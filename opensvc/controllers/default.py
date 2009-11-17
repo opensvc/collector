@@ -428,29 +428,48 @@ def delete_services(hostid=None):
     if hostid is None:
         return 0
     db(db.services.svc_hostid==hostid).delete()
+    db.commit()
     return 0
 
 @service.xmlrpc
 def update_service(vars, vals):
     if 'svc_hostid' not in vars:
         return 0
-    sql="""insert into services (%s) values (%s)""" % (','.join(vars), ','.join(vals))
+    sql="""insert delayed into services (%s) values (%s)""" % (','.join(vars), ','.join(vals))
     db.executesql(sql)
+    db.commit()
     return 0
 
 @service.xmlrpc
 def begin_action(vars, vals):
     sql="""insert delayed into SVCactions (%s) values (%s)""" % (','.join(vars), ','.join(vals))
     db.executesql(sql)
+    db.commit()
+    return 0
+
+@service.xmlrpc
+def res_action(vars, vals):
+    upd = []
+    for a, b in zip(vars, vals):
+        upd.append("%s=%s" % (a, b))
+    sql="""insert delayed into SVCactions (%s) values (%s)""" % (','.join(vars), ','.join(vals))
+    db.executesql(sql)
+    db.commit()
     return 0
 
 @service.xmlrpc
 def end_action(vars, vals):
     upd = []
+    h = {}
     for a, b in zip(vars, vals):
-        upd.append("%s=%s" % (a, b))
-    sql="""insert delayed into SVCactions (%s) values (%s) on duplicate key update %s""" % (','.join(vars), ','.join(vals), ','.join(upd))
+        h[a] = b
+        if a not in ['hostname', 'svcname', 'begin', 'action', 'hostid']:
+            upd.append("%s=%s" % (a, b))
+    sql="""update SVCactions set %s where hostname=%s and svcname=%s and begin=%s and action=%s""" %\
+        (','.join(upd), h['hostname'], h['svcname'], h['begin'], h['action'])
+    #raise Exception(sql)
     db.executesql(sql)
+    db.commit()
     return 0
 
 @service.xmlrpc
