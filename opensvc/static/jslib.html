@@ -1,0 +1,28 @@
+<script language="JavaScript" type="text/javascript">
+function checkEnter(e) {
+  var characterCode
+  if(e && e.which) {
+    e = e
+    characterCode = e.which
+  }else{
+    e = event
+    characterCode = e.keyCode
+  }
+  if(characterCode == 13) {
+    document.svcform.submit()
+    return false
+  }else{
+    return true
+  }
+}
+
+function select_all(checked, aform) {
+  var elem = aform.elements;
+  for(var i = 0; i < elem.length; i++) {
+    if (elem[i].type == 'checkbox') {
+      elem[i].checked = checked
+    }
+  }
+}
+</script>
+

@@ -1,0 +1,4 @@
+{{extend 'layout.html'}}
+
+{{try:}}{{=H2(message)}}{{except:}}{{=BEAUTIFY(response._vars)}}{{pass}}
+

@@ -1,0 +1,78 @@
+{{extend 'layout.html'}}
+{{include '../static/jslib.html'}}
+{{
+for key in ['svcname',
+            'svcapp',
+            'svctype',
+            'containertype',
+            'containerstatus',
+            'ipstatus',
+            'fsstatus',
+            'diskstatus',
+            'overallstatus',
+            'nodename',
+            'nodetype',
+            'mon_updated']:
+    if not vars.has_key(key) or vars[key] is None: vars[key]=''
+    pass
+}}
+{{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0),_href=URL(r=request,f='svcmon_csv', vars=vars))}}
+<table>
+  <tr>
+    <td>Service<br>name</td>
+    <td>App</td>
+    <td>Service<br>type</td>
+    <td>Node<br>type</td>
+    <td>Node<br>name</td>
+    <td>Container<br>type</td>
+    <td>Container<br>status</td>
+    <td>Ip<br>status</td>
+    <td>Fs<br>status</td>
+    <td>Disk<br>status</td>
+    <td>Overall<br>status</td>
+    <td>Last status<br>update</td>
+  </tr>
+  <tr>
+    <form submit='svcmon' name='svcform'>
+    <td><input name=svcname value='{{=vars.svcname}}' size=12 onKeyPress="checkEnter(event)"></td>
+    <td><input name=svcapp value='{{=vars.svcapp}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td><input name=svctype value='{{=vars.svctype}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td><input name=nodetype value='{{=vars.nodetype}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td><input name=nodename value='{{=vars.nodename}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td><input name=containertype value='{{=vars.containertype}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td><input name=containerstatus value='{{=vars.containerstatus}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td><input name=ipstatus value='{{=vars.ipstatus}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td><input name=fsstatus value='{{=vars.fsstatus}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td><input name=diskstatus value='{{=vars.diskstatus}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td><input name=overallstatus value='{{=vars.overallstatus}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td><input name=mon_updated value='{{=vars.mon_updated}}' size=12 onKeyPress="checkEnter(event)"></td>
+    </form>
+  {{
+    svcname = ''
+    cellclass = 'cell1'
+    cellclasses = {}
+    cellclasses['cell1'] = 'cell2'
+    cellclasses['cell2'] = 'cell1'
+  }}
+  {{for svc in services:}}
+  <tr>
+    {{if svcname != svc.mon_svcname:
+          cellclass = cellclasses[cellclass]
+          svcname = svc.mon_svcname
+          pass
+    }}
+    <td class={{=cellclass}}>{{=svc.mon_svcname}}</td>
+    <td class={{=cellclass}}>{{=svc.svc_app}}</td>
+    <td class={{=cellclass}}>{{=svc.mon_svctype}}</td>
+    <td class={{=cellclass}}>{{=svc.mon_nodtype}}</td>
+    <td class={{=cellclass}}>{{=svc.mon_nodname}}</td>
+    <td class={{=cellclass}}>{{=svc.svc_containertype}}</td>
+    <td class="{{=cellclass}} status_{{=svc.mon_containerstatus}}">{{=svc.mon_containerstatus}}</td>
+    <td class="{{=cellclass}} status_{{=svc.mon_ipstatus}}">{{=svc.mon_ipstatus}}</td>
+    <td class="{{=cellclass}} status_{{=svc.mon_fsstatus}}">{{=svc.mon_fsstatus}}</td>
+    <td class="{{=cellclass}} status_{{=svc.mon_diskstatus}}">{{=svc.mon_diskstatus}}</td>
+    <td class="{{=cellclass}} status_{{=svc.mon_overallstatus}}">{{=svc.mon_overallstatus}}</td>
+    <td class={{=cellclass}}>{{=svc.mon_updated}}</td>
+  </tr>
+  {{pass}}
+</table>

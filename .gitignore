@@ -1,0 +1,13 @@
+*.bak
+*.pyc
+*.swp
+*.class
+cache/
+databases/
+private/
+sessions/
+errors/
+uploads/
+/admin/
+/examples/
+__init__.py

@@ -1,0 +1,56 @@
+{{extend 'layout.html'}}
+{{include '../static/jslib.html'}}
+{{
+for key in ['svcname', 'action', 'status', 'begin', 'end', 'hostname', 'pid', 'status_log']:
+    if not vars.has_key(key) or vars[key] is None: vars[key]=''
+    pass
+}}
+{{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0),_href=URL(r=request,f='svcactions_csv', vars=vars))}}
+{{=A(IMG(_src=URL(r=request,c='static',f='rss.png'),_border=0),_href=URL(r=request,f='svcactions_rss', vars=vars))}}
+<table>
+  <tr>
+    <td>Service</td>
+    <td>Node</td>
+    <td>Action</td>
+    <td>Status</td>
+    <td>Begin</td>
+    <td>End</td>
+    <td>Pid</td>
+    <td>Log</td>
+  </tr>
+  <tr>
+    <form submit='svcaction' name='svcform'>
+    <td><input name=svcname value='{{=vars.svcname}}' size=12 onKeyPress="checkEnter(event)"></td>
+    <td><input name=hostname value='{{=vars.hostname}}' size=12 onKeyPress="checkEnter(event)"></td>
+    <td><input name=action value='{{=vars.action}}' size=8 onKeyPress="checkEnter(event)"></td>
+    <td><input name=status value='{{=vars.status}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td><input name=begin value='{{=vars.begin}}' size=12 onKeyPress="checkEnter(event)"></td>
+    <td><input name=end value='{{=vars.end}}' size=12 onKeyPress="checkEnter(event)"></td>
+    <td><input name=pid value='{{=vars.pid}}' size=5 onKeyPress="checkEnter(event)"></td>
+    <td><input name=status_log value='{{=vars.status_log}}' size=20 onKeyPress="checkEnter(event)"></td>
+    </form>
+  {{
+    pid = ''
+    cellclass = 'cell1'
+    cellclasses = {}
+    cellclasses['cell1'] = 'cell2'
+    cellclasses['cell2'] = 'cell1'
+  }}
+  {{for action in actions:}}
+    {{if pid != action.pid:
+          cellclass = cellclasses[cellclass]
+          pid = action.pid
+          pass
+    }}
+  <tr>
+    <td class={{=cellclass}}>{{=action.svcname}}</td>
+    <td class={{=cellclass}}>{{=action.hostname}}</td>
+    <td class={{=cellclass}}>{{=action.action}}</td>
+    <td class="{{=cellclass}} status_{{=action.status}}">{{=action.status}}</td>
+    <td class={{=cellclass}}>{{=action.begin}}</td>
+    <td class={{=cellclass}}>{{=action.end}}</td>
+    <td class={{=cellclass}}>{{=action.pid}}</td>
+    <td class={{=cellclass}}>{{=action.status_log}}</td>
+  </tr>
+  {{pass}}
+</table>

@@ -1,0 +1,125 @@
+{{extend 'layout.html'}}
+{{include '../static/jslib.html'}}
+{{
+for key in ['svc_name',
+            'svc_app',
+            'svc_type',
+            'svc_drptype',
+            'svc_autostart',
+            'svc_nodes',
+            'svc_drpnode',
+            'svc_drpnodes',
+            'svc_wave',
+            ]:
+    if not vars.has_key(key) or vars[key] is None: vars[key]=''
+    pass
+}}
+{{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title="print the csv representation of the current data cursor"),_href=URL(r=request,f='drplan_csv', vars=vars))}}
+<form submit='drplan' name='svcform' id='svcform'>
+<table>
+  <tr>
+    <td></td>
+    <td>Service<br>name</td>
+    <td>App</td>
+    <td>Service<br>type</td>
+    <td>DR type</td>
+    <td>Node</td>
+    <td>Nodes</td>
+    <td>DR node</td>
+    <td>DR nodes</td>
+    <td>Wave</td>
+  </tr>
+  <tr>
+    <td><input type=checkbox id=check_all onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'))"></td>
+    <td><input name=svc_name value='{{=vars.svc_name}}' size=12 onKeyPress="checkEnter(event)"></td>
+    <td><input name=svc_app value='{{=vars.svc_app}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td><input name=svc_type value='{{=vars.svc_type}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td><input name=svc_drptype value='{{=vars.svc_drptype}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td><input name=svc_autostart value='{{=vars.svc_autostart}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td><input name=svc_nodes value='{{=vars.svc_nodes}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td><input name=svc_drpnode value='{{=vars.svc_drpnode}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td><input name=svc_drpnodes value='{{=vars.svc_drpnodes}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td><input name=svc_wave value='{{=vars.svc_wave}}' size=4 onKeyPress="checkEnter(event)"></td>
+  {{
+    svcname = ''
+    cellclass = 'cell1'
+    cellclasses = {}
+    cellclasses['cell1'] = 'cell2'
+    cellclasses['cell2'] = 'cell1'
+  }}
+  {{for svc in services:}}
+  <tr>
+    {{if svcname != svc.services.svc_name:
+          cellclass = cellclasses[cellclass]
+          svcname = svc.services.svc_name
+          pass
+      checked = getattr(vars, 'check_'+svc.services.svc_name)
+      if checked is not None:
+          checked = 'checked=on'
+          pass
+      if svc.drpservices.drp_wave is None:
+          drp_wave = ''
+      else:
+          drp_wave = svc.drpservices.drp_wave
+          pass
+      if svc.drpservices.drp_project_id is None:
+          drp_project_id = ''
+      else:
+          drp_project_id = svc.drpservices.drp_project_id
+          pass
+    }}
+    <td class={{=cellclass}}><input type=checkbox name=check_{{=svc.services.svc_name}} {{=checked}}></td>
+    <td class={{=cellclass}}>{{=svc.services.svc_name}}</td>
+    <td class={{=cellclass}}>{{=svc.services.svc_app}}</td>
+    <td class={{=cellclass}}>{{=svc.services.svc_type}}</td>
+    <td class={{=cellclass}}>{{=svc.services.svc_drptype}}</td>
+    <td class={{=cellclass}}>{{=svc.services.svc_autostart}}</td>
+    <td class={{=cellclass}}>{{=svc.services.svc_nodes}}</td>
+    <td class={{=cellclass}}>{{=svc.services.svc_drpnode}}</td>
+    <td class={{=cellclass}}>{{=svc.services.svc_drpnodes}}</td>
+    <td class={{=cellclass}}>{{=drp_wave}}</td>
+  </tr>
+  {{pass}}
+  <tr class=toolbar>
+    <input name=setwave type=hidden>
+    <td width=100% align=right colspan=10>
+      <table>
+        <tr>
+          <td> set wave:</td>
+          <td> project:</td>
+        </tr>
+        <tr>
+          <td>
+            {{=IMG(_src=URL(r=request,c='static',f='wave0.png'),_border=0,_onclick='javascript:document.svcform.setwave.value=0;document.svcform.submit()')}}
+            {{=IMG(_src=URL(r=request,c='static',f='wave1.png'),_border=0,_onclick='javascript:document.svcform.setwave.value=1;document.svcform.submit()')}}
+            {{=IMG(_src=URL(r=request,c='static',f='wave2.png'),_border=0,_onclick='javascript:document.svcform.setwave.value=2;document.svcform.submit()')}}
+            {{=IMG(_src=URL(r=request,c='static',f='wave3.png'),_border=0,_onclick='javascript:document.svcform.setwave.value=3;document.svcform.submit()')}}
+            {{=IMG(_src=URL(r=request,c='static',f='del.png'),_border=0,_title="remove the selected services from the DR plan", _onclick='javascript:document.svcform.setwave.value="del";document.svcform.submit()')}}
+          </td>
+          <td valign=center>
+            {{=IMG(_src=URL(r=request,c='static',f='add.png'),_border=0, _title="create new project", _onclick='javascript:document.getElementById("div_addproject").style.visibility="visible";document.svcform.addproject.focus()')}}
+            {{=IMG(_src=URL(r=request,c='static',f='clone.png'),_border=0, _title="clone the current project", _onclick='javascript:document.getElementById("div_cloneproject").style.visibility="visible";document.svcform.cloneproject.focus()')}}
+            {{=IMG(_src=URL(r=request,c='static',f='del.png'),_border=0, _title="trash the current project", _onclick='javascript:document.svcform.delproject.value=1;document.svcform.submit()')}}
+            {{=A(IMG(_src=URL(r=request,c='static',f='gen.png'),_border=0, _title="generate the DR scripts for the current project"),_href=URL(r=request,f='drplan_scripts', vars=vars))}}
+            <input name=delproject type=hidden>
+            <select name=prjlist onChange='document.svcform.submit()'>
+              <option value=0>choose</option>
+              {{for project in projects:
+              if str(project.drp_project_id) == str(request.vars.prjlist):
+                  selected = 'selected'
+              else:
+                  selected = ''
+                  pass
+              }}
+              <option value={{=project.drp_project_id}} {{=selected}}>{{=project.drp_project_id}}: {{=project.drp_project}}</option>
+              {{pass}}
+            </select>
+            <div id=div_cloneproject class=invisible_div><input name=cloneproject onKeyPress="checkEnter(event)"></div>
+            <div id=div_addproject class=invisible_div><input name=addproject onKeyPress="checkEnter(event)"></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</form>
