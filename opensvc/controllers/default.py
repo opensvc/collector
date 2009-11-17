@@ -427,7 +427,7 @@ def drplan_scripts_archive():
 def delete_services(hostid=None):
     if hostid is None:
         return 0
-    db(db.services.hostid==hostid).delete()
+    db(db.services.svc_hostid==hostid).delete()
     return 0
 
 @service.xmlrpc
