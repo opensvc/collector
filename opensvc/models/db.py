@@ -12,7 +12,7 @@ if request.env.web2py_runtime_gae:            # if running on Google App Engine
     # from google.appengine.api.memcache import Client
     # session.connect(request, response, db=MEMDB(Client())
 else:                                         # else use a normal relational database
-    db = DAL('mysql://unxdev01:unxdev01@unxdevweb/opensvc')       # if not, use SQLite or other DB
+    db = DAL('mysql://opensvc:opensvc@dbopensvc/opensvc')       # if not, use SQLite or other DB
 ## if no need for session
 # session.forget()
 
@@ -28,7 +28,7 @@ else:                                         # else use a normal relational dat
 from gluon.tools import *
 auth=Auth(globals(),db)                      # authentication/authorization
 auth.settings.hmac_key='sha512:7755f108-1b83-45dc-8302-54be8f3616a1'
-auth.define_tables()                         # creates all needed tables
+auth.define_tables(migrate=False)                         # creates all needed tables
 crud=Crud(globals(),db)                      # for CRUD helpers using auth
 service=Service(globals())                   # for json, xml, jsonrpc, xmlrpc, amfrpc
 
