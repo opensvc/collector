@@ -539,6 +539,9 @@ CREATE TABLE `SVCactions` (
   `B_SVCstatus` varchar(10) DEFAULT NULL,
   `E_SVCstatus` varchar(10) DEFAULT NULL,
   `action_group` int(11) DEFAULT NULL,
+  `acked_by` varchar(50) DEFAULT NULL,
+  `acked_comment` text,
+  `acked_date` datetime NOT NULL,
   PRIMARY KEY (`ID`),
   KEY `hostname` (`hostname`),
   KEY `svcname` (`svcname`),
@@ -551,7 +554,7 @@ CREATE TABLE `SVCactions` (
   KEY `hostid_2` (`hostid`,`begin`),
   KEY `svcname_2` (`svcname`,`begin`),
   KEY `status` (`status`,`scripts_status`)
-) ENGINE=MyISAM AUTO_INCREMENT=3386703 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=3386798 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -570,7 +573,7 @@ CREATE TABLE `auth_event` (
   `description` longtext,
   PRIMARY KEY (`id`),
   KEY `user_id__idx` (`user_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=16 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -654,7 +657,7 @@ CREATE TABLE `drpprojects` (
   PRIMARY KEY (`drp_project_id`),
   UNIQUE KEY `uniq_key` (`drp_project`),
   KEY `drp_project_index` (`drp_project`)
-) ENGINE=MyISAM AUTO_INCREMENT=60 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=62 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -715,7 +718,7 @@ CREATE TABLE `services` (
   KEY `svc_hostid` (`svc_hostid`),
   KEY `svc_name` (`svc_name`),
   KEY `svc_drpnode` (`svc_drpnode`)
-) ENGINE=MyISAM AUTO_INCREMENT=54 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=57 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -922,4 +925,4 @@ USE `test`;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2009-11-17 18:00:39
+-- Dump completed on 2009-11-19  0:42:14
