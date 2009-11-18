@@ -8,6 +8,16 @@ select {
     border: 1px solid #cccccc;
 }
 
+.ack_1 {
+    text-decoration:line-through;
+}
+
+.ack {
+    background: #000000;
+    color: #ffffff;
+    font-size: 0%;
+}
+
 .toolbar {
     background: transparent;
 }

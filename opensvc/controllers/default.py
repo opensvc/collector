@@ -134,8 +134,22 @@ def svcmon_csv():
     response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
     return svcmon()
 
+def _svcaction_ack(request):
+    action_ids = ([])
+    for key in [ k for k in request.vars.keys() if 'check_' in k ]:
+        action_ids += ([key[6:]])
+    for action_id in action_ids:
+        query = (db.SVCactions.id == action_id)&(db.SVCactions.status != "ok")
+        db(query).update(ack=1,
+                         acked_comment=request.vars.ackcomment,
+                         acked_by=' '.join([session.auth.user.first_name, session.auth.user.last_name]),
+                         acked_date=datetime.datetime.now())
+    del request.vars.ackcomment
+
 @auth.requires_login()
 def svcactions():
+    if request.vars.ackcomment is not None:
+        _svcaction_ack(request)
     query = _where(None, 'SVCactions', request.vars.svcname, 'svcname')
     query &= _where(None, 'SVCactions', request.vars.id, 'id')
     query &= _where(None, 'SVCactions', request.vars.action, 'action')

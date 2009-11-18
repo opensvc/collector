@@ -7,8 +7,10 @@ for key in ['svcname', 'action', 'status', 'begin', 'end', 'hostname', 'pid', 's
 }}
 {{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0),_href=URL(r=request,f='svcactions_csv', vars=vars))}}
 {{=A(IMG(_src=URL(r=request,c='static',f='rss.png'),_border=0),_href=URL(r=request,f='svcactions_rss', vars=vars))}}
+<form submit='svcaction' name='svcform' id='svcform'>
 <table>
   <tr>
+    <td></td>
     <td>Service</td>
     <td>Node</td>
     <td>Action</td>
@@ -19,7 +21,7 @@ for key in ['svcname', 'action', 'status', 'begin', 'end', 'hostname', 'pid', 's
     <td>Log</td>
   </tr>
   <tr>
-    <form submit='svcaction' name='svcform'>
+    <td><input type=checkbox id=check_all onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'))"></td>
     <td><input name=svcname value='{{=vars.svcname}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=hostname value='{{=vars.hostname}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=action value='{{=vars.action}}' size=8 onKeyPress="checkEnter(event)"></td>
@@ -41,16 +43,51 @@ for key in ['svcname', 'action', 'status', 'begin', 'end', 'hostname', 'pid', 's
           cellclass = cellclasses[cellclass]
           pid = action.pid
           pass
+      checked = getattr(vars, 'check_'+action.svcname)
+      if checked is not None:
+          checked = 'checked=on'
+          pass
+      if action.status == 'ok':
+          disabled = 'disabled'
+      else:
+          disabled = ''
+          pass
+      if action.ack == 1:
+          div_ack = DIV(B("acked by "),action.acked_by,B(" on "),action.acked_date,B(" with comment: "),action.acked_comment, _id='div_ack_'+str(action.id), _class='invisible_div')
+      else:
+          div_ack = DIV("", _id='div_ack_'+str(action.id), _class='invisible_div')
+          pass
     }}
   <tr>
+    <td class={{=cellclass}}><input type=checkbox name=check_{{=action.id}} {{=checked}} {{=disabled}}></td>
     <td class={{=cellclass}}>{{=action.svcname}}</td>
     <td class={{=cellclass}}>{{=action.hostname}}</td>
     <td class={{=cellclass}}>{{=action.action}}</td>
-    <td class="{{=cellclass}} status_{{=action.status}}">{{=action.status}}</td>
+    <td class="{{=cellclass}} status_{{=action.status}} ack_{{=action.ack}}" onMouseOver='javascript:show_ack({{=action.id}})' onMouseOut='javascript:hide_ack({{=action.id}})'>{{=action.status}}</td>
     <td class={{=cellclass}}>{{=action.begin}}</td>
     <td class={{=cellclass}}>{{=action.end}}</td>
     <td class={{=cellclass}}>{{=action.pid}}</td>
     <td class={{=cellclass}}>{{=action.status_log}}</td>
   </tr>
+  <tr class=ack>
+    <td colspan=99>
+      {{=div_ack}}
+    </td>
+  </tr>
   {{pass}}
+  <tr>
+    <td colspan=20>
+      <table>
+        <tr>
+          <td valign=center>
+            {{=IMG(_src=URL(r=request,c='static',f='add.png'),_border=0, _title="acknowledge selected error", _onclick='javascript:document.getElementById("div_ackcomment").style.visibility="visible";document.svcform.ackcomment.focus()')}}
+            <div id=div_ackcomment class=invisible_div>
+              Acknowledge with comment:<br>
+              <input name=ack value="" type=hidden>
+              <input name=ackcomment onKeyPress="checkEnter(event)">
+            </div>
+        </tr>
+      </table>
+    </td>
+  </tr>
 </table>

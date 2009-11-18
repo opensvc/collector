@@ -24,5 +24,17 @@ function select_all(checked, aform) {
     }
   }
 }
+
+function show_ack(id) {
+  document.getElementById("div_ack_"+id).style.visibility="visible"
+  //document.getElementById("div_ack_"+id).style.fontSize="100%"
+  document.getElementById("div_ack_"+id).style.fontSize="10pt"
+}
+
+function hide_ack(id) {
+  document.getElementById("div_ack_"+id).style.visibility="invisible"
+  document.getElementById("div_ack_"+id).style.fontSize="0%"
+}
+
 </script>
 
