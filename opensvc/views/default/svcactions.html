@@ -80,7 +80,7 @@ for key in ['svcname', 'action', 'status', 'begin', 'end', 'hostname', 'pid', 's
       <table>
         <tr>
           <td valign=center>
-            {{=IMG(_src=URL(r=request,c='static',f='add.png'),_border=0, _title="acknowledge selected error", _onclick='javascript:document.getElementById("div_ackcomment").style.visibility="visible";document.svcform.ackcomment.focus()')}}
+            {{=IMG(_src=URL(r=request,c='static',f='ack.png'),_border=0, _title="acknowledge selected errors", _onclick='javascript:document.getElementById("div_ackcomment").style.visibility="visible";document.svcform.ackcomment.focus()')}}
             <div id=div_ackcomment class=invisible_div>
               Acknowledge with comment:<br>
               <input name=ack value="" type=hidden>
