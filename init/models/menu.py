@@ -45,8 +45,6 @@ if 'auth' in globals():
 import datetime
 yesterday = str(datetime.datetime.today()-datetime.timedelta(days=1))
 response.menu = [
-  [T('Views'), False, None,
-    [
     [T('svcmon'), False, 
      URL(request.application,'default','svcmon'), []],
     [T('actions'), False, 
@@ -55,6 +53,4 @@ response.menu = [
      URL(request.application,'default','drplan'), []],
     [T('applications'), False, 
      URL(request.application,'default','apps'), []],
-   ],
-  ],
 ]

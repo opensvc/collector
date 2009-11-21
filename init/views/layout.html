@@ -10,23 +10,22 @@
     <div class="wrapper">
       <table class="layout">
         <tr class="header">
-          <td width="100%">
+          <td>
             <h1>
               {{=(response.title or request.application)}}
             </h1>
-            <h3>{{=response.subtitle or ''}}</h3>
           </td>
-          <td>
+          <td class=menucell>
             <table>
-              <tr>
-                <td>
+              <tr class=menucell>
+                <td class=menucell>
                   {{if response.menu_auth:}}
-                  {{=MENU(response.menu_auth)}}
+                  {{=MENU(response.menu_auth, _class="web2py-menu web2py-menu-horizontal")}}
                   {{pass}}
                 </td>
-                <td>
+                <td class=menucell>
                   {{if response.menu:}}
-                  {{=MENU(response.menu)}}
+                  {{=MENU(response.menu, _class="web2py-menu web2py-menu-horizontal")}}
                   {{pass}}
                 </td>
               </tr>

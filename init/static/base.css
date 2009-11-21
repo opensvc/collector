@@ -8,6 +8,11 @@ select {
     border: 1px solid #cccccc;
 }
 
+.menucell {
+    padding:0px;
+    vertical-align: bottom;
+}
+
 .ack_1 {
     text-decoration:line-through;
 }
@@ -171,7 +176,7 @@ html {
 }
 
 a {
-    color: #FF5C1F;
+    color: #330000;
 }
 
 .flash {
@@ -229,8 +234,8 @@ div.error {
 }
 
 .wrapper {
-    padding-top: 20px;
-    padding-left: 20px;
+    padding-top: 10px;
+    padding-left: 10px;
 }
 
 .layout {
@@ -245,7 +250,7 @@ div.error {
 .header {
     background: url('header.gif');
     color: white;
-    border-bottom: 1px #ddf solid;
+    border-bottom: 1px #000 solid;
 }
 
 .statusbar {
@@ -408,7 +413,7 @@ ul.web2py-menu-hRight ul
 
 ul.web2py-menu li a
 {
-    border: solid 1px #ddf
+    border-left: solid 1px #dddddd
 }
 
 ul.web2py-menu-horizontal li
@@ -455,7 +460,8 @@ ul.web2py-menu li:hover a:active
 
 ul.web2py-menu li
 {
-    background: url('menu.gif');
+    #background: url('menu.gif');
+    background-color: #ffffff;
 }
 
 ul.web2py-menu li:hover,
