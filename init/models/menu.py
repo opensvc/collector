@@ -6,6 +6,7 @@
 
 response.title = T('OpenSVC')
 #response.subtitle = T('datacenter control tower')
+_f = request.function
 
 ##########################################
 ## this is the authentication menu
@@ -45,12 +46,12 @@ if 'auth' in globals():
 import datetime
 yesterday = str(datetime.datetime.today()-datetime.timedelta(days=1))
 response.menu = [
-    [T('svcmon'), False, 
+    [T('svcmon'), _f == 'svcmon', 
      URL(request.application,'default','svcmon'), []],
-    [T('actions'), False, 
+    [T('actions'), _f == 'svcactions', 
      URL(request.application,'default','svcactions?begin=>'+yesterday), []],
-    [T('drplan'), False, 
+    [T('drplan'), _f == 'drplan', 
      URL(request.application,'default','drplan'), []],
-    [T('applications'), False, 
+    [T('applications'), _f == 'apps', 
      URL(request.application,'default','apps'), []],
 ]

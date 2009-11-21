@@ -8,8 +8,13 @@ select {
     border: 1px solid #cccccc;
 }
 
+.web2py-menu-active a {
+    background-color: #ffffff;
+}
+
 .menucell {
     padding:0px;
+    padding-left:5px;
     vertical-align: bottom;
 }
 
@@ -176,7 +181,7 @@ html {
 }
 
 a {
-    color: #330000;
+    color: #000000;
 }
 
 .flash {
@@ -460,8 +465,7 @@ ul.web2py-menu li:hover a:active
 
 ul.web2py-menu li
 {
-    #background: url('menu.gif');
-    background-color: #ffffff;
+    background-color: #eee;
 }
 
 ul.web2py-menu li:hover,
@@ -538,7 +542,7 @@ ul.web2py-menu li.web2py-menu-expand li.web2py-menu-expand li.web2py-menu-expand
 
 ul.web2py-menu ul
 {
-    background-color: #fff;
+    background-color: #ddd;
 }
 
 * html ul.web2py-menu-vertical li,
