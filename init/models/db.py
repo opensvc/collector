@@ -170,3 +170,20 @@ db.define_table('drpprojects',
     Field('drp_project_id'),
     migrate=False)
 
+db.define_table('apps',
+    Field('id'),
+    Field('app'),
+    migrate=False)
+
+db.define_table('v_apps',
+    Field('id'),
+    Field('app'),
+    Field('responsibles'),
+    migrate=False)
+
+db.define_table('apps_responsibles',
+    Field('id'),
+    Field('app_id'),
+    Field('user_id'),
+    migrate=False)
+

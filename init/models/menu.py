@@ -32,9 +32,10 @@ if 'auth' in globals():
                     [T('Edit Profile'), False, 
                      URL(request.application,'default','user/profile')],
                     [T('Change Password'), False,
-                     URL(request.application,'default','user/change_password')]]
+                     URL(request.application,'default','user/change_password')],
              ],
-            ]
+            ],
+        ]
 
 ##########################################
 ## this is the main application menu
@@ -50,4 +51,6 @@ response.menu = [
      URL(request.application,'default','svcactions?begin=>'+yesterday), []],
     [T('drplan'), False, 
      URL(request.application,'default','drplan'), []],
+    [T('applications'), False, 
+     URL(request.application,'default','apps'), []],
 ]

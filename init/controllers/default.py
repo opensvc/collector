@@ -42,6 +42,67 @@ def call():
     session.forget()
     return service()
 
+@auth.requires_membership('Manager')
+def _add_app(request):
+    apps = db(db.apps.app==request.vars.addapp).select(db.apps.id)
+    if len(apps) != 0:
+        response.flash = "application '%s' already exists" % request.vars.addapp
+        return
+    db.apps.insert(app=request.vars.addapp)
+    response.flash = "application '%s' created" % request.vars.addapp
+    q = db.apps.app==request.vars.addapp
+    app = db(q).select(db.apps.id)[0]
+    request.vars.appid = str(app.id)
+    del request.vars.addapp
+
+@auth.requires_membership('Manager')
+def _set_resp(request):
+    ids = ([])
+    for key in [ k for k in request.vars.keys() if 'check_' in k ]:
+        ids += ([key[6:]])
+    for id in ids:
+        query = (db.apps_responsibles.app_id == id)&(db.apps_responsibles.user_id == request.vars.users)
+        rows = db(query).select()
+        if len(rows) == 0:
+            db.apps_responsibles.insert(app_id=id,user_id=request.vars.users)
+    num = len(ids)
+    if num > 1:
+        s = 's'
+    else:
+        s = ''
+    response.flash = "%s assignement%s added"%(num, s)
+    del request.vars.resp
+
+@auth.requires_membership('Manager')
+def _unset_resp(request):
+    ids = ([])
+    for key in [ k for k in request.vars.keys() if 'check_' in k ]:
+        ids += ([key[6:]])
+    for id in ids:
+        query = (db.apps_responsibles.app_id == id)&(db.apps_responsibles.user_id == request.vars.users)
+        num = db(query).delete()
+    if num > 1:
+        s = 's'
+    else:
+        s = ''
+    response.flash = "%s assignement%s removed"%(num, s)
+    del request.vars.resp
+
+@auth.requires_membership('Manager')
+def apps():
+    if request.vars.addapp is not None and request.vars.addapp != '':
+        _add_app(request)
+    elif request.vars.resp == 'add':
+        _set_resp(request)
+    elif request.vars.resp == 'del':
+        _unset_resp(request)
+    query = _where(None, 'v_apps', request.vars.app, 'app')
+    query &= _where(None, 'v_apps', request.vars.responsibles, 'responsibles')
+    apps = db(query).select(orderby=db.v_apps.app)
+    query = (db.auth_user.id>0)
+    users = db(query).select()
+    return dict(apps=apps, users=users, vars=request.vars)
+
 def _where(query, table, var, field, tableid=None):
     if query is None:
         if tableid is not None:
@@ -86,7 +147,7 @@ def _where(query, table, var, field, tableid=None):
         _not = False
 
     if chunk == 'empty':
-        q = db[table][field]==None
+        q = (db[table][field]==None)|(db[table][field]=='')
     elif chunk[0] not in '<>=':
         q = db[table][field].like(chunk)
     else:
