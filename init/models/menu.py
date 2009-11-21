@@ -4,7 +4,7 @@
 ## Customize your APP title, subtitle and menus here
 #########################################################################
 
-response.title = request.application
+response.title = T('OpenSVC')
 response.subtitle = T('datacenter control tower')
 
 ##########################################
