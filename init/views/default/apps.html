@@ -11,8 +11,8 @@ for key in ['app',
 <table>
   <tr>
     <td></td>
-    <td>App</td>
-    <td>Responsibles</td>
+    <td>{{=T('App')}}</td>
+    <td>{{=T('Responsibles')}}</td>
   </tr>
   <tr>
     <td><input type=checkbox id=check_all onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'))"></td>
@@ -35,18 +35,18 @@ for key in ['app',
     <td width=100% align=right colspan=10>
       <table>
         <tr>
-          <td> app:</td>
-          <td> responsible:</td>
+          <td> {{=T('app')}}:</td>
+          <td> {{=T('responsible')}}:</td>
         </tr>
         <tr>
           <td>
-            {{=IMG(_src=URL(r=request,c='static',f='add.png'),_border=0,_title="create application", _onclick='javascript:document.getElementById("div_addapp").style.visibility="visible";document.svcform.addapp.focus()')}}
-            {{=IMG(_src=URL(r=request,c='static',f='del.png'),_border=0,_title="remove the selected application", _onclick='javascript:document.svcform.app.value="del";document.svcform.submit()')}}
+            {{=IMG(_src=URL(r=request,c='static',f='add.png'),_border=0,_title=T('create application'), _onclick='javascript:document.getElementById("div_addapp").style.visibility="visible";document.svcform.addapp.focus()')}}
+            {{=IMG(_src=URL(r=request,c='static',f='del.png'),_border=0,_title=T('remove the selected application'), _onclick='javascript:document.svcform.app.value="del";document.svcform.submit()')}}
             <div id=div_addapp class=invisible_div><input name=addapp size=4 onKeyPress="checkEnter(event)"></div>
           </td>
           <td valign=center>
-            {{=IMG(_src=URL(r=request,c='static',f='add.png'),_border=0,_title="add this responsible to selected applications", _onclick='javascript:document.svcform.resp.value="add";document.svcform.submit()')}}
-            {{=IMG(_src=URL(r=request,c='static',f='del.png'),_border=0,_title="remove this responsible from selected applications", _onclick='javascript:document.svcform.resp.value="del";document.svcform.submit()')}}
+            {{=IMG(_src=URL(r=request,c='static',f='add.png'),_border=0,_title=T('add this responsible to selected applications'), _onclick='javascript:document.svcform.resp.value="add";document.svcform.submit()')}}
+            {{=IMG(_src=URL(r=request,c='static',f='del.png'),_border=0,_title=T('remove this responsible from selected applications'), _onclick='javascript:document.svcform.resp.value="del";document.svcform.submit()')}}
             <input name=resp type=hidden>
             <select name=users>
               <option value=0>choose</option>

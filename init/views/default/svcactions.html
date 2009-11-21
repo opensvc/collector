@@ -11,14 +11,14 @@ for key in ['svcname', 'action', 'status', 'begin', 'end', 'hostname', 'pid', 's
 <table>
   <tr>
     <td></td>
-    <td>Service</td>
-    <td>Node</td>
-    <td>Action</td>
-    <td>Status</td>
-    <td>Begin</td>
-    <td>End</td>
-    <td>Pid</td>
-    <td>Log</td>
+    <td>{{=T('Service')}}</td>
+    <td>{{=T('Node')}}</td>
+    <td>{{=T('Action')}}</td>
+    <td>{{=T('Status')}}</td>
+    <td>{{=T('Begin')}}</td>
+    <td>{{=T('End')}}</td>
+    <td>{{=T('Pid')}}</td>
+    <td>{{=T('Log')}}</td>
   </tr>
   <tr>
     <td><input type=checkbox id=check_all onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'))"></td>
@@ -80,9 +80,9 @@ for key in ['svcname', 'action', 'status', 'begin', 'end', 'hostname', 'pid', 's
       <table>
         <tr>
           <td valign=center>
-            {{=IMG(_src=URL(r=request,c='static',f='ack.png'),_border=0, _title="acknowledge selected errors", _onclick='javascript:document.getElementById("div_ackcomment").style.visibility="visible";document.svcform.ackcomment.focus()')}}
+            {{=IMG(_src=URL(r=request,c='static',f='ack.png'),_border=0, _title=T('acknowledge selected errors'), _onclick='javascript:document.getElementById("div_ackcomment").style.visibility="visible";document.svcform.ackcomment.focus()')}}
             <div id=div_ackcomment class=invisible_div>
-              Acknowledge with comment:<br>
+              {{=T('Acknowledge with comment')}}:<br>
               <input name=ack value="" type=hidden>
               <input name=ackcomment onKeyPress="checkEnter(event)">
             </div>
