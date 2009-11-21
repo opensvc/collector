@@ -25,7 +25,7 @@ if 'auth' in globals():
            ]
     else:
         response.menu_auth = [
-            ['User: '+auth.user.first_name,False,None,
+            [auth.user.first_name,False,None,
              [
                     [T('Logout'), False, 
                      URL(request.application,'default','user/logout')],

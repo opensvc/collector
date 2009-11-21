@@ -14,20 +14,20 @@ for key in ['svc_name',
     if not vars.has_key(key) or vars[key] is None: vars[key]=''
     pass
 }}
-{{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title="print the csv representation of the current data cursor"),_href=URL(r=request,f='drplan_csv', vars=vars))}}
+{{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='drplan_csv', vars=vars))}}
 <form submit='drplan' name='svcform' id='svcform'>
 <table>
   <tr>
     <td></td>
-    <td>Service<br>name</td>
-    <td>App</td>
-    <td>Service<br>type</td>
-    <td>DR type</td>
-    <td>Node</td>
-    <td>Nodes</td>
-    <td>DR node</td>
-    <td>DR nodes</td>
-    <td>Wave</td>
+    <td>{{=T('Service name')}}</td>
+    <td width=10>{{=T('App')}}</td>
+    <td width=10>{{=T('Service type')}}</td>
+    <td width=10>{{=T('DR type')}}</td>
+    <td>{{=T('Node')}}</td>
+    <td>{{=T('Nodes')}}</td>
+    <td>{{=T('DR node')}}</td>
+    <td>{{=T('DR nodes')}}</td>
+    <td>{{=T('Wave')}}</td>
   </tr>
   <tr>
     <td><input type=checkbox id=check_all onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'))"></td>
@@ -85,8 +85,8 @@ for key in ['svc_name',
     <td width=100% align=right colspan=10>
       <table>
         <tr>
-          <td> set wave:</td>
-          <td> project:</td>
+          <td> {{=T('set wave')}}:</td>
+          <td> {{=T('project')}}:</td>
         </tr>
         <tr>
           <td>
@@ -94,13 +94,13 @@ for key in ['svc_name',
             {{=IMG(_src=URL(r=request,c='static',f='wave1.png'),_border=0,_onclick='javascript:document.svcform.setwave.value=1;document.svcform.submit()')}}
             {{=IMG(_src=URL(r=request,c='static',f='wave2.png'),_border=0,_onclick='javascript:document.svcform.setwave.value=2;document.svcform.submit()')}}
             {{=IMG(_src=URL(r=request,c='static',f='wave3.png'),_border=0,_onclick='javascript:document.svcform.setwave.value=3;document.svcform.submit()')}}
-            {{=IMG(_src=URL(r=request,c='static',f='del.png'),_border=0,_title="remove the selected services from the DR plan", _onclick='javascript:document.svcform.setwave.value="del";document.svcform.submit()')}}
+            {{=IMG(_src=URL(r=request,c='static',f='del.png'),_border=0,_title=T("remove the selected services from the DR plan"), _onclick='javascript:document.svcform.setwave.value="del";document.svcform.submit()')}}
           </td>
           <td valign=center>
-            {{=IMG(_src=URL(r=request,c='static',f='add.png'),_border=0, _title="create new project", _onclick='javascript:document.getElementById("div_addproject").style.visibility="visible";document.svcform.addproject.focus()')}}
-            {{=IMG(_src=URL(r=request,c='static',f='clone.png'),_border=0, _title="clone the current project", _onclick='javascript:document.getElementById("div_cloneproject").style.visibility="visible";document.svcform.cloneproject.focus()')}}
-            {{=IMG(_src=URL(r=request,c='static',f='del.png'),_border=0, _title="trash the current project", _onclick='javascript:document.svcform.delproject.value=1;document.svcform.submit()')}}
-            {{=A(IMG(_src=URL(r=request,c='static',f='gen.png'),_border=0, _title="generate the DR scripts for the current project"),_href=URL(r=request,f='drplan_scripts', vars=vars))}}
+            {{=IMG(_src=URL(r=request,c='static',f='add.png'),_border=0, _title=T("create new project"), _onclick='javascript:document.getElementById("div_addproject").style.visibility="visible";document.svcform.addproject.focus()')}}
+            {{=IMG(_src=URL(r=request,c='static',f='clone.png'),_border=0, _title=T("clone the current project"), _onclick='javascript:document.getElementById("div_cloneproject").style.visibility="visible";document.svcform.cloneproject.focus()')}}
+            {{=IMG(_src=URL(r=request,c='static',f='del.png'),_border=0, _title=T("trash the current project"), _onclick='javascript:document.svcform.delproject.value=1;document.svcform.submit()')}}
+            {{=A(IMG(_src=URL(r=request,c='static',f='gen.png'),_border=0, _title=T("generate the DR scripts for the current project")),_href=URL(r=request,f='drplan_scripts', vars=vars))}}
             <input name=delproject type=hidden>
             <select name=prjlist onChange='document.svcform.submit()'>
               <option value=0>choose</option>
