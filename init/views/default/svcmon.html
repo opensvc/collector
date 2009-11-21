@@ -16,21 +16,21 @@ for key in ['svcname',
     if not vars.has_key(key) or vars[key] is None: vars[key]=''
     pass
 }}
-{{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0),_href=URL(r=request,f='svcmon_csv', vars=vars))}}
+{{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='svcmon_csv', vars=vars))}}
 <table>
   <tr>
-    <td>Service<br>name</td>
-    <td>App</td>
-    <td>Service<br>type</td>
-    <td>Node<br>type</td>
-    <td>Node<br>name</td>
-    <td>Container<br>type</td>
-    <td>Container<br>status</td>
-    <td>Ip<br>status</td>
-    <td>Fs<br>status</td>
-    <td>Disk<br>status</td>
-    <td>Overall<br>status</td>
-    <td>Last status<br>update</td>
+    <td>{{=T('Service')}}</td>
+    <td width=10>{{=T('App')}}</td>
+    <td width=10>{{=T('Service type')}}</td>
+    <td width=10>{{=T('Node type')}}</td>
+    <td>{{=T('Node')}}</td>
+    <td width=10>{{=T('Container type')}}</td>
+    <td width=10>{{=T('Container status')}}</td>
+    <td width=10>{{=T('Ip status')}}</td>
+    <td width=10>{{=T('Fs status')}}</td>
+    <td width=10>{{=T('Disk status')}}</td>
+    <td width=10>{{=T('Overall status')}}</td>
+    <td>{{=T('Last status update')}}</td>
   </tr>
   <tr>
     <form submit='svcmon' name='svcform'>

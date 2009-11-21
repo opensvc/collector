@@ -5,7 +5,7 @@ for key in ['svcname', 'action', 'status', 'begin', 'end', 'hostname', 'pid', 's
     if not vars.has_key(key) or vars[key] is None: vars[key]=''
     pass
 }}
-{{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0),_href=URL(r=request,f='svcactions_csv', vars=vars))}}
+{{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='svcactions_csv', vars=vars))}}
 {{=A(IMG(_src=URL(r=request,c='static',f='rss.png'),_border=0),_href=URL(r=request,f='svcactions_rss', vars=vars))}}
 <form submit='svcaction' name='svcform' id='svcform'>
 <table>
