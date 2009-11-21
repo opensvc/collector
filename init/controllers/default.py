@@ -101,7 +101,7 @@ def apps():
     apps = db(query).select(orderby=db.v_apps.app)
     query = (db.auth_user.id>0)
     users = db(query).select()
-    return dict(apps=apps, users=users, vars=request.vars)
+    return dict(apps=apps, users=users)
 
 def _where(query, table, var, field, tableid=None):
     if query is None:
@@ -188,7 +188,7 @@ def svcmon():
     query &= _where(None, 'v_svcmon_ext', request.vars.nodetype, 'mon_nodtype')
     query &= _where(None, 'v_svcmon_ext', request.vars.mon_updated, 'mon_updated')
     rows = db(query).select(orderby=db.v_svcmon_ext.mon_svcname)
-    return dict(services=rows, vars=request.vars)
+    return dict(services=rows)
 
 def svcmon_csv():
     import gluon.contenttype
@@ -222,7 +222,7 @@ def svcactions():
     query &= _where(None, 'SVCactions', request.vars.status_log, 'status_log')
     query &= _where(None, 'SVCactions', request.vars.pid, 'pid')
     rows = db(query).select(orderby="SVCactions.begin DESC")
-    return dict(actions=rows, vars=request.vars)
+    return dict(actions=rows)
 
 def svcactions_rss():
     #return BEAUTIFY(request)
@@ -344,16 +344,12 @@ def drplan():
     svc_rows = db(query).select(db.services.ALL, db.drpservices.drp_wave,
 db.drpservices.drp_project_id, left=db.drpservices.on((db.services.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)),groupby=db.services.svc_name)
     prj_rows = db().select(db.drpprojects.drp_project_id, db.drpprojects.drp_project)
-    return dict(services=svc_rows, projects=prj_rows, vars=request.vars)
+    return dict(services=svc_rows, projects=prj_rows)
 
 def drplan_csv():
     import gluon.contenttype
     response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
     return drplan()
-
-@auth.requires_login()
-def drplan_set_wave():
-    return dict(vars=request.vars)
 
 def _drplan_scripts_header(phase):
     l = ["""#!/bin/sh"""]

@@ -1,10 +1,11 @@
 {{extend 'layout.html'}}
 {{include '../static/jslib.html'}}
 {{
+vars = request.vars
 for key in ['app',
             'responsibles',
             ]:
-    if not vars.has_key(key) or vars[key] is None: vars[key]=''
+    if not vars.has_key(key) or vars[key] is None: request.vars[key]=''
     pass
 }}
 <form submit='apps' name='svcform' id='svcform'>

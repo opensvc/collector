@@ -1,6 +1,7 @@
 {{extend 'layout.html'}}
 {{include '../static/jslib.html'}}
 {{
+vars = request.vars
 for key in ['svcname', 'action', 'status', 'begin', 'end', 'hostname', 'pid', 'status_log']:
     if not vars.has_key(key) or vars[key] is None: vars[key]=''
     pass

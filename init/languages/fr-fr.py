@@ -121,7 +121,7 @@
 'next 100 rows': '100 lignes suivantes',
 'or import from csv file': 'importer depuis un fichier csv',
 'previous 100 rows': '100 lignes pr\xc3\xa9c\xc3\xa9dantes',
-'print the csv representation of the current data cursor': 'print the csv representation of the current data cursor',
+'print the csv representation of the current data cursor': 'afficher la repr\xc3\xa9sentation csv des donn\xc3\xa9es s\xc3\xa9lectionn\xc3\xa9es',
 'project': 'projet',
 'record': 'enregistrement',
 'record does not exist': "l'archive n'existe pas",
