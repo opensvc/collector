@@ -8,6 +8,10 @@ select {
     border: 1px solid #cccccc;
 }
 
+.metaaction {
+    font-weight: bold;
+}
+
 .web2py-menu-active a {
     background-color: #ffffff;
 }

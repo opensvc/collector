@@ -58,13 +58,19 @@ for key in ['svcname', 'action', 'status', 'begin', 'end', 'hostname', 'pid', 's
       else:
           div_ack = DIV("", _id='div_ack_'+str(action.id), _class='invisible_div')
           pass
+      if not action.status_log:
+          action.status_log = ''
+          metaactionclass = 'metaaction'
+      else:
+          metaactionclass = ''
+          pass
     }}
   <tr>
     <td class={{=cellclass}}><input type=checkbox name=check_{{=action.id}} {{=checked}} {{=disabled}}></td>
     <td class={{=cellclass}}>{{=action.svcname}}</td>
     <td class={{=cellclass}}>{{=action.hostname}}</td>
-    <td class={{=cellclass}}>{{=action.action}}</td>
-    <td class="{{=cellclass}} status_{{=action.status}} ack_{{=action.ack}}" onMouseOver='javascript:show_ack({{=action.id}})' onMouseOut='javascript:hide_ack({{=action.id}})'>{{=action.status}}</td>
+    <td class="{{=cellclass}} {{=metaactionclass}}">{{=action.action}}</td>
+    <td class="{{=cellclass}} status_{{=action.status}} ack_{{=action.ack}} {{=metaactionclass}}" onMouseOver='javascript:show_ack({{=action.id}})' onMouseOut='javascript:hide_ack({{=action.id}})'>{{=action.status}}</td>
     <td class={{=cellclass}}>{{=action.begin}}</td>
     <td class={{=cellclass}}>{{=action.end}}</td>
     <td class={{=cellclass}}>{{=action.pid}}</td>
