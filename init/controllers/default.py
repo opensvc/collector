@@ -232,7 +232,7 @@ def svcactions():
     query &= _where(None, 'SVCactions', request.vars.hostname, 'hostname')
     query &= _where(None, 'SVCactions', request.vars.status_log, 'status_log')
     query &= _where(None, 'SVCactions', request.vars.pid, 'pid')
-    rows = db(query).select(orderby="SVCactions.begin DESC")
+    rows = db(query).select(orderby=~db.SVCactions.begin|~db.SVCactions.id)
     return dict(actions=rows)
 
 def svcactions_rss():
