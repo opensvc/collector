@@ -43,7 +43,6 @@ for key in ['app',
           <td>
             {{=IMG(_src=URL(r=request,c='static',f='add.png'),_border=0,_title=T('create application'), _onclick='javascript:document.getElementById("div_addapp").style.visibility="visible";document.svcform.addapp.focus()')}}
             {{=IMG(_src=URL(r=request,c='static',f='del.png'),_border=0,_title=T('remove the selected application'), _onclick='javascript:document.svcform.app.value="del";document.svcform.submit()')}}
-            <div id=div_addapp class=invisible_div><input name=addapp size=4 onKeyPress="checkEnter(event)"></div>
           </td>
           <td valign=center>
             {{=IMG(_src=URL(r=request,c='static',f='add.png'),_border=0,_title=T('add this responsible to selected applications'), _onclick='javascript:document.svcform.resp.value="add";document.svcform.submit()')}}
@@ -61,6 +60,11 @@ for key in ['app',
               <option value={{=user.id}} {{=selected}}>{{=user.first_name}} {{=user.last_name}}</option>
               {{pass}}
             </select>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div id=div_addapp class=invisible_div><input name=addapp size=4 onKeyPress="checkEnter(event)"></div>
           </td>
         </tr>
       </table>
