@@ -187,7 +187,7 @@ def svcmon():
     query &= _where(None, 'v_svcmon_ext', request.vars.nodename, 'mon_nodname')
     query &= _where(None, 'v_svcmon_ext', request.vars.nodetype, 'mon_nodtype')
     query &= _where(None, 'v_svcmon_ext', request.vars.mon_updated, 'mon_updated')
-    rows = db(query).select(orderby=db.v_svcmon_ext.mon_svcname)
+    rows = db(query).select(orderby=db.v_svcmon_ext.mon_svcname|~db.v_svcmon_ext.mon_nodtype)
     return dict(services=rows)
 
 def svcmon_csv():
