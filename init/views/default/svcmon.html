@@ -3,9 +3,10 @@
 {{
 vars = request.vars
 for key in ['svcname',
+            'containertype',
             'svcapp',
             'svctype',
-            'containertype',
+            'svcautostart',
             'containerstatus',
             'ipstatus',
             'fsstatus',
@@ -17,36 +18,43 @@ for key in ['svcname',
     if not vars.has_key(key) or vars[key] is None: vars[key]=''
     pass
 }}
+
+{{def node_status(svc, cellclass):}}
+    <table>
+      <tr>
+         <td colspan=4 class="status {{=cellclass}} status_{{=svc.mon_overallstatus}}" title="since {{=svc.mon_updated}}">{{=svc.mon_overallstatus}}</td>
+      </tr><tr>
+        <td class="{{=cellclass}} status_{{=svc.mon_containerstatus}}">vm</td>
+        <td class="{{=cellclass}} status_{{=svc.mon_ipstatus}}">ip</td>
+        <td class="{{=cellclass}} status_{{=svc.mon_fsstatus}}">fs</td>
+        <td class="{{=cellclass}} status_{{=svc.mon_diskstatus}}">dk</td>
+      </tr>
+    </table>
+    {{return ''}}
+{{pass}}
+
 {{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='svcmon_csv', vars=vars))}}
 <table>
   <tr>
     <td>{{=T('Service')}}</td>
+    <td width=10>{{=T('Container type')}}</td>
     <td width=10>{{=T('App')}}</td>
+    <td width=10>{{=T('Preferred node')}}</td>
     <td width=10>{{=T('Service type')}}</td>
     <td width=10>{{=T('Node type')}}</td>
     <td>{{=T('Node')}}</td>
-    <td width=10>{{=T('Container type')}}</td>
-    <td width=10>{{=T('Container status')}}</td>
-    <td width=10>{{=T('Ip status')}}</td>
-    <td width=10>{{=T('Fs status')}}</td>
-    <td width=10>{{=T('Disk status')}}</td>
-    <td width=10>{{=T('Overall status')}}</td>
-    <td>{{=T('Last status update')}}</td>
+    <td width=10 class=status_t>{{=T('Status')}}</td>
   </tr>
   <tr>
     <form submit='svcmon' name='svcform'>
     <td><input name=svcname value='{{=vars.svcname}}' size=12 onKeyPress="checkEnter(event)"></td>
+    <td><input name=containertype value='{{=vars.containertype}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=svcapp value='{{=vars.svcapp}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td><input name=svcautostart value='{{=vars.svcautostart}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=svctype value='{{=vars.svctype}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=nodetype value='{{=vars.nodetype}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=nodename value='{{=vars.nodename}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td><input name=containertype value='{{=vars.containertype}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td><input name=containerstatus value='{{=vars.containerstatus}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td><input name=ipstatus value='{{=vars.ipstatus}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td><input name=fsstatus value='{{=vars.fsstatus}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td><input name=diskstatus value='{{=vars.diskstatus}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td><input name=overallstatus value='{{=vars.overallstatus}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td><input name=mon_updated value='{{=vars.mon_updated}}' size=12 onKeyPress="checkEnter(event)"></td>
+    <td class=status_t><input name=overallstatus value='{{=vars.overallstatus}}' size=4 onKeyPress="checkEnter(event)"></td>
     </form>
   {{
     svcname = ''
@@ -63,17 +71,13 @@ for key in ['svcname',
           pass
     }}
     <td class={{=cellclass}}>{{=svc.mon_svcname}}</td>
+    <td class={{=cellclass}}>{{=svc.svc_containertype}}</td>
     <td class={{=cellclass}}>{{=svc.svc_app}}</td>
+    <td class={{=cellclass}}>{{=svc.svc_autostart}}</td>
     <td class={{=cellclass}}>{{=svc.mon_svctype}}</td>
     <td class={{=cellclass}}>{{=svc.mon_nodtype}}</td>
     <td class={{=cellclass}}>{{=svc.mon_nodname}}</td>
-    <td class={{=cellclass}}>{{=svc.svc_containertype}}</td>
-    <td class="{{=cellclass}} status_{{=svc.mon_containerstatus}}">{{=svc.mon_containerstatus}}</td>
-    <td class="{{=cellclass}} status_{{=svc.mon_ipstatus}}">{{=svc.mon_ipstatus}}</td>
-    <td class="{{=cellclass}} status_{{=svc.mon_fsstatus}}">{{=svc.mon_fsstatus}}</td>
-    <td class="{{=cellclass}} status_{{=svc.mon_diskstatus}}">{{=svc.mon_diskstatus}}</td>
-    <td class="{{=cellclass}} status_{{=svc.mon_overallstatus}}">{{=svc.mon_overallstatus}}</td>
-    <td class={{=cellclass}}>{{=svc.mon_updated}}</td>
+    <td class="{{=cellclass}}">{{=node_status(svc,cellclass)}}</td>
   </tr>
   {{pass}}
 </table>

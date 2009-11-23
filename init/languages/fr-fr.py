@@ -74,6 +74,7 @@
 "Password fields don't match": "Password fields don't match",
 'Pid': 'Pid',
 'Powered by': 'M\xc3\xbb par',
+'Preferred node': 'Preferred node',
 'Query:': 'Requ\xc3\xaate:',
 'Record ID': "Id d'enregistrement",
 'Register': "S'enregistrer",

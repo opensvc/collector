@@ -41,11 +41,14 @@ select {
 }
 
 .cell1 {
-    background: #dddddd;
-    opacity: 0.75;
+    background: #eeeeee;
 }
 
 .cell2 {
+}
+
+.status_n\/a {
+    opacity: 0.5;
 }
 
 .status_up, .status_ok {
@@ -58,6 +61,16 @@ select {
 
 .status_warn {
     color: #777700;
+}
+
+.status_t {
+    text-align: center;
+}
+
+.status {
+    border-bottom: solid 1px #dddddd;
+    text-align: center;
+    font-weight: bold;
 }
 
 body, table, tr, td, th, thead, tfoot, label, h1, h2, h3, h4, h5, h6, p, ul, li, ol, pre, input, button, textarea {
@@ -89,7 +102,7 @@ label,
 th,
 td {
     text-align: left;
-    vertical-align: top;
+    vertical-align: middle;
     padding-left: 0.5em;
     padding-right: 0.5em;
     padding-top: 0.3em;
