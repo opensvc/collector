@@ -180,25 +180,25 @@ def svcmon():
         session.filters[1] = dict(name='preferred node',
                           id=1,
                           active=False,
-                          q=(db.v_svcmon_ext.mon_nodname==db.v_svcmon_ext.svc_autostart))
+                          q=(db.v_svcmon.mon_nodname==db.v_svcmon.svc_autostart))
     if request.vars.addfilter is not None and request.vars.addfilter != '':
         session.filters[int(request.vars.addfilter)]['active'] = True
     elif request.vars.delfilter is not None and request.vars.delfilter != '':
         session.filters[int(request.vars.delfilter)]['active'] = False
-    query = _where(None, 'v_svcmon_ext', request.vars.svcname, 'mon_svcname')
-    query &= _where(None, 'v_svcmon_ext', request.vars.svctype, 'mon_svctype')
-    query &= _where(None, 'v_svcmon_ext', request.vars.containerstatus, 'mon_containerstatus')
-    query &= _where(None, 'v_svcmon_ext', request.vars.overallstatus, 'mon_overallstatus')
-    query &= _where(None, 'v_svcmon_ext', request.vars.svcapp, 'svc_app')
-    query &= _where(None, 'v_svcmon_ext', request.vars.svcautostart, 'svc_autostart')
-    query &= _where(None, 'v_svcmon_ext', request.vars.containertype, 'svc_containertype')
-    query &= _where(None, 'v_svcmon_ext', request.vars.nodename, 'mon_nodname')
-    query &= _where(None, 'v_svcmon_ext', request.vars.nodetype, 'mon_nodtype')
+    query = _where(None, 'v_svcmon', request.vars.svcname, 'mon_svcname')
+    query &= _where(None, 'v_svcmon', request.vars.svctype, 'mon_svctype')
+    query &= _where(None, 'v_svcmon', request.vars.containerstatus, 'mon_containerstatus')
+    query &= _where(None, 'v_svcmon', request.vars.overallstatus, 'mon_overallstatus')
+    query &= _where(None, 'v_svcmon', request.vars.svcapp, 'svc_app')
+    query &= _where(None, 'v_svcmon', request.vars.svcautostart, 'svc_autostart')
+    query &= _where(None, 'v_svcmon', request.vars.containertype, 'svc_containertype')
+    query &= _where(None, 'v_svcmon', request.vars.nodename, 'mon_nodname')
+    query &= _where(None, 'v_svcmon', request.vars.nodetype, 'mon_nodtype')
     for k in session.filters.keys():
         filter = session.filters[k]
         if filter['active']:
             query &= filter['q']
-    rows = db(query).select(orderby=db.v_svcmon_ext.mon_svcname|~db.v_svcmon_ext.mon_nodtype)
+    rows = db(query).select(orderby=db.v_svcmon.mon_svcname|~db.v_svcmon.mon_nodtype)
     return dict(services=rows, filters=session.filters)
 
 def svcmon_csv():
@@ -211,7 +211,7 @@ def _svcaction_ack(request):
     for key in [ k for k in request.vars.keys() if 'check_' in k ]:
         action_ids += ([key[6:]])
     for action_id in action_ids:
-        query = (db.SVCactions.id == action_id)&(db.SVCactions.status != "ok")
+        query = (db.v_svcactions.id == action_id)&(db.v_svcactions.status != "ok")
         db(query).update(ack=1,
                          acked_comment=request.vars.ackcomment,
                          acked_by=' '.join([session.auth.user.first_name, session.auth.user.last_name]),
@@ -222,17 +222,18 @@ def _svcaction_ack(request):
 def svcactions():
     if request.vars.ackcomment is not None:
         _svcaction_ack(request)
-    query = _where(None, 'SVCactions', request.vars.svcname, 'svcname')
-    query &= _where(None, 'SVCactions', request.vars.id, 'id')
-    query &= _where(None, 'SVCactions', request.vars.action, 'action')
-    query &= _where(None, 'SVCactions', request.vars.status, 'status')
-    query &= _where(None, 'SVCactions', request.vars.time, 'time')
-    query &= _where(None, 'SVCactions', request.vars.begin, 'begin')
-    query &= _where(None, 'SVCactions', request.vars.end, 'end')
-    query &= _where(None, 'SVCactions', request.vars.hostname, 'hostname')
-    query &= _where(None, 'SVCactions', request.vars.status_log, 'status_log')
-    query &= _where(None, 'SVCactions', request.vars.pid, 'pid')
-    rows = db(query).select(orderby=~db.SVCactions.begin|~db.SVCactions.id)
+    query = _where(None, 'v_svcactions', request.vars.svcname, 'svcname')
+    query &= _where(None, 'v_svcactions', request.vars.id, 'id')
+    query &= _where(None, 'v_svcactions', request.vars.app, 'app')
+    query &= _where(None, 'v_svcactions', request.vars.action, 'action')
+    query &= _where(None, 'v_svcactions', request.vars.status, 'status')
+    query &= _where(None, 'v_svcactions', request.vars.time, 'time')
+    query &= _where(None, 'v_svcactions', request.vars.begin, 'begin')
+    query &= _where(None, 'v_svcactions', request.vars.end, 'end')
+    query &= _where(None, 'v_svcactions', request.vars.hostname, 'hostname')
+    query &= _where(None, 'v_svcactions', request.vars.status_log, 'status_log')
+    query &= _where(None, 'v_svcactions', request.vars.pid, 'pid')
+    rows = db(query).select(orderby=~db.v_svcactions.begin|~db.v_svcactions.id)
     return dict(actions=rows)
 
 def svcactions_rss():
