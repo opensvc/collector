@@ -175,20 +175,31 @@ def _where(query, table, var, field, tableid=None):
 
 @auth.requires_login()
 def svcmon():
+    if not getattr(session, 'filters'):
+        session.filters = {}
+        session.filters[1] = dict(name='preferred node',
+                          id=1,
+                          active=False,
+                          q=(db.v_svcmon_ext.mon_nodname==db.v_svcmon_ext.svc_autostart))
+    if request.vars.addfilter is not None and request.vars.addfilter != '':
+        session.filters[int(request.vars.addfilter)]['active'] = True
+    elif request.vars.delfilter is not None and request.vars.delfilter != '':
+        session.filters[int(request.vars.delfilter)]['active'] = False
     query = _where(None, 'v_svcmon_ext', request.vars.svcname, 'mon_svcname')
     query &= _where(None, 'v_svcmon_ext', request.vars.svctype, 'mon_svctype')
     query &= _where(None, 'v_svcmon_ext', request.vars.containerstatus, 'mon_containerstatus')
-    query &= _where(None, 'v_svcmon_ext', request.vars.ipstatus, 'mon_ipstatus')
-    query &= _where(None, 'v_svcmon_ext', request.vars.fsstatus, 'mon_fsstatus')
-    query &= _where(None, 'v_svcmon_ext', request.vars.diskstatus, 'mon_diskstatus')
     query &= _where(None, 'v_svcmon_ext', request.vars.overallstatus, 'mon_overallstatus')
     query &= _where(None, 'v_svcmon_ext', request.vars.svcapp, 'svc_app')
+    query &= _where(None, 'v_svcmon_ext', request.vars.svcautostart, 'svc_autostart')
     query &= _where(None, 'v_svcmon_ext', request.vars.containertype, 'svc_containertype')
     query &= _where(None, 'v_svcmon_ext', request.vars.nodename, 'mon_nodname')
     query &= _where(None, 'v_svcmon_ext', request.vars.nodetype, 'mon_nodtype')
-    query &= _where(None, 'v_svcmon_ext', request.vars.mon_updated, 'mon_updated')
+    for k in session.filters.keys():
+        filter = session.filters[k]
+        if filter['active']:
+            query &= filter['q']
     rows = db(query).select(orderby=db.v_svcmon_ext.mon_svcname|~db.v_svcmon_ext.mon_nodtype)
-    return dict(services=rows)
+    return dict(services=rows, filters=session.filters)
 
 def svcmon_csv():
     import gluon.contenttype
