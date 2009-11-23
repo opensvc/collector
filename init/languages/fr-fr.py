@@ -81,6 +81,7 @@
 'Record ID': "Id d'enregistrement",
 'Register': "S'enregistrer",
 'Registration key': "Cl\xc3\xa9 d'enregistrement",
+'Resp': 'Resp',
 'Responsibles': 'Responsables',
 'Role': 'R\xc3\xb4le',
 'Rows in table': 'Lignes dans la table',

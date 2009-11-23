@@ -5,6 +5,7 @@ vars = request.vars
 for key in ['svcname',
             'containertype',
             'svcapp',
+            'responsibles',
             'svctype',
             'svcautostart',
             'containerstatus',
@@ -40,6 +41,7 @@ for key in ['svcname',
     <td>{{=T('Service')}}</td>
     <td width=10>{{=T('Container type')}}</td>
     <td width=10>{{=T('App')}}</td>
+    <td width=10>{{=T('Resp')}}</td>
     <td width=10>{{=T('Preferred node')}}</td>
     <td width=10>{{=T('Service type')}}</td>
     <td width=10>{{=T('Node type')}}</td>
@@ -50,6 +52,7 @@ for key in ['svcname',
     <td><input name=svcname value='{{=vars.svcname}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=containertype value='{{=vars.containertype}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=svcapp value='{{=vars.svcapp}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td><input name=responsibles value='{{=vars.responsibles}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=svcautostart value='{{=vars.svcautostart}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=svctype value='{{=vars.svctype}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=nodetype value='{{=vars.nodetype}}' size=4 onKeyPress="checkEnter(event)"></td>
@@ -68,10 +71,16 @@ for key in ['svcname',
           cellclass = cellclasses[cellclass]
           svcname = svc.mon_svcname
           pass
+      if svc.responsibles:
+          responsibles = IMG(_src=URL(r=request,c='static',f='guy.png'),_border=0, _title=svc.responsibles)
+      else:
+          responsibles = ''
+          pass
     }}
     <td class={{=cellclass}}>{{=svc.mon_svcname}}</td>
     <td class={{=cellclass}}>{{=svc.svc_containertype}}</td>
     <td class={{=cellclass}}>{{=svc.svc_app}}</td>
+    <td class={{=cellclass}}>{{=responsibles}}</td>
     <td class={{=cellclass}}>{{=svc.svc_autostart}}</td>
     <td class={{=cellclass}}>{{=svc.mon_svctype}}</td>
     <td class={{=cellclass}}>{{=svc.mon_nodtype}}</td>

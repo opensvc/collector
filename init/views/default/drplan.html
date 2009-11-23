@@ -4,6 +4,7 @@
 vars = request.vars
 for key in ['svc_name',
             'svc_app',
+            'responsibles',
             'svc_type',
             'svc_drptype',
             'svc_autostart',
@@ -22,6 +23,7 @@ for key in ['svc_name',
     <td></td>
     <td>{{=T('Service name')}}</td>
     <td width=10>{{=T('App')}}</td>
+    <td width=10>{{=T('Resp')}}</td>
     <td width=10>{{=T('Service type')}}</td>
     <td width=10>{{=T('DR type')}}</td>
     <td>{{=T('Node')}}</td>
@@ -34,6 +36,7 @@ for key in ['svc_name',
     <td><input type=checkbox id=check_all onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'))"></td>
     <td><input name=svc_name value='{{=vars.svc_name}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=svc_app value='{{=vars.svc_app}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td><input name=responsibles value='{{=vars.responsibles}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=svc_type value='{{=vars.svc_type}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=svc_drptype value='{{=vars.svc_drptype}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=svc_autostart value='{{=vars.svc_autostart}}' size=4 onKeyPress="checkEnter(event)"></td>
@@ -50,11 +53,11 @@ for key in ['svc_name',
   }}
   {{for svc in services:}}
   <tr>
-    {{if svcname != svc.services.svc_name:
+    {{if svcname != svc.v_services.svc_name:
           cellclass = cellclasses[cellclass]
-          svcname = svc.services.svc_name
+          svcname = svc.v_services.svc_name
           pass
-      checked = getattr(vars, 'check_'+svc.services.svc_name)
+      checked = getattr(vars, 'check_'+svc.v_services.svc_name)
       if checked is not None:
           checked = 'checked=on'
           pass
@@ -68,16 +71,22 @@ for key in ['svc_name',
       else:
           drp_project_id = svc.drpservices.drp_project_id
           pass
+      if svc.v_services.responsibles:
+          responsibles = IMG(_src=URL(r=request,c='static',f='guy.png'),_border=0, _title=svc.v_services.responsibles)
+      else:
+          responsibles = ''
+          pass
     }}
-    <td class={{=cellclass}}><input type=checkbox name=check_{{=svc.services.svc_name}} {{=checked}}></td>
-    <td class={{=cellclass}}>{{=svc.services.svc_name}}</td>
-    <td class={{=cellclass}}>{{=svc.services.svc_app}}</td>
-    <td class={{=cellclass}}>{{=svc.services.svc_type}}</td>
-    <td class={{=cellclass}}>{{=svc.services.svc_drptype}}</td>
-    <td class={{=cellclass}}>{{=svc.services.svc_autostart}}</td>
-    <td class={{=cellclass}}>{{=svc.services.svc_nodes}}</td>
-    <td class={{=cellclass}}>{{=svc.services.svc_drpnode}}</td>
-    <td class={{=cellclass}}>{{=svc.services.svc_drpnodes}}</td>
+    <td class={{=cellclass}}><input type=checkbox name=check_{{=svc.v_services.svc_name}} {{=checked}}></td>
+    <td class={{=cellclass}}>{{=svc.v_services.svc_name}}</td>
+    <td class={{=cellclass}}>{{=svc.v_services.svc_app}}</td>
+    <td class={{=cellclass}}>{{=responsibles}}</td>
+    <td class={{=cellclass}}>{{=svc.v_services.svc_type}}</td>
+    <td class={{=cellclass}}>{{=svc.v_services.svc_drptype}}</td>
+    <td class={{=cellclass}}>{{=svc.v_services.svc_autostart}}</td>
+    <td class={{=cellclass}}>{{=svc.v_services.svc_nodes}}</td>
+    <td class={{=cellclass}}>{{=svc.v_services.svc_drpnode}}</td>
+    <td class={{=cellclass}}>{{=svc.v_services.svc_drpnodes}}</td>
     <td class={{=cellclass}}>{{=drp_wave}}</td>
   </tr>
   {{pass}}
