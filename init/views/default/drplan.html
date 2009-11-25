@@ -106,7 +106,7 @@ for key in ['svc_name',
             {{=IMG(_src=URL(r=request,c='static',f='wave3.png'),_border=0,_onclick='javascript:document.svcform.setwave.value=3;document.svcform.submit()')}}
             {{=IMG(_src=URL(r=request,c='static',f='del.png'),_border=0,_title=T("remove the selected services from the DR plan"), _onclick='javascript:document.svcform.setwave.value="del";document.svcform.submit()')}}
           </td>
-          <td valign=center>
+          <td>
             {{=IMG(_src=URL(r=request,c='static',f='add.png'),_border=0, _title=T("create new project"), _onclick='javascript:document.getElementById("div_addproject").style.visibility="visible";document.svcform.addproject.focus()')}}
             {{=IMG(_src=URL(r=request,c='static',f='clone.png'),_border=0, _title=T("clone the current project"), _onclick='javascript:document.getElementById("div_cloneproject").style.visibility="visible";document.svcform.cloneproject.focus()')}}
             {{=IMG(_src=URL(r=request,c='static',f='del.png'),_border=0, _title=T("trash the current project"), _onclick='javascript:document.svcform.delproject.value=1;document.svcform.submit()')}}
@@ -124,6 +124,11 @@ for key in ['svc_name',
               <option value={{=project.drp_project_id}} {{=selected}}>{{=project.drp_project_id}}: {{=project.drp_project}}</option>
               {{pass}}
             </select>
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
             <div id=div_cloneproject class=invisible_div><input name=cloneproject onKeyPress="checkEnter(event)"></div>
             <div id=div_addproject class=invisible_div><input name=addproject onKeyPress="checkEnter(event)"></div>
           </td>
