@@ -274,6 +274,7 @@ def services():
 def nodes_csv():
     import gluon.contenttype
     response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
+    request.vars['perpage'] = 0
     return nodes()['nodes']
 
 @auth.requires_login()
@@ -405,13 +406,26 @@ def nodes():
         query &= _where(None, 'nodes', request.vars[key], key)
 
     # paging
-    perpage = 50
-    totalposts = db(query).count()
-    totalpages = totalposts / perpage
-    page = int(request.vars.page) if request.vars.page else 1
-    limit = int(page - 1) * perpage
-    rows = db(query).select(db.nodes.ALL, limitby=(limit+1,limit+perpage+1))
-    return dict(columns=columns, colkeys=colkeys, nodes=rows)
+    perpage = int(request.vars.perpage) if 'perpage' in request.vars.keys() else 25
+    if perpage > 0:
+        totalrecs = db(query).count()
+        totalpages = totalrecs / perpage
+        page = int(request.args[0]) if len(request.args) else 0
+        limit = int(page) * perpage
+        rows = db(query).select(db.nodes.ALL, limitby=(limit,limit+perpage))
+
+        # paging toolbar
+        prev = A(T('<< previous'),_href=URL(r=request,args=[page-perpage])) if page else '<< previous'
+        next = A(T('next >>'),_href=URL(r=request,args=[page+perpage]))  if totalrecs>page+perpage else 'next >>'
+        nav = "Showing %d to %d out of %d records"  % (page, page+len(rows), totalrecs)
+        nav = P(prev, ' ', next, ' ', nav)
+    else:
+        rows = db(query).select(db.nodes.ALL)
+        nav = ''
+
+    return dict(columns=columns, colkeys=colkeys,
+                nodes=rows,
+                nav=nav)
 
 class ex(Exception):
     def __init__(self, value):
