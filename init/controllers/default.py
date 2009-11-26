@@ -271,6 +271,115 @@ def services():
     rows = db().select(db.services.ALL)
     return dict(services=rows)
 
+@auth.requires_login()
+def nodes():
+    columns = dict(
+        nodename = dict(
+            title = T('Node name'),
+            size = 10
+        ),
+        warranty_end = dict(
+            title = T('Warranty end'),
+            size = 10
+        ),
+        status = dict(
+            title = T('Status'),
+            size = 10
+        ),
+        role = dict(
+            title = T('Role'),
+            size = 10
+        ),
+        environnement = dict(
+            title = T('Env'),
+            size = 10
+        ),
+        cpu_freq = dict(
+            title = T('CPU freq'),
+            size = 10
+        ),
+        mem_bytes = dict(
+            title = T('Memory'),
+            size = 10
+        ),
+        os_name = dict(
+            title = T('OS name'),
+            size = 10
+        ),
+        os_kernel = dict(
+            title = T('OS kernel'),
+            size = 10
+        ),
+        cpu_dies = dict(
+            title = T('CPU dies'),
+            size = 10
+        ),
+        cpu_model = dict(
+            title = T('CPU model'),
+            size = 10
+        ),
+        type = dict(
+            title = T('Type'),
+            size = 10
+        ),
+        team_responsible = dict(
+            title = T('Team responsible'),
+            size = 10
+        ),
+        serial = dict(
+            title = T('Serial'),
+            size = 10
+        ),
+        model = dict(
+            title = T('Model'),
+            size = 10
+        ),
+        loc_addr = dict(
+            title = T('Address'),
+            size = 10
+        ),
+        loc_city = dict(
+            title = T('City'),
+            size = 10
+        ),
+        loc_zip = dict(
+            title = T('ZIP'),
+            size = 10
+        ),
+        loc_rack = dict(
+            title = T('Rack'),
+            size = 10
+        ),
+        loc_country = dict(
+            title = T('Country'),
+            size = 10
+        ),
+        loc_building = dict(
+            title = T('Building'),
+            size = 10
+        ),
+        loc_room = dict(
+            title = T('Room'),
+            size = 10
+        ),
+    )
+
+    # filtering
+    query = (db.nodes.id>0)
+    for key in columns.keys():
+        if key not in request.vars.keys():
+            continue
+        query &= _where(None, 'nodes', request.vars[key], key)
+
+    # paging
+    perpage = 50
+    totalposts = db(query).count()
+    totalpages = totalposts / perpage
+    page = int(request.vars.page) if request.vars.page else 1
+    limit = int(page - 1) * perpage
+    rows = db(query).select(db.nodes.ALL, limitby=(limit+1,limit+perpage+1))
+    return dict(columns=columns, nodes=rows)
+
 class ex(Exception):
     def __init__(self, value):
         self.value = value

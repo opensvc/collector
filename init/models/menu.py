@@ -54,4 +54,6 @@ response.menu = [
      URL(request.application,'default','drplan'), []],
     [T('applications'), _f == 'apps', 
      URL(request.application,'default','apps'), []],
+    [T('nodes'), _f == 'nodes', 
+     URL(request.application,'default','nodes'), []],
 ]
