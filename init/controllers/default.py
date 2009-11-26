@@ -43,6 +43,17 @@ def call():
     return service()
 
 @auth.requires_membership('Manager')
+def _del_app(request):
+    ids = ([])
+    count = 0
+    for key in [ k for k in request.vars.keys() if 'check_' in k ]:
+        ids += ([key[6:]])
+    for id in ids:
+        count += db(db.apps.id == id).delete()
+    response.flash = "application '%s' deleted" % count
+    del request.vars.delapp
+
+@auth.requires_membership('Manager')
 def _add_app(request):
     apps = db(db.apps.app==request.vars.addapp).select(db.apps.id)
     if len(apps) != 0:
@@ -90,7 +101,9 @@ def _unset_resp(request):
 
 @auth.requires_membership('Manager')
 def apps():
-    if request.vars.addapp is not None and request.vars.addapp != '':
+    if request.vars.delapp is not None and request.vars.delapp != '':
+        _del_app(request)
+    elif request.vars.addapp is not None and request.vars.addapp != '':
         _add_app(request)
     elif request.vars.resp == 'add':
         _set_resp(request)

@@ -9,6 +9,7 @@ for key in ['app',
     pass
 }}
 <form submit='apps' name='svcform' id='svcform'>
+<input style='height:0px;width:0px;border:0' name='svcsubmit' id='svcsubmit' type="submit">
 <table>
   <tr>
     <td></td>
@@ -33,7 +34,7 @@ for key in ['app',
   </tr>
   {{pass}}
   <tr class=toolbar>
-    <td width=100% align=right colspan=10>
+    <td width=100% colspan=99>
       <table>
         <tr>
           <td> {{=T('app')}}:</td>
@@ -41,13 +42,10 @@ for key in ['app',
         </tr>
         <tr>
           <td>
-            {{=IMG(_src=URL(r=request,c='static',f='add.png'),_border=0,_title=T('create application'), _onclick='javascript:document.getElementById("div_addapp").style.visibility="visible";document.svcform.addapp.focus()')}}
-            {{=IMG(_src=URL(r=request,c='static',f='del.png'),_border=0,_title=T('remove the selected application'), _onclick='javascript:document.svcform.app.value="del";document.svcform.submit()')}}
+            <img src={{=URL(r=request,c='static',f='add.png')}} style="border:0" title={{=T('create application')}} onClick='javascript:document.getElementById("div_addapp").style.visibility="visible";document.svcform.addapp.focus()'>
+            <input type=image src={{=URL(r=request,c='static',f='del.png')}} style="border:0" title={{=T('remove the selected application')}} onClick='javascript:document.svcform.delapp.value="del";document.svcsubmit.submit()'>
           </td>
-          <td valign=center>
-            {{=IMG(_src=URL(r=request,c='static',f='add.png'),_border=0,_title=T('add this responsible to selected applications'), _onclick='javascript:document.svcform.resp.value="add";document.svcform.submit()')}}
-            {{=IMG(_src=URL(r=request,c='static',f='del.png'),_border=0,_title=T('remove this responsible from selected applications'), _onclick='javascript:document.svcform.resp.value="del";document.svcform.submit()')}}
-            <input name=resp type=hidden>
+          <td>
             <select name=users>
               <option value=0>choose</option>
               {{for user in users:
@@ -60,15 +58,19 @@ for key in ['app',
               <option value={{=user.id}} {{=selected}}>{{=user.first_name}} {{=user.last_name}}</option>
               {{pass}}
             </select>
+            <input type=image src={{=URL(r=request,c='static',f='add.png')}} style="border:0" title={{=T('add this responsible to selected applications')}} onClick='javascript:document.svcform.resp.value="add";document.svcform.submit()'>
+            <input type=image src={{=URL(r=request,c='static',f='del.png')}} style="border:0" title={{=T('remove this responsible from selected applications')}} onClick='javascript:document.svcform.resp.value="del";document.svcform.submit()'>
           </td>
         </tr>
         <tr>
           <td>
             <div id=div_addapp class=invisible_div><input name=addapp size=4 onKeyPress="checkEnter(event)"></div>
+            <input name=delapp type=hidden>
           </td>
         </tr>
       </table>
     </td>
   </tr>
 </table>
+<input name=resp type=hidden>
 </form>
