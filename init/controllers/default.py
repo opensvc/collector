@@ -271,98 +271,131 @@ def services():
     rows = db().select(db.services.ALL)
     return dict(services=rows)
 
+def nodes_csv():
+    import gluon.contenttype
+    response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
+    return nodes()['nodes']
+
 @auth.requires_login()
 def nodes():
+    def _sort_cols(x, y):
+        return cmp(columns[x]['pos'], columns[y]['pos'])
+
     columns = dict(
         nodename = dict(
+            pos = 1,
             title = T('Node name'),
             size = 10
         ),
-        warranty_end = dict(
-            title = T('Warranty end'),
-            size = 10
-        ),
-        status = dict(
-            title = T('Status'),
-            size = 10
-        ),
-        role = dict(
-            title = T('Role'),
-            size = 10
-        ),
-        environnement = dict(
-            title = T('Env'),
-            size = 10
-        ),
-        cpu_freq = dict(
-            title = T('CPU freq'),
-            size = 10
-        ),
-        mem_bytes = dict(
-            title = T('Memory'),
-            size = 10
-        ),
-        os_name = dict(
-            title = T('OS name'),
-            size = 10
-        ),
-        os_kernel = dict(
-            title = T('OS kernel'),
-            size = 10
-        ),
-        cpu_dies = dict(
-            title = T('CPU dies'),
-            size = 10
-        ),
-        cpu_model = dict(
-            title = T('CPU model'),
-            size = 10
-        ),
-        type = dict(
-            title = T('Type'),
-            size = 10
-        ),
-        team_responsible = dict(
-            title = T('Team responsible'),
-            size = 10
-        ),
-        serial = dict(
-            title = T('Serial'),
-            size = 10
-        ),
-        model = dict(
-            title = T('Model'),
-            size = 10
-        ),
-        loc_addr = dict(
-            title = T('Address'),
-            size = 10
-        ),
-        loc_city = dict(
-            title = T('City'),
-            size = 10
-        ),
-        loc_zip = dict(
-            title = T('ZIP'),
-            size = 10
-        ),
-        loc_rack = dict(
-            title = T('Rack'),
-            size = 10
-        ),
         loc_country = dict(
+            pos = 2,
             title = T('Country'),
             size = 10
         ),
+        loc_zip = dict(
+            pos = 3,
+            title = T('ZIP'),
+            size = 10
+        ),
+        loc_city = dict(
+            pos = 4,
+            title = T('City'),
+            size = 10
+        ),
+        loc_addr = dict(
+            pos = 5,
+            title = T('Address'),
+            size = 10
+        ),
         loc_building = dict(
+            pos = 6,
             title = T('Building'),
             size = 10
         ),
         loc_room = dict(
+            pos = 7,
             title = T('Room'),
             size = 10
         ),
+        loc_rack = dict(
+            pos = 8,
+            title = T('Rack'),
+            size = 10
+        ),
+        cpu_freq = dict(
+            pos = 9,
+            title = T('CPU freq'),
+            size = 10
+        ),
+        mem_bytes = dict(
+            pos = 10,
+            title = T('Memory'),
+            size = 10
+        ),
+        os_name = dict(
+            pos = 11,
+            title = T('OS name'),
+            size = 10
+        ),
+        os_kernel = dict(
+            pos = 12,
+            title = T('OS kernel'),
+            size = 10
+        ),
+        cpu_dies = dict(
+            pos = 13,
+            title = T('CPU dies'),
+            size = 10
+        ),
+        cpu_model = dict(
+            pos = 14,
+            title = T('CPU model'),
+            size = 10
+        ),
+        serial = dict(
+            pos = 15,
+            title = T('Serial'),
+            size = 10
+        ),
+        model = dict(
+            pos = 16,
+            title = T('Model'),
+            size = 10
+        ),
+        team_responsible = dict(
+            pos = 17,
+            title = T('Team responsible'),
+            size = 10
+        ),
+        role = dict(
+            pos = 18,
+            title = T('Role'),
+            size = 10
+        ),
+        environnement = dict(
+            pos = 19,
+            title = T('Env'),
+            size = 10
+        ),
+        warranty_end = dict(
+            pos = 20,
+            title = T('Warranty end'),
+            size = 10
+        ),
+        status = dict(
+            pos = 21,
+            title = T('Status'),
+            size = 10
+        ),
+        type = dict(
+            pos = 22,
+            title = T('Type'),
+            size = 10
+        ),
     )
+    colkeys = columns.keys()
+    colkeys.sort(_sort_cols)
+
 
     # filtering
     query = (db.nodes.id>0)
@@ -378,7 +411,7 @@ def nodes():
     page = int(request.vars.page) if request.vars.page else 1
     limit = int(page - 1) * perpage
     rows = db(query).select(db.nodes.ALL, limitby=(limit+1,limit+perpage+1))
-    return dict(columns=columns, nodes=rows)
+    return dict(columns=columns, colkeys=colkeys, nodes=rows)
 
 class ex(Exception):
     def __init__(self, value):
