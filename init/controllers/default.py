@@ -406,19 +406,28 @@ def nodes():
         query &= _where(None, 'nodes', request.vars[key], key)
 
     # paging
-    perpage = int(request.vars.perpage) if 'perpage' in request.vars.keys() else 25
+    perpage = int(request.vars.perpage) if 'perpage' in request.vars.keys() else 20
     if perpage > 0:
         totalrecs = db(query).count()
         totalpages = totalrecs / perpage
-        page = int(request.args[0]) if len(request.args) else 0
-        limit = int(page) * perpage
-        rows = db(query).select(db.nodes.ALL, limitby=(limit,limit+perpage))
+        if totalrecs % perpage > 0: totalpages = totalpages + 1
+        page = int(request.args[0]) if len(request.args) else 1
+        # out of range
+        if page <= 0: page = 1
+        if page > totalpages: page = 1
+        start = (page-1)*perpage
+        end = start+perpage
+        if end > totalrecs: end = totalrecs
+        rows = db(query).select(db.nodes.ALL, limitby=(start,end))
 
         # paging toolbar
-        prev = A(T('<< previous'),_href=URL(r=request,args=[page-perpage])) if page else '<< previous'
-        next = A(T('next >>'),_href=URL(r=request,args=[page+perpage]))  if totalrecs>page+perpage else 'next >>'
-        nav = "Showing %d to %d out of %d records"  % (page, page+len(rows), totalrecs)
-        nav = P(prev, ' ', next, ' ', nav)
+        if totalrecs == 0:
+            nav = "No records found matching filters"
+        else:
+            prev = A(T('<< previous'),_href=URL(r=request,args=[page-1],vars=request.vars)) if page>1 else '<< previous'
+            next = A(T('next >>'),_href=URL(r=request,args=[page+1],vars=request.vars)) if page<totalpages else 'next >>'
+            nav = "Showing %d to %d out of %d records"  % (start+1, end, totalrecs)
+            nav = P(prev, ' ', next, ' ', nav)
     else:
         rows = db(query).select(db.nodes.ALL)
         nav = ''
