@@ -35,7 +35,8 @@ for key in ['svcname',
 {{pass}}
 
 {{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='svcmon_csv', vars=vars))}}
-<form submit='svcmon' name='svcform'>
+<form submit='svcmon'> 
+<input style='height:0px;width:0px;border:0' name='svcform' id='svcform' type="submit">
 <table>
   <tr>
     <td>{{=T('Service')}}</td>

@@ -17,7 +17,8 @@ for key in ['svc_name',
     pass
 }}
 {{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='drplan_csv', vars=vars))}}
-<form submit='drplan' name='svcform' id='svcform'>
+<form submit='drplan'> 
+<input style='height:0px;width:0px;border:0' name='svcform' id='svcform' type="submit">
 <table>
   <tr>
     <td></td>
