@@ -9,8 +9,8 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
 {{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='svcactions_csv', vars=vars))}}
 {{=A(IMG(_src=URL(r=request,c='static',f='rss.png'),_border=0),_href=URL(r=request,f='svcactions_rss', vars=vars))}}
 {{=nav}}
-<form submit='svcactions'> 
-<input style='height:0px;width:0px;border:0' name='svcform' id='svcform' type="submit">
+<form submit='svcactions' name='svcform' id='svcform'> 
+<input style='height:0px;width:0px;border:0' name='svcsubmit' id='svcsubmit' type="submit">
 <table>
   <tr>
     <td></td>
@@ -37,7 +37,6 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
     <td><input name=end value='{{=vars.end}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=pid value='{{=vars.pid}}' size=5 onKeyPress="checkEnter(event)"></td>
     <td><input name=status_log value='{{=vars.status_log}}' size=20 onKeyPress="checkEnter(event)"></td>
-    </form>
   {{
     pid = ''
     cellclass = 'cell1'
@@ -60,9 +59,11 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
           disabled = ''
           pass
       if action.ack == 1:
-          div_ack = DIV(B("acked by "),action.acked_by,B(" on "),action.acked_date,B(" with comment: "),action.acked_comment, _id='div_ack_'+str(action.id), _class='invisible_div')
+          trigger = "onMouseOver='javascript:show_ack(%s)' onMouseOut='javascript:hide_ack(%s)'"%(action.id, action.id)
+          ack = TR(TD(B("acked by "),action.acked_by,B(" on "),action.acked_date,B(" with comment: "),action.acked_comment,_colspan=99), _class='ack', _id='ack_'+str(action.id))
       else:
-          div_ack = DIV("", _id='div_ack_'+str(action.id), _class='invisible_div')
+          trigger = ""
+          ack = TR(TD("", _colspan=99), _class='ack', _id='ack_'+str(action.id))
           pass
       if not action.status_log:
           action.status_log = ''
@@ -83,17 +84,13 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
     <td class={{=cellclass}}>{{=responsibles}}</td>
     <td class={{=cellclass}}>{{=action.hostname}}</td>
     <td class="{{=cellclass}} {{=metaactionclass}}">{{=action.action}}</td>
-    <td class="{{=cellclass}} status_{{=action.status}} ack_{{=action.ack}} {{=metaactionclass}}" onMouseOver='javascript:show_ack({{=action.id}})' onMouseOut='javascript:hide_ack({{=action.id}})'>{{=action.status}}</td>
+    <td class="{{=cellclass}} status_{{=action.status}} ack_{{=action.ack}} {{=metaactionclass}}" {{=trigger}}>{{=action.status}}</td>
     <td class={{=cellclass}}>{{=action.begin}}</td>
     <td class={{=cellclass}}>{{=action.end}}</td>
     <td class={{=cellclass}}>{{=action.pid}}</td>
     <td class={{=cellclass}}>{{=action.status_log}}</td>
   </tr>
-  <tr class=ack>
-    <td colspan=99>
-      {{=div_ack}}
-    </td>
-  </tr>
+  {{=ack}}
   {{pass}}
   <tr>
     <td colspan=20>
@@ -111,3 +108,4 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
     </td>
   </tr>
 </table>
+</form>
