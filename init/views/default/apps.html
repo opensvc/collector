@@ -9,8 +9,7 @@ for key in ['app',
     pass
 }}
 {{=nav}}
-<form submit='apps' name='svcform' id='svcform'>
-<input style='height:0px;width:0px;border:0' name='svcsubmit' id='svcsubmit' type="submit">
+<form action='apps' name='svcform' id='svcform'>
 <table>
   <tr>
     <td></td>
@@ -43,10 +42,10 @@ for key in ['app',
         </tr>
         <tr>
           <td>
-            <img src={{=URL(r=request,c='static',f='add.png')}} style="border:0" title={{=T('create application')}} onClick='javascript:document.getElementById("div_addapp").style.visibility="visible";document.svcform.addapp.focus()'>
-            <input type=image src={{=URL(r=request,c='static',f='del.png')}} style="border:0" title={{=T('remove the selected application')}} onClick='javascript:document.svcform.delapp.value="del";document.svcsubmit.submit()'>
+            <img src={{=URL(r=request,c='static',f='add.png')}} style="border:0" title={{=T('create application')}} onClick='javascript:document.svcform.appctl.value="add";document.getElementById("div_addapp").style.visibility="visible";document.svcform.addapp.focus()'>
+            <img src={{=URL(r=request,c='static',f='del.png')}} style="border:0" title={{=T('remove the selected application')}} onClick='javascript:document.svcform.appctl.value="del";document.svcform.submit()'>
           </td>
-          <td>
+          <td width=220>
             <select name=users>
               <option value=0>choose</option>
               {{for user in users:
@@ -66,7 +65,7 @@ for key in ['app',
         <tr>
           <td>
             <div id=div_addapp class=invisible_div><input name=addapp size=4 onKeyPress="checkEnter(event)"></div>
-            <input name=delapp type=hidden>
+            <input id='appctl' name='appctl' type=hidden value="">
           </td>
         </tr>
       </table>

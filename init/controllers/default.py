@@ -84,7 +84,7 @@ def _del_app(request):
     for id in ids:
         count += db(db.apps.id == id).delete()
     response.flash = "application '%s' deleted" % count
-    del request.vars.delapp
+    del request.vars.appctl
 
 @auth.requires_membership('Manager')
 def _add_app(request):
@@ -97,6 +97,7 @@ def _add_app(request):
     q = db.apps.app==request.vars.addapp
     app = db(q).select(db.apps.id)[0]
     request.vars.appid = str(app.id)
+    del request.vars.appctl
     del request.vars.addapp
 
 @auth.requires_membership('Manager')
@@ -134,14 +135,14 @@ def _unset_resp(request):
 
 @auth.requires_membership('Manager')
 def apps():
-    if request.vars.delapp is not None and request.vars.delapp != '':
+    if request.vars.appctl == 'del':
         _del_app(request)
-    elif request.vars.addapp is not None and request.vars.addapp != '':
+    elif request.vars.appctl == 'add' and request.vars.addapp is not None and request.vars.addapp != '':
         _add_app(request)
-    elif request.vars.resp == 'add':
-        _set_resp(request)
     elif request.vars.resp == 'del':
         _unset_resp(request)
+    elif request.vars.resp == 'add':
+        _set_resp(request)
     query = _where(None, 'v_apps', request.vars.app, 'app')
     query &= _where(None, 'v_apps', request.vars.responsibles, 'responsibles')
 

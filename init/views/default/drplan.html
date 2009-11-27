@@ -18,8 +18,7 @@ for key in ['svc_name',
 }}
 {{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='drplan_csv', vars=vars))}}
 {{=nav}}
-<form submit='drplan'> 
-<input style='height:0px;width:0px;border:0' name='svcform' id='svcform' type="submit">
+<form action='drplan' name='svcform' id='svcform'> 
 <table>
   <tr>
     <td></td>
@@ -108,11 +107,7 @@ for key in ['svc_name',
             {{=IMG(_src=URL(r=request,c='static',f='wave3.png'),_border=0,_onclick='javascript:document.svcform.setwave.value=3;document.svcform.submit()')}}
             {{=IMG(_src=URL(r=request,c='static',f='del.png'),_border=0,_title=T("remove the selected services from the DR plan"), _onclick='javascript:document.svcform.setwave.value="del";document.svcform.submit()')}}
           </td>
-          <td>
-            {{=IMG(_src=URL(r=request,c='static',f='add.png'),_border=0, _title=T("create new project"), _onclick='javascript:document.getElementById("div_addproject").style.visibility="visible";document.svcform.addproject.focus()')}}
-            {{=IMG(_src=URL(r=request,c='static',f='clone.png'),_border=0, _title=T("clone the current project"), _onclick='javascript:document.getElementById("div_cloneproject").style.visibility="visible";document.svcform.cloneproject.focus()')}}
-            {{=IMG(_src=URL(r=request,c='static',f='del.png'),_border=0, _title=T("trash the current project"), _onclick='javascript:document.svcform.delproject.value=1;document.svcform.submit()')}}
-            {{=A(IMG(_src=URL(r=request,c='static',f='gen.png'),_border=0, _title=T("generate the DR scripts for the current project")),_href=URL(r=request,f='drplan_scripts', vars=vars))}}
+          <td width=500>
             <input name=delproject type=hidden>
             <select name=prjlist onChange='document.svcform.submit()'>
               <option value=0>choose</option>
@@ -126,6 +121,10 @@ for key in ['svc_name',
               <option value={{=project.drp_project_id}} {{=selected}}>{{=project.drp_project_id}}: {{=project.drp_project}}</option>
               {{pass}}
             </select>
+            {{=IMG(_src=URL(r=request,c='static',f='add.png'),_border=0, _title=T("create new project"), _onclick='javascript:document.getElementById("div_addproject").style.visibility="visible";document.svcform.addproject.focus()')}}
+            {{=IMG(_src=URL(r=request,c='static',f='clone.png'),_border=0, _title=T("clone the current project"), _onclick='javascript:document.getElementById("div_cloneproject").style.visibility="visible";document.svcform.cloneproject.focus()')}}
+            {{=IMG(_src=URL(r=request,c='static',f='del.png'),_border=0, _title=T("trash the current project"), _onclick='javascript:document.svcform.delproject.value=1;document.svcform.submit()')}}
+            {{=A(IMG(_src=URL(r=request,c='static',f='gen.png'),_border=0, _title=T("generate the DR scripts for the current project")),_href=URL(r=request,f='drplan_scripts', vars=vars))}}
           </td>
         </tr>
         <tr>

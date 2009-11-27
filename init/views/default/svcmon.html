@@ -36,8 +36,7 @@ for key in ['svcname',
 
 {{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='svcmon_csv', vars=vars))}}
 {{=nav}}
-<form submit='svcmon'> 
-<input style='height:0px;width:0px;border:0' name='svcform' id='svcform' type="submit">
+<form action='svcmon' name='svcform' id='svcform'> 
 <table>
   <tr>
     <td>{{=T('Service')}}</td>
@@ -114,7 +113,7 @@ for key in ['svcname',
               </table>
           </td>
           <td valign=center>
-            <select name=addfilter onChange='document.svcform.submit()'>
+            <select name=addfilter onChange="document.getElementById('svcform').submit()">
               <option value=''>{{=T('choose')}}</option>
               {{for k in session.filters.keys():}}
               {{f = filters[k]}}
