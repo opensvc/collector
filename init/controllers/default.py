@@ -42,6 +42,39 @@ def call():
     session.forget()
     return service()
 
+def _pagination(request, query):
+    start = 0
+    end = 0
+    nav = ''
+    perpage = int(request.vars.perpage) if 'perpage' in request.vars.keys() else 20
+
+    if perpage <= 0:
+        return (start, end, nav)
+
+    totalrecs = db(query).count()
+    totalpages = totalrecs / perpage
+    if totalrecs % perpage > 0: totalpages = totalpages + 1
+    page = int(request.args[0]) if len(request.args) else 1
+
+    # out of range conditions
+    if page <= 0: page = 1
+    if page > totalpages: page = 1
+    start = (page-1)*perpage
+    end = start+perpage
+    if end > totalrecs:
+        end = totalrecs
+
+    # paging toolbar
+    if totalrecs == 0:
+        nav = "No records found matching filters"
+    else:
+        prev = A(T('<< prev'),_href=URL(r=request,args=[page-1],vars=request.vars)) if page>1 else '<< prev'
+        next = A(T('next >>'),_href=URL(r=request,args=[page+1],vars=request.vars)) if page<totalpages else 'next >>'
+        nav = "Showing %d to %d out of %d records"  % (start+1, end, totalrecs)
+        nav = P(prev, ' ', next, ' ', nav)
+
+    return (start, end, nav)
+
 @auth.requires_membership('Manager')
 def _del_app(request):
     ids = ([])
@@ -111,10 +144,16 @@ def apps():
         _unset_resp(request)
     query = _where(None, 'v_apps', request.vars.app, 'app')
     query &= _where(None, 'v_apps', request.vars.responsibles, 'responsibles')
-    apps = db(query).select(orderby=db.v_apps.app)
+
+    (start, end, nav) = _pagination(request, query)
+    if start == 0 and end == 0:
+        rows = db(query).select(orderby=db.v_apps.app)
+    else:
+        rows = db(query).select(limitby=(start,end), orderby=db.v_apps.app)
+
     query = (db.auth_user.id>0)
     users = db(query).select()
-    return dict(apps=apps, users=users)
+    return dict(apps=rows, users=users, nav=nav)
 
 def _where(query, table, var, field, tableid=None):
     if query is None:
@@ -212,13 +251,20 @@ def svcmon():
         filter = session.filters[k]
         if filter['active']:
             query &= filter['q']
-    rows = db(query).select(orderby=db.v_svcmon.mon_svcname|~db.v_svcmon.mon_nodtype)
-    return dict(services=rows, filters=session.filters)
+
+    (start, end, nav) = _pagination(request, query)
+    if start == 0 and end == 0:
+        rows = db(query).select(orderby=db.v_svcmon.mon_svcname|~db.v_svcmon.mon_nodtype)
+    else:
+        rows = db(query).select(limitby=(start,end), orderby=db.v_svcmon.mon_svcname|~db.v_svcmon.mon_nodtype)
+
+    return dict(services=rows, filters=session.filters, nav=nav)
 
 def svcmon_csv():
     import gluon.contenttype
     response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
-    return svcmon()
+    request.vars['perpage'] = 0
+    return svcmon()['services']
 
 def _svcaction_ack(request):
     action_ids = ([])
@@ -248,8 +294,14 @@ def svcactions():
     query &= _where(None, 'v_svcactions', request.vars.hostname, 'hostname')
     query &= _where(None, 'v_svcactions', request.vars.status_log, 'status_log')
     query &= _where(None, 'v_svcactions', request.vars.pid, 'pid')
-    rows = db(query).select(orderby=~db.v_svcactions.begin|~db.v_svcactions.id)
-    return dict(actions=rows)
+
+    (start, end, nav) = _pagination(request, query)
+    if start == 0 and end == 0:
+        rows = db(query).select(orderby=~db.v_svcactions.begin|~db.v_svcactions.id)
+    else:
+        rows = db(query).select(limitby=(start,end), orderby=~db.v_svcactions.begin|~db.v_svcactions.id)
+
+    return dict(actions=rows, nav=nav)
 
 def svcactions_rss():
     #return BEAUTIFY(request)
@@ -277,7 +329,8 @@ def svcactions_rss():
 def svcactions_csv():
     import gluon.contenttype
     response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
-    return svcactions()
+    request.vars['perpage'] = 0
+    return svcactions()['actions']
 
 @auth.requires_login()
 def services():
@@ -418,32 +471,11 @@ def nodes():
             continue
         query &= _where(None, 'nodes', request.vars[key], key)
 
-    # paging
-    perpage = int(request.vars.perpage) if 'perpage' in request.vars.keys() else 20
-    if perpage > 0:
-        totalrecs = db(query).count()
-        totalpages = totalrecs / perpage
-        if totalrecs % perpage > 0: totalpages = totalpages + 1
-        page = int(request.args[0]) if len(request.args) else 1
-        # out of range
-        if page <= 0: page = 1
-        if page > totalpages: page = 1
-        start = (page-1)*perpage
-        end = start+perpage
-        if end > totalrecs: end = totalrecs
-        rows = db(query).select(db.nodes.ALL, limitby=(start,end))
-
-        # paging toolbar
-        if totalrecs == 0:
-            nav = "No records found matching filters"
-        else:
-            prev = A(T('<< previous'),_href=URL(r=request,args=[page-1],vars=request.vars)) if page>1 else '<< previous'
-            next = A(T('next >>'),_href=URL(r=request,args=[page+1],vars=request.vars)) if page<totalpages else 'next >>'
-            nav = "Showing %d to %d out of %d records"  % (start+1, end, totalrecs)
-            nav = P(prev, ' ', next, ' ', nav)
+    (start, end, nav) = _pagination(request, query)
+    if start == 0 and end == 0:
+        rows = db(query).select()
     else:
-        rows = db(query).select(db.nodes.ALL)
-        nav = ''
+        rows = db(query).select(limitby=(start,end))
 
     return dict(columns=columns, colkeys=colkeys,
                 nodes=rows,
@@ -534,15 +566,21 @@ def drplan():
     query &= _where(None, 'v_services', request.vars.svc_drpnode, 'svc_drpnode')
     query &= _where(None, 'v_services', request.vars.svc_drpnodes, 'svc_drpnodes')
     query &= _where(None, 'drpservices', request.vars.svc_wave, 'drp_wave', tableid=db.v_services.id)
-    svc_rows = db(query).select(db.v_services.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id,
-left=db.drpservices.on((db.v_services.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)),groupby=db.v_services.svc_name)
+
+    (start, end, nav) = _pagination(request, query)
+    if start == 0 and end == 0:
+        svc_rows = db(query).select(db.v_services.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id, left=db.drpservices.on((db.v_services.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)),groupby=db.v_services.svc_name)
+    else:
+        svc_rows = db(query).select(db.v_services.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id, left=db.drpservices.on((db.v_services.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)),groupby=db.v_services.svc_name, limitby=(start,end))
+
     prj_rows = db().select(db.drpprojects.drp_project_id, db.drpprojects.drp_project)
-    return dict(services=svc_rows, projects=prj_rows)
+    return dict(services=svc_rows, projects=prj_rows, nav=nav)
 
 def drplan_csv():
     import gluon.contenttype
     response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
-    return drplan()
+    request.vars['perpage'] = 0
+    return drplan()['apps']
 
 def _drplan_scripts_header(phase):
     l = ["""#!/bin/sh"""]

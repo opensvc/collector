@@ -4,6 +4,7 @@
 '%Y-%m-%d %H:%M:%S': '%Y-%m-%d %H:%M:%S',
 '%s rows deleted': '%s rang\xc3\xa9es effac\xc3\xa9es',
 '%s rows updated': '%s rang\xc3\xa9es mises \xc3\xa0 jour',
+'<< prev': '<< prev',
 '<< previous': '<< previous',
 'Acknowledge with comment': 'Acquitter avec commentaire',
 'Action': 'Action',

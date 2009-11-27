@@ -8,6 +8,7 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
 }}
 {{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='svcactions_csv', vars=vars))}}
 {{=A(IMG(_src=URL(r=request,c='static',f='rss.png'),_border=0),_href=URL(r=request,f='svcactions_rss', vars=vars))}}
+{{=nav}}
 <form submit='svcactions'> 
 <input style='height:0px;width:0px;border:0' name='svcform' id='svcform' type="submit">
 <table>
