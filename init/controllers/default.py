@@ -83,17 +83,21 @@ def _del_app(request):
         ids += ([key[6:]])
     for id in ids:
         count += db(db.apps.id == id).delete()
-    response.flash = "application '%s' deleted" % count
+    if count > 1:
+        s = 's'
+    else:
+        s = ''
+    response.flash = T("%(count)s application%(s)s deleted", dict(count=count, s=s))
     del request.vars.appctl
 
 @auth.requires_membership('Manager')
 def _add_app(request):
     apps = db(db.apps.app==request.vars.addapp).select(db.apps.id)
     if len(apps) != 0:
-        response.flash = "application '%s' already exists" % request.vars.addapp
+        response.flash = T("application '%(app)s' already exists", dict(app=request.vars.addapp))
         return
     db.apps.insert(app=request.vars.addapp)
-    response.flash = "application '%s' created" % request.vars.addapp
+    response.flash = T("application '%(app)s' created", dict(app=request.vars.addapp))
     q = db.apps.app==request.vars.addapp
     app = db(q).select(db.apps.id)[0]
     request.vars.appid = str(app.id)
@@ -115,7 +119,7 @@ def _set_resp(request):
         s = 's'
     else:
         s = ''
-    response.flash = "%s assignement%s added"%(num, s)
+    response.flash = T("%(num)s assignment%(s)s added", dict(num=num, s=s))
     del request.vars.resp
 
 @auth.requires_membership('Manager')
@@ -130,7 +134,7 @@ def _unset_resp(request):
         s = 's'
     else:
         s = ''
-    response.flash = "%s assignement%s removed"%(num, s)
+    response.flash = T("%(num)s assignment%(s)s removed", dict(num=num, s=s))
     del request.vars.resp
 
 @auth.requires_membership('Manager')
@@ -492,7 +496,7 @@ class ex(Exception):
 def _drplan_clone_project(request):
     prj_rows = db(db.drpprojects.drp_project==request.vars.cloneproject).select(db.drpprojects.drp_project_id)
     if len(prj_rows) != 0:
-        response.flash = "project '%s' already exists" % request.vars.cloneproject
+        response.flash = T("project '%(prj)s' already exists", dict(prj=request.vars.cloneproject))
         return
     db.drpprojects.insert(drp_project=request.vars.cloneproject)
     q = db.drpprojects.drp_project==request.vars.cloneproject
@@ -507,7 +511,7 @@ def _drplan_clone_project(request):
                               drp_project_id=dst_prj.drp_project_id)
     q = db.drpprojects.drp_project_id==request.vars.prjlist
     src_prj = db(q).select(db.drpprojects.drp_project)[0]
-    response.flash = "project '%s' cloned from '%s'. %s services DR configurations ported to the new project"%(request.vars.cloneproject, src_prj.drp_project, str(len(src_prj_rows)))
+    response.flash = T("project '%(dst)s' cloned from '%(src)s'. %(num)s services DR configurations ported to the new project", dict(dst=request.vars.cloneproject, src=src_prj.drp_project, num=str(len(src_prj_rows))))
     request.vars.prjlist = str(dst_prj.drp_project_id)
     del request.vars.cloneproject
 
@@ -515,10 +519,10 @@ def _drplan_clone_project(request):
 def _drplan_add_project(request):
     prj_rows = db(db.drpprojects.drp_project==request.vars.addproject).select(db.drpprojects.drp_project_id)
     if len(prj_rows) != 0:
-        response.flash = "project '%s' already exists" % request.vars.addproject
+        response.flash = T("project '%(prj)s' already exists", dict(prj=request.vars.addproject))
         return
     db.drpprojects.insert(drp_project=request.vars.addproject)
-    response.flash = "project '%s' created" % request.vars.addproject
+    response.flash = T("project '%(prj)s' created", dict(prj=request.vars.addproject))
     q = db.drpprojects.drp_project==request.vars.addproject
     dst_prj = db(q).select(db.drpprojects.drp_project_id)[0]
     request.vars.prjlist = str(dst_prj.drp_project_id)
@@ -528,7 +532,7 @@ def _drplan_add_project(request):
 def _drplan_del_project(request):
     db(db.drpprojects.drp_project_id == request.vars.prjlist).delete()
     num_deleted = db(db.drpservices.drp_project_id == request.vars.prjlist).delete()
-    response.flash = "project deleted. %d services DR configurations dropped." % num_deleted
+    response.flash = T("project deleted. %(num)d services DR configurations dropped.", dict(num=num_deleted))
 
 @auth.requires_membership('Manager')
 def _drplan_set_wave(request):
