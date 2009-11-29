@@ -118,14 +118,16 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
             {{=A(IMG(_src=URL(r=request,c='static',f='rss.png'),_border=0),_href=URL(r=request,f='svcactions_rss', vars=vars))}}
           </td>
           <td>
-            {{=IMG(_src=URL(r=request,c='static',f='ack.png'),_border=0, _title=T('acknowledge selected errors'), _onclick='javascript:document.getElementById("div_ackcomment").style.visibility="visible";document.svcform.ackcomment.focus()')}}
+            {{=IMG(_src=URL(r=request,c='static',f='ack.png'),_border=0, _title=T('acknowledge selected errors'), _onclick='javascript:show_eid("inputs");document.svcform.ackcomment.focus()')}}
           </td>
+        </tr>
+        <tr class=hidden id="inputs">
+          <td></td>
+          <td></td>
           <td>
-            <div id=div_ackcomment class=invisible_div>
-              {{=T('Acknowledge with comment')}}:<br>
-              <input name=ack value="" type=hidden>
-              <input name=ackcomment onKeyPress="checkEnter(event)">
-            </div>
+            {{=T('Acknowledge with comment')}}:<br>
+            <input name=ack value="" type=hidden>
+            <input name=ackcomment onKeyPress="checkEnter(event)" onBlur="hide_eid('inputs')">
           </td>
         </tr>
       </table>
