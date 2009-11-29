@@ -66,12 +66,12 @@ def _pagination(request, query):
 
     # paging toolbar
     if totalrecs == 0:
-        nav = "No records found matching filters"
+        nav = P("No records found matching filters", _style='text-align:center')
     else:
         prev = A(T('<< prev'),_href=URL(r=request,args=[page-1],vars=request.vars)) if page>1 else '<< prev'
         next = A(T('next >>'),_href=URL(r=request,args=[page+1],vars=request.vars)) if page<totalpages else 'next >>'
         nav = "Showing %d to %d out of %d records"  % (start+1, end, totalrecs)
-        nav = P(prev, ' ', next, ' ', nav)
+        nav = P(prev, ' ', next, ' ', nav, _style='text-align:center')
 
     return (start, end, nav)
 

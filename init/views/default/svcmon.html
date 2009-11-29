@@ -1,5 +1,7 @@
 {{extend 'layout.html'}}
 {{include '../static/jslib.html'}}
+{{include 'box.html'}}
+
 {{
 vars = request.vars
 for key in ['svcname',
@@ -34,11 +36,11 @@ for key in ['svcname',
     {{return ''}}
 {{pass}}
 
-{{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='svcmon_csv', vars=vars))}}
-{{=nav}}
 <form action='svcmon' name='svcform' id='svcform'> 
 <table>
-  <tr>
+  {{BOX_TOP_ROW(9)}}
+  <tr class=box>
+    <td class=box></td>
     <td>{{=T('Service')}}</td>
     <td width=10>{{=T('Container type')}}</td>
     <td width=10>{{=T('App')}}</td>
@@ -48,8 +50,10 @@ for key in ['svcname',
     <td width=10>{{=T('Node type')}}</td>
     <td>{{=T('Node')}}</td>
     <td width=10 class=status_t>{{=T('Status')}}</td>
+    <td class=box></td>
   </tr>
-  <tr>
+  <tr class=box>
+    <td style='padding:0'></td>
     <td><input name=svcname value='{{=vars.svcname}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=containertype value='{{=vars.containertype}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=svcapp value='{{=vars.svcapp}}' size=4 onKeyPress="checkEnter(event)"></td>
@@ -59,6 +63,9 @@ for key in ['svcname',
     <td><input name=nodetype value='{{=vars.nodetype}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=nodename value='{{=vars.nodename}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td class=status_t><input name=overallstatus value='{{=vars.overallstatus}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td style='padding:0'></td>
+  </tr>
+  {{BOX_BOTTOM_ROW(9)}}
   {{
     svcname = ''
     cellclass = 'cell1'
@@ -78,6 +85,7 @@ for key in ['svcname',
           responsibles = ''
           pass
     }}
+    <td style='padding:0'></td>
     <td class={{=cellclass}}>{{=svc.mon_svcname}}</td>
     <td class={{=cellclass}}>{{=svc.svc_containertype}}</td>
     <td class={{=cellclass}}>{{=svc.svc_app}}</td>
@@ -87,16 +95,25 @@ for key in ['svcname',
     <td class={{=cellclass}}>{{=svc.mon_nodtype}}</td>
     <td class={{=cellclass}}>{{=svc.mon_nodname}}</td>
     <td class="{{=cellclass}}">{{=node_status(svc,cellclass)}}</td>
+    <td style='padding:0'></td>
   </tr>
   {{pass}}
-  <tr class=toolbar>
-    <td width=100% align=right colspan=99>
+  {{BOX_TOP_ROW(9)}}
+  <tr class=box>
+    <td align=center colspan=99>{{=nav}}</td>
+  </tr>
+  <tr class=box>
+    <td colspan=99>
       <table>
         <tr>
+          <td> {{=T('Export')}}:</td>
           <td> {{=T('Active filters')}}:</td>
           <td> {{=T('Add filter')}}:</td>
         </tr>
         <tr>
+          <td>
+            {{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='svcmon_csv', vars=vars))}}
+          </td>
           <td>
             <input type=hidden name=delfilter>
             <table>
@@ -126,5 +143,6 @@ for key in ['svcname',
       </table>
     </td>
   </tr>
+  {{BOX_BOTTOM_ROW(9)}}
 </table>
 </form>

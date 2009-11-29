@@ -1,5 +1,6 @@
 {{extend 'layout.html'}}
 {{include '../static/jslib.html'}}
+{{include 'box.html'}}
 {{
 vars = request.vars
 for key in ['app',
@@ -8,18 +9,24 @@ for key in ['app',
     if not vars.has_key(key) or vars[key] is None: request.vars[key]=''
     pass
 }}
-{{=nav}}
 <form action='apps' name='svcform' id='svcform'>
 <table>
-  <tr>
-    <td></td>
+  {{BOX_TOP_ROW(3)}}
+  <tr class=box>
+    <td class=box></td>
+    <td class=box></td>
     <td>{{=T('App')}}</td>
     <td>{{=T('Responsibles')}}</td>
+    <td class=box></td>
   </tr>
-  <tr>
+  <tr class=box>
+    <td class=box></td>
     <td><input type=checkbox id=check_all onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'))"></td>
     <td><input name=app value='{{=request.vars.app}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=responsibles value='{{=request.vars.responsibles}}' size=12 onKeyPress="checkEnter(event)"></td>
+    <td class=box></td>
+  </tr>
+  {{BOX_BOTTOM_ROW(3)}}
   {{for app in apps:}}
   <tr>
     {{
@@ -28,13 +35,18 @@ for key in ['app',
           checked = 'checked=on'
           pass
     }}
+    <td style='padding:0'></td>
     <td><input type=checkbox name=check_{{=str(app.id)}} {{=checked}}></td>
     <td>{{=app.app}}</td>
     <td>{{=app.responsibles}}</td>
   </tr>
   {{pass}}
-  <tr class=toolbar>
-    <td width=100% colspan=99>
+  {{BOX_TOP_ROW(3)}}
+  <tr class=box>
+    <td align=center colspan=99>{{=nav}}</td>
+  </tr>
+  <tr class=box>
+    <td colspan=99>
       <table>
         <tr>
           <td> {{=T('app')}}:</td>
@@ -71,6 +83,7 @@ for key in ['app',
       </table>
     </td>
   </tr>
+  {{BOX_BOTTOM_ROW(3)}}
 </table>
 <input name=resp type=hidden>
 </form>

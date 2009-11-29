@@ -1,5 +1,42 @@
 @charset "UTF-8";
 
+.box {
+    background-color:#e0e1cd;
+    padding:0;
+    overflow:hidden;
+}
+
+.boxtlc, .boxtrc, .boxblc, .boxbrc {
+    background-color:transparent;
+    background-image:url('corners.gif');
+    background-repeat:no-repeat;
+    height:10px;
+    width:10px;
+    padding:0;
+    border:0 none;
+    margin:0;
+}
+
+.boxblc {
+    background-position:0 -10px;
+    float:left;
+}
+
+.boxbrc {
+    background-position:-10px -10px;
+    float:right;
+}
+
+.boxtrc {
+    background-position:-10px 0;
+    float:right;
+}
+
+.boxtlc {
+    background-position:0 0;
+    float:left;
+}
+
 select {
     float: left;
     display: inline;

@@ -1,18 +1,18 @@
 {{extend 'layout.html'}}
 {{include '../static/jslib.html'}}
+{{include 'box.html'}}
 {{
 vars = request.vars
 for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end', 'hostname', 'pid', 'status_log']:
     if not vars.has_key(key) or vars[key] is None: vars[key]=''
     pass
 }}
-{{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='svcactions_csv', vars=vars))}}
-{{=A(IMG(_src=URL(r=request,c='static',f='rss.png'),_border=0),_href=URL(r=request,f='svcactions_rss', vars=vars))}}
-{{=nav}}
 <form action='svcactions' name='svcform' id='svcform'> 
 <table>
-  <tr>
-    <td></td>
+  {{BOX_TOP_ROW(11)}}
+  <tr class=box>
+    <td class=box></td>
+    <td class=box></td>
     <td>{{=T('Service')}}</td>
     <td>{{=T('App')}}</td>
     <td>{{=T('Resp')}}</td>
@@ -23,8 +23,10 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
     <td>{{=T('End')}}</td>
     <td>{{=T('Pid')}}</td>
     <td>{{=T('Log')}}</td>
+    <td class=box></td>
   </tr>
-  <tr>
+  <tr class=box>
+    <td class=box></td>
     <td><input type=checkbox id=check_all onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'))"></td>
     <td><input name=svcname value='{{=vars.svcname}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=app value='{{=vars.app}}' size=4 onKeyPress="checkEnter(event)"></td>
@@ -36,6 +38,9 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
     <td><input name=end value='{{=vars.end}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=pid value='{{=vars.pid}}' size=5 onKeyPress="checkEnter(event)"></td>
     <td><input name=status_log value='{{=vars.status_log}}' size=20 onKeyPress="checkEnter(event)"></td>
+    <td class=box></td>
+  </tr>
+  {{BOX_BOTTOM_ROW(11)}}
   {{
     pid = ''
     cellclass = 'cell1'
@@ -77,6 +82,7 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
           pass
     }}
   <tr>
+    <td style='padding:0'></td>
     <td class={{=cellclass}}><input type=checkbox name=check_{{=action.id}} {{=checked}} {{=disabled}}></td>
     <td class={{=cellclass}}>{{=action.svcname}}</td>
     <td class={{=cellclass}}>{{=action.app}}</td>
@@ -91,20 +97,39 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
   </tr>
   {{=ack}}
   {{pass}}
-  <tr>
-    <td colspan=20>
+  {{BOX_TOP_ROW(11)}}
+  <tr class=box>
+    <td align=center colspan=99>{{=nav}}</td>
+  </tr>
+  <tr class=box>
+    <td colspan=99>
       <table>
-        <tr>
-          <td valign=center>
+        <tr class=box>
+          <td> {{=T('Export')}}:</td>
+          <td> {{=T('Rss')}}:</td>
+          <td> {{=T('Actions')}}:</td>
+        </tr>
+        <tr class=box>
+          <td>
+            {{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='svcactions_csv', vars=vars))}}
+          </td>
+          <td>
+            {{=A(IMG(_src=URL(r=request,c='static',f='rss.png'),_border=0),_href=URL(r=request,f='svcactions_rss', vars=vars))}}
+          </td>
+          <td>
             {{=IMG(_src=URL(r=request,c='static',f='ack.png'),_border=0, _title=T('acknowledge selected errors'), _onclick='javascript:document.getElementById("div_ackcomment").style.visibility="visible";document.svcform.ackcomment.focus()')}}
+          </td>
+          <td>
             <div id=div_ackcomment class=invisible_div>
               {{=T('Acknowledge with comment')}}:<br>
               <input name=ack value="" type=hidden>
               <input name=ackcomment onKeyPress="checkEnter(event)">
             </div>
+          </td>
         </tr>
       </table>
     </td>
-  </tr>
+   </tr>
+  {{BOX_BOTTOM_ROW(11)}}
 </table>
 </form>
