@@ -69,6 +69,10 @@ select {
     color: #ffffff;
 }
 
+.hidden {
+    display: none;
+}
+
 .toolbar {
     background: transparent;
 }

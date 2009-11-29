@@ -62,12 +62,13 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
       else:
           disabled = ''
           pass
+      eid = 'ack_'+str(action.id)
       if action.ack == 1:
-          trigger = "onMouseOver='javascript:show_ack(%s)' onMouseOut='javascript:hide_ack(%s)'"%(action.id, action.id)
-          ack = TR(TD(B("acked by "),action.acked_by,B(" on "),action.acked_date,B(" with comment: "),action.acked_comment,_colspan=99), _class='ack', _id='ack_'+str(action.id))
+          trigger = """onMouseOver='javascript:show_eid("%s")' onMouseOut='javascript:hide_eid("%s")'"""%(eid, eid)
+          ack = TR(TD(B("acked by "),action.acked_by,B(" on "),action.acked_date,B(" with comment: "),action.acked_comment,_colspan=99), _class='ack', _id=eid)
       else:
           trigger = ""
-          ack = TR(TD("", _colspan=99), _class='ack', _id='ack_'+str(action.id))
+          ack = TR(TD("", _colspan=99), _class='ack', _id=eid)
           pass
       if not action.status_log:
           action.status_log = ''

@@ -42,16 +42,16 @@ function dumpProps(obj, parent) {
    }
 }
 
-function show_ack(id) {
+function show_eid(id) {
   if (navigator.appName == 'Netscape') {
-    document.getElementById("ack_"+id).style['display']='table-row'
+    document.getElementById(id).style['display']='table-row'
   } else {
-    document.getElementById("ack_"+id).style['display']='block'
+    document.getElementById(id).style['display']='block'
   }
 }
 
-function hide_ack(id) {
-  document.getElementById("ack_"+id).style['display']='none'
+function hide_eid(id) {
+  document.getElementById(id).style['display']='none'
 }
 
 </script>
