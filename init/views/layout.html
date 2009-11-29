@@ -7,46 +7,51 @@
     {{include 'web2py_ajax.html'}}
   </head>
   <body>
-    <div class="wrapper">
       <table class="layout">
         <tr class="header">
-          <td>
-            <h1>
-              {{=(response.title or request.application)}}
-            </h1>
-          </td>
-          <td class=menucell>
+          <td style="padding:0">
             <table>
-              <tr class=menucell>
-                <td class=menucell>
-                  {{if response.menu_auth:}}
-                  {{=MENU(response.menu_auth, _class="web2py-menu web2py-menu-horizontal")}}
-                  {{pass}}
+              <tr>
+                <td>
+                  <h1>{{=(response.title or request.application)}}</h1>
                 </td>
-                <td class=menucell>
-                  {{if response.menu:}}
-                  {{=MENU(response.menu, _class="web2py-menu web2py-menu-horizontal")}}
-                  {{pass}}
-                </td>
-              </tr>
+                <td class=menucell width=100%>
+                  <div align="center">
+                  <table style="line-height:25px">
+                    <tr class=menucell>
+                      <td class=menucell>
+                        {{if response.menu_auth:}}
+                        {{=MENU(response.menu_auth, _class="web2py-menu web2py-menu-horizontal")}}
+                       {{pass}}
+                     </td>
+                     <td class=menucell>
+                       {{if response.menu:}}
+                       {{=MENU(response.menu, _class="web2py-menu web2py-menu-horizontal")}}
+                       {{pass}}
+                     </td>
+                   </tr>
+                 </table>
+                 </div>
+               </tr>
             </table>
           </td>
         </tr>
         <tr>
-          <td colspan=2 class="expandable column2">
+          <td>
             <div class="flash">{{=response.flash or ''}}</div>
-            {{include}}
+            <div align=center>{{include}}</div>
           </td>
         </tr>
         <tr>
-          <td colspan="10" class="footer">
+          <td class="footer">
             <p>
-            {{=T('Copyright')}} &copy; 2009 - OpenSVC -
-            {{=T('Powered by')}} <a href="http://www.web2py.com">web2py</a>
+            <div align="center">
+              {{=T('Copyright')}} &copy; 2009 - OpenSVC -
+              {{=T('Powered by')}} <a href="http://www.web2py.com">web2py</a>
+            </div>
             </p>
           </td>
         </tr>
       </table>
-    </div>
   </body>
 </html>

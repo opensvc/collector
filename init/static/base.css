@@ -297,11 +297,13 @@ div.error {
 
 .wrapper {
     padding-top: 10px;
+    padding-bottom: 10px;
     padding-left: 10px;
+    padding-right: 10px;
 }
 
 .layout {
-    width: 95%;
+    width: 100%;
     padding: 0;
     border: 1px #99f solid;
     border-spacing: 0;
