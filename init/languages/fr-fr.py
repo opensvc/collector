@@ -118,6 +118,7 @@
 'Service': 'Service',
 'Service name': 'Nom de service',
 'Service type': 'Type de service',
+'Showing %(first)d to %(last)d out of %(total)d records': 'Affichage des enregistrements %(first)d \xc3\xa0 %(last)d sur un total de %(total)d',
 'Status': 'Statut',
 'Stylesheet': 'Feuille de style',
 'Submit': 'Soumettre',
