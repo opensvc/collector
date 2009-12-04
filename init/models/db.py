@@ -275,3 +275,12 @@ db.define_table('nodes',
     Field('loc_room'),
     migrate=False)
 
+db.define_table('alerts',
+    Field('id'),
+    Field('created'),
+    Field('deleted'),
+    Field('sent_to'),
+    Field('subject'),
+    Field('body'),
+    migrate=False)
+

@@ -230,6 +230,89 @@ def _where(query, table, var, field, tableid=None):
 
     return query
 
+def gen_alerts():
+    """ Actions not ackowleged : Alert responsibles & Acknowledge
+    """
+    import datetime
+    now = datetime.datetime.now()
+    rows = db(db.v_svcactions.ack!=1).select(orderby=db.v_svcactions.end)
+    for row in rows:
+        d = dict(app=row.app,
+                 svcname=row.svcname,
+                 action=row.action,
+                 node=row.hostname)
+        subject = T("[%(app)s] failed action '%(svcname)s %(action)s' on node '%(node)s' not acknowledged", d)
+        body = T("node: %(node)s\nservice: %(svcname)s\napp: %(app)s\nresponsibles: %(responsibles)s\naction: %(action)s\nbegin: %(begin)s\nend: %(end)s\nerror message:\n%(status_log)s\n", dict(
+                          node=row.hostname,
+                          svcname=row.svcname,
+                          app=row.app,
+                          responsibles=row.responsibles,
+                          action=row.action,
+                          begin=row.begin,
+                          end=row.end,
+                          status_log=row.status_log,
+                      )
+                )
+        ack_comment = T("Automatically acknowledged upon ticket generation. Assigned to %(to)s", dict(to=row.responsibles))
+        db.alerts.insert(subject=subject,
+                         body=body,
+                         created=now,
+                         sent_to=row.mailto)
+        db(db.v_svcactions.id==row.id).update(ack=1,
+                                              acked_by=T('Alert Bot'),
+                                              acked_comment=ack_comment,
+                                              acked_date=now)
+
+@auth.requires_login()
+def alerts():
+    columns = dict(
+        id = dict(
+            pos = 1,
+            title = T('Alert Id'),
+            size = 5
+        ),
+        created = dict(
+            pos = 2,
+            title = T('Date'),
+            size = 10
+        ),
+        sent_to = dict(
+            pos = 3,
+            title = T('Assigned to'),
+            size = 10
+        ),
+        subject = dict(
+            pos = 4,
+            title = T('Subject'),
+            size = 30
+        ),
+        body = dict(
+            pos = 5,
+            title = T('Description'),
+            size = 30
+        ),
+    )
+    def _sort_cols(x, y):
+        return cmp(columns[x]['pos'], columns[y]['pos'])
+    colkeys = columns.keys()
+    colkeys.sort(_sort_cols)
+
+    query = _where(None, 'alerts', request.vars.id, 'id')
+    query &= _where(None, 'alerts', request.vars.created, 'created')
+    query &= _where(None, 'alerts', request.vars.sent_to, 'sent_to')
+    query &= _where(None, 'alerts', request.vars.subject, 'subject')
+    query &= _where(None, 'alerts', request.vars.body, 'body')
+
+    (start, end, nav) = _pagination(request, query)
+    if start == 0 and end == 0:
+        rows = db(query).select(orderby=db.alerts.created)
+    else:
+        rows = db(query).select(limitby=(start,end), orderby=db.alerts.created)
+
+    return dict(alerts=rows,
+                nav=nav,
+                columns=columns, colkeys=colkeys)
+
 @auth.requires_login()
 def svcmon():
     if not getattr(session, 'filters'):
@@ -350,9 +433,6 @@ def nodes_csv():
 
 @auth.requires_login()
 def nodes():
-    def _sort_cols(x, y):
-        return cmp(columns[x]['pos'], columns[y]['pos'])
-
     columns = dict(
         nodename = dict(
             pos = 1,
@@ -465,6 +545,8 @@ def nodes():
             size = 10
         ),
     )
+    def _sort_cols(x, y):
+        return cmp(columns[x]['pos'], columns[y]['pos'])
     colkeys = columns.keys()
     colkeys.sort(_sort_cols)
 

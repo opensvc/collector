@@ -8,7 +8,7 @@ for key in colkeys:
     if not vars.has_key(key) or vars[key] is None: request.vars[key]=''
     pass
 }}
-<form action='nodes' name='svcform' id='svcform'>
+<form action='alerts' name='svcform' id='svcform'>
 <table>
   {{BOX_TOP_ROW(len(colkeys))}}
   <tr class=box>
@@ -26,11 +26,11 @@ for key in colkeys:
     <td class=box></td>
   </tr>
   {{BOX_BOTTOM_ROW(len(colkeys))}}
-  {{for node in nodes:}}
+  {{for row in alerts:}}
   <tr>
     <td style='padding:0'></td>
     {{for key in colkeys:}}
-    <td>{{=node[key]}}</td>
+    <td>{{=row[key]}}</td>
     {{pass}}
     <td style='padding:0'></td>
   </tr>
@@ -47,7 +47,7 @@ for key in colkeys:
         </tr>
         <tr>
           <td>
-            {{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='nodes_csv', vars=vars))}}
+            {{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='alerts_csv', vars=vars))}}
           </td>
         </tr>
       </table>
