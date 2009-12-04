@@ -1,1 +1,2 @@
 #crontab
+#0 12 * * * iisosvc *default/gen_alerts

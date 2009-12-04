@@ -235,12 +235,10 @@ def _where(query, table, var, field, tableid=None):
 
     return query
 
-def gen_alerts():
+def gen_alerts_failed_actions_not_acked():
     """ Actions not ackowleged : Alert responsibles & Acknowledge
     """
     import datetime
-    import smtplib
-    server = smtplib.SMTP('localhost')
 
     now = datetime.datetime.now()
     rows = db((db.v_svcactions.status!='ok')&((db.v_svcactions.ack!=1)|(db.v_svcactions.ack==None))).select(orderby=db.v_svcactions.end)
@@ -251,28 +249,6 @@ def gen_alerts():
                  node=row.hostname)
         subject = T("[%(app)s] failed action '%(svcname)s %(action)s' on node '%(node)s' not acknowledged", d)
         ack_comment = T("Automatically acknowledged upon ticket generation. Assigned to %(to)s", dict(to=row.responsibles))
-
-        """ Send mail alert
-        """
-        botaddr = 'admins@opensvc.com'
-        body = TABLE(
-                 TR(TD(T('node'),TD(row.hostname))),
-                 TR(TD(T('service'),TD(row.svcname))),
-                 TR(TD(T('app'),TD(row.app))),
-                 TR(TD(T('responsibles'),TD(row.responsibles))),
-                 TR(TD(T('action'),TD(row.action))),
-                 TR(TD(T('begin'),TD(row.begin))),
-                 TR(TD(T('end'),TD(row.end))),
-                 TR(TD(T('error message'),TD(row.status_log))),
-               )
-        msg = "To: %s\r\nFrom: %s\r\nSubject: %s\r\nContent-type: text/html;charset=utf-8\r\n%s"%(row.mailto, botaddr, subject, str(body))
-        try:
-            server.sendmail(botaddr, row.mailto, msg)
-        except:
-            """ Don't acknowledge if the mail sending fails
-            """
-            raise
-            continue
 
         body = T("node: %(node)s\n"+\
                  "service: %(service)s\n"+\
@@ -294,12 +270,43 @@ def gen_alerts():
 
         db.alerts.insert(subject=subject,
                          body=body,
-                         created=now,
+                         send_at=now,
                          sent_to=row.responsibles)
-        db(db.v_svcactions.id==row.id).update(ack=1,
-                                              acked_by=T('Alert Bot'),
-                                              acked_comment=ack_comment,
-                                              acked_date=now)
+
+
+def gen_alerts():
+    """ Send mail alert
+    """
+    import smtplib
+    import datetime
+
+    now = datetime.datetime.now()
+    server = smtplib.SMTP('localhost')
+
+    db((db.alerts.sent_at==None)&(db.alerts.send_at<now)).select()
+    for row in rows:
+        """
+        body = TABLE(
+                 TR(TD(T('node'),TD(row.hostname))),
+                 TR(TD(T('service'),TD(row.svcname))),
+                 TR(TD(T('app'),TD(row.app))),
+                 TR(TD(T('responsibles'),TD(row.responsibles))),
+                 TR(TD(T('action'),TD(row.action))),
+                 TR(TD(T('begin'),TD(row.begin))),
+                 TR(TD(T('end'),TD(row.end))),
+                 TR(TD(T('error message'),TD(row.status_log))),
+               )
+        """
+        msg = "To: %s\r\nFrom: %s\r\nSubject: %s\r\nContent-type: text/html;charset=utf-8\r\n%s"%(row.send_to, botaddr, row.subject, row.body)
+        try:
+            server.sendmail(botaddr, row.mailto, msg)
+        except:
+            """ Don't mark as sent if the mail sending fails
+            """
+            raise
+            continue
+
+        db(db.alerts.id==row.id).update(sent_at=now)
     server.quit()
     return dict(inserted=rows)
 
