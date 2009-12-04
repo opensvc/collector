@@ -235,8 +235,10 @@ def _where(query, table, var, field, tableid=None):
 
     return query
 
-def gen_alerts_failed_actions_not_acked():
+def alerts_failed_actions_not_acked():
     """ Actions not ackowleged : Alert responsibles & Acknowledge
+        This function is meant to be scheduled daily, at night,
+        and alerts generated should be sent as soon as possible.
     """
     import datetime
 
@@ -248,7 +250,6 @@ def gen_alerts_failed_actions_not_acked():
                  action=row.action,
                  node=row.hostname)
         subject = T("[%(app)s] failed action '%(svcname)s %(action)s' on node '%(node)s' not acknowledged", d)
-        ack_comment = T("Automatically acknowledged upon ticket generation. Assigned to %(to)s", dict(to=row.responsibles))
 
         body = T("node: %(node)s\n"+\
                  "service: %(service)s\n"+\
@@ -271,10 +272,14 @@ def gen_alerts_failed_actions_not_acked():
         db.alerts.insert(subject=subject,
                          body=body,
                          send_at=now,
-                         sent_to=row.responsibles)
+                         created_at=now,
+                         action_id=row.id,
+                         sent_to=row.mailto)
+
+    return dict(alerts_queued=rows)
 
 
-def gen_alerts():
+def send_alerts():
     """ Send mail alert
     """
     import smtplib
@@ -283,7 +288,7 @@ def gen_alerts():
     now = datetime.datetime.now()
     server = smtplib.SMTP('localhost')
 
-    db((db.alerts.sent_at==None)&(db.alerts.send_at<now)).select()
+    rows = db((db.alerts.sent_at==None)&(db.alerts.send_at<now)).select()
     for row in rows:
         """
         body = TABLE(
@@ -297,9 +302,10 @@ def gen_alerts():
                  TR(TD(T('error message'),TD(row.status_log))),
                )
         """
-        msg = "To: %s\r\nFrom: %s\r\nSubject: %s\r\nContent-type: text/html;charset=utf-8\r\n%s"%(row.send_to, botaddr, row.subject, row.body)
+        botaddr = 'admins@opensvc.com'
+        msg = "To: %s\r\nFrom: %s\r\nSubject: %s\r\nContent-type: text/html;charset=utf-8\r\n%s"%(row.sent_to, botaddr, row.subject, row.body)
         try:
-            server.sendmail(botaddr, row.mailto, msg)
+            server.sendmail(botaddr, row.sent_to, msg)
         except:
             """ Don't mark as sent if the mail sending fails
             """
@@ -307,8 +313,17 @@ def gen_alerts():
             continue
 
         db(db.alerts.id==row.id).update(sent_at=now)
+        row.sent_at=now
+
+        """ If the alert concerns an unaknowledged action,
+            auto-ack it
+        """
+        ack_comment = T("Automatically acknowledged upon ticket generation. Alert sent to %(to)s", dict(to=row.sent_to))
+        if row.action_id is not None:
+            db(db.SVCactions.id==row.action_id).update(ack=1, acked_comment=ack_comment, acked_date=now, acked_by=botaddr)
+
     server.quit()
-    return dict(inserted=rows)
+    return dict(alerts_sent=rows)
 
 @auth.requires_login()
 def alerts():
@@ -318,23 +333,33 @@ def alerts():
             title = T('Alert Id'),
             size = 5
         ),
-        created = dict(
+        created_at = dict(
             pos = 2,
-            title = T('Date'),
+            title = T('Created at'),
+            size = 10
+        ),
+        send_at = dict(
+            pos = 3,
+            title = T('Scheduled at'),
+            size = 10
+        ),
+        sent_at = dict(
+            pos = 4,
+            title = T('Sent at'),
             size = 10
         ),
         sent_to = dict(
-            pos = 3,
+            pos = 5,
             title = T('Assigned to'),
             size = 10
         ),
         subject = dict(
-            pos = 4,
+            pos = 6,
             title = T('Subject'),
             size = 30
         ),
         body = dict(
-            pos = 5,
+            pos = 7,
             title = T('Description'),
             size = 30
         ),
@@ -345,7 +370,9 @@ def alerts():
     colkeys.sort(_sort_cols)
 
     query = _where(None, 'alerts', request.vars.id, 'id')
-    query &= _where(None, 'alerts', request.vars.created, 'created')
+    query &= _where(None, 'alerts', request.vars.created_at, 'created_at')
+    query &= _where(None, 'alerts', request.vars.send_at, 'send_at')
+    query &= _where(None, 'alerts', request.vars.sent_at, 'sent_at')
     query &= _where(None, 'alerts', request.vars.responsibles, 'responsibles')
     query &= _where(None, 'alerts', request.vars.subject, 'subject')
     query &= _where(None, 'alerts', request.vars.body, 'body')

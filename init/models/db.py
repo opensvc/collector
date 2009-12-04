@@ -277,10 +277,12 @@ db.define_table('nodes',
 
 db.define_table('alerts',
     Field('id'),
+    Field('created_at'),
     Field('send_at'),
     Field('sent_at'),
     Field('sent_to'),
     Field('subject'),
     Field('body'),
+    Field('action_id'),
     migrate=False)
 
