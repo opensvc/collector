@@ -1,8 +1,8 @@
 {{def BOX_TOP_ROW(cols):}}
-  <tr style='heigth:2'><td style='padding-bottom:2;padding-left:0'></td></tr>
+  <tr><td style='padding-bottom:2;padding-left:0'></td></tr>
   <tr>
     <td class="boxtlc"></td>
-    <td class=box colspan={{=cols}}></td>
+    <td style='min-width:600px' class=box colspan={{=cols}}></td>
     <td class="boxtrc"></td>
   </tr>
 {{pass}}
@@ -10,7 +10,7 @@
 {{def BOX_BOTTOM_ROW(cols):}}
   <tr>
     <td class="boxblc"></td>
-    <td class=box colspan={{=cols}}></td>
+    <td style='min-width:600px' class=box colspan={{=cols}}></td>
     <td class="boxbrc"></td>
   </tr>
 {{pass}}
