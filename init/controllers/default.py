@@ -54,7 +54,12 @@ def _pagination(request, query):
     totalrecs = db(query).count()
     totalpages = totalrecs / perpage
     if totalrecs % perpage > 0: totalpages = totalpages + 1
-    page = int(request.args[0]) if len(request.args) else 1
+    try:
+        page = int(request.args[0]) if len(request.args) else 1
+    except:
+        """ casting error
+        """
+        page = 1
 
     # out of range conditions
     if page <= 0: page = 1
@@ -234,34 +239,69 @@ def gen_alerts():
     """ Actions not ackowleged : Alert responsibles & Acknowledge
     """
     import datetime
+    import smtplib
+    server = smtplib.SMTP('localhost')
+
     now = datetime.datetime.now()
-    rows = db(db.v_svcactions.ack!=1).select(orderby=db.v_svcactions.end)
+    rows = db((db.v_svcactions.status!='ok')&((db.v_svcactions.ack!=1)|(db.v_svcactions.ack==None))).select(orderby=db.v_svcactions.end)
     for row in rows:
         d = dict(app=row.app,
                  svcname=row.svcname,
                  action=row.action,
                  node=row.hostname)
         subject = T("[%(app)s] failed action '%(svcname)s %(action)s' on node '%(node)s' not acknowledged", d)
-        body = T("node: %(node)s\nservice: %(svcname)s\napp: %(app)s\nresponsibles: %(responsibles)s\naction: %(action)s\nbegin: %(begin)s\nend: %(end)s\nerror message:\n%(status_log)s\n", dict(
-                          node=row.hostname,
-                          svcname=row.svcname,
-                          app=row.app,
-                          responsibles=row.responsibles,
-                          action=row.action,
-                          begin=row.begin,
-                          end=row.end,
-                          status_log=row.status_log,
-                      )
-                )
         ack_comment = T("Automatically acknowledged upon ticket generation. Assigned to %(to)s", dict(to=row.responsibles))
+
+        """ Send mail alert
+        """
+        botaddr = 'admins@opensvc.com'
+        body = TABLE(
+                 TR(TD(T('node'),TD(row.hostname))),
+                 TR(TD(T('service'),TD(row.svcname))),
+                 TR(TD(T('app'),TD(row.app))),
+                 TR(TD(T('responsibles'),TD(row.responsibles))),
+                 TR(TD(T('action'),TD(row.action))),
+                 TR(TD(T('begin'),TD(row.begin))),
+                 TR(TD(T('end'),TD(row.end))),
+                 TR(TD(T('error message'),TD(row.status_log))),
+               )
+        msg = "To: %s\r\nFrom: %s\r\nSubject: %s\r\nContent-type: text/html;charset=utf-8\r\n%s"%(row.mailto, botaddr, subject, str(body))
+        try:
+            server.sendmail(botaddr, row.mailto, msg)
+        except:
+            """ Don't acknowledge if the mail sending fails
+            """
+            raise
+            continue
+
+        body = T("node: %(node)s\n"+\
+                 "service: %(service)s\n"+\
+                 "app: %(app)s\n"+\
+                 "responsibles: %(responsibles)s\n"+\
+                 "action: %(action)s\n"+\
+                 "begin: %(begin)s\n"+\
+                 "end: %(end)s\n"+\
+                 "error message:\n%(log)s\n", dict(
+                  node=row.hostname,
+                  service=row.svcname,
+                  app=row.app,
+                  responsibles=row.responsibles,
+                  action=row.action,
+                  begin=row.begin,
+                  end=row.end,
+                  log=row.status_log,
+                ))
+
         db.alerts.insert(subject=subject,
                          body=body,
                          created=now,
-                         sent_to=row.mailto)
+                         sent_to=row.responsibles)
         db(db.v_svcactions.id==row.id).update(ack=1,
                                               acked_by=T('Alert Bot'),
                                               acked_comment=ack_comment,
                                               acked_date=now)
+    server.quit()
+    return dict(inserted=rows)
 
 @auth.requires_login()
 def alerts():
@@ -299,15 +339,15 @@ def alerts():
 
     query = _where(None, 'alerts', request.vars.id, 'id')
     query &= _where(None, 'alerts', request.vars.created, 'created')
-    query &= _where(None, 'alerts', request.vars.sent_to, 'sent_to')
+    query &= _where(None, 'alerts', request.vars.responsibles, 'responsibles')
     query &= _where(None, 'alerts', request.vars.subject, 'subject')
     query &= _where(None, 'alerts', request.vars.body, 'body')
 
     (start, end, nav) = _pagination(request, query)
     if start == 0 and end == 0:
-        rows = db(query).select(orderby=db.alerts.created)
+        rows = db(query).select(orderby=~db.alerts.id)
     else:
-        rows = db(query).select(limitby=(start,end), orderby=db.alerts.created)
+        rows = db(query).select(limitby=(start,end), orderby=~db.alerts.id)
 
     return dict(alerts=rows,
                 nav=nav,
