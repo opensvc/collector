@@ -235,6 +235,27 @@ def _where(query, table, var, field, tableid=None):
 
     return query
 
+def alerts_svc_not_on_primary():
+    import datetime
+    now = datetime.datetime.now()
+
+    rows = db((db.v_svcmon.mon_overallstatus!='up')&(db.v_svcmon.svc_autostart==db.v_svcmon.mon_nodname)).select()
+    for row in rows:
+        subject = T("[%(app)s][%(svcname)s] service not 'up' on its primary node", dict(app=row.svc_app, svcname=row.mon_svcname))
+        body = ""
+        dups = db(db.alerts.subject==subject).select()
+        if len(dups) > 0:
+            """ don't raise a duplicate alert
+            """
+            continue
+        db.alerts.insert(subject=subject,
+                         body=body,
+                         send_at=now,
+                         created_at=now,
+                         sent_to=row.mailto)
+
+    return dict(alerts=rows)
+
 def alerts_svcmon_not_updated():
     """ Alert if svcmon is not updated for 2h
     """
@@ -250,7 +271,7 @@ def alerts_svcmon_not_updated():
     for row in rows:
         subject = format_subject(row)
         body = T("Service will be purged from database after 24 hours without update")
-        dups = db(db.alerts.subject==body).select()
+        dups = db(db.alerts.subject==subject).select()
         if len(dups) > 0:
             """ don't raise a duplicate alert
             """

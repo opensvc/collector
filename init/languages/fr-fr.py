@@ -153,6 +153,7 @@
 'Welcome to web2py': 'Bienvenue sur web2py',
 'ZIP': 'Code postal',
 "[%(app)s] failed action '%(svcname)s %(action)s' on node '%(node)s' not acknowledged": "[%(app)s] action en \xc3\xa9chec '%(svcname)s %(action)s' sur le noeud '%(node)s' non-acquitt\xc3\xa9e",
+"[%(app)s][%(svcname)s] service not 'up' on its primary node": "[%(app)s][%(svcname)s] service not 'up' on its primary node",
 '[%(app)s][%(svcname)s] service status not updated for more than 2h': '[%(app)s][%(svcname)s] service status not updated for more than 2h',
 'acknowledge selected errors': 'acquitter les erreurs s\xc3\xa9lectionn\xc3\xa9es',
 'action': 'action',
