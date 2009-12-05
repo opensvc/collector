@@ -1,3 +1,4 @@
 #crontab
 0-59/1 * * * * unxdev01 *default/send_alerts
 0-59/1 * * * * unxdev01 *default/alerts_failed_actions_not_acked
+1 * * * * unxdev01 *default/alerts_svcmon_not_updated
