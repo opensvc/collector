@@ -235,6 +235,41 @@ def _where(query, table, var, field, tableid=None):
 
     return query
 
+def alerts_svcmon_not_updated():
+    """ Alert if svcmon is not updated for 2h
+    """
+    import datetime
+    now = datetime.datetime.now()
+    two_hours_ago = now - datetime.timedelta(hours=2)
+    one_day_ago = now - datetime.timedelta(days=1)
+
+    def format_subject(row):
+        return T("[%(app)s][%(svcname)s] service status not updated for more than 2h", dict(app=row.svc_app, svcname=row.mon_svcname))
+
+    rows = db(db.v_svcmon.mon_updated<two_hours_ago).select()
+    for row in rows:
+        subject = format_subject(row)
+        body = T("Service will be purged from database after 24 hours without update")
+        dups = db(db.alerts.subject==body).select()
+        if len(dups) > 0:
+            """ don't raise a duplicate alert
+            """
+            continue
+        db.alerts.insert(subject=subject,
+                         body=body,
+                         send_at=now,
+                         created_at=now,
+                         sent_to=row.mailto)
+
+    """ Remove the service after 24h
+    """
+    rows = db(db.v_svcmon.mon_updated<one_day_ago).select()
+    for row in rows:
+        db(db.svcmon.mon_svcname==row.mon_svcname).delete()
+        db(db.services.svc_name==row.mon_svcname).delete()
+
+    return dict(deleted=rows)
+
 def alerts_failed_actions_not_acked():
     """ Actions not ackowleged : Alert responsibles & Acknowledge
         This function is meant to be scheduled daily, at night,
@@ -439,6 +474,9 @@ def _svcaction_ack(request):
                          acked_comment=request.vars.ackcomment,
                          acked_by=' '.join([session.auth.user.first_name, session.auth.user.last_name]),
                          acked_date=datetime.datetime.now())
+        """ Cancel pending alert
+        """
+        db((db.alerts.action_id==action_id)&(db.alerts.sent_at==None)).delete()
     del request.vars.ackcomment
 
 @auth.requires_login()

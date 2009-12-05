@@ -220,6 +220,7 @@ db.define_table('v_svcmon',
     Field('mon_overallstatus'),
     Field('mon_prinodes'),
     Field('mon_updated'),
+    Field('mon_changed'),
     migrate=False)
 
 db.define_table('drpservices',
