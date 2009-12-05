@@ -243,6 +243,7 @@ def alerts_failed_actions_not_acked():
     import datetime
 
     now = datetime.datetime.now()
+    in_24h = now + datetime.timedelta(hours=24)
     rows = db((db.v_svcactions.status!='ok')&((db.v_svcactions.ack!=1)|(db.v_svcactions.ack==None))).select(orderby=db.v_svcactions.end)
     for row in rows:
         d = dict(app=row.app,
@@ -271,7 +272,7 @@ def alerts_failed_actions_not_acked():
 
         db.alerts.insert(subject=subject,
                          body=body,
-                         send_at=now,
+                         send_at=in_24h,
                          created_at=now,
                          action_id=row.id,
                          sent_to=row.mailto)
