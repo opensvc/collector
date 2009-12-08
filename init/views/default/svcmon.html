@@ -1,6 +1,7 @@
 {{extend 'layout.html'}}
 {{include '../static/jslib.html'}}
 {{include 'box.html'}}
+{{include 'filters.html'}}
 
 {{
 vars = request.vars
@@ -114,31 +115,8 @@ for key in ['svcname',
           <td>
             {{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='svcmon_csv', vars=vars))}}
           </td>
-          <td>
-            <input type=hidden name=delfilter>
-            <table>
-              {{for k in session.filters.keys():}}
-              {{f = filters[k]}}
-              {{if f['active']:}}
-              <tr>
-                <td>{{=f['name']}}</td>
-                <td><img src='{{=URL(r=request,c='static',f='del.png')}}' border=0 title='{{=T("remove filter")}}' onClick='javascript:document.svcform.delfilter.value={{=f["id"]}};document.svcform.submit()'></td>
-              </tr>
-              {{pass}}
-              {{pass}}
-              {{pass}}
-              </table>
-          </td>
-          <td valign=center>
-            <select name=addfilter onChange="document.getElementById('svcform').submit()">
-              <option value=''>{{=T('choose')}}</option>
-              {{for k in session.filters.keys():}}
-              {{f = filters[k]}}
-              {{if not f['active']:}}
-              <option value={{=f['id']}}>{{=T(f['name'])}}</option>
-              {{pass}}
-            </select>
-          </td>
+          <td>{{FILTERS_ACTIVE(session.svcmon_filters)}}</td>
+          <td>{{FILTERS_AVAIL(session.svcmon_filters)}}</td>
         </tr>
       </table>
     </td>

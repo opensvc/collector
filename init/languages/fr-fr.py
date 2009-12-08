@@ -199,6 +199,7 @@
 'node: %(node)s\nservice: %(service)s\napp: %(app)s\nresponsibles: %(responsibles)s\naction: %(action)s\nbegin: %(begin)s\nend: %(end)s\nerror message:\n%(log)s\n': 'node: %(node)s\nservice: %(service)s\napp: %(app)s\nresponsibles: %(responsibles)s\naction: %(action)s\nbegin: %(begin)s\nend: %(end)s\nerror message:\n%(log)s\n',
 'node: %(node)s\nservice: %(svcname)s\napp: %(app)s\nresponsibles: %(responsibles)s\naction: %(action)s\nbegin: %(begin)s\nend: %(end)s\nerror message:\n%(status_log)s\n': "noeud: %(node)s\r\nservice: %(svcname)s\r\napp: %(app)s\r\nresponsables: %(responsibles)s\r\naction: %(action)s\r\nd\xc3\xa9but: %(begin)s\r\nfin: %(end)s\r\nmessage d'erreur:\r\n%(status_log)s\r\n",
 'nodes': 'noeuds',
+'not acknowledged': 'not acknowledged',
 'or import from csv file': 'importer depuis un fichier csv',
 'preferred node': 'noeud pr\xc3\xa9ferr\xc3\xa9',
 'preferred nodes': 'noeuds pr\xc3\xa9ferr\xc3\xa9s',

@@ -326,6 +326,14 @@ def alerts_failed_actions_not_acked():
                   log=row.status_log,
                 ))
 
+        """ Check if the alert is already queued
+        """
+        dups = db(db.alerts.action_id==row.id).select()
+        if len(dups) > 0:
+            continue
+
+        """ Queue alert
+        """
         db.alerts.insert(subject=subject,
                          body=body,
                          send_at=in_24h,
@@ -446,16 +454,16 @@ def alerts():
 
 @auth.requires_login()
 def svcmon():
-    if not getattr(session, 'filters'):
-        session.filters = {}
-        session.filters[1] = dict(name='preferred node',
-                          id=1,
-                          active=False,
-                          q=(db.v_svcmon.mon_nodname==db.v_svcmon.svc_autostart))
-    if request.vars.addfilter is not None and request.vars.addfilter != '':
-        session.filters[int(request.vars.addfilter)]['active'] = True
-    elif request.vars.delfilter is not None and request.vars.delfilter != '':
-        session.filters[int(request.vars.delfilter)]['active'] = False
+    if not getattr(session, 'svcmon_filters'):
+        session.svcmon_filters = {
+            1: dict(name='preferred node',
+                    id=1,
+                    active=False,
+                    q=(db.v_svcmon.mon_nodname==db.v_svcmon.svc_autostart)
+            ),
+        }
+    toggle_session_filters(session.svcmon_filters)
+
     query = _where(None, 'v_svcmon', request.vars.svcname, 'mon_svcname')
     query &= _where(None, 'v_svcmon', request.vars.svctype, 'mon_svctype')
     query &= _where(None, 'v_svcmon', request.vars.containerstatus, 'mon_containerstatus')
@@ -466,8 +474,7 @@ def svcmon():
     query &= _where(None, 'v_svcmon', request.vars.containertype, 'svc_containertype')
     query &= _where(None, 'v_svcmon', request.vars.nodename, 'mon_nodname')
     query &= _where(None, 'v_svcmon', request.vars.nodetype, 'mon_nodtype')
-    for k in session.filters.keys():
-        filter = session.filters[k]
+    for filter in session.svcmon_filters.values():
         if filter['active']:
             query &= filter['q']
 
@@ -500,8 +507,24 @@ def _svcaction_ack(request):
         db((db.alerts.action_id==action_id)&(db.alerts.sent_at==None)).delete()
     del request.vars.ackcomment
 
+def toggle_session_filters(filters):
+    if request.vars.addfilter is not None and request.vars.addfilter != '':
+        filters[int(request.vars.addfilter)]['active'] = True
+    elif request.vars.delfilter is not None and request.vars.delfilter != '':
+        filters[int(request.vars.delfilter)]['active'] = False
+
 @auth.requires_login()
 def svcactions():
+    if not getattr(session, 'svcactions_filters'):
+        session.svcactions_filters = {
+            1: dict(name='not acknowledged',
+                    id=1,
+                    active=False,
+                    q=((db.v_svcactions.status!='ok')&(db.v_svcactions.ack==None))
+               ),
+        }
+    toggle_session_filters(session.svcactions_filters)
+
     if request.vars.ackcomment is not None:
         _svcaction_ack(request)
     query = _where(None, 'v_svcactions', request.vars.svcname, 'svcname')
@@ -516,6 +539,10 @@ def svcactions():
     query &= _where(None, 'v_svcactions', request.vars.hostname, 'hostname')
     query &= _where(None, 'v_svcactions', request.vars.status_log, 'status_log')
     query &= _where(None, 'v_svcactions', request.vars.pid, 'pid')
+
+    for filter in session.svcactions_filters.values():
+        if filter['active']:
+            query &= filter['q']
 
     (start, end, nav) = _pagination(request, query)
     if start == 0 and end == 0:
