@@ -3,9 +3,8 @@
 {{include 'box.html'}}
 {{
 vars = request.vars
-for key in ['app',
-            'responsibles',
-            ]:
+
+for key in colkeys:
     if not vars.has_key(key) or vars[key] is None: request.vars[key]=''
     pass
 }}
@@ -15,15 +14,17 @@ for key in ['app',
   <tr class=box>
     <td class=box></td>
     <td class=box></td>
-    <td>{{=T('App')}}</td>
-    <td>{{=T('Responsibles')}}</td>
+    {{for key in colkeys:}}
+    <td>{{=columns[key]['title']}}</td>
+    {{pass}}
     <td class=box></td>
   </tr>
   <tr class=box>
     <td class=box></td>
     <td><input type=checkbox id=check_all onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'))"></td>
-    <td><input name=app value='{{=request.vars.app}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td><input name=responsibles value='{{=request.vars.responsibles}}' size=12 onKeyPress="checkEnter(event)"></td>
+    {{for key in colkeys:}}
+    <td><input name={{=key}} value='{{=request.vars[key]}}' size={{=columns[key]['size']}} onKeyPress="checkEnter(event)"></td>
+    {{pass}}
     <td class=box></td>
   </tr>
   {{BOX_BOTTOM_ROW(3)}}
@@ -37,8 +38,9 @@ for key in ['app',
     }}
     <td style='padding:0'></td>
     <td><input type=checkbox name=check_{{=str(app.id)}} {{=checked}}></td>
-    <td>{{=app.app}}</td>
-    <td>{{=app.responsibles}}</td>
+    {{for key in colkeys:}}
+    <td>{{=app[key]}}</td>
+    {{pass}}
   </tr>
   {{pass}}
   {{BOX_TOP_ROW(3)}}

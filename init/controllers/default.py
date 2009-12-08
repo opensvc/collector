@@ -144,6 +144,23 @@ def _unset_resp(request):
 
 @auth.requires_membership('Manager')
 def apps():
+    columns = dict(
+        app = dict(
+            pos = 1,
+            title = T('App'),
+            size = 4
+        ),
+        responsibles = dict(
+            pos = 2,
+            title = T('Responsibles'),
+            size = 12
+        ),
+    )
+    def _sort_cols(x, y):
+        return cmp(columns[x]['pos'], columns[y]['pos'])
+    colkeys = columns.keys()
+    colkeys.sort(_sort_cols)
+
     if request.vars.appctl == 'del':
         _del_app(request)
     elif request.vars.appctl == 'add' and request.vars.addapp is not None and request.vars.addapp != '':
@@ -152,8 +169,14 @@ def apps():
         _unset_resp(request)
     elif request.vars.resp == 'add':
         _set_resp(request)
-    query = _where(None, 'v_apps', request.vars.app, 'app')
-    query &= _where(None, 'v_apps', request.vars.responsibles, 'responsibles')
+
+    # filtering
+    query = (db.v_apps.id>0)
+    for key in columns.keys():
+        if key not in request.vars.keys():
+            continue
+        query &= _where(None, 'nodes', request.vars[key], key)
+
 
     (start, end, nav) = _pagination(request, query)
     if start == 0 and end == 0:
@@ -163,7 +186,8 @@ def apps():
 
     query = (db.auth_user.id>0)
     users = db(query).select()
-    return dict(apps=rows, users=users, nav=nav)
+    return dict(columns=columns, colkeys=colkeys,
+                apps=rows, users=users, nav=nav)
 
 def _where(query, table, var, field, tableid=None):
     if query is None:
