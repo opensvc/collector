@@ -69,14 +69,38 @@ def _pagination(request, query):
     if end > totalrecs:
         end = totalrecs
 
+    num_pages = 10
+    def page_range():
+        s = page - num_pages/2
+        e = page + num_pages/2
+        if s <= 0:
+            e = e - s
+            s = 1
+        if e > totalpages:
+            s = s - (e - totalpages)
+            e = totalpages
+        if s <= 0:
+            s = 1
+        return range(s, e+1)
+
+    pr = page_range()
+    pager = []
+    if page != 1:
+        pager.append(A(T('<< '),_href=URL(r=request,args=[page-1],vars=request.vars)))
+    for p in pr:
+        pager.append(A(str(p)+' ',_href=URL(r=request,args=[p],vars=request.vars)))
+    if page != totalpages:
+        pager.append(A(T('>> '),_href=URL(r=request,args=[page+1],vars=request.vars)))
+    v = request.vars
+    v.perpage = 0
+    pager.append(A(T('all'),_href=URL(r=request,vars=v)))
+
     # paging toolbar
     if totalrecs == 0:
-        nav = P("No records found matching filters", _style='text-align:center')
+        pager.append(P("No records found matching filters", _style='text-align:center'))
     else:
-        prev = A(T('<< prev'),_href=URL(r=request,args=[page-1],vars=request.vars)) if page>1 else T('<< prev')
-        next = A(T('next >>'),_href=URL(r=request,args=[page+1],vars=request.vars)) if page<totalpages else T('next >>')
-        nav = T("Showing %(first)d to %(last)d out of %(total)d records", dict(first=start+1, last=end, total=totalrecs))
-        nav = P(prev, ' ', next, ' ', nav, _style='text-align:center')
+        info=T("Showing %(first)d to %(last)d out of %(total)d records", dict(first=start+1, last=end, total=totalrecs))
+        nav = P(pager, _style='text-align:center', _title=info)
 
     return (start, end, nav)
 
@@ -144,6 +168,23 @@ def _unset_resp(request):
 
 @auth.requires_membership('Manager')
 def apps():
+    columns = dict(
+        app = dict(
+            pos = 1,
+            title = T('App'),
+            size = 4
+        ),
+        responsibles = dict(
+            pos = 2,
+            title = T('Responsibles'),
+            size = 12
+        ),
+    )
+    def _sort_cols(x, y):
+        return cmp(columns[x]['pos'], columns[y]['pos'])
+    colkeys = columns.keys()
+    colkeys.sort(_sort_cols)
+
     if request.vars.appctl == 'del':
         _del_app(request)
     elif request.vars.appctl == 'add' and request.vars.addapp is not None and request.vars.addapp != '':
@@ -152,8 +193,14 @@ def apps():
         _unset_resp(request)
     elif request.vars.resp == 'add':
         _set_resp(request)
-    query = _where(None, 'v_apps', request.vars.app, 'app')
-    query &= _where(None, 'v_apps', request.vars.responsibles, 'responsibles')
+
+    # filtering
+    query = (db.v_apps.id>0)
+    for key in columns.keys():
+        if key not in request.vars.keys():
+            continue
+        query &= _where(None, 'nodes', request.vars[key], key)
+
 
     (start, end, nav) = _pagination(request, query)
     if start == 0 and end == 0:
@@ -163,7 +210,8 @@ def apps():
 
     query = (db.auth_user.id>0)
     users = db(query).select()
-    return dict(apps=rows, users=users, nav=nav)
+    return dict(columns=columns, colkeys=colkeys,
+                apps=rows, users=users, nav=nav)
 
 def _where(query, table, var, field, tableid=None):
     if query is None:
@@ -361,6 +409,14 @@ def alerts_failed_actions_not_acked():
                   log=row.status_log,
                 ))
 
+        """ Check if the alert is already queued
+        """
+        dups = db(db.alerts.action_id==row.id).select()
+        if len(dups) > 0:
+            continue
+
+        """ Queue alert
+        """
         db.alerts.insert(subject=subject,
                          body=body,
                          send_at=in_24h,
@@ -481,16 +537,16 @@ def alerts():
 
 @auth.requires_login()
 def svcmon():
-    if not getattr(session, 'filters'):
-        session.filters = {}
-        session.filters[1] = dict(name='preferred node',
-                          id=1,
-                          active=False,
-                          q=(db.v_svcmon.mon_nodname==db.v_svcmon.svc_autostart))
-    if request.vars.addfilter is not None and request.vars.addfilter != '':
-        session.filters[int(request.vars.addfilter)]['active'] = True
-    elif request.vars.delfilter is not None and request.vars.delfilter != '':
-        session.filters[int(request.vars.delfilter)]['active'] = False
+    if not getattr(session, 'svcmon_filters'):
+        session.svcmon_filters = {
+            1: dict(name='preferred node',
+                    id=1,
+                    active=False,
+                    q=(db.v_svcmon.mon_nodname==db.v_svcmon.svc_autostart)
+            ),
+        }
+    toggle_session_filters(session.svcmon_filters)
+
     query = _where(None, 'v_svcmon', request.vars.svcname, 'mon_svcname')
     query &= _where(None, 'v_svcmon', request.vars.svctype, 'mon_svctype')
     query &= _where(None, 'v_svcmon', request.vars.containerstatus, 'mon_containerstatus')
@@ -501,8 +557,7 @@ def svcmon():
     query &= _where(None, 'v_svcmon', request.vars.containertype, 'svc_containertype')
     query &= _where(None, 'v_svcmon', request.vars.nodename, 'mon_nodname')
     query &= _where(None, 'v_svcmon', request.vars.nodetype, 'mon_nodtype')
-    for k in session.filters.keys():
-        filter = session.filters[k]
+    for filter in session.svcmon_filters.values():
         if filter['active']:
             query &= filter['q']
 
@@ -535,8 +590,24 @@ def _svcaction_ack(request):
         db((db.alerts.action_id==action_id)&(db.alerts.sent_at==None)).delete()
     del request.vars.ackcomment
 
+def toggle_session_filters(filters):
+    if request.vars.addfilter is not None and request.vars.addfilter != '':
+        filters[int(request.vars.addfilter)]['active'] = True
+    elif request.vars.delfilter is not None and request.vars.delfilter != '':
+        filters[int(request.vars.delfilter)]['active'] = False
+
 @auth.requires_login()
 def svcactions():
+    if not getattr(session, 'svcactions_filters'):
+        session.svcactions_filters = {
+            1: dict(name='not acknowledged',
+                    id=1,
+                    active=False,
+                    q=((db.v_svcactions.status!='ok')&(db.v_svcactions.ack==None))
+               ),
+        }
+    toggle_session_filters(session.svcactions_filters)
+
     if request.vars.ackcomment is not None:
         _svcaction_ack(request)
     query = _where(None, 'v_svcactions', request.vars.svcname, 'svcname')
@@ -551,6 +622,10 @@ def svcactions():
     query &= _where(None, 'v_svcactions', request.vars.hostname, 'hostname')
     query &= _where(None, 'v_svcactions', request.vars.status_log, 'status_log')
     query &= _where(None, 'v_svcactions', request.vars.pid, 'pid')
+
+    for filter in session.svcactions_filters.values():
+        if filter['active']:
+            query &= filter['q']
 
     (start, end, nav) = _pagination(request, query)
     if start == 0 and end == 0:

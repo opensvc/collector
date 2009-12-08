@@ -1,6 +1,7 @@
 {{extend 'layout.html'}}
 {{include '../static/jslib.html'}}
 {{include 'box.html'}}
+{{include 'filters.html'}}
 {{
 vars = request.vars
 for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end', 'hostname', 'pid', 'status_log']:
@@ -109,6 +110,8 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
           <td> {{=T('Export')}}:</td>
           <td> {{=T('Rss')}}:</td>
           <td> {{=T('Actions')}}:</td>
+          <td> {{=T('Active filters')}}:</td>
+          <td> {{=T('Add filter')}}:</td>
         </tr>
         <tr class=box>
           <td>
@@ -120,6 +123,8 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
           <td>
             {{=IMG(_src=URL(r=request,c='static',f='ack.png'),_border=0, _title=T('acknowledge selected errors'), _onclick='javascript:show_eid("inputs");document.svcform.ackcomment.focus()')}}
           </td>
+          <td>{{FILTERS_ACTIVE(session.svcactions_filters)}}</td>
+          <td>{{FILTERS_AVAIL(session.svcactions_filters)}}</td>
         </tr>
         <tr class=hidden id="inputs">
           <td></td>
