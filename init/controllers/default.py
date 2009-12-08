@@ -256,6 +256,41 @@ def alerts_svc_not_on_primary():
 
     return dict(alerts=rows)
 
+def alerts_services_not_updated():
+    """ Alert if service is not updated for 48h
+    """
+    import datetime
+    now = datetime.datetime.now()
+    two_day_ago = now - datetime.timedelta(days=2)
+    three_day_ago = now - datetime.timedelta(days=3)
+
+    def format_subject(row):
+        return T("[%(app)s][%(svcname)s] service configuration not updated for more than 48h", dict(app=row.svc_app, svcname=row.svc_name))
+
+    rows = db(db.v_services.updated<two_days_ago).select()
+    for row in rows:
+        subject = format_subject(row)
+        body = T("Service will be purged from database after 3 days without update")
+        dups = db(db.alerts.subject==subject).select()
+        if len(dups) > 0:
+            """ don't raise a duplicate alert
+            """
+            continue
+        db.alerts.insert(subject=subject,
+                         body=body,
+                         send_at=now,
+                         created_at=now,
+                         sent_to=row.mailto)
+
+    """ Remove the service after 3 days
+    """
+    rows = db(db.v_services.mon_updated<three_day_ago).select()
+    for row in rows:
+        db(db.svcmon.mon_svcname==row.svc_name).delete()
+        db(db.services.svc_name==row.svc_name).delete()
+
+    return dict(deleted=rows)
+
 def alerts_svcmon_not_updated():
     """ Alert if svcmon is not updated for 2h
     """
