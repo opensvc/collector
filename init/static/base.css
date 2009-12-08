@@ -1,5 +1,14 @@
 @charset "UTF-8";
 
+.current_page {
+    color: #990000;
+    font-weight: bold;
+}
+
+.current_page:hover {
+    text-decoration: none;
+}
+
 .box {
     background-color:#e0e1cd;
     padding:0;

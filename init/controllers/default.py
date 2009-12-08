@@ -88,7 +88,10 @@ def _pagination(request, query):
     if page != 1:
         pager.append(A(T('<< '),_href=URL(r=request,args=[page-1],vars=request.vars)))
     for p in pr:
-        pager.append(A(str(p)+' ',_href=URL(r=request,args=[p],vars=request.vars)))
+        if p == page:
+            pager.append(A(str(p)+' ', _class="current_page"))
+        else:
+            pager.append(A(str(p)+' ', _href=URL(r=request,args=[p],vars=request.vars)))
     if page != totalpages:
         pager.append(A(T('>> '),_href=URL(r=request,args=[page+1],vars=request.vars)))
     v = request.vars
