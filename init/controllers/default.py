@@ -69,14 +69,38 @@ def _pagination(request, query):
     if end > totalrecs:
         end = totalrecs
 
+    num_pages = 10
+    def page_range():
+        s = page - num_pages/2
+        e = page + num_pages/2
+        if s <= 0:
+            e = e - s
+            s = 1
+        if e > totalpages:
+            s = s - (e - totalpages)
+            e = totalpages
+        if s <= 0:
+            s = 1
+        return range(s, e+1)
+
+    pr = page_range()
+    pager = []
+    if page != 1:
+        pager.append(A(T('<< '),_href=URL(r=request,args=[page-1],vars=request.vars)))
+    for p in pr:
+        pager.append(A(str(p)+' ',_href=URL(r=request,args=[p],vars=request.vars)))
+    if page != totalpages:
+        pager.append(A(T('>> '),_href=URL(r=request,args=[page+1],vars=request.vars)))
+    v = request.vars
+    v.perpage = 0
+    pager.append(A(T('all'),_href=URL(r=request,vars=v)))
+
     # paging toolbar
     if totalrecs == 0:
-        nav = P("No records found matching filters", _style='text-align:center')
+        pager.append(P("No records found matching filters", _style='text-align:center'))
     else:
-        prev = A(T('<< prev'),_href=URL(r=request,args=[page-1],vars=request.vars)) if page>1 else T('<< prev')
-        next = A(T('next >>'),_href=URL(r=request,args=[page+1],vars=request.vars)) if page<totalpages else T('next >>')
-        nav = T("Showing %(first)d to %(last)d out of %(total)d records", dict(first=start+1, last=end, total=totalrecs))
-        nav = P(prev, ' ', next, ' ', nav, _style='text-align:center')
+        info=T("Showing %(first)d to %(last)d out of %(total)d records", dict(first=start+1, last=end, total=totalrecs))
+        nav = P(pager, _style='text-align:center', _title=info)
 
     return (start, end, nav)
 
