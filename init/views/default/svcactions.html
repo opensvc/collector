@@ -95,7 +95,7 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
     <td class={{=cellclass}}>{{=action.begin}}</td>
     <td class={{=cellclass}}>{{=action.end}}</td>
     <td class={{=cellclass}}>{{=action.pid}}</td>
-    <td class={{=cellclass}}>{{=action.status_log}}</td>
+    <td class={{=cellclass}} style='white-space:pre'>{{=action.status_log.replace('\\n','\n')}}</td>
   </tr>
   {{=ack}}
   {{pass}}
