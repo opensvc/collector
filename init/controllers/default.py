@@ -386,7 +386,7 @@ def alerts_failed_actions_not_acked():
 
     now = datetime.datetime.now()
     in_24h = now + datetime.timedelta(hours=24)
-    rows = db((db.v_svcactions.status!='ok')&((db.v_svcactions.ack!=1)|(db.v_svcactions.ack==None))).select(orderby=db.v_svcactions.end)
+    rows = db((db.v_svcactions.status=='err')&((db.v_svcactions.ack!=1)|(db.v_svcactions.ack==None))).select(orderby=db.v_svcactions.end)
     for row in rows:
         d = dict(app=row.app,
                  svcname=row.svcname,
@@ -606,7 +606,7 @@ def svcactions():
             1: dict(name='not acknowledged',
                     id=1,
                     active=False,
-                    q=((db.v_svcactions.status!='ok')&(db.v_svcactions.ack==None))
+                    q=((db.v_svcactions.status=='err')&(db.v_svcactions.ack==None))
                ),
         }
     toggle_session_filters(session.svcactions_filters)

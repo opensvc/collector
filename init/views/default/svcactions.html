@@ -58,10 +58,10 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
       if checked is not None:
           checked = 'checked=on'
           pass
-      if action.status == 'ok':
-          disabled = 'disabled'
-      else:
+      if action.status == 'err':
           disabled = ''
+      else:
+          disabled = 'disabled'
           pass
       eid = 'ack_'+str(action.id)
       if action.ack == 1:
