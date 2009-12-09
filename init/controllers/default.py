@@ -202,7 +202,7 @@ def apps():
     for key in columns.keys():
         if key not in request.vars.keys():
             continue
-        query &= _where(None, 'nodes', request.vars[key], key)
+        query &= _where(None, 'v_apps', request.vars[key], key)
 
 
     (start, end, nav) = _pagination(request, query)
