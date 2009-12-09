@@ -1,0 +1,24 @@
+{{def FILTERS_ACTIVE(filters):}}
+  <input type=hidden name=delfilter>
+  <table>
+    {{for f in filters.values():}}
+      {{if f['active']:}}
+        <tr>
+          <td>{{=f['name']}}</td>
+          <td><img src='{{=URL(r=request,c='static',f='del.png')}}' border=0 title='{{=T("remove filter")}}' onClick='javascript:document.svcform.delfilter.value={{=f["id"]}};document.svcform.submit()'></td>
+        </tr>
+      {{pass}}
+    {{pass}}
+  </table>
+{{pass}}
+
+{{def FILTERS_AVAIL(filters):}}
+  <select name=addfilter onChange="document.getElementById('svcform').submit()">
+  <option value=''>{{=T('choose')}}</option>
+  {{for f in filters.values():}}
+    {{if not f['active']:}}
+      <option value={{=f['id']}}>{{=T(f['name'])}}</option>
+    {{pass}}
+  {{pass}}
+  </select>
+{{pass}}
