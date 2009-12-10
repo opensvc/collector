@@ -598,7 +598,6 @@ def get_racks():
 
 @auth.requires_login()
 def svcmon():
-
     if not getattr(session, 'svcmon_filters'):
         session.svcmon_filters = {
             1: dict(name='preferred node',
@@ -716,6 +715,62 @@ def svcactions():
                     active=False,
                     q=((db.v_svcactions.status=='err')&(db.v_svcactions.ack==None))
                ),
+            2: dict(name='country',
+                    id=2,
+                    active=False,
+                    value=None,
+                    field='loc_country',
+                    table='v_svcactions',
+            ),
+            3: dict(name='zip',
+                    id=3,
+                    active=False,
+                    value=None,
+                    field='loc_zip',
+                    table='v_svcactions',
+            ),
+            4: dict(name='city',
+                    id=4,
+                    active=False,
+                    value=None,
+                    field='loc_city',
+                    table='v_svcactions',
+            ),
+            5: dict(name='addr',
+                    id=5,
+                    active=False,
+                    value=None,
+                    field='loc_addr',
+                    table='v_svcactions',
+            ),
+            6: dict(name='building',
+                    id=6,
+                    active=False,
+                    value=None,
+                    field='loc_building',
+                    table='v_svcactions',
+            ),
+            7: dict(name='floor',
+                    id=7,
+                    active=False,
+                    value=None,
+                    field='loc_floor',
+                    table='v_svcactions',
+            ),
+            8: dict(name='room',
+                    id=8,
+                    active=False,
+                    value=None,
+                    field='loc_room',
+                    table='v_svcactions',
+            ),
+            9: dict(name='rack',
+                    id=9,
+                    active=False,
+                    value=None,
+                    field='loc_rack',
+                    table='v_svcactions',
+            ),
         }
     toggle_session_filters(session.svcactions_filters)
 
@@ -734,9 +789,7 @@ def svcactions():
     query &= _where(None, 'v_svcactions', request.vars.status_log, 'status_log')
     query &= _where(None, 'v_svcactions', request.vars.pid, 'pid')
 
-    for filter in session.svcactions_filters.values():
-        if filter['active']:
-            query &= filter['q']
+    query = apply_session_filters(session.svcactions_filters, query)
 
     (start, end, nav) = _pagination(request, query)
     if start == 0 and end == 0:
