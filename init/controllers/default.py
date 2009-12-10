@@ -107,6 +107,23 @@ def _pagination(request, query):
 
     return (start, end, nav)
 
+def toggle_session_filters(filters):
+    if request.vars.addfilter is not None and request.vars.addfilter != '':
+        filters[int(request.vars.addfilter)]['active'] = True
+        if request.vars.filtervalue is not None and request.vars.filtervalue != '':
+            filters[int(request.vars.addfilter)]['value'] = request.vars.filtervalue
+    elif request.vars.delfilter is not None and request.vars.delfilter != '':
+        filters[int(request.vars.delfilter)]['active'] = False
+
+def apply_session_filters(filters, query):
+    for filter in filters.values():
+        if filter['active']:
+            if filter.has_key('q'):
+                query &= filter['q']
+            elif filter.has_key('field') and filter.has_key('table'):
+                query &= _where(None, filter['table'], filter['value'], filter['field'])
+    return query
+
 @auth.requires_membership('Manager')
 def _del_app(request):
     ids = ([])
@@ -573,14 +590,77 @@ def alerts():
                 nav=nav,
                 columns=columns, colkeys=colkeys)
 
+def get_racks():
+    racks = []
+    for row in db(db.nodes.id>0).select(db.nodes.loc_rack, groupby=db.nodes.loc_rack, orderby=db.nodes.loc_rack):
+        racks.append(row.loc_rack)
+    return dict(racks=racks)
+
 @auth.requires_login()
 def svcmon():
+
     if not getattr(session, 'svcmon_filters'):
         session.svcmon_filters = {
             1: dict(name='preferred node',
                     id=1,
                     active=False,
                     q=(db.v_svcmon.mon_nodname==db.v_svcmon.svc_autostart)
+            ),
+            2: dict(name='country',
+                    id=2,
+                    active=False,
+                    value=None,
+                    field='loc_country',
+                    table='v_svcmon',
+            ),
+            3: dict(name='zip',
+                    id=3,
+                    active=False,
+                    value=None,
+                    field='loc_zip',
+                    table='v_svcmon',
+            ),
+            4: dict(name='city',
+                    id=4,
+                    active=False,
+                    value=None,
+                    field='loc_city',
+                    table='v_svcmon',
+            ),
+            5: dict(name='addr',
+                    id=5,
+                    active=False,
+                    value=None,
+                    field='loc_addr',
+                    table='v_svcmon',
+            ),
+            6: dict(name='building',
+                    id=6,
+                    active=False,
+                    value=None,
+                    field='loc_building',
+                    table='v_svcmon',
+            ),
+            7: dict(name='floor',
+                    id=7,
+                    active=False,
+                    value=None,
+                    field='loc_floor',
+                    table='v_svcmon',
+            ),
+            8: dict(name='room',
+                    id=8,
+                    active=False,
+                    value=None,
+                    field='loc_room',
+                    table='v_svcmon',
+            ),
+            9: dict(name='rack',
+                    id=9,
+                    active=False,
+                    value=None,
+                    field='loc_rack',
+                    table='v_svcmon',
             ),
         }
     toggle_session_filters(session.svcmon_filters)
@@ -595,9 +675,8 @@ def svcmon():
     query &= _where(None, 'v_svcmon', request.vars.containertype, 'svc_containertype')
     query &= _where(None, 'v_svcmon', request.vars.nodename, 'mon_nodname')
     query &= _where(None, 'v_svcmon', request.vars.nodetype, 'mon_nodtype')
-    for filter in session.svcmon_filters.values():
-        if filter['active']:
-            query &= filter['q']
+
+    query = apply_session_filters(session.svcmon_filters, query)
 
     (start, end, nav) = _pagination(request, query)
     if start == 0 and end == 0:
@@ -627,12 +706,6 @@ def _svcaction_ack(request):
         """
         db((db.alerts.action_id==action_id)&(db.alerts.sent_at==None)).delete()
     del request.vars.ackcomment
-
-def toggle_session_filters(filters):
-    if request.vars.addfilter is not None and request.vars.addfilter != '':
-        filters[int(request.vars.addfilter)]['active'] = True
-    elif request.vars.delfilter is not None and request.vars.delfilter != '':
-        filters[int(request.vars.delfilter)]['active'] = False
 
 @auth.requires_login()
 def svcactions():

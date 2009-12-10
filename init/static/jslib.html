@@ -54,5 +54,15 @@ function hide_eid(id) {
   document.getElementById(id).style['display']='none'
 }
 
+function toggle_filter_value_input() {
+  id = document.getElementById('addfilter').value
+  id = 'addfilter_opt'+id
+  if (document.getElementById(id).title == '') {
+    hide_eid('filtervalue')
+  } else {
+    show_eid('filtervalue')
+  }
+}
+
 </script>
 
