@@ -36,10 +36,12 @@
         </select>
       </td>
       <td>
-        <input name='filtervalue' id='filtervalue' size=6 class=hidden onkeypress="checkEnter(event)">
-      </td>
-      <td>
         <img src='{{=URL(r=request,c='static',f='add.png')}}' border=0 title='{{=T("add filter")}}' onClick='javascript:document.svcform.submit()'>
+      </td>
+    </tr>
+    <tr class=hidden id=tr_filtervalue>
+      <td>
+        <input name='filtervalue' id='filtervalue' size=14 onkeypress="checkEnter(event)">
       </td>
     </tr>
   </table>
