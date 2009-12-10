@@ -1,6 +1,6 @@
--- MySQL dump 10.13  Distrib 5.1.40, for unknown-linux-gnu (x86_64)
+-- MySQL dump 10.11
 --
--- Host: localhost    Database: opensvc
+-- Host: dbopensvc    Database: opensvc
 -- ------------------------------------------------------
 -- Server version	5.1.40
 
@@ -28,8 +28,8 @@ USE `opensvc`;
 --
 
 DROP TABLE IF EXISTS `SVCactions`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
 CREATE TABLE `SVCactions` (
   `svcname` varchar(20) NOT NULL DEFAULT '',
   `action` varchar(30) DEFAULT NULL,
@@ -73,66 +73,67 @@ CREATE TABLE `SVCactions` (
   KEY `hostid_2` (`hostid`,`begin`),
   KEY `svcname_2` (`svcname`,`begin`),
   KEY `status` (`status`,`scripts_status`)
-) ENGINE=MyISAM AUTO_INCREMENT=3387191 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=3389527 DEFAULT CHARSET=latin1;
+SET character_set_client = @saved_cs_client;
 
 --
 -- Table structure for table `alerts`
 --
 
 DROP TABLE IF EXISTS `alerts`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
 CREATE TABLE `alerts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `send_at` datetime NOT NULL,
+  `sent_at` datetime DEFAULT NULL,
   `sent_to` text NOT NULL,
   `body` text NOT NULL,
   `subject` varchar(150) NOT NULL,
-  `sent_at` datetime DEFAULT NULL,
+  `send_at` datetime NOT NULL,
   `created_at` datetime NOT NULL,
   `action_id` int(11) DEFAULT NULL,
+  `app_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=472 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=931 DEFAULT CHARSET=latin1;
+SET character_set_client = @saved_cs_client;
 
 --
 -- Table structure for table `apps`
 --
 
 DROP TABLE IF EXISTS `apps`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
 CREATE TABLE `apps` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `app` varchar(20) NOT NULL,
   `desc` text NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=12 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=17 DEFAULT CHARSET=latin1;
+SET character_set_client = @saved_cs_client;
 
 --
 -- Table structure for table `apps_responsibles`
 --
 
 DROP TABLE IF EXISTS `apps_responsibles`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
 CREATE TABLE `apps_responsibles` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
   `app_id` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=19 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=20 DEFAULT CHARSET=latin1;
+SET character_set_client = @saved_cs_client;
 
 --
 -- Table structure for table `auth_event`
 --
 
 DROP TABLE IF EXISTS `auth_event`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
 CREATE TABLE `auth_event` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `time_stamp` datetime DEFAULT NULL,
@@ -142,31 +143,31 @@ CREATE TABLE `auth_event` (
   `description` longtext,
   PRIMARY KEY (`id`),
   KEY `user_id__idx` (`user_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=62 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=77 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
 
 --
 -- Table structure for table `auth_group`
 --
 
 DROP TABLE IF EXISTS `auth_group`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
 CREATE TABLE `auth_group` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `role` varchar(512) DEFAULT NULL,
   `description` longtext,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
 
 --
 -- Table structure for table `auth_membership`
 --
 
 DROP TABLE IF EXISTS `auth_membership`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
 CREATE TABLE `auth_membership` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) DEFAULT NULL,
@@ -174,16 +175,16 @@ CREATE TABLE `auth_membership` (
   PRIMARY KEY (`id`),
   KEY `user_id__idx` (`user_id`),
   KEY `group_id__idx` (`group_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
 
 --
 -- Table structure for table `auth_permission`
 --
 
 DROP TABLE IF EXISTS `auth_permission`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
 CREATE TABLE `auth_permission` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `group_id` int(11) DEFAULT NULL,
@@ -193,15 +194,15 @@ CREATE TABLE `auth_permission` (
   PRIMARY KEY (`id`),
   KEY `group_id__idx` (`group_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+SET character_set_client = @saved_cs_client;
 
 --
 -- Table structure for table `auth_user`
 --
 
 DROP TABLE IF EXISTS `auth_user`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
 CREATE TABLE `auth_user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `first_name` varchar(128) DEFAULT NULL,
@@ -210,47 +211,47 @@ CREATE TABLE `auth_user` (
   `password` varchar(512) DEFAULT NULL,
   `registration_key` varchar(512) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+SET character_set_client = @saved_cs_client;
 
 --
 -- Table structure for table `drpprojects`
 --
 
 DROP TABLE IF EXISTS `drpprojects`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
 CREATE TABLE `drpprojects` (
   `drp_project` varchar(30) NOT NULL,
   `drp_project_id` int(11) NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`drp_project_id`),
   UNIQUE KEY `uniq_key` (`drp_project`),
   KEY `drp_project_index` (`drp_project`)
-) ENGINE=MyISAM AUTO_INCREMENT=72 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=66 DEFAULT CHARSET=latin1;
+SET character_set_client = @saved_cs_client;
 
 --
 -- Table structure for table `drpservices`
 --
 
 DROP TABLE IF EXISTS `drpservices`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
 CREATE TABLE `drpservices` (
   `drp_svcname` varchar(30) NOT NULL,
   `drp_wave` varchar(10) NOT NULL,
   `drp_project_id` int(11) NOT NULL,
   UNIQUE KEY `foo` (`drp_svcname`,`drp_project_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
+SET character_set_client = @saved_cs_client;
 
 --
 -- Table structure for table `nodes`
 --
 
 DROP TABLE IF EXISTS `nodes`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
 CREATE TABLE `nodes` (
   `nodename` varchar(30) NOT NULL,
   `loc_country` varchar(20) NOT NULL,
@@ -287,16 +288,62 @@ CREATE TABLE `nodes` (
   `environnement` varchar(20) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `nodename_1` (`nodename`)
-) ENGINE=MyISAM AUTO_INCREMENT=45378 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=45436 DEFAULT CHARSET=latin1;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `nodes_import`
+--
+
+DROP TABLE IF EXISTS `nodes_import`;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+CREATE TABLE `nodes_import` (
+  `nodename` varchar(30) NOT NULL,
+  `loc_country` varchar(20) NOT NULL,
+  `loc_city` varchar(50) NOT NULL,
+  `loc_addr` varchar(100) NOT NULL,
+  `loc_building` varchar(50) NOT NULL,
+  `loc_floor` varchar(5) NOT NULL,
+  `loc_room` varchar(20) NOT NULL,
+  `loc_rack` varchar(10) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `cpu_freq` varchar(10) NOT NULL,
+  `cpu_cores` int(11) NOT NULL,
+  `cpu_dies` int(11) NOT NULL,
+  `cpu_vendor` varchar(20) NOT NULL,
+  `cpu_model` varchar(50) NOT NULL,
+  `mem_banks` int(11) NOT NULL,
+  `mem_slots` int(11) NOT NULL,
+  `mem_bytes` int(11) NOT NULL,
+  `os_name` varchar(50) NOT NULL,
+  `os_release` varchar(10) NOT NULL,
+  `os_update` varchar(10) NOT NULL,
+  `os_segment` varchar(10) NOT NULL,
+  `os_arch` varchar(10) NOT NULL,
+  `os_vendor` varchar(20) NOT NULL,
+  `os_kernel` varchar(20) NOT NULL,
+  `loc_zip` varchar(10) NOT NULL,
+  `team_responsible` varchar(20) NOT NULL,
+  `serial` varchar(30) NOT NULL,
+  `model` varchar(30) NOT NULL,
+  `type` varchar(15) NOT NULL,
+  `warranty_end` datetime NOT NULL,
+  `status` varchar(15) NOT NULL,
+  `role` varchar(20) NOT NULL,
+  `environnement` varchar(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `nodename_1` (`nodename`)
+) ENGINE=MyISAM AUTO_INCREMENT=137184 DEFAULT CHARSET=latin1;
+SET character_set_client = @saved_cs_client;
 
 --
 -- Table structure for table `services`
 --
 
 DROP TABLE IF EXISTS `services`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
 CREATE TABLE `services` (
   `svc_hostid` varchar(30) DEFAULT NULL,
   `svc_name` varchar(30) DEFAULT NULL,
@@ -333,16 +380,16 @@ CREATE TABLE `services` (
   KEY `svc_hostid` (`svc_hostid`),
   KEY `svc_name` (`svc_name`),
   KEY `svc_drpnode` (`svc_drpnode`)
-) ENGINE=MyISAM AUTO_INCREMENT=133 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=336 DEFAULT CHARSET=latin1;
+SET character_set_client = @saved_cs_client;
 
 --
 -- Table structure for table `svcmon`
 --
 
 DROP TABLE IF EXISTS `svcmon`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
 CREATE TABLE `svcmon` (
   `mon_svcname` varchar(30) DEFAULT NULL,
   `mon_svctype` varchar(10) DEFAULT NULL,
@@ -384,16 +431,16 @@ CREATE TABLE `svcmon` (
   KEY `mon_hostid` (`mon_hostid`),
   KEY `mon_svcname_3` (`mon_svcname`,`mon_hostid`),
   KEY `mon_svcname_4` (`mon_svcname`,`mon_nodname`)
-) ENGINE=MyISAM AUTO_INCREMENT=206403387 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
+) ENGINE=MyISAM AUTO_INCREMENT=206403400 DEFAULT CHARSET=latin1;
+SET character_set_client = @saved_cs_client;
 
 --
 -- Table structure for table `svcmonchanges`
 --
 
 DROP TABLE IF EXISTS `svcmonchanges`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
 CREATE TABLE `svcmonchanges` (
   `svcname` varchar(50) DEFAULT NULL,
   `action` varchar(50) DEFAULT NULL,
@@ -427,7 +474,7 @@ CREATE TABLE `svcmonchanges` (
   KEY `end_2` (`end`,`svcname`),
   KEY `osvc` (`osvc`,`svcname`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1197725 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
+SET character_set_client = @saved_cs_client;
 
 --
 -- Temporary table structure for view `v_apps`
@@ -435,15 +482,12 @@ CREATE TABLE `svcmonchanges` (
 
 DROP TABLE IF EXISTS `v_apps`;
 /*!50001 DROP VIEW IF EXISTS `v_apps`*/;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
 /*!50001 CREATE TABLE `v_apps` (
   `id` int(11),
   `app` varchar(20),
   `responsibles` varchar(341),
   `mailto` varchar(341)
 ) ENGINE=MyISAM */;
-SET character_set_client = @saved_cs_client;
 
 --
 -- Temporary table structure for view `v_services`
@@ -451,8 +495,6 @@ SET character_set_client = @saved_cs_client;
 
 DROP TABLE IF EXISTS `v_services`;
 /*!50001 DROP VIEW IF EXISTS `v_services`*/;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
 /*!50001 CREATE TABLE `v_services` (
   `svc_hostid` varchar(30),
   `svc_name` varchar(30),
@@ -488,7 +530,6 @@ SET character_set_client = utf8;
   `responsibles` varchar(341),
   `mailto` varchar(341)
 ) ENGINE=MyISAM */;
-SET character_set_client = @saved_cs_client;
 
 --
 -- Temporary table structure for view `v_svcactions`
@@ -496,8 +537,6 @@ SET character_set_client = @saved_cs_client;
 
 DROP TABLE IF EXISTS `v_svcactions`;
 /*!50001 DROP VIEW IF EXISTS `v_svcactions`*/;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
 /*!50001 CREATE TABLE `v_svcactions` (
   `svcname` varchar(20),
   `action` varchar(30),
@@ -533,7 +572,6 @@ SET character_set_client = utf8;
   `responsibles` varchar(341),
   `mailto` varchar(341)
 ) ENGINE=MyISAM */;
-SET character_set_client = @saved_cs_client;
 
 --
 -- Temporary table structure for view `v_svcmon`
@@ -541,8 +579,6 @@ SET character_set_client = @saved_cs_client;
 
 DROP TABLE IF EXISTS `v_svcmon`;
 /*!50001 DROP VIEW IF EXISTS `v_svcmon`*/;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
 /*!50001 CREATE TABLE `v_svcmon` (
   `svc_name` varchar(30),
   `svc_nodes` varchar(1000),
@@ -593,7 +629,24 @@ SET character_set_client = utf8;
   `mon_containerstatus` varchar(10),
   `mon_overallstatus` varchar(10)
 ) ENGINE=MyISAM */;
-SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary table structure for view `v_users`
+--
+
+DROP TABLE IF EXISTS `v_users`;
+/*!50001 DROP VIEW IF EXISTS `v_users`*/;
+/*!50001 CREATE TABLE `v_users` (
+  `first_name` varchar(128),
+  `last_name` varchar(128),
+  `email` varchar(512),
+  `password` varchar(512),
+  `registration_key` varchar(512),
+  `id` int(11),
+  `group_id` int(11),
+  `role` varchar(512),
+  `description` longtext
+) ENGINE=MyISAM */;
 
 --
 -- Current Database: `opensvc`
@@ -605,77 +658,51 @@ USE `opensvc`;
 -- Final view structure for view `v_apps`
 --
 
-/*!50001 DROP TABLE IF EXISTS `v_apps`*/;
+/*!50001 DROP TABLE `v_apps`*/;
 /*!50001 DROP VIEW IF EXISTS `v_apps`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8 */;
-/*!50001 SET character_set_results     = utf8 */;
-/*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`unxdev01`@`localhost` SQL SECURITY DEFINER */
+/*!50013 DEFINER=`opensvc`@`%` SQL SECURITY DEFINER */
 /*!50001 VIEW `v_apps` AS select distinct `a`.`id` AS `id`,`a`.`app` AS `app`,group_concat(concat_ws(' ',`u`.`first_name`,`u`.`last_name`) separator ', ') AS `responsibles`,group_concat(`u`.`email` separator ', ') AS `mailto` from ((`apps` `a` left join `apps_responsibles` `ar` on((`ar`.`app_id` = `a`.`id`))) left join `auth_user` `u` on((`ar`.`user_id` = `u`.`id`))) group by `a`.`app` */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
 
 --
 -- Final view structure for view `v_services`
 --
 
-/*!50001 DROP TABLE IF EXISTS `v_services`*/;
+/*!50001 DROP TABLE `v_services`*/;
 /*!50001 DROP VIEW IF EXISTS `v_services`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8 */;
-/*!50001 SET character_set_results     = utf8 */;
-/*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`unxdev01`@`localhost` SQL SECURITY DEFINER */
+/*!50013 DEFINER=`opensvc`@`%` SQL SECURITY DEFINER */
 /*!50001 VIEW `v_services` AS select `s`.`svc_hostid` AS `svc_hostid`,`s`.`svc_name` AS `svc_name`,`s`.`svc_nodes` AS `svc_nodes`,`s`.`svc_drpnode` AS `svc_drpnode`,`s`.`svc_ipname` AS `svc_ipname`,`s`.`svc_ipdev` AS `svc_ipdev`,`s`.`svc_drpipname` AS `svc_drpipname`,`s`.`svc_drpipdev` AS `svc_drpipdev`,`s`.`svc_drptype` AS `svc_drptype`,`s`.`svc_fs` AS `svc_fs`,`s`.`svc_dev` AS `svc_dev`,`s`.`svc_autostart` AS `svc_autostart`,`s`.`svc_mntopt` AS `svc_mntopt`,`s`.`svc_scsi` AS `svc_scsi`,`s`.`svc_type` AS `svc_type`,`s`.`svc_drpnodes` AS `svc_drpnodes`,`s`.`svc_comment` AS `svc_comment`,`s`.`svc_app` AS `svc_app`,`s`.`svc_drnoaction` AS `svc_drnoaction`,`s`.`updated` AS `updated`,`s`.`cksum` AS `cksum`,`s`.`svc_envdate` AS `svc_envdate`,`s`.`svc_containertype` AS `svc_containertype`,`s`.`svc_metrocluster` AS `svc_metrocluster`,`s`.`id` AS `id`,`s`.`svc_hasec` AS `svc_hasec`,`s`.`svc_hapri` AS `svc_hapri`,`s`.`svc_hastonith` AS `svc_hastonith`,`s`.`svc_hastartup` AS `svc_hastartup`,`s`.`svc_wave` AS `svc_wave`,`a`.`app` AS `app`,`a`.`responsibles` AS `responsibles`,`a`.`mailto` AS `mailto` from (`services` `s` left join `v_apps` `a` on((`a`.`app` = `s`.`svc_app`))) group by `s`.`svc_name` */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
 
 --
 -- Final view structure for view `v_svcactions`
 --
 
-/*!50001 DROP TABLE IF EXISTS `v_svcactions`*/;
+/*!50001 DROP TABLE `v_svcactions`*/;
 /*!50001 DROP VIEW IF EXISTS `v_svcactions`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8 */;
-/*!50001 SET character_set_results     = utf8 */;
-/*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`unxdev01`@`localhost` SQL SECURITY DEFINER */
+/*!50013 DEFINER=`opensvc`@`%` SQL SECURITY DEFINER */
 /*!50001 VIEW `v_svcactions` AS select `ac`.`svcname` AS `svcname`,`ac`.`action` AS `action`,`ac`.`status` AS `status`,`ac`.`time` AS `time`,`ac`.`begin` AS `begin`,`ac`.`end` AS `end`,`ac`.`hostname` AS `hostname`,`ac`.`hostid` AS `hostid`,`ac`.`status_log` AS `status_log`,`ac`.`pid` AS `pid`,`ac`.`B_ip_status` AS `B_ip_status`,`ac`.`B_mount_status` AS `B_mount_status`,`ac`.`B_srdf_status` AS `B_srdf_status`,`ac`.`B_dsk_mode` AS `B_dsk_mode`,`ac`.`E_ip_status` AS `E_ip_status`,`ac`.`E_mount_status` AS `E_mount_status`,`ac`.`E_srdf_status` AS `E_srdf_status`,`ac`.`E_dsk_mode` AS `E_dsk_mode`,`ac`.`ID` AS `ID`,`ac`.`ack` AS `ack`,`ac`.`alert` AS `alert`,`ac`.`scripts_status` AS `scripts_status`,`ac`.`scripts_failed` AS `scripts_failed`,`ac`.`scripts_success` AS `scripts_success`,`ac`.`B_SVCstatus` AS `B_SVCstatus`,`ac`.`E_SVCstatus` AS `E_SVCstatus`,`ac`.`action_group` AS `action_group`,`ac`.`acked_by` AS `acked_by`,`ac`.`acked_comment` AS `acked_comment`,`ac`.`acked_date` AS `acked_date`,`sa`.`app` AS `app`,`sa`.`responsibles` AS `responsibles`,`sa`.`mailto` AS `mailto` from (`SVCactions` `ac` left join `v_services` `sa` on((`sa`.`svc_name` = `ac`.`svcname`))) */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
 
 --
 -- Final view structure for view `v_svcmon`
 --
 
-/*!50001 DROP TABLE IF EXISTS `v_svcmon`*/;
+/*!50001 DROP TABLE `v_svcmon`*/;
 /*!50001 DROP VIEW IF EXISTS `v_svcmon`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8 */;
-/*!50001 SET character_set_results     = utf8 */;
-/*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`unxdev01`@`localhost` SQL SECURITY DEFINER */
+/*!50013 DEFINER=`opensvc`@`%` SQL SECURITY DEFINER */
 /*!50001 VIEW `v_svcmon` AS select `s`.`svc_name` AS `svc_name`,`s`.`svc_nodes` AS `svc_nodes`,`s`.`svc_drpnode` AS `svc_drpnode`,`s`.`svc_drpnodes` AS `svc_drpnodes`,`s`.`svc_drptype` AS `svc_drptype`,`s`.`svc_autostart` AS `svc_autostart`,`s`.`svc_type` AS `svc_type`,`s`.`svc_comment` AS `svc_comment`,`s`.`svc_app` AS `svc_app`,`s`.`svc_drnoaction` AS `svc_drnoaction`,`s`.`updated` AS `svc_updated`,`s`.`svc_envdate` AS `svc_envdate`,`s`.`svc_containertype` AS `svc_containertype`,`s`.`svc_metrocluster` AS `svc_metrocluster`,`s`.`responsibles` AS `responsibles`,`s`.`mailto` AS `mailto`,`m`.`mon_svcname` AS `mon_svcname`,`m`.`mon_svctype` AS `mon_svctype`,`m`.`mon_drptype` AS `mon_drptype`,`m`.`mon_nodname` AS `mon_nodname`,`m`.`mon_nodtype` AS `mon_nodtype`,`m`.`mon_nodmode` AS `mon_nodmode`,`m`.`mon_ipstatus` AS `mon_ipstatus`,`m`.`mon_fsstatus` AS `mon_fsstatus`,`m`.`mon_srdf` AS `mon_srdf`,`m`.`mon_r2mode` AS `mon_r2mode`,`m`.`mon_prinodes` AS `mon_prinodes`,`m`.`mon_hostid` AS `mon_hostid`,`m`.`ID` AS `ID`,`m`.`mon_frozen` AS `mon_frozen`,`m`.`mon_rev` AS `mon_rev`,`m`.`mon_os` AS `mon_os`,`m`.`mon_frozentxt` AS `mon_frozentxt`,`m`.`mon_os_rev` AS `mon_os_rev`,`m`.`mon_svcstatus` AS `mon_svcstatus`,`m`.`mon_ipdetail` AS `mon_ipdetail`,`m`.`mon_srdfdetail` AS `mon_srdfdetail`,`m`.`mon_srdfupdated` AS `mon_srdfupdated`,`m`.`mon_diskdetail` AS `mon_diskdetail`,`m`.`mon_srdfinvtracks` AS `mon_srdfinvtracks`,`m`.`mon_lastactionid` AS `mon_lastactionid`,`m`.`mon_lastaction` AS `mon_lastaction`,`m`.`mon_lastactionstatus` AS `mon_lastactionstatus`,`m`.`mon_changed` AS `mon_changed`,`m`.`mon_updated` AS `mon_updated`,`m`.`mon_diskstatus` AS `mon_diskstatus`,`m`.`mon_containerstatus` AS `mon_containerstatus`,`m`.`mon_overallstatus` AS `mon_overallstatus` from (`svcmon` `m` join `v_services` `s` on((`s`.`svc_name` = `m`.`mon_svcname`))) */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `v_users`
+--
+
+/*!50001 DROP TABLE `v_users`*/;
+/*!50001 DROP VIEW IF EXISTS `v_users`*/;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`opensvc`@`%` SQL SECURITY DEFINER */
+/*!50001 VIEW `v_users` AS select `u`.`first_name` AS `first_name`,`u`.`last_name` AS `last_name`,`u`.`email` AS `email`,`u`.`password` AS `password`,`u`.`registration_key` AS `registration_key`,`m`.`user_id` AS `id`,`m`.`group_id` AS `group_id`,`g`.`role` AS `role`,`g`.`description` AS `description` from ((`auth_user` `u` join `auth_membership` `m` on((`u`.`id` = `m`.`user_id`))) join `auth_group` `g` on((`m`.`group_id` = `g`.`id`))) */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -686,4 +713,4 @@ USE `opensvc`;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2009-12-05 18:42:24
+-- Dump completed on 2009-12-10  8:27:40

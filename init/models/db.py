@@ -243,6 +243,7 @@ db.define_table('v_apps',
     Field('id'),
     Field('app'),
     Field('responsibles'),
+    Field('mailto'),
     migrate=False)
 
 db.define_table('apps_responsibles',
@@ -285,5 +286,16 @@ db.define_table('alerts',
     Field('subject'),
     Field('body'),
     Field('action_id'),
+    Field('app_id'),
+    migrate=False)
+
+db.define_table('v_users',
+    Field('group_id'),
+    Field('last_name'),
+    Field('first_name'),
+    Field('role'),
+    Field('password'),
+    Field('email'),
+    Field('description'),
     migrate=False)
 

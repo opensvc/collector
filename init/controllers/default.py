@@ -296,9 +296,16 @@ def alerts_apps_without_responsible():
     now = datetime.datetime.now()
     in_24h = now + datetime.timedelta(hours=24)
 
+    def managers():
+        rows = db(db.v_users.role=="Manager").select()
+        m = []
+        for row in rows:
+            m.append(row.email)
+        return ','.join(m)
+
     rows = db((db.v_apps.id>0)&(db.v_apps.mailto==None)).select()
     for row in rows:
-        subject = T("[%(app)s] application has no responsible", dict(app=row.svc_app, svcname=row.mon_svcname))
+        subject = T("[%(app)s] application has no responsible", dict(app=row.app))
         body = ""
         dups = db(db.alerts.subject==subject).select()
         if len(dups) > 0:
@@ -310,7 +317,7 @@ def alerts_apps_without_responsible():
                          send_at=in_24h,
                          created_at=now,
                          app_id=row.id,
-                         sent_to=row.mailto)
+                         sent_to=managers())
 
     return dict(alerts=rows)
 
