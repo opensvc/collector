@@ -146,6 +146,11 @@ def _set_resp(request):
         rows = db(query).select()
         if len(rows) == 0:
             db.apps_responsibles.insert(app_id=id,user_id=request.vars.users)
+
+        """ Purge pending alerts
+        """
+        db((db.alerts.app_id==id)&(db.alerts.sent_at==None)).delete()
+
     num = len(ids)
     if num > 1:
         s = 's'
@@ -285,6 +290,29 @@ def _where(query, table, var, field, tableid=None):
         query = _where(query, table, var, field)
 
     return query
+
+def alerts_apps_without_responsible():
+    import datetime
+    now = datetime.datetime.now()
+    in_24h = now + datetime.timedelta(hours=24)
+
+    rows = db((db.v_apps.id>0)&(db.v_apps.mailto==None)).select()
+    for row in rows:
+        subject = T("[%(app)s] application has no responsible", dict(app=row.svc_app, svcname=row.mon_svcname))
+        body = ""
+        dups = db(db.alerts.subject==subject).select()
+        if len(dups) > 0:
+            """ don't raise a duplicate alert
+            """
+            continue
+        db.alerts.insert(subject=subject,
+                         body=body,
+                         send_at=in_24h,
+                         created_at=now,
+                         app_id=row.id,
+                         sent_to=row.mailto)
+
+    return dict(alerts=rows)
 
 def alerts_svc_not_on_primary():
     import datetime
