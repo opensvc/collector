@@ -274,7 +274,7 @@ def _where(query, table, var, field, tableid=None):
         done = True
         chunk = var
 
-    if len(chunk) > 0:
+    if len(chunk) == 0:
         return query
 
     if chunk[0] == '!':
@@ -283,7 +283,7 @@ def _where(query, table, var, field, tableid=None):
     else:
         _not = False
 
-    if len(chunk) > 0:
+    if len(chunk) == 0:
         return query
 
     if chunk == 'empty':
@@ -293,7 +293,7 @@ def _where(query, table, var, field, tableid=None):
     else:
         _op = chunk[0]
 
-        if len(chunk) > 0:
+        if len(chunk) == 0:
             return query
 
         chunk = chunk[1:]
