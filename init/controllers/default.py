@@ -597,56 +597,56 @@ def get_racks():
     return dict(racks=racks)
 
 asset_filters = {
-    'country': dict(name='country',
+    101: dict(name='country',
             id=101,
             active=False,
             value=None,
             field='loc_country',
             table='v_svcmon',
     ),
-    'zip': dict(name='zip',
+    102: dict(name='zip',
             id=102,
             active=False,
             value=None,
             field='loc_zip',
             table='v_svcmon',
     ),
-    'city': dict(name='city',
+    103: dict(name='city',
             id=103,
             active=False,
             value=None,
             field='loc_city',
             table='v_svcmon',
     ),
-    'addr': dict(name='addr',
+    104: dict(name='addr',
             id=104,
             active=False,
             value=None,
             field='loc_addr',
             table='v_svcmon',
     ),
-    'building': dict(name='building',
+    105: dict(name='building',
             id=105,
             active=False,
             value=None,
             field='loc_building',
             table='v_svcmon',
     ),
-    'floor': dict(name='floor',
+    106: dict(name='floor',
             id=106,
             active=False,
             value=None,
             field='loc_floor',
             table='v_svcmon',
     ),
-    'room': dict(name='room',
+    107: dict(name='room',
             id=107,
             active=False,
             value=None,
             field='loc_room',
             table='v_svcmon',
     ),
-    'rack': dict(name='rack',
+    108: dict(name='rack',
             id=108,
             active=False,
             value=None,
@@ -659,7 +659,7 @@ asset_filters = {
 def svcmon():
     if not getattr(session, 'svcmon_filters'):
         session.svcmon_filters = {
-            'preferred node': dict(name='preferred node',
+            1: dict(name='preferred node',
                     id=1,
                     active=False,
                     q=(db.v_svcmon.mon_nodname==db.v_svcmon.svc_autostart)
@@ -714,14 +714,14 @@ def _svcaction_ack(request):
 def svcactions():
     if not getattr(session, 'svcactions_filters'):
         session.svcactions_filters = {
-            'not acknowledged': dict(name='not acknowledged',
+            1: dict(name='not acknowledged',
                     id=1,
                     active=False,
                     q=((db.v_svcactions.status=='err')&(db.v_svcactions.ack==None))
                ),
         }
 
-    session.svcmon_filters.update(asset_filters)
+    session.svcactions_filters.update(asset_filters)
     toggle_session_filters(session.svcactions_filters)
 
     if request.vars.ackcomment is not None:

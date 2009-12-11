@@ -1,7 +1,12 @@
+{{def sort_filters(x, y):
+        return cmp(x['id'], y['id'])
+  pass
+}}
+
 {{def FILTERS_ACTIVE(filters):}}
   <input type=hidden name=delfilter>
   <table>
-    {{for f in filters.values():}}
+    {{for f in sorted(filters.values(), sort_filters):}}
       {{if f['active']:}}
         {{if f.has_key('value'):
               query = ' '+f['value']
@@ -23,7 +28,7 @@
       <td>
         <select name=addfilter id=addfilter onChange="toggle_filter_value_input()">
         <option value=''>{{=T('choose')}}</option>
-        {{for f in filters.values():}}
+        {{for f in sorted(filters.values(), sort_filters):}}
           {{if not f['active']:}}
             {{if f.has_key('value'):
               title = 'need value'
