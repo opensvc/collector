@@ -94,7 +94,7 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
     <td class="{{=cellclass}} status_{{=action.status}} ack_{{=action.ack}} {{=metaactionclass}}" {{=trigger}}>{{=action.status}}</td>
     <td class={{=cellclass}}>{{=action.begin}}</td>
     <td class={{=cellclass}}>{{=action.end}}</td>
-    <td class={{=cellclass}}>{{=action.pid}}</td>
+    <td class={{=cellclass}}>{{=A(action.pid, _href=URL(r=request, vars={'pid': action.pid}))}}</td>
     <td class={{=cellclass}}>{{=action.status_log.replace('\\n','\n')}}</td>
   </tr>
   {{=ack}}
