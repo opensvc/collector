@@ -49,7 +49,7 @@ response.menu = [
     [T('svcmon'), _f == 'svcmon', 
      URL(request.application,'default','svcmon'), []],
     [T('actions'), _f == 'svcactions', 
-     URL(request.application,'default','svcactions?begin=>'+yesterday), []],
+     URL(request.application,'default','svcactions?begin=>'+yesterday+'&status_log=empty'), []],
     [T('drplan'), _f == 'drplan', 
      URL(request.application,'default','drplan'), []],
     [T('applications'), _f == 'apps', 
