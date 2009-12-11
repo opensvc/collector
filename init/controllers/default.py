@@ -115,13 +115,13 @@ def toggle_session_filters(filters):
     elif request.vars.delfilter is not None and request.vars.delfilter != '':
         filters[int(request.vars.delfilter)]['active'] = False
 
-def apply_session_filters(filters, query):
+def apply_session_filters(filters, query, table=None):
     for filter in filters.values():
         if filter['active']:
             if filter.has_key('q'):
                 query &= filter['q']
-            elif filter.has_key('field') and filter.has_key('table'):
-                query &= _where(None, filter['table'], filter['value'], filter['field'])
+            elif filter.has_key('field') and table is not None:
+                query &= _where(None, table, filter['value'], filter['field'])
     return query
 
 @auth.requires_membership('Manager')
@@ -596,72 +596,76 @@ def get_racks():
         racks.append(row.loc_rack)
     return dict(racks=racks)
 
+asset_filters = {
+    'country': dict(name='country',
+            id=101,
+            active=False,
+            value=None,
+            field='loc_country',
+            table='v_svcmon',
+    ),
+    'zip': dict(name='zip',
+            id=102,
+            active=False,
+            value=None,
+            field='loc_zip',
+            table='v_svcmon',
+    ),
+    'city': dict(name='city',
+            id=103,
+            active=False,
+            value=None,
+            field='loc_city',
+            table='v_svcmon',
+    ),
+    'addr': dict(name='addr',
+            id=104,
+            active=False,
+            value=None,
+            field='loc_addr',
+            table='v_svcmon',
+    ),
+    'building': dict(name='building',
+            id=105,
+            active=False,
+            value=None,
+            field='loc_building',
+            table='v_svcmon',
+    ),
+    'floor': dict(name='floor',
+            id=106,
+            active=False,
+            value=None,
+            field='loc_floor',
+            table='v_svcmon',
+    ),
+    'room': dict(name='room',
+            id=107,
+            active=False,
+            value=None,
+            field='loc_room',
+            table='v_svcmon',
+    ),
+    'rack': dict(name='rack',
+            id=108,
+            active=False,
+            value=None,
+            field='loc_rack',
+            table='v_svcmon',
+    ),
+}
+
 @auth.requires_login()
 def svcmon():
     if not getattr(session, 'svcmon_filters'):
         session.svcmon_filters = {
-            1: dict(name='preferred node',
+            'preferred node': dict(name='preferred node',
                     id=1,
                     active=False,
                     q=(db.v_svcmon.mon_nodname==db.v_svcmon.svc_autostart)
             ),
-            2: dict(name='country',
-                    id=2,
-                    active=False,
-                    value=None,
-                    field='loc_country',
-                    table='v_svcmon',
-            ),
-            3: dict(name='zip',
-                    id=3,
-                    active=False,
-                    value=None,
-                    field='loc_zip',
-                    table='v_svcmon',
-            ),
-            4: dict(name='city',
-                    id=4,
-                    active=False,
-                    value=None,
-                    field='loc_city',
-                    table='v_svcmon',
-            ),
-            5: dict(name='addr',
-                    id=5,
-                    active=False,
-                    value=None,
-                    field='loc_addr',
-                    table='v_svcmon',
-            ),
-            6: dict(name='building',
-                    id=6,
-                    active=False,
-                    value=None,
-                    field='loc_building',
-                    table='v_svcmon',
-            ),
-            7: dict(name='floor',
-                    id=7,
-                    active=False,
-                    value=None,
-                    field='loc_floor',
-                    table='v_svcmon',
-            ),
-            8: dict(name='room',
-                    id=8,
-                    active=False,
-                    value=None,
-                    field='loc_room',
-                    table='v_svcmon',
-            ),
-            9: dict(name='rack',
-                    id=9,
-                    active=False,
-                    value=None,
-                    field='loc_rack',
-                    table='v_svcmon',
-            ),
         }
+    session.svcmon_filters.update(asset_filters)
     toggle_session_filters(session.svcmon_filters)
 
     query = _where(None, 'v_svcmon', request.vars.svcname, 'mon_svcname')
@@ -675,7 +679,7 @@ def svcmon():
     query &= _where(None, 'v_svcmon', request.vars.nodename, 'mon_nodname')
     query &= _where(None, 'v_svcmon', request.vars.nodetype, 'mon_nodtype')
 
-    query = apply_session_filters(session.svcmon_filters, query)
+    query = apply_session_filters(session.svcmon_filters, query, 'v_svcmon')
 
     (start, end, nav) = _pagination(request, query)
     if start == 0 and end == 0:
@@ -710,68 +714,14 @@ def _svcaction_ack(request):
 def svcactions():
     if not getattr(session, 'svcactions_filters'):
         session.svcactions_filters = {
-            1: dict(name='not acknowledged',
+            'not acknowledged': dict(name='not acknowledged',
                     id=1,
                     active=False,
                     q=((db.v_svcactions.status=='err')&(db.v_svcactions.ack==None))
                ),
-            2: dict(name='country',
-                    id=2,
-                    active=False,
-                    value=None,
-                    field='loc_country',
-                    table='v_svcactions',
-            ),
-            3: dict(name='zip',
-                    id=3,
-                    active=False,
-                    value=None,
-                    field='loc_zip',
-                    table='v_svcactions',
-            ),
-            4: dict(name='city',
-                    id=4,
-                    active=False,
-                    value=None,
-                    field='loc_city',
-                    table='v_svcactions',
-            ),
-            5: dict(name='addr',
-                    id=5,
-                    active=False,
-                    value=None,
-                    field='loc_addr',
-                    table='v_svcactions',
-            ),
-            6: dict(name='building',
-                    id=6,
-                    active=False,
-                    value=None,
-                    field='loc_building',
-                    table='v_svcactions',
-            ),
-            7: dict(name='floor',
-                    id=7,
-                    active=False,
-                    value=None,
-                    field='loc_floor',
-                    table='v_svcactions',
-            ),
-            8: dict(name='room',
-                    id=8,
-                    active=False,
-                    value=None,
-                    field='loc_room',
-                    table='v_svcactions',
-            ),
-            9: dict(name='rack',
-                    id=9,
-                    active=False,
-                    value=None,
-                    field='loc_rack',
-                    table='v_svcactions',
-            ),
         }
+
+    session.svcmon_filters.update(asset_filters)
     toggle_session_filters(session.svcactions_filters)
 
     if request.vars.ackcomment is not None:
@@ -789,7 +739,7 @@ def svcactions():
     query &= _where(None, 'v_svcactions', request.vars.status_log, 'status_log')
     query &= _where(None, 'v_svcactions', request.vars.pid, 'pid')
 
-    query = apply_session_filters(session.svcactions_filters, query)
+    query = apply_session_filters(session.svcactions_filters, query, 'v_svcactions')
 
     (start, end, nav) = _pagination(request, query)
     if start == 0 and end == 0:
