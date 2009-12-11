@@ -6,7 +6,7 @@
 ## - user is required for authentication and authorization
 ## - download is for downloading files uploaded in the db (does streaming)
 ## - call exposes all registered services (none by default)
-#########################################################################  
+#########################################################################
 
 def index():
     """
@@ -15,11 +15,10 @@ def index():
     """
     return dict(message=T('Select a report type'))
 
-
 def user():
     """
     exposes:
-    http://..../[app]/default/user/login 
+    http://..../[app]/default/user/login
     http://..../[app]/default/user/logout
     http://..../[app]/default/user/register
     http://..../[app]/default/user/profile
@@ -254,11 +253,20 @@ def _where(query, table, var, field, tableid=None):
 
     done = False
 
-    if '&' in var[1:]:
+    if var[0] == '|':
+        _or=True
+        var = var[1:]
+    elif var[0] == '&':
+        _or=False
+        var = var[1:]
+    else:
+        _or=False
+
+    if '&' in var:
         i = var.index('&')
         chunk = var[:i]
         var = var[i:]
-    elif '|' in var[1:]:
+    elif '|' in var:
         i = var.index('|')
         chunk = var[:i]
         var = var[i:]
@@ -266,14 +274,8 @@ def _where(query, table, var, field, tableid=None):
         done = True
         chunk = var
 
-    if chunk[0] == '|':
-        _or=True
-        chunk = chunk[1:]
-    elif chunk[0] == '&':
-        _or=False
-        chunk = chunk[1:]
-    else:
-        _or=False
+    if len(chunk) > 0:
+        return query
 
     if chunk[0] == '!':
         _not = True
@@ -281,12 +283,19 @@ def _where(query, table, var, field, tableid=None):
     else:
         _not = False
 
+    if len(chunk) > 0:
+        return query
+
     if chunk == 'empty':
         q = (db[table][field]==None)|(db[table][field]=='')
     elif chunk[0] not in '<>=':
         q = db[table][field].like(chunk)
     else:
         _op = chunk[0]
+
+        if len(chunk) > 0:
+            return query
+
         chunk = chunk[1:]
         if _op == '>':
             q = db[table][field]>chunk
