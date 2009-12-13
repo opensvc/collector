@@ -2,3 +2,30 @@
 
 {{try:}}{{=H2(message)}}{{except:}}{{=BEAUTIFY(response._vars)}}{{pass}}
 
+{{def cell(img, link, txt):}}
+<table>
+  <tr class=index_grid>
+    <td>
+      {{=A(IMG(_src=URL(r=request,c='static',f=img),_border=0), _href=URL(request.application,'default',link))}}
+    </td>
+    <td width=180>
+      <h3>{{=txt}}</h3>
+    </td>
+  </tr>
+</table>
+{{pass}}
+    
+<table>
+  <tr>
+    <td>{{cell('shot_svcmon.png', 'svcmon', T('display services live status'))}}</td>
+    <td>{{cell('shot_svcactions.png', 'svcactions?begin=>'+yesterday+'&status_log=empty', T('display last actions executed on services with their status'))}}</td>
+  </tr>
+  <tr>
+    <td>{{cell('shot_drplan.png', 'drplan', T('prepare or consult a disaster recovery plan'))}}</td>
+    <td>{{cell('shot_apps.png', 'apps', T('create new project codes and assign responsibles to projects'))}}</td>
+  </tr>
+  <tr>
+    <td>{{cell('shot_nodes.png', 'nodes', T('consult asset information'))}}</td>
+    <td>{{cell('shot_alerts.png', 'alerts', T('consult alerts sent and pending emission'))}}</td>
+  </tr>
+</table>

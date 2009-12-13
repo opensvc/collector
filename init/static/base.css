@@ -1,5 +1,9 @@
 @charset "UTF-8";
 
+.index_grid:hover {
+    background-color: #ffc;
+}
+
 .current_page {
     color: #990000;
     font-weight: bold;
@@ -199,7 +203,8 @@ h2 {
 
 h3 {
     padding-top: 0.3em;
-    font-size: 1em;
+    font-size: 1.25em;
+    font-style: italic;
 }
 
 p {
