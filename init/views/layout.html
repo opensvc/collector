@@ -7,51 +7,50 @@
     {{include 'web2py_ajax.html'}}
   </head>
   <body>
-      <table class="layout">
-        <tr class="header">
-          <td style="padding:0">
-            <table>
-              <tr>
-                <td>
-                  <h1>{{=(response.title or request.application)}}</h1>
-                </td>
-                <td class=menucell width=100%>
-                  <div align="center">
-                  <table style="line-height:25px">
-                    <tr class=menucell>
-                      <td class=menucell>
-                        {{if response.menu_auth:}}
-                        {{=MENU(response.menu_auth, _class="web2py-menu web2py-menu-horizontal")}}
-                       {{pass}}
-                     </td>
-                     <td class=menucell>
-                       {{if response.menu:}}
-                       {{=MENU(response.menu, _class="web2py-menu web2py-menu-horizontal")}}
-                       {{pass}}
-                     </td>
-                   </tr>
-                 </table>
-                 </div>
-               </tr>
-            </table>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <div class="flash">{{=response.flash or ''}}</div>
-            <div align=center>{{include}}</div>
-          </td>
-        </tr>
-        <tr>
-          <td class="footer">
-            <p>
-            <div align="center">
-              {{=T('Copyright')}} &copy; 2009 - OpenSVC -
-              {{=T('Powered by')}} <a href="http://www.web2py.com">web2py</a>
-            </div>
-            </p>
-          </td>
-        </tr>
-      </table>
+    <table class="layout">
+      <tr class="header">
+        <td style="padding:0">
+          <table>
+            <tr>
+              <td width=180>
+                <h1>{{=A((response.title or request.application), _href=URL(request.application,'default','index'), _style='color:white')}}</h1>
+              </td>
+              <td class=menucell>
+                <table style="line-height:25px">
+                  <tr class=menucell>
+                    <td class=menucell>
+                      {{if response.menu_auth:}}
+                      {{=MENU(response.menu_auth, _class="web2py-menu web2py-menu-horizontal")}}
+                      {{pass}}
+                    </td>
+                    <td class=menucell>
+                      {{if response.menu:}}
+                      {{=MENU(response.menu, _class="web2py-menu web2py-menu-horizontal")}}
+                      {{pass}}
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div class="flash">{{=response.flash or ''}}</div>
+          <div align=center>{{include}}</div>
+        </td>
+      </tr>
+      <tr>
+        <td class="footer">
+          <p>
+          <div align="center">
+            {{=T('Copyright')}} &copy; 2009 - OpenSVC -
+            {{=T('Powered by')}} <a href="http://www.web2py.com">web2py</a>
+          </div>
+          </p>
+        </td>
+      </tr>
+    </table>
   </body>
 </html>
