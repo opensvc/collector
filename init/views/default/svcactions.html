@@ -89,7 +89,7 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
     <td class={{=cellclass}}>{{=action.svcname}}</td>
     <td class={{=cellclass}}>{{=action.app}}</td>
     <td class={{=cellclass}}>{{=responsibles}}</td>
-    <td class={{=cellclass}}>{{=action.hostname}}</td>
+    <td class={{=cellclass}}>{{=A(action.hostname, _href=URL(request.application,'default','node?nodename='+action.hostname))}}</td>
     <td class="{{=cellclass}} {{=metaactionclass}}">{{=action.action}}</td>
     <td class="{{=cellclass}} status_{{=action.status}} ack_{{=action.ack}} {{=metaactionclass}}" {{=trigger}}>{{=action.status}}</td>
     <td class={{=cellclass}}>{{=action.begin}}</td>

@@ -18,6 +18,13 @@ for key in ['svc_name',
     if not vars.has_key(key) or vars[key] is None: vars[key]=''
     pass
 }}
+{{
+def show_nodes(nodes):
+    for n in nodes.split():
+}}
+        {{=A(n, _href=URL(request.application,'default','node?nodename='+n))}}
+    {{pass}}
+{{pass}}
 <form action='drplan' name='svcform' id='svcform'> 
 <table>
   {{BOX_TOP_ROW(11)}}
@@ -84,7 +91,7 @@ for key in ['svc_name',
       else:
           responsibles = ''
           pass
-    }}
+      }}
     <td style='padding:0'></td>
     <td class={{=cellclass}}><input type=checkbox name=check_{{=svc.v_services.svc_name}} {{=checked}}></td>
     <td class={{=cellclass}}>{{=svc.v_services.svc_name}}</td>
@@ -92,10 +99,10 @@ for key in ['svc_name',
     <td class={{=cellclass}}>{{=responsibles}}</td>
     <td class={{=cellclass}}>{{=svc.v_services.svc_type}}</td>
     <td class={{=cellclass}}>{{=svc.v_services.svc_drptype}}</td>
-    <td class={{=cellclass}}>{{=svc.v_services.svc_autostart}}</td>
-    <td class={{=cellclass}}>{{=svc.v_services.svc_nodes}}</td>
-    <td class={{=cellclass}}>{{=svc.v_services.svc_drpnode}}</td>
-    <td class={{=cellclass}}>{{=svc.v_services.svc_drpnodes}}</td>
+    <td class={{=cellclass}}>{{show_nodes(svc.v_services.svc_autostart)}}</td>
+    <td class={{=cellclass}}>{{show_nodes(svc.v_services.svc_nodes)}}</td>
+    <td class={{=cellclass}}>{{show_nodes(svc.v_services.svc_drpnode)}}</td>
+    <td class={{=cellclass}}>{{show_nodes(svc.v_services.svc_drpnodes)}}</td>
     <td class={{=cellclass}}>{{=drp_wave}}</td>
   </tr>
   {{pass}}

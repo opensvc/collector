@@ -94,7 +94,7 @@ for key in ['svcname',
     <td class={{=cellclass}}>{{=svc.svc_autostart}}</td>
     <td class={{=cellclass}}>{{=svc.mon_svctype}}</td>
     <td class={{=cellclass}}>{{=svc.mon_nodtype}}</td>
-    <td class={{=cellclass}}>{{=svc.mon_nodname}}</td>
+    <td class={{=cellclass}}>{{=A(svc.mon_nodname, _href=URL(request.application,'default','node?nodename='+svc.mon_nodname))}}</td>
     <td class="{{=cellclass}}">{{=node_status(svc,cellclass)}}</td>
     <td style='padding:0'></td>
   </tr>

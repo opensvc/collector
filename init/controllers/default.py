@@ -935,6 +935,14 @@ def nodes():
                 nodes=rows,
                 nav=nav)
 
+@auth.requires_login()
+def node():
+    node = db(db.nodes.nodename==request.vars.nodename).select()
+    if len(node) != 1:
+        response.flash(T('error'))
+        return
+    return dict(node=node)
+
 class ex(Exception):
     def __init__(self, value):
         self.value = value
