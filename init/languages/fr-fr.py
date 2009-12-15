@@ -233,6 +233,7 @@
 'node: %(node)s\nservice: %(service)s\napp: %(app)s\nresponsibles: %(responsibles)s\naction: %(action)s\nbegin: %(begin)s\nend: %(end)s\nerror message:\n%(log)s\n': "noeud: %(node)s\r\nservice: %(service)s\r\napp: %(app)s\r\nresponsables: %(responsibles)s\r\naction: %(action)s\r\nd\xc3\xa9but: %(begin)s\r\nfin: %(end)s\r\nmessage d'erreur:\r\n%(log)s\r\n",
 'node: %(node)s\nservice: %(svcname)s\napp: %(app)s\nresponsibles: %(responsibles)s\naction: %(action)s\nbegin: %(begin)s\nend: %(end)s\nerror message:\n%(status_log)s\n': "noeud: %(node)s\r\nservice: %(svcname)s\r\napp: %(app)s\r\nresponsables: %(responsibles)s\r\naction: %(action)s\r\nd\xc3\xa9but: %(begin)s\r\nfin: %(end)s\r\nmessage d'erreur:\r\n%(status_log)s\r\n",
 'nodes': 'noeuds',
+'nodes with services': 'noeuds avec services',
 'not acknowledged': 'non acquitt\xc3\xa9',
 'operating system': "syst\xc3\xa8me d'exploitation",
 'or import from csv file': 'importer depuis un fichier csv',

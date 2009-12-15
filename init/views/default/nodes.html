@@ -1,6 +1,7 @@
 {{extend 'layout.html'}}
 {{include '../static/jslib.html'}}
 {{include 'box.html'}}
+{{include 'filters.html'}}
 {{
 vars = request.vars
 
@@ -44,11 +45,15 @@ for key in colkeys:
       <table>
         <tr>
           <td> {{=T('Export')}}:</td>
+          <td> {{=T('Active filters')}}:</td>
+          <td> {{=T('Add filter')}}:</td>
         </tr>
         <tr>
           <td>
             {{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='nodes_csv', vars=vars))}}
           </td>
+          <td>{{FILTERS_ACTIVE(session.nodes_filters)}}</td>
+          <td>{{FILTERS_AVAIL(session.nodes_filters)}}</td>
         </tr>
       </table>
     </td>

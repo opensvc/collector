@@ -917,6 +917,16 @@ def nodes():
     colkeys = columns.keys()
     colkeys.sort(_sort_cols)
 
+    if not getattr(session, 'nodes_filters'):
+        session.nodes_filters = {
+            1: dict(name='nodes with services',
+                    id=1,
+                    active=True,
+                    q=(db.nodes.nodename.belongs(db()._select(db.svcmon.mon_nodname))),
+            ),
+        }
+
+    toggle_session_filters(session.nodes_filters)
 
     # filtering
     query = (db.nodes.id>0)
@@ -924,6 +934,8 @@ def nodes():
         if key not in request.vars.keys():
             continue
         query &= _where(None, 'nodes', request.vars[key], key)
+
+    query = apply_session_filters(session.nodes_filters, query, 'nodes')
 
     (start, end, nav) = _pagination(request, query)
     if start == 0 and end == 0:
