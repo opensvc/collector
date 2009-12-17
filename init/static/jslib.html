@@ -19,7 +19,7 @@ function checkEnter(e) {
 function select_all(checked, aform) {
   var elem = aform.elements;
   for(var i = 0; i < elem.length; i++) {
-    if (elem[i].type == 'checkbox') {
+    if (elem[i].type == 'checkbox' && elem[i].disabled == false) {
       elem[i].checked = checked
     }
   }
