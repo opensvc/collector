@@ -4,30 +4,76 @@
 <table>
   <tr><td>
     <table width='100%'>
-      {{BOX_TOP_ROW(8)}}
+      {{BOX_TOP_ROW(4)}}
       <tr class=box>
         <td class=box></td>
-        <td>{{=T('country')}}</td>
-        <td>{{=T('city')}}</td>
-        <td>{{=T('zip')}}</td>
-        <td>{{=T('address')}}</td>
-        <td>{{=T('building')}}</td>
-        <td>{{=T('floor')}}</td>
-        <td>{{=T('room')}}</td>
-        <td>{{=T('rack')}}</td>
+        <td colspan=2 width=50%>{{=T('location')}}</td>
+        <td colspan=2 width=50%>{{=T('power')}}</td>
         <td class=box></td>
       </tr>
-      {{BOX_BOTTOM_ROW(8)}}
+      {{BOX_BOTTOM_ROW(4)}}
       <tr>
         <td style='padding:0'></td>
-        <td width=15%>{{=node['loc_country']}}</td>
-        <td width=15%>{{=node['loc_city']}}</td>
-        <td width=15%>{{=node['loc_zip']}}</td>
-        <td width=15%>{{=node['loc_addr']}}</td>
-        <td width=15%>{{=node['loc_building']}}</td>
-        <td width=15%>{{=node['loc_floor']}}</td>
-        <td width=15%>{{=node['loc_room']}}</td>
-        <td width=15%>{{=node['loc_rack']}}</td>
+        <td style='font-style:italic'>{{=T('country')}}</td>
+        <td>{{=node['loc_country']}}</td>
+        <td style='font-style:italic'>{{=T('nb power supply')}}</td>
+        <td>{{=node['power_supply_nb']}}</td>
+        <td style='padding:0'></td>
+      </tr>
+      <tr>
+        <td style='padding:0'></td>
+        <td style='font-style:italic'>{{=T('city')}}</td>
+        <td>{{=node['loc_city']}}</td>
+        <td style='font-style:italic'>{{=T('power cabinet #1')}}</td>
+        <td>{{=node['power_cabinet1']}}</td>
+        <td style='padding:0'></td>
+      </tr>
+      <tr>
+        <td style='padding:0'></td>
+        <td style='font-style:italic'>{{=T('zip')}}</td>
+        <td>{{=node['loc_zip']}}</td>
+        <td style='font-style:italic'>{{=T('power cabinet #2')}}</td>
+        <td>{{=node['power_cabinet2']}}</td>
+        <td style='padding:0'></td>
+      </tr>
+      <tr>
+        <td style='padding:0'></td>
+        <td style='font-style:italic'>{{=T('address')}}</td>
+        <td>{{=node['loc_addr']}}</td>
+        <td style='font-style:italic'>{{=T('power protector')}}</td>
+        <td>{{=node['power_protect']}}</td>
+        <td style='padding:0'></td>
+      </tr>
+      <tr>
+        <td style='padding:0'></td>
+        <td style='font-style:italic'>{{=T('building')}}</td>
+        <td>{{=node['loc_building']}}</td>
+        <td style='font-style:italic'>{{=T('power protector breaker')}}</td>
+        <td>{{=node['power_protect_breaker']}}</td>
+        <td style='padding:0'></td>
+      </tr>
+      <tr>
+        <td style='padding:0'></td>
+        <td style='font-style:italic'>{{=T('floor')}}</td>
+        <td>{{=node['loc_floor']}}</td>
+        <td style='font-style:italic'>{{=T('power breaker #1')}}</td>
+        <td>{{=node['power_breaker1']}}</td>
+        <td style='padding:0'></td>
+      </tr>
+      <tr>
+        <td style='padding:0'></td>
+        <td style='font-style:italic'>{{=T('room')}}</td>
+        <td>{{=node['loc_room']}}</td>
+        <td style='font-style:italic'>{{=T('power breaker #2')}}</td>
+        <td>{{=node['power_breaker2']}}</td>
+        <td style='padding:0'></td>
+      </tr>
+      <tr>
+        <td style='padding:0'></td>
+        <td style='font-style:italic'>{{=T('rack')}}</td>
+        <td>{{=node['loc_rack']}}</td>
+        <td style='font-style:italic'></td>
+        <td></td>
         <td style='padding:0'></td>
       </tr>
     </table>

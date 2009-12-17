@@ -605,62 +605,112 @@ def get_racks():
         racks.append(row.loc_rack)
     return dict(racks=racks)
 
-asset_filters = {
+def asset_filters(table):
+   return {
     101: dict(name='country',
             id=101,
             active=False,
             value=None,
             field='loc_country',
-            table='v_svcmon',
+            table=table,
     ),
     102: dict(name='zip',
             id=102,
             active=False,
             value=None,
             field='loc_zip',
-            table='v_svcmon',
+            table=table,
     ),
     103: dict(name='city',
             id=103,
             active=False,
             value=None,
             field='loc_city',
-            table='v_svcmon',
+            table=table,
     ),
     104: dict(name='addr',
             id=104,
             active=False,
             value=None,
             field='loc_addr',
-            table='v_svcmon',
+            table=table,
     ),
     105: dict(name='building',
             id=105,
             active=False,
             value=None,
             field='loc_building',
-            table='v_svcmon',
+            table=table,
     ),
     106: dict(name='floor',
             id=106,
             active=False,
             value=None,
             field='loc_floor',
-            table='v_svcmon',
+            table=table,
     ),
     107: dict(name='room',
             id=107,
             active=False,
             value=None,
             field='loc_room',
-            table='v_svcmon',
+            table=table,
     ),
     108: dict(name='rack',
             id=108,
             active=False,
             value=None,
             field='loc_rack',
-            table='v_svcmon',
+            table=table,
+    ),
+    109: dict(name='nb power supply',
+            id=109,
+            active=False,
+            value=None,
+            field='power_supply_nb',
+            table=table,
+    ),
+    110: dict(name='power cabinet #1',
+            id=110,
+            active=False,
+            value=None,
+            field='power_cabinet1',
+            table=table,
+    ),
+    111: dict(name='power cabinet #2',
+            id=111,
+            active=False,
+            value=None,
+            field='power_cabinet2',
+            table=table,
+    ),
+    112: dict(name='power protector',
+            id=112,
+            active=False,
+            value=None,
+            field='power_protect',
+            table=table,
+    ),
+    113: dict(name='power protector breaker',
+            id=113,
+            active=False,
+            value=None,
+            field='power_protect_breaker',
+            table=table,
+    ),
+    114: dict(name='power breaker #1',
+            id=114,
+            active=False,
+            value=None,
+            field='power_breaker1',
+            table=table,
+    ),
+    115: dict(name='power breaker #2',
+            id=115,
+            active=False,
+            value=None,
+            field='power_breaker2',
+            table=table,
     ),
 }
 
@@ -674,7 +724,7 @@ def svcmon():
                     q=(db.v_svcmon.mon_nodname==db.v_svcmon.svc_autostart)
             ),
         }
-    session.svcmon_filters.update(asset_filters)
+    session.svcmon_filters.update(asset_filters('v_svcmon'))
     toggle_session_filters(session.svcmon_filters)
 
     query = _where(None, 'v_svcmon', request.vars.svcname, 'mon_svcname')
@@ -730,7 +780,7 @@ def svcactions():
                ),
         }
 
-    session.svcactions_filters.update(asset_filters)
+    session.svcactions_filters.update(asset_filters('v_svc_actions'))
     toggle_session_filters(session.svcactions_filters)
 
     if request.vars.ackcomment is not None:
@@ -909,6 +959,41 @@ def nodes():
         type = dict(
             pos = 22,
             title = T('Type'),
+            size = 10
+        ),
+        power_supply_nb = dict(
+            pos = 23,
+            title = T('Power supply number'),
+            size = 10
+        ),
+        power_cabinet1 = dict(
+            pos = 24,
+            title = T('Power cabinet #1'),
+            size = 10
+        ),
+        power_cabinet2 = dict(
+            pos = 25,
+            title = T('Power cabinet #2'),
+            size = 10
+        ),
+        power_protect = dict(
+            pos = 26,
+            title = T('Power protector'),
+            size = 10
+        ),
+        power_protect_breaker = dict(
+            pos = 27,
+            title = T('Power protector breaker'),
+            size = 10
+        ),
+        power_breaker1 = dict(
+            pos = 28,
+            title = T('Power breaker #1'),
+            size = 10
+        ),
+        power_breaker2 = dict(
+            pos = 29,
+            title = T('Power breaker #2'),
             size = 10
         ),
     )
