@@ -73,6 +73,7 @@ for key in ['svcname',
     cellclasses = {}
     cellclasses['cell1'] = 'cell2'
     cellclasses['cell2'] = 'cell1'
+    yesterday = str(datetime.datetime.today()-datetime.timedelta(days=1))
   }}
   {{for svc in services:}}
   <tr>
@@ -87,7 +88,7 @@ for key in ['svcname',
           pass
     }}
     <td style='padding:0'></td>
-    <td class={{=cellclass}}>{{=svc.mon_svcname}}</td>
+    <td class={{=cellclass}}>{{=A(svc.mon_svcname, _href=URL(request.application,'default','svcactions?svcname='+svc.mon_svcname+'&status_log=empty&begin=>'+yesterday))}}</td>
     <td class={{=cellclass}}>{{=svc.svc_containertype}}</td>
     <td class={{=cellclass}}>{{=svc.svc_app}}</td>
     <td class={{=cellclass}}>{{=responsibles}}</td>
