@@ -1115,7 +1115,8 @@ def drplan():
     elif request.vars.setwave is not None and request.vars.setwave != '':
         _drplan_set_wave(request)
 
-    query = _where(None, 'v_services', request.vars.svc_name, 'svc_name')
+    query = (db.v_services.svc_drpnode!=None)&(db.v_services.svc_drpnode!='')
+    query &= _where(None, 'v_services', request.vars.svc_name, 'svc_name')
     query &= _where(None, 'v_services', request.vars.svc_app, 'svc_app')
     query &= _where(None, 'v_services', request.vars.responsibles, 'responsibles')
     query &= _where(None, 'v_services', request.vars.svc_type, 'svc_type')
@@ -1158,12 +1159,12 @@ def _drplan_scripts_header(phase):
     l += ['']
     return l
 
-def _scripts(rows, title, action, service=False):
+def _scripts(rows, title, action, nodecol=None, service=False):
     ssh = '/usr/bin/ssh -F /tmp/ssh_config_drp'
     cmd = '/service/bin/svcmgr'
     lines = _drplan_scripts_header(title)
     for row in rows:
-        _cmd = ' '.join([ssh, row.services.svc_drpnode, '--'])
+        _cmd = ' '.join([ssh, row.services[nodecol], '--'])
         if service:
             _cmd += """ %s --service %s %s"""%(cmd, row.services.svc_name, action)
         else:
@@ -1177,74 +1178,75 @@ def _scripts(rows, title, action, service=False):
 
 @auth.requires_login()
 def drplan_scripts():
-    q_dev_drptype = (db.services.svc_drptype=='DEV')
     q_drpnode_is_set = (db.services.svc_drpnode!=None)
     q_drpnode_is_set &= (db.services.svc_drpnode!='')
     q_autostart_is_set = (db.services.svc_autostart!=None)
     q_autostart_is_set &= (db.services.svc_autostart!='')
+    q_wave_is_set = (db.drpservices.drp_wave!=None)&(db.drpservices.drp_wave!='')
+    q_cur_project = (db.drpservices.drp_project_id==request.vars.prjlist)
     p = {}
 
     """stop/start DEV
     """
-    query = q_dev_drptype & q_drpnode_is_set
-    dev_rows = db(query).select(db.services.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id, left=db.drpservices.on((db.services.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)),groupby=db.services.svc_drpnode)
-    (sh, node_nb) = _scripts(dev_rows, 'STOP DEV', 'stop')
+    query = q_drpnode_is_set & q_wave_is_set & q_cur_project
+    dev_rows = db(query).select(db.services.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id, left=db.drpservices.on(db.services.svc_name==db.drpservices.drp_svcname),groupby=db.services.svc_drpnode)
+    (sh, node_nb) = _scripts(dev_rows, 'STOP DEV', 'stop', 'svc_drpnode')
     p['stopdev'] =  dict(action='stop', phase='DEV', sh=sh, node_nb=node_nb, shname='00_stop_dev.sh')
-    (sh, node_nb) = _scripts(dev_rows, 'START DEV', 'startdev')
+    (sh, node_nb) = _scripts(dev_rows, 'START DEV', 'startdev', 'svc_drpnode')
     p['startdev'] =  dict(action='start', phase='DEV', sh=sh, node_nb=node_nb, shname='15_start_dev.sh')
 
     """stop/start PRD
     """
-    query = q_autostart_is_set & q_drpnode_is_set
-    prd_rows = db(query).select(db.services.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id, left=db.drpservices.on((db.services.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)),groupby=db.services.svc_autostart)
-    (sh, node_nb) = _scripts(prd_rows, 'STOP PRD', 'stop')
+    query = q_autostart_is_set & q_drpnode_is_set & q_wave_is_set & q_cur_project
+    prd_rows = db(query).select(db.services.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id, left=db.drpservices.on(db.services.svc_name==db.drpservices.drp_svcname),groupby=db.services.svc_autostart)
+    (sh, node_nb) = _scripts(prd_rows, 'STOP PRD', 'stop', 'svc_autostart')
     p['stopprd'] =  dict(action='stop', phase='PRD', sh=sh, node_nb=node_nb, shname='01_stop_prd.sh')
 
     wquery = query & (db.drpservices.drp_wave==0)
     prd_rows = db(wquery).select(db.services.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id, left=db.drpservices.on((db.services.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)),groupby=db.services.svc_name,orderby=(db.services.svc_autostart))
-    (sh, node_nb) = _scripts(prd_rows, 'START PRD WAVE 0', 'start')
+    (sh, node_nb) = _scripts(prd_rows, 'START PRD WAVE 0', 'start', 'svc_autostart')
     p['startprd0'] =  dict(action='start', phase='PRD WAVE 0', sh=sh, node_nb=node_nb, shname='11_start_prd0.sh')
 
     wquery = query & (db.drpservices.drp_wave==1)
     prd_rows = db(wquery).select(db.services.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id, left=db.drpservices.on((db.services.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)),groupby=db.services.svc_name,orderby=(db.services.svc_autostart))
-    (sh, node_nb) = _scripts(prd_rows, 'START PRD WAVE 1', 'start')
+    (sh, node_nb) = _scripts(prd_rows, 'START PRD WAVE 1', 'start', 'svc_autostart')
     p['startprd1'] =  dict(action='start', phase='PRD WAVE 1', sh=sh, node_nb=node_nb, shname='12_start_prd1.sh')
 
     wquery = query & (db.drpservices.drp_wave==2)
     prd_rows = db(wquery).select(db.services.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id, left=db.drpservices.on((db.services.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)),groupby=db.services.svc_name,orderby=(db.services.svc_autostart))
-    (sh, node_nb) = _scripts(prd_rows, 'START PRD WAVE 2', 'start')
+    (sh, node_nb) = _scripts(prd_rows, 'START PRD WAVE 2', 'start', 'svc_autostart')
     p['startprd2'] =  dict(action='start', phase='PRD WAVE 2', sh=sh, node_nb=node_nb, shname='13_start_prd2.sh')
 
     wquery = query & (db.drpservices.drp_wave==3)
     prd_rows = db(wquery).select(db.services.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id, left=db.drpservices.on((db.services.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)),groupby=db.services.svc_name,orderby=(db.services.svc_autostart))
-    (sh, node_nb) = _scripts(prd_rows, 'START PRD WAVE 3', 'start')
+    (sh, node_nb) = _scripts(prd_rows, 'START PRD WAVE 3', 'start', 'svc_autostart')
     p['startprd3'] =  dict(action='start', phase='PRD WAVE 3', sh=sh, node_nb=node_nb, shname='14_start_prd3.sh')
 
     """stop/start DR
     """
-    query = q_drpnode_is_set
-    dr_rows = db(query).select(db.services.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id, left=db.drpservices.on((db.services.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)),groupby=db.services.svc_drpnode)
-    (sh, node_nb) = _scripts(dr_rows, 'STOP DR', 'stop')
+    query = q_drpnode_is_set & q_wave_is_set & q_cur_project & q_drpnode_is_set
+    dr_rows = db(query).select(db.services.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id, left=db.drpservices.on(db.services.svc_name==db.drpservices.drp_svcname),groupby=db.services.svc_drpnode)
+    (sh, node_nb) = _scripts(dr_rows, 'STOP DR', 'stop', 'svc_drpnode')
     p['stopdr'] =  dict(action='stop', phase='DR', sh=sh, node_nb=node_nb, shname='10_stop_dr.sh')
 
-    query = q_drpnode_is_set & (db.drpservices.drp_wave==0)
-    dr_rows = db(query).select(db.services.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id, left=db.drpservices.on((db.services.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)),groupby=db.services.svc_name,orderby=(db.services.svc_drpnode))
-    (sh, node_nb) = _scripts(dr_rows, 'START DR WAVE 0', 'start', service=True)
+    wquery = query & (db.drpservices.drp_wave==0)
+    dr_rows = db(wquery).select(db.services.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id, left=db.drpservices.on((db.services.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)),groupby=db.services.svc_name,orderby=(db.services.svc_drpnode))
+    (sh, node_nb) = _scripts(dr_rows, 'START DR WAVE 0', 'svc_drpnode', 'start', service=True)
     p['startdr0'] =  dict(action='start', phase='DR WAVE 0', sh=sh, node_nb=node_nb, shname='02_start_dr0.sh')
 
-    query = q_drpnode_is_set & (db.drpservices.drp_wave==1)
-    dr_rows = db(query).select(db.services.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id, left=db.drpservices.on((db.services.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)),groupby=db.services.svc_name,orderby=(db.services.svc_drpnode))
-    (sh, node_nb) = _scripts(dr_rows, 'START DR WAVE 1', 'start', service=True)
+    wquery = query & (db.drpservices.drp_wave==1)
+    dr_rows = db(wquery).select(db.services.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id, left=db.drpservices.on((db.services.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)),groupby=db.services.svc_name,orderby=(db.services.svc_drpnode))
+    (sh, node_nb) = _scripts(dr_rows, 'START DR WAVE 1', 'start', 'svc_drpnode', service=True)
     p['startdr1'] =  dict(action='start', phase='DR WAVE 1', sh=sh, node_nb=node_nb, shname='03_start_dr1.sh')
 
-    query = q_drpnode_is_set & (db.drpservices.drp_wave==2)
-    dr_rows = db(query).select(db.services.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id, left=db.drpservices.on((db.services.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)),groupby=db.services.svc_name,orderby=(db.services.svc_drpnode))
-    (sh, node_nb) = _scripts(dr_rows, 'START DR WAVE 2', 'start', service=True)
+    wquery = query & (db.drpservices.drp_wave==2)
+    dr_rows = db(wquery).select(db.services.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id, left=db.drpservices.on((db.services.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)),groupby=db.services.svc_name,orderby=(db.services.svc_drpnode))
+    (sh, node_nb) = _scripts(dr_rows, 'START DR WAVE 2', 'start', 'svc_drpnode', service=True)
     p['startdr2'] =  dict(action='start', phase='DR WAVE 2', sh=sh, node_nb=node_nb, shname='04_start_dr2.sh')
 
-    query = q_drpnode_is_set & (db.drpservices.drp_wave==3)
-    dr_rows = db(query).select(db.services.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id, left=db.drpservices.on((db.services.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)),groupby=db.services.svc_name,orderby=(db.services.svc_drpnode))
-    (sh, node_nb) = _scripts(dr_rows, 'START DR WAVE 3', 'start', service=True)
+    wquery = query & (db.drpservices.drp_wave==3)
+    dr_rows = db(wquery).select(db.services.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id, left=db.drpservices.on((db.services.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)),groupby=db.services.svc_name,orderby=(db.services.svc_drpnode))
+    (sh, node_nb) = _scripts(dr_rows, 'START DR WAVE 3', 'start', 'svc_drpnode', service=True)
     p['startdr3'] =  dict(action='start', phase='DR WAVE 3', sh=sh, node_nb=node_nb, shname='05_start_dr3.sh')
 
     return dict(p=p)
