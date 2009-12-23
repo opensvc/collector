@@ -21,3 +21,15 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`opensvc`@`%` SQL SECURITY DEFINER VIEW  `ope
 DROP VIEW v_scvactions
 
 CREATE ALGORITHM=UNDEFINED DEFINER=`opensvc`@`%` SQL SECURITY DEFINER VIEW  `opensvc`.`v_svcactions` AS select `ac`.`svcname` AS `svcname`,`ac`.`action` AS `action`,`ac`.`status` AS `status`,`ac`.`time` AS `time`,`ac`.`begin` AS `begin`,`ac`.`end` AS `end`,`ac`.`hostname` AS `hostname`,`ac`.`hostid` AS `hostid`,`ac`.`status_log` AS `status_log`,`ac`.`pid` AS `pid`,`ac`.`B_ip_status` AS `B_ip_status`,`ac`.`B_mount_status` AS `B_mount_status`,`ac`.`B_srdf_status` AS `B_srdf_status`,`ac`.`B_dsk_mode` AS `B_dsk_mode`,`ac`.`E_ip_status` AS `E_ip_status`,`ac`.`E_mount_status` AS `E_mount_status`,`ac`.`E_srdf_status` AS `E_srdf_status`,`ac`.`E_dsk_mode` AS `E_dsk_mode`,`ac`.`ID` AS `ID`,`ac`.`ack` AS `ack`,`ac`.`alert` AS `alert`,`ac`.`scripts_status` AS `scripts_status`,`ac`.`scripts_failed` AS `scripts_failed`,`ac`.`scripts_success` AS `scripts_success`,`ac`.`B_SVCstatus` AS `B_SVCstatus`,`ac`.`E_SVCstatus` AS `E_SVCstatus`,`ac`.`action_group` AS `action_group`,`ac`.`acked_by` AS `acked_by`,`ac`.`acked_comment` AS `acked_comment`,`ac`.`acked_date` AS `acked_date`,`sa`.`app` AS `app`,`sa`.`responsibles` AS `responsibles`,`sa`.`mailto` AS `mailto`,`n`.`nodename` AS `nodename`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`team_responsible` AS `team_responsible`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`status` AS `asset_status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`, n.power_supply_nb, n.power_cabinet1, n.power_cabinet2, n.power_protect, n.power_protect_breaker, n.power_breaker1, n.power_breaker2 from ((`SVCactions` `ac` left join `v_services` `sa` on((`sa`.`svc_name` = `ac`.`svcname`))) join `nodes` `n` on((`ac`.`hostname` = `n`.`nodename`)))
+
+CREATE TABLE  `opensvc`.`svcdisks` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `disk_id` varchar(60) NOT NULL,
+  `disk_svcname` varchar(60) NOT NULL,
+  `disk_nodename` varchar(60) NOT NULL,
+  `disk_size` int(11) NOT NULL,
+  `disk_vendor` varchar(8) NOT NULL,
+  `disk_model` varchar(16) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `new_index` (`disk_id`,`disk_svcname`,`disk_nodename`)
+) ENGINE=MyISAM AUTO_INCREMENT=7 DEFAULT CHARSET=latin1 COMMENT='disks used by services'

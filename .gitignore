@@ -2,6 +2,8 @@
 *.pyc
 *.swp
 *.class
+viz*.png
+viz*.dot
 cache/
 databases/
 private/

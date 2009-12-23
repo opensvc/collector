@@ -748,6 +748,174 @@ def svcmon():
 
     return dict(services=rows, filters=session.filters, nav=nav)
 
+class viz(object):
+    services = set([])
+    prdnodes = set([])
+    drpnodes = set([])
+    prddisks = {}
+    drpdisks = {}
+    drpsvc2disk = set([])
+    prddisk2svc = set([])
+    prdnode2disk = set([])
+    drpnode2disk = set([])
+    drpdisk2node = set([])
+    data = ""
+    img_node = 'applications'+str(URL(r=request,c='static',f='node.png'))
+    img_disk = 'applications'+str(URL(r=request,c='static',f='hd.png'))
+    img_svc = 'applications'+str(URL(r=request,c='static',f='svc.png'))
+    def __str__(self):
+        buff = """
+        digraph G {
+                rankdir=LR;
+                compound=true;
+                ranksep=1.05;
+                splines=true;
+                penwidth=0;
+                center=true;
+                fontsize=8;
+                //label="Service architecture diagram";
+
+                node [shape=plaintext, fontsize=8];
+                edge [fontsize=8];
+
+                bgcolor=white;
+        """
+        buff += self.data
+        buff += self.rank(self.prdnodes)
+        buff += self.rank(self.prddisks.values())
+        buff += self.rank(self.services)
+        buff += self.rank(self.drpdisks.values())
+        buff += self.rank(self.drpnodes)
+        buff += "}"
+        return buff
+
+    def write(self, path):
+        pl = path.split('.')
+        type = pl[len(pl)-1]
+        dot = path+'.dot'
+        with open(dot, 'w') as f:
+            f.write(str(self))
+            f.close()
+        if type == 'dot':
+            return
+        from subprocess import *
+        dst = path+'.'+type
+        cmd = [ 'dot', '-T'+type, '-o', path, dot ]
+        process = Popen(cmd, stdout=None, stderr=None)
+        process.communicate()
+
+    def __init__(self):
+        pass
+
+    def add_service(self, svc):
+        vid = 'svc_'+svc
+        if vid in self.services: return
+        self.services |= set([vid])
+        self.data += r"""
+        subgraph cluster_%(v)s {label="%(s)s"; labelloc="b"; %(v)s};
+        %(v)s [label="", shape=box, style=invis, shapefile="%(img)s"];
+        """%(dict(v=vid, s=svc, img=self.img_svc))
+
+    def add_prdnode(self, node, model=None, mem=None):
+        vid = 'node_'+node
+        if vid in self.prdnodes: return
+        self.prdnodes |= set([vid])
+        self.data += r"""
+        subgraph cluster_%(v)s {label="%(n)s\n%(model)s\n%(mem)s KB"; labelloc="b"; %(v)s};
+        %(v)s [label="", shape=box, style=invis, shapefile="%(img)s"];
+        """%(dict(v=vid, n=node, model=model, mem=mem, img=self.img_node))
+
+    def add_drpnode(self, node, model=None, mem=None):
+        vid = 'node_'+node
+        if vid in self.drpnodes: return
+        self.drpnodes |= set([vid])
+        self.data += r"""
+        subgraph cluster_%(v)s {label="%(n)s\n%(model)s\n%(mem)s KB"; labelloc="b"; %(v)s};
+        %(v)s [label="", shape=box, style=invis, shapefile="%(img)s"];
+        """%(dict(v=vid, n=node, model=model, mem=mem, img=self.img_node))
+
+    def add_prddisk(self, id, disk, size=None, vendor=None, model=None):
+        vid = 'disk_'+str(id)
+        if disk in self.prddisks: return
+        self.prddisks[disk]= vid
+        self.data += r"""
+        subgraph cluster_%(id)s {label="%(name)s,\n%(size)s GB\n%(vendor)s\n%(model)s"; labelloc="b"; %(id)s};
+        %(id)s [label="", shape=box, style=invis, shapefile="%(img)s"];
+        """%(dict(id=vid, name=disk, size=size, vendor=vendor, model=model, img=self.img_disk))
+
+    def add_drpdisk(self, id, disk, size=None, vendor=None, model=None):
+        vid = 'disk_'+str(id)
+        if disk in self.drpdisks: return
+        self.drpdisks[disk] = vid
+        self.data += r"""
+        subgraph cluster_%(id)s {label="%(name)s,\n%(size)s GB\n%(vendor)s\n%(model)s"; labelloc="b"; %(id)s};
+        %(id)s [label="", shape=box, style=invis, shapefile="%(img)s"];
+        """%(dict(id=vid, name=disk, size=size, vendor=vendor, model=model, img=self.img_disk))
+
+    def rank(self, list):
+        return """{ rank=same; %s };
+               """%'; '.join(list)
+
+    def add_prdnode2disk(self, node, disk):
+        vid1 = 'node_'+node
+        vid2 = self.prddisks[disk]
+        key = vid1+vid2
+        if key in self.prdnode2disk: return
+        self.prdnode2disk |= set([key])
+        self.data += """edge [arrowsize=0, color=black]; %(n)s -> %(d)s;"""%(dict(n=vid1, d=vid2))
+
+    def add_prddisk2svc(self, disk, svc):
+        vid1 = self.prddisks[disk]
+        vid2 = 'svc_'+svc
+        key = vid1+vid2
+        if key in self.drpnode2disk: return
+        self.prddisk2svc |= set([key])
+        self.data += """edge [arrowsize=0, color=grey]; %(d)s -> %(s)s;"""%(dict(d=vid1, s=vid2))
+
+    def add_drpsvc2disk(self, svc, disk):
+        vid1 = 'svc_'+svc
+        vid2 = self.drpdisks[disk]
+        key = vid1+vid2
+        if key in self.drpsvc2disk: return
+        self.drpsvc2disk |= set([key])
+        self.data += """edge [arrowsize=0, color=grey]; %(s)s -> %(d)s;"""%(dict(d=vid1, s=vid2))
+
+    def add_drpdisk2node(self, disk, node):
+        vid1 = self.drpdisks[disk]
+        vid2 = 'node_'+node
+        key = vid1+vid2
+        if key in self.drpdisk2node: return
+        self.drpdisk2node |= set([key])
+        self.data += """edge [arrowsize=0, color=black]; %(d)s -> %(n)s;"""%(dict(d=vid1, n=vid2))
+
+def svcmon_viz():
+    request.vars['perpage'] = 0
+    s = svcmon()
+    v = viz()
+    disks = db(db.svcdisks.id>0).select()
+    for svc in s['services']:
+        v.add_service(svc.svc_name)
+        if svc.nodename in svc.svc_nodes.split(' '):
+            v.add_prdnode(svc.nodename, svc.model, svc.mem_bytes)
+            for d in [ disk for disk in disks if disk.disk_nodename == svc.nodename and disk.disk_svcname == svc.svc_name ]:
+                v.add_prddisk(d.id, d.disk_id, d.disk_size, d.disk_vendor, d.disk_model)
+                v.add_prdnode2disk(svc.nodename, d.disk_id)
+                v.add_prddisk2svc(d.disk_id, svc.svc_name)
+        elif svc.nodename in [ node for node in set(svc.svc_drpnodes.split(' ')+[svc.svc_drpnode]) if len(node) > 0]:
+            v.add_drpnode(svc.nodename, svc.model, svc.mem_bytes)
+            for d in [ disk for disk in disks if disk.disk_nodename == svc.nodename and disk.disk_svcname == svc.svc_name ]:
+                v.add_drpdisk(d.id, d.disk_id, d.disk_size, d.disk_vendor, d.disk_model)
+                v.add_drpsvc2disk(svc.svc_name, d.disk_id)
+                v.add_drpdisk2node(d.disk_id, svc.nodename)
+    import tempfile
+    import os
+    vizdir = 'applications'+str(URL(r=request,c='static',f='/'))
+    f = tempfile.NamedTemporaryFile(delete=False, dir=vizdir, prefix='viz')
+    f.close()
+    v.write(f.name+'.png')
+    img = str(URL(r=request,c='static',f=os.path.basename(f.name)+'.png'))
+    return dict(s=s['services'], v=str(v), disks=disks, img=img)
+
 def svcmon_csv():
     import gluon.contenttype
     response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
@@ -1341,6 +1509,16 @@ def svcmon_update(vars, vals):
     for a, b in zip(vars, vals):
         upd.append("%s=%s" % (a, b))
     sql="""insert delayed into svcmon (%s) values (%s) on duplicate key update %s""" % (','.join(vars), ','.join(vals), ','.join(upd))
+    db.executesql(sql)
+    db.commit()
+    return 0
+
+@service.xmlrpc
+def register_disk(vars, vals):
+    upd = []
+    for a, b in zip(vars, vals):
+        upd.append("%s=%s" % (a, b))
+    sql="""insert delayed into svcdisks (%s) values (%s) on duplicate key update %s""" % (','.join(vars), ','.join(vals), ','.join(upd))
     db.executesql(sql)
     db.commit()
     return 0

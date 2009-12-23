@@ -109,12 +109,16 @@ for key in ['svcname',
       <table>
         <tr>
           <td> {{=T('Export')}}:</td>
+          <td> {{=T('Topology')}}:</td>
           <td> {{=T('Active filters')}}:</td>
           <td> {{=T('Add filter')}}:</td>
         </tr>
         <tr>
           <td>
             {{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='svcmon_csv', vars=vars))}}
+          </td>
+          <td>
+            {{=A(IMG(_src=URL(r=request,c='static',f='viz.png'),_border=0, _title=T("print the topology of the current data cursor")),_href=URL(r=request,f='svcmon_viz', vars=vars))}}
           </td>
           <td>{{FILTERS_ACTIVE(session.svcmon_filters)}}</td>
           <td>{{FILTERS_AVAIL(session.svcmon_filters)}}</td>
