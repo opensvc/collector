@@ -813,7 +813,7 @@ class viz(object):
         self.services |= set([vid])
         self.data += r"""
         subgraph cluster_%(v)s {label="%(s)s"; labelloc="b"; %(v)s};
-        %(v)s [label="", shape=box, style=invis, shapefile="%(img)s"];
+        %(v)s [label="", image="%(img)s"];
         """%(dict(v=vid, s=svc, img=self.img_svc))
 
     def add_prdnode(self, node, model=None, mem=None):
@@ -822,7 +822,7 @@ class viz(object):
         self.prdnodes |= set([vid])
         self.data += r"""
         subgraph cluster_%(v)s {label="%(n)s\n%(model)s\n%(mem)s KB"; labelloc="b"; %(v)s};
-        %(v)s [label="", shape=box, style=invis, shapefile="%(img)s"];
+        %(v)s [label="", image="%(img)s"];
         """%(dict(v=vid, n=node, model=model, mem=mem, img=self.img_node))
 
     def add_drpnode(self, node, model=None, mem=None):
@@ -831,7 +831,7 @@ class viz(object):
         self.drpnodes |= set([vid])
         self.data += r"""
         subgraph cluster_%(v)s {label="%(n)s\n%(model)s\n%(mem)s KB"; labelloc="b"; %(v)s};
-        %(v)s [label="", shape=box, style=invis, shapefile="%(img)s"];
+        %(v)s [label="", image="%(img)s"];
         """%(dict(v=vid, n=node, model=model, mem=mem, img=self.img_node))
 
     def add_prddisk(self, id, disk, size=None, vendor=None, model=None):
@@ -839,18 +839,18 @@ class viz(object):
         if disk in self.prddisks: return
         self.prddisks[disk]= vid
         self.data += r"""
-        subgraph cluster_%(id)s {label="%(name)s,\n%(size)s GB\n%(vendor)s\n%(model)s"; labelloc="b"; %(id)s};
-        %(id)s [label="", shape=box, style=invis, shapefile="%(img)s"];
-        """%(dict(id=vid, name=disk, size=size, vendor=vendor, model=model, img=self.img_disk))
+        subgraph cluster_%(id)s {label="%(name)s\n%(size)s GB\n%(vendor)s\n%(model)s"; labelloc="b"; %(id)s};
+        %(id)s [label="", image="%(img)s"];
+        """%(dict(id=vid, name=disk, size=size, vendor=vendor.strip(), model=model.strip(), img=self.img_disk))
 
     def add_drpdisk(self, id, disk, size=None, vendor=None, model=None):
         vid = 'disk_'+str(id)
         if disk in self.drpdisks: return
         self.drpdisks[disk] = vid
         self.data += r"""
-        subgraph cluster_%(id)s {label="%(name)s,\n%(size)s GB\n%(vendor)s\n%(model)s"; labelloc="b"; %(id)s};
-        %(id)s [label="", shape=box, style=invis, shapefile="%(img)s"];
-        """%(dict(id=vid, name=disk, size=size, vendor=vendor, model=model, img=self.img_disk))
+        subgraph cluster_%(id)s {label="%(name)s\n%(size)s GB\n%(vendor)s\n%(model)s"; labelloc="b"; %(id)s};
+        %(id)s [label="", image="%(img)s"];
+        """%(dict(id=vid, name=disk, size=size, vendor=vendor.strip(), model=model.strip(), img=self.img_disk))
 
     def rank(self, list):
         return """{ rank=same; %s };
@@ -862,15 +862,19 @@ class viz(object):
         key = vid1+vid2
         if key in self.prdnode2disk: return
         self.prdnode2disk |= set([key])
-        self.data += """edge [arrowsize=0, color=black]; %(n)s -> %(d)s;"""%(dict(n=vid1, d=vid2))
+        self.data += """
+        edge [arrowsize=0, color=black]; %(n)s -> %(d)s;
+        """%(dict(n=vid1, d=vid2))
 
     def add_prddisk2svc(self, disk, svc):
         vid1 = self.prddisks[disk]
         vid2 = 'svc_'+svc
         key = vid1+vid2
-        if key in self.drpnode2disk: return
+        if key in self.prddisk2svc: return
         self.prddisk2svc |= set([key])
-        self.data += """edge [arrowsize=0, color=grey]; %(d)s -> %(s)s;"""%(dict(d=vid1, s=vid2))
+        self.data += """
+        edge [arrowsize=0, color=grey]; %(d)s -> %(s)s;
+        """%(dict(d=vid1, s=vid2))
 
     def add_drpsvc2disk(self, svc, disk):
         vid1 = 'svc_'+svc
@@ -878,7 +882,9 @@ class viz(object):
         key = vid1+vid2
         if key in self.drpsvc2disk: return
         self.drpsvc2disk |= set([key])
-        self.data += """edge [arrowsize=0, color=grey]; %(s)s -> %(d)s;"""%(dict(d=vid1, s=vid2))
+        self.data += """
+        edge [arrowsize=0, color=grey]; %(s)s -> %(d)s;
+        """%(dict(s=vid1, d=vid2))
 
     def add_drpdisk2node(self, disk, node):
         vid1 = self.drpdisks[disk]
@@ -886,7 +892,9 @@ class viz(object):
         key = vid1+vid2
         if key in self.drpdisk2node: return
         self.drpdisk2node |= set([key])
-        self.data += """edge [arrowsize=0, color=black]; %(d)s -> %(n)s;"""%(dict(d=vid1, n=vid2))
+        self.data += """
+        edge [arrowsize=0, color=black]; %(d)s -> %(n)s;
+        """%(dict(d=vid1, n=vid2))
 
 def svcmon_viz():
     request.vars['perpage'] = 0
@@ -894,19 +902,32 @@ def svcmon_viz():
     v = viz()
     disks = db(db.svcdisks.id>0).select()
     for svc in s['services']:
+        dl = [ disk for disk in disks if disk.disk_nodename == svc.mon_nodname and disk.disk_svcname == svc.svc_name ]
         v.add_service(svc.svc_name)
-        if svc.nodename in svc.svc_nodes.split(' '):
-            v.add_prdnode(svc.nodename, svc.model, svc.mem_bytes)
-            for d in [ disk for disk in disks if disk.disk_nodename == svc.nodename and disk.disk_svcname == svc.svc_name ]:
-                v.add_prddisk(d.id, d.disk_id, d.disk_size, d.disk_vendor, d.disk_model)
-                v.add_prdnode2disk(svc.nodename, d.disk_id)
-                v.add_prddisk2svc(d.disk_id, svc.svc_name)
-        elif svc.nodename in [ node for node in set(svc.svc_drpnodes.split(' ')+[svc.svc_drpnode]) if len(node) > 0]:
-            v.add_drpnode(svc.nodename, svc.model, svc.mem_bytes)
-            for d in [ disk for disk in disks if disk.disk_nodename == svc.nodename and disk.disk_svcname == svc.svc_name ]:
-                v.add_drpdisk(d.id, d.disk_id, d.disk_size, d.disk_vendor, d.disk_model)
-                v.add_drpsvc2disk(svc.svc_name, d.disk_id)
-                v.add_drpdisk2node(d.disk_id, svc.nodename)
+        if svc.mon_nodtype == 'PRD':
+            v.add_prdnode(svc.mon_nodname, svc.model, svc.mem_bytes)
+            if len(dl) == 0:
+                disk_id = svc.mon_nodname + "_unknown"
+                v.add_prddisk(svc.mon_nodname, disk_id, "?", "", "")
+                v.add_prdnode2disk(svc.mon_nodname, disk_id)
+                v.add_prddisk2svc(disk_id, svc.svc_name)
+            else:
+                for d in dl:
+                    v.add_prddisk(d.id, d.disk_id, d.disk_size, d.disk_vendor, d.disk_model)
+                    v.add_prdnode2disk(svc.mon_nodname, d.disk_id)
+                    v.add_prddisk2svc(d.disk_id, svc.svc_name)
+        else:
+            v.add_drpnode(svc.mon_nodname, svc.model, svc.mem_bytes)
+            if len(dl) == 0:
+                disk_id = svc.mon_nodname + "_unknown"
+                v.add_drpdisk(svc.mon_nodname, disk_id, "?", "", "")
+                v.add_drpsvc2disk(svc.svc_name, disk_id)
+                v.add_drpdisk2node(disk_id, svc.mon_nodname)
+            else:
+                for d in dl:
+                    v.add_drpdisk(d.id, d.disk_id, d.disk_size, d.disk_vendor, d.disk_model)
+                    v.add_drpsvc2disk(svc.svc_name, d.disk_id)
+                    v.add_drpdisk2node(d.disk_id, svc.mon_nodname)
     import tempfile
     import os
     vizdir = 'applications'+str(URL(r=request,c='static',f='/'))
@@ -914,7 +935,7 @@ def svcmon_viz():
     f.close()
     v.write(f.name+'.png')
     img = str(URL(r=request,c='static',f=os.path.basename(f.name)+'.png'))
-    return dict(s=s['services'], v=str(v), disks=disks, img=img)
+    return dict(s=s['services'], v=str(v), disks=disks, img=img, cwd=os.getcwd())
 
 def svcmon_csv():
     import gluon.contenttype
