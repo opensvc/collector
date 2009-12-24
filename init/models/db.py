@@ -390,3 +390,15 @@ db.define_table('svcdisks',
     Field('disk_model'),
     migrate=False)
 
+db.define_table('svc_res_sync',
+    Field('id'),
+    Field('sync_svcname'),
+    Field('sync_src'),
+    Field('sync_dst'),
+    Field('sync_dstfs'),
+    Field('sync_snap'),
+    Field('sync_bwlimit'),
+    Field('sync_exclude'),
+    Field('sync_target'),
+    migrate=False)
+

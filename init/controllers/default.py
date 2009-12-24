@@ -1544,3 +1544,21 @@ def register_disk(vars, vals):
     db.commit()
     return 0
 
+@service.xmlrpc
+def register_sync(vars, vals):
+    upd = []
+    for a, b in zip(vars, vals):
+        upd.append("%s=%s" % (a, b))
+    sql="""insert delayed into svc_res_sync (%s) values (%s) on duplicate key update %s""" % (','.join(vars), ','.join(vals), ','.join(upd))
+    db.executesql(sql)
+    db.commit()
+    return 0
+
+@service.xmlrpc
+def delete_syncs(svcname):
+    if svcname is None or svcname == '':
+        return 0
+    db(db.svc_res_sync.sync_svcname==svcname).delete()
+    db.commit()
+    return 0
+
