@@ -399,6 +399,7 @@ db.define_table('svc_res_sync',
     Field('sync_snap'),
     Field('sync_bwlimit'),
     Field('sync_exclude'),
-    Field('sync_target'),
+    Field('sync_prdtarget'),
+    Field('sync_drptarget'),
     migrate=False)
 

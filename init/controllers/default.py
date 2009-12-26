@@ -759,10 +759,12 @@ class viz(object):
     prdnode2disk = set([])
     drpnode2disk = set([])
     drpdisk2node = set([])
+    syncs = {}
     data = ""
     img_node = 'applications'+str(URL(r=request,c='static',f='node.png'))
     img_disk = 'applications'+str(URL(r=request,c='static',f='hd.png'))
     img_svc = 'applications'+str(URL(r=request,c='static',f='svc.png'))
+
     def __str__(self):
         buff = """
         digraph G {
@@ -863,7 +865,7 @@ class viz(object):
         if key in self.prdnode2disk: return
         self.prdnode2disk |= set([key])
         self.data += """
-        edge [arrowsize=0, color=black]; %(n)s -> %(d)s;
+        edge [label="", arrowsize=0, color=black]; %(n)s -> %(d)s;
         """%(dict(n=vid1, d=vid2))
 
     def add_prddisk2svc(self, disk, svc):
@@ -873,7 +875,7 @@ class viz(object):
         if key in self.prddisk2svc: return
         self.prddisk2svc |= set([key])
         self.data += """
-        edge [arrowsize=0, color=grey]; %(d)s -> %(s)s;
+        edge [label="", arrowsize=0, color=grey]; %(d)s -> %(s)s;
         """%(dict(d=vid1, s=vid2))
 
     def add_drpsvc2disk(self, svc, disk):
@@ -883,7 +885,7 @@ class viz(object):
         if key in self.drpsvc2disk: return
         self.drpsvc2disk |= set([key])
         self.data += """
-        edge [arrowsize=0, color=grey]; %(s)s -> %(d)s;
+        edge [label="", arrowsize=0, color=grey]; %(s)s -> %(d)s;
         """%(dict(s=vid1, d=vid2))
 
     def add_drpdisk2node(self, disk, node):
@@ -893,8 +895,38 @@ class viz(object):
         if key in self.drpdisk2node: return
         self.drpdisk2node |= set([key])
         self.data += """
-        edge [arrowsize=0, color=black]; %(d)s -> %(n)s;
+        edge [label="", arrowsize=0, color=black]; %(d)s -> %(n)s;
         """%(dict(d=vid1, n=vid2))
+
+    def add_prdsync(self, sync):
+        if sync.sync_prdtarget is None or len(sync.sync_prdtarget) == 0:
+            return
+        l = sync.sync_prdtarget.split(' ')
+        pairs = [(l[x],l[y]) for y in xrange(len(l)) for x in xrange(y,len(l)) if x!=y]
+        for (n1, n2) in pairs:
+            key = n1,n2,sync.sync_src,sync.sync_dst
+            if key in self.syncs:
+                continue
+            self.syncs[key] = ""
+            self.data += r"""
+            edge [label="rsync\nsrc: %(src)s\ndst: %(dst)s", arrowsize=0, color=red, fontcolor=red];
+            node_%(n1)s -> node_%(n2)s
+            """%(dict(n1=n1, n2=n2, src=sync.sync_src, dst=sync.sync_dst))
+
+    def add_drpsync(self, sync, primary):
+        if sync.sync_drptarget is None or len(sync.sync_drptarget) == 0:
+            return
+        n1 = primary
+        for n2 in sync.sync_drptarget.split(' '):
+            key = n1,n2,sync.sync_src,sync.sync_dst
+            if key in self.syncs:
+                continue
+            self.syncs[key] = ""
+            self.data += r"""
+            edge [label="rsync\nsrc: %(src)s\ndst: %(dst)s", arrowsize=0, color=red, fontcolor=red];
+            node_%(n1)s -> node_%(n2)s
+            """%(dict(n1=n1, n2=n2, src=sync.sync_src, dst=sync.sync_dst))
+
 
 def svcmon_viz():
     request.vars['perpage'] = 0
@@ -902,6 +934,9 @@ def svcmon_viz():
     v = viz()
     disks = db(db.svcdisks.id>0).select()
     for svc in s['services']:
+        for sync in db(db.svc_res_sync.sync_svcname==svc.svc_name).select():
+            v.add_prdsync(sync)
+            v.add_drpsync(sync, svc.svc_autostart)
         dl = [ disk for disk in disks if disk.disk_nodename == svc.mon_nodname and disk.disk_svcname == svc.svc_name ]
         v.add_service(svc.svc_name)
         if svc.mon_nodtype == 'PRD':
