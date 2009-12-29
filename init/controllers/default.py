@@ -852,7 +852,7 @@ class viz(object):
         if disk in self.prddisks: return
         self.prddisks[disk]= vid
         self.data += r"""
-        subgraph cluster_%(id)s {label="%(name)s\n%(size)s GB\n%(vendor)s\n%(model)s"; labelloc="b"; %(id)s};
+        subgraph cluster_%(id)s {label="%(name)s\n%(size)s GB\n%(vendor)s - %(model)s"; labelloc="b"; %(id)s};
         %(id)s [label="", image="%(img)s"];
         """%(dict(id=vid, name=disk, size=size, vendor=vendor.strip(), model=model.strip(), img=self.img_disk))
 
@@ -861,7 +861,7 @@ class viz(object):
         if disk in self.drpdisks: return
         self.drpdisks[disk] = vid
         self.data += r"""
-        subgraph cluster_%(id)s {label="%(name)s\n%(size)s GB\n%(vendor)s\n%(model)s"; labelloc="b"; %(id)s};
+        subgraph cluster_%(id)s {label="%(name)s\n%(size)s GB\n%(vendor)s - %(model)s"; labelloc="b"; %(id)s};
         %(id)s [label="", image="%(img)s"];
         """%(dict(id=vid, name=disk, size=size, vendor=vendor.strip(), model=model.strip(), img=self.img_disk))
 
