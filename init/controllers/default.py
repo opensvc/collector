@@ -749,6 +749,8 @@ def svcmon():
     return dict(services=rows, filters=session.filters, nav=nav)
 
 class viz(object):
+    vizdir = 'applications'+str(URL(r=request,c='static',f='/'))
+    vizprefix = 'tempviz'
     services = set([])
     prdnodes = set([])
     drpnodes = set([])
@@ -791,20 +793,29 @@ class viz(object):
         buff += "}"
         return buff
 
-    def write(self, path):
-        pl = path.split('.')
-        type = pl[len(pl)-1]
-        dot = path+'.dot'
+    def write(self, type):
+        import tempfile
+        f = tempfile.NamedTemporaryFile(delete=False, dir=self.vizdir, prefix=self.vizprefix)
+        f.close()
+        dot = f.name + '.dot'
         with open(dot, 'w') as f:
             f.write(str(self))
             f.close()
         if type == 'dot':
-            return
+            return dot
         from subprocess import *
-        dst = path+'.'+type
-        cmd = [ 'dot', '-T'+type, '-o', path, dot ]
+        dst = f.name + '.' + type
+        cmd = [ 'dot', '-T'+type, '-o', dst, dot ]
         process = Popen(cmd, stdout=None, stderr=None)
         process.communicate()
+        return dst
+
+    def viz_cron_cleanup(self):
+        """ unlink static/.viz*.png
+        """
+        import os
+        for name in glob.glob(self.vizdir + '/.viz*.png'):
+            os.unlink(name)
 
     def __init__(self):
         pass
@@ -923,10 +934,9 @@ class viz(object):
                 continue
             self.syncs[key] = ""
             self.data += r"""
-            edge [label="rsync\nsrc: %(src)s\ndst: %(dst)s", arrowsize=0, color=red, fontcolor=red];
+            edge [label="rsync\nsrc: %(src)s\ndst: %(dst)s", arrowsize=1, color=red, fontcolor=red];
             node_%(n1)s -> node_%(n2)s
             """%(dict(n1=n1, n2=n2, src=sync.sync_src, dst=sync.sync_dst))
-
 
 def svcmon_viz():
     request.vars['perpage'] = 0
@@ -963,14 +973,13 @@ def svcmon_viz():
                     v.add_drpdisk(d.id, d.disk_id, d.disk_size, d.disk_vendor, d.disk_model)
                     v.add_drpsvc2disk(svc.svc_name, d.disk_id)
                     v.add_drpdisk2node(d.disk_id, svc.mon_nodname)
-    import tempfile
+    fname = v.write('png')
     import os
-    vizdir = 'applications'+str(URL(r=request,c='static',f='/'))
-    f = tempfile.NamedTemporaryFile(delete=False, dir=vizdir, prefix='viz')
-    f.close()
-    v.write(f.name+'.png')
-    img = str(URL(r=request,c='static',f=os.path.basename(f.name)+'.png'))
-    return dict(s=s['services'], v=str(v), disks=disks, img=img, cwd=os.getcwd())
+    img = str(URL(r=request,c='static',f=os.path.basename(fname)))
+    return dict(s=s['services'], v=str(v), disks=disks, img=img)
+
+def viz_cron_cleanup():
+    viz().viz_cron_cleanup()
 
 def svcmon_csv():
     import gluon.contenttype
