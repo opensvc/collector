@@ -388,6 +388,8 @@ db.define_table('svcdisks',
     Field('disk_size'),
     Field('disk_vendor'),
     Field('disk_model'),
+    Field('disk_dg'),
+    Field('disk_target_port_id'),
     migrate=False)
 
 db.define_table('svc_res_sync',
