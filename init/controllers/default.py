@@ -833,12 +833,13 @@ class viz(object):
             self.resources[svc] = set([])
         self.data += r"""
         %(v)s [label="%(s)s", fontsize=12];
-        subgraph cluster_%(v)s {%(v)s; %(res)s};
+        subgraph cluster_%(v)s {style=rounded; %(v)s; %(res)s};
         """%(dict(v=vid, s=svc, img=self.img_svc, res=';'.join(self.resources[svc])))
 
     def add_node(self, vid, node, model="", mem=""):
         self.data += r"""
-        %(v)s [label="%(n)s\n%(model)s\n%(mem)s MB", image="%(img)s"];
+        %(v)s [label="", image="%(img)s"];
+        subgraph cluster_%(v)s {penwidth=0; label="%(n)s\n%(model)s\n%(mem)s MB"; labelloc=b; %(v)s};
         """%(dict(v=vid, n=node, model=model, mem=mem, img=self.img_node))
 
     def add_prdnode(self, node, model="", mem=""):
@@ -872,7 +873,7 @@ class viz(object):
     def add_arrays(self):
         for a in self.array:
             self.data += r"""
-        subgraph cluster_%(a)s {label="%(l)s"; fontsize=12; %(disks)s};
+        subgraph cluster_%(a)s {label="%(l)s"; color=grey; style=rounded; fontsize=12; %(disks)s};
         """%(dict(a=a, l=r"""%s\n%s"""%(a, self.arrayinfo[a]), disks='; '.join(self.array[a])))
 
     def add_prddisk(self, id, disk, size="", vendor="", model="", arrayid="", devid=""):
