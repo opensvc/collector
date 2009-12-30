@@ -390,6 +390,8 @@ db.define_table('svcdisks',
     Field('disk_model'),
     Field('disk_dg'),
     Field('disk_target_port_id'),
+    Field('disk_devid'),
+    Field('disk_arrayid'),
     migrate=False)
 
 db.define_table('svc_res_sync',
