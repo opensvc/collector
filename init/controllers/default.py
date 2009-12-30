@@ -901,9 +901,12 @@ class viz(object):
         edge [label="", arrowsize=0, color=black]; %(n)s -> %(d)s;
         """%(dict(n=vid1, d=vid2))
 
-    def add_prddisk2svc(self, disk, svc):
+    def add_prddisk2svc(self, disk, svc, dg=""):
         vid1 = self.prddisks[disk]
-        vid2 = 'svc_'+svc
+        if dg == "":
+            vid2 = 'svc_'+svc
+        else:
+            vid2 = 'dg_'+svc+'_'+dg
         key = vid1+vid2
         if key in self.prddisk2svc: return
         self.prddisk2svc |= set([key])
@@ -911,8 +914,11 @@ class viz(object):
         edge [label="", arrowsize=0, color=grey]; %(d)s -> %(s)s;
         """%(dict(d=vid1, s=vid2))
 
-    def add_drpsvc2disk(self, svc, disk):
-        vid1 = 'svc_'+svc
+    def add_drpsvc2disk(self, svc, disk, dg=""):
+        if dg == "":
+            vid1 = 'svc_'+svc
+        else:
+            vid1 = 'dg_'+svc+'_'+dg
         vid2 = self.drpdisks[disk]
         key = vid1+vid2
         if key in self.drpsvc2disk: return
@@ -976,7 +982,7 @@ def svcmon_viz():
                     v.add_dg(svc.svc_name, d.disk_dg)
                     v.add_prddisk(d.id, d.disk_id, d.disk_size, d.disk_vendor, d.disk_model, d.disk_arrayid, d.disk_devid)
                     v.add_prdnode2disk(svc.mon_nodname, d.disk_id)
-                    v.add_prddisk2svc(d.disk_id, svc.svc_name)
+                    v.add_prddisk2svc(d.disk_id, svc.svc_name, d.disk_dg)
         else:
             v.add_drpnode(svc.mon_nodname, svc.model, svc.mem_bytes)
             if len(dl) == 0:
@@ -986,8 +992,9 @@ def svcmon_viz():
                 v.add_drpdisk2node(disk_id, svc.mon_nodname)
             else:
                 for d in dl:
+                    v.add_dg(svc.svc_name, d.disk_dg)
                     v.add_drpdisk(d.id, d.disk_id, d.disk_size, d.disk_vendor, d.disk_model, d.disk_arrayid, d.disk_devid)
-                    v.add_drpsvc2disk(svc.svc_name, d.disk_id)
+                    v.add_drpsvc2disk(svc.svc_name, d.disk_id, d.disk_dg)
                     v.add_drpdisk2node(d.disk_id, svc.mon_nodname)
         v.add_service(svc.svc_name)
     fname = v.write('png')
