@@ -819,7 +819,7 @@ class viz(object):
         """ unlink static/.viz*.png
         """
         import os
-        for name in glob.glob(self.vizdir + '/.viz*.png'):
+        for name in glob.glob(self.vizdir + '/tempviz*.png'):
             os.unlink(name)
 
     def __init__(self):
