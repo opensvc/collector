@@ -1,5 +1,6 @@
 {{extend 'layout.html'}}
 {{include 'box.html'}}
+{{if node is not None:}}
 {{node=node[0]}}
 <table>
   <tr><td>
@@ -187,3 +188,4 @@
     </table>
   </td></tr>
 </table>
+{{pass}}

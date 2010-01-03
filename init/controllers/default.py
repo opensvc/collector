@@ -1294,8 +1294,8 @@ def nodes():
 def node():
     node = db(db.nodes.nodename==request.vars.nodename).select()
     if len(node) != 1:
-        response.flash(T('error'))
-        return
+        response.flash = T("No asset information for %(node)s", dict(node=request.vars.nodename))
+        return dict(node=None)
     return dict(node=node)
 
 class ex(Exception):

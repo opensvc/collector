@@ -98,6 +98,7 @@
 'Name': 'Nom',
 'New Record': 'Nouvel enregistrement',
 'New password': 'Nouveau mot de passe',
+'No asset information for %(node)s': 'No asset information for %(node)s',
 'No databases in this application': 'Pas de base de donn\xc3\xa9es pour cette application',
 'Node': 'Noeud',
 'Node name': 'Nom de noeud',
