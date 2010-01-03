@@ -800,15 +800,15 @@ class viz(object):
 
     def write(self, type):
         import tempfile
-        f = tempfile.NamedTemporaryFile(delete=False, dir=self.vizdir, prefix=self.vizprefix)
+        f = tempfile.NamedTemporaryFile(dir=self.vizdir, prefix=self.vizprefix)
         f.close()
         dot = f.name + '.dot'
-        with open(dot, 'w') as f:
-            f.write(str(self))
-            f.close()
+        f = open(dot, 'w')
+        f.write(str(self))
+        f.close()
         if type == 'dot':
             return dot
-        from subprocess import *
+        from subprocess import Popen
         dst = f.name + '.' + type
         cmd = [ 'dot', '-T'+type, '-o', dst, dot ]
         process = Popen(cmd, stdout=None, stderr=None)
