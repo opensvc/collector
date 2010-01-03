@@ -407,3 +407,9 @@ db.define_table('svc_res_sync',
     Field('sync_drptarget'),
     migrate=False)
 
+db.define_table('domain_permissions',
+    Field('id'),
+    Field('group_id'),
+    Field('domains'),
+    migrate=False)
+

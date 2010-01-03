@@ -106,6 +106,20 @@ def _pagination(request, query):
 
     return (start, end, nav)
 
+def domain_perms():
+    domain_perms = "abracadabra@0123456789"
+    rows = db(db.domain_permissions.id>0).select()
+    if len(rows) == 0:
+        # wildcard for collectors with no domain_permissions information
+        domain_perms = None
+    query = (db.auth_membership.user_id==session.auth.user.id)&(db.domain_permissions.group_id==db.auth_membership.group_id)
+    rows = db(query).select(db.domain_permissions.domains)
+    if len(rows) == 0:
+        return domain_perms
+    if rows[0]['domains'] is None:
+        return domain_perms
+    return rows[0]['domains']
+
 def toggle_session_filters(filters):
     if request.vars.addfilter is not None and request.vars.addfilter != '':
         filters[int(request.vars.addfilter)]['active'] = True
@@ -737,6 +751,7 @@ def svcmon():
     query &= _where(None, 'v_svcmon', request.vars.containertype, 'svc_containertype')
     query &= _where(None, 'v_svcmon', request.vars.nodename, 'mon_nodname')
     query &= _where(None, 'v_svcmon', request.vars.nodetype, 'mon_nodtype')
+    query &= _where(None, 'v_svcmon', domain_perms(), 'mon_nodname')
 
     query = apply_session_filters(session.svcmon_filters, query, 'v_svcmon')
 
@@ -1055,6 +1070,7 @@ def svcactions():
     query &= _where(None, 'v_svcactions', request.vars.hostname, 'hostname')
     query &= _where(None, 'v_svcactions', request.vars.status_log, 'status_log')
     query &= _where(None, 'v_svcactions', request.vars.pid, 'pid')
+    query &= _where(None, 'v_svcactions', domain_perms(), 'hostname')
 
     query = apply_session_filters(session.svcactions_filters, query, 'v_svcactions')
 
@@ -1278,6 +1294,8 @@ def nodes():
             continue
         query &= _where(None, 'nodes', request.vars[key], key)
 
+    query &= _where(None, 'nodes', domain_perms(), 'nodename')
+
     query = apply_session_filters(session.nodes_filters, query, 'nodes')
 
     (start, end, nav) = _pagination(request, query)
@@ -1384,6 +1402,7 @@ def drplan():
     query &= _where(None, 'v_services', request.vars.svc_drpnode, 'svc_drpnode')
     query &= _where(None, 'v_services', request.vars.svc_drpnodes, 'svc_drpnodes')
     query &= _where(None, 'drpservices', request.vars.svc_wave, 'drp_wave', tableid=db.v_services.id)
+    query &= _where(None, 'v_services', domain_perms(), 'svc_nodes')
 
     (start, end, nav) = _pagination(request, query)
     if start == 0 and end == 0:
