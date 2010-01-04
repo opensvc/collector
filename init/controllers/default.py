@@ -857,14 +857,17 @@ class viz(object):
         subgraph cluster_%(v)s {penwidth=0; label="%(n)s\n%(model)s\n%(mem)s MB"; labelloc=b; %(v)s};
         """%(dict(v=vid, n=node, model=model, mem=mem, img=self.img_node))
 
+    def vid_node(self, node):
+        return 'node_'+node.replace(".", "_")
+
     def add_prdnode(self, node, model="", mem=""):
-        vid = 'node_'+node
+        vid = self.vid_node(node)
         if vid in self.prdnodes: return
         self.prdnodes |= set([vid])
         self.add_node(vid, node, model, mem)
 
     def add_drpnode(self, node, model=None, mem=None):
-        vid = 'node_'+node
+        vid = self.vid_node(node)
         if vid in self.drpnodes: return
         self.drpnodes |= set([vid])
         self.add_node(vid, node, model, mem)
@@ -891,14 +894,17 @@ class viz(object):
         subgraph cluster_%(a)s {label="%(l)s"; color=grey; style=rounded; fontsize=12; %(disks)s};
         """%(dict(a=a, l=r"""%s\n%s"""%(a, self.arrayinfo[a]), disks='; '.join(self.array[a])))
 
+    def vid_disk(self, id):
+        return 'disk_'+str(id).replace(".", "_")
+
     def add_prddisk(self, id, disk, size="", vendor="", model="", arrayid="", devid=""):
-        vid = 'disk_'+str(id)
+        vid = self.vid_disk(id)
         if disk in self.prddisks: return
         self.prddisks[disk]= vid
         self.add_disk(vid, disk, size, vendor, model, arrayid, devid)
 
     def add_drpdisk(self, id, disk, size="", vendor="", model="", arrayid="", devid=""):
-        vid = 'disk_'+str(id)
+        vid = self.vid_disk(id)
         if disk in self.drpdisks: return
         self.drpdisks[disk] = vid
         self.add_disk(vid, disk, size, vendor, model, arrayid, devid)
@@ -908,7 +914,7 @@ class viz(object):
                """%'; '.join(list)
 
     def add_prdnode2disk(self, node, disk):
-        vid1 = 'node_'+node
+        vid1 = self.vid_node(node)
         vid2 = self.prddisks[disk]
         key = vid1+vid2
         if key in self.prdnode2disk: return
@@ -945,7 +951,7 @@ class viz(object):
 
     def add_drpdisk2node(self, disk, node):
         vid1 = self.drpdisks[disk]
-        vid2 = 'node_'+node
+        vid2 = self.vid_node(node)
         key = vid1+vid2
         if key in self.drpdisk2node: return
         self.drpdisk2node |= set([key])
