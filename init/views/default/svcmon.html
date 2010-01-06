@@ -5,6 +5,7 @@
 
 {{
 vars = request.vars
+toolong = datetime.datetime.today()-datetime.timedelta(hours=1)
 for key in ['svcname',
             'containertype',
             'svcapp',
@@ -23,15 +24,32 @@ for key in ['svcname',
     pass
 }}
 
-{{def node_status(svc, cellclass):}}
+{{def node_status(svc, cellclass):
+    import time
+    time_format = "%Y-%m-%d %H:%M:%S"
+    updated = svc.mon_updated
+    if updated < toolong:
+        overallstatus = 'status_expired'
+        containerstatus = 'status_expired'
+        ipstatus = 'status_expired'
+        fsstatus = 'status_expired'
+        diskstatus = 'status_expired'
+    else:
+        overallstatus = 'status_'+svc.mon_overallstatus
+        containerstatus = 'status_'+svc.mon_containerstatus
+        ipstatus = 'status_'+svc.mon_ipstatus
+        fsstatus = 'status_'+svc.mon_fsstatus
+        diskstatus = 'status_'+svc.mon_diskstatus
+    pass
+}}
     <table>
       <tr>
-         <td colspan=4 class="status {{=cellclass}} status_{{=svc.mon_overallstatus}}" title="since {{=svc.mon_updated}}">{{=svc.mon_overallstatus}}</td>
+         <td colspan=4 class="status {{=cellclass}} {{=overallstatus}}" title="since {{=svc.mon_updated}}">{{=svc.mon_overallstatus}}</td>
       </tr><tr>
-        <td class="{{=cellclass}} status_{{=svc.mon_containerstatus}}">vm</td>
-        <td class="{{=cellclass}} status_{{=svc.mon_ipstatus}}">ip</td>
-        <td class="{{=cellclass}} status_{{=svc.mon_fsstatus}}">fs</td>
-        <td class="{{=cellclass}} status_{{=svc.mon_diskstatus}}">dg</td>
+        <td class="{{=cellclass}} {{=containerstatus}}">vm</td>
+        <td class="{{=cellclass}} {{=ipstatus}}">ip</td>
+        <td class="{{=cellclass}} {{=fsstatus}}">fs</td>
+        <td class="{{=cellclass}} {{=diskstatus}}">dg</td>
       </tr>
     </table>
     {{return ''}}
