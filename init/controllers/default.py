@@ -238,13 +238,24 @@ def apps():
         if key not in request.vars.keys():
             continue
         query &= _where(None, 'v_apps', request.vars[key], key)
-
+    query &= _where(None, 'v_svcmon', domain_perms(), 'mon_nodname')
 
     (start, end, nav) = _pagination(request, query)
     if start == 0 and end == 0:
-        rows = db(query).select(orderby=db.v_apps.app)
+        rows = db(query).select(db.v_apps.id,
+                                db.v_apps.app,
+                                db.v_apps.responsibles,
+                                orderby=db.v_apps.app,
+                                left=db.v_svcmon.on(db.v_svcmon.svc_app==db.v_apps.app),
+                                groupby=db.v_apps.app)
     else:
-        rows = db(query).select(limitby=(start,end), orderby=db.v_apps.app)
+        rows = db(query).select(db.v_apps.id,
+                                db.v_apps.app,
+                                db.v_apps.responsibles,
+                                limitby=(start,end),
+                                orderby=db.v_apps.app,
+                                left=db.v_svcmon.on(db.v_svcmon.svc_app==db.v_apps.app),
+                                groupby=db.v_apps.app)
 
     query = (db.auth_user.id>0)
     users = db(query).select()
