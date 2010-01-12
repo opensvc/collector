@@ -903,7 +903,7 @@ class viz(object):
         for a in self.array:
             self.data += r"""
         subgraph cluster_%(a)s {label="%(l)s"; color=grey; style=rounded; fontsize=12; %(disks)s};
-        """%(dict(a=a, l=r"""%s\n%s"""%(a, self.arrayinfo[a]), disks='; '.join(self.array[a])))
+        """%(dict(a=a.replace("-","_"), l=r"""%s\n%s"""%(a, self.arrayinfo[a]), disks='; '.join(self.array[a])))
 
     def vid_disk(self, id):
         return 'disk_'+str(id).replace(".", "_")
