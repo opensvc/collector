@@ -872,27 +872,34 @@ class viz(object):
         self.drpnodes |= set([vid])
         self.add_node(vid, node, model, mem)
 
-    def add_disk(self, vid, disk, size="", vendor="", model="", arrayid="", devid=""):
-        self.add_array(vid, arrayid, vendor, model)
+    def add_disk(self, vid, disk, size="", vendor="", model="", arrayid="", devid="", type=""):
+        self.add_array(vid, arrayid, vendor, model, type)
         self.data += r"""
         %(id)s [label="%(name)s\n%(devid)s\n%(size)s GB", image="%(img)s"];
         """%(dict(id=vid, name=disk, size=size, img=self.img_disk, devid=devid))
 
-    def add_array(self, vid, arrayid="", vendor="", model=""):
+    def add_array(self, vid, arrayid="", vendor="", model="", type=""):
         if arrayid == "":
             return
+        if type == "prd":
+            title = arrayid + " (prd)"
+            arrayid = arrayid + "_left"
+        else:
+            title = arrayid + " (!prd)"
+            arrayid = arrayid + "_right"
+
         if arrayid not in self.array:
             self.array[arrayid] = set([vid])
         else:
             self.array[arrayid] |= set([vid])
         if arrayid not in self.arrayinfo:
-            self.arrayinfo[arrayid] = "%s - %s"%(vendor.strip(), model.strip())
+            self.arrayinfo[arrayid] = r"%s\n%s - %s"%(title, vendor.strip(), model.strip())
 
     def add_arrays(self):
         for a in self.array:
             self.data += r"""
         subgraph cluster_%(a)s {label="%(l)s"; color=grey; style=rounded; fontsize=12; %(disks)s};
-        """%(dict(a=a.replace("-","_"), l=r"""%s\n%s"""%(a, self.arrayinfo[a]), disks='; '.join(self.array[a])))
+        """%(dict(a=a.replace("-","_"), l=self.arrayinfo[a], disks='; '.join(self.array[a])))
 
     def vid_disk(self, id):
         return 'disk_'+str(id).replace(".", "_")
@@ -901,13 +908,13 @@ class viz(object):
         vid = self.vid_disk(id)
         if disk in self.prddisks: return
         self.prddisks[disk]= vid
-        self.add_disk(vid, disk, size, vendor, model, arrayid, devid)
+        self.add_disk(vid, disk, size, vendor, model, arrayid, devid, "prd")
 
     def add_drpdisk(self, id, disk, size="", vendor="", model="", arrayid="", devid=""):
         vid = self.vid_disk(id)
         if disk in self.drpdisks: return
         self.drpdisks[disk] = vid
-        self.add_disk(vid, disk, size, vendor, model, arrayid, devid)
+        self.add_disk(vid, disk, size, vendor, model, arrayid, devid, "drp")
 
     def rank(self, list):
         return """{ rank=same; %s };
