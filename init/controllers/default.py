@@ -342,17 +342,17 @@ def _where(query, table, var, field, tableid=None):
 
     return query
 
+def managers():
+    rows = db(db.v_users.role=="Manager").select()
+    m = []
+    for row in rows:
+        m.append(row.email)
+    return ','.join(m)
+
 def alerts_apps_without_responsible():
     import datetime
     now = datetime.datetime.now()
     in_24h = now + datetime.timedelta(hours=24)
-
-    def managers():
-        rows = db(db.v_users.role=="Manager").select()
-        m = []
-        for row in rows:
-            m.append(row.email)
-        return ','.join(m)
 
     rows = db((db.v_apps.id>0)&(db.v_apps.mailto==None)).select()
     for row in rows:
@@ -385,11 +385,15 @@ def alerts_svc_not_on_primary():
             """ don't raise a duplicate alert
             """
             continue
+        if row.mailto is None or row.mailto == "":
+            to = managers()
+        else:
+            to = row.mailto
         db.alerts.insert(subject=subject,
                          body=body,
                          send_at=now,
                          created_at=now,
-                         sent_to=row.mailto)
+                         sent_to=to)
 
     return dict(alerts=rows)
 
@@ -398,8 +402,8 @@ def alerts_services_not_updated():
     """
     import datetime
     now = datetime.datetime.now()
-    two_day_ago = now - datetime.timedelta(days=2)
-    three_day_ago = now - datetime.timedelta(days=3)
+    two_days_ago = now - datetime.timedelta(days=2)
+    three_days_ago = now - datetime.timedelta(days=3)
 
     def format_subject(row):
         return T("[%(app)s][%(svcname)s] service configuration not updated for more than 48h", dict(app=row.svc_app, svcname=row.svc_name))
@@ -413,15 +417,19 @@ def alerts_services_not_updated():
             """ don't raise a duplicate alert
             """
             continue
+        if row.mailto is None or row.mailto == "":
+            to = managers()
+        else:
+            to = row.mailto
         db.alerts.insert(subject=subject,
                          body=body,
                          send_at=now,
                          created_at=now,
-                         sent_to=row.mailto)
+                         sent_to=row.to)
 
     """ Remove the service after 3 days
     """
-    rows = db(db.v_services.updated<three_day_ago).select()
+    rows = db(db.v_services.updated<three_days_ago).select()
     for row in rows:
         db(db.svcmon.mon_svcname==row.svc_name).delete()
         db(db.services.svc_name==row.svc_name).delete()
@@ -448,11 +456,15 @@ def alerts_svcmon_not_updated():
             """ don't raise a duplicate alert
             """
             continue
+        if row.mailto is None or row.mailto == "":
+            to = managers()
+        else:
+            to = row.mailto
         db.alerts.insert(subject=subject,
                          body=body,
                          send_at=now,
                          created_at=now,
-                         sent_to=row.mailto)
+                         sent_to=to)
 
     """ Remove the service after 24h
     """
@@ -506,12 +518,16 @@ def alerts_failed_actions_not_acked():
 
         """ Queue alert
         """
+        if row.mailto is None or row.mailto == "":
+            to = managers()
+        else:
+            to = row.mailto
         db.alerts.insert(subject=subject,
                          body=body,
                          send_at=in_24h,
                          created_at=now,
                          action_id=row.id,
-                         sent_to=row.mailto)
+                         sent_to=to)
 
     return dict(alerts_queued=rows)
 
@@ -842,10 +858,11 @@ class viz(object):
         return dst
 
     def viz_cron_cleanup(self):
-        """ unlink static/.viz*.png
+        """ unlink static/tempviz*.png
         """
         import os
-        for name in glob.glob(self.vizdir + '/tempviz*.png'):
+        import glob
+        for name in glob.glob(os.path.join(self.vizdir, self.vizprefix+'*.png')):
             os.unlink(name)
 
     def __init__(self):
