@@ -407,7 +407,7 @@ def alerts_services_not_updated():
     rows = db(db.v_services.updated<two_days_ago).select()
     for row in rows:
         subject = format_subject(row)
-        body = T("Service will be purged from database after 3 days without update")
+        body = T("Service will be purged from database 3 days after last update")
         dups = db(db.alerts.subject==subject).select()
         if len(dups) > 0:
             """ don't raise a duplicate alert
@@ -421,7 +421,7 @@ def alerts_services_not_updated():
 
     """ Remove the service after 3 days
     """
-    rows = db(db.v_services.mon_updated<three_day_ago).select()
+    rows = db(db.v_services.updated<three_day_ago).select()
     for row in rows:
         db(db.svcmon.mon_svcname==row.svc_name).delete()
         db(db.services.svc_name==row.svc_name).delete()
