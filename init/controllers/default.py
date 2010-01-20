@@ -425,7 +425,7 @@ def alerts_services_not_updated():
                          body=body,
                          send_at=now,
                          created_at=now,
-                         sent_to=row.to)
+                         sent_to=to)
 
     """ Remove the service after 3 days
     """
