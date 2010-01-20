@@ -864,6 +864,8 @@ class viz(object):
         import glob
         for name in glob.glob(os.path.join(self.vizdir, self.vizprefix+'*.png')):
             os.unlink(name)
+        for name in glob.glob(os.path.join(self.vizdir, self.vizprefix+'*.dot')):
+            os.unlink(name)
 
     def __init__(self):
         pass
