@@ -358,6 +358,41 @@ def domainname(fqdn):
     l[0] = ""
     return '.'.join(l)
 
+def alert_format_subject(msg="", app=None, svcname=None):
+    s = ""
+    if app is not None:
+        s += "[%s]"%app
+    if svcname is not None:
+        s += "[%s]"%svcname
+    if len(s) > 0:
+        out = ' '.join([s, msg])
+    else:
+        out = msg
+    return T(out)
+
+def alert_format_body(msg="", app=None, svcname=None, node=None, action=None,
+                      begin=None, end=None, svctype=None, pid=None):
+    def header_field(title=None, value=None):
+        if value is None:
+            return TR(_style='font-size:0')
+        return TR(TD(B(T(title))),TD(T(value)))
+
+    out = DIV(
+      TABLE(
+        header_field("application", app),
+        header_field("service name", svcname),
+        header_field("service type", svctype),
+        header_field("node name", node),
+        header_field("action", action),
+        header_field("begin", str(begin)),
+        header_field("end", str(end)),
+        header_field("pid", str(pid)),
+        TR(TD(msg, _colspan=2)),
+      ),
+      _style="width:400"
+    )
+    return out
+
 def alerts_apps_without_responsible():
     import datetime
     now = datetime.datetime.now()
@@ -365,7 +400,7 @@ def alerts_apps_without_responsible():
 
     rows = db((db.v_apps.id>0)&(db.v_apps.mailto==None)).select()
     for row in rows:
-        subject = T("[%(app)s] application has no responsible", dict(app=row.app))
+        subject = alert_format_subject("application has no responsible", app=row.app)
         body = ""
         dups = db(db.alerts.subject==subject).select()
         if len(dups) > 0:
@@ -420,7 +455,10 @@ def alerts_services_not_updated():
     rows = db(db.v_services.updated<two_days_ago).select()
     for row in rows:
         subject = format_subject(row)
-        body = T("Service will be purged from database 3 days after last update")
+        body = alert_format_body(DIV(
+          P(T("Last status update occured on %s."%str(row.updated))),
+          P(T("Service will be purged on %s"%str(row.updated + datetime.timedelta(days=3)))),
+        ), svcname=row.svc_name, app=row.svc_app, svctype=row.svc_type)
         dups = db(db.alerts.subject==subject).select()
         if len(dups) > 0:
             """ don't raise a duplicate alert
@@ -460,7 +498,13 @@ def alerts_svcmon_not_updated():
     rows = db(db.v_svcmon.mon_updated<two_hours_ago).select()
     for row in rows:
         subject = format_subject(row)
-        body = T("Service will be purged from database after 24 hours without update")
+        body = alert_format_body(
+          T("Service will be purged from database on %s"%str(row.mon_updated+datetime.timedelta(days=1))),
+          svcname=row.mon_svcname,
+          app=row.svc_app,
+          node=row.mon_nodname,
+          svctype=row.svc_type
+        )
         dups = db(db.alerts.subject==subject).select()
         if len(dups) > 0:
             """ don't raise a duplicate alert
@@ -491,55 +535,64 @@ def alerts_failed_actions_not_acked():
         This function is meant to be scheduled daily, at night,
         and alerts generated should be sent as soon as possible.
     """
+    def insert_alert(r, log):
+        d = dict(app=r.app,
+                 svcname=r.svcname,
+                 action=r.action,
+                 node=r.hostname)
+        subject = T("[%(app)s] failed action '%(svcname)s %(action)s' on node '%(node)s' not acknowledged", d)
+
+        body = alert_format_body(
+          map(P, log),
+          node=r.hostname,
+          svcname=r.svcname,
+          app=r.app,
+          pid=r.pid,
+          action=r.action,
+          begin=r.begin,
+          end=r.end)
+
+        """ Check if the alert is already queued
+        """
+        dups = db(db.alerts.action_id==r.id).select()
+        if len(dups) > 0:
+            return
+
+        """ Queue alert
+        """
+        if r.mailto is None or r.mailto == "":
+            to = managers()
+        else:
+            to = r.mailto
+        db.alerts.insert(subject=subject,
+                         body=body,
+                         send_at=in_24h,
+                         created_at=now,
+                         action_id=r.id,
+                         domain=domainname(r.svcname),
+                         sent_to=to)
+
     import datetime
 
     now = datetime.datetime.now()
     in_24h = now + datetime.timedelta(hours=24)
     rows = db((db.v_svcactions.status=='err')&((db.v_svcactions.ack!=1)|(db.v_svcactions.ack==None))).select(orderby=db.v_svcactions.end)
+    pid = None
     for row in rows:
-        d = dict(app=row.app,
-                 svcname=row.svcname,
-                 action=row.action,
-                 node=row.hostname)
-        subject = T("[%(app)s] failed action '%(svcname)s %(action)s' on node '%(node)s' not acknowledged", d)
-
-        body = T("node: %(node)s\n"+\
-                 "service: %(service)s\n"+\
-                 "app: %(app)s\n"+\
-                 "responsibles: %(responsibles)s\n"+\
-                 "action: %(action)s\n"+\
-                 "begin: %(begin)s\n"+\
-                 "end: %(end)s\n"+\
-                 "error message:\n%(log)s\n", dict(
-                  node=row.hostname,
-                  service=row.svcname,
-                  app=row.app,
-                  responsibles=row.responsibles,
-                  action=row.action,
-                  begin=row.begin,
-                  end=row.end,
-                  log=row.status_log,
-                ))
-
-        """ Check if the alert is already queued
-        """
-        dups = db(db.alerts.action_id==row.id).select()
-        if len(dups) > 0:
-            continue
-
-        """ Queue alert
-        """
-        if row.mailto is None or row.mailto == "":
-            to = managers()
+        if pid is None:
+            pid = row.pid
+            if row.status_log != None: log = str(row.status_log).split('\\n')
+            else: log = []
+            prev = row
+        elif pid != row.pid:
+            insert_alert(prev, log)
+            pid = row.pid
+            if row.status_log != None: log = str(row.status_log).split('\\n')
+            else: log = []
+            prev = row
         else:
-            to = row.mailto
-        db.alerts.insert(subject=subject,
-                         body=body,
-                         send_at=in_24h,
-                         created_at=now,
-                         action_id=row.id,
-                         domain=domainname(row.svcname),
-                         sent_to=to)
+            if row.status_log != None: log += str(row.status_log).split('\\n')
+    insert_alert(prev, log)
 
     return dict(alerts_queued=rows)
 

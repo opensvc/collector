@@ -26,11 +26,25 @@ for key in colkeys:
     <td class=box></td>
   </tr>
   {{BOX_BOTTOM_ROW(len(colkeys))}}
+  {{
+    cellclass = 'cell1'
+    cellclasses = {}
+    cellclasses['cell1'] = 'cell2'
+    cellclasses['cell2'] = 'cell1'
+  }}
   {{for row in alerts:}}
+    {{
+    cellclass = cellclasses[cellclass]
+    if row.sent_to:
+        row['sent_to'] = IMG(_src=URL(r=request,c='static',f='guy.png'),_border=0, _title=row.sent_to)
+    else:
+        row['sent_to'] = ''
+        pass
+    }}
   <tr>
     <td style='padding:0'></td>
     {{for key in colkeys:}}
-    <td style='white-space:pre'>{{=row[key]}}</td>
+    <td class={{=cellclass}} style='white-space:pre'>{{=XML(row[key])}}</td>
     {{pass}}
     <td style='padding:0'></td>
   </tr>
