@@ -649,7 +649,7 @@ def alerts():
         id = dict(
             pos = 1,
             title = T('Alert Id'),
-            size = 5
+            size = 3
         ),
         created_at = dict(
             pos = 2,
@@ -669,7 +669,7 @@ def alerts():
         sent_to = dict(
             pos = 5,
             title = T('Assigned to'),
-            size = 10
+            size = 7
         ),
         subject = dict(
             pos = 6,
