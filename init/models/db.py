@@ -368,6 +368,7 @@ db.define_table('alerts',
     Field('body'),
     Field('action_id'),
     Field('app_id'),
+    Field('domain'),
     migrate=False)
 
 db.define_table('v_users',

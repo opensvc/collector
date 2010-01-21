@@ -349,6 +349,15 @@ def managers():
         m.append(row.email)
     return ','.join(m)
 
+def domainname(fqdn):
+    if fqdn is None or fqdn == "":
+        return
+    l = fqdn.split('.')
+    if len(l) < 2:
+        return
+    l[0] = ""
+    return '.'.join(l)
+
 def alerts_apps_without_responsible():
     import datetime
     now = datetime.datetime.now()
@@ -425,7 +434,8 @@ def alerts_services_not_updated():
                          body=body,
                          send_at=now,
                          created_at=now,
-                         sent_to=row.to)
+                         domain=domainname(row.svc_name),
+                         sent_to=to)
 
     """ Remove the service after 3 days
     """
@@ -464,6 +474,7 @@ def alerts_svcmon_not_updated():
                          body=body,
                          send_at=now,
                          created_at=now,
+                         domain=domainname(row.mon_svcname),
                          sent_to=to)
 
     """ Remove the service after 24h
@@ -527,6 +538,7 @@ def alerts_failed_actions_not_acked():
                          send_at=in_24h,
                          created_at=now,
                          action_id=row.id,
+                         domain=domainname(row.svcname),
                          sent_to=to)
 
     return dict(alerts_queued=rows)
@@ -629,6 +641,7 @@ def alerts():
     query &= _where(None, 'alerts', request.vars.responsibles, 'responsibles')
     query &= _where(None, 'alerts', request.vars.subject, 'subject')
     query &= _where(None, 'alerts', request.vars.body, 'body')
+    query &= _where(None, 'alerts', domain_perms(), 'domain')
 
     (start, end, nav) = _pagination(request, query)
     if start == 0 and end == 0:
@@ -863,6 +876,8 @@ class viz(object):
         import os
         import glob
         for name in glob.glob(os.path.join(self.vizdir, self.vizprefix+'*.png')):
+            os.unlink(name)
+        for name in glob.glob(os.path.join(self.vizdir, self.vizprefix+'*.dot')):
             os.unlink(name)
 
     def __init__(self):
