@@ -382,7 +382,7 @@ def alert_format_body(msg="", app=None, svcname=None, node=None, action=None,
         header_field("application", app),
         header_field("service name", A(svcname, _href=URL(r=request, f='svcmon', vars={'svcname':svcname}))),
         header_field("service type", svctype),
-        header_field("node name", A(node, _href=URL(r=request, f='nodes', vars={'nodename':node}))),
+        header_field("node name", A(node, _href=URL(r=request, f='node', vars={'nodename':node}))),
         header_field("action", action),
         header_field("begin", str(begin)),
         header_field("end", str(end)),
@@ -1416,6 +1416,37 @@ def nodes():
     return dict(columns=columns, colkeys=colkeys,
                 nodes=rows,
                 nav=nav)
+
+@auth.requires_login()
+def node_insert():
+    form=SQLFORM(db.nodes)
+    if form.accepts(request.vars):
+        response.flash = T("edition recorded")
+        redirect(URL(r=request, f='nodes'))
+    elif form.errors:
+        response.flash = T("errors in form")
+    return dict(form=form)
+
+@auth.requires_login()
+def node_edit():
+    query = (db.nodes.id>0)
+    query &= _where(None, 'nodes', request.vars.node, 'nodename')
+    query &= _where(None, 'nodes', domain_perms(), 'nodename')
+    rows = db(query).select()
+    if len(rows) != 1:
+        response.flash = "vars: %s"%str(request.vars)
+        return dict(form=None)
+    record = rows[0]
+    id = record.id
+    record = db(db.nodes.id==id).select()[0]
+    form=SQLFORM(db.nodes, record)
+    if form.accepts(request.vars):
+        response.flash = T("edition recorded")
+        redirect(URL(r=request, f='node', vars={'nodename':request.vars.node}))
+    elif form.errors:
+        response.flash = T("errors in form")
+
+    return dict(form=form)
 
 @auth.requires_login()
 def node():
