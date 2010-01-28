@@ -375,18 +375,18 @@ def alert_format_body(msg="", app=None, svcname=None, node=None, action=None,
     def header_field(title=None, value=None):
         if value is None:
             return TR(_style='font-size:0')
-        return TR(TD(B(T(title))),TD(T(value)))
+        return TR(TD(B(T(title))),TD(value))
 
     out = DIV(
       TABLE(
         header_field("application", app),
-        header_field("service name", svcname),
+        header_field("service name", A(svcname, _href=URL(r=request, f='svcmon', vars={'svcname':svcname}))),
         header_field("service type", svctype),
-        header_field("node name", node),
+        header_field("node name", A(node, _href=URL(r=request, f='nodes', vars={'nodename':node}))),
         header_field("action", action),
         header_field("begin", str(begin)),
         header_field("end", str(end)),
-        header_field("pid", str(pid)),
+        header_field("pid", A(pid, _href=URL(r=request, f='svcactions', vars={'pid':pid, 'hostname':node, 'perpage':0}))),
         TR(TD(msg, _colspan=2)),
       ),
       _style="width:400"
