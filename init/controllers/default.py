@@ -1453,6 +1453,7 @@ def node():
     node = db(db.nodes.nodename==request.vars.nodename).select()
     if len(node) != 1:
         response.flash = T("No asset information for %(node)s", dict(node=request.vars.nodename))
+        redirect(URL(r=request, f='node_insert'))
         return dict(node=None)
     return dict(node=node)
 
