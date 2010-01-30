@@ -592,7 +592,8 @@ def alerts_failed_actions_not_acked():
             prev = row
         else:
             if row.status_log != None: log += str(row.status_log).split('\\n')
-    insert_alert(prev, log)
+    if len(rows) > 0:
+        insert_alert(prev, log)
 
     return dict(alerts_queued=rows)
 
