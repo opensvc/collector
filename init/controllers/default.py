@@ -937,8 +937,20 @@ class viz(object):
     def __init__(self):
         pass
 
+    def vid_svc(self, svc):
+        return "svc_"+svc.replace(".", "_").replace("-", "_")
+
+    def vid_svc_dg(self, svc, dg):
+        return "svc_"+svc.replace(".", "_").replace("-", "_")+"_"+dg
+
+    def vid_node(self, node):
+        return 'node_'+node.replace(".", "_").replace("-", "_")
+
+    def vid_disk(self, id):
+        return 'disk_'+str(id).replace(".", "_").replace("-", "_")
+
     def add_service(self, svc):
-        vid = 'svc_'+svc
+        vid = self.vid_svc(svc)
         if vid in self.services: return
         self.services |= set([vid])
         if svc not in self.resources:
@@ -953,9 +965,6 @@ class viz(object):
         %(v)s [label="", image="%(img)s"];
         subgraph cluster_%(v)s {penwidth=0; label="%(n)s\n%(model)s\n%(mem)s MB"; labelloc=b; %(v)s};
         """%(dict(v=vid, n=node, model=model, mem=mem, img=self.img_node))
-
-    def vid_node(self, node):
-        return 'node_'+node.replace(".", "_")
 
     def add_prdnode(self, node, model="", mem=""):
         vid = self.vid_node(node)
@@ -998,9 +1007,6 @@ class viz(object):
         subgraph cluster_%(a)s {label="%(l)s"; color=grey; style=rounded; fontsize=12; %(disks)s};
         """%(dict(a=a.replace("-","_"), l=self.arrayinfo[a], disks='; '.join(self.array[a])))
 
-    def vid_disk(self, id):
-        return 'disk_'+str(id).replace(".", "_")
-
     def add_prddisk(self, id, disk, size="", vendor="", model="", arrayid="", devid=""):
         vid = self.vid_disk(id)
         if disk in self.prddisks: return
@@ -1030,9 +1036,9 @@ class viz(object):
     def add_prddisk2svc(self, disk, svc, dg=""):
         vid1 = self.prddisks[disk]
         if dg == "":
-            vid2 = 'svc_'+svc
+            vid2 = self.vid_svc(svc)
         else:
-            vid2 = 'dg_'+svc+'_'+dg
+            vid2 = self.vid_svc_dg(svc, dg)
         key = vid1+vid2
         if key in self.prddisk2svc: return
         self.prddisk2svc |= set([key])
@@ -1042,9 +1048,9 @@ class viz(object):
 
     def add_drpsvc2disk(self, svc, disk, dg=""):
         if dg == "":
-            vid1 = 'svc_'+svc
+            vid1 = self.vid_svc(svc)
         else:
-            vid1 = 'dg_'+svc+'_'+dg
+            vid1 = self.vid_svc_dg(svc, dg)
         vid2 = self.drpdisks[disk]
         key = vid1+vid2
         if key in self.drpsvc2disk: return

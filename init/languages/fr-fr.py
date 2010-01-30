@@ -219,6 +219,7 @@
 'display services live status': 'afficher le status courrant des services',
 'done!': 'fait!',
 'drplan': 'pra',
+'edit': 'edit',
 'end': 'fin',
 'env': 'env',
 'error message': "message d'erreur",
