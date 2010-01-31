@@ -105,11 +105,11 @@ select {
     opacity: 0.5;
 }
 
-.status_up, .status_ok {
+.status_up, .status_ok, .status_stdby_up {
     color: #009900;
 }
 
-.status_down, .status_err {
+.status_down, .status_err, .status_stdby_down {
     color: #990000;
 }
 

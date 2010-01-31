@@ -35,11 +35,11 @@ for key in ['svcname',
         fsstatus = 'status_expired'
         diskstatus = 'status_expired'
     else:
-        overallstatus = 'status_'+svc.mon_overallstatus
-        containerstatus = 'status_'+svc.mon_containerstatus
-        ipstatus = 'status_'+svc.mon_ipstatus
-        fsstatus = 'status_'+svc.mon_fsstatus
-        diskstatus = 'status_'+svc.mon_diskstatus
+        overallstatus = 'status_'+svc.mon_overallstatus.replace(" ", "_")
+        containerstatus = 'status_'+svc.mon_containerstatus.replace(" ", "_")
+        ipstatus = 'status_'+svc.mon_ipstatus.replace(" ", "_")
+        fsstatus = 'status_'+svc.mon_fsstatus.replace(" ", "_")
+        diskstatus = 'status_'+svc.mon_diskstatus.replace(" ", "_")
     pass
 }}
     <table>
