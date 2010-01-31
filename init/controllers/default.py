@@ -879,12 +879,14 @@ class viz(object):
     node2disk = set([])
     syncs = {}
     ips = {}
+    fss = {}
     data = ""
     img_node = 'applications'+str(URL(r=request,c='static',f='node.png'))
     img_disk = 'applications'+str(URL(r=request,c='static',f='hd.png'))
     img_svc = 'applications'+str(URL(r=request,c='static',f='svc.png'))
     img_sync = 'applications'+str(URL(r=request,c='static',f='sync.png'))
     img_ip = 'applications'+str(URL(r=request,c='static',f='ip.png'))
+    img_fs = 'applications'+str(URL(r=request,c='static',f='fs.png'))
 
     def __str__(self):
         buff = """
@@ -1039,6 +1041,24 @@ class viz(object):
         edge [label="", arrowsize=0, color=grey]; %(d)s -- %(s)s;
         """%(dict(d=vid1, s=vid2))
 
+    def add_fss(self, svc):
+        for fs in db(db.svc_res_fs.fs_svcname==svc).select():
+            self.add_fs(svc, fs)
+
+    def add_fs(self, svc, fs):
+        key = svc,fs.fs_mnt
+        vid = "fs_%d"%len(self.fss)
+        if key in self.fss:
+            return
+        self.fss[key] = vid
+        if svc not in self.resources:
+            self.resources[svc] = set([])
+        self.resources[svc] |= set([vid])
+        label = r"%s@%s\n(%s %s)"%(fs.fs_dev, fs.fs_mnt, fs.fs_type, fs.fs_mntopt)
+        self.data += r"""
+        %(v)s [label="%(s)s", image="%(img)s"];
+        """%(dict(v=vid, s=label, img=self.img_fs))
+
     def add_ips(self, svc):
         for ip in db(db.svc_res_ip.ip_svcname==svc).select():
             self.add_ip(svc, ip)
@@ -1091,6 +1111,7 @@ def svcmon_viz():
     for svc in s['services']:
         v.add_node(svc)
         v.add_ips(svc.svc_name)
+        v.add_fss(svc.svc_name)
         for sync in db(db.svc_res_sync.sync_svcname==svc.svc_name).select():
             v.add_sync(svc.svc_name, sync)
         dl = [ disk for disk in disks if disk.disk_nodename == svc.mon_nodname and disk.disk_svcname == svc.svc_name ]
@@ -1778,6 +1799,16 @@ def register_ip(vars, vals):
     return 0
 
 @service.xmlrpc
+def register_fs(vars, vals):
+    upd = []
+    for a, b in zip(vars, vals):
+        upd.append("%s=%s" % (a, b))
+    sql="""insert delayed into svc_res_fs (%s) values (%s) on duplicate key update %s""" % (','.join(vars), ','.join(vals), ','.join(upd))
+    db.executesql(sql)
+    db.commit()
+    return 0
+
+@service.xmlrpc
 def delete_syncs(svcname):
     if svcname is None or svcname == '':
         return 0
@@ -1792,6 +1823,14 @@ def delete_ips(svcname, node):
     if node is None or node == '':
         return 0
     db((db.svc_res_ip.ip_svcname==svcname)&(db.svc_res_ip.ip_node==node)).delete()
+    db.commit()
+    return 0
+
+@service.xmlrpc
+def delete_fss(svcname):
+    if svcname is None or svcname == '':
+        return 0
+    db(db.svc_res_fs.fs_svcname==svcname).delete()
     db.commit()
     return 0
 

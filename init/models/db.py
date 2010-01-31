@@ -417,6 +417,15 @@ db.define_table('svc_res_ip',
     Field('ip_node'),
     migrate=False)
 
+db.define_table('svc_res_fs',
+    Field('id'),
+    Field('fs_svcname'),
+    Field('fs_dev'),
+    Field('fs_mnt'),
+    Field('fs_mntopt'),
+    Field('fs_type'),
+    migrate=False)
+
 db.define_table('domain_permissions',
     Field('id'),
     Field('group_id'),
