@@ -408,6 +408,15 @@ db.define_table('svc_res_sync',
     Field('sync_drptarget'),
     migrate=False)
 
+db.define_table('svc_res_ip',
+    Field('id'),
+    Field('ip_svcname'),
+    Field('ip_name'),
+    Field('ip_dev'),
+    Field('ip_netmask'),
+    Field('ip_node'),
+    migrate=False)
+
 db.define_table('domain_permissions',
     Field('id'),
     Field('group_id'),

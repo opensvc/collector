@@ -860,29 +860,35 @@ def svcmon():
 class viz(object):
     vizdir = 'applications'+str(URL(r=request,c='static',f='/'))
     vizprefix = 'tempviz'
+    loc = {
+        'country': {},
+        'city': {},
+        'building': {},
+        'floor': {},
+        'room': {},
+        'rack': {},
+    }
     services = set([])
+    servicesdata = ""
     resources = {}
-    prdnodes = set([])
-    drpnodes = set([])
-    prddisks = {}
-    drpdisks = {}
+    nodes = set([])
+    disks = {}
     array = {}
     arrayinfo = {}
-    drpsvc2disk = set([])
-    prddisk2svc = set([])
-    prdnode2disk = set([])
-    drpnode2disk = set([])
-    drpdisk2node = set([])
+    disk2svc = set([])
+    node2disk = set([])
     syncs = {}
+    ips = {}
     data = ""
     img_node = 'applications'+str(URL(r=request,c='static',f='node.png'))
     img_disk = 'applications'+str(URL(r=request,c='static',f='hd.png'))
     img_svc = 'applications'+str(URL(r=request,c='static',f='svc.png'))
     img_sync = 'applications'+str(URL(r=request,c='static',f='sync.png'))
+    img_ip = 'applications'+str(URL(r=request,c='static',f='ip.png'))
 
     def __str__(self):
         buff = """
-        digraph G {
+        graph G {
                 rankdir=LR;
                 ranksep=0.75;
                 nodesep=0.1;
@@ -896,14 +902,10 @@ class viz(object):
 
                 bgcolor=white;
         """
+        self.add_services()
         self.add_arrays()
+        self.add_citys()
         buff += self.data
-        buff += self.rank(self.prdnodes)
-        buff += self.rank(self.prddisks.values())
-        buff += self.rank(self.services)
-        buff += self.rank(self.syncs.values())
-        buff += self.rank(self.drpdisks.values())
-        buff += self.rank(self.drpnodes)
         buff += "}"
         return buff
 
@@ -919,7 +921,7 @@ class viz(object):
             return dot
         from subprocess import Popen
         dst = f.name + '.' + type
-        cmd = [ 'dot', '-T'+type, '-o', dst, dot ]
+        cmd = [ 'fdp', '-T'+type, '-o', dst, dot ]
         process = Popen(cmd, stdout=None, stderr=None)
         process.communicate()
         return dst
@@ -949,51 +951,43 @@ class viz(object):
     def vid_disk(self, id):
         return 'disk_'+str(id).replace(".", "_").replace("-", "_")
 
+    def vid_loc(self, id):
+        return str(id).replace(".", "_").replace("-", "_").replace(" ", "_")
+
     def add_service(self, svc):
         vid = self.vid_svc(svc)
         if vid in self.services: return
-        self.services |= set([vid])
+        self.services = set([vid])
         if svc not in self.resources:
             self.resources[svc] = set([])
-        self.data += r"""
-        %(v)s [label="%(s)s", fontsize=12];
-        subgraph cluster_%(v)s {style=rounded; %(v)s; %(res)s};
+        self.servicesdata += r"""
+        subgraph cluster_%(v)s {label="%(s)s"; fontsize=12; penwidth=1; style=rounded; %(res)s};
         """%(dict(v=vid, s=svc, img=self.img_svc, res=';'.join(self.resources[svc])))
 
-    def add_node(self, vid, node, model="", mem=""):
-        self.data += r"""
+    def add_node(self, svc):
+        vid = self.vid_node(svc.mon_nodname)
+        if vid in self.nodes: return
+        self.nodes |= set([vid])
+        if svc.loc_city not in self.loc['city']:
+            self.loc['city'][svc.loc_city] = ""
+        self.loc['city'][svc.loc_city] += r"""
         %(v)s [label="", image="%(img)s"];
-        subgraph cluster_%(v)s {penwidth=0; label="%(n)s\n%(model)s\n%(mem)s MB"; labelloc=b; %(v)s};
-        """%(dict(v=vid, n=node, model=model, mem=mem, img=self.img_node))
+        subgraph cluster_%(v)s {fontsize=8; penwidth=0; label="%(n)s\n%(model)s\n%(mem)s MB"; labelloc=b; %(v)s};
+        """%(dict(v=vid, n=svc.mon_nodname, model=svc.model, mem=svc.mem_bytes, img=self.img_node))
 
-    def add_prdnode(self, node, model="", mem=""):
-        vid = self.vid_node(node)
-        if vid in self.prdnodes: return
-        self.prdnodes |= set([vid])
-        self.add_node(vid, node, model, mem)
-
-    def add_drpnode(self, node, model=None, mem=None):
-        vid = self.vid_node(node)
-        if vid in self.drpnodes: return
-        self.drpnodes |= set([vid])
-        self.add_node(vid, node, model, mem)
-
-    def add_disk(self, vid, disk, size="", vendor="", model="", arrayid="", devid="", type=""):
-        self.add_array(vid, arrayid, vendor, model, type)
+    def add_disk(self, id, disk, size="", vendor="", model="", arrayid="", devid=""):
+        vid = self.vid_disk(id)
+        if disk in self.disks: return
+        self.disks[disk]= vid
+        self.add_array(vid, arrayid, vendor, model)
         self.data += r"""
         %(id)s [label="%(name)s\n%(devid)s\n%(size)s GB", image="%(img)s"];
         """%(dict(id=vid, name=disk, size=size, img=self.img_disk, devid=devid))
 
-    def add_array(self, vid, arrayid="", vendor="", model="", type=""):
+    def add_array(self, vid, arrayid="", vendor="", model=""):
         if arrayid == "":
             return
-        if type == "prd":
-            title = arrayid + " (prd)"
-            arrayid = arrayid + "_left"
-        else:
-            title = arrayid + " (!prd)"
-            arrayid = arrayid + "_right"
-
+        title = arrayid
         if arrayid not in self.array:
             self.array[arrayid] = set([vid])
         else:
@@ -1001,73 +995,67 @@ class viz(object):
         if arrayid not in self.arrayinfo:
             self.arrayinfo[arrayid] = r"%s\n%s - %s"%(title, vendor.strip(), model.strip())
 
+    def add_services(self):
+        self.data += r"""
+        subgraph cluster_services {penwidth=0; %(n)s};
+        """%(dict(n=self.servicesdata))
+
+    def add_citys(self):
+        for a in self.loc['city']:
+            self.data += r"""
+        subgraph cluster_%(a)s {label="%(l)s"; color=grey; style=rounded; fontsize=12; %(n)s};
+        """%(dict(a=self.vid_loc(a), l=a, n=self.loc['city'][a]))
+
     def add_arrays(self):
         for a in self.array:
             self.data += r"""
         subgraph cluster_%(a)s {label="%(l)s"; color=grey; style=rounded; fontsize=12; %(disks)s};
         """%(dict(a=a.replace("-","_"), l=self.arrayinfo[a], disks='; '.join(self.array[a])))
 
-    def add_prddisk(self, id, disk, size="", vendor="", model="", arrayid="", devid=""):
-        vid = self.vid_disk(id)
-        if disk in self.prddisks: return
-        self.prddisks[disk]= vid
-        self.add_disk(vid, disk, size, vendor, model, arrayid, devid, "prd")
-
-    def add_drpdisk(self, id, disk, size="", vendor="", model="", arrayid="", devid=""):
-        vid = self.vid_disk(id)
-        if disk in self.drpdisks: return
-        self.drpdisks[disk] = vid
-        self.add_disk(vid, disk, size, vendor, model, arrayid, devid, "drp")
-
     def rank(self, list):
         return """{ rank=same; %s };
                """%'; '.join(list)
 
-    def add_prdnode2disk(self, node, disk):
+    def add_node2disk(self, node, disk):
         vid1 = self.vid_node(node)
-        vid2 = self.prddisks[disk]
+        vid2 = self.disks[disk]
         key = vid1+vid2
-        if key in self.prdnode2disk: return
-        self.prdnode2disk |= set([key])
+        if key in self.node2disk: return
+        self.node2disk |= set([key])
         self.data += """
-        edge [label="", arrowsize=0, color=black]; %(n)s -> %(d)s;
+        edge [label="", arrowsize=0, color=black]; %(n)s -- %(d)s;
         """%(dict(n=vid1, d=vid2))
 
-    def add_prddisk2svc(self, disk, svc, dg=""):
-        vid1 = self.prddisks[disk]
+    def add_disk2svc(self, disk, svc, dg=""):
+        vid1 = self.disks[disk]
         if dg == "":
-            vid2 = self.vid_svc(svc)
+            vid2 = "cluster_"+self.vid_svc(svc)
         else:
             vid2 = self.vid_svc_dg(svc, dg)
         key = vid1+vid2
-        if key in self.prddisk2svc: return
-        self.prddisk2svc |= set([key])
+        if key in self.disk2svc: return
+        self.disk2svc |= set([key])
         self.data += """
-        edge [label="", arrowsize=0, color=grey]; %(d)s -> %(s)s;
+        edge [label="", arrowsize=0, color=grey]; %(d)s -- %(s)s;
         """%(dict(d=vid1, s=vid2))
 
-    def add_drpsvc2disk(self, svc, disk, dg=""):
-        if dg == "":
-            vid1 = self.vid_svc(svc)
-        else:
-            vid1 = self.vid_svc_dg(svc, dg)
-        vid2 = self.drpdisks[disk]
-        key = vid1+vid2
-        if key in self.drpsvc2disk: return
-        self.drpsvc2disk |= set([key])
-        self.data += """
-        edge [label="", arrowsize=0, color=grey]; %(s)s -> %(d)s;
-        """%(dict(s=vid1, d=vid2))
+    def add_ips(self, svc):
+        for ip in db(db.svc_res_ip.ip_svcname==svc).select():
+            self.add_ip(svc, ip)
 
-    def add_drpdisk2node(self, disk, node):
-        vid1 = self.drpdisks[disk]
-        vid2 = self.vid_node(node)
-        key = vid1+vid2
-        if key in self.drpdisk2node: return
-        self.drpdisk2node |= set([key])
-        self.data += """
-        edge [label="", arrowsize=0, color=black]; %(d)s -> %(n)s;
-        """%(dict(d=vid1, n=vid2))
+    def add_ip(self, svc, ip):
+        key = svc,ip.ip_name,ip.ip_dev,ip.ip_node
+        vid = "ip_%d"%len(self.ips)
+        if key in self.ips:
+            return
+        self.ips[key] = vid
+        if svc not in self.resources:
+            self.resources[svc] = set([])
+        self.resources[svc] |= set([vid])
+        label = r"%s@%s\non %s"%(ip.ip_name, ip.ip_dev, ip.ip_node)
+        self.data += r"""
+        %(v)s [label="%(s)s", image="%(img)s"];
+        """%(dict(v=vid, s=label, img=self.img_ip))
 
     def add_sync(self, svc, sync):
         key = svc,sync.sync_src,sync.sync_dst
@@ -1084,6 +1072,8 @@ class viz(object):
         """%(dict(v=vid, s=label, img=self.img_sync))
 
     def add_dg(self, svc, dg):
+        if dg is None or dg == "":
+             return
         vid = "dg_" + svc + "_" + dg
         if svc not in self.resources:
             self.resources[svc] = set([])
@@ -1099,35 +1089,22 @@ def svcmon_viz():
     v = viz()
     disks = db(db.svcdisks.id>0).select()
     for svc in s['services']:
+        v.add_node(svc)
+        v.add_ips(svc.svc_name)
         for sync in db(db.svc_res_sync.sync_svcname==svc.svc_name).select():
             v.add_sync(svc.svc_name, sync)
         dl = [ disk for disk in disks if disk.disk_nodename == svc.mon_nodname and disk.disk_svcname == svc.svc_name ]
-        if svc.mon_nodtype == 'PRD':
-            v.add_prdnode(svc.mon_nodname, svc.model, svc.mem_bytes)
-            if len(dl) == 0:
-                disk_id = svc.mon_nodname + "_unknown"
-                v.add_prddisk(svc.mon_nodname, disk_id, size="?")
-                v.add_prdnode2disk(svc.mon_nodname, disk_id)
-                v.add_prddisk2svc(disk_id, svc.svc_name)
-            else:
-                for d in dl:
-                    v.add_dg(svc.svc_name, d.disk_dg)
-                    v.add_prddisk(d.id, d.disk_id, d.disk_size, d.disk_vendor, d.disk_model, d.disk_arrayid, d.disk_devid)
-                    v.add_prdnode2disk(svc.mon_nodname, d.disk_id)
-                    v.add_prddisk2svc(d.disk_id, svc.svc_name, d.disk_dg)
+        if len(dl) == 0:
+            disk_id = svc.mon_nodname + "_unknown"
+            v.add_disk(svc.mon_nodname, disk_id, size="?")
+            v.add_node2disk(svc.mon_nodname, disk_id)
+            v.add_disk2svc(disk_id, svc.svc_name)
         else:
-            v.add_drpnode(svc.mon_nodname, svc.model, svc.mem_bytes)
-            if len(dl) == 0:
-                disk_id = svc.mon_nodname + "_unknown"
-                v.add_drpdisk(svc.mon_nodname, disk_id, size="?")
-                v.add_drpsvc2disk(svc.svc_name, disk_id)
-                v.add_drpdisk2node(disk_id, svc.mon_nodname)
-            else:
-                for d in dl:
-                    v.add_dg(svc.svc_name, d.disk_dg)
-                    v.add_drpdisk(d.id, d.disk_id, d.disk_size, d.disk_vendor, d.disk_model, d.disk_arrayid, d.disk_devid)
-                    v.add_drpsvc2disk(svc.svc_name, d.disk_id, d.disk_dg)
-                    v.add_drpdisk2node(d.disk_id, svc.mon_nodname)
+            for d in dl:
+                v.add_dg(svc.svc_name, d.disk_dg)
+                v.add_disk(d.id, d.disk_id, d.disk_size, d.disk_vendor, d.disk_model, d.disk_arrayid, d.disk_devid)
+                v.add_node2disk(svc.mon_nodname, d.disk_id)
+                v.add_disk2svc(d.disk_id, svc.svc_name, d.disk_dg)
         v.add_service(svc.svc_name)
     fname = v.write('png')
     import os
@@ -1791,10 +1768,30 @@ def register_sync(vars, vals):
     return 0
 
 @service.xmlrpc
+def register_ip(vars, vals):
+    upd = []
+    for a, b in zip(vars, vals):
+        upd.append("%s=%s" % (a, b))
+    sql="""insert delayed into svc_res_ip (%s) values (%s) on duplicate key update %s""" % (','.join(vars), ','.join(vals), ','.join(upd))
+    db.executesql(sql)
+    db.commit()
+    return 0
+
+@service.xmlrpc
 def delete_syncs(svcname):
     if svcname is None or svcname == '':
         return 0
     db(db.svc_res_sync.sync_svcname==svcname).delete()
+    db.commit()
+    return 0
+
+@service.xmlrpc
+def delete_ips(svcname, node):
+    if svcname is None or svcname == '':
+        return 0
+    if node is None or node == '':
+        return 0
+    db((db.svc_res_ip.ip_svcname==svcname)&(db.svc_res_ip.ip_node==node)).delete()
     db.commit()
     return 0
 
