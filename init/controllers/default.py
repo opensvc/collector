@@ -873,6 +873,8 @@ class viz(object):
     resources = {}
     nodes = set([])
     disks = {}
+    cdg = {}
+    vidcdg = {}
     array = {}
     arrayinfo = {}
     disk2svc = set([])
@@ -947,7 +949,7 @@ class viz(object):
         return "svc_"+svc.replace(".", "_").replace("-", "_")
 
     def vid_svc_dg(self, svc, dg):
-        return "svc_"+svc.replace(".", "_").replace("-", "_")+"_"+dg
+        return "dg_"+svc.replace(".", "_").replace("-", "_")+"_"+dg
 
     def vid_node(self, node):
         return 'node_'+node.replace(".", "_").replace("-", "_")
@@ -991,12 +993,12 @@ class viz(object):
     def add_array(self, vid, arrayid="", vendor="", model=""):
         if arrayid == "":
             return
-        title = arrayid
         if arrayid not in self.array:
             self.array[arrayid] = set([vid])
         else:
             self.array[arrayid] |= set([vid])
         if arrayid not in self.arrayinfo:
+            title = arrayid
             self.arrayinfo[arrayid] = r"%s\n%s - %s"%(title, vendor.strip(), model.strip())
 
     def _add_services(self):
@@ -1017,9 +1019,11 @@ class viz(object):
 
     def add_arrays(self):
         for a in self.array:
+            nodes = [self.cdg_cluster(v) for v in self.array[a] if "cdg_" in v]
+            nodes += [v for v in self.array[a] if "cdg_" not in v]
             self.data += r"""
         subgraph cluster_%(a)s {label="%(l)s"; color=grey; style=rounded; fontsize=12; %(disks)s};
-        """%(dict(a=a.replace("-","_"), l=self.arrayinfo[a], disks='; '.join(self.array[a])))
+        """%(dict(a=a.replace("-","_"), l=self.arrayinfo[a], disks='; '.join(nodes)))
 
     def rank(self, list):
         return """{ rank=same; %s };
@@ -1123,35 +1127,84 @@ class viz(object):
         %(v)s [label="%(s)s", image="%(img)s"];
         """%(dict(v=vid, s=dg, img=self.img_disk))
 
+    def cdg_cluster(self, cdg):
+        if cdg not in self.cdg or len(self.cdg[cdg]) == 0:
+            return ""
+        return r"""
+        subgraph cluster_%(cdg)s {label="";%(n)s}
+        """%dict(cdg=cdg, n=";".join(self.cdg[cdg]))
+
+    def vid_cdg(self, d):
+        key = "cdg_"+d.disk_arrayid.replace("-", "_")+'_'+d.disk_svcname+"_"+d.disk_dg
+        if key not in self.vidcdg:
+            self.vidcdg[key] = len(self.vidcdg)
+        return 'cdg_'+str(self.vidcdg[key])
+
+    def add_dgdisk(self, d):
+        cdg = self.vid_cdg(d)
+        if d.disk_id not in self.disks:
+            vid = self.vid_disk(d.id)
+            self.disks[d.disk_id] = vid
+            self.add_array(cdg, d.disk_arrayid, d.disk_vendor, d.disk_model)
+            if cdg not in self.cdg:
+                self.cdg[cdg] = []
+            self.cdg[cdg].append(r"""
+            %(id)s [label="%(name)s\n%(devid)s\n%(size)s GB", image="%(img)s"];
+            """%(dict(id=vid, name=d.disk_id, size=d.disk_size, img=self.img_disk, devid=d.disk_devid)))
+            self.add_dg2svc("cluster_"+cdg, d.disk_svcname, d.disk_dg)
+        self.add_node2dg(d.disk_nodename, "cluster_"+cdg)
+
+    def add_node2dg(self, node, cdg):
+        vid1 = self.vid_node(node)
+        vid2 = cdg
+        key = vid1+vid2
+        if key in self.node2disk: return
+        self.node2disk |= set([key])
+        self.data += """
+        edge [label="", weight=1.5, arrowsize=0, color=black, penwidth=1]; %(n)s -- %(d)s;
+        """%(dict(n=vid1, d=vid2))
+
+    def add_dg2svc(self, cdg, svc, dg=""):
+        vid1 = cdg
+        if dg == "":
+            vid2 = "cluster_"+self.vid_svc(svc)
+        else:
+            vid2 = self.vid_svc_dg(svc, dg)
+        key = vid1+vid2
+        if key in self.disk2svc: return
+        self.disk2svc |= set([key])
+        self.data += """
+        edge [label="", arrowsize=0, color=grey, penwidth=1]; %(d)s -- %(s)s;
+        """%(dict(d=vid1, s=vid2))
+
+    def add_disks(self, svc):
+        dl = db((db.svcdisks.disk_svcname==svc.svc_name)&(db.svcdisks.disk_nodename==svc.mon_nodname)).select()
+        if len(dl) == 0:
+            disk_id = svc.mon_nodname + "_unknown"
+            self.add_disk(svc.mon_nodname, disk_id, size="?")
+            self.add_node2disk(svc.mon_nodname, disk_id)
+            self.add_disk2svc(disk_id, svc.svc_name)
+        else:
+            for d in dl:
+                self.add_dg(svc.svc_name, d.disk_dg)
+                self.add_dgdisk(d)
 
 def svcmon_viz():
     request.vars['perpage'] = 0
     s = svcmon()
     v = viz()
-    disks = db(db.svcdisks.id>0).select()
     for svc in s['services']:
         v.add_node(svc)
         v.add_ips(svc.svc_name)
         v.add_fss(svc.svc_name)
         v.add_syncs(svc.svc_name)
-        dl = [ disk for disk in disks if disk.disk_nodename == svc.mon_nodname and disk.disk_svcname == svc.svc_name ]
-        if len(dl) == 0:
-            disk_id = svc.mon_nodname + "_unknown"
-            v.add_disk(svc.mon_nodname, disk_id, size="?")
-            v.add_node2disk(svc.mon_nodname, disk_id)
-            v.add_disk2svc(disk_id, svc.svc_name)
-        else:
-            for d in dl:
-                v.add_dg(svc.svc_name, d.disk_dg)
-                v.add_disk(d.id, d.disk_id, d.disk_size, d.disk_vendor, d.disk_model, d.disk_arrayid, d.disk_devid)
-                v.add_node2disk(svc.mon_nodname, d.disk_id)
-                v.add_disk2svc(d.disk_id, svc.svc_name, d.disk_dg)
+        v.add_disks(svc)
         v.add_service(svc.svc_name)
         v.add_node2svc(svc.mon_nodname, svc.svc_name)
     fname = v.write('png')
     import os
     img = str(URL(r=request,c='static',f=os.path.basename(fname)))
-    return dict(s=s['services'], v=str(v), disks=disks, img=img)
+    return dict(s=s['services'], v=str(v), img=img)
 
 def viz_cron_cleanup():
     viz().viz_cron_cleanup()
