@@ -1,4 +1,2 @@
 {{extend 'layout.html'}}
-<p align=center>
-  <img src={{=img}}>
-</p>
+{{=P(A(IMG(_src=img, _border=0), _href=img), _align="center")}}

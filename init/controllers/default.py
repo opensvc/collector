@@ -877,6 +877,7 @@ class viz(object):
     arrayinfo = {}
     disk2svc = set([])
     node2disk = set([])
+    node2svc = set([])
     syncs = {}
     ips = {}
     fss = {}
@@ -891,12 +892,13 @@ class viz(object):
     def __str__(self):
         buff = """
         graph G {
-                rankdir=LR;
-                ranksep=0.75;
-                nodesep=0.1;
-                splines=true;
+                //size=12;
+                //rankdir=LR;
+                //ranksep=0.75;
+                sep=0.1;
+                //splines=true;
                 penwidth=1;
-                center=true;
+                //center=true;
                 fontsize=8;
 
                 node [shape=plaintext, fontsize=8];
@@ -963,7 +965,7 @@ class viz(object):
         if svc not in self.resources:
             self.resources[svc] = set([])
         self.servicesdata += r"""
-        subgraph cluster_%(v)s {label="%(s)s"; fontsize=12; penwidth=1; style=rounded; %(res)s};
+        subgraph cluster_%(v)s {label="%(s)s"; sep=0; fontsize=12; penwidth=1; style=rounded; %(res)s};
         """%(dict(v=vid, s=svc, img=self.img_svc, res=';'.join(self.resources[svc])))
 
     def add_node(self, svc):
@@ -997,9 +999,14 @@ class viz(object):
         if arrayid not in self.arrayinfo:
             self.arrayinfo[arrayid] = r"%s\n%s - %s"%(title, vendor.strip(), model.strip())
 
-    def add_services(self):
+    def _add_services(self):
         self.data += r"""
         subgraph cluster_services {penwidth=0; %(n)s};
+        """%(dict(n=self.servicesdata))
+
+    def add_services(self):
+        self.data += r"""
+        %(n)s
         """%(dict(n=self.servicesdata))
 
     def add_citys(self):
@@ -1018,6 +1025,16 @@ class viz(object):
         return """{ rank=same; %s };
                """%'; '.join(list)
 
+    def add_node2svc(self, node, svc):
+        vid1 = self.vid_node(node)
+        vid2 = "cluster_"+self.vid_svc(svc)
+        key = vid1+vid2
+        if key in self.node2svc: return
+        self.node2svc |= set([key])
+        self.data += """
+        edge [label="", weight=1.5, arrowsize=0, penwidth=0]; %(n)s -- %(d)s;
+        """%(dict(n=vid1, d=vid2))
+
     def add_node2disk(self, node, disk):
         vid1 = self.vid_node(node)
         vid2 = self.disks[disk]
@@ -1025,7 +1042,7 @@ class viz(object):
         if key in self.node2disk: return
         self.node2disk |= set([key])
         self.data += """
-        edge [label="", arrowsize=0, color=black]; %(n)s -- %(d)s;
+        edge [label="", weight=1.5, arrowsize=0, color=black, penwidth=1]; %(n)s -- %(d)s;
         """%(dict(n=vid1, d=vid2))
 
     def add_disk2svc(self, disk, svc, dg=""):
@@ -1038,7 +1055,7 @@ class viz(object):
         if key in self.disk2svc: return
         self.disk2svc |= set([key])
         self.data += """
-        edge [label="", arrowsize=0, color=grey]; %(d)s -- %(s)s;
+        edge [label="", arrowsize=0, color=grey, penwidth=1]; %(d)s -- %(s)s;
         """%(dict(d=vid1, s=vid2))
 
     def add_fss(self, svc):
@@ -1054,7 +1071,7 @@ class viz(object):
         if svc not in self.resources:
             self.resources[svc] = set([])
         self.resources[svc] |= set([vid])
-        label = r"%s@%s\n(%s %s)"%(fs.fs_dev, fs.fs_mnt, fs.fs_type, fs.fs_mntopt)
+        label = r"%s\n@%s\n(%s %s)"%(fs.fs_dev, fs.fs_mnt, fs.fs_type, fs.fs_mntopt)
         self.data += r"""
         %(v)s [label="%(s)s", image="%(img)s"];
         """%(dict(v=vid, s=label, img=self.img_fs))
@@ -1072,10 +1089,14 @@ class viz(object):
         if svc not in self.resources:
             self.resources[svc] = set([])
         self.resources[svc] |= set([vid])
-        label = r"%s@%s\non %s"%(ip.ip_name, ip.ip_dev, ip.ip_node)
+        label = r"%s\n@%s\non %s"%(ip.ip_name, ip.ip_dev, ip.ip_node)
         self.data += r"""
         %(v)s [label="%(s)s", image="%(img)s"];
         """%(dict(v=vid, s=label, img=self.img_ip))
+
+    def add_syncs(self, svc):
+        for sync in db(db.svc_res_sync.sync_svcname==svc).select():
+            self.add_sync(svc, sync)
 
     def add_sync(self, svc, sync):
         key = svc,sync.sync_src,sync.sync_dst
@@ -1112,8 +1133,7 @@ def svcmon_viz():
         v.add_node(svc)
         v.add_ips(svc.svc_name)
         v.add_fss(svc.svc_name)
-        for sync in db(db.svc_res_sync.sync_svcname==svc.svc_name).select():
-            v.add_sync(svc.svc_name, sync)
+        v.add_syncs(svc.svc_name)
         dl = [ disk for disk in disks if disk.disk_nodename == svc.mon_nodname and disk.disk_svcname == svc.svc_name ]
         if len(dl) == 0:
             disk_id = svc.mon_nodname + "_unknown"
@@ -1127,6 +1147,7 @@ def svcmon_viz():
                 v.add_node2disk(svc.mon_nodname, d.disk_id)
                 v.add_disk2svc(d.disk_id, svc.svc_name, d.disk_dg)
         v.add_service(svc.svc_name)
+        v.add_node2svc(svc.mon_nodname, svc.svc_name)
     fname = v.write('png')
     import os
     img = str(URL(r=request,c='static',f=os.path.basename(fname)))
