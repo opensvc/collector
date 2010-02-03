@@ -1186,8 +1186,14 @@ class viz(object):
             self.add_disk2svc(disk_id, svc.svc_name)
         else:
             for d in dl:
-                self.add_dg(svc.svc_name, d.disk_dg)
-                self.add_dgdisk(d)
+                if d.disk_dg is None or d.disk_dg == "":
+                    disk_id = svc.mon_nodname + "_unknown"
+                    self.add_disk(svc.mon_nodname, disk_id, size="?")
+                    self.add_node2disk(svc.mon_nodname, disk_id)
+                    self.add_disk2svc(disk_id, svc.svc_name)
+                else:
+                    self.add_dg(svc.svc_name, d.disk_dg)
+                    self.add_dgdisk(d)
 
 def svcmon_viz():
     request.vars['perpage'] = 0
