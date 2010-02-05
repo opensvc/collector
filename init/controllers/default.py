@@ -896,8 +896,8 @@ class viz(object):
         buff = """
         graph G {
                 //size=12;
-                //rankdir=LR;
-                ranksep=0.75;
+                rankdir=LR;
+                ranksep=0.1;
                 nodesep = 0.1;
                 sep=0.1;
                 splines=false;
@@ -978,20 +978,29 @@ class viz(object):
             self.resources[svc]['sync'] = []
         if 'dg' not in self.resources[svc]:
             self.resources[svc]['dg'] = []
-        e = ""
-        for type in ['fs', 'ip', 'sync', 'dg']:
-            l = self.resources[svc][type]
-            if len(l) >1:
-                for i in range(len(l)-1):
-                    e += "edge [penwidth=0, sep=0] %s -- %s;"%(l[i], l[i+1])
-        self.resources[svc]['all'] = self.resources[svc]['fs']+self.resources[svc]['ip']+self.resources[svc]['sync']+self.resources[svc]['dg']
+
+        def tr(t,title):
+            if len(t)>0:
+                return """<tr><td bgcolor="orange">%s</td>%s</tr>"""%(title, t)
+            else:
+                return ""
+
+        def td(t, port=None):
+            if port is None:
+                return """<td align="left" balign="left" border="0">%s</td>"""%t
+            else:
+                return """<td port=%s align="left" align="left">%s</td>"""%(port, t)
+
+        ip = tr(''.join(map(td, self.resources[svc]['ip'])), title="ip")
+        dg = tr(''.join(map(td, self.resources[svc]['dg'])), title="dg")
+        fs = tr(''.join(map(td, self.resources[svc]['fs'])), title="fs")
+        sync = tr(''.join(map(td, self.resources[svc]['sync'])), title="sync")
+
         self.servicesdata += r"""
-        subgraph cluster_%(v)s {
-            label=""; sep=0; fontsize=12; penwidth=1; style=rounded;
-            %(v)s [fontsize=12; label="%(s)s"];
-            %(res)s;
-            %(e)s};
-        """%(dict(v=vid, s=svc, img=self.img_svc, res=';'.join(self.resources[svc]['all']), e=e))
+        %(v)s [shape=plaintext; label=<<table color="lightgrey" cellspacing="0" cellpadding="2"
+        cellborder="1"><tr><td colspan="100" align="left"><font
+        point-size="12">%(s)s</font></td></tr>%(ip)s%(dg)s%(fs)s%(sync)s</table>>];
+        """%(dict(v=vid, s=svc, ip=ip, dg=dg, fs=fs, sync=sync))
 
     def add_node(self, svc):
         vid = self.vid_node(svc.mon_nodname)
@@ -1082,7 +1091,7 @@ class viz(object):
         if key in self.disk2svc: return
         self.disk2svc |= set([key])
         self.data += """
-        edge [label="", arrowsize=0, color=grey, penwidth=1]; %(d)s -- %(s)s;
+        edge [label="", arrowsize=0, color=grey, penwidth=1, lhead=cluster_%(s)s]; %(d)s -- %(s)s;
         """%(dict(d=vid1, s=vid2))
 
     def add_fss(self, svc):
@@ -1099,11 +1108,8 @@ class viz(object):
             self.resources[svc] = {}
         if 'fs' not in self.resources[svc]:
             self.resources[svc]['fs'] = []
-        self.resources[svc]['fs'].append(vid)
-        label = r"%s\n@%s\n(%s %s)"%(fs.fs_dev, fs.fs_mnt, fs.fs_type, fs.fs_mntopt)
-        self.data += r"""
-        %(v)s [label="%(s)s", image="%(img)s"];
-        """%(dict(v=vid, s=label, img=self.img_fs))
+        label = r"dev: %s<br/>mntpt: %s<br/>type: %s<br/>mntopt: %s"%(fs.fs_dev, fs.fs_mnt, fs.fs_type, fs.fs_mntopt)
+        self.resources[svc]['fs'].append(label)
 
     def add_ips(self, svc):
         for ip in db(db.svc_res_ip.ip_svcname==svc).select():
@@ -1119,11 +1125,8 @@ class viz(object):
             self.resources[svc] = {}
         if 'ip' not in self.resources[svc]:
             self.resources[svc]['ip'] = []
-        self.resources[svc]['ip'].append(vid)
-        label = r"%s\n@%s\non %s"%(ip.ip_name, ip.ip_dev, ip.ip_node)
-        self.data += r"""
-        %(v)s [label="%(s)s", image="%(img)s"];
-        """%(dict(v=vid, s=label, img=self.img_ip))
+        label = r"ipname: %s<br/>ipdev: %s<br/>on node: %s"%(ip.ip_name, ip.ip_dev, ip.ip_node)
+        self.resources[svc]['ip'].append(label)
 
     def add_syncs(self, svc):
         for sync in db(db.svc_res_sync.sync_svcname==svc).select():
@@ -1139,11 +1142,8 @@ class viz(object):
             self.resources[svc] = {}
         if 'sync' not in self.resources[svc]:
             self.resources[svc]['sync'] = []
-        self.resources[svc]['sync'].append(vid)
-        label = r"%s\n(%s)"%(sync.sync_src, ",".join(sync.sync_prdtarget.split(' ')+sync.sync_drptarget.split(' ')))
-        self.data += r"""
-        %(v)s [label="%(s)s", image="%(img)s"];
-        """%(dict(v=vid, s=label, img=self.img_sync))
+        label = r"%s (%s)"%(sync.sync_src, ",".join(sync.sync_prdtarget.split(' ')+sync.sync_drptarget.split(' ')))
+        self.resources[svc]['sync'].append(label)
 
     def add_dg(self, svc, dg):
         if dg is None or dg == "":
@@ -1153,10 +1153,7 @@ class viz(object):
             self.resources[svc] = set([])
         if 'dg' not in self.resources[svc]:
             self.resources[svc]['dg'] = []
-        self.resources[svc]['dg'].append(vid)
-        self.data += r"""
-        %(v)s [label="%(s)s", image="%(img)s"];
-        """%(dict(v=vid, s=dg, img=self.img_disk))
+        self.resources[svc]['dg'].append(dg)
 
     def cdg_cluster(self, cdg):
         if cdg not in self.cdg or len(self.cdg[cdg]) == 0:
