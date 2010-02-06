@@ -377,16 +377,27 @@ def alert_format_body(msg="", app=None, svcname=None, node=None, action=None,
             return TR(_style='font-size:0')
         return TR(TD(B(T(title))),TD(value))
 
+    def URL_WITH_HOST(a=None, c=None, f=None, r=None, args=[], vars={}, host=None, scheme="https"):
+        path = URL(a=a,c=c,f=f,r=r,args=args,vars=vars)
+        try:
+            import applications.init.modules.config as cf
+            if host is None or not isinstance(host,str): host = cf.http_host
+        except:
+            pass
+        if not isinstance(scheme,str): scheme = r.env.wsgi_url_scheme
+        return '%s://%s%s' % (scheme,host,path)
+        return path
+
     out = DIV(
       TABLE(
         header_field("application", app),
-        header_field("service name", A(svcname, _href=URL(r=request, f='svcmon', vars={'svcname':svcname}))),
+        header_field("service name", A(svcname, _href=URL_WITH_HOST(r=request, f='svcmon', vars={'svcname':svcname}))),
         header_field("service type", svctype),
-        header_field("node name", A(node, _href=URL(r=request, f='node', vars={'nodename':node}))),
+        header_field("node name", A(node, _href=URL_WITH_HOST(r=request, f='node', vars={'nodename':node}))),
         header_field("action", action),
         header_field("begin", str(begin)),
         header_field("end", str(end)),
-        header_field("pid", A(pid, _href=URL(r=request, f='svcactions', vars={'pid':pid, 'hostname':node, 'perpage':0}))),
+        header_field("pid", A(pid, _href=URL_WITH_HOST(r=request, f='svcactions', vars={'pid':pid, 'hostname':node, 'perpage':0}))),
         TR(TD(msg, _colspan=2)),
       ),
       _style="width:400"
