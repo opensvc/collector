@@ -222,6 +222,7 @@ db.define_table('services',
     Field('svc_envdate'),
     Field('svc_containertype'),
     Field('svc_metrocluster'),
+    Field('svc_envfile'),
     migrate=False)
 
 db.define_table('v_svcmon',

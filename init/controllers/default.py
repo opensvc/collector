@@ -823,6 +823,16 @@ def asset_filters(table):
 }
 
 @auth.requires_login()
+def envfile():
+    query = _where(None, 'services', request.vars.svcname, 'svc_name')
+    query &= _where(None, 'v_svcmon', domain_perms(), 'svc_name')
+    rows = db(query).select()
+    if len(rows) == 0:
+        response.flash = T("service %(s)s not found"%dict(s=request.vars.svcname))
+        return
+    return dict(svc=rows[0])
+
+@auth.requires_login()
 def svcmon():
     if not getattr(session, 'svcmon_filters'):
         session.svcmon_filters = {
