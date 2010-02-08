@@ -222,6 +222,7 @@ db.define_table('services',
     Field('svc_envdate'),
     Field('svc_containertype'),
     Field('svc_metrocluster'),
+    Field('svc_envfile'),
     migrate=False)
 
 db.define_table('v_svcmon',
@@ -384,6 +385,18 @@ db.define_table('v_users',
     migrate=False)
 
 db.define_table('svcdisks',
+    Field('id'),
+    Field('disk_id'),
+    Field('disk_svcname'),
+    Field('disk_nodename'),
+    Field('disk_size'),
+    Field('disk_vendor'),
+    Field('disk_model'),
+    Field('disk_dg'),
+    Field('disk_target_port_id'),
+    migrate=False)
+
+db.define_table('v_svcdisks',
     Field('id'),
     Field('disk_id'),
     Field('disk_svcname'),

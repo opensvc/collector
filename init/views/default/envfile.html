@@ -1,0 +1,10 @@
+{{extend 'layout.html'}}
+
+{{
+envfile=svc['services']['svc_envfile']
+if envfile is not None:
+    envfile = envfile.replace('\\n','\n')
+    pass
+}}
+{{=H1(T("%(s)s configuration file"%(dict(s=svc['services']['svc_name']))), _style="text-align:left")}}
+{{=P(PRE(envfile, _style="text-align:left"))}}
