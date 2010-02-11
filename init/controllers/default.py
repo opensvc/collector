@@ -990,7 +990,7 @@ class viz(object):
         else:
             color = "grey"
         self.servicesdata += r"""
-        %(v)s [label=%(s)s, style="rounded,filled", fillcolor="%(color)s", fontsize="12"];
+        %(v)s [label="%(s)s", style="rounded,filled", fillcolor="%(color)s", fontsize="12"];
         """%(dict(v=vid, s=svc.svc_name, color=color))
 
     def add_node(self, svc):
