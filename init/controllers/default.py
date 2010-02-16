@@ -1014,7 +1014,7 @@ class viz(object):
         """%(dict(id=vid, name=disk, size=size, img=self.img_disk, devid=devid))
 
     def add_array(self, vid, arrayid="", vendor="", model=""):
-        if arrayid == "":
+        if arrayid == "" or arrayid is None:
             return
         if arrayid not in self.array:
             self.array[arrayid] = set([vid])
@@ -1037,6 +1037,8 @@ class viz(object):
 
     def add_arrays(self):
         for a in self.array:
+            if a is None:
+                continue
             nodes = [self.cdg_cluster(v) for v in self.array[a] if "cdg_" in v]
             nodes += [v for v in self.array[a] if "cdg_" not in v]
             self.data += r"""
@@ -1088,20 +1090,19 @@ class viz(object):
         else:
             dg = cdg
 
-        def tr(t):
-            return """<tr><td align="left" balign="left" border="0">%s</td></tr>"""%t
-
         return r"""
             %(cdg)s [shape="plaintext"; label=<<table color="white"
-            cellspacing="0" cellpadding="2"
-            cellborder="1"><tr><td>%(dg)s</td></tr>%(n)s</table>>]"""%dict(dg=dg, cdg=cdg, n=''.join(map(tr, self.cdg[cdg])))
+            cellspacing="0" cellpadding="2" cellborder="1">
+            <tr><td colspan="3">%(dg)s</td></tr>
+            <tr><td>wwid</td><td>devid</td><td>size</td></tr>
+            %(n)s
+            </table>>]"""%dict(dg=dg, cdg=cdg, n=''.join(self.cdg[cdg]))
 
     def vid_cdg(self, d):
         key = d.disk_arrayid,d.disk_svcname,d.disk_dg
         cdg = 'cdg_'+str(len(self.vidcdg))
         if key not in self.vidcdg:
             self.vidcdg[key] = cdg
-        if cdg not in self.cdgdg:
             self.cdgdg[cdg] = d.disk_dg
         return self.vidcdg[key]
 
@@ -1112,7 +1113,7 @@ class viz(object):
         self.add_array(cdg, d.disk_arrayid, d.disk_vendor, d.disk_model)
         if cdg not in self.cdg:
             self.cdg[cdg] = []
-        label="wwid: %(name)s<br/>devid: %(devid)s<br/>size: %(size)s GB"%(dict(id=vid, name=d.disk_id, size=d.disk_size, img=self.img_disk, devid=d.disk_devid))
+        label="<tr><td>%(name)s</td><td>%(devid)s</td><td>%(size)s GB</td></tr>"%(dict(id=vid, name=d.disk_id, size=d.disk_size, img=self.img_disk, devid=d.disk_devid))
         if label not in self.cdg[cdg]:
             self.cdg[cdg].append(label)
 
