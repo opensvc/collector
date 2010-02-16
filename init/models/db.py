@@ -159,6 +159,7 @@ db.define_table('v_svcactions',
     migrate=False)
 
 db.define_table('v_services',
+    Field('svc_version'),
     Field('svc_hostid'),
     Field('svc_name'),
     Field('svc_nodes'),
@@ -193,6 +194,7 @@ db.define_table('v_services',
     migrate=False)
 
 db.define_table('services',
+    Field('svc_version'),
     Field('svc_hostid'),
     Field('svc_name'),
     Field('svc_nodes'),
@@ -226,6 +228,7 @@ db.define_table('services',
     migrate=False)
 
 db.define_table('v_svcmon',
+    Field('svc_version'),
     Field('svc_name'),
     Field('svc_nodes'),
     Field('svc_drpnode'),
