@@ -1036,7 +1036,7 @@ class viz(object):
             for s in self.svcclu[n]:
                 self.data += r"""subgraph cluster_%(n)s_%(s)s {penwidth=0;
                 %(svcs)s
-        };"""%dict(n=n, s=s.replace(' ','_'), svcs=''.join(self.svcclu[n][s]))
+        };"""%dict(n=n.replace('.','_').replace('-','_'), s=s.replace(' ','_'), svcs=''.join(self.svcclu[n][s]))
 
     def add_citys(self):
         for a in self.loc['city']:
@@ -1063,20 +1063,14 @@ class viz(object):
         vid2 = self.vid_svc(svc.svc_name, svc.mon_nodname)
         key = vid1+vid2
         if key in self.node2svc: return
+        if svc.mon_overallstatus == "up":
+            color = "darkgreen"
+        else:
+            color = "grey"
         self.node2svc |= set([key])
         self.data += """
-        edge [label="", arrowsize=0, penwidth=1]; %(n)s -- %(d)s;
-        """%(dict(n=vid1, d=vid2))
-
-    def add_node2disk(self, node, disk):
-        vid1 = self.vid_node(node)
-        vid2 = self.disks[disk]
-        key = vid1+vid2
-        if key in self.node2disk: return
-        self.node2disk |= set([key])
-        self.data += """
-        edge [label="", weight=1.5, arrowsize=0, color=black, penwidth=1]; %(n)s -- %(d)s;
-        """%(dict(n=vid1, d=vid2))
+        edge [color=%(c)s, label="", arrowsize=0, penwidth=1]; %(n)s -- %(d)s;
+        """%(dict(c=color, n=vid1, d=vid2))
 
     def add_disk2svc(self, disk, svc, dg=""):
         vid1 = self.disks[disk]
@@ -1087,9 +1081,13 @@ class viz(object):
         key = vid1+vid2
         if key in self.disk2svc: return
         self.disk2svc |= set([key])
+        if svc.mon_overallstatus == "up":
+            color = "darkgreen"
+        else:
+            color = "grey"
         self.data += """
-        edge [label="", arrowsize=0, color=grey, penwidth=1]; %(s)s -- %(d)s;
-        """%(dict(d=vid1, s=vid2))
+        edge [color=%(c)s, label="", arrowsize=0, penwidth=1]; %(s)s -- %(d)s;
+        """%(dict(c=color, d=vid1, s=vid2))
 
     def cdg_cluster(self, cdg):
         if cdg not in self.cdg or len(self.cdg[cdg]) == 0:
@@ -1126,16 +1124,6 @@ class viz(object):
         if label not in self.cdg[cdg]:
             self.cdg[cdg].append(label)
 
-    def add_node2dg(self, node, cdg):
-        vid1 = self.vid_node(node)
-        vid2 = cdg
-        key = vid1+vid2
-        if key in self.node2disk: return
-        self.node2disk |= set([key])
-        self.data += """
-        edge [label="", weight=1.5, arrowsize=0, color=black, penwidth=1]; %(n)s -- %(d)s;
-        """%(dict(n=vid1, d=vid2))
-
     def add_dg2svc(self, cdg, svc, dg=""):
         vid1 = cdg
         if dg == "":
@@ -1145,9 +1133,13 @@ class viz(object):
         key = cdg+vid2
         if key in self.disk2svc: return
         self.disk2svc |= set([key])
+        if svc.mon_overallstatus == "up":
+            color = "darkgreen"
+        else:
+            color = "grey"
         self.data += """
-        edge [label="", arrowsize=0, color=grey, penwidth=1]; %(s)s -- %(cdg)s;
-        """%(dict(d=vid1, s=vid2, cdg=cdg))
+        edge [color=%(c)s, label="", arrowsize=0, penwidth=1]; %(s)s -- %(cdg)s;
+        """%(dict(c=color, d=vid1, s=vid2, cdg=cdg))
 
     def add_disks(self, svc):
         svccdg = set([])
@@ -1155,21 +1147,18 @@ class viz(object):
         if len(dl) == 0:
             disk_id = svc.mon_nodname + "_unknown"
             self.add_disk(svc.mon_nodname, disk_id, size="?")
-            #self.add_node2disk(svc.mon_nodname, disk_id)
             self.add_disk2svc(disk_id, svc)
         else:
             for d in dl:
                 if d.disk_dg is None or d.disk_dg == "":
                     disk_id = svc.mon_nodname + "_unknown"
                     self.add_disk(svc.mon_nodname, disk_id, size="?")
-                    #self.add_node2disk(svc.mon_nodname, disk_id)
                     self.add_disk2svc(disk_id, svc)
                 else:
                     svccdg |= set([self.vid_cdg(d)])
                     self.add_dgdisk(d)
         for cdg in svccdg:
             self.add_dg2svc(cdg, svc)
-            #self.add_node2dg(svc.mon_nodname, cdg)
 
 def svcmon_viz():
     request.vars['perpage'] = 0
