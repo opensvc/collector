@@ -1761,6 +1761,17 @@ def delete_services(hostid=None):
     return 0
 
 @service.xmlrpc
+def delete_service_list(hostid=None, svcnames=[]):
+    if hostid is None or len(svcnames) == 0:
+        return 0
+    for svcname in svcnames:
+        q = (db.services.svc_name==svcname)
+        q &= (db.services.svc_hostid==hostid)
+        db(q).delete()
+        db.commit()
+    return 0
+
+@service.xmlrpc
 def update_service(vars, vals):
     if 'svc_hostid' not in vars:
         return 0
