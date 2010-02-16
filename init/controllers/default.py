@@ -845,6 +845,8 @@ def envfile():
 
 @auth.requires_login()
 def svcmon():
+    o = db.v_svcmon.mon_svcname|~db.v_svcmon.mon_nodtype
+
     if not getattr(session, 'svcmon_filters'):
         session.svcmon_filters = {
             1: dict(name='preferred node',
@@ -872,9 +874,9 @@ def svcmon():
 
     (start, end, nav) = _pagination(request, query)
     if start == 0 and end == 0:
-        rows = db(query).select(orderby=db.v_svcmon.mon_svcname|~db.v_svcmon.mon_nodtype)
+        rows = db(query).select(orderby=o)
     else:
-        rows = db(query).select(limitby=(start,end), orderby=db.v_svcmon.mon_svcname|~db.v_svcmon.mon_nodtype)
+        rows = db(query).select(limitby=(start,end), orderby=o)
 
     return dict(services=rows, filters=session.filters, nav=nav)
 
@@ -889,8 +891,8 @@ class viz(object):
         'room': {},
         'rack': {},
     }
+    svcclu = {}
     services = set([])
-    servicesdata = ""
     resources = {}
     nodes = set([])
     disks = {}
@@ -989,9 +991,14 @@ class viz(object):
             color = "green"
         else:
             color = "grey"
-        self.servicesdata += r"""
+        servicesdata = r"""
         %(v)s [label="%(s)s", style="rounded,filled", fillcolor="%(color)s", fontsize="12"];
         """%(dict(v=vid, s=svc.svc_name, color=color))
+        if svc.mon_nodname not in self.svcclu:
+            self.svcclu[svc.mon_nodname] = {}
+        if svc.mon_overallstatus not in self.svcclu[svc.mon_nodname]:
+            self.svcclu[svc.mon_nodname][svc.mon_overallstatus] = set([])
+        self.svcclu[svc.mon_nodname][svc.mon_overallstatus] |= set([servicesdata])
 
     def add_node(self, svc):
         vid = self.vid_node(svc.mon_nodname)
@@ -1025,9 +1032,11 @@ class viz(object):
             self.arrayinfo[arrayid] = r"%s\n%s - %s"%(title, vendor.strip(), model.strip())
 
     def add_services(self):
-        self.data += r"""
-        %(n)s
-        """%(dict(n=self.servicesdata))
+        for n in self.svcclu:
+            for s in self.svcclu[n]:
+                self.data += r"""subgraph cluster_%(n)s_%(s)s {penwidth=0;
+                %(svcs)s
+        };"""%dict(n=n, s=s.replace(' ','_'), svcs=''.join(self.svcclu[n][s]))
 
     def add_citys(self):
         for a in self.loc['city']:
