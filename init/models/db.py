@@ -76,6 +76,7 @@ db.define_table('svcmon',
     migrate=False)
 
 db.define_table('SVCactions',
+    Field('version'),
     Field('action'),
     Field('status'),
     Field('time'),
@@ -100,6 +101,7 @@ db.define_table('SVCactions',
     migrate=False)
 
 db.define_table('v_svcactions',
+    Field('version'),
     Field('action'),
     Field('status'),
     Field('time'),
