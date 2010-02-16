@@ -990,7 +990,7 @@ class viz(object):
         else:
             color = "grey"
         self.servicesdata += r"""
-        %(v)s [label=%(s)s, style="rounded,filled", fillcolor="%(color)s", fontsize="12"];
+        %(v)s [label="%(s)s", style="rounded,filled", fillcolor="%(color)s", fontsize="12"];
         """%(dict(v=vid, s=svc.svc_name, color=color))
 
     def add_node(self, svc):
@@ -1759,6 +1759,17 @@ def delete_services(hostid=None):
         return 0
     db(db.services.svc_hostid==hostid).delete()
     db.commit()
+    return 0
+
+@service.xmlrpc
+def delete_service_list(hostid=None, svcnames=[]):
+    if hostid is None or len(svcnames) == 0:
+        return 0
+    for svcname in svcnames:
+        q = (db.services.svc_name==svcname)
+        q &= (db.services.svc_hostid==hostid)
+        db(q).delete()
+        db.commit()
     return 0
 
 @service.xmlrpc
