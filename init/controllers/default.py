@@ -1143,7 +1143,10 @@ class viz(object):
 
     def add_disks(self, svc):
         svccdg = set([])
-        dl = db((db.v_svcdisks.disk_svcname==svc.svc_name)&(db.v_svcdisks.disk_nodename==svc.mon_nodname)).select()
+        q = (db.v_svcdisks.disk_svcname==svc.svc_name)
+        q &= (db.v_svcdisks.disk_nodename==svc.mon_nodname)
+        q &= (db.v_svcdisks.disk_id!="")
+        dl = db(q).select()
         if len(dl) == 0:
             disk_id = svc.mon_nodname + "_unknown"
             self.add_disk(svc.mon_nodname, disk_id, size="?")
