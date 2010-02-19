@@ -23,6 +23,16 @@ for key in ['svcname',
             'mon_updated']:
     if not vars.has_key(key) or vars[key] is None: vars[key]=''
     pass
+
+def node_icon(svc):
+    if "linux" in svc.os_name.lower():
+        img = IMG(_src=URL(r=request,c='static',f='linux.png'), _class='logo')
+    elif "HP-UX" in svc.os_name:
+	img = IMG(_src=URL(r=request,c='static',f='hpux.png'), _class='logo')
+    else:
+        img = ''
+        pass
+    return img
 }}
 
 {{def node_status(svc, cellclass):
@@ -125,7 +135,7 @@ for key in ['svcname',
     <td class={{=cellclass}}>{{=A(svc.svc_autostart, _href=URL(request.application,'default','node?nodename='+svc.svc_autostart))}}</td>
     <td class={{=cellclass}}>{{=svc.mon_svctype}}</td>
     <td class={{=cellclass}}>{{=svc.mon_nodtype}}</td>
-    <td class={{=cellclass}}>{{=A(svc.mon_nodname, _href=URL(request.application,'default','node?nodename='+svc.mon_nodname))}}</td>
+    <td class={{=cellclass}}>{{=DIV(node_icon(svc), A(svc.mon_nodname, _href=URL(request.application,'default','node?nodename='+svc.mon_nodname)))}}</td>
     <td class="{{=cellclass}}">{{=node_status(svc,cellclass)}}</td>
     <td style='padding:0'></td>
   </tr>
