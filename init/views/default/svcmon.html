@@ -110,11 +110,16 @@ for key in ['svcname',
       else:
           responsibles = ''
           pass
+      if svc.svc_vmname != "" and svc.svc_vmname is not None:
+          vmname = svc.svc_vmname
+      else:
+          vmname = ''
+          pass
     }}
     <td style='padding:0'></td>
     <td class={{=cellclass}}>{{=A(IMG(_src=URL(r=request,c='static',f='envfile.png'), _border=0, _title="service configuration file"), _href=URL(r=request,f='envfile', vars={'svcname': svc.svc_name}))}}</td>
     <td class={{=cellclass}}>{{=A(svc.mon_svcname, _href=URL(request.application,'default','svcactions?svcname='+svc.mon_svcname+'&status_log=empty&begin=>'+yesterday))}}</td>
-    <td class={{=cellclass}}>{{=svc.svc_containertype}}</td>
+    <td class={{=cellclass}}>{{=DIV(svc.svc_containertype, _title=vmname, _style='vertical-align:middle')}}</td>
     <td class={{=cellclass}}>{{=svc.svc_app}}</td>
     <td class={{=cellclass}}>{{=responsibles}}</td>
     <td class={{=cellclass}}>{{=A(svc.svc_autostart, _href=URL(request.application,'default','node?nodename='+svc.svc_autostart))}}</td>

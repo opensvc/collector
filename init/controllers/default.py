@@ -854,6 +854,12 @@ def svcmon():
                     active=False,
                     q=(db.v_svcmon.mon_nodname==db.v_svcmon.svc_autostart)
             ),
+            2: dict(name='container name',
+                    id=2,
+                    active=False,
+                    value=None,
+                    field='svc_vmname',
+            ),
         }
     session.svcmon_filters.update(asset_filters('v_svcmon'))
     toggle_session_filters(session.svcmon_filters)
