@@ -23,6 +23,16 @@ for key in ['svcname',
             'mon_updated']:
     if not vars.has_key(key) or vars[key] is None: vars[key]=''
     pass
+
+def node_icon(svc):
+    if "linux" in svc.os_name.lower():
+        img = IMG(_src=URL(r=request,c='static',f='linux.png'), _class='logo')
+    elif "HP-UX" in svc.os_name:
+	img = IMG(_src=URL(r=request,c='static',f='hpux.png'), _class='logo')
+    else:
+        img = ''
+        pass
+    return img
 }}
 
 {{def node_status(svc, cellclass):
@@ -110,17 +120,22 @@ for key in ['svcname',
       else:
           responsibles = ''
           pass
+      if svc.svc_vmname != "" and svc.svc_vmname is not None:
+          vmname = svc.svc_vmname
+      else:
+          vmname = ''
+          pass
     }}
     <td style='padding:0'></td>
     <td class={{=cellclass}}>{{=A(IMG(_src=URL(r=request,c='static',f='envfile.png'), _border=0, _title="service configuration file"), _href=URL(r=request,f='envfile', vars={'svcname': svc.svc_name}))}}</td>
     <td class={{=cellclass}}>{{=A(svc.mon_svcname, _href=URL(request.application,'default','svcactions?svcname='+svc.mon_svcname+'&status_log=empty&begin=>'+yesterday))}}</td>
-    <td class={{=cellclass}}>{{=svc.svc_containertype}}</td>
+    <td class={{=cellclass}}>{{=DIV(svc.svc_containertype, _title=vmname, _style='vertical-align:middle')}}</td>
     <td class={{=cellclass}}>{{=svc.svc_app}}</td>
     <td class={{=cellclass}}>{{=responsibles}}</td>
     <td class={{=cellclass}}>{{=A(svc.svc_autostart, _href=URL(request.application,'default','node?nodename='+svc.svc_autostart))}}</td>
     <td class={{=cellclass}}>{{=svc.mon_svctype}}</td>
     <td class={{=cellclass}}>{{=svc.mon_nodtype}}</td>
-    <td class={{=cellclass}}>{{=A(svc.mon_nodname, _href=URL(request.application,'default','node?nodename='+svc.mon_nodname))}}</td>
+    <td class={{=cellclass}}>{{=DIV(node_icon(svc), A(svc.mon_nodname, _href=URL(request.application,'default','node?nodename='+svc.mon_nodname)))}}</td>
     <td class="{{=cellclass}}">{{=node_status(svc,cellclass)}}</td>
     <td style='padding:0'></td>
   </tr>

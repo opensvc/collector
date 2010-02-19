@@ -854,6 +854,12 @@ def svcmon():
                     active=False,
                     q=(db.v_svcmon.mon_nodname==db.v_svcmon.svc_autostart)
             ),
+            2: dict(name='container name',
+                    id=2,
+                    active=False,
+                    value=None,
+                    field='svc_vmname',
+            ),
         }
     session.svcmon_filters.update(asset_filters('v_svcmon'))
     toggle_session_filters(session.svcmon_filters)
@@ -1777,7 +1783,10 @@ def delete_service_list(hostid=None, svcnames=[]):
 def update_service(vars, vals):
     if 'svc_hostid' not in vars:
         return 0
-    sql="""insert delayed into services (%s) values (%s)""" % (','.join(vars), ','.join(vals))
+    upd = []
+    for a, b in zip(vars, vals):
+        upd.append("%s=%s" % (a, b))
+    sql="""insert delayed into services (%s) values (%s) on duplicate key update %s""" % (','.join(vars), ','.join(vals), ','.join(upd))
     db.executesql(sql)
     db.commit()
     return 0

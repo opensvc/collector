@@ -1,5 +1,10 @@
 @charset "UTF-8";
 
+.logo {
+    vertical-align: middle;
+    padding-right: 0.5em;
+} 
+
 .index_grid:hover {
     background-color: #ffc;
 }
