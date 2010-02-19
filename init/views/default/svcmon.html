@@ -29,6 +29,10 @@ def node_icon(svc):
         img = IMG(_src=URL(r=request,c='static',f='linux.png'), _class='logo')
     elif "HP-UX" in svc.os_name:
 	img = IMG(_src=URL(r=request,c='static',f='hpux.png'), _class='logo')
+    elif "opensolaris" in svc.os_name.lower():
+	img = IMG(_src=URL(r=request,c='static',f='opensolaris.png'), _class='logo')
+    elif "solaris" in svc.os_name.lower():
+	img = IMG(_src=URL(r=request,c='static',f='solaris.png'), _class='logo')
     else:
         img = ''
         pass
