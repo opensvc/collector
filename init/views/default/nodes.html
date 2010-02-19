@@ -30,7 +30,8 @@ for key in colkeys:
   {{for node in nodes:}}
   <tr>
     <td style='padding:0'></td>
-    {{for key in colkeys:}}
+    <td>{{=A(node['nodename'].lower(), _href=URL(request.application,'default','node?nodename='+node['nodename']))}}
+    {{for key in [k for k in colkeys if k != 'nodename']:}}
     <td>{{=node[key]}}</td>
     {{pass}}
     <td style='padding:0'></td>
