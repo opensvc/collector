@@ -1777,7 +1777,10 @@ def delete_service_list(hostid=None, svcnames=[]):
 def update_service(vars, vals):
     if 'svc_hostid' not in vars:
         return 0
-    sql="""insert delayed into services (%s) values (%s)""" % (','.join(vars), ','.join(vals))
+    upd = []
+    for a, b in zip(vars, vals):
+        upd.append("%s=%s" % (a, b))
+    sql="""insert delayed into services (%s) values (%s) on duplicate key update %s""" % (','.join(vars), ','.join(vals), ','.join(upd))
     db.executesql(sql)
     db.commit()
     return 0
