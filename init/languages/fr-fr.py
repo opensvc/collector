@@ -199,6 +199,7 @@
 'clone the current project': 'cloner le projet courrant',
 'consult alerts sent and pending emission': "consulter les alertes envoy\xc3\xa9es et en attente d'envoi",
 'consult asset information': 'consulter les information sur les biens',
+'container name': 'container name',
 'country': 'pays',
 'cpu': 'cpu',
 'cpu cores': 'cpu, coeurs',

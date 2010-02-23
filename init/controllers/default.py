@@ -546,7 +546,7 @@ def alerts_failed_actions_not_acked():
         This function is meant to be scheduled daily, at night,
         and alerts generated should be sent as soon as possible.
     """
-    def insert_alert(r, log):
+    def insert_alert(r, log, rids):
         d = dict(app=r.app,
                  svcname=r.svcname,
                  action=r.action,
@@ -580,6 +580,7 @@ def alerts_failed_actions_not_acked():
                          send_at=in_24h,
                          created_at=now,
                          action_id=r.id,
+                         action_ids=','.join(rids),
                          domain=domainname(r.svcname),
                          sent_to=to)
 
@@ -589,22 +590,26 @@ def alerts_failed_actions_not_acked():
     in_24h = now + datetime.timedelta(hours=24)
     rows = db((db.v_svcactions.status=='err')&((db.v_svcactions.ack!=1)|(db.v_svcactions.ack==None))).select(orderby=db.v_svcactions.end)
     pid = None
+    rids = []
     for row in rows:
         if pid is None:
             pid = row.pid
             if row.status_log != None: log = str(row.status_log).split('\\n')
             else: log = []
+            rids.append(str(row.id))
             prev = row
         elif pid != row.pid:
-            insert_alert(prev, log)
+            insert_alert(prev, log, rids)
             pid = row.pid
             if row.status_log != None: log = str(row.status_log).split('\\n')
             else: log = []
+            rids = [str(row.id)]
             prev = row
         else:
             if row.status_log != None: log += str(row.status_log).split('\\n')
+            rids.append(str(row.id))
     if len(rows) > 0:
-        insert_alert(prev, log)
+        insert_alert(prev, log, rids)
 
     return dict(alerts_queued=rows)
 
@@ -633,13 +638,12 @@ def send_alerts():
                )
         """
         botaddr = 'admins@opensvc.com'
-        msg = "To: %s\r\nFrom: %s\r\nSubject: %s\r\nContent-type: text/html;charset=utf-8\r\n%s"%(row.sent_to, botaddr, row.subject, row.body)
+        msg = "To: %s\r\nFrom: %s\r\nSubject: %s\r\nContent-type: text/html;charset=utf-8\r\n\r\n%s"%(row.sent_to, botaddr, row.subject, row.body)
         try:
-            server.sendmail(botaddr, row.sent_to, msg)
+            server.sendmail(botaddr, row.sent_to.split(", "), msg)
         except:
             """ Don't mark as sent if the mail sending fails
             """
-            raise
             continue
 
         db(db.alerts.id==row.id).update(sent_at=now)
@@ -649,8 +653,10 @@ def send_alerts():
             auto-ack it
         """
         ack_comment = T("Automatically acknowledged upon ticket generation. Alert sent to %(to)s", dict(to=row.sent_to))
-        if row.action_id is not None:
-            db(db.SVCactions.id==row.action_id).update(ack=1, acked_comment=ack_comment, acked_date=now, acked_by=botaddr)
+        if row.action_ids is not None:
+            sql = "update table SVCactions set ack=1, acked_comment=%(ack_comment)s, acked_date=%(acked_date)s, acked_by=%(acked_by)s where action_id in (%(ids)s)"%dict(ack_comment=ack_comment, acked_date=now, acked_by=botaddr, ids=row.action_ids)
+            db.executesql(sql)
+            #db(db.SVCactions.id==row.action_id).update(ack=1, acked_comment=ack_comment, acked_date=now, acked_by=botaddr)
 
     server.quit()
     return dict(alerts_sent=rows)
@@ -1198,14 +1204,24 @@ def _svcaction_ack(request):
         action_ids += ([key[6:]])
     for action_id in action_ids:
         query = (db.v_svcactions.id == action_id)&(db.v_svcactions.status != "ok")
-        db(query).update(ack=1,
-                         acked_comment=request.vars.ackcomment,
-                         acked_by=' '.join([session.auth.user.first_name, session.auth.user.last_name]),
-                         acked_date=datetime.datetime.now())
+        rows = db(query).select()
+        if len(rows) != 1:
+            continue
+        a = rows[0]
+        _svcaction_ack_one(request, action_id)
+
         """ Cancel pending alert
         """
         db((db.alerts.action_id==action_id)&(db.alerts.sent_at==None)).delete()
     del request.vars.ackcomment
+
+
+def _svcaction_ack_one(request, action_id):
+        query = (db.v_svcactions.id == action_id)&(db.v_svcactions.status != "ok")
+        db(query).update(ack=1,
+                         acked_comment=request.vars.ackcomment,
+                         acked_by=' '.join([session.auth.user.first_name, session.auth.user.last_name]),
+                         acked_date=datetime.datetime.now())
 
 @auth.requires_login()
 def svcactions():

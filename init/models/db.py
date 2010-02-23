@@ -378,6 +378,7 @@ db.define_table('alerts',
     Field('subject'),
     Field('body'),
     Field('action_id'),
+    Field('action_ids'),
     Field('app_id'),
     Field('domain'),
     migrate=False)
