@@ -8,7 +8,7 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
     if not vars.has_key(key) or vars[key] is None: vars[key]=''
     pass
 }}
-<form action='svcactions' name='svcform' id='svcform'> 
+<form action='svcactions' name='svcform' id='svcform' method='post'> 
 <table>
   {{BOX_TOP_ROW(11)}}
   <tr class=box>
