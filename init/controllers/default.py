@@ -1198,6 +1198,10 @@ def svcmon_csv():
     request.vars['perpage'] = 0
     return svcmon()['services']
 
+def cron_purge_alerts():
+    sql = "delete from alerts using alerts, SVCactions where alerts.sent_at is NULL and alerts.action_id=SVCactions.id and SVCactions.ack=1"
+    db.executesql(sql)
+
 def _svcaction_ack(request):
     action_ids = ([])
     for key in [ k for k in request.vars.keys() if 'check_' in k ]:
