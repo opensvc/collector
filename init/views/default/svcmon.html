@@ -131,9 +131,15 @@ def node_icon(svc):
       else:
           vmname = ''
           pass
+
+      if svc.err>0:
+          err = A(IMG(_src=URL(r=request,c='static',f='exclamation_red.png'), _border=0, _title="%d unaknowledged errors"%svc.err), _href=URL(r=request,f='svcactions', vars={'svcname': svc.svc_name, 'status': 'err', 'ack': '!1'}))
+      else:
+          err = ''
+          pass
     }}
     <td style='padding:0'></td>
-    <td class={{=cellclass}}>{{=A(IMG(_src=URL(r=request,c='static',f='envfile.png'), _border=0, _title="service configuration file"), _href=URL(r=request,f='envfile', vars={'svcname': svc.svc_name}))}}</td>
+    <td class={{=cellclass}}>{{=A(IMG(_src=URL(r=request,c='static',f='envfile.png'), _border=0, _title="service configuration file"), _href=URL(r=request,f='envfile', vars={'svcname': svc.svc_name}))}}{{=err}}</td>
     <td class={{=cellclass}}>{{=A(svc.mon_svcname, _href=URL(request.application,'default','svcactions?svcname='+svc.mon_svcname+'&status_log=empty&begin=>'+yesterday))}}</td>
     <td class={{=cellclass}}>{{=DIV(svc.svc_containertype, _title=vmname, _style='vertical-align:middle')}}</td>
     <td class={{=cellclass}}>{{=svc.svc_app}}</td>

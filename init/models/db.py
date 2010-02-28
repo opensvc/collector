@@ -232,6 +232,7 @@ db.define_table('services',
     migrate=False)
 
 db.define_table('v_svcmon',
+    Field('err'),
     Field('svc_vmname'),
     Field('svc_version'),
     Field('svc_name'),
@@ -454,5 +455,25 @@ db.define_table('domain_permissions',
     Field('id'),
     Field('group_id'),
     Field('domains'),
+    migrate=False)
+
+db.define_table('stat_day',
+    Field('id'),
+    Field('day'),
+    Field('nb_svc'),
+    Field('nb_action'),
+    Field('nb_action_err'),
+    Field('nb_action_warn'),
+    Field('nb_action_ok'),
+    Field('disk_size'),
+    Field('ram_size'),
+    Field('nb_core_core'),
+    Field('nb_core_die'),
+    Field('watt'),
+    Field('rackunit'),
+    Field('nb_apps'),
+    Field('nb_accounts'),
+    Field('nb_svc_with_drp'),
+    Field('nb_nodes'),
     migrate=False)
 

@@ -1198,6 +1198,48 @@ def svcmon_csv():
     request.vars['perpage'] = 0
     return svcmon()['services']
 
+def cron_stat_day():
+    when = None
+    if when is None:
+        when = datetime.datetime.now()
+    begin = datetime.datetime(year=when.year, month=when.month, day=when.day, hour=0, minute=0, second=0)
+    end = begin + datetime.timedelta(days=1, seconds=-1)
+
+    pairs = ["nb_svc=(select count(distinct svc_name) from services)"]
+    pairs += ["nb_action=(select count(distinct id) from SVCactions where begin>'%s' and begin<'%s')"%(begin, end)]
+    pairs += ["nb_action_err=(select count(distinct id) from SVCactions where begin>'%s' and begin<'%s' and status='err')"%(begin, end)]
+    pairs += ["nb_action_warn=(select count(distinct id) from SVCactions where begin>'%s' and begin<'%s' and status='warn')"%(begin, end)]
+    pairs += ["nb_action_ok=(select count(distinct id) from SVCactions where begin>'%s' and begin<'%s' and status='ok')"%(begin, end)]
+    pairs += ["nb_apps=(select count(distinct svc_app) from services)"]
+    pairs += ["nb_accounts=(select count(distinct id) from auth_user)"]
+    pairs += ["nb_svc_with_drp=(select count(distinct svc_name) from services where svc_drpnode is not NULL and svc_drpnode!='')"]
+    pairs += ["nb_nodes=(select count(distinct mon_nodname) from svcmon)"]
+    sql = "insert into stat_day set day='%(end)s', %(pairs)s on duplicate key update %(pairs)s"%dict(end=end, pairs=','.join(pairs))
+    #raise Exception(sql)
+    db.executesql(sql)
+    return dict(sql=sql)
+
+def cron_stat_day_svc():
+    when = None
+    if when is None:
+        when = datetime.datetime.now()
+    begin = datetime.datetime(year=when.year, month=when.month, day=when.day, hour=0, minute=0, second=0)
+    end = begin + datetime.timedelta(days=1, seconds=-1)
+
+    rows = db(db.services.id>0).select(db.services.svc_name, groupby=db.services.svc_name)
+
+    for row in rows:
+        svc = row.svc_name
+        pairs = ["nb_svc=(select count(distinct svc_name) from services where svc_name='%s')"%svc]
+        pairs += ["nb_action=(select count(distinct id) from SVCactions where begin>'%s' and begin<'%s' and hostname='%s')"%(begin, end, svc)]
+        pairs += ["nb_action_err=(select count(distinct id) from SVCactions where begin>'%s' and begin<'%s' and status='err' and hostname='%s')"%(begin, end, svc)]
+        pairs += ["nb_action_warn=(select count(distinct id) from SVCactions where begin>'%s' and begin<'%s' and status='warn' and hostname='%s')"%(begin, end, svc)]
+        pairs += ["nb_action_ok=(select count(distinct id) from SVCactions where begin>'%s' and begin<'%s' and status='ok' and hostname='%s')"%(begin, end, svc)]
+        sql = "insert into stat_day_svc set day='%(end)s', svcname='%(svc)s', %(pairs)s on duplicate key update %(pairs)s"%dict(end=end, svc=svc, pairs=','.join(pairs))
+        #raise Exception(sql)
+        db.executesql(sql)
+    return dict(sql=sql)
+
 def cron_purge_alerts():
     sql = "delete from alerts using alerts, SVCactions where alerts.sent_at is NULL and alerts.action_id=SVCactions.id and SVCactions.ack=1"
     db.executesql(sql)
