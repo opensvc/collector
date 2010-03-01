@@ -1213,7 +1213,10 @@ def cron_stat_day():
     pairs += ["nb_apps=(select count(distinct svc_app) from services)"]
     pairs += ["nb_accounts=(select count(distinct id) from auth_user)"]
     pairs += ["nb_svc_with_drp=(select count(distinct svc_name) from services where svc_drpnode is not NULL and svc_drpnode!='')"]
+    pairs += ["nb_svc_prd=(select count(distinct svc_name) from services where svc_type='PRD')"]
+    pairs += ["nb_svc_cluster=sum(select (length(svc_nodes)-length(replace(svc_nodes,' ',''))+1>1) from services)"]
     pairs += ["nb_nodes=(select count(distinct mon_nodname) from svcmon)"]
+    pairs += ["nb_nodes_prd=(select count(distinct mon_nodname) from v_svcmon where mon_nodtype='PRD')"]
     sql = "insert into stat_day set day='%(end)s', %(pairs)s on duplicate key update %(pairs)s"%dict(end=end, pairs=','.join(pairs))
     #raise Exception(sql)
     db.executesql(sql)
@@ -1821,6 +1824,145 @@ def drplan_scripts_archive():
     os.chdir(olddir)
     os.rmdir(dir)
     return buff
+
+from pychart import *
+def stats():
+    def format(ordinal):
+        d = datetime.date.fromordinal(int(ordinal))
+        return "/a60{}" + d.strftime("%Y-%m-%d")
+
+    rows = db(db.stat_day.id>0).select()
+
+    """ actions
+    """
+    action = str(URL(r=request,c='static',f='stat_action.png'))
+    path = 'applications'+action
+    can = canvas.init(path)
+    theme.use_color = True;
+    theme.reinitialize()
+
+    data = [(row.day.toordinal(), row.nb_action_ok, row.nb_action_warn, row.nb_action_err) for row in rows]
+
+    chart_object.set_defaults(area.T, y_range = (0, None),
+                              x_coord = category_coord.T(data, 0))
+    chart_object.set_defaults(bar_plot.T, data = data)
+    ar = area.T(x_coord = category_coord.T(data, 0),
+                y_range = (0, None),
+                x_axis = axis.X(label = "", format = format),
+                y_axis = axis.Y(label = ""))
+    bar_plot.fill_styles.reset();
+    plot1 = bar_plot.T(label="ok")
+    plot2 = bar_plot.T(label="warn", hcol=2, stack_on = plot1)
+    plot3 = bar_plot.T(label="err", hcol=3, stack_on = plot2)
+    ar.add_plot(plot1, plot2, plot3)
+    ar.draw(can)
+    can.close()
+
+    """ services
+    """
+    action = str(URL(r=request,c='static',f='stat_service.png'))
+    path = 'applications'+action
+    can = canvas.init(path)
+
+    data = [(row.day.toordinal(), row.nb_svc_with_drp, row.nb_svc-row.nb_svc_with_drp) for row in rows]
+    chart_object.set_defaults(area.T, y_range = (0, None),
+                              x_coord = category_coord.T(data, 0))
+    chart_object.set_defaults(bar_plot.T, data = data)
+    ar = area.T(x_coord = category_coord.T(data, 0),
+                y_range = (0, None),
+                x_axis = axis.X(label = "", format = format),
+                y_axis = axis.Y(label = ""))
+    bar_plot.fill_styles.reset();
+    plot1 = bar_plot.T(label="svc with drp")
+    plot2 = bar_plot.T(label="svc without drp", hcol=2, stack_on = plot1)
+    ar.add_plot(plot1, plot2)
+    ar.draw(can)
+    can.close()
+
+    """ services
+    """
+    action = str(URL(r=request,c='static',f='stat_service_clustered.png'))
+    path = 'applications'+action
+    can = canvas.init(path)
+
+    data = [(row.day.toordinal(), row.nb_svc_cluster, row.nb_svc-row.nb_svc_cluster) for row in rows]
+    chart_object.set_defaults(area.T, y_range = (0, None),
+                              x_coord = category_coord.T(data, 0))
+    chart_object.set_defaults(bar_plot.T, data = data)
+    ar = area.T(x_coord = category_coord.T(data, 0),
+                y_range = (0, None),
+                x_axis = axis.X(label = "", format = format),
+                y_axis = axis.Y(label = ""))
+    bar_plot.fill_styles.reset();
+    plot1 = bar_plot.T(label="clustered svc")
+    plot2 = bar_plot.T(label="not clustered svc", hcol=2, stack_on = plot1)
+    ar.add_plot(plot1, plot2)
+    ar.draw(can)
+    can.close()
+
+    """ nodes
+    """
+    action = str(URL(r=request,c='static',f='stat_node.png'))
+    path = 'applications'+action
+    can = canvas.init(path)
+
+    data = [(row.day.toordinal(), row.nb_nodes_prd, row.nb_nodes-row.nb_nodes_prd) for row in rows]
+    chart_object.set_defaults(area.T, y_range = (0, None),
+                              x_coord = category_coord.T(data, 0))
+    chart_object.set_defaults(bar_plot.T, data = data)
+    ar = area.T(x_coord = category_coord.T(data, 0),
+                y_range = (0, None),
+                x_axis = axis.X(label = "", format = format),
+                y_axis = axis.Y(label = ""))
+    bar_plot.fill_styles.reset();
+    plot1 = bar_plot.T(label="prd nodes")
+    plot2 = bar_plot.T(label="other nodes", hcol=2, stack_on = plot1)
+    ar.add_plot(plot1, plot2)
+    ar.draw(can)
+    can.close()
+
+    """ apps
+    """
+    action = str(URL(r=request,c='static',f='stat_app.png'))
+    path = 'applications'+action
+    can = canvas.init(path)
+
+    data = [(row.day.toordinal(), row.nb_apps) for row in rows]
+    chart_object.set_defaults(area.T, y_range = (0, None),
+                              x_coord = category_coord.T(data, 0))
+    chart_object.set_defaults(bar_plot.T, data = data)
+    ar = area.T(x_coord = category_coord.T(data, 0),
+                y_range = (0, None),
+                x_axis = axis.X(label = "", format = format),
+                y_axis = axis.Y(label = ""))
+    bar_plot.fill_styles.reset();
+    plot1 = bar_plot.T(label="apps")
+    ar.add_plot(plot1)
+    ar.draw(can)
+    can.close()
+
+    """ accounts
+    """
+    action = str(URL(r=request,c='static',f='stat_accounts.png'))
+    path = 'applications'+action
+    can = canvas.init(path)
+
+    data = [(row.day.toordinal(), row.nb_accounts) for row in rows]
+    chart_object.set_defaults(area.T, y_range = (0, None),
+                              x_coord = category_coord.T(data, 0))
+    chart_object.set_defaults(bar_plot.T, data = data)
+    ar = area.T(x_coord = category_coord.T(data, 0),
+                y_range = (0, None),
+                x_axis = axis.X(label = "", format = format),
+                y_axis = axis.Y(label = ""))
+    bar_plot.fill_styles.reset();
+    plot1 = bar_plot.T(label="accounts")
+    ar.add_plot(plot1)
+    ar.draw(can)
+    can.close()
+
+
+    return dict()
 
 @service.xmlrpc
 def delete_services(hostid=None):

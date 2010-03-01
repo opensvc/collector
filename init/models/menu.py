@@ -58,4 +58,6 @@ response.menu = [
      URL(request.application,'default','nodes'), []],
     [T('alerts'), _f == 'alerts', 
      URL(request.application,'default','alerts'), []],
+    [T('stats'), _f == 'stats', 
+     URL(request.application,'default','stats'), []],
 ]

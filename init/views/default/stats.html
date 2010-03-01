@@ -1,0 +1,30 @@
+{{extend 'layout.html'}}
+{{include 'box.html'}}
+
+{{=TABLE(
+  TR(
+    TD(H2(T("Services")), _style="text-align:center"),
+    TD(H2(T("Clustered services")), _style="text-align:center"),
+  ),
+  TR(
+    TD(IMG(_src=URL(r=request,c='static',f='stat_service.png'), _border=0)),
+    TD(IMG(_src=URL(r=request,c='static',f='stat_service_clustered.png'), _border=0)),
+  ),
+  TR(
+    TD(H2(T("Actions")), _style="text-align:center"),
+    TD(H2(T("Nodes")), _style="text-align:center"),
+  ),
+  TR(
+    TD(IMG(_src=URL(r=request,c='static',f='stat_action.png'), _border=0)),
+    TD(IMG(_src=URL(r=request,c='static',f='stat_node.png'), _border=0)),
+  ),
+  TR(
+    TD(H2(T("Applications")), _style="text-align:center"),
+    TD(H2(T("Accounts")), _style="text-align:center"),
+  ),
+  TR(
+    TD(IMG(_src=URL(r=request,c='static',f='stat_app.png'), _border=0)),
+    TD(IMG(_src=URL(r=request,c='static',f='stat_accounts.png'), _border=0)),
+  ),
+)
+}}
