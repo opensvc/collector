@@ -1214,7 +1214,7 @@ def cron_stat_day():
     pairs += ["nb_accounts=(select count(distinct id) from auth_user)"]
     pairs += ["nb_svc_with_drp=(select count(distinct svc_name) from services where svc_drpnode is not NULL and svc_drpnode!='')"]
     pairs += ["nb_svc_prd=(select count(distinct svc_name) from services where svc_type='PRD')"]
-    pairs += ["nb_svc_cluster=sum(select (length(svc_nodes)-length(replace(svc_nodes,' ',''))+1>1) from services)"]
+    pairs += ["nb_svc_cluster=(select sum(length(svc_nodes)-length(replace(svc_nodes,' ',''))+1>1) from services)"]
     pairs += ["nb_nodes=(select count(distinct mon_nodname) from svcmon)"]
     pairs += ["nb_nodes_prd=(select count(distinct mon_nodname) from v_svcmon where mon_nodtype='PRD')"]
     sql = "insert into stat_day set day='%(end)s', %(pairs)s on duplicate key update %(pairs)s"%dict(end=end, pairs=','.join(pairs))
@@ -1831,6 +1831,24 @@ def stats():
         d = datetime.date.fromordinal(int(ordinal))
         return "/a60{}" + d.strftime("%Y-%m-%d")
 
+    def tics(min, max):
+        s = (10**len(str(max)))/10
+        if s < 1: s = 1
+        t = []
+        for i in range(1, 10):
+            t.append(s*i)
+            if s*(i+1) > max: break
+        return t
+
+    def grid(min, max):
+        s = (10**len(str(max)))/10
+        if s < 1: s = 1
+        t = []
+        for i in range(1, 10):
+            t.append(s*i)
+            if s*i > max: break
+        return t
+
     rows = db(db.stat_day.id>0).select()
 
     """ actions
@@ -1838,7 +1856,8 @@ def stats():
     action = str(URL(r=request,c='static',f='stat_action.png'))
     path = 'applications'+action
     can = canvas.init(path)
-    theme.use_color = True;
+    theme.use_color = True
+    theme.scale_factor = 2
     theme.reinitialize()
 
     data = [(row.day.toordinal(), row.nb_action_ok, row.nb_action_warn, row.nb_action_err) for row in rows]
@@ -1848,8 +1867,9 @@ def stats():
     chart_object.set_defaults(bar_plot.T, data = data)
     ar = area.T(x_coord = category_coord.T(data, 0),
                 y_range = (0, None),
+                y_grid_interval=grid,
                 x_axis = axis.X(label = "", format = format),
-                y_axis = axis.Y(label = ""))
+                y_axis = axis.Y(label = "", tic_interval=tics))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="ok")
     plot2 = bar_plot.T(label="warn", hcol=2, stack_on = plot1)
@@ -1858,7 +1878,7 @@ def stats():
     ar.draw(can)
     can.close()
 
-    """ services
+    """ services (drp)
     """
     action = str(URL(r=request,c='static',f='stat_service.png'))
     path = 'applications'+action
@@ -1870,8 +1890,9 @@ def stats():
     chart_object.set_defaults(bar_plot.T, data = data)
     ar = area.T(x_coord = category_coord.T(data, 0),
                 y_range = (0, None),
-                x_axis = axis.X(label = "", format = format),
-                y_axis = axis.Y(label = ""))
+                y_grid_interval=grid,
+                x_axis = axis.X(label = "", format=format),
+                y_axis = axis.Y(label = "", tic_interval=tics))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="svc with drp")
     plot2 = bar_plot.T(label="svc without drp", hcol=2, stack_on = plot1)
@@ -1879,7 +1900,7 @@ def stats():
     ar.draw(can)
     can.close()
 
-    """ services
+    """ services (clustered)
     """
     action = str(URL(r=request,c='static',f='stat_service_clustered.png'))
     path = 'applications'+action
@@ -1891,8 +1912,9 @@ def stats():
     chart_object.set_defaults(bar_plot.T, data = data)
     ar = area.T(x_coord = category_coord.T(data, 0),
                 y_range = (0, None),
+                y_grid_interval = grid,
                 x_axis = axis.X(label = "", format = format),
-                y_axis = axis.Y(label = ""))
+                y_axis = axis.Y(label = "", tic_interval = tics))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="clustered svc")
     plot2 = bar_plot.T(label="not clustered svc", hcol=2, stack_on = plot1)
@@ -1912,8 +1934,9 @@ def stats():
     chart_object.set_defaults(bar_plot.T, data = data)
     ar = area.T(x_coord = category_coord.T(data, 0),
                 y_range = (0, None),
-                x_axis = axis.X(label = "", format = format),
-                y_axis = axis.Y(label = ""))
+                y_grid_interval = grid,
+                x_axis = axis.X(label = "", format=format),
+                y_axis = axis.Y(label = "", tic_interval=tics))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="prd nodes")
     plot2 = bar_plot.T(label="other nodes", hcol=2, stack_on = plot1)
@@ -1933,8 +1956,9 @@ def stats():
     chart_object.set_defaults(bar_plot.T, data = data)
     ar = area.T(x_coord = category_coord.T(data, 0),
                 y_range = (0, None),
-                x_axis = axis.X(label = "", format = format),
-                y_axis = axis.Y(label = ""))
+                y_grid_interval = grid,
+                x_axis = axis.X(label = "", format=format),
+                y_axis = axis.Y(label = "", tic_interval=tics))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="apps")
     ar.add_plot(plot1)
@@ -1953,8 +1977,9 @@ def stats():
     chart_object.set_defaults(bar_plot.T, data = data)
     ar = area.T(x_coord = category_coord.T(data, 0),
                 y_range = (0, None),
+                y_grid_interval = grid,
                 x_axis = axis.X(label = "", format = format),
-                y_axis = axis.Y(label = ""))
+                y_axis = axis.Y(label = "", tic_interval=tics))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="accounts")
     ar.add_plot(plot1)
