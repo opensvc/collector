@@ -1300,6 +1300,7 @@ def svcactions():
     query &= _where(None, 'v_svcactions', request.vars.hostname, 'hostname')
     query &= _where(None, 'v_svcactions', request.vars.status_log, 'status_log')
     query &= _where(None, 'v_svcactions', request.vars.pid, 'pid')
+    query &= _where(None, 'v_svcactions', request.vars.ack, 'ack')
     query &= _where(None, 'v_svcactions', domain_perms(), 'hostname')
 
     query = apply_session_filters(session.svcactions_filters, query, 'v_svcactions')

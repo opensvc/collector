@@ -133,7 +133,7 @@ def node_icon(svc):
           pass
 
       if svc.err>0:
-          err = A(IMG(_src=URL(r=request,c='static',f='exclamation_red.png'), _border=0, _title="%d unaknowledged errors"%svc.err), _href=URL(r=request,f='svcactions', vars={'svcname': svc.svc_name, 'status': 'err', 'ack': '!1'}))
+          err = A(IMG(_src=URL(r=request,c='static',f='exclamation_red.png'), _border=0, _title="%d unaknowledged errors"%svc.err), _href=URL(r=request,f='svcactions', vars={'svcname': svc.svc_name, 'status': 'err', 'ack': '!1|empty'}))
       else:
           err = ''
           pass
