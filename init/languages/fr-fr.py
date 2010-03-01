@@ -296,6 +296,7 @@
 'service': 'service',
 'set wave': 'assigner la vague',
 'state': '\xc3\xa9tat',
+'stats': 'stats',
 'status': 'statuts',
 'svcmon': 'svcmon',
 'table': 'table',

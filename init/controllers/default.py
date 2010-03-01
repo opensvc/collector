@@ -1199,6 +1199,7 @@ def svcmon_csv():
     return svcmon()['services']
 
 def cron_stat_day():
+    #when = datetime.datetime.now()-datetime.timedelta(days=14)
     when = None
     if when is None:
         when = datetime.datetime.now()
@@ -1850,7 +1851,7 @@ def stats():
             if s*i > max: break
         return t
 
-    rows = db(db.stat_day.id>0).select()
+    rows = db(db.stat_day.id>0).select(orderby=db.stat_day.day)
 
     """ actions
     """
@@ -1872,10 +1873,35 @@ def stats():
                 x_axis = axis.X(label = "", format = format),
                 y_axis = axis.Y(label = "", tic_interval=tics))
     bar_plot.fill_styles.reset();
-    plot1 = bar_plot.T(label="ok")
-    plot2 = bar_plot.T(label="warn", hcol=2, stack_on = plot1)
-    plot3 = bar_plot.T(label="err", hcol=3, stack_on = plot2)
+    plot1 = bar_plot.T(label="ok", fill_style=fill_style.black)
+    plot2 = bar_plot.T(label="warn", hcol=2, stack_on = plot1, fill_style=fill_style.yellow)
+    plot3 = bar_plot.T(label="err", hcol=3, stack_on = plot2, fill_style=fill_style.red)
     ar.add_plot(plot1, plot2, plot3)
+    ar.draw(can)
+    can.close()
+
+    """ actions (errs only)
+    """
+    action = str(URL(r=request,c='static',f='stat_action_err.png'))
+    path = 'applications'+action
+    can = canvas.init(path)
+    theme.use_color = True
+    theme.scale_factor = 2
+    theme.reinitialize()
+
+    data = [(row.day.toordinal(), row.nb_action_err) for row in rows]
+
+    chart_object.set_defaults(area.T, y_range = (0, None),
+                              x_coord = category_coord.T(data, 0))
+    chart_object.set_defaults(bar_plot.T, data = data)
+    ar = area.T(x_coord = category_coord.T(data, 0),
+                y_range = (0, None),
+                y_grid_interval=grid,
+                x_axis = axis.X(label = "", format = format),
+                y_axis = axis.Y(label = "", tic_interval=tics))
+    bar_plot.fill_styles.reset();
+    plot1 = bar_plot.T(label="err", fill_style=fill_style.red)
+    ar.add_plot(plot1)
     ar.draw(can)
     can.close()
 
