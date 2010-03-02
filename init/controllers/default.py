@@ -1218,6 +1218,7 @@ def cron_stat_day():
     pairs += ["nb_svc_cluster=(select sum(length(svc_nodes)-length(replace(svc_nodes,' ',''))+1>1) from services)"]
     pairs += ["nb_nodes=(select count(distinct mon_nodname) from svcmon)"]
     pairs += ["nb_nodes_prd=(select count(distinct mon_nodname) from v_svcmon where mon_nodtype='PRD')"]
+    pairs += ["disk_size=(select sum(t.disk_size) from (select distinct s.disk_id, s.disk_size from svcdisks s) t)"]
     sql = "insert into stat_day set day='%(end)s', %(pairs)s on duplicate key update %(pairs)s"%dict(end=end, pairs=','.join(pairs))
     #raise Exception(sql)
     db.executesql(sql)
@@ -1234,11 +1235,11 @@ def cron_stat_day_svc():
 
     for row in rows:
         svc = row.svc_name
-        pairs = ["nb_svc=(select count(distinct svc_name) from services where svc_name='%s')"%svc]
-        pairs += ["nb_action=(select count(distinct id) from SVCactions where begin>'%s' and begin<'%s' and hostname='%s')"%(begin, end, svc)]
+        pairs = ["nb_action=(select count(distinct id) from SVCactions where begin>'%s' and begin<'%s' and hostname='%s')"%(begin, end, svc)]
         pairs += ["nb_action_err=(select count(distinct id) from SVCactions where begin>'%s' and begin<'%s' and status='err' and hostname='%s')"%(begin, end, svc)]
         pairs += ["nb_action_warn=(select count(distinct id) from SVCactions where begin>'%s' and begin<'%s' and status='warn' and hostname='%s')"%(begin, end, svc)]
         pairs += ["nb_action_ok=(select count(distinct id) from SVCactions where begin>'%s' and begin<'%s' and status='ok' and hostname='%s')"%(begin, end, svc)]
+        pairs += ["disk_size=(select sum(t.disk_size) from (select distinct s.disk_id, s.disk_size from svcdisks s where s.disk_svcname='%s') t)"%svc]
         sql = "insert into stat_day_svc set day='%(end)s', svcname='%(svc)s', %(pairs)s on duplicate key update %(pairs)s"%dict(end=end, svc=svc, pairs=','.join(pairs))
         #raise Exception(sql)
         db.executesql(sql)
@@ -2013,6 +2014,51 @@ def stats():
     ar.draw(can)
     can.close()
 
+    """ disks
+    """
+    action = str(URL(r=request,c='static',f='stat_disk.png'))
+    path = 'applications'+action
+    can = canvas.init(path)
+
+    data = [(row.day.toordinal(), row.disk_size) for row in rows]
+    chart_object.set_defaults(area.T, y_range = (0, None),
+                              x_coord = category_coord.T(data, 0))
+    chart_object.set_defaults(bar_plot.T, data = data)
+    ar = area.T(x_coord = category_coord.T(data, 0),
+                y_range = (0, None),
+                y_grid_interval = grid,
+                x_axis = axis.X(label = "", format = format),
+                y_axis = axis.Y(label = "", tic_interval=tics))
+    bar_plot.fill_styles.reset();
+    plot1 = bar_plot.T(label="disk size (GB)")
+    ar.add_plot(plot1)
+    ar.draw(can)
+    can.close()
+
+    """ disks per svc
+    """
+    sql = "select svcname, group_concat(disk_size order by day separator ',') from stat_day_svc group by svcname"
+    rows = db.executesql(sql)
+
+    action = str(URL(r=request,c='static',f='stat_disk_svc.png'))
+    path = 'applications'+action
+    can = canvas.init(path)
+
+    data1 = [(row[0], int(row[1].split(',')[-1]) or 0) for row in rows]
+    data = sorted(data1, key = lambda x: x[1])[-10:]
+    chart_object.set_defaults(area.T, y_range = (0, None),
+                              x_coord = category_coord.T(data, 0))
+    chart_object.set_defaults(bar_plot.T, data = data)
+    ar = area.T(x_coord = category_coord.T(data, 0),
+                y_range = (0, None),
+                y_grid_interval = grid,
+                x_axis = axis.X(label = "", format = "/a60%s"),
+                y_axis = axis.Y(label = "", tic_interval=tics))
+    bar_plot.fill_styles.reset();
+    plot1 = bar_plot.T(label="disk size (GB)")
+    ar.add_plot(plot1)
+    ar.draw(can)
+    can.close()
 
     return dict()
 

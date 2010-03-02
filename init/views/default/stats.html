@@ -17,6 +17,14 @@
     TD(IMG(_src=URL(r=request,c='static',f='stat_action_err.png'), _border=0)),
   ),
   TR(
+    TD(H2(T("Disks")), _style="text-align:center"),
+    TD(H2(T("Top disks/service")), _style="text-align:center"),
+  ),
+  TR(
+    TD(IMG(_src=URL(r=request,c='static',f='stat_disk.png'), _border=0)),
+    TD(IMG(_src=URL(r=request,c='static',f='stat_disk_svc.png'), _border=0)),
+  ),
+  TR(
     TD(H2(T("Applications")), _style="text-align:center"),
     TD(H2(T("Accounts")), _style="text-align:center"),
   ),
@@ -26,9 +34,11 @@
   ),
   TR(
     TD(H2(T("Nodes")), _style="text-align:center"),
+    TD(),
   ),
   TR(
     TD(IMG(_src=URL(r=request,c='static',f='stat_node.png'), _border=0)),
+    TD(),
   ),
-)
+),
 }}
