@@ -316,6 +316,7 @@
 'trash the current project': 'effacer le projet courrant',
 'type': 'type',
 'unable to parse csv file': "incapable d'analyser le fichier csv",
+'users': 'users',
 'warranty end': 'fin de garantie',
 'zip': 'code postal',
 }

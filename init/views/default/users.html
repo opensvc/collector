@@ -72,16 +72,11 @@ for key in ['fullname',
     <td colspan=99>
       <table>
         <tr>
-          <td> {{=T('Create account')}}:</td>
           <td> {{=T('Remove account')}}:</td>
           <td> {{=T('Grant manager')}}:</td>
           <td> {{=T('Revoke manager')}}:</td>
         </tr>
         <tr>
-          <td>
-            {{=A(IMG(_src=URL(r=request,c='static',f='oneguy.png'),_border=0),
-                 IMG(_src=URL(r=request,c='static',f='add.png'),_border=0), _href=URL(request.application,'default','user/register'))}}
-          </td>
           <td>
             {{=DIV(IMG(_src=URL(r=request,c='static',f='oneguy.png'),_border=0, _onclick='javascript:document.svcform.action.value="del";document.svcform.submit()'),
                    IMG(_src=URL(r=request,c='static',f='del.png'),_border=0, _onclick='javascript:document.svcform.action.value="del";document.svcform.submit()'))}}
