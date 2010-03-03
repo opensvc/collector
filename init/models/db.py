@@ -45,6 +45,10 @@ auth.messages.logged_in = ''
 #  'Click on the link http://.../user/verify_email/%(key)s to verify your email'
 ## more options discussed in gluon/tools.py
 #########################################################################
+mail=Mail()
+mail.settings.server='localhost:25'
+mail.settings.sender='admin@opensvc.com'
+auth.settings.mailer=mail
 
 #########################################################################
 ## Define your tables below, for example
