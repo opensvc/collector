@@ -60,4 +60,6 @@ response.menu = [
      URL(request.application,'default','alerts'), []],
     [T('stats'), _f == 'stats', 
      URL(request.application,'default','stats'), []],
+    [T('users'), _f == 'users', 
+     URL(request.application,'default','users'), []],
 ]

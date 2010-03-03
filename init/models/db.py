@@ -28,6 +28,7 @@ else:                                         # else use a normal relational dat
 from gluon.tools import *
 auth=Auth(globals(),db)                      # authentication/authorization
 auth.settings.hmac_key='sha512:7755f108-1b83-45dc-8302-54be8f3616a1'
+auth.settings.expiration=36000
 auth.define_tables(migrate=False)                         # creates all needed tables
 crud=Crud(globals(),db)                      # for CRUD helpers using auth
 service=Service(globals())                   # for json, xml, jsonrpc, xmlrpc, amfrpc
@@ -385,13 +386,10 @@ db.define_table('alerts',
     migrate=False)
 
 db.define_table('v_users',
-    Field('group_id'),
-    Field('last_name'),
-    Field('first_name'),
-    Field('role'),
-    Field('password'),
+    Field('fullname'),
+    Field('domains'),
+    Field('manager'),
     Field('email'),
-    Field('description'),
     migrate=False)
 
 db.define_table('svcdisks',

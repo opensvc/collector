@@ -849,6 +849,61 @@ def envfile():
         return
     return dict(svc=rows[0])
 
+@auth.requires_membership('Manager')
+def _user_grant_manager(request):
+    ids = ([])
+    manager_group_id = auth.id_group('Manager')
+    for key in [ k for k in request.vars.keys() if 'check_' in k ]:
+        ids += ([int(key[6:])])
+    for id in ids:
+        if not auth.has_membership(manager_group_id, id):
+            auth.add_membership(manager_group_id, id)
+    redirect(URL(r=request, f='users'))
+
+@auth.requires_membership('Manager')
+def _user_revoke_manager(request):
+    ids = ([])
+    manager_group_id = auth.id_group('Manager')
+    for key in [ k for k in request.vars.keys() if 'check_' in k ]:
+        ids += ([int(key[6:])])
+    for id in ids:
+        if auth.has_membership(manager_group_id, id):
+            auth.del_membership(manager_group_id, id)
+    redirect(URL(r=request, f='users'))
+
+@auth.requires_membership('Manager')
+def _user_del(request):
+    ids = ([])
+    for key in [ k for k in request.vars.keys() if 'check_' in k ]:
+        ids += ([int(key[6:])])
+    sql = "delete u, m from auth_user u join auth_membership m on u.id=m.user_id where u.id in (%s)"%','.join(map(str, ids))
+    db.executesql(sql)
+    redirect(URL(r=request, f='users'))
+
+@auth.requires_login()
+def users():
+    if request.vars.action is not None and request.vars.action == "grant":
+        _user_grant_manager(request)
+    elif request.vars.action is not None and request.vars.action == "revoke":
+        _user_revoke_manager(request)
+    elif request.vars.action is not None and request.vars.action == "del":
+        _user_del(request)
+
+    o = db.v_users.fullname
+
+    query = _where(None, 'v_users', request.vars.fullname, 'fullname')
+    query &= _where(None, 'v_users', request.vars.email, 'email')
+    query &= _where(None, 'v_users', request.vars.domains, 'domains')
+    query &= _where(None, 'v_users', request.vars.domains, 'manager')
+
+    (start, end, nav) = _pagination(request, query)
+    if start == 0 and end == 0:
+        rows = db(query).select(orderby=o)
+    else:
+        rows = db(query).select(limitby=(start,end), orderby=o)
+
+    return dict(users=rows, nav=nav)
+
 @auth.requires_login()
 def svcmon():
     o = db.v_svcmon.mon_svcname|~db.v_svcmon.mon_nodtype
@@ -1829,6 +1884,7 @@ def drplan_scripts_archive():
     return buff
 
 from pychart import *
+@auth.requires_login()
 def stats():
     def format(ordinal):
         d = datetime.date.fromordinal(int(ordinal))

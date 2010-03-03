@@ -1,0 +1,104 @@
+{{extend 'layout.html'}}
+{{include '../static/jslib.html'}}
+{{include 'box.html'}}
+{{include 'filters.html'}}
+
+{{
+vars = request.vars
+for key in ['fullname',
+            'email',
+            'domains']:
+    if not vars.has_key(key) or vars[key] is None: vars[key]=''
+    pass
+}}
+
+<form action='users' name='svcform' id='svcform'> 
+<table>
+  {{BOX_TOP_ROW(5)}}
+  <tr class=box>
+    <td class=box></td>
+    <td class=box></td>
+    <td>{{=T('Role')}}</td>
+    <td>{{=T('Full name')}}</td>
+    <td>{{=T('Email')}}</td>
+    <td>{{=T('Domains')}}</td>
+    <td class=box></td>
+  </tr>
+  <tr class=box>
+    <td style='padding:0'></td>
+    <td><input type=checkbox id=check_all onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'))"></td>
+    <td></td>
+    <td><input name=fullname value='{{=vars.fullname}}' size=12 onKeyPress="checkEnter(event)"></td>
+    <td><input name=email value='{{=vars.email}}' size=12 onKeyPress="checkEnter(event)"></td>
+    <td><input name=domains value='{{=vars.domains}}' size=12 onKeyPress="checkEnter(event)"></td>
+    <td style='padding:0'></td>
+  </tr>
+  {{BOX_BOTTOM_ROW(5)}}
+  {{
+    cellclass = 'cell1'
+    cellclasses = {}
+    cellclasses['cell1'] = 'cell2'
+    cellclasses['cell2'] = 'cell1'
+  }}
+  {{for u in users:}}
+  <tr>
+    {{cellclass = cellclasses[cellclass]}}
+    {{
+    if u.manager == 1:
+        role = IMG(_src=URL(r=request,c='static',f='admin.png'),_border=0)
+    else:
+        role = IMG(_src=URL(r=request,c='static',f='oneguy.png'),_border=0)
+        pass
+
+    checked = getattr(vars, 'check_'+str(u.id))
+    if checked is not None:
+        checked = 'checked=on'
+        pass
+    }}
+    <td style='padding:0'></td>
+    <td class={{=cellclass}}><input type=checkbox name=check_{{=u.id}} {{=checked}}></td>
+    <td class={{=cellclass}}>{{=role}}</td>
+    <td class={{=cellclass}}>{{=u.fullname}}</td>
+    <td class={{=cellclass}}>{{=u.email}}</td>
+    <td class={{=cellclass}}>{{=u.domains}}</td>
+    <td style='padding:0'></td>
+  </tr>
+  {{pass}}
+  {{BOX_TOP_ROW(5)}}
+  <tr class=box>
+    <td align=center colspan=99>{{=nav}}</td>
+  </tr>
+  <tr class=box>
+    <td colspan=99>
+      <table>
+        <tr>
+          <td> {{=T('Create account')}}:</td>
+          <td> {{=T('Remove account')}}:</td>
+          <td> {{=T('Grant manager')}}:</td>
+          <td> {{=T('Revoke manager')}}:</td>
+        </tr>
+        <tr>
+          <td>
+            {{=A(IMG(_src=URL(r=request,c='static',f='oneguy.png'),_border=0),
+                 IMG(_src=URL(r=request,c='static',f='add.png'),_border=0), _href=URL(request.application,'default','user/register'))}}
+          </td>
+          <td>
+            {{=DIV(IMG(_src=URL(r=request,c='static',f='oneguy.png'),_border=0, _onclick='javascript:document.svcform.action.value="del";document.svcform.submit()'),
+                   IMG(_src=URL(r=request,c='static',f='del.png'),_border=0, _onclick='javascript:document.svcform.action.value="del";document.svcform.submit()'))}}
+          </td>
+          <td>
+            {{=DIV(IMG(_src=URL(r=request,c='static',f='admin.png'),_border=0, _onclick='javascript:document.svcform.action.value="grant";document.svcform.submit()'),
+                   IMG(_src=URL(r=request,c='static',f='add.png'),_border=0, _onclick='javascript:document.svcform.action.value="grant";document.svcform.submit()'))}}
+          </td>
+          <td>
+            {{=DIV(IMG(_src=URL(r=request,c='static',f='admin.png'),_border=0, _onclick='javascript:document.svcform.action.value="revoke";document.svcform.submit()'),
+                   IMG(_src=URL(r=request,c='static',f='del.png'),_border=0, _onclick='javascript:document.svcform.action.value="revoke";document.svcform.submit()'))}}
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  {{BOX_BOTTOM_ROW(5)}}
+</table>
+<input name=action type=hidden>
+</form>
