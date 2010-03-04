@@ -56,11 +56,23 @@ for key in ['fullname',
         pass
     }}
     <td style='padding:0'></td>
-    <td class={{=cellclass}}><input type=checkbox name=check_{{=u.id}} {{=checked}}></td>
+    <td class={{=cellclass}}><input type=checkbox name="check_{{=u.id}}" id="id_check_{{=u.id}}" {{=checked}}></td>
     <td class={{=cellclass}}>{{=role}}</td>
     <td class={{=cellclass}}>{{=u.fullname}}</td>
     <td class={{=cellclass}}>{{=u.email}}</td>
-    <td class={{=cellclass}}>{{=u.domains}}</td>
+    <td class={{=cellclass}}>
+      <div id="div_domain_text_{{=u.id}}" onClick='javascript:show_eid("div_domain_input_{{=u.id}}");hide_eid("div_domain_text_{{=u.id}}");'>
+        {{=u.domains}}
+      </div>
+      <div class='hidden' id="div_domain_input_{{=u.id}}">
+        <input name="domains_{{=u.id}}" value="{{=u.domains}}" size=15 
+               onKeyPress='javascript:document.svcform.action.value="set_domains";
+                                      document.getElementById("id_check_{{=u.id}}").checked=true;
+                                      checkEnter(event);
+                          '
+        >
+      </div>
+    </td>
     <td style='padding:0'></td>
   </tr>
   {{pass}}

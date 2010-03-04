@@ -872,6 +872,22 @@ def _user_revoke_manager(request):
     redirect(URL(r=request, f='users'))
 
 @auth.requires_membership('Manager')
+def _user_domain_edit(request):
+    ids = ([])
+    manager_group_id = auth.id_group('Manager')
+    for key in [ k for k in request.vars.keys() if 'check_' in k ]:
+        id = int(key[6:])
+        domains = request.vars["domains_"+str(id)]
+        group = auth.user_group(id)
+        if domains is None or len(domains) == 0:
+            sql = "delete from domain_permissions where group_id=%s"%group
+        else:
+            sql = "insert into domain_permissions set group_id=%(group)s, domains='%(domains)s' on duplicate key update domains='%(domains)s'"%dict(domains=domains, group=group)
+        #raise Exception(sql)
+        db.executesql(sql)
+    redirect(URL(r=request, f='users'))
+
+@auth.requires_membership('Manager')
 def _user_del(request):
     ids = ([])
     for key in [ k for k in request.vars.keys() if 'check_' in k ]:
@@ -888,6 +904,8 @@ def users():
         _user_revoke_manager(request)
     elif request.vars.action is not None and request.vars.action == "del":
         _user_del(request)
+    elif request.vars.action is not None and request.vars.action == "set_domains":
+        _user_domain_edit(request)
 
     o = db.v_users.fullname
 
