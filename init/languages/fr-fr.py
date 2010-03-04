@@ -158,6 +158,7 @@
 'Service type': 'Type de service',
 'Service will be purged from database after 24 hours without update': 'Le service sera supprim\xc3\xa9 de la base de donn\xc3\xa9es apr\xc3\xa8s 24 heures sans mise \xc3\xa0 jour',
 'Services': 'Services',
+'Services by type': 'Services by type',
 'Showing %(first)d to %(last)d out of %(total)d records': 'Affichage des enregistrements %(first)d \xc3\xa0 %(last)d sur un total de %(total)d',
 'Status': 'Statut',
 'Stylesheet': 'Feuille de style',

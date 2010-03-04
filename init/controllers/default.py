@@ -1981,13 +1981,13 @@ def stats():
     ar.draw(can)
     can.close()
 
-    """ services (drp)
+    """ services (drp ready)
     """
-    action = str(URL(r=request,c='static',f='stat_service.png'))
+    action = str(URL(r=request,c='static',f='stat_service_type.png'))
     path = 'applications'+action
     can = canvas.init(path)
 
-    data = [(row.day.toordinal(), row.nb_svc_with_drp, row.nb_svc-row.nb_svc_with_drp) for row in rows]
+    data = [(row.day.toordinal(), row.nb_svc_prd, row.nb_svc-row.nb_svc_prd) for row in rows]
     chart_object.set_defaults(area.T, y_range = (0, None),
                               x_coord = category_coord.T(data, 0))
     chart_object.set_defaults(bar_plot.T, data = data)
@@ -1997,8 +1997,30 @@ def stats():
                 x_axis = axis.X(label = "", format=format),
                 y_axis = axis.Y(label = "", tic_interval=tics))
     bar_plot.fill_styles.reset();
-    plot1 = bar_plot.T(label="svc with drp")
-    plot2 = bar_plot.T(label="svc without drp", hcol=2, stack_on = plot1)
+    plot1 = bar_plot.T(label="prd svc")
+    plot2 = bar_plot.T(label="other svc", hcol=2, stack_on = plot1)
+    ar.add_plot(plot1, plot2)
+    ar.draw(can)
+    can.close()
+
+    """ services (drp ready)
+    """
+    action = str(URL(r=request,c='static',f='stat_service.png'))
+    path = 'applications'+action
+    can = canvas.init(path)
+
+    data = [(row.day.toordinal(), row.nb_svc_with_drp, row.nb_svc_prd-row.nb_svc_with_drp) for row in rows]
+    chart_object.set_defaults(area.T, y_range = (0, None),
+                              x_coord = category_coord.T(data, 0))
+    chart_object.set_defaults(bar_plot.T, data = data)
+    ar = area.T(x_coord = category_coord.T(data, 0),
+                y_range = (0, None),
+                y_grid_interval=grid,
+                x_axis = axis.X(label = "", format=format),
+                y_axis = axis.Y(label = "", tic_interval=tics))
+    bar_plot.fill_styles.reset();
+    plot1 = bar_plot.T(label="prd svc with drp")
+    plot2 = bar_plot.T(label="prd svc without drp", hcol=2, stack_on = plot1)
     ar.add_plot(plot1, plot2)
     ar.draw(can)
     can.close()
