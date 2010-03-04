@@ -913,6 +913,7 @@ def users():
     query &= _where(None, 'v_users', request.vars.email, 'email')
     query &= _where(None, 'v_users', request.vars.domains, 'domains')
     query &= _where(None, 'v_users', request.vars.domains, 'manager')
+    query &= _where(None, 'v_users', request.vars.last, 'last')
 
     (start, end, nav) = _pagination(request, query)
     if start == 0 and end == 0:

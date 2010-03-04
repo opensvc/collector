@@ -7,6 +7,7 @@
 vars = request.vars
 for key in ['fullname',
             'email',
+            'last',
             'domains']:
     if not vars.has_key(key) or vars[key] is None: vars[key]=''
     pass
@@ -14,7 +15,7 @@ for key in ['fullname',
 
 <form action='users' name='svcform' id='svcform'> 
 <table>
-  {{BOX_TOP_ROW(5)}}
+  {{BOX_TOP_ROW(6)}}
   <tr class=box>
     <td class=box></td>
     <td class=box></td>
@@ -22,6 +23,7 @@ for key in ['fullname',
     <td>{{=T('Full name')}}</td>
     <td>{{=T('Email')}}</td>
     <td>{{=T('Domains')}}</td>
+    <td>{{=T('Last event')}}</td>
     <td class=box></td>
   </tr>
   <tr class=box>
@@ -31,9 +33,10 @@ for key in ['fullname',
     <td><input name=fullname value='{{=vars.fullname}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=email value='{{=vars.email}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=domains value='{{=vars.domains}}' size=12 onKeyPress="checkEnter(event)"></td>
+    <td><input name=last value='{{=vars.last}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td style='padding:0'></td>
   </tr>
-  {{BOX_BOTTOM_ROW(5)}}
+  {{BOX_BOTTOM_ROW(6)}}
   {{
     cellclass = 'cell1'
     cellclasses = {}
@@ -73,10 +76,11 @@ for key in ['fullname',
         >
       </div>
     </td>
+    <td class={{=cellclass}}>{{=u.last}}</td>
     <td style='padding:0'></td>
   </tr>
   {{pass}}
-  {{BOX_TOP_ROW(5)}}
+  {{BOX_TOP_ROW(6)}}
   <tr class=box>
     <td align=center colspan=99>{{=nav}}</td>
   </tr>
@@ -105,7 +109,7 @@ for key in ['fullname',
       </table>
     </td>
   </tr>
-  {{BOX_BOTTOM_ROW(5)}}
+  {{BOX_BOTTOM_ROW(6)}}
 </table>
 <input name=action type=hidden>
 </form>

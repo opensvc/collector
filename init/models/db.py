@@ -394,6 +394,7 @@ db.define_table('v_users',
     Field('domains'),
     Field('manager'),
     Field('email'),
+    Field('last'),
     migrate=False)
 
 db.define_table('svcdisks',
