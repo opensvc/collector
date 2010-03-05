@@ -17,6 +17,7 @@ for key in ['svcname',
             'fsstatus',
             'diskstatus',
             'syncstatus',
+            'appstatus',
             'overallstatus',
             'nodename',
             'nodetype',
@@ -52,6 +53,7 @@ def node_icon(svc):
         fsstatus = 'status_expired'
         diskstatus = 'status_expired'
         syncstatus = 'status_expired'
+        appstatus = 'status_expired'
     else:
         overallstatus = 'status_'+svc.mon_overallstatus.replace(" ", "_")
         containerstatus = 'status_'+svc.mon_containerstatus.replace(" ", "_")
@@ -59,17 +61,19 @@ def node_icon(svc):
         fsstatus = 'status_'+svc.mon_fsstatus.replace(" ", "_")
         diskstatus = 'status_'+svc.mon_diskstatus.replace(" ", "_")
         syncstatus = 'status_'+svc.mon_syncstatus.replace(" ", "_")
+        appstatus = 'status_'+svc.mon_appstatus.replace(" ", "_")
     pass
 }}
     <table>
       <tr>
-         <td colspan=5 class="status {{=cellclass}} {{=overallstatus}}" title="since {{=svc.mon_updated}}">{{=svc.mon_overallstatus}}</td>
+         <td colspan=6 class="status {{=cellclass}} {{=overallstatus}}" title="since {{=svc.mon_updated}}">{{=svc.mon_overallstatus}}</td>
       </tr><tr>
         <td class="{{=cellclass}} {{=containerstatus}}">vm</td>
         <td class="{{=cellclass}} {{=ipstatus}}">ip</td>
         <td class="{{=cellclass}} {{=fsstatus}}">fs</td>
         <td class="{{=cellclass}} {{=diskstatus}}">dg</td>
         <td class="{{=cellclass}} {{=syncstatus}}">sync</td>
+        <td class="{{=cellclass}} {{=appstatus}}">app</td>
       </tr>
     </table>
     {{return ''}}
