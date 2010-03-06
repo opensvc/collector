@@ -845,9 +845,21 @@ def envfile():
     query &= _where(None, 'v_svcmon', domain_perms(), 'svc_name')
     rows = db(query).select()
     if len(rows) == 0:
-        response.flash = T("service %(s)s not found"%dict(s=request.vars.svcname))
-        return
-    return dict(svc=rows[0])
+        return "None"
+    #return dict(svc=rows[0])
+    envfile = rows[0]['services']['svc_envfile']
+    if envfile is None:
+        return "None"
+    return PRE(envfile.replace('\\n','\n'), _style="text-align:left")
+
+@auth.requires_membership('Manager')
+def user_event_log():
+    rows = db(db.auth_event.user_id==request.vars.uid).select(orderby=~db.auth_event.id, limitby=(0, 20))
+    x = TR(TH(T('Date')), TH(T('From')), TH(T('Event')))
+    def to_row(row):
+       return TR(TD(row.time_stamp), TD(row.client_ip), TD(row.description))
+    xx = map(to_row, rows)
+    return TABLE(x, xx)
 
 @auth.requires_membership('Manager')
 def _user_grant_manager(request):
@@ -1654,6 +1666,10 @@ def node():
         redirect(URL(r=request, f='node_insert'))
         return dict(node=None)
     return dict(node=node)
+
+@auth.requires_login()
+def format_node(node):
+   return TABLE()
 
 class ex(Exception):
     def __init__(self, value):

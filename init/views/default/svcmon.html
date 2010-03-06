@@ -143,7 +143,31 @@ def node_icon(svc):
           pass
     }}
     <td style='padding:0'></td>
-    <td class={{=cellclass}}>{{=A(IMG(_src=URL(r=request,c='static',f='envfile.png'), _border=0, _title="service configuration file"), _href=URL(r=request,f='envfile', vars={'svcname': svc.svc_name}))}}{{=err}}</td>
+    <td class={{=cellclass}}>
+      <input id="{{=svc.mon_svcname}}" value="{{=svc.mon_svcname}}" type="hidden">
+      {{=A(
+          IMG(
+            _src=URL(r=request,c='static',f='envfile.png'),
+            _border=0,
+            _title="service configuration file",
+            _onclick="""
+               getElementById("svcname").value="%(svcname)s";
+               ajax("%(url)s",['svcname'],"info_%(svcname)s");
+               getElementById("foo_%(svcname)s").className="xinfo_shown";
+            """%dict(url=URL(r=request,f='envfile'), svcname=svc.mon_svcname),
+          ),
+          SPAN(
+            DIV(_id="info_"+svc.mon_svcname),
+            _onclick="""
+               getElementById("foo_%(svcname)s").className="xinfo";
+            """%dict(svcname=svc.mon_svcname),
+          ),
+          _id="foo_"+svc.mon_svcname,
+          _class="xinfo",
+        )
+      }}
+      {{=err}}
+    </td>
     <td class={{=cellclass}}>{{=A(svc.mon_svcname, _href=URL(request.application,'default','svcactions?svcname='+svc.mon_svcname+'&status_log=empty&begin=>'+yesterday))}}</td>
     <td class={{=cellclass}}>{{=DIV(svc.svc_containertype, _title=vmname, _style='vertical-align:middle')}}</td>
     <td class={{=cellclass}}>{{=svc.svc_app}}</td>
@@ -156,6 +180,8 @@ def node_icon(svc):
     <td style='padding:0'></td>
   </tr>
   {{pass}}
+  <div id="foo"></div>
+  <input id="svcname" type="hidden">
   {{BOX_TOP_ROW(10)}}
   <tr class=box>
     <td align=center colspan=99>{{=nav}}</td>

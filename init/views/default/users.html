@@ -15,7 +15,7 @@ for key in ['fullname',
 
 <form action='users' name='svcform' id='svcform'> 
 <table>
-  {{BOX_TOP_ROW(6)}}
+  {{BOX_TOP_ROW(7)}}
   <tr class=box>
     <td class=box></td>
     <td class=box></td>
@@ -24,6 +24,7 @@ for key in ['fullname',
     <td>{{=T('Email')}}</td>
     <td>{{=T('Domains')}}</td>
     <td>{{=T('Last event')}}</td>
+    <td class=box></td>
     <td class=box></td>
   </tr>
   <tr class=box>
@@ -35,8 +36,9 @@ for key in ['fullname',
     <td><input name=domains value='{{=vars.domains}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=last value='{{=vars.last}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td style='padding:0'></td>
+    <td style='padding:0'></td>
   </tr>
-  {{BOX_BOTTOM_ROW(6)}}
+  {{BOX_BOTTOM_ROW(7)}}
   {{
     cellclass = 'cell1'
     cellclasses = {}
@@ -77,10 +79,34 @@ for key in ['fullname',
       </div>
     </td>
     <td class={{=cellclass}}>{{=u.last}}</td>
+    <td class={{=cellclass}}>
+      {{=A(
+          IMG(
+            _src=URL(r=request,c='static',f='envfile.png'),
+            _border=0,
+            _title="more events",
+            _onclick="""
+               getElementById("uid").value="%(uid)s";
+               ajax("%(url)s",['uid'],"info_%(uid)s");
+               getElementById("foo_%(uid)s").className="xinfo_shown";
+            """%dict(url=URL(r=request,f='user_event_log'), uid=u.id),
+          ),
+          SPAN(
+            DIV(_id="info_"+str(u.id)),
+            _onclick="""
+               getElementById("foo_%(uid)s").className="xinfo";
+            """%dict(uid=u.id),
+          ),
+          _id="foo_"+str(u.id),
+          _class="xinfo",
+        )
+      }}
+    </td>
     <td style='padding:0'></td>
   </tr>
+  <input id="uid" type="hidden">
   {{pass}}
-  {{BOX_TOP_ROW(6)}}
+  {{BOX_TOP_ROW(7)}}
   <tr class=box>
     <td align=center colspan=99>{{=nav}}</td>
   </tr>
@@ -109,7 +135,7 @@ for key in ['fullname',
       </table>
     </td>
   </tr>
-  {{BOX_BOTTOM_ROW(6)}}
+  {{BOX_BOTTOM_ROW(7)}}
 </table>
 <input name=action type=hidden>
 </form>
