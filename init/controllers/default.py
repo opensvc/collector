@@ -1659,17 +1659,74 @@ def node_edit():
     return dict(form=form)
 
 @auth.requires_login()
-def node():
-    node = db(db.nodes.nodename==request.vars.nodename).select()
-    if len(node) != 1:
-        response.flash = T("No asset information for %(node)s", dict(node=request.vars.nodename))
-        redirect(URL(r=request, f='node_insert'))
-        return dict(node=None)
-    return dict(node=node)
-
-@auth.requires_login()
-def format_node(node):
-   return TABLE()
+def ajax_node():
+    nodes = db(db.nodes.nodename==request.vars.node).select()
+    if len(nodes) != 1:
+        return T("No asset information for %(node)s"%dict(node=request.vars.nodename))
+    node = nodes[0]
+    loc = TABLE(
+      TR(TD(T('location'), _class="boxed", _colspan=2)),
+      TR(TD(T('country'), _style='font-style:italic'), TD(node['loc_country'])),
+      TR(TD(T('city'), _style='font-style:italic'), TD(node['loc_city'])),
+      TR(TD(T('zip'), _style='font-style:italic'), TD(node['loc_zip'])),
+      TR(TD(T('address'), _style='font-style:italic'), TD(node['loc_addr'])),
+      TR(TD(T('building'), _style='font-style:italic'), TD(node['loc_building'])),
+      TR(TD(T('floor'), _style='font-style:italic'), TD(node['loc_floor'])),
+      TR(TD(T('room'), _style='font-style:italic'), TD(node['loc_room'])),
+      TR(TD(T('rack'), _style='font-style:italic'), TD(node['loc_rack'])),
+    )
+    power = TABLE(
+      TR(TD(T('power'), _class="boxed", _colspan=2)),
+      TR(TD(T('nb power supply'), _style='font-style:italic'), TD(node['power_supply_nb'])),
+      TR(TD(T('power cabinet #1'), _style='font-style:italic'), TD(node['power_cabinet1'])),
+      TR(TD(T('power cabinet #2'), _style='font-style:italic'), TD(node['power_cabinet2'])),
+      TR(TD(T('power protector'), _style='font-style:italic'), TD(node['power_protect'])),
+      TR(TD(T('power protector breaker'), _style='font-style:italic'), TD(node['power_protect_breaker'])),
+      TR(TD(T('power breaker #1'), _style='font-style:italic'), TD(node['power_breaker1'])),
+      TR(TD(T('power breaker #2'), _style='font-style:italic'), TD(node['power_breaker1'])),
+    )
+    server = TABLE(
+      TR(TD(T('server'), _class="boxed", _colspan=2)),
+      TR(TD(T('model'), _style='font-style:italic'), TD(node['model'])),
+      TR(TD(T('type'), _style='font-style:italic'), TD(node['type'])),
+      TR(TD(T('serial'), _style='font-style:italic'), TD(node['serial'])),
+      TR(TD(T('warranty end'), _style='font-style:italic'), TD(node['warranty_end'])),
+      TR(TD(T('team responsible'), _style='font-style:italic'), TD(node['team_responsible'])),
+      TR(TD(T('status'), _style='font-style:italic'), TD(node['status'])),
+      TR(TD(T('role'), _style='font-style:italic'), TD(node['role'])),
+      TR(TD(T('env'), _style='font-style:italic'), TD(node['environnement'])),
+    )
+    cpu = TABLE(
+      TR(TD(T('cpu'), _class="boxed", _colspan=2)),
+      TR(TD(T('cpu frequency'), _style='font-style:italic'), TD(node['cpu_freq'])),
+      TR(TD(T('cpu cores'), _style='font-style:italic'), TD(node['cpu_cores'])),
+      TR(TD(T('cpu dies'), _style='font-style:italic'), TD(node['cpu_dies'])),
+      TR(TD(T('cpu vendor'), _style='font-style:italic'), TD(node['cpu_vendor'])),
+      TR(TD(T('cpu model'), _style='font-style:italic'), TD(node['cpu_model'])),
+    )
+    mem = TABLE(
+      TR(TD(T('memory'), _class="boxed", _colspan=2)),
+      TR(TD(T('memory banks'), _style='font-style:italic'), TD(node['mem_banks'])),
+      TR(TD(T('memory slots'), _style='font-style:italic'), TD(node['mem_slots'])),
+      TR(TD(T('memory total'), _style='font-style:italic'), TD(node['mem_bytes'])),
+    )
+    os = TABLE(
+      TR(TD(T('operating system'), _class="boxed", _colspan=2)),
+      TR(TD(T('os name'), _style='font-style:italic'), TD(node['os_name'])),
+      TR(TD(T('os release'), _style='font-style:italic'), TD(node['os_release'])),
+      TR(TD(T('os update'), _style='font-style:italic'), TD(node['os_update'])),
+      TR(TD(T('os segment'), _style='font-style:italic'), TD(node['os_segment'])),
+      TR(TD(T('os kernel'), _style='font-style:italic'), TD(node['os_kernel'])),
+      TR(TD(T('os arch'), _style='font-style:italic'), TD(node['os_arch'])),
+    )
+    t = TABLE(
+      TR(TD(H2(request.vars.node), _colspan=2, _style='text-align:center')),
+      TR(TD(loc), TD(power)),
+      TR(TD(server), TD(os)),
+      TR(TD(cpu), TD(mem)),
+      TR(TD(A(T("edit"), _href=URL(r=request, f='node_edit', vars={'node': request.vars.node})), _colspan=2, _style='text-align:center')),
+    )
+    return t
 
 class ex(Exception):
     def __init__(self, value):

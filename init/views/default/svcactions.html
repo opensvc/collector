@@ -89,7 +89,28 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
     <td class={{=cellclass}}>{{=action.svcname}}</td>
     <td class={{=cellclass}}>{{=action.app}}</td>
     <td class={{=cellclass}}>{{=responsibles}}</td>
-    <td class={{=cellclass}}>{{=A(action.hostname, _href=URL(request.application,'default','node?nodename='+action.hostname))}}</td>
+    <td class={{=cellclass}}>
+      {{=A(
+          DIV(
+            action.hostname,
+            _onclick="""
+               getElementById("node").value="%(node)s";
+               ajax("%(url)s",['node'],"info_%(node)s");
+               getElementById("foo_%(node)s").className="xinfo_shown";
+            """%dict(url=URL(r=request,f='ajax_node'), node=action.hostname),
+          ),
+          SPAN(
+            DIV(_id="info_"+action.hostname),
+            _onclick="""
+               getElementById("foo_%(node)s").className="xinfo";
+            """%dict(node=action.hostname),
+          ),
+          _id="foo_"+action.hostname,
+          _class="xinfo",
+        )
+      }}
+
+    </td>
     <td class="{{=cellclass}} {{=metaactionclass}}">{{=action.action}}</td>
     <td class="{{=cellclass}} status_{{=action.status}} ack_{{=action.ack}} {{=metaactionclass}}" {{=trigger}}>{{=action.status}}</td>
     <td class={{=cellclass}}>{{=action.begin}}</td>
@@ -99,6 +120,7 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
   </tr>
   {{=ack}}
   {{pass}}
+  <input id='node' type='hidden'>
   {{BOX_TOP_ROW(11)}}
   <tr class=box>
     <td align=center colspan=99>{{=nav}}</td>

@@ -18,6 +18,16 @@
     text-decoration: none;
 }
 
+.boxed {
+   -moz-border-radius:8px;	/* Rounded edges in Firefox */
+    background-color:#e0e1cd;
+    padding-left:0.8em;
+    padding-right:0.8em;
+    padding-top:0.4em;
+    padding-bottom:0.4em;
+    overflow:hidden;
+}
+
 .box {
     background-color:#e0e1cd;
     padding:0;

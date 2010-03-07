@@ -172,16 +172,57 @@ def node_icon(svc):
     <td class={{=cellclass}}>{{=DIV(svc.svc_containertype, _title=vmname, _style='vertical-align:middle')}}</td>
     <td class={{=cellclass}}>{{=svc.svc_app}}</td>
     <td class={{=cellclass}}>{{=responsibles}}</td>
-    <td class={{=cellclass}}>{{=A(svc.svc_autostart, _href=URL(request.application,'default','node?nodename='+svc.svc_autostart))}}</td>
+    <td class={{=cellclass}}>
+      {{=A(
+          DIV(
+            svc.svc_autostart,
+            _onclick="""
+               getElementById("node").value="%(node)s";
+               ajax("%(url)s",['node'],"asn_info_%(node)s");
+               getElementById("asn_%(node)s").className="xinfo_shown";
+            """%dict(url=URL(r=request,f='ajax_node'), node=svc.svc_autostart),
+          ),
+          SPAN(
+            DIV(_id="asn_info_"+svc.svc_autostart),
+            _onclick="""
+               getElementById("asn_%(node)s").className="xinfo";
+            """%dict(node=svc.svc_autostart),
+          ),
+          _id="asn_"+svc.svc_autostart,
+          _class="xinfo",
+        )
+      }}
+    </td>
     <td class={{=cellclass}}>{{=svc.mon_svctype}}</td>
     <td class={{=cellclass}}>{{=svc.mon_nodtype}}</td>
-    <td class={{=cellclass}}>{{=DIV(node_icon(svc), A(svc.mon_nodname, _href=URL(request.application,'default','node?nodename='+svc.mon_nodname)))}}</td>
+    <td class={{=cellclass}}>
+      {{=A(
+          DIV(
+            svc.mon_nodname,
+            _onclick="""
+               getElementById("node").value="%(node)s";
+               ajax("%(url)s",['node'],"info_%(node)s");
+               getElementById("foo_%(node)s").className="xinfo_shown";
+            """%dict(url=URL(r=request,f='ajax_node'), node=svc.mon_nodname),
+          ),
+          SPAN(
+            DIV(_id="info_"+svc.mon_nodname),
+            _onclick="""
+               getElementById("foo_%(node)s").className="xinfo";
+            """%dict(node=svc.mon_nodname),
+          ),
+          _id="foo_"+svc.mon_nodname,
+          _class="xinfo",
+        )
+      }}
+    </td>
     <td class="{{=cellclass}}">{{=node_status(svc,cellclass)}}</td>
     <td style='padding:0'></td>
   </tr>
   {{pass}}
   <div id="foo"></div>
   <input id="svcname" type="hidden">
+  <input id="node" type="hidden">
   {{BOX_TOP_ROW(10)}}
   <tr class=box>
     <td align=center colspan=99>{{=nav}}</td>
