@@ -193,8 +193,20 @@ def node_icon(svc):
         )
       }}
     </td>
-    <td class={{=cellclass}}>{{=svc.mon_svctype}}</td>
-    <td class={{=cellclass}}>{{=svc.mon_nodtype}}</td>
+    {{if svc.mon_svctype == 'PRD':
+          boldtype = """style='font-weight:bold'"""
+      else:
+          boldtype = ""
+          pass
+    }}
+    <td class={{=cellclass}} {{=boldtype}}>{{=svc.mon_svctype}}</td>
+    {{if svc.mon_nodtype == 'PRD':
+          boldtype = """style='font-weight:bold'"""
+      else:
+          boldtype = ""
+          pass
+    }}
+    <td class={{=cellclass}} {{=boldtype}}>{{=svc.mon_nodtype}}</td>
     <td class={{=cellclass}}>
       {{=A(
           DIV(
