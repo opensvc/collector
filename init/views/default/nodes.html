@@ -30,13 +30,35 @@ for key in colkeys:
   {{for node in nodes:}}
   <tr>
     <td style='padding:0'></td>
-    <td>{{=A(node['nodename'].lower(), _href=URL(request.application,'default','node?nodename='+node['nodename']))}}
+    <td>
+      {{nodename = node['nodename'].lower()}}
+      {{=A(
+          DIV(
+            nodename,
+            _onclick="""
+               getElementById("node").value="%(node)s";
+               ajax("%(url)s",['node'],"info_%(node)s");
+               getElementById("foo_%(node)s").className="xinfo_shown";
+            """%dict(url=URL(r=request,f='ajax_node'), node=nodename),
+          ),
+          SPAN(
+            DIV(_id="info_"+nodename),
+            _onclick="""
+               getElementById("foo_%(node)s").className="xinfo";
+            """%dict(node=nodename),
+          ),
+          _id="foo_"+nodename,
+          _class="xinfo",
+        )
+      }}
+    </td>
     {{for key in [k for k in colkeys if k != 'nodename']:}}
     <td>{{=node[key]}}</td>
     {{pass}}
     <td style='padding:0'></td>
   </tr>
   {{pass}}
+  <input id="node" type="hidden">
   {{BOX_TOP_ROW(len(colkeys))}}
   <tr class=box>
     <td align=center colspan=99>{{=nav}}</td>
