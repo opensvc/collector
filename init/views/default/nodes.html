@@ -8,14 +8,31 @@ vars = request.vars
 for key in colkeys:
     if not vars.has_key(key) or vars[key] is None: request.vars[key]=''
     pass
+
+def list_vals_for_key(key):
+    return DIV(H3(T("""distinct "%(key)s" values in set""",dict(key=columns[key]['title']))), PRE('\\n'.join(set([str(n[key]) for n in nodes]))))
+    pass
+
+def colname(key):
+    title = columns[key]['title']
+    values = list_vals_for_key(key)
+    return A(
+          title,
+          _onclick="getElementById('listspan').innerHTML='%s';getElementById('listdiv').className='xinfo_shown';"%values,
+          _class="xinfo",
+        )
 }}
+
+<a id="listdiv" class="xinfo"><span><div onclick="getElementById('listdiv').className='xinfo';" id='listspan'>innerHTML here</div></span></a>
 <form action='nodes' name='svcform' id='svcform'>
 <table>
   {{BOX_TOP_ROW(len(colkeys))}}
   <tr class=box>
     <td class=box></td>
     {{for key in colkeys:}}
-    <td>{{=columns[key]['title']}}</td>
+    <td>
+      {{=colname(key)}}
+    </td>
     {{pass}}
     <td class=box></td>
   </tr>

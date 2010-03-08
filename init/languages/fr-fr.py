@@ -237,6 +237,8 @@
 'design': 'design',
 'display last actions executed on services with their status': 'afficher les derni\xc3\xa8res actions ex\xc3\xa9cut\xc3\xa9es sur les services',
 'display services live status': 'afficher le status courrant des services',
+'distinct "%(key)s" values in set': 'distinct "%(key)s" values in set',
+'distinct "%(title)s" values in set': 'valeurs distinctes de "%(title)s"',
 'done!': 'fait!',
 'drplan': 'pra',
 'edit': 'editer',

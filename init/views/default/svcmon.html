@@ -25,6 +25,18 @@ for key in ['svcname',
     if not vars.has_key(key) or vars[key] is None: vars[key]=''
     pass
 
+def list_vals_for_key(key, title):
+    return DIV(H3(T("""distinct "%(title)s" values in set""",dict(title=title))), PRE('\\n'.join(set([str(n[key]) for n in services]))))
+    pass
+
+def colname(key, title):
+    values = list_vals_for_key(key, title)
+    return A(
+          title,
+          _onclick="getElementById('listspan').innerHTML='%s';getElementById('listdiv').className='xinfo_shown';"%values,
+          _class="xinfo",
+        )
+
 def node_icon(svc):
     if svc.os_name is None:
         return ''
@@ -105,20 +117,21 @@ def ajax_status(svc, name, cssclass):
     {{return ''}}
 {{pass}}
 
+<a id="listdiv" class="xinfo"><span><div onclick="getElementById('listdiv').className='xinfo';" id='listspan'>innerHTML here</div></span></a>
 <form action='svcmon' name='svcform' id='svcform'> 
 <table>
   {{BOX_TOP_ROW(10)}}
   <tr class=box>
     <td class=box></td>
     <td class=box></td>
-    <td>{{=T('Service')}}</td>
-    <td width=10>{{=T('Container type')}}</td>
-    <td width=10>{{=T('App')}}</td>
-    <td width=10>{{=T('Resp')}}</td>
-    <td width=10>{{=T('Preferred node')}}</td>
-    <td width=10>{{=T('Service type')}}</td>
-    <td width=10>{{=T('Node type')}}</td>
-    <td>{{=T('Node')}}</td>
+    <td>{{=colname('svc_name', T('Service'))}}</td>
+    <td width=10>{{=colname('svc_containertype', T('Container type'))}}</td>
+    <td width=10>{{=colname('svc_app', T('App'))}}</td>
+    <td width=10>{{=colname('responsibles', T('Resp'))}}</td>
+    <td width=10>{{=colname('svc_autostart', T('Preferred node'))}}</td>
+    <td width=10>{{=colname('mon_svctype', T('Service type'))}}</td>
+    <td width=10>{{=colname('mon_nodtype', T('Node type'))}}</td>
+    <td>{{=colname('mon_nodname', T('Node'))}}</td>
     <td width=10 class=status_t>{{=T('Status')}}</td>
     <td class=box></td>
   </tr>

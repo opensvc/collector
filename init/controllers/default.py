@@ -1678,7 +1678,7 @@ def ajax_res_status():
 def ajax_node():
     nodes = db(db.nodes.nodename==request.vars.node).select()
     if len(nodes) != 1:
-        return T("No asset information for %(node)s"%dict(node=request.vars.nodename))
+        return T("No asset information for %(node)s",dict(node=request.vars.nodename))
     node = nodes[0]
     loc = TABLE(
       TR(TD(T('location'), _class="boxed", _colspan=2)),
