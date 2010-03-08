@@ -163,6 +163,9 @@ def ajax_status(svc, name, cssclass):
     {{if svcname != svc.mon_svcname:
           cellclass = cellclasses[cellclass]
           svcname = svc.mon_svcname
+          newsvc = True
+      else:
+          newsvc = False
           pass
       if svc.responsibles:
           responsibles = IMG(_src=URL(r=request,c='static',f='guy.png'),_border=0, _title=svc.responsibles)
@@ -184,6 +187,7 @@ def ajax_status(svc, name, cssclass):
     <td style='padding:0'></td>
     <td class={{=cellclass}}>
       <input id="{{=svc.mon_svcname}}" value="{{=svc.mon_svcname}}" type="hidden">
+      {{if newsvc:}}
       {{=A(
           IMG(
             _src=URL(r=request,c='static',f='envfile.png'),
@@ -206,12 +210,30 @@ def ajax_status(svc, name, cssclass):
         )
       }}
       {{=err}}
+      {{pass}}
     </td>
-    <td class={{=cellclass}}>{{=A(svc.mon_svcname, _href=URL(request.application,'default','svcactions?svcname='+svc.mon_svcname+'&status_log=empty&begin=>'+yesterday))}}</td>
-    <td class={{=cellclass}}>{{=DIV(svc.svc_containertype, _title=vmname, _style='vertical-align:middle')}}</td>
-    <td class={{=cellclass}}>{{=svc.svc_app}}</td>
-    <td class={{=cellclass}}>{{=responsibles}}</td>
     <td class={{=cellclass}}>
+      {{if newsvc:}}
+        {{=A(svc.mon_svcname, _href=URL(request.application,'default','svcactions?svcname='+svc.mon_svcname+'&status_log=empty&begin=>'+yesterday))}}
+        {{pass}}
+    </td>
+    <td class={{=cellclass}}>
+      {{if newsvc:}}
+        {{=DIV(svc.svc_containertype, _title=vmname, _style='vertical-align:middle')}}
+        {{pass}}
+    </td>
+    <td class={{=cellclass}}>
+      {{if newsvc:}}
+        {{=svc.svc_app}}
+        {{pass}}
+    </td>
+    <td class={{=cellclass}}>
+      {{if newsvc:}}
+        {{=responsibles}}
+        {{pass}}
+    </td>
+    <td class={{=cellclass}}>
+      {{if newsvc:}}
       {{=A(
           DIV(
             svc.svc_autostart,
@@ -231,6 +253,7 @@ def ajax_status(svc, name, cssclass):
           _class="xinfo",
         )
       }}
+      {{pass}}
     </td>
     {{if svc.mon_svctype == 'PRD':
           boldtype = """style='font-weight:bold'"""
