@@ -41,6 +41,32 @@ def node_icon(svc):
         pass
     return img
 }}
+{{
+def ajax_status(svc, name, cssclass):
+    return A(
+          DIV(
+            DIV(
+              name,
+              _class=cssclass,
+            ),
+            _onclick="""
+               getElementById("node").value="%(node)s";
+               getElementById("svcname").value="%(svcname)s";
+               ajax("%(url)s",['node', 'svcname'],"stat_%(name)s_%(node)s_%(svcname)s");
+               getElementById("foostat_%(name)s_%(node)s_%(svcname)s").className="xinfo_shown";
+            """%dict(url=URL(r=request,f='ajax_res_status'), node=svc.mon_nodname, svcname=svc.svc_name, name=name),
+          ),
+          SPAN(
+            DIV(_id="stat_"+name+"_"+svc.mon_nodname+"_"+svc.svc_name),
+            _onclick="""
+               getElementById("foostat_%(name)s_%(node)s_%(svcname)s").className="xinfo";
+            """%dict(node=svc.mon_nodname, svcname=svc.svc_name, name=name),
+          ),
+          _id="foostat_"+name+"_"+svc.mon_nodname+"_"+svc.svc_name,
+          _class="xinfo",
+        )
+    pass
+}}
 
 {{def node_status(svc, cellclass):
     import time
@@ -66,14 +92,14 @@ def node_icon(svc):
 }}
     <table>
       <tr>
-         <td colspan=6 class="status {{=cellclass}} {{=overallstatus}}" title="since {{=svc.mon_updated}}">{{=svc.mon_overallstatus}}</td>
+         <td colspan=6 class="{{=cellclass}}" title="since {{=svc.mon_updated}}">{{=ajax_status(svc, svc.mon_overallstatus, ' '.join(["status", overallstatus]))}}</td>
       </tr><tr>
-        <td class="{{=cellclass}} {{=containerstatus}}">vm</td>
-        <td class="{{=cellclass}} {{=ipstatus}}">ip</td>
-        <td class="{{=cellclass}} {{=fsstatus}}">fs</td>
-        <td class="{{=cellclass}} {{=diskstatus}}">dg</td>
-        <td class="{{=cellclass}} {{=syncstatus}}">sync</td>
-        <td class="{{=cellclass}} {{=appstatus}}">app</td>
+        <td class="{{=cellclass}}">{{=ajax_status(svc, "vm", containerstatus)}}</td>
+        <td class="{{=cellclass}}">{{=ajax_status(svc, "ip", ipstatus)}}</td>
+        <td class="{{=cellclass}}">{{=ajax_status(svc, "fs", fsstatus)}}</td>
+        <td class="{{=cellclass}}">{{=ajax_status(svc, "dg", diskstatus)}}</td>
+        <td class="{{=cellclass}}">{{=ajax_status(svc, "sync", syncstatus)}}</td>
+        <td class="{{=cellclass}}">{{=ajax_status(svc, "app", appstatus)}}</td>
       </tr>
     </table>
     {{return ''}}
@@ -228,7 +254,9 @@ def node_icon(svc):
         )
       }}
     </td>
-    <td class="{{=cellclass}}">{{=node_status(svc,cellclass)}}</td>
+    <td class="{{=cellclass}}">
+      {{=node_status(svc,cellclass)}}
+    </td>
     <td style='padding:0'></td>
   </tr>
   {{pass}}

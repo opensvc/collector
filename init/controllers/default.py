@@ -1659,6 +1659,22 @@ def node_edit():
     return dict(form=form)
 
 @auth.requires_login()
+def ajax_res_status():
+    rows = db((db.resmon.svcname==request.vars.svcname)&(db.resmon.nodename==request.vars.node)).select(orderby=db.resmon.rid)
+    def print_row(row):
+        cssclass = 'status_'+row.res_status.replace(" ", "_")
+        return TR(
+                 TD(row.rid),
+                 TD(row.res_desc),
+                 TD(row.res_status, _class='%s'%cssclass),
+               )
+    t = TABLE(
+          TR(TH('id'), TH('description'), TH('status')),
+          map(print_row, rows)
+    )
+    return t
+
+@auth.requires_login()
 def ajax_node():
     nodes = db(db.nodes.nodename==request.vars.node).select()
     if len(nodes) != 1:
@@ -2290,6 +2306,21 @@ def end_action(vars, vals):
             upd.append("%s=%s" % (a, b))
     sql="""update SVCactions set %s where hostname=%s and svcname=%s and begin=%s and action=%s""" %\
         (','.join(upd), h['hostname'], h['svcname'], h['begin'], h['action'])
+    #raise Exception(sql)
+    db.executesql(sql)
+    db.commit()
+    return 0
+
+def value_wrap(a):
+    return "%(a)s=values(%(a)s)"%dict(a=a)
+
+@service.xmlrpc
+def resmon_update(vars, valsl):
+    upd = map(value_wrap, vars)
+    vals = []
+    for l in valsl:
+        vals.append('('+','.join(l)+')')
+    sql="""insert delayed into resmon (%s) values %s on duplicate key update %s""" % (','.join(vars), ','.join(vals), ','.join(upd))
     #raise Exception(sql)
     db.executesql(sql)
     db.commit()

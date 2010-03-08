@@ -473,3 +473,14 @@ db.define_table('stat_day',
     Field('nb_nodes_prd'),
     migrate=False)
 
+db.define_table('resmon',
+    Field('id'),
+    Field('svcname'),
+    Field('nodename'),
+    Field('rid'),
+    Field('res_desc'),
+    Field('res_status'),
+    Field('changed'),
+    Field('updated'),
+    migrate=False)
+
