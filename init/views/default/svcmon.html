@@ -70,7 +70,7 @@ def ajax_status(svc, name, cssclass):
           ),
           SPAN(
             DIV(_id="stat_"+name+"_"+svc.mon_nodname+"_"+svc.svc_name),
-            _onclick="""
+            _ondblclick="""
                getElementById("foostat_%(name)s_%(node)s_%(svcname)s").className="xinfo";
             """%dict(node=svc.mon_nodname, svcname=svc.svc_name, name=name),
           ),
@@ -117,7 +117,7 @@ def ajax_status(svc, name, cssclass):
     {{return ''}}
 {{pass}}
 
-<a id="listdiv" class="xinfo"><span><div onclick="getElementById('listdiv').className='xinfo';" id='listspan'>innerHTML here</div></span></a>
+<a id="listdiv" class="xinfo"><span><div ondblclick="getElementById('listdiv').className='xinfo';" id='listspan'>innerHTML here</div></span></a>
 <form action='svcmon' name='svcform' id='svcform'> 
 <table>
   {{BOX_TOP_ROW(10)}}
@@ -201,11 +201,46 @@ def ajax_status(svc, name, cssclass):
           ),
           SPAN(
             DIV(_id="info_"+svc.mon_svcname),
-            _onclick="""
+            _ondblclick="""
                getElementById("foo_%(svcname)s").className="xinfo";
             """%dict(svcname=svc.mon_svcname),
           ),
           _id="foo_"+svc.mon_svcname,
+          _class="xinfo",
+        )
+      }}
+      {{if svc.svc_name in svcmsg:
+          img = URL(r=request,c='static',f='msg1.png')
+        else:
+          img = URL(r=request,c='static',f='msg0.png')
+          pass
+      }}
+      {{=A(
+          IMG(
+            _src=img,
+            _border=0,
+            _title="comments",
+            _onclick="""
+               getElementById("svcname").value="%(svcname)s";
+               ajax("%(url)s",['svcname'],"msg__%(svcname)s");
+               getElementById("msg_%(svcname)s").className="xinfo_shown";
+            """%dict(url=URL(r=request,f='ajax_svc_message_load'), svcname=svc.mon_svcname),
+          ),
+          SPAN(
+            DIV(TEXTAREA(_id="msgbody_"+svc.mon_svcname), _id="msg__"+svc.mon_svcname),
+            INPUT(
+              _value=T("save"),
+              _type="button",
+              _onclick="""
+                ajax("%(url)s",['svcname','msgbody_%(svcname)s'],"msg__%(svcname)s");
+                getElementById("msg_%(svcname)s").className="xinfo";
+              """%dict(url=URL(r=request,f='ajax_svc_message_save'), svcname=svc.mon_svcname),
+            ),
+            _ondblclick="""
+               getElementById("msg_%(svcname)s").className="xinfo";
+            """%dict(svcname=svc.mon_svcname),
+          ),
+          _id="msg_"+svc.mon_svcname,
           _class="xinfo",
         )
       }}
@@ -245,7 +280,7 @@ def ajax_status(svc, name, cssclass):
           ),
           SPAN(
             DIV(_id="asn_info_"+svc.svc_autostart),
-            _onclick="""
+            _ondblclick="""
                getElementById("asn_%(node)s").className="xinfo";
             """%dict(node=svc.svc_autostart),
           ),
@@ -281,7 +316,7 @@ def ajax_status(svc, name, cssclass):
           ),
           SPAN(
             DIV(_id="info_"+svc.mon_nodname),
-            _onclick="""
+            _ondblclick="""
                getElementById("foo_%(node)s").className="xinfo";
             """%dict(node=svc.mon_nodname),
           ),

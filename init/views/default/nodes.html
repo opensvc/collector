@@ -23,7 +23,7 @@ def colname(key):
         )
 }}
 
-<a id="listdiv" class="xinfo"><span><div onclick="getElementById('listdiv').className='xinfo';" id='listspan'>innerHTML here</div></span></a>
+<a id="listdiv" class="xinfo"><span><div ondblclick="getElementById('listdiv').className='xinfo';" id='listspan'>innerHTML here</div></span></a>
 <form action='nodes' name='svcform' id='svcform'>
 <table>
   {{BOX_TOP_ROW(len(colkeys))}}
@@ -60,7 +60,7 @@ def colname(key):
           ),
           SPAN(
             DIV(_id="info_"+nodename),
-            _onclick="""
+            _ondblclick="""
                getElementById("foo_%(node)s").className="xinfo";
             """%dict(node=nodename),
           ),

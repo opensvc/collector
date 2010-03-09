@@ -101,7 +101,7 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
           ),
           SPAN(
             DIV(_id="info_"+action.hostname),
-            _onclick="""
+            _ondblclick="""
                getElementById("foo_%(node)s").className="xinfo";
             """%dict(node=action.hostname),
           ),

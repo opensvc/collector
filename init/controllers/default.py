@@ -1000,7 +1000,10 @@ def svcmon():
     else:
         rows = db(query).select(limitby=(start,end), orderby=o)
 
-    return dict(services=rows, filters=session.filters, nav=nav)
+    msgs = db(db.svcmessages.id>0).select(db.svcmessages.msg_svcname)
+    svcmsg = [msg.msg_svcname for msg in msgs]
+
+    return dict(services=rows, filters=session.filters, nav=nav, svcmsg=svcmsg)
 
 class viz(object):
     vizdir = 'applications'+str(URL(r=request,c='static',f='/'))
@@ -1681,6 +1684,44 @@ def node_edit():
         response.flash = T("errors in form")
 
     return dict(form=form)
+
+@auth.requires_login()
+def ajax_svc_message_save():
+    vars = {
+            'msg_svcname': request.vars.svcname,
+            'msg_last_editor': ' '.join([session.auth.user.first_name,
+                                         session.auth.user.last_name]),
+            'msg_last_edit_date':str(datetime.datetime.now()),
+            'msg_body':request.vars['msgbody_'+request.vars.svcname],
+           }
+    v = lambda x: "%(x)s=values(%(x)s)"%dict(x=x)
+    r = lambda x: "'%(x)s'"%dict(x=x)
+    sql = "insert into svcmessages (%s) values (%s) on duplicate key update %s"%(
+        ','.join(vars.keys()),
+        ','.join(map(r, vars.values())),
+        ','.join(map(v, vars.keys())),
+    )
+    db.executesql(sql)
+
+@auth.requires_login()
+def ajax_svc_message_load():
+    rows = db(db.svcmessages.msg_svcname==request.vars.svcname).select()
+    if len(rows) != 1:
+        return DIV(P(T("new message")), TEXTAREA())
+    return DIV(
+            H3("%(s)s messages"%dict(s=rows[0].msg_svcname)),
+            P(
+              T("last edited on "),
+              rows[0].msg_last_edit_date,
+              BR(),
+              T(" by "),
+              rows[0].msg_last_editor,
+            ),
+            TEXTAREA(
+              rows[0].msg_body,
+              _id='msgbody_'+rows[0].msg_svcname,
+            ),
+           )
 
 @auth.requires_login()
 def ajax_res_status():

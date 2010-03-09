@@ -484,3 +484,11 @@ db.define_table('resmon',
     Field('updated'),
     migrate=False)
 
+db.define_table('svcmessages',
+    Field('id'),
+    Field('msg_svcname'),
+    Field('msg_last_editor'),
+    Field('msg_last_edit_date'),
+    Field('msg_body'),
+    migrate=False)
+
