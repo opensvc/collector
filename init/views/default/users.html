@@ -93,7 +93,7 @@ for key in ['fullname',
           ),
           SPAN(
             DIV(_id="info_"+str(u.id)),
-            _onclick="""
+            _ondblclick="""
                getElementById("foo_%(uid)s").className="xinfo";
             """%dict(uid=u.id),
           ),

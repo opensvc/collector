@@ -44,7 +44,7 @@ for key in colkeys:
   <tr>
     <td style='padding:0'></td>
     {{for key in colkeys:}}
-    <td class={{=cellclass}}>{{=XML(row[key])}}</td>
+    <td class={{=cellclass}} style='vertical-align:top'>{{=XML(row[key])}}</td>
     {{pass}}
     <td style='padding:0'></td>
   </tr>
