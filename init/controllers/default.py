@@ -1000,8 +1000,8 @@ def svcmon():
     else:
         rows = db(query).select(limitby=(start,end), orderby=o)
 
-    msgs = db(db.svcmessages.id>0).select(db.svcmessages.msg_svcname)
-    svcmsg = [msg.msg_svcname for msg in msgs]
+    msgs = db(db.svcmessages.id>0).select()
+    svcmsg = [msg.msg_svcname for msg in msgs if len(msg.msg_body)>0]
 
     return dict(services=rows, filters=session.filters, nav=nav, svcmsg=svcmsg)
 
@@ -1707,7 +1707,10 @@ def ajax_svc_message_save():
 def ajax_svc_message_load():
     rows = db(db.svcmessages.msg_svcname==request.vars.svcname).select()
     if len(rows) != 1:
-        return DIV(P(T("new message")), TEXTAREA())
+        return DIV(
+                P(T("new message")),
+                TEXTAREA(_id='msgbody_'+request.vars.svcname)
+               )
     return DIV(
             H3("%(s)s messages"%dict(s=rows[0].msg_svcname)),
             P(

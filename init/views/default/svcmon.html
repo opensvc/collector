@@ -217,6 +217,7 @@ def ajax_status(svc, name, cssclass):
       }}
       {{=A(
           IMG(
+            _id="msg_img_"+svc.mon_svcname,
             _src=img,
             _border=0,
             _title="comments",
@@ -224,7 +225,9 @@ def ajax_status(svc, name, cssclass):
                getElementById("svcname").value="%(svcname)s";
                ajax("%(url)s",['svcname'],"msg__%(svcname)s");
                getElementById("msg_%(svcname)s").className="xinfo_shown";
-            """%dict(url=URL(r=request,f='ajax_svc_message_load'), svcname=svc.mon_svcname),
+            """%dict(url=URL(r=request,f='ajax_svc_message_load'),
+                     svcname=svc.mon_svcname,
+                    ),
           ),
           SPAN(
             DIV(TEXTAREA(_id="msgbody_"+svc.mon_svcname), _id="msg__"+svc.mon_svcname),
@@ -234,7 +237,15 @@ def ajax_status(svc, name, cssclass):
               _onclick="""
                 ajax("%(url)s",['svcname','msgbody_%(svcname)s'],"msg__%(svcname)s");
                 getElementById("msg_%(svcname)s").className="xinfo";
-              """%dict(url=URL(r=request,f='ajax_svc_message_save'), svcname=svc.mon_svcname),
+                if (getElementById("msgbody_%(svcname)s").value.length>0)
+                  getElementById("msg_img_%(svcname)s").src="%(img1)s";
+                else
+                  getElementById("msg_img_%(svcname)s").src="%(img0)s";
+              """%dict(url=URL(r=request,f='ajax_svc_message_save'),
+                       svcname=svc.mon_svcname,
+                       img0=URL(r=request,c='static',f='msg0.png'),
+                       img1=URL(r=request,c='static',f='msg1.png'),
+                      ),
             ),
             _ondblclick="""
                getElementById("msg_%(svcname)s").className="xinfo";
