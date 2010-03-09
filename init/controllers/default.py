@@ -936,7 +936,10 @@ def users():
 
 @auth.requires_login()
 def svcmon():
-    o = db.v_svcmon.mon_svcname|~db.v_svcmon.mon_nodtype
+    o = db.v_svcmon.mon_svcname
+    o |= ~db.v_svcmon.mon_nodtype
+    o |= ~db.v_svcmon.mon_overallstatus
+    o |= db.v_svcmon.mon_nodname
 
     if not getattr(session, 'svcmon_filters'):
         session.svcmon_filters = {
