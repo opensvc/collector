@@ -937,8 +937,8 @@ def users():
 @auth.requires_login()
 def svcmon():
     o = db.v_svcmon.mon_svcname
-    o |= ~db.v_svcmon.mon_nodtype
     o |= ~db.v_svcmon.mon_overallstatus
+    o |= ~db.v_svcmon.mon_nodtype
     o |= db.v_svcmon.mon_nodname
 
     if not getattr(session, 'svcmon_filters'):
@@ -1472,6 +1472,8 @@ def nodes_csv():
 
 @auth.requires_login()
 def nodes():
+    o = db.nodes.nodename
+
     columns = dict(
         nodename = dict(
             pos = 1,
@@ -1648,9 +1650,9 @@ def nodes():
 
     (start, end, nav) = _pagination(request, query)
     if start == 0 and end == 0:
-        rows = db(query).select()
+        rows = db(query).select(orderby=o)
     else:
-        rows = db(query).select(limitby=(start,end))
+        rows = db(query).select(orderby=o, limitby=(start,end))
 
     return dict(columns=columns, colkeys=colkeys,
                 nodes=rows,

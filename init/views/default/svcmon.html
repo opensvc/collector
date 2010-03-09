@@ -57,25 +57,16 @@ def node_icon(svc):
 def ajax_status(svc, name, cssclass):
     return A(
           DIV(
-            DIV(
-              name,
-              _class=cssclass,
-            ),
+            name,
+            _class=cssclass,
             _onclick="""
                getElementById("node").value="%(node)s";
                getElementById("svcname").value="%(svcname)s";
-               ajax("%(url)s",['node', 'svcname'],"stat_%(name)s_%(node)s_%(svcname)s");
-               getElementById("foostat_%(name)s_%(node)s_%(svcname)s").className="xinfo_shown";
-            """%dict(url=URL(r=request,f='ajax_res_status'), node=svc.mon_nodname, svcname=svc.svc_name, name=name),
+               ajax("%(url)s",['node', 'svcname'],"spanstat_%(node)s_%(svcname)s");
+               getElementById("foostat_%(node)s_%(svcname)s").className="xinfo_shown";
+            """%dict(url=URL(r=request,f='ajax_res_status'), node=svc.mon_nodname, svcname=svc.svc_name),
           ),
-          SPAN(
-            DIV(_id="stat_"+name+"_"+svc.mon_nodname+"_"+svc.svc_name),
-            _ondblclick="""
-               getElementById("foostat_%(name)s_%(node)s_%(svcname)s").className="xinfo";
-            """%dict(node=svc.mon_nodname, svcname=svc.svc_name, name=name),
-          ),
-          _id="foostat_"+name+"_"+svc.mon_nodname+"_"+svc.svc_name,
-          _class="xinfo",
+          _class="xinfo"
         )
     pass
 }}
@@ -102,6 +93,10 @@ def ajax_status(svc, name, cssclass):
         appstatus = 'status_'+svc.mon_appstatus.replace(" ", "_")
     pass
 }}
+    <a id="foostat_{{=svc.mon_nodname}}_{{=svc.svc_name}}" class="xinfo">
+      <span><div ondblclick="getElementById('foostat_{{=svc.mon_nodname}}_{{=svc.svc_name}}').className='xinfo';"
+                 id='spanstat_{{=svc.mon_nodname}}_{{=svc.svc_name}}'>innerHTML here</div></span>
+    </a>
     <table>
       <tr>
          <td colspan=6 class="{{=cellclass}}" title="since {{=svc.mon_updated}}">{{=ajax_status(svc, svc.mon_overallstatus, ' '.join(["status", overallstatus]))}}</td>
@@ -117,6 +112,8 @@ def ajax_status(svc, name, cssclass):
     {{return ''}}
 {{pass}}
 
+<input id="svcname" type="hidden">
+<input id="node" type="hidden">
 <a id="listdiv" class="xinfo"><span><div ondblclick="getElementById('listdiv').className='xinfo';" id='listspan'>innerHTML here</div></span></a>
 <form action='svcmon' name='svcform' id='svcform'> 
 <table>
@@ -318,6 +315,7 @@ def ajax_status(svc, name, cssclass):
     <td class={{=cellclass}}>
       {{=A(
           DIV(
+            node_icon(svc),
             svc.mon_nodname,
             _onclick="""
                getElementById("node").value="%(node)s";
@@ -343,8 +341,6 @@ def ajax_status(svc, name, cssclass):
   </tr>
   {{pass}}
   <div id="foo"></div>
-  <input id="svcname" type="hidden">
-  <input id="node" type="hidden">
   {{BOX_TOP_ROW(10)}}
   <tr class=box>
     <td align=center colspan=99>{{=nav}}</td>

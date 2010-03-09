@@ -44,8 +44,14 @@ def colname(key):
     <td class=box></td>
   </tr>
   {{BOX_BOTTOM_ROW(len(colkeys))}}
-  {{for node in nodes:}}
-  <tr>
+  {{
+    cellclass = 'cell1'
+    cellclasses = {'cell1': 'cell2', 'cell2': 'cell1'}
+  }}
+  {{for node in nodes:
+      cellclass = cellclasses[cellclass]
+  }}
+  <tr class={{=cellclass}}>
     <td style='padding:0'></td>
     <td>
       {{nodename = node['nodename'].lower()}}
