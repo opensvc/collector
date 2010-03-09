@@ -281,9 +281,9 @@ a {
     margin: 0 auto;
     text-align: center;
     clear: both;
-    border: 1px #000000 solid; 
+    border: 2px darkyellow solid; 
     color: black;
-    font-size: 12pt;
+    font-size: 11pt;
     //padding: 10px 10px 10px 10px;
     cursor: pointer;
     background: yellow;
@@ -301,6 +301,10 @@ a {
     padding-top: 1.0em;
     padding-bottom: 1.0em;
 */
+}
+
+html>body .flash {
+    position: fixed;
 }
 
 div.error {
