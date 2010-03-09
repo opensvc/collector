@@ -2336,18 +2336,6 @@ def delete_service_list(hostid=None, svcnames=[]):
     return 0
 
 @service.xmlrpc
-def update_service(vars, vals):
-    if 'svc_hostid' not in vars:
-        return 0
-    upd = []
-    for a, b in zip(vars, vals):
-        upd.append("%s=%s" % (a, b))
-    sql="""insert delayed into services (%s) values (%s) on duplicate key update %s""" % (','.join(vars), ','.join(vals), ','.join(upd))
-    db.executesql(sql)
-    db.commit()
-    return 0
-
-@service.xmlrpc
 def begin_action(vars, vals):
     sql="""insert delayed into SVCactions (%s) values (%s)""" % (','.join(vars), ','.join(vals))
     db.executesql(sql)
@@ -2382,68 +2370,64 @@ def end_action(vars, vals):
 def value_wrap(a):
     return "%(a)s=values(%(a)s)"%dict(a=a)
 
-@service.xmlrpc
-def resmon_update(vars, valsl):
+def quote_wrap(x):
+    if isinstance(x, (int, long, float, complex)):
+        return x
+    elif isinstance(x, str) and x[0] == "'" and x[-1] == "'":
+        return x
+    else:
+        return "'%s'"%str(x)
+
+def insert_multiline(table, vars, valsl):
+    value_wrap = lambda a: "%(a)s=values(%(a)s)"%dict(a=a)
+    line_wrap = lambda x: "(%(x)s)"%dict(x=','.join(map(quote_wrap, x)))
     upd = map(value_wrap, vars)
-    vals = []
-    for l in valsl:
-        vals.append('('+','.join(l)+')')
-    sql="""insert delayed into resmon (%s) values %s on duplicate key update %s""" % (','.join(vars), ','.join(vals), ','.join(upd))
-    #raise Exception(sql)
+    lines = map(line_wrap, valsl)
+    sql="""insert delayed into %s (%s) values %s on duplicate key update %s""" % (table, ','.join(vars), ','.join(lines), ','.join(upd))
     db.executesql(sql)
     db.commit()
-    return 0
+
+def generic_insert(table, vars, vals):
+    if len(vals) == 0:
+        return
+    elif isinstance(vals[0], list):
+        insert_multiline(table, vars, vals)
+    else:
+        insert_multiline(table, vars, [vals])
+
+@service.xmlrpc
+def update_service(vars, vals):
+    if 'svc_hostid' not in vars:
+        return
+    generic_insert('services', vars, vals)
+
+@service.xmlrpc
+def res_action_batch(vars, vals):
+    generic_insert('SVCactions', vars, vals)
+
+@service.xmlrpc
+def resmon_update(vars, vals):
+    generic_insert('resmon', vars, vals)
 
 @service.xmlrpc
 def svcmon_update(vars, vals):
-    upd = []
-    for a, b in zip(vars, vals):
-        upd.append("%s=%s" % (a, b))
-    sql="""insert delayed into svcmon (%s) values (%s) on duplicate key update %s""" % (','.join(vars), ','.join(vals), ','.join(upd))
-    db.executesql(sql)
-    db.commit()
-    return 0
+    generic_insert('svcmon', vars, vals)
 
 @service.xmlrpc
 def register_disk(vars, vals):
-    import datetime
-    upd = []
-    for a, b in zip(vars, vals):
-        upd.append("%s=%s" % (a, b))
-    sql="""insert delayed into svcdisks (%s) values (%s) on duplicate key update %s""" % (','.join(vars), ','.join(vals), ','.join(upd))
-    db.executesql(sql)
-    db.commit()
-    return 0
+    generic_insert('svcdisks', vars, vals)
 
 @service.xmlrpc
 def register_sync(vars, vals):
-    upd = []
-    for a, b in zip(vars, vals):
-        upd.append("%s=%s" % (a, b))
-    sql="""insert delayed into svc_res_sync (%s) values (%s) on duplicate key update %s""" % (','.join(vars), ','.join(vals), ','.join(upd))
-    db.executesql(sql)
-    db.commit()
-    return 0
+    generic_insert('svc_res_sync', vars, vals)
 
 @service.xmlrpc
 def register_ip(vars, vals):
-    upd = []
-    for a, b in zip(vars, vals):
-        upd.append("%s=%s" % (a, b))
-    sql="""insert delayed into svc_res_ip (%s) values (%s) on duplicate key update %s""" % (','.join(vars), ','.join(vals), ','.join(upd))
-    db.executesql(sql)
-    db.commit()
-    return 0
+    generic_insert('svc_res_ip', vars, vals)
 
 @service.xmlrpc
 def register_fs(vars, vals):
-    upd = []
-    for a, b in zip(vars, vals):
-        upd.append("%s=%s" % (a, b))
-    sql="""insert delayed into svc_res_fs (%s) values (%s) on duplicate key update %s""" % (','.join(vars), ','.join(vals), ','.join(upd))
-    db.executesql(sql)
-    db.commit()
-    return 0
+    generic_insert('svc_res_fs', vars, vals)
 
 @service.xmlrpc
 def delete_syncs(svcname):
@@ -2451,7 +2435,6 @@ def delete_syncs(svcname):
         return 0
     db(db.svc_res_sync.sync_svcname==svcname).delete()
     db.commit()
-    return 0
 
 @service.xmlrpc
 def delete_ips(svcname, node):
@@ -2461,7 +2444,6 @@ def delete_ips(svcname, node):
         return 0
     db((db.svc_res_ip.ip_svcname==svcname)&(db.svc_res_ip.ip_node==node)).delete()
     db.commit()
-    return 0
 
 @service.xmlrpc
 def delete_fss(svcname):
@@ -2469,7 +2451,6 @@ def delete_fss(svcname):
         return 0
     db(db.svc_res_fs.fs_svcname==svcname).delete()
     db.commit()
-    return 0
 
 @service.xmlrpc
 def delete_disks(svcname, node):
@@ -2477,5 +2458,4 @@ def delete_disks(svcname, node):
         return 0
     db((db.svcdisks.disk_svcname==svcname)&(db.svcdisks.disk_nodename==node)).delete()
     db.commit()
-    return 0
 
