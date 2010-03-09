@@ -2062,9 +2062,12 @@ def drplan_scripts_archive():
 from pychart import *
 @auth.requires_login()
 def stats():
-    def format(ordinal):
+    def format_x(ordinal):
         d = datetime.date.fromordinal(int(ordinal))
-        return "/a60{}" + d.strftime("%Y-%m-%d")
+        return "/a50/6{}" + d.strftime("%y-%m-%d")
+
+    def format_y(x):
+        return "/6{}" + str(x)
 
     def tics(min, max):
         s = (10**len(str(max)))/10
@@ -2072,7 +2075,7 @@ def stats():
         t = []
         for i in range(1, 10):
             t.append(s*i)
-            if s*(i+1) > max: break
+            if s*(i+2) > max: break
         return t
 
     def grid(min, max):
@@ -2081,8 +2084,9 @@ def stats():
         t = []
         for i in range(1, 10):
             t.append(s*i)
-            if s*i > max: break
+            if s*(i+1) > max: break
         return t
+
 
     rows = db(db.stat_day.id>0).select(orderby=db.stat_day.day)
 
@@ -2101,10 +2105,9 @@ def stats():
                               x_coord = category_coord.T(data, 0))
     chart_object.set_defaults(bar_plot.T, data = data)
     ar = area.T(x_coord = category_coord.T(data, 0),
-                y_range = (0, None),
                 y_grid_interval=grid,
-                x_axis = axis.X(label = "", format = format),
-                y_axis = axis.Y(label = "", tic_interval=tics))
+                x_axis = axis.X(label="", format=format_x, tic_interval=3),
+                y_axis = axis.Y(label="", format=format_y, tic_interval=tics))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="ok", fill_style=fill_style.black)
     plot2 = bar_plot.T(label="warn", hcol=2, stack_on = plot1, fill_style=fill_style.yellow)
@@ -2128,10 +2131,9 @@ def stats():
                               x_coord = category_coord.T(data, 0))
     chart_object.set_defaults(bar_plot.T, data = data)
     ar = area.T(x_coord = category_coord.T(data, 0),
-                y_range = (0, None),
                 y_grid_interval=grid,
-                x_axis = axis.X(label = "", format = format),
-                y_axis = axis.Y(label = "", tic_interval=tics))
+                x_axis = axis.X(label = "", format=format_x, tic_interval=3),
+                y_axis = axis.Y(label = "", format=format_y, tic_interval=tics))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="err", fill_style=fill_style.red)
     ar.add_plot(plot1)
@@ -2149,10 +2151,9 @@ def stats():
                               x_coord = category_coord.T(data, 0))
     chart_object.set_defaults(bar_plot.T, data = data)
     ar = area.T(x_coord = category_coord.T(data, 0),
-                y_range = (0, None),
                 y_grid_interval=grid,
-                x_axis = axis.X(label = "", format=format),
-                y_axis = axis.Y(label = "", tic_interval=tics))
+                x_axis = axis.X(label = "", format=format_x, tic_interval=3),
+                y_axis = axis.Y(label = "", format=format_y, tic_interval=tics))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="prd svc")
     plot2 = bar_plot.T(label="other svc", hcol=2, stack_on = plot1)
@@ -2171,10 +2172,9 @@ def stats():
                               x_coord = category_coord.T(data, 0))
     chart_object.set_defaults(bar_plot.T, data = data)
     ar = area.T(x_coord = category_coord.T(data, 0),
-                y_range = (0, None),
                 y_grid_interval=grid,
-                x_axis = axis.X(label = "", format=format),
-                y_axis = axis.Y(label = "", tic_interval=tics))
+                x_axis = axis.X(label = "", format=format_x, tic_interval=3),
+                y_axis = axis.Y(label = "", format=format_y, tic_interval=tics))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="prd svc with drp")
     plot2 = bar_plot.T(label="prd svc without drp", hcol=2, stack_on = plot1)
@@ -2193,10 +2193,9 @@ def stats():
                               x_coord = category_coord.T(data, 0))
     chart_object.set_defaults(bar_plot.T, data = data)
     ar = area.T(x_coord = category_coord.T(data, 0),
-                y_range = (0, None),
                 y_grid_interval = grid,
-                x_axis = axis.X(label = "", format = format),
-                y_axis = axis.Y(label = "", tic_interval = tics))
+                x_axis = axis.X(label = "", format=format_x, tic_interval=3),
+                y_axis = axis.Y(label = "", format=format_y, tic_interval = tics))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="clustered svc")
     plot2 = bar_plot.T(label="not clustered svc", hcol=2, stack_on = plot1)
@@ -2215,10 +2214,9 @@ def stats():
                               x_coord = category_coord.T(data, 0))
     chart_object.set_defaults(bar_plot.T, data = data)
     ar = area.T(x_coord = category_coord.T(data, 0),
-                y_range = (0, None),
                 y_grid_interval = grid,
-                x_axis = axis.X(label = "", format=format),
-                y_axis = axis.Y(label = "", tic_interval=tics))
+                x_axis = axis.X(label = "", format=format_x, tic_interval=3),
+                y_axis = axis.Y(label = "", format=format_y, tic_interval=tics))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="prd nodes")
     plot2 = bar_plot.T(label="other nodes", hcol=2, stack_on = plot1)
@@ -2237,10 +2235,9 @@ def stats():
                               x_coord = category_coord.T(data, 0))
     chart_object.set_defaults(bar_plot.T, data = data)
     ar = area.T(x_coord = category_coord.T(data, 0),
-                y_range = (0, None),
                 y_grid_interval = grid,
-                x_axis = axis.X(label = "", format=format),
-                y_axis = axis.Y(label = "", tic_interval=tics))
+                x_axis = axis.X(label = "", format=format_x, tic_interval=3),
+                y_axis = axis.Y(label = "", format=format_y, tic_interval=tics))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="apps")
     ar.add_plot(plot1)
@@ -2258,10 +2255,9 @@ def stats():
                               x_coord = category_coord.T(data, 0))
     chart_object.set_defaults(bar_plot.T, data = data)
     ar = area.T(x_coord = category_coord.T(data, 0),
-                y_range = (0, None),
                 y_grid_interval = grid,
-                x_axis = axis.X(label = "", format = format),
-                y_axis = axis.Y(label = "", tic_interval=tics))
+                x_axis = axis.X(label="", format=format_x, tic_interval=3),
+                y_axis = axis.Y(label="", format=format_y, tic_interval=tics))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="accounts")
     ar.add_plot(plot1)
@@ -2279,10 +2275,9 @@ def stats():
                               x_coord = category_coord.T(data, 0))
     chart_object.set_defaults(bar_plot.T, data = data)
     ar = area.T(x_coord = category_coord.T(data, 0),
-                y_range = (0, None),
                 y_grid_interval = grid,
-                x_axis = axis.X(label = "", format = format),
-                y_axis = axis.Y(label = "", tic_interval=tics))
+                x_axis = axis.X(label = "", format=format_x, tic_interval=3),
+                y_axis = axis.Y(label = "", format=format_y, tic_interval=tics))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="disk size (GB)")
     ar.add_plot(plot1)
@@ -2304,10 +2299,9 @@ def stats():
                               x_coord = category_coord.T(data, 0))
     chart_object.set_defaults(bar_plot.T, data = data)
     ar = area.T(x_coord = category_coord.T(data, 0),
-                y_range = (0, None),
                 y_grid_interval = grid,
-                x_axis = axis.X(label = "", format = "/a60%s"),
-                y_axis = axis.Y(label = "", tic_interval=tics))
+                x_axis = axis.X(label = "", format="/a60%s"),
+                y_axis = axis.Y(label = "", format=format_y, tic_interval=tics))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="disk size (GB)")
     ar.add_plot(plot1)
