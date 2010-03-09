@@ -238,7 +238,6 @@ def apps():
         if key not in request.vars.keys():
             continue
         query &= _where(None, 'v_apps', request.vars[key], key)
-    query &= _where(None, 'v_svcmon', domain_perms(), 'mon_nodname')
 
     (start, end, nav) = _pagination(request, query)
     if start == 0 and end == 0:
