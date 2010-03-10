@@ -2073,24 +2073,8 @@ def stats():
     def format_y(x):
         return "/6{}" + str(x)
 
-    def tics(min, max):
-        s = (10**len(str(max)))/10
-        if s < 1: s = 1
-        t = []
-        for i in range(1, 10):
-            t.append(s*i)
-            if s*(i+2) > max: break
-        return t
-
-    def grid(min, max):
-        s = (10**len(str(max)))/10
-        if s < 1: s = 1
-        t = []
-        for i in range(1, 10):
-            t.append(s*i)
-            if s*(i+1) > max: break
-        return t
-
+    def format2_y(x):
+        return "/a50/6{}" + str(x)
 
     rows = db(db.stat_day.id>0).select(orderby=db.stat_day.day)
 
@@ -2105,17 +2089,30 @@ def stats():
 
     data = [(row.day.toordinal(), row.nb_action_ok, row.nb_action_warn, row.nb_action_err) for row in rows]
 
-    chart_object.set_defaults(area.T, y_range = (0, None),
-                              x_coord = category_coord.T(data, 0))
-    chart_object.set_defaults(bar_plot.T, data = data)
     ar = area.T(x_coord = category_coord.T(data, 0),
-                y_grid_interval=grid,
+                y_coord = linear_coord.T(),
                 x_axis = axis.X(label="", format=format_x, tic_interval=3),
-                y_axis = axis.Y(label="", format=format_y, tic_interval=tics))
+                y_axis = axis.Y(label="", format=format_y))
     bar_plot.fill_styles.reset();
-    plot1 = bar_plot.T(label="ok", fill_style=fill_style.black)
-    plot2 = bar_plot.T(label="warn", hcol=2, stack_on = plot1, fill_style=fill_style.yellow)
-    plot3 = bar_plot.T(label="err", hcol=3, stack_on = plot2, fill_style=fill_style.red)
+    plot1 = bar_plot.T(label="ok",
+                       fill_style=fill_style.black,
+                       data = data,
+                       data_label_format="",
+                       direction='vertical')
+    plot2 = bar_plot.T(label="warn",
+                       hcol=2,
+                       stack_on=plot1,
+                       fill_style=fill_style.yellow,
+                       data = data,
+                       data_label_format="",
+                       direction='vertical')
+    plot3 = bar_plot.T(label="err",
+                       hcol=3,
+                       stack_on=plot2,
+                       fill_style=fill_style.red,
+                       data = data,
+                       data_label_format="",
+                       direction='vertical')
     ar.add_plot(plot1, plot2, plot3)
     ar.draw(can)
     can.close()
@@ -2130,16 +2127,15 @@ def stats():
     theme.reinitialize()
 
     data = [(row.day.toordinal(), row.nb_action_err) for row in rows]
-
-    chart_object.set_defaults(area.T, y_range = (0, None),
-                              x_coord = category_coord.T(data, 0))
-    chart_object.set_defaults(bar_plot.T, data = data)
     ar = area.T(x_coord = category_coord.T(data, 0),
-                y_grid_interval=grid,
+                y_coord = linear_coord.T(),
                 x_axis = axis.X(label = "", format=format_x, tic_interval=3),
-                y_axis = axis.Y(label = "", format=format_y, tic_interval=tics))
+                y_axis = axis.Y(label = "", format=format_y))
     bar_plot.fill_styles.reset();
-    plot1 = bar_plot.T(label="err", fill_style=fill_style.red)
+    plot1 = bar_plot.T(label="err", fill_style=fill_style.red,
+                       data = data,
+                       data_label_format="",
+                       direction='vertical')
     ar.add_plot(plot1)
     ar.draw(can)
     can.close()
@@ -2151,16 +2147,19 @@ def stats():
     can = canvas.init(path)
 
     data = [(row.day.toordinal(), row.nb_svc_prd, row.nb_svc-row.nb_svc_prd) for row in rows]
-    chart_object.set_defaults(area.T, y_range = (0, None),
-                              x_coord = category_coord.T(data, 0))
-    chart_object.set_defaults(bar_plot.T, data = data)
     ar = area.T(x_coord = category_coord.T(data, 0),
-                y_grid_interval=grid,
+                y_coord = linear_coord.T(),
                 x_axis = axis.X(label = "", format=format_x, tic_interval=3),
-                y_axis = axis.Y(label = "", format=format_y, tic_interval=tics))
+                y_axis = axis.Y(label = "", format=format_y))
     bar_plot.fill_styles.reset();
-    plot1 = bar_plot.T(label="prd svc")
-    plot2 = bar_plot.T(label="other svc", hcol=2, stack_on = plot1)
+    plot1 = bar_plot.T(label="prd svc",
+                       data = data,
+                       data_label_format="",
+                       direction='vertical')
+    plot2 = bar_plot.T(label="other svc", hcol=2, stack_on = plot1,
+                       data = data,
+                       data_label_format="",
+                       direction='vertical')
     ar.add_plot(plot1, plot2)
     ar.draw(can)
     can.close()
@@ -2172,16 +2171,19 @@ def stats():
     can = canvas.init(path)
 
     data = [(row.day.toordinal(), row.nb_svc_with_drp, row.nb_svc_prd-row.nb_svc_with_drp) for row in rows]
-    chart_object.set_defaults(area.T, y_range = (0, None),
-                              x_coord = category_coord.T(data, 0))
-    chart_object.set_defaults(bar_plot.T, data = data)
     ar = area.T(x_coord = category_coord.T(data, 0),
-                y_grid_interval=grid,
+                y_coord = linear_coord.T(),
                 x_axis = axis.X(label = "", format=format_x, tic_interval=3),
-                y_axis = axis.Y(label = "", format=format_y, tic_interval=tics))
+                y_axis = axis.Y(label = "", format=format_y))
     bar_plot.fill_styles.reset();
-    plot1 = bar_plot.T(label="prd svc with drp")
-    plot2 = bar_plot.T(label="prd svc without drp", hcol=2, stack_on = plot1)
+    plot1 = bar_plot.T(label="prd svc with drp",
+                       data = data,
+                       data_label_format="",
+                       direction='vertical')
+    plot2 = bar_plot.T(label="prd svc without drp", hcol=2, stack_on = plot1,
+                       data = data,
+                       data_label_format="",
+                       direction='vertical')
     ar.add_plot(plot1, plot2)
     ar.draw(can)
     can.close()
@@ -2193,16 +2195,19 @@ def stats():
     can = canvas.init(path)
 
     data = [(row.day.toordinal(), row.nb_svc_cluster, row.nb_svc-row.nb_svc_cluster) for row in rows]
-    chart_object.set_defaults(area.T, y_range = (0, None),
-                              x_coord = category_coord.T(data, 0))
-    chart_object.set_defaults(bar_plot.T, data = data)
     ar = area.T(x_coord = category_coord.T(data, 0),
-                y_grid_interval = grid,
+                y_coord = linear_coord.T(),
                 x_axis = axis.X(label = "", format=format_x, tic_interval=3),
-                y_axis = axis.Y(label = "", format=format_y, tic_interval = tics))
+                y_axis = axis.Y(label = "", format=format_y))
     bar_plot.fill_styles.reset();
-    plot1 = bar_plot.T(label="clustered svc")
-    plot2 = bar_plot.T(label="not clustered svc", hcol=2, stack_on = plot1)
+    plot1 = bar_plot.T(label="clustered svc",
+                       data = data,
+                       data_label_format="",
+                       direction='vertical')
+    plot2 = bar_plot.T(label="not clustered svc", hcol=2, stack_on = plot1,
+                       data = data,
+                       data_label_format="",
+                       direction='vertical')
     ar.add_plot(plot1, plot2)
     ar.draw(can)
     can.close()
@@ -2214,16 +2219,19 @@ def stats():
     can = canvas.init(path)
 
     data = [(row.day.toordinal(), row.nb_nodes_prd, row.nb_nodes-row.nb_nodes_prd) for row in rows]
-    chart_object.set_defaults(area.T, y_range = (0, None),
-                              x_coord = category_coord.T(data, 0))
-    chart_object.set_defaults(bar_plot.T, data = data)
     ar = area.T(x_coord = category_coord.T(data, 0),
-                y_grid_interval = grid,
+                y_coord = linear_coord.T(),
                 x_axis = axis.X(label = "", format=format_x, tic_interval=3),
-                y_axis = axis.Y(label = "", format=format_y, tic_interval=tics))
+                y_axis = axis.Y(label = "", format=format_y))
     bar_plot.fill_styles.reset();
-    plot1 = bar_plot.T(label="prd nodes")
-    plot2 = bar_plot.T(label="other nodes", hcol=2, stack_on = plot1)
+    plot1 = bar_plot.T(label="prd nodes",
+                       data = data,
+                       data_label_format="",
+                       direction='vertical')
+    plot2 = bar_plot.T(label="other nodes", hcol=2, stack_on = plot1,
+                       data = data,
+                       data_label_format="",
+                       direction='vertical')
     ar.add_plot(plot1, plot2)
     ar.draw(can)
     can.close()
@@ -2235,15 +2243,15 @@ def stats():
     can = canvas.init(path)
 
     data = [(row.day.toordinal(), row.nb_apps) for row in rows]
-    chart_object.set_defaults(area.T, y_range = (0, None),
-                              x_coord = category_coord.T(data, 0))
-    chart_object.set_defaults(bar_plot.T, data = data)
     ar = area.T(x_coord = category_coord.T(data, 0),
-                y_grid_interval = grid,
+                y_coord = linear_coord.T(),
                 x_axis = axis.X(label = "", format=format_x, tic_interval=3),
-                y_axis = axis.Y(label = "", format=format_y, tic_interval=tics))
+                y_axis = axis.Y(label = "", format=format_y))
     bar_plot.fill_styles.reset();
-    plot1 = bar_plot.T(label="apps")
+    plot1 = bar_plot.T(label="apps",
+                       data = data,
+                       data_label_format="",
+                       direction='vertical')
     ar.add_plot(plot1)
     ar.draw(can)
     can.close()
@@ -2255,15 +2263,15 @@ def stats():
     can = canvas.init(path)
 
     data = [(row.day.toordinal(), row.nb_accounts) for row in rows]
-    chart_object.set_defaults(area.T, y_range = (0, None),
-                              x_coord = category_coord.T(data, 0))
-    chart_object.set_defaults(bar_plot.T, data = data)
     ar = area.T(x_coord = category_coord.T(data, 0),
-                y_grid_interval = grid,
+                y_coord = linear_coord.T(),
                 x_axis = axis.X(label="", format=format_x, tic_interval=3),
-                y_axis = axis.Y(label="", format=format_y, tic_interval=tics))
+                y_axis = axis.Y(label="", format=format_y))
     bar_plot.fill_styles.reset();
-    plot1 = bar_plot.T(label="accounts")
+    plot1 = bar_plot.T(label="accounts",
+                       data = data,
+                       data_label_format="",
+                       direction='vertical')
     ar.add_plot(plot1)
     ar.draw(can)
     can.close()
@@ -2275,15 +2283,15 @@ def stats():
     can = canvas.init(path)
 
     data = [(row.day.toordinal(), row.disk_size) for row in rows]
-    chart_object.set_defaults(area.T, y_range = (0, None),
-                              x_coord = category_coord.T(data, 0))
-    chart_object.set_defaults(bar_plot.T, data = data)
     ar = area.T(x_coord = category_coord.T(data, 0),
-                y_grid_interval = grid,
+                y_coord = linear_coord.T(),
                 x_axis = axis.X(label = "", format=format_x, tic_interval=3),
-                y_axis = axis.Y(label = "", format=format_y, tic_interval=tics))
+                y_axis = axis.Y(label = "", format=format_y))
     bar_plot.fill_styles.reset();
-    plot1 = bar_plot.T(label="disk size (GB)")
+    plot1 = bar_plot.T(label="disk size (GB)",
+                       data = data,
+                       data_label_format="",
+                       direction='vertical')
     ar.add_plot(plot1)
     ar.draw(can)
     can.close()
@@ -2298,16 +2306,17 @@ def stats():
     can = canvas.init(path)
 
     data1 = [(row[0], int(row[1].split(',')[-1]) or 0) for row in rows]
-    data = sorted(data1, key = lambda x: x[1])[-10:]
-    chart_object.set_defaults(area.T, y_range = (0, None),
-                              x_coord = category_coord.T(data, 0))
-    chart_object.set_defaults(bar_plot.T, data = data)
-    ar = area.T(x_coord = category_coord.T(data, 0),
-                y_grid_interval = grid,
-                x_axis = axis.X(label = "", format="/a60%s"),
-                y_axis = axis.Y(label = "", format=format_y, tic_interval=tics))
-    bar_plot.fill_styles.reset();
-    plot1 = bar_plot.T(label="disk size (GB)")
+    data = sorted(data1, key = lambda x: x[1])[-15:]
+    ar = area.T(x_coord = linear_coord.T(),
+                y_coord = category_coord.T(data, 0),
+                y_axis = axis.Y(label = "", format="/6{}%s"),
+                x_axis = axis.X(label = "", format=format2_y)
+               )
+    bar_plot.fill_styles.reset()
+    plot1 = bar_plot.T(label="disk size (GB)",
+                       data=data,
+                       data_label_format="",
+                       direction='horizontal')
     ar.add_plot(plot1)
     ar.draw(can)
     can.close()
