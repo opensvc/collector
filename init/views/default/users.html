@@ -1,6 +1,7 @@
 {{extend 'layout.html'}}
 {{include '../static/jslib.html'}}
 {{include 'box.html'}}
+{{include 'panel.html'}}
 {{include 'filters.html'}}
 
 {{
@@ -80,6 +81,7 @@ for key in ['fullname',
     </td>
     <td class={{=cellclass}}>{{=u.last}}</td>
     <td class={{=cellclass}}>
+      {{=PANEL('events_'+str(u.id))}}
       {{=A(
           IMG(
             _src=URL(r=request,c='static',f='envfile.png'),
@@ -87,17 +89,10 @@ for key in ['fullname',
             _title="more events",
             _onclick="""
                getElementById("uid").value="%(uid)s";
-               ajax("%(url)s",['uid'],"info_%(uid)s");
-               getElementById("foo_%(uid)s").className="xinfo_shown";
+               ajax("%(url)s",['uid'],"panelbody_events_%(uid)s");
+               getElementById("panel_events_%(uid)s").className="panel_shown";
             """%dict(url=URL(r=request,f='user_event_log'), uid=u.id),
           ),
-          SPAN(
-            DIV(_id="info_"+str(u.id)),
-            _ondblclick="""
-               getElementById("foo_%(uid)s").className="xinfo";
-            """%dict(uid=u.id),
-          ),
-          _id="foo_"+str(u.id),
           _class="xinfo",
         )
       }}

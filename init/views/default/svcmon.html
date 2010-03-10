@@ -1,6 +1,7 @@
 {{extend 'layout.html'}}
 {{include '../static/jslib.html'}}
 {{include 'box.html'}}
+{{include 'panel.html'}}
 {{include 'filters.html'}}
 
 {{
@@ -25,18 +26,6 @@ for key in ['svcname',
     if not vars.has_key(key) or vars[key] is None: vars[key]=''
     pass
 
-def list_vals_for_key(key, title):
-    return DIV(H3(T("""distinct "%(title)s" values in set""",dict(title=title))), PRE('\\n'.join(set([str(n[key]) for n in services]))))
-    pass
-
-def colname(key, title):
-    values = list_vals_for_key(key, title)
-    return A(
-          title,
-          _onclick="getElementById('listspan').innerHTML='%s';getElementById('listdiv').className='xinfo_shown';"%values,
-          _class="xinfo",
-        )
-
 def node_icon(svc):
     if svc.os_name is None:
         return ''
@@ -52,8 +41,7 @@ def node_icon(svc):
         img = ''
         pass
     return img
-}}
-{{
+
 def ajax_status(svc, name, cssclass):
     return A(
           DIV(
@@ -62,11 +50,11 @@ def ajax_status(svc, name, cssclass):
             _onclick="""
                getElementById("node").value="%(node)s";
                getElementById("svcname").value="%(svcname)s";
-               ajax("%(url)s",['node', 'svcname'],"spanstat_%(node)s_%(svcname)s");
-               getElementById("foostat_%(node)s_%(svcname)s").className="xinfo_shown";
+               ajax("%(url)s",['node', 'svcname'],"panelbody_%(node)s_%(svcname)s");
+               getElementById("panel_%(node)s_%(svcname)s").className="panel_shown";
             """%dict(url=URL(r=request,f='ajax_res_status'), node=svc.mon_nodname, svcname=svc.svc_name),
           ),
-          _class="xinfo"
+          _style="cursor:help",
         )
     pass
 }}
@@ -93,10 +81,7 @@ def ajax_status(svc, name, cssclass):
         appstatus = 'status_'+svc.mon_appstatus.replace(" ", "_")
     pass
 }}
-    <a id="foostat_{{=svc.mon_nodname}}_{{=svc.svc_name}}" class="xinfo">
-      <span><div ondblclick="getElementById('foostat_{{=svc.mon_nodname}}_{{=svc.svc_name}}').className='xinfo';"
-                 id='spanstat_{{=svc.mon_nodname}}_{{=svc.svc_name}}'>innerHTML here</div></span>
-    </a>
+    {{=PANEL(svc.mon_nodname+'_'+svc.svc_name)}}
     <table>
       <tr>
          <td colspan=6 class="{{=cellclass}}" title="since {{=svc.mon_updated}}">{{=ajax_status(svc, svc.mon_overallstatus, ' '.join(["status", overallstatus]))}}</td>
@@ -114,21 +99,21 @@ def ajax_status(svc, name, cssclass):
 
 <input id="svcname" type="hidden">
 <input id="node" type="hidden">
-<a id="listdiv" class="xinfo"><span><div ondblclick="getElementById('listdiv').className='xinfo';" id='listspan'>innerHTML here</div></span></a>
+{{=PANEL("column_values")}}
 <form action='svcmon' name='svcform' id='svcform'> 
 <table>
   {{BOX_TOP_ROW(10)}}
   <tr class=box>
     <td class=box></td>
     <td class=box></td>
-    <td>{{=colname('svc_name', T('Service'))}}</td>
-    <td width=10>{{=colname('svc_containertype', T('Container type'))}}</td>
-    <td width=10>{{=colname('svc_app', T('App'))}}</td>
-    <td width=10>{{=colname('responsibles', T('Resp'))}}</td>
-    <td width=10>{{=colname('svc_autostart', T('Preferred node'))}}</td>
-    <td width=10>{{=colname('mon_svctype', T('Service type'))}}</td>
-    <td width=10>{{=colname('mon_nodtype', T('Node type'))}}</td>
-    <td>{{=colname('mon_nodname', T('Node'))}}</td>
+    <td>{{=colname(services, 'svc_name', T('Service'))}}</td>
+    <td width=10>{{=colname(services, 'svc_containertype', T('Container type'))}}</td>
+    <td width=10>{{=colname(services, 'svc_app', T('App'))}}</td>
+    <td width=10>{{=colname(services, 'responsibles', T('Resp'))}}</td>
+    <td width=10>{{=colname(services, 'svc_autostart', T('Preferred node'))}}</td>
+    <td width=10>{{=colname(services, 'mon_svctype', T('Service type'))}}</td>
+    <td width=10>{{=colname(services, 'mon_nodtype', T('Node type'))}}</td>
+    <td>{{=colname(services, 'mon_nodname', T('Node'))}}</td>
     <td width=10 class=status_t>{{=T('Status')}}</td>
     <td class=box></td>
   </tr>
@@ -185,6 +170,7 @@ def ajax_status(svc, name, cssclass):
     <td class={{=cellclass}}>
       <input id="{{=svc.mon_svcname}}" value="{{=svc.mon_svcname}}" type="hidden">
       {{if newsvc:}}
+      {{=PANEL('envfile_'+svc.mon_svcname)}}
       {{=A(
           IMG(
             _src=URL(r=request,c='static',f='envfile.png'),
@@ -192,17 +178,10 @@ def ajax_status(svc, name, cssclass):
             _title="service configuration file",
             _onclick="""
                getElementById("svcname").value="%(svcname)s";
-               ajax("%(url)s",['svcname'],"info_%(svcname)s");
-               getElementById("foo_%(svcname)s").className="xinfo_shown";
+               ajax("%(url)s",['svcname'],"panelbody_envfile_%(svcname)s");
+               getElementById("panel_envfile_%(svcname)s").className="panel_shown";
             """%dict(url=URL(r=request,f='envfile'), svcname=svc.mon_svcname),
           ),
-          SPAN(
-            DIV(_id="info_"+svc.mon_svcname),
-            _ondblclick="""
-               getElementById("foo_%(svcname)s").className="xinfo";
-            """%dict(svcname=svc.mon_svcname),
-          ),
-          _id="foo_"+svc.mon_svcname,
           _class="xinfo",
         )
       }}
@@ -221,36 +200,37 @@ def ajax_status(svc, name, cssclass):
             _onclick="""
                getElementById("svcname").value="%(svcname)s";
                ajax("%(url)s",['svcname'],"msg__%(svcname)s");
-               getElementById("msg_%(svcname)s").className="xinfo_shown";
+               getElementById("panel_msg_%(svcname)s").className="panel_shown";
             """%dict(url=URL(r=request,f='ajax_svc_message_load'),
                      svcname=svc.mon_svcname,
                     ),
           ),
-          SPAN(
-            DIV(TEXTAREA(_id="msgbody_"+svc.mon_svcname), _id="msg__"+svc.mon_svcname),
-            INPUT(
-              _value=T("save"),
-              _type="button",
-              _onclick="""
-                ajax("%(url)s",['svcname','msgbody_%(svcname)s'],"msg__%(svcname)s");
-                getElementById("msg_%(svcname)s").className="xinfo";
-                if (getElementById("msgbody_%(svcname)s").value.length>0)
-                  getElementById("msg_img_%(svcname)s").src="%(img1)s";
-                else
-                  getElementById("msg_img_%(svcname)s").src="%(img0)s";
-              """%dict(url=URL(r=request,f='ajax_svc_message_save'),
-                       svcname=svc.mon_svcname,
-                       img0=URL(r=request,c='static',f='msg0.png'),
-                       img1=URL(r=request,c='static',f='msg1.png'),
-                      ),
-            ),
-            _ondblclick="""
-               getElementById("msg_%(svcname)s").className="xinfo";
-            """%dict(svcname=svc.mon_svcname),
-          ),
-          _id="msg_"+svc.mon_svcname,
           _class="xinfo",
         )
+     }}
+     {{=PANEL("msg_"+svc.mon_svcname, DIV(
+          DIV(
+            TEXTAREA(_id="msgbody_"+svc.mon_svcname),
+            _id="msg__"+svc.mon_svcname
+          ),
+          INPUT(
+            _value=T("save"),
+            _type="button",
+            _onclick="""
+              ajax("%(url)s",['svcname','msgbody_%(svcname)s'],"msg__%(svcname)s");
+              getElementById("panel_msg_%(svcname)s").className="panel";
+              if (getElementById("msgbody_%(svcname)s").value.length>0)
+                getElementById("msg_img_%(svcname)s").src="%(img1)s";
+              else
+                getElementById("msg_img_%(svcname)s").src="%(img0)s";
+            """%dict(url=URL(r=request,f='ajax_svc_message_save'),
+                     svcname=svc.mon_svcname,
+                     img0=URL(r=request,c='static',f='msg0.png'),
+                     img1=URL(r=request,c='static',f='msg1.png'),
+                    ),
+          ),
+          _id="msg_"+svc.mon_svcname,
+        ))
       }}
       {{=err}}
       {{pass}}
@@ -277,22 +257,16 @@ def ajax_status(svc, name, cssclass):
     </td>
     <td class={{=cellclass}}>
       {{if newsvc:}}
+      {{=PANEL('asn_'+svc.svc_autostart)}}
       {{=A(
           DIV(
             svc.svc_autostart,
             _onclick="""
                getElementById("node").value="%(node)s";
-               ajax("%(url)s",['node'],"asn_info_%(node)s");
-               getElementById("asn_%(node)s").className="xinfo_shown";
+               ajax("%(url)s",['node'],"panelbody_asn_%(node)s");
+               getElementById("panel_asn_%(node)s").className="panel_shown";
             """%dict(url=URL(r=request,f='ajax_node'), node=svc.svc_autostart),
           ),
-          SPAN(
-            DIV(_id="asn_info_"+svc.svc_autostart),
-            _ondblclick="""
-               getElementById("asn_%(node)s").className="xinfo";
-            """%dict(node=svc.svc_autostart),
-          ),
-          _id="asn_"+svc.svc_autostart,
           _class="xinfo",
         )
       }}
@@ -313,23 +287,17 @@ def ajax_status(svc, name, cssclass):
     }}
     <td class={{=cellclass}} {{=boldtype}}>{{=svc.mon_nodtype}}</td>
     <td class={{=cellclass}}>
+      {{=PANEL('node_'+svc.svc_autostart)}}
       {{=A(
           DIV(
             node_icon(svc),
             svc.mon_nodname,
             _onclick="""
                getElementById("node").value="%(node)s";
-               ajax("%(url)s",['node'],"info_%(node)s");
-               getElementById("foo_%(node)s").className="xinfo_shown";
+               ajax("%(url)s",['node'],"panelbody_node_%(node)s");
+               getElementById("panel_node_%(node)s").className="panel_shown";
             """%dict(url=URL(r=request,f='ajax_node'), node=svc.mon_nodname),
           ),
-          SPAN(
-            DIV(_id="info_"+svc.mon_nodname),
-            _ondblclick="""
-               getElementById("foo_%(node)s").className="xinfo";
-            """%dict(node=svc.mon_nodname),
-          ),
-          _id="foo_"+svc.mon_nodname,
           _class="xinfo",
         )
       }}
@@ -340,7 +308,6 @@ def ajax_status(svc, name, cssclass):
     <td style='padding:0'></td>
   </tr>
   {{pass}}
-  <div id="foo"></div>
   {{BOX_TOP_ROW(10)}}
   <tr class=box>
     <td align=center colspan=99>{{=nav}}</td>

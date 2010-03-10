@@ -181,7 +181,7 @@ th,
 thead td,
 tfoot td {
     font-weight: bold;
-    text-align: center;
+    //text-align: center;
 }
 
 b {
@@ -790,6 +790,40 @@ a.xinfo_shown span {
    left: 20px;
    background: white;
    padding: 3px;
+   border: 4px solid grey;
+   -moz-border-radius:8px;	/* Rounded edges in Firefox */
+}
+
+.panel_move {
+   -moz-user-select:none;
+    padding-right:10px;
+    cursor: move;
+    background: LightGoldenRodYellow;
+    text-align:right;
+}
+
+.panel_close {
+   -moz-user-select:none;
+    cursor: crosshair;
+}
+
+.panel {
+   display: none; /* on masque l'infobulle */
+   position: fixed;
+   background: none; /* correction d'un bug IE */
+   z-index: 500; /* on définit une valeur pour l'ordre d'affichage */
+}
+
+.panel_shown {
+   clear:both;
+   z-index: 500; /* on définit une valeur pour l'ordre d'affichage */
+   display: inline; /* on affiche l'infobulle */
+   position: fixed;
+   white-space: nowrap; /* on change la valeur de la propriété white-space pour qu'il n'y ait pas de retour à la ligne non-désiré */
+   top: 30px; /* on positionne notre infobulle */
+   left: 20px;
+   background: white;
+   //padding: 3px;
    border: 4px solid grey;
    -moz-border-radius:8px;	/* Rounded edges in Firefox */
 }

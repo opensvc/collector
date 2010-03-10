@@ -1,6 +1,7 @@
 {{extend 'layout.html'}}
 {{include '../static/jslib.html'}}
 {{include 'box.html'}}
+{{include 'panel.html'}}
 {{include 'filters.html'}}
 {{
 vars = request.vars
@@ -8,22 +9,10 @@ vars = request.vars
 for key in colkeys:
     if not vars.has_key(key) or vars[key] is None: request.vars[key]=''
     pass
-
-def list_vals_for_key(key):
-    return DIV(H3(T("""distinct "%(key)s" values in set""",dict(key=columns[key]['title']))), PRE('\\n'.join(set([str(n[key]) for n in nodes]))))
-    pass
-
-def colname(key):
-    title = columns[key]['title']
-    values = list_vals_for_key(key)
-    return A(
-          title,
-          _onclick="getElementById('listspan').innerHTML='%s';getElementById('listdiv').className='xinfo_shown';"%values,
-          _class="xinfo",
-        )
 }}
 
 <a id="listdiv" class="xinfo"><span><div ondblclick="getElementById('listdiv').className='xinfo';" id='listspan'>innerHTML here</div></span></a>
+{{=PANEL("column_values")}}
 <form action='nodes' name='svcform' id='svcform'>
 <table>
   {{BOX_TOP_ROW(len(colkeys))}}
@@ -31,7 +20,7 @@ def colname(key):
     <td class=box></td>
     {{for key in colkeys:}}
     <td>
-      {{=colname(key)}}
+      {{=colname(nodes, key, columns[key]['title'])}}
     </td>
     {{pass}}
     <td class=box></td>
@@ -55,22 +44,16 @@ def colname(key):
     <td style='padding:0'></td>
     <td>
       {{nodename = node['nodename'].lower()}}
+      {{=PANEL('node_'+nodename)}}
       {{=A(
           DIV(
             nodename,
             _onclick="""
                getElementById("node").value="%(node)s";
-               ajax("%(url)s",['node'],"info_%(node)s");
-               getElementById("foo_%(node)s").className="xinfo_shown";
+               ajax("%(url)s",['node'],"panelbody_node_%(node)s");
+               getElementById("panel_node_%(node)s").className="panel_shown";
             """%dict(url=URL(r=request,f='ajax_node'), node=nodename),
           ),
-          SPAN(
-            DIV(_id="info_"+nodename),
-            _ondblclick="""
-               getElementById("foo_%(node)s").className="xinfo";
-            """%dict(node=nodename),
-          ),
-          _id="foo_"+nodename,
           _class="xinfo",
         )
       }}

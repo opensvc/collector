@@ -1,6 +1,7 @@
 {{extend 'layout.html'}}
 {{include '../static/jslib.html'}}
 {{include 'box.html'}}
+{{include 'panel.html'}}
 {{include 'filters.html'}}
 {{
 vars = request.vars
@@ -8,22 +9,23 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
     if not vars.has_key(key) or vars[key] is None: vars[key]=''
     pass
 }}
+{{=PANEL("column_values")}}
 <form action='svcactions' name='svcform' id='svcform' method='post'> 
 <table>
   {{BOX_TOP_ROW(11)}}
   <tr class=box>
     <td class=box></td>
     <td class=box></td>
-    <td>{{=T('Service')}}</td>
-    <td>{{=T('App')}}</td>
+    <td>{{=colname(actions, 'svcname', T('Service'))}}</td>
+    <td>{{=colname(actions, 'app', T('App'))}}</td>
     <td>{{=T('Resp')}}</td>
-    <td>{{=T('Node')}}</td>
-    <td>{{=T('Action')}}</td>
-    <td>{{=T('Status')}}</td>
-    <td>{{=T('Begin')}}</td>
-    <td>{{=T('End')}}</td>
-    <td>{{=T('Pid')}}</td>
-    <td>{{=T('Log')}}</td>
+    <td>{{=colname(actions, 'hostname', T('Node'))}}</td>
+    <td>{{=colname(actions, 'action', T('Action'))}}</td>
+    <td>{{=colname(actions, 'status', T('Status'))}}</td>
+    <td>{{=colname(actions, 'begin', T('Begin'))}}</td>
+    <td>{{=colname(actions, 'end', T('End'))}}</td>
+    <td>{{=colname(actions, 'pid', T('Pid'))}}</td>
+    <td>{{=colname(actions, 'status_log', T('Log'))}}</td>
     <td class=box></td>
   </tr>
   <tr class=box>
@@ -90,22 +92,16 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
     <td class={{=cellclass}}>{{=action.app}}</td>
     <td class={{=cellclass}}>{{=responsibles}}</td>
     <td class={{=cellclass}}>
+      {{=PANEL('node_'+action.hostname)}}
       {{=A(
           DIV(
             action.hostname,
             _onclick="""
                getElementById("node").value="%(node)s";
-               ajax("%(url)s",['node'],"info_%(node)s");
-               getElementById("foo_%(node)s").className="xinfo_shown";
+               ajax("%(url)s",['node'],"panelbody_node_%(node)s");
+               getElementById("panel_node_%(node)s").className="panel_shown";
             """%dict(url=URL(r=request,f='ajax_node'), node=action.hostname),
           ),
-          SPAN(
-            DIV(_id="info_"+action.hostname),
-            _ondblclick="""
-               getElementById("foo_%(node)s").className="xinfo";
-            """%dict(node=action.hostname),
-          ),
-          _id="foo_"+action.hostname,
           _class="xinfo",
         )
       }}
