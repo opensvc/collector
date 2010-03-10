@@ -319,6 +319,7 @@
 'selected': 's\xc3\xa9lectionn\xc3\xa9',
 'serial': 'num\xc3\xa9ro de s\xc3\xa9rie',
 'server': 'serveur',
+'server model': 'server model',
 'service': 'service',
 'service name': 'service name',
 'set wave': 'assigner la vague',

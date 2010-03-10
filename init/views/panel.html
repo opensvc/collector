@@ -3,6 +3,7 @@
 
 {{
 def PANEL(a, content=None):
+    a = a.replace('.', '_')
     if content is None:
         content = DIV("Loading ...", _id="panelbody_"+a)
         pass

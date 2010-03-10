@@ -43,6 +43,8 @@ def node_icon(svc):
     return img
 
 def ajax_status(svc, name, cssclass):
+    a = svc.mon_nodname+'_'+svc.svc_name
+    a = a.replace('.', '_')
     return A(
           DIV(
             name,
@@ -50,9 +52,9 @@ def ajax_status(svc, name, cssclass):
             _onclick="""
                getElementById("node").value="%(node)s";
                getElementById("svcname").value="%(svcname)s";
-               ajax("%(url)s",['node', 'svcname'],"panelbody_%(node)s_%(svcname)s");
-               getElementById("panel_%(node)s_%(svcname)s").className="panel_shown";
-            """%dict(url=URL(r=request,f='ajax_res_status'), node=svc.mon_nodname, svcname=svc.svc_name),
+               ajax("%(url)s",['node', 'svcname'],"panelbody_%(a)s");
+               getElementById("panel_%(a)s").className="panel_shown";
+            """%dict(url=URL(r=request,f='ajax_res_status'), node=svc.mon_nodname, svcname=svc.svc_name, a=a),
           ),
           _style="cursor:help",
         )
@@ -178,9 +180,11 @@ def ajax_status(svc, name, cssclass):
             _title="service configuration file",
             _onclick="""
                getElementById("svcname").value="%(svcname)s";
-               ajax("%(url)s",['svcname'],"panelbody_envfile_%(svcname)s");
-               getElementById("panel_envfile_%(svcname)s").className="panel_shown";
-            """%dict(url=URL(r=request,f='envfile'), svcname=svc.mon_svcname),
+               ajax("%(url)s",['svcname'],"panelbody_envfile_%(a)s");
+               getElementById("panel_envfile_%(a)s").className="panel_shown";
+            """%dict(url=URL(r=request,f='envfile'),
+                     svcname=svc.mon_svcname,
+                     a=svc.mon_svcname.replace('.', '_')),
           ),
           _class="xinfo",
         )
@@ -200,9 +204,10 @@ def ajax_status(svc, name, cssclass):
             _onclick="""
                getElementById("svcname").value="%(svcname)s";
                ajax("%(url)s",['svcname'],"msg__%(svcname)s");
-               getElementById("panel_msg_%(svcname)s").className="panel_shown";
+               getElementById("panel_msg_%(a)s").className="panel_shown";
             """%dict(url=URL(r=request,f='ajax_svc_message_load'),
                      svcname=svc.mon_svcname,
+                     a=svc.mon_svcname.replace('.', '_')
                     ),
           ),
           _class="xinfo",
@@ -218,13 +223,14 @@ def ajax_status(svc, name, cssclass):
             _type="button",
             _onclick="""
               ajax("%(url)s",['svcname','msgbody_%(svcname)s'],"msg__%(svcname)s");
-              getElementById("panel_msg_%(svcname)s").className="panel";
+              getElementById("panel_msg_%(a)s").className="panel";
               if (getElementById("msgbody_%(svcname)s").value.length>0)
                 getElementById("msg_img_%(svcname)s").src="%(img1)s";
               else
                 getElementById("msg_img_%(svcname)s").src="%(img0)s";
             """%dict(url=URL(r=request,f='ajax_svc_message_save'),
                      svcname=svc.mon_svcname,
+                     a=svc.mon_svcname.replace('.', '_'),
                      img0=URL(r=request,c='static',f='msg0.png'),
                      img1=URL(r=request,c='static',f='msg1.png'),
                     ),
@@ -263,9 +269,12 @@ def ajax_status(svc, name, cssclass):
             svc.svc_autostart,
             _onclick="""
                getElementById("node").value="%(node)s";
-               ajax("%(url)s",['node'],"panelbody_asn_%(node)s");
-               getElementById("panel_asn_%(node)s").className="panel_shown";
-            """%dict(url=URL(r=request,f='ajax_node'), node=svc.svc_autostart),
+               ajax("%(url)s",['node'],"panelbody_asn_%(a)s");
+               getElementById("panel_asn_%(a)s").className="panel_shown";
+            """%dict(url=URL(r=request,f='ajax_node'),
+                     node=svc.svc_autostart,
+                     a=svc.svc_autostart.replace('.', '_')
+                    ),
           ),
           _class="xinfo",
         )
@@ -294,9 +303,12 @@ def ajax_status(svc, name, cssclass):
             svc.mon_nodname,
             _onclick="""
                getElementById("node").value="%(node)s";
-               ajax("%(url)s",['node'],"panelbody_node_%(node)s");
-               getElementById("panel_node_%(node)s").className="panel_shown";
-            """%dict(url=URL(r=request,f='ajax_node'), node=svc.mon_nodname),
+               ajax("%(url)s",['node'],"panelbody_node_%(a)s");
+               getElementById("panel_node_%(a)s").className="panel_shown";
+            """%dict(url=URL(r=request,f='ajax_node'),
+                     node=svc.mon_nodname,
+                     a=svc.mon_nodname.replace('.', '_')
+                    ),
           ),
           _class="xinfo",
         )
