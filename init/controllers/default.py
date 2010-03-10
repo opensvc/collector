@@ -978,6 +978,18 @@ def svcmon():
                     value=None,
                     field='responsibles',
             ),
+            7: dict(name='os name',
+                    id=7,
+                    active=False,
+                    value=None,
+                    field='os_name',
+            ),
+            8: dict(name='server model',
+                    id=8,
+                    active=False,
+                    value=None,
+                    field='model',
+            ),
         }
     session.svcmon_filters.update(asset_filters('v_svcmon'))
     toggle_session_filters(session.svcmon_filters)
