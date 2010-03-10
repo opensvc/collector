@@ -181,7 +181,6 @@ th,
 thead td,
 tfoot td {
     font-weight: bold;
-    //text-align: center;
 }
 
 b {
@@ -281,26 +280,12 @@ a {
     margin: 0 auto;
     text-align: center;
     clear: both;
-    border: 2px darkyellow solid; 
     color: black;
     font-size: 11pt;
-    //padding: 10px 10px 10px 10px;
     cursor: pointer;
     background: yellow;
    -moz-border-radius-topleft:8px;	/* Rounded edges in Firefox */
    -moz-border-radius-topright:8px;	/* Rounded edges in Firefox */
-/*
-    margin: 0 auto;
-    text-align: center; 
-    clear: both;
-    border: 1px solid #99f;
-    background-color: #ddf;
-    cursor: pointer;
-    margin-top: 0.0em;
-    margin-bottom: 1.0em;
-    padding-top: 1.0em;
-    padding-bottom: 1.0em;
-*/
 }
 
 html>body .flash {
@@ -823,7 +808,6 @@ a.xinfo_shown span {
    top: 30px; /* on positionne notre infobulle */
    left: 20px;
    background: white;
-   //padding: 3px;
    border: 4px solid grey;
    -moz-border-radius:8px;	/* Rounded edges in Firefox */
 }
