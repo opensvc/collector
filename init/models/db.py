@@ -521,3 +521,9 @@ db.define_table('svcmon_changes',
     Field('mon_appstatus'),
     migrate=False)
 
+db.define_table('v_svc_group_status',
+    Field('id'),
+    Field('svcname'),
+    Field('groupstatus'),
+    migrate=False)
+

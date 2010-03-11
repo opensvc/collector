@@ -1,31 +1,303 @@
 {{extend 'layout.html'}}
 
-{{try:}}{{=H2(message)}}{{except:}}{{=BEAUTIFY(response._vars)}}{{pass}}
+{{
+def svc_status(svc, cellclass):
+    overallstatus = 'status_'+svc.mon_overallstatus.replace(" ", "_")
+    containerstatus = 'status_'+svc.mon_containerstatus.replace(" ", "_")
+    ipstatus = 'status_'+svc.mon_ipstatus.replace(" ", "_")
+    fsstatus = 'status_'+svc.mon_fsstatus.replace(" ", "_")
+    diskstatus = 'status_'+svc.mon_diskstatus.replace(" ", "_")
+    syncstatus = 'status_'+svc.mon_syncstatus.replace(" ", "_")
+    appstatus = 'status_'+svc.mon_appstatus.replace(" ", "_")
 
-{{def cell(img, link, txt):}}
-<table>
-  <tr class=index_grid>
-    <td>
-      {{=A(IMG(_src=URL(r=request,c='static',f=img),_border=0), _href=URL(request.application,'default',link))}}
-    </td>
-    <td width=180>
-      <h3>{{=txt}}</h3>
-    </td>
-  </tr>
-</table>
-{{pass}}
-    
-<table>
-  <tr>
-    <td>{{cell('shot_svcmon.png', 'svcmon', T('display services live status'))}}</td>
-    <td>{{cell('shot_svcactions.png', 'svcactions?begin=>'+yesterday+'&status_log=empty', T('display last actions executed on services with their status'))}}</td>
-  </tr>
-  <tr>
-    <td>{{cell('shot_drplan.png', 'drplan', T('prepare or consult a disaster recovery plan'))}}</td>
-    <td>{{cell('shot_apps.png', 'apps', T('create new project codes and assign responsibles to projects'))}}</td>
-  </tr>
-  <tr>
-    <td>{{cell('shot_nodes.png', 'nodes', T('consult asset information'))}}</td>
-    <td>{{cell('shot_alerts.png', 'alerts', T('consult alerts sent and pending emission'))}}</td>
-  </tr>
-</table>
+    t = TABLE(
+      TR(
+        TD(svc.mon_overallstatus, _colspan=6, _class=cellclass+' status '+overallstatus),
+      ),
+      TR(
+        TD("vm", _class=cellclass+' '+containerstatus),
+        TD("ip", _class=cellclass+' '+ipstatus),
+        TD("fs", _class=cellclass+' '+fsstatus),
+        TD("dg", _class=cellclass+' '+diskstatus),
+        TD("sync", _class=cellclass+' '+syncstatus),
+        TD("app", _class=cellclass+' '+appstatus),
+      ),
+    )
+    return t
+    pass
+
+
+""" Last status changes
+"""
+def last_changes_line(line, cellclass):
+    tr = TR(
+      TD(line.begin, _class=cellclass),
+      TD(line.mon_svcname, _class=cellclass),
+      TD(line.mon_nodname, _class=cellclass),
+      TD(svc_status(line, cellclass), _class=cellclass),
+    )
+    return tr
+    pass
+
+def last_changes_header():
+    tr = TR(
+      TH(T("Date")),
+      TH(T("Service")),
+      TH(T("Node")),
+      TH(T("Status"), _style="text-align:center"),
+      _style="border-bottom:4px solid darkorange",
+    )
+    return tr
+    pass
+
+def last_changes_table():
+    cellclass = 'cell1'
+    cellclasses = {}
+    cellclasses['cell1'] = 'cell2'
+    cellclasses['cell2'] = 'cell1'
+    lines = []
+
+    for line in lastchanges:
+        cellclass = cellclasses[cellclass]
+        lines += [last_changes_line(line, cellclass)]
+        pass
+
+    t = TABLE(
+        last_changes_header(),
+        lines,
+    )
+    return t
+    pass
+
+def last_changes():
+    d = DIV(
+      H2(T("Last service status changes"), _style="padding:10px"),
+      last_changes_table(),
+      _style="padding:10px",
+    )
+    return d
+    pass
+
+
+""" Services with unacknowleged errors
+"""
+def svc_with_errors_line(line, cellclass):
+    tr = TR(
+      TD(line.svc_name, _class=cellclass),
+      TD(line.mon_nodname, _class=cellclass),
+      TD(line.err, _class=cellclass),
+      TD(svc_status(line, cellclass), _class=cellclass),
+    )
+    return tr
+    pass
+
+def svc_with_errors_header():
+    tr = TR(
+      TH(T("Service")),
+      TH(T("Node")),
+      TH(T("Error count")),
+      TH(T("Status"), _style="text-align:center"),
+      _style="border-bottom:4px solid darkorange",
+    )
+    return tr
+    pass
+
+def svc_with_errors_table():
+    cellclass = 'cell1'
+    cellclasses = {}
+    cellclasses['cell1'] = 'cell2'
+    cellclasses['cell2'] = 'cell1'
+    lines = []
+
+    for line in svcwitherrors:
+        cellclass = cellclasses[cellclass]
+        lines += [svc_with_errors_line(line, cellclass)]
+        pass
+
+    t = TABLE(
+        svc_with_errors_header(),
+        lines,
+    )
+    return t
+    pass
+
+def svc_with_errors():
+    d = DIV(
+      H2(T("Services with errors"), _style="padding:10px"),
+      svc_with_errors_table(),
+      _style="padding:10px",
+    )
+    return d
+    pass
+
+
+""" Services not up on all nodes
+"""
+def svc_not_up_line(line, cellclass):
+    tr = TR(
+      TD(line.svcname, _class=cellclass),
+      TD(line.groupstatus, _class=cellclass),
+    )
+    return tr
+    pass
+
+def svc_not_up_header():
+    tr = TR(
+      TH(T("Service")),
+      TH(T("Cluster status")),
+      _style="border-bottom:4px solid darkorange",
+    )
+    return tr
+    pass
+
+def svc_not_up_table():
+    cellclass = 'cell1'
+    cellclasses = {}
+    cellclasses['cell1'] = 'cell2'
+    cellclasses['cell2'] = 'cell1'
+    lines = []
+
+    for line in svcnotup:
+        cellclass = cellclasses[cellclass]
+        lines += [svc_not_up_line(line, cellclass)]
+        pass
+
+    t = TABLE(
+        svc_not_up_header(),
+        lines,
+    )
+    return t
+    pass
+
+def svc_not_up():
+    d = DIV(
+      H2(T("Services not up"), _style="padding:10px"),
+      svc_not_up_table(),
+      _style="padding:10px",
+    )
+    return d
+    pass
+
+
+""" Services not up on their primary node
+"""
+def svc_not_on_primary_line(line, cellclass):
+    tr = TR(
+      TD(line.svc_name, _class=cellclass),
+      TD(line.svc_autostart, _class=cellclass),
+      TD(svc_status(line, cellclass), _class=cellclass),
+    )
+    return tr
+    pass
+
+def svc_not_on_primary_header():
+    tr = TR(
+      TH(T("Service")),
+      TH(T("Primary")),
+      TH(T("Status"), _style="text-align:center"),
+      _style="border-bottom:4px solid darkorange",
+    )
+    return tr
+    pass
+
+def svc_not_on_primary_table():
+    cellclass = 'cell1'
+    cellclasses = {}
+    cellclasses['cell1'] = 'cell2'
+    cellclasses['cell2'] = 'cell1'
+    lines = []
+
+    for line in svcnotonprimary:
+        cellclass = cellclasses[cellclass]
+        lines += [svc_not_on_primary_line(line, cellclass)]
+        pass
+
+    t = TABLE(
+        svc_not_on_primary_header(),
+        lines,
+    )
+    return t
+    pass
+
+def svc_not_on_primary():
+    d = DIV(
+      H2(T("Services not up on primary"), _style="padding:10px"),
+      svc_not_on_primary_table(),
+      _style="padding:10px",
+    )
+    return d
+    pass
+
+
+""" Applications without responsibles
+"""
+def app_wo_resp_line(line, cellclass):
+    tr = TR(
+      TD(line.app, _class=cellclass),
+    )
+    return tr
+    pass
+
+def app_wo_resp_header():
+    tr = TR(
+      TH(T("App")),
+      _style="border-bottom:4px solid darkorange",
+    )
+    return tr
+    pass
+
+def app_wo_resp_table():
+    cellclass = 'cell1'
+    cellclasses = {}
+    cellclasses['cell1'] = 'cell2'
+    cellclasses['cell2'] = 'cell1'
+    lines = []
+
+    for line in appwithoutresp:
+        cellclass = cellclasses[cellclass]
+        lines += [app_wo_resp_line(line, cellclass)]
+        pass
+
+    t = TABLE(
+        app_wo_resp_header(),
+        lines,
+    )
+    return t
+    pass
+
+def app_wo_resp():
+    d = DIV(
+      H2(T("Application without responsibles"), _style="padding:10px"),
+      app_wo_resp_table(),
+      _style="padding:10px",
+    )
+    return d
+    pass
+
+}}
+
+{{=DIV(
+     DIV(
+       last_changes(),
+       app_wo_resp(),
+       _style="
+         width:50%;
+         float:left;
+       ",
+     ),
+     DIV(
+       svc_with_errors(),
+       svc_not_up(),
+       svc_not_on_primary(),
+       _style="
+         width:50%;
+         float:right;
+       ",
+     ),
+     _style="
+        padding-left:2em;
+        padding-right:2em;
+     "
+   )
+}}
+

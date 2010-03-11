@@ -8,13 +8,6 @@
 ## - call exposes all registered services (none by default)
 #########################################################################
 
-def index():
-    """
-    example action using the internationalization operator T and flash
-    rendered by views/default/index.html or views/generic.html
-    """
-    return dict(message=T('Select a report type'))
-
 def user():
     """
     exposes:
@@ -136,6 +129,35 @@ def apply_session_filters(filters, query, table=None):
             elif filter.has_key('field') and table is not None:
                 query &= _where(None, table, filter['value'], filter['field'])
     return query
+
+def index():
+    query = (db.svcmon_changes.id>0)
+    query &= _where(None, 'svcmon_changes', domain_perms(), 'mon_svcname')
+    lastchanges = db(query).select(orderby=~db.svcmon_changes.begin, limitby=(0,20))
+
+    query = (db.v_svcmon.err>0)
+    query &= _where(None, 'v_svcmon', domain_perms(), 'mon_svcname')
+    svcwitherrors = db(query).select(orderby=~db.v_svcmon.err)
+
+    query = (~db.v_svc_group_status.groupstatus.like("%up,%"))
+    query &= (~db.v_svc_group_status.groupstatus.like("%, up%"))
+    query &= _where(None, 'v_svc_group_status', domain_perms(), 'svcname')
+    svcnotup = db(query).select()
+
+    query = (db.v_svcmon.svc_autostart==db.v_svcmon.mon_nodname)
+    query &= (db.v_svcmon.mon_overallstatus!="up")
+    query &= _where(None, 'v_svcmon', domain_perms(), 'svcname')
+    svcnotonprimary = db(query).select()
+
+    query = (db.v_apps.responsibles==None)
+    query |= (db.v_apps.responsibles=="")
+    appwithoutresp = db(query).select(db.v_apps.app)
+
+    return dict(lastchanges=lastchanges,
+                svcwitherrors=svcwitherrors,
+                svcnotonprimary=svcnotonprimary,
+                appwithoutresp=appwithoutresp,
+                svcnotup=svcnotup)
 
 @auth.requires_membership('Manager')
 def _del_app(request):
