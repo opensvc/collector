@@ -506,3 +506,18 @@ db.define_table('svcmon_log',
     Field('mon_appstatus'),
     migrate=False)
 
+db.define_table('svcmon_changes',
+    Field('id'),
+    Field('begin'),
+    Field('end'),
+    Field('mon_svcname'),
+    Field('mon_nodname'),
+    Field('mon_overallstatus'),
+    Field('mon_ipstatus'),
+    Field('mon_fsstatus'),
+    Field('mon_diskstatus'),
+    Field('mon_containerstatus'),
+    Field('mon_syncstatus'),
+    Field('mon_appstatus'),
+    migrate=False)
+
