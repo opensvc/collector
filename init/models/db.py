@@ -492,3 +492,17 @@ db.define_table('svcmessages',
     Field('msg_body'),
     migrate=False)
 
+db.define_table('svcmon_log',
+    Field('id'),
+    Field('mon_date'),
+    Field('mon_svcname'),
+    Field('mon_nodname'),
+    Field('mon_overallstatus'),
+    Field('mon_ipstatus'),
+    Field('mon_fsstatus'),
+    Field('mon_diskstatus'),
+    Field('mon_containerstatus'),
+    Field('mon_syncstatus'),
+    Field('mon_appstatus'),
+    migrate=False)
+

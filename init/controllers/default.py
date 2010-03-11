@@ -918,7 +918,7 @@ def users():
     elif request.vars.action is not None and request.vars.action == "set_domains":
         _user_domain_edit(request)
 
-    o = db.v_users.fullname
+    o = ~db.v_users.last
 
     query = _where(None, 'v_users', request.vars.fullname, 'fullname')
     query &= _where(None, 'v_users', request.vars.email, 'email')
@@ -2393,6 +2393,8 @@ def quote_wrap(x):
     if isinstance(x, (int, long, float, complex)):
         return x
     elif isinstance(x, str) and x[0] == "'" and x[-1] == "'":
+        return x
+    elif isinstance(x, str) and x[0] == '"' and x[-1] == '"':
         return x
     else:
         return "'%s'"%str(x)
