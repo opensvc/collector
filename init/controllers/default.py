@@ -131,9 +131,9 @@ def apply_session_filters(filters, query, table=None):
     return query
 
 def index():
-    query = (db.svcmon_changes.id>0)
-    query &= _where(None, 'svcmon_changes', domain_perms(), 'mon_svcname')
-    lastchanges = db(query).select(orderby=~db.svcmon_changes.begin, limitby=(0,20))
+    query = (db.v_svcmon_changes.id>0)
+    query &= _where(None, 'v_svcmon_changes', domain_perms(), 'mon_svcname')
+    lastchanges = db(query).select(orderby=~db.v_svcmon_changes.begin, limitby=(0,20))
 
     query = (db.v_svcmon.err>0)
     query &= _where(None, 'v_svcmon', domain_perms(), 'mon_svcname')

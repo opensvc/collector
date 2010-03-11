@@ -506,7 +506,7 @@ db.define_table('svcmon_log',
     Field('mon_appstatus'),
     migrate=False)
 
-db.define_table('svcmon_changes',
+db.define_table('v_svcmon_changes',
     Field('id'),
     Field('begin'),
     Field('end'),
