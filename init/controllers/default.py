@@ -130,6 +130,7 @@ def apply_session_filters(filters, query, table=None):
                 query &= _where(None, table, filter['value'], filter['field'])
     return query
 
+@auth.requires_login()
 def index():
     query = (db.v_svcmon_changes.id>0)
     query &= _where(None, 'v_svcmon_changes', domain_perms(), 'mon_svcname')
@@ -146,7 +147,7 @@ def index():
 
     query = (db.v_svcmon.svc_autostart==db.v_svcmon.mon_nodname)
     query &= (db.v_svcmon.mon_overallstatus!="up")
-    query &= _where(None, 'v_svcmon', domain_perms(), 'svcname')
+    query &= _where(None, 'v_svcmon', domain_perms(), 'svc_name')
     svcnotonprimary = db(query).select()
 
     query = (db.v_apps.responsibles==None)
