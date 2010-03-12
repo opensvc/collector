@@ -1,5 +1,4 @@
 {{extend 'layout.html'}}
-
 {{
 def svc_status(svc, cellclass):
     overallstatus = 'status_'+svc.mon_overallstatus.replace(" ", "_")
@@ -293,26 +292,15 @@ def app_wo_resp():
 }}
 
 {{=DIV(
-     DIV(
-       last_changes(),
-       app_wo_resp(),
-       _style="
-         width:50%;
-         float:left;
-       ",
-     ),
-     DIV(
-       svc_with_errors(),
-       svc_not_up(),
-       svc_not_on_primary(),
-       _style="
-         width:50%;
-         float:right;
-       ",
-     ),
+     last_changes(),
+     app_wo_resp(),
+     svc_with_errors(),
+     svc_not_up(),
+     svc_not_on_primary(),
      _style="
-        padding-left:2em;
-        padding-right:2em;
+       padding-left:2em;
+       padding-right:2em;
+       -moz-column-count:2
      "
    )
 }}
