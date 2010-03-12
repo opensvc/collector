@@ -2586,6 +2586,36 @@ def svcmon_update(vars, vals):
                  h['mon_appstatus'],
                  h['mon_syncstatus']]
         generic_insert('svcmon_log', _vars, _vals)
+    elif h['mon_overallstatus'] != last[0].mon_overallstatus or \
+         h['mon_ipstatus'] != last[0].mon_ipstatus or \
+         h['mon_fsstatus'] != last[0].mon_fsstatus or \
+         h['mon_diskstatus'] != last[0].mon_diskstatus or \
+         h['mon_containerstatus'] != last[0].mon_containerstatus or \
+         h['mon_appstatus'] != last[0].mon_appstatus or \
+         h['mon_syncstatus'] != last[0].mon_syncstatus:
+        _vars = ['mon_begin',
+                 'mon_end',
+                 'mon_svcname',
+                 'mon_nodname',
+                 'mon_overallstatus',
+                 'mon_ipstatus',
+                 'mon_fsstatus',
+                 'mon_diskstatus',
+                 'mon_containerstatus',
+                 'mon_appstatus',
+                 'mon_syncstatus']
+        _vals = [h['mon_updated'],
+                 h['mon_updated'],
+                 h['mon_svcname'],
+                 h['mon_nodname'],
+                 h['mon_overallstatus'],
+                 h['mon_ipstatus'],
+                 h['mon_fsstatus'],
+                 h['mon_diskstatus'],
+                 h['mon_containerstatus'],
+                 h['mon_appstatus'],
+                 h['mon_syncstatus']]
+        generic_insert('svcmon_log', _vars, _vals)
     else:
         db(db.svcmon_log.id==last[0].id).update(mon_end=h['mon_updated'])
 
