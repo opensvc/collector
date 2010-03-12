@@ -136,6 +136,7 @@ def svc_with_errors():
 def svc_not_up_line(line, cellclass):
     tr = TR(
       TD(line.svcname, _class=cellclass),
+      TD(line.svctype, _class=cellclass),
       TD(line.groupstatus, _class=cellclass),
     )
     return tr
@@ -144,6 +145,7 @@ def svc_not_up_line(line, cellclass):
 def svc_not_up_header():
     tr = TR(
       TH(T("Service")),
+      TH(T("Env")),
       TH(T("Cluster status")),
       _style="border-bottom:4px solid darkorange",
     )

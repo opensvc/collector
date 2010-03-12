@@ -524,6 +524,7 @@ db.define_table('v_svcmon_changes',
 db.define_table('v_svc_group_status',
     Field('id'),
     Field('svcname'),
+    Field('svctype'),
     Field('groupstatus'),
     migrate=False)
 

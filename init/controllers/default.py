@@ -132,7 +132,10 @@ def apply_session_filters(filters, query, table=None):
 
 @auth.requires_login()
 def index():
+    now = datetime.datetime.now()
+    one_days_ago = now - datetime.timedelta(days=1)
     query = (db.v_svcmon_changes.id>0)
+    query = (db.v_svcmon_changes.end>one_days_ago)
     query &= _where(None, 'v_svcmon_changes', domain_perms(), 'mon_svcname')
     lastchanges = db(query).select(orderby=~db.v_svcmon_changes.begin, limitby=(0,20))
 
