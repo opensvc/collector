@@ -2510,7 +2510,7 @@ def svcmon_update(vars, vals):
     h = {}
     for a,b in zip(vars, vals):
         h[a] = b
-    eleven_minutes_before = datetime.datetime.strptime(h['mon_updated'], "%Y-%m-%d %H:%M:%S.%f") - datetime.timedelta(minutes=11)
+    eleven_minutes_before = datetime.datetime.strptime(h['mon_updated'].split('.')[0], "%Y-%m-%d %H:%M:%S") - datetime.timedelta(minutes=11)
     query = db.svcmon_log.mon_svcname==h['mon_svcname']
     query &= db.svcmon_log.mon_nodname==h['mon_nodname']
     last = db(query).select(orderby=~db.svcmon_log.id, limitby=(0,1))
