@@ -2506,6 +2506,8 @@ def delete_disks(svcname, node):
 
 @service.xmlrpc
 def svcmon_update(vars, vals):
+    now = datetime.datetime.now()
+    eleven_minutes_ago = now - datetime.timedelta(minutes=11)
     generic_insert('svcmon', vars, vals)
     h = {}
     for a,b in zip(vars, vals):
@@ -2514,6 +2516,53 @@ def svcmon_update(vars, vals):
     query &= db.svcmon_log.mon_nodname==h['mon_nodname']
     last = db(query).select(orderby=~db.svcmon_log.id, limitby=(0,1))
     if len(last) == 0:
+        _vars = ['mon_begin',
+                 'mon_end',
+                 'mon_svcname',
+                 'mon_nodname',
+                 'mon_overallstatus',
+                 'mon_ipstatus',
+                 'mon_fsstatus',
+                 'mon_diskstatus',
+                 'mon_containerstatus',
+                 'mon_appstatus',
+                 'mon_syncstatus']
+        _vals = [h['mon_updated'],
+                 h['mon_updated'],
+                 h['mon_svcname'],
+                 h['mon_nodname'],
+                 h['mon_overallstatus'],
+                 h['mon_ipstatus'],
+                 h['mon_fsstatus'],
+                 h['mon_diskstatus'],
+                 h['mon_containerstatus'],
+                 h['mon_appstatus'],
+                 h['mon_syncstatus']]
+        generic_insert('svcmon_log', _vars, _vals)
+    elif last[0].mon_end < eleven_minutes_ago:
+        _vars = ['mon_begin',
+                 'mon_end',
+                 'mon_svcname',
+                 'mon_nodname',
+                 'mon_overallstatus',
+                 'mon_ipstatus',
+                 'mon_fsstatus',
+                 'mon_diskstatus',
+                 'mon_containerstatus',
+                 'mon_appstatus',
+                 'mon_syncstatus']
+        _vals = [last[0].mon_end,
+                 h['mon_updated'],
+                 h['mon_svcname'],
+                 h['mon_nodname'],
+                 "undef",
+                 "undef",
+                 "undef",
+                 "undef",
+                 "undef",
+                 "undef",
+                 "undef"]
+        generic_insert('svcmon_log', _vars, _vals)
         _vars = ['mon_begin',
                  'mon_end',
                  'mon_svcname',
