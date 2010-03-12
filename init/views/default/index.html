@@ -31,7 +31,7 @@ def svc_status(svc, cellclass):
 """
 def last_changes_line(line, cellclass):
     tr = TR(
-      TD(line.begin, _class=cellclass),
+      TD(line.mon_begin, _class=cellclass),
       TD(line.mon_svcname, _class=cellclass),
       TD(line.mon_nodname, _class=cellclass),
       TD(svc_status(line, cellclass), _class=cellclass),

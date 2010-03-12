@@ -134,10 +134,10 @@ def apply_session_filters(filters, query, table=None):
 def index():
     now = datetime.datetime.now()
     one_days_ago = now - datetime.timedelta(days=1)
-    query = (db.v_svcmon_changes.id>0)
-    query = (db.v_svcmon_changes.end>one_days_ago)
-    query &= _where(None, 'v_svcmon_changes', domain_perms(), 'mon_svcname')
-    lastchanges = db(query).select(orderby=~db.v_svcmon_changes.begin, limitby=(0,20))
+    query = (db.svcmon_log.id>0)
+    query = (db.svcmon_log.mon_end>one_days_ago)
+    query &= _where(None, 'svcmon_log', domain_perms(), 'mon_svcname')
+    lastchanges = db(query).select(orderby=~db.svcmon_log.mon_begin, limitby=(0,20))
 
     query = (db.v_svcmon.err>0)
     query &= _where(None, 'v_svcmon', domain_perms(), 'mon_svcname')
@@ -2458,10 +2458,6 @@ def resmon_update(vars, vals):
     generic_insert('resmon', vars, vals)
 
 @service.xmlrpc
-def svcmon_update(vars, vals):
-    generic_insert('svcmon', vars, vals)
-
-@service.xmlrpc
 def register_disk(vars, vals):
     generic_insert('svcdisks', vars, vals)
 
@@ -2506,4 +2502,40 @@ def delete_disks(svcname, node):
         return 0
     db((db.svcdisks.disk_svcname==svcname)&(db.svcdisks.disk_nodename==node)).delete()
     db.commit()
+
+@service.xmlrpc
+def svcmon_update(vars, vals):
+    generic_insert('svcmon', vars, vals)
+    h = {}
+    for a,b in zip(vars, vals):
+        h[a] = b
+    query = db.svcmon_log.mon_svcname==h['mon_svcname']
+    query &= db.svcmon_log.mon_nodname==h['mon_nodname']
+    last = db(query).select(orderby=~db.svcmon_log.id, limitby=(0,1))
+    if len(last) == 0:
+        _vars = ['mon_begin',
+                 'mon_end',
+                 'mon_svcname',
+                 'mon_nodname',
+                 'mon_overallstatus',
+                 'mon_ipstatus',
+                 'mon_fsstatus',
+                 'mon_diskstatus',
+                 'mon_containerstatus',
+                 'mon_appstatus',
+                 'mon_syncstatus']
+        _vals = [h['mon_updated'],
+                 h['mon_updated'],
+                 h['mon_svcname'],
+                 h['mon_nodname'],
+                 h['mon_overallstatus'],
+                 h['mon_ipstatus'],
+                 h['mon_fsstatus'],
+                 h['mon_diskstatus'],
+                 h['mon_containerstatus'],
+                 h['mon_appstatus'],
+                 h['mon_syncstatus']]
+        generic_insert('svcmon_log', _vars, _vals)
+    else:
+        db(db.svcmon_log.id==last[0].id).update(mon_end=h['mon_updated'])
 
