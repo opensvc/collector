@@ -140,8 +140,9 @@ def index():
     query &= _where(None, 'v_svcmon', domain_perms(), 'mon_svcname')
     svcwitherrors = db(query).select(orderby=~db.v_svcmon.err)
 
-    query = (~db.v_svc_group_status.groupstatus.like("%up,%"))
-    query &= (~db.v_svc_group_status.groupstatus.like("%, up%"))
+    query = (~db.v_svc_group_status.groupstatus.like("up,%"))
+    query &= (~db.v_svc_group_status.groupstatus.like("%,up,%"))
+    query &= (~db.v_svc_group_status.groupstatus.like("%,up"))
     query &= _where(None, 'v_svc_group_status', domain_perms(), 'svcname')
     svcnotup = db(query).select()
 
