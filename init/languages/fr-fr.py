@@ -173,6 +173,7 @@
 'Services with errors': 'Services avec erreurs',
 'Showing %(first)d to %(last)d out of %(total)d records': 'Affichage des enregistrements %(first)d \xc3\xa0 %(last)d sur un total de %(total)d',
 'Status': 'Etat',
+'Status on primary': 'Etat sur le primaire',
 'Stylesheet': 'Feuille de style',
 'Subject': 'Sujet',
 'Submit': 'Soumettre',

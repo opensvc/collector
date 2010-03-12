@@ -146,6 +146,7 @@ def index():
     query = (~db.v_svc_group_status.groupstatus.like("up,%"))
     query &= (~db.v_svc_group_status.groupstatus.like("%,up,%"))
     query &= (~db.v_svc_group_status.groupstatus.like("%,up"))
+    query &= (db.v_svc_group_status.groupstatus!="up")
     query &= _where(None, 'v_svc_group_status', domain_perms(), 'svcname')
     svcnotup = db(query).select()
 

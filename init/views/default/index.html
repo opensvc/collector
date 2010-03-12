@@ -32,7 +32,7 @@ def svc_status(svc, cellclass):
 def last_changes_line(line, cellclass):
     tr = TR(
       TD(line.mon_begin, _class=cellclass),
-      TD(line.mon_svcname, _class=cellclass),
+      TD(A(line.mon_svcname, _href=URL(r=request, f='svcmon', vars={'svcname':line.mon_svcname})), _class=cellclass),
       TD(line.mon_nodname, _class=cellclass),
       TD(svc_status(line, cellclass), _class=cellclass),
     )
@@ -70,6 +70,8 @@ def last_changes_table():
     pass
 
 def last_changes():
+    if len(lastchanges) == 0:
+        return DIV()
     d = DIV(
       H2(T("Last service status changes"), _style="padding:10px"),
       last_changes_table(),
@@ -83,9 +85,10 @@ def last_changes():
 """
 def svc_with_errors_line(line, cellclass):
     tr = TR(
-      TD(line.svc_name, _class=cellclass),
+      TD(A(line.svc_name, _href=URL(r=request, f='svcmon', vars={'svcname':line.svc_name})), _class=cellclass),
       TD(line.mon_nodname, _class=cellclass),
-      TD(line.err, _class=cellclass),
+      TD(line.svc_type, _class=cellclass),
+      TD(A(line.err, _href=URL(r=request,f='svcactions', vars={'svcname': line.svc_name, 'status': 'err', 'ack': '!1|empty'})), _class=cellclass),
       TD(svc_status(line, cellclass), _class=cellclass),
     )
     return tr
@@ -95,6 +98,7 @@ def svc_with_errors_header():
     tr = TR(
       TH(T("Service")),
       TH(T("Node")),
+      TH(T("Env")),
       TH(T("Error count")),
       TH(T("Status"), _style="text-align:center"),
       _style="border-bottom:4px solid darkorange",
@@ -122,6 +126,8 @@ def svc_with_errors_table():
     pass
 
 def svc_with_errors():
+    if len(svcwitherrors) == 0:
+        return DIV()
     d = DIV(
       H2(T("Services with errors"), _style="padding:10px"),
       svc_with_errors_table(),
@@ -135,7 +141,7 @@ def svc_with_errors():
 """
 def svc_not_up_line(line, cellclass):
     tr = TR(
-      TD(line.svcname, _class=cellclass),
+      TD(A(line.svcname, _href=URL(r=request, f='svcmon', vars={'svcname':line.svcname})), _class=cellclass),
       TD(line.svctype, _class=cellclass),
       TD(line.groupstatus, _class=cellclass),
     )
@@ -172,6 +178,8 @@ def svc_not_up_table():
     pass
 
 def svc_not_up():
+    if len(svcnotup) == 0:
+        return DIV()
     d = DIV(
       H2(T("Services not up"), _style="padding:10px"),
       svc_not_up_table(),
@@ -185,8 +193,9 @@ def svc_not_up():
 """
 def svc_not_on_primary_line(line, cellclass):
     tr = TR(
-      TD(line.svc_name, _class=cellclass),
+      TD(A(line.svc_name, _href=URL(r=request, f='svcmon', vars={'svcname':line.svc_name})), _class=cellclass),
       TD(line.svc_autostart, _class=cellclass),
+      TD(line.svc_type, _class=cellclass),
       TD(svc_status(line, cellclass), _class=cellclass),
     )
     return tr
@@ -196,7 +205,8 @@ def svc_not_on_primary_header():
     tr = TR(
       TH(T("Service")),
       TH(T("Primary")),
-      TH(T("Status"), _style="text-align:center"),
+      TH(T("Env")),
+      TH(T("Status on primary"), _style="text-align:center"),
       _style="border-bottom:4px solid darkorange",
     )
     return tr
@@ -222,6 +232,8 @@ def svc_not_on_primary_table():
     pass
 
 def svc_not_on_primary():
+    if len(svcnotonprimary) == 0:
+        return DIV()
     d = DIV(
       H2(T("Services not up on primary"), _style="padding:10px"),
       svc_not_on_primary_table(),
@@ -268,6 +280,8 @@ def app_wo_resp_table():
     pass
 
 def app_wo_resp():
+    if len(appwithoutresp) == 0:
+        return DIV()
     d = DIV(
       H2(T("Application without responsibles"), _style="padding:10px"),
       app_wo_resp_table(),
