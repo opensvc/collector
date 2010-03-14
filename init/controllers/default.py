@@ -2420,6 +2420,8 @@ def value_wrap(a):
 def quote_wrap(x):
     if isinstance(x, (int, long, float, complex)):
         return x
+    elif isinstance(x, str) and len(x) == 0:
+        return "''"
     elif isinstance(x, str) and x[0] == "'" and x[-1] == "'":
         return x
     elif isinstance(x, str) and x[0] == '"' and x[-1] == '"':
