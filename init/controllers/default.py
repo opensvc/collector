@@ -2345,7 +2345,12 @@ def stats():
     path = 'applications'+action
     can = canvas.init(path)
 
-    data1 = [(row[0], int(row[1].split(',')[-1]) or 0) for row in rows]
+    def compute_size(s):
+        if s is None or len(s) == 0:
+            return 0
+        return int(s.split(',')[-1])
+
+    data1 = [(row[0], compute_size(row[1])) for row in rows]
     data = sorted(data1, key = lambda x: x[1])[-15:]
     ar = area.T(x_coord = linear_coord.T(),
                 y_coord = category_coord.T(data, 0),
