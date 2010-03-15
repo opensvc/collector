@@ -751,12 +751,6 @@ def alerts():
                 nav=nav,
                 columns=columns, colkeys=colkeys)
 
-def get_racks():
-    racks = []
-    for row in db(db.nodes.id>0).select(db.nodes.loc_rack, groupby=db.nodes.loc_rack, orderby=db.nodes.loc_rack):
-        racks.append(row.loc_rack)
-    return dict(racks=racks)
-
 def asset_filters(table):
    return {
     101: dict(name='country',
