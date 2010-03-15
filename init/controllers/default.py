@@ -370,7 +370,7 @@ def _where(query, table, var, field, tableid=None):
     return query
 
 def managers():
-    rows = db(db.v_users.role=="Manager").select()
+    rows = db(db.v_users.manager==1).select()
     m = []
     for row in rows:
         m.append(row.email)
