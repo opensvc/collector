@@ -861,6 +861,191 @@ def asset_filters(table):
 }
 
 @auth.requires_login()
+def service_availability(rows):
+    h = {}
+    def status_merge_down(s):
+        if s == 'up': return 'warn'
+        elif s == 'down': return 'down'
+        elif s == 'stdby up': return 'stdby up with down'
+        elif s == 'stdby up with up': return 'warn'
+        elif s == 'stdby up with down': return 'stdby up with down'
+        elif s == 'undef': return 'down'
+        else: return 'undef'
+
+    def status_merge_up(s):
+        if s == 'up': return 'up'
+        elif s == 'down': return 'warn'
+        elif s == 'stdby up': return 'stdby up with up'
+        elif s == 'stdby up with up': return 'stdby up with up'
+        elif s == 'stdby up with down': return 'warn'
+        elif s == 'undef': return 'up'
+        else: return 'undef'
+
+    def status_merge_stdby_up(s):
+        if s == 'up': return 'stdby up with up'
+        elif s == 'down': return 'stdby up with down'
+        elif s == 'stdby up': return 'stdby up'
+        elif s == 'stdby up with up': return 'stdby up with up'
+        elif s == 'stdby up with down': return 'warn'
+        elif s == 'undef': return 'stdby up'
+        else: return 'undef'
+
+    def status(row):
+        s = 'undef'
+        for sn in ['mon_containerstatus',
+                  'mon_ipstatus',
+                  'mon_fsstatus',
+                  'mon_appstatus',
+                  'mon_diskstatus']:
+            if row[sn] in ['warn', 'stdby down', 'todo']: return 'warn'
+            elif row[sn] == 'undef': return 'undef'
+            elif row[sn] == 'n/a': continue
+            elif row[sn] == 'up': s = status_merge_up(s)
+            elif row[sn] == 'down': s = status_merge_down(s)
+            elif row[sn] == 'stdby_up': s = status_merge_stdby_up(s)
+            else: return 'undef'
+        return s
+
+    now = datetime.datetime.now()
+
+    for row in rows:
+        if row.mon_svcname not in h:
+            h[row.mon_svcname] = {'ranges': [],
+                                  'begin': now,
+                                  'end': datetime.datetime.min,
+                                  'period': 0,
+                                  'uptime': 0}
+        s = status(row)
+        if s != 'up':
+            continue
+        if row.mon_begin < h[row.mon_svcname]['begin']:
+            h[row.mon_svcname]['begin'] = row.mon_begin
+        if row.mon_end > h[row.mon_svcname]['end']:
+            h[row.mon_svcname]['end'] = row.mon_end
+        if len(h[row.mon_svcname]['ranges']) == 0:
+            h[row.mon_svcname]['ranges'] = [(row.mon_begin,row.mon_end)]
+            continue
+        add = False
+        for (b, e) in h[row.mon_svcname]['ranges']:
+            if row.mon_end < b or row.mon_begin > e:
+                """        XXXXXXXXXXX
+                    XXX        or         XXX
+                """
+                add = True
+            elif row.mon_begin > b or row.mon_end < e:
+                """        XXXXXXXXXXX
+                              XXX
+                """
+                add = False
+                break
+            elif row.mon_begin < b or row.mon_end > e:
+                """        XXXXXXXXXXX
+                         XXXXXXXXXXXXXXXXX
+                """
+                add = False
+                b = row.mon_begin
+                e = row.mon_end
+                break
+            elif row.mon_begin < b and row.mon_end > b:
+                """        XXXXXXXXXXX
+                         XXXXX
+                """
+                add = False
+                b = row.mon_begin
+                break
+            elif row.mon_begin < e and row.mon_end > e:
+                """        XXXXXXXXXXX
+                                   XXXXX
+                """
+                add = False
+                e = row.mon_end
+                break
+
+        if add:
+            h[row.mon_svcname]['ranges'] += [(row.mon_begin,row.mon_end)]
+
+    def delta_to_min(d):
+        return (d.days*1440)+(d.seconds//60)
+
+    for svc in h:
+        h[svc]['period'] = h[svc]['end'] - h[svc]['begin']
+        _e = now
+        for (b, e) in h[svc]['ranges']:
+            """ Merge overlapping ranges
+            """
+            if _e == now:
+                _e = e
+                continue
+            if b > _e:
+                b = _e
+            _e = e
+            range_duration = e - b
+            h[svc]['uptime'] += delta_to_min(range_duration)
+        if h[svc]['period'].seconds == 0:
+            h[svc]['availability'] = 0
+        else:
+            h[svc]['availability'] = h[svc]['uptime'] * 100 / delta_to_min(h[svc]['period'])
+
+    return h
+
+def service_availability_chart(h):
+    action = str(URL(r=request,c='static',f='avail.png'))
+    path = 'applications'+action
+    can = canvas.init(path)
+    theme.use_color = True
+    theme.scale_factor = 2
+    theme.reinitialize()
+
+    def format_x(ts):
+        d = datetime.fromtimestamp(ts)
+        return "/a50/6{}" + d.strftime("%y-%m-%d")
+
+    data = []
+    from time import mktime
+
+    for svc in h:
+        ranges = []
+        for b, e in h[svc]['ranges']:
+            ranges += [mktime(b.timetuple()), mktime(e.timetuple())]
+        data += [(svc, tuple(ranges))]
+
+    ar = area.T(x_coord = linear_coord.T(),
+                y_coord = category_coord.T(data, 0),
+                x_axis=axis.X(label=""),
+                y_axis=axis.Y(label=""))
+    bar_plot.fill_styles.reset()
+
+    chart_object.set_defaults(interval_bar_plot.T,
+                              direction="horizontal",
+                              width=3,
+                              cluster_sep = 5,
+                              data=data)
+    plot1 = interval_bar_plot.T(line_styles = [line_style.default, None],
+                                fill_styles = [fill_style.red, None],
+                                label="up")
+    ar.add_plot(plot1)
+    ar.draw(can)
+    can.close()
+    return action
+
+@auth.requires_login()
+def svcmon_log():
+    o = db.svcmon_log.mon_begin
+    query = (db.svcmon_log.id>0)
+    query &= _where(None, 'svcmon_log', request.vars.mon_svcname, 'mon_svcname')
+    query &= _where(None, 'svcmon_log', request.vars.mon_begin, 'mon_begin')
+    query &= _where(None, 'svcmon_log', request.vars.mon_end, 'mon_end')
+    query &= _where(None, 'svcmon_log', domain_perms(), 'mon_svcname')
+
+    rows = db(query).select(orderby=o)
+    nav = DIV()
+    h=service_availability(rows)
+    return dict(rows=rows,
+                h=h,
+                nav=nav,
+                )
+
+@auth.requires_login()
 def envfile():
     query = _where(None, 'services', request.vars.svcname, 'svc_name')
     query &= _where(None, 'v_svcmon', domain_perms(), 'svc_name')

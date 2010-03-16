@@ -1,5 +1,4 @@
 {
-'': '',
 ' by ': ' par ',
 '"update" is an optional expression like "field1=\'newvalue\'". You cannot update or delete the results of a JOIN': '"update" is an optional expression like "field1=\'newvalue\'". You cannot update or delete the results of a JOIN',
 '%(count)s application%(s)s deleted': '%(count)s application%(s)s supprim\xc3\xa9e%(s)s',
@@ -30,6 +29,7 @@
 'Authentication': 'Autentification',
 'Automatically acknowledged upon ticket generation': 'Acquitt\xc3\xa9 automatiquement \xc3\xa0 la g\xc3\xa9n\xc3\xa9ration du ticket',
 'Automatically acknowledged upon ticket generation. Assigned to %(to)s': 'Acquitt\xc3\xa9 automatiquement \xc3\xa0 la g\xc3\xa9n\xc3\xa9ration du ticket. Assign\xc3\xa9 \xc3\xa0 %(to)s',
+'Availability': 'Disponibilit\xc3\xa9',
 'Available databases and tables': 'Bases de donn\xc3\xa9es et tables disponibles',
 'Begin': 'D\xc3\xa9but',
 'Building': 'B\xc3\xa2timent',

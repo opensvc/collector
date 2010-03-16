@@ -1,0 +1,155 @@
+{{extend 'layout.html'}}
+{{include '../static/jslib.html'}}
+{{include 'box.html'}}
+{{include 'panel.html'}}
+{{include 'filters.html'}}
+
+{{
+vars = request.vars
+for key in ['mon_svcname',
+            'mon_nodname',
+            'mon_begin',
+            'mon_end']:
+    if not vars.has_key(key) or vars[key] is None: vars[key]=''
+    pass
+
+def node_icon(svc):
+    if svc.os_name is None:
+        return ''
+    if "linux" in svc.os_name.lower():
+        img = IMG(_src=URL(r=request,c='static',f='linux.png'), _class='logo')
+    elif "HP-UX" in svc.os_name:
+	img = IMG(_src=URL(r=request,c='static',f='hpux.png'), _class='logo')
+    elif "opensolaris" in svc.os_name.lower():
+	img = IMG(_src=URL(r=request,c='static',f='opensolaris.png'), _class='logo')
+    elif "solaris" in svc.os_name.lower():
+	img = IMG(_src=URL(r=request,c='static',f='solaris.png'), _class='logo')
+    else:
+        img = ''
+        pass
+    return img
+
+}}
+
+<input id="svcname" type="hidden">
+{{=PANEL("column_values")}}
+<form action='svcmon_log' name='svcform' id='svcform'> 
+<table>
+  {{BOX_TOP_ROW(5)}}
+  <tr class=box>
+    <td class=box></td>
+    <td class=box></td>
+    <td>{{=colname(rows, 'mon_svcname', T('Service'))}}</td>
+    <td>{{=T('Availability')}}</td>
+    <td>{{=T('Begin')}}</td>
+    <td>{{=T('End')}}</td>
+    <td class=box></td>
+  </tr>
+  <tr class=box>
+    <td style='padding:0'></td>
+    <td style='padding:0'></td>
+    <td><input name=mon_svcname value='{{=vars.mon_svcname}}' size=12 onKeyPress="checkEnter(event)"></td>
+    <td style='padding:0'></td>
+    <td><input name=mon_begin value='{{=vars.mon_begin}}' size=12 onKeyPress="checkEnter(event)"></td>
+    <td><input name=mon_end value='{{=vars.mon_end}}' size=12 onKeyPress="checkEnter(event)"></td>
+    <td style='padding:0'></td>
+  </tr>
+  {{BOX_BOTTOM_ROW(5)}}
+  {{
+    svcname = ''
+    cellclass = 'cell1'
+    cellclasses = {}
+    cellclasses['cell1'] = 'cell2'
+    cellclasses['cell2'] = 'cell1'
+    now = datetime.datetime.today()
+  }}
+  {{for svc in h:}}
+    {{for b, e in h[svc]['ranges']:}}
+    {{if svcname != svc:
+          cellclass = cellclasses[cellclass]
+          svcname = svc
+          newsvc = True
+      else:
+          newsvc = False
+          pass
+    }}
+  <tr>
+    <td style='padding:0'></td>
+    <td class={{=cellclass}}>
+      <input id="{{=svc}}" value="{{=svc}}" type="hidden">
+      {{if newsvc:}}
+      {{=PANEL('envfile_'+svc)}}
+      {{=A(
+          IMG(
+            _src=URL(r=request,c='static',f='envfile.png'),
+            _border=0,
+            _title="service configuration file",
+            _onclick="""
+               getElementById("svcname").value="%(svcname)s";
+               ajax("%(url)s",['svcname'],"panelbody_envfile_%(a)s");
+               getElementById("panel_envfile_%(a)s").className="panel_shown";
+            """%dict(url=URL(r=request,f='envfile'),
+                     svcname=svc,
+                     a=svc.replace('.', '_')),
+          ),
+          _class="xinfo",
+        )
+     }}
+     {{=PANEL("msg_"+svc, DIV(
+          DIV(
+            TEXTAREA(_id="msgbody_"+svc),
+            _id="msg__"+svc
+          ),
+          INPUT(
+            _value=T("save"),
+            _type="button",
+            _onclick="""
+              ajax("%(url)s",['svcname','msgbody_%(svcname)s'],"msg__%(svcname)s");
+              getElementById("panel_msg_%(a)s").className="panel";
+              if (getElementById("msgbody_%(svcname)s").value.length>0)
+                getElementById("msg_img_%(svcname)s").src="%(img1)s";
+              else
+                getElementById("msg_img_%(svcname)s").src="%(img0)s";
+            """%dict(url=URL(r=request,f='ajax_svc_message_save'),
+                     svcname=svc,
+                     a=svc.replace('.', '_'),
+                     img0=URL(r=request,c='static',f='msg0.png'),
+                     img1=URL(r=request,c='static',f='msg1.png'),
+                    ),
+          ),
+          _id="msg_"+svc,
+        ))
+      }}
+      {{pass}}
+    </td>
+    <td class={{=cellclass}}>
+      {{if newsvc:}}
+        {{=A(svc, _href=URL(request.application,'default','svcactions?svcname='+svc+'&status_log=empty&begin=>'+yesterday))}}
+      {{pass}}
+    </td>
+    <td class={{=cellclass}}>
+      {{if newsvc:}}
+        {{=str(h[svc]['availability'])+'%'}}
+      {{pass}}
+    </td>
+    <td class={{=cellclass}}>
+        {{=b}}
+    </td>
+    <td class={{=cellclass}}>
+        {{=e}}
+    </td>
+    <td style='padding:0'></td>
+  </tr>
+  {{pass}}
+  {{pass}}
+  {{BOX_TOP_ROW(5)}}
+  <tr class=box>
+    <td align=center colspan=99>{{=nav}}</td>
+  </tr>
+  <tr class=box>
+    <td colspan=99>
+    </td>
+  </tr>
+  {{BOX_BOTTOM_ROW(5)}}
+</table>
+</form>
