@@ -159,21 +159,27 @@ def index():
     query |= (db.v_apps.responsibles=="")
     appwithoutresp = db(query).select(db.v_apps.app)
 
+    perm = domain_perms()
+    if perm is None:
+        perm = '%'
+
     sql = """select n.nodename, o.obs_name, o.obs_warn_date from nodes n
              left join obsolescence o
              on concat_ws(' ', n.os_vendor, n.os_release, n.os_update)=o.obs_name
              and o.obs_type="os"
              where o.obs_warn_date is not NULL and obs_alert_date is not NULL
-             and o.obs_warn_date<NOW() and obs_alert_date>NOW();
-          """
+             and o.obs_warn_date<NOW() and obs_alert_date>NOW()
+             and n.nodename like "%s";
+          """%perm
     obsoswarn = db.executesql(sql)
 
     sql = """select n.nodename, o.obs_name, o.obs_alert_date from nodes n
              left join obsolescence o
              on concat_ws(' ', n.os_vendor, n.os_release, n.os_update)=o.obs_name
              and o.obs_type="os"
-             where obs_alert_date is not NULL and obs_alert_date<NOW();
-          """
+             where obs_alert_date is not NULL and obs_alert_date<NOW()
+             and n.nodename like "%s";
+          """%perm
     obsosalert = db.executesql(sql)
 
     return dict(lastchanges=lastchanges,
