@@ -61,7 +61,9 @@ response.menu = [
     [T('alerts'), _f == 'alerts', 
      URL(request.application,'default','alerts'), []],
     [T('stats'), _f == 'stats', 
-     URL(request.application,'default','stats'), []],
+     URL(request.application,'default','stats'), [
+         [T('Availability'), False, 
+          URL(request.application,'default','svcmon_log')]]],
     [T('users'), _f == 'users', 
      URL(request.application,'default','users'), []],
 ]

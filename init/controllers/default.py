@@ -972,11 +972,15 @@ def service_availability(rows):
         _e = now
         for (b, e) in h[svc]['ranges']:
             """ Merge overlapping ranges
+
+                init:                                  _e=now
+
+                prev:       XXXXXXXXXXXXXXXXX
+                                            _e
+                curr:                     XXXXXXXXXXXX
+                                          b          e
             """
-            if _e == now:
-                _e = e
-                continue
-            if b > _e:
+            if _e != now and b < _e:
                 b = _e
             _e = e
             range_duration = e - b
@@ -984,7 +988,7 @@ def service_availability(rows):
         if h[svc]['period'].seconds == 0:
             h[svc]['availability'] = 0
         else:
-            h[svc]['availability'] = h[svc]['uptime'] * 100 / delta_to_min(h[svc]['period'])
+            h[svc]['availability'] = h[svc]['uptime'] * 100.0 / delta_to_min(h[svc]['period'])
 
     return h
 
@@ -1033,8 +1037,8 @@ def svcmon_log():
     o = db.svcmon_log.mon_begin
     query = (db.svcmon_log.id>0)
     query &= _where(None, 'svcmon_log', request.vars.mon_svcname, 'mon_svcname')
-    query &= _where(None, 'svcmon_log', request.vars.mon_begin, 'mon_begin')
-    query &= _where(None, 'svcmon_log', request.vars.mon_end, 'mon_end')
+    query &= _where(None, 'svcmon_log', request.vars.mon_begin, 'mon_end')
+    query &= _where(None, 'svcmon_log', request.vars.mon_end, 'mon_begin')
     query &= _where(None, 'svcmon_log', domain_perms(), 'mon_svcname')
 
     rows = db(query).select(orderby=o)

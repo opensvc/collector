@@ -6,8 +6,44 @@
 
 {{
 vars = request.vars
+
+def sort_by_avail(x, y):
+    return cmp(h[x]['availability'], h[y]['availability'])
+
+op = None
+if vars.mon_availability != "" and vars.mon_availability is not None and len(vars.mon_availability) > 1:
+    if vars.mon_availability[0] == '>':
+        op = 'sup'
+        avail = float(vars.mon_availability[1:])
+    elif vars.mon_availability[0] == '<':
+        op = 'inf'
+        avail = float(vars.mon_availability[1:])
+    else:
+        avail = float(vars.mon_availability)
+    pass
+pass
+
+k = h.copy()
+if op in ["sup", "inf"]:
+    for svc in k:
+        if op == "sup":
+            if k[svc]['availability'] < avail:
+                del h[svc]
+            pass
+        elif op == "inf":
+            if k[svc]['availability'] > avail:
+                del h[svc]
+            pass
+        pass
+    pass
+pass
+
+k = h.keys()
+k.sort(sort_by_avail)
+
 for key in ['mon_svcname',
             'mon_nodname',
+            'mon_availability',
             'mon_begin',
             'mon_end']:
     if not vars.has_key(key) or vars[key] is None: vars[key]=''
@@ -49,7 +85,7 @@ def node_icon(svc):
     <td style='padding:0'></td>
     <td style='padding:0'></td>
     <td><input name=mon_svcname value='{{=vars.mon_svcname}}' size=12 onKeyPress="checkEnter(event)"></td>
-    <td style='padding:0'></td>
+    <td><input name=mon_availability value='{{=vars.mon_availability}}' size=6 onKeyPress="checkEnter(event)"></td>
     <td><input name=mon_begin value='{{=vars.mon_begin}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=mon_end value='{{=vars.mon_end}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td style='padding:0'></td>
@@ -63,7 +99,7 @@ def node_icon(svc):
     cellclasses['cell2'] = 'cell1'
     now = datetime.datetime.today()
   }}
-  {{for svc in h:}}
+  {{for svc in k:}}
     {{for b, e in h[svc]['ranges']:}}
     {{if svcname != svc:
           cellclass = cellclasses[cellclass]
@@ -129,7 +165,7 @@ def node_icon(svc):
     </td>
     <td class={{=cellclass}}>
       {{if newsvc:}}
-        {{=str(h[svc]['availability'])+'%'}}
+        {{="%0.2f%%"%h[svc]['availability']}}
       {{pass}}
     </td>
     <td class={{=cellclass}}>
