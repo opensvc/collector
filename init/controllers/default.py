@@ -159,10 +159,29 @@ def index():
     query |= (db.v_apps.responsibles=="")
     appwithoutresp = db(query).select(db.v_apps.app)
 
+    sql = """select n.nodename, o.obs_name, o.obs_warn_date from nodes n
+             left join obsolescence o
+             on concat_ws(' ', n.os_vendor, n.os_release, n.os_update)=o.obs_name
+             and o.obs_type="os"
+             where o.obs_warn_date is not NULL and obs_alert_date is not NULL
+             and o.obs_warn_date<NOW() and obs_alert_date>NOW();
+          """
+    obsoswarn = db.executesql(sql)
+
+    sql = """select n.nodename, o.obs_name, o.obs_alert_date from nodes n
+             left join obsolescence o
+             on concat_ws(' ', n.os_vendor, n.os_release, n.os_update)=o.obs_name
+             and o.obs_type="os"
+             where obs_alert_date is not NULL and obs_alert_date<NOW();
+          """
+    obsosalert = db.executesql(sql)
+
     return dict(lastchanges=lastchanges,
                 svcwitherrors=svcwitherrors,
                 svcnotonprimary=svcnotonprimary,
                 appwithoutresp=appwithoutresp,
+                obsoswarn=obsoswarn,
+                obsosalert=obsosalert,
                 svcnotup=svcnotup)
 
 @auth.requires_membership('Manager')
@@ -1536,6 +1555,14 @@ def svcmon_csv():
     request.vars['perpage'] = 0
     return svcmon()['services']
 
+def cron_obsolescence_os():
+    sql = """insert ignore into obsolescence (obs_type, obs_name)
+             select "os", concat_ws(" ",os_vendor, os_release, os_update)
+             from nodes where os_vendor!='' and os_release!=''
+             group by os_vendor, os_release;
+          """
+    db.executesql(sql)
+
 def cron_stat_day():
     #when = datetime.datetime.now()-datetime.timedelta(days=14)
     when = None
@@ -1906,7 +1933,7 @@ def node_edit():
     form=SQLFORM(db.nodes, record)
     if form.accepts(request.vars):
         response.flash = T("edition recorded")
-        redirect(URL(r=request, f='node', vars={'nodename':request.vars.node}))
+        redirect(URL(r=request, f='nodes'))
     elif form.errors:
         response.flash = T("errors in form")
 
