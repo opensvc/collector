@@ -165,7 +165,7 @@ def index():
 
     sql = """select n.nodename, o.obs_name, o.obs_warn_date from nodes n
              left join obsolescence o
-             on concat_ws(' ', n.os_vendor, n.os_release, n.os_update)=o.obs_name
+             on concat_ws(' ', n.os_name, n.os_vendor, n.os_release, n.os_update)=o.obs_name
              and o.obs_type="os"
              where o.obs_warn_date is not NULL and obs_alert_date is not NULL
              and o.obs_warn_date<NOW() and obs_alert_date>NOW()
@@ -175,7 +175,7 @@ def index():
 
     sql = """select n.nodename, o.obs_name, o.obs_alert_date from nodes n
              left join obsolescence o
-             on concat_ws(' ', n.os_vendor, n.os_release, n.os_update)=o.obs_name
+             on concat_ws(' ', n.os_name, n.os_vendor, n.os_release, n.os_update)=o.obs_name
              and o.obs_type="os"
              where obs_alert_date is not NULL and obs_alert_date<NOW()
              and n.nodename like "%s";
@@ -1725,9 +1725,10 @@ def svcmon_csv():
 
 def cron_obsolescence_os():
     sql = """insert ignore into obsolescence (obs_type, obs_name)
-             select "os", concat_ws(" ",os_vendor, os_release, os_update)
-             from nodes where os_vendor!='' and os_release!=''
-             group by os_vendor, os_release;
+             select "os", concat_ws(" ", os_name, os_vendor, os_release, os_update)
+             from nodes
+             where os_name!='' or os_vendor!='' or os_release!='' or os_update!=''
+             group by os_name, os_vendor, os_release, os_update;
           """
     db.executesql(sql)
     return dict(message=T("done"))
