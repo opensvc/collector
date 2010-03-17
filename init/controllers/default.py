@@ -167,8 +167,8 @@ def index():
              left join obsolescence o
              on concat_ws(' ', n.os_name, n.os_vendor, n.os_release, n.os_update)=o.obs_name
              and o.obs_type="os"
-             where o.obs_warn_date is not NULL and obs_alert_date is not NULL
-             and o.obs_warn_date<NOW() and obs_alert_date>NOW()
+             where (o.obs_warn_date is not NULL and o.obs_warn_date != "0000-00-00" and o.obs_warn_date<NOW())
+             and (o.obs_alert_date is NULL or o.obs_alert_date="0000-00-00" or o.obs_alert_date>NOW())
              and n.nodename like "%s";
           """%perm
     obsoswarn = db.executesql(sql)
@@ -177,7 +177,7 @@ def index():
              left join obsolescence o
              on concat_ws(' ', n.os_name, n.os_vendor, n.os_release, n.os_update)=o.obs_name
              and o.obs_type="os"
-             where obs_alert_date is not NULL and obs_alert_date<NOW()
+             where obs_alert_date is not NULL and o.obs_alert_date!="0000-00-00" and obs_alert_date<NOW()
              and n.nodename like "%s";
           """%perm
     obsosalert = db.executesql(sql)
@@ -186,7 +186,8 @@ def index():
              left join obsolescence o
              on n.model=o.obs_name
              and o.obs_type="hw"
-             where obs_warn_date is not NULL and obs_warn_date<NOW()
+             where (o.obs_warn_date is not NULL and o.obs_warn_date != "0000-00-00" and o.obs_warn_date<NOW())
+             and (o.obs_alert_date is NULL or o.obs_alert_date="0000-00-00" or o.obs_alert_date>NOW())
              and n.nodename like "%s";
           """%perm
     obshwwarn = db.executesql(sql)
@@ -195,7 +196,7 @@ def index():
              left join obsolescence o
              on n.model=o.obs_name
              and o.obs_type="hw"
-             where obs_alert_date is not NULL and obs_alert_date<NOW()
+             where obs_alert_date is not NULL and o.obs_alert_date!="0000-00-00" and obs_alert_date<NOW()
              and n.nodename like "%s";
           """%perm
     obshwalert = db.executesql(sql)
@@ -2236,8 +2237,12 @@ def ajax_res_status():
 @auth.requires_login()
 def ajax_node():
     nodes = db(db.nodes.nodename==request.vars.node).select()
-    if len(nodes) != 1:
-        return T("No asset information for %(node)s",dict(node=request.vars.nodename))
+    if len(nodes) == 0:
+        return DIV(
+                 T("No asset information for %(node)s",dict(node=request.vars.node)),
+                 P(A(T("insert"), _href=URL(r=request, f='node_insert')), _style='text-align:center'),
+               )
+
     node = nodes[0]
     loc = TABLE(
       TR(TD(T('location'), _class="boxed", _colspan=2)),
@@ -2288,6 +2293,7 @@ def ajax_node():
     os = TABLE(
       TR(TD(T('operating system'), _class="boxed", _colspan=2)),
       TR(TD(T('os name'), _style='font-style:italic'), TD(node['os_name'])),
+      TR(TD(T('os vendor'), _style='font-style:italic'), TD(node['os_vendor'])),
       TR(TD(T('os release'), _style='font-style:italic'), TD(node['os_release'])),
       TR(TD(T('os update'), _style='font-style:italic'), TD(node['os_update'])),
       TR(TD(T('os segment'), _style='font-style:italic'), TD(node['os_segment'])),

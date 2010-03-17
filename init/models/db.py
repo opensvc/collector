@@ -323,6 +323,31 @@ db.define_table('apps_responsibles',
     Field('user_id'),
     migrate=False)
 
+os_names = [
+    "Linux", 
+    "HP-UX",
+    "AIX",
+    "Solaris",
+    "OpenSolaris",
+    "Windows",
+    "Irix",
+    "FreeBSD",
+    "OSX",
+    "Tru64"
+]
+
+os_vendors = [
+    "Apple", 
+    "Red Hat", 
+    "Ubuntu",
+    "Debian",
+    "HP",
+    "IBM",
+    "Microsoft",
+    "Suse",
+    "Oracle"
+]
+
 db.define_table('nodes',
     Field('warranty_end', 'datetime', default=request.now),
     Field('status'),
@@ -331,8 +356,8 @@ db.define_table('nodes',
     Field('mem_bytes', 'integer', default=0),
     Field('mem_banks', 'integer', default=0),
     Field('mem_slots', 'integer', default=0),
-    Field('os_vendor', length=20, default=None),
-    Field('os_name', length=50, default=None),
+    Field('os_vendor', length=20, default=None, requires=IS_IN_SET(sorted(os_vendors))),
+    Field('os_name', length=50, requires=IS_IN_SET(sorted(os_names)), default=None),
     Field('os_kernel', length=20, default=None),
     Field('os_release', length=10, default=None),
     Field('os_update', length=10, default=None),
@@ -344,7 +369,7 @@ db.define_table('nodes',
     Field('cpu_model'),
     Field('cpu_vendor'),
     Field('type'),
-    Field('nodename', 'string', length=30, unique=True),
+    Field('nodename', 'string', length=30, requires=IS_NOT_EMPTY(), unique=True),
     Field('team_responsible'),
     Field('serial'),
     Field('model'),

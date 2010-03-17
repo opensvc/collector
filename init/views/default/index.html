@@ -438,7 +438,7 @@ def obs_hw_warn():
     if len(obshwwarn) == 0:
         return DIV()
     d = DIV(
-      H2(T("Nodes with obsolescent operating system (warn)"), _style="padding:10px"),
+      H2(T("Nodes with obsolescent hardware (warn)"), _style="padding:10px"),
       obs_hw_warn_table(),
       _style="padding:10px",
     )
@@ -461,7 +461,7 @@ def obs_hw_alert_header():
     tr = TR(
       TH(T("Nodename")),
       TH(T("Model")),
-      TH(T("Warning since")),
+      TH(T("Alert since")),
       _style="border-bottom:4px solid darkorange",
     )
     return tr
@@ -490,7 +490,7 @@ def obs_hw_alert():
     if len(obshwalert) == 0:
         return DIV()
     d = DIV(
-      H2(T("Nodes with obsolescent operating system (alert)"), _style="padding:10px"),
+      H2(T("Nodes with obsolescent hardware (alert)"), _style="padding:10px"),
       obs_hw_alert_table(),
       _style="padding:10px",
     )

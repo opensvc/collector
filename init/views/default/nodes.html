@@ -77,12 +77,16 @@ for key in colkeys:
       <table>
         <tr>
           <td> {{=T('Export')}}:</td>
+          <td> {{=T('Add node')}}:</td>
           <td> {{=T('Active filters')}}:</td>
           <td> {{=T('Add filter')}}:</td>
         </tr>
         <tr>
           <td>
             {{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='nodes_csv', vars=vars))}}
+          </td>
+          <td>
+            {{=A(IMG(_src=URL(r=request,c='static',f='add.png'),_border=0, _title=T("add a new node")),_href=URL(r=request,f='node_insert'))}}
           </td>
           <td>{{FILTERS_ACTIVE(session.nodes_filters)}}</td>
           <td>{{FILTERS_AVAIL(session.nodes_filters)}}</td>
