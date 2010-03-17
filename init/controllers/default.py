@@ -1330,7 +1330,27 @@ def obsolescence_config():
     else:
         rows = db(query).select(limitby=(start,end), orderby=o)
 
-    return dict(obsitems=rows, nav=nav)
+    counts = {}
+    for row in rows:
+        sql = """select count(nodename) from nodes
+                 where "%s"=concat_ws(" ", os_name, os_vendor, os_release, os_update);
+              """%row.obs_name
+        counts[row.id] = db.executesql(sql)[0][0]
+
+    return dict(obsitems=rows,
+                counts=counts,
+                nav=nav)
+
+def ajax_obsolete_os_nodes():
+    sql = """select nodename from nodes
+             where "%s"=concat_ws(" ", os_name, os_vendor, os_release, os_update);
+          """%request.vars.obs_name
+    rows = db.executesql(sql)
+    nodes = [row[0] for row in rows]
+    return DIV(
+             H3(T("""Nodes in %(os)s"""%dict(os=request.vars.obs_name))),
+             PRE('\n'.join(nodes)),
+           )
 
 @auth.requires_login()
 def svcmon():

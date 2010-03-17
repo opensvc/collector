@@ -14,12 +14,14 @@ for key in ['obs_type',
     pass
 }}
 
+{{=PANEL("nodes")}}
 <form action='obsolescence_config' name='svcform' id='svcform'> 
 <table>
-  {{BOX_TOP_ROW(6)}}
+  {{BOX_TOP_ROW(7)}}
   <tr class=box>
     <td class=box></td>
     <td class=box></td>
+    <td>{{=T('Count')}}</td>
     <td>{{=T('Type')}}</td>
     <td>{{=T('Name')}}</td>
     <td>{{=T('Warn date')}}</td>
@@ -29,6 +31,7 @@ for key in ['obs_type',
   </tr>
   <tr class=box>
     <td style='padding:0'></td>
+    <td style='padding:0'></td>
     <td><input type=checkbox id=check_all onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'))"></td>
     <td><input name=obs_type value='{{=vars.obs_type}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=obs_name value='{{=vars.obs_name}}' size=12 onKeyPress="checkEnter(event)"></td>
@@ -37,7 +40,7 @@ for key in ['obs_type',
     <td style='padding:0'></td>
     <td style='padding:0'></td>
   </tr>
-  {{BOX_BOTTOM_ROW(6)}}
+  {{BOX_BOTTOM_ROW(7)}}
   {{
     cellclass = 'cell1'
     cellclasses = {}
@@ -61,6 +64,20 @@ for key in ['obs_type',
     }}
     <td style='padding:0'></td>
     <td class={{=cellclass}}><input type=checkbox name="check_{{=u.id}}" id="id_check_{{=u.id}}" {{=checked}}></td>
+    <td class={{=cellclass}}>
+      {{=A(counts[u.id],
+           _onclick="""
+               getElementById("obs_name").value="%(obs_name)s";
+               ajax("%(url)s",['obs_name'],"panelbody_nodes");
+               getElementById("panel_nodes").className="panel_shown";
+            """%dict(url=URL(r=request,f='ajax_obsolete_os_nodes'),
+                     obs_name=u.obs_name,
+                    ),
+            _class="xinfo",
+          )
+
+      }}
+    </td>
     <td class={{=cellclass}}>{{=DIV(obs_type_img, _title=u.obs_type)}}</td>
     <td class={{=cellclass}}>{{=u.obs_name}}</td>
     <td class={{=cellclass}}>
@@ -92,7 +109,7 @@ for key in ['obs_type',
     <td style='padding:0'></td>
   </tr>
   {{pass}}
-  {{BOX_TOP_ROW(6)}}
+  {{BOX_TOP_ROW(7)}}
   <tr class=box>
     <td align=center colspan=99>{{=nav}}</td>
   </tr>
@@ -114,7 +131,8 @@ for key in ['obs_type',
       </table>
     </td>
   </tr>
-  {{BOX_BOTTOM_ROW(6)}}
+  {{BOX_BOTTOM_ROW(7)}}
 </table>
 <input name=action type=hidden>
+<input id=obs_name type=hidden>
 </form>
