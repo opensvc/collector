@@ -861,7 +861,7 @@ def asset_filters(table):
 }
 
 @auth.requires_login()
-def service_availability(rows):
+def service_availability(rows, begin=None, end=None):
     h = {}
     def status_merge_down(s):
         if s == 'up': return 'warn'
@@ -907,24 +907,36 @@ def service_availability(rows):
         return s
 
     now = datetime.datetime.now()
+    if begin is None:
+        begin = now - datetime.timedelta(days=7, microseconds=now.microsecond)
+    if end is None:
+        end = now - datetime.timedelta(seconds=1200, microseconds=now.microsecond)
+    period = end - begin
 
+    """ First pass at range construction:
+          for each row in resultset, create a new range
+    """
     for row in rows:
         if row.mon_svcname not in h:
             h[row.mon_svcname] = {'ranges': [],
-                                  'begin': now,
-                                  'end': datetime.datetime.min,
-                                  'period': 0,
+                                  'holes': [],
+                                  'begin': begin,
+                                  'end': end,
+                                  'period': period,
                                   'uptime': 0}
         s = status(row)
         if s != 'up':
             continue
-        if row.mon_begin < h[row.mon_svcname]['begin']:
-            h[row.mon_svcname]['begin'] = row.mon_begin
-        if row.mon_end > h[row.mon_svcname]['end']:
-            h[row.mon_svcname]['end'] = row.mon_end
+
+        """ First range does not need overlap detection
+        """
+        (b, e) = (row.mon_begin, row.mon_end)
         if len(h[row.mon_svcname]['ranges']) == 0:
-            h[row.mon_svcname]['ranges'] = [(row.mon_begin,row.mon_end)]
+            h[row.mon_svcname]['ranges'] = [(b, e)]
             continue
+
+        """ Overlap detection
+        """
         add = False
         for (b, e) in h[row.mon_svcname]['ranges']:
             if row.mon_end < b or row.mon_begin > e:
@@ -964,31 +976,87 @@ def service_availability(rows):
         if add:
             h[row.mon_svcname]['ranges'] += [(row.mon_begin,row.mon_end)]
 
+        if h[row.mon_svcname]['begin'] > begin:
+            h[row.mon_svcname]['begin'] = begin
+        if h[row.mon_svcname]['end'] < end:
+            h[row.mon_svcname]['end'] = end
+
     def delta_to_min(d):
         return (d.days*1440)+(d.seconds//60)
 
     for svc in h:
-        h[svc]['period'] = h[svc]['end'] - h[svc]['begin']
-        _e = now
-        for (b, e) in h[svc]['ranges']:
+        _e = end
+
+        for i, (b, e) in enumerate(h[svc]['ranges']):
             """ Merge overlapping ranges
-
-                init:                                  _e=now
-
-                prev:       XXXXXXXXXXXXXXXXX
-                                            _e
-                curr:                     XXXXXXXXXXXX
-                                          b          e
+                      begin                            end
+                init:   |                              _e
+                        |                               |
+                prev:   |   XXXXXXXXXXXXXXXXX           |
+                        |                   _e          |
+                curr:   |                 XXXXXXXXXXXX  |
+                        |                 b          e  |
             """
-            if _e != now and b < _e:
+            if _e != end and b < _e:
                 b = _e
-            _e = e
+
+            """ Discard segment heading part outside scope
+                      begin                            end
+                        |                               |
+                    XXXXXXXXXXXXXXXXX                   |
+                    b   |           e                   |
+            """
+            if b < begin:
+                b = begin
+
+            """ Discard segment trailing part outside scope
+                      begin                            end
+                        |                               |
+                        |                    XXXXXXXXXXXXXXXX
+                        |                    b          |   e
+            """
+            if e > end:
+                e = end
+
+            """ Store changed range
+            """
+            h[svc]['ranges'][i] = (b, e)
+
+            """ Add up uptime
+            """
             range_duration = e - b
             h[svc]['uptime'] += delta_to_min(range_duration)
-        if h[svc]['period'].seconds == 0:
+
+            """ Store holes
+            """
+            if _e != end:
+                h[svc]['holes'] += [(_e, b)]
+
+            """ Store the current segment endpoint for use in the
+                next loop iteration
+            """
+            _e = e
+
+        if len(h[svc]['ranges']) == 0:
+            h[svc]['ranges'] += [(begin, end)]
+        else:
+            """ Add heading hole
+            """
+            (b, e) = h[svc]['ranges'][0]
+            if b > begin:
+                h[svc]['holes'] = [(begin, b)] + h[svc]['holes']
+
+            """ Add trailing hole
+            """
+            (b, e) = h[svc]['ranges'][-1]
+            if e < end:
+                h[svc]['holes'] = h[svc]['holes'] + [(e, end)]
+
+        if h[svc]['period'].seconds and h[svc]['period'].days == 0:
             h[svc]['availability'] = 0
         else:
             h[svc]['availability'] = h[svc]['uptime'] * 100.0 / delta_to_min(h[svc]['period'])
+            h[svc]['period_min'] = delta_to_min(h[svc]['period'])
 
     return h
 
@@ -1043,11 +1111,25 @@ def svcmon_log():
 
     rows = db(query).select(orderby=o)
     nav = DIV()
-    h=service_availability(rows)
+
+    def str_to_date(s, fmt="%Y-%m-%d %H:%M:%S"):
+        if s is None or s == "" or len(fmt) == 0:
+            return None
+        if s[0] in ["<", ">"]:
+            s = s[1:]
+        try:
+            return datetime.datetime.strptime(s, fmt)
+        except:
+            return str_to_date(s, fmt[0:-1])
+
+    begin = str_to_date(request.vars.mon_begin)
+    end = str_to_date(request.vars.mon_end)
+    h = service_availability(rows, begin, end)
+
     return dict(rows=rows,
                 h=h,
                 nav=nav,
-                )
+               )
 
 @auth.requires_login()
 def envfile():
