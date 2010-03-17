@@ -1022,16 +1022,11 @@ def service_availability(rows, begin=None, end=None):
         if add:
             h[row.mon_svcname]['ranges'] += [(row.mon_begin,row.mon_end)]
 
-        if h[row.mon_svcname]['begin'] > begin:
-            h[row.mon_svcname]['begin'] = begin
-        if h[row.mon_svcname]['end'] < end:
-            h[row.mon_svcname]['end'] = end
-
     def delta_to_min(d):
         return (d.days*1440)+(d.seconds//60)
 
     for svc in h:
-        _e = end
+        _e = None
 
         for i, (b, e) in enumerate(h[svc]['ranges']):
             """ Merge overlapping ranges
@@ -1043,7 +1038,7 @@ def service_availability(rows, begin=None, end=None):
                 curr:   |                 XXXXXXXXXXXX  |
                         |                 b          e  |
             """
-            if _e != end and b < _e:
+            if _e is not None and b < _e:
                 b = _e
 
             """ Discard segment heading part outside scope
@@ -1075,7 +1070,7 @@ def service_availability(rows, begin=None, end=None):
 
             """ Store holes
             """
-            if _e != end:
+            if _e is not None and _e < b:
                 h[svc]['holes'] += [(_e, b)]
 
             """ Store the current segment endpoint for use in the
@@ -1085,6 +1080,7 @@ def service_availability(rows, begin=None, end=None):
 
         if len(h[svc]['ranges']) == 0:
             h[svc]['ranges'] += [(begin, end)]
+            h[svc]['uptime'] = delta_to_min(end - begin)
         else:
             """ Add heading hole
             """
