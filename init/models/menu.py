@@ -57,7 +57,9 @@ response.menu = [
     [T('applications'), _f == 'apps', 
      URL(request.application,'default','apps'), []],
     [T('nodes'), _f == 'nodes', 
-     URL(request.application,'default','nodes'), []],
+     URL(request.application,'default','nodes'), [
+         [T('Obsolescence setup'), False, 
+          URL(request.application,'default','obsolescence_config')]]],
     [T('alerts'), _f == 'alerts', 
      URL(request.application,'default','alerts'), []],
     [T('stats'), _f == 'stats', 

@@ -159,10 +159,35 @@ def index():
     query |= (db.v_apps.responsibles=="")
     appwithoutresp = db(query).select(db.v_apps.app)
 
+    perm = domain_perms()
+    if perm is None:
+        perm = '%'
+
+    sql = """select n.nodename, o.obs_name, o.obs_warn_date from nodes n
+             left join obsolescence o
+             on concat_ws(' ', n.os_vendor, n.os_release, n.os_update)=o.obs_name
+             and o.obs_type="os"
+             where o.obs_warn_date is not NULL and obs_alert_date is not NULL
+             and o.obs_warn_date<NOW() and obs_alert_date>NOW()
+             and n.nodename like "%s";
+          """%perm
+    obsoswarn = db.executesql(sql)
+
+    sql = """select n.nodename, o.obs_name, o.obs_alert_date from nodes n
+             left join obsolescence o
+             on concat_ws(' ', n.os_vendor, n.os_release, n.os_update)=o.obs_name
+             and o.obs_type="os"
+             where obs_alert_date is not NULL and obs_alert_date<NOW()
+             and n.nodename like "%s";
+          """%perm
+    obsosalert = db.executesql(sql)
+
     return dict(lastchanges=lastchanges,
                 svcwitherrors=svcwitherrors,
                 svcnotonprimary=svcnotonprimary,
                 appwithoutresp=appwithoutresp,
+                obsoswarn=obsoswarn,
+                obsosalert=obsosalert,
                 svcnotup=svcnotup)
 
 @auth.requires_membership('Manager')
@@ -1227,6 +1252,86 @@ def users():
 
     return dict(users=rows, nav=nav)
 
+@auth.requires_membership('Manager')
+def _obs_warn_date_edit(request):
+    _obs_date_edit(request, "warn")
+
+@auth.requires_membership('Manager')
+def _obs_alert_date_edit(request):
+    _obs_date_edit(request, "alert")
+
+@auth.requires_membership('Manager')
+def _obs_date_edit(request, what):
+    ids = ([])
+    for key in [ k for k in request.vars.keys() if 'check_' in k ]:
+        id = int(key[6:])
+        date = request.vars[what+"_date_"+str(id)]
+        if date is None or len(date) == 0:
+            sql = """update obsolescence
+                     set obs_%(what)s_date='',
+                         obs_%(what)s_date_updated='%(now)s',
+                         obs_%(what)s_date_updated_by='%(user)s'
+                     where id=%(id)s;
+                  """%dict(id=id,
+                           now=datetime.datetime.now(),
+                           what=what,
+                           user=' '.join([session.auth.user.first_name, session.auth.user.last_name])
+                          )
+        else:
+            sql = """update obsolescence
+                     set obs_%(what)s_date='%(date)s',
+                         obs_%(what)s_date_updated='%(now)s',
+                         obs_%(what)s_date_updated_by='%(user)s'
+                     where id=%(id)s;
+                  """%dict(id=id,
+                           now=datetime.datetime.now(),
+                           what=what,
+                           date=date,
+                           user=' '.join([session.auth.user.first_name, session.auth.user.last_name])
+                          )
+        #raise Exception(sql)
+        db.executesql(sql)
+
+@auth.requires_membership('Manager')
+def _obs_item_del(request):
+    ids = ([])
+    for key in [ k for k in request.vars.keys() if 'check_' in k ]:
+        ids += ([int(key[6:])])
+    sql = "delete from obsolescence where id in (%s)"%','.join(map(str, ids))
+    db.executesql(sql)
+
+def _refresh_obsolescence(request):
+    cron_obsolescence_os()
+
+@auth.requires_membership('Manager')
+def obsolescence_config():
+    if request.vars.action == "del":
+        _obs_item_del(request)
+    elif request.vars.action == "set_warn_date":
+        _obs_warn_date_edit(request)
+    elif request.vars.action == "set_alert_date":
+        _obs_alert_date_edit(request)
+    elif request.vars.action == "refresh":
+        _refresh_obsolescence(request)
+
+    o = db.obsolescence.obs_type
+    o |= db.obsolescence.obs_name
+    o |= db.obsolescence.obs_warn_date
+    o |= db.obsolescence.obs_alert_date
+
+    query = _where(None, 'obsolescence', request.vars.obs_type, 'obs_type')
+    query &= _where(None, 'obsolescence', request.vars.obs_name, 'obs_name')
+    query &= _where(None, 'obsolescence', request.vars.obs_warn_date, 'obs_warn_date')
+    query &= _where(None, 'obsolescence', request.vars.obs_alert_date, 'obs_alert_date')
+
+    (start, end, nav) = _pagination(request, query)
+    if start == 0 and end == 0:
+        rows = db(query).select(orderby=o)
+    else:
+        rows = db(query).select(limitby=(start,end), orderby=o)
+
+    return dict(obsitems=rows, nav=nav)
+
 @auth.requires_login()
 def svcmon():
     o = db.v_svcmon.mon_svcname
@@ -1618,6 +1723,15 @@ def svcmon_csv():
     request.vars['perpage'] = 0
     return svcmon()['services']
 
+def cron_obsolescence_os():
+    sql = """insert ignore into obsolescence (obs_type, obs_name)
+             select "os", concat_ws(" ",os_vendor, os_release, os_update)
+             from nodes where os_vendor!='' and os_release!=''
+             group by os_vendor, os_release;
+          """
+    db.executesql(sql)
+    return dict(message=T("done"))
+
 def cron_stat_day():
     #when = datetime.datetime.now()-datetime.timedelta(days=14)
     when = None
@@ -1988,7 +2102,7 @@ def node_edit():
     form=SQLFORM(db.nodes, record)
     if form.accepts(request.vars):
         response.flash = T("edition recorded")
-        redirect(URL(r=request, f='node', vars={'nodename':request.vars.node}))
+        redirect(URL(r=request, f='nodes'))
     elif form.errors:
         response.flash = T("errors in form")
 

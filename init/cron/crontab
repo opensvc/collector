@@ -5,6 +5,7 @@
 1 * * * * unxdev01 *default/alerts_svcmon_not_updated
 55 23 * * * unxdev01 *default/cron_stat_day
 55 23 * * * unxdev01 *default/cron_stat_day_svc
+55 23 * * * unxdev01 *default/cron_obsolescence_os
 0 1 * * * unxdev01 *default/viz_cron_cleanup
 5 1 * * * unxdev01 *default/alerts_services_not_updated
 15 1 * * * unxdev01 *default/alerts_svc_not_on_primary

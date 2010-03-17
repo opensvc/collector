@@ -514,3 +514,15 @@ db.define_table('v_svc_group_status',
     Field('groupstatus'),
     migrate=False)
 
+db.define_table('obsolescence',
+    Field('id'),
+    Field('obs_type', 'string', length=30),
+    Field('obs_name', 'string', length=100),
+    Field('obs_warn_date', 'datetime'),
+    Field('obs_alert_date', 'datetime'),
+    Field('obs_warn_date_updated_by', 'string', length=100),
+    Field('obs_alert_date_updated_by', 'string', length=100),
+    Field('obs_warn_date_updated', 'datetime'),
+    Field('obs_alert_date_updated', 'datetime'),
+    migrate=False)
+
