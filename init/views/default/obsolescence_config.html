@@ -53,6 +53,8 @@ for key in ['obs_type',
     {{
     if u.obs_type == "os":
         obs_type_img = IMG(_src=URL(r=request,c='static',f='os.png'),_border=0)
+    elif u.obs_type == "hw":
+        obs_type_img = IMG(_src=URL(r=request,c='static',f='hw.png'),_border=0)
     else:
         obs_type_img = IMG(_src=URL(r=request,c='static',f='unknown.png'),_border=0)
         pass
@@ -68,10 +70,12 @@ for key in ['obs_type',
       {{=A(counts[u.id],
            _onclick="""
                getElementById("obs_name").value="%(obs_name)s";
-               ajax("%(url)s",['obs_name'],"panelbody_nodes");
+               getElementById("obs_type").value="%(obs_type)s";
+               ajax("%(url)s",['obs_name', 'obs_type'],"panelbody_nodes");
                getElementById("panel_nodes").className="panel_shown";
             """%dict(url=URL(r=request,f='ajax_obsolete_os_nodes'),
                      obs_name=u.obs_name,
+                     obs_type=u.obs_type,
                     ),
             _class="xinfo",
           )
@@ -134,5 +138,6 @@ for key in ['obs_type',
   {{BOX_BOTTOM_ROW(7)}}
 </table>
 <input name=action type=hidden>
-<input id=obs_name type=hidden>
+<input id="obs_name" type=hidden>
+<input id="obs_type" type=hidden>
 </form>

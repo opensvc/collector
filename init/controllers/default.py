@@ -182,12 +182,32 @@ def index():
           """%perm
     obsosalert = db.executesql(sql)
 
+    sql = """select n.nodename, o.obs_name, o.obs_warn_date from nodes n
+             left join obsolescence o
+             on n.model=o.obs_name
+             and o.obs_type="hw"
+             where obs_warn_date is not NULL and obs_warn_date<NOW()
+             and n.nodename like "%s";
+          """%perm
+    obshwwarn = db.executesql(sql)
+
+    sql = """select n.nodename, o.obs_name, o.obs_alert_date from nodes n
+             left join obsolescence o
+             on n.model=o.obs_name
+             and o.obs_type="hw"
+             where obs_alert_date is not NULL and obs_alert_date<NOW()
+             and n.nodename like "%s";
+          """%perm
+    obshwalert = db.executesql(sql)
+
     return dict(lastchanges=lastchanges,
                 svcwitherrors=svcwitherrors,
                 svcnotonprimary=svcnotonprimary,
                 appwithoutresp=appwithoutresp,
                 obsoswarn=obsoswarn,
                 obsosalert=obsosalert,
+                obshwwarn=obshwwarn,
+                obshwalert=obshwalert,
                 svcnotup=svcnotup)
 
 @auth.requires_membership('Manager')
@@ -1302,6 +1322,7 @@ def _obs_item_del(request):
 
 def _refresh_obsolescence(request):
     cron_obsolescence_os()
+    cron_obsolescence_hw()
 
 @auth.requires_membership('Manager')
 def obsolescence_config():
@@ -1332,9 +1353,17 @@ def obsolescence_config():
 
     counts = {}
     for row in rows:
-        sql = """select count(nodename) from nodes
-                 where "%s"=concat_ws(" ", os_name, os_vendor, os_release, os_update);
-              """%row.obs_name
+        if row.obs_type == "os":
+            sql = """select count(nodename) from nodes
+                     where "%s"=concat_ws(" ", os_name, os_vendor, os_release, os_update);
+                  """%row.obs_name
+        elif row.obs_type == "hw":
+            sql = """select count(nodename) from nodes
+                     where "%s"=model;
+                  """%row.obs_name
+        else:
+            counts[row.id] = 0
+
         counts[row.id] = db.executesql(sql)[0][0]
 
     return dict(obsitems=rows,
@@ -1342,9 +1371,17 @@ def obsolescence_config():
                 nav=nav)
 
 def ajax_obsolete_os_nodes():
-    sql = """select nodename from nodes
-             where "%s"=concat_ws(" ", os_name, os_vendor, os_release, os_update);
-          """%request.vars.obs_name
+    if request.vars.obs_type == "os":
+        sql = """select nodename from nodes
+                 where "%s"=concat_ws(" ", os_name, os_vendor, os_release, os_update);
+              """%request.vars.obs_name
+    elif request.vars.obs_type == "hw":
+        sql = """select nodename from nodes
+                 where "%s"=model;
+              """%request.vars.obs_name
+    else:
+        return DIV()
+
     rows = db.executesql(sql)
     nodes = [row[0] for row in rows]
     return DIV(
@@ -1742,6 +1779,16 @@ def svcmon_csv():
     response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
     request.vars['perpage'] = 0
     return svcmon()['services']
+
+def cron_obsolescence_hw():
+    sql = """insert ignore into obsolescence (obs_type, obs_name)
+             select "hw", model
+             from nodes
+             where model!=''
+             group by model;
+          """
+    db.executesql(sql)
+    return dict(message=T("done"))
 
 def cron_obsolescence_os():
     sql = """insert ignore into obsolescence (obs_type, obs_name)
