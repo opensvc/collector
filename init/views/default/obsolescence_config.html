@@ -1,0 +1,120 @@
+{{extend 'layout.html'}}
+{{include '../static/jslib.html'}}
+{{include 'box.html'}}
+{{include 'panel.html'}}
+{{include 'filters.html'}}
+
+{{
+vars = request.vars
+for key in ['obs_type',
+            'obs_name',
+            'obs_warn_date',
+            'obs_alert_date']:
+    if not vars.has_key(key) or vars[key] is None: vars[key]=''
+    pass
+}}
+
+<form action='obsolescence_config' name='svcform' id='svcform'> 
+<table>
+  {{BOX_TOP_ROW(6)}}
+  <tr class=box>
+    <td class=box></td>
+    <td class=box></td>
+    <td>{{=T('Type')}}</td>
+    <td>{{=T('Name')}}</td>
+    <td>{{=T('Warn date')}}</td>
+    <td>{{=T('Alert date')}}</td>
+    <td class=box></td>
+    <td class=box></td>
+  </tr>
+  <tr class=box>
+    <td style='padding:0'></td>
+    <td><input type=checkbox id=check_all onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'))"></td>
+    <td><input name=obs_type value='{{=vars.obs_type}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td><input name=obs_name value='{{=vars.obs_name}}' size=12 onKeyPress="checkEnter(event)"></td>
+    <td><input name=obs_warn_date value='{{=vars.obs_warn_date}}' size=12 onKeyPress="checkEnter(event)"></td>
+    <td><input name=obs_alert_date value='{{=vars.obs_alert_date}}' size=12 onKeyPress="checkEnter(event)"></td>
+    <td style='padding:0'></td>
+    <td style='padding:0'></td>
+  </tr>
+  {{BOX_BOTTOM_ROW(6)}}
+  {{
+    cellclass = 'cell1'
+    cellclasses = {}
+    cellclasses['cell1'] = 'cell2'
+    cellclasses['cell2'] = 'cell1'
+  }}
+  {{for u in obsitems:}}
+  <tr>
+    {{cellclass = cellclasses[cellclass]}}
+    {{
+    if u.obs_type == "os":
+        obs_type_img = IMG(_src=URL(r=request,c='static',f='os.png'),_border=0)
+    else:
+        obs_type_img = IMG(_src=URL(r=request,c='static',f='unknown.png'),_border=0)
+        pass
+
+    checked = getattr(vars, 'check_'+str(u.id))
+    if checked is not None:
+        checked = 'checked=on'
+        pass
+    }}
+    <td style='padding:0'></td>
+    <td class={{=cellclass}}><input type=checkbox name="check_{{=u.id}}" id="id_check_{{=u.id}}" {{=checked}}></td>
+    <td class={{=cellclass}}>{{=DIV(obs_type_img, _title=u.obs_type)}}</td>
+    <td class={{=cellclass}}>{{=u.obs_name}}</td>
+    <td class={{=cellclass}}>
+      <div id="div_warn_text_{{=u.id}}" title="set by {{=u.obs_warn_date_updated_by}} on {{=u.obs_warn_date_updated}}" onClick='javascript:show_eid("div_warn_input_{{=u.id}}");hide_eid("div_warn_text_{{=u.id}}");'>
+        {{=u.obs_warn_date}}
+      </div>
+      <div class='hidden' id="div_warn_input_{{=u.id}}">
+        <input name="warn_date_{{=u.id}}" value="{{=u.obs_warn_date}}" size=15 
+               onKeyPress='javascript:document.svcform.action.value="set_warn_date";
+                                      document.getElementById("id_check_{{=u.id}}").checked=true;
+                                      checkEnter(event);
+                          '
+        >
+      </div>
+    </td>
+    <td class={{=cellclass}}>
+      <div id="div_alert_text_{{=u.id}}" title="set by {{=u.obs_alert_date_updated_by}} on {{=u.obs_alert_date_updated}}" onClick='javascript:show_eid("div_alert_input_{{=u.id}}");hide_eid("div_alert_text_{{=u.id}}");'>
+        {{=u.obs_alert_date}}
+      </div>
+      <div class='hidden' id="div_alert_input_{{=u.id}}">
+        <input name="alert_date_{{=u.id}}" value="{{=u.obs_alert_date}}" size=15 
+               onKeyPress='javascript:document.svcform.action.value="set_alert_date";
+                                      document.getElementById("id_check_{{=u.id}}").checked=true;
+                                      checkEnter(event);
+                          '
+        >
+      </div>
+    </td>
+    <td style='padding:0'></td>
+  </tr>
+  {{pass}}
+  {{BOX_TOP_ROW(6)}}
+  <tr class=box>
+    <td align=center colspan=99>{{=nav}}</td>
+  </tr>
+  <tr class=box>
+    <td colspan=99>
+      <table>
+        <tr>
+          <td> {{=T('Remove')}}:</td>
+          <td> {{=T('Refresh')}}:</td>
+        </tr>
+        <tr>
+          <td>
+            {{=IMG(_src=URL(r=request,c='static',f='del.png'),_border=0, _onclick='javascript:document.svcform.action.value="del";document.svcform.submit()')}}
+          </td>
+          <td>
+            {{=IMG(_src=URL(r=request,c='static',f='refresh.png'),_border=0, _onclick='javascript:document.svcform.action.value="refresh";document.svcform.submit()')}}
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  {{BOX_BOTTOM_ROW(6)}}
+</table>
+<input name=action type=hidden>
+</form>
