@@ -116,9 +116,12 @@ def node_icon(svc):
     cellclasses['cell2'] = 'cell1'
     now = datetime.datetime.today()
   }}
-  {{for svc in k:}}
-    {{for b, e in h[svc]['ranges']:}}
-    {{if svcname != svc:
+  {{for svc in k:
+      if len(h[svc]['ranges']) == 0:
+          h[svc]['ranges'] = [("","")]
+          pass
+      for b, e in h[svc]['ranges']:
+      if svcname != svc:
           cellclass = cellclasses[cellclass]
           svcname = svc
           newsvc = True
