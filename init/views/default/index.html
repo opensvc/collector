@@ -211,7 +211,7 @@ def svc_not_on_primary_header():
     return tr
     pass
 
-def svc_not_on_primary_table():
+def svc_not_on_primary_table(svcnotonprimary):
     cellclass = 'cell1'
     cellclasses = {}
     cellclasses['cell1'] = 'cell2'
@@ -231,11 +231,13 @@ def svc_not_on_primary_table():
     pass
 
 def svc_not_on_primary():
-    if len(svcnotonprimary) == 0:
+    svcnotup_names = [s.svcname for s in svcnotup]
+    list = [s for s in svcnotonprimary if s.svc_name not in svcnotup_names]
+    if len(list) == 0:
         return DIV()
     d = DIV(
       H2(T("Services not up on primary"), _style="padding:10px"),
-      svc_not_on_primary_table(),
+      svc_not_on_primary_table(list),
       _style="padding:10px",
     )
     return d
