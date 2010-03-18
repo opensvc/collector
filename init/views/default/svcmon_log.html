@@ -69,8 +69,10 @@ for key in ['mon_svcname',
     if not vars.has_key(key) or vars[key] is None: vars[key]=''
     pass
 
-seven_days_ago = datetime.datetime.now() - datetime.timedelta(days=7)
-twenty_min_ago = datetime.datetime.now() - datetime.timedelta(seconds=1200)
+
+now = datetime.datetime.now()
+seven_days_ago = now - datetime.timedelta(days=7, microseconds=now.microsecond)
+twenty_min_ago = now - datetime.timedelta(seconds=1200, microseconds=now.microsecond)
 if vars['mon_begin'] == '': vars['mon_begin']='>'+str(seven_days_ago)
 if vars['mon_end'] == '': vars['mon_end']='<'+str(twenty_min_ago)
 
@@ -114,6 +116,9 @@ def parseTimeDelta(s):
                               for key, value in d.items() )))
 
 def filter_match(key, fval):
+    if fval == '':
+        fval = parseTimeDelta("00:00:00")
+        pass
     if key not in vars or vars[key] is None or vars[key] == "":
         return True
     op = None
@@ -134,6 +139,8 @@ def filter_match(key, fval):
         pass
     pass
 
+    if a is None:
+        return False
     if len(a) == 0:
         return True
 
@@ -196,14 +203,17 @@ def filter_match(key, fval):
     cellclasses = {}
     cellclasses['cell1'] = 'cell2'
     cellclasses['cell2'] = 'cell1'
-    now = datetime.datetime.today()
   }}
   {{for svc in k:
       if len(h[svc]['holes']) == 0:
           h[svc]['holes'] = [("","")]
           pass
       for b, e in h[svc]['holes']:
-      d = e - b
+      if b == "" or e == "":
+          d = ""
+      else:
+          d = e - b
+          pass
       if not filter_match('mon_duration', d):
           continue
       if svcname != svc:
