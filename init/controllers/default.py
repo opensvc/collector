@@ -965,7 +965,7 @@ def service_availability(rows, begin=None, end=None):
             elif row[sn] == 'n/a': continue
             elif row[sn] == 'up': s = status_merge_up(s)
             elif row[sn] == 'down': s = status_merge_down(s)
-            elif row[sn] == 'stdby_up': s = status_merge_stdby_up(s)
+            elif row[sn] == 'stdby up': s = status_merge_stdby_up(s)
             else: return 'undef'
         return s
 
@@ -987,9 +987,12 @@ def service_availability(rows, begin=None, end=None):
                                   'begin': begin,
                                   'end': end,
                                   'period': period,
-                                  'uptime': 0}
+                                  'uptime': 0,
+                                  'discarded': [],
+                                 }
         s = status(row)
-        if s != 'up':
+        if s not in ['up', 'stdby up with up']:
+            h[row.mon_svcname]['discarded'] += [(row.id, s)]
             continue
 
         """ First range does not need overlap detection
