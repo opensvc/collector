@@ -497,6 +497,27 @@ def obs_hw_alert():
     return d
     pass
 
+def obs_miss():
+    if obswarnmiss + obsalertmiss == 0:
+        return DIV()
+    return DIV(
+      H2(T("Items with missing obsolescence information")),
+      TABLE(
+        TR(
+          TH(T("Date not set")),
+          TH(T("Item count")),
+          _style="border-bottom:4px solid darkorange",
+        ),
+        TR(
+          TD(T("Warn")),
+          TD(A(obswarnmiss, _href=(URL(r=request, f='obsolescence_config', vars={'obs_warn_date': 'empty|0000-00-00 00:00:00'})))),
+        ),
+        TR(
+          TD(T("Alert"), _class="cell1"),
+          TD(A(obsalertmiss, _href=(URL(r=request, f='obsolescence_config', vars={'obs_alert_date': 'empty|0000-00-00 00:00:00'}))), _class="cell1"),
+        )
+      )
+    )
 }}
 
 {{=DIV(
@@ -509,6 +530,7 @@ def obs_hw_alert():
      obs_os_warn(),
      obs_hw_alert(),
      obs_hw_warn(),
+     obs_miss(),
      _style="
        padding-left:2em;
        padding-right:2em;

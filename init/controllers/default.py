@@ -201,6 +201,16 @@ def index():
           """%perm
     obshwalert = db.executesql(sql)
 
+    sql = """select count(obs_name) from obsolescence
+             where obs_warn_date="0000-00-00" or obs_warn_date is NULL;
+          """
+    obswarnmiss = db.executesql(sql)[0][0]
+
+    sql = """select count(obs_name) from obsolescence
+             where obs_alert_date="0000-00-00" or obs_alert_date is NULL;
+          """
+    obsalertmiss = db.executesql(sql)[0][0]
+
     return dict(lastchanges=lastchanges,
                 svcwitherrors=svcwitherrors,
                 svcnotonprimary=svcnotonprimary,
@@ -209,6 +219,8 @@ def index():
                 obsosalert=obsosalert,
                 obshwwarn=obshwwarn,
                 obshwalert=obshwalert,
+                obswarnmiss=obswarnmiss,
+                obsalertmiss=obsalertmiss,
                 svcnotup=svcnotup)
 
 @auth.requires_membership('Manager')
@@ -3097,6 +3109,7 @@ def svcmon_update(vars, vals):
                  h['mon_appstatus'],
                  h['mon_syncstatus']]
         generic_insert('svcmon_log', _vars, _vals)
+        db(db.svcmon_log.id==last[0].id).update(mon_end=h['mon_updated'])
     else:
         db(db.svcmon_log.id==last[0].id).update(mon_end=h['mon_updated'])
 
