@@ -1192,7 +1192,21 @@ def envfile():
     envfile = rows[0]['services']['svc_envfile']
     if envfile is None:
         return "None"
-    return PRE(envfile.replace('\\n','\n'), _style="text-align:left")
+    return DIV(
+             H3(T("Service configuration file for %(svc)s",dict(
+                     svc=rows[0]['services']['svc_name']
+                   )
+                ),
+                _style='text-align:center',
+             ),
+             P(T("updated: %(upd)s",dict(
+                     upd=rows[0]['services']['svc_name']
+                   ),
+                ),
+                _style='text-align:center',
+             ),
+             PRE(envfile.replace('\\n','\n'), _style="text-align:left"),
+           )
 
 @auth.requires_membership('Manager')
 def user_event_log():
@@ -2204,11 +2218,12 @@ def ajax_svc_message_load():
     rows = db(db.svcmessages.msg_svcname==request.vars.svcname).select()
     if len(rows) != 1:
         return DIV(
-                P(T("new message")),
+                P(H3("%(svc)s"%dict(svc=request.vars.svcname), _style="text-align:center")),
+                P(T("new message"), _style="text-align:center"),
                 TEXTAREA(_id='msgbody_'+request.vars.svcname)
                )
     return DIV(
-            H3("%(s)s messages",dict(s=rows[0].msg_svcname)),
+            H3(T("%(s)s messages",dict(s=rows[0].msg_svcname)), _style="text-align:center"),
             P(
               T("last edited on "),
               rows[0].msg_last_edit_date,
@@ -2236,7 +2251,10 @@ def ajax_res_status():
           TR(TH('id'), TH('description'), TH('status')),
           map(print_row, rows)
     )
-    return t
+    return DIV(
+             P(H3("%(svc)s@%(node)s"%dict(svc=request.vars.svcname, node=request.vars.node), _style="text-align:center")),
+             t,
+           )
 
 @auth.requires_login()
 def ajax_node():
