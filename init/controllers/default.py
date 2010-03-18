@@ -534,7 +534,12 @@ def alerts_services_not_updated():
     three_days_ago = now - datetime.timedelta(days=3)
 
     def format_subject(row):
-        return T("[%(app)s][%(svcname)s] service configuration not updated for more than 48h", dict(app=row.svc_app, svcname=row.svc_name))
+        return T("[%(app)s][%(svcname)s] service configuration not updated since %(last)s", dict(
+                 last=row.updated,
+                 app=row.svc_app,
+                 svcname=row.svc_name
+                )
+               )
 
     rows = db(db.v_services.updated<two_days_ago).select()
     for row in rows:
@@ -1385,7 +1390,7 @@ def ajax_obsolete_os_nodes():
     rows = db.executesql(sql)
     nodes = [row[0] for row in rows]
     return DIV(
-             H3(T("""Nodes in %(os)s"""%dict(os=request.vars.obs_name))),
+             H3(T("""Nodes in %(os)s""",dict(os=request.vars.obs_name))),
              PRE('\n'.join(nodes)),
            )
 
@@ -2203,7 +2208,7 @@ def ajax_svc_message_load():
                 TEXTAREA(_id='msgbody_'+request.vars.svcname)
                )
     return DIV(
-            H3("%(s)s messages"%dict(s=rows[0].msg_svcname)),
+            H3("%(s)s messages",dict(s=rows[0].msg_svcname)),
             P(
               T("last edited on "),
               rows[0].msg_last_edit_date,
