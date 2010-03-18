@@ -56,12 +56,14 @@ if op in ["sup", "inf", "eq"]:
     pass
 pass
 
+
 k = h.keys()
 k.sort(sort_by_avail)
 
 for key in ['mon_svcname',
             'mon_nodname',
             'mon_availability',
+            'mon_duration',
             'mon_begin',
             'mon_end']:
     if not vars.has_key(key) or vars[key] is None: vars[key]=''
@@ -83,19 +85,88 @@ def node_icon(svc):
         pass
     return img
 
+import re
+def parseTimeDelta(s):
+    """Create timedelta object representing time delta
+       expressed in a string
+   
+    Takes a string in the format produced by calling str() on
+    a python timedelta object and returns a timedelta instance
+    that would produce that string.
+   
+    Acceptable formats are: "X days, HH:MM:SS" or "HH:MM:SS".
+    """
+    if s is None:
+        return None
+    try:
+        d = re.match(
+            r'((?P<days>\d+) days, )?(?P<hours>\d+):'
+            r'(?P<minutes>\d+):(?P<seconds>\d+)',
+            str(s)).groupdict(0)
+    except:
+        return None
+    return datetime.timedelta(**dict(( (key, int(value))
+                              for key, value in d.items() )))
+
+def filter_match(key, fval):
+    if key not in vars or vars[key] is None or vars[key] == "":
+        return True
+    op = None
+    a = None
+    if vars[key] != "" and vars[key] is not None and len(vars[key]) > 1:
+        if vars[key][0] == '>':
+            op = 'sup'
+            a = vars[key][1:]
+        elif vars[key][0] == '<':
+            op = 'inf'
+            a = vars[key][1:]
+        elif vars[key][0] == '=':
+            op = 'eq'
+            a = vars[key][1:]
+        else:
+            op = 'eq'
+            a = vars[key]
+        pass
+    pass
+
+    if len(a) == 0:
+        return True
+
+    a = parseTimeDelta(a)
+    if a is None:
+        return False
+
+    k = h.copy()
+
+    if op in ["sup", "inf", "eq"]:
+        if op == "sup":
+            if a > fval:
+                return False
+            pass
+        if op == "inf":
+            if a < fval:
+                return False
+            pass
+    else:
+        if a != fval:
+            return False
+        pass
+    return True
+
 }}
 <input id="svcname" type="hidden">
 {{=PANEL("column_values")}}
 <form action='svcmon_log' name='svcform' id='svcform'> 
 <table>
-  {{BOX_TOP_ROW(5)}}
+  {{BOX_TOP_ROW(6)}}
   <tr class=box>
     <td class=box></td>
     <td class=box></td>
     <td>{{=colname(rows, 'mon_svcname', T('Service'))}}</td>
     <td>{{=T('Availability')}}</td>
-    <td>{{=T('Begin')}}</td>
-    <td>{{=T('End')}}</td>
+    <td>{{=T('Unavailability begin')}}</td>
+    <td>{{=T('Unavailability end')}}</td>
+    <td>{{=T('Duration')}}</td>
     <td class=box></td>
   </tr>
   <tr class=box>
@@ -105,9 +176,10 @@ def node_icon(svc):
     <td><input name=mon_availability value='{{=vars.mon_availability}}' size=6 onKeyPress="checkEnter(event)"></td>
     <td><input name=mon_begin value='{{=vars.mon_begin}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=mon_end value='{{=vars.mon_end}}' size=12 onKeyPress="checkEnter(event)"></td>
+    <td><input name=mon_duration value='{{=vars.mon_duration}}' size=6 onKeyPress="checkEnter(event)"></td>
     <td style='padding:0'></td>
   </tr>
-  {{BOX_BOTTOM_ROW(5)}}
+  {{BOX_BOTTOM_ROW(6)}}
   {{
     svcname = ''
     cellclass = 'cell1'
@@ -117,10 +189,13 @@ def node_icon(svc):
     now = datetime.datetime.today()
   }}
   {{for svc in k:
-      if len(h[svc]['ranges']) == 0:
-          h[svc]['ranges'] = [("","")]
+      if len(h[svc]['holes']) == 0:
+          h[svc]['holes'] = [("","")]
           pass
-      for b, e in h[svc]['ranges']:
+      for b, e in h[svc]['holes']:
+      d = e - b
+      if not filter_match('mon_duration', d):
+          continue
       if svcname != svc:
           cellclass = cellclasses[cellclass]
           svcname = svc
@@ -194,11 +269,14 @@ def node_icon(svc):
     <td class={{=cellclass}}>
         {{=e}}
     </td>
+    <td class={{=cellclass}}>
+        {{=d}}
+    </td>
     <td style='padding:0'></td>
   </tr>
   {{pass}}
   {{pass}}
-  {{BOX_TOP_ROW(5)}}
+  {{BOX_TOP_ROW(6)}}
   <tr class=box>
     <td align=center colspan=99>{{=nav}}</td>
   </tr>
@@ -206,6 +284,6 @@ def node_icon(svc):
     <td colspan=99>
     </td>
   </tr>
-  {{BOX_BOTTOM_ROW(5)}}
+  {{BOX_BOTTOM_ROW(6)}}
 </table>
 </form>
