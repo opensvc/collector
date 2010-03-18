@@ -965,6 +965,7 @@ def service_availability(rows, begin=None, end=None):
     for row in rows:
         if row.mon_svcname not in h:
             h[row.mon_svcname] = {'ranges': [],
+                                  'range_count': 0,
                                   'holes': [],
                                   'begin': begin,
                                   'end': end,
@@ -979,6 +980,7 @@ def service_availability(rows, begin=None, end=None):
         (b, e) = (row.mon_begin, row.mon_end)
         if len(h[row.mon_svcname]['ranges']) == 0:
             h[row.mon_svcname]['ranges'] = [(b, e)]
+            h[row.mon_svcname]['range_count'] += 1
             continue
 
         """ Overlap detection
@@ -1020,6 +1022,7 @@ def service_availability(rows, begin=None, end=None):
                 break
 
         if add:
+            h[row.mon_svcname]['range_count'] += 1
             h[row.mon_svcname]['ranges'] += [(row.mon_begin,row.mon_end)]
 
     def delta_to_min(d):
@@ -1079,8 +1082,7 @@ def service_availability(rows, begin=None, end=None):
             _e = e
 
         if len(h[svc]['ranges']) == 0:
-            h[svc]['ranges'] += [(begin, end)]
-            h[svc]['uptime'] = delta_to_min(end - begin)
+            h[svc]['holes'] += [(begin, end)]
         else:
             """ Add heading hole
             """
@@ -1094,11 +1096,12 @@ def service_availability(rows, begin=None, end=None):
             if e < end:
                 h[svc]['holes'] = h[svc]['holes'] + [(e, end)]
 
-        if h[svc]['period'].seconds and h[svc]['period'].days == 0:
+        h[svc]['period_min'] = delta_to_min(h[svc]['period'])
+
+        if h[svc]['period_min'] == 0:
             h[svc]['availability'] = 0
         else:
             h[svc]['availability'] = h[svc]['uptime'] * 100.0 / delta_to_min(h[svc]['period'])
-            h[svc]['period_min'] = delta_to_min(h[svc]['period'])
 
     return h
 
