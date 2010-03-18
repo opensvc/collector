@@ -15,28 +15,42 @@ avail = None
 if vars.mon_availability != "" and vars.mon_availability is not None and len(vars.mon_availability) > 1:
     if vars.mon_availability[0] == '>':
         op = 'sup'
-        avail = float(vars.mon_availability[1:])
+        avail = vars.mon_availability[1:]
     elif vars.mon_availability[0] == '<':
         op = 'inf'
-        avail = float(vars.mon_availability[1:])
+        avail = vars.mon_availability[1:]
+    elif vars.mon_availability[0] == '=':
+        op = 'eq'
+        avail = vars.mon_availability[1:]
     else:
-        avail = float(vars.mon_availability)
+        op = 'eq'
+        avail = vars.mon_availability
+    pass
+    if isinstance(avail, str):
+        avail = float(avail)
+    pass
+    if isinstance(avail, (float,int,long,complex)):
+        avail = float(avail)
+    else:
+        avail = None
     pass
 pass
 
 k = h.copy()
 
-if isinstance(avail, float):
-    if op in ["sup", "inf"]:
-        for svc in k:
-            if op == "sup":
-                if k[svc]['availability'] < avail:
-                    del h[svc]
-                pass
-            elif op == "inf":
-                if k[svc]['availability'] > avail:
-                    del h[svc]
-                pass
+if op in ["sup", "inf", "eq"]:
+    for svc in k:
+        if op == "sup":
+            if k[svc]['availability'] < avail:
+                del h[svc]
+            pass
+        elif op == "inf":
+            if k[svc]['availability'] > avail:
+                del h[svc]
+            pass
+        elif op == "eq":
+            if k[svc]['availability'] != avail:
+                del h[svc]
             pass
         pass
     pass
