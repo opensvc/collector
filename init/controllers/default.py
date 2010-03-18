@@ -1212,7 +1212,7 @@ def envfile():
                 _style='text-align:center',
              ),
              P(T("updated: %(upd)s",dict(
-                     upd=rows[0]['services']['svc_name']
+                     upd=rows[0]['services']['updated']
                    ),
                 ),
                 _style='text-align:center',
