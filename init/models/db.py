@@ -551,3 +551,12 @@ db.define_table('obsolescence',
     Field('obs_alert_date_updated', 'datetime'),
     migrate=False)
 
+db.define_table('svcmon_log_ack',
+    Field('mon_svcname', 'string', length=100),
+    Field('mon_nodname', 'string', length=100),
+    Field('mon_begin', 'datetime'),
+    Field('mon_end', 'datetime'),
+    Field('mon_comment', 'string'),
+    Field('mon_acked_by', 'string'),
+    Field('mon_acked_on', 'datetime'),
+    migrate=False)

@@ -2250,6 +2250,79 @@ def ajax_svc_message_load():
            )
 
 @auth.requires_login()
+def ajax_svcmon_log_ack_write():
+    svc = request.vars.xi
+    begin = request.vars.bi
+    end = request.vars.ei
+    comment = request.vars.ci
+
+    db.svcmon_log_ack.insert(
+        mon_svcname = svc,
+        mon_begin = begin,
+        mon_end = end,
+        mon_comment = comment,
+        mon_acked_on = datetime.datetime.now(),
+        mon_acked_by = ' '.join([session.auth.user.first_name,
+                                 session.auth.user.last_name])
+    )
+
+    return DIV(T("saved"))
+
+@auth.requires_login()
+def ajax_svcmon_log_ack_load():
+    svc = request.vars.svcname
+    begin = request.vars.begin
+    end = request.vars.end
+
+    o = db.svcmon_log_ack
+
+    query = (db.svcmon_log.id>0)
+    query = (db.svcmon_log.mon_end>begin)
+    query = (db.svcmon_log.mon_begin>end)
+    query &= _where(None, 'svcmon_log', domain_perms(), 'mon_svcname')
+
+    rows = db(query).select()
+
+    xi = INPUT(_value=svc, _id='xi', _type='hidden')
+    bi = INPUT(_value=begin, _id='bi')
+    ei = INPUT(_value=end, _id='ei')
+    ci = TEXTAREA(_value='', _id='ci')
+    si = INPUT(_value='save', _id='si', _type='submit', _onclick="""
+               ajax("%(url)s",['xi', 'bi', 'ei', 'ci'],"panelbody_ack");
+               getElementById("panel_ack").className="panel";
+              """%dict(url=URL(r=request,f='ajax_svcmon_log_ack_write'),
+                       svcname=svc)
+         )
+    ti = TABLE(
+           TR(
+             TD(H3(T("Unavailability segment for %(svc)s",
+                     dict(svc=svc)
+                    )),
+                _colspan=2,
+                _style='text-align:center',
+             ),
+           ),
+           TR(
+             TH(T("begin")),
+             TH(T("end")),
+           ),
+           TR(
+             TD(bi),
+             TD(ei),
+           ),
+           TR(
+             TH(T("comment"), _colspan=2),
+           ),
+           TR(
+             TD(ci, _colspan=2),
+           ),
+           TR(
+             TD(si, _colspan=2),
+           ),
+         )
+    return DIV(xi, ti)
+
+@auth.requires_login()
 def ajax_res_status():
     rows = db((db.resmon.svcname==request.vars.svcname)&(db.resmon.nodename==request.vars.node)).select(orderby=db.resmon.rid)
     def print_row(row):

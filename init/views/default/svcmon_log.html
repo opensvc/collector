@@ -160,10 +160,13 @@ def filter_match(key, fval):
 
 }}
 <input id="svcname" type="hidden">
+<input id="begin" type="hidden">
+<input id="end" type="hidden">
 {{=PANEL("column_values")}}
+{{=PANEL("ack")}}
 <form action='svcmon_log' name='svcform' id='svcform'> 
 <table>
-  {{BOX_TOP_ROW(6)}}
+  {{BOX_TOP_ROW(7)}}
   <tr class=box>
     <td class=box></td>
     <td class=box></td>
@@ -172,6 +175,7 @@ def filter_match(key, fval):
     <td>{{=T('Unavailability begin')}}</td>
     <td>{{=T('Unavailability end')}}</td>
     <td>{{=T('Duration')}}</td>
+    <td class=box></td>
     <td class=box></td>
   </tr>
   <tr class=box>
@@ -183,8 +187,9 @@ def filter_match(key, fval):
     <td><input name=mon_end value='{{=vars.mon_end}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=mon_duration value='{{=vars.mon_duration}}' size=6 onKeyPress="checkEnter(event)"></td>
     <td style='padding:0'></td>
+    <td style='padding:0'></td>
   </tr>
-  {{BOX_BOTTOM_ROW(6)}}
+  {{BOX_BOTTOM_ROW(7)}}
   {{
     svcname = ''
     cellclass = 'cell1'
@@ -277,11 +282,35 @@ def filter_match(key, fval):
     <td class={{=cellclass}}>
         {{=d}}
     </td>
+    <td class={{=cellclass}}>
+      {{=A(
+          IMG(
+            _src=URL(r=request,c='static',f='ack.png'),
+            _border=0,
+            _title=T("acknowledge a unavailability segment"),
+            _onclick="""
+               getElementById("svcname").value="%(svcname)s";
+               getElementById("begin").value="%(begin)s";
+               getElementById("end").value="%(end)s";
+               ajax("%(url)s",['svcname', 'begin', 'end'],"panelbody_ack");
+               getElementById("panel_ack").className="panel_shown";
+               getElementById("panel_ack").style.top=event.pageY+'px';
+            """%dict(url=URL(r=request,f='ajax_svcmon_log_ack_load'),
+                     svcname=svc,
+                     a=svc.replace('.', '_'),
+                     begin=b,
+                     end=e,
+                    ),
+          ),
+          _class="xinfo",
+         )
+      }}
+    </td>
     <td style='padding:0'></td>
   </tr>
   {{pass}}
   {{pass}}
-  {{BOX_TOP_ROW(6)}}
+  {{BOX_TOP_ROW(7)}}
   <tr class=box>
     <td align=center colspan=99>{{=nav}}</td>
   </tr>
@@ -289,6 +318,6 @@ def filter_match(key, fval):
     <td colspan=99>
     </td>
   </tr>
-  {{BOX_BOTTOM_ROW(6)}}
+  {{BOX_BOTTOM_ROW(7)}}
 </table>
 </form>
