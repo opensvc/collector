@@ -2942,6 +2942,9 @@ def generic_insert(table, vars, vals):
 def update_service(vars, vals):
     if 'svc_hostid' not in vars:
         return
+    if 'updated' not in vars:
+        vars += ['updated']
+        vals += [datetime.datetime.now()]
     generic_insert('services', vars, vals)
 
 @service.xmlrpc
