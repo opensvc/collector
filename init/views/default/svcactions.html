@@ -100,6 +100,7 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
                getElementById("node").value="%(node)s";
                ajax("%(url)s",['node'],"panelbody_node_%(a)s");
                getElementById("panel_node_%(a)s").className="panel_shown";
+               getElementById("panel_node_%(a)s").style.top=event.pageY+'px';
             """%dict(url=URL(r=request,f='ajax_node'),
                      node=action.hostname,
                      a=action.hostname.replace('.', '_'),

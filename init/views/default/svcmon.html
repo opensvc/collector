@@ -54,6 +54,7 @@ def ajax_status(svc, name, cssclass):
                getElementById("svcname").value="%(svcname)s";
                ajax("%(url)s",['node', 'svcname'],"panelbody_%(a)s");
                getElementById("panel_%(a)s").className="panel_shown";
+               getElementById("panel_%(a)s").style.top=event.pageY+'px';
             """%dict(url=URL(r=request,f='ajax_res_status'), node=svc.mon_nodname, svcname=svc.svc_name, a=a),
           ),
           _style="cursor:help",
@@ -182,6 +183,7 @@ def ajax_status(svc, name, cssclass):
                getElementById("svcname").value="%(svcname)s";
                ajax("%(url)s",['svcname'],"panelbody_envfile_%(a)s");
                getElementById("panel_envfile_%(a)s").className="panel_shown";
+               getElementById("panel_envfile_%(a)s").style.top=event.pageY+'px';
             """%dict(url=URL(r=request,f='envfile'),
                      svcname=svc.mon_svcname,
                      a=svc.mon_svcname.replace('.', '_')),
@@ -205,6 +207,7 @@ def ajax_status(svc, name, cssclass):
                getElementById("svcname").value="%(svcname)s";
                ajax("%(url)s",['svcname'],"msg__%(svcname)s");
                getElementById("panel_msg_%(a)s").className="panel_shown";
+               getElementById("panel_msg_%(a)s").style.top=event.pageY+'px';
             """%dict(url=URL(r=request,f='ajax_svc_message_load'),
                      svcname=svc.mon_svcname,
                      a=svc.mon_svcname.replace('.', '_')
@@ -271,6 +274,7 @@ def ajax_status(svc, name, cssclass):
                getElementById("node").value="%(node)s";
                ajax("%(url)s",['node'],"panelbody_asn_%(a)s");
                getElementById("panel_asn_%(a)s").className="panel_shown";
+               getElementById("panel_asn_%(a)s").style.top=event.pageY+'px';
             """%dict(url=URL(r=request,f='ajax_node'),
                      node=svc.svc_autostart,
                      a=svc.svc_autostart.replace('.', '_')
@@ -305,6 +309,7 @@ def ajax_status(svc, name, cssclass):
                getElementById("node").value="%(node)s";
                ajax("%(url)s",['node'],"panelbody_node_%(a)s");
                getElementById("panel_node_%(a)s").className="panel_shown";
+               getElementById("panel_node_%(a)s").style.top=event.pageY+'px';
             """%dict(url=URL(r=request,f='ajax_node'),
                      node=svc.mon_nodname,
                      a=svc.mon_nodname.replace('.', '_')

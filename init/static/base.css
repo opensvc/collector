@@ -802,7 +802,7 @@ a.xinfo_shown span {
    clear:both;
    z-index: 500; /* on définit une valeur pour l'ordre d'affichage */
    display: inline; /* on affiche l'infobulle */
-   position: fixed;
+   position: absolute;
    white-space: nowrap; /* on change la valeur de la propriété white-space pour qu'il n'y ait pas de retour à la ligne non-désiré */
    top: 30px; /* on positionne notre infobulle */
    left: 20px;

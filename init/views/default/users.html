@@ -91,6 +91,7 @@ for key in ['fullname',
                getElementById("uid").value="%(uid)s";
                ajax("%(url)s",['uid'],"panelbody_events_%(uid)s");
                getElementById("panel_events_%(uid)s").className="panel_shown";
+               getElementById("panel_events_%(uid)s").style.top=event.pageY+'px';
             """%dict(url=URL(r=request,f='user_event_log'), uid=u.id),
           ),
           _class="xinfo",
