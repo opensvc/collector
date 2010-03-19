@@ -206,9 +206,9 @@ def filter_match(key, fval):
   }}
   {{for svc in k:
       if len(h[svc]['holes']) == 0:
-          h[svc]['holes'] = [("","")]
+          h[svc]['holes'] = [("","",0)]
           pass
-      for b, e in h[svc]['holes']:
+      for b, e, ack in h[svc]['holes']:
       if b == "" or e == "":
           d = ""
       else:
@@ -216,6 +216,13 @@ def filter_match(key, fval):
           pass
       if not filter_match('mon_duration', d):
           continue
+
+      if ack == 1:
+          strike = 'text-decoration:line-through'
+      else:
+          strike = ''
+          pass
+
       if svcname != svc:
           cellclass = cellclasses[cellclass]
           svcname = svc
@@ -283,13 +290,13 @@ def filter_match(key, fval):
         {{="%0.2f%%"%h[svc]['availability']}}
       {{pass}}
     </td>
-    <td class={{=cellclass}}>
+    <td class={{=cellclass}} style={{=strike}}>
         {{=b}}
     </td>
-    <td class={{=cellclass}}>
+    <td class={{=cellclass}} style={{=strike}}>
         {{=e}}
     </td>
-    <td class={{=cellclass}}>
+    <td class={{=cellclass}} style={{=strike}}>
         {{=d}}
     </td>
     <td class={{=cellclass}}>

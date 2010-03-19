@@ -988,6 +988,7 @@ def service_availability(rows, begin=None, end=None):
                                   'end': end,
                                   'period': period,
                                   'uptime': 0,
+                                  'uptime_ack': 0,
                                   'discarded': [],
                                  }
         s = status(row)
@@ -1048,6 +1049,79 @@ def service_availability(rows, begin=None, end=None):
     def delta_to_min(d):
         return (d.days*1440)+(d.seconds//60)
 
+    o = db.svcmon_log_ack.mon_begin
+    query = (db.svcmon_log_ack.id>0)
+    query &= _where(None, 'svcmon_log_ack', request.vars.mon_svcname, 'mon_svcname')
+    query &= _where(None, 'svcmon_log_ack', request.vars.mon_begin, 'mon_end')
+    query &= _where(None, 'svcmon_log_ack', request.vars.mon_end, 'mon_begin')
+    query &= _where(None, 'svcmon_log_ack', domain_perms(), 'mon_svcname')
+    acked = db(query).select(orderby=o)
+
+    def get_holes(svc, _e, b):
+        ack_overlap = 0
+        holes = []
+        for a in [ack for ack in acked if ack.mon_svcname == svc]:
+            (ab, ae) = (a.mon_begin, a.mon_end)
+
+            if _e >= ab and b <= ae:
+                """ hole is completely acknowledged
+                      XXXXX
+                          _e
+                                   XXXXXXXXXX
+                                   b
+                         ============= acked segment
+                        ab           ae
+                """
+                holes += [(_e, b, 1)]
+                ack_overlap += 1
+                break
+
+            if _e < ab and ab < b and ae >= b:
+                """ hole is partly acknowledged
+                      XXXXX
+                          _e
+                                   XXXXXXXXXX
+                                   b
+                               =========== acked segment
+                              ab         ae
+                """
+                holes += [(_e, ab, 0)]
+                holes += [(ab, b, 1)]
+                ack_overlap += 1
+
+            elif ab < _e and ae <= b and ae > _e:
+                """ hole is partly acknowledged
+                      XXXXX
+                          _e
+                                   XXXXXXXXXX
+                                   b
+                     ========= acked segment
+                    ab       ae
+                """
+                holes += [(_e, ae, 1)]
+                holes += [(ae, b, 0)]
+                ack_overlap += 1
+
+            elif ab > _e and ab < b and ae > _e and ae < b:
+                """ hole is partly acknowledged
+                      XXXXX
+                          _e
+                                        XXXXXXXXXX
+                                        b
+                               ====== acked segment
+                              ab    ae
+                """
+                holes += [(_e, ab, 0)]
+                holes += [(ab, ae, 1)]
+                holes += [(ae, b, 0)]
+                ack_overlap += 1
+
+        if ack_overlap == 0:
+            holes += [(_e, b, 0)]
+
+        return holes
+
+
     for svc in h:
         _e = None
 
@@ -1094,7 +1168,7 @@ def service_availability(rows, begin=None, end=None):
             """ Store holes
             """
             if _e is not None and _e < b:
-                h[svc]['holes'] += [(_e, b)]
+                h[svc]['holes'] += get_holes(svc, _e, b)
 
             """ Store the current segment endpoint for use in the
                 next loop iteration
@@ -1102,26 +1176,35 @@ def service_availability(rows, begin=None, end=None):
             _e = e
 
         if len(h[svc]['ranges']) == 0:
-            h[svc]['holes'] += [(begin, end)]
+            h[svc]['holes'] += get_holes(svc, begin, end)
         else:
             """ Add heading hole
             """
             (b, e) = h[svc]['ranges'][0]
             if b > begin:
-                h[svc]['holes'] = [(begin, b)] + h[svc]['holes']
+                h[svc]['holes'] = get_holes(svc, begin, b) + h[svc]['holes']
 
             """ Add trailing hole
             """
             (b, e) = h[svc]['ranges'][-1]
             if e < end:
-                h[svc]['holes'] = h[svc]['holes'] + [(e, end)]
+                h[svc]['holes'] = h[svc]['holes'] + get_holes(svc, e, end)
 
+        """ Account acknowledged time
+        """
+        for b, e, ack in h[svc]['holes']:
+            if ack == 0:
+                continue
+            h[svc]['uptime_ack'] += delta_to_min(e-b)
+
+        """ Compute availability
+        """
         h[svc]['period_min'] = delta_to_min(h[svc]['period'])
 
         if h[svc]['period_min'] == 0:
             h[svc]['availability'] = 0
         else:
-            h[svc]['availability'] = h[svc]['uptime'] * 100.0 / delta_to_min(h[svc]['period'])
+            h[svc]['availability'] = (h[svc]['uptime'] + h[svc]['uptime_ack']) * 100.0 / delta_to_min(h[svc]['period'])
 
     return h
 
@@ -1165,6 +1248,16 @@ def service_availability_chart(h):
     can.close()
     return action
 
+def str_to_date(s, fmt="%Y-%m-%d %H:%M:%S"):
+    if s is None or s == "" or len(fmt) == 0:
+        return None
+    if s[0] in ["<", ">"]:
+        s = s[1:]
+    try:
+        return datetime.datetime.strptime(s, fmt)
+    except:
+        return str_to_date(s, fmt[0:-1])
+
 @auth.requires_login()
 def svcmon_log():
     o = db.svcmon_log.mon_begin
@@ -1176,16 +1269,6 @@ def svcmon_log():
 
     rows = db(query).select(orderby=o)
     nav = DIV()
-
-    def str_to_date(s, fmt="%Y-%m-%d %H:%M:%S"):
-        if s is None or s == "" or len(fmt) == 0:
-            return None
-        if s[0] in ["<", ">"]:
-            s = s[1:]
-        try:
-            return datetime.datetime.strptime(s, fmt)
-        except:
-            return str_to_date(s, fmt[0:-1])
 
     begin = str_to_date(request.vars.mon_begin)
     end = str_to_date(request.vars.mon_end)
@@ -2255,21 +2338,90 @@ def ajax_svc_message_load():
 @auth.requires_login()
 def ajax_svcmon_log_ack_write():
     svc = request.vars.xi
-    begin = request.vars.bi
-    end = request.vars.ei
+    b = str_to_date(request.vars.bi)
+    e = str_to_date(request.vars.ei)
     comment = request.vars.ci
 
-    db.svcmon_log_ack.insert(
-        mon_svcname = svc,
-        mon_begin = begin,
-        mon_end = end,
-        mon_comment = comment,
-        mon_acked_on = datetime.datetime.now(),
-        mon_acked_by = ' '.join([session.auth.user.first_name,
-                                 session.auth.user.last_name])
-    )
+    def db_insert_ack_segment(svc, begin, end, comment):
+        db.svcmon_log_ack.insert(
+            mon_svcname = svc,
+            mon_begin = begin,
+            mon_end = end,
+            mon_comment = comment,
+            mon_acked_on = datetime.datetime.now(),
+            mon_acked_by = ' '.join([session.auth.user.first_name,
+                                     session.auth.user.last_name])
+        )
 
-    return DIV(T("saved"))
+    def recursive_ack_segment(rows, b, e):
+        segs = []
+        for row in rows:
+            (_b, _e) = (row.mon_begin, row.mon_end)
+
+            if b >= _b and e <= _e:
+                """
+                           ================== acked segment
+                          _b                _e
+                                XXXXXXXXXXX
+                                b         e
+                """
+                pass
+            elif b >= _b and b <= _e and e > _e:
+                """
+                           ================== acked segment
+                          _b                _e
+                                      XXXXXXXXXXX
+                                      b         e
+                """
+                segs += recursive_ack_segment(rows, _e, e)
+            elif b < _b and e < _e and e >= _b:
+                """
+                           ================== acked segment
+                          _b                _e
+                       XXXXXXXXXXX
+                       b         e
+                """
+                segs += recursive_ack_segment(rows, b, _b)
+
+            elif b < _b and e > _e:
+                """
+                           ================== acked segment
+                          _b                _e
+                        XXXXXXXXXXXXXXXXXXXXXXXXX
+                        b                       e
+                """
+                segs += recursive_ack_segment(rows, b, _b)
+                segs += recursive_ack_segment(rows, _e, e)
+            elif e < _b or b > _e:
+                """
+                           ================== acked segment
+                          _b                _e
+                      XXXX              or     XXXXXXX
+                      b  e                     b     e
+                """
+                segs += [(b, e)]
+
+        return segs
+
+    rows = db_ack_overlap(svc, b, e)
+    if len(rows) == 0:
+        segs = [(b, e)]
+    else:
+        segs = recursive_ack_segment(rows, b, e)
+
+    for (begin, end) in segs:
+        db_insert_ack_segment(svc, begin, end, comment)
+
+    return str(segs)
+
+def db_ack_overlap(svc, begin, end):
+    b = str(begin)
+    e = str(end)
+    o = db.svcmon_log_ack.mon_begin
+    query = (db.svcmon_log_ack.mon_svcname==svc)
+    query &= _where(None, 'svcmon_log_ack', domain_perms(), 'mon_svcname')
+    query &= ((b<=db.svcmon_log_ack.mon_end)&(b>=db.svcmon_log_ack.mon_begin))|((e<=db.svcmon_log_ack.mon_end)&(e>=db.svcmon_log_ack.mon_begin))
+    return db(query).select(orderby=o)
 
 @auth.requires_login()
 def ajax_svcmon_log_ack_load():
@@ -2277,15 +2429,33 @@ def ajax_svcmon_log_ack_load():
     begin = request.vars.begin
     end = request.vars.end
 
-    o = db.svcmon_log_ack
+    """ Load relevant acknowledged segments
+    """
+    rows = db_ack_overlap(svc, begin, end)
 
-    query = (db.svcmon_log.id>0)
-    query = (db.svcmon_log.mon_end>begin)
-    query = (db.svcmon_log.mon_begin>end)
-    query &= _where(None, 'svcmon_log', domain_perms(), 'mon_svcname')
-
-    rows = db(query).select()
-
+    ack_overlap_lines = []
+    for row in rows:
+        ack_overlap_lines += [TR(
+                    TD(INPUT(_id=row.id, _type="radio", _value=0, _onselect="""
+                    """)),
+                    TD(row.mon_begin, _id="begin_"+str(row.id)),
+                    TD(row.mon_end, _id="end_"+str(row.id)),
+                    TD(row.mon_comment, _id="comment_"+str(row.id)),
+                    TD(row.mon_acked_by, _id="acked_by_"+str(row.id)),
+                    TD(row.mon_acked_on, _id="acked_on_"+str(row.id)),
+                  )
+                 ]
+    ack_overlap_table = TABLE(
+                          TR(
+                            TH(),
+                            TH(T("begin")),
+                            TH(T("end")),
+                            TH(T("comment")),
+                            TH(T("acked by")),
+                            TH(T("acked on")),
+                          ),
+                          ack_overlap_lines,
+                        )
     xi = INPUT(_value=svc, _id='xi', _type='hidden')
     bi = INPUT(_value=begin, _id='bi')
     ei = INPUT(_value=end, _id='ei')
@@ -2296,15 +2466,8 @@ def ajax_svcmon_log_ack_load():
               """%dict(url=URL(r=request,f='ajax_svcmon_log_ack_write'),
                        svcname=svc)
          )
+    title = H3(T("Overlapping unavailability segments for %(svc)s", dict(svc=svc)))
     ti = TABLE(
-           TR(
-             TD(H3(T("Unavailability segment for %(svc)s",
-                     dict(svc=svc)
-                    )),
-                _colspan=2,
-                _style='text-align:center',
-             ),
-           ),
            TR(
              TH(T("begin")),
              TH(T("end")),
@@ -2323,7 +2486,12 @@ def ajax_svcmon_log_ack_load():
              TD(si, _colspan=2),
            ),
          )
-    return DIV(xi, ti)
+    return DIV(
+             title,
+             ack_overlap_table,
+             xi,
+             ti
+           )
 
 @auth.requires_login()
 def ajax_res_status():
