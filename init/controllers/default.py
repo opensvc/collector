@@ -1076,7 +1076,7 @@ def service_availability(rows, begin=None, end=None):
                 ack_overlap += 1
                 break
 
-            if _e < ab and ab < b and ae >= b:
+            if _e <= ab and ab < b and ae >= b:
                 """ hole is partly acknowledged
                       XXXXX
                           _e
@@ -1089,7 +1089,7 @@ def service_availability(rows, begin=None, end=None):
                 holes += [(ab, b, 1)]
                 ack_overlap += 1
 
-            elif ab < _e and ae <= b and ae > _e:
+            elif ab <= _e and ae < b and ae > _e:
                 """ hole is partly acknowledged
                       XXXXX
                           _e
@@ -2392,7 +2392,7 @@ def ajax_svcmon_log_ack_write():
                 """
                 segs += recursive_ack_segment(rows, b, _b)
                 segs += recursive_ack_segment(rows, _e, e)
-            elif e < _b or b > _e:
+            elif e <= _b or b >= _e:
                 """
                            ================== acked segment
                           _b                _e
@@ -2420,7 +2420,7 @@ def db_ack_overlap(svc, begin, end):
     o = db.svcmon_log_ack.mon_begin
     query = (db.svcmon_log_ack.mon_svcname==svc)
     query &= _where(None, 'svcmon_log_ack', domain_perms(), 'mon_svcname')
-    query &= ((b<=db.svcmon_log_ack.mon_end)&(b>=db.svcmon_log_ack.mon_begin))|((e<=db.svcmon_log_ack.mon_end)&(e>=db.svcmon_log_ack.mon_begin))
+    query &= ((b<db.svcmon_log_ack.mon_end)&(b>=db.svcmon_log_ack.mon_begin))|((e<=db.svcmon_log_ack.mon_end)&(e>db.svcmon_log_ack.mon_begin))
     return db(query).select(orderby=o)
 
 @auth.requires_login()
