@@ -2436,8 +2436,6 @@ def ajax_svcmon_log_ack_load():
     ack_overlap_lines = []
     for row in rows:
         ack_overlap_lines += [TR(
-                    TD(INPUT(_id=row.id, _type="radio", _value=0, _onselect="""
-                    """)),
                     TD(row.mon_begin, _id="begin_"+str(row.id)),
                     TD(row.mon_end, _id="end_"+str(row.id)),
                     TD(row.mon_comment, _id="comment_"+str(row.id)),
@@ -2447,7 +2445,6 @@ def ajax_svcmon_log_ack_load():
                  ]
     ack_overlap_table = TABLE(
                           TR(
-                            TH(),
                             TH(T("begin")),
                             TH(T("end")),
                             TH(T("comment")),
@@ -2466,7 +2463,7 @@ def ajax_svcmon_log_ack_load():
               """%dict(url=URL(r=request,f='ajax_svcmon_log_ack_write'),
                        svcname=svc)
          )
-    title = H3(T("Overlapping unavailability segments for %(svc)s", dict(svc=svc)))
+    title = H3(T("Ack unavailability period for %(svc)s", dict(svc=svc)))
     ti = TABLE(
            TR(
              TH(T("begin")),
@@ -2488,7 +2485,6 @@ def ajax_svcmon_log_ack_load():
          )
     return DIV(
              title,
-             ack_overlap_table,
              xi,
              ti
            )

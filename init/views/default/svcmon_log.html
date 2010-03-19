@@ -301,8 +301,8 @@ def filter_match(key, fval):
     </td>
     <td class={{=cellclass}}>
       {{=A(
-          IMG(
-            _src=URL(r=request,c='static',f='ack.png'),
+            '[ack]',
+            _href='#',
             _border=0,
             _title=T("acknowledge a unavailability segment"),
             _onclick="""
@@ -318,7 +318,6 @@ def filter_match(key, fval):
                      begin=b,
                      end=e,
                     ),
-          ),
           _class="xinfo",
          )
       }}

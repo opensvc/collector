@@ -16,6 +16,7 @@
 '>>': '>>',
 '>> ': '>> ',
 'Accounts': 'Comptes',
+'Ack unavailability period for %(svc)s': 'Ack unavailability period for %(svc)s',
 'Acknowledge with comment': 'Acquitter avec commentaire',
 'Action': 'Action',
 'Actions': 'Actions',
