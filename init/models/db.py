@@ -553,7 +553,6 @@ db.define_table('obsolescence',
 
 db.define_table('svcmon_log_ack',
     Field('mon_svcname', 'string', length=100),
-    Field('mon_nodname', 'string', length=100),
     Field('mon_begin', 'datetime'),
     Field('mon_end', 'datetime'),
     Field('mon_comment', 'string'),

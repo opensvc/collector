@@ -267,6 +267,7 @@
 'click here for the administrative interface': "cliquez ici pour aller \xc3\xa0 l'interface d'administration",
 'clone the current project': 'cloner le projet courrant',
 'close': 'fermer',
+'close & refresh table': 'close & refresh table',
 'comment': 'comment',
 'consult alerts sent and pending emission': "consulter les alertes envoy\xc3\xa9es et en attente d'envoi",
 'consult asset information': 'consulter les information sur les biens',

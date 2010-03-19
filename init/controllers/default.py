@@ -987,8 +987,7 @@ def service_availability(rows, begin=None, end=None):
                                   'begin': begin,
                                   'end': end,
                                   'period': period,
-                                  'uptime': 0,
-                                  'uptime_ack': 0,
+                                  'downtime': 0,
                                   'discarded': [],
                                  }
         s = status(row)
@@ -1160,11 +1159,6 @@ def service_availability(rows, begin=None, end=None):
             """
             h[svc]['ranges'][i] = (b, e)
 
-            """ Add up uptime
-            """
-            range_duration = e - b
-            h[svc]['uptime'] += delta_to_min(range_duration)
-
             """ Store holes
             """
             if _e is not None and _e < b:
@@ -1193,9 +1187,9 @@ def service_availability(rows, begin=None, end=None):
         """ Account acknowledged time
         """
         for b, e, ack in h[svc]['holes']:
-            if ack == 0:
+            if ack == 1:
                 continue
-            h[svc]['uptime_ack'] += delta_to_min(e-b)
+            h[svc]['downtime'] += delta_to_min(e-b)
 
         """ Compute availability
         """
@@ -1204,7 +1198,7 @@ def service_availability(rows, begin=None, end=None):
         if h[svc]['period_min'] == 0:
             h[svc]['availability'] = 0
         else:
-            h[svc]['availability'] = (h[svc]['uptime'] + h[svc]['uptime_ack']) * 100.0 / delta_to_min(h[svc]['period'])
+            h[svc]['availability'] = (h[svc]['period_min'] - h[svc]['downtime']) * 100.0 / h[svc]['period_min']
 
     return h
 
@@ -1249,6 +1243,7 @@ def service_availability_chart(h):
     return action
 
 def str_to_date(s, fmt="%Y-%m-%d %H:%M:%S"):
+    s = s.strip()
     if s is None or s == "" or len(fmt) == 0:
         return None
     if s[0] in ["<", ">"]:
@@ -1515,48 +1510,48 @@ def svcmon():
 
     if not getattr(session, 'svcmon_filters'):
         session.svcmon_filters = {
-            1: dict(name='preferred node',
+            1: dict(name=T('prefered node'),
                     id=1,
                     active=False,
                     q=(db.v_svcmon.mon_nodname==db.v_svcmon.svc_autostart)
             ),
-            2: dict(name='container name',
+            2: dict(name=T('container name'),
                     id=2,
                     active=False,
                     value=None,
                     field='svc_vmname',
             ),
-            3: dict(name='opensvc version',
+            3: dict(name=T('opensvc version'),
                     id=3,
                     active=False,
                     value=None,
                     field='svc_version',
             ),
-            4: dict(name='service name',
+            4: dict(name=T('service name'),
                     id=4,
                     active=False,
                     value=None,
                     field='mon_svcname',
             ),
-            5: dict(name='nodename',
+            5: dict(name=T('nodename'),
                     id=5,
                     active=False,
                     value=None,
                     field='mon_nodname',
             ),
-            6: dict(name='responsibles',
+            6: dict(name=T('responsibles'),
                     id=6,
                     active=False,
                     value=None,
                     field='responsibles',
             ),
-            7: dict(name='os name',
+            7: dict(name=T('os name'),
                     id=7,
                     active=False,
                     value=None,
                     field='os_name',
             ),
-            8: dict(name='server model',
+            8: dict(name=T('server model'),
                     id=8,
                     active=False,
                     value=None,
@@ -2353,75 +2348,41 @@ def ajax_svcmon_log_ack_write():
                                      session.auth.user.last_name])
         )
 
-    def recursive_ack_segment(rows, b, e):
-        segs = []
-        for row in rows:
-            (_b, _e) = (row.mon_begin, row.mon_end)
+    rows = db_select_ack_overlap(svc, b, e)
+    if len(rows) == 1:
+        b = min(rows[0].mon_begin, b)
+        e = max(rows[0].mon_end, e)
+    if len(rows) > 1:
+        b = min(rows[0].mon_begin, b)
+        e = max(rows[-1].mon_end, e)
 
-            if b >= _b and e <= _e:
-                """
-                           ================== acked segment
-                          _b                _e
-                                XXXXXXXXXXX
-                                b         e
-                """
-                pass
-            elif b >= _b and b <= _e and e > _e:
-                """
-                           ================== acked segment
-                          _b                _e
-                                      XXXXXXXXXXX
-                                      b         e
-                """
-                segs += recursive_ack_segment(rows, _e, e)
-            elif b < _b and e < _e and e >= _b:
-                """
-                           ================== acked segment
-                          _b                _e
-                       XXXXXXXXXXX
-                       b         e
-                """
-                segs += recursive_ack_segment(rows, b, _b)
+    db_delete_ack_overlap(svc, b, e)
+    db_insert_ack_segment(svc, b, e, comment)
 
-            elif b < _b and e > _e:
-                """
-                           ================== acked segment
-                          _b                _e
-                        XXXXXXXXXXXXXXXXXXXXXXXXX
-                        b                       e
-                """
-                segs += recursive_ack_segment(rows, b, _b)
-                segs += recursive_ack_segment(rows, _e, e)
-            elif e <= _b or b >= _e:
-                """
-                           ================== acked segment
-                          _b                _e
-                      XXXX              or     XXXXXXX
-                      b  e                     b     e
-                """
-                segs += [(b, e)]
+    input_close = INPUT(_value=T('close & refresh table'), _id='close', _type='submit', _onclick="""
+                    getElementById("panel_ack").className="panel";
+                    window.location.reload();
+                  """%dict(url=URL(r=request,f='ajax_svcmon_log_ack_write'),
+                           svcname=svc)
+                  )
+    return DIV(T("saved"), input_close)
 
-        return segs
-
-    rows = db_ack_overlap(svc, b, e)
-    if len(rows) == 0:
-        segs = [(b, e)]
-    else:
-        segs = recursive_ack_segment(rows, b, e)
-
-    for (begin, end) in segs:
-        db_insert_ack_segment(svc, begin, end, comment)
-
-    return str(segs)
-
-def db_ack_overlap(svc, begin, end):
+def db_select_ack_overlap(svc, begin, end):
     b = str(begin)
     e = str(end)
     o = db.svcmon_log_ack.mon_begin
     query = (db.svcmon_log_ack.mon_svcname==svc)
     query &= _where(None, 'svcmon_log_ack', domain_perms(), 'mon_svcname')
-    query &= ((b<db.svcmon_log_ack.mon_end)&(b>=db.svcmon_log_ack.mon_begin))|((e<=db.svcmon_log_ack.mon_end)&(e>db.svcmon_log_ack.mon_begin))
+    query &= ((db.svcmon_log_ack.mon_end>b)&(db.svcmon_log_ack.mon_end<e))|((db.svcmon_log_ack.mon_begin>b)&(db.svcmon_log_ack.mon_begin<e))
     return db(query).select(orderby=o)
+
+def db_delete_ack_overlap(svc, begin, end):
+    b = str(begin)
+    e = str(end)
+    query = (db.svcmon_log_ack.mon_svcname==svc)
+    query &= _where(None, 'svcmon_log_ack', domain_perms(), 'mon_svcname')
+    query &= ((db.svcmon_log_ack.mon_end>b)&(db.svcmon_log_ack.mon_end<e))|((db.svcmon_log_ack.mon_begin>b)&(db.svcmon_log_ack.mon_begin<e))
+    return db(query).delete()
 
 @auth.requires_login()
 def ajax_svcmon_log_ack_load():
@@ -2431,7 +2392,7 @@ def ajax_svcmon_log_ack_load():
 
     """ Load relevant acknowledged segments
     """
-    rows = db_ack_overlap(svc, begin, end)
+    rows = db_select_ack_overlap(svc, begin, end)
 
     ack_overlap_lines = []
     for row in rows:
@@ -2457,9 +2418,8 @@ def ajax_svcmon_log_ack_load():
     bi = INPUT(_value=begin, _id='bi')
     ei = INPUT(_value=end, _id='ei')
     ci = TEXTAREA(_value='', _id='ci')
-    si = INPUT(_value='save', _id='si', _type='submit', _onclick="""
+    input_save = INPUT(_value='save', _id='save', _type='submit', _onclick="""
                ajax("%(url)s",['xi', 'bi', 'ei', 'ci'],"panelbody_ack");
-               getElementById("panel_ack").className="panel";
               """%dict(url=URL(r=request,f='ajax_svcmon_log_ack_write'),
                        svcname=svc)
          )
@@ -2480,7 +2440,7 @@ def ajax_svcmon_log_ack_load():
              TD(ci, _colspan=2),
            ),
            TR(
-             TD(si, _colspan=2),
+             TD(input_save, _colspan=2),
            ),
          )
     return DIV(
