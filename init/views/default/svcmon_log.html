@@ -195,6 +195,11 @@ def filter_match(key, fval):
 {{=PANEL("transition")}}
 {{=PANEL("ack")}}
 <form action='svcmon_log' name='svcform' id='svcform'> 
+
+{{if img is not None:}}
+{{=IMG(_src=URL(r=request,c='static',f='avail.png'), _border=0)}}
+{{pass}}
+
 <table>
   {{BOX_TOP_ROW(7)}}
   <tr class=box>

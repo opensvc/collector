@@ -1203,41 +1203,80 @@ def service_availability(rows, begin=None, end=None):
     return h
 
 def service_availability_chart(h):
+    def format_x(ts):
+        d = datetime.date.fromtimestamp(ts)
+        return "/a50/5{}" + d.strftime("%y-%m-%d")
+
+    data = []
+    from time import mktime
+    x_min = 0
+    x_max = 0
+
+    def get_range(holes):
+        last = 0
+        ticks = []
+        for b, e, ack in holes:
+            tsb = mktime(b.timetuple())
+            tse = mktime(e.timetuple())
+            d1 = tsb - last
+            if d1 < 0:
+                continue
+            d2 = tse - tsb
+            if d2 == 0 or d1 == 0:
+                continue
+            last = tse
+            ticks += [d1, d2]
+        if len(ticks) == 0:
+            ticks = [0, 0]
+        return ticks
+
+    for svc in h:
+        if len(h[svc]['holes']) == 0:
+            continue
+
+        if x_min == 0:
+            x_min = mktime(h[svc]['begin'].timetuple())
+        else:
+            x_min = min(mktime(h[svc]['begin'].timetuple()), x_min)
+
+        if x_max == 0:
+            x_max = mktime(h[svc]['end'].timetuple())
+        else:
+            x_max = min(mktime(h[svc]['end'].timetuple()), x_max)
+
+        ticks = get_range([(b, e, ack) for (b, e, ack) in h[svc]['holes'] if ack==0])
+        ticks_acked = get_range([(b, e, ack) for (b, e, ack) in h[svc]['holes'] if ack==1])
+
+        data += [(svc, tuple(ticks), tuple(ticks_acked))]
+
+    if len(data) == 0:
+        return
+
     action = str(URL(r=request,c='static',f='avail.png'))
     path = 'applications'+action
     can = canvas.init(path)
     theme.use_color = True
-    theme.scale_factor = 2
+    theme.scale_factor = 3
     theme.reinitialize()
 
-    def format_x(ts):
-        d = datetime.fromtimestamp(ts)
-        return "/a50/6{}" + d.strftime("%y-%m-%d")
-
-    data = []
-    from time import mktime
-
-    for svc in h:
-        ranges = []
-        for b, e in h[svc]['ranges']:
-            ranges += [mktime(b.timetuple()), mktime(e.timetuple())]
-        data += [(svc, tuple(ranges))]
-
-    ar = area.T(x_coord = linear_coord.T(),
-                y_coord = category_coord.T(data, 0),
-                x_axis=axis.X(label=""),
-                y_axis=axis.Y(label=""))
+    ar = area.T(y_coord = category_coord.T(data, 0),
+                x_range = (x_min, x_max),
+                x_axis = axis.X(label="", format=format_x, tic_interval=259200),
+                y_axis = axis.Y(label="",  format="/6{}%s"))
     bar_plot.fill_styles.reset()
 
     chart_object.set_defaults(interval_bar_plot.T,
                               direction="horizontal",
                               width=3,
-                              cluster_sep = 5,
+                              cluster_sep = 0,
                               data=data)
-    plot1 = interval_bar_plot.T(line_styles = [line_style.default, None],
-                                fill_styles = [fill_style.red, None],
-                                label="up")
-    ar.add_plot(plot1)
+    plot1 = interval_bar_plot.T(fill_styles = [fill_style.red, None],
+                                cluster=(0,2),
+                                label="/6unavail")
+    plot2 = interval_bar_plot.T(fill_styles = [fill_style.blue, None],
+                                hcol=2, cluster=(1,2),
+                                label="/6unavail acked")
+    ar.add_plot(plot1, plot2)
     ar.draw(can)
     can.close()
     return action
@@ -1255,7 +1294,7 @@ def str_to_date(s, fmt="%Y-%m-%d %H:%M:%S"):
 
 @auth.requires_login()
 def svcmon_log():
-    o = db.svcmon_log.mon_begin
+    o = db.svcmon_log.mon_begin|db.svcmon_log.mon_end
     query = (db.svcmon_log.id>0)
     query &= _where(None, 'svcmon_log', request.vars.mon_svcname, 'mon_svcname')
     query &= _where(None, 'svcmon_log', request.vars.mon_begin, 'mon_end')
@@ -1268,10 +1307,12 @@ def svcmon_log():
     begin = str_to_date(request.vars.mon_begin)
     end = str_to_date(request.vars.mon_end)
     h = service_availability(rows, begin, end)
+    img = service_availability_chart(h)
 
     return dict(rows=rows,
                 h=h,
                 nav=nav,
+                img=img,
                )
 
 @auth.requires_login()
