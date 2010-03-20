@@ -1510,48 +1510,48 @@ def svcmon():
 
     if not getattr(session, 'svcmon_filters'):
         session.svcmon_filters = {
-            1: dict(name=T('prefered node'),
+            1: dict(name='prefered node',
                     id=1,
                     active=False,
                     q=(db.v_svcmon.mon_nodname==db.v_svcmon.svc_autostart)
             ),
-            2: dict(name=T('container name'),
+            2: dict(name='container name',
                     id=2,
                     active=False,
                     value=None,
                     field='svc_vmname',
             ),
-            3: dict(name=T('opensvc version'),
+            3: dict(name='opensvc version',
                     id=3,
                     active=False,
                     value=None,
                     field='svc_version',
             ),
-            4: dict(name=T('service name'),
+            4: dict(name='service name',
                     id=4,
                     active=False,
                     value=None,
                     field='mon_svcname',
             ),
-            5: dict(name=T('nodename'),
+            5: dict(name='nodename',
                     id=5,
                     active=False,
                     value=None,
                     field='mon_nodname',
             ),
-            6: dict(name=T('responsibles'),
+            6: dict(name='responsibles',
                     id=6,
                     active=False,
                     value=None,
                     field='responsibles',
             ),
-            7: dict(name=T('os name'),
+            7: dict(name='os name',
                     id=7,
                     active=False,
                     value=None,
                     field='os_name',
             ),
-            8: dict(name=T('server model'),
+            8: dict(name='server model',
                     id=8,
                     active=False,
                     value=None,
@@ -1869,11 +1869,9 @@ class viz(object):
         for cdg in svccdg:
             self.add_dg2svc(cdg, svc)
 
-def svcmon_viz():
-    request.vars['perpage'] = 0
-    s = svcmon()
+def svcmon_viz_img(services):
     v = viz()
-    for svc in s['services']:
+    for svc in services:
         v.add_node(svc)
         v.add_disks(svc)
         v.add_service(svc)
@@ -1881,6 +1879,17 @@ def svcmon_viz():
     fname = v.write('png')
     import os
     img = str(URL(r=request,c='static',f=os.path.basename(fname)))
+    return img
+
+def ajax_svcmon_viz():
+    s = svcmon()
+    img = svcmon_viz_img(s['services'])
+    return IMG(_src=img, _border=0)
+
+def svcmon_viz():
+    request.vars['perpage'] = 0
+    s = svcmon()
+    img = svcmon_viz_img(s['services'])
     return dict(s=s['services'], v=str(v), img=img)
 
 def viz_cron_cleanup():
