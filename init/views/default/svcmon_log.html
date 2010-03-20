@@ -165,11 +165,34 @@ def filter_match(key, fval):
         pass
     return True
 
+    def date(d, b, e, svc):
+      return A(
+            d,
+            _href='#',
+            _border=0,
+            _title=T("click to view state transition"),
+            _onclick="""
+               getElementById("svcname").value="%(svcname)s";
+               getElementById("begin").value="%(begin)s";
+               getElementById("end").value="%(end)s";
+               ajax("%(url)s",['svcname', 'begin', 'end'],"panelbody_transition");
+               getElementById("panel_transition").className="panel_shown";
+               getElementById("panel_transition").style.top=event.pageY+'px';
+            """%dict(url=URL(r=request,f='ajax_svcmon_log_transition'),
+                     svcname=svc,
+                     a=svc.replace('.', '_'),
+                     begin=b,
+                     end=e,
+                    ),
+          _class="xinfo",
+         )
+
 }}
 <input id="svcname" type="hidden">
 <input id="begin" type="hidden">
 <input id="end" type="hidden">
 {{=PANEL("column_values")}}
+{{=PANEL("transition")}}
 {{=PANEL("ack")}}
 <form action='svcmon_log' name='svcform' id='svcform'> 
 <table>
@@ -291,10 +314,10 @@ def filter_match(key, fval):
       {{pass}}
     </td>
     <td class={{=cellclass}} style={{=strike}}>
-        {{=b}}
+      {{=date(b, b, e, svc)}}
     </td>
     <td class={{=cellclass}} style={{=strike}}>
-        {{=e}}
+      {{=date(e, b, e, svc)}}
     </td>
     <td class={{=cellclass}} style={{=strike}}>
         {{=d}}

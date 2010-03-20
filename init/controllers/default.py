@@ -2339,6 +2339,83 @@ def ajax_svc_message_load():
             ),
            )
 
+def svc_status(svc, cellclass="cell2"):
+    overallstatus = 'status_'+svc.mon_overallstatus.replace(" ", "_")
+    containerstatus = 'status_'+svc.mon_containerstatus.replace(" ", "_")
+    ipstatus = 'status_'+svc.mon_ipstatus.replace(" ", "_")
+    fsstatus = 'status_'+svc.mon_fsstatus.replace(" ", "_")
+    diskstatus = 'status_'+svc.mon_diskstatus.replace(" ", "_")
+    syncstatus = 'status_'+svc.mon_syncstatus.replace(" ", "_")
+    appstatus = 'status_'+svc.mon_appstatus.replace(" ", "_")
+
+    t = TABLE(
+      TR(
+        TD(svc.mon_overallstatus, _colspan=6, _class=cellclass+' status '+overallstatus),
+      ),
+      TR(
+        TD("vm", _class=cellclass+' '+containerstatus),
+        TD("ip", _class=cellclass+' '+ipstatus),
+        TD("fs", _class=cellclass+' '+fsstatus),
+        TD("dg", _class=cellclass+' '+diskstatus),
+        TD("sync", _class=cellclass+' '+syncstatus),
+        TD("app", _class=cellclass+' '+appstatus),
+      ),
+    )
+    return t
+
+@auth.requires_login()
+def ajax_svcmon_log_transition():
+    svc = request.vars.svcname
+    b = str_to_date(request.vars.begin)
+    e = str_to_date(request.vars.end)
+
+    """ real transition dates
+    """
+    tb = b
+    te = e
+
+    def get_states_at(d, svc):
+        q = (db.svcmon_log.mon_svcname==svc)
+        q &= (db.svcmon_log.mon_begin!=db.svcmon_log.mon_end)
+
+        rows = db(q&(db.svcmon_log.mon_end<=d)).select(orderby=~db.svcmon_log.mon_end, limitby=(0,1))
+        n = len(rows)
+        if n == 0:
+            before = DIV(T("No known state before %(date)s", dict(date=d)))
+        else:
+            before = svc_status(rows[0])
+            tb = rows[0].mon_end
+
+        rows = db(q&(db.svcmon_log.mon_begin>=d)).select(orderby=db.svcmon_log.mon_begin, limitby=(0,1))
+        n = len(rows)
+        if n == 0:
+            after = DIV(T("No known state after %(date)s", dict(date=d)))
+        else:
+            after = svc_status(rows[0])
+            te = rows[0].mon_begin
+
+        return (before, after)
+
+    (bb, ab) = get_states_at(b, svc)
+    (be, ae) = get_states_at(e, svc)
+
+    header = DIV(
+               H3(T("State transitions for %(svc)s", dict(svc=svc))),
+             )
+    t = TABLE(
+          TR(
+            TH(b, _colspan=2, _style="text-align:center"),
+            TH(e, _colspan=2, _style="text-align:center"),
+          ),
+          TR(
+            TD(bb),
+            TD(ab),
+            TD(be),
+            TD(ae),
+          ),
+        )
+    return DIV(header, t)
+
 @auth.requires_login()
 def ajax_svcmon_log_ack_write():
     svc = request.vars.xi
