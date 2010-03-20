@@ -1243,9 +1243,9 @@ def service_availability_chart(h):
     return action
 
 def str_to_date(s, fmt="%Y-%m-%d %H:%M:%S"):
-    s = s.strip()
     if s is None or s == "" or len(fmt) == 0:
         return None
+    s = s.strip()
     if s[0] in ["<", ">"]:
         s = s[1:]
     try:
