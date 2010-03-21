@@ -60,45 +60,54 @@ def ajax_status(svc, name, cssclass):
           _style="cursor:help",
         )
     pass
-}}
 
-{{def node_status(svc, cellclass):
+
+def svc_status(svc, cellclass="cell2"):
+    cl = {}
     import time
     time_format = "%Y-%m-%d %H:%M:%S"
     updated = svc.mon_updated
-    if updated < toolong:
-        overallstatus = 'status_expired'
-        containerstatus = 'status_expired'
-        ipstatus = 'status_expired'
-        fsstatus = 'status_expired'
-        diskstatus = 'status_expired'
-        syncstatus = 'status_expired'
-        appstatus = 'status_expired'
-    else:
-        overallstatus = 'status_'+svc.mon_overallstatus.replace(" ", "_")
-        containerstatus = 'status_'+svc.mon_containerstatus.replace(" ", "_")
-        ipstatus = 'status_'+svc.mon_ipstatus.replace(" ", "_")
-        fsstatus = 'status_'+svc.mon_fsstatus.replace(" ", "_")
-        diskstatus = 'status_'+svc.mon_diskstatus.replace(" ", "_")
-        syncstatus = 'status_'+svc.mon_syncstatus.replace(" ", "_")
-        appstatus = 'status_'+svc.mon_appstatus.replace(" ", "_")
+    for k in ['mon_overallstatus',
+              'mon_containerstatus',
+              'mon_ipstatus',
+              'mon_fsstatus',
+              'mon_diskstatus',
+              'mon_syncstatus',
+              'mon_appstatus']:
+        if svc[k] is None:
+            cl[k] = 'status_undef'
+        elif updated < toolong:
+            cl[k] = 'status_expired'
+        else:
+            cl[k] = 'status_'+svc[k].replace(" ", "_")
+        pass
     pass
+
 }}
-    {{=PANEL(svc.mon_nodname+'_'+svc.svc_name)}}
-    <table>
-      <tr>
-         <td colspan=6 class="{{=cellclass}}" title="since {{=svc.mon_updated}}">{{=ajax_status(svc, svc.mon_overallstatus, ' '.join(["status", overallstatus]))}}</td>
-      </tr><tr>
-        <td class="{{=cellclass}}">{{=ajax_status(svc, "vm", containerstatus)}}</td>
-        <td class="{{=cellclass}}">{{=ajax_status(svc, "ip", ipstatus)}}</td>
-        <td class="{{=cellclass}}">{{=ajax_status(svc, "fs", fsstatus)}}</td>
-        <td class="{{=cellclass}}">{{=ajax_status(svc, "dg", diskstatus)}}</td>
-        <td class="{{=cellclass}}">{{=ajax_status(svc, "sync", syncstatus)}}</td>
-        <td class="{{=cellclass}}">{{=ajax_status(svc, "app", appstatus)}}</td>
-      </tr>
-    </table>
-    {{return ''}}
-{{pass}}
+{{=PANEL(svc.mon_nodname+'_'+svc.svc_name)}}
+{{
+    t = TABLE(
+      TR(
+        TD(ajax_status(svc,
+                       svc.mon_overallstatus,
+                       ' '.join(["status", cl['mon_overallstatus']])),
+           _colspan=6,
+           _title="since "+str(svc.mon_updated),
+        ),
+      ),
+      TR(
+        TD("vm", _class=cellclass+' '+cl['mon_containerstatus']),
+        TD("ip", _class=cellclass+' '+cl['mon_ipstatus']),
+        TD("fs", _class=cellclass+' '+cl['mon_fsstatus']),
+        TD("dg", _class=cellclass+' '+cl['mon_diskstatus']),
+        TD("sync", _class=cellclass+' '+cl['mon_syncstatus']),
+        TD("app", _class=cellclass+' '+cl['mon_appstatus']),
+      ),
+    )
+    return t
+    pass
+
+}}
 
 <input id="svcname" type="hidden">
 <input id="node" type="hidden">
@@ -320,7 +329,7 @@ def ajax_status(svc, name, cssclass):
       }}
     </td>
     <td class="{{=cellclass}}">
-      {{=node_status(svc,cellclass)}}
+      {{=svc_status(svc,cellclass)}}
     </td>
     <td style='padding:0'></td>
   </tr>

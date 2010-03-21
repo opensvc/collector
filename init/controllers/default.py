@@ -2378,25 +2378,33 @@ def ajax_svc_message_load():
            )
 
 def svc_status(svc, cellclass="cell2"):
-    overallstatus = 'status_'+svc.mon_overallstatus.replace(" ", "_")
-    containerstatus = 'status_'+svc.mon_containerstatus.replace(" ", "_")
-    ipstatus = 'status_'+svc.mon_ipstatus.replace(" ", "_")
-    fsstatus = 'status_'+svc.mon_fsstatus.replace(" ", "_")
-    diskstatus = 'status_'+svc.mon_diskstatus.replace(" ", "_")
-    syncstatus = 'status_'+svc.mon_syncstatus.replace(" ", "_")
-    appstatus = 'status_'+svc.mon_appstatus.replace(" ", "_")
+    cl = {}
+    for k in ['mon_overallstatus',
+              'mon_containerstatus',
+              'mon_ipstatus',
+              'mon_fsstatus',
+              'mon_diskstatus',
+              'mon_syncstatus',
+              'mon_appstatus']:
+        if svc[k] is None:
+            cl[k] = 'status_undef'
+        else:
+            cl[k] = 'status_'+svc[k].replace(" ", "_")
 
     t = TABLE(
       TR(
-        TD(svc.mon_overallstatus, _colspan=6, _class=cellclass+' status '+overallstatus),
+        TD(svc.mon_overallstatus,
+           _colspan=6,
+           _class=cellclass+' status '+cl['mon_overallstatus'],
+        ),
       ),
       TR(
-        TD("vm", _class=cellclass+' '+containerstatus),
-        TD("ip", _class=cellclass+' '+ipstatus),
-        TD("fs", _class=cellclass+' '+fsstatus),
-        TD("dg", _class=cellclass+' '+diskstatus),
-        TD("sync", _class=cellclass+' '+syncstatus),
-        TD("app", _class=cellclass+' '+appstatus),
+        TD("vm", _class=cellclass+' '+cl['mon_containerstatus']),
+        TD("ip", _class=cellclass+' '+cl['mon_ipstatus']),
+        TD("fs", _class=cellclass+' '+cl['mon_fsstatus']),
+        TD("dg", _class=cellclass+' '+cl['mon_diskstatus']),
+        TD("sync", _class=cellclass+' '+cl['mon_syncstatus']),
+        TD("app", _class=cellclass+' '+cl['mon_appstatus']),
       ),
     )
     return t
