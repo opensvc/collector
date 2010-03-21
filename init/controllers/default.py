@@ -1222,7 +1222,7 @@ def service_availability_chart(h):
             if d1 < 0:
                 continue
             d2 = tse - tsb
-            if d2 == 0 or d1 == 0:
+            if d2 == 0:
                 continue
             last = tse
             ticks += [d1, d2]
@@ -1231,9 +1231,6 @@ def service_availability_chart(h):
         return ticks
 
     for svc in h:
-        if len(h[svc]['holes']) == 0:
-            continue
-
         if x_min == 0:
             x_min = mktime(h[svc]['begin'].timetuple())
         else:
