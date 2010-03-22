@@ -233,23 +233,56 @@ def filter_match(key, fval):
     cellclasses['cell2'] = 'cell1'
   }}
   {{for svc in k:
+      n = 0
       if len(h[svc]['holes']) == 0:
-          h[svc]['holes'] = [("","",0)]
+          h[svc]['holes'] = [dict(begin="",
+                                  end="",
+                                  acked=0,
+                                  acked_comment='',
+                                  acked_by_comment='',
+                                  acked_on='',
+                                 )]
           pass
-      for b, e, ack in h[svc]['holes']:
-      if b == "" or e == "":
-          d = ""
-      else:
-          d = e - b
-          pass
-      if not filter_match('mon_duration', d):
-          continue
+      for _h in h[svc]['holes']:
+          n += 1
+          b = _h['begin']
+          e = _h['end']
+          ack = _h['acked']
+          if b == "" or e == "":
+              d = ""
+          else:
+              d = e - b
+              pass
+          if not filter_match('mon_duration', d):
+              continue
 
-      if ack == 1:
-          strike = 'text-decoration:line-through'
-      else:
-          strike = ''
-          pass
+          eid = "ack_"+svc+"_"+str(n)
+          if _h['acked'] == 1:
+              strike = 'text-decoration:line-through'
+              trigger = """onMouseOver='javascript:show_eid("%(eid)s")'
+                           onMouseOut='javascript:hide_eid("%(eid)s")'
+                        """%dict(eid=eid)
+              ackline = TR(
+                          TD(_style='padding:0'),
+                          TD(
+                            B("acked by "),
+                            _h['acked_by'],
+                            B(" on "),
+                            _h['acked_on'],
+                            B(" with comment: "),
+                            _h['acked_comment'],
+                            _colspan=99
+                          ),
+                          TD(_style='padding:0'),
+                          _class='ack',
+                          _id=eid
+                        )
+
+          else:
+              strike = ''
+              ackline = SPAN()
+              trigger = ''
+              pass
 
       if svcname != svc:
           cellclass = cellclasses[cellclass]
@@ -327,7 +360,7 @@ def filter_match(key, fval):
     <td class={{=cellclass}} style={{=strike}}>
         {{=d}}
     </td>
-    <td class={{=cellclass}}>
+    <td class={{=cellclass}} {{=trigger}}>
       {{=A(
             '[ack]',
             _href='#',
@@ -352,6 +385,7 @@ def filter_match(key, fval):
     </td>
     <td style='padding:0'></td>
   </tr>
+  {{=ackline}}
   {{pass}}
   {{pass}}
   {{BOX_TOP_ROW(7)}}

@@ -1056,6 +1056,23 @@ def service_availability(rows, begin=None, end=None):
     def get_holes(svc, _e, b):
         ack_overlap = 0
         holes = []
+
+        def _hole(b, e, acked, a):
+            if a is None:
+                a = dict(mon_acked_by='',
+                         mon_acked_on='',
+                         mon_comment='',
+                         id='',
+                        )
+            return dict(begin=b, 
+                        end=e, 
+                        acked=acked,
+                        acked_by=a['mon_acked_by'],
+                        acked_on=a['mon_acked_on'],
+                        acked_comment=a['mon_comment'],
+                        id=a['id'],
+                       )
+
         for a in [ack for ack in acked if ack.mon_svcname == svc]:
             (ab, ae) = (a.mon_begin, a.mon_end)
 
@@ -1068,7 +1085,7 @@ def service_availability(rows, begin=None, end=None):
                          ============= acked segment
                         ab           ae
                 """
-                holes += [(_e, b, 1)]
+                holes += [_hole(_e, b, 1, a)]
                 ack_overlap += 1
                 break
 
@@ -1081,8 +1098,8 @@ def service_availability(rows, begin=None, end=None):
                                =========== acked segment
                               ab         ae
                 """
-                holes += [(_e, ab, 0)]
-                holes += [(ab, b, 1)]
+                holes += [_hole(_e, ab, 0, None)]
+                holes += [_hole(ab, b, 1, a)]
                 ack_overlap += 1
 
             elif ab <= _e and ae < b and ae > _e:
@@ -1094,8 +1111,8 @@ def service_availability(rows, begin=None, end=None):
                      ========= acked segment
                     ab       ae
                 """
-                holes += [(_e, ae, 1)]
-                holes += [(ae, b, 0)]
+                holes += [_hole(_e, ae, 1, a)]
+                holes += [_hole(ae, b, 0, None)]
                 ack_overlap += 1
 
             elif ab > _e and ab < b and ae > _e and ae < b:
@@ -1107,13 +1124,13 @@ def service_availability(rows, begin=None, end=None):
                                ====== acked segment
                               ab    ae
                 """
-                holes += [(_e, ab, 0)]
-                holes += [(ab, ae, 1)]
-                holes += [(ae, b, 0)]
+                holes += [_hole(_e, ab, 0, None)]
+                holes += [_hole(ab, ae, 1, a)]
+                holes += [_hole(ae, b, 0, None)]
                 ack_overlap += 1
 
         if ack_overlap == 0:
-            holes += [(_e, b, 0)]
+            holes += [_hole(_e, b, 0, None)]
 
         return holes
 
@@ -1183,10 +1200,10 @@ def service_availability(rows, begin=None, end=None):
 
         """ Account acknowledged time
         """
-        for b, e, ack in h[svc]['holes']:
-            if ack == 1:
+        for _h in h[svc]['holes']:
+            if _h['acked'] == 1:
                 continue
-            h[svc]['downtime'] += delta_to_min(e-b)
+            h[svc]['downtime'] += delta_to_min(_h['end'] - _h['begin'])
 
         """ Compute availability
         """
@@ -1212,9 +1229,9 @@ def service_availability_chart(h):
     def get_range(holes):
         last = 0
         ticks = []
-        for b, e, ack in holes:
-            tsb = mktime(b.timetuple())
-            tse = mktime(e.timetuple())
+        for _h in holes:
+            tsb = mktime(_h['begin'].timetuple())
+            tse = mktime(_h['end'].timetuple())
             d1 = tsb - last
             if d1 < 0:
                 continue
@@ -1238,8 +1255,8 @@ def service_availability_chart(h):
         else:
             x_max = min(mktime(h[svc]['end'].timetuple()), x_max)
 
-        ticks = get_range([(b, e, ack) for (b, e, ack) in h[svc]['holes'] if ack==0])
-        ticks_acked = get_range([(b, e, ack) for (b, e, ack) in h[svc]['holes'] if ack==1])
+        ticks = get_range([_h for _h in h[svc]['holes'] if _h['acked']==0])
+        ticks_acked = get_range([_h for _h in h[svc]['holes'] if _h['acked']==1])
 
         data += [(svc, tuple(ticks), tuple(ticks_acked))]
 
