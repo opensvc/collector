@@ -337,11 +337,13 @@ def svc_status(svc, cellclass="cell2"):
   {{pass}}
 
   <tr>
-    <td colspan=99>
+    <td style='padding:0'></td>
+    <td colspan=10>
     {{if viz is not None:}}
       {{=P(IMG(_src=viz, _border=0), _style="text-align:center")}}
     {{pass}}
     </td>
+    <td style='padding:0'></td>
   </tr>
 
   {{BOX_TOP_ROW(10)}}
