@@ -1936,7 +1936,7 @@ def svcmon_viz():
     request.vars['perpage'] = 0
     s = svcmon()
     img = svcmon_viz_img(s['services'])
-    return dict(s=s['services'], v=str(v), img=img)
+    return dict(s=s['services'], img=img)
 
 def viz_cron_cleanup():
     viz().viz_cron_cleanup()
