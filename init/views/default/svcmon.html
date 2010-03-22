@@ -152,6 +152,7 @@ def svc_status(svc, cellclass="cell2"):
     cellclasses['cell2'] = 'cell1'
     yesterday = str(datetime.datetime.today()-datetime.timedelta(days=1))
   }}
+
   {{for svc in services:}}
   <tr>
     {{if svcname != svc.mon_svcname:
@@ -334,6 +335,15 @@ def svc_status(svc, cellclass="cell2"):
     <td style='padding:0'></td>
   </tr>
   {{pass}}
+
+  <tr>
+    <td colspan=99>
+    {{if viz is not None:}}
+      {{=P(IMG(_src=viz, _border=0), _style="text-align:center")}}
+    {{pass}}
+    </td>
+  </tr>
+
   {{BOX_TOP_ROW(10)}}
   <tr class=box>
     <td align=center colspan=99>{{=nav}}</td>

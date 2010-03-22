@@ -1630,7 +1630,16 @@ def svcmon():
     msgs = db(db.svcmessages.id>0).select()
     svcmsg = [msg.msg_svcname for msg in msgs if len(msg.msg_body)>0]
 
-    return dict(services=rows, filters=session.filters, nav=nav, svcmsg=svcmsg)
+    if len(set([svc.mon_svcname for svc in rows])) == 1:
+        viz = svcmon_viz_img(rows)
+    else:
+        viz = None
+
+    return dict(services=rows,
+                filters=session.filters,
+                nav=nav,
+                viz=viz,
+                svcmsg=svcmsg)
 
 class viz(object):
     vizdir = 'applications'+str(URL(r=request,c='static',f='/'))
