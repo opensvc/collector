@@ -1221,6 +1221,12 @@ def service_availability_chart(h):
         d = datetime.date.fromtimestamp(ts)
         return "/a50/5{}" + d.strftime("%y-%m-%d")
 
+    def sort_by_avail(x, y):
+        return cmp(h[x]['availability'], h[y]['availability'])
+
+    k = h.keys()
+    k.sort(sort_by_avail, reverse=True)
+
     data = []
     from time import mktime
     x_min = 0
@@ -1244,7 +1250,7 @@ def service_availability_chart(h):
             ticks = [0, 0]
         return ticks
 
-    for svc in h:
+    for svc in k:
         if x_min == 0:
             x_min = mktime(h[svc]['begin'].timetuple())
         else:
