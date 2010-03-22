@@ -341,6 +341,7 @@ os_vendors = [
     "Red Hat", 
     "Ubuntu",
     "Debian",
+    "Centos",
     "HP",
     "IBM",
     "Microsoft",

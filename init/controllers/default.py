@@ -969,11 +969,8 @@ def service_availability(rows, begin=None, end=None):
             else: return 'undef'
         return s
 
-    now = datetime.datetime.now()
-    if begin is None:
-        begin = now - datetime.timedelta(days=7, microseconds=now.microsecond)
-    if end is None:
-        end = now - datetime.timedelta(seconds=1200, microseconds=now.microsecond)
+    if end is None or begin is None:
+        return {}
     period = end - begin
 
     """ First pass at range construction:
@@ -1291,6 +1288,19 @@ def str_to_date(s, fmt="%Y-%m-%d %H:%M:%S"):
 
 @auth.requires_login()
 def svcmon_log():
+    now = datetime.datetime.now()
+    if request.vars.mon_begin is None or request.vars.mon_begin == "":
+        begin = now - datetime.timedelta(days=7, microseconds=now.microsecond)
+        request.vars.mon_begin = ">"+str(begin)
+    else:
+        begin = str_to_date(request.vars.mon_begin)
+
+    if request.vars.mon_end is None or request.vars.mon_end == "":
+        end = now - datetime.timedelta(seconds=1200, microseconds=now.microsecond)
+        request.vars.mon_end = "<"+str(end)
+    else:
+        end = str_to_date(request.vars.mon_end)
+
     o = db.svcmon_log.mon_begin|db.svcmon_log.mon_end
     query = (db.svcmon_log.id>0)
     query &= _where(None, 'svcmon_log', request.vars.mon_svcname, 'mon_svcname')
@@ -1301,8 +1311,6 @@ def svcmon_log():
     rows = db(query).select(orderby=o)
     nav = DIV()
 
-    begin = str_to_date(request.vars.mon_begin)
-    end = str_to_date(request.vars.mon_end)
     h = service_availability(rows, begin, end)
     img = service_availability_chart(h)
 
