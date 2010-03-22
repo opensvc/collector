@@ -1254,6 +1254,7 @@ def service_availability_chart(h):
     theme.reinitialize()
 
     ar = area.T(y_coord = category_coord.T(data, 0),
+                size = (150,len(data)*8),
                 x_range = (x_min, x_max),
                 x_axis = axis.X(label="", format=format_x, tic_interval=259200),
                 y_axis = axis.Y(label="",  format="/6{}%s"))
