@@ -168,16 +168,15 @@ def filter_match(key, fval):
     def date(d, b, e, svc):
       return A(
             d,
-            _href='#',
             _border=0,
             _title=T("click to view state transition"),
             _onclick="""
                getElementById("svcname").value="%(svcname)s";
                getElementById("begin").value="%(begin)s";
                getElementById("end").value="%(end)s";
+               getElementById("panel_transition").style.top=event.pageY+'px';
                ajax("%(url)s",['svcname', 'begin', 'end'],"panelbody_transition");
                getElementById("panel_transition").className="panel_shown";
-               getElementById("panel_transition").style.top=event.pageY+'px';
             """%dict(url=URL(r=request,f='ajax_svcmon_log_transition'),
                      svcname=svc,
                      a=svc.replace('.', '_'),
@@ -188,12 +187,6 @@ def filter_match(key, fval):
          )
 
 }}
-<input id="svcname" type="hidden">
-<input id="begin" type="hidden">
-<input id="end" type="hidden">
-{{=PANEL("column_values")}}
-{{=PANEL("transition")}}
-{{=PANEL("ack")}}
 <form action='svcmon_log' name='svcform' id='svcform'> 
 
 {{if img is not None:}}
@@ -306,6 +299,7 @@ def filter_match(key, fval):
             _title="service configuration file",
             _onclick="""
                getElementById("svcname").value="%(svcname)s";
+               getElementById("panel_envfile_%(a)s").style.top=event.pageY+'px';
                ajax("%(url)s",['svcname'],"panelbody_envfile_%(a)s");
                getElementById("panel_envfile_%(a)s").className="panel_shown";
             """%dict(url=URL(r=request,f='envfile'),
@@ -315,32 +309,7 @@ def filter_match(key, fval):
           _class="xinfo",
         )
      }}
-     {{=PANEL("msg_"+svc, DIV(
-          DIV(
-            TEXTAREA(_id="msgbody_"+svc),
-            _id="msg__"+svc
-          ),
-          INPUT(
-            _value=T("save"),
-            _type="button",
-            _onclick="""
-              ajax("%(url)s",['svcname','msgbody_%(svcname)s'],"msg__%(svcname)s");
-              getElementById("panel_msg_%(a)s").className="panel";
-              if (getElementById("msgbody_%(svcname)s").value.length>0)
-                getElementById("msg_img_%(svcname)s").src="%(img1)s";
-              else
-                getElementById("msg_img_%(svcname)s").src="%(img0)s";
-            """%dict(url=URL(r=request,f='ajax_svc_message_save'),
-                     svcname=svc,
-                     a=svc.replace('.', '_'),
-                     img0=URL(r=request,c='static',f='msg0.png'),
-                     img1=URL(r=request,c='static',f='msg1.png'),
-                    ),
-          ),
-          _id="msg_"+svc,
-        ))
-      }}
-      {{pass}}
+    {{pass}}
     </td>
     <td class={{=cellclass}}>
       {{if newsvc:}}
@@ -364,16 +333,15 @@ def filter_match(key, fval):
     <td class={{=cellclass}} {{=trigger}}>
       {{=A(
             '[ack]',
-            _href='#',
             _border=0,
             _title=T("acknowledge a unavailability segment"),
             _onclick="""
                getElementById("svcname").value="%(svcname)s";
                getElementById("begin").value="%(begin)s";
                getElementById("end").value="%(end)s";
+               getElementById("panel_ack").style.top=event.pageY+'px';
                ajax("%(url)s",['svcname', 'begin', 'end'],"panelbody_ack");
                getElementById("panel_ack").className="panel_shown";
-               getElementById("panel_ack").style.top=event.pageY+'px';
             """%dict(url=URL(r=request,f='ajax_svcmon_log_ack_load'),
                      svcname=svc,
                      a=svc.replace('.', '_'),
@@ -399,4 +367,10 @@ def filter_match(key, fval):
   </tr>
   {{BOX_BOTTOM_ROW(7)}}
 </table>
+<input id="svcname" type="hidden">
+<input id="begin" type="hidden">
+<input id="end" type="hidden">
+{{=PANEL("column_values")}}
+{{=PANEL("transition")}}
+{{=PANEL("ack")}}
 </form>
