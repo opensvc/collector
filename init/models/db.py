@@ -560,3 +560,21 @@ db.define_table('svcmon_log_ack',
     Field('mon_acked_by', 'string'),
     Field('mon_acked_on', 'datetime'),
     migrate=False)
+
+db.define_table('auth_filters',
+    Field('id'),
+    Field('fil_uid', 'integer'),
+    Field('fil_id', 'integer'),
+    Field('fil_value', 'string', length=200),
+    migrate=False)
+
+db.define_table('filters',
+    Field('id'),
+    Field('fil_name', 'string', length=30),
+    Field('fil_column', 'string', length=30),
+    Field('fil_need_value', 'boolean'),
+    Field('fil_pos', 'integer'),
+    Field('fil_table', 'string', length=30),
+    Field('fil_img', 'string', length=30),
+    migrate=False)
+

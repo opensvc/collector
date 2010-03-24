@@ -1,6 +1,7 @@
 {{extend 'layout.html'}}
 {{include '../static/jslib.html'}}
 {{include 'box.html'}}
+{{include 'filters.html'}}
 
 {{
 vars = request.vars
@@ -68,11 +69,11 @@ def show_nodes(nodes):
   }}
   {{for svc in services:}}
   <tr>
-    {{if svcname != svc.v_services.svc_name:
+    {{if svcname != svc.v_svcmon.svc_name:
           cellclass = cellclasses[cellclass]
-          svcname = svc.v_services.svc_name
+          svcname = svc.v_svcmon.svc_name
           pass
-      checked = getattr(vars, 'check_'+svc.v_services.svc_name)
+      checked = getattr(vars, 'check_'+svc.v_svcmon.svc_name)
       if checked is not None:
           checked = 'checked=on'
           pass
@@ -86,23 +87,23 @@ def show_nodes(nodes):
       else:
           drp_project_id = svc.drpservices.drp_project_id
           pass
-      if svc.v_services.responsibles:
-          responsibles = IMG(_src=URL(r=request,c='static',f='guy.png'),_border=0, _title=svc.v_services.responsibles)
+      if svc.v_svcmon.responsibles:
+          responsibles = IMG(_src=URL(r=request,c='static',f='guy.png'),_border=0, _title=svc.v_svcmon.responsibles)
       else:
           responsibles = ''
           pass
       }}
     <td style='padding:0'></td>
-    <td class={{=cellclass}}><input type=checkbox name=check_{{=svc.v_services.svc_name}} {{=checked}}></td>
-    <td class={{=cellclass}}>{{=svc.v_services.svc_name}}</td>
-    <td class={{=cellclass}}>{{=svc.v_services.svc_app}}</td>
+    <td class={{=cellclass}}><input type=checkbox name=check_{{=svc.v_svcmon.svc_name}} {{=checked}}></td>
+    <td class={{=cellclass}}>{{=svc.v_svcmon.svc_name}}</td>
+    <td class={{=cellclass}}>{{=svc.v_svcmon.svc_app}}</td>
     <td class={{=cellclass}}>{{=responsibles}}</td>
-    <td class={{=cellclass}}>{{=svc.v_services.svc_type}}</td>
-    <td class={{=cellclass}}>{{=svc.v_services.svc_drptype}}</td>
-    <td class={{=cellclass}}>{{show_nodes(svc.v_services.svc_autostart)}}</td>
-    <td class={{=cellclass}}>{{show_nodes(svc.v_services.svc_nodes)}}</td>
-    <td class={{=cellclass}}>{{show_nodes(svc.v_services.svc_drpnode)}}</td>
-    <td class={{=cellclass}}>{{show_nodes(svc.v_services.svc_drpnodes)}}</td>
+    <td class={{=cellclass}}>{{=svc.v_svcmon.svc_type}}</td>
+    <td class={{=cellclass}}>{{=svc.v_svcmon.svc_drptype}}</td>
+    <td class={{=cellclass}}>{{show_nodes(svc.v_svcmon.svc_autostart)}}</td>
+    <td class={{=cellclass}}>{{show_nodes(svc.v_svcmon.svc_nodes)}}</td>
+    <td class={{=cellclass}}>{{show_nodes(svc.v_svcmon.svc_drpnode)}}</td>
+    <td class={{=cellclass}}>{{show_nodes(svc.v_svcmon.svc_drpnodes)}}</td>
     <td class={{=cellclass}}>{{=drp_wave}}</td>
   </tr>
   {{pass}}
@@ -118,6 +119,8 @@ def show_nodes(nodes):
           <td> {{=T('Export')}}:</td>
           <td> {{=T('set wave')}}:</td>
           <td> {{=T('project')}}:</td>
+          <td> {{=T('Active filters')}}:</td>
+          <td> {{=T('Add filter')}}:</td>
         </tr>
         <tr>
           <td>
@@ -130,7 +133,7 @@ def show_nodes(nodes):
             {{=IMG(_src=URL(r=request,c='static',f='wave3.png'),_border=0,_onclick='javascript:document.svcform.setwave.value=3;document.svcform.submit()')}}
             {{=IMG(_src=URL(r=request,c='static',f='del.png'),_border=0,_title=T("remove the selected services from the DR plan"), _onclick='javascript:document.svcform.setwave.value="del";document.svcform.submit()')}}
           </td>
-          <td width=500>
+          <td width=11em>
             <input name=delproject type=hidden>
             <select name=prjlist onChange='document.svcform.submit()'>
               <option value=0>choose</option>
@@ -149,6 +152,8 @@ def show_nodes(nodes):
             {{=IMG(_src=URL(r=request,c='static',f='del.png'),_border=0, _title=T("trash the current project"), _onclick='javascript:document.svcform.delproject.value=1;document.svcform.submit()')}}
             {{=A(IMG(_src=URL(r=request,c='static',f='gen.png'),_border=0, _title=T("generate the DR scripts for the current project")),_href=URL(r=request,f='drplan_scripts', vars=vars))}}
           </td>
+          <td>{{=DB_FILTERS_ACTIVE(active_filters)}}</td>
+          <td>{{=DB_FILTERS_AVAIL(available_filters)}}</td>
         </tr>
         <tr class='hidden' id='cloneproject_row'>
           <td></td>

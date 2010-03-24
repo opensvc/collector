@@ -1,53 +1,82 @@
-{{def sort_filters(x, y):
-        return cmp(x['id'], y['id'])
-  pass
+{{
+def DB_FILTERS_ACTIVE(filters):
+    i = INPUT(_type='hidden', _name='delfilter')
+    lines = []
+    for f in filters:
+        if f.auth_filters.fil_value is not None and \
+           len(f.auth_filters.fil_value) != 0:
+            value = " [%s]"%f.auth_filters.fil_value
+        else:
+            value = ""
+        pass
+        lines += [TR(
+                    TD(T(f.filters.fil_name),
+                       value,
+                       _style='background-image:url(%s);
+                               background-repeat:no-repeat;
+                               background-position:center left;
+                               padding:0px;
+                               padding-right:4px;
+                               padding-left:18px;
+                              '%URL(r=request,c='static',f=f.filters.fil_img),
+                    ),
+                    TD(IMG(_src=URL(r=request,c='static',f='del.png'),
+                           _border=0,
+                           _title=T("remove filter"),
+                           _onClick='javascript:document.svcform.delfilter.value='+str(f.auth_filters.id)+';document.svcform.submit()'
+                       ),
+                       _style='padding:0px;',
+                    ),
+                  )]
+    pass
+    return DIV(i, TABLE(lines))
+pass
+
+def DB_FILTERS_AVAIL(filters):
+    options = [OPTION(T('choose'), _value='')]
+    for f in filters:
+        if f.fil_need_value == 1:
+            title = 'need value'
+        else:
+            title = ''
+        pass
+        options += [OPTION(T(f.fil_name),
+                           _style='background-image:url(%s);background-repeat:no-repeat;padding-left:18px;'%URL(r=request,c='static',f=f.fil_img),
+                           _value=f.id,
+                           _id='addfilter_opt'+str(f.id),
+                           _title=title,
+                    )]
+    pass
+    t = TABLE(
+          TR(
+            TD(
+              SELECT(options,
+                     _name='addfilter',
+                     _id='addfilter',
+                     _onChange='javascript:toggle_filter_value_input()',
+              ),
+            ),
+            TD(
+              IMG(_src=URL(r=request,c='static',f='add.png'),
+                  _border=0,
+                  _title=T("add filter"),
+                  _onClick='javascript:document.svcform.submit()',
+              ),
+            ),
+          ),
+          TR(
+            TD(
+              INPUT(_name='filtervalue',
+                    _id='filtervalue',
+                    _size=14,
+                    _onkeypress="checkEnter(event)",
+              ),
+            ),
+            _class='hidden',
+            _id='tr_filtervalue',
+          ),
+        )
+    return DIV(t)
+pass
+
 }}
-
-{{def FILTERS_ACTIVE(filters):}}
-  <input type=hidden name=delfilter>
-  <table>
-    {{for f in sorted(filters.values(), sort_filters):}}
-      {{if f['active']:}}
-        {{if f.has_key('value'):
-              query = ' '+f['value']
-          else:
-              query = ''
-          pass}}
-        <tr>
-          <td>{{=f['name']}}{{=query}}</td>
-          <td><img src='{{=URL(r=request,c='static',f='del.png')}}' border=0 title='{{=T("remove filter")}}' onClick='javascript:document.svcform.delfilter.value={{=f["id"]}};document.svcform.submit()'></td>
-        </tr>
-      {{pass}}
-    {{pass}}
-  </table>
-{{pass}}
-
-{{def FILTERS_AVAIL(filters):}}
-  <table>
-    <tr>
-      <td>
-        <select name=addfilter id=addfilter onChange="toggle_filter_value_input()">
-        <option value=''>{{=T('choose')}}</option>
-        {{for f in sorted(filters.values(), sort_filters):}}
-          {{if not f['active']:}}
-            {{if f.has_key('value'):
-              title = 'need value'
-            else:
-              title = ''
-            pass}}
-            <option id="addfilter_opt{{=f['id']}}" value={{=f['id']}} title="{{=title}}">{{=T(f['name'])}}</option>
-          {{pass}}
-        {{pass}}
-        </select>
-      </td>
-      <td>
-        <img src='{{=URL(r=request,c='static',f='add.png')}}' border=0 title='{{=T("add filter")}}' onClick='javascript:document.svcform.submit()'>
-      </td>
-    </tr>
-    <tr class=hidden id=tr_filtervalue>
-      <td>
-        <input name='filtervalue' id='filtervalue' size=14 onkeypress="checkEnter(event)">
-      </td>
-    </tr>
-  </table>
-{{pass}}

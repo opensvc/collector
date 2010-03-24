@@ -89,8 +89,8 @@ for key in colkeys:
           <td>
             {{=A(IMG(_src=URL(r=request,c='static',f='add.png'),_border=0, _title=T("add a new node")),_href=URL(r=request,f='node_insert'))}}
           </td>
-          <td>{{FILTERS_ACTIVE(session.nodes_filters)}}</td>
-          <td>{{FILTERS_AVAIL(session.nodes_filters)}}</td>
+          <td>{{=DB_FILTERS_ACTIVE(active_filters)}}</td>
+          <td>{{=DB_FILTERS_AVAIL(available_filters)}}</td>
         </tr>
       </table>
     </td>

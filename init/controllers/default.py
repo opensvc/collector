@@ -113,22 +113,88 @@ def domain_perms():
         return domain_perms
     return rows[0]['domains']
 
-def toggle_session_filters(filters):
+def toggle_db_filters():
     if request.vars.addfilter is not None and request.vars.addfilter != '':
-        filters[int(request.vars.addfilter)]['active'] = True
-        if request.vars.filtervalue is not None and request.vars.filtervalue != '':
-            filters[int(request.vars.addfilter)]['value'] = request.vars.filtervalue
-    elif request.vars.delfilter is not None and request.vars.delfilter != '':
-        filters[int(request.vars.delfilter)]['active'] = False
+        filters = db(db.filters.id==request.vars.addfilter).select(db.filters.fil_name)
+        if len(filters) == 0:
+            return
+        name = filters[0].fil_name
+        ids = db(db.filters.fil_name==name).select(db.filters.id)
+        for id in [r.id for r in ids]:
+            try:
+                db.auth_filters.insert(fil_uid=session.auth.user.id,
+                                  fil_id=id,
+                                  fil_value=request.vars.filtervalue)
+            except:
+                pass
 
-def apply_session_filters(filters, query, table=None):
-    for filter in filters.values():
-        if filter['active']:
-            if filter.has_key('q'):
-                query &= filter['q']
-            elif filter.has_key('field') and table is not None:
-                query &= _where(None, table, filter['value'], filter['field'])
+    elif request.vars.delfilter is not None and request.vars.delfilter != '':
+        filters = db(db.auth_filters.id==request.vars.delfilter).select(db.filters.fil_name, left=db.filters.on(db.auth_filters.fil_id==db.filters.id))
+        if len(filters) == 0:
+            return
+        name = filters[0].fil_name
+        ids = db(db.filters.fil_name==name)._select(db.filters.id)
+        q = db.auth_filters.fil_id.belongs(ids)
+        db(q).delete()
+
+def apply_db_filters(query, table=None):
+    q = db.auth_filters.fil_uid==session.auth.user.id
+    q &= db.filters.fil_table==table
+    filters = db(q).select(db.auth_filters.fil_value,
+                           db.filters.fil_name,
+                           db.filters.fil_table,
+                           db.filters.fil_column,
+                           left=db.filters.on(db.filters.id==db.auth_filters.fil_id))
+    for f in filters:
+        if 'ref' not in f.filters.fil_column:
+            if table not in db or f.filters.fil_column not in db[table]:
+                continue
+            query &= _where(None, table, f.auth_filters.fil_value, f.filters.fil_column)
+        elif f.filters.fil_column == 'ref1':
+            """ only primary nodes
+            """
+            query &= db.v_svcmon.mon_nodname==db.v_svcmon.svc_autostart
+        elif f.filters.fil_column == 'ref2':
+            """ only nodes with services
+            """
+            query &= db.nodes.nodename.belongs(db()._select(db.svcmon.mon_nodname))
+        elif f.filters.fil_column == 'ref3':
+            """ only not acknowledged actions
+            """
+            query &= (db.v_svcactions.status=='err')&(db.v_svcactions.ack==None)
     return query
+
+def avail_db_filters(table=None):
+    o = db.filters.fil_pos|db.filters.fil_img|db.filters.fil_name
+    active_fid = db(db.auth_filters.fil_uid==session.auth.user.id)._select(db.auth_filters.fil_id)
+    q = db.filters.fil_table==table
+    q &= ~db.filters.id.belongs(active_fid)
+    filters = db(q).select(db.filters.id,
+                           db.filters.fil_name,
+                           db.filters.fil_img,
+                           db.filters.fil_table,
+                           db.filters.fil_column,
+                           db.filters.fil_need_value,
+                           db.filters.fil_pos,
+                           orderby=o
+                          )
+    return filters
+
+def active_db_filters(table=None):
+    o = db.filters.fil_pos|db.filters.fil_img|db.filters.fil_name
+    q = db.auth_filters.fil_uid==session.auth.user.id
+    filters = db(q).select(db.auth_filters.fil_value,
+                           db.auth_filters.id,
+                           db.filters.fil_name,
+                           db.filters.fil_img,
+                           db.filters.fil_table,
+                           db.filters.fil_column,
+                           left=db.filters.on(db.filters.id==db.auth_filters.fil_id),
+                           groupby=db.filters.fil_name,
+                           orderby=o
+                          )
+    return filters
+
 
 @auth.requires_login()
 def index():
@@ -1578,58 +1644,7 @@ def svcmon():
     o |= ~db.v_svcmon.mon_nodtype
     o |= db.v_svcmon.mon_nodname
 
-    if not getattr(session, 'svcmon_filters'):
-        session.svcmon_filters = {
-            1: dict(name='prefered node',
-                    id=1,
-                    active=False,
-                    q=(db.v_svcmon.mon_nodname==db.v_svcmon.svc_autostart)
-            ),
-            2: dict(name='container name',
-                    id=2,
-                    active=False,
-                    value=None,
-                    field='svc_vmname',
-            ),
-            3: dict(name='opensvc version',
-                    id=3,
-                    active=False,
-                    value=None,
-                    field='svc_version',
-            ),
-            4: dict(name='service name',
-                    id=4,
-                    active=False,
-                    value=None,
-                    field='mon_svcname',
-            ),
-            5: dict(name='nodename',
-                    id=5,
-                    active=False,
-                    value=None,
-                    field='mon_nodname',
-            ),
-            6: dict(name='responsibles',
-                    id=6,
-                    active=False,
-                    value=None,
-                    field='responsibles',
-            ),
-            7: dict(name='os name',
-                    id=7,
-                    active=False,
-                    value=None,
-                    field='os_name',
-            ),
-            8: dict(name='server model',
-                    id=8,
-                    active=False,
-                    value=None,
-                    field='model',
-            ),
-        }
-    session.svcmon_filters.update(asset_filters('v_svcmon'))
-    toggle_session_filters(session.svcmon_filters)
+    toggle_db_filters()
 
     query = _where(None, 'v_svcmon', request.vars.svcname, 'mon_svcname')
     query &= _where(None, 'v_svcmon', request.vars.svctype, 'mon_svctype')
@@ -1643,7 +1658,7 @@ def svcmon():
     query &= _where(None, 'v_svcmon', request.vars.nodetype, 'mon_nodtype')
     query &= _where(None, 'v_svcmon', domain_perms(), 'mon_nodname')
 
-    query = apply_session_filters(session.svcmon_filters, query, 'v_svcmon')
+    query = apply_db_filters(query, 'v_svcmon')
 
     (start, end, nav) = _pagination(request, query)
     if start == 0 and end == 0:
@@ -1660,10 +1675,12 @@ def svcmon():
         viz = None
 
     return dict(services=rows,
-                filters=session.filters,
                 nav=nav,
                 viz=viz,
-                svcmsg=svcmsg)
+                svcmsg=svcmsg,
+                active_filters=active_db_filters('v_svcmon'),
+                available_filters=avail_db_filters('v_svcmon'),
+               )
 
 class viz(object):
     vizdir = 'applications'+str(URL(r=request,c='static',f='/'))
@@ -1692,7 +1709,6 @@ class viz(object):
     data = ""
     img_node = 'applications'+str(URL(r=request,c='static',f='node.png'))
     img_disk = 'applications'+str(URL(r=request,c='static',f='hd.png'))
-    img_svc = 'applications'+str(URL(r=request,c='static',f='svc.png'))
 
     def __str__(self):
         buff = """
@@ -2078,17 +2094,7 @@ def _svcaction_ack_one(request, action_id):
 
 @auth.requires_login()
 def svcactions():
-    if not getattr(session, 'svcactions_filters'):
-        session.svcactions_filters = {
-            1: dict(name='not acknowledged',
-                    id=1,
-                    active=False,
-                    q=((db.v_svcactions.status=='err')&(db.v_svcactions.ack==None))
-               ),
-        }
-
-    session.svcactions_filters.update(asset_filters('v_svc_actions'))
-    toggle_session_filters(session.svcactions_filters)
+    toggle_db_filters()
 
     if request.vars.ackcomment is not None:
         _svcaction_ack(request)
@@ -2107,7 +2113,7 @@ def svcactions():
     query &= _where(None, 'v_svcactions', request.vars.ack, 'ack')
     query &= _where(None, 'v_svcactions', domain_perms(), 'hostname')
 
-    query = apply_session_filters(session.svcactions_filters, query, 'v_svcactions')
+    query = apply_db_filters(query, 'v_svcactions')
 
     (start, end, nav) = _pagination(request, query)
     if start == 0 and end == 0:
@@ -2115,7 +2121,10 @@ def svcactions():
     else:
         rows = db(query).select(limitby=(start,end), orderby=~db.v_svcactions.begin|~db.v_svcactions.id)
 
-    return dict(actions=rows, nav=nav)
+    return dict(actions=rows,
+                active_filters=active_db_filters('v_svcactions'),
+                available_filters=avail_db_filters('v_svcactions'),
+                nav=nav)
 
 def svcactions_rss():
     #return BEAUTIFY(request)
@@ -2313,16 +2322,7 @@ def nodes():
     colkeys = columns.keys()
     colkeys.sort(_sort_cols)
 
-    if not getattr(session, 'nodes_filters'):
-        session.nodes_filters = {
-            1: dict(name='nodes with services',
-                    id=1,
-                    active=True,
-                    q=(db.nodes.nodename.belongs(db()._select(db.svcmon.mon_nodname))),
-            ),
-        }
-
-    toggle_session_filters(session.nodes_filters)
+    toggle_db_filters()
 
     # filtering
     query = (db.nodes.id>0)
@@ -2333,7 +2333,7 @@ def nodes():
 
     query &= _where(None, 'nodes', domain_perms(), 'nodename')
 
-    query = apply_session_filters(session.nodes_filters, query, 'nodes')
+    query = apply_db_filters(query, 'nodes')
 
     (start, end, nav) = _pagination(request, query)
     if start == 0 and end == 0:
@@ -2343,6 +2343,8 @@ def nodes():
 
     return dict(columns=columns, colkeys=colkeys,
                 nodes=rows,
+                active_filters=active_db_filters('nodes'),
+                available_filters=avail_db_filters('nodes'),
                 nav=nav)
 
 @auth.requires_login()
@@ -2791,27 +2793,35 @@ def drplan():
     elif request.vars.setwave is not None and request.vars.setwave != '':
         _drplan_set_wave(request)
 
-    query = (db.v_services.svc_drpnode!=None)&(db.v_services.svc_drpnode!='')
-    query &= _where(None, 'v_services', request.vars.svc_name, 'svc_name')
-    query &= _where(None, 'v_services', request.vars.svc_app, 'svc_app')
-    query &= _where(None, 'v_services', request.vars.responsibles, 'responsibles')
-    query &= _where(None, 'v_services', request.vars.svc_type, 'svc_type')
-    query &= _where(None, 'v_services', request.vars.svc_drptype, 'svc_drptype')
-    query &= _where(None, 'v_services', request.vars.svc_autostart, 'svc_autostart')
-    query &= _where(None, 'v_services', request.vars.svc_nodes, 'svc_nodes')
-    query &= _where(None, 'v_services', request.vars.svc_drpnode, 'svc_drpnode')
-    query &= _where(None, 'v_services', request.vars.svc_drpnodes, 'svc_drpnodes')
-    query &= _where(None, 'drpservices', request.vars.svc_wave, 'drp_wave', tableid=db.v_services.id)
-    query &= _where(None, 'v_services', domain_perms(), 'svc_nodes')
+    toggle_db_filters()
+
+    query = (db.v_svcmon.svc_drpnode!=None)&(db.v_svcmon.svc_drpnode!='')
+    query &= _where(None, 'v_svcmon', request.vars.svc_name, 'svc_name')
+    query &= _where(None, 'v_svcmon', request.vars.svc_app, 'svc_app')
+    query &= _where(None, 'v_svcmon', request.vars.responsibles, 'responsibles')
+    query &= _where(None, 'v_svcmon', request.vars.svc_type, 'svc_type')
+    query &= _where(None, 'v_svcmon', request.vars.svc_drptype, 'svc_drptype')
+    query &= _where(None, 'v_svcmon', request.vars.svc_autostart, 'svc_autostart')
+    query &= _where(None, 'v_svcmon', request.vars.svc_nodes, 'svc_nodes')
+    query &= _where(None, 'v_svcmon', request.vars.svc_drpnode, 'svc_drpnode')
+    query &= _where(None, 'v_svcmon', request.vars.svc_drpnodes, 'svc_drpnodes')
+    query &= _where(None, 'drpservices', request.vars.svc_wave, 'drp_wave', tableid=db.v_svcmon.id)
+    query &= _where(None, 'v_svcmon', domain_perms(), 'svc_nodes')
+
+    query = apply_db_filters(query, 'v_svcmon')
 
     (start, end, nav) = _pagination(request, query)
     if start == 0 and end == 0:
-        svc_rows = db(query).select(db.v_services.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id, left=db.drpservices.on((db.v_services.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)),groupby=db.v_services.svc_name)
+        svc_rows = db(query).select(db.v_svcmon.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id, left=db.drpservices.on((db.v_svcmon.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)),groupby=db.v_svcmon.svc_name)
     else:
-        svc_rows = db(query).select(db.v_services.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id, left=db.drpservices.on((db.v_services.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)),groupby=db.v_services.svc_name, limitby=(start,end))
+        svc_rows = db(query).select(db.v_svcmon.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id, left=db.drpservices.on((db.v_svcmon.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)),groupby=db.v_svcmon.svc_name, limitby=(start,end))
 
     prj_rows = db().select(db.drpprojects.drp_project_id, db.drpprojects.drp_project)
-    return dict(services=svc_rows, projects=prj_rows, nav=nav)
+    return dict(services=svc_rows,
+                projects=prj_rows,
+                active_filters=active_db_filters('v_svcmon'),
+                available_filters=avail_db_filters('v_svcmon'),
+                nav=nav)
 
 def drplan_csv():
     import gluon.contenttype

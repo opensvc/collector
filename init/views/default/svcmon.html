@@ -366,8 +366,8 @@ def svc_status(svc, cellclass="cell2"):
           <td>
             {{=A(IMG(_src=URL(r=request,c='static',f='viz.png'),_border=0, _title=T("print the topology of the current data cursor")),_href=URL(r=request,f='svcmon_viz', vars=vars))}}
           </td>
-          <td>{{FILTERS_ACTIVE(session.svcmon_filters)}}</td>
-          <td>{{FILTERS_AVAIL(session.svcmon_filters)}}</td>
+          <td>{{=DB_FILTERS_ACTIVE(active_filters)}}</td>
+          <td>{{=DB_FILTERS_AVAIL(available_filters)}}</td>
         </tr>
       </table>
     </td>
