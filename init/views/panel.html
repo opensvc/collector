@@ -27,12 +27,15 @@ def PANEL(a, content=None):
     )
     return d
 
-def list_vals_for_key(rows, key, title):
-    return DIV(H3(T("""distinct "%(title)s" values in set""",dict(title=title))), PRE('\\n'.join(set([str(n[key]) for n in rows]))))
+def list_vals_for_key(rows, key, title, nestedin=None):
+    if nestedin is None:
+        return DIV(H3(T("""distinct "%(title)s" values in set""",dict(title=title))), PRE('\\n'.join(set([str(n[key]) for n in rows]))))
+    else:
+        return DIV(H3(T("""distinct "%(title)s" values in set""",dict(title=title))), PRE('\\n'.join(set([str(n[nestedin][key]) for n in rows]))))
     pass
 
-def colname(rows, key, title):
-    values = list_vals_for_key(rows, key, title)
+def colname(rows, key, title, nestedin=None):
+    values = list_vals_for_key(rows, key, title, nestedin=nestedin)
     return A(
           title,
           _onclick="""

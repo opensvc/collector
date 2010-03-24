@@ -198,7 +198,7 @@ def filter_match(key, fval):
   <tr class=box>
     <td class=box></td>
     <td class=box></td>
-    <td>{{=colname(rows, 'mon_svcname', T('Service'))}}</td>
+    <td>{{=colname(rows, 'mon_svcname', T('Service'), nestedin='svcmon_log')}}</td>
     <td>{{=T('Availability')}}</td>
     <td>{{=T('Unavailability begin')}}</td>
     <td>{{=T('Unavailability end')}}</td>
@@ -363,6 +363,16 @@ def filter_match(key, fval):
   </tr>
   <tr class=box>
     <td colspan=99>
+      <table>
+        <tr>
+          <td> {{=T('Active filters')}}:</td>
+          <td> {{=T('Add filter')}}:</td>
+        </tr>
+        <tr>
+          <td>{{=DB_FILTERS_ACTIVE(active_filters)}}</td>
+          <td>{{=DB_FILTERS_AVAIL(available_filters)}}</td>
+        </tr>
+      </table>
     </td>
   </tr>
   {{BOX_BOTTOM_ROW(7)}}

@@ -1026,12 +1026,12 @@ def service_availability(rows, begin=None, end=None):
                   'mon_fsstatus',
                   'mon_appstatus',
                   'mon_diskstatus']:
-            if row[sn] in ['warn', 'stdby down', 'todo']: return 'warn'
-            elif row[sn] == 'undef': return 'undef'
-            elif row[sn] == 'n/a': continue
-            elif row[sn] == 'up': s = status_merge_up(s)
-            elif row[sn] == 'down': s = status_merge_down(s)
-            elif row[sn] == 'stdby up': s = status_merge_stdby_up(s)
+            if row.svcmon_log[sn] in ['warn', 'stdby down', 'todo']: return 'warn'
+            elif row.svcmon_log[sn] == 'undef': return 'undef'
+            elif row.svcmon_log[sn] == 'n/a': continue
+            elif row.svcmon_log[sn] == 'up': s = status_merge_up(s)
+            elif row.svcmon_log[sn] == 'down': s = status_merge_down(s)
+            elif row.svcmon_log[sn] == 'stdby up': s = status_merge_stdby_up(s)
             else: return 'undef'
         return s
 
@@ -1043,8 +1043,8 @@ def service_availability(rows, begin=None, end=None):
           for each row in resultset, create a new range
     """
     for row in rows:
-        if row.mon_svcname not in h:
-            h[row.mon_svcname] = {'ranges': [],
+        if row.svcmon_log.mon_svcname not in h:
+            h[row.svcmon_log.mon_svcname] = {'ranges': [],
                                   'range_count': 0,
                                   'holes': [],
                                   'begin': begin,
@@ -1055,58 +1055,58 @@ def service_availability(rows, begin=None, end=None):
                                  }
         s = status(row)
         if s not in ['up', 'stdby up with up']:
-            h[row.mon_svcname]['discarded'] += [(row.id, s)]
+            h[row.svcmon_log.mon_svcname]['discarded'] += [(row.svcmon_log.id, s)]
             continue
 
         """ First range does not need overlap detection
         """
-        (b, e) = (row.mon_begin, row.mon_end)
-        if len(h[row.mon_svcname]['ranges']) == 0:
-            h[row.mon_svcname]['ranges'] = [(b, e)]
-            h[row.mon_svcname]['range_count'] += 1
+        (b, e) = (row.svcmon_log.mon_begin, row.svcmon_log.mon_end)
+        if len(h[row.svcmon_log.mon_svcname]['ranges']) == 0:
+            h[row.svcmon_log.mon_svcname]['ranges'] = [(b, e)]
+            h[row.svcmon_log.mon_svcname]['range_count'] += 1
             continue
 
         """ Overlap detection
         """
         add = False
-        for (b, e) in h[row.mon_svcname]['ranges']:
-            if row.mon_end < b or row.mon_begin > e:
+        for (b, e) in h[row.svcmon_log.mon_svcname]['ranges']:
+            if row.svcmon_log.mon_end < b or row.svcmon_log.mon_begin > e:
                 """        XXXXXXXXXXX
                     XXX        or         XXX
                 """
                 add = True
-            elif row.mon_begin > b or row.mon_end < e:
+            elif row.svcmon_log.mon_begin > b or row.svcmon_log.mon_end < e:
                 """        XXXXXXXXXXX
                               XXX
                 """
                 add = False
                 break
-            elif row.mon_begin < b or row.mon_end > e:
+            elif row.svcmon_log.mon_begin < b or row.svcmon_log.mon_end > e:
                 """        XXXXXXXXXXX
                          XXXXXXXXXXXXXXXXX
                 """
                 add = False
-                b = row.mon_begin
-                e = row.mon_end
+                b = row.svcmon_log.mon_begin
+                e = row.svcmon_log.mon_end
                 break
-            elif row.mon_begin < b and row.mon_end > b:
+            elif row.svcmon_log.mon_begin < b and row.svcmon_log.mon_end > b:
                 """        XXXXXXXXXXX
                          XXXXX
                 """
                 add = False
-                b = row.mon_begin
+                b = row.svcmon_log.mon_begin
                 break
-            elif row.mon_begin < e and row.mon_end > e:
+            elif row.svcmon_log.mon_begin < e and row.svcmon_log.mon_end > e:
                 """        XXXXXXXXXXX
                                    XXXXX
                 """
                 add = False
-                e = row.mon_end
+                e = row.svcmon_log.mon_end
                 break
 
         if add:
-            h[row.mon_svcname]['range_count'] += 1
-            h[row.mon_svcname]['ranges'] += [(row.mon_begin,row.mon_end)]
+            h[row.svcmon_log.mon_svcname]['range_count'] += 1
+            h[row.svcmon_log.mon_svcname]['ranges'] += [(row.svcmon_log.mon_begin,row.svcmon_log.mon_end)]
 
     def delta_to_min(d):
         return (d.days*1440)+(d.seconds//60)
@@ -1391,12 +1391,16 @@ def svcmon_log():
     else:
         end = str_to_date(request.vars.mon_end)
 
+    toggle_db_filters()
+
     o = db.svcmon_log.mon_begin|db.svcmon_log.mon_end
-    query = (db.svcmon_log.id>0)
+    query = db.v_svcmon.mon_svcname==db.svcmon_log.mon_svcname
     query &= _where(None, 'svcmon_log', request.vars.mon_svcname, 'mon_svcname')
     query &= _where(None, 'svcmon_log', request.vars.mon_begin, 'mon_end')
     query &= _where(None, 'svcmon_log', request.vars.mon_end, 'mon_begin')
     query &= _where(None, 'svcmon_log', domain_perms(), 'mon_svcname')
+
+    query = apply_db_filters(query, 'v_svcmon')
 
     rows = db(query).select(orderby=o)
     nav = DIV()
@@ -1408,6 +1412,8 @@ def svcmon_log():
                 h=h,
                 nav=nav,
                 img=img,
+                active_filters=active_db_filters('v_svcmon'),
+                available_filters=avail_db_filters('v_svcmon'),
                )
 
 @auth.requires_login()
