@@ -2524,7 +2524,7 @@ def ajax_svcmon_log_ack_write():
     comment = request.vars.ci
 
     def db_insert_ack_segment(svc, begin, end, comment):
-        db.svcmon_log_ack.insert(
+        r = db.svcmon_log_ack.insert(
             mon_svcname = svc,
             mon_begin = begin,
             mon_end = end,
@@ -2535,10 +2535,12 @@ def ajax_svcmon_log_ack_write():
         )
 
     rows = db_select_ack_overlap(svc, b, e)
-    if len(rows) == 1:
+    l = len(rows)
+
+    if l == 1:
         b = min(rows[0].mon_begin, b)
         e = max(rows[0].mon_end, e)
-    if len(rows) > 1:
+    elif l > 1:
         b = min(rows[0].mon_begin, b)
         e = max(rows[-1].mon_end, e)
 
@@ -2547,11 +2549,10 @@ def ajax_svcmon_log_ack_write():
 
     input_close = INPUT(_value=T('close & refresh table'), _id='close', _type='submit', _onclick="""
                     getElementById("panel_ack").className="panel";
-                    window.location.reload();
                   """%dict(url=URL(r=request,f='ajax_svcmon_log_ack_write'),
                            svcname=svc)
                   )
-    return DIV(T("saved"), input_close)
+    return DIV(T("saved"), P(input_close))
 
 def db_select_ack_overlap(svc, begin, end):
     b = str(begin)
@@ -2560,7 +2561,8 @@ def db_select_ack_overlap(svc, begin, end):
     query = (db.svcmon_log_ack.mon_svcname==svc)
     query &= _where(None, 'svcmon_log_ack', domain_perms(), 'mon_svcname')
     query &= ((db.svcmon_log_ack.mon_end>b)&(db.svcmon_log_ack.mon_end<e))|((db.svcmon_log_ack.mon_begin>b)&(db.svcmon_log_ack.mon_begin<e))
-    return db(query).select(orderby=o)
+    rows = db(query).select(orderby=o)
+    return rows
 
 def db_delete_ack_overlap(svc, begin, end):
     b = str(begin)
@@ -2604,7 +2606,7 @@ def ajax_svcmon_log_ack_load():
     bi = INPUT(_value=begin, _id='bi')
     ei = INPUT(_value=end, _id='ei')
     ci = TEXTAREA(_value='', _id='ci')
-    input_save = INPUT(_value='save', _id='save', _type='submit', _onclick="""
+    input_save = INPUT(_value='save', _id='save', _type='button', _onclick="""
                ajax("%(url)s",['xi', 'bi', 'ei', 'ci'],"panelbody_ack");
               """%dict(url=URL(r=request,f='ajax_svcmon_log_ack_write'),
                        svcname=svc)
