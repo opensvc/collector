@@ -1634,18 +1634,15 @@ def obsolescence_config():
 
 def ajax_obsolete_os_nodes():
     if request.vars.obs_type == "os":
-        sql = """select nodename from nodes
-                 where "%s"=concat_ws(" ", os_name, os_vendor, os_release, os_update);
-              """%request.vars.obs_name
+        query = (db.obsolescence.obs_type=="os")&(db.v_nodes.os_concat==request.vars.obs_name)
     elif request.vars.obs_type == "hw":
-        sql = """select nodename from nodes
-                 where "%s"=model;
-              """%request.vars.obs_name
+        query = (db.obsolescence.obs_type=="hw")&(db.v_nodes.model==request.vars.obs_name)
     else:
         return DIV()
 
-    rows = db.executesql(sql)
-    nodes = [row[0] for row in rows]
+    query = apply_db_filters(query, 'v_nodes')
+    rows = db(query).select(db.v_nodes.nodename, orderby=db.v_nodes.nodename, groupby=db.v_nodes.nodename)
+    nodes = [row.nodename for row in rows]
     return DIV(
              H3(T("""Nodes in %(os)s""",dict(os=request.vars.obs_name))),
              PRE('\n'.join(nodes)),
