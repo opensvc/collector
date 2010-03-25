@@ -16,7 +16,7 @@ for key in ['fullname',
 
 <form action='users' name='svcform' id='svcform'> 
 <table>
-  {{BOX_TOP_ROW(7)}}
+  {{=BOX_TOP_ROW(7)}}
   <tr class=box>
     <td class=box></td>
     <td class=box></td>
@@ -39,7 +39,7 @@ for key in ['fullname',
     <td style='padding:0'></td>
     <td style='padding:0'></td>
   </tr>
-  {{BOX_BOTTOM_ROW(7)}}
+  {{=BOX_BOTTOM_ROW(7)}}
   {{
     cellclass = 'cell1'
     cellclasses = {}
@@ -102,7 +102,7 @@ for key in ['fullname',
   </tr>
   <input id="uid" type="hidden">
   {{pass}}
-  {{BOX_TOP_ROW(7)}}
+  {{=BOX_TOP_ROW(7)}}
   <tr class=box>
     <td align=center colspan=99>{{=nav}}</td>
   </tr>
@@ -131,7 +131,7 @@ for key in ['fullname',
       </table>
     </td>
   </tr>
-  {{BOX_BOTTOM_ROW(7)}}
+  {{=BOX_BOTTOM_ROW(7)}}
 </table>
 <input name=action type=hidden>
 </form>

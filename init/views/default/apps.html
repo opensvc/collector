@@ -10,7 +10,7 @@ for key in colkeys:
 }}
 <form action='apps' name='svcform' id='svcform'>
 <table>
-  {{BOX_TOP_ROW(3)}}
+  {{=BOX_TOP_ROW(3)}}
   <tr class=box>
     <td class=box></td>
     <td class=box></td>
@@ -27,7 +27,7 @@ for key in colkeys:
     {{pass}}
     <td class=box></td>
   </tr>
-  {{BOX_BOTTOM_ROW(3)}}
+  {{=BOX_BOTTOM_ROW(3)}}
   {{for app in apps:}}
   <tr>
     {{
@@ -43,7 +43,7 @@ for key in colkeys:
     {{pass}}
   </tr>
   {{pass}}
-  {{BOX_TOP_ROW(3)}}
+  {{=BOX_TOP_ROW(3)}}
   <tr class=box>
     <td align=center colspan=99>{{=nav}}</td>
   </tr>
@@ -85,7 +85,7 @@ for key in colkeys:
       </table>
     </td>
   </tr>
-  {{BOX_BOTTOM_ROW(3)}}
+  {{=BOX_BOTTOM_ROW(3)}}
 </table>
 <input name=resp type=hidden>
 </form>

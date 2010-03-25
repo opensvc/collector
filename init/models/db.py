@@ -349,7 +349,7 @@ os_vendors = [
     "Oracle"
 ]
 
-db.define_table('nodes',
+db.define_table('v_nodes',
     Field('warranty_end', 'datetime', default=request.now),
     Field('status'),
     Field('role'),
@@ -364,6 +364,7 @@ db.define_table('nodes',
     Field('os_update', length=10, default=None),
     Field('os_segment', length=10, default=None),
     Field('os_arch', length=10, default=None),
+    Field('os_concat', writable=False),
     Field('cpu_freq'),
     Field('cpu_dies', 'integer', default=0),
     Field('cpu_cores', 'integer', default=0),

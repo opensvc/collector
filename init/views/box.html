@@ -1,17 +1,19 @@
-{{def BOX_TOP_ROW(cols):}}
-  <tr><td style='padding-bottom:2;padding-left:0'></td></tr>
-  <tr>
-    <td class="boxtlc"></td>
-    <td style='min-width:600px' class=box colspan={{=cols}}></td>
-    <td class="boxtrc"></td>
-  </tr>
-{{pass}}
+{{
+def BOX_TOP_ROW(cols, min_width='38em'):
+    t = TR(
+          TD(_class='boxtlc'),
+          TD(_class='box', _style='min-width:'+min_width, _colspan=cols),
+          TD(_class='boxtrc'),
+        )
+    return t
+    pass
 
-{{def BOX_BOTTOM_ROW(cols):}}
-  <tr>
-    <td class="boxblc"></td>
-    <td style='min-width:600px' class=box colspan={{=cols}}></td>
-    <td class="boxbrc"></td>
-  </tr>
-{{pass}}
-
+def BOX_BOTTOM_ROW(cols, min_width='38em'):
+    t = TR(
+          TD(_class='boxblc'),
+          TD(_class='box', _style='min-width:'+min_width, _colspan=cols),
+          TD(_class='boxbrc'),
+        )
+    return t
+    pass
+}}

@@ -28,7 +28,7 @@ def show_nodes(nodes):
 {{pass}}
 <form action='drplan' name='svcform' id='svcform'> 
 <table>
-  {{BOX_TOP_ROW(11)}}
+  {{=BOX_TOP_ROW(11, min_width='70em')}}
   <tr class=box>
     <td class=box></td>
     <td class=box></td>
@@ -59,7 +59,7 @@ def show_nodes(nodes):
     <td><input name=svc_wave value='{{=vars.svc_wave}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td class=box></td>
   </tr>
-  {{BOX_BOTTOM_ROW(11)}}
+  {{=BOX_BOTTOM_ROW(11)}}
   {{
     svcname = ''
     cellclass = 'cell1'
@@ -107,7 +107,7 @@ def show_nodes(nodes):
     <td class={{=cellclass}}>{{=drp_wave}}</td>
   </tr>
   {{pass}}
-  {{BOX_TOP_ROW(11)}}
+  {{=BOX_TOP_ROW(11, min_width='70em')}}
   <tr class=box>
     <td align=center colspan=99>{{=nav}}</td>
   </tr>
@@ -172,6 +172,6 @@ def show_nodes(nodes):
       </table>
     </td>
   </tr>
-  {{BOX_BOTTOM_ROW(11)}}
+  {{=BOX_BOTTOM_ROW(11)}}
 </table>
 </form>

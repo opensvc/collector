@@ -15,7 +15,7 @@ for key in colkeys:
 {{=PANEL("column_values")}}
 <form action='nodes' name='svcform' id='svcform'>
 <table>
-  {{BOX_TOP_ROW(len(colkeys))}}
+  {{=BOX_TOP_ROW(len(colkeys))}}
   <tr class=box>
     <td class=box></td>
     {{for key in colkeys:}}
@@ -32,7 +32,7 @@ for key in colkeys:
     {{pass}}
     <td class=box></td>
   </tr>
-  {{BOX_BOTTOM_ROW(len(colkeys))}}
+  {{=BOX_BOTTOM_ROW(len(colkeys))}}
   {{
     cellclass = 'cell1'
     cellclasses = {'cell1': 'cell2', 'cell2': 'cell1'}
@@ -69,7 +69,7 @@ for key in colkeys:
   </tr>
   {{pass}}
   <input id="node" type="hidden">
-  {{BOX_TOP_ROW(len(colkeys))}}
+  {{=BOX_TOP_ROW(len(colkeys))}}
   <tr class=box>
     <td align=center colspan=99>{{=nav}}</td>
   </tr>
@@ -95,6 +95,6 @@ for key in colkeys:
       </table>
     </td>
   </tr>
-  {{BOX_BOTTOM_ROW(len(colkeys))}}
+  {{=BOX_BOTTOM_ROW(len(colkeys))}}
 </table>
 </form>

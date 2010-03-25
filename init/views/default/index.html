@@ -1,6 +1,9 @@
 {{extend 'layout.html'}}
+{{include 'box.html'}}
+{{include '../static/jslib.html'}}
+{{include 'filters.html'}}
 {{
-def svc_status(svc, cellclass="cell2"):
+def svc_status(svc, cellclass="cell2", nestedin=None):
     cl = {}
     for k in ['mon_overallstatus',
               'mon_containerstatus',
@@ -9,16 +12,30 @@ def svc_status(svc, cellclass="cell2"):
               'mon_diskstatus',
               'mon_syncstatus',
               'mon_appstatus']:
-        if svc[k] is None:
-            cl[k] = 'status_undef'
+        if nestedin is None:
+            if svc[k] is None:
+                cl[k] = 'status_undef'
+            else:
+                cl[k] = 'status_'+svc[k].replace(" ", "_")
+            pass
         else:
-            cl[k] = 'status_'+svc[k].replace(" ", "_")
+            if svc[nestedin][k] is None:
+                cl[k] = 'status_undef'
+            else:
+                cl[k] = 'status_'+svc[nestedin][k].replace(" ", "_")
+            pass
         pass
+    pass
+
+    if nestedin is None:
+        overallstatus = svc.mon_overallstatus
+    else:
+        overallstatus = svc[nestedin].mon_overallstatus
     pass
 
     t = TABLE(
       TR(
-        TD(svc.mon_overallstatus,
+        TD(overallstatus,
            _colspan=6, 
            _class=cellclass+' status '+cl['mon_overallstatus'],
         ),
@@ -40,10 +57,10 @@ def svc_status(svc, cellclass="cell2"):
 """
 def last_changes_line(line, cellclass):
     tr = TR(
-      TD(A(line.mon_begin, _href=URL(r=request, f='svcmon_log', vars={'mon_svcname':line.mon_svcname})), _class=cellclass),
-      TD(A(line.mon_svcname, _href=URL(r=request, f='svcmon', vars={'svcname':line.mon_svcname})), _class=cellclass),
-      TD(line.mon_nodname, _class=cellclass),
-      TD(svc_status(line, cellclass), _class=cellclass),
+      TD(A(line.svcmon_log.mon_begin, _href=URL(r=request, f='svcmon_log', vars={'mon_svcname':line.svcmon_log.mon_svcname})), _class=cellclass),
+      TD(A(line.svcmon_log.mon_svcname, _href=URL(r=request, f='svcmon', vars={'svcname':line.svcmon_log.mon_svcname})), _class=cellclass),
+      TD(line.svcmon_log.mon_nodname, _class=cellclass),
+      TD(svc_status(line, cellclass, nestedin='svcmon_log'), _class=cellclass),
     )
     return tr
     pass
@@ -150,9 +167,9 @@ def svc_with_errors():
 """
 def svc_not_up_line(line, cellclass):
     tr = TR(
-      TD(A(line.svcname, _href=URL(r=request, f='svcmon', vars={'svcname':line.svcname})), _class=cellclass),
-      TD(line.svctype, _class=cellclass),
-      TD(line.groupstatus, _class=cellclass),
+      TD(A(line.v_svc_group_status.svcname, _href=URL(r=request, f='svcmon', vars={'svcname':line.v_svc_group_status.svcname})), _class=cellclass),
+      TD(line.v_svc_group_status.svctype, _class=cellclass),
+      TD(line.v_svc_group_status.groupstatus, _class=cellclass),
     )
     return tr
     pass
@@ -241,7 +258,7 @@ def svc_not_on_primary_table(svcnotonprimary):
     pass
 
 def svc_not_on_primary():
-    svcnotup_names = [s.svcname for s in svcnotup]
+    svcnotup_names = [s.v_svc_group_status.svcname for s in svcnotup]
     list = [s for s in svcnotonprimary if s.svc_name not in svcnotup_names]
     if len(list) == 0:
         return DIV()
@@ -306,9 +323,9 @@ def app_wo_resp():
 """
 def obs_os_alert_line(line, cellclass):
     tr = TR(
-      TD(line[0], _class=cellclass),
-      TD(line[1], _class=cellclass),
-      TD(line[2], _class=cellclass),
+      TD(line.v_nodes.nodename, _class=cellclass),
+      TD(line.obsolescence.obs_name, _class=cellclass),
+      TD(line.obsolescence.obs_alert_date, _class=cellclass),
     )
     return tr
     pass
@@ -358,9 +375,9 @@ def obs_os_alert():
 """
 def obs_os_warn_line(line, cellclass):
     tr = TR(
-      TD(line[0], _class=cellclass),
-      TD(line[1], _class=cellclass),
-      TD(line[2], _class=cellclass),
+      TD(line.v_nodes.nodename, _class=cellclass),
+      TD(line.obsolescence.obs_name, _class=cellclass),
+      TD(line.obsolescence.obs_warn_date, _class=cellclass),
     )
     return tr
     pass
@@ -410,9 +427,9 @@ def obs_os_warn():
 """
 def obs_hw_warn_line(line, cellclass):
     tr = TR(
-      TD(line[0], _class=cellclass),
-      TD(line[1], _class=cellclass),
-      TD(line[2], _class=cellclass),
+      TD(line.v_nodes.nodename, _class=cellclass),
+      TD(line.obsolescence.obs_name, _class=cellclass),
+      TD(line.obsolescence.obs_warn_date, _class=cellclass),
     )
     return tr
     pass
@@ -462,9 +479,9 @@ def obs_hw_warn():
 """
 def obs_hw_alert_line(line, cellclass):
     tr = TR(
-      TD(line[0], _class=cellclass),
-      TD(line[1], _class=cellclass),
-      TD(line[2], _class=cellclass),
+      TD(line.v_nodes.nodename, _class=cellclass),
+      TD(line.obsolescence.obs_name, _class=cellclass),
+      TD(line.obsolescence.obs_alert_date, _class=cellclass),
     )
     return tr
     pass
@@ -530,6 +547,32 @@ def obs_miss():
         )
       )
     )
+
+def toolbar():
+    t = TABLE(
+          BOX_TOP_ROW(1),
+          TR(
+            TD(
+              TABLE(
+                TR(
+                  TD(T('Active filters')),
+                  TD(T('Add filter')),
+                ),
+                TR(
+                  TD(DB_FILTERS_ACTIVE(active_filters)),
+                  TD(DB_FILTERS_AVAIL(available_filters)),
+                ),
+              ),
+              _colspan=3,
+            ),
+            _class='box'
+          ),
+          BOX_BOTTOM_ROW(1),
+          _style='margin-top:2em;margin-bottom:2em;',
+        )
+    return t
+    pass
+
 }}
 
 {{=DIV(
@@ -543,6 +586,12 @@ def obs_miss():
      obs_hw_alert(),
      obs_hw_warn(),
      obs_miss(),
+     FORM(
+       toolbar(),
+       _action='index',
+       _name='svcform',
+       _id='svcform',
+     ),
      _style="
        padding-left:2em;
        padding-right:2em;

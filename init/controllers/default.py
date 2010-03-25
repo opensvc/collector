@@ -157,7 +157,7 @@ def apply_db_filters(query, table=None):
         elif f.filters.fil_column == 'ref2':
             """ only nodes with services
             """
-            query &= db.nodes.nodename.belongs(db()._select(db.svcmon.mon_nodname))
+            query &= db.v_nodes.nodename.belongs(db()._select(db.svcmon.mon_nodname))
         elif f.filters.fil_column == 'ref3':
             """ only not acknowledged actions
             """
@@ -167,8 +167,7 @@ def apply_db_filters(query, table=None):
 def avail_db_filters(table=None):
     o = db.filters.fil_pos|db.filters.fil_img|db.filters.fil_name
     active_fid = db(db.auth_filters.fil_uid==session.auth.user.id)._select(db.auth_filters.fil_id)
-    q = db.filters.fil_table==table
-    q &= ~db.filters.id.belongs(active_fid)
+    q = ~db.filters.id.belongs(active_fid)
     filters = db(q).select(db.filters.id,
                            db.filters.fil_name,
                            db.filters.fil_img,
@@ -176,7 +175,8 @@ def avail_db_filters(table=None):
                            db.filters.fil_column,
                            db.filters.fil_need_value,
                            db.filters.fil_pos,
-                           orderby=o
+                           orderby=o,
+                           groupby=db.filters.fil_name,
                           )
     return filters
 
@@ -198,15 +198,21 @@ def active_db_filters(table=None):
 
 @auth.requires_login()
 def index():
+    toggle_db_filters()
+
     now = datetime.datetime.now()
     one_days_ago = now - datetime.timedelta(days=1)
-    query = (db.svcmon_log.id>0)
-    query = (db.svcmon_log.mon_end>one_days_ago)
+
+    query = db.svcmon_log.mon_end>one_days_ago
+    query &= db.svcmon_log.mon_svcname==db.v_svcmon.mon_svcname
+    query &= db.svcmon_log.mon_nodname==db.v_svcmon.mon_nodname
     query &= _where(None, 'svcmon_log', domain_perms(), 'mon_svcname')
+    query = apply_db_filters(query, 'v_svcmon')
     lastchanges = db(query).select(orderby=~db.svcmon_log.mon_begin, limitby=(0,20))
 
     query = (db.v_svcmon.err>0)
     query &= _where(None, 'v_svcmon', domain_perms(), 'mon_svcname')
+    query = apply_db_filters(query, 'v_svcmon')
     svcwitherrors = db(query).select(orderby=~db.v_svcmon.err)
 
     query = (~db.v_svc_group_status.groupstatus.like("up,%"))
@@ -214,68 +220,73 @@ def index():
     query &= (~db.v_svc_group_status.groupstatus.like("%,up"))
     query &= (db.v_svc_group_status.groupstatus!="up")
     query &= _where(None, 'v_svc_group_status', domain_perms(), 'svcname')
+    query &= db.v_svc_group_status.svcname==db.v_svcmon.mon_svcname
+    query = apply_db_filters(query, 'v_svcmon')
     svcnotup = db(query).select()
 
     query = (db.v_svcmon.svc_autostart==db.v_svcmon.mon_nodname)
     query &= (db.v_svcmon.mon_overallstatus!="up")
-    query &= _where(None, 'v_svcmon', domain_perms(), 'svc_name')
+    query &= _where(None, 'v_svcmon', domain_perms(), 'mon_svcname')
+    query = apply_db_filters(query, 'v_svcmon')
     svcnotonprimary = db(query).select()
 
     query = (db.v_apps.responsibles==None)
     query |= (db.v_apps.responsibles=="")
     appwithoutresp = db(query).select(db.v_apps.app)
 
-    perm = domain_perms()
-    if perm is None:
-        perm = '%'
+    warn = (db.obsolescence.obs_warn_date!=None)&(db.obsolescence.obs_warn_date!="0000-00-00")&(db.obsolescence.obs_warn_date<now)
+    alert = (db.obsolescence.obs_alert_date==None)|(db.obsolescence.obs_alert_date=="0000-00-00")|(db.obsolescence.obs_alert_date>=now)
+    query = warn & alert
+    query &= _where(None, 'v_nodes', domain_perms(), 'nodename')
+    query = apply_db_filters(query, 'v_nodes')
+    join = db.obsolescence.obs_type=="os"
+    join &= db.obsolescence.obs_name==db.v_nodes.os_concat
+    obsoswarn = db(query).select(db.v_nodes.nodename,
+                                 db.obsolescence.obs_name,
+                                 db.obsolescence.obs_warn_date,
+                                 left=db.v_nodes.on(join)
+                                )
 
-    sql = """select n.nodename, o.obs_name, o.obs_warn_date from nodes n
-             left join obsolescence o
-             on concat_ws(' ', n.os_name, n.os_vendor, n.os_release, n.os_update)=o.obs_name
-             and o.obs_type="os"
-             where (o.obs_warn_date is not NULL and o.obs_warn_date != "0000-00-00" and o.obs_warn_date<NOW())
-             and (o.obs_alert_date is NULL or o.obs_alert_date="0000-00-00" or o.obs_alert_date>NOW())
-             and n.nodename like "%s";
-          """%perm
-    obsoswarn = db.executesql(sql)
+    query = (db.obsolescence.obs_alert_date!=None)&(db.obsolescence.obs_alert_date!="0000-00-00")&(db.obsolescence.obs_alert_date<now)
+    query &= _where(None, 'v_nodes', domain_perms(), 'nodename')
+    query = apply_db_filters(query, 'v_nodes')
+    join = db.obsolescence.obs_type=="os"
+    join &= db.obsolescence.obs_name==db.v_nodes.os_concat
+    obsosalert = db(query).select(db.v_nodes.nodename,
+                                 db.obsolescence.obs_name,
+                                 db.obsolescence.obs_alert_date,
+                                 left=db.v_nodes.on(join)
+                                )
 
-    sql = """select n.nodename, o.obs_name, o.obs_alert_date from nodes n
-             left join obsolescence o
-             on concat_ws(' ', n.os_name, n.os_vendor, n.os_release, n.os_update)=o.obs_name
-             and o.obs_type="os"
-             where obs_alert_date is not NULL and o.obs_alert_date!="0000-00-00" and obs_alert_date<NOW()
-             and n.nodename like "%s";
-          """%perm
-    obsosalert = db.executesql(sql)
+    warn = (db.obsolescence.obs_warn_date!=None)&(db.obsolescence.obs_warn_date!="0000-00-00")&(db.obsolescence.obs_warn_date<now)
+    alert = (db.obsolescence.obs_alert_date==None)|(db.obsolescence.obs_alert_date=="0000-00-00")|(db.obsolescence.obs_alert_date>=now)
+    query = warn & alert
+    query &= _where(None, 'v_nodes', domain_perms(), 'nodename')
+    query = apply_db_filters(query, 'v_nodes')
+    join = db.obsolescence.obs_type=="hw"
+    join &= db.obsolescence.obs_name==db.v_nodes.model
+    obshwwarn = db(query).select(db.v_nodes.nodename,
+                                 db.obsolescence.obs_name,
+                                 db.obsolescence.obs_warn_date,
+                                 left=db.v_nodes.on(join)
+                                )
 
-    sql = """select n.nodename, o.obs_name, o.obs_warn_date from nodes n
-             left join obsolescence o
-             on n.model=o.obs_name
-             and o.obs_type="hw"
-             where (o.obs_warn_date is not NULL and o.obs_warn_date != "0000-00-00" and o.obs_warn_date<NOW())
-             and (o.obs_alert_date is NULL or o.obs_alert_date="0000-00-00" or o.obs_alert_date>NOW())
-             and n.nodename like "%s";
-          """%perm
-    obshwwarn = db.executesql(sql)
+    query = (db.obsolescence.obs_alert_date!=None)&(db.obsolescence.obs_alert_date!="0000-00-00")&(db.obsolescence.obs_alert_date<now)
+    query &= _where(None, 'v_nodes', domain_perms(), 'nodename')
+    query = apply_db_filters(query, 'v_nodes')
+    join = db.obsolescence.obs_type=="hw"
+    join &= db.obsolescence.obs_name==db.v_nodes.model
+    obshwalert = db(query).select(db.v_nodes.nodename,
+                                 db.obsolescence.obs_name,
+                                 db.obsolescence.obs_alert_date,
+                                 left=db.v_nodes.on(join)
+                                )
 
-    sql = """select n.nodename, o.obs_name, o.obs_alert_date from nodes n
-             left join obsolescence o
-             on n.model=o.obs_name
-             and o.obs_type="hw"
-             where obs_alert_date is not NULL and o.obs_alert_date!="0000-00-00" and obs_alert_date<NOW()
-             and n.nodename like "%s";
-          """%perm
-    obshwalert = db.executesql(sql)
+    query = (db.obsolescence.obs_warn_date==None)|(db.obsolescence.obs_warn_date=="0000-00-00")
+    obswarnmiss = db(query).count()
 
-    sql = """select count(obs_name) from obsolescence
-             where obs_warn_date="0000-00-00" or obs_warn_date is NULL;
-          """
-    obswarnmiss = db.executesql(sql)[0][0]
-
-    sql = """select count(obs_name) from obsolescence
-             where obs_alert_date="0000-00-00" or obs_alert_date is NULL;
-          """
-    obsalertmiss = db.executesql(sql)[0][0]
+    query = (db.obsolescence.obs_alert_date==None)|(db.obsolescence.obs_alert_date=="0000-00-00")
+    obsalertmiss = db(query).count()
 
     return dict(lastchanges=lastchanges,
                 svcwitherrors=svcwitherrors,
@@ -287,7 +298,10 @@ def index():
                 obshwalert=obshwalert,
                 obswarnmiss=obswarnmiss,
                 obsalertmiss=obsalertmiss,
-                svcnotup=svcnotup)
+                svcnotup=svcnotup,
+                active_filters=active_db_filters('v_svcmon'),
+                available_filters=avail_db_filters('v_svcmon'),
+               )
 
 @auth.requires_membership('Manager')
 def _del_app(request):
@@ -1589,39 +1603,33 @@ def obsolescence_config():
     elif request.vars.action == "refresh":
         _refresh_obsolescence(request)
 
+    toggle_db_filters()
+
     o = db.obsolescence.obs_type
     o |= db.obsolescence.obs_name
     o |= db.obsolescence.obs_warn_date
     o |= db.obsolescence.obs_alert_date
 
-    query = _where(None, 'obsolescence', request.vars.obs_type, 'obs_type')
+    g = db.obsolescence.obs_name|db.obsolescence.obs_type
+
+    query = (db.obsolescence.obs_type=="os")&(db.obsolescence.obs_name==db.v_nodes.os_concat)
+    query |= (db.obsolescence.obs_type=="hw")&(db.obsolescence.obs_name==db.v_nodes.model)
+    query &= _where(None, 'obsolescence', request.vars.obs_type, 'obs_type')
     query &= _where(None, 'obsolescence', request.vars.obs_name, 'obs_name')
     query &= _where(None, 'obsolescence', request.vars.obs_warn_date, 'obs_warn_date')
     query &= _where(None, 'obsolescence', request.vars.obs_alert_date, 'obs_alert_date')
 
+    query = apply_db_filters(query, 'v_nodes')
+
     (start, end, nav) = _pagination(request, query)
     if start == 0 and end == 0:
-        rows = db(query).select(orderby=o)
+        rows = db(query).select(db.obsolescence.ALL, db.v_nodes.id.count(), orderby=o, groupby=g)
     else:
-        rows = db(query).select(limitby=(start,end), orderby=o)
-
-    counts = {}
-    for row in rows:
-        if row.obs_type == "os":
-            sql = """select count(nodename) from nodes
-                     where "%s"=concat_ws(" ", os_name, os_vendor, os_release, os_update);
-                  """%row.obs_name
-        elif row.obs_type == "hw":
-            sql = """select count(nodename) from nodes
-                     where "%s"=model;
-                  """%row.obs_name
-        else:
-            counts[row.id] = 0
-
-        counts[row.id] = db.executesql(sql)[0][0]
+        rows = db(query).select(db.obsolescence.ALL, db.v_nodes.id.count(), limitby=(start,end), orderby=o, groupby=g)
 
     return dict(obsitems=rows,
-                counts=counts,
+                active_filters=active_db_filters('v_nodes'),
+                available_filters=avail_db_filters('v_nodes'),
                 nav=nav)
 
 def ajax_obsolete_os_nodes():
@@ -2174,7 +2182,7 @@ def nodes_csv():
 
 @auth.requires_login()
 def nodes():
-    o = db.nodes.nodename
+    o = db.v_nodes.nodename
 
     columns = dict(
         nodename = dict(
@@ -2331,15 +2339,15 @@ def nodes():
     toggle_db_filters()
 
     # filtering
-    query = (db.nodes.id>0)
+    query = (db.v_nodes.id>0)
     for key in columns.keys():
         if key not in request.vars.keys():
             continue
-        query &= _where(None, 'nodes', request.vars[key], key)
+        query &= _where(None, 'v_nodes', request.vars[key], key)
 
-    query &= _where(None, 'nodes', domain_perms(), 'nodename')
+    query &= _where(None, 'v_nodes', domain_perms(), 'nodename')
 
-    query = apply_db_filters(query, 'nodes')
+    query = apply_db_filters(query, 'v_nodes')
 
     (start, end, nav) = _pagination(request, query)
     if start == 0 and end == 0:
@@ -2349,13 +2357,13 @@ def nodes():
 
     return dict(columns=columns, colkeys=colkeys,
                 nodes=rows,
-                active_filters=active_db_filters('nodes'),
-                available_filters=avail_db_filters('nodes'),
+                active_filters=active_db_filters('v_nodes'),
+                available_filters=avail_db_filters('v_nodes'),
                 nav=nav)
 
 @auth.requires_login()
 def node_insert():
-    form=SQLFORM(db.nodes)
+    form=SQLFORM(db.v_nodes)
     if form.accepts(request.vars):
         response.flash = T("edition recorded")
         redirect(URL(r=request, f='nodes'))
@@ -2365,17 +2373,17 @@ def node_insert():
 
 @auth.requires_login()
 def node_edit():
-    query = (db.nodes.id>0)
-    query &= _where(None, 'nodes', request.vars.node, 'nodename')
-    query &= _where(None, 'nodes', domain_perms(), 'nodename')
+    query = (db.v_nodes.id>0)
+    query &= _where(None, 'v_nodes', request.vars.node, 'nodename')
+    query &= _where(None, 'v_nodes', domain_perms(), 'nodename')
     rows = db(query).select()
     if len(rows) != 1:
         response.flash = "vars: %s"%str(request.vars)
         return dict(form=None)
     record = rows[0]
     id = record.id
-    record = db(db.nodes.id==id).select()[0]
-    form=SQLFORM(db.nodes, record)
+    record = db(db.v_nodes.id==id).select()[0]
+    form=SQLFORM(db.v_nodes, record)
     if form.accepts(request.vars):
         response.flash = T("edition recorded")
         redirect(URL(r=request, f='nodes'))
@@ -2651,7 +2659,7 @@ def ajax_res_status():
 
 @auth.requires_login()
 def ajax_node():
-    nodes = db(db.nodes.nodename==request.vars.node).select()
+    nodes = db(db.v_nodes.nodename==request.vars.node).select()
     if len(nodes) == 0:
         return DIV(
                  T("No asset information for %(node)s",dict(node=request.vars.node)),

@@ -114,7 +114,7 @@ def svc_status(svc, cellclass="cell2"):
 {{=PANEL("column_values")}}
 <form action='svcmon' name='svcform' id='svcform'> 
 <table>
-  {{BOX_TOP_ROW(10)}}
+  {{=BOX_TOP_ROW(10)}}
   <tr class=box>
     <td class=box></td>
     <td class=box></td>
@@ -143,7 +143,7 @@ def svc_status(svc, cellclass="cell2"):
     <td class=status_t><input name=overallstatus value='{{=vars.overallstatus}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td style='padding:0'></td>
   </tr>
-  {{BOX_BOTTOM_ROW(10)}}
+  {{=BOX_BOTTOM_ROW(10)}}
   {{
     svcname = ''
     cellclass = 'cell1'
@@ -346,7 +346,7 @@ def svc_status(svc, cellclass="cell2"):
     <td style='padding:0'></td>
   </tr>
 
-  {{BOX_TOP_ROW(10)}}
+  {{=BOX_TOP_ROW(10)}}
   <tr class=box>
     <td align=center colspan=99>{{=nav}}</td>
   </tr>
@@ -372,6 +372,6 @@ def svc_status(svc, cellclass="cell2"):
       </table>
     </td>
   </tr>
-  {{BOX_BOTTOM_ROW(10)}}
+  {{=BOX_BOTTOM_ROW(10)}}
 </table>
 </form>
