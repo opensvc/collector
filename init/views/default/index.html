@@ -552,6 +552,7 @@ def toolbar():
     t = TABLE(
           BOX_TOP_ROW(1),
           TR(
+            TD(_style='padding:0px'),
             TD(
               TABLE(
                 TR(
@@ -563,8 +564,8 @@ def toolbar():
                   TD(DB_FILTERS_AVAIL(available_filters)),
                 ),
               ),
-              _colspan=3,
             ),
+            TD(_style='padding:0px'),
             _class='box'
           ),
           BOX_BOTTOM_ROW(1),
