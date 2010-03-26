@@ -1142,16 +1142,19 @@ def service_availability(rows, begin=None, end=None):
                 a = dict(mon_acked_by='',
                          mon_acked_on='',
                          mon_comment='',
+                         mon_account=1,
                          id='',
                         )
-            return dict(begin=b, 
-                        end=e, 
-                        acked=acked,
-                        acked_by=a['mon_acked_by'],
-                        acked_on=a['mon_acked_on'],
-                        acked_comment=a['mon_comment'],
-                        id=a['id'],
-                       )
+            h = dict(begin=b,
+                     end=e,
+                     acked=acked,
+                     acked_by=a['mon_acked_by'],
+                     acked_on=a['mon_acked_on'],
+                     acked_comment=a['mon_comment'],
+                     acked_account=a['mon_account'],
+                     id=a['id'],
+                    )
+            return h
 
         for a in [ack for ack in acked if ack.mon_svcname == svc]:
             (ab, ae) = (a.mon_begin, a.mon_end)
@@ -1169,7 +1172,7 @@ def service_availability(rows, begin=None, end=None):
                 ack_overlap += 1
                 break
 
-            if _e <= ab and ab < b and ae >= b:
+            elif _e <= ab and ab < b and ae >= b:
                 """ hole is partly acknowledged
                       XXXXX
                           _e
@@ -1281,7 +1284,7 @@ def service_availability(rows, begin=None, end=None):
         """ Account acknowledged time
         """
         for _h in h[svc]['holes']:
-            if _h['acked'] == 1:
+            if _h['acked'] == 1 and _h['acked_account'] == 0:
                 continue
             h[svc]['downtime'] += delta_to_min(_h['end'] - _h['begin'])
 
@@ -1341,8 +1344,8 @@ def service_availability_chart(h):
         else:
             x_max = min(mktime(h[svc]['end'].timetuple()), x_max)
 
-        ticks = get_range([_h for _h in h[svc]['holes'] if _h['acked']==0])
-        ticks_acked = get_range([_h for _h in h[svc]['holes'] if _h['acked']==1])
+        ticks = get_range([_h for _h in h[svc]['holes'] if _h['acked']==0 or (_h['acked']==1 and _h['acked_account']==1)])
+        ticks_acked = get_range([_h for _h in h[svc]['holes'] if _h['acked']==1 and _h['acked_account']==0])
 
         data += [(svc, tuple(ticks), tuple(ticks_acked))]
 
@@ -1370,10 +1373,10 @@ def service_availability_chart(h):
                               data=data)
     plot1 = interval_bar_plot.T(fill_styles = [fill_style.red, None],
                                 cluster=(0,2),
-                                label="/6unavail")
+                                label="/6accounted")
     plot2 = interval_bar_plot.T(fill_styles = [fill_style.blue, None],
                                 hcol=2, cluster=(1,2),
-                                label="/6unavail acked")
+                                label="/6ignored")
     ar.add_plot(plot1, plot2)
     ar.draw(can)
     can.close()
@@ -2523,12 +2526,18 @@ def ajax_svcmon_log_ack_write():
     e = str_to_date(request.vars.ei)
     comment = request.vars.ci
 
-    def db_insert_ack_segment(svc, begin, end, comment):
+    if request.vars.ac == 'true':
+        account = 1
+    else:
+        account = 0
+
+    def db_insert_ack_segment(svc, begin, end, comment, account):
         r = db.svcmon_log_ack.insert(
             mon_svcname = svc,
             mon_begin = begin,
             mon_end = end,
             mon_comment = comment,
+            mon_account = account,
             mon_acked_on = datetime.datetime.now(),
             mon_acked_by = ' '.join([session.auth.user.first_name,
                                      session.auth.user.last_name])
@@ -2545,7 +2554,7 @@ def ajax_svcmon_log_ack_write():
         e = max(rows[-1].mon_end, e)
 
     db_delete_ack_overlap(svc, b, e)
-    db_insert_ack_segment(svc, b, e, comment)
+    db_insert_ack_segment(svc, b, e, comment, account)
 
     input_close = INPUT(_value=T('close & refresh table'), _id='close', _type='submit', _onclick="""
                     getElementById("panel_ack").className="panel";
@@ -2569,7 +2578,7 @@ def db_delete_ack_overlap(svc, begin, end):
     e = str(end)
     query = (db.svcmon_log_ack.mon_svcname==svc)
     query &= _where(None, 'svcmon_log_ack', domain_perms(), 'mon_svcname')
-    query &= ((db.svcmon_log_ack.mon_end>b)&(db.svcmon_log_ack.mon_end<e))|((db.svcmon_log_ack.mon_begin>b)&(db.svcmon_log_ack.mon_begin<e))
+    query &= ((db.svcmon_log_ack.mon_end>b)&(db.svcmon_log_ack.mon_end<=e))|((db.svcmon_log_ack.mon_begin>=b)&(db.svcmon_log_ack.mon_begin<e))
     return db(query).delete()
 
 @auth.requires_login()
@@ -2605,9 +2614,13 @@ def ajax_svcmon_log_ack_load():
     xi = INPUT(_value=svc, _id='xi', _type='hidden')
     bi = INPUT(_value=begin, _id='bi')
     ei = INPUT(_value=end, _id='ei')
+    ac = INPUT(_id='ac',
+               _type='checkbox',
+               _onChange='this.value=this.checked',
+              )
     ci = TEXTAREA(_value='', _id='ci')
     input_save = INPUT(_value='save', _id='save', _type='button', _onclick="""
-               ajax("%(url)s",['xi', 'bi', 'ei', 'ci'],"panelbody_ack");
+               ajax("%(url)s",['xi', 'bi', 'ei', 'ci', 'ac'],"panelbody_ack");
               """%dict(url=URL(r=request,f='ajax_svcmon_log_ack_write'),
                        svcname=svc)
          )
@@ -2620,6 +2633,10 @@ def ajax_svcmon_log_ack_load():
            TR(
              TD(bi),
              TD(ei),
+           ),
+           TR(
+             TH(T("account in availability ratio")),
+             TD(ac, _colspan=2),
            ),
            TR(
              TH(T("comment"), _colspan=2),

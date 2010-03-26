@@ -251,7 +251,11 @@ def filter_match(key, fval):
 
           eid = "ack_"+svc+"_"+str(n)
           if _h['acked'] == 1:
-              strike = 'text-decoration:line-through'
+              if _h['acked_account'] == 0:
+                  strike = 'text-decoration:line-through'
+              else:
+                  strike = ''
+                  pass
               trigger = """onMouseOver='javascript:show_eid("%(eid)s")'
                            onMouseOut='javascript:hide_eid("%(eid)s")'
                         """%dict(eid=eid)

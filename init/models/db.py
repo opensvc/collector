@@ -558,6 +558,7 @@ db.define_table('svcmon_log_ack',
     Field('mon_begin', 'datetime'),
     Field('mon_end', 'datetime'),
     Field('mon_comment', 'string'),
+    Field('mon_account', 'integer'),
     Field('mon_acked_by', 'string'),
     Field('mon_acked_on', 'datetime'),
     migrate=False)
