@@ -115,7 +115,20 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
     <td class="{{=cellclass}} status_{{=action.status}} ack_{{=action.ack}} {{=metaactionclass}}" {{=trigger}}>{{=action.status}}</td>
     <td class={{=cellclass}}>{{=action.begin}}</td>
     <td class={{=cellclass}}>{{=action.end}}</td>
-    <td class={{=cellclass}}>{{=A(action.pid, _href=URL(r=request, vars={'pid':action.pid, 'hostname':action.hostname, 'perpage':0}))}}</td>
+    <td class={{=cellclass}}>{{=A(action.pid,
+                                  _href=URL(r=request,
+                                            vars={
+                                                'pid':action.pid,
+                                                'hostname':action.hostname,
+                                                'svcname':action.svcname,
+                                                'begin':'>'+str(action.begin-datetime.timedelta(days=1)),
+                                                'end':'<'+str(action.end+datetime.timedelta(days=1)),
+                                                'perpage':0,
+                                            }
+                                           )
+                                 )
+                             }}
+    </td>
     <td class={{=cellclass}}>{{=action.status_log.replace('\\n','\n')}}</td>
   </tr>
   {{=ack}}
