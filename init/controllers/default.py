@@ -1083,40 +1083,44 @@ def service_availability(rows, begin=None, end=None):
         """ Overlap detection
         """
         add = False
-        for (b, e) in h[row.svcmon_log.mon_svcname]['ranges']:
+        for i, (b, e) in enumerate(h[row.svcmon_log.mon_svcname]['ranges']):
             if row.svcmon_log.mon_end < b or row.svcmon_log.mon_begin > e:
                 """        XXXXXXXXXXX
                     XXX        or         XXX
                 """
                 add = True
-            elif row.svcmon_log.mon_begin > b or row.svcmon_log.mon_end < e:
+            elif row.svcmon_log.mon_begin >= b and row.svcmon_log.mon_end <= e:
                 """        XXXXXXXXXXX
                               XXX
                 """
                 add = False
                 break
-            elif row.svcmon_log.mon_begin < b or row.svcmon_log.mon_end > e:
+            elif row.svcmon_log.mon_begin <= b and row.svcmon_log.mon_end >= e:
                 """        XXXXXXXXXXX
                          XXXXXXXXXXXXXXXXX
                 """
                 add = False
                 b = row.svcmon_log.mon_begin
                 e = row.svcmon_log.mon_end
+                h[row.svcmon_log.mon_svcname]['ranges'][i] = (b, e)
                 break
-            elif row.svcmon_log.mon_begin < b and row.svcmon_log.mon_end > b:
+            elif row.svcmon_log.mon_begin < b and row.svcmon_log.mon_end >= b:
                 """        XXXXXXXXXXX
                          XXXXX
                 """
                 add = False
                 b = row.svcmon_log.mon_begin
+                h[row.svcmon_log.mon_svcname]['ranges'][i] = (b, e)
                 break
-            elif row.svcmon_log.mon_begin < e and row.svcmon_log.mon_end > e:
+            elif row.svcmon_log.mon_begin <= e and row.svcmon_log.mon_end > e:
                 """        XXXXXXXXXXX
                                    XXXXX
                 """
                 add = False
                 e = row.svcmon_log.mon_end
+                h[row.svcmon_log.mon_svcname]['ranges'][i] = (b, e)
                 break
+
 
         if add:
             h[row.svcmon_log.mon_svcname]['range_count'] += 1
@@ -1412,6 +1416,7 @@ def svcmon_log():
 
     o = db.svcmon_log.mon_begin|db.svcmon_log.mon_end
     query = db.v_svcmon.mon_svcname==db.svcmon_log.mon_svcname
+    query &= db.v_svcmon.mon_nodname==db.svcmon_log.mon_nodname
     query &= _where(None, 'svcmon_log', request.vars.mon_svcname, 'mon_svcname')
     query &= _where(None, 'svcmon_log', request.vars.mon_begin, 'mon_end')
     query &= _where(None, 'svcmon_log', request.vars.mon_end, 'mon_begin')
