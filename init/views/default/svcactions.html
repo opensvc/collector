@@ -5,20 +5,25 @@
 {{include 'filters.html'}}
 {{
 vars = request.vars
-for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end', 'hostname', 'pid', 'status_log']:
+for key in ['svcname',
+            'action',
+            'status',
+            'begin',
+            'end',
+            'hostname',
+            'pid',
+            'status_log']:
     if not vars.has_key(key) or vars[key] is None: vars[key]=''
     pass
 }}
 {{=PANEL("column_values")}}
 <form action='svcactions' name='svcform' id='svcform' method='post'> 
 <table>
-  {{=BOX_TOP_ROW(11)}}
+  {{=BOX_TOP_ROW(9)}}
   <tr class=box>
     <td class=box></td>
     <td class=box></td>
     <td>{{=colname(actions, 'svcname', T('Service'))}}</td>
-    <td>{{=colname(actions, 'app', T('App'))}}</td>
-    <td>{{=T('Resp')}}</td>
     <td>{{=colname(actions, 'hostname', T('Node'))}}</td>
     <td>{{=colname(actions, 'action', T('Action'))}}</td>
     <td>{{=colname(actions, 'status', T('Status'))}}</td>
@@ -32,18 +37,16 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
     <td class=box></td>
     <td><input type=checkbox id=check_all onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'))"></td>
     <td><input name=svcname value='{{=vars.svcname}}' size=12 onKeyPress="checkEnter(event)"></td>
-    <td><input name=app value='{{=vars.app}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td><input name=responsibles value='{{=vars.responsibles}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td><input name=hostname value='{{=vars.hostname}}' size=12 onKeyPress="checkEnter(event)"></td>
+    <td><input name=hostname value='{{=vars.hostname}}' size=8 onKeyPress="checkEnter(event)"></td>
     <td><input name=action value='{{=vars.action}}' size=8 onKeyPress="checkEnter(event)"></td>
-    <td><input name=status value='{{=vars.status}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td><input name=begin value='{{=vars.begin}}' size=12 onKeyPress="checkEnter(event)"></td>
-    <td><input name=end value='{{=vars.end}}' size=12 onKeyPress="checkEnter(event)"></td>
-    <td><input name=pid value='{{=vars.pid}}' size=5 onKeyPress="checkEnter(event)"></td>
+    <td><input name=status value='{{=vars.status}}' size=2 onKeyPress="checkEnter(event)"></td>
+    <td><input name=begin value='{{=vars.begin}}' size=8 onKeyPress="checkEnter(event)"></td>
+    <td><input name=end value='{{=vars.end}}' size=8 onKeyPress="checkEnter(event)"></td>
+    <td><input name=pid value='{{=vars.pid}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=status_log value='{{=vars.status_log}}' size=20 onKeyPress="checkEnter(event)"></td>
     <td class=box></td>
   </tr>
-  {{=BOX_BOTTOM_ROW(11)}}
+  {{=BOX_BOTTOM_ROW(9)}}
   {{
     pid = ''
     cellclass = 'cell1'
@@ -89,8 +92,6 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
     <td style='padding:0'></td>
     <td class={{=cellclass}}><input type=checkbox name=check_{{=action.id}} {{=checked}} {{=disabled}}></td>
     <td class={{=cellclass}}>{{=action.svcname}}</td>
-    <td class={{=cellclass}}>{{=action.app}}</td>
-    <td class={{=cellclass}}>{{=responsibles}}</td>
     <td class={{=cellclass}}>
       {{=PANEL('node_'+action.hostname)}}
       {{=A(
@@ -134,7 +135,7 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
   {{=ack}}
   {{pass}}
   <input id='node' type='hidden'>
-  {{=BOX_TOP_ROW(11)}}
+  {{=BOX_TOP_ROW(9)}}
   <tr class=box>
     <td align=center colspan=99>{{=nav}}</td>
   </tr>
@@ -173,6 +174,6 @@ for key in ['svcname', 'app', 'responsibles', 'action', 'status', 'begin', 'end'
       </table>
     </td>
    </tr>
-  {{=BOX_BOTTOM_ROW(11)}}
+  {{=BOX_BOTTOM_ROW(9)}}
 </table>
 </form>
