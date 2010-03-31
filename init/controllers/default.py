@@ -1650,7 +1650,9 @@ def ajax_filter_cloud():
         return DIV()
     n = {}
     for f in filters:
-        rows = db(db[f.fil_table][f.fil_column].like('%'+val+'%')).select(db[f.fil_table][f.fil_column])
+        col = db[f.fil_table][f.fil_column]
+        q = col.like('%'+val+'%')
+        rows = db(q).select(col)
         for i in [r[f.fil_column] for r in rows]:
             if i in n:
                 n[i] += 1
