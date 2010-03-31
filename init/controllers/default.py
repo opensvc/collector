@@ -1660,8 +1660,8 @@ def ajax_filter_cloud():
         return DIV()
     c_max = max(n.values())
     def format_item(i, c, c_max):
-        s = float(c) / c_max * 100 + 50
-        return SPAN(i+' ', _style='font-size:'+str(s)+'%;padding:0.5em')
+        s = float(c) / c_max * 100 + 70
+        return SPAN(i+' ', _style='font-size:'+str(s)+'%;padding:0.4em')
     d = []
     for i in sorted(n):
         if i == '':

@@ -817,5 +817,5 @@ a.xinfo_shown span {
 
 .cloud_shown {
    display: block;
-   max-width:20em;
+   text-align: center;
 }

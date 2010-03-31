@@ -363,10 +363,13 @@ def filter_match(key, fval):
   {{pass}}
   {{=BOX_TOP_ROW(7)}}
   <tr class=box>
-    <td align=center colspan=99>{{=nav}}</td>
+    <td style='padding:0'></td>
+    <td align=center colspan=7>{{=nav}}</td>
+    <td style='padding:0'></td>
   </tr>
   <tr class=box>
-    <td colspan=99>
+    <td style='padding:0'></td>
+    <td colspan=7>
       <table>
         <tr>
           <td> {{=T('Active filters')}}:</td>
@@ -376,8 +379,12 @@ def filter_match(key, fval):
           <td>{{=DB_FILTERS_ACTIVE(active_filters)}}</td>
           <td>{{=DB_FILTERS_AVAIL(available_filters)}}</td>
         </tr>
+        <tr>
+          <td colspan=10>{{=SPAN(_id='cloud', _class='cloud')}}</td>
+        </tr>
       </table>
     </td>
+    <td style='padding:0'></td>
   </tr>
   {{=BOX_BOTTOM_ROW(7)}}
 </table>

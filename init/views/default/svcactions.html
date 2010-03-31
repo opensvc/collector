@@ -140,7 +140,8 @@ for key in ['svcname',
     <td align=center colspan=99>{{=nav}}</td>
   </tr>
   <tr class=box>
-    <td colspan=99>
+    <td style='padding:0'></td>
+    <td colspan=9>
       <table>
         <tr class=box>
           <td> {{=T('Export')}}:</td>
@@ -171,8 +172,12 @@ for key in ['svcname',
             <input name=ackcomment onKeyPress="checkEnter(event)" onBlur="hide_eid('inputs')">
           </td>
         </tr>
+        <tr>
+          <td colspan=10>{{=SPAN(_id='cloud', _class='cloud')}}</td>
+        </tr>
       </table>
     </td>
+    <td style='padding:0'></td>
    </tr>
   {{=BOX_BOTTOM_ROW(9)}}
 </table>

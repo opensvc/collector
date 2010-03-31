@@ -109,11 +109,14 @@ def show_nodes(nodes):
   {{pass}}
   {{=BOX_TOP_ROW(11, min_width='70em')}}
   <tr class=box>
-    <td align=center colspan=99>{{=nav}}</td>
+    <td style='padding:0'></td>
+    <td align=center colspan=11>{{=nav}}</td>
+    <td style='padding:0'></td>
   </tr>
   <tr class=box>
     <input name=setwave type=hidden>
-    <td colspan=99>
+    <td style='padding:0'></td>
+    <td colspan=11>
       <table>
         <tr>
           <td> {{=T('Export')}}:</td>
@@ -169,8 +172,12 @@ def show_nodes(nodes):
             <input name=addproject onKeyPress="checkEnter(event)" onBlur="hide_eid('addproject_row')">
           </td>
         </tr>
+        <tr>
+          <td colspan=10>{{=SPAN(_id='cloud', _class='cloud')}}</td>
+        </tr>
       </table>
     </td>
+    <td style='padding:0'></td>
   </tr>
   {{=BOX_BOTTOM_ROW(11)}}
 </table>

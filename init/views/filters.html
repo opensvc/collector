@@ -1,3 +1,7 @@
+<script type="text/javascript">
+var timer
+</script>
+
 {{
 def DB_FILTERS_ACTIVE(filters):
     i = INPUT(_type='hidden', _name='delfilter')
@@ -66,23 +70,16 @@ def DB_FILTERS_AVAIL(filters):
                   _onClick='javascript:document.svcform.submit()',
               ),
             ),
-            TD(
-              SPAN(_id='cloud',
-                  _class='cloud'
-              ),
-              _rowspan=2,
-            ),
           ),
           TR(
             TD(
               INPUT(_name='filtervalue',
                     _id='filtervalue',
                     _onKeyPress='javascript:checkEnter(event);',
-                    _onKeyUp="""javascript:ajax('%(url)s',
-                                        ['filtervalue', 'addfilter'],
-                                        'cloud'
-                                       );
-                                """%dict(url=URL(r=request,f='ajax_filter_cloud')),
+                    _onKeyUp="""
+                       clearTimeout(timer);
+                       timer=setTimeout(function validate(){ajax('%(url)s', ['filtervalue', 'addfilter'], 'cloud')}, 800);
+                    """%dict(url=URL(r=request,f='ajax_filter_cloud')),
                     _style='width:18em',
               ),
               _colspan=2,

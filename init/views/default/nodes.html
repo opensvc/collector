@@ -71,10 +71,13 @@ for key in colkeys:
   <input id="node" type="hidden">
   {{=BOX_TOP_ROW(len(colkeys))}}
   <tr class=box>
-    <td align=center colspan=99>{{=nav}}</td>
+    <td style='padding:0'></td>
+    <td align=center colspan={{=len(colkeys)}}>{{=nav}}</td>
+    <td style='padding:0'></td>
   </tr>
   <tr class=box>
-    <td colspan=99>
+    <td style='padding:0'></td>
+    <td colspan={{=len(colkeys)}}>
       <table>
         <tr>
           <td> {{=T('Export')}}:</td>
@@ -92,8 +95,12 @@ for key in colkeys:
           <td>{{=DB_FILTERS_ACTIVE(active_filters)}}</td>
           <td>{{=DB_FILTERS_AVAIL(available_filters)}}</td>
         </tr>
+        <tr>
+          <td colspan=10>{{=SPAN(_id='cloud', _class='cloud')}}</td>
+        </tr>
       </table>
     </td>
+    <td style='padding:0'></td>
   </tr>
   {{=BOX_BOTTOM_ROW(len(colkeys))}}
 </table>
