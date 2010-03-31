@@ -1,5 +1,30 @@
 <script type="text/javascript">
-var timer
+var timer;
+var lastkeypress = 0;
+
+document.onkeydown = tofilter;
+document.onkeyup = reset_lastkeypress;
+
+function reset_lastkeypress() {
+    lastkeypress = 0;
+}
+
+function tofilter(e) {
+    var KeyID = (window.event) ? event.keyCode : e.keyCode;
+    //alert(KeyID);
+    switch(KeyID)
+    {
+        case 59:
+            if (lastkeypress == 17) {
+                // Ctrl + :
+                document.svcform.addfilter.focus();
+                //document.svcform.addfilter.select();
+            }
+            break;
+    }
+    lastkeypress = KeyID;
+}
+
 </script>
 
 {{
