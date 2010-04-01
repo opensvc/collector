@@ -1356,6 +1356,14 @@ def service_availability_chart(h):
     if len(data) == 0:
         return
 
+    duration = x_max - x_min
+    if duration < 691200:
+        ti = 86400
+    elif duration < 2764800:
+        ti = 604800
+    else:
+        ti = 2592000
+
     action = str(URL(r=request,c='static',f='avail.png'))
     path = 'applications'+action
     can = canvas.init(path)
@@ -1366,8 +1374,8 @@ def service_availability_chart(h):
     ar = area.T(y_coord = category_coord.T(data, 0),
                 size = (150,len(data)*8),
                 x_range = (x_min, x_max),
-                x_axis = axis.X(label="", format=format_x, tic_interval=259200),
-                y_axis = axis.Y(label="",  format="/6{}%s"))
+                x_axis = axis.X(label="", format=format_x, tic_interval=ti),
+                y_axis = axis.Y(label="",  format="/4{}%s"))
     bar_plot.fill_styles.reset()
 
     chart_object.set_defaults(interval_bar_plot.T,
@@ -1377,10 +1385,10 @@ def service_availability_chart(h):
                               data=data)
     plot1 = interval_bar_plot.T(fill_styles = [fill_style.red, None],
                                 cluster=(0,2),
-                                label="/6accounted")
+                                label="/5accounted")
     plot2 = interval_bar_plot.T(fill_styles = [fill_style.blue, None],
                                 hcol=2, cluster=(1,2),
-                                label="/6ignored")
+                                label="/5ignored")
     ar.add_plot(plot1, plot2)
     ar.draw(can)
     can.close()
