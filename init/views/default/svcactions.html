@@ -24,22 +24,22 @@ for key in ['svcname',
     <td class=box></td>
     <td>{{=colname(actions, 'svcname', T('Service'))}}</td>
     <td>{{=colname(actions, 'hostname', T('Node'))}}</td>
+    <td>{{=colname(actions, 'pid', T('Pid'))}}</td>
     <td>{{=colname(actions, 'action', T('Action'))}}</td>
     <td>{{=colname(actions, 'status', T('Status'))}}</td>
     <td>{{=colname(actions, 'begin', T('Begin'))}}</td>
     <td>{{=colname(actions, 'end', T('End'))}}</td>
-    <td>{{=colname(actions, 'pid', T('Pid'))}}</td>
     <td>{{=colname(actions, 'status_log', T('Log'))}}</td>
   </tr>
   <tr class=box>
     <td><input type=checkbox id=check_all onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'))"></td>
     <td><input name=svcname value='{{=vars.svcname}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=hostname value='{{=vars.hostname}}' size=8 onKeyPress="checkEnter(event)"></td>
+    <td><input name=pid value='{{=vars.pid}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=action value='{{=vars.action}}' size=8 onKeyPress="checkEnter(event)"></td>
     <td><input name=status value='{{=vars.status}}' size=2 onKeyPress="checkEnter(event)"></td>
     <td><input name=begin value='{{=vars.begin}}' size=8 onKeyPress="checkEnter(event)"></td>
     <td><input name=end value='{{=vars.end}}' size=8 onKeyPress="checkEnter(event)"></td>
-    <td><input name=pid value='{{=vars.pid}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=status_log value='{{=vars.status_log}}' size=20 onKeyPress="checkEnter(event)"></td>
   </tr>
   {{
@@ -53,6 +53,9 @@ for key in ['svcname',
     {{if pid != action.pid:
           cellclass = cellclasses[cellclass]
           pid = action.pid
+          new = True
+      else:
+          new = False
           pass
       checked = getattr(vars, 'check_'+action.svcname)
       if checked is not None:
@@ -85,8 +88,13 @@ for key in ['svcname',
     }}
   <tr>
     <td class={{=cellclass}}><input type=checkbox name=check_{{=action.id}} {{=checked}} {{=disabled}}></td>
-    <td class={{=cellclass}}>{{=action.svcname}}</td>
     <td class={{=cellclass}}>
+      {{if new:}}
+        {{=action.svcname}}
+        {{pass}}
+    </td>
+    <td class={{=cellclass}}>
+      {{if new:}}
       {{=PANEL('node_'+action.hostname)}}
       {{=A(
           DIV(
@@ -104,26 +112,28 @@ for key in ['svcname',
           _class="xinfo",
         )
       }}
+      {{pass}}
 
+    </td>
+    <td class={{=cellclass}}>
+      {{if new:}}
+        {{=A(action.pid,
+             _href=URL(r=request, vars={
+                       'pid':action.pid,
+                       'hostname':action.hostname,
+                       'svcname':action.svcname,
+                       'begin':'>'+str(action.begin-datetime.timedelta(days=1)),
+                       'end':'<'+str(action.end+datetime.timedelta(days=1)),
+                       'perpage':0,
+                      }),
+            )
+       }}
+      {{pass}}
     </td>
     <td class="{{=cellclass}} {{=metaactionclass}}">{{=action.action}}</td>
     <td class="{{=cellclass}} status_{{=action.status}} ack_{{=action.ack}} {{=metaactionclass}}" {{=trigger}}>{{=action.status}}</td>
     <td class={{=cellclass}}>{{=action.begin}}</td>
     <td class={{=cellclass}}>{{=action.end}}</td>
-    <td class={{=cellclass}}>{{=A(action.pid,
-                                  _href=URL(r=request,
-                                            vars={
-                                                'pid':action.pid,
-                                                'hostname':action.hostname,
-                                                'svcname':action.svcname,
-                                                'begin':'>'+str(action.begin-datetime.timedelta(days=1)),
-                                                'end':'<'+str(action.end+datetime.timedelta(days=1)),
-                                                'perpage':0,
-                                            }
-                                           )
-                                 )
-                             }}
-    </td>
     <td class={{=cellclass}}>{{=action.status_log.replace('\\n','\n')}}</td>
   </tr>
   {{=ack}}
