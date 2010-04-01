@@ -5,12 +5,12 @@
 {{include 'filters.html'}}
 
 {{
+
 vars = request.vars
 toolong = datetime.datetime.today()-datetime.timedelta(hours=1)
 for key in ['svcname',
             'containertype',
             'svcapp',
-            'responsibles',
             'svctype',
             'svcautostart',
             'containerstatus',
@@ -113,37 +113,30 @@ def svc_status(svc, cellclass="cell2"):
 <input id="node" type="hidden">
 {{=PANEL("column_values")}}
 <form action='svcmon' name='svcform' id='svcform'> 
-<table>
-  {{=BOX_TOP_ROW(10)}}
+{{=DB_FILTERS_TABLE(active_filters, available_filters)}}
+<table class=datatable>
   <tr class=box>
-    <td class=box></td>
     <td class=box></td>
     <td>{{=colname(services, 'svc_name', T('Service'))}}</td>
-    <td width=10>{{=colname(services, 'svc_containertype', T('Container type'))}}</td>
-    <td width=10>{{=colname(services, 'svc_app', T('App'))}}</td>
-    <td width=10>{{=colname(services, 'responsibles', T('Resp'))}}</td>
-    <td width=10>{{=colname(services, 'svc_autostart', T('Preferred node'))}}</td>
-    <td width=10>{{=colname(services, 'mon_svctype', T('Service type'))}}</td>
-    <td width=10>{{=colname(services, 'mon_nodtype', T('Node type'))}}</td>
+    <td>{{=colname(services, 'svc_containertype', T('Container type'))}}</td>
+    <td>{{=colname(services, 'svc_app', T('App'))}}</td>
+    <td>{{=colname(services, 'svc_autostart', T('Preferred node'))}}</td>
+    <td>{{=colname(services, 'mon_svctype', T('Service type'))}}</td>
+    <td>{{=colname(services, 'mon_nodtype', T('Node type'))}}</td>
     <td>{{=colname(services, 'mon_nodname', T('Node'))}}</td>
-    <td width=10 class=status_t>{{=T('Status')}}</td>
-    <td class=box></td>
+    <td class=status_t>{{=T('Status')}}</td>
   </tr>
   <tr class=box>
-    <td style='padding:0'></td>
     <td style='padding:0'></td>
     <td><input name=svcname value='{{=vars.svcname}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=containertype value='{{=vars.containertype}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=svcapp value='{{=vars.svcapp}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td><input name=responsibles value='{{=vars.responsibles}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=svcautostart value='{{=vars.svcautostart}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=svctype value='{{=vars.svctype}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=nodetype value='{{=vars.nodetype}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=nodename value='{{=vars.nodename}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td class=status_t><input name=overallstatus value='{{=vars.overallstatus}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td style='padding:0'></td>
   </tr>
-  {{=BOX_BOTTOM_ROW(10)}}
   {{
     svcname = ''
     cellclass = 'cell1'
@@ -162,11 +155,6 @@ def svc_status(svc, cellclass="cell2"):
       else:
           newsvc = False
           pass
-      if svc.responsibles:
-          responsibles = IMG(_src=URL(r=request,c='static',f='guy.png'),_border=0, _title=svc.responsibles)
-      else:
-          responsibles = ''
-          pass
       if svc.svc_vmname != "" and svc.svc_vmname is not None:
           vmname = svc.svc_vmname
       else:
@@ -179,7 +167,6 @@ def svc_status(svc, cellclass="cell2"):
           err = ''
           pass
     }}
-    <td style='padding:0'></td>
     <td class={{=cellclass}}>
       <input id="{{=svc.mon_svcname}}" value="{{=svc.mon_svcname}}" type="hidden">
       {{if newsvc:}}
@@ -271,11 +258,6 @@ def svc_status(svc, cellclass="cell2"):
     </td>
     <td class={{=cellclass}}>
       {{if newsvc:}}
-        {{=responsibles}}
-        {{pass}}
-    </td>
-    <td class={{=cellclass}}>
-      {{if newsvc:}}
       {{=PANEL('asn_'+svc.svc_autostart)}}
       {{=A(
           DIV(
@@ -332,35 +314,26 @@ def svc_status(svc, cellclass="cell2"):
     <td class="{{=cellclass}}">
       {{=svc_status(svc,cellclass)}}
     </td>
-    <td style='padding:0'></td>
   </tr>
   {{pass}}
 
   <tr>
-    <td style='padding:0'></td>
     <td colspan=10>
     {{if viz is not None:}}
       {{=P(IMG(_src=viz, _border=0), _style="text-align:center")}}
     {{pass}}
     </td>
-    <td style='padding:0'></td>
   </tr>
 
-  {{=BOX_TOP_ROW(10)}}
   <tr class=box>
-    <td style='padding:0'></td>
     <td align=center colspan=10>{{=nav}}</td>
-    <td style='padding:0'></td>
   </tr>
   <tr class=box>
-    <td style='padding:0'></td>
     <td colspan=10>
       <table>
         <tr>
           <td> {{=T('Export')}}:</td>
           <td> {{=T('Topology')}}:</td>
-          <td> {{=T('Active filters')}}:</td>
-          <td> {{=T('Add filter')}}:</td>
         </tr>
         <tr>
           <td>
@@ -369,16 +342,9 @@ def svc_status(svc, cellclass="cell2"):
           <td>
             {{=A(IMG(_src=URL(r=request,c='static',f='viz.png'),_border=0, _title=T("print the topology of the current data cursor")),_href=URL(r=request,f='svcmon_viz', vars=vars))}}
           </td>
-          <td>{{=DB_FILTERS_ACTIVE(active_filters)}}</td>
-          <td>{{=DB_FILTERS_AVAIL(available_filters)}}</td>
-        </tr>
-        <tr>
-          <td colspan=10>{{=SPAN(_id='cloud', _class='cloud')}}</td>
         </tr>
       </table>
     </td>
-    <td style='padding:0'></td>
   </tr>
-  {{=BOX_BOTTOM_ROW(10)}}
 </table>
 </form>

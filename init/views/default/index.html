@@ -547,43 +547,17 @@ def obs_miss():
         )
       )
     )
-
-def toolbar():
-    t = TABLE(
-          BOX_TOP_ROW(1),
-          TR(
-            TD(_style='padding:0px'),
-            TD(
-              TABLE(
-                TR(
-                  TD(T('Active filters')),
-                  TD(T('Add filter')),
-                ),
-                TR(
-                  TD(DB_FILTERS_ACTIVE(active_filters)),
-                  TD(DB_FILTERS_AVAIL(available_filters)),
-                ),
-              ),
-            ),
-            TD(_style='padding:0px'),
-            _class='box'
-          ),
-          TR(
-            TD(_style='padding:0px'),
-            TD(
-              SPAN(_id='cloud', _class='cloud'),
-            ),
-            TD(_style='padding:0px'),
-            _class='box'
-          ),
-          BOX_BOTTOM_ROW(1),
-          _style='margin-top:2em;margin-bottom:2em;',
-        )
-    return t
     pass
 
 }}
 
+{{=FORM(
+     DB_FILTERS_TABLE(active_filters, available_filters),
+     _action='index',
+     _name='svcform',
+     _id='svcform',
+   )
+}}
 {{=DIV(
      last_changes(),
      app_wo_resp(),
@@ -595,12 +569,6 @@ def toolbar():
      obs_hw_alert(),
      obs_hw_warn(),
      obs_miss(),
-     FORM(
-       toolbar(),
-       _action='index',
-       _name='svcform',
-       _id='svcform',
-     ),
      _style="
        padding-left:2em;
        padding-right:2em;

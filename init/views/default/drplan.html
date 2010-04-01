@@ -27,10 +27,9 @@ def show_nodes(nodes):
     {{pass}}
 {{pass}}
 <form action='drplan' name='svcform' id='svcform'> 
-<table>
-  {{=BOX_TOP_ROW(11, min_width='70em')}}
+{{=DB_FILTERS_TABLE(active_filters, available_filters)}}
+<table class=datatable>
   <tr class=box>
-    <td class=box></td>
     <td class=box></td>
     <td>{{=T('Service name')}}</td>
     <td width=10>{{=T('App')}}</td>
@@ -42,10 +41,8 @@ def show_nodes(nodes):
     <td>{{=T('DR node')}}</td>
     <td>{{=T('DR nodes')}}</td>
     <td>{{=T('Wave')}}</td>
-    <td class=box></td>
   </tr>
   <tr class=box>
-    <td class=box></td>
     <td><input type=checkbox id=check_all onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'))"></td>
     <td><input name=svc_name value='{{=vars.svc_name}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=svc_app value='{{=vars.svc_app}}' size=4 onKeyPress="checkEnter(event)"></td>
@@ -57,9 +54,7 @@ def show_nodes(nodes):
     <td><input name=svc_drpnode value='{{=vars.svc_drpnode}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=svc_drpnodes value='{{=vars.svc_drpnodes}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=svc_wave value='{{=vars.svc_wave}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td class=box></td>
   </tr>
-  {{=BOX_BOTTOM_ROW(11)}}
   {{
     svcname = ''
     cellclass = 'cell1'
@@ -93,7 +88,6 @@ def show_nodes(nodes):
           responsibles = ''
           pass
       }}
-    <td style='padding:0'></td>
     <td class={{=cellclass}}><input type=checkbox name=check_{{=svc.v_svcmon.svc_name}} {{=checked}}></td>
     <td class={{=cellclass}}>{{=svc.v_svcmon.svc_name}}</td>
     <td class={{=cellclass}}>{{=svc.v_svcmon.svc_app}}</td>
@@ -107,23 +101,17 @@ def show_nodes(nodes):
     <td class={{=cellclass}}>{{=drp_wave}}</td>
   </tr>
   {{pass}}
-  {{=BOX_TOP_ROW(11, min_width='70em')}}
   <tr class=box>
-    <td style='padding:0'></td>
     <td align=center colspan=11>{{=nav}}</td>
-    <td style='padding:0'></td>
   </tr>
   <tr class=box>
     <input name=setwave type=hidden>
-    <td style='padding:0'></td>
     <td colspan=11>
       <table>
         <tr>
           <td> {{=T('Export')}}:</td>
           <td> {{=T('set wave')}}:</td>
           <td> {{=T('project')}}:</td>
-          <td> {{=T('Active filters')}}:</td>
-          <td> {{=T('Add filter')}}:</td>
         </tr>
         <tr>
           <td>
@@ -155,8 +143,6 @@ def show_nodes(nodes):
             {{=IMG(_src=URL(r=request,c='static',f='del.png'),_border=0, _title=T("trash the current project"), _onclick='javascript:document.svcform.delproject.value=1;document.svcform.submit()')}}
             {{=A(IMG(_src=URL(r=request,c='static',f='gen.png'),_border=0, _title=T("generate the DR scripts for the current project")),_href=URL(r=request,f='drplan_scripts', vars=vars))}}
           </td>
-          <td>{{=DB_FILTERS_ACTIVE(active_filters)}}</td>
-          <td>{{=DB_FILTERS_AVAIL(available_filters)}}</td>
         </tr>
         <tr class='hidden' id='cloneproject_row'>
           <td></td>
@@ -172,13 +158,8 @@ def show_nodes(nodes):
             <input name=addproject onKeyPress="checkEnter(event)" onBlur="hide_eid('addproject_row')">
           </td>
         </tr>
-        <tr>
-          <td colspan=10>{{=SPAN(_id='cloud', _class='cloud')}}</td>
-        </tr>
       </table>
     </td>
-    <td style='padding:0'></td>
   </tr>
-  {{=BOX_BOTTOM_ROW(11)}}
 </table>
 </form>

@@ -18,10 +18,9 @@ for key in ['svcname',
 }}
 {{=PANEL("column_values")}}
 <form action='svcactions' name='svcform' id='svcform' method='post'> 
-<table>
-  {{=BOX_TOP_ROW(9)}}
+{{=DB_FILTERS_TABLE(active_filters, available_filters)}}
+<table class=datatable>
   <tr class=box>
-    <td class=box></td>
     <td class=box></td>
     <td>{{=colname(actions, 'svcname', T('Service'))}}</td>
     <td>{{=colname(actions, 'hostname', T('Node'))}}</td>
@@ -31,10 +30,8 @@ for key in ['svcname',
     <td>{{=colname(actions, 'end', T('End'))}}</td>
     <td>{{=colname(actions, 'pid', T('Pid'))}}</td>
     <td>{{=colname(actions, 'status_log', T('Log'))}}</td>
-    <td class=box></td>
   </tr>
   <tr class=box>
-    <td class=box></td>
     <td><input type=checkbox id=check_all onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'))"></td>
     <td><input name=svcname value='{{=vars.svcname}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=hostname value='{{=vars.hostname}}' size=8 onKeyPress="checkEnter(event)"></td>
@@ -44,9 +41,7 @@ for key in ['svcname',
     <td><input name=end value='{{=vars.end}}' size=8 onKeyPress="checkEnter(event)"></td>
     <td><input name=pid value='{{=vars.pid}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=status_log value='{{=vars.status_log}}' size=20 onKeyPress="checkEnter(event)"></td>
-    <td class=box></td>
   </tr>
-  {{=BOX_BOTTOM_ROW(9)}}
   {{
     pid = ''
     cellclass = 'cell1'
@@ -89,7 +84,6 @@ for key in ['svcname',
           pass
     }}
   <tr>
-    <td style='padding:0'></td>
     <td class={{=cellclass}}><input type=checkbox name=check_{{=action.id}} {{=checked}} {{=disabled}}></td>
     <td class={{=cellclass}}>{{=action.svcname}}</td>
     <td class={{=cellclass}}>
@@ -135,20 +129,16 @@ for key in ['svcname',
   {{=ack}}
   {{pass}}
   <input id='node' type='hidden'>
-  {{=BOX_TOP_ROW(9)}}
   <tr class=box>
     <td align=center colspan=99>{{=nav}}</td>
   </tr>
   <tr class=box>
-    <td style='padding:0'></td>
     <td colspan=9>
       <table>
         <tr class=box>
           <td> {{=T('Export')}}:</td>
           <td> {{=T('Rss')}}:</td>
           <td> {{=T('Actions')}}:</td>
-          <td> {{=T('Active filters')}}:</td>
-          <td> {{=T('Add filter')}}:</td>
         </tr>
         <tr class=box>
           <td>
@@ -160,8 +150,6 @@ for key in ['svcname',
           <td>
             {{=IMG(_src=URL(r=request,c='static',f='ack.png'),_border=0, _title=T('acknowledge selected errors'), _onclick='javascript:show_eid("inputs");document.svcform.ackcomment.focus()')}}
           </td>
-          <td>{{=DB_FILTERS_ACTIVE(active_filters)}}</td>
-          <td>{{=DB_FILTERS_AVAIL(available_filters)}}</td>
         </tr>
         <tr class=hidden id="inputs">
           <td></td>
@@ -172,13 +160,8 @@ for key in ['svcname',
             <input name=ackcomment onKeyPress="checkEnter(event)" onBlur="hide_eid('inputs')">
           </td>
         </tr>
-        <tr>
-          <td colspan=10>{{=SPAN(_id='cloud', _class='cloud')}}</td>
-        </tr>
       </table>
     </td>
-    <td style='padding:0'></td>
    </tr>
-  {{=BOX_BOTTOM_ROW(9)}}
 </table>
 </form>

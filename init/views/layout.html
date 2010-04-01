@@ -24,7 +24,7 @@
                       {{=MENU(response.menu_auth, _class="web2py-menu web2py-menu-horizontal")}}
                       {{pass}}
                     </td>
-                    <td class=menucell style="min-width:56em">
+                    <td class=menucell style="min-width:33em">
                       {{if response.menu:}}
                       {{=MENU(response.menu, _class="web2py-menu web2py-menu-horizontal")}}
                       {{pass}}
@@ -37,7 +37,7 @@
         </td>
       </tr>
       <tr>
-        <td>
+        <td style='padding:0px'>
           <div class="flash">{{=response.flash or ''}}</div>
           <div align=center>{{include}}</div>
         </td>

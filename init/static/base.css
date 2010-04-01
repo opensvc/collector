@@ -78,7 +78,7 @@ select {
 }
 
 .web2py-menu-active a {
-    background-color: #ffffff;
+    background-color: orange;
 }
 
 .menucell {
@@ -817,5 +817,27 @@ a.xinfo_shown span {
 
 .cloud_shown {
    display: block;
+   text-align: left;
+}
+
+.menubar {
+   padding: 0px;
+   display: none; /* on masque l'infobulle */
+}
+
+.menubar_shown {
+   display: block;
    text-align: center;
+}
+
+.menuhandle {
+    background:orange;
+    color: #ffffff;
+    text-align: center;
+    padding: 0px;
+    font-size: 0.5em;
+}
+
+.datatable {
+    width:100%;
 }

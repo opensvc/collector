@@ -188,15 +188,14 @@ def filter_match(key, fval):
 
 }}
 <form action='svcmon_log' name='svcform' id='svcform'> 
+{{=DB_FILTERS_TABLE(active_filters, available_filters)}}
 
 {{if img is not None:}}
 {{=IMG(_src=URL(r=request,c='static',f='avail.png'), _border=0)}}
 {{pass}}
 
-<table>
-  {{=BOX_TOP_ROW(7)}}
+<table class=datatable>
   <tr class=box>
-    <td class=box></td>
     <td class=box></td>
     <td>{{=colname(rows, 'mon_svcname', T('Service'), nestedin='svcmon_log')}}</td>
     <td>{{=T('Availability')}}</td>
@@ -204,20 +203,16 @@ def filter_match(key, fval):
     <td>{{=T('Unavailability end')}}</td>
     <td>{{=T('Duration')}}</td>
     <td class=box></td>
-    <td class=box></td>
   </tr>
   <tr class=box>
-    <td style='padding:0'></td>
-    <td style='padding:0'></td>
+    <td class=box></td>
     <td><input name=mon_svcname value='{{=vars.mon_svcname}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=mon_availability value='{{=vars.mon_availability}}' size=6 onKeyPress="checkEnter(event)"></td>
     <td><input name=mon_begin value='{{=vars.mon_begin}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=mon_end value='{{=vars.mon_end}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=mon_duration value='{{=vars.mon_duration}}' size=6 onKeyPress="checkEnter(event)"></td>
     <td style='padding:0'></td>
-    <td style='padding:0'></td>
   </tr>
-  {{=BOX_BOTTOM_ROW(7)}}
   {{
     svcname = ''
     cellclass = 'cell1'
@@ -291,7 +286,6 @@ def filter_match(key, fval):
           pass
     }}
   <tr>
-    <td style='padding:0'></td>
     <td class={{=cellclass}}>
       <input id="{{=svc}}" value="{{=svc}}" type="hidden">
       {{if newsvc:}}
@@ -361,32 +355,6 @@ def filter_match(key, fval):
   {{=ackline}}
   {{pass}}
   {{pass}}
-  {{=BOX_TOP_ROW(7)}}
-  <tr class=box>
-    <td style='padding:0'></td>
-    <td align=center colspan=7>{{=nav}}</td>
-    <td style='padding:0'></td>
-  </tr>
-  <tr class=box>
-    <td style='padding:0'></td>
-    <td colspan=7>
-      <table>
-        <tr>
-          <td> {{=T('Active filters')}}:</td>
-          <td> {{=T('Add filter')}}:</td>
-        </tr>
-        <tr>
-          <td>{{=DB_FILTERS_ACTIVE(active_filters)}}</td>
-          <td>{{=DB_FILTERS_AVAIL(available_filters)}}</td>
-        </tr>
-        <tr>
-          <td colspan=10>{{=SPAN(_id='cloud', _class='cloud')}}</td>
-        </tr>
-      </table>
-    </td>
-    <td style='padding:0'></td>
-  </tr>
-  {{=BOX_BOTTOM_ROW(7)}}
 </table>
 <input id="svcname" type="hidden">
 <input id="begin" type="hidden">

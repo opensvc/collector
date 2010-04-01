@@ -9,10 +9,8 @@ for key in colkeys:
     pass
 }}
 <form action='apps' name='svcform' id='svcform'>
-<table>
-  {{=BOX_TOP_ROW(3)}}
+<table class=datatable>
   <tr class=box>
-    <td class=box></td>
     <td class=box></td>
     {{for key in colkeys:}}
     <td>{{=columns[key]['title']}}</td>
@@ -20,14 +18,11 @@ for key in colkeys:
     <td class=box></td>
   </tr>
   <tr class=box>
-    <td class=box></td>
     <td><input type=checkbox id=check_all onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'))"></td>
     {{for key in colkeys:}}
     <td><input name={{=key}} value='{{=request.vars[key]}}' size={{=columns[key]['size']}} onKeyPress="checkEnter(event)"></td>
     {{pass}}
-    <td class=box></td>
   </tr>
-  {{=BOX_BOTTOM_ROW(3)}}
   {{for app in apps:}}
   <tr>
     {{
@@ -36,14 +31,12 @@ for key in colkeys:
           checked = 'checked=on'
           pass
     }}
-    <td style='padding:0'></td>
     <td><input type=checkbox name=check_{{=str(app.id)}} {{=checked}}></td>
     {{for key in colkeys:}}
     <td>{{=app[key]}}</td>
     {{pass}}
   </tr>
   {{pass}}
-  {{=BOX_TOP_ROW(3)}}
   <tr class=box>
     <td align=center colspan=99>{{=nav}}</td>
   </tr>
@@ -85,7 +78,6 @@ for key in colkeys:
       </table>
     </td>
   </tr>
-  {{=BOX_BOTTOM_ROW(3)}}
 </table>
 <input name=resp type=hidden>
 </form>

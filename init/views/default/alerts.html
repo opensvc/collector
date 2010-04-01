@@ -9,23 +9,17 @@ for key in colkeys:
     pass
 }}
 <form action='alerts' name='svcform' id='svcform'>
-<table>
-  {{=BOX_TOP_ROW(len(colkeys))}}
+<table class=datatable>
   <tr class=box>
-    <td class=box></td>
     {{for key in colkeys:}}
     <td>{{=columns[key]['title']}}</td>
     {{pass}}
-    <td class=box></td>
   </tr>
   <tr class=box>
-    <td class=box></td>
     {{for key in colkeys:}}
     <td><input name={{=key}} value='{{=request.vars[key]}}' size={{=columns[key]['size']}} onKeyPress="checkEnter(event)"></td>
     {{pass}}
-    <td class=box></td>
   </tr>
-  {{=BOX_BOTTOM_ROW(len(colkeys))}}
   {{
     cellclass = 'cell1'
     cellclasses = {}
@@ -42,14 +36,11 @@ for key in colkeys:
         pass
     }}
   <tr>
-    <td style='padding:0'></td>
     {{for key in colkeys:}}
     <td class={{=cellclass}} style='vertical-align:top'>{{=XML(row[key])}}</td>
     {{pass}}
-    <td style='padding:0'></td>
   </tr>
   {{pass}}
-  {{=BOX_TOP_ROW(len(colkeys))}}
   <tr class=box>
     <td align=center colspan=99>{{=nav}}</td>
   </tr>
@@ -67,6 +58,5 @@ for key in colkeys:
       </table>
     </td>
   </tr>
-  {{=BOX_BOTTOM_ROW(len(colkeys))}}
 </table>
 </form>

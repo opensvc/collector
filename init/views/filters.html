@@ -9,6 +9,16 @@ function reset_lastkeypress() {
     lastkeypress = 0;
 }
 
+function toggle_menu()
+{
+    var menubar = document.getElementById("menubar");
+    if (menubar.className=="menubar") {
+        menubar.className="menubar_shown";
+    } else {
+        menubar.className="menubar";
+    }
+}
+
 function tofilter(e) {
     var KeyID = (window.event) ? event.keyCode : e.keyCode;
     //alert(KeyID);
@@ -18,6 +28,7 @@ function tofilter(e) {
             if (lastkeypress == 17) {
                 // Ctrl + :
                 document.svcform.addfilter.focus();
+                toggle_menu()
                 //document.svcform.addfilter.select();
             }
             break;
@@ -29,6 +40,8 @@ function tofilter(e) {
 
 {{
 def DB_FILTERS_ACTIVE(filters):
+    if filters is None or len(filters) == 0:
+        return T("None")
     i = INPUT(_type='hidden', _name='delfilter')
     lines = []
     for f in filters:
@@ -62,6 +75,8 @@ def DB_FILTERS_ACTIVE(filters):
 pass
 
 def DB_FILTERS_AVAIL(filters):
+    if filters is None or len(filters) == 0:
+        return DIV()
     options = [OPTION(T('choose'), _value='')]
     for f in filters:
         if f.fil_need_value == 1:
@@ -114,6 +129,32 @@ def DB_FILTERS_AVAIL(filters):
           ),
         )
     return DIV(t)
+pass
+
+def DB_FILTERS_TABLE(active, avail):
+    t = TABLE(
+      TR(
+        TD(T('Available filters')),
+        TD(T('Active filters')),
+      ),
+      TR(
+        TD(DB_FILTERS_AVAIL(available_filters)),
+        TD(DB_FILTERS_ACTIVE(active_filters)),
+      ),
+    )
+    c = DIV(_id='cloud')
+    filterbar = DIV(
+      t,
+      c,
+      _class='menubar',
+      _id='menubar',
+    )
+    handlebar = DIV(
+      'filters',
+      _class='menuhandle',
+      _onclick='toggle_menu()',
+    )
+    return SPAN(filterbar, handlebar)
 pass
 
 }}

@@ -2,7 +2,6 @@
 {{include '../static/jslib.html'}}
 {{include 'box.html'}}
 {{include 'panel.html'}}
-{{include 'filters.html'}}
 
 {{
 vars = request.vars
@@ -15,10 +14,8 @@ for key in ['fullname',
 }}
 
 <form action='users' name='svcform' id='svcform'> 
-<table>
-  {{=BOX_TOP_ROW(7)}}
+<table class=datatable>
   <tr class=box>
-    <td class=box></td>
     <td class=box></td>
     <td>{{=T('Role')}}</td>
     <td>{{=T('Full name')}}</td>
@@ -26,10 +23,8 @@ for key in ['fullname',
     <td>{{=T('Domains')}}</td>
     <td>{{=T('Last event')}}</td>
     <td class=box></td>
-    <td class=box></td>
   </tr>
   <tr class=box>
-    <td style='padding:0'></td>
     <td><input type=checkbox id=check_all onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'))"></td>
     <td></td>
     <td><input name=fullname value='{{=vars.fullname}}' size=12 onKeyPress="checkEnter(event)"></td>
@@ -37,9 +32,7 @@ for key in ['fullname',
     <td><input name=domains value='{{=vars.domains}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=last value='{{=vars.last}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td style='padding:0'></td>
-    <td style='padding:0'></td>
   </tr>
-  {{=BOX_BOTTOM_ROW(7)}}
   {{
     cellclass = 'cell1'
     cellclasses = {}
@@ -61,7 +54,6 @@ for key in ['fullname',
         checked = 'checked=on'
         pass
     }}
-    <td style='padding:0'></td>
     <td class={{=cellclass}}><input type=checkbox name="check_{{=u.id}}" id="id_check_{{=u.id}}" {{=checked}}></td>
     <td class={{=cellclass}}>{{=role}}</td>
     <td class={{=cellclass}}>{{=u.fullname}}</td>
@@ -98,11 +90,9 @@ for key in ['fullname',
         )
       }}
     </td>
-    <td style='padding:0'></td>
   </tr>
   <input id="uid" type="hidden">
   {{pass}}
-  {{=BOX_TOP_ROW(7)}}
   <tr class=box>
     <td align=center colspan=99>{{=nav}}</td>
   </tr>
@@ -131,7 +121,6 @@ for key in ['fullname',
       </table>
     </td>
   </tr>
-  {{=BOX_BOTTOM_ROW(7)}}
 </table>
 <input name=action type=hidden>
 </form>

@@ -52,20 +52,27 @@ response.menu = [
      URL(request.application,'default','svcmon'), []],
     [T('actions'), _f == 'svcactions', 
      URL(request.application,'default','svcactions?begin=>'+yesterday+'&status_log=empty'), []],
-    [T('drplan'), _f == 'drplan', 
-     URL(request.application,'default','drplan'), []],
-    [T('applications'), _f == 'apps', 
-     URL(request.application,'default','apps'), []],
     [T('nodes'), _f == 'nodes', 
-     URL(request.application,'default','nodes'), [
-         [T('Obsolescence setup'), False, 
-          URL(request.application,'default','obsolescence_config')]]],
-    [T('alerts'), _f == 'alerts', 
-     URL(request.application,'default','alerts'), []],
+     URL(request.application,'default','nodes'), []],
     [T('stats'), _f == 'stats', 
-     URL(request.application,'default','stats'), [
-         [T('Availability'), False, 
-          URL(request.application,'default','svcmon_log')]]],
-    [T('users'), _f == 'users', 
-     URL(request.application,'default','users'), []],
+     URL(request.application,'default','stats'),
+         [
+             [T('availability'), False, 
+              URL(request.application,'default','svcmon_log')],
+             [T('alerts'), False, 
+              URL(request.application,'default','alerts')],
+         ]
+    ],
+    [T('admin'), False, '',
+         [
+             [T('users'), False, 
+              URL(request.application,'default','users')],
+             [T('obsolescence setup'), False, 
+              URL(request.application,'default','obsolescence_config')],
+             [T('applications'), False, 
+              URL(request.application,'default','apps')],
+             [T('drplan'), False, 
+              URL(request.application,'default','drplan')],
+         ]
+    ],
 ]

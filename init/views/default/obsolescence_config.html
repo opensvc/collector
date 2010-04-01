@@ -16,10 +16,9 @@ for key in ['obs_type',
 
 {{=PANEL("nodes")}}
 <form action='obsolescence_config' name='svcform' id='svcform'> 
-<table>
-  {{=BOX_TOP_ROW(7)}}
+{{=DB_FILTERS_TABLE(active_filters, available_filters)}}
+<table class=datatable>
   <tr class=box>
-    <td class=box></td>
     <td class=box></td>
     <td>{{=T('Count')}}</td>
     <td>{{=T('Type')}}</td>
@@ -27,10 +26,8 @@ for key in ['obs_type',
     <td>{{=T('Warn date')}}</td>
     <td>{{=T('Alert date')}}</td>
     <td class=box></td>
-    <td class=box></td>
   </tr>
   <tr class=box>
-    <td style='padding:0'></td>
     <td><input type=checkbox id=check_all onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'))"></td>
     <td style='padding:0'></td>
     <td><input name=obs_type value='{{=vars.obs_type}}' size=4 onKeyPress="checkEnter(event)"></td>
@@ -38,9 +35,7 @@ for key in ['obs_type',
     <td><input name=obs_warn_date value='{{=vars.obs_warn_date}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=obs_alert_date value='{{=vars.obs_alert_date}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td style='padding:0'></td>
-    <td style='padding:0'></td>
   </tr>
-  {{=BOX_BOTTOM_ROW(7)}}
   {{
     cellclass = 'cell1'
     cellclasses = {}
@@ -64,7 +59,6 @@ for key in ['obs_type',
         checked = 'checked=on'
         pass
     }}
-    <td style='padding:0'></td>
     <td class={{=cellclass}}><input type=checkbox name="check_{{=u.obsolescence.id}}" id="id_check_{{=u.obsolescence.id}}" {{=checked}}></td>
     <td class={{=cellclass}}>
       {{=A(u['COUNT(v_nodes.id)'],
@@ -110,22 +104,17 @@ for key in ['obs_type',
         >
       </div>
     </td>
-    <td style='padding:0'></td>
   </tr>
   {{pass}}
-  {{=BOX_TOP_ROW(7)}}
   <tr class=box>
     <td align=center colspan=99>{{=nav}}</td>
   </tr>
   <tr class=box>
-    <td style='padding:0'></td>
     <td colspan=7>
       <table>
         <tr>
           <td> {{=T('Remove')}}:</td>
           <td> {{=T('Refresh')}}:</td>
-          <td> {{=T('Active filters')}}:</td>
-          <td> {{=T('Add filter')}}:</td>
         </tr>
         <tr>
           <td>
@@ -142,17 +131,10 @@ for key in ['obs_type',
                )
             }}
           </td>
-          <td>{{=DB_FILTERS_ACTIVE(active_filters)}}</td>
-          <td>{{=DB_FILTERS_AVAIL(available_filters)}}</td>
-        </tr>
-        <tr>
-          <td colspan=10>{{=SPAN(_id='cloud', _class='cloud')}}</td>
         </tr>
       </table>
     </td>
-    <td style='padding:0'></td>
   </tr>
-  {{=BOX_BOTTOM_ROW(7)}}
 </table>
 <input name=action type=hidden>
 <input id="obs_name" type=hidden>
