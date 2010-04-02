@@ -782,7 +782,7 @@ a.xinfo_shown span {
    -moz-user-select:none;
     padding-right:10px;
     cursor: move;
-    background: LightGoldenRodYellow;
+    background: orange;
     text-align:right;
 }
 
