@@ -2733,7 +2733,9 @@ def res_status(svcname, node):
 
 @auth.requires_login()
 def ajax_service():
+    rowid = request.vars.rowid
     rows = db(db.v_svcmon.mon_svcname==request.vars.node).select()
+    viz = svcmon_viz_img(rows)
     if len(rows) == 0:
         return DIV(
                  T("No service information for %(node)s",
@@ -2769,6 +2771,10 @@ def ajax_service():
       TR(
         TD(T('container type'), _style='font-style:italic'),
         TD(s['svc_containertype'])
+      ),
+      TR(
+        TD(T('container name'), _style='font-style:italic'),
+        TD(s['svc_vmname'])
       ),
       TR(
         TD(T('responsibles'), _style='font-style:italic'),
@@ -2819,28 +2825,27 @@ def ajax_service():
                  rstatus,
                )
 
-    def js(id):
+    def js(tab, rowid):
         buff = ""
-        for i in range(1, 5):
-            buff += "getElementById('tab%s').style['display']='none';"%str(i)
-        buff += "getElementById('%s').style['display']='block';"%id
+        for i in range(1, 6):
+            buff += "getElementById('tab%s_%s').style['display']='none';"%(str(i), str(rowid))
+        buff += "getElementById('%s_%s').style['display']='block';"%(tab, str(rowid))
         return buff
 
 
     t = TABLE(
       TR(
         TD(
-          H2(request.vars.node),
-          _style='text-align:center',
-        ),
-      ),
-      TR(
-        TD(
           UL(
-            LI(P(T("properties"), _class="tab", _onclick=js('tab1'))),
-            LI(P(T("status"), _class="tab", _onclick=js('tab2'))),
-            LI(P(T("resources"), _class="tab", _onclick=js('tab3'))),
-            LI(P(T("env"), _class="tab", _onclick=js('tab4'))),
+            LI(P(T("close %(n)s", dict(n=request.vars.node)), _class="tab closetab", _onclick="""
+                 getElementById("tr_id_%(id)s").style['display']='none'
+                 """%dict(id=rowid))
+            ),
+            LI(P(T("properties"), _class="tab", _onclick=js('tab1', rowid))),
+            LI(P(T("status"), _class="tab", _onclick=js('tab2', rowid))),
+            LI(P(T("resources"), _class="tab", _onclick=js('tab3', rowid))),
+            LI(P(T("env"), _class="tab", _onclick=js('tab4', rowid))),
+            LI(P(T("topology"), _class="tab", _onclick=js('tab5', rowid))),
             _class="web2py-menu web2py-menu-horizontal",
           ),
           _style="border-bottom:solid 1px orange;padding:1px",
@@ -2850,22 +2855,27 @@ def ajax_service():
         TD(
           DIV(
             t_misc,
-            _id='tab1',
+            _id='tab1_'+str(rowid),
             _class='cloud_shown',
           ),
           DIV(
             t_status,
-            _id='tab2',
+            _id='tab2_'+str(rowid),
             _class='cloud',
           ),
           DIV(
             t_rstatus,
-            _id='tab3',
+            _id='tab3_'+str(rowid),
             _class='cloud',
           ),
           DIV(
             envfile(request.vars.node),
-            _id='tab4',
+            _id='tab4_'+str(rowid),
+            _class='cloud',
+          ),
+          DIV(
+            IMG(_src=viz),
+            _id='tab5_'+str(rowid),
             _class='cloud',
           ),
         ),
@@ -2875,6 +2885,7 @@ def ajax_service():
 
 @auth.requires_login()
 def ajax_node():
+    rowid = request.vars.rowid
     nodes = db(db.v_nodes.nodename==request.vars.node).select()
     if len(nodes) == 0:
         return DIV(
@@ -2892,7 +2903,6 @@ def ajax_node():
 
     node = nodes[0]
     loc = TABLE(
-      TR(TD(T('location'), _class="boxed", _colspan=2)),
       TR(TD(T('country'), _style='font-style:italic'), TD(node['loc_country'])),
       TR(TD(T('city'), _style='font-style:italic'), TD(node['loc_city'])),
       TR(TD(T('zip'), _style='font-style:italic'), TD(node['loc_zip'])),
@@ -2903,7 +2913,6 @@ def ajax_node():
       TR(TD(T('rack'), _style='font-style:italic'), TD(node['loc_rack'])),
     )
     power = TABLE(
-      TR(TD(T('power'), _class="boxed", _colspan=2)),
       TR(TD(T('nb power supply'), _style='font-style:italic'), TD(node['power_supply_nb'])),
       TR(TD(T('power cabinet #1'), _style='font-style:italic'), TD(node['power_cabinet1'])),
       TR(TD(T('power cabinet #2'), _style='font-style:italic'), TD(node['power_cabinet2'])),
@@ -2913,7 +2922,6 @@ def ajax_node():
       TR(TD(T('power breaker #2'), _style='font-style:italic'), TD(node['power_breaker1'])),
     )
     server = TABLE(
-      TR(TD(T('server'), _class="boxed", _colspan=2)),
       TR(TD(T('model'), _style='font-style:italic'), TD(node['model'])),
       TR(TD(T('type'), _style='font-style:italic'), TD(node['type'])),
       TR(TD(T('serial'), _style='font-style:italic'), TD(node['serial'])),
@@ -2924,7 +2932,6 @@ def ajax_node():
       TR(TD(T('env'), _style='font-style:italic'), TD(node['environnement'])),
     )
     cpu = TABLE(
-      TR(TD(T('cpu'), _class="boxed", _colspan=2)),
       TR(TD(T('cpu frequency'), _style='font-style:italic'), TD(node['cpu_freq'])),
       TR(TD(T('cpu cores'), _style='font-style:italic'), TD(node['cpu_cores'])),
       TR(TD(T('cpu dies'), _style='font-style:italic'), TD(node['cpu_dies'])),
@@ -2932,13 +2939,11 @@ def ajax_node():
       TR(TD(T('cpu model'), _style='font-style:italic'), TD(node['cpu_model'])),
     )
     mem = TABLE(
-      TR(TD(T('memory'), _class="boxed", _colspan=2)),
       TR(TD(T('memory banks'), _style='font-style:italic'), TD(node['mem_banks'])),
       TR(TD(T('memory slots'), _style='font-style:italic'), TD(node['mem_slots'])),
       TR(TD(T('memory total'), _style='font-style:italic'), TD(node['mem_bytes'])),
     )
     os = TABLE(
-      TR(TD(T('operating system'), _class="boxed", _colspan=2)),
       TR(TD(T('os name'), _style='font-style:italic'), TD(node['os_name'])),
       TR(TD(T('os vendor'), _style='font-style:italic'), TD(node['os_vendor'])),
       TR(TD(T('os release'), _style='font-style:italic'), TD(node['os_release'])),
@@ -2953,6 +2958,69 @@ def ajax_node():
       TR(TD(server), TD(os)),
       TR(TD(cpu), TD(mem)),
       TR(TD(A(T("edit"), _href=URL(r=request, f='node_edit', vars={'node': request.vars.node})), _colspan=2, _style='text-align:center')),
+    )
+
+    def js(tab, rowid):
+        buff = ""
+        for i in range(1, 7):
+            buff += "getElementById('tab%s_%s').style['display']='none';"%(str(i), str(rowid))
+        buff += "getElementById('%s_%s').style['display']='block';"%(tab, str(rowid))
+        return buff
+
+
+    t = TABLE(
+      TR(
+        TD(
+          UL(
+            LI(P(T("close %(n)s", dict(n=request.vars.node)), _class="tab closetab", _onclick="""
+                 getElementById("tr_id_%(id)s").style['display']='none'
+                 """%dict(id=rowid))
+            ),
+            LI(P(T("server"), _class="tab", _onclick=js('tab1', rowid))),
+            LI(P(T("os"), _class="tab", _onclick=js('tab2', rowid))),
+            LI(P(T("mem"), _class="tab", _onclick=js('tab3', rowid))),
+            LI(P(T("cpu"), _class="tab", _onclick=js('tab4', rowid))),
+            LI(P(T("location"), _class="tab", _onclick=js('tab5', rowid))),
+            LI(P(T("power"), _class="tab", _onclick=js('tab6', rowid))),
+            _class="web2py-menu web2py-menu-horizontal",
+          ),
+          _style="border-bottom:solid 1px orange;padding:1px",
+        ),
+      ),
+      TR(
+        TD(
+          DIV(
+            server,
+            _id='tab1_'+str(rowid),
+            _class='cloud_shown',
+          ),
+          DIV(
+            os,
+            _id='tab2_'+str(rowid),
+            _class='cloud',
+          ),
+          DIV(
+            mem,
+            _id='tab3_'+str(rowid),
+            _class='cloud',
+          ),
+          DIV(
+            cpu,
+            _id='tab4_'+str(rowid),
+            _class='cloud',
+          ),
+          DIV(
+            loc,
+            _id='tab5_'+str(rowid),
+            _class='cloud',
+          ),
+          DIV(
+            power,
+            _id='tab6_'+str(rowid),
+            _class='cloud',
+          ),
+        ),
+      ),
     )
     return t
 

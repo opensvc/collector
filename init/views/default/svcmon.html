@@ -12,7 +12,6 @@ for key in ['svcname',
             'containertype',
             'svcapp',
             'svctype',
-            'svcautostart',
             'containerstatus',
             'ipstatus',
             'fsstatus',
@@ -114,15 +113,16 @@ def svc_status(svc, cellclass="cell2"):
 {{=PANEL("column_values")}}
 <form action='svcmon' name='svcform' id='svcform'> 
 {{=DB_FILTERS_TABLE(active_filters, available_filters)}}
+<input id='node' type='hidden'>
+<input id='rowid' type='hidden'>
 <table class=datatable>
   <tr class=box>
     <td class=box></td>
     <td>{{=colname(services, 'svc_name', T('Service'))}}</td>
-    <td>{{=colname(services, 'svc_containertype', T('Container type'))}}</td>
-    <td>{{=colname(services, 'svc_app', T('App'))}}</td>
-    <td>{{=colname(services, 'svc_autostart', T('Preferred node'))}}</td>
-    <td>{{=colname(services, 'mon_svctype', T('Service type'))}}</td>
-    <td>{{=colname(services, 'mon_nodtype', T('Node type'))}}</td>
+    <td style="max-width:1em">{{=colname(services, 'svc_containertype', T('Container type'))}}</td>
+    <td style="max-width:1em">{{=colname(services, 'svc_app', T('App'))}}</td>
+    <td style="max-width:1em">{{=colname(services, 'mon_svctype', T('Service type'))}}</td>
+    <td style="max-width:1em">{{=colname(services, 'mon_nodtype', T('Node type'))}}</td>
     <td>{{=colname(services, 'mon_nodname', T('Node'))}}</td>
     <td class=status_t>{{=T('Status')}}</td>
   </tr>
@@ -131,7 +131,6 @@ def svc_status(svc, cellclass="cell2"):
     <td><input name=svcname value='{{=vars.svcname}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=containertype value='{{=vars.containertype}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=svcapp value='{{=vars.svcapp}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td><input name=svcautostart value='{{=vars.svcautostart}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=svctype value='{{=vars.svctype}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=nodetype value='{{=vars.nodetype}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td><input name=nodename value='{{=vars.nodename}}' size=4 onKeyPress="checkEnter(event)"></td>
@@ -144,11 +143,11 @@ def svc_status(svc, cellclass="cell2"):
     cellclasses['cell1'] = 'cell2'
     cellclasses['cell2'] = 'cell1'
     yesterday = str(datetime.datetime.today()-datetime.timedelta(days=1))
+    svcbuff = None
   }}
 
   {{for svc in services:}}
-  <tr>
-    {{if svcname != svc.mon_svcname:
+    {{if svcname != svc.mon_svcname or svcname == '':
           cellclass = cellclasses[cellclass]
           svcname = svc.mon_svcname
           newsvc = True
@@ -167,27 +166,28 @@ def svc_status(svc, cellclass="cell2"):
           err = ''
           pass
     }}
+    {{if newsvc and svcbuff is not None:}}
+    <tr id='tr_id_{{=svcbuff.svc_name}}' class=cloud>
+      <td colspan=99 class="details_row {{=cellclasses[cellclass]}}">
+        <div id='id_{{=svcbuff.svc_name}}'>
+        </div>
+      </td>
+    </tr>
+    <tr>
+    {{pass}}
+    {{svcbuff = svc}}
     <td class={{=cellclass}}>
       <input id="{{=svc.mon_svcname}}" value="{{=svc.mon_svcname}}" type="hidden">
       {{if newsvc:}}
-      {{=PANEL('envfile_'+svc.mon_svcname)}}
-      {{=A(
-          IMG(
-            _src=URL(r=request,c='static',f='envfile.png'),
-            _border=0,
-            _title="service configuration file",
-            _onclick="""
-               getElementById("svcname").value="%(svcname)s";
-               ajax("%(url)s",['svcname'],"panelbody_envfile_%(a)s");
-               getElementById("panel_envfile_%(a)s").className="panel_shown";
-               getElementById("panel_envfile_%(a)s").style.top=event.pageY+'px';
-            """%dict(url=URL(r=request,f='envfile'),
-                     svcname=svc.mon_svcname,
-                     a=svc.mon_svcname.replace('.', '_')),
-          ),
-          _class="xinfo",
-        )
-      }}
+        {{=A(IMG(
+               _src=URL(r=request,c='static',f='action16.png'),
+               _border=0,
+             ),
+             _href=URL(request.application,'default','svcactions?svcname='+svc.mon_svcname+'&status_log=empty&begin=>'+yesterday)
+           )
+        }}
+        {{pass}}
+       {{if newsvc:}}
       {{if svc.svc_name in svcmsg:
           img = URL(r=request,c='static',f='msg1.png')
         else:
@@ -243,8 +243,23 @@ def svc_status(svc, cellclass="cell2"):
     </td>
     <td class={{=cellclass}}>
       {{if newsvc:}}
-        {{=A(svc.mon_svcname, _href=URL(request.application,'default','svcactions?svcname='+svc.mon_svcname+'&status_log=empty&begin=>'+yesterday))}}
-        {{pass}}
+      {{=A(
+          DIV(
+            svc.svc_name,
+            _onclick="""
+               getElementById("node").value="%(node)s";
+               getElementById("rowid").value="%(id)s";
+               ajax("%(url)s",['node', 'rowid'],"id_%(id)s");
+               getElementById("tr_id_%(id)s").style['display']="table-row";
+            """%dict(url=URL(r=request,f='ajax_service'),
+                     node=svc.svc_name,
+                     id=svc.svc_name,
+                    ),
+          ),
+          _class="xinfo",
+        )
+      }}
+      {{pass}}
     </td>
     <td class={{=cellclass}}>
       {{if newsvc:}}
@@ -256,34 +271,20 @@ def svc_status(svc, cellclass="cell2"):
         {{=svc.svc_app}}
         {{pass}}
     </td>
-    <td class={{=cellclass}}>
-      {{if newsvc:}}
-      {{=PANEL('asn_'+svc.svc_autostart)}}
-      {{=A(
-          DIV(
-            svc.svc_autostart,
-            _onclick="""
-               getElementById("node").value="%(node)s";
-               ajax("%(url)s",['node'],"panelbody_asn_%(a)s");
-               getElementById("panel_asn_%(a)s").className="panel_shown";
-               getElementById("panel_asn_%(a)s").style.top=event.pageY+'px';
-            """%dict(url=URL(r=request,f='ajax_node'),
-                     node=svc.svc_autostart,
-                     a=svc.svc_autostart.replace('.', '_')
-                    ),
-          ),
-          _class="xinfo",
-        )
+      {{if svc.mon_svctype == 'PRD':
+            boldtype = """style='font-weight:bold'"""
+        else:
+            boldtype = ""
+            pass
       }}
-      {{pass}}
+    {{if newsvc:}}
+    <td class={{=cellclass}} {{=boldtype}}>
+      {{=svc.mon_svctype}}
     </td>
-    {{if svc.mon_svctype == 'PRD':
-          boldtype = """style='font-weight:bold'"""
-      else:
-          boldtype = ""
-          pass
-    }}
-    <td class={{=cellclass}} {{=boldtype}}>{{=svc.mon_svctype}}</td>
+    {{else:}}
+    <td class={{=cellclass}} {{=boldtype}}>
+    </td>
+    {{pass}}
     {{if svc.mon_nodtype == 'PRD':
           boldtype = """style='font-weight:bold'"""
       else:
@@ -291,20 +292,25 @@ def svc_status(svc, cellclass="cell2"):
           pass
     }}
     <td class={{=cellclass}} {{=boldtype}}>{{=svc.mon_nodtype}}</td>
-    <td class={{=cellclass}}>
-      {{=PANEL('node_'+svc.svc_autostart)}}
+    {{if svc.mon_nodname == svc.svc_autostart:
+          boldtype = """style='font-weight:bold'"""
+      else:
+          boldtype = ""
+          pass
+    }}
+    <td class={{=cellclass}} {{=boldtype}}>
       {{=A(
           DIV(
             node_icon(svc),
             svc.mon_nodname,
             _onclick="""
                getElementById("node").value="%(node)s";
-               ajax("%(url)s",['node'],"panelbody_node_%(a)s");
-               getElementById("panel_node_%(a)s").className="panel_shown";
-               getElementById("panel_node_%(a)s").style.top=event.pageY+'px';
+               getElementById("rowid").value="%(id)s";
+               ajax("%(url)s",['node', 'rowid'],"id_%(id)s");
+               getElementById("tr_id_%(id)s").style['display']="table-row";
             """%dict(url=URL(r=request,f='ajax_node'),
                      node=svc.mon_nodname,
-                     a=svc.mon_nodname.replace('.', '_')
+                     id=svc.svc_name,
                     ),
           ),
           _class="xinfo",
@@ -316,14 +322,14 @@ def svc_status(svc, cellclass="cell2"):
     </td>
   </tr>
   {{pass}}
-
-  <tr>
-    <td colspan=10>
-    {{if viz is not None:}}
-      {{=P(IMG(_src=viz, _border=0), _style="text-align:center")}}
-    {{pass}}
-    </td>
-  </tr>
+  {{if svcbuff is not None:}}
+    <tr id='tr_id_{{=svcbuff.svc_name}}' class=cloud>
+      <td colspan=99 class="details_row {{=cellclass}}">
+        <div id='id_{{=svcbuff.svc_name}}'>
+        </div>
+      </td>
+    </tr>
+  {{pass}}
 
   <tr class=box>
     <td align=center colspan=10>{{=nav}}</td>

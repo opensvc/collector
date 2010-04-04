@@ -18,6 +18,8 @@ for key in ['svcname',
 }}
 {{=PANEL("column_values")}}
 <form action='svcactions' name='svcform' id='svcform' method='post'> 
+<input id='node' type='hidden'>
+<input id='rowid' type='hidden'>
 {{=DB_FILTERS_TABLE(active_filters, available_filters)}}
 <table class=datatable>
   <tr class=box>
@@ -90,18 +92,17 @@ for key in ['svcname',
     <td class={{=cellclass}}><input type=checkbox name=check_{{=action.id}} {{=checked}} {{=disabled}}></td>
     <td class={{=cellclass}}>
       {{if new:}}
-      {{=PANEL('svc_'+action.svcname)}}
       {{=A(
           DIV(
             action.svcname,
             _onclick="""
                getElementById("node").value="%(node)s";
-               ajax("%(url)s",['node'],"panelbody_svc_%(a)s");
-               getElementById("panel_svc_%(a)s").className="panel_shown";
-               getElementById("panel_svc_%(a)s").style.top=event.pageY+'px';
+               getElementById("rowid").value="%(id)s";
+               ajax("%(url)s",['node', 'rowid'],"id_%(id)s");
+               getElementById("tr_id_%(id)s").style['display']="table-row";
             """%dict(url=URL(r=request,f='ajax_service'),
                      node=action.svcname,
-                     a=action.svcname.replace('.', '_'),
+                     id=action.id,
                     ),
           ),
           _class="xinfo",
@@ -111,18 +112,17 @@ for key in ['svcname',
     </td>
     <td class={{=cellclass}}>
       {{if new:}}
-      {{=PANEL('node_'+action.hostname)}}
       {{=A(
           DIV(
             action.hostname,
             _onclick="""
                getElementById("node").value="%(node)s";
-               ajax("%(url)s",['node'],"panelbody_node_%(a)s");
-               getElementById("panel_node_%(a)s").className="panel_shown";
-               getElementById("panel_node_%(a)s").style.top=event.pageY+'px';
+               getElementById("rowid").value="%(id)s";
+               ajax("%(url)s",['node', 'rowid'],"id_%(id)s");
+               getElementById("tr_id_%(id)s").style['display']="table-row";
             """%dict(url=URL(r=request,f='ajax_node'),
                      node=action.hostname,
-                     a=action.hostname.replace('.', '_'),
+                     id=action.id,
                     ),
           ),
           _class="xinfo",
@@ -152,9 +152,14 @@ for key in ['svcname',
     <td class={{=cellclass}}>{{=action.end}}</td>
     <td class={{=cellclass}}>{{=action.status_log.replace('\\n','\n')}}</td>
   </tr>
+  <tr id='tr_id_{{=action.id}}' class=cloud>
+    <td colspan=99 class="details_row {{=cellclass}}">
+      <div id='id_{{=action.id}}'>
+      </div>
+    </td>
+  </tr>
   {{=ack}}
   {{pass}}
-  <input id='node' type='hidden'>
   <tr class=box>
     <td align=center colspan=99>{{=nav}}</td>
   </tr>
