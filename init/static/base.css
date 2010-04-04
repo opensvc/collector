@@ -841,3 +841,12 @@ a.xinfo_shown span {
 .datatable {
     width:100%;
 }
+
+.tab {
+    text-align: center;
+    vertical-align: middle;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    padding-top: 0.3em;
+    padding-bottom: 0.2em;
+}

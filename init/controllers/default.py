@@ -1447,8 +1447,20 @@ def svcmon_log():
                )
 
 @auth.requires_login()
-def envfile():
-    query = _where(None, 'services', request.vars.svcname, 'svc_name')
+def ajax_envfile():
+    return DIV(
+             H3(T("Service configuration file for %(svc)s",dict(
+                     svc=request.vars.svcname
+                   )
+                ),
+                _style='text-align:center',
+             ),
+             envfile(request.vars.svcname)
+           )
+
+@auth.requires_login()
+def envfile(svcname):
+    query = _where(None, 'services', svcname, 'svc_name')
     query &= _where(None, 'v_svcmon', domain_perms(), 'svc_name')
     rows = db(query).select()
     if len(rows) == 0:
@@ -1458,12 +1470,6 @@ def envfile():
     if envfile is None:
         return "None"
     return DIV(
-             H3(T("Service configuration file for %(svc)s",dict(
-                     svc=rows[0]['services']['svc_name']
-                   )
-                ),
-                _style='text-align:center',
-             ),
              P(T("updated: %(upd)s",dict(
                      upd=rows[0]['services']['updated']
                    ),
@@ -2700,7 +2706,12 @@ def ajax_svcmon_log_ack_load():
 
 @auth.requires_login()
 def ajax_res_status():
-    rows = db((db.resmon.svcname==request.vars.svcname)&(db.resmon.nodename==request.vars.node)).select(orderby=db.resmon.rid)
+    svcname = request.vars.svcname
+    node = request.vars.node
+    return res_status(svcname, node)
+
+def res_status(svcname, node):
+    rows = db((db.resmon.svcname==svcname)&(db.resmon.nodename==node)).select(orderby=db.resmon.rid)
     def print_row(row):
         cssclass = 'status_'+row.res_status.replace(" ", "_")
         return TR(
@@ -2713,17 +2724,170 @@ def ajax_res_status():
           map(print_row, rows)
     )
     return DIV(
-             P(H3("%(svc)s@%(node)s"%dict(svc=request.vars.svcname, node=request.vars.node), _style="text-align:center")),
+             P(
+               H3("%(svc)s@%(node)s"%dict(svc=svcname, node=node),
+               _style="text-align:center")
+             ),
              t,
            )
+
+@auth.requires_login()
+def ajax_service():
+    rows = db(db.v_svcmon.mon_svcname==request.vars.node).select()
+    if len(rows) == 0:
+        return DIV(
+                 T("No service information for %(node)s",
+                   dict(node=request.vars.node)),
+               )
+
+    s = rows[0]
+    t_misc = TABLE(
+      TR(
+        TD(T('opensvc version'), _style='font-style:italic'),
+        TD(s['svc_version'])
+      ),
+      TR(
+        TD(T('unacknowledged errors'), _style='font-style:italic'),
+        TD(s['err'])
+      ),
+      TR(
+        TD(T('type'), _style='font-style:italic'),
+        TD(s['svc_type'])
+      ),
+      TR(
+        TD(T('application'), _style='font-style:italic'),
+        TD(s['svc_app'])
+      ),
+      TR(
+        TD(T('comment'), _style='font-style:italic'),
+        TD(s['svc_comment'])
+      ),
+      TR(
+        TD(T('last update'), _style='font-style:italic'),
+        TD(s['svc_updated'])
+      ),
+      TR(
+        TD(T('container type'), _style='font-style:italic'),
+        TD(s['svc_containertype'])
+      ),
+      TR(
+        TD(T('responsibles'), _style='font-style:italic'),
+        TD(s['responsibles'])
+      ),
+      TR(
+        TD(T('responsibles mail'), _style='font-style:italic'),
+        TD(s['mailto'])
+      ),
+      TR(
+        TD(T('primary node'), _style='font-style:italic'),
+        TD(s['svc_autostart'])
+      ),
+      TR(
+        TD(T('nodes'), _style='font-style:italic'),
+        TD(s['svc_nodes'])
+      ),
+      TR(
+        TD(T('drp node'), _style='font-style:italic'),
+        TD(s['svc_drpnode'])
+      ),
+      TR(
+        TD(T('drp nodes'), _style='font-style:italic'),
+        TD(s['svc_drpnodes'])
+      ),
+    )
+
+    def print_status_row(row):
+        r = TR(
+              TD(row.mon_nodname, _style='font-style:italic'),
+              TD(svc_status(row))
+            )
+        return r
+    status = map(print_status_row, rows)
+    t_status = TABLE(
+                 status,
+               )
+
+    def print_rstatus_row(row):
+        r = TR(
+              TD(
+                res_status(row.mon_svcname, row.mon_nodname)
+              )
+            )
+        return r
+    rstatus = map(print_rstatus_row, rows)
+    t_rstatus = TABLE(
+                 rstatus,
+               )
+
+    def js(id):
+        buff = ""
+        for i in range(1, 5):
+            buff += "getElementById('tab%s').style['display']='none';"%str(i)
+        buff += "getElementById('%s').style['display']='block';"%id
+        return buff
+
+
+    t = TABLE(
+      TR(
+        TD(
+          H2(request.vars.node),
+          _style='text-align:center',
+        ),
+      ),
+      TR(
+        TD(
+          UL(
+            LI(P(T("properties"), _class="tab", _onclick=js('tab1'))),
+            LI(P(T("status"), _class="tab", _onclick=js('tab2'))),
+            LI(P(T("resources"), _class="tab", _onclick=js('tab3'))),
+            LI(P(T("env"), _class="tab", _onclick=js('tab4'))),
+            _class="web2py-menu web2py-menu-horizontal",
+          ),
+          _style="border-bottom:solid 1px orange;padding:1px",
+        ),
+      ),
+      TR(
+        TD(
+          DIV(
+            t_misc,
+            _id='tab1',
+            _class='cloud_shown',
+          ),
+          DIV(
+            t_status,
+            _id='tab2',
+            _class='cloud',
+          ),
+          DIV(
+            t_rstatus,
+            _id='tab3',
+            _class='cloud',
+          ),
+          DIV(
+            envfile(request.vars.node),
+            _id='tab4',
+            _class='cloud',
+          ),
+        ),
+      ),
+    )
+    return t
 
 @auth.requires_login()
 def ajax_node():
     nodes = db(db.v_nodes.nodename==request.vars.node).select()
     if len(nodes) == 0:
         return DIV(
-                 T("No asset information for %(node)s",dict(node=request.vars.node)),
-                 P(A(T("insert"), _href=URL(r=request, f='node_insert')), _style='text-align:center'),
+                 T("No asset information for %(node)s",
+                   dict(node=request.vars.node)
+                 ),
+                 P(
+                   A(
+                     T("insert"),
+                     _href=URL(r=request, f='node_insert'),
+                   ),
+                   _style='text-align:center',
+                 ),
                )
 
     node = nodes[0]

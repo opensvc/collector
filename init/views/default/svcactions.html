@@ -90,8 +90,24 @@ for key in ['svcname',
     <td class={{=cellclass}}><input type=checkbox name=check_{{=action.id}} {{=checked}} {{=disabled}}></td>
     <td class={{=cellclass}}>
       {{if new:}}
-        {{=action.svcname}}
-        {{pass}}
+      {{=PANEL('svc_'+action.svcname)}}
+      {{=A(
+          DIV(
+            action.svcname,
+            _onclick="""
+               getElementById("node").value="%(node)s";
+               ajax("%(url)s",['node'],"panelbody_svc_%(a)s");
+               getElementById("panel_svc_%(a)s").className="panel_shown";
+               getElementById("panel_svc_%(a)s").style.top=event.pageY+'px';
+            """%dict(url=URL(r=request,f='ajax_service'),
+                     node=action.svcname,
+                     a=action.svcname.replace('.', '_'),
+                    ),
+          ),
+          _class="xinfo",
+        )
+      }}
+      {{pass}}
     </td>
     <td class={{=cellclass}}>
       {{if new:}}
