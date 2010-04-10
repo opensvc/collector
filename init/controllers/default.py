@@ -1,5 +1,7 @@
 # coding: utf8
 
+from pychart import *
+
 #########################################################################
 ## This is a samples controller
 ## - index is the default action of any application
@@ -1828,6 +1830,9 @@ class viz(object):
         for name in glob.glob(os.path.join(self.vizdir, self.vizprefix+'*.dot')):
             os.unlink(name)
 
+        for name in glob.glob(os.path.join(self.vizdir, 'stats_*.png')):
+            os.unlink(name)
+
     def __init__(self):
         pass
 
@@ -2884,6 +2889,937 @@ def ajax_service():
     return t
 
 @auth.requires_login()
+def perf_stats_blockdev(node, s, e):
+    rows = db.executesql("""
+      select dev,
+             avg(tps) as avg_tps,
+             min(tps) as min_tps,
+             max(tps) as max_tps,
+             avg(rsecps) as rsecps,
+             avg(wsecps) as wsecps,
+             avg(avgrq_sz) as avg_avgrq_sz,
+             min(avgrq_sz) as min_avgrq_sz,
+             max(avgrq_sz) as max_avgrq_sz,
+             avg(await) as avg_await,
+             min(await) as min_await,
+             max(await) as max_await,
+             avg(svctm) as avg_svctm,
+             min(svctm) as min_svctm,
+             max(svctm) as max_svctm,
+             avg(pct_util) as avg_pct_util,
+             min(pct_util) as min_pct_util,
+             max(pct_util) as max_pct_util
+      from stats_blockdev
+      where date >= "%(s)s" and
+            date <= "%(e)s" and
+            nodename = "%(node)s"
+      group by dev;
+    """%dict(node=node, s=s, e=e))
+
+    if len(rows) == 0:
+        return SPAN()
+
+    from time import mktime
+
+    def format_x(x):
+        return "/6{}" + str(x)
+
+    def format_y(x):
+        return "/6{}" + str(x)
+
+    import random
+    rand = int(random.random()*1000000)
+
+    """ %util
+    """
+    data1 = [(row[0],
+              row[15],
+              row[16],
+              row[17],
+             ) for row in rows]
+    data = sorted(data1, key = lambda x: x[1])
+
+    action1 = URL(r=request,c='static',f='stats_blockdev1_'+str(rand)+'.png')
+    path = 'applications'+str(action1)
+    can = canvas.init(path)
+    theme.use_color = True
+    theme.scale_factor = 2
+    theme.reinitialize()
+
+    ar = area.T(
+           x_coord = linear_coord.T(),
+           y_coord = category_coord.T(data, 0),
+           x_axis = axis.X(label = 'blockdev %util', format=format_x, tic_interval=10),
+           y_axis = axis.Y(label = "", format=format_y),
+           x_range = (0, 100),
+         )
+    bar_plot.fill_styles.reset()
+    plot1 = bar_plot.T(label="avg",
+                       hcol=1,
+                       cluster=(0,3),
+                       data=data,
+                       data_label_format="",
+                       direction='horizontal')
+    plot2 = bar_plot.T(label="min",
+                       hcol=2,
+                       cluster=(1,3),
+                       data=data,
+                       data_label_format="",
+                       direction='horizontal')
+    plot3 = bar_plot.T(label="max",
+                       hcol=3,
+                       cluster=(2,3),
+                       data=data,
+                       data_label_format="",
+                       direction='horizontal')
+    ar.add_plot(plot1, plot2, plot3)
+    ar.draw(can)
+    can.close()
+
+    """ service time
+    """
+    data1 = [(row[0],
+              row[12],
+              row[13],
+              row[14],
+             ) for row in rows]
+    data = sorted(data1, key = lambda x: x[1])
+
+    action2 = URL(r=request,c='static',f='stats_blockdev2_'+str(rand)+'.png')
+    path = 'applications'+str(action2)
+    can = canvas.init(path)
+    theme.use_color = True
+    theme.scale_factor = 2
+    theme.reinitialize()
+
+    ar = area.T(
+           x_coord = linear_coord.T(),
+           y_coord = category_coord.T(data, 0),
+           x_axis = axis.X(label = 'blockdev service time (ms)', format=format_x),
+           y_axis = axis.Y(label = "", format=format_y),
+           x_range = (0, None),
+         )
+    bar_plot.fill_styles.reset()
+    plot1 = bar_plot.T(label="avg",
+                       hcol=1,
+                       cluster=(0,3),
+                       data=data,
+                       data_label_format="",
+                       direction='horizontal')
+    plot2 = bar_plot.T(label="min",
+                       hcol=2,
+                       cluster=(1,3),
+                       data=data,
+                       data_label_format="",
+                       direction='horizontal')
+    plot3 = bar_plot.T(label="max",
+                       hcol=3,
+                       cluster=(2,3),
+                       data=data,
+                       data_label_format="",
+                       direction='horizontal')
+    ar.add_plot(plot1, plot2, plot3)
+    ar.draw(can)
+    can.close()
+
+    """ await
+    """
+    data1 = [(row[0],
+              row[9],
+              row[10],
+              row[11],
+             ) for row in rows]
+    data = sorted(data1, key = lambda x: x[1])
+
+    action3 = URL(r=request,c='static',f='stats_blockdev3_'+str(rand)+'.png')
+    path = 'applications'+str(action3)
+    can = canvas.init(path)
+    theme.use_color = True
+    theme.scale_factor = 2
+    theme.reinitialize()
+
+    ar = area.T(
+           x_coord = linear_coord.T(),
+           y_coord = category_coord.T(data, 0),
+           x_axis = axis.X(label = 'blockdev wait time (ms)', format=format_x),
+           y_axis = axis.Y(label = "", format=format_y),
+           x_range = (0, None),
+         )
+    bar_plot.fill_styles.reset()
+    plot1 = bar_plot.T(label="avg",
+                       hcol=1,
+                       cluster=(0,3),
+                       data=data,
+                       data_label_format="",
+                       direction='horizontal')
+    plot2 = bar_plot.T(label="min",
+                       hcol=2,
+                       cluster=(1,3),
+                       data=data,
+                       data_label_format="",
+                       direction='horizontal')
+    plot3 = bar_plot.T(label="max",
+                       hcol=3,
+                       cluster=(2,3),
+                       data=data,
+                       data_label_format="",
+                       direction='horizontal')
+    ar.add_plot(plot1, plot2, plot3)
+    ar.draw(can)
+    can.close()
+
+    """ request size
+    """
+    data1 = [(row[0],
+              row[6],
+              row[7],
+              row[8],
+             ) for row in rows]
+    data = sorted(data1, key = lambda x: x[1])
+
+    action4 = URL(r=request,c='static',f='stats_blockdev4_'+str(rand)+'.png')
+    path = 'applications'+str(action4)
+    can = canvas.init(path)
+    theme.use_color = True
+    theme.scale_factor = 2
+    theme.reinitialize()
+
+    ar = area.T(
+           x_coord = linear_coord.T(),
+           y_coord = category_coord.T(data, 0),
+           x_axis = axis.X(label = 'blockdev request size (sector)',
+                           format=format_x),
+           y_axis = axis.Y(label = "", format=format_y),
+           x_range = (0, None),
+         )
+    bar_plot.fill_styles.reset()
+    plot1 = bar_plot.T(label="avg",
+                       hcol=1,
+                       cluster=(0,3),
+                       data=data,
+                       data_label_format="",
+                       direction='horizontal')
+    plot2 = bar_plot.T(label="min",
+                       hcol=2,
+                       cluster=(1,3),
+                       data=data,
+                       data_label_format="",
+                       direction='horizontal')
+    plot3 = bar_plot.T(label="max",
+                       hcol=3,
+                       cluster=(2,3),
+                       data=data,
+                       data_label_format="",
+                       direction='horizontal')
+    ar.add_plot(plot1, plot2, plot3)
+    ar.draw(can)
+    can.close()
+
+    """ tps
+    """
+    data1 = [(row[0],
+              row[1],
+              row[2],
+              row[3],
+             ) for row in rows]
+    data = sorted(data1, key = lambda x: x[1])
+
+    action5 = URL(r=request,c='static',f='stats_blockdev5_'+str(rand)+'.png')
+    path = 'applications'+str(action5)
+    can = canvas.init(path)
+    theme.use_color = True
+    theme.scale_factor = 2
+    theme.reinitialize()
+
+    ar = area.T(
+           x_coord = linear_coord.T(),
+           y_coord = category_coord.T(data, 0),
+           x_axis = axis.X(label = 'blockdev io//s',
+                           format=format_x),
+           y_axis = axis.Y(label = "", format=format_y),
+           x_range = (0, None),
+         )
+    bar_plot.fill_styles.reset()
+    plot1 = bar_plot.T(label="avg",
+                       hcol=1,
+                       cluster=(0,3),
+                       data=data,
+                       data_label_format="",
+                       direction='horizontal')
+    plot2 = bar_plot.T(label="min",
+                       hcol=2,
+                       cluster=(1,3),
+                       data=data,
+                       data_label_format="",
+                       direction='horizontal')
+    plot3 = bar_plot.T(label="max",
+                       hcol=3,
+                       cluster=(2,3),
+                       data=data,
+                       data_label_format="",
+                       direction='horizontal')
+    ar.add_plot(plot1, plot2, plot3)
+    ar.draw(can)
+    can.close()
+
+    return DIV(
+             IMG(_src=action1),
+             IMG(_src=action4),
+             IMG(_src=action2),
+             IMG(_src=action3),
+             IMG(_src=action5),
+           )
+
+@auth.requires_login()
+def perf_stats_proc(node, s, e):
+    q = db.stats_proc.nodename == node
+    q &= db.stats_proc.date > s
+    q &= db.stats_proc.date < e
+    rows = db(q).select(orderby=db.stats_proc.date)
+    if len(rows) == 0:
+        return SPAN()
+
+    from time import mktime
+
+    start_date = mktime(rows[0].date.timetuple())
+
+    def format_x(ts):
+        d = datetime.datetime.fromtimestamp(ts+start_date)
+        return "/a50/5{}" + d.strftime("%y-%m-%d %H:%M")
+
+    def format_y(x):
+        return "/6{}" + str(x)
+
+    import random
+    rand = int(random.random()*1000000)
+
+
+    """ Usage KB
+    """
+    action1 = URL(r=request,c='static',f='stats_load_'+str(rand)+'.png')
+    path = 'applications'+str(action1)
+    can = canvas.init(path)
+    theme.use_color = True
+    theme.scale_factor = 2
+    theme.reinitialize()
+
+    data = [(mktime(row.date.timetuple())-start_date,
+             row.runq_sz,
+             row.plist_sz,
+             row.ldavg_1,
+             row.ldavg_5,
+             row.ldavg_15,
+            ) for row in rows]
+
+    ar = area.T(
+           x_coord = linear_coord.T(),
+           y_coord = linear_coord.T(),
+           x_axis = axis.X(label = 'load average', format=format_x),
+           y_axis = axis.Y(label = "", format=format_y),
+           x_range = (None, mktime(rows[-1].date.timetuple())-start_date)
+         )
+    bar_plot.fill_styles.reset()
+    plot1 = line_plot.T(label="ldavg_1",
+                       ycol=3,
+                       line_style=line_style.T(width=2, color=color.gray30),
+                       data = data,
+                       data_label_format="",
+                       )
+    plot2 = line_plot.T(label="ldavg_5",
+                       ycol=4,
+                       line_style=line_style.T(width=2, color=color.gray50),
+                       data = data,
+                       data_label_format="",
+                       )
+    plot3 = line_plot.T(label="ldavg_15",
+                       ycol=5,
+                       line_style=line_style.T(width=2, color=color.gray70),
+                       data = data,
+                       data_label_format="",
+                       )
+    plot4 = line_plot.T(label="runq_sz",
+                       ycol=1,
+                       line_style=line_style.T(width=1, color=color.red),
+                       data = data,
+                       data_label_format="",
+                       )
+    ar.add_plot(plot1, plot2, plot3, plot4)
+    ar.draw(can)
+    can.close()
+
+
+    """ Usage Percent
+    """
+    rand = int(random.random()*1000000)
+    action2 = URL(r=request,c='static',f='stats_proc_'+str(rand)+'.png')
+    path = 'applications'+str(action2)
+    can = canvas.init(path)
+    theme.use_color = True
+    theme.scale_factor = 2
+    theme.reinitialize()
+
+    ar = area.T(
+           x_coord = linear_coord.T(),
+           y_coord = linear_coord.T(),
+           x_axis = axis.X(label = 'process list', format=format_x),
+           y_axis = axis.Y(label = "", format=format_y),
+           x_range = (None, mktime(rows[-1].date.timetuple())-start_date)
+         )
+    bar_plot.fill_styles.reset()
+    plot1 = line_plot.T(label="plist_sz",
+                       ycol=2,
+                       line_style=line_style.T(width=2, color=color.red),
+                       data = data,
+                       data_label_format="",
+                       )
+    ar.add_plot(plot1)
+    ar.draw(can)
+    can.close()
+    return DIV(
+             IMG(_src=action1),
+             IMG(_src=action2),
+           )
+
+@auth.requires_login()
+def perf_stats_swap(node, s, e):
+    q = db.stats_swap.nodename == node
+    q &= db.stats_swap.date > s
+    q &= db.stats_swap.date < e
+    rows = db(q).select(orderby=db.stats_swap.date)
+    if len(rows) == 0:
+        return SPAN()
+
+    from time import mktime
+
+    start_date = mktime(rows[0].date.timetuple())
+
+    def format_x(ts):
+        d = datetime.datetime.fromtimestamp(ts+start_date)
+        return "/a50/5{}" + d.strftime("%y-%m-%d %H:%M")
+
+    def format_y(x):
+        return "/6{}" + str(x)
+
+    import random
+    rand = int(random.random()*1000000)
+
+
+    """ Usage KB
+    """
+    action1 = URL(r=request,c='static',f='stats_swap_'+str(rand)+'.png')
+    path = 'applications'+str(action1)
+    can = canvas.init(path)
+    theme.use_color = True
+    theme.scale_factor = 2
+    theme.reinitialize()
+
+    data = [(mktime(row.date.timetuple())-start_date,
+             row.kbswpused-row.kbswpcad,
+             row.kbswpcad,
+             row.kbswpfree,
+             row.pct_swpused,
+             row.pct_swpcad,
+            ) for row in rows]
+
+    ar = area.T(
+           x_coord = linear_coord.T(),
+           y_coord = linear_coord.T(),
+           x_axis = axis.X(label = 'swap usage (KB)', format=format_x),
+           y_axis = axis.Y(label = "", format=format_y),
+           x_range = (None, mktime(rows[-1].date.timetuple())-start_date)
+         )
+    bar_plot.fill_styles.reset()
+    plot1 = bar_plot.T(label="used", fill_style=fill_style.red,
+                       hcol=1,
+                       line_style=None,
+                       data = data,
+                       data_label_format="",
+                       width=1,
+                       direction='vertical')
+    plot2 = bar_plot.T(label="used, cached",
+                       hcol=2,
+                       stack_on=plot1,
+                       fill_style=fill_style.blue,
+                       line_style=None,
+                       data = data,
+                       data_label_format="",
+                       width=1,
+                       direction='vertical')
+    plot3 = bar_plot.T(label="free",
+                       hcol=3,
+                       stack_on=plot2,
+                       fill_style=fill_style.green,
+                       line_style=None,
+                       data = data,
+                       data_label_format="",
+                       width=1,
+                       direction='vertical')
+    ar.add_plot(plot1, plot2, plot3)
+    ar.draw(can)
+    can.close()
+
+
+    return DIV(
+             IMG(_src=action1),
+           )
+
+@auth.requires_login()
+def perf_stats_block(node, s, e):
+    q = db.stats_block.nodename == node
+    q &= db.stats_block.date > s
+    q &= db.stats_block.date < e
+    rows = db(q).select(orderby=db.stats_block.date)
+    if len(rows) == 0:
+        return SPAN()
+
+    from time import mktime
+
+    start_date = mktime(rows[0].date.timetuple())
+
+    def format_x(ts):
+        d = datetime.datetime.fromtimestamp(ts+start_date)
+        return "/a50/5{}" + d.strftime("%y-%m-%d %H:%M")
+
+    def format_y(x):
+        return "/6{}" + str(x)
+
+    import random
+    rand = int(random.random()*1000000)
+
+
+    """ TPS
+    """
+    action1 = URL(r=request,c='static',f='stats_block1_'+str(rand)+'.png')
+    path = 'applications'+str(action1)
+    can = canvas.init(path)
+    theme.use_color = True
+    theme.scale_factor = 2
+    theme.reinitialize()
+
+    data = [(mktime(row.date.timetuple())-start_date,
+             row.tps,
+             row.rtps,
+             row.wtps,
+             row.rbps/2,
+             row.wbps/2,
+            ) for row in rows]
+
+    ar = area.T(
+           x_coord = linear_coord.T(),
+           y_coord = linear_coord.T(),
+           x_axis = axis.X(label = 'io//s', format=format_x),
+           y_axis = axis.Y(label = "", format=format_y),
+           x_range = (None, mktime(rows[-1].date.timetuple())-start_date)
+         )
+    bar_plot.fill_styles.reset()
+    plot1 = line_plot.T(label="read",
+                       ycol=2,
+                       line_style=line_style.T(color=color.blue,
+                                               width=2),
+                       data = data,
+                       data_label_format="",
+                       )
+    plot2 = line_plot.T(label="write",
+                       ycol=3,
+                       line_style=line_style.T(color=color.red,
+                                               width=2),
+                       data = data,
+                       data_label_format="",
+                       )
+    ar.add_plot(plot1, plot2)
+    ar.draw(can)
+    can.close()
+
+
+    """ BPS
+    """
+    rand = int(random.random()*1000000)
+    action2 = URL(r=request,c='static',f='stats_block2_'+str(rand)+'.png')
+    path = 'applications'+str(action2)
+    can = canvas.init(path)
+    theme.use_color = True
+    theme.scale_factor = 2
+    theme.reinitialize()
+
+    ar = area.T(
+           x_coord = linear_coord.T(),
+           y_coord = linear_coord.T(),
+           x_axis = axis.X(label = 'KB//s', format=format_x),
+           y_axis = axis.Y(label = "", format=format_y),
+           x_range = (None, mktime(rows[-1].date.timetuple())-start_date)
+         )
+    bar_plot.fill_styles.reset()
+    plot1 = line_plot.T(label="read",
+                       ycol=4,
+                       line_style=line_style.T(color=color.blue,
+                                               width=2),
+                       data = data,
+                       data_label_format="",
+                       )
+    plot2 = line_plot.T(label="write",
+                       ycol=5,
+                       line_style=line_style.T(color=color.red,
+                                               width=2),
+                       data = data,
+                       data_label_format="",
+                       )
+    ar.add_plot(plot1, plot2)
+    ar.draw(can)
+    can.close()
+
+    return DIV(
+             IMG(_src=action1),
+             IMG(_src=action2),
+           )
+
+@auth.requires_login()
+def perf_stats_mem_u(node, s, e):
+    q = db.stats_mem_u.nodename == node
+    q &= db.stats_mem_u.date > s
+    q &= db.stats_mem_u.date < e
+    rows = db(q).select(orderby=db.stats_mem_u.date)
+    if len(rows) == 0:
+        return SPAN()
+
+    from time import mktime
+
+    start_date = mktime(rows[0].date.timetuple())
+
+    def format_x(ts):
+        d = datetime.datetime.fromtimestamp(ts+start_date)
+        return "/a50/5{}" + d.strftime("%y-%m-%d %H:%M")
+
+    def format_y(x):
+        return "/6{}" + str(x)
+
+    import random
+    rand = int(random.random()*1000000)
+
+
+    """ Usage KB
+    """
+    action1 = URL(r=request,c='static',f='stats_mem_u_'+str(rand)+'.png')
+    path = 'applications'+str(action1)
+    can = canvas.init(path)
+    theme.use_color = True
+    theme.scale_factor = 2
+    theme.reinitialize()
+
+    data = [(mktime(row.date.timetuple())-start_date,
+             row.kbmemfree,
+             row.kbmemused-row.kbbuffers-row.kbcached,
+             row.pct_memused,
+             row.kbbuffers,
+             row.kbcached,
+             row.kbcommit,
+             row.pct_commit,
+            ) for row in rows]
+
+    ar = area.T(
+           x_coord = linear_coord.T(),
+           y_coord = linear_coord.T(),
+           x_axis = axis.X(label = 'memory usage (KB)', format=format_x),
+           y_axis = axis.Y(label = "", format=format_y),
+           x_range = (None, mktime(rows[-1].date.timetuple())-start_date)
+         )
+    bar_plot.fill_styles.reset()
+    plot1 = bar_plot.T(label="free", fill_style=fill_style.green,
+                       hcol=1,
+                       line_style=None,
+                       data = data,
+                       data_label_format="",
+                       width=1,
+                       direction='vertical')
+    plot2 = bar_plot.T(label="used",
+                       hcol=2,
+                       stack_on=plot1,
+                       fill_style=fill_style.red,
+                       line_style=None,
+                       data = data,
+                       data_label_format="",
+                       width=1,
+                       direction='vertical')
+    plot3 = bar_plot.T(label="used, buffer",
+                       hcol=4,
+                       stack_on=plot2,
+                       fill_style=fill_style.black,
+                       line_style=None,
+                       data = data,
+                       data_label_format="",
+                       width=1,
+                       direction='vertical')
+    plot4 = bar_plot.T(label="used, cache",
+                       hcol=5,
+                       stack_on=plot3,
+                       fill_style=fill_style.blue,
+                       line_style=None,
+                       data = data,
+                       data_label_format="",
+                       width=1,
+                       direction='vertical')
+    plot5 = line_plot.T(label="commit",
+                       ycol=6,
+                       line_style=line_style.T(color=color.darkkhaki,
+                                               width=2),
+                       data = data,
+                       data_label_format="",
+                       )
+    ar.add_plot(plot1, plot2, plot3, plot4, plot5)
+    ar.draw(can)
+    can.close()
+
+
+    """ Usage Percent
+    """
+    rand = int(random.random()*1000000)
+    action2 = URL(r=request,c='static',f='stats_mem_u_'+str(rand)+'.png')
+    path = 'applications'+str(action2)
+    can = canvas.init(path)
+    theme.use_color = True
+    theme.scale_factor = 2
+    theme.reinitialize()
+
+    ar = area.T(
+           x_coord = linear_coord.T(),
+           y_coord = linear_coord.T(),
+           x_axis = axis.X(label = 'memory usage (%)', format=format_x),
+           y_axis = axis.Y(label = "", format=format_y),
+           x_range = (None, mktime(rows[-1].date.timetuple())-start_date)
+         )
+    bar_plot.fill_styles.reset()
+    plot1 = line_plot.T(label="used",
+                       ycol=3,
+                       line_style=line_style.T(color=color.red,
+                                               width=2),
+                       data = data,
+                       data_label_format="",
+                       )
+    plot2 = line_plot.T(label="commit",
+                       ycol=7,
+                       line_style=line_style.T(color=color.darkkhaki,
+                                               width=2),
+                       data = data,
+                       data_label_format="",
+                       )
+    ar.add_plot(plot1, plot2)
+    ar.draw(can)
+    can.close()
+    return DIV(
+             IMG(_src=action1),
+             IMG(_src=action2),
+           )
+
+
+@auth.requires_login()
+def perf_stats_cpu(node, s, e):
+    q = db.stats_cpu.nodename == node
+    q &= db.stats_cpu.date > s
+    q &= db.stats_cpu.date < e
+    rows = db(q).select(db.stats_cpu.cpu,
+                        groupby=db.stats_cpu.cpu,
+                        orderby=db.stats_cpu.cpu,
+                       )
+    cpus = [r.cpu for r in rows]
+
+    t = []
+    for cpu in cpus:
+        t += perf_stats_cpu_one(node, s, e, cpu)
+    def format(x):
+        return SPAN(x)
+    return SPAN(map(format, t))
+
+@auth.requires_login()
+def perf_stats_cpu_one(node, s, e, cpu):
+    q = db.stats_cpu.nodename == node
+    q &= db.stats_cpu.date > s
+    q &= db.stats_cpu.date < e
+    q &= db.stats_cpu.cpu == cpu
+    rows = db(q).select(orderby=db.stats_cpu.date)
+    if len(rows) == 0:
+        return SPAN()
+
+    from time import mktime
+
+    start_date = mktime(rows[0].date.timetuple())
+
+    def format_x(ts):
+        d = datetime.datetime.fromtimestamp(ts+start_date)
+        return "/a50/5{}" + d.strftime("%y-%m-%d %H:%M")
+
+    def format_y(x):
+        return "/6{}" + str(x)
+
+    def format2_y(x):
+        return "/a50/6{}" + str(x)
+
+    import random
+    rand = int(random.random()*1000000)
+    action = URL(r=request,c='static',f='stats_cpu_'+str(rand)+'.png')
+    path = 'applications'+str(action)
+    can = canvas.init(path)
+    theme.use_color = True
+    theme.scale_factor = 2
+    theme.reinitialize()
+
+    data = [(mktime(row.date.timetuple())-start_date,
+             row.usr,
+             row.nice,
+             row.sys,
+             row.iowait,
+             row.steal,
+             row.irq,
+             row.soft,
+             row.guest,
+             row.idle) for row in rows]
+
+    ar = area.T(
+           #x_coord = category_coord.T(data, 0),
+           x_coord = linear_coord.T(),
+           y_coord = linear_coord.T(),
+           x_axis = axis.X(label = 'cpu '+cpu, format=format_x),
+           y_axis = axis.Y(label = "", format=format_y),
+           x_range = (None, mktime(rows[-1].date.timetuple())-start_date)
+         )
+    bar_plot.fill_styles.reset();
+    plot1 = bar_plot.T(label="usr", fill_style=fill_style.red,
+                       hcol=1,
+                       line_style=None,
+                       data = data,
+                       data_label_format="",
+                       width=1,
+                       direction='vertical')
+    plot2 = bar_plot.T(label="nice",
+                       hcol=2,
+                       stack_on=plot1,
+                       fill_style=fill_style.yellow,
+                       line_style=None,
+                       data = data,
+                       data_label_format="",
+                       width=1,
+                       direction='vertical')
+    plot3 = bar_plot.T(label="sys",
+                       hcol=3,
+                       stack_on=plot2,
+                       fill_style=fill_style.black,
+                       line_style=None,
+                       data = data,
+                       data_label_format="",
+                       width=1,
+                       direction='vertical')
+    plot4 = bar_plot.T(label="iowait",
+                       hcol=4,
+                       stack_on=plot3,
+                       fill_style=fill_style.blue,
+                       line_style=None,
+                       data = data,
+                       data_label_format="",
+                       width=1,
+                       direction='vertical')
+    plot5 = bar_plot.T(label="steal",
+                       hcol=5,
+                       stack_on=plot4,
+                       #fill_style=fill_style.??,
+                       line_style=None,
+                       data = data,
+                       data_label_format="",
+                       width=1,
+                       direction='vertical')
+    plot6 = bar_plot.T(label="irq",
+                       hcol=6,
+                       stack_on=plot5,
+                       fill_style=fill_style.green,
+                       line_style=None,
+                       data = data,
+                       data_label_format="",
+                       width=1,
+                       direction='vertical')
+    plot7 = bar_plot.T(label="soft",
+                       hcol=7,
+                       stack_on=plot6,
+                       #fill_style=fill_style.red,
+                       line_style=None,
+                       data = data,
+                       width=1,
+                       data_label_format="",
+                       direction='vertical')
+    plot8 = bar_plot.T(label="guest",
+                       hcol=8,
+                       stack_on=plot7,
+                       #fill_style=fill_style.grey,
+                       line_style=None,
+                       data = data,
+                       width=1,
+                       data_label_format="",
+                       direction='vertical')
+    ar.add_plot(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8)
+    ar.draw(can)
+    can.close()
+
+    return DIV(IMG(_src=action))
+
+@auth.requires_login()
+def ajax_perf_stats():
+     node = None
+     begin = None
+     end = None
+     for k in request.vars:
+         if 'node_' in k:
+             node = request.vars[k]
+         elif 'begin_' in k:
+             begin = request.vars[k]
+         elif 'end_' in k:
+             end = request.vars[k]
+     if node is None or begin is None or end is None:
+         return SPAN()
+     return SPAN(
+              perf_stats_cpu(node, begin, end),
+              perf_stats_mem_u(node, begin, end),
+              perf_stats_swap(node, begin, end),
+              perf_stats_proc(node, begin, end),
+              perf_stats_block(node, begin, end),
+              perf_stats_blockdev(node, begin, end),
+            )
+
+@auth.requires_login()
+def perf_stats(node, rowid):
+    e = datetime.datetime.now()
+    s = e - datetime.timedelta(days=3)
+
+    t = DIV(
+          SPAN(
+            INPUT(
+              _type='hidden',
+              _value=node,
+              _id='node_'+rowid,
+            ),
+            INPUT(
+              _value=s.strftime("%Y-%m-%d %H:%M"),
+              _id='begin_'+rowid,
+            ),
+            INPUT(
+              _value=e.strftime("%Y-%m-%d %H:%M"),
+              _id='end_'+rowid,
+            ),
+            INPUT(
+              _value='gen',
+              _type='button',
+              _onClick="""ajax("%(url)s",
+                              ['node_%(id)s',
+                               'begin_%(id)s',
+                               'end_%(id)s',
+                              ],"perf_%(id)s");
+                      """%dict(url=URL(r=request,f='ajax_perf_stats'),
+                               id=rowid,
+                              )
+            )
+          ),
+          DIV(
+            _id='perf_'+rowid
+          ),
+        )
+    return t
+
+@auth.requires_login()
 def ajax_node():
     rowid = request.vars.rowid
     nodes = db(db.v_nodes.nodename==request.vars.node).select()
@@ -2962,7 +3898,7 @@ def ajax_node():
 
     def js(tab, rowid):
         buff = ""
-        for i in range(1, 7):
+        for i in range(1, 8):
             buff += "getElementById('tab%s_%s').style['display']='none';"%(str(i), str(rowid))
         buff += "getElementById('%s_%s').style['display']='block';"%(tab, str(rowid))
         return buff
@@ -2982,6 +3918,7 @@ def ajax_node():
             LI(P(T("cpu"), _class="tab", _onclick=js('tab4', rowid))),
             LI(P(T("location"), _class="tab", _onclick=js('tab5', rowid))),
             LI(P(T("power"), _class="tab", _onclick=js('tab6', rowid))),
+            LI(P(T("stats"), _class="tab", _onclick=js('tab7', rowid))),
             _class="web2py-menu web2py-menu-horizontal",
           ),
           _style="border-bottom:solid 1px orange;padding:1px",
@@ -3017,6 +3954,11 @@ def ajax_node():
           DIV(
             power,
             _id='tab6_'+str(rowid),
+            _class='cloud',
+          ),
+          DIV(
+            perf_stats(request.vars.node, rowid),
+            _id='tab7_'+str(rowid),
             _class='cloud',
           ),
         ),
@@ -3279,7 +4221,6 @@ def drplan_scripts_archive():
     os.rmdir(dir)
     return buff
 
-from pychart import *
 @auth.requires_login()
 def stats():
     def format_x(ordinal):
@@ -3650,38 +4591,51 @@ def register_disk(vars, vals):
 
 @service.xmlrpc
 def register_sync(vars, vals):
-    generic_insert('svc_res_sync', vars, vals)
+    pass
 
 @service.xmlrpc
 def register_ip(vars, vals):
-    generic_insert('svc_res_ip', vars, vals)
+    pass
 
 @service.xmlrpc
 def register_fs(vars, vals):
-    generic_insert('svc_res_fs', vars, vals)
+    pass
+
+@service.xmlrpc
+def insert_stats_cpu(vars, vals):
+    generic_insert('stats_cpu', vars, vals)
+
+@service.xmlrpc
+def insert_stats_mem_u(vars, vals):
+    generic_insert('stats_mem_u', vars, vals)
+
+@service.xmlrpc
+def insert_stats_proc(vars, vals):
+    generic_insert('stats_proc', vars, vals)
+
+@service.xmlrpc
+def insert_stats_swap(vars, vals):
+    generic_insert('stats_swap', vars, vals)
+
+@service.xmlrpc
+def insert_stats_block(vars, vals):
+    generic_insert('stats_block', vars, vals)
+
+@service.xmlrpc
+def insert_stats_blockdev(vars, vals):
+    generic_insert('stats_blockdev', vars, vals)
 
 @service.xmlrpc
 def delete_syncs(svcname):
-    if svcname is None or svcname == '':
-        return 0
-    db(db.svc_res_sync.sync_svcname==svcname).delete()
-    db.commit()
+    pass
 
 @service.xmlrpc
 def delete_ips(svcname, node):
-    if svcname is None or svcname == '':
-        return 0
-    if node is None or node == '':
-        return 0
-    db((db.svc_res_ip.ip_svcname==svcname)&(db.svc_res_ip.ip_node==node)).delete()
-    db.commit()
+    pass
 
 @service.xmlrpc
 def delete_fss(svcname):
-    if svcname is None or svcname == '':
-        return 0
-    db(db.svc_res_fs.fs_svcname==svcname).delete()
-    db.commit()
+    pass
 
 @service.xmlrpc
 def delete_disks(svcname, node):

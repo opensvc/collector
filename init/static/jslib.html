@@ -1,5 +1,9 @@
 <script language="JavaScript" type="text/javascript">
 function checkEnter(e) {
+  submit_form_on_enter(e, document.svcform)
+}
+
+function submit_form_on_enter(e, form) {
   var characterCode
   if(e && e.which) {
     e = e
@@ -9,7 +13,7 @@ function checkEnter(e) {
     characterCode = e.keyCode
   }
   if(characterCode == 13) {
-    document.svcform.submit()
+    form.submit()
     return false
   }else{
     return true
