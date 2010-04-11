@@ -59,7 +59,7 @@ for key in ['svcname',
       else:
           new = False
           pass
-      checked = getattr(vars, 'check_'+action.svcname)
+      checked = getattr(vars, 'check_'+str(action.id))
       if checked is not None:
           checked = 'checked=on'
           pass
@@ -133,13 +133,19 @@ for key in ['svcname',
     </td>
     <td class={{=cellclass}}>
       {{if new:}}
+        {{if action.end is None:
+             end = action.begin
+          else:
+             end = action.end
+             pass
+        }}
         {{=A(action.pid,
              _href=URL(r=request, vars={
                        'pid':action.pid,
                        'hostname':action.hostname,
                        'svcname':action.svcname,
                        'begin':'>'+str(action.begin-datetime.timedelta(days=1)),
-                       'end':'<'+str(action.end+datetime.timedelta(days=1)),
+                       'end':'<'+str(end+datetime.timedelta(days=1)),
                        'perpage':0,
                       }),
             )

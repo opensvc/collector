@@ -197,6 +197,45 @@ def active_db_filters(table=None):
                           )
     return filters
 
+@auth.requires_login()
+def service_action():
+    action = request.vars.select_action
+
+    if action is None or action == '':
+        return
+
+    ids = ([])
+    for key in [ k for k in request.vars.keys() if 'check_' in k ]:
+        ids += ([key[6:]])
+
+    if len(ids) == 0:
+        response.flash = "no target to execute %s on"%action
+        return
+
+    sql = """select mon_nodname, mon_svcname
+             from svcmon
+             where id in (%(ids)s)
+             group by mon_nodname, mon_svcname
+          """%dict(ids=','.join(ids))
+    rows = db.executesql(sql)
+
+    from subprocess import Popen
+    def do_select_action(node, svc, action):
+        cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
+                      '-o', 'ForwardX11=no',
+                      '-o', 'PasswordAuthentication=no',
+               'opensvc@'+node,
+               '--',
+               'sudo', '/opt/opensvc/bin/svcmgr', '--service', svc, action]
+        process = Popen(cmd, stdin=None, stdout=None, close_fds=True)
+        #process.communicate()
+
+    for row in rows:
+        do_select_action(row[0], row[1], action)
+
+    request.vars.select_action = None
+    response.flash = T("launched %(action)s on %(n)d services", dict(
+                       n=len(rows), action=action))
 
 @auth.requires_login()
 def index():
@@ -1705,6 +1744,8 @@ def ajax_obsolete_os_nodes():
 
 @auth.requires_login()
 def svcmon():
+    service_action()
+
     o = db.v_svcmon.mon_svcname
     o |= ~db.v_svcmon.mon_overallstatus
     o |= ~db.v_svcmon.mon_nodtype

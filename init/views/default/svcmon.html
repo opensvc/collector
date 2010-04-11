@@ -111,12 +111,13 @@ def svc_status(svc, cellclass="cell2"):
 <input id="svcname" type="hidden">
 <input id="node" type="hidden">
 {{=PANEL("column_values")}}
-<form action='svcmon' name='svcform' id='svcform'> 
+<form action='svcmon' name='svcform' id='svcform' method='post'> 
 {{=DB_FILTERS_TABLE(active_filters, available_filters)}}
 <input id='node' type='hidden'>
 <input id='rowid' type='hidden'>
 <table class=datatable>
   <tr class=box>
+    <td class=box></td>
     <td class=box></td>
     <td>{{=colname(services, 'svc_name', T('Service'))}}</td>
     <td style="max-width:1em">{{=colname(services, 'svc_containertype', T('Container type'))}}</td>
@@ -127,6 +128,7 @@ def svc_status(svc, cellclass="cell2"):
     <td class=status_t>{{=T('Status')}}</td>
   </tr>
   <tr class=box>
+    <td><input type=checkbox id=check_all onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'))"></td>
     <td style='padding:0'></td>
     <td><input name=svcname value='{{=vars.svcname}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=containertype value='{{=vars.containertype}}' size=4 onKeyPress="checkEnter(event)"></td>
@@ -165,6 +167,12 @@ def svc_status(svc, cellclass="cell2"):
       else:
           err = ''
           pass
+
+      checked = getattr(vars, 'check_'+str(svc.id))
+      if checked is not None:
+          checked = 'checked=on'
+          pass
+
     }}
     {{if newsvc and svcbuff is not None:}}
     <tr id='tr_id_{{=svcbuff.svc_name}}' class=cloud>
@@ -176,6 +184,7 @@ def svc_status(svc, cellclass="cell2"):
     <tr>
     {{pass}}
     {{svcbuff = svc}}
+    <td class={{=cellclass}}><input type=checkbox name=check_{{=svc.id}} {{=checked}}></td>
     <td class={{=cellclass}}>
       <input id="{{=svc.mon_svcname}}" value="{{=svc.mon_svcname}}" type="hidden">
       {{if newsvc:}}
@@ -340,6 +349,7 @@ def svc_status(svc, cellclass="cell2"):
         <tr>
           <td> {{=T('Export')}}:</td>
           <td> {{=T('Topology')}}:</td>
+          <td> {{=T('Actions')}}:</td>
         </tr>
         <tr>
           <td>
@@ -347,6 +357,104 @@ def svc_status(svc, cellclass="cell2"):
           </td>
           <td>
             {{=A(IMG(_src=URL(r=request,c='static',f='viz.png'),_border=0, _title=T("print the topology of the current data cursor")),_href=URL(r=request,f='svcmon_viz', vars=vars))}}
+          </td>
+          <td>
+{{
+def option_style(img):
+    return 'background-image:url(%s);
+            background-repeat:no-repeat;
+            padding-left:18px;
+           '%URL(r=request,c='static',f=img)
+}}
+
+            {{=SPAN(SELECT(
+                 OPTION('choose'),
+                 OPTION(
+                   'stop',
+                   _id='stop',
+                   _style=option_style('action_stop_16.png'),
+                 ),
+                 OPTION(
+                   'start',
+                   _id='start',
+                   _style=option_style('action_start_16.png'),
+                 ),
+                 OPTION(
+                   'restart',
+                   _id='restart',
+                   _style=option_style('action_restart_16.png'),
+                 ),
+                 OPTION(
+                   'syncall',
+                   _id='syncall',
+                   _style=option_style('action_sync_16.png'),
+                 ),
+                 OPTION(
+                   'syncnodes',
+                   _id='syncnodes',
+                   _style=option_style('action_sync_16.png'),
+                 ),
+                 OPTION(
+                   'syncdrp',
+                   _id='syncdrp',
+                   _style=option_style('action_sync_16.png'),
+                 ),
+                 OPTION(
+                   'syncfullsync',
+                   _id='syncfullsync',
+                   _style=option_style('action_sync_16.png'),
+                 ),
+                 OPTION(
+                   'syncresync',
+                   _id='syncresync',
+                   _style=option_style('action_sync_16.png'),
+                 ),
+                 OPTION(
+                   'syncupdate',
+                   _id='syncupdate',
+                   _style=option_style('action_sync_16.png'),
+                 ),
+                 OPTION(
+                   'syncbreak',
+                   _id='syncbreak',
+                   _style=option_style('action_sync_16.png'),
+                 ),
+                 OPTION(
+                   'syncswap',
+                   _id='syncswap',
+                   _style=option_style('action_sync_16.png'),
+                 ),
+                 OPTION(
+                   'diskupdate',
+                   _id='diskupdate',
+                   _style=option_style('action16.png'),
+                 ),
+                 OPTION(
+                   'push',
+                   _id='push',
+                   _style=option_style('action16.png'),
+                 ),
+                 OPTION(
+                   'freeze',
+                   _id='freeze',
+                   _style=option_style('action16.png'),
+                 ),
+                 OPTION(
+                   'thaw',
+                   _id='thaw',
+                   _style=option_style('action16.png'),
+                 ),
+                 _name='select_action',
+                 _id='select_action',
+               ),
+               INPUT(
+                 _value=T("go"),
+                 _name="go",
+                 _id="go",
+                 _type="submit",
+               ),
+               )
+            }}
           </td>
         </tr>
       </table>
