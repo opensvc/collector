@@ -412,6 +412,7 @@ db.define_table('v_users',
     Field('manager'),
     Field('email'),
     Field('last'),
+    Field('groups'),
     migrate=False)
 
 db.define_table('svcdisks',

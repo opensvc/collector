@@ -1530,31 +1530,51 @@ def user_event_log():
     return TABLE(x, xx)
 
 @auth.requires_membership('Manager')
-def _user_grant_manager(request):
+def _user_grant(request):
     ids = ([])
-    manager_group_id = auth.id_group('Manager')
+    group_id = request.vars.select_role
     for key in [ k for k in request.vars.keys() if 'check_' in k ]:
         ids += ([int(key[6:])])
     for id in ids:
-        if not auth.has_membership(manager_group_id, id):
-            auth.add_membership(manager_group_id, id)
+        if not auth.has_membership(group_id, id):
+            auth.add_membership(group_id, id)
     redirect(URL(r=request, f='users'))
 
 @auth.requires_membership('Manager')
-def _user_revoke_manager(request):
+def _user_revoke(request):
     ids = ([])
-    manager_group_id = auth.id_group('Manager')
+    group_id = request.vars.select_role
     for key in [ k for k in request.vars.keys() if 'check_' in k ]:
         ids += ([int(key[6:])])
     for id in ids:
-        if auth.has_membership(manager_group_id, id):
-            auth.del_membership(manager_group_id, id)
+        if auth.has_membership(group_id, id):
+            auth.del_membership(group_id, id)
+    redirect(URL(r=request, f='users'))
+
+@auth.requires_membership('Manager')
+def _role_add(request):
+    role = request.vars.newrole
+    if role is None or len(role) == 0:
+        response.flash = T('invalid role name')
+        return
+    db.auth_group.insert(role=role)
+    response.flash = T('new role added')
+    redirect(URL(r=request, f='users'))
+
+@auth.requires_membership('Manager')
+def _role_del(request):
+    id = request.vars.select_delrole
+    if id is None or len(id) == 0:
+        response.flash = T('invalid role: %(id)s', dict(id=id))
+        return
+    db(db.auth_membership.group_id==id).delete()
+    db(db.auth_group.id==id).delete()
+    response.flash = T('role removed')
     redirect(URL(r=request, f='users'))
 
 @auth.requires_membership('Manager')
 def _user_domain_edit(request):
     ids = ([])
-    manager_group_id = auth.id_group('Manager')
     for key in [ k for k in request.vars.keys() if 'check_' in k ]:
         id = int(key[6:])
         domains = request.vars["domains_"+str(id)]
@@ -1563,7 +1583,6 @@ def _user_domain_edit(request):
             sql = "delete from domain_permissions where group_id=%s"%group
         else:
             sql = "insert into domain_permissions set group_id=%(group)s, domains='%(domains)s' on duplicate key update domains='%(domains)s'"%dict(domains=domains, group=group)
-        #raise Exception(sql)
         db.executesql(sql)
     redirect(URL(r=request, f='users'))
 
@@ -1579,11 +1598,15 @@ def _user_del(request):
 @auth.requires_login()
 def users():
     if request.vars.action is not None and request.vars.action == "grant":
-        _user_grant_manager(request)
+        _user_grant(request)
     elif request.vars.action is not None and request.vars.action == "revoke":
-        _user_revoke_manager(request)
+        _user_revoke(request)
     elif request.vars.action is not None and request.vars.action == "del":
         _user_del(request)
+    elif request.vars.action is not None and request.vars.action == "addrole":
+        _role_add(request)
+    elif request.vars.action is not None and request.vars.action == "delrole":
+        _role_del(request)
     elif request.vars.action is not None and request.vars.action == "set_domains":
         _user_domain_edit(request)
 
@@ -1601,7 +1624,9 @@ def users():
     else:
         rows = db(query).select(limitby=(start,end), orderby=o)
 
-    return dict(users=rows, nav=nav)
+    roles = db(~db.auth_group.role.like("user_%")).select(orderby=db.auth_group.role)
+
+    return dict(users=rows, nav=nav, roles=roles)
 
 @auth.requires_membership('Manager')
 def _obs_warn_date_edit(request):
