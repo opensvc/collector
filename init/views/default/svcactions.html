@@ -52,7 +52,7 @@ for key in ['svcname',
     cellclasses['cell2'] = 'cell1'
   }}
   {{for action in actions:}}
-    {{if pid != action.pid:
+    {{if pid != action.pid or pid is None:
           cellclass = cellclasses[cellclass]
           pid = action.pid
           new = True
