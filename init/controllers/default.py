@@ -212,11 +212,15 @@ def service_action():
         response.flash = "no target to execute %s on"%action
         return
 
-    sql = """select mon_nodname, mon_svcname
-             from svcmon
-             where id in (%(ids)s)
-             group by mon_nodname, mon_svcname
-          """%dict(ids=','.join(ids))
+    sql = """select m.mon_nodname, m.mon_svcname
+             from v_svcmon m
+             join v_apps_flat a on m.svc_app=a.app
+             where m.id in (%(ids)s)
+             and responsible='%(user)s'
+             group by m.mon_nodname, m.mon_svcname
+          """%dict(ids=','.join(ids),
+                   user=' '.join([session.auth.user.first_name,
+                                  session.auth.user.last_name]))
     rows = db.executesql(sql)
 
     from subprocess import Popen
@@ -379,10 +383,12 @@ def _set_resp(request):
     for key in [ k for k in request.vars.keys() if 'check_' in k ]:
         ids += ([key[6:]])
     for id in ids:
-        query = (db.apps_responsibles.app_id == id)&(db.apps_responsibles.user_id == request.vars.users)
+        query = db.apps_responsibles.app_id == id
+        query &= db.apps_responsibles.group_id == request.vars.select_roles
         rows = db(query).select()
         if len(rows) == 0:
-            db.apps_responsibles.insert(app_id=id,user_id=request.vars.users)
+            db.apps_responsibles.insert(app_id=id,
+                                        group_id=request.vars.select_roles)
 
         """ Purge pending alerts
         """
@@ -402,7 +408,7 @@ def _unset_resp(request):
     for key in [ k for k in request.vars.keys() if 'check_' in k ]:
         ids += ([key[6:]])
     for id in ids:
-        query = (db.apps_responsibles.app_id == id)&(db.apps_responsibles.user_id == request.vars.users)
+        query = (db.apps_responsibles.app_id == id)&(db.apps_responsibles.group_id == request.vars.select_roles)
         num = db(query).delete()
     if num > 1:
         s = 's'
@@ -419,8 +425,13 @@ def apps():
             title = T('App'),
             size = 4
         ),
-        responsibles = dict(
+        roles = dict(
             pos = 2,
+            title = T('Roles'),
+            size = 12
+        ),
+        responsibles = dict(
+            pos = 3,
             title = T('Responsibles'),
             size = 12
         ),
@@ -450,6 +461,7 @@ def apps():
     if start == 0 and end == 0:
         rows = db(query).select(db.v_apps.id,
                                 db.v_apps.app,
+                                db.v_apps.roles,
                                 db.v_apps.responsibles,
                                 orderby=db.v_apps.app,
                                 left=db.v_svcmon.on(db.v_svcmon.svc_app==db.v_apps.app),
@@ -457,16 +469,17 @@ def apps():
     else:
         rows = db(query).select(db.v_apps.id,
                                 db.v_apps.app,
+                                db.v_apps.roles,
                                 db.v_apps.responsibles,
                                 limitby=(start,end),
                                 orderby=db.v_apps.app,
                                 left=db.v_svcmon.on(db.v_svcmon.svc_app==db.v_apps.app),
                                 groupby=db.v_apps.app)
 
-    query = (db.auth_user.id>0)
-    users = db(query).select()
+    query = ~db.auth_group.role.like('user_%')
+    roles = db(query).select()
     return dict(columns=columns, colkeys=colkeys,
-                apps=rows, users=users, nav=nav)
+                apps=rows, roles=roles, nav=nav)
 
 def _where(query, table, var, field, tableid=None):
     if query is None:
@@ -1568,6 +1581,7 @@ def _role_del(request):
         response.flash = T('invalid role: %(id)s', dict(id=id))
         return
     db(db.auth_membership.group_id==id).delete()
+    db(db.apps_permissions.group_id==id).delete()
     db(db.auth_group.id==id).delete()
     response.flash = T('role removed')
     redirect(URL(r=request, f='users'))

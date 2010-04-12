@@ -313,6 +313,7 @@ db.define_table('apps',
 db.define_table('v_apps',
     Field('id'),
     Field('app'),
+    Field('roles'),
     Field('responsibles'),
     Field('mailto'),
     migrate=False)
@@ -320,7 +321,7 @@ db.define_table('v_apps',
 db.define_table('apps_responsibles',
     Field('id'),
     Field('app_id'),
-    Field('user_id'),
+    Field('group_id'),
     migrate=False)
 
 os_names = [

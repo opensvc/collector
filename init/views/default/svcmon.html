@@ -6,6 +6,7 @@
 
 {{
 
+user=' '.join([session.auth.user.first_name, session.auth.user.last_name])
 vars = request.vars
 toolong = datetime.datetime.today()-datetime.timedelta(hours=1)
 for key in ['svcname',
@@ -172,6 +173,11 @@ def svc_status(svc, cellclass="cell2"):
       if checked is not None:
           checked = 'checked=on'
           pass
+      if user in svc.responsibles.split(', '):
+          disabled = ""
+      else:
+          disabled = "disabled"
+          pass
 
     }}
     {{if newsvc and svcbuff is not None:}}
@@ -184,7 +190,7 @@ def svc_status(svc, cellclass="cell2"):
     <tr>
     {{pass}}
     {{svcbuff = svc}}
-    <td class={{=cellclass}}><input type=checkbox name=check_{{=svc.id}} {{=checked}}></td>
+    <td class={{=cellclass}}><input type=checkbox name=check_{{=svc.id}} {{=checked}} {{=disabled}}></td>
     <td class={{=cellclass}}>
       <input id="{{=svc.mon_svcname}}" value="{{=svc.mon_svcname}}" type="hidden">
       {{if newsvc:}}

@@ -53,16 +53,16 @@ for key in colkeys:
             <img src={{=URL(r=request,c='static',f='del.png')}} style="border:0" title={{=T('remove the selected application')}} onClick='javascript:document.svcform.appctl.value="del";document.svcform.submit()'>
           </td>
           <td width=220>
-            <select name=users>
+            <select name=select_roles>
               <option value=0>choose</option>
-              {{for user in users:
-              if str(user.id) == str(request.vars.users):
+              {{for role in roles:
+              if str(role.id) == str(request.vars.select_roles):
                   selected = 'selected'
               else:
                   selected = ''
                   pass
               }}
-              <option value={{=user.id}} {{=selected}}>{{=user.first_name}} {{=user.last_name}}</option>
+              <option value={{=role.id}} {{=selected}}>{{=role.role}}</option>
               {{pass}}
             </select>
             <input type=image src={{=URL(r=request,c='static',f='add.png')}} style="border:0" title={{=T('add this responsible to selected applications')}} onClick='javascript:document.svcform.resp.value="add";document.svcform.submit()'>

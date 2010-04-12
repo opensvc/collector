@@ -188,6 +188,7 @@
 'Responsibles': 'Responsables',
 'Revoke manager': 'R\xc3\xa9voquer r\xc3\xb4le manager',
 'Role': 'R\xc3\xb4le',
+'Roles': 'Roles',
 'Room': 'Salle',
 'Rows in table': 'Lignes dans la table',
 'Rows selected': 'Lignes s\xc3\xa9lectionn\xc3\xa9es',
