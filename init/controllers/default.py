@@ -200,8 +200,9 @@ def active_db_filters(table=None):
 @auth.requires_login()
 def service_action():
     action = request.vars.select_action
+    request.vars.select_action = 'choose'
 
-    if action is None or action == '':
+    if action is None or action == '' or action == 'choose':
         return
 
     ids = ([])
@@ -237,7 +238,6 @@ def service_action():
     for row in rows:
         do_select_action(row[0], row[1], action)
 
-    request.vars.select_action = None
     response.flash = T("launched %(action)s on %(n)d services", dict(
                        n=len(rows), action=action))
 
