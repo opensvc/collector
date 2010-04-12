@@ -2540,12 +2540,14 @@ def ajax_svc_message_save():
             'msg_body':request.vars['msgbody_'+request.vars.svcname],
            }
     v = lambda x: "%(x)s=values(%(x)s)"%dict(x=x)
-    r = lambda x: "'%(x)s'"%dict(x=x)
-    sql = "insert into svcmessages (%s) values (%s) on duplicate key update %s"%(
-        ','.join(vars.keys()),
-        ','.join(map(r, vars.values())),
-        ','.join(map(v, vars.keys())),
-    )
+    r = lambda x: "'%(x)s'"%dict(x=x.replace("'",'"'))
+    sql = """insert into svcmessages (%s) values (%s)
+             on duplicate key update %s
+          """%(
+               ','.join(vars.keys()),
+               ','.join(map(r, vars.values())),
+               ','.join(map(v, vars.keys())),
+              )
     db.executesql(sql)
 
 @auth.requires_login()
