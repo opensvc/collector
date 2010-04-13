@@ -44,8 +44,110 @@ drop view v_svcmon;
 
 CREATE VIEW `v_svcmon` AS select s.svc_vmname, `s`.`svc_version` AS `svc_version`,`s`.`svc_name` AS `svc_name`,`s`.`svc_nodes` AS `svc_nodes`,`s`.`svc_drpnode` AS `svc_drpnode`,`s`.`svc_drpnodes` AS `svc_drpnodes`,`s`.`svc_drptype` AS `svc_drptype`,`s`.`svc_autostart` AS `svc_autostart`,`s`.`svc_type` AS `svc_type`,`s`.`svc_comment` AS `svc_comment`,`s`.`svc_app` AS `svc_app`,`s`.`svc_drnoaction` AS `svc_drnoaction`,`s`.`updated` AS `svc_updated`,`s`.`svc_envdate` AS `svc_envdate`,`s`.`svc_containertype` AS `svc_containertype`,`s`.`svc_metrocluster` AS `svc_metrocluster`,`s`.`responsibles` AS `responsibles`,`s`.`mailto` AS `mailto`,`m`.`mon_svcname` AS `mon_svcname`,`m`.`mon_svctype` AS `mon_svctype`,`m`.`mon_drptype` AS `mon_drptype`,`m`.`mon_nodname` AS `mon_nodname`,`m`.`mon_nodtype` AS `mon_nodtype`,`m`.`mon_nodmode` AS `mon_nodmode`,`m`.`mon_ipstatus` AS `mon_ipstatus`,`m`.`mon_fsstatus` AS `mon_fsstatus`,`m`.`mon_srdf` AS `mon_srdf`,`m`.`mon_r2mode` AS `mon_r2mode`,`m`.`mon_prinodes` AS `mon_prinodes`,`m`.`mon_hostid` AS `mon_hostid`,`m`.`ID` AS `ID`,`m`.`mon_frozen` AS `mon_frozen`,`m`.`mon_rev` AS `mon_rev`,`m`.`mon_os` AS `mon_os`,`m`.`mon_frozentxt` AS `mon_frozentxt`,`m`.`mon_os_rev` AS `mon_os_rev`,`m`.`mon_svcstatus` AS `mon_svcstatus`,`m`.`mon_ipdetail` AS `mon_ipdetail`,`m`.`mon_srdfdetail` AS `mon_srdfdetail`,`m`.`mon_srdfupdated` AS `mon_srdfupdated`,`m`.`mon_diskdetail` AS `mon_diskdetail`,`m`.`mon_srdfinvtracks` AS `mon_srdfinvtracks`,`m`.`mon_lastactionid` AS `mon_lastactionid`,`m`.`mon_lastaction` AS `mon_lastaction`,`m`.`mon_lastactionstatus` AS `mon_lastactionstatus`,`m`.`mon_changed` AS `mon_changed`,`m`.`mon_updated` AS `mon_updated`,`m`.`mon_diskstatus` AS `mon_diskstatus`,`m`.`mon_containerstatus` AS `mon_containerstatus`,`m`.`mon_overallstatus` AS `mon_overallstatus`,`n`.`nodename` AS `nodename`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`team_responsible` AS `team_responsible`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,`m`.`mon_syncstatus` AS `mon_syncstatus` from ((`svcmon` `m` join `v_services` `s` on((`s`.`svc_name` = `m`.`mon_svcname`))) left join `nodes` `n` on((`m`.`mon_nodname` = `n`.`nodename`)));
 
-alter table alerts add column action_ids varchar(1000);
+alter table alerts add column action_pid integer;
 
-alter table alerts change body body mediumtext;
+#
+# 2010-04-13
+#
+CREATE TABLE `stats_block` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nodename` varchar(60) NOT NULL,
+  `date` datetime NOT NULL,
+  `tps` float NOT NULL,
+  `rtps` float NOT NULL,
+  `wtps` float NOT NULL,
+  `rbps` float NOT NULL,
+  `wbps` float NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `index_1` (`date`,`nodename`)
+);
+
+CREATE TABLE `stats_blockdev` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `date` datetime NOT NULL,
+  `nodename` varchar(60) NOT NULL,
+  `dev` varchar(20) NOT NULL,
+  `tps` float NOT NULL,
+  `rsecps` float NOT NULL,
+  `wsecps` float NOT NULL,
+  `avgrq_sz` float NOT NULL,
+  `avgqu_sz` float NOT NULL,
+  `await` float NOT NULL,
+  `svctm` float NOT NULL,
+  `pct_util` float NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `index_1` (`date`,`nodename`,`dev`)
+);
+
+CREATE TABLE `stats_cpu` (
+  `date` datetime NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `cpu` varchar(5) NOT NULL,
+  `usr` float NOT NULL,
+  `nice` float NOT NULL,
+  `sys` float NOT NULL,
+  `iowait` float NOT NULL,
+  `steal` float NOT NULL,
+  `irq` float NOT NULL,
+  `soft` float NOT NULL,
+  `guest` float NOT NULL,
+  `idle` float NOT NULL,
+  `nodename` varchar(60) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `index_1` (`date`,`cpu`,`nodename`)
+);
+
+CREATE TABLE `stats_mem_u` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nodename` varchar(60) NOT NULL,
+  `kbmemfree` int(11) NOT NULL,
+  `kbmemused` int(11) NOT NULL,
+  `pct_memused` float NOT NULL,
+  `kbbuffers` int(11) NOT NULL,
+  `kbcached` int(11) NOT NULL,
+  `kbcommit` int(11) NOT NULL,
+  `pct_commit` float NOT NULL,
+  `date` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `index_1` (`date`,`nodename`)
+);
+
+CREATE TABLE `stats_proc` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `date` datetime NOT NULL,
+  `nodename` varchar(60) NOT NULL,
+  `runq_sz` int(11) NOT NULL,
+  `plist_sz` int(11) NOT NULL,
+  `ldavg_1` float NOT NULL,
+  `ldavg_5` float NOT NULL,
+  `ldavg_15` float NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `index_1` (`date`,`nodename`)
+);
+
+CREATE TABLE `stats_swap` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nodename` varchar(60) NOT NULL,
+  `date` datetime NOT NULL,
+  `kbswpfree` int(11) NOT NULL,
+  `kbswpused` int(11) NOT NULL,
+  `pct_swpused` float NOT NULL,
+  `kbswpcad` int(11) NOT NULL,
+  `pct_swpcad` float NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `index_1` (`date`,`nodename`)
+);
+
+ALTER TABLE `opensvc`.`apps_responsibles` CHANGE COLUMN `user_id` `group_id` INTEGER NOT NULL;
+
+CREATE VIEW `v_apps_flat` AS (select `a`.`id` AS `id`,`a`.`app` AS `app`,`g`.`role` AS `role`,concat_ws(' ',`u`.`first_name`,`u`.`last_name`) AS `responsible`,`u`.`email` AS `email` from ((((`apps` `a` left join `apps_responsibles` `ar` on((`ar`.`app_id` = `a`.`id`))) left join `auth_group` `g` on((`g`.`id` = `ar`.`group_id`))) left join `auth_membership` `am` on((`am`.`group_id` = `g`.`id`))) left join `auth_user` `u` on((`u`.`id` = `am`.`user_id`))) order by `a`.`app`);
+
+drop view v_apps;
+
+CREATE VIEW `v_apps` AS (select `v_apps_flat`.`id` AS `id`,`v_apps_flat`.`app` AS `app`,group_concat(distinct `v_apps_flat`.`role` separator ', ') AS `roles`,group_concat(distinct `v_apps_flat`.`responsible` separator ', ') AS `responsibles`,group_concat(distinct `v_apps_flat`.`email` separator ', ') AS `mailto` from `v_apps_flat` group by `v_apps_flat`.`app`);
+
+drop view v_users;
+
+CREATE VIEW `v_users` AS (select (select `e`.`time_stamp` AS `time_stamp` from `auth_event` `e` where (`e`.`user_id` = `u`.`id`) order by `e`.`time_stamp` desc limit 1) AS `last`,`u`.`id` AS `id`,concat_ws(' ',`u`.`first_name`,`u`.`last_name`) AS `fullname`,`u`.`email` AS `email`,group_concat(`d`.`domains` separator ', ') AS `domains`,sum((select count(0) AS `count(*)` from `auth_group` `gg` where ((`gg`.`role` = 'Manager') and (`gg`.`id` = `g`.`id`)))) AS `manager`,group_concat(`g`.`role` separator ', ') AS `groups` from (((`auth_user` `u` left join `auth_membership` `m` on((`u`.`id` = `m`.`user_id`))) left join `auth_group` `g` on(((`m`.`group_id` = `g`.`id`) and (not((`g`.`role` like 'user_%')))))) left join `domain_permissions` `d` on((`m`.`group_id` = `d`.`group_id`))) group by concat_ws(' ',`u`.`first_name`,`u`.`last_name`));
 
 
