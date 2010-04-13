@@ -173,7 +173,7 @@ def svc_status(svc, cellclass="cell2"):
       if checked is not None:
           checked = 'checked=on'
           pass
-      if user in svc.responsibles.split(', '):
+      if svc.responsibles is not None and user in svc.responsibles.split(', '):
           disabled = ""
       else:
           disabled = "disabled"
