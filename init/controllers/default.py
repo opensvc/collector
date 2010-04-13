@@ -3039,21 +3039,25 @@ def perf_stats_blockdev(node, s, e):
            x_axis = axis.X(label = 'blockdev %util', format=format_x, tic_interval=10),
            y_axis = axis.Y(label = "", format=format_y),
            x_range = (0, 100),
+           size = (150,len(data)*8),
          )
     bar_plot.fill_styles.reset()
     plot1 = bar_plot.T(label="avg",
+                       width=2,
                        hcol=1,
                        cluster=(0,3),
                        data=data,
                        data_label_format="",
                        direction='horizontal')
     plot2 = bar_plot.T(label="min",
+                       width=2,
                        hcol=2,
                        cluster=(1,3),
                        data=data,
                        data_label_format="",
                        direction='horizontal')
     plot3 = bar_plot.T(label="max",
+                       width=2,
                        hcol=3,
                        cluster=(2,3),
                        data=data,
@@ -3085,21 +3089,25 @@ def perf_stats_blockdev(node, s, e):
            x_axis = axis.X(label = 'blockdev service time (ms)', format=format_x),
            y_axis = axis.Y(label = "", format=format_y),
            x_range = (0, None),
+           size = (150,len(data)*8),
          )
     bar_plot.fill_styles.reset()
     plot1 = bar_plot.T(label="avg",
+                       width=2,
                        hcol=1,
                        cluster=(0,3),
                        data=data,
                        data_label_format="",
                        direction='horizontal')
     plot2 = bar_plot.T(label="min",
+                       width=2,
                        hcol=2,
                        cluster=(1,3),
                        data=data,
                        data_label_format="",
                        direction='horizontal')
     plot3 = bar_plot.T(label="max",
+                       width=2,
                        hcol=3,
                        cluster=(2,3),
                        data=data,
@@ -3131,21 +3139,25 @@ def perf_stats_blockdev(node, s, e):
            x_axis = axis.X(label = 'blockdev wait time (ms)', format=format_x),
            y_axis = axis.Y(label = "", format=format_y),
            x_range = (0, None),
+           size = (150,len(data)*8),
          )
     bar_plot.fill_styles.reset()
     plot1 = bar_plot.T(label="avg",
+                       width=2,
                        hcol=1,
                        cluster=(0,3),
                        data=data,
                        data_label_format="",
                        direction='horizontal')
     plot2 = bar_plot.T(label="min",
+                       width=2,
                        hcol=2,
                        cluster=(1,3),
                        data=data,
                        data_label_format="",
                        direction='horizontal')
     plot3 = bar_plot.T(label="max",
+                       width=2,
                        hcol=3,
                        cluster=(2,3),
                        data=data,
@@ -3178,21 +3190,25 @@ def perf_stats_blockdev(node, s, e):
                            format=format_x),
            y_axis = axis.Y(label = "", format=format_y),
            x_range = (0, None),
+           size = (150,len(data)*8),
          )
     bar_plot.fill_styles.reset()
     plot1 = bar_plot.T(label="avg",
+                       width=2,
                        hcol=1,
                        cluster=(0,3),
                        data=data,
                        data_label_format="",
                        direction='horizontal')
     plot2 = bar_plot.T(label="min",
+                       width=2,
                        hcol=2,
                        cluster=(1,3),
                        data=data,
                        data_label_format="",
                        direction='horizontal')
     plot3 = bar_plot.T(label="max",
+                       width=2,
                        hcol=3,
                        cluster=(2,3),
                        data=data,
@@ -3225,21 +3241,25 @@ def perf_stats_blockdev(node, s, e):
                            format=format_x),
            y_axis = axis.Y(label = "", format=format_y),
            x_range = (0, None),
+           size = (150,len(data)*8),
          )
     bar_plot.fill_styles.reset()
     plot1 = bar_plot.T(label="avg",
+                       width=2,
                        hcol=1,
                        cluster=(0,3),
                        data=data,
                        data_label_format="",
                        direction='horizontal')
     plot2 = bar_plot.T(label="min",
+                       width=2,
                        hcol=2,
                        cluster=(1,3),
                        data=data,
                        data_label_format="",
                        direction='horizontal')
     plot3 = bar_plot.T(label="max",
+                       width=2,
                        hcol=3,
                        cluster=(2,3),
                        data=data,
@@ -3303,7 +3323,7 @@ def perf_stats_proc(node, s, e):
            y_coord = linear_coord.T(),
            x_axis = axis.X(label = 'load average', format=format_x),
            y_axis = axis.Y(label = "", format=format_y),
-           x_range = (None, mktime(rows[-1].date.timetuple())-start_date)
+           x_range = (None, mktime(rows[-1].date.timetuple())-start_date),
          )
     bar_plot.fill_styles.reset()
     plot1 = line_plot.T(label="ldavg_1",
@@ -3350,7 +3370,7 @@ def perf_stats_proc(node, s, e):
            y_coord = linear_coord.T(),
            x_axis = axis.X(label = 'process list', format=format_x),
            y_axis = axis.Y(label = "", format=format_y),
-           x_range = (None, mktime(rows[-1].date.timetuple())-start_date)
+           x_range = (None, mktime(rows[-1].date.timetuple())-start_date),
          )
     bar_plot.fill_styles.reset()
     plot1 = line_plot.T(label="plist_sz",
@@ -3413,7 +3433,7 @@ def perf_stats_swap(node, s, e):
            y_coord = linear_coord.T(),
            x_axis = axis.X(label = 'swap usage (KB)', format=format_x),
            y_axis = axis.Y(label = "", format=format_y),
-           x_range = (None, mktime(rows[-1].date.timetuple())-start_date)
+           x_range = (None, mktime(rows[-1].date.timetuple())-start_date),
          )
     bar_plot.fill_styles.reset()
     plot1 = bar_plot.T(label="used", fill_style=fill_style.red,
@@ -3496,7 +3516,7 @@ def perf_stats_block(node, s, e):
            y_coord = linear_coord.T(),
            x_axis = axis.X(label = 'io//s', format=format_x),
            y_axis = axis.Y(label = "", format=format_y),
-           x_range = (None, mktime(rows[-1].date.timetuple())-start_date)
+           x_range = (None, mktime(rows[-1].date.timetuple())-start_date),
          )
     bar_plot.fill_styles.reset()
     plot1 = line_plot.T(label="read",
@@ -3533,7 +3553,7 @@ def perf_stats_block(node, s, e):
            y_coord = linear_coord.T(),
            x_axis = axis.X(label = 'KB//s', format=format_x),
            y_axis = axis.Y(label = "", format=format_y),
-           x_range = (None, mktime(rows[-1].date.timetuple())-start_date)
+           x_range = (None, mktime(rows[-1].date.timetuple())-start_date),
          )
     bar_plot.fill_styles.reset()
     plot1 = line_plot.T(label="read",
