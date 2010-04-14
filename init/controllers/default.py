@@ -2824,6 +2824,44 @@ def res_status(svcname, node):
            )
 
 @auth.requires_login()
+def ajax_action_status():
+    id = None
+    for k in request.vars:
+        if 'spin_' in k:
+            id = request.vars[k]
+            break
+
+    if id is None:
+        return SPAN()
+
+    rows = db(db.SVCactions.id==id).select()
+
+    if len(rows) != 1:
+        return SPAN()
+
+    status = rows[0].status
+    if status is not None:
+        return SPAN(
+                 status,
+                 _class="status_"+status,
+               )
+    else:
+        return IMG(
+                _src=URL(r=request,c='static',f='spinner_16.png'),
+                _border=0,
+                _title=T("unfinished"),
+                _onload="""
+                  var spintimer_%(id)s;
+                  clearTimeout(spintimer_%(id)s);
+                  spintimer=setTimeout(function validate(){ajax('%(url)s',
+['spin_%(id)s'], 'spin_span_%(id)s')}, 3000);
+                """%dict(
+                      url=URL(r=request,f='ajax_action_status'),
+                      id=id,
+                    )
+              )
+
+@auth.requires_login()
 def ajax_service():
     rowid = request.vars.rowid
     rows = db(db.v_svcmon.mon_svcname==request.vars.node).select()

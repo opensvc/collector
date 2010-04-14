@@ -88,11 +88,29 @@ for key in ['svcname',
           responsibles = ''
           pass
       if action.status is None:
-          action_status = IMG(
-                            _src=URL(r=request,c='static',f='spinner_16.png'),
-                            _border=0,
-                            _title=T("unfinished"),
-                          )
+          action_status = SPAN(
+            INPUT(
+              _id="spin_"+str(action.id),
+              _type="hidden",
+            ),
+            SPAN(
+              IMG(
+                _src=URL(r=request,c='static',f='spinner_16.png'),
+                _border=0,
+                _title=T("unfinished"),
+                _onload="""
+                  var spintimer_%(id)s;
+                  getElementById('spin_%(id)s').value=%(id)s;
+                  clearTimeout(spintimer_%(id)s);
+                  spintimer=setTimeout(function validate(){ajax('%(url)s', ['spin_%(id)s'], 'spin_span_%(id)s')}, 3000);
+                """%dict(
+                      url=URL(r=request,f='ajax_action_status'),
+                      id=action.id,
+                    )
+              ),
+              _id="spin_span_"+str(action.id),
+            ),
+          )
       else:
           action_status = action.status
           pass
