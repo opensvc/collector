@@ -3916,13 +3916,17 @@ def ajax_perf_stats():
              end = request.vars[k]
      if node is None or begin is None or end is None:
          return SPAN()
-     return SPAN(
+     return DIV(
               perf_stats_cpu(node, begin, end),
               perf_stats_mem_u(node, begin, end),
               perf_stats_swap(node, begin, end),
               perf_stats_proc(node, begin, end),
               perf_stats_block(node, begin, end),
               perf_stats_blockdev(node, begin, end),
+              _style="""background-color:white;
+                        padding:10px;
+                        -moz-border-radius:8px;
+                     """
             )
 
 @auth.requires_login()
