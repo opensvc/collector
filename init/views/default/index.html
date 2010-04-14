@@ -59,7 +59,7 @@ def last_changes_line(line, cellclass):
     tr = TR(
       TD(A(line.svcmon_log.mon_begin, _href=URL(r=request, f='svcmon_log', vars={'mon_svcname':line.svcmon_log.mon_svcname})), _class=cellclass),
       TD(A(line.svcmon_log.mon_svcname, _href=URL(r=request, f='svcmon', vars={'svcname':line.svcmon_log.mon_svcname})), _class=cellclass),
-      TD(line.svcmon_log.mon_nodname, _class=cellclass),
+      TD(A(line.svcmon_log.mon_nodname, _href=URL(r=request, f='svcmon', vars={'nodename':line.svcmon_log.mon_nodname})), _class=cellclass),
       TD(svc_status(line, cellclass, nestedin='svcmon_log'), _class=cellclass),
     )
     return tr
@@ -112,7 +112,7 @@ def last_changes():
 def svc_with_errors_line(line, cellclass):
     tr = TR(
       TD(A(line.svc_name, _href=URL(r=request, f='svcmon', vars={'svcname':line.svc_name})), _class=cellclass),
-      TD(line.mon_nodname, _class=cellclass),
+      TD(A(line.mon_nodname, _href=URL(r=request, f='svcmon', vars={'nodename':line.mon_nodname})), _class=cellclass),
       TD(line.svc_type, _class=cellclass),
       TD(A(line.err, _href=URL(r=request,f='svcactions', vars={'svcname': line.svc_name, 'status': 'err', 'ack': '!1|empty'})), _class=cellclass),
       TD(svc_status(line, cellclass), _class=cellclass),
@@ -220,7 +220,7 @@ def svc_not_up():
 def svc_not_on_primary_line(line, cellclass):
     tr = TR(
       TD(A(line.svc_name, _href=URL(r=request, f='svcmon', vars={'svcname':line.svc_name})), _class=cellclass),
-      TD(line.svc_autostart, _class=cellclass),
+      TD(A(line.svc_autostart, _href=URL(r=request, f='svcmon', vars={'nodename':line.svc_autostart})), _class=cellclass),
       TD(line.svc_type, _class=cellclass),
       TD(svc_status(line, cellclass), _class=cellclass),
     )
@@ -323,7 +323,7 @@ def app_wo_resp():
 """
 def obs_os_alert_line(line, cellclass):
     tr = TR(
-      TD(line.v_nodes.nodename, _class=cellclass),
+      TD(A(line.v_nodes.nodename, _href=URL(r=request, f='svcmon', vars={'nodename':line.v_nodes.nodename})), _class=cellclass),
       TD(line.obsolescence.obs_name, _class=cellclass),
       TD(line.obsolescence.obs_alert_date, _class=cellclass),
     )
@@ -375,7 +375,7 @@ def obs_os_alert():
 """
 def obs_os_warn_line(line, cellclass):
     tr = TR(
-      TD(line.v_nodes.nodename, _class=cellclass),
+      TD(A(line.v_nodes.nodename, _href=URL(r=request, f='svcmon', vars={'nodename':line.v_nodes.nodename})), _class=cellclass),
       TD(line.obsolescence.obs_name, _class=cellclass),
       TD(line.obsolescence.obs_warn_date, _class=cellclass),
     )
@@ -427,7 +427,7 @@ def obs_os_warn():
 """
 def obs_hw_warn_line(line, cellclass):
     tr = TR(
-      TD(line.v_nodes.nodename, _class=cellclass),
+      TD(A(line.v_nodes.nodename, _href=URL(r=request, f='svcmon', vars={'nodename':line.v_nodes.nodename})), _class=cellclass),
       TD(line.obsolescence.obs_name, _class=cellclass),
       TD(line.obsolescence.obs_warn_date, _class=cellclass),
     )
@@ -479,7 +479,7 @@ def obs_hw_warn():
 """
 def obs_hw_alert_line(line, cellclass):
     tr = TR(
-      TD(line.v_nodes.nodename, _class=cellclass),
+      TD(A(line.v_nodes.nodename, _href=URL(r=request, f='svcmon', vars={'nodename':line.v_nodes.nodename})), _class=cellclass),
       TD(line.obsolescence.obs_name, _class=cellclass),
       TD(line.obsolescence.obs_alert_date, _class=cellclass),
     )

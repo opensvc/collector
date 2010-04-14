@@ -87,6 +87,15 @@ for key in ['svcname',
       else:
           responsibles = ''
           pass
+      if action.status is None:
+          action_status = IMG(
+                            _src=URL(r=request,c='static',f='spinner_16.png'),
+                            _border=0,
+                            _title=T("unfinished"),
+                          )
+      else:
+          action_status = action.status
+          pass
     }}
   <tr>
     <td class={{=cellclass}}><input type=checkbox name=check_{{=action.id}} {{=checked}} {{=disabled}}></td>
@@ -153,7 +162,7 @@ for key in ['svcname',
       {{pass}}
     </td>
     <td class="{{=cellclass}} {{=metaactionclass}}">{{=action.action}}</td>
-    <td class="{{=cellclass}} status_{{=action.status}} ack_{{=action.ack}} {{=metaactionclass}}" {{=trigger}}>{{=action.status}}</td>
+    <td class="{{=cellclass}} status_{{=action.status}} ack_{{=action.ack}} {{=metaactionclass}}" {{=trigger}}>{{=action_status}}</td>
     <td class={{=cellclass}}>{{=action.begin}}</td>
     <td class={{=cellclass}}>{{=action.end}}</td>
     <td class={{=cellclass}}>{{=action.status_log.replace('\\n','\n')}}</td>
