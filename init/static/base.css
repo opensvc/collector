@@ -849,12 +849,14 @@ a.xinfo_shown span {
     padding-right: 0.5em;
     padding-top: 0.3em;
     padding-bottom: 0.2em;
+    cursor: pointer;
 }
 
 .closetab {
    -moz-border-radius-topleft:8px;	/* Rounded edges in Firefox */
    -moz-border-radius-topright:8px;	/* Rounded edges in Firefox */
     background-color:orange;
+    cursor: pointer;
 }
 
 .details_row {

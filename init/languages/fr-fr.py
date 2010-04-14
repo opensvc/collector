@@ -458,6 +458,7 @@
 'type': 'type',
 'unable to parse csv file': "incapable d'analyser le fichier csv",
 'unacknowledged errors': 'erreurs non-acquitt\xc3\xa9es',
+'unfinished': 'unfinished',
 'updated: %(upd)s': 'mise \xc3\xa0 jour: %(upd)s',
 'users': 'utilisateurs',
 'warranty end': 'fin de garantie',
