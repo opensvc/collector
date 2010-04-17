@@ -1437,12 +1437,18 @@ def service_availability_chart(h):
                               width=3,
                               cluster_sep = 0,
                               data=data)
-    plot1 = interval_bar_plot.T(fill_styles = [fill_style.red, None],
-                                cluster=(0,2),
-                                label="/5accounted")
-    plot2 = interval_bar_plot.T(fill_styles = [fill_style.blue, None],
-                                hcol=2, cluster=(1,2),
-                                label="/5ignored")
+    plot1 = interval_bar_plot.T(
+                fill_styles=[fill_style.Plain(bgcolor=color.salmon), None],
+                line_styles=[None, None],
+                cluster=(0,2),
+                label="/5accounted"
+    )
+    plot2 = interval_bar_plot.T(
+                fill_styles=[fill_style.Plain(bgcolor=color.thistle3), None],
+                line_styles=[None, None],
+                hcol=2, cluster=(1,2),
+                label="/5ignored"
+    )
     ar.add_plot(plot1, plot2)
     ar.draw(can)
     can.close()
@@ -3081,20 +3087,25 @@ def perf_stats_blockdev(node, s, e):
          )
     bar_plot.fill_styles.reset()
     plot1 = bar_plot.T(label="avg",
+                       line_style=None,
                        width=2,
                        hcol=1,
-                       cluster=(0,3),
-                       data=data,
-                       data_label_format="",
-                       direction='horizontal')
-    plot2 = bar_plot.T(label="min",
-                       width=2,
-                       hcol=2,
                        cluster=(1,3),
                        data=data,
                        data_label_format="",
                        direction='horizontal')
+    plot2 = bar_plot.T(label="min",
+                       fill_style=fill_style.Plain(bgcolor=color.darkolivegreen1),
+                       line_style=None,
+                       width=2,
+                       hcol=2,
+                       cluster=(0,3),
+                       data=data,
+                       data_label_format="",
+                       direction='horizontal')
     plot3 = bar_plot.T(label="max",
+                       fill_style=fill_style.Plain(bgcolor=color.salmon),
+                       line_style=None,
                        width=2,
                        hcol=3,
                        cluster=(2,3),
@@ -3131,20 +3142,25 @@ def perf_stats_blockdev(node, s, e):
          )
     bar_plot.fill_styles.reset()
     plot1 = bar_plot.T(label="avg",
+                       line_style=None,
                        width=2,
                        hcol=1,
-                       cluster=(0,3),
-                       data=data,
-                       data_label_format="",
-                       direction='horizontal')
-    plot2 = bar_plot.T(label="min",
-                       width=2,
-                       hcol=2,
                        cluster=(1,3),
                        data=data,
                        data_label_format="",
                        direction='horizontal')
+    plot2 = bar_plot.T(label="min",
+                       fill_style=fill_style.Plain(bgcolor=color.darkolivegreen1),
+                       line_style=None,
+                       width=2,
+                       hcol=2,
+                       cluster=(0,3),
+                       data=data,
+                       data_label_format="",
+                       direction='horizontal')
     plot3 = bar_plot.T(label="max",
+                       fill_style=fill_style.Plain(bgcolor=color.salmon),
+                       line_style=None,
                        width=2,
                        hcol=3,
                        cluster=(2,3),
@@ -3181,20 +3197,25 @@ def perf_stats_blockdev(node, s, e):
          )
     bar_plot.fill_styles.reset()
     plot1 = bar_plot.T(label="avg",
+                       line_style=None,
                        width=2,
                        hcol=1,
-                       cluster=(0,3),
-                       data=data,
-                       data_label_format="",
-                       direction='horizontal')
-    plot2 = bar_plot.T(label="min",
-                       width=2,
-                       hcol=2,
                        cluster=(1,3),
                        data=data,
                        data_label_format="",
                        direction='horizontal')
+    plot2 = bar_plot.T(label="min",
+                       fill_style=fill_style.Plain(bgcolor=color.darkolivegreen1),
+                       line_style=None,
+                       width=2,
+                       hcol=2,
+                       cluster=(0,3),
+                       data=data,
+                       data_label_format="",
+                       direction='horizontal')
     plot3 = bar_plot.T(label="max",
+                       fill_style=fill_style.Plain(bgcolor=color.salmon),
+                       line_style=None,
                        width=2,
                        hcol=3,
                        cluster=(2,3),
@@ -3232,20 +3253,25 @@ def perf_stats_blockdev(node, s, e):
          )
     bar_plot.fill_styles.reset()
     plot1 = bar_plot.T(label="avg",
+                       line_style=None,
                        width=2,
                        hcol=1,
-                       cluster=(0,3),
-                       data=data,
-                       data_label_format="",
-                       direction='horizontal')
-    plot2 = bar_plot.T(label="min",
-                       width=2,
-                       hcol=2,
                        cluster=(1,3),
                        data=data,
                        data_label_format="",
                        direction='horizontal')
+    plot2 = bar_plot.T(label="min",
+                       fill_style=fill_style.Plain(bgcolor=color.darkolivegreen1),
+                       line_style=None,
+                       width=2,
+                       hcol=2,
+                       cluster=(0,3),
+                       data=data,
+                       data_label_format="",
+                       direction='horizontal')
     plot3 = bar_plot.T(label="max",
+                       fill_style=fill_style.Plain(bgcolor=color.salmon),
+                       line_style=None,
                        width=2,
                        hcol=3,
                        cluster=(2,3),
@@ -3283,21 +3309,26 @@ def perf_stats_blockdev(node, s, e):
          )
     bar_plot.fill_styles.reset()
     plot1 = bar_plot.T(label="avg",
+                       line_style=None,
                        width=2,
                        hcol=1,
-                       cluster=(0,3),
+                       cluster=(1,3),
                        data=data,
                        data_label_format="",
                        direction='horizontal')
     plot2 = bar_plot.T(label="min",
+                       fill_style=fill_style.Plain(bgcolor=color.darkolivegreen1),
+                       line_style=None,
                        width=2,
                        hcol=2,
-                       cluster=(1,3),
+                       cluster=(0,3),
                        data=data,
                        data_label_format="",
                        direction='horizontal')
     plot3 = bar_plot.T(label="max",
                        width=2,
+                       fill_style=fill_style.Plain(bgcolor=color.salmon),
+                       line_style=None,
                        hcol=3,
                        cluster=(2,3),
                        data=data,
@@ -3384,7 +3415,7 @@ def perf_stats_proc(node, s, e):
                        )
     plot4 = line_plot.T(label="runq_sz",
                        ycol=1,
-                       line_style=line_style.T(width=1, color=color.red),
+                       line_style=line_style.T(width=1, color=color.salmon),
                        data = data,
                        data_label_format="",
                        )
@@ -3413,7 +3444,7 @@ def perf_stats_proc(node, s, e):
     bar_plot.fill_styles.reset()
     plot1 = line_plot.T(label="plist_sz",
                        ycol=2,
-                       line_style=line_style.T(width=2, color=color.red),
+                       line_style=line_style.T(width=2, color=color.salmon),
                        data = data,
                        data_label_format="",
                        )
@@ -3474,7 +3505,8 @@ def perf_stats_swap(node, s, e):
            x_range = (None, mktime(rows[-1].date.timetuple())-start_date),
          )
     bar_plot.fill_styles.reset()
-    plot1 = bar_plot.T(label="used", fill_style=fill_style.red,
+    plot1 = bar_plot.T(label="used",
+                       fill_style=fill_style.Plain(bgcolor=color.salmon),
                        hcol=1,
                        line_style=None,
                        data = data,
@@ -3484,7 +3516,7 @@ def perf_stats_swap(node, s, e):
     plot2 = bar_plot.T(label="used, cached",
                        hcol=2,
                        stack_on=plot1,
-                       fill_style=fill_style.blue,
+                       fill_style=fill_style.Plain(bgcolor=color.thistle3),
                        line_style=None,
                        data = data,
                        data_label_format="",
@@ -3493,7 +3525,7 @@ def perf_stats_swap(node, s, e):
     plot3 = bar_plot.T(label="free",
                        hcol=3,
                        stack_on=plot2,
-                       fill_style=fill_style.green,
+                       fill_style=fill_style.Plain(bgcolor=color.darkolivegreen1),
                        line_style=None,
                        data = data,
                        data_label_format="",
@@ -3559,14 +3591,14 @@ def perf_stats_block(node, s, e):
     bar_plot.fill_styles.reset()
     plot1 = line_plot.T(label="read",
                        ycol=2,
-                       line_style=line_style.T(color=color.blue,
+                       line_style=line_style.T(color=color.thistle3,
                                                width=2),
                        data = data,
                        data_label_format="",
                        )
     plot2 = line_plot.T(label="write",
                        ycol=3,
-                       line_style=line_style.T(color=color.red,
+                       line_style=line_style.T(color=color.salmon,
                                                width=2),
                        data = data,
                        data_label_format="",
@@ -3596,14 +3628,14 @@ def perf_stats_block(node, s, e):
     bar_plot.fill_styles.reset()
     plot1 = line_plot.T(label="read",
                        ycol=4,
-                       line_style=line_style.T(color=color.blue,
+                       line_style=line_style.T(color=color.thistle3,
                                                width=2),
                        data = data,
                        data_label_format="",
                        )
     plot2 = line_plot.T(label="write",
                        ycol=5,
-                       line_style=line_style.T(color=color.red,
+                       line_style=line_style.T(color=color.salmon,
                                                width=2),
                        data = data,
                        data_label_format="",
@@ -3668,7 +3700,8 @@ def perf_stats_mem_u(node, s, e):
            x_range = (None, mktime(rows[-1].date.timetuple())-start_date)
          )
     bar_plot.fill_styles.reset()
-    plot1 = bar_plot.T(label="free", fill_style=fill_style.green,
+    plot1 = bar_plot.T(label="free",
+                       fill_style=fill_style.Plain(bgcolor=color.darkolivegreen1),
                        hcol=1,
                        line_style=None,
                        data = data,
@@ -3678,7 +3711,7 @@ def perf_stats_mem_u(node, s, e):
     plot2 = bar_plot.T(label="used",
                        hcol=2,
                        stack_on=plot1,
-                       fill_style=fill_style.red,
+                       fill_style=fill_style.Plain(bgcolor=color.salmon),
                        line_style=None,
                        data = data,
                        data_label_format="",
@@ -3696,7 +3729,7 @@ def perf_stats_mem_u(node, s, e):
     plot4 = bar_plot.T(label="used, cache",
                        hcol=5,
                        stack_on=plot3,
-                       fill_style=fill_style.blue,
+                       fill_style=fill_style.Plain(bgcolor=color.thistle3),
                        line_style=None,
                        data = data,
                        data_label_format="",
@@ -3734,7 +3767,7 @@ def perf_stats_mem_u(node, s, e):
     bar_plot.fill_styles.reset()
     plot1 = line_plot.T(label="used",
                        ycol=3,
-                       line_style=line_style.T(color=color.red,
+                       line_style=line_style.T(color=color.salmon,
                                                width=2),
                        data = data,
                        data_label_format="",
@@ -3826,7 +3859,8 @@ def perf_stats_cpu_one(node, s, e, cpu):
            x_range = (None, mktime(rows[-1].date.timetuple())-start_date)
          )
     bar_plot.fill_styles.reset();
-    plot1 = bar_plot.T(label="usr", fill_style=fill_style.red,
+    plot1 = bar_plot.T(label="usr",
+                       fill_style=fill_style.Plain(bgcolor=color.salmon),
                        hcol=1,
                        line_style=None,
                        data = data,
@@ -3836,7 +3870,7 @@ def perf_stats_cpu_one(node, s, e, cpu):
     plot2 = bar_plot.T(label="nice",
                        hcol=2,
                        stack_on=plot1,
-                       fill_style=fill_style.yellow,
+                       fill_style=fill_style.Plain(bgcolor=color.darkkhaki),
                        line_style=None,
                        data = data,
                        data_label_format="",
@@ -3854,7 +3888,7 @@ def perf_stats_cpu_one(node, s, e, cpu):
     plot4 = bar_plot.T(label="iowait",
                        hcol=4,
                        stack_on=plot3,
-                       fill_style=fill_style.blue,
+                       fill_style=fill_style.Plain(bgcolor=color.thistle3),
                        line_style=None,
                        data = data,
                        data_label_format="",
@@ -3863,7 +3897,7 @@ def perf_stats_cpu_one(node, s, e, cpu):
     plot5 = bar_plot.T(label="steal",
                        hcol=5,
                        stack_on=plot4,
-                       #fill_style=fill_style.??,
+                       fill_style=fill_style.Plain(bgcolor=color.coral),
                        line_style=None,
                        data = data,
                        data_label_format="",
@@ -3872,7 +3906,7 @@ def perf_stats_cpu_one(node, s, e, cpu):
     plot6 = bar_plot.T(label="irq",
                        hcol=6,
                        stack_on=plot5,
-                       fill_style=fill_style.green,
+                       fill_style=fill_style.Plain(bgcolor=color.darkolivegreen1),
                        line_style=None,
                        data = data,
                        data_label_format="",
@@ -3881,7 +3915,7 @@ def perf_stats_cpu_one(node, s, e, cpu):
     plot7 = bar_plot.T(label="soft",
                        hcol=7,
                        stack_on=plot6,
-                       #fill_style=fill_style.red,
+                       fill_style=fill_style.Plain(bgcolor=color.navajowhite2),
                        line_style=None,
                        data = data,
                        width=1,
@@ -3890,7 +3924,7 @@ def perf_stats_cpu_one(node, s, e, cpu):
     plot8 = bar_plot.T(label="guest",
                        hcol=8,
                        stack_on=plot7,
-                       #fill_style=fill_style.grey,
+                       fill_style=fill_style.Plain(bgcolor=color.plum3),
                        line_style=None,
                        data = data,
                        width=1,
@@ -4401,21 +4435,24 @@ def stats():
                 y_axis = axis.Y(label="", format=format_y))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="ok",
-                       fill_style=fill_style.black,
+                       fill_style=fill_style.Plain(bgcolor=color.darkolivegreen1),
+                       line_style=None,
                        data = data,
                        data_label_format="",
                        direction='vertical')
     plot2 = bar_plot.T(label="warn",
                        hcol=2,
                        stack_on=plot1,
-                       fill_style=fill_style.yellow,
+                       fill_style=fill_style.Plain(bgcolor=color.darkkhaki),
+                       line_style=None,
                        data = data,
                        data_label_format="",
                        direction='vertical')
     plot3 = bar_plot.T(label="err",
                        hcol=3,
                        stack_on=plot2,
-                       fill_style=fill_style.red,
+                       fill_style=fill_style.Plain(bgcolor=color.salmon),
+                       line_style=None,
                        data = data,
                        data_label_format="",
                        direction='vertical')
@@ -4438,7 +4475,9 @@ def stats():
                 x_axis = axis.X(label = "", format=format_x, tic_interval=3),
                 y_axis = axis.Y(label = "", format=format_y))
     bar_plot.fill_styles.reset();
-    plot1 = bar_plot.T(label="err", fill_style=fill_style.red,
+    plot1 = bar_plot.T(label="err",
+                       fill_style=fill_style.Plain(bgcolor=color.salmon),
+                       line_style=None,
                        data = data,
                        data_label_format="",
                        direction='vertical')
@@ -4459,10 +4498,14 @@ def stats():
                 y_axis = axis.Y(label = "", format=format_y))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="prd svc",
+                       fill_style=fill_style.Plain(bgcolor=color.thistle3),
+                       line_style=None,
                        data = data,
                        data_label_format="",
                        direction='vertical')
     plot2 = bar_plot.T(label="other svc", hcol=2, stack_on = plot1,
+                       fill_style=fill_style.Plain(bgcolor=color.salmon),
+                       line_style=None,
                        data = data,
                        data_label_format="",
                        direction='vertical')
@@ -4483,10 +4526,14 @@ def stats():
                 y_axis = axis.Y(label = "", format=format_y))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="prd svc with drp",
+                       fill_style=fill_style.Plain(bgcolor=color.thistle3),
+                       line_style=None,
                        data = data,
                        data_label_format="",
                        direction='vertical')
     plot2 = bar_plot.T(label="prd svc without drp", hcol=2, stack_on = plot1,
+                       fill_style=fill_style.Plain(bgcolor=color.salmon),
+                       line_style=None,
                        data = data,
                        data_label_format="",
                        direction='vertical')
@@ -4507,10 +4554,14 @@ def stats():
                 y_axis = axis.Y(label = "", format=format_y))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="clustered svc",
+                       fill_style=fill_style.Plain(bgcolor=color.thistle3),
+                       line_style=None,
                        data = data,
                        data_label_format="",
                        direction='vertical')
     plot2 = bar_plot.T(label="not clustered svc", hcol=2, stack_on = plot1,
+                       fill_style=fill_style.Plain(bgcolor=color.salmon),
+                       line_style=None,
                        data = data,
                        data_label_format="",
                        direction='vertical')
@@ -4531,10 +4582,14 @@ def stats():
                 y_axis = axis.Y(label = "", format=format_y))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="prd nodes",
+                       fill_style=fill_style.Plain(bgcolor=color.thistle3),
+                       line_style=None,
                        data = data,
                        data_label_format="",
                        direction='vertical')
     plot2 = bar_plot.T(label="other nodes", hcol=2, stack_on = plot1,
+                       fill_style=fill_style.Plain(bgcolor=color.salmon),
+                       line_style=None,
                        data = data,
                        data_label_format="",
                        direction='vertical')
@@ -4555,6 +4610,8 @@ def stats():
                 y_axis = axis.Y(label = "", format=format_y))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="apps",
+                       fill_style=fill_style.Plain(bgcolor=color.thistle3),
+                       line_style=None,
                        data = data,
                        data_label_format="",
                        direction='vertical')
@@ -4575,6 +4632,8 @@ def stats():
                 y_axis = axis.Y(label="", format=format_y))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="accounts",
+                       fill_style=fill_style.Plain(bgcolor=color.thistle3),
+                       line_style=None,
                        data = data,
                        data_label_format="",
                        direction='vertical')
@@ -4595,6 +4654,8 @@ def stats():
                 y_axis = axis.Y(label = "", format=format_y))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="disk size (GB)",
+                       fill_style=fill_style.Plain(bgcolor=color.thistle3),
+                       line_style=None,
                        data = data,
                        data_label_format="",
                        direction='vertical')
@@ -4625,6 +4686,8 @@ def stats():
                )
     bar_plot.fill_styles.reset()
     plot1 = bar_plot.T(label="disk size (GB)",
+                       fill_style=fill_style.Plain(bgcolor=color.thistle3),
+                       line_style=None,
                        data=data,
                        data_label_format="",
                        direction='horizontal')
