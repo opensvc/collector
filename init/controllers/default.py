@@ -4493,6 +4493,7 @@ def stats():
     plot1 = bar_plot.T(label="ok",
                        fill_style=fill_style.Plain(bgcolor=color.darkolivegreen1),
                        line_style=None,
+                       width = 2,
                        data = data,
                        data_label_format="",
                        direction='vertical')
@@ -4501,6 +4502,7 @@ def stats():
                        stack_on=plot1,
                        fill_style=fill_style.Plain(bgcolor=color.darkkhaki),
                        line_style=None,
+                       width = 2,
                        data = data,
                        data_label_format="",
                        direction='vertical')
@@ -4509,6 +4511,7 @@ def stats():
                        stack_on=plot2,
                        fill_style=fill_style.Plain(bgcolor=color.salmon),
                        line_style=None,
+                       width = 2,
                        data = data,
                        data_label_format="",
                        direction='vertical')
@@ -4534,6 +4537,7 @@ def stats():
     plot1 = bar_plot.T(label="err",
                        fill_style=fill_style.Plain(bgcolor=color.salmon),
                        line_style=None,
+                       width = 2,
                        data = data,
                        data_label_format="",
                        direction='vertical')
@@ -4556,12 +4560,14 @@ def stats():
     plot1 = bar_plot.T(label="prd svc",
                        fill_style=fill_style.Plain(bgcolor=color.thistle3),
                        line_style=None,
+                       width = 2,
                        data = data,
                        data_label_format="",
                        direction='vertical')
     plot2 = bar_plot.T(label="other svc", hcol=2, stack_on = plot1,
                        fill_style=fill_style.Plain(bgcolor=color.salmon),
                        line_style=None,
+                       width = 2,
                        data = data,
                        data_label_format="",
                        direction='vertical')
@@ -4585,11 +4591,13 @@ def stats():
                        fill_style=fill_style.Plain(bgcolor=color.thistle3),
                        line_style=None,
                        data = data,
+                       width = 2,
                        data_label_format="",
                        direction='vertical')
     plot2 = bar_plot.T(label="prd svc without drp", hcol=2, stack_on = plot1,
                        fill_style=fill_style.Plain(bgcolor=color.salmon),
                        line_style=None,
+                       width = 2,
                        data = data,
                        data_label_format="",
                        direction='vertical')
@@ -4612,12 +4620,14 @@ def stats():
     plot1 = bar_plot.T(label="clustered svc",
                        fill_style=fill_style.Plain(bgcolor=color.thistle3),
                        line_style=None,
+                       width = 2,
                        data = data,
                        data_label_format="",
                        direction='vertical')
     plot2 = bar_plot.T(label="not clustered svc", hcol=2, stack_on = plot1,
                        fill_style=fill_style.Plain(bgcolor=color.salmon),
                        line_style=None,
+                       width = 2,
                        data = data,
                        data_label_format="",
                        direction='vertical')
@@ -4640,12 +4650,14 @@ def stats():
     plot1 = bar_plot.T(label="prd nodes",
                        fill_style=fill_style.Plain(bgcolor=color.thistle3),
                        line_style=None,
+                       width = 2,
                        data = data,
                        data_label_format="",
                        direction='vertical')
     plot2 = bar_plot.T(label="other nodes", hcol=2, stack_on = plot1,
                        fill_style=fill_style.Plain(bgcolor=color.salmon),
                        line_style=None,
+                       width = 2,
                        data = data,
                        data_label_format="",
                        direction='vertical')
@@ -4668,6 +4680,7 @@ def stats():
     plot1 = bar_plot.T(label="apps",
                        fill_style=fill_style.Plain(bgcolor=color.thistle3),
                        line_style=None,
+                       width = 2,
                        data = data,
                        data_label_format="",
                        direction='vertical')
@@ -4690,6 +4703,7 @@ def stats():
     plot1 = bar_plot.T(label="accounts",
                        fill_style=fill_style.Plain(bgcolor=color.thistle3),
                        line_style=None,
+                       width = 2,
                        data = data,
                        data_label_format="",
                        direction='vertical')
@@ -4712,6 +4726,7 @@ def stats():
     plot1 = bar_plot.T(label="disk size (GB)",
                        fill_style=fill_style.Plain(bgcolor=color.thistle3),
                        line_style=None,
+                       width = 2,
                        data = data,
                        data_label_format="",
                        direction='vertical')
@@ -4744,6 +4759,7 @@ def stats():
     plot1 = bar_plot.T(label="disk size (GB)",
                        fill_style=fill_style.Plain(bgcolor=color.thistle3),
                        line_style=None,
+                       width = 2,
                        data=data,
                        data_label_format="",
                        direction='horizontal')
