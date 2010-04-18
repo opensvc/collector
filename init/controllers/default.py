@@ -3346,6 +3346,30 @@ def perf_stats_blockdev(node, s, e):
              IMG(_src=action5),
            )
 
+def tic_interval_from_ts(_min, _max):
+    p = _max - _min
+    r = []
+    intervals = [2419200, 1209600, 604800, 86400, 21600, 7200, 3600]
+    for i in intervals:
+        if p / i >= 6:
+            break
+    return range(_min, _max, i)
+
+def tic_start_ts(rows):
+    from time import mktime
+    start_date = mktime(rows[0].date.timetuple())
+    end_date = mktime(rows[-1].date.timetuple())
+    p = end_date - start_date
+    if p < 86400:
+        """ align start to closest preceding hour
+        """
+        start_date = ((start_date // 3600) + 1) * 3600
+    else:
+        """ align start to closest preceding day
+        """
+        start_date = ((start_date // 86400) + 1) * 86400
+    return start_date
+
 @auth.requires_login()
 def perf_stats_proc(node, s, e):
     q = db.stats_proc.nodename == node
@@ -3357,7 +3381,7 @@ def perf_stats_proc(node, s, e):
 
     from time import mktime
 
-    start_date = mktime(rows[0].date.timetuple())
+    start_date = tic_start_ts(rows)
 
     def format_x(ts):
         d = datetime.datetime.fromtimestamp(ts+start_date)
@@ -3390,7 +3414,11 @@ def perf_stats_proc(node, s, e):
     ar = area.T(
            x_coord = linear_coord.T(),
            y_coord = linear_coord.T(),
-           x_axis = axis.X(label = 'load average', format=format_x),
+           x_axis = axis.X(
+                      label = 'load average',
+                      format=format_x,
+                      tic_interval=tic_interval_from_ts,
+                    ),
            y_axis = axis.Y(label = "", format=format_y),
            x_range = (None, mktime(rows[-1].date.timetuple())-start_date),
          )
@@ -3437,7 +3465,11 @@ def perf_stats_proc(node, s, e):
     ar = area.T(
            x_coord = linear_coord.T(),
            y_coord = linear_coord.T(),
-           x_axis = axis.X(label = 'process list', format=format_x),
+           x_axis = axis.X(
+                      label = 'process list',
+                      format=format_x,
+                      tic_interval=tic_interval_from_ts,
+                    ),
            y_axis = axis.Y(label = "", format=format_y),
            x_range = (None, mktime(rows[-1].date.timetuple())-start_date),
          )
@@ -3467,7 +3499,7 @@ def perf_stats_swap(node, s, e):
 
     from time import mktime
 
-    start_date = mktime(rows[0].date.timetuple())
+    start_date = tic_start_ts(rows)
 
     def format_x(ts):
         d = datetime.datetime.fromtimestamp(ts+start_date)
@@ -3500,7 +3532,11 @@ def perf_stats_swap(node, s, e):
     ar = area.T(
            x_coord = linear_coord.T(),
            y_coord = linear_coord.T(),
-           x_axis = axis.X(label = 'swap usage (KB)', format=format_x),
+           x_axis = axis.X(
+                      label = 'swap usage (KB)',
+                      format=format_x,
+                      tic_interval=tic_interval_from_ts,
+                    ),
            y_axis = axis.Y(label = "", format=format_y),
            x_range = (None, mktime(rows[-1].date.timetuple())-start_date),
          )
@@ -3551,7 +3587,7 @@ def perf_stats_block(node, s, e):
 
     from time import mktime
 
-    start_date = mktime(rows[0].date.timetuple())
+    start_date = tic_start_ts(rows)
 
     def format_x(ts):
         d = datetime.datetime.fromtimestamp(ts+start_date)
@@ -3584,7 +3620,11 @@ def perf_stats_block(node, s, e):
     ar = area.T(
            x_coord = linear_coord.T(),
            y_coord = linear_coord.T(),
-           x_axis = axis.X(label = 'io//s', format=format_x),
+           x_axis = axis.X(
+                      label = 'io//s',
+                      tic_interval=tic_interval_from_ts,
+                      format=format_x
+                    ),
            y_axis = axis.Y(label = "", format=format_y),
            x_range = (None, mktime(rows[-1].date.timetuple())-start_date),
          )
@@ -3621,7 +3661,11 @@ def perf_stats_block(node, s, e):
     ar = area.T(
            x_coord = linear_coord.T(),
            y_coord = linear_coord.T(),
-           x_axis = axis.X(label = 'KB//s', format=format_x),
+           x_axis = axis.X(
+                      label = 'KB//s',
+                      tic_interval = tic_interval_from_ts,
+                      format=format_x
+                    ),
            y_axis = axis.Y(label = "", format=format_y),
            x_range = (None, mktime(rows[-1].date.timetuple())-start_date),
          )
@@ -3660,7 +3704,7 @@ def perf_stats_mem_u(node, s, e):
 
     from time import mktime
 
-    start_date = mktime(rows[0].date.timetuple())
+    start_date = tic_start_ts(rows)
 
     def format_x(ts):
         d = datetime.datetime.fromtimestamp(ts+start_date)
@@ -3695,7 +3739,11 @@ def perf_stats_mem_u(node, s, e):
     ar = area.T(
            x_coord = linear_coord.T(),
            y_coord = linear_coord.T(),
-           x_axis = axis.X(label = 'memory usage (KB)', format=format_x),
+           x_axis = axis.X(
+                      label = 'memory usage (KB)',
+                      format=format_x,
+                      tic_interval=tic_interval_from_ts,
+                    ),
            y_axis = axis.Y(label = "", format=format_y),
            x_range = (None, mktime(rows[-1].date.timetuple())-start_date)
          )
@@ -3760,7 +3808,11 @@ def perf_stats_mem_u(node, s, e):
     ar = area.T(
            x_coord = linear_coord.T(),
            y_coord = linear_coord.T(),
-           x_axis = axis.X(label = 'memory usage (%)', format=format_x),
+           x_axis = axis.X(
+                      label = 'memory usage (%)',
+                      tic_interval = tic_interval_from_ts,
+                      format=format_x
+                    ),
            y_axis = axis.Y(label = "", format=format_y),
            x_range = (None, mktime(rows[-1].date.timetuple())-start_date)
          )
@@ -3818,7 +3870,7 @@ def perf_stats_cpu_one(node, s, e, cpu):
 
     from time import mktime
 
-    start_date = mktime(rows[0].date.timetuple())
+    start_date = tic_start_ts(rows)
 
     def format_x(ts):
         d = datetime.datetime.fromtimestamp(ts+start_date)
@@ -3854,7 +3906,11 @@ def perf_stats_cpu_one(node, s, e, cpu):
            #x_coord = category_coord.T(data, 0),
            x_coord = linear_coord.T(),
            y_coord = linear_coord.T(),
-           x_axis = axis.X(label = 'cpu '+cpu, format=format_x),
+           x_axis = axis.X(
+                      label = 'cpu '+cpu,
+                      format=format_x,
+                      tic_interval=tic_interval_from_ts,
+                    ),
            y_axis = axis.Y(label = "", format=format_y),
            x_range = (None, mktime(rows[-1].date.timetuple())-start_date)
          )
