@@ -89,6 +89,12 @@ def last_changes_table():
         pass
 
     t = TABLE(
+        TR(
+          TD(
+            H2(T("Last service status changes"), _style="padding:10px"),
+            _colspan=99,
+          ),
+        ),
         last_changes_header(),
         lines,
     )
@@ -99,7 +105,6 @@ def last_changes():
     if len(lastchanges) == 0:
         return DIV()
     d = DIV(
-      H2(T("Last service status changes"), _style="padding:10px"),
       last_changes_table(),
       _style="padding:10px",
     )
@@ -145,6 +150,12 @@ def svc_with_errors_table():
         pass
 
     t = TABLE(
+        TR(
+          TD(
+            H2(T("Services with errors"), _style="padding:10px"),
+            _colspan=99,
+          ),
+        ),
         svc_with_errors_header(),
         lines,
     )
@@ -155,7 +166,6 @@ def svc_with_errors():
     if len(svcwitherrors) == 0:
         return DIV()
     d = DIV(
-      H2(T("Services with errors"), _style="padding:10px"),
       svc_with_errors_table(),
       _style="padding:10px",
     )
@@ -197,6 +207,12 @@ def svc_not_up_table():
         pass
 
     t = TABLE(
+        TR(
+          TD(
+            H2(T("Services not up"), _style="padding:10px"),
+            _colspan=99,
+          ),
+        ),
         svc_not_up_header(),
         lines,
     )
@@ -207,7 +223,6 @@ def svc_not_up():
     if len(svcnotup) == 0:
         return DIV()
     d = DIV(
-      H2(T("Services not up"), _style="padding:10px"),
       svc_not_up_table(),
       _style="padding:10px",
     )
@@ -251,6 +266,12 @@ def svc_not_on_primary_table(svcnotonprimary):
         pass
 
     t = TABLE(
+        TR(
+          TD(
+            H2(T("Services not up on primary"), _style="padding:10px"),
+            _colspan=99,
+          ),
+        ),
         svc_not_on_primary_header(),
         lines,
     )
@@ -263,7 +284,6 @@ def svc_not_on_primary():
     if len(list) == 0:
         return DIV()
     d = DIV(
-      H2(T("Services not up on primary"), _style="padding:10px"),
       svc_not_on_primary_table(list),
       _style="padding:10px",
     )
@@ -301,6 +321,12 @@ def app_wo_resp_table():
         pass
 
     t = TABLE(
+        TR(
+          TD(
+           H2(T("Application without responsibles"), _style="padding:10px"),
+            _colspan=99,
+          ),
+        ),
         app_wo_resp_header(),
         lines,
     )
@@ -311,7 +337,6 @@ def app_wo_resp():
     if len(appwithoutresp) == 0:
         return DIV()
     d = DIV(
-      H2(T("Application without responsibles"), _style="padding:10px"),
       app_wo_resp_table(),
       _style="padding:10px",
     )
@@ -353,6 +378,12 @@ def obs_os_alert_table():
         pass
 
     t = TABLE(
+        TR(
+          TD(
+            H2(T("Nodes with obsolescent operating system (alert)"), _style="padding:10px"),
+            _colspan=99,
+          ),
+        ),
         obs_os_alert_header(),
         lines,
     )
@@ -363,7 +394,6 @@ def obs_os_alert():
     if len(obsosalert) == 0:
         return DIV()
     d = DIV(
-      H2(T("Nodes with obsolescent operating system (alert)"), _style="padding:10px"),
       obs_os_alert_table(),
       _style="padding:10px",
     )
@@ -405,6 +435,12 @@ def obs_os_warn_table():
         pass
 
     t = TABLE(
+        TR(
+          TD(
+            H2(T("Nodes with obsolescent operating system (warn)"), _style="padding:10px"),
+            _colspan=99,
+          ),
+        ),
         obs_os_warn_header(),
         lines,
     )
@@ -415,7 +451,6 @@ def obs_os_warn():
     if len(obsoswarn) == 0:
         return DIV()
     d = DIV(
-      H2(T("Nodes with obsolescent operating system (warn)"), _style="padding:10px"),
       obs_os_warn_table(),
       _style="padding:10px",
     )
@@ -457,6 +492,12 @@ def obs_hw_warn_table():
         pass
 
     t = TABLE(
+        TR(
+          TD(
+            H2(T("Nodes with obsolescent hardware (warn)"), _style="padding:10px"),
+            _colspan=99,
+          ),
+        ),
         obs_hw_warn_header(),
         lines,
     )
@@ -467,7 +508,6 @@ def obs_hw_warn():
     if len(obshwwarn) == 0:
         return DIV()
     d = DIV(
-      H2(T("Nodes with obsolescent hardware (warn)"), _style="padding:10px"),
       obs_hw_warn_table(),
       _style="padding:10px",
     )
@@ -509,6 +549,12 @@ def obs_hw_alert_table():
         pass
 
     t = TABLE(
+        TR(
+          TD(
+            H2(T("Nodes with obsolescent hardware (alert)"), _style="padding:10px"),
+            _colspan=99,
+          ),
+        ),
         obs_hw_alert_header(),
         lines,
     )
@@ -519,7 +565,6 @@ def obs_hw_alert():
     if len(obshwalert) == 0:
         return DIV()
     d = DIV(
-      H2(T("Nodes with obsolescent hardware (alert)"), _style="padding:10px"),
       obs_hw_alert_table(),
       _style="padding:10px",
     )
@@ -530,8 +575,13 @@ def obs_miss():
     if obswarnmiss + obsalertmiss == 0:
         return DIV()
     return DIV(
-      H2(T("Items with missing obsolescence information")),
       TABLE(
+        TR(
+          TD(
+            H2(T("Items with missing obsolescence information")),
+            _colspan=99,
+          ),
+        ),
         TR(
           TH(T("Date not set")),
           TH(T("Item count")),
@@ -572,10 +622,10 @@ def obs_miss():
      _style="
        padding-left:2em;
        padding-right:2em;
-       -moz-column-width:30em;
-       -moz-column-gap:4em;
-       -webkit-column-width:30em;
-       -webkit-column-gap:4em;
+       -moz-column-width:50em;
+       -moz-column-gap:2em;
+       -webkit-column-width:50em;
+       -webkit-column-gap:2em;
      "
    )
 }}
