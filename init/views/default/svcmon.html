@@ -265,7 +265,7 @@ def svc_status(svc, cellclass="cell2"):
                getElementById("node").value="%(node)s";
                getElementById("rowid").value="%(id)s";
                ajax("%(url)s",['node', 'rowid'],"id_%(id)s");
-               getElementById("tr_id_%(id)s").style['display']="table-row";
+               show_eid("tr_id_%(id)s");
             """%dict(url=URL(r=request,f='ajax_service'),
                      node=svc.svc_name,
                      id=svc.svc_name,
@@ -322,7 +322,7 @@ def svc_status(svc, cellclass="cell2"):
                getElementById("node").value="%(node)s";
                getElementById("rowid").value="%(id)s";
                ajax("%(url)s",['node', 'rowid'],"id_%(id)s");
-               getElementById("tr_id_%(id)s").style['display']="table-row";
+               show_eid("tr_id_%(id)s");
             """%dict(url=URL(r=request,f='ajax_node'),
                      node=svc.mon_nodname,
                      id=svc.svc_name,
