@@ -327,11 +327,16 @@ def index():
                                  left=db.v_nodes.on(join)
                                 )
 
-    query = (db.obsolescence.obs_warn_date==None)|(db.obsolescence.obs_warn_date=="0000-00-00")
-    obswarnmiss = db(query).count()
+    rows = db(db.v_users.id==session.auth.user.id).select(db.v_users.manager)
+    if len(rows) == 1 and rows[0].manager == 1:
+        query = (db.obsolescence.obs_warn_date==None)|(db.obsolescence.obs_warn_date=="0000-00-00")
+        obswarnmiss = db(query).count()
 
-    query = (db.obsolescence.obs_alert_date==None)|(db.obsolescence.obs_alert_date=="0000-00-00")
-    obsalertmiss = db(query).count()
+        query = (db.obsolescence.obs_alert_date==None)|(db.obsolescence.obs_alert_date=="0000-00-00")
+        obsalertmiss = db(query).count()
+    else:
+        obswarnmiss = 0
+        obsalertmiss = 0
 
     return dict(lastchanges=lastchanges,
                 svcwitherrors=svcwitherrors,
