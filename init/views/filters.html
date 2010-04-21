@@ -21,10 +21,13 @@ function toggle_menu()
 
 function tofilter(e) {
     var KeyID = (window.event) ? event.keyCode : e.keyCode;
+    //alert(event.keyCode);
     //alert(KeyID);
     switch(KeyID)
     {
         case 59:
+        case 190:
+        case 191:
             if (lastkeypress == 17) {
                 // Ctrl + :
                 toggle_menu()
