@@ -2232,6 +2232,14 @@ def cron_purge_alerts():
     sql = "delete from alerts using alerts, SVCactions where alerts.sent_at is NULL and alerts.action_id=SVCactions.id and SVCactions.ack=1"
     db.executesql(sql)
 
+def cron_unfinished_actions():
+    now = datetime.datetime.now()
+    tmo = now - datetime.timedelta(minutes=120)
+    q = (db.SVCactions.begin < tmo)
+    q &= (db.SVCactions.end==None)
+    rows = db(q).update(status="err")
+    return "%d actions marked timed out"%rows
+
 def _svcaction_ack(request):
     action_ids = ([])
     for key in [ k for k in request.vars.keys() if 'check_' in k ]:
