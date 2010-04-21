@@ -2269,7 +2269,7 @@ def _svcaction_ack_one(request, action_id):
 def svcactions():
     toggle_db_filters()
 
-    if request.vars.ackcomment is not None:
+    if request.vars.ackflag == "1":
         _svcaction_ack(request)
     query = _where(None, 'v_svcactions', request.vars.svcname, 'svcname')
     query &= _where(None, 'v_svcactions', request.vars.id, 'id')
