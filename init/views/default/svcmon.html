@@ -45,10 +45,10 @@ def node_icon(svc):
 def ajax_status(svc, name, cssclass):
     a = svc.mon_nodname+'_'+svc.svc_name
     a = a.replace('.', '_')
-    return A(
-          DIV(
+    return DIV(
             name,
             _class=cssclass,
+            _style="cursor:help",
             _onclick="""
                getElementById("node").value="%(node)s";
                getElementById("svcname").value="%(svcname)s";
@@ -56,9 +56,7 @@ def ajax_status(svc, name, cssclass):
                getElementById("panel_%(a)s").className="panel_shown";
                getElementById("panel_%(a)s").style.top=event.pageY+'px';
             """%dict(url=URL(r=request,f='ajax_res_status'), node=svc.mon_nodname, svcname=svc.svc_name, a=a),
-          ),
-          _style="cursor:help",
-        )
+          )
     pass
 
 
