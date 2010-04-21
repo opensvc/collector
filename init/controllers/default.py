@@ -4934,7 +4934,7 @@ def svcmon_update(vars, vals):
     h = {}
     for a,b in zip(vars, vals):
         h[a] = b
-    eleven_minutes_before = datetime.datetime.strptime(h['mon_updated'].split('.')[0], "%Y-%m-%d %H:%M:%S") - datetime.timedelta(minutes=11)
+    tmo = datetime.datetime.strptime(h['mon_updated'].split('.')[0], "%Y-%m-%d %H:%M:%S") - datetime.timedelta(minutes=18)
     query = db.svcmon_log.mon_svcname==h['mon_svcname']
     query &= db.svcmon_log.mon_nodname==h['mon_nodname']
     last = db(query).select(orderby=~db.svcmon_log.id, limitby=(0,1))
@@ -4962,7 +4962,7 @@ def svcmon_update(vars, vals):
                  h['mon_appstatus'],
                  h['mon_syncstatus']]
         generic_insert('svcmon_log', _vars, _vals)
-    elif last[0].mon_end < eleven_minutes_before:
+    elif last[0].mon_end < tmo:
         _vars = ['mon_begin',
                  'mon_end',
                  'mon_svcname',
