@@ -25,8 +25,8 @@ for key in colkeys:
     {{pass}}
   </tr>
   <tr class=box>
-    {{for key in colkeys:}}
     <td></td>
+    {{for key in colkeys:}}
     <td><input name={{=key}} value='{{=request.vars[key]}}' size={{=columns[key]['size']}} onKeyPress="checkEnter(event)"></td>
     {{pass}}
   </tr>
@@ -55,10 +55,10 @@ for key in colkeys:
   {{pass}}
   <input id="node" type="hidden">
   <tr class=box>
-    <td align=center colspan={{=len(colkeys)}}>{{=nav}}</td>
+    <td align=center colspan=99>{{=nav}}</td>
   </tr>
   <tr class=box>
-    <td colspan={{=len(colkeys)}}>
+    <td colspan=99>
       <table>
         <tr>
           <td> {{=T('Export')}}:</td>
