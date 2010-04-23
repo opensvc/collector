@@ -3741,12 +3741,13 @@ def perf_stats_mem_u(node, s, e):
 
     data = [(mktime(row.date.timetuple())-start_date,
              row.kbmemfree,
-             row.kbmemused-row.kbbuffers-row.kbcached,
+             row.kbmemused-row.kbbuffers-row.kbcached-row.kbmemsys,
              row.pct_memused,
              row.kbbuffers,
              row.kbcached,
              row.kbcommit,
              row.pct_commit,
+             row.kbmemsys,
             ) for row in rows]
 
     ar = area.T(
@@ -3796,14 +3797,23 @@ def perf_stats_mem_u(node, s, e):
                        data_label_format="",
                        width=1,
                        direction='vertical')
-    plot5 = line_plot.T(label="commit",
+    plot5 = bar_plot.T(label="used, sys",
+                       hcol=8,
+                       stack_on=plot4,
+                       fill_style=fill_style.Plain(bgcolor=color.coral),
+                       line_style=None,
+                       data = data,
+                       data_label_format="",
+                       width=1,
+                       direction='vertical')
+    plot6 = line_plot.T(label="commit",
                        ycol=6,
                        line_style=line_style.T(color=color.darkkhaki,
                                                width=2),
                        data = data,
                        data_label_format="",
                        )
-    ar.add_plot(plot1, plot2, plot3, plot4, plot5)
+    ar.add_plot(plot1, plot2, plot3, plot4, plot5, plot6)
     ar.draw(can)
     can.close()
 
