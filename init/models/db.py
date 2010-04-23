@@ -651,6 +651,7 @@ db.define_table('stats_mem_u',
     Field('kbcached', 'integer'),
     Field('kbcommit', 'integer'),
     Field('pct_commit', 'float'),
+    Field('kbmemsys', 'integer'),
     migrate=False)
 
 db.define_table('stats_proc',
