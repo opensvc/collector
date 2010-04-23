@@ -2522,7 +2522,7 @@ def nodes():
 
 @auth.requires_login()
 def node_insert():
-    form=SQLFORM(db.v_nodes)
+    form=SQLFORM(db.nodes)
     if form.accepts(request.vars):
         response.flash = T("edition recorded")
         redirect(URL(r=request, f='nodes'))
