@@ -3,6 +3,9 @@
 {{include '../static/jslib.html'}}
 {{include 'filters.html'}}
 {{
+
+tmo = datetime.datetime.now() - datetime.timedelta(minutes=15)
+
 def svc_status(svc, cellclass="cell2", nestedin=None):
     cl = {}
     for k in ['mon_overallstatus',
@@ -15,12 +18,16 @@ def svc_status(svc, cellclass="cell2", nestedin=None):
         if nestedin is None:
             if svc[k] is None:
                 cl[k] = 'status_undef'
+            elif 'mon_updated' in svc and svc['mon_updated'] < tmo:
+                cl[k] = 'status_expired'
             else:
                 cl[k] = 'status_'+svc[k].replace(" ", "_")
             pass
         else:
             if svc[nestedin][k] is None:
                 cl[k] = 'status_undef'
+            elif 'mon_updated' in svc[nestedin] and svc[nestedin]['mon_updated'] < tmo:
+                cl[k] = 'status_expired'
             else:
                 cl[k] = 'status_'+svc[nestedin][k].replace(" ", "_")
             pass
@@ -50,6 +57,65 @@ def svc_status(svc, cellclass="cell2", nestedin=None):
       ),
     )
     return t
+    pass
+
+
+""" Service status not updated
+"""
+def svcmon_not_updated_line(line, cellclass):
+    tr = TR(
+      TD(A(line.mon_svcname, _href=URL(r=request, f='svcmon', vars={'svcname':line.mon_svcname})), _class=cellclass),
+      TD(A(line.mon_nodname, _href=URL(r=request, f='svcmon', vars={'nodename':line.mon_nodname})), _class=cellclass),
+      TD(line.mon_updated, _class=cellclass),
+      TD(svc_status(line, cellclass), _class=cellclass),
+    )
+    return tr
+    pass
+
+def svcmon_not_updated_header():
+    tr = TR(
+      TH(T("Service")),
+      TH(T("Node")),
+      TH(T("Last updated date")),
+      TH(T("Last known status"), _style="text-align:center"),
+      _style="border-bottom:4px solid darkorange",
+    )
+    return tr
+    pass
+
+def svcmon_not_updated_table():
+    cellclass = 'cell1'
+    cellclasses = {}
+    cellclasses['cell1'] = 'cell2'
+    cellclasses['cell2'] = 'cell1'
+    lines = []
+
+    for line in svcnotupdated:
+        cellclass = cellclasses[cellclass]
+        lines += [svcmon_not_updated_line(line, cellclass)]
+        pass
+
+    t = TABLE(
+        TR(
+          TD(
+            H2(T("Service status not updated"), _style="padding:10px;text-align:center"),
+            _colspan=99,
+          ),
+        ),
+        svcmon_not_updated_header(),
+        lines,
+    )
+    return t
+    pass
+
+def svcmon_not_updated():
+    if len(svcnotupdated) == 0:
+        return DIV()
+    d = DIV(
+      svcmon_not_updated_table(),
+      _style="padding:10px",
+    )
+    return d
     pass
 
 
@@ -609,6 +675,7 @@ def obs_miss():
    )
 }}
 {{=DIV(
+     svcmon_not_updated(),
      last_changes(),
      app_wo_resp(),
      svc_with_errors(),

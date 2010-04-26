@@ -247,6 +247,12 @@ def index():
 
     now = datetime.datetime.now()
     one_days_ago = now - datetime.timedelta(days=1)
+    tmo = now - datetime.timedelta(minutes=15)
+
+    query = db.v_svcmon.mon_updated<tmo
+    query &= _where(None, 'v_svcmon', domain_perms(), 'mon_svcname')
+    query = apply_db_filters(query, 'v_svcmon')
+    svcnotupdated = db(query).select(orderby=~db.v_svcmon.mon_updated, limitby=(0,50))
 
     query = db.svcmon_log.mon_end>one_days_ago
     query &= db.svcmon_log.mon_svcname==db.v_svcmon.mon_svcname
@@ -267,10 +273,10 @@ def index():
     query &= _where(None, 'v_svc_group_status', domain_perms(), 'svcname')
     query &= db.v_svc_group_status.svcname==db.v_svcmon.mon_svcname
     query = apply_db_filters(query, 'v_svcmon')
-    svcnotup = db(query).select()
+    svcnotup = db(query).select(groupby=db.v_svc_group_status.svcname)
 
     query = (db.v_svcmon.svc_autostart==db.v_svcmon.mon_nodname)
-    query &= (db.v_svcmon.mon_overallstatus!="up")
+    query &= ((db.v_svcmon.mon_overallstatus!="up")|(db.v_svcmon.mon_updated<tmo))
     query &= _where(None, 'v_svcmon', domain_perms(), 'mon_svcname')
     query = apply_db_filters(query, 'v_svcmon')
     svcnotonprimary = db(query).select()
@@ -338,7 +344,8 @@ def index():
         obswarnmiss = 0
         obsalertmiss = 0
 
-    return dict(lastchanges=lastchanges,
+    return dict(svcnotupdated=svcnotupdated,
+                lastchanges=lastchanges,
                 svcwitherrors=svcwitherrors,
                 svcnotonprimary=svcnotonprimary,
                 appwithoutresp=appwithoutresp,

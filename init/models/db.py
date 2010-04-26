@@ -79,6 +79,8 @@ db.define_table('svcmon',
     Field('mon_appstatus'),
     Field('mon_overallstatus'),
     Field('mon_prinodes'),
+    Field('mon_updated'),
+    Field('mon_changed'),
     migrate=False)
 
 db.define_table('SVCactions',

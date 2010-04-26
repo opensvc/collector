@@ -164,3 +164,26 @@ insert into filters set fil_name='team responsible',fil_column='team_responsible
 #
 ALTER TABLE `opensvc`.`stats_mem_u` ADD COLUMN `kbmemsys` integer  NOT NULL DEFAULT 0 AFTER `date`;
 
+#
+# 2010-04-26
+#
+DELIMITER //
+
+CREATE FUNCTION trusted_status(status VARCHAR(20), updated DATETIME)
+  RETURNS VARCHAR(20)
+
+  BEGIN
+    DECLARE s VARCHAR(20);
+
+    IF updated < DATE_SUB(NOW(), INTERVAL 15 MINUTE) THEN SET s = "unknown";
+    ELSE SET s = status;
+    END IF;
+
+    RETURN s;
+  END //
+
+DELIMITER ;
+
+drop view v_svc_group_status;
+
+CREATE VIEW `v_svc_group_status` AS (select `svcmon`.`ID` AS `id`,`svcmon`.`mon_svcname` AS `svcname`,`svcmon`.`mon_svctype` AS `svctype`,group_concat(trusted_status(`svcmon`.`mon_overallstatus`,mon_updated) separator ',') AS `groupstatus` from `svcmon` group by `svcmon`.`mon_svcname`);
