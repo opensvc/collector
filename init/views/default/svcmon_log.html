@@ -209,7 +209,7 @@ function update_ack_dates(b, e) {
 }
 </script>
 
-<form action='svcmon_log' name='svcform' id='svcform'> 
+<form action='svcmon_log' name='svcform' id='svcform' method='post'> 
 {{=DB_FILTERS_TABLE(active_filters, available_filters)}}
 
 {{if img is not None:}}
@@ -341,13 +341,13 @@ function update_ack_dates(b, e) {
         {{="%0.2f%%"%h[svc]['availability']}}
       {{pass}}
     </td>
-    <td class={{=cellclass}} style={{=strike}} {{=trigger}}>
+    <td class={{=cellclass}} style='{{=strike}}' {{=trigger}}>
       {{=date(b, b, e, svc)}}
     </td>
-    <td class={{=cellclass}} style={{=strike}} {{=trigger}}>
+    <td class={{=cellclass}} style='{{=strike}}' {{=trigger}}>
       {{=date(e, b, e, svc)}}
     </td>
-    <td class={{=cellclass}} style={{=strike}} {{=trigger}}>
+    <td class={{=cellclass}} style='{{=strike}}' {{=trigger}}>
         {{=d}}
     </td>
     <td style='padding:0'></td>
@@ -394,7 +394,9 @@ function update_ack_dates(b, e) {
           <td>
             {{=T("Account in availability ratio")}}
             <br>
-            {{=INPUT(_id='ac',
+            {{=INPUT(
+               _id='ac',
+               _name='ac',
                _type='checkbox',
                _onChange='this.value=this.checked',
               )
