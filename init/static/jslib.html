@@ -23,7 +23,7 @@ function submit_form_on_enter(e, form) {
 function select_all(checked, aform) {
   var elem = aform.elements;
   for(var i = 0; i < elem.length; i++) {
-    if (elem[i].type == 'checkbox' && elem[i].disabled == false) {
+    if (elem[i].type == 'checkbox' && elem[i].disabled == false && elem[i].name.match(/^check_/)) {
       elem[i].checked = checked
     }
   }

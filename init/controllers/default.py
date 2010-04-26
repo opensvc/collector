@@ -1362,7 +1362,29 @@ def str_to_date(s, fmt="%Y-%m-%d %H:%M:%S"):
         return str_to_date(s, fmt[0:-1])
 
 @auth.requires_login()
+def _svcmon_log_ack(request):
+    request.vars.ackflag = "0"
+    svcs = set([])
+
+    b = str_to_date(request.vars.ack_begin)
+    e = str_to_date(request.vars.ack_end)
+    if request.vars.ac == 'true':
+        account = 1
+    else:
+        account = 0
+
+    for key in [ k for k in request.vars.keys() if 'check_' in k ]:
+        svcs |= set(['_'.join(key.split('_')[1:-1])])
+    for svc in svcs:
+        svcmon_log_ack_write(svc, b, e, 
+                             request.vars.ackcomment,
+                             account)
+
+@auth.requires_login()
 def svcmon_log():
+    if request.vars.ackflag == "1":
+        _svcmon_log_ack(request)
+
     now = datetime.datetime.now()
     if request.vars.mon_begin is None or request.vars.mon_begin == "":
         begin = now - datetime.timedelta(days=7, microseconds=now.microsecond)
@@ -1392,6 +1414,7 @@ def svcmon_log():
     nav = DIV()
 
     h = service_availability(rows, begin, end)
+
     img = service_availability_chart(h)
 
     return dict(rows=rows,
@@ -2583,6 +2606,17 @@ def ajax_svcmon_log_ack_write():
     else:
         account = 0
 
+    svcmon_log_ack_write(svc, b, e, comment, account)
+
+    input_close = INPUT(_value=T('close & refresh table'), _id='close', _type='submit', _onclick="""
+                    getElementById("panel_ack").className="panel";
+                  """%dict(url=URL(r=request,f='ajax_svcmon_log_ack_write'),
+                           svcname=svc)
+                  )
+    return DIV(T("saved"), P(input_close))
+
+@auth.requires_login()
+def svcmon_log_ack_write(svc, b, e, comment="", account=False):
     def db_insert_ack_segment(svc, begin, end, comment, account):
         r = db.svcmon_log_ack.insert(
             mon_svcname = svc,
@@ -2607,13 +2641,6 @@ def ajax_svcmon_log_ack_write():
 
     db_delete_ack_overlap(svc, b, e)
     db_insert_ack_segment(svc, b, e, comment, account)
-
-    input_close = INPUT(_value=T('close & refresh table'), _id='close', _type='submit', _onclick="""
-                    getElementById("panel_ack").className="panel";
-                  """%dict(url=URL(r=request,f='ajax_svcmon_log_ack_write'),
-                           svcname=svc)
-                  )
-    return DIV(T("saved"), P(input_close))
 
 def db_select_ack_overlap(svc, begin, end):
     b = str(begin)

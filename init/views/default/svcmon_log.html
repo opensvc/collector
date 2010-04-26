@@ -187,6 +187,28 @@ def filter_match(key, fval):
          )
 
 }}
+
+<script type="text/javascript">
+
+function update_ack_dates(b, e) {
+    ab = document.svcform.ack_begin;
+    ae = document.svcform.ack_end;
+    if (b[0] == "<" || b[0] == ">") {
+        b = b.substr(1);
+    }
+    if (e[0] == "<" || e[0] == ">") {
+        e = e.substr(1);
+    }
+
+    if ((b < ab.value) || (ab.value == "")) {
+        ab.value = b;
+    }
+    if ((e > ae.value) || (ae.value == "")) {
+        ae.value = e;
+    }
+}
+</script>
+
 <form action='svcmon_log' name='svcform' id='svcform'> 
 {{=DB_FILTERS_TABLE(active_filters, available_filters)}}
 
@@ -202,16 +224,18 @@ def filter_match(key, fval):
     <td>{{=T('Unavailability begin')}}</td>
     <td>{{=T('Unavailability end')}}</td>
     <td>{{=T('Duration')}}</td>
-    <td class=box></td>
   </tr>
   <tr class=box>
-    <td class=box></td>
+    <td>
+      <input type=checkbox id=check_all 
+             onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'));
+                      update_ack_dates('{{=vars.mon_begin}}', '{{=vars.mon_end}}');">
+    </td>
     <td><input name=mon_svcname value='{{=vars.mon_svcname}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=mon_availability value='{{=vars.mon_availability}}' size=6 onKeyPress="checkEnter(event)"></td>
     <td><input name=mon_begin value='{{=vars.mon_begin}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=mon_end value='{{=vars.mon_end}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td><input name=mon_duration value='{{=vars.mon_duration}}' size=6 onKeyPress="checkEnter(event)"></td>
-    <td style='padding:0'></td>
   </tr>
   {{
     svcname = ''
@@ -284,34 +308,32 @@ def filter_match(key, fval):
       else:
           newsvc = False
           pass
+
+      checked = getattr(vars, 'check_'+svc+'_'+str(n))
+      if checked is not None:
+          checked = 'checked=on'
+          pass
+
     }}
   <tr>
     <td class={{=cellclass}}>
-      <input id="{{=svc}}" value="{{=svc}}" type="hidden">
+      <input type=checkbox name=check_{{=svc}}_{{=n}} {{=checked}}
+             onclick="update_ack_dates('{{=b}}', '{{=e}}');">
       {{if newsvc:}}
-      {{=PANEL('envfile_'+svc)}}
       {{=A(
           IMG(
-            _src=URL(r=request,c='static',f='envfile.png'),
+            _src=URL(r=request,c='static',f='action16.png'),
             _border=0,
-            _title="service configuration file",
-            _onclick="""
-               getElementById("svcname").value="%(svcname)s";
-               getElementById("panel_envfile_%(a)s").style.top=event.pageY+'px';
-               ajax("%(url)s",['svcname'],"panelbody_envfile_%(a)s");
-               getElementById("panel_envfile_%(a)s").className="panel_shown";
-            """%dict(url=URL(r=request,f='envfile'),
-                     svcname=svc,
-                     a=svc.replace('.', '_')),
+            _title="service actions",
           ),
-          _class="xinfo",
+          _href=URL(request.application,'default','svcactions?svcname='+svc+'&status_log=empty&begin=>'+yesterday),
         )
      }}
     {{pass}}
     </td>
     <td class={{=cellclass}}>
       {{if newsvc:}}
-        {{=A(svc, _href=URL(request.application,'default','svcactions?svcname='+svc+'&status_log=empty&begin=>'+yesterday))}}
+        {{=svc}}
       {{pass}}
     </td>
     <td class={{=cellclass}}>
@@ -319,42 +341,69 @@ def filter_match(key, fval):
         {{="%0.2f%%"%h[svc]['availability']}}
       {{pass}}
     </td>
-    <td class={{=cellclass}} style={{=strike}}>
+    <td class={{=cellclass}} style={{=strike}} {{=trigger}}>
       {{=date(b, b, e, svc)}}
     </td>
-    <td class={{=cellclass}} style={{=strike}}>
+    <td class={{=cellclass}} style={{=strike}} {{=trigger}}>
       {{=date(e, b, e, svc)}}
     </td>
-    <td class={{=cellclass}} style={{=strike}}>
+    <td class={{=cellclass}} style={{=strike}} {{=trigger}}>
         {{=d}}
-    </td>
-    <td class={{=cellclass}} {{=trigger}}>
-      {{=A(
-            '[ack]',
-            _border=0,
-            _title=T("acknowledge a unavailability segment"),
-            _onclick="""
-               getElementById("svcname").value="%(svcname)s";
-               getElementById("begin").value="%(begin)s";
-               getElementById("end").value="%(end)s";
-               getElementById("panel_ack").style.top=event.pageY+'px';
-               ajax("%(url)s",['svcname', 'begin', 'end'],"panelbody_ack");
-               getElementById("panel_ack").className="panel_shown";
-            """%dict(url=URL(r=request,f='ajax_svcmon_log_ack_load'),
-                     svcname=svc,
-                     a=svc.replace('.', '_'),
-                     begin=b,
-                     end=e,
-                    ),
-          _class="xinfo",
-         )
-      }}
     </td>
     <td style='padding:0'></td>
   </tr>
   {{=ackline}}
   {{pass}}
   {{pass}}
+  <tr class=box>
+    <td colspan=9>
+      <table>
+        <tr class=box>
+          <td>
+            {{=IMG(_src=URL(r=request,c='static',f='ack.png'),_border=0, _title=T('acknowledge selected unavailability ranges'), _onclick='javascript:show_eid("inputs");document.svcform.ackcomment.focus()')}}
+          </td>
+        </tr>
+        <tr class=hidden id="inputs">
+          <td>
+            {{=T("Begin")}}
+            <br>
+            <input name="ack_begin" id="ack_begin" value=""
+                   onKeyPress="checkEnter(event)"
+                   onFocus="getElementById('ackflag').value=1"
+                   onBlur="getElementById('ackflag').value=0"
+            >
+          </td>
+          <td>
+            {{=T("End")}}
+            <br>
+            <input name="ack_end" id="ack_end" value=""
+                   onKeyPress="checkEnter(event)"
+                   onFocus="getElementById('ackflag').value=1"
+                   onBlur="getElementById('ackflag').value=0"
+            >
+          </td>
+          <td>
+            {{=T('Acknowledge with comment')}}:<br>
+            <input name=ackflag id=ackflag value=0 type=hidden>
+            <input name=ackcomment
+                   onKeyPress="checkEnter(event)"
+                   onFocus="getElementById('ackflag').value=1"
+                   onBlur="getElementById('ackflag').value=0"
+            >
+          </td>
+          <td>
+            {{=T("Account in availability ratio")}}
+            <br>
+            {{=INPUT(_id='ac',
+               _type='checkbox',
+               _onChange='this.value=this.checked',
+              )
+            }}
+          </td>
+        </tr>
+      </table>
+    </td>
+   </tr>
 </table>
 <input id="svcname" type="hidden">
 <input id="begin" type="hidden">
