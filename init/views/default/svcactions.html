@@ -46,15 +46,17 @@ for key in ['svcname',
   </tr>
   {{
     pid = ''
+    svcname = ''
     cellclass = 'cell1'
     cellclasses = {}
     cellclasses['cell1'] = 'cell2'
     cellclasses['cell2'] = 'cell1'
   }}
   {{for action in actions:}}
-    {{if pid != action.pid or pid is None:
+    {{if (pid != action.pid and svcname != action.svcname) or pid is None:
           cellclass = cellclasses[cellclass]
           pid = action.pid
+          svcname = action.svcname
           new = True
       else:
           new = False
