@@ -53,7 +53,7 @@ for key in ['svcname',
     cellclasses['cell2'] = 'cell1'
   }}
   {{for action in actions:}}
-    {{if (pid != action.pid and svcname != action.svcname) or pid is None:
+    {{if pid != action.pid or svcname != action.svcname or pid is None:
           cellclass = cellclasses[cellclass]
           pid = action.pid
           svcname = action.svcname

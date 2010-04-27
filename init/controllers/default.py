@@ -2188,6 +2188,8 @@ def _svcaction_ack_one(request, action_id):
 
 @auth.requires_login()
 def svcactions():
+    o = ~db.v_svcactions.begin|~db.v_svcactions.end|~db.v_svcactions.id
+
     toggle_db_filters()
 
     if request.vars.ackflag == "1":
@@ -2211,9 +2213,9 @@ def svcactions():
 
     (start, end, nav) = _pagination(request, query)
     if start == 0 and end == 0:
-        rows = db(query).select(orderby=~db.v_svcactions.begin|~db.v_svcactions.id)
+        rows = db(query).select(orderby=o)
     else:
-        rows = db(query).select(limitby=(start,end), orderby=~db.v_svcactions.begin|~db.v_svcactions.id)
+        rows = db(query).select(orderby=o, limitby=(start,end))
 
     return dict(actions=rows,
                 active_filters=active_db_filters('v_svcactions'),
