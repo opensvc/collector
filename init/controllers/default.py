@@ -3964,6 +3964,7 @@ def ajax_perf_stats():
               _style="""background-color:white;
                         padding:10px;
                         -moz-border-radius:8px;
+                        -webkit-border-radius:8px;
                      """
             )
 
