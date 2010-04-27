@@ -3990,13 +3990,15 @@ def perf_stats(node, rowid):
             INPUT(
               _value='gen',
               _type='button',
-              _onClick="""ajax("%(url)s",
+              _onClick="""getElementById('perf_%(id)s').innerHTML='%(spinner)s';
+                          ajax("%(url)s",
                               ['node_%(id)s',
                                'begin_%(id)s',
-                               'end_%(id)s',
+                               'end_%(id)s'
                               ],"perf_%(id)s");
                       """%dict(url=URL(r=request,f='ajax_perf_stats'),
                                id=rowid,
+                               spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
                               )
             )
           ),
