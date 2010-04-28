@@ -2904,8 +2904,12 @@ def ajax_service():
     def js(tab, rowid):
         buff = ""
         for i in range(1, 6):
-            buff += "getElementById('tab%s_%s').style['display']='none';"%(str(i), str(rowid))
-        buff += "getElementById('%s_%s').style['display']='block';"%(tab, str(rowid))
+            buff += """getElementById('%(tab)s_%(id)s').style['display']='none';
+                       getElementById('li%(tab)s_%(id)s').style['backgroundColor']='#EEE';
+                    """%dict(tab='tab'+str(i), id=rowid)
+        buff += """getElementById('%(tab)s_%(id)s').style['display']='block';
+                   getElementById('li%(tab)s_%(id)s').style['backgroundColor']='orange';
+                """%dict(tab=tab, id=rowid)
         return buff
 
 
@@ -2913,15 +2917,28 @@ def ajax_service():
       TR(
         TD(
           UL(
-            LI(P(T("close %(n)s", dict(n=request.vars.node)), _class="tab closetab", _onclick="""
-                 getElementById("tr_id_%(id)s").style['display']='none'
-                 """%dict(id=rowid))
+            LI(
+              P(
+                T("close %(n)s", dict(n=request.vars.node)),
+                _class="tab closetab",
+                _onclick="""
+                    getElementById("tr_id_%(id)s").style['display']='none'
+                """%dict(id=rowid),
+              ),
             ),
-            LI(P(T("properties"), _class="tab", _onclick=js('tab1', rowid))),
-            LI(P(T("status"), _class="tab", _onclick=js('tab2', rowid))),
-            LI(P(T("resources"), _class="tab", _onclick=js('tab3', rowid))),
-            LI(P(T("env"), _class="tab", _onclick=js('tab4', rowid))),
-            LI(P(T("topology"), _class="tab", _onclick=js('tab5', rowid))),
+            LI(
+              P(
+                T("properties"),
+                _class="tab",
+                _onclick=js('tab1', rowid)
+               ),
+              _id="litab1_"+str(rowid),
+              _style="background-color:orange",
+            ),
+            LI(P(T("status"), _class="tab", _onclick=js('tab2', rowid)), _id="litab2_"+str(rowid)),
+            LI(P(T("resources"), _class="tab", _onclick=js('tab3', rowid)), _id="litab3_"+str(rowid)),
+            LI(P(T("env"), _class="tab", _onclick=js('tab4', rowid)), _id="litab4_"+str(rowid)),
+            LI(P(T("topology"), _class="tab", _onclick=js('tab5', rowid)), _id="litab5_"+str(rowid)),
             _class="web2py-menu web2py-menu-horizontal",
           ),
           _style="border-bottom:solid 1px orange;padding:1px",
@@ -4091,26 +4108,42 @@ def ajax_node():
     def js(tab, rowid):
         buff = ""
         for i in range(1, 8):
-            buff += "getElementById('tab%s_%s').style['display']='none';"%(str(i), str(rowid))
-        buff += "getElementById('%s_%s').style['display']='block';"%(tab, str(rowid))
+            buff += """getElementById('%(tab)s_%(id)s').style['display']='none';
+                       getElementById('li%(tab)s_%(id)s').style['backgroundColor']='#EEE';
+                    """%dict(tab='tab'+str(i), id=rowid)
+        buff += """getElementById('%(tab)s_%(id)s').style['display']='block';
+                   getElementById('li%(tab)s_%(id)s').style['backgroundColor']='orange';
+                """%dict(tab=tab, id=rowid)
         return buff
-
 
     t = TABLE(
       TR(
         TD(
           UL(
-            LI(P(T("close %(n)s", dict(n=request.vars.node)), _class="tab closetab", _onclick="""
-                 getElementById("tr_id_%(id)s").style['display']='none'
-                 """%dict(id=rowid))
+            LI(
+              P(
+                T("close %(n)s", dict(n=request.vars.node)),
+                _class="tab closetab",
+                _onclick="""
+                    getElementById("tr_id_%(id)s").style['display']='none'
+                """%dict(id=rowid),
+              ),
             ),
-            LI(P(T("server"), _class="tab", _onclick=js('tab1', rowid))),
-            LI(P(T("os"), _class="tab", _onclick=js('tab2', rowid))),
-            LI(P(T("mem"), _class="tab", _onclick=js('tab3', rowid))),
-            LI(P(T("cpu"), _class="tab", _onclick=js('tab4', rowid))),
-            LI(P(T("location"), _class="tab", _onclick=js('tab5', rowid))),
-            LI(P(T("power"), _class="tab", _onclick=js('tab6', rowid))),
-            LI(P(T("stats"), _class="tab", _onclick=js('tab7', rowid))),
+            LI(
+              P(
+                T("server"),
+                _class="tab",
+                _onclick=js('tab1', rowid),
+              ),
+              _id="litab1_"+str(rowid),
+              _style="background-color:orange",
+            ),
+            LI(P(T("os"), _class="tab", _onclick=js('tab2', rowid)), _id="litab2_"+str(rowid)),
+            LI(P(T("mem"), _class="tab", _onclick=js('tab3', rowid)), _id="litab3_"+str(rowid)),
+            LI(P(T("cpu"), _class="tab", _onclick=js('tab4', rowid)), _id="litab4_"+str(rowid)),
+            LI(P(T("location"), _class="tab", _onclick=js('tab5', rowid)), _id="litab5_"+str(rowid)),
+            LI(P(T("power"), _class="tab", _onclick=js('tab6', rowid)), _id="litab6_"+str(rowid)),
+            LI(P(T("stats"), _class="tab", _onclick=js('tab7', rowid)), _id="litab7_"+str(rowid)),
             _class="web2py-menu web2py-menu-horizontal",
           ),
           _style="border-bottom:solid 1px orange;padding:1px",

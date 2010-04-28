@@ -870,7 +870,8 @@ a.xinfo_shown span {
    -moz-border-radius-topright:8px;	/* Rounded edges in Firefox */
    -webkit-border-top-left-radius:8px;	/* Rounded edges in Firefox */
    -webkit-border-top-right-radius:8px;	/* Rounded edges in Firefox */
-    background-color:orange;
+    background-color:black;
+    color:white;
     cursor: pointer;
 }
 
