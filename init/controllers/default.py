@@ -249,6 +249,10 @@ def index():
     one_days_ago = now - datetime.timedelta(days=1)
     tmo = now - datetime.timedelta(minutes=15)
 
+    query = ~db.svcmon.mon_nodname.belongs(db()._select(db.nodes.nodename))
+    query &= _where(None, 'svcmon', domain_perms(), 'mon_nodname')
+    nodeswithoutasset = db(query).select(db.svcmon.mon_nodname, groupby=db.svcmon.mon_nodname,)
+
     query = db.v_svcmon.mon_updated<tmo
     query &= _where(None, 'v_svcmon', domain_perms(), 'mon_svcname')
     query = apply_db_filters(query, 'v_svcmon')
@@ -345,6 +349,7 @@ def index():
         obsalertmiss = 0
 
     return dict(svcnotupdated=svcnotupdated,
+                nodeswithoutasset=nodeswithoutasset,
                 lastchanges=lastchanges,
                 svcwitherrors=svcwitherrors,
                 svcnotonprimary=svcnotonprimary,
@@ -4819,7 +4824,7 @@ def quote_wrap(x):
     elif isinstance(x, str) and x[0] == '"' and x[-1] == '"':
         return x
     else:
-        return "'%s'"%str(x)
+        return "'%s'"%str(x).replace("'", '"')
 
 def insert_multiline(table, vars, valsl):
     value_wrap = lambda a: "%(a)s=values(%(a)s)"%dict(a=a)

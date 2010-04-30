@@ -637,6 +637,9 @@ def obs_hw_alert():
     return d
     pass
 
+
+""" Obsolescence information missing
+"""
 def obs_miss():
     if obswarnmiss + obsalertmiss == 0:
         return DIV()
@@ -665,6 +668,58 @@ def obs_miss():
     )
     pass
 
+""" Nodes without asset
+"""
+def nodes_without_asset_line(line, cellclass):
+    tr = TR(
+      TD(A(line.mon_nodname, _href=URL(r=request, f='svcmon', vars={'nodename':line.mon_nodname})), _class=cellclass),
+    )
+    return tr
+    pass
+
+def nodes_without_asset_header():
+    tr = TR(
+      TH(T("Nodename")),
+      _style="border-bottom:4px solid darkorange",
+    )
+    return tr
+    pass
+
+def nodes_without_asset_table():
+    cellclass = 'cell1'
+    cellclasses = {}
+    cellclasses['cell1'] = 'cell2'
+    cellclasses['cell2'] = 'cell1'
+    lines = []
+
+    for line in nodeswithoutasset:
+        cellclass = cellclasses[cellclass]
+        lines += [nodes_without_asset_line(line, cellclass)]
+        pass
+
+    t = TABLE(
+        TR(
+          TD(
+            H2(T("Nodes without asset information"), _style="padding:10px;text-align:center"),
+            _colspan=99,
+          ),
+        ),
+        nodes_without_asset_header(),
+        lines,
+    )
+    return t
+    pass
+
+def nodes_without_asset():
+    if len(nodeswithoutasset) == 0:
+        return DIV()
+    d = DIV(
+      nodes_without_asset_table(),
+      _style="padding:10px",
+    )
+    return d
+    pass
+
 }}
 
 {{=FORM(
@@ -686,6 +741,7 @@ def obs_miss():
      obs_hw_alert(),
      obs_hw_warn(),
      obs_miss(),
+     nodes_without_asset(),
      _style="
        padding-left:2em;
        padding-right:2em;

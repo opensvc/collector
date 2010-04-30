@@ -150,6 +150,7 @@
 'Nodes with obsolescent hardware (warn)': 'Noeuds en mat\xc3\xa9riel obsolescent (attention)',
 'Nodes with obsolescent operating system (alert)': "Noeuds en syst\xc3\xa8me d'exploitation obsolescent (alerte)",
 'Nodes with obsolescent operating system (warn)': "Noeuds en syst\xc3\xa8me d'exploitation obsolescent (attention)",
+'Nodes without asset information': 'Noeuds sans information de bien',
 'None': 'Aucun',
 'OS kernel': 'noyau du SE',
 'OS name': 'Nom du SE',
