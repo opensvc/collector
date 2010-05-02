@@ -1,0 +1,30 @@
+{{
+def node_icon(os_name):
+    if os_name is None:
+        return ''
+    if "linux" in os_name.lower():
+        img = IMG(
+                _src=URL(r=request,c='static',f='linux.png'),
+                _class='logo'
+              )
+    elif "HP-UX" in os_name:
+        img = IMG(
+                _src=URL(r=request,c='static',f='hpux.png'),
+                _class='logo'
+              )
+    elif "opensolaris" in os_name.lower():
+        img = IMG(
+                _src=URL(r=request,c='static',f='opensolaris.png'),
+                _class='logo'
+              )
+    elif "solaris" in os_name.lower():
+        img = IMG(
+                _src=URL(r=request,c='static',f='solaris.png'),
+                _class='logo'
+              )
+    else:
+        img = ''
+        pass
+    return img
+
+}}

@@ -3,6 +3,7 @@
 {{include 'box.html'}}
 {{include 'panel.html'}}
 {{include 'filters.html'}}
+{{include 'lib.html'}}
 {{
 vars = request.vars
 
@@ -13,7 +14,7 @@ for key in colkeys:
 
 <a id="listdiv" class="xinfo"><span><div ondblclick="getElementById('listdiv').className='xinfo';" id='listspan'>innerHTML here</div></span></a>
 {{=PANEL("column_values")}}
-<form action='nodes' name='svcform' id='svcform'>
+<form action='nodes' name='svcform' id='svcform' method='post'>
 {{=DB_FILTERS_TABLE(active_filters, available_filters)}}
 <table class=datatable>
   <tr class=box>
@@ -47,10 +48,34 @@ for key in colkeys:
            )
         }}
     </td>
+    <td>
+      {{=A(
+          DIV(
+            node_icon(node.os_name),
+            node.nodename,
+            _onclick="""
+               getElementById("node").value="%(node)s";
+               getElementById("rowid").value="%(id)s";
+               ajax("%(url)s",['node', 'rowid'],"id_%(id)s");
+               show_eid("tr_id_%(id)s");
+            """%dict(url=URL(r=request,f='ajax_node'),
+                     node=node.nodename,
+                     id=node.nodename,
+                    ),
+          ),
+          _class="xinfo",
+        )
+      }}
     </td>
-    {{for key in [k for k in colkeys]:}}
+    {{for key in [k for k in colkeys if k != 'nodename']:}}
     <td>{{=node[key]}}</td>
     {{pass}}
+  </tr>
+  <tr id='tr_id_{{=node.nodename}}' class="cloud">
+    <td colspan=99 class="details_row {{=cellclass}}">
+      <div id='id_{{=node.nodename}}'>
+      </div>
+    </td>
   </tr>
   {{pass}}
   <tr class=box>
@@ -76,4 +101,5 @@ for key in colkeys:
   </tr>
 </table>
 <input id="node" type="hidden">
+<input id="rowid" type="hidden">
 </form>
