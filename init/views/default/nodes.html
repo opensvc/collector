@@ -5,11 +5,7 @@
 {{include 'filters.html'}}
 {{include 'lib.html'}}
 {{
-vars = request.vars
-
-for key in colkeys:
-    if not vars.has_key(key) or vars[key] is None: request.vars[key]=''
-    pass
+initialize_keys()
 }}
 
 <a id="listdiv" class="xinfo"><span><div ondblclick="getElementById('listdiv').className='xinfo';" id='listspan'>innerHTML here</div></span></a>
@@ -20,7 +16,7 @@ for key in colkeys:
   <tr class=box>
     <td></td>
     {{for key in colkeys:}}
-    <td>
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}}">
       {{=colname(nodes, key, columns[key]['title'])}}
     </td>
     {{pass}}
@@ -28,7 +24,9 @@ for key in colkeys:
   <tr class=box>
     <td></td>
     {{for key in colkeys:}}
-    <td><input name={{=key}} value='{{=request.vars[key]}}' size={{=columns[key]['size']}} onKeyPress="checkEnter(event)"></td>
+    {{
+    }} 
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}}"><input name={{=key}} value='{{=request.vars[key]}}' size={{=columns[key]['size']}} onKeyPress="checkEnter(event)"></td>
     {{pass}}
   </tr>
   {{
@@ -48,7 +46,7 @@ for key in colkeys:
            )
         }}
     </td>
-    <td>
+    <td name="tcol_nodename" style="{{=col_hide('nodename')}}">
       {{=A(
           DIV(
             node_icon(node.os_name),
@@ -68,7 +66,7 @@ for key in colkeys:
       }}
     </td>
     {{for key in [k for k in colkeys if k != 'nodename']:}}
-    <td>{{=node[key]}}</td>
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}}">{{=node[key]}}</td>
     {{pass}}
   </tr>
   <tr id='tr_id_{{=node.nodename}}' class="cloud">
@@ -90,7 +88,7 @@ for key in colkeys:
         </tr>
         <tr>
           <td>
-            {{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='nodes_csv', vars=vars))}}
+            {{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='nodes_csv', vars=request.vars))}}
           </td>
           <td>
             {{=A(IMG(_src=URL(r=request,c='static',f='add.png'),_border=0, _title=T("add a new node")),_href=URL(r=request,f='node_insert'))}}

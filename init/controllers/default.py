@@ -2193,25 +2193,106 @@ def _svcaction_ack_one(request, action_id):
 
 @auth.requires_login()
 def svcactions():
+    columns = dict(
+        hostname = dict(
+            pos = 1,
+            title = T('Service'),
+            display = True,
+            size = 10
+        ),
+        svcname = dict(
+            pos = 2,
+            title = T('Node name'),
+            display = True,
+            size = 6
+        ),
+        pid = dict(
+            pos = 3,
+            title = T('Pid'),
+            display = True,
+            size = 4
+        ),
+        action = dict(
+            pos = 4,
+            title = T('Action'),
+            display = True,
+            size = 6
+        ),
+        status = dict(
+            pos = 5,
+            title = T('Status'),
+            display = True,
+            size = 3
+        ),
+        begin = dict(
+            pos = 6,
+            title = T('Begin'),
+            display = True,
+            size = 6
+        ),
+        end = dict(
+            pos = 7,
+            title = T('End'),
+            display = True,
+            size = 6
+        ),
+        status_log = dict(
+            pos = 8,
+            title = T('Log'),
+            display = True,
+            size = 10
+        ),
+        time = dict(
+            pos = 9,
+            title = T('Duration'),
+            display = False,
+            size = 10
+        ),
+        id = dict(
+            pos = 10,
+            title = T('Id'),
+            display = False,
+            size = 3
+        ),
+        ack = dict(
+            pos = 11,
+            title = T('Ack'),
+            display = False,
+            size = 3
+        ),
+        app = dict(
+            pos = 12,
+            title = T('App'),
+            display = False,
+            size = 3
+        ),
+        responsibles = dict(
+            pos = 13,
+            title = T('Responsibles'),
+            display = False,
+            size = 6
+        ),
+    )
+
+    def _sort_cols(x, y):
+        return cmp(columns[x]['pos'], columns[y]['pos'])
+    colkeys = columns.keys()
+    colkeys.sort(_sort_cols)
+
     o = ~db.v_svcactions.begin|~db.v_svcactions.end|~db.v_svcactions.id
 
     toggle_db_filters()
 
     if request.vars.ackflag == "1":
         _svcaction_ack(request)
-    query = _where(None, 'v_svcactions', request.vars.svcname, 'svcname')
-    query &= _where(None, 'v_svcactions', request.vars.id, 'id')
-    query &= _where(None, 'v_svcactions', request.vars.app, 'app')
-    query &= _where(None, 'v_svcactions', request.vars.responsibles, 'responsibles')
-    query &= _where(None, 'v_svcactions', request.vars.action, 'action')
-    query &= _where(None, 'v_svcactions', request.vars.status, 'status')
-    query &= _where(None, 'v_svcactions', request.vars.time, 'time')
-    query &= _where(None, 'v_svcactions', request.vars.begin, 'begin')
-    query &= _where(None, 'v_svcactions', request.vars.end, 'end')
-    query &= _where(None, 'v_svcactions', request.vars.hostname, 'hostname')
-    query &= _where(None, 'v_svcactions', request.vars.status_log, 'status_log')
-    query &= _where(None, 'v_svcactions', request.vars.pid, 'pid')
-    query &= _where(None, 'v_svcactions', request.vars.ack, 'ack')
+
+    # filtering
+    query = (db.v_svcactions.id>0)
+    for key in columns.keys():
+        if key not in request.vars.keys():
+            continue
+        query &= _where(None, 'v_svcactions', request.vars[key], key)
+
     query &= _where(None, 'v_svcactions', domain_perms(), 'hostname')
 
     query = apply_db_filters(query, 'v_svcactions')
@@ -2222,7 +2303,7 @@ def svcactions():
     else:
         rows = db(query).select(orderby=o, limitby=(start,end))
 
-    return dict(actions=rows,
+    return dict(columns=columns, colkeys=colkeys, actions=rows,
                 active_filters=active_db_filters('v_svcactions'),
                 available_filters=avail_db_filters('v_svcactions'),
                 nav=nav)
@@ -2275,146 +2356,175 @@ def nodes():
         nodename = dict(
             pos = 1,
             title = T('Node name'),
+            display = True,
             size = 10
         ),
         loc_country = dict(
             pos = 2,
             title = T('Country'),
+            display = False,
             size = 10
         ),
         loc_zip = dict(
             pos = 3,
             title = T('ZIP'),
+            display = False,
             size = 10
         ),
         loc_city = dict(
             pos = 4,
             title = T('City'),
+            display = False,
             size = 10
         ),
         loc_addr = dict(
             pos = 5,
             title = T('Address'),
+            display = False,
             size = 10
         ),
         loc_building = dict(
             pos = 6,
             title = T('Building'),
+            display = True,
             size = 10
         ),
         loc_room = dict(
             pos = 7,
             title = T('Room'),
+            display = False,
             size = 10
         ),
         loc_rack = dict(
             pos = 8,
             title = T('Rack'),
+            display = True,
             size = 10
         ),
         cpu_freq = dict(
             pos = 9,
             title = T('CPU freq'),
+            display = False,
             size = 10
         ),
         mem_bytes = dict(
             pos = 10,
             title = T('Memory'),
+            display = True,
             size = 10
         ),
         os_name = dict(
             pos = 11,
             title = T('OS name'),
+            display = False,
             size = 10
         ),
         os_kernel = dict(
             pos = 12,
             title = T('OS kernel'),
+            display = False,
             size = 10
         ),
         cpu_dies = dict(
             pos = 13,
             title = T('CPU dies'),
+            display = True,
             size = 10
         ),
         cpu_model = dict(
             pos = 14,
             title = T('CPU model'),
+            display = True,
             size = 10
         ),
         serial = dict(
             pos = 15,
             title = T('Serial'),
+            display = True,
             size = 10
         ),
         model = dict(
             pos = 16,
             title = T('Model'),
+            display = False,
             size = 10
         ),
         team_responsible = dict(
             pos = 17,
             title = T('Team responsible'),
+            display = True,
             size = 10
         ),
         role = dict(
             pos = 18,
             title = T('Role'),
+            display = False,
             size = 10
         ),
         environnement = dict(
             pos = 19,
             title = T('Env'),
+            display = True,
             size = 10
         ),
         warranty_end = dict(
             pos = 20,
             title = T('Warranty end'),
+            display = False,
             size = 10
         ),
         status = dict(
             pos = 21,
             title = T('Status'),
+            display = True,
             size = 10
         ),
         type = dict(
             pos = 22,
             title = T('Type'),
+            display = False,
             size = 10
         ),
         power_supply_nb = dict(
             pos = 23,
             title = T('Power supply number'),
+            display = False,
             size = 10
         ),
         power_cabinet1 = dict(
             pos = 24,
             title = T('Power cabinet #1'),
+            display = False,
             size = 10
         ),
         power_cabinet2 = dict(
             pos = 25,
             title = T('Power cabinet #2'),
+            display = False,
             size = 10
         ),
         power_protect = dict(
             pos = 26,
             title = T('Power protector'),
+            display = False,
             size = 10
         ),
         power_protect_breaker = dict(
             pos = 27,
             title = T('Power protector breaker'),
+            display = False,
             size = 10
         ),
         power_breaker1 = dict(
             pos = 28,
             title = T('Power breaker #1'),
+            display = False,
             size = 10
         ),
         power_breaker2 = dict(
             pos = 29,
             title = T('Power breaker #2'),
+            display = False,
             size = 10
         ),
     )

@@ -39,6 +39,45 @@ function tofilter(e) {
     lastkeypress = KeyID;
 }
 
+// Set the default "show" mode to that specified by W3C DOM
+// compliant browsers
+
+var showMode = 'table-cell';
+
+// However, IE5 at least does not render table cells correctly
+// using the style 'table-cell', but does when the style 'block'
+// is used, so handle this
+
+if (document.all) showMode='block';
+
+// This is the function that actually does the manipulation
+
+function toggleVis(btn){
+
+	// First isolate the checkbox by name using the
+	// name of the form and the name of the checkbox
+
+	btn = document.getElementsByName(btn)[0];
+
+	// Next find all the table cells by using the DOM function
+	// getElementsByName passing in the constructed name of
+	// the cells, derived from the checkbox name
+
+	cells = document.getElementsByName('t'+btn.name);
+
+	// Once the cells and checkbox object has been retrieved
+	// the show hide choice is simply whether the checkbox is
+	// checked or clear
+
+	mode = btn.checked ? showMode : 'none';
+
+	// Apply the style to the CSS display property for the cells
+
+	for(j = 0; j < cells.length; j++) {
+		cells[j].style.display = mode;
+        }
+}
+
 </script>
 
 {{
@@ -134,15 +173,51 @@ def DB_FILTERS_AVAIL(filters):
     return DIV(t)
 pass
 
+def COLUMNS_ACTIVE():
+    if 'colkeys' not in globals():
+        return DIV()
+    def checkbox(a):
+        if columns[a]['display'] or \
+           ('col_'+a in request.vars and request.vars['col_'+a] == 'on'):
+            val = 'on'
+        else:
+            val = ''
+        pass
+        return SPAN(
+                 INPUT(
+                   _type='checkbox',
+                   _name='col_'+a,
+                   _onclick='toggleVis(this.name)',
+                   value=val,
+                 ),
+                 columns[a]['title'],
+                 BR(),
+               )
+    a = DIV(
+          map(checkbox, colkeys),
+          _style='-moz-column-width:13em',
+        )
+    return a
+pass
+
+def COLUMNS_ACTIVE_TITLE():
+    if 'colkeys' not in globals():
+         return ''
+    else:
+         return 'Active columns'
+pass
+
 def DB_FILTERS_TABLE(active, avail):
     t = TABLE(
       TR(
-        TD(T('Available filters')),
-        TD(T('Active filters')),
+        TH(T('Available filters')),
+        TH(T('Active filters')),
+        TH(T(COLUMNS_ACTIVE_TITLE()), _width='60%'),
       ),
       TR(
         TD(DB_FILTERS_AVAIL(available_filters)),
         TD(DB_FILTERS_ACTIVE(active_filters)),
+        TD(COLUMNS_ACTIVE()),
       ),
     )
     c = DIV(_id='cloud')
@@ -158,6 +233,23 @@ def DB_FILTERS_TABLE(active, avail):
       _onclick='toggle_menu()',
     )
     return SPAN(filterbar, handlebar)
+pass
+
+def col_hide(key):
+    if columns[key]['display'] or \
+       ('col_'+key in request.vars and request.vars['col_'+key] == 'on'):
+         return ""
+    else:
+         return "display:none"
+pass
+
+def initialize_keys():
+    for key in colkeys:
+        if not request.vars.has_key(key) or \
+           request.vars[key] is None:
+            request.vars[key]=''
+        pass
+    pass
 pass
 
 }}

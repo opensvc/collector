@@ -3,18 +3,9 @@
 {{include 'box.html'}}
 {{include 'panel.html'}}
 {{include 'filters.html'}}
+{{include 'lib.html'}}
 {{
-vars = request.vars
-for key in ['svcname',
-            'action',
-            'status',
-            'begin',
-            'end',
-            'hostname',
-            'pid',
-            'status_log']:
-    if not vars.has_key(key) or vars[key] is None: vars[key]=''
-    pass
+initialize_keys()
 }}
 {{=PANEL("column_values")}}
 <form action='svcactions' name='svcform' id='svcform' method='post'> 
@@ -24,25 +15,35 @@ for key in ['svcname',
 <table class=datatable>
   <tr class=box>
     <td class=box></td>
-    <td>{{=colname(actions, 'svcname', T('Service'))}}</td>
-    <td>{{=colname(actions, 'hostname', T('Node'))}}</td>
-    <td>{{=colname(actions, 'pid', T('Pid'))}}</td>
-    <td>{{=colname(actions, 'action', T('Action'))}}</td>
-    <td>{{=colname(actions, 'status', T('Status'))}}</td>
-    <td>{{=colname(actions, 'begin', T('Begin'))}}</td>
-    <td>{{=colname(actions, 'end', T('End'))}}</td>
-    <td>{{=colname(actions, 'status_log', T('Log'))}}</td>
+    <td name="tcol_svcname">{{=colname(actions, 'svcname', T('Service'))}}</td>
+    <td name="tcol_hostname">{{=colname(actions, 'hostname', T('Node'))}}</td>
+    <td name="tcol_pid">{{=colname(actions, 'pid', T('Pid'))}}</td>
+    <td name="tcol_action">{{=colname(actions, 'action', T('Action'))}}</td>
+    <td name="tcol_status">{{=colname(actions, 'status', T('Status'))}}</td>
+    <td name="tcol_begin">{{=colname(actions, 'begin', T('Begin'))}}</td>
+    <td name="tcol_end">{{=colname(actions, 'end', T('End'))}}</td>
+    <td name="tcol_status_log">{{=colname(actions, 'status_log', T('Log'))}}</td>
+    <td style="{{=col_hide('time')}}" name="tcol_time">{{=colname(actions, 'time', columns['time']['title'])}}</td>
+    <td style="{{=col_hide('id')}}" name="tcol_id">{{=colname(actions, 'id', columns['id']['title'])}}</td>
+    <td style="{{=col_hide('ack')}}" name="tcol_ack">{{=colname(actions, 'ack', columns['ack']['title'])}}</td>
+    <td style="{{=col_hide('app')}}" name="tcol_app">{{=colname(actions, 'app', columns['app']['title'])}}</td>
+    <td style="{{=col_hide('responsibles')}}" name="tcol_responsibles">{{=colname(actions, 'responsibles', columns['responsibles']['title'])}}</td>
   </tr>
   <tr class=box>
     <td><input type=checkbox id=check_all onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'))"></td>
-    <td><input name=svcname value='{{=vars.svcname}}' size=12 onKeyPress="checkEnter(event)"></td>
-    <td><input name=hostname value='{{=vars.hostname}}' size=8 onKeyPress="checkEnter(event)"></td>
-    <td><input name=pid value='{{=vars.pid}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td><input name=action value='{{=vars.action}}' size=8 onKeyPress="checkEnter(event)"></td>
-    <td><input name=status value='{{=vars.status}}' size=2 onKeyPress="checkEnter(event)"></td>
-    <td><input name=begin value='{{=vars.begin}}' size=8 onKeyPress="checkEnter(event)"></td>
-    <td><input name=end value='{{=vars.end}}' size=8 onKeyPress="checkEnter(event)"></td>
-    <td><input name=status_log value='{{=vars.status_log}}' size=20 onKeyPress="checkEnter(event)"></td>
+    <td name="tcol_svcname"><input name=svcname value='{{=request.vars.svcname}}' size=12 onKeyPress="checkEnter(event)"></td>
+    <td name="tcol_hostname"><input name=hostname value='{{=request.vars.hostname}}' size=8 onKeyPress="checkEnter(event)"></td>
+    <td name="tcol_pid"><input name=pid value='{{=request.vars.pid}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td name="tcol_action"><input name=action value='{{=request.vars.action}}' size=8 onKeyPress="checkEnter(event)"></td>
+    <td name="tcol_status"><input name=status value='{{=request.vars.status}}' size=2 onKeyPress="checkEnter(event)"></td>
+    <td name="tcol_begin"><input name=begin value='{{=request.vars.begin}}' size=8 onKeyPress="checkEnter(event)"></td>
+    <td name="tcol_end"><input name=end value='{{=request.vars.end}}' size=8 onKeyPress="checkEnter(event)"></td>
+    <td name="tcol_status_log"><input name=status_log value='{{=request.vars.status_log}}' size=20 onKeyPress="checkEnter(event)"></td>
+    <td style="{{=col_hide('time')}}" name="tcol_time"><input name=time value='{{=request.vars.time}}' size={{=columns['time']['size']}} onKeyPress="checkEnter(event)"></td>
+    <td style="{{=col_hide('id')}}" name="tcol_id"><input name=id value='{{=request.vars.id}}' size={{=columns['id']['size']}} onKeyPress="checkEnter(event)"></td>
+    <td style="{{=col_hide('ack')}}" name="tcol_ack"><input name=ack value='{{=request.vars.ack}}' size={{=columns['ack']['size']}} onKeyPress="checkEnter(event)"></td>
+    <td style="{{=col_hide('app')}}" name="tcol_app"><input name=app value='{{=request.vars.app}}' size={{=columns['app']['size']}} onKeyPress="checkEnter(event)"></td>
+    <td style="{{=col_hide('responsibles')}}" name="tcol_responsibles"><input name=responsibles value='{{=request.vars.responsibles}}' size={{=columns['responsibles']['size']}} onKeyPress="checkEnter(event)"></td>
   </tr>
   {{
     pid = ''
@@ -61,7 +62,7 @@ for key in ['svcname',
       else:
           new = False
           pass
-      checked = getattr(vars, 'check_'+str(action.id))
+      checked = getattr(request.vars, 'check_'+str(action.id))
       if checked is not None:
           checked = 'checked=on'
           pass
@@ -119,7 +120,7 @@ for key in ['svcname',
     }}
   <tr>
     <td class={{=cellclass}}><input type=checkbox name=check_{{=action.id}} {{=checked}} {{=disabled}}></td>
-    <td class={{=cellclass}}>
+    <td name="tcol_svcname" class={{=cellclass}}>
       {{if new:}}
       {{=A(
           DIV(
@@ -139,7 +140,7 @@ for key in ['svcname',
       }}
       {{pass}}
     </td>
-    <td class={{=cellclass}}>
+    <td name="tcol_hostname" class={{=cellclass}}>
       {{if new:}}
       {{=A(
           DIV(
@@ -160,7 +161,7 @@ for key in ['svcname',
       {{pass}}
 
     </td>
-    <td class={{=cellclass}}>
+    <td name="tcol_pid" class={{=cellclass}}>
       {{if new:}}
         {{if action.end is None:
              end = action.begin
@@ -181,11 +182,16 @@ for key in ['svcname',
        }}
       {{pass}}
     </td>
-    <td class="{{=cellclass}} {{=metaactionclass}}">{{=action.action}}</td>
-    <td class="{{=cellclass}} status_{{=action.status}} ack_{{=action.ack}} {{=metaactionclass}}" {{=trigger}}>{{=action_status}}</td>
-    <td class={{=cellclass}}>{{=action.begin}}</td>
-    <td class={{=cellclass}}>{{=action.end}}</td>
-    <td class={{=cellclass}}>{{=action.status_log.replace('\\n','\n')}}</td>
+    <td name="tcol_action" class="{{=cellclass}} {{=metaactionclass}}">{{=action.action}}</td>
+    <td name="tcol_status" class="{{=cellclass}} status_{{=action.status}} ack_{{=action.ack}} {{=metaactionclass}}" {{=trigger}}>{{=action_status}}</td>
+    <td name="tcol_begin" class={{=cellclass}}>{{=action.begin}}</td>
+    <td name="tcol_end" class={{=cellclass}}>{{=action.end}}</td>
+    <td name="tcol_status_log" class={{=cellclass}}>{{=action.status_log.replace('\\n','\n')}}</td>
+    <td style="{{=col_hide('time')}}" name="tcol_time" class={{=cellclass}}>{{=action.time}}</td>
+    <td style="{{=col_hide('id')}}" name="tcol_id" class={{=cellclass}}>{{=action.id}}</td>
+    <td style="{{=col_hide('ack')}}" name="tcol_ack" class={{=cellclass}}>{{=action.ack}}</td>
+    <td style="{{=col_hide('app')}}" name="tcol_app" class={{=cellclass}}>{{=action.app}}</td>
+    <td style="{{=col_hide('responsibles')}}" name="tcol_responsibles" class={{=cellclass}}>{{=action.responsibles}}</td>
   </tr>
   <tr id='tr_id_{{=action.id}}' class=cloud>
     <td colspan=99 class="details_row {{=cellclass}}">
@@ -199,7 +205,7 @@ for key in ['svcname',
     <td align=center colspan=99>{{=nav}}</td>
   </tr>
   <tr class=box>
-    <td colspan=9>
+    <td colspan=99>
       <table>
         <tr class=box>
           <td> {{=T('Export')}}:</td>
@@ -208,10 +214,10 @@ for key in ['svcname',
         </tr>
         <tr class=box>
           <td>
-            {{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='svcactions_csv', vars=vars))}}
+            {{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='svcactions_csv', vars=request.vars))}}
           </td>
           <td>
-            {{=A(IMG(_src=URL(r=request,c='static',f='rss.png'),_border=0),_href=URL(r=request,f='svcactions_rss', vars=vars))}}
+            {{=A(IMG(_src=URL(r=request,c='static',f='rss.png'),_border=0),_href=URL(r=request,f='svcactions_rss', vars=request.vars))}}
           </td>
           <td>
             {{=IMG(_src=URL(r=request,c='static',f='ack.png'),_border=0, _title=T('acknowledge selected errors'), _onclick='javascript:getElementById("ackflag").value=1;show_eid("inputs");document.svcform.ackcomment.focus()')}}
