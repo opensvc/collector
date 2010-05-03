@@ -4932,6 +4932,78 @@ def stats():
     ar.draw(can)
     can.close()
 
+    """ last day avg cpu usage per node
+    """
+    now = datetime.datetime.now()
+    end = now - datetime.timedelta(days=0, microseconds=now.microsecond)
+    begin = end - datetime.timedelta(days=1)
+    sql = """select nodename,100-avg(idle) as avg,std(idle) as std
+             from stats_cpu
+             where cpu='all'
+               and date>'%(begin)s'
+               and date<'%(end)s'
+             group by nodename
+             order by avg"""%dict(begin=str(begin),end=str(end))
+    rows = db.executesql(sql)
+
+    action = str(URL(r=request,c='static',f='stat_cpu_avg_day.png'))
+    path = 'applications'+action
+    can = canvas.init(path)
+
+    data1 = [(row[0], row[1]) for row in rows]
+    data = sorted(data1, key = lambda x: x[1])[-15:]
+    ar = area.T(x_coord = linear_coord.T(),
+                y_coord = category_coord.T(data, 0),
+                y_axis = axis.Y(label = "", format="/6{}%s"),
+                x_axis = axis.X(label = "", format=format2_y)
+               )
+    bar_plot.fill_styles.reset()
+    plot1 = bar_plot.T(label="cpu usage (%)",
+                       fill_style=fill_style.Plain(bgcolor=color.thistle3),
+                       line_style=None,
+                       width = 2,
+                       data=data,
+                       data_label_format="",
+                       direction='horizontal')
+    ar.add_plot(plot1)
+    ar.draw(can)
+    can.close()
+
+    """ available mem
+    """
+    sql = """select * from (
+               select nodename,(kbmemfree+kbcached) as avail
+               from stats_mem_u
+               group by nodename
+               order by nodename, date
+             ) tmp
+             order by avail;
+          """
+    rows = db.executesql(sql)
+
+    action = str(URL(r=request,c='static',f='stat_mem_avail.png'))
+    path = 'applications'+action
+    can = canvas.init(path)
+
+    data1 = [(row[0], row[1]) for row in rows]
+    data = sorted(data1, key = lambda x: x[1])[-15:]
+    ar = area.T(x_coord = linear_coord.T(),
+                y_coord = category_coord.T(data, 0),
+                y_axis = axis.Y(label = "", format="/6{}%s"),
+                x_axis = axis.X(label = "", format=format2_y)
+               )
+    bar_plot.fill_styles.reset()
+    plot1 = bar_plot.T(label="available memory (KB)",
+                       fill_style=fill_style.Plain(bgcolor=color.thistle3),
+                       line_style=None,
+                       width = 2,
+                       data=data,
+                       data_label_format="",
+                       direction='horizontal')
+    ar.add_plot(plot1)
+    ar.draw(can)
+    can.close()
+
     return dict()
 
 @service.xmlrpc
