@@ -24,8 +24,6 @@ initialize_keys()
   <tr class=box>
     <td></td>
     {{for key in colkeys:}}
-    {{
-    }} 
     <td name="tcol_{{=key}}" style="{{=col_hide(key)}}"><input name={{=key}} value='{{=request.vars[key]}}' size={{=columns[key]['size']}} onKeyPress="checkEnter(event)"></td>
     {{pass}}
   </tr>

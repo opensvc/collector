@@ -1727,6 +1727,62 @@ def ajax_obsolete_os_nodes():
 def svcmon():
     service_action()
 
+    columns = dict(
+        svcname = dict(
+            pos = 1,
+            title = T('Service'),
+            display = True,
+            size = 10
+        ),
+        containertype = dict(
+            pos = 2,
+            title = T('Container type'),
+            display = True,
+            size = 3
+        ),
+        svcapp = dict(
+            pos = 3,
+            title = T('App'),
+            display = True,
+            size = 3
+        ),
+        svctype = dict(
+            pos = 4,
+            title = T('Service type'),
+            display = True,
+            size = 3
+        ),
+        nodetype = dict(
+            pos = 5,
+            title = T('Node type'),
+            display = True,
+            size = 3
+        ),
+        nodename = dict(
+            pos = 6,
+            title = T('Node name'),
+            display = True,
+            size = 6
+        ),
+        overallstatus = dict(
+            pos = 7,
+            title = T('Status'),
+            display = True,
+            size = 4
+        ),
+        mon_updated = dict(
+            pos = 8,
+            title = T('Last status update'),
+            display = False,
+            size = 6
+        ),
+    )
+
+    def _sort_cols(x, y):
+        return cmp(columns[x]['pos'], columns[y]['pos'])
+    colkeys = columns.keys()
+    colkeys.sort(_sort_cols)
+
     o = db.v_svcmon.mon_svcname
     o |= ~db.v_svcmon.mon_overallstatus
     o |= ~db.v_svcmon.mon_nodtype
@@ -1744,6 +1800,7 @@ def svcmon():
     query &= _where(None, 'v_svcmon', request.vars.containertype, 'svc_containertype')
     query &= _where(None, 'v_svcmon', request.vars.nodename, 'mon_nodname')
     query &= _where(None, 'v_svcmon', request.vars.nodetype, 'mon_nodtype')
+    query &= _where(None, 'v_svcmon', request.vars.mon_updated, 'mon_updated')
     query &= _where(None, 'v_svcmon', domain_perms(), 'mon_nodname')
 
     query = apply_db_filters(query, 'v_svcmon')
@@ -1757,14 +1814,9 @@ def svcmon():
     msgs = db(db.svcmessages.id>0).select()
     svcmsg = [msg.msg_svcname for msg in msgs if len(msg.msg_body)>0]
 
-    if len(set([svc.mon_svcname for svc in rows])) == 1:
-        viz = svcmon_viz_img(rows)
-    else:
-        viz = None
-
-    return dict(services=rows,
+    return dict(columns=columns, colkeys=colkeys, actions=rows,
+                services=rows,
                 nav=nav,
-                viz=viz,
                 svcmsg=svcmsg,
                 active_filters=active_db_filters('v_svcmon'),
                 available_filters=avail_db_filters('v_svcmon'),
@@ -2194,13 +2246,13 @@ def _svcaction_ack_one(request, action_id):
 @auth.requires_login()
 def svcactions():
     columns = dict(
-        hostname = dict(
+        svcname = dict(
             pos = 1,
             title = T('Service'),
             display = True,
             size = 10
         ),
-        svcname = dict(
+        hostname = dict(
             pos = 2,
             title = T('Node name'),
             display = True,

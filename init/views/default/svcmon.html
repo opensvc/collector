@@ -10,22 +10,7 @@
 user=' '.join([session.auth.user.first_name, session.auth.user.last_name])
 vars = request.vars
 toolong = datetime.datetime.today()-datetime.timedelta(hours=1)
-for key in ['svcname',
-            'containertype',
-            'svcapp',
-            'svctype',
-            'containerstatus',
-            'ipstatus',
-            'fsstatus',
-            'diskstatus',
-            'syncstatus',
-            'appstatus',
-            'overallstatus',
-            'nodename',
-            'nodetype',
-            'mon_updated']:
-    if not vars.has_key(key) or vars[key] is None: vars[key]=''
-    pass
+initialize_keys()
 
 def ajax_status(svc, name, cssclass):
     a = svc.mon_nodname+'_'+svc.svc_name
@@ -103,24 +88,26 @@ def svc_status(svc, cellclass="cell2"):
   <tr class=box>
     <td class=box></td>
     <td class=box></td>
-    <td>{{=colname(services, 'svc_name', T('Service'))}}</td>
-    <td style="max-width:1em">{{=colname(services, 'svc_containertype', T('Container type'))}}</td>
-    <td style="max-width:1em">{{=colname(services, 'svc_app', T('App'))}}</td>
-    <td style="max-width:1em">{{=colname(services, 'mon_svctype', T('Service type'))}}</td>
-    <td style="max-width:1em">{{=colname(services, 'mon_nodtype', T('Node type'))}}</td>
-    <td>{{=colname(services, 'mon_nodname', T('Node'))}}</td>
-    <td class=status_t>{{=T('Status')}}</td>
+    <td name="tcol_svcname" style="{{=col_hide('svcname')}}">{{=colname(services, 'svc_name', T('Service'))}}</td>
+    <td name="tcol_containertype" style="{{=col_hide('containertype')}};max-width:1em">{{=colname(services, 'svc_containertype', T('Container type'))}}</td>
+    <td name="tcol_svcapp" style="{{=col_hide('svcapp')}};max-width:1em">{{=colname(services, 'svc_app', T('App'))}}</td>
+    <td name="tcol_svctype" style="{{=col_hide('svctype')}};max-width:1em">{{=colname(services, 'mon_svctype', T('Service type'))}}</td>
+    <td name="tcol_nodetype" style="{{=col_hide('nodetype')}};max-width:1em">{{=colname(services, 'mon_nodtype', T('Node type'))}}</td>
+    <td name="tcol_nodename" style="{{=col_hide('nodename')}}">{{=colname(services, 'mon_nodname', T('Node'))}}</td>
+    <td name="tcol_overallstatus" style="{{=col_hide('overallstatus')}}" class=status_t>{{=T('Status')}}</td>
+    <td name="tcol_mon_updated" style="{{=col_hide('mon_updated')}}" class=status_t>{{=columns['mon_updated']['title']}}</td>
   </tr>
   <tr class=box>
     <td><input type=checkbox id=check_all onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'))"></td>
     <td style='padding:0'></td>
-    <td><input name=svcname value='{{=vars.svcname}}' size=12 onKeyPress="checkEnter(event)"></td>
-    <td><input name=containertype value='{{=vars.containertype}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td><input name=svcapp value='{{=vars.svcapp}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td><input name=svctype value='{{=vars.svctype}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td><input name=nodetype value='{{=vars.nodetype}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td><input name=nodename value='{{=vars.nodename}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td class=status_t><input name=overallstatus value='{{=vars.overallstatus}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td name="tcol_svcname" style="{{=col_hide('svcname')}}"><input name=svcname value='{{=vars.svcname}}' size=12 onKeyPress="checkEnter(event)"></td>
+    <td name="tcol_containertype" style="{{=col_hide('containertype')}}"><input name=containertype value='{{=vars.containertype}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td name="tcol_svcapp" style="{{=col_hide('svcapp')}}"><input name=svcapp value='{{=vars.svcapp}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td name="tcol_svctype" style="{{=col_hide('svctype')}}"><input name=svctype value='{{=vars.svctype}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td name="tcol_nodetype" style="{{=col_hide('nodetype')}}"><input name=nodetype value='{{=vars.nodetype}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td name="tcol_nodename" style="{{=col_hide('nodename')}}"><input name=nodename value='{{=vars.nodename}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td name="tcol_overallstatus" style="{{=col_hide('overallstatus')}}" class=status_t><input name=overallstatus value='{{=vars.overallstatus}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td name="tcol_mon_updated" style="{{=col_hide('mon_updated')}}" class=status_t><input name=mon_updated value='{{=vars.mon_updated}}' size=4 onKeyPress="checkEnter(event)"></td>
   </tr>
   {{
     svcname = ''
@@ -239,7 +226,7 @@ def svc_status(svc, cellclass="cell2"):
       {{=err}}
       {{pass}}
     </td>
-    <td class={{=cellclass}}>
+    <td name="tcol_svcname" style="{{=col_hide('svcname')}}" class={{=cellclass}}>
       {{if newsvc:}}
       {{=A(
           DIV(
@@ -259,12 +246,12 @@ def svc_status(svc, cellclass="cell2"):
       }}
       {{pass}}
     </td>
-    <td class={{=cellclass}}>
+    <td name="tcol_containertype" style="{{=col_hide('containertype')}}" class={{=cellclass}}>
       {{if newsvc:}}
         {{=DIV(svc.svc_containertype, _title=vmname, _style='vertical-align:middle')}}
         {{pass}}
     </td>
-    <td class={{=cellclass}}>
+    <td name="tcol_svcapp" style="{{=col_hide('svcapp')}}" class={{=cellclass}}>
       {{if newsvc:}}
         {{=svc.svc_app}}
         {{pass}}
@@ -276,11 +263,11 @@ def svc_status(svc, cellclass="cell2"):
             pass
       }}
     {{if newsvc:}}
-    <td class={{=cellclass}} {{=boldtype}}>
+    <td name="tcol_svctype" style="{{=col_hide('svctype')}}" class={{=cellclass}} {{=boldtype}}>
       {{=svc.mon_svctype}}
     </td>
     {{else:}}
-    <td class={{=cellclass}} {{=boldtype}}>
+    <td name="tcol_svctype" style="{{=col_hide('svctype')}}" class={{=cellclass}} {{=boldtype}}>
     </td>
     {{pass}}
     {{if svc.mon_nodtype == 'PRD':
@@ -289,14 +276,14 @@ def svc_status(svc, cellclass="cell2"):
           boldtype = ""
           pass
     }}
-    <td class={{=cellclass}} {{=boldtype}}>{{=svc.mon_nodtype}}</td>
+    <td name="tcol_nodetype" style="{{=col_hide('nodetype')}}" class={{=cellclass}} {{=boldtype}}>{{=svc.mon_nodtype}}</td>
     {{if svc.mon_nodname == svc.svc_autostart:
           boldtype = """style='font-weight:bold'"""
       else:
           boldtype = ""
           pass
     }}
-    <td class={{=cellclass}} {{=boldtype}}>
+    <td name="tcol_nodename" style="{{=col_hide('nodename')}}" class={{=cellclass}} {{=boldtype}}>
       {{=A(
           DIV(
             node_icon(svc.os_name),
@@ -315,8 +302,11 @@ def svc_status(svc, cellclass="cell2"):
         )
       }}
     </td>
-    <td class="{{=cellclass}}">
+    <td name="tcol_overallstatus" style="{{=col_hide('overallstatus')}}" class="{{=cellclass}}">
       {{=svc_status(svc,cellclass)}}
+    </td>
+    <td name="tcol_mon_updated" style="{{=col_hide('mon_updated')}}" class="{{=cellclass}}">
+      {{=svc.mon_updated}}
     </td>
   </tr>
   {{pass}}
