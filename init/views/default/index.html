@@ -724,7 +724,7 @@ def nodes_without_asset():
 
 {{=FORM(
      DB_FILTERS_TABLE(active_filters, available_filters),
-     _action='index',
+     _action=URL(r=request, f='index'),
      _name='svcform',
      _id='svcform',
    )
