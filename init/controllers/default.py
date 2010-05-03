@@ -4901,7 +4901,14 @@ def stats():
 
     """ disks per svc
     """
-    sql = "select svcname, group_concat(disk_size order by day separator ',') from stat_day_svc group by svcname"
+    dom = domain_perms()
+    if dom is None:
+        dom = '%'
+    sql = """select svcname, group_concat(disk_size order by day separator ',')
+             from stat_day_svc
+             where svcname like '%(dom)s'
+             group by svcname
+          """%dict(dom=dom)
     rows = db.executesql(sql)
 
     action = str(URL(r=request,c='static',f='stat_disk_svc.png'))
@@ -4942,17 +4949,23 @@ def stats():
              where cpu='all'
                and date>'%(begin)s'
                and date<'%(end)s'
+               and nodename like '%(dom)s'
              group by nodename
-             order by avg"""%dict(begin=str(begin),end=str(end))
+             order by avg"""%dict(begin=str(begin),end=str(end),dom=dom)
     rows = db.executesql(sql)
 
     action = str(URL(r=request,c='static',f='stat_cpu_avg_day.png'))
     path = 'applications'+action
     can = canvas.init(path)
 
-    data1 = [(row[0], row[1]) for row in rows]
-    data = sorted(data1, key = lambda x: x[1])[-15:]
+    data = [(row[0], row[1]) for row in rows]
+    data1 = sorted(data, key = lambda x: x[1])
+    if len(data1) > 31:
+        data = data1[0:15] + [("...", 0)] + data1[-15:]
+    else:
+        data = data1
     ar = area.T(x_coord = linear_coord.T(),
+                size = (150,len(data)*6),
                 y_coord = category_coord.T(data, 0),
                 y_axis = axis.Y(label = "", format="/6{}%s"),
                 x_axis = axis.X(label = "", format=format2_y)
@@ -4974,20 +4987,26 @@ def stats():
     sql = """select * from (
                select nodename,(kbmemfree+kbcached) as avail
                from stats_mem_u
+               where nodename like '%(dom)s'
                group by nodename
                order by nodename, date
              ) tmp
              order by avail;
-          """
+          """%dict(dom=dom)
     rows = db.executesql(sql)
 
     action = str(URL(r=request,c='static',f='stat_mem_avail.png'))
     path = 'applications'+action
     can = canvas.init(path)
 
-    data1 = [(row[0], row[1]) for row in rows]
-    data = sorted(data1, key = lambda x: x[1])[-15:]
+    data = [(row[0], row[1]) for row in rows]
+    data1 = sorted(data, key = lambda x: x[1])
+    if len(data1) > 31:
+        data = data1[0:15] + [("...", 0)] + data1[-15:]
+    else:
+        data = data1
     ar = area.T(x_coord = linear_coord.T(),
+                size = (150,len(data)*6),
                 y_coord = category_coord.T(data, 0),
                 y_axis = axis.Y(label = "", format="/6{}%s"),
                 x_axis = axis.X(label = "", format=format2_y)
