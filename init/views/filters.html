@@ -1,12 +1,15 @@
 <script type="text/javascript">
 var timer;
-var lastkeypress = 0;
+var ctrl = false;
 
 document.onkeydown = tofilter;
-document.onkeyup = reset_lastkeypress;
+document.onkeyup = reset_ctrl;
 
-function reset_lastkeypress() {
-    lastkeypress = 0;
+function reset_ctrl() {
+    var KeyID = (window.event) ? event.keyCode : e.keyCode;
+    if (KeyID == 17) {
+        ctrl = false;
+    }
 }
 
 function toggle_menu()
@@ -21,22 +24,23 @@ function toggle_menu()
 
 function tofilter(e) {
     var KeyID = (window.event) ? event.keyCode : e.keyCode;
-    //alert(event.keyCode);
-    //alert(KeyID);
+    if (KeyID == 17) {
+        ctrl = true;
+        return;
+    }
     switch(KeyID)
     {
         case 59:
+        case 186:
         case 190:
         case 191:
-            if (lastkeypress == 17) {
-                // Ctrl + :
+            if (ctrl) {
                 toggle_menu()
                 document.svcform.addfilter.focus();
                 //document.svcform.addfilter.select();
             }
             break;
     }
-    lastkeypress = KeyID;
 }
 
 // Set the default "show" mode to that specified by W3C DOM
