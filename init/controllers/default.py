@@ -4157,12 +4157,12 @@ def perf_stats_mem_u_trend_data(node, s, e, p):
     return [(p, r[0], r[1])]
 
 def period_to_range(period):
-    if period < datetime.timedelta(days=1):
+    if period <= datetime.timedelta(days=1):
         return ["6 day", "5 day", "4 day", "3 day",
                 "2 day", "1 day", "0 day"]
-    elif period < datetime.timedelta(days=7):
+    elif period <= datetime.timedelta(days=7):
         return ["3 week", "2 week", "1 week", "0 week"]
-    elif period < datetime.timedelta(days=30):
+    elif period <= datetime.timedelta(days=30):
         return ["2 month", "1 month", "0 month"]
     else:
         return []
@@ -4202,6 +4202,7 @@ def perf_stats_mem_u_trend(node, s, e):
                       format=format_x,
                     ),
            y_axis = axis.Y(label = "", format=format_y),
+           #y_range = (0, None),
          )
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="avg avail mem (KB)",
@@ -4268,7 +4269,9 @@ def perf_stats_cpu_trend(node, s, e):
                       label = 'period over period cpu usage (%)',
                       format=format_x,
                     ),
-           y_axis = axis.Y(label = "", format=format_y),
+           y_axis = axis.Y(label = "", format=format_y, tic_interval=10),
+           y_range = (0, 100),
+           y_grid_interval = 10,
          )
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="avg cpu usage (%)",
@@ -4278,6 +4281,7 @@ def perf_stats_cpu_trend(node, s, e):
                        data = data,
                        data_label_format="",
                        #width=1,
+                       error_bar = error_bar.bar2, error_minus_col=2,
                        direction='vertical')
     ar.add_plot(plot1)
     ar.draw(can)
@@ -4323,8 +4327,12 @@ def perf_stats_trends(node, begin, end):
 
 @auth.requires_login()
 def perf_stats(node, rowid):
-    e = datetime.datetime.now()
-    s = e - datetime.timedelta(days=3)
+    now = datetime.datetime.now()
+    s = now - datetime.timedelta(days=0,
+                                 hours=now.hour,
+                                 minutes=now.minute,
+                                 microseconds=now.microsecond)
+    e = s + datetime.timedelta(days=1)
 
     t = DIV(
           SPAN(
