@@ -15,14 +15,15 @@ for key in ['obs_type',
 }}
 
 {{=PANEL("nodes")}}
+{{=PANEL("column_values")}}
 <form action='obsolescence_config' name='svcform' id='svcform'> 
 {{=DB_FILTERS_TABLE(active_filters, available_filters)}}
 <table class=datatable>
   <tr class=box>
     <td class=box></td>
     <td>{{=T('Count')}}</td>
-    <td>{{=T('Type')}}</td>
-    <td>{{=T('Name')}}</td>
+    <td>{{=colname(obsitems, 'obs_type', T('Type'), nestedin='obsolescence')}}</td>
+    <td>{{=colname(obsitems, 'obs_name', T('Name'), nestedin='obsolescence')}}</td>
     <td>{{=T('Warn date')}}</td>
     <td>{{=T('Alert date')}}</td>
     <td class=box></td>
