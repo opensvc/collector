@@ -1703,7 +1703,10 @@ def ajax_filter_cloud():
                     _onClick="""getElementById("filtervalue").value="%s";
                                 getElementById("filtervalue").focus();
                              """%str(i),
-                    _style='font-size:'+str(s)+'%;padding:0.4em'
+                    _style="""font-size:'+str(s)+'%;
+                              padding:0.4em;
+                              cursor:pointer;
+                           """
                    )
     d = []
     for i in sorted(n):
@@ -4139,6 +4142,150 @@ def perf_stats_cpu_one(node, s, e, cpu):
     return DIV(IMG(_src=action))
 
 @auth.requires_login()
+def perf_stats_mem_u_trend_data(node, s, e, p):
+    sql = """select cast(avg(kbmemfree+kbcached) as unsigned),
+                    cast(std(kbmemfree+kbcached) as unsigned)
+             from stats_mem_u
+             where nodename="%(node)s"
+               and date>date_sub("%(s)s", interval %(p)s)
+               and date<date_sub("%(e)s", interval %(p)s)
+          """%dict(s=s,e=e,node=node,p=p)
+    rows = db.executesql(sql)
+    if len(rows) != 1:
+        return [(p, 0, 0)]
+    r = rows[0]
+    return [(p, r[0], r[1])]
+
+def period_to_range(period):
+    if period < datetime.timedelta(days=1):
+        return ["6 day", "5 day", "4 day", "3 day",
+                "2 day", "1 day", "0 day"]
+    elif period < datetime.timedelta(days=7):
+        return ["3 week", "2 week", "1 week", "0 week"]
+    elif period < datetime.timedelta(days=30):
+        return ["2 month", "1 month", "0 month"]
+    else:
+        return []
+
+@auth.requires_login()
+def perf_stats_mem_u_trend(node, s, e):
+    data = []
+    start = str_to_date(s)
+    end = str_to_date(e)
+    period = end - start
+    for p in period_to_range(period):
+        data += perf_stats_mem_u_trend_data(node, s, e, p)
+
+    if len(data) == 0:
+        return SPAN()
+
+    def format_x(x):
+        return "/a50/5{}" + str(x)
+
+    def format_y(x):
+        return "/6{}" + str(x)
+
+    import random
+    rand = int(random.random()*1000000)
+    action = URL(r=request,c='static',f='stats_mem_u_trend_'+str(rand)+'.png')
+    path = 'applications'+str(action)
+    can = canvas.init(path)
+    theme.use_color = True
+    theme.scale_factor = 2
+    theme.reinitialize()
+
+    ar = area.T(
+           x_coord = category_coord.T(data, 0),
+           y_coord = linear_coord.T(),
+           x_axis = axis.X(
+                      label = 'period over period available memory (KB)',
+                      format=format_x,
+                    ),
+           y_axis = axis.Y(label = "", format=format_y),
+         )
+    bar_plot.fill_styles.reset();
+    plot1 = bar_plot.T(label="avg avail mem (KB)",
+                       fill_style=fill_style.Plain(bgcolor=color.salmon),
+                       hcol=1,
+                       line_style=None,
+                       data = data,
+                       data_label_format="",
+                       #width=1,
+                       direction='vertical')
+    ar.add_plot(plot1)
+    ar.draw(can)
+    can.close()
+
+    return IMG(_src=action)
+
+@auth.requires_login()
+def perf_stats_cpu_trend_data(node, s, e, p):
+    sql = """select 100-avg(idle),std(idle)
+             from stats_cpu
+             where cpu="all"
+               and nodename="%(node)s"
+               and date>date_sub("%(s)s", interval %(p)s)
+               and date<date_sub("%(e)s", interval %(p)s)
+          """%dict(s=s,e=e,node=node,p=p)
+    rows = db.executesql(sql)
+    if len(rows) != 1:
+        return [(p, 0, 0)]
+    r = rows[0]
+    return [(p, r[0], r[1])]
+
+@auth.requires_login()
+def perf_stats_cpu_trend(node, s, e):
+    data = []
+    start = str_to_date(s)
+    end = str_to_date(e)
+    period = end - start
+
+    for p in period_to_range(period):
+        data += perf_stats_cpu_trend_data(node, s, e, p)
+
+    if len(data) == 0:
+        return SPAN()
+
+    def format_x(x):
+        return "/a50/5{}" + str(x)
+
+    def format_y(x):
+        return "/6{}" + str(x)
+
+    import random
+    rand = int(random.random()*1000000)
+    action = URL(r=request,c='static',f='stats_cpu_trend_'+str(rand)+'.png')
+    path = 'applications'+str(action)
+    can = canvas.init(path)
+    theme.use_color = True
+    theme.scale_factor = 2
+    theme.reinitialize()
+
+    ar = area.T(
+           x_coord = category_coord.T(data, 0),
+           y_coord = linear_coord.T(),
+           x_axis = axis.X(
+                      label = 'period over period cpu usage (%)',
+                      format=format_x,
+                    ),
+           y_axis = axis.Y(label = "", format=format_y),
+         )
+    bar_plot.fill_styles.reset();
+    plot1 = bar_plot.T(label="avg cpu usage (%)",
+                       fill_style=fill_style.Plain(bgcolor=color.salmon),
+                       hcol=1,
+                       line_style=None,
+                       data = data,
+                       data_label_format="",
+                       #width=1,
+                       direction='vertical')
+    ar.add_plot(plot1)
+    ar.draw(can)
+    can.close()
+
+    return IMG(_src=action)
+
+@auth.requires_login()
 def ajax_perf_stats():
      node = None
      begin = None
@@ -4153,6 +4300,7 @@ def ajax_perf_stats():
      if node is None or begin is None or end is None:
          return SPAN()
      return DIV(
+              perf_stats_trends(node, begin, end),
               perf_stats_cpu(node, begin, end),
               perf_stats_mem_u(node, begin, end),
               perf_stats_swap(node, begin, end),
@@ -4165,6 +4313,13 @@ def ajax_perf_stats():
                         -webkit-border-radius:8px;
                      """
             )
+
+@auth.requires_login()
+def perf_stats_trends(node, begin, end):
+    return DIV(
+              perf_stats_cpu_trend(node, begin, end),
+              perf_stats_mem_u_trend(node, begin, end),
+           )
 
 @auth.requires_login()
 def perf_stats(node, rowid):
@@ -4958,8 +5113,7 @@ def stats():
     path = 'applications'+action
     can = canvas.init(path)
 
-    data = [(row[0], row[1]) for row in rows]
-    data1 = sorted(data, key = lambda x: x[1])
+    data1 = [(row[0], row[1]) for row in rows]
     if len(data1) > 31:
         data = data1[0:15] + [("...", 0)] + data1[-15:]
     else:
@@ -4991,7 +5145,7 @@ def stats():
                group by nodename
                order by nodename, date
              ) tmp
-             order by avail;
+             order by avail desc;
           """%dict(dom=dom)
     rows = db.executesql(sql)
 
@@ -4999,8 +5153,7 @@ def stats():
     path = 'applications'+action
     can = canvas.init(path)
 
-    data = [(row[0], row[1]) for row in rows]
-    data1 = sorted(data, key = lambda x: x[1])
+    data1 = [(row[0], row[1]) for row in rows]
     if len(data1) > 31:
         data = data1[0:15] + [("...", 0)] + data1[-15:]
     else:
