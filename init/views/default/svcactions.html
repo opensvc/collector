@@ -34,8 +34,11 @@ initialize_keys()
     cellclasses = {}
     cellclasses['cell1'] = 'cell2'
     cellclasses['cell2'] = 'cell1'
+    r = range(len(actions))
+    r.reverse()
   }}
-  {{for action in actions:}}
+  {{for i in r:}}
+    {{action = actions[i]}}
     {{if pid != action.pid or svcname != action.svcname or pid is None:
           cellclass = cellclasses[cellclass]
           pid = action.pid
