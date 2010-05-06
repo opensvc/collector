@@ -192,3 +192,8 @@ CREATE VIEW `v_svc_group_status` AS (select `svcmon`.`ID` AS `id`,`svcmon`.`mon_
 # 2010-05-03
 #
 insert into filters values (NULL, 'frozen services', 'mon_frozen', 1, 12, 'v_svcmon', 'svc.png');
+
+#
+# 2010-05-06
+#
+alter table resmon add column `res_log` varchar(200) DEFAULT '';

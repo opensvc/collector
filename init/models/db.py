@@ -555,6 +555,7 @@ db.define_table('resmon',
     Field('rid'),
     Field('res_desc'),
     Field('res_status'),
+    Field('res_log'),
     Field('changed'),
     Field('updated'),
     migrate=False)

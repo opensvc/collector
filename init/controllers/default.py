@@ -2934,13 +2934,22 @@ def res_status(svcname, node):
     rows = db((db.resmon.svcname==svcname)&(db.resmon.nodename==node)).select(orderby=db.resmon.rid)
     def print_row(row):
         cssclass = 'status_'+row.res_status.replace(" ", "_")
-        return TR(
+        return (TR(
                  TD(row.rid),
-                 TD(row.res_desc),
                  TD(row.res_status, _class='%s'%cssclass),
-               )
+                 TD(row.res_desc),
+               ),
+               TR(
+                 TD(),
+                 TD(),
+                 TD(PRE(row.res_log)),
+               ))
     t = TABLE(
-          TR(TH('id'), TH('description'), TH('status')),
+          TR(
+            TH('id'),
+            TH('status'),
+            TH('description'),
+          ),
           map(print_row, rows)
     )
     return DIV(
