@@ -267,33 +267,33 @@ def svc_status(svc, cellclass="cell2"):
         {{pass}}
     </td>
       {{if svc.mon_svctype == 'PRD':
-            boldtype = """style='font-weight:bold'"""
+            boldtype = "font-weight:bold;"
         else:
             boldtype = ""
             pass
       }}
     {{if newsvc:}}
-    <td name="tcol_svctype" style="{{=col_hide('svctype')}}" class={{=cellclass}} {{=boldtype}}>
+    <td name="tcol_svctype" style="{{=boldtype}}{{=col_hide('svctype')}}" class={{=cellclass}}>
       {{=svc.mon_svctype}}
     </td>
     {{else:}}
-    <td name="tcol_svctype" style="{{=col_hide('svctype')}}" class={{=cellclass}} {{=boldtype}}>
+    <td name="tcol_svctype" style="{{=boldtype}}{{=col_hide('svctype')}}" class={{=cellclass}}>
     </td>
     {{pass}}
     {{if svc.mon_nodtype == 'PRD':
-          boldtype = """style='font-weight:bold'"""
+          boldtype = "font-weight:bold;"
       else:
           boldtype = ""
           pass
     }}
-    <td name="tcol_nodetype" style="{{=col_hide('nodetype')}}" class={{=cellclass}} {{=boldtype}}>{{=svc.mon_nodtype}}</td>
+    <td name="tcol_nodetype" style="{{=boldtype}}{{=col_hide('nodetype')}}" class={{=cellclass}}>{{=svc.mon_nodtype}}</td>
     {{if svc.mon_nodname == svc.svc_autostart:
-          boldtype = """style='font-weight:bold'"""
+          boldtype = "font-weight:bold;"
       else:
           boldtype = ""
           pass
     }}
-    <td name="tcol_nodename" style="{{=col_hide('nodename')}}" class={{=cellclass}} {{=boldtype}}>
+    <td name="tcol_nodename" style="{{=boldtype}}{{=col_hide('nodename')}}" class={{=cellclass}}>
       {{=A(
           DIV(
             node_icon(svc.os_name),
