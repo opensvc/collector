@@ -1551,7 +1551,7 @@ def _user_del(request):
     db.executesql(sql)
     redirect(URL(r=request, f='users'))
 
-@auth.requires_login()
+@auth.requires_membership('Manager')
 def users():
     if request.vars.action is not None and request.vars.action == "grant":
         _user_grant(request)
@@ -4799,17 +4799,28 @@ def drplan_scripts_archive():
 
 @auth.requires_login()
 def stats():
-    def format_x(ordinal):
-        d = datetime.date.fromordinal(int(ordinal))
-        return "/a50/6{}" + d.strftime("%y-%m-%d")
+    d = {}
+    d.update(stats_global())
+    d.update(stats_disks_per_svc())
+    d.update(stats_last_day_avg_cpu())
+    d.update(stats_last_day_avg_mem())
+    return d
 
-    def format_y(x):
-        return "/6{}" + str(x)
+def format_x(ordinal):
+    d = datetime.date.fromordinal(int(ordinal))
+    return "/a50/6{}" + d.strftime("%y-%m-%d")
 
-    def format2_y(x):
-        return "/a50/6{}" + str(x)
+def format_y(x):
+    return "/6{}" + str(x)
 
+def format2_y(x):
+    return "/a50/6{}" + str(x)
+
+@auth.requires_login()
+def stats_global():
     rows = db(db.stat_day.id>0).select(orderby=db.stat_day.day)
+    if len(rows) == 0:
+        return dict()
 
     """ actions
     """
@@ -5070,7 +5081,10 @@ def stats():
     ar.add_plot(plot1)
     ar.draw(can)
     can.close()
+    return dict()
 
+@auth.requires_login()
+def stats_disks_per_svc():
     """ disks per svc
     """
     dom = domain_perms()
@@ -5083,7 +5097,13 @@ def stats():
           """%dict(dom=dom)
     rows = db.executesql(sql)
 
-    action = str(URL(r=request,c='static',f='stat_disk_svc.png'))
+    if len(rows) == 0:
+        return dict(stat_disk_svc=None)
+
+    import random
+    rand = int(random.random()*1000000)
+    img = 'stat_disk_svc_'+str(rand)+'.png'
+    action = str(URL(r=request,c='static',f=img))
     path = 'applications'+action
     can = canvas.init(path)
 
@@ -5094,6 +5114,7 @@ def stats():
 
     data1 = [(row[0], compute_size(row[1])) for row in rows]
     data = sorted(data1, key = lambda x: x[1])[-15:]
+    
     ar = area.T(x_coord = linear_coord.T(),
                 y_coord = category_coord.T(data, 0),
                 y_axis = axis.Y(label = "", format="/6{}%s"),
@@ -5110,9 +5131,13 @@ def stats():
     ar.add_plot(plot1)
     ar.draw(can)
     can.close()
+    return dict(stat_disk_svc=img)
 
+@auth.requires_login()
+def stats_last_day_avg_cpu():
     """ last day avg cpu usage per node
     """
+    dom = domain_perms()
     now = datetime.datetime.now()
     end = now - datetime.timedelta(days=0, microseconds=now.microsecond)
     begin = end - datetime.timedelta(days=1)
@@ -5126,7 +5151,13 @@ def stats():
              order by avg"""%dict(begin=str(begin),end=str(end),dom=dom)
     rows = db.executesql(sql)
 
-    action = str(URL(r=request,c='static',f='stat_cpu_avg_day.png'))
+    if len(rows) == 0:
+        return dict(stat_cpu_avg_day=None)
+
+    import random
+    rand = int(random.random()*1000000)
+    img = 'stat_cpu_avg_day_'+str(rand)+'.png'
+    action = str(URL(r=request,c='static',f=img))
     path = 'applications'+action
     can = canvas.init(path)
 
@@ -5152,9 +5183,13 @@ def stats():
     ar.add_plot(plot1)
     ar.draw(can)
     can.close()
+    return dict(stat_cpu_avg_day=img)
 
+@auth.requires_login()
+def stats_last_day_avg_mem():
     """ available mem
     """
+    dom = domain_perms()
     sql = """select * from (
                select nodename,(kbmemfree+kbcached) as avail
                from stats_mem_u
@@ -5166,7 +5201,13 @@ def stats():
           """%dict(dom=dom)
     rows = db.executesql(sql)
 
-    action = str(URL(r=request,c='static',f='stat_mem_avail.png'))
+    if len(rows) == 0:
+        return dict(stat_mem_avail=None)
+
+    import random
+    rand = int(random.random()*1000000)
+    img = 'stat_mem_avail_'+str(rand)+'.png'
+    action = str(URL(r=request,c='static',f=img))
     path = 'applications'+action
     can = canvas.init(path)
 
@@ -5192,8 +5233,8 @@ def stats():
     ar.add_plot(plot1)
     ar.draw(can)
     can.close()
+    return dict(stat_mem_avail=img)
 
-    return dict()
 
 @service.xmlrpc
 def delete_services(hostid=None):
