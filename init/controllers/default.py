@@ -4163,6 +4163,8 @@ def perf_stats_mem_u_trend_data(node, s, e, p):
     if len(rows) != 1:
         return [(p, 0, 0)]
     r = rows[0]
+    if r[0] is None or r[1] is None:
+        return [(p, 0, 0)]
     return [(p, r[0], r[1])]
 
 def period_to_range(period):
@@ -4241,6 +4243,8 @@ def perf_stats_cpu_trend_data(node, s, e, p):
     if len(rows) != 1:
         return [(p, 0, 0)]
     r = rows[0]
+    if r[0] is None or r[1] is None:
+        return [(p, 0, 0)]
     return [(p, r[0], r[1])]
 
 @auth.requires_login()
