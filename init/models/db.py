@@ -617,6 +617,7 @@ db.define_table('auth_filters',
     Field('fil_uid', 'integer'),
     Field('fil_id', 'integer'),
     Field('fil_value', 'string', length=200),
+    Field('fil_active', 'tinyint'),
     migrate=False)
 
 db.define_table('filters',

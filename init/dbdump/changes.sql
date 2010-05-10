@@ -197,3 +197,8 @@ insert into filters values (NULL, 'frozen services', 'mon_frozen', 1, 12, 'v_svc
 # 2010-05-06
 #
 alter table resmon add column `res_log` varchar(200) DEFAULT '';
+
+#
+# 2010-05-06
+# 
+alter table auth_filters add column fil_active boolean default true;

@@ -139,8 +139,26 @@ def toggle_db_filters():
         q = db.auth_filters.fil_id.belongs(ids)
         db(q).delete()
 
+    elif request.vars.togfilter is not None and request.vars.togfilter != '':
+        filters = db(db.auth_filters.id==request.vars.togfilter).select(
+                        db.filters.fil_name,
+                        db.auth_filters.fil_active,
+                        left=db.filters.on(db.auth_filters.fil_id==db.filters.id)
+                  )
+        if len(filters) == 0:
+            return
+        name = filters[0].filters.fil_name
+        ids = db(db.filters.fil_name==name)._select(db.filters.id)
+        cur = filters[0].auth_filters.fil_active
+        if cur: tgt = '0'
+        else: tgt = '1'
+        q = db.auth_filters.fil_id.belongs(ids)
+        db(q).update(fil_active=tgt)
+        del request.vars.togfilter
+
 def apply_db_filters(query, table=None):
     q = db.auth_filters.fil_uid==session.auth.user.id
+    q &= db.auth_filters.fil_active==1
     q &= db.filters.fil_table==table
     filters = db(q).select(db.auth_filters.fil_value,
                            db.filters.fil_name,
@@ -187,6 +205,7 @@ def active_db_filters(table=None):
     q = db.auth_filters.fil_uid==session.auth.user.id
     filters = db(q).select(db.auth_filters.fil_value,
                            db.auth_filters.id,
+                           db.auth_filters.fil_active,
                            db.filters.fil_name,
                            db.filters.fil_img,
                            db.filters.fil_table,

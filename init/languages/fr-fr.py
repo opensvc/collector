@@ -342,6 +342,7 @@
 'drp nodes': 'noeuds de reprise',
 'drplan': 'pra',
 'edit': 'editer',
+'enable/disable filter': 'enable/disable filter',
 'end': 'fin',
 'env': 'env',
 'environment': 'environnement',
