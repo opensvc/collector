@@ -15,10 +15,13 @@ function reset_ctrl() {
 function toggle_menu()
 {
     var menubar = document.getElementById("menubar");
+    var status = document.getElementById("filterbar_status");
     if (menubar.className=="menubar") {
         menubar.className="menubar_shown";
+        status.value = 'shown';
     } else {
         menubar.className="menubar";
+        status.value = 'hidden';
     }
 }
 
@@ -212,6 +215,13 @@ def COLUMNS_ACTIVE_TITLE():
 pass
 
 def DB_FILTERS_TABLE(active, avail):
+    if "filterbar_status" in request.vars and \
+       request.vars.filterbar_status == "shown":
+        menubar_class = "menubar_shown"
+    else:
+        menubar_class = "menubar"
+    pass
+
     t = TABLE(
       TR(
         TH(T('Available filters')),
@@ -228,7 +238,12 @@ def DB_FILTERS_TABLE(active, avail):
     filterbar = DIV(
       t,
       c,
-      _class='menubar',
+      INPUT(
+        _name='filterbar_status',
+        _id='filterbar_status',
+        _type='hidden',
+      ),
+      _class=menubar_class,
       _id='menubar',
     )
     handlebar = DIV(
