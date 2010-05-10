@@ -780,6 +780,13 @@ def frozen_services():
 """ Summary
 """
 def summary_table():
+    def color(i):
+        if i > 0:
+            return 'color:darkred;font-weight:bold;'
+        else:
+            return ''
+        pass
+
     cellclass = 'cell1'
     cellclasses = {}
     cellclasses['cell1'] = 'cell2'
@@ -789,85 +796,81 @@ def summary_table():
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Services not up"), _class=cellclass),
-      TD(len(svcnotup), _class=cellclass),
+      TD(len(svcnotup), _class=cellclass, _style=color(len(svcnotup))),
     )]
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Frozen services"), _class=cellclass),
-      TD(len(frozen), _class=cellclass),
+      TD(len(frozen), _class=cellclass, _style=color(len(frozen))),
     )]
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Service status not updated"), _class=cellclass),
-      TD(len(svcnotupdated), _class=cellclass),
+      TD(len(svcnotupdated), _class=cellclass, _style=color(len(svcnotupdated))),
     )]
-
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Services with errors"), _class=cellclass),
-      TD(len(svcwitherrors), _class=cellclass),
+      TD(len(svcwitherrors), _class=cellclass, _style=color(len(svcwitherrors))),
     )]
     svcnotup_names = [s.v_svc_group_status.svcname for s in svcnotup]
     list = [s for s in svcnotonprimary if s.svc_name not in svcnotup_names]
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Services not up on primary"), _class=cellclass),
-      TD(len(list), _class=cellclass),
+      TD(len(list), _class=cellclass, _style=color(len(list))),
     )]
     now = datetime.datetime.now()
     onehourago = now - datetime.timedelta(minutes=60)
     hrate = len([c for c in lastchanges if c.svcmon_log.mon_begin > onehourago])
     if hrate == 20:
-        hrate = "+20/h"
+        shrate = "+20/h"
     else:
-        hrate = "%s/h"%str(hrate)
-        
-
-    cellclass = cellclasses[cellclass]
-    lines += [TR(
-      TD(T("Application without responsibles"), _class=cellclass),
-      TD(len(appwithoutresp), _class=cellclass),
-    )]
-
+        shrate = "%s/h"%str(hrate)
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Last service status changes"), _class=cellclass),
-      TD(hrate, _class=cellclass),
+      TD(shrate, _class=cellclass, _style=color(hrate)),
+    )]
+    cellclass = cellclasses[cellclass]
+    lines += [TR(
+      TD(T("Application without responsibles"), _class=cellclass),
+      TD(len(appwithoutresp), _class=cellclass, _style=color(len(appwithoutresp))),
     )]
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Nodes with obsolescent operating system (alert)"), _class=cellclass),
-      TD(len(obsosalert), _class=cellclass),
+      TD(len(obsosalert), _class=cellclass, _style=color(len(obsosalert))),
     )]
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Nodes with obsolescent operating system (warn)"), _class=cellclass),
-      TD(len(obsoswarn), _class=cellclass),
+      TD(len(obsoswarn), _class=cellclass, _style=color(len(obsoswarn))),
     )]
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Nodes with obsolescent hardware (alert)"), _class=cellclass),
-      TD(len(obshwalert), _class=cellclass),
+      TD(len(obshwalert), _class=cellclass, _style=color(len(obshwalert))),
     )]
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Nodes with obsolescent hardware (warn)"), _class=cellclass),
-      TD(len(obshwwarn), _class=cellclass),
+      TD(len(obshwwarn), _class=cellclass, _style=color(len(obshwwarn))),
     )]
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Items with missing obsolescence information (alert)"), _class=cellclass),
-      TD(obswarnmiss, _class=cellclass),
+      TD(obswarnmiss, _class=cellclass, _style=color(obswarnmiss)),
     )]
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Items with missing obsolescence information (warn)"), _class=cellclass),
-      TD(obsalertmiss, _class=cellclass),
+      TD(obsalertmiss, _class=cellclass, _style=color(obsalertmiss)),
     )]
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Nodes without asset information"), _class=cellclass),
-      TD(len(nodeswithoutasset), _class=cellclass),
+      TD(len(nodeswithoutasset), _class=cellclass, _style=color(len(nodeswithoutasset))),
     )]
 
     t = TABLE(
