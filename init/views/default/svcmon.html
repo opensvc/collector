@@ -225,8 +225,8 @@ def svc_status(svc, cellclass="cell2"):
           _id="msg_"+svc.mon_svcname,
         ))
       }}
-      {{=err}}
       {{pass}}
+      {{=err}}
       {{
         if svc.mon_frozen == 1:
             frozen = IMG(_src=URL(r=request,c='static',f='frozen16.png'), _title=svc.mon_frozen)

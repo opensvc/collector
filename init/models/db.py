@@ -226,6 +226,8 @@ db.define_table('services',
     Field('svc_containertype'),
     Field('svc_metrocluster'),
     Field('svc_envfile'),
+    Field('svc_vcpus'),
+    Field('svc_vmem'),
     migrate=False)
 
 db.define_table('v_svcmon',
