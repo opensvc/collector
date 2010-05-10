@@ -2171,7 +2171,7 @@ def svcmon_csv():
     import gluon.contenttype
     response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
     request.vars['perpage'] = 0
-    return svcmon()['services']
+    return str(svcmon()['services'])
 
 def cron_obsolescence_hw():
     sql = """insert ignore into obsolescence (obs_type, obs_name)
@@ -2421,7 +2421,7 @@ def svcactions_csv():
     import gluon.contenttype
     response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
     request.vars['perpage'] = 0
-    return svcactions()['actions']
+    return str(svcactions()['actions'])
 
 @auth.requires_login()
 def services():
@@ -2432,7 +2432,7 @@ def nodes_csv():
     import gluon.contenttype
     response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
     request.vars['perpage'] = 0
-    return nodes()['nodes']
+    return str(nodes()['nodes'])
 
 @auth.requires_login()
 def nodes():
@@ -4670,7 +4670,7 @@ def drplan_csv():
     import gluon.contenttype
     response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
     request.vars['perpage'] = 0
-    return drplan()['apps']
+    return str(drplan()['apps'])
 
 def _drplan_scripts_header(phase):
     l = ["""#!/bin/sh"""]
