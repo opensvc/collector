@@ -15,10 +15,13 @@ function reset_ctrl() {
 function toggle_menu()
 {
     var menubar = document.getElementById("menubar");
+    var status = document.getElementById("filterbar_status");
     if (menubar.className=="menubar") {
         menubar.className="menubar_shown";
+        status.value = 'shown';
     } else {
         menubar.className="menubar";
+        status.value = 'hidden';
     }
 }
 
@@ -88,7 +91,8 @@ function toggleVis(btn){
 def DB_FILTERS_ACTIVE(filters):
     if filters is None or len(filters) == 0:
         return T("None")
-    i = INPUT(_type='hidden', _name='delfilter')
+    i1 = INPUT(_type='hidden', _name='delfilter')
+    i2 = INPUT(_type='hidden', _name='togfilter')
     lines = []
     for f in filters:
         if f.auth_filters.fil_value is not None and \
@@ -96,6 +100,11 @@ def DB_FILTERS_ACTIVE(filters):
             value = " [%s]"%f.auth_filters.fil_value
         else:
             value = ""
+        pass
+        if f.auth_filters.fil_active:
+            img = "checked16.png"
+        else:
+            img = "unchecked16.png"
         pass
         lines += [TR(
                     TD(T(f.filters.fil_name),
@@ -108,6 +117,12 @@ def DB_FILTERS_ACTIVE(filters):
                                padding-left:18px;
                               '%URL(r=request,c='static',f=f.filters.fil_img),
                     ),
+                    TD(IMG(_src=URL(r=request,c='static',f=img),
+                           _border=0,
+                           _title=T("enable/disable filter"),
+                           _onClick='javascript:document.svcform.togfilter.value='+str(f.auth_filters.id)+';document.svcform.submit()'
+                       ),
+                    ),
                     TD(IMG(_src=URL(r=request,c='static',f='del.png'),
                            _border=0,
                            _title=T("remove filter"),
@@ -117,7 +132,7 @@ def DB_FILTERS_ACTIVE(filters):
                     ),
                   )]
     pass
-    return DIV(i, TABLE(lines))
+    return DIV(i1, i2, TABLE(lines))
 pass
 
 def DB_FILTERS_AVAIL(filters):
@@ -212,6 +227,15 @@ def COLUMNS_ACTIVE_TITLE():
 pass
 
 def DB_FILTERS_TABLE(active, avail):
+    if "filterbar_status" in request.vars and \
+       request.vars.filterbar_status == "shown":
+        menubar_class = "menubar_shown"
+        filterbar_state = "shown"
+    else:
+        menubar_class = "menubar"
+        filterbar_state = "hidden"
+    pass
+
     t = TABLE(
       TR(
         TH(T('Available filters')),
@@ -228,7 +252,13 @@ def DB_FILTERS_TABLE(active, avail):
     filterbar = DIV(
       t,
       c,
-      _class='menubar',
+      INPUT(
+        _name='filterbar_status',
+        _id='filterbar_status',
+        _type='hidden',
+        _value=filterbar_state
+      ),
+      _class=menubar_class,
       _id='menubar',
     )
     handlebar = DIV(

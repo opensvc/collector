@@ -776,6 +776,132 @@ def frozen_services():
     return d
     pass
 
+
+""" Summary
+"""
+def summary_table():
+    def color(i):
+        if i > 0:
+            return 'color:darkred;font-weight:bold;'
+        else:
+            return ''
+        pass
+
+    cellclass = 'cell1'
+    cellclasses = {}
+    cellclasses['cell1'] = 'cell2'
+    cellclasses['cell2'] = 'cell1'
+    lines = []
+
+    cellclass = cellclasses[cellclass]
+    lines += [TR(
+      TD(T("Services not up"), _class=cellclass),
+      TD(len(svcnotup), _class=cellclass, _style=color(len(svcnotup))),
+    )]
+    cellclass = cellclasses[cellclass]
+    lines += [TR(
+      TD(T("Frozen services"), _class=cellclass),
+      TD(len(frozen), _class=cellclass, _style=color(len(frozen))),
+    )]
+    cellclass = cellclasses[cellclass]
+    lines += [TR(
+      TD(T("Service status not updated"), _class=cellclass),
+      TD(len(svcnotupdated), _class=cellclass, _style=color(len(svcnotupdated))),
+    )]
+    cellclass = cellclasses[cellclass]
+    lines += [TR(
+      TD(T("Services with errors"), _class=cellclass),
+      TD(len(svcwitherrors), _class=cellclass, _style=color(len(svcwitherrors))),
+    )]
+    svcnotup_names = [s.v_svc_group_status.svcname for s in svcnotup]
+    list = [s for s in svcnotonprimary if s.svc_name not in svcnotup_names]
+    cellclass = cellclasses[cellclass]
+    lines += [TR(
+      TD(T("Services not up on primary"), _class=cellclass),
+      TD(len(list), _class=cellclass, _style=color(len(list))),
+    )]
+    now = datetime.datetime.now()
+    onehourago = now - datetime.timedelta(minutes=60)
+    hrate = len([c for c in lastchanges if c.svcmon_log.mon_begin > onehourago])
+    if hrate == 20:
+        shrate = "+20/h"
+    else:
+        shrate = "%s/h"%str(hrate)
+    cellclass = cellclasses[cellclass]
+    lines += [TR(
+      TD(T("Last service status changes"), _class=cellclass),
+      TD(shrate, _class=cellclass, _style=color(hrate)),
+    )]
+    cellclass = cellclasses[cellclass]
+    lines += [TR(
+      TD(T("Application without responsibles"), _class=cellclass),
+      TD(len(appwithoutresp), _class=cellclass, _style=color(len(appwithoutresp))),
+    )]
+    cellclass = cellclasses[cellclass]
+    lines += [TR(
+      TD(T("Nodes with obsolescent operating system (alert)"), _class=cellclass),
+      TD(len(obsosalert), _class=cellclass, _style=color(len(obsosalert))),
+    )]
+    cellclass = cellclasses[cellclass]
+    lines += [TR(
+      TD(T("Nodes with obsolescent operating system (warn)"), _class=cellclass),
+      TD(len(obsoswarn), _class=cellclass, _style=color(len(obsoswarn))),
+    )]
+    cellclass = cellclasses[cellclass]
+    lines += [TR(
+      TD(T("Nodes with obsolescent hardware (alert)"), _class=cellclass),
+      TD(len(obshwalert), _class=cellclass, _style=color(len(obshwalert))),
+    )]
+    cellclass = cellclasses[cellclass]
+    lines += [TR(
+      TD(T("Nodes with obsolescent hardware (warn)"), _class=cellclass),
+      TD(len(obshwwarn), _class=cellclass, _style=color(len(obshwwarn))),
+    )]
+    cellclass = cellclasses[cellclass]
+    lines += [TR(
+      TD(T("Items with missing obsolescence information (alert)"), _class=cellclass),
+      TD(obswarnmiss, _class=cellclass, _style=color(obswarnmiss)),
+    )]
+    cellclass = cellclasses[cellclass]
+    lines += [TR(
+      TD(T("Items with missing obsolescence information (warn)"), _class=cellclass),
+      TD(obsalertmiss, _class=cellclass, _style=color(obsalertmiss)),
+    )]
+    cellclass = cellclasses[cellclass]
+    lines += [TR(
+      TD(T("Nodes without asset information"), _class=cellclass),
+      TD(len(nodeswithoutasset), _class=cellclass, _style=color(len(nodeswithoutasset))),
+    )]
+
+    t = TABLE(
+        TR(
+          TD(
+            H2(T("Summary"), _style="padding:10px;text-align:center"),
+            _colspan=99,
+          ),
+        ),
+        summary_header(),
+        lines,
+    )
+    return t
+    pass
+
+def summary_header():
+    tr = TR(
+      TH(T("Report")),
+      TH(T("Status")),
+      _style="border-bottom:4px solid darkorange",
+    )
+    return tr
+    pass
+
+def summary():
+    d = DIV(
+      summary_table(),
+      _style="padding:10px",
+    )
+    return d
+    pass
 }}
 
 {{=FORM(
@@ -786,13 +912,14 @@ def frozen_services():
    )
 }}
 {{=DIV(
+     summary(),
+     svc_not_up(),
      frozen_services(),
      svcmon_not_updated(),
+     svc_with_errors(),
+     svc_not_on_primary(),
      last_changes(),
      app_wo_resp(),
-     svc_with_errors(),
-     svc_not_up(),
-     svc_not_on_primary(),
      obs_os_alert(),
      obs_os_warn(),
      obs_hw_alert(),

@@ -226,6 +226,8 @@ db.define_table('services',
     Field('svc_containertype'),
     Field('svc_metrocluster'),
     Field('svc_envfile'),
+    Field('svc_vcpus'),
+    Field('svc_vmem'),
     migrate=False)
 
 db.define_table('v_svcmon',
@@ -617,6 +619,7 @@ db.define_table('auth_filters',
     Field('fil_uid', 'integer'),
     Field('fil_id', 'integer'),
     Field('fil_value', 'string', length=200),
+    Field('fil_active', 'tinyint'),
     migrate=False)
 
 db.define_table('filters',
