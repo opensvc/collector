@@ -90,6 +90,8 @@ def svc_status(svc, cellclass="cell2"):
     <td class=box></td>
     <td name="tcol_svcname" style="{{=col_hide('svcname')}}">{{=colname(services, 'svc_name', T('Service'))}}</td>
     <td name="tcol_containertype" style="{{=col_hide('containertype')}};max-width:1em">{{=colname(services, 'svc_containertype', T('Container type'))}}</td>
+    <td name="tcol_svc_vcpus" style="{{=col_hide('svc_vcpus')}}" class=status_t>{{=columns['svc_vcpus']['title']}}</td>
+    <td name="tcol_svc_vmem" style="{{=col_hide('svc_vmem')}}" class=status_t>{{=columns['svc_vmem']['title']}}</td>
     <td name="tcol_svcapp" style="{{=col_hide('svcapp')}};max-width:1em">{{=colname(services, 'svc_app', T('App'))}}</td>
     <td name="tcol_svctype" style="{{=col_hide('svctype')}};max-width:1em">{{=colname(services, 'mon_svctype', T('Service type'))}}</td>
     <td name="tcol_nodetype" style="{{=col_hide('nodetype')}};max-width:1em">{{=colname(services, 'mon_nodtype', T('Node type'))}}</td>
@@ -97,14 +99,14 @@ def svc_status(svc, cellclass="cell2"):
     <td name="tcol_overallstatus" style="{{=col_hide('overallstatus')}}" class=status_t>{{=T('Status')}}</td>
     <td name="tcol_mon_updated" style="{{=col_hide('mon_updated')}}" class=status_t>{{=columns['mon_updated']['title']}}</td>
     <td name="tcol_mon_frozen" style="{{=col_hide('mon_frozen')}}" class=status_t>{{=columns['mon_frozen']['title']}}</td>
-    <td name="tcol_svc_vcpus" style="{{=col_hide('svc_vcpus')}}" class=status_t>{{=columns['svc_vcpus']['title']}}</td>
-    <td name="tcol_svc_vmem" style="{{=col_hide('svc_vmem')}}" class=status_t>{{=columns['svc_vmem']['title']}}</td>
   </tr>
   <tr class=box>
     <td><input type=checkbox id=check_all onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'))"></td>
     <td style='padding:0'></td>
     <td name="tcol_svcname" style="{{=col_hide('svcname')}}"><input name=svcname value='{{=vars.svcname}}' size=12 onKeyPress="checkEnter(event)"></td>
     <td name="tcol_containertype" style="{{=col_hide('containertype')}}"><input name=containertype value='{{=vars.containertype}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td name="tcol_svc_vcpus" style="{{=col_hide('svc_vcpus')}}" class=status_t><input name=svc_vcpus value='{{=vars.svc_vcpus}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td name="tcol_svc_vmem" style="{{=col_hide('svc_vmem')}}" class=status_t><input name=svc_vmem value='{{=vars.svc_vmem}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td name="tcol_svcapp" style="{{=col_hide('svcapp')}}"><input name=svcapp value='{{=vars.svcapp}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td name="tcol_svctype" style="{{=col_hide('svctype')}}"><input name=svctype value='{{=vars.svctype}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td name="tcol_nodetype" style="{{=col_hide('nodetype')}}"><input name=nodetype value='{{=vars.nodetype}}' size=4 onKeyPress="checkEnter(event)"></td>
@@ -112,8 +114,6 @@ def svc_status(svc, cellclass="cell2"):
     <td name="tcol_overallstatus" style="{{=col_hide('overallstatus')}}" class=status_t><input name=overallstatus value='{{=vars.overallstatus}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td name="tcol_mon_updated" style="{{=col_hide('mon_updated')}}" class=status_t><input name=mon_updated value='{{=vars.mon_updated}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td name="tcol_mon_frozen" style="{{=col_hide('mon_frozen')}}" class=status_t><input name=mon_frozen value='{{=vars.mon_frozen}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td name="tcol_svc_vcpus" style="{{=col_hide('svc_vcpus')}}" class=status_t><input name=svc_vcpus value='{{=vars.svc_vcpus}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td name="tcol_svc_vmem" style="{{=col_hide('svc_vmem')}}" class=status_t><input name=svc_vmem value='{{=vars.svc_vmem}}' size=4 onKeyPress="checkEnter(event)"></td>
   </tr>
   {{
     svcname = ''
@@ -271,6 +271,16 @@ def svc_status(svc, cellclass="cell2"):
         {{=DIV(svc.svc_containertype, _title=vmname, _style='vertical-align:middle')}}
         {{pass}}
     </td>
+    <td name="tcol_svc_vcpus" style="{{=col_hide('svc_vcpus')}}" class="{{=cellclass}}">
+      {{if newsvc:}}
+        {{=svc.svc_vcpus}}
+        {{pass}}
+    </td>
+    <td name="tcol_svc_vmem" style="{{=col_hide('svc_vmem')}}" class="{{=cellclass}}">
+      {{if newsvc:}}
+        {{=svc.svc_vmem}}
+        {{pass}}
+    </td>
     <td name="tcol_svcapp" style="{{=col_hide('svcapp')}}" class={{=cellclass}}>
       {{if newsvc:}}
         {{=svc.svc_app}}
@@ -318,12 +328,6 @@ def svc_status(svc, cellclass="cell2"):
     </td>
     <td name="tcol_mon_frozen" style="{{=col_hide('mon_frozen')}}" class="{{=cellclass}}">
       {{=svc.mon_frozen}}
-    </td>
-    <td name="tcol_svc_vcpus" style="{{=col_hide('svc_vcpus')}}" class="{{=cellclass}}">
-      {{=svc.svc_vcpus}}
-    </td>
-    <td name="tcol_svc_vmem" style="{{=col_hide('svc_vmem')}}" class="{{=cellclass}}">
-      {{=svc.svc_vmem}}
     </td>
   </tr>
   {{pass}}
