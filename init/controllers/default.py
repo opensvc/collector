@@ -1809,6 +1809,18 @@ def svcmon():
             display = False,
             size = 3
         ),
+        svc_vcpus = dict(
+            pos = 10,
+            title = T('Vcpus'),
+            display = False,
+            size = 3
+        ),
+        svc_vmem = dict(
+            pos = 11,
+            title = T('Vmem'),
+            display = False,
+            size = 3
+        ),
     )
 
     def _sort_cols(x, y):
@@ -1835,6 +1847,8 @@ def svcmon():
     query &= _where(None, 'v_svcmon', request.vars.nodetype, 'mon_nodtype')
     query &= _where(None, 'v_svcmon', request.vars.mon_updated, 'mon_updated')
     query &= _where(None, 'v_svcmon', request.vars.mon_frozen, 'mon_frozen')
+    query &= _where(None, 'v_svcmon', request.vars.svc_vcpus, 'svc_vcpus')
+    query &= _where(None, 'v_svcmon', request.vars.svc_vmem, 'svc_vmem')
     query &= _where(None, 'v_svcmon', domain_perms(), 'mon_nodname')
 
     query = apply_db_filters(query, 'v_svcmon')
@@ -3085,6 +3099,14 @@ def ajax_service():
       TR(
         TD(T('drp nodes'), _style='font-style:italic'),
         TD(s['svc_drpnodes'])
+      ),
+      TR(
+        TD(T('vcpus'), _style='font-style:italic'),
+        TD(s['svc_vcpus'])
+      ),
+      TR(
+        TD(T('vmem'), _style='font-style:italic'),
+        TD(s['svc_vmem'])
       ),
     )
 
