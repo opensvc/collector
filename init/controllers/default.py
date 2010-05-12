@@ -115,6 +115,12 @@ def domain_perms():
         return domain_perms
     return rows[0]['domains']
 
+def _domain_perms():
+    dom = domain_perms()
+    if dom is None:
+        return '%'
+    return dom
+
 def toggle_db_filters():
     if request.vars.addfilter is not None and request.vars.addfilter != '':
         filters = db(db.filters.id==request.vars.addfilter).select(db.filters.fil_name)
@@ -5132,7 +5138,7 @@ def stats_global():
 def stats_disks_per_svc():
     """ disks per svc
     """
-    dom = domain_perms()
+    dom = _domain_perms()
     if dom is None:
         dom = '%'
     sql = """select svcname, group_concat(disk_size order by day separator ',')
@@ -5159,7 +5165,7 @@ def stats_disks_per_svc():
 
     data1 = [(row[0], compute_size(row[1])) for row in rows]
     data = sorted(data1, key = lambda x: x[1])[-15:]
-    
+
     ar = area.T(x_coord = linear_coord.T(),
                 y_coord = category_coord.T(data, 0),
                 y_axis = axis.Y(label = "", format="/6{}%s"),
@@ -5182,7 +5188,7 @@ def stats_disks_per_svc():
 def stats_last_day_avg_cpu():
     """ last day avg cpu usage per node
     """
-    dom = domain_perms()
+    dom = _domain_perms()
     now = datetime.datetime.now()
     end = now - datetime.timedelta(days=0, microseconds=now.microsecond)
     begin = end - datetime.timedelta(days=1)
@@ -5234,7 +5240,7 @@ def stats_last_day_avg_cpu():
 def stats_last_day_avg_mem():
     """ available mem
     """
-    dom = domain_perms()
+    dom = _domain_perms()
     sql = """select * from (
                select nodename,(kbmemfree+kbcached) as avail
                from stats_mem_u
