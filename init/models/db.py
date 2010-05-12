@@ -633,6 +633,7 @@ db.define_table('filters',
     Field('fil_need_value', 'boolean'),
     Field('fil_pos', 'integer'),
     Field('fil_table', 'string', length=30),
+    Field('fil_search_table', 'string', length=30),
     Field('fil_img', 'string', length=30),
     migrate=False)
 
