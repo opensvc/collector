@@ -94,6 +94,7 @@ def svc_status(svc, cellclass="cell2"):
     <td name="tcol_svc_vmem" style="{{=col_hide('svc_vmem')}}" class=status_t>{{=columns['svc_vmem']['title']}}</td>
     <td name="tcol_svcapp" style="{{=col_hide('svcapp')}};max-width:1em">{{=colname(services, 'svc_app', T('App'))}}</td>
     <td name="tcol_svctype" style="{{=col_hide('svctype')}};max-width:1em">{{=colname(services, 'mon_svctype', T('Service type'))}}</td>
+    <td name="tcol_responsibles" style="{{=col_hide('responsibles')}};max-width:1em">{{=colname(services, 'responsibles', T('Responsibles'))}}</td>
     <td name="tcol_nodetype" style="{{=col_hide('nodetype')}};max-width:1em">{{=colname(services, 'mon_nodtype', T('Node type'))}}</td>
     <td name="tcol_nodename" style="{{=col_hide('nodename')}}">{{=colname(services, 'mon_nodname', T('Node'))}}</td>
     <td name="tcol_overallstatus" style="{{=col_hide('overallstatus')}}" class=status_t>{{=T('Status')}}</td>
@@ -109,6 +110,7 @@ def svc_status(svc, cellclass="cell2"):
     <td name="tcol_svc_vmem" style="{{=col_hide('svc_vmem')}}" class=status_t><input name=svc_vmem value='{{=vars.svc_vmem}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td name="tcol_svcapp" style="{{=col_hide('svcapp')}}"><input name=svcapp value='{{=vars.svcapp}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td name="tcol_svctype" style="{{=col_hide('svctype')}}"><input name=svctype value='{{=vars.svctype}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td name="tcol_responsibles" style="{{=col_hide('responsibles')}}"><input name=responsibles value='{{=vars.responsibles}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td name="tcol_nodetype" style="{{=col_hide('nodetype')}}"><input name=nodetype value='{{=vars.nodetype}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td name="tcol_nodename" style="{{=col_hide('nodename')}}"><input name=nodename value='{{=vars.nodename}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td name="tcol_overallstatus" style="{{=col_hide('overallstatus')}}" class=status_t><input name=overallstatus value='{{=vars.overallstatus}}' size=4 onKeyPress="checkEnter(event)"></td>
@@ -286,14 +288,16 @@ def svc_status(svc, cellclass="cell2"):
         {{=svc.svc_app}}
         {{pass}}
     </td>
-    {{if newsvc:}}
     <td name="tcol_svctype" style="{{=col_hide('svctype')}}" class={{=cellclass}}>
-      {{=svc.mon_svctype}}
+      {{if newsvc:}}
+        {{=svc.mon_svctype}}
+        {{pass}}
     </td>
-    {{else:}}
-    <td name="tcol_svctype" style="{{=col_hide('svctype')}}" class={{=cellclass}}>
+    <td name="tcol_responsibles" style="{{=col_hide('responsibles')}}" class={{=cellclass}}>
+      {{if newsvc:}}
+        {{=svc.responsibles}}
+        {{pass}}
     </td>
-    {{pass}}
     <td name="tcol_nodetype" style="{{=col_hide('nodetype')}}" class={{=cellclass}}>{{=svc.mon_nodtype}}</td>
     {{if svc.mon_nodname == svc.svc_autostart:
           boldtype = "font-weight:bold;"

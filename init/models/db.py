@@ -594,6 +594,7 @@ db.define_table('v_svc_group_status',
     Field('svcname'),
     Field('svctype'),
     Field('groupstatus'),
+    Field('nodes'),
     migrate=False)
 
 db.define_table('obsolescence',
@@ -713,5 +714,13 @@ db.define_table('stats_blockdev',
     Field('await', 'float'),
     Field('svctm', 'float'),
     Field('pct_util', 'float'),
+    migrate=False)
+
+db.define_table('packages',
+    Field('id'),
+    Field('pkg_nodename', 'string', length=60),
+    Field('pkg_name', 'string', length=100),
+    Field('pkg_version', 'string', length=16),
+    Field('pkg_arch', 'string', length=8),
     migrate=False)
 

@@ -377,6 +377,27 @@ def index():
         obswarnmiss = 0
         obsalertmiss = 0
 
+    pkgdiff = {}
+    rows = db(db.v_svc_group_status.id>0).select(db.v_svc_group_status.nodes, distinct=True)
+    for row in rows:
+        nodes = row.nodes.split(',')
+        n = len(nodes)
+        if n == 1:
+            continue
+        sql = """select count(id) from (
+                   select *,count(pkg_nodename) as c
+                   from packages
+                   where pkg_nodename in (%(nodes)s)
+                   group by pkg_name,pkg_version,pkg_arch
+                   order by pkg_name,pkg_version,pkg_arch
+                 ) as t
+                 where t.c!=%(n)s;
+              """%dict(n=n, nodes=','.join(map(repr, nodes)))
+        x = db.executesql(sql)
+        if len(x) != 1 or len(x[0]) != 1:
+            continue
+        pkgdiff[row.nodes] = x[0][0]
+
     return dict(svcnotupdated=svcnotupdated,
                 frozen=frozen,
                 nodeswithoutasset=nodeswithoutasset,
@@ -393,6 +414,7 @@ def index():
                 svcnotup=svcnotup,
                 active_filters=active_db_filters('v_svcmon'),
                 available_filters=avail_db_filters('v_svcmon'),
+                pkgdiff=pkgdiff,
                )
 
 @auth.requires_membership('Manager')
@@ -1786,6 +1808,12 @@ def svcmon():
             title = T('Service type'),
             display = True,
             size = 3
+        ),
+        responsibles = dict(
+            pos = 4,
+            title = T('Responsibles'),
+            display = False,
+            size = 5
         ),
         nodetype = dict(
             pos = 5,
@@ -5449,6 +5477,17 @@ def insert_stats_block(vars, vals):
 @service.xmlrpc
 def insert_stats_blockdev(vars, vals):
     generic_insert('stats_blockdev', vars, vals)
+
+@service.xmlrpc
+def insert_pkg(vars, vals):
+    generic_insert('packages', vars, vals)
+
+@service.xmlrpc
+def delete_pkg(node):
+    if node is None or node == '':
+        return 0
+    db(db.packages.pkg_nodename==node).delete()
+    db.commit()
 
 @service.xmlrpc
 def delete_syncs(svcname):

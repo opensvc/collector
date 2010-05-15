@@ -239,12 +239,68 @@ def svc_with_errors():
     pass
 
 
+""" pkg differences amongst cluster nodes
+"""
+def pkg_diff_line(line, cellclass):
+    tr = TR(
+      TD(line, _class=cellclass),
+      TD(pkgdiff[line], _class=cellclass),
+    )
+    return tr
+    pass
+
+def pkg_diff_header():
+    tr = TR(
+      TH(T("Cluster")),
+      TH(T("Number of package differences")),
+      _style="border-bottom:4px solid darkorange",
+    )
+    return tr
+    pass
+
+def pkg_diff_table():
+    cellclass = 'cell1'
+    cellclasses = {}
+    cellclasses['cell1'] = 'cell2'
+    cellclasses['cell2'] = 'cell1'
+    lines = []
+
+    for line in pkgdiff:
+        cellclass = cellclasses[cellclass]
+        lines += [pkg_diff_line(line, cellclass)]
+        pass
+
+    t = TABLE(
+        TR(
+          TD(
+            H2(T("Package differences amongst cluster nodes"), _style="padding:10px;text-align:center"),
+            _colspan=99,
+          ),
+        ),
+        pkg_diff_header(),
+        lines,
+    )
+    return t
+    pass
+
+def pkg_diff():
+    if len(pkgdiff) == 0:
+        return DIV()
+    d = DIV(
+      pkg_diff_table(),
+      _style="padding:10px",
+    )
+    return d
+    pass
+
+
 """ Services not up on all nodes
 """
 def svc_not_up_line(line, cellclass):
     tr = TR(
       TD(A(line.v_svc_group_status.svcname, _href=URL(r=request, f='svcmon', vars={'svcname':line.v_svc_group_status.svcname})), _class=cellclass),
       TD(line.v_svc_group_status.svctype, _class=cellclass),
+      TD(line.v_svc_group_status.nodes, _class=cellclass),
       TD(line.v_svc_group_status.groupstatus, _class=cellclass),
     )
     return tr
@@ -254,6 +310,7 @@ def svc_not_up_header():
     tr = TR(
       TH(T("Service")),
       TH(T("Env")),
+      TH(T("Cluster")),
       TH(T("Cluster status")),
       _style="border-bottom:4px solid darkorange",
     )
@@ -872,6 +929,11 @@ def summary_table():
       TD(T("Nodes without asset information"), _class=cellclass),
       TD(len(nodeswithoutasset), _class=cellclass, _style=color(len(nodeswithoutasset))),
     )]
+    cellclass = cellclasses[cellclass]
+    lines += [TR(
+      TD(T("Clusters with package differences amongst nodes"), _class=cellclass),
+      TD(len(pkgdiff), _class=cellclass, _style=color(len(pkgdiff))),
+    )]
 
     t = TABLE(
         TR(
@@ -926,6 +988,7 @@ def summary():
      obs_hw_warn(),
      obs_miss(),
      nodes_without_asset(),
+     pkg_diff(),
      _style="
        padding-left:2em;
        padding-right:2em;
