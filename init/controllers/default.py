@@ -378,9 +378,14 @@ def index():
         obsalertmiss = 0
 
     pkgdiff = {}
+    clusters = {}
     rows = db(db.v_svc_group_status.id>0).select(db.v_svc_group_status.nodes, distinct=True)
     for row in rows:
         nodes = row.nodes.split(',')
+        s = set(nodes)
+        if s in clusters.values():
+            continue
+        clusters[row.nodes] = set(nodes)
         n = len(nodes)
         if n == 1:
             continue
