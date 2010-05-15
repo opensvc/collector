@@ -259,7 +259,7 @@ CREATE TABLE `opensvc`.`packages` (
   PRIMARY KEY (`id`),
   INDEX `idx1`(`pkg_nodename`),
   INDEX `idx2`(`pkg_version`)
-)
+);
 create unique index idx3 on packages (pkg_nodename, pkg_name);
 
 drop view v_svc_group_status;

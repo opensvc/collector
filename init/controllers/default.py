@@ -394,7 +394,7 @@ def index():
                  where t.c!=%(n)s;
               """%dict(n=n, nodes=','.join(map(repr, nodes)))
         x = db.executesql(sql)
-        if len(x) != 1 or len(x[0]) != 1:
+        if len(x) != 1 or len(x[0]) != 1 or x[0][0] == 0:
             continue
         pkgdiff[row.nodes] = x[0][0]
 
