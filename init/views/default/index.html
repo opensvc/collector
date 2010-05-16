@@ -2,6 +2,7 @@
 {{include 'box.html'}}
 {{include '../static/jslib.html'}}
 {{include 'filters.html'}}
+{{include 'panel.html'}}
 {{
 
 tmo = datetime.datetime.now() - datetime.timedelta(minutes=15)
@@ -243,8 +244,28 @@ def svc_with_errors():
 """
 def pkg_diff_line(line, cellclass):
     tr = TR(
-      TD(line, _class=cellclass),
-      TD(pkgdiff[line], _class=cellclass),
+      TD(
+        line,
+        _class=cellclass,
+        _style="cursor:help",
+        _onclick="""
+               getElementById("pkgnodes").value="%(nodes)s";
+               ajax("%(url)s",['pkgnodes'],"panelbody_%(a)s");
+               getElementById("panel_%(a)s").className="panel_shown";
+               getElementById("panel_%(a)s").style.top=event.pageY+'px';
+            """%dict(url=URL(r=request,f='ajax_pkgdiff'), nodes=line, a='pkgdiff'),
+      ),
+      TD(
+        pkgdiff[line],
+        _class=cellclass,
+        _style="cursor:help",
+        _onclick="""
+               getElementById("pkgnodes").value="%(nodes)s";
+               ajax("%(url)s",['pkgnodes'],"panelbody_%(a)s");
+               getElementById("panel_%(a)s").className="panel_shown";
+               getElementById("panel_%(a)s").style.top=event.pageY+'px';
+            """%dict(url=URL(r=request,f='ajax_pkgdiff'), nodes=line, a='pkgdiff'),
+      ),
     )
     return tr
     pass
@@ -287,6 +308,8 @@ def pkg_diff():
     if len(pkgdiff) == 0:
         return DIV()
     d = DIV(
+      PANEL('pkgdiff'),
+      INPUT(_id='pkgnodes', _type='hidden'),
       pkg_diff_table(),
       _style="padding:10px",
     )
