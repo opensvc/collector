@@ -4130,6 +4130,200 @@ def perf_stats_mem_u(node, s, e):
 
 
 @auth.requires_login()
+def perf_stats_netdev(node, s, e):
+    q = db.stats_netdev.nodename == node
+    q &= db.stats_netdev.date > s
+    q &= db.stats_netdev.date < e
+    rows = db(q).select(db.stats_netdev.dev,
+                        groupby=db.stats_netdev.dev,
+                        orderby=db.stats_netdev.dev,
+                       )
+    devs = [r.dev for r in rows]
+
+    t = []
+    for dev in devs:
+        t += perf_stats_netdev_one(node, s, e, dev)
+    def format(x):
+        return SPAN(x)
+    return SPAN(map(format, t))
+
+@auth.requires_login()
+def perf_stats_netdev_one(node, s, e, dev):
+    q = db.stats_netdev.nodename == node
+    q &= db.stats_netdev.date > s
+    q &= db.stats_netdev.date < e
+    q &= db.stats_netdev.dev == dev
+    rows = db(q).select(orderby=db.stats_netdev.date)
+    if len(rows) == 0:
+        return SPAN()
+
+    from time import mktime
+
+    start_date = tic_start_ts(rows)
+
+    def format_x(ts):
+        d = datetime.datetime.fromtimestamp(ts+start_date)
+        return "/a50/5{}" + d.strftime("%y-%m-%d %H:%M")
+
+    def format_y(x):
+        return "/6{}" + str(x)
+
+    def format2_y(x):
+        return "/a50/6{}" + str(x)
+
+    import random
+    rand = int(random.random()*1000000)
+    action = URL(r=request,c='static',f='stats_netdev_'+str(rand)+'.png')
+    path = 'applications'+str(action)
+    can = canvas.init(path)
+    theme.use_color = True
+    theme.scale_factor = 2
+    theme.reinitialize()
+
+    data = [(mktime(row.date.timetuple())-start_date,
+             row.rxpckps,
+             row.txpckps,
+             row.rxkBps,
+             row.txkBps) for row in rows]
+
+    ar = area.T(
+           #x_coord = category_coord.T(data, 0),
+           x_coord = linear_coord.T(),
+           y_coord = linear_coord.T(),
+           x_axis = axis.X(
+                      label = 'dev '+dev,
+                      format=format_x,
+                      tic_interval=tic_interval_from_ts,
+                    ),
+           y_axis = axis.Y(label = "", format=format_y),
+           x_range = (None, mktime(rows[-1].date.timetuple())-start_date)
+         )
+    bar_plot.fill_styles.reset();
+    plot1 = line_plot.T(label="rx kB//s",
+                       ycol=3,
+                       line_style=line_style.T(color=color.thistle3, width=2),
+                       data = data,
+                       data_label_format="",
+                       )
+    plot2 = line_plot.T(label="tx kB//s",
+                       ycol=4,
+                       line_style=line_style.T(width=2, color=color.salmon),
+                       data = data,
+                       data_label_format="",
+                       )
+    ar.add_plot(plot1, plot2)
+    ar.draw(can)
+    can.close()
+
+    return DIV(IMG(_src=action))
+
+@auth.requires_login()
+def perf_stats_netdev_err(node, s, e):
+    rows = db.executesql("""
+      select dev,
+             max(rxerrps) as max_rxerrps,
+             max(txerrps) as max_txerrps,
+             max(collps) as max_collps,
+             max(rxdropps) as max_rxdropps,
+             max(txdropps) as max_txdropps
+      from stats_netdev_err
+      where date >= "%(s)s" and
+            date <= "%(e)s" and
+            nodename = "%(node)s"
+      group by dev;
+    """%dict(node=node, s=s, e=e))
+
+    if len(rows) == 0:
+        return SPAN()
+
+    from time import mktime
+
+    def format_x(x):
+        return "/6{}" + str(x)
+
+    def format_y(x):
+        return "/6{}" + str(x)
+
+    import random
+    rand = int(random.random()*1000000)
+
+    """ %util
+    """
+    data1 = [(row[0],
+              row[1],
+              row[2],
+              row[3],
+              row[4],
+              row[5],
+             ) for row in rows]
+    data = sorted(data1, key = lambda x: x[1])
+
+    action1 = URL(r=request,c='static',f='stats_netdev_err_'+str(rand)+'.png')
+    path = 'applications'+str(action1)
+    can = canvas.init(path)
+    theme.use_color = True
+    theme.scale_factor = 2
+    theme.reinitialize()
+
+    ar = area.T(
+           x_coord = linear_coord.T(),
+           y_coord = category_coord.T(data, 0),
+           x_axis = axis.X(label = 'net dev errors', format=format_x, tic_interval=10),
+           y_axis = axis.Y(label = "", format=format_y),
+           size = (150,len(data)*8),
+         )
+    bar_plot.fill_styles.reset()
+    plot1 = bar_plot.T(label="max rxerr//s",
+                       line_style=None,
+                       width=2,
+                       hcol=1,
+                       cluster=(0,5),
+                       data=data,
+                       data_label_format="",
+                       direction='horizontal')
+    plot2 = bar_plot.T(label="max txerr//s",
+                       fill_style=fill_style.Plain(bgcolor=color.darkolivegreen1),
+                       line_style=None,
+                       width=2,
+                       hcol=2,
+                       cluster=(1,5),
+                       data=data,
+                       data_label_format="",
+                       direction='horizontal')
+    plot3 = bar_plot.T(label="max coll//s",
+                       fill_style=fill_style.Plain(bgcolor=color.salmon),
+                       line_style=None,
+                       width=2,
+                       hcol=3,
+                       cluster=(2,5),
+                       data=data,
+                       data_label_format="",
+                       direction='horizontal')
+    plot4 = bar_plot.T(label="max rxdrop//s",
+                       fill_style=fill_style.Plain(bgcolor=color.thistle3),
+                       line_style=None,
+                       width=2,
+                       hcol=4,
+                       cluster=(3,5),
+                       data=data,
+                       data_label_format="",
+                       direction='horizontal')
+    plot5 = bar_plot.T(label="max txdrop//s",
+                       fill_style=fill_style.Plain(bgcolor=color.darkkhaki),
+                       line_style=None,
+                       width=2,
+                       hcol=5,
+                       cluster=(4,5),
+                       data=data,
+                       data_label_format="",
+                       direction='horizontal')
+    ar.add_plot(plot1, plot2, plot3, plot4, plot5)
+    ar.draw(can)
+    can.close()
+
+    return DIV(IMG(_src=action1))
+
+@auth.requires_login()
 def perf_stats_cpu(node, s, e):
     q = db.stats_cpu.nodename == node
     q &= db.stats_cpu.date > s
@@ -4453,6 +4647,8 @@ def ajax_perf_stats():
               perf_stats_mem_u(node, begin, end),
               perf_stats_swap(node, begin, end),
               perf_stats_proc(node, begin, end),
+              perf_stats_netdev(node, begin, end),
+              perf_stats_netdev_err(node, begin, end),
               perf_stats_block(node, begin, end),
               perf_stats_blockdev(node, begin, end),
               _style="""background-color:white;
