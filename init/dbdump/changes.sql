@@ -254,7 +254,7 @@ CREATE TABLE `opensvc`.`packages` (
   `id` integer  NOT NULL AUTO_INCREMENT,
   `pkg_nodename` varchar(60)  NOT NULL,
   `pkg_name` varchar(100)  NOT NULL,
-  `pkg_version` varchar(16)  NOT NULL,
+  `pkg_version` varchar(32)  NOT NULL,
   `pkg_arch` varchar(8)  NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `idx1`(`pkg_nodename`),
@@ -267,3 +267,31 @@ drop view v_svc_group_status;
 create view v_svc_group_status as (select `svcmon`.`ID` AS `id`,`svcmon`.`mon_svcname` AS `svcname`,`svcmon`.`mon_svctype` AS `svctype`,group_concat(`trusted_status`(`svcmon`.`mon_overallstatus`,`svcmon`.`mon_updated`) separator ',') AS `groupstatus`, group_concat(`svcmon`.`mon_nodname` separator ',') AS `nodes` from `svcmon` group by `svcmon`.`mon_svcname`);
 
 alter table packages add column pkg_updated timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+#
+# 2010-05-17
+#
+CREATE TABLE `stats_netdev` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nodename` varchar(60) NOT NULL,
+  `date` datetime NOT NULL,
+  `dev` varchar(8) NOT NULL,
+  `rxkBps` float NOT NULL,
+  `txkBps` float NOT NULL,
+  `rxpckps` float NOT NULL,
+  `txpckps` float NOT NULL,
+  PRIMARY KEY (`id`)
+)
+
+CREATE TABLE `stats_netdev_err` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nodename` varchar(60) NOT NULL,
+  `date` datetime NOT NULL,
+  `rxerrps` float NOT NULL,
+  `txerrps` float NOT NULL,
+  `collps` float NOT NULL,
+  `rxdropps` float NOT NULL,
+  `txdropps` float NOT NULL,
+  `dev` varchar(8) NOT NULL,
+  PRIMARY KEY (`id`)
+)
