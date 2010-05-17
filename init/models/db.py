@@ -716,6 +716,29 @@ db.define_table('stats_blockdev',
     Field('pct_util', 'float'),
     migrate=False)
 
+db.define_table('stats_netdev_err',
+    Field('id'),
+    Field('date', 'datetime'),
+    Field('nodename', 'string', length=60),
+    Field('dev', 'string', length=8),
+    Field('rxerrps', 'float'),
+    Field('txerrps', 'float'),
+    Field('collps', 'float'),
+    Field('rxdropps', 'float'),
+    Field('txdropps', 'float'),
+    migrate=False)
+
+db.define_table('stats_netdev',
+    Field('id'),
+    Field('date', 'datetime'),
+    Field('nodename', 'string', length=60),
+    Field('dev', 'string', length=8),
+    Field('rxkBps', 'float'),
+    Field('txkBps', 'float'),
+    Field('rxpckps', 'float'),
+    Field('txpckps', 'float'),
+    migrate=False)
+
 db.define_table('packages',
     Field('id'),
     Field('pkg_nodename', 'string', length=60),
