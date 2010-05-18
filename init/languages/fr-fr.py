@@ -476,6 +476,7 @@
 'service primary node': 'noeud primaire de service',
 'service type': 'type de service',
 'set wave': 'assigner la vague',
+'site': 'site',
 'state': '\xc3\xa9tat',
 'stats': 'stats',
 'status': '\xc3\xa9tats',
