@@ -286,7 +286,7 @@ def pkg_diff_table():
     cellclasses['cell2'] = 'cell1'
     lines = []
 
-    for line in pkgdiff:
+    for line in sorted(pkgdiff, key=pkgdiff.__getitem__):
         cellclass = cellclasses[cellclass]
         lines += [pkg_diff_line(line, cellclass)]
         pass
