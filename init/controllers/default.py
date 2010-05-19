@@ -384,6 +384,10 @@ def index():
         n = len(nodes)
         if n == 1:
             continue
+        nodes.sort()
+        key = ','.join(nodes)
+        if key in pkgdiff:
+            continue
         sql = """select count(id) from (
                    select *,count(pkg_nodename) as c
                    from packages
@@ -396,7 +400,7 @@ def index():
         x = db.executesql(sql)
         if len(x) != 1 or len(x[0]) != 1 or x[0][0] == 0:
             continue
-        pkgdiff[row.nodes] = x[0][0]
+        pkgdiff[key] = x[0][0]
 
     return dict(svcnotupdated=svcnotupdated,
                 frozen=frozen,
