@@ -281,7 +281,7 @@ CREATE TABLE `stats_netdev` (
   `rxpckps` float NOT NULL,
   `txpckps` float NOT NULL,
   PRIMARY KEY (`id`)
-)
+);
 
 CREATE TABLE `stats_netdev_err` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -294,4 +294,11 @@ CREATE TABLE `stats_netdev_err` (
   `txdropps` float NOT NULL,
   `dev` varchar(8) NOT NULL,
   PRIMARY KEY (`id`)
-)
+);
+
+#
+# 2010-05-19
+#
+ALTER TABLE `opensvc`.`packages` DROP INDEX `idx3`,
+ ADD UNIQUE INDEX `idx3` USING BTREE(`pkg_nodename`, `pkg_name`, `pkg_arch`);
+

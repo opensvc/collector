@@ -389,6 +389,10 @@ def index():
         n = len(nodes)
         if n == 1:
             continue
+        nodes.sort()
+        key = ','.join(nodes)
+        if key in pkgdiff:
+            continue
         sql = """select count(id) from (
                    select *,count(pkg_nodename) as c
                    from packages
@@ -401,7 +405,7 @@ def index():
         x = db.executesql(sql)
         if len(x) != 1 or len(x[0]) != 1 or x[0][0] == 0:
             continue
-        pkgdiff[row.nodes] = x[0][0]
+        pkgdiff[key] = x[0][0]
 
     return dict(svcnotupdated=svcnotupdated,
                 frozen=frozen,
@@ -1499,7 +1503,11 @@ def ajax_pkgdiff():
     nodes = request.vars.pkgnodes.split(',')
     n = len(nodes)
     sql = """select * from (
-               select *,count(pkg_nodename) as c
+               select group_concat(pkg_nodename order by pkg_nodename),
+                      pkg_name,
+                      pkg_version,
+                      pkg_arch,
+                      count(pkg_nodename) as c
                from packages
                where pkg_nodename in (%(nodes)s)
                group by pkg_name,pkg_version,pkg_arch
@@ -1519,10 +1527,10 @@ def ajax_pkgdiff():
 
     def fmt_line(row):
         return TR(
+                 TD(row[0]),
                  TD(row[1]),
                  TD(row[2]),
                  TD(row[3]),
-                 TD(row[4]),
                )
 
     def fmt_table(rows):
