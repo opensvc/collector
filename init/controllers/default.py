@@ -377,6 +377,9 @@ def index():
     if len(rows) == 1 and rows[0].manager == 1:
         query = (db.obsolescence.obs_warn_date==None)|(db.obsolescence.obs_warn_date=="0000-00-00")
         query &= (db.v_nodes.os_concat==db.obsolescence.obs_name)|(db.v_nodes.model==db.obsolescence.obs_name)
+        query &= (~db.v_nodes.model.like("%virtual%"))
+        query &= (~db.v_nodes.model.like("%virtuel%"))
+        query &= (~db.v_nodes.model.like("%cluster%"))
         query &= _where(None, 'v_nodes', domain_perms(), 'nodename')
         query &= apply_db_filters(query, 'v_nodes')
         rows = db(query).select(db.obsolescence.obs_name, groupby=db.obsolescence.obs_name)
@@ -384,6 +387,9 @@ def index():
 
         query = (db.obsolescence.obs_alert_date==None)|(db.obsolescence.obs_alert_date=="0000-00-00")
         query &= (db.v_nodes.os_concat==db.obsolescence.obs_name)|(db.v_nodes.model==db.obsolescence.obs_name)
+        query &= (~db.v_nodes.model.like("%virtual%"))
+        query &= (~db.v_nodes.model.like("%virtuel%"))
+        query &= (~db.v_nodes.model.like("%cluster%"))
         query &= _where(None, 'v_nodes', domain_perms(), 'nodename')
         query &= apply_db_filters(query, 'v_nodes')
         rows = db(query).select(db.obsolescence.obs_name, groupby=db.obsolescence.obs_name)
@@ -1769,6 +1775,9 @@ def obsolescence_config():
 
     query = (db.obsolescence.obs_type=="os")&(db.obsolescence.obs_name==db.v_nodes.os_concat)
     query |= (db.obsolescence.obs_type=="hw")&(db.obsolescence.obs_name==db.v_nodes.model)
+    query &= (~db.v_nodes.model.like("%virtual%"))
+    query &= (~db.v_nodes.model.like("%virtuel%"))
+    query &= (~db.v_nodes.model.like("%cluster%"))
     query &= _where(None, 'obsolescence', request.vars.obs_type, 'obs_type')
     query &= _where(None, 'obsolescence', request.vars.obs_name, 'obs_name')
     query &= _where(None, 'obsolescence', request.vars.obs_warn_date, 'obs_warn_date')
