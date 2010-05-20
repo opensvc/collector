@@ -36,7 +36,7 @@ def call():
     session.forget()
     return service()
 
-def _pagination(request, query):
+def _pagination(request, query, groupby=None):
     start = 0
     end = 0
     nav = ''
@@ -44,8 +44,10 @@ def _pagination(request, query):
 
     if perpage <= 0:
         return (start, end, nav)
-
-    totalrecs = db(query).count()
+    if groupby is not None:
+        totalrecs = len(db(query).select(groupby=groupby))
+    else:
+        totalrecs = db(query).count()
     totalpages = totalrecs / perpage
     if totalrecs % perpage > 0: totalpages = totalpages + 1
     try:
@@ -276,7 +278,8 @@ def index():
 
     query = db.svcmon.mon_frozen==1
     query &= _where(None, 'svcmon', domain_perms(), 'mon_nodname')
-    frozen = db(query).select(db.svcmon.mon_svcname, db.svcmon.mon_nodname)
+    frozen = db(query).select(db.svcmon.mon_svcname, db.svcmon.mon_nodname,
+                              orderby=db.svcmon.mon_svcname)
 
     query = ~db.svcmon.mon_nodname.belongs(db()._select(db.nodes.nodename))
     query &= _where(None, 'svcmon', domain_perms(), 'mon_nodname')
@@ -297,7 +300,7 @@ def index():
     query = (db.v_svcmon.err>0)
     query &= _where(None, 'v_svcmon', domain_perms(), 'mon_svcname')
     query = apply_db_filters(query, 'v_svcmon')
-    svcwitherrors = db(query).select(orderby=~db.v_svcmon.err)
+    svcwitherrors = db(query).select(orderby=~db.v_svcmon.err, groupby=db.v_svcmon.mon_svcname)
 
     query = (~db.v_svc_group_status.groupstatus.like("up,%"))
     query &= (~db.v_svc_group_status.groupstatus.like("%,up,%"))
@@ -306,7 +309,7 @@ def index():
     query &= _where(None, 'v_svc_group_status', domain_perms(), 'svcname')
     query &= db.v_svc_group_status.svcname==db.v_svcmon.mon_svcname
     query = apply_db_filters(query, 'v_svcmon')
-    svcnotup = db(query).select(groupby=db.v_svc_group_status.svcname)
+    svcnotup = db(query).select(groupby=db.v_svc_group_status.svcname, orderby=db.v_svc_group_status.svcname)
 
     query = (db.v_svcmon.svc_autostart==db.v_svcmon.mon_nodname)
     query &= ((db.v_svcmon.mon_overallstatus!="up")|(db.v_svcmon.mon_updated<tmo))
@@ -328,7 +331,8 @@ def index():
     obsoswarn = db(query).select(db.v_nodes.nodename,
                                  db.obsolescence.obs_name,
                                  db.obsolescence.obs_warn_date,
-                                 left=db.v_nodes.on(join)
+                                 left=db.v_nodes.on(join),
+                                 orderby=db.obsolescence.obs_warn_date|db.v_nodes.nodename
                                 )
 
     query = (db.obsolescence.obs_alert_date!=None)&(db.obsolescence.obs_alert_date!="0000-00-00")&(db.obsolescence.obs_alert_date<now)
@@ -339,7 +343,8 @@ def index():
     obsosalert = db(query).select(db.v_nodes.nodename,
                                  db.obsolescence.obs_name,
                                  db.obsolescence.obs_alert_date,
-                                 left=db.v_nodes.on(join)
+                                 left=db.v_nodes.on(join),
+                                 orderby=db.obsolescence.obs_alert_date|db.v_nodes.nodename
                                 )
 
     warn = (db.obsolescence.obs_warn_date!=None)&(db.obsolescence.obs_warn_date!="0000-00-00")&(db.obsolescence.obs_warn_date<now)
@@ -352,7 +357,8 @@ def index():
     obshwwarn = db(query).select(db.v_nodes.nodename,
                                  db.obsolescence.obs_name,
                                  db.obsolescence.obs_warn_date,
-                                 left=db.v_nodes.on(join)
+                                 left=db.v_nodes.on(join),
+                                 orderby=db.obsolescence.obs_warn_date|db.v_nodes.nodename
                                 )
 
     query = (db.obsolescence.obs_alert_date!=None)&(db.obsolescence.obs_alert_date!="0000-00-00")&(db.obsolescence.obs_alert_date<now)
@@ -363,16 +369,31 @@ def index():
     obshwalert = db(query).select(db.v_nodes.nodename,
                                  db.obsolescence.obs_name,
                                  db.obsolescence.obs_alert_date,
-                                 left=db.v_nodes.on(join)
+                                 left=db.v_nodes.on(join),
+                                 orderby=db.obsolescence.obs_alert_date|db.v_nodes.nodename
                                 )
 
     rows = db(db.v_users.id==session.auth.user.id).select(db.v_users.manager)
     if len(rows) == 1 and rows[0].manager == 1:
         query = (db.obsolescence.obs_warn_date==None)|(db.obsolescence.obs_warn_date=="0000-00-00")
-        obswarnmiss = db(query).count()
+        query &= (db.v_nodes.os_concat==db.obsolescence.obs_name)|(db.v_nodes.model==db.obsolescence.obs_name)
+        query &= (~db.v_nodes.model.like("%virtual%"))
+        query &= (~db.v_nodes.model.like("%virtuel%"))
+        query &= (~db.v_nodes.model.like("%cluster%"))
+        query &= _where(None, 'v_nodes', domain_perms(), 'nodename')
+        query &= apply_db_filters(query, 'v_nodes')
+        rows = db(query).select(db.obsolescence.obs_name, groupby=db.obsolescence.obs_name)
+        obswarnmiss = len(rows)
 
         query = (db.obsolescence.obs_alert_date==None)|(db.obsolescence.obs_alert_date=="0000-00-00")
-        obsalertmiss = db(query).count()
+        query &= (db.v_nodes.os_concat==db.obsolescence.obs_name)|(db.v_nodes.model==db.obsolescence.obs_name)
+        query &= (~db.v_nodes.model.like("%virtual%"))
+        query &= (~db.v_nodes.model.like("%virtuel%"))
+        query &= (~db.v_nodes.model.like("%cluster%"))
+        query &= _where(None, 'v_nodes', domain_perms(), 'nodename')
+        query &= apply_db_filters(query, 'v_nodes')
+        rows = db(query).select(db.obsolescence.obs_name, groupby=db.obsolescence.obs_name)
+        obsalertmiss = len(rows)
     else:
         obswarnmiss = 0
         obsalertmiss = 0
@@ -535,7 +556,9 @@ def apps():
             continue
         query &= _where(None, 'v_apps', request.vars[key], key)
 
-    (start, end, nav) = _pagination(request, query)
+    g = db.v_apps.app
+
+    (start, end, nav) = _pagination(request, query, groupby=g)
     if start == 0 and end == 0:
         rows = db(query).select(db.v_apps.id,
                                 db.v_apps.app,
@@ -543,7 +566,7 @@ def apps():
                                 db.v_apps.responsibles,
                                 orderby=db.v_apps.app,
                                 left=db.v_svcmon.on(db.v_svcmon.svc_app==db.v_apps.app),
-                                groupby=db.v_apps.app)
+                                groupby=g)
     else:
         rows = db(query).select(db.v_apps.id,
                                 db.v_apps.app,
@@ -552,7 +575,7 @@ def apps():
                                 limitby=(start,end),
                                 orderby=db.v_apps.app,
                                 left=db.v_svcmon.on(db.v_svcmon.svc_app==db.v_apps.app),
-                                groupby=db.v_apps.app)
+                                groupby=g)
 
     query = ~db.auth_group.role.like('user_%')
     roles = db(query).select()
@@ -1753,10 +1776,13 @@ def obsolescence_config():
     o |= db.obsolescence.obs_warn_date
     o |= db.obsolescence.obs_alert_date
 
-    g = db.obsolescence.obs_name|db.obsolescence.obs_type
+    g = db.obsolescence.obs_type|db.obsolescence.obs_name
 
     query = (db.obsolescence.obs_type=="os")&(db.obsolescence.obs_name==db.v_nodes.os_concat)
     query |= (db.obsolescence.obs_type=="hw")&(db.obsolescence.obs_name==db.v_nodes.model)
+    query &= (~db.v_nodes.model.like("%virtual%"))
+    query &= (~db.v_nodes.model.like("%virtuel%"))
+    query &= (~db.v_nodes.model.like("%cluster%"))
     query &= _where(None, 'obsolescence', request.vars.obs_type, 'obs_type')
     query &= _where(None, 'obsolescence', request.vars.obs_name, 'obs_name')
     query &= _where(None, 'obsolescence', request.vars.obs_warn_date, 'obs_warn_date')
@@ -1764,7 +1790,7 @@ def obsolescence_config():
 
     query = apply_db_filters(query, 'v_nodes')
 
-    (start, end, nav) = _pagination(request, query)
+    (start, end, nav) = _pagination(request, query, groupby=g)
     if start == 0 and end == 0:
         rows = db(query).select(db.obsolescence.ALL, db.v_nodes.id.count(), orderby=o, groupby=g)
     else:
@@ -4973,11 +4999,23 @@ def drplan():
 
     query = apply_db_filters(query, 'v_svcmon')
 
-    (start, end, nav) = _pagination(request, query)
+    g = db.v_svcmon.svc_name
+    j = (db.v_svcmon.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)
+
+    (start, end, nav) = _pagination(request, query, groupby=g)
     if start == 0 and end == 0:
-        svc_rows = db(query).select(db.v_svcmon.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id, left=db.drpservices.on((db.v_svcmon.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)),groupby=db.v_svcmon.svc_name)
+        svc_rows = db(query).select(db.v_svcmon.ALL,
+                                    db.drpservices.drp_wave,
+                                    db.drpservices.drp_project_id,
+                                    left=db.drpservices.on(j),
+                                    groupby=g)
     else:
-        svc_rows = db(query).select(db.v_svcmon.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id, left=db.drpservices.on((db.v_svcmon.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)),groupby=db.v_svcmon.svc_name, limitby=(start,end))
+        svc_rows = db(query).select(db.v_svcmon.ALL,
+                                    db.drpservices.drp_wave,
+                                    db.drpservices.drp_project_id,
+                                    left=db.drpservices.on(j),
+                                    groupby=g,
+                                    limitby=(start,end))
 
     prj_rows = db().select(db.drpprojects.drp_project_id, db.drpprojects.drp_project)
     return dict(services=svc_rows,
