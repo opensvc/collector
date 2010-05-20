@@ -276,7 +276,8 @@ def index():
 
     query = db.svcmon.mon_frozen==1
     query &= _where(None, 'svcmon', domain_perms(), 'mon_nodname')
-    frozen = db(query).select(db.svcmon.mon_svcname, db.svcmon.mon_nodname)
+    frozen = db(query).select(db.svcmon.mon_svcname, db.svcmon.mon_nodname,
+                              orderby=db.svcmon.mon_svcname)
 
     query = ~db.svcmon.mon_nodname.belongs(db()._select(db.nodes.nodename))
     query &= _where(None, 'svcmon', domain_perms(), 'mon_nodname')
@@ -306,7 +307,7 @@ def index():
     query &= _where(None, 'v_svc_group_status', domain_perms(), 'svcname')
     query &= db.v_svc_group_status.svcname==db.v_svcmon.mon_svcname
     query = apply_db_filters(query, 'v_svcmon')
-    svcnotup = db(query).select(groupby=db.v_svc_group_status.svcname)
+    svcnotup = db(query).select(groupby=db.v_svc_group_status.svcname, orderby=db.v_svc_group_status.svcname)
 
     query = (db.v_svcmon.svc_autostart==db.v_svcmon.mon_nodname)
     query &= ((db.v_svcmon.mon_overallstatus!="up")|(db.v_svcmon.mon_updated<tmo))
@@ -328,7 +329,8 @@ def index():
     obsoswarn = db(query).select(db.v_nodes.nodename,
                                  db.obsolescence.obs_name,
                                  db.obsolescence.obs_warn_date,
-                                 left=db.v_nodes.on(join)
+                                 left=db.v_nodes.on(join),
+                                 orderby=db.obsolescence.obs_warn_date|db.v_nodes.nodename
                                 )
 
     query = (db.obsolescence.obs_alert_date!=None)&(db.obsolescence.obs_alert_date!="0000-00-00")&(db.obsolescence.obs_alert_date<now)
@@ -339,7 +341,8 @@ def index():
     obsosalert = db(query).select(db.v_nodes.nodename,
                                  db.obsolescence.obs_name,
                                  db.obsolescence.obs_alert_date,
-                                 left=db.v_nodes.on(join)
+                                 left=db.v_nodes.on(join),
+                                 orderby=db.obsolescence.obs_alert_date|db.v_nodes.nodename
                                 )
 
     warn = (db.obsolescence.obs_warn_date!=None)&(db.obsolescence.obs_warn_date!="0000-00-00")&(db.obsolescence.obs_warn_date<now)
@@ -352,7 +355,8 @@ def index():
     obshwwarn = db(query).select(db.v_nodes.nodename,
                                  db.obsolescence.obs_name,
                                  db.obsolescence.obs_warn_date,
-                                 left=db.v_nodes.on(join)
+                                 left=db.v_nodes.on(join),
+                                 orderby=db.obsolescence.obs_warn_date|db.v_nodes.nodename
                                 )
 
     query = (db.obsolescence.obs_alert_date!=None)&(db.obsolescence.obs_alert_date!="0000-00-00")&(db.obsolescence.obs_alert_date<now)
@@ -363,7 +367,8 @@ def index():
     obshwalert = db(query).select(db.v_nodes.nodename,
                                  db.obsolescence.obs_name,
                                  db.obsolescence.obs_alert_date,
-                                 left=db.v_nodes.on(join)
+                                 left=db.v_nodes.on(join),
+                                 orderby=db.obsolescence.obs_alert_date|db.v_nodes.nodename
                                 )
 
     rows = db(db.v_users.id==session.auth.user.id).select(db.v_users.manager)
