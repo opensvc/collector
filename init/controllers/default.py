@@ -2395,7 +2395,8 @@ def _svcaction_ack(request):
         """ Cancel pending alert
         """
         db((db.alerts.action_id==action_id)&(db.alerts.sent_at==None)).delete()
-    del request.vars.ackcomment
+    if 'ackcomment' in request.vars:
+        del request.vars.ackcomment
 
 
 def _svcaction_ack_one(request, action_id):
