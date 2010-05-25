@@ -400,7 +400,8 @@ def index():
 
     pkgdiff = {}
     clusters = {}
-    rows = db(db.v_svc_group_status.id>0).select(db.v_svc_group_status.nodes, distinct=True)
+    query = _where(None, 'v_svc_group_status', domain_perms(), 'nodes')
+    rows = db(query).select(db.v_svc_group_status.nodes, distinct=True)
     for row in rows:
         nodes = row.nodes.split(',')
         s = set(nodes)
