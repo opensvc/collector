@@ -302,3 +302,7 @@ CREATE TABLE `stats_netdev_err` (
 ALTER TABLE `opensvc`.`packages` DROP INDEX `idx3`,
  ADD UNIQUE INDEX `idx3` USING BTREE(`pkg_nodename`, `pkg_name`, `pkg_arch`);
 
+#
+# 2010-05-26
+#
+create view v_stats_netdev_err_avg_last_day as (select id, nodename, dev, avg(rxerrps) as avgrxerrps, avg(txerrps) as avgtxerrps, avg(collps) as avgcollps, avg(rxdropps) as avgrxdropps, avg(txdropps) as avgtxdropps from stats_netdev_err where date > date_sub(now(), interval 1 day) group by nodename, dev order by nodename, dev);

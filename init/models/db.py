@@ -739,6 +739,17 @@ db.define_table('stats_netdev',
     Field('txpckps', 'float'),
     migrate=False)
 
+db.define_table('v_stats_netdev_err_avg_last_day',
+    Field('id'),
+    Field('nodename', 'string', length=60),
+    Field('dev', 'string', length=8),
+    Field('avgrxerrps', 'float'),
+    Field('avgtxerrps', 'float'),
+    Field('avgcollps', 'float'),
+    Field('avgrxdropps', 'float'),
+    Field('avgtxdropps', 'float'),
+    migrate=False)
+
 db.define_table('packages',
     Field('id'),
     Field('pkg_nodename', 'string', length=60),

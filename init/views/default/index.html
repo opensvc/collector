@@ -855,6 +855,71 @@ def frozen_services():
     pass
 
 
+""" Netdev errors
+"""
+def netdev_err_line(line, cellclass):
+    tr = TR(
+      TD(A(line.nodename, _href=URL(r=request, f='svcmon', vars={'nodename':line.nodename})), _class=cellclass),
+      TD(line.dev, _class=cellclass),
+      TD("%.02f"%line.avgrxerrps, _class=cellclass),
+      TD("%.02f"%line.avgtxerrps, _class=cellclass),
+      TD("%.02f"%line.avgcollps, _class=cellclass),
+      TD("%.02f"%line.avgrxdropps, _class=cellclass),
+      TD("%.02f"%line.avgtxdropps, _class=cellclass),
+    )
+    return tr
+    pass
+
+def netdev_err_header():
+    tr = TR(
+      TH(T("Nodename")),
+      TH(T("Device")),
+      TH(T("Avg rx err/s")),
+      TH(T("Avg tx err/s")),
+      TH(T("Avg coll/s")),
+      TH(T("Avg rx drop/s")),
+      TH(T("Avg tx drop/s")),
+      _style="border-bottom:4px solid darkorange",
+    )
+    return tr
+    pass
+
+def netdev_err_table():
+    cellclass = 'cell1'
+    cellclasses = {}
+    cellclasses['cell1'] = 'cell2'
+    cellclasses['cell2'] = 'cell1'
+    lines = []
+
+    for line in netdeverrs:
+        cellclass = cellclasses[cellclass]
+        lines += [netdev_err_line(line, cellclass)]
+        pass
+
+    t = TABLE(
+        TR(
+          TD(
+            H2(T("Nodes with network device errors in the last day"), _style="padding:10px;text-align:center"),
+            _colspan=99,
+          ),
+        ),
+        netdev_err_header(),
+        lines,
+    )
+    return t
+    pass
+
+def netdev_err():
+    if len(netdeverrs) == 0:
+        return DIV()
+    d = DIV(
+      netdev_err_table(),
+      _style="padding:10px",
+    )
+    return d
+    pass
+
+
 """ Summary
 """
 def summary_table():
@@ -1010,6 +1075,7 @@ def summary():
      obs_miss(),
      nodes_without_asset(),
      pkg_diff(),
+     netdev_err(),
      _style="
        padding-left:2em;
        padding-right:2em;

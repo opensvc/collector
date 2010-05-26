@@ -429,6 +429,15 @@ def index():
             continue
         pkgdiff[key] = x[0][0]
 
+    q = db.v_stats_netdev_err_avg_last_day.avgrxerrps > 0
+    q |= db.v_stats_netdev_err_avg_last_day.avgtxerrps > 0
+    q |= db.v_stats_netdev_err_avg_last_day.avgcollps > 0
+    q |= db.v_stats_netdev_err_avg_last_day.avgrxdropps > 0
+    q |= db.v_stats_netdev_err_avg_last_day.avgtxdropps > 0
+    query = _where(None, 'v_stats_netdev_err_avg_last_day', domain_perms(), 'nodename')
+    query &= q
+    netdeverrs = db(query).select()
+
     return dict(svcnotupdated=svcnotupdated,
                 frozen=frozen,
                 nodeswithoutasset=nodeswithoutasset,
@@ -446,6 +455,7 @@ def index():
                 active_filters=active_db_filters('v_svcmon'),
                 available_filters=avail_db_filters('v_svcmon'),
                 pkgdiff=pkgdiff,
+                netdeverrs=netdeverrs,
                )
 
 @auth.requires_membership('Manager')
