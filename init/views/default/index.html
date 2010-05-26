@@ -1020,6 +1020,11 @@ def summary_table():
       TD(T("Clusters with package differences amongst nodes"), _class=cellclass),
       TD(len(pkgdiff), _class=cellclass, _style=color(len(pkgdiff))),
     )]
+    cellclass = cellclasses[cellclass]
+    lines += [TR(
+      TD(T("Nodes with network device errors in the last day"), _class=cellclass),
+      TD("%i intf"%len(netdeverrs), _class=cellclass, _style=color(len(pkgdiff))),
+    )]
 
     t = TABLE(
         TR(

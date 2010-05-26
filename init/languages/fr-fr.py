@@ -165,6 +165,7 @@
 'Nodes': 'Noeuds',
 'Nodes in %(os)s': 'Noeuds en %(os)s',
 'Nodes with network device errors in the last day': "Noeuds avec erreurs d'interface r\xc3\xa9seau ce dernier jour",
+'Nodes with network interfaces errors': 'Nodes with network interfaces errors',
 'Nodes with obsolescent hardware (alert)': 'Noeuds en mat\xc3\xa9riel obsolescent (alerte)',
 'Nodes with obsolescent hardware (warn)': 'Noeuds en mat\xc3\xa9riel obsolescent (attention)',
 'Nodes with obsolescent operating system (alert)': "Noeuds en syst\xc3\xa8me d'exploitation obsolescent (alerte)",
