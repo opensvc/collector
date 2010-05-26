@@ -118,7 +118,7 @@ select {
 }
 
 .status_n\/a {
-    opacity: 0.5;
+    color: #666666;
 }
 
 .status_up, .status_ok, .status_stdby_up {
