@@ -3,25 +3,13 @@ var timer;
 var ctrl = false;
 
 document.onkeydown = tofilter;
-document.onkeyup = reset_ctrl;
+document.onkeyup = resetctrl;
 
-function reset_ctrl() {
+function resetctrl(e)
+{
     var KeyID = (window.event) ? event.keyCode : e.keyCode;
     if (KeyID == 17) {
         ctrl = false;
-    }
-}
-
-function toggle_menu()
-{
-    var menubar = document.getElementById("menubar");
-    var status = document.getElementById("filterbar_status");
-    if (menubar.className=="menubar") {
-        menubar.className="menubar_shown";
-        status.value = 'shown';
-    } else {
-        menubar.className="menubar";
-        status.value = 'hidden';
     }
 }
 
@@ -43,6 +31,19 @@ function tofilter(e) {
                 //document.svcform.addfilter.select();
             }
             break;
+    }
+}
+
+function toggle_menu()
+{
+    var menubar = document.getElementById("menubar");
+    var status = document.getElementById("filterbar_status");
+    if (menubar.className=="menubar") {
+        menubar.className="menubar_shown";
+        status.value = 'shown';
+    } else {
+        menubar.className="menubar";
+        status.value = 'hidden';
     }
 }
 
