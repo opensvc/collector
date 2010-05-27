@@ -276,10 +276,11 @@ def index():
     one_days_ago = now - datetime.timedelta(days=1)
     tmo = now - datetime.timedelta(minutes=15)
 
-    query = db.svcmon.mon_frozen==1
-    query &= _where(None, 'svcmon', domain_perms(), 'mon_nodname')
-    frozen = db(query).select(db.svcmon.mon_svcname, db.svcmon.mon_nodname,
-                              orderby=db.svcmon.mon_svcname)
+    query = db.v_svcmon.mon_frozen==1
+    query &= _where(None, 'v_svcmon', domain_perms(), 'mon_nodname')
+    query = apply_db_filters(query, 'v_svcmon')
+    frozen = db(query).select(db.v_svcmon.mon_svcname, db.v_svcmon.mon_nodname,
+                              orderby=db.v_svcmon.mon_svcname)
 
     query = ~db.svcmon.mon_nodname.belongs(db()._select(db.nodes.nodename))
     query &= _where(None, 'svcmon', domain_perms(), 'mon_nodname')
