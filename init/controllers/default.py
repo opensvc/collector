@@ -382,7 +382,7 @@ def index():
         query &= (~db.v_nodes.model.like("%virtuel%"))
         query &= (~db.v_nodes.model.like("%cluster%"))
         query &= _where(None, 'v_nodes', domain_perms(), 'nodename')
-        query &= apply_db_filters(query, 'v_nodes')
+        query = apply_db_filters(query, 'v_nodes')
         rows = db(query).select(db.obsolescence.obs_name, groupby=db.obsolescence.obs_name)
         obswarnmiss = len(rows)
 
@@ -392,7 +392,7 @@ def index():
         query &= (~db.v_nodes.model.like("%virtuel%"))
         query &= (~db.v_nodes.model.like("%cluster%"))
         query &= _where(None, 'v_nodes', domain_perms(), 'nodename')
-        query &= apply_db_filters(query, 'v_nodes')
+        query = apply_db_filters(query, 'v_nodes')
         rows = db(query).select(db.obsolescence.obs_name, groupby=db.obsolescence.obs_name)
         obsalertmiss = len(rows)
     else:
@@ -401,7 +401,9 @@ def index():
 
     pkgdiff = {}
     clusters = {}
-    query = _where(None, 'v_svc_group_status', domain_perms(), 'nodes')
+    query = _where(None, 'v_svc_group_status', domain_perms(), 'svcname')
+    query &= db.v_svc_group_status.svcname==db.v_svcmon.mon_svcname
+    query = apply_db_filters(query, 'v_svcmon')
     rows = db(query).select(db.v_svc_group_status.nodes, distinct=True)
     for row in rows:
         nodes = row.nodes.split(',')
@@ -436,6 +438,8 @@ def index():
     q |= db.v_stats_netdev_err_avg_last_day.avgrxdropps > 0
     q |= db.v_stats_netdev_err_avg_last_day.avgtxdropps > 0
     query = _where(None, 'v_stats_netdev_err_avg_last_day', domain_perms(), 'nodename')
+    query &= db.v_stats_netdev_err_avg_last_day.nodename==db.v_nodes.nodename
+    query = apply_db_filters(query, 'v_nodes')
     query &= q
     netdeverrs = db(query).select()
 

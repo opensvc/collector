@@ -304,6 +304,11 @@ db.define_table('v_svcmon',
     Field('loc_room'),
     migrate=False)
 
+db.define_table('v_svcmon_clusters',
+    db.v_svcmon,
+    Field('nodes'),
+    migrate=False)
+
 db.define_table('drpservices',
     Field('drp_svcname'),
     Field('drp_wave'),

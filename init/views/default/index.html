@@ -859,13 +859,23 @@ def frozen_services():
 """
 def netdev_err_line(line, cellclass):
     tr = TR(
-      TD(A(line.nodename, _href=URL(r=request, f='svcmon', vars={'nodename':line.nodename})), _class=cellclass),
-      TD(line.dev, _class=cellclass),
-      TD("%.02f"%line.avgrxerrps, _class=cellclass),
-      TD("%.02f"%line.avgtxerrps, _class=cellclass),
-      TD("%.02f"%line.avgcollps, _class=cellclass),
-      TD("%.02f"%line.avgrxdropps, _class=cellclass),
-      TD("%.02f"%line.avgtxdropps, _class=cellclass),
+      TD(
+        A(
+          line.v_stats_netdev_err_avg_last_day.nodename,
+          _href=URL(
+                  r=request,
+                  f='svcmon',
+                  vars={'nodename':line.v_stats_netdev_err_avg_last_day.nodename}
+                )
+        ),
+        _class=cellclass
+      ),
+      TD(line.v_stats_netdev_err_avg_last_day.dev, _class=cellclass),
+      TD("%.02f"%line.v_stats_netdev_err_avg_last_day.avgrxerrps, _class=cellclass),
+      TD("%.02f"%line.v_stats_netdev_err_avg_last_day.avgtxerrps, _class=cellclass),
+      TD("%.02f"%line.v_stats_netdev_err_avg_last_day.avgcollps, _class=cellclass),
+      TD("%.02f"%line.v_stats_netdev_err_avg_last_day.avgrxdropps, _class=cellclass),
+      TD("%.02f"%line.v_stats_netdev_err_avg_last_day.avgtxdropps, _class=cellclass),
     )
     return tr
     pass
