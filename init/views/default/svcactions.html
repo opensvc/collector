@@ -7,6 +7,13 @@
 {{
 initialize_keys()
 }}
+{{
+def pid_to_filter(pid):
+    if pid is None:
+        return ''
+    return pid.replace(',', '|')
+pass
+}}
 {{=PANEL("column_values")}}
 <form action='svcactions' name='svcform' id='svcform' method='post'> 
 <input id='node' type='hidden'>
@@ -156,7 +163,7 @@ initialize_keys()
         }}
         {{=A(action.pid,
              _href=URL(r=request, vars={
-                       'pid':action.pid,
+                       'pid':pid_to_filter(action.pid),
                        'hostname':action.hostname,
                        'svcname':action.svcname,
                        'begin':'>'+str(action.begin-datetime.timedelta(days=1)),
