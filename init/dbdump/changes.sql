@@ -312,3 +312,8 @@ create view v_stats_netdev_err_avg_last_day as (select id, nodename, dev, avg(rx
 #
 create view v_svcmon_clusters as (select *, (select group_concat(mon_nodname order by mon_nodname) from svcmon where mon_svcname=m.mon_svcname) as nodes from v_svcmon m);
 alter table SVCactions modify pid VARCHAR(32);
+
+#
+# 2010-06-02
+#
+update alerts set body=replace(body, 'node?nodename', 'svcmon?nodename') where body like '%node?nodename%';
