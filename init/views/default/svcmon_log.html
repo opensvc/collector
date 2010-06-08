@@ -76,22 +76,6 @@ twenty_min_ago = now - datetime.timedelta(seconds=1200, microseconds=now.microse
 if vars['mon_begin'] == '': vars['mon_begin']='>'+str(seven_days_ago)
 if vars['mon_end'] == '': vars['mon_end']='<'+str(twenty_min_ago)
 
-def node_icon(svc):
-    if svc.os_name is None:
-        return ''
-    if "linux" in svc.os_name.lower():
-        img = IMG(_src=URL(r=request,c='static',f='linux.png'), _class='logo')
-    elif "HP-UX" in svc.os_name:
-	img = IMG(_src=URL(r=request,c='static',f='hpux.png'), _class='logo')
-    elif "opensolaris" in svc.os_name.lower():
-	img = IMG(_src=URL(r=request,c='static',f='opensolaris.png'), _class='logo')
-    elif "solaris" in svc.os_name.lower():
-	img = IMG(_src=URL(r=request,c='static',f='solaris.png'), _class='logo')
-    else:
-        img = ''
-        pass
-    return img
-
 import re
 def parseTimeDelta(s):
     """Create timedelta object representing time delta
