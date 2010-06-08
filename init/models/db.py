@@ -340,7 +340,7 @@ db.define_table('apps_responsibles',
     migrate=False)
 
 os_names = [
-    "Linux", 
+    "Linux",
     "HP-UX",
     "AIX",
     "Solaris",
@@ -353,8 +353,9 @@ os_names = [
 ]
 
 os_vendors = [
-    "Apple", 
-    "Red Hat", 
+    "Apple",
+    "FreeBSD",
+    "Red Hat",
     "Ubuntu",
     "Debian",
     "Centos",
