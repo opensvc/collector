@@ -27,6 +27,11 @@ def node_icon(os_name):
                 _src=URL(r=request,c='static',f='freebsd.png'),
                 _class='logo'
               )
+    elif "aix" in os_name.lower():
+        img = IMG(
+                _src=URL(r=request,c='static',f='aix24.png'),
+                _class='logo'
+              )
     else:
         img = ''
         pass
