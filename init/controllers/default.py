@@ -2001,7 +2001,7 @@ def svcmon():
                )
 
 class viz(object):
-    vizdir = 'applications'+str(URL(r=request,c='static',f='/'))
+    vizdir = 'applications'+str(URL(r=request,c='static',f='.'))
     vizprefix = 'tempviz'
     loc = {
         'country': {},
@@ -2077,13 +2077,23 @@ class viz(object):
         """
         import os
         import glob
+        files = []
         for name in glob.glob(os.path.join(self.vizdir, self.vizprefix+'*.png')):
+            files.append(name)
             os.unlink(name)
         for name in glob.glob(os.path.join(self.vizdir, self.vizprefix+'*.dot')):
+            files.append(name)
             os.unlink(name)
-
         for name in glob.glob(os.path.join(self.vizdir, 'stats_*.png')):
+            files.append(name)
             os.unlink(name)
+        for name in glob.glob(os.path.join(self.vizdir, 'stat_*.png')):
+            files.append(name)
+            os.unlink(name)
+        for name in glob.glob(os.path.join(self.vizdir, 'stats_*.svg')):
+            files.append(name)
+            os.unlink(name)
+        return files
 
     def __init__(self):
         pass
@@ -2309,7 +2319,7 @@ def svcmon_viz():
     return dict(s=s['services'], img=img)
 
 def viz_cron_cleanup():
-    viz().viz_cron_cleanup()
+    return viz().viz_cron_cleanup()
 
 def svcmon_csv():
     import gluon.contenttype
