@@ -3677,6 +3677,8 @@ def perf_stats_blockdev(node, s, e):
            )
 
 def tic_interval_from_ts(_min, _max):
+    """ choose an interval to display a minimum of 5 marks on the axis
+    """
     p = _max - _min
     r = []
     intervals = [2419200, 1209600, 604800, 86400, 21600, 7200, 3600]
@@ -3685,7 +3687,18 @@ def tic_interval_from_ts(_min, _max):
             break
     return range(_min, _max, i)
 
-def tic_interval_from_ord(rows):
+def tic_interval_from_ord(_min, _max):
+    """ choose interval to display a minimum of 5 marks on the axis
+    """
+    p = _max - _min
+    r = []
+    intervals = [720, 360, 30, 14, 7, 2, 1]
+    for i in intervals:
+        if p / i >= 6:
+            break
+    return range(_min, _max, i)
+
+def tic_interval_from_rows(rows):
     _min = rows[0].day.toordinal()
     _max = rows[-1].day.toordinal()
     p = _max - _min
@@ -5223,6 +5236,7 @@ def format2_y(x):
 @auth.requires_login()
 def stats_global():
     from time import mktime
+    import datetime
     rows = db(db.stat_day.id>0).select(orderby=db.stat_day.day)
     if len(rows) == 0:
         return dict()
@@ -5237,12 +5251,13 @@ def stats_global():
     theme.reinitialize()
 
     data = [(row.day.toordinal(), row.nb_action_ok, row.nb_action_warn, row.nb_action_err) for row in rows]
-    ti = tic_interval_from_ord(rows)
+    today = datetime.datetime.today().toordinal()
 
-    ar = area.T(x_coord = category_coord.T(data, 0),
+    ar = area.T(x_coord = linear_coord.T(),
                 y_coord = linear_coord.T(),
                 x_axis = axis.X(label="", format=format_x,
-                                tic_interval=ti),
+                                tic_interval=tic_interval_from_ord),
+                x_range = (None, today),
                 y_axis = axis.Y(label="", format=format_y))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="ok",
@@ -5284,10 +5299,11 @@ def stats_global():
     theme.reinitialize()
 
     data = [(row.day.toordinal(), row.nb_action_err) for row in rows]
-    ar = area.T(x_coord = category_coord.T(data, 0),
+    ar = area.T(x_coord = linear_coord.T(),
                 y_coord = linear_coord.T(),
                 x_axis = axis.X(label = "", format=format_x,
-                                tic_interval=ti),
+                                tic_interval=tic_interval_from_ord),
+                x_range = (None, today),
                 y_axis = axis.Y(label = "", format=format_y))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="err",
@@ -5308,10 +5324,11 @@ def stats_global():
     can = canvas.init(path)
 
     data = [(row.day.toordinal(), row.nb_svc_prd, row.nb_svc-row.nb_svc_prd) for row in rows]
-    ar = area.T(x_coord = category_coord.T(data, 0),
+    ar = area.T(x_coord = linear_coord.T(),
                 y_coord = linear_coord.T(),
                 x_axis = axis.X(label = "", format=format_x,
-                                tic_interval=ti),
+                                tic_interval=tic_interval_from_ord),
+                x_range = (None, today),
                 y_axis = axis.Y(label = "", format=format_y))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="prd svc",
@@ -5339,10 +5356,11 @@ def stats_global():
     can = canvas.init(path)
 
     data = [(row.day.toordinal(), row.nb_svc_with_drp, row.nb_svc_prd-row.nb_svc_with_drp) for row in rows]
-    ar = area.T(x_coord = category_coord.T(data, 0),
+    ar = area.T(x_coord = linear_coord.T(),
                 y_coord = linear_coord.T(),
                 x_axis = axis.X(label = "", format=format_x,
-                                tic_interval=ti),
+                                tic_interval=tic_interval_from_ord),
+                x_range = (None, today),
                 y_axis = axis.Y(label = "", format=format_y))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="prd svc with drp",
@@ -5370,10 +5388,11 @@ def stats_global():
     can = canvas.init(path)
 
     data = [(row.day.toordinal(), row.nb_svc_cluster, row.nb_svc-row.nb_svc_cluster) for row in rows]
-    ar = area.T(x_coord = category_coord.T(data, 0),
+    ar = area.T(x_coord = linear_coord.T(),
                 y_coord = linear_coord.T(),
                 x_axis = axis.X(label = "", format=format_x,
-                                tic_interval=ti),
+                                tic_interval=tic_interval_from_ord),
+                x_range = (None, today),
                 y_axis = axis.Y(label = "", format=format_y))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="clustered svc",
@@ -5401,10 +5420,11 @@ def stats_global():
     can = canvas.init(path)
 
     data = [(row.day.toordinal(), row.nb_nodes_prd, row.nb_nodes-row.nb_nodes_prd) for row in rows]
-    ar = area.T(x_coord = category_coord.T(data, 0),
+    ar = area.T(x_coord = linear_coord.T(),
                 y_coord = linear_coord.T(),
                 x_axis = axis.X(label = "", format=format_x,
-                                tic_interval=ti),
+                                tic_interval=tic_interval_from_ord),
+                x_range = (None, today),
                 y_axis = axis.Y(label = "", format=format_y))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="prd nodes",
@@ -5432,10 +5452,11 @@ def stats_global():
     can = canvas.init(path)
 
     data = [(row.day.toordinal(), row.nb_apps) for row in rows]
-    ar = area.T(x_coord = category_coord.T(data, 0),
+    ar = area.T(x_coord = linear_coord.T(),
                 y_coord = linear_coord.T(),
                 x_axis = axis.X(label = "", format=format_x,
-                                tic_interval=ti),
+                                tic_interval=tic_interval_from_ord),
+                x_range = (None, today),
                 y_axis = axis.Y(label = "", format=format_y))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="apps",
@@ -5456,10 +5477,11 @@ def stats_global():
     can = canvas.init(path)
 
     data = [(row.day.toordinal(), row.nb_accounts) for row in rows]
-    ar = area.T(x_coord = category_coord.T(data, 0),
+    ar = area.T(x_coord = linear_coord.T(),
                 y_coord = linear_coord.T(),
                 x_axis = axis.X(label="", format=format_x,
-                                tic_interval=ti),
+                                tic_interval=tic_interval_from_ord),
+                x_range = (None, today),
                 y_axis = axis.Y(label="", format=format_y))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="accounts",
@@ -5480,10 +5502,11 @@ def stats_global():
     can = canvas.init(path)
 
     data = [(row.day.toordinal(), row.disk_size) for row in rows]
-    ar = area.T(x_coord = category_coord.T(data, 0),
+    ar = area.T(x_coord = linear_coord.T(),
                 y_coord = linear_coord.T(),
                 x_axis = axis.X(label = "", format=format_x,
-                                tic_interval=ti),
+                                tic_interval=tic_interval_from_ord),
+                x_range = (None, today),
                 y_axis = axis.Y(label = "", format=format_y))
     bar_plot.fill_styles.reset();
     plot1 = bar_plot.T(label="disk size (GB)",
