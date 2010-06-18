@@ -270,7 +270,13 @@ def svc_status(svc, cellclass="cell2"):
     </td>
     <td name="tcol_containertype" style="{{=col_hide('containertype')}}" class={{=cellclass}}>
       {{if newsvc:}}
-        {{=DIV(svc.svc_containertype, _title=vmname, _style='vertical-align:middle')}}
+        {{=DIV(
+             node_icon(svc.svc_guestos),
+             svc.svc_containertype,
+             _title=vmname,
+             _style='vertical-align:middle'
+          )
+        }}
         {{pass}}
     </td>
     <td name="tcol_svc_vcpus" style="{{=col_hide('svc_vcpus')}}" class="{{=cellclass}}">
