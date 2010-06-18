@@ -17,7 +17,7 @@ def node_icon(os_name):
                 _src=URL(r=request,c='static',f='opensolaris.png'),
                 _class='logo'
               )
-    elif "solaris" in os_name.lower():
+    elif os_name.lower() in ["solaris", "sunos"]:
         img = IMG(
                 _src=URL(r=request,c='static',f='solaris.png'),
                 _class='logo'
