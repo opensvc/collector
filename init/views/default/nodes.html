@@ -15,6 +15,7 @@ initialize_keys()
 <table class=datatable>
   <tr class=box>
     <td></td>
+    <td></td>
     {{for key in colkeys:}}
     <td name="tcol_{{=key}}" style="{{=col_hide(key)}}">
       {{=colname(nodes, key, columns[key]['title'])}}
