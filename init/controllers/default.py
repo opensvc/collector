@@ -5827,19 +5827,23 @@ def update_service(vars, vals):
 def res_action_batch(vars, vals):
     generic_insert('SVCactions', vars, vals)
 
-def _resmon_clean(node):
+def _resmon_clean(node, svcname):
     if node is None or node == '':
         return 0
-    db(db.resmon.nodename==node).delete()
+    if svcname is None or svcname == '':
+        return 0
+    q = db.resmon.nodename==node.strip("'")
+    q &= db.resmon.svcname==svcname.strip("'")
+    db(q).delete()
     db.commit()
 
 @service.xmlrpc
 def resmon_update(vars, vals):
     h = {}
-    for a,b in zip(vars, vals):
+    for a,b in zip(vars, vals[0]):
         h[a] = b
-    if 'nodename' in h:
-        _resmon_clean(h['nodename'])
+    if 'nodename' in h and 'svcname' in h:
+        _resmon_clean(h['nodename'], h['svcname'])
     generic_insert('resmon', vars, vals)
 
 @service.xmlrpc
