@@ -22,6 +22,7 @@ initialize_keys()
     {{pass}}
   </tr>
   <tr class=box>
+    <td><input type=checkbox id=check_all onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'))"></td>
     <td></td>
     {{for key in colkeys:}}
     <td name="tcol_{{=key}}" style="{{=col_hide(key)}}"><input name={{=key}} value='{{=request.vars[key]}}' size={{=columns[key]['size']}} onKeyPress="checkEnter(event)"></td>
@@ -33,8 +34,15 @@ initialize_keys()
   }}
   {{for node in nodes:
       cellclass = cellclasses[cellclass]
+
+      checked = getattr(request.vars, 'check_'+str(node.id))
+      if checked is not None:
+          checked = 'checked=on'
+          pass
+
   }}
   <tr class={{=cellclass}}>
+    <td class={{=cellclass}}><input type=checkbox name=check_{{=node.id}} {{=checked}}></td>
     <td>{{=A(
              IMG(
                _src=URL(r=request,c='static',f='edit.png'),
@@ -83,6 +91,7 @@ initialize_keys()
         <tr>
           <td> {{=T('Export')}}:</td>
           <td> {{=T('Add node')}}:</td>
+          <td> {{=T('Delete nodes')}}:</td>
         </tr>
         <tr>
           <td>
@@ -91,6 +100,18 @@ initialize_keys()
           <td>
             {{=A(IMG(_src=URL(r=request,c='static',f='add.png'),_border=0, _title=T("add a new node")),_href=URL(r=request,f='node_insert'))}}
           </td>
+          <td>
+            {{=IMG(
+                _src=URL(r=request,c='static',f='del.png'),
+                _border=0,
+                _title=T("delete selected nodes"),
+                _onclick='
+                   document.svcform.action.value="delnodes";
+                   document.svcform.submit();
+                '
+              )
+            }}
+          </td>
         </tr>
       </table>
     </td>
@@ -98,4 +119,5 @@ initialize_keys()
 </table>
 <input id="node" type="hidden">
 <input id="rowid" type="hidden">
+<input name="action" type="hidden">
 </form>

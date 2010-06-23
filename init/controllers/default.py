@@ -2589,8 +2589,26 @@ def nodes_csv():
     request.vars['perpage'] = 0
     return str(nodes()['nodes'])
 
+@auth.requires_membership('Manager')
+def _nodes_del(request):
+    node_ids = ([])
+    for key in [ k for k in request.vars.keys() if 'check_' in k ]:
+        node_ids += ([key[6:]])
+
+    if len(node_ids) == 0:
+        response.flash = T('invalid node selection')
+        return
+    for id in node_ids:
+        db(db.nodes.id==id).delete()
+    response.flash = T('nodes removed')
+    del(request.vars['action'])
+    redirect(URL(r=request, f='nodes'))
+
 @auth.requires_login()
 def nodes():
+    if request.vars.action is not None and request.vars.action == "delnodes":
+        _nodes_del(request)
+
     o = db.v_nodes.nodename
 
     columns = dict(
