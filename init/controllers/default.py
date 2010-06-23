@@ -3170,7 +3170,46 @@ def ajax_action_status():
 
     status = rows[0].status
     if status is not None:
+        def pid_to_filter(pid):
+            if pid is None:
+                return ''
+            return pid.replace(',', '|')
+
+        if rows[0].end is None:
+            end = rows[0].begin
+        else:
+            end = rows[0].end
+            pass
+
+        pid = A(
+             rows[0].pid,
+             _href=URL(
+                     r=request,
+                     f='svcactions',
+                     vars={
+                       'pid':pid_to_filter(rows[0].pid),
+                       'hostname':rows[0].hostname,
+                       'svcname':rows[0].svcname,
+                       'begin':'>'+str(rows[0].begin-datetime.timedelta(days=1)),
+                       'end':'<'+str(end+datetime.timedelta(days=1)),
+                       'perpage':0,
+                     }
+          ),
+        )
         return SPAN(
+                 IMG(
+                   _src=URL(r=request,c='static',f='action16.png'),
+                   _border=0,
+                   _onload="""
+                     document.getElementById('spin_span_pid_%(id)s').innerHTML='%(pid)s';
+                     document.getElementById('spin_span_end_%(id)s').innerHTML='%(end)s';
+                   """%dict(
+                         id=id,
+                         pid=pid,
+                         end=rows[0].end,
+                       ),
+                   _style='display:none',
+                 ),
                  status,
                  _class="status_"+status,
                )

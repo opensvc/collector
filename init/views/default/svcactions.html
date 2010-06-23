@@ -46,7 +46,8 @@ pass
   }}
   {{for i in r:}}
     {{action = actions[i]}}
-    {{if pid != action.pid or svcname != action.svcname or pid is None:
+    {{
+      if pid != action.pid or svcname != action.svcname or pid is None:
           cellclass = cellclasses[cellclass]
           pid = action.pid
           svcname = action.svcname
@@ -54,16 +55,21 @@ pass
       else:
           new = False
           pass
+
       checked = getattr(request.vars, 'check_'+str(action.id))
+
       if checked is not None:
           checked = 'checked=on'
           pass
+
       if action.status == 'err':
           disabled = ''
       else:
           disabled = 'disabled'
           pass
+
       eid = 'ack_'+str(action.id)
+
       if action.ack == 1:
           trigger = """onMouseOver='javascript:show_eid("%s")' onMouseOut='javascript:hide_eid("%s")'"""%(eid, eid)
           ack = TR(TD(B("acked by "),action.acked_by,B(" on "),action.acked_date,B(" with comment: "),action.acked_comment,_colspan=99), _class='ack', _id=eid)
@@ -71,17 +77,55 @@ pass
           trigger = ""
           ack = TR(TD("", _colspan=99), _class='ack', _id=eid)
           pass
+
       if not action.status_log:
           action.status_log = ''
           metaactionclass = 'metaaction'
       else:
           metaactionclass = ''
           pass
+
       if action.responsibles:
           responsibles = IMG(_src=URL(r=request,c='static',f='guy.png'),_border=0, _title=action.responsibles)
       else:
           responsibles = ''
           pass
+
+      if action.end is None:
+          end = action.begin
+      else:
+          end = action.end
+          pass
+
+      if action.pid is None:
+          action_pid = SPAN(
+              _id="spin_span_pid_"+str(action.id),
+          )
+      else:
+          action_pid = A(
+             action.pid,
+             _href=URL(
+                     r=request,
+                     vars={
+                       'pid':pid_to_filter(action.pid),
+                       'hostname':action.hostname,
+                       'svcname':action.svcname,
+                       'begin':'>'+str(action.begin-datetime.timedelta(days=1)),
+                       'end':'<'+str(end+datetime.timedelta(days=1)),
+                       'perpage':0,
+                     }
+            ),
+          )
+          pass
+
+      if action.end is None:
+          action_end = SPAN(
+              _id="spin_span_end_"+str(action.id),
+          )
+      else:
+          action_end = action.end
+          pass
+
       if action.status is None:
           action_status = SPAN(
             INPUT(
@@ -153,31 +197,11 @@ pass
       {{pass}}
 
     </td>
-    <td name="tcol_pid" class={{=cellclass}}>
-      {{if new:}}
-        {{if action.end is None:
-             end = action.begin
-          else:
-             end = action.end
-             pass
-        }}
-        {{=A(action.pid,
-             _href=URL(r=request, vars={
-                       'pid':pid_to_filter(action.pid),
-                       'hostname':action.hostname,
-                       'svcname':action.svcname,
-                       'begin':'>'+str(action.begin-datetime.timedelta(days=1)),
-                       'end':'<'+str(end+datetime.timedelta(days=1)),
-                       'perpage':0,
-                      }),
-            )
-       }}
-      {{pass}}
-    </td>
+    <td name="tcol_pid" class={{=cellclass}}>{{=action_pid}}</td>
     <td name="tcol_action" class="{{=cellclass}} {{=metaactionclass}}">{{=action.action}}</td>
     <td name="tcol_status" class="{{=cellclass}} status_{{=action.status}} ack_{{=action.ack}} {{=metaactionclass}}" {{=trigger}}>{{=action_status}}</td>
     <td name="tcol_begin" class={{=cellclass}}>{{=action.begin}}</td>
-    <td name="tcol_end" class={{=cellclass}}>{{=action.end}}</td>
+    <td name="tcol_end" class={{=cellclass}}>{{=action_end}}</td>
     <td name="tcol_status_log" class={{=cellclass}}><pre>{{=action.status_log}}</pre></td>
     <td style="{{=col_hide('time')}}" name="tcol_time" class={{=cellclass}}>{{=action.time}}</td>
     <td style="{{=col_hide('id')}}" name="tcol_id" class={{=cellclass}}>{{=action.id}}</td>
