@@ -3738,7 +3738,7 @@ def tic_interval_from_ts(_min, _max):
     """
     p = _max - _min
     r = []
-    intervals = [2419200, 1209600, 604800, 86400, 21600, 7200, 3600]
+    intervals = [2419200, 1209600, 604800, 86400, 21600, 7200, 3600, 1800, 600]
     for i in intervals:
         if p / i >= 6:
             break
