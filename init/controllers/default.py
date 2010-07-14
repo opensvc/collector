@@ -3907,6 +3907,8 @@ def perf_stats_swap(node, s, e):
     if len(rows) == 0:
         return SPAN()
 
+    w = __stats_bar_width(rows)
+
     from time import mktime
 
     start_date = tic_start_ts(rows)
@@ -3957,7 +3959,7 @@ def perf_stats_swap(node, s, e):
                        line_style=None,
                        data = data,
                        data_label_format="",
-                       width=1,
+                       width=w,
                        direction='vertical')
     plot2 = bar_plot.T(label="used, cached",
                        hcol=2,
@@ -3966,7 +3968,7 @@ def perf_stats_swap(node, s, e):
                        line_style=None,
                        data = data,
                        data_label_format="",
-                       width=1,
+                       width=w,
                        direction='vertical')
     plot3 = bar_plot.T(label="free",
                        hcol=3,
@@ -3975,7 +3977,7 @@ def perf_stats_swap(node, s, e):
                        line_style=None,
                        data = data,
                        data_label_format="",
-                       width=1,
+                       width=w,
                        direction='vertical')
     ar.add_plot(plot1, plot2, plot3)
     ar.draw(can)
@@ -4112,6 +4114,8 @@ def perf_stats_mem_u(node, s, e):
     if len(rows) == 0:
         return SPAN()
 
+    w = __stats_bar_width(rows)
+
     from time import mktime
 
     start_date = tic_start_ts(rows)
@@ -4165,7 +4169,7 @@ def perf_stats_mem_u(node, s, e):
                        line_style=None,
                        data = data,
                        data_label_format="",
-                       width=1,
+                       width=w,
                        direction='vertical')
     plot2 = bar_plot.T(label="used",
                        hcol=2,
@@ -4174,7 +4178,7 @@ def perf_stats_mem_u(node, s, e):
                        line_style=None,
                        data = data,
                        data_label_format="",
-                       width=1,
+                       width=w,
                        direction='vertical')
     plot3 = bar_plot.T(label="used, buffer",
                        hcol=4,
@@ -4183,7 +4187,7 @@ def perf_stats_mem_u(node, s, e):
                        line_style=None,
                        data = data,
                        data_label_format="",
-                       width=1,
+                       width=w,
                        direction='vertical')
     plot4 = bar_plot.T(label="used, cache",
                        hcol=5,
@@ -4192,7 +4196,7 @@ def perf_stats_mem_u(node, s, e):
                        line_style=None,
                        data = data,
                        data_label_format="",
-                       width=1,
+                       width=w,
                        direction='vertical')
     plot5 = bar_plot.T(label="used, sys",
                        hcol=8,
@@ -4201,7 +4205,7 @@ def perf_stats_mem_u(node, s, e):
                        line_style=None,
                        data = data,
                        data_label_format="",
-                       width=1,
+                       width=w,
                        direction='vertical')
     plot6 = line_plot.T(label="commit",
                        ycol=6,
@@ -4472,6 +4476,12 @@ def perf_stats_cpu(node, s, e):
         return SPAN(x)
     return SPAN(map(format, t))
 
+def __stats_bar_width(rows):
+    width = 120//len(rows)
+    if width == 0:
+        return 1
+    return width
+
 @auth.requires_login()
 def perf_stats_cpu_one(node, s, e, cpu):
     q = db.stats_cpu.nodename == node
@@ -4481,6 +4491,8 @@ def perf_stats_cpu_one(node, s, e, cpu):
     rows = db(q).select(orderby=db.stats_cpu.date)
     if len(rows) == 0:
         return SPAN()
+
+    w = __stats_bar_width(rows)
 
     from time import mktime
 
@@ -4535,7 +4547,7 @@ def perf_stats_cpu_one(node, s, e, cpu):
                        line_style=None,
                        data = data,
                        data_label_format="",
-                       width=1,
+                       width=w,
                        direction='vertical')
     plot2 = bar_plot.T(label="nice",
                        hcol=2,
@@ -4544,7 +4556,7 @@ def perf_stats_cpu_one(node, s, e, cpu):
                        line_style=None,
                        data = data,
                        data_label_format="",
-                       width=1,
+                       width=w,
                        direction='vertical')
     plot3 = bar_plot.T(label="sys",
                        hcol=3,
@@ -4553,7 +4565,7 @@ def perf_stats_cpu_one(node, s, e, cpu):
                        line_style=None,
                        data = data,
                        data_label_format="",
-                       width=1,
+                       width=w,
                        direction='vertical')
     plot4 = bar_plot.T(label="iowait",
                        hcol=4,
@@ -4562,7 +4574,7 @@ def perf_stats_cpu_one(node, s, e, cpu):
                        line_style=None,
                        data = data,
                        data_label_format="",
-                       width=1,
+                       width=w,
                        direction='vertical')
     plot5 = bar_plot.T(label="steal",
                        hcol=5,
@@ -4571,7 +4583,7 @@ def perf_stats_cpu_one(node, s, e, cpu):
                        line_style=None,
                        data = data,
                        data_label_format="",
-                       width=1,
+                       width=w,
                        direction='vertical')
     plot6 = bar_plot.T(label="irq",
                        hcol=6,
@@ -4580,7 +4592,7 @@ def perf_stats_cpu_one(node, s, e, cpu):
                        line_style=None,
                        data = data,
                        data_label_format="",
-                       width=1,
+                       width=w,
                        direction='vertical')
     plot7 = bar_plot.T(label="soft",
                        hcol=7,
@@ -4588,7 +4600,7 @@ def perf_stats_cpu_one(node, s, e, cpu):
                        fill_style=fill_style.Plain(bgcolor=color.navajowhite2),
                        line_style=None,
                        data = data,
-                       width=1,
+                       width=w,
                        data_label_format="",
                        direction='vertical')
     plot8 = bar_plot.T(label="guest",
@@ -4597,7 +4609,7 @@ def perf_stats_cpu_one(node, s, e, cpu):
                        fill_style=fill_style.Plain(bgcolor=color.plum3),
                        line_style=None,
                        data = data,
-                       width=1,
+                       width=w,
                        data_label_format="",
                        direction='vertical')
     ar.add_plot(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8)
@@ -4757,37 +4769,6 @@ def perf_stats_cpu_trend(node, s, e):
     can.close()
 
     return IMG(_src=action)
-
-@auth.requires_login()
-def ajax_perf_stats():
-     node = None
-     begin = None
-     end = None
-     for k in request.vars:
-         if 'node_' in k:
-             node = request.vars[k]
-         elif 'begin_' in k:
-             begin = request.vars[k]
-         elif 'end_' in k:
-             end = request.vars[k]
-     if node is None or begin is None or end is None:
-         return SPAN()
-     return DIV(
-              perf_stats_trends(node, begin, end),
-              perf_stats_cpu(node, begin, end),
-              perf_stats_mem_u(node, begin, end),
-              perf_stats_swap(node, begin, end),
-              perf_stats_proc(node, begin, end),
-              perf_stats_netdev(node, begin, end),
-              perf_stats_netdev_err(node, begin, end),
-              perf_stats_block(node, begin, end),
-              perf_stats_blockdev(node, begin, end),
-              _style="""background-color:white;
-                        padding:10px;
-                        -moz-border-radius:8px;
-                        -webkit-border-radius:8px;
-                     """
-            )
 
 @auth.requires_login()
 def _ajax_perf_stats(f):
