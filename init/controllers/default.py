@@ -4790,6 +4790,49 @@ def ajax_perf_stats():
             )
 
 @auth.requires_login()
+def _ajax_perf_stats(f):
+     node = None
+     begin = None
+     end = None
+     for k in request.vars:
+         if 'node_' in k:
+             node = request.vars[k]
+         elif 'begin_' in k:
+             begin = request.vars[k]
+         elif 'end_' in k:
+             end = request.vars[k]
+     if node is None or begin is None or end is None:
+         return SPAN()
+     return f(node, begin, end)
+
+def ajax_perf_stats_trends():
+    return _ajax_perf_stats(perf_stats_trends)
+
+def ajax_perf_stats_cpu():
+    return _ajax_perf_stats(perf_stats_cpu)
+
+def ajax_perf_stats_mem_u():
+    return _ajax_perf_stats(perf_stats_mem_u)
+
+def ajax_perf_stats_swap():
+    return _ajax_perf_stats(perf_stats_swap)
+
+def ajax_perf_stats_proc():
+    return _ajax_perf_stats(perf_stats_proc)
+
+def ajax_perf_stats_netdev():
+    return _ajax_perf_stats(perf_stats_netdev)
+
+def ajax_perf_stats_netdev_err():
+    return _ajax_perf_stats(perf_stats_netdev_err)
+
+def ajax_perf_stats_block():
+    return _ajax_perf_stats(perf_stats_block)
+
+def ajax_perf_stats_blockdev():
+    return _ajax_perf_stats(perf_stats_blockdev)
+
+@auth.requires_login()
 def perf_stats_trends(node, begin, end):
     return DIV(
               perf_stats_cpu_trend(node, begin, end),
@@ -4798,6 +4841,19 @@ def perf_stats_trends(node, begin, end):
 
 @auth.requires_login()
 def perf_stats(node, rowid):
+    def format_ajax(id, f, e):
+        return """getElementById('%(e)s').innerHTML='%(spinner)s';
+                  ajax("%(url)s",
+                       ['node_%(id)s',
+                        'begin_%(id)s',
+                        'end_%(id)s'
+                       ],"%(e)s");
+               """%dict(url=URL(r=request,f=f),
+                               id=rowid,
+                               e=e,
+                               spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
+                       )
+
     now = datetime.datetime.now()
     s = now - datetime.timedelta(days=0,
                                  hours=now.hour,
@@ -4823,20 +4879,43 @@ def perf_stats(node, rowid):
             INPUT(
               _value='gen',
               _type='button',
-              _onClick="""getElementById('perf_%(id)s').innerHTML='%(spinner)s';
-                          ajax("%(url)s",
-                              ['node_%(id)s',
-                               'begin_%(id)s',
-                               'end_%(id)s'
-                              ],"perf_%(id)s");
-                      """%dict(url=URL(r=request,f='ajax_perf_stats'),
-                               id=rowid,
-                               spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
-                              )
+              _onClick=format_ajax(rowid, 'ajax_perf_stats_cpu', 'perf_cpu_'+rowid)+\
+                       format_ajax(rowid, 'ajax_perf_stats_mem_u', 'perf_mem_u_'+rowid)+\
+                       format_ajax(rowid, 'ajax_perf_stats_trends', 'perf_trends_'+rowid)+\
+                       format_ajax(rowid, 'ajax_perf_stats_swap', 'perf_swap_'+rowid)+\
+                       format_ajax(rowid, 'ajax_perf_stats_proc', 'perf_proc_'+rowid)+\
+                       format_ajax(rowid, 'ajax_perf_stats_netdev', 'perf_netdev_'+rowid)+\
+                       format_ajax(rowid, 'ajax_perf_stats_netdev_err', 'perf_netdev_err_'+rowid)+\
+                       format_ajax(rowid, 'ajax_perf_stats_block', 'perf_block_'+rowid)+\
+                       format_ajax(rowid, 'ajax_perf_stats_blockdev', 'perf_blockdev_'+rowid)
             )
           ),
           DIV(
-            _id='perf_'+rowid
+            _id='perf_trends_'+rowid
+          ),
+          DIV(
+            _id='perf_cpu_'+rowid
+          ),
+          DIV(
+            _id='perf_mem_u_'+rowid
+          ),
+          DIV(
+            _id='perf_swap_'+rowid
+          ),
+          DIV(
+            _id='perf_proc_'+rowid
+          ),
+          DIV(
+            _id='perf_netdev_'+rowid
+          ),
+          DIV(
+            _id='perf_netdev_err_'+rowid
+          ),
+          DIV(
+            _id='perf_block_'+rowid
+          ),
+          DIV(
+            _id='perf_blockdev_'+rowid
           ),
         )
     return t
