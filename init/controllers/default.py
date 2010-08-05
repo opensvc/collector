@@ -224,6 +224,10 @@ def active_db_filters(table=None):
                           )
     return filters
 
+def user_name():
+    return ' '.join([session.auth.user.first_name,
+                     session.auth.user.last_name])
+
 @auth.requires_login()
 def service_action():
     action = request.vars.select_action
@@ -247,8 +251,7 @@ def service_action():
              and responsible='%(user)s'
              group by m.mon_nodname, m.mon_svcname
           """%dict(ids=','.join(ids),
-                   user=' '.join([session.auth.user.first_name,
-                                  session.auth.user.last_name]))
+                   user=user_name())
     rows = db.executesql(sql)
 
     from subprocess import Popen
@@ -443,6 +446,12 @@ def index():
     query &= q
     netdeverrs = db(query).select()
 
+    q = db.v_checks.chk_value < db.v_checks.chk_low
+    q |= db.v_checks.chk_value > db.v_checks.chk_high
+    query = _where(None, 'v_checks', domain_perms(), 'chk_nodename')
+    query &= q
+    checks = db(query).select()
+
     return dict(svcnotupdated=svcnotupdated,
                 frozen=frozen,
                 nodeswithoutasset=nodeswithoutasset,
@@ -461,6 +470,7 @@ def index():
                 available_filters=avail_db_filters('v_svcmon'),
                 pkgdiff=pkgdiff,
                 netdeverrs=netdeverrs,
+                checks=checks,
                )
 
 @auth.requires_membership('Manager')
@@ -1745,7 +1755,7 @@ def _obs_date_edit(request, what):
                   """%dict(id=id,
                            now=datetime.datetime.now(),
                            what=what,
-                           user=' '.join([session.auth.user.first_name, session.auth.user.last_name])
+                           user=user_name()
                           )
         else:
             sql = """update obsolescence
@@ -1757,7 +1767,7 @@ def _obs_date_edit(request, what):
                            now=datetime.datetime.now(),
                            what=what,
                            date=date,
-                           user=' '.join([session.auth.user.first_name, session.auth.user.last_name])
+                           user=user_name()
                           )
         #raise Exception(sql)
         db.executesql(sql)
@@ -2429,7 +2439,7 @@ def _svcaction_ack_one(request, action_id):
         query = (db.v_svcactions.id == action_id)&(db.v_svcactions.status != "ok")
         db(query).update(ack=1,
                          acked_comment=request.vars.ackcomment,
-                         acked_by=' '.join([session.auth.user.first_name, session.auth.user.last_name]),
+                         acked_by=user_name(),
                          acked_date=datetime.datetime.now())
 
 @auth.requires_login()
@@ -2818,6 +2828,85 @@ def nodes():
                 nav=nav)
 
 @auth.requires_login()
+def checks_defaults_insert():
+    q = (db.checks_defaults.chk_type==request.vars.chk_type)
+    rows = db(q).select()
+    if len(rows) == 1:
+        record = rows[0]
+    else:
+        record = None
+
+    form = SQLFORM(db.checks_defaults,
+                 record=record,
+                 fields=['chk_type',
+                         'chk_low',
+                         'chk_high'],
+                 labels={'chk_type': T('Check type'),
+                         'chk_low': T('Low threshold'),
+                         'chk_high': T('High threshold')},
+                )
+    if form.accepts(request.vars):
+        response.flash = T("edition recorded")
+        redirect(URL(r=request, f='index'))
+    elif form.errors:
+        response.flash = T("errors in form")
+    return dict(form=form)
+
+@auth.requires_login()
+def checks_settings_insert():
+    q = (db.checks_settings.chk_nodename==request.vars.chk_nodename)
+    q &= (db.checks_settings.chk_svcname==request.vars.chk_svcname)
+    q &= (db.checks_settings.chk_type==request.vars.chk_type)
+    q &= (db.checks_settings.chk_instance==request.vars.chk_instance)
+    rows = db(q).select()
+    if len(rows) == 0:
+        defaults = db(db.checks_defaults.chk_type==request.vars.chk_type).select().first()
+        db.checks_settings.insert(chk_nodename=request.vars.chk_nodename,
+                                  chk_svcname=request.vars.chk_svcname,
+                                  chk_type=request.vars.chk_type,
+                                  chk_instance=request.vars.chk_instance,
+                                  chk_low=defaults.chk_low,
+                                  chk_high=defaults.chk_high,
+                                 )
+        rows = db(q).select()
+    record = rows[0]
+
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+    form = SQLFORM(db.checks_settings,
+                 record=record,
+                 deletable=True,
+                 hidden_fields=['chk_changed',
+                                'chk_changed_by'],
+                 fields=['chk_nodename',
+                         'chk_svcname',
+                         'chk_type',
+                         'chk_instance',
+                         'chk_changed',
+                         'chk_changed_by',
+                         'chk_low',
+                         'chk_high'],
+                 labels={'chk_nodename': T('Node'),
+                         'chk_svcname': T('Service'),
+                         'chk_type': T('Check type'),
+                         'chk_instance': T('Check instance'),
+                         'chk_changed': T('Change date'),
+                         'chk_changed_by': T('Change author'),
+                         'chk_low': T('Low threshold'),
+                         'chk_high': T('High threshold')},
+                )
+    request.vars['chk_changed_by'] = user_name()
+    request.vars['chk_changed'] = str(now)
+    if form.accepts(request.vars):
+        response.flash = T("edition recorded")
+        db(q).update(chk_changed=now,
+                     chk_changed_by=user_name())
+        redirect(URL(r=request, f='index'))
+    elif form.errors:
+        response.flash = T("errors in form")
+    return dict(form=form, record=record)
+
+@auth.requires_login()
 def node_insert():
     form=SQLFORM(db.nodes)
     if form.accepts(request.vars):
@@ -2852,8 +2941,7 @@ def node_edit():
 def ajax_svc_message_save():
     vars = {
             'msg_svcname': request.vars.svcname,
-            'msg_last_editor': ' '.join([session.auth.user.first_name,
-                                         session.auth.user.last_name]),
+            'msg_last_editor': user_name(),
             'msg_last_edit_date':str(datetime.datetime.now()),
             'msg_body':request.vars['msgbody_'+request.vars.svcname],
            }
@@ -3008,8 +3096,7 @@ def svcmon_log_ack_write(svc, b, e, comment="", account=False):
             mon_comment = comment,
             mon_account = account,
             mon_acked_on = datetime.datetime.now(),
-            mon_acked_by = ' '.join([session.auth.user.first_name,
-                                     session.auth.user.last_name])
+            mon_acked_by = user_name()
         )
 
     rows = db_select_ack_overlap(svc, b, e)
@@ -3042,79 +3129,6 @@ def db_delete_ack_overlap(svc, begin, end):
     query &= _where(None, 'svcmon_log_ack', domain_perms(), 'mon_svcname')
     query &= ((db.svcmon_log_ack.mon_end>b)&(db.svcmon_log_ack.mon_end<=e))|((db.svcmon_log_ack.mon_begin>=b)&(db.svcmon_log_ack.mon_begin<e))
     return db(query).delete()
-
-@auth.requires_login()
-def ajax_svcmon_log_ack_load():
-    svc = request.vars.svcname
-    begin = request.vars.begin
-    end = request.vars.end
-
-    """ Load relevant acknowledged segments
-    """
-    rows = db_select_ack_overlap(svc, begin, end)
-
-    ack_overlap_lines = []
-    for row in rows:
-        ack_overlap_lines += [TR(
-                    TD(row.mon_begin, _id="begin_"+str(row.id)),
-                    TD(row.mon_end, _id="end_"+str(row.id)),
-                    TD(row.mon_comment, _id="comment_"+str(row.id)),
-                    TD(row.mon_acked_by, _id="acked_by_"+str(row.id)),
-                    TD(row.mon_acked_on, _id="acked_on_"+str(row.id)),
-                  )
-                 ]
-    ack_overlap_table = TABLE(
-                          TR(
-                            TH(T("begin")),
-                            TH(T("end")),
-                            TH(T("comment")),
-                            TH(T("acked by")),
-                            TH(T("acked on")),
-                          ),
-                          ack_overlap_lines,
-                        )
-    xi = INPUT(_value=svc, _id='xi', _type='hidden')
-    bi = INPUT(_value=begin, _id='bi')
-    ei = INPUT(_value=end, _id='ei')
-    ac = INPUT(_id='ac',
-               _type='checkbox',
-               _onChange='this.value=this.checked',
-              )
-    ci = TEXTAREA(_value='', _id='ci')
-    input_save = INPUT(_value='save', _id='save', _type='button', _onclick="""
-               ajax("%(url)s",['xi', 'bi', 'ei', 'ci', 'ac'],"panelbody_ack");
-              """%dict(url=URL(r=request,f='ajax_svcmon_log_ack_write'),
-                       svcname=svc)
-         )
-    title = H3(T("Ack unavailability period for %(svc)s", dict(svc=svc)))
-    ti = TABLE(
-           TR(
-             TH(T("begin")),
-             TH(T("end")),
-           ),
-           TR(
-             TD(bi),
-             TD(ei),
-           ),
-           TR(
-             TH(T("account in availability ratio")),
-             TD(ac, _colspan=2),
-           ),
-           TR(
-             TH(T("comment"), _colspan=2),
-           ),
-           TR(
-             TD(ci, _colspan=2),
-           ),
-           TR(
-             TD(input_save, _colspan=2),
-           ),
-         )
-    return DIV(
-             title,
-             xi,
-             ti
-           )
 
 @auth.requires_login()
 def ajax_res_status():
@@ -5882,6 +5896,14 @@ def update_service(vars, vals):
         vars += ['updated']
         vals += [datetime.datetime.now()]
     generic_insert('services', vars, vals)
+
+@service.xmlrpc
+def push_checks(vars, vals):
+    generic_insert('checks_live', vars, vals)
+
+@service.xmlrpc
+def update_asset(vars, vals):
+    generic_insert('nodes', vars, vals)
 
 @service.xmlrpc
 def res_action_batch(vars, vals):

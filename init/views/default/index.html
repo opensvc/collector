@@ -61,6 +61,77 @@ def svc_status(svc, cellclass="cell2", nestedin=None):
     pass
 
 
+""" node checks
+"""
+def node_checks_line(line, cellclass):
+    vars = {
+        'chk_nodename':line.chk_nodename,
+        'chk_svcname':line.chk_svcname,
+        'chk_type':line.chk_type,
+        'chk_instance':line.chk_instance,
+    }
+    tr = TR(
+      TD(A(line.chk_nodename, _href=URL(r=request, f='svcmon', vars={'nodename':line.chk_nodename})), _class=cellclass),
+      TD(A(line.chk_svcname, _href=URL(r=request, f='checks_settings_insert', vars=vars)), _class=cellclass),
+      TD(A(line.chk_type, _href=URL(r=request, f='checks_defaults_insert', vars=vars)), _class=cellclass),
+      TD(A(line.chk_instance, _href=URL(r=request, f='checks_settings_insert', vars=vars)), _class=cellclass),
+      TD(line.chk_value, _class=cellclass),
+      TD(A(line.chk_low, _href=URL(r=request, f='checks_settings_insert', vars=vars)), _class=cellclass),
+      TD(A(line.chk_high, _href=URL(r=request, f='checks_settings_insert', vars=vars)), _class=cellclass),
+    )
+    return tr
+    pass
+
+def node_checks_header():
+    tr = TR(
+      TH(T("Node")),
+      TH(T("Service")),
+      TH(T("Check")),
+      TH(T("Instance")),
+      TH(T("Value")),
+      TH(T("Low threshold")),
+      TH(T("High threshold")),
+      _style="border-bottom:4px solid darkorange",
+    )
+    return tr
+    pass
+
+def node_checks_table():
+    cellclass = 'cell1'
+    cellclasses = {}
+    cellclasses['cell1'] = 'cell2'
+    cellclasses['cell2'] = 'cell1'
+    lines = []
+
+    for line in checks:
+        cellclass = cellclasses[cellclass]
+        lines += [node_checks_line(line, cellclass)]
+        pass
+
+    t = TABLE(
+        TR(
+          TD(
+            H2(T("Node check alerts"), _style="padding:10px;text-align:center"),
+            _colspan=99,
+          ),
+        ),
+        node_checks_header(),
+        lines,
+    )
+    return t
+    pass
+
+def node_checks():
+    if len(checks) == 0:
+        return DIV()
+    d = DIV(
+      node_checks_table(),
+      _style="padding:10px",
+    )
+    return d
+    pass
+
+
 """ Service status not updated
 """
 def svcmon_not_updated_line(line, cellclass):
@@ -948,6 +1019,11 @@ def summary_table():
 
     cellclass = cellclasses[cellclass]
     lines += [TR(
+      TD(T("Node check alerts"), _class=cellclass),
+      TD(len(checks), _class=cellclass, _style=color(len(checks))),
+    )]
+    cellclass = cellclasses[cellclass]
+    lines += [TR(
       TD(T("Services not up"), _class=cellclass),
       TD(len(svcnotup), _class=cellclass, _style=color(len(svcnotup))),
     )]
@@ -1033,7 +1109,7 @@ def summary_table():
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Nodes with network device errors in the last day"), _class=cellclass),
-      TD("%i intf"%len(netdeverrs), _class=cellclass, _style=color(len(pkgdiff))),
+      TD("%i intf"%len(netdeverrs), _class=cellclass, _style=color(len(netdeverrs))),
     )]
 
     t = TABLE(
@@ -1076,6 +1152,7 @@ def summary():
 }}
 {{=DIV(
      summary(),
+     node_checks(),
      svc_not_up(),
      frozen_services(),
      svcmon_not_updated(),

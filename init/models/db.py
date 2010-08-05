@@ -380,7 +380,7 @@ db.define_table('nodes',
     Field('os_vendor', length=20, default=None, requires=IS_IN_SET(sorted(os_vendors))),
     Field('os_name', length=50, requires=IS_IN_SET(sorted(os_names)), default=None),
     Field('os_kernel', length=20, default=None),
-    Field('os_release', length=10, default=None),
+    Field('os_release', length=64, default=None),
     Field('os_update', length=10, default=None),
     Field('os_segment', length=10, default=None),
     Field('os_arch', length=10, default=None),
@@ -766,4 +766,48 @@ db.define_table('packages',
     Field('pkg_version', 'string', length=16),
     Field('pkg_arch', 'string', length=8),
     migrate=False)
+
+db.define_table('checks_live',
+    Field('id'),
+    Field('chk_nodename', 'string', length=60),
+    Field('chk_svcname', 'string', length=60),
+    Field('chk_instance', 'string', length=60),
+    Field('chk_type', 'string', length=10),
+    Field('chk_updated', 'timestamp'),
+    Field('chk_created', 'timestamp'),
+    Field('chk_value', 'integer'),
+    migrate=False)
+
+db.define_table('checks_defaults',
+    Field('id'),
+    Field('chk_type', 'string', length=10, writable=False),
+    Field('chk_low', 'integer'),
+    Field('chk_high', 'integer'),
+    migrate=False)
+
+db.define_table('checks_settings',
+    Field('id'),
+    Field('chk_nodename', 'string', length=60, writable=False),
+    Field('chk_svcname', 'string', length=60, writable=False),
+    Field('chk_instance', 'string', length=60, writable=False),
+    Field('chk_type', 'string', length=10, writable=False),
+    Field('chk_changed', 'datetime', writable=False),
+    Field('chk_changed_by', 'string', length=60, writable=False),
+    Field('chk_low', 'integer'),
+    Field('chk_high', 'integer'),
+    migrate=False)
+
+db.define_table('v_checks',
+    Field('id'),
+    Field('chk_nodename', 'string', length=60),
+    Field('chk_svcname', 'string', length=60),
+    Field('chk_instance', 'string', length=60),
+    Field('chk_type', 'string', length=10),
+    Field('chk_updated', 'timestamp'),
+    Field('chk_created', 'timestamp'),
+    Field('chk_value', 'integer'),
+    Field('chk_low', 'integer'),
+    Field('chk_high', 'integer'),
+    migrate=False)
+
 
