@@ -1052,10 +1052,11 @@ def summary_table():
     now = datetime.datetime.now()
     onehourago = now - datetime.timedelta(minutes=60)
     hrate = len([c for c in lastchanges if c.svcmon_log.mon_begin > onehourago])
-    if hrate == 20:
+    if hrate > 20:
         shrate = "+20/h"
     else:
         shrate = "%s/h"%str(hrate)
+        pass
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Last service status changes"), _class=cellclass),
