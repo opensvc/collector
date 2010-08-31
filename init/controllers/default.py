@@ -450,6 +450,8 @@ def index():
     q |= db.v_checks.chk_value > db.v_checks.chk_high
     query = _where(None, 'v_checks', domain_perms(), 'chk_nodename')
     query &= q
+    query &= db.v_checks.chk_nodename==db.v_nodes.nodename
+    query = apply_db_filters(query, 'v_nodes')
     checks = db(query).select()
 
     return dict(svcnotupdated=svcnotupdated,
