@@ -5292,7 +5292,7 @@ def drplan_scripts():
 
     wquery = query & (db.drpservices.drp_wave==0)
     dr_rows = db(wquery).select(db.services.ALL, db.drpservices.drp_wave, db.drpservices.drp_project_id, left=db.drpservices.on((db.services.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)),groupby=db.services.svc_name,orderby=(db.services.svc_drpnode))
-    (sh, node_nb) = _scripts(dr_rows, 'START DR WAVE 0', 'svc_drpnode', 'start', service=True)
+    (sh, node_nb) = _scripts(dr_rows, 'START DR WAVE 0', 'start', 'svc_drpnode', service=True)
     p['startdr0'] =  dict(action='start', phase='DR WAVE 0', sh=sh, node_nb=node_nb, shname='02_start_dr0.sh')
 
     wquery = query & (db.drpservices.drp_wave==1)
