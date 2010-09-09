@@ -810,4 +810,12 @@ db.define_table('v_checks',
     Field('chk_high', 'integer'),
     migrate=False)
 
+db.define_table('v_billing',
+    Field('id'),
+    Field('svc_list', 'string'),
+    Field('os_name', 'string'),
+    Field('nb', 'integer'),
+    Field('unit_cost', 'integer'),
+    Field('cost', 'integer'),
+    migrate=False)
 

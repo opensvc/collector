@@ -1,0 +1,74 @@
+{{extend 'layout.html'}}
+
+{{
+def billing_line(line, cellclass):
+    tr = TR(
+      TD(line.os_name, _class=cellclass),
+      TD(line.nb, _class=cellclass),
+      TD(line.unit_cost, _class=cellclass),
+      TD(line.cost, _class=cellclass),
+      TD(line.svc_list, _class=cellclass),
+    )
+    return tr
+    pass
+
+def billing_header():
+    tr = TR(
+      TH(T("OS name")),
+      TH(T("Service count")),
+      TH(T("Unit cost")),
+      TH(T("OS cost")),
+      TH(T("Services")),
+      _style="border-bottom:4px solid darkorange",
+    )
+    return tr
+    pass
+
+def billing_table():
+    cellclass = 'cell1'
+    cellclasses = {}
+    cellclasses['cell1'] = 'cell2'
+    cellclasses['cell2'] = 'cell1'
+    lines = []
+
+    for line in rows:
+        cellclass = cellclasses[cellclass]
+        lines += [billing_line(line, cellclass)]
+        pass
+
+    t = TABLE(
+        TR(
+          TD(
+            H2(T("Billing details"), _style="padding:10px;text-align:center"),
+            _colspan=99,
+          ),
+        ),
+        billing_header(),
+        lines,
+    )
+    return t
+    pass
+
+def billing():
+    if len(rows) == 0:
+        return DIV()
+    d = DIV(
+      billing_table(),
+      _style="padding:10px",
+    )
+    return d
+    pass
+
+
+}}
+
+{{=DIV(
+     billing(),
+     _style="
+       padding-left:2em;
+       padding-right:2em;
+       align:center;
+     "
+   )
+}}
+

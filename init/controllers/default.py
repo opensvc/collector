@@ -5144,6 +5144,12 @@ def _drplan_set_wave(request):
                 query = (db.drpservices.drp_svcname == svc)&(db.drpservices.drp_project_id == request.vars.prjlist)
                 db(query).update(drp_wave=request.vars.setwave)
 
+@auth.requires_membership('Manager')
+def billing():
+    query = (db.v_billing.nb!=0)
+    rows = db(query).select()
+    return dict(rows=rows)
+
 @auth.requires_login()
 def drplan():
     if request.vars.cloneproject is not None and request.vars.cloneproject != '':
