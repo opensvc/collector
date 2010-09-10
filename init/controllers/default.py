@@ -5360,13 +5360,13 @@ def cron_stats():
 
     # generate graphs
     stats_global()
-    stats_disks_per_svc()
-    stats_last_day_avg_cpu()
-    stats_last_day_avg_mem()
 
 @auth.requires_login()
 def stats():
     d = {}
+    d.update(stats_disks_per_svc())
+    d.update(stats_last_day_avg_cpu())
+    d.update(stats_last_day_avg_mem())
     return d
 
 def format_x(ordinal):
@@ -5681,9 +5681,11 @@ def stats_disks_per_svc():
     rows = db.executesql(sql)
 
     if len(rows) == 0:
-        return
+        return dict(stat_disk_svc=None)
 
-    img = 'stat_disk_svc.png'
+    import random
+    rand = int(random.random()*1000000)
+    img = 'stat_disk_svc_'+str(rand)+'.png'
     action = str(URL(r=request,c='static',f=img))
     path = 'applications'+action
     can = canvas.init(path)
@@ -5712,7 +5714,7 @@ def stats_disks_per_svc():
     ar.add_plot(plot1)
     ar.draw(can)
     can.close()
-    return
+    return dict(stat_disk_svc=img)
 
 @auth.requires_login()
 def stats_last_day_avg_cpu():
@@ -5733,9 +5735,11 @@ def stats_last_day_avg_cpu():
     rows = db.executesql(sql)
 
     if len(rows) == 0:
-        return
+        return dict(stat_cpu_avg_day=None)
 
-    img = 'stat_cpu_avg_day.png'
+    import random
+    rand = int(random.random()*1000000)
+    img = 'stat_cpu_avg_day_'+str(rand)+'.png'
     action = str(URL(r=request,c='static',f=img))
     path = 'applications'+action
     can = canvas.init(path)
@@ -5762,7 +5766,7 @@ def stats_last_day_avg_cpu():
     ar.add_plot(plot1)
     ar.draw(can)
     can.close()
-    return
+    return dict(stat_cpu_avg_day=img)
 
 @auth.requires_login()
 def stats_last_day_avg_mem():
@@ -5781,9 +5785,11 @@ def stats_last_day_avg_mem():
     rows = db.executesql(sql)
 
     if len(rows) == 0:
-        return
+        return dict(stat_mem_avail=None)
 
-    img = 'stat_mem_avail.png'
+    import random
+    rand = int(random.random()*1000000)
+    img = 'stat_mem_avail_'+str(rand)+'.png'
     action = str(URL(r=request,c='static',f=img))
     path = 'applications'+action
     can = canvas.init(path)
@@ -5810,7 +5816,7 @@ def stats_last_day_avg_mem():
     ar.add_plot(plot1)
     ar.draw(can)
     can.close()
-    return
+    return dict(stat_mem_avail=img)
 
 
 @service.xmlrpc
