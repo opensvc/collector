@@ -7,7 +7,7 @@ def billing_line(line, cellclass):
       TD(line.nb, _class=cellclass),
       TD(line.unit_cost, _class=cellclass),
       TD(line.cost, _class=cellclass),
-      TD(line.svc_list, _class=cellclass),
+      TD(line.svc_list.replace(',', ', '), _class=cellclass),
     )
     return tr
     pass
