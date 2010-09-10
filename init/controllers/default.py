@@ -2379,7 +2379,7 @@ def cron_stat_day():
     pairs += ["nb_svc_cluster=(select sum(length(svc_nodes)-length(replace(svc_nodes,' ',''))+1>1) from services)"]
     pairs += ["nb_nodes=(select count(distinct mon_nodname) from svcmon)"]
     pairs += ["nb_nodes_prd=(select count(distinct mon_nodname) from v_svcmon where mon_nodtype='PRD')"]
-    pairs += ["disk_size=(select sum(t.disk_size) from (select distinct s.disk_id, s.disk_size from svcdisks s) t)"]
+    pairs += ["disk_size=(select ifnull((select sum(t.disk_size) from (select distinct s.disk_id, s.disk_size from svcdisks s) t), 0))"]
     sql = "insert into stat_day set day='%(end)s', %(pairs)s on duplicate key update %(pairs)s"%dict(end=end, pairs=','.join(pairs))
     #raise Exception(sql)
     db.executesql(sql)
@@ -5353,13 +5353,20 @@ def drplan_scripts_archive():
     os.rmdir(dir)
     return buff
 
+def cron_stats():
+    # refresh db tables
+    cron_stat_day()
+    cron_stat_day_svc()
+
+    # generate graphs
+    stats_global()
+    stats_disks_per_svc()
+    stats_last_day_avg_cpu()
+    stats_last_day_avg_mem()
+
 @auth.requires_login()
 def stats():
     d = {}
-    d.update(stats_global())
-    d.update(stats_disks_per_svc())
-    d.update(stats_last_day_avg_cpu())
-    d.update(stats_last_day_avg_mem())
     return d
 
 def format_x(ordinal):
@@ -5378,7 +5385,7 @@ def stats_global():
     import datetime
     rows = db(db.stat_day.id>0).select(orderby=db.stat_day.day)
     if len(rows) == 0:
-        return dict()
+        return
 
     """ actions
     """
@@ -5658,7 +5665,6 @@ def stats_global():
     ar.add_plot(plot1)
     ar.draw(can)
     can.close()
-    return dict()
 
 @auth.requires_login()
 def stats_disks_per_svc():
@@ -5675,11 +5681,9 @@ def stats_disks_per_svc():
     rows = db.executesql(sql)
 
     if len(rows) == 0:
-        return dict(stat_disk_svc=None)
+        return
 
-    import random
-    rand = int(random.random()*1000000)
-    img = 'stat_disk_svc_'+str(rand)+'.png'
+    img = 'stat_disk_svc.png'
     action = str(URL(r=request,c='static',f=img))
     path = 'applications'+action
     can = canvas.init(path)
@@ -5708,7 +5712,7 @@ def stats_disks_per_svc():
     ar.add_plot(plot1)
     ar.draw(can)
     can.close()
-    return dict(stat_disk_svc=img)
+    return
 
 @auth.requires_login()
 def stats_last_day_avg_cpu():
@@ -5729,11 +5733,9 @@ def stats_last_day_avg_cpu():
     rows = db.executesql(sql)
 
     if len(rows) == 0:
-        return dict(stat_cpu_avg_day=None)
+        return
 
-    import random
-    rand = int(random.random()*1000000)
-    img = 'stat_cpu_avg_day_'+str(rand)+'.png'
+    img = 'stat_cpu_avg_day.png'
     action = str(URL(r=request,c='static',f=img))
     path = 'applications'+action
     can = canvas.init(path)
@@ -5760,7 +5762,7 @@ def stats_last_day_avg_cpu():
     ar.add_plot(plot1)
     ar.draw(can)
     can.close()
-    return dict(stat_cpu_avg_day=img)
+    return
 
 @auth.requires_login()
 def stats_last_day_avg_mem():
@@ -5779,11 +5781,9 @@ def stats_last_day_avg_mem():
     rows = db.executesql(sql)
 
     if len(rows) == 0:
-        return dict(stat_mem_avail=None)
+        return
 
-    import random
-    rand = int(random.random()*1000000)
-    img = 'stat_mem_avail_'+str(rand)+'.png'
+    img = 'stat_mem_avail.png'
     action = str(URL(r=request,c='static',f=img))
     path = 'applications'+action
     can = canvas.init(path)
@@ -5810,7 +5810,7 @@ def stats_last_day_avg_mem():
     ar.add_plot(plot1)
     ar.draw(can)
     can.close()
-    return dict(stat_mem_avail=img)
+    return
 
 
 @service.xmlrpc
