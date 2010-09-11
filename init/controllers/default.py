@@ -2096,13 +2096,13 @@ class viz(object):
         for name in glob.glob(os.path.join(self.vizdir, self.vizprefix+'*.dot')):
             files.append(name)
             os.unlink(name)
-        for name in glob.glob(os.path.join(self.vizdir, 'stats_*.png')):
+        for name in glob.glob(os.path.join(self.vizdir, 'stats_*_[0-9]*.png')):
             files.append(name)
             os.unlink(name)
-        for name in glob.glob(os.path.join(self.vizdir, 'stat_*.png')):
+        for name in glob.glob(os.path.join(self.vizdir, 'stat_*_[0-9]*.png')):
             files.append(name)
             os.unlink(name)
-        for name in glob.glob(os.path.join(self.vizdir, 'stats_*.svg')):
+        for name in glob.glob(os.path.join(self.vizdir, 'stats_*_[0-9]*.svg')):
             files.append(name)
             os.unlink(name)
         return files
