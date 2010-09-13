@@ -58,6 +58,8 @@ response.menu = [
               URL(request.application,'default','svcactions?begin=>'+yesterday+'&status_log=empty')],
              [T('checks'), False,
               URL(request.application,'default','checks')],
+             [T('packages'), False,
+              URL(request.application,'default','packages')],
          ]
     ],
     [T('stats'), False, '',

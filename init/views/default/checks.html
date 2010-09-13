@@ -9,6 +9,7 @@ initialize_keys()
 now = datetime.datetime.now()
 deadline = now - datetime.timedelta(days=1)
 def outdated(t):
+     if t is None: return True
      if t < deadline: return True
      return False
 pass

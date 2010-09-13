@@ -2013,6 +2013,89 @@ def svcmon():
                )
 
 @auth.requires_login()
+def packages():
+    columns = dict(
+        pkg_nodename = dict(
+            pos = 1,
+            title = T('Nodename'),
+            display = True,
+            size = 10
+        ),
+        pkg_name = dict(
+            pos = 2,
+            title = T('Package'),
+            display = True,
+            size = 10
+        ),
+        pkg_version = dict(
+            pos = 3,
+            title = T('Version'),
+            display = True,
+            size = 4
+        ),
+        pkg_arch = dict(
+            pos = 4,
+            title = T('Arch'),
+            display = True,
+            size = 10
+        ),
+        pkg_updated = dict(
+            pos = 5,
+            title = T('Updated'),
+            display = True,
+            size = 6
+        ),
+    )
+    d = v_nodes_columns()
+    for k in d:
+        d[k]['pos'] += 10
+        d[k]['display'] = False
+    del(d['nodename'])
+    columns.update(d)
+
+    def _sort_cols(x, y):
+        return cmp(columns[x]['pos'], columns[y]['pos'])
+
+    colkeys = columns.keys()
+    colkeys.sort(_sort_cols)
+
+    o = db.v_packages_nodes.pkg_nodename
+    o |= db.v_packages_nodes.pkg_name
+    o |= db.v_packages_nodes.pkg_arch
+
+    toggle_db_filters()
+
+    # filtering
+    query = (db.v_packages_nodes.id>0)
+    for key in columns.keys():
+        if key not in request.vars.keys():
+            continue
+        query &= _where(None, 'v_packages_nodes', request.vars[key], key)
+
+    query &= _where(None, 'v_packages_nodes', domain_perms(), 'pkg_nodename')
+
+    query = apply_db_filters(query, 'v_nodes')
+
+    (start, end, nav) = _pagination(request, query)
+    if start == 0 and end == 0:
+        rows = db(query).select(orderby=o)
+    else:
+        rows = db(query).select(limitby=(start,end), orderby=o)
+
+    return dict(columns=columns, colkeys=colkeys,
+                packages=rows,
+                nav=nav,
+                active_filters=active_db_filters('v_nodes'),
+                available_filters=avail_db_filters('v_nodes'),
+               )
+
+def packages_csv():
+    import gluon.contenttype
+    response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
+    request.vars['perpage'] = 0
+    return str(checks()['packages'])
+
+@auth.requires_login()
 def checks():
     columns = dict(
         chk_nodename = dict(
