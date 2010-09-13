@@ -2012,6 +2012,113 @@ def svcmon():
                 available_filters=avail_db_filters('v_svcmon'),
                )
 
+@auth.requires_login()
+def checks():
+    columns = dict(
+        chk_nodename = dict(
+            pos = 1,
+            title = T('Nodename'),
+            display = True,
+            size = 10
+        ),
+        chk_svcname = dict(
+            pos = 2,
+            title = T('Service'),
+            display = True,
+            size = 10
+        ),
+        chk_type = dict(
+            pos = 3,
+            title = T('Type'),
+            display = True,
+            size = 3
+        ),
+        chk_instance = dict(
+            pos = 4,
+            title = T('Instance'),
+            display = True,
+            size = 10
+        ),
+        chk_value = dict(
+            pos = 5,
+            title = T('Value'),
+            display = True,
+            size = 3
+        ),
+        chk_low = dict(
+            pos = 6,
+            title = T('Low threshold'),
+            display = True,
+            size = 3
+        ),
+        chk_high = dict(
+            pos = 7,
+            title = T('High threshold'),
+            display = True,
+            size = 10
+        ),
+        chk_created = dict(
+            pos = 8,
+            title = T('Created'),
+            display = False,
+            size = 6
+        ),
+        chk_updated = dict(
+            pos = 9,
+            title = T('Updated'),
+            display = True,
+            size = 6
+        ),
+    )
+    d = v_nodes_columns()
+    for k in d:
+        d[k]['pos'] += 10
+        d[k]['display'] = False
+    del(d['nodename'])
+    columns.update(d)
+
+    def _sort_cols(x, y):
+        return cmp(columns[x]['pos'], columns[y]['pos'])
+
+    colkeys = columns.keys()
+    colkeys.sort(_sort_cols)
+
+    o = db.v_checks_nodes.chk_nodename
+    o |= db.v_checks_nodes.chk_type
+    o |= db.v_checks_nodes.chk_instance
+
+    toggle_db_filters()
+
+    # filtering
+    query = (db.v_checks_nodes.id>0)
+    for key in columns.keys():
+        if key not in request.vars.keys():
+            continue
+        query &= _where(None, 'v_checks_nodes', request.vars[key], key)
+
+    query &= _where(None, 'v_checks_nodes', domain_perms(), 'chk_nodename')
+
+    query = apply_db_filters(query, 'v_nodes')
+
+    (start, end, nav) = _pagination(request, query)
+    if start == 0 and end == 0:
+        rows = db(query).select(orderby=o)
+    else:
+        rows = db(query).select(limitby=(start,end), orderby=o)
+
+    return dict(columns=columns, colkeys=colkeys,
+                checks=rows,
+                nav=nav,
+                active_filters=active_db_filters('v_nodes'),
+                available_filters=avail_db_filters('v_nodes'),
+               )
+
+def checks_csv():
+    import gluon.contenttype
+    response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
+    request.vars['perpage'] = 0
+    return str(checks()['checks'])
+
 class viz(object):
     vizdir = 'applications'+str(URL(r=request,c='static',f='.'))
     vizprefix = 'tempviz'
@@ -2616,14 +2723,8 @@ def _nodes_del(request):
     del(request.vars['action'])
     redirect(URL(r=request, f='nodes'))
 
-@auth.requires_login()
-def nodes():
-    if request.vars.action is not None and request.vars.action == "delnodes":
-        _nodes_del(request)
-
-    o = db.v_nodes.nodename
-
-    columns = dict(
+def v_nodes_columns():
+    return dict(
         nodename = dict(
             pos = 1,
             title = T('Node name'),
@@ -2799,6 +2900,16 @@ def nodes():
             size = 10
         ),
     )
+
+@auth.requires_login()
+def nodes():
+    if request.vars.action is not None and request.vars.action == "delnodes":
+        _nodes_del(request)
+
+    o = db.v_nodes.nodename
+
+    columns = v_nodes_columns()
+
     def _sort_cols(x, y):
         return cmp(columns[x]['pos'], columns[y]['pos'])
     colkeys = columns.keys()

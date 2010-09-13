@@ -48,12 +48,18 @@ yesterday = str(datetime.datetime.today()-datetime.timedelta(days=1))
 response.menu = [
     [T('dashboard'), _f == 'index',
      URL(request.application,'default','index'), []],
-    [T('svcmon'), _f == 'svcmon',
-     URL(request.application,'default','svcmon'), []],
-    [T('actions'), _f == 'svcactions',
-     URL(request.application,'default','svcactions?begin=>'+yesterday+'&status_log=empty'), []],
-    [T('nodes'), _f == 'nodes',
-     URL(request.application,'default','nodes'), []],
+    [T('views'), False, '',
+         [
+             [T('services'), False,
+              URL(request.application,'default','svcmon')],
+             [T('nodes'), False,
+              URL(request.application,'default','nodes')],
+             [T('actions'), False,
+              URL(request.application,'default','svcactions?begin=>'+yesterday+'&status_log=empty')],
+             [T('checks'), False,
+              URL(request.application,'default','checks')],
+         ]
+    ],
     [T('stats'), False, '',
          [
              [T('site'), False,
