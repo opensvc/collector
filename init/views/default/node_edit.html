@@ -1,2 +1,13 @@
 {{extend 'layout.html'}}
-{{=form}}
+{{=TABLE(
+     TR(
+       TD(
+         H1(T('Edit node')),
+         _style="border-bottom:4px solid darkorange;text-align:center"
+       ),
+     ),
+     TR(
+       TD(form),
+     )
+   )
+}}

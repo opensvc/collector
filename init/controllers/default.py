@@ -2817,161 +2817,195 @@ def v_nodes_columns():
             pos = 1,
             title = T('Node name'),
             display = True,
+            img = 'node16',
             size = 10
         ),
         loc_country = dict(
             pos = 2,
             title = T('Country'),
             display = False,
+            img = 'loc',
             size = 10
         ),
         loc_zip = dict(
             pos = 3,
             title = T('ZIP'),
             display = False,
+            img = 'loc',
             size = 10
         ),
         loc_city = dict(
             pos = 4,
             title = T('City'),
             display = False,
+            img = 'loc',
             size = 10
         ),
         loc_addr = dict(
             pos = 5,
             title = T('Address'),
             display = False,
+            img = 'loc',
             size = 10
         ),
         loc_building = dict(
             pos = 6,
             title = T('Building'),
             display = True,
+            img = 'loc',
             size = 10
+        ),
+        loc_floor = dict(
+            pos = 6,
+            title = T('Floor'),
+            display = True,
+            img = 'loc',
+            size = 3
         ),
         loc_room = dict(
             pos = 7,
             title = T('Room'),
             display = False,
+            img = 'loc',
             size = 10
         ),
         loc_rack = dict(
             pos = 8,
             title = T('Rack'),
             display = True,
+            img = 'loc',
             size = 10
         ),
         cpu_freq = dict(
             pos = 9,
             title = T('CPU freq'),
             display = False,
+            img = 'cpu16',
             size = 10
         ),
         mem_bytes = dict(
             pos = 10,
             title = T('Memory'),
             display = True,
+            img = 'mem16',
             size = 10
         ),
         os_name = dict(
             pos = 11,
             title = T('OS name'),
             display = False,
+            img = 'os16',
             size = 10
         ),
         os_kernel = dict(
             pos = 12,
             title = T('OS kernel'),
             display = False,
+            img = 'os16',
             size = 10
         ),
         cpu_dies = dict(
             pos = 13,
             title = T('CPU dies'),
             display = True,
+            img = 'cpu16',
             size = 10
         ),
         cpu_model = dict(
             pos = 14,
             title = T('CPU model'),
             display = True,
+            img = 'cpu16',
             size = 10
         ),
         serial = dict(
             pos = 15,
             title = T('Serial'),
             display = True,
+            img = 'node16',
             size = 10
         ),
         model = dict(
             pos = 16,
             title = T('Model'),
             display = False,
+            img = 'node16',
             size = 10
         ),
         team_responsible = dict(
             pos = 17,
             title = T('Team responsible'),
             display = True,
+            img = 'node16',
             size = 10
         ),
         role = dict(
             pos = 18,
             title = T('Role'),
             display = False,
+            img = 'node16',
             size = 10
         ),
         environnement = dict(
             pos = 19,
             title = T('Env'),
             display = True,
+            img = 'node16',
             size = 10
         ),
         warranty_end = dict(
             pos = 20,
             title = T('Warranty end'),
             display = False,
+            img = 'node16',
             size = 10
         ),
         status = dict(
             pos = 21,
             title = T('Status'),
             display = True,
+            img = 'node16',
             size = 10
         ),
         type = dict(
             pos = 22,
             title = T('Type'),
             display = False,
+            img = 'node16',
             size = 10
         ),
         power_supply_nb = dict(
             pos = 23,
             title = T('Power supply number'),
             display = False,
+            img = 'pwr',
             size = 10
         ),
         power_cabinet1 = dict(
             pos = 24,
             title = T('Power cabinet #1'),
             display = False,
+            img = 'pwr',
             size = 10
         ),
         power_cabinet2 = dict(
             pos = 25,
             title = T('Power cabinet #2'),
             display = False,
+            img = 'pwr',
             size = 10
         ),
         power_protect = dict(
             pos = 26,
             title = T('Power protector'),
             display = False,
+            img = 'pwr',
             size = 10
         ),
         power_protect_breaker = dict(
             pos = 27,
             title = T('Power protector breaker'),
+            img = 'pwr',
             display = False,
             size = 10
         ),
@@ -2979,12 +3013,14 @@ def v_nodes_columns():
             pos = 28,
             title = T('Power breaker #1'),
             display = False,
+            img = 'pwr',
             size = 10
         ),
         power_breaker2 = dict(
             pos = 29,
             title = T('Power breaker #2'),
             display = False,
+            img = 'pwr',
             size = 10
         ),
     )
@@ -3107,9 +3143,90 @@ def checks_settings_insert():
         response.flash = T("errors in form")
     return dict(form=form, record=record)
 
+def _label(key):
+    d = v_nodes_columns()
+    return DIV(
+             IMG(
+               _src=URL(r=request,c='static',f=d[key]['img']+'.png'),
+               _border=0,
+               _style='vertical-align:top;margin-right:10px',
+             ),
+             d[key]['title'],
+           )
+
+def _node_form(record=None):
+    if record is not None:
+        deletable = True
+    else:
+        deletable = False
+    return SQLFORM(db.nodes,
+                 record=record,
+                 deletable=deletable,
+                 hidden_fields=['mem_bytes',
+                                'mem_banks',
+                                'mem_slots',
+                                'os_name',
+                                'os_kernel',
+                                'os_vendor',
+                                'os_release',
+                                'os_arch',
+                                'cpu_freq',
+                                'cpu_dies',
+                                'cpu_cores',
+                                'cpu_model',
+                                'cpu_vendor',
+                                'serial',
+                                'model'],
+                 fields=['nodename',
+                         'warranty_end',
+                         'status',
+                         'role',
+                         'environnement',
+                         'type',
+                         'loc_country',
+                         'loc_zip',
+                         'loc_city',
+                         'loc_addr',
+                         'loc_building',
+                         'loc_floor',
+                         'loc_room',
+                         'loc_rack',
+                         'power_supply_nb',
+                         'power_cabinet1',
+                         'power_cabinet2',
+                         'power_protect',
+                         'power_protect_breaker',
+                         'power_breaker1',
+                         'power_breaker2',
+                        ],
+                 labels={
+                         'nodename': _label('nodename'),
+                         'warranty_end': _label('warranty_end'),
+                         'status': _label('status'),
+                         'role': _label('role'),
+                         'environnement': _label('environnement'),
+                         'type': _label('type'),
+                         'loc_country': _label('loc_country'),
+                         'loc_zip': _label('loc_zip'),
+                         'loc_city': _label('loc_city'),
+                         'loc_addr': _label('loc_addr'),
+                         'loc_building': _label('loc_building'),
+                         'loc_floor': _label('loc_floor'),
+                         'loc_room': _label('loc_room'),
+                         'loc_rack': _label('loc_rack'),
+                         'power_supply_nb': _label('power_supply_nb'),
+                         'power_cabinet1': _label('power_cabinet1'),
+                         'power_cabinet2': _label('power_cabinet2'),
+                         'power_protect': _label('power_protect'),
+                         'power_protect_breaker': _label('power_protect_breaker'),
+                         'power_breaker1': _label('power_breaker1'),
+                         'power_breaker2': _label('power_breaker2'),
+                        },
+                )
+
 @auth.requires_login()
 def node_insert():
-    form=SQLFORM(db.nodes)
+    form = _node_form()
     if form.accepts(request.vars):
         response.flash = T("edition recorded")
         redirect(URL(r=request, f='nodes'))
@@ -3129,7 +3246,7 @@ def node_edit():
     record = rows[0]
     id = record.id
     record = db(db.v_nodes.id==id).select()[0]
-    form=SQLFORM(db.v_nodes, record)
+    form = _node_form(record)
     if form.accepts(request.vars):
         response.flash = T("edition recorded")
         redirect(URL(r=request, f='nodes'))
