@@ -810,12 +810,21 @@ db.define_table('v_checks',
     Field('chk_high', 'integer'),
     migrate=False)
 
-db.define_table('v_billing',
+db.define_table('v_billing_per_os',
     Field('id'),
     Field('svc_list', 'string'),
     Field('os_name', 'string'),
     Field('nb', 'integer'),
-    Field('unit_cost', 'integer'),
+    Field('app_list', 'string'),
+    Field('cost', 'integer'),
+    migrate=False)
+
+db.define_table('v_billing_per_app',
+    Field('id'),
+    Field('svc_list', 'string'),
+    Field('svc_app', 'string'),
+    Field('nb', 'integer'),
+    Field('os_list', 'string'),
     Field('cost', 'integer'),
     migrate=False)
 

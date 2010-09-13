@@ -1,69 +1,133 @@
 {{extend 'layout.html'}}
 
 {{
-def billing_line(line, cellclass):
+#
+# Per OS
+#
+def f_billing_per_os_line(line, cellclass):
     tr = TR(
       TD(line.os_name, _class=cellclass),
       TD(line.nb, _class=cellclass),
-      TD(line.unit_cost, _class=cellclass),
       TD(line.cost, _class=cellclass),
+      TD(line.app_list.replace(',', ', '), _class=cellclass),
       TD(line.svc_list.replace(',', ', '), _class=cellclass),
     )
     return tr
     pass
 
-def billing_header():
+def f_billing_per_os_header():
     tr = TR(
       TH(T("OS name")),
       TH(T("Service count")),
-      TH(T("Unit cost")),
-      TH(T("OS cost")),
+      TH(T("Cost")),
+      TH(T("Apps")),
       TH(T("Services")),
       _style="border-bottom:4px solid darkorange",
     )
     return tr
     pass
 
-def billing_table():
+def f_billing_per_os_table():
     cellclass = 'cell1'
     cellclasses = {}
     cellclasses['cell1'] = 'cell2'
     cellclasses['cell2'] = 'cell1'
     lines = []
 
-    for line in rows:
+    for line in billing_per_os:
         cellclass = cellclasses[cellclass]
-        lines += [billing_line(line, cellclass)]
+        lines += [f_billing_per_os_line(line, cellclass)]
         pass
 
     t = TABLE(
         TR(
           TD(
-            H2(T("Billing details"), _style="padding:10px;text-align:center"),
+            H2(T("Per operating system billing"), _style="padding:10px;text-align:center"),
             _colspan=99,
           ),
         ),
-        billing_header(),
+        f_billing_per_os_header(),
         lines,
     )
     return t
     pass
 
-def billing():
-    if len(rows) == 0:
+def f_billing_per_os():
+    if len(billing_per_os) == 0:
         return DIV()
     d = DIV(
-      billing_table(),
+      f_billing_per_os_table(),
       _style="padding:10px",
     )
     return d
     pass
 
+#
+# Per App
+#
+def f_billing_per_app_line(line, cellclass):
+    tr = TR(
+      TD(line.svc_app, _class=cellclass),
+      TD(line.cost, _class=cellclass),
+      TD(line.nb, _class=cellclass),
+      TD(line.os_list.replace(',', ', '), _class=cellclass),
+      TD(line.svc_list.replace(',', ', '), _class=cellclass),
+    )
+    return tr
+    pass
+
+def f_billing_per_app_header():
+    tr = TR(
+      TH(T("App name")),
+      TH(T("Cost")),
+      TH(T("Service count")),
+      TH(T("OS")),
+      TH(T("Services")),
+      _style="border-bottom:4px solid darkorange",
+    )
+    return tr
+    pass
+
+def f_billing_per_app_table():
+    cellclass = 'cell1'
+    cellclasses = {}
+    cellclasses['cell1'] = 'cell2'
+    cellclasses['cell2'] = 'cell1'
+    lines = []
+
+    for line in billing_per_app:
+        cellclass = cellclasses[cellclass]
+        lines += [f_billing_per_app_line(line, cellclass)]
+        pass
+
+    t = TABLE(
+        TR(
+          TD(
+            H2(T("Per application billing"), _style="padding:10px;text-align:center"),
+            _colspan=99,
+          ),
+        ),
+        f_billing_per_app_header(),
+        lines,
+    )
+    return t
+    pass
+
+def f_billing_per_app():
+    if len(billing_per_app) == 0:
+        return DIV()
+    d = DIV(
+      f_billing_per_app_table(),
+      _style="padding:10px",
+    )
+    return d
+    pass
 
 }}
 
 {{=DIV(
-     billing(),
+     f_billing_per_os(),
+     f_billing_per_app(),
      _style="
        padding-left:2em;
        padding-right:2em;
