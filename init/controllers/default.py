@@ -5689,6 +5689,9 @@ def stats_disks_per_svc():
     action = str(URL(r=request,c='static',f=img))
     path = 'applications'+action
     can = canvas.init(path)
+    theme.use_color = True
+    theme.scale_factor = 2
+    theme.reinitialize()
 
     def compute_size(s):
         if s is None or len(s) == 0:
@@ -5743,6 +5746,9 @@ def stats_last_day_avg_cpu():
     action = str(URL(r=request,c='static',f=img))
     path = 'applications'+action
     can = canvas.init(path)
+    theme.use_color = True
+    theme.scale_factor = 2
+    theme.reinitialize()
 
     data1 = [(row[0], row[1]) for row in rows]
     if len(data1) > 31:
@@ -5793,6 +5799,9 @@ def stats_last_day_avg_mem():
     action = str(URL(r=request,c='static',f=img))
     path = 'applications'+action
     can = canvas.init(path)
+    theme.use_color = True
+    theme.scale_factor = 2
+    theme.reinitialize()
 
     data1 = [(row[0], row[1]) for row in rows]
     if len(data1) > 31:
