@@ -2573,7 +2573,12 @@ def cron_stat_day():
     sql = "insert into stat_day set day='%(end)s', %(pairs)s on duplicate key update %(pairs)s"%dict(end=end, pairs=','.join(pairs))
     #raise Exception(sql)
     db.executesql(sql)
-    return dict(sql=sql)
+
+    # os lifecycle
+    sql2 = """replace into lifecycle_os (lc_os_concat, lc_count, lc_date) select concat_ws(' ', os_name, os_vendor, os_release, os_arch) c,count(nodename),CURDATE() from nodes group by c;"""
+    db.executesql(sql2)
+
+    return dict(sql=sql, sql2=sql2)
 
 def cron_stat_day_svc():
     when = None
@@ -5175,8 +5180,6 @@ def ajax_node():
       TR(TD(T('os name'), _style='font-style:italic'), TD(node['os_name'])),
       TR(TD(T('os vendor'), _style='font-style:italic'), TD(node['os_vendor'])),
       TR(TD(T('os release'), _style='font-style:italic'), TD(node['os_release'])),
-      TR(TD(T('os update'), _style='font-style:italic'), TD(node['os_update'])),
-      TR(TD(T('os segment'), _style='font-style:italic'), TD(node['os_segment'])),
       TR(TD(T('os kernel'), _style='font-style:italic'), TD(node['os_kernel'])),
       TR(TD(T('os arch'), _style='font-style:italic'), TD(node['os_arch'])),
     )
