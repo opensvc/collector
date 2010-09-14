@@ -16,6 +16,8 @@ def lc_display(o="", title=None):
     if title is None:
         title = o
         pass
+    if o is None:
+        return SPAN()
     return SPAN(
              H2(T(title), _style="padding:10px;text-align:center"),
              img(o),

@@ -5749,6 +5749,7 @@ def format2_y(x):
     return "/a50/6{}" + str(x)
 
 @auth.requires_login()
+<<<<<<< HEAD
 def __stats_lifecycle_os_name():
     from time import mktime
     import datetime
@@ -5834,6 +5835,9 @@ def __stats_lifecycle_os_name():
 
 @auth.requires_login()
 def __stats_lifecycle_os_release(os_name=None):
+    if os_name is None:
+        return
+
     from time import mktime
     import datetime
 
