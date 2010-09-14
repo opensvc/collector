@@ -2606,7 +2606,11 @@ def cron_stat_day():
     db.executesql(sql)
 
     # os lifecycle
-    sql2 = """replace into lifecycle_os (lc_os_concat, lc_count, lc_date) select concat_ws(' ', os_name, os_vendor, os_release, os_arch) c,count(nodename),CURDATE() from nodes group by c;"""
+    sql2 = """replace into lifecycle_os
+              (lc_os_concat, lc_count, lc_date, lc_os_name, lc_os_vendor)
+              select concat_ws(' ', os_name, os_vendor, os_release, os_arch) c,
+                     count(nodename),CURDATE(), os_name, os_vendor
+              from nodes group by c;"""
     db.executesql(sql2)
 
     return dict(sql=sql, sql2=sql2)
@@ -5708,6 +5712,23 @@ def cron_stats():
     stats_global()
     stats_lifecycle_os()
 
+def __get_lifecycle_os():
+    rows = db(db.lifecycle_os.id>0).select(orderby=db.lifecycle_os.lc_os_name,
+                                           groupby=db.lifecycle_os.lc_os_name)
+    os = []
+    for r in rows:
+        os += [r.lc_os_name]
+    return os
+
+@auth.requires_login()
+def lifecycle_os():
+    os = __get_lifecycle_os()
+    return dict(os=os)
+
+def stats_lifecycle_os():
+    for o in __get_lifecycle_os():
+        __stats_lifecycle_os(o)
+
 @auth.requires_login()
 def stats():
     d = {}
@@ -5727,13 +5748,13 @@ def format2_y(x):
     return "/a50/6{}" + str(x)
 
 @auth.requires_login()
-def stats_lifecycle_os():
+def __stats_lifecycle_os(os_name=None):
     from time import mktime
     import datetime
 
     today = datetime.datetime.today().toordinal()
 
-    rows = db(db.lifecycle_os.id>0).select(orderby=db.lifecycle_os.lc_date)
+    rows = db(db.lifecycle_os.lc_os_name==os_name).select(orderby=db.lifecycle_os.lc_date)
     if len(rows) == 0:
         return
 
@@ -5756,7 +5777,7 @@ def stats_lifecycle_os():
                 e += [h[day][o]]
         data += [tuple(e)]
 
-    action = str(URL(r=request,c='static',f='stat_lifecycle_os.png'))
+    action = str(URL(r=request,c='static',f='stat_lifecycle_'+os_name+'.png'))
     path = 'applications'+action
     can = canvas.init(path)
     theme.use_color = True

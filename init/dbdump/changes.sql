@@ -434,3 +434,7 @@ alter table lifecycle_os add unique index idx1 using btree(lc_os_concat,lc_date)
 drop view v_packages_nodes;
 
 drop view v_checks_nodes;
+
+alter table lifecycle_os add column lc_os_name varchar(60) default null;
+
+alter table lifecycle_os add column lc_os_vendor varchar(60) default null;

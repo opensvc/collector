@@ -66,6 +66,8 @@ response.menu = [
          [
              [T('site'), False,
               URL(request.application,'default','stats')],
+             [T('os lifecycle'), False,
+              URL(request.application,'default','lifecycle_os')],
              [T('availability'), False,
               URL(request.application,'default','svcmon_log')],
              [T('alerts'), False,

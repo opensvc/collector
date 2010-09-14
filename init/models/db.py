@@ -824,6 +824,8 @@ db.define_table('v_billing_per_app',
 db.define_table('lifecycle_os',
     Field('id'),
     Field('lc_os_concat', 'string'),
+    Field('lc_os_vendor', 'string'),
+    Field('lc_os_name', 'string'),
     Field('lc_count', 'integer'),
     Field('lc_date', 'date'),
     migrate=False)
