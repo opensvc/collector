@@ -24,7 +24,7 @@ pass
   <tr class=box>
     {{for key in colkeys:}}
     <td name="tcol_{{=key}}" style="{{=col_hide(key)}}">
-      {{=colname(packages, key, columns[key]['title'])}}
+      {{=colname(packages, key, columns[key]['title'], nestedin=columns[key]['nestedin'])}}
     </td>
     {{pass}}
   </tr>
@@ -47,16 +47,16 @@ pass
     <td name="tcol_pkg_id" style="{{=col_hide('pkg_nodename')}}">
       {{=A(
           DIV(
-            node_icon(pkg.os_name),
-            pkg.pkg_nodename,
+            node_icon(pkg.v_nodes.os_name),
+            pkg.packages.pkg_nodename,
             _onclick="""
                getElementById("node").value="%(node)s";
                getElementById("rowid").value="%(id)s";
                ajax("%(url)s",['node', 'rowid'],"id_%(id)s");
                show_eid("tr_id_%(id)s");
             """%dict(url=URL(r=request,f='ajax_node'),
-                     node=pkg.pkg_nodename,
-                     id=pkg.id,
+                     node=pkg.packages.pkg_nodename,
+                     id=pkg.packages.id,
                     ),
           ),
           _class="xinfo",
@@ -64,21 +64,21 @@ pass
       }}
     </td>
     {{elif key == 'pkg_updated':
-         if outdated(pkg['pkg_updated']):
+         if outdated(pkg.packages.pkg_updated):
              alert = 'color:darkred;font-weight:bold'
          else:
              alert = ''
          pass
     }}
-    <td name="tcol_{{=key}}" style="{{=col_hide(key)}};{{=alert}}">{{=pkg[key]}}</td>
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}};{{=alert}}">{{=pkg[columns[key]['nestedin']][key]}}</td>
     {{else:}}
-    <td name="tcol_{{=key}}" style="{{=col_hide(key)}}">{{=pkg[key]}}</td>
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}}">{{=pkg[columns[key]['nestedin']][key]}}</td>
     {{pass}}
     {{pass}}
   </tr>
-  <tr id='tr_id_{{=pkg.id}}' class="cloud">
+  <tr id='tr_id_{{=pkg.packages.id}}' class="cloud">
     <td colspan=99 class="details_row {{=cellclass}}">
-      <div id='id_{{=pkg.id}}'>
+      <div id='id_{{=pkg.packages.id}}'>
       </div>
     </td>
   </tr>

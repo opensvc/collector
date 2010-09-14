@@ -24,7 +24,7 @@ pass
   <tr class=box>
     {{for key in colkeys:}}
     <td name="tcol_{{=key}}" style="{{=col_hide(key)}}">
-      {{=colname(checks, key, columns[key]['title'])}}
+      {{=colname(checks, key, columns[key]['title'], nestedin=columns[key]['nestedin'])}}
     </td>
     {{pass}}
   </tr>
@@ -42,20 +42,21 @@ pass
   }}
   <tr class={{=cellclass}}>
     {{for key in colkeys:}}
+    {{table = columns[key]['nestedin']}}
 
     {{if key == 'chk_svcname':}}
     <td name="tcol_chk_id" style="{{=col_hide('chk_svcname')}}">
       {{=A(
           DIV(
-            check.chk_svcname,
+            check.v_checks.chk_svcname,
             _onclick="""
                getElementById("node").value="%(node)s";
                getElementById("rowid").value="%(id)s";
                ajax("%(url)s",['node', 'rowid'],"id_%(id)s");
                show_eid("tr_id_%(id)s");
             """%dict(url=URL(r=request,f='ajax_service'),
-                     node=check.chk_svcname,
-                     id=check.id,
+                     node=check.v_checks.chk_svcname,
+                     id=check.v_checks.id,
                     ),
           ),
           _class="xinfo",
@@ -65,16 +66,16 @@ pass
     <td name="tcol_chk_id" style="{{=col_hide('chk_nodename')}}">
       {{=A(
           DIV(
-            node_icon(check.os_name),
-            check.chk_nodename,
+            node_icon(check.v_nodes.os_name),
+            check.v_checks.chk_nodename,
             _onclick="""
                getElementById("node").value="%(node)s";
                getElementById("rowid").value="%(id)s";
                ajax("%(url)s",['node', 'rowid'],"id_%(id)s");
                show_eid("tr_id_%(id)s");
             """%dict(url=URL(r=request,f='ajax_node'),
-                     node=check.chk_nodename,
-                     id=check.id,
+                     node=check.v_checks.chk_nodename,
+                     id=check.v_checks.id,
                     ),
           ),
           _class="xinfo",
@@ -82,45 +83,45 @@ pass
       }}
     </td>
     {{elif key == 'chk_value':
-         if check['chk_value'] < check['chk_low'] or check['chk_value'] > check['chk_high']:
+         if check.v_checks.chk_value < check.v_checks.chk_low or check.v_checks.chk_value > check.v_checks.chk_high:
              alert = 'color:darkred;font-weight:bold'
          else:
              alert = ''
          pass
     }}
-    <td name="tcol_{{=key}}" style="{{=col_hide(key)}};{{=alert}}">{{=check[key]}}</td>
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}};{{=alert}}">{{=check[table][key]}}</td>
     {{elif key == 'chk_low':
-         if check['chk_value'] < check['chk_low']:
+         if check[table]['chk_value'] < check[table]['chk_low']:
              alert = 'color:darkred;font-weight:bold'
          else:
              alert = ''
          pass
     }}
-    <td name="tcol_{{=key}}" style="{{=col_hide(key)}};{{=alert}}">{{=check[key]}}</td>
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}};{{=alert}}">{{=check[table][key]}}</td>
     {{elif key == 'chk_high':
-         if check['chk_value'] > check['chk_high']:
+         if check[table]['chk_value'] > check[table]['chk_high']:
              alert = 'color:darkred;font-weight:bold'
          else:
              alert = ''
          pass
     }}
-    <td name="tcol_{{=key}}" style="{{=col_hide(key)}};{{=alert}}">{{=check[key]}}</td>
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}};{{=alert}}">{{=check[table][key]}}</td>
     {{elif key == 'chk_updated':
-         if outdated(check['chk_updated']):
+         if outdated(check[table]['chk_updated']):
              alert = 'color:darkred;font-weight:bold'
          else:
              alert = ''
          pass
     }}
-    <td name="tcol_{{=key}}" style="{{=col_hide(key)}};{{=alert}}">{{=check[key]}}</td>
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}};{{=alert}}">{{=check[table][key]}}</td>
     {{else:}}
-    <td name="tcol_{{=key}}" style="{{=col_hide(key)}}">{{=check[key]}}</td>
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}}">{{=check[table][key]}}</td>
     {{pass}}
     {{pass}}
   </tr>
-  <tr id='tr_id_{{=check.id}}' class="cloud">
+  <tr id='tr_id_{{=check.v_checks.id}}' class="cloud">
     <td colspan=99 class="details_row {{=cellclass}}">
-      <div id='id_{{=check.id}}'>
+      <div id='id_{{=check.v_checks.id}}'>
       </div>
     </td>
   </tr>

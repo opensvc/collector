@@ -430,3 +430,7 @@ CREATE TABLE `opensvc`.`lifecycle_os` (
 );
 
 alter table lifecycle_os add unique index idx1 using btree(lc_os_concat,lc_date);
+
+drop view v_packages_nodes;
+
+drop view v_checks_nodes;

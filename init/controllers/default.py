@@ -2014,44 +2014,53 @@ def svcmon():
 
 @auth.requires_login()
 def packages():
-    columns = dict(
+    d1 = dict(
         pkg_nodename = dict(
             pos = 1,
             title = T('Nodename'),
             display = True,
+            nestedin = 'packages',
             size = 10
         ),
         pkg_name = dict(
             pos = 2,
             title = T('Package'),
             display = True,
+            nestedin = 'packages',
             size = 10
         ),
         pkg_version = dict(
             pos = 3,
             title = T('Version'),
             display = True,
+            nestedin = 'packages',
             size = 4
         ),
         pkg_arch = dict(
             pos = 4,
             title = T('Arch'),
             display = True,
+            nestedin = 'packages',
             size = 10
         ),
         pkg_updated = dict(
             pos = 5,
             title = T('Updated'),
             display = True,
+            nestedin = 'packages',
             size = 6
         ),
     )
-    d = v_nodes_columns()
-    for k in d:
-        d[k]['pos'] += 10
-        d[k]['display'] = False
-    del(d['nodename'])
-    columns.update(d)
+
+    d2 = v_nodes_columns()
+    for k in d2:
+        d2[k]['pos'] += 10
+        d2[k]['display'] = False
+        d2[k]['nestedin'] = 'v_nodes'
+
+    del(d2['nodename'])
+    columns = d1
+    columns.update(d2)
 
     def _sort_cols(x, y):
         return cmp(columns[x]['pos'], columns[y]['pos'])
@@ -2059,20 +2068,25 @@ def packages():
     colkeys = columns.keys()
     colkeys.sort(_sort_cols)
 
-    o = db.v_packages_nodes.pkg_nodename
-    o |= db.v_packages_nodes.pkg_name
-    o |= db.v_packages_nodes.pkg_arch
+    o = db.packages.pkg_nodename
+    o |= db.packages.pkg_name
+    o |= db.packages.pkg_arch
 
     toggle_db_filters()
 
     # filtering
-    query = (db.v_packages_nodes.id>0)
-    for key in columns.keys():
+    query = db.packages.id>0
+    query &= db.packages.pkg_nodename==db.v_nodes.nodename
+    for key in d1.keys():
         if key not in request.vars.keys():
             continue
-        query &= _where(None, 'v_packages_nodes', request.vars[key], key)
+        query &= _where(None, 'packages', request.vars[key], key)
+    for key in d2.keys():
+        if key not in request.vars.keys():
+            continue
+        query &= _where(None, 'v_nodes', request.vars[key], key)
 
-    query &= _where(None, 'v_packages_nodes', domain_perms(), 'pkg_nodename')
+    query &= _where(None, 'packages', domain_perms(), 'pkg_nodename')
 
     query = apply_db_filters(query, 'v_nodes')
 
@@ -2097,68 +2111,80 @@ def packages_csv():
 
 @auth.requires_login()
 def checks():
-    columns = dict(
+    d1 = dict(
         chk_nodename = dict(
             pos = 1,
             title = T('Nodename'),
             display = True,
+            nestedin = 'v_checks',
             size = 10
         ),
         chk_svcname = dict(
             pos = 2,
             title = T('Service'),
             display = True,
+            nestedin = 'v_checks',
             size = 10
         ),
         chk_type = dict(
             pos = 3,
             title = T('Type'),
             display = True,
+            nestedin = 'v_checks',
             size = 3
         ),
         chk_instance = dict(
             pos = 4,
             title = T('Instance'),
             display = True,
+            nestedin = 'v_checks',
             size = 10
         ),
         chk_value = dict(
             pos = 5,
             title = T('Value'),
             display = True,
+            nestedin = 'v_checks',
             size = 3
         ),
         chk_low = dict(
             pos = 6,
             title = T('Low threshold'),
             display = True,
+            nestedin = 'v_checks',
             size = 3
         ),
         chk_high = dict(
             pos = 7,
             title = T('High threshold'),
             display = True,
+            nestedin = 'v_checks',
             size = 10
         ),
         chk_created = dict(
             pos = 8,
             title = T('Created'),
             display = False,
+            nestedin = 'v_checks',
             size = 6
         ),
         chk_updated = dict(
             pos = 9,
             title = T('Updated'),
             display = True,
+            nestedin = 'v_checks',
             size = 6
         ),
     )
-    d = v_nodes_columns()
-    for k in d:
-        d[k]['pos'] += 10
-        d[k]['display'] = False
-    del(d['nodename'])
-    columns.update(d)
+    d2 = v_nodes_columns()
+    for k in d2:
+        d2[k]['pos'] += 10
+        d2[k]['display'] = False
+        d2[k]['nestedin'] = 'v_nodes'
+    del(d2['nodename'])
+
+    columns = d1
+    columns.update(d2)
 
     def _sort_cols(x, y):
         return cmp(columns[x]['pos'], columns[y]['pos'])
@@ -2166,20 +2192,25 @@ def checks():
     colkeys = columns.keys()
     colkeys.sort(_sort_cols)
 
-    o = db.v_checks_nodes.chk_nodename
-    o |= db.v_checks_nodes.chk_type
-    o |= db.v_checks_nodes.chk_instance
+    o = db.v_checks.chk_nodename
+    o |= db.v_checks.chk_type
+    o |= db.v_checks.chk_instance
 
     toggle_db_filters()
 
     # filtering
-    query = (db.v_checks_nodes.id>0)
-    for key in columns.keys():
+    query = db.v_checks.id>0
+    query &= db.v_checks.chk_nodename==db.v_nodes.nodename
+    for key in d1.keys():
         if key not in request.vars.keys():
             continue
-        query &= _where(None, 'v_checks_nodes', request.vars[key], key)
+        query &= _where(None, 'v_checks', request.vars[key], key)
+    for key in d2.keys():
+        if key not in request.vars.keys():
+            continue
+        query &= _where(None, 'v_nodes', request.vars[key], key)
 
-    query &= _where(None, 'v_checks_nodes', domain_perms(), 'chk_nodename')
+    query &= _where(None, 'v_checks', domain_perms(), 'chk_nodename')
 
     query = apply_db_filters(query, 'v_nodes')
 
