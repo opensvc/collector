@@ -5,6 +5,8 @@
 
 
 def lc_display(o=""):
+    if o is None:
+        return SPAN()
     return SPAN(
                  H2(o, _style="padding:10px;text-align:center"),
                  IMG(

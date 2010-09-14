@@ -5749,6 +5749,9 @@ def format2_y(x):
 
 @auth.requires_login()
 def __stats_lifecycle_os(os_name=None):
+    if os_name is None:
+        return
+
     from time import mktime
     import datetime
 
