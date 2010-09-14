@@ -197,6 +197,7 @@
 'OS': 'SE',
 'OS cost': 'Co\xc3\xbbt par SE',
 'OS kernel': 'noyau du SE',
+'OS lifecycle': 'OS lifecycle',
 'OS name': 'Nom du SE',
 'Obsolescence setup': "Configuration de l'obsolescence",
 'Old password': 'Ancien mot de passe',

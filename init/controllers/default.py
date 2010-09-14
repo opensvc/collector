@@ -5706,6 +5706,7 @@ def cron_stats():
 
     # generate graphs
     stats_global()
+    stats_lifecycle_os()
 
 @auth.requires_login()
 def stats():
@@ -5724,6 +5725,84 @@ def format_y(x):
 
 def format2_y(x):
     return "/a50/6{}" + str(x)
+
+@auth.requires_login()
+def stats_lifecycle_os():
+    from time import mktime
+    import datetime
+
+    today = datetime.datetime.today().toordinal()
+
+    rows = db(db.lifecycle_os.id>0).select(orderby=db.lifecycle_os.lc_date)
+    if len(rows) == 0:
+        return
+
+    h = {}
+    os = set()
+    data = []
+    for r in rows:
+        o = r.lc_os_concat.replace('/', '//')
+        os |= set([o])
+        day = r.lc_date.toordinal()
+        if day not in h:
+            h[day] = {}
+        h[day][o] = r.lc_count
+    for day in h:
+        e = [day]
+        for o in os:
+            if o not in h[day]:
+                e += [0]
+            else:
+                e += [h[day][o]]
+        data += [tuple(e)]
+
+    action = str(URL(r=request,c='static',f='stat_lifecycle_os.png'))
+    path = 'applications'+action
+    can = canvas.init(path)
+    theme.use_color = True
+    theme.scale_factor = 2
+    theme.reinitialize()
+
+    ar = area.T(x_coord = linear_coord.T(),
+                y_coord = linear_coord.T(),
+                x_axis = axis.X(label="", format=format_x,
+                                tic_interval=tic_interval_from_ord),
+                x_range = (None, today),
+                y_range = (0, None),
+                y_axis = axis.Y(label="", format=format_y))
+    bar_plot.fill_styles.reset();
+
+    colors = [color.darkolivegreen1,
+              color.salmon,
+              color.darkkhaki,
+              color.thistle3,
+              color.gray30,
+              color.coral,
+              color.gray70]
+
+    w = 120/len(data)
+    if w < 1: w = 1
+
+    plot = []
+    for i, o in enumerate(os):
+        if i == 0:
+            stackon = None
+        else:
+            stackon = plot[i-1]
+
+        plot += [bar_plot.T(label=o,
+                            hcol=i+1,
+                            fill_style=fill_style.Plain(bgcolor=colors[i]),
+                            stack_on=stackon,
+                            line_style=None,
+                            width = w,
+                            data = data,
+                            data_label_format="",
+                            direction='vertical')]
+        ar.add_plot(plot[i])
+
+    ar.draw(can)
+    can.close()
 
 @auth.requires_login()
 def stats_global():

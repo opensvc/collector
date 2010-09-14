@@ -825,6 +825,6 @@ db.define_table('lifecycle_os',
     Field('id'),
     Field('lc_os_concat', 'string'),
     Field('lc_count', 'integer'),
-    Field('lc_date', 'datetime'),
+    Field('lc_date', 'date'),
     migrate=False)
 
