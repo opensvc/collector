@@ -1,0 +1,26 @@
+{{extend 'layout.html'}}
+{{include '../static/jslib.html'}}
+{{include 'filters.html'}}
+{{
+
+
+def lc_display(o=""):
+    return SPAN(
+                 H2(o, _style="padding:10px;text-align:center"),
+                 IMG(
+                   _src=URL(r=request,c='static',f='stat_lifecycle_'+o+'.png'),
+                   _border=0,
+                 ),
+                _style="padding:10px",
+           )
+    pass
+
+}}
+{{=DIV(
+     map(lc_display, os),
+     _style="
+       padding-left:2em;
+       padding-right:2em;
+     "
+   )
+}}
