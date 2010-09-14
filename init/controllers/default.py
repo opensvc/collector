@@ -5794,12 +5794,17 @@ def __stats_lifecycle_os(os_name=None):
     bar_plot.fill_styles.reset();
 
     colors = [color.darkolivegreen1,
+              color.gray10,
               color.salmon,
-              color.darkkhaki,
-              color.thistle3,
               color.gray30,
-              color.coral,
-              color.gray70]
+              color.darkkhaki,
+              color.gray50,
+              color.sienna1,
+              color.gray70,
+              color.lightgreen,
+              color.gray90,
+              color.thistle3,
+              color.coral]
 
     w = 120/len(data)
     if w < 1: w = 1
@@ -5813,7 +5818,7 @@ def __stats_lifecycle_os(os_name=None):
 
         plot += [bar_plot.T(label=o,
                             hcol=i+1,
-                            fill_style=fill_style.Plain(bgcolor=colors[i]),
+                            fill_style=fill_style.Plain(bgcolor=colors[i%len(colors)]),
                             stack_on=stackon,
                             line_style=None,
                             width = w,
