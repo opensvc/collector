@@ -830,3 +830,10 @@ db.define_table('lifecycle_os',
     Field('lc_date', 'date'),
     migrate=False)
 
+db.define_table('v_lifecycle_os_name',
+    Field('id'),
+    Field('lc_os_name', 'string'),
+    Field('lc_count', 'integer'),
+    Field('lc_date', 'date'),
+    migrate=False)
+

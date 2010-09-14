@@ -438,3 +438,8 @@ drop view v_checks_nodes;
 alter table lifecycle_os add column lc_os_name varchar(60) default null;
 
 alter table lifecycle_os add column lc_os_vendor varchar(60) default null;
+
+# test => set in config file
+set global concurrent_insert=2;
+
+create view v_lifecycle_os_name as select id, lc_date, sum(lc_count) as lc_count,lc_os_name from lifecycle_os group by lc_date, lc_os_name order by lc_date,lc_os_name;

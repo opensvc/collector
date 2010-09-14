@@ -3,19 +3,28 @@
 {{include 'filters.html'}}
 {{
 
-
-def lc_display(o=""):
+def img(o):
     return SPAN(
-                 H2(o, _style="padding:10px;text-align:center"),
-                 IMG(
-                   _src=URL(r=request,c='static',f='stat_lifecycle_'+o+'.png'),
-                   _border=0,
-                 ),
-                _style="padding:10px",
+             IMG(
+               _src=URL(r=request,c='static',f='stat_lifecycle_'+o+'.png'),
+               _border=0,
+             ), 
+           )
+    pass
+
+def lc_display(o="", title=None):
+    if title is None:
+        title = o
+        pass
+    return SPAN(
+             H2(T(title), _style="padding:10px;text-align:center"),
+             img(o),
+             _style="padding:10px",
            )
     pass
 
 }}
+{{=lc_display('os_name', 'Operating systems')}}
 {{=DIV(
      map(lc_display, os),
      _style="
