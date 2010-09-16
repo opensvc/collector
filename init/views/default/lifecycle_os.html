@@ -19,17 +19,18 @@ def lc_display(o="", title=None):
     if o is None:
         return SPAN()
     return SPAN(
-             H2(T(title), _style="padding:10px;text-align:center"),
+             H2(T(title), _style="padding:10px"),
              img(o),
              _style="padding:10px",
            )
     pass
 
 }}
-{{=lc_display('os_name', 'Operating systems')}}
 {{=DIV(
-     map(lc_display, os),
+     lc_display('os_name', 'Operating systems'),
+     SPAN(map(lc_display, os)),
      _style="
+       text-align:left;
        padding-left:2em;
        padding-right:2em;
      "
