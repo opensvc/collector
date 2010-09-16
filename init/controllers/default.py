@@ -2110,7 +2110,101 @@ def packages_csv():
     return str(checks()['packages'])
 
 @auth.requires_login()
+def _checks_set_low_threshold(request):
+    val = int(request.vars.val)
+    ids = ([])
+    now = datetime.datetime.now()
+    for key in [ k for k in request.vars.keys() if 'check_' in k ]:
+        ids += ([key[6:]])
+    for i in ids:
+        rows = db(db.checks_live.id==i).select()
+        if len(rows) != 1:
+            continue
+        chk = rows[0]
+        q = db.checks_settings.chk_nodename==chk.chk_nodename
+        q &= db.checks_settings.chk_type==chk.chk_type
+        q &= db.checks_settings.chk_instance==chk.chk_instance
+        settings = db(q).select()
+        if len(settings) == 0:
+            # insert
+            defq = db.checks_defaults.chk_type==chk.chk_type
+            defq &= db.checks_defaults.chk_type==chk.chk_type
+            defaults = db(defq).select()
+            if len(defaults) != 1:
+                continue
+            default = defaults[0]
+            db.checks_settings.insert(chk_nodename=chk.chk_nodename,
+                                      chk_type=chk.chk_type,
+                                      chk_instance=chk.chk_instance,
+                                      chk_low=val,
+                                      chk_high=default.chk_high,
+                                      chk_changed_by=user_name(),
+                                      chk_changed=now)
+        elif len(settings) == 1:
+            # update
+            db(q).update(chk_low=val,
+                         chk_changed_by=user_name(),
+                         chk_changed=now)
+
+def _checks_set_high_threshold(request):
+    val = int(request.vars.val)
+    ids = ([])
+    now = datetime.datetime.now()
+    for key in [ k for k in request.vars.keys() if 'check_' in k ]:
+        ids += ([key[6:]])
+    for i in ids:
+        rows = db(db.checks_live.id==i).select()
+        if len(rows) != 1:
+            continue
+        chk = rows[0]
+        q = db.checks_settings.chk_nodename==chk.chk_nodename
+        q &= db.checks_settings.chk_type==chk.chk_type
+        q &= db.checks_settings.chk_instance==chk.chk_instance
+        settings = db(q).select()
+        if len(settings) == 0:
+            # insert
+            defq = db.checks_defaults.chk_type==chk.chk_type
+            defq &= db.checks_defaults.chk_type==chk.chk_type
+            chk_defaults = db(defq).select()
+            if len(chk_defaults) != 1:
+                continue
+            chk_default = chk_defaults[0]
+            db.checks_settings.insert(chk_nodename=chk.chk_nodename,
+                                      chk_type=chk.chk_type,
+                                      chk_instance=chk.chk_instance,
+                                      chk_high=val,
+                                      chk_low=chk_default.chk_low,
+                                      chk_changed_by=user_name(),
+                                      chk_changed=now)
+        elif len(settings) == 1:
+            # update
+            db(q).update(chk_high=val,
+                         chk_changed_by=user_name(),
+                         chk_changed=now)
+
+def _checks_reset_settings(request):
+    ids = ([])
+    for key in [ k for k in request.vars.keys() if 'check_' in k ]:
+        ids += ([key[6:]])
+    for i in ids:
+        rows = db(db.checks_live.id==i).select()
+        if len(rows) != 1:
+            continue
+        chk = rows[0]
+        q = db.checks_settings.chk_nodename==chk.chk_nodename
+        q &= db.checks_settings.chk_type==chk.chk_type
+        q &= db.checks_settings.chk_instance==chk.chk_instance
+        settings = db(q).delete()
+
+@auth.requires_login()
 def checks():
+    if request.vars.action == "set_low_thres":
+        _checks_set_low_threshold(request)
+    elif request.vars.action == "set_high_thres":
+        _checks_set_high_threshold(request)
+    elif request.vars.action == "reset":
+        _checks_reset_settings(request)
+
     d1 = dict(
         chk_nodename = dict(
             pos = 1,

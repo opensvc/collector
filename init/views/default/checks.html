@@ -22,6 +22,7 @@ pass
 {{=DB_FILTERS_TABLE(active_filters, available_filters)}}
 <table class=datatable>
   <tr class=box>
+    <td></td>
     {{for key in colkeys:}}
     <td name="tcol_{{=key}}" style="{{=col_hide(key)}}">
       {{=colname(checks, key, columns[key]['title'], nestedin=columns[key]['nestedin'])}}
@@ -29,6 +30,7 @@ pass
     {{pass}}
   </tr>
   <tr class=box>
+    <td><input type=checkbox id=check_all onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'))"></td>
     {{for key in colkeys:}}
     <td name="tcol_{{=key}}" style="{{=col_hide(key)}}"><input name={{=key}} value='{{=request.vars[key]}}' size={{=columns[key]['size']}} onKeyPress="checkEnter(event)"></td>
     {{pass}}
@@ -39,8 +41,15 @@ pass
   }}
   {{for check in checks:
       cellclass = cellclasses[cellclass]
+
+      checked = getattr(request.vars, 'check_'+str(check.v_checks.id))
+      if checked is not None:
+          checked = 'checked=on'
+          pass
+
   }}
   <tr class={{=cellclass}}>
+    <td class={{=cellclass}}><input type=checkbox name=check_{{=check.v_checks.id}} {{=checked}}></td>
     {{for key in colkeys:}}
     {{table = columns[key]['nestedin']}}
 
@@ -134,10 +143,55 @@ pass
       <table>
         <tr>
           <td> {{=T('Export')}}:</td>
+          <td> {{=T('Set low thresholds')}}:</td>
+          <td> {{=T('Set high thresholds')}}:</td>
+          <td> {{=T('Reset thresholds')}}:</td>
         </tr>
         <tr>
           <td>
             {{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='checks_csv', vars=request.vars))}}
+          </td>
+          <td>
+            {{=IMG(
+                 _src=URL(r=request,c='static',f='add.png'),
+                 _border=0,
+                 _title=T('set the low alert thresholds for the current data cursor'),
+                 _onclick='svcform.action.value="set_low_thres";
+                           show_eid("inputs");
+                           document.svcform.val.focus();
+                          '
+               )
+            }}
+          </td>
+          <td>
+            {{=IMG(
+                 _src=URL(r=request,c='static',f='add.png'),
+                 _border=0,
+                 _title=T('set the high alert thresholds for the current data cursor'),
+                 _onclick='svcform.action.value="set_high_thres";
+                           show_eid("inputs");
+                           document.svcform.val.focus();
+                          '
+               )
+            }}
+          </td>
+          <td>
+            {{=IMG(
+                 _src=URL(r=request,c='static',f='del.png'),
+                 _border=0,
+                 _title=T('reset the high and low alert thresholds for the current data cursor'),
+                 _onclick='svcform.action.value="reset";
+                           document.svcform.submit();
+                          '
+               )
+            }}
+          </td>
+        </tr>
+        <tr class=hidden id="inputs">
+          <td></td>
+          <td>
+            {{=T('New threshold value')}}:<br>
+            <input name=val onKeyPress="checkEnter(event)" onBlur="getElementById('action').value='';hide_eid('inputs')">
           </td>
         </tr>
       </table>
