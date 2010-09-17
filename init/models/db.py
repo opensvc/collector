@@ -760,6 +760,14 @@ db.define_table('packages',
     Field('pkg_updated', 'timestamp'),
     migrate=False)
 
+db.define_table('patches',
+    Field('id'),
+    Field('patch_nodename', 'string', length=60),
+    Field('patch_num', 'string', length=100),
+    Field('patch_rev', 'string', length=16),
+    Field('patch_updated', 'timestamp'),
+    migrate=False)
+
 db.define_table('checks_live',
     Field('id'),
     Field('chk_nodename', 'string', length=60),

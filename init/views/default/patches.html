@@ -1,0 +1,107 @@
+{{extend 'layout.html'}}
+{{include '../static/jslib.html'}}
+{{include 'box.html'}}
+{{include 'panel.html'}}
+{{include 'filters.html'}}
+{{include 'lib.html'}}
+{{
+initialize_keys()
+now = datetime.datetime.now()
+deadline = now - datetime.timedelta(days=1)
+def outdated(t):
+     if t is None: return True
+     if t < deadline: return True
+     return False
+pass
+
+}}
+
+<a id="listdiv" class="xinfo"><span><div ondblclick="getElementById('listdiv').className='xinfo';" id='listspan'>innerHTML here</div></span></a>
+{{=PANEL("column_values")}}
+<form action='patches' name='svcform' id='svcform' method='post'>
+{{=DB_FILTERS_TABLE(active_filters, available_filters)}}
+<table class=datatable>
+  <tr class=box>
+    {{for key in colkeys:}}
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}}">
+      {{=colname(patches, key, columns[key]['title'], nestedin=columns[key]['nestedin'])}}
+    </td>
+    {{pass}}
+  </tr>
+  <tr class=box>
+    {{for key in colkeys:}}
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}}"><input name={{=key}} value='{{=request.vars[key]}}' size={{=columns[key]['size']}} onKeyPress="checkEnter(event)"></td>
+    {{pass}}
+  </tr>
+  {{
+    cellclass = 'cell1'
+    cellclasses = {'cell1': 'cell2', 'cell2': 'cell1'}
+  }}
+  {{for patch in patches:
+      cellclass = cellclasses[cellclass]
+  }}
+  <tr class={{=cellclass}}>
+    {{for key in colkeys:}}
+
+    {{if key == 'patch_nodename':}}
+    <td name="tcol_patch_id" style="{{=col_hide('patch_nodename')}}">
+      {{=A(
+          DIV(
+            node_icon(patch.v_nodes.os_name),
+            patch.patches.patch_nodename,
+            _onclick="""
+               getElementById("node").value="%(node)s";
+               getElementById("rowid").value="%(id)s";
+               ajax("%(url)s",['node', 'rowid'],"id_%(id)s");
+               show_eid("tr_id_%(id)s");
+            """%dict(url=URL(r=request,f='ajax_node'),
+                     node=patch.patches.patch_nodename,
+                     id=patch.patches.id,
+                    ),
+          ),
+          _class="xinfo",
+        )
+      }}
+    </td>
+    {{elif key == 'patch_updated':
+         if outdated(patch.patches.patch_updated):
+             alert = 'color:darkred;font-weight:bold'
+         else:
+             alert = ''
+         pass
+    }}
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}};{{=alert}}">{{=patch[columns[key]['nestedin']][key]}}</td>
+    {{else:}}
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}}">{{=patch[columns[key]['nestedin']][key]}}</td>
+    {{pass}}
+    {{pass}}
+  </tr>
+  <tr id='tr_id_{{=patch.patches.id}}' class="cloud">
+    <td colspan=99 class="details_row {{=cellclass}}">
+      <div id='id_{{=patch.patches.id}}'>
+      </div>
+    </td>
+  </tr>
+  {{pass}}
+  <tr class=box>
+    <td align=center colspan=99>{{=nav}}</td>
+  </tr>
+  <tr class=box>
+    <td colspan=99>
+      <table>
+        <tr>
+          <td> {{=T('Export')}}:</td>
+        </tr>
+        <tr>
+          <td>
+            {{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='patches_csv', vars=request.vars))}}
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<input id="node" type="hidden">
+<input id="rowid" type="hidden">
+<input name="action" type="hidden">
+</form>
