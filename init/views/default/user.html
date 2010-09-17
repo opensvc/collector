@@ -1,7 +1,23 @@
 {{extend 'layout.html'}}
-<h2>{{=request.args(0).replace('_',' ').capitalize()}}</h2>
+<script type="text/javascript">
+/*
+ * browser can fill this field asynchronously
+ */
+function email_focus() {
+    document.getElementById('auth_user_email').select();
+}
+
+jQuery(document).ready(function(){
+    document.getElementById('auth_user_email').focus();
+    setTimeout(email_focus, 500);
+});
+</script>
+{{
+title = {'login': 'Login',
+         'retrieve_password': 'Password retrieve',
+         'register': 'Register'}
+}}
+<div>
+{{=H2(T(title[request.args[0]]))}}
 {{=form}}
-{{if request.args(0)=='login':}}
-<a href="{{=URL(r=request,args='register')}}">{{=T('register')}}</a><br />
-<a href="{{=URL(r=request,args='retrieve_password')}}">{{=T('lost password')}}</a><br />
-{{pass}}
+</div>
