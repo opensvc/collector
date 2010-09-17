@@ -443,3 +443,13 @@ alter table lifecycle_os add column lc_os_vendor varchar(60) default null;
 set global concurrent_insert=2;
 
 create view v_lifecycle_os_name as select id, lc_date, sum(lc_count) as lc_count,lc_os_name from lifecycle_os group by lc_date, lc_os_name order by lc_date,lc_os_name;
+
+CREATE TABLE `patches` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `patch_nodename` varchar(60) NOT NULL,
+  `patch_num` varchar(100) NOT NULL,
+  `patch_rev` varchar(32) DEFAULT NULL,
+  `patch_updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx3` (`patch_nodename`,`patch_num`,`patch_rev`)
+);
