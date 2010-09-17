@@ -845,3 +845,11 @@ db.define_table('v_lifecycle_os_name',
     Field('lc_date', 'date'),
     migrate=False)
 
+db.define_table('user_prefs_columns',
+    Field('id'),
+    Field('upc_user_id', 'integer'),
+    Field('upc_table', 'string'),
+    Field('upc_field', 'string'),
+    Field('upc_visible', 'boolean'),
+    migrate=False)
+

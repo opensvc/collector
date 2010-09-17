@@ -197,12 +197,12 @@ pass
       {{pass}}
 
     </td>
-    <td name="tcol_pid" class={{=cellclass}}>{{=action_pid}}</td>
-    <td name="tcol_action" class="{{=cellclass}} {{=metaactionclass}}">{{=action.action}}</td>
-    <td name="tcol_status" class="{{=cellclass}} status_{{=action.status}} ack_{{=action.ack}} {{=metaactionclass}}" {{=trigger}}>{{=action_status}}</td>
-    <td name="tcol_begin" class={{=cellclass}}>{{=action.begin}}</td>
-    <td name="tcol_end" class={{=cellclass}}>{{=action_end}}</td>
-    <td name="tcol_status_log" class={{=cellclass}}><pre>{{=action.status_log}}</pre></td>
+    <td style="{{=col_hide('pid')}}" name="tcol_pid" class={{=cellclass}}>{{=action_pid}}</td>
+    <td style="{{=col_hide('action')}}" name="tcol_action" class="{{=cellclass}} {{=metaactionclass}}">{{=action.action}}</td>
+    <td style="{{=col_hide('status')}}" name="tcol_status" class="{{=cellclass}} status_{{=action.status}} ack_{{=action.ack}} {{=metaactionclass}}" {{=trigger}}>{{=action_status}}</td>
+    <td style="{{=col_hide('begin')}}" name="tcol_begin" class={{=cellclass}}>{{=action.begin}}</td>
+    <td style="{{=col_hide('end')}}" name="tcol_end" class={{=cellclass}}>{{=action_end}}</td>
+    <td style="{{=col_hide('status_log')}}" name="tcol_status_log" class={{=cellclass}}><pre>{{=action.status_log}}</pre></td>
     <td style="{{=col_hide('time')}}" name="tcol_time" class={{=cellclass}}>{{=action.time}}</td>
     <td style="{{=col_hide('id')}}" name="tcol_id" class={{=cellclass}}>{{=action.id}}</td>
     <td style="{{=col_hide('ack')}}" name="tcol_ack" class={{=cellclass}}>{{=action.ack}}</td>

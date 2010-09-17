@@ -207,7 +207,13 @@ def COLUMNS_ACTIVE():
                  INPUT(
                    _type='checkbox',
                    _name='col_'+a,
-                   _onclick='toggleVis(this.name)',
+                   _onclick='toggleVis(this.name);
+                             getElementById("set_col_table").value="%(table)s";
+                             getElementById("set_col_field").value="%(field)s";
+                             getElementById("set_col_value").value=this.checked;
+                             ajax("%(url)s",["set_col_table", "set_col_field", "set_col_value"],"set_col_dummy");
+                            '%dict(url=URL(r=request,f='ajax_set_user_prefs_column'),
+                                   table=request.function, field=a),
                    value=val,
                  ),
                  columns[a]['title'],
@@ -253,6 +259,25 @@ def DB_FILTERS_TABLE(active, avail):
     filterbar = DIV(
       t,
       c,
+      SPAN(
+        _id='set_col_dummy',
+        _style='display:none',
+      ),
+      INPUT(
+        _name='set_col_field',
+        _id='set_col_field',
+        _type='hidden',
+      ),
+      INPUT(
+        _name='set_col_table',
+        _id='set_col_table',
+        _type='hidden',
+      ),
+      INPUT(
+        _name='set_col_value',
+        _id='set_col_value',
+        _type='hidden',
+      ),
       INPUT(
         _name='filterbar_status',
         _id='filterbar_status',

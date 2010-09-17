@@ -453,3 +453,14 @@ CREATE TABLE `patches` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx3` (`patch_nodename`,`patch_num`,`patch_rev`)
 );
+
+CREATE TABLE `opensvc`.`user_prefs_columns` (
+  `id` integer  NOT NULL AUTO_INCREMENT,
+  `upc_user_id` integer  NOT NULL,
+  `upc_table` varchar(30)  NOT NULL,
+  `upc_field` varchar(30)  NOT NULL,
+  `upc_visible` boolean  NOT NULL,
+  PRIMARY KEY (`id`)
+);
+
+create unique index idx1 on user_prefs_columns (upc_user_id, upc_table, upc_field);

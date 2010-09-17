@@ -1891,25 +1891,25 @@ def svcmon():
     service_action()
 
     columns = dict(
-        svcname = dict(
+        mon_svcname = dict(
             pos = 1,
             title = T('Service'),
             display = True,
             size = 10
         ),
-        containertype = dict(
+        svc_containertype = dict(
             pos = 2,
             title = T('Container type'),
             display = True,
             size = 3
         ),
-        svcapp = dict(
+        svc_app = dict(
             pos = 3,
             title = T('App'),
             display = True,
             size = 3
         ),
-        svctype = dict(
+        mon_svctype = dict(
             pos = 4,
             title = T('Service type'),
             display = True,
@@ -1921,13 +1921,13 @@ def svcmon():
             display = False,
             size = 5
         ),
-        nodetype = dict(
+        mon_nodtype = dict(
             pos = 5,
             title = T('Node type'),
             display = True,
             size = 3
         ),
-        nodename = dict(
+        mon_nodname = dict(
             pos = 6,
             title = T('Node name'),
             display = True,
@@ -1969,6 +1969,7 @@ def svcmon():
         return cmp(columns[x]['pos'], columns[y]['pos'])
     colkeys = columns.keys()
     colkeys.sort(_sort_cols)
+    __update_columns(columns, 'svcmon')
 
     o = db.v_svcmon.mon_svcname
     o |= ~db.v_svcmon.mon_overallstatus
@@ -2067,6 +2068,7 @@ def packages():
 
     colkeys = columns.keys()
     colkeys.sort(_sort_cols)
+    __update_columns(columns, 'packages')
 
     o = db.packages.pkg_nodename
     o |= db.packages.pkg_name
@@ -2158,6 +2160,7 @@ def patches():
 
     colkeys = columns.keys()
     colkeys.sort(_sort_cols)
+    __update_columns(columns, 'patches')
 
     o = db.patches.patch_nodename
     o |= db.patches.patch_num
@@ -2377,6 +2380,7 @@ def checks():
 
     colkeys = columns.keys()
     colkeys.sort(_sort_cols)
+    __update_columns(columns, 'checks')
 
     o = db.v_checks.chk_nodename
     o |= db.v_checks.chk_type
@@ -2947,6 +2951,7 @@ def svcactions():
         return cmp(columns[x]['pos'], columns[y]['pos'])
     colkeys = columns.keys()
     colkeys.sort(_sort_cols)
+    __update_columns(columns, 'svcactions')
 
     o = ~db.v_svcactions.begin|~db.v_svcactions.end|~db.v_svcactions.id
 
@@ -3033,7 +3038,7 @@ def _nodes_del(request):
     redirect(URL(r=request, f='nodes'))
 
 def v_nodes_columns():
-    return dict(
+    d = dict(
         nodename = dict(
             pos = 1,
             title = T('Node name'),
@@ -3252,6 +3257,30 @@ def v_nodes_columns():
             size = 10
         ),
     )
+    return d
+
+def __update_columns(d, table):
+    q = db.user_prefs_columns.upc_user_id==session.auth.user.id
+    q &= db.user_prefs_columns.upc_table==table
+    rows = db(q).select()
+    for row in rows:
+        d[row.upc_field]['display'] = row.upc_visible
+
+@auth.requires_login()
+def ajax_set_user_prefs_column():
+    field = request.vars.set_col_field
+    table = request.vars.set_col_table
+    visible = request.vars.set_col_value
+    sql = """replace into user_prefs_columns
+             (upc_user_id, upc_table, upc_field, upc_visible)
+             values
+             (%(uid)s, '%(table)s', '%(field)s', %(visible)s)
+          """%dict(uid=session.auth.user.id,
+                   table=table, field=field, visible=visible)
+    try:
+        db.executesql(sql)
+    except:
+        raise Exception(sql)
 
 @auth.requires_login()
 def nodes():
@@ -3261,6 +3290,7 @@ def nodes():
     o = db.v_nodes.nodename
 
     columns = v_nodes_columns()
+    __update_columns(columns, 'nodes')
 
     def _sort_cols(x, y):
         return cmp(columns[x]['pos'], columns[y]['pos'])
