@@ -3118,6 +3118,13 @@ def v_nodes_columns():
             img = 'os16',
             size = 10
         ),
+        os_release = dict(
+            pos = 12,
+            title = T('OS release'),
+            display = False,
+            img = 'os16',
+            size = 10
+        ),
         os_kernel = dict(
             pos = 12,
             title = T('OS kernel'),
