@@ -3707,7 +3707,7 @@ def db_delete_ack_overlap(svc, begin, end):
 
 @auth.requires_login()
 def ajax_res_status():
-    svcname = request.vars.svcname
+    svcname = request.vars.mon_svcname
     node = request.vars.node
     return res_status(svcname, node)
 
