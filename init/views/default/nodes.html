@@ -8,6 +8,19 @@
 initialize_keys()
 }}
 
+<script type="text/javascript">
+function selected_nodes() {
+	var l = new Array();
+	var elem = svcform.elements;
+	for(var i = 0; i < elem.length; i++) {
+		if (elem[i].type == 'checkbox' && elem[i].disabled == false && elem[i].name.match(/^check_/) && elem[i].checked) {
+			l.push(elem[i].id.replace("check_",""));
+		}
+	}
+	return l.join(",");
+}
+</script>
+
 <a id="listdiv" class="xinfo"><span><div ondblclick="getElementById('listdiv').className='xinfo';" id='listspan'>innerHTML here</div></span></a>
 {{=PANEL("column_values")}}
 <form action='nodes' name='svcform' id='svcform' method='post'>
@@ -43,7 +56,7 @@ initialize_keys()
 
   }}
   <tr class={{=cellclass}}>
-    <td class={{=cellclass}}><input type=checkbox name=check_{{=node.id}} {{=checked}}></td>
+    <td class={{=cellclass}}><input type=checkbox name=check_{{=node.id}} id=check_{{=node.nodename}} {{=checked}}></td>
     <td>{{=A(
              IMG(
                _src=URL(r=request,c='static',f='edit.png'),
@@ -93,6 +106,7 @@ initialize_keys()
           <td> {{=T('Export')}}:</td>
           <td> {{=T('Add node')}}:</td>
           <td> {{=T('Delete nodes')}}:</td>
+          <td> {{=T('Package differences')}}:</td>
         </tr>
         <tr>
           <td>
@@ -113,12 +127,28 @@ initialize_keys()
               )
             }}
           </td>
+          <td>
+            {{=IMG(
+                _src=URL(r=request,c='static',f='pkg.png'),
+                _border=0,
+                _title=T("display installed package differences between selected nodes"),
+                _onclick="""
+                  getElementById("pkgnodes").value=selected_nodes();
+                  ajax("%(url)s",['pkgnodes'],"panelbody_%(a)s");
+                  getElementById("panel_%(a)s").className="panel_shown";
+                  getElementById("panel_%(a)s").style.top=event.pageY+'px';
+               """%dict(url=URL(r=request,f='ajax_pkgdiff'), a='pkgdiff'),
+              )
+            }}
+          </td>
         </tr>
       </table>
     </td>
   </tr>
 </table>
+{{=PANEL('pkgdiff')}}
 <input id="node" type="hidden">
+<input id="pkgnodes" type="hidden">
 <input id="rowid" type="hidden">
 <input name="action" type="hidden">
 </form>
