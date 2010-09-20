@@ -890,3 +890,29 @@ a.xinfo_shown span {
 .details_row {
 }
 
+div.float {
+    float: left;
+    margin-left:0.5em;
+    margin-right:0.5em;
+}
+  
+div.float img {
+    border: 0;
+}
+  
+div.float h2 {
+    text-align: center;
+}
+
+div.container {
+    border: 2px dotted #333;
+    background-color: #ffe;
+    margin:0.2em;
+   -moz-border-radius:8px;	/* Rounded edges in Firefox */
+   -webkit-border-radius:8px;	/* Rounded edges in Firefox */
+}
+
+div.spacer {
+    clear: both;
+}
+
