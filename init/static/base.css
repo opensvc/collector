@@ -916,7 +916,7 @@ div.spacer {
 }
 
 div.dashboard {
-    width: 100%;
+    padding:1em;
 }
 
 div.dashboard table {
@@ -925,7 +925,7 @@ div.dashboard table {
 }
 
 div.dashboard h2 {
-    padding:10px;
+    padding:1em;
     text-align:center
 }
 

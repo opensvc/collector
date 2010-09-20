@@ -3913,7 +3913,7 @@ def ajax_service():
     def print_rstatus_row(row):
         r = DIV(
               res_status(row.mon_svcname, row.mon_nodname),
-              _style='float:left; padding:0 1em',
+              _style='float:left',
             )
         return r
     rstatus = map(print_rstatus_row, rows)
