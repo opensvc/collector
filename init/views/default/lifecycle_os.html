@@ -12,27 +12,40 @@ def img(o):
            )
     pass
 
-def lc_display(o="", title=None):
-    if title is None:
-        title = o
-        pass
+def lc_display(o="", title=True):
     if o is None:
         return SPAN()
-    return SPAN(
-             H2(T(title), _style="padding:10px"),
+    if title:
+        title = H2(o, _style="padding:10px")
+    else:
+        title = SPAN()
+        pass
+    return DIV(
+             title,
              img(o),
-             _style="padding:10px",
+             _class="float",
            )
     pass
 
 }}
 {{=DIV(
-     lc_display('os_name', 'Operating systems'),
-     SPAN(map(lc_display, os)),
-     _style="
-       text-align:left;
-       padding-left:2em;
-       padding-right:2em;
-     "
+     DIV(
+       H1(T("Operating systems lifecycle")),
+       lc_display('os_name', None),
+       DIV(
+         XML('&nbsp;'),
+         _class='spacer',
+       ),
+       _class="container"
+     ),
+     DIV(
+       H1(T("Per operating system lifecycle")),
+       SPAN(map(lc_display, os)),
+       DIV(
+         XML('&nbsp;'),
+         _class='spacer',
+       ),
+       _class="container",
+     ),
    )
 }}
