@@ -313,7 +313,7 @@ def svc_with_errors():
 def pkg_diff_line(line, cellclass):
     tr = TR(
       TD(
-        line,
+        line.replace(',', ', '),
         _class=cellclass,
         _style="cursor:help",
         _onclick="""
@@ -390,8 +390,8 @@ def svc_not_up_line(line, cellclass):
     tr = TR(
       TD(A(line.v_svc_group_status.svcname, _href=URL(r=request, f='svcmon', vars={'mon_svcname':line.v_svc_group_status.svcname})), _class=cellclass),
       TD(line.v_svc_group_status.svctype, _class=cellclass),
-      TD(line.v_svc_group_status.nodes, _class=cellclass),
-      TD(line.v_svc_group_status.groupstatus, _class=cellclass),
+      TD(line.v_svc_group_status.nodes.replace(',', ', '), _class=cellclass),
+      TD(line.v_svc_group_status.groupstatus.replace(',', ', '), _class=cellclass),
     )
     return tr
     pass
