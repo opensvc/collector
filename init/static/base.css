@@ -159,7 +159,6 @@ body, table, tr, td, th, thead, tfoot, label, h1, h2, h3, h4, h5, h6, p, ul, li,
 body {
     background: transparent;
     width:100%;
-    min-width: 600px;
 }
 
 table {
@@ -177,10 +176,10 @@ th,
 td {
     text-align: left;
     vertical-align: middle;
-    padding-left: 0.5em;
-    padding-right: 0.5em;
-    padding-top: 0.3em;
-    padding-bottom: 0.2em;
+    padding-left: 0.3em;
+    padding-right: 0.3em;
+    padding-top: 0.15em;
+    padding-bottom: 0.15em;
 }
 
 th,
@@ -340,7 +339,7 @@ div.error {
 .layout {
     width: 100%;
     padding: 0;
-    border: 1px #99f solid;
+    border: 0;
     border-spacing: 0;
     background: #fff;
     z-index: 1;
@@ -916,3 +915,36 @@ div.spacer {
     clear: both;
 }
 
+div.dashboard {
+    width: 100%;
+}
+
+div.dashboard table {
+    width: 100%;
+    border-collapse: separate;
+}
+
+div.dashboard h2 {
+    padding:10px;
+    text-align:center
+}
+
+div.dashboard th {
+    border-bottom:4px solid darkorange;
+}
+
+div.svcstatus {
+    text-align: center;
+    display: inline-block;
+}
+
+div.svcstatus table,
+div.svcstatus tr,
+div.svcstatus td {
+    padding: 0;
+    padding-left: 0.3em;
+    padding-right: 0.3em;
+    margin: 0;
+    width: auto;
+    text-align: center;
+}

@@ -22,7 +22,6 @@ def f_billing_per_os_header():
       TH(T("Cost")),
       TH(T("Apps")),
       TH(T("Services")),
-      _style="border-bottom:4px solid darkorange",
     )
     return tr
     pass
@@ -42,7 +41,7 @@ def f_billing_per_os_table():
     t = TABLE(
         TR(
           TD(
-            H2(T("Per operating system billing"), _style="padding:10px;text-align:center"),
+            H2(T("Per operating system billing")),
             _colspan=99,
           ),
         ),
@@ -57,7 +56,7 @@ def f_billing_per_os():
         return DIV()
     d = DIV(
       f_billing_per_os_table(),
-      _style="padding:10px",
+      _class="dashboard",
     )
     return d
     pass
@@ -83,7 +82,6 @@ def f_billing_per_app_header():
       TH(T("Service count")),
       TH(T("OS")),
       TH(T("Services")),
-      _style="border-bottom:4px solid darkorange",
     )
     return tr
     pass
@@ -103,7 +101,7 @@ def f_billing_per_app_table():
     t = TABLE(
         TR(
           TD(
-            H2(T("Per application billing"), _style="padding:10px;text-align:center"),
+            H2(T("Per application billing")),
             _colspan=99,
           ),
         ),
@@ -118,7 +116,7 @@ def f_billing_per_app():
         return DIV()
     d = DIV(
       f_billing_per_app_table(),
-      _style="padding:10px",
+      _class="dashboard",
     )
     return d
     pass

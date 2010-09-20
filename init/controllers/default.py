@@ -3735,10 +3735,11 @@ def res_status(svcname, node):
     )
     return DIV(
              P(
-               H3("%(svc)s@%(node)s"%dict(svc=svcname, node=node),
+               H2("%(svc)s@%(node)s"%dict(svc=svcname, node=node),
                _style="text-align:center")
              ),
              t,
+             _class="dashboard",
            )
 
 @auth.requires_login()
@@ -3898,27 +3899,27 @@ def ajax_service():
     )
 
     def print_status_row(row):
-        r = TR(
-              TD(row.mon_nodname, _style='font-style:italic'),
-              TD(svc_status(row))
+        r = DIV(
+              H2(row.mon_nodname, _style='text-align:center'),
+              svc_status(row),
+              _style='float:left; padding:0 1em',
             )
         return r
     status = map(print_status_row, rows)
-    t_status = TABLE(
+    t_status = SPAN(
                  status,
                )
 
     def print_rstatus_row(row):
-        r = TR(
-              TD(
-                res_status(row.mon_svcname, row.mon_nodname)
-              )
+        r = DIV(
+              res_status(row.mon_svcname, row.mon_nodname),
+              _style='float:left; padding:0 1em',
             )
         return r
     rstatus = map(print_rstatus_row, rows)
-    t_rstatus = TABLE(
-                 rstatus,
-               )
+    t_rstatus = SPAN(
+                  rstatus,
+                )
 
     def js(tab, rowid):
         buff = ""

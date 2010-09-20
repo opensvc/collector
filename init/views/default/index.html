@@ -41,22 +41,25 @@ def svc_status(svc, cellclass="cell2", nestedin=None):
         overallstatus = svc[nestedin].mon_overallstatus
     pass
 
-    t = TABLE(
-      TR(
-        TD(overallstatus,
-           _colspan=6, 
-           _class=cellclass+' status '+cl['mon_overallstatus'],
-        ),
-      ),
-      TR(
-        TD("vm", _class=cellclass+' '+cl['mon_containerstatus']),
-        TD("ip", _class=cellclass+' '+cl['mon_ipstatus']),
-        TD("fs", _class=cellclass+' '+cl['mon_fsstatus']),
-        TD("dg", _class=cellclass+' '+cl['mon_diskstatus']),
-        TD("sync", _class=cellclass+' '+cl['mon_syncstatus']),
-        TD("app", _class=cellclass+' '+cl['mon_appstatus']),
-      ),
-    )
+    t = DIV(
+          TABLE(
+            TR(
+              TD(overallstatus,
+                 _colspan=6, 
+                 _class=cellclass+' status '+cl['mon_overallstatus'],
+              ),
+            ),
+            TR(
+              TD("vm", _class=cellclass+' '+cl['mon_containerstatus']),
+              TD("ip", _class=cellclass+' '+cl['mon_ipstatus']),
+              TD("fs", _class=cellclass+' '+cl['mon_fsstatus']),
+              TD("dg", _class=cellclass+' '+cl['mon_diskstatus']),
+              TD("sync", _class=cellclass+' '+cl['mon_syncstatus']),
+              TD("app", _class=cellclass+' '+cl['mon_appstatus']),
+            ),
+          ),
+          _class="svcstatus",
+        )
     return t
     pass
 
@@ -91,7 +94,6 @@ def node_checks_header():
       TH(T("Value")),
       TH(T("Low threshold")),
       TH(T("High threshold")),
-      _style="border-bottom:4px solid darkorange",
     )
     return tr
     pass
@@ -111,7 +113,7 @@ def node_checks_table():
     t = TABLE(
         TR(
           TD(
-            H2(T("Node check alerts"), _style="padding:10px;text-align:center"),
+            H2(T("Node check alerts")),
             _colspan=99,
           ),
         ),
@@ -126,7 +128,7 @@ def node_checks():
         return DIV()
     d = DIV(
       node_checks_table(),
-      _style="padding:10px",
+      _class="dashboard",
     )
     return d
     pass
@@ -139,7 +141,7 @@ def svcmon_not_updated_line(line, cellclass):
       TD(A(line.mon_svcname, _href=URL(r=request, f='svcmon', vars={'svcname':line.mon_svcname})), _class=cellclass),
       TD(A(line.mon_nodname, _href=URL(r=request, f='svcmon', vars={'nodename':line.mon_nodname})), _class=cellclass),
       TD(line.mon_updated, _class=cellclass),
-      TD(svc_status(line, cellclass), _class=cellclass),
+      TD(svc_status(line, cellclass), _class=cellclass, _style="text-align:center"),
     )
     return tr
     pass
@@ -149,8 +151,7 @@ def svcmon_not_updated_header():
       TH(T("Service")),
       TH(T("Node")),
       TH(T("Last updated date")),
-      TH(T("Last known status"), _style="text-align:center"),
-      _style="border-bottom:4px solid darkorange",
+      TH(T("Last known status")),
     )
     return tr
     pass
@@ -170,7 +171,7 @@ def svcmon_not_updated_table():
     t = TABLE(
         TR(
           TD(
-            H2(T("Service status not updated"), _style="padding:10px;text-align:center"),
+            H2(T("Service status not updated")),
             _colspan=99,
           ),
         ),
@@ -185,7 +186,7 @@ def svcmon_not_updated():
         return DIV()
     d = DIV(
       svcmon_not_updated_table(),
-      _style="padding:10px",
+      _class="dashboard",
     )
     return d
     pass
@@ -198,7 +199,7 @@ def last_changes_line(line, cellclass):
       TD(A(line.svcmon_log.mon_begin, _href=URL(r=request, f='svcmon_log', vars={'mon_svcname':line.svcmon_log.mon_svcname})), _class=cellclass),
       TD(A(line.svcmon_log.mon_svcname, _href=URL(r=request, f='svcmon', vars={'mon_svcname':line.svcmon_log.mon_svcname})), _class=cellclass),
       TD(A(line.svcmon_log.mon_nodname, _href=URL(r=request, f='svcmon', vars={'mon_nodname':line.svcmon_log.mon_nodname})), _class=cellclass),
-      TD(svc_status(line, cellclass, nestedin='svcmon_log'), _class=cellclass),
+      TD(svc_status(line, cellclass, nestedin='svcmon_log'), _class=cellclass, _style="text-align:center"),
     )
     return tr
     pass
@@ -209,7 +210,6 @@ def last_changes_header():
       TH(T("Service")),
       TH(T("Node")),
       TH(T("Status"), _style="text-align:center"),
-      _style="border-bottom:4px solid darkorange",
     )
     return tr
     pass
@@ -229,7 +229,7 @@ def last_changes_table():
     t = TABLE(
         TR(
           TD(
-            H2(T("Last service status changes"), _style="padding:10px;text-align:center"),
+            H2(T("Last service status changes")),
             _colspan=99,
           ),
         ),
@@ -244,7 +244,7 @@ def last_changes():
         return DIV()
     d = DIV(
       last_changes_table(),
-      _style="padding:10px",
+      _class="dashboard",
     )
     return d
     pass
@@ -257,7 +257,7 @@ def svc_with_errors_line(line, cellclass):
       TD(A(line.svc_name, _href=URL(r=request, f='svcmon', vars={'mon_svcname':line.svc_name})), _class=cellclass),
       TD(line.svc_type, _class=cellclass),
       TD(A(line.err, _href=URL(r=request,f='svcactions', vars={'svcname': line.svc_name, 'status': 'err', 'ack': '!1|empty'})), _class=cellclass),
-      TD(svc_status(line, cellclass), _class=cellclass),
+      TD(svc_status(line, cellclass), _class=cellclass, _style="text-align:center"),
     )
     return tr
     pass
@@ -268,7 +268,6 @@ def svc_with_errors_header():
       TH(T("Env")),
       TH(T("Error count")),
       TH(T("Status"), _style="text-align:center"),
-      _style="border-bottom:4px solid darkorange",
     )
     return tr
     pass
@@ -288,7 +287,7 @@ def svc_with_errors_table():
     t = TABLE(
         TR(
           TD(
-            H2(T("Services with errors"), _style="padding:10px;text-align:center"),
+            H2(T("Services with errors")),
             _colspan=99,
           ),
         ),
@@ -303,7 +302,7 @@ def svc_with_errors():
         return DIV()
     d = DIV(
       svc_with_errors_table(),
-      _style="padding:10px",
+      _class="dashboard",
     )
     return d
     pass
@@ -343,7 +342,6 @@ def pkg_diff_header():
     tr = TR(
       TH(T("Cluster")),
       TH(T("Number of package differences")),
-      _style="border-bottom:4px solid darkorange",
     )
     return tr
     pass
@@ -363,7 +361,7 @@ def pkg_diff_table():
     t = TABLE(
         TR(
           TD(
-            H2(T("Package differences amongst cluster nodes"), _style="padding:10px;text-align:center"),
+            H2(T("Package differences amongst cluster nodes")),
             _colspan=99,
           ),
         ),
@@ -380,7 +378,7 @@ def pkg_diff():
       PANEL('pkgdiff'),
       INPUT(_id='pkgnodes', _type='hidden'),
       pkg_diff_table(),
-      _style="padding:10px",
+      _class="dashboard",
     )
     return d
     pass
@@ -404,7 +402,6 @@ def svc_not_up_header():
       TH(T("Env")),
       TH(T("Cluster")),
       TH(T("Cluster status")),
-      _style="border-bottom:4px solid darkorange",
     )
     return tr
     pass
@@ -424,7 +421,7 @@ def svc_not_up_table():
     t = TABLE(
         TR(
           TD(
-            H2(T("Services not up"), _style="padding:10px;text-align:center"),
+            H2(T("Services not up")),
             _colspan=99,
           ),
         ),
@@ -439,7 +436,7 @@ def svc_not_up():
         return DIV()
     d = DIV(
       svc_not_up_table(),
-      _style="padding:10px",
+      _class="dashboard",
     )
     return d
     pass
@@ -452,7 +449,7 @@ def svc_not_on_primary_line(line, cellclass):
       TD(A(line.svc_name, _href=URL(r=request, f='svcmon', vars={'mon_svcname':line.svc_name})), _class=cellclass),
       TD(A(line.svc_autostart, _href=URL(r=request, f='svcmon', vars={'mon_nodname':line.svc_autostart})), _class=cellclass),
       TD(line.svc_type, _class=cellclass),
-      TD(svc_status(line, cellclass), _class=cellclass),
+      TD(svc_status(line, cellclass), _class=cellclass, _style="text-align:center"),
     )
     return tr
     pass
@@ -463,7 +460,6 @@ def svc_not_on_primary_header():
       TH(T("Primary")),
       TH(T("Env")),
       TH(T("Status on primary"), _style="text-align:center"),
-      _style="border-bottom:4px solid darkorange",
     )
     return tr
     pass
@@ -483,7 +479,7 @@ def svc_not_on_primary_table(svcnotonprimary):
     t = TABLE(
         TR(
           TD(
-            H2(T("Services not up on primary"), _style="padding:10px;text-align:center"),
+            H2(T("Services not up on primary")),
             _colspan=99,
           ),
         ),
@@ -500,7 +496,7 @@ def svc_not_on_primary():
         return DIV()
     d = DIV(
       svc_not_on_primary_table(list),
-      _style="padding:10px",
+      _class="dashboard",
     )
     return d
     pass
@@ -518,7 +514,6 @@ def app_wo_resp_line(line, cellclass):
 def app_wo_resp_header():
     tr = TR(
       TH(T("App")),
-      _style="border-bottom:4px solid darkorange",
     )
     return tr
     pass
@@ -538,7 +533,7 @@ def app_wo_resp_table():
     t = TABLE(
         TR(
           TD(
-           H2(T("Application without responsibles"), _style="padding:10px;text-align:center"),
+           H2(T("Application without responsibles")),
             _colspan=99,
           ),
         ),
@@ -553,7 +548,7 @@ def app_wo_resp():
         return DIV()
     d = DIV(
       app_wo_resp_table(),
-      _style="padding:10px",
+      _class="dashboard",
     )
     return d
     pass
@@ -575,7 +570,6 @@ def obs_os_alert_header():
       TH(T("Nodename")),
       TH(T("Operating system")),
       TH(T("Alert since")),
-      _style="border-bottom:4px solid darkorange",
     )
     return tr
     pass
@@ -595,7 +589,7 @@ def obs_os_alert_table():
     t = TABLE(
         TR(
           TD(
-            H2(T("Nodes with obsolescent operating system (alert)"), _style="padding:10px;text-align:center"),
+            H2(T("Nodes with obsolescent operating system (alert)")),
             _colspan=99,
           ),
         ),
@@ -610,7 +604,7 @@ def obs_os_alert():
         return DIV()
     d = DIV(
       obs_os_alert_table(),
-      _style="padding:10px",
+      _class="dashboard",
     )
     return d
     pass
@@ -632,7 +626,6 @@ def obs_os_warn_header():
       TH(T("Nodename")),
       TH(T("Operating system")),
       TH(T("Warning since")),
-      _style="border-bottom:4px solid darkorange",
     )
     return tr
     pass
@@ -652,7 +645,7 @@ def obs_os_warn_table():
     t = TABLE(
         TR(
           TD(
-            H2(T("Nodes with obsolescent operating system (warn)"), _style="padding:10px;text-align:center"),
+            H2(T("Nodes with obsolescent operating system (warn)")),
             _colspan=99,
           ),
         ),
@@ -667,7 +660,7 @@ def obs_os_warn():
         return DIV()
     d = DIV(
       obs_os_warn_table(),
-      _style="padding:10px",
+      _class="dashboard",
     )
     return d
     pass
@@ -689,7 +682,6 @@ def obs_hw_warn_header():
       TH(T("Nodename")),
       TH(T("Model")),
       TH(T("Warning since")),
-      _style="border-bottom:4px solid darkorange",
     )
     return tr
     pass
@@ -709,7 +701,7 @@ def obs_hw_warn_table():
     t = TABLE(
         TR(
           TD(
-            H2(T("Nodes with obsolescent hardware (warn)"), _style="padding:10px;text-align:center"),
+            H2(T("Nodes with obsolescent hardware (warn)")),
             _colspan=99,
           ),
         ),
@@ -724,7 +716,7 @@ def obs_hw_warn():
         return DIV()
     d = DIV(
       obs_hw_warn_table(),
-      _style="padding:10px",
+      _class="dashboard",
     )
     return d
     pass
@@ -746,7 +738,6 @@ def obs_hw_alert_header():
       TH(T("Nodename")),
       TH(T("Model")),
       TH(T("Alert since")),
-      _style="border-bottom:4px solid darkorange",
     )
     return tr
     pass
@@ -766,7 +757,7 @@ def obs_hw_alert_table():
     t = TABLE(
         TR(
           TD(
-            H2(T("Nodes with obsolescent hardware (alert)"), _style="padding:10px;text-align:center"),
+            H2(T("Nodes with obsolescent hardware (alert)")),
             _colspan=99,
           ),
         ),
@@ -781,7 +772,7 @@ def obs_hw_alert():
         return DIV()
     d = DIV(
       obs_hw_alert_table(),
-      _style="padding:10px",
+      _class="dashboard",
     )
     return d
     pass
@@ -803,7 +794,6 @@ def obs_miss():
         TR(
           TH(T("Date not set")),
           TH(T("Item count")),
-          _style="border-bottom:4px solid darkorange",
         ),
         TR(
           TD(T("Warn")),
@@ -812,8 +802,9 @@ def obs_miss():
         TR(
           TD(T("Alert"), _class="cell1"),
           TD(A(obsalertmiss, _href=(URL(r=request, f='obsolescence_config', vars={'obs_alert_date': 'empty|0000-00-00 00:00:00'}))), _class="cell1"),
-        )
-      )
+        ),
+      ),
+      _class="dashboard",
     )
     pass
 
@@ -830,7 +821,6 @@ def nodes_without_asset_line(line, cellclass):
 def nodes_without_asset_header():
     tr = TR(
       TH(T("Nodename")),
-      _style="border-bottom:4px solid darkorange",
     )
     return tr
     pass
@@ -850,7 +840,7 @@ def nodes_without_asset_table():
     t = TABLE(
         TR(
           TD(
-            H2(T("Nodes without asset information"), _style="padding:10px;text-align:center"),
+            H2(T("Nodes without asset information")),
             _colspan=99,
           ),
         ),
@@ -865,7 +855,7 @@ def nodes_without_asset():
         return DIV()
     d = DIV(
       nodes_without_asset_table(),
-      _style="padding:10px",
+      _class="dashboard",
     )
     return d
     pass
@@ -885,7 +875,6 @@ def frozen_header():
     tr = TR(
       TH(T("Service")),
       TH(T("Nodename")),
-      _style="border-bottom:4px solid darkorange",
     )
     return tr
     pass
@@ -905,7 +894,7 @@ def frozen_table():
     t = TABLE(
         TR(
           TD(
-            H2(T("Frozen services"), _style="padding:10px;text-align:center"),
+            H2(T("Frozen services")),
             _colspan=99,
           ),
         ),
@@ -920,7 +909,7 @@ def frozen_services():
         return DIV()
     d = DIV(
       frozen_table(),
-      _style="padding:10px",
+      _class="dashboard",
     )
     return d
     pass
@@ -960,7 +949,6 @@ def netdev_err_header():
       TH(T("Avg coll/s")),
       TH(T("Avg rx drop/s")),
       TH(T("Avg tx drop/s")),
-      _style="border-bottom:4px solid darkorange",
     )
     return tr
     pass
@@ -980,7 +968,7 @@ def netdev_err_table():
     t = TABLE(
         TR(
           TD(
-            H2(T("Nodes with network device errors in the last day"), _style="padding:10px;text-align:center"),
+            H2(T("Nodes with network device errors in the last day")),
             _colspan=99,
           ),
         ),
@@ -995,7 +983,7 @@ def netdev_err():
         return DIV()
     d = DIV(
       netdev_err_table(),
-      _style="padding:10px",
+      _class="dashboard",
     )
     return d
     pass
@@ -1116,7 +1104,7 @@ def summary_table():
     t = TABLE(
         TR(
           TD(
-            H2(T("Summary"), _style="padding:10px;text-align:center"),
+            H2(T("Summary")),
             _colspan=99,
           ),
         ),
@@ -1130,7 +1118,6 @@ def summary_header():
     tr = TR(
       TH(T("Report")),
       TH(T("Status")),
-      _style="border-bottom:4px solid darkorange",
     )
     return tr
     pass
@@ -1138,7 +1125,7 @@ def summary_header():
 def summary():
     d = DIV(
       summary_table(),
-      _style="padding:10px",
+      _class="dashboard",
     )
     return d
     pass

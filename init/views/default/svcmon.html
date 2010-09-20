@@ -54,24 +54,27 @@ def svc_status(svc, cellclass="cell2"):
 }}
 {{=PANEL(svc.mon_nodname+'_'+svc.svc_name)}}
 {{
-    t = TABLE(
-      TR(
-        TD(ajax_status(svc,
-                       svc.mon_overallstatus,
-                       ' '.join(["status", cl['mon_overallstatus']])),
-           _colspan=6,
-           _title="since "+str(svc.mon_updated),
-        ),
-      ),
-      TR(
-        TD("vm", _class=cellclass+' '+cl['mon_containerstatus']),
-        TD("ip", _class=cellclass+' '+cl['mon_ipstatus']),
-        TD("fs", _class=cellclass+' '+cl['mon_fsstatus']),
-        TD("dg", _class=cellclass+' '+cl['mon_diskstatus']),
-        TD("sync", _class=cellclass+' '+cl['mon_syncstatus']),
-        TD("app", _class=cellclass+' '+cl['mon_appstatus']),
-      ),
-    )
+    t = DIV(
+          TABLE(
+            TR(
+              TD(
+                ajax_status(svc, svc.mon_overallstatus,
+                            ' '.join(["status", cl['mon_overallstatus']])),
+                _colspan=6,
+                _title="since "+str(svc.mon_updated),
+              ),
+            ),
+            TR(
+              TD("vm", _class=cellclass+' '+cl['mon_containerstatus']),
+              TD("ip", _class=cellclass+' '+cl['mon_ipstatus']),
+              TD("fs", _class=cellclass+' '+cl['mon_fsstatus']),
+              TD("dg", _class=cellclass+' '+cl['mon_diskstatus']),
+              TD("sync", _class=cellclass+' '+cl['mon_syncstatus']),
+              TD("app", _class=cellclass+' '+cl['mon_appstatus']),
+            ),
+          ),
+          _class="svcstatus",
+        )
     return t
     pass
 
@@ -330,7 +333,7 @@ def svc_status(svc, cellclass="cell2"):
         )
       }}
     </td>
-    <td name="tcol_overallstatus" style="{{=col_hide('overallstatus')}}" class="{{=cellclass}}">
+    <td name="tcol_overallstatus" style="text-align:center;{{=col_hide('overallstatus')}}" class="{{=cellclass}}">
       {{=svc_status(svc,cellclass)}}
     </td>
     <td name="tcol_mon_updated" style="{{=col_hide('mon_updated')}}" class="{{=cellclass}}">
