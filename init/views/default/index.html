@@ -1224,6 +1224,8 @@ def summary_table():
             H2(T("Summary")),
             _colspan=99,
           ),
+          _onclick="toggle_vis('summary_line_good')",
+          _style="cursor:help",
         ),
         summary_header(),
         lines,
@@ -1251,8 +1253,6 @@ def summary():
      DIV(
        summary(),
        _class="container",
-       _onclick="toggle_vis('summary_line_good')",
-       _style="cursor:help",
      ),
      node_checks(),
      svc_not_up(),
