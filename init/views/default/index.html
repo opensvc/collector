@@ -3,6 +3,22 @@
 {{include '../static/jslib.html'}}
 {{include 'filters.html'}}
 {{include 'panel.html'}}
+<script>
+function ScrollToElement(theElement){
+
+  var selectedPosX = 0;
+  var selectedPosY = 0;
+              
+  while(theElement != null){
+    //selectedPosX += theElement.offsetLeft;
+    selectedPosY += theElement.offsetTop;
+    theElement = theElement.offsetParent;
+  }
+                        		      
+ window.scrollTo(selectedPosX,selectedPosY);
+
+}
+</script>
 {{
 
 tmo = datetime.datetime.now() - datetime.timedelta(minutes=15)
@@ -129,6 +145,7 @@ def node_checks():
     d = DIV(
       node_checks_table(),
       _class="dashboard",
+      _id="node_checks",
     )
     return d
     pass
@@ -187,6 +204,7 @@ def svcmon_not_updated():
     d = DIV(
       svcmon_not_updated_table(),
       _class="dashboard",
+      _id="svcmon_not_updated",
     )
     return d
     pass
@@ -245,6 +263,7 @@ def last_changes():
     d = DIV(
       last_changes_table(),
       _class="dashboard",
+      _id="last_changes",
     )
     return d
     pass
@@ -303,6 +322,7 @@ def svc_with_errors():
     d = DIV(
       svc_with_errors_table(),
       _class="dashboard",
+      _id="svc_with_errors",
     )
     return d
     pass
@@ -379,6 +399,7 @@ def pkg_diff():
       INPUT(_id='pkgnodes', _type='hidden'),
       pkg_diff_table(),
       _class="dashboard",
+      _id="pkg_diff",
     )
     return d
     pass
@@ -437,6 +458,7 @@ def svc_not_up():
     d = DIV(
       svc_not_up_table(),
       _class="dashboard",
+      _id="svc_not_up",
     )
     return d
     pass
@@ -497,6 +519,7 @@ def svc_not_on_primary():
     d = DIV(
       svc_not_on_primary_table(list),
       _class="dashboard",
+      _id="svc_not_on_primary",
     )
     return d
     pass
@@ -549,6 +572,7 @@ def app_wo_resp():
     d = DIV(
       app_wo_resp_table(),
       _class="dashboard",
+      _id="app_wo_resp",
     )
     return d
     pass
@@ -605,6 +629,7 @@ def obs_os_alert():
     d = DIV(
       obs_os_alert_table(),
       _class="dashboard",
+      _id="obs_os_alert",
     )
     return d
     pass
@@ -661,6 +686,7 @@ def obs_os_warn():
     d = DIV(
       obs_os_warn_table(),
       _class="dashboard",
+      _id="obs_os_warn",
     )
     return d
     pass
@@ -717,6 +743,7 @@ def obs_hw_warn():
     d = DIV(
       obs_hw_warn_table(),
       _class="dashboard",
+      _id="obs_hw_warn",
     )
     return d
     pass
@@ -773,6 +800,7 @@ def obs_hw_alert():
     d = DIV(
       obs_hw_alert_table(),
       _class="dashboard",
+      _id="obs_hw_alert",
     )
     return d
     pass
@@ -805,6 +833,7 @@ def obs_miss():
         ),
       ),
       _class="dashboard",
+      _id="obs_miss",
     )
     pass
 
@@ -856,6 +885,7 @@ def nodes_without_asset():
     d = DIV(
       nodes_without_asset_table(),
       _class="dashboard",
+      _id="nodes_without_asset",
     )
     return d
     pass
@@ -910,6 +940,7 @@ def frozen_services():
     d = DIV(
       frozen_table(),
       _class="dashboard",
+      _id="frozen",
     )
     return d
     pass
@@ -984,6 +1015,7 @@ def netdev_err():
     d = DIV(
       netdev_err_table(),
       _class="dashboard",
+      _id="netdev_err",
     )
     return d
     pass
@@ -1009,26 +1041,31 @@ def summary_table():
     lines += [TR(
       TD(T("Node check alerts"), _class=cellclass),
       TD(len(checks), _class=cellclass, _style=color(len(checks))),
+      _onclick="ScrollToElement(getElementById('node_checks'))",
     )]
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Services not up"), _class=cellclass),
       TD(len(svcnotup), _class=cellclass, _style=color(len(svcnotup))),
+      _onclick="ScrollToElement(getElementById('svc_not_up'))",
     )]
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Frozen services"), _class=cellclass),
       TD(len(frozen), _class=cellclass, _style=color(len(frozen))),
+      _onclick="ScrollToElement(getElementById('frozen'))",
     )]
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Service status not updated"), _class=cellclass),
       TD(len(svcnotupdated), _class=cellclass, _style=color(len(svcnotupdated))),
+      _onclick="ScrollToElement(getElementById('svcmon_not_updated'))",
     )]
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Services with errors"), _class=cellclass),
       TD(len(svcwitherrors), _class=cellclass, _style=color(len(svcwitherrors))),
+      _onclick="ScrollToElement(getElementById('svc_with_errors'))",
     )]
     svcnotup_names = [s.v_svc_group_status.svcname for s in svcnotup]
     list = [s for s in svcnotonprimary if s.svc_name not in svcnotup_names]
@@ -1036,6 +1073,7 @@ def summary_table():
     lines += [TR(
       TD(T("Services not up on primary"), _class=cellclass),
       TD(len(list), _class=cellclass, _style=color(len(list))),
+      _onclick="ScrollToElement(getElementById('svc_not_on_primary'))",
     )]
     now = datetime.datetime.now()
     onehourago = now - datetime.timedelta(minutes=60)
@@ -1049,56 +1087,67 @@ def summary_table():
     lines += [TR(
       TD(T("Last service status changes"), _class=cellclass),
       TD(shrate, _class=cellclass, _style=color(hrate)),
+      _onclick="ScrollToElement(getElementById('last_changes'))",
     )]
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Application without responsibles"), _class=cellclass),
       TD(len(appwithoutresp), _class=cellclass, _style=color(len(appwithoutresp))),
+      _onclick="ScrollToElement(getElementById('app_wo_resp'))",
     )]
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Nodes with obsolescent operating system (alert)"), _class=cellclass),
       TD(len(obsosalert), _class=cellclass, _style=color(len(obsosalert))),
+      _onclick="ScrollToElement(getElementById('obs_os_alert'))",
     )]
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Nodes with obsolescent operating system (warn)"), _class=cellclass),
       TD(len(obsoswarn), _class=cellclass, _style=color(len(obsoswarn))),
+      _onclick="ScrollToElement(getElementById('obs_os_warn'))",
     )]
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Nodes with obsolescent hardware (alert)"), _class=cellclass),
       TD(len(obshwalert), _class=cellclass, _style=color(len(obshwalert))),
+      _onclick="ScrollToElement(getElementById('obs_hw_alert'))",
     )]
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Nodes with obsolescent hardware (warn)"), _class=cellclass),
       TD(len(obshwwarn), _class=cellclass, _style=color(len(obshwwarn))),
+      _onclick="ScrollToElement(getElementById('obs_hw_warn'))",
     )]
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Items with missing obsolescence information (alert)"), _class=cellclass),
       TD(obswarnmiss, _class=cellclass, _style=color(obswarnmiss)),
+      _onclick="ScrollToElement(getElementById('obs_miss'))",
     )]
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Items with missing obsolescence information (warn)"), _class=cellclass),
       TD(obsalertmiss, _class=cellclass, _style=color(obsalertmiss)),
+      _onclick="ScrollToElement(getElementById('obs_miss'))",
     )]
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Nodes without asset information"), _class=cellclass),
       TD(len(nodeswithoutasset), _class=cellclass, _style=color(len(nodeswithoutasset))),
+      _onclick="ScrollToElement(getElementById('nodes_without_asset'))",
     )]
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Clusters with package differences amongst nodes"), _class=cellclass),
       TD(len(pkgdiff), _class=cellclass, _style=color(len(pkgdiff))),
+      _onclick="ScrollToElement(getElementById('pkg_diff'))",
     )]
     cellclass = cellclasses[cellclass]
     lines += [TR(
       TD(T("Nodes with network device errors in the last day"), _class=cellclass),
       TD("%i intf"%len(netdeverrs), _class=cellclass, _style=color(len(netdeverrs))),
+      _onclick="ScrollToElement(getElementById('netdev_err'))",
     )]
 
     t = TABLE(
