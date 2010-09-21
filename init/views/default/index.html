@@ -16,8 +16,19 @@ function ScrollToElement(theElement){
   }
                         		      
  window.scrollTo(selectedPosX,selectedPosY);
-
 }
+
+function toggle_vis(name){
+        cells = document.getElementsByName(name);
+        for(j = 0; j < cells.length; j++) {
+		if (cells[j].style.display == 'none') {
+			cells[j].style.display = 'table-row';
+		} else {
+                	cells[j].style.display = 'none';
+		}
+        }
+}
+
 </script>
 {{
 
@@ -1023,132 +1034,189 @@ def netdev_err():
 
 """ Summary
 """
-def summary_table():
-    def color(i):
-        if i > 0:
-            return 'color:darkred;font-weight:bold;'
-        else:
-            return ''
-        pass
-
-    cellclass = 'cell1'
-    cellclasses = {}
-    cellclasses['cell1'] = 'cell2'
-    cellclasses['cell2'] = 'cell1'
-    lines = []
-
-    cellclass = cellclasses[cellclass]
-    lines += [TR(
-      TD(T("Node check alerts"), _class=cellclass),
-      TD(len(checks), _class=cellclass, _style=color(len(checks))),
-      _onclick="ScrollToElement(getElementById('node_checks'))",
-    )]
-    cellclass = cellclasses[cellclass]
-    lines += [TR(
-      TD(T("Services not up"), _class=cellclass),
-      TD(len(svcnotup), _class=cellclass, _style=color(len(svcnotup))),
-      _onclick="ScrollToElement(getElementById('svc_not_up'))",
-    )]
-    cellclass = cellclasses[cellclass]
-    lines += [TR(
-      TD(T("Frozen services"), _class=cellclass),
-      TD(len(frozen), _class=cellclass, _style=color(len(frozen))),
-      _onclick="ScrollToElement(getElementById('frozen'))",
-    )]
-    cellclass = cellclasses[cellclass]
-    lines += [TR(
-      TD(T("Service status not updated"), _class=cellclass),
-      TD(len(svcnotupdated), _class=cellclass, _style=color(len(svcnotupdated))),
-      _onclick="ScrollToElement(getElementById('svcmon_not_updated'))",
-    )]
-    cellclass = cellclasses[cellclass]
-    lines += [TR(
-      TD(T("Services with errors"), _class=cellclass),
-      TD(len(svcwitherrors), _class=cellclass, _style=color(len(svcwitherrors))),
-      _onclick="ScrollToElement(getElementById('svc_with_errors'))",
-    )]
+def _summary():
     svcnotup_names = [s.v_svc_group_status.svcname for s in svcnotup]
-    list = [s for s in svcnotonprimary if s.svc_name not in svcnotup_names]
-    cellclass = cellclasses[cellclass]
-    lines += [TR(
-      TD(T("Services not up on primary"), _class=cellclass),
-      TD(len(list), _class=cellclass, _style=color(len(list))),
-      _onclick="ScrollToElement(getElementById('svc_not_on_primary'))",
-    )]
+    svcnotup_names_filtered = [s for s in svcnotonprimary if s.svc_name not in svcnotup_names]
     now = datetime.datetime.now()
     onehourago = now - datetime.timedelta(minutes=60)
-    hrate = len([c for c in lastchanges if c.svcmon_log.mon_begin > onehourago])
-    if hrate > 20:
-        shrate = "+20/h"
+
+    _hash = [{
+               'title': 'Node check alerts',
+               'unit': '',
+               'limit': 0,
+               'linkto': 'node_checks',
+               'status': len(checks),
+             },
+             {
+               'title': 'Services not up',
+               'unit': '',
+               'limit': 0,
+               'linkto': 'svc_not_up',
+               'status': len(svcnotup),
+             },
+             {
+               'title': 'Frozen services',
+               'unit': '',
+               'limit': 0,
+               'linkto': 'frozen',
+               'status': len(frozen),
+             },
+             {
+               'title': 'Service status not updated',
+               'unit': '',
+               'limit': 0,
+               'linkto': 'svcmon_not_updated',
+               'status': len(svcnotupdated),
+             },
+             {
+               'title': 'Services with errors',
+               'unit': '',
+               'limit': 0,
+               'linkto': 'svc_with_errors',
+               'status': len(svcwitherrors),
+             },
+             {
+               'title': 'Services not up on primary',
+               'unit': '',
+               'limit': 0,
+               'linkto': 'svc_not_on_primary',
+               'status': len(svcnotup_names_filtered),
+             },
+             {
+               'title': 'Last service status changes',
+               'unit': '/h',
+               'limit': 20,
+               'linkto': 'last_changes',
+               'status': len([c for c in lastchanges if c.svcmon_log.mon_begin > onehourago]),
+             },
+             {
+               'title': 'Application without responsibles',
+               'unit': '',
+               'limit': 0,
+               'linkto': 'app_wo_resp',
+               'status': len(appwithoutresp),
+             },
+             {
+               'title': 'Nodes with obsolescent operating system (alert)',
+               'unit': '',
+               'limit': 0,
+               'linkto': 'obs_os_alert',
+               'status': len(obsosalert),
+             },
+             {
+               'title': 'Nodes with obsolescent operating system (warn)',
+               'unit': '',
+               'limit': 0,
+               'linkto': 'obs_os_warn',
+               'status': len(obsoswarn),
+             },
+             {
+               'title': 'Nodes with obsolescent hardware (alert)',
+               'unit': '',
+               'limit': 0,
+               'linkto': 'obs_hw_alert',
+               'status': len(obshwalert),
+             },
+             {
+               'title': 'Nodes with obsolescent hardware (warn)',
+               'unit': '',
+               'limit': 0,
+               'linkto': 'obs_hw_warn',
+               'status': len(obshwwarn),
+             },
+             {
+               'title': 'Items with missing obsolescence information (alert)',
+               'unit': '',
+               'limit': 0,
+               'linkto': 'obs_miss',
+               'status': obsalertmiss,
+             },
+             {
+               'title': 'Items with missing obsolescence information (warn)',
+               'unit': '',
+               'limit': 0,
+               'linkto': 'obs_miss',
+               'status': obswarnmiss,
+             },
+             {
+               'title': 'Nodes without asset information',
+               'unit': '',
+               'limit': 0,
+               'linkto': 'nodes_without_asset',
+               'status': len(nodeswithoutasset),
+             },
+             {
+               'title': 'Clusters with package differences amongst nodes',
+               'unit': '',
+               'limit': 0,
+               'linkto': 'pkg_diff',
+               'status': len(pkgdiff),
+             },
+             {
+               'title': 'Nodes with network device errors in the last day',
+               'unit': '',
+               'limit': 0,
+               'linkto': 'netdev_err',
+               'status': len(netdeverrs),
+             }]
+
+    return _hash
+    pass
+
+def summary_header():
+    tr = TR(
+      TH(T("Report")),
+      TH(T("Status")),
+    )
+    return tr
+    pass
+
+def summary_line(l, cellclass):
+    if l['status'] > l['limit']:
+        color = 'color:darkred;font-weight:bold;'
+        status = 'bad'
+        rowstyle = ''
     else:
-        shrate = "%s/h"%str(hrate)
+        color = ''
+        status = 'good'
+        rowstyle = 'display:none'
+    pass
+    line = TR(
+             TD(
+               T(l['title']),
+               _class=cellclass,
+             ),
+             TD(
+               str(l['status'])+l['unit'],
+               _class=cellclass,
+               _style=color,
+             ),
+             _onclick="ScrollToElement(getElementById('%s'))"%l['linkto'],
+             _name="summary_line_"+status,
+             _style='cursor:pointer;'+rowstyle,
+           )
+    return line
+
+def summary_table():
+    cellclass = 'cell1'
+    cellclasses = {'cell1': 'cell2', 'cell2': 'cell1'}
+    head = []
+    foot = []
+    lines = []
+
+    summary_hash = _summary()
+
+    for l in summary_hash:
+        if l['status'] <= l['limit']:
+            foot.append(l)
+        else:
+            head.append(l)
         pass
-    cellclass = cellclasses[cellclass]
-    lines += [TR(
-      TD(T("Last service status changes"), _class=cellclass),
-      TD(shrate, _class=cellclass, _style=color(hrate)),
-      _onclick="ScrollToElement(getElementById('last_changes'))",
-    )]
-    cellclass = cellclasses[cellclass]
-    lines += [TR(
-      TD(T("Application without responsibles"), _class=cellclass),
-      TD(len(appwithoutresp), _class=cellclass, _style=color(len(appwithoutresp))),
-      _onclick="ScrollToElement(getElementById('app_wo_resp'))",
-    )]
-    cellclass = cellclasses[cellclass]
-    lines += [TR(
-      TD(T("Nodes with obsolescent operating system (alert)"), _class=cellclass),
-      TD(len(obsosalert), _class=cellclass, _style=color(len(obsosalert))),
-      _onclick="ScrollToElement(getElementById('obs_os_alert'))",
-    )]
-    cellclass = cellclasses[cellclass]
-    lines += [TR(
-      TD(T("Nodes with obsolescent operating system (warn)"), _class=cellclass),
-      TD(len(obsoswarn), _class=cellclass, _style=color(len(obsoswarn))),
-      _onclick="ScrollToElement(getElementById('obs_os_warn'))",
-    )]
-    cellclass = cellclasses[cellclass]
-    lines += [TR(
-      TD(T("Nodes with obsolescent hardware (alert)"), _class=cellclass),
-      TD(len(obshwalert), _class=cellclass, _style=color(len(obshwalert))),
-      _onclick="ScrollToElement(getElementById('obs_hw_alert'))",
-    )]
-    cellclass = cellclasses[cellclass]
-    lines += [TR(
-      TD(T("Nodes with obsolescent hardware (warn)"), _class=cellclass),
-      TD(len(obshwwarn), _class=cellclass, _style=color(len(obshwwarn))),
-      _onclick="ScrollToElement(getElementById('obs_hw_warn'))",
-    )]
-    cellclass = cellclasses[cellclass]
-    lines += [TR(
-      TD(T("Items with missing obsolescence information (alert)"), _class=cellclass),
-      TD(obswarnmiss, _class=cellclass, _style=color(obswarnmiss)),
-      _onclick="ScrollToElement(getElementById('obs_miss'))",
-    )]
-    cellclass = cellclasses[cellclass]
-    lines += [TR(
-      TD(T("Items with missing obsolescence information (warn)"), _class=cellclass),
-      TD(obsalertmiss, _class=cellclass, _style=color(obsalertmiss)),
-      _onclick="ScrollToElement(getElementById('obs_miss'))",
-    )]
-    cellclass = cellclasses[cellclass]
-    lines += [TR(
-      TD(T("Nodes without asset information"), _class=cellclass),
-      TD(len(nodeswithoutasset), _class=cellclass, _style=color(len(nodeswithoutasset))),
-      _onclick="ScrollToElement(getElementById('nodes_without_asset'))",
-    )]
-    cellclass = cellclasses[cellclass]
-    lines += [TR(
-      TD(T("Clusters with package differences amongst nodes"), _class=cellclass),
-      TD(len(pkgdiff), _class=cellclass, _style=color(len(pkgdiff))),
-      _onclick="ScrollToElement(getElementById('pkg_diff'))",
-    )]
-    cellclass = cellclasses[cellclass]
-    lines += [TR(
-      TD(T("Nodes with network device errors in the last day"), _class=cellclass),
-      TD("%i intf"%len(netdeverrs), _class=cellclass, _style=color(len(netdeverrs))),
-      _onclick="ScrollToElement(getElementById('netdev_err'))",
-    )]
+    pass
+    for l in head + foot:
+        cellclass = cellclasses[cellclass]
+        lines.append(summary_line(l, cellclass))
+    pass
 
     t = TABLE(
         TR(
@@ -1161,14 +1229,6 @@ def summary_table():
         lines,
     )
     return t
-    pass
-
-def summary_header():
-    tr = TR(
-      TH(T("Report")),
-      TH(T("Status")),
-    )
-    return tr
     pass
 
 def summary():
@@ -1188,7 +1248,12 @@ def summary():
    )
 }}
 {{=DIV(
-     summary(),
+     DIV(
+       summary(),
+       _class="container",
+       _onclick="toggle_vis('summary_line_good')",
+       _style="cursor:help",
+     ),
      node_checks(),
      svc_not_up(),
      frozen_services(),
