@@ -1007,7 +1007,16 @@ def send_alerts():
         """
         ack_comment = T("Automatically acknowledged upon ticket generation. Alert sent to %(to)s", dict(to=row.sent_to))
         if row.action_ids is not None:
-            sql = "update table SVCactions set ack=1, acked_comment=%(ack_comment)s, acked_date=%(acked_date)s, acked_by=%(acked_by)s where action_id in (%(ids)s)"%dict(ack_comment=ack_comment, acked_date=now, acked_by=botaddr, ids=row.action_ids)
+            sql = """update table SVCactions set
+                     ack=1,
+                     acked_comment="%(ack_comment)s",
+                     acked_date="%(acked_date)s",
+                     acked_by="%(acked_by)s"
+                     where action_id in (%(ids)s)
+                  """%dict(ack_comment=ack_comment,
+                           acked_date=now,
+                           acked_by=botaddr,
+                           ids=row.action_ids)
             db.executesql(sql)
             #db(db.SVCactions.id==row.action_id).update(ack=1, acked_comment=ack_comment, acked_date=now, acked_by=botaddr)
 
@@ -1782,7 +1791,7 @@ def _obs_item_del(request):
     sql = "delete from obsolescence where id in (%s)"%','.join(map(str, ids))
     db.executesql(sql)
 
-def _refresh_obsolescence(request):
+def refresh_obsolescence():
     cron_obsolescence_os()
     cron_obsolescence_hw()
 
@@ -1795,7 +1804,7 @@ def obsolescence_config():
     elif request.vars.action == "set_alert_date":
         _obs_alert_date_edit(request)
     elif request.vars.action == "refresh":
-        _refresh_obsolescence(request)
+        refresh_obsolescence()
 
     toggle_db_filters()
 
