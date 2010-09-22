@@ -100,7 +100,7 @@ def svc_status(svc, cellclass="cell2"):
     <td name="tcol_responsibles" style="{{=col_hide('responsibles')}};max-width:1em">{{=colname(services, 'responsibles', T('Responsibles'))}}</td>
     <td name="tcol_mon_nodtype" style="{{=col_hide('mon_nodtype')}};max-width:1em">{{=colname(services, 'mon_nodtype', T('Node type'))}}</td>
     <td name="tcol_mon_nodname" style="{{=col_hide('mon_nodname')}}">{{=colname(services, 'mon_nodname', T('Node'))}}</td>
-    <td name="tcol_overallstatus" style="{{=col_hide('overallstatus')}}" class=status_t>{{=T('Status')}}</td>
+    <td name="tcol_mon_overallstatus" style="{{=col_hide('mon_overallstatus')}}" class=status_t>{{=T('Status')}}</td>
     <td name="tcol_mon_updated" style="{{=col_hide('mon_updated')}}" class=status_t>{{=columns['mon_updated']['title']}}</td>
     <td name="tcol_mon_frozen" style="{{=col_hide('mon_frozen')}}" class=status_t>{{=columns['mon_frozen']['title']}}</td>
   </tr>
@@ -116,7 +116,7 @@ def svc_status(svc, cellclass="cell2"):
     <td name="tcol_responsibles" style="{{=col_hide('responsibles')}}"><input name=responsibles value='{{=vars.responsibles}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td name="tcol_mon_nodtype" style="{{=col_hide('mon_nodtype')}}"><input name=mon_nodtype value='{{=vars.mon_nodtype}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td name="tcol_mon_nodname" style="{{=col_hide('mon_nodname')}}"><input name=mon_nodname value='{{=vars.mon_nodname}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td name="tcol_overallstatus" style="{{=col_hide('overallstatus')}}" class=status_t><input name=overallstatus value='{{=vars.overallstatus}}' size=4 onKeyPress="checkEnter(event)"></td>
+    <td name="tcol_mon_overallstatus" style="{{=col_hide('mon_overallstatus')}}" class=status_t><input name=mon_overallstatus value='{{=vars.mon_overallstatus}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td name="tcol_mon_updated" style="{{=col_hide('mon_updated')}}" class=status_t><input name=mon_updated value='{{=vars.mon_updated}}' size=4 onKeyPress="checkEnter(event)"></td>
     <td name="tcol_mon_frozen" style="{{=col_hide('mon_frozen')}}" class=status_t><input name=mon_frozen value='{{=vars.mon_frozen}}' size=4 onKeyPress="checkEnter(event)"></td>
   </tr>
@@ -333,7 +333,7 @@ def svc_status(svc, cellclass="cell2"):
         )
       }}
     </td>
-    <td name="tcol_overallstatus" style="text-align:center;{{=col_hide('overallstatus')}}" class="{{=cellclass}}">
+    <td name="tcol_mon_overallstatus" style="text-align:center;{{=col_hide('mon_overallstatus')}}" class="{{=cellclass}}">
       {{=svc_status(svc,cellclass)}}
     </td>
     <td name="tcol_mon_updated" style="{{=col_hide('mon_updated')}}" class="{{=cellclass}}">

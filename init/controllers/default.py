@@ -1559,9 +1559,48 @@ def svcmon_log():
                )
 
 @auth.requires_login()
-def ajax_pkgdiff():
-    nodes = request.vars.pkgnodes.split(',')
+def ajax_perfcmp():
+    nodes = set(request.vars.node.split(','))
+    nodes -= set([""])
+    begin = request.vars.begin
+    end = request.vars.end
     n = len(nodes)
+
+    if n == 0:
+         return DIV(T("No nodes selected"))
+
+    charts = dict()
+    charts.update(stats_last_day_avg_cpu_for_nodes(nodes, begin=begin, end=end))
+    charts.update(stats_last_day_avg_mem_for_nodes(nodes, begin=begin, end=end))
+
+    d = DIV(
+          H1(T("Computing ressource usage")),
+            DIV(
+              IMG(_src=URL(r=request,c='static',f=charts['stat_cpu_avg_day'])),
+              _class='float',
+            ),
+            DIV(
+              IMG(_src=URL(r=request,c='static',f=charts['stat_mem_avail'])),
+              _class='float',
+            ),
+            DIV(
+              XML('&nbsp;'),
+              _class='spacer',
+            ),
+            _class='container',
+          )
+
+    return d
+
+@auth.requires_login()
+def ajax_pkgdiff():
+    nodes = set(request.vars.node.split(','))
+    nodes -= set([""])
+    n = len(nodes)
+
+    if n == 0:
+         return DIV(T("No nodes selected"))
+
     sql = """select * from (
                select group_concat(pkg_nodename order by pkg_nodename),
                       pkg_name,
@@ -1942,7 +1981,7 @@ def svcmon():
             display = True,
             size = 6
         ),
-        overallstatus = dict(
+        mon_overallstatus = dict(
             pos = 7,
             title = T('Status'),
             display = True,
@@ -6493,6 +6532,29 @@ def stats_disks_per_svc():
     return dict(stat_disk_svc=img)
 
 @auth.requires_login()
+def stats_last_day_avg_cpu_for_nodes(nodes=[], begin=None, end=None):
+    """ last day avg cpu usage per node
+    """
+    nodes = map(repr, nodes)
+    nodes = ','.join(nodes)
+    dom = _domain_perms()
+    if begin is None or end is None:
+        now = datetime.datetime.now()
+        end = now - datetime.timedelta(days=0, microseconds=now.microsecond)
+        begin = end - datetime.timedelta(days=1)
+    sql = """select nodename,100-avg(idle) as avg,std(idle) as std
+             from stats_cpu
+             where cpu='all'
+               and date>'%(begin)s'
+               and date<'%(end)s'
+               and nodename like '%(dom)s'
+               and nodename in (%(nodes)s)
+             group by nodename
+             order by avg"""%dict(begin=str(begin),end=str(end),dom=dom,nodes=nodes)
+    rows = db.executesql(sql)
+    return _stats_last_day_avg_cpu(rows)
+
+@auth.requires_login()
 def stats_last_day_avg_cpu():
     """ last day avg cpu usage per node
     """
@@ -6509,7 +6571,10 @@ def stats_last_day_avg_cpu():
              group by nodename
              order by avg"""%dict(begin=str(begin),end=str(end),dom=dom)
     rows = db.executesql(sql)
+    return _stats_last_day_avg_cpu(rows)
 
+@auth.requires_login()
+def _stats_last_day_avg_cpu(rows):
     if len(rows) == 0:
         return dict(stat_cpu_avg_day=None)
 
@@ -6548,6 +6613,32 @@ def stats_last_day_avg_cpu():
     return dict(stat_cpu_avg_day=img)
 
 @auth.requires_login()
+def stats_last_day_avg_mem_for_nodes(nodes=[], begin=None, end=None):
+    """ available mem
+    """
+    nodes = map(repr, nodes)
+    nodes = ','.join(nodes)
+    dom = _domain_perms()
+    if begin is None or end is None:
+        now = datetime.datetime.now()
+        end = now - datetime.timedelta(days=0, microseconds=now.microsecond)
+        begin = end - datetime.timedelta(days=1)
+    sql = """select * from (
+               select nodename,avg(kbmemfree+kbcached) as avail
+               from stats_mem_u
+               where nodename like '%(dom)s'
+               and nodename in (%(nodes)s)
+               and date>'%(begin)s'
+               and date<'%(end)s'
+               group by nodename
+               order by nodename, date
+             ) tmp
+             order by avail desc;
+          """%dict(dom=dom, nodes=nodes, begin=str(begin), end=str(end))
+    rows = db.executesql(sql)
+    return _stats_last_day_avg_mem(rows)
+
+@auth.requires_login()
 def stats_last_day_avg_mem():
     """ available mem
     """
@@ -6562,7 +6653,10 @@ def stats_last_day_avg_mem():
              order by avail desc;
           """%dict(dom=dom)
     rows = db.executesql(sql)
+    return _stats_last_day_avg_mem(rows)
 
+@auth.requires_login()
+def _stats_last_day_avg_mem(rows):
     if len(rows) == 0:
         return dict(stat_mem_avail=None)
 
@@ -6576,7 +6670,7 @@ def stats_last_day_avg_mem():
     theme.scale_factor = 2
     theme.reinitialize()
 
-    data1 = [(row[0], row[1]) for row in rows]
+    data1 = [(row[0], int(row[1])) for row in rows]
     if len(data1) > 31:
         data = data1[0:15] + [("...", 0)] + data1[-15:]
     else:

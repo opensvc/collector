@@ -11,7 +11,7 @@ initialize_keys()
 <script type="text/javascript">
 function selected_nodes() {
 	var l = new Array();
-	var elem = svcform.elements;
+	var elem = document.svcform.elements;
 	for(var i = 0; i < elem.length; i++) {
 		if (elem[i].type == 'checkbox' && elem[i].disabled == false && elem[i].name.match(/^check_/) && elem[i].checked) {
 			l.push(elem[i].id.replace("check_",""));
@@ -107,6 +107,7 @@ function selected_nodes() {
           <td> {{=T('Add node')}}:</td>
           <td> {{=T('Delete nodes')}}:</td>
           <td> {{=T('Package differences')}}:</td>
+          <td> {{=T('Group performance')}}:</td>
         </tr>
         <tr>
           <td>
@@ -133,13 +134,54 @@ function selected_nodes() {
                 _border=0,
                 _title=T("display installed package differences between selected nodes"),
                 _onclick="""
-                  getElementById("pkgnodes").value=selected_nodes();
-                  ajax("%(url)s",['pkgnodes'],"panelbody_%(a)s");
+                  getElementById("node").value=selected_nodes();
+                  ajax("%(url)s",['node'],"panelbody_%(a)s");
                   getElementById("panel_%(a)s").className="panel_shown";
                   getElementById("panel_%(a)s").style.top=event.pageY+'px';
                """%dict(url=URL(r=request,f='ajax_pkgdiff'), a='pkgdiff'),
               )
             }}
+          </td>
+          <td>
+            {{=IMG(
+                _src=URL(r=request,c='static',f='chart24.png'),
+                _border=0,
+                _title=T("compare performance metrics between selected nodes"),
+                _onclick="""getElementById("perfcmp_row").style.display='table-row';
+                         """,
+              )
+            }}
+        </tr>
+        <tr id="perfcmp_row" style="display:none">
+          <td colspan=99>
+{{
+    now = datetime.datetime.now()
+    s = now - datetime.timedelta(days=0,
+                                 hours=now.hour,
+                                 minutes=now.minute,
+                                 microseconds=now.microsecond)
+    e = s + datetime.timedelta(days=1)
+}}
+{{=SPAN(
+            INPUT(
+              _value=s.strftime("%Y-%m-%d %H:%M"),
+              _id='begin',
+            ),
+            INPUT(
+              _value=e.strftime("%Y-%m-%d %H:%M"),
+              _id='end',
+            ),
+            INPUT(
+              _value='gen',
+              _type='button',
+              _onClick="""
+                  getElementById("node").value=selected_nodes();
+                  ajax("%(url)s",['node'],"perfcmp_div");
+              """%dict(url=URL(r=request,f='ajax_perfcmp')),
+            ),
+  )
+}}
+             <div id="perfcmp_div"></div>
           </td>
         </tr>
       </table>
@@ -148,7 +190,6 @@ function selected_nodes() {
 </table>
 {{=PANEL('pkgdiff')}}
 <input id="node" type="hidden">
-<input id="pkgnodes" type="hidden">
 <input id="rowid" type="hidden">
 <input name="action" type="hidden">
 </form>

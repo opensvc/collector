@@ -1,4 +1,15 @@
 <script language="JavaScript" type="text/javascript">
+function toggle_vis(name){
+        cells = document.getElementsByName(name);
+        for(j = 0; j < cells.length; j++) {
+                if (cells[j].style.display == 'none') {
+                        cells[j].style.display = 'table-row';
+                } else {
+                        cells[j].style.display = 'none';
+                }
+        }
+}
+
 function checkEnter(e) {
   submit_form_on_enter(e, document.svcform)
 }
