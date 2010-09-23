@@ -2055,7 +2055,7 @@ def svcmon():
         d2[k]['display'] = False
 
     del(d2['nodename'])
-    columns = d1
+    columns = d1.copy()
     columns.update(d2)
 
     def _sort_cols(x, y):
@@ -2150,7 +2150,7 @@ def packages():
         d2[k]['nestedin'] = 'v_nodes'
 
     del(d2['nodename'])
-    columns = d1
+    columns = d1.copy()
     columns.update(d2)
 
     def _sort_cols(x, y):
@@ -2242,7 +2242,7 @@ def patches():
         d2[k]['nestedin'] = 'v_nodes'
 
     del(d2['nodename'])
-    columns = d1
+    columns = d1.copy()
     columns.update(d2)
 
     def _sort_cols(x, y):
@@ -2462,7 +2462,7 @@ def checks():
         d2[k]['nestedin'] = 'v_nodes'
     del(d2['nodename'])
 
-    columns = d1
+    columns = d1.copy()
     columns.update(d2)
 
     def _sort_cols(x, y):
