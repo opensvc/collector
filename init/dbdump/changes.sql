@@ -464,3 +464,7 @@ CREATE TABLE `opensvc`.`user_prefs_columns` (
 );
 
 create unique index idx1 on user_prefs_columns (upc_user_id, upc_table, upc_field);
+
+alter table packages modify pkg_version VARCHAR(64);
+
+alter table nodes modify os_kernel VARCHAR(32);
