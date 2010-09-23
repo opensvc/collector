@@ -6062,7 +6062,6 @@ def format_y(x):
 def format2_y(x):
     return "/a50/6{}" + str(x)
 
-@auth.requires_login()
 def __stats_lifecycle_os_name():
     from time import mktime
     import datetime
@@ -6146,7 +6145,6 @@ def __stats_lifecycle_os_name():
     ar.draw(can)
     can.close()
 
-@auth.requires_login()
 def __stats_lifecycle_os_release(os_name=None):
     if os_name is None:
         return
@@ -6233,7 +6231,6 @@ def __stats_lifecycle_os_release(os_name=None):
     ar.draw(can)
     can.close()
 
-@auth.requires_login()
 def stats_global():
     from time import mktime
     import datetime
