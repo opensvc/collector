@@ -301,6 +301,13 @@ db.define_table('v_svcmon',
     Field('loc_country'),
     Field('loc_building'),
     Field('loc_room'),
+    Field('power_supply_nb', 'integer', default=0),
+    Field('power_cabinet1'),
+    Field('power_cabinet2'),
+    Field('power_protect'),
+    Field('power_protect_breaker'),
+    Field('power_breaker1'),
+    Field('power_breaker2'),
     migrate=False)
 
 db.define_table('v_svcmon_clusters',

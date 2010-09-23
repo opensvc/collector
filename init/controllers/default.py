@@ -1938,7 +1938,7 @@ def ajax_obsolete_os_nodes():
 def svcmon():
     service_action()
 
-    columns = dict(
+    d1 = dict(
         mon_svcname = dict(
             pos = 1,
             title = T('Service'),
@@ -2048,6 +2048,15 @@ def svcmon():
             size = 3
         ),
     )
+
+    d2 = v_nodes_columns()
+    for k in d2:
+        d2[k]['pos'] += 50
+        d2[k]['display'] = False
+
+    del(d2['nodename'])
+    columns = d1
+    columns.update(d2)
 
     def _sort_cols(x, y):
         return cmp(columns[x]['pos'], columns[y]['pos'])
