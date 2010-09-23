@@ -30,6 +30,7 @@ def ajax_status(svc, name, cssclass):
     pass
 
 
+
 def svc_status(svc, cellclass="cell2"):
     cl = {}
     import time
@@ -78,6 +79,129 @@ def svc_status(svc, cellclass="cell2"):
     return t
     pass
 
+
+""" col formatters
+"""
+def format_mon_overallstatus(svc, newsvc=True, cellclass="cell2"):
+    return TD(
+             svc_status(svc, cellclass),
+             _name="tcol_"+key, 
+             _style=col_hide(key),
+             _class=cellclass,
+           )
+    pass
+
+def format_mon_nodname(svc, newsvc=True, cellclass=""):
+    key = "mon_nodname"
+    if svc.mon_nodname == svc.svc_autostart:
+        boldtype = "font-weight:bold;"
+    else:
+        boldtype = ""
+    pass
+
+    return TD(
+             A(
+               DIV(
+                 node_icon(svc.os_name),
+                 svc.mon_nodname,
+                 _onclick="""
+                   getElementById("node").value="%(node)s";
+                   getElementById("rowid").value="%(id)s";
+                   ajax("%(url)s",['node', 'rowid'],"id_%(id)s");
+                   show_eid("tr_id_%(id)s");
+                 """%dict(url=URL(r=request,f='ajax_node'),
+                          node=svc.mon_nodname,
+                          id=svc.svc_name,
+                         ),
+               ),
+               _class="xinfo",
+             ),
+             _name="tcol_"+key, 
+             _style=boldtype+col_hide(key),
+             _class=cellclass,
+           )
+    pass
+
+def format_mon_svcname(svc, newsvc=True, cellclass=""):
+    key = "mon_svcname"
+    if not newsvc:
+        return TD(
+                 _name="tcol_"+key,
+                 _style=col_hide(key),
+                 _class=cellclass,
+               )
+
+    if svc.mon_svctype == 'PRD':
+        boldtype = "font-weight:bold;"
+    else:
+        boldtype = ""
+    pass
+
+    return TD(
+             A(
+               DIV(
+                 svc.svc_name,
+                 _onclick="""
+                   getElementById("node").value="%(node)s";
+                   getElementById("rowid").value="%(id)s";
+                   ajax("%(url)s",['node', 'rowid'],"id_%(id)s");
+                   show_eid("tr_id_%(id)s");
+                 """%dict(url=URL(r=request,f='ajax_service'),
+                          node=svc.svc_name,
+                          id=svc.svc_name,
+                         ),
+               ),
+               _class="xinfo",
+             ),
+             _name="tcol_"+key, 
+             _style=boldtype+col_hide(key),
+             _class=cellclass,
+           )
+    pass
+
+def format_svc_containertype(svc, newsvc=True, cellclass=""):
+    key = "svc_containertype"
+    if not newsvc:
+        return TD(
+                 _name="tcol_"+key,
+                 _style=col_hide(key),
+                 _class=cellclass,
+               )
+
+    if svc.svc_containertype == "hosted":
+        img = node_icon(svc.os_name)
+    else:
+        img = node_icon(svc.svc_guestos)
+    pass
+
+    return TD(
+             DIV(
+               img,
+               svc.svc_containertype,
+               _title=vmname,
+               _style='vertical-align:middle'
+             ),
+             _name="tcol_"+key, 
+             _style=col_hide(key),
+             _class=cellclass,
+           )
+    pass
+
+def format_generic(svc, key, newsvc=True, cellclass=""):
+    if not newsvc:
+        return TD(
+                 _name="tcol_"+key,
+                 _style=col_hide(key),
+                 _class=cellclass,
+               )
+    return TD(
+             svc[key],
+             _name="tcol_"+key, 
+             _style=col_hide(key),
+             _class=cellclass,
+           )
+    pass
+
 }}
 
 <input id="mon_svcname" type="hidden">
@@ -91,34 +215,18 @@ def svc_status(svc, cellclass="cell2"):
   <tr class=box>
     <td class=box></td>
     <td class=box></td>
-    <td name="tcol_mon_svcname" style="{{=col_hide('mon_svcname')}}">{{=colname(services, 'svc_name', T('Service'))}}</td>
-    <td name="tcol_svc_containertype" style="{{=col_hide('svc_containertype')}};max-width:1em">{{=colname(services, 'svc_containertype', T('Container type'))}}</td>
-    <td name="tcol_svc_vcpus" style="{{=col_hide('svc_vcpus')}}" class=status_t>{{=columns['svc_vcpus']['title']}}</td>
-    <td name="tcol_svc_vmem" style="{{=col_hide('svc_vmem')}}" class=status_t>{{=columns['svc_vmem']['title']}}</td>
-    <td name="tcol_svc_app" style="{{=col_hide('svc_app')}};max-width:1em">{{=colname(services, 'svc_app', T('App'))}}</td>
-    <td name="tcol_mon_svctype" style="{{=col_hide('mon_svctype')}};max-width:1em">{{=colname(services, 'mon_svctype', T('Service type'))}}</td>
-    <td name="tcol_responsibles" style="{{=col_hide('responsibles')}};max-width:1em">{{=colname(services, 'responsibles', T('Responsibles'))}}</td>
-    <td name="tcol_mon_nodtype" style="{{=col_hide('mon_nodtype')}};max-width:1em">{{=colname(services, 'mon_nodtype', T('Node type'))}}</td>
-    <td name="tcol_mon_nodname" style="{{=col_hide('mon_nodname')}}">{{=colname(services, 'mon_nodname', T('Node'))}}</td>
-    <td name="tcol_mon_overallstatus" style="{{=col_hide('mon_overallstatus')}}" class=status_t>{{=T('Status')}}</td>
-    <td name="tcol_mon_updated" style="{{=col_hide('mon_updated')}}" class=status_t>{{=columns['mon_updated']['title']}}</td>
-    <td name="tcol_mon_frozen" style="{{=col_hide('mon_frozen')}}" class=status_t>{{=columns['mon_frozen']['title']}}</td>
+    {{for key in colkeys:}}
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}}">
+      {{=colname(services, key, columns[key]['title'])}}
+    </td>
+    {{pass}}
   </tr>
   <tr class=box>
     <td><input type=checkbox id=check_all onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'))"></td>
     <td style='padding:0'></td>
-    <td name="tcol_mon_svcname" style="{{=col_hide('mon_svcname')}}"><input name=mon_svcname value='{{=vars.mon_svcname}}' size=12 onKeyPress="checkEnter(event)"></td>
-    <td name="tcol_svc_containertype" style="{{=col_hide('svc_containertype')}}"><input name=svc_containertype value='{{=vars.svc_containertype}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td name="tcol_svc_vcpus" style="{{=col_hide('svc_vcpus')}}" class=status_t><input name=svc_vcpus value='{{=vars.svc_vcpus}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td name="tcol_svc_vmem" style="{{=col_hide('svc_vmem')}}" class=status_t><input name=svc_vmem value='{{=vars.svc_vmem}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td name="tcol_svc_app" style="{{=col_hide('svc_app')}}"><input name=svc_app value='{{=vars.svc_app}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td name="tcol_mon_svctype" style="{{=col_hide('mon_svctype')}}"><input name=mon_svctype value='{{=vars.mon_svctype}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td name="tcol_responsibles" style="{{=col_hide('responsibles')}}"><input name=responsibles value='{{=vars.responsibles}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td name="tcol_mon_nodtype" style="{{=col_hide('mon_nodtype')}}"><input name=mon_nodtype value='{{=vars.mon_nodtype}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td name="tcol_mon_nodname" style="{{=col_hide('mon_nodname')}}"><input name=mon_nodname value='{{=vars.mon_nodname}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td name="tcol_mon_overallstatus" style="{{=col_hide('mon_overallstatus')}}" class=status_t><input name=mon_overallstatus value='{{=vars.mon_overallstatus}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td name="tcol_mon_updated" style="{{=col_hide('mon_updated')}}" class=status_t><input name=mon_updated value='{{=vars.mon_updated}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td name="tcol_mon_frozen" style="{{=col_hide('mon_frozen')}}" class=status_t><input name=mon_frozen value='{{=vars.mon_frozen}}' size=4 onKeyPress="checkEnter(event)"></td>
+    {{for key in colkeys:}}
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}}"><input name={{=key}} value='{{=request.vars[key]}}' size={{=columns[key]['size']}} onKeyPress="checkEnter(event)"></td>
+    {{pass}}
   </tr>
   {{
     mon_svcname = ''
@@ -245,103 +353,21 @@ def svc_status(svc, cellclass="cell2"):
       }}
       {{=frozen}}
     </td>
-      {{if svc.mon_svctype == 'PRD':
-            boldtype = "font-weight:bold;"
-        else:
-            boldtype = ""
-            pass
-      }}
-    <td name="tcol_mon_svcname" style="{{=boldtype}}{{=col_hide('mon_svcname')}}" class={{=cellclass}}>
-      {{if newsvc:}}
-      {{=A(
-          DIV(
-            svc.svc_name,
-            _onclick="""
-               getElementById("node").value="%(node)s";
-               getElementById("rowid").value="%(id)s";
-               ajax("%(url)s",['node', 'rowid'],"id_%(id)s");
-               show_eid("tr_id_%(id)s");
-            """%dict(url=URL(r=request,f='ajax_service'),
-                     node=svc.svc_name,
-                     id=svc.svc_name,
-                    ),
-          ),
-          _class="xinfo",
-        )
-      }}
-      {{pass}}
-    </td>
-    <td name="tcol_svc_containertype" style="{{=col_hide('svc_containertype')}}" class={{=cellclass}}>
-      {{if newsvc:}}
-        {{=DIV(
-             node_icon(svc.svc_guestos),
-             svc.svc_containertype,
-             _title=vmname,
-             _style='vertical-align:middle'
-          )
-        }}
+    {{for key in colkeys:}}
+        {{if key == "mon_svcname":}}
+            {{=format_mon_svcname(svc, newsvc, cellclass)}}
+        {{elif key == "svc_containertype":}}
+            {{=format_svc_containertype(svc, newsvc, cellclass)}}
+        {{elif key == "mon_nodname":}}
+            {{=format_mon_nodname(svc, newsvc, cellclass)}}
+        {{elif key == "mon_overallstatus":}}
+            {{=format_mon_overallstatus(svc, True, cellclass)}}
+        {{elif key in ["svc_vcpus", "svc_vmem", "svc_app", "mon_svctype", "responsibles"]:}}
+            {{=format_generic(svc, key, newsvc, cellclass)}}
+        {{else:}}
+            {{=format_generic(svc, key, True, cellclass)}}
         {{pass}}
-    </td>
-    <td name="tcol_svc_vcpus" style="{{=col_hide('svc_vcpus')}}" class="{{=cellclass}}">
-      {{if newsvc:}}
-        {{=svc.svc_vcpus}}
-        {{pass}}
-    </td>
-    <td name="tcol_svc_vmem" style="{{=col_hide('svc_vmem')}}" class="{{=cellclass}}">
-      {{if newsvc:}}
-        {{=svc.svc_vmem}}
-        {{pass}}
-    </td>
-    <td name="tcol_svc_app" style="{{=col_hide('svc_app')}}" class={{=cellclass}}>
-      {{if newsvc:}}
-        {{=svc.svc_app}}
-        {{pass}}
-    </td>
-    <td name="tcol_mon_svctype" style="{{=col_hide('mon_svctype')}}" class={{=cellclass}}>
-      {{if newsvc:}}
-        {{=svc.mon_svctype}}
-        {{pass}}
-    </td>
-    <td name="tcol_responsibles" style="{{=col_hide('responsibles')}}" class={{=cellclass}}>
-      {{if newsvc:}}
-        {{=svc.responsibles}}
-        {{pass}}
-    </td>
-    <td name="tcol_mon_nodtype" style="{{=col_hide('mon_nodtype')}}" class={{=cellclass}}>{{=svc.mon_nodtype}}</td>
-    {{if svc.mon_nodname == svc.svc_autostart:
-          boldtype = "font-weight:bold;"
-      else:
-          boldtype = ""
-          pass
-    }}
-    <td name="tcol_mon_nodname" style="{{=boldtype}}{{=col_hide('mon_nodname')}}" class={{=cellclass}}>
-      {{=A(
-          DIV(
-            node_icon(svc.os_name),
-            svc.mon_nodname,
-            _onclick="""
-               getElementById("node").value="%(node)s";
-               getElementById("rowid").value="%(id)s";
-               ajax("%(url)s",['node', 'rowid'],"id_%(id)s");
-               show_eid("tr_id_%(id)s");
-            """%dict(url=URL(r=request,f='ajax_node'),
-                     node=svc.mon_nodname,
-                     id=svc.svc_name,
-                    ),
-          ),
-          _class="xinfo",
-        )
-      }}
-    </td>
-    <td name="tcol_mon_overallstatus" style="text-align:center;{{=col_hide('mon_overallstatus')}}" class="{{=cellclass}}">
-      {{=svc_status(svc,cellclass)}}
-    </td>
-    <td name="tcol_mon_updated" style="{{=col_hide('mon_updated')}}" class="{{=cellclass}}">
-      {{=svc.mon_updated}}
-    </td>
-    <td name="tcol_mon_frozen" style="{{=col_hide('mon_frozen')}}" class="{{=cellclass}}">
-      {{=svc.mon_frozen}}
-    </td>
+    {{pass}}
   </tr>
   {{pass}}
   {{if svcbuff is not None:}}

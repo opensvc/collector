@@ -2011,6 +2011,42 @@ def svcmon():
             display = False,
             size = 3
         ),
+        mon_containerstatus = dict(
+            pos = 12,
+            title = T('Container status'),
+            display = False,
+            size = 3
+        ),
+        mon_ipstatus = dict(
+            pos = 13,
+            title = T('Ip status'),
+            display = False,
+            size = 3
+        ),
+        mon_fsstatus = dict(
+            pos = 14,
+            title = T('Fs status'),
+            display = False,
+            size = 3
+        ),
+        mon_diskstatus = dict(
+            pos = 15,
+            title = T('Disk status'),
+            display = False,
+            size = 3
+        ),
+        mon_syncstatus = dict(
+            pos = 16,
+            title = T('Sync status'),
+            display = False,
+            size = 3
+        ),
+        mon_appstatus = dict(
+            pos = 17,
+            title = T('App status'),
+            display = False,
+            size = 3
+        ),
     )
 
     def _sort_cols(x, y):
@@ -2026,21 +2062,18 @@ def svcmon():
 
     toggle_db_filters()
 
-    query = _where(None, 'v_svcmon', request.vars.mon_svcname, 'mon_svcname')
-    query &= _where(None, 'v_svcmon', request.vars.mon_svctype, 'mon_svctype')
-    query &= _where(None, 'v_svcmon', request.vars.mon_containerstatus, 'mon_containerstatus')
-    query &= _where(None, 'v_svcmon', request.vars.mon_overallstatus, 'mon_overallstatus')
+    query = _where(None, 'v_svcmon', domain_perms(), 'mon_nodname')
+    for key in columns.keys():
+        if key not in request.vars.keys():
+            continue
+        query &= _where(None, 'v_svcmon', request.vars[key], key)
+
     query &= _where(None, 'v_svcmon', request.vars.svc_app, 'svc_app')
     query &= _where(None, 'v_svcmon', request.vars.responsibles, 'responsibles')
     query &= _where(None, 'v_svcmon', request.vars.svc_autostart, 'svc_autostart')
     query &= _where(None, 'v_svcmon', request.vars.svc_containertype, 'svc_containertype')
-    query &= _where(None, 'v_svcmon', request.vars.mon_nodname, 'mon_nodname')
-    query &= _where(None, 'v_svcmon', request.vars.mon_nodtype, 'mon_nodtype')
-    query &= _where(None, 'v_svcmon', request.vars.mon_updated, 'mon_updated')
-    query &= _where(None, 'v_svcmon', request.vars.mon_frozen, 'mon_frozen')
     query &= _where(None, 'v_svcmon', request.vars.svc_vcpus, 'svc_vcpus')
     query &= _where(None, 'v_svcmon', request.vars.svc_vmem, 'svc_vmem')
-    query &= _where(None, 'v_svcmon', domain_perms(), 'mon_nodname')
 
     query = apply_db_filters(query, 'v_svcmon')
 
@@ -2158,7 +2191,7 @@ def packages_csv():
     import gluon.contenttype
     response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
     request.vars['perpage'] = 0
-    return str(checks()['packages'])
+    return str(packages()['packages'])
 
 @auth.requires_login()
 def patches():
