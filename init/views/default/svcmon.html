@@ -400,10 +400,10 @@ def format_generic(svc, key, newsvc=True, cellclass=""):
           <td>
 {{
 def option_style(img):
-    return 'background-image:url(%s);
-            background-repeat:no-repeat;
-            padding-left:18px;
-           '%URL(r=request,c='static',f=img)
+    return """background-image:url(%s);
+              background-repeat:no-repeat;
+              padding-left:18px;
+           """%URL(r=request,c='static',f=img)
 }}
 
             {{=SPAN(SELECT(

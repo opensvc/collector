@@ -156,10 +156,10 @@ pass
                  _src=URL(r=request,c='static',f='add.png'),
                  _border=0,
                  _title=T('set the low alert thresholds for the current data cursor'),
-                 _onclick='svcform.action.value="set_low_thres";
-                           show_eid("inputs");
-                           document.svcform.val.focus();
-                          '
+                 _onclick="""svcform.action.value="set_low_thres";
+                             show_eid("inputs");
+                             document.svcform.val.focus();
+                          """
                )
             }}
           </td>
@@ -168,10 +168,10 @@ pass
                  _src=URL(r=request,c='static',f='add.png'),
                  _border=0,
                  _title=T('set the high alert thresholds for the current data cursor'),
-                 _onclick='svcform.action.value="set_high_thres";
-                           show_eid("inputs");
-                           document.svcform.val.focus();
-                          '
+                 _onclick="""svcform.action.value="set_high_thres";
+                             show_eid("inputs");
+                             document.svcform.val.focus();
+                          """
                )
             }}
           </td>
@@ -180,9 +180,9 @@ pass
                  _src=URL(r=request,c='static',f='del.png'),
                  _border=0,
                  _title=T('reset the high and low alert thresholds for the current data cursor'),
-                 _onclick='svcform.action.value="reset";
-                           document.svcform.submit();
-                          '
+                 _onclick="""svcform.action.value="reset";
+                             document.svcform.submit();
+                          """
                )
             }}
           </td>

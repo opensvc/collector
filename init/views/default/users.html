@@ -127,17 +127,17 @@ for role in roles:
                  ),
                  IMG(_src=URL(r=request,c='static',f='add.png'),
                      _border=0,
-                     _onclick='
+                     _onclick="""
                        javascript:document.svcform.action.value="grant";
                        document.svcform.submit();
-                     '
+                     """
                  ),
                  IMG(_src=URL(r=request,c='static',f='del.png'),
                      _border=0,
-                     _onclick='
+                     _onclick="""
                        javascript:document.svcform.action.value="revoke";
                        document.svcform.submit();
-                     '
+                     """
                  ),
                )
             }}
@@ -152,18 +152,18 @@ for role in roles:
                  IMG(
                    _src=URL(r=request,c='static',f='add.png'),
                    _border=0,
-                   _onclick='
+                   _onclick="""
                      document.svcform.action.value="addrole";
                      show_eid("inputs");
                      document.svcform.newrole.focus();
-                   '
+                   """
                  ),
                  IMG(_src=URL(r=request,c='static',f='del.png'),
                      _border=0,
-                     _onclick='
+                     _onclick="""
                        document.svcform.action.value="delrole";
                        document.svcform.submit();
-                     '
+                     """
                  ),
                )
             }}

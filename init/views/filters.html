@@ -110,13 +110,13 @@ def DB_FILTERS_ACTIVE(filters):
         lines += [TR(
                     TD(T(f.filters.fil_name),
                        value,
-                       _style='background-image:url(%s);
-                               background-repeat:no-repeat;
-                               background-position:center left;
-                               padding:0px;
-                               padding-right:4px;
-                               padding-left:18px;
-                              '%URL(r=request,c='static',f=f.filters.fil_img),
+                       _style="""background-image:url(%s);
+                                 background-repeat:no-repeat;
+                                 background-position:center left;
+                                 padding:0px;
+                                 padding-right:4px;
+                                 padding-left:18px;
+                              """%URL(r=request,c='static',f=f.filters.fil_img),
                     ),
                     TD(IMG(_src=URL(r=request,c='static',f=img),
                            _border=0,
@@ -207,12 +207,12 @@ def COLUMNS_ACTIVE():
                  INPUT(
                    _type='checkbox',
                    _name='col_'+a,
-                   _onclick='toggleVis(this.name);
-                             getElementById("set_col_table").value="%(table)s";
-                             getElementById("set_col_field").value="%(field)s";
-                             getElementById("set_col_value").value=this.checked;
-                             ajax("%(url)s",["set_col_table", "set_col_field", "set_col_value"],"set_col_dummy");
-                            '%dict(url=URL(r=request,f='ajax_set_user_prefs_column'),
+                   _onclick="""toggleVis(this.name);
+                               getElementById("set_col_table").value="%(table)s";
+                               getElementById("set_col_field").value="%(field)s";
+                               getElementById("set_col_value").value=this.checked;
+                               ajax("%(url)s",["set_col_table", "set_col_field", "set_col_value"],"set_col_dummy");
+                            """%dict(url=URL(r=request,f='ajax_set_user_prefs_column'),
                                    table=request.function, field=a),
                    value=val,
                  ),

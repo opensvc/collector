@@ -21,7 +21,8 @@ function ScrollToElement(theElement){
 </script>
 {{
 
-tmo = datetime.datetime.now() - datetime.timedelta(minutes=15)
+now = datetime.datetime.now()
+tmo = now - datetime.timedelta(minutes=15)
 
 def svc_status(svc, cellclass="cell2", nestedin=None):
     cl = {}
@@ -213,8 +214,10 @@ def svcmon_not_updated():
 """ Last status changes
 """
 def last_changes_line(line, cellclass):
+    d = now - line.svcmon_log.mon_begin
+    d -= datetime.timedelta(microseconds=d.microseconds)
     tr = TR(
-      TD(A(line.svcmon_log.mon_begin, _href=URL(r=request, f='svcmon_log', vars={'mon_svcname':line.svcmon_log.mon_svcname})), _class=cellclass),
+      TD(A(d, _href=URL(r=request, f='svcmon_log', vars={'mon_svcname':line.svcmon_log.mon_svcname})), _class=cellclass),
       TD(A(line.svcmon_log.mon_svcname, _href=URL(r=request, f='svcmon', vars={'mon_svcname':line.svcmon_log.mon_svcname})), _class=cellclass),
       TD(A(line.svcmon_log.mon_nodname, _href=URL(r=request, f='svcmon', vars={'mon_nodname':line.svcmon_log.mon_nodname})), _class=cellclass),
       TD(svc_status(line, cellclass, nestedin='svcmon_log'), _class=cellclass, _style="text-align:center"),
@@ -224,7 +227,7 @@ def last_changes_line(line, cellclass):
 
 def last_changes_header():
     tr = TR(
-      TH(T("Date")),
+      TH(T("Since")),
       TH(T("Service")),
       TH(T("Node")),
       TH(T("Status"), _style="text-align:center"),
@@ -1259,10 +1262,10 @@ def summary():
      nodes_without_asset(),
      pkg_diff(),
      netdev_err(),
-     _style="
+     _style="""
        -moz-column-width:50em;
        -webkit-column-width:50em;
-     "
+     """
    )
 }}
 

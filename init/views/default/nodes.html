@@ -121,10 +121,10 @@ function selected_nodes() {
                 _src=URL(r=request,c='static',f='del.png'),
                 _border=0,
                 _title=T("delete selected nodes"),
-                _onclick='
+                _onclick="""
                    document.svcform.action.value="delnodes";
                    document.svcform.submit();
-                '
+                """
               )
             }}
           </td>

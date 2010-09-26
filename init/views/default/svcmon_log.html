@@ -197,7 +197,7 @@ function update_ack_dates(b, e) {
 {{=DB_FILTERS_TABLE(active_filters, available_filters)}}
 
 {{if img is not None:}}
-{{=IMG(_src=URL(r=request,c='static',f='avail.png'), _border=0)}}
+{{=IMG(_src=img, _border=0)}}
 {{pass}}
 
 <table class=datatable>
@@ -259,8 +259,8 @@ function update_ack_dates(b, e) {
               else:
                   strike = ''
                   pass
-              trigger = """onMouseOver='javascript:show_eid("%(eid)s")'
-                           onMouseOut='javascript:hide_eid("%(eid)s")'
+              trigger = """onMouseOver=show_eid("%(eid)s")
+                           onMouseOut=hide_eid("%(eid)s")
                         """%dict(eid=eid)
               ackline = TR(
                           TD(_style='padding:0'),

@@ -71,7 +71,9 @@ pass
       eid = 'ack_'+str(action.id)
 
       if action.ack == 1:
-          trigger = """onMouseOver='javascript:show_eid("%s")' onMouseOut='javascript:hide_eid("%s")'"""%(eid, eid)
+          trigger = """onMouseOver=show_eid("%(eid)s")
+                       onMouseOut=hide_eid("%(eid)s")
+                    """%dict(eid=eid)
           ack = TR(TD(B("acked by "),action.acked_by,B(" on "),action.acked_date,B(" with comment: "),action.acked_comment,_colspan=99), _class='ack', _id=eid)
       else:
           trigger = ""

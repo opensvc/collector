@@ -1547,8 +1547,14 @@ def svcmon_log():
     nav = DIV()
 
     h = service_availability(rows, begin, end)
-
     img = service_availability_chart(h)
+
+    """
+    if request.vars.chart == "timeline":
+        img = service_availability_chart(h)
+    else:
+        img = svcmon_log_global_chart(rows)
+    """
 
     return dict(rows=rows,
                 h=h,
@@ -1721,7 +1727,7 @@ def _role_del(request):
         response.flash = T('invalid role: %(id)s', dict(id=id))
         return
     db(db.auth_membership.group_id==id).delete()
-    db(db.apps_permissions.group_id==id).delete()
+    db(db.apps_responsibles.group_id==id).delete()
     db(db.auth_group.id==id).delete()
     response.flash = T('role removed')
     redirect(URL(r=request, f='users'))
@@ -2513,8 +2519,160 @@ def checks_csv():
     request.vars['perpage'] = 0
     return str(checks()['checks'])
 
+@auth.requires_login()
+def svcmon_log_global_chart(rows):
+    import datetime
+
+    begin = rows[0].svcmon_log.mon_begin
+    end = rows[-1].svcmon_log.mon_end
+    interval = datetime.timedelta(minutes=60)
+
+    """ setup the sampling
+    """
+    ticks = []
+    b = begin
+    while b <= end:
+        ticks.append(b)
+        b += interval
+
+    """ determine the chart stacks
+    """
+    cols = set([])
+    for row in rows:
+        cols |= set(['-'.join((row.v_svcmon.mon_nodtype, row.svcmon_log.mon_overallstatus))])
+
+    """ sample
+    """
+    data = []
+    for tick in ticks:
+        d = {}
+        for row in rows:
+            if tick < row.svcmon_log.mon_begin or tick >row.svcmon_log.mon_end:
+                continue
+            key = '-'.join((row.v_svcmon.mon_nodtype,row.svcmon_log.mon_overallstatus)) 
+            if key not in d:
+                d[key] = 1
+            else:
+                d[key] += 1
+        u = [tick]
+        for col in cols:
+            if col in d:
+                u.append(d[col])
+            else:
+                u.append(0)
+        data.append(u)
+
+    """ chart
+    """
+    def tic_start_ts(begin, end):
+        from time import mktime
+        start_date = mktime(begin.timetuple())
+        end_date = mktime(end.timetuple())
+        p = end_date - start_date
+        if p < 86400:
+            """ align start to closest preceding hour
+            """
+            start_date = ((start_date // 3600) + 1) * 3600
+        else:
+            """ align start to closest preceding day
+            """
+            start_date = ((start_date // 86400) + 1) * 86400
+        return start_date
+
+    w = __stats_bar_width(data)
+
+    from time import mktime
+
+    start_date = tic_start_ts(begin, end)
+
+    def format_x(ts):
+        d = datetime.datetime.fromtimestamp(ts+start_date)
+        return "/a50/5{}" + d.strftime("%y-%m-%d %H:%M")
+
+    def format_y(x):
+        return "/6{}" + str(x)
+
+    def format2_y(x):
+        return "/a50/6{}" + str(x)
+
+    import random
+    action = URL(r=request,c='static',f='stats_test.png')
+    path = 'applications'+str(action)
+    can = canvas.init(path)
+    theme.use_color = True
+    theme.scale_factor = 2
+    theme.reinitialize()
+
+    for d in data:
+        d[0] = mktime(d[0].timetuple())-start_date
+
+    ar = area.T(
+           #x_coord = category_coord.T(data, 0),
+           x_coord = linear_coord.T(),
+           y_coord = linear_coord.T(),
+           x_axis = axis.X(
+                      label = '',
+                      format=format_x,
+                      tic_interval=tic_interval_from_ts,
+                    ),
+           y_axis = axis.Y(label = "", format=format_y),
+           x_range = (None, mktime(end.timetuple())-start_date)
+         )
+    bar_plot.fill_styles.reset();
+
+    colors = [color.darkolivegreen1,
+              color.gray10,
+              color.salmon,
+              color.gray30,
+              color.darkkhaki,
+              color.gray50,
+              color.sienna1,
+              color.gray70,
+              color.lightgreen,
+              color.gray90,
+              color.thistle3,
+              color.coral]
+
+    plot = []
+    for i, o in enumerate(cols):
+        if i == 0:
+            stackon = None
+        else:
+            stackon = plot[i-1]
+
+        plot += [bar_plot.T(label=o.replace('/','//'),
+                            hcol=i+1,
+                            fill_style=fill_style.Plain(bgcolor=colors[i%len(colors)]),
+                            stack_on=stackon,
+                            line_style=None,
+                            width = w,
+                            data = data,
+                            data_label_format="",
+                            direction='vertical')]
+        ar.add_plot(plot[i])
+
+    ar.draw(can)
+    can.close()
+
+    return action
+
+"""
+@auth.requires_login()
+def svcmon_log_count_at(date):
+    q = db.svcmon_log.mon_begin < date
+    q &= db.svcmon_log.mon_end >= date
+    q &= db.svcmon_log.mon_nodname == db.nodes.nodename
+    count = db.svcmon_log.id.count().with_alias('nb')
+    rows = db(q).select(repr(str(date))+" AS date", count, db.svcmon_log.mon_overallstatus,
+                        db.nodes.environnement,
+                        groupby=db.nodes.environnement|db.svcmon_log.mon_overallstatus)
+
+    return rows
+"""
+
 class viz(object):
-    vizdir = 'applications'+str(URL(r=request,c='static',f='.'))
+    import os
+    vizdir = os.path.join(os.getcwd(), 'applications', 'init', 'static')
     vizprefix = 'tempviz'
     loc = {
         'country': {},
