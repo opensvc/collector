@@ -250,7 +250,9 @@ def last_changes_table():
     t = TABLE(
         TR(
           TD(
-            H2(T("Last service status changes")),
+            H2(
+              T("Last service status changes"),
+            ),
             _colspan=99,
           ),
         ),
@@ -1213,7 +1215,15 @@ def summary_table():
     t = TABLE(
           TR(
             TD(
-              H2(T("Summary")),
+              H2(
+                T("Summary"),
+                SPAN(
+                  "(%s)"%(now - datetime.timedelta(microseconds=now.microsecond)),
+                  _style="""font-size:0.6em;
+                            padding-left:1em;
+                         """,
+                ),
+              ),
               _colspan=99,
             ),
             _onclick="toggle_vis('summary_line_good')",
