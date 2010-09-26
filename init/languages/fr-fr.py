@@ -292,7 +292,7 @@
 'Set low threshold': 'Paramétrer le seuil bas',
 'Set low thresholds': 'Paramétrer les seuils bas',
 'Showing %(first)d to %(last)d out of %(total)d records': 'Affichage des enregistrements %(first)d à %(last)d sur un total de %(total)d',
-'Since': 'Since',
+'Since': 'Depuis',
 'State transitions for %(svc)s': "Changements d'états pour %(svc)s",
 'Status': 'Etat',
 'Status on primary': 'Etat sur le primaire',
