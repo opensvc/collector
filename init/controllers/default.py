@@ -7070,6 +7070,10 @@ def insert_pkg(vars, vals):
     generic_insert('packages', vars, vals)
 
 @service.xmlrpc
+def update_sym_xml(vars, vals):
+    generic_insert('sym_xml', vars, vals)
+
+@service.xmlrpc
 def delete_pkg(node):
     if node is None or node == '':
         return 0
