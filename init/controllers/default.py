@@ -6189,6 +6189,8 @@ def __get_lifecycle_os():
                                            groupby=db.lifecycle_os.lc_os_name)
     os = []
     for r in rows:
+        if r.lc_os_name == "":
+            continue
         os += [r.lc_os_name]
     return os
 
@@ -6304,7 +6306,7 @@ def __stats_lifecycle_os_name():
     can.close()
 
 def __stats_lifecycle_os_release(os_name=None):
-    if os_name is None:
+    if os_name is None or os_name == "":
         return
 
     from time import mktime
