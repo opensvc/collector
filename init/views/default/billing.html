@@ -67,8 +67,8 @@ def f_billing_per_os():
 def f_billing_per_app_line(line, cellclass):
     tr = TR(
       TD(line.svc_app, _class=cellclass),
-      TD(line.cost, _class=cellclass),
       TD(line.nb, _class=cellclass),
+      TD(line.cost, _class=cellclass),
       TD(line.os_list.replace(',', ', '), _class=cellclass),
       TD(line.svc_list.replace(',', ', '), _class=cellclass),
     )
@@ -78,8 +78,8 @@ def f_billing_per_app_line(line, cellclass):
 def f_billing_per_app_header():
     tr = TR(
       TH(T("App name")),
-      TH(T("Cost")),
       TH(T("Service count")),
+      TH(T("Cost")),
       TH(T("OS")),
       TH(T("Services")),
     )
