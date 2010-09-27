@@ -583,6 +583,61 @@ def app_wo_resp():
     pass
 
 
+""" Systems close to warranty end
+"""
+def warranty_end_line(line, cellclass):
+    tr = TR(
+      TD(A(line.nodename, _href=URL(r=request, f='svcmon', vars={'mon_nodname':line.nodename})), _class=cellclass),
+      TD(line.warranty_end, _class=cellclass),
+    )
+    return tr
+    pass
+
+def warranty_end_header():
+    tr = TR(
+      TH(T("Nodename")),
+      TH(T("Warranty end")),
+    )
+    return tr
+    pass
+
+def warranty_end_table():
+    cellclass = 'cell1'
+    cellclasses = {}
+    cellclasses['cell1'] = 'cell2'
+    cellclasses['cell2'] = 'cell1'
+    lines = []
+
+    for line in warrantyend:
+        cellclass = cellclasses[cellclass]
+        lines += [warranty_end_line(line, cellclass)]
+        pass
+
+    t = TABLE(
+        TR(
+          TD(
+            H2(T("Nodes close to warranty end")),
+            _colspan=99,
+          ),
+        ),
+        warranty_end_header(),
+        lines,
+    )
+    return t
+    pass
+
+def warranty_end():
+    if len(warrantyend) == 0:
+        return DIV()
+    d = DIV(
+      warranty_end_table(),
+      _class="dashboard",
+      _id="warranty_end",
+    )
+    return d
+    pass
+
+
 """ Systems obsolescent (alert)
 """
 def obs_os_alert_line(line, cellclass):
@@ -1091,6 +1146,13 @@ def _summary():
                'status': len(appwithoutresp),
              },
              {
+               'title': 'Nodes close to warranty end',
+               'unit': '',
+               'limit': 0,
+               'linkto': 'warranty_end',
+               'status': len(warrantyend),
+             },
+             {
                'title': 'Nodes with obsolescent operating system (alert)',
                'unit': '',
                'limit': 0,
@@ -1264,6 +1326,7 @@ def summary():
      svc_not_on_primary(),
      last_changes(),
      app_wo_resp(),
+     warranty_end(),
      obs_os_alert(),
      obs_os_warn(),
      obs_hw_alert(),

@@ -325,6 +325,16 @@ def index():
     query |= (db.v_apps.responsibles=="")
     appwithoutresp = db(query).select(db.v_apps.app)
 
+    query = db.v_nodes.warranty_end < now + datetime.timedelta(days=30)
+    query &= db.v_nodes.warranty_end != "0000-00-00 00:00:00"
+    query &= db.v_nodes.warranty_end is not None
+    query &= _where(None, 'v_nodes', domain_perms(), 'nodename')
+    query = apply_db_filters(query, 'v_nodes')
+    warrantyend = db(query).select(db.v_nodes.nodename,
+                                    db.v_nodes.warranty_end,
+                                    orderby=db.v_nodes.warranty_end
+                                   )
+
     warn = (db.obsolescence.obs_warn_date!=None)&(db.obsolescence.obs_warn_date!="0000-00-00")&(db.obsolescence.obs_warn_date<now)
     alert = (db.obsolescence.obs_alert_date==None)|(db.obsolescence.obs_alert_date=="0000-00-00")|(db.obsolescence.obs_alert_date>=now)
     query = warn & alert
@@ -461,6 +471,7 @@ def index():
                 svcwitherrors=svcwitherrors,
                 svcnotonprimary=svcnotonprimary,
                 appwithoutresp=appwithoutresp,
+                warrantyend=warrantyend,
                 obsoswarn=obsoswarn,
                 obsosalert=obsosalert,
                 obshwwarn=obshwwarn,
