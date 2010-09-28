@@ -83,11 +83,13 @@ def svc_status(svc, cellclass="cell2"):
 """ col formatters
 """
 def format_mon_overallstatus(svc, newsvc=True, cellclass="cell2"):
+    key = 'mon_overallstatus'
     return TD(
              svc_status(svc, cellclass),
              _name="tcol_"+key, 
              _style=col_hide(key),
              _class=cellclass,
+             _ondblclick="svcform.%(key)s.value='%(val)s';svcform.submit()"%dict(key=key, val=svc[key]),
            )
     pass
 
@@ -100,9 +102,9 @@ def format_mon_nodname(svc, newsvc=True, cellclass=""):
     pass
 
     return TD(
-             A(
-               DIV(
-                 node_icon(svc.os_name),
+             DIV(
+               node_icon(svc.os_name),
+               A(
                  svc.mon_nodname,
                  _onclick="""
                    getElementById("node").value="%(node)s";
@@ -119,6 +121,7 @@ def format_mon_nodname(svc, newsvc=True, cellclass=""):
              _name="tcol_"+key, 
              _style=boldtype+col_hide(key),
              _class=cellclass,
+             _ondblclick="svcform.%(key)s.value='%(val)s';svcform.submit()"%dict(key=key, val=svc[key]),
            )
     pass
 
@@ -138,8 +141,8 @@ def format_mon_svcname(svc, newsvc=True, cellclass=""):
     pass
 
     return TD(
-             A(
-               DIV(
+             DIV(
+               A(
                  svc.svc_name,
                  _onclick="""
                    getElementById("node").value="%(node)s";
@@ -156,6 +159,7 @@ def format_mon_svcname(svc, newsvc=True, cellclass=""):
              _name="tcol_"+key, 
              _style=boldtype+col_hide(key),
              _class=cellclass,
+             _ondblclick="svcform.%(key)s.value='%(val)s';svcform.submit()"%dict(key=key, val=svc[key]),
            )
     pass
 
@@ -184,6 +188,7 @@ def format_svc_containertype(svc, newsvc=True, cellclass=""):
              _name="tcol_"+key, 
              _style=col_hide(key),
              _class=cellclass,
+             _ondblclick="svcform.%(key)s.value='%(val)s';svcform.submit()"%dict(key=key, val=svc[key]),
            )
     pass
 
@@ -199,6 +204,7 @@ def format_generic(svc, key, newsvc=True, cellclass=""):
              _name="tcol_"+key, 
              _style=col_hide(key),
              _class=cellclass,
+             _ondblclick="svcform.%(key)s.value='%(val)s';svcform.submit()"%dict(key=key, val=svc[key]),
            )
     pass
 

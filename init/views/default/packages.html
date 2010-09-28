@@ -44,10 +44,10 @@ pass
     {{for key in colkeys:}}
 
     {{if key == 'pkg_nodename':}}
-    <td name="tcol_pkg_id" style="{{=col_hide('pkg_nodename')}}">
-      {{=A(
-          DIV(
-            node_icon(pkg.v_nodes.os_name),
+    <td name="tcol_pkg_id" style="{{=col_hide('pkg_nodename')}}" ondblclick="svcform.{{=key}}.value='{{=pkg[columns[key]['nestedin']][key]}}';svcform.submit()">
+      {{=DIV(
+          node_icon(pkg.v_nodes.os_name),
+          A(
             pkg.packages.pkg_nodename,
             _onclick="""
                getElementById("node").value="%(node)s";
@@ -70,9 +70,9 @@ pass
              alert = ''
          pass
     }}
-    <td name="tcol_{{=key}}" style="{{=col_hide(key)}};{{=alert}}">{{=pkg[columns[key]['nestedin']][key]}}</td>
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}};{{=alert}}" ondblclick="svcform.{{=key}}.value='{{=pkg[columns[key]['nestedin']][key]}}';svcform.submit()">{{=pkg[columns[key]['nestedin']][key]}}</td>
     {{else:}}
-    <td name="tcol_{{=key}}" style="{{=col_hide(key)}}">{{=pkg[columns[key]['nestedin']][key]}}</td>
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}}" ondblclick="svcform.{{=key}}.value='{{=pkg[columns[key]['nestedin']][key]}}';svcform.submit()">{{=pkg[columns[key]['nestedin']][key]}}</td>
     {{pass}}
     {{pass}}
   </tr>

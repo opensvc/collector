@@ -13,6 +13,120 @@ def pid_to_filter(pid):
         return ''
     return pid.replace(',', '|')
 pass
+
+def format_svcname(row, new=True, cellclass=""):
+    key = "svcname"
+    if not new:
+        return TD(
+                 _name="tcol_"+key,
+                 _style=col_hide(key),
+                 _class=cellclass,
+               )
+
+    return TD(
+             DIV(
+               A(
+                 row.svcname,
+                 _onclick="""
+                   getElementById("node").value="%(node)s";
+                   getElementById("rowid").value="%(id)s";
+                   ajax("%(url)s",['node', 'rowid'],"id_%(id)s");
+                   show_eid("tr_id_%(id)s");
+                 """%dict(url=URL(r=request,f='ajax_service'),
+                          node=row.svcname,
+                          id=row.id,
+                         ),
+               ),
+               _class="xinfo",
+             ),
+             _name="tcol_"+key, 
+             _style=col_hide(key),
+             _class=cellclass,
+             _ondblclick="svcform.%(key)s.value='%(val)s';svcform.submit()"%dict(key=key, val=row[key]),
+           )
+    pass
+
+def format_hostname(row, new=True, cellclass=""):
+    key = "hostname"
+
+    if not new:
+        return TD(
+                 _name="tcol_"+key, 
+                 _style=col_hide(key),
+                 _class=cellclass,
+               )
+
+    return TD(
+             DIV(
+               node_icon(row.os_name),
+               A(
+                 row.hostname,
+                 _onclick="""
+                   getElementById("node").value="%(node)s";
+                   getElementById("rowid").value="%(id)s";
+                   ajax("%(url)s",['node', 'rowid'],"id_%(id)s");
+                   show_eid("tr_id_%(id)s");
+                 """%dict(url=URL(r=request,f='ajax_node'),
+                          node=row.hostname,
+                          id=row.id,
+                         ),
+               ),
+               _class="xinfo",
+             ),
+             _name="tcol_"+key, 
+             _style=col_hide(key),
+             _class=cellclass,
+             _ondblclick="svcform.%(key)s.value='%(val)s';svcform.submit()"%dict(key=key, val=row[key]),
+           )
+    pass
+
+def format_status(row, cellclass=""):
+    key = 'status'
+
+    if not action.status_log:
+        metaactionclass = 'metaaction'
+    else:
+        metaactionclass = ''
+    pass
+
+    if action.ack == 1:
+        onmouseover = """onMouseOver=show_eid("%s")"""%eid
+        onmouseout = """onMouseOut=hide_eid("%s")"""%eid
+        ack_class = "ack_1"
+    else:
+        onmouseover = ""
+        onmouseout = ""
+        ack_class = ""
+    pass
+
+    return TD(
+             row[key],
+             _name="tcol_"+key, 
+             _style=col_hide(key),
+             _class=' '.join([cellclass, 'status_'+str(row.status), ack_class, metaactionclass]),
+             _ondblclick="svcform.%(key)s.value='%(val)s';svcform.submit()"%dict(key=key, val=row[key]),
+             _onmouseover=onmouseover,
+             _onmouseout=onmouseout,
+           )
+    pass
+
+def format_generic(row, key, new, cellclass=""):
+    if not new:
+        return TD(
+                 _name="tcol_"+key, 
+                 _style=col_hide(key),
+                 _class=cellclass,
+               )
+
+    return TD(
+             row[key],
+             _name="tcol_"+key, 
+             _style=col_hide(key),
+             _class=cellclass,
+             _ondblclick="svcform.%(key)s.value='%(val)s';svcform.submit()"%dict(key=key, val=row[key]),
+           )
+    pass
+
 }}
 {{=PANEL("column_values")}}
 <form action='svcactions' name='svcform' id='svcform' method='post'> 
@@ -82,9 +196,7 @@ pass
 
       if not action.status_log:
           action.status_log = ''
-          metaactionclass = 'metaaction'
       else:
-          metaactionclass = ''
           pass
 
       if action.responsibles:
@@ -118,7 +230,7 @@ pass
                      }
             ),
           )
-          pass
+      pass
 
       if action.end is None:
           action_end = SPAN(
@@ -126,7 +238,7 @@ pass
           )
       else:
           action_end = action.end
-          pass
+      pass
 
       if action.status is None:
           action_status = SPAN(
@@ -154,62 +266,21 @@ pass
           )
       else:
           action_status = action.status
-          pass
+      pass
     }}
   <tr>
     <td class={{=cellclass}}><input type=checkbox name=check_{{=action.id}} {{=checked}} {{=disabled}}></td>
-    <td name="tcol_svcname" class={{=cellclass}}>
-      {{if new:}}
-      {{=A(
-          DIV(
-            action.svcname,
-            _onclick="""
-               getElementById("node").value="%(node)s";
-               getElementById("rowid").value="%(id)s";
-               ajax("%(url)s",['node', 'rowid'],"id_%(id)s");
-               show_eid("tr_id_%(id)s");
-            """%dict(url=URL(r=request,f='ajax_service'),
-                     node=action.svcname,
-                     id=action.id,
-                    ),
-          ),
-          _class="xinfo",
-        )
-      }}
-      {{pass}}
-    </td>
-    <td name="tcol_hostname" class={{=cellclass}}>
-      {{if new:}}
-      {{=A(
-          DIV(
-            action.hostname,
-            _onclick="""
-               getElementById("node").value="%(node)s";
-               getElementById("rowid").value="%(id)s";
-               ajax("%(url)s",['node', 'rowid'],"id_%(id)s");
-               show_eid("tr_id_%(id)s");
-            """%dict(url=URL(r=request,f='ajax_node'),
-                     node=action.hostname,
-                     id=action.id,
-                    ),
-          ),
-          _class="xinfo",
-        )
-      }}
-      {{pass}}
-
-    </td>
-    <td style="{{=col_hide('pid')}}" name="tcol_pid" class={{=cellclass}}>{{=action_pid}}</td>
-    <td style="{{=col_hide('action')}}" name="tcol_action" class="{{=cellclass}} {{=metaactionclass}}">{{=action.action}}</td>
-    <td style="{{=col_hide('status')}}" name="tcol_status" class="{{=cellclass}} status_{{=action.status}} ack_{{=action.ack}} {{=metaactionclass}}" {{=trigger}}>{{=action_status}}</td>
-    <td style="{{=col_hide('begin')}}" name="tcol_begin" class={{=cellclass}}>{{=action.begin}}</td>
-    <td style="{{=col_hide('end')}}" name="tcol_end" class={{=cellclass}}>{{=action_end}}</td>
-    <td style="{{=col_hide('status_log')}}" name="tcol_status_log" class={{=cellclass}}><pre>{{=action.status_log}}</pre></td>
-    <td style="{{=col_hide('time')}}" name="tcol_time" class={{=cellclass}}>{{=action.time}}</td>
-    <td style="{{=col_hide('id')}}" name="tcol_id" class={{=cellclass}}>{{=action.id}}</td>
-    <td style="{{=col_hide('ack')}}" name="tcol_ack" class={{=cellclass}}>{{=action.ack}}</td>
-    <td style="{{=col_hide('app')}}" name="tcol_app" class={{=cellclass}}>{{=action.app}}</td>
-    <td style="{{=col_hide('responsibles')}}" name="tcol_responsibles" class={{=cellclass}}>{{=action.responsibles}}</td>
+    {{for key in colkeys:}}
+        {{if key == "svcname":}}
+            {{=format_svcname(action, new, cellclass)}}
+        {{elif key == "hostname":}}
+            {{=format_hostname(action, new, cellclass)}}
+        {{elif key == "status":}}
+            {{=format_status(action, cellclass)}}
+        {{else:}}
+            {{=format_generic(action, key, True, cellclass)}}
+        {{pass}}
+    {{pass}}
   </tr>
   <tr id='tr_id_{{=action.id}}' class=cloud>
     <td colspan=99 class="details_row {{=cellclass}}">

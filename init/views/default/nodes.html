@@ -66,10 +66,10 @@ function selected_nodes() {
            )
         }}
     </td>
-    <td name="tcol_nodename" style="{{=col_hide('nodename')}}">
-      {{=A(
-          DIV(
-            node_icon(node.os_name),
+    <td name="tcol_nodename" style="{{=col_hide('nodename')}}" ondblclick="svcform.nodename.value='{{=node.nodename}}';svcform.submit()">
+      {{=SPAN(
+          node_icon(node.os_name),
+          A(
             node.nodename,
             _onclick="""
                getElementById("node").value="%(node)s";
@@ -86,7 +86,7 @@ function selected_nodes() {
       }}
     </td>
     {{for key in [k for k in colkeys if k != 'nodename']:}}
-    <td name="tcol_{{=key}}" style="{{=col_hide(key)}}">{{=node[key]}}</td>
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}}" ondblclick="svcform.{{=key}}.value='{{=node[key]}}';svcform.submit()">{{=node[key]}}</td>
     {{pass}}
   </tr>
   <tr id='tr_id_{{=node.nodename}}' class="cloud">

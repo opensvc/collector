@@ -44,10 +44,10 @@ pass
     {{for key in colkeys:}}
 
     {{if key == 'patch_nodename':}}
-    <td name="tcol_patch_id" style="{{=col_hide('patch_nodename')}}">
-      {{=A(
-          DIV(
-            node_icon(patch.v_nodes.os_name),
+    <td name="tcol_patch_id" style="{{=col_hide('patch_nodename')}}" ondblclick="svcform.{{=key}}.value='{{=patch[columns[key]['nestedin']][key]}}';svcform.submit()">
+      {{=DIV(
+          node_icon(patch.v_nodes.os_name),
+          A(
             patch.patches.patch_nodename,
             _onclick="""
                getElementById("node").value="%(node)s";
@@ -70,9 +70,9 @@ pass
              alert = ''
          pass
     }}
-    <td name="tcol_{{=key}}" style="{{=col_hide(key)}};{{=alert}}">{{=patch[columns[key]['nestedin']][key]}}</td>
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}};{{=alert}}" ondblclick="svcform.{{=key}}.value='{{=patch[columns[key]['nestedin']][key]}}';svcform.submit()">{{=patch[columns[key]['nestedin']][key]}}</td>
     {{else:}}
-    <td name="tcol_{{=key}}" style="{{=col_hide(key)}}">{{=patch[columns[key]['nestedin']][key]}}</td>
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}}" ondblclick="svcform.{{=key}}.value='{{=patch[columns[key]['nestedin']][key]}}';svcform.submit()">{{=patch[columns[key]['nestedin']][key]}}</td>
     {{pass}}
     {{pass}}
   </tr>

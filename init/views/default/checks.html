@@ -54,9 +54,9 @@ pass
     {{table = columns[key]['nestedin']}}
 
     {{if key == 'chk_svcname':}}
-    <td name="tcol_chk_id" style="{{=col_hide('chk_svcname')}}">
-      {{=A(
-          DIV(
+    <td name="tcol_chk_id" style="{{=col_hide('chk_svcname')}}" ondblclick="svcform.chk_svcname.value='{{=check.v_checks.chk_svcname}}';svcform.submit()">
+      {{=DIV(
+          A(
             check.v_checks.chk_svcname,
             _onclick="""
                getElementById("node").value="%(node)s";
@@ -72,10 +72,10 @@ pass
         )
       }}
     {{elif key == 'chk_nodename':}}
-    <td name="tcol_chk_id" style="{{=col_hide('chk_nodename')}}">
-      {{=A(
-          DIV(
-            node_icon(check.v_nodes.os_name),
+    <td name="tcol_chk_id" style="{{=col_hide('chk_nodename')}}" ondblclick="svcform.chk_nodename.value='{{=check.v_checks.chk_nodename}}';svcform.submit()">
+      {{=DIV(
+          node_icon(check.v_nodes.os_name),
+          A(
             check.v_checks.chk_nodename,
             _onclick="""
                getElementById("node").value="%(node)s";
@@ -98,7 +98,7 @@ pass
              alert = ''
          pass
     }}
-    <td name="tcol_{{=key}}" style="{{=col_hide(key)}};{{=alert}}">{{=check[table][key]}}</td>
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}};{{=alert}}" ondblclick="svcform.{{=key}}.value='{{=check[table][key]}}';svcform.submit()">{{=check[table][key]}}</td>
     {{elif key == 'chk_low':
          if check[table]['chk_value'] < check[table]['chk_low']:
              alert = 'color:darkred;font-weight:bold'
@@ -106,7 +106,7 @@ pass
              alert = ''
          pass
     }}
-    <td name="tcol_{{=key}}" style="{{=col_hide(key)}};{{=alert}}">{{=check[table][key]}}</td>
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}};{{=alert}}" ondblclick="svcform.{{=key}}.value='{{=check[table][key]}}';svcform.submit()">{{=check[table][key]}}</td>
     {{elif key == 'chk_high':
          if check[table]['chk_value'] > check[table]['chk_high']:
              alert = 'color:darkred;font-weight:bold'
@@ -114,7 +114,7 @@ pass
              alert = ''
          pass
     }}
-    <td name="tcol_{{=key}}" style="{{=col_hide(key)}};{{=alert}}">{{=check[table][key]}}</td>
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}};{{=alert}}" ondblclick="svcform.{{=key}}.value='{{=check[table][key]}}';svcform.submit()">{{=check[table][key]}}</td>
     {{elif key == 'chk_updated':
          if outdated(check[table]['chk_updated']):
              alert = 'color:darkred;font-weight:bold'
@@ -122,9 +122,9 @@ pass
              alert = ''
          pass
     }}
-    <td name="tcol_{{=key}}" style="{{=col_hide(key)}};{{=alert}}">{{=check[table][key]}}</td>
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}};{{=alert}}" ondblclick="svcform.{{=key}}.value='{{=check[table][key]}}';svcform.submit()">{{=check[table][key]}}</td>
     {{else:}}
-    <td name="tcol_{{=key}}" style="{{=col_hide(key)}}">{{=check[table][key]}}</td>
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}}" ondblclick="svcform.{{=key}}.value='{{=check[table][key]}}';svcform.submit()">{{=check[table][key]}}</td>
     {{pass}}
     {{pass}}
   </tr>
