@@ -1,12 +1,9 @@
 #crontab
-0-59/1 * * * * unxdev01 *default/send_alerts
-0-59/10 * * * * unxdev01 *default/cron_purge_alerts
 0-59/10 * * * * unxdev01 *default/cron_unfinished_actions
-0-59/1 * * * * unxdev01 *default/alerts_failed_actions_not_acked
-1 * * * * unxdev01 *default/alerts_svcmon_not_updated
 59 23 * * * unxdev01 *default/cron_stats
 55 23 * * * unxdev01 *default/refresh_obsolescence
 0 1 * * * unxdev01 *default/viz_cron_cleanup
 5 1 * * * unxdev01 *default/alerts_services_not_updated
-15 1 * * * unxdev01 *default/alerts_svc_not_on_primary
 20 1 * * * unxdev01 *default/alerts_apps_without_responsible
+1 * * * * unxdev01 *default/alerts_svcmon_not_updated
+0-59/1 * * * * unxdev01 *default/alerts_failed_actions_not_acked

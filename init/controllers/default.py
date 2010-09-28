@@ -528,10 +528,6 @@ def _set_resp(request):
             db.apps_responsibles.insert(app_id=id,
                                         group_id=request.vars.select_roles)
 
-        """ Purge pending alerts
-        """
-        db((db.alerts.app_id==id)&(db.alerts.sent_at==None)).delete()
-
     num = len(ids)
     if num > 1:
         s = 's'
@@ -766,48 +762,23 @@ def alert_format_body(msg="", app=None, svcname=None, node=None, action=None,
 def alerts_apps_without_responsible():
     import datetime
     now = datetime.datetime.now()
-    in_24h = now + datetime.timedelta(hours=24)
+    delay = datetime.timedelta(hours=24)
 
-    rows = db((db.v_apps.id>0)&(db.v_apps.mailto==None)).select()
+    q = db.v_apps.mailto==None
+    q &= db.v_apps.app==db.apps.app
+    q &= db.apps.updated<now-delay
+    rows = db(q).select()
     for row in rows:
-        subject = alert_format_subject("application has no responsible", app=row.app)
-        body = ""
-        dups = db(db.alerts.subject==subject).select()
-        if len(dups) > 0:
-            """ don't raise a duplicate alert
-            """
-            continue
-        db.alerts.insert(subject=subject,
-                         body=body,
-                         send_at=in_24h,
-                         created_at=now,
-                         app_id=row.id,
-                         sent_to=managers())
+        h = {}
+        h['subject'] = alert_format_subject("application has no responsible", app=row.v_apps.app)
+        h['body'] = ""
+        h['mailto'] = managers()
 
-    return dict(alerts=rows)
-
-def alerts_svc_not_on_primary():
-    import datetime
-    now = datetime.datetime.now()
-
-    rows = db((db.v_svcmon.mon_overallstatus!='up')&(db.v_svcmon.svc_autostart==db.v_svcmon.mon_nodname)).select()
-    for row in rows:
-        subject = T("[%(app)s][%(svcname)s] service not 'up' on its primary node", dict(app=row.svc_app, svcname=row.mon_svcname))
-        body = ""
-        dups = db(db.alerts.subject==subject).select()
-        if len(dups) > 0:
-            """ don't raise a duplicate alert
-            """
-            continue
-        if row.mailto is None or row.mailto == "":
-            to = managers()
-        else:
-            to = row.mailto
-        db.alerts.insert(subject=subject,
-                         body=body,
-                         send_at=now,
-                         created_at=now,
-                         sent_to=to)
+        send_alert(h)
+        db.alerts.insert(subject=h['subject'],
+                         body=['body'],
+                         sent_at=now,
+                         sent_to=h['mailto'])
 
     return dict(alerts=rows)
 
@@ -829,8 +800,8 @@ def alerts_services_not_updated():
 
     rows = db(db.v_services.updated<two_days_ago).select()
     for row in rows:
-        subject = format_subject(row)
-        body = alert_format_body(DIV(
+        h['subject'] = format_subject(row)
+        h['body'] = alert_format_body(DIV(
           P(T("Last status update occured on %s."%str(row.updated))),
           P(T("Service will be purged on %s"%str(row.updated + datetime.timedelta(days=3)))),
         ), svcname=row.svc_name, app=row.svc_app, svctype=row.svc_type)
@@ -840,15 +811,15 @@ def alerts_services_not_updated():
             """
             continue
         if row.mailto is None or row.mailto == "":
-            to = managers()
+            h['mailto'] = managers()
         else:
-            to = row.mailto
-        db.alerts.insert(subject=subject,
-                         body=body,
-                         send_at=now,
-                         created_at=now,
+            h['mailto'] = row.mailto
+        send_alert(h)
+        db.alerts.insert(subject=h['subject'],
+                         body=h['body'],
+                         sent_at=now,
                          domain=domainname(row.svc_name),
-                         sent_to=to)
+                         sent_to=h['mailto'])
 
     """ Remove the service after 3 days
     """
@@ -872,8 +843,8 @@ def alerts_svcmon_not_updated():
 
     rows = db(db.v_svcmon.mon_updated<two_hours_ago).select()
     for row in rows:
-        subject = format_subject(row)
-        body = alert_format_body(
+        h['subject'] = format_subject(row)
+        h['body'] = alert_format_body(
           T("Service will be purged from database on %s"%str(row.mon_updated+datetime.timedelta(days=1))),
           svcname=row.mon_svcname,
           app=row.svc_app,
@@ -886,15 +857,15 @@ def alerts_svcmon_not_updated():
             """
             continue
         if row.mailto is None or row.mailto == "":
-            to = managers()
+            h['mailto'] = managers()
         else:
-            to = row.mailto
-        db.alerts.insert(subject=subject,
-                         body=body,
-                         send_at=now,
-                         created_at=now,
+            h['mailto'] = row.mailto
+        send_alert(h)
+        db.alerts.insert(subject=h['subject'],
+                         body=['body'],
+                         sent_at=now,
                          domain=domainname(row.mon_svcname),
-                         sent_to=to)
+                         sent_to=h['mailto'])
 
     """ Remove the service after 24h
     """
@@ -905,80 +876,113 @@ def alerts_svcmon_not_updated():
 
     return dict(deleted=rows)
 
+def user_apps(uid):
+    q = db.auth_user.id == uid
+    q &= db.auth_user.id == db.auth_membership.user_id
+    q &= db.auth_membership.group_id == db.auth_group.id
+    q &= db.auth_group.id == db.apps_responsibles.group_id
+    q &= db.apps_responsibles.app_id == db.apps.id
+    rows = db(q).select(db.apps.app)
+    return [r.app for r in rows]
+
 def alerts_failed_actions_not_acked():
     """ Actions not ackowleged : Alert responsibles & Acknowledge
         This function is meant to be scheduled daily, at night,
         and alerts generated should be sent as soon as possible.
     """
-    def insert_alert(r, log, rids):
-        d = dict(app=r.app,
-                 svcname=r.svcname,
-                 action=r.action,
-                 node=r.hostname)
-        subject = T("[%(app)s] failed action '%(svcname)s %(action)s' on node '%(node)s' not acknowledged", d)
+    def format_body(p):
+        b = []
 
-        body = alert_format_body(
-          map(P, log),
-          node=r.hostname,
-          svcname=r.svcname,
-          app=r.app,
-          pid=r.pid,
-          action=r.action,
-          begin=r.begin,
-          end=r.end)
+        for pid in p:
+            err = p[pid]
+            b.append(alert_format_body(
+                       map(P, err['log']),
+                       node=err['node'],
+                       svcname=err['svcname'],
+                       app=err['app'],
+                       pid=pid,
+                       action=err['action'],
+                       begin=err['begin'],
+                       end=err['end']))
+        return DIV(map(DIV, b))
 
-        """ Check if the alert is already queued
-        """
-        dups = db(db.alerts.action_id==r.id).select()
-        if len(dups) > 0:
-            return
-
-        """ Queue alert
-        """
-        if r.mailto is None or r.mailto == "":
-            to = managers()
-        else:
-            to = r.mailto
-        db.alerts.insert(subject=subject,
-                         body=body,
-                         send_at=in_24h,
-                         created_at=now,
-                         action_id=r.id,
-                         action_ids=','.join(rids),
-                         domain=domainname(r.svcname),
-                         sent_to=to)
+    def log_alert(h):
+        db.alerts.insert(subject=h['subject'],
+                         body=h['body'],
+                         sent_at=now,
+                         domain=h['domain'],
+                         sent_to=h['mailto'])
 
     import datetime
 
+    subject = T("unacknowledged failed actions")
     now = datetime.datetime.now()
-    in_24h = now + datetime.timedelta(hours=24)
-    rows = db((db.v_svcactions.status=='err')&((db.v_svcactions.ack!=1)|(db.v_svcactions.ack==None))).select(orderby=db.v_svcactions.end)
-    pid = None
-    rids = []
-    for row in rows:
-        if pid is None:
+    delay = datetime.timedelta(hours=24)
+    users = db(db.auth_user.id>0).select(db.auth_user.id,
+                                         db.auth_user.email)
+    rids = set([])
+
+    for user in users:
+        """ group all alerts for a user in a single mail
+        """
+        apps = user_apps(user.id)
+        q = db.v_svcactions.app.belongs(apps)
+        q &= db.v_svcactions.end<now-delay
+        q &= db.v_svcactions.status=='err'
+        q &= ((db.v_svcactions.ack!=1)|(db.v_svcactions.ack==None))
+        rows = db(q).select(orderby=db.v_svcactions.end|db.v_svcactions.pid)
+
+        if len(rows) ==  0:
+           continue
+
+        h = {}
+        p = {}
+        for row in rows:
+            """ print only one header for logs of actions with same pid
+            """
             pid = row.pid
-            if row.status_log != None: log = str(row.status_log).split('\\n')
-            else: log = []
-            rids.append(str(row.id))
-            prev = row
-        elif pid != row.pid:
-            insert_alert(prev, log, rids)
-            pid = row.pid
-            if row.status_log != None: log = str(row.status_log).split('\\n')
-            else: log = []
-            rids = [str(row.id)]
-            prev = row
-        else:
-            if row.status_log != None: log += str(row.status_log).split('\\n')
-            rids.append(str(row.id))
-    if len(rows) > 0:
-        insert_alert(prev, log, rids)
+            if pid not in h:
+                p[pid] = {}
+                p[pid]['log'] = []
+                p[pid]['rid'] = []
+                p[pid]['node'] = row.hostname
+                p[pid]['svcname'] = row.svcname
+                p[pid]['app'] = row.app
+                p[pid]['action'] = row.action
+                p[pid]['begin'] = row.begin
 
-    return dict(alerts_queued=rows)
+            p[pid]['log'] += str(row.status_log).split('\\n')
+            p[pid]['end'] = row.end
+            rids |= set([row.id])
+
+        h['mailto'] = user.email
+        h['subject'] = subject
+        h['body'] = format_body(p)
+        h['domain'] = domainname(row.svcname)
+
+        send_alert(h)
+        log_alert(h)
+
+    """ Ack all actions we sent an alert for
+    """
+    if len(rids)>0:
+        ack_comment = T("Automatically acknowledged upon ticket generation.  Alert sent to responsibles.")
+        sql = """update SVCactions set
+                 ack=1,
+                 acked_comment="%(ack_comment)s",
+                 acked_date="%(acked_date)s",
+                 acked_by="%(acked_by)s"
+                 where id in (%(ids)s)
+              """%dict(ack_comment=ack_comment,
+                       acked_date=now,
+                       acked_by="admin@opensvc.com",
+                       ids=','.join(map(str, rids)))
+        db.executesql(sql)
+
+    return dict(alerts=rows)
 
 
-def send_alerts():
+def send_alert(h):
     """ Send mail alert
     """
     import smtplib
@@ -986,53 +990,12 @@ def send_alerts():
 
     now = datetime.datetime.now()
     server = smtplib.SMTP('localhost')
-
-    rows = db((db.alerts.sent_at==None)&(db.alerts.send_at<now)).select()
-    for row in rows:
-        """
-        body = TABLE(
-                 TR(TD(T('node'),TD(row.hostname))),
-                 TR(TD(T('service'),TD(row.svcname))),
-                 TR(TD(T('app'),TD(row.app))),
-                 TR(TD(T('responsibles'),TD(row.responsibles))),
-                 TR(TD(T('action'),TD(row.action))),
-                 TR(TD(T('begin'),TD(row.begin))),
-                 TR(TD(T('end'),TD(row.end))),
-                 TR(TD(T('error message'),TD(row.status_log))),
-               )
-        """
-        botaddr = 'admins@opensvc.com'
-        msg = "To: %s\r\nFrom: %s\r\nSubject: %s\r\nContent-type: text/html;charset=utf-8\r\n\r\n%s"%(row.sent_to, botaddr, row.subject, row.body)
-        try:
-            server.sendmail(botaddr, row.sent_to.split(", "), msg)
-        except:
-            """ Don't mark as sent if the mail sending fails
-            """
-            continue
-
-        db(db.alerts.id==row.id).update(sent_at=now)
-        row.sent_at=now
-
-        """ If the alert concerns an unaknowledged action,
-            auto-ack it
-        """
-        ack_comment = T("Automatically acknowledged upon ticket generation. Alert sent to %(to)s", dict(to=row.sent_to))
-        if row.action_ids is not None:
-            sql = """update table SVCactions set
-                     ack=1,
-                     acked_comment="%(ack_comment)s",
-                     acked_date="%(acked_date)s",
-                     acked_by="%(acked_by)s"
-                     where action_id in (%(ids)s)
-                  """%dict(ack_comment=ack_comment,
-                           acked_date=now,
-                           acked_by=botaddr,
-                           ids=row.action_ids)
-            db.executesql(sql)
-            #db(db.SVCactions.id==row.action_id).update(ack=1, acked_comment=ack_comment, acked_date=now, acked_by=botaddr)
-
+    botaddr = 'admin@opensvc.com'
+    msg = "To: %s\r\nFrom: %s\r\nSubject: %s\r\nContent-type: text/html;charset=utf-8\r\n\r\n%s"%(h['mailto'], botaddr, h['subject'], h['body'])
+    server.sendmail(botaddr, h['mailto'].split(", "), msg)
     server.quit()
-    return dict(alerts_sent=rows)
+
+    return dict(alert_sent=h)
 
 @auth.requires_login()
 def alerts():
@@ -1041,16 +1004,6 @@ def alerts():
             pos = 1,
             title = T('Alert Id'),
             size = 3
-        ),
-        created_at = dict(
-            pos = 2,
-            title = T('Created at'),
-            size = 10
-        ),
-        send_at = dict(
-            pos = 3,
-            title = T('Scheduled at'),
-            size = 10
         ),
         sent_at = dict(
             pos = 4,
@@ -1079,8 +1032,6 @@ def alerts():
     colkeys.sort(_sort_cols)
 
     query = _where(None, 'alerts', request.vars.id, 'id')
-    query &= _where(None, 'alerts', request.vars.created_at, 'created_at')
-    query &= _where(None, 'alerts', request.vars.send_at, 'send_at')
     query &= _where(None, 'alerts', request.vars.sent_at, 'sent_at')
     query &= _where(None, 'alerts', request.vars.responsibles, 'responsibles')
     query &= _where(None, 'alerts', request.vars.subject, 'subject')
@@ -3094,10 +3045,6 @@ def cron_stat_day_svc():
         db.executesql(sql)
     return dict(sql=sql)
 
-def cron_purge_alerts():
-    sql = "delete from alerts using alerts, SVCactions where alerts.sent_at is NULL and alerts.action_id=SVCactions.id and SVCactions.ack=1"
-    db.executesql(sql)
-
 def cron_unfinished_actions():
     now = datetime.datetime.now()
     tmo = now - datetime.timedelta(minutes=120)
@@ -3118,9 +3065,6 @@ def _svcaction_ack(request):
         a = rows[0]
         _svcaction_ack_one(request, action_id)
 
-        """ Cancel pending alert
-        """
-        db((db.alerts.action_id==action_id)&(db.alerts.sent_at==None)).delete()
     if 'ackcomment' in request.vars:
         del request.vars.ackcomment
 

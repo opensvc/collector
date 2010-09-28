@@ -471,20 +471,16 @@ alter table nodes modify os_kernel VARCHAR(32);
 
 ALTER TABLE `opensvc`.`auth_user` ADD COLUMN `reset_password_key` varchar(512) default "";
 
-CREATE TABLE `opensvc`.`sym_xml` (
-  `id` integer  NOT NULL AUTO_INCREMENT,
-  `sym_xml_symid` varchar(12)  NOT NULL,
-  `sym_xml_dev_info` LONGTEXT  NOT NULL,
-  `sym_xml_dir_info` LONGTEXT  NOT NULL,
-  `sym_xml_disk_info` LONGTEXT  NOT NULL,
-  `sym_xml_diskgroup_info` LONGTEXT  NOT NULL,
-  `sym_xml_fa_info` LONGTEXT  NOT NULL,
-  `sym_xml_meta_info` LONGTEXT  NOT NULL,
-  `sym_xml_sg_aclx` LONGTEXT  NOT NULL,
-  `sym_xml_ig_aclx` LONGTEXT  NOT NULL,
-  `sym_xml_pg_aclx` LONGTEXT  NOT NULL,
-  `sym_xml_view_aclx` LONGTEXT  NOT NULL,
-  PRIMARY KEY (`id`)
-);
+alter table apps add column updated timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP;
 
-create unique index idx1 on sym_xml (sym_xml_symid);
+alter table alerts drop column created_at;
+
+alter table alerts drop column send_at;
+
+alter table alerts drop column action_ids;
+
+alter table alerts drop column action_id;
+
+alter table alerts drop column app_id;
+
+

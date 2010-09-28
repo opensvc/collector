@@ -329,6 +329,7 @@ db.define_table('drpprojects',
 db.define_table('apps',
     Field('id'),
     Field('app'),
+    Field('updated'),
     migrate=False)
 
 db.define_table('v_apps',
@@ -455,15 +456,10 @@ db.define_table('v_nodes',
 
 db.define_table('alerts',
     Field('id'),
-    Field('created_at'),
-    Field('send_at'),
     Field('sent_at'),
     Field('sent_to'),
     Field('subject'),
     Field('body'),
-    Field('action_id'),
-    Field('action_ids'),
-    Field('app_id'),
     Field('domain'),
     migrate=False)
 
