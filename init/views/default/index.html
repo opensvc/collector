@@ -214,8 +214,7 @@ def svcmon_not_updated():
 """ Last status changes
 """
 def last_changes_line(line, cellclass):
-    d = now - line.svcmon_log.mon_begin
-    d -= datetime.timedelta(microseconds=d.microseconds)
+    d = prettydate(line.svcmon_log.mon_begin, T)
     tr = TR(
       TD(A(d, _href=URL(r=request, f='svcmon_log', vars={'mon_svcname':line.svcmon_log.mon_svcname})), _class=cellclass),
       TD(A(line.svcmon_log.mon_svcname, _href=URL(r=request, f='svcmon', vars={'mon_svcname':line.svcmon_log.mon_svcname})), _class=cellclass),
