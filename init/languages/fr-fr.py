@@ -337,6 +337,7 @@
 'Warranty end': 'Fin de garantie',
 'Wave': 'Vague',
 'Welcome to web2py': 'Bienvenue sur web2py',
+'You are not authorized to access this function': "Vous n'êtes pas autorisé à accéder à cette fonction",
 'Your password is: %(password)s': 'Votre mot de passe est %(password)s',
 'ZIP': 'Code postal',
 '[%(app)s] application has no responsible': "[%(app)s] l'application n'a pas de responsable désigné",
@@ -462,6 +463,7 @@
 'new record inserted': 'nouvel enregistrement inséré',
 'next 100 rows': '100 lignes suivantes',
 'next >>': 'suivants >>',
+'no user selected': 'aucun utilisateur sélectionné',
 'node': 'noeud',
 'node name': 'nom de noeud',
 'node type': 'type de noeud',
@@ -574,5 +576,6 @@
 'views': 'vues',
 'vmem': 'vmem',
 'warranty end': 'fin de garantie',
+'you are not allowed to delete the Manager group': 'il ne vous est pas permis de supprimer le groupe Manager',
 'zip': 'code postal',
 }

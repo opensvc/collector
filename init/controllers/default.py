@@ -1705,6 +1705,9 @@ def _user_grant(request):
     group_id = request.vars.select_role
     for key in [ k for k in request.vars.keys() if 'check_' in k ]:
         ids += ([int(key[6:])])
+    if len(ids) == 0:
+        response.flash = T('no user selected')
+        return
     for id in ids:
         if not auth.has_membership(group_id, id):
             auth.add_membership(group_id, id)
@@ -1716,6 +1719,9 @@ def _user_revoke(request):
     group_id = request.vars.select_role
     for key in [ k for k in request.vars.keys() if 'check_' in k ]:
         ids += ([int(key[6:])])
+    if len(ids) == 0:
+        response.flash = T('no user selected')
+        return
     for id in ids:
         if auth.has_membership(group_id, id):
             auth.del_membership(group_id, id)
@@ -1736,6 +1742,9 @@ def _role_del(request):
     id = request.vars.select_delrole
     if id is None or len(id) == 0:
         response.flash = T('invalid role: %(id)s', dict(id=id))
+        return
+    if int(id) == auth.id_group("Manager"):
+        response.flash = T("you are not allowed to delete the Manager group", dict(id=id))
         return
     db(db.auth_membership.group_id==id).delete()
     db(db.apps_responsibles.group_id==id).delete()
