@@ -215,8 +215,16 @@ def COLUMNS_ACTIVE():
                             """%dict(url=URL(r=request,f='ajax_set_user_prefs_column'),
                                    table=request.function, field=a),
                    value=val,
+                   _style='vertical-align:text-bottom',
                  ),
-                 columns[a]['title'],
+                 SPAN(
+                   columns[a]['title'],
+                   _style="""background-image:url(%s);
+                             background-repeat:no-repeat;
+                             padding-left:18px;
+                             margin-left:0.2em;
+                          """%URL(r=request,c='static',f=columns[a]['img']+'.png'),
+                 ),
                  BR(),
                )
     a = DIV(
