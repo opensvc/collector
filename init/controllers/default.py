@@ -1908,6 +1908,65 @@ def ajax_obsolete_os_nodes():
              PRE('\n'.join(nodes)),
            )
 
+def status_columns():
+    d = dict(
+        mon_overallstatus = dict(
+            pos = 7,
+            title = T('Status'),
+            display = True,
+            size = 4
+        ),
+        mon_updated = dict(
+            pos = 8,
+            title = T('Last status update'),
+            display = False,
+            size = 6
+        ),
+        mon_frozen = dict(
+            pos = 9,
+            title = T('Frozen'),
+            display = False,
+            size = 3
+        ),
+        mon_containerstatus = dict(
+            pos = 12,
+            title = T('Container status'),
+            display = False,
+            size = 3
+        ),
+        mon_ipstatus = dict(
+            pos = 13,
+            title = T('Ip status'),
+            display = False,
+            size = 3
+        ),
+        mon_fsstatus = dict(
+            pos = 14,
+            title = T('Fs status'),
+            display = False,
+            size = 3
+        ),
+        mon_diskstatus = dict(
+            pos = 15,
+            title = T('Disk status'),
+            display = False,
+            size = 3
+        ),
+        mon_syncstatus = dict(
+            pos = 16,
+            title = T('Sync status'),
+            display = False,
+            size = 3
+        ),
+        mon_appstatus = dict(
+            pos = 17,
+            title = T('App status'),
+            display = False,
+            size = 3
+        ),
+    )
+    return d
+
 def v_svcmon_columns():
     d = dict(
         mon_svcname = dict(
@@ -1952,18 +2011,6 @@ def v_svcmon_columns():
             display = True,
             size = 6
         ),
-        mon_overallstatus = dict(
-            pos = 7,
-            title = T('Status'),
-            display = True,
-            size = 4
-        ),
-        mon_updated = dict(
-            pos = 8,
-            title = T('Last status update'),
-            display = False,
-            size = 6
-        ),
         mon_frozen = dict(
             pos = 9,
             title = T('Frozen'),
@@ -1982,43 +2029,8 @@ def v_svcmon_columns():
             display = False,
             size = 3
         ),
-        mon_containerstatus = dict(
-            pos = 12,
-            title = T('Container status'),
-            display = False,
-            size = 3
-        ),
-        mon_ipstatus = dict(
-            pos = 13,
-            title = T('Ip status'),
-            display = False,
-            size = 3
-        ),
-        mon_fsstatus = dict(
-            pos = 14,
-            title = T('Fs status'),
-            display = False,
-            size = 3
-        ),
-        mon_diskstatus = dict(
-            pos = 15,
-            title = T('Disk status'),
-            display = False,
-            size = 3
-        ),
-        mon_syncstatus = dict(
-            pos = 16,
-            title = T('Sync status'),
-            display = False,
-            size = 3
-        ),
-        mon_appstatus = dict(
-            pos = 17,
-            title = T('App status'),
-            display = False,
-            size = 3
-        ),
     )
+    d.update(status_columns())
     return d
 
 @auth.requires_login()
@@ -6067,6 +6079,8 @@ def drplan():
 
     d1 = v_services_columns()
     d2 = v_drpservices_columns()
+    d3 = v_nodes_columns()
+    d4 = status_columns()
     d1['svc_nodes']['display'] = True
     d1['svc_drpnode']['display'] = True
     d1['svc_drpnodes']['display'] = True
@@ -6074,9 +6088,20 @@ def drplan():
     d2['drp_wave']['nestedin'] = 'drpservices'
     for k in d1:
         d1[k]['nestedin'] = 'v_svcmon'
+    for k in d3:
+        d3[k]['nestedin'] = 'v_svcmon'
+        d3[k]['display'] = False
+        d3[k]['pos'] += 50
+    for k in d4:
+        d4[k]['nestedin'] = 'v_svcmon'
+        d4[k]['display'] = False
+        d4[k]['pos'] += 100
+    d3['nodename']['display'] = True
 
     columns = d1.copy()
     columns.update(d2)
+    columns.update(d3)
+    columns.update(d4)
 
     def _sort_cols(x, y):
         return cmp(columns[x]['pos'], columns[y]['pos'])
@@ -6095,22 +6120,22 @@ def drplan():
 
     query = apply_db_filters(query, 'v_svcmon')
 
-    g = db.v_svcmon.svc_name
+    o = db.v_svcmon.svc_name
     j = (db.v_svcmon.svc_name==db.drpservices.drp_svcname)&(db.drpservices.drp_project_id==request.vars.prjlist)
 
-    (start, end, nav) = _pagination(request, query, groupby=g)
+    (start, end, nav) = _pagination(request, query)
     if start == 0 and end == 0:
         svc_rows = db(query).select(db.v_svcmon.ALL,
                                     db.drpservices.drp_wave,
                                     db.drpservices.drp_project_id,
                                     left=db.drpservices.on(j),
-                                    groupby=g)
+                                    orderby=o)
     else:
         svc_rows = db(query).select(db.v_svcmon.ALL,
                                     db.drpservices.drp_wave,
                                     db.drpservices.drp_project_id,
                                     left=db.drpservices.on(j),
-                                    groupby=g,
+                                    orderby=o,
                                     limitby=(start,end))
 
     prj_rows = db().select(db.drpprojects.drp_project_id, db.drpprojects.drp_project)

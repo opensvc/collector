@@ -10,7 +10,19 @@
 vars = request.vars
 initialize_keys()
 
-def format_generic(svc, nestedin, key, cellclass=""):
+def empty_cell(svc, nestedin, key, cellclass=""):
+    return TD(
+             _name="tcol_"+key,
+             _style=col_hide(key),
+             _class=cellclass,
+             _ondblclick="svcform.%(key)s.value='%(val)s';svcform.submit()"%dict(key=key, val=svc[nestedin][key]),
+           )
+
+
+def format_generic(svc, nestedin, key, new=True, cellclass=""):
+    if not new:
+        return empty_cell(svc, nestedin, key, cellclass)
+
     return TD(
              svc[nestedin][key],
              _name="tcol_"+key, 
@@ -20,8 +32,11 @@ def format_generic(svc, nestedin, key, cellclass=""):
            )
     pass
 
-def format_svc_name(svc, cellclass=""):
+def format_svc_name(svc, new=True, cellclass=""):
     key = "svc_name"
+
+    if not new:
+        return empty_cell(svc, 'v_svcmon', 'svc_name', cellclass)
 
     return TD(
              DIV(
@@ -64,13 +79,16 @@ def format_nodename(nodename, svcname, cellclass=""):
              )
     pass
 
-def format_nodenames(nodes, svcname, cellclass=""):
+def format_nodenames(svc, key, new, cellclass=""):
+    if not new:
+        return empty_cell(svc, 'v_svcmon', key, cellclass)
+
     return TD(
-             DIV(map(lambda x: format_nodename(x, svcname, cellclass), nodes.split())),
+             DIV(map(lambda x: format_nodename(x, svc['v_svcmon']['svc_name'], cellclass), svc['v_svcmon'][key].split())),
              _name="tcol_"+key,
              _style=col_hide(key),
              _class=cellclass,
-             _ondblclick="svcform.%(key)s.value='%(val)s';svcform.submit()"%dict(key=key, val=nodes),
+             _ondblclick="svcform.%(key)s.value='%(val)s';svcform.submit()"%dict(key=key, val=svc['v_svcmon'][key]),
            )
     pass
 
@@ -97,6 +115,7 @@ def format_nodenames(nodes, svcname, cellclass=""):
   </tr>
 
   {{
+    svcbuff = None
     svcname = ''
     cellclass = 'cell1'
     cellclasses = {}
@@ -104,10 +123,12 @@ def format_nodenames(nodes, svcname, cellclass=""):
     cellclasses['cell2'] = 'cell1'
   }}
   {{for svc in services:}}
-  <tr>
     {{if svcname != svc.v_svcmon.svc_name:
           cellclass = cellclasses[cellclass]
           svcname = svc.v_svcmon.svc_name
+          new = True
+      else:
+          new = False
           pass
       checked = getattr(vars, 'check_'+svc.v_svcmon.svc_name)
       if checked is not None:
@@ -129,24 +150,36 @@ def format_nodenames(nodes, svcname, cellclass=""):
           responsibles = ''
           pass
       }}
-    <td class={{=cellclass}}><input type=checkbox name=check_{{=svc.v_svcmon.svc_name}} {{=checked}}></td>
-    {{for key in colkeys:}}
-        {{if key in ['svc_autostart', 'svc_nodes', 'svc_drpnode', 'svc_drpnodes']:}}
-            {{=format_nodenames(svc['v_svcmon'][key], svc.v_svcmon.svc_name, cellclass)}}
-        {{elif key == 'svc_name':}}
-            {{=format_svc_name(svc, cellclass)}}
-        {{elif key == 'drp_wave':}}
-            {{=format_generic(svc, 'drpservices', key, cellclass)}}
-        {{else:}}
-            {{=format_generic(svc, 'v_svcmon', key, cellclass)}}
-        {{pass}}
-    {{pass}}
-  </tr>
-  <tr id='tr_id_{{=svc.v_svcmon.svc_name}}' class=cloud>
-    <td colspan=99 class="details_row {{=cellclass}}">
-      <div id='id_{{=svc.v_svcmon.svc_name}}'>
+  {{if new and svcbuff is not None:}}
+  <tr id='tr_id_{{=svcbuff.v_svcmon.svc_name}}' class=cloud>
+    <td colspan=99 class="details_row {{=cellclasses[cellclass]}}">
+      <div id='id_{{=svcbuff.v_svcmon.svc_name}}'>
       </div>
     </td>
+  </tr>
+  {{pass}}
+  {{svcbuff = svc}}
+  <tr>
+    {{if new:}}
+    <td class={{=cellclass}}><input type=checkbox name=check_{{=svc.v_svcmon.svc_name}} {{=checked}}></td>
+    {{else:}}
+    <td class={{=cellclass}}></td>
+    {{pass}}
+    {{for key in colkeys:}}
+        {{if key in ['svc_autostart', 'svc_nodes', 'svc_drpnode', 'svc_drpnodes']:}}
+            {{=format_nodenames(svc, key, new, cellclass)}}
+        {{elif key == 'nodename':}}
+            {{=format_nodenames(svc, key, True, cellclass)}}
+        {{elif key == 'svc_name':}}
+            {{=format_svc_name(svc, new, cellclass)}}
+        {{elif key == 'drp_wave':}}
+            {{=format_generic(svc, 'drpservices', key, new, cellclass)}}
+        {{elif 'svc_' in key:}}
+            {{=format_generic(svc, 'v_svcmon', key, new, cellclass)}}
+        {{else:}}
+            {{=format_generic(svc, 'v_svcmon', key, True, cellclass)}}
+        {{pass}}
+    {{pass}}
   </tr>
   {{pass}}
   <tr class=box>
