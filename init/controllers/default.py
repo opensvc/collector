@@ -617,12 +617,9 @@ def apps():
     return dict(columns=columns, colkeys=colkeys,
                 apps=rows, roles=roles, nav=nav)
 
-def _where(query, table, var, field, tableid=None):
+def _where(query, table, var, field):
     if query is None:
-        if tableid is not None:
-            query = (tableid > 0)
-        else:
-            query = (db[table].id > 0)
+        query = (db[table].id > 0)
     if var is None: return query
     if len(var) == 0: return query
 
@@ -1911,11 +1908,8 @@ def ajax_obsolete_os_nodes():
              PRE('\n'.join(nodes)),
            )
 
-@auth.requires_login()
-def svcmon():
-    service_action()
-
-    d1 = dict(
+def v_svcmon_columns():
+    d = dict(
         mon_svcname = dict(
             pos = 1,
             title = T('Service'),
@@ -2025,7 +2019,13 @@ def svcmon():
             size = 3
         ),
     )
+    return d
 
+@auth.requires_login()
+def svcmon():
+    service_action()
+
+    d1 = v_svcmon_columns()
     d2 = v_nodes_columns()
     for k in d2:
         d2[k]['pos'] += 50
@@ -5936,6 +5936,124 @@ def billing():
     billing_per_app = db(query).select()
     return dict(billing_per_os=billing_per_os, billing_per_app=billing_per_app)
 
+def v_services_columns():
+    d = dict(
+        svc_name = dict(
+            pos = 1,
+            title = T('Service'),
+            display = True,
+            size = 10
+        ),
+        svc_app = dict(
+            pos = 2,
+            title = T('App'),
+            display = True,
+            size = 3
+        ),
+        svc_containertype = dict(
+            pos = 3,
+            title = T('Container type'),
+            display = True,
+            size = 3
+        ),
+        svc_type = dict(
+            pos = 4,
+            title = T('Service type'),
+            display = True,
+            size = 3
+        ),
+        svc_vmname = dict(
+            pos = 6,
+            title = T('Container name'),
+            display = False,
+            size = 10
+        ),
+        svc_vcpus = dict(
+            pos = 7,
+            title = T('Vcpus'),
+            display = False,
+            size = 3
+        ),
+        svc_vmem = dict(
+            pos = 8,
+            title = T('Vmem'),
+            display = False,
+            size = 3
+        ),
+        svc_guestos = dict(
+            pos = 9,
+            title = T('Guest OS'),
+            display = False,
+            size = 6
+        ),
+        svc_autostart = dict(
+            pos = 11,
+            title = T('Primary node'),
+            display = False,
+            size = 10
+        ),
+        svc_nodes = dict(
+            pos = 12,
+            title = T('Nodes'),
+            display = False,
+            size = 10
+        ),
+        svc_drpnode = dict(
+            pos = 13,
+            title = T('DRP node'),
+            display = False,
+            size = 10
+        ),
+        svc_drpnodes = dict(
+            pos = 14,
+            title = T('DRP nodes'),
+            display = False,
+            size = 10
+        ),
+        svc_drptype = dict(
+            pos = 15,
+            title = T('DRP type'),
+            display = False,
+            size = 6
+        ),
+        svc_comment = dict(
+            pos = 17,
+            title = T('Comment'),
+            display = False,
+            size = 10
+        ),
+        svc_updated = dict(
+            pos = 18,
+            title = T('Updated'),
+            display = False,
+            size = 6
+        ),
+        responsibles = dict(
+            pos = 19,
+            title = T('Responsibles'),
+            display = False,
+            size = 6
+        ),
+        mailto = dict(
+            pos = 20,
+            title = T('Responsibles emails'),
+            display = False,
+            size = 6
+        ),
+    )
+    return d
+
+def v_drpservices_columns():
+    d = dict(
+        drp_wave = dict(
+            pos = 1,
+            title = T('Wave'),
+            display = True,
+            size = 4
+        ),
+    )
+    return d
+
 @auth.requires_login()
 def drplan():
     if request.vars.cloneproject is not None and request.vars.cloneproject != '':
@@ -5947,20 +6065,33 @@ def drplan():
     elif request.vars.setwave is not None and request.vars.setwave != '':
         _drplan_set_wave(request)
 
+    d1 = v_services_columns()
+    d2 = v_drpservices_columns()
+    d1['svc_nodes']['display'] = True
+    d1['svc_drpnode']['display'] = True
+    d1['svc_drpnodes']['display'] = True
+    d1['svc_drptype']['display'] = True
+    d2['drp_wave']['nestedin'] = 'drpservices'
+    for k in d1:
+        d1[k]['nestedin'] = 'v_svcmon'
+
+    columns = d1.copy()
+    columns.update(d2)
+
+    def _sort_cols(x, y):
+        return cmp(columns[x]['pos'], columns[y]['pos'])
+    colkeys = columns.keys()
+    colkeys.sort(_sort_cols)
+    __update_columns(columns, 'drplan')
+
     toggle_db_filters()
 
     query = (db.v_svcmon.svc_drpnode!=None)&(db.v_svcmon.svc_drpnode!='')
-    query &= _where(None, 'v_svcmon', request.vars.svc_name, 'svc_name')
-    query &= _where(None, 'v_svcmon', request.vars.svc_app, 'svc_app')
-    query &= _where(None, 'v_svcmon', request.vars.responsibles, 'responsibles')
-    query &= _where(None, 'v_svcmon', request.vars.svc_type, 'svc_type')
-    query &= _where(None, 'v_svcmon', request.vars.svc_drptype, 'svc_drptype')
-    query &= _where(None, 'v_svcmon', request.vars.svc_autostart, 'svc_autostart')
-    query &= _where(None, 'v_svcmon', request.vars.svc_nodes, 'svc_nodes')
-    query &= _where(None, 'v_svcmon', request.vars.svc_drpnode, 'svc_drpnode')
-    query &= _where(None, 'v_svcmon', request.vars.svc_drpnodes, 'svc_drpnodes')
-    query &= _where(None, 'drpservices', request.vars.svc_wave, 'drp_wave', tableid=db.v_svcmon.id)
-    query &= _where(None, 'v_svcmon', domain_perms(), 'svc_nodes')
+    for key in columns.keys():
+        if key not in request.vars.keys():
+            continue
+        query = _where(query, columns[key]['nestedin'], request.vars[key], key)
+    query = _where(query, 'v_svcmon', domain_perms(), 'svc_nodes')
 
     query = apply_db_filters(query, 'v_svcmon')
 
@@ -5983,7 +6114,8 @@ def drplan():
                                     limitby=(start,end))
 
     prj_rows = db().select(db.drpprojects.drp_project_id, db.drpprojects.drp_project)
-    return dict(services=svc_rows,
+    return dict(columns=columns, colkeys=colkeys,
+                services=svc_rows,
                 projects=prj_rows,
                 active_filters=active_db_filters('v_svcmon'),
                 available_filters=avail_db_filters('v_svcmon'),

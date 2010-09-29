@@ -2,59 +2,100 @@
 {{include '../static/jslib.html'}}
 {{include 'box.html'}}
 {{include 'filters.html'}}
+{{include 'panel.html'}}
+
 
 {{
+
 vars = request.vars
-for key in ['svc_name',
-            'svc_app',
-            'responsibles',
-            'svc_type',
-            'svc_drptype',
-            'svc_autostart',
-            'svc_nodes',
-            'svc_drpnode',
-            'svc_drpnodes',
-            'svc_wave',
-            ]:
-    if not vars.has_key(key) or vars[key] is None: vars[key]=''
+initialize_keys()
+
+def format_generic(svc, nestedin, key, cellclass=""):
+    return TD(
+             svc[nestedin][key],
+             _name="tcol_"+key, 
+             _style=col_hide(key),
+             _class=cellclass,
+             _ondblclick="svcform.%(key)s.value='%(val)s';svcform.submit()"%dict(key=key, val=svc[nestedin][key]),
+           )
     pass
+
+def format_svc_name(svc, cellclass=""):
+    key = "svc_name"
+
+    return TD(
+             DIV(
+               A(
+                 svc.v_svcmon.svc_name,
+                 _onclick="""
+                   getElementById("node").value="%(node)s";
+                   getElementById("rowid").value="%(id)s";
+                   ajax("%(url)s",['node', 'rowid'],"id_%(id)s");
+                   show_eid("tr_id_%(id)s");
+                 """%dict(url=URL(r=request,f='ajax_service'),
+                          node=svc.v_svcmon.svc_name,
+                          id=svc.v_svcmon.svc_name,
+                         ),
+               ),
+               _class="xinfo",
+             ),
+             _name="tcol_"+key, 
+             _style=col_hide(key),
+             _class=cellclass,
+             _ondblclick="svcform.%(key)s.value='%(val)s';svcform.submit()"%dict(key=key, val=svc['v_svcmon'][key]),
+           )
+    pass
+
+def format_nodename(nodename, svcname, cellclass=""):
+    return DIV(
+               A(
+                 nodename,
+                 _onclick="""
+                   getElementById("node").value="%(node)s";
+                   getElementById("rowid").value="%(id)s";
+                   ajax("%(url)s",['node', 'rowid'],"id_%(id)s");
+                   show_eid("tr_id_%(id)s");
+                 """%dict(url=URL(r=request,f='ajax_node'),
+                          node=nodename,
+                          id=svcname,
+                         ),
+               ),
+               _class="xinfo",
+             )
+    pass
+
+def format_nodenames(nodes, svcname, cellclass=""):
+    return TD(
+             DIV(map(lambda x: format_nodename(x, svcname, cellclass), nodes.split())),
+             _name="tcol_"+key,
+             _style=col_hide(key),
+             _class=cellclass,
+             _ondblclick="svcform.%(key)s.value='%(val)s';svcform.submit()"%dict(key=key, val=nodes),
+           )
+    pass
+
 }}
-{{
-def show_nodes(nodes):
-    for n in nodes.split():
-}}
-        {{=A(n, _href=URL(request.application,'default','node?nodename='+n))}}
-    {{pass}}
-{{pass}}
+{{=PANEL("column_values")}}
 <form action='drplan' name='svcform' id='svcform'> 
 {{=DB_FILTERS_TABLE(active_filters, available_filters)}}
+<input id='node' type='hidden'>
+<input id='rowid' type='hidden'>
 <table class=datatable>
   <tr class=box>
     <td class=box></td>
-    <td>{{=T('Service name')}}</td>
-    <td width=10>{{=T('App')}}</td>
-    <td width=10>{{=T('Resp')}}</td>
-    <td width=10>{{=T('Service type')}}</td>
-    <td width=10>{{=T('DR type')}}</td>
-    <td>{{=T('Node')}}</td>
-    <td>{{=T('Nodes')}}</td>
-    <td>{{=T('DR node')}}</td>
-    <td>{{=T('DR nodes')}}</td>
-    <td>{{=T('Wave')}}</td>
+    {{for key in colkeys:}}
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}}">
+      {{=colname(services, key, columns[key]['title'], columns[key]['nestedin'])}}
+    </td>
+    {{pass}}
   </tr>
   <tr class=box>
     <td><input type=checkbox id=check_all onClick="select_all(document.getElementById('check_all').checked, document.getElementById('svcform'))"></td>
-    <td><input name=svc_name value='{{=vars.svc_name}}' size=12 onKeyPress="checkEnter(event)"></td>
-    <td><input name=svc_app value='{{=vars.svc_app}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td><input name=responsibles value='{{=vars.responsibles}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td><input name=svc_type value='{{=vars.svc_type}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td><input name=svc_drptype value='{{=vars.svc_drptype}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td><input name=svc_autostart value='{{=vars.svc_autostart}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td><input name=svc_nodes value='{{=vars.svc_nodes}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td><input name=svc_drpnode value='{{=vars.svc_drpnode}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td><input name=svc_drpnodes value='{{=vars.svc_drpnodes}}' size=4 onKeyPress="checkEnter(event)"></td>
-    <td><input name=svc_wave value='{{=vars.svc_wave}}' size=4 onKeyPress="checkEnter(event)"></td>
+    {{for key in colkeys:}}
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}}"><input name={{=key}} value='{{=request.vars[key]}}' size={{=columns[key]['size']}} onKeyPress="checkEnter(event)"></td>
+    {{pass}}
   </tr>
+
   {{
     svcname = ''
     cellclass = 'cell1'
@@ -89,23 +130,30 @@ def show_nodes(nodes):
           pass
       }}
     <td class={{=cellclass}}><input type=checkbox name=check_{{=svc.v_svcmon.svc_name}} {{=checked}}></td>
-    <td class={{=cellclass}}>{{=svc.v_svcmon.svc_name}}</td>
-    <td class={{=cellclass}}>{{=svc.v_svcmon.svc_app}}</td>
-    <td class={{=cellclass}}>{{=responsibles}}</td>
-    <td class={{=cellclass}}>{{=svc.v_svcmon.svc_type}}</td>
-    <td class={{=cellclass}}>{{=svc.v_svcmon.svc_drptype}}</td>
-    <td class={{=cellclass}}>{{show_nodes(svc.v_svcmon.svc_autostart)}}</td>
-    <td class={{=cellclass}}>{{show_nodes(svc.v_svcmon.svc_nodes)}}</td>
-    <td class={{=cellclass}}>{{show_nodes(svc.v_svcmon.svc_drpnode)}}</td>
-    <td class={{=cellclass}}>{{show_nodes(svc.v_svcmon.svc_drpnodes)}}</td>
-    <td class={{=cellclass}}>{{=drp_wave}}</td>
+    {{for key in colkeys:}}
+        {{if key in ['svc_autostart', 'svc_nodes', 'svc_drpnode', 'svc_drpnodes']:}}
+            {{=format_nodenames(svc['v_svcmon'][key], svc.v_svcmon.svc_name, cellclass)}}
+        {{elif key == 'svc_name':}}
+            {{=format_svc_name(svc, cellclass)}}
+        {{elif key == 'drp_wave':}}
+            {{=format_generic(svc, 'drpservices', key, cellclass)}}
+        {{else:}}
+            {{=format_generic(svc, 'v_svcmon', key, cellclass)}}
+        {{pass}}
+    {{pass}}
+  </tr>
+  <tr id='tr_id_{{=svc.v_svcmon.svc_name}}' class=cloud>
+    <td colspan=99 class="details_row {{=cellclass}}">
+      <div id='id_{{=svc.v_svcmon.svc_name}}'>
+      </div>
+    </td>
   </tr>
   {{pass}}
   <tr class=box>
-    <td align=center colspan=11>{{=nav}}</td>
+    <td align=center colspan=99>{{=nav}}</td>
   </tr>
   <tr class=box>
-    <td colspan=11>
+    <td colspan=99>
       <table>
         <tr>
           <td> {{=T('Export')}}:</td>
