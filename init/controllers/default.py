@@ -189,7 +189,10 @@ def apply_db_filters(query, table=None):
         elif f.filters.fil_column == 'ref3':
             """ only not acknowledged actions
             """
-            query &= (db.v_svcactions.status=='err')&(db.v_svcactions.ack==None)
+            q1 = db.v_svcactions.ack!=1
+            q2 = db.v_svcactions.ack==None
+            q3 = db.v_svcactions.status=='err'
+            query = (q1 | q2) & q3
     return query
 
 def avail_db_filters(table=None):
@@ -925,12 +928,14 @@ def alerts_failed_actions_not_acked():
     for user in users:
         """ group all alerts for a user in a single mail
         """
+        rows = []
         apps = user_apps(user.id)
-        q = db.v_svcactions.app.belongs(apps)
-        q &= db.v_svcactions.end<now-delay
-        q &= db.v_svcactions.status=='err'
-        q &= ((db.v_svcactions.ack!=1)|(db.v_svcactions.ack==None))
-        rows = db(q).select(orderby=db.v_svcactions.end|db.v_svcactions.pid)
+        if len(apps) > 0:
+            q = db.v_svcactions.app.belongs(apps)
+            q &= db.v_svcactions.end<now-delay
+            q &= db.v_svcactions.status=='err'
+            q &= ((db.v_svcactions.ack!=1)|(db.v_svcactions.ack==None))
+            rows = db(q).select(orderby=db.v_svcactions.end|db.v_svcactions.pid)
 
         if len(rows) ==  0:
            continue
