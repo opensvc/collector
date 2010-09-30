@@ -6,4 +6,4 @@
 5 1 * * * unxdev01 *default/alerts_services_not_updated
 20 1 * * * unxdev01 *default/alerts_apps_without_responsible
 1 * * * * unxdev01 *default/alerts_svcmon_not_updated
-0-59/1 * * * * unxdev01 *default/alerts_failed_actions_not_acked
+1 5 * * * unxdev01 *default/alerts_failed_actions_not_acked
