@@ -7302,8 +7302,25 @@ def insert_pkg(vars, vals):
     generic_insert('packages', vars, vals)
 
 @service.xmlrpc
-def update_sym_xml(vars, vals):
-    generic_insert('sym_xml', vars, vals)
+def update_sym_xml(symid, vars, vals):
+    import os
+
+    dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+
+    dir = os.path.join(dir, symid)
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+
+    for a,b in zip(vars, vals):
+        a = os.path.join(dir, a)
+        try:
+            f = open(a, 'w')
+            f.write(b)
+            f.close()
+        except:
+            pass
 
 @service.xmlrpc
 def delete_pkg(node):
