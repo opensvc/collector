@@ -147,13 +147,15 @@ def format_status_log(row, key, new, cellclass=""):
                  _class=cellclass,
                )
 
-    return TD(PRE(
-             row[key],
+    return TD(
+             PRE(
+               row[key],
+             ),
              _name="tcol_"+key, 
              _style=col_hide(key),
              _class=cellclass,
              _ondblclick="svcform.%(key)s.value='%(val)s';svcform.submit()"%dict(key=key, val=row[key]),
-           ))
+           )
     pass
 
 def format_generic(row, key, new, cellclass=""):
