@@ -134,6 +134,7 @@
 'Edit This App': 'Editer cette application',
 'Edit current record': 'Editer cet enregistrement',
 'Edit node': 'Edition de noeud',
+'Edit profile': 'Edition du profil',
 'Email': 'Mèl',
 'Email sent': 'Mèl envoyé',
 'End': 'Fin',
