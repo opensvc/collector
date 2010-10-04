@@ -81,7 +81,7 @@ function dumpProps(obj, parent) {
 }
 
 function show_eid(id) {
-  if (navigator.appName == 'Netscape') {
+  if ((navigator.appName == 'Netscape')||(navigator.appName == 'Opera')) {
     document.getElementById(id).style['display']='table-row'
   } else {
     document.getElementById(id).style['display']='block'

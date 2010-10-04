@@ -19,8 +19,9 @@
 }
 
 .boxed {
-   -moz-border-radius:8px;	/* Rounded edges in Firefox */
-   -webkit-border-radius:8px;	/* Rounded edges in Firefox */
+    border-radius:8px;
+   -moz-border-radius:8px;
+   -webkit-border-radius:8px;
     background-color:#e0e1cd;
     padding-left:0.8em;
     padding-right:0.8em;
@@ -296,10 +297,12 @@ a {
     font-size: 11pt;
     cursor: pointer;
     background: yellow;
-   -moz-border-radius-topleft:8px;	/* Rounded edges in Firefox */
-   -moz-border-radius-topright:8px;	/* Rounded edges in Firefox */
-   -webkit-border-top-left-radius:8px;	/* Rounded edges in Firefox */
-   -webkit-border-top-right-radius:8px;	/* Rounded edges in Firefox */
+    border-top-left-radius:8px;
+    border-top-right-radius:8px;
+   -moz-border-radius-topleft:8px;
+   -moz-border-radius-topright:8px;
+   -webkit-border-top-left-radius:8px;
+   -webkit-border-top-right-radius:8px;
 }
 
 html>body .flash {
@@ -546,10 +549,12 @@ ul.web2py-menu li a:hover,
 ul.web2py-menu li a:visited,
 ul.web2py-menu li a:active
 {
-   -moz-border-radius-topleft:8px;	/* Rounded edges in Firefox */
-   -moz-border-radius-topright:8px;	/* Rounded edges in Firefox */
-   -webkit-border-top-left-radius:8px;	/* Rounded edges in Firefox */
-   -webkit-border-top-right-radius:8px;	/* Rounded edges in Firefox */
+    border-top-left-radius:8px;
+    border-top-right-radius:8px;
+   -moz-border-radius-topleft:8px;
+   -moz-border-radius-topright:8px;
+   -webkit-border-top-left-radius:8px;
+   -webkit-border-top-right-radius:8px;
     text-decoration: none;
 }
 
@@ -562,10 +567,12 @@ ul.web2py-menu li:hover a:active
 
 ul.web2py-menu li
 {
-   -moz-border-radius-topleft:8px;	/* Rounded edges in Firefox */
-   -moz-border-radius-topright:8px;	/* Rounded edges in Firefox */
-   -webkit-border-top-left-radius:8px;	/* Rounded edges in Firefox */
-   -webkit-border-top-right-radius:8px;	/* Rounded edges in Firefox */
+    border-top-left-radius:8px;
+    border-top-right-radius:8px;
+   -moz-border-radius-topleft:8px;
+   -moz-border-radius-topright:8px;
+   -webkit-border-top-left-radius:8px;
+   -webkit-border-top-right-radius:8px;
     background-color: #eee;
 }
 
@@ -577,10 +584,12 @@ ul.web2py-menu li.sfhover
 
 ul.web2py-menu li a:hover
 {
-   -moz-border-radius-topleft:8px;	/* Rounded edges in Firefox */
-   -moz-border-radius-topright:8px;	/* Rounded edges in Firefox */
-   -webkit-border-top-left-radius:8px;	/* Rounded edges in Firefox */
-   -webkit-border-top-right-radius:8px;	/* Rounded edges in Firefox */
+    border-top-left-radius:8px;
+    border-top-right-radius:8px;
+   -moz-border-radius-topleft:8px;
+   -moz-border-radius-topright:8px;
+   -webkit-border-top-left-radius:8px;
+   -webkit-border-top-right-radius:8px;
     background-color: #ffc;
 }
 
@@ -623,10 +632,12 @@ ul.web2py-menu li.web2py-menu-expand li a,
 ul.web2py-menu li.web2py-menu-expand li.web2py-menu-expand li a,
 ul.web2py-menu li.web2py-menu-expand li.web2py-menu-expand li.web2py-menu-expand li a
 {
-   -moz-border-radius-topleft:0px;	/* Rounded edges in Firefox */
-   -moz-border-radius-topright:0px;	/* Rounded edges in Firefox */
-   -webkit-border-top-left-radius:0px;	/* Rounded edges in Firefox */
-   -webkit-border-top-right-radius:0px;	/* Rounded edges in Firefox */
+    border-top-left-radius:8px;
+    border-top-right-radius:8px;
+   -moz-border-radius-topleft:0px;
+   -moz-border-radius-topright:0px;
+   -webkit-border-top-left-radius:0px;
+   -webkit-border-top-right-radius:0px;
     background-image: none;
     padding-right: 5px;
     padding-left: 5px;
@@ -797,8 +808,9 @@ a.xinfo_shown span {
    background: white;
    padding: 3px;
    border: 4px solid grey;
-   -moz-border-radius:8px;	/* Rounded edges in Firefox */
-   -webkit-border-radius:8px;	/* Rounded edges in Firefox */
+    border-radius:8px;
+   -moz-border-radius:8px;
+   -webkit-border-radius:8px;
 }
 
 .panel_move {
@@ -815,28 +827,29 @@ a.xinfo_shown span {
 }
 
 .panel {
-   display: none; /* on masque l'infobulle */
+   display: none;
    position: fixed;
-   background: none; /* correction d'un bug IE */
-   z-index: 500; /* on définit une valeur pour l'ordre d'affichage */
+   background: none; /* bug IE */
+   z-index: 500;
 }
 
 .panel_shown {
    clear:both;
-   z-index: 500; /* on définit une valeur pour l'ordre d'affichage */
-   display: inline; /* on affiche l'infobulle */
+   z-index: 500;
+   display: inline;
    position: absolute;
-   white-space: nowrap; /* on change la valeur de la propriété white-space pour qu'il n'y ait pas de retour à la ligne non-désiré */
-   top: 30px; /* on positionne notre infobulle */
+   white-space: nowrap;
+   top: 30px;
    left: 20px;
    background: white;
    border: 4px solid grey;
-   -moz-border-radius:8px;	/* Rounded edges in Firefox */
-   -webkit-border-radius:8px;	/* Rounded edges in Firefox */
+    border-radius:8px;
+   -moz-border-radius:8px;
+   -webkit-border-radius:8px;
 }
 
 .cloud {
-   display: none; /* on masque l'infobulle */
+   display: none;
 }
 
 .cloud_shown {
@@ -877,10 +890,12 @@ a.xinfo_shown span {
 }
 
 .closetab {
-   -moz-border-radius-topleft:8px;	/* Rounded edges in Firefox */
-   -moz-border-radius-topright:8px;	/* Rounded edges in Firefox */
-   -webkit-border-top-left-radius:8px;	/* Rounded edges in Firefox */
-   -webkit-border-top-right-radius:8px;	/* Rounded edges in Firefox */
+    border-top-left-radius:8px;
+    border-top-right-radius:8px;
+   -moz-border-radius-topleft:8px;
+   -moz-border-radius-topright:8px;
+   -webkit-border-top-left-radius:8px;
+   -webkit-border-top-right-radius:8px;
     background-color:black;
     color:white;
     cursor: pointer;
@@ -907,8 +922,9 @@ div.container {
     border: 2px dotted #333;
     background-color: #ffe;
     margin:0.2em;
-   -moz-border-radius:8px;	/* Rounded edges in Firefox */
-   -webkit-border-radius:8px;	/* Rounded edges in Firefox */
+    border-radius:8px;
+   -moz-border-radius:8px;
+   -webkit-border-radius:8px;
 }
 
 div.spacer {
@@ -952,8 +968,9 @@ div.svcstatus td {
 div.sym {
     border: 3px solid #335;
     margin:0.2em;
-   -moz-border-radius:8px;	/* Rounded edges in Firefox */
-   -webkit-border-radius:8px;	/* Rounded edges in Firefox */
+    border-radius:8px;
+   -moz-border-radius:8px;
+   -webkit-border-radius:8px;
     text-align: left;
     padding: 0.3em;
     overflow: auto;
@@ -971,8 +988,9 @@ div.sym_detail {
 
 div.sym_diskgroup {
     background-color: #bca;
-   -moz-border-radius:6px;	/* Rounded edges in Firefox */
-   -webkit-border-radius:6px;	/* Rounded edges in Firefox */
+    border-radius:6px;
+   -moz-border-radius:6px;
+   -webkit-border-radius:6px;
     margin: 0.3em;
     padding: 0.3em;
 }
