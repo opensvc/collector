@@ -137,7 +137,7 @@ def index():
     perms = _domain_perms().split('|')
     
     for d in sym_dirs:
-        if os.path.basename(d) not in perms:
+        if '%' not in perms and os.path.basename(d) not in perms:
             continue
         syms.append(sym_info(os.path.basename(d)))
 
