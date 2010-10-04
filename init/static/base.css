@@ -851,7 +851,7 @@ a.xinfo_shown span {
 
 .menubar_shown {
    display: block;
-   text-align: center;
+   text-align: left;
 }
 
 .menuhandle {
@@ -947,4 +947,38 @@ div.svcstatus td {
     margin: 0;
     width: auto;
     text-align: center;
+}
+
+div.sym {
+    border: 3px solid #335;
+    margin:0.2em;
+   -moz-border-radius:8px;	/* Rounded edges in Firefox */
+   -webkit-border-radius:8px;	/* Rounded edges in Firefox */
+    text-align: left;
+    padding: 0.3em;
+    overflow: auto;
+}
+
+div.sym_info {
+    padding: 1em;
+}
+
+div.sym_detail {
+    padding: 1em;
+    display: none;
+    clear: both;
+}
+
+div.sym_diskgroup {
+    background-color: #bca;
+   -moz-border-radius:6px;	/* Rounded edges in Firefox */
+   -webkit-border-radius:6px;	/* Rounded edges in Firefox */
+    margin: 0.3em;
+    padding: 0.3em;
+}
+
+div.sym_float {
+    float:left;
+    margin: 0.2em;
+    padding: 0.3em;
 }

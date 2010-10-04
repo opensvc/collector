@@ -856,3 +856,9 @@ db.define_table('user_prefs_columns',
     Field('upc_visible', 'boolean'),
     migrate=False)
 
+db.define_table('sym_upload',
+    Field('name'),
+    Field('bin_file','upload', requires=IS_NOT_EMPTY()),
+    Field('aclx_file','upload', requires=IS_NOT_EMPTY()),
+    migrate=False)
+

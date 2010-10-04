@@ -483,4 +483,12 @@ alter table alerts drop column action_id;
 
 alter table alerts drop column app_id;
 
+CREATE TABLE `sym_upload` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(512) DEFAULT NULL,
+  `bin_file` varchar(512) DEFAULT NULL,
+  `aclx_file` varchar(512) DEFAULT NULL,
+  `added` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8
 

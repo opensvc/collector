@@ -27,8 +27,10 @@ function tofilter(e) {
         case 191:
             if (ctrl) {
                 toggle_menu()
-                document.svcform.addfilter.focus();
-                //document.svcform.addfilter.select();
+                var e = document.getElementById('addfilter')
+                if (e) {
+                    e.focus();
+                }
             }
             break;
     }
@@ -40,10 +42,14 @@ function toggle_menu()
     var status = document.getElementById("filterbar_status");
     if (menubar.className=="menubar") {
         menubar.className="menubar_shown";
-        status.value = 'shown';
+        if (status) {
+            status.value = 'shown';
+        }
     } else {
         menubar.className="menubar";
-        status.value = 'hidden';
+        if (status) {
+            status.value = 'hidden';
+        }
     }
 }
 
