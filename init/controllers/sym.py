@@ -128,13 +128,17 @@ def sym_info(symid):
     return d
 
 @auth.requires_login()
-def sym():
+def index():
     import glob
     dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
     pattern = "[0-9]*"
     sym_dirs = glob.glob(os.path.join(dir, pattern))
     syms = []
+    perms = _domain_perms().split('|')
+    
     for d in sym_dirs:
+        if os.path.basename(d) not in perms:
+            continue
         syms.append(sym_info(os.path.basename(d)))
 
     form = SQLFORM(db.sym_upload)
