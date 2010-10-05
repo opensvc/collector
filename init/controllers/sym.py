@@ -1,4 +1,5 @@
 import os
+import re
 from xml.etree.ElementTree import ElementTree, SubElement
 symmetrix = local_import('symmetrix', reload=True)
 config = local_import('config', reload=True)
@@ -239,16 +240,94 @@ def html_dev(dev):
         )
     return l
 
+def filter_parse(symid, f):
+    key = 'filter_%s_%s'%(f,symid)
+    if key in request.vars:
+        value = request.vars[key]
+    else: 
+        value = ""
+    return key, value
+
+def int_filter(value, num):
+    if len(value) == 0:
+        return True
+    if not isinstance(num, int):
+        return False
+
+    negate = False
+    inf = False
+    sup = False
+    inf_e = False
+    sup_e = False
+
+    if value[0] == '!':
+        negate = True
+        value = value[1:]
+    if value[0] == '<':
+        if len(value) > 2 and value[1] == '=':
+            inf_e = True
+            value = value[2:]
+        else:
+            inf = True
+            value = value[1:]
+    if value[0] == '>':
+        if len(value) > 2 and value[1] == '=':
+            sup_e = True
+            value = value[2:]
+        else:
+            sup = True
+            value = value[1:]
+    try:
+        v = int(value)
+    except:
+        return str_filter(value, str(num))
+
+    if sup and num > v:
+        r = True
+    elif inf and num < v:
+        r = True
+    elif sup_e and num >= v:
+        r = True
+    elif inf_e and num <= v:
+        r = True
+    elif num == v:
+        r = True
+    else:
+        r = False
+
+    if negate:
+        return not r
+    else:
+        return r
+
+def str_filter(value, text):
+    negate = False
+    if len(value) == 0:
+        return True
+    if value[0] == '!':
+        negate = True
+        value = value[1:]
+    if value == "empty":
+        if text == "":
+            r = True
+        else:
+            r = False
+    else:
+        reg = value.replace('%', '.*')
+        if reg[-1] != '$':
+            reg = reg+'$'
+        r = re.match(reg, text)
+        if r is None:
+            r = False
+        else:
+            r = True
+    if negate:
+        return not r
+    else:
+        return r
+
 def sym_dev():
     symid = request.vars.arrayid
-
-    def filter_parse(symid, f):
-        key = 'filter_%s_%s'%(f,symid)
-        if key in request.vars:
-            value = request.vars[key]
-        else: 
-            value = ""
-        return key, value
 
     filter_dev_key, filter_dev_value = filter_parse(symid, 'dev')
     filter_conf_key, filter_conf_value = filter_parse(symid, 'conf')
@@ -264,17 +343,23 @@ def sym_dev():
     s.get_sym_dev()
     lines = []
     for dev in sorted(s.dev):
-        if len(filter_dev_value) > 0 and filter_dev_value not in s.dev[dev].info['dev_name']:
+        if not str_filter(filter_dev_value, s.dev[dev].info['dev_name']):
             continue
-        if len(filter_conf_value) > 0 and filter_conf_value not in s.dev[dev].info['configuration']:
+        if not str_filter(filter_conf_value, s.dev[dev].info['configuration']):
             continue
-        if len(filter_meta_value) > 0 and filter_meta_value != str(s.dev[dev].meta_count):
+        if s.dev[dev].meta_count == 0:
+            s.dev[dev].meta_count = 'n/a'
+        if not int_filter(filter_meta_value, s.dev[dev].meta_count):
             continue
-        if len(filter_size_value) > 0 and filter_size_value != str(s.dev[dev].megabytes):
+        if not int_filter(filter_size_value, s.dev[dev].megabytes):
             continue
-        if len(filter_dg_value) > 0 and filter_dg_value != str(s.dev[dev].diskgroup):
+        if s.dev[dev].diskgroup is None:
+            s.dev[dev].diskgroup = 'n/a'
+        if not int_filter(filter_dg_value, s.dev[dev].diskgroup):
             continue
-        if len(filter_view_value) > 0 and filter_view_value not in s.dev[dev].view:
+        if len(s.dev[dev].view) == 0:
+            s.dev[dev].view = ['free']
+        if not str_filter(filter_view_value, ', '.join(s.dev[dev].view)):
             continue
         lines.append(html_dev(s.dev[dev]))
 
