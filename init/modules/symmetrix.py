@@ -205,13 +205,18 @@ class VmaxDisk(object):
         return '\n'.join(l)
 
 class Vmax(object):
-    def __init__(self, xml_dir=None):
+    def __init__(self, xml_dir=None, preload_data=False):
         if xml_dir is None:
             return
         self.xml_dir = xml_dir
         self.xml_mtime = None
-        self.info = {}
-        self.ig = {}
+        self.info = {'dev_count':0,
+                     'disk_count': 0,
+                     'diskgroup_count': 0,
+                     'view_count': 0,
+                     'ig_count': 0,
+                     'sg_count': 0,
+                     'pg_count': 0}
         self.ig = {}
         self.pg = {}
         self.sg = {}
@@ -220,18 +225,12 @@ class Vmax(object):
         self.diskgroup = {}
         self.view = {}
 
-        try:
-            if self.dump_outdated():
-                raise Exception
-            self.info = self.load('info.dump')
-            self.ig = self.load('ig.dump')
-            self.pg = self.load('pg.dump')
-            self.sg = self.load('sg.dump')
-            self.dev = self.load('dev.dump')
-            self.disk = self.load('disk.dump')
-            self.diskgroup = self.load('diskgroup.dump')
-            self.view = self.load('view.dump')
-        except:
+        if self.dump_outdated():
+            self.load_xml()
+        elif preload_data:
+            self.get_sym_all()
+
+    def load_xml(self):
             self.sym_info()
             self.sym_diskgroup()
             self.sym_disk()
@@ -283,6 +282,7 @@ class Vmax(object):
         return lines
 
     def __str__(self):
+        self.get_sym_all()
         l = []
         for key in self.info:
             l += self.prefix('%s: %s'%(key,self.info[key]))
@@ -299,8 +299,10 @@ class Vmax(object):
     def __iadd__(self, o):
         if isinstance(o, VmaxDiskGroup):
             self.diskgroup[o.info['disk_group_number']] = o
+            self.info['diskgroup_count'] += 1
         elif isinstance(o, VmaxDisk):
             self.disk[o.id] = o
+            self.info['disk_count'] += 1
             self.diskgroup[o.info['disk_group']] += o
         elif isinstance(o, VmaxDev):
             disk_id = o.backend[0]['id']
@@ -312,14 +314,19 @@ class Vmax(object):
                 # VDEV
                 pass
             self.dev[o.info['dev_name']] = o
+            self.info['dev_count'] += 1
         elif isinstance(o, VmaxMeta):
             self.dev[o.dev_name].meta = o.meta
             self.dev[o.dev_name].meta_count = len(o.meta)
         elif isinstance(o, VmaxView):
             self.view[o.view_name] = o
+            self.info['view_count'] += 1
             self.ig[o.init_grpname] = o.ig
+            self.info['ig_count'] += 1
             self.pg[o.port_grpname] = o.pg
+            self.info['pg_count'] += 1
             self.sg[o.stor_grpname] = o.sg
+            self.info['sg_count'] += 1
             for dev_name in o.sg:
                 dev = self.dev[dev_name]
                 dev.view.append(o.view_name)
@@ -373,6 +380,58 @@ class Vmax(object):
         for e in tree.getiterator('View_Info'):
             self += VmaxView(e)
         del tree
+
+    """ Accessors
+    """
+    def get_sym_info(self):
+        if 'symid' not in self.info:
+            self.info = self.load('info.dump')
+        return self.info
+
+    def get_sym_diskgroup(self):
+        if len(self.diskgroup) == 0:
+            self.diskgroup = self.load('diskgroup.dump')
+        return self.diskgroup
+
+    def get_sym_disk(self):
+        if len(self.disk) == 0:
+            self.disk = self.load('disk.dump')
+        return self.disk
+
+    def get_sym_dev(self):
+        if len(self.dev) == 0:
+            self.dev = self.load('dev.dump')
+        return self.dev
+
+    def get_sym_sg(self):
+        if len(self.sg) == 0:
+            self.sg = self.load('sg.dump')
+        return self.sg
+
+    def get_sym_pg(self):
+        if len(self.pg) == 0:
+            self.pg = self.load('pg.dump')
+        return self.pg
+
+    def get_sym_ig(self):
+        if len(self.ig) == 0:
+            self.ig = self.load('ig.dump')
+        return self.ig
+
+    def get_sym_view(self):
+        if len(self.info) == 0:
+            self.view = self.load('view.dump')
+        return self.view
+
+    def get_sym_all(self):
+        self.get_sym_info()
+        self.get_sym_dev()
+        self.get_sym_disk()
+        self.get_sym_diskgroup()
+        self.get_sym_ig()
+        self.get_sym_pg()
+        self.get_sym_sg()
+        self.get_sym_view()
 
 import sys
 def main():

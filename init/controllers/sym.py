@@ -198,6 +198,8 @@ def index():
                    labels={'name': 'Sym ID',
                            'bin_file': 'Sym DB',
                            'aclx_file': 'Sym ACLX'},
+                   col3={'bin_file': T('Only one symmetrix should be dumped in this file.'),
+                         'aclx_file': T('The file produced by : "%(s)s"'%dict(s="symaccess -sid <SymmID> -file <BackupFileName> backup"))},
            )
     if form.accepts(request.vars, session):
         batch_files()
@@ -210,6 +212,7 @@ def sym_diskgroup():
     dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
     p = os.path.join(dir, symid)
     s = symmetrix.Vmax(p)
+    s.get_sym_diskgroup()
     d = []
     for dg in s.diskgroup.values():
         d.append(html_diskgroup(dg))
@@ -258,6 +261,7 @@ def sym_dev():
     dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
     p = os.path.join(dir, symid)
     s = symmetrix.Vmax(p)
+    s.get_sym_dev()
     lines = []
     for dev in sorted(s.dev):
         if len(filter_dev_value) > 0 and filter_dev_value not in s.dev[dev].info['dev_name']:
@@ -350,9 +354,10 @@ def sym_overview():
     dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
     p = os.path.join(dir, symid)
     s = symmetrix.Vmax(p)
+    info = s.get_sym_info()
     d = DIV(
           H2(
-            'diskgroup (%d)'%len(s.diskgroup),
+            'diskgroup (%d)'%info['diskgroup_count'],
             _onclick="""if (getElementById("sym_diskgroup_%(symid)s").innerHTML=="") {
                           getElementById("sym_diskgroup_%(symid)s").innerHTML='%(spinner)s';
                           getElementById("arrayid").value="%(symid)s";
@@ -369,9 +374,9 @@ def sym_overview():
             _id='sym_diskgroup_'+symid,
             _name='sym_diskgroup_'+symid,
           ),
-          H2('disks (%d)'%len(s.disk)),
+          H2('disks (%d)'%info['disk_count']),
           H2(
-            'dev (%d)'%len(s.dev),
+            'dev (%d)'%info['dev_count'],
             _onclick="""if (getElementById("sym_dev_%(symid)s").innerHTML=="") {
                           getElementById("sym_dev_%(symid)s").innerHTML='%(spinner)s';
                           getElementById("arrayid").value="%(symid)s";
@@ -389,10 +394,10 @@ def sym_overview():
             _name='sym_dev_'+symid,
             _style='display:none',
           ),
-          H2('view (%d)'%len(s.view)),
-          H2('initator group (%d)'%len(s.ig)),
-          H2('port group (%d)'%len(s.pg)),
-          H2('storage group (%d)'%len(s.sg)),
+          H2('view (%d)'%info['view_count']),
+          H2('initator group (%d)'%info['ig_count']),
+          H2('port group (%d)'%info['pg_count']),
+          H2('storage group (%d)'%info['sg_count']),
           _onclick="event.cancelBubble = true;",
         )
     return d
