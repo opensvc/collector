@@ -165,6 +165,7 @@
 'Hello World': 'Bonjour Monde',
 'High threshold': 'Seuil haut',
 'Id': 'Id',
+'Import Date': 'Import Date',
 'Import/Export': 'Import/Export',
 'Index': 'Clé',
 'Insert new node': 'Ajouter un noeud',

@@ -14,11 +14,12 @@ def format_sym(sym):
               _style='width:15em',
             ),
             DIV(
-              UL(
-                LI(T('Microcode Version')+': ', sym['microcode_version']),
-                LI(T('Cache')+': ', sym['cache_megabytes'], ' ', T('MB')),
-                LI(T('Devices')+': ', sym['devices']),
-                LI(T('Physical Devices')+': ', sym['physical_devices']),
+              TABLE(
+                TR(TH(T('Import Date')), TD(sym['mtime'])),
+                TR(TH(T('Microcode Version')), TD(sym['microcode_version'])),
+                TR(TH(T('Cache')), TD(sym['cache_megabytes'], ' ', T('MB'))),
+                TR(TH(T('Devices')), TD(sym['devices'])),
+                TR(TH(T('Physical Devices')), TD(sym['physical_devices'])),
               ),
               _class='sym_float',
             ),

@@ -118,6 +118,15 @@ def xmltree(symid, xml):
     tree.parse(f)
     return tree
 
+def mtime(symid, xml):
+    import datetime
+    dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
+    f = os.path.join(dir, symid, xml)
+    statinfo = os.stat(f)
+    d = datetime.datetime.fromtimestamp(statinfo.st_mtime)
+    d -= datetime.timedelta(microseconds=d.microsecond)
+    return d
+
 def sym_info(symid):
     tree = xmltree(symid, 'sym_info')
     for e in tree.getiterator('Symm_Info'): pass
@@ -125,6 +134,7 @@ def sym_info(symid):
     for se in list(e):
       d[se.tag] = se.text
     del tree
+    d['mtime'] = mtime(symid, 'sym_info')
     return d
 
 from subprocess import *
@@ -190,11 +200,8 @@ def index():
                            'aclx_file': 'Sym ACLX'},
            )
     if form.accepts(request.vars, session):
-        try:
-            batch_files()
-            response.flash = T('file uploaded')
-        except:
-            response.flash = T('file uploaded, but import failed')
+        batch_files()
+        response.flash = T('file uploaded')
 
     return dict(syms=syms, form=form)
 
