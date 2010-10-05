@@ -933,6 +933,7 @@ div.spacer {
 
 div.dashboard {
     padding:1em;
+    break-inside: avoid;
 }
 
 div.dashboard table {
