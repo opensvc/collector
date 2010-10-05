@@ -860,5 +860,6 @@ db.define_table('sym_upload',
     Field('name'),
     Field('bin_file','upload', requires=IS_NOT_EMPTY()),
     Field('aclx_file','upload', requires=IS_NOT_EMPTY()),
+    Field('batched','integer', writable=False),
     migrate=False)
 

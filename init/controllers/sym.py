@@ -127,6 +127,46 @@ def sym_info(symid):
     del tree
     return d
 
+from subprocess import *
+
+def batch_files():
+    if not hasattr(config, 'sym_node'):
+        return
+    scp = ['scp', '-o', 'StrictHostKeyChecking=no', '-o', 'ForwardX11=no']
+    ssh = ['ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'ForwardX11=no', '-t']
+
+    rows = db(db.sym_upload.batched != 1).select()
+    for row in rows:
+        f = {}
+        if row.bin_file != '':
+            dst_prefix = row.bin_file.replace('sym_upload.bin_file.', '')
+            src = 'applications'+str(URL(r=request,c='uploads', f=row.bin_file))
+            dst = os.path.join(os.sep, 'tmp', dst_prefix+'.bin')
+            f['bin'] = (src, dst)
+        if row.aclx_file != '' and row.bin_file != '':
+            src = 'applications'+str(URL(r=request,c='uploads', f=row.aclx_file))
+            dst = os.path.join(os.sep, 'tmp', dst_prefix+'.aclx')
+            f['aclx'] = (src, dst)
+        if len(f) == 0:
+            db(db.sym_upload.id==row.id).delete()
+            continue
+        for src, dst in f.values():
+            cmd = scp + [src, config.sym_node+':'+dst]
+            p = Popen(cmd, stdout=PIPE, stderr=PIPE)
+            out, err = p.communicate()
+            if p.returncode != 0:
+                raise Exception(out, err, ' '.join(cmd))
+
+        cmd = ssh + [config.sym_node, 'sudo', '-E',
+                     '/opt/opensvc/bin/nodemgr',
+                     '--symcli-db-file', f['bin'][1], 'pushsym']
+        p = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        out, err = p.communicate()
+        if p.returncode != 0:
+            raise Exception(out, err, ' '.join(cmd))
+
+        db(db.sym_upload.id==row.id).update(batched=1)
+
 @auth.requires_login()
 def index():
     import glob
@@ -135,15 +175,26 @@ def index():
     sym_dirs = glob.glob(os.path.join(dir, pattern))
     syms = []
     perms = _domain_perms().split('|')
-    
+
     for d in sym_dirs:
         if '%' not in perms and os.path.basename(d) not in perms:
             continue
         syms.append(sym_info(os.path.basename(d)))
 
-    form = SQLFORM(db.sym_upload)
+    form = SQLFORM(db.sym_upload,
+                   fields=['name',
+                           'bin_file',
+                           'aclx_file'],
+                   labels={'name': 'Sym ID',
+                           'bin_file': 'Sym DB',
+                           'aclx_file': 'Sym ACLX'},
+           )
     if form.accepts(request.vars, session):
-        response.flash = T('file uploaded')
+        try:
+            batch_files()
+            response.flash = T('file uploaded')
+        except:
+            response.flash = T('file uploaded, but import failed')
 
     return dict(syms=syms, form=form)
 

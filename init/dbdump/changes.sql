@@ -492,3 +492,4 @@ CREATE TABLE `sym_upload` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8
 
+alter table sym_upload add column batched integer default 0;

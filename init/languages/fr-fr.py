@@ -468,6 +468,7 @@
 'error message': "message d'erreur",
 'errors in form': 'erreurs dans le formulaire',
 'export as csv file': 'exporter en fichier csv',
+'file uploaded': 'file uploaded',
 'floor': 'étage',
 'frozen services': 'Services gelés',
 'generate the DR scripts for the current project': 'générer les scripts du PRA pour le projet courrant',

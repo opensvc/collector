@@ -5865,13 +5865,6 @@ def ajax_node():
       TR(TD(T('os kernel'), _style='font-style:italic'), TD(node['os_kernel'])),
       TR(TD(T('os arch'), _style='font-style:italic'), TD(node['os_arch'])),
     )
-    t = TABLE(
-      TR(TD(H2(request.vars.node), _colspan=2, _style='text-align:center')),
-      TR(TD(loc), TD(power)),
-      TR(TD(server), TD(os)),
-      TR(TD(cpu), TD(mem)),
-      TR(TD(A(T("edit"), _href=URL(r=request, f='node_edit', vars={'node': request.vars.node})), _colspan=2, _style='text-align:center')),
-    )
 
     def js(tab, rowid):
         buff = ""
