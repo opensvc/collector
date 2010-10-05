@@ -161,15 +161,20 @@ function selected_nodes() {
                                  minutes=now.minute,
                                  microseconds=now.microsecond)
     e = s + datetime.timedelta(days=1)
+    timepicker = """Calendar.setup({inputField:this.id, ifFormat:"%Y-%m-%d %H:%M:%S", showsTime: true,timeFormat: "24" });"""
 }}
 {{=SPAN(
             INPUT(
               _value=s.strftime("%Y-%m-%d %H:%M"),
               _id='begin',
+              _class='datetime',
+              _onfocus=timepicker,
             ),
             INPUT(
               _value=e.strftime("%Y-%m-%d %H:%M"),
               _id='end',
+              _class='datetime',
+              _onfocus=timepicker,
             ),
             INPUT(
               _value='gen',

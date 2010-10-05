@@ -5734,6 +5734,7 @@ def perf_stats(node, rowid):
                                  microseconds=now.microsecond)
     e = s + datetime.timedelta(days=1)
 
+    timepicker = """Calendar.setup({inputField:this.id, ifFormat:"%Y-%m-%d %H:%M:%S", showsTime: true,timeFormat: "24" });"""
     t = DIV(
           SPAN(
             INPUT(
@@ -5744,10 +5745,14 @@ def perf_stats(node, rowid):
             INPUT(
               _value=s.strftime("%Y-%m-%d %H:%M"),
               _id='begin_'+rowid,
+              _class='datetime',
+              _onfocus=timepicker,
             ),
             INPUT(
               _value=e.strftime("%Y-%m-%d %H:%M"),
               _id='end_'+rowid,
+              _class='datetime',
+              _onfocus=timepicker,
             ),
             INPUT(
               _value='gen',
