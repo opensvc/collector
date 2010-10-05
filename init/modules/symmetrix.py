@@ -57,6 +57,7 @@ class VmaxDev(object):
         self.meta = []
         self.meta_count = 0
         self.diskgroup = None
+        self.diskgroup_name = ""
         self.view = []
 
         try:
@@ -103,6 +104,7 @@ class VmaxDev(object):
                 l += self.prefix("be[%d].%s: %s"%(i, key, be[key]))
         l += self.prefix('megabytes: %d'%self.megabytes)
         l += self.prefix('diskgroup: %s'%str(self.diskgroup))
+        l += self.prefix('diskgroup_name: %s'%str(self.diskgroup_name))
         l += self.prefix('meta: %s'%','.join(self.meta))
         l += self.prefix('view: %s'%','.join(self.view))
         return '\n'.join(l)
@@ -298,17 +300,18 @@ class Vmax(object):
 
     def __iadd__(self, o):
         if isinstance(o, VmaxDiskGroup):
-            self.diskgroup[o.info['disk_group_number']] = o
+            self.diskgroup[int(o.info['disk_group_number'])] = o
             self.info['diskgroup_count'] += 1
         elif isinstance(o, VmaxDisk):
             self.disk[o.id] = o
             self.info['disk_count'] += 1
-            self.diskgroup[o.info['disk_group']] += o
+            self.diskgroup[int(o.info['disk_group'])] += o
         elif isinstance(o, VmaxDev):
             disk_id = o.backend[0]['id']
             if disk_id in self.disk:
                 disk = self.disk[disk_id]
-                o.diskgroup = disk.info['disk_group']
+                o.diskgroup = int(disk.info['disk_group'])
+                o.diskgroup_name = disk.info['disk_group_name']
                 self.diskgroup[o.diskgroup] += o
             else:
                 # VDEV

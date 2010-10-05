@@ -48,19 +48,10 @@ def html_diskgroup(dg):
                 )
          m.append(line)
 
-     d = DIV(
-          DIV(
-            H3(
-              dg.info['disk_group_number'],
-              ': ',
-              dg.info['disk_group_name'],
-            ),
-            SPAN(map(P, l)),
-            _class='sym_float',
-            _style='width:18em',
-          ),
-          DIV(
-            TABLE(
+     if dev_count == 0:
+         table_usage = SPAN()
+     else:
+         table_usage = TABLE(
               TR(
                 TH(),
                 TH('GB'),
@@ -86,12 +77,12 @@ def html_diskgroup(dg):
                 TD(usage),
                 TD(dev_usage),
               ),
-            ),
-            _class='sym_float',
-            _style='width:12em',
-          ),
-          DIV(
-            TABLE(
+            )
+
+     if len(m) == 0:
+         table_usage_per_size = SPAN()
+     else:
+         table_usage_per_size = TABLE(
               TR(
                 TH('dev size'),
                 TH('free'),
@@ -101,6 +92,25 @@ def html_diskgroup(dg):
               ),
               SPAN(map(SPAN, m))
             ),
+
+     d = DIV(
+          DIV(
+            H3(
+              dg.info['disk_group_number'],
+              ': ',
+              dg.info['disk_group_name'],
+            ),
+            SPAN(map(P, l)),
+            _class='sym_float',
+            _style='width:18em',
+          ),
+          DIV(
+            table_usage,
+            _class='sym_float',
+            _style='width:12em',
+          ),
+          DIV(
+            table_usage_per_size,
             _class='sym_float',
             _style='width:20em',
           ),
@@ -220,22 +230,14 @@ def sym_diskgroup():
     return DIV(d)
 
 def html_dev(dev):
-    if dev.meta_count == 0:
-        meta = 'n/a'
-    else:
-        meta = dev.meta_count
-
-    if len(dev.view) == 0:
-        view = 'free'
-    else:
-        view = ', '.join(dev.view)
+    view = ', '.join(dev.view)
 
     l = TR(
           TD(dev.info['dev_name']),
           TD(dev.info['configuration']),
-          TD(meta),
+          TD(dev.meta_count),
           TD(dev.megabytes),
-          TD(dev.diskgroup),
+          TD(dev.diskgroup_name),
           TD(view),
         )
     return l
@@ -244,7 +246,7 @@ def filter_parse(symid, f):
     key = 'filter_%s_%s'%(f,symid)
     if key in request.vars:
         value = request.vars[key]
-    else: 
+    else:
         value = ""
     return key, value
 
@@ -353,9 +355,7 @@ def sym_dev():
             continue
         if not int_filter(filter_size_value, s.dev[dev].megabytes):
             continue
-        if s.dev[dev].diskgroup is None:
-            s.dev[dev].diskgroup = 'n/a'
-        if not int_filter(filter_dg_value, s.dev[dev].diskgroup):
+        if not str_filter(filter_dg_value, s.dev[dev].diskgroup_name):
             continue
         if len(s.dev[dev].view) == 0:
             s.dev[dev].view = ['free']
@@ -418,7 +418,7 @@ def sym_dev():
               INPUT(
                 _id='filter_dg_'+symid,
                 _value=filter_dg_value,
-                _size=5,
+                _size=10,
                 _onKeyPress=_ajax()
               ),
               INPUT(
