@@ -7305,6 +7305,24 @@ def update_sym_xml(symid, vars, vals):
         except:
             pass
 
+    symmetrix = local_import('symmetrix', reload=True)
+    s = symmetrix.Vmax(p)
+
+    #
+    # better to create hashes from the batch rather than
+    # during an interactive session
+    #
+    s.get_sym_all()
+
+    #
+    # populate the diskinfo table
+    #
+    vars = ['disk_id', 'disk_devid', 'disk_arrayid']
+    vals = []
+    for devname, dev in s.dev.items():
+        vals.append([dev.wwn, devname, symid])
+    generic_insert('diskinfo', vars, vals)
+
 @service.xmlrpc
 def delete_pkg(node):
     if node is None or node == '':

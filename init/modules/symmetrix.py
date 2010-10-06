@@ -6,6 +6,10 @@ class VmaxMeta(object):
     def __init__(self, xml):
         self.dev_name = xml.find("Dev_Info/dev_name").text
         self.meta = [ m.text for m in xml.findall("Meta/Meta_Device/dev_name")]
+        try:
+            self.wwn = xml.find("Product/wwn").text
+        except:
+            self.wwn = ""
 
 class VmaxView(object):
     def __init__(self, xml):
@@ -59,6 +63,7 @@ class VmaxDev(object):
         self.diskgroup = None
         self.diskgroup_name = ""
         self.view = []
+        self.wwn = ""
 
         try:
             self.megabytes = int(xml.find("Capacity/megabytes").text)
@@ -107,7 +112,15 @@ class VmaxDev(object):
         l += self.prefix('diskgroup_name: %s'%str(self.diskgroup_name))
         l += self.prefix('meta: %s'%','.join(self.meta))
         l += self.prefix('view: %s'%','.join(self.view))
+        l += self.prefix('wwn: %s'%self.wwn)
         return '\n'.join(l)
+
+    def __iadd__(self, o):
+        if isinstance(o, VmaxMeta):
+            self.meta = o.meta
+            self.meta_count = len(o.meta)
+            self.wwn = o.wwn
+        return self
 
 class VmaxDiskGroup(object):
     def __init__(self, xml):
@@ -318,9 +331,6 @@ class Vmax(object):
                 pass
             self.dev[o.info['dev_name']] = o
             self.info['dev_count'] += 1
-        elif isinstance(o, VmaxMeta):
-            self.dev[o.dev_name].meta = o.meta
-            self.dev[o.dev_name].meta_count = len(o.meta)
         elif isinstance(o, VmaxView):
             self.view[o.view_name] = o
             self.info['view_count'] += 1
@@ -375,7 +385,8 @@ class Vmax(object):
     def sym_meta(self):
         tree = self.xmltree('sym_meta_info')
         for e in tree.getiterator('Device'):
-            self += VmaxMeta(e)
+            o = VmaxMeta(e)
+            self.dev[o.dev_name] += o
         del tree
 
     def sym_view(self):

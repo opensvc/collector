@@ -239,6 +239,7 @@ def html_dev(dev):
           TD(dev.megabytes,' ',T('MB'), _class='numeric'),
           TD(dev.diskgroup_name),
           TD(view),
+          TD(dev.wwn),
         )
     return l
 
@@ -332,6 +333,7 @@ def sym_dev():
     symid = request.vars.arrayid
 
     filter_dev_key, filter_dev_value = filter_parse(symid, 'dev')
+    filter_wwn_key, filter_wwn_value = filter_parse(symid, 'wwn')
     filter_conf_key, filter_conf_value = filter_parse(symid, 'conf')
     filter_meta_key, filter_meta_value = filter_parse(symid, 'meta')
     filter_size_key, filter_size_value = filter_parse(symid, 'size')
@@ -346,6 +348,8 @@ def sym_dev():
     lines = []
     for dev in sorted(s.dev):
         if not str_filter(filter_dev_value, s.dev[dev].info['dev_name']):
+            continue
+        if not str_filter(filter_wwn_value, s.dev[dev].wwn):
             continue
         if not str_filter(filter_conf_value, s.dev[dev].info['configuration']):
             continue
@@ -373,6 +377,7 @@ def sym_dev():
                           "filter_size_%(symid)s",
                           "filter_dg_%(symid)s",
                           "filter_view_%(symid)s",
+                          "filter_wwn_%(symid)s",
                           "filter_dev_%(symid)s"],
                          "sym_dev_%(symid)s");
                     getElementById("sym_dev_%(symid)s").innerHTML='%(spinner)s';
@@ -389,6 +394,7 @@ def sym_dev():
               TH('size'),
               TH('diskgroup'),
               TH('view'),
+              TH('wwn'),
             ),
             TR(
               INPUT(
@@ -425,6 +431,12 @@ def sym_dev():
                 _id='filter_view_'+symid,
                 _value=filter_view_value,
                 _size=10,
+                _onKeyPress=_ajax()
+              ),
+              INPUT(
+                _id='filter_wwn_'+symid,
+                _value=filter_wwn_value,
+                _size=32,
                 _onKeyPress=_ajax()
               ),
             ),
