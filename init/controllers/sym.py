@@ -40,11 +40,11 @@ def html_diskgroup(dg):
          else:
              pct = 'n/a'
          line = TR(
-                  TH('%d MB'%size),
-                  TD(free),
-                  TD(used),
-                  TD(total),
-                  TD(pct),
+                  TH('%d'%size,' ',T('MB'), _class='numeric'),
+                  TD(free, _class='numeric'),
+                  TD(used, _class='numeric'),
+                  TD(total, _class='numeric'),
+                  TD(pct, _class='numeric'),
                 )
          m.append(line)
 
@@ -54,28 +54,28 @@ def html_diskgroup(dg):
          table_usage = TABLE(
               TR(
                 TH(),
-                TH('GB'),
+                TH(T('GB')),
                 TH('dev'),
               ),
               TR(
                 TH('free'),
-                TD((dg.total-dg.used)//1024),
-                TD(dev_count-masked_dev_count),
+                TD((dg.total-dg.used)//1024, _class='numeric'),
+                TD(dev_count-masked_dev_count, _class='numeric'),
               ),
               TR(
                 TH('used'),
-                TD(dg.used//1024),
-                TD(masked_dev_count),
+                TD(dg.used//1024, _class='numeric'),
+                TD(masked_dev_count, _class='numeric'),
               ),
               TR(
                 TH('total'),
-                TD(dg.total//1024),
-                TD(dev_count),
+                TD(dg.total//1024, _class='numeric'),
+                TD(dev_count, _class='numeric'),
               ),
               TR(
                 TH('%used'),
-                TD(usage),
-                TD(dev_usage),
+                TD(usage, _class='numeric'),
+                TD(dev_usage, _class='numeric'),
               ),
             )
 
@@ -235,8 +235,8 @@ def html_dev(dev):
     l = TR(
           TD(dev.info['dev_name']),
           TD(dev.info['configuration']),
-          TD(dev.meta_count),
-          TD(dev.megabytes),
+          TD(dev.meta_count, _class='numeric'),
+          TD(dev.megabytes,' ',T('MB'), _class='numeric'),
           TD(dev.diskgroup_name),
           TD(view),
         )
@@ -383,7 +383,7 @@ def sym_dev():
     d = DIV(
           TABLE(
             TR(
-              TH('dev'),
+              TH('dev (%d)'%len(lines)),
               TH('conf'),
               TH('meta'),
               TH('size'),
@@ -406,13 +406,13 @@ def sym_dev():
               INPUT(
                 _id='filter_meta_'+symid,
                 _value=filter_meta_value,
-                _size=5,
+                _size=3,
                 _onKeyPress=_ajax()
               ),
               INPUT(
                 _id='filter_size_'+symid,
                 _value=filter_size_value,
-                _size=5,
+                _size=7,
                 _onKeyPress=_ajax()
               ),
               INPUT(

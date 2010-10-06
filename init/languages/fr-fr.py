@@ -153,6 +153,7 @@
 'Fs status': 'Etat fs',
 'Full name': 'Nom complet',
 'Function disabled': 'Fonction désactivée',
+'GB': 'GB',
 'Grant manager': 'Accorder rôle manager',
 'Grant/Revoke': 'Accorder/Révoquer',
 'Grant/Revoke role': 'Accorder/Révoquer le rôle',

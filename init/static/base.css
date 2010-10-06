@@ -996,8 +996,16 @@ div.sym_diskgroup {
     padding: 0.3em;
 }
 
-div.sym_float {
+.sym_float {
     float:left;
     margin: 0.2em;
     padding: 0.3em;
+}
+
+.sym_float table,td {
+    vertical-align: top;
+}
+
+.numeric {
+    text-align:right;
 }
