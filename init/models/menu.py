@@ -59,7 +59,7 @@ response.menu = [
              [T('checks'), False,
               URL(request.application,'default','checks')],
              [T('packages'), False,
-              URL(request.application,'default','packages')],
+              URL(request.application,'packages','packages')],
              [T('patches'), False,
               URL(request.application,'default','patches')],
          ]
