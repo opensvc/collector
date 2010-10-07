@@ -47,7 +47,7 @@ def format_svc_name(svc, new=True, cellclass=""):
                    getElementById("rowid").value="%(id)s";
                    ajax("%(url)s",['node', 'rowid'],"id_%(id)s");
                    show_eid("tr_id_%(id)s");
-                 """%dict(url=URL(r=request,f='ajax_service'),
+                 """%dict(url=URL(r=request,c='default',f='ajax_service'),
                           node=svc.v_svcmon.svc_name,
                           id=svc.v_svcmon.svc_name,
                          ),
@@ -70,7 +70,7 @@ def format_nodename(nodename, svcname, cellclass=""):
                    getElementById("rowid").value="%(id)s";
                    ajax("%(url)s",['node', 'rowid'],"id_%(id)s");
                    show_eid("tr_id_%(id)s");
-                 """%dict(url=URL(r=request,f='ajax_node'),
+                 """%dict(url=URL(r=request,c='default',f='ajax_node'),
                           node=nodename,
                           id=svcname,
                          ),
@@ -180,6 +180,14 @@ def format_nodenames(svc, key, new, cellclass=""):
             {{=format_generic(svc, 'v_svcmon', key, True, cellclass)}}
         {{pass}}
     {{pass}}
+  </tr>
+  {{pass}}
+  {{if svcbuff is not None:}}
+  <tr id='tr_id_{{=svcbuff.v_svcmon.svc_name}}' class=cloud>
+    <td colspan=99 class="details_row {{=cellclass}}">
+      <div id='id_{{=svcbuff.v_svcmon.svc_name}}'>
+      </div>
+    </td>
   </tr>
   {{pass}}
   <tr class=box>
