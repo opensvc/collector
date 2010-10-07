@@ -67,7 +67,7 @@ response.menu = [
     [T('stats'), False, '',
          [
              [T('site'), False,
-              URL(request.application,'default','stats')],
+              URL(request.application,'stats','stats')],
              [T('os lifecycle'), False,
               URL(request.application,'lifecycle','lifecycle_os')],
              [T('availability'), False,
