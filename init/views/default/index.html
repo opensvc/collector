@@ -345,18 +345,18 @@ def pkg_diff_line(line, cellclass):
                ajax("%(url)s",['pkgnodes'],"panelbody_%(a)s");
                getElementById("panel_%(a)s").className="panel_shown";
                getElementById("panel_%(a)s").style.top=event.pageY+'px';
-            """%dict(url=URL(r=request,f='ajax_pkgdiff'), nodes=line, a='pkgdiff'),
+            """%dict(url=URL(r=request,c='pkgdiff',f='ajax_pkgdiff'), nodes=line, a='pkgdiff'),
       ),
       TD(
         pkgdiff[line],
         _class=cellclass,
         _style="cursor:help",
         _onclick="""
-               getElementById("pkgnodes").value="%(nodes)s";
-               ajax("%(url)s",['pkgnodes'],"panelbody_%(a)s");
+               getElementById("node").value="%(nodes)s";
+               ajax("%(url)s",['node'],"panelbody_%(a)s");
                getElementById("panel_%(a)s").className="panel_shown";
                getElementById("panel_%(a)s").style.top=event.pageY+'px';
-            """%dict(url=URL(r=request,f='ajax_pkgdiff'), nodes=line, a='pkgdiff'),
+            """%dict(url=URL(r=request,c='pkgdiff',f='ajax_pkgdiff'), nodes=line, a='pkgdiff'),
       ),
     )
     return tr
@@ -400,7 +400,7 @@ def pkg_diff():
         return DIV()
     d = DIV(
       PANEL('pkgdiff'),
-      INPUT(_id='pkgnodes', _type='hidden'),
+      INPUT(_id='node', _type='hidden'),
       pkg_diff_table(),
       _class="dashboard",
       _id="pkg_diff",

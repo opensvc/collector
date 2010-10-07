@@ -138,7 +138,7 @@ function selected_nodes() {
                   ajax("%(url)s",['node'],"panelbody_%(a)s");
                   getElementById("panel_%(a)s").className="panel_shown";
                   getElementById("panel_%(a)s").style.top=event.pageY+'px';
-               """%dict(url=URL(r=request,f='ajax_pkgdiff'), a='pkgdiff'),
+               """%dict(url=URL(r=request,c='pkgdiff',f='ajax_pkgdiff'), a='pkgdiff'),
               )
             }}
           </td>
