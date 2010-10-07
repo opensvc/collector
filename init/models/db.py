@@ -29,6 +29,35 @@ from gluon.tools import *
 auth=Auth(globals(),db)                      # authentication/authorization
 auth.settings.hmac_key='sha512:7755f108-1b83-45dc-8302-54be8f3616a1'
 auth.settings.expiration=36000
+
+#
+# custom auth_user table. new field: email_notifications
+#
+table = db.define_table(auth.settings.table_user_name,
+    Field('first_name', length=128, default='',
+          label=auth.messages.label_first_name,
+          requires=IS_NOT_EMPTY(error_message=auth.messages.is_empty)),
+    Field('last_name', length=128, default='',
+          label=auth.messages.label_last_name,
+          requires=IS_NOT_EMPTY(error_message=auth.messages.is_empty)),
+    Field('email', length=512, default='',
+          label=auth.messages.label_email),
+    Field('password', 'password', length=512,
+          readable=False, label=auth.messages.label_password,
+          requires=[CRYPT(key=auth.settings.hmac_key)]),
+    Field('registration_key', length=512,
+          writable=False, readable=False, default='',
+          label=auth.messages.label_registration_key),
+    Field('reset_password_key', length=512,
+          writable=False, readable=False, default='',
+          label=auth.messages.label_reset_password_key),
+    Field('email_notifications', 'boolean', default=True,
+          label=T('Email notifications')),
+    migrate=False)
+
+table.email.requires = [IS_EMAIL(error_message=auth.messages.invalid_email),
+                        IS_NOT_IN_DB(db, db.auth_user.email)]
+
 auth.define_tables(migrate=False)                         # creates all needed tables
 crud=Crud(globals(),db)                      # for CRUD helpers using auth
 service=Service(globals())                   # for json, xml, jsonrpc, xmlrpc, amfrpc

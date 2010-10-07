@@ -710,10 +710,12 @@ def alert_format_subject(msg="", app=None, svcname=None):
 
 def alert_format_body(msg="", app=None, svcname=None, node=None, action=None,
                       begin=None, end=None, svctype=None, pid=None):
-    def header_field(title=None, value=None):
+    def header_field(title=None, value=None, fmt=None):
         if value is None:
-            return TR(_style='font-size:0')
-        return TR(TD(B(T(title))),TD(value))
+            return None
+        if fmt is None:
+            fmt = value
+        return (B(title),fmt)
 
     def URL_WITH_HOST(a=None, c=None, f=None, r=None, args=[], vars={}, host=None, scheme="https"):
         path = URL(a=a,c=c,f=f,r=r,args=args,vars=vars)
@@ -726,16 +728,20 @@ def alert_format_body(msg="", app=None, svcname=None, node=None, action=None,
         return '%s://%s%s' % (scheme,host,path)
         return path
 
+    header = []
+    header.append(header_field("application", app))
+    header.append(header_field("service name", svcname, A(svcname, _href=URL_WITH_HOST(r=request, f='svcmon', vars={'svcname':svcname}))))
+    header.append(header_field("service type", svctype))
+    header.append(header_field("node name", node, A(node, _href=URL_WITH_HOST(r=request, f='svcmon', vars={'nodename':node}))))
+    header.append(header_field("action", action))
+    header.append(header_field("begin", begin, str(begin)))
+    header.append(header_field("end", end, str(end)))
+    header.append(header_field("pid", pid, A(pid, _href=URL_WITH_HOST(r=request, f='svcactions', vars={'pid':pid, 'hostname':node, 'perpage':0}))))
+    header = [TR(TD(h[0], _width="40%"), TD(h[1])) for h in header if h is not None]
+
     out = DIV(
       TABLE(
-        header_field("application", app),
-        header_field("service name", A(svcname, _href=URL_WITH_HOST(r=request, f='svcmon', vars={'svcname':svcname}))),
-        header_field("service type", svctype),
-        header_field("node name", A(node, _href=URL_WITH_HOST(r=request, f='svcmon', vars={'nodename':node}))),
-        header_field("action", action),
-        header_field("begin", str(begin)),
-        header_field("end", str(end)),
-        header_field("pid", A(pid, _href=URL_WITH_HOST(r=request, f='svcactions', vars={'pid':pid, 'hostname':node, 'perpage':0}))),
+        SPAN(header),
         TR(TD(msg, _colspan=2)),
       ),
       _style="width:400"
@@ -765,9 +771,25 @@ def alerts_apps_without_responsible():
 
     return dict(alerts=rows)
 
-def alerts_services_not_updated():
+def user_roles(uid):
+    q = db.auth_membership.user_id == uid
+    q &= db.auth_membership.group_id == db.auth_group.id
+    rows = db(q).select(db.auth_group.role)
+    return [r.role for r in rows]
+
+def user_apps(uid):
+    q = db.auth_user.id == uid
+    q &= db.auth_user.id == db.auth_membership.user_id
+    q &= db.auth_membership.group_id == db.auth_group.id
+    q &= db.auth_group.id == db.apps_responsibles.group_id
+    q &= db.apps_responsibles.app_id == db.apps.id
+    rows = db(q).select(db.apps.app, groupby=db.apps.id)
+    return [r.app for r in rows]
+
+def alerts_services_not_updated(user):
     """ Alert if service is not updated for 48h
     """
+    h = {}
     import datetime
     now = datetime.datetime.now()
     two_days_ago = now - datetime.timedelta(days=2)
@@ -781,22 +803,25 @@ def alerts_services_not_updated():
                 )
                )
 
-    rows = db(db.v_services.updated<two_days_ago).select()
+    q = db.v_services.updated<two_days_ago
+    if 'Manager' not in user_roles(user.id):
+        q &= db.v_services.svc_app.belongs(user_apps(user.id))
+
+    cancelled = []
+    body = []
+    rows = db(q).select()
     for row in rows:
-        h['subject'] = format_subject(row)
-        h['body'] = alert_format_body(DIV(
-          P(T("Last status update occured on %s."%str(row.updated))),
-          P(T("Service will be purged on %s"%str(row.updated + datetime.timedelta(days=3)))),
-        ), svcname=row.svc_name, app=row.svc_app, svctype=row.svc_type)
-        dups = db(db.alerts.subject==subject).select()
-        if len(dups) > 0:
-            """ don't raise a duplicate alert
-            """
-            continue
-        if row.mailto is None or row.mailto == "":
-            h['mailto'] = managers()
-        else:
-            h['mailto'] = row.mailto
+        msg = DIV(
+                "Last status update occured on %s."%str(row.updated),
+                BR(),
+                "This service will be purged on %s"%str(row.updated + datetime.timedelta(days=3)),
+              )
+        body.append(alert_format_body(msg, svcname=row.svc_name, app=row.svc_app, svctype=row.svc_type))
+
+    if len(rows) > 0:
+        h['body'] = SPAN(body)
+        h['subject'] = "service configurations not updated"
+        h['mailto'] = user.email
         send_alert(h)
         db.alerts.insert(subject=h['subject'],
                          body=h['body'],
@@ -804,6 +829,12 @@ def alerts_services_not_updated():
                          domain=domainname(row.svc_name),
                          sent_to=h['mailto'])
 
+    return dict(alerts=rows)
+
+def purge_services_not_updated():
+    import datetime
+    now = datetime.datetime.now()
+    three_days_ago = now - datetime.timedelta(days=3)
     """ Remove the service after 3 days
     """
     rows = db(db.v_services.updated<three_days_ago).select()
@@ -859,15 +890,6 @@ def alerts_svcmon_not_updated():
 
     return dict(deleted=rows)
 
-def user_apps(uid):
-    q = db.auth_user.id == uid
-    q &= db.auth_user.id == db.auth_membership.user_id
-    q &= db.auth_membership.group_id == db.auth_group.id
-    q &= db.auth_group.id == db.apps_responsibles.group_id
-    q &= db.apps_responsibles.app_id == db.apps.id
-    rows = db(q).select(db.apps.app)
-    return [r.app for r in rows]
-
 def alerts_failed_actions_not_acked():
     """ Actions not ackowleged : Alert responsibles & Acknowledge
         This function is meant to be scheduled daily, at night,
@@ -901,8 +923,8 @@ def alerts_failed_actions_not_acked():
     subject = T("unacknowledged failed actions")
     now = datetime.datetime.now()
     delay = datetime.timedelta(hours=24)
-    users = db(db.auth_user.id>0).select(db.auth_user.id,
-                                         db.auth_user.email)
+    q = db.auth_user.email_notifications==True
+    users = db(q).select(db.auth_user.id, db.auth_user.email,db.auth_user.email_notifications)
     rids = set([])
 
     for user in users:
@@ -964,8 +986,17 @@ def alerts_failed_actions_not_acked():
                        ids=','.join(map(str, rids)))
         db.executesql(sql)
 
-    return dict(alerts=rows)
+    return dict(users=users,alerts=rows)
 
+def cron_alerts():
+    q = db.auth_user.email_notifications==True
+    users = db(q).select(db.auth_user.id,
+                         db.auth_user.email)
+    h = {}
+    for user in users:
+        h[user.email] = alerts_services_not_updated(user)
+
+    return dict(done=h)
 
 def send_alert(h):
     """ Send mail alert

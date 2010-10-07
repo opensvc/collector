@@ -493,3 +493,5 @@ CREATE TABLE `sym_upload` (
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8
 
 alter table sym_upload add column batched integer default 0;
+
+alter table auth_user add column email_notifications varchar(1) default 'T';
