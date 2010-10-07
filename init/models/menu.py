@@ -71,7 +71,7 @@ response.menu = [
              [T('os lifecycle'), False,
               URL(request.application,'lifecycle','lifecycle_os')],
              [T('availability'), False,
-              URL(request.application,'default','svcmon_log')],
+              URL(request.application,'svcmon_log','svcmon_log')],
              [T('alerts'), False,
               URL(request.application,'default','alerts')],
          ]
