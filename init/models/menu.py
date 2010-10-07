@@ -83,7 +83,7 @@ response.menu = [
              [T('obsolescence setup'), False,
               URL(request.application,'obsolescence','obsolescence_config')],
              [T('applications'), False,
-              URL(request.application,'default','apps')],
+              URL(request.application,'apps','apps')],
              [T('drplan'), False,
               URL(request.application,'drplan','drplan')],
              [T('billing'), False,
