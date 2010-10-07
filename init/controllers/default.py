@@ -3218,7 +3218,7 @@ def update_sym_xml(symid, vars, vals):
             pass
 
     symmetrix = local_import('symmetrix', reload=True)
-    s = symmetrix.Vmax(p)
+    s = symmetrix.Vmax(dir)
 
     #
     # better to create hashes from the batch rather than
