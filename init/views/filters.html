@@ -218,7 +218,7 @@ def COLUMNS_ACTIVE():
                                getElementById("set_col_field").value="%(field)s";
                                getElementById("set_col_value").value=this.checked;
                                ajax("%(url)s",["set_col_table", "set_col_field", "set_col_value"],"set_col_dummy");
-                            """%dict(url=URL(r=request,f='ajax_set_user_prefs_column'),
+                            """%dict(url=URL(r=request,c='ajax',f='ajax_set_user_prefs_column'),
                                    table=request.function, field=a),
                    value=val,
                    _style='vertical-align:text-bottom',

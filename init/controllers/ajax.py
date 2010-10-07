@@ -1,3 +1,19 @@
+@auth.requires_login()
+def ajax_set_user_prefs_column():
+    field = request.vars.set_col_field
+    table = request.vars.set_col_table
+    visible = request.vars.set_col_value
+    sql = """replace into user_prefs_columns
+             (upc_user_id, upc_table, upc_field, upc_visible)
+             values
+             (%(uid)s, '%(table)s', '%(field)s', %(visible)s)
+          """%dict(uid=session.auth.user.id,
+                   table=table, field=field, visible=visible)
+    try:
+        db.executesql(sql)
+    except:
+        raise Exception(sql)
+
 def ajax_filter_cloud():
     val = request.vars.filtervalue
     fil = request.vars.addfilter

@@ -1458,22 +1458,6 @@ def _nodes_del(request):
     redirect(URL(r=request, f='nodes'))
 
 @auth.requires_login()
-def ajax_set_user_prefs_column():
-    field = request.vars.set_col_field
-    table = request.vars.set_col_table
-    visible = request.vars.set_col_value
-    sql = """replace into user_prefs_columns
-             (upc_user_id, upc_table, upc_field, upc_visible)
-             values
-             (%(uid)s, '%(table)s', '%(field)s', %(visible)s)
-          """%dict(uid=session.auth.user.id,
-                   table=table, field=field, visible=visible)
-    try:
-        db.executesql(sql)
-    except:
-        raise Exception(sql)
-
-@auth.requires_login()
 def nodes():
     if request.vars.action is not None and request.vars.action == "delnodes":
         _nodes_del(request)
@@ -3649,64 +3633,6 @@ class ex(Exception):
         self.value = value
     def __str__(self):
         return repr(self.value)
-
-@auth.requires_membership('Manager')
-def _drplan_clone_project(request):
-    prj_rows = db(db.drpprojects.drp_project==request.vars.cloneproject).select(db.drpprojects.drp_project_id)
-    if len(prj_rows) != 0:
-        response.flash = T("project '%(prj)s' already exists", dict(prj=request.vars.cloneproject))
-        return
-    db.drpprojects.insert(drp_project=request.vars.cloneproject)
-    q = db.drpprojects.drp_project==request.vars.cloneproject
-    dst_prj = db(q).select(db.drpprojects.drp_project_id)[0]
-    q = db.drpservices.drp_project_id==request.vars.prjlist
-    src_prj_rows = db(q).select(db.drpservices.drp_project_id,
-                                db.drpservices.drp_svcname,
-                                db.drpservices.drp_wave,)
-    for row in src_prj_rows:
-        db.drpservices.insert(drp_svcname=row.drp_svcname,
-                              drp_wave=row.drp_wave,
-                              drp_project_id=dst_prj.drp_project_id)
-    q = db.drpprojects.drp_project_id==request.vars.prjlist
-    src_prj = db(q).select(db.drpprojects.drp_project)[0]
-    response.flash = T("project '%(dst)s' cloned from '%(src)s'. %(num)s services DR configurations ported to the new project", dict(dst=request.vars.cloneproject, src=src_prj.drp_project, num=str(len(src_prj_rows))))
-    request.vars.prjlist = str(dst_prj.drp_project_id)
-    del request.vars.cloneproject
-
-@auth.requires_membership('Manager')
-def _drplan_add_project(request):
-    prj_rows = db(db.drpprojects.drp_project==request.vars.addproject).select(db.drpprojects.drp_project_id)
-    if len(prj_rows) != 0:
-        response.flash = T("project '%(prj)s' already exists", dict(prj=request.vars.addproject))
-        return
-    db.drpprojects.insert(drp_project=request.vars.addproject)
-    response.flash = T("project '%(prj)s' created", dict(prj=request.vars.addproject))
-    q = db.drpprojects.drp_project==request.vars.addproject
-    dst_prj = db(q).select(db.drpprojects.drp_project_id)[0]
-    request.vars.prjlist = str(dst_prj.drp_project_id)
-    del request.vars.addproject
-
-@auth.requires_membership('Manager')
-def _drplan_del_project(request):
-    db(db.drpprojects.drp_project_id == request.vars.prjlist).delete()
-    num_deleted = db(db.drpservices.drp_project_id == request.vars.prjlist).delete()
-    response.flash = T("project deleted. %(num)d services DR configurations dropped.", dict(num=num_deleted))
-
-@auth.requires_membership('Manager')
-def _drplan_set_wave(request):
-    svcs = ([])
-    for key in [ k for k in request.vars.keys() if 'check_' in k ]:
-        svcs += ([key[6:]])
-    for svc in svcs:
-        if request.vars.setwave == "del":
-                query = (db.drpservices.drp_svcname == svc)&(db.drpservices.drp_project_id == request.vars.prjlist)
-                db(query).delete()
-        else:
-            try:
-                db.drpservices.insert(drp_svcname=svc, drp_wave=request.vars.setwave, drp_project_id=request.vars.prjlist)
-            except:
-                query = (db.drpservices.drp_svcname == svc)&(db.drpservices.drp_project_id == request.vars.prjlist)
-                db(query).update(drp_wave=request.vars.setwave)
 
 @auth.requires_membership('Manager')
 def billing():

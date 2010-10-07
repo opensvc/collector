@@ -195,58 +195,49 @@ def format_nodenames(svc, key, new, cellclass=""):
   </tr>
   <tr class=box>
     <td colspan=99>
-      <table>
-        <tr>
-          <td> {{=T('Export')}}:</td>
-          <td> {{=T('set wave')}}:</td>
-          <td> {{=T('project')}}:</td>
-        </tr>
-        <tr>
-          <td>
-            {{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='drplan_csv', vars=vars))}}
-          </td>
-          <td>
-            {{=IMG(_src=URL(r=request,c='static',f='wave0.png'),_border=0,_onclick='javascript:document.svcform.setwave.value=0;document.svcform.submit()')}}
-            {{=IMG(_src=URL(r=request,c='static',f='wave1.png'),_border=0,_onclick='javascript:document.svcform.setwave.value=1;document.svcform.submit()')}}
-            {{=IMG(_src=URL(r=request,c='static',f='wave2.png'),_border=0,_onclick='javascript:document.svcform.setwave.value=2;document.svcform.submit()')}}
-            {{=IMG(_src=URL(r=request,c='static',f='wave3.png'),_border=0,_onclick='javascript:document.svcform.setwave.value=3;document.svcform.submit()')}}
-            {{=IMG(_src=URL(r=request,c='static',f='del.png'),_border=0,_title=T("remove the selected services from the DR plan"), _onclick='javascript:document.svcform.setwave.value="del";document.svcform.submit()')}}
-          </td>
-          <td width=11em>
-            <input name=delproject type=hidden>
-            <select name=prjlist onChange='document.svcform.submit()'>
-              <option value=0>choose</option>
-              {{for project in projects:
+      <div class=float>
+        <p>{{=T('Export')}}:</p>
+        {{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='drplan_csv', vars=vars))}}
+      </div>
+      <div class=float>
+        <p>{{=T('set wave')}}:</p>
+        {{=IMG(_src=URL(r=request,c='static',f='wave0.png'),_border=0,_onclick='javascript:document.svcform.setwave.value=0;document.svcform.submit()')}}
+        {{=IMG(_src=URL(r=request,c='static',f='wave1.png'),_border=0,_onclick='javascript:document.svcform.setwave.value=1;document.svcform.submit()')}}
+        {{=IMG(_src=URL(r=request,c='static',f='wave2.png'),_border=0,_onclick='javascript:document.svcform.setwave.value=2;document.svcform.submit()')}}
+        {{=IMG(_src=URL(r=request,c='static',f='wave3.png'),_border=0,_onclick='javascript:document.svcform.setwave.value=3;document.svcform.submit()')}}
+        {{=IMG(_src=URL(r=request,c='static',f='del.png'),_border=0,_title=T("remove the selected services from the DR plan"), _onclick='javascript:document.svcform.setwave.value="del";document.svcform.submit()')}}
+      </div>
+      <div class=float style='width:25em'>
+        <p>{{=T('project')}}:</p>
+        <input name=delproject type=hidden>
+        <select name=prjlist onChange='document.svcform.submit()'>
+          <option value=0>choose</option>
+           {{for project in projects:
               if str(project.drp_project_id) == str(request.vars.prjlist):
                   selected = 'selected'
               else:
                   selected = ''
                   pass
               }}
-              <option value={{=project.drp_project_id}} {{=selected}}>{{=project.drp_project_id}}: {{=project.drp_project}}</option>
-              {{pass}}
-            </select>
-            {{=IMG(_src=URL(r=request,c='static',f='add.png'),_border=0, _title=T("create new project"), _onclick='javascript:show_eid("addproject_row");document.svcform.addproject.focus()')}}
-            {{=IMG(_src=URL(r=request,c='static',f='clone.png'),_border=0, _title=T("clone the current project"), _onclick='javascript:show_eid("cloneproject_row");document.svcform.cloneproject.focus()')}}
-            {{=IMG(_src=URL(r=request,c='static',f='del.png'),_border=0, _title=T("trash the current project"), _onclick='javascript:document.svcform.delproject.value=1;document.svcform.submit()')}}
-            {{=A(IMG(_src=URL(r=request,c='static',f='gen.png'),_border=0, _title=T("generate the DR scripts for the current project")),_href=URL(r=request,f='drplan_scripts', vars=vars))}}
-          </td>
-        </tr>
-        <tr class='hidden' id='cloneproject_row'>
-          <td></td>
-          <td></td>
-          <td>
-            <input name=cloneproject onKeyPress="checkEnter(event)" onBlur="hide_eid('cloneproject_row')">
-          </td>
-        </tr>
-        <tr class='hidden' id='addproject_row'>
-          <td></td>
-          <td></td>
-          <td>
-            <input name=addproject onKeyPress="checkEnter(event)" onBlur="hide_eid('addproject_row')">
-          </td>
-        </tr>
-      </table>
+          <option value={{=project.drp_project_id}} {{=selected}}>{{=project.drp_project_id}}: {{=project.drp_project}}</option>
+            {{pass}}
+          </select>
+          {{=IMG(_src=URL(r=request,c='static',f='add.png'),_border=0, _title=T("create new project"), _onclick='javascript:show_eid("addproject_row");document.svcform.addproject.focus()')}}
+          {{=IMG(_src=URL(r=request,c='static',f='clone.png'),_border=0, _title=T("clone the current project"), _onclick='javascript:show_eid("cloneproject_row");document.svcform.cloneproject.focus()')}}
+          {{=IMG(_src=URL(r=request,c='static',f='del.png'),_border=0, _title=T("trash the current project"), _onclick='javascript:document.svcform.delproject.value=1;document.svcform.submit()')}}
+          {{=A(IMG(_src=URL(r=request,c='static',f='gen.png'),_border=0, _title=T("generate the DR scripts for the current project")),_href=URL(r=request,f='drplan_scripts', vars=vars))}}
+      </div>
+      <div class="spacer">
+        &nbsp;
+      </div>
+      <div class='hidden' id='cloneproject_row'>
+        <p>{{=T("Clone project name")}}</p>
+        <input name=cloneproject onKeyPress="checkEnter(event)" onBlur="hide_eid('cloneproject_row')">
+      </div>
+      <div class='hidden' id='addproject_row'>
+        <p>{{=T("New project name")}}</p>
+        <input name=addproject onKeyPress="checkEnter(event)" onBlur="hide_eid('addproject_row')">
+      </div>
     </td>
   </tr>
 </table>
