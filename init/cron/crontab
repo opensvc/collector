@@ -3,5 +3,5 @@
 59 23 * * * unxdev01 *default/cron_stats
 55 23 * * * unxdev01 *default/refresh_obsolescence
 0 1 * * * unxdev01 *default/viz_cron_cleanup
-1 5 * * * unxdev01 *default/cron_alerts_daily
-1 * * * * unxdev01 *default/cron_alerts_hourly
+1 5 * * * unxdev01 *alerts/cron_alerts_daily
+1 * * * * unxdev01 *alerts/cron_alerts_hourly
