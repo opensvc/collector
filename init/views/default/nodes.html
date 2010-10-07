@@ -181,7 +181,7 @@ function selected_nodes() {
               _type='button',
               _onClick="""
                   getElementById("node").value=selected_nodes();
-                  ajax("%(url)s",['node'],"perfcmp_div");
+                  ajax("%(url)s",['node', 'begin', 'end'],"perfcmp_div");
               """%dict(url=URL(r=request,f='ajax_perfcmp')),
             ),
   )
