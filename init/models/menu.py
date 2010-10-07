@@ -79,7 +79,7 @@ response.menu = [
     [T('admin'), False, '',
          [
              [T('users'), False,
-              URL(request.application,'default','users')],
+              URL(request.application,'users','users')],
              [T('obsolescence setup'), False,
               URL(request.application,'obsolescence','obsolescence_config')],
              [T('applications'), False,
