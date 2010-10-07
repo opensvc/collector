@@ -12,6 +12,8 @@ for key in ['obs_type',
             'obs_alert_date']:
     if not vars.has_key(key) or vars[key] is None: vars[key]=''
     pass
+
+timepicker = """Calendar.setup({inputField:this.id, ifFormat:"%Y-%m-%d %H:%M:%S", showsTime: true,timeFormat: "24" });"""
 }}
 
 {{=PANEL("nodes")}}
@@ -84,7 +86,10 @@ for key in ['obs_type',
         {{=u.obsolescence.obs_warn_date}}
       </div>
       <div class='hidden' id="div_warn_input_{{=u.obsolescence.id}}">
-        <input name="warn_date_{{=u.obsolescence.id}}" value="{{=u.obsolescence.obs_warn_date}}" size=15 
+        <input name="warn_date_{{=u.obsolescence.id}}"
+               id="warn_date_{{=u.obsolescence.id}}"
+               value="{{=u.obsolescence.obs_warn_date}}" size=15 
+               class="datetime" onFocus="{{=timepicker}}"
                onKeyPress='javascript:document.svcform.action.value="set_warn_date";
                                       document.getElementById("id_check_{{=u.obsolescence.id}}").checked=true;
                                       checkEnter(event);
@@ -97,7 +102,10 @@ for key in ['obs_type',
         {{=u.obsolescence.obs_alert_date}}
       </div>
       <div class='hidden' id="div_alert_input_{{=u.obsolescence.id}}">
-        <input name="alert_date_{{=u.obsolescence.id}}" value="{{=u.obsolescence.obs_alert_date}}" size=15 
+        <input name="alert_date_{{=u.obsolescence.id}}"
+               id="alert_date_{{=u.obsolescence.id}}"
+               value="{{=u.obsolescence.obs_alert_date}}" size=15
+               class="datetime" onFocus="{{=timepicker}}"
                onKeyPress='javascript:document.svcform.action.value="set_alert_date";
                                       document.getElementById("id_check_{{=u.obsolescence.id}}").checked=true;
                                       checkEnter(event);

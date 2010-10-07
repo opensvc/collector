@@ -219,6 +219,7 @@
 'New role name': 'Nouveau rôle',
 'New threshold value': 'Nouvelle valeur de seuil',
 'No asset information for %(node)s': "Pas d'information sur l'asset %(node)s",
+'No data available': 'No data available',
 'No databases in this application': 'Pas de base de données pour cette application',
 'No known state after %(date)s': "Pas d'état connu apès %(date)s",
 'No nodes selected': 'Aucun noeud séléctionné',

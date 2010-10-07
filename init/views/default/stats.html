@@ -1,5 +1,30 @@
 {{extend 'layout.html'}}
 {{include 'box.html'}}
+{{
+if stat_cpu_avg_day is None:
+   img_stat_cpu_avg_day = SPAN()
+else:
+   img_stat_cpu_avg_day = SPAN(
+         IMG(_src=URL(r=request,c='static',f=stat_cpu_avg_day)),
+         P(T("(yesterday's average)")),
+   )
+pass
+
+if stat_mem_avail is None:
+   img_stat_mem_avail = SPAN()
+else:
+   img_stat_mem_avail = SPAN(
+         IMG(_src=URL(r=request,c='static',f=stat_mem_avail)),
+         P(T("(yesterday's average)")),
+   )
+pass
+
+if stat_cpu_avg_day is None:
+   img_stat_disk_svc = SPAN()
+else:
+   img_stat_disk_svc = IMG(_src=URL(r=request,c='static',f=stat_disk_svc)),
+pass
+}}
 
 {{=DIV(
      DIV(
@@ -57,7 +82,7 @@
          _class='float',
        ),
        DIV(
-         IMG(_src=URL(r=request,c='static',f=stat_disk_svc)),
+         img_stat_disk_svc,
          _class='float',
        ),
        DIV(
@@ -69,13 +94,11 @@
      DIV(
        H1(T("Computing ressource usage")),
        DIV(
-         IMG(_src=URL(r=request,c='static',f=stat_cpu_avg_day)),
-         P(T("(yesterday's average)")),
+         img_stat_cpu_avg_day,
          _class='float',
        ),
        DIV(
-         IMG(_src=URL(r=request,c='static',f=stat_mem_avail)),
-         P(T("(yesterday's average)")),
+         img_stat_mem_avail,
          _class='float',
        ),
        DIV(

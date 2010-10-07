@@ -7,6 +7,8 @@
 {{
 vars = request.vars
 
+timepicker = """Calendar.setup({inputField:this.id, ifFormat:"%Y-%m-%d %H:%M:%S", showsTime: true,timeFormat: "24" });"""
+
 def sort_by_avail(x, y):
     return cmp(h[x]['availability'], h[y]['availability'])
 
@@ -351,18 +353,18 @@ function update_ack_dates(b, e) {
           <td>
             {{=T("Begin")}}
             <br>
-            <input name="ack_begin" id="ack_begin" value=""
+            <input name="ack_begin" id="ack_begin" value="" class="datetime"
                    onKeyPress="checkEnter(event)"
-                   onFocus="getElementById('ackflag').value=1"
+                   onFocus="getElementById('ackflag').value=1;{{=timepicker}}"
                    onBlur="getElementById('ackflag').value=0"
             >
           </td>
           <td>
             {{=T("End")}}
             <br>
-            <input name="ack_end" id="ack_end" value=""
+            <input name="ack_end" id="ack_end" value="" class="datetime"
                    onKeyPress="checkEnter(event)"
-                   onFocus="getElementById('ackflag').value=1"
+                   onFocus="getElementById('ackflag').value=1;{{=timepicker}}"
                    onBlur="getElementById('ackflag').value=0"
             >
           </td>

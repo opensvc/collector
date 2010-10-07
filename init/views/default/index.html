@@ -884,11 +884,11 @@ def obs_miss():
         ),
         TR(
           TD(T("Warn")),
-          TD(A(obswarnmiss, _href=(URL(r=request, f='obsolescence_config', vars={'obs_warn_date': 'empty|0000-00-00 00:00:00'})))),
+          TD(A(obswarnmiss, _href=(URL(r=request, c='obsolescence', f='obsolescence_config', vars={'obs_warn_date': 'empty|0000-00-00 00:00:00'})))),
         ),
         TR(
           TD(T("Alert"), _class="cell1"),
-          TD(A(obsalertmiss, _href=(URL(r=request, f='obsolescence_config', vars={'obs_alert_date': 'empty|0000-00-00 00:00:00'}))), _class="cell1"),
+          TD(A(obsalertmiss, _href=(URL(r=request, c='obsolescence', f='obsolescence_config', vars={'obs_alert_date': 'empty|0000-00-00 00:00:00'}))), _class="cell1"),
         ),
       ),
       _class="dashboard",

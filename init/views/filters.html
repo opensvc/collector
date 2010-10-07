@@ -168,7 +168,7 @@ def DB_FILTERS_AVAIL(filters):
                      _onChange="""javascript:toggle_filter_value_input();
                                   ajax("%(url)s",['filtervalue', 'addfilter'],"cloud");
                                   getElementById("cloud").className="cloud_shown";
-                               """%dict(url=URL(r=request,f='ajax_filter_cloud')),
+                               """%dict(url=URL(r=request,c='ajax',f='ajax_filter_cloud')),
               ),
             ),
             TD(
@@ -187,7 +187,7 @@ def DB_FILTERS_AVAIL(filters):
                     _onKeyUp="""
                        clearTimeout(timer);
                        timer=setTimeout(function validate(){ajax('%(url)s', ['filtervalue', 'addfilter'], 'cloud')}, 800);
-                    """%dict(url=URL(r=request,f='ajax_filter_cloud')),
+                    """%dict(url=URL(r=request,c='ajax',f='ajax_filter_cloud')),
                     _style='width:18em',
               ),
               _colspan=2,
