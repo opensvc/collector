@@ -73,7 +73,7 @@ response.menu = [
              [T('availability'), False,
               URL(request.application,'svcmon_log','svcmon_log')],
              [T('alerts'), False,
-              URL(request.application,'default','alerts')],
+              URL(request.application,'alerts','alerts')],
          ]
     ],
     [T('admin'), False, '',
