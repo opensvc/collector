@@ -85,7 +85,7 @@ response.menu = [
              [T('applications'), False,
               URL(request.application,'default','apps')],
              [T('drplan'), False,
-              URL(request.application,'default','drplan')],
+              URL(request.application,'drplan','drplan')],
              [T('billing'), False,
               URL(request.application,'default','billing')],
          ]
