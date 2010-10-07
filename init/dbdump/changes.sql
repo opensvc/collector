@@ -495,3 +495,7 @@ CREATE TABLE `sym_upload` (
 alter table sym_upload add column batched integer default 0;
 
 alter table auth_user add column email_notifications varchar(1) default 'T';
+
+alter table services modify svc_drnoaction varchar(1) default 'F';
+
+update services set svc_drnoaction='F';

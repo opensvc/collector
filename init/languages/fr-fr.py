@@ -219,6 +219,7 @@
 'No databases in this application': 'Pas de base de données pour cette application',
 'No known state after %(date)s': "Pas d'état connu apès %(date)s",
 'No nodes selected': 'Aucun noeud séléctionné',
+'No service information for %(node)s': "Pas d'informations sur le service %(node)s",
 'Node': 'Noeud',
 'Node check alerts': 'Alertes des sondes de noeud',
 'Node name': 'Nom de noeud',
