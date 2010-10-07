@@ -294,46 +294,6 @@ def index():
                 checks=checks,
                )
 
-def alert_format_body(msg="", app=None, svcname=None, node=None, action=None,
-                      begin=None, end=None, svctype=None, pid=None):
-    def header_field(title=None, value=None, fmt=None):
-        if value is None:
-            return None
-        if fmt is None:
-            fmt = value
-        return (B(title),fmt)
-
-    def URL_WITH_HOST(a=None, c=None, f=None, r=None, args=[], vars={}, host=None, scheme="https"):
-        path = URL(a=a,c=c,f=f,r=r,args=args,vars=vars)
-        try:
-            import applications.init.modules.config as cf
-            if host is None or not isinstance(host,str): host = cf.http_host
-        except:
-            pass
-        if not isinstance(scheme,str): scheme = r.env.wsgi_url_scheme
-        return '%s://%s%s' % (scheme,host,path)
-        return path
-
-    header = []
-    header.append(header_field("application", app))
-    header.append(header_field("service name", svcname, A(svcname, _href=URL_WITH_HOST(r=request, f='svcmon', vars={'svcname':svcname}))))
-    header.append(header_field("service type", svctype))
-    header.append(header_field("node name", node, A(node, _href=URL_WITH_HOST(r=request, f='svcmon', vars={'nodename':node}))))
-    header.append(header_field("action", action))
-    header.append(header_field("begin", begin, str(begin)))
-    header.append(header_field("end", end, str(end)))
-    header.append(header_field("pid", pid, A(pid, _href=URL_WITH_HOST(r=request, f='svcactions', vars={'pid':pid, 'hostname':node, 'perpage':0}))))
-    header = [TR(TD(h[0], _width="40%"), TD(h[1])) for h in header if h is not None]
-
-    out = DIV(
-      TABLE(
-        SPAN(header),
-        TR(TD(msg, _colspan=2)),
-      ),
-      _style="width:400"
-    )
-    return out
-
 @auth.requires_login()
 def alerts():
     columns = dict(
