@@ -428,6 +428,7 @@
 "application '%(count)s' deleted": "application '%(count)s' supprimée",
 'application code': "code d'application",
 'applications': 'applications',
+'applications with no declared responsibles': 'applications with no declared responsibles',
 'availability': 'disponibilité',
 'begin': 'début',
 'billing': 'facturation',
