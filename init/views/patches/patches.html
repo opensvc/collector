@@ -54,7 +54,7 @@ pass
                getElementById("rowid").value="%(id)s";
                ajax("%(url)s",['node', 'rowid'],"id_%(id)s");
                show_eid("tr_id_%(id)s");
-            """%dict(url=URL(r=request,f='ajax_node'),
+            """%dict(url=URL(r=request,c='default',f='ajax_node'),
                      node=patch.patches.patch_nodename,
                      id=patch.patches.id,
                     ),

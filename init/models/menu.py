@@ -61,7 +61,7 @@ response.menu = [
              [T('packages'), False,
               URL(request.application,'packages','packages')],
              [T('patches'), False,
-              URL(request.application,'default','patches')],
+              URL(request.application,'patches','patches')],
          ]
     ],
     [T('stats'), False, '',
