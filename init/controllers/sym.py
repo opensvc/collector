@@ -158,35 +158,65 @@ def batch_files():
 
     rows = db(db.sym_upload.batched != 1).select()
     for row in rows:
-        f = {}
-        if row.bin_file != '':
-            dst_prefix = row.bin_file.replace('sym_upload.bin_file.', '')
-            src = 'applications'+str(URL(r=request,c='uploads', f=row.bin_file))
-            dst = os.path.join(os.sep, 'tmp', dst_prefix+'.bin')
-            f['bin'] = (src, dst)
-        if row.aclx_file != '' and row.bin_file != '':
-            src = 'applications'+str(URL(r=request,c='uploads', f=row.aclx_file))
-            dst = os.path.join(os.sep, 'tmp', dst_prefix+'.aclx')
-            f['aclx'] = (src, dst)
-        if len(f) == 0:
-            db(db.sym_upload.id==row.id).delete()
-            continue
-        for src, dst in f.values():
-            cmd = scp + [src, config.sym_node+':'+dst]
-            p = Popen(cmd, stdout=PIPE, stderr=PIPE)
-            out, err = p.communicate()
-            if p.returncode != 0:
-                raise Exception(out, err, ' '.join(cmd))
+        # set double batch run protection flag
+        db(db.sym_upload.id==row.id).update(batched=1)
 
-        cmd = ssh + [config.sym_node, 'sudo', '-E',
-                     '/opt/opensvc/bin/nodemgr',
-                     '--symcli-db-file', f['bin'][1], 'pushsym']
+        # create a dir on sym node to host data
+        dst_dir = os.path.join(os.sep, 'tmp', os.path.basename(row.archive))
+        cmd = ssh + [config.sym_node, 'mkdir', dst_dir]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
         if p.returncode != 0:
-            raise Exception(out, err, ' '.join(cmd))
+            raise Exception('failed create dir %s sym node'%dst_dir)
 
-        db(db.sym_upload.id==row.id).update(batched=1)
+        # copy the archive to symnode
+        if row.archive == "":
+            db(db.sym_upload.id==row.id).delete()
+            continue
+        src = 'applications'+str(URL(r=request,c='uploads', f=row.archive))
+        dst = os.path.join(dst_dir, os.path.basename(row.archive))
+        cmd = scp + [src, config.sym_node+':'+dst]
+        p = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        out, err = p.communicate()
+        if p.returncode != 0:
+            raise Exception('failed to transfert the archive to sym node')
+
+        # uncompress archive on symnode
+        compress_opts = {'gz': '-z',
+                         'Z': '-Z',
+                         'tar': '',
+                         'bz2': '-j'}
+        suffix = src.split('.')[-1]
+        if suffix not in compress_opts:
+            raise Exception("%s archive format is not supported. try %s"%(suffix, ', '.join(compress_opts.keys())))
+
+        compress_opt = compress_opts[suffix]
+        cmd = ssh + [config.sym_node, 'tar', compress_opt, '-xvf', dst,
+                     '-C', dst_dir]
+        p = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        out, err = p.communicate()
+        if p.returncode != 0:
+            raise Exception('failed to explode archive')
+
+        # identify the binfile
+        files = out.split('\n')
+        binfiles = [f for f in files if f=='symapi_db.bin']
+        if len(binfiles) == 0:
+            raise Exception('no bin file found in archive')
+        elif len(binfiles) > 1:
+            raise Exception('only one bin file is allowed in archive')
+        binfile = os.path.join(dst_dir, binfiles[0])
+
+        # run nodemgr on archive content
+        cmd = ssh + [config.sym_node, 'sudo', '-E',
+                     '/opt/opensvc/bin/nodemgr',
+                     '--symcli-db-file', binfile, 'pushsym']
+        p = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        out, err = p.communicate()
+        if p.returncode != 0:
+            raise Exception('failed to compute the data on sym node')
+
+        db(db.sym_upload.id==row.id).delete()
 
 @auth.requires_login()
 def index():
@@ -203,18 +233,18 @@ def index():
         syms.append(sym_info(os.path.basename(d)))
 
     form = SQLFORM(db.sym_upload,
-                   fields=['name',
-                           'bin_file',
-                           'aclx_file'],
-                   labels={'name': 'Sym ID',
-                           'bin_file': 'Sym DB',
-                           'aclx_file': 'Sym ACLX'},
-                   col3={'bin_file': T('Only one symmetrix should be dumped in this file.'),
-                         'aclx_file': T('The file produced by : "%(s)s"'%dict(s="symaccess -sid <SymmID> -file <BackupFileName> backup"))},
+                   fields=['archive'],
+                   col3={'archive': """An archive produced from the 'se' directory of an emcgrab file tree by the command 'tar cf - */*bin */*aclx *bin | gzip -c >foo.tar.gz'"""},
+                   labels={'archive': 'archive'},
            )
     if form.accepts(request.vars, session):
-        batch_files()
-        response.flash = T('file uploaded')
+        try:
+            batch_files()
+            response.flash = T('file uploaded')
+        except:
+            import sys
+            e = sys.exc_info()
+            response.flash = str(e[1])
 
     return dict(syms=syms, form=form)
 
