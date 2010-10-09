@@ -227,18 +227,6 @@ def batch_files():
 
 @auth.requires_login()
 def index():
-    import glob
-    dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
-    pattern = "[0-9]*"
-    sym_dirs = glob.glob(os.path.join(dir, pattern))
-    syms = []
-    perms = _domain_perms().split('|')
-
-    for d in sym_dirs:
-        if '%' not in perms and os.path.basename(d) not in perms:
-            continue
-        syms.append(sym_info(os.path.basename(d)))
-
     form = SQLFORM(db.sym_upload,
                    fields=['archive'],
                    col3={'archive': """An archive produced from the 'se' directory of an emcgrab file tree by the command 'tar cf - */*bin */*aclx *bin | gzip -c >foo.tar.gz'"""},
@@ -252,6 +240,18 @@ def index():
             import sys
             e = sys.exc_info()
             response.flash = str(e[1])
+
+    import glob
+    dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
+    pattern = "[0-9]*"
+    sym_dirs = glob.glob(os.path.join(dir, pattern))
+    syms = []
+    perms = _domain_perms().split('|')
+
+    for d in sym_dirs:
+        if '%' not in perms and os.path.basename(d) not in perms:
+            continue
+        syms.append(sym_info(os.path.basename(d)))
 
     return dict(syms=syms, form=form)
 
