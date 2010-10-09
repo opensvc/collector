@@ -111,7 +111,7 @@ def format_mon_nodname(svc, newsvc=True, cellclass=""):
                    getElementById("rowid").value="%(id)s";
                    ajax("%(url)s",['node', 'rowid'],"id_%(id)s");
                    show_eid("tr_id_%(id)s");
-                 """%dict(url=URL(r=request,f='ajax_node'),
+                 """%dict(url=URL(r=request,c='ajax_node',f='ajax_node'),
                           node=svc.mon_nodname,
                           id=svc.svc_name,
                          ),

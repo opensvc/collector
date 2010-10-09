@@ -70,7 +70,7 @@ def format_nodename(nodename, svcname, cellclass=""):
                    getElementById("rowid").value="%(id)s";
                    ajax("%(url)s",['node', 'rowid'],"id_%(id)s");
                    show_eid("tr_id_%(id)s");
-                 """%dict(url=URL(r=request,c='default',f='ajax_node'),
+                 """%dict(url=URL(r=request,c='ajax_node',f='ajax_node'),
                           node=nodename,
                           id=svcname,
                          ),
