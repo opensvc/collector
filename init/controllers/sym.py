@@ -167,6 +167,7 @@ def batch_files():
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
         if p.returncode != 0:
+            db(db.sym_upload.id==row.id).update(batched=0)
             raise Exception('failed create dir %s sym node'%dst_dir)
 
         # copy the archive to symnode
@@ -179,6 +180,7 @@ def batch_files():
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
         if p.returncode != 0:
+            db(db.sym_upload.id==row.id).update(batched=0)
             raise Exception('failed to transfert the archive to sym node')
 
         # uncompress archive on symnode
@@ -188,6 +190,7 @@ def batch_files():
                          'bz2': '-j'}
         suffix = src.split('.')[-1]
         if suffix not in compress_opts:
+            db(db.sym_upload.id==row.id).update(batched=0)
             raise Exception("%s archive format is not supported. try %s"%(suffix, ', '.join(compress_opts.keys())))
 
         compress_opt = compress_opts[suffix]
@@ -196,14 +199,17 @@ def batch_files():
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
         if p.returncode != 0:
+            db(db.sym_upload.id==row.id).update(batched=0)
             raise Exception('failed to explode archive')
 
         # identify the binfile
         files = out.split('\n')
         binfiles = [f for f in files if f=='symapi_db.bin']
         if len(binfiles) == 0:
+            db(db.sym_upload.id==row.id).update(batched=0)
             raise Exception('no bin file found in archive')
         elif len(binfiles) > 1:
+            db(db.sym_upload.id==row.id).update(batched=0)
             raise Exception('only one bin file is allowed in archive')
         binfile = os.path.join(dst_dir, binfiles[0])
 
@@ -214,6 +220,7 @@ def batch_files():
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
         if p.returncode != 0:
+            db(db.sym_upload.id==row.id).update(batched=0)
             raise Exception('failed to compute the data on sym node')
 
         db(db.sym_upload.id==row.id).delete()
