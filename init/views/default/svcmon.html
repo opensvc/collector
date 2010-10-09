@@ -315,7 +315,7 @@ def format_generic(svc, key, newsvc=True, cellclass=""):
                ajax("%(url)s",['mon_svcname'],"msg__%(mon_svcname)s");
                getElementById("panel_msg_%(a)s").className="panel_shown";
                getElementById("panel_msg_%(a)s").style.top=event.pageY+'px';
-            """%dict(url=URL(r=request,f='ajax_svc_message_load'),
+            """%dict(url=URL(r=request,c='ajax_messages',f='ajax_svc_message_load'),
                      mon_svcname=svc.mon_svcname,
                      a=svc.mon_svcname.replace('.', '_')
                     ),
@@ -338,7 +338,7 @@ def format_generic(svc, key, newsvc=True, cellclass=""):
                 getElementById("msg_img_%(mon_svcname)s").src="%(img1)s";
               else
                 getElementById("msg_img_%(mon_svcname)s").src="%(img0)s";
-            """%dict(url=URL(r=request,f='ajax_svc_message_save'),
+            """%dict(url=URL(r=request, c='ajax_messages', f='ajax_svc_message_save'),
                      mon_svcname=svc.mon_svcname,
                      a=svc.mon_svcname.replace('.', '_'),
                      img0=URL(r=request,c='static',f='msg0.png'),
