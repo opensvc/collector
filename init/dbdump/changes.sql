@@ -502,6 +502,6 @@ update services set svc_drnoaction='F';
 
 drop table sym_upload;
 
-CREATE TABLE `sym_upload` (`id` int(11) NOT NULL AUTO_INCREMENT,`name` varchar(512) DEFAULT NULL,archive varchar(512) DEFAULT NULL,`added` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,`batched` int(11) DEFAULT '0', PRIMARY KEY (`id`) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
+CREATE TABLE `sym_upload` (`id` int(11) NOT NULL AUTO_INCREMENT,`name` varchar(512) DEFAULT NULL,archive varchar(512) DEFAULT NULL,`added` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,`batched` int(11) DEFAULT '0', PRIMARY KEY (`id`)) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
 
 alter table sym_upload drop column name;
