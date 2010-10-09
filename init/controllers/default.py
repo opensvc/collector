@@ -680,11 +680,6 @@ def svcmon_viz_img(services):
     img = str(URL(r=request,c='static',f=os.path.basename(fname)))
     return img
 
-def ajax_svcmon_viz():
-    s = svcmon()
-    img = svcmon_viz_img(s['services'])
-    return IMG(_src=img, _border=0)
-
 def svcmon_viz():
     request.vars['perpage'] = 0
     s = svcmon()
