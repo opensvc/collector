@@ -259,7 +259,7 @@ def format_generic(svc, key, newsvc=True, cellclass=""):
           pass
 
       if svc.err>0:
-          err = A(IMG(_src=URL(r=request,c='static',f='exclamation_red.png'), _border=0, _title="%d unaknowledged errors"%svc.err), _href=URL(r=request,f='svcactions', vars={'svcname': svc.svc_name, 'status': 'err', 'ack': '!1|empty'}))
+          err = A(IMG(_src=URL(r=request,c='static',f='exclamation_red.png'), _border=0, _title="%d unaknowledged errors"%svc.err), _href=URL(r=request,c='svcactions',f='svcactions', vars={'svcname': svc.svc_name, 'status': 'err', 'ack': '!1|empty'}))
       else:
           err = ''
           pass
@@ -293,7 +293,7 @@ def format_generic(svc, key, newsvc=True, cellclass=""):
                _src=URL(r=request,c='static',f='action16.png'),
                _border=0,
              ),
-             _href=URL(request.application,'default','svcactions?svcname='+svc.mon_svcname+'&status_log=empty&begin=>'+yesterday)
+             _href=URL(request.application,'svcactions','svcactions?svcname='+svc.mon_svcname+'&status_log=empty&begin=>'+yesterday)
            )
         }}
         {{pass}}
