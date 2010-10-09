@@ -812,14 +812,12 @@ db.define_table('checks_live',
     migrate=False)
 
 db.define_table('checks_defaults',
-    Field('id'),
     Field('chk_type', 'string', length=10, writable=False),
     Field('chk_low', 'integer'),
     Field('chk_high', 'integer'),
     migrate=False)
 
 db.define_table('checks_settings',
-    Field('id', writable=False),
     Field('chk_nodename', 'string', length=60, writable=False),
     Field('chk_svcname', 'string', length=60, writable=False),
     Field('chk_instance', 'string', length=60, writable=False),

@@ -18,7 +18,7 @@ def checks_defaults_insert():
                 )
     if form.accepts(request.vars):
         response.flash = T("edition recorded")
-        redirect(URL(r=request, f='index'))
+        redirect(URL(r=request, c='checks', f='checks'))
     elif form.errors:
         response.flash = T("errors in form")
     return dict(form=form)
@@ -47,8 +47,7 @@ def checks_settings_insert():
     form = SQLFORM(db.checks_settings,
                  record=record,
                  deletable=True,
-                 hidden_fields=['id',
-                                'chk_changed',
+                 hidden_fields=['chk_changed',
                                 'chk_changed_by'],
                  fields=['chk_nodename',
                          'chk_svcname',
@@ -73,7 +72,7 @@ def checks_settings_insert():
         response.flash = T("edition recorded")
         db(q).update(chk_changed=now,
                      chk_changed_by=user_name())
-        redirect(URL(r=request, f='index'))
+        redirect(URL(r=request, c='checks', f='checks'))
     elif form.errors:
         response.flash = T("errors in form")
     return dict(form=form, record=record)
