@@ -703,11 +703,6 @@ def svcmon_csv():
     return str(svcmon()['services'])
 
 @auth.requires_login()
-def services():
-    rows = db().select(db.services.ALL)
-    return dict(services=rows)
-
-@auth.requires_login()
 def ajax_svc_message_save():
     vars = {
             'msg_svcname': request.vars.svcname,
