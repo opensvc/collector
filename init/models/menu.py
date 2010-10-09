@@ -53,7 +53,7 @@ response.menu = [
              [T('services'), False,
               URL(request.application,'default','svcmon')],
              [T('nodes'), False,
-              URL(request.application,'default','nodes')],
+              URL(request.application,'nodes','nodes')],
              [T('actions'), False,
               URL(request.application,'svcactions','svcactions?begin=>'+yesterday+'&status_log=empty')],
              [T('checks'), False,
