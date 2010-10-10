@@ -52,6 +52,10 @@ class VmaxView(object):
         l += self.prefix("devices: "+','.join(self.sg))
         return '\n'.join(l)
 
+class VmaxFiconDev(object):
+    def __init__(self, xml):
+        self.devname = xml.find("Dev_Info/dev_name").text
+
 class VmaxDev(object):
     def __init__(self, xml):
         self.info = {}
@@ -64,6 +68,7 @@ class VmaxDev(object):
         self.diskgroup_name = ""
         self.view = []
         self.wwn = ""
+        self.ficon = False
 
         try:
             self.megabytes = int(xml.find("Capacity/megabytes").text)
@@ -113,6 +118,7 @@ class VmaxDev(object):
         l += self.prefix('meta: %s'%','.join(self.meta))
         l += self.prefix('view: %s'%','.join(self.view))
         l += self.prefix('wwn: %s'%self.wwn)
+        l += self.prefix('ficon: %s'%self.ficon)
         return '\n'.join(l)
 
     def __iadd__(self, o):
@@ -250,6 +256,7 @@ class Vmax(object):
             self.sym_diskgroup()
             self.sym_disk()
             self.sym_dev()
+            self.sym_ficondev()
             self.sym_meta()
             self.sym_view()
 
@@ -271,7 +278,10 @@ class Vmax(object):
         dump = os.path.join(self.xml_dir, 'info.dump')
         self.xml_mtime = os.stat(xml).st_mtime
         dump_mtime = os.stat(dump).st_mtime
+        module_mtime = os.stat(__file__).st_mtime
         if self.xml_mtime > dump_mtime:
+            return True
+        if module_mtime > dump_mtime:
             return True
         return False
 
@@ -319,6 +329,13 @@ class Vmax(object):
             self.disk[o.id] = o
             self.info['disk_count'] += 1
             self.diskgroup[int(o.info['disk_group'])] += o
+        elif isinstance(o, VmaxFiconDev):
+            dev = self.dev[o.devname]
+            dev.ficon = True
+            dev.view.append('Mainframe')
+            dg = dev.diskgroup
+            if dg is not None:
+	        self.diskgroup[dg].add_masked_dev(dev)
         elif isinstance(o, VmaxDev):
             disk_id = o.backend[0]['id']
             if disk_id in self.disk:
@@ -380,6 +397,12 @@ class Vmax(object):
         tree = self.xmltree('sym_dev_info')
         for e in tree.getiterator('Device'):
             self += VmaxDev(e)
+        del tree
+
+    def sym_ficondev(self):
+        tree = self.xmltree('sym_ficondev_info')
+        for e in tree.getiterator('Device'):
+            self += VmaxFiconDev(e)
         del tree
 
     def sym_meta(self):
