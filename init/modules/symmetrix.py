@@ -456,7 +456,7 @@ class Vmax(object):
         return self.ig
 
     def get_sym_view(self):
-        if len(self.info) == 0:
+        if len(self.view) == 0:
             self.view = self.load('view.dump')
         return self.view
 

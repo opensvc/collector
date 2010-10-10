@@ -1,8 +1,44 @@
 import os
 import re
+from subprocess import *
 from xml.etree.ElementTree import ElementTree, SubElement
+
 symmetrix = local_import('symmetrix', reload=True)
 config = local_import('config', reload=True)
+
+@auth.requires_login()
+def index():
+    """
+    Format an upload form and a list of known symmetrix arrays.
+    Each array can be drilled-down (ajax)
+    """
+    form = SQLFORM(db.sym_upload,
+                   fields=['archive'],
+                   col3={'archive': """An archive produced from the 'se' directory of an emcgrab file tree by the command 'tar cf - */*bin */*aclx *bin | gzip -c >foo.tar.gz'"""},
+                   labels={'archive': 'archive'},
+           )
+    if form.accepts(request.vars, session):
+        try:
+            batch_files()
+            response.flash = T('file uploaded')
+        except:
+            import sys
+            e = sys.exc_info()
+            response.flash = str(e[1])
+
+    import glob
+    dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
+    pattern = "[0-9]*"
+    sym_dirs = glob.glob(os.path.join(dir, pattern))
+    syms = []
+    perms = _domain_perms().split('|')
+
+    for d in sym_dirs:
+        if '%' not in perms and os.path.basename(d) not in perms:
+            continue
+        syms.append(sym_info(os.path.basename(d)))
+
+    return dict(syms=syms, form=form)
 
 def write_csv(fname, buff):
     try:
@@ -19,6 +55,9 @@ def write_all_csv(dir):
     return files
 
 def sym_all_csv():
+    """
+    Create a tarball containing all data in csv format for a given symid.
+    """
     import os
     import tarfile
     import tempfile
@@ -190,11 +229,10 @@ def sym_info(symid):
     d['mtime'] = mtime(symid, 'sym_info')
     return d
 
-from subprocess import *
-
 def batch_files():
     if not hasattr(config, 'sym_node'):
-        return
+        raise Exception('no known sym compute node. report to site admins.')
+
     scp = ['scp', '-o', 'StrictHostKeyChecking=no', '-o', 'ForwardX11=no']
     ssh = ['ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'ForwardX11=no', '-t']
 
@@ -267,36 +305,6 @@ def batch_files():
 
         db(db.sym_upload.id==row.id).delete()
 
-@auth.requires_login()
-def index():
-    form = SQLFORM(db.sym_upload,
-                   fields=['archive'],
-                   col3={'archive': """An archive produced from the 'se' directory of an emcgrab file tree by the command 'tar cf - */*bin */*aclx *bin | gzip -c >foo.tar.gz'"""},
-                   labels={'archive': 'archive'},
-           )
-    if form.accepts(request.vars, session):
-        try:
-            batch_files()
-            response.flash = T('file uploaded')
-        except:
-            import sys
-            e = sys.exc_info()
-            response.flash = str(e[1])
-
-    import glob
-    dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
-    pattern = "[0-9]*"
-    sym_dirs = glob.glob(os.path.join(dir, pattern))
-    syms = []
-    perms = _domain_perms().split('|')
-
-    for d in sym_dirs:
-        if '%' not in perms and os.path.basename(d) not in perms:
-            continue
-        syms.append(sym_info(os.path.basename(d)))
-
-    return dict(syms=syms, form=form)
-
 def sym_diskgroup():
     symid = request.vars.arrayid
     dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
@@ -306,6 +314,59 @@ def sym_diskgroup():
     d = []
     for dg in s.diskgroup.values():
         d.append(html_diskgroup(dg))
+    return DIV(d)
+
+def html_view(view):
+    d = DIV(
+          DIV(
+            H3(view.view_name),
+            _class='sym_float',
+            _style='width:18em',
+          ),
+          DIV(
+            B('storage group: '),
+            BR(),
+            '%s (%d)'%(view.stor_grpname, len(view.sg)),
+            HR(),
+            SPAN(map(P, view.sg)),
+            _class='sym_float',
+            _style='width:12em',
+          ),
+          DIV(
+            B('port group: '),
+            BR(),
+            '%s (%d)'%(view.port_grpname, len(view.pg)),
+            HR(),
+            SPAN(map(P, view.pg)),
+            _class='sym_float',
+            _style='width:12em',
+          ),
+          DIV(
+            B('initiator group: '),
+            BR(),
+            '%s (%d)'%(view.init_grpname, len(view.ig)),
+            HR(),
+            SPAN(map(P, view.ig)),
+            _class='sym_float',
+            _style='width:12em',
+          ),
+          DIV(
+            '',
+            _class='spacer',
+          ),
+          _class='sym_diskgroup',
+        )
+    return d
+
+def sym_view():
+    symid = request.vars.arrayid
+    dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
+    p = os.path.join(dir, symid)
+    s = symmetrix.Vmax(p)
+    s.get_sym_view()
+    d = []
+    for view in s.view.values():
+        d.append(html_view(view))
     return DIV(d)
 
 def html_dev(dev):
@@ -324,7 +385,7 @@ def html_dev(dev):
     return l
 
 def filter_parse(symid, f):
-    key = 'filter_%s_%s'%(f,symid)
+    key = 'dev_filter_%s_%s'%(f,symid)
     if key in request.vars:
         value = request.vars[key]
     else:
@@ -431,8 +492,8 @@ def sym_dev_csv():
 
 def sym_dev():
     symid = request.vars.arrayid
-    if 'dev_perpage' in request.vars:
-        perpage = int(request.vars.dev_perpage)
+    if 'dev_perpage_'+symid in request.vars:
+        perpage = int(request.vars['dev_perpage_'+symid])
     else:
         perpage = 20
     line_count = 0
@@ -478,15 +539,15 @@ def sym_dev():
     def __ajax():
         return """ajax("%(url)s",
                        ["arrayid",
-                        "dev_perpage",
-                        "filter_conf_%(symid)s",
-                        "filter_meta_%(symid)s",
-                        "filter_metaflag_%(symid)s",
-                        "filter_size_%(symid)s",
-                        "filter_dg_%(symid)s",
-                        "filter_view_%(symid)s",
-                        "filter_wwn_%(symid)s",
-                        "filter_dev_%(symid)s"],
+                        "dev_perpage_%(symid)s",
+                        "dev_filter_conf_%(symid)s",
+                        "dev_filter_meta_%(symid)s",
+                        "dev_filter_metaflag_%(symid)s",
+                        "dev_filter_size_%(symid)s",
+                        "dev_filter_dg_%(symid)s",
+                        "dev_filter_view_%(symid)s",
+                        "dev_filter_wwn_%(symid)s",
+                        "dev_filter_dev_%(symid)s"],
                        "sym_dev_%(symid)s");
                   getElementById("sym_dev_%(symid)s").innerHTML='%(spinner)s';
                 """%dict(url=URL(r=request,f='sym_dev'),
@@ -515,49 +576,49 @@ def sym_dev():
             ),
             TR(
               INPUT(
-                _id='filter_dev_'+symid,
+                _id='dev_filter_dev_'+symid,
                 _value=filter_dev_value,
                 _size=5,
                 _onKeyPress=_ajax()
               ),
               INPUT(
-                _id='filter_conf_'+symid,
+                _id='dev_filter_conf_'+symid,
                 _value=filter_conf_value,
                 _size=5,
                 _onKeyPress=_ajax()
               ),
               INPUT(
-                _id='filter_meta_'+symid,
+                _id='dev_filter_meta_'+symid,
                 _value=filter_meta_value,
                 _size=3,
                 _onKeyPress=_ajax()
               ),
               INPUT(
-                _id='filter_metaflag_'+symid,
+                _id='dev_filter_metaflag_'+symid,
                 _value=filter_metaflag_value,
                 _size=4,
                 _onKeyPress=_ajax()
               ),
               INPUT(
-                _id='filter_size_'+symid,
+                _id='dev_filter_size_'+symid,
                 _value=filter_size_value,
                 _size=7,
                 _onKeyPress=_ajax()
               ),
               INPUT(
-                _id='filter_dg_'+symid,
+                _id='dev_filter_dg_'+symid,
                 _value=filter_dg_value,
                 _size=10,
                 _onKeyPress=_ajax()
               ),
               INPUT(
-                _id='filter_view_'+symid,
+                _id='dev_filter_view_'+symid,
                 _value=filter_view_value,
                 _size=10,
                 _onKeyPress=_ajax()
               ),
               INPUT(
-                _id='filter_wwn_'+symid,
+                _id='dev_filter_wwn_'+symid,
                 _value=filter_wwn_value,
                 _size=32,
                 _onKeyPress=_ajax()
@@ -567,7 +628,7 @@ def sym_dev():
           ),
           DIV(
             INPUT(
-              _id='dev_perpage',
+              _id='dev_perpage_'+symid,
               _type='hidden',
               _value=perpage,
             ),
@@ -575,8 +636,9 @@ def sym_dev():
               A(
                 T('Display all lines'),
               ),
-              _onclick="""getElementById("dev_perpage").value="%(count)s";
-                       """%dict(count=line_count)+__ajax(),
+              _onclick="""
+                getElementById("dev_perpage_%(symid)s").value="%(count)s";
+              """%dict(count=line_count, symid=symid)+__ajax(),
               _class='sym_float',
             ),
             DIV(
@@ -591,52 +653,48 @@ def sym_dev():
         )
     return d
 
+def sym_overview_item(symid, title, count):
+    """
+    Format a H2 list item title with a child object count.
+    Also append a DIV whose innerHTML will receive the ajax data
+    container child objects info.
+    """
+    h = H2(
+         '%s (%d)'%(title, count),
+         _onclick="""
+           if (getElementById("sym_%(title)s_%(symid)s").innerHTML=="") {
+             getElementById("sym_%(title)s_%(symid)s").innerHTML='%(spinner)s';
+             getElementById("arrayid").value="%(symid)s";
+             ajax("%(url)s",["arrayid"],"sym_%(title)s_%(symid)s");
+           };
+           toggle_vis("sym_%(title)s_%(symid)s");
+         """%dict(url=URL(r=request,f='sym_'+title), title=title,
+                  spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
+                  symid=symid),
+        _onmouseover="this.style.color='orange'",
+        _onmouseout="this.style.color='inherit'",
+      )
+    d = DIV(
+          _id='sym_%s_%s'%(title, symid),
+          _name='sym_%s_%s'%(title, symid),
+        )
+    return SPAN(h, d)
+
 def sym_overview():
+    """
+    Format a list of top-level Symmetrix objects.
+    Each item can be drilled down (ajax)
+    """
     symid = request.vars.arrayid
     dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
     p = os.path.join(dir, symid)
     s = symmetrix.Vmax(p)
     info = s.get_sym_info()
     d = DIV(
-          H2(
-            'diskgroup (%d)'%info['diskgroup_count'],
-            _onclick="""if (getElementById("sym_diskgroup_%(symid)s").innerHTML=="") {
-                          getElementById("sym_diskgroup_%(symid)s").innerHTML='%(spinner)s';
-                          getElementById("arrayid").value="%(symid)s";
-                          ajax("%(url)s",["arrayid"],"sym_diskgroup_%(symid)s");
-                        };
-                        toggle_vis("sym_diskgroup_%(symid)s");
-                     """%dict(url=URL(r=request,f='sym_diskgroup'),
-                              spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
-                              symid=symid),
-            _onmouseover="this.style.color='orange'",
-            _onmouseout="this.style.color='inherit'",
-          ),
-          DIV(
-            _id='sym_diskgroup_'+symid,
-            _name='sym_diskgroup_'+symid,
-          ),
+          sym_overview_item(symid, 'diskgroup', info['diskgroup_count']),
           H2('disks (%d)'%info['disk_count']),
-          H2(
-            'dev (%d)'%info['dev_count'],
-            _onclick="""if (getElementById("sym_dev_%(symid)s").innerHTML=="") {
-                          getElementById("sym_dev_%(symid)s").innerHTML='%(spinner)s';
-                          getElementById("arrayid").value="%(symid)s";
-                          ajax("%(url)s",["arrayid"],"sym_dev_%(symid)s");
-                        };
-                        toggle_vis("sym_dev_%(symid)s");
-                     """%dict(url=URL(r=request,f='sym_dev'),
-                              spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
-                              symid=symid),
-            _onmouseover="this.style.color='orange'",
-            _onmouseout="this.style.color='inherit'",
-          ),
-          DIV(
-            _id='sym_dev_'+symid,
-            _name='sym_dev_'+symid,
-            _style='display:none',
-          ),
-          H2('view (%d)'%info['view_count']),
+          sym_overview_item(symid, 'dev', info['dev_count']),
+          sym_overview_item(symid, 'view', info['view_count']),
           H2('initator group (%d)'%info['ig_count']),
           H2('port group (%d)'%info['pg_count']),
           H2('storage group (%d)'%info['sg_count']),
