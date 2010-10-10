@@ -4,6 +4,48 @@ from xml.etree.ElementTree import ElementTree, SubElement
 symmetrix = local_import('symmetrix', reload=True)
 config = local_import('config', reload=True)
 
+def write_csv(fname, buff):
+    try:
+        f = open(fname, 'w')
+        f.write(buff)
+        f.close()
+    except:
+        return []
+    return [fname]
+
+def write_all_csv(dir):
+    files = []
+    files += write_csv(os.path.join(dir, 'sym_dev.csv'), sym_dev_csv())
+    return files
+
+def sym_all_csv():
+    import os
+    import tarfile
+    import tempfile
+    import gluon.contenttype
+    dir = tempfile.mkdtemp()
+    files = write_all_csv(dir)
+    olddir = os.getcwd()
+    os.chdir(dir)
+    try:
+        tarpath = "sym_csv.tar"
+        tar = tarfile.open(tarpath, "w")
+        for f in files:
+            tar.add(os.path.basename(f))
+        tar.close()
+        response.headers['Content-Type']=gluon.contenttype.contenttype('.tar')
+        f = open(tarpath, 'r')
+        buff = f.read()
+        f.close()
+        for f in files:
+            os.unlink(os.path.basename(f))
+        os.unlink(tarpath)
+    except:
+        pass
+    os.chdir(olddir)
+    os.rmdir(dir)
+    return buff
+
 def html_diskgroup(dg):
      l = []
      for key in dg.diskcount:
@@ -376,7 +418,7 @@ def sym_dev_csv():
     lines = ['devname;config;meta_count;meta_flag;size_mb;dgname;views;wwn']
     for d in sorted(s.dev):
         dev = s.dev[d]
-        inf = [dev.info['dev_name'],
+        inf = [repr(dev.info['dev_name']),
                dev.info['configuration'],
                str(dev.meta_count),
                dev.flags['meta'],
@@ -598,6 +640,13 @@ def sym_overview():
           H2('initator group (%d)'%info['ig_count']),
           H2('port group (%d)'%info['pg_count']),
           H2('storage group (%d)'%info['sg_count']),
+          DIV(
+            A(
+              T('Export to csv'),
+              _href=URL(r=request,f='sym_all_csv', vars={'arrayid':symid}),
+            ),
+            _class='sym_float',
+          ),
           _onclick="event.cancelBubble = true;",
         )
     return d
