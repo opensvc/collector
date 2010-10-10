@@ -127,6 +127,7 @@
 'Devices': 'Devices',
 'Disk status': 'Etat disque',
 'Disks': 'Disques',
+'Display all lines': 'Display all lines',
 'Domains': 'Domaines',
 'Duration': 'Durée',
 'E-mail': 'Mèl',

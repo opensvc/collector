@@ -273,6 +273,7 @@ def html_dev(dev):
           TD(dev.info['dev_name']),
           TD(dev.info['configuration']),
           TD(dev.meta_count, _class='numeric'),
+          TD(dev.flags['meta']),
           TD(dev.megabytes,' ',T('MB'), _class='numeric'),
           TD(dev.diskgroup_name),
           TD(view),
@@ -366,13 +367,39 @@ def str_filter(value, text):
     else:
         return r
 
+def sym_dev_csv():
+    symid = request.vars.arrayid
+    dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
+    p = os.path.join(dir, symid)
+    s = symmetrix.Vmax(p)
+    s.get_sym_dev()
+    lines = ['devname;config;meta_count;meta_flag;size_mb;dgname;views;wwn']
+    for d in sorted(s.dev):
+        dev = s.dev[d]
+        inf = [dev.info['dev_name'],
+               dev.info['configuration'],
+               str(dev.meta_count),
+               dev.flags['meta'],
+               str(dev.megabytes),
+               dev.diskgroup_name,
+               ','.join(dev.view),
+               dev.wwn]
+        lines.append(';'.join(inf))
+    return '\n'.join(lines)
+
 def sym_dev():
     symid = request.vars.arrayid
+    if 'dev_perpage' in request.vars:
+        perpage = int(request.vars.dev_perpage)
+    else:
+        perpage = 20
+    line_count = 0
 
     filter_dev_key, filter_dev_value = filter_parse(symid, 'dev')
     filter_wwn_key, filter_wwn_value = filter_parse(symid, 'wwn')
     filter_conf_key, filter_conf_value = filter_parse(symid, 'conf')
     filter_meta_key, filter_meta_value = filter_parse(symid, 'meta')
+    filter_metaflag_key, filter_metaflag_value = filter_parse(symid, 'metaflag')
     filter_size_key, filter_size_value = filter_parse(symid, 'size')
     filter_dg_key, filter_dg_value = filter_parse(symid, 'dg')
     filter_view_key, filter_view_value = filter_parse(symid, 'view')
@@ -394,40 +421,51 @@ def sym_dev():
             s.dev[dev].meta_count = 'n/a'
         if not int_filter(filter_meta_value, s.dev[dev].meta_count):
             continue
+        if not str_filter(filter_metaflag_value, s.dev[dev].flags['meta']):
+            continue
         if not int_filter(filter_size_value, s.dev[dev].megabytes):
             continue
         if not str_filter(filter_dg_value, s.dev[dev].diskgroup_name):
             continue
-        if len(s.dev[dev].view) == 0:
-            s.dev[dev].view = ['free']
         if not str_filter(filter_view_value, ', '.join(s.dev[dev].view)):
             continue
-        lines.append(html_dev(s.dev[dev]))
+        line_count += 1
+        if line_count <= perpage:
+            lines.append(html_dev(s.dev[dev]))
+
+    def __ajax():
+        return """ajax("%(url)s",
+                       ["arrayid",
+                        "dev_perpage",
+                        "filter_conf_%(symid)s",
+                        "filter_meta_%(symid)s",
+                        "filter_metaflag_%(symid)s",
+                        "filter_size_%(symid)s",
+                        "filter_dg_%(symid)s",
+                        "filter_view_%(symid)s",
+                        "filter_wwn_%(symid)s",
+                        "filter_dev_%(symid)s"],
+                       "sym_dev_%(symid)s");
+                  getElementById("sym_dev_%(symid)s").innerHTML='%(spinner)s';
+                """%dict(url=URL(r=request,f='sym_dev'),
+                         spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
+                         symid=symid)
 
     def _ajax():
         return """if (is_enter(event)) {
                     getElementById("arrayid").value="%(symid)s";
-                    ajax("%(url)s",
-                         ["arrayid",
-                          "filter_conf_%(symid)s",
-                          "filter_meta_%(symid)s",
-                          "filter_size_%(symid)s",
-                          "filter_dg_%(symid)s",
-                          "filter_view_%(symid)s",
-                          "filter_wwn_%(symid)s",
-                          "filter_dev_%(symid)s"],
-                         "sym_dev_%(symid)s");
-                    getElementById("sym_dev_%(symid)s").innerHTML='%(spinner)s';
+                    %(ajax)s
                   };
-                  """%dict(url=URL(r=request,f='sym_dev'),
-                           spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
+                  """%dict(ajax=__ajax(),
                            symid=symid)
+
     d = DIV(
           TABLE(
             TR(
-              TH('dev (%d)'%len(lines)),
+              TH('dev (%d/%d)'%(len(lines),line_count)),
               TH('conf'),
               TH('meta'),
+              TH('meta flag'),
               TH('size'),
               TH('diskgroup'),
               TH('view'),
@@ -450,6 +488,12 @@ def sym_dev():
                 _id='filter_meta_'+symid,
                 _value=filter_meta_value,
                 _size=3,
+                _onKeyPress=_ajax()
+              ),
+              INPUT(
+                _id='filter_metaflag_'+symid,
+                _value=filter_metaflag_value,
+                _size=4,
                 _onKeyPress=_ajax()
               ),
               INPUT(
@@ -478,6 +522,28 @@ def sym_dev():
               ),
             ),
             SPAN(map(SPAN, lines)),
+          ),
+          DIV(
+            INPUT(
+              _id='dev_perpage',
+              _type='hidden',
+              _value=perpage,
+            ),
+            DIV(
+              A(
+                T('Display all lines'),
+              ),
+              _onclick="""getElementById("dev_perpage").value="%(count)s";
+                       """%dict(count=line_count)+__ajax(),
+              _class='sym_float',
+            ),
+            DIV(
+              A(
+                T('Export to csv'),
+                _href=URL(r=request,f='sym_dev_csv', vars=request.vars),
+              ),
+              _class='sym_float',
+            ),
           ),
           _class='sym_diskgroup',
         )
