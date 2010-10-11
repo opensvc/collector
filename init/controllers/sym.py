@@ -54,6 +54,7 @@ def write_all_csv(dir):
     files += write_csv(os.path.join(dir, 'sym_dev.csv'), sym_dev_csv())
     return files
 
+@auth.requires_login()
 def sym_all_csv():
     """
     Create a tarball containing all data in csv format for a given symid.
@@ -236,6 +237,7 @@ def sym_info(symid):
     d['mtime'] = mtime(symid, 'sym_info')
     return d
 
+@auth.requires_login()
 def batch_files():
     if not hasattr(config, 'sym_node'):
         raise Exception('no known sym compute node. report to site admins.')
@@ -312,6 +314,7 @@ def batch_files():
 
         db(db.sym_upload.id==row.id).delete()
 
+@auth.requires_login()
 def sym_diskgroup():
     symid = request.vars.arrayid
     dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
@@ -389,16 +392,75 @@ def html_view(view):
         )
     return d
 
+@auth.requires_login()
 def sym_view():
     symid = request.vars.arrayid
     dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
+
+    def view_filter_parse(key):
+        return filter_parse(symid, 'view', key)
+
+    def view_filter_key(key):
+        return filter_key(symid, 'view', key)
+
+    filters = ['init', 'port', 'dev']
+    ajax_inputs = map(view_filter_key, filters)
+    filter_value = {}
+    for f in filters:
+        filter_value[f] = view_filter_parse(f)
+
     p = os.path.join(dir, symid)
     s = symmetrix.Vmax(p)
     s.get_sym_view()
+
+    x = DIV(
+          DIV(T('Filter:')),
+          DIV(
+            T('Initiator'),
+            INPUT(
+              _id=view_filter_key('init'),
+              _value=filter_value['init'],
+              _size=10,
+              _onKeyPress=_ajax(symid, 'view', ajax_inputs)
+            ),
+            _class='float',
+          ),
+          DIV(
+            T('Port'),
+            INPUT(
+              _id=view_filter_key('port'),
+              _value=filter_value['port'],
+              _size=10,
+              _onKeyPress=_ajax(symid, 'view', ajax_inputs)
+            ),
+            _class='float',
+          ),
+          DIV(
+            T('Device'),
+            INPUT(
+              _id=view_filter_key('dev'),
+              _value=filter_value['dev'],
+              _size=10,
+              _onKeyPress=_ajax(symid, 'view', ajax_inputs)
+            ),
+            _class='float',
+          ),
+          DIV(
+            '',
+            _class='spacer',
+          ),
+        )
+
     d = []
     for view in s.view.values():
+        if not str_filter_in_list(filter_value['init'], view.ig):
+            continue
+        if not str_filter_in_list(filter_value['port'], view.pg):
+            continue
+        if not str_filter_in_list(filter_value['dev'], view.sg):
+            continue
         d.append(html_view(view))
-    return DIV(d)
+    return DIV(x, SPAN(d))
 
 def html_dev_header(info=None):
     if info is not None:
@@ -432,13 +494,14 @@ def html_dev(dev):
         )
     return l
 
-def filter_parse(symid, f):
-    key = 'dev_filter_%s_%s'%(f,symid)
+def filter_key(symid, section, f):
+    return '%s_filter_%s_%s'%(section, f, symid)
+
+def filter_parse(symid, section, f):
+    key = filter_key(symid, section, f)
     if key in request.vars:
-        value = request.vars[key]
-    else:
-        value = ""
-    return key, value
+        return request.vars[key]
+    return ""
 
 def int_filter(value, num):
     if len(value) == 0:
@@ -518,6 +581,13 @@ def str_filter(value, text):
     else:
         return r
 
+def str_filter_in_list(value, l):
+    for i in l:
+        if str_filter(value, i):
+            return True
+    return False
+
+@auth.requires_login()
 def sym_dev_csv():
     symid = request.vars.arrayid
     dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
@@ -538,6 +608,26 @@ def sym_dev_csv():
         lines.append(';'.join(inf))
     return '\n'.join(lines)
 
+def __ajax(symid, section, inputs):
+    return """ajax("%(url)s",
+                   ["arrayid", %(inputs)s],
+                   "sym_%(s)s_%(symid)s");
+              getElementById("sym_%(s)s_%(symid)s").innerHTML='%(spinner)s';
+            """%dict(url=URL(r=request,f='sym_'+section),
+                     s=section,
+                     inputs = ','.join(map(repr, inputs)),
+                     spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
+                     symid=symid)
+
+def _ajax(symid, section, inputs):
+    return """if (is_enter(event)) {
+                getElementById("arrayid").value="%(symid)s";
+                %(ajax)s
+              };
+              """%dict(ajax=__ajax(symid, section, inputs),
+                       symid=symid)
+
+@auth.requires_login()
 def sym_dev():
     symid = request.vars.arrayid
     if 'dev_perpage_'+symid in request.vars:
@@ -546,15 +636,17 @@ def sym_dev():
         perpage = 20
     line_count = 0
 
-    filter_dev_key, filter_dev_value = filter_parse(symid, 'dev')
-    filter_wwn_key, filter_wwn_value = filter_parse(symid, 'wwn')
-    filter_conf_key, filter_conf_value = filter_parse(symid, 'conf')
-    filter_meta_key, filter_meta_value = filter_parse(symid, 'meta')
-    filter_metaflag_key, filter_metaflag_value = filter_parse(symid, 'metaflag')
-    filter_size_key, filter_size_value = filter_parse(symid, 'size')
-    filter_dg_key, filter_dg_value = filter_parse(symid, 'dg')
-    filter_view_key, filter_view_value = filter_parse(symid, 'view')
+    def dev_filter_key(key):
+        return filter_key(symid, 'dev', key)
 
+    def dev_filter_parse(key):
+        return filter_parse(symid, 'dev', key)
+
+    filters = ['dev', 'wwn', 'conf', 'meta', 'metaflag', 'size', 'dg', 'view']
+    filter_value = {}
+    ajax_inputs = map(dev_filter_key, filters)
+    for f in filters:
+        filter_value[f] = dev_filter_parse(f)
 
     dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
     p = os.path.join(dir, symid)
@@ -562,53 +654,27 @@ def sym_dev():
     s.get_sym_dev()
     lines = []
     for dev in sorted(s.dev):
-        if not str_filter(filter_dev_value, s.dev[dev].info['dev_name']):
+        if not str_filter(filter_value['dev'], s.dev[dev].info['dev_name']):
             continue
-        if not str_filter(filter_wwn_value, s.dev[dev].wwn):
+        if not str_filter(filter_value['wwn'], s.dev[dev].wwn):
             continue
-        if not str_filter(filter_conf_value, s.dev[dev].info['configuration']):
+        if not str_filter(filter_value['conf'], s.dev[dev].info['configuration']):
             continue
         if s.dev[dev].meta_count == 0:
             s.dev[dev].meta_count = 'n/a'
-        if not int_filter(filter_meta_value, s.dev[dev].meta_count):
+        if not int_filter(filter_value['meta'], s.dev[dev].meta_count):
             continue
-        if not str_filter(filter_metaflag_value, s.dev[dev].flags['meta']):
+        if not str_filter(filter_value['metaflag'], s.dev[dev].flags['meta']):
             continue
-        if not int_filter(filter_size_value, s.dev[dev].megabytes):
+        if not int_filter(filter_value['size'], s.dev[dev].megabytes):
             continue
-        if not str_filter(filter_dg_value, s.dev[dev].diskgroup_name):
+        if not str_filter(filter_value['dg'], s.dev[dev].diskgroup_name):
             continue
-        if not str_filter(filter_view_value, ', '.join(s.dev[dev].view)):
+        if not str_filter_in_list(filter_value['view'], s.dev[dev].view):
             continue
         line_count += 1
         if line_count <= perpage:
             lines.append(html_dev(s.dev[dev]))
-
-    def __ajax():
-        return """ajax("%(url)s",
-                       ["arrayid",
-                        "dev_perpage_%(symid)s",
-                        "dev_filter_conf_%(symid)s",
-                        "dev_filter_meta_%(symid)s",
-                        "dev_filter_metaflag_%(symid)s",
-                        "dev_filter_size_%(symid)s",
-                        "dev_filter_dg_%(symid)s",
-                        "dev_filter_view_%(symid)s",
-                        "dev_filter_wwn_%(symid)s",
-                        "dev_filter_dev_%(symid)s"],
-                       "sym_dev_%(symid)s");
-                  getElementById("sym_dev_%(symid)s").innerHTML='%(spinner)s';
-                """%dict(url=URL(r=request,f='sym_dev'),
-                         spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
-                         symid=symid)
-
-    def _ajax():
-        return """if (is_enter(event)) {
-                    getElementById("arrayid").value="%(symid)s";
-                    %(ajax)s
-                  };
-                  """%dict(ajax=__ajax(),
-                           symid=symid)
 
     d = DIV(
           TABLE(
@@ -616,51 +682,51 @@ def sym_dev():
             TR(
               INPUT(
                 _id='dev_filter_dev_'+symid,
-                _value=filter_dev_value,
+                _value=filter_value['dev'],
                 _size=5,
-                _onKeyPress=_ajax()
+                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
               ),
               INPUT(
                 _id='dev_filter_conf_'+symid,
-                _value=filter_conf_value,
+                _value=filter_value['conf'],
                 _size=5,
-                _onKeyPress=_ajax()
+                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
               ),
               INPUT(
                 _id='dev_filter_meta_'+symid,
-                _value=filter_meta_value,
+                _value=filter_value['meta'],
                 _size=3,
-                _onKeyPress=_ajax()
+                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
               ),
               INPUT(
                 _id='dev_filter_metaflag_'+symid,
-                _value=filter_metaflag_value,
+                _value=filter_value['metaflag'],
                 _size=4,
-                _onKeyPress=_ajax()
+                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
               ),
               INPUT(
                 _id='dev_filter_size_'+symid,
-                _value=filter_size_value,
+                _value=filter_value['size'],
                 _size=7,
-                _onKeyPress=_ajax()
+                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
               ),
               INPUT(
                 _id='dev_filter_dg_'+symid,
-                _value=filter_dg_value,
+                _value=filter_value['dg'],
                 _size=10,
-                _onKeyPress=_ajax()
+                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
               ),
               INPUT(
                 _id='dev_filter_view_'+symid,
-                _value=filter_view_value,
+                _value=filter_value['view'],
                 _size=10,
-                _onKeyPress=_ajax()
+                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
               ),
               INPUT(
                 _id='dev_filter_wwn_'+symid,
-                _value=filter_wwn_value,
+                _value=filter_value['wwn'],
                 _size=32,
-                _onKeyPress=_ajax()
+                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
               ),
             ),
             SPAN(map(SPAN, lines)),
@@ -677,7 +743,8 @@ def sym_dev():
               ),
               _onclick="""
                 getElementById("dev_perpage_%(symid)s").value="%(count)s";
-              """%dict(count=line_count, symid=symid)+__ajax(),
+              """%dict(count=line_count,
+                       symid=symid)+__ajax(symid, 'dev', ajax_inputs),
               _class='sym_float',
             ),
             DIV(
@@ -692,6 +759,7 @@ def sym_dev():
         )
     return d
 
+@auth.requires_login()
 def sym_overview_item(symid, title, count):
     """
     Format a H2 list item title with a child object count.
@@ -719,6 +787,7 @@ def sym_overview_item(symid, title, count):
         )
     return SPAN(h, d)
 
+@auth.requires_login()
 def sym_overview():
     """
     Format a list of top-level Symmetrix objects.
