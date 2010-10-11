@@ -149,6 +149,7 @@
 'Export': 'Export',
 'Export to csv': 'Export en csv',
 'Filter:': 'Filtre:',
+'Filters:': 'Filtres:',
 'First name': 'Prénom',
 'Floor': 'Etage',
 'From': 'Depuis',
