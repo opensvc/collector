@@ -403,7 +403,7 @@ def sym_view():
     def view_filter_key(key):
         return filter_key(symid, 'view', key)
 
-    filters = ['init', 'port', 'dev']
+    filters = ['init', 'port', 'dev', 'wwn']
     ajax_inputs = map(view_filter_key, filters)
     filter_value = {}
     for f in filters:
@@ -414,7 +414,10 @@ def sym_view():
     s.get_sym_view()
 
     x = DIV(
-          DIV(T('Filter:')),
+          DIV(
+            T('Filters:'),
+            _class='float',
+          ),
           DIV(
             T('Initiator'),
             INPUT(
@@ -436,10 +439,20 @@ def sym_view():
             _class='float',
           ),
           DIV(
-            T('Device'),
+            T('Dev id'),
             INPUT(
               _id=view_filter_key('dev'),
               _value=filter_value['dev'],
+              _size=10,
+              _onKeyPress=_ajax(symid, 'view', ajax_inputs)
+            ),
+            _class='float',
+          ),
+          DIV(
+            T('Dev wwn'),
+            INPUT(
+              _id=view_filter_key('wwn'),
+              _value=filter_value['wwn'],
               _size=10,
               _onKeyPress=_ajax(symid, 'view', ajax_inputs)
             ),
@@ -458,6 +471,9 @@ def sym_view():
         if not str_filter_in_list(filter_value['port'], view.pg):
             continue
         if not str_filter_in_list(filter_value['dev'], view.sg):
+            continue
+        if not str_filter_in_list(filter_value['wwn'],
+                                  [dev.wwn for dev in view.dev]):
             continue
         d.append(html_view(view))
     return DIV(x, SPAN(d))

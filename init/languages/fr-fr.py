@@ -147,6 +147,8 @@
 'Delete nodes': 'Supprimer les noeuds',
 'Delete:': 'Effacer:',
 'Description': 'Description',
+'Dev id': 'Dev id',
+'Dev wwn': 'Dev wwn',
 'Device': 'Device',
 'Devices': 'Devices',
 'Disk status': 'Etat disque',
