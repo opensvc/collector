@@ -17,6 +17,7 @@ class VmaxView(object):
         self.init_grpname = xml.find('init_grpname').text
         self.port_grpname = xml.find('port_grpname').text
         self.stor_grpname = xml.find('stor_grpname').text
+        self.dev = []
 
         self.ig = []
         for e in list(xml.find("Initiators")):
@@ -360,6 +361,7 @@ class Vmax(object):
             for dev_name in o.sg:
                 dev = self.dev[dev_name]
                 dev.view.append(o.view_name)
+                o.dev.append(dev)
                 dg = dev.diskgroup
                 if dg is None:
                     # VDEV

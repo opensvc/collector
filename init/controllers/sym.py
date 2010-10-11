@@ -86,6 +86,12 @@ def sym_all_csv():
     return buff
 
 def html_diskgroup(dg):
+     """
+     Format diskgroup information.
+     - disk composition
+     - global ressource usage
+     - per-size device usage
+     """
      l = []
      for key in dg.diskcount:
          if len(key) == 3:
@@ -93,7 +99,8 @@ def html_diskgroup(dg):
              spare = None
          else:
              size, tech, speed, spare = key
-         s = '%d x %d GB %s rpm %s'%(dg.diskcount[key], int(size)//1024, speed, tech)
+         s = '%d x %d GB %s rpm %s'%(dg.diskcount[key],
+                                     int(size)//1024, speed, tech)
          if spare is not None:
             s += " (spare)"
          l.append(s)
@@ -316,21 +323,35 @@ def sym_diskgroup():
         d.append(html_diskgroup(dg))
     return DIV(d)
 
+def html_view_devs(devs):
+    lines = []
+    for dev in devs:
+        lines.append(html_dev(dev))
+    t = TABLE(
+          html_dev_header(),
+          SPAN(map(TR, lines)),
+        )
+    return t
+
+def pretty_size(size, unit):
+    units = ['B', 'KB', 'MB', 'GB', 'TB', 'EB']
+    units_index = {'B':0, 'KB':1, 'MB':2, 'GB':3, 'TB':4, 'EB':5}
+    for u in units[units_index[unit]:]:
+        if size < 1000:
+           return size, ' ', T(u)
+        size = size/1024
+    return size, ' ', T(u)
+
 def html_view(view):
+    size = 0
+    for dev in view.dev:
+        size += dev.megabytes
+
     d = DIV(
           DIV(
             H3(view.view_name),
             _class='sym_float',
             _style='width:18em',
-          ),
-          DIV(
-            B('storage group: '),
-            BR(),
-            '%s (%d)'%(view.stor_grpname, len(view.sg)),
-            HR(),
-            SPAN(map(P, view.sg)),
-            _class='sym_float',
-            _style='width:12em',
           ),
           DIV(
             B('port group: '),
@@ -339,7 +360,7 @@ def html_view(view):
             HR(),
             SPAN(map(P, view.pg)),
             _class='sym_float',
-            _style='width:12em',
+            _style='min-width:12em',
           ),
           DIV(
             B('initiator group: '),
@@ -348,7 +369,17 @@ def html_view(view):
             HR(),
             SPAN(map(P, view.ig)),
             _class='sym_float',
-            _style='width:12em',
+            _style='min-width:12em',
+          ),
+          DIV(
+            B('storage group: '),
+            BR(),
+            '%s (%d)'%(view.stor_grpname, len(view.sg)),
+            '(', SPAN(pretty_size(size, 'MB')), ')',
+            HR(),
+            html_view_devs(view.dev),
+            _class='sym_float',
+            _style='min-width:12em',
           ),
           DIV(
             '',
@@ -368,6 +399,23 @@ def sym_view():
     for view in s.view.values():
         d.append(html_view(view))
     return DIV(d)
+
+def html_dev_header(info=None):
+    if info is not None:
+        dev = 'dev (%s)'%info
+    else:
+        dev = 'dev'
+    l = TR(
+          TH(dev),
+          TH('conf'),
+          TH('meta'),
+          TH('meta flag'),
+          TH('size'),
+          TH('diskgroup'),
+          TH('view'),
+          TH('wwn'),
+        )
+    return l
 
 def html_dev(dev):
     view = ', '.join(dev.view)
@@ -564,16 +612,7 @@ def sym_dev():
 
     d = DIV(
           TABLE(
-            TR(
-              TH('dev (%d/%d)'%(len(lines),line_count)),
-              TH('conf'),
-              TH('meta'),
-              TH('meta flag'),
-              TH('size'),
-              TH('diskgroup'),
-              TH('view'),
-              TH('wwn'),
-            ),
+            html_dev_header('%d/%d'%(len(lines),line_count)),
             TR(
               INPUT(
                 _id='dev_filter_dev_'+symid,
@@ -692,7 +731,7 @@ def sym_overview():
     info = s.get_sym_info()
     d = DIV(
           sym_overview_item(symid, 'diskgroup', info['diskgroup_count']),
-          H2('disks (%d)'%info['disk_count']),
+          H2('disk (%d)'%info['disk_count']),
           sym_overview_item(symid, 'dev', info['dev_count']),
           sym_overview_item(symid, 'view', info['view_count']),
           H2('initator group (%d)'%info['ig_count']),
