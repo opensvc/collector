@@ -252,7 +252,7 @@ def batch_files():
 
         # create a dir on sym node to host data
         dst_dir = os.path.join(os.sep, 'tmp', os.path.basename(row.archive))
-        cmd = ssh + [config.sym_node, 'mkdir', dst_dir]
+        cmd = ssh + [config.sym_node, 'mkdir', '-p', dst_dir]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
         if p.returncode != 0:
@@ -312,6 +312,23 @@ def batch_files():
             db(db.sym_upload.id==row.id).update(batched=0)
             raise Exception('failed to compute the data on sym node')
 
+        # add acl to the uploader
+        cmd = ssh + [config.sym_node, 'find', dst_dir, '-name', '[0-9]*',
+                     '-type', 'd', '-printf', '%P,']
+        p = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        out, err = p.communicate()
+        if p.returncode != 0:
+            db(db.sym_upload.id==row.id).update(batched=0)
+            raise Exception('failed to determine uploader acl')
+        for symid in out.split(','):
+            if '%' in symid:
+                # privilege escalation protection
+                continue
+            if len(symid) != 12:
+                continue
+            add_domain_perm(symid)
+
+        # purge the compute job from the queue
         db(db.sym_upload.id==row.id).delete()
 
 @auth.requires_login()
