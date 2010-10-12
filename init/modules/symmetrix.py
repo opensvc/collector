@@ -2,6 +2,26 @@ import pickle
 import os
 from xml.etree.ElementTree import ElementTree, SubElement
 
+class VmaxDirector(object):
+    def __init__(self, xml):
+        self.info = {}
+        for e in list(xml.find("Dir_Info")):
+            self.info[e.tag] = e.text
+
+    def prefix(self, text=""):
+        if len(text) == 0:
+            return ""
+        lines = text.split('\n')
+        for i, line in enumerate(lines):
+            lines[i] = "dir[%s].%s"%(self.info['id'], line)
+        return lines
+
+    def __str__(self):
+        l = []
+        l += self.prefix("type: "+self.info['type'])
+        l += self.prefix("slot: "+self.info['slot'])
+        return '\n'.join(l)
+
 class VmaxMeta(object):
     def __init__(self, xml):
         self.dev_name = xml.find("Dev_Info/dev_name").text
@@ -56,6 +76,32 @@ class VmaxView(object):
 class VmaxFiconDev(object):
     def __init__(self, xml):
         self.devname = xml.find("Dev_Info/dev_name").text
+
+class VmaxDevRdf(object):
+    def __init__(self, xml):
+        self.devname = xml.find("Dev_Info/dev_name").text
+        self.pair_state = xml.find("RDF/RDF_Info/pair_state").text
+        self.mode = xml.find("RDF/Mode/mode").text
+        self.ra_group_num = xml.find("RDF/Local/ra_group_num").text
+        self.remote_symid = xml.find("RDF/Remote/remote_symid").text
+        self.remote_devname = xml.find("RDF/Remote/dev_name").text
+
+    def prefix(self, text=""):
+        if len(text) == 0:
+            return ""
+        lines = text.split('\n')
+        for i, line in enumerate(lines):
+            lines[i] = "rdf.%s"%line
+        return lines
+
+    def __str__(self):
+        l = []
+        l += self.prefix("pair_state: "+self.pair_state)
+        l += self.prefix("mode: "+self.mode)
+        l += self.prefix("ra_group_num: "+self.ra_group_num)
+        l += self.prefix("remote_symid: "+self.remote_symid)
+        l += self.prefix("remote_devname: "+self.remote_devname)
+        return '\n'.join(l)
 
 class VmaxDev(object):
     def __init__(self, xml):
@@ -120,6 +166,8 @@ class VmaxDev(object):
         l += self.prefix('view: %s'%','.join(self.view))
         l += self.prefix('wwn: %s'%self.wwn)
         l += self.prefix('ficon: %s'%self.ficon)
+        if hasattr(self, 'rdf'):
+            l += self.prefix(str(self.rdf))
         return '\n'.join(l)
 
     def __iadd__(self, o):
@@ -127,6 +175,8 @@ class VmaxDev(object):
             self.meta = o.meta
             self.meta_count = len(o.meta)
             self.wwn = o.wwn
+        elif isinstance(o, VmaxDevRdf):
+            self.rdf = o
         return self
 
 class VmaxDiskGroup(object):
@@ -246,6 +296,7 @@ class Vmax(object):
         self.disk = {}
         self.diskgroup = {}
         self.view = {}
+        self.director = {}
 
         if self.dump_outdated():
             self.load_xml()
@@ -257,9 +308,11 @@ class Vmax(object):
             self.sym_diskgroup()
             self.sym_disk()
             self.sym_dev()
+            self.sym_devrdfa()
             self.sym_ficondev()
             self.sym_meta()
             self.sym_view()
+            self.sym_dir()
 
             # restore mtime changed by the parser
             os.utime(os.path.join(self.xml_dir, 'sym_info'),
@@ -273,6 +326,7 @@ class Vmax(object):
             self.dump('disk.dump', self.disk)
             self.dump('diskgroup.dump', self.diskgroup)
             self.dump('view.dump', self.view)
+            self.dump('dir.dump', self.view)
 
     def dump_outdated(self):
         xml = os.path.join(self.xml_dir, 'sym_info')
@@ -320,6 +374,8 @@ class Vmax(object):
             l += self.prefix(str(self.dev[dev]))
         for view in self.view:
             l += self.prefix(str(self.view[view]))
+        for director in self.director:
+            l += self.prefix(str(self.director[director]))
         return '\n'.join(l)
 
     def __iadd__(self, o):
@@ -337,6 +393,8 @@ class Vmax(object):
             dg = dev.diskgroup
             if dg is not None:
 	        self.diskgroup[dg].add_masked_dev(dev)
+        elif isinstance(o, VmaxDevRdf):
+            self.dev[o.devname] += o
         elif isinstance(o, VmaxDev):
             disk_id = o.backend[0]['id']
             if disk_id in self.disk:
@@ -367,6 +425,8 @@ class Vmax(object):
                     # VDEV
                     continue
                 self.diskgroup[dg].add_masked_dev(dev)
+        elif isinstance(o, VmaxDirector):
+           self.director[o.info['id']] = o
         return self
 
     def xmltree(self, xml):
@@ -401,6 +461,12 @@ class Vmax(object):
             self += VmaxDev(e)
         del tree
 
+    def sym_devrdfa(self):
+        tree = self.xmltree('sym_devrdfa_info')
+        for e in tree.getiterator('Device'):
+            self += VmaxDevRdf(e)
+        del tree
+
     def sym_ficondev(self):
         tree = self.xmltree('sym_ficondev_info')
         for e in tree.getiterator('Device'):
@@ -418,6 +484,18 @@ class Vmax(object):
         tree = self.xmltree('sym_view_aclx')
         for e in tree.getiterator('View_Info'):
             self += VmaxView(e)
+        del tree
+
+    def sym_dir(self):
+        tree = self.xmltree('sym_dir_info')
+        for e in tree.getiterator('Microcode'):
+            for el in list(e):
+                self.info[el.tag] = el.text
+        for e in tree.getiterator('Symmwin'):
+            for el in list(e):
+                self.info['symmwin_'+el.tag] = el.text
+        for e in tree.getiterator('Director'):
+            self += VmaxDirector(e)
         del tree
 
     """ Accessors
@@ -441,6 +519,11 @@ class Vmax(object):
         if len(self.dev) == 0:
             self.dev = self.load('dev.dump')
         return self.dev
+
+    def get_sym_dir(self):
+        if len(self.director) == 0:
+            self.director = self.load('dir.dump')
+        return self.director
 
     def get_sym_sg(self):
         if len(self.sg) == 0:
@@ -471,6 +554,7 @@ class Vmax(object):
         self.get_sym_pg()
         self.get_sym_sg()
         self.get_sym_view()
+        self.get_sym_dir()
 
 import sys
 def main():

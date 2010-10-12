@@ -16,10 +16,18 @@ def format_sym(sym):
             DIV(
               TABLE(
                 TR(TH(T('Import Date')), TD(sym['mtime'])),
-                TR(TH(T('Microcode Version')), TD(sym['microcode_version'])),
+                TR(
+                  TH(T('Microcode Version')),
+                  TD(
+                    sym['microcode_version'],
+                    '.',
+                    sym['patch_level'],
+                    '.',
+                    sym['symmwin_version'],
+                  ),
+                ),
                 TR(TH(T('Cache')), TD(sym['cache_megabytes'], ' ', T('MB'))),
                 TR(TH(T('Devices')), TD(sym['devices'])),
-                TR(TH(T('Physical Devices')), TD(sym['physical_devices'])),
               ),
               _class='sym_float',
             ),

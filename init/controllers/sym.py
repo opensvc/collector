@@ -231,9 +231,17 @@ def sym_info(symid):
     tree = xmltree(symid, 'sym_info')
     for e in tree.getiterator('Symm_Info'): pass
     d = {}
-    for se in list(e):
-      d[se.tag] = se.text
+    sym_type = e.find("model").text
     del tree
+    dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
+    p = os.path.join(dir, symid)
+
+    if 'VMAX' in sym_type:
+        s = symmetrix.Vmax(p)
+        s.get_sym_info()
+        d = s.info
+    else:
+        response.flash = T('array model not supported: %s, %s'%(symid, sym_type))
     d['mtime'] = mtime(symid, 'sym_info')
     return d
 
@@ -356,16 +364,25 @@ def html_view_devs(devs):
 def pretty_size(size, unit):
     units = ['B', 'KB', 'MB', 'GB', 'TB', 'EB']
     units_index = {'B':0, 'KB':1, 'MB':2, 'GB':3, 'TB':4, 'EB':5}
+    size = float(size)
     for u in units[units_index[unit]:]:
         if size < 1000:
-           return size, ' ', T(u)
+           return '%.2f'%size, ' ', T(u)
         size = size/1024
-    return size, ' ', T(u)
+    return '%.2f'%size, ' ', T(u)
 
 def html_view(view):
     size = 0
+    vsize = 0
+    dev_count = 0
+    vdev_count = 0
     for dev in view.dev:
-        size += dev.megabytes
+        if dev.info['configuration'] in ['VDEV', 'THINDEV']:
+            vsize += dev.megabytes
+            vdev_count += 1
+        else:
+            size += dev.megabytes
+            dev_count += 1
 
     d = DIV(
           DIV(
@@ -394,8 +411,12 @@ def html_view(view):
           DIV(
             B('storage group: '),
             BR(),
-            '%s (%d)'%(view.stor_grpname, len(view.sg)),
-            '(', SPAN(pretty_size(size, 'MB')), ')',
+            view.stor_grpname, BR(),
+            'dev count: %d, dev total size: '%dev_count,
+            SPAN(pretty_size(size,'MB')),
+            BR(),
+            'vdev count: %d, vdev total size: '%vdev_count,
+            SPAN(pretty_size(vsize,'MB')),
             HR(),
             html_view_devs(view.dev),
             _class='sym_float',
@@ -509,11 +530,28 @@ def html_dev_header(info=None):
           TH('diskgroup'),
           TH('view'),
           TH('wwn'),
+          TH('rdf state'),
+          TH('rdf mode'),
+          TH('rdf group'),
+          TH('remote sym'),
+          TH('remote dev'),
         )
     return l
 
 def html_dev(dev):
     view = ', '.join(dev.view)
+    if hasattr(dev, 'rdf'):
+        rdf_state = dev.rdf.pair_state
+        rdf_mode = dev.rdf.mode
+        rdf_group = dev.rdf.ra_group_num
+        remote_sym = dev.rdf.remote_symid
+        remote_dev = dev.rdf.remote_devname
+    else:
+        rdf_state = ""
+        rdf_mode = ""
+        rdf_group = ""
+        remote_sym = ""
+        remote_dev = ""
 
     l = TR(
           TD(dev.info['dev_name']),
@@ -524,6 +562,11 @@ def html_dev(dev):
           TD(dev.diskgroup_name),
           TD(view),
           TD(dev.wwn),
+          TD(rdf_state),
+          TD(rdf_mode),
+          TD(rdf_group),
+          TD(remote_sym),
+          TD(remote_dev),
         )
     return l
 
@@ -675,7 +718,9 @@ def sym_dev():
     def dev_filter_parse(key):
         return filter_parse(symid, 'dev', key)
 
-    filters = ['dev', 'wwn', 'conf', 'meta', 'metaflag', 'size', 'dg', 'view']
+    filters = ['dev', 'wwn', 'conf', 'meta', 'metaflag', 'size', 'dg', 'view',
+               'rdf_state', 'rdf_mode', 'rdf_group', 'remote_sym', 'remote_dev'
+              ]
     filter_value = {}
     ajax_inputs = map(dev_filter_key, filters)
     for f in filters:
@@ -687,24 +732,48 @@ def sym_dev():
     s.get_sym_dev()
     lines = []
     for dev in sorted(s.dev):
-        if not str_filter(filter_value['dev'], s.dev[dev].info['dev_name']):
+        if not str_filter(filter_value['dev'],
+                          s.dev[dev].info['dev_name']):
             continue
-        if not str_filter(filter_value['wwn'], s.dev[dev].wwn):
+        if not str_filter(filter_value['wwn'],
+                          s.dev[dev].wwn):
             continue
-        if not str_filter(filter_value['conf'], s.dev[dev].info['configuration']):
+        if not str_filter(filter_value['conf'],
+                          s.dev[dev].info['configuration']):
             continue
         if s.dev[dev].meta_count == 0:
             s.dev[dev].meta_count = 'n/a'
-        if not int_filter(filter_value['meta'], s.dev[dev].meta_count):
+        if not int_filter(filter_value['meta'],
+                          s.dev[dev].meta_count):
             continue
-        if not str_filter(filter_value['metaflag'], s.dev[dev].flags['meta']):
+        if not str_filter(filter_value['metaflag'],
+                          s.dev[dev].flags['meta']):
             continue
-        if not int_filter(filter_value['size'], s.dev[dev].megabytes):
+        if not int_filter(filter_value['size'],
+                          s.dev[dev].megabytes):
             continue
-        if not str_filter(filter_value['dg'], s.dev[dev].diskgroup_name):
+        if not str_filter(filter_value['dg'],
+                          s.dev[dev].diskgroup_name):
             continue
-        if not str_filter_in_list(filter_value['view'], s.dev[dev].view):
+        if not str_filter_in_list(filter_value['view'],
+                                  s.dev[dev].view):
             continue
+        if hasattr(s.dev[dev], 'rdf'):
+            if not str_filter(filter_value['rdf_mode'],
+                              s.dev[dev].rdf.mode):
+                continue
+            if not str_filter(filter_value['rdf_state'],
+                              s.dev[dev].rdf.pair_state):
+                continue
+            if not str_filter(filter_value['rdf_group'],
+                              s.dev[dev].rdf.ra_group_num):
+                continue
+            if not str_filter(filter_value['remote_sym'],
+                              s.dev[dev].rdf.remote_symid):
+                continue
+            if not str_filter(filter_value['remote_dev'],
+                              s.dev[dev].rdf.remote_devname):
+                continue
         line_count += 1
         if line_count <= perpage:
             lines.append(html_dev(s.dev[dev]))
@@ -716,7 +785,7 @@ def sym_dev():
               INPUT(
                 _id='dev_filter_dev_'+symid,
                 _value=filter_value['dev'],
-                _size=5,
+                _size=4,
                 _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
               ),
               INPUT(
@@ -758,7 +827,37 @@ def sym_dev():
               INPUT(
                 _id='dev_filter_wwn_'+symid,
                 _value=filter_value['wwn'],
-                _size=32,
+                _size=24,
+                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
+              ),
+              INPUT(
+                _id='dev_filter_rdf_state_'+symid,
+                _value=filter_value['rdf_state'],
+                _size=8,
+                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
+              ),
+              INPUT(
+                _id='dev_filter_rdf_mode_'+symid,
+                _value=filter_value['rdf_mode'],
+                _size=8,
+                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
+              ),
+              INPUT(
+                _id='dev_filter_rdf_group_'+symid,
+                _value=filter_value['rdf_group'],
+                _size=2,
+                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
+              ),
+              INPUT(
+                _id='dev_filter_remote_sym_'+symid,
+                _value=filter_value['remote_sym'],
+                _size=8,
+                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
+              ),
+              INPUT(
+                _id='dev_filter_remote_dev_'+symid,
+                _value=filter_value['remote_dev'],
+                _size=4,
                 _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
               ),
             ),
