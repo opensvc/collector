@@ -123,6 +123,8 @@ pass
          pass
     }}
     <td name="tcol_{{=key}}" style="{{=col_hide(key)}};{{=alert}}" ondblclick="svcform.{{=key}}.value='{{=check[table][key]}}';svcform.submit()">{{=check[table][key]}}</td>
+    {{elif key == 'chk_type':}}
+    <td name="tcol_{{=key}}" style="{{=col_hide(key)}}" ondblclick="svcform.{{=key}}.value='{{=check[table][key]}}';svcform.submit()">{{=A(check[table][key], _href=URL(r=request, c='checks', f='checks_defaults_insert', vars={'chk_type':check[table][key]}))}}</td>
     {{else:}}
     <td name="tcol_{{=key}}" style="{{=col_hide(key)}}" ondblclick="svcform.{{=key}}.value='{{=check[table][key]}}';svcform.submit()">{{=check[table][key]}}</td>
     {{pass}}
