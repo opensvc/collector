@@ -357,7 +357,10 @@ def html_view_devs(devs):
             'rdf_state', 'rdf_mode', 'rdf_group',
             'remote_sym', 'remote_dev', 'view']
     lines = []
+    rdf = symmetrix.SymDevRdf()
     for dev in devs:
+        if not hasattr(dev, 'rdf'):
+            dev.rdf = rdf
         lines.append(html_dev(dev, cols))
     t = TABLE(
           html_dev_header(cols),
