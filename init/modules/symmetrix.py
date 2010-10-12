@@ -2,7 +2,7 @@ import pickle
 import os
 from xml.etree.ElementTree import ElementTree, SubElement
 
-class VmaxDirector(object):
+class SymDirector(object):
     def __init__(self, xml):
         self.info = {}
         for e in list(xml.find("Dir_Info")):
@@ -22,7 +22,7 @@ class VmaxDirector(object):
         l += self.prefix("slot: "+self.info['slot'])
         return '\n'.join(l)
 
-class VmaxMeta(object):
+class SymMeta(object):
     def __init__(self, xml):
         self.dev_name = xml.find("Dev_Info/dev_name").text
         self.meta = [ m.text for m in xml.findall("Meta/Meta_Device/dev_name")]
@@ -73,11 +73,11 @@ class VmaxView(object):
         l += self.prefix("devices: "+','.join(self.sg))
         return '\n'.join(l)
 
-class VmaxFiconDev(object):
+class SymFiconDev(object):
     def __init__(self, xml):
         self.devname = xml.find("Dev_Info/dev_name").text
 
-class VmaxDevRdf(object):
+class SymDevRdf(object):
     def __init__(self, xml):
         self.devname = xml.find("Dev_Info/dev_name").text
         self.pair_state = xml.find("RDF/RDF_Info/pair_state").text
@@ -103,7 +103,7 @@ class VmaxDevRdf(object):
         l += self.prefix("remote_devname: "+self.remote_devname)
         return '\n'.join(l)
 
-class VmaxDev(object):
+class SymDev(object):
     def __init__(self, xml):
         self.info = {}
         self.flags = {}
@@ -171,15 +171,15 @@ class VmaxDev(object):
         return '\n'.join(l)
 
     def __iadd__(self, o):
-        if isinstance(o, VmaxMeta):
+        if isinstance(o, SymMeta):
             self.meta = o.meta
             self.meta_count = len(o.meta)
             self.wwn = o.wwn
-        elif isinstance(o, VmaxDevRdf):
+        elif isinstance(o, SymDevRdf):
             self.rdf = o
         return self
 
-class VmaxDiskGroup(object):
+class SymDiskGroup(object):
     def __init__(self, xml):
         self.total = 0
         self.used = 0
@@ -222,7 +222,7 @@ class VmaxDiskGroup(object):
         return '\n'.join(l)
 
     def __iadd__(self, o):
-        if isinstance(o, VmaxDisk):
+        if isinstance(o, SymDisk):
             self.disk.append(o.id)
             if o.info['hot_spare'] == 'True':
                 key = o.info['actual_megabytes'], o.info['technology'], o.info['speed'], "hot spare"
@@ -232,7 +232,7 @@ class VmaxDiskGroup(object):
                 self.diskcount[key] = 1
             else:
                 self.diskcount[key] += 1
-        if isinstance(o, VmaxDev):
+        if isinstance(o, SymDev):
             self.dev.append(o.info['dev_name'])
             if o.info['configuration'] != 'VDEV':
                 self.total += o.megabytes
@@ -253,7 +253,7 @@ class VmaxDiskGroup(object):
         else:
             self.masked_dev_by_size[o.megabytes] |= set([o.info['dev_name']])
 
-class VmaxDisk(object):
+class SymDisk(object):
     def __init__(self, xml):
         self.info = {}
         for e in list(xml.find('Disk_Info')):
@@ -276,26 +276,34 @@ class VmaxDisk(object):
             l += self.prefix(key+": "+self.info[key])
         return '\n'.join(l)
 
-class Vmax(object):
+class Sym(object):
+    info = {}
+    parsers = ['sym_info',
+               'sym_diskgroup',
+               'sym_disk',
+               'sym_dev',
+               'sym_devrdfa',
+               'sym_ficondev',
+               'sym_meta',
+               'sym_director']
+    dumps = ['info',
+             'dev',
+             'disk',
+             'diskgroup',
+             'director']
+
     def __init__(self, xml_dir=None, preload_data=False):
         if xml_dir is None:
             return
         self.xml_dir = xml_dir
         self.xml_mtime = None
-        self.info = {'dev_count':0,
-                     'disk_count': 0,
-                     'diskgroup_count': 0,
-                     'view_count': 0,
-                     'ig_count': 0,
-                     'sg_count': 0,
-                     'pg_count': 0}
-        self.ig = {}
-        self.pg = {}
-        self.sg = {}
+        self.info.update({'dev_count':0,
+                          'disk_count': 0,
+                          'diskgroup_count': 0,
+                          'view_count': 0})
         self.dev = {}
         self.disk = {}
         self.diskgroup = {}
-        self.view = {}
         self.director = {}
 
         if self.dump_outdated():
@@ -304,36 +312,25 @@ class Vmax(object):
             self.get_sym_all()
 
     def load_xml(self):
-            self.sym_info()
-            self.sym_diskgroup()
-            self.sym_disk()
-            self.sym_dev()
-            self.sym_devrdfa()
-            self.sym_ficondev()
-            self.sym_meta()
-            self.sym_view()
-            self.sym_dir()
+        for parser in self.parsers:
+            getattr(self, parser)()
 
-            # restore mtime changed by the parser
-            os.utime(os.path.join(self.xml_dir, 'sym_info'),
-                     (-1, self.xml_mtime))
+        # restore mtime changed by the parser
+        os.utime(os.path.join(self.xml_dir, 'sym_info'),
+                 (-1, self.xml_mtime))
 
-            self.dump('info.dump', self.info)
-            self.dump('ig.dump', self.ig)
-            self.dump('pg.dump', self.pg)
-            self.dump('sg.dump', self.sg)
-            self.dump('dev.dump', self.dev)
-            self.dump('disk.dump', self.disk)
-            self.dump('diskgroup.dump', self.diskgroup)
-            self.dump('view.dump', self.view)
-            self.dump('dir.dump', self.view)
+        for d in self.dumps:
+            self.dump(d+'.dump', getattr(self, d))
 
     def dump_outdated(self):
-        xml = os.path.join(self.xml_dir, 'sym_info')
-        dump = os.path.join(self.xml_dir, 'info.dump')
-        self.xml_mtime = os.stat(xml).st_mtime
-        dump_mtime = os.stat(dump).st_mtime
-        module_mtime = os.stat(__file__).st_mtime
+        try:
+            xml = os.path.join(self.xml_dir, 'sym_info')
+            dump = os.path.join(self.xml_dir, 'info.dump')
+            self.xml_mtime = os.stat(xml).st_mtime
+            dump_mtime = os.stat(dump).st_mtime
+            module_mtime = os.stat(__file__).st_mtime
+        except:
+            return True
         if self.xml_mtime > dump_mtime:
             return True
         if module_mtime > dump_mtime:
@@ -372,30 +369,175 @@ class Vmax(object):
             l += self.prefix(str(self.disk[disk]))
         for dev in self.dev:
             l += self.prefix(str(self.dev[dev]))
-        for view in self.view:
-            l += self.prefix(str(self.view[view]))
         for director in self.director:
             l += self.prefix(str(self.director[director]))
         return '\n'.join(l)
 
     def __iadd__(self, o):
-        if isinstance(o, VmaxDiskGroup):
+        if isinstance(o, SymDiskGroup):
             self.diskgroup[int(o.info['disk_group_number'])] = o
             self.info['diskgroup_count'] += 1
-        elif isinstance(o, VmaxDisk):
+        elif isinstance(o, SymDisk):
             self.disk[o.id] = o
             self.info['disk_count'] += 1
             self.diskgroup[int(o.info['disk_group'])] += o
-        elif isinstance(o, VmaxFiconDev):
+        elif isinstance(o, SymFiconDev):
+            dev = self.dev[o.devname]
+            dev.ficon = True
+            dg = dev.diskgroup
+            if dg is not None:
+	        self.diskgroup[dg].add_masked_dev(dev)
+        elif isinstance(o, SymDevRdf):
+            self.dev[o.devname] += o
+        elif isinstance(o, SymDev):
+            disk_id = o.backend[0]['id']
+            if disk_id in self.disk:
+                disk = self.disk[disk_id]
+                o.diskgroup = int(disk.info['disk_group'])
+                o.diskgroup_name = disk.info['disk_group_name']
+                self.diskgroup[o.diskgroup] += o
+            else:
+                # VDEV
+                pass
+            self.dev[o.info['dev_name']] = o
+            self.info['dev_count'] += 1
+        elif isinstance(o, SymDirector):
+           self.director[o.info['id']] = o
+        return self
+
+    def xmltree(self, xml):
+        f = os.path.join(self.xml_dir, xml)
+        tree = ElementTree()
+        tree.parse(f)
+        return tree
+
+    def sym_info(self):
+        tree = self.xmltree('sym_info')
+        for e in tree.getiterator('Symm_Info'): pass
+        for se in list(e):
+          self.info[se.tag] = se.text
+        del tree
+
+    def sym_diskgroup(self):
+        tree = self.xmltree('sym_diskgroup_info')
+        self.diskgroup = {}
+        for e in tree.getiterator('Disk_Group'):
+            self += SymDiskGroup(e)
+        del tree
+
+    def sym_disk(self):
+        tree = self.xmltree('sym_disk_info')
+        for e in tree.getiterator('Disk'):
+            self += SymDisk(e)
+        del tree
+
+    def sym_dev(self):
+        tree = self.xmltree('sym_dev_info')
+        for e in tree.getiterator('Device'):
+            self += SymDev(e)
+        del tree
+
+    def sym_devrdfa(self):
+        tree = self.xmltree('sym_devrdfa_info')
+        for e in tree.getiterator('Device'):
+            self += SymDevRdf(e)
+        del tree
+
+    def sym_ficondev(self):
+        tree = self.xmltree('sym_ficondev_info')
+        for e in tree.getiterator('Device'):
+            self += SymFiconDev(e)
+        del tree
+
+    def sym_meta(self):
+        tree = self.xmltree('sym_meta_info')
+        for e in tree.getiterator('Device'):
+            o = SymMeta(e)
+            self.dev[o.dev_name] += o
+        del tree
+
+    def sym_director(self):
+        tree = self.xmltree('sym_dir_info')
+        for e in tree.getiterator('Microcode'):
+            for el in list(e):
+                self.info[el.tag] = el.text
+        for e in tree.getiterator('Symmwin'):
+            for el in list(e):
+                self.info['symmwin_'+el.tag] = el.text
+        for e in tree.getiterator('Director'):
+            self += SymDirector(e)
+        del tree
+
+    """ Accessors
+    """
+    def get_sym_info(self):
+        if 'symid' not in self.info:
+            self.info = self.load('info.dump')
+        return self.info
+
+    def get_sym_diskgroup(self):
+        if len(self.diskgroup) == 0:
+            self.diskgroup = self.load('diskgroup.dump')
+        return self.diskgroup
+
+    def get_sym_disk(self):
+        if len(self.disk) == 0:
+            self.disk = self.load('disk.dump')
+        return self.disk
+
+    def get_sym_dev(self):
+        if len(self.dev) == 0:
+            self.dev = self.load('dev.dump')
+        return self.dev
+
+    def get_sym_director(self):
+        if len(self.director) == 0:
+            self.director = self.load('director.dump')
+        return self.director
+
+    def get_sym_all(self):
+        for d in self.dumps:
+            getattr(self, 'get_sym_'+d)()
+
+class Vmax(Sym):
+    def __init__(self, xml_dir=None, preload_data=False):
+        self.parsers += ['sym_view']
+        self.dumps += ['ig', 'pg', 'sg', 'view']
+        self.ig = {}
+        self.pg = {}
+        self.sg = {}
+        self.view = {}
+        self.info.update({'view_count': 0,
+                          'ig_count': 0,
+                          'pg_count': 0,
+                          'sg_count': 0})
+        Sym.__init__(self, xml_dir, preload_data)
+
+    def __str__(self):
+        self.get_sym_all()
+        l = []
+        for view in self.view:
+            l += self.prefix(str(self.view[view]))
+        return Sym.__str__(self)+'\n'.join(l)
+
+    def __iadd__(self, o):
+        if isinstance(o, SymDiskGroup):
+            self.diskgroup[int(o.info['disk_group_number'])] = o
+            self.info['diskgroup_count'] += 1
+        elif isinstance(o, SymDisk):
+            self.disk[o.id] = o
+            self.info['disk_count'] += 1
+            self.diskgroup[int(o.info['disk_group'])] += o
+        elif isinstance(o, SymFiconDev):
             dev = self.dev[o.devname]
             dev.ficon = True
             dev.view.append('Mainframe')
             dg = dev.diskgroup
             if dg is not None:
 	        self.diskgroup[dg].add_masked_dev(dev)
-        elif isinstance(o, VmaxDevRdf):
+        elif isinstance(o, SymDevRdf):
             self.dev[o.devname] += o
-        elif isinstance(o, VmaxDev):
+        elif isinstance(o, SymDev):
             disk_id = o.backend[0]['id']
             if disk_id in self.disk:
                 disk = self.disk[disk_id]
@@ -425,60 +567,9 @@ class Vmax(object):
                     # VDEV
                     continue
                 self.diskgroup[dg].add_masked_dev(dev)
-        elif isinstance(o, VmaxDirector):
+        elif isinstance(o, SymDirector):
            self.director[o.info['id']] = o
         return self
-
-    def xmltree(self, xml):
-        f = os.path.join(self.xml_dir, xml)
-        tree = ElementTree()
-        tree.parse(f)
-        return tree
-
-    def sym_info(self):
-        tree = self.xmltree('sym_info')
-        for e in tree.getiterator('Symm_Info'): pass
-        for se in list(e):
-          self.info[se.tag] = se.text
-        del tree
-
-    def sym_diskgroup(self):
-        tree = self.xmltree('sym_diskgroup_info')
-        self.diskgroup = {}
-        for e in tree.getiterator('Disk_Group'):
-            self += VmaxDiskGroup(e)
-        del tree
-
-    def sym_disk(self):
-        tree = self.xmltree('sym_disk_info')
-        for e in tree.getiterator('Disk'):
-            self += VmaxDisk(e)
-        del tree
-
-    def sym_dev(self):
-        tree = self.xmltree('sym_dev_info')
-        for e in tree.getiterator('Device'):
-            self += VmaxDev(e)
-        del tree
-
-    def sym_devrdfa(self):
-        tree = self.xmltree('sym_devrdfa_info')
-        for e in tree.getiterator('Device'):
-            self += VmaxDevRdf(e)
-        del tree
-
-    def sym_ficondev(self):
-        tree = self.xmltree('sym_ficondev_info')
-        for e in tree.getiterator('Device'):
-            self += VmaxFiconDev(e)
-        del tree
-
-    def sym_meta(self):
-        tree = self.xmltree('sym_meta_info')
-        for e in tree.getiterator('Device'):
-            o = VmaxMeta(e)
-            self.dev[o.dev_name] += o
-        del tree
 
     def sym_view(self):
         tree = self.xmltree('sym_view_aclx')
@@ -486,45 +577,8 @@ class Vmax(object):
             self += VmaxView(e)
         del tree
 
-    def sym_dir(self):
-        tree = self.xmltree('sym_dir_info')
-        for e in tree.getiterator('Microcode'):
-            for el in list(e):
-                self.info[el.tag] = el.text
-        for e in tree.getiterator('Symmwin'):
-            for el in list(e):
-                self.info['symmwin_'+el.tag] = el.text
-        for e in tree.getiterator('Director'):
-            self += VmaxDirector(e)
-        del tree
-
     """ Accessors
     """
-    def get_sym_info(self):
-        if 'symid' not in self.info:
-            self.info = self.load('info.dump')
-        return self.info
-
-    def get_sym_diskgroup(self):
-        if len(self.diskgroup) == 0:
-            self.diskgroup = self.load('diskgroup.dump')
-        return self.diskgroup
-
-    def get_sym_disk(self):
-        if len(self.disk) == 0:
-            self.disk = self.load('disk.dump')
-        return self.disk
-
-    def get_sym_dev(self):
-        if len(self.dev) == 0:
-            self.dev = self.load('dev.dump')
-        return self.dev
-
-    def get_sym_dir(self):
-        if len(self.director) == 0:
-            self.director = self.load('dir.dump')
-        return self.director
-
     def get_sym_sg(self):
         if len(self.sg) == 0:
             self.sg = self.load('sg.dump')
@@ -545,20 +599,22 @@ class Vmax(object):
             self.view = self.load('view.dump')
         return self.view
 
-    def get_sym_all(self):
-        self.get_sym_info()
-        self.get_sym_dev()
-        self.get_sym_disk()
-        self.get_sym_diskgroup()
-        self.get_sym_ig()
-        self.get_sym_pg()
-        self.get_sym_sg()
-        self.get_sym_view()
-        self.get_sym_dir()
+def get_sym(xml_dir=None, preload_data=False):
+        f = os.path.join(xml_dir, 'sym_info')
+        tree = ElementTree()
+        tree.parse(f)
+        for e in tree.getiterator('Symm_Info'): pass
+        model = e.find('model').text
+        del tree
+        if 'VMAX' in model:
+            return Vmax(xml_dir, preload_data)
+        elif 'DMX' in model:
+            return Sym(xml_dir, preload_data)
+        return None
 
 import sys
 def main():
-    s = Vmax(sys.argv[1])
+    s = get_sym(sys.argv[1])
     print s
 
 if __name__ == "__main__":

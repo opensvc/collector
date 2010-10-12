@@ -36,7 +36,9 @@ def index():
     for d in sym_dirs:
         if '%' not in perms and os.path.basename(d) not in perms:
             continue
-        syms.append(sym_info(os.path.basename(d)))
+        d = sym_info(os.path.basename(d))
+        if d is not None:
+            syms.append(d)
 
     return dict(syms=syms, form=form)
 
@@ -230,14 +232,18 @@ def mtime(symid, xml):
 def sym_info(symid):
     tree = xmltree(symid, 'sym_info')
     for e in tree.getiterator('Symm_Info'): pass
-    d = {}
+    d = None
     sym_type = e.find("model").text
     del tree
     dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
     p = os.path.join(dir, symid)
 
     if 'VMAX' in sym_type:
-        s = symmetrix.Vmax(p)
+        s = symmetrix.get_sym(p)
+        s.get_sym_info()
+        d = s.info
+    elif 'DMX' in sym_type:
+        s = symmetrix.get_sym(p)
         s.get_sym_info()
         d = s.info
     else:
@@ -344,7 +350,7 @@ def sym_diskgroup():
     symid = request.vars.arrayid
     dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
     p = os.path.join(dir, symid)
-    s = symmetrix.Vmax(p)
+    s = symmetrix.get_sym(p)
     s.get_sym_diskgroup()
     d = []
     for dg in s.diskgroup.values():
@@ -448,7 +454,7 @@ def sym_view():
         filter_value[f] = view_filter_parse(f)
 
     p = os.path.join(dir, symid)
-    s = symmetrix.Vmax(p)
+    s = symmetrix.get_sym(p)
     s.get_sym_view()
 
     x = DIV(
@@ -668,7 +674,7 @@ def sym_dev_csv():
     symid = request.vars.arrayid
     dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
     p = os.path.join(dir, symid)
-    s = symmetrix.Vmax(p)
+    s = symmetrix.get_sym(p)
     s.get_sym_dev()
     lines = ['devname;config;meta_count;meta_flag;size_mb;dgname;views;wwn']
     for d in sorted(s.dev):
@@ -728,7 +734,7 @@ def sym_dev():
 
     dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
     p = os.path.join(dir, symid)
-    s = symmetrix.Vmax(p)
+    s = symmetrix.get_sym(p)
     s.get_sym_dev()
     lines = []
     for dev in sorted(s.dev):
@@ -928,16 +934,22 @@ def sym_overview():
     symid = request.vars.arrayid
     dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
     p = os.path.join(dir, symid)
-    s = symmetrix.Vmax(p)
+    s = symmetrix.get_sym(p)
     info = s.get_sym_info()
+    if 'ig_count' in info:
+       d_vmax = SPAN(
+                  sym_overview_item(symid, 'view', info['view_count']),
+                  H2('initator group (%d)'%info['ig_count']),
+                  H2('port group (%d)'%info['pg_count']),
+                  H2('storage group (%d)'%info['sg_count']),
+                )
+    else:
+        d_vmax = SPAN()
     d = DIV(
           sym_overview_item(symid, 'diskgroup', info['diskgroup_count']),
           H2('disk (%d)'%info['disk_count']),
           sym_overview_item(symid, 'dev', info['dev_count']),
-          sym_overview_item(symid, 'view', info['view_count']),
-          H2('initator group (%d)'%info['ig_count']),
-          H2('port group (%d)'%info['pg_count']),
-          H2('storage group (%d)'%info['sg_count']),
+          d_vmax,
           DIV(
             A(
               T('Export to csv'),
