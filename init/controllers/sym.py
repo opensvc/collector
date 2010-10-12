@@ -238,16 +238,11 @@ def sym_info(symid):
     dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
     p = os.path.join(dir, symid)
 
-    if 'VMAX' in sym_type:
-        s = symmetrix.get_sym(p)
-        s.get_sym_info()
-        d = s.info
-    elif 'DMX' in sym_type:
-        s = symmetrix.get_sym(p)
-        s.get_sym_info()
-        d = s.info
-    else:
+    s = symmetrix.get_sym(p)
+    if s is None:
         response.flash = T('array model not supported: %s, %s'%(symid, sym_type))
+    s.get_sym_info()
+    d = s.info
     d['mtime'] = mtime(symid, 'sym_info')
     return d
 
@@ -358,11 +353,14 @@ def sym_diskgroup():
     return DIV(d)
 
 def html_view_devs(devs):
+    cols = ['dev', 'wwn', 'conf', 'meta', 'metaflag', 'size', 'dg',
+            'rdf_state', 'rdf_mode', 'rdf_group',
+            'remote_sym', 'remote_dev', 'view']
     lines = []
     for dev in devs:
-        lines.append(html_dev(dev))
+        lines.append(html_dev(dev, cols))
     t = TABLE(
-          html_dev_header(),
+          html_dev_header(cols),
           SPAN(map(TR, lines)),
         )
     return t
@@ -522,59 +520,29 @@ def sym_view():
         d.append(html_view(view))
     return DIV(x, SPAN(d))
 
-def html_dev_header(info=None):
-    if info is not None:
-        dev = 'dev (%s)'%info
-    else:
-        dev = 'dev'
-    l = TR(
-          TH(dev),
-          TH('conf'),
-          TH('meta'),
-          TH('meta flag'),
-          TH('size'),
-          TH('diskgroup'),
-          TH('view'),
-          TH('wwn'),
-          TH('rdf state'),
-          TH('rdf mode'),
-          TH('rdf group'),
-          TH('remote sym'),
-          TH('remote dev'),
-        )
-    return l
+def html_dev_header(cols):
+    titles = map(lambda x: dev_columns[x]['title'], cols)
+    return TR(map(TH, titles))
 
-def html_dev(dev):
-    view = ', '.join(dev.view)
-    if hasattr(dev, 'rdf'):
-        rdf_state = dev.rdf.pair_state
-        rdf_mode = dev.rdf.mode
-        rdf_group = dev.rdf.ra_group_num
-        remote_sym = dev.rdf.remote_symid
-        remote_dev = dev.rdf.remote_devname
-    else:
-        rdf_state = ""
-        rdf_mode = ""
-        rdf_group = ""
-        remote_sym = ""
-        remote_dev = ""
-
-    l = TR(
-          TD(dev.info['dev_name']),
-          TD(dev.info['configuration']),
-          TD(dev.meta_count, _class='numeric'),
-          TD(dev.flags['meta']),
-          TD(dev.megabytes,' ',T('MB'), _class='numeric'),
-          TD(dev.diskgroup_name),
-          TD(view),
-          TD(dev.wwn),
-          TD(rdf_state),
-          TD(rdf_mode),
-          TD(rdf_group),
-          TD(remote_sym),
-          TD(remote_dev),
-        )
-    return l
+def html_dev(dev, cols):
+    h = {'dev':  dev.info['dev_name'],
+         'conf': dev.info['configuration'],
+         'meta': dev.meta_count,
+         'metaflag': dev.flags['meta'],
+         'size': T('%(n)s MB'%dict(n=dev.megabytes)),
+         'dg': dev.diskgroup_name,
+         'view': ', '.join(dev.view),
+         'wwn': dev.wwn,
+         'rdf_state': dev.rdf.pair_state,
+         'rdf_mode': dev.rdf.mode,
+         'rdf_group': dev.rdf.ra_group_num,
+         'remote_sym': dev.rdf.remote_symid,
+         'remote_dev': dev.rdf.remote_devname}
+    vals = map(lambda x: h[x], cols)
+    cells = []
+    for c in cols:
+        cells.append(TD(h[c], _class=dev_columns[c]['_class']))
+    return TR(cells)
 
 def filter_key(symid, section, f):
     return '%s_filter_%s_%s'%(section, f, symid)
@@ -709,9 +677,39 @@ def _ajax(symid, section, inputs):
               """%dict(ajax=__ajax(symid, section, inputs),
                        symid=symid)
 
+dev_columns = {
+    'dev':        dict(pos=1, size=3,  title='dev',        _class=''),
+    'conf':       dict(pos=2, size=5,  title='conf',       _class=''),
+    'meta':       dict(pos=3, size=3,  title='meta',       _class='numeric'),
+    'metaflag':   dict(pos=4, size=4,  title='meta flag',  _class=''),
+    'size':       dict(pos=5, size=7,  title='size',       _class='numeric'),
+    'dg':         dict(pos=6, size=10, title='diskgroup',  _class=''),
+    'view':       dict(pos=7, size=10, title='view',       _class=''),
+    'wwn':        dict(pos=8, size=24, title='wwn',        _class=''),
+    'rdf_state':  dict(pos=9, size=8,  title='rdf state',  _class=''),
+    'rdf_mode':   dict(pos=10, size=8, title='rdf mode',   _class=''),
+    'rdf_group':  dict(pos=11, size=2, title='rdf group',  _class='numeric'),
+    'remote_sym': dict(pos=12, size=8, title='remote sym', _class=''),
+    'remote_dev': dict(pos=13, size=3, title='remote dev', _class=''),
+}
+
+def _filter(value, o):
+    if isinstance(o, str) or isinstance(o, unicode):
+        return str_filter(value, o)
+    elif isinstance(o, list):
+        return str_filter_in_list(value, o)
+    elif isinstance(o, int):
+        return int_filter(value, o)
+    return False
+
 @auth.requires_login()
 def sym_dev():
     symid = request.vars.arrayid
+    dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
+    p = os.path.join(dir, symid)
+    s = symmetrix.get_sym(p)
+    s.get_sym_dev()
+
     if 'dev_perpage_'+symid in request.vars:
         perpage = int(request.vars['dev_perpage_'+symid])
     else:
@@ -724,149 +722,70 @@ def sym_dev():
     def dev_filter_parse(key):
         return filter_parse(symid, 'dev', key)
 
-    filters = ['dev', 'wwn', 'conf', 'meta', 'metaflag', 'size', 'dg', 'view',
-               'rdf_state', 'rdf_mode', 'rdf_group', 'remote_sym', 'remote_dev'
-              ]
-    filter_value = {}
-    ajax_inputs = map(dev_filter_key, filters)
-    for f in filters:
-        filter_value[f] = dev_filter_parse(f)
+    cols = ['dev', 'wwn', 'conf', 'meta', 'metaflag', 'size', 'dg',
+            'rdf_state', 'rdf_mode', 'rdf_group',
+            'remote_sym', 'remote_dev']
 
-    dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
-    p = os.path.join(dir, symid)
-    s = symmetrix.get_sym(p)
-    s.get_sym_dev()
+    if isinstance(s, symmetrix.Vmax):
+        cols += ['view']
+
+    filter_value = {}
+    ajax_inputs = map(dev_filter_key, cols)
+    for c in cols:
+        filter_value[c] = dev_filter_parse(c)
+
     lines = []
-    for dev in sorted(s.dev):
-        if not str_filter(filter_value['dev'],
-                          s.dev[dev].info['dev_name']):
+    rdf = symmetrix.SymDevRdf()
+    for devname in sorted(s.dev):
+        dev = s.dev[devname]
+        if not hasattr(dev, 'rdf'):
+            dev.rdf = rdf
+        if dev.meta_count == 0:
+            dev.meta_count = 'n/a'
+        if not _filter(filter_value['dev'], dev.info['dev_name']):
             continue
-        if not str_filter(filter_value['wwn'],
-                          s.dev[dev].wwn):
+        if not _filter(filter_value['wwn'], dev.wwn):
             continue
-        if not str_filter(filter_value['conf'],
-                          s.dev[dev].info['configuration']):
+        if not _filter(filter_value['conf'], dev.info['configuration']):
             continue
-        if s.dev[dev].meta_count == 0:
-            s.dev[dev].meta_count = 'n/a'
-        if not int_filter(filter_value['meta'],
-                          s.dev[dev].meta_count):
+        if not _filter(filter_value['meta'], dev.meta_count):
             continue
-        if not str_filter(filter_value['metaflag'],
-                          s.dev[dev].flags['meta']):
+        if not _filter(filter_value['metaflag'], dev.flags['meta']):
             continue
-        if not int_filter(filter_value['size'],
-                          s.dev[dev].megabytes):
+        if not _filter(filter_value['size'], dev.megabytes):
             continue
-        if not str_filter(filter_value['dg'],
-                          s.dev[dev].diskgroup_name):
+        if not _filter(filter_value['dg'], dev.diskgroup_name):
             continue
-        if not str_filter_in_list(filter_value['view'],
-                                  s.dev[dev].view):
+        if 'view' in cols and not _filter(filter_value['view'], dev.view):
             continue
-        if hasattr(s.dev[dev], 'rdf'):
-            if not str_filter(filter_value['rdf_mode'],
-                              s.dev[dev].rdf.mode):
-                continue
-            if not str_filter(filter_value['rdf_state'],
-                              s.dev[dev].rdf.pair_state):
-                continue
-            if not str_filter(filter_value['rdf_group'],
-                              s.dev[dev].rdf.ra_group_num):
-                continue
-            if not str_filter(filter_value['remote_sym'],
-                              s.dev[dev].rdf.remote_symid):
-                continue
-            if not str_filter(filter_value['remote_dev'],
-                              s.dev[dev].rdf.remote_devname):
-                continue
+        if not _filter(filter_value['rdf_mode'], dev.rdf.mode):
+            continue
+        if not _filter(filter_value['rdf_state'], dev.rdf.pair_state):
+            continue
+        if not _filter(filter_value['rdf_group'], dev.rdf.ra_group_num):
+            continue
+        if not _filter(filter_value['remote_sym'], dev.rdf.remote_symid):
+            continue
+        if not _filter(filter_value['remote_dev'], dev.rdf.remote_symid):
+            continue
+
         line_count += 1
         if line_count <= perpage:
-            lines.append(html_dev(s.dev[dev]))
+            lines.append(html_dev(dev, cols))
 
-    d = DIV(
-          TABLE(
-            html_dev_header('%d/%d'%(len(lines),line_count)),
-            TR(
-              INPUT(
-                _id='dev_filter_dev_'+symid,
+    inputs = []
+    for c in cols:
+        inputs.append(INPUT(
+                _id=dev_filter_key(c),
                 _value=filter_value['dev'],
-                _size=4,
-                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
-              ),
-              INPUT(
-                _id='dev_filter_conf_'+symid,
-                _value=filter_value['conf'],
-                _size=5,
-                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
-              ),
-              INPUT(
-                _id='dev_filter_meta_'+symid,
-                _value=filter_value['meta'],
-                _size=3,
-                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
-              ),
-              INPUT(
-                _id='dev_filter_metaflag_'+symid,
-                _value=filter_value['metaflag'],
-                _size=4,
-                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
-              ),
-              INPUT(
-                _id='dev_filter_size_'+symid,
-                _value=filter_value['size'],
-                _size=7,
-                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
-              ),
-              INPUT(
-                _id='dev_filter_dg_'+symid,
-                _value=filter_value['dg'],
-                _size=10,
-                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
-              ),
-              INPUT(
-                _id='dev_filter_view_'+symid,
-                _value=filter_value['view'],
-                _size=10,
-                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
-              ),
-              INPUT(
-                _id='dev_filter_wwn_'+symid,
-                _value=filter_value['wwn'],
-                _size=24,
-                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
-              ),
-              INPUT(
-                _id='dev_filter_rdf_state_'+symid,
-                _value=filter_value['rdf_state'],
-                _size=8,
-                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
-              ),
-              INPUT(
-                _id='dev_filter_rdf_mode_'+symid,
-                _value=filter_value['rdf_mode'],
-                _size=8,
-                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
-              ),
-              INPUT(
-                _id='dev_filter_rdf_group_'+symid,
-                _value=filter_value['rdf_group'],
-                _size=2,
-                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
-              ),
-              INPUT(
-                _id='dev_filter_remote_sym_'+symid,
-                _value=filter_value['remote_sym'],
-                _size=8,
-                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
-              ),
-              INPUT(
-                _id='dev_filter_remote_dev_'+symid,
-                _value=filter_value['remote_dev'],
-                _size=4,
-                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
-              ),
-            ),
+                _size=dev_columns[c]['size'],
+                _onKeyPress=_ajax(symid, c, ajax_inputs)
+              ))
+    d = DIV(
+          '%d/%d'%(len(lines),line_count),
+          TABLE(
+            html_dev_header(cols),
+            TR(map(TD, inputs)),
             SPAN(map(SPAN, lines)),
           ),
           DIV(

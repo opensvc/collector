@@ -78,7 +78,15 @@ class SymFiconDev(object):
         self.devname = xml.find("Dev_Info/dev_name").text
 
 class SymDevRdf(object):
-    def __init__(self, xml):
+    devname = ''
+    pair_state = ''
+    mode = ''
+    ra_group_num = ''
+    remote_symid = ''
+    remote_devname = ''
+    def __init__(self, xml=None):
+        if xml is None:
+            return
         self.devname = xml.find("Dev_Info/dev_name").text
         self.pair_state = xml.find("RDF/RDF_Info/pair_state").text
         self.mode = xml.find("RDF/Mode/mode").text

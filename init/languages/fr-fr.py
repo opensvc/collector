@@ -22,6 +22,8 @@
 '1 minute ago': '1 minute',
 '1 second ago': '1 seconde',
 '1 year ago': '1 an',
+'1027 MB': '1027 MB',
+'3 MB': '3 MB',
 '<< ': '<< ',
 '<< prev': '<< précédents',
 '<< previous': '<< précédents',
