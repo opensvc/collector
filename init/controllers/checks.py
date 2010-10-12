@@ -228,7 +228,7 @@ def checks():
             display = True,
             nestedin = 'v_checks',
             img = 'check16',
-            size = 10
+            size = 3
         ),
         chk_created = dict(
             pos = 8,
