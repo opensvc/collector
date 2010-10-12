@@ -777,9 +777,9 @@ def sym_dev():
     for c in cols:
         inputs.append(INPUT(
                 _id=dev_filter_key(c),
-                _value=filter_value['dev'],
+                _value=filter_value[c],
                 _size=dev_columns[c]['size'],
-                _onKeyPress=_ajax(symid, c, ajax_inputs)
+                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
               ))
     d = DIV(
           '%d/%d'%(len(lines),line_count),
