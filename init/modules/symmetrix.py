@@ -2,6 +2,35 @@ import pickle
 import os
 from xml.etree.ElementTree import ElementTree, SubElement
 
+class SymMask(object):
+    def __init__(self, director, port, xml):
+        self.director = director
+        self.port = port
+        self.id = ':'.join([director, port])
+        self.dev = []
+        for e in xml.findall("Device"):
+            start_dev_e = e.find("start_dev")
+            if start_dev_e is None:
+                # this really can happen
+                continue
+            start_dev = int(start_dev_e.text, 16)
+            end_dev = int(e.find("end_dev").text, 16)
+            devs = range(start_dev, end_dev)
+            self.dev += map(lambda x: str('%04X'%x).replace('0x',''), devs)
+
+    def prefix(self, text=""):
+        if len(text) == 0:
+            return ""
+        lines = text.split('\n')
+        for i, line in enumerate(lines):
+            lines[i] = "mask[%s].%s"%(self.id, line)
+        return lines
+
+    def __str__(self):
+        l = []
+        l += self.prefix("dev: "+','.join(self.dev))
+        return '\n'.join(l)
+
 class SymDirector(object):
     def __init__(self, xml):
         self.info = {}
@@ -124,6 +153,7 @@ class SymDev(object):
         self.view = []
         self.wwn = ""
         self.ficon = False
+        self.rdf = SymDevRdf()
 
         try:
             self.megabytes = int(xml.find("Capacity/megabytes").text)
@@ -285,24 +315,24 @@ class SymDisk(object):
         return '\n'.join(l)
 
 class Sym(object):
-    info = {}
-    parsers = ['sym_info',
-               'sym_diskgroup',
-               'sym_disk',
-               'sym_dev',
-               'sym_devrdfa',
-               'sym_ficondev',
-               'sym_meta',
-               'sym_director']
-    dumps = ['info',
-             'dev',
-             'disk',
-             'diskgroup',
-             'director']
-
     def __init__(self, xml_dir=None, preload_data=False):
         if xml_dir is None:
             return
+        self.info = {}
+        self.parsers = ['sym_info',
+                        'sym_diskgroup',
+                        'sym_disk',
+                        'sym_dev',
+                        'sym_devrdfa',
+                        'sym_ficondev',
+                        'sym_meta',
+                        'sym_director']
+        self.dumps = ['info',
+                      'dev',
+                      'disk',
+                      'diskgroup',
+                      'director']
+
         self.xml_dir = xml_dir
         self.xml_mtime = None
         self.info.update({'dev_count':0,
@@ -314,6 +344,7 @@ class Sym(object):
         self.diskgroup = {}
         self.director = {}
 
+    def init_data(self, preload_data):
         if self.dump_outdated():
             self.load_xml()
         elif preload_data:
@@ -383,35 +414,50 @@ class Sym(object):
 
     def __iadd__(self, o):
         if isinstance(o, SymDiskGroup):
-            self.diskgroup[int(o.info['disk_group_number'])] = o
-            self.info['diskgroup_count'] += 1
+            self.add_sym_diskgroup(o)
         elif isinstance(o, SymDisk):
-            self.disk[o.id] = o
-            self.info['disk_count'] += 1
-            self.diskgroup[int(o.info['disk_group'])] += o
+            self.add_sym_disk(o)
         elif isinstance(o, SymFiconDev):
-            dev = self.dev[o.devname]
-            dev.ficon = True
-            dg = dev.diskgroup
-            if dg is not None:
-	        self.diskgroup[dg].add_masked_dev(dev)
+            self.add_sym_ficondev(o)
         elif isinstance(o, SymDevRdf):
-            self.dev[o.devname] += o
+            self.add_sym_devrdf(o)
         elif isinstance(o, SymDev):
-            disk_id = o.backend[0]['id']
-            if disk_id in self.disk:
-                disk = self.disk[disk_id]
-                o.diskgroup = int(disk.info['disk_group'])
-                o.diskgroup_name = disk.info['disk_group_name']
-                self.diskgroup[o.diskgroup] += o
-            else:
-                # VDEV
-                pass
-            self.dev[o.info['dev_name']] = o
-            self.info['dev_count'] += 1
+            self.add_sym_dev(o)
         elif isinstance(o, SymDirector):
-           self.director[o.info['id']] = o
+            self.add_sym_director(o)
         return self
+
+    def add_sym_diskgroup(self, o):
+        self.diskgroup[int(o.info['disk_group_number'])] = o
+        self.info['diskgroup_count'] += 1
+
+    def add_sym_disk(self, o):
+        self.disk[o.id] = o
+        self.info['disk_count'] += 1
+        self.diskgroup[int(o.info['disk_group'])] += o
+
+    def add_sym_ficondev(self, o):
+        dev = self.dev[o.devname]
+        dev.ficon = True
+        dg = dev.diskgroup
+        if dg is not None:
+            self.diskgroup[dg].add_masked_dev(dev)
+
+    def add_sym_devrdf(self, o):
+        self.dev[o.devname] += o
+
+    def add_sym_dev(self, o):
+        disk_id = o.backend[0]['id']
+        if disk_id in self.disk:
+            disk = self.disk[disk_id]
+            o.diskgroup = int(disk.info['disk_group'])
+            o.diskgroup_name = disk.info['disk_group_name']
+            self.diskgroup[o.diskgroup] += o
+        self.dev[o.info['dev_name']] = o
+        self.info['dev_count'] += 1
+
+    def add_sym_director(self, o):
+        self.director[o.info['id']] = o
 
     def xmltree(self, xml):
         f = os.path.join(self.xml_dir, xml)
@@ -507,8 +553,70 @@ class Sym(object):
         for d in self.dumps:
             getattr(self, 'get_sym_'+d)()
 
+class Dmx(Sym):
+    def __init__(self, xml_dir=None, preload_data=False):
+        Sym.__init__(self, xml_dir, preload_data)
+        self.parsers += ['sym_maskdb']
+        self.dumps += ['maskdb']
+        self.maskdb = {}
+        self.info.update({'maskdb_count': 0})
+        self.init_data(preload_data)
+
+    def __str__(self):
+        self.get_sym_all()
+        l = []
+        for mask in self.maskdb:
+            l += self.prefix(str(self.maskdb[mask]))
+        return Sym.__str__(self)+'\n'.join(l)
+
+    def __iadd__(self, o):
+        if isinstance(o, SymDiskGroup):
+            self.add_sym_diskgroup(o)
+        elif isinstance(o, SymDisk):
+            self.add_sym_disk(o)
+        elif isinstance(o, SymFiconDev):
+            self.add_sym_ficondev(o)
+        elif isinstance(o, SymDevRdf):
+            self.add_sym_devrdf(o)
+        elif isinstance(o, SymDev):
+            self.add_sym_dev(o)
+        elif isinstance(o, SymDirector):
+            self.add_sym_director(o)
+        elif isinstance(o, SymMask):
+            self.add_sym_mask(o)
+        return self
+
+    def add_sym_mask(self, o):
+        self.maskdb[o.id] = o
+        self.info['maskdb_count'] += 1
+        for dev_name in o.dev:
+            dev = self.dev[dev_name]
+            dev.view.append(o.id)
+            dg = dev.diskgroup
+            if dg is None:
+                # VDEV
+                continue
+            self.diskgroup[dg].add_masked_dev(dev)
+
+    def sym_maskdb(self):
+        tree = self.xmltree('sym_maskdb')
+        for e in tree.getiterator('Devmask_Database_Record'):
+            director = e.find('director').text
+            port = e.find('port').text
+            for ee in e.findall('Db_Record'):
+                self += SymMask(director, port, ee)
+        del tree
+
+    """ Accessors
+    """
+    def get_sym_maskdb(self):
+        if len(self.maskdb) == 0:
+            self.maskdb = self.load('maskdb.dump')
+        return self.maskdb
+
 class Vmax(Sym):
     def __init__(self, xml_dir=None, preload_data=False):
+        Sym.__init__(self, xml_dir, preload_data)
         self.parsers += ['sym_view']
         self.dumps += ['ig', 'pg', 'sg', 'view']
         self.ig = {}
@@ -519,7 +627,7 @@ class Vmax(Sym):
                           'ig_count': 0,
                           'pg_count': 0,
                           'sg_count': 0})
-        Sym.__init__(self, xml_dir, preload_data)
+        self.init_data(preload_data)
 
     def __str__(self):
         self.get_sym_all()
@@ -530,54 +638,39 @@ class Vmax(Sym):
 
     def __iadd__(self, o):
         if isinstance(o, SymDiskGroup):
-            self.diskgroup[int(o.info['disk_group_number'])] = o
-            self.info['diskgroup_count'] += 1
+            self.add_sym_diskgroup(o)
         elif isinstance(o, SymDisk):
-            self.disk[o.id] = o
-            self.info['disk_count'] += 1
-            self.diskgroup[int(o.info['disk_group'])] += o
+            self.add_sym_disk(o)
         elif isinstance(o, SymFiconDev):
-            dev = self.dev[o.devname]
-            dev.ficon = True
-            dev.view.append('Mainframe')
-            dg = dev.diskgroup
-            if dg is not None:
-	        self.diskgroup[dg].add_masked_dev(dev)
+            self.add_sym_ficondev(o)
         elif isinstance(o, SymDevRdf):
-            self.dev[o.devname] += o
+            self.add_sym_devrdf(o)
         elif isinstance(o, SymDev):
-            disk_id = o.backend[0]['id']
-            if disk_id in self.disk:
-                disk = self.disk[disk_id]
-                o.diskgroup = int(disk.info['disk_group'])
-                o.diskgroup_name = disk.info['disk_group_name']
-                self.diskgroup[o.diskgroup] += o
-            else:
-                # VDEV
-                pass
-            self.dev[o.info['dev_name']] = o
-            self.info['dev_count'] += 1
-        elif isinstance(o, VmaxView):
-            self.view[o.view_name] = o
-            self.info['view_count'] += 1
-            self.ig[o.init_grpname] = o.ig
-            self.info['ig_count'] += 1
-            self.pg[o.port_grpname] = o.pg
-            self.info['pg_count'] += 1
-            self.sg[o.stor_grpname] = o.sg
-            self.info['sg_count'] += 1
-            for dev_name in o.sg:
-                dev = self.dev[dev_name]
-                dev.view.append(o.view_name)
-                o.dev.append(dev)
-                dg = dev.diskgroup
-                if dg is None:
-                    # VDEV
-                    continue
-                self.diskgroup[dg].add_masked_dev(dev)
+            self.add_sym_dev(o)
         elif isinstance(o, SymDirector):
-           self.director[o.info['id']] = o
+            self.add_sym_director(o)
+        elif isinstance(o, VmaxView):
+            self.add_sym_view(o)
         return self
+
+    def add_sym_view(self, o):
+        self.view[o.view_name] = o
+        self.info['view_count'] += 1
+        self.ig[o.init_grpname] = o.ig
+        self.info['ig_count'] += 1
+        self.pg[o.port_grpname] = o.pg
+        self.info['pg_count'] += 1
+        self.sg[o.stor_grpname] = o.sg
+        self.info['sg_count'] += 1
+        for dev_name in o.sg:
+            dev = self.dev[dev_name]
+            dev.view.append(o.view_name)
+            o.dev.append(dev)
+            dg = dev.diskgroup
+            if dg is None:
+                # VDEV
+                continue
+            self.diskgroup[dg].add_masked_dev(dev)
 
     def sym_view(self):
         tree = self.xmltree('sym_view_aclx')
@@ -617,7 +710,7 @@ def get_sym(xml_dir=None, preload_data=False):
         if 'VMAX' in model:
             return Vmax(xml_dir, preload_data)
         elif 'DMX' in model:
-            return Sym(xml_dir, preload_data)
+            return Dmx(xml_dir, preload_data)
         return None
 
 import sys

@@ -635,6 +635,18 @@ def str_filter(value, text):
         return r
 
 def str_filter_in_list(value, l):
+    if value == 'empty':
+        if len(l) == 0:
+            return True
+        else:
+            return False
+    elif value == '!empty':
+        if len(l) == 0:
+            return False
+        else:
+            return True
+    if len(value) == 0 and len(l) == 0:
+        return True
     for i in l:
         if str_filter(value, i):
             return True
