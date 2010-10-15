@@ -105,8 +105,10 @@ def html_diskgroup(dg):
          s = '%d x %d GB %s rpm %s'%(dg.diskcount[key],
                                      int(size)//1024, speed, tech)
          if spare is not None:
-            s += " (spare)"
-         l.append(s)
+            sp = SPAN('spare', _class='sym_highlight')
+         else:
+            sp = SPAN()
+         l.append(SPAN(s, sp))
      dev_count = len(dg.dev)
      masked_dev_count = len(dg.masked_dev)
      if dev_count != 0:
@@ -142,7 +144,8 @@ def html_diskgroup(dg):
      if dev_count == 0:
          table_usage = SPAN()
      else:
-         table_usage = TABLE(
+         table_usage = DIV(
+            TABLE(
               TR(
                 TH(),
                 TH(T('GB')),
@@ -168,12 +171,16 @@ def html_diskgroup(dg):
                 TD(usage, _class='numeric'),
                 TD(dev_usage, _class='numeric'),
               ),
-            )
+            ),
+            _class='sym_float',
+            _style='width:12em',
+          )
 
      if len(m) == 0:
          table_usage_per_size = SPAN()
      else:
-         table_usage_per_size = TABLE(
+         table_usage_per_size = DIV(
+            TABLE(
               TR(
                 TH('dev size'),
                 TH('free'),
@@ -183,33 +190,25 @@ def html_diskgroup(dg):
               ),
               SPAN(map(SPAN, m))
             ),
+            _class='sym_float',
+            _style='width:20em',
+          ),
 
      d = DIV(
-          DIV(
             H3(
               dg.info['disk_group_number'],
               ': ',
               dg.info['disk_group_name'],
             ),
-            SPAN(map(P, l)),
+          DIV(
+            map(P, l),
             _class='sym_float',
             _style='width:18em',
           ),
-          DIV(
-            table_usage,
-            _class='sym_float',
-            _style='width:12em',
-          ),
-          DIV(
-            table_usage_per_size,
-            _class='sym_float',
-            _style='width:20em',
-          ),
-          DIV(
-            '',
-            _class='spacer',
-          ),
-          _class='sym_diskgroup',
+          SPAN(table_usage),
+          SPAN(table_usage_per_size),
+          DIV('', _class='spacer'),
+          _class='sym_detail_visible',
          )
      return d
 
@@ -394,8 +393,7 @@ def html_view(view):
     d = DIV(
           DIV(
             H3(view.view_name),
-            _class='sym_float',
-            _style='width:18em',
+            _class='sym_h2',
           ),
           DIV(
             B('port group: '),
@@ -801,7 +799,7 @@ def sym_dev():
                 _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
               ))
     d = DIV(
-          '%d/%d'%(len(lines),line_count),
+          SPAN('%d/%d'%(len(lines),line_count), _class='sym_highlight'),
           TABLE(
             html_dev_header(cols),
             TR(map(TD, inputs)),
@@ -831,6 +829,7 @@ def sym_dev():
               _class='sym_float',
             ),
           ),
+          DIV('', _class='spacer'),
           _class='sym_diskgroup',
         )
     return d
@@ -850,7 +849,7 @@ def sym_overview_item(symid, title, count):
              getElementById("arrayid").value="%(symid)s";
              ajax("%(url)s",["arrayid"],"sym_%(title)s_%(symid)s");
            };
-           toggle_vis("sym_%(title)s_%(symid)s");
+           toggle_vis_block("sym_%(title)s_%(symid)s");
          """%dict(url=URL(r=request,f='sym_'+title), title=title,
                   spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
                   symid=symid),
@@ -860,6 +859,7 @@ def sym_overview_item(symid, title, count):
     d = DIV(
           _id='sym_%s_%s'%(title, symid),
           _name='sym_%s_%s'%(title, symid),
+          _class='sym_detail',
         )
     return SPAN(h, d)
 

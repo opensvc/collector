@@ -966,7 +966,7 @@ div.svcstatus td {
     text-align: center;
 }
 
-div.sym {
+.sym {
     border: 3px solid #335;
     margin:0.2em;
     border-radius:8px;
@@ -975,23 +975,39 @@ div.sym {
     text-align: left;
     padding: 0.3em;
     overflow: auto;
+    display: block;
 }
 
-div.sym_info {
+.sym_highlight {
+    border-radius:4px;
+   -moz-border-radius:4px;
+   -webkit-border-radius:4px;
+    background-color: #DCDDE6;
+    padding: 0.2em;
+    margin: 0.1em;
+}
+
+.sym h3 {
+    border-radius:6px;
+   -moz-border-radius:6px;
+   -webkit-border-radius:6px;
+    background-color: #DCDDE6;
+    padding: 0.4em;
+    margin-top: 0.2em;
+    margin-bottom: 0.2em;
+}
+
+.sym_info div {
     padding: 1em;
 }
 
-div.sym_detail {
-    padding: 1em;
+.sym_detail {
+    padding: 0em;
     display: none;
     clear: both;
 }
 
-div.sym_diskgroup {
-    background-color: #bca;
-    border-radius:6px;
-   -moz-border-radius:6px;
-   -webkit-border-radius:6px;
+div.sym_detail_visible {
     margin: 0.3em;
     padding: 0.3em;
 }
@@ -1000,6 +1016,14 @@ div.sym_diskgroup {
     float:left;
     margin: 0.2em;
     padding: 0.3em;
+}
+
+.sym_detail_visible h3 {
+    border-radius:6px;
+   -moz-border-radius:6px;
+   -webkit-border-radius:6px;
+    background-color: #DCDDE6;
+    padding: 0.5em;
 }
 
 .sym_float table,td {

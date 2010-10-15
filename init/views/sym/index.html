@@ -9,7 +9,7 @@ def format_sym(sym):
           DIV(
             DIV(
               H2(sym['symid']),
-              H3(T('Model')+': ', sym['model']),
+              SPAN(sym['model'], _class='sym_highlight'),
               _class='sym_float',
               _style='width:15em',
             ),
