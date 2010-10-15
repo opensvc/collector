@@ -107,14 +107,14 @@ class SymFiconDev(object):
         self.devname = xml.find("Dev_Info/dev_name").text
 
 class SymDevRdf(object):
-    devname = ''
-    pair_state = ''
-    mode = ''
-    ra_group_num = ''
-    remote_symid = ''
-    remote_devname = ''
     def __init__(self, xml=None):
         if xml is None:
+            self.devname = ''
+            self.pair_state = ''
+            self.mode = ''
+            self.ra_group_num = ''
+            self.remote_symid = ''
+            self.remote_devname = ''
             return
         self.devname = xml.find("Dev_Info/dev_name").text
         self.pair_state = xml.find("RDF/RDF_Info/pair_state").text
@@ -163,11 +163,6 @@ class SymDev(object):
             self.info[e.tag] = e.text
         for e in list(xml.find("Flags")):
             self.flags[e.tag] = e.text
-        for port in list(xml.find("Front_End")):
-            d = {}
-            for e in list(port):
-                d[e.tag] = e.text
-            self.frontend += [d]
         for disk in list(xml.find("Back_End")):
             d = {}
             for e in list(disk):
@@ -191,9 +186,7 @@ class SymDev(object):
             l += self.prefix(key+": "+self.info[key])
         for key in self.flags:
             l += self.prefix("flags."+key+": "+self.flags[key])
-        for i, fe in enumerate(self.frontend):
-            for key in fe:
-                l += self.prefix("fe[%d].%s: %s"%(i, key, fe[key]))
+        l += self.prefix("frontend: %s"%','.join(self.frontend))
         for i, be in enumerate(self.backend):
             for key in be:
                 l += self.prefix("be[%d].%s: %s"%(i, key, be[key]))
@@ -220,7 +213,9 @@ class SymDev(object):
 class SymDiskGroup(object):
     def __init__(self, xml):
         self.total = 0
+        self.vtotal = 0
         self.used = 0
+        self.vused = 0
         self.diskcount = {}
         self.info = {}
         self.disk = []
@@ -250,13 +245,15 @@ class SymDiskGroup(object):
         l += self.prefix('total: %d'%(self.total))
         l += self.prefix('free: %d'%(self.total-self.used))
         l += self.prefix('used: %d'%self.used)
+        l += self.prefix('vtotal: %d'%(self.total))
+        l += self.prefix('vused: %d'%self.vused)
         l += self.prefix('disks: %s'%','.join(self.disk))
         l += self.prefix('devs: %s'%','.join(self.dev))
         l += self.prefix('masked_devs: %s'%','.join(self.masked_dev))
         for size in self.dev_by_size:
-            l += self.prefix('devs[%dMB]: %s'%(size, ','.join(self.dev)))
+            l += self.prefix('devs[%dMB]: %s'%(size, ','.join(self.dev_by_size[size])))
         for size in self.masked_dev_by_size:
-            l += self.prefix('masked_devs[%dMB]: %s'%(size, ','.join(self.dev)))
+            l += self.prefix('masked_devs[%dMB]: %s'%(size, ','.join(self.masked_dev_by_size[size])))
         return '\n'.join(l)
 
     def __iadd__(self, o):
@@ -271,25 +268,33 @@ class SymDiskGroup(object):
             else:
                 self.diskcount[key] += 1
         if isinstance(o, SymDev):
-            self.dev.append(o.info['dev_name'])
+            devname = o.info['dev_name']
+            if devname in self.dev:
+                return
+            self.dev.append(devname)
             if o.info['configuration'] != 'VDEV':
                 self.total += o.megabytes
-            if o.megabytes not in self.dev_by_size:
-                self.dev_by_size[o.megabytes] = set([o.info['dev_name']])
             else:
-                self.dev_by_size[o.megabytes] |= set([o.info['dev_name']])
+                self.vtotal += o.megabytes
+            if o.megabytes not in self.dev_by_size:
+                self.dev_by_size[o.megabytes] = []
+            if devname not in self.dev_by_size[o.megabytes]:
+                self.dev_by_size[o.megabytes].append(devname)
         return self
 
     def add_masked_dev(self, o):
-        if o.info['dev_name'] in self.masked_dev:
+        devname = o.info['dev_name']
+        if devname in self.masked_dev:
             return
-        self.masked_dev.append(o.info['dev_name'])
+        self.masked_dev.append(devname)
         if o.info['configuration'] != 'VDEV':
             self.used += o.megabytes
-        if o.megabytes not in self.masked_dev_by_size:
-            self.masked_dev_by_size[o.megabytes] = set([o.info['dev_name']])
         else:
-            self.masked_dev_by_size[o.megabytes] |= set([o.info['dev_name']])
+            self.vused += o.megabytes
+        if o.megabytes not in self.masked_dev_by_size:
+            self.masked_dev_by_size[o.megabytes] = []
+        if devname not in self.masked_dev_by_size[o.megabytes]:
+            self.masked_dev_by_size[o.megabytes].append(devname)
 
 class SymDisk(object):
     def __init__(self, xml):
@@ -591,7 +596,9 @@ class Dmx(Sym):
         self.info['maskdb_count'] += 1
         for dev_name in o.dev:
             dev = self.dev[dev_name]
-            dev.view.append(o.id)
+            if o.id in dev.frontend:
+                continue
+            dev.frontend.append(o.id)
             dg = dev.diskgroup
             if dg is None:
                 # VDEV
@@ -665,6 +672,7 @@ class Vmax(Sym):
         for dev_name in o.sg:
             dev = self.dev[dev_name]
             dev.view.append(o.view_name)
+            dev.frontend += o.pg
             o.dev.append(dev)
             dg = dev.diskgroup
             if dg is None:

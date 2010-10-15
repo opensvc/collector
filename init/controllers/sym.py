@@ -536,6 +536,7 @@ def html_dev(dev, cols):
          'dg': dev.diskgroup_name,
          'view': ', '.join(dev.view),
          'wwn': dev.wwn,
+         'frontend': ', '.join(dev.frontend),
          'rdf_state': dev.rdf.pair_state,
          'rdf_mode': dev.rdf.mode,
          'rdf_group': dev.rdf.ra_group_num,
@@ -701,6 +702,7 @@ dev_columns = {
     'dg':         dict(pos=6, size=10, title='diskgroup',  _class=''),
     'view':       dict(pos=7, size=10, title='view',       _class=''),
     'wwn':        dict(pos=8, size=24, title='wwn',        _class=''),
+    'frontend':   dict(pos=8, size=4,  title='frontend',   _class=''),
     'rdf_state':  dict(pos=9, size=8,  title='rdf state',  _class=''),
     'rdf_mode':   dict(pos=10, size=8, title='rdf mode',   _class=''),
     'rdf_group':  dict(pos=11, size=2, title='rdf group',  _class='numeric'),
@@ -738,14 +740,14 @@ def sym_dev():
         return filter_parse(symid, 'dev', key)
 
     cols = ['dev', 'wwn', 'conf', 'meta', 'metaflag', 'size', 'dg',
-            'rdf_state', 'rdf_mode', 'rdf_group',
+            'frontend', 'rdf_state', 'rdf_mode', 'rdf_group',
             'remote_sym', 'remote_dev']
 
     if isinstance(s, symmetrix.Vmax):
         cols += ['view']
 
     filter_value = {}
-    ajax_inputs = map(dev_filter_key, cols)
+    ajax_inputs = map(dev_filter_key, cols)+['dev_perpage_'+symid]
     for c in cols:
         filter_value[c] = dev_filter_parse(c)
 
@@ -760,6 +762,8 @@ def sym_dev():
         if not _filter(filter_value['dev'], dev.info['dev_name']):
             continue
         if not _filter(filter_value['wwn'], dev.wwn):
+            continue
+        if not _filter(filter_value['frontend'], dev.frontend):
             continue
         if not _filter(filter_value['conf'], dev.info['configuration']):
             continue
