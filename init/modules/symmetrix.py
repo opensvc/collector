@@ -60,6 +60,21 @@ class SymMeta(object):
         except:
             self.wwn = ""
 
+    def prefix(self, text=""):
+        if len(text) == 0:
+            return ""
+        lines = text.split('\n')
+        for i, line in enumerate(lines):
+            lines[i] = "meta.%s"%(line)
+        return lines
+
+    def __str__(self):
+        l = []
+        l += self.prefix("head: "+self.dev_name)
+        l += self.prefix("members: "+','.join(self.meta))
+        l += self.prefix("wwn: "+self.wwn)
+        return '\n'.join(l)
+
 class VmaxView(object):
     def __init__(self, xml):
         self.view_name = xml.find('view_name').text
@@ -154,6 +169,7 @@ class SymDev(object):
         self.wwn = ""
         self.ficon = False
         self.rdf = SymDevRdf()
+        self.memberof = ""
 
         try:
             self.megabytes = int(xml.find("Capacity/megabytes").text)
@@ -194,6 +210,7 @@ class SymDev(object):
         l += self.prefix('diskgroup: %s'%str(self.diskgroup))
         l += self.prefix('diskgroup_name: %s'%str(self.diskgroup_name))
         l += self.prefix('meta: %s'%','.join(self.meta))
+        l += self.prefix('member of: %s'%self.memberof)
         l += self.prefix('view: %s'%','.join(self.view))
         l += self.prefix('wwn: %s'%self.wwn)
         l += self.prefix('ficon: %s'%self.ficon)
@@ -209,6 +226,9 @@ class SymDev(object):
         elif isinstance(o, SymDevRdf):
             self.rdf = o
         return self
+
+    def set_membership(self, devname):
+        self.memberof = devname
 
 class SymDiskGroup(object):
     def __init__(self, xml):
@@ -430,7 +450,14 @@ class Sym(object):
             self.add_sym_dev(o)
         elif isinstance(o, SymDirector):
             self.add_sym_director(o)
+        elif isinstance(o, SymMeta):
+            self.add_sym_meta(o)
         return self
+
+    def add_sym_meta(self, o):
+        self.dev[o.dev_name] += o
+        for devname in o.meta:
+            self.dev[devname].set_membership(o.dev_name)
 
     def add_sym_diskgroup(self, o):
         self.diskgroup[int(o.info['disk_group_number'])] = o
@@ -511,8 +538,7 @@ class Sym(object):
     def sym_meta(self):
         tree = self.xmltree('sym_meta_info')
         for e in tree.getiterator('Device'):
-            o = SymMeta(e)
-            self.dev[o.dev_name] += o
+            self += SymMeta(e)
         del tree
 
     def sym_director(self):
@@ -575,21 +601,9 @@ class Dmx(Sym):
         return Sym.__str__(self)+'\n'.join(l)
 
     def __iadd__(self, o):
-        if isinstance(o, SymDiskGroup):
-            self.add_sym_diskgroup(o)
-        elif isinstance(o, SymDisk):
-            self.add_sym_disk(o)
-        elif isinstance(o, SymFiconDev):
-            self.add_sym_ficondev(o)
-        elif isinstance(o, SymDevRdf):
-            self.add_sym_devrdf(o)
-        elif isinstance(o, SymDev):
-            self.add_sym_dev(o)
-        elif isinstance(o, SymDirector):
-            self.add_sym_director(o)
-        elif isinstance(o, SymMask):
+        if isinstance(o, SymMask):
             self.add_sym_mask(o)
-        return self
+        return Sym.__iadd__(self, o)
 
     def add_sym_mask(self, o):
         self.maskdb[o.id] = o
@@ -644,21 +658,9 @@ class Vmax(Sym):
         return Sym.__str__(self)+'\n'.join(l)
 
     def __iadd__(self, o):
-        if isinstance(o, SymDiskGroup):
-            self.add_sym_diskgroup(o)
-        elif isinstance(o, SymDisk):
-            self.add_sym_disk(o)
-        elif isinstance(o, SymFiconDev):
-            self.add_sym_ficondev(o)
-        elif isinstance(o, SymDevRdf):
-            self.add_sym_devrdf(o)
-        elif isinstance(o, SymDev):
-            self.add_sym_dev(o)
-        elif isinstance(o, SymDirector):
-            self.add_sym_director(o)
-        elif isinstance(o, VmaxView):
+        if isinstance(o, VmaxView):
             self.add_sym_view(o)
-        return self
+        return Sym.__iadd__(self, o)
 
     def add_sym_view(self, o):
         self.view[o.view_name] = o

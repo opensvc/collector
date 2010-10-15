@@ -352,8 +352,8 @@ def sym_diskgroup():
     return DIV(d)
 
 def html_view_devs(devs):
-    cols = ['dev', 'wwn', 'conf', 'meta', 'metaflag', 'size', 'dg',
-            'rdf_state', 'rdf_mode', 'rdf_group',
+    cols = ['dev', 'wwn', 'conf', 'meta', 'metaflag', 'memberof', 'size',
+            'dg', 'rdf_state', 'rdf_mode', 'rdf_group',
             'remote_sym', 'remote_dev', 'view']
     lines = []
     rdf = symmetrix.SymDevRdf()
@@ -530,6 +530,7 @@ def html_dev(dev, cols):
          'conf': dev.info['configuration'],
          'meta': dev.meta_count,
          'metaflag': dev.flags['meta'],
+         'memberof': dev.memberof,
          'size': T('%(n)s MB'%dict(n=dev.megabytes)),
          'dg': dev.diskgroup_name,
          'view': ', '.join(dev.view),
@@ -651,6 +652,30 @@ def str_filter_in_list(value, l):
             return True
     return False
 
+def __filter(value, o):
+    if isinstance(o, str) or isinstance(o, unicode):
+        return str_filter(value, o)
+    elif isinstance(o, list):
+        return str_filter_in_list(value, o)
+    elif isinstance(o, int):
+        return int_filter(value, o)
+    return False
+
+def _filter(value, o):
+    if '&' in value:
+        for v in value.split('&'):
+            if not _filter(v, o):
+                return False
+        return True
+    elif '|' in value:
+        for v in value.split('|'):
+            if _filter(v, o):
+                return True
+        return False
+    else:
+        return __filter(value, o)
+
+
 @auth.requires_login()
 def sym_dev_csv():
     symid = request.vars.arrayid
@@ -665,6 +690,7 @@ def sym_dev_csv():
                dev.info['configuration'],
                str(dev.meta_count),
                dev.flags['meta'],
+               dev.memberof,
                str(dev.megabytes),
                dev.diskgroup_name,
                ','.join(dev.view),
@@ -696,6 +722,7 @@ dev_columns = {
     'conf':       dict(pos=2, size=5,  title='conf',       _class=''),
     'meta':       dict(pos=3, size=3,  title='meta',       _class='numeric'),
     'metaflag':   dict(pos=4, size=4,  title='meta flag',  _class=''),
+    'memberof':   dict(pos=4, size=3,  title='member of',  _class=''),
     'size':       dict(pos=5, size=7,  title='size',       _class='numeric'),
     'dg':         dict(pos=6, size=10, title='diskgroup',  _class=''),
     'view':       dict(pos=7, size=10, title='view',       _class=''),
@@ -707,15 +734,6 @@ dev_columns = {
     'remote_sym': dict(pos=12, size=8, title='remote sym', _class=''),
     'remote_dev': dict(pos=13, size=3, title='remote dev', _class=''),
 }
-
-def _filter(value, o):
-    if isinstance(o, str) or isinstance(o, unicode):
-        return str_filter(value, o)
-    elif isinstance(o, list):
-        return str_filter_in_list(value, o)
-    elif isinstance(o, int):
-        return int_filter(value, o)
-    return False
 
 @auth.requires_login()
 def sym_dev():
@@ -737,8 +755,8 @@ def sym_dev():
     def dev_filter_parse(key):
         return filter_parse(symid, 'dev', key)
 
-    cols = ['dev', 'wwn', 'conf', 'meta', 'metaflag', 'size', 'dg',
-            'frontend', 'rdf_state', 'rdf_mode', 'rdf_group',
+    cols = ['dev', 'wwn', 'conf', 'meta', 'metaflag', 'memberof', 'size',
+            'dg', 'frontend', 'rdf_state', 'rdf_mode', 'rdf_group',
             'remote_sym', 'remote_dev']
 
     if isinstance(s, symmetrix.Vmax):
@@ -768,6 +786,8 @@ def sym_dev():
         if not _filter(filter_value['meta'], dev.meta_count):
             continue
         if not _filter(filter_value['metaflag'], dev.flags['meta']):
+            continue
+        if not _filter(filter_value['memberof'], dev.memberof):
             continue
         if not _filter(filter_value['size'], dev.megabytes):
             continue
