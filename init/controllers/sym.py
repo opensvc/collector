@@ -578,7 +578,7 @@ def int_filter(value, num):
         else:
             inf = True
             value = value[1:]
-    if value[0] == '>':
+    elif value[0] == '>':
         if len(value) > 2 and value[1] == '=':
             sup_e = True
             value = value[2:]
@@ -590,14 +590,26 @@ def int_filter(value, num):
     except:
         return str_filter(value, str(num))
 
-    if sup and num > v:
-        r = True
-    elif inf and num < v:
-        r = True
-    elif sup_e and num >= v:
-        r = True
-    elif inf_e and num <= v:
-        r = True
+    if sup:
+        if num > v:
+            r = True
+        else:
+            r = False
+    elif inf:
+        if num < v:
+            r = True
+        else:
+            r = False
+    elif sup_e:
+        if num >= v:
+            r = True
+        else:
+            r = False
+    elif inf_e:
+        if num <= v:
+            r = True
+        else:
+            r = False
     elif num == v:
         r = True
     else:
