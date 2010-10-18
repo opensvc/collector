@@ -638,6 +638,8 @@
 'set the high alert thresholds for the current data cursor': 'paramétrer les seuils hauts pour le curseur de données actif',
 'set the low alert thresholds for the current data cursor': 'paramétrer les seuils bas pour le curseur de données actif',
 'set wave': 'assigner la vague',
+'show storage group devices': 'show storage group devices',
+'show view devices': 'show view devices',
 'site': 'site',
 'state': 'état',
 'stats': 'stats',

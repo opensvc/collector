@@ -978,6 +978,28 @@ div.svcstatus td {
     display: block;
 }
 
+.sym_headers {
+    border-top-left-radius:8px;
+    border-top-right-radius:8px;
+   -moz-border-radius-topleft:8px;
+   -moz-border-radius-topright:8px;
+   -webkit-border-top-left-radius:8px;
+   -webkit-border-top-right-radius:8px;
+    background-color: #13434d;
+    color: white;
+    padding: 0.2em;
+    margin-top: 0.3em;
+    margin-bottom: 0;
+}
+
+.sym_inputs {
+    background-color: #13434d;
+    color: white;
+    padding: 0.2em;
+    margin: 0.1em;
+    margin-top: 0;
+}
+
 .sym_highlight {
     border-radius:4px;
    -moz-border-radius:4px;
@@ -985,6 +1007,15 @@ div.svcstatus td {
     background-color: #DCDDE6;
     padding: 0.2em;
     margin: 0.1em;
+}
+
+.sym table {
+    border-radius:6px;
+   -moz-border-radius:6px;
+   -webkit-border-radius:6px;
+    padding: 0.4em;
+    margin-top: 0.4em;
+    margin-bottom: 0.4em;
 }
 
 .sym h3 {

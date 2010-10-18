@@ -426,7 +426,7 @@ class table(object):
         self.line_count = 0
         self.id_perpage = '_'.join((self.id_prefix, 'perpage'))
         self.cellclasses = {'cell1': 'cell2', 'cell2': 'cell1'}
-        self.cellclass = 'cell1'
+        self.cellclass = 'cell2'
 
         if self.id_perpage in request.vars:
             self.perpage = int(request.vars[self.id_perpage])
@@ -442,8 +442,11 @@ class table(object):
         self.filterable = True
         self.pageable = True
         self.exportable = True
+        self.colored_lines = True
 
     def rotate_colors(self):
+        if not self.colored_lines:
+            return
         self.cellclass = self.cellclasses[self.cellclass]
 
     def filter_key(self, f):
@@ -465,7 +468,7 @@ class table(object):
 
     def table_header(self):
         titles = map(lambda x: self.colprops[x]['title'], self.cols)
-        return TR(map(TH, titles))
+        return TR(map(TH, titles), _class='sym_headers')
 
     def table_line(self, o):
         cells = []
@@ -549,7 +552,7 @@ class table(object):
         lines, line_count = self.table_lines()
 
         if self.filterable:
-            inputs = TR(map(TD, self.table_inputs()))
+            inputs = TR(map(TD, self.table_inputs()), _class='sym_inputs')
         else:
             inputs = SPAN()
 
@@ -604,7 +607,7 @@ class table(object):
               TABLE(
                 self.table_header(),
                 inputs,
-                SPAN(map(SPAN, lines)),
+                lines,
               ),
               DIV(
                 INPUT(
@@ -1248,7 +1251,21 @@ class table_view(table):
         t.filterable = False
         t.pageable = False
         t.exportable = False
-        return t.table()
+        short = T('show storage group devices')
+        id = '_'.join((self.symid, view.view_name, 'devs'))
+        s = SPAN(
+              A(short),
+              DIV(
+                t.table(),
+                _id=id,
+                _name=id,
+                _class='sym_detail',
+              ),
+              _onclick="""toggle_vis_block("%(id)s");
+                       """%dict(id=id)
+            )
+
+        return s
 
 
 @auth.requires_login()
@@ -1309,6 +1326,7 @@ def sym_view_csv():
 @auth.requires_login()
 def sym_view():
     t = table_view()
+    t.colored_lines = False
     return t.table()
 
 @auth.requires_login()
