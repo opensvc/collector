@@ -352,21 +352,13 @@ def sym_diskgroup():
         d.append(html_diskgroup(dg))
     return DIV(d)
 
-def html_view_devs(devs):
-    cols = ['dev', 'wwn', 'conf', 'meta', 'metaflag', 'memberof', 'size',
-            'dg', 'rdf_state', 'rdf_mode', 'rdf_group',
-            'remote_sym', 'remote_dev', 'view']
+def html_view_devs(symid, innerhtml, devs):
+    t = table_dev(symid, innerhtml, devs=devs)
+    t.cols += ['view']
+    t.filterable = False
+    t.pageable = False
     lines = []
-    rdf = symmetrix.SymDevRdf()
-    for dev in devs:
-        if not hasattr(dev, 'rdf'):
-            dev.rdf = rdf
-        lines.append(html_dev(dev, cols))
-    t = TABLE(
-          html_header(cols),
-          SPAN(map(TR, lines)),
-        )
-    return t
+    return t.table()
 
 def pretty_size(size, unit):
     units = ['B', 'KB', 'MB', 'GB', 'TB', 'EB']
@@ -378,7 +370,7 @@ def pretty_size(size, unit):
         size = size/1024
     return '%.2f'%size, ' ', T(u)
 
-def html_view(view):
+def html_view(symid, view):
     size = 0
     vsize = 0
     dev_count = 0
@@ -390,6 +382,8 @@ def html_view(view):
         else:
             size += dev.megabytes
             dev_count += 1
+
+    devs_innerhtml = 'sym_view_devs_%s_%s'%(symid, view.view_name)
 
     d = DIV(
           DIV(
@@ -424,7 +418,10 @@ def html_view(view):
             'vdev count: %d, vdev total size: '%vdev_count,
             SPAN(pretty_size(vsize,'MB')),
             HR(),
-            html_view_devs(view.dev),
+            DIV(
+              html_view_devs(symid, devs_innerhtml, view.dev),
+              _id=devs_innerhtml,
+            ),
             _class='sym_float',
             _style='min-width:12em',
           ),
@@ -435,6 +432,15 @@ def html_view(view):
           _class='sym_diskgroup',
         )
     return d
+
+def filter_key(symid, section, f):
+    return '%s_filter_%s_%s'%(section, f, symid)
+
+def filter_parse(symid, section, f):
+    key = filter_key(symid, section, f)
+    if key in request.vars:
+        return request.vars[key]
+    return ""
 
 @auth.requires_login()
 def sym_view():
@@ -519,33 +525,8 @@ def sym_view():
         if not str_filter_in_list(filter_value['wwn'],
                                   [dev.wwn for dev in view.dev]):
             continue
-        d.append(html_view(view))
+        d.append(html_view(symid, view))
     return DIV(x, SPAN(d))
-
-def html_header(cols):
-    titles = map(lambda x: _columns[x]['title'], cols)
-    return TR(map(TH, titles))
-
-def html_disk(disk, cols):
-    cells = []
-    for c in cols:
-        cells.append(TD(_disk_columns_print[c](disk), _class=_columns[c]['_class']))
-    return TR(cells)
-
-def html_dev(dev, cols):
-    cells = []
-    for c in cols:
-        cells.append(TD(_dev_columns_print[c](dev), _class=_columns[c]['_class']))
-    return TR(cells)
-
-def filter_key(symid, section, f):
-    return '%s_filter_%s_%s'%(section, f, symid)
-
-def filter_parse(symid, section, f):
-    key = filter_key(symid, section, f)
-    if key in request.vars:
-        return request.vars[key]
-    return ""
 
 def int_filter(value, num):
     if len(value) == 0:
@@ -742,262 +723,446 @@ def _ajax(symid, section, inputs):
               """%dict(ajax=__ajax(symid, section, inputs),
                        symid=symid)
 
-_columns = {
-    'dev':        dict(pos=1,  size=3,  title='dev',        _class=''),
-    'conf':       dict(pos=2,  size=5,  title='conf',       _class=''),
-    'meta':       dict(pos=3,  size=3,  title='meta',       _class='numeric'),
-    'metaflag':   dict(pos=4,  size=4,  title='meta flag',  _class=''),
-    'memberof':   dict(pos=4,  size=3,  title='member of',  _class=''),
-    'size':       dict(pos=5,  size=7,  title='size',       _class='numeric'),
-    'dg':         dict(pos=6,  size=12, title='diskgroup',  _class=''),
-    'view':       dict(pos=7,  size=10, title='view',       _class=''),
-    'wwn':        dict(pos=8,  size=24, title='wwn',        _class=''),
-    'frontend':   dict(pos=8,  size=4,  title='frontend',   _class=''),
-    'rdf_state':  dict(pos=9,  size=8,  title='rdf state',  _class=''),
-    'rdf_mode':   dict(pos=10, size=8,  title='rdf mode',   _class=''),
-    'rdf_group':  dict(pos=11, size=2,  title='rdf group',  _class='numeric'),
-    'remote_sym': dict(pos=12, size=8,  title='remote sym', _class=''),
-    'remote_dev': dict(pos=13, size=3,  title='remote dev', _class=''),
-    'da_number':  dict(pos=20, size=3,  title='director',   _class=''),
-    'interface':  dict(pos=21, size=3,  title='interface',  _class=''),
-    'tid':        dict(pos=22, size=2,  title='target id',  _class='numeric'),
-    'technology': dict(pos=23, size=4,  title='technology', _class=''),
-    'speed':      dict(pos=24, size=3,  title='speed',      _class='numeric'),
-    'vendor':     dict(pos=25, size=5,  title='vendor',     _class=''),
-    'revision':   dict(pos=26, size=5,  title='revision',   _class=''),
-    'product':    dict(pos=27, size=12, title='product',    _class=''),
-    'serial':     dict(pos=28, size=5,  title='serial',     _class=''),
-    'megabytes':  dict(pos=29, size=5,  title='megabytes',  _class='numeric'),
-    'hypers':     dict(pos=30, size=2,  title='hypers',     _class='numeric'),
-    'hot_spare':  dict(pos=31, size=4,  title='hot spare',  _class=''),
-    'failed_disk':dict(pos=32, size=4,  title='failed disk',_class=''),
-}
+class table(object):
+    def __init__(self, symid, func, innerhtml):
+        self.symid = symid
+        self.innerhtml = innerhtml
+        self.id_prefix = innerhtml
+        self.func = func
+        self.line_count = 0
+        self.id_perpage = '_'.join((self.id_prefix, 'perpage'))
+        self.filterable = True
+        self.pageable = True
 
-_dev_columns_get = {
-    'dev':        lambda x: x.info['dev_name'],
-    'conf':       lambda x: x.info['configuration'],
-    'meta':       lambda x: x.meta_count,
-    'metaflag':   lambda x: x.flags['meta'],
-    'memberof':   lambda x: x.memberof,
-    'size':       lambda x: x.megabytes,
-    'dg':         lambda x: x.diskgroup_name,
-    'view':       lambda x: x.view,
-    'wwn':        lambda x: x.wwn,
-    'frontend':   lambda x: x.frontend,
-    'rdf_state':  lambda x: x.rdf.pair_state,
-    'rdf_mode':   lambda x: x.rdf.mode,
-    'rdf_group':  lambda x: x.rdf.ra_group_num,
-    'remote_sym': lambda x: x.rdf.remote_symid,
-    'remote_dev': lambda x: x.rdf.remote_devname,
-}
+        if self.id_perpage in request.vars:
+            self.perpage = int(request.vars[self.id_perpage])
+        else:
+            self.perpage = 20
 
-_dev_columns_print = _dev_columns_get.copy()
-_dev_columns_print['size'] = lambda x: T('%(n)s MB', dict(n=x.megabytes))
-_dev_columns_print['view'] = lambda x: ', '.join(x.view)
-_dev_columns_print['frontend'] = lambda x: ', '.join(x.frontend)
+    def filter_key(self, f):
+        return '_'.join((self.id_prefix, 'filter', f))
 
-_disk_columns_get = {
-    'da_number':   lambda x: x.info['da_number'],
-    'interface':   lambda x: x.info['interface'],
-    'tid':         lambda x: x.info['tid'],
-    'dg':          lambda x: x.info['disk_group_name'],
-    'technology':  lambda x: x.info['technology'],
-    'speed':       lambda x: x.info['speed'],
-    'vendor':      lambda x: x.info['vendor'],
-    'revision':    lambda x: x.info['revision'],
-    'product':     lambda x: x.info['product'],
-    'serial':      lambda x: x.info['serial'],
-    'megabytes':   lambda x: x.info['megabytes'],
-    'hypers':      lambda x: x.info['hypers'],
-    'hot_spare':   lambda x: x.info['hot_spare'],
-    'failed_disk': lambda x: x.info['failed_disk'],
-}
+    def filter_parse(self, f):
+        key = self.filter_key(f)
+        if key in request.vars:
+            return request.vars[key]
+        return ""
 
-_disk_columns_print = _disk_columns_get.copy()
-_disk_columns_print['size'] = lambda x: T('%(n)s MB', dict(n=x.megabytes))
+    def ajax_inputs(self):
+        l = []
+        if self.pageable:
+            l.append(self.id_perpage)
+        if self.filterable:
+            l += map(self.filter_key, self.cols)
+        return l
 
-disk_cols = ['da_number', 'interface', 'tid', 'dg', 'technology', 'speed',
-             'vendor', 'revision', 'product', 'serial', 'megabytes', 'hypers',
-             'hot_spare', 'failed_disk']
+    def table_header(self):
+        titles = map(lambda x: self.colprops[x]['title'], self.cols)
+        return TR(map(TH, titles))
 
-dev_cols = ['dev', 'wwn', 'conf', 'meta', 'metaflag', 'memberof', 'size',
-            'dg', 'frontend', 'rdf_state', 'rdf_mode', 'rdf_group',
-            'remote_sym', 'remote_dev']
+    def table_line(self, o):
+        cells = []
+        for c in self.cols:
+            cells.append(TD(self.colprops[c]['str'](o),
+                            _class=self.colprops[c]['_class']))
+        return TR(cells)
+
+    def table_lines(self):
+        lines = []
+        line_count = 0
+        for i in sorted(self.object_list):
+            if isinstance(i, str):
+                o = self.object_list[i]
+            else:
+                o = i
+            self.change_line_data(o)
+            skip = False
+            for c in self.cols:
+                if not _filter(self.filter_parse(c), self.colprops[c]['get'](o)):
+                    skip = True
+                    break
+            if skip:
+                continue
+            line_count += 1
+            if not self.pageable or line_count <= self.perpage:
+                lines.append(self.table_line(o))
+        return lines, line_count
+
+    def table_inputs(self):
+        inputs = []
+        for c in self.cols:
+            inputs.append(INPUT(
+                    _id=self.filter_key(c),
+                    _value=self.filter_parse(c),
+                    _size=self.colprops[c]['size'],
+                    _onKeyPress=self._ajax()
+                  ))
+        return inputs
+
+    def __ajax(self):
+        return """ajax("%(url)s",
+                       ["arrayid", %(inputs)s],
+                       "%(innerhtml)s");
+                  getElementById("%(innerhtml)s").innerHTML='%(spinner)s';
+                """%dict(url=URL(r=request,f=self.func),
+                         innerhtml=self.innerhtml,
+                         inputs = ','.join(map(repr, self.ajax_inputs())),
+                         spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
+                        )
+
+    def _ajax(self):
+        return """if (is_enter(event)) {
+                    getElementById("arrayid").value="%(symid)s";
+                    %(ajax)s
+                  };
+                  """%dict(ajax=self.__ajax(),
+                           symid=self.symid)
+
+    def table(self):
+        lines, line_count = self.table_lines()
+
+        if self.filterable:
+            inputs = TR(map(TD, self.table_inputs()))
+        else:
+            inputs = SPAN()
+
+        if self.pageable:
+            paging = DIV(
+                  A(
+                    T('Display all lines'),
+                  ),
+                  _onclick="""
+                    getElementById("%(id_perpage)s").value="%(count)s";
+                  """%dict(count=line_count,
+                           id_perpage=self.id_perpage,
+                          )+self.__ajax(),
+                  _class='sym_float',
+                )
+        else:
+            paging = SPAN()
+
+        d = DIV(
+              SPAN('%d/%d'%(len(lines),line_count), _class='sym_highlight'),
+              TABLE(
+                self.table_header(),
+                inputs,
+                SPAN(map(SPAN, lines)),
+              ),
+              DIV(
+                INPUT(
+                  _id=self.id_perpage,
+                  _type='hidden',
+                  _value=self.perpage,
+                ),
+                paging,
+                DIV(
+                  A(
+                    T('Export to csv'),
+                    _href=URL(r=request,f=self.csv, vars=request.vars),
+                  ),
+                  _class='sym_float',
+                ),
+              ),
+              DIV('', _class='spacer'),
+              _class='sym_diskgroup',
+            )
+        return d
+
+    def change_line_data(self, o):
+        pass
+
+
+class table_disk(table):
+    def __init__(self, symid, innerhtml):
+        table.__init__(self, symid, 'sym_disk', innerhtml)
+        self.csv = 'sym_disk_csv'
+        self.cols = ['da_number', 'interface', 'tid', 'dg', 'technology',
+                     'speed', 'vendor', 'revision', 'product', 'serial',
+                     'megabytes', 'hypers', 'hot_spare', 'failed_disk']
+        self.colprops = {
+            'da_number': dict(
+                     size=3, title='director', _class='',
+                     get=lambda x: x.info['da_number'],
+                     str=lambda x: x.info['da_number'],
+                    ),
+            'interface': dict(
+                     size=3, title='interface', _class='',
+                     get=lambda x: x.info['interface'],
+                     str=lambda x: x.info['interface'],
+                    ),
+            'tid': dict(
+                     size=2, title='target id', _class='numeric',
+                     get=lambda x: x.info['tid'],
+                     str=lambda x: x.info['tid'],
+                    ),
+            'dg': dict(
+                     size=12, title='diskgroup', _class='',
+                     get=lambda x: x.info['disk_group_name'],
+                     str=lambda x: x.info['disk_group_name'],
+                    ),
+            'technology': dict(
+                     size=4, title='technology', _class='',
+                     get=lambda x: x.info['technology'],
+                     str=lambda x: x.info['technology'],
+                    ),
+            'speed': dict(
+                     size=3, title='speed', _class='numeric',
+                     get=lambda x: x.info['speed'],
+                     str=lambda x: x.info['speed'],
+                    ),
+            'vendor': dict(
+                     size=5, title='vendor', _class='',
+                     get=lambda x: x.info['vendor'],
+                     str=lambda x: x.info['vendor'],
+                    ),
+            'revision': dict(
+                     size=5, title='revision', _class='',
+                     get=lambda x: x.info['revision'],
+                     str=lambda x: x.info['revision'],
+                    ),
+            'product': dict(
+                     size=12, title='product', _class='',
+                     get=lambda x: x.info['product'],
+                     str=lambda x: x.info['product'],
+                    ),
+            'serial': dict(
+                     size=5, title='serial', _class='',
+                     get=lambda x: x.info['serial'],
+                     str=lambda x: x.info['serial'],
+                    ),
+            'megabytes': dict(
+                     size=5, title='size', _class='numeric',
+                     get=lambda x: x.info['megabytes'],
+                     str=lambda x: x.info['megabytes'],
+                    ),
+            'hypers': dict(
+                     size=2, title='hypers', _class='numeric',
+                     get=lambda x: x.info['hypers'],
+                     str=lambda x: x.info['hypers'],
+                    ),
+            'hot_spare': dict(
+                     size=4, title='hot spare', _class='',
+                     get=lambda x: x.info['hot_spare'],
+                     str=lambda x: x.info['hot_spare'],
+                    ),
+            'failed_disk': dict(
+                     size=4, title='failed disk', _class='',
+                     get=lambda x: x.info['failed_disk'],
+                     str=lambda x: x.info['failed_disk'],
+                    ),
+        }
+
+        dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
+        p = os.path.join(dir, symid)
+        s = symmetrix.get_sym(p)
+        s.get_sym_disk()
+        self.object_list = s.disk
+
+
+class table_dev(table):
+    def __init__(self, symid, innerhtml, devs=None):
+        table.__init__(self, symid, 'sym_dev', innerhtml)
+        self.csv = 'sym_dev_csv'
+        self.cols = ['dev', 'wwn', 'conf', 'meta', 'metaflag', 'memberof',
+                     'size', 'dg', 'frontend', 'rdf_state', 'rdf_mode',
+                     'rdf_group', 'remote_sym', 'remote_dev']
+        self.colprops = {
+            'dev': dict(
+                     size=3, title='dev', _class='',
+                     get=lambda x: x.info['dev_name'],
+                     str=lambda x: x.info['dev_name'],
+                    ),
+            'conf': dict(
+                     size=5, title='conf', _class='',
+                     get=lambda x: x.info['configuration'],
+                     str=lambda x: x.info['configuration'],
+                    ),
+            'meta': dict(
+                     size=3, title='meta', _class='numeric',
+                     get=lambda x: x.meta_count,
+                     str=lambda x: x.meta_count,
+                    ),
+            'metaflag': dict(
+                     size=4, title='meta flag', _class='',
+                     get=lambda x: x.flags['meta'],
+                     str=lambda x: x.flags['meta'],
+                    ),
+            'memberof': dict(
+                     size=3, title='member of', _class='',
+                     get=lambda x: x.memberof,
+                     str=lambda x: x.memberof,
+                    ),
+            'size': dict(
+                     size=7, title='size', _class='numeric',
+                     get=lambda x: x.megabytes,
+                     str=lambda x: T('%(n)s MB', dict(n=x.megabytes)),
+                    ),
+            'dg': dict(
+                     size=12, title='diskgroup', _class='',
+                     get=lambda x: x.diskgroup_name,
+                     str=lambda x: x.diskgroup_name,
+                    ),
+            'view': dict(
+                     size=10, title='view', _class='',
+                     get=lambda x: x.view,
+                     str=lambda x: ', '.join(x.view),
+                    ),
+            'wwn': dict(
+                     size=24, title='wwn', _class='',
+                     get=lambda x: x.wwn,
+                     str=lambda x: x.wwn,
+                    ),
+            'frontend': dict(
+                     size=4, title='frontend', _class='',
+                     get=lambda x: x.frontend,
+                     str=lambda x: ', '.join(x.frontend),
+                    ),
+            'rdf_state': dict(
+                     size=8, title='rdf state', _class='',
+                     get=lambda x: x.rdf.pair_state,
+                     str=lambda x: x.rdf.pair_state,
+                    ),
+            'rdf_mode': dict(
+                     size=8, title='rdf mode', _class='',
+                     get=lambda x: x.rdf.mode,
+                     str=lambda x: x.rdf.mode,
+                    ),
+            'rdf_group': dict(
+                     size=2, title='rdf group', _class='numeric',
+                     get=lambda x: x.rdf.ra_group_num,
+                     str=lambda x: x.rdf.ra_group_num,
+                    ),
+            'remote_sym': dict(
+                     size=8, title='remote sym', _class='',
+                     get=lambda x: x.rdf.remote_symid,
+                     str=lambda x: x.rdf.remote_symid,
+                    ),
+            'remote_dev': dict(
+                     pos=13, size=3, title='remote dev', _class='',
+                     get=lambda x: x.rdf.remote_devname,
+                     str=lambda x: x.rdf.remote_devname,
+                    ),
+        }
+
+        if devs is None:
+            dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
+            p = os.path.join(dir, symid)
+            s = symmetrix.get_sym(p)
+            s.get_sym_dev()
+            self.object_list = s.dev
+            if isinstance(s, symmetrix.Vmax):
+                self.cols += ['view']
+        else:
+            self.object_list = devs
+
+    def change_line_data(self, dev):
+        if dev.meta_count == 0:
+            dev.meta_count = 'n/a'
+
+class table_ig(table):
+    def __init__(self, symid, innerhtml):
+        table.__init__(self, symid, 'sym_ig', innerhtml)
+        self.csv = 'sym_ig_csv'
+        self.cols = ['init_grpname', 'wwn']
+        self.colprops = {
+            'init_grpname': dict(
+                     size=12, title='initiator group', _class='',
+                     get=lambda x: x['init_grpname'],
+                     str=lambda x: x['init_grpname'],
+                    ),
+            'wwn': dict(
+                     size=24, title='wwn', _class='',
+                     get=lambda x: x['init_list'],
+                     str=lambda x: ', '.join(x['init_list']),
+                    ),
+        }
+
+        dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
+        p = os.path.join(dir, symid)
+        s = symmetrix.get_sym(p)
+        s.get_sym_ig()
+        self.object_list = map(lambda x: dict(init_grpname=x, init_list=s.ig[x]), s.ig.keys())
+
+class table_pg(table):
+    def __init__(self, symid, innerhtml):
+        table.__init__(self, symid, 'sym_pg', innerhtml)
+        self.csv = 'sym_pg_csv'
+        self.cols = ['port_grpname', 'port']
+        self.colprops = {
+            'port_grpname': dict(
+                     size=12, title='port group', _class='',
+                     get=lambda x: x['port_grpname'],
+                     str=lambda x: x['port_grpname'],
+                    ),
+            'port': dict(
+                     size=24, title='port', _class='',
+                     get=lambda x: x['port_list'],
+                     str=lambda x: ', '.join(x['port_list']),
+                    ),
+        }
+
+        dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
+        p = os.path.join(dir, symid)
+        s = symmetrix.get_sym(p)
+        s.get_sym_pg()
+        self.object_list = map(lambda x: dict(port_grpname=x, port_list=s.pg[x]), s.pg.keys())
+
+class table_sg(table):
+    def __init__(self, symid, innerhtml):
+        table.__init__(self, symid, 'sym_sg', innerhtml)
+        self.csv = 'sym_sg_csv'
+        self.cols = ['stor_grpname', 'dev']
+        self.colprops = {
+            'stor_grpname': dict(
+                     size=12, title='storage group', _class='',
+                     get=lambda x: x['stor_grpname'],
+                     str=lambda x: x['stor_grpname'],
+                    ),
+            'dev': dict(
+                     size=24, title='devices', _class='',
+                     get=lambda x: x['dev_list'],
+                     str=lambda x: ', '.join(x['dev_list']),
+                    ),
+        }
+
+        dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
+        p = os.path.join(dir, symid)
+        s = symmetrix.get_sym(p)
+        s.get_sym_sg()
+        self.object_list = map(lambda x: dict(stor_grpname=x, dev_list=s.sg[x]), s.sg.keys())
 
 @auth.requires_login()
 def sym_disk():
     symid = request.vars.arrayid
-    dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
-    p = os.path.join(dir, symid)
-    s = symmetrix.get_sym(p)
-    s.get_sym_disk()
-
-    if 'disk_perpage_'+symid in request.vars:
-        perpage = int(request.vars['disk_perpage_'+symid])
-    else:
-        perpage = 20
-    line_count = 0
-
-    cols = disk_cols
-
-    def disk_filter_key(key):
-        return filter_key(symid, 'disk', key)
-
-    def disk_filter_parse(key):
-        return filter_parse(symid, 'disk', key)
-
-    filter_value = {}
-    ajax_inputs = map(disk_filter_key, cols)+['disk_perpage_'+symid]
-    for c in cols:
-        filter_value[c] = disk_filter_parse(c)
-
-    lines = []
-    rdf = symmetrix.SymDevRdf()
-    for diskid in sorted(s.disk):
-        disk = s.disk[diskid]
-        for c in cols:
-            if not _filter(filter_value[c], _disk_columns_get[c](disk)):
-                continue
-        line_count += 1
-        if line_count <= perpage:
-            lines.append(html_disk(disk, cols))
-
-    inputs = []
-    for c in cols:
-        inputs.append(INPUT(
-                _id=disk_filter_key(c),
-                _value=filter_value[c],
-                _size=_columns[c]['size'],
-                _onKeyPress=_ajax(symid, 'disk', ajax_inputs)
-              ))
-    d = DIV(
-          SPAN('%d/%d'%(len(lines),line_count), _class='sym_highlight'),
-          TABLE(
-            html_header(cols),
-            TR(map(TD, inputs)),
-            SPAN(map(SPAN, lines)),
-          ),
-          DIV(
-            INPUT(
-              _id='disk_perpage_'+symid,
-              _type='hidden',
-              _value=perpage,
-            ),
-            DIV(
-              A(
-                T('Display all lines'),
-              ),
-              _onclick="""
-                getElementById("disk_perpage_%(symid)s").value="%(count)s";
-              """%dict(count=line_count,
-                       symid=symid)+__ajax(symid, 'disk', ajax_inputs),
-              _class='sym_float',
-            ),
-            DIV(
-              A(
-                T('Export to csv'),
-                _href=URL(r=request,f='sym_disk_csv', vars=request.vars),
-              ),
-              _class='sym_float',
-            ),
-          ),
-          DIV('', _class='spacer'),
-          _class='sym_diskgroup',
-        )
-    return d
+    t = table_disk(symid, 'sym_disk_%s'%symid)
+    return t.table()
 
 @auth.requires_login()
 def sym_dev():
     symid = request.vars.arrayid
-    dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
-    p = os.path.join(dir, symid)
-    s = symmetrix.get_sym(p)
-    s.get_sym_dev()
-
-    if 'dev_perpage_'+symid in request.vars:
-        perpage = int(request.vars['dev_perpage_'+symid])
-    else:
-        perpage = 20
-    line_count = 0
-
-    def dev_filter_key(key):
-        return filter_key(symid, 'dev', key)
-
-    def dev_filter_parse(key):
-        return filter_parse(symid, 'dev', key)
-
-    cols = dev_cols
-
-    if isinstance(s, symmetrix.Vmax):
-        cols += ['view']
-
-    filter_value = {}
-    ajax_inputs = map(dev_filter_key, cols)+['dev_perpage_'+symid]
-    for c in cols:
-        filter_value[c] = dev_filter_parse(c)
-
-    lines = []
-    for devname in sorted(s.dev):
-        dev = s.dev[devname]
-        if dev.meta_count == 0:
-            dev.meta_count = 'n/a'
-        skip = False
-        for c in cols:
-            if not _filter(filter_value[c], _dev_columns_get[c](dev)):
-                skip = True
-                break
-        if skip:
-            continue
-        line_count += 1
-        if line_count <= perpage:
-            lines.append(html_dev(dev, cols))
-
-    inputs = []
-    for c in cols:
-        inputs.append(INPUT(
-                _id=dev_filter_key(c),
-                _value=filter_value[c],
-                _size=_columns[c]['size'],
-                _onKeyPress=_ajax(symid, 'dev', ajax_inputs)
-              ))
-    d = DIV(
-          SPAN('%d/%d'%(len(lines),line_count), _class='sym_highlight'),
-          TABLE(
-            html_header(cols),
-            TR(map(TD, inputs)),
-            SPAN(map(SPAN, lines)),
-          ),
-          DIV(
-            INPUT(
-              _id='dev_perpage_'+symid,
-              _type='hidden',
-              _value=perpage,
-            ),
-            DIV(
-              A(
-                T('Display all lines'),
-              ),
-              _onclick="""
-                getElementById("dev_perpage_%(symid)s").value="%(count)s";
-              """%dict(count=line_count,
-                       symid=symid)+__ajax(symid, 'dev', ajax_inputs),
-              _class='sym_float',
-            ),
-            DIV(
-              A(
-                T('Export to csv'),
-                _href=URL(r=request,f='sym_dev_csv', vars=request.vars),
-              ),
-              _class='sym_float',
-            ),
-          ),
-          DIV('', _class='spacer'),
-          _class='sym_diskgroup',
-        )
-    return d
+    t = table_dev(symid, 'sym_dev_%s'%symid)
+    return t.table()
 
 @auth.requires_login()
-def sym_overview_item(symid, title, count):
+def sym_ig():
+    symid = request.vars.arrayid
+    t = table_ig(symid, 'sym_ig_%s'%symid)
+    return t.table()
+
+@auth.requires_login()
+def sym_pg():
+    symid = request.vars.arrayid
+    t = table_pg(symid, 'sym_pg_%s'%symid)
+    return t.table()
+
+@auth.requires_login()
+def sym_sg():
+    symid = request.vars.arrayid
+    t = table_sg(symid, 'sym_sg_%s'%symid)
+    return t.table()
+
+@auth.requires_login()
+def sym_overview_item(symid, func, count, title):
     """
     Format a H2 list item title with a child object count.
     Also append a DIV whose innerHTML will receive the ajax data
@@ -1006,21 +1171,21 @@ def sym_overview_item(symid, title, count):
     h = H2(
          '%s (%d)'%(title, count),
          _onclick="""
-           if (getElementById("sym_%(title)s_%(symid)s").innerHTML=="") {
-             getElementById("sym_%(title)s_%(symid)s").innerHTML='%(spinner)s';
+           if (getElementById("%(func)s_%(symid)s").innerHTML=="") {
+             getElementById("%(func)s_%(symid)s").innerHTML='%(spinner)s';
              getElementById("arrayid").value="%(symid)s";
-             ajax("%(url)s",["arrayid"],"sym_%(title)s_%(symid)s");
+             ajax("%(url)s",["arrayid"],"%(func)s_%(symid)s");
            };
-           toggle_vis_block("sym_%(title)s_%(symid)s");
-         """%dict(url=URL(r=request,f='sym_'+title), title=title,
+           toggle_vis_block("%(func)s_%(symid)s");
+         """%dict(url=URL(r=request,f=func), func=func,
                   spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
                   symid=symid),
         _onmouseover="this.style.color='orange'",
         _onmouseout="this.style.color='inherit'",
       )
     d = DIV(
-          _id='sym_%s_%s'%(title, symid),
-          _name='sym_%s_%s'%(title, symid),
+          _id='%s_%s'%(func, symid),
+          _name='%s_%s'%(func, symid),
           _class='sym_detail',
         )
     return SPAN(h, d)
@@ -1038,17 +1203,31 @@ def sym_overview():
     info = s.get_sym_info()
     if 'ig_count' in info:
        d_vmax = SPAN(
-                  sym_overview_item(symid, 'view', info['view_count']),
-                  H2('initator group (%d)'%info['ig_count']),
-                  H2('port group (%d)'%info['pg_count']),
-                  H2('storage group (%d)'%info['sg_count']),
+                  sym_overview_item(symid, func='sym_view',
+                                    count=info['view_count'],
+                                    title='views'),
+                  sym_overview_item(symid, func='sym_ig',
+                                    count=info['ig_count'],
+                                    title='initiator groups'),
+                  sym_overview_item(symid, func='sym_pg',
+                                    count=info['pg_count'],
+                                    title='port groups'),
+                  sym_overview_item(symid, func='sym_sg',
+                                    count=info['sg_count'],
+                                    title='storage groups'),
                 )
     else:
         d_vmax = SPAN()
     d = DIV(
-          sym_overview_item(symid, 'diskgroup', info['diskgroup_count']),
-          sym_overview_item(symid, 'disk',info['disk_count']),
-          sym_overview_item(symid, 'dev', info['dev_count']),
+          sym_overview_item(symid, func='sym_diskgroup',
+                            count=info['diskgroup_count'],
+                            title='disk groups'),
+          sym_overview_item(symid, func='sym_disk',
+                            count=info['disk_count'],
+                            title='disks'),
+          sym_overview_item(symid, func='sym_dev',
+                            count=info['dev_count'],
+                            title='devices'),
           d_vmax,
           DIV(
             A(
