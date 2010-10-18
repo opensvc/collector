@@ -356,14 +356,6 @@ def sym_diskgroup():
         d.append(html_diskgroup(dg))
     return DIV(d)
 
-def html_view_devs(symid, innerhtml, devs):
-    t = table_dev(symid, innerhtml, devs=devs)
-    t.cols += ['view']
-    t.filterable = False
-    t.pageable = False
-    lines = []
-    return t.table()
-
 def pretty_size(size, unit):
     units = ['B', 'KB', 'MB', 'GB', 'TB', 'EB']
     units_index = {'B':0, 'KB':1, 'MB':2, 'GB':3, 'TB':4, 'EB':5}
@@ -373,164 +365,6 @@ def pretty_size(size, unit):
            return '%.2f'%size, ' ', T(u)
         size = size/1024
     return '%.2f'%size, ' ', T(u)
-
-def html_view(symid, view):
-    size = 0
-    vsize = 0
-    dev_count = 0
-    vdev_count = 0
-    for dev in view.dev:
-        if dev.info['configuration'] in ['VDEV', 'THINDEV']:
-            vsize += dev.megabytes
-            vdev_count += 1
-        else:
-            size += dev.megabytes
-            dev_count += 1
-
-    devs_innerhtml = 'sym_view_devs_%s_%s'%(symid, view.view_name)
-
-    d = DIV(
-          DIV(
-            H3(view.view_name),
-            _class='sym_h2',
-          ),
-          DIV(
-            B('port group: '),
-            BR(),
-            '%s (%d)'%(view.port_grpname, len(view.pg)),
-            HR(),
-            SPAN(map(P, view.pg)),
-            _class='sym_float',
-            _style='min-width:12em',
-          ),
-          DIV(
-            B('initiator group: '),
-            BR(),
-            '%s (%d)'%(view.init_grpname, len(view.ig)),
-            HR(),
-            SPAN(map(P, view.ig)),
-            _class='sym_float',
-            _style='min-width:12em',
-          ),
-          DIV(
-            B('storage group: '),
-            BR(),
-            view.stor_grpname, BR(),
-            'dev count: %d, dev total size: '%dev_count,
-            SPAN(pretty_size(size,'MB')),
-            BR(),
-            'vdev count: %d, vdev total size: '%vdev_count,
-            SPAN(pretty_size(vsize,'MB')),
-            HR(),
-            DIV(
-              html_view_devs(symid, devs_innerhtml, view.dev),
-              _id=devs_innerhtml,
-            ),
-            _class='sym_float',
-            _style='min-width:12em',
-          ),
-          DIV(
-            '',
-            _class='spacer',
-          ),
-          _class='sym_diskgroup',
-        )
-    return d
-
-def filter_key(symid, section, f):
-    return '%s_filter_%s_%s'%(section, f, symid)
-
-def filter_parse(symid, section, f):
-    key = filter_key(symid, section, f)
-    if key in request.vars:
-        return request.vars[key]
-    return ""
-
-@auth.requires_login()
-def sym_view():
-    symid = request.vars.arrayid
-    dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
-
-    def view_filter_parse(key):
-        return filter_parse(symid, 'view', key)
-
-    def view_filter_key(key):
-        return filter_key(symid, 'view', key)
-
-    filters = ['init', 'port', 'dev', 'wwn']
-    ajax_inputs = map(view_filter_key, filters)
-    filter_value = {}
-    for f in filters:
-        filter_value[f] = view_filter_parse(f)
-
-    p = os.path.join(dir, symid)
-    s = symmetrix.get_sym(p)
-    s.get_sym_view()
-
-    x = DIV(
-          DIV(
-            T('Filters:'),
-            _class='float',
-          ),
-          DIV(
-            T('Initiator'),
-            INPUT(
-              _id=view_filter_key('init'),
-              _value=filter_value['init'],
-              _size=10,
-              _onKeyPress=_ajax(symid, 'view', ajax_inputs)
-            ),
-            _class='float',
-          ),
-          DIV(
-            T('Port'),
-            INPUT(
-              _id=view_filter_key('port'),
-              _value=filter_value['port'],
-              _size=10,
-              _onKeyPress=_ajax(symid, 'view', ajax_inputs)
-            ),
-            _class='float',
-          ),
-          DIV(
-            T('Dev id'),
-            INPUT(
-              _id=view_filter_key('dev'),
-              _value=filter_value['dev'],
-              _size=10,
-              _onKeyPress=_ajax(symid, 'view', ajax_inputs)
-            ),
-            _class='float',
-          ),
-          DIV(
-            T('Dev wwn'),
-            INPUT(
-              _id=view_filter_key('wwn'),
-              _value=filter_value['wwn'],
-              _size=10,
-              _onKeyPress=_ajax(symid, 'view', ajax_inputs)
-            ),
-            _class='float',
-          ),
-          DIV(
-            '',
-            _class='spacer',
-          ),
-        )
-
-    d = []
-    for view in s.view.values():
-        if not str_filter_in_list(filter_value['init'], view.ig):
-            continue
-        if not str_filter_in_list(filter_value['port'], view.pg):
-            continue
-        if not str_filter_in_list(filter_value['dev'], view.sg):
-            continue
-        if not str_filter_in_list(filter_value['wwn'],
-                                  [dev.wwn for dev in view.dev]):
-            continue
-        d.append(html_view(symid, view))
-    return DIV(x, SPAN(d))
 
 def int_filter(value, num):
     if len(value) == 0:
@@ -693,13 +527,21 @@ class table(object):
         self.func = func
         self.line_count = 0
         self.id_perpage = '_'.join((self.id_prefix, 'perpage'))
-        self.filterable = True
-        self.pageable = True
 
         if self.id_perpage in request.vars:
             self.perpage = int(request.vars[self.id_perpage])
         else:
             self.perpage = 20
+
+        # to be set by children
+        self.additional_filters = []
+        self.cols = []
+        self.colprops = {}
+
+        # to be set be instanciers
+        self.filterable = True
+        self.pageable = True
+        self.exportable = True
 
     def filter_key(self, f):
         return '_'.join((self.id_prefix, 'filter', f))
@@ -715,7 +557,7 @@ class table(object):
         if self.pageable:
             l.append(self.id_perpage)
         if self.filterable:
-            l += map(self.filter_key, self.cols)
+            l += map(self.filter_key, self.cols+self.additional_filters)
         return l
 
     def table_header(self):
@@ -739,7 +581,7 @@ class table(object):
                 o = i
             self.change_line_data(o)
             skip = False
-            for c in self.cols:
+            for c in self.cols+self.additional_filters:
                 if not _filter(self.filter_parse(c), self.colprops[c]['get'](o)):
                     skip = True
                     break
@@ -753,6 +595,17 @@ class table(object):
     def table_inputs(self):
         inputs = []
         for c in self.cols:
+            inputs.append(INPUT(
+                    _id=self.filter_key(c),
+                    _value=self.filter_parse(c),
+                    _size=self.colprops[c]['size'],
+                    _onKeyPress=self._ajax()
+                  ))
+        return inputs
+
+    def table_additional_inputs(self):
+        inputs = []
+        for c in self.additional_filters:
             inputs.append(INPUT(
                     _id=self.filter_key(c),
                     _value=self.filter_parse(c),
@@ -788,6 +641,19 @@ class table(object):
         else:
             inputs = SPAN()
 
+        if self.filterable and len(self.additional_filters) > 0:
+            additional_filters = DIV(
+              B(T('Additional filters')),
+              TABLE(
+                TR(map(TH, self.additional_filters)),
+                TR(map(TD, self.table_additional_inputs())),
+              ),
+              _class='sym_highlight',
+              _style='margin-bottom:6px',
+            )
+        else:
+            additional_filters = SPAN()
+
         if self.pageable:
             paging = DIV(
                   A(
@@ -800,11 +666,25 @@ class table(object):
                           )+self.__ajax(),
                   _class='sym_float',
                 )
+            counts = SPAN('%d/%d'%(len(lines),line_count), _class='sym_highlight')
         else:
             paging = SPAN()
+            counts = SPAN()
+
+        if self.exportable:
+            export = DIV(
+                  A(
+                    T('Export to csv'),
+                    _href=URL(r=request,f=self.func+'_csv', vars=request.vars),
+                  ),
+                  _class='sym_float',
+                )
+        else:
+            export = SPAN()
 
         d = DIV(
-              SPAN('%d/%d'%(len(lines),line_count), _class='sym_highlight'),
+              additional_filters,
+              counts,
               TABLE(
                 self.table_header(),
                 inputs,
@@ -817,13 +697,7 @@ class table(object):
                   _value=self.perpage,
                 ),
                 paging,
-                DIV(
-                  A(
-                    T('Export to csv'),
-                    _href=URL(r=request,f=self.func+'_csv', vars=request.vars),
-                  ),
-                  _class='sym_float',
-                ),
+                export,
               ),
               DIV('', _class='spacer'),
               _class='sym_diskgroup',
@@ -945,7 +819,6 @@ class table_dev(table):
         if symid is None and 'arrayid' in request.vars:
             symid = request.vars.arrayid
         table.__init__(self, symid, 'sym_dev', innerhtml)
-        self.csv = 'sym_dev_csv'
         self.cols = ['dev', 'wwn', 'conf', 'meta', 'metaflag', 'memberof',
                      'size', 'dg', 'frontend', 'rdf_state', 'rdf_mode',
                      'rdf_group', 'remote_sym', 'remote_dev']
@@ -1047,7 +920,6 @@ class table_ig(table):
         if symid is None and 'arrayid' in request.vars:
             symid = request.vars.arrayid
         table.__init__(self, symid, 'sym_ig', innerhtml)
-        self.csv = 'sym_ig_csv'
         self.cols = ['init_grpname', 'wwn']
         self.colprops = {
             'init_grpname': dict(
@@ -1073,7 +945,6 @@ class table_pg(table):
         if symid is None and 'arrayid' in request.vars:
             symid = request.vars.arrayid
         table.__init__(self, symid, 'sym_pg', innerhtml)
-        self.csv = 'sym_pg_csv'
         self.cols = ['port_grpname', 'port']
         self.colprops = {
             'port_grpname': dict(
@@ -1099,7 +970,6 @@ class table_sg(table):
         if symid is None and 'arrayid' in request.vars:
             symid = request.vars.arrayid
         table.__init__(self, symid, 'sym_sg', innerhtml)
-        self.csv = 'sym_sg_csv'
         self.cols = ['stor_grpname', 'dev']
         self.colprops = {
             'stor_grpname': dict(
@@ -1119,6 +989,139 @@ class table_sg(table):
         s = symmetrix.get_sym(p)
         s.get_sym_sg()
         self.object_list = map(lambda x: dict(stor_grpname=x, dev_list=s.sg[x]), s.sg.keys())
+
+class table_view(table):
+    def __init__(self, symid=None, innerhtml=None):
+        if symid is None and 'arrayid' in request.vars:
+            symid = request.vars.arrayid
+        table.__init__(self, symid, 'sym_view', innerhtml)
+        self.cols = ['view', 'init_grpname', 'port_grpname', 'stor_grpname']
+        self.additional_filters = ['initiator', 'port', 'dev', 'wwn']
+        self.colprops = {
+            'init_grpname': dict(
+                     size=12, title='initiator group', _class='',
+                     get=lambda x: x.init_grpname,
+                     str=lambda x: self.format_init_grp(x),
+                    ),
+            'port_grpname': dict(
+                     size=12, title='port group', _class='',
+                     get=lambda x: x.port_grpname,
+                     str=lambda x: self.format_port_grp(x),
+                    ),
+            'stor_grpname': dict(
+                     size=12, title='storage group', _class='',
+                     get=lambda x: x.stor_grpname,
+                     str=lambda x: self.format_stor_grp(x),
+                    ),
+            'view': dict(
+                     size=12, title='view', _class='',
+                     get=lambda x: x.view_name,
+                     str=lambda x: self.format_view(x),
+                    ),
+            'initiator': dict(
+                     size=0, title='initiator', _class='',
+                     get=lambda x: x.ig,
+                     str=lambda x: ', '.join(x.ig),
+                    ),
+            'port': dict(
+                     size=0, title='port', _class='',
+                     get=lambda x: x.pg,
+                     str=lambda x: ', '.join(x.pg),
+                    ),
+            'dev': dict(
+                     size=0, title='dev', _class='',
+                     get=lambda x: x.sg,
+                     str=lambda x: ', '.join(x.sg),
+                    ),
+            'wwn': dict(
+                     size=0, title='wwn', _class='',
+                     get=lambda x: [d.wwn for d in x.dev],
+                     str=lambda x: ', '.join([d.wwn for d in x.dev]),
+                    ),
+        }
+
+        dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
+        p = os.path.join(dir, symid)
+        s = symmetrix.get_sym(p)
+        s.get_sym_view()
+        self.object_list = s.view
+
+    def format_view(self, view):
+        size = 0
+        vsize = 0
+        dev_count = 0
+        vdev_count = 0
+        for dev in view.dev:
+            if dev.info['configuration'] in ['VDEV', 'THINDEV']:
+                vsize += dev.megabytes
+                vdev_count += 1
+            else:
+                size += dev.megabytes
+                dev_count += 1
+
+        return DIV(
+            B('%s'%(view.view_name)),
+            HR(),
+            TABLE(
+              TR(
+                TH(),
+                TH('count', _class='numeric'),
+                TH('size', _class='numeric'),
+              ),
+              TR(
+                TH('dev'),
+                TD(dev_count, _class='numeric'),
+                TD(pretty_size(size,'MB'), _class='numeric'),
+              ),
+              TR(
+                TH('vdev'),
+                TD(vdev_count, _class='numeric'),
+                TD(pretty_size(vsize,'MB'), _class='numeric'),
+              ),
+              TR(
+                TH('total'),
+                TD(dev_count+vdev_count, _class='numeric'),
+                TD(pretty_size(size+vsize,'MB'), _class='numeric'),
+              ),
+            ),
+            _style='min-width:12em',
+        )
+
+    def format_init_grp(self, view):
+        return DIV(
+            B(view.init_grpname),
+            ' ', SPAN('%d'%len(view.ig), _class='sym_highlight'),
+            HR(),
+            P(B(T('Initiators'))),
+            SPAN(map(P, view.ig)),
+            _style='min-width:12em',
+        )
+
+    def format_port_grp(self, view):
+        return DIV(
+            B(view.port_grpname),
+            ' ', SPAN('%d'%len(view.pg), _class='sym_highlight'),
+            HR(),
+            P(B(T('Ports'))),
+            SPAN(map(P, view.pg)),
+            _style='min-width:12em',
+        )
+
+    def format_stor_grp(self, view):
+        t = table_dev(devs=view.dev)
+        t.cols += ['view']
+        t.filterable = False
+        t.pageable = False
+        t.exportable = False
+
+        return DIV(
+            B(view.stor_grpname),
+            ' ', SPAN('%d'%len(view.sg), _class='sym_highlight'),
+            HR(),
+            t.table(),
+            _style='min-width:12em',
+        )
+
 
 @auth.requires_login()
 def sym_disk_csv():
@@ -1168,6 +1171,16 @@ def sym_sg_csv():
 @auth.requires_login()
 def sym_sg():
     t = table_sg()
+    return t.table()
+
+@auth.requires_login()
+def sym_view_csv():
+    t = table_view()
+    return t.csv()
+
+@auth.requires_login()
+def sym_view():
+    t = table_view()
     return t.table()
 
 @auth.requires_login()
