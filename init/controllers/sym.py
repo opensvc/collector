@@ -42,6 +42,59 @@ def index():
 
     return dict(syms=syms, form=form)
 
+@auth.requires_login()
+def sym_overview():
+    """
+    Format a list of top-level Symmetrix objects.
+    Each item can be drilled down (ajax)
+    """
+    symid = request.vars.arrayid
+    dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
+    p = os.path.join(dir, symid)
+    s = symmetrix.get_sym(p)
+    info = s.get_sym_info()
+    if 'ig_count' in info:
+        vmax = True
+        d_vmax = SPAN(
+                  sym_overview_item(symid, func='sym_view',
+                                    count=info['view_count'],
+                                    title='views'),
+                  sym_overview_item(symid, func='sym_ig',
+                                    count=info['ig_count'],
+                                    title='initiator groups'),
+                  sym_overview_item(symid, func='sym_pg',
+                                    count=info['pg_count'],
+                                    title='port groups'),
+                  sym_overview_item(symid, func='sym_sg',
+                                    count=info['sg_count'],
+                                    title='storage groups'),
+                 )
+    else:
+        vmax = False
+        d_vmax = SPAN()
+
+    d = DIV(
+          sym_overview_item(symid, func='sym_diskgroup',
+                            count=info['diskgroup_count'],
+                            title='disk groups'),
+          sym_overview_item(symid, func='sym_disk',
+                            count=info['disk_count'],
+                            title='disks'),
+          sym_overview_item(symid, func='sym_dev',
+                            count=info['dev_count'],
+                            title='devices'),
+          d_vmax,
+          DIV(
+            A(
+              T('Export to csv'),
+              _href=URL(r=request,f='sym_all_csv', vars={'arrayid':symid, 'vmax': vmax}),
+            ),
+            _class='sym_float',
+          ),
+          _onclick="event.cancelBubble = true;",
+        )
+    return d
+
 def write_csv(fname, buff):
     try:
         f = open(fname, 'w')
@@ -92,130 +145,6 @@ def sym_all_csv():
     os.chdir(olddir)
     os.rmdir(dir)
     return buff
-
-def html_diskgroup(dg):
-     """
-     Format diskgroup information.
-     - disk composition
-     - global ressource usage
-     - per-size device usage
-     """
-     l = []
-     for key in dg.diskcount:
-         if len(key) == 3:
-             size, tech, speed = key
-             spare = None
-         else:
-             size, tech, speed, spare = key
-         s = '%d x %d GB %s rpm %s'%(dg.diskcount[key],
-                                     int(size)//1024, speed, tech)
-         if spare is not None:
-            sp = SPAN('spare', _class='sym_highlight')
-         else:
-            sp = SPAN()
-         l.append(SPAN(s, sp))
-     dev_count = len(dg.dev)
-     masked_dev_count = len(dg.masked_dev)
-     if dev_count != 0:
-         dev_usage = "%d%%"%int(100*masked_dev_count/dev_count)
-     else:
-         dev_usage = 'n/a'
-     if dg.total != 0:
-         usage = "%d%%"%int(100*dg.used/dg.total)
-     else:
-         usage = 'n/a'
-
-     m = []
-     for size in sorted(dg.dev_by_size):
-         if size in dg.masked_dev_by_size:
-             used = len(dg.masked_dev_by_size[size])
-         else:
-             used = 0
-         total = len(dg.dev_by_size[size])
-         free = total - used
-         if total != 0:
-             pct = '%d%%'%int(100*used/total)
-         else:
-             pct = 'n/a'
-         line = TR(
-                  TH('%d'%size,' ',T('MB'), _class='numeric'),
-                  TD(free, _class='numeric'),
-                  TD(used, _class='numeric'),
-                  TD(total, _class='numeric'),
-                  TD(pct, _class='numeric'),
-                )
-         m.append(line)
-
-     if dev_count == 0:
-         table_usage = SPAN()
-     else:
-         table_usage = DIV(
-            TABLE(
-              TR(
-                TH(),
-                TH(T('GB')),
-                TH('dev'),
-              ),
-              TR(
-                TH('free'),
-                TD((dg.total-dg.used)//1024, _class='numeric'),
-                TD(dev_count-masked_dev_count, _class='numeric'),
-              ),
-              TR(
-                TH('used'),
-                TD(dg.used//1024, _class='numeric'),
-                TD(masked_dev_count, _class='numeric'),
-              ),
-              TR(
-                TH('total'),
-                TD(dg.total//1024, _class='numeric'),
-                TD(dev_count, _class='numeric'),
-              ),
-              TR(
-                TH('%used'),
-                TD(usage, _class='numeric'),
-                TD(dev_usage, _class='numeric'),
-              ),
-            ),
-            _class='sym_float',
-            _style='width:12em',
-          )
-
-     if len(m) == 0:
-         table_usage_per_size = SPAN()
-     else:
-         table_usage_per_size = DIV(
-            TABLE(
-              TR(
-                TH('dev size'),
-                TH('free'),
-                TH('used'),
-                TH('total'),
-                TH('%used'),
-              ),
-              SPAN(map(SPAN, m))
-            ),
-            _class='sym_float',
-            _style='width:20em',
-          ),
-
-     d = DIV(
-            H3(
-              dg.info['disk_group_number'],
-              ': ',
-              dg.info['disk_group_name'],
-            ),
-          DIV(
-            map(P, l),
-            _class='sym_float',
-            _style='width:18em',
-          ),
-          SPAN(table_usage),
-          SPAN(table_usage_per_size),
-          DIV('', _class='spacer'),
-          _class='sym_detail_visible',
-         )
-     return d
 
 def xmltree(symid, xml):
     dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
@@ -343,18 +272,6 @@ def batch_files():
 
         # purge the compute job from the queue
         db(db.sym_upload.id==row.id).delete()
-
-@auth.requires_login()
-def sym_diskgroup():
-    symid = request.vars.arrayid
-    dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
-    p = os.path.join(dir, symid)
-    s = symmetrix.get_sym(p)
-    s.get_sym_diskgroup()
-    d = []
-    for dg in s.diskgroup.values():
-        d.append(html_diskgroup(dg))
-    return DIV(d)
 
 def pretty_size(size, unit):
     units = ['B', 'KB', 'MB', 'GB', 'TB', 'EB']
@@ -498,25 +415,6 @@ def _filter(value, o):
         return __filter(value, o)
 
 
-def __ajax(symid, section, inputs):
-    return """ajax("%(url)s",
-                   ["arrayid", %(inputs)s],
-                   "sym_%(s)s_%(symid)s");
-              getElementById("sym_%(s)s_%(symid)s").innerHTML='%(spinner)s';
-            """%dict(url=URL(r=request,f='sym_'+section),
-                     s=section,
-                     inputs = ','.join(map(repr, inputs)),
-                     spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
-                     symid=symid)
-
-def _ajax(symid, section, inputs):
-    return """if (is_enter(event)) {
-                getElementById("arrayid").value="%(symid)s";
-                %(ajax)s
-              };
-              """%dict(ajax=__ajax(symid, section, inputs),
-                       symid=symid)
-
 class table(object):
     def __init__(self, symid=None, func=None, innerhtml=None):
         if innerhtml is None:
@@ -527,6 +425,8 @@ class table(object):
         self.func = func
         self.line_count = 0
         self.id_perpage = '_'.join((self.id_prefix, 'perpage'))
+        self.cellclasses = {'cell1': 'cell2', 'cell2': 'cell1'}
+        self.cellclass = 'cell1'
 
         if self.id_perpage in request.vars:
             self.perpage = int(request.vars[self.id_perpage])
@@ -542,6 +442,9 @@ class table(object):
         self.filterable = True
         self.pageable = True
         self.exportable = True
+
+    def rotate_colors(self):
+        self.cellclass = self.cellclasses[self.cellclass]
 
     def filter_key(self, f):
         return '_'.join((self.id_prefix, 'filter', f))
@@ -569,13 +472,13 @@ class table(object):
         for c in self.cols:
             cells.append(TD(self.colprops[c]['str'](o),
                             _class=self.colprops[c]['_class']))
-        return TR(cells)
+        return TR(cells, _class=self.cellclass)
 
     def table_lines(self):
         lines = []
         line_count = 0
         for i in sorted(self.object_list):
-            if isinstance(i, str):
+            if isinstance(i, str) or isinstance(i, unicode) or isinstance(i, int):
                 o = self.object_list[i]
             else:
                 o = i
@@ -589,7 +492,16 @@ class table(object):
                 continue
             line_count += 1
             if not self.pageable or line_count <= self.perpage:
+                self.rotate_colors()
                 lines.append(self.table_line(o))
+                if hasattr(self, 'format_extra_line'):
+                    lines.append(TR(
+                                   TD(
+                                     self.format_extra_line(o),
+                                     _colspan=len(self.cols),
+                                   ),
+                                   _class=self.cellclass,
+                                 ))
         return lines, line_count
 
     def table_inputs(self):
@@ -666,7 +578,11 @@ class table(object):
                           )+self.__ajax(),
                   _class='sym_float',
                 )
-            counts = SPAN('%d/%d'%(len(lines),line_count), _class='sym_highlight')
+            if hasattr(self, 'format_extra_line'):
+                visible_line_count = len(lines)/2
+            else:
+                visible_line_count = len(lines)
+            counts = SPAN('%d/%d'%(visible_line_count,line_count), _class='sym_highlight')
         else:
             paging = SPAN()
             counts = SPAN()
@@ -710,7 +626,7 @@ class table(object):
     def _csv(self):
         lines = [';'.join(self.cols)]
         for i in sorted(self.object_list):
-            if isinstance(i, str):
+            if isinstance(i, str) or isinstance(i, unicode) or isinstance(i, int):
                 o = self.object_list[i]
             else:
                 o = i
@@ -915,6 +831,211 @@ class table_dev(table):
         if dev.meta_count == 0:
             dev.meta_count = 'n/a'
 
+class table_diskgroup(table):
+    def __init__(self, symid=None, innerhtml=None):
+        if symid is None and 'arrayid' in request.vars:
+            symid = request.vars.arrayid
+        table.__init__(self, symid, 'sym_diskgroup', innerhtml)
+        self.cols = ['dg_number', 'dg_name', 'composition', 'dev',
+                     'masked_dev']
+        self.colprops = {
+            'dg_number': dict(
+                     size=1, title='num', _class='numeric',
+                     get=lambda x: x.info['disk_group_number'],
+                     str=lambda x: x.info['disk_group_number'],
+                    ),
+            'dg_name': dict(
+                     size=12, title='name', _class='',
+                     get=lambda x: x.info['disk_group_name'],
+                     str=lambda x: x.info['disk_group_name'],
+                    ),
+            'composition': dict(
+                     size=24, title='composition', _class='',
+                     get=lambda x: self.get_composition(x),
+                     str=lambda x: self.format_composition(x),
+                    ),
+            'dev': dict(
+                     size=24, title='dev', _class='',
+                     get=lambda x: x.dev,
+                     str=lambda x: self.format_dev(x.dev),
+                    ),
+            'masked_dev': dict(
+                     size=24, title='masked dev', _class='',
+                     get=lambda x: x.masked_dev,
+                     str=lambda x: self.format_dev(x.masked_dev),
+                    ),
+            'used': dict(
+                     size=24, title='used', _class='numeric',
+                     get=lambda x: x.used,
+                     str=lambda x: x.used,
+                    ),
+            'vused': dict(
+                     size=24, title='vused', _class='numeric',
+                     get=lambda x: x.vused,
+                     str=lambda x: x.vused,
+                    ),
+        }
+
+        dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
+        p = os.path.join(dir, symid)
+        s = symmetrix.get_sym(p)
+        s.get_sym_diskgroup()
+        self.object_list = s.diskgroup
+
+    def format_dev(self, l):
+        count = SPAN(len(l), _class='sym_highlight')
+        alldevs = ', '.join(l)
+        if len(alldevs) < 49:
+            return SPAN(count, BR(), alldevs)
+        else:
+            shortdevs = '('+alldevs[0:48]+' ...)'
+            return SPAN(
+              count, BR(),
+              SPAN(
+                shortdevs,
+                _onclick="""a=["%s","%s"];
+                            if (this.innerHTML==a[0]) {this.innerHTML=a[1]} else {this.innerHTML=a[0]}
+                         """%(shortdevs, alldevs),
+              ),
+            )
+
+    def get_composition(self, dg):
+        l = []
+        for key in dg.diskcount:
+            if len(key) == 3:
+                size, tech, speed = key
+                spare = None
+            else:
+                size, tech, speed, spare = key
+            s = '%d x %d GB %s rpm %s'%(dg.diskcount[key],
+                                        int(size)//1024, speed, tech)
+            if spare is not None:
+               s += ' '+spare
+            l.append(s)
+        return l
+
+    def format_composition(self, dg):
+        l = []
+        for key in dg.diskcount:
+            if len(key) == 3:
+                size, tech, speed = key
+                spare = None
+            else:
+                size, tech, speed, spare = key
+
+            if spare is not None:
+                sp = SPAN('spare', _class='sym_highlight')
+            else:
+                sp = SPAN()
+
+            if tech == 'N/A':
+                tech = ''
+
+            line = SPAN(
+              TD(dg.diskcount[key], _class='numeric', _style='min-width:2em'),
+              TD('x'),
+              TD(pretty_size(size, 'MB'), _class='numeric'),
+              TD(speed, 'rpm', _class='numeric'),
+              TD(tech),
+              TD(sp),
+            ),
+            l.append(line)
+
+        return TABLE(map(TR, l))
+
+    def format_extra_line(self, dg):
+        dev_count = len(dg.dev)
+        masked_dev_count = len(dg.masked_dev)
+        if dev_count != 0:
+            dev_usage = "%d%%"%int(100*masked_dev_count/dev_count)
+        else:
+            dev_usage = 'n/a'
+        if dg.total != 0:
+            usage = "%d%%"%int(100*dg.used/dg.total)
+        else:
+            usage = 'n/a'
+
+        m = []
+        for size in sorted(dg.dev_by_size):
+            if size in dg.masked_dev_by_size:
+                used = len(dg.masked_dev_by_size[size])
+            else:
+                used = 0
+            total = len(dg.dev_by_size[size])
+            free = total - used
+            if total != 0:
+                pct = '%d%%'%int(100*used/total)
+            else:
+                pct = 'n/a'
+            line = TR(
+                     TH('%d'%size,' ',T('MB'), _class='numeric'),
+                     TD(free, _class='numeric'),
+                     TD(used, _class='numeric'),
+                     TD(total, _class='numeric'),
+                     TD(pct, _class='numeric'),
+                   )
+            m.append(line)
+
+        if dev_count == 0:
+            table_usage = SPAN()
+        else:
+            table_usage = DIV(
+                TABLE(
+                  TR(
+                    TH(),
+                    TH(T('GB')),
+                    TH('dev'),
+                  ),
+                  TR(
+                    TH('free'),
+                    TD((dg.total-dg.used)//1024, _class='numeric'),
+                    TD(dev_count-masked_dev_count, _class='numeric'),
+                  ),
+                  TR(
+                    TH('used'),
+                    TD(dg.used//1024, _class='numeric'),
+                    TD(masked_dev_count, _class='numeric'),
+                  ),
+                  TR(
+                    TH('total'),
+                    TD(dg.total//1024, _class='numeric'),
+                    TD(dev_count, _class='numeric'),
+                  ),
+                  TR(
+                    TH('%used'),
+                    TD(usage, _class='numeric'),
+                    TD(dev_usage, _class='numeric'),
+                  ),
+                ),
+                _class='sym_float',
+                _style='width:12em',
+              )
+
+        if len(m) == 0:
+            table_usage_per_size = SPAN()
+        else:
+            table_usage_per_size = DIV(
+                TABLE(
+                  TR(
+                    TH('dev size'),
+                    TH('free'),
+                    TH('used'),
+                    TH('total'),
+                    TH('%used'),
+                  ),
+                  SPAN(map(SPAN, m))
+                ),
+                _class='sym_float',
+                _style='width:20em',
+              )
+
+        d = DIV(
+              SPAN(table_usage),
+              SPAN(table_usage_per_size),
+              DIV('', _class='spacer'),
+            )
+        return d
+
 class table_ig(table):
     def __init__(self, symid=None, innerhtml=None):
         if symid is None and 'arrayid' in request.vars:
@@ -996,7 +1117,8 @@ class table_view(table):
             symid = request.vars.arrayid
         table.__init__(self, symid, 'sym_view', innerhtml)
         self.cols = ['view', 'init_grpname', 'port_grpname', 'stor_grpname']
-        self.additional_filters = ['initiator', 'port', 'dev', 'wwn']
+        self.additional_filters = ['initiator', 'port', 'dev', 'wwn',
+                                   'diskgroup']
         self.colprops = {
             'init_grpname': dict(
                      size=12, title='initiator group', _class='',
@@ -1038,6 +1160,11 @@ class table_view(table):
                      get=lambda x: [d.wwn for d in x.dev],
                      str=lambda x: ', '.join([d.wwn for d in x.dev]),
                     ),
+            'diskgroup': dict(
+                     size=0, title='diskgroup', _class='',
+                     get=lambda x: [d.diskgroup_name for d in x.dev],
+                     str=lambda x: ', '.join([d.diskgroup_name for d in x.dev]),
+                    ),
         }
 
         dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
@@ -1047,6 +1174,33 @@ class table_view(table):
         self.object_list = s.view
 
     def format_view(self, view):
+        return DIV(
+            B('%s'%(view.view_name)),
+            HR(),
+            _style='min-width:12em',
+        )
+
+    def format_init_grp(self, view):
+        return DIV(
+            B(view.init_grpname),
+            ' ', SPAN('%d'%len(view.ig), _class='sym_highlight'),
+            HR(),
+            P(B(T('Initiators'))),
+            SPAN(map(P, view.ig)),
+            _style='min-width:12em',
+        )
+
+    def format_port_grp(self, view):
+        return DIV(
+            B(view.port_grpname),
+            ' ', SPAN('%d'%len(view.pg), _class='sym_highlight'),
+            HR(),
+            P(B(T('Ports'))),
+            SPAN(map(P, view.pg)),
+            _style='min-width:12em',
+        )
+
+    def format_stor_grp(self, view):
         size = 0
         vsize = 0
         dev_count = 0
@@ -1060,7 +1214,8 @@ class table_view(table):
                 dev_count += 1
 
         return DIV(
-            B('%s'%(view.view_name)),
+            B(view.stor_grpname),
+            ' ', SPAN('%d'%len(view.sg), _class='sym_highlight'),
             HR(),
             TABLE(
               TR(
@@ -1087,40 +1242,13 @@ class table_view(table):
             _style='min-width:12em',
         )
 
-    def format_init_grp(self, view):
-        return DIV(
-            B(view.init_grpname),
-            ' ', SPAN('%d'%len(view.ig), _class='sym_highlight'),
-            HR(),
-            P(B(T('Initiators'))),
-            SPAN(map(P, view.ig)),
-            _style='min-width:12em',
-        )
-
-    def format_port_grp(self, view):
-        return DIV(
-            B(view.port_grpname),
-            ' ', SPAN('%d'%len(view.pg), _class='sym_highlight'),
-            HR(),
-            P(B(T('Ports'))),
-            SPAN(map(P, view.pg)),
-            _style='min-width:12em',
-        )
-
-    def format_stor_grp(self, view):
+    def format_extra_line(self, view):
         t = table_dev(devs=view.dev)
         t.cols += ['view']
         t.filterable = False
         t.pageable = False
         t.exportable = False
-
-        return DIV(
-            B(view.stor_grpname),
-            ' ', SPAN('%d'%len(view.sg), _class='sym_highlight'),
-            HR(),
-            t.table(),
-            _style='min-width:12em',
-        )
+        return t.table()
 
 
 @auth.requires_login()
@@ -1184,6 +1312,16 @@ def sym_view():
     return t.table()
 
 @auth.requires_login()
+def sym_diskgroup_csv():
+    t = table_diskgroup()
+    return t.csv()
+
+@auth.requires_login()
+def sym_diskgroup():
+    t = table_diskgroup()
+    return t.table()
+
+@auth.requires_login()
 def sym_overview_item(symid, func, count, title):
     """
     Format a H2 list item title with a child object count.
@@ -1211,58 +1349,5 @@ def sym_overview_item(symid, func, count, title):
           _class='sym_detail',
         )
     return SPAN(h, d)
-
-@auth.requires_login()
-def sym_overview():
-    """
-    Format a list of top-level Symmetrix objects.
-    Each item can be drilled down (ajax)
-    """
-    symid = request.vars.arrayid
-    dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
-    p = os.path.join(dir, symid)
-    s = symmetrix.get_sym(p)
-    info = s.get_sym_info()
-    if 'ig_count' in info:
-        vmax = True
-        d_vmax = SPAN(
-                  sym_overview_item(symid, func='sym_view',
-                                    count=info['view_count'],
-                                    title='views'),
-                  sym_overview_item(symid, func='sym_ig',
-                                    count=info['ig_count'],
-                                    title='initiator groups'),
-                  sym_overview_item(symid, func='sym_pg',
-                                    count=info['pg_count'],
-                                    title='port groups'),
-                  sym_overview_item(symid, func='sym_sg',
-                                    count=info['sg_count'],
-                                    title='storage groups'),
-                 )
-    else:
-        vmax = False
-        d_vmax = SPAN()
-
-    d = DIV(
-          sym_overview_item(symid, func='sym_diskgroup',
-                            count=info['diskgroup_count'],
-                            title='disk groups'),
-          sym_overview_item(symid, func='sym_disk',
-                            count=info['disk_count'],
-                            title='disks'),
-          sym_overview_item(symid, func='sym_dev',
-                            count=info['dev_count'],
-                            title='devices'),
-          d_vmax,
-          DIV(
-            A(
-              T('Export to csv'),
-              _href=URL(r=request,f='sym_all_csv', vars={'arrayid':symid, 'vmax': vmax}),
-            ),
-            _class='sym_float',
-          ),
-          _onclick="event.cancelBubble = true;",
-        )
-    return d
 
 
