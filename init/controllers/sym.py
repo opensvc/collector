@@ -53,8 +53,12 @@ def write_csv(fname, buff):
 
 def write_all_csv(dir):
     files = []
-    files += write_csv(os.path.join(dir, 'sym_dev.csv'), _sym_dev_csv())
-    files += write_csv(os.path.join(dir, 'sym_disk.csv'), _sym_disk_csv())
+    files += write_csv(os.path.join(dir, 'sym_dev.csv'), table_dev()._csv())
+    files += write_csv(os.path.join(dir, 'sym_disk.csv'), table_disk()._csv())
+    if 'vmax' in request.vars and request.vars.vmax == 'True':
+        files += write_csv(os.path.join(dir, 'sym_ig.csv'), table_ig()._csv())
+        files += write_csv(os.path.join(dir, 'sym_pg.csv'), table_pg()._csv())
+        files += write_csv(os.path.join(dir, 'sym_sg.csv'), table_sg()._csv())
     return files
 
 @auth.requires_login()
@@ -660,50 +664,6 @@ def _filter(value, o):
         return __filter(value, o)
 
 
-@auth.requires_login()
-def _sym_disk_csv():
-    symid = request.vars.arrayid
-    dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
-    p = os.path.join(dir, symid)
-    s = symmetrix.get_sym(p)
-    s.get_sym_disk()
-    lines = [';'.join(_disk_columns_print.keys())]
-    for d in sorted(s.disk):
-        dev = s.disk[d]
-        inf = []
-        for c in _disk_columns_print.keys():
-            inf.append(repr(str(_disk_columns_print[c](dev))))
-        lines.append(';'.join(inf))
-    return '\n'.join(lines)
-
-@auth.requires_login()
-def _sym_dev_csv():
-    symid = request.vars.arrayid
-    dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
-    p = os.path.join(dir, symid)
-    s = symmetrix.get_sym(p)
-    s.get_sym_dev()
-    lines = [';'.join(_dev_columns_print.keys())]
-    for d in sorted(s.dev):
-        dev = s.dev[d]
-        inf = []
-        for c in _dev_columns_print.keys():
-            inf.append(repr(str(_dev_columns_print[c](dev))))
-        lines.append(';'.join(inf))
-    return '\n'.join(lines)
-
-@auth.requires_login()
-def sym_disk_csv():
-    import gluon.contenttype
-    response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
-    return _sym_disk_csv()
-
-@auth.requires_login()
-def sym_dev_csv():
-    import gluon.contenttype
-    response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
-    return _sym_dev_csv()
-
 def __ajax(symid, section, inputs):
     return """ajax("%(url)s",
                    ["arrayid", %(inputs)s],
@@ -724,7 +684,9 @@ def _ajax(symid, section, inputs):
                        symid=symid)
 
 class table(object):
-    def __init__(self, symid, func, innerhtml):
+    def __init__(self, symid=None, func=None, innerhtml=None):
+        if innerhtml is None:
+            innerhtml='_'.join((func, str(symid)))
         self.symid = symid
         self.innerhtml = innerhtml
         self.id_prefix = innerhtml
@@ -858,7 +820,7 @@ class table(object):
                 DIV(
                   A(
                     T('Export to csv'),
-                    _href=URL(r=request,f=self.csv, vars=request.vars),
+                    _href=URL(r=request,f=self.func+'_csv', vars=request.vars),
                   ),
                   _class='sym_float',
                 ),
@@ -871,11 +833,30 @@ class table(object):
     def change_line_data(self, o):
         pass
 
+    def _csv(self):
+        lines = [';'.join(self.cols)]
+        for i in sorted(self.object_list):
+            if isinstance(i, str):
+                o = self.object_list[i]
+            else:
+                o = i
+            inf = []
+            for c in self.cols:
+                inf.append(repr(str(self.colprops[c]['str'](o))))
+            lines.append(';'.join(inf))
+        return '\n'.join(lines)
+
+    def csv(self):
+        import gluon.contenttype
+        response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
+        return self._csv()
+
 
 class table_disk(table):
-    def __init__(self, symid, innerhtml):
+    def __init__(self, symid=None, innerhtml=None):
+        if symid is None and 'arrayid' in request.vars:
+            symid = request.vars.arrayid
         table.__init__(self, symid, 'sym_disk', innerhtml)
-        self.csv = 'sym_disk_csv'
         self.cols = ['da_number', 'interface', 'tid', 'dg', 'technology',
                      'speed', 'vendor', 'revision', 'product', 'serial',
                      'megabytes', 'hypers', 'hot_spare', 'failed_disk']
@@ -960,7 +941,9 @@ class table_disk(table):
 
 
 class table_dev(table):
-    def __init__(self, symid, innerhtml, devs=None):
+    def __init__(self, symid=None, innerhtml=None, devs=None):
+        if symid is None and 'arrayid' in request.vars:
+            symid = request.vars.arrayid
         table.__init__(self, symid, 'sym_dev', innerhtml)
         self.csv = 'sym_dev_csv'
         self.cols = ['dev', 'wwn', 'conf', 'meta', 'metaflag', 'memberof',
@@ -1060,7 +1043,9 @@ class table_dev(table):
             dev.meta_count = 'n/a'
 
 class table_ig(table):
-    def __init__(self, symid, innerhtml):
+    def __init__(self, symid=None, innerhtml=None):
+        if symid is None and 'arrayid' in request.vars:
+            symid = request.vars.arrayid
         table.__init__(self, symid, 'sym_ig', innerhtml)
         self.csv = 'sym_ig_csv'
         self.cols = ['init_grpname', 'wwn']
@@ -1084,7 +1069,9 @@ class table_ig(table):
         self.object_list = map(lambda x: dict(init_grpname=x, init_list=s.ig[x]), s.ig.keys())
 
 class table_pg(table):
-    def __init__(self, symid, innerhtml):
+    def __init__(self, symid=None, innerhtml=None):
+        if symid is None and 'arrayid' in request.vars:
+            symid = request.vars.arrayid
         table.__init__(self, symid, 'sym_pg', innerhtml)
         self.csv = 'sym_pg_csv'
         self.cols = ['port_grpname', 'port']
@@ -1108,7 +1095,9 @@ class table_pg(table):
         self.object_list = map(lambda x: dict(port_grpname=x, port_list=s.pg[x]), s.pg.keys())
 
 class table_sg(table):
-    def __init__(self, symid, innerhtml):
+    def __init__(self, symid=None, innerhtml=None):
+        if symid is None and 'arrayid' in request.vars:
+            symid = request.vars.arrayid
         table.__init__(self, symid, 'sym_sg', innerhtml)
         self.csv = 'sym_sg_csv'
         self.cols = ['stor_grpname', 'dev']
@@ -1132,33 +1121,53 @@ class table_sg(table):
         self.object_list = map(lambda x: dict(stor_grpname=x, dev_list=s.sg[x]), s.sg.keys())
 
 @auth.requires_login()
+def sym_disk_csv():
+    t = table_disk()
+    return t.csv()
+
+@auth.requires_login()
 def sym_disk():
-    symid = request.vars.arrayid
-    t = table_disk(symid, 'sym_disk_%s'%symid)
+    t = table_disk()
     return t.table()
+
+@auth.requires_login()
+def sym_dev_csv():
+    t = table_dev()
+    return t.csv()
 
 @auth.requires_login()
 def sym_dev():
-    symid = request.vars.arrayid
-    t = table_dev(symid, 'sym_dev_%s'%symid)
+    t = table_dev()
     return t.table()
+
+@auth.requires_login()
+def sym_ig_csv():
+    t = table_ig()
+    return t.csv()
 
 @auth.requires_login()
 def sym_ig():
-    symid = request.vars.arrayid
-    t = table_ig(symid, 'sym_ig_%s'%symid)
+    t = table_ig()
     return t.table()
+
+@auth.requires_login()
+def sym_pg_csv():
+    t = table_pg()
+    return t.csv()
 
 @auth.requires_login()
 def sym_pg():
-    symid = request.vars.arrayid
-    t = table_pg(symid, 'sym_pg_%s'%symid)
+    t = table_pg()
     return t.table()
 
 @auth.requires_login()
+def sym_sg_csv():
+    t = table_sg()
+    return t.csv()
+
+@auth.requires_login()
 def sym_sg():
-    symid = request.vars.arrayid
-    t = table_sg(symid, 'sym_sg_%s'%symid)
+    t = table_sg()
     return t.table()
 
 @auth.requires_login()
@@ -1202,7 +1211,8 @@ def sym_overview():
     s = symmetrix.get_sym(p)
     info = s.get_sym_info()
     if 'ig_count' in info:
-       d_vmax = SPAN(
+        vmax = True
+        d_vmax = SPAN(
                   sym_overview_item(symid, func='sym_view',
                                     count=info['view_count'],
                                     title='views'),
@@ -1215,9 +1225,11 @@ def sym_overview():
                   sym_overview_item(symid, func='sym_sg',
                                     count=info['sg_count'],
                                     title='storage groups'),
-                )
+                 )
     else:
+        vmax = False
         d_vmax = SPAN()
+
     d = DIV(
           sym_overview_item(symid, func='sym_diskgroup',
                             count=info['diskgroup_count'],
@@ -1232,7 +1244,7 @@ def sym_overview():
           DIV(
             A(
               T('Export to csv'),
-              _href=URL(r=request,f='sym_all_csv', vars={'arrayid':symid}),
+              _href=URL(r=request,f='sym_all_csv', vars={'arrayid':symid, 'vmax': vmax}),
             ),
             _class='sym_float',
           ),
