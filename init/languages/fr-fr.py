@@ -22,6 +22,7 @@
 '1 hour ago': '1 heure',
 '1 minute ago': '1 minute',
 '1 second ago': '1 seconde',
+'1 week ago': '1 semaine',
 '1 year ago': '1 an',
 '<< ': '<< ',
 '<< prev': '<< précédents',
