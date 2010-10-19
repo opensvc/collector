@@ -743,7 +743,7 @@ class table_dev(table):
             symid = request.vars.arrayid
         table.__init__(self, symid, 'sym_dev', innerhtml)
         self.cols = ['dev', 'wwn', 'conf', 'meta', 'metaflag', 'memberof',
-                     'size', 'dg', 'frontend', 'rdf_state', 'rdf_mode',
+                     'size', 'dg', 'rdf_state', 'rdf_mode',
                      'rdf_group', 'remote_sym', 'remote_dev']
         self.colprops = {
             'dev': dict(
@@ -796,6 +796,11 @@ class table_dev(table):
                      get=lambda x: x.frontend,
                      str=lambda x: ', '.join(x.frontend),
                     ),
+            'masking': dict(
+                     size=4, title='masking', _class='',
+                     get=lambda x: x.masking,
+                     str=lambda x: ', '.join(x.masking),
+                    ),
             'rdf_state': dict(
                      size=8, title='rdf state', _class='',
                      get=lambda x: x.rdf.pair_state,
@@ -830,7 +835,9 @@ class table_dev(table):
             s.get_sym_dev()
             self.object_list = s.dev
             if isinstance(s, symmetrix.Vmax):
-                self.cols += ['view']
+                self.cols += ['frontend', 'view']
+            else:
+                self.cols += ['masking']
         else:
             self.object_list = devs
 

@@ -6,7 +6,8 @@ class SymMask(object):
     def __init__(self, director, port, xml):
         self.director = director
         self.port = port
-        self.id = ':'.join([director, port])
+        self.originator_port_wwn = xml.find('originator_port_wwn').text
+        self.id = ':'.join([director, port, self.originator_port_wwn])
         self.dev = []
         for e in xml.findall("Device"):
             start_dev_e = e.find("start_dev")
@@ -15,7 +16,7 @@ class SymMask(object):
                 continue
             start_dev = int(start_dev_e.text, 16)
             end_dev = int(e.find("end_dev").text, 16)
-            devs = range(start_dev, end_dev)
+            devs = range(start_dev, end_dev+1)
             self.dev += map(lambda x: str('%04X'%x).replace('0x',''), devs)
 
     def prefix(self, text=""):
@@ -161,6 +162,7 @@ class SymDev(object):
         self.flags = {}
         self.backend = []
         self.frontend = []
+        self.masking = []
         self.meta = []
         self.meta_count = 0
         self.diskgroup = None
@@ -203,6 +205,7 @@ class SymDev(object):
         for key in self.flags:
             l += self.prefix("flags."+key+": "+self.flags[key])
         l += self.prefix("frontend: %s"%','.join(self.frontend))
+        l += self.prefix("masking: %s"%','.join(self.masking))
         for i, be in enumerate(self.backend):
             for key in be:
                 l += self.prefix("be[%d].%s: %s"%(i, key, be[key]))
@@ -610,9 +613,8 @@ class Dmx(Sym):
         self.info['maskdb_count'] += 1
         for dev_name in o.dev:
             dev = self.dev[dev_name]
-            if o.id in dev.frontend:
-                continue
-            dev.frontend.append(o.id)
+            if o.id not in dev.masking:
+                dev.masking.append(o.id)
             dg = dev.diskgroup
             if dg is None:
                 # VDEV
