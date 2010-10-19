@@ -717,10 +717,13 @@ def get_sym(xml_dir=None, preload_data=False):
         for e in tree.getiterator('Symm_Info'): pass
         model = e.find('model').text
         del tree
-        if 'VMAX' in model:
-            return Vmax(xml_dir, preload_data)
-        elif 'DMX' in model:
-            return Dmx(xml_dir, preload_data)
+        try:
+            if 'VMAX' in model:
+                return Vmax(xml_dir, preload_data)
+            elif 'DMX' in model or '3000-M':
+                return Dmx(xml_dir, preload_data)
+        except:
+            return None
         return None
 
 import sys

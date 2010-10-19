@@ -52,6 +52,8 @@ def sym_overview():
     dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
     p = os.path.join(dir, symid)
     s = symmetrix.get_sym(p)
+    if s is None:
+        return SPAN(T("Incomplete information"))
     info = s.get_sym_info()
     if 'ig_count' in info:
         vmax = True
@@ -173,7 +175,9 @@ def sym_info(symid):
 
     s = symmetrix.get_sym(p)
     if s is None:
-        response.flash = T('array model not supported: %s, %s'%(symid, sym_type))
+        response.flash = T('array model not supported or incomplete info: %(symid)s, %(model)s',
+                           dict(symid=symid, model=sym_type))
+        return None
     s.get_sym_info()
     d = s.info
     d['mtime'] = mtime(symid, 'sym_info')
