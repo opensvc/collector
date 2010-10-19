@@ -38,7 +38,13 @@ def stats_disks_per_svc():
     def compute_size(s):
         if s is None or len(s) == 0:
             return 0
-        return int(s.split(',')[-1])
+        l = s.split(',')
+        l.reverse()
+        for w in l:
+            if len(w) > 0: break
+        if len(w) == 0:
+            return 0
+        return int(w)
 
     data1 = [(row[0], compute_size(row[1])) for row in rows]
     data = sorted(data1, key = lambda x: x[1])[-15:]
