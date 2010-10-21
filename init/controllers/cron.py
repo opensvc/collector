@@ -434,15 +434,10 @@ def alert_format_body(msg="", app=None, svcname=None, node=None, action=None,
     return out
 
 def alerts_apps_without_responsible(user):
-    import datetime
-    now = datetime.datetime.now()
-    delay = datetime.timedelta(hours=24)
-
     if 'Manager' not in user_roles(user.id):
         return
 
     q = db.v_apps.mailto == None
-    q &= db.v_apps.app == db.apps.app
     rows = db(q).select()
     apps = [r.v_apps.app for r in rows]
     if len(apps) == 0:
@@ -480,7 +475,10 @@ def alerts_services_not_updated(user):
 
     q = db.v_services.updated<two_days_ago
     if 'Manager' not in user_roles(user.id):
-        q &= db.v_services.svc_app.belongs(user_apps(user.id))
+        apps = user_apps(user.id)
+        if len(apps) == 0:
+            return dict(alerts=[])
+        q &= db.v_services.svc_app.belongs(apps)
 
     cancelled = []
     body = []
