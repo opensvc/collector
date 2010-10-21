@@ -585,3 +585,20 @@ ALTER TABLE `opensvc`.`comp_log` ADD COLUMN `run_ruleset` char(100)  NOT NULL AF
 ALTER TABLE `opensvc`.`comp_status` ADD COLUMN `run_ruleset` char(100)  NOT NULL AFTER `run_date`;
 
 # sncf
+
+ALTER TABLE `opensvc`.`comp_rules` DROP COLUMN `rule_var_name`,
+ DROP COLUMN `rule_var_value`;
+
+CREATE TABLE `opensvc`.`comp_rules_vars` (
+  `id` integer  NOT NULL AUTO_INCREMENT,
+  `rule_name` varchar(60)  NOT NULL,
+  `rule_var_name` varchar(60)  NOT NULL,
+  `rule_var_value` varchar(100)  NOT NULL,
+  PRIMARY KEY (`id`)
+);
+
+create unique index idx1 on comp_rules_vars (rule_name, rule_var_name);
+
+alter table comp_rules_vars add column rule_var_updated timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+# ovh

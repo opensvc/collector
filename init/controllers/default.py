@@ -1317,7 +1317,7 @@ def comp_format_filter(q):
 
 @service.xmlrpc
 def comp_get_ruleset(nodename):
-    ruleset = []
+    ruleset = {}
     q = db.nodes.nodename == nodename
     rows = db(db.comp_rules.id>0).select(orderby=db.comp_rules.rule_name)
     last_index = len(rows)-1
@@ -1336,10 +1336,13 @@ def comp_get_ruleset(nodename):
         if end_seq:
             match = db(q&qr).select(db.nodes.id)
             if len(match) == 1:
-                ruleset.append(dict(var=rule.rule_var_name,
-                                    val=rule.rule_var_value,
-                                    name=rule.rule_name,
-                                    filter=comp_format_filter(qr)))
+                rulevars = db(db.comp_rules_vars.rule_name==rule.rule_name).select()
+                ruleset[rule.rule_name] = dict(name=rule.rule_name,
+                                                  filter=comp_format_filter(qr),
+                                                  vars=[])
+                for rulevar in rulevars:
+                    ruleset[rule.rule_name]['vars'].append((rulevar.rule_var_name,
+                                                            rulevar.rule_var_value))
             qr = db.nodes.id > 0
     return ruleset
 

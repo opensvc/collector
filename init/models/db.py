@@ -918,9 +918,14 @@ db.define_table('comp_rules',
     Field('rule_table','string'),
     Field('rule_field','string'),
     Field('rule_value','string'),
+    Field('rule_updated','datetime'),
+    migrate=False)
+
+db.define_table('comp_rules_vars',
+    Field('rule_name','string'),
     Field('rule_var_name','string'),
     Field('rule_var_value','string'),
-    Field('rule_updated','datetime'),
+    Field('rule_var_updated','datetime'),
     migrate=False)
 
 db.define_table('comp_node_ruleset',
