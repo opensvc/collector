@@ -583,3 +583,5 @@ ALTER TABLE `opensvc`.`comp_rules` MODIFY COLUMN `rule_log_op` VARCHAR(3)  CHARA
 ALTER TABLE `opensvc`.`comp_log` ADD COLUMN `run_ruleset` char(100)  NOT NULL AFTER `run_date`;
 
 ALTER TABLE `opensvc`.`comp_status` ADD COLUMN `run_ruleset` char(100)  NOT NULL AFTER `run_date`;
+
+# sncf

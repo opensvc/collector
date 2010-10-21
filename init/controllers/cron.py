@@ -441,9 +441,8 @@ def alerts_apps_without_responsible(user):
     if 'Manager' not in user_roles(user.id):
         return
 
-    q = db.v_apps.mailto==None
-    q &= db.v_apps.app==db.apps.app
-    q &= db.apps.updated<now-delay
+    q = db.v_apps.mailto == None
+    q &= db.v_apps.app == db.apps.app
     rows = db(q).select()
     apps = [r.v_apps.app for r in rows]
     if len(apps) == 0:
@@ -679,7 +678,8 @@ def purge_failed_actions_not_acked(rids):
 def cron_alerts_daily():
     q = db.auth_user.email_notifications==True
     users = db(q).select(db.auth_user.id,
-                         db.auth_user.email)
+                         db.auth_user.email,
+                         groupby=db.auth_user.email)
     h = {}
     rids = set()
     for user in users:
