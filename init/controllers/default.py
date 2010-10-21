@@ -1175,6 +1175,8 @@ def delete_disks(svcname, node):
 @service.xmlrpc
 def comp_get_moduleset_modules(moduleset):
     if isinstance(moduleset, list):
+        if len(moduleset) == 0:
+            return []
         q = db.comp_moduleset.moduleset.belongs(moduleset)
     elif isinstance(moduleset, str):
         q = db.comp_moduleset.moduleset == moduleset
