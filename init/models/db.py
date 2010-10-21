@@ -888,3 +888,50 @@ db.define_table('sym_upload',
     Field('batched','integer', writable=False),
     migrate=False)
 
+db.define_table('comp_moduleset',
+    Field('moduleset','string'),
+    Field('module','string'),
+    migrate=False)
+
+db.define_table('comp_log',
+    Field('run_module','string'),
+    Field('run_nodename','string'),
+    Field('run_status','integer'),
+    Field('run_log','string'),
+    Field('run_ruleset','string'),
+    Field('run_date','datetime'),
+    migrate=False)
+
+db.define_table('comp_status',
+    Field('run_module','string'),
+    Field('run_nodename','string'),
+    Field('run_status','integer'),
+    Field('run_log','string'),
+    Field('run_ruleset','string'),
+    Field('run_date','datetime'),
+    migrate=False)
+
+db.define_table('comp_rules',
+    Field('rule_name','string'),
+    Field('rule_op','string'),
+    Field('rule_log_op','string'),
+    Field('rule_table','string'),
+    Field('rule_field','string'),
+    Field('rule_value','string'),
+    Field('rule_var_name','string'),
+    Field('rule_var_value','string'),
+    Field('rule_updated','datetime'),
+    migrate=False)
+
+db.define_table('comp_node_ruleset',
+    Field('ruleset_node','string'),
+    Field('ruleset_name','string'),
+    Field('ruleset_updated','string'),
+    migrate=False)
+
+db.define_table('comp_node_moduleset',
+    Field('moduleset_node','string'),
+    Field('moduleset_name','string'),
+    Field('moduleset_updated','string'),
+    migrate=False)
+

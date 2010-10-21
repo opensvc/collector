@@ -505,3 +505,81 @@ drop table sym_upload;
 CREATE TABLE `sym_upload` (`id` int(11) NOT NULL AUTO_INCREMENT,`name` varchar(512) DEFAULT NULL,archive varchar(512) DEFAULT NULL,`added` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,`batched` int(11) DEFAULT '0', PRIMARY KEY (`id`)) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
 
 alter table sym_upload drop column name;
+
+# sncf
+
+CREATE TABLE `opensvc`.`comp_log` (
+  `id` integer  NOT NULL AUTO_INCREMENT,
+  `run_nodename` varchar(64)  NOT NULL,
+  `run_module` varchar(64)  NOT NULL,
+  `run_status` integer  NOT NULL DEFAULT 1,
+  `run_log` text  NOT NULL,
+  `run_date` TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+);
+
+CREATE TABLE `opensvc`.`comp_status` (
+  `id` integer  NOT NULL AUTO_INCREMENT,
+  `run_nodename` varchar(64)  NOT NULL,
+  `run_module` varchar(64)  NOT NULL,
+  `run_status` integer  NOT NULL DEFAULT 1,
+  `run_log` text  NOT NULL,
+  `run_date` TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+);
+
+create unique index idx1 on comp_status (run_nodename, run_module);
+
+CREATE TABLE `opensvc`.`comp_moduleset` (
+  `id` integer  NOT NULL AUTO_INCREMENT,
+  `moduleset` varchar(60)  NOT NULL,
+  `module` varchar(60)  NOT NULL,
+  PRIMARY KEY (`id`)
+);
+
+create unique index idx1 on comp_moduleset (moduleset, module);
+
+CREATE TABLE `comp_rules` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `rule_table` varchar(30) NOT NULL,
+  `rule_field` varchar(30) NOT NULL,
+  `rule_value` varchar(60) NOT NULL,
+  `rule_var_name` varchar(60) NOT NULL,
+  `rule_updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `rule_var_value` varchar(100) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx1` (`rule_table`,`rule_field`,`rule_value`)
+);
+
+create unique index idx1 on comp_rules (rule_table, rule_field, rule_value, rule_var_name);
+
+CREATE TABLE `opensvc`.`comp_node_ruleset` (
+  `id` integer  NOT NULL AUTO_INCREMENT,
+  `ruleset_node` varchar(60)  NOT NULL,
+  `ruleset_name` varchar(60)  NOT NULL,
+  `ruleset_updated` timestamp  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+);
+
+create unique index idx1 on comp_node_ruleset (ruleset_node,ruleset_name);
+
+CREATE TABLE `opensvc`.`comp_node_moduleset` (
+  `id` integer  NOT NULL AUTO_INCREMENT,
+  `moduleset_node` varchar(60)  NOT NULL,
+  `moduleset_name` varchar(60)  NOT NULL,
+  `moduleset_updated` timestamp  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+);
+
+create unique index idx1 on comp_node_moduleset (moduleset_node,moduleset_name);
+
+ALTER TABLE `opensvc`.`comp_rules` ADD COLUMN `rule_name` varchar(60)  NOT NULL AFTER `rule_var_value`,
+ ADD COLUMN `rule_op` varchar(4)  NOT NULL AFTER `rule_name`;
+
+ALTER TABLE `opensvc`.`comp_rules` ADD COLUMN `rule_log_op` varchar(3)  NOT NULL AFTER `rule_op`;
+
+ALTER TABLE `opensvc`.`comp_rules` MODIFY COLUMN `rule_log_op` VARCHAR(3)  CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT "AND";
+
+ALTER TABLE `opensvc`.`comp_log` ADD COLUMN `run_ruleset` char(100)  NOT NULL AFTER `run_date`;
+
+ALTER TABLE `opensvc`.`comp_status` ADD COLUMN `run_ruleset` char(100)  NOT NULL AFTER `run_date`;
