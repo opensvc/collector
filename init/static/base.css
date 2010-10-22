@@ -1064,3 +1064,7 @@ div.sym_detail_visible {
 .numeric {
     text-align:right;
 }
+
+.tableo table {
+    width: 100%;
+}

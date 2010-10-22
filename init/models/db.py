@@ -940,3 +940,11 @@ db.define_table('comp_node_moduleset',
     Field('moduleset_updated','string'),
     migrate=False)
 
+db.define_table('v_comp_mod_status',
+    Field('mod_name','string'),
+    Field('mod_total','integer'),
+    Field('mod_ok','integer'),
+    Field('mod_percent','integer'),
+    Field('mod_nodes','string'),
+    migrate=False)
+
