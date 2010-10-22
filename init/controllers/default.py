@@ -1315,9 +1315,21 @@ def comp_format_filter(q):
     s = s.replace('nodes.id>0 AND ','')
     return s
 
+def comp_get_node_ruleset(nodename):
+    q = db.v_nodes.nodename == nodename
+    rows = db(q).select()
+    if len(rows) != 1:
+        return {}
+    ruleset = {'name': 'osvc_node', 
+               'filter': str(q),
+               'vars': []}
+    for f in db.nodes.fields:
+        ruleset['vars'].append(('nodes.'+f, rows[0][f]))
+    return {'osvc_node':ruleset}
+
 @service.xmlrpc
 def comp_get_ruleset(nodename):
-    ruleset = {}
+    ruleset = comp_get_node_ruleset(nodename)
     q = db.nodes.nodename == nodename
     rows = db(db.comp_rules.id>0).select(orderby=db.comp_rules.rule_name)
     last_index = len(rows)-1
