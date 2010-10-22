@@ -1,301 +1,3 @@
-class table(object):
-    def __init__(self, id=None, func=None, innerhtml=None):
-        if innerhtml is None:
-            innerhtml=id
-        self.id = id
-        self.innerhtml = innerhtml
-        self.id_prefix = innerhtml
-        self.func = func
-        self.line_count = 0
-        self.id_perpage = '_'.join((self.id_prefix, 'perpage'))
-        self.id_page = '_'.join((self.id_prefix, 'page'))
-        self.cellclasses = {'cell1': 'cell2', 'cell2': 'cell1'}
-        self.cellclass = 'cell2'
-
-        # to be set by children
-        self.additional_filters = []
-        self.cols = []
-        self.colprops = {}
-
-        # to be set be instanciers
-        self.filterable = True
-        self.pageable = True
-        self.exportable = True
-        self.colored_lines = True
-
-        if self.pageable:
-            if self.id_perpage in request.vars:
-                self.perpage = int(request.vars[self.id_perpage])
-            else:
-                self.perpage = 20
-
-            if self.id_page in request.vars:
-                self.page = int(request.vars[self.id_page])
-            else:
-                self.page = 1
-            if self.page == 0:
-                self.perpage = 0
-                self.pager_start = 0
-                self.pager_end = 0
-            else:
-                self.pager_start = (self.page-1) * self.perpage
-                self.pager_end = self.pager_start + self.perpage - 1
-        else:
-            self.perpage = 0
-            self.page = 0
-            self.pager_start = 0
-            self.pager_end = 0
-
-    def set_pager_max(self, n):
-        self.totalrecs = n
-
-    def pager(self):
-        start = 0
-        end = 0
-
-        if self.perpage <= 0:
-            return SPAN()
-        totalpages = self.totalrecs / self.perpage
-        if self.totalrecs % self.perpage > 0:
-            totalpages = totalpages + 1
-
-        # out of range conditions
-        page = self.page
-        if page <= 0:
-            page = 1
-        if page > totalpages:
-            page = 1
-        start = (page-1) * self.perpage
-        end = start + self.perpage
-        if end > self.totalrecs:
-            end = self.totalrecs
-
-        num_pages = 10
-        def page_range():
-            s = page - num_pages / 2
-            e = page + num_pages / 2
-            if s <= 0:
-                e = e - s
-                s = 1
-            if e > totalpages:
-                s = s - (e - totalpages)
-                e = totalpages
-            if s <= 0:
-                s = 1
-            return range(s, e+1)
-
-        pr = page_range()
-        pager = []
-        if page != 1:
-            pager.append(A(T('<< '), _onclick='getElementById("%(page_i)s").value=%(page)s;'%dict(page_i=self.id_page, page=page-1)+self.__ajax()))
-        for p in pr:
-            if p == page:
-                pager.append(A(str(p)+' ', _class="current_page"))
-            else:
-                pager.append(A(
-                               str(p)+' ',
-                               _onclick='getElementById("%(page_i)s").value=%(page)s;'%dict(page_i=self.id_page, page=p)+self.__ajax()
-                              ))
-        if page != totalpages:
-            pager.append(A(T('>> '), _onclick='getElementById("%(page_i)s").value=%(page)s;'%dict(page_i=self.id_page, page=page+1)+self.__ajax()))
-        pager.append(A(T('all'), _onclick='getElementById("%(page_i)s").value=%(page)s;'%dict(page_i=self.id_page, page=0)+self.__ajax()))
-
-        # paging toolbar
-        if self.totalrecs == 0:
-            pager.append(P("No records found matching filters", _style='text-align:center'))
-        else:
-            info=T("Showing %(first)d to %(last)d out of %(total)d records",
-                   dict(first=start+1, last=end, total=self.totalrecs))
-            nav = P(pager, _style='text-align:center', _title=info)
-
-        return nav
-
-    def rotate_colors(self):
-        if not self.colored_lines:
-            return
-        self.cellclass = self.cellclasses[self.cellclass]
-
-    def filter_key(self, f):
-        return '_'.join((self.id_prefix, 'filter', f))
-
-    def filter_parse(self, f):
-        key = self.filter_key(f)
-        if key in request.vars:
-            return request.vars[key]
-        return ""
-
-    def ajax_inputs(self):
-        l = []
-        if self.pageable:
-            l.append(self.id_perpage)
-            l.append(self.id_page)
-        if self.filterable:
-            l += map(self.filter_key, self.cols+self.additional_filters)
-        return l
-
-    def table_header(self):
-        titles = map(lambda x: self.colprops[x]['title'], self.cols)
-        return TR(map(TH, titles), _class='sym_headers')
-
-    def table_line(self, o):
-        cells = []
-        for c in self.cols:
-            cells.append(TD(self.colprops[c]['str'](o),
-                            _class=self.colprops[c]['_class']))
-        return TR(cells, _class=self.cellclass)
-
-    def table_lines(self):
-        lines = []
-        line_count = 0
-        for i in self.object_list:
-            if isinstance(i, str) or isinstance(i, unicode) or isinstance(i, int):
-                o = self.object_list[i]
-            else:
-                o = i
-            self.change_line_data(o)
-            if hasattr(self, 'filter'):
-                skip = False
-                for c in self.cols+self.additional_filters:
-                    if not _filter(self.filter_parse(c), self.colprops[c]['get'](o)):
-                        skip = True
-                        break
-                if skip:
-                    continue
-            line_count += 1
-            if not self.pageable or self.perpage == 0 or line_count <= self.perpage:
-                self.rotate_colors()
-                lines.append(self.table_line(o))
-                if hasattr(self, 'format_extra_line'):
-                    lines.append(TR(
-                                   TD(
-                                     self.format_extra_line(o),
-                                     _colspan=len(self.cols),
-                                   ),
-                                   _class=self.cellclass,
-                                 ))
-        return lines, line_count
-
-    def table_inputs(self):
-        inputs = []
-        for c in self.cols:
-            inputs.append(INPUT(
-                    _id=self.filter_key(c),
-                    _value=self.filter_parse(c),
-                    _size=self.colprops[c]['size'],
-                    _onKeyPress=self._ajax()
-                  ))
-        return inputs
-
-    def table_additional_inputs(self):
-        inputs = []
-        for c in self.additional_filters:
-            inputs.append(INPUT(
-                    _id=self.filter_key(c),
-                    _value=self.filter_parse(c),
-                    _size=self.colprops[c]['size'],
-                    _onKeyPress=self._ajax()
-                  ))
-        return inputs
-
-    def __ajax(self):
-        return """ajax("%(url)s",
-                       ["tableid", %(inputs)s],
-                       "%(innerhtml)s");
-                  getElementById("%(innerhtml)s").innerHTML='%(spinner)s';
-                """%dict(url=URL(r=request,f=self.func),
-                         innerhtml=self.innerhtml,
-                         inputs = ','.join(map(repr, self.ajax_inputs())),
-                         spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
-                        )
-
-    def _ajax(self):
-        return """if (is_enter(event)) {
-                    getElementById("tableid").value="%(id)s";
-                    %(ajax)s
-                  };
-                  """%dict(ajax=self.__ajax(),
-                           id=self.id)
-
-    def table(self):
-        lines, line_count = self.table_lines()
-
-        if self.filterable:
-            inputs = TR(map(TD, self.table_inputs()), _class='sym_inputs')
-        else:
-            inputs = SPAN()
-
-        if self.filterable and len(self.additional_filters) > 0:
-            additional_filters = DIV(
-              B(T('Additional filters')),
-              TABLE(
-                TR(map(TH, self.additional_filters)),
-                TR(map(TD, self.table_additional_inputs())),
-              ),
-              _class='sym_highlight',
-              _style='margin-bottom:6px',
-            )
-        else:
-            additional_filters = SPAN()
-
-        if self.exportable:
-            export = DIV(
-                  A(
-                    T('Export to csv'),
-                    _href=URL(r=request,f=self.func+'_csv', vars=request.vars),
-                  ),
-                  _class='sym_float',
-                )
-        else:
-            export = SPAN()
-
-        d = DIV(
-              additional_filters,
-              TABLE(
-                self.table_header(),
-                inputs,
-                lines,
-              ),
-              DIV(
-                INPUT(
-                  _id=self.id_perpage,
-                  _type='hidden',
-                  _value=self.perpage,
-                ),
-                INPUT(
-                  _id=self.id_page,
-                  _type='hidden',
-                  _value=self.page,
-                ),
-                self.pager(),
-                export,
-              ),
-              DIV('', _class='spacer'),
-              _class='tableo',
-            )
-        return d
-
-    def change_line_data(self, o):
-        pass
-
-    def _csv(self):
-        lines = [';'.join(self.cols)]
-        for i in self.object_list:
-            if isinstance(i, str) or isinstance(i, unicode) or isinstance(i, int):
-                o = self.object_list[i]
-            else:
-                o = i
-            inf = []
-            for c in self.cols:
-                inf.append(repr(str(self.colprops[c]['str'](o))))
-            lines.append(';'.join(inf))
-        return '\n'.join(lines)
-
-    def csv(self):
-        import gluon.contenttype
-        response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
-        return self._csv()
-
-
 class table_comp_mod_status(table):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -308,32 +10,38 @@ class table_comp_mod_status(table):
                      size=12, title='module', _class='',
                      get=lambda x: x['mod_name'],
                      str=lambda x: x['mod_name'],
+                     img='check16',
                     ),
             'mod_total': dict(
                      size=3, title='total', _class='',
                      get=lambda x: x['mod_total'],
                      str=lambda x: x['mod_total'],
+                     img='check16',
                     ),
             'mod_ok': dict(
                      size=3, title='ok', _class='',
                      get=lambda x: x['mod_ok'],
                      str=lambda x: x['mod_ok'],
+                     img='check16',
                     ),
             'mod_percent': dict(
                      size=3, title='percent', _class='',
                      get=lambda x: x['mod_percent'],
                      str=lambda x: x['mod_percent'],
+                     img='check16',
                     ),
             'mod_nodes': dict(
                      size=10, title='mod_nodes', _class='',
                      get=lambda x: x['mod_nodes'],
                      str=lambda x: x['mod_nodes'].replace(',',', '),
+                     img='node16',
                     ),
         }
 
 @auth.requires_login()
 def ajax_comp_mod_status():
     t = table_comp_mod_status('ajax_comp_mod_status', 'ajax_comp_mod_status')
+    t.upc_table = 'comp_mod_status'
 
     o = ~db.v_comp_mod_status.mod_percent
     q = db.v_comp_mod_status.id > 0
@@ -365,31 +73,37 @@ class table_comp_status(table):
                      size=12, title='date', _class='',
                      get=lambda x: x['run_date'],
                      str=lambda x: x['run_date'],
+                     img='check16',
                     ),
             'run_nodename': dict(
                      size=10, title='nodename', _class='',
                      get=lambda x: x['run_nodename'],
                      str=lambda x: x['run_nodename'],
+                     img='node16',
                     ),
             'run_module': dict(
                      size=6, title='module', _class='',
                      get=lambda x: x['run_module'],
                      str=lambda x: x['run_module'],
+                     img='check16',
                     ),
             'run_status': dict(
                      size=1, title='status', _class='',
                      get=lambda x: x['run_status'],
                      str=lambda x: self.format_run_status(x),
+                     img='check16',
                     ),
             'run_log': dict(
                      size=16, title='log', _class='',
                      get=lambda x: x['run_log'],
                      str=lambda x: PRE(x['run_log']),
+                     img='check16',
                     ),
             'run_ruleset': dict(
                      size=6, title='ruleset', _class='',
                      get=lambda x: x['run_ruleset'],
                      str=lambda x: x['run_ruleset'].replace(',',', '),
+                     img='check16',
                     ),
         }
         self.img_h = {0: 'check16.png',
@@ -409,6 +123,7 @@ class table_comp_status(table):
 @auth.requires_login()
 def ajax_comp_status():
     t = table_comp_status('ajax_comp_status', 'ajax_comp_status')
+    t.upc_table = 'comp_status'
 
     o = ~db.comp_status.run_nodename
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
@@ -440,6 +155,7 @@ class table_comp_log(table_comp_status):
 @auth.requires_login()
 def ajax_comp_log():
     t = table_comp_log('ajax_comp_log', 'ajax_comp_log')
+    t.upc_table = 'comp_log'
 
     o = ~db.comp_log.run_date
     q = _where(None, 'comp_log', domain_perms(), 'run_nodename')

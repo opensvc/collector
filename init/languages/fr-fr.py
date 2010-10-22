@@ -575,6 +575,7 @@
 'project deleted. %(num)d services DR configurations dropped.': 'projet supprimé. %(num)d configurations de PRA de services perdues.',
 'properties': 'propriétés',
 'rack': 'armoire',
+'reactivate paging': 'reactivate paging',
 'record': 'enregistrement',
 'record does not exist': "l'archive n'existe pas",
 'record id': "id d'enregistrement",

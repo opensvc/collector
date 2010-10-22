@@ -979,12 +979,6 @@ div.svcstatus td {
 }
 
 .sym_headers {
-    border-top-left-radius:8px;
-    border-top-right-radius:8px;
-   -moz-border-radius-topleft:8px;
-   -moz-border-radius-topright:8px;
-   -webkit-border-top-left-radius:8px;
-   -webkit-border-top-right-radius:8px;
     background-color: #13434d;
     color: white;
     padding: 0.2em;
