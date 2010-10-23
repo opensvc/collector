@@ -84,7 +84,7 @@ class table(object):
                   INPUT(
                     _type='checkbox',
                     _name=id_col,
-                    _onclick="""toggleVis(this.checked, "%(col_name)s");
+                    _onclick="""check_toggle_vis(this.checked, "%(col_name)s");
                                 getElementById("%(id_set_col_table)s").value="%(table)s";
                                 getElementById("%(id_set_col_field)s").value="%(field)s";
                                 getElementById("%(id_set_col_value)s").value=this.checked;
@@ -104,7 +104,7 @@ class table(object):
                     _style='vertical-align:text-bottom',
                   ),
                   SPAN(
-                    self.colprops[a]['title'],
+                    T(self.colprops[a]['title']),
                     _style="""background-image:url(%s);
                               background-repeat:no-repeat;
                               padding-left:18px;
@@ -120,11 +120,21 @@ class table(object):
                 """
                 var showMode = 'table-cell';
                 if (document.all) showMode='block';
-                function toggleVis(checked, col){
+                function check_toggle_vis(checked, col){
                     cells = document.getElementsByName(col);
                     mode = checked ? showMode : 'none';
                     for(j = 0; j < cells.length; j++) {
                         cells[j].style.display = mode;
+                    }
+                }
+                function click_toggle_vis(name, mode){
+                    cells = document.getElementsByName(name);
+                    for(j = 0; j < cells.length; j++) {
+                        if (cells[j].style.display == 'none' || cells[j].style.display == "") {
+                            cells[j].style.display = mode;
+                        } else {
+                            cells[j].style.display = 'none';
+                        }
                     }
                 }
                 """
@@ -148,7 +158,20 @@ class table(object):
               SPAN(map(checkbox, self.cols)),
               _style='-moz-column-width:13em;-webkit-column-width:13em;column-width:13em',
             )
-        return a
+        d = DIV(
+              A(
+                'Configure columns',
+                _onclick="click_toggle_vis('column_selector', 'block')",
+              ),
+              DIV(
+                a,
+                _style='display:none',
+                _class='white_float',
+                _name='column_selector',
+              ),
+              _class='floatw',
+            )
+        return d
 
     def set_pager_max(self, n):
         self.totalrecs = n
@@ -171,14 +194,14 @@ class table(object):
         end = 0
 
         if self.totalrecs == 0:
-            return P("No records found matching filters", _style='text-align:center')
+            return DIV("No records found matching filters", _class='floatw')
         if self.perpage <= 0:
-            return P(
+            return DIV(
                      A(
-                       T('reactivate paging'),
+                       T('Enable paging'),
                        _onclick=set_perpage_js(20)+set_page_js(1),
                      ),
-                     _style='text-align:center',
+                     _class='floatw',
                    )
         totalpages = self.totalrecs / self.perpage
         if self.totalrecs % self.perpage > 0:
@@ -225,7 +248,7 @@ class table(object):
         # paging toolbar
         info=T("Showing %(first)d to %(last)d out of %(total)d records",
                dict(first=start+1, last=end, total=self.totalrecs))
-        nav = P(pager, _style='text-align:center', _title=info)
+        nav = DIV(pager, _class='floatw', _title=info)
 
         return nav
 
@@ -242,6 +265,9 @@ class table(object):
 
     def filter_key(self, f):
         return '_'.join((self.id_prefix, 'filter', f))
+
+    def filter_div_key(self, f):
+        return '_'.join((self.id_prefix, 'filter_div', f))
 
     def filter_parse(self, f):
         key = self.filter_key(f)
@@ -261,10 +287,10 @@ class table(object):
     def table_header(self):
         cells = []
         for c in self.cols:
-            cells.append(TH(self.colprops[c]['title'],
+            cells.append(TH(T(self.colprops[c]['title']),
                             _style=self.col_hide(c),
                             _name=self.col_key(c)))
-        return TR(cells, _class='sym_headers')
+        return TR(cells, _class='tableo_header')
 
     def table_line(self, o):
         cells = []
@@ -312,17 +338,42 @@ v=self.colprops[c]['get'](o))+self.__ajax(),
     def table_inputs(self):
         inputs = []
         for c in self.cols:
+            if len(self.filter_parse(c)) > 0:
+                clear = IMG(
+                          _src=URL(r=request,c='static',f='clear16.png'),
+                          _onclick="getElementById('%s').value='';"%self.filter_key(c)+self.__ajax(),
+                          _style="margin-right:4px",
+                        )
+            else:
+                clear = SPAN()
             inputs.append(TD(
-                            INPUT(
-                              _id=self.filter_key(c),
-                              _value=self.filter_parse(c),
-                              _size=self.colprops[c]['size'],
-                              _onKeyPress=self._ajax()
+                            SPAN(
+                              IMG(
+                                _src=URL(r=request,c='static',f='filter16.png'),
+                                _onclick="""
+                                  click_toggle_vis('%(div)s','block');
+                                  getElementById('%(input)s').focus();
+                                """%dict(div=self.filter_div_key(c),
+                                         input=self.filter_key(c))
+                              ),
+                              clear,
+                              self.filter_parse(c),
+                              _style="vertical-align:top",
+                            ),
+                            DIV(
+                              INPUT(
+                                _id=self.filter_key(c),
+                                _value=self.filter_parse(c),
+                                _onKeyPress=self._ajax()
+                              ),
+                              _name=self.filter_div_key(c),
+                              _class='white_float',
+                              _style='display:none',
                             ),
                             _name=self.col_key(c),
                             _style=self.col_hide(c),
                           ))
-        return TR(inputs, _class='sym_inputs')
+        return TR(inputs, _class='sym_headers')
 
     def table_additional_inputs(self):
         inputs = []
@@ -330,7 +381,6 @@ v=self.colprops[c]['get'](o))+self.__ajax(),
             inputs.append(INPUT(
                     _id=self.filter_key(c),
                     _value=self.filter_parse(c),
-                    _size=self.colprops[c]['size'],
                     _onKeyPress=self._ajax()
                   ))
         return inputs
@@ -382,13 +432,19 @@ v=self.colprops[c]['get'](o))+self.__ajax(),
                     T('Export to csv'),
                     _href=URL(r=request,f=self.func+'_csv', vars=request.vars),
                   ),
-                  _class='sym_float',
+                  _class='floatw',
                 )
         else:
             export = SPAN()
 
         d = DIV(
-              self.columns_selector(),
+              DIV(
+                self.pager(),
+                export,
+                self.columns_selector(),
+                DIV('', _class='spacer'),
+                _class='tableo_header',
+              ),
               additional_filters,
               TABLE(
                 self.table_header(),
@@ -406,8 +462,6 @@ v=self.colprops[c]['get'](o))+self.__ajax(),
                   _type='hidden',
                   _value=self.page,
                 ),
-                self.pager(),
-                export,
               ),
               DIV('', _class='spacer'),
               _class='tableo',

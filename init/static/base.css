@@ -1062,3 +1062,56 @@ div.sym_detail_visible {
 .tableo table {
     width: 100%;
 }
+
+.tableo_header {
+    background-color: #13434d;
+    color: white;
+    padding: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.white_float {
+    border-radius:8px;
+   -moz-border-radius:8px;
+   -webkit-border-radius:8px;
+    border-bottom-color: black;
+    border-bottom-style: solid;
+    border-bottom-width: 2px;
+    border-left-color: #AAA;
+    border-left-style: solid;
+    border-left-width: 2px;
+    border-right-color: black;
+    border-right-style: solid;
+    border-right-width: 2px;
+    border-top-color: #AAA;
+    border-top-style: solid;
+    border-top-width: 2px;
+    color: black;
+    cursor: default;
+    display: block;
+    margin: 0px;
+    padding: 8px;
+    position: absolute;
+    vertical-align: baseline;
+    text-align: left;
+    z-index: 502;
+    background-color: white;
+}
+
+.floatw {
+    float: right;
+    margin-left:0.5em;
+    margin-right:0.5em;
+}
+ 
+.floatw a {
+    color: white;
+}
+
+.floatw .current_page {
+    color: #ff9999;
+    font-weight: bold;
+}
+
+
