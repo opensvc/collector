@@ -104,6 +104,30 @@ class HtmlTable(object):
         else:
             return "display:none"
 
+    def persistent_filters(self):
+        id_session_div = '_'.join((self.id_prefix, 'session_div'))
+        s = SPAN(
+              A(
+                T('Persistent filters'),
+                _onclick="""
+                  click_toggle_vis('session_filters', 'block');
+                  getElementById("%(div)s").innerHTML='%(spinner)s';
+                  ajax('%(url)s', [], '%(div)s');
+                """%dict(div=id_session_div,
+                         spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
+                         url=URL(r=request,c='ajax', f='ajax_db_filters', args=[id_session_div]),
+                        ),
+              ),
+              DIV(
+                _style='display:none',
+                _class='white_float',
+                _name='session_filters',
+                _id=id_session_div,
+              ),
+              _class='floatw',
+            )
+        return s
+
     def columns_selector(self):
         id_set_col_table = '_'.join((self.id_prefix, 'set_col_table'))
         id_set_col_field = '_'.join((self.id_prefix, 'set_col_field'))
@@ -505,6 +529,7 @@ v=self.colprops[c].get(o))+self.ajax_submit(),
                 self.pager(),
                 export,
                 self.columns_selector(),
+                self.persistent_filters(),
                 DIV('', _class='spacer'),
                 _class='tableo_header',
               ),

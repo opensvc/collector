@@ -371,6 +371,7 @@ def ajax_comp_mod_status():
     q = db.v_comp_mod_status.id > 0
     for f in t.cols:
         q &= _where(None, 'v_comp_mod_status', t.filter_parse(f), f)
+    q = apply_db_filters(q, 'v_nodes')
 
     n = db(q).count()
     t.set_pager_max(n)
@@ -452,6 +453,7 @@ def ajax_comp_log_col_values():
     q &= db.comp_log.run_nodename == db.v_nodes.nodename
     for f in t.cols:
         q &= _where(None, t.colprops[f].table, t.filter_parse_glob(f), f)
+    q = apply_db_filters(q, 'v_nodes')
     t.object_list = db(q).select(orderby=o, groupby=o)
     return t.col_values_cloud(col)
 
@@ -464,6 +466,7 @@ def ajax_comp_status_col_values():
     q &= db.comp_status.run_nodename == db.v_nodes.nodename
     for f in t.cols:
         q &= _where(None, t.colprops[f].table, t.filter_parse_glob(f), f)
+    q = apply_db_filters(q, 'v_nodes')
     t.object_list = db(q).select(orderby=o, groupby=o)
     return t.col_values_cloud(col)
 
@@ -477,6 +480,7 @@ def ajax_comp_status():
     q &= db.comp_status.run_nodename == db.v_nodes.nodename
     for f in t.cols:
         q &= _where(None, t.colprops[f].table, t.filter_parse(f), f)
+    q = apply_db_filters(q, 'v_nodes')
 
     n = db(q).count()
     t.set_pager_max(n)
@@ -514,6 +518,7 @@ def ajax_comp_log():
     q &= db.comp_log.run_nodename == db.v_nodes.nodename
     for f in t.cols:
         q &= _where(None, 'comp_log', t.filter_parse(f), f)
+    q = apply_db_filters(q, 'v_nodes')
 
     n = db(q).count()
     t.set_pager_max(n)
