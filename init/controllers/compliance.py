@@ -1,39 +1,363 @@
-class table_comp_mod_status(table):
+#
+# custom column formatting
+#
+class col_run_log(HtmlTableColumn):
+    def html(self, o):
+        return PRE(self.get(o))
+
+class col_run_ruleset(HtmlTableColumn):
+    def html(self, o):
+        return self.get(o).replace(',',', ')
+
+class col_mod_nodes(HtmlTableColumn):
+    def html(self, o):
+        return self.get(o).replace(',',', ')
+
+class col_run_status(HtmlTableColumn):
+    img_h = {0: 'check16.png',
+             1: 'nok.png'}
+    def html(self, o):
+        val = self.get(o)
+        if val in self.img_h:
+            r = IMG(
+                  _src=URL(r=request,c='static',f=self.img_h[val]),
+                  _title=val,
+                )
+        else:
+            r = val
+        return r
+
+v_nodes_cols = [
+     'loc_country',
+     'loc_zip',
+     'loc_city',
+     'loc_addr',
+     'loc_building',
+     'loc_floor',
+     'loc_room',
+     'loc_rack',
+     'os_name',
+     'os_release',
+     'os_vendor',
+     'os_arch',
+     'os_kernel',
+     'cpu_dies',
+     'cpu_cores',
+     'cpu_model',
+     'cpu_freq',
+     'mem_banks',
+     'mem_slots',
+     'mem_bytes',
+     'team_responsible',
+     'serial',
+     'model',
+     'role',
+     'environnement',
+     'warranty_end',
+     'status',
+     'type',
+     'power_supply_nb',
+     'power_cabinet1',
+     'power_cabinet2',
+     'power_protect',
+     'power_protect_breaker',
+     'power_breaker1',
+     'power_breaker2'
+]
+
+v_nodes_colprops = {
+            'loc_country': HtmlTableColumn(
+                     title = 'Country',
+                     field='loc_country',
+                     display = False,
+                     img = 'loc',
+                     table = 'v_nodes',
+                    ),
+            'loc_zip': HtmlTableColumn(
+                     title = 'ZIP',
+                     field='loc_zip',
+                     display = False,
+                     img = 'loc',
+                     table = 'v_nodes',
+                    ),
+            'loc_city': HtmlTableColumn(
+                     title = 'City',
+                     field='loc_city',
+                     display = False,
+                     img = 'loc',
+                     table = 'v_nodes',
+                    ),
+            'loc_addr': HtmlTableColumn(
+                     title = 'Address',
+                     field='loc_addr',
+                     display = False,
+                     img = 'loc',
+                     table = 'v_nodes',
+                    ),
+            'loc_building': HtmlTableColumn(
+                     title = 'Building',
+                     field='loc_building',
+                     display = False,
+                     img = 'loc',
+                     table = 'v_nodes',
+                    ),
+
+            'loc_floor': HtmlTableColumn(
+                     title = 'Floor',
+                     field='loc_floor',
+                     display = False,
+                     img = 'loc',
+                     table = 'v_nodes',
+                    ),
+            'loc_room': HtmlTableColumn(
+                     title = 'Room',
+                     field='loc_room',
+                     display = False,
+                     img = 'loc',
+                     table = 'v_nodes',
+                    ),
+            'loc_rack': HtmlTableColumn(
+                     title = 'Rack',
+                     field='loc_rack',
+                     display = False,
+                     img = 'loc',
+                     table = 'v_nodes',
+                    ),
+            'os_name': HtmlTableColumn(
+                     title = 'OS name',
+                     field='os_name',
+                     display = False,
+                     img = 'os16',
+                     table = 'v_nodes',
+                    ),
+            'os_release': HtmlTableColumn(
+                     title = 'OS release',
+                     field='os_release',
+                     display = False,
+                     img = 'os16',
+                     table = 'v_nodes',
+                    ),
+            'os_vendor': HtmlTableColumn(
+                     title = 'OS vendor',
+                     field='os_vendor',
+                     display = False,
+                     img = 'os16',
+                     table = 'v_nodes',
+                    ),
+            'os_arch': HtmlTableColumn(
+                     title = 'OS arch',
+                     field='os_arch',
+                     display = False,
+                     img = 'os16',
+                     table = 'v_nodes',
+                    ),
+            'os_kernel': HtmlTableColumn(
+                     title = 'OS kernel',
+                     field='os_kernel',
+                     display = False,
+                     img = 'os16',
+                     table = 'v_nodes',
+                    ),
+            'cpu_dies': HtmlTableColumn(
+                     title = 'CPU dies',
+                     field='cpu_dies',
+                     display = False,
+                     img = 'cpu16',
+                     table = 'v_nodes',
+                    ),
+            'cpu_cores': HtmlTableColumn(
+                     title = 'CPU cores',
+                     field='cpu_cores',
+                     display = False,
+                     img = 'cpu16',
+                     table = 'v_nodes',
+                    ),
+            'cpu_model': HtmlTableColumn(
+                     title = 'CPU model',
+                     field='cpu_model',
+                     display = False,
+                     img = 'cpu16',
+                     table = 'v_nodes',
+                    ),
+            'cpu_freq': HtmlTableColumn(
+                     title = 'CPU freq',
+                     field='cpu_freq',
+                     display = False,
+                     img = 'cpu16',
+                     table = 'v_nodes',
+                    ),
+            'mem_banks': HtmlTableColumn(
+                     title = 'Memory banks',
+                     field='mem_banks',
+                     display = False,
+                     img = 'mem16',
+                     table = 'v_nodes',
+                    ),
+            'mem_slots': HtmlTableColumn(
+                     title = 'Memory slots',
+                     field='mem_slots',
+                     display = False,
+                     img = 'mem16',
+                     table = 'v_nodes',
+                    ),
+            'mem_bytes': HtmlTableColumn(
+                     title = 'Memory',
+                     field='mem_bytes',
+                     display = False,
+                     img = 'mem16',
+                     table = 'v_nodes',
+                    ),
+            'serial': HtmlTableColumn(
+                     title = 'Serial',
+                     field='serial',
+                     display = False,
+                     img = 'node16',
+                     table = 'v_nodes',
+                    ),
+            'model': HtmlTableColumn(
+                     title = 'Model',
+                     field='model',
+                     display = False,
+                     img = 'node16',
+                     table = 'v_nodes',
+                    ),
+            'team_responsible': HtmlTableColumn(
+                     title = 'Team responsible',
+                     field='team_responsible',
+                     display = False,
+                     img = 'guy16',
+                     table = 'v_nodes',
+                    ),
+            'role': HtmlTableColumn(
+                     title = 'Role',
+                     field='role',
+                     display = False,
+                     img = 'node16',
+                     table = 'v_nodes',
+                    ),
+            'environnement': HtmlTableColumn(
+                     title = 'Env',
+                     field='environnement',
+                     display = False,
+                     img = 'node16',
+                     table = 'v_nodes',
+                    ),
+            'warranty_end': HtmlTableColumn(
+                     title = 'Warranty end',
+                     field='warranty_end',
+                     display = False,
+                     img = 'node16',
+                     table = 'v_nodes',
+                    ),
+            'status': HtmlTableColumn(
+                     title = 'Status',
+                     field='status',
+                     display = False,
+                     img = 'node16',
+                     table = 'v_nodes',
+                    ),
+            'type': HtmlTableColumn(
+                     title = 'Type',
+                     field='type',
+                     display = False,
+                     img = 'node16',
+                     table = 'v_nodes',
+                    ),
+            'power_supply_nb': HtmlTableColumn(
+                     title = 'Power supply number',
+                     field='power_supply_nb',
+                     display = False,
+                     img = 'pwr',
+                     table = 'v_nodes',
+                    ),
+            'power_cabinet1': HtmlTableColumn(
+                     title = 'Power cabinet #1',
+                     field='power_cabinet1',
+                     display = False,
+                     img = 'pwr',
+                     table = 'v_nodes',
+                    ),
+            'power_cabinet2': HtmlTableColumn(
+                     title = 'Power cabinet #2',
+                     field='power_cabinet2',
+                     display = False,
+                     img = 'pwr',
+                     table = 'v_nodes',
+                    ),
+            'power_protect': HtmlTableColumn(
+                     title = 'Power protector',
+                     field='power_protect',
+                     display = False,
+                     img = 'pwr',
+                     table = 'v_nodes',
+                    ),
+            'power_protect_breaker': HtmlTableColumn(
+                     title = 'Power protector breaker',
+                     field='power_protect_breaker',
+                     display = False,
+                     img = 'pwr',
+                     table = 'v_nodes',
+                    ),
+            'power_breaker1': HtmlTableColumn(
+                     title = 'Power breaker #1',
+                     field='power_breaker1',
+                     display = False,
+                     img = 'pwr',
+                     table = 'v_nodes',
+                    ),
+            'power_breaker2': HtmlTableColumn(
+                     title = 'Power breaker #2',
+                     field='power_breaker2',
+                     display = False,
+                     img = 'pwr',
+                     table = 'v_nodes',
+                    ),
+}
+
+class table_comp_mod_status(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
-        table.__init__(self, id, func, innerhtml)
+        HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['mod_name', 'mod_total', 'mod_ok', 'mod_percent',
                      'mod_nodes']
         self.colprops = {
-            'mod_name': dict(
-                     size=12, title='module', _class='',
-                     get=lambda x: x['mod_name'],
-                     str=lambda x: x['mod_name'],
+            'mod_name': HtmlTableColumn(
+                     title='Module',
+                     field='mod_name',
+                     #table='comp_mod_status',
+                     display=True,
                      img='check16',
                     ),
-            'mod_total': dict(
-                     size=3, title='total', _class='',
-                     get=lambda x: x['mod_total'],
-                     str=lambda x: x['mod_total'],
+            'mod_total': HtmlTableColumn(
+                     title='Total',
+                     field='mod_total',
+                     #table='comp_mod_status',
+                     display=True,
                      img='check16',
+                     _class='numeric',
                     ),
-            'mod_ok': dict(
-                     size=3, title='ok', _class='',
-                     get=lambda x: x['mod_ok'],
-                     str=lambda x: x['mod_ok'],
+            'mod_ok': HtmlTableColumn(
+                     title='Ok',
+                     field='mod_ok',
+                     #table='comp_mod_status',
+                     display=True,
                      img='check16',
+                     _class='numeric',
                     ),
-            'mod_percent': dict(
-                     size=3, title='percent', _class='',
-                     get=lambda x: x['mod_percent'],
-                     str=lambda x: x['mod_percent'],
+            'mod_percent': HtmlTableColumn(
+                     title='Percent',
+                     field='mod_percent',
+                     #table='comp_mod_status',
+                     display=True,
                      img='check16',
+                     _class='numeric',
                     ),
-            'mod_nodes': dict(
-                     size=10, title='mod_nodes', _class='',
-                     get=lambda x: x['mod_nodes'],
-                     str=lambda x: x['mod_nodes'].replace(',',', '),
+            'mod_nodes': col_mod_nodes(
+                     title='Nodes',
+                     field='mod_nodes',
+                     #table='comp_mod_status',
+                     display=True,
                      img='node16',
                     ),
         }
@@ -55,70 +379,69 @@ def ajax_comp_mod_status():
         t.object_list = db(q).select(orderby=o)
     else:
         t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
-    return t.table()
+    return t.html()
 
 @auth.requires_login()
 def comp_mod_status():
     return dict(table=DIV(ajax_comp_mod_status(), _id='ajax_comp_mod_status'))
 
-class table_comp_status(table):
+class table_comp_status(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
-        table.__init__(self, id, func, innerhtml)
-        self.cols = ['run_date', 'run_nodename', 'run_module', 'run_status',
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['run_date',
+                     'run_nodename',
+                     'run_module',
+                     'run_status',
                      'run_ruleset']
+        self.cols += v_nodes_cols
         self.colprops = {
-            'run_date': dict(
-                     size=12, title='date', _class='',
-                     get=lambda x: x['run_date'],
-                     str=lambda x: x['run_date'],
+            'run_date': HtmlTableColumn(
+                     title='Run date',
+                     field='run_date',
+                     table='comp_status',
                      img='check16',
+                     display=True,
                     ),
-            'run_nodename': dict(
-                     size=10, title='nodename', _class='',
-                     get=lambda x: x['run_nodename'],
-                     str=lambda x: x['run_nodename'],
+            'run_nodename': HtmlTableColumn(
+                     title='Node name',
+                     field='run_nodename',
+                     table='comp_status',
                      img='node16',
+                     display=True,
                     ),
-            'run_module': dict(
-                     size=6, title='module', _class='',
-                     get=lambda x: x['run_module'],
-                     str=lambda x: x['run_module'],
+            'run_module': HtmlTableColumn(
+                     title='Module',
+                     field='run_module',
+                     table='comp_status',
                      img='check16',
+                     display=True,
                     ),
-            'run_status': dict(
-                     size=1, title='status', _class='',
-                     get=lambda x: x['run_status'],
-                     str=lambda x: self.format_run_status(x),
+            'run_status': col_run_status(
+                     title='Status',
+                     field='run_status',
+                     table='comp_status',
                      img='check16',
+                     display=True,
                     ),
-            'run_log': dict(
-                     size=16, title='log', _class='',
-                     get=lambda x: x['run_log'],
-                     str=lambda x: PRE(x['run_log']),
+            'run_log': col_run_log(
+                     title='Log',
+                     field='run_log',
+                     table='comp_status',
                      img='check16',
+                     display=True,
                     ),
-            'run_ruleset': dict(
-                     size=6, title='ruleset', _class='',
-                     get=lambda x: x['run_ruleset'],
-                     str=lambda x: x['run_ruleset'].replace(',',', '),
+            'run_ruleset': col_run_ruleset(
+                     title='Rule set',
+                     field='run_ruleset',
+                     table='comp_status',
                      img='check16',
+                     display=True,
                     ),
         }
-        self.img_h = {0: 'check16.png',
-                      1: 'nok.png'}
+        self.colprops.update(v_nodes_colprops)
 
-    def format_run_status(self, x):
-        val = x['run_status']
-        if val in self.img_h:
-            r = IMG(
-                  _src=URL(r=request,c='static',f=self.img_h[val]),
-                  _title=val,
-                )
-        else:
-            r = val
-        return r
 
 @auth.requires_login()
 def ajax_comp_status():
@@ -127,8 +450,9 @@ def ajax_comp_status():
 
     o = ~db.comp_status.run_nodename
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
+    q &= db.comp_status.run_nodename == db.v_nodes.nodename
     for f in t.cols:
-        q &= _where(None, 'comp_status', t.filter_parse(f), f)
+        q &= _where(None, t.colprops[f].table, t.filter_parse(f), f)
 
     n = db(q).count()
     t.set_pager_max(n)
@@ -137,7 +461,7 @@ def ajax_comp_status():
         t.object_list = db(q).select(orderby=o)
     else:
         t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
-    return t.table()
+    return t.html()
 
 
 @auth.requires_login()
@@ -151,6 +475,10 @@ class table_comp_log(table_comp_status):
         table_comp_status.__init__(self, id, 'ajax_comp_log', innerhtml)
         self.cols = ['run_date', 'run_nodename', 'run_module', 'run_status',
                      'run_log', 'run_ruleset']
+        self.cols += v_nodes_cols
+        for c in self.colprops:
+            if 'run_' in c:
+                self.colprops[c].table = 'comp_log'
 
 @auth.requires_login()
 def ajax_comp_log():
@@ -159,6 +487,7 @@ def ajax_comp_log():
 
     o = ~db.comp_log.run_date
     q = _where(None, 'comp_log', domain_perms(), 'run_nodename')
+    q &= db.comp_log.run_nodename == db.v_nodes.nodename
     for f in t.cols:
         q &= _where(None, 'comp_log', t.filter_parse(f), f)
 
@@ -169,7 +498,7 @@ def ajax_comp_log():
         t.object_list = db(q).select(orderby=o)
     else:
         t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
-    return t.table()
+    return t.html()
 
 
 @auth.requires_login()

@@ -1,4 +1,27 @@
-class table(object):
+class Column(object):
+    def __init__(self, title, display=False, img='generic', _class=''):
+        self.title = title
+        self.display = display
+        self.img = img
+        self._class = _class
+
+class HtmlTableColumn(Column):
+    def __init__(self, title, field, table=None, display=False,
+                 img='generic', _class=''):
+        Column.__init__(self, title, display, img, _class)
+        self.table = table
+        self.field = field
+
+    def get(self, o):
+        if self.table is None:
+            return o[self.field]
+        else:
+            return o[self.table][self.field]
+
+    def html(self, o):
+        return self.get(o)
+
+class HtmlTable(object):
     def __init__(self, id=None, func=None, innerhtml=None):
         if innerhtml is None:
             innerhtml=id
@@ -48,16 +71,16 @@ class table(object):
             self.pager_end = 0
 
     def get_column_visibility(self, c):
-        if 'display' not in self.colprops[c]:
-            return True
-        return self.colprops[c]['display']
+        return self.colprops[c].display
 
     def set_column_visibility(self):
         q = db.user_prefs_columns.upc_user_id==session.auth.user.id
         q &= db.user_prefs_columns.upc_table==self.upc_table
         rows = db(q).select()
         for row in rows:
-            self.colprops[row.upc_field]['display'] = row.upc_visible
+            if row.upc_field not in self.colprops:
+                continue
+            self.colprops[row.upc_field].display = row.upc_visible
 
     def col_hide(self, c):
         id_col = self.col_checkbox_key(c)
@@ -104,12 +127,12 @@ class table(object):
                     _style='vertical-align:text-bottom',
                   ),
                   SPAN(
-                    T(self.colprops[a]['title']),
+                    T(self.colprops[a].title),
                     _style="""background-image:url(%s);
                               background-repeat:no-repeat;
                               padding-left:18px;
                               margin-left:0.2em;
-                           """%URL(r=request,c='static',f=self.colprops[a]['img']+'.png'),
+                           """%URL(r=request,c='static',f=self.colprops[a].img+'.png'),
                   ),
                   BR(),
                 )
@@ -287,7 +310,7 @@ class table(object):
     def table_header(self):
         cells = []
         for c in self.cols:
-            cells.append(TH(T(self.colprops[c]['title']),
+            cells.append(TH(T(self.colprops[c].title),
                             _style=self.col_hide(c),
                             _name=self.col_key(c)))
         return TR(cells, _class='tableo_header')
@@ -295,12 +318,12 @@ class table(object):
     def table_line(self, o):
         cells = []
         for c in self.cols:
-            cells.append(TD(self.colprops[c]['str'](o),
+            cells.append(TD(self.colprops[c].html(o),
                             _name=self.col_key(c),
                             _style=self.col_hide(c),
-                            _class=self.colprops[c]['_class'],
+                            _class=self.colprops[c]._class,
                             _ondblclick="getElementById('%(k)s').value='%(v)s';"%dict(k=self.filter_key(c),
-v=self.colprops[c]['get'](o))+self.__ajax(),
+v=self.colprops[c].get(o))+self.__ajax(),
                          ))
         return TR(cells, _class=self.cellclass)
 
@@ -316,7 +339,7 @@ v=self.colprops[c]['get'](o))+self.__ajax(),
             if hasattr(self, 'filter'):
                 skip = False
                 for c in self.cols+self.additional_filters:
-                    if not _filter(self.filter_parse(c), self.colprops[c]['get'](o)):
+                    if not _filter(self.filter_parse(c), self.colprops[c].get(o)):
                         skip = True
                         break
                 if skip:
@@ -404,7 +427,7 @@ v=self.colprops[c]['get'](o))+self.__ajax(),
                   """%dict(ajax=self.__ajax(),
                            id=self.id)
 
-    def table(self):
+    def html(self):
         self.set_column_visibility()
         lines, line_count = self.table_lines()
 
@@ -480,7 +503,7 @@ v=self.colprops[c]['get'](o))+self.__ajax(),
                 o = i
             inf = []
             for c in self.cols:
-                inf.append(repr(str(self.colprops[c]['str'](o))))
+                inf.append(repr(str(self.colprops[c].html(o))))
             lines.append(';'.join(inf))
         return '\n'.join(lines)
 

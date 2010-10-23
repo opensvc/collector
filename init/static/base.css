@@ -201,8 +201,8 @@ pre {
     font-size: 0.8em;
     font-family: monospace,
 courier;
-    padding-left: 2em;
-    padding-top: 1em;
+    padding-left: 0em;
+    padding-top: 0em;
 
     /* for status_log wrapping */
     white-space: pre-wrap; /* css-3 */
