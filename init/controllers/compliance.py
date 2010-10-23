@@ -444,6 +444,30 @@ class table_comp_status(HtmlTable):
 
 
 @auth.requires_login()
+def ajax_comp_log_col_values():
+    t = table_comp_log('ajax_comp_log', 'ajax_comp_log')
+    col = request.args[0]
+    o = db.comp_log[col]
+    q = _where(None, 'comp_log', domain_perms(), 'run_nodename')
+    q &= db.comp_log.run_nodename == db.v_nodes.nodename
+    for f in t.cols:
+        q &= _where(None, t.colprops[f].table, t.filter_parse_glob(f), f)
+    t.object_list = db(q).select(orderby=o, groupby=o)
+    return t.col_values_cloud(col)
+
+@auth.requires_login()
+def ajax_comp_status_col_values():
+    t = table_comp_status('ajax_comp_status', 'ajax_comp_status')
+    col = request.args[0]
+    o = db.comp_status[col]
+    q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
+    q &= db.comp_status.run_nodename == db.v_nodes.nodename
+    for f in t.cols:
+        q &= _where(None, t.colprops[f].table, t.filter_parse_glob(f), f)
+    t.object_list = db(q).select(orderby=o, groupby=o)
+    return t.col_values_cloud(col)
+
+@auth.requires_login()
 def ajax_comp_status():
     t = table_comp_status('ajax_comp_status', 'ajax_comp_status')
     t.upc_table = 'comp_status'

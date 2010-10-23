@@ -70,6 +70,20 @@ class HtmlTable(object):
             self.pager_start = 0
             self.pager_end = 0
 
+    def col_values_cloud(self, c):
+        l = []
+        for o in self.object_list:
+            l.append(A(
+                       self.colprops[c].get(o),
+                       _class="cloud_tag",
+                       _onclick="""
+                         getElementById('%(id)s').value='%(val)s';
+                       """%dict(id=self.filter_key(c),
+                                val=self.colprops[c].get(o),
+                               )+self.ajax_submit(),
+                    ))
+        return SPAN(l)
+
     def get_column_visibility(self, c):
         return self.colprops[c].display
 
@@ -141,6 +155,7 @@ class HtmlTable(object):
         a = DIV(
               SCRIPT(
                 """
+                var timer;
                 var showMode = 'table-cell';
                 if (document.all) showMode='block';
                 function check_toggle_vis(checked, col){
@@ -210,7 +225,7 @@ class HtmlTable(object):
             js = 'getElementById("%(id)s").value=%(page)s;'%dict(
                    id=self.id_page,
                    page=page)
-            js += self.__ajax()
+            js += self.ajax_submit()
             return js
 
         start = 0
@@ -292,11 +307,20 @@ class HtmlTable(object):
     def filter_div_key(self, f):
         return '_'.join((self.id_prefix, 'filter_div', f))
 
+    def filter_cloud_key(self, f):
+        return '_'.join((self.id_prefix, 'filter_cloud', f))
+
     def filter_parse(self, f):
         key = self.filter_key(f)
         if key in request.vars:
             return request.vars[key]
         return ""
+
+    def filter_parse_glob(self, f):
+        val = self.filter_parse(f)
+        if len(val) != 0:
+           val = '%'+val+'%'
+        return val
 
     def ajax_inputs(self):
         l = []
@@ -323,7 +347,7 @@ class HtmlTable(object):
                             _style=self.col_hide(c),
                             _class=self.colprops[c]._class,
                             _ondblclick="getElementById('%(k)s').value='%(v)s';"%dict(k=self.filter_key(c),
-v=self.colprops[c].get(o))+self.__ajax(),
+v=self.colprops[c].get(o))+self.ajax_submit(),
                          ))
         return TR(cells, _class=self.cellclass)
 
@@ -364,7 +388,7 @@ v=self.colprops[c].get(o))+self.__ajax(),
             if len(self.filter_parse(c)) > 0:
                 clear = IMG(
                           _src=URL(r=request,c='static',f='clear16.png'),
-                          _onclick="getElementById('%s').value='';"%self.filter_key(c)+self.__ajax(),
+                          _onclick="getElementById('%s').value='';"%self.filter_key(c)+self.ajax_submit(),
                           _style="margin-right:4px",
                         )
             else:
@@ -373,11 +397,15 @@ v=self.colprops[c].get(o))+self.__ajax(),
                             SPAN(
                               IMG(
                                 _src=URL(r=request,c='static',f='filter16.png'),
-                                _onclick="""
+                                _onClick="""
                                   click_toggle_vis('%(div)s','block');
                                   getElementById('%(input)s').focus();
+                                  ajax('%(url)s', [%(inputs)s], '%(cloud)s');
                                 """%dict(div=self.filter_div_key(c),
-                                         input=self.filter_key(c))
+                                         url=URL(r=request,f=self.func+'_col_values', args=[c]),
+                                         inputs=','.join(map(repr, self.ajax_inputs())),
+                                         cloud=self.filter_cloud_key(c),
+                                         input=self.filter_key(c)),
                               ),
                               clear,
                               self.filter_parse(c),
@@ -387,11 +415,23 @@ v=self.colprops[c].get(o))+self.__ajax(),
                               INPUT(
                                 _id=self.filter_key(c),
                                 _value=self.filter_parse(c),
-                                _onKeyPress=self._ajax()
+                                _onKeyPress=self.ajax_enter_submit(),
+                                _onKeyUp="""
+                                   clearTimeout(timer);
+                                   timer=setTimeout(function validate(){
+                                     ajax('%(url)s', [%(inputs)s], '%(cloud)s')
+                                   }, 800);
+                                """%dict(url=URL(r=request,f=self.func+'_col_values', args=[c]),
+                                         inputs=','.join(map(repr, self.ajax_inputs())),
+                                         cloud=self.filter_cloud_key(c)),
+                              ),
+                              BR(),
+                              SPAN(
+                                _id=self.filter_cloud_key(c),
                               ),
                               _name=self.filter_div_key(c),
                               _class='white_float',
-                              _style='display:none',
+                              _style='max-width:50%;display:none',
                             ),
                             _name=self.col_key(c),
                             _style=self.col_hide(c),
@@ -404,11 +444,11 @@ v=self.colprops[c].get(o))+self.__ajax(),
             inputs.append(INPUT(
                     _id=self.filter_key(c),
                     _value=self.filter_parse(c),
-                    _onKeyPress=self._ajax()
+                    _onKeyPress=self.ajax_enter_submit()
                   ))
         return inputs
 
-    def __ajax(self):
+    def ajax_submit(self):
         return """ajax("%(url)s",
                        ["tableid", %(inputs)s],
                        "%(innerhtml)s");
@@ -419,12 +459,12 @@ v=self.colprops[c].get(o))+self.__ajax(),
                          spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
                         )
 
-    def _ajax(self):
+    def ajax_enter_submit(self):
         return """if (is_enter(event)) {
                     getElementById("tableid").value="%(id)s";
                     %(ajax)s
                   };
-                  """%dict(ajax=self.__ajax(),
+                  """%dict(ajax=self.ajax_submit(),
                            id=self.id)
 
     def html(self):

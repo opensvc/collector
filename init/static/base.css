@@ -848,6 +848,10 @@ a.xinfo_shown span {
    -webkit-border-radius:8px;
 }
 
+.cloud_tag {
+   margin: 0.5em;
+}
+
 .cloud {
    display: none;
 }
