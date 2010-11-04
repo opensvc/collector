@@ -115,7 +115,7 @@ def ajax_new_db_filters():
              """%dict(url=URL(
                            r=request, c='ajax',
                            f='ajax_add_db_filters',
-                           args=[fil_name, div]),
+                           args=[div]),
                       div=div),
            ),
            _class='float',
@@ -182,7 +182,7 @@ def ajax_db_filters():
                                 name=f.filters.fil_name,
                                 div=div),
                      ),
-                     T(f.auth_filters.fil_value),
+                     f.auth_filters.fil_value,
                      _class='float',
                    ),
                    DIV(

@@ -222,7 +222,7 @@ class HtmlTable(object):
             )
         d = DIV(
               A(
-                'Configure columns',
+                T('Configure columns'),
                 _onclick="click_toggle_vis('column_selector', 'block')",
               ),
               DIV(
