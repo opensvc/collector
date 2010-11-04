@@ -44,7 +44,13 @@ if 'auth' in globals():
 ##########################################
 
 import datetime
-yesterday = str(datetime.datetime.today()-datetime.timedelta(days=1))
+now=datetime.datetime.today()
+yesterday = str(now-datetime.timedelta(days=1))
+sevendays = str(now-datetime.timedelta(days=7,
+                                       hours=now.hour,
+                                       minutes=now.minute,
+                                       seconds=now.second,
+                                       microseconds=now.microsecond))
 response.menu = [
     [T('dashboard'), _f == 'index',
      URL(request.application,'default','index'), []],
@@ -63,7 +69,7 @@ response.menu = [
              [T('patches'), False,
               URL(request.application,'patches','patches')],
              [T('compliance'), False,
-              URL(request.application,'compliance','comp_status')],
+              URL(request.application,'compliance','comp_status?ajax_comp_status_filter_run_date=>'+sevendays)],
              [T('storage'), False,
               URL(request.application,'sym','index')],
          ]
