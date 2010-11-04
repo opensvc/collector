@@ -1,6 +1,20 @@
 #
 # custom column formatting
 #
+def is_named_ruleset(o):
+    if o.rule_log_op == 'AND' and \
+       o.rule_op == '=' and \
+       o.rule_table == 'comp_node_ruleset' and \
+       o.rule_field == 'ruleset_name':
+        return True
+    return False
+
+class col_rule_filter(HtmlTableColumn):
+    def html(self, o):
+        if is_named_ruleset(o):
+            return SPAN()
+        return self.get(o)
+
 class col_run_log(HtmlTableColumn):
     def html(self, o):
         return PRE(self.get(o))
@@ -343,6 +357,181 @@ v_nodes_colprops = {
                      table = 'v_nodes',
                     ),
 }
+
+class table_comp_rules_vars(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['rule_name',
+                     'rule_var_name',
+                     'rule_var_value',
+                     'rule_var_updated',
+                    ]
+        self.colprops = {
+            'rule_var_updated': HtmlTableColumn(
+                     title='Updated',
+                     field='rule_var_updated',
+                     display=True,
+                     img='action16',
+                    ),
+            'rule_name': HtmlTableColumn(
+                     title='Ruleset',
+                     field='rule_name',
+                     display=True,
+                     img='action16',
+                    ),
+            'rule_var_value': HtmlTableColumn(
+                     title='Value',
+                     field='rule_var_value',
+                     display=True,
+                     img='action16',
+                    ),
+            'rule_var_name': HtmlTableColumn(
+                     title='Variable',
+                     field='rule_var_name',
+                     display=True,
+                     img='action16',
+                    ),
+        }
+        self.form_add = self.comp_rules_vars_add_sqlform()
+        self.additional_tools = self.rule_vars_add()
+
+    def rule_vars_add(self):
+        d = DIV(
+              A(
+                T("Add variable"),
+                _onclick="""
+                  click_toggle_vis('%(div)s', 'block');
+                """%dict(div='comp_rules_vars_add'),
+              ),
+              DIV(
+                self.form_add,
+                _style='display:none',
+                _class='white_float',
+                _name='comp_rules_vars_add',
+                _id='comp_rules_vars_add',
+              ),
+              _class='floatw',
+            )
+        return d
+
+    def comp_rules_vars_add_sqlform(self):
+        f = SQLFORM(
+                 db.comp_rules_vars,
+                 fields=['rule_name',
+                         'rule_var_name',
+                         'rule_var_value'],
+                 labels={'rule_name': T('Ruleset name'),
+                         'rule_var_name': T('Variable'),
+                         'rule_var_value': T('Value')},
+            )
+        return f
+
+class table_comp_rules(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['rule_name',
+                     'rule_log_op',
+                     'rule_table',
+                     'rule_field',
+                     'rule_op',
+                     'rule_value',
+                     'rule_updated',
+                    ]
+        self.colprops = {
+            'rule_table': col_rule_filter(
+                     title='Table',
+                     field='rule_table',
+                     display=True,
+                     img='filter16',
+                    ),
+            'rule_field': col_rule_filter(
+                     title='Field',
+                     field='rule_field',
+                     display=True,
+                     img='filter16',
+                    ),
+            'rule_value': col_rule_filter(
+                     title='Value',
+                     field='rule_value',
+                     display=True,
+                     img='filter16',
+                    ),
+            'rule_updated': HtmlTableColumn(
+                     title='Updated',
+                     field='rule_updated',
+                     display=True,
+                     img='action16',
+                    ),
+            'rule_name': HtmlTableColumn(
+                     title='Ruleset',
+                     field='rule_name',
+                     display=True,
+                     img='action16',
+                    ),
+            'rule_op': col_rule_filter(
+                     title='Operator',
+                     field='rule_op',
+                     display=True,
+                     img='filter16',
+                    ),
+            'rule_log_op': col_rule_filter(
+                     title='Logical operator',
+                     field='rule_log_op',
+                     display=True,
+                     img='filter16',
+                    ),
+        }
+
+@auth.requires_login()
+def ajax_comp_rules():
+    t = table_comp_rules('ajax_comp_rules', 'ajax_comp_rules')
+    t.upc_table = 'comp_rules'
+
+    o = db.comp_rules.rule_name
+    q = db.comp_rules.id > 0
+    for f in t.cols:
+        q &= _where(None, 'comp_rules', t.filter_parse(f), f)
+    #q = apply_db_filters(q, 'v_nodes')
+
+    n = db(q).count()
+    t.set_pager_max(n)
+
+    if t.pager_start == 0 and t.pager_end == 0:
+        t.object_list = db(q).select(orderby=o)
+    else:
+        t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+
+    v = table_comp_rules_vars('ajax_comp_rules_vars', 'ajax_comp_rules_vars')
+    v.upc_table = 'comp_rules_vars'
+
+    if v.form_add.accepts(request.vars):
+        response.flash = T("rule added")
+    elif v.form_add.errors:
+        response.flash = T("errors in form")
+
+    o = db.comp_rules_vars.rule_name
+    q = db.comp_rules_vars.id > 0
+    for f in v.cols:
+        q &= _where(None, 'comp_rules_vars', v.filter_parse(f), f)
+    #q = apply_db_filters(q, 'v_nodes')
+
+    n = db(q).count()
+    v.set_pager_max(n)
+
+    if v.pager_start == 0 and v.pager_end == 0:
+        v.object_list = db(q).select(orderby=o)
+    else:
+        v.object_list = db(q).select(limitby=(v.pager_start,v.pager_end), orderby=o)
+
+    return DIV(t.html(), v.html())
+
+@auth.requires_login()
+def comp_rules():
+    return dict(table=DIV(ajax_comp_rules(), _id='ajax_comp_rules'))
 
 class table_comp_mod_status(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):

@@ -47,6 +47,7 @@ class HtmlTable(object):
         self.pageable = True
         self.exportable = True
         self.colored_lines = True
+        self.additional_tools = SPAN()
 
         if self.pageable:
             if self.id_perpage in request.vars:
@@ -549,6 +550,7 @@ v=self.colprops[c].get(o))+self.ajax_submit(),
                 export,
                 self.columns_selector(),
                 self.persistent_filters(),
+                self.additional_tools,
                 DIV('', _class='spacer'),
                 _class='tableo_header',
               ),
