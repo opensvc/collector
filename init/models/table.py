@@ -35,6 +35,7 @@ class HtmlTable(object):
         self.cellclasses = {'cell1': 'cell2', 'cell2': 'cell1'}
         self.cellclass = 'cell2'
         self.upc_table = ''
+        self.last = None
 
         # to be set by children
         self.additional_filters = []
@@ -48,6 +49,7 @@ class HtmlTable(object):
         self.exportable = True
         self.colored_lines = True
         self.additional_tools = SPAN()
+        self.span = None
 
         if self.pageable:
             if self.id_perpage in request.vars:
@@ -386,7 +388,14 @@ class HtmlTable(object):
     def table_line(self, o):
         cells = []
         for c in self.cols:
-            cells.append(TD(self.colprops[c].html(o),
+            if self.span is not None and \
+               self.last is not None and \
+               o[self.span] == self.last[self.span] and \
+               self.colprops[c].get(o) == self.colprops[c].get(self.last):
+                content = '"'
+            else:
+                content = self.colprops[c].html(o)
+            cells.append(TD(content,
                             _name=self.col_key(c),
                             _style=self.col_hide(c),
                             _class=self.colprops[c]._class,
@@ -414,7 +423,10 @@ v=self.colprops[c].get(o))+self.ajax_submit(),
                     continue
             line_count += 1
             if not self.pageable or self.perpage == 0 or line_count <= self.perpage:
-                self.rotate_colors()
+                if self.last is None or \
+                   self.span is None or \
+                   o[self.span] != self.last[self.span]:
+                    self.rotate_colors()
                 lines.append(self.table_line(o))
                 if hasattr(self, 'format_extra_line'):
                     lines.append(TR(
@@ -424,6 +436,7 @@ v=self.colprops[c].get(o))+self.ajax_submit(),
                                    ),
                                    _class=self.cellclass,
                                  ))
+                self.last = o
         return lines, line_count
 
     def table_inputs(self):
@@ -556,9 +569,8 @@ v=self.colprops[c].get(o))+self.ajax_submit(),
               ),
               additional_filters,
               TABLE(
-                self.table_header(),
-                inputs,
-                lines,
+                [self.table_header(),
+                 inputs]+lines,
               ),
               DIV(
                 INPUT(

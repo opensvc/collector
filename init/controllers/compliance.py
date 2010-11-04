@@ -507,6 +507,7 @@ def ajax_comp_rules():
 
     v = table_comp_rules_vars('ajax_comp_rules_vars', 'ajax_comp_rules_vars')
     v.upc_table = 'comp_rules_vars'
+    v.span = 'rule_name'
 
     if v.form_add.accepts(request.vars):
         response.flash = T("rule added")
