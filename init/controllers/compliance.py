@@ -11,7 +11,7 @@ class col_run_ruleset(HtmlTableColumn):
 
 class col_mod_nodes(HtmlTableColumn):
     def html(self, o):
-        return self.get(o).replace(',',', ')
+        return ', '.join(self.get(o))
 
 class col_mod_percent(HtmlTableColumn):
     def html(self, o):
@@ -519,8 +519,35 @@ def ajax_comp_status():
         t.object_list = db(q).select(orderby=o)
     else:
         t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
-    return t.html()
 
+    mt = table_comp_mod_status('ajax_comp_mod_status', 'ajax_comp_mod_status')
+    mt.object_list = compute_mod_status(t.object_list)
+    mt.pageable = False
+    mt.filterable = False
+    mt.exportable = False
+    mt.dbfilterable = False
+    return DIV(t.html(), mt.html())
+
+def compute_mod_status(rows):
+    h = {}
+    for r in rows:
+        if r.comp_status.run_module not in h:
+            h[r.comp_status.run_module] = {
+              'mod_name': r.comp_status.run_module,
+              'mod_total': 0,
+              'mod_ok': 0,
+              'mod_percent': 0,
+              'mod_nodes': [],
+            }
+        h[r.comp_status.run_module]['mod_total'] += 1
+        h[r.comp_status.run_module]['mod_nodes'].append(r.comp_status.run_nodename)
+        if r.comp_status.run_status == 0:
+            h[r.comp_status.run_module]['mod_ok'] += 1
+    for m in h.values():
+        if m['mod_total'] == 0:
+            continue
+        m['mod_percent'] = int(100*m['mod_ok']/m['mod_total'])
+    return h.values()
 
 @auth.requires_login()
 def comp_status():

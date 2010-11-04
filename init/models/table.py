@@ -43,6 +43,7 @@ class HtmlTable(object):
 
         # to be set be instanciers
         self.filterable = True
+        self.dbfilterable = True
         self.pageable = True
         self.exportable = True
         self.colored_lines = True
@@ -105,6 +106,9 @@ class HtmlTable(object):
             return "display:none"
 
     def persistent_filters(self):
+        if not self.dbfilterable:
+            return SPAN()
+
         id_session_div = '_'.join((self.id_prefix, 'session_div'))
         filters_count = active_db_filters_count()
         if filters_count > 0:
@@ -230,13 +234,14 @@ class HtmlTable(object):
         d = DIV(
               A(
                 T('Configure columns'),
-                _onclick="click_toggle_vis('column_selector', 'block')",
+                _onclick="click_toggle_vis('%(div)s', 'block')"%dict(
+                                                          div=self.col_selector_key()),
               ),
               DIV(
                 a,
                 _style='display:none',
                 _class='white_float',
-                _name='column_selector',
+                _name=self.col_selector_key(),
               ),
               _class='floatw',
             )
@@ -246,6 +251,9 @@ class HtmlTable(object):
         self.totalrecs = n
 
     def pager(self):
+        if not self.pageable:
+            return SPAN()
+
         def set_perpage_js(n):
             js = 'getElementById("%(id)s").value=%(n)s;'%dict(
                    id=self.id_perpage,
@@ -329,6 +337,9 @@ class HtmlTable(object):
     def col_checkbox_key(self, f):
         return '_'.join((self.id_prefix, 'col', f))
 
+    def col_selector_key(self):
+        return '_'.join((self.id_prefix, 'column_selector'))
+
     def col_key(self, f):
         return '_'.join((self.id_prefix, 'tcol', f))
 
@@ -367,6 +378,7 @@ class HtmlTable(object):
         for c in self.cols:
             cells.append(TH(T(self.colprops[c].title),
                             _style=self.col_hide(c),
+                            _class=self.colprops[c]._class,
                             _name=self.col_key(c)))
         return TR(cells, _class='tableo_header')
 
