@@ -259,4 +259,12 @@ def active_db_filters(table=None):
                           )
     return filters
 
+def active_db_filters_count():
+    g = db.filters.fil_name
+    q = db.auth_filters.fil_uid==session.auth.user.id
+    rows = db(q).select(g,
+                        left=db.filters.on(db.filters.id==db.auth_filters.fil_id),
+                        orderby=g,
+                        groupby=g)
+    return len(rows)
 

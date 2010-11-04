@@ -106,9 +106,16 @@ class HtmlTable(object):
 
     def persistent_filters(self):
         id_session_div = '_'.join((self.id_prefix, 'session_div'))
+        filters_count = active_db_filters_count()
+        if filters_count > 0:
+            filters_count = ' (%d)'%filters_count
+        else:
+            filters_count = ''
+
         s = SPAN(
               A(
                 T('Persistent filters'),
+                filters_count,
                 _onclick="""
                   click_toggle_vis('session_filters', 'block');
                   getElementById("%(div)s").innerHTML='%(spinner)s';
