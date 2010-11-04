@@ -62,6 +62,8 @@ response.menu = [
               URL(request.application,'packages','packages')],
              [T('patches'), False,
               URL(request.application,'patches','patches')],
+             [T('compliance'), False,
+              URL(request.application,'compliance','comp_status')],
              [T('storage'), False,
               URL(request.application,'sym','index')],
          ]

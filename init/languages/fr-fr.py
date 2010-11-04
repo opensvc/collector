@@ -466,6 +466,7 @@
 'close & refresh table': 'fermer et rafraichir le tableau',
 'comment': 'commentaire',
 'compare performance metrics between selected nodes': 'comparer les performances entre les noeuds séléctionnés',
+'compliance': 'compliance',
 'consult alerts sent and pending emission': "consulter les alertes envoyées et en attente d'envoi",
 'consult asset information': 'consulter les information sur les biens',
 'container name': 'nom du container',
@@ -666,5 +667,6 @@
 'vmem': 'vmem',
 'warranty end': 'fin de garantie',
 'you are not allowed to delete the Manager group': 'il ne vous est pas permis de supprimer le groupe Manager',
+'zezette': 'zezette',
 'zip': 'code postal',
 }

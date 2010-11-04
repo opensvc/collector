@@ -13,6 +13,36 @@ class col_mod_nodes(HtmlTableColumn):
     def html(self, o):
         return self.get(o).replace(',',', ')
 
+class col_mod_percent(HtmlTableColumn):
+    def html(self, o):
+        p = self.get(o)
+        p = "%d%%"%int(p)
+        d = DIV(
+              DIV(
+                DIV(
+                  _style="""font-size: 0px;
+                            line-height: 0px;
+                            height: 4px;
+                            min-width: 0%%;
+                            max-width: %(p)s;
+                            width: %(p)s;
+                            background: #A6FF80;
+                         """%dict(p=p),
+                ),
+                _style="""text-align: left;
+                          margin: 2px auto;
+                          background: #FF7863;
+                          overflow: hidden;
+                       """,
+              ),
+              DIV(p),
+              _style="""margin: auto;
+                        text-align: center;
+                        width: 100%;
+                     """,
+            ),
+        return d
+
 class col_run_status(HtmlTableColumn):
     img_h = {0: 'check16.png',
              1: 'nok.png'}
@@ -345,7 +375,7 @@ class table_comp_mod_status(HtmlTable):
                      img='check16',
                      _class='numeric',
                     ),
-            'mod_percent': HtmlTableColumn(
+            'mod_percent': col_mod_percent(
                      title='Percent',
                      field='mod_percent',
                      #table='comp_mod_status',
