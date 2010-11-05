@@ -367,6 +367,7 @@ class table_comp_rules_vars(HtmlTable):
                      'rule_var_name',
                      'rule_var_value',
                      'rule_var_updated',
+                     'rule_var_author',
                     ]
         self.colprops = {
             'rule_var_updated': HtmlTableColumn(
@@ -374,6 +375,12 @@ class table_comp_rules_vars(HtmlTable):
                      field='rule_var_updated',
                      display=True,
                      img='action16',
+                    ),
+            'rule_var_author': HtmlTableColumn(
+                     title='Author',
+                     field='rule_var_author',
+                     display=True,
+                     img='guy16',
                     ),
             'rule_name': HtmlTableColumn(
                      title='Ruleset',
@@ -417,15 +424,15 @@ class table_comp_rules_vars(HtmlTable):
         return d
 
     def comp_rules_vars_add_sqlform(self):
+        db.comp_rules_vars.rule_name.unique = True
+        db.comp_rules_vars.rule_name.requires = IS_IN_DB(db, db.v_comp_ruleset_names.rule_name, zero=T('choose one'))
         f = SQLFORM(
                  db.comp_rules_vars,
-                 fields=['rule_name',
-                         'rule_var_name',
-                         'rule_var_value'],
                  labels={'rule_name': T('Ruleset name'),
                          'rule_var_name': T('Variable'),
                          'rule_var_value': T('Value')},
             )
+        f.vars.rule_var_author = user_name()
         return f
 
 class table_comp_rules(HtmlTable):
@@ -440,6 +447,7 @@ class table_comp_rules(HtmlTable):
                      'rule_op',
                      'rule_value',
                      'rule_updated',
+                     'rule_author',
                     ]
         self.colprops = {
             'rule_table': col_rule_filter(
@@ -465,6 +473,12 @@ class table_comp_rules(HtmlTable):
                      field='rule_updated',
                      display=True,
                      img='action16',
+                    ),
+            'rule_author': HtmlTableColumn(
+                     title='Author',
+                     field='rule_author',
+                     display=True,
+                     img='guy16',
                     ),
             'rule_name': HtmlTableColumn(
                      title='Ruleset',
@@ -532,6 +546,7 @@ class table_comp_rules(HtmlTable):
                          'rule_value': T('Value')},
                  _name='c_ruleset_add',
             )
+        f.vars.rule_author = user_name()
         return f
 
     def x_ruleset_add(self):
@@ -580,6 +595,7 @@ class table_comp_rules(HtmlTable):
         f.vars.rule_field = 'ruleset_name'
         f.vars.rule_op = '='
         f.vars.rule_log_op = 'AND'
+        f.vars.rule_author = user_name()
         if 'rule_name' in request.vars:
             f.vars.rule_value = request.vars['rule_name']
 
@@ -615,7 +631,9 @@ def ajax_comp_rules():
     else:
         t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
 
-    v = table_comp_rules_vars('ajax_comp_rules_vars', 'ajax_comp_rules_vars')
+    v = table_comp_rules_vars('ajax_comp_rules_vars',
+                              func='ajax_comp_rules',
+                              innerhtml='ajax_comp_rules')
     v.upc_table = 'comp_rules_vars'
     v.span = 'rule_name'
 

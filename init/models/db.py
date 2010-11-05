@@ -922,6 +922,7 @@ db.define_table('comp_rules',
     Field('rule_table','string', requires=IS_NOT_EMPTY()),
     Field('rule_field','string', requires=IS_NOT_EMPTY()),
     Field('rule_value','string', requires=IS_NOT_EMPTY()),
+    Field('rule_author','string', readable=False, writable=False),
     Field('rule_updated','datetime', readable=False, writable=False),
     migrate=False)
 
@@ -929,7 +930,8 @@ db.define_table('comp_rules_vars',
     Field('rule_name','string', requires=IS_NOT_EMPTY()),
     Field('rule_var_name','string', requires=IS_NOT_EMPTY()),
     Field('rule_var_value','string', requires=IS_NOT_EMPTY()),
-    Field('rule_var_updated','datetime'),
+    Field('rule_var_author','string', readable=False, writable=False),
+    Field('rule_var_updated','datetime', readable=False, writable=False),
     migrate=False)
 
 db.define_table('comp_node_ruleset',
@@ -950,5 +952,9 @@ db.define_table('v_comp_mod_status',
     Field('mod_ok','integer'),
     Field('mod_percent','integer'),
     Field('mod_nodes','string'),
+    migrate=False)
+
+db.define_table('v_comp_ruleset_names',
+    Field('rule_name','string'),
     migrate=False)
 

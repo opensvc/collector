@@ -605,3 +605,11 @@ alter table comp_rules_vars add column rule_var_updated timestamp NOT NULL DEFAU
 # sncf
 
 create view v_comp_mod_status as (select id, run_module as mod_name, count(id) as mod_total, sum(if(run_status=0,1,0)) as mod_ok, group_concat(run_nodename) as mod_nodes, ifnull(count(id)/sum(if(run_status=0,1,0))*100,0) as mod_percent from comp_status where run_status in (0,1) group by run_module );
+
+drop view v_comp_mod_status;
+
+alter table comp_rules add column rule_author varchar(100) default '';
+
+alter table comp_rules_vars add column rule_var_author varchar(100) default '';
+
+create view v_comp_ruleset_names as (select distinct rule_name from comp_rules order by rule_name);
