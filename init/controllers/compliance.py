@@ -403,6 +403,17 @@ class table_comp_rules_vars(HtmlTable):
         }
         self.form_add = self.comp_rules_vars_add_sqlform()
         self.additional_tools.append('rule_vars_add')
+        self.additional_tools.append('rule_vars_del')
+
+    def rule_vars_del(self):
+        d = DIV(
+              A(
+                T("Delete variable"),
+                _onclick=self.ajax_submit(args=['delete_ruleset_var']),
+              ),
+              _class='floatw',
+            )
+        return d
 
     def rule_vars_add(self):
         d = DIV(
@@ -612,8 +623,19 @@ class table_comp_rules(HtmlTable):
 
 @auth.requires_login()
 def comp_delete_ruleset(ids=[]):
+    if len(ids) == 0:
+        response.flash = T("no rulesets")
+        return
     n = db(db.comp_rules.id.belongs(ids)).delete()
     response.flash = T("deleted %(n)d rulesets", dict(n=n))
+
+@auth.requires_login()
+def comp_delete_ruleset_var(ids=[]):
+    if len(ids) == 0:
+        response.flash = T("no ruleset variable selected")
+        return
+    n = db(db.comp_rules_vars.id.belongs(ids)).delete()
+    response.flash = T("deleted %(n)d ruleset variables", dict(n=n))
 
 @auth.requires_login()
 def ajax_comp_rules():
@@ -648,11 +670,18 @@ def ajax_comp_rules():
     else:
         t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
 
+    return t.html()
+
+@auth.requires_login()
+def ajax_comp_rules_vars():
     v = table_comp_rules_vars('ajax_comp_rules_vars',
-                              func='ajax_comp_rules',
-                              innerhtml='ajax_comp_rules')
+                              'ajax_comp_rules_vars')
     v.upc_table = 'comp_rules_vars'
     v.span = 'rule_name'
+    v.checkboxes = True
+
+    if len(request.args) == 1 and request.args[0] == 'delete_ruleset_var':
+        comp_delete_ruleset_var(v.get_checked())
 
     if v.form_add.accepts(request.vars):
         response.flash = T("rule added")
@@ -673,11 +702,21 @@ def ajax_comp_rules():
     else:
         v.object_list = db(q).select(limitby=(v.pager_start,v.pager_end), orderby=o)
 
-    return DIV(t.html(), v.html())
+    return v.html()
 
 @auth.requires_login()
 def comp_rules():
-    return dict(table=DIV(ajax_comp_rules(), _id='ajax_comp_rules'))
+    t = DIV(
+          DIV(
+            ajax_comp_rules(),
+            _id='ajax_comp_rules',
+          ),
+          DIV(
+            ajax_comp_rules_vars(),
+            _id='ajax_comp_rules_vars',
+          ),
+        )
+    return dict(table=t)
 
 class table_comp_mod_status(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
