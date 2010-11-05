@@ -402,7 +402,7 @@ class table_comp_rules_vars(HtmlTable):
                     ),
         }
         self.form_add = self.comp_rules_vars_add_sqlform()
-        self.additional_tools = self.rule_vars_add()
+        self.additional_tools.append('rule_vars_add')
 
     def rule_vars_add(self):
         d = DIV(
@@ -501,10 +501,19 @@ class table_comp_rules(HtmlTable):
         }
         self.form_x_add = self.comp_x_ruleset_add_sqlform()
         self.form_c_add = self.comp_c_ruleset_add_sqlform()
-        self.additional_tools = SPAN(
-                                  self.x_ruleset_add(),
-                                  self.c_ruleset_add(),
-                                )
+        self.additional_tools.append('x_ruleset_add')
+        self.additional_tools.append('c_ruleset_add')
+        self.additional_tools.append('ruleset_del')
+
+    def ruleset_del(self):
+        d = DIV(
+              A(
+                T("Delete ruleset"),
+                _onclick=self.ajax_submit(args=['delete_ruleset']),
+              ),
+              _class='floatw',
+            )
+        return d
 
     def c_ruleset_add(self):
         d = DIV(
@@ -601,11 +610,19 @@ class table_comp_rules(HtmlTable):
 
         return f
 
+@auth.requires_login()
+def comp_delete_ruleset(ids=[]):
+    n = db(db.comp_rules.id.belongs(ids)).delete()
+    response.flash = T("deleted %(n)d rulesets", dict(n=n))
 
 @auth.requires_login()
 def ajax_comp_rules():
     t = table_comp_rules('ajax_comp_rules', 'ajax_comp_rules')
     t.upc_table = 'comp_rules'
+    t.checkboxes = True
+
+    if len(request.args) == 1 and request.args[0] == 'delete_ruleset':
+        comp_delete_ruleset(t.get_checked())
 
     if t.form_c_add.accepts(request.vars, formname='c_ruleset_add'):
         response.flash = T("contextual ruleset added")

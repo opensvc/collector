@@ -129,6 +129,7 @@
 'Date': 'Date',
 'Date not set': 'Date non définie',
 'Delete nodes': 'Supprimer les noeuds',
+'Delete ruleset': 'Delete ruleset',
 'Delete:': 'Effacer:',
 'Description': 'Description',
 'Dev id': 'Dev id',

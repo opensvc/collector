@@ -40,15 +40,18 @@ class HtmlTable(object):
         # to be set by children
         self.additional_filters = []
         self.cols = []
+        self.checkbox_ids = []
         self.colprops = {}
 
         # to be set be instanciers
+        self.checkboxes = False
+        self.checkbox_id_col = 'id'
         self.filterable = True
         self.dbfilterable = True
         self.pageable = True
         self.exportable = True
         self.colored_lines = True
-        self.additional_tools = SPAN()
+        self.additional_tools = []
         self.span = None
 
         if self.pageable:
@@ -213,6 +216,14 @@ class HtmlTable(object):
                         }
                     }
                 }
+                function check_all(name, checked){
+                    c = document.getElementsByName(name);
+                    for(i = 0; i < c.length; i++) {
+                        if (c[i].type == 'checkbox' && c[i].disabled == false) {
+                            c[i].checked = checked
+                        }
+                    }
+                }
                 """
               ),
               INPUT(
@@ -355,6 +366,22 @@ class HtmlTable(object):
     def filter_cloud_key(self, f):
         return '_'.join((self.id_prefix, 'filter_cloud', f))
 
+    def checkbox_key(self, f):
+        return '_'.join((self.id_prefix, 'check_id', str(f)))
+
+    def checkbox_name_key(self):
+        return '_'.join((self.id_prefix, 'check'))
+
+    def master_checkbox_key(self):
+        return '_'.join((self.id_prefix, 'check_all'))
+
+    def get_checked(self):
+        prefix = self.checkbox_key('')
+        ids = []
+        for key in [ k for k in request.vars.keys() if prefix in k and request.vars[k] == 'true' ]:
+            ids.append(int(key.replace(prefix, '')))
+        return ids
+
     def filter_parse(self, f):
         key = self.filter_key(f)
         if key in request.vars:
@@ -374,10 +401,14 @@ class HtmlTable(object):
             l.append(self.id_page)
         if self.filterable:
             l += map(self.filter_key, self.cols+self.additional_filters)
+        if self.checkboxes:
+            l += self.checkbox_ids
         return l
 
     def table_header(self):
         cells = []
+        if self.checkboxes:
+            cells.append(TH(''))
         for c in self.cols:
             cells.append(TH(T(self.colprops[c].title),
                             _style=self.col_hide(c),
@@ -387,12 +418,33 @@ class HtmlTable(object):
 
     def table_line(self, o):
         cells = []
+        if self.checkboxes:
+            checked = getattr(request.vars, self.checkbox_key(o['id']))
+            if checked is None or checked == 'false':
+                checked = False
+                value = 'false'
+            else:
+                checked = True
+                value = 'true'
+            checkbox_id = self.checkbox_key(o[self.checkbox_id_col])
+            self.checkbox_ids.append(checkbox_id)
+            cells.append(TD(
+                           INPUT(
+                             _type='checkbox',
+                             _id=checkbox_id,
+                             _name=self.checkbox_name_key(),
+                             _value=value,
+                             _onclick='this.value=this.checked',
+                             value=checked,
+                           ),
+                         ))
+
         for c in self.cols:
             if self.span is not None and \
                self.last is not None and \
                o[self.span] == self.last[self.span] and \
                self.colprops[c].get(o) == self.colprops[c].get(self.last):
-                content = '"'
+                content = ''
             else:
                 content = self.colprops[c].html(o)
             cells.append(TD(content,
@@ -441,6 +493,16 @@ v=self.colprops[c].get(o))+self.ajax_submit(),
 
     def table_inputs(self):
         inputs = []
+        if self.checkboxes:
+            inputs.append(TD(
+                            INPUT(
+                              _type='checkbox',
+                              _id=self.master_checkbox_key(),
+                              _onclick="""
+                                check_all('%(name)s', this.checked);
+                              """%dict(name=self.checkbox_name_key())
+                            )
+                          ))
         for c in self.cols:
             if len(self.filter_parse(c)) > 0:
                 clear = IMG(
@@ -505,12 +567,12 @@ v=self.colprops[c].get(o))+self.ajax_submit(),
                   ))
         return inputs
 
-    def ajax_submit(self):
+    def ajax_submit(self, args=[]):
         return """ajax("%(url)s",
                        ["tableid", %(inputs)s],
                        "%(innerhtml)s");
                   getElementById("%(innerhtml)s").innerHTML='%(spinner)s';
-                """%dict(url=URL(r=request,f=self.func),
+                """%dict(url=URL(r=request,f=self.func, args=args),
                          innerhtml=self.innerhtml,
                          inputs = ','.join(map(repr, self.ajax_inputs())),
                          spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
@@ -546,6 +608,12 @@ v=self.colprops[c].get(o))+self.ajax_submit(),
         else:
             additional_filters = SPAN()
 
+        if len(self.additional_tools) > 0:
+            additional_tools = SPAN(map(lambda x: getattr(self, x)(),
+                                   self.additional_tools))
+        else:
+            additional_tools = SPAN()
+
         if self.exportable:
             export = DIV(
                   A(
@@ -563,7 +631,7 @@ v=self.colprops[c].get(o))+self.ajax_submit(),
                 export,
                 self.columns_selector(),
                 self.persistent_filters(),
-                self.additional_tools,
+                additional_tools,
                 DIV('', _class='spacer'),
                 _class='tableo_header',
               ),
