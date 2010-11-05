@@ -912,19 +912,23 @@ db.define_table('comp_status',
     migrate=False)
 
 db.define_table('comp_rules',
-    Field('rule_name','string'),
-    Field('rule_op','string'),
-    Field('rule_log_op','string'),
-    Field('rule_table','string'),
-    Field('rule_field','string'),
-    Field('rule_value','string'),
-    Field('rule_updated','datetime'),
+    Field('rule_name','string', requires=IS_NOT_EMPTY()),
+    Field('rule_log_op','string',
+          requires=IS_IN_SET(['AND', 'OR']),
+          default='AND'),
+    Field('rule_op','string',
+          requires=IS_IN_SET(['=', 'LIKE', '<', '<=', '>', '>=', 'IN']),
+          default='='),
+    Field('rule_table','string', requires=IS_NOT_EMPTY()),
+    Field('rule_field','string', requires=IS_NOT_EMPTY()),
+    Field('rule_value','string', requires=IS_NOT_EMPTY()),
+    Field('rule_updated','datetime', readable=False, writable=False),
     migrate=False)
 
 db.define_table('comp_rules_vars',
-    Field('rule_name','string'),
-    Field('rule_var_name','string'),
-    Field('rule_var_value','string'),
+    Field('rule_name','string', requires=IS_NOT_EMPTY()),
+    Field('rule_var_name','string', requires=IS_NOT_EMPTY()),
+    Field('rule_var_value','string', requires=IS_NOT_EMPTY()),
     Field('rule_var_updated','datetime'),
     migrate=False)
 

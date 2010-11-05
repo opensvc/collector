@@ -485,11 +485,121 @@ class table_comp_rules(HtmlTable):
                      img='filter16',
                     ),
         }
+        self.form_x_add = self.comp_x_ruleset_add_sqlform()
+        self.form_c_add = self.comp_c_ruleset_add_sqlform()
+        self.additional_tools = SPAN(
+                                  self.x_ruleset_add(),
+                                  self.c_ruleset_add(),
+                                )
+
+    def c_ruleset_add(self):
+        d = DIV(
+              A(
+                T("Add contextual ruleset"),
+                _onclick="""
+                  click_toggle_vis('%(div)s', 'block');
+                """%dict(div='comp_c_ruleset_add'),
+              ),
+              DIV(
+                self.form_c_add,
+                _style='display:none',
+                _class='white_float',
+                _name='comp_c_ruleset_add',
+                _id='comp_c_ruleset_add',
+              ),
+              _class='floatw',
+            )
+        return d
+
+    def comp_c_ruleset_add_sqlform(self):
+        db.comp_rules.rule_log_op.readable = True
+        db.comp_rules.rule_log_op.writable = True
+        db.comp_rules.rule_op.readable = True
+        db.comp_rules.rule_op.writable = True
+        db.comp_rules.rule_table.readable = True
+        db.comp_rules.rule_table.writable = True
+        db.comp_rules.rule_field.readable = True
+        db.comp_rules.rule_field.writable = True
+        db.comp_rules.rule_value.readable = True
+        db.comp_rules.rule_value.writable = True
+        f = SQLFORM(
+                 db.comp_rules,
+                 labels={'rule_name': T('Ruleset name'),
+                         'rule_log_op': T('Logical operator'),
+                         'rule_table': T('Table'),
+                         'rule_field': T('Field'),
+                         'rule_op': T('Operator'),
+                         'rule_value': T('Value')},
+                 _name='c_ruleset_add',
+            )
+        return f
+
+    def x_ruleset_add(self):
+        d = DIV(
+              A(
+                T("Add explicit ruleset"),
+                _onclick="""
+                  click_toggle_vis('%(div)s', 'block');
+                """%dict(div='comp_x_ruleset_add'),
+              ),
+              DIV(
+                self.form_x_add,
+                _style='display:none',
+                _class='white_float',
+                _name='comp_x_ruleset_add',
+                _id='comp_x_ruleset_add',
+              ),
+              _class='floatw',
+            )
+        return d
+
+    def comp_x_ruleset_add_sqlform(self):
+        db.comp_rules.rule_log_op.readable = False
+        db.comp_rules.rule_log_op.writable = False
+        db.comp_rules.rule_op.readable = False
+        db.comp_rules.rule_op.writable = False
+        db.comp_rules.rule_table.readable = False
+        db.comp_rules.rule_table.writable = False
+        db.comp_rules.rule_field.readable = False
+        db.comp_rules.rule_field.writable = False
+        db.comp_rules.rule_value.readable = False
+        db.comp_rules.rule_value.writable = False
+        f = SQLFORM(
+                 db.comp_rules,
+                 labels={'rule_name': T('Ruleset name'),
+                         'rule_log_op': T('Logical operator'),
+                         'rule_table': T('Table'),
+                         'rule_field': T('Field'),
+                         'rule_op': T('Operator'),
+                         'rule_value': T('Value')},
+                 _name='x_ruleset_add',
+            )
+
+        # default values
+        f.vars.rule_table = 'comp_node_ruleset'
+        f.vars.rule_field = 'ruleset_name'
+        f.vars.rule_op = '='
+        f.vars.rule_log_op = 'AND'
+        if 'rule_name' in request.vars:
+            f.vars.rule_value = request.vars['rule_name']
+
+        return f
+
 
 @auth.requires_login()
 def ajax_comp_rules():
     t = table_comp_rules('ajax_comp_rules', 'ajax_comp_rules')
     t.upc_table = 'comp_rules'
+
+    if t.form_c_add.accepts(request.vars, formname='c_ruleset_add'):
+        response.flash = T("contextual ruleset added")
+    elif t.form_c_add.errors:
+        response.flash = T("errors in form")
+
+    if t.form_x_add.accepts(request.vars, formname='x_ruleset_add'):
+        response.flash = T("explicit ruleset added")
+    elif t.form_x_add.errors:
+        response.flash = T("errors in form")
 
     o = db.comp_rules.rule_name
     q = db.comp_rules.id > 0
