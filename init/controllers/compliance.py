@@ -641,6 +641,7 @@ def comp_delete_ruleset_var(ids=[]):
 def ajax_comp_rules():
     t = table_comp_rules('ajax_comp_rules', 'ajax_comp_rules')
     t.upc_table = 'comp_rules'
+    t.span = 'rule_name'
     t.checkboxes = True
 
     if len(request.args) == 1 and request.args[0] == 'delete_ruleset':

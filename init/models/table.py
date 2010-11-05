@@ -53,6 +53,7 @@ class HtmlTable(object):
         self.colored_lines = True
         self.additional_tools = []
         self.span = None
+        self.sub_span = []
 
         if self.pageable:
             if self.id_perpage in request.vars:
@@ -443,7 +444,8 @@ class HtmlTable(object):
             if self.span is not None and \
                self.last is not None and \
                o[self.span] == self.last[self.span] and \
-               self.colprops[c].get(o) == self.colprops[c].get(self.last):
+               (c == self.span or (c in self.sub_span and \
+               self.colprops[c].get(o) == self.colprops[c].get(self.last))):
                 content = ''
             else:
                 content = self.colprops[c].html(o)
