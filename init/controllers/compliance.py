@@ -1,3 +1,64 @@
+import datetime
+now=datetime.datetime.today()
+sevendays = str(now-datetime.timedelta(days=7,
+                                       hours=now.hour,
+                                       minutes=now.minute,
+                                       seconds=now.second,
+                                       microseconds=now.microsecond))
+
+def comp_menu(current):
+    m = [{
+          'title': 'Status',
+          'url': URL(
+                   request.application,
+                   'compliance',
+                   'comp_status?ajax_comp_status_filter_run_date=>'+sevendays
+                 ),
+         },
+         {
+          'title': 'Log',
+          'url': URL(
+                   request.application,
+                   'compliance',
+                   'comp_log'
+                 ),
+         },
+         {
+          'title': 'Rules',
+          'url': URL(
+                   request.application,
+                   'compliance',
+                   'comp_rules'
+                 ),
+         },
+         {
+          'title': 'Modules',
+          'url': URL(
+                   request.application,
+                   'compliance',
+                   'comp_modules'
+                 ),
+         },
+        ]
+
+    def item(i):
+        if i['title'] == current:
+            bg = 'orange'
+        else:
+            bg = '#DCDDE6'
+        d = DIV(
+              i['title'],
+              _class='menu_item',
+              _style='background-color:%s'%bg,
+              _onclick="location.href='%s'"%i['url'],
+              _onmouseover="this.style.backgroundColor='orange'",
+              _onmouseout="this.style.backgroundColor='%s'"%bg,
+            )
+        return d
+
+    d = SPAN(map(lambda x: item(x), m))
+    return d
+
 #
 # custom column formatting
 #
@@ -708,6 +769,7 @@ def ajax_comp_rules_vars():
 @auth.requires_login()
 def comp_rules():
     t = DIV(
+          comp_menu('Rules'),
           DIV(
             ajax_comp_rules(),
             _id='ajax_comp_rules',
@@ -926,7 +988,14 @@ def compute_mod_status(rows):
 
 @auth.requires_login()
 def comp_status():
-    return dict(table=DIV(ajax_comp_status(), _id='ajax_comp_status'))
+    t = DIV(
+          comp_menu('Status'),
+          DIV(
+            ajax_comp_status(),
+            _id='ajax_comp_status',
+          ),
+        )
+    return dict(table=t)
 
 class table_comp_log(table_comp_status):
     def __init__(self, id=None, func=None, innerhtml=None):
@@ -964,7 +1033,14 @@ def ajax_comp_log():
 
 @auth.requires_login()
 def comp_log():
-    return dict(table=DIV(ajax_comp_log(), _id='ajax_comp_log'))
+    t = DIV(
+          comp_menu('Log'),
+          DIV(
+            ajax_comp_log(),
+            _id='ajax_comp_log',
+          ),
+        )
+    return dict(table=t)
 
 def call():
     """
