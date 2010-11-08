@@ -134,6 +134,7 @@
 'Delete variable': 'Delete variable',
 'Delete:': 'Effacer:',
 'Description': 'Description',
+'Detach ruleset': 'Detach ruleset',
 'Dev id': 'Dev id',
 'Dev wwn': 'Dev wwn',
 'Device': 'Device',

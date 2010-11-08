@@ -89,7 +89,10 @@ class col_run_log(HtmlTableColumn):
 
 class col_run_ruleset(HtmlTableColumn):
     def html(self, o):
-        return self.get(o).replace(',',', ')
+        val = self.get(o)
+        if val is None:
+            return SPAN()
+        return val.replace(',',', ')
 
 class col_mod_nodes(HtmlTableColumn):
     def html(self, o):
@@ -696,8 +699,30 @@ class table_comp_rules(HtmlTable):
         return f
 
 @auth.requires_login()
+def comp_detach_ruleset(node_ids=[], ruleset_ids=[]):
+    if len(node_ids) == 0:
+        response.flash = T("no node selected")
+        return
+    if len(ruleset_ids) == 0:
+        response.flash = T("no ruleset selected")
+        return
+
+    q = db.v_comp_explicit_rulesets.id.belongs(ruleset_ids)
+    rows = db(q).select(db.v_comp_explicit_rulesets.rule_name)
+    ruleset_names = [r.rule_name for r in rows]
+
+    q = db.v_nodes.id.belongs(node_ids)
+    rows = db(q).select(db.v_nodes.nodename)
+    node_names = [r.nodename for r in rows]
+
+    for rsname in ruleset_names:
+        for node in node_names:
+            q = db.comp_node_ruleset.ruleset_node == node
+            q &= db.comp_node_ruleset.ruleset_name == rsname
+            db(q).delete()
+
+@auth.requires_login()
 def comp_attach_ruleset(node_ids=[], ruleset_ids=[]):
-    #raise Exception(node_ids, ruleset_ids)
     if len(node_ids) == 0:
         response.flash = T("no node selected")
         return
@@ -966,11 +991,29 @@ class table_comp_nodes(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['nodename'] + v_nodes_cols
+        self.cols = ['nodename', 'rulesets'] + v_nodes_cols
         self.colprops = v_nodes_colprops
+        self.colprops['rulesets'] = col_run_ruleset(
+                     title='Rule set',
+                     field='rulesets',
+                     img='action16',
+                     display=True,
+                    )
         self.colprops['nodename'].display = True
         self.checkboxes = True
         self.additional_tools.append('ruleset_attach')
+        self.additional_tools.append('ruleset_detach')
+
+    def ruleset_detach(self):
+        d = DIV(
+              A(
+                T("Detach ruleset"),
+                _onclick=self.ajax_submit(args=['detach_ruleset'],
+                                          additional_inputs=self.rulesets.ajax_inputs()),
+              ),
+              _class='floatw',
+            )
+        return d
 
     def ruleset_attach(self):
         d = DIV(
@@ -1017,6 +1060,8 @@ def ajax_comp_nodes():
 
     if len(request.args) == 1 and request.args[0] == 'attach_ruleset':
         comp_attach_ruleset(t.get_checked(), r.get_checked())
+    elif len(request.args) == 1 and request.args[0] == 'detach_ruleset':
+        comp_detach_ruleset(t.get_checked(), r.get_checked())
 
     o = db.v_comp_explicit_rulesets.rule_name
     q = db.v_comp_explicit_rulesets.id > 0
@@ -1034,11 +1079,11 @@ def ajax_comp_nodes():
     r.object_list = db(q).select(orderby=o)
     r_html = r.html()
 
-    o = db.v_nodes.nodename
-    q = _where(None, 'v_nodes', domain_perms(), 'nodename')
+    o = db.v_comp_nodes.nodename
+    q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
     for f in t.cols:
-        q &= _where(None, t.colprops[f].table, t.filter_parse_glob(f), f)
-    q = apply_db_filters(q, 'v_nodes')
+        q &= _where(None, 'v_comp_nodes', t.filter_parse_glob(f), f)
+    q = apply_db_filters(q, 'v_comp_nodes')
 
     n = db(q).count()
     t.set_pager_max(n)

@@ -965,3 +965,8 @@ db.define_table('v_comp_explicit_rulesets',
     Field('variables','string'),
     migrate=False)
 
+db.define_table('v_comp_nodes',
+    db.v_nodes,
+    Field('rulesets','string'),
+    migrate=False)
+

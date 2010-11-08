@@ -620,4 +620,6 @@ alter table comp_log add column run_action varchar(5) default '';
 
 alter table comp_status add column run_action varchar(5) default '';
 
+create view v_comp_nodes as (select n.*,group_concat(distinct r.ruleset_name separator ', ') as rulesets from v_nodes n left join comp_node_ruleset r on n.nodename=r.ruleset_node group by n.nodename);
+
 
