@@ -633,6 +633,10 @@ class table_comp_rules(HtmlTable):
         db.comp_rules.rule_field.writable = True
         db.comp_rules.rule_value.readable = True
         db.comp_rules.rule_value.writable = True
+        db.comp_rules.rule_name.requires = IS_NOT_IN_DB(db, db.comp_rules.rule_name)
+        db.comp_rules.rule_table.requires = IS_NOT_EMPTY()
+        db.comp_rules.rule_field.requires = IS_NOT_EMPTY()
+        db.comp_rules.rule_value.requires = IS_NOT_EMPTY()
         f = SQLFORM(
                  db.comp_rules,
                  labels={'rule_name': T('Ruleset name'),
@@ -676,6 +680,7 @@ class table_comp_rules(HtmlTable):
         db.comp_rules.rule_field.writable = False
         db.comp_rules.rule_value.readable = False
         db.comp_rules.rule_value.writable = False
+        db.comp_rules.rule_name.requires = IS_NOT_IN_DB(db, db.comp_rules.rule_name)
         f = SQLFORM(
                  db.comp_rules,
                  labels={'rule_name': T('Ruleset name'),
@@ -1303,8 +1308,14 @@ def comp_add_moduleset(nodename, moduleset):
     if comp_moduleset_attached(nodename, moduleset):
         return dict(status=True,
                     msg="moduleset %s is already attached to this node"%moduleset)
+
+    q = db.comp_node_moduleset.moduleset_node == nodename
+    q &= db.comp_node_moduleset.moduleset_name == moduleset
+    if db(q).count() > 0:
+        return dict(status=True, msg="moduleset %s already attached"%moduleset)
+
     n = db.comp_node_moduleset.insert(moduleset_node=nodename,
-                                    moduleset_name=moduleset)
+                                      moduleset_name=moduleset)
     if n == 0:
         return dict(status=False, msg="failed to attach moduleset %s"%moduleset)
     return dict(status=True, msg="moduleset %s attached"%moduleset)
@@ -1332,6 +1343,12 @@ def comp_add_ruleset(nodename, ruleset):
     if comp_ruleset_attached(nodename, ruleset):
         return dict(status=True,
                     msg="ruleset %s is already attached to this node"%ruleset)
+
+    q = db.comp_node_ruleset.ruleset_node == nodename
+    q &= db.comp_node_ruleset.ruleset_name == ruleset
+    if db(q).count() > 0:
+        return dict(status=True, msg="ruleset %s already attached"%moduleset)
+
     n = db.comp_node_ruleset.insert(ruleset_node=nodename,
                                     ruleset_name=ruleset)
     if n == 0:
