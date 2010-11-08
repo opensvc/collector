@@ -622,4 +622,8 @@ alter table comp_status add column run_action varchar(5) default '';
 
 create view v_comp_nodes as (select n.*,group_concat(distinct r.ruleset_name separator ', ') as rulesets from v_nodes n left join comp_node_ruleset r on n.nodename=r.ruleset_node group by n.nodename);
 
+create view v_comp_moduleset_names as (select id, moduleset from comp_moduleset group by moduleset order by moduleset);
 
+drop view v_comp_ruleset_names;
+
+create view v_comp_ruleset_names as (select id, rule_name from comp_rules group by rule_name order by rule_name);

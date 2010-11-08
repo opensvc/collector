@@ -960,6 +960,10 @@ db.define_table('v_comp_ruleset_names',
     Field('rule_name','string'),
     migrate=False)
 
+db.define_table('v_comp_moduleset_names',
+    Field('moduleset','string'),
+    migrate=False)
+
 db.define_table('v_comp_explicit_rulesets',
     Field('rule_name','string'),
     Field('variables','string'),

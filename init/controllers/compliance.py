@@ -1370,6 +1370,18 @@ def comp_detach_ruleset(nodename, ruleset):
     return dict(status=True, msg="ruleset %s detached"%ruleset)
 
 @service.xmlrpc
+def comp_list_rulesets(pattern='%'):
+    q = db.comp_rules.rule_name.like(pattern)
+    rows = db(q).select(groupby=db.comp_rules.rule_name)
+    return [r.rule_name for r in rows]
+
+@service.xmlrpc
+def comp_list_modulesets(pattern='%'):
+    q = db.v_comp_moduleset_names.moduleset.like(pattern)
+    rows = db(q).select()
+    return [r.moduleset for r in rows]
+
+@service.xmlrpc
 def comp_get_moduleset(nodename):
     moduleset = []
     q = db.comp_node_moduleset.moduleset_node == nodename
