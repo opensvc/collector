@@ -1317,6 +1317,9 @@ def comp_get_moduleset(nodename):
 
 @service.xmlrpc
 def comp_log_action(vars, vals):
+    now = datetime.datetime.now()
+    vars.append('run_date')
+    vals.append(now)
     generic_insert('comp_log', vars, vals)
     generic_insert('comp_status', vars, vals)
 
