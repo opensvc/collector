@@ -1300,7 +1300,7 @@ def comp_ruleset_attached(nodename, ruleset):
     return True
 
 @service.xmlrpc
-def comp_add_moduleset(nodename, moduleset):
+def comp_attach_moduleset(nodename, moduleset):
     if len(moduleset) == 0:
         return dict(status=False, msg="no moduleset specified"%moduleset)
     if not comp_moduleset_exists(moduleset):
@@ -1321,7 +1321,7 @@ def comp_add_moduleset(nodename, moduleset):
     return dict(status=True, msg="moduleset %s attached"%moduleset)
 
 @service.xmlrpc
-def comp_del_moduleset(nodename, moduleset):
+def comp_detach_moduleset(nodename, moduleset):
     if len(moduleset) == 0:
         return dict(status=False, msg="no moduleset specified"%moduleset)
     if not comp_moduleset_attached(nodename, moduleset):
@@ -1335,7 +1335,7 @@ def comp_del_moduleset(nodename, moduleset):
     return dict(status=True, msg="moduleset %s detached"%moduleset)
 
 @service.xmlrpc
-def comp_add_ruleset(nodename, ruleset):
+def comp_attach_ruleset(nodename, ruleset):
     if len(ruleset) == 0:
         return dict(status=False, msg="no ruleset specified"%ruleset)
     if not comp_ruleset_exists(ruleset):
@@ -1356,7 +1356,7 @@ def comp_add_ruleset(nodename, ruleset):
     return dict(status=True, msg="ruleset %s attached"%ruleset)
 
 @service.xmlrpc
-def comp_del_ruleset(nodename, ruleset):
+def comp_detach_ruleset(nodename, ruleset):
     if len(ruleset) == 0:
         return dict(status=False, msg="no ruleset specified"%ruleset)
     if not comp_ruleset_attached(nodename, ruleset):
