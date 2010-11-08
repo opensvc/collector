@@ -70,6 +70,13 @@ def is_named_ruleset(o):
         return True
     return False
 
+class col_variables(HtmlTableColumn):
+    def html(self, o):
+        val = self.get(o)
+        if val is None:
+            return SPAN()
+        return PRE(val.replace('|','\n'))
+
 class col_rule_filter(HtmlTableColumn):
     def html(self, o):
         if is_named_ruleset(o):
@@ -206,7 +213,6 @@ v_nodes_colprops = {
                      img = 'loc',
                      table = 'v_nodes',
                     ),
-
             'loc_floor': HtmlTableColumn(
                      title = 'Floor',
                      field='loc_floor',
@@ -310,6 +316,13 @@ v_nodes_colprops = {
                      field='mem_bytes',
                      display = False,
                      img = 'mem16',
+                     table = 'v_nodes',
+                    ),
+            'nodename': HtmlTableColumn(
+                     title = 'Node name',
+                     field='nodename',
+                     display = False,
+                     img = 'node16',
                      table = 'v_nodes',
                     ),
             'serial': HtmlTableColumn(
@@ -683,6 +696,32 @@ class table_comp_rules(HtmlTable):
         return f
 
 @auth.requires_login()
+def comp_attach_ruleset(node_ids=[], ruleset_ids=[]):
+    #raise Exception(node_ids, ruleset_ids)
+    if len(node_ids) == 0:
+        response.flash = T("no node selected")
+        return
+    if len(ruleset_ids) == 0:
+        response.flash = T("no ruleset selected")
+        return
+
+    q = db.v_comp_explicit_rulesets.id.belongs(ruleset_ids)
+    rows = db(q).select(db.v_comp_explicit_rulesets.rule_name)
+    ruleset_names = [r.rule_name for r in rows]
+
+    q = db.v_nodes.id.belongs(node_ids)
+    rows = db(q).select(db.v_nodes.nodename)
+    node_names = [r.nodename for r in rows]
+
+    for rsname in ruleset_names:
+        for node in node_names:
+            q = db.comp_node_ruleset.ruleset_node == node
+            q &= db.comp_node_ruleset.ruleset_name == rsname
+            if db(q).count() == 0:
+                db.comp_node_ruleset.insert(ruleset_node=node,
+                                            ruleset_name=rsname)
+
+@auth.requires_login()
 def comp_delete_ruleset(ids=[]):
     if len(ids) == 0:
         response.flash = T("no rulesets")
@@ -777,6 +816,10 @@ def comp_rules():
           DIV(
             ajax_comp_rules_vars(),
             _id='ajax_comp_rules_vars',
+          ),
+          DIV(
+            ajax_comp_nodes(),
+            _id='ajax_comp_nodes',
           ),
         )
     return dict(table=t)
@@ -910,6 +953,110 @@ class table_comp_status(HtmlTable):
         }
         self.colprops.update(v_nodes_colprops)
 
+class table_comp_nodes(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['nodename'] + v_nodes_cols
+        self.colprops = v_nodes_colprops
+        self.colprops['nodename'].display = True
+        self.checkboxes = True
+        self.additional_tools.append('ruleset_attach')
+
+    def ruleset_attach(self):
+        d = DIV(
+              A(
+                T("Attach ruleset"),
+                _onclick=self.ajax_submit(args=['attach_ruleset'],
+                                          additional_inputs=self.rulesets.ajax_inputs()),
+              ),
+              _class='floatw',
+            )
+        return d
+
+
+class table_comp_explicit_rules(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['rule_name', 'variables']
+        self.colprops = {
+            'rule_name': HtmlTableColumn(
+                     title='Ruleset',
+                     field='rule_name',
+                     display=True,
+                     img='action16',
+                    ),
+            'variables': col_variables(
+                     title='Variables',
+                     field='variables',
+                     display=True,
+                     img='action16',
+                    ),
+        }
+        self.checkboxes = True
+        self.dbfilterable = False
+        self.exportable = False
+
+@auth.requires_login()
+def ajax_comp_nodes():
+    r = table_comp_explicit_rules('ajax_comp_explicit_rules',
+                                  'ajax_comp_explicit_rules')
+    t = table_comp_nodes('ajax_comp_nodes', 'ajax_comp_nodes')
+    t.rulesets = r
+
+    if len(request.args) == 1 and request.args[0] == 'attach_ruleset':
+        comp_attach_ruleset(t.get_checked(), r.get_checked())
+
+    o = db.v_comp_explicit_rulesets.rule_name
+    q = db.v_comp_explicit_rulesets.id > 0
+    for f in r.cols:
+        q &= _where(None, 'v_comp_explicit_rulesets', r.filter_parse_glob(f), f)
+
+    n = db(q).count()
+    r.set_pager_max(n)
+
+    if r.pager_start == 0 and r.pager_end == 0:
+        r.object_list = db(q).select(orderby=o)
+    else:
+        r.object_list = db(q).select(limitby=(r.pager_start,r.pager_end), orderby=o)
+
+    r.object_list = db(q).select(orderby=o)
+    r_html = r.html()
+
+    o = db.v_nodes.nodename
+    q = _where(None, 'v_nodes', domain_perms(), 'nodename')
+    for f in t.cols:
+        q &= _where(None, t.colprops[f].table, t.filter_parse_glob(f), f)
+    q = apply_db_filters(q, 'v_nodes')
+
+    n = db(q).count()
+    t.set_pager_max(n)
+
+    if t.pager_start == 0 and t.pager_end == 0:
+        t.object_list = db(q).select(orderby=o)
+    else:
+        t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+
+    t.object_list = db(q).select(orderby=o)
+
+    return DIV(
+             DIV(
+               t.html(),
+               _style="""min-width:70%;
+                         float:left;
+                         border-right:1px solid;
+                      """
+             ),
+             DIV(
+               r_html,
+               _style="""min-width:30%;
+                         float:left;
+                      """
+             ),
+           )
 
 @auth.requires_login()
 def ajax_comp_log_col_values():

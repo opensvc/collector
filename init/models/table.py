@@ -13,7 +13,7 @@ class HtmlTableColumn(Column):
         self.field = field
 
     def get(self, o):
-        if self.table is None:
+        if self.table is None or self.table not in o:
             return o[self.field]
         else:
             return o[self.table][self.field]
@@ -222,6 +222,7 @@ class HtmlTable(object):
                     for(i = 0; i < c.length; i++) {
                         if (c[i].type == 'checkbox' && c[i].disabled == false) {
                             c[i].checked = checked
+                            c[i].value = checked
                         }
                     }
                 }
@@ -569,14 +570,14 @@ v=self.colprops[c].get(o))+self.ajax_submit(),
                   ))
         return inputs
 
-    def ajax_submit(self, args=[]):
+    def ajax_submit(self, args=[], additional_inputs=[]):
         return """ajax("%(url)s",
                        ["tableid", %(inputs)s],
                        "%(innerhtml)s");
                   getElementById("%(innerhtml)s").innerHTML='%(spinner)s';
                 """%dict(url=URL(r=request,f=self.func, args=args),
                          innerhtml=self.innerhtml,
-                         inputs = ','.join(map(repr, self.ajax_inputs())),
+                         inputs = ','.join(map(repr, self.ajax_inputs()+additional_inputs)),
                          spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
                         )
 
