@@ -904,6 +904,7 @@ class table_comp_status(HtmlTable):
         self.cols = ['run_date',
                      'run_nodename',
                      'run_module',
+                     'run_action',
                      'run_status',
                      'run_ruleset']
         self.cols += v_nodes_cols
@@ -918,6 +919,13 @@ class table_comp_status(HtmlTable):
             'run_nodename': HtmlTableColumn(
                      title='Node name',
                      field='run_nodename',
+                     table='comp_status',
+                     img='node16',
+                     display=True,
+                    ),
+            'run_action': HtmlTableColumn(
+                     title='Action',
+                     field='run_action',
                      table='comp_status',
                      img='node16',
                      display=True,
@@ -1149,8 +1157,8 @@ class table_comp_log(table_comp_status):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         table_comp_status.__init__(self, id, 'ajax_comp_log', innerhtml)
-        self.cols = ['run_date', 'run_nodename', 'run_module', 'run_status',
-                     'run_log', 'run_ruleset']
+        self.cols = ['run_date', 'run_nodename', 'run_module', 'run_action',
+                     'run_status', 'run_log', 'run_ruleset']
         self.cols += v_nodes_cols
         for c in self.colprops:
             if 'run_' in c:
@@ -1317,6 +1325,8 @@ def comp_query(q, rule):
         qry = db[rule.rule_table][rule.rule_field] == rule.rule_value
     elif rule.rule_op == 'LIKE':
         qry = db[rule.rule_table][rule.rule_field].like(rule.rule_value)
+    elif rule.rule_op == 'IN':
+        qry = db[rule.rule_table][rule.rule_field].belongs(rule.rule_value.split(','))
     elif rule.rule_op == '>=':
         qry = db[rule.rule_table][rule.rule_field] >= rule.rule_value
     elif rule.rule_op == '>':

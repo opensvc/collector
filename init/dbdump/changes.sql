@@ -615,3 +615,9 @@ alter table comp_rules_vars add column rule_var_author varchar(100) default '';
 create view v_comp_ruleset_names as (select distinct rule_name from comp_rules order by rule_name);
 
 create view v_comp_explicit_rulesets as (select r.id, r.rule_name, group_concat(distinct concat(v.rule_var_name,'=',v.rule_var_value) separator '|') as variables from comp_rules r left join comp_rules_vars v on r.rule_name=v.rule_name where r.rule_table='comp_node_ruleset' and r.rule_field='ruleset_name' and r.rule_value=r.rule_name  group by r.rule_name order by r.rule_name);
+
+alter table comp_log add column run_action varchar(5) default '';
+
+alter table comp_status add column run_action varchar(5) default '';
+
+

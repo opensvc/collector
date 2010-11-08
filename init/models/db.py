@@ -900,6 +900,7 @@ db.define_table('comp_log',
     Field('run_log','string'),
     Field('run_ruleset','string'),
     Field('run_date','datetime'),
+    Field('run_action','string'),
     migrate=False)
 
 db.define_table('comp_status',
@@ -909,6 +910,7 @@ db.define_table('comp_status',
     Field('run_log','string'),
     Field('run_ruleset','string'),
     Field('run_date','datetime'),
+    Field('run_action','string'),
     migrate=False)
 
 db.define_table('comp_rules',
