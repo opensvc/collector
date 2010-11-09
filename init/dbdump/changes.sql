@@ -627,3 +627,7 @@ create view v_comp_moduleset_names as (select id, moduleset from comp_moduleset 
 drop view v_comp_ruleset_names;
 
 create view v_comp_ruleset_names as (select id, rule_name from comp_rules group by rule_name order by rule_name);
+
+alter table comp_status modify column run_action varchar(7) default '';
+
+alter table comp_log modify column run_action varchar(7) default '';
