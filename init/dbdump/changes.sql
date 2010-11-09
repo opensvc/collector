@@ -631,3 +631,7 @@ create view v_comp_ruleset_names as (select id, rule_name from comp_rules group 
 alter table comp_status modify column run_action varchar(7) default '';
 
 alter table comp_log modify column run_action varchar(7) default '';
+
+alter table comp_rules drop index idx1;
+
+create unique index idx1 on comp_rules (rule_table, rule_field, rule_value, rule_name);

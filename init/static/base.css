@@ -212,6 +212,10 @@ courier;
     word-wrap: break-word; /* Internet Explorer 5.5+ */
 }
 
+.err {
+    color: red;
+}
+
 tt {
     font-size: 0.8em;
     font-family: monospace,

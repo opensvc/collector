@@ -6,6 +6,10 @@ sevendays = str(now-datetime.timedelta(days=7,
                                        seconds=now.second,
                                        microseconds=now.microsecond))
 
+img_h = {0: 'check16.png',
+         1: 'nok.png',
+         2: 'na.png'}
+
 def comp_menu(current):
     m = [{
           'title': 'Status',
@@ -85,7 +89,18 @@ class col_rule_filter(HtmlTableColumn):
 
 class col_run_log(HtmlTableColumn):
     def html(self, o):
-        return PRE(self.get(o))
+        lines = self.get(o).split('\n')
+        for i, line in enumerate(lines):
+            if line.startswith('ERR: '):
+                lines[i] = PRE(
+                             SPAN('ERR: ', _class='err'),
+                             line[5:]+'\n',
+                           )
+            else:
+                lines[i] = PRE(
+                             line,
+                           )
+        return SPAN(lines)
 
 class col_run_ruleset(HtmlTableColumn):
     def html(self, o):
@@ -129,13 +144,11 @@ class col_mod_percent(HtmlTableColumn):
         return d
 
 class col_run_status(HtmlTableColumn):
-    img_h = {0: 'check16.png',
-             1: 'nok.png'}
     def html(self, o):
         val = self.get(o)
-        if val in self.img_h:
+        if val in img_h:
             r = IMG(
-                  _src=URL(r=request,c='static',f=self.img_h[val]),
+                  _src=URL(r=request,c='static',f=img_h[val]),
                   _title=val,
                 )
         else:
