@@ -635,3 +635,15 @@ alter table comp_log modify column run_action varchar(7) default '';
 alter table comp_rules drop index idx1;
 
 create unique index idx1 on comp_rules (rule_table, rule_field, rule_value, rule_name);
+
+alter table comp_moduleset add column modset_author varchar(100) default '';
+
+alter table comp_moduleset add column modset_updated timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+drop table comp_moduleset;
+
+create table comp_moduleset (`id` int(11) NOT NULL AUTO_INCREMENT, `modset_name` varchar(60) NOT NULL, `modset_author` varchar(100) DEFAULT '', `modset_updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (`id`), UNIQUE KEY `idx1` (`modset_name`)) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+
+create table comp_moduleset_modules (`id` int(11) NOT NULL AUTO_INCREMENT, `modset_id` integer, `modset_mod_name` varchar(60) NOT NULL, `modset_mod_author` varchar(100) DEFAULT '', `modset_mod_updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (`id`), UNIQUE KEY `idx1` (`modset_mod_name`,`modset_id`)) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+
+

@@ -889,9 +889,26 @@ db.define_table('sym_upload',
     migrate=False)
 
 db.define_table('comp_moduleset',
+    Field('modset_name','string'),
+    Field('modset_author','string'),
+    Field('modset_updated','datetime'),
+    migrate=False)
+
+db.define_table('comp_moduleset_modules',
+    Field('modset_id','string'),
+    Field('modset_mod_name','string'),
+    Field('modset_mod_author','string'),
+    Field('modset_mod_updated','datetime'),
+    migrate=False)
+
+"""
+db.define_table('v_comp_moduleset',
     Field('moduleset','string'),
     Field('module','string'),
+    Field('modset_author','string'),
+    Field('modset_updated','datetime'),
     migrate=False)
+"""
 
 db.define_table('comp_log',
     Field('run_module','string'),

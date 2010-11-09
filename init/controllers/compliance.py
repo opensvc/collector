@@ -10,6 +10,9 @@ img_h = {0: 'check16.png',
          1: 'nok.png',
          2: 'na.png'}
 
+#
+# Sub-view menu
+#
 def comp_menu(current):
     m = [{
           'title': 'Status',
@@ -448,6 +451,134 @@ v_nodes_colprops = {
                     ),
 }
 
+#
+# Rules sub-view
+#
+class table_comp_nodes(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['nodename', 'rulesets'] + v_nodes_cols
+        self.colprops = v_nodes_colprops
+        self.colprops['rulesets'] = col_run_ruleset(
+                     title='Rule set',
+                     field='rulesets',
+                     img='action16',
+                     display=True,
+                    )
+        self.colprops['nodename'].display = True
+        self.checkboxes = True
+        self.additional_tools.append('ruleset_attach')
+        self.additional_tools.append('ruleset_detach')
+
+    def ruleset_detach(self):
+        d = DIV(
+              A(
+                T("Detach ruleset"),
+                _onclick=self.ajax_submit(args=['detach_ruleset'],
+                                          additional_inputs=self.rulesets.ajax_inputs()),
+              ),
+              _class='floatw',
+            )
+        return d
+
+    def ruleset_attach(self):
+        d = DIV(
+              A(
+                T("Attach ruleset"),
+                _onclick=self.ajax_submit(args=['attach_ruleset'],
+                                          additional_inputs=self.rulesets.ajax_inputs()),
+              ),
+              _class='floatw',
+            )
+        return d
+
+
+class table_comp_explicit_rules(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['rule_name', 'variables']
+        self.colprops = {
+            'rule_name': HtmlTableColumn(
+                     title='Ruleset',
+                     field='rule_name',
+                     display=True,
+                     img='action16',
+                    ),
+            'variables': col_variables(
+                     title='Variables',
+                     field='variables',
+                     display=True,
+                     img='action16',
+                    ),
+        }
+        self.checkboxes = True
+        self.dbfilterable = False
+        self.exportable = False
+
+@auth.requires_login()
+def ajax_comp_nodes():
+    r = table_comp_explicit_rules('ajax_comp_explicit_rules',
+                                  'ajax_comp_explicit_rules')
+    t = table_comp_nodes('ajax_comp_nodes', 'ajax_comp_nodes')
+    t.rulesets = r
+
+    if len(request.args) == 1 and request.args[0] == 'attach_ruleset':
+        comp_attach_ruleset(t.get_checked(), r.get_checked())
+    elif len(request.args) == 1 and request.args[0] == 'detach_ruleset':
+        comp_detach_ruleset(t.get_checked(), r.get_checked())
+
+    o = db.v_comp_explicit_rulesets.rule_name
+    q = db.v_comp_explicit_rulesets.id > 0
+    for f in r.cols:
+        q &= _where(None, 'v_comp_explicit_rulesets', r.filter_parse_glob(f), f)
+
+    n = db(q).count()
+    r.set_pager_max(n)
+
+    if r.pager_start == 0 and r.pager_end == 0:
+        r.object_list = db(q).select(orderby=o)
+    else:
+        r.object_list = db(q).select(limitby=(r.pager_start,r.pager_end), orderby=o)
+
+    r.object_list = db(q).select(orderby=o)
+    r_html = r.html()
+
+    o = db.v_comp_nodes.nodename
+    q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
+    for f in t.cols:
+        q &= _where(None, 'v_comp_nodes', t.filter_parse_glob(f), f)
+    q = apply_db_filters(q, 'v_comp_nodes')
+
+    n = db(q).count()
+    t.set_pager_max(n)
+
+    if t.pager_start == 0 and t.pager_end == 0:
+        t.object_list = db(q).select(orderby=o)
+    else:
+        t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+
+    t.object_list = db(q).select(orderby=o)
+
+    return DIV(
+             DIV(
+               t.html(),
+               _style="""min-width:70%;
+                         float:left;
+                         border-right:1px solid;
+                      """
+             ),
+             DIV(
+               r_html,
+               _style="""min-width:30%;
+                         float:left;
+                      """
+             ),
+           )
+
 class table_comp_rules_vars(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -867,6 +998,221 @@ def comp_rules():
         )
     return dict(table=t)
 
+#
+# Modules sub-view
+#
+class table_comp_moduleset(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['modset_name',
+                     'modset_mod_name',
+                     'modset_mod_updated',
+                     'modset_mod_author']
+        self.colprops = {
+            'modset_name': HtmlTableColumn(
+                     title='Moduleset',
+                     table='comp_moduleset',
+                     field='modset_name',
+                     display=True,
+                     img='action16',
+                    ),
+            'modset_mod_name': HtmlTableColumn(
+                     title='Module',
+                     table='comp_moduleset_modules',
+                     field='modset_mod_name',
+                     display=True,
+                     img='action16',
+                    ),
+            'modset_mod_updated': HtmlTableColumn(
+                     title='Updated',
+                     table='comp_moduleset_modules',
+                     field='modset_mod_updated',
+                     display=True,
+                     img='action16',
+                    ),
+            'modset_mod_author': HtmlTableColumn(
+                     title='Author',
+                     table='comp_moduleset_modules',
+                     field='modset_mod_author',
+                     display=True,
+                     img='guy16',
+                    ),
+        }
+        self.form_module_add = self.comp_module_add_sqlform()
+        self.form_moduleset_add = self.comp_moduleset_add_sqlform()
+        self.additional_tools.append('module_add')
+        self.additional_tools.append('module_del')
+        self.additional_tools.append('moduleset_add')
+        self.additional_tools.append('moduleset_del')
+
+    def moduleset_del(self):
+        d = DIV(
+              A(
+                T("Delete moduleset"),
+                _onclick=self.ajax_submit(args=['moduleset_del']),
+              ),
+              _class='floatw',
+            )
+        return d
+
+    def moduleset_add(self):
+        d = DIV(
+              A(
+                T("Add moduleset"),
+                _onclick="""
+                  click_toggle_vis('%(div)s', 'block');
+                """%dict(div='comp_moduleset_add'),
+              ),
+              DIV(
+                self.form_moduleset_add,
+                _style='display:none',
+                _class='white_float',
+                _name='comp_moduleset_add',
+                _id='comp_moduleset_add',
+              ),
+              _class='floatw',
+            )
+        return d
+
+
+    def module_del(self):
+        d = DIV(
+              A(
+                T("Delete modules"),
+                _onclick=self.ajax_submit(args=['module_del']),
+              ),
+              _class='floatw',
+            )
+        return d
+
+    def module_add(self):
+        d = DIV(
+              A(
+                T("Add module"),
+                _onclick="""
+                  click_toggle_vis('%(div)s', 'block');
+                """%dict(div='comp_module_add'),
+              ),
+              DIV(
+                self.form_module_add,
+                _style='display:none',
+                _class='white_float',
+                _name='comp_module_add',
+                _id='comp_module_add',
+              ),
+              _class='floatw',
+            )
+        return d
+
+    def comp_moduleset_add_sqlform(self):
+        db.comp_moduleset.modset_name.readable = True
+        db.comp_moduleset.modset_name.writable = True
+        db.comp_moduleset.modset_author.readable = False
+        db.comp_moduleset.modset_author.writable = False
+        db.comp_moduleset.modset_updated.readable = False
+        db.comp_moduleset.modset_updated.writable = False
+        db.comp_moduleset.modset_name.requires = IS_NOT_IN_DB(db,
+                                                db.comp_moduleset.modset_name)
+        f = SQLFORM(
+                 db.comp_moduleset,
+                 labels={'modset_name': T('Moduleset name')},
+                 _name='moduleset_add',
+            )
+        f.vars.modset_author = user_name()
+        return f
+
+    def comp_module_add_sqlform(self):
+        db.comp_moduleset_modules.modset_id.readable = True
+        db.comp_moduleset_modules.modset_id.writable = True
+        db.comp_moduleset_modules.modset_mod_name.readable = True
+        db.comp_moduleset_modules.modset_mod_name.writable = True
+        db.comp_moduleset_modules.modset_mod_author.readable = False
+        db.comp_moduleset_modules.modset_mod_author.writable = False
+        db.comp_moduleset_modules.modset_mod_updated.readable = False
+        db.comp_moduleset_modules.modset_mod_updated.writable = False
+        db.comp_moduleset_modules.modset_id.requires = IS_IN_DB(db,
+                                                db.comp_moduleset.id,
+                                                "%(modset_name)s",
+                                                zero=T('choose one'))
+        if 'modset_id' in request.vars:
+            q = db.comp_moduleset_modules.modset_id == request.vars.modset_id
+            db.comp_moduleset_modules.modset_mod_name.requires = IS_NOT_IN_DB(
+                                db(q), 'comp_moduleset_modules.modset_mod_name')
+        f = SQLFORM(
+                 db.comp_moduleset_modules,
+                 labels={'modset_id': T('Moduleset name'),
+                         'modset_mod_name': T('Module name')},
+                 _name='module_add',
+            )
+        f.vars.modset_mod_author = user_name()
+        return f
+
+@auth.requires_login()
+def comp_delete_module(ids=[]):
+    if len(ids) == 0:
+        response.flash = T("no module selected")
+        return
+    n = db(db.comp_moduleset_modules.id.belongs(ids)).delete()
+    response.flash = T("deleted %(n)d modules", dict(n=n))
+
+@auth.requires_login()
+def ajax_comp_moduleset():
+    t = table_comp_moduleset('ajax_comp_moduleset', 'ajax_comp_moduleset')
+    t.upc_table = 'comp_moduleset'
+    t.span = 'modset_name'
+    t.checkboxes = True
+    t.checkbox_id_table = 'comp_moduleset_modules'
+
+    if len(request.args) == 1 and request.args[0] == 'module_del':
+        comp_delete_module(t.get_checked())
+
+    if t.form_moduleset_add.accepts(request.vars, formname='add_moduleset'):
+        response.flash = T("moduleset added")
+    elif t.form_moduleset_add.errors:
+        response.flash = T("errors in form")
+
+    if t.form_module_add.accepts(request.vars, formname='add_module'):
+        response.flash = T("moduleset added")
+    elif t.form_module_add.errors:
+        response.flash = T("errors in form")
+
+    o = db.comp_moduleset.modset_name
+    q = db.comp_moduleset.id > 0
+    for f in t.cols:
+        q &= _where(None, t.colprops[f].table, t.filter_parse(f), f)
+
+    join = db.comp_moduleset.id == db.comp_moduleset_modules.modset_id
+    left = db.comp_moduleset_modules.on(join)
+    rows = db(q).select(db.comp_moduleset_modules.id, left=left)
+    t.set_pager_max(len(rows))
+
+    if t.pager_start == 0 and t.pager_end == 0:
+        t.object_list = db(q).select(orderby=o, left=left)
+    else:
+        t.object_list = db(q).select(left=left, limitby=(t.pager_start,t.pager_end), orderby=o)
+
+    return t.html()
+
+@auth.requires_login()
+def comp_modules():
+    t = DIV(
+          comp_menu('Modules'),
+          DIV(
+            ajax_comp_moduleset(),
+            _id='ajax_comp_moduleset',
+          ),
+          DIV(
+            #ajax_comp_modules_nodes(),
+            _id='ajax_comp_modules_nodes',
+          ),
+        )
+    return dict(table=t)
+
+#
+# Status sub-view
+#
 class table_comp_mod_status(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -1003,131 +1349,6 @@ class table_comp_status(HtmlTable):
                     ),
         }
         self.colprops.update(v_nodes_colprops)
-
-class table_comp_nodes(HtmlTable):
-    def __init__(self, id=None, func=None, innerhtml=None):
-        if id is None and 'tableid' in request.vars:
-            id = request.vars.tableid
-        HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['nodename', 'rulesets'] + v_nodes_cols
-        self.colprops = v_nodes_colprops
-        self.colprops['rulesets'] = col_run_ruleset(
-                     title='Rule set',
-                     field='rulesets',
-                     img='action16',
-                     display=True,
-                    )
-        self.colprops['nodename'].display = True
-        self.checkboxes = True
-        self.additional_tools.append('ruleset_attach')
-        self.additional_tools.append('ruleset_detach')
-
-    def ruleset_detach(self):
-        d = DIV(
-              A(
-                T("Detach ruleset"),
-                _onclick=self.ajax_submit(args=['detach_ruleset'],
-                                          additional_inputs=self.rulesets.ajax_inputs()),
-              ),
-              _class='floatw',
-            )
-        return d
-
-    def ruleset_attach(self):
-        d = DIV(
-              A(
-                T("Attach ruleset"),
-                _onclick=self.ajax_submit(args=['attach_ruleset'],
-                                          additional_inputs=self.rulesets.ajax_inputs()),
-              ),
-              _class='floatw',
-            )
-        return d
-
-
-class table_comp_explicit_rules(HtmlTable):
-    def __init__(self, id=None, func=None, innerhtml=None):
-        if id is None and 'tableid' in request.vars:
-            id = request.vars.tableid
-        HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['rule_name', 'variables']
-        self.colprops = {
-            'rule_name': HtmlTableColumn(
-                     title='Ruleset',
-                     field='rule_name',
-                     display=True,
-                     img='action16',
-                    ),
-            'variables': col_variables(
-                     title='Variables',
-                     field='variables',
-                     display=True,
-                     img='action16',
-                    ),
-        }
-        self.checkboxes = True
-        self.dbfilterable = False
-        self.exportable = False
-
-@auth.requires_login()
-def ajax_comp_nodes():
-    r = table_comp_explicit_rules('ajax_comp_explicit_rules',
-                                  'ajax_comp_explicit_rules')
-    t = table_comp_nodes('ajax_comp_nodes', 'ajax_comp_nodes')
-    t.rulesets = r
-
-    if len(request.args) == 1 and request.args[0] == 'attach_ruleset':
-        comp_attach_ruleset(t.get_checked(), r.get_checked())
-    elif len(request.args) == 1 and request.args[0] == 'detach_ruleset':
-        comp_detach_ruleset(t.get_checked(), r.get_checked())
-
-    o = db.v_comp_explicit_rulesets.rule_name
-    q = db.v_comp_explicit_rulesets.id > 0
-    for f in r.cols:
-        q &= _where(None, 'v_comp_explicit_rulesets', r.filter_parse_glob(f), f)
-
-    n = db(q).count()
-    r.set_pager_max(n)
-
-    if r.pager_start == 0 and r.pager_end == 0:
-        r.object_list = db(q).select(orderby=o)
-    else:
-        r.object_list = db(q).select(limitby=(r.pager_start,r.pager_end), orderby=o)
-
-    r.object_list = db(q).select(orderby=o)
-    r_html = r.html()
-
-    o = db.v_comp_nodes.nodename
-    q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
-    for f in t.cols:
-        q &= _where(None, 'v_comp_nodes', t.filter_parse_glob(f), f)
-    q = apply_db_filters(q, 'v_comp_nodes')
-
-    n = db(q).count()
-    t.set_pager_max(n)
-
-    if t.pager_start == 0 and t.pager_end == 0:
-        t.object_list = db(q).select(orderby=o)
-    else:
-        t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
-
-    t.object_list = db(q).select(orderby=o)
-
-    return DIV(
-             DIV(
-               t.html(),
-               _style="""min-width:70%;
-                         float:left;
-                         border-right:1px solid;
-                      """
-             ),
-             DIV(
-               r_html,
-               _style="""min-width:30%;
-                         float:left;
-                      """
-             ),
-           )
 
 @auth.requires_login()
 def ajax_comp_log_col_values():

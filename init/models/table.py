@@ -46,6 +46,7 @@ class HtmlTable(object):
         # to be set be instanciers
         self.checkboxes = False
         self.checkbox_id_col = 'id'
+        self.checkbox_id_table = None
         self.filterable = True
         self.dbfilterable = True
         self.pageable = True
@@ -368,8 +369,15 @@ class HtmlTable(object):
     def filter_cloud_key(self, f):
         return '_'.join((self.id_prefix, 'filter_cloud', f))
 
-    def checkbox_key(self, f):
-        return '_'.join((self.id_prefix, 'check_id', str(f)))
+    def checkbox_key(self, o):
+        if o is None:
+            return '_'.join((self.id_prefix, 'check_id', ''))
+        if self.checkbox_id_table is None or \
+           self.checkbox_id_table not in o:
+            id = o[self.checkbox_id_col]
+        else:
+            id = o[self.checkbox_id_table][self.checkbox_id_col]
+        return '_'.join((self.id_prefix, 'check_id', str(id)))
 
     def checkbox_name_key(self):
         return '_'.join((self.id_prefix, 'check'))
@@ -378,7 +386,7 @@ class HtmlTable(object):
         return '_'.join((self.id_prefix, 'check_all'))
 
     def get_checked(self):
-        prefix = self.checkbox_key('')
+        prefix = self.checkbox_key(None)
         ids = []
         for key in [ k for k in request.vars.keys() if prefix in k and request.vars[k] == 'true' ]:
             ids.append(int(key.replace(prefix, '')))
@@ -421,14 +429,14 @@ class HtmlTable(object):
     def table_line(self, o):
         cells = []
         if self.checkboxes:
-            checked = getattr(request.vars, self.checkbox_key(o['id']))
+            checked = getattr(request.vars, self.checkbox_key(o))
             if checked is None or checked == 'false':
                 checked = False
                 value = 'false'
             else:
                 checked = True
                 value = 'true'
-            checkbox_id = self.checkbox_key(o[self.checkbox_id_col])
+            checkbox_id = self.checkbox_key(o)
             self.checkbox_ids.append(checkbox_id)
             cells.append(TD(
                            INPUT(
@@ -442,11 +450,7 @@ class HtmlTable(object):
                          ))
 
         for c in self.cols:
-            if self.span is not None and \
-               self.last is not None and \
-               o[self.span] == self.last[self.span] and \
-               (c == self.span or (c in self.sub_span and \
-               self.colprops[c].get(o) == self.colprops[c].get(self.last))):
+            if self.spaning_cell(c, o):
                 content = ''
             else:
                 content = self.colprops[c].html(o)
@@ -458,6 +462,21 @@ class HtmlTable(object):
 v=self.colprops[c].get(o))+self.ajax_submit(),
                          ))
         return TR(cells, _class=self.cellclass)
+
+    def spaning_line(self, o):
+        if self.span is not None and \
+           self.last is not None and \
+           self.colprops[self.span].get(o) == self.colprops[self.span].get(self.last):
+            return True
+        return False
+
+    def spaning_cell(self, c, o):
+        if not self.spaning_line(o):
+           return False
+        if (c == self.span or (c in self.sub_span and \
+           self.colprops[c].get(o) == self.colprops[c].get(self.last))):
+            return True
+        return False
 
     def table_lines(self):
         lines = []
@@ -478,9 +497,7 @@ v=self.colprops[c].get(o))+self.ajax_submit(),
                     continue
             line_count += 1
             if not self.pageable or self.perpage == 0 or line_count <= self.perpage:
-                if self.last is None or \
-                   self.span is None or \
-                   o[self.span] != self.last[self.span]:
+                if not self.spaning_line(o):
                     self.rotate_colors()
                 lines.append(self.table_line(o))
                 if hasattr(self, 'format_extra_line'):
