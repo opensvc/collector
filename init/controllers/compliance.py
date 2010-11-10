@@ -777,7 +777,7 @@ class table_comp_rules(HtmlTable):
         db.comp_rules.rule_field.writable = True
         db.comp_rules.rule_value.readable = True
         db.comp_rules.rule_value.writable = True
-        db.comp_rules.rule_name.requires = IS_NOT_IN_DB(db, db.comp_rules.rule_name)
+        db.comp_rules.rule_name.requires = IS_NOT_EMPTY()
         db.comp_rules.rule_table.requires = IS_NOT_EMPTY()
         db.comp_rules.rule_field.requires = IS_NOT_EMPTY()
         db.comp_rules.rule_value.requires = IS_NOT_EMPTY()
