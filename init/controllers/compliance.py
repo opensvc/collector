@@ -561,8 +561,6 @@ def ajax_comp_nodes():
     else:
         t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
 
-    t.object_list = db(q).select(orderby=o)
-
     return DIV(
              DIV(
                t.html(),
