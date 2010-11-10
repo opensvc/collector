@@ -1561,24 +1561,26 @@ def comp_get_moduleset_modules(moduleset):
     if isinstance(moduleset, list):
         if len(moduleset) == 0:
             return []
-        q = db.comp_moduleset.moduleset.belongs(moduleset)
+        q = db.comp_moduleset.modset_name.belongs(moduleset)
     elif isinstance(moduleset, str):
-        q = db.comp_moduleset.moduleset == moduleset
+        q = db.comp_moduleset.modset_name == moduleset
     else:
         return []
-    rows = db(q).select(db.comp_moduleset.module,
-                        groupby=db.comp_moduleset.module)
-    return [r.module for r in rows]
+    q &= db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
+    rows = db(q).select(db.comp_moduleset_modules.modset_mod_name,
+                        groupby=db.comp_moduleset_modules.modset_mod_name)
+    return [r.modset_mod_name for r in rows]
 
-def comp_moduleset_exists(moduleset):
-    q = db.comp_moduleset.moduleset == moduleset
-    if len(db(q).select(db.comp_moduleset.id)) == 0:
-        return False
-    return True
+def comp_moduleset_id(moduleset):
+    q = db.comp_moduleset.modset_name == moduleset
+    rows = db(q).select(db.comp_moduleset.id)
+    if len(rows) == 0:
+        return None
+    return rows[0].id
 
-def comp_moduleset_attached(nodename, moduleset):
-    q = db.comp_node_moduleset.moduleset_node == nodename
-    q &= db.comp_node_moduleset.moduleset_name == moduleset
+def comp_moduleset_attached(nodename, modset_id):
+    q = db.comp_node_moduleset.modset_node == nodename
+    q &= db.comp_node_moduleset.modset_id == modset_id
     if len(db(q).select(db.comp_node_moduleset.id)) == 0:
         return False
     return True
@@ -1602,19 +1604,15 @@ def comp_ruleset_attached(nodename, ruleset):
 def comp_attach_moduleset(nodename, moduleset):
     if len(moduleset) == 0:
         return dict(status=False, msg="no moduleset specified"%moduleset)
-    if not comp_moduleset_exists(moduleset):
+    modset_id = comp_moduleset_id(moduleset)
+    if modset_id is None:
         return dict(status=False, msg="moduleset %s does not exist"%moduleset)
-    if comp_moduleset_attached(nodename, moduleset):
+    if comp_moduleset_attached(nodename, modset_id):
         return dict(status=True,
                     msg="moduleset %s is already attached to this node"%moduleset)
 
-    q = db.comp_node_moduleset.moduleset_node == nodename
-    q &= db.comp_node_moduleset.moduleset_name == moduleset
-    if db(q).count() > 0:
-        return dict(status=True, msg="moduleset %s already attached"%moduleset)
-
-    n = db.comp_node_moduleset.insert(moduleset_node=nodename,
-                                      moduleset_name=moduleset)
+    n = db.comp_node_moduleset.insert(modset_node=nodename,
+                                      modset_id=modset_id)
     if n == 0:
         return dict(status=False, msg="failed to attach moduleset %s"%moduleset)
     return dict(status=True, msg="moduleset %s attached"%moduleset)
@@ -1623,11 +1621,14 @@ def comp_attach_moduleset(nodename, moduleset):
 def comp_detach_moduleset(nodename, moduleset):
     if len(moduleset) == 0:
         return dict(status=False, msg="no moduleset specified"%moduleset)
-    if not comp_moduleset_attached(nodename, moduleset):
+    modset_id = comp_moduleset_id(moduleset)
+    if modset_id is None:
+        return dict(status=True, msg="moduleset %s does not exist"%moduleset)
+    if not comp_moduleset_attached(nodename, modset_id):
         return dict(status=True,
                     msg="moduleset %s is not attached to this node"%moduleset)
-    q = db.comp_node_moduleset.moduleset_node == nodename
-    q &= db.comp_node_moduleset.moduleset_name == moduleset
+    q = db.comp_node_moduleset.modset_node == nodename
+    q &= db.comp_node_moduleset.modset_id == modset_id
     n = db(q).delete()
     if n == 0:
         return dict(status=False, msg="failed to detach the moduleset")
@@ -1676,17 +1677,17 @@ def comp_list_rulesets(pattern='%'):
 
 @service.xmlrpc
 def comp_list_modulesets(pattern='%'):
-    q = db.v_comp_moduleset_names.moduleset.like(pattern)
+    q = db.comp_moduleset.modset_name.like(pattern)
     rows = db(q).select()
-    return [r.moduleset for r in rows]
+    return [r.modset_name for r in rows]
 
 @service.xmlrpc
 def comp_get_moduleset(nodename):
-    moduleset = []
-    q = db.comp_node_moduleset.moduleset_node == nodename
-    rows = db(q).select(db.comp_node_moduleset.moduleset_name,
-                        groupby=db.comp_node_moduleset.moduleset_name)
-    return [r.moduleset_name for r in rows]
+    q = db.comp_node_moduleset.modset_node == nodename
+    q &= db.comp_node_moduleset.modset_id == db.comp_moduleset.id
+    rows = db(q).select(db.comp_moduleset.modset_name,
+                        groupby=db.comp_node_moduleset.modset_id)
+    return [r.modset_name for r in rows]
 
 @service.xmlrpc
 def comp_log_action(vars, vals):

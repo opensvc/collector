@@ -901,15 +901,6 @@ db.define_table('comp_moduleset_modules',
     Field('modset_mod_updated','datetime'),
     migrate=False)
 
-"""
-db.define_table('v_comp_moduleset',
-    Field('moduleset','string'),
-    Field('module','string'),
-    Field('modset_author','string'),
-    Field('modset_updated','datetime'),
-    migrate=False)
-"""
-
 db.define_table('comp_log',
     Field('run_module','string'),
     Field('run_nodename','string'),
@@ -960,9 +951,10 @@ db.define_table('comp_node_ruleset',
     migrate=False)
 
 db.define_table('comp_node_moduleset',
-    Field('moduleset_node','string'),
-    Field('moduleset_name','string'),
-    Field('moduleset_updated','string'),
+    Field('modset_node','string'),
+    Field('modset_id','integer'),
+    Field('modset_updated','string'),
+    Field('modset_author','string'),
     migrate=False)
 
 db.define_table('v_comp_mod_status',
@@ -975,10 +967,6 @@ db.define_table('v_comp_mod_status',
 
 db.define_table('v_comp_ruleset_names',
     Field('rule_name','string'),
-    migrate=False)
-
-db.define_table('v_comp_moduleset_names',
-    Field('moduleset','string'),
     migrate=False)
 
 db.define_table('v_comp_explicit_rulesets',

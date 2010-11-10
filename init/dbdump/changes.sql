@@ -646,4 +646,8 @@ create table comp_moduleset (`id` int(11) NOT NULL AUTO_INCREMENT, `modset_name`
 
 create table comp_moduleset_modules (`id` int(11) NOT NULL AUTO_INCREMENT, `modset_id` integer, `modset_mod_name` varchar(60) NOT NULL, `modset_mod_author` varchar(100) DEFAULT '', `modset_mod_updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (`id`), UNIQUE KEY `idx1` (`modset_mod_name`,`modset_id`)) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 
+drop table comp_node_moduleset;
 
+CREATE TABLE `comp_node_moduleset` (   `id` int(11) NOT NULL AUTO_INCREMENT, `modset_node` varchar(60) NOT NULL, `modset_id` integer NOT NULL, `modset_mod_author` varchar(100) DEFAULT '', `modset_updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,   PRIMARY KEY (`id`), UNIQUE KEY `idx1` (`modset_node`,`modset_id`) ) ENGINE=MyISAM AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+
+drop view v_comp_moduleset_names;
