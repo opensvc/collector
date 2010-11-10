@@ -1046,6 +1046,36 @@ class table_comp_moduleset(HtmlTable):
         self.additional_tools.append('module_del')
         self.additional_tools.append('moduleset_add')
         self.additional_tools.append('moduleset_del')
+        self.additional_tools.append('moduleset_rename')
+
+    def checkbox_key(self, o):
+        if o is None:
+            return '_'.join((self.id_prefix, 'check_id', ''))
+        id1 = o['comp_moduleset']['id']
+        id2 = o['comp_moduleset_modules']['id']
+        return '_'.join((self.id_prefix, 'check_id', str(id1), str(id2)))
+
+    def moduleset_rename(self):
+        d = DIV(
+              A(
+                T("Rename moduleset"),
+                _onclick="""click_toggle_vis('%(div)s', 'block');
+                         """%dict(div='comp_moduleset_rename'),
+              ),
+              DIV(
+                INPUT(
+                  _id='comp_moduleset_rename_input',
+                  _onKeyPress=self.ajax_enter_submit(additional_inputs=['comp_moduleset_rename_input'],
+                                                     args=['moduleset_rename']),
+                ),
+                _style='display:none',
+                _class='white_float',
+                _name='comp_moduleset_rename',
+                _id='comp_moduleset_rename',
+              ),
+              _class='floatw',
+            )
+        return d
 
     def moduleset_del(self):
         d = DIV(
@@ -1149,13 +1179,34 @@ class table_comp_moduleset(HtmlTable):
         f.vars.modset_mod_author = user_name()
         return f
 
-@auth.requires_login()
 def comp_delete_module(ids=[]):
+    ids = map(lambda x: int(x.split('_')[1]), ids)
     if len(ids) == 0:
         response.flash = T("no module selected")
         return
     n = db(db.comp_moduleset_modules.id.belongs(ids)).delete()
     response.flash = T("deleted %(n)d modules", dict(n=n))
+
+def comp_delete_moduleset(ids=[]):
+    ids = map(lambda x: int(x.split('_')[0]), ids)
+    if len(ids) == 0:
+        response.flash = T("no moduleset selected")
+        return
+    n = db(db.comp_moduleset_modules.modset_id.belongs(ids)).delete()
+    n = db(db.comp_moduleset.id.belongs(ids)).delete()
+    response.flash = T("deleted %(n)d moduleset", dict(n=n))
+
+def comp_rename_moduleset(ids):
+    if len(ids) != 1:
+        response.flash = T("one and only one moduleset must be selected")
+        return
+    if 'comp_moduleset_rename_input' not in request.vars:
+        response.flash = T("new moduleset name is empty")
+        return
+    new = request.vars['comp_moduleset_rename_input']
+    id = int(ids[0].split('_')[0])
+    n = db(db.comp_moduleset.id == id).update(modset_name=new)
+    response.flash = T("moduleset renamed", dict(n=n))
 
 @auth.requires_login()
 def ajax_comp_moduleset():
@@ -1167,6 +1218,10 @@ def ajax_comp_moduleset():
 
     if len(request.args) == 1 and request.args[0] == 'module_del':
         comp_delete_module(t.get_checked())
+    if len(request.args) == 1 and request.args[0] == 'moduleset_del':
+        comp_delete_moduleset(t.get_checked())
+    if len(request.args) == 1 and request.args[0] == 'moduleset_rename':
+        comp_rename_moduleset(t.get_checked())
 
     if t.form_moduleset_add.accepts(request.vars, formname='add_moduleset'):
         response.flash = T("moduleset added")
@@ -1181,17 +1236,27 @@ def ajax_comp_moduleset():
     o = db.comp_moduleset.modset_name
     q = db.comp_moduleset.id > 0
     for f in t.cols:
-        q &= _where(None, t.colprops[f].table, t.filter_parse(f), f)
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
-    join = db.comp_moduleset.id == db.comp_moduleset_modules.modset_id
+    join = db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
     left = db.comp_moduleset_modules.on(join)
     rows = db(q).select(db.comp_moduleset_modules.id, left=left)
     t.set_pager_max(len(rows))
 
     if t.pager_start == 0 and t.pager_end == 0:
-        t.object_list = db(q).select(orderby=o, left=left)
+        t.object_list = db(q).select(db.comp_moduleset_modules.ALL,
+                                     db.comp_moduleset.modset_name,
+                                     db.comp_moduleset.id,
+                                     orderby=o,
+                                     left=left
+                                    )
     else:
-        t.object_list = db(q).select(left=left, limitby=(t.pager_start,t.pager_end), orderby=o)
+        t.object_list = db(q).select(db.comp_moduleset_modules.ALL,
+                                     db.comp_moduleset.modset_name,
+                                     db.comp_moduleset.id,
+                                     orderby=o,
+                                     left=left,
+                                     limitby=(t.pager_start,t.pager_end))
 
     return t.html()
 

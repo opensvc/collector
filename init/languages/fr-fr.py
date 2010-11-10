@@ -331,6 +331,7 @@
 'Remove': 'Supprimer',
 'Remove account': 'Supprimer compte',
 'Remove item': "Supprimer l'élément",
+'Rename moduleset': 'Rename moduleset',
 'Report': 'Rapport',
 'Reset Password key': 'Remise à zéro de la clé du mot de passe',
 'Reset thresholds': 'Remise aux défauts des seuils',

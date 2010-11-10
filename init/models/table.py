@@ -19,7 +19,10 @@ class HtmlTableColumn(Column):
             return o[self.table][self.field]
 
     def html(self, o):
-        return self.get(o)
+        val = self.get(o)
+        if val is None:
+            return ''
+        return val
 
 class HtmlTable(object):
     def __init__(self, id=None, func=None, innerhtml=None):
@@ -389,7 +392,10 @@ class HtmlTable(object):
         prefix = self.checkbox_key(None)
         ids = []
         for key in [ k for k in request.vars.keys() if prefix in k and request.vars[k] == 'true' ]:
-            ids.append(int(key.replace(prefix, '')))
+            try:
+                ids.append(int(key.replace(prefix, '')))
+            except:
+                ids.append(key.replace(prefix, ''))
         return ids
 
     def filter_parse(self, f):
@@ -454,12 +460,17 @@ class HtmlTable(object):
                 content = ''
             else:
                 content = self.colprops[c].html(o)
+            v = self.colprops[c].get(o)
+            if v is None:
+                v = 'empty'
             cells.append(TD(content,
                             _name=self.col_key(c),
                             _style=self.col_hide(c),
                             _class=self.colprops[c]._class,
-                            _ondblclick="getElementById('%(k)s').value='%(v)s';"%dict(k=self.filter_key(c),
-v=self.colprops[c].get(o))+self.ajax_submit(),
+                            _ondblclick="getElementById('%(k)s').value='%(v)s';"%dict(
+                              k=self.filter_key(c),
+                              v=v,
+                             )+self.ajax_submit(),
                          ))
         return TR(cells, _class=self.cellclass)
 
@@ -598,12 +609,14 @@ v=self.colprops[c].get(o))+self.ajax_submit(),
                          spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
                         )
 
-    def ajax_enter_submit(self):
+    def ajax_enter_submit(self, args=[], additional_inputs=[]):
         return """if (is_enter(event)) {
                     getElementById("tableid").value="%(id)s";
                     %(ajax)s
                   };
-                  """%dict(ajax=self.ajax_submit(),
+                  """%dict(ajax=self.ajax_submit(
+                                  args=args,
+                                  additional_inputs=additional_inputs),
                            id=self.id)
 
     def html(self):
