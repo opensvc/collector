@@ -10,6 +10,13 @@ img_h = {0: 'check16.png',
          1: 'nok.png',
          2: 'na.png'}
 
+import re
+# ex: \x1b[37;44m\x1b[1mContact List\x1b[0m\n
+regex = re.compile("\x1b\[([0-9]{1,3}(;[0-9]{1,3})*)?[m|K]", re.UNICODE)
+
+def strip_unprintable(s):
+    return regex.sub('', s)
+
 #
 # Sub-view menu
 #
@@ -1690,10 +1697,11 @@ def comp_get_moduleset(nodename):
 @service.xmlrpc
 def comp_log_action(vars, vals):
     now = datetime.datetime.now()
-    for a, b in zip(vars, vals):
-        if a != 'run_action':
-            continue
-        action = b
+    for i, (a, b) in enumerate(zip(vars, vals)):
+        if a == 'run_action':
+            action = b
+        elif a == 'run_log':
+            vals[i] = strip_unprintable(b)
     vars.append('run_date')
     vals.append(now)
     generic_insert('comp_log', vars, vals)
