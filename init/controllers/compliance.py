@@ -566,7 +566,7 @@ def ajax_comp_nodes():
                t.html(),
                _style="""min-width:70%;
                          float:left;
-                         border-right:1px solid;
+                         border-right:0px solid;
                       """
              ),
              DIV(
