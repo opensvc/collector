@@ -53,6 +53,14 @@ def comp_menu(current):
                    'comp_modules'
                  ),
          },
+         {
+          'title': 'Filters',
+          'url': URL(
+                   request.application,
+                   'compliance',
+                   'comp_filters'
+                 ),
+         },
         ]
 
     def item(i):
@@ -76,26 +84,12 @@ def comp_menu(current):
 #
 # custom column formatting
 #
-def is_named_ruleset(o):
-    if o.rule_log_op == 'AND' and \
-       o.rule_op == '=' and \
-       o.rule_table == 'comp_node_ruleset' and \
-       o.rule_field == 'ruleset_name':
-        return True
-    return False
-
 class col_variables(HtmlTableColumn):
     def html(self, o):
         val = self.get(o)
         if val is None:
             return SPAN()
         return PRE(val.replace('|','\n'))
-
-class col_rule_filter(HtmlTableColumn):
-    def html(self, o):
-        if is_named_ruleset(o):
-            return SPAN()
-        return self.get(o)
 
 class col_run_log(HtmlTableColumn):
     def html(self, o):
@@ -507,11 +501,11 @@ class table_comp_explicit_rules(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['rule_name', 'variables']
+        self.cols = ['ruleset_name', 'variables']
         self.colprops = {
-            'rule_name': HtmlTableColumn(
-                     title='Ruleset',
-                     field='rule_name',
+            'ruleset_name': HtmlTableColumn(
+                     title='Rule set',
+                     field='ruleset_name',
                      display=True,
                      img='action16',
                     ),
@@ -534,14 +528,14 @@ def ajax_comp_nodes():
     t.rulesets = r
 
     if len(request.args) == 1 and request.args[0] == 'attach_ruleset':
-        comp_attach_ruleset(t.get_checked(), r.get_checked())
+        comp_attach_rulesets(t.get_checked(), r.get_checked())
     elif len(request.args) == 1 and request.args[0] == 'detach_ruleset':
-        comp_detach_ruleset(t.get_checked(), r.get_checked())
+        comp_detach_rulesets(t.get_checked(), r.get_checked())
 
-    o = db.v_comp_explicit_rulesets.rule_name
+    o = db.v_comp_explicit_rulesets.ruleset_name
     q = db.v_comp_explicit_rulesets.id > 0
     for f in r.cols:
-        q &= _where(None, 'v_comp_explicit_rulesets', r.filter_parse_glob(f), f)
+        q = _where(q, 'v_comp_explicit_rulesets', r.filter_parse_glob(f), f)
 
     n = db(q).count()
     r.set_pager_max(n)
@@ -551,13 +545,12 @@ def ajax_comp_nodes():
     else:
         r.object_list = db(q).select(limitby=(r.pager_start,r.pager_end), orderby=o)
 
-    r.object_list = db(q).select(orderby=o)
     r_html = r.html()
 
     o = db.v_comp_nodes.nodename
     q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
     for f in t.cols:
-        q &= _where(None, 'v_comp_nodes', t.filter_parse_glob(f), f)
+        q = _where(q, 'v_comp_nodes', t.filter_parse_glob(f), f)
     q = apply_db_filters(q, 'v_comp_nodes')
 
     n = db(q).count()
@@ -584,395 +577,314 @@ def ajax_comp_nodes():
              ),
            )
 
-class table_comp_rules_vars(HtmlTable):
+class table_comp_rulesets(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['rule_name',
-                     'rule_var_name',
-                     'rule_var_value',
-                     'rule_var_updated',
-                     'rule_var_author',
+        self.cols = ['ruleset_name',
+                     'fset_name',
+                     'var_name',
+                     'var_value',
+                     'var_updated',
+                     'var_author',
                     ]
         self.colprops = {
-            'rule_var_updated': HtmlTableColumn(
+            'var_updated': HtmlTableColumn(
                      title='Updated',
-                     field='rule_var_updated',
+                     field='var_updated',
                      display=True,
                      img='action16',
                     ),
-            'rule_var_author': HtmlTableColumn(
+            'var_author': HtmlTableColumn(
                      title='Author',
-                     field='rule_var_author',
+                     field='var_author',
                      display=True,
                      img='guy16',
                     ),
-            'rule_name': HtmlTableColumn(
-                     title='Ruleset',
-                     field='rule_name',
+            'ruleset_name': HtmlTableColumn(
+                     title='Rule set',
+                     field='ruleset_name',
                      display=True,
                      img='action16',
                     ),
-            'rule_var_value': HtmlTableColumn(
+            'fset_name': HtmlTableColumn(
+                     title='Filter set',
+                     field='fset_name',
+                     display=True,
+                     img='filter16',
+                    ),
+            'var_value': HtmlTableColumn(
                      title='Value',
-                     field='rule_var_value',
+                     field='var_value',
                      display=True,
                      img='action16',
                     ),
-            'rule_var_name': HtmlTableColumn(
+            'var_name': HtmlTableColumn(
                      title='Variable',
-                     field='rule_var_name',
+                     field='var_name',
                      display=True,
                      img='action16',
                     ),
         }
-        self.form_add = self.comp_rules_vars_add_sqlform()
-        self.additional_tools.append('rule_vars_add')
-        self.additional_tools.append('rule_vars_del')
-
-    def rule_vars_del(self):
-        d = DIV(
-              A(
-                T("Delete variable"),
-                _onclick=self.ajax_submit(args=['delete_ruleset_var']),
-              ),
-              _class='floatw',
-            )
-        return d
-
-    def rule_vars_add(self):
-        d = DIV(
-              A(
-                T("Add variable"),
-                _onclick="""
-                  click_toggle_vis('%(div)s', 'block');
-                """%dict(div='comp_rules_vars_add'),
-              ),
-              DIV(
-                self.form_add,
-                _style='display:none',
-                _class='white_float',
-                _name='comp_rules_vars_add',
-                _id='comp_rules_vars_add',
-              ),
-              _class='floatw',
-            )
-        return d
-
-    def comp_rules_vars_add_sqlform(self):
-        db.comp_rules_vars.rule_name.unique = True
-        db.comp_rules_vars.rule_name.requires = IS_IN_DB(db, db.v_comp_ruleset_names.rule_name, zero=T('choose one'))
-        f = SQLFORM(
-                 db.comp_rules_vars,
-                 labels={'rule_name': T('Ruleset name'),
-                         'rule_var_name': T('Variable'),
-                         'rule_var_value': T('Value')},
-            )
-        f.vars.rule_var_author = user_name()
-        return f
-
-class table_comp_rules(HtmlTable):
-    def __init__(self, id=None, func=None, innerhtml=None):
-        if id is None and 'tableid' in request.vars:
-            id = request.vars.tableid
-        HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['rule_name',
-                     'rule_log_op',
-                     'rule_table',
-                     'rule_field',
-                     'rule_op',
-                     'rule_value',
-                     'rule_updated',
-                     'rule_author',
-                    ]
-        self.colprops = {
-            'rule_table': col_rule_filter(
-                     title='Table',
-                     field='rule_table',
-                     display=True,
-                     img='filter16',
-                    ),
-            'rule_field': col_rule_filter(
-                     title='Field',
-                     field='rule_field',
-                     display=True,
-                     img='filter16',
-                    ),
-            'rule_value': col_rule_filter(
-                     title='Value',
-                     field='rule_value',
-                     display=True,
-                     img='filter16',
-                    ),
-            'rule_updated': HtmlTableColumn(
-                     title='Updated',
-                     field='rule_updated',
-                     display=True,
-                     img='action16',
-                    ),
-            'rule_author': HtmlTableColumn(
-                     title='Author',
-                     field='rule_author',
-                     display=True,
-                     img='guy16',
-                    ),
-            'rule_name': HtmlTableColumn(
-                     title='Ruleset',
-                     field='rule_name',
-                     display=True,
-                     img='action16',
-                    ),
-            'rule_op': col_rule_filter(
-                     title='Operator',
-                     field='rule_op',
-                     display=True,
-                     img='filter16',
-                    ),
-            'rule_log_op': col_rule_filter(
-                     title='Logical operator',
-                     field='rule_log_op',
-                     display=True,
-                     img='filter16',
-                    ),
-        }
-        self.form_x_add = self.comp_x_ruleset_add_sqlform()
-        self.form_c_add = self.comp_c_ruleset_add_sqlform()
-        self.additional_tools.append('x_ruleset_add')
-        self.additional_tools.append('c_ruleset_add')
+        self.form_filterset_attach = self.comp_filterset_attach_sqlform()
+        self.form_ruleset_var_add = self.comp_ruleset_var_add_sqlform()
+        self.form_ruleset_add = self.comp_ruleset_add_sqlform()
+        self.additional_tools.append('filterset_attach')
+        self.additional_tools.append('filterset_detach')
+        self.additional_tools.append('ruleset_var_add')
+        self.additional_tools.append('ruleset_var_del')
         self.additional_tools.append('ruleset_del')
+        self.additional_tools.append('ruleset_add')
+
+    def checkbox_key(self, o):
+        if o is None:
+            return '_'.join((self.id_prefix, 'check_id', ''))
+        ids = []
+        ids.append(o['ruleset_id'])
+        ids.append(o['fset_id'])
+        ids.append(o['id'])
+        return '_'.join([self.id_prefix, 'check_id']+map(str,ids))
 
     def ruleset_del(self):
         d = DIV(
               A(
                 T("Delete ruleset"),
-                _onclick=self.ajax_submit(args=['delete_ruleset']),
+                _onclick=self.ajax_submit(args=['ruleset_del']),
               ),
               _class='floatw',
             )
         return d
 
-    def c_ruleset_add(self):
+    def filterset_attach(self):
         d = DIV(
               A(
-                T("Add contextual ruleset"),
+                T("Attach filterset"),
                 _onclick="""
                   click_toggle_vis('%(div)s', 'block');
-                """%dict(div='comp_c_ruleset_add'),
+                """%dict(div='comp_filterset_attach'),
               ),
               DIV(
-                self.form_c_add,
+                self.form_filterset_attach,
                 _style='display:none',
                 _class='white_float',
-                _name='comp_c_ruleset_add',
-                _id='comp_c_ruleset_add',
+                _name='comp_filterset_attach',
+                _id='comp_filterset_attach',
               ),
               _class='floatw',
             )
         return d
 
-    def comp_c_ruleset_add_sqlform(self):
-        db.comp_rules.rule_log_op.readable = True
-        db.comp_rules.rule_log_op.writable = True
-        db.comp_rules.rule_op.readable = True
-        db.comp_rules.rule_op.writable = True
-        db.comp_rules.rule_table.readable = True
-        db.comp_rules.rule_table.writable = True
-        db.comp_rules.rule_field.readable = True
-        db.comp_rules.rule_field.writable = True
-        db.comp_rules.rule_value.readable = True
-        db.comp_rules.rule_value.writable = True
-        db.comp_rules.rule_name.requires = IS_NOT_EMPTY()
-        db.comp_rules.rule_table.requires = IS_NOT_EMPTY()
-        db.comp_rules.rule_field.requires = IS_NOT_EMPTY()
-        db.comp_rules.rule_value.requires = IS_NOT_EMPTY()
-        f = SQLFORM(
-                 db.comp_rules,
-                 labels={'rule_name': T('Ruleset name'),
-                         'rule_log_op': T('Logical operator'),
-                         'rule_table': T('Table'),
-                         'rule_field': T('Field'),
-                         'rule_op': T('Operator'),
-                         'rule_value': T('Value')},
-                 _name='c_ruleset_add',
-            )
-        f.vars.rule_author = user_name()
-        return f
-
-    def x_ruleset_add(self):
+    def filterset_detach(self):
         d = DIV(
               A(
-                T("Add explicit ruleset"),
-                _onclick="""
-                  click_toggle_vis('%(div)s', 'block');
-                """%dict(div='comp_x_ruleset_add'),
-              ),
-              DIV(
-                self.form_x_add,
-                _style='display:none',
-                _class='white_float',
-                _name='comp_x_ruleset_add',
-                _id='comp_x_ruleset_add',
+                T("Detach filterset"),
+                _onclick=self.ajax_submit(args=['filterset_detach']),
               ),
               _class='floatw',
             )
         return d
 
-    def comp_x_ruleset_add_sqlform(self):
-        db.comp_rules.rule_log_op.readable = False
-        db.comp_rules.rule_log_op.writable = False
-        db.comp_rules.rule_op.readable = False
-        db.comp_rules.rule_op.writable = False
-        db.comp_rules.rule_table.readable = False
-        db.comp_rules.rule_table.writable = False
-        db.comp_rules.rule_field.readable = False
-        db.comp_rules.rule_field.writable = False
-        db.comp_rules.rule_value.readable = False
-        db.comp_rules.rule_value.writable = False
-        db.comp_rules.rule_name.requires = IS_NOT_IN_DB(db, db.comp_rules.rule_name)
-        f = SQLFORM(
-                 db.comp_rules,
-                 labels={'rule_name': T('Ruleset name'),
-                         'rule_log_op': T('Logical operator'),
-                         'rule_table': T('Table'),
-                         'rule_field': T('Field'),
-                         'rule_op': T('Operator'),
-                         'rule_value': T('Value')},
-                 _name='x_ruleset_add',
+    def ruleset_add(self):
+        d = DIV(
+              A(
+                T("Add ruleset"),
+                _onclick="""
+                  click_toggle_vis('%(div)s', 'block');
+                """%dict(div='comp_ruleset_add'),
+              ),
+              DIV(
+                self.form_ruleset_add,
+                _style='display:none',
+                _class='white_float',
+                _name='comp_ruleset_add',
+                _id='comp_ruleset_add',
+              ),
+              _class='floatw',
             )
+        return d
 
-        # default values
-        f.vars.rule_table = 'comp_node_ruleset'
-        f.vars.rule_field = 'ruleset_name'
-        f.vars.rule_op = '='
-        f.vars.rule_log_op = 'AND'
-        f.vars.rule_author = user_name()
-        if 'rule_name' in request.vars:
-            f.vars.rule_value = request.vars['rule_name']
-
+    def comp_ruleset_add_sqlform(self):
+        db.comp_rulesets.ruleset_name.readable = True
+        db.comp_rulesets.ruleset_name.writable = True
+        #db.comp_rulesets.ruleset_author.readable = False
+        #db.comp_rulesets.ruleset_author.writable = False
+        #db.comp_rulesets.ruleset_updated.readable = False
+        #db.comp_rulesets.ruleset_updated.writable = False
+        db.comp_rulesets.ruleset_name.requires = IS_NOT_IN_DB(db,
+                                                db.comp_rulesets.ruleset_name)
+        f = SQLFORM(
+                 db.comp_rulesets,
+                 labels={'ruleset_name': T('Ruleset name')},
+                 _name='ruleset_add',
+            )
+        #f.vars.ruleset_author = user_name()
         return f
 
-@auth.requires_login()
-def comp_detach_ruleset(node_ids=[], ruleset_ids=[]):
-    if len(node_ids) == 0:
-        response.flash = T("no node selected")
-        return
-    if len(ruleset_ids) == 0:
-        response.flash = T("no ruleset selected")
-        return
+    def ruleset_var_del(self):
+        d = DIV(
+              A(
+                T("Delete variable"),
+                _onclick=self.ajax_submit(args=['ruleset_var_del']),
+              ),
+              _class='floatw',
+            )
+        return d
 
-    q = db.v_comp_explicit_rulesets.id.belongs(ruleset_ids)
-    rows = db(q).select(db.v_comp_explicit_rulesets.rule_name)
-    ruleset_names = [r.rule_name for r in rows]
+    def ruleset_var_add(self):
+        d = DIV(
+              A(
+                T("Add variable"),
+                _onclick="""
+                  click_toggle_vis('%(div)s', 'block');
+                """%dict(div='comp_ruleset_var_add'),
+              ),
+              DIV(
+                self.form_ruleset_var_add,
+                _style='display:none',
+                _class='white_float',
+                _name='comp_ruleset_var_add',
+                _id='comp_ruleset_var_add',
+              ),
+              _class='floatw',
+            )
+        return d
 
-    q = db.v_nodes.id.belongs(node_ids)
-    rows = db(q).select(db.v_nodes.nodename)
-    node_names = [r.nodename for r in rows]
+    def comp_filterset_attach_sqlform(self):
+        db.comp_rulesets_filtersets.ruleset_id.requires = IS_IN_DB(db,
+                    db.comp_rulesets.id, "%(ruleset_name)s", zero=T('choose one'))
+        db.comp_rulesets_filtersets.fset_id.requires = IS_IN_DB(db,
+                    db.gen_filtersets.id, "%(fset_name)s", zero=T('choose one'))
+        f = SQLFORM(
+                 db.comp_rulesets_filtersets,
+                 fields=['ruleset_id', 'fset_id'],
+                 labels={'fset_id': T('Filter set name'),
+                         'ruleset_id': T('Rule set name')},
+            )
+        return f
 
-    for rsname in ruleset_names:
-        for node in node_names:
-            q = db.comp_node_ruleset.ruleset_node == node
-            q &= db.comp_node_ruleset.ruleset_name == rsname
-            db(q).delete()
-
-@auth.requires_login()
-def comp_attach_ruleset(node_ids=[], ruleset_ids=[]):
-    if len(node_ids) == 0:
-        response.flash = T("no node selected")
-        return
-    if len(ruleset_ids) == 0:
-        response.flash = T("no ruleset selected")
-        return
-
-    q = db.v_comp_explicit_rulesets.id.belongs(ruleset_ids)
-    rows = db(q).select(db.v_comp_explicit_rulesets.rule_name)
-    ruleset_names = [r.rule_name for r in rows]
-
-    q = db.v_nodes.id.belongs(node_ids)
-    rows = db(q).select(db.v_nodes.nodename)
-    node_names = [r.nodename for r in rows]
-
-    for rsname in ruleset_names:
-        for node in node_names:
-            q = db.comp_node_ruleset.ruleset_node == node
-            q &= db.comp_node_ruleset.ruleset_name == rsname
-            if db(q).count() == 0:
-                db.comp_node_ruleset.insert(ruleset_node=node,
-                                            ruleset_name=rsname)
+    def comp_ruleset_var_add_sqlform(self):
+        db.comp_rulesets_variables.id.readable = False
+        db.comp_rulesets_variables.id.writable = False
+        db.comp_rulesets_variables.ruleset_id.requires = IS_IN_DB(db,
+                    db.comp_rulesets.id, "%(ruleset_name)s", zero=T('choose one'))
+        f = SQLFORM(
+                 db.comp_rulesets_variables,
+                 labels={'ruleset_id': T('Ruleset name'),
+                         'var_name': T('Variable'),
+                         'var_value': T('Value')},
+            )
+        f.vars.var_author = user_name()
+        return f
 
 @auth.requires_login()
 def comp_delete_ruleset(ids=[]):
+    ids = map(lambda x: int(x.split('_')[0]), ids)
     if len(ids) == 0:
-        response.flash = T("no rulesets")
+        response.flash = T("no ruleset selected")
         return
-    n = db(db.comp_rules.id.belongs(ids)).delete()
-    response.flash = T("deleted %(n)d rulesets", dict(n=n))
+    n = db(db.comp_rulesets_filtersets.ruleset_id.belongs(ids)).delete()
+    n = db(db.comp_rulesets_variables.ruleset_id.belongs(ids)).delete()
+    n = db(db.comp_rulesets.id.belongs(ids)).delete()
+    response.flash = T("deleted %(n)d ruleset(s)", dict(n=n))
 
 @auth.requires_login()
 def comp_delete_ruleset_var(ids=[]):
+    ids = map(lambda x: int(x.split('_')[2]), ids)
     if len(ids) == 0:
         response.flash = T("no ruleset variable selected")
         return
-    n = db(db.comp_rules_vars.id.belongs(ids)).delete()
+    n = db(db.comp_rulesets_variables.id.belongs(ids)).delete()
     response.flash = T("deleted %(n)d ruleset variables", dict(n=n))
 
 @auth.requires_login()
-def ajax_comp_rules():
-    t = table_comp_rules('ajax_comp_rules', 'ajax_comp_rules')
-    t.upc_table = 'comp_rules'
-    t.span = 'rule_name'
-    t.checkboxes = True
-
-    if len(request.args) == 1 and request.args[0] == 'delete_ruleset':
-        comp_delete_ruleset(t.get_checked())
-
-    if t.form_c_add.accepts(request.vars, formname='c_ruleset_add'):
-        response.flash = T("contextual ruleset added")
-    elif t.form_c_add.errors:
-        response.flash = T("errors in form")
-
-    if t.form_x_add.accepts(request.vars, formname='x_ruleset_add'):
-        response.flash = T("explicit ruleset added")
-    elif t.form_x_add.errors:
-        response.flash = T("errors in form")
-
-    o = db.comp_rules.rule_name
-    q = db.comp_rules.id > 0
-    for f in t.cols:
-        q &= _where(None, 'comp_rules', t.filter_parse(f), f)
-    #q = apply_db_filters(q, 'v_nodes')
-
-    n = db(q).count()
-    t.set_pager_max(n)
-
-    if t.pager_start == 0 and t.pager_end == 0:
-        t.object_list = db(q).select(orderby=o)
-    else:
-        t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
-
-    return t.html()
+def comp_detach_filterset(ids=[]):
+    ids = map(lambda x: int(x.split('_')[1]), ids)
+    if len(ids) == 0:
+        response.flash = T("no filterset selected")
+        return
+    n = db(db.comp_rulesets_filtersets.id.belongs(ids)).delete()
+    response.flash = T("detached %(n)d filtersets", dict(n=n))
 
 @auth.requires_login()
-def ajax_comp_rules_vars():
-    v = table_comp_rules_vars('ajax_comp_rules_vars',
-                              'ajax_comp_rules_vars')
-    v.upc_table = 'comp_rules_vars'
-    v.span = 'rule_name'
+def comp_detach_rulesets(node_ids=[], ruleset_ids=[]):
+    if len(node_ids) == 0:
+        response.flash = T("no node selected")
+        return
+    if len(ruleset_ids) == 0:
+        response.flash = T("no ruleset selected")
+        return
+
+    q = db.v_nodes.id.belongs(node_ids)
+    rows = db(q).select(db.v_nodes.nodename)
+    node_names = [r.nodename for r in rows]
+
+    for rsid in ruleset_ids:
+        for node in node_names:
+            q = db.comp_rulesets_nodes.nodename == node
+            q &= db.comp_rulesets_nodes.ruleset_id == rsid
+            db(q).delete()
+
+@auth.requires_login()
+def comp_attach_rulesets(node_ids=[], ruleset_ids=[]):
+    if len(node_ids) == 0:
+        response.flash = T("no node selected")
+        return
+    if len(ruleset_ids) == 0:
+        response.flash = T("no ruleset selected")
+        return
+
+    q = db.v_nodes.id.belongs(node_ids)
+    rows = db(q).select(db.v_nodes.nodename)
+    node_names = [r.nodename for r in rows]
+
+    for rsid in ruleset_ids:
+        for node in node_names:
+            q = db.comp_rulesets_nodes.nodename == node
+            q &= db.comp_rulesets_nodes.ruleset_id == rsid
+            if db(q).count() == 0:
+                db.comp_rulesets_nodes.insert(nodename=node,
+                                            ruleset_id=rsid)
+
+@auth.requires_login()
+def ajax_comp_rulesets():
+    v = table_comp_rulesets('ajax_comp_rulesets',
+                            'ajax_comp_rulesets')
+    v.span = 'ruleset_name'
+    v.sub_span = ['fset_name']
     v.checkboxes = True
 
-    if len(request.args) == 1 and request.args[0] == 'delete_ruleset_var':
+    if len(request.args) == 1 and request.args[0] == 'filterset_detach':
+        comp_detach_filterset(v.get_checked())
+    if len(request.args) == 1 and request.args[0] == 'ruleset_var_del':
         comp_delete_ruleset_var(v.get_checked())
+    if len(request.args) == 1 and request.args[0] == 'ruleset_del':
+        comp_delete_ruleset(v.get_checked())
+        v.form_filterset_attach = v.comp_filterset_attach_sqlform()
+        v.form_ruleset_var_add = v.comp_ruleset_var_add_sqlform()
 
-    if v.form_add.accepts(request.vars):
-        response.flash = T("rule added")
-    elif v.form_add.errors:
+    if v.form_filterset_attach.accepts(request.vars):
+        response.flash = T("filterset attached")
+    elif v.form_filterset_attach.errors:
         response.flash = T("errors in form")
 
-    o = db.comp_rules_vars.rule_name
-    q = db.comp_rules_vars.id > 0
+    if v.form_ruleset_var_add.accepts(request.vars):
+        response.flash = T("rule added")
+    elif v.form_ruleset_var_add.errors:
+        response.flash = T("errors in form")
+
+    if v.form_ruleset_add.accepts(request.vars, formname='add_ruleset'):
+        response.flash = T("ruleset added")
+        # refresh forms ruleset comboboxes
+        v.form_filterset_attach = v.comp_filterset_attach_sqlform()
+        v.form_ruleset_var_add = v.comp_ruleset_var_add_sqlform()
+    elif v.form_ruleset_add.errors:
+        response.flash = T("errors in form")
+
+    o = db.v_comp_rulesets.ruleset_name|db.v_comp_rulesets.var_name
+    q = db.v_comp_rulesets.ruleset_id > 0
     for f in v.cols:
-        q &= _where(None, 'comp_rules_vars', v.filter_parse(f), f)
-    #q = apply_db_filters(q, 'v_nodes')
+        q = _where(q, 'v_comp_rulesets', v.filter_parse(f), f)
 
     n = db(q).count()
     v.set_pager_max(n)
@@ -989,16 +901,424 @@ def comp_rules():
     t = DIV(
           comp_menu('Rules'),
           DIV(
-            ajax_comp_rules(),
-            _id='ajax_comp_rules',
-          ),
-          DIV(
-            ajax_comp_rules_vars(),
-            _id='ajax_comp_rules_vars',
+            ajax_comp_rulesets(),
+            _id='ajax_comp_rulesets',
           ),
           DIV(
             ajax_comp_nodes(),
             _id='ajax_comp_nodes',
+          ),
+        )
+    return dict(table=t)
+
+#
+# Filters sub-view
+#
+filters_colprops = {
+    'f_table': HtmlTableColumn(
+             title='Table',
+             field='f_table',
+             display=True,
+             img='filter16',
+            ),
+    'f_field': HtmlTableColumn(
+             title='Field',
+             field='f_field',
+             display=True,
+             img='filter16',
+            ),
+    'f_value': HtmlTableColumn(
+             title='Value',
+             field='f_value',
+             display=True,
+             img='filter16',
+            ),
+    'f_updated': HtmlTableColumn(
+             title='Updated',
+             field='f_updated',
+             display=True,
+             img='action16',
+            ),
+    'f_author': HtmlTableColumn(
+             title='Author',
+             field='f_author',
+             display=True,
+             img='guy16',
+            ),
+    'f_op': HtmlTableColumn(
+             title='Operator',
+             field='f_op',
+             display=True,
+             img='filter16',
+            ),
+}
+
+filters_cols = ['f_table',
+                'f_field',
+                'f_op',
+                'f_value',
+                'f_updated',
+                'f_author']
+
+class table_comp_filtersets(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['fset_name',
+                     'fset_updated',
+                     'fset_author',
+                     'f_log_op']
+        self.cols += filters_cols
+
+        self.colprops = {
+            'fset_name': HtmlTableColumn(
+                     title='Filterset',
+                     field='fset_name',
+                     display=True,
+                     img='filter16',
+                    ),
+            'fset_updated': HtmlTableColumn(
+                     title='Fset updated',
+                     field='fset_updated',
+                     display=False,
+                     img='action16',
+                    ),
+            'fset_author': HtmlTableColumn(
+                     title='Fset author',
+                     field='fset_author',
+                     display=False,
+                     img='guy16',
+                    ),
+            'f_log_op': HtmlTableColumn(
+                     title='Operator',
+                     field='f_log_op',
+                     display=True,
+                     img='filter16',
+                    ),
+        }
+        self.colprops.update(filters_colprops)
+        self.form_filterset_add = self.comp_filterset_add_sqlform()
+        self.form_filter_attach = self.comp_filter_attach_sqlform()
+        self.additional_tools.append('filterset_add')
+        self.additional_tools.append('filterset_del')
+        self.additional_tools.append('filter_attach')
+        self.additional_tools.append('filter_detach')
+
+    def checkbox_key(self, o):
+        if o is None:
+            return '_'.join((self.id_prefix, 'check_id', ''))
+        ids = []
+        ids.append(o['fset_id'])
+        ids.append(o['id'])
+        return '_'.join([self.id_prefix, 'check_id']+map(str,ids))
+
+    def filter_detach(self):
+        d = DIV(
+              A(
+                T("Detach filters"),
+                _onclick=self.ajax_submit(args=['detach_filters'])
+              ),
+              _class='floatw',
+            )
+        return d
+
+    def filterset_del(self):
+        d = DIV(
+              A(
+                T("Delete filterset"),
+                _onclick=self.ajax_submit(args=['delete_filterset']),
+              ),
+              _class='floatw',
+            )
+        return d
+
+    def filter_attach(self):
+        d = DIV(
+              A(
+                T("Attach filter"),
+                _onclick="""
+                  click_toggle_vis('%(div)s', 'block');
+                """%dict(div='comp_filter_attach'),
+              ),
+              DIV(
+                self.form_filter_attach,
+                _style='display:none',
+                _class='white_float',
+                _name='comp_filter_attach',
+                _id='comp_filter_attach',
+              ),
+              _class='floatw',
+            )
+        return d
+
+    def filterset_add(self):
+        d = DIV(
+              A(
+                T("Add filterset"),
+                _onclick="""
+                  click_toggle_vis('%(div)s', 'block');
+                """%dict(div='comp_filterset_add'),
+              ),
+              DIV(
+                self.form_filterset_add,
+                _style='display:none',
+                _class='white_float',
+                _name='comp_filterset_add',
+                _id='comp_filterset_add',
+              ),
+              _class='floatw',
+            )
+        return d
+
+    def comp_filter_attach_sqlform(self):
+        db.gen_filtersets_filters.fset_id.readable = True
+        db.gen_filtersets_filters.fset_id.writable = True
+        db.gen_filtersets_filters.f_id.readable = True
+        db.gen_filtersets_filters.f_id.writable = True
+        db.gen_filtersets_filters.f_log_op.readable = True
+        db.gen_filtersets_filters.f_log_op.writable = True
+        db.gen_filtersets_filters.fset_id.requires = IS_IN_DB(
+            db,
+            db.gen_filtersets.id,
+            "%(fset_name)s",
+            zero=T('choose one')
+        )
+        if 'fset_id' in request.vars:
+            q = db.gen_filtersets_filters.f_id == request.vars.f_id
+            q = db.gen_filtersets_filters.fset_id == request.vars.fset_id
+            existing = db(q)
+            f_id_validator = IS_NOT_IN_DB(existing, 'gen_filtersets_filters.f_id')
+        else:
+            f_id_validator = None
+
+        db.gen_filtersets_filters.f_id.requires = IS_IN_DB(
+            db,
+            db.gen_filters.id,
+            "%(f_table)s.%(f_field)s %(f_op)s %(f_value)s",
+            zero=T('choose one'),
+            _and=f_id_validator
+        )
+
+
+        f = SQLFORM(
+                 db.gen_filtersets_filters,
+                 labels={'fset_id': T('Filterset'),
+                         'f_id': T('Filter'),
+                         'f_log_op': T('Operator'),
+                        },
+                 _name='form_filterset_add',
+            )
+
+        # default values
+        f.vars.f_log_op = 'AND'
+
+        return f
+
+    def comp_filterset_add_sqlform(self):
+        db.gen_filtersets.fset_name.readable = True
+        db.gen_filtersets.fset_name.writable = True
+        db.gen_filtersets.fset_author.readable = False
+        db.gen_filtersets.fset_author.writable = False
+        db.gen_filtersets.fset_updated.readable = False
+        db.gen_filtersets.fset_updated.writable = False
+        db.gen_filtersets.fset_name.requires = IS_NOT_IN_DB(db, 'gen_filtersets.fset_name')
+
+        f = SQLFORM(
+                 db.gen_filtersets,
+                 labels={'fset_name': T('Filterset name')},
+                 _name='form_filterset_add',
+            )
+
+        # default values
+        f.vars.fset_author = user_name()
+
+        return f
+
+@auth.requires_login()
+def comp_detach_filters(ids=[]):
+    ids = map(lambda x: int(x.split('_')[1]), ids)
+    if len(ids) == 0:
+        response.flash = T("no filters selected")
+        return
+    n = db(db.gen_filtersets_filters.id.belongs(ids)).delete()
+    response.flash = T("detached %(n)d filters(s)", dict(n=n))
+
+@auth.requires_login()
+def comp_delete_filterset(ids=[]):
+    ids = map(lambda x: int(x.split('_')[0]), ids)
+    if len(ids) == 0:
+        response.flash = T("no filterset selected")
+        return
+    n = db(db.gen_filtersets.id.belongs(ids)).delete()
+    response.flash = T("deleted %(n)d filterset(s)", dict(n=n))
+
+class table_comp_filters(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = filters_cols
+        self.colprops = filters_colprops
+        self.form_filter_add = self.comp_filters_add_sqlform()
+        self.additional_tools.append('filter_add')
+        self.additional_tools.append('filter_del')
+
+    def filter_del(self):
+        d = DIV(
+              A(
+                T("Delete filters"),
+                _onclick=self.ajax_submit(args=['delete_filter']),
+              ),
+              _class='floatw',
+            )
+        return d
+
+    def filter_add(self):
+        d = DIV(
+              A(
+                T("Add filter"),
+                _onclick="""
+                  click_toggle_vis('%(div)s', 'block');
+                """%dict(div='comp_filter_add'),
+              ),
+              DIV(
+                self.form_filter_add,
+                _style='display:none',
+                _class='white_float',
+                _name='comp_filter_add',
+                _id='comp_filter_add',
+              ),
+              _class='floatw',
+            )
+        return d
+
+    def comp_filters_add_sqlform(self):
+        db.gen_filters.f_op.readable = True
+        db.gen_filters.f_op.writable = True
+        db.gen_filters.f_table.readable = True
+        db.gen_filters.f_table.writable = True
+        db.gen_filters.f_field.readable = True
+        db.gen_filters.f_field.writable = True
+        db.gen_filters.f_value.readable = True
+        db.gen_filters.f_value.writable = True
+
+        if 'f_op' in request.vars:
+            q = db.gen_filters.f_op == request.vars.f_op
+            q = db.gen_filters.f_table == request.vars.f_table
+            q = db.gen_filters.f_field == request.vars.f_field
+            q = db.gen_filters.f_value == request.vars.f_value
+            existing = db(q)
+            db.gen_filters.f_value.requires = IS_NOT_IN_DB(existing,
+                                                          'gen_filters.f_value')
+
+        f = SQLFORM(
+                 db.gen_filters,
+                 fields=['f_table',
+                         'f_field',
+                         'f_op',
+                         'f_value'],
+                 labels={'f_table': T('Table'),
+                         'f_field': T('Field'),
+                         'f_op': T('Operator'),
+                         'f_value': T('Value')},
+                 _name='form_filter_add',
+            )
+
+        # default values
+        f.vars.f_op = '='
+        f.vars.f_author = user_name()
+
+        return f
+
+@auth.requires_login()
+def comp_delete_filter(ids=[]):
+    if len(ids) == 0:
+        response.flash = T("no filter selected")
+        return
+    n = db(db.gen_filters.id.belongs(ids)).delete()
+    response.flash = T("deleted %(n)d filter(s)", dict(n=n))
+
+@auth.requires_login()
+def ajax_comp_filters():
+    v = table_comp_filters('ajax_comp_filters',
+                           'ajax_comp_filters')
+    v.span = 'f_table'
+    v.checkboxes = True
+
+    if len(request.args) == 1 and request.args[0] == 'delete_filter':
+        comp_delete_filter(v.get_checked())
+
+    if v.form_filter_add.accepts(request.vars):
+        response.flash = T("filter added")
+    elif v.form_filter_add.errors:
+        response.flash = T("errors in form")
+
+    o = db.gen_filters.f_table|db.gen_filters.f_field|db.gen_filters.f_op|db.gen_filters.f_field
+    q = db.gen_filters.id > 0
+    for f in v.cols:
+        q = _where(q, 'gen_filters', v.filter_parse(f), f)
+
+    n = db(q).count()
+    v.set_pager_max(n)
+
+    if v.pager_start == 0 and v.pager_end == 0:
+        v.object_list = db(q).select(orderby=o)
+    else:
+        v.object_list = db(q).select(limitby=(v.pager_start,v.pager_end), orderby=o)
+
+    return v.html()
+
+@auth.requires_login()
+def ajax_comp_filtersets():
+    t = table_comp_filtersets('ajax_comp_filtersets',
+                              'ajax_comp_filtersets')
+    t.span = 'fset_name'
+    t.checkboxes = True
+
+    if len(request.args) == 1 and request.args[0] == 'delete_filterset':
+        comp_delete_filterset(t.get_checked())
+        t.form_filter_attach = t.comp_filter_attach_sqlform()
+    elif len(request.args) == 1 and request.args[0] == 'detach_filters':
+        comp_detach_filters(t.get_checked())
+
+    if t.form_filter_attach.accepts(request.vars):
+        response.flash = T("filter attached")
+    elif t.form_filter_attach.errors:
+        response.flash = T("errors in form")
+
+    if t.form_filterset_add.accepts(request.vars):
+        response.flash = T("filterset added")
+        t.form_filter_attach = t.comp_filter_attach_sqlform()
+    elif t.form_filterset_add.errors:
+        response.flash = T("errors in form")
+
+    o = db.v_gen_filtersets.fset_name|db.v_gen_filtersets.f_id
+    q = db.v_gen_filtersets.fset_id > 0
+    for f in t.cols:
+        q = _where(q, 'v_gen_filtersets', t.filter_parse(f), f)
+
+    n = db(q).count()
+    t.set_pager_max(n)
+
+    if t.pager_start == 0 and t.pager_end == 0:
+        t.object_list = db(q).select(orderby=o)
+    else:
+        t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+
+    return t.html()
+
+@auth.requires_login()
+def comp_filters():
+    t = DIV(
+          comp_menu('Filters'),
+          DIV(
+            ajax_comp_filters(),
+            _id='ajax_comp_filters',
+          ),
+          DIV(
+            ajax_comp_filtersets(),
+            _id='ajax_comp_filtersets',
           ),
         )
     return dict(table=t)
@@ -1225,11 +1545,14 @@ def ajax_comp_moduleset():
         comp_delete_module(t.get_checked())
     if len(request.args) == 1 and request.args[0] == 'moduleset_del':
         comp_delete_moduleset(t.get_checked())
+        t.form_module_add = t.comp_module_add_sqlform()
     if len(request.args) == 1 and request.args[0] == 'moduleset_rename':
         comp_rename_moduleset(t.get_checked())
+        t.form_module_add = t.comp_module_add_sqlform()
 
     if t.form_moduleset_add.accepts(request.vars, formname='add_moduleset'):
         response.flash = T("moduleset added")
+        t.form_module_add = t.comp_module_add_sqlform()
     elif t.form_moduleset_add.errors:
         response.flash = T("errors in form")
 
@@ -1339,7 +1662,7 @@ def ajax_comp_mod_status():
     o = ~db.v_comp_mod_status.mod_percent
     q = db.v_comp_mod_status.id > 0
     for f in t.cols:
-        q &= _where(None, 'v_comp_mod_status', t.filter_parse(f), f)
+        q = _where(q, 'v_comp_mod_status', t.filter_parse(f), f)
     q = apply_db_filters(q, 'v_nodes')
 
     n = db(q).count()
@@ -1428,7 +1751,7 @@ def ajax_comp_log_col_values():
     q = _where(None, 'comp_log', domain_perms(), 'run_nodename')
     q &= db.comp_log.run_nodename == db.v_nodes.nodename
     for f in t.cols:
-        q &= _where(None, t.colprops[f].table, t.filter_parse_glob(f), f)
+        q = _where(q, t.colprops[f].table, t.filter_parse_glob(f), f)
     q = apply_db_filters(q, 'v_nodes')
     t.object_list = db(q).select(orderby=o, groupby=o)
     return t.col_values_cloud(col)
@@ -1441,7 +1764,7 @@ def ajax_comp_status_col_values():
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
     q &= db.comp_status.run_nodename == db.v_nodes.nodename
     for f in t.cols:
-        q &= _where(None, t.colprops[f].table, t.filter_parse_glob(f), f)
+        q = _where(q, t.colprops[f].table, t.filter_parse_glob(f), f)
     q = apply_db_filters(q, 'v_nodes')
     t.object_list = db(q).select(orderby=o, groupby=o)
     return t.col_values_cloud(col)
@@ -1455,7 +1778,7 @@ def ajax_comp_status():
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
     q &= db.comp_status.run_nodename == db.v_nodes.nodename
     for f in t.cols:
-        q &= _where(None, t.colprops[f].table, t.filter_parse(f), f)
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_db_filters(q, 'v_nodes')
 
     n = db(q).count()
@@ -1527,7 +1850,7 @@ def ajax_comp_log():
     q = _where(None, 'comp_log', domain_perms(), 'run_nodename')
     q &= db.comp_log.run_nodename == db.v_nodes.nodename
     for f in t.cols:
-        q &= _where(None, 'comp_log', t.filter_parse(f), f)
+        q = _where(q, 'comp_log', t.filter_parse(f), f)
     q = apply_db_filters(q, 'v_nodes')
 
     n = db(q).count()
@@ -1591,17 +1914,16 @@ def comp_moduleset_attached(nodename, modset_id):
     return True
 
 def comp_ruleset_exists(ruleset):
-    q = db.comp_rules.rule_table == 'comp_node_ruleset'
-    q &= db.comp_rules.rule_field == 'ruleset_name'
-    q &= db.comp_rules.rule_value == ruleset
-    if len(db(q).select(db.comp_rules.id)) == 0:
-        return False
-    return True
+    q = db.v_comp_explicit_rulesets.ruleset_name == ruleset
+    rows = db(q).select(db.v_comp_explicit_rulesets.id)
+    if len(rows) != 1:
+        return None
+    return rows[0].id
 
-def comp_ruleset_attached(nodename, ruleset):
-    q = db.comp_node_ruleset.ruleset_node == nodename
-    q &= db.comp_node_ruleset.ruleset_name == ruleset
-    if len(db(q).select(db.comp_node_ruleset.id)) == 0:
+def comp_ruleset_attached(nodename, ruleset_id):
+    q = db.comp_rulesets_nodes.nodename == nodename
+    q &= db.comp_rulesets_nodes.ruleset_id == ruleset_id
+    if len(db(q).select(db.comp_rulesets_nodes.id)) == 0:
         return False
     return True
 
@@ -1643,19 +1965,20 @@ def comp_detach_moduleset(nodename, moduleset):
 def comp_attach_ruleset(nodename, ruleset):
     if len(ruleset) == 0:
         return dict(status=False, msg="no ruleset specified"%ruleset)
-    if not comp_ruleset_exists(ruleset):
+    ruleset_id = comp_ruleset_exists(ruleset)
+    if ruleset_id is None:
         return dict(status=False, msg="ruleset %s does not exist"%ruleset)
-    if comp_ruleset_attached(nodename, ruleset):
+    if comp_ruleset_attached(nodename, ruleset_id):
         return dict(status=True,
                     msg="ruleset %s is already attached to this node"%ruleset)
 
-    q = db.comp_node_ruleset.ruleset_node == nodename
-    q &= db.comp_node_ruleset.ruleset_name == ruleset
+    q = db.comp_rulesets_nodes.nodename == nodename
+    q &= db.comp_rulesets_nodes.ruleset_id == ruleset_id
     if db(q).count() > 0:
-        return dict(status=True, msg="ruleset %s already attached"%moduleset)
+        return dict(status=True, msg="ruleset %s already attached"%ruleset)
 
-    n = db.comp_node_ruleset.insert(ruleset_node=nodename,
-                                    ruleset_name=ruleset)
+    n = db.comp_rulesets_nodes.insert(nodename=nodename,
+                                      ruleset_id=ruleset_id)
     if n == 0:
         return dict(status=False, msg="failed to attach ruleset %s"%ruleset)
     return dict(status=True, msg="ruleset %s attached"%ruleset)
@@ -1664,11 +1987,14 @@ def comp_attach_ruleset(nodename, ruleset):
 def comp_detach_ruleset(nodename, ruleset):
     if len(ruleset) == 0:
         return dict(status=False, msg="no ruleset specified"%ruleset)
-    if not comp_ruleset_attached(nodename, ruleset):
+    ruleset_id = comp_ruleset_exists(ruleset)
+    if ruleset_id is None:
+        return dict(status=False, msg="ruleset %s does not exist"%ruleset)
+    if not comp_ruleset_attached(nodename, ruleset_id):
         return dict(status=True,
                     msg="ruleset %s is not attached to this node"%ruleset)
-    q = db.comp_node_ruleset.ruleset_node == nodename
-    q &= db.comp_node_ruleset.ruleset_name == ruleset
+    q = db.comp_rulesets_nodes.nodename == nodename
+    q &= db.comp_rulesets_nodes.ruleset_id == ruleset_id
     n = db(q).delete()
     if n == 0:
         return dict(status=False, msg="failed to detach the ruleset")
@@ -1676,9 +2002,9 @@ def comp_detach_ruleset(nodename, ruleset):
 
 @service.xmlrpc
 def comp_list_rulesets(pattern='%'):
-    q = db.comp_rules.rule_name.like(pattern)
-    rows = db(q).select(groupby=db.comp_rules.rule_name)
-    return [r.rule_name for r in rows]
+    q = db.v_comp_explicit_rulesets.ruleset_name.like(pattern)
+    rows = db(q).select(groupby=db.v_comp_explicit_rulesets.ruleset_name)
+    return [r.ruleset_name for r in rows]
 
 @service.xmlrpc
 def comp_list_modulesets(pattern='%'):
@@ -1708,26 +2034,28 @@ def comp_log_action(vars, vals):
     if action == 'check':
         generic_insert('comp_status', vars, vals)
 
-def comp_query(q, rule):
-    if rule.rule_op == '=':
-        qry = db[rule.rule_table][rule.rule_field] == rule.rule_value
-    elif rule.rule_op == 'LIKE':
-        qry = db[rule.rule_table][rule.rule_field].like(rule.rule_value)
-    elif rule.rule_op == 'IN':
-        qry = db[rule.rule_table][rule.rule_field].belongs(rule.rule_value.split(','))
-    elif rule.rule_op == '>=':
-        qry = db[rule.rule_table][rule.rule_field] >= rule.rule_value
-    elif rule.rule_op == '>':
-        qry = db[rule.rule_table][rule.rule_field] > rule.rule_value
-    elif rule.rule_op == '<=':
-        qry = db[rule.rule_table][rule.rule_field] <= rule.rule_value
-    elif rule.rule_op == '<':
-        qry = db[rule.rule_table][rule.rule_field] < rule.rule_value
+def comp_query(q, row):
+    f = row.gen_filters
+    fset = row.gen_filtersets_filters
+    if f.f_op == '=':
+        qry = db[f.f_table][f.f_field] == f.f_value
+    elif f.f_op == 'LIKE':
+        qry = db[f.f_table][f.f_field].like(f.f_value)
+    elif f.f_op == 'IN':
+        qry = db[f.f_table][f.f_field].belongs(f.f_value.split(','))
+    elif f.f_op == '>=':
+        qry = db[f.f_table][f.f_field] >= f.f_value
+    elif f.f_op == '>':
+        qry = db[f.f_table][f.f_field] > f.f_value
+    elif f.f_op == '<=':
+        qry = db[f.f_table][f.f_field] <= f.f_value
+    elif f.f_op == '<':
+        qry = db[f.f_table][f.f_field] < f.f_value
     else:
         return q
-    if rule.rule_log_op == 'AND':
+    if fset.f_log_op == 'AND':
         q &= qry
-    elif rule.rule_log_op == 'OR':
+    elif fset.f_log_op == 'OR':
         q |= qry
     return q
 
@@ -1752,35 +2080,64 @@ def comp_get_node_ruleset(nodename):
         ruleset['vars'].append(('nodes.'+f, rows[0][f]))
     return {'osvc_node':ruleset}
 
+def comp_ruleset_vars(ruleset_id, qr=None):
+    if qr is None:
+        f = 'explicit attachment'
+    else:
+        f = comp_format_filter(qr)
+    q = db.comp_rulesets_variables.ruleset_id==ruleset_id
+    q &= db.comp_rulesets.id == db.comp_rulesets_variables.ruleset_id
+    rows = db(q).select()
+    if len(rows) == 0:
+        return dict()
+    ruleset_name = rows[0].comp_rulesets.ruleset_name
+    d = dict(
+          name=ruleset_name,
+          filter=f,
+          vars=[]
+        )
+    for row in rows:
+        d['vars'].append((row.comp_rulesets_variables.var_name,
+                          row.comp_rulesets_variables.var_value))
+    return {ruleset_name: d}
+
 @service.xmlrpc
 def comp_get_ruleset(nodename):
+    # initialize ruleset with asset variables
     ruleset = comp_get_node_ruleset(nodename)
+
+    # add contextual rulesets variables
+    q = db.comp_rulesets.id>0
+    q &= db.comp_rulesets.id == db.comp_rulesets_filtersets.ruleset_id
+    q &= db.gen_filtersets_filters.fset_id == db.comp_rulesets_filtersets.fset_id
+    q &= db.gen_filtersets_filters.f_id == db.gen_filters.id
+    rows = db(q).select(orderby=db.comp_rulesets.ruleset_name)
+
     q = db.nodes.nodename == nodename
-    rows = db(db.comp_rules.id>0).select(orderby=db.comp_rules.rule_name)
     last_index = len(rows)-1
     qr = db.nodes.id > 0
 
-    for i, rule in enumerate(rows):
-        if rule.rule_table == 'comp_node_ruleset':
-            qr = db.comp_node_ruleset.ruleset_node == db.nodes.nodename
+    for i, row in enumerate(rows):
         if i == last_index:
             end_seq = True
-        elif rows[i].rule_name != rows[i+1].rule_name:
+        elif rows[i].comp_rulesets.ruleset_name != rows[i+1].comp_rulesets.ruleset_name:
             end_seq = True
         else:
             end_seq = False
-        qr = comp_query(qr, rule)
+        qr = comp_query(qr, row)
         if end_seq:
             match = db(q&qr).select(db.nodes.id)
             if len(match) == 1:
-                rulevars = db(db.comp_rules_vars.rule_name==rule.rule_name).select()
-                ruleset[rule.rule_name] = dict(name=rule.rule_name,
-                                                  filter=comp_format_filter(qr),
-                                                  vars=[])
-                for rulevar in rulevars:
-                    ruleset[rule.rule_name]['vars'].append((rulevar.rule_var_name,
-                                                            rulevar.rule_var_value))
+                ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr))
             qr = db.nodes.id > 0
+
+    # add explicit rulesets variables
+    q = db.comp_rulesets_nodes.nodename == nodename
+    rows = db(q).select(db.comp_rulesets_nodes.ruleset_id,
+                        orderby=db.comp_rulesets_nodes.ruleset_id)
+    for row in rows:
+        ruleset.update(comp_ruleset_vars(row.ruleset_id))
+
     return ruleset
 
 

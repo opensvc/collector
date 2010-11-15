@@ -651,3 +651,48 @@ drop table comp_node_moduleset;
 CREATE TABLE `comp_node_moduleset` (   `id` int(11) NOT NULL AUTO_INCREMENT, `modset_node` varchar(60) NOT NULL, `modset_id` integer NOT NULL, `modset_mod_author` varchar(100) DEFAULT '', `modset_updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,   PRIMARY KEY (`id`), UNIQUE KEY `idx1` (`modset_node`,`modset_id`) ) ENGINE=MyISAM AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
 
 drop view v_comp_moduleset_names;
+
+# sncf
+
+CREATE TABLE gen_filters (`id` int(11) NOT NULL AUTO_INCREMENT, f_table varchar(30) NOT NULL, f_field varchar(30) NOT NULL, f_value varchar(60) NOT NULL, f_updated timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, f_author varchar(100) NOT NULL DEFAULT '', f_op varchar(4) NOT NULL, PRIMARY KEY (`id`), UNIQUE KEY `idx1` (f_table, f_field, f_value, f_op)) ENGINE=MyISAM AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
+
+CREATE TABLE `gen_filtersets` (`id` int(11) NOT NULL AUTO_INCREMENT,   `fset_name` varchar(30) NOT NULL, fset_updated timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, fset_author varchar(100) NOT NULL DEFAULT '', PRIMARY KEY (`id`),   UNIQUE KEY `idx1` (`fset_name`) ) ENGINE=MyISAM AUTO_INCREMENT=16 DEFAULT CHARSET=utf8;
+
+CREATE TABLE gen_filtersets_filters (`id` int(11) NOT NULL AUTO_INCREMENT, fset_id integer NOT NULL, f_id integer not null, f_log_op varchar(4) NOT NULL, PRIMARY KEY (`id`), UNIQUE KEY `idx1` (f_id, fset_id)) ENGINE=MyISAM AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
+
+CREATE TABLE comp_rulesets (`id` int(11) NOT NULL AUTO_INCREMENT, ruleset_name varchar(30) NOT NULL, PRIMARY KEY (`id`), UNIQUE KEY `idx1` (ruleset_name)) ENGINE=MyISAM AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
+
+CREATE TABLE comp_rulesets_filtersets (`id` int(11) NOT NULL AUTO_INCREMENT, ruleset_id integer NOT NULL, fset_id integer NOT NULL, PRIMARY KEY (`id`), UNIQUE KEY `idx1` (ruleset_id)) ENGINE=MyISAM AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
+
+CREATE TABLE comp_rulesets_nodes (`id` int(11) NOT NULL AUTO_INCREMENT, ruleset_id integer NOT NULL, nodename varchar(100) NOT NULL, PRIMARY KEY (`id`), UNIQUE KEY `idx1` (ruleset_id,nodename)) ENGINE=MyISAM AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
+
+create view v_gen_filtersets as (SELECT fs.fset_name, fs.fset_updated, fs.fset_author, g.fset_id, g.f_id, g.f_log_op, f.* FROM gen_filtersets fs left join gen_filtersets_filters g on g.fset_id=fs.id left join gen_filters f on g.f_id=f.id order by fs.fset_name);
+
+CREATE TABLE comp_rulesets_variables (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `ruleset_id` integer NOT NULL,
+  `var_name` varchar(60)  NOT NULL,
+  `var_value` varchar(100)  NOT NULL,
+  `var_author` varchar(100)  NOT NULL,
+  `var_updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx1` (ruleset_id, var_name, var_value)
+) ENGINE=MyISAM AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
+
+drop view v_comp_rulesets;
+
+create view v_comp_rulesets as (select r.id as ruleset_id,r.ruleset_name,rv.id,rv.var_name,rv.var_value,rv.var_author,rv.var_updated,rf.fset_id,fs.fset_name from comp_rulesets r left join comp_rulesets_variables rv on rv.ruleset_id = r.id left join comp_rulesets_filtersets rf on r.id=rf.ruleset_id left join gen_filtersets fs on fs.id=rf.fset_id);
+
+drop table v_comp_ruleset_names;
+
+drop table comp_rules_vars;
+
+drop table comp_rules;
+
+drop table comp_node_ruleset;
+
+drop view v_comp_nodes;
+
+create view v_comp_nodes as (select n.*,group_concat(distinct r.ruleset_name separator ', ') as rulesets from v_nodes n left join comp_rulesets_nodes rn on n.nodename=rn.nodename left join comp_rulesets r on r.id=rn.ruleset_id group by n.nodename);
+
+create view v_comp_explicit_rulesets as (select r.id, r.ruleset_name, group_concat(distinct concat(v.var_name,'=',v.var_value) separator '|') as variables from comp_rulesets r join comp_rulesets_variables v on r.id=v.ruleset_id where r.id not in (select ruleset_id from comp_rulesets_filtersets) group by r.id order by r.ruleset_name);

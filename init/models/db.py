@@ -921,27 +921,68 @@ db.define_table('comp_status',
     Field('run_action','string'),
     migrate=False)
 
-db.define_table('comp_rules',
-    Field('rule_name','string', requires=IS_NOT_EMPTY()),
-    Field('rule_log_op','string',
-          requires=IS_IN_SET(['AND', 'OR']),
-          default='AND'),
-    Field('rule_op','string',
-          requires=IS_IN_SET(['=', 'LIKE', '<', '<=', '>', '>=', 'IN']),
-          default='='),
-    Field('rule_table','string', requires=IS_NOT_EMPTY()),
-    Field('rule_field','string', requires=IS_NOT_EMPTY()),
-    Field('rule_value','string', requires=IS_NOT_EMPTY()),
-    Field('rule_author','string', readable=False, writable=False),
-    Field('rule_updated','datetime', readable=False, writable=False),
+db.define_table('gen_filtersets',
+    Field('fset_name','string', requires=IS_NOT_EMPTY()),
+    Field('fset_author','string'),
+    Field('fset_updated','datetime'),
     migrate=False)
 
-db.define_table('comp_rules_vars',
-    Field('rule_name','string', requires=IS_NOT_EMPTY()),
-    Field('rule_var_name','string', requires=IS_NOT_EMPTY()),
-    Field('rule_var_value','string', requires=IS_NOT_EMPTY()),
-    Field('rule_var_author','string', readable=False, writable=False),
-    Field('rule_var_updated','datetime', readable=False, writable=False),
+db.define_table('gen_filtersets_filters',
+    Field('fset_id','integer', requires=IS_NOT_EMPTY()),
+    Field('f_id','integer', requires=IS_NOT_EMPTY()),
+    Field('f_log_op','string',
+          requires=IS_IN_SET(['AND', 'OR']),
+          default='AND'),
+    migrate=False)
+
+db.define_table('gen_filters',
+    Field('f_op','string',
+          requires=IS_IN_SET(['=', 'LIKE', '<', '<=', '>', '>=', 'IN']),
+          default='='),
+    Field('f_table','string', requires=IS_NOT_EMPTY()),
+    Field('f_field','string', requires=IS_NOT_EMPTY()),
+    Field('f_value','string', requires=IS_NOT_EMPTY()),
+    Field('f_author','string', readable=False, writable=False),
+    Field('f_updated','datetime', readable=False, writable=False),
+    migrate=False)
+
+db.define_table('v_gen_filtersets',
+    db.gen_filtersets,
+    db.gen_filtersets_filters,
+    db.gen_filters,
+    migrate=False)
+
+db.define_table('comp_rulesets',
+    Field('ruleset_name','string', requires=IS_NOT_EMPTY()),
+    migrate=False)
+
+db.define_table('comp_rulesets_variables',
+    Field('ruleset_id','integer', requires=IS_NOT_EMPTY()),
+    Field('var_name','string', requires=IS_NOT_EMPTY()),
+    Field('var_value','string', requires=IS_NOT_EMPTY()),
+    Field('var_author','string', readable=False, writable=False),
+    Field('var_updated','datetime', readable=False, writable=False),
+    migrate=False)
+
+db.define_table('comp_rulesets_filtersets',
+    Field('ruleset_id','integer', requires=IS_NOT_EMPTY()),
+    Field('fset_id','integer', requires=IS_NOT_EMPTY()),
+    migrate=False)
+
+db.define_table('comp_rulesets_nodes',
+    Field('ruleset_id','integer', requires=IS_NOT_EMPTY()),
+    Field('nodename','string', requires=IS_NOT_EMPTY()),
+    migrate=False)
+
+db.define_table('v_comp_rulesets',
+    Field('ruleset_id','integer'),
+    Field('fset_id','integer'),
+    Field('ruleset_name','string', requires=IS_NOT_EMPTY()),
+    Field('fset_name','string'),
+    Field('var_name','string'),
+    Field('var_value','string'),
+    Field('var_author','string', readable=False, writable=False),
+    Field('var_updated','datetime', readable=False, writable=False),
     migrate=False)
 
 db.define_table('comp_node_ruleset',
@@ -965,17 +1006,13 @@ db.define_table('v_comp_mod_status',
     Field('mod_nodes','string'),
     migrate=False)
 
-db.define_table('v_comp_ruleset_names',
-    Field('rule_name','string'),
-    migrate=False)
-
-db.define_table('v_comp_explicit_rulesets',
-    Field('rule_name','string'),
-    Field('variables','string'),
-    migrate=False)
-
 db.define_table('v_comp_nodes',
     db.v_nodes,
     Field('rulesets','string'),
+    migrate=False)
+
+db.define_table('v_comp_explicit_rulesets',
+    Field('ruleset_name','string'),
+    Field('variables','string'),
     migrate=False)
 
