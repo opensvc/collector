@@ -455,7 +455,7 @@ v_nodes_colprops = {
 #
 # Rules sub-view
 #
-class table_comp_nodes(HtmlTable):
+class table_comp_rulesets_nodes(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
@@ -521,10 +521,11 @@ class table_comp_explicit_rules(HtmlTable):
         self.exportable = False
 
 @auth.requires_login()
-def ajax_comp_nodes():
+def ajax_comp_rulesets_nodes():
     r = table_comp_explicit_rules('ajax_comp_explicit_rules',
                                   'ajax_comp_explicit_rules')
-    t = table_comp_nodes('ajax_comp_nodes', 'ajax_comp_nodes')
+    t = table_comp_rulesets_nodes('ajax_comp_rulesets_nodes',
+                                  'ajax_comp_rulesets_nodes')
     t.rulesets = r
 
     if len(request.args) == 1 and request.args[0] == 'attach_ruleset':
@@ -950,8 +951,8 @@ def comp_rules():
             _id='ajax_comp_rulesets',
           ),
           DIV(
-            ajax_comp_nodes(),
-            _id='ajax_comp_nodes',
+            ajax_comp_rulesets_nodes(),
+            _id='ajax_comp_rulesets_nodes',
           ),
         )
     return dict(table=t)
@@ -1627,7 +1628,6 @@ def comp_rename_moduleset(ids):
 @auth.requires_login()
 def ajax_comp_moduleset():
     t = table_comp_moduleset('ajax_comp_moduleset', 'ajax_comp_moduleset')
-    t.upc_table = 'comp_moduleset'
     t.span = 'modset_name'
     t.checkboxes = True
     t.checkbox_id_table = 'comp_moduleset_modules'
@@ -1748,7 +1748,6 @@ class table_comp_mod_status(HtmlTable):
 @auth.requires_login()
 def ajax_comp_mod_status():
     t = table_comp_mod_status('ajax_comp_mod_status', 'ajax_comp_mod_status')
-    t.upc_table = 'comp_mod_status'
 
     o = ~db.v_comp_mod_status.mod_percent
     q = db.v_comp_mod_status.id > 0
@@ -1863,7 +1862,6 @@ def ajax_comp_status_col_values():
 @auth.requires_login()
 def ajax_comp_status():
     t = table_comp_status('ajax_comp_status', 'ajax_comp_status')
-    t.upc_table = 'comp_status'
 
     o = ~db.comp_status.run_nodename
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
@@ -1935,7 +1933,6 @@ class table_comp_log(table_comp_status):
 @auth.requires_login()
 def ajax_comp_log():
     t = table_comp_log('ajax_comp_log', 'ajax_comp_log')
-    t.upc_table = 'comp_log'
 
     o = ~db.comp_log.run_date
     q = _where(None, 'comp_log', domain_perms(), 'run_nodename')

@@ -1009,6 +1009,7 @@ db.define_table('v_comp_mod_status',
 db.define_table('v_comp_nodes',
     db.v_nodes,
     Field('rulesets','string'),
+    Field('modulesets','string'),
     migrate=False)
 
 db.define_table('v_comp_explicit_rulesets',
