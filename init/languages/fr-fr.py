@@ -553,6 +553,7 @@
 'explicit ruleset added': 'explicit ruleset added',
 'export as csv file': 'exporter en fichier csv',
 'file uploaded': 'fichier transféré',
+'filter added': 'filter added',
 'filter attached': 'filter attached',
 'filterset added': 'filterset added',
 'filterset attached': 'filterset attached',

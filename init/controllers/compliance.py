@@ -564,14 +564,16 @@ def ajax_comp_nodes():
     return DIV(
              DIV(
                t.html(),
-               _style="""min-width:70%;
+               _style="""min-width:60%;
+                         max-width:60%;
                          float:left;
                          border-right:0px solid;
                       """
              ),
              DIV(
                r_html,
-               _style="""min-width:30%;
+               _style="""min-width:40%;
+                         max-width:40%;
                          float:left;
                       """
              ),
