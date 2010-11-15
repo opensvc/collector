@@ -30,11 +30,10 @@ class HtmlTable(object):
             innerhtml=id
         self.id = id
         self.innerhtml = innerhtml
-        self.id_prefix = innerhtml
         self.func = func
         self.line_count = 0
-        self.id_perpage = '_'.join((self.id_prefix, 'perpage'))
-        self.id_page = '_'.join((self.id_prefix, 'page'))
+        self.id_perpage = '_'.join((self.id, 'perpage'))
+        self.id_page = '_'.join((self.id, 'page'))
         self.cellclasses = {'cell1': 'cell2', 'cell2': 'cell1'}
         self.cellclass = 'cell2'
         self.upc_table = ''
@@ -120,7 +119,7 @@ class HtmlTable(object):
         if not self.dbfilterable:
             return SPAN()
 
-        id_session_div = '_'.join((self.id_prefix, 'session_div'))
+        id_session_div = '_'.join((self.id, 'session_div'))
         filters_count = active_db_filters_count()
         if filters_count > 0:
             filters_count = ' (%d)'%filters_count
@@ -151,9 +150,9 @@ class HtmlTable(object):
         return s
 
     def columns_selector(self):
-        id_set_col_table = '_'.join((self.id_prefix, 'set_col_table'))
-        id_set_col_field = '_'.join((self.id_prefix, 'set_col_field'))
-        id_set_col_value = '_'.join((self.id_prefix, 'set_col_value'))
+        id_set_col_table = '_'.join((self.id, 'set_col_table'))
+        id_set_col_field = '_'.join((self.id, 'set_col_field'))
+        id_set_col_value = '_'.join((self.id, 'set_col_value'))
         def checkbox(a):
             id_col = self.col_checkbox_key(a)
 
@@ -200,37 +199,37 @@ class HtmlTable(object):
 
         a = DIV(
               SCRIPT(
-                """
-                var timer;
-                var showMode = 'table-cell';
-                if (document.all) showMode='block';
-                function check_toggle_vis(checked, col){
-                    cells = document.getElementsByName(col);
-                    mode = checked ? showMode : 'none';
-                    for(j = 0; j < cells.length; j++) {
-                        cells[j].style.display = mode;
-                    }
-                }
-                function click_toggle_vis(name, mode){
-                    cells = document.getElementsByName(name);
-                    for(j = 0; j < cells.length; j++) {
-                        if (cells[j].style.display == 'none' || cells[j].style.display == "") {
-                            cells[j].style.display = mode;
-                        } else {
-                            cells[j].style.display = 'none';
-                        }
-                    }
-                }
-                function check_all(name, checked){
-                    c = document.getElementsByName(name);
-                    for(i = 0; i < c.length; i++) {
-                        if (c[i].type == 'checkbox' && c[i].disabled == false) {
-                            c[i].checked = checked
-                            c[i].value = checked
-                        }
-                    }
-                }
-                """
+"""
+var timer;
+var showMode = 'table-cell';
+if (document.all) showMode='block';
+function check_toggle_vis(checked, col){
+    cells = document.getElementsByName(col);
+    mode = checked ? showMode : 'none';
+    for(j = 0; j < cells.length; j++) {
+        cells[j].style.display = mode;
+    }
+}
+function click_toggle_vis(name, mode){
+    cells = document.getElementsByName(name);
+    for(j = 0; j < cells.length; j++) {
+        if (cells[j].style.display == 'none' || cells[j].style.display == "") {
+            cells[j].style.display = mode;
+        } else {
+            cells[j].style.display = 'none';
+        }
+    }
+}
+function check_all(name, checked){
+    c = document.getElementsByName(name);
+    for(i = 0; i < c.length; i++) {
+        if (c[i].type == 'checkbox' && c[i].disabled == false) {
+            c[i].checked = checked
+            c[i].value = checked
+        }
+    }
+}
+"""
               ),
               INPUT(
                 _id=id_set_col_table,
@@ -355,38 +354,38 @@ class HtmlTable(object):
         self.cellclass = self.cellclasses[self.cellclass]
 
     def col_checkbox_key(self, f):
-        return '_'.join((self.id_prefix, 'col', f))
+        return '_'.join((self.id, 'cc', f))
 
     def col_selector_key(self):
-        return '_'.join((self.id_prefix, 'column_selector'))
+        return '_'.join((self.id, 'cs'))
 
     def col_key(self, f):
-        return '_'.join((self.id_prefix, 'tcol', f))
+        return '_'.join((self.id, 'c', f))
 
     def filter_key(self, f):
-        return '_'.join((self.id_prefix, 'filter', f))
+        return '_'.join((self.id, 'f', f))
 
     def filter_div_key(self, f):
-        return '_'.join((self.id_prefix, 'filter_div', f))
+        return '_'.join((self.id, 'fd', f))
 
     def filter_cloud_key(self, f):
-        return '_'.join((self.id_prefix, 'filter_cloud', f))
+        return '_'.join((self.id, 'fc', f))
 
     def checkbox_key(self, o):
         if o is None:
-            return '_'.join((self.id_prefix, 'check_id', ''))
+            return '_'.join((self.id, 'ckid', ''))
         if self.checkbox_id_table is None or \
            self.checkbox_id_table not in o:
             id = o[self.checkbox_id_col]
         else:
             id = o[self.checkbox_id_table][self.checkbox_id_col]
-        return '_'.join((self.id_prefix, 'check_id', str(id)))
+        return '_'.join((self.id, 'ckid', str(id)))
 
     def checkbox_name_key(self):
-        return '_'.join((self.id_prefix, 'check'))
+        return '_'.join((self.id, 'ck'))
 
     def master_checkbox_key(self):
-        return '_'.join((self.id_prefix, 'check_all'))
+        return '_'.join((self.id, 'mck'))
 
     def get_checked(self):
         prefix = self.checkbox_key(None)
@@ -411,7 +410,7 @@ class HtmlTable(object):
         return val
 
     def ajax_inputs(self):
-        l = []
+        l = ['tableid']
         if self.pageable:
             l.append(self.id_perpage)
             l.append(self.id_page)
@@ -424,6 +423,8 @@ class HtmlTable(object):
     def table_header(self):
         cells = []
         if self.checkboxes:
+            # reset checkbox list
+            self.checkbox_ids = []
             cells.append(TH(''))
         for c in self.cols:
             cells.append(TH(T(self.colprops[c].title),
@@ -529,9 +530,7 @@ class HtmlTable(object):
                             INPUT(
                               _type='checkbox',
                               _id=self.master_checkbox_key(),
-                              _onclick="""
-                                check_all('%(name)s', this.checked);
-                              """%dict(name=self.checkbox_name_key())
+                              _onclick="check_all('%(name)s', this.checked);"%dict(name=self.checkbox_name_key())
                             )
                           ))
         for c in self.cols:
@@ -547,15 +546,13 @@ class HtmlTable(object):
                             SPAN(
                               IMG(
                                 _src=URL(r=request,c='static',f='filter16.png'),
-                                _onClick="""
-                                  click_toggle_vis('%(div)s','block');
-                                  getElementById('%(input)s').focus();
-                                  ajax('%(url)s', [%(inputs)s], '%(cloud)s');
-                                """%dict(div=self.filter_div_key(c),
-                                         url=URL(r=request,f=self.func+'_col_values', args=[c]),
-                                         inputs=','.join(map(repr, self.ajax_inputs())),
-                                         cloud=self.filter_cloud_key(c),
-                                         input=self.filter_key(c)),
+                                _onClick="""click_toggle_vis('%(div)s','block');getElementById('%(input)s').focus();ajax('%(url)s', inputs_%(id)s, '%(cloud)s');"""%dict(
+                                    id=self.id,
+                                    div=self.filter_div_key(c),
+                                    url=URL(r=request,f=self.func+'_col_values', args=[c]),
+                                    cloud=self.filter_cloud_key(c),
+                                    input=self.filter_key(c),
+                                  ),
                               ),
                               clear,
                               self.filter_parse(c),
@@ -566,14 +563,12 @@ class HtmlTable(object):
                                 _id=self.filter_key(c),
                                 _value=self.filter_parse(c),
                                 _onKeyPress=self.ajax_enter_submit(),
-                                _onKeyUp="""
-                                   clearTimeout(timer);
-                                   timer=setTimeout(function validate(){
-                                     ajax('%(url)s', [%(inputs)s], '%(cloud)s')
-                                   }, 800);
-                                """%dict(url=URL(r=request,f=self.func+'_col_values', args=[c]),
-                                         inputs=','.join(map(repr, self.ajax_inputs())),
-                                         cloud=self.filter_cloud_key(c)),
+                                _onKeyUp="""clearTimeout(timer);timer=setTimeout(function validate(){ajax('%(url)s', inputs_%(id)s, '%(cloud)s')}, 800);"""%dict(
+                                    id=self.id,
+                                    url=URL(r=request,f=self.func+'_col_values', args=[c]),
+                                    inputs=','.join(map(repr, self.ajax_inputs())),
+                                    cloud=self.filter_cloud_key(c)
+                                  ),
                               ),
                               BR(),
                               SPAN(
@@ -599,25 +594,19 @@ class HtmlTable(object):
         return inputs
 
     def ajax_submit(self, args=[], additional_inputs=[]):
-        return """ajax("%(url)s",
-                       ["tableid", %(inputs)s],
-                       "%(innerhtml)s");
-                  getElementById("%(innerhtml)s").innerHTML='%(spinner)s';
-                """%dict(url=URL(r=request,f=self.func, args=args),
+        return """ajax("%(url)s",inputs_%(id)s.concat([%(inputs)s]),"%(innerhtml)s");getElementById("%(innerhtml)s").innerHTML='%(spinner)s';"""%dict(
+                         url=URL(r=request,f=self.func, args=args),
                          innerhtml=self.innerhtml,
-                         inputs = ','.join(map(repr, self.ajax_inputs()+additional_inputs)),
+                         id=self.id,
+                         inputs = ','.join(map(repr, additional_inputs)),
                          spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
                         )
 
     def ajax_enter_submit(self, args=[], additional_inputs=[]):
-        return """if (is_enter(event)) {
-                    getElementById("tableid").value="%(id)s";
-                    %(ajax)s
-                  };
-                  """%dict(ajax=self.ajax_submit(
-                                  args=args,
-                                  additional_inputs=additional_inputs),
-                           id=self.id)
+        return """if (is_enter(event)){getElementById("tableid").value="%(id)s";%(ajax)s};"""%dict(
+                 ajax=self.ajax_submit(args=args,
+                                       additional_inputs=additional_inputs),
+                 id=self.id)
 
     def html(self):
         self.set_column_visibility()
@@ -686,6 +675,12 @@ class HtmlTable(object):
                 ),
               ),
               DIV('', _class='spacer'),
+              SCRIPT(
+                "var inputs_%(id)s = %(a)s;"%dict(
+                   id=self.id,
+                   a=self.ajax_inputs(),
+                ),
+              ),
               _class='tableo',
             )
         return d

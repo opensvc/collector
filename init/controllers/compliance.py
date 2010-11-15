@@ -522,10 +522,10 @@ class table_comp_explicit_rules(HtmlTable):
 
 @auth.requires_login()
 def ajax_comp_rulesets_nodes():
-    r = table_comp_explicit_rules('ajax_comp_explicit_rules',
-                                  'ajax_comp_explicit_rules')
-    t = table_comp_rulesets_nodes('ajax_comp_rulesets_nodes',
-                                  'ajax_comp_rulesets_nodes')
+    r = table_comp_explicit_rules('1', 'ajax_comp_rulesets_nodes',
+                                  innerhtml='1')
+    t = table_comp_rulesets_nodes('2', 'ajax_comp_rulesets_nodes',
+                                  innerhtml='1')
     t.rulesets = r
 
     if len(request.args) == 1 and request.args[0] == 'attach_ruleset':
@@ -569,14 +569,14 @@ def ajax_comp_rulesets_nodes():
                          max-width:60%;
                          float:left;
                          border-right:0px solid;
-                      """
+                      """,
              ),
              DIV(
                r_html,
                _style="""min-width:40%;
                          max-width:40%;
                          float:left;
-                      """
+                      """,
              ),
            )
 
@@ -643,12 +643,12 @@ class table_comp_rulesets(HtmlTable):
 
     def checkbox_key(self, o):
         if o is None:
-            return '_'.join((self.id_prefix, 'check_id', ''))
+            return '_'.join((self.id, 'ckid', ''))
         ids = []
         ids.append(o['ruleset_id'])
         ids.append(o['fset_id'])
         ids.append(o['id'])
-        return '_'.join([self.id_prefix, 'check_id']+map(str,ids))
+        return '_'.join([self.id, 'ckid']+map(str,ids))
 
     def ruleset_rename(self):
         d = DIV(
@@ -890,8 +890,7 @@ def comp_attach_rulesets(node_ids=[], ruleset_ids=[]):
 
 @auth.requires_login()
 def ajax_comp_rulesets():
-    v = table_comp_rulesets('ajax_comp_rulesets',
-                            'ajax_comp_rulesets')
+    v = table_comp_rulesets('0', 'ajax_comp_rulesets')
     v.span = 'ruleset_name'
     v.sub_span = ['fset_name']
     v.checkboxes = True
@@ -948,11 +947,11 @@ def comp_rules():
           comp_menu('Rules'),
           DIV(
             ajax_comp_rulesets(),
-            _id='ajax_comp_rulesets',
+            _id='0',
           ),
           DIV(
             ajax_comp_rulesets_nodes(),
-            _id='ajax_comp_rulesets_nodes',
+            _id='1',
           ),
         )
     return dict(table=t)
@@ -1054,11 +1053,11 @@ class table_comp_filtersets(HtmlTable):
 
     def checkbox_key(self, o):
         if o is None:
-            return '_'.join((self.id_prefix, 'check_id', ''))
+            return '_'.join((self.id, 'ckid', ''))
         ids = []
         ids.append(o['fset_id'])
         ids.append(o['id'])
-        return '_'.join([self.id_prefix, 'check_id']+map(str,ids))
+        return '_'.join([self.id, 'ckid']+map(str,ids))
 
     def filter_detach(self):
         d = DIV(
@@ -1463,10 +1462,10 @@ class table_comp_moduleset(HtmlTable):
 
     def checkbox_key(self, o):
         if o is None:
-            return '_'.join((self.id_prefix, 'check_id', ''))
+            return '_'.join((self.id, 'ckid', ''))
         id1 = o['comp_moduleset']['id']
         id2 = o['comp_moduleset_modules']['id']
-        return '_'.join((self.id_prefix, 'check_id', str(id1), str(id2)))
+        return '_'.join((self.id, 'ckid', str(id1), str(id2)))
 
     def moduleset_rename(self):
         d = DIV(
