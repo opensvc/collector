@@ -638,6 +638,7 @@ class table_comp_rulesets(HtmlTable):
         self.additional_tools.append('ruleset_var_del')
         self.additional_tools.append('ruleset_del')
         self.additional_tools.append('ruleset_add')
+        self.additional_tools.append('ruleset_rename')
 
     def checkbox_key(self, o):
         if o is None:
@@ -647,6 +648,28 @@ class table_comp_rulesets(HtmlTable):
         ids.append(o['fset_id'])
         ids.append(o['id'])
         return '_'.join([self.id_prefix, 'check_id']+map(str,ids))
+
+    def ruleset_rename(self):
+        d = DIV(
+              A(
+                T("Rename ruleset"),
+                _onclick="""click_toggle_vis('%(div)s', 'block');
+                         """%dict(div='comp_ruleset_rename'),
+              ),
+              DIV(
+                INPUT(
+                  _id='comp_ruleset_rename_input',
+                  _onKeyPress=self.ajax_enter_submit(additional_inputs=['comp_ruleset_rename_input'],
+                                                     args=['ruleset_rename']),
+                ),
+                _style='display:none',
+                _class='white_float',
+                _name='comp_ruleset_rename',
+                _id='comp_ruleset_rename',
+              ),
+              _class='floatw',
+            )
+        return d
 
     def ruleset_del(self):
         d = DIV(
@@ -782,6 +805,19 @@ class table_comp_rulesets(HtmlTable):
         f.vars.var_author = user_name()
         return f
 
+def comp_rename_ruleset(ids):
+    ids = map(lambda x: int(x.split('_')[0]), ids)
+    if len(ids) != 1:
+        response.flash = T("one and only one ruleset must be selected")
+        return
+    if 'comp_ruleset_rename_input' not in request.vars:
+        response.flash = T("new ruleset name is empty")
+        return
+    new = request.vars['comp_ruleset_rename_input']
+    id = ids[0]
+    n = db(db.comp_rulesets.id == id).update(ruleset_name=new)
+    response.flash = T("ruleset renamed", dict(n=n))
+
 @auth.requires_login()
 def comp_delete_ruleset(ids=[]):
     ids = map(lambda x: int(x.split('_')[0]), ids)
@@ -865,6 +901,10 @@ def ajax_comp_rulesets():
         comp_delete_ruleset_var(v.get_checked())
     if len(request.args) == 1 and request.args[0] == 'ruleset_del':
         comp_delete_ruleset(v.get_checked())
+        v.form_filterset_attach = v.comp_filterset_attach_sqlform()
+        v.form_ruleset_var_add = v.comp_ruleset_var_add_sqlform()
+    if len(request.args) == 1 and request.args[0] == 'ruleset_rename':
+        comp_rename_ruleset(v.get_checked())
         v.form_filterset_attach = v.comp_filterset_attach_sqlform()
         v.form_ruleset_var_add = v.comp_ruleset_var_add_sqlform()
 
@@ -1005,6 +1045,7 @@ class table_comp_filtersets(HtmlTable):
         self.colprops.update(filters_colprops)
         self.form_filterset_add = self.comp_filterset_add_sqlform()
         self.form_filter_attach = self.comp_filter_attach_sqlform()
+        self.additional_tools.append('filterset_rename')
         self.additional_tools.append('filterset_add')
         self.additional_tools.append('filterset_del')
         self.additional_tools.append('filter_attach')
@@ -1023,6 +1064,28 @@ class table_comp_filtersets(HtmlTable):
               A(
                 T("Detach filters"),
                 _onclick=self.ajax_submit(args=['detach_filters'])
+              ),
+              _class='floatw',
+            )
+        return d
+
+    def filterset_rename(self):
+        d = DIV(
+              A(
+                T("Rename filterset"),
+                _onclick="""click_toggle_vis('%(div)s', 'block');
+                         """%dict(div='comp_filterset_rename'),
+              ),
+              DIV(
+                INPUT(
+                  _id='comp_filterset_rename_input',
+                  _onKeyPress=self.ajax_enter_submit(additional_inputs=['comp_filterset_rename_input'],
+                                                     args=['filterset_rename']),
+                ),
+                _style='display:none',
+                _class='white_float',
+                _name='comp_filterset_rename',
+                _id='comp_filterset_rename',
               ),
               _class='floatw',
             )
@@ -1161,6 +1224,19 @@ def comp_delete_filterset(ids=[]):
     n = db(db.gen_filtersets.id.belongs(ids)).delete()
     response.flash = T("deleted %(n)d filterset(s)", dict(n=n))
 
+def comp_rename_filterset(ids):
+    ids = map(lambda x: int(x.split('_')[0]), ids)
+    if len(ids) != 1:
+        response.flash = T("one and only one filterset must be selected")
+        return
+    if 'comp_filterset_rename_input' not in request.vars:
+        response.flash = T("new filterset name is empty")
+        return
+    new = request.vars['comp_filterset_rename_input']
+    id = ids[0]
+    n = db(db.gen_filtersets.id == id).update(fset_name=new)
+    response.flash = T("filterset renamed", dict(n=n))
+
 class table_comp_filters(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -1289,6 +1365,9 @@ def ajax_comp_filtersets():
         t.form_filter_attach = t.comp_filter_attach_sqlform()
     elif len(request.args) == 1 and request.args[0] == 'detach_filters':
         comp_detach_filters(t.get_checked())
+    elif len(request.args) == 1 and request.args[0] == 'filterset_rename':
+        comp_rename_filterset(t.get_checked())
+        t.form_filter_attach = t.comp_filter_attach_sqlform()
 
     if t.form_filter_attach.accepts(request.vars):
         response.flash = T("filter attached")
