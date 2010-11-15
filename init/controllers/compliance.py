@@ -652,7 +652,10 @@ class table_comp_rulesets(HtmlTable):
         d = DIV(
               A(
                 T("Delete ruleset"),
-                _onclick=self.ajax_submit(args=['ruleset_del']),
+                _onclick="""if (confirm("%(text)s")){%(s)s};
+                         """%dict(s=self.ajax_submit(args=['ruleset_del']),
+                                  text=T("Deleting a ruleset also deletes the ruleset variables, filters attachments and node attachments. Please confirm ruleset deletion."),
+                                 ),
               ),
               _class='floatw',
             )
@@ -1029,7 +1032,10 @@ class table_comp_filtersets(HtmlTable):
         d = DIV(
               A(
                 T("Delete filterset"),
-                _onclick=self.ajax_submit(args=['delete_filterset']),
+                _onclick="""if (confirm("%(text)s")){%(s)s};
+                         """%dict(s=self.ajax_submit(args=['delete_filterset']),
+                                  text=T("Deleting a filterset also deletes the filterset filter attachments. Please confirm filterset deletion."),
+                                 ),
               ),
               _class='floatw',
             )
@@ -1408,7 +1414,10 @@ class table_comp_moduleset(HtmlTable):
         d = DIV(
               A(
                 T("Delete moduleset"),
-                _onclick=self.ajax_submit(args=['moduleset_del']),
+                _onclick="""if (confirm("%(text)s")){%(s)s};
+                         """%dict(s=self.ajax_submit(args=['moduleset_del']),
+                                  text=T("Deleting a moduleset also deletes the moduleset module attachments. Please confirm moduleset deletion."),
+                                 ),
               ),
               _class='floatw',
             )
@@ -1520,6 +1529,7 @@ def comp_delete_moduleset(ids=[]):
         response.flash = T("no moduleset selected")
         return
     n = db(db.comp_moduleset_modules.modset_id.belongs(ids)).delete()
+    n = db(db.comp_node_moduleset.id.belongs(ids)).delete()
     n = db(db.comp_moduleset.id.belongs(ids)).delete()
     response.flash = T("deleted %(n)d moduleset", dict(n=n))
 

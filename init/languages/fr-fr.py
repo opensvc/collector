@@ -144,6 +144,8 @@
 'Delete ruleset': 'Delete ruleset',
 'Delete variable': 'Delete variable',
 'Delete:': 'Effacer:',
+'Deleting a ruleset also deletes the ruleset variables, filters attachments and node attachments. Please confirm ruleset deletion.': 'Deleting a ruleset also deletes the ruleset variables, filters attachments and node attachments. Please confirm ruleset deletion.',
+'Deleting a ruleset also deletes the ruleset variables, ruleset filters attachments and node attachments. Please confirm ruleset deletion.': 'Deleting a ruleset also deletes the ruleset variables, ruleset filters attachments and node attachments. Please confirm ruleset deletion.',
 'Description': 'Description',
 'Detach filters': 'Detach filters',
 'Detach filterset': 'Detach filterset',

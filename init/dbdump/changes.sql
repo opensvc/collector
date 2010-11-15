@@ -696,3 +696,7 @@ drop view v_comp_nodes;
 create view v_comp_nodes as (select n.*,group_concat(distinct r.ruleset_name separator ', ') as rulesets from v_nodes n left join comp_rulesets_nodes rn on n.nodename=rn.nodename left join comp_rulesets r on r.id=rn.ruleset_id group by n.nodename);
 
 create view v_comp_explicit_rulesets as (select r.id, r.ruleset_name, group_concat(distinct concat(v.var_name,'=',v.var_value) separator '|') as variables from comp_rulesets r join comp_rulesets_variables v on r.id=v.ruleset_id where r.id not in (select ruleset_id from comp_rulesets_filtersets) group by r.id order by r.ruleset_name);
+
+alter table comp_rulesets modify column ruleset_name varchar(100) default '';
+
+alter table gen_filtersets modify column fset_name varchar(100) default '';
