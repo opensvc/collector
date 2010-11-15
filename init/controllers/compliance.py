@@ -1740,7 +1740,7 @@ class table_comp_mod_status(HtmlTable):
                      title='Nodes',
                      field='mod_nodes',
                      #table='comp_mod_status',
-                     display=True,
+                     display=False,
                      img='node16',
                     ),
         }
@@ -1786,7 +1786,7 @@ class table_comp_node_status(HtmlTable):
             'mod_names': col_concat_list(
                      title='Modules',
                      field='mod_names',
-                     display=True,
+                     display=False,
                      img='check16',
                     ),
         }
@@ -1851,7 +1851,7 @@ class table_comp_status(HtmlTable):
                      field='run_ruleset',
                      table='comp_status',
                      img='check16',
-                     display=True,
+                     display=False,
                     ),
         }
         self.colprops.update(v_nodes_colprops)
