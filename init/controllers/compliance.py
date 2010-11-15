@@ -113,7 +113,7 @@ class col_run_ruleset(HtmlTableColumn):
             return SPAN()
         return val.replace(',',', ')
 
-class col_mod_nodes(HtmlTableColumn):
+class col_concat_list(HtmlTableColumn):
     def html(self, o):
         return ', '.join(self.get(o))
 
@@ -1736,7 +1736,7 @@ class table_comp_mod_status(HtmlTable):
                      img='check16',
                      _class='numeric',
                     ),
-            'mod_nodes': col_mod_nodes(
+            'mod_nodes': col_concat_list(
                      title='Nodes',
                      field='mod_nodes',
                      #table='comp_mod_status',
@@ -1745,28 +1745,51 @@ class table_comp_mod_status(HtmlTable):
                     ),
         }
 
-@auth.requires_login()
-def ajax_comp_mod_status():
-    t = table_comp_mod_status('ajax_comp_mod_status', 'ajax_comp_mod_status')
-
-    o = ~db.v_comp_mod_status.mod_percent
-    q = db.v_comp_mod_status.id > 0
-    for f in t.cols:
-        q = _where(q, 'v_comp_mod_status', t.filter_parse(f), f)
-    q = apply_db_filters(q, 'v_nodes')
-
-    n = db(q).count()
-    t.set_pager_max(n)
-
-    if t.pager_start == 0 and t.pager_end == 0:
-        t.object_list = db(q).select(orderby=o)
-    else:
-        t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
-    return t.html()
-
-@auth.requires_login()
-def comp_mod_status():
-    return dict(table=DIV(ajax_comp_mod_status(), _id='ajax_comp_mod_status'))
+class table_comp_node_status(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['mod_node', 'mod_total', 'mod_ok', 'mod_percent',
+                     'mod_names']
+        self.colprops = {
+            'mod_node': HtmlTableColumn(
+                     title='Node',
+                     field='mod_node',
+                     display=True,
+                     img='node16',
+                    ),
+            'mod_total': HtmlTableColumn(
+                     title='Total',
+                     field='mod_total',
+                     #table='comp_mod_status',
+                     display=True,
+                     img='check16',
+                     _class='numeric',
+                    ),
+            'mod_ok': HtmlTableColumn(
+                     title='Ok',
+                     field='mod_ok',
+                     #table='comp_mod_status',
+                     display=True,
+                     img='check16',
+                     _class='numeric',
+                    ),
+            'mod_percent': col_mod_percent(
+                     title='Percent',
+                     field='mod_percent',
+                     #table='comp_mod_status',
+                     display=True,
+                     img='check16',
+                     _class='numeric',
+                    ),
+            'mod_names': col_concat_list(
+                     title='Modules',
+                     field='mod_names',
+                     display=True,
+                     img='check16',
+                    ),
+        }
 
 class table_comp_status(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
@@ -1884,7 +1907,19 @@ def ajax_comp_status():
     mt.filterable = False
     mt.exportable = False
     mt.dbfilterable = False
-    return DIV(t.html(), mt.html())
+
+    nt = table_comp_node_status('ajax_comp_node_status', 'ajax_comp_node_status')
+    nt.object_list = compute_node_status(t.object_list)
+    nt.pageable = False
+    nt.filterable = False
+    nt.exportable = False
+    nt.dbfilterable = False
+
+    return DIV(
+             mt.html(),
+             nt.html(),
+             t.html()
+           )
 
 def compute_mod_status(rows):
     h = {}
@@ -1901,6 +1936,27 @@ def compute_mod_status(rows):
         h[r.comp_status.run_module]['mod_nodes'].append(r.comp_status.run_nodename)
         if r.comp_status.run_status == 0:
             h[r.comp_status.run_module]['mod_ok'] += 1
+    for m in h.values():
+        if m['mod_total'] == 0:
+            continue
+        m['mod_percent'] = int(100*m['mod_ok']/m['mod_total'])
+    return h.values()
+
+def compute_node_status(rows):
+    h = {}
+    for r in rows:
+        if r.comp_status.run_nodename not in h:
+            h[r.comp_status.run_nodename] = {
+              'mod_names': [],
+              'mod_total': 0,
+              'mod_ok': 0,
+              'mod_percent': 0,
+              'mod_node': r.comp_status.run_nodename,
+            }
+        h[r.comp_status.run_nodename]['mod_total'] += 1
+        h[r.comp_status.run_nodename]['mod_names'].append(r.comp_status.run_module)
+        if r.comp_status.run_status == 0:
+            h[r.comp_status.run_nodename]['mod_ok'] += 1
     for m in h.values():
         if m['mod_total'] == 0:
             continue

@@ -256,6 +256,7 @@
 'Model': 'Modèle',
 'Module': 'Module',
 'Module name': 'Module name',
+'Modules': 'Modules',
 'Moduleset': 'Moduleset',
 'Moduleset name': 'Moduleset name',
 'Name': 'Nom',
