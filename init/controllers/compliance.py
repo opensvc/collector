@@ -1960,7 +1960,7 @@ def compute_mod_status(rows):
         if m['mod_total'] == 0:
             continue
         m['mod_percent'] = int(100*m['mod_ok']/m['mod_total'])
-    return h.values()
+    return sorted(h.values(), key=lambda x: x['mod_percent'])
 
 def compute_node_status(rows):
     h = {}
@@ -1981,7 +1981,7 @@ def compute_node_status(rows):
         if m['mod_total'] == 0:
             continue
         m['mod_percent'] = int(100*m['mod_ok']/m['mod_total'])
-    return h.values()
+    return sorted(h.values(), key=lambda x: x['mod_percent'])
 
 @auth.requires_login()
 def comp_status():
