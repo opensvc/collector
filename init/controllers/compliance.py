@@ -472,6 +472,7 @@ class table_comp_rulesets_nodes(HtmlTable):
         self.checkboxes = True
         self.additional_tools.append('ruleset_attach')
         self.additional_tools.append('ruleset_detach')
+        self.ajax_col_values = 'ajax_comp_rulesets_rules_col_values'
 
     def ruleset_detach(self):
         d = DIV(
@@ -519,6 +520,31 @@ class table_comp_explicit_rules(HtmlTable):
         self.checkboxes = True
         self.dbfilterable = False
         self.exportable = False
+        self.ajax_col_values = 'ajax_comp_explicit_rules_col_values'
+
+@auth.requires_login()
+def ajax_comp_explicit_rules_col_values():
+    t = table_comp_explicit_rules('1', 'ajax_comp_rulesets_nodes',
+                                  innerhtml='1')
+    col = request.args[0]
+    o = db.v_comp_explicit_rulesets[col]
+    q = db.v_comp_explicit_rulesets.id > 0
+    for f in t.cols:
+        q = _where(q, 'v_comp_explicit_rulesets', t.filter_parse_glob(f), f)
+    t.object_list = db(q).select(orderby=o, groupby=o)
+    return t.col_values_cloud(col)
+
+@auth.requires_login()
+def ajax_comp_rulesets_rules_col_values():
+    t = table_comp_rulesets_nodes('2', 'ajax_comp_rulesets_nodes',
+                                  innerhtml='1')
+    col = request.args[0]
+    o = db.v_comp_nodes[col]
+    q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
+    for f in t.cols:
+        q = _where(q, 'v_comp_nodes', t.filter_parse_glob(f), f)
+    t.object_list = db(q).select(orderby=o, groupby=o)
+    return t.col_values_cloud(col)
 
 @auth.requires_login()
 def ajax_comp_rulesets_nodes():
@@ -640,6 +666,7 @@ class table_comp_rulesets(HtmlTable):
         self.additional_tools.append('ruleset_del')
         self.additional_tools.append('ruleset_add')
         self.additional_tools.append('ruleset_rename')
+        self.ajax_col_values = 'ajax_comp_rulesets_col_values'
 
     def checkbox_key(self, o):
         if o is None:
@@ -909,6 +936,17 @@ def comp_attach_rulesets(node_ids=[], ruleset_ids=[]):
             if db(q).count() == 0:
                 db.comp_rulesets_nodes.insert(nodename=node,
                                             ruleset_id=rsid)
+
+@auth.requires_login()
+def ajax_comp_rulesets_col_values():
+    t = table_comp_rulesets('0', 'ajax_comp_rulesets')
+    col = request.args[0]
+    o = db.v_comp_rulesets[col]
+    q = db.v_comp_rulesets.id > 0
+    for f in t.cols:
+        q = _where(q, 'v_comp_rulesets', t.filter_parse_glob(f), f)
+    t.object_list = db(q).select(orderby=o, groupby=o)
+    return t.col_values_cloud(col)
 
 @auth.requires_login()
 def ajax_comp_rulesets():

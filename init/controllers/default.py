@@ -1142,11 +1142,17 @@ def delete_disks(svcname, node):
 
 @service.xmlrpc
 def svcmon_update(vars, vals):
-    generic_insert('svcmon', vars, vals)
+    # don't trust the server's time
     h = {}
     for a,b in zip(vars, vals):
+        if a == 'mon_updated':
+            continue
         h[a] = b
-    tmo = datetime.datetime.strptime(h['mon_updated'].split('.')[0], "%Y-%m-%d %H:%M:%S") - datetime.timedelta(minutes=18)
+    now = datetime.datetime.now()
+    tmo = now - datetime.timedelta(minutes=18)
+    h['mon_updated'] = now
+    generic_insert('svcmon', h.keys(), h.values())
+
     query = db.svcmon_log.mon_svcname==h['mon_svcname']
     query &= db.svcmon_log.mon_nodname==h['mon_nodname']
     last = db(query).select(orderby=~db.svcmon_log.id, limitby=(0,1))

@@ -31,6 +31,7 @@ class HtmlTable(object):
         self.id = id
         self.innerhtml = innerhtml
         self.func = func
+        self.ajax_col_values = func
         self.line_count = 0
         self.id_perpage = '_'.join((self.id, 'perpage'))
         self.id_page = '_'.join((self.id, 'page'))
@@ -383,8 +384,6 @@ class HtmlTable(object):
             l.append(self.id_page)
         if self.filterable:
             l += map(self.filter_key, self.cols+self.additional_filters)
-        if self.checkboxes:
-            l += self.checkbox_ids
         return l
 
     def table_header(self):
@@ -516,7 +515,7 @@ class HtmlTable(object):
                                 _onClick="""click_toggle_vis('%(div)s','block');getElementById('%(input)s').focus();ajax('%(url)s', inputs_%(id)s, '%(cloud)s');"""%dict(
                                     id=self.id,
                                     div=self.filter_div_key(c),
-                                    url=URL(r=request,f=self.func+'_col_values', args=[c]),
+                                    url=URL(r=request,f=self.ajax_col_values, args=[c]),
                                     cloud=self.filter_cloud_key(c),
                                     input=self.filter_key(c),
                                   ),
@@ -561,7 +560,7 @@ class HtmlTable(object):
         return inputs
 
     def ajax_submit(self, args=[], additional_inputs=[]):
-        return """ajax("%(url)s",inputs_%(id)s.concat([%(inputs)s]),"%(innerhtml)s");getElementById("%(innerhtml)s").innerHTML='%(spinner)s';"""%dict(
+        return """ajax("%(url)s",inputs_%(id)s.concat([%(inputs)s]).concat(getIdsByName("%(id)s_ck")),"%(innerhtml)s");getElementById("%(innerhtml)s").innerHTML='%(spinner)s';"""%dict(
                          url=URL(r=request,f=self.func, args=args),
                          innerhtml=self.innerhtml,
                          id=self.id,
