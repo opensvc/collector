@@ -745,7 +745,7 @@ class table_comp_rulesets(HtmlTable):
         f = SQLFORM(
                  db.comp_rulesets,
                  labels={'ruleset_name': T('Ruleset name')},
-                 _name='ruleset_add',
+                 _name='form_ruleset_add',
             )
         #f.vars.ruleset_author = user_name()
         return f
@@ -804,6 +804,7 @@ class table_comp_rulesets(HtmlTable):
                  fields=['ruleset_id', 'fset_id'],
                  labels={'fset_id': T('Filter set name'),
                          'ruleset_id': T('Rule set name')},
+                 _name='form_filterset_attach',
             )
         return f
 
@@ -817,6 +818,7 @@ class table_comp_rulesets(HtmlTable):
                  labels={'ruleset_id': T('Ruleset name'),
                          'var_name': T('Variable'),
                          'var_value': T('Value')},
+                 _name='form_var_add',
             )
         f.vars.var_author = user_name()
         return f
@@ -928,6 +930,14 @@ def ajax_comp_rulesets():
         v.form_filterset_attach = v.comp_filterset_attach_sqlform()
         v.form_ruleset_var_add = v.comp_ruleset_var_add_sqlform()
 
+    if v.form_ruleset_add.accepts(request.vars, formname='add_ruleset'):
+        response.flash = T("ruleset added")
+        # refresh forms ruleset comboboxes
+        v.form_filterset_attach = v.comp_filterset_attach_sqlform()
+        v.form_ruleset_var_add = v.comp_ruleset_var_add_sqlform()
+    elif v.form_ruleset_add.errors:
+        response.flash = T("errors in form")
+
     if v.form_filterset_attach.accepts(request.vars):
         response.flash = T("filterset attached")
     elif v.form_filterset_attach.errors:
@@ -936,14 +946,6 @@ def ajax_comp_rulesets():
     if v.form_ruleset_var_add.accepts(request.vars):
         response.flash = T("rule added")
     elif v.form_ruleset_var_add.errors:
-        response.flash = T("errors in form")
-
-    if v.form_ruleset_add.accepts(request.vars, formname='add_ruleset'):
-        response.flash = T("ruleset added")
-        # refresh forms ruleset comboboxes
-        v.form_filterset_attach = v.comp_filterset_attach_sqlform()
-        v.form_ruleset_var_add = v.comp_ruleset_var_add_sqlform()
-    elif v.form_ruleset_add.errors:
         response.flash = T("errors in form")
 
     o = db.v_comp_rulesets.ruleset_name|db.v_comp_rulesets.var_name
@@ -1583,7 +1585,7 @@ class table_comp_moduleset(HtmlTable):
         f = SQLFORM(
                  db.comp_moduleset,
                  labels={'modset_name': T('Moduleset name')},
-                 _name='moduleset_add',
+                 _name='form_moduleset_add',
             )
         f.vars.modset_author = user_name()
         return f
@@ -1609,7 +1611,7 @@ class table_comp_moduleset(HtmlTable):
                  db.comp_moduleset_modules,
                  labels={'modset_id': T('Moduleset name'),
                          'modset_mod_name': T('Module name')},
-                 _name='module_add',
+                 _name='form_module_add',
             )
         f.vars.modset_mod_author = user_name()
         return f
