@@ -135,6 +135,14 @@ function check_all(name, checked){
         }
     }
 }
+function getIdsByName(name){
+    c = document.getElementsByName(name);
+    ids = []
+    for(i = 0; i < c.length; i++) {
+        ids.push(c[i].id)
+    }
+    return ids
+}
 
 </script>
 
