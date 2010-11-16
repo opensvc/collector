@@ -807,13 +807,13 @@ class table_comp_rulesets(HtmlTable):
         return f
 
 def comp_rename_ruleset(ids):
-    ids = map(lambda x: int(x.split('_')[0]), ids)
     if len(ids) != 1:
         response.flash = T("one and only one ruleset must be selected")
         return
     if 'comp_ruleset_rename_input' not in request.vars:
         response.flash = T("new ruleset name is empty")
         return
+    ids = map(lambda x: int(x.split('_')[0]), ids)
     new = request.vars['comp_ruleset_rename_input']
     id = ids[0]
     n = db(db.comp_rulesets.id == id).update(ruleset_name=new)
@@ -821,10 +821,10 @@ def comp_rename_ruleset(ids):
 
 @auth.requires_login()
 def comp_delete_ruleset(ids=[]):
-    ids = map(lambda x: int(x.split('_')[0]), ids)
     if len(ids) == 0:
         response.flash = T("no ruleset selected")
         return
+    ids = map(lambda x: int(x.split('_')[0]), ids)
     n = db(db.comp_rulesets_filtersets.ruleset_id.belongs(ids)).delete()
     n = db(db.comp_rulesets_variables.ruleset_id.belongs(ids)).delete()
     n = db(db.comp_rulesets.id.belongs(ids)).delete()
@@ -832,20 +832,25 @@ def comp_delete_ruleset(ids=[]):
 
 @auth.requires_login()
 def comp_delete_ruleset_var(ids=[]):
-    ids = map(lambda x: int(x.split('_')[2]), ids)
     if len(ids) == 0:
         response.flash = T("no ruleset variable selected")
         return
+    ids = map(lambda x: int(x.split('_')[2]), ids)
     n = db(db.comp_rulesets_variables.id.belongs(ids)).delete()
     response.flash = T("deleted %(n)d ruleset variables", dict(n=n))
 
 @auth.requires_login()
 def comp_detach_filterset(ids=[]):
-    ids = map(lambda x: int(x.split('_')[1]), ids)
     if len(ids) == 0:
         response.flash = T("no filterset selected")
         return
-    n = db(db.comp_rulesets_filtersets.id.belongs(ids)).delete()
+    ruleset_ids = map(lambda x: int(x.split('_')[0]), ids)
+    fset_ids = map(lambda x: int(x.split('_')[1]), ids)
+    n = 0
+    for ruleset_id, fset_id in zip(ruleset_ids, fset_ids):
+        q = db.comp_rulesets_filtersets.fset_id == fset_id
+        q &= db.comp_rulesets_filtersets.ruleset_id == ruleset_id
+        n += db(q).delete()
     response.flash = T("detached %(n)d filtersets", dict(n=n))
 
 @auth.requires_login()
@@ -1208,30 +1213,30 @@ class table_comp_filtersets(HtmlTable):
 
 @auth.requires_login()
 def comp_detach_filters(ids=[]):
-    ids = map(lambda x: int(x.split('_')[1]), ids)
     if len(ids) == 0:
         response.flash = T("no filters selected")
         return
+    ids = map(lambda x: int(x.split('_')[1]), ids)
     n = db(db.gen_filtersets_filters.id.belongs(ids)).delete()
     response.flash = T("detached %(n)d filters(s)", dict(n=n))
 
 @auth.requires_login()
 def comp_delete_filterset(ids=[]):
-    ids = map(lambda x: int(x.split('_')[0]), ids)
     if len(ids) == 0:
         response.flash = T("no filterset selected")
         return
+    ids = map(lambda x: int(x.split('_')[0]), ids)
     n = db(db.gen_filtersets.id.belongs(ids)).delete()
     response.flash = T("deleted %(n)d filterset(s)", dict(n=n))
 
 def comp_rename_filterset(ids):
-    ids = map(lambda x: int(x.split('_')[0]), ids)
     if len(ids) != 1:
         response.flash = T("one and only one filterset must be selected")
         return
     if 'comp_filterset_rename_input' not in request.vars:
         response.flash = T("new filterset name is empty")
         return
+    ids = map(lambda x: int(x.split('_')[0]), ids)
     new = request.vars['comp_filterset_rename_input']
     id = ids[0]
     n = db(db.gen_filtersets.id == id).update(fset_name=new)
@@ -1595,18 +1600,18 @@ class table_comp_moduleset(HtmlTable):
         return f
 
 def comp_delete_module(ids=[]):
-    ids = map(lambda x: int(x.split('_')[1]), ids)
     if len(ids) == 0:
         response.flash = T("no module selected")
         return
+    ids = map(lambda x: int(x.split('_')[1]), ids)
     n = db(db.comp_moduleset_modules.id.belongs(ids)).delete()
     response.flash = T("deleted %(n)d modules", dict(n=n))
 
 def comp_delete_moduleset(ids=[]):
-    ids = map(lambda x: int(x.split('_')[0]), ids)
     if len(ids) == 0:
         response.flash = T("no moduleset selected")
         return
+    ids = map(lambda x: int(x.split('_')[0]), ids)
     n = db(db.comp_moduleset_modules.modset_id.belongs(ids)).delete()
     n = db(db.comp_node_moduleset.id.belongs(ids)).delete()
     n = db(db.comp_moduleset.id.belongs(ids)).delete()

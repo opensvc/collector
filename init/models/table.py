@@ -390,8 +390,6 @@ class HtmlTable(object):
     def table_header(self):
         cells = []
         if self.checkboxes:
-            # reset checkbox list
-            self.checkbox_ids = []
             cells.append(TH(''))
         for c in self.cols:
             cells.append(TH(T(self.colprops[c].title),
@@ -460,6 +458,8 @@ class HtmlTable(object):
     def table_lines(self):
         lines = []
         line_count = 0
+        # reset checkbox list
+        self.checkbox_ids = []
         for i in self.object_list:
             if isinstance(i, str) or isinstance(i, unicode) or isinstance(i, int):
                 o = self.object_list[i]
