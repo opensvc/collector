@@ -1783,7 +1783,6 @@ class table_comp_node_status(HtmlTable):
             'mod_total': HtmlTableColumn(
                      title='Total',
                      field='mod_total',
-                     #table='comp_mod_status',
                      display=True,
                      img='check16',
                      _class='numeric',
@@ -1791,7 +1790,6 @@ class table_comp_node_status(HtmlTable):
             'mod_ok': HtmlTableColumn(
                      title='Ok',
                      field='mod_ok',
-                     #table='comp_mod_status',
                      display=True,
                      img='check16',
                      _class='numeric',
@@ -1799,7 +1797,6 @@ class table_comp_node_status(HtmlTable):
             'mod_percent': col_mod_percent(
                      title='Percent',
                      field='mod_percent',
-                     #table='comp_mod_status',
                      display=True,
                      img='check16',
                      _class='numeric',
@@ -1918,19 +1915,21 @@ def ajax_comp_status():
     t.set_pager_max(n)
 
     if t.pager_start == 0 and t.pager_end == 0:
-        t.object_list = db(q).select(orderby=o)
+        all = db(q).select(orderby=o)
+        t.object_list = all
     else:
+        all = db(q).select(orderby=o)
         t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
 
     mt = table_comp_mod_status('ajax_comp_mod_status', 'ajax_comp_mod_status')
-    mt.object_list = compute_mod_status(t.object_list)
+    mt.object_list = compute_mod_status(all)
     mt.pageable = False
     mt.filterable = False
     mt.exportable = False
     mt.dbfilterable = False
 
     nt = table_comp_node_status('ajax_comp_node_status', 'ajax_comp_node_status')
-    nt.object_list = compute_node_status(t.object_list)
+    nt.object_list = compute_node_status(all)
     nt.pageable = False
     nt.filterable = False
     nt.exportable = False
