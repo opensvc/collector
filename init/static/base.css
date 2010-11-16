@@ -1067,18 +1067,6 @@ div.sym_detail_visible {
     text-align:right;
 }
 
-.tableo table {
-    width: 100%;
-}
-
-.tableo_header {
-    background-color: #13434d;
-    color: white;
-    padding: 0;
-    margin-top: 0;
-    margin-bottom: 0;
-}
-
 .white_float {
     border-radius:8px;
    -moz-border-radius:8px;
@@ -1133,6 +1121,21 @@ div.sym_detail_visible {
     padding-bottom: 0.3em;
     margin: 0.2em;
     float: left;
+}
+
+/*
+ * table class
+ */
+.tableo table {
+    width: 100%;
+}
+
+.tableo .theader {
+    background-color: #13434d;
+    color: white;
+    padding: 0;
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
 

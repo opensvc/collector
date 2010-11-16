@@ -198,39 +198,6 @@ class HtmlTable(object):
             return s
 
         a = DIV(
-              SCRIPT(
-"""
-var timer;
-var showMode = 'table-cell';
-if (document.all) showMode='block';
-function check_toggle_vis(checked, col){
-    cells = document.getElementsByName(col);
-    mode = checked ? showMode : 'none';
-    for(j = 0; j < cells.length; j++) {
-        cells[j].style.display = mode;
-    }
-}
-function click_toggle_vis(name, mode){
-    cells = document.getElementsByName(name);
-    for(j = 0; j < cells.length; j++) {
-        if (cells[j].style.display == 'none' || cells[j].style.display == "") {
-            cells[j].style.display = mode;
-        } else {
-            cells[j].style.display = 'none';
-        }
-    }
-}
-function check_all(name, checked){
-    c = document.getElementsByName(name);
-    for(i = 0; i < c.length; i++) {
-        if (c[i].type == 'checkbox' && c[i].disabled == false) {
-            c[i].checked = checked
-            c[i].value = checked
-        }
-    }
-}
-"""
-              ),
               INPUT(
                 _id=id_set_col_table,
                 _type='hidden',
@@ -431,7 +398,7 @@ function check_all(name, checked){
                             _style=self.col_hide(c),
                             _class=self.colprops[c]._class,
                             _name=self.col_key(c)))
-        return TR(cells, _class='tableo_header')
+        return TR(cells, _class='theader')
 
     def table_line(self, o):
         cells = []
@@ -655,7 +622,7 @@ function check_all(name, checked){
                 self.persistent_filters(),
                 additional_tools,
                 DIV('', _class='spacer'),
-                _class='tableo_header',
+                _class='theader',
               ),
               additional_filters,
               TABLE(
