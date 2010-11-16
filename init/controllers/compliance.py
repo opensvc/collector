@@ -780,10 +780,25 @@ class table_comp_rulesets(HtmlTable):
         return d
 
     def comp_filterset_attach_sqlform(self):
-        db.comp_rulesets_filtersets.ruleset_id.requires = IS_IN_DB(db,
-                    db.comp_rulesets.id, "%(ruleset_name)s", zero=T('choose one'))
-        db.comp_rulesets_filtersets.fset_id.requires = IS_IN_DB(db,
-                    db.gen_filtersets.id, "%(fset_name)s", zero=T('choose one'))
+        if 'ruleset_id' in request.vars:
+            ruleset_validator = IS_NOT_IN_DB(
+                    db,
+                    'comp_rulesets_filtersets.ruleset_id'
+            )
+        else:
+            ruleset_validator = None
+        db.comp_rulesets_filtersets.ruleset_id.requires = IS_IN_DB(
+                    db,
+                    db.comp_rulesets.id,
+                    "%(ruleset_name)s",
+                    zero=T('choose one'),
+                    _and=ruleset_validator)
+        db.comp_rulesets_filtersets.fset_id.requires = IS_IN_DB(
+                    db,
+                    db.gen_filtersets.id,
+                    "%(fset_name)s",
+                    zero=T('choose one')
+        )
         f = SQLFORM(
                  db.comp_rulesets_filtersets,
                  fields=['ruleset_id', 'fset_id'],
