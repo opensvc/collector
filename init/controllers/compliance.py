@@ -861,8 +861,15 @@ def comp_rename_ruleset(ids):
     ids = map(lambda x: int(x.split('_')[0]), ids)
     new = request.vars['comp_ruleset_rename_input']
     id = ids[0]
+    rows = db(db.comp_rulesets.id == id).select(db.comp_rulesets.ruleset_name)
+    if len(rows) != 1:
+        return
+    old = rows[0].ruleset_name
     n = db(db.comp_rulesets.id == id).update(ruleset_name=new)
     response.flash = T("ruleset renamed", dict(n=n))
+    _log('compliance.ruleset.rename',
+        'renamed ruleset %(old)s as %(new)s',
+        dict(old=old, new=new))
 
 @auth.requires_login()
 def comp_delete_ruleset(ids=[]):
@@ -870,10 +877,15 @@ def comp_delete_ruleset(ids=[]):
         response.flash = T("no ruleset selected")
         return
     ids = map(lambda x: int(x.split('_')[0]), ids)
+    rows = db(db.comp_rulesets.id.belongs(ids)).select(db.comp_rulesets.ruleset_name)
+    x = ', '.join([r.ruleset_name for r in rows])
     n = db(db.comp_rulesets_filtersets.ruleset_id.belongs(ids)).delete()
     n = db(db.comp_rulesets_variables.ruleset_id.belongs(ids)).delete()
     n = db(db.comp_rulesets.id.belongs(ids)).delete()
     response.flash = T("deleted %(n)d ruleset(s)", dict(n=n))
+    _log('compliance.ruleset.delete',
+         'deleted rulesets %(x)s',
+         dict(x=x))
 
 @auth.requires_login()
 def comp_delete_ruleset_var(ids=[]):
@@ -881,8 +893,17 @@ def comp_delete_ruleset_var(ids=[]):
         response.flash = T("no ruleset variable selected")
         return
     ids = map(lambda x: int(x.split('_')[2]), ids)
+    rows = db(db.v_comp_rulesets.id.belongs(ids)).select()
+    x = map(lambda r: ' '.join((
+                       r.var_name+'.'+r.var_value,
+                       'from ruleset',
+                       r.ruleset_name)), rows)
+    x = ', '.join(set(x))
     n = db(db.comp_rulesets_variables.id.belongs(ids)).delete()
-    response.flash = T("deleted %(n)d ruleset variables", dict(n=n))
+    response.flash = T("deleted %(n)d", dict(n=n))
+    _log('compliance.ruleset.variable.delete',
+         'deleted ruleset variables %(x)s',
+         dict(x=x))
 
 @auth.requires_login()
 def comp_detach_filterset(ids=[]):
@@ -891,12 +912,25 @@ def comp_detach_filterset(ids=[]):
         return
     ruleset_ids = map(lambda x: int(x.split('_')[0]), ids)
     fset_ids = map(lambda x: int(x.split('_')[1]), ids)
+    q = db.v_comp_rulesets.id < 0
+    for ruleset_id, fset_id in zip(ruleset_ids, fset_ids):
+        q |= ((db.v_comp_rulesets.ruleset_id == ruleset_id) & \
+              (db.v_comp_rulesets.fset_id == fset_id))
+    rows = db(q).select()
+    x = map(lambda r: ' '.join((
+                       r.fset_name,
+                       'from ruleset',
+                       r.ruleset_name)), rows)
+    x = ', '.join(set(x))
     n = 0
     for ruleset_id, fset_id in zip(ruleset_ids, fset_ids):
         q = db.comp_rulesets_filtersets.fset_id == fset_id
         q &= db.comp_rulesets_filtersets.ruleset_id == ruleset_id
         n += db(q).delete()
     response.flash = T("detached %(n)d filtersets", dict(n=n))
+    _log('compliance.ruleset.filterset.detach',
+         'detached filterset %(x)s',
+         dict(x=x))
 
 @auth.requires_login()
 def comp_detach_rulesets(node_ids=[], ruleset_ids=[]):
@@ -910,12 +944,19 @@ def comp_detach_rulesets(node_ids=[], ruleset_ids=[]):
     q = db.v_nodes.id.belongs(node_ids)
     rows = db(q).select(db.v_nodes.nodename)
     node_names = [r.nodename for r in rows]
+    nodes = ', '.join(node_names)
 
     for rsid in ruleset_ids:
         for node in node_names:
             q = db.comp_rulesets_nodes.nodename == node
             q &= db.comp_rulesets_nodes.ruleset_id == rsid
             db(q).delete()
+    q = db.comp_rulesets.id.belongs(ruleset_ids)
+    rows = db(q).select(db.comp_rulesets.ruleset_name)
+    rulesets = ', '.join([r.ruleset_name for r in rows])
+    _log('compliance.ruleset.node.detach',
+         'detached rulesets %(rulesets)s from nodes %(nodes)s',
+         dict(rulesets=rulesets, nodes=nodes))
 
 @auth.requires_login()
 def comp_attach_rulesets(node_ids=[], ruleset_ids=[]):
