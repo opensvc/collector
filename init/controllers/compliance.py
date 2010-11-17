@@ -983,6 +983,12 @@ def ajax_comp_rulesets():
 
     if v.form_ruleset_var_add.accepts(request.vars):
         response.flash = T("rule added")
+        var = '='.join((request.vars.var_name,
+                        request.vars.var_value))
+        ruleset = db(db.comp_rulesets.id==request.vars.ruleset_id).select(db.comp_rulesets.ruleset_name)[0].ruleset_name
+        _log('compliance.ruleset.variable.add',
+            'added ruleset variable %(var)s to ruleset %(ruleset)s',
+            dict(var=var, ruleset=ruleset))
     elif v.form_ruleset_var_add.errors:
         response.flash = T("errors in form")
 
@@ -1272,8 +1278,21 @@ def comp_detach_filters(ids=[]):
         response.flash = T("no filters selected")
         return
     ids = map(lambda x: int(x.split('_')[1]), ids)
+    q = db.v_gen_filtersets.id.belongs(ids)
+    rows = db(q).select()
+    if len(rows) == 0:
+        return
+    f_names = ', '.join(map(lambda f: ' '.join([
+                       f.f_table+'.'+f.f_field,
+                       f.f_op,
+                       f.f_value,
+                       'from',
+                       f.fset_name]), rows))
     n = db(db.gen_filtersets_filters.id.belongs(ids)).delete()
     response.flash = T("detached %(n)d filters(s)", dict(n=n))
+    _log('compliance.filterset.filter.detach',
+        'detached filters %(f_names)s',
+        dict(f_names=f_names))
 
 @auth.requires_login()
 def comp_delete_filterset(ids=[]):
@@ -1281,8 +1300,16 @@ def comp_delete_filterset(ids=[]):
         response.flash = T("no filterset selected")
         return
     ids = map(lambda x: int(x.split('_')[0]), ids)
-    n = db(db.gen_filtersets.id.belongs(ids)).delete()
+    q = db.gen_filtersets.id.belongs(ids)
+    rows = db(q).select()
+    if len(rows) == 0:
+        return
+    fset_names = ', '.join([r.fset_name for r in rows])
+    n = db(q).delete()
     response.flash = T("deleted %(n)d filterset(s)", dict(n=n))
+    _log('compliance.filterset.delete',
+        'deleted filtersets %(fset_names)s',
+        dict(fset_names=fset_names))
 
 def comp_rename_filterset(ids):
     if len(ids) != 1:
@@ -1294,8 +1321,15 @@ def comp_rename_filterset(ids):
     ids = map(lambda x: int(x.split('_')[0]), ids)
     new = request.vars['comp_filterset_rename_input']
     id = ids[0]
+    rows = db(db.gen_filtersets.id == id).select(db.gen_filtersets.fset_name)
+    if len(rows) != 1:
+        return
+    old = rows[0].fset_name
     n = db(db.gen_filtersets.id == id).update(fset_name=new)
     response.flash = T("filterset renamed", dict(n=n))
+    _log('compliance.filterset.rename',
+        'renamed filterset %(old)s as %(new)s',
+        dict(old=old, new=new))
 
 class table_comp_filters(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
@@ -1380,8 +1414,19 @@ def comp_delete_filter(ids=[]):
     if len(ids) == 0:
         response.flash = T("no filter selected")
         return
-    n = db(db.gen_filters.id.belongs(ids)).delete()
+    q = db.gen_filters.id.belongs(ids)
+    rows = db(q).select()
+    if len(rows) == 0:
+        return
+    f_names = ', '.join(map(lambda f: ' '.join([
+                       f.f_table+'.'+f.f_field,
+                       f.f_op,
+                       f.f_value]), rows))
+    n = db(q).delete()
     response.flash = T("deleted %(n)d filter(s)", dict(n=n))
+    _log('compliance.filter.delete',
+        'deleted filters %(f_names)s',
+        dict(f_names=f_names))
 
 @auth.requires_login()
 def ajax_comp_filters():
@@ -1395,6 +1440,12 @@ def ajax_comp_filters():
 
     if v.form_filter_add.accepts(request.vars):
         response.flash = T("filter added")
+        f_name = ' '.join([request.vars.f_table+'.'+request.vars.f_field,
+                           request.vars.f_op,
+                           request.vars.f_value])
+        _log('compliance.filter.add',
+            'added filter %(f_name)s',
+            dict(f_name=f_name))
     elif v.form_filter_add.errors:
         response.flash = T("errors in form")
 
@@ -1429,15 +1480,28 @@ def ajax_comp_filtersets():
         comp_rename_filterset(t.get_checked())
         t.form_filter_attach = t.comp_filter_attach_sqlform()
 
-    if t.form_filter_attach.accepts(request.vars):
-        response.flash = T("filter attached")
-    elif t.form_filter_attach.errors:
-        response.flash = T("errors in form")
-
     if t.form_filterset_add.accepts(request.vars):
         response.flash = T("filterset added")
         t.form_filter_attach = t.comp_filter_attach_sqlform()
+        _log('compliance.filterset.add',
+            'added filterset %(fset_name)s',
+            dict(fset_name=request.vars.fset_name))
     elif t.form_filterset_add.errors:
+        response.flash = T("errors in form")
+
+    if t.form_filter_attach.accepts(request.vars):
+        response.flash = T("filter attached")
+        q = db.v_gen_filtersets.f_id==request.vars.f_id
+        q &= db.v_gen_filtersets.fset_id==request.vars.fset_id
+        f = db(db.v_gen_filtersets.f_id==request.vars.f_id).select()[0]
+        f_name = ' '.join([request.vars.f_log_op,
+                           f.f_table+'.'+f.f_field,
+                           f.f_op,
+                           f.f_value])
+        _log('compliance.filterset.filter.attach',
+            'filter %(f_name)s attached to filterset %(fset_name)s',
+            dict(f_name=f_name, fset_name=f.fset_name))
+    elif t.form_filter_attach.errors:
         response.flash = T("errors in form")
 
     o = db.v_gen_filtersets.fset_name|db.v_gen_filtersets.f_id
@@ -1659,7 +1723,14 @@ def comp_delete_module(ids=[]):
         response.flash = T("no module selected")
         return
     ids = map(lambda x: int(x.split('_')[1]), ids)
+    rows = db(db.comp_moduleset_modules.id.belongs(ids)).select(db.comp_moduleset_modules.modset_mod_name)
+    if len(rows) == 0:
+        return
+    mod_names = ', '.join([r.modset_mod_name for r in rows])
     n = db(db.comp_moduleset_modules.id.belongs(ids)).delete()
+    _log('compliance.moduleset.module.delete',
+        'deleted modules %(mod_names)s',
+        dict(mod_names=mod_names))
     response.flash = T("deleted %(n)d modules", dict(n=n))
 
 def comp_delete_moduleset(ids=[]):
@@ -1667,11 +1738,19 @@ def comp_delete_moduleset(ids=[]):
         response.flash = T("no moduleset selected")
         return
     ids = map(lambda x: int(x.split('_')[0]), ids)
+    rows = db(db.comp_moduleset.id.belongs(ids)).select(db.comp_moduleset.modset_name)
+    if len(rows) == 0:
+        return
+    modset_names = ', '.join([r.modset_name for r in rows])
     n = db(db.comp_moduleset_modules.modset_id.belongs(ids)).delete()
     n = db(db.comp_node_moduleset.id.belongs(ids)).delete()
     n = db(db.comp_moduleset.id.belongs(ids)).delete()
+    _log('compliance.moduleset.delete',
+        'deleted modulesets %(modset_names)s',
+        dict(modset_names=modset_names))
     response.flash = T("deleted %(n)d moduleset", dict(n=n))
 
+@auth.requires_login()
 def comp_rename_moduleset(ids):
     if len(ids) != 1:
         response.flash = T("one and only one moduleset must be selected")
@@ -1681,7 +1760,14 @@ def comp_rename_moduleset(ids):
         return
     new = request.vars['comp_moduleset_rename_input']
     id = int(ids[0].split('_')[0])
+    rows = db(db.comp_moduleset.id == id).select(db.comp_moduleset.modset_name)
+    if len(rows) != 1:
+        return
+    old = rows[0].modset_name
     n = db(db.comp_moduleset.id == id).update(modset_name=new)
+    _log('compliance.moduleset.rename',
+         'renamed moduleset %(old)s as %(new)s',
+         dict(old=old, new=new))
     response.flash = T("moduleset renamed", dict(n=n))
 
 @auth.requires_login()
@@ -1703,11 +1789,18 @@ def ajax_comp_moduleset():
     if t.form_moduleset_add.accepts(request.vars, formname='add_moduleset'):
         response.flash = T("moduleset added")
         t.form_module_add = t.comp_module_add_sqlform()
+        _log('compliance.moduleset.add',
+            'added moduleset %(modset_name)s',
+            dict(modset_name=request.vars.modset_name))
     elif t.form_moduleset_add.errors:
         response.flash = T("errors in form")
 
     if t.form_module_add.accepts(request.vars, formname='add_module'):
         response.flash = T("moduleset added")
+        modset_name = db(db.comp_moduleset.id==request.vars.modset_id).select(db.comp_moduleset.modset_name)[0].modset_name
+        _log('compliance.moduleset.module.add',
+            'added module %(mod_name)s to moduleset %(modset_name)s',
+            dict(mod_name=request.vars.modset_mod_name, modset_name=modset_name))
     elif t.form_module_add.errors:
         response.flash = T("errors in form")
 
@@ -1998,7 +2091,7 @@ def compute_mod_status(rows):
         if m['mod_total'] == 0:
             continue
         m['mod_percent'] = int(100*m['mod_ok']/m['mod_total'])
-    return sorted(h.values(), key=lambda x: x['mod_percent'])
+    return sorted(h.values(), key=lambda x: x['mod_percent']+x['mod_name'])
 
 def compute_node_status(rows):
     h = {}
@@ -2019,7 +2112,7 @@ def compute_node_status(rows):
         if m['mod_total'] == 0:
             continue
         m['mod_percent'] = int(100*m['mod_ok']/m['mod_total'])
-    return sorted(h.values(), key=lambda x: x['mod_percent'])
+    return sorted(h.values(), key=lambda x: x['mod_percent']+x['mod_node'])
 
 @auth.requires_login()
 def comp_status():
@@ -2144,6 +2237,10 @@ def comp_attach_moduleset(nodename, moduleset):
                                       modset_id=modset_id)
     if n == 0:
         return dict(status=False, msg="failed to attach moduleset %s"%moduleset)
+    _log('compliance.moduleset.node.attach',
+        '%(moduleset)s attached to node %(node)s',
+        dict(node=nodename, moduleset=moduleset),
+        user='root@'+nodename)
     return dict(status=True, msg="moduleset %s attached"%moduleset)
 
 @service.xmlrpc
@@ -2161,6 +2258,10 @@ def comp_detach_moduleset(nodename, moduleset):
     n = db(q).delete()
     if n == 0:
         return dict(status=False, msg="failed to detach the moduleset")
+    _log('compliance.moduleset.node.detach',
+        '%(moduleset)s detached from node %(node)s',
+        dict(node=nodename, moduleset=moduleset),
+        user='root@'+nodename)
     return dict(status=True, msg="moduleset %s detached"%moduleset)
 
 @service.xmlrpc
@@ -2183,6 +2284,10 @@ def comp_attach_ruleset(nodename, ruleset):
                                       ruleset_id=ruleset_id)
     if n == 0:
         return dict(status=False, msg="failed to attach ruleset %s"%ruleset)
+    _log('compliance.ruleset.node.attach',
+        '%(ruleset)s attached to node %(node)s',
+        dict(node=nodename, ruleset=ruleset),
+        user='root@'+nodename)
     return dict(status=True, msg="ruleset %s attached"%ruleset)
 
 @service.xmlrpc
@@ -2200,6 +2305,10 @@ def comp_detach_ruleset(nodename, ruleset):
     n = db(q).delete()
     if n == 0:
         return dict(status=False, msg="failed to detach the ruleset")
+    _log('compliance.ruleset.node.detach',
+        '%(ruleset)s detached from node %(node)s',
+        dict(node=nodename, ruleset=ruleset),
+        user='root@'+nodename)
     return dict(status=True, msg="ruleset %s detached"%ruleset)
 
 @service.xmlrpc

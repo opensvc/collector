@@ -90,6 +90,8 @@ response.menu = [
          [
              [T('users'), False,
               URL(request.application,'users','users')],
+             [T('log'), False,
+              URL(request.application,'log','log')],
              [T('obsolescence setup'), False,
               URL(request.application,'obsolescence','obsolescence_config')],
              [T('applications'), False,

@@ -706,3 +706,15 @@ drop view v_comp_nodes;
 create view v_comp_nodes as (select n.*,group_concat(distinct r.ruleset_name separator ', ') as rulesets, group_concat(distinct m.modset_name separator ', ') as modulesets from v_nodes n left join comp_rulesets_nodes rn on n.nodename=rn.nodename left join comp_rulesets r on r.id=rn.ruleset_id left join comp_node_moduleset mn on mn.modset_node=n.nodename left join comp_moduleset m on m.id=mn.modset_id group by n.nodename);
 
 alter table nodes modify column loc_room varchar(30) default '';
+
+CREATE TABLE log (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `log_action` varchar(100) NOT NULL,
+  `log_user` varchar(100)  NOT NULL,
+  `log_fmt` varchar(100)  NOT NULL,
+  `log_dict` varchar(200)  NOT NULL,
+  `log_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
+
+
