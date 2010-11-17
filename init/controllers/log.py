@@ -4,7 +4,7 @@ class log_vfields(object):
 
         def log_evt(self):
             try:
-                s = self.log.log_fmt%simplejson.loads(self.log.log_dict)
+                s = self.log.log_fmt%json.loads(self.log.log_dict)
             except:
                 s = 'error parsing: %s'%self.log.log_dict
             return s
