@@ -135,11 +135,13 @@ function check_all(name, checked){
         }
     }
 }
-function getIdsByName(name){
-    c = document.getElementsByName(name);
+function getIdsByName(names){
     ids = []
-    for(i = 0; i < c.length; i++) {
-        ids.push(c[i].id)
+    for (j = 0; j < names.length; j++) {
+        c = document.getElementsByName(names[j]);
+        for (i = 0; i < c.length; i++) {
+            ids.push(c[i].id)
+        }
     }
     return ids
 }

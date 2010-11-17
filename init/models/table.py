@@ -43,11 +43,11 @@ class HtmlTable(object):
         # to be set by children
         self.additional_filters = []
         self.cols = []
-        self.checkbox_ids = []
         self.colprops = {}
 
         # to be set be instanciers
         self.checkboxes = False
+        self.checkbox_names = [self.id+'_ck']
         self.checkbox_id_col = 'id'
         self.checkbox_id_table = None
         self.filterable = True
@@ -408,7 +408,6 @@ class HtmlTable(object):
                 checked = True
                 value = 'true'
             checkbox_id = self.checkbox_key(o)
-            self.checkbox_ids.append(checkbox_id)
             cells.append(TD(
                            INPUT(
                              _type='checkbox',
@@ -457,8 +456,6 @@ class HtmlTable(object):
     def table_lines(self):
         lines = []
         line_count = 0
-        # reset checkbox list
-        self.checkbox_ids = []
         for i in self.object_list:
             if isinstance(i, str) or isinstance(i, unicode) or isinstance(i, int):
                 o = self.object_list[i]
@@ -560,10 +557,11 @@ class HtmlTable(object):
         return inputs
 
     def ajax_submit(self, args=[], additional_inputs=[]):
-        return """ajax("%(url)s",inputs_%(id)s.concat([%(inputs)s]).concat(getIdsByName("%(id)s_ck")),"%(innerhtml)s");getElementById("%(innerhtml)s").innerHTML='%(spinner)s';"""%dict(
+        return """ajax("%(url)s",inputs_%(id)s.concat([%(inputs)s]).concat(getIdsByName(%(names)s)),"%(innerhtml)s");getElementById("%(innerhtml)s").innerHTML='%(spinner)s';"""%dict(
                          url=URL(r=request,f=self.func, args=args),
                          innerhtml=self.innerhtml,
                          id=self.id,
+                         names=str(self.checkbox_names),
                          inputs = ','.join(map(repr, additional_inputs)),
                          spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
                         )

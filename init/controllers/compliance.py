@@ -553,6 +553,7 @@ def ajax_comp_rulesets_nodes():
     t = table_comp_rulesets_nodes('2', 'ajax_comp_rulesets_nodes',
                                   innerhtml='1')
     t.rulesets = r
+    t.checkbox_names.append(r.id+'_ck')
 
     if len(request.args) == 1 and request.args[0] == 'attach_ruleset':
         comp_attach_rulesets(t.get_checked(), r.get_checked())
@@ -928,6 +929,7 @@ def comp_attach_rulesets(node_ids=[], ruleset_ids=[]):
     q = db.v_nodes.id.belongs(node_ids)
     rows = db(q).select(db.v_nodes.nodename)
     node_names = [r.nodename for r in rows]
+    nodes = ', '.join(node_names)
 
     for rsid in ruleset_ids:
         for node in node_names:
@@ -936,6 +938,13 @@ def comp_attach_rulesets(node_ids=[], ruleset_ids=[]):
             if db(q).count() == 0:
                 db.comp_rulesets_nodes.insert(nodename=node,
                                             ruleset_id=rsid)
+
+    q = db.comp_rulesets.id.belongs(ruleset_ids)
+    rows = db(q).select(db.comp_rulesets.ruleset_name)
+    rulesets = ', '.join([r.ruleset_name for r in rows])
+    _log('compliance.ruleset.node.attach',
+         'attached rulesets %(rulesets)s to nodes %(nodes)s',
+         dict(rulesets=rulesets, nodes=nodes))
 
 @auth.requires_login()
 def ajax_comp_rulesets_col_values():
@@ -973,11 +982,24 @@ def ajax_comp_rulesets():
         # refresh forms ruleset comboboxes
         v.form_filterset_attach = v.comp_filterset_attach_sqlform()
         v.form_ruleset_var_add = v.comp_ruleset_var_add_sqlform()
+        _log('compliance.ruleset.add',
+             'added ruleset %(ruleset)s',
+             dict(ruleset=request.vars.ruleset_name))
     elif v.form_ruleset_add.errors:
         response.flash = T("errors in form")
 
     if v.form_filterset_attach.accepts(request.vars):
         response.flash = T("filterset attached")
+        q = db.v_comp_rulesets.fset_id == request.vars.fset_id
+        q &= db.v_comp_rulesets.ruleset_id == request.vars.ruleset_id
+        rows = db(q).select()
+        if len(rows) != 1:
+            return
+        fset = rows[0].fset_name
+        ruleset = rows[0].ruleset_name
+        _log('compliance.ruleset.filterset.attach',
+             'attached filterset %(fset)s to ruleset %(ruleset)s',
+             dict(fset=fset, ruleset=ruleset))
     elif v.form_filterset_attach.errors:
         response.flash = T("errors in form")
 
@@ -987,8 +1009,8 @@ def ajax_comp_rulesets():
                         request.vars.var_value))
         ruleset = db(db.comp_rulesets.id==request.vars.ruleset_id).select(db.comp_rulesets.ruleset_name)[0].ruleset_name
         _log('compliance.ruleset.variable.add',
-            'added ruleset variable %(var)s to ruleset %(ruleset)s',
-            dict(var=var, ruleset=ruleset))
+             'added ruleset variable %(var)s to ruleset %(ruleset)s',
+             dict(var=var, ruleset=ruleset))
     elif v.form_ruleset_var_add.errors:
         response.flash = T("errors in form")
 
