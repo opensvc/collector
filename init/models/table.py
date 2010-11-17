@@ -1,3 +1,5 @@
+import re
+
 class Column(object):
     def __init__(self, title, display=False, img='generic', _class=''):
         self.title = title
@@ -58,7 +60,10 @@ class HtmlTable(object):
         self.additional_tools = []
         self.span = None
         self.sub_span = []
+        self.setup_pager()
 
+    def setup_pager(self, n=0):
+        self.totalrecs = n
         if self.pageable:
             if self.id_perpage in request.vars:
                 self.perpage = int(request.vars[self.id_perpage])
@@ -72,7 +77,7 @@ class HtmlTable(object):
             if self.page == 0:
                 self.perpage = 0
                 self.pager_start = 0
-                self.pager_end = 0
+                self.pager_end = n
             else:
                 self.pager_start = (self.page-1) * self.perpage
                 self.pager_end = self.pager_start + self.perpage - 1
@@ -80,7 +85,7 @@ class HtmlTable(object):
             self.perpage = 0
             self.page = 0
             self.pager_start = 0
-            self.pager_end = 0
+            self.pager_end = n
 
     def col_values_cloud(self, c):
         l = []
@@ -233,9 +238,6 @@ class HtmlTable(object):
               _class='floatw',
             )
         return d
-
-    def set_pager_max(self, n):
-        self.totalrecs = n
 
     def pager(self):
         if not self.pageable:
@@ -670,5 +672,137 @@ class HtmlTable(object):
         response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
         return self._csv()
 
+    def int_match(self, value, num):
+        if len(value) == 0:
+            return True
+        if not isinstance(num, int):
+            return False
 
+        negate = False
+        inf = False
+        sup = False
+        inf_e = False
+        sup_e = False
+
+        if value[0] == '!':
+            negate = True
+            value = value[1:]
+        if value[0] == '<':
+            if len(value) > 2 and value[1] == '=':
+                inf_e = True
+                value = value[2:]
+            else:
+                inf = True
+                value = value[1:]
+        elif value[0] == '>':
+            if len(value) > 2 and value[1] == '=':
+                sup_e = True
+                value = value[2:]
+            else:
+                sup = True
+                value = value[1:]
+        try:
+            v = int(value)
+        except:
+            return self.str_match(value, str(num))
+
+        if sup:
+            if num > v:
+                r = True
+            else:
+                r = False
+        elif inf:
+            if num < v:
+                r = True
+            else:
+                r = False
+        elif sup_e:
+            if num >= v:
+                r = True
+            else:
+                r = False
+        elif inf_e:
+            if num <= v:
+                r = True
+            else:
+                r = False
+        elif num == v:
+            r = True
+        else:
+            r = False
+
+        if negate:
+            return not r
+        else:
+            return r
+
+    def str_match(self, value, text):
+        negate = False
+        if len(value) == 0:
+            return True
+        if value[0] == '!':
+            negate = True
+            value = value[1:]
+        if value == "empty":
+            if text == "":
+                r = True
+            else:
+                r = False
+        else:
+            reg = value.replace('%', '.*')
+            if reg[-1] != '$':
+                reg = reg+'$'
+            r = re.match(reg, text)
+            if r is None:
+                r = False
+            else:
+                r = True
+        if negate:
+            return not r
+        else:
+            return r
+
+    def str_match_in_list(self, value, l):
+        if value == 'empty':
+            if len(l) == 0:
+                return True
+            else:
+                return False
+        elif value == '!empty':
+            if len(l) == 0:
+                return False
+            else:
+                return True
+        if len(value) == 0 and len(l) == 0:
+            return True
+        for i in l:
+            if self.str_match(value, i):
+                return True
+        return False
+
+    def _match(self, value, o):
+        if isinstance(o, str) or isinstance(o, unicode):
+            return self.str_match(value, o)
+        elif isinstance(o, list):
+            return self.str_match_in_list(value, o)
+        elif isinstance(o, int):
+            return self.int_match(value, o)
+        return False
+
+    def match(self, value, o):
+        if '&' in value:
+            for v in value.split('&'):
+                if not self.match(v, o):
+                    return False
+            return True
+        elif '|' in value:
+            for v in value.split('|'):
+                if self.match(v, o):
+                    return True
+            return False
+        else:
+            return self._match(value, o)
+
+    def match_col(self, value, o, f):
+        return self.match(value, self.colprops[f].get(o))
 

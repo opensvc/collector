@@ -83,21 +83,24 @@ class table_log(HtmlTable):
 @auth.requires_login()
 def ajax_log():
     t = table_log('log', 'ajax_log')
-
+    special_filtered_cols = ['log_icons', 'log_evt']
     o = ~db.log.log_date
     q = db.log.id > 0
-    for f in t.cols:
+    for f in set(t.cols)-set(special_filtered_cols):
         q = _where(q, 'log', t.filter_parse(f), f)
-
     n = db(q).count()
-    t.set_pager_max(n)
+    t.setup_pager(n)
 
-    if t.pager_start == 0 and t.pager_end == 0:
-        all = db(q).select(orderby=o)
-        t.object_list = all
-    else:
-        all = db(q).select(orderby=o)
-        t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    all = db(q).select()
+    ids = []
+    for i, row in enumerate(all):
+        for f in special_filtered_cols:
+            if not t.match_col(t.filter_parse(f), row, f):
+                ids.append(row.id)
+    if len(ids) > 0:
+        q = ~db.log.id.belongs(ids)
+
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
 
     return t.html()
 

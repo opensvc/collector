@@ -566,12 +566,8 @@ def ajax_comp_rulesets_nodes():
         q = _where(q, 'v_comp_explicit_rulesets', r.filter_parse_glob(f), f)
 
     n = db(q).count()
-    r.set_pager_max(n)
-
-    if r.pager_start == 0 and r.pager_end == 0:
-        r.object_list = db(q).select(orderby=o)
-    else:
-        r.object_list = db(q).select(limitby=(r.pager_start,r.pager_end), orderby=o)
+    r.setup_pager(n)
+    r.object_list = db(q).select(limitby=(r.pager_start,r.pager_end), orderby=o)
 
     r_html = r.html()
 
@@ -582,12 +578,8 @@ def ajax_comp_rulesets_nodes():
     q = apply_db_filters(q, 'v_comp_nodes')
 
     n = db(q).count()
-    t.set_pager_max(n)
-
-    if t.pager_start == 0 and t.pager_end == 0:
-        t.object_list = db(q).select(orderby=o)
-    else:
-        t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    t.setup_pager(n)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
 
     return DIV(
              DIV(
@@ -1061,12 +1053,8 @@ def ajax_comp_rulesets():
         q = _where(q, 'v_comp_rulesets', v.filter_parse(f), f)
 
     n = db(q).count()
-    v.set_pager_max(n)
-
-    if v.pager_start == 0 and v.pager_end == 0:
-        v.object_list = db(q).select(orderby=o)
-    else:
-        v.object_list = db(q).select(limitby=(v.pager_start,v.pager_end), orderby=o)
+    v.setup_pager(n)
+    v.object_list = db(q).select(limitby=(v.pager_start,v.pager_end), orderby=o)
 
     return v.html()
 
@@ -1518,12 +1506,8 @@ def ajax_comp_filters():
         q = _where(q, 'gen_filters', v.filter_parse(f), f)
 
     n = db(q).count()
-    v.set_pager_max(n)
-
-    if v.pager_start == 0 and v.pager_end == 0:
-        v.object_list = db(q).select(orderby=o)
-    else:
-        v.object_list = db(q).select(limitby=(v.pager_start,v.pager_end), orderby=o)
+    v.setup_pager(n)
+    v.object_list = db(q).select(limitby=(v.pager_start,v.pager_end), orderby=o)
 
     return v.html()
 
@@ -1573,12 +1557,8 @@ def ajax_comp_filtersets():
         q = _where(q, 'v_gen_filtersets', t.filter_parse(f), f)
 
     n = db(q).count()
-    t.set_pager_max(n)
-
-    if t.pager_start == 0 and t.pager_end == 0:
-        t.object_list = db(q).select(orderby=o)
-    else:
-        t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    t.setup_pager(n)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
 
     return t.html()
 
@@ -1875,22 +1855,13 @@ def ajax_comp_moduleset():
     join = db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
     left = db.comp_moduleset_modules.on(join)
     rows = db(q).select(db.comp_moduleset_modules.id, left=left)
-    t.set_pager_max(len(rows))
-
-    if t.pager_start == 0 and t.pager_end == 0:
-        t.object_list = db(q).select(db.comp_moduleset_modules.ALL,
-                                     db.comp_moduleset.modset_name,
-                                     db.comp_moduleset.id,
-                                     orderby=o,
-                                     left=left
-                                    )
-    else:
-        t.object_list = db(q).select(db.comp_moduleset_modules.ALL,
-                                     db.comp_moduleset.modset_name,
-                                     db.comp_moduleset.id,
-                                     orderby=o,
-                                     left=left,
-                                     limitby=(t.pager_start,t.pager_end))
+    t.setup_pager(len(rows))
+    t.object_list = db(q).select(db.comp_moduleset_modules.ALL,
+                                 db.comp_moduleset.modset_name,
+                                 db.comp_moduleset.id,
+                                 orderby=o,
+                                 left=left,
+                                 limitby=(t.pager_start,t.pager_end))
 
     return t.html()
 
@@ -2106,14 +2077,12 @@ def ajax_comp_status():
     q = apply_db_filters(q, 'v_nodes')
 
     n = db(q).count()
-    t.set_pager_max(n)
-
-    if t.pager_start == 0 and t.pager_end == 0:
-        all = db(q).select(orderby=o)
-        t.object_list = all
+    t.setup_pager(n)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    if t.pager_start == 0 and t.pager_end == n:
+        all = t.pager_start
     else:
         all = db(q).select(orderby=o)
-        t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
 
     mt = table_comp_mod_status('ajax_comp_mod_status', 'ajax_comp_mod_status')
     mt.object_list = compute_mod_status(all)
@@ -2212,12 +2181,8 @@ def ajax_comp_log():
     q = apply_db_filters(q, 'v_nodes')
 
     n = db(q).count()
-    t.set_pager_max(n)
-
-    if t.pager_start == 0 and t.pager_end == 0:
-        t.object_list = db(q).select(orderby=o)
-    else:
-        t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    t.setup_pager(n)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
     return t.html()
 
 
