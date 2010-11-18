@@ -1977,6 +1977,50 @@ class table_comp_node_status(HtmlTable):
                     ),
         }
 
+@service.json
+def json_run_status_log(nodename, module):
+    c = db.comp_log.run_status
+    o = db.comp_log.run_date
+    q = db.comp_log.run_nodename == nodename
+    q = db.comp_log.run_action == 'check'
+    q &= db.comp_log.run_module == module
+    q &= db.comp_log.run_date > datetime.datetime.now() - datetime.timedelta(days=90)
+    data = [r.run_status for r in db(q).select(c, orderby=o)]
+    def enc(v):
+        if v == 0: return 1
+        elif v == 1: return -1
+        else: return 0
+    data = map(lambda x: enc(x), data)
+    return data
+
+class table_comp_status_vfields(object):
+        def run_status_log(self):
+            id = 'rh_%s_%s'%(self.comp_status.run_nodename,
+                             self.comp_status.run_module)
+            url = URL(r=request,
+                      f='call/json/json_run_status_log/%(node)s/%(module)s'%dict(
+                         node=self.comp_status.run_nodename,
+                         module=self.comp_status.run_module)
+                  )
+            return SPAN(
+                     SPAN(
+                        IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
+                       _id=id
+                     ),
+                     SCRIPT(
+"""
+$(function() {
+    chartoptions = {type: 'tristate'}
+    $.getJSON('%(url)s', function(data) {
+        $("#%(id)s").sparkline(data, chartoptions);
+    });
+});
+"""%dict(url=url, id=id)
+                     ),
+                   )
+
+db.comp_status.virtualfields.append(table_comp_status_vfields())
+
 class table_comp_status(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -1987,6 +2031,7 @@ class table_comp_status(HtmlTable):
                      'run_module',
                      'run_action',
                      'run_status',
+                     'run_status_log',
                      'run_ruleset']
         self.cols += v_nodes_cols
         self.colprops = {
@@ -2021,6 +2066,13 @@ class table_comp_status(HtmlTable):
             'run_status': col_run_status(
                      title='Status',
                      field='run_status',
+                     table='comp_status',
+                     img='check16',
+                     display=True,
+                    ),
+            'run_status_log': col_run_status(
+                     title='History',
+                     field='run_status_log',
                      table='comp_status',
                      img='check16',
                      display=True,

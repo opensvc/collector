@@ -2,6 +2,7 @@
 response.files.insert(0,URL(r=request,c='static',f='jquery.js'))
 response.files.insert(1,URL(r=request,c='static',f='calendar.css'))
 response.files.insert(2,URL(r=request,c='static',f='calendar.js'))
+response.files.insert(4,URL(r=request,c='static',f='jquery.sparkline.min.js'))
 for _item in response.meta or []:}}
      <meta name="{{=_item}}" content="{{=response.meta[_item]}}" />{{
 pass

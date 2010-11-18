@@ -206,6 +206,7 @@
 'Guest OS': 'OS du container',
 'Hello World': 'Bonjour Monde',
 'High threshold': 'Seuil haut',
+'History': 'History',
 'Icons': 'Icons',
 'Id': 'Id',
 'Import Date': "Date d'import",
