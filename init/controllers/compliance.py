@@ -1982,7 +1982,7 @@ def json_run_status_log(nodename, module):
     c = db.comp_log.run_status
     o = db.comp_log.run_date
     q = db.comp_log.run_nodename == nodename
-    q = db.comp_log.run_action == 'check'
+    q &= db.comp_log.run_action == 'check'
     q &= db.comp_log.run_module == module
     q &= db.comp_log.run_date > datetime.datetime.now() - datetime.timedelta(days=90)
     data = [r.run_status for r in db(q).select(c, orderby=o)]
