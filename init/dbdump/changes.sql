@@ -717,4 +717,4 @@ CREATE TABLE log (
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
 
-
+alter table comp_log add index idx2 (run_date,run_nodename,run_module,run_action);
