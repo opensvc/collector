@@ -581,6 +581,9 @@ def ajax_comp_rulesets_nodes():
     t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
 
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        return t.csv()
+
     return DIV(
              DIV(
                t.html(),
@@ -2097,6 +2100,9 @@ def ajax_comp_status():
     nt.filterable = False
     nt.exportable = False
     nt.dbfilterable = False
+
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        return t.csv()
 
     return DIV(
              mt.html(),

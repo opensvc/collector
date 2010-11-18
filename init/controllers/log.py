@@ -79,14 +79,39 @@ class table_log(HtmlTable):
                      display=True,
                     ),
         }
+        self.dbfilterable = False
+        self.ajax_col_values = 'ajax_log_col_values'
+        self.special_filtered_cols = ['log_icons', 'log_evt']
+
+@auth.requires_login()
+def ajax_log_col_values():
+    t = table_log('log', 'ajax_log')
+    col = request.args[0]
+    o = db.log[col]
+    q = db.log.id > 0
+    t.object_list = db(q).select(orderby=o, groupby=o)
+    for f in set(t.cols)-set(t.special_filtered_cols):
+        q = _where(q, 'log', t.filter_parse(f), f)
+    all = db(q).select()
+    ids = []
+    for i, row in enumerate(all):
+        for f in t.special_filtered_cols:
+            if not t.match_col(t.filter_parse(f), row, f):
+                ids.append(row.id)
+    if len(ids) > 0:
+        q = ~db.log.id.belongs(ids)
+
+    rows = db(q).select(orderby=o)
+    t.object_list = map(lambda x: {col: x}, set([r[col] for r in rows]))
+
+    return t.col_values_cloud(col)
 
 @auth.requires_login()
 def ajax_log():
     t = table_log('log', 'ajax_log')
-    special_filtered_cols = ['log_icons', 'log_evt']
     o = ~db.log.log_date
     q = db.log.id > 0
-    for f in set(t.cols)-set(special_filtered_cols):
+    for f in set(t.cols)-set(t.special_filtered_cols):
         q = _where(q, 'log', t.filter_parse(f), f)
     n = db(q).count()
     t.setup_pager(n)
@@ -94,7 +119,7 @@ def ajax_log():
     all = db(q).select()
     ids = []
     for i, row in enumerate(all):
-        for f in special_filtered_cols:
+        for f in t.special_filtered_cols:
             if not t.match_col(t.filter_parse(f), row, f):
                 ids.append(row.id)
     if len(ids) > 0:

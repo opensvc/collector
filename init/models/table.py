@@ -92,6 +92,7 @@ class HtmlTable(object):
         for o in self.object_list:
             l.append(A(
                        self.colprops[c].get(o),
+                       ' ',
                        _class="cloud_tag",
                        _onclick="""
                          getElementById('%(id)s').value='%(val)s';
@@ -575,6 +576,9 @@ class HtmlTable(object):
                  id=self.id)
 
     def html(self):
+        if len(request.args) == 1 and request.args[0] == 'csv':
+            return self.csv()
+
         self.set_column_visibility()
         lines, line_count = self.table_lines()
 
@@ -606,7 +610,12 @@ class HtmlTable(object):
             export = DIV(
                   A(
                     T('Export to csv'),
-                    _href=URL(r=request,f=self.func+'_csv', vars=request.vars),
+                    _href=URL(
+                            r=request,
+                            f=self.func,
+                            vars=request.vars,
+                            args=['csv']
+                          ),
                   ),
                   _class='floatw',
                 )
@@ -663,7 +672,7 @@ class HtmlTable(object):
                 o = i
             inf = []
             for c in self.cols:
-                inf.append(repr(str(self.colprops[c].html(o))))
+                inf.append(repr(str(self.colprops[c].get(o))))
             lines.append(';'.join(inf))
         return '\n'.join(lines)
 
