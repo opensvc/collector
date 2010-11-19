@@ -18,7 +18,7 @@ timepicker = """Calendar.setup({inputField:this.id, ifFormat:"%Y-%m-%d %H:%M:%S"
 
 {{=PANEL("nodes")}}
 {{=PANEL("column_values")}}
-<form action='obsolescence_config' name='svcform' id='svcform'> 
+<form action='obsolescence_config' name='svcform' id='svcform' method='post'> 
 {{=DB_FILTERS_TABLE(active_filters, available_filters)}}
 <table class=datatable>
   <tr class=box>

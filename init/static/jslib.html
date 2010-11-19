@@ -145,6 +145,37 @@ function getIdsByName(names){
     }
     return ids
 }
-
+function eval_js_in_ajax_response(id) {
+    l = document.getElementsByName(id+"_to_eval")
+    for (i = 0; i < l.length; i++) {
+        eval(l[i].innerHTML)
+    }
+}
+function sparkl(url, id) {
+    chartoptions = {type: 'tristate'};
+    $.getJSON(url, function(data) {
+        $(document.getElementById(id)).sparkline(data, chartoptions);
+    });
+}
+function table_ajax_submit(url, id, inputs, additional_inputs, input_name, spinner) {
+    s = inputs.concat(additional_inputs).concat(getIdsByName(input_name))
+    var query=""
+    for (i=0; i<s.length; i++) {
+        if (i > 0) {query=query+"&"}
+        query=query+encodeURIComponent(s[i])+"="+encodeURIComponent(document.getElementById(s[i]).value);
+    }
+    $.ajax({
+         type: "POST",
+         url: url,
+         data: query,
+         beforeSend: function(req){
+	     document.getElementById(id).innerHTML=spinner
+         },
+         success: function(msg){
+             document.getElementById(id).innerHTML=msg
+             eval_js_in_ajax_response(id)
+         }
+    })
+}
 </script>
 
