@@ -69,7 +69,7 @@ response.menu = [
              [T('patches'), False,
               URL(request.application,'patches','patches')],
              [T('compliance'), False,
-              URL(request.application,'compliance','comp_status?ajax_comp_status_filter_run_date=>'+sevendays)],
+              URL(request.application,'compliance','comp_status?0_f_run_date=>'+sevendays)],
              [T('storage'), False,
               URL(request.application,'sym','index')],
          ]

@@ -560,12 +560,12 @@ class HtmlTable(object):
         return inputs
 
     def ajax_submit(self, args=[], additional_inputs=[]):
-        return """ajax("%(url)s",inputs_%(id)s.concat([%(inputs)s]).concat(getIdsByName(%(names)s)),"%(innerhtml)s");getElementById("%(innerhtml)s").innerHTML='%(spinner)s';"""%dict(
+        return """table_ajax_submit('%(url)s', '%(id)s', %(inputs)s, %(additional_inputs)s, %(input_name)s, '%(spinner)s');"""%dict(
                          url=URL(r=request,f=self.func, args=args),
-                         innerhtml=self.innerhtml,
-                         id=self.id,
-                         names=str(self.checkbox_names),
-                         inputs = ','.join(map(repr, additional_inputs)),
+                         id=self.innerhtml,
+                         inputs = 'inputs_'+self.id,
+                         additional_inputs = str(map(repr, additional_inputs)),
+                         input_name=str(self.checkbox_names),
                          spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
                         )
 

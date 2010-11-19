@@ -2146,15 +2146,16 @@ def ajax_comp_status():
     if len(request.args) == 1 and request.args[0] == 'csv':
         return t.csv()
 
-    spark_cmds = "$(document).ready(function(){"
+    #spark_cmds = "$(document.getElementById('%s')).ready(function(){"%t.id
+    spark_cmds = ""
     for r in t.object_list:
         spark_cmds += "sparkl('%(url)s', '%(id)s');"%dict(
           url=spark_url(r.comp_status.run_nodename, r.comp_status.run_module),
-          id=spark_id(r.comp_status.run_nodename, r.comp_status.run_module)
+          id=spark_id(r.comp_status.run_nodename, r.comp_status.run_module),
         )
-    spark_cmds += "});"
+    #spark_cmds += "});"
     return DIV(
-             SCRIPT(spark_cmds),
+             SCRIPT(spark_cmds, _name=t.id+"_to_eval"),
              mt.html(),
              nt.html(),
              t.html(),
