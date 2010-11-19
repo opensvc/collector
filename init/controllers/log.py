@@ -12,6 +12,9 @@ class log_vfields(object):
 db.log.virtualfields.append(log_vfields())
 
 img_h = {
+  'users': 'guys16.png',
+  'group': 'guys16.png',
+  'user': 'guy16.png',
   'compliance': 'check16.png',
   'moduleset': 'action16.png',
   'module': 'action16.png',
@@ -19,6 +22,7 @@ img_h = {
   'filter': 'filter16.png',
   'add': 'add16.png',
   'delete': 'del16.png',
+  'change': 'rename16.png',
   'rename': 'rename16.png',
   'attach': 'attach16.png',
   'detach': 'detach16.png',

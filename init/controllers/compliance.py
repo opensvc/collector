@@ -1277,7 +1277,7 @@ class table_comp_filtersets(HtmlTable):
         )
         if 'fset_id' in request.vars:
             q = db.gen_filtersets_filters.f_id == request.vars.f_id
-            q = db.gen_filtersets_filters.fset_id == request.vars.fset_id
+            q &= db.gen_filtersets_filters.fset_id == request.vars.fset_id
             existing = db(q)
             f_id_validator = IS_NOT_IN_DB(existing, 'gen_filtersets_filters.f_id')
         else:

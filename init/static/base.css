@@ -1130,6 +1130,10 @@ div.sym_detail_visible {
     width: 100%;
 }
 
+.tableo a:hover {
+    cursor: pointer;
+}
+
 .tableo .theader {
     background-color: #13434d;
     color: white;
@@ -1138,4 +1142,6 @@ div.sym_detail_visible {
     margin-bottom: 0;
 }
 
-
+.clickable:hover {
+   cursor: pointer;
+}

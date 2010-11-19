@@ -519,6 +519,7 @@ class HtmlTable(object):
                                     cloud=self.filter_cloud_key(c),
                                     input=self.filter_key(c),
                                   ),
+                                _class='clickable',
                               ),
                               clear,
                               self.filter_parse(c),
