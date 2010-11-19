@@ -565,7 +565,7 @@ class HtmlTable(object):
                          url=URL(r=request,f=self.func, args=args),
                          id=self.innerhtml,
                          inputs = 'inputs_'+self.id,
-                         additional_inputs = str(map(repr, additional_inputs)),
+                         additional_inputs = str(additional_inputs),
                          input_name=str(self.checkbox_names),
                          spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
                         )
