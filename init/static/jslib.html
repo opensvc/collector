@@ -145,6 +145,12 @@ function getIdsByName(names){
     }
     return ids
 }
+function sparkl(url, id) {
+    chartoptions = {type: 'tristate'};
+    $.getJSON(url, function(data) {
+        $(document.getElementById(id)).sparkline(data, chartoptions);
+    });
+};
 
 </script>
 

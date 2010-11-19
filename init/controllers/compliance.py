@@ -1993,33 +1993,26 @@ def json_run_status_log(nodename, module):
     data = map(lambda x: enc(x), data)
     return data
 
+def spark_id(nodename, module):
+    return 'rh_%s_%s'%(nodename, module)
+
+def spark_url(nodename, module):
+    return URL(r=request,
+               f='call/json/json_run_status_log/%(node)s/%(module)s'%dict(
+                 node=nodename,
+                 module=module)
+           )
+
 class table_comp_status_vfields(object):
         def run_status_log(self):
-            id = 'rh_%s_%s'%(self.comp_status.run_nodename,
-                             self.comp_status.run_module)
-            url = URL(r=request,
-                      f='call/json/json_run_status_log/%(node)s/%(module)s'%dict(
-                         node=self.comp_status.run_nodename,
-                         module=self.comp_status.run_module)
-                  )
             return SPAN(
-                     SPAN(
-                        IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
-                       _id=id
-                     ),
-                     SCRIPT(
-"""
-$(function() {
-    chartoptions = {type: 'tristate'}
-    $.getJSON('%(url)s', function(data) {
-        $("#%(id)s").sparkline(data, chartoptions);
-    });
-});
-"""%dict(url=url, id=id)
-                     ),
+                     _id=spark_id(self.comp_status.run_nodename,
+                                  self.comp_status.run_module)
                    )
 
-db.comp_status.virtualfields.append(table_comp_status_vfields())
+def table_comp_status_add_vfields(t):
+    db.comp_status.virtualfields.append(table_comp_status_vfields())
+    t.cols.insert(5, 'run_status_log')
 
 class table_comp_status(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
@@ -2031,7 +2024,6 @@ class table_comp_status(HtmlTable):
                      'run_module',
                      'run_action',
                      'run_status',
-                     'run_status_log',
                      'run_ruleset']
         self.cols += v_nodes_cols
         self.colprops = {
@@ -2109,7 +2101,7 @@ def ajax_comp_log_col_values():
 
 @auth.requires_login()
 def ajax_comp_status_col_values():
-    t = table_comp_status('ajax_comp_status', 'ajax_comp_status')
+    t = table_comp_status('0', 'ajax_comp_status')
     col = request.args[0]
     o = db.comp_status[col]
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
@@ -2122,7 +2114,7 @@ def ajax_comp_status_col_values():
 
 @auth.requires_login()
 def ajax_comp_status():
-    t = table_comp_status('ajax_comp_status', 'ajax_comp_status')
+    t = table_comp_status('0', 'ajax_comp_status')
 
     o = ~db.comp_status.run_nodename
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
@@ -2133,20 +2125,18 @@ def ajax_comp_status():
 
     n = db(q).count()
     t.setup_pager(n)
+    all = db(q).select(db.comp_status.ALL, db.v_nodes.id)
+    table_comp_status_add_vfields(t)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
-    if t.pager_start == 0 and t.pager_end == n:
-        all = t.pager_start
-    else:
-        all = db(q).select(orderby=o)
 
-    mt = table_comp_mod_status('ajax_comp_mod_status', 'ajax_comp_mod_status')
+    mt = table_comp_mod_status('1', 'ajax_comp_mod_status')
     mt.object_list = compute_mod_status(all)
     mt.pageable = False
     mt.filterable = False
     mt.exportable = False
     mt.dbfilterable = False
 
-    nt = table_comp_node_status('ajax_comp_node_status', 'ajax_comp_node_status')
+    nt = table_comp_node_status('2', 'ajax_comp_node_status')
     nt.object_list = compute_node_status(all)
     nt.pageable = False
     nt.filterable = False
@@ -2156,10 +2146,18 @@ def ajax_comp_status():
     if len(request.args) == 1 and request.args[0] == 'csv':
         return t.csv()
 
+    spark_cmds = "$(document).ready(function(){"
+    for r in t.object_list:
+        spark_cmds += "sparkl('%(url)s', '%(id)s');"%dict(
+          url=spark_url(r.comp_status.run_nodename, r.comp_status.run_module),
+          id=spark_id(r.comp_status.run_nodename, r.comp_status.run_module)
+        )
+    spark_cmds += "});"
     return DIV(
+             SCRIPT(spark_cmds),
              mt.html(),
              nt.html(),
-             t.html()
+             t.html(),
            )
 
 def compute_mod_status(rows):
@@ -2210,7 +2208,7 @@ def comp_status():
           comp_menu('Status'),
           DIV(
             ajax_comp_status(),
-            _id='ajax_comp_status',
+            _id='0',
           ),
         )
     return dict(table=t)
