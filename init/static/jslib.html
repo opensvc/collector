@@ -157,6 +157,47 @@ function sparkl(url, id) {
         $(document.getElementById(id)).sparkline(data, chartoptions);
     });
 }
+function comp_status_plot(url, id) {
+    $.jqplot.config.enablePlugins = true;
+    $.getJSON(url, function(data) {
+	$.jqplot(id, data[1], {
+	    stackSeries: true,
+	    legend: {
+                show: false,
+                location: 'nw'
+            },
+	    seriesDefaults: {
+                fill: true,
+                shadowAngle: 135
+            },
+	    series: [
+                {
+                    label: 'ok',
+                    color: 'lightgreen'
+                },
+                {
+                    label: 'errors',
+                    color: 'red'
+                },
+                {
+                    label: 'n/a',
+                    color: 'gray'
+                }
+            ],
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.CategoryAxisRenderer, 
+		    tickOptions: {formatString:'%s'},
+                    ticks: data[0],
+		}, 
+		yaxis: {
+		    min: 0, 
+		    tickOptions:{formatString:'%d'}
+		}
+	    }
+	});
+    });
+}
 function table_ajax_submit(url, id, inputs, additional_inputs, input_name, spinner) {
     s = inputs.concat(additional_inputs).concat(getIdsByName(input_name))
     var query=""

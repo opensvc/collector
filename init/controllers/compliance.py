@@ -84,6 +84,20 @@ def comp_menu(current):
 #
 # custom column formatting
 #
+class col_comp_node_status(HtmlTableColumn):
+    def html(self, o):
+        return DIV(
+                 _id=nod_plot_id(o['mod_node']),
+                 _style="height:100px;width:300px;",
+               )
+
+class col_comp_mod_status(HtmlTableColumn):
+    def html(self, o):
+        return DIV(
+                 _id=mod_plot_id(o['mod_name']),
+                 _style="height:100px;width:300px;",
+               )
+
 class col_variables(HtmlTableColumn):
     def html(self, o):
         val = self.get(o)
@@ -1892,19 +1906,17 @@ class table_comp_mod_status(HtmlTable):
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['mod_name', 'mod_total', 'mod_ok', 'mod_percent',
-                     'mod_nodes']
+                     'mod_log', 'mod_nodes']
         self.colprops = {
             'mod_name': HtmlTableColumn(
                      title='Module',
                      field='mod_name',
-                     #table='comp_mod_status',
                      display=True,
                      img='check16',
                     ),
             'mod_total': HtmlTableColumn(
                      title='Total',
                      field='mod_total',
-                     #table='comp_mod_status',
                      display=True,
                      img='check16',
                      _class='numeric',
@@ -1912,7 +1924,6 @@ class table_comp_mod_status(HtmlTable):
             'mod_ok': HtmlTableColumn(
                      title='Ok',
                      field='mod_ok',
-                     #table='comp_mod_status',
                      display=True,
                      img='check16',
                      _class='numeric',
@@ -1920,7 +1931,6 @@ class table_comp_mod_status(HtmlTable):
             'mod_percent': col_mod_percent(
                      title='Percent',
                      field='mod_percent',
-                     #table='comp_mod_status',
                      display=True,
                      img='check16',
                      _class='numeric',
@@ -1928,9 +1938,15 @@ class table_comp_mod_status(HtmlTable):
             'mod_nodes': col_concat_list(
                      title='Nodes',
                      field='mod_nodes',
-                     #table='comp_mod_status',
                      display=False,
                      img='node16',
+                    ),
+            'mod_log': col_comp_mod_status(
+                     title='History',
+                     field='mod_name',
+                     display=True,
+                     img='log16',
+                     _class='numeric',
                     ),
         }
 
@@ -1940,7 +1956,7 @@ class table_comp_node_status(HtmlTable):
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['mod_node', 'mod_total', 'mod_ok', 'mod_percent',
-                     'mod_names']
+                     'mod_log', 'mod_names']
         self.colprops = {
             'mod_node': HtmlTableColumn(
                      title='Node',
@@ -1975,7 +1991,50 @@ class table_comp_node_status(HtmlTable):
                      display=False,
                      img='check16',
                     ),
+            'mod_log': col_comp_node_status(
+                     title='History',
+                     field='mod_node',
+                     display=True,
+                     img='log16',
+                     _class='numeric',
+                    ),
         }
+
+@service.json
+def json_nod_status_log(nodename):
+    t = db.v_comp_node_status_weekly
+    o = ~t.year|~t.week
+    q = t.run_nodename == nodename
+    d = []
+    d_ok = []
+    d_nok = []
+    d_na = []
+    rows = db(q).select(orderby=o, limitby=(0,50))
+    for i in range(len(rows)-1, -1, -1):
+        r = rows[i]
+        d.append('w%d'%r.week)
+        d_ok.append(int(r.nb_ok))
+        d_nok.append(int(r.nb_nok))
+        d_na.append(int(r.nb_na))
+    return [d, [d_ok, d_nok, d_na]]
+
+@service.json
+def json_mod_status_log(module):
+    t = db.v_comp_module_status_weekly
+    o = ~t.year|~t.week
+    q = t.run_module == module
+    d = []
+    d_ok = []
+    d_nok = []
+    d_na = []
+    rows = db(q).select(orderby=o, limitby=(0,50))
+    for i in range(len(rows)-1, -1, -1):
+        r = rows[i]
+        d.append('w%d'%r.week)
+        d_ok.append(int(r.nb_ok))
+        d_nok.append(int(r.nb_nok))
+        d_na.append(int(r.nb_na))
+    return [d, [d_ok, d_nok, d_na]]
 
 @service.json
 def json_run_status_log(nodename, module):
@@ -1992,6 +2051,24 @@ def json_run_status_log(nodename, module):
         else: return 0
     data = map(lambda x: enc(x), data)
     return data
+
+def nod_plot_id(nodename):
+    return 'nod_sparkl_%s'%(nodename)
+
+def nod_plot_url(nodename):
+    return URL(r=request,
+               f='call/json/json_nod_status_log/%(nodename)s'%dict(
+                 nodename=nodename)
+           )
+
+def mod_plot_id(module):
+    return 'mod_plot_%s'%(module)
+
+def mod_plot_url(module):
+    return URL(r=request,
+               f='call/json/json_mod_status_log/%(module)s'%dict(
+                 module=module)
+           )
 
 def spark_id(nodename, module):
     return 'rh_%s_%s'%(nodename, module)
@@ -2146,14 +2223,22 @@ def ajax_comp_status():
     if len(request.args) == 1 and request.args[0] == 'csv':
         return t.csv()
 
-    #spark_cmds = "$(document.getElementById('%s')).ready(function(){"%t.id
     spark_cmds = ""
     for r in t.object_list:
         spark_cmds += "sparkl('%(url)s', '%(id)s');"%dict(
           url=spark_url(r.comp_status.run_nodename, r.comp_status.run_module),
           id=spark_id(r.comp_status.run_nodename, r.comp_status.run_module),
         )
-    #spark_cmds += "});"
+    for r in mt.object_list:
+        spark_cmds += "comp_status_plot('%(url)s', '%(id)s');"%dict(
+          url=mod_plot_url(r['mod_name']),
+          id=mod_plot_id(r['mod_name']),
+        )
+    for r in nt.object_list:
+        spark_cmds += "comp_status_plot('%(url)s', '%(id)s');"%dict(
+          url=nod_plot_url(r['mod_node']),
+          id=nod_plot_id(r['mod_node']),
+        )
     return DIV(
              SCRIPT(spark_cmds, _name=t.id+"_to_eval"),
              mt.html(),

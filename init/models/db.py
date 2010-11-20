@@ -1025,3 +1025,22 @@ db.define_table('log',
     Field('log_date','datetime'),
     migrate=False)
 
+db.define_table('v_comp_node_status_weekly',
+    Field('year','string'),
+    Field('week','string'),
+    Field('run_nodename','string'),
+    Field('nb_ok','integer'),
+    Field('nb_nok','integer'),
+    Field('nb_na','integer'),
+    migrate=False)
+
+db.define_table('v_comp_module_status_weekly',
+    Field('year','string'),
+    Field('week','string'),
+    Field('run_module','string'),
+    Field('nb_ok','integer'),
+    Field('nb_nok','integer'),
+    Field('nb_na','integer'),
+    migrate=False)
+
+
