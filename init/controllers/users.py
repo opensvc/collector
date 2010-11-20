@@ -386,7 +386,7 @@ def ajax_users():
     elif t.form_user_add.errors:
         response.flash = T("errors in form")
 
-    o = db.v_users.fullname
+    o = ~db.v_users.last
     q = db.v_users.id > 0
     for f in t.cols:
         q = _where(q, 'v_users', t.filter_parse(f), f)
