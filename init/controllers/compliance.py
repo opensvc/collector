@@ -860,6 +860,7 @@ class table_comp_rulesets(HtmlTable):
         f.vars.var_author = user_name()
         return f
 
+@auth.requires_membership('CompManager')
 def comp_rename_ruleset(ids):
     if len(ids) != 1:
         response.flash = T("one and only one ruleset must be selected")
@@ -880,7 +881,7 @@ def comp_rename_ruleset(ids):
         'renamed ruleset %(old)s as %(new)s',
         dict(old=old, new=new))
 
-@auth.requires_login()
+@auth.requires_membership('CompManager')
 def comp_delete_ruleset(ids=[]):
     if len(ids) == 0:
         response.flash = T("no ruleset selected")
@@ -896,7 +897,7 @@ def comp_delete_ruleset(ids=[]):
          'deleted rulesets %(x)s',
          dict(x=x))
 
-@auth.requires_login()
+@auth.requires_membership('CompManager')
 def comp_delete_ruleset_var(ids=[]):
     if len(ids) == 0:
         response.flash = T("no ruleset variable selected")
@@ -914,7 +915,7 @@ def comp_delete_ruleset_var(ids=[]):
          'deleted ruleset variables %(x)s',
          dict(x=x))
 
-@auth.requires_login()
+@auth.requires_membership('CompManager')
 def comp_detach_filterset(ids=[]):
     if len(ids) == 0:
         response.flash = T("no filterset selected")
@@ -941,7 +942,7 @@ def comp_detach_filterset(ids=[]):
          'detached filterset %(x)s',
          dict(x=x))
 
-@auth.requires_login()
+@auth.requires_membership('CompManager')
 def comp_detach_rulesets(node_ids=[], ruleset_ids=[]):
     if len(node_ids) == 0:
         response.flash = T("no node selected")
@@ -967,7 +968,7 @@ def comp_detach_rulesets(node_ids=[], ruleset_ids=[]):
          'detached rulesets %(rulesets)s from nodes %(nodes)s',
          dict(rulesets=rulesets, nodes=nodes))
 
-@auth.requires_login()
+@auth.requires_membership('CompManager')
 def comp_attach_rulesets(node_ids=[], ruleset_ids=[]):
     if len(node_ids) == 0:
         response.flash = T("no node selected")
@@ -1340,7 +1341,7 @@ class table_comp_filtersets(HtmlTable):
 
         return f
 
-@auth.requires_login()
+@auth.requires_membership('CompManager')
 def comp_detach_filters(ids=[]):
     if len(ids) == 0:
         response.flash = T("no filters selected")
@@ -1362,7 +1363,7 @@ def comp_detach_filters(ids=[]):
         'detached filters %(f_names)s',
         dict(f_names=f_names))
 
-@auth.requires_login()
+@auth.requires_membership('CompManager')
 def comp_delete_filterset(ids=[]):
     if len(ids) == 0:
         response.flash = T("no filterset selected")
@@ -1379,6 +1380,7 @@ def comp_delete_filterset(ids=[]):
         'deleted filtersets %(fset_names)s',
         dict(fset_names=fset_names))
 
+@auth.requires_membership('CompManager')
 def comp_rename_filterset(ids):
     if len(ids) != 1:
         response.flash = T("one and only one filterset must be selected")
@@ -1477,7 +1479,7 @@ class table_comp_filters(HtmlTable):
 
         return f
 
-@auth.requires_login()
+@auth.requires_membership('CompManager')
 def comp_delete_filter(ids=[]):
     if len(ids) == 0:
         response.flash = T("no filter selected")
@@ -1778,6 +1780,7 @@ class table_comp_moduleset(HtmlTable):
         f.vars.modset_mod_author = user_name()
         return f
 
+@auth.requires_membership('CompManager')
 def comp_delete_module(ids=[]):
     if len(ids) == 0:
         response.flash = T("no module selected")
@@ -1793,6 +1796,7 @@ def comp_delete_module(ids=[]):
         dict(mod_names=mod_names))
     response.flash = T("deleted %(n)d modules", dict(n=n))
 
+@auth.requires_membership('CompManager')
 def comp_delete_moduleset(ids=[]):
     if len(ids) == 0:
         response.flash = T("no moduleset selected")
@@ -1810,7 +1814,7 @@ def comp_delete_moduleset(ids=[]):
         dict(modset_names=modset_names))
     response.flash = T("deleted %(n)d moduleset", dict(n=n))
 
-@auth.requires_login()
+@auth.requires_membership('CompManager')
 def comp_rename_moduleset(ids):
     if len(ids) != 1:
         response.flash = T("one and only one moduleset must be selected")
