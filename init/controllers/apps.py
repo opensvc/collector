@@ -1,135 +1,262 @@
-@auth.requires_membership('Manager')
-def _del_app(request):
-    ids = ([])
-    count = 0
-    for key in [ k for k in request.vars.keys() if 'check_' in k ]:
-        ids += ([key[6:]])
-    for id in ids:
-        count += db(db.apps.id == id).delete()
-    if count > 1:
-        s = 's'
-    else:
-        s = ''
-    response.flash = T("%(count)s application%(s)s deleted", dict(count=count, s=s))
-    del request.vars.appctl
+class table_apps(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['app',
+                     'roles',
+                     'responsibles',
+                     'mailto']
+        self.colprops = {
+            'app': HtmlTableColumn(
+                     title='Application code',
+                     field='app',
+                     img='svc16',
+                     display=True,
+                    ),
+            'roles': HtmlTableColumn(
+                     title='Responsible groups',
+                     field='roles',
+                     img='guys16',
+                     display=True,
+                    ),
+            'responsibles': HtmlTableColumn(
+                     title='Responsibles',
+                     field='responsibles',
+                     img='guys16',
+                     display=True,
+                    ),
+            'mailto': HtmlTableColumn(
+                     title='Mailing list',
+                     field='mailto',
+                     img='guys16',
+                     display=True,
+                    ),
+        }
+        self.ajax_col_values = 'ajax_apps_col_values'
+        self.dbfilterable = True
+        self.checkboxes = True
+        self.additional_tools.append('app_del')
+        self.additional_tools.append('app_add')
+        self.additional_tools.append('group_detach')
+        self.additional_tools.append('group_attach')
+
+    def app_add(self):
+        label = 'Add application'
+        action = 'app_add'
+        divid = 'app_add_div'
+        sid = 'app_add_i'
+        o = db.v_apps.id > 0
+        d = DIV(
+              A(
+                T(label),
+                _onclick="""
+                  click_toggle_vis('%(div)s', 'block');
+                """%dict(div=divid),
+              ),
+              DIV(
+                TABLE(
+                  TR(
+                    TH(T('App')),
+                    TD(
+                      INPUT(
+                        **dict(_id=sid,
+                               _requires=IS_NOT_IN_DB(db, 'v_apps.app'))
+                      ),
+                    ),
+                  ),
+                  TR(
+                    TH(),
+                    TD(
+                      INPUT(
+                        _type='submit',
+                        _onclick=self.ajax_submit(additional_inputs=[sid],
+                                                  args=action),
+                      ),
+                    ),
+                  ),
+                ),
+                _style='display:none',
+                _class='white_float',
+                _name=divid,
+                _id=divid,
+              ),
+              _class='floatw',
+            )
+        return d
+
+    def group_select_tool(self, label, action, divid, sid):
+        q = ~db.auth_group.role.like('user_%')
+        o = db.auth_group.role
+        options = [OPTION(g.role,_value=g.id) for g in db(q).select(orderby=o)]
+        d = DIV(
+              A(
+                T(label),
+                _onclick="""
+                  click_toggle_vis('%(div)s', 'block');
+                """%dict(div=divid),
+              ),
+              DIV(
+                TABLE(
+                  TR(
+                    TH(T('Group')),
+                    TD(
+                      SELECT(
+                        *options,
+                        **dict(_id=sid,
+                               _requires=IS_IN_DB(db, 'auth_group.id'))
+                      ),
+                    ),
+                  ),
+                  TR(
+                    TH(),
+                    TD(
+                      INPUT(
+                        _type='submit',
+                        _onclick=self.ajax_submit(additional_inputs=[sid],
+                                                  args=action),
+                      ),
+                    ),
+                  ),
+                ),
+                _style='display:none',
+                _class='white_float',
+                _name=divid,
+                _id=divid,
+              ),
+              _class='floatw',
+            )
+        return d
+
+    def group_detach(self):
+        d = self.group_select_tool(label="Detach group",
+                                   action="group_detach",
+                                   divid="group_detach",
+                                   sid="group_detach_s")
+        return d
+
+    def group_attach(self):
+        d = self.group_select_tool(label="Attach group",
+                                   action="group_attach",
+                                   divid="group_attach",
+                                   sid="group_attach_s")
+        return d
+
+    def app_del(self):
+        d = DIV(
+              A(
+                T("Delete application"),
+                _onclick="""if (confirm("%(text)s")){%(s)s};
+                         """%dict(s=self.ajax_submit(args=['app_del']),
+                                  text=T("Deleting an application code also deletes its group membership. Please confirm application deletion"),
+                                 ),
+              ),
+              _class='floatw',
+            )
+        return d
+
+@auth.requires_login()
+def ajax_apps_col_values():
+    t = table_apps('apps', 'ajax_apps')
+    col = request.args[0]
+    o = db.v_apps[col]
+    q = db.v_apps.id > 0
+    t.object_list = db(q).select(orderby=o, groupby=o)
+    for f in t.cols:
+        q = _where(q, 'v_users', t.filter_parse(f), f)
+    q = apply_db_filters(q, 'v_apps')
+    t.object_list = db(q).select(orderby=o)
+    return t.col_values_cloud(col)
 
 @auth.requires_membership('Manager')
-def _add_app(request):
-    apps = db(db.apps.app==request.vars.addapp).select(db.apps.id)
-    if len(apps) != 0:
-        response.flash = T("application '%(app)s' already exists", dict(app=request.vars.addapp))
+def group_attach(ids=[]):
+    if len(ids) == 0:
+        response.flash = T("no app selected")
         return
-    db.apps.insert(app=request.vars.addapp)
-    response.flash = T("application '%(app)s' created", dict(app=request.vars.addapp))
-    q = db.apps.app==request.vars.addapp
-    app = db(q).select(db.apps.id)[0]
-    request.vars.appid = str(app.id)
-    del request.vars.appctl
-    del request.vars.addapp
+    gid = request.vars.group_attach_s
 
-@auth.requires_membership('Manager')
-def _set_resp(request):
-    ids = ([])
-    for key in [ k for k in request.vars.keys() if 'check_' in k ]:
-        ids += ([key[6:]])
+    done = []
     for id in ids:
-        query = db.apps_responsibles.app_id == id
-        query &= db.apps_responsibles.group_id == request.vars.select_roles
-        rows = db(query).select()
-        if len(rows) == 0:
-            db.apps_responsibles.insert(app_id=id,
-                                        group_id=request.vars.select_roles)
-
-    num = len(ids)
-    if num > 1:
-        s = 's'
-    else:
-        s = ''
-    response.flash = T("%(num)s assignment%(s)s added", dict(num=num, s=s))
-    del request.vars.resp
-
-@auth.requires_membership('Manager')
-def _unset_resp(request):
-    ids = ([])
-    for key in [ k for k in request.vars.keys() if 'check_' in k ]:
-        ids += ([key[6:]])
-    for id in ids:
-        query = (db.apps_responsibles.app_id == id)&(db.apps_responsibles.group_id == request.vars.select_roles)
-        num = db(query).delete()
-    if num > 1:
-        s = 's'
-    else:
-        s = ''
-    response.flash = T("%(num)s assignment%(s)s removed", dict(num=num, s=s))
-    del request.vars.resp
-
-@auth.requires_membership('Manager')
-def apps():
-    columns = dict(
-        app = dict(
-            pos = 1,
-            title = T('App'),
-            img = 'svc',
-            size = 4
-        ),
-        roles = dict(
-            pos = 2,
-            title = T('Roles'),
-            img = 'guy16',
-            size = 12
-        ),
-        responsibles = dict(
-            pos = 3,
-            title = T('Responsibles'),
-            img = 'guy16',
-            size = 12
-        ),
-    )
-    def _sort_cols(x, y):
-        return cmp(columns[x]['pos'], columns[y]['pos'])
-    colkeys = columns.keys()
-    colkeys.sort(_sort_cols)
-
-    if request.vars.appctl == 'del':
-        _del_app(request)
-    elif request.vars.appctl == 'add' and request.vars.addapp is not None and request.vars.addapp != '':
-        _add_app(request)
-    elif request.vars.resp == 'del':
-        _unset_resp(request)
-    elif request.vars.resp == 'add':
-        _set_resp(request)
-
-    # filtering
-    query = (db.v_apps.id>0)
-    for key in columns.keys():
-        if key not in request.vars.keys():
+        q = db.apps_responsibles.app_id == id
+        q &= db.apps_responsibles.group_id==gid
+        if db(q).count() != 0:
             continue
-        query &= _where(None, 'v_apps', request.vars[key], key)
+        done.append(id)
+        db.apps_responsibles.insert(app_id=id, group_id=gid)
+    rows = db(db.apps_responsibles.id.belongs(done)).select(db.v_apps.app)
+    u = ', '.join([r.app for r in rows])
+    g = db(db.auth_group.id==gid).select(db.auth_group.role)[0].role
+    _log('apps.group.attach',
+         'attached group %(g)s to apps %(u)s',
+         dict(g=g, u=u))
 
-    g = db.v_apps.app
+@auth.requires_membership('Manager')
+def group_detach(ids=[]):
+    if len(ids) == 0:
+        response.flash = T("no app selected")
+        return
+    gid = request.vars.group_detach_s
+    rows = db(db.v_apps.id.belongs(ids)).select(db.v_apps.app)
+    u = ', '.join([r.app for r in rows])
+    g = db(db.auth_group.id==gid).select(db.auth_group.role)[0].role
 
-    (start, end, nav) = _pagination(request, query, groupby=g)
-    if start == 0 and end == 0:
-        rows = db(query).select(db.v_apps.id,
-                                db.v_apps.app,
-                                db.v_apps.roles,
-                                db.v_apps.responsibles,
-                                orderby=db.v_apps.app,
-                                left=db.v_svcmon.on(db.v_svcmon.svc_app==db.v_apps.app),
-                                groupby=g)
-    else:
-        rows = db(query).select(db.v_apps.id,
-                                db.v_apps.app,
-                                db.v_apps.roles,
-                                db.v_apps.responsibles,
-                                limitby=(start,end),
-                                orderby=db.v_apps.app,
-                                left=db.v_svcmon.on(db.v_svcmon.svc_app==db.v_apps.app),
-                                groupby=g)
+    q = db.apps_responsibles.app_id.belongs(ids)
+    q &= db.apps_responsibles.group_id==gid
+    db(q).delete()
+    _log('apps.group.detach',
+         'detached group %(g)s from app %(u)s',
+         dict(g=g, u=u))
 
-    query = ~db.auth_group.role.like('user_%')
-    roles = db(query).select()
-    return dict(columns=columns, colkeys=colkeys,
-                apps=rows, roles=roles, nav=nav)
+@auth.requires_membership('Manager')
+def app_add():
+    app = request.vars.app_add_i
+    q = db.apps.app==app
+    if db(q).count() > 0:
+        return
+    db.apps.insert(app=app)
+    _log('apps.app.add',
+         'added app %(a)s',
+         dict(a=app))
+
+@auth.requires_membership('Manager')
+def app_del(ids):
+    q = db.apps.id.belongs(ids)
+    u = ', '.join([r.app for r in db(q).select(db.apps.app)])
+    g = db(q).select(db.apps.app)[0].app
+    db(db.apps_responsibles.app_id.belongs(ids)).delete()
+    db(q).delete()
+    _log('apps.app.delete',
+         'deleted apps %(u)s',
+         dict(u=u))
+
+@auth.requires_login()
+def ajax_apps():
+    t = table_apps('apps', 'ajax_apps')
+
+    if len(request.args) == 1 and request.args[0] == 'app_del':
+        app_del(t.get_checked())
+    if len(request.args) == 1 and request.args[0] == 'app_add':
+        app_add()
+    if len(request.args) == 1 and request.args[0] == 'group_attach':
+        group_attach(t.get_checked())
+    if len(request.args) == 1 and request.args[0] == 'group_detach':
+        group_detach(t.get_checked())
+
+    o = ~db.v_apps.app
+    q = db.v_apps.id > 0
+    for f in t.cols:
+        q = _where(q, 'v_apps', t.filter_parse(f), f)
+    n = db(q).count()
+    t.setup_pager(n)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    return t.html()
+
+@auth.requires_login()
+def apps():
+    t = DIV(
+          ajax_apps(),
+          _id='apps',
+        )
+    return dict(table=t)
 
 
