@@ -1,97 +1,127 @@
+import datetime
+
+now = datetime.datetime.now()
+deadline = now - datetime.timedelta(days=1)
+def outdated(t):
+     if t is None: return True
+     if t < deadline: return True
+     return False
+
+class col_node(HtmlTableColumn):
+    def html(self, o):
+        id = '%s_x_%d'%(self.t.id, o.patches.id)
+        s = self.get(o)
+        d = DIV(
+              node_icon(o.v_nodes.os_name),
+              A(
+                s,
+                _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                  url=URL(r=request, c='ajax_node',f='ajax_node',
+                          vars={'node': s, 'rowid': id}),
+                  id=id,
+                ),
+              ),
+            )
+        return d
+
+class col_updated(HtmlTableColumn):
+    def html(self, o):
+       d = self.get(o)
+       if outdated(d):
+           alert = 'color:darkred;font-weight:bold'
+       else:
+           alert = ''
+       return SPAN(d, _style=alert)
+
+class table_patches(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['nodename']+v_nodes_cols
+        self.cols += ['patch_rev',
+                      'patch_num',
+                      'patch_updated']
+        self.colprops = v_nodes_colprops
+        self.colprops.update({
+            'nodename': col_node(
+                     title='Nodename',
+                     table='v_nodes',
+                     field='nodename',
+                     img='node16',
+                     display=True,
+                    ),
+            'patch_num': HtmlTableColumn(
+                     title='Patchnum',
+                     table='patches',
+                     field='patch_num',
+                     img='pkg16',
+                     display=True,
+                    ),
+            'patch_rev': HtmlTableColumn(
+                     title='Patchrev',
+                     table='patches',
+                     field='patch_rev',
+                     img='pkg16',
+                     display=True,
+                    ),
+            'patch_updated': col_updated(
+                     title='Updated',
+                     table='patches',
+                     field='patch_updated',
+                     img='pkg16',
+                     display=True,
+                    ),
+        })
+        self.colprops['nodename'].display = True
+        self.colprops['nodename'].t = self
+        self.dbfilterable = True
+        self.ajax_col_values = 'ajax_patches_col_values'
+
+    def format_extra_line(self, o):
+        id = '%s_x_%d'%(self.id, o.patches.id)
+        return SPAN(
+                 _id=id,
+                 _style='display:none',
+               )
+
 @auth.requires_login()
-def patches():
-    d1 = dict(
-        patch_nodename = dict(
-            pos = 1,
-            title = T('Nodename'),
-            display = True,
-            nestedin = 'patches',
-            img = 'node16',
-            size = 10
-        ),
-        patch_num = dict(
-            pos = 2,
-            title = T('Patchnum'),
-            display = True,
-            nestedin = 'patches',
-            img = 'pkg16',
-            size = 10
-        ),
-        patch_rev = dict(
-            pos = 3,
-            title = T('Patchrev'),
-            display = True,
-            nestedin = 'patches',
-            img = 'pkg16',
-            size = 4
-        ),
-        patch_updated = dict(
-            pos = 4,
-            title = T('Updated'),
-            display = True,
-            nestedin = 'patches',
-            img = 'pkg16',
-            size = 6
-        ),
-    )
+def ajax_patches_col_values():
+    t = table_patches('patches', 'ajax_patches')
+    col = request.args[0]
+    o = db[t.colprops[col].table][col]
+    q = db.patches.patch_nodename==db.v_nodes.nodename
+    q = _where(q, 'patches', domain_perms(), 'patch_nodename')
+    q = apply_db_filters(q, 'v_nodes')
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    t.object_list = db(q).select(orderby=o, groupby=o)
+    return t.col_values_cloud(col)
 
-    d2 = v_nodes_columns()
-    for k in d2:
-        d2[k]['pos'] += 10
-        d2[k]['display'] = False
-        d2[k]['nestedin'] = 'v_nodes'
-
-    del(d2['nodename'])
-    columns = d1.copy()
-    columns.update(d2)
-
-    def _sort_cols(x, y):
-        return cmp(columns[x]['pos'], columns[y]['pos'])
-
-    colkeys = columns.keys()
-    colkeys.sort(_sort_cols)
-    __update_columns(columns, 'patches')
-
+@auth.requires_login()
+def ajax_patches():
+    t = table_patches('patches', 'ajax_patches')
     o = db.patches.patch_nodename
     o |= db.patches.patch_num
     o |= db.patches.patch_rev
 
-    toggle_db_filters()
-
-    # filtering
-    query = db.patches.id>0
-    query &= db.patches.patch_nodename==db.v_nodes.nodename
-    for key in d1.keys():
-        if key not in request.vars.keys():
-            continue
-        query &= _where(None, 'patches', request.vars[key], key)
-    for key in d2.keys():
-        if key not in request.vars.keys():
-            continue
-        query &= _where(None, 'v_nodes', request.vars[key], key)
-
-    query &= _where(None, 'patches', domain_perms(), 'patch_nodename')
-
-    query = apply_db_filters(query, 'v_nodes')
-
-    (start, end, nav) = _pagination(request, query)
-    if start == 0 and end == 0:
-        rows = db(query).select(orderby=o)
-    else:
-        rows = db(query).select(limitby=(start,end), orderby=o)
-
-    return dict(columns=columns, colkeys=colkeys,
-                patches=rows,
-                nav=nav,
-                active_filters=active_db_filters('v_nodes'),
-                available_filters=avail_db_filters('v_nodes'),
-               )
+    q = db.patches.id>0
+    q &= db.patches.patch_nodename==db.v_nodes.nodename
+    q = _where(q, 'patches', domain_perms(), 'patch_nodename')
+    q = apply_db_filters(q, 'v_nodes')
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    n = db(q).count()
+    t.setup_pager(n)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    return t.html()
 
 @auth.requires_login()
-def patches_csv():
-    import gluon.contenttype
-    response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
-    request.vars['perpage'] = 0
-    return str(checks()['patches'])
+def patches():
+    t = DIV(
+          ajax_patches(),
+          _id='patches',
+        )
+    return dict(table=t)
 
 

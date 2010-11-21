@@ -1113,4 +1113,31 @@ v_nodes_colprops = {
 }
 
 
+#
+# common column formatting
+#
+os_img_h = {
+  'linux': 'linux',
+  'hp-ux': 'hpux',
+  'opensolaris': 'opensolaris',
+  'solaris': 'solaris',
+  'sunos': 'solaris',
+  'freebsd': 'freebsd',
+  'aix': 'aix',
+  'windows': 'windows',
+}
+
+def node_icon(os_name):
+    if os_name is None:
+        return ''
+    os_name = os_name.lower()
+    if os_name in os_img_h:
+        img = IMG(
+                _src=URL(r=request,c='static',f=os_name+'.png'),
+                _class='logo'
+              )
+    else:
+        img = ''
+    return img
+
 
