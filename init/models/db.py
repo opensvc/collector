@@ -26,7 +26,7 @@ else:                                         # else use a normal relational dat
 ## comment/uncomment as needed
 
 from gluon.tools import *
-auth=Auth(globals(),db)                      # authentication/authorization
+auth=MyAuth(globals(),db)                      # authentication/authorization
 auth.settings.hmac_key='sha512:7755f108-1b83-45dc-8302-54be8f3616a1'
 auth.settings.expiration=36000
 

@@ -12,6 +12,8 @@ class log_vfields(object):
 db.log.virtualfields.append(log_vfields())
 
 img_h = {
+  'apps': 'svc.png',
+  'auth': 'guys16.png',
   'users': 'guys16.png',
   'group': 'guys16.png',
   'user': 'guy16.png',
