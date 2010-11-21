@@ -1059,10 +1059,6 @@ div.sym_detail_visible {
     padding: 0.5em;
 }
 
-.sym_float table,td {
-    vertical-align: top;
-}
-
 .numeric {
     text-align:right;
 }

@@ -218,5 +218,14 @@ function table_ajax_submit(url, id, inputs, additional_inputs, input_name, spinn
          }
     })
 }
+function toggle_extra(url, id) {
+    e = document.getElementById(id)
+    if (e.style['display']=='none') {
+        show_eid(id)
+        ajax(url, [], id)
+    } else {
+        hide_eid(id)
+    }
+}
 </script>
 

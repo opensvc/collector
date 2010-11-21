@@ -1,105 +1,159 @@
+import datetime
+
+now = datetime.datetime.now()
+deadline = now - datetime.timedelta(days=1)
+def outdated(t):
+     if t is None: return True
+     if t < deadline: return True
+     return False
+
+os_img_h = {
+  'linux': 'linux',
+  'hp-ux': 'hpux',
+  'opensolaris': 'opensolaris',
+  'solaris': 'solaris',
+  'sunos': 'solaris',
+  'freebsd': 'freebsd',
+  'aix': 'aix',
+  'windows': 'windows',
+}
+
+def node_icon(os_name):
+    if os_name is None:
+        return ''
+    os_name = os_name.lower()
+    if os_name in os_img_h:
+        img = IMG(
+                _src=URL(r=request,c='static',f=os_name+'.png'),
+                _class='logo'
+              )
+    else:
+        img = ''
+    return img
+
+class col_node(HtmlTableColumn):
+    def html(self, o):
+        id = '%s_x_%d'%(self.t.id, o.packages.id)
+        s = self.get(o)
+        d = DIV(
+              node_icon(o.v_nodes.os_name),
+              A(
+                s,
+                _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                  url=URL(r=request, c='ajax_node',f='ajax_node',
+                          vars={'node': s, 'rowid': id}),
+                  id=id,
+                ),
+              ),
+            )
+        return d
+
+class col_updated(HtmlTableColumn):
+    def html(self, o):
+       d = self.get(o)
+       if outdated(d):
+           alert = 'color:darkred;font-weight:bold'
+       else:
+           alert = ''
+       return SPAN(d, _style=alert)
+
+class table_packages(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['nodename']+v_nodes_cols
+        self.cols += ['pkg_name',
+                      'pkg_version',
+                      'pkg_arch',
+                      'pkg_updated']
+        self.colprops = v_nodes_colprops
+        self.colprops.update({
+            'nodename': col_node(
+                     title='Nodename',
+                     table='v_nodes',
+                     field='nodename',
+                     img='node16',
+                     display=True,
+                    ),
+            'pkg_name': HtmlTableColumn(
+                     title='Package',
+                     table='packages',
+                     field='pkg_name',
+                     img='pkg16',
+                     display=True,
+                    ),
+            'pkg_version': HtmlTableColumn(
+                     title='Version',
+                     table='packages',
+                     field='pkg_version',
+                     img='pkg16',
+                     display=True,
+                    ),
+            'pkg_arch': HtmlTableColumn(
+                     title='Arch',
+                     table='packages',
+                     field='pkg_arch',
+                     img='pkg16',
+                     display=True,
+                    ),
+            'pkg_updated': col_updated(
+                     title='Updated',
+                     table='packages',
+                     field='pkg_updated',
+                     img='pkg16',
+                     display=True,
+                    ),
+        })
+        self.colprops['nodename'].display = True
+        self.colprops['nodename'].t = self
+        self.dbfilterable = True
+        self.ajax_col_values = 'ajax_packages_col_values'
+
+    def format_extra_line(self, o):
+        id = '%s_x_%d'%(self.id, o.packages.id)
+        return SPAN(
+                 _id=id,
+                 _style='display:none',
+               )
+
 @auth.requires_login()
-def packages():
-    d1 = dict(
-        pkg_nodename = dict(
-            pos = 1,
-            title = T('Nodename'),
-            display = True,
-            nestedin = 'packages',
-            img = 'node16',
-            size = 10
-        ),
-        pkg_name = dict(
-            pos = 2,
-            title = T('Package'),
-            display = True,
-            nestedin = 'packages',
-            img = 'pkg16',
-            size = 10
-        ),
-        pkg_version = dict(
-            pos = 3,
-            title = T('Version'),
-            display = True,
-            nestedin = 'packages',
-            img = 'pkg16',
-            size = 4
-        ),
-        pkg_arch = dict(
-            pos = 4,
-            title = T('Arch'),
-            display = True,
-            nestedin = 'packages',
-            img = 'pkg16',
-            size = 10
-        ),
-        pkg_updated = dict(
-            pos = 5,
-            title = T('Updated'),
-            display = True,
-            nestedin = 'packages',
-            img = 'pkg16',
-            size = 6
-        ),
-    )
+def ajax_packages_col_values():
+    t = table_packages('packages', 'ajax_packages')
+    col = request.args[0]
+    o = db[t.colprops[col].table][col]
+    q = db.packages.pkg_nodename==db.v_nodes.nodename
+    q = _where(q, 'packages', domain_perms(), 'pkg_nodename')
+    q = apply_db_filters(q, 'v_nodes')
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    t.object_list = db(q).select(orderby=o, groupby=o)
+    return t.col_values_cloud(col)
 
-    d2 = v_nodes_columns()
-    for k in d2:
-        d2[k]['pos'] += 10
-        d2[k]['display'] = False
-        d2[k]['nestedin'] = 'v_nodes'
-
-    del(d2['nodename'])
-    columns = d1.copy()
-    columns.update(d2)
-
-    def _sort_cols(x, y):
-        return cmp(columns[x]['pos'], columns[y]['pos'])
-
-    colkeys = columns.keys()
-    colkeys.sort(_sort_cols)
-    __update_columns(columns, 'packages')
-
+@auth.requires_login()
+def ajax_packages():
+    t = table_packages('packages', 'ajax_packages')
     o = db.packages.pkg_nodename
     o |= db.packages.pkg_name
     o |= db.packages.pkg_arch
 
-    toggle_db_filters()
-
-    # filtering
-    query = db.packages.id>0
-    query &= db.packages.pkg_nodename==db.v_nodes.nodename
-    for key in d1.keys():
-        if key not in request.vars.keys():
-            continue
-        query &= _where(None, 'packages', request.vars[key], key)
-    for key in d2.keys():
-        if key not in request.vars.keys():
-            continue
-        query &= _where(None, 'v_nodes', request.vars[key], key)
-
-    query &= _where(None, 'packages', domain_perms(), 'pkg_nodename')
-
-    query = apply_db_filters(query, 'v_nodes')
-
-    (start, end, nav) = _pagination(request, query)
-    if start == 0 and end == 0:
-        rows = db(query).select(orderby=o)
-    else:
-        rows = db(query).select(limitby=(start,end), orderby=o)
-
-    return dict(columns=columns, colkeys=colkeys,
-                packages=rows,
-                nav=nav,
-                active_filters=active_db_filters('v_nodes'),
-                available_filters=avail_db_filters('v_nodes'),
-               )
+    q = db.packages.id>0
+    q &= db.packages.pkg_nodename==db.v_nodes.nodename
+    q = _where(q, 'packages', domain_perms(), 'pkg_nodename')
+    q = apply_db_filters(q, 'v_nodes')
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    n = db(q).count()
+    t.setup_pager(n)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    return t.html()
 
 @auth.requires_login()
-def packages_csv():
-    import gluon.contenttype
-    response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
-    request.vars['perpage'] = 0
-    return str(packages()['packages'])
+def packages():
+    t = DIV(
+          ajax_packages(),
+          _id='packages',
+        )
+    return dict(table=t)
 
 
