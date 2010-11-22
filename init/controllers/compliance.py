@@ -1997,12 +1997,16 @@ def var_set(t):
         oldn = rows[0].comp_rulesets_variables.var_name
         oldv = rows[0].comp_rulesets_variables.var_value
         if t == 'name':
-            db(q).update(var_name=new)
+            db(q).update(var_name=new,
+                         var_author=user_name(),
+                         var_updated=now)
             _log('comp.ruleset.variable.change',
                  'renamed variable %(on)s to %(d)s in ruleset %(x)s',
                  dict(on=oldn, x=iid, d=new))
         elif t == 'value':
-            db(q).update(var_value=new)
+            db(q).update(var_value=new,
+                         var_author=user_name(),
+                         var_updated=now)
             _log('comp.ruleset.variable.change',
                  'change variable %(on)s value from %(ov) to %(d)s in ruleset %(x)s',
                  dict(on=oldn, ov=oldv, x=iid, d=new))
