@@ -1,62 +1,6 @@
 {{extend 'layout.html'}}
 {{include '../static/jslib.html'}}
-{{include 'box.html'}}
-{{
-vars = request.vars
 
-for key in colkeys:
-    if not vars.has_key(key) or vars[key] is None: request.vars[key]=''
-    pass
-}}
-<form action='alerts' name='svcform' id='svcform'>
-<table class=datatable>
-  <tr class=box>
-    {{for key in colkeys:}}
-    <td>{{=columns[key]['title']}}</td>
-    {{pass}}
-  </tr>
-  <tr class=box>
-    {{for key in colkeys:}}
-    <td><input name={{=key}} value='{{=request.vars[key]}}' size={{=columns[key]['size']}} onKeyPress="checkEnter(event)"></td>
-    {{pass}}
-  </tr>
-  {{
-    cellclass = 'cell1'
-    cellclasses = {}
-    cellclasses['cell1'] = 'cell2'
-    cellclasses['cell2'] = 'cell1'
-  }}
-  {{for row in alerts:}}
-    {{
-    cellclass = cellclasses[cellclass]
-    if row.sent_to:
-        row['sent_to'] = IMG(_src=URL(r=request,c='static',f='guy.png'),_border=0, _title=row.sent_to)
-    else:
-        row['sent_to'] = ''
-        pass
-    }}
-  <tr>
-    {{for key in colkeys:}}
-    <td class={{=cellclass}} style='vertical-align:top'>{{=XML(row[key])}}</td>
-    {{pass}}
-  </tr>
-  {{pass}}
-  <tr class=box>
-    <td align=center colspan=99>{{=nav}}</td>
-  </tr>
-  <tr class=box>
-    <td colspan=99>
-      <table>
-        <tr>
-          <td> {{=T('Export')}}:</td>
-        </tr>
-        <tr>
-          <td>
-            {{=A(IMG(_src=URL(r=request,c='static',f='csv.png'),_border=0, _title=T("print the csv representation of the current data cursor")),_href=URL(r=request,f='alerts_csv', vars=vars))}}
-          </td>
-        </tr>
-      </table>
-    </td>
-  </tr>
-</table>
-</form>
+<input id=tableid type=hidden></input>
+{{=table}}
+

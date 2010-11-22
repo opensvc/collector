@@ -26,7 +26,7 @@ else:                                         # else use a normal relational dat
 ## comment/uncomment as needed
 
 from gluon.tools import *
-auth=Auth(globals(),db)                      # authentication/authorization
+auth=MyAuth(globals(),db)                      # authentication/authorization
 auth.settings.hmac_key='sha512:7755f108-1b83-45dc-8302-54be8f3616a1'
 auth.settings.expiration=36000
 
@@ -1024,4 +1024,23 @@ db.define_table('log',
     Field('log_dict','string'),
     Field('log_date','datetime'),
     migrate=False)
+
+db.define_table('v_comp_node_status_weekly',
+    Field('year','string'),
+    Field('week','string'),
+    Field('run_nodename','string'),
+    Field('nb_ok','integer'),
+    Field('nb_nok','integer'),
+    Field('nb_na','integer'),
+    migrate=False)
+
+db.define_table('v_comp_module_status_weekly',
+    Field('year','string'),
+    Field('week','string'),
+    Field('run_module','string'),
+    Field('nb_ok','integer'),
+    Field('nb_nok','integer'),
+    Field('nb_na','integer'),
+    migrate=False)
+
 

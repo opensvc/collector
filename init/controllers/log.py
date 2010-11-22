@@ -3,15 +3,20 @@ class log_vfields(object):
             return self.log.log_action
 
         def log_evt(self):
+            d = json.loads(self.log.log_dict)
+            for k in d:
+                d[k] = str(d[k])
             try:
-                s = self.log.log_fmt%json.loads(self.log.log_dict)
-            except:
+                s = T.translate(self.log.log_fmt,d)
+            except KeyError:
                 s = 'error parsing: %s'%self.log.log_dict
             return s
 
 db.log.virtualfields.append(log_vfields())
 
 img_h = {
+  'apps': 'svc.png',
+  'auth': 'guys16.png',
   'users': 'guys16.png',
   'group': 'guys16.png',
   'user': 'guy16.png',

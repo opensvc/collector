@@ -718,3 +718,13 @@ CREATE TABLE log (
 ) ENGINE=MyISAM AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
 
 alter table comp_log add index idx2 (run_date,run_nodename,run_module,run_action);
+
+create view v_comp_status_weekly as (select id,run_nodename,run_module,max(run_status) as run_status,year(run_date) as year,week(run_date) as week from comp_log l where l.run_action='check' group by run_nodename,run_module,year,week order by run_date);
+
+create view v_comp_node_status_weekly as (select id, year, week, run_nodename,sum(if(run_status=0,1,0)) as nb_ok, sum(if(run_status=1,1,0)) as nb_nok,sum(if(run_status=2,1,0)) as nb_na from v_comp_status_weekly group by year,week,run_nodename);
+
+create view v_comp_module_status_weekly as (select id, year, week, run_module,sum(if(run_status=0,1,0)) as nb_ok, sum(if(run_status=1,1,0)) as nb_nok,sum(if(run_status=2,1,0)) as nb_na from v_comp_status_weekly group by year,week,run_module);
+
+-- drop view v_comp_status_weekly;
+-- drop view v_comp_node_status_weekly;
+-- drop view v_comp_module_status_weekly;

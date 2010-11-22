@@ -52,6 +52,7 @@ class HtmlTable(object):
         self.checkbox_names = [self.id+'_ck']
         self.checkbox_id_col = 'id'
         self.checkbox_id_table = None
+        self.extraline = False
         self.filterable = True
         self.dbfilterable = True
         self.pageable = True
@@ -342,14 +343,21 @@ class HtmlTable(object):
     def filter_cloud_key(self, f):
         return '_'.join((self.id, 'fc', f))
 
-    def checkbox_key(self, o):
+    def line_id(self, o):
         if o is None:
-            return '_'.join((self.id, 'ckid', ''))
+            return ''
         if self.checkbox_id_table is None or \
            self.checkbox_id_table not in o:
-            id = o[self.checkbox_id_col]
+            return o[self.checkbox_id_col]
         else:
-            id = o[self.checkbox_id_table][self.checkbox_id_col]
+            return o[self.checkbox_id_table][self.checkbox_id_col]
+
+    def extra_line_key(self, o):
+        id = self.line_id(o)
+        return '_'.join((self.id, 'x', str(id)))
+
+    def checkbox_key(self, o):
+        id = self.line_id(o)
         return '_'.join((self.id, 'ckid', str(id)))
 
     def checkbox_name_key(self):
@@ -478,11 +486,15 @@ class HtmlTable(object):
                 if not self.spaning_line(o):
                     self.rotate_colors()
                 lines.append(self.table_line(o))
-                if hasattr(self, 'format_extra_line'):
+                if self.extraline:
+                    n = len(self.cols)
+                    if self.checkboxes:
+                        n += 1
                     lines.append(TR(
                                    TD(
-                                     self.format_extra_line(o),
-                                     _colspan=len(self.cols),
+                                     _colspan=n,
+                                     _id=self.extra_line_key(o),
+                                     _style='display:none',
                                    ),
                                    _class=self.cellclass,
                                  ))
@@ -815,4 +827,329 @@ class HtmlTable(object):
 
     def match_col(self, value, o, f):
         return self.match(value, self.colprops[f].get(o))
+
+#
+# colprops definitions
+#
+v_nodes_cols = [
+     'loc_country',
+     'loc_zip',
+     'loc_city',
+     'loc_addr',
+     'loc_building',
+     'loc_floor',
+     'loc_room',
+     'loc_rack',
+     'os_name',
+     'os_release',
+     'os_vendor',
+     'os_arch',
+     'os_kernel',
+     'cpu_dies',
+     'cpu_cores',
+     'cpu_model',
+     'cpu_freq',
+     'mem_banks',
+     'mem_slots',
+     'mem_bytes',
+     'team_responsible',
+     'serial',
+     'model',
+     'role',
+     'environnement',
+     'warranty_end',
+     'status',
+     'type',
+     'power_supply_nb',
+     'power_cabinet1',
+     'power_cabinet2',
+     'power_protect',
+     'power_protect_breaker',
+     'power_breaker1',
+     'power_breaker2'
+]
+
+v_nodes_colprops = {
+            'loc_country': HtmlTableColumn(
+                     title = 'Country',
+                     field='loc_country',
+                     display = False,
+                     img = 'loc',
+                     table = 'v_nodes',
+                    ),
+            'loc_zip': HtmlTableColumn(
+                     title = 'ZIP',
+                     field='loc_zip',
+                     display = False,
+                     img = 'loc',
+                     table = 'v_nodes',
+                    ),
+            'loc_city': HtmlTableColumn(
+                     title = 'City',
+                     field='loc_city',
+                     display = False,
+                     img = 'loc',
+                     table = 'v_nodes',
+                    ),
+            'loc_addr': HtmlTableColumn(
+                     title = 'Address',
+                     field='loc_addr',
+                     display = False,
+                     img = 'loc',
+                     table = 'v_nodes',
+                    ),
+            'loc_building': HtmlTableColumn(
+                     title = 'Building',
+                     field='loc_building',
+                     display = False,
+                     img = 'loc',
+                     table = 'v_nodes',
+                    ),
+            'loc_floor': HtmlTableColumn(
+                     title = 'Floor',
+                     field='loc_floor',
+                     display = False,
+                     img = 'loc',
+                     table = 'v_nodes',
+                    ),
+            'loc_room': HtmlTableColumn(
+                     title = 'Room',
+                     field='loc_room',
+                     display = False,
+                     img = 'loc',
+                     table = 'v_nodes',
+                    ),
+            'loc_rack': HtmlTableColumn(
+                     title = 'Rack',
+                     field='loc_rack',
+                     display = False,
+                     img = 'loc',
+                     table = 'v_nodes',
+                    ),
+            'os_name': HtmlTableColumn(
+                     title = 'OS name',
+                     field='os_name',
+                     display = False,
+                     img = 'os16',
+                     table = 'v_nodes',
+                    ),
+            'os_release': HtmlTableColumn(
+                     title = 'OS release',
+                     field='os_release',
+                     display = False,
+                     img = 'os16',
+                     table = 'v_nodes',
+                    ),
+            'os_vendor': HtmlTableColumn(
+                     title = 'OS vendor',
+                     field='os_vendor',
+                     display = False,
+                     img = 'os16',
+                     table = 'v_nodes',
+                    ),
+            'os_arch': HtmlTableColumn(
+                     title = 'OS arch',
+                     field='os_arch',
+                     display = False,
+                     img = 'os16',
+                     table = 'v_nodes',
+                    ),
+            'os_kernel': HtmlTableColumn(
+                     title = 'OS kernel',
+                     field='os_kernel',
+                     display = False,
+                     img = 'os16',
+                     table = 'v_nodes',
+                    ),
+            'cpu_dies': HtmlTableColumn(
+                     title = 'CPU dies',
+                     field='cpu_dies',
+                     display = False,
+                     img = 'cpu16',
+                     table = 'v_nodes',
+                    ),
+            'cpu_cores': HtmlTableColumn(
+                     title = 'CPU cores',
+                     field='cpu_cores',
+                     display = False,
+                     img = 'cpu16',
+                     table = 'v_nodes',
+                    ),
+            'cpu_model': HtmlTableColumn(
+                     title = 'CPU model',
+                     field='cpu_model',
+                     display = False,
+                     img = 'cpu16',
+                     table = 'v_nodes',
+                    ),
+            'cpu_freq': HtmlTableColumn(
+                     title = 'CPU freq',
+                     field='cpu_freq',
+                     display = False,
+                     img = 'cpu16',
+                     table = 'v_nodes',
+                    ),
+            'mem_banks': HtmlTableColumn(
+                     title = 'Memory banks',
+                     field='mem_banks',
+                     display = False,
+                     img = 'mem16',
+                     table = 'v_nodes',
+                    ),
+            'mem_slots': HtmlTableColumn(
+                     title = 'Memory slots',
+                     field='mem_slots',
+                     display = False,
+                     img = 'mem16',
+                     table = 'v_nodes',
+                    ),
+            'mem_bytes': HtmlTableColumn(
+                     title = 'Memory',
+                     field='mem_bytes',
+                     display = False,
+                     img = 'mem16',
+                     table = 'v_nodes',
+                    ),
+            'nodename': HtmlTableColumn(
+                     title = 'Node name',
+                     field='nodename',
+                     display = False,
+                     img = 'node16',
+                     table = 'v_nodes',
+                    ),
+            'serial': HtmlTableColumn(
+                     title = 'Serial',
+                     field='serial',
+                     display = False,
+                     img = 'node16',
+                     table = 'v_nodes',
+                    ),
+            'model': HtmlTableColumn(
+                     title = 'Model',
+                     field='model',
+                     display = False,
+                     img = 'node16',
+                     table = 'v_nodes',
+                    ),
+            'team_responsible': HtmlTableColumn(
+                     title = 'Team responsible',
+                     field='team_responsible',
+                     display = False,
+                     img = 'guy16',
+                     table = 'v_nodes',
+                    ),
+            'role': HtmlTableColumn(
+                     title = 'Role',
+                     field='role',
+                     display = False,
+                     img = 'node16',
+                     table = 'v_nodes',
+                    ),
+            'environnement': HtmlTableColumn(
+                     title = 'Env',
+                     field='environnement',
+                     display = False,
+                     img = 'node16',
+                     table = 'v_nodes',
+                    ),
+            'warranty_end': HtmlTableColumn(
+                     title = 'Warranty end',
+                     field='warranty_end',
+                     display = False,
+                     img = 'node16',
+                     table = 'v_nodes',
+                    ),
+            'status': HtmlTableColumn(
+                     title = 'Status',
+                     field='status',
+                     display = False,
+                     img = 'node16',
+                     table = 'v_nodes',
+                    ),
+            'type': HtmlTableColumn(
+                     title = 'Type',
+                     field='type',
+                     display = False,
+                     img = 'node16',
+                     table = 'v_nodes',
+                    ),
+            'power_supply_nb': HtmlTableColumn(
+                     title = 'Power supply number',
+                     field='power_supply_nb',
+                     display = False,
+                     img = 'pwr',
+                     table = 'v_nodes',
+                    ),
+            'power_cabinet1': HtmlTableColumn(
+                     title = 'Power cabinet #1',
+                     field='power_cabinet1',
+                     display = False,
+                     img = 'pwr',
+                     table = 'v_nodes',
+                    ),
+            'power_cabinet2': HtmlTableColumn(
+                     title = 'Power cabinet #2',
+                     field='power_cabinet2',
+                     display = False,
+                     img = 'pwr',
+                     table = 'v_nodes',
+                    ),
+            'power_protect': HtmlTableColumn(
+                     title = 'Power protector',
+                     field='power_protect',
+                     display = False,
+                     img = 'pwr',
+                     table = 'v_nodes',
+                    ),
+            'power_protect_breaker': HtmlTableColumn(
+                     title = 'Power protector breaker',
+                     field='power_protect_breaker',
+                     display = False,
+                     img = 'pwr',
+                     table = 'v_nodes',
+                    ),
+            'power_breaker1': HtmlTableColumn(
+                     title = 'Power breaker #1',
+                     field='power_breaker1',
+                     display = False,
+                     img = 'pwr',
+                     table = 'v_nodes',
+                    ),
+            'power_breaker2': HtmlTableColumn(
+                     title = 'Power breaker #2',
+                     field='power_breaker2',
+                     display = False,
+                     img = 'pwr',
+                     table = 'v_nodes',
+                    ),
+}
+
+
+#
+# common column formatting
+#
+os_img_h = {
+  'linux': 'linux',
+  'hp-ux': 'hpux',
+  'opensolaris': 'opensolaris',
+  'solaris': 'solaris',
+  'sunos': 'solaris',
+  'freebsd': 'freebsd',
+  'aix': 'aix',
+  'windows': 'windows',
+}
+
+def node_icon(os_name):
+    if os_name is None:
+        return ''
+    os_name = os_name.lower()
+    if os_name in os_img_h:
+        img = IMG(
+                _src=URL(r=request,c='static',f=os_name+'.png'),
+                _class='logo'
+              )
+    else:
+        img = ''
+    return img
+
 
