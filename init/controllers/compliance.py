@@ -70,7 +70,7 @@ def comp_menu(current):
             bg = '#DCDDE6'
         d = DIV(
               i['title'],
-              _class='menu_item',
+              _class='menu_item clickable',
               _style='background-color:%s'%bg,
               _onclick="location.href='%s'"%i['url'],
               _onmouseover="this.style.backgroundColor='orange'",
@@ -172,6 +172,74 @@ class col_run_status(HtmlTableColumn):
         else:
             r = val
         return r
+
+class col_var_name(HtmlTableColumn):
+    def html(self, o):
+        s = self.get(o)
+        if s == '':
+            ss = '(no name)'
+        else:
+            ss = s
+        tid = 'nd_t_%s_%s'%(o.id, o.ruleset_id)
+        iid = 'nd_i_%s_%s'%(o.id, o.ruleset_id)
+        sid = 'nd_s_%s_%s'%(o.id, o.ruleset_id)
+        d = SPAN(
+              SPAN(
+                ss,
+                _id=tid,
+                _onclick="""hide_eid('%(tid)s');show_eid('%(sid)s');getElementById('%(iid)s').focus()"""%dict(tid=tid,
+sid=sid, iid=iid),
+                _class="clickable",
+              ),
+              SPAN(
+                INPUT(
+                  value=s,
+                  _id=iid,
+                  _onblur="""hide_eid('%(sid)s');show_eid('%(tid)s');"""%dict(sid=sid,
+tid=tid),
+                  _onkeypress="if (is_enter(event)) {%s};"%\
+                     self.t.ajax_submit(additional_inputs=[iid],
+                                        args="var_name_set"),
+                ),
+                _id=sid,
+                _style="display:none",
+              ),
+            )
+        return d
+
+class col_var_value(HtmlTableColumn):
+    def html(self, o):
+        s = self.get(o)
+        if s == '':
+            ss = '(no value)'
+        else:
+            ss = s
+        tid = 'vd_t_%s_%s'%(o.id, o.ruleset_id)
+        iid = 'vd_i_%s_%s'%(o.id, o.ruleset_id)
+        sid = 'vd_s_%s_%s'%(o.id, o.ruleset_id)
+        d = SPAN(
+              SPAN(
+                ss,
+                _id=tid,
+                _onclick="""hide_eid('%(tid)s');show_eid('%(sid)s');getElementById('%(iid)s').focus()"""%dict(tid=tid,
+sid=sid, iid=iid),
+                _class="clickable",
+              ),
+              SPAN(
+                INPUT(
+                  value=s,
+                  _id=iid,
+                  _onblur="""hide_eid('%(sid)s');show_eid('%(tid)s');"""%dict(sid=sid,
+tid=tid),
+                  _onkeypress="if (is_enter(event)) {%s};"%\
+                     self.t.ajax_submit(additional_inputs=[iid],
+                                        args="var_value_set"),
+                ),
+                _id=sid,
+                _style="display:none",
+              ),
+            )
+        return d
 
 #
 # Rules sub-view
@@ -360,19 +428,21 @@ class table_comp_rulesets(HtmlTable):
                      display=True,
                      img='filter16',
                     ),
-            'var_value': HtmlTableColumn(
+            'var_value': col_var_value(
                      title='Value',
                      field='var_value',
                      display=True,
                      img='action16',
                     ),
-            'var_name': HtmlTableColumn(
+            'var_name': col_var_name(
                      title='Variable',
                      field='var_name',
                      display=True,
                      img='action16',
                     ),
         }
+        self.colprops['var_name'].t = self
+        self.colprops['var_value'].t = self
         self.form_filterset_attach = self.comp_filterset_attach_sqlform()
         self.form_ruleset_var_add = self.comp_ruleset_var_add_sqlform()
         self.form_ruleset_add = self.comp_ruleset_add_sqlform()
@@ -724,6 +794,10 @@ def ajax_comp_rulesets():
 
     if len(request.args) == 1 and request.args[0] == 'filterset_detach':
         comp_detach_filterset(v.get_checked())
+    if len(request.args) == 1 and request.args[0] == 'var_name_set':
+        var_name_set()
+    if len(request.args) == 1 and request.args[0] == 'var_value_set':
+        var_value_set()
     if len(request.args) == 1 and request.args[0] == 'ruleset_var_del':
         comp_delete_ruleset_var(v.get_checked())
     if len(request.args) == 1 and request.args[0] == 'ruleset_del':
@@ -1874,6 +1948,66 @@ class table_comp_status(HtmlTable):
         }
         self.colprops.update(v_nodes_colprops)
         self.ajax_col_values = 'ajax_comp_status_col_values'
+
+@auth.requires_membership('Manager')
+def var_name_set():
+    var_set('name')
+
+@auth.requires_membership('Manager')
+def var_value_set():
+    var_set('value')
+
+@auth.requires_membership('Manager')
+def var_set(t):
+    prefix = t[0]+'d_i_'
+    l = [k for k in request.vars if prefix in k]
+    if len(l) != 1:
+        return
+    new = request.vars[l[0]]
+    ids = l[0].replace(prefix,'').split('_')
+    if ids[0] == 'None':
+        # insert
+        id = int(ids[1])
+        q = db.v_comp_rulesets.ruleset_id==id
+        rows = db(q).select()
+        iid = rows[0].ruleset_name
+        if t == 'name':
+            db.comp_rulesets_variables.insert(var_name=new,
+                                              ruleset_id=id,
+                                              var_author=user_name())
+        elif t == 'value':
+            db.comp_rulesets_variables.insert(var_value=new,
+                                              ruleset_id=id,
+                                              var_author=user_name())
+        else:
+            raise Exception()
+        _log('comp.ruleset.variable.add',
+             'add variable %(t)s %(d)s for ruleset %(x)s',
+             dict(t=t, x=iid, d=new))
+    else:
+        # update
+        id = int(ids[0])
+        q = db.comp_rulesets_variables.id==id
+        q1 = db.comp_rulesets_variables.ruleset_id==db.comp_rulesets.id
+        rows = db(q&q1).select()
+        n = len(rows)
+        if n != 1:
+            return
+        iid = rows[0].comp_rulesets.ruleset_name
+        oldn = rows[0].comp_rulesets_variables.var_name
+        oldv = rows[0].comp_rulesets_variables.var_value
+        if t == 'name':
+            db(q).update(var_name=new)
+            _log('comp.ruleset.variable.change',
+                 'renamed variable %(on)s to %(d)s in ruleset %(x)s',
+                 dict(on=oldn, x=iid, d=new))
+        elif t == 'value':
+            db(q).update(var_value=new)
+            _log('comp.ruleset.variable.change',
+                 'change variable %(on)s value from %(ov) to %(d)s in ruleset %(x)s',
+                 dict(on=oldn, ov=oldv, x=iid, d=new))
+        else:
+            raise Exception()
 
 @auth.requires_login()
 def ajax_comp_log_col_values():
