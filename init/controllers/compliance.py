@@ -1764,7 +1764,7 @@ def json_run_status_log(nodename, module):
     return data
 
 def nod_plot_id(nodename):
-    return 'nod_sparkl_%s'%(nodename)
+    return 'nod_sparkl_%s'%(nodename).replace('.','_')
 
 def nod_plot_url(nodename):
     return URL(r=request,
@@ -1773,7 +1773,7 @@ def nod_plot_url(nodename):
            )
 
 def mod_plot_id(module):
-    return 'mod_plot_%s'%(module)
+    return 'mod_plot_%s'%(module).replace('.','_')
 
 def mod_plot_url(module):
     return URL(r=request,
