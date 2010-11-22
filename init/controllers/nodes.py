@@ -95,6 +95,7 @@ def _node_form(record=None):
                                 'serial',
                                 'model'],
                  fields=['nodename',
+                         'team_responsible',
                          'warranty_end',
                          'status',
                          'role',
@@ -117,6 +118,7 @@ def _node_form(record=None):
                         ],
                  labels={
                          'nodename': _label('nodename'),
+                         'team_responsible': _label('team_responsible'),
                          'warranty_end': _label('warranty_end'),
                          'status': _label('status'),
                          'role': _label('role'),
