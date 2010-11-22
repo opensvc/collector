@@ -384,8 +384,6 @@ class HtmlTable(object):
 
     def filter_parse_glob(self, f):
         val = self.filter_parse(f)
-        if len(val) != 0:
-           val = '%'+val+'%'
         return val
 
     def ajax_inputs(self):
