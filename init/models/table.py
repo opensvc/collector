@@ -1145,7 +1145,7 @@ def node_icon(os_name):
     os_name = os_name.lower()
     if os_name in os_img_h:
         img = IMG(
-                _src=URL(r=request,c='static',f=os_name+'.png'),
+                _src=URL(r=request,c='static',f=os_img_h[os_name]+'.png'),
                 _class='logo'
               )
     else:
