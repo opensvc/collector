@@ -88,14 +88,14 @@ class col_comp_node_status(HtmlTableColumn):
     def html(self, o):
         return DIV(
                  _id=nod_plot_id(o['mod_node']),
-                 _style="height:100px;width:300px;",
+                 _style="height:50px;width:300px;",
                )
 
 class col_comp_mod_status(HtmlTableColumn):
     def html(self, o):
         return DIV(
                  _id=mod_plot_id(o['mod_name']),
-                 _style="height:100px;width:300px;",
+                 _style="height:50px;width:300px;",
                )
 
 class col_variables(HtmlTableColumn):
@@ -1644,7 +1644,7 @@ class table_comp_mod_status(HtmlTable):
                      field='mod_percent',
                      display=True,
                      img='check16',
-                     _class='numeric',
+                     _class='comp_pct',
                     ),
             'mod_nodes': col_concat_list(
                      title='Nodes',
@@ -1657,7 +1657,7 @@ class table_comp_mod_status(HtmlTable):
                      field='mod_name',
                      display=True,
                      img='log16',
-                     _class='numeric',
+                     _class='comp_plot',
                     ),
         }
 
@@ -1694,7 +1694,7 @@ class table_comp_node_status(HtmlTable):
                      field='mod_percent',
                      display=True,
                      img='check16',
-                     _class='numeric',
+                     _class='comp_pct',
                     ),
             'mod_names': col_concat_list(
                      title='Modules',
@@ -1707,7 +1707,7 @@ class table_comp_node_status(HtmlTable):
                      field='mod_node',
                      display=True,
                      img='log16',
-                     _class='numeric',
+                     _class='comp_plot',
                     ),
         }
 
@@ -1873,6 +1873,7 @@ class table_comp_status(HtmlTable):
                     ),
         }
         self.colprops.update(v_nodes_colprops)
+        self.ajax_col_values = 'ajax_comp_status_col_values'
 
 @auth.requires_login()
 def ajax_comp_log_col_values():
@@ -1891,7 +1892,7 @@ def ajax_comp_log_col_values():
 def ajax_comp_status_col_values():
     t = table_comp_status('0', 'ajax_comp_status')
     col = request.args[0]
-    o = db.comp_status[col]
+    o = db[t.colprops[col].table][col]
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
     q &= db.comp_status.run_nodename == db.v_nodes.nodename
     for f in t.cols:

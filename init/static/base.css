@@ -1141,3 +1141,13 @@ div.sym_detail_visible {
 .clickable:hover {
    cursor: pointer;
 }
+
+.comp_pct {
+   width: 80px;
+   text-align: right;
+}
+
+.comp_plot {
+   width: 80px;
+   text-align: right;
+}

@@ -166,9 +166,16 @@ function comp_status_plot(url, id) {
                 show: false,
                 location: 'nw'
             },
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
 	    seriesDefaults: {
                 fill: true,
-                shadowAngle: 135
+                shadowAngle: 135,
+                shadowOffset: 1.0,
+                shadowWidth: 2
             },
 	    series: [
                 {
@@ -192,7 +199,11 @@ function comp_status_plot(url, id) {
 		}, 
 		yaxis: {
 		    min: 0, 
-		    tickOptions:{formatString:'%d'}
+		    tickOptions:{
+                        showLabel: false,
+                        size: 0,
+                        formatString:'%d'
+                    }
 		}
 	    }
 	});
