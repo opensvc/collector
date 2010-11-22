@@ -221,11 +221,17 @@ function table_ajax_submit(url, id, inputs, additional_inputs, input_name, spinn
 function toggle_extra(url, id) {
     e = document.getElementById(id)
     if (e.style['display']=='none') {
-        show_eid(id)
+        e.style['display']='table-cell'
         ajax(url, [], id)
     } else {
-        hide_eid(id)
+        e.style['display']='none'
     }
 }
+function timepicker(e) {
+    Calendar.setup({
+        inputField:e.id,
+        ifFormat:"%Y-%m-%d %H:%M:%S",
+        showsTime: true,timeFormat: "24"
+    })
+}
 </script>
-

@@ -52,6 +52,7 @@ class HtmlTable(object):
         self.checkbox_names = [self.id+'_ck']
         self.checkbox_id_col = 'id'
         self.checkbox_id_table = None
+        self.extraline = False
         self.filterable = True
         self.dbfilterable = True
         self.pageable = True
@@ -342,14 +343,21 @@ class HtmlTable(object):
     def filter_cloud_key(self, f):
         return '_'.join((self.id, 'fc', f))
 
-    def checkbox_key(self, o):
+    def line_id(self, o):
         if o is None:
-            return '_'.join((self.id, 'ckid', ''))
+            return ''
         if self.checkbox_id_table is None or \
            self.checkbox_id_table not in o:
-            id = o[self.checkbox_id_col]
+            return o[self.checkbox_id_col]
         else:
-            id = o[self.checkbox_id_table][self.checkbox_id_col]
+            return o[self.checkbox_id_table][self.checkbox_id_col]
+
+    def extra_line_key(self, o):
+        id = self.line_id(o)
+        return '_'.join((self.id, 'x', str(id)))
+
+    def checkbox_key(self, o):
+        id = self.line_id(o)
         return '_'.join((self.id, 'ckid', str(id)))
 
     def checkbox_name_key(self):
@@ -478,11 +486,15 @@ class HtmlTable(object):
                 if not self.spaning_line(o):
                     self.rotate_colors()
                 lines.append(self.table_line(o))
-                if hasattr(self, 'format_extra_line'):
+                if self.extraline:
+                    n = len(self.cols)
+                    if self.checkboxes:
+                        n += 1
                     lines.append(TR(
                                    TD(
-                                     self.format_extra_line(o),
-                                     _colspan=len(self.cols),
+                                     _colspan=n,
+                                     _id=self.extra_line_key(o),
+                                     _style='display:none',
                                    ),
                                    _class=self.cellclass,
                                  ))

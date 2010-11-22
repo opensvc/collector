@@ -9,7 +9,7 @@ def outdated(t):
 
 class col_node(HtmlTableColumn):
     def html(self, o):
-        id = '%s_x_%d'%(self.t.id, o.patches.id)
+        id = self.t.extra_line_key(o)
         s = self.get(o)
         d = DIV(
               node_icon(o.v_nodes.os_name),
@@ -76,14 +76,10 @@ class table_patches(HtmlTable):
         self.colprops['nodename'].display = True
         self.colprops['nodename'].t = self
         self.dbfilterable = True
+        self.extraline = True
+        self.checkbox_id_col = 'id'
+        self.checkbox_id_table = 'patches'
         self.ajax_col_values = 'ajax_patches_col_values'
-
-    def format_extra_line(self, o):
-        id = '%s_x_%d'%(self.id, o.patches.id)
-        return SPAN(
-                 _id=id,
-                 _style='display:none',
-               )
 
 @auth.requires_login()
 def ajax_patches_col_values():
