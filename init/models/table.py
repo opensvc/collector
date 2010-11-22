@@ -1,5 +1,11 @@
 import re
 
+class ToolError(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return str(self.value)
+
 class Column(object):
     def __init__(self, title, display=False, img='generic', _class=''):
         self.title = title
@@ -60,6 +66,7 @@ class HtmlTable(object):
         self.colored_lines = True
         self.additional_tools = []
         self.span = None
+        self.flash = None
         self.sub_span = []
         self.setup_pager()
 
@@ -586,6 +593,16 @@ class HtmlTable(object):
                                        additional_inputs=additional_inputs),
                  id=self.id)
 
+    def show_flash(self):
+        if self.flash is None:
+            return SPAN()
+        d = DIV(
+              self.flash,
+              _class='tableo_flash',
+              _onclick="this.style['display']='none';"
+            )
+        return d
+
     def html(self):
         if len(request.args) == 1 and request.args[0] == 'csv':
             return self.csv()
@@ -634,6 +651,7 @@ class HtmlTable(object):
             export = SPAN()
 
         d = DIV(
+              self.show_flash(),
               DIV(
                 self.pager(),
                 export,

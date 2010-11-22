@@ -453,7 +453,64 @@ class table_comp_rulesets(HtmlTable):
         self.additional_tools.append('ruleset_del')
         self.additional_tools.append('ruleset_add')
         self.additional_tools.append('ruleset_rename')
+        self.additional_tools.append('ruleset_clone')
         self.ajax_col_values = 'ajax_comp_rulesets_col_values'
+
+    def ruleset_clone(self):
+        label = 'Clone ruleset'
+        action = 'ruleset_clone'
+        divid = 'rset_clone'
+        sid = 'rset_clone_s'
+        iid = 'rset_clone_i'
+        q = db.comp_rulesets.id > 0
+        o = db.comp_rulesets.ruleset_name
+        options = [OPTION(g.ruleset_name,_value=g.id) for g in db(q).select(orderby=o)]
+        d = DIV(
+              A(
+                T(label),
+                _onclick="""
+                  click_toggle_vis('%(div)s', 'block');
+                """%dict(div=divid),
+              ),
+              DIV(
+                TABLE(
+                  TR(
+                    TH(T('Ruleset')),
+                    TD(
+                      SELECT(
+                        *options,
+                        **dict(_id=sid,
+                               _requires=IS_IN_DB(db, 'comp_rulesets.id'))
+                      ),
+                    ),
+                  ),
+                  TR(
+                    TH(T('Clone name')),
+                    TD(
+                      INPUT(
+                        _id=iid,
+                        _requires=IS_NOT_IN_DB(db, 'comp_rulesets.ruleset_name')
+                      ),
+                    ),
+                  ),
+                  TR(
+                    TH(),
+                    TD(
+                      INPUT(
+                        _type='submit',
+                        _onclick=self.ajax_submit(additional_inputs=[sid,iid],
+                                                  args=action),
+                      ),
+                    ),
+                  ),
+                ),
+                _style='display:none',
+                _class='white_float',
+                _name=divid,
+              ),
+              _class='floatw',
+            )
+        return d
 
     def checkbox_key(self, o):
         if o is None:
@@ -638,22 +695,47 @@ class table_comp_rulesets(HtmlTable):
         return f
 
 @auth.requires_membership('CompManager')
+def ruleset_clone():
+    sid = request.vars.rset_clone_s
+    iid = request.vars.rset_clone_i
+    if len(iid) == 0:
+        raise ToolError("clone ruleset failed: invalid target name")
+    if len(db(db.comp_rulesets.ruleset_name==iid).select()) > 0:
+        raise ToolError("clone ruleset failed: target name already exists")
+    q = db.v_comp_rulesets.ruleset_id==sid
+    rows = db(q).select()
+    if len(rows) == 0:
+        raise ToolError("clone ruleset failed: can't find source ruleset")
+    orig = rows[0].ruleset_name
+    newid = db.comp_rulesets.insert(ruleset_name=iid)
+    db.comp_rulesets_filtersets.insert(ruleset_id=newid,
+                                       fset_id=rows[0].fset_id)
+    for row in rows:
+        db.comp_rulesets_variables.insert(ruleset_id=newid,
+                                          var_name=row.var_name,
+                                          var_value=row.var_value,
+                                          var_author=user_name())
+    _log('comp.ruleset.clone',
+         'cloned ruleset %(o)s from %(n)s',
+         dict(o=orig, n=iid))
+
+@auth.requires_membership('CompManager')
 def comp_rename_ruleset(ids):
     if len(ids) != 1:
-        response.flash = T("one and only one ruleset must be selected")
-        return
-    if 'comp_ruleset_rename_input' not in request.vars:
-        response.flash = T("new ruleset name is empty")
-        return
-    ids = map(lambda x: int(x.split('_')[0]), ids)
+        raise ToolError("rename ruleset failed: one ruleset must be selected")
+    if 'comp_ruleset_rename_input' not in request.vars or \
+       len(request.vars['comp_ruleset_rename_input']) == 0:
+        raise ToolError("rename ruleset failed: new ruleset name is empty")
     new = request.vars['comp_ruleset_rename_input']
+    if len(db(db.comp_rulesets.ruleset_name==new).select()) > 0:
+        raise ToolError("rename ruleset failed: new ruleset name already exists")
+    ids = map(lambda x: int(x.split('_')[0]), ids)
     id = ids[0]
     rows = db(db.comp_rulesets.id == id).select(db.comp_rulesets.ruleset_name)
     if len(rows) != 1:
-        return
+        raise ToolError("rename ruleset failed: can't find source ruleset")
     old = rows[0].ruleset_name
     n = db(db.comp_rulesets.id == id).update(ruleset_name=new)
-    response.flash = T("ruleset renamed", dict(n=n))
     _log('compliance.ruleset.rename',
         'renamed ruleset %(old)s as %(new)s',
         dict(old=old, new=new))
@@ -661,15 +743,13 @@ def comp_rename_ruleset(ids):
 @auth.requires_membership('CompManager')
 def comp_delete_ruleset(ids=[]):
     if len(ids) == 0:
-        response.flash = T("no ruleset selected")
-        return
+        raise ToolError("delete ruleset failed: no ruleset selected")
     ids = map(lambda x: int(x.split('_')[0]), ids)
     rows = db(db.comp_rulesets.id.belongs(ids)).select(db.comp_rulesets.ruleset_name)
-    x = ', '.join([r.ruleset_name for r in rows])
+    x = ', '.join([str(r.ruleset_name) for r in rows])
     n = db(db.comp_rulesets_filtersets.ruleset_id.belongs(ids)).delete()
     n = db(db.comp_rulesets_variables.ruleset_id.belongs(ids)).delete()
     n = db(db.comp_rulesets.id.belongs(ids)).delete()
-    response.flash = T("deleted %(n)d ruleset(s)", dict(n=n))
     _log('compliance.ruleset.delete',
          'deleted rulesets %(x)s',
          dict(x=x))
@@ -677,9 +757,12 @@ def comp_delete_ruleset(ids=[]):
 @auth.requires_membership('CompManager')
 def comp_delete_ruleset_var(ids=[]):
     if len(ids) == 0:
-        response.flash = T("no ruleset variable selected")
-        return
-    ids = map(lambda x: int(x.split('_')[2]), ids)
+        raise ToolError("delete variables failed: no variable selected")
+    ids = map(lambda x: x.split('_')[2], ids)
+    ids = [id for id in ids if id != 'None']
+    ids = map(lambda x: int(x), ids)
+    if len(ids) == 0:
+        raise ToolError("delete variables failed: no variable selected")
     rows = db(db.v_comp_rulesets.id.belongs(ids)).select()
     x = map(lambda r: ' '.join((
                        r.var_name+'.'+r.var_value,
@@ -687,7 +770,6 @@ def comp_delete_ruleset_var(ids=[]):
                        r.ruleset_name)), rows)
     x = ', '.join(set(x))
     n = db(db.comp_rulesets_variables.id.belongs(ids)).delete()
-    response.flash = T("deleted %(n)d", dict(n=n))
     _log('compliance.ruleset.variable.delete',
          'deleted ruleset variables %(x)s',
          dict(x=x))
@@ -695,8 +777,7 @@ def comp_delete_ruleset_var(ids=[]):
 @auth.requires_membership('CompManager')
 def comp_detach_filterset(ids=[]):
     if len(ids) == 0:
-        response.flash = T("no filterset selected")
-        return
+        raise ToolError("detach filterset failed: no filterset selected")
     ruleset_ids = map(lambda x: int(x.split('_')[0]), ids)
     fset_ids = map(lambda x: int(x.split('_')[1]), ids)
     q = db.v_comp_rulesets.id < 0
@@ -714,7 +795,6 @@ def comp_detach_filterset(ids=[]):
         q = db.comp_rulesets_filtersets.fset_id == fset_id
         q &= db.comp_rulesets_filtersets.ruleset_id == ruleset_id
         n += db(q).delete()
-    response.flash = T("detached %(n)d filtersets", dict(n=n))
     _log('compliance.ruleset.filterset.detach',
          'detached filterset %(x)s',
          dict(x=x))
@@ -722,11 +802,9 @@ def comp_detach_filterset(ids=[]):
 @auth.requires_membership('CompManager')
 def comp_detach_rulesets(node_ids=[], ruleset_ids=[]):
     if len(node_ids) == 0:
-        response.flash = T("no node selected")
-        return
+        raise ToolError("detach ruleset failed: no node selected")
     if len(ruleset_ids) == 0:
-        response.flash = T("no ruleset selected")
-        return
+        raise ToolError("detach ruleset failed: no ruleset selected")
 
     q = db.v_nodes.id.belongs(node_ids)
     rows = db(q).select(db.v_nodes.nodename)
@@ -748,11 +826,9 @@ def comp_detach_rulesets(node_ids=[], ruleset_ids=[]):
 @auth.requires_membership('CompManager')
 def comp_attach_rulesets(node_ids=[], ruleset_ids=[]):
     if len(node_ids) == 0:
-        response.flash = T("no node selected")
-        return
+        raise ToolError("detach ruleset failed: no node selected")
     if len(ruleset_ids) == 0:
-        response.flash = T("no ruleset selected")
-        return
+        raise ToolError("detach ruleset failed: no ruleset selected")
 
     q = db.v_nodes.id.belongs(node_ids)
     rows = db(q).select(db.v_nodes.nodename)
@@ -792,25 +868,34 @@ def ajax_comp_rulesets():
     v.sub_span = ['fset_name']
     v.checkboxes = True
 
-    if len(request.args) == 1 and request.args[0] == 'filterset_detach':
-        comp_detach_filterset(v.get_checked())
-    if len(request.args) == 1 and request.args[0] == 'var_name_set':
-        var_name_set()
-    if len(request.args) == 1 and request.args[0] == 'var_value_set':
-        var_value_set()
-    if len(request.args) == 1 and request.args[0] == 'ruleset_var_del':
-        comp_delete_ruleset_var(v.get_checked())
-    if len(request.args) == 1 and request.args[0] == 'ruleset_del':
-        comp_delete_ruleset(v.get_checked())
-        v.form_filterset_attach = v.comp_filterset_attach_sqlform()
-        v.form_ruleset_var_add = v.comp_ruleset_var_add_sqlform()
-    if len(request.args) == 1 and request.args[0] == 'ruleset_rename':
-        comp_rename_ruleset(v.get_checked())
-        v.form_filterset_attach = v.comp_filterset_attach_sqlform()
-        v.form_ruleset_var_add = v.comp_ruleset_var_add_sqlform()
+    err = None
+    if len(request.args) == 1:
+       action = request.args[0]
+       try:
+           if action == 'filterset_detach':
+               comp_detach_filterset(v.get_checked())
+           elif action == 'var_name_set':
+               var_name_set()
+           elif action == 'var_value_set':
+               var_value_set()
+           elif action == 'ruleset_var_del':
+               comp_delete_ruleset_var(v.get_checked())
+           elif action == 'ruleset_clone':
+               ruleset_clone()
+               v.form_filterset_attach = v.comp_filterset_attach_sqlform()
+               v.form_ruleset_var_add = v.comp_ruleset_var_add_sqlform()
+           elif action == 'ruleset_del':
+               comp_delete_ruleset(v.get_checked())
+               v.form_filterset_attach = v.comp_filterset_attach_sqlform()
+               v.form_ruleset_var_add = v.comp_ruleset_var_add_sqlform()
+           elif action == 'ruleset_rename':
+               comp_rename_ruleset(v.get_checked())
+               v.form_filterset_attach = v.comp_filterset_attach_sqlform()
+               v.form_ruleset_var_add = v.comp_ruleset_var_add_sqlform()
+       except ToolError, e:
+           v.flash = str(e)
 
     if v.form_ruleset_add.accepts(request.vars, formname='add_ruleset'):
-        response.flash = T("ruleset added")
         # refresh forms ruleset comboboxes
         v.form_filterset_attach = v.comp_filterset_attach_sqlform()
         v.form_ruleset_var_add = v.comp_ruleset_var_add_sqlform()
@@ -821,7 +906,6 @@ def ajax_comp_rulesets():
         response.flash = T("errors in form")
 
     if v.form_filterset_attach.accepts(request.vars):
-        response.flash = T("filterset attached")
         q = db.v_comp_rulesets.fset_id == request.vars.fset_id
         q &= db.v_comp_rulesets.ruleset_id == request.vars.ruleset_id
         rows = db(q).select()
@@ -836,7 +920,6 @@ def ajax_comp_rulesets():
         response.flash = T("errors in form")
 
     if v.form_ruleset_var_add.accepts(request.vars):
-        response.flash = T("rule added")
         var = '='.join((request.vars.var_name,
                         request.vars.var_value))
         ruleset = db(db.comp_rulesets.id==request.vars.ruleset_id).select(db.comp_rulesets.ruleset_name)[0].ruleset_name
@@ -1125,13 +1208,12 @@ class table_comp_filtersets(HtmlTable):
 @auth.requires_membership('CompManager')
 def comp_detach_filters(ids=[]):
     if len(ids) == 0:
-        response.flash = T("no filters selected")
-        return
+        raise ToolError("detach filter failed: no filter selected")
     ids = map(lambda x: int(x.split('_')[1]), ids)
     q = db.v_gen_filtersets.id.belongs(ids)
     rows = db(q).select()
     if len(rows) == 0:
-        return
+        raise ToolError("detach filter failed: can't find selected filters")
     f_names = ', '.join(map(lambda f: ' '.join([
                        f.f_table+'.'+f.f_field,
                        f.f_op,
@@ -1139,7 +1221,6 @@ def comp_detach_filters(ids=[]):
                        'from',
                        f.fset_name]), rows))
     n = db(db.gen_filtersets_filters.id.belongs(ids)).delete()
-    response.flash = T("detached %(n)d filters(s)", dict(n=n))
     _log('compliance.filterset.filter.detach',
         'detached filters %(f_names)s',
         dict(f_names=f_names))
@@ -1147,16 +1228,14 @@ def comp_detach_filters(ids=[]):
 @auth.requires_membership('CompManager')
 def comp_delete_filterset(ids=[]):
     if len(ids) == 0:
-        response.flash = T("no filterset selected")
-        return
+        raise ToolError("delete filterset failed: no filterset selected")
     ids = map(lambda x: int(x.split('_')[0]), ids)
     q = db.gen_filtersets.id.belongs(ids)
     rows = db(q).select()
     if len(rows) == 0:
-        return
+        raise ToolError("delete filterset failed: can't find selected filtersets")
     fset_names = ', '.join([r.fset_name for r in rows])
     n = db(q).delete()
-    response.flash = T("deleted %(n)d filterset(s)", dict(n=n))
     _log('compliance.filterset.delete',
         'deleted filtersets %(fset_names)s',
         dict(fset_names=fset_names))
@@ -1164,20 +1243,20 @@ def comp_delete_filterset(ids=[]):
 @auth.requires_membership('CompManager')
 def comp_rename_filterset(ids):
     if len(ids) != 1:
-        response.flash = T("one and only one filterset must be selected")
-        return
-    if 'comp_filterset_rename_input' not in request.vars:
-        response.flash = T("new filterset name is empty")
-        return
-    ids = map(lambda x: int(x.split('_')[0]), ids)
+        raise ToolError("rename filterset failed: one filterset must be selected")
+    if 'comp_filterset_rename_input' not in request.vars or \
+       len(request.vars['comp_filterset_rename_input']) == 0:
+        raise ToolError("rename filterset failed: new filterset name is empty")
     new = request.vars['comp_filterset_rename_input']
+    if len(db(db.comp_filtersets.fset_name==new).select()) > 0:
+        raise ToolError("rename filterset failed: new filterset name already exists")
+    ids = map(lambda x: int(x.split('_')[0]), ids)
     id = ids[0]
     rows = db(db.gen_filtersets.id == id).select(db.gen_filtersets.fset_name)
     if len(rows) != 1:
-        return
+        raise ToolError("rename filterset failed: can't find selected filterset")
     old = rows[0].fset_name
     n = db(db.gen_filtersets.id == id).update(fset_name=new)
-    response.flash = T("filterset renamed", dict(n=n))
     _log('compliance.filterset.rename',
         'renamed filterset %(old)s as %(new)s',
         dict(old=old, new=new))
@@ -1263,18 +1342,16 @@ class table_comp_filters(HtmlTable):
 @auth.requires_membership('CompManager')
 def comp_delete_filter(ids=[]):
     if len(ids) == 0:
-        response.flash = T("no filter selected")
-        return
+        raise ToolError("delete filter failed: no filter selected")
     q = db.gen_filters.id.belongs(ids)
     rows = db(q).select()
     if len(rows) == 0:
-        return
+        raise ToolError("delete filter failed: can't find selected filters")
     f_names = ', '.join(map(lambda f: ' '.join([
                        f.f_table+'.'+f.f_field,
                        f.f_op,
                        f.f_value]), rows))
     n = db(q).delete()
-    response.flash = T("deleted %(n)d filter(s)", dict(n=n))
     _log('compliance.filter.delete',
         'deleted filters %(f_names)s',
         dict(f_names=f_names))
@@ -1290,7 +1367,6 @@ def ajax_comp_filters():
         comp_delete_filter(v.get_checked())
 
     if v.form_filter_add.accepts(request.vars):
-        response.flash = T("filter added")
         f_name = ' '.join([request.vars.f_table+'.'+request.vars.f_field,
                            request.vars.f_op,
                            request.vars.f_value])
@@ -1328,7 +1404,6 @@ def ajax_comp_filtersets():
         t.form_filter_attach = t.comp_filter_attach_sqlform()
 
     if t.form_filterset_add.accepts(request.vars):
-        response.flash = T("filterset added")
         t.form_filter_attach = t.comp_filter_attach_sqlform()
         _log('compliance.filterset.add',
             'added filterset %(fset_name)s',
@@ -1337,7 +1412,6 @@ def ajax_comp_filtersets():
         response.flash = T("errors in form")
 
     if t.form_filter_attach.accepts(request.vars):
-        response.flash = T("filter attached")
         q = db.v_gen_filtersets.f_id==request.vars.f_id
         q &= db.v_gen_filtersets.fset_id==request.vars.fset_id
         f = db(db.v_gen_filtersets.f_id==request.vars.f_id).select()[0]
@@ -1564,28 +1638,25 @@ class table_comp_moduleset(HtmlTable):
 @auth.requires_membership('CompManager')
 def comp_delete_module(ids=[]):
     if len(ids) == 0:
-        response.flash = T("no module selected")
-        return
+        raise ToolError("delete module failed: no module selected")
     ids = map(lambda x: int(x.split('_')[1]), ids)
     rows = db(db.comp_moduleset_modules.id.belongs(ids)).select(db.comp_moduleset_modules.modset_mod_name)
     if len(rows) == 0:
-        return
+        raise ToolError("delete module failed: can't find selected modules")
     mod_names = ', '.join([r.modset_mod_name for r in rows])
     n = db(db.comp_moduleset_modules.id.belongs(ids)).delete()
     _log('compliance.moduleset.module.delete',
         'deleted modules %(mod_names)s',
         dict(mod_names=mod_names))
-    response.flash = T("deleted %(n)d modules", dict(n=n))
 
 @auth.requires_membership('CompManager')
 def comp_delete_moduleset(ids=[]):
     if len(ids) == 0:
-        response.flash = T("no moduleset selected")
-        return
+        raise ToolError("delete moduleset failed: no moduleset selected")
     ids = map(lambda x: int(x.split('_')[0]), ids)
     rows = db(db.comp_moduleset.id.belongs(ids)).select(db.comp_moduleset.modset_name)
     if len(rows) == 0:
-        return
+        raise ToolError("delete moduleset failed: can't find selected modulesets")
     modset_names = ', '.join([r.modset_name for r in rows])
     n = db(db.comp_moduleset_modules.modset_id.belongs(ids)).delete()
     n = db(db.comp_node_moduleset.id.belongs(ids)).delete()
@@ -1593,27 +1664,25 @@ def comp_delete_moduleset(ids=[]):
     _log('compliance.moduleset.delete',
         'deleted modulesets %(modset_names)s',
         dict(modset_names=modset_names))
-    response.flash = T("deleted %(n)d moduleset", dict(n=n))
 
 @auth.requires_membership('CompManager')
 def comp_rename_moduleset(ids):
     if len(ids) != 1:
-        response.flash = T("one and only one moduleset must be selected")
-        return
+        raise ToolError("rename moduleset failed: one moduleset must be selected")
     if 'comp_moduleset_rename_input' not in request.vars:
-        response.flash = T("new moduleset name is empty")
-        return
+        raise ToolError("rename moduleset failed: new moduleset name is empty")
     new = request.vars['comp_moduleset_rename_input']
+    if len(db(db.comp_modulesets.modset_name==new).select()) > 0:
+        raise ToolError("rename moduleset failed: new moduleset name already exists")
     id = int(ids[0].split('_')[0])
     rows = db(db.comp_moduleset.id == id).select(db.comp_moduleset.modset_name)
     if len(rows) != 1:
-        return
+        raise ToolError("rename moduleset failed: can't find selected moduleset")
     old = rows[0].modset_name
     n = db(db.comp_moduleset.id == id).update(modset_name=new)
     _log('compliance.moduleset.rename',
          'renamed moduleset %(old)s as %(new)s',
          dict(old=old, new=new))
-    response.flash = T("moduleset renamed", dict(n=n))
 
 @auth.requires_login()
 def ajax_comp_moduleset():
@@ -1632,7 +1701,6 @@ def ajax_comp_moduleset():
         t.form_module_add = t.comp_module_add_sqlform()
 
     if t.form_moduleset_add.accepts(request.vars, formname='add_moduleset'):
-        response.flash = T("moduleset added")
         t.form_module_add = t.comp_module_add_sqlform()
         _log('compliance.moduleset.add',
             'added moduleset %(modset_name)s',
@@ -1641,7 +1709,6 @@ def ajax_comp_moduleset():
         response.flash = T("errors in form")
 
     if t.form_module_add.accepts(request.vars, formname='add_module'):
-        response.flash = T("moduleset added")
         modset_name = db(db.comp_moduleset.id==request.vars.modset_id).select(db.comp_moduleset.modset_name)[0].modset_name
         _log('compliance.moduleset.module.add',
             'added module %(mod_name)s to moduleset %(modset_name)s',
@@ -2008,7 +2075,7 @@ def var_set(t):
                          var_author=user_name(),
                          var_updated=now)
             _log('comp.ruleset.variable.change',
-                 'change variable %(on)s value from %(ov) to %(d)s in ruleset %(x)s',
+                 'change variable %(on)s value from %(ov)s to %(d)s in ruleset %(x)s',
                  dict(on=oldn, ov=oldv, x=iid, d=new))
         else:
             raise Exception()
