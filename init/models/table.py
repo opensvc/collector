@@ -417,10 +417,16 @@ class HtmlTable(object):
 
     def store_filter_value(self, f, v):
         field = self.stored_filter_field(f)
-        db.column_filters.insert(col_tableid=self.id,
-                                 col_name=field,
-                                 col_filter=v,
-                                 user_id=session.auth.user.id)
+        q = db.column_filters.col_tableid==self.id
+        q &= db.column_filters.col_name==field
+        q &= db.column_filters.user_id==session.auth.user.id
+        if len(db(q).select()) > 0:
+            db(q).update(col_filter=v)
+        else:
+            db.column_filters.insert(col_tableid=self.id,
+                                     col_name=field,
+                                     col_filter=v,
+                                     user_id=session.auth.user.id)
 
     def stored_filter_value(self, f):
         field = self.stored_filter_field(f)
