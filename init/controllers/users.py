@@ -20,8 +20,8 @@ class col_users_domains(HtmlTableColumn):
                   value=s,
                   _id=iid,
                   _onkeypress="if (is_enter(event)) {%s};"%\
-                     self.table.ajax_submit(additional_inputs=[iid],
-                                            args="domain_set"),
+                     self.t.ajax_submit(additional_inputs=[iid],
+                                        args="domain_set"),
                 ),
                 _id=sid,
                 _style="display:none",
@@ -94,7 +94,7 @@ class table_users(HtmlTable):
                      display=True,
                     ),
         }
-        self.colprops['domains'].table = self
+        self.colprops['domains'].t = self
         self.ajax_col_values = 'ajax_users_col_values'
         self.dbfilterable = False
         self.checkboxes = True

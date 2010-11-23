@@ -2016,15 +2016,15 @@ class table_comp_status(HtmlTable):
         self.colprops.update(v_nodes_colprops)
         self.ajax_col_values = 'ajax_comp_status_col_values'
 
-@auth.requires_membership('Manager')
+@auth.requires_membership('CompManager')
 def var_name_set():
     var_set('name')
 
-@auth.requires_membership('Manager')
+@auth.requires_membership('CompManager')
 def var_value_set():
     var_set('value')
 
-@auth.requires_membership('Manager')
+@auth.requires_membership('CompManager')
 def var_set(t):
     prefix = t[0]+'d_i_'
     l = [k for k in request.vars if prefix in k]
