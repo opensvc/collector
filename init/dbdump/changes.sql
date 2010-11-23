@@ -744,4 +744,16 @@ CREATE TABLE column_filters (
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
 
+alter table comp_log add index idx3 (run_nodename);
 
+alter table comp_rulesets_nodes add index idx2 (nodename);
+
+alter table comp_node_moduleset add index idx2 (modset_node);
+
+delete from column_filters;
+
+create unique index idx1 on column_filters (user_id,col_tableid,col_name);
+
+alter table column_filters modify column col_name varchar(60) default '';
+
+alter table column_filters modify column col_tableid varchar(30) default '';
