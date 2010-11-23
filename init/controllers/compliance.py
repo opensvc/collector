@@ -397,6 +397,7 @@ class table_comp_rulesets(HtmlTable):
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['ruleset_name',
+                     'ruleset_type',
                      'fset_name',
                      'var_name',
                      'var_value',
@@ -417,13 +418,19 @@ class table_comp_rulesets(HtmlTable):
                      img='guy16',
                     ),
             'ruleset_name': HtmlTableColumn(
-                     title='Rule set',
+                     title='Ruleset',
                      field='ruleset_name',
                      display=True,
                      img='action16',
                     ),
+            'ruleset_type': HtmlTableColumn(
+                     title='Ruleset type',
+                     field='ruleset_type',
+                     display=True,
+                     img='action16',
+                    ),
             'fset_name': HtmlTableColumn(
-                     title='Filter set',
+                     title='Filterset',
                      field='fset_name',
                      display=True,
                      img='filter16',
@@ -454,7 +461,51 @@ class table_comp_rulesets(HtmlTable):
         self.additional_tools.append('ruleset_add')
         self.additional_tools.append('ruleset_rename')
         self.additional_tools.append('ruleset_clone')
+        self.additional_tools.append('ruleset_change_type')
         self.ajax_col_values = 'ajax_comp_rulesets_col_values'
+
+    def ruleset_change_type(self):
+        label = 'Change ruleset type'
+        action = 'ruleset_change_type'
+        divid = 'rset_type_change'
+        sid = 'rset_type_change_s'
+        options = ['contextual', 'explicit']
+        d = DIV(
+              A(
+                T(label),
+                _onclick="""
+                  click_toggle_vis('%(div)s', 'block');
+                """%dict(div=divid),
+              ),
+              DIV(
+                TABLE(
+                  TR(
+                    TH(T('Ruleset type')),
+                    TD(
+                      SELECT(
+                        *options,
+                        **dict(_id=sid)
+                      ),
+                    ),
+                  ),
+                  TR(
+                    TH(),
+                    TD(
+                      INPUT(
+                        _type='submit',
+                        _onclick=self.ajax_submit(additional_inputs=[sid],
+                                                  args=action),
+                      ),
+                    ),
+                  ),
+                ),
+                _style='display:none',
+                _class='white_float',
+                _name=divid,
+              ),
+              _class='floatw',
+            )
+        return d
 
     def ruleset_clone(self):
         label = 'Clone ruleset'
@@ -613,11 +664,14 @@ class table_comp_rulesets(HtmlTable):
         #db.comp_rulesets.ruleset_updated.writable = False
         db.comp_rulesets.ruleset_name.requires = IS_NOT_IN_DB(db,
                                                 db.comp_rulesets.ruleset_name)
+        db.comp_rulesets.ruleset_type.requires = IS_IN_SET(['contextual',
+                                                            'explicit'])
         f = SQLFORM(
                  db.comp_rulesets,
                  labels={'ruleset_name': T('Ruleset name')},
                  _name='form_ruleset_add',
             )
+        f.vars.ruleset_type = 'explicit'
         #f.vars.ruleset_author = user_name()
         return f
 
@@ -659,7 +713,7 @@ class table_comp_rulesets(HtmlTable):
         else:
             ruleset_validator = None
         db.comp_rulesets_filtersets.ruleset_id.requires = IS_IN_DB(
-                    db,
+                    db(db.comp_rulesets.ruleset_type=='contextual'),
                     db.comp_rulesets.id,
                     "%(ruleset_name)s",
                     zero=T('choose one'),
@@ -695,6 +749,26 @@ class table_comp_rulesets(HtmlTable):
         return f
 
 @auth.requires_membership('CompManager')
+def ruleset_change_type(ids):
+    sid = request.vars.rset_type_change_s
+    if len(sid) == 0:
+        raise ToolError("change ruleset type failed: target type is empty")
+    if len(ids) == 0:
+        raise ToolError("change ruleset type failed: no ruleset selected")
+    ids = map(lambda x: int(x.split('_')[0]), ids)
+
+    q = db.comp_rulesets.id.belongs(ids)
+    rows = db(q).select()
+    if len(rows) == 0:
+        raise ToolError("change ruleset type failed: can't find ruleset")
+
+    x = ', '.join(['from %s on %s'%(r.ruleset_type,r.ruleset_name) for r in rows])
+    db(q).update(ruleset_type=sid)
+    _log('comp.ruleset.type.change',
+         'changed ruleset type to %(s)s %(x)s',
+         dict(s=sid, x=x))
+
+@auth.requires_membership('CompManager')
 def ruleset_clone():
     sid = request.vars.rset_clone_s
     iid = request.vars.rset_clone_i
@@ -707,9 +781,11 @@ def ruleset_clone():
     if len(rows) == 0:
         raise ToolError("clone ruleset failed: can't find source ruleset")
     orig = rows[0].ruleset_name
-    newid = db.comp_rulesets.insert(ruleset_name=iid)
-    db.comp_rulesets_filtersets.insert(ruleset_id=newid,
-                                       fset_id=rows[0].fset_id)
+    newid = db.comp_rulesets.insert(ruleset_name=iid,
+                                    ruleset_type=rows[0].ruleset_type)
+    if rows[0].ruleset_type == 'contextual':
+        db.comp_rulesets_filtersets.insert(ruleset_id=newid,
+                                           fset_id=rows[0].fset_id)
     for row in rows:
         db.comp_rulesets_variables.insert(ruleset_id=newid,
                                           var_name=row.var_name,
@@ -865,7 +941,7 @@ def ajax_comp_rulesets_col_values():
 def ajax_comp_rulesets():
     v = table_comp_rulesets('0', 'ajax_comp_rulesets')
     v.span = 'ruleset_name'
-    v.sub_span = ['fset_name']
+    v.sub_span = ['ruleset_type', 'fset_name']
     v.checkboxes = True
 
     err = None
@@ -880,6 +956,8 @@ def ajax_comp_rulesets():
                var_value_set()
            elif action == 'ruleset_var_del':
                comp_delete_ruleset_var(v.get_checked())
+           elif action == 'ruleset_change_type':
+               ruleset_change_type(v.get_checked())
            elif action == 'ruleset_clone':
                ruleset_clone()
                v.form_filterset_attach = v.comp_filterset_attach_sqlform()
@@ -2498,6 +2576,56 @@ def comp_ruleset_vars(ruleset_id, qr=None):
         d['vars'].append((row.comp_rulesets_variables.var_name,
                           row.comp_rulesets_variables.var_value))
     return {ruleset_name: d}
+
+@service.xmlrpc
+def comp_get_dated_ruleset(nodename, date):
+    # initialize ruleset with asset variables
+    ruleset = comp_get_node_ruleset(nodename)
+
+    # lookup the rulesets valid for specified date
+    o = db.comp_log.run_date
+    q = db.comp_log.run_date >= date
+    q &= db.comp_log.run_nodename == nodename
+    rows = db(q).select(limitby=(0,1))
+    if len(rows) == 0:
+        # no trace of a previous run
+        return ruleset
+    found_date = rows[0].run_date
+    dated_ruleset_names = rows[0].run_ruleset.split(',')
+    q = db.comp_rulesets.ruleset_name.belongs(dated_ruleset_names)
+    q &= db.comp_rulesets.ruleset_type=='explicit'
+    dated_explicit_ruleset_ids = [r.id for r in db(q).select()]
+
+    # add contextual rulesets variables
+    q = db.comp_rulesets.id>0
+    q &= db.comp_rulesets.id == db.comp_rulesets_filtersets.ruleset_id
+    q &= db.gen_filtersets_filters.fset_id == db.comp_rulesets_filtersets.fset_id
+    q &= db.gen_filtersets_filters.f_id == db.gen_filters.id
+    rows = db(q).select(orderby=db.comp_rulesets.ruleset_name)
+
+    q = db.nodes.nodename == nodename
+    last_index = len(rows)-1
+    qr = db.nodes.id > 0
+
+    for i, row in enumerate(rows):
+        if i == last_index:
+            end_seq = True
+        elif rows[i].comp_rulesets.ruleset_name != rows[i+1].comp_rulesets.ruleset_name:
+            end_seq = True
+        else:
+            end_seq = False
+        qr = comp_query(qr, row)
+        if end_seq:
+            match = db(q&qr).select(db.nodes.id)
+            if len(match) == 1:
+                ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr))
+            qr = db.nodes.id > 0
+
+    # add explicit rulesets variables
+    for id in dated_explicit_ruleset_ids:
+        ruleset.update(comp_ruleset_vars(id))
+
+    return ruleset
 
 @service.xmlrpc
 def comp_get_ruleset(nodename):

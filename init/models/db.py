@@ -954,6 +954,7 @@ db.define_table('v_gen_filtersets',
 
 db.define_table('comp_rulesets',
     Field('ruleset_name','string', requires=IS_NOT_EMPTY()),
+    Field('ruleset_type','string', requires=IS_IN_SET(['contextual','explicit'])),
     migrate=False)
 
 db.define_table('comp_rulesets_variables',
@@ -978,6 +979,7 @@ db.define_table('v_comp_rulesets',
     Field('ruleset_id','integer'),
     Field('fset_id','integer'),
     Field('ruleset_name','string', requires=IS_NOT_EMPTY()),
+    Field('ruleset_type','string', requires=IS_IN_SET(['contextual','explicit'])),
     Field('fset_name','string'),
     Field('var_name','string'),
     Field('var_value','string'),

@@ -757,3 +757,15 @@ create unique index idx1 on column_filters (user_id,col_tableid,col_name);
 alter table column_filters modify column col_name varchar(60) default '';
 
 alter table column_filters modify column col_tableid varchar(30) default '';
+
+alter table comp_log modify column run_ruleset varchar(500) default '';
+
+alter table comp_rulesets add column ruleset_type varchar(10) default 'explicit';
+
+drop view v_comp_rulesets;
+
+create view v_comp_rulesets as (select r.id as ruleset_id,r.ruleset_name,r.ruleset_type,rv.id,rv.var_name,rv.var_value,rv.var_author,rv.var_updated,rf.fset_id,fs.fset_name from comp_rulesets r left join comp_rulesets_variables rv on rv.ruleset_id = r.id left join comp_rulesets_filtersets rf on r.id=rf.ruleset_id left join gen_filtersets fs on fs.id=rf.fset_id);
+
+drop view v_comp_explicit_rulesets;
+
+CREATE VIEW `v_comp_explicit_rulesets` AS (select `r`.`id` AS `id`,`r`.`ruleset_name` AS `ruleset_name`,group_concat(distinct concat(`v`.`var_name`,'=',`v`.`var_value`) separator '|') AS `variables` from (`comp_rulesets` `r` join `comp_rulesets_variables` `v` on((`r`.`id` = `v`.`ruleset_id`))) where r.ruleset_type='explicit' group by `r`.`id` order by `r`.`ruleset_name`);
