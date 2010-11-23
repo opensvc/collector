@@ -2166,7 +2166,7 @@ def ajax_comp_log_col_values():
     q = _where(None, 'comp_log', domain_perms(), 'run_nodename')
     q &= db.comp_log.run_nodename == db.v_nodes.nodename
     for f in t.cols:
-        q = _where(q, t.colprops[f].table, t.filter_parse_glob(f), f)
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_db_filters(q, 'v_nodes')
     t.object_list = db(q).select(orderby=o, groupby=o)
     return t.col_values_cloud(col)
@@ -2179,7 +2179,7 @@ def ajax_comp_status_col_values():
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
     q &= db.comp_status.run_nodename == db.v_nodes.nodename
     for f in t.cols:
-        q = _where(q, t.colprops[f].table, t.filter_parse_glob(f), f)
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_db_filters(q, 'v_nodes')
     t.object_list = db(q).select(orderby=o, groupby=o)
     return t.col_values_cloud(col)
@@ -2305,6 +2305,7 @@ class table_comp_log(table_comp_status):
         for c in self.colprops:
             if 'run_' in c:
                 self.colprops[c].table = 'comp_log'
+        self.ajax_col_values = 'ajax_comp_log_col_values'
 
 @auth.requires_login()
 def ajax_comp_log():
