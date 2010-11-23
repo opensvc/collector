@@ -735,3 +735,13 @@ CREATE VIEW `v_users` AS (select (select `e`.`time_stamp` AS `time_stamp` from `
 
 alter table comp_rulesets_variables modify column var_value varchar(200) default '';
 
+CREATE TABLE column_filters (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` integer NOT NULL,
+  `col_tableid` varchar(20)  NOT NULL,
+  `col_name` varchar(20)  NOT NULL,
+  `col_filter` varchar(60)  NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
+
+

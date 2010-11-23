@@ -1043,4 +1043,11 @@ db.define_table('v_comp_module_status_weekly',
     Field('nb_na','integer'),
     migrate=False)
 
+db.define_table('column_filters',
+    Field('user_id','integer'),
+    Field('col_tableid','string'),
+    Field('col_name','string'),
+    Field('col_filter','string'),
+    migrate=False)
+
 

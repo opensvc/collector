@@ -238,8 +238,7 @@ def ajax_obs_col_values():
 @auth.requires_membership('Manager')
 def item_del(ids=[]):
     if len(ids) == 0:
-        response.flash = T("no item selected")
-        return
+        raise ToolError("delete item failed: no item selected")
     q = db.obsolescence.id.belongs(ids)
     rows = db(q).select(db.obsolescence.obs_name)
     x = ', '.join([r.obs_name for r in rows])
@@ -260,15 +259,17 @@ def alert_date_set():
 def date_set(t):
     prefix = t[0]+'d_i_'
     l = [k for k in request.vars if prefix in k]
-    if len(l) != 1:
-        return
+    if len(l) == 0:
+        raise ToolError("set date failed: no item selected")
+    elif len(l) > 1:
+        raise ToolError("set date failed: too many item selected")
     id = int(l[0].replace(prefix,''))
     new = request.vars[l[0]]
     q = db.obsolescence.id==id
     rows = db(q).select()
     n = len(rows)
     if n != 1:
-        return
+        raise ToolError("set date failed: can't find selected item")
     iid = rows[0].obs_name
     if t == 'warn':
         db(q).update(obs_warn_date=new)
@@ -284,14 +285,19 @@ def date_set(t):
 def ajax_obs():
     t = table_obs('obs', 'ajax_obs')
 
-    if len(request.args) == 1 and request.args[0] == 'warn_date_set':
-        warn_date_set()
-    if len(request.args) == 1 and request.args[0] == 'alert_date_set':
-        alert_date_set()
-    if len(request.args) == 1 and request.args[0] == 'item_del':
-        item_del(t.get_checked())
-    if len(request.args) == 1 and request.args[0] == 'item_refresh':
-        refresh_obsolescence()
+    if len(request.args) == 1:
+        action = request.args[0]
+        try:
+            if action == 'warn_date_set':
+                warn_date_set()
+            if action == 'alert_date_set':
+                alert_date_set()
+            if action == 'item_del':
+                item_del(t.get_checked())
+            if action == 'item_refresh':
+                refresh_obsolescence()
+        except ToolError, e:
+            t.flash = str(e)
 
     o = db.obsolescence.obs_type
     o |= db.obsolescence.obs_name

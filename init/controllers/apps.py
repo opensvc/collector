@@ -11,7 +11,7 @@ class table_apps(HtmlTable):
             'app': HtmlTableColumn(
                      title='Application code',
                      field='app',
-                     img='svc16',
+                     img='svc',
                      display=True,
                     ),
             'roles': HtmlTableColumn(
@@ -171,8 +171,7 @@ def ajax_apps_col_values():
 @auth.requires_membership('Manager')
 def group_attach(ids=[]):
     if len(ids) == 0:
-        response.flash = T("no app selected")
-        return
+        raise ToolError("attach group failed: no app selected")
     gid = request.vars.group_attach_s
 
     done = []
@@ -193,8 +192,7 @@ def group_attach(ids=[]):
 @auth.requires_membership('Manager')
 def group_detach(ids=[]):
     if len(ids) == 0:
-        response.flash = T("no app selected")
-        return
+        raise ToolError("detach group failed: no app selected")
     gid = request.vars.group_detach_s
     rows = db(db.v_apps.id.belongs(ids)).select(db.v_apps.app)
     u = ', '.join([r.app for r in rows])
@@ -210,9 +208,11 @@ def group_detach(ids=[]):
 @auth.requires_membership('Manager')
 def app_add():
     app = request.vars.app_add_i
+    if len(app) == 0:
+        raise ToolError("add application failed: application name is empty")
     q = db.apps.app==app
     if db(q).count() > 0:
-        return
+        raise ToolError("add application failed: application already exists")
     db.apps.insert(app=app)
     _log('apps.app.add',
          'added app %(a)s',
@@ -233,14 +233,19 @@ def app_del(ids):
 def ajax_apps():
     t = table_apps('apps', 'ajax_apps')
 
-    if len(request.args) == 1 and request.args[0] == 'app_del':
-        app_del(t.get_checked())
-    if len(request.args) == 1 and request.args[0] == 'app_add':
-        app_add()
-    if len(request.args) == 1 and request.args[0] == 'group_attach':
-        group_attach(t.get_checked())
-    if len(request.args) == 1 and request.args[0] == 'group_detach':
-        group_detach(t.get_checked())
+    if len(request.args) == 1:
+        action = request.args[0]
+        try:
+            if action == 'app_del':
+                app_del(t.get_checked())
+            elif action == 'app_add':
+                app_add()
+            elif action == 'group_attach':
+                group_attach(t.get_checked())
+            elif action == 'group_detach':
+                group_detach(t.get_checked())
+        except ToolError, e:
+            t.flash = str(e)
 
     o = ~db.v_apps.app
     q = db.v_apps.id > 0

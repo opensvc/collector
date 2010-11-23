@@ -1,5 +1,11 @@
 import re
 
+class ToolError(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return str(self.value)
+
 class Column(object):
     def __init__(self, title, display=False, img='generic', _class=''):
         self.title = title
@@ -41,6 +47,7 @@ class HtmlTable(object):
         self.cellclass = 'cell2'
         self.upc_table = ''
         self.last = None
+        self.column_filter_reset = '**clear**'
 
         # to be set by children
         self.additional_filters = []
@@ -60,6 +67,7 @@ class HtmlTable(object):
         self.colored_lines = True
         self.additional_tools = []
         self.span = None
+        self.flash = None
         self.sub_span = []
         self.setup_pager()
 
@@ -114,6 +122,19 @@ class HtmlTable(object):
             if row.upc_field not in self.colprops:
                 continue
             self.colprops[row.upc_field].display = row.upc_visible
+
+        #
+        # if a column has a filter set, make it visible, even if it
+        # marked for hiding.
+        #
+        q = db.column_filters.user_id==session.auth.user.id
+        q &= db.column_filters.col_tableid==self.id
+        rows = db(q).select()
+        for row in rows:
+            field = row.col_name.split('.')[-1]
+            if field not in self.colprops:
+                continue
+            self.colprops[field].display = True
 
     def col_hide(self, c):
         id_col = self.col_checkbox_key(c)
@@ -174,17 +195,22 @@ class HtmlTable(object):
                   INPUT(
                     _type='checkbox',
                     _name=id_col,
-                    _onclick="""check_toggle_vis(this.checked, "%(col_name)s");
-                                getElementById("%(id_set_col_table)s").value="%(table)s";
-                                getElementById("%(id_set_col_field)s").value="%(field)s";
-                                getElementById("%(id_set_col_value)s").value=this.checked;
-                                ajax("%(url)s",
-                                     ["%(id_set_col_table)s",
-                                      "%(id_set_col_field)s",
-                                      "%(id_set_col_value)s"],
-                                     "set_col_dummy");
+                    _onclick="""if (getElementById('%(fid)s').value.length==0) {
+                                 check_toggle_vis(this.checked, "%(col_name)s");
+                                 getElementById("%(id_set_col_table)s").value="%(table)s";
+                                 getElementById("%(id_set_col_field)s").value="%(field)s";
+                                 getElementById("%(id_set_col_value)s").value=this.checked;
+                                 ajax("%(url)s",
+                                      ["%(id_set_col_table)s",
+                                       "%(id_set_col_field)s",
+                                       "%(id_set_col_value)s"],
+                                      "set_col_dummy");
+                                 } else {
+                                  this.checked = true
+                                 }
                              """%dict(url=URL(r=request,c='ajax',f='ajax_set_user_prefs_column'),
                                       col_name=self.col_key(a),
+                                      fid=self.filter_key(a),
                                       id_set_col_table=id_set_col_table,
                                       id_set_col_field=id_set_col_field,
                                       id_set_col_value=id_set_col_value,
@@ -376,7 +402,47 @@ class HtmlTable(object):
                 ids.append(key.replace(prefix, ''))
         return ids
 
+    def stored_filter_field(self, f):
+        cp = self.colprops[f]
+        if cp.table is None:
+            return cp.field
+        return '.'.join((cp.table, cp.field))
+
+    def drop_filter_value(self, f):
+        field = self.stored_filter_field(f)
+        q = db.column_filters.col_tableid==self.id
+        q &= db.column_filters.col_name==field
+        q &= db.column_filters.user_id==session.auth.user.id
+        db(q).delete()
+
+    def store_filter_value(self, f, v):
+        field = self.stored_filter_field(f)
+        db.column_filters.insert(col_tableid=self.id,
+                                 col_name=field,
+                                 col_filter=v,
+                                 user_id=session.auth.user.id)
+
+    def stored_filter_value(self, f):
+        field = self.stored_filter_field(f)
+        q = db.column_filters.col_tableid==self.id
+        q &= db.column_filters.col_name==field
+        q &= db.column_filters.user_id==session.auth.user.id
+        rows = db(q).select()
+        if len(rows) == 0:
+            return ""
+        return rows[0].col_filter
+
     def filter_parse(self, f):
+        v = self._filter_parse(f)
+        if v == self.column_filter_reset:
+            self.drop_filter_value(f)
+            return ""
+        if v == "":
+            return self.stored_filter_value(f)
+        self.store_filter_value(f, v)
+        return v
+
+    def _filter_parse(self, f):
         key = self.filter_key(f)
         if key in request.vars:
             return request.vars[key]
@@ -513,7 +579,9 @@ class HtmlTable(object):
             if len(self.filter_parse(c)) > 0:
                 clear = IMG(
                           _src=URL(r=request,c='static',f='clear16.png'),
-                          _onclick="getElementById('%s').value='';"%self.filter_key(c)+self.ajax_submit(),
+                          _onclick="getElementById('%s').value='%s';"%(
+                             self.filter_key(c),
+                             self.column_filter_reset)+self.ajax_submit(),
                           _style="margin-right:4px",
                         )
             else:
@@ -586,6 +654,16 @@ class HtmlTable(object):
                                        additional_inputs=additional_inputs),
                  id=self.id)
 
+    def show_flash(self):
+        if self.flash is None:
+            return SPAN()
+        d = DIV(
+              self.flash,
+              _class='tableo_flash',
+              _onclick="this.style['display']='none';"
+            )
+        return d
+
     def html(self):
         if len(request.args) == 1 and request.args[0] == 'csv':
             return self.csv()
@@ -634,6 +712,7 @@ class HtmlTable(object):
             export = SPAN()
 
         d = DIV(
+              self.show_flash(),
               DIV(
                 self.pager(),
                 export,
