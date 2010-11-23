@@ -245,4 +245,15 @@ function timepicker(e) {
         showsTime: true,timeFormat: "24"
     })
 }
+function checked_nodes() {
+    l = document.getElementsByName('nodes_ck');
+    d = new Array()
+    for(i=0; i<l.length; i++) {
+        if (l[i].type == 'checkbox' && l[i].disabled == false && l[i].checked) {
+            d.push(l[i].id.replace("nodes_ckid_",""));
+        }
+    }
+    return d.join(",");
+}
+
 </script>

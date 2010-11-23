@@ -1,73 +1,11 @@
-def nodes_csv():
-    import gluon.contenttype
-    response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
-    request.vars['perpage'] = 0
-    return str(nodes()['nodes'])
-
-@auth.requires_membership('Manager')
-def _nodes_del(request):
-    node_ids = ([])
-    for key in [ k for k in request.vars.keys() if 'check_' in k ]:
-        node_ids += ([key[6:]])
-
-    if len(node_ids) == 0:
-        response.flash = T('invalid node selection')
-        return
-    for id in node_ids:
-        db(db.nodes.id==id).delete()
-    response.flash = T('nodes removed')
-    del(request.vars['action'])
-    redirect(URL(r=request, f='nodes'))
-
-@auth.requires_login()
-def nodes():
-    if request.vars.action is not None and request.vars.action == "delnodes":
-        _nodes_del(request)
-
-    o = db.v_nodes.nodename
-
-    columns = v_nodes_columns()
-    __update_columns(columns, 'nodes')
-
-    def _sort_cols(x, y):
-        return cmp(columns[x]['pos'], columns[y]['pos'])
-    colkeys = columns.keys()
-    colkeys.sort(_sort_cols)
-
-    toggle_db_filters()
-
-    # filtering
-    query = (db.v_nodes.id>0)
-    for key in columns.keys():
-        if key not in request.vars.keys():
-            continue
-        query &= _where(None, 'v_nodes', request.vars[key], key)
-
-    query &= _where(None, 'v_nodes', domain_perms(), 'nodename')
-
-    query = apply_db_filters(query, 'v_nodes')
-
-    (start, end, nav) = _pagination(request, query)
-    if start == 0 and end == 0:
-        rows = db(query).select(orderby=o)
-    else:
-        rows = db(query).select(orderby=o, limitby=(start,end))
-
-    return dict(columns=columns, colkeys=colkeys,
-                nodes=rows,
-                active_filters=active_db_filters('v_nodes'),
-                available_filters=avail_db_filters('v_nodes'),
-                nav=nav)
-
 def _label(key):
-    d = v_nodes_columns()
     return DIV(
              IMG(
-               _src=URL(r=request,c='static',f=d[key]['img']+'.png'),
-               _border=0,
+               _src=URL(r=request, c='static',
+                        f=v_nodes_colprops[key].img+'.png'),
                _style='vertical-align:top;margin-right:10px',
              ),
-             d[key]['title'],
+             v_nodes_colprops[key].title,
            )
 
 def _node_form(record=None):
@@ -171,5 +109,214 @@ def node_edit():
         response.flash = T("errors in form")
 
     return dict(form=form)
+
+class col_node(HtmlTableColumn):
+    def html(self, o):
+        id = self.t.extra_line_key(o)
+        s = self.get(o)
+        d = DIV(
+              A(
+                IMG(
+                  _src=URL(r=request, c='static', f='edit.png'),
+                  _style='vertical-align:middle',
+                ),
+                _href=URL(r=request, c='nodes', f='node_edit',
+                          vars={'node':o.nodename,
+                                '_next': URL(r=request)}
+                      ),
+              ),
+              node_icon(o.os_name),
+              A(
+                s,
+                _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                  url=URL(r=request, c='ajax_node',f='ajax_node',
+                          vars={'node': s, 'rowid': id}),
+                  id=id,
+                ),
+              ),
+            )
+        return d
+
+class table_nodes(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['nodename']+v_nodes_cols
+        self.colprops = v_nodes_colprops
+        self.colprops.update({
+            'nodename': col_node(
+                     title='Nodename',
+                     field='nodename',
+                     img='node16',
+                     display=True,
+                    ),
+        })
+        for c in self.cols:
+            self.colprops[c].table = None
+        for c in ['loc_building', 'loc_floor', 'loc_rack',
+                  'cpu_dies', 'cpu_cores', 'cpu_model', 'mem_bytes',
+                  'serial', 'team_responsible', 'environnement', 'status']:
+            self.colprops[c].display = True
+        self.colprops['nodename'].t = self
+        self.extraline = True
+        self.checkboxes = True
+        self.checkbox_id_col = 'nodename'
+        self.dbfilterable = True
+        self.ajax_col_values = 'ajax_nodes_col_values'
+        self.additional_tools.append('node_add')
+        self.additional_tools.append('node_del')
+        self.additional_tools.append('pkgdiff')
+        self.additional_tools.append('grpperf')
+
+    def node_del(self):
+        d = DIV(
+              A(
+                T("Delete nodes"),
+                _onclick="""if (confirm("%(text)s")){%(s)s};"""%dict(
+                   s=self.ajax_submit(args=['node_del']),
+                   text=T("Deleting a node also deletes all its asset information. Please confirm user deletion"),
+                ),
+              ),
+              _class='floatw',
+            )
+        return d
+
+    def node_add(self):
+        d = DIV(
+              A(
+                T("Add node"),
+                _onclick="""location.href='node_insert?_next=%s'"""%URL(r=request),
+              ),
+              _class='floatw',
+            )
+        return d
+
+    def grpperf(self):
+        divid = 'grpperf'
+        now = datetime.datetime.now()
+        s = now - datetime.timedelta(days=0,
+                                     hours=now.hour,
+                                     minutes=now.minute,
+                                     microseconds=now.microsecond)
+        e = s + datetime.timedelta(days=1)
+        timepicker = """Calendar.setup({inputField:this.id, ifFormat:"%Y-%m-%d %H:%M:%S", showsTime: true,timeFormat: "24"});"""
+
+        d = DIV(
+              A(
+                T("Group performance"),
+                _onclick="""click_toggle_vis('%(div)s', 'block');
+                            ajax('%(url)s?node='+checked_nodes(), [], '%(div)s');"""%dict(
+                              url=URL(r=request,c='grpperf',f='ajax_grpperf'),
+                              div=divid,
+                            ),
+              ),
+              DIV(
+                SPAN(
+                  INPUT(
+                    _value=s.strftime("%Y-%m-%d %H:%M"),
+                    _id='begin',
+                    _class='datetime',
+                    _onfocus=timepicker,
+                  ),
+                  INPUT(
+                    _value=e.strftime("%Y-%m-%d %H:%M"),
+                    _id='end',
+                    _class='datetime',
+                    _onfocus=timepicker,
+                  ),
+                  INPUT(
+                    _value='gen',
+                    _type='button',
+                    _onClick="""ajax("%(url)s?node="+checked_nodes(),['begin', 'end'],"%(div)s");
+                    """%dict(url=URL(r=request,c='stats',f='ajax_perfcmp'),
+                             div="prf_cont"),
+                  ),
+                  DIV(
+                    _id="prf_cont"
+                  ),
+                ),
+                _style='display:none',
+                _class='white_float',
+                _name=divid,
+                _id=divid,
+              ),
+              _class='floatw',
+            )
+        return d
+
+    def pkgdiff(self):
+        divid = 'pkgdiff'
+        d = DIV(
+              A(
+                T("Package differences"),
+                _onclick="""click_toggle_vis('%(div)s', 'block');
+                            ajax('%(url)s?node='+checked_nodes(), [], '%(div)s');"""%dict(
+                              url=URL(r=request,c='pkgdiff',f='ajax_pkgdiff'),
+                              div=divid,
+                            ),
+              ),
+              DIV(
+                _style='display:none',
+                _class='white_float',
+                _name=divid,
+                _id=divid,
+              ),
+
+              _class='floatw',
+            )
+        return d
+
+@auth.requires_membership('Manager')
+def node_del(ids):
+    q = db.nodes.id.belongs(ids)
+    u = ', '.join([r.nodename for r in db(q).select(db.nodes.nodename)])
+    db(q).delete()
+    _log('nodes.delete',
+         'deleted nodes %(u)s',
+         dict(u=u))
+
+@auth.requires_login()
+def ajax_nodes_col_values():
+    t = table_nodes('nodes', 'ajax_nodes')
+    col = request.args[0]
+    o = db[t.colprops[col].table][col]
+    q = _where(q, 'v_nodes', domain_perms(), 'pkg_nodename')
+    q = apply_db_filters(q, 'v_nodes')
+    for f in t.cols:
+        q = _where(q, 'v_nodes', t.filter_parse(f), f)
+    t.object_list = db(q).select(orderby=o, groupby=o)
+    return t.col_values_cloud(col)
+
+@auth.requires_login()
+def ajax_nodes():
+    t = table_nodes('nodes', 'ajax_nodes')
+
+    if len(request.args) == 1:
+        action = request.args[0]
+        try:
+            if action == 'node_del':
+                node_del(t.get_checked())
+        except ToolError, e:
+            t.flash = str(e)
+
+    o = db.v_nodes.nodename
+    q = db.v_nodes.id>0
+    q = _where(q, 'v_nodes', domain_perms(), 'nodename')
+    q = apply_db_filters(q, 'v_nodes')
+    for f in t.cols:
+        q = _where(q, 'v_nodes', t.filter_parse(f), f)
+    n = db(q).count()
+    t.setup_pager(n)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    return t.html()
+
+@auth.requires_login()
+def nodes():
+    t = DIV(
+          ajax_nodes(),
+          _id='nodes',
+        )
+    return dict(table=t)
 
 
