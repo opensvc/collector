@@ -12,7 +12,7 @@ img_h = {0: 'check16.png',
 
 import re
 # ex: \x1b[37;44m\x1b[1mContact List\x1b[0m\n
-regex = re.compile("\x1b\[([0-9]{1,3}(;[0-9]{1,3})*)?[m|K]", re.UNICODE)
+regex = re.compile("\x1b\[([0-9]{1,3}(;[0-9]{1,3})*)?[m|K|G]", re.UNICODE)
 
 def strip_unprintable(s):
     return regex.sub('', s)
