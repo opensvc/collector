@@ -1218,7 +1218,7 @@ os_img_h = {
   'solaris': 'solaris',
   'sunos': 'solaris',
   'freebsd': 'freebsd',
-  'aix': 'aix',
+  'aix': 'aix24',
   'windows': 'windows',
 }
 
