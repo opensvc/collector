@@ -2236,7 +2236,7 @@ def ajax_comp_log():
     q = _where(None, 'comp_log', domain_perms(), 'run_nodename')
     q &= db.comp_log.run_nodename == db.v_nodes.nodename
     for f in t.cols:
-        q = _where(q, 'comp_log', t.filter_parse(f), f)
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_db_filters(q, 'v_nodes')
 
     n = db(q).count()
