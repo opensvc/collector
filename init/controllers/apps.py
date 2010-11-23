@@ -11,7 +11,7 @@ class table_apps(HtmlTable):
             'app': HtmlTableColumn(
                      title='Application code',
                      field='app',
-                     img='svc16',
+                     img='svc',
                      display=True,
                     ),
             'roles': HtmlTableColumn(
