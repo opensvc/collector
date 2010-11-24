@@ -2311,6 +2311,7 @@ class table_comp_log(table_comp_status):
 def ajax_comp_log():
     t = table_comp_log('ajax_comp_log', 'ajax_comp_log')
 
+    db.commit()
     o = ~db.comp_log.run_date
     q = _where(None, 'comp_log', domain_perms(), 'run_nodename')
     q &= db.comp_log.run_nodename == db.v_nodes.nodename
