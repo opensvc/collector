@@ -1219,7 +1219,7 @@ os_img_h = {
   'sunos': 'solaris',
   'freebsd': 'freebsd',
   'aix': 'aix24',
-  'windows': 'windows',
+  'windows': 'win24',
 }
 
 def node_icon(os_name):

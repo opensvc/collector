@@ -277,7 +277,8 @@ def node_del(ids):
 def ajax_nodes_col_values():
     t = table_nodes('nodes', 'ajax_nodes')
     col = request.args[0]
-    o = db[t.colprops[col].table][col]
+    o = db['v_nodes'][col]
+    q = db.v_nodes.id > 0
     q = _where(q, 'v_nodes', domain_perms(), 'pkg_nodename')
     q = apply_db_filters(q, 'v_nodes')
     for f in t.cols:
