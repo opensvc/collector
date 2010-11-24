@@ -81,70 +81,6 @@ def stats_disks_per_svc():
 def stats_last_day_avg_cpu_for_nodes(nodes=[], begin=None, end=None):
     return _stats_last_day_avg_cpu(rows_avg_cpu_for_nodes(nodes, begin, end))
 
-@service.json
-def json_avg_cpu_for_nodes():
-    nodes = request.vars.node
-    begin = request.vars.begin
-    end = request.vars.end
-    if nodes is None:
-        return []
-    nodes = nodes.split(',')
-    rows = rows_avg_cpu_for_nodes(nodes, begin, end)
-    d = []
-    u = []
-    usr = []
-    nice = []
-    sys = []
-    iowait = []
-    steal = []
-    irq = []
-    soft = []
-    guest = []
-    for i, r in enumerate(rows):
-        j = i+1
-        d.append(r[0])
-        usr.append([r[3], j])
-        nice.append([r[4], j])
-        sys.append([r[5], j])
-        iowait.append([r[6], j])
-        steal.append([r[7], j])
-        irq.append([r[8], j])
-        soft.append([r[9], j])
-        guest.append([r[10], j])
-    return [d, [usr, nice, sys, iowait, steal, irq, soft, guest]]
-
-@auth.requires_login()
-def rows_avg_cpu_for_nodes(nodes=[], begin=None, end=None):
-    """ last day avg cpu usage per node
-    """
-    nodes = map(repr, nodes)
-    nodes = ','.join(nodes)
-    dom = _domain_perms()
-    if begin is None or end is None:
-        now = datetime.datetime.now()
-        end = now - datetime.timedelta(days=0, microseconds=now.microsecond)
-        begin = end - datetime.timedelta(days=1)
-    sql = """select nodename,
-                    100-avg(idle) as avg,
-                    cpu,
-                    avg(usr) as avg_usr,
-                    avg(nice) as avg_nice,
-                    avg(sys) as avg_sys,
-                    avg(iowait) as avg_iowait,
-                    avg(steal) as avg_steal,
-                    avg(irq) as avg_irq,
-                    avg(soft) as avg_soft,
-                    avg(guest) as avg_guest
-             from stats_cpu
-             where cpu='all'
-               and date>'%(begin)s'
-               and date<'%(end)s'
-               and nodename like '%(dom)s'
-               and nodename in (%(nodes)s)
-             group by nodename
-             order by avg"""%dict(begin=str(begin),end=str(end),dom=dom,nodes=nodes)
-    return db.executesql(sql)
-
 @auth.requires_login()
 def stats_last_day_avg_cpu():
     """ last day avg cpu usage per node
@@ -202,25 +138,6 @@ def _stats_last_day_avg_cpu(rows):
     ar.draw(can)
     can.close()
     return dict(stat_cpu_avg_day=img)
-
-@service.json
-def json_avg_mem_for_nodes():
-    nodes = request.vars.node
-    begin = request.vars.begin
-    end = request.vars.end
-    if nodes is None:
-        return []
-    nodes = nodes.split(',')
-    rows = rows_avg_mem_for_nodes(nodes, begin, end)
-    d = []
-    free = []
-    cache = []
-    for i, r in enumerate(rows):
-        j = i+1
-        d.append(r[0])
-        free.append([int(r[2]/1024), j])
-        cache.append([int(r[3]/1024), j])
-    return [d, [free, cache]]
 
 @auth.requires_login()
 def rows_avg_mem_for_nodes(nodes=[], begin=None, end=None):
@@ -333,6 +250,12 @@ def ajax_perfcmp_plot():
               vars={'node':nodes, 'b':b, 'e':e}
           )
     ))
+    plots.append("stats_avg_block_for_nodes('%(url)s', 'avg_block_for_nodes_plot');"%dict(
+      url=URL(r=request,
+              f='call/json/json_avg_block_for_nodes',
+              vars={'node':nodes, 'b':b, 'e':e}
+          )
+    ))
 
     d = DIV(
           DIV(
@@ -341,6 +264,14 @@ def ajax_perfcmp_plot():
           ),
           DIV(
             _id='avg_mem_for_nodes_plot',
+            _class='float',
+          ),
+          DIV(
+            _id='avg_block_for_nodes_plot_tps',
+            _class='float',
+          ),
+          DIV(
+            _id='avg_block_for_nodes_plot_bps',
             _class='float',
           ),
           DIV(
@@ -394,5 +325,172 @@ def ajax_perfcmp():
           )
 
     return d
+
+#
+# raw data extractors
+#
+@auth.requires_login()
+def rows_avg_cpu_for_nodes(nodes=[], begin=None, end=None):
+    """ last day avg cpu usage per node
+    """
+    nodes = map(repr, nodes)
+    nodes = ','.join(nodes)
+    dom = _domain_perms()
+    if begin is None or end is None:
+        now = datetime.datetime.now()
+        end = now - datetime.timedelta(days=0, microseconds=now.microsecond)
+        begin = end - datetime.timedelta(days=1)
+    sql = """select nodename,
+                    100-avg(idle) as avg,
+                    cpu,
+                    avg(usr) as avg_usr,
+                    avg(nice) as avg_nice,
+                    avg(sys) as avg_sys,
+                    avg(iowait) as avg_iowait,
+                    avg(steal) as avg_steal,
+                    avg(irq) as avg_irq,
+                    avg(soft) as avg_soft,
+                    avg(guest) as avg_guest
+             from stats_cpu
+             where cpu='all'
+               and date>'%(begin)s'
+               and date<'%(end)s'
+               and nodename like '%(dom)s'
+               and nodename in (%(nodes)s)
+             group by nodename
+             order by avg"""%dict(begin=str(begin),end=str(end),dom=dom,nodes=nodes)
+    return db.executesql(sql)
+
+@auth.requires_login()
+def rows_avg_cpu_for_nodes(nodes=[], begin=None, end=None):
+    """ last day avg cpu usage per node
+    """
+    nodes = map(repr, nodes)
+    nodes = ','.join(nodes)
+    dom = _domain_perms()
+    if begin is None or end is None:
+        now = datetime.datetime.now()
+        end = now - datetime.timedelta(days=0, microseconds=now.microsecond)
+        begin = end - datetime.timedelta(days=1)
+    sql = """select nodename,
+                    100-avg(idle) as avg,
+                    cpu,
+                    avg(usr) as avg_usr,
+                    avg(nice) as avg_nice,
+                    avg(sys) as avg_sys,
+                    avg(iowait) as avg_iowait,
+                    avg(steal) as avg_steal,
+                    avg(irq) as avg_irq,
+                    avg(soft) as avg_soft,
+                    avg(guest) as avg_guest
+             from stats_cpu
+             where cpu='all'
+               and date>'%(begin)s'
+               and date<'%(end)s'
+               and nodename like '%(dom)s'
+               and nodename in (%(nodes)s)
+             group by nodename
+             order by avg"""%dict(begin=str(begin),end=str(end),dom=dom,nodes=nodes)
+    return db.executesql(sql)
+
+@auth.requires_login()
+def rows_avg_block_for_nodes(nodes=[], begin=None, end=None):
+    nodes = map(repr, nodes)
+    nodes = ','.join(nodes)
+    dom = _domain_perms()
+    if begin is None or end is None:
+        now = datetime.datetime.now()
+        end = now - datetime.timedelta(days=0, microseconds=now.microsecond)
+        begin = end - datetime.timedelta(days=1)
+    sql = """select nodename,
+                    avg(rtps),
+                    avg(wtps),
+                    avg(rbps),
+                    avg(wbps)
+             from stats_block
+             where date>'%(begin)s'
+               and date<'%(end)s'
+               and nodename like '%(dom)s'
+               and nodename in (%(nodes)s)
+             group by nodename
+             order by avg(rtps)+avg(wtps)"""%dict(begin=str(begin),end=str(end),dom=dom,nodes=nodes)
+    return db.executesql(sql)
+
+#
+# json data servers
+#
+@service.json
+def json_avg_cpu_for_nodes():
+    nodes = request.vars.node
+    begin = request.vars.begin
+    end = request.vars.end
+    if nodes is None:
+        return []
+    nodes = nodes.split(',')
+    rows = rows_avg_cpu_for_nodes(nodes, begin, end)
+    d = []
+    u = []
+    usr = []
+    nice = []
+    sys = []
+    iowait = []
+    steal = []
+    irq = []
+    soft = []
+    guest = []
+    for i, r in enumerate(rows):
+        j = i+1
+        d.append(r[0])
+        usr.append([r[3], j])
+        nice.append([r[4], j])
+        sys.append([r[5], j])
+        iowait.append([r[6], j])
+        steal.append([r[7], j])
+        irq.append([r[8], j])
+        soft.append([r[9], j])
+        guest.append([r[10], j])
+    return [d, [usr, nice, sys, iowait, steal, irq, soft, guest]]
+
+@service.json
+def json_avg_mem_for_nodes():
+    nodes = request.vars.node
+    begin = request.vars.begin
+    end = request.vars.end
+    if nodes is None:
+        return []
+    nodes = nodes.split(',')
+    rows = rows_avg_mem_for_nodes(nodes, begin, end)
+    d = []
+    free = []
+    cache = []
+    for i, r in enumerate(rows):
+        j = i+1
+        d.append(r[0])
+        free.append([int(r[2]/1024), j])
+        cache.append([int(r[3]/1024), j])
+    return [d, [free, cache]]
+
+@service.json
+def json_avg_block_for_nodes():
+    nodes = request.vars.node
+    begin = request.vars.begin
+    end = request.vars.end
+    if nodes is None:
+        return []
+    nodes = nodes.split(',')
+    rows = rows_avg_block_for_nodes(nodes, begin, end)
+    d = []
+    rtps = []
+    wtps = []
+    rbps = []
+    wbps = []
+    for i, r in enumerate(rows):
+        j = i+1
+        d.append(r[0])
+        rtps.append([r[1]/2, j])
+        wtps.append([r[2]/2, j])
+        rbps.append([r[3]/2, j])
+        wbps.append([r[4]/2, j])
+    return [d, [rtps, wtps, rbps, wbps]]
 
 
