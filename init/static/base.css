@@ -1087,7 +1087,7 @@ div.sym_detail_visible {
     position: absolute;
     vertical-align: baseline;
     text-align: left;
-    z-index: 502;
+    z-index: 499;
     background-color: white;
 }
 
@@ -1122,7 +1122,7 @@ div.sym_detail_visible {
 /*
  * table class
  */
-.tableo table {
+.tableo > table {
     width: 100%;
 }
 
@@ -1165,4 +1165,9 @@ div.sym_detail_visible {
 .comp_plot {
    width: 80px;
    text-align: right;
+}
+
+.perf_plot {
+   width: 300px;
+   height: 300px;
 }

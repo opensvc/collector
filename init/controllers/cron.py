@@ -164,7 +164,7 @@ def stats_global():
     path = 'applications'+action
     can = canvas.init(path)
 
-    data = [(row.day.toordinal(), row.nb_svc_prd, row.nb_svc-row.nb_svc_prd) for row in rows]
+    data = [(row.day.toordinal(), row.nb_svc_prd, row.nb_svc-row.nb_svc_prd) for row in rows if row.nb_svc is not None and row.nb_svc_prd is not None]
     ar = area.T(x_coord = linear_coord.T(),
                 y_coord = linear_coord.T(),
                 x_axis = axis.X(label = "", format=format_x,
@@ -228,7 +228,7 @@ def stats_global():
     path = 'applications'+action
     can = canvas.init(path)
 
-    data = [(row.day.toordinal(), row.nb_svc_cluster, row.nb_svc-row.nb_svc_cluster) for row in rows]
+    data = [(row.day.toordinal(), row.nb_svc_cluster, row.nb_svc-row.nb_svc_cluster) for row in rows if row.nb_svc is not None and row.nb_svc_cluster is not None]
     ar = area.T(x_coord = linear_coord.T(),
                 y_coord = linear_coord.T(),
                 x_axis = axis.X(label = "", format=format_x,

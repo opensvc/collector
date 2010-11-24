@@ -7,6 +7,9 @@ def ajax_pkgdiff():
     if n == 0:
          return DIV(T("No nodes selected"))
 
+    if list(nodes)[0][0] in "0123456789":
+        # received node ids
+        nodes = [r.nodename for r in db(db.nodes.id.belongs(nodes)).select(db.nodes.nodename)]
     sql = """select * from (
                select group_concat(pkg_nodename order by pkg_nodename),
                       pkg_name,

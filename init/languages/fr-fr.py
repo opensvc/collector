@@ -158,6 +158,7 @@
 'Delete:': 'Effacer:',
 'Deleting a filterset also deletes the filterset filter attachments. Please confirm filterset deletion.': 'Supprimer un jeu de filtres supprime également ses attachements de filtres. Merci de confirmer la suppression.',
 'Deleting a moduleset also deletes the moduleset module attachments. Please confirm moduleset deletion.': 'Supprimer un jeu de modules supprime également ses attachements de modules. Merci de confirmer la suppression.',
+'Deleting a node also deletes all its asset information. Please confirm user deletion': 'Deleting a node also deletes all its asset information. Please confirm user deletion',
 'Deleting a ruleset also deletes the ruleset variables, filters attachments and node attachments. Please confirm ruleset deletion.': 'Supprimer un jeu de règles supprime également ses attachements de variables, de filtres et de noeuds. Merci de confirmer la suppression.',
 'Deleting a user also deletes its group membership. Please confirm user deletion': 'Supprimer un utilisateur supprime également ses appartenances aux groupes. Merci de confirmer la suppression',
 'Deleting an application code also deletes its group membership. Please confirm application deletion': "Supprimer un code d'application supprime également ses appartenances aux groupes. Merci de confirmer la suppression",

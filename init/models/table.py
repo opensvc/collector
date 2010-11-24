@@ -44,7 +44,7 @@ class HtmlTable(object):
         self.id_perpage = '_'.join((self.id, 'perpage'))
         self.id_page = '_'.join((self.id, 'page'))
         self.cellclasses = {'cell1': 'cell2', 'cell2': 'cell1'}
-        self.cellclass = 'cell2'
+        self.cellclass = 'cell1'
         self.upc_table = ''
         self.last = None
         self.column_filter_reset = '**clear**'
@@ -1218,7 +1218,7 @@ os_img_h = {
   'solaris': 'solaris',
   'sunos': 'solaris',
   'freebsd': 'freebsd',
-  'aix': 'aix',
+  'aix': 'aix24',
   'windows': 'windows',
 }
 

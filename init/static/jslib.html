@@ -209,6 +209,23 @@ function comp_status_plot(url, id) {
 	});
     });
 }
+function sync_ajax(url, inputs, id, f) {
+    s = inputs
+    var query=""
+    for (i=0; i<s.length; i++) {
+        if (i > 0) {query=query+"&"}
+        query=query+encodeURIComponent(s[i])+"="+encodeURIComponent(document.getElementById(s[i]).value);
+    }
+    $.ajax({
+         type: "POST",
+         url: url,
+         data: query,
+         success: function(msg){
+             document.getElementById(id).innerHTML=msg
+             f()
+         }
+    })
+}
 function table_ajax_submit(url, id, inputs, additional_inputs, input_name, spinner) {
     s = inputs.concat(additional_inputs).concat(getIdsByName(input_name))
     var query=""
@@ -244,5 +261,109 @@ function timepicker(e) {
         ifFormat:"%Y-%m-%d %H:%M:%S",
         showsTime: true,timeFormat: "24"
     })
+}
+function checked_nodes() {
+    l = document.getElementsByName('nodes_ck');
+    d = new Array()
+    for(i=0; i<l.length; i++) {
+        if (l[i].type == 'checkbox' && l[i].disabled == false && l[i].checked) {
+            d.push(l[i].id.replace("nodes_ckid_",""));
+        }
+    }
+    return d.join(",");
+}
+function stats_avg_cpu_for_nodes(url, id) {
+    $.jqplot.config.enablePlugins = true;
+    $.getJSON(url, function(data) {
+	$.jqplot(id, data[1], {
+	    stackSeries: true,
+	    grid: {
+                borderWidth: 0.5,
+            },
+            title: {
+                text: 'Average cpu utilisation',
+            },
+            legend: {
+                show: true,
+                location: 'e',
+                placement: "outside",
+            },
+            gridPadding: {
+                right:90,
+            },
+	    seriesDefaults: {
+                renderer: $.jqplot.BarRenderer, 
+                rendererOptions: {
+                    barDirection:'horizontal',
+                    barPadding: 6,
+                    barMargin:15
+                }, 
+                shadowAngle: 135,
+            },
+	    series: [
+                {label: 'usr (%)'},
+                {label: 'nice (%)'},
+                {label: 'sys (%)'},
+                {label: 'iowait (%)'},
+                {label: 'steal (%)'},
+                {label: 'irq (%)'},
+                {label: 'soft (%)'},
+                {label: 'guest (%)'},
+            ],
+	    axes: {
+		xaxis: {
+		    min: 0, 
+		},
+		yaxis: {
+		    renderer: $.jqplot.CategoryAxisRenderer, 
+                    ticks: data[0],
+		}, 
+	    }
+	});
+    });
+}
+function stats_avg_mem_for_nodes(url, id) {
+    $.jqplot.config.enablePlugins = true;
+    $.getJSON(url, function(data) {
+	$.jqplot(id, data[1], {
+	    stackSeries: true,
+	    grid: {
+                borderWidth: 0.5,
+            },
+            title: {
+                text: 'Average memory utilisation',
+            },
+            legend: {
+                show: true,
+                location: 'e',
+                placement: "outside",
+            },
+            gridPadding: {
+                right:90,
+            },
+	    seriesDefaults: {
+                renderer: $.jqplot.BarRenderer, 
+                rendererOptions: {
+                    barDirection:'horizontal',
+                    barPadding: 6,
+                    barMargin:15
+                }, 
+                shadowAngle: 135,
+            },
+	    series: [
+                {label: 'free (MB)'},
+                {label: 'cache (MB)'},
+            ],
+	    axes: {
+		xaxis: {
+		    min: 0, 
+		},
+		yaxis: {
+		    renderer: $.jqplot.CategoryAxisRenderer, 
+                    ticks: data[0],
+		}, 
+	    }
+	});
+    });
 }
 </script>
