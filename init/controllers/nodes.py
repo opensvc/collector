@@ -205,9 +205,7 @@ class table_nodes(HtmlTable):
         d = DIV(
               A(
                 T("Group performance"),
-                _onclick="""click_toggle_vis('%(div)s', 'block');
-                            ajax('%(url)s?node='+checked_nodes(), [], '%(div)s');"""%dict(
-                              url=URL(r=request,c='grpperf',f='ajax_grpperf'),
+                _onclick="""click_toggle_vis('%(div)s', 'block');"""%dict(
                               div=divid,
                             ),
               ),
