@@ -140,35 +140,6 @@ def _stats_last_day_avg_cpu(rows):
     return dict(stat_cpu_avg_day=img)
 
 @auth.requires_login()
-def rows_avg_mem_for_nodes(nodes=[], begin=None, end=None):
-    """ available mem
-    """
-    nodes = map(repr, nodes)
-    nodes = ','.join(nodes)
-    dom = _domain_perms()
-    if begin is None or end is None:
-        now = datetime.datetime.now()
-        end = now - datetime.timedelta(days=0, microseconds=now.microsecond)
-        begin = end - datetime.timedelta(days=1)
-    sql = """select * from (
-               select nodename,
-                      avg(kbmemfree+kbcached) as avail,
-                      avg(kbmemfree),
-                      avg(kbcached)
-               from stats_mem_u
-               where nodename like '%(dom)s'
-               and nodename in (%(nodes)s)
-               and date>'%(begin)s'
-               and date<'%(end)s'
-               group by nodename
-               order by nodename, date
-             ) tmp
-             order by avail desc;
-          """%dict(dom=dom, nodes=nodes, begin=str(begin), end=str(end))
-    rows = db.executesql(sql)
-    return rows
-
-@auth.requires_login()
 def stats_last_day_avg_mem_for_nodes(nodes=[], begin=None, end=None):
     return _stats_last_day_avg_mem(rows_avg_mem_for_nodes(nodes, begin, end))
 
@@ -250,6 +221,18 @@ def ajax_perfcmp_plot():
               vars={'node':nodes, 'b':b, 'e':e}
           )
     ))
+    plots.append("stats_avg_swp_for_nodes('%(url)s', 'avg_swp_for_nodes_plot');"%dict(
+      url=URL(r=request,
+              f='call/json/json_avg_swp_for_nodes',
+              vars={'node':nodes, 'b':b, 'e':e}
+          )
+    ))
+    plots.append("stats_avg_proc_for_nodes('%(url)s', 'avg_proc_for_nodes_plot');"%dict(
+      url=URL(r=request,
+              f='call/json/json_avg_proc_for_nodes',
+              vars={'node':nodes, 'b':b, 'e':e}
+          )
+    ))
     plots.append("stats_avg_block_for_nodes('%(url)s', 'avg_block_for_nodes_plot');"%dict(
       url=URL(r=request,
               f='call/json/json_avg_block_for_nodes',
@@ -264,6 +247,18 @@ def ajax_perfcmp_plot():
           ),
           DIV(
             _id='avg_mem_for_nodes_plot',
+            _class='float',
+          ),
+          DIV(
+            _id='avg_swp_for_nodes_plot',
+            _class='float',
+          ),
+          DIV(
+            _id='avg_proc_for_nodes_plot_runq_sz',
+            _class='float',
+          ),
+          DIV(
+            _id='avg_proc_for_nodes_plot_plist_sz',
             _class='float',
           ),
           DIV(
@@ -362,8 +357,8 @@ def rows_avg_cpu_for_nodes(nodes=[], begin=None, end=None):
     return db.executesql(sql)
 
 @auth.requires_login()
-def rows_avg_cpu_for_nodes(nodes=[], begin=None, end=None):
-    """ last day avg cpu usage per node
+def rows_avg_mem_for_nodes(nodes=[], begin=None, end=None):
+    """ available mem
     """
     nodes = map(repr, nodes)
     nodes = ','.join(nodes)
@@ -372,26 +367,78 @@ def rows_avg_cpu_for_nodes(nodes=[], begin=None, end=None):
         now = datetime.datetime.now()
         end = now - datetime.timedelta(days=0, microseconds=now.microsecond)
         begin = end - datetime.timedelta(days=1)
-    sql = """select nodename,
-                    100-avg(idle) as avg,
-                    cpu,
-                    avg(usr) as avg_usr,
-                    avg(nice) as avg_nice,
-                    avg(sys) as avg_sys,
-                    avg(iowait) as avg_iowait,
-                    avg(steal) as avg_steal,
-                    avg(irq) as avg_irq,
-                    avg(soft) as avg_soft,
-                    avg(guest) as avg_guest
-             from stats_cpu
-             where cpu='all'
+    sql = """select * from (
+               select nodename,
+                      avg(kbmemfree+kbcached) as avail,
+                      avg(kbmemfree),
+                      avg(kbcached)
+               from stats_mem_u
+               where nodename like '%(dom)s'
+               and nodename in (%(nodes)s)
                and date>'%(begin)s'
                and date<'%(end)s'
-               and nodename like '%(dom)s'
+               group by nodename
+               order by nodename, date
+             ) tmp
+             order by avail desc;
+          """%dict(dom=dom, nodes=nodes, begin=str(begin), end=str(end))
+    rows = db.executesql(sql)
+    return rows
+
+@auth.requires_login()
+def rows_avg_swp_for_nodes(nodes=[], begin=None, end=None):
+    nodes = map(repr, nodes)
+    nodes = ','.join(nodes)
+    dom = _domain_perms()
+    if begin is None or end is None:
+        now = datetime.datetime.now()
+        end = now - datetime.timedelta(days=0, microseconds=now.microsecond)
+        begin = end - datetime.timedelta(days=1)
+    sql = """select * from (
+               select nodename,
+                      avg(kbswpfree) as avail,
+                      avg(kbswpused)
+               from stats_swap
+               where nodename like '%(dom)s'
                and nodename in (%(nodes)s)
-             group by nodename
-             order by avg"""%dict(begin=str(begin),end=str(end),dom=dom,nodes=nodes)
-    return db.executesql(sql)
+               and date>'%(begin)s'
+               and date<'%(end)s'
+               group by nodename
+               order by nodename, date
+             ) tmp
+             order by avail desc;
+          """%dict(dom=dom, nodes=nodes, begin=str(begin), end=str(end))
+    rows = db.executesql(sql)
+    return rows
+
+@auth.requires_login()
+def rows_avg_proc_for_nodes(nodes=[], begin=None, end=None):
+    nodes = map(repr, nodes)
+    nodes = ','.join(nodes)
+    dom = _domain_perms()
+    if begin is None or end is None:
+        now = datetime.datetime.now()
+        end = now - datetime.timedelta(days=0, microseconds=now.microsecond)
+        begin = end - datetime.timedelta(days=1)
+    sql = """select * from (
+               select nodename,
+                      avg(runq_sz),
+                      avg(plist_sz),
+                      avg(ldavg_1),
+                      avg(ldavg_5),
+                      avg(ldavg_15) as o
+               from stats_proc
+               where nodename like '%(dom)s'
+               and nodename in (%(nodes)s)
+               and date>'%(begin)s'
+               and date<'%(end)s'
+               group by nodename
+               order by nodename, date
+             ) tmp
+             order by o desc;
+          """%dict(dom=dom, nodes=nodes, begin=str(begin), end=str(end))
+    rows = db.executesql(sql)
+    return rows
 
 @auth.requires_login()
 def rows_avg_block_for_nodes(nodes=[], begin=None, end=None):
@@ -450,6 +497,50 @@ def json_avg_cpu_for_nodes():
         soft.append([r[9], j])
         guest.append([r[10], j])
     return [d, [usr, nice, sys, iowait, steal, irq, soft, guest]]
+
+@service.json
+def json_avg_swp_for_nodes():
+    nodes = request.vars.node
+    begin = request.vars.begin
+    end = request.vars.end
+    if nodes is None:
+        return []
+    nodes = nodes.split(',')
+    rows = rows_avg_swp_for_nodes(nodes, begin, end)
+    d = []
+    kbswpfree = []
+    kbswpused = []
+    for i, r in enumerate(rows):
+        j = i+1
+        d.append(r[0])
+        kbswpfree.append([int(r[1]/1024), j])
+        kbswpused.append([int(r[2]/1024), j])
+    return [d, [kbswpfree, kbswpused]]
+
+@service.json
+def json_avg_proc_for_nodes():
+    nodes = request.vars.node
+    begin = request.vars.begin
+    end = request.vars.end
+    if nodes is None:
+        return []
+    nodes = nodes.split(',')
+    rows = rows_avg_proc_for_nodes(nodes, begin, end)
+    d = []
+    runq_sz = []
+    plist_sz = []
+    ldavg_1 = []
+    ldavg_5 = []
+    ldavg_15 = []
+    for i, r in enumerate(rows):
+        j = i+1
+        d.append(r[0])
+        runq_sz.append([float(r[1]), j])
+        plist_sz.append([float(r[2]), j])
+        ldavg_1.append([float(r[3]), j])
+        ldavg_5.append([float(r[4]), j])
+        ldavg_15.append([float(r[5]), j])
+    return [d, [runq_sz, plist_sz, ldavg_1, ldavg_5, ldavg_15]]
 
 @service.json
 def json_avg_mem_for_nodes():

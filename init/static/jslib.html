@@ -322,6 +322,50 @@ function stats_avg_cpu_for_nodes(url, id) {
 	});
     });
 }
+function stats_avg_swp_for_nodes(url, id) {
+    $.jqplot.config.enablePlugins = true;
+    $.getJSON(url, function(data) {
+	$.jqplot(id, data[1], {
+	    stackSeries: true,
+	    grid: {
+                borderWidth: 0.5,
+            },
+            title: {
+                text: 'Average swap utilisation',
+            },
+            legend: {
+                show: true,
+                location: 'e',
+                placement: "outside",
+            },
+            gridPadding: {
+                right:90,
+            },
+	    seriesDefaults: {
+                renderer: $.jqplot.BarRenderer, 
+                rendererOptions: {
+                    barDirection:'horizontal',
+                    barPadding: 6,
+                    barMargin:15
+                }, 
+                shadowAngle: 135,
+            },
+	    series: [
+                {label: 'free (MB)'},
+                {label: 'used (MB)'},
+            ],
+	    axes: {
+		xaxis: {
+		    min: 0, 
+		},
+		yaxis: {
+		    renderer: $.jqplot.CategoryAxisRenderer, 
+                    ticks: data[0],
+		}, 
+	    }
+	});
+    });
+}
 function stats_avg_mem_for_nodes(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
@@ -436,6 +480,87 @@ function stats_avg_block_for_nodes(url, id) {
 	    series: [
                 {label: 'read (KB/s)'},
                 {label: 'write (KB/s)'},
+            ],
+	    axes: {
+		xaxis: {
+		    min: 0, 
+		},
+		yaxis: {
+		    renderer: $.jqplot.CategoryAxisRenderer, 
+                    ticks: data[0],
+		}, 
+	    }
+	});
+    });
+}
+function stats_avg_proc_for_nodes(url, id) {
+    $.jqplot.config.enablePlugins = true;
+    $.getJSON(url, function(data) {
+	$.jqplot(id+'_runq_sz', [data[1][0]], {
+	    stackSeries: true,
+	    grid: {
+                borderWidth: 0.5,
+            },
+            title: {
+                text: 'Average run queue size',
+            },
+            legend: {
+                show: true,
+                location: 'e',
+                placement: "outside",
+            },
+            gridPadding: {
+                right:90,
+            },
+	    seriesDefaults: {
+                renderer: $.jqplot.BarRenderer, 
+                rendererOptions: {
+                    barDirection:'horizontal',
+                    barPadding: 6,
+                    barMargin:15
+                }, 
+                shadowAngle: 135,
+            },
+	    series: [
+                {label: 'runq sz'},
+            ],
+	    axes: {
+		xaxis: {
+		    min: 0, 
+		},
+		yaxis: {
+		    renderer: $.jqplot.CategoryAxisRenderer, 
+                    ticks: data[0],
+		}, 
+	    }
+	});
+	$.jqplot(id+'_plist_sz', [data[1][1]], {
+	    stackSeries: true,
+	    grid: {
+                borderWidth: 0.5,
+            },
+            title: {
+                text: 'Average process list size',
+            },
+            legend: {
+                show: true,
+                location: 'e',
+                placement: "outside",
+            },
+            gridPadding: {
+                right:90,
+            },
+	    seriesDefaults: {
+                renderer: $.jqplot.BarRenderer, 
+                rendererOptions: {
+                    barDirection:'horizontal',
+                    barPadding: 6,
+                    barMargin:15
+                }, 
+                shadowAngle: 135,
+            },
+	    series: [
+                {label: 'plist sz'},
             ],
 	    axes: {
 		xaxis: {
