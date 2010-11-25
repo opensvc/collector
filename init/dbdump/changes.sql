@@ -769,3 +769,5 @@ create view v_comp_rulesets as (select r.id as ruleset_id,r.ruleset_name,r.rules
 drop view v_comp_explicit_rulesets;
 
 CREATE VIEW `v_comp_explicit_rulesets` AS (select `r`.`id` AS `id`,`r`.`ruleset_name` AS `ruleset_name`,group_concat(distinct concat(`v`.`var_name`,'=',`v`.`var_value`) separator '|') AS `variables` from (`comp_rulesets` `r` join `comp_rulesets_variables` `v` on((`r`.`id` = `v`.`ruleset_id`))) where r.ruleset_type='explicit' group by `r`.`id` order by `r`.`ruleset_name`);
+
+alter table log modify column log_dict varchar(400) default null;
