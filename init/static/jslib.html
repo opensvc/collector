@@ -276,6 +276,13 @@ function plot_height(id, data) {
     h = Math.max(100+data.length*30, 200)+'px'
     document.getElementById(id).style['height'] = h
 }
+function plot_width(id, data) {
+    w = data[0].length
+    for (i=0; i<data.length; i++) {
+        w = Math.max(w, data[i].length)
+    }
+    document.getElementById(id).style['width'] += w*12+'px'
+}
 
 function stats_avg_cpu_for_nodes(url, id) {
     $.jqplot.config.enablePlugins = true;
@@ -364,6 +371,7 @@ function stats_avg_swp_for_nodes(url, id) {
 	    axes: {
 		xaxis: {
 		    min: 0, 
+		    tickOptions:{formatString:'%i'},
 		},
 		yaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
@@ -409,6 +417,7 @@ function stats_avg_mem_for_nodes(url, id) {
 	    axes: {
 		xaxis: {
 		    min: 0, 
+		    tickOptions:{formatString:'%i'},
 		},
 		yaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
@@ -454,6 +463,7 @@ function stats_avg_block_for_nodes(url, id) {
 	    axes: {
 		xaxis: {
 		    min: 0, 
+		    tickOptions:{formatString:'%i'},
 		},
 		yaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
@@ -494,6 +504,7 @@ function stats_avg_block_for_nodes(url, id) {
 	    axes: {
 		xaxis: {
 		    min: 0, 
+		    tickOptions:{formatString:'%i'},
 		},
 		yaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
@@ -507,8 +518,8 @@ function stats_disk_for_svc(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         plot_height(id, data[0])
+        plot_width(id, data[0])
 	$.jqplot(id, [data[1][0]], {
-	    stackSeries: true,
 	    grid: {
                 borderWidth: 0.5,
             },
@@ -528,7 +539,7 @@ function stats_disk_for_svc(url, id) {
                 rendererOptions: {
                     barDirection:'horizontal',
                     barPadding: 6,
-                    barMargin:15
+                    barMargin:10
                 }, 
                 shadowAngle: 135,
             },
@@ -538,6 +549,7 @@ function stats_disk_for_svc(url, id) {
 	    axes: {
 		xaxis: {
 		    min: 0, 
+		    tickOptions:{formatString:'%i'},
 		},
 		yaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
@@ -582,6 +594,7 @@ function stats_avg_proc_for_nodes(url, id) {
 	    axes: {
 		xaxis: {
 		    min: 0, 
+		    tickOptions:{formatString:'%i'},
 		},
 		yaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
@@ -621,6 +634,7 @@ function stats_avg_proc_for_nodes(url, id) {
 	    axes: {
 		xaxis: {
 		    min: 0, 
+		    tickOptions:{formatString:'%i'},
 		},
 		yaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
