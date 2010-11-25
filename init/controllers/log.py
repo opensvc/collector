@@ -3,13 +3,17 @@ class log_vfields(object):
             return self.log.log_action
 
         def log_evt(self):
-            d = json.loads(self.log.log_dict)
-            for k in d:
-                d[k] = str(d[k])
             try:
+                d = json.loads(self.log.log_dict)
+                for k in d:
+                    d[k] = d[k].encode('utf8')
                 s = T.translate(self.log.log_fmt,d)
             except KeyError:
                 s = 'error parsing: %s'%self.log.log_dict
+            except json.decoder.JSONDecodeError:
+                s = 'error loading JSON: %s'%self.log.log_dict
+            except UnicodeEncodeError:
+                s = 'error transcoding: %s'%self.log.log_dict
             return s
 
 db.log.virtualfields.append(log_vfields())
