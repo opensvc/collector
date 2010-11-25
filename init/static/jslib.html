@@ -503,6 +503,50 @@ function stats_avg_block_for_nodes(url, id) {
 	});
     });
 }
+function stats_disk_for_svc(url, id) {
+    $.jqplot.config.enablePlugins = true;
+    $.getJSON(url, function(data) {
+        plot_height(id, data[0])
+	$.jqplot(id, [data[1][0]], {
+	    stackSeries: true,
+	    grid: {
+                borderWidth: 0.5,
+            },
+            title: {
+                text: 'Disk size per service',
+            },
+            legend: {
+                show: true,
+                location: 'e',
+                placement: "outside",
+            },
+            gridPadding: {
+                right:90,
+            },
+	    seriesDefaults: {
+                renderer: $.jqplot.BarRenderer, 
+                rendererOptions: {
+                    barDirection:'horizontal',
+                    barPadding: 6,
+                    barMargin:15
+                }, 
+                shadowAngle: 135,
+            },
+	    series: [
+                {label: 'size (GB)'},
+            ],
+	    axes: {
+		xaxis: {
+		    min: 0, 
+		},
+		yaxis: {
+		    renderer: $.jqplot.CategoryAxisRenderer, 
+                    ticks: data[0],
+		}, 
+	    }
+	});
+    });
+}
 function stats_avg_proc_for_nodes(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
@@ -593,7 +637,7 @@ function stat_day(url, id) {
             cursor:{zoom:true, showTooltip:false},
 	    legend: {
                 show: true,
-                location: 'ne',
+                location: 'nw',
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -617,7 +661,7 @@ function stat_day(url, id) {
             cursor:{zoom:true, showTooltip:false},
 	    legend: {
                 show: true,
-                location: 'ne',
+                location: 'nw',
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -637,11 +681,38 @@ function stat_day(url, id) {
 		}, 
 	    }
 	});
+	$.jqplot(id+'_disk', [data[5]], {
+            cursor:{zoom:true, showTooltip:false},
+	    legend: {
+                show: true,
+                location: 'nw',
+            },
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: [
+                {
+                    label: 'size (GB)',
+                    breakOnNull: true,
+                },
+            ],
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'},
+		}, 
+	    }
+	});
 	$.jqplot(id+'_accounts', [data[12]], {
             cursor:{zoom:true, showTooltip:false},
 	    legend: {
                 show: true,
-                location: 'ne',
+                location: 'nw',
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -661,8 +732,6 @@ function stat_day(url, id) {
 		}, 
 	    }
 	});
-    });
-    $.getJSON(url, function(data) {
 	$.jqplot(id+'_actions', [data[4],  data[3], data[2]], {
             cursor:{zoom:true, showTooltip:false},
 	    stackSeries: true,
@@ -790,24 +859,13 @@ function stat_day(url, id) {
                 show: true,
                 location: 'nw'
             },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
-            },
 	    seriesDefaults: {
+                breakOnNull: true,
                 fill: true,
-                shadowAngle: 135,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    series: [
-                {
-                    label: 'clustered svc',
-                },
-                {
-                    label: 'not clustered svc',
-                },
+                {label: 'clustered svc'},
+                {label: 'not clustered svc'},
             ],
 	    axes: {
 		xaxis: {

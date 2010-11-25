@@ -1,31 +1,6 @@
 {{extend 'layout.html'}}
 {{include 'box.html'}}
 {{include '../static/jslib.html'}}
-{{
-if stat_cpu_avg_day is None:
-   img_stat_cpu_avg_day = SPAN()
-else:
-   img_stat_cpu_avg_day = SPAN(
-         IMG(_src=URL(r=request,c='static',f=stat_cpu_avg_day)),
-         P(T("(yesterday's average)")),
-   )
-pass
-
-if stat_mem_avail is None:
-   img_stat_mem_avail = SPAN()
-else:
-   img_stat_mem_avail = SPAN(
-         IMG(_src=URL(r=request,c='static',f=stat_mem_avail)),
-         P(T("(yesterday's average)")),
-   )
-pass
-
-if stat_cpu_avg_day is None:
-   img_stat_disk_svc = SPAN()
-else:
-   img_stat_disk_svc = IMG(_src=URL(r=request,c='static',f=stat_disk_svc)),
-pass
-}}
 
 {{=DIV(
      DIV(
@@ -40,6 +15,10 @@ pass
        ),
        DIV(
          _id='stat_day_svc_type',
+         _class='float',
+       ),
+       DIV(
+         _id='stat_day_apps',
          _class='float',
        ),
        DIV(
@@ -79,11 +58,15 @@ pass
      DIV(
        H1(T("Disks")),
        DIV(
-         IMG(_src=URL(r=request,c='static',f='stat_disk.png')),
+         _id='stat_day_disk',
          _class='float',
        ),
        DIV(
-         img_stat_disk_svc,
+         _id='stat_day_svc_disk',
+         _class='float',
+       ),
+       DIV(
+         _id='stat_day_svc_disk',
          _class='float',
        ),
        DIV(
@@ -95,23 +78,31 @@ pass
      DIV(
        H1(T("Computing ressource usage")),
        DIV(
-         img_stat_cpu_avg_day,
+         _id='stat_day_node_cpu',
          _class='float',
        ),
        DIV(
-         img_stat_mem_avail,
+         _id='stat_day_node_mem',
          _class='float',
        ),
        DIV(
-         XML('&nbsp;'),
-         _class='spacer',
+         _id='stat_day_node_swp',
+         _class='float',
        ),
-       _class='container',
-     ),
-     DIV(
-       H1(T("Application codes")),
        DIV(
-         _id='stat_day_apps',
+         _id='stat_day_node_proc_runq_sz',
+         _class='float',
+       ),
+       DIV(
+         _id='stat_day_node_proc_plist_sz',
+         _class='float',
+       ),
+       DIV(
+         _id='stat_day_node_block_tps',
+         _class='float',
+       ),
+       DIV(
+         _id='stat_day_node_block_bps',
          _class='float',
        ),
        DIV(
@@ -135,8 +126,44 @@ pass
      SCRIPT(
        "stat_day('%(url)s', 'stat_day');"%dict(
          url=URL(r=request,
-                 f='call/json/json_stat_day')
-       )
+                 f='call/json/json_stat_day'),
+       ),
+       "stats_avg_cpu_for_nodes('%(url)s', 'stat_day_node_cpu');"%dict(
+         url=URL(r=request,
+                 f='call/json/json_avg_cpu_for_nodes',
+                 vars={'higher':15}
+          )
+       ),
+       "stats_avg_mem_for_nodes('%(url)s', 'stat_day_node_mem');"%dict(
+         url=URL(r=request,
+                 f='call/json/json_avg_mem_for_nodes',
+                 vars={'lower':15}
+          )
+       ),
+       "stats_avg_proc_for_nodes('%(url)s', 'stat_day_node_proc');"%dict(
+         url=URL(r=request,
+                 f='call/json/json_avg_proc_for_nodes',
+                 vars={'higher':15}
+          )
+       ),
+       "stats_avg_block_for_nodes('%(url)s', 'stat_day_node_block');"%dict(
+         url=URL(r=request,
+                 f='call/json/json_avg_block_for_nodes',
+                 vars={'higher':15}
+          )
+       ),
+       "stats_avg_swp_for_nodes('%(url)s', 'stat_day_node_swp');"%dict(
+         url=URL(r=request,
+                 f='call/json/json_avg_swp_for_nodes',
+                 vars={'lower':15}
+          )
+       ),
+       "stats_disk_for_svc('%(url)s', 'stat_day_svc_disk');"%dict(
+         url=URL(r=request,
+                 f='call/json/json_disk_for_svc',
+                 vars={'higher':15}
+          )
+       ),
      ),
    )
 }}
