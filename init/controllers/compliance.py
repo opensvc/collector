@@ -173,6 +173,40 @@ class col_run_status(HtmlTableColumn):
             r = val
         return r
 
+class col_modset_mod_name(HtmlTableColumn):
+    def html(self, o):
+        s = self.get(o)
+        if s == '':
+            ss = '(no name)'
+        else:
+            ss = s
+        tid = 'd_t_%s_%s'%(o.comp_moduleset.id, o.comp_moduleset_modules.id)
+        iid = 'd_i_%s_%s'%(o.comp_moduleset.id, o.comp_moduleset_modules.id)
+        sid = 'd_s_%s_%s'%(o.comp_moduleset.id, o.comp_moduleset_modules.id)
+        d = SPAN(
+              SPAN(
+                ss,
+                _id=tid,
+                _onclick="""hide_eid('%(tid)s');show_eid('%(sid)s');getElementById('%(iid)s').focus()"""%dict(tid=tid,
+sid=sid, iid=iid),
+                _class="clickable",
+              ),
+              SPAN(
+                INPUT(
+                  value=s,
+                  _id=iid,
+                  _onblur="""hide_eid('%(sid)s');show_eid('%(tid)s');"""%dict(sid=sid,
+tid=tid),
+                  _onkeypress="if (is_enter(event)) {%s};"%\
+                     self.t.ajax_submit(additional_inputs=[iid],
+                                        args="mod_name_set"),
+                ),
+                _id=sid,
+                _style="display:none",
+              ),
+            )
+        return d
+
 class col_var_name(HtmlTableColumn):
     def html(self, o):
         s = self.get(o)
@@ -988,7 +1022,7 @@ def ajax_comp_rulesets():
         q &= db.v_comp_rulesets.ruleset_id == request.vars.ruleset_id
         rows = db(q).select()
         if len(rows) != 1:
-            return
+            raise ToolError("filterset attach failed: can't find filterset")
         fset = rows[0].fset_name
         ruleset = rows[0].ruleset_name
         _log('compliance.ruleset.filterset.attach',
@@ -1549,7 +1583,7 @@ class table_comp_moduleset(HtmlTable):
                      display=True,
                      img='action16',
                     ),
-            'modset_mod_name': HtmlTableColumn(
+            'modset_mod_name': col_modset_mod_name(
                      title='Module',
                      table='comp_moduleset_modules',
                      field='modset_mod_name',
@@ -1571,6 +1605,7 @@ class table_comp_moduleset(HtmlTable):
                      img='guy16',
                     ),
         }
+        self.colprops['modset_mod_name'].t = self
         self.form_module_add = self.comp_module_add_sqlform()
         self.form_moduleset_add = self.comp_moduleset_add_sqlform()
         self.additional_tools.append('module_add')
@@ -1762,6 +1797,49 @@ def comp_rename_moduleset(ids):
          'renamed moduleset %(old)s as %(new)s',
          dict(old=old, new=new))
 
+@auth.requires_membership('CompManager')
+def mod_name_set():
+    prefix = 'd_i_'
+    l = [k for k in request.vars if prefix in k]
+    if len(l) != 1:
+        raise ToolError("set module name failed: misformated request")
+    new = request.vars[l[0]]
+    ids = l[0].replace(prefix,'').split('_')
+    modset_id = int(ids[0])
+    if ids[1] == 'None':
+        # insert
+        q = db.comp_moduleset.id==modset_id
+        rows = db(q).select()
+        modset_name = rows[0].modset_name
+        db.comp_moduleset_modules.insert(modset_mod_name=new,
+                                         modset_id=modset_id,
+                                         modset_mod_author=user_name())
+        _log('comp.moduleset.module.add',
+             'add module %(d)s in moduleset %(x)s',
+             dict(x=modset_name, d=new))
+    else:
+        # update
+        id = int(ids[1])
+        q = db.comp_moduleset_modules.id==id
+        q1 = db.comp_moduleset_modules.modset_id==db.comp_moduleset.id
+        rows = db(q&q1).select()
+        n = len(rows)
+        if n != 1:
+            raise ToolError("set module name failed: can't find moduleset")
+        modset_name = rows[0].comp_moduleset.modset_name
+        q2 = db.comp_moduleset_modules.modset_mod_name==new
+        q3 = db.comp_moduleset_modules.modset_id==modset_id
+        n = len(db(q3&q2).select())
+        if n != 0:
+            raise ToolError("set module name failed: target module is already in moduleset")
+        oldn = rows[0].comp_moduleset_modules.modset_mod_name
+        db(q).update(modset_mod_name=new,
+                     modset_mod_author=user_name(),
+                     modset_mod_updated=now)
+        _log('comp.moduleset.module.change',
+             'change module name from %(on)s to %(d)s in moduleset %(x)s',
+             dict(on=oldn, x=modset_name, d=new))
+
 @auth.requires_login()
 def ajax_comp_moduleset():
     t = table_comp_moduleset('ajax_comp_moduleset', 'ajax_comp_moduleset')
@@ -1769,14 +1847,22 @@ def ajax_comp_moduleset():
     t.checkboxes = True
     t.checkbox_id_table = 'comp_moduleset_modules'
 
-    if len(request.args) == 1 and request.args[0] == 'module_del':
-        comp_delete_module(t.get_checked())
-    if len(request.args) == 1 and request.args[0] == 'moduleset_del':
-        comp_delete_moduleset(t.get_checked())
-        t.form_module_add = t.comp_module_add_sqlform()
-    if len(request.args) == 1 and request.args[0] == 'moduleset_rename':
-        comp_rename_moduleset(t.get_checked())
-        t.form_module_add = t.comp_module_add_sqlform()
+    if len(request.args) == 1:
+        action = request.args[0]
+        try:
+            if action == 'mod_name_set':
+                mod_name_set()
+                t.form_module_add = t.comp_module_add_sqlform()
+            elif action == 'module_del':
+                comp_delete_module(t.get_checked())
+            elif action == 'moduleset_del':
+                comp_delete_moduleset(t.get_checked())
+                t.form_module_add = t.comp_module_add_sqlform()
+            elif action == 'moduleset_rename':
+                comp_rename_moduleset(t.get_checked())
+                t.form_module_add = t.comp_module_add_sqlform()
+        except ToolError, e:
+            t.flash = str(e)
 
     if t.form_moduleset_add.accepts(request.vars, formname='add_moduleset'):
         t.form_module_add = t.comp_module_add_sqlform()
@@ -2107,7 +2193,7 @@ def var_set(t):
     prefix = t[0]+'d_i_'
     l = [k for k in request.vars if prefix in k]
     if len(l) != 1:
-        return
+        raise ToolError("set variable name failed: misformated request")
     new = request.vars[l[0]]
     ids = l[0].replace(prefix,'').split('_')
     if ids[0] == 'None':
@@ -2137,7 +2223,7 @@ def var_set(t):
         rows = db(q&q1).select()
         n = len(rows)
         if n != 1:
-            return
+            raise ToolError("set variable name failed: can't find ruleset")
         iid = rows[0].comp_rulesets.ruleset_name
         oldn = rows[0].comp_rulesets_variables.var_name
         oldv = rows[0].comp_rulesets_variables.var_value
