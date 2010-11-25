@@ -586,4 +586,277 @@ function stats_avg_proc_for_nodes(url, id) {
 	});
     });
 }
+function stat_day(url, id) {
+    $.jqplot.config.enablePlugins = true;
+    $.getJSON(url, function(data) {
+	$.jqplot(id+'_err', [data[2]], {
+            cursor:{zoom:true, showTooltip:false},
+	    legend: {
+                show: true,
+                location: 'ne',
+            },
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: [
+                {label: 'err', color: 'red'},
+            ],
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'},
+		}, 
+	    }
+	});
+	$.jqplot(id+'_apps', [data[11]], {
+            cursor:{zoom:true, showTooltip:false},
+	    legend: {
+                show: true,
+                location: 'ne',
+            },
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: [
+                {label: 'apps'},
+            ],
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'},
+		}, 
+	    }
+	});
+	$.jqplot(id+'_accounts', [data[12]], {
+            cursor:{zoom:true, showTooltip:false},
+	    legend: {
+                show: true,
+                location: 'ne',
+            },
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: [
+                {label: 'accounts'},
+            ],
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'},
+		}, 
+	    }
+	});
+    });
+    $.getJSON(url, function(data) {
+	$.jqplot(id+'_actions', [data[4],  data[3], data[2]], {
+            cursor:{zoom:true, showTooltip:false},
+	    stackSeries: true,
+	    legend: {
+                show: true,
+                location: 'nw'
+            },
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    seriesDefaults: {
+                fill: true,
+                shadowAngle: 135,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: [
+                {
+                    label: 'ok',
+                    color: 'lightgreen'
+                },
+                {
+                    label: 'warn',
+                    color: 'orange'
+                },
+                {
+                    label: 'error',
+                    color: 'red'
+                }
+            ],
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'},
+		}, 
+	    }
+	});
+    });
+    $.getJSON(url, function(data) {
+	$.jqplot(id+'_nodes', [data[17],  data[14]], {
+            cursor:{zoom:true, showTooltip:false},
+	    stackSeries: true,
+	    legend: {
+                show: true,
+                location: 'nw'
+            },
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    seriesDefaults: {
+                fill: true,
+                shadowAngle: 135,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: [
+                {
+                    label: 'PRD nodes',
+                },
+                {
+                    label: 'other nodes',
+                },
+            ],
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'},
+		}, 
+	    }
+	});
+    });
+    $.getJSON(url, function(data) {
+	$.jqplot(id+'_svc_type', [data[15],  data[0]], {
+            cursor:{zoom:true, showTooltip:false},
+	    stackSeries: true,
+	    legend: {
+                show: true,
+                location: 'nw'
+            },
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    seriesDefaults: {
+                fill: true,
+                shadowAngle: 135,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: [
+                {
+                    label: 'PRD svc',
+                },
+                {
+                    label: 'other svc',
+                },
+            ],
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'},
+		}, 
+	    }
+	});
+    });
+    $.getJSON(url, function(data) {
+	$.jqplot(id+'_svc_cluster', [data[16],  data[18]], {
+            cursor:{zoom:true, showTooltip:false},
+	    stackSeries: true,
+	    legend: {
+                show: true,
+                location: 'nw'
+            },
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    seriesDefaults: {
+                fill: true,
+                shadowAngle: 135,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: [
+                {
+                    label: 'clustered svc',
+                },
+                {
+                    label: 'not clustered svc',
+                },
+            ],
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'},
+		}, 
+	    }
+	});
+    });
+    $.getJSON(url, function(data) {
+	$.jqplot(id+'_svc_drp', [data[13],  data[19]], {
+            cursor:{zoom:true, showTooltip:false},
+	    stackSeries: true,
+	    legend: {
+                show: true,
+                location: 'nw'
+            },
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    seriesDefaults: {
+                fill: true,
+                shadowAngle: 135,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: [
+                {
+                    label: 'svc with drp',
+                },
+                {
+                    label: 'svc without drp',
+                },
+            ],
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'},
+		}, 
+	    }
+	});
+    });
+}
 </script>

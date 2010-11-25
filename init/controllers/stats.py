@@ -325,6 +325,11 @@ def ajax_perfcmp():
 # raw data extractors
 #
 @auth.requires_login()
+def rows_stat_day():
+    sql = """select * from stat_day order by day"""
+    return db.executesql(sql)
+
+@auth.requires_login()
 def rows_avg_cpu_for_nodes(nodes=[], begin=None, end=None):
     """ last day avg cpu usage per node
     """
@@ -466,6 +471,88 @@ def rows_avg_block_for_nodes(nodes=[], begin=None, end=None):
 #
 # json data servers
 #
+@service.json
+def json_stat_day():
+    rows = rows_stat_day()
+    d = []
+    nb_svc_not_prd = []
+    nb_action = []
+    nb_action_err = []
+    nb_action_warn = []
+    nb_action_ok = []
+    disk_size = []
+    ram_size = []
+    nb_cpu_core = []
+    nb_cpu_die = []
+    watt = []
+    rackunit = []
+    nb_apps = []
+    nb_accounts = []
+    nb_svc_with_drp = []
+    nb_nodes_not_prd = []
+    nb_svc_prd = []
+    nb_svc_cluster = []
+    nb_nodes_prd = []
+    nb_svc_not_cluster = []
+    nb_svc_without_drp = []
+    for r in rows:
+        if r[2] is None or r[17] is None:
+            v = None
+        else:
+            v = r[2] - r[17]
+        nb_svc_not_prd.append([r[1], v])
+        nb_action.append([r[1], r[3]])
+        nb_action_err.append([r[1], r[4]])
+        nb_action_warn.append([r[1], r[5]])
+        nb_action_ok.append([r[1], r[6]])
+        disk_size.append([r[1], r[7]])
+        ram_size.append([r[1], r[8]])
+        nb_cpu_core.append([r[1], r[9]])
+        nb_cpu_die.append([r[1], r[10]])
+        watt.append([r[1], r[11]])
+        rackunit.append([r[1], r[12]])
+        nb_apps.append([r[1], r[13]])
+        nb_accounts.append([r[1], r[14]])
+        nb_svc_with_drp.append([r[1], r[15]])
+        if r[16] is None or r[19] is None:
+            v = None
+        else:
+            v = r[16]-r[19]
+        nb_nodes_not_prd.append([r[1], v])
+        nb_svc_prd.append([r[1], r[17]])
+        nb_svc_cluster.append([r[1], r[18]])
+        nb_nodes_prd.append([r[1], r[19]])
+        if r[15] is None or r[2] is None:
+            v = None
+        else:
+            v = r[2]-r[15]
+        nb_svc_without_drp.append([r[1], v])
+        if r[18] is None or r[2] is None:
+            v = None
+        else:
+            v = r[2]-r[18]
+        nb_svc_not_cluster.append([r[1], v])
+    return [nb_svc_not_prd,
+            nb_action,
+            nb_action_err,
+            nb_action_warn,
+            nb_action_ok,
+            disk_size,
+            ram_size,
+            nb_cpu_core,
+            nb_cpu_die,
+            watt,
+            rackunit,
+            nb_apps,
+            nb_accounts,
+            nb_svc_with_drp,
+            nb_nodes_not_prd,
+            nb_svc_prd,
+            nb_svc_cluster,
+            nb_nodes_prd,
+            nb_svc_not_cluster,
+            nb_svc_without_drp]
+
 @service.json
 def json_avg_cpu_for_nodes():
     nodes = request.vars.node

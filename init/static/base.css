@@ -914,8 +914,8 @@ a.xinfo_shown span {
 
 div.float {
     float: left;
-    margin-left:0.5em;
-    margin-right:0.5em;
+    margin-left:1em;
+    margin-right:1em;
 }
   
 div.float img {
@@ -927,9 +927,13 @@ div.float h2 {
 }
 
 div.container {
-    border: 2px dotted #333;
+    border-top: 1px solid #ddc;
+    border-left: 1px solid #ddc;
+    border-right: 1px solid #eed;
+    border-bottom: 1px solid #eed;
     background-color: #ffe;
     margin:0.2em;
+    padding:0.2em;
     border-radius:8px;
    -moz-border-radius:8px;
    -webkit-border-radius:8px;

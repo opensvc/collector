@@ -1,5 +1,6 @@
 {{extend 'layout.html'}}
 {{include 'box.html'}}
+{{include '../static/jslib.html'}}
 {{
 if stat_cpu_avg_day is None:
    img_stat_cpu_avg_day = SPAN()
@@ -30,15 +31,15 @@ pass
      DIV(
        H1(T("Services")),
        DIV(
-         IMG(_src=URL(r=request,c='static',f='stat_service.png')),
+         _id='stat_day_svc_drp',
          _class='float',
        ),
        DIV(
-         IMG(_src=URL(r=request,c='static',f='stat_service_clustered.png')),
+         _id='stat_day_svc_cluster',
          _class='float',
        ),
        DIV(
-         IMG(_src=URL(r=request,c='static',f='stat_service_type.png')),
+         _id='stat_day_svc_type',
          _class='float',
        ),
        DIV(
@@ -50,7 +51,7 @@ pass
      DIV(
        H1(T("Nodes")),
        DIV(
-         IMG(_src=URL(r=request,c='static',f='stat_node.png')),
+         _id='stat_day_nodes',
          _class='float',
        ),
        DIV(
@@ -62,11 +63,11 @@ pass
      DIV(
        H1(T("Actions")),
        DIV(
-         IMG(_src=URL(r=request,c='static',f='stat_action.png')),
+         _id='stat_day_actions',
          _class='float',
        ),
        DIV(
-         IMG(_src=URL(r=request,c='static',f='stat_action_err.png')),
+         _id='stat_day_err',
          _class='float',
        ),
        DIV(
@@ -110,7 +111,7 @@ pass
      DIV(
        H1(T("Application codes")),
        DIV(
-         IMG(_src=URL(r=request,c='static',f='stat_app.png')),
+         _id='stat_day_apps',
          _class='float',
        ),
        DIV(
@@ -122,14 +123,20 @@ pass
      DIV(
        H1(T("Collector user accounts")),
        DIV(
-         IMG(_src=URL(r=request,c='static',f='stat_accounts.png')),
          _class='float',
+         _id='stat_day_accounts',
        ),
        DIV(
          XML('&nbsp;'),
          _class='spacer',
        ),
        _class='container',
+     ),
+     SCRIPT(
+       "stat_day('%(url)s', 'stat_day');"%dict(
+         url=URL(r=request,
+                 f='call/json/json_stat_day')
+       )
      ),
    )
 }}
