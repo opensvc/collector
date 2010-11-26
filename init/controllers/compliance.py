@@ -1322,8 +1322,10 @@ class table_comp_filtersets(HtmlTable):
 def comp_detach_filters(ids=[]):
     if len(ids) == 0:
         raise ToolError("detach filter failed: no filter selected")
-    ids = map(lambda x: int(x.split('_')[1]), ids)
-    q = db.v_gen_filtersets.id.belongs(ids)
+    ids = map(lambda x: map(int, (x.split('_'))), ids)
+    q = db.v_gen_filtersets.id < 0
+    for (fset_id, f_id) in ids:
+        q |= ((db.v_gen_filtersets.id == f_id) & (db.v_gen_filtersets.fset_id == fset_id))
     rows = db(q).select()
     if len(rows) == 0:
         raise ToolError("detach filter failed: can't find selected filters")
@@ -1333,7 +1335,10 @@ def comp_detach_filters(ids=[]):
                        f.f_value,
                        'from',
                        f.fset_name]), rows))
-    n = db(db.gen_filtersets_filters.id.belongs(ids)).delete()
+    q = db.gen_filtersets_filters.id < 0
+    for (fset_id, f_id) in ids:
+        q |= ((db.gen_filtersets_filters.f_id == f_id) & (db.gen_filtersets_filters.fset_id == fset_id))
+    db(q).delete()
     _log('compliance.filterset.filter.detach',
         'detached filters %(f_names)s',
         dict(f_names=f_names))
