@@ -1161,6 +1161,7 @@ class table_comp_filtersets(HtmlTable):
         self.additional_tools.append('filterset_del')
         self.additional_tools.append('filter_attach')
         self.additional_tools.append('filter_detach')
+        self.ajax_col_values = ajax_comp_filtersets_col_values
 
     def checkbox_key(self, o):
         if o is None:
@@ -1383,6 +1384,7 @@ class table_comp_filters(HtmlTable):
         self.form_filter_add = self.comp_filters_add_sqlform()
         self.additional_tools.append('filter_add')
         self.additional_tools.append('filter_del')
+        self.ajax_col_values = 'ajax_comp_filters_col_values'
 
     def filter_del(self):
         d = DIV(
@@ -1469,6 +1471,17 @@ def comp_delete_filter(ids=[]):
         dict(f_names=f_names))
 
 @auth.requires_login()
+def ajax_comp_filters_col_values():
+    t = table_comp_filters('ajax_comp_filters', 'ajax_comp_filters')
+    col = request.args[0]
+    o = db.gen_filters[col]
+    q = db.gen_filters.id > 0
+    for f in t.cols:
+        q = _where(q, 'gen_filters', t.filter_parse(f), f)
+    t.object_list = db(q).select(orderby=o, groupby=o)
+    return t.col_values_cloud(col)
+
+@auth.requires_login()
 def ajax_comp_filters():
     v = table_comp_filters('ajax_comp_filters',
                            'ajax_comp_filters')
@@ -1503,6 +1516,17 @@ def ajax_comp_filters():
     v.object_list = db(q).select(limitby=(v.pager_start,v.pager_end), orderby=o)
 
     return v.html()
+
+@auth.requires_login()
+def ajax_comp_filtersets_col_values():
+    t = table_comp_filtersets('ajax_comp_filtersets', 'ajax_comp_filtersets')
+    col = request.args[0]
+    o = db.v_gen_filtersets[col]
+    q = db.v_gen_filtersets.fset_id > 0
+    for f in t.cols:
+        q = _where(q, 'v_gen_filtersets', t.filter_parse(f), f)
+    t.object_list = db(q).select(orderby=o, groupby=o)
+    return t.col_values_cloud(col)
 
 @auth.requires_login()
 def ajax_comp_filtersets():
