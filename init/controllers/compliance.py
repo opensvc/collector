@@ -1475,8 +1475,13 @@ def ajax_comp_filters():
     v.span = 'f_table'
     v.checkboxes = True
 
-    if len(request.args) == 1 and request.args[0] == 'delete_filter':
-        comp_delete_filter(v.get_checked())
+    if len(request.args) == 1:
+        action = request.args[0]
+        try:
+            if action == 'delete_filter':
+                comp_delete_filter(v.get_checked())
+        except ToolError, e:
+            v.flash = str(e)
 
     if v.form_filter_add.accepts(request.vars):
         f_name = ' '.join([request.vars.f_table+'.'+request.vars.f_field,
@@ -1506,14 +1511,19 @@ def ajax_comp_filtersets():
     t.span = 'fset_name'
     t.checkboxes = True
 
-    if len(request.args) == 1 and request.args[0] == 'delete_filterset':
-        comp_delete_filterset(t.get_checked())
-        t.form_filter_attach = t.comp_filter_attach_sqlform()
-    elif len(request.args) == 1 and request.args[0] == 'detach_filters':
-        comp_detach_filters(t.get_checked())
-    elif len(request.args) == 1 and request.args[0] == 'filterset_rename':
-        comp_rename_filterset(t.get_checked())
-        t.form_filter_attach = t.comp_filter_attach_sqlform()
+    if len(request.args) == 1:
+        action = request.args[0]
+        try:
+            if action == 'delete_filterset':
+                comp_delete_filterset(t.get_checked())
+                t.form_filter_attach = t.comp_filter_attach_sqlform()
+            elif action == 'detach_filters':
+                comp_detach_filters(t.get_checked())
+            elif action == 'filterset_rename':
+                comp_rename_filterset(t.get_checked())
+                t.form_filter_attach = t.comp_filter_attach_sqlform()
+        except ToolError, e:
+            t.flash = str(e)
 
     if t.form_filterset_add.accepts(request.vars):
         t.form_filter_attach = t.comp_filter_attach_sqlform()
