@@ -35,18 +35,6 @@ def call():
     return service()
 
 @auth.requires_login()
-def service_action():
-    action = request.vars.select_action
-    request.vars.select_action = 'choose'
-
-    if action is None or action == '' or action == 'choose':
-        return
-
-    ids = ([])
-    for key in [ k for k in request.vars.keys() if 'check_' in k ]:
-        ids += ([key[6:]])
-
-@auth.requires_login()
 def index():
     toggle_db_filters()
 
@@ -1166,8 +1154,11 @@ def svcmon_update(vars, vals):
     else:
         db(db.svcmon_log.id==last[0].id).update(mon_end=h['mon_updated'])
 
-##############################################################
 
+#
+# services view
+#
+################
 
 class table_svcmon(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
@@ -1380,6 +1371,18 @@ class table_svcmon(HtmlTable):
             )
 
         return d
+
+@auth.requires_login()
+def service_action():
+    action = request.vars.select_action
+    request.vars.select_action = 'choose'
+
+    if action is None or action == '' or action == 'choose':
+        return
+
+    ids = ([])
+    for key in [ k for k in request.vars.keys() if 'check_' in k ]:
+        ids += ([key[6:]])
 
 def do_action(ids, action=None):
     if action is None or len(action) == 0:
