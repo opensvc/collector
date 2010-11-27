@@ -729,7 +729,7 @@ def ajax_service():
 
     def js(tab, rowid):
         buff = ""
-        for i in range(1, 6):
+        for i in range(1, 7):
             buff += """getElementById('%(tab)s_%(id)s').style['display']='none';
                        getElementById('li%(tab)s_%(id)s').style['backgroundColor']='#EEE';
                     """%dict(tab='tab'+str(i), id=rowid)
@@ -737,7 +737,6 @@ def ajax_service():
                    getElementById('li%(tab)s_%(id)s').style['backgroundColor']='orange';
                 """%dict(tab=tab, id=rowid)
         return buff
-
 
     t = TABLE(
       TR(
@@ -765,6 +764,7 @@ def ajax_service():
             LI(P(T("resources"), _class="tab", _onclick=js('tab3', rowid)), _id="litab3_"+str(rowid)),
             LI(P(T("env"), _class="tab", _onclick=js('tab4', rowid)), _id="litab4_"+str(rowid)),
             LI(P(T("topology"), _class="tab", _onclick=js('tab5', rowid)), _id="litab5_"+str(rowid)),
+            LI(P(T("wiki"), _class="tab", _onclick=js('tab6', rowid)), _id="litab6_"+str(rowid)),
             _class="web2py-menu web2py-menu-horizontal",
           ),
           _style="border-bottom:solid 1px orange;padding:1px",
@@ -796,6 +796,18 @@ def ajax_service():
             IMG(_src=viz),
             _id='tab5_'+str(rowid),
             _class='cloud',
+          ),
+          DIV(
+            _id='tab6_'+str(rowid),
+            _class='cloud',
+          ),
+          SCRIPT(
+            "ajax('%(url)s', [], '%(id)s')"%dict(
+               id='tab6_'+str(rowid),
+               url=URL(r=request, c='wiki', f='ajax_wiki',
+                       args=['tab6_'+str(rowid), request.vars.node])
+            ),
+            _name='_to_eval',
           ),
         ),
       ),
