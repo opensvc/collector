@@ -169,7 +169,7 @@ def ajax_node():
           UL(
             LI(
               P(
-                T("close %(n)s", dict(n=request.vars.node)),
+                T("%(n)s", dict(n=request.vars.node)),
                 _class="tab closetab",
                 _onclick="""
                     getElementById("tr_id_%(id)s").style['display']='none'

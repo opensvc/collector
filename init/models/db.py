@@ -300,6 +300,7 @@ db.define_table('v_svcmon',
     Field('mon_updated'),
     Field('mon_changed'),
     Field('mon_frozen'),
+    Field('node_updated'),
     Field('warranty_end'),
     Field('status'),
     Field('role'),
@@ -440,6 +441,7 @@ db.define_table('nodes',
     Field('power_protect_breaker'),
     Field('power_breaker1'),
     Field('power_breaker2'),
+    Field('updated'),
     migrate=False)
 
 db.define_table('v_nodes',
@@ -481,6 +483,7 @@ db.define_table('v_nodes',
     Field('power_protect_breaker'),
     Field('power_breaker1'),
     Field('power_breaker2'),
+    Field('updated'),
     migrate=False)
 
 db.define_table('alerts',

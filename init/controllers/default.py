@@ -46,37 +46,6 @@ def service_action():
     for key in [ k for k in request.vars.keys() if 'check_' in k ]:
         ids += ([key[6:]])
 
-    if len(ids) == 0:
-        response.flash = "no target to execute %s on"%action
-        return
-
-    sql = """select m.mon_nodname, m.mon_svcname
-             from v_svcmon m
-             join v_apps_flat a on m.svc_app=a.app
-             where m.id in (%(ids)s)
-             and responsible='%(user)s'
-             group by m.mon_nodname, m.mon_svcname
-          """%dict(ids=','.join(ids),
-                   user=user_name())
-    rows = db.executesql(sql)
-
-    from subprocess import Popen
-    def do_select_action(node, svc, action):
-        cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
-                      '-o', 'ForwardX11=no',
-                      '-o', 'PasswordAuthentication=no',
-               'opensvc@'+node,
-               '--',
-               'sudo', '/opt/opensvc/bin/svcmgr', '--service', svc, action]
-        process = Popen(cmd, stdin=None, stdout=None, close_fds=True)
-        #process.communicate()
-
-    for row in rows:
-        do_select_action(row[0], row[1], action)
-
-    response.flash = T("launched %(action)s on %(n)d services", dict(
-                       n=len(rows), action=action))
-
 @auth.requires_login()
 def index():
     toggle_db_filters()
@@ -312,65 +281,6 @@ def envfile(svcname):
              ),
              PRE(envfile.replace('\\n','\n'), _style="text-align:left"),
            )
-
-@auth.requires_login()
-def svcmon():
-    service_action()
-
-    d1 = v_svcmon_columns()
-    d2 = v_nodes_columns()
-    for k in d2:
-        d2[k]['pos'] += 50
-        d2[k]['display'] = False
-
-    del(d2['nodename'])
-    columns = d1.copy()
-    columns.update(d2)
-
-    def _sort_cols(x, y):
-        return cmp(columns[x]['pos'], columns[y]['pos'])
-    colkeys = columns.keys()
-    colkeys.sort(_sort_cols)
-    __update_columns(columns, 'svcmon')
-
-    o = db.v_svcmon.mon_svcname
-    o |= ~db.v_svcmon.mon_overallstatus
-    o |= ~db.v_svcmon.mon_nodtype
-    o |= db.v_svcmon.mon_nodname
-
-    toggle_db_filters()
-
-    query = _where(None, 'v_svcmon', domain_perms(), 'mon_nodname')
-    for key in columns.keys():
-        if key not in request.vars.keys():
-            continue
-        query &= _where(None, 'v_svcmon', request.vars[key], key)
-
-    query &= _where(None, 'v_svcmon', request.vars.svc_app, 'svc_app')
-    query &= _where(None, 'v_svcmon', request.vars.responsibles, 'responsibles')
-    query &= _where(None, 'v_svcmon', request.vars.svc_autostart, 'svc_autostart')
-    query &= _where(None, 'v_svcmon', request.vars.svc_containertype, 'svc_containertype')
-    query &= _where(None, 'v_svcmon', request.vars.svc_vcpus, 'svc_vcpus')
-    query &= _where(None, 'v_svcmon', request.vars.svc_vmem, 'svc_vmem')
-
-    query = apply_db_filters(query, 'v_svcmon')
-
-    (start, end, nav) = _pagination(request, query)
-    if start == 0 and end == 0:
-        rows = db(query).select(orderby=o)
-    else:
-        rows = db(query).select(limitby=(start,end), orderby=o)
-
-    msgs = db(db.svcmessages.id>0).select()
-    svcmsg = [msg.msg_svcname for msg in msgs if len(msg.msg_body)>0]
-
-    return dict(columns=columns, colkeys=colkeys, actions=rows,
-                services=rows,
-                nav=nav,
-                svcmsg=svcmsg,
-                active_filters=active_db_filters('v_svcmon'),
-                available_filters=avail_db_filters('v_svcmon'),
-               )
 
 class viz(object):
     import os
@@ -680,20 +590,15 @@ def svcmon_viz_img(services):
     img = str(URL(r=request,c='static',f=os.path.basename(fname)))
     return img
 
-def svcmon_viz():
-    request.vars['perpage'] = 0
-    s = svcmon()
-    img = svcmon_viz_img(s['services'])
-    return dict(s=s['services'], img=img)
+def svcmon_viz(ids):
+    if len(ids) == 0:
+        return SPAN()
+    q = db.v_svcmon.id.belongs(ids)
+    services = db(q).select()
+    return IMG(_src=svcmon_viz_img(services))
 
 def viz_cron_cleanup():
     return viz().viz_cron_cleanup()
-
-def svcmon_csv():
-    import gluon.contenttype
-    response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
-    request.vars['perpage'] = 0
-    return str(svcmon()['services'])
 
 @auth.requires_login()
 def ajax_res_status():
@@ -852,7 +757,7 @@ def ajax_service():
           UL(
             LI(
               P(
-                T("close %(n)s", dict(n=request.vars.node)),
+                T("%(n)s", dict(n=request.vars.node)),
                 _class="tab closetab",
                 _onclick="""
                     getElementById("tr_id_%(id)s").style['display']='none'
@@ -1260,4 +1165,311 @@ def svcmon_update(vars, vals):
         db(db.svcmon_log.id==last[0].id).update(mon_end=h['mon_updated'])
     else:
         db(db.svcmon_log.id==last[0].id).update(mon_end=h['mon_updated'])
+
+##############################################################
+
+
+class table_svcmon(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = [
+            'svc_name',
+            'err',
+            'svc_app',
+            'svc_drptype',
+            'svc_containertype',
+            'svc_vmname',
+            'svc_vcpus',
+            'svc_vmem',
+            'svc_guestos',
+            'svc_autostart',
+            'svc_nodes',
+            'svc_drpnode',
+            'svc_drpnodes',
+            'svc_comment',
+            'svc_updated',
+            'svc_type',
+            'environnement',
+            'mon_nodname',
+            'mon_overallstatus',
+            'mon_frozen',
+            'mon_containerstatus',
+            'mon_ipstatus',
+            'mon_fsstatus',
+            'mon_diskstatus',
+            'mon_syncstatus',
+            'mon_appstatus',
+            'mon_updated',
+            'team_responsible',
+            'responsibles',
+            'mailto',
+            'serial',
+            'model',
+            'role',
+            'warranty_end',
+            'status',
+            'type',
+            'node_updated',
+            'power_supply_nb',
+            'power_cabinet1',
+            'power_cabinet2',
+            'power_protect',
+            'power_protect_breaker',
+            'power_breaker1',
+            'power_breaker2',
+            'loc_country',
+            'loc_zip',
+            'loc_city',
+            'loc_addr',
+            'loc_building',
+            'loc_floor',
+            'loc_room',
+            'loc_rack',
+            'os_name',
+            'os_release',
+            'os_vendor',
+            'os_arch',
+            'os_kernel',
+            'cpu_dies',
+            'cpu_cores',
+            'cpu_model',
+            'cpu_freq',
+            'mem_banks',
+            'mem_slots',
+            'mem_bytes',
+        ]
+        self.colprops = {
+            'err': HtmlTableColumn(
+                     title = 'Action errors',
+                     field='err',
+                     display = False,
+                     img = 'action16',
+                    ),
+        }
+        self.colprops.update(svcmon_colprops)
+        self.colprops.update(v_services_colprops)
+        self.colprops.update(v_nodes_colprops)
+        for i in self.cols:
+            self.colprops[i].table = None
+            self.colprops[i].t = self
+        for i in ['mon_nodname', 'svc_name', 'svc_containertype', 'svc_app',
+                  'svc_type', 'environnement', 'mon_overallstatus', 'mon_syncstatus']:
+            self.colprops[i].display = True
+        self.span = 'svc_name'
+        self.sub_span = v_services_cols
+        self.dbfilterable = True
+        self.extraline = True
+        self.extrarow = True
+        self.checkboxes = True
+        self.checkbox_id_col = 'id'
+        self.ajax_col_values = 'ajax_svcmon_col_values'
+        self.user_name = user_name()
+        self.additional_tools.append('tool_action')
+        self.additional_tools.append('tool_topology')
+
+    def checkbox_disabled(self, o):
+        responsibles = self.colprops['responsibles'].get(o)
+        if responsibles is None:
+            return True
+        if self.user_name in responsibles.split(', '):
+            return False
+        return True
+
+    def format_extrarow(self, o):
+        if not self.spaning_line(o):
+            act = A(
+                    IMG(
+                      _src=URL(r=request,c='static',f='action16.png'),
+                      _border=0,
+                    ),
+                    _href=URL(
+                            r=request, c='svcactions',
+                            f='svcactions?svcname=%(svc)s&status_log=empty&begin=>%(b)s'%dict(
+                              svc=o.mon_svcname,
+                              b=yesterday)
+                    ),
+                  )
+        else:
+            act = ''
+
+        if o.err>0:
+            err = A(
+                    IMG(
+                      _src=URL(r=request,c='static',f='exclamation_red.png'),
+                      _title="%d unaknowledged errors"%o.err),
+                      _href=URL(r=request,c='svcactions',f='svcactions',
+                                vars={'svcname': o.svc_name,
+                                      'status': 'err',
+                                      'ack': '!1|empty'}
+                            )
+                  )
+        else:
+            err = ''
+
+        if o.mon_frozen == 1:
+            frozen = IMG(
+                       _src=URL(r=request,c='static',f='frozen16.png'),
+                     )
+        else:
+            frozen = ''
+
+        return SPAN(
+                 act,
+                 err,
+                 frozen,
+               )
+
+    def tool_topology(self):
+        d = DIV(
+              A(
+                T("Topology"),
+                _onclick=self.ajax_submit(args=['topology']),
+              ),
+              _class='floatw',
+            )
+        return d
+
+    def tool_action(self):
+        cmd = [
+          {'action': 'stop', 'img': 'action_stop_16.png'},
+          {'action': 'start', 'img': 'action_start_16.png'},
+          {'action': 'restart', 'img': 'action_restart_16.png'},
+          {'action': 'freeze', 'img': 'frozen16.png'},
+          {'action': 'thaw', 'img': 'frozen16.png'},
+          {'action': 'syncall', 'img': 'action_sync_16.png'},
+          {'action': 'syncnodes', 'img': 'action_sync_16.png'},
+          {'action': 'syncdrp', 'img': 'action_sync_16.png'},
+          {'action': 'syncfullsync', 'img': 'action_sync_16.png'},
+        ]
+        s = []
+        for c in cmd:
+            s.append(TR(
+                       TD(
+                         IMG(
+                           _src=URL(r=request,c='static',f=c['img']),
+                         ),
+                       ),
+                       TD(
+                         A(
+                           c['action'],
+                           _onclick="""if (confirm("%(text)s")){%(s)s};"""%dict(
+                             s=self.ajax_submit(args=['do_action', c['action']]),
+                             text=T("Are you sure you want to execute a '%s' action on all selected services@nodes. Please confirm action"%c['action']),
+                           ),
+                         ),
+                       ),
+                     ))
+
+        d = DIV(
+              A(
+                T("Service action"),
+                _onclick="""
+                  click_toggle_vis('%(div)s', 'block');
+                """%dict(div='tool_action'),
+              ),
+              DIV(
+                TABLE(*s),
+                _style='display:none',
+                _class='white_float',
+                _name='tool_action',
+                _id='tool_action',
+              ),
+              _class='floatw',
+            )
+
+        return d
+
+def do_action(ids, action=None):
+    if action is None or len(action) == 0:
+        raise ToolError("no action specified")
+    if len(ids) == 0:
+        raise ToolError("no target to execute %s on"%action)
+
+    sql = """select m.mon_nodname, m.mon_svcname
+             from v_svcmon m
+             join v_apps_flat a on m.svc_app=a.app
+             where m.id in (%(ids)s)
+             and responsible='%(user)s'
+             group by m.mon_nodname, m.mon_svcname
+          """%dict(ids=','.join(map(str,ids)),
+                   user=user_name())
+    rows = db.executesql(sql)
+
+    from subprocess import Popen
+    def do_select_action(node, svc, action):
+        cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
+                      '-o', 'ForwardX11=no',
+                      '-o', 'PasswordAuthentication=no',
+               'opensvc@'+node,
+               '--',
+               'sudo', '/opt/opensvc/bin/svcmgr', '--service', svc, action]
+        process = Popen(cmd, stdin=None, stdout=None, close_fds=True)
+        #process.communicate()
+
+    s = []
+    for row in rows:
+        do_select_action(row[0], row[1], action)
+        s.append('@'.join((row[0], row[1])))
+
+    _log('service.action', 'run %(a)s on $(s)s', dict(a=action, s=', '.join(s)))
+
+
+@auth.requires_login()
+def ajax_svcmon_col_values():
+    t = table_svcmon('v_svcmon', 'ajax_svcmon')
+    col = request.args[0]
+    o = db.v_svcmon[col]
+    q = _where(None, 'v_svcmon', domain_perms(), 'mod_nodname')
+    q = apply_db_filters(q, 'v_svcmon')
+    for f in t.cols:
+        q = _where(q, 'v_svcmon', t.filter_parse(f), f)
+    t.object_list = db(q).select(orderby=o, groupby=o)
+    return t.col_values_cloud(col)
+
+@auth.requires_login()
+def ajax_svcmon():
+    t = table_svcmon('svcmon', 'ajax_svcmon')
+
+    if len(request.args) == 2:
+        action = request.args[0]
+        saction = request.args[1]
+        try:
+            if action == 'do_action':
+                do_action(t.get_checked(), saction)
+        except ToolError, e:
+            t.flash = str(e)
+
+    o = db.v_svcmon.mon_svcname
+    o |= ~db.v_svcmon.mon_overallstatus
+    o |= ~db.v_svcmon.mon_nodtype
+    o |= db.v_svcmon.mon_nodname
+
+    q = _where(None, 'v_svcmon', domain_perms(), 'mon_svcname')
+    q = apply_db_filters(q, 'v_svcmon')
+    for f in t.cols:
+        q = _where(q, 'v_svcmon', t.filter_parse(f), f)
+    n = db(q).count()
+    t.setup_pager(n)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+
+    if len(request.args) == 1:
+        action = request.args[0]
+        try:
+            if action == 'topology':
+                t.flash = svcmon_viz(t.get_checked())
+        except ToolError, e:
+            t.flash = str(e)
+
+    return t.html()
+
+@auth.requires_login()
+def svcmon():
+    t = DIV(
+          ajax_svcmon(),
+          _id='svcmon',
+        )
+    return dict(table=t)
+
 

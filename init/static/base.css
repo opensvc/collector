@@ -1101,7 +1101,7 @@ div.sym_detail_visible {
     margin-right:0.5em;
 }
  
-.floatw a {
+.floatw > a {
     color: white;
 }
 
