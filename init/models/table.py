@@ -74,6 +74,9 @@ class HtmlTable(object):
         # initialize the pager, to be re-executed by instanciers
         self.setup_pager()
 
+        # drop stored filters if request asks for it
+        self.drop_filters()
+
     def setup_pager(self, n=0):
         self.totalrecs = n
         if self.pageable:
@@ -423,6 +426,13 @@ class HtmlTable(object):
         if cp.table is None:
             return cp.field
         return '.'.join((cp.table, cp.field))
+
+    def drop_filters(self):
+        if request.vars.clear_filters != 'true':
+            return
+        q = db.column_filters.col_tableid==self.id
+        q &= db.column_filters.user_id==session.auth.user.id
+        db(q).delete()
 
     def drop_filter_value(self, f):
         field = self.stored_filter_field(f)
