@@ -291,6 +291,8 @@ class table_comp_rulesets_nodes(HtmlTable):
                      img='action16',
                      display=True,
                     )
+        for c in self.cols:
+            self.colprops['nodename'].t = self
         self.colprops['nodename'].display = True
         self.checkboxes = True
         self.additional_tools.append('ruleset_attach')

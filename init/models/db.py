@@ -1004,7 +1004,7 @@ db.define_table('v_comp_mod_status',
     migrate=False)
 
 db.define_table('v_comp_nodes',
-    db.v_nodes,
+    db.nodes,
     Field('rulesets','string'),
     Field('modulesets','string'),
     migrate=False)
