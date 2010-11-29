@@ -121,9 +121,27 @@ function click_toggle_vis(name, mode){
     for(j = 0; j < cells.length; j++) {
         if (cells[j].style.display == 'none' || cells[j].style.display == "") {
             cells[j].style.display = mode;
+            register_pop_up(cells[j])
         } else {
             cells[j].style.display = 'none';
         }
+    }
+}
+function register_pop_up(box){
+    event.stopPropagation()
+    document.onclick = function(e){
+        e = e || event
+        var target = e.target || e.srcElement
+        //var box = document.getElementById(id)
+        do {
+            if (box == target) {
+                // click inside
+                return
+            }
+            target = target.parentNode
+        } while(target)
+        // click outside
+        box.style.display = 'none'
     }
 }
 function check_all(name, checked){
