@@ -34,6 +34,7 @@ def ajax_action_status():
                        'actions_f_begin':'>'+str(rows[0].begin-datetime.timedelta(days=1)),
                        'actions_f_end':'<'+str(end+datetime.timedelta(days=1)),
                        'actions_f_perpage':0,
+                       'clear_filters': 'true',
                      }
           ),
         )
@@ -194,6 +195,7 @@ class col_pid(HtmlTableColumn):
                            'actions_f_begin':'>'+str(o.begin-datetime.timedelta(days=1)),
                            'actions_f_end':'<'+str(o.end+datetime.timedelta(days=1)),
                            'actions_f_perpage':0,
+                           'clear_filters': 'true',
                          }
               ),
             )
