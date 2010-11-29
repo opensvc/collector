@@ -782,6 +782,7 @@
 'ruleset': 'jeu de règles',
 'ruleset added': 'Jeu de règles ajouté',
 'run %(a)s on $(s)s': 'run %(a)s on $(s)s',
+'run %(a)s on %(s)s': 'run %(a)s on %(s)s',
 'save': 'enregistrer',
 'saved': 'enregistré',
 'selected': 'sélectionné',
