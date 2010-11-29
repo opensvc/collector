@@ -985,6 +985,8 @@ def push_checks(vars, vals):
 
 @service.xmlrpc
 def update_asset(vars, vals):
+    vars.append('updated')
+    vals.append(now)
     generic_insert('nodes', vars, vals)
 
 @service.xmlrpc
