@@ -807,7 +807,7 @@ def ajax_service():
                url=URL(r=request, c='wiki', f='ajax_wiki',
                        args=['tab6_'+str(rowid), request.vars.node])
             ),
-            _name='_to_eval',
+            _name='tab6_%s_to_eval'%rowid,
           ),
         ),
       ),
@@ -1254,6 +1254,7 @@ class table_svcmon(HtmlTable):
         self.colprops.update(svcmon_colprops)
         self.colprops.update(v_services_colprops)
         self.colprops.update(v_nodes_colprops)
+        self.colprops['svc_updated'].field = 'svc_updated'
         for i in self.cols:
             self.colprops[i].table = None
             self.colprops[i].t = self
@@ -1336,30 +1337,31 @@ class table_svcmon(HtmlTable):
 
     def tool_action(self):
         cmd = [
-          {'action': 'stop', 'img': 'action_stop_16.png'},
-          {'action': 'start', 'img': 'action_start_16.png'},
-          {'action': 'restart', 'img': 'action_restart_16.png'},
-          {'action': 'freeze', 'img': 'frozen16.png'},
-          {'action': 'thaw', 'img': 'frozen16.png'},
-          {'action': 'syncall', 'img': 'action_sync_16.png'},
-          {'action': 'syncnodes', 'img': 'action_sync_16.png'},
-          {'action': 'syncdrp', 'img': 'action_sync_16.png'},
-          {'action': 'syncfullsync', 'img': 'action_sync_16.png'},
+          'stop',
+          'start',
+          'startstandby',
+          'restart',
+          'freeze',
+          'thaw',
+          'syncall',
+          'syncnodes',
+          'syncdrp',
+          'syncfullsync',
         ]
         s = []
         for c in cmd:
             s.append(TR(
                        TD(
                          IMG(
-                           _src=URL(r=request,c='static',f=c['img']),
+                           _src=URL(r=request,c='static',f=action_img_h[c]),
                          ),
                        ),
                        TD(
                          A(
-                           c['action'],
+                           c,
                            _onclick="""if (confirm("%(text)s")){%(s)s};"""%dict(
-                             s=self.ajax_submit(args=['do_action', c['action']]),
-                             text=T("Are you sure you want to execute a '%s' action on all selected services@nodes. Please confirm action"%c['action']),
+                             s=self.ajax_submit(args=['do_action', c]),
+                             text=T("Are you sure you want to execute a '%s' action on all selected services@nodes. Please confirm action"%c),
                            ),
                          ),
                        ),
@@ -1428,7 +1430,7 @@ def do_action(ids, action=None):
         do_select_action(row[0], row[1], action)
         s.append('@'.join((row[0], row[1])))
 
-    _log('service.action', 'run %(a)s on $(s)s', dict(a=action, s=', '.join(s)))
+    _log('service.action', 'run %(a)s on %(s)s', dict(a=action, s=', '.join(s)))
 
 
 @auth.requires_login()

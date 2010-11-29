@@ -250,7 +250,7 @@ function toggle_extra(url, id) {
     e = document.getElementById(id)
     if (e.style['display']=='none') {
         e.style['display']='table-cell'
-        sync_ajax(url, [], id, function(){eval_js_in_ajax_response('')})
+        sync_ajax(url, [], id, function(){eval_js_in_ajax_response(id)})
     } else {
         e.style['display']='none'
     }
@@ -930,5 +930,19 @@ function stat_day(url, id) {
 	    }
 	});
     });
+}
+function ackpanel(show, s){
+    elt = document.getElementById("ackpanel")
+    if (show){
+        elt.style.posLeft = event.pageX+5
+        elt.style.posTop = event.pageY+5
+        show_eid("ackpanel")
+    } else {
+        hide_eid("ackpanel")
+    }
+    elt.innerHTML = s
+}
+function refresh_action(url, id){
+    spintimer=setTimeout(function validate(){ajax(url, [], 'spin_span_'+id)}, 3000);
 }
 </script>

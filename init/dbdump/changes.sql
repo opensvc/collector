@@ -795,3 +795,4 @@ CREATE TABLE `opensvc`.`wiki_pages` (
 
 drop table svcmessages;
 
+alter table services drop key svc_name;

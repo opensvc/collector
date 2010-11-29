@@ -279,7 +279,7 @@ def svc_with_errors_line(line, cellclass):
     tr = TR(
       TD(A(line.svc_name, _href=URL(r=request, f='svcmon', vars={'svcmon_f_svc_name':line.svc_name, 'clear_filters': 'true'})), _class=cellclass),
       TD(line.svc_type, _class=cellclass),
-      TD(A(line.err, _href=URL(r=request,c='svcactions',f='svcactions', vars={'svcname': line.svc_name, 'status': 'err', 'ack': '!1|empty', 'clear_filters': 'true'})), _class=cellclass),
+      TD(A(line.err, _href=URL(r=request,c='svcactions',f='svcactions', vars={'actions_f_svcname': line.svc_name, 'actions_f_status': 'err', 'actions_f_ack': '!1|empty', 'clear_filters': 'true'})), _class=cellclass),
       TD(svc_status(line, cellclass), _class=cellclass, _style="text-align:center"),
     )
     return tr

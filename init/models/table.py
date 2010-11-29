@@ -963,6 +963,32 @@ class HtmlTable(object):
 #
 # common column formatting
 #
+action_img_h = {
+    'stop': 'action_stop_16.png',
+    'stopapp': 'action_stop_16.png',
+    'stopdisk': 'action_stop_16.png',
+    'stoploop': 'action_stop_16.png',
+    'stopip': 'action_stop_16.png',
+    'umount': 'action_stop_16.png',
+    'start': 'action_start_16.png',
+    'startstandby': 'action_start_16.png',
+    'startapp': 'action_start_16.png',
+    'startdisk': 'action_start_16.png',
+    'startloop': 'action_start_16.png',
+    'startip': 'action_start_16.png',
+    'mount': 'action_start_16.png',
+    'restart': 'action_restart_16.png',
+    'switch': 'action_restart_16.png',
+    'freeze': 'frozen16.png',
+    'thaw': 'frozen16.png',
+    'syncall': 'action_sync_16.png',
+    'syncnodes': 'action_sync_16.png',
+    'syncdrp': 'action_sync_16.png',
+    'syncfullsync': 'action_sync_16.png',
+    'postsync': 'action_sync_16.png',
+    'push': 'log16.png',
+}
+
 os_img_h = {
   'linux': 'linux',
   'hp-ux': 'hpux',
@@ -1027,6 +1053,7 @@ class col_containertype(HtmlTableColumn):
                   id=id,
                 ),
               ),
+              _class='nowrap',
             )
         return d
 
@@ -1050,6 +1077,7 @@ class col_node(HtmlTableColumn):
                 ),
                 _style=c,
               ),
+              _class='nowrap',
             )
         return d
 
@@ -1293,7 +1321,7 @@ v_services_colprops = {
             ),
     'svc_updated': col_updated(
              title = 'Last service update',
-             field='svc_updated',
+             field='updated',
              display = False,
              img = 'time16',
              table = 'v_services',

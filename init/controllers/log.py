@@ -6,6 +6,8 @@ class log_vfields(object):
             try:
                 d = json.loads(self.log.log_dict)
                 for k in d:
+                    if not isinstance(d[k], str):
+                        d[k] = str(d[k])
                     d[k] = d[k].encode('utf8')
                 s = T.translate(self.log.log_fmt,d)
             except KeyError:
@@ -19,14 +21,17 @@ class log_vfields(object):
 db.log.virtualfields.append(log_vfields())
 
 img_h = {
+  'service': 'svc.png',
   'apps': 'svc.png',
   'auth': 'guys16.png',
   'users': 'guys16.png',
   'group': 'guys16.png',
   'user': 'guy16.png',
+  'ack': 'check16.png',
   'compliance': 'check16.png',
   'moduleset': 'action16.png',
   'module': 'action16.png',
+  'action': 'action16.png',
   'filterset': 'filter16.png',
   'filter': 'filter16.png',
   'add': 'add16.png',

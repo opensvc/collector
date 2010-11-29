@@ -245,7 +245,7 @@ def ajax_node():
                url=URL(r=request, c='wiki', f='ajax_wiki',
                        args=['tab8_'+str(rowid), request.vars.node])
             ),
-            _name='_to_eval',
+            _name='tab8_%s_to_eval'%rowid,
           ),
         ),
       ),
