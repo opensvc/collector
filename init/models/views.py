@@ -136,15 +136,13 @@ def _where(query, table, var, field):
     if _not:
         q = ~q
 
-    if _or:
-        query |= q
-    else:
-        query &= q
-
     if not done:
-        query = _where(query, table, var, field)
+        q = _where(q, table, var, field)
 
-    return query
+    if _or:
+        return query|q
+    else:
+        return query&q
 
 def domainname(fqdn):
     if fqdn is None or fqdn == "":

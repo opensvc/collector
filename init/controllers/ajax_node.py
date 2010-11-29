@@ -154,7 +154,7 @@ def ajax_node():
 
     def js(tab, rowid):
         buff = ""
-        for i in range(1, 8):
+        for i in range(1, 9):
             buff += """getElementById('%(tab)s_%(id)s').style['display']='none';
                        getElementById('li%(tab)s_%(id)s').style['backgroundColor']='#EEE';
                     """%dict(tab='tab'+str(i), id=rowid)
@@ -169,7 +169,7 @@ def ajax_node():
           UL(
             LI(
               P(
-                T("close %(n)s", dict(n=request.vars.node)),
+                T("%(n)s", dict(n=request.vars.node)),
                 _class="tab closetab",
                 _onclick="""
                     getElementById("tr_id_%(id)s").style['display']='none'
@@ -191,6 +191,8 @@ def ajax_node():
             LI(P(T("location"), _class="tab", _onclick=js('tab5', rowid)), _id="litab5_"+str(rowid)),
             LI(P(T("power"), _class="tab", _onclick=js('tab6', rowid)), _id="litab6_"+str(rowid)),
             LI(P(T("stats"), _class="tab", _onclick=js('tab7', rowid)), _id="litab7_"+str(rowid)),
+
+            LI(P(T("wiki"), _class="tab", _onclick=js('tab8', rowid)), _id="litab8_"+str(rowid)),
             _class="web2py-menu web2py-menu-horizontal",
           ),
           _style="border-bottom:solid 1px orange;padding:1px",
@@ -232,6 +234,18 @@ def ajax_node():
             perf_stats(request.vars.node, rowid),
             _id='tab7_'+str(rowid),
             _class='cloud',
+          ),
+          DIV(
+            _id='tab8_'+str(rowid),
+            _class='cloud',
+          ),
+          SCRIPT(
+            "ajax('%(url)s', [], '%(id)s')"%dict(
+               id='tab8_'+str(rowid),
+               url=URL(r=request, c='wiki', f='ajax_wiki',
+                       args=['tab8_'+str(rowid), request.vars.node])
+            ),
+            _name='tab8_%s_to_eval'%rowid,
           ),
         ),
       ),

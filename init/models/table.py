@@ -60,6 +60,7 @@ class HtmlTable(object):
         self.checkbox_id_col = 'id'
         self.checkbox_id_table = None
         self.extraline = False
+        self.extrarow = False
         self.filterable = True
         self.dbfilterable = True
         self.pageable = True
@@ -69,7 +70,12 @@ class HtmlTable(object):
         self.span = None
         self.flash = None
         self.sub_span = []
+
+        # initialize the pager, to be re-executed by instanciers
         self.setup_pager()
+
+        # drop stored filters if request asks for it
+        self.drop_filters()
 
     def setup_pager(self, n=0):
         self.totalrecs = n
@@ -95,6 +101,7 @@ class HtmlTable(object):
             self.page = 0
             self.pager_start = 0
             self.pager_end = n
+        self.page_len = self.pager_end - self.pager_start
 
     def col_values_cloud(self, c):
         l = []
@@ -378,8 +385,20 @@ class HtmlTable(object):
         else:
             return o[self.checkbox_id_table][self.checkbox_id_col]
 
+    def span_line_id(self, o):
+        if o is None:
+            return ''
+        if self.colprops[self.span].table is None or \
+           self.colprops[self.span].table not in o:
+            return o[self.span]
+        else:
+            return o[self.colprops[self.span].table][self.span]
+
     def extra_line_key(self, o):
-        id = self.line_id(o)
+        if self.span:
+            id = self.span_line_id(o)
+        else:
+            id = self.line_id(o)
         return '_'.join((self.id, 'x', str(id)))
 
     def checkbox_key(self, o):
@@ -407,6 +426,13 @@ class HtmlTable(object):
         if cp.table is None:
             return cp.field
         return '.'.join((cp.table, cp.field))
+
+    def drop_filters(self):
+        if request.vars.clear_filters != 'true':
+            return
+        q = db.column_filters.col_tableid==self.id
+        q &= db.column_filters.user_id==session.auth.user.id
+        db(q).delete()
 
     def drop_filter_value(self, f):
         field = self.stored_filter_field(f)
@@ -471,6 +497,8 @@ class HtmlTable(object):
         cells = []
         if self.checkboxes:
             cells.append(TH(''))
+        if self.extrarow:
+            cells.append(TD(''))
         for c in self.cols:
             cells.append(TH(T(self.colprops[c].title),
                             _style=self.col_hide(c),
@@ -481,24 +509,36 @@ class HtmlTable(object):
     def table_line(self, o):
         cells = []
         if self.checkboxes:
-            checked = getattr(request.vars, self.checkbox_key(o))
-            if checked is None or checked == 'false':
-                checked = False
-                value = 'false'
+            if hasattr(self, 'checkbox_disabled') and \
+               self.checkbox_disabled(o):
+                cells.append(TD(
+                               INPUT(
+                                 _type='checkbox',
+                                 _disabled='disabled',
+                               ),
+                             ))
             else:
-                checked = True
-                value = 'true'
-            checkbox_id = self.checkbox_key(o)
-            cells.append(TD(
-                           INPUT(
-                             _type='checkbox',
-                             _id=checkbox_id,
-                             _name=self.checkbox_name_key(),
-                             _value=value,
-                             _onclick='this.value=this.checked',
-                             value=checked,
-                           ),
-                         ))
+                checked = getattr(request.vars, self.checkbox_key(o))
+                if checked is None or checked == 'false':
+                    checked = False
+                    value = 'false'
+                else:
+                    checked = True
+                    value = 'true'
+                checkbox_id = self.checkbox_key(o)
+                cells.append(TD(
+                               INPUT(
+                                 _type='checkbox',
+                                 _id=checkbox_id,
+                                 _name=self.checkbox_name_key(),
+                                 _value=value,
+                                 _onclick='this.value=this.checked',
+                                 value=checked,
+                               ),
+                             ))
+
+        if self.extrarow:
+            cells.append(TD(self.format_extrarow(o)))
 
         for c in self.cols:
             if self.spaning_cell(c, o):
@@ -554,22 +594,29 @@ class HtmlTable(object):
             line_count += 1
             if not self.pageable or self.perpage == 0 or line_count <= self.perpage:
                 if not self.spaning_line(o):
+                    if self.extraline and self.span is not None:
+                        lines.append(self.format_extraline(self.last))
                     self.rotate_colors()
                 lines.append(self.table_line(o))
-                if self.extraline:
-                    n = len(self.cols)
-                    if self.checkboxes:
-                        n += 1
-                    lines.append(TR(
-                                   TD(
-                                     _colspan=n,
-                                     _id=self.extra_line_key(o),
-                                     _style='display:none',
-                                   ),
-                                   _class=self.cellclass,
-                                 ))
+                if self.extraline and self.span is None:
+                    lines.append(self.format_extraline(o))
                 self.last = o
+        if self.extraline and self.span is not None:
+            lines.append(self.format_extraline(self.last))
         return lines, line_count
+
+    def format_extraline(self, o):
+        n = len(self.cols)
+        if self.checkboxes:
+            n += 1
+        return TR(
+                 TD(
+                   _colspan=n,
+                   _id=self.extra_line_key(o),
+                   _style='display:none',
+                 ),
+                 _class=self.cellclass,
+               )
 
     def table_inputs(self):
         inputs = []
@@ -581,6 +628,8 @@ class HtmlTable(object):
                               _onclick="check_all('%(name)s', this.checked);"%dict(name=self.checkbox_name_key())
                             )
                           ))
+        if self.extrarow:
+            inputs.append(TD(''))
         for c in self.cols:
             if len(self.filter_parse(c)) > 0:
                 clear = IMG(
@@ -912,305 +961,34 @@ class HtmlTable(object):
         return self.match(value, self.colprops[f].get(o))
 
 #
-# colprops definitions
-#
-v_nodes_cols = [
-     'loc_country',
-     'loc_zip',
-     'loc_city',
-     'loc_addr',
-     'loc_building',
-     'loc_floor',
-     'loc_room',
-     'loc_rack',
-     'os_name',
-     'os_release',
-     'os_vendor',
-     'os_arch',
-     'os_kernel',
-     'cpu_dies',
-     'cpu_cores',
-     'cpu_model',
-     'cpu_freq',
-     'mem_banks',
-     'mem_slots',
-     'mem_bytes',
-     'team_responsible',
-     'serial',
-     'model',
-     'role',
-     'environnement',
-     'warranty_end',
-     'status',
-     'type',
-     'power_supply_nb',
-     'power_cabinet1',
-     'power_cabinet2',
-     'power_protect',
-     'power_protect_breaker',
-     'power_breaker1',
-     'power_breaker2'
-]
-
-v_nodes_colprops = {
-            'loc_country': HtmlTableColumn(
-                     title = 'Country',
-                     field='loc_country',
-                     display = False,
-                     img = 'loc',
-                     table = 'v_nodes',
-                    ),
-            'loc_zip': HtmlTableColumn(
-                     title = 'ZIP',
-                     field='loc_zip',
-                     display = False,
-                     img = 'loc',
-                     table = 'v_nodes',
-                    ),
-            'loc_city': HtmlTableColumn(
-                     title = 'City',
-                     field='loc_city',
-                     display = False,
-                     img = 'loc',
-                     table = 'v_nodes',
-                    ),
-            'loc_addr': HtmlTableColumn(
-                     title = 'Address',
-                     field='loc_addr',
-                     display = False,
-                     img = 'loc',
-                     table = 'v_nodes',
-                    ),
-            'loc_building': HtmlTableColumn(
-                     title = 'Building',
-                     field='loc_building',
-                     display = False,
-                     img = 'loc',
-                     table = 'v_nodes',
-                    ),
-            'loc_floor': HtmlTableColumn(
-                     title = 'Floor',
-                     field='loc_floor',
-                     display = False,
-                     img = 'loc',
-                     table = 'v_nodes',
-                    ),
-            'loc_room': HtmlTableColumn(
-                     title = 'Room',
-                     field='loc_room',
-                     display = False,
-                     img = 'loc',
-                     table = 'v_nodes',
-                    ),
-            'loc_rack': HtmlTableColumn(
-                     title = 'Rack',
-                     field='loc_rack',
-                     display = False,
-                     img = 'loc',
-                     table = 'v_nodes',
-                    ),
-            'os_name': HtmlTableColumn(
-                     title = 'OS name',
-                     field='os_name',
-                     display = False,
-                     img = 'os16',
-                     table = 'v_nodes',
-                    ),
-            'os_release': HtmlTableColumn(
-                     title = 'OS release',
-                     field='os_release',
-                     display = False,
-                     img = 'os16',
-                     table = 'v_nodes',
-                    ),
-            'os_vendor': HtmlTableColumn(
-                     title = 'OS vendor',
-                     field='os_vendor',
-                     display = False,
-                     img = 'os16',
-                     table = 'v_nodes',
-                    ),
-            'os_arch': HtmlTableColumn(
-                     title = 'OS arch',
-                     field='os_arch',
-                     display = False,
-                     img = 'os16',
-                     table = 'v_nodes',
-                    ),
-            'os_kernel': HtmlTableColumn(
-                     title = 'OS kernel',
-                     field='os_kernel',
-                     display = False,
-                     img = 'os16',
-                     table = 'v_nodes',
-                    ),
-            'cpu_dies': HtmlTableColumn(
-                     title = 'CPU dies',
-                     field='cpu_dies',
-                     display = False,
-                     img = 'cpu16',
-                     table = 'v_nodes',
-                    ),
-            'cpu_cores': HtmlTableColumn(
-                     title = 'CPU cores',
-                     field='cpu_cores',
-                     display = False,
-                     img = 'cpu16',
-                     table = 'v_nodes',
-                    ),
-            'cpu_model': HtmlTableColumn(
-                     title = 'CPU model',
-                     field='cpu_model',
-                     display = False,
-                     img = 'cpu16',
-                     table = 'v_nodes',
-                    ),
-            'cpu_freq': HtmlTableColumn(
-                     title = 'CPU freq',
-                     field='cpu_freq',
-                     display = False,
-                     img = 'cpu16',
-                     table = 'v_nodes',
-                    ),
-            'mem_banks': HtmlTableColumn(
-                     title = 'Memory banks',
-                     field='mem_banks',
-                     display = False,
-                     img = 'mem16',
-                     table = 'v_nodes',
-                    ),
-            'mem_slots': HtmlTableColumn(
-                     title = 'Memory slots',
-                     field='mem_slots',
-                     display = False,
-                     img = 'mem16',
-                     table = 'v_nodes',
-                    ),
-            'mem_bytes': HtmlTableColumn(
-                     title = 'Memory',
-                     field='mem_bytes',
-                     display = False,
-                     img = 'mem16',
-                     table = 'v_nodes',
-                    ),
-            'nodename': HtmlTableColumn(
-                     title = 'Node name',
-                     field='nodename',
-                     display = False,
-                     img = 'node16',
-                     table = 'v_nodes',
-                    ),
-            'serial': HtmlTableColumn(
-                     title = 'Serial',
-                     field='serial',
-                     display = False,
-                     img = 'node16',
-                     table = 'v_nodes',
-                    ),
-            'model': HtmlTableColumn(
-                     title = 'Model',
-                     field='model',
-                     display = False,
-                     img = 'node16',
-                     table = 'v_nodes',
-                    ),
-            'team_responsible': HtmlTableColumn(
-                     title = 'Team responsible',
-                     field='team_responsible',
-                     display = False,
-                     img = 'guy16',
-                     table = 'v_nodes',
-                    ),
-            'role': HtmlTableColumn(
-                     title = 'Role',
-                     field='role',
-                     display = False,
-                     img = 'node16',
-                     table = 'v_nodes',
-                    ),
-            'environnement': HtmlTableColumn(
-                     title = 'Env',
-                     field='environnement',
-                     display = False,
-                     img = 'node16',
-                     table = 'v_nodes',
-                    ),
-            'warranty_end': HtmlTableColumn(
-                     title = 'Warranty end',
-                     field='warranty_end',
-                     display = False,
-                     img = 'node16',
-                     table = 'v_nodes',
-                    ),
-            'status': HtmlTableColumn(
-                     title = 'Status',
-                     field='status',
-                     display = False,
-                     img = 'node16',
-                     table = 'v_nodes',
-                    ),
-            'type': HtmlTableColumn(
-                     title = 'Type',
-                     field='type',
-                     display = False,
-                     img = 'node16',
-                     table = 'v_nodes',
-                    ),
-            'power_supply_nb': HtmlTableColumn(
-                     title = 'Power supply number',
-                     field='power_supply_nb',
-                     display = False,
-                     img = 'pwr',
-                     table = 'v_nodes',
-                    ),
-            'power_cabinet1': HtmlTableColumn(
-                     title = 'Power cabinet #1',
-                     field='power_cabinet1',
-                     display = False,
-                     img = 'pwr',
-                     table = 'v_nodes',
-                    ),
-            'power_cabinet2': HtmlTableColumn(
-                     title = 'Power cabinet #2',
-                     field='power_cabinet2',
-                     display = False,
-                     img = 'pwr',
-                     table = 'v_nodes',
-                    ),
-            'power_protect': HtmlTableColumn(
-                     title = 'Power protector',
-                     field='power_protect',
-                     display = False,
-                     img = 'pwr',
-                     table = 'v_nodes',
-                    ),
-            'power_protect_breaker': HtmlTableColumn(
-                     title = 'Power protector breaker',
-                     field='power_protect_breaker',
-                     display = False,
-                     img = 'pwr',
-                     table = 'v_nodes',
-                    ),
-            'power_breaker1': HtmlTableColumn(
-                     title = 'Power breaker #1',
-                     field='power_breaker1',
-                     display = False,
-                     img = 'pwr',
-                     table = 'v_nodes',
-                    ),
-            'power_breaker2': HtmlTableColumn(
-                     title = 'Power breaker #2',
-                     field='power_breaker2',
-                     display = False,
-                     img = 'pwr',
-                     table = 'v_nodes',
-                    ),
-}
-
-
-#
 # common column formatting
 #
+action_img_h = {
+    'stop': 'action_stop_16.png',
+    'stopapp': 'action_stop_16.png',
+    'stopdisk': 'action_stop_16.png',
+    'stoploop': 'action_stop_16.png',
+    'stopip': 'action_stop_16.png',
+    'umount': 'action_stop_16.png',
+    'start': 'action_start_16.png',
+    'startstandby': 'action_start_16.png',
+    'startapp': 'action_start_16.png',
+    'startdisk': 'action_start_16.png',
+    'startloop': 'action_start_16.png',
+    'startip': 'action_start_16.png',
+    'mount': 'action_start_16.png',
+    'restart': 'action_restart_16.png',
+    'switch': 'action_restart_16.png',
+    'freeze': 'frozen16.png',
+    'thaw': 'frozen16.png',
+    'syncall': 'action_sync_16.png',
+    'syncnodes': 'action_sync_16.png',
+    'syncdrp': 'action_sync_16.png',
+    'syncfullsync': 'action_sync_16.png',
+    'postsync': 'action_sync_16.png',
+    'push': 'log16.png',
+}
+
 os_img_h = {
   'linux': 'linux',
   'hp-ux': 'hpux',
@@ -1234,5 +1012,683 @@ def node_icon(os_name):
     else:
         img = ''
     return img
+
+now = datetime.datetime.now()
+
+class col_updated(HtmlTableColumn):
+    deadline = now - datetime.timedelta(days=1)
+
+    def outdated(self, t):
+         if t is None: return True
+         if t < self.deadline: return True
+         return False
+
+    def html(self, o):
+       d = self.get(o)
+       if self.outdated(d):
+           alert = 'color:darkred;font-weight:bold'
+       else:
+           alert = ''
+       return SPAN(d, _style=alert)
+
+class col_containertype(HtmlTableColumn):
+    def html(self, o):
+        id = self.t.extra_line_key(o)
+        s = self.get(o)
+        os = self.t.colprops['svc_guestos'].get(o)
+        if (os is None or len(os) == 0):
+            key = None
+            if 'os_name' in self.t.cols:
+                key = 'os_name'
+            if key is not None:
+                os = self.t.colprops[key].get(o)
+        d = DIV(
+              node_icon(os),
+              A(
+                s,
+                _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                  url=URL(r=request, c='ajax_node',f='ajax_node',
+                          vars={'node': self.t.colprops['svc_vmname'].get(o),
+                                'rowid': id}),
+                  id=id,
+                ),
+              ),
+              _class='nowrap',
+            )
+        return d
+
+class col_node(HtmlTableColumn):
+    def html(self, o):
+        id = self.t.extra_line_key(o)
+        s = self.get(o)
+        if 'svc_autostart' in self.t.cols and \
+           self.t.colprops['svc_autostart'].get(o) == s:
+            c = 'font-weight: bold'
+        else:
+            c = ''
+        d = DIV(
+              node_icon(self.t.colprops['os_name'].get(o)),
+              A(
+                s,
+                _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                  url=URL(r=request, c='ajax_node',f='ajax_node',
+                          vars={'node': s, 'rowid': id}),
+                  id=id,
+                ),
+                _style=c,
+              ),
+              _class='nowrap',
+            )
+        return d
+
+class col_svc(HtmlTableColumn):
+    def html(self, o):
+        id = self.t.extra_line_key(o)
+        s = self.get(o)
+        d = DIV(
+              A(
+                s,
+                _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                  url=URL(r=request, c='default',f='ajax_service',
+                          vars={'node': s, 'rowid': id}),
+                  id=id,
+                ),
+              ),
+            )
+        return d
+
+class col_status(HtmlTableColumn):
+    def html(self, o):
+        s = self.get(o)
+        c = 'status_undef'
+        if s is not None:
+            c = 'status_'+s.replace(" ", "_")
+        return SPAN(s, _class=c)
+
+class col_overallstatus(HtmlTableColumn):
+    def html(self, o):
+        cl = {}
+        for k in ['mon_overallstatus',
+                  'mon_containerstatus',
+                  'mon_ipstatus',
+                  'mon_fsstatus',
+                  'mon_diskstatus',
+                  'mon_syncstatus',
+                  'mon_appstatus']:
+            s = self.t.colprops[k].get(o)
+            if s is None:
+                cl[k] = 'status_undef'
+            else:
+                cl[k] = 'status_'+s.replace(" ", "_")
+
+        t = TABLE(
+          TR(
+            TD(self.t.colprops['mon_overallstatus'].get(o),
+               _colspan=6,
+               _class='status '+cl['mon_overallstatus'],
+            ),
+          ),
+          TR(
+            TD("vm", _class=cl['mon_containerstatus']),
+            TD("ip", _class=cl['mon_ipstatus']),
+            TD("fs", _class=cl['mon_fsstatus']),
+            TD("dg", _class=cl['mon_diskstatus']),
+            TD("sync", _class=cl['mon_syncstatus']),
+            TD("app", _class=cl['mon_appstatus']),
+          ),
+        )
+        return t
+
+class col_env(HtmlTableColumn):
+    def html(self, o):
+        s = self.get(o)
+        c = ''
+        if s == 'PRD':
+            c = 'b'
+        return SPAN(s, _class=c)
+
+#
+# colprops definitions
+#
+v_nodes_cols = [
+    'loc_country',
+    'loc_zip',
+    'loc_city',
+    'loc_addr',
+    'loc_building',
+    'loc_floor',
+    'loc_room',
+    'loc_rack',
+    'os_name',
+    'os_release',
+    'os_vendor',
+    'os_arch',
+    'os_kernel',
+    'cpu_dies',
+    'cpu_cores',
+    'cpu_model',
+    'cpu_freq',
+    'mem_banks',
+    'mem_slots',
+    'mem_bytes',
+    'team_responsible',
+    'serial',
+    'model',
+    'role',
+    'environnement',
+    'warranty_end',
+    'status',
+    'type',
+    'updated',
+    'power_supply_nb',
+    'power_cabinet1',
+    'power_cabinet2',
+    'power_protect',
+    'power_protect_breaker',
+    'power_breaker1',
+    'power_breaker2'
+]
+
+v_services_cols = [
+    'svc_app',
+    'svc_type',
+    'svc_drptype',
+    'svc_containertype',
+    'svc_vmname',
+    'svc_vcpus',
+    'svc_vmem',
+    'svc_guestos',
+    'svc_autostart',
+    'svc_nodes',
+    'svc_drpnode',
+    'svc_drpnodes',
+    'svc_comment',
+    'svc_updated',
+    'responsibles',
+    'mailto'
+]
+
+svcmon_cols = [
+    'mon_overallstatus',
+    'mon_updated',
+    'mon_frozen',
+    'mon_containerstatus',
+    'mon_ipstatus',
+    'mon_fsstatus',
+    'mon_diskstatus',
+    'mon_syncstatus',
+    'mon_appstatus'
+]
+
+v_services_colprops = {
+    'svc_name': col_svc(
+             title = 'Service',
+             field='svc_name',
+             display = False,
+             img = 'svc',
+             table = 'v_services',
+            ),
+    'svc_app': HtmlTableColumn(
+             title = 'App',
+             field='svc_app',
+             display = False,
+             img = 'svc',
+             table = 'v_services',
+            ),
+    'svc_containertype': col_containertype(
+             title = 'Container type',
+             field='svc_containertype',
+             display = False,
+             img = 'svc',
+             table = 'v_services',
+            ),
+    'svc_type': col_env(
+             title = 'Service type',
+             field='svc_type',
+             display = False,
+             img = 'svc',
+             table = 'v_services',
+            ),
+    'svc_vmname': col_node(
+             title = 'Container name',
+             field='svc_vmname',
+             display = False,
+             img = 'svc',
+             table = 'v_services',
+            ),
+    'svc_vcpus': HtmlTableColumn(
+             title = 'Vcpus',
+             field='svc_vcpus',
+             display = False,
+             img = 'svc',
+             table = 'v_services',
+            ),
+    'svc_vmem': HtmlTableColumn(
+             title = 'Vmem',
+             field='svc_vmem',
+             display = False,
+             img = 'svc',
+             table = 'v_services',
+            ),
+    'svc_guestos': HtmlTableColumn(
+             title = 'Guest OS',
+             field='svc_guestos',
+             display = False,
+             img = 'svc',
+             table = 'v_services',
+            ),
+    'svc_autostart': col_node(
+             title = 'Primary node',
+             field='svc_autostart',
+             display = False,
+             img = 'svc',
+             table = 'v_services',
+            ),
+    'svc_nodes': HtmlTableColumn(
+             title = 'Nodes',
+             field='svc_nodes',
+             display = False,
+             img = 'svc',
+             table = 'v_services',
+            ),
+    'svc_drpnode': col_node(
+             title = 'DRP node',
+             field='svc_drpnode',
+             display = False,
+             img = 'svc',
+             table = 'v_services',
+            ),
+    'svc_drpnodes': HtmlTableColumn(
+             title = 'DRP nodes',
+             field='svc_drpnodes',
+             display = False,
+             img = 'svc',
+             table = 'v_services',
+            ),
+    'svc_drptype': HtmlTableColumn(
+             title = 'DRP type',
+             field='svc_drptype',
+             display = False,
+             img = 'svc',
+             table = 'v_services',
+            ),
+    'svc_comment': HtmlTableColumn(
+             title = 'Comment',
+             field='svc_comment',
+             display = False,
+             img = 'svc',
+             table = 'v_services',
+            ),
+    'svc_updated': col_updated(
+             title = 'Last service update',
+             field='updated',
+             display = False,
+             img = 'time16',
+             table = 'v_services',
+            ),
+    'responsibles': HtmlTableColumn(
+             title = 'Responsibles',
+             field='responsibles',
+             display = False,
+             img = 'guy16',
+             table = 'v_services',
+            ),
+    'mailto': HtmlTableColumn(
+             title = 'Responsibles emails',
+             field='mailto',
+             display = False,
+             img = 'guy16',
+             table = 'v_services',
+            ),
+}
+
+svcmon_colprops = {
+    'mon_svcname': col_svc(
+             title = 'Service',
+             field='mon_svcname',
+             display = False,
+             img = 'svc',
+             table = 'svcmon',
+            ),
+    'mon_nodname': col_node(
+             title = 'Node',
+             field='mon_nodname',
+             display = False,
+             img = 'node16',
+             table = 'svcmon',
+            ),
+    'mon_overallstatus': col_overallstatus(
+             title = 'Status',
+             field='mon_overallstatus',
+             display = False,
+             img = 'svc',
+             table = 'svcmon',
+            ),
+    'mon_updated': col_updated(
+             title = 'Last status update',
+             field='mon_updated',
+             display = False,
+             img = 'time16',
+             table = 'svcmon',
+            ),
+    'mon_frozen': HtmlTableColumn(
+             title = 'Frozen',
+             field='mon_frozen',
+             display = False,
+             img = 'svc',
+             table = 'svcmon',
+            ),
+    'mon_containerstatus': col_status(
+             title = 'Container status',
+             field='mon_containerstatus',
+             display = False,
+             img = 'svc',
+             table = 'svcmon',
+            ),
+    'mon_ipstatus': col_status(
+             title = 'Ip status',
+             field='mon_ipstatus',
+             display = False,
+             img = 'svc',
+             table = 'svcmon',
+            ),
+    'mon_fsstatus': col_status(
+             title = 'Fs status',
+             field='mon_fsstatus',
+             display = False,
+             img = 'svc',
+             table = 'svcmon',
+            ),
+    'mon_diskstatus': col_status(
+             title = 'Disk status',
+             field='mon_diskstatus',
+             display = False,
+             img = 'svc',
+             table = 'svcmon',
+            ),
+    'mon_syncstatus': col_status(
+             title = 'Sync status',
+             field='mon_syncstatus',
+             display = False,
+             img = 'svc',
+             table = 'svcmon',
+            ),
+    'mon_appstatus': col_status(
+             title = 'App status',
+             field='mon_appstatus',
+             display = False,
+             img = 'svc',
+             table = 'svcmon',
+            ),
+}
+
+v_nodes_colprops = {
+    'node_updated': col_updated(
+             title = 'Last node update',
+             field='node_updated',
+             display = False,
+             img = 'time16',
+             table = 'v_nodes',
+            ),
+    'updated': col_updated(
+             title = 'Last node update',
+             field='updated',
+             display = False,
+             img = 'time16',
+             table = 'v_nodes',
+            ),
+    'loc_country': HtmlTableColumn(
+             title = 'Country',
+             field='loc_country',
+             display = False,
+             img = 'loc',
+             table = 'v_nodes',
+            ),
+    'loc_zip': HtmlTableColumn(
+             title = 'ZIP',
+             field='loc_zip',
+             display = False,
+             img = 'loc',
+             table = 'v_nodes',
+            ),
+    'loc_city': HtmlTableColumn(
+             title = 'City',
+             field='loc_city',
+             display = False,
+             img = 'loc',
+             table = 'v_nodes',
+            ),
+    'loc_addr': HtmlTableColumn(
+             title = 'Address',
+             field='loc_addr',
+             display = False,
+             img = 'loc',
+             table = 'v_nodes',
+            ),
+    'loc_building': HtmlTableColumn(
+             title = 'Building',
+             field='loc_building',
+             display = False,
+             img = 'loc',
+             table = 'v_nodes',
+            ),
+    'loc_floor': HtmlTableColumn(
+             title = 'Floor',
+             field='loc_floor',
+             display = False,
+             img = 'loc',
+             table = 'v_nodes',
+            ),
+    'loc_room': HtmlTableColumn(
+             title = 'Room',
+             field='loc_room',
+             display = False,
+             img = 'loc',
+             table = 'v_nodes',
+            ),
+    'loc_rack': HtmlTableColumn(
+             title = 'Rack',
+             field='loc_rack',
+             display = False,
+             img = 'loc',
+             table = 'v_nodes',
+            ),
+    'os_name': HtmlTableColumn(
+             title = 'OS name',
+             field='os_name',
+             display = False,
+             img = 'os16',
+             table = 'v_nodes',
+            ),
+    'os_release': HtmlTableColumn(
+             title = 'OS release',
+             field='os_release',
+             display = False,
+             img = 'os16',
+             table = 'v_nodes',
+            ),
+    'os_vendor': HtmlTableColumn(
+             title = 'OS vendor',
+             field='os_vendor',
+             display = False,
+             img = 'os16',
+             table = 'v_nodes',
+            ),
+    'os_arch': HtmlTableColumn(
+             title = 'OS arch',
+             field='os_arch',
+             display = False,
+             img = 'os16',
+             table = 'v_nodes',
+            ),
+    'os_kernel': HtmlTableColumn(
+             title = 'OS kernel',
+             field='os_kernel',
+             display = False,
+             img = 'os16',
+             table = 'v_nodes',
+            ),
+    'cpu_dies': HtmlTableColumn(
+             title = 'CPU dies',
+             field='cpu_dies',
+             display = False,
+             img = 'cpu16',
+             table = 'v_nodes',
+            ),
+    'cpu_cores': HtmlTableColumn(
+             title = 'CPU cores',
+             field='cpu_cores',
+             display = False,
+             img = 'cpu16',
+             table = 'v_nodes',
+            ),
+    'cpu_model': HtmlTableColumn(
+             title = 'CPU model',
+             field='cpu_model',
+             display = False,
+             img = 'cpu16',
+             table = 'v_nodes',
+            ),
+    'cpu_freq': HtmlTableColumn(
+             title = 'CPU freq',
+             field='cpu_freq',
+             display = False,
+             img = 'cpu16',
+             table = 'v_nodes',
+            ),
+    'mem_banks': HtmlTableColumn(
+             title = 'Memory banks',
+             field='mem_banks',
+             display = False,
+             img = 'mem16',
+             table = 'v_nodes',
+            ),
+    'mem_slots': HtmlTableColumn(
+             title = 'Memory slots',
+             field='mem_slots',
+             display = False,
+             img = 'mem16',
+             table = 'v_nodes',
+            ),
+    'mem_bytes': HtmlTableColumn(
+             title = 'Memory',
+             field='mem_bytes',
+             display = False,
+             img = 'mem16',
+             table = 'v_nodes',
+            ),
+    'nodename': col_node(
+             title = 'Node name',
+             field='nodename',
+             display = False,
+             img = 'node16',
+             table = 'v_nodes',
+            ),
+    'serial': HtmlTableColumn(
+             title = 'Serial',
+             field='serial',
+             display = False,
+             img = 'node16',
+             table = 'v_nodes',
+            ),
+    'model': HtmlTableColumn(
+             title = 'Model',
+             field='model',
+             display = False,
+             img = 'node16',
+             table = 'v_nodes',
+            ),
+    'team_responsible': HtmlTableColumn(
+             title = 'Team responsible',
+             field='team_responsible',
+             display = False,
+             img = 'guy16',
+             table = 'v_nodes',
+            ),
+    'role': HtmlTableColumn(
+             title = 'Role',
+             field='role',
+             display = False,
+             img = 'node16',
+             table = 'v_nodes',
+            ),
+    'environnement': col_env(
+             title = 'Env',
+             field='environnement',
+             display = False,
+             img = 'node16',
+             table = 'v_nodes',
+            ),
+    'warranty_end': HtmlTableColumn(
+             title = 'Warranty end',
+             field='warranty_end',
+             display = False,
+             img = 'node16',
+             table = 'v_nodes',
+            ),
+    'status': HtmlTableColumn(
+             title = 'Status',
+             field='status',
+             display = False,
+             img = 'node16',
+             table = 'v_nodes',
+            ),
+    'type': HtmlTableColumn(
+             title = 'Type',
+             field='type',
+             display = False,
+             img = 'node16',
+             table = 'v_nodes',
+            ),
+    'power_supply_nb': HtmlTableColumn(
+             title = 'Power supply number',
+             field='power_supply_nb',
+             display = False,
+             img = 'pwr',
+             table = 'v_nodes',
+            ),
+    'power_cabinet1': HtmlTableColumn(
+             title = 'Power cabinet #1',
+             field='power_cabinet1',
+             display = False,
+             img = 'pwr',
+             table = 'v_nodes',
+            ),
+    'power_cabinet2': HtmlTableColumn(
+             title = 'Power cabinet #2',
+             field='power_cabinet2',
+             display = False,
+             img = 'pwr',
+             table = 'v_nodes',
+            ),
+    'power_protect': HtmlTableColumn(
+             title = 'Power protector',
+             field='power_protect',
+             display = False,
+             img = 'pwr',
+             table = 'v_nodes',
+            ),
+    'power_protect_breaker': HtmlTableColumn(
+             title = 'Power protector breaker',
+             field='power_protect_breaker',
+             display = False,
+             img = 'pwr',
+             table = 'v_nodes',
+            ),
+    'power_breaker1': HtmlTableColumn(
+             title = 'Power breaker #1',
+             field='power_breaker1',
+             display = False,
+             img = 'pwr',
+             table = 'v_nodes',
+            ),
+    'power_breaker2': HtmlTableColumn(
+             title = 'Power breaker #2',
+             field='power_breaker2',
+             display = False,
+             img = 'pwr',
+             table = 'v_nodes',
+            ),
+}
 
 

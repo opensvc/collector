@@ -1,38 +1,3 @@
-import datetime
-
-now = datetime.datetime.now()
-deadline = now - datetime.timedelta(days=1)
-def outdated(t):
-     if t is None: return True
-     if t < deadline: return True
-     return False
-
-class col_node(HtmlTableColumn):
-    def html(self, o):
-        id = self.t.extra_line_key(o)
-        s = self.get(o)
-        d = DIV(
-              node_icon(o.v_nodes.os_name),
-              A(
-                s,
-                _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
-                  url=URL(r=request, c='ajax_node',f='ajax_node',
-                          vars={'node': s, 'rowid': id}),
-                  id=id,
-                ),
-              ),
-            )
-        return d
-
-class col_updated(HtmlTableColumn):
-    def html(self, o):
-       d = self.get(o)
-       if outdated(d):
-           alert = 'color:darkred;font-weight:bold'
-       else:
-           alert = ''
-       return SPAN(d, _style=alert)
-
 class table_packages(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -45,13 +10,6 @@ class table_packages(HtmlTable):
                       'pkg_updated']
         self.colprops = v_nodes_colprops
         self.colprops.update({
-            'nodename': col_node(
-                     title='Nodename',
-                     table='v_nodes',
-                     field='nodename',
-                     img='node16',
-                     display=True,
-                    ),
             'pkg_name': HtmlTableColumn(
                      title='Package',
                      table='packages',

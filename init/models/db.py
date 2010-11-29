@@ -300,6 +300,7 @@ db.define_table('v_svcmon',
     Field('mon_updated'),
     Field('mon_changed'),
     Field('mon_frozen'),
+    Field('node_updated'),
     Field('warranty_end'),
     Field('status'),
     Field('role'),
@@ -440,6 +441,7 @@ db.define_table('nodes',
     Field('power_protect_breaker'),
     Field('power_breaker1'),
     Field('power_breaker2'),
+    Field('updated'),
     migrate=False)
 
 db.define_table('v_nodes',
@@ -481,6 +483,7 @@ db.define_table('v_nodes',
     Field('power_protect_breaker'),
     Field('power_breaker1'),
     Field('power_breaker2'),
+    Field('updated'),
     migrate=False)
 
 db.define_table('alerts',
@@ -597,14 +600,6 @@ db.define_table('resmon',
     Field('res_log'),
     Field('changed'),
     Field('updated'),
-    migrate=False)
-
-db.define_table('svcmessages',
-    Field('id'),
-    Field('msg_svcname'),
-    Field('msg_last_editor'),
-    Field('msg_last_edit_date'),
-    Field('msg_body'),
     migrate=False)
 
 db.define_table('svcmon_log',
@@ -1052,4 +1047,12 @@ db.define_table('column_filters',
     Field('col_filter','string'),
     migrate=False)
 
+db.define_table('wiki_pages',
+    Field('name', writable=False, requires=IS_NOT_IN_DB(db,'wiki_pages.name')),
+    Field('author', db.auth_user, readable=False, writable=False),
+    Field('saved_on', 'datetime', readable=False, writable=False),
+    Field('title'),
+    Field('body', 'text'),
+    Field('change_note', length=200),
+    migrate=False)
 
