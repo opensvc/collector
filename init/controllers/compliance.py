@@ -1126,7 +1126,9 @@ class table_comp_filtersets(HtmlTable):
         self.cols = ['fset_name',
                      'fset_updated',
                      'fset_author',
-                     'f_log_op']
+                     'f_log_op',
+                     'f_order',
+                     'encap_fset_name']
         self.cols += filters_cols
 
         self.colprops = {
@@ -1154,13 +1156,27 @@ class table_comp_filtersets(HtmlTable):
                      display=True,
                      img='filter16',
                     ),
+            'f_order': HtmlTableColumn(
+                     title='Ordering',
+                     field='f_order',
+                     display=False,
+                     img='filter16',
+                    ),
+            'encap_fset_name': HtmlTableColumn(
+                     title='Encap filterset',
+                     field='encap_fset_name',
+                     display=True,
+                     img='filter16',
+                    ),
         }
         self.colprops.update(filters_colprops)
+        self.form_encap_filterset_attach = self.comp_encap_filterset_attach_sqlform()
         self.form_filterset_add = self.comp_filterset_add_sqlform()
         self.form_filter_attach = self.comp_filter_attach_sqlform()
         self.additional_tools.append('filterset_rename')
         self.additional_tools.append('filterset_add')
         self.additional_tools.append('filterset_del')
+        self.additional_tools.append('encap_filterset_attach')
         self.additional_tools.append('filter_attach')
         self.additional_tools.append('filter_detach')
         self.ajax_col_values = ajax_comp_filtersets_col_values
@@ -1171,6 +1187,7 @@ class table_comp_filtersets(HtmlTable):
         ids = []
         ids.append(o['fset_id'])
         ids.append(o['id'])
+        ids.append(o['encap_fset_id'])
         return '_'.join([self.id, 'ckid']+map(str,ids))
 
     def filter_detach(self):
@@ -1218,6 +1235,25 @@ class table_comp_filtersets(HtmlTable):
             )
         return d
 
+    def encap_filterset_attach(self):
+        d = DIV(
+              A(
+                T("Attach filterset"),
+                _onclick="""
+                  click_toggle_vis('%(div)s', 'block');
+                """%dict(div='comp_encap_filterset_attach'),
+              ),
+              DIV(
+                self.form_encap_filterset_attach,
+                _style='display:none',
+                _class='white_float',
+                _name='comp_encap_filterset_attach',
+                _id='comp_encap_filterset_attach',
+              ),
+              _class='floatw',
+            )
+        return d
+
     def filter_attach(self):
         d = DIV(
               A(
@@ -1256,6 +1292,58 @@ class table_comp_filtersets(HtmlTable):
             )
         return d
 
+    @auth.requires_membership('CompManager')
+    def comp_encap_filterset_attach_sqlform(self):
+        db.gen_filtersets_filters.fset_id.readable = True
+        db.gen_filtersets_filters.fset_id.writable = True
+        db.gen_filtersets_filters.f_log_op.readable = True
+        db.gen_filtersets_filters.f_log_op.writable = True
+        db.gen_filtersets_filters.f_id.readable = False
+        db.gen_filtersets_filters.f_id.writable = True
+        db.gen_filtersets_filters.encap_fset_id.readable = True
+        db.gen_filtersets_filters.encap_fset_id.writable = True
+        db.gen_filtersets_filters.f_order.default = 0
+        db.gen_filtersets_filters.fset_id.requires = IS_IN_DB(
+            db,
+            db.gen_filtersets.id,
+            "%(fset_name)s",
+            zero=T('choose one')
+        )
+        if 'fset_id' in request.vars:
+            q = db.gen_filtersets_filters.encap_fset_id == request.vars.encap_fset_id
+            q &= db.gen_filtersets_filters.fset_id == request.vars.fset_id
+            existing = db(q)
+            encap_fset_id_validator = IS_NOT_IN_DB(
+                existing, 'gen_filtersets_filters.encap_fset_id')
+            allowed = db(db.gen_filtersets.id != request.vars.fset_id)
+        else:
+            encap_fset_id_validator = None
+            allowed = db(db.gen_filtersets.id > 0)
+
+        db.gen_filtersets_filters.encap_fset_id.requires = IS_IN_DB(
+            allowed,
+            db.gen_filtersets.id,
+            "%(fset_name)s",
+            zero=T('choose one'),
+            _and=encap_fset_id_validator
+        )
+
+        f = SQLFORM(
+                 db.gen_filtersets_filters,
+                 fields=['fset_id', 'encap_fset_id', 'f_log_op', 'f_order'],
+                 labels={'fset_id': T('Parent filterset'),
+                         'encap_fset_id': T('Child filterset'),
+                         'f_log_op': T('Operator'),
+                         'f_order': T('Order'),
+                        },
+                 _name='form_encap_filterset_attach',
+            )
+
+        # default values
+        f.vars.f_log_op = 'AND'
+
+        return f
+
     def comp_filter_attach_sqlform(self):
         db.gen_filtersets_filters.fset_id.readable = True
         db.gen_filtersets_filters.fset_id.writable = True
@@ -1263,6 +1351,9 @@ class table_comp_filtersets(HtmlTable):
         db.gen_filtersets_filters.f_id.writable = True
         db.gen_filtersets_filters.f_log_op.readable = True
         db.gen_filtersets_filters.f_log_op.writable = True
+        db.gen_filtersets_filters.encap_fset_id.readable = False
+        db.gen_filtersets_filters.encap_fset_id.writable = True
+        db.gen_filtersets_filters.f_order.default = 0
         db.gen_filtersets_filters.fset_id.requires = IS_IN_DB(
             db,
             db.gen_filtersets.id,
@@ -1288,9 +1379,11 @@ class table_comp_filtersets(HtmlTable):
 
         f = SQLFORM(
                  db.gen_filtersets_filters,
+                 fields=['fset_id', 'f_id', 'f_log_op', 'f_order'],
                  labels={'fset_id': T('Filterset'),
                          'f_id': T('Filter'),
                          'f_log_op': T('Operator'),
+                         'f_order': T('Order'),
                         },
                  _name='form_filterset_add',
             )
@@ -1324,22 +1417,38 @@ class table_comp_filtersets(HtmlTable):
 def comp_detach_filters(ids=[]):
     if len(ids) == 0:
         raise ToolError("detach filter failed: no filter selected")
-    ids = map(lambda x: map(int, (x.split('_'))), ids)
+    ids = map(lambda x: map(int, (x.replace('None','0').split('_'))), ids)
     q = db.v_gen_filtersets.id < 0
-    for (fset_id, f_id) in ids:
-        q |= ((db.v_gen_filtersets.id == f_id) & (db.v_gen_filtersets.fset_id == fset_id))
+    for (fset_id, f_id, encap_fset_id) in ids:
+        if encap_fset_id > 0:
+            q |= ((db.v_gen_filtersets.encap_fset_id == encap_fset_id) & (db.v_gen_filtersets.fset_id == fset_id))
+        else:
+            q |= ((db.v_gen_filtersets.f_id == f_id) & (db.v_gen_filtersets.fset_id == fset_id))
     rows = db(q).select()
     if len(rows) == 0:
         raise ToolError("detach filter failed: can't find selected filters")
-    f_names = ', '.join(map(lambda f: ' '.join([
+
+    def print_filter(f):
+        if f.encap_fset_id > 0:
+            return ' '.join([
+                       f.encap_fset_name,
+                       'from',
+                       f.fset_name])
+        else:
+            return ' '.join([
                        f.f_table+'.'+f.f_field,
                        f.f_op,
                        f.f_value,
                        'from',
-                       f.fset_name]), rows))
+                       f.fset_name])
+
+    f_names = ', '.join(map(print_filter, rows))
     q = db.gen_filtersets_filters.id < 0
-    for (fset_id, f_id) in ids:
-        q |= ((db.gen_filtersets_filters.f_id == f_id) & (db.gen_filtersets_filters.fset_id == fset_id))
+    for (fset_id, f_id, encap_fset_id) in ids:
+        if encap_fset_id > 0:
+            q |= ((db.gen_filtersets_filters.encap_fset_id == encap_fset_id) & (db.gen_filtersets_filters.fset_id == fset_id))
+        else:
+            q |= ((db.gen_filtersets_filters.f_id == f_id) & (db.gen_filtersets_filters.fset_id == fset_id))
     db(q).delete()
     _log('compliance.filterset.filter.detach',
         'detached filters %(f_names)s',
@@ -1564,10 +1673,22 @@ def ajax_comp_filtersets():
     elif t.form_filterset_add.errors:
         response.flash = T("errors in form")
 
+    if t.form_encap_filterset_attach.accepts(request.vars):
+        q = db.v_gen_filtersets.encap_fset_id==request.vars.encap_fset_id
+        q &= db.v_gen_filtersets.fset_id==request.vars.fset_id
+        f = db(q).select()[0]
+        f_name = ' '.join([request.vars.f_log_op,
+                           f.encap_fset_name])
+        _log('compliance.filterset.filterset.attach',
+            'filterset %(f_name)s attached to filterset %(fset_name)s',
+            dict(f_name=f_name, fset_name=f.fset_name))
+    elif t.form_filter_attach.errors:
+        response.flash = T("errors in form")
+
     if t.form_filter_attach.accepts(request.vars):
         q = db.v_gen_filtersets.f_id==request.vars.f_id
         q &= db.v_gen_filtersets.fset_id==request.vars.fset_id
-        f = db(db.v_gen_filtersets.f_id==request.vars.f_id).select()[0]
+        f = db(q).select()[0]
         f_name = ' '.join([request.vars.f_log_op,
                            f.f_table+'.'+f.f_field,
                            f.f_op,
@@ -1578,7 +1699,7 @@ def ajax_comp_filtersets():
     elif t.form_filter_attach.errors:
         response.flash = T("errors in form")
 
-    o = db.v_gen_filtersets.fset_name|db.v_gen_filtersets.f_id
+    o = db.v_gen_filtersets.fset_name|db.v_gen_filtersets.f_order
     q = db.v_gen_filtersets.fset_id > 0
     for f in t.cols:
         q = _where(q, 'v_gen_filtersets', t.filter_parse(f), f)
@@ -2640,27 +2761,39 @@ def comp_log_action(vars, vals):
         generic_insert('comp_status', vars, vals)
 
 def comp_query(q, row):
-    f = row.gen_filters
-    fset = row.gen_filtersets_filters
-    if f.f_op == '=':
-        qry = db[f.f_table][f.f_field] == f.f_value
-    elif f.f_op == 'LIKE':
-        qry = db[f.f_table][f.f_field].like(f.f_value)
-    elif f.f_op == 'IN':
-        qry = db[f.f_table][f.f_field].belongs(f.f_value.split(','))
-    elif f.f_op == '>=':
-        qry = db[f.f_table][f.f_field] >= f.f_value
-    elif f.f_op == '>':
-        qry = db[f.f_table][f.f_field] > f.f_value
-    elif f.f_op == '<=':
-        qry = db[f.f_table][f.f_field] <= f.f_value
-    elif f.f_op == '<':
-        qry = db[f.f_table][f.f_field] < f.f_value
+    if 'v_gen_filtersets' in row:
+        v = row.v_gen_filtersets
     else:
-        return q
-    if fset.f_log_op == 'AND':
+        v = row
+    if v.encap_fset_id > 0:
+        o = db.v_gen_filtersets.f_order
+        qr = db.v_gen_filtersets.fset_id == v.encap_fset_id
+        rows = db(qr).select(orderby=o)
+        qry = None
+        for r in rows:
+            qry = comp_query(qry, r)
+    else:
+        if v.f_op == '=':
+            qry = db[v.f_table][v.f_field] == v.f_value
+        elif v.f_op == 'LIKE':
+            qry = db[v.f_table][v.f_field].like(v.f_value)
+        elif v.f_op == 'IN':
+            qry = db[v.f_table][v.f_field].belongs(v.f_value.split(','))
+        elif v.f_op == '>=':
+            qry = db[v.f_table][v.f_field] >= v.f_value
+        elif v.f_op == '>':
+            qry = db[v.f_table][v.f_field] > v.f_value
+        elif v.f_op == '<=':
+            qry = db[v.f_table][v.f_field] <= v.f_value
+        elif v.f_op == '<':
+            qry = db[v.f_table][v.f_field] < v.f_value
+        else:
+            return q
+    if q is None:
+        q = qry
+    elif v.f_log_op == 'AND':
         q &= qry
-    elif fset.f_log_op == 'OR':
+    elif v.f_log_op == 'OR':
         q |= qry
     return q
 
@@ -2668,8 +2801,8 @@ def comp_format_filter(q):
     s = str(q)
     if 'comp_node_ruleset' in s:
         return ''
-    s = s.replace('(','')
-    s = s.replace(')','')
+    #s = s.replace('(','')
+    #s = s.replace(')','')
     s = s.replace('nodes.id>0 AND ','')
     return s
 
@@ -2678,7 +2811,7 @@ def comp_get_node_ruleset(nodename):
     rows = db(q).select()
     if len(rows) != 1:
         return {}
-    ruleset = {'name': 'osvc_node', 
+    ruleset = {'name': 'osvc_node',
                'filter': str(q),
                'vars': []}
     for f in db.nodes.fields:
@@ -2726,11 +2859,14 @@ def comp_get_dated_ruleset(nodename, date):
     dated_explicit_ruleset_ids = [r.id for r in db(q).select()]
 
     # add contextual rulesets variables
-    q = db.comp_rulesets.id>0
-    q &= db.comp_rulesets.id == db.comp_rulesets_filtersets.ruleset_id
-    q &= db.gen_filtersets_filters.fset_id == db.comp_rulesets_filtersets.fset_id
-    q &= db.gen_filtersets_filters.f_id == db.gen_filters.id
-    rows = db(q).select(orderby=db.comp_rulesets.ruleset_name)
+    v = db.v_gen_filtersets
+    rset = db.comp_rulesets
+    rset_fset = db.comp_rulesets_filtersets
+    o = rset.ruleset_name|v.f_order
+    q = rset.id>0
+    q &= rset.id == rset_fset.ruleset_id
+    q &= rset_fset.fset_id == v.fset_id
+    rows = db(q).select(orderby=o)
 
     q = db.nodes.nodename == nodename
     last_index = len(rows)-1
@@ -2762,11 +2898,14 @@ def comp_get_ruleset(nodename):
     ruleset = comp_get_node_ruleset(nodename)
 
     # add contextual rulesets variables
-    q = db.comp_rulesets.id>0
-    q &= db.comp_rulesets.id == db.comp_rulesets_filtersets.ruleset_id
-    q &= db.gen_filtersets_filters.fset_id == db.comp_rulesets_filtersets.fset_id
-    q &= db.gen_filtersets_filters.f_id == db.gen_filters.id
-    rows = db(q).select(orderby=db.comp_rulesets.ruleset_name)
+    v = db.v_gen_filtersets
+    rset = db.comp_rulesets
+    rset_fset = db.comp_rulesets_filtersets
+    o = rset.ruleset_name|v.f_order
+    q = rset.id>0
+    q &= rset.id == rset_fset.ruleset_id
+    q &= rset_fset.fset_id == v.fset_id
+    rows = db(q).select(orderby=o)
 
     q = db.nodes.nodename == nodename
     last_index = len(rows)-1

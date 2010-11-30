@@ -924,7 +924,9 @@ db.define_table('gen_filtersets',
 
 db.define_table('gen_filtersets_filters',
     Field('fset_id','integer', requires=IS_NOT_EMPTY()),
-    Field('f_id','integer', requires=IS_NOT_EMPTY()),
+    Field('encap_fset_id','integer'),
+    Field('f_id','integer'),
+    Field('f_order','integer'),
     Field('f_log_op','string',
           requires=IS_IN_SET(['AND', 'OR']),
           default='AND'),
@@ -945,6 +947,7 @@ db.define_table('v_gen_filtersets',
     db.gen_filtersets,
     db.gen_filtersets_filters,
     db.gen_filters,
+    Field('encap_fset_name','string'),
     migrate=False)
 
 db.define_table('comp_rulesets',
