@@ -36,10 +36,11 @@ class table_apps(HtmlTable):
         self.ajax_col_values = 'ajax_apps_col_values'
         self.dbfilterable = True
         self.checkboxes = True
-        self.additional_tools.append('app_del')
-        self.additional_tools.append('app_add')
-        self.additional_tools.append('group_detach')
-        self.additional_tools.append('group_attach')
+        if 'Manager' in user_groups():
+            self.additional_tools.append('app_del')
+            self.additional_tools.append('app_add')
+            self.additional_tools.append('group_detach')
+            self.additional_tools.append('group_attach')
 
     def app_add(self):
         label = 'Add application'

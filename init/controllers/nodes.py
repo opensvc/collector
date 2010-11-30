@@ -8,6 +8,7 @@ def _label(key):
              v_nodes_colprops[key].title,
            )
 
+@auth.requires_membership('Manager')
 def _node_form(record=None):
     if record is not None:
         deletable = True
@@ -164,8 +165,9 @@ class table_nodes(HtmlTable):
         self.checkbox_id_col = 'nodename'
         self.dbfilterable = True
         self.ajax_col_values = 'ajax_nodes_col_values'
-        self.additional_tools.append('node_add')
-        self.additional_tools.append('node_del')
+        if 'Manager' in user_groups():
+            self.additional_tools.append('node_add')
+            self.additional_tools.append('node_del')
         self.additional_tools.append('pkgdiff')
         self.additional_tools.append('grpperf')
 

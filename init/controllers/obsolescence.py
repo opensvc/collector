@@ -193,8 +193,9 @@ class table_obs(HtmlTable):
         self.dbfilterable = True
         self.checkboxes = True
         self.extraline = True
-        self.additional_tools.append('item_del')
-        self.additional_tools.append('item_refresh')
+        if 'Manager' in user_groups():
+            self.additional_tools.append('item_del')
+            self.additional_tools.append('item_refresh')
 
     def item_refresh(self):
         d = DIV(
