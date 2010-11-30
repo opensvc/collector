@@ -374,7 +374,7 @@ def ajax_users():
         if t.form_group_add.accepts(request.vars, formname='form_add_group'):
             response.flash = T("group added")
             # refresh forms comboboxes
-            #t.form_group_attach = t.group_attach_sqlform()
+            t.form_group_attach = t.group_attach_sqlform()
             _log('users.group.add',
                  'added group %(u)s',
                  dict(u=request.vars.role))
