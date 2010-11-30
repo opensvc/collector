@@ -458,15 +458,17 @@ def ajax_actions():
     t.setup_pager(n)
     #raise Exception(db(q)._select(limitby=(t.pager_start,t.pager_end), orderby=o))
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
-    return t.html()
+    return SPAN(
+              DIV(
+               _id='ackpanel',
+               _class='ackpanel',
+              ),
+              t.html(),
+            )
 
 @auth.requires_login()
 def svcactions():
     t = DIV(
-          DIV(
-            _id='ackpanel',
-            _class='ackpanel',
-          ),
           ajax_actions(),
           _id='actions',
         )
