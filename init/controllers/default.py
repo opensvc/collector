@@ -1363,7 +1363,7 @@ class table_svcmon(HtmlTable):
                            c,
                            _onclick="""if (confirm("%(text)s")){%(s)s};"""%dict(
                              s=self.ajax_submit(args=['do_action', c]),
-                             text=T("Are you sure you want to execute a '%s' action on all selected services@nodes. Please confirm action"%c),
+                             text=T("""Are you sure you want to execute a %(a)s action on all selected service@node. Please confirm action""",dict(a=c)),
                            ),
                          ),
                        ),
