@@ -13,6 +13,12 @@ def group_role(id):
         return None
     return rows[0].role
 
+def user_groups():
+    q = db.auth_membership.user_id==auth.user_id
+    q &= db.auth_membership.group_id==db.auth_group.id
+    rows = db(q).select(db.auth_group.role)
+    return map(lambda x: x.role, rows)
+
 class MyAuth(Auth):
     def __init__(self, environment, db = None):
         Auth.__init__(self,environment,db)

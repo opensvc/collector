@@ -486,18 +486,19 @@ class table_comp_rulesets(HtmlTable):
         }
         self.colprops['var_name'].t = self
         self.colprops['var_value'].t = self
-        self.form_filterset_attach = self.comp_filterset_attach_sqlform()
-        self.form_ruleset_var_add = self.comp_ruleset_var_add_sqlform()
-        self.form_ruleset_add = self.comp_ruleset_add_sqlform()
-        self.additional_tools.append('filterset_attach')
-        self.additional_tools.append('filterset_detach')
-        self.additional_tools.append('ruleset_var_add')
-        self.additional_tools.append('ruleset_var_del')
-        self.additional_tools.append('ruleset_del')
-        self.additional_tools.append('ruleset_add')
-        self.additional_tools.append('ruleset_rename')
-        self.additional_tools.append('ruleset_clone')
-        self.additional_tools.append('ruleset_change_type')
+        if 'CompManager' in user_groups():
+            self.form_filterset_attach = self.comp_filterset_attach_sqlform()
+            self.form_ruleset_var_add = self.comp_ruleset_var_add_sqlform()
+            self.form_ruleset_add = self.comp_ruleset_add_sqlform()
+            self.additional_tools.append('filterset_attach')
+            self.additional_tools.append('filterset_detach')
+            self.additional_tools.append('ruleset_var_add')
+            self.additional_tools.append('ruleset_var_del')
+            self.additional_tools.append('ruleset_del')
+            self.additional_tools.append('ruleset_add')
+            self.additional_tools.append('ruleset_rename')
+            self.additional_tools.append('ruleset_clone')
+            self.additional_tools.append('ruleset_change_type')
         self.ajax_col_values = 'ajax_comp_rulesets_col_values'
 
     def ruleset_change_type(self):
@@ -691,6 +692,7 @@ class table_comp_rulesets(HtmlTable):
             )
         return d
 
+    @auth.requires_membership('CompManager')
     def comp_ruleset_add_sqlform(self):
         db.comp_rulesets.ruleset_name.readable = True
         db.comp_rulesets.ruleset_name.writable = True
@@ -740,6 +742,7 @@ class table_comp_rulesets(HtmlTable):
             )
         return d
 
+    @auth.requires_membership('CompManager')
     def comp_filterset_attach_sqlform(self):
         if 'ruleset_id' in request.vars:
             ruleset_validator = IS_NOT_IN_DB(
@@ -769,6 +772,7 @@ class table_comp_rulesets(HtmlTable):
             )
         return f
 
+    @auth.requires_membership('CompManager')
     def comp_ruleset_var_add_sqlform(self):
         db.comp_rulesets_variables.id.readable = False
         db.comp_rulesets_variables.id.writable = False
@@ -1009,39 +1013,42 @@ def ajax_comp_rulesets():
        except ToolError, e:
            v.flash = str(e)
 
-    if v.form_ruleset_add.accepts(request.vars, formname='add_ruleset'):
-        # refresh forms ruleset comboboxes
-        v.form_filterset_attach = v.comp_filterset_attach_sqlform()
-        v.form_ruleset_var_add = v.comp_ruleset_var_add_sqlform()
-        _log('compliance.ruleset.add',
-             'added ruleset %(ruleset)s',
-             dict(ruleset=request.vars.ruleset_name))
-    elif v.form_ruleset_add.errors:
-        response.flash = T("errors in form")
+    try:
+        if v.form_ruleset_add.accepts(request.vars, formname='add_ruleset'):
+            # refresh forms ruleset comboboxes
+            v.form_filterset_attach = v.comp_filterset_attach_sqlform()
+            v.form_ruleset_var_add = v.comp_ruleset_var_add_sqlform()
+            _log('compliance.ruleset.add',
+                 'added ruleset %(ruleset)s',
+                 dict(ruleset=request.vars.ruleset_name))
+        elif v.form_ruleset_add.errors:
+            response.flash = T("errors in form")
 
-    if v.form_filterset_attach.accepts(request.vars):
-        q = db.v_comp_rulesets.fset_id == request.vars.fset_id
-        q &= db.v_comp_rulesets.ruleset_id == request.vars.ruleset_id
-        rows = db(q).select()
-        if len(rows) != 1:
-            raise ToolError("filterset attach failed: can't find filterset")
-        fset = rows[0].fset_name
-        ruleset = rows[0].ruleset_name
-        _log('compliance.ruleset.filterset.attach',
-             'attached filterset %(fset)s to ruleset %(ruleset)s',
-             dict(fset=fset, ruleset=ruleset))
-    elif v.form_filterset_attach.errors:
-        response.flash = T("errors in form")
+        if v.form_filterset_attach.accepts(request.vars):
+            q = db.v_comp_rulesets.fset_id == request.vars.fset_id
+            q &= db.v_comp_rulesets.ruleset_id == request.vars.ruleset_id
+            rows = db(q).select()
+            if len(rows) != 1:
+                raise ToolError("filterset attach failed: can't find filterset")
+            fset = rows[0].fset_name
+            ruleset = rows[0].ruleset_name
+            _log('compliance.ruleset.filterset.attach',
+                 'attached filterset %(fset)s to ruleset %(ruleset)s',
+                 dict(fset=fset, ruleset=ruleset))
+        elif v.form_filterset_attach.errors:
+            response.flash = T("errors in form")
 
-    if v.form_ruleset_var_add.accepts(request.vars):
-        var = '='.join((request.vars.var_name,
-                        request.vars.var_value))
-        ruleset = db(db.comp_rulesets.id==request.vars.ruleset_id).select(db.comp_rulesets.ruleset_name)[0].ruleset_name
-        _log('compliance.ruleset.variable.add',
-             'added ruleset variable %(var)s to ruleset %(ruleset)s',
-             dict(var=var, ruleset=ruleset))
-    elif v.form_ruleset_var_add.errors:
-        response.flash = T("errors in form")
+        if v.form_ruleset_var_add.accepts(request.vars):
+            var = '='.join((request.vars.var_name,
+                            request.vars.var_value))
+            ruleset = db(db.comp_rulesets.id==request.vars.ruleset_id).select(db.comp_rulesets.ruleset_name)[0].ruleset_name
+            _log('compliance.ruleset.variable.add',
+                 'added ruleset variable %(var)s to ruleset %(ruleset)s',
+                 dict(var=var, ruleset=ruleset))
+        elif v.form_ruleset_var_add.errors:
+            response.flash = T("errors in form")
+    except AttributeError:
+        pass
 
     o = db.v_comp_rulesets.ruleset_name|db.v_comp_rulesets.var_name
     q = db.v_comp_rulesets.ruleset_id > 0
@@ -1170,15 +1177,16 @@ class table_comp_filtersets(HtmlTable):
                     ),
         }
         self.colprops.update(filters_colprops)
-        self.form_encap_filterset_attach = self.comp_encap_filterset_attach_sqlform()
-        self.form_filterset_add = self.comp_filterset_add_sqlform()
-        self.form_filter_attach = self.comp_filter_attach_sqlform()
-        self.additional_tools.append('filterset_rename')
-        self.additional_tools.append('filterset_add')
-        self.additional_tools.append('filterset_del')
-        self.additional_tools.append('encap_filterset_attach')
-        self.additional_tools.append('filter_attach')
-        self.additional_tools.append('filter_detach')
+        if 'CompManager' in user_groups():
+            self.form_encap_filterset_attach = self.comp_encap_filterset_attach_sqlform()
+            self.form_filterset_add = self.comp_filterset_add_sqlform()
+            self.form_filter_attach = self.comp_filter_attach_sqlform()
+            self.additional_tools.append('filterset_rename')
+            self.additional_tools.append('filterset_add')
+            self.additional_tools.append('filterset_del')
+            self.additional_tools.append('encap_filterset_attach')
+            self.additional_tools.append('filter_attach')
+            self.additional_tools.append('filter_detach')
         self.ajax_col_values = ajax_comp_filtersets_col_values
 
     def checkbox_key(self, o):
@@ -1344,6 +1352,7 @@ class table_comp_filtersets(HtmlTable):
 
         return f
 
+    @auth.requires_membership('CompManager')
     def comp_filter_attach_sqlform(self):
         db.gen_filtersets_filters.fset_id.readable = True
         db.gen_filtersets_filters.fset_id.writable = True
@@ -1393,6 +1402,7 @@ class table_comp_filtersets(HtmlTable):
 
         return f
 
+    @auth.requires_membership('CompManager')
     def comp_filterset_add_sqlform(self):
         db.gen_filtersets.fset_name.readable = True
         db.gen_filtersets.fset_name.writable = True
@@ -1497,9 +1507,10 @@ class table_comp_filters(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = filters_cols
         self.colprops = filters_colprops
-        self.form_filter_add = self.comp_filters_add_sqlform()
-        self.additional_tools.append('filter_add')
-        self.additional_tools.append('filter_del')
+        if 'CompManager' in user_groups():
+            self.form_filter_add = self.comp_filters_add_sqlform()
+            self.additional_tools.append('filter_add')
+            self.additional_tools.append('filter_del')
         self.ajax_col_values = 'ajax_comp_filters_col_values'
 
     def filter_del(self):
@@ -1531,6 +1542,7 @@ class table_comp_filters(HtmlTable):
             )
         return d
 
+    @auth.requires_membership('CompManager')
     def comp_filters_add_sqlform(self):
         db.gen_filters.f_op.readable = True
         db.gen_filters.f_op.writable = True
@@ -1612,15 +1624,18 @@ def ajax_comp_filters():
         except ToolError, e:
             v.flash = str(e)
 
-    if v.form_filter_add.accepts(request.vars):
-        f_name = ' '.join([request.vars.f_table+'.'+request.vars.f_field,
-                           request.vars.f_op,
-                           request.vars.f_value])
-        _log('compliance.filter.add',
-            'added filter %(f_name)s',
-            dict(f_name=f_name))
-    elif v.form_filter_add.errors:
-        response.flash = T("errors in form")
+    try:
+        if v.form_filter_add.accepts(request.vars):
+            f_name = ' '.join([request.vars.f_table+'.'+request.vars.f_field,
+                               request.vars.f_op,
+                               request.vars.f_value])
+            _log('compliance.filter.add',
+                'added filter %(f_name)s',
+                dict(f_name=f_name))
+        elif v.form_filter_add.errors:
+            response.flash = T("errors in form")
+    except AttributeError:
+        pass
 
     o = db.gen_filters.f_table|db.gen_filters.f_field|db.gen_filters.f_op|db.gen_filters.f_field
     q = db.gen_filters.id > 0
@@ -1665,39 +1680,42 @@ def ajax_comp_filtersets():
         except ToolError, e:
             t.flash = str(e)
 
-    if t.form_filterset_add.accepts(request.vars):
-        t.form_filter_attach = t.comp_filter_attach_sqlform()
-        _log('compliance.filterset.add',
-            'added filterset %(fset_name)s',
-            dict(fset_name=request.vars.fset_name))
-    elif t.form_filterset_add.errors:
-        response.flash = T("errors in form")
+    try:
+        if t.form_filterset_add.accepts(request.vars):
+            t.form_filter_attach = t.comp_filter_attach_sqlform()
+            _log('compliance.filterset.add',
+                'added filterset %(fset_name)s',
+                dict(fset_name=request.vars.fset_name))
+        elif t.form_filterset_add.errors:
+            response.flash = T("errors in form")
 
-    if t.form_encap_filterset_attach.accepts(request.vars):
-        q = db.v_gen_filtersets.encap_fset_id==request.vars.encap_fset_id
-        q &= db.v_gen_filtersets.fset_id==request.vars.fset_id
-        f = db(q).select()[0]
-        f_name = ' '.join([request.vars.f_log_op,
-                           f.encap_fset_name])
-        _log('compliance.filterset.filterset.attach',
-            'filterset %(f_name)s attached to filterset %(fset_name)s',
-            dict(f_name=f_name, fset_name=f.fset_name))
-    elif t.form_filter_attach.errors:
-        response.flash = T("errors in form")
+        if t.form_encap_filterset_attach.accepts(request.vars):
+            q = db.v_gen_filtersets.encap_fset_id==request.vars.encap_fset_id
+            q &= db.v_gen_filtersets.fset_id==request.vars.fset_id
+            f = db(q).select()[0]
+            f_name = ' '.join([request.vars.f_log_op,
+                               f.encap_fset_name])
+            _log('compliance.filterset.filterset.attach',
+                'filterset %(f_name)s attached to filterset %(fset_name)s',
+                dict(f_name=f_name, fset_name=f.fset_name))
+        elif t.form_filter_attach.errors:
+            response.flash = T("errors in form")
 
-    if t.form_filter_attach.accepts(request.vars):
-        q = db.v_gen_filtersets.f_id==request.vars.f_id
-        q &= db.v_gen_filtersets.fset_id==request.vars.fset_id
-        f = db(q).select()[0]
-        f_name = ' '.join([request.vars.f_log_op,
-                           f.f_table+'.'+f.f_field,
-                           f.f_op,
-                           f.f_value])
-        _log('compliance.filterset.filter.attach',
-            'filter %(f_name)s attached to filterset %(fset_name)s',
-            dict(f_name=f_name, fset_name=f.fset_name))
-    elif t.form_filter_attach.errors:
-        response.flash = T("errors in form")
+        if t.form_filter_attach.accepts(request.vars):
+            q = db.v_gen_filtersets.f_id==request.vars.f_id
+            q &= db.v_gen_filtersets.fset_id==request.vars.fset_id
+            f = db(q).select()[0]
+            f_name = ' '.join([request.vars.f_log_op,
+                               f.f_table+'.'+f.f_field,
+                               f.f_op,
+                               f.f_value])
+            _log('compliance.filterset.filter.attach',
+                'filter %(f_name)s attached to filterset %(fset_name)s',
+                dict(f_name=f_name, fset_name=f.fset_name))
+        elif t.form_filter_attach.errors:
+            response.flash = T("errors in form")
+    except AttributeError:
+        pass
 
     o = db.v_gen_filtersets.fset_name|db.v_gen_filtersets.f_order
     q = db.v_gen_filtersets.fset_id > 0
@@ -1768,13 +1786,14 @@ class table_comp_moduleset(HtmlTable):
                     ),
         }
         self.colprops['modset_mod_name'].t = self
-        self.form_module_add = self.comp_module_add_sqlform()
-        self.form_moduleset_add = self.comp_moduleset_add_sqlform()
-        self.additional_tools.append('module_add')
-        self.additional_tools.append('module_del')
-        self.additional_tools.append('moduleset_add')
-        self.additional_tools.append('moduleset_del')
-        self.additional_tools.append('moduleset_rename')
+        if 'CompManager' in user_groups():
+            self.form_module_add = self.comp_module_add_sqlform()
+            self.form_moduleset_add = self.comp_moduleset_add_sqlform()
+            self.additional_tools.append('module_add')
+            self.additional_tools.append('module_del')
+            self.additional_tools.append('moduleset_add')
+            self.additional_tools.append('moduleset_del')
+            self.additional_tools.append('moduleset_rename')
 
     def checkbox_key(self, o):
         if o is None:
@@ -1867,6 +1886,7 @@ class table_comp_moduleset(HtmlTable):
             )
         return d
 
+    @auth.requires_membership('CompManager')
     def comp_moduleset_add_sqlform(self):
         db.comp_moduleset.modset_name.readable = True
         db.comp_moduleset.modset_name.writable = True
@@ -1884,6 +1904,7 @@ class table_comp_moduleset(HtmlTable):
         f.vars.modset_author = user_name()
         return f
 
+    @auth.requires_membership('CompManager')
     def comp_module_add_sqlform(self):
         db.comp_moduleset_modules.modset_id.readable = True
         db.comp_moduleset_modules.modset_id.writable = True
@@ -2026,21 +2047,24 @@ def ajax_comp_moduleset():
         except ToolError, e:
             t.flash = str(e)
 
-    if t.form_moduleset_add.accepts(request.vars, formname='add_moduleset'):
-        t.form_module_add = t.comp_module_add_sqlform()
-        _log('compliance.moduleset.add',
-            'added moduleset %(modset_name)s',
-            dict(modset_name=request.vars.modset_name))
-    elif t.form_moduleset_add.errors:
-        response.flash = T("errors in form")
+    try:
+        if t.form_moduleset_add.accepts(request.vars, formname='add_moduleset'):
+            t.form_module_add = t.comp_module_add_sqlform()
+            _log('compliance.moduleset.add',
+                'added moduleset %(modset_name)s',
+                dict(modset_name=request.vars.modset_name))
+        elif t.form_moduleset_add.errors:
+            response.flash = T("errors in form")
 
-    if t.form_module_add.accepts(request.vars, formname='add_module'):
-        modset_name = db(db.comp_moduleset.id==request.vars.modset_id).select(db.comp_moduleset.modset_name)[0].modset_name
-        _log('compliance.moduleset.module.add',
-            'added module %(mod_name)s to moduleset %(modset_name)s',
-            dict(mod_name=request.vars.modset_mod_name, modset_name=modset_name))
-    elif t.form_module_add.errors:
-        response.flash = T("errors in form")
+        if t.form_module_add.accepts(request.vars, formname='add_module'):
+            modset_name = db(db.comp_moduleset.id==request.vars.modset_id).select(db.comp_moduleset.modset_name)[0].modset_name
+            _log('compliance.moduleset.module.add',
+                'added module %(mod_name)s to moduleset %(modset_name)s',
+                dict(mod_name=request.vars.modset_mod_name, modset_name=modset_name))
+        elif t.form_module_add.errors:
+            response.flash = T("errors in form")
+    except AttributeError:
+        pass
 
     o = db.comp_moduleset.modset_name
     q = db.comp_moduleset.id > 0
