@@ -409,7 +409,7 @@ def ajax_actions_col_values():
                                  orderby=o)
     return t.col_values_cloud(col)
 
-@auth.requires_membership('Manager')
+@auth.requires_login()
 def ack(ids=[]):
     if len(ids) == 0:
         raise ToolError("no action selected")
