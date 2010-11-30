@@ -98,14 +98,15 @@ class table_users(HtmlTable):
         self.ajax_col_values = 'ajax_users_col_values'
         self.dbfilterable = False
         self.checkboxes = True
-        self.additional_tools.append('group_del')
-        self.additional_tools.append('group_add')
-        self.additional_tools.append('users_del')
-        self.additional_tools.append('user_add')
-        self.additional_tools.append('group_detach')
-        self.additional_tools.append('group_attach')
-        self.form_group_add = self.group_add_sqlform()
-        self.form_user_add = self.user_add_sqlform()
+        if 'Manager' in user_groups():
+            self.additional_tools.append('group_del')
+            self.additional_tools.append('group_add')
+            self.additional_tools.append('users_del')
+            self.additional_tools.append('user_add')
+            self.additional_tools.append('group_detach')
+            self.additional_tools.append('group_attach')
+            self.form_group_add = self.group_add_sqlform()
+            self.form_user_add = self.user_add_sqlform()
 
     def group_add(self):
         d = DIV(
@@ -222,6 +223,7 @@ class table_users(HtmlTable):
             )
         return d
 
+    @auth.requires_membership('Manager')
     def user_add_sqlform(self):
         f = SQLFORM(
                  db.auth_user,
@@ -234,6 +236,7 @@ class table_users(HtmlTable):
             )
         return f
 
+    @auth.requires_membership('Manager')
     def group_add_sqlform(self):
         db.auth_group.description.readable = False
         db.auth_group.description.writable = False
@@ -262,8 +265,7 @@ def ajax_users_col_values():
 @auth.requires_membership('Manager')
 def group_attach(ids=[]):
     if len(ids) == 0:
-        response.flash = T("no user selected")
-        return
+        raise ToolError("no user selected")
     gid = request.vars.group_attach_s
 
     done = []
@@ -284,8 +286,7 @@ def group_attach(ids=[]):
 @auth.requires_membership('Manager')
 def group_detach(ids=[]):
     if len(ids) == 0:
-        response.flash = T("no user selected")
-        return
+        raise ToolError("no user selected")
     gid = request.vars.group_detach_s
     rows = db(db.v_users.id.belongs(ids)).select(db.v_users.fullname)
     u = ', '.join([r.fullname for r in rows])
@@ -312,8 +313,7 @@ def group_del():
 @auth.requires_membership('Manager')
 def users_del(ids=[]):
     if len(ids) == 0:
-        response.flash = T("no user selected")
-        return
+        raise ToolError("no user selected")
     rows = db(db.v_users.id.belongs(ids)).select(db.v_users.fullname)
     x = ', '.join([r.fullname for r in rows])
     db(db.auth_user.id.belongs(ids)).delete()
@@ -326,7 +326,7 @@ def users_del(ids=[]):
 def domain_set():
     l = [k for k in request.vars if 'd_i_' in k]
     if len(l) != 1:
-        return
+        raise ToolError("one user must be selected")
     id = int(l[0].replace('d_i_',''))
     new = request.vars[l[0]]
     gid = auth.user_group(id)
@@ -335,14 +335,14 @@ def domain_set():
     rows = db(q).select(db.domain_permissions.id)
     n = len(rows)
     if n == 1:
-       if new == '':
-           db(q).delete()
-       else:
-           db(q).update(domains=new)
+        if new == '':
+            db(q).delete()
+        else:
+            db(q).update(domains=new)
     elif n == 0:
-       if new == '':
-           return
-       db.domain_permissions.insert(domains=new, group_id=gid)
+        if new == '':
+            raise ToolError("no domain specified")
+        db.domain_permissions.insert(domains=new, group_id=gid)
 
     rows = db(db.v_users.id==id).select(db.v_users.fullname)
     x = ', '.join([r.fullname for r in rows])
@@ -354,37 +354,45 @@ def domain_set():
 def ajax_users():
     t = table_users('users', 'ajax_users')
 
-    if len(request.args) == 1 and request.args[0] == 'domain_set':
-        domain_set()
-    if len(request.args) == 1 and request.args[0] == 'group_del':
-        group_del()
-    if len(request.args) == 1 and request.args[0] == 'users_del':
-        users_del(t.get_checked())
-    if len(request.args) == 1 and request.args[0] == 'group_attach':
-        group_attach(t.get_checked())
-    if len(request.args) == 1 and request.args[0] == 'group_detach':
-        group_detach(t.get_checked())
+    if len(request.args) == 1:
+        action = request.args[0]
+        try:
+            if action == 'domain_set':
+                domain_set()
+            elif action == 'group_del':
+                group_del()
+            elif action == 'users_del':
+                users_del(t.get_checked())
+            elif action == 'group_attach':
+                group_attach(t.get_checked())
+            elif action == 'group_detach':
+                group_detach(t.get_checked())
+        except ToolError, e:
+            t.flash = str(e)
 
-    if t.form_group_add.accepts(request.vars, formname='form_add_group'):
-        response.flash = T("group added")
-        # refresh forms comboboxes
-        #t.form_group_attach = t.group_attach_sqlform()
-        _log('users.group.add',
-             'added group %(u)s',
-             dict(u=request.vars.role))
-    elif t.form_group_add.errors:
-        response.flash = T("errors in form")
+    try:
+        if t.form_group_add.accepts(request.vars, formname='form_add_group'):
+            response.flash = T("group added")
+            # refresh forms comboboxes
+            #t.form_group_attach = t.group_attach_sqlform()
+            _log('users.group.add',
+                 'added group %(u)s',
+                 dict(u=request.vars.role))
+        elif t.form_group_add.errors:
+            response.flash = T("errors in form")
 
-    if t.form_user_add.accepts(request.vars, formname='form_add_user'):
-        response.flash = T("user added")
-        # refresh forms comboboxes
-        t.form_group_attach = t.group_attach_sqlform()
-        _log('users.user.add',
-             'added user %(u)s',
-             dict(u=' '.join((request.vars.first_name,
-                              request.vars.last_name))))
-    elif t.form_user_add.errors:
-        response.flash = T("errors in form")
+        if t.form_user_add.accepts(request.vars, formname='form_add_user'):
+            response.flash = T("user added")
+            # refresh forms comboboxes
+            t.form_group_attach = t.group_attach_sqlform()
+            _log('users.user.add',
+                 'added user %(u)s',
+                 dict(u=' '.join((request.vars.first_name,
+                                  request.vars.last_name))))
+        elif t.form_user_add.errors:
+            response.flash = T("errors in form")
+    except AttributeError:
+        pass
 
     o = ~db.v_users.last
     q = db.v_users.id > 0
