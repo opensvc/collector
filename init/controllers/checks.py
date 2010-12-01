@@ -78,12 +78,13 @@ def checks_settings_insert():
     return dict(form=form, record=record)
 
 @auth.requires_login()
-def _checks_set_low_threshold(request):
-    val = int(request.vars.val)
-    ids = ([])
-    now = datetime.datetime.now()
-    for key in [ k for k in request.vars.keys() if 'check_' in k ]:
-        ids += ([key[6:]])
+def set_low_threshold(ids):
+    if len(ids) == 0:
+        raise ToolError("No check selected")
+    val = request.vars.set_low_threshold
+    if val is None or len(val) == 0:
+        raise ToolError("New threshold value invalid")
+    val = int(val)
     for i in ids:
         rows = db(db.checks_live.id==i).select()
         if len(rows) != 1:
@@ -114,12 +115,14 @@ def _checks_set_low_threshold(request):
                          chk_changed_by=user_name(),
                          chk_changed=now)
 
-def _checks_set_high_threshold(request):
-    val = int(request.vars.val)
-    ids = ([])
-    now = datetime.datetime.now()
-    for key in [ k for k in request.vars.keys() if 'check_' in k ]:
-        ids += ([key[6:]])
+@auth.requires_login()
+def set_high_threshold(ids):
+    if len(ids) == 0:
+        raise ToolError("No check selected")
+    val = request.vars.set_high_threshold
+    if val is None or len(val) == 0:
+        raise ToolError("New threshold value invalid")
+    val = int(val)
     for i in ids:
         rows = db(db.checks_live.id==i).select()
         if len(rows) != 1:
@@ -150,10 +153,10 @@ def _checks_set_high_threshold(request):
                          chk_changed_by=user_name(),
                          chk_changed=now)
 
-def _checks_reset_settings(request):
-    ids = ([])
-    for key in [ k for k in request.vars.keys() if 'check_' in k ]:
-        ids += ([key[6:]])
+@auth.requires_login()
+def reset_thresholds(ids):
+    if len(ids) == 0:
+        raise ToolError("No check selected")
     for i in ids:
         rows = db(db.checks_live.id==i).select()
         if len(rows) != 1:
@@ -164,145 +167,200 @@ def _checks_reset_settings(request):
         q &= db.checks_settings.chk_instance==chk.chk_instance
         settings = db(q).delete()
 
+class table_checks(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['chk_nodename',
+                     'chk_svcname',
+                     'chk_type',
+                     'chk_instance',
+                     'chk_value',
+                     'chk_low',
+                     'chk_high',
+                     'chk_created',
+                     'chk_updated']
+        self.colprops = {
+            'chk_nodename': col_node(
+                title = 'Nodename',
+                field = 'chk_nodename',
+                display = True,
+                table = 'v_checks',
+                img = 'node16'
+            ),
+            'chk_svcname': col_svc(
+                title = 'Service',
+                field = 'chk_svcname',
+                display = True,
+                table = 'v_checks',
+                img = 'check16'
+            ),
+            'chk_type': HtmlTableColumn(
+                title = 'Type',
+                field = 'chk_type',
+                display = True,
+                table = 'v_checks',
+                img = 'check16'
+            ),
+            'chk_instance': HtmlTableColumn(
+                title = 'Instance',
+                field = 'chk_instance',
+                display = True,
+                table = 'v_checks',
+                img = 'check16'
+            ),
+            'chk_value': HtmlTableColumn(
+                title = 'Value',
+                field = 'chk_value',
+                display = True,
+                table = 'v_checks',
+                img = 'check16'
+            ),
+            'chk_low': HtmlTableColumn(
+                title = 'Low threshold',
+                field = 'chk_low',
+                display = True,
+                table = 'v_checks',
+                img = 'check16'
+            ),
+            'chk_high': HtmlTableColumn(
+                title = 'High threshold',
+                field = 'chk_high',
+                display = True,
+                table = 'v_checks',
+                img = 'check16'
+            ),
+            'chk_created': HtmlTableColumn(
+                title = 'Created',
+                field = 'chk_created',
+                display = False,
+                table = 'v_checks',
+                img = 'check16'
+            ),
+            'chk_updated': col_updated(
+                title = 'Last check update',
+                field = 'chk_updated',
+                display = True,
+                table = 'v_checks',
+                img = 'check16'
+            ),
+        }
+        self.colprops.update(v_nodes_colprops)
+        self.cols += v_nodes_cols
+        for c in self.cols:
+            self.colprops[c].t = self
+        self.ajax_col_values = 'ajax_checks_col_values'
+        self.dbfilterable = False
+        self.checkbox_id_table = 'v_checks'
+        self.checkboxes = True
+        if 'Manager' in user_groups():
+            self.additional_tools.append('set_low_threshold')
+            self.additional_tools.append('set_high_threshold')
+            self.additional_tools.append('reset_thresholds')
+
+    def set_low_threshold(self):
+        return self.set_threshold('low')
+
+    def set_high_threshold(self):
+        return self.set_threshold('high')
+
+    def set_threshold(self, t):
+        d = DIV(
+              A(
+                T("Set %s threshold"%t),
+                _onclick="""
+                  click_toggle_vis('%(div)s', 'block');
+                """%dict(div='set_%s_threshold_d'%t),
+              ),
+              DIV(
+                TABLE(
+                  TR(
+                    TD(
+                      T('New threshold value'),
+                    ),
+                    TD(
+                      INPUT(
+                       _id='set_%s_threshold'%t,
+                       _onkeypress="if (is_enter(event)) {%s};"%\
+                          self.ajax_submit(additional_inputs=['set_%s_threshold'%t],
+                                           args="set_%s_threshold"%t),
+
+                      ),
+                    ),
+                  ),
+                ),
+                _style='display:none',
+                _class='white_float',
+                _name='set_%s_threshold_d'%t,
+                _id='set_%s_threshold_d'%t,
+              ),
+              _class='floatw',
+            )
+        return d
+
+    def reset_thresholds(self):
+        d = DIV(
+              A(
+                T("Reset thresholds"),
+                _onclick="""if (confirm("%(text)s")){%(s)s};
+                         """%dict(s=self.ajax_submit(args=['reset_thresholds']),
+                                  text=T("Resetting thresholds will definitively lose the custom thresholds of the selected checks. Please confirm reset"),
+                                 ),
+              ),
+              _class='floatw',
+            )
+        return d
+
+
 @auth.requires_login()
-def checks():
-    if request.vars.action == "set_low_thres":
-        _checks_set_low_threshold(request)
-    elif request.vars.action == "set_high_thres":
-        _checks_set_high_threshold(request)
-    elif request.vars.action == "reset":
-        _checks_reset_settings(request)
+def ajax_checks_col_values():
+    t = table_checks('checks', 'ajax_checks')
+    col = request.args[0]
+    o = db.v_users[col]
+    q = db.v_users.id > 0
+    t.object_list = db(q).select(orderby=o, groupby=o)
+    for f in t.cols:
+        q = _where(q, 'v_users', t.filter_parse(f), f)
+    t.object_list = db(q).select(orderby=o, groupby=o)
+    return t.col_values_cloud(col)
 
-    d1 = dict(
-        chk_nodename = dict(
-            pos = 1,
-            title = T('Nodename'),
-            display = True,
-            nestedin = 'v_checks',
-            img = 'node16',
-            size = 10
-        ),
-        chk_svcname = dict(
-            pos = 2,
-            title = T('Service'),
-            display = True,
-            nestedin = 'v_checks',
-            img = 'check16',
-            size = 10
-        ),
-        chk_type = dict(
-            pos = 3,
-            title = T('Type'),
-            display = True,
-            nestedin = 'v_checks',
-            img = 'check16',
-            size = 3
-        ),
-        chk_instance = dict(
-            pos = 4,
-            title = T('Instance'),
-            display = True,
-            nestedin = 'v_checks',
-            img = 'check16',
-            size = 10
-        ),
-        chk_value = dict(
-            pos = 5,
-            title = T('Value'),
-            display = True,
-            nestedin = 'v_checks',
-            img = 'check16',
-            size = 3
-        ),
-        chk_low = dict(
-            pos = 6,
-            title = T('Low threshold'),
-            display = True,
-            nestedin = 'v_checks',
-            img = 'check16',
-            size = 3
-        ),
-        chk_high = dict(
-            pos = 7,
-            title = T('High threshold'),
-            display = True,
-            nestedin = 'v_checks',
-            img = 'check16',
-            size = 3
-        ),
-        chk_created = dict(
-            pos = 8,
-            title = T('Created'),
-            display = False,
-            nestedin = 'v_checks',
-            img = 'check16',
-            size = 6
-        ),
-        chk_updated = dict(
-            pos = 9,
-            title = T('Updated'),
-            display = True,
-            nestedin = 'v_checks',
-            img = 'check16',
-            size = 6
-        ),
-    )
-    d2 = v_nodes_columns()
-    for k in d2:
-        d2[k]['pos'] += 10
-        d2[k]['display'] = False
-        d2[k]['nestedin'] = 'v_nodes'
-    del(d2['nodename'])
+@auth.requires_login()
+def ajax_checks():
+    t = table_checks('checks', 'ajax_checks')
 
-    columns = d1.copy()
-    columns.update(d2)
-
-    def _sort_cols(x, y):
-        return cmp(columns[x]['pos'], columns[y]['pos'])
-
-    colkeys = columns.keys()
-    colkeys.sort(_sort_cols)
-    __update_columns(columns, 'checks')
+    if len(request.args) == 1:
+        action = request.args[0]
+        try:
+            if action == 'set_low_threshold':
+                set_low_threshold(t.get_checked())
+            elif action == 'set_high_threshold':
+                set_high_threshold(t.get_checked())
+            elif action == 'reset_thresholds':
+                reset_thresholds(t.get_checked())
+        except ToolError, e:
+            t.flash = str(e)
 
     o = db.v_checks.chk_nodename
     o |= db.v_checks.chk_type
     o |= db.v_checks.chk_instance
+    q = db.v_checks.id>0
+    q = _where(q, 'v_checks', domain_perms(), 'chk_nodename')
+    q = apply_db_filters(q, 'v_nodes')
+    q &= db.v_checks.chk_nodename==db.v_nodes.nodename
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    n = db(q).count()
+    t.setup_pager(n)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    return t.html()
 
-    toggle_db_filters()
-
-    # filtering
-    query = db.v_checks.id>0
-    query &= db.v_checks.chk_nodename==db.v_nodes.nodename
-    for key in d1.keys():
-        if key not in request.vars.keys():
-            continue
-        query &= _where(None, 'v_checks', request.vars[key], key)
-    for key in d2.keys():
-        if key not in request.vars.keys():
-            continue
-        query &= _where(None, 'v_nodes', request.vars[key], key)
-
-    query &= _where(None, 'v_checks', domain_perms(), 'chk_nodename')
-
-    query = apply_db_filters(query, 'v_nodes')
-
-    (start, end, nav) = _pagination(request, query)
-    if start == 0 and end == 0:
-        rows = db(query).select(orderby=o)
-    else:
-        rows = db(query).select(limitby=(start,end), orderby=o)
-
-    return dict(columns=columns, colkeys=colkeys,
-                checks=rows,
-                nav=nav,
-                active_filters=active_db_filters('v_nodes'),
-                available_filters=avail_db_filters('v_nodes'),
-               )
-
-def checks_csv():
-    import gluon.contenttype
-    response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
-    request.vars['perpage'] = 0
-    return str(checks()['checks'])
+@auth.requires_login()
+def checks():
+    t = DIV(
+          ajax_checks(),
+          _id='checks',
+        )
+    return dict(table=t)
 
 

@@ -358,13 +358,6 @@ class table_actions(HtmlTable):
         d = DIV(
               A(
                 T("Acknowledge error"),
-                _onclick=self.ajax_submit(args=['ack']),
-              ),
-              _class='floatw',
-            )
-        d = DIV(
-              A(
-                T("Acknowledge error"),
                 _onclick="""
                   click_toggle_vis('%(div)s', 'block');
                 """%dict(div='ackcomment_d'),
