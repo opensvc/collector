@@ -167,6 +167,41 @@ def reset_thresholds(ids):
         q &= db.checks_settings.chk_instance==chk.chk_instance
         settings = db(q).delete()
 
+class col_chk_value(HtmlTableColumn):
+    def html(self, o):
+        val = self.get(o)
+        high = self.t.colprops['chk_high'].get(o)
+        low = self.t.colprops['chk_low'].get(o)
+        if val > high or val < low:
+            return SPAN(val, _style='font-weight:bold;color:darkred')
+        return val
+
+class col_chk_high(HtmlTableColumn):
+    def html(self, o):
+        high = self.get(o)
+        val = self.t.colprops['chk_value'].get(o)
+        if val > high:
+            return SPAN(high, _style='font-weight:bold')
+        return high
+
+class col_chk_low(HtmlTableColumn):
+    def html(self, o):
+        low = self.get(o)
+        val = self.t.colprops['chk_value'].get(o)
+        if val < low:
+            return SPAN(low, _style='font-weight:bold')
+        return low
+
+class col_chk_type(HtmlTableColumn):
+    def html(self, o):
+        s = self.get(o)
+        d = A(
+              s,
+              _href=URL(r=request, c='checks', f='checks_defaults_insert',
+                        vars={'chk_type': s})
+            )
+        return d
+
 class table_checks(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -196,7 +231,7 @@ class table_checks(HtmlTable):
                 table = 'v_checks',
                 img = 'check16'
             ),
-            'chk_type': HtmlTableColumn(
+            'chk_type': col_chk_type(
                 title = 'Type',
                 field = 'chk_type',
                 display = True,
@@ -210,21 +245,21 @@ class table_checks(HtmlTable):
                 table = 'v_checks',
                 img = 'check16'
             ),
-            'chk_value': HtmlTableColumn(
+            'chk_value': col_chk_value(
                 title = 'Value',
                 field = 'chk_value',
                 display = True,
                 table = 'v_checks',
                 img = 'check16'
             ),
-            'chk_low': HtmlTableColumn(
+            'chk_low': col_chk_low(
                 title = 'Low threshold',
                 field = 'chk_low',
                 display = True,
                 table = 'v_checks',
                 img = 'check16'
             ),
-            'chk_high': HtmlTableColumn(
+            'chk_high': col_chk_high(
                 title = 'High threshold',
                 field = 'chk_high',
                 display = True,
@@ -254,6 +289,8 @@ class table_checks(HtmlTable):
         self.dbfilterable = False
         self.checkbox_id_table = 'v_checks'
         self.checkboxes = True
+        self.extraline = True
+        self.span = 'chk_nodename'
         if 'Manager' in user_groups():
             self.additional_tools.append('set_low_threshold')
             self.additional_tools.append('set_high_threshold')
