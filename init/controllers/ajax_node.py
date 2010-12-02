@@ -12,6 +12,23 @@ def perf_stats(node, rowid):
                                e=e,
                                spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
                        )
+    def perf_group(title='', group=''):
+        d = DIV(
+              A(
+                T(title),
+                _onClick="""sync_ajax("%(url)s",['begin_%(rowid)s', 'end_%(rowid)s'],"%(div)s",function(){eval_js_in_ajax_response('%(rowid)s_plot')});"""%dict(
+                             url=URL(r=request,c='ajax_perf',f='ajax_perf_%s_plot'%group,
+                                     args=[node, rowid]),
+                             node=node,
+                             rowid=rowid,
+                             div="prf_cont_%s_%s"%(group,rowid)),
+              ),
+              DIV(
+               _id='prf_cont_%s_%s'%(group,rowid),
+              ),
+              _class='container',
+            ),
+        return d
 
     now = datetime.datetime.now()
     s = now - datetime.timedelta(days=0,
@@ -23,32 +40,28 @@ def perf_stats(node, rowid):
     timepicker = """Calendar.setup({inputField:this.id, ifFormat:"%Y-%m-%d %H:%M:%S", showsTime: true,timeFormat: "24" });"""
     t = DIV(
           SPAN(
+            T('Start'),
             INPUT(
               _value=s.strftime("%Y-%m-%d %H:%M"),
               _id='begin_'+rowid,
               _class='datetime',
               _onfocus=timepicker,
             ),
+            T('End'),
             INPUT(
               _value=e.strftime("%Y-%m-%d %H:%M"),
               _id='end_'+rowid,
               _class='datetime',
               _onfocus=timepicker,
             ),
-            INPUT(
-              _value='gen',
-              _type='button',
-              _onClick="""sync_ajax("%(url)s",['begin_%(rowid)s', 'end_%(rowid)s'],"%(div)s",function(){eval_js_in_ajax_response('%(rowid)s_plot')});"""%dict(
-                           url=URL(r=request,c='ajax_perf',f='ajax_perf_plot',
-                                   args=[node, rowid]),
-                           node=node,
-                           rowid=rowid,
-                           div="prf_cont_%s"%rowid),
-
-            )
-          ),
-          DIV(
-            _id='prf_cont_%s'%rowid
+            SPAN(perf_group('Plot resource usage trends', 'trend')),
+            SPAN(perf_group('Plot cpu usage', 'cpu')),
+            SPAN(perf_group('Plot mem/swap usage', 'memswap')),
+            SPAN(perf_group('Plot process activity', 'proc')),
+            SPAN(perf_group('Plot aggregated block device usage', 'block')),
+            SPAN(perf_group('Plot per block device usage', 'blockdev')),
+            SPAN(perf_group('Plot per net device usage', 'netdev')),
+            SPAN(perf_group('Plot per net device errors', 'netdev_err')),
           ),
         )
     return t

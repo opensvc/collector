@@ -1699,6 +1699,133 @@ function stats_blockdev(url, id) {
 	});
     });
 }
+function stats_netdev_err(url, id) {
+    $.jqplot.config.enablePlugins = true;
+    $.getJSON(url, function(data) {
+        plot_width_x(id, data[0])
+	$.jqplot(id, data[1], {
+	    stackSeries: false,
+	    grid: {
+                borderWidth: 0.5,
+            },
+            title: {
+                text: 'Net device errors',
+            },
+            legend: {
+                show: true,
+                location: 'e',
+                placement: "outside",
+            },
+            gridPadding: {
+                right:90,
+            },
+	    seriesDefaults: {
+                renderer: $.jqplot.BarRenderer, 
+                shadowAngle: 135,
+            },
+	    series: [
+                {label: 'rx err/s'},
+                {label: 'tx err/s'},
+                {label: 'collision/s'},
+                {label: 'rx drop/s'},
+                {label: 'tx drop/s'},
+            ],
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.CategoryAxisRenderer, 
+                    tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+                    tickOptions: {formatString:'%s', angle: -70},
+                    ticks: data[0],
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'},
+		}, 
+	    }
+	});
+    });
+}
+function stats_netdev(url, id) {
+    $.jqplot.config.enablePlugins = true;
+    $.getJSON(url, function(data) {
+        plot_width_x(id+'_kBps', data[0])
+	$.jqplot(id+'_kBps', data[1], {
+	    stackSeries: false,
+	    grid: {
+                borderWidth: 0.5,
+            },
+            title: {
+                text: 'Net device bandwidth',
+            },
+            legend: {
+                show: true,
+                location: 'e',
+                placement: "outside",
+            },
+            gridPadding: {
+                right:90,
+            },
+	    seriesDefaults: {
+                renderer: $.jqplot.BarRenderer, 
+                shadowAngle: 135,
+            },
+	    series: [
+                {label: 'avg rcv (kB/s)'},
+                {label: 'avg send (kB/s)'},
+            ],
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.CategoryAxisRenderer, 
+                    tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+                    tickOptions: {formatString:'%s', angle: -70},
+                    ticks: data[0],
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'},
+		}, 
+	    }
+	});
+        plot_width_x(id+'_pckps', data[0])
+	$.jqplot(id+'_pckps', data[2], {
+	    stackSeries: false,
+	    grid: {
+                borderWidth: 0.5,
+            },
+            title: {
+                text: 'Net device packet rate',
+            },
+            legend: {
+                show: true,
+                location: 'e',
+                placement: "outside",
+            },
+            gridPadding: {
+                right:90,
+            },
+	    seriesDefaults: {
+                renderer: $.jqplot.BarRenderer, 
+                shadowAngle: 135,
+            },
+	    series: [
+                {label: 'avg rcv (pck/s)'},
+                {label: 'avg send (pck/s)'},
+            ],
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.CategoryAxisRenderer, 
+                    tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+                    tickOptions: {formatString:'%s', angle: -70},
+                    ticks: data[0],
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'},
+		}, 
+	    }
+	});
+    });
+}
 function ackpanel(show, s){
     elt = document.getElementById("ackpanel")
     if (show){

@@ -9,43 +9,13 @@ def call():
     return service()
 
 @auth.requires_login()
-def perf_stats_netdev(node, s, e):
-    q = db.stats_netdev.nodename == node
-    q &= db.stats_netdev.date > s
-    q &= db.stats_netdev.date < e
-    rows = db(q).select(db.stats_netdev.dev,
-                        groupby=db.stats_netdev.dev,
-                        orderby=db.stats_netdev.dev,
-                       )
-    devs = [r.dev for r in rows]
-
-    t = []
-    for dev in devs:
-        t += perf_stats_netdev_one(node, s, e, dev)
-
-@auth.requires_login()
 def perf_stats_netdev_one(node, s, e, dev):
     q = db.stats_netdev.nodename == node
     q &= db.stats_netdev.date > s
     q &= db.stats_netdev.date < e
     q &= db.stats_netdev.dev == dev
     rows = db(q).select(orderby=db.stats_netdev.date)
-
-@auth.requires_login()
-def perf_stats_netdev_err(node, s, e):
-    rows = db.executesql("""
-      select dev,
-             max(rxerrps) as max_rxerrps,
-             max(txerrps) as max_txerrps,
-             max(collps) as max_collps,
-             max(rxdropps) as max_rxdropps,
-             max(txdropps) as max_txdropps
-      from stats_netdev_err
-      where date >= "%(s)s" and
-            date <= "%(e)s" and
-            nodename = "%(node)s"
-      group by dev;
-    """%dict(node=node, s=s, e=e))
+    return rows
 
 def period_to_range(period):
     if period <= datetime.timedelta(days=1):
@@ -115,7 +85,41 @@ def perf_stats_cpu_trend(node, s, e):
     return data
 
 @auth.requires_login()
-def ajax_perf_plot():
+def ajax_perf_netdev_err_plot():
+    return _ajax_perf_plot('netdev_err', last=True)
+
+@auth.requires_login()
+def ajax_perf_netdev_plot():
+    return _ajax_perf_plot('netdev', sub=['_kBps', '_pckps'], last=True)
+
+@auth.requires_login()
+def ajax_perf_blockdev_plot():
+    return _ajax_perf_plot('blockdev', sub=['_tps', '_avgrq_sz', '_await', '_svctm', '_pct_util', '_secps'], last=True)
+
+def ajax_perf_block_plot():
+    return _ajax_perf_plot('block', sub=['_tps', '_bps'], last=True)
+
+def ajax_perf_proc_plot():
+    return _ajax_perf_plot('proc', sub=['_runq_sz', '_plist_sz', '_loadavg'], last=True)
+
+def ajax_perf_memswap_plot():
+    return SPAN(
+             _ajax_perf_plot('mem', sub=['_u', '_pct']),
+             _ajax_perf_plot('swap', sub=['_u', '_pct'], last=True)
+           )
+
+def ajax_perf_trend_plot():
+    return SPAN(
+             _ajax_perf_plot('trend_cpu'),
+             _ajax_perf_plot('trend_mem', last=True)
+           )
+
+@auth.requires_login()
+def ajax_perf_cpu_plot():
+    return _ajax_perf_plot('cpu', last=True)
+
+@auth.requires_login()
+def _ajax_perf_plot(group, sub=[''], last=False):
     node = request.args[0]
     rowid = request.args[1]
     begin = None
@@ -129,155 +133,35 @@ def ajax_perf_plot():
         return SPAN()
 
     plots = []
-    plots.append("stats_trend_cpu('%(url)s', 'perf_trend_cpu_%(rowid)s');"%dict(
+    plots.append("stats_%(group)s('%(url)s', 'perf_%(group)s_%(rowid)s');"%dict(
       url=URL(r=request,
-              f='call/json/json_trend_cpu',
+              f='call/json/json_%s'%group,
               vars={'node':node, 'b':b, 'e':e}
           ),
       rowid=rowid,
-    ))
-    plots.append("stats_trend_mem('%(url)s', 'perf_trend_mem_%(rowid)s');"%dict(
-      url=URL(r=request,
-              f='call/json/json_trend_mem',
-              vars={'node':node, 'b':b, 'e':e}
-          ),
-      rowid=rowid,
-    ))
-    plots.append("stats_cpu('%(url)s', 'perf_cpu_%(rowid)s');"%dict(
-      url=URL(r=request,
-              f='call/json/json_cpu',
-              vars={'node':node, 'b':b, 'e':e}
-          ),
-      rowid=rowid,
-    ))
-    plots.append("stats_mem('%(url)s', 'perf_mem_%(rowid)s');"%dict(
-      url=URL(r=request,
-              f='call/json/json_mem',
-              vars={'node':node, 'b':b, 'e':e}
-          ),
-      rowid=rowid,
-    ))
-    plots.append("stats_swap('%(url)s', 'perf_swap_%(rowid)s');"%dict(
-      url=URL(r=request,
-              f='call/json/json_swap',
-              vars={'node':node, 'b':b, 'e':e}
-          ),
-      rowid=rowid,
-    ))
-    plots.append("stats_proc('%(url)s', 'perf_proc_%(rowid)s');"%dict(
-      url=URL(r=request,
-              f='call/json/json_proc',
-              vars={'node':node, 'b':b, 'e':e}
-          ),
-      rowid=rowid,
-    ))
-    plots.append("stats_block('%(url)s', 'perf_block_%(rowid)s');"%dict(
-      url=URL(r=request,
-              f='call/json/json_block',
-              vars={'node':node, 'b':b, 'e':e}
-          ),
-      rowid=rowid,
-    ))
-    plots.append("stats_blockdev('%(url)s', 'perf_blockdev_%(rowid)s');"%dict(
-      url=URL(r=request,
-              f='call/json/json_blockdev',
-              vars={'node':node, 'b':b, 'e':e}
-          ),
-      rowid=rowid,
+      group=group,
     ))
 
-    d = DIV(
-          DIV(
-            _id='perf_trend_cpu_'+rowid,
-            _class='float',
-          ),
-          DIV(
-            _id='perf_trend_mem_'+rowid,
-            _class='float',
-          ),
-          DIV(
-            _id='perf_cpu_'+rowid,
-            _class='float',
-          ),
-          DIV(
-            _id='perf_mem_'+rowid+'_u',
-            _class='float',
-          ),
-          DIV(
-            _id='perf_mem_'+rowid+'_pct',
-            _class='float',
-          ),
-          DIV(
-            _id='perf_swap_'+rowid+'_u',
-            _class='float',
-          ),
-          DIV(
-            _id='perf_swap_'+rowid+'_pct',
-            _class='float',
-          ),
-          DIV(
-            _id='perf_proc_'+rowid+'_runq_sz',
-            _class='float',
-          ),
-          DIV(
-            _id='perf_proc_'+rowid+'_plist_sz',
-            _class='float',
-          ),
-          DIV(
-            _id='perf_proc_'+rowid+'_loadavg',
-            _class='float',
-          ),
-          DIV(
-            _id='perf_netdev_'+rowid,
-            _class='float',
-          ),
-          DIV(
-            _id='perf_netdev_err_'+rowid,
-            _class='float',
-          ),
-          DIV(
-            _id='perf_block_'+rowid+'_tps',
-            _class='float',
-          ),
-          DIV(
-            _id='perf_block_'+rowid+'_bps',
-            _class='float',
-          ),
-          DIV(
-            _id='perf_blockdev_'+rowid+'_tps',
-            _class='float',
-          ),
-          DIV(
-            _id='perf_blockdev_'+rowid+'_avgrq_sz',
-            _class='float',
-          ),
-          DIV(
-            _id='perf_blockdev_'+rowid+'_await',
-            _class='float',
-          ),
-          DIV(
-            _id='perf_blockdev_'+rowid+'_svctm',
-            _class='float',
-          ),
-          DIV(
-            _id='perf_blockdev_'+rowid+'_pct_util',
-            _class='float',
-          ),
-          DIV(
-            _id='perf_blockdev_'+rowid+'_secps',
-            _class='float',
-          ),
-          DIV(
-            XML('&nbsp;'),
-            _class='spacer',
-          ),
-          SCRIPT(
-            plots,
-            _name='%s_plot_to_eval'%rowid,
-          ),
-        )
+    if last:
+        spacer = DIV(
+                   XML('&nbsp;'),
+                   _class='spacer',
+                 ),
+    else:
+        spacer = ''
+    l = []
+    for s in sub:
+        l.append(DIV(
+                  _id='perf_%s_%s%s'%(group,rowid,s),
+                  _class='float',
+                 ))
+    l.append(SPAN(spacer))
+    l.append(SCRIPT(
+               plots,
+               _name='%s_plot_to_eval'%rowid,
+             ))
+    return SPAN(*l)
 
-    return d
 
 #
 # raw data extractors
@@ -373,6 +257,55 @@ def rows_blockdev(node, s, e):
       group by dev;
     """%dict(node=node, s=s, e=e))
     return rows
+
+@auth.requires_login()
+def rows_netdev(node, s, e):
+    rows = db.executesql("""
+      select dev,
+             avg(rxkBps) as rxkBps,
+             avg(txkBps) as txkBps,
+             avg(rxpckps) as rxpckps,
+             avg(txpckps) as txpckps
+      from stats_netdev
+      where date >= "%(s)s" and
+            date <= "%(e)s" and
+            nodename = "%(node)s"
+      group by dev;
+    """%dict(node=node, s=s, e=e))
+    return rows
+
+@auth.requires_login()
+def rows_netdev_err(node, s, e):
+    rows = db.executesql("""
+      select dev,
+             max(rxerrps) as max_rxerrps,
+             max(txerrps) as max_txerrps,
+             max(collps) as max_collps,
+             max(rxdropps) as max_rxdropps,
+             max(txdropps) as max_txdropps
+      from stats_netdev_err
+      where date >= "%(s)s" and
+            date <= "%(e)s" and
+            nodename = "%(node)s"
+      group by dev;
+    """%dict(node=node, s=s, e=e))
+    return rows
+
+@auth.requires_login()
+def perf_stats_netdev(node, s, e):
+    q = db.stats_netdev.nodename == node
+    q &= db.stats_netdev.date > s
+    q &= db.stats_netdev.date < e
+    rows = db(q).select(db.stats_netdev.dev,
+                        groupby=db.stats_netdev.dev,
+                        orderby=db.stats_netdev.dev,
+                       )
+    devs = [r.dev for r in rows]
+
+    t = []
+    for dev in devs:
+        t += perf_stats_netdev_one(node, s, e, dev)
+    return t
 
 #
 # json servers
@@ -522,6 +455,56 @@ def json_mem():
             kbcommit,
             pct_commit,
             kbmemsys]
+
+@service.json
+def json_netdev_err():
+    node = request.vars.node
+    begin = request.vars.b
+    end = request.vars.e
+
+    dev = []
+    max_rxerrps = []
+    max_txerrps = []
+    max_collps = []
+    max_rxdropps = []
+    max_txdropps = []
+
+    if node is None:
+        return [dev, [max_rxerrps, max_txerrps, max_collps, max_rxdropps, max_txdropps]]
+
+    rows = rows_netdev_err(node, begin, end)
+    for r in rows:
+        dev.append(r[0])
+        max_rxerrps.append(r[1])
+        max_txerrps.append(r[2])
+        max_collps.append(r[3])
+        max_rxdropps.append(r[4])
+        max_txdropps.append(r[5])
+    return [dev, [max_rxerrps, max_txerrps, max_collps, max_rxdropps, max_txdropps]]
+
+@service.json
+def json_netdev():
+    node = request.vars.node
+    begin = request.vars.b
+    end = request.vars.e
+
+    dev = []
+    rxkBps = []
+    txkBps = []
+    rxpckps = []
+    txpckps = []
+
+    if node is None:
+        return [dev, [rxkBps, txkBps], [rxpckps, txpckps]]
+
+    rows = rows_netdev(node, begin, end)
+    for r in rows:
+        dev.append(r[0])
+        rxkBps.append(r[1])
+        txkBps.append(r[2])
+        rxpckps.append(r[3])
+        txpckps.append(r[4])
+    return [dev, [rxkBps, txkBps], [rxpckps, txpckps]]
 
 @service.json
 def json_blockdev():
