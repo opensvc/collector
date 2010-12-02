@@ -946,6 +946,11 @@ div.container {
    -webkit-border-radius:8px;
 }
 
+div.container > * {
+    padding:0.2em;
+    vertical-align: middle;
+}
+
 div.spacer {
     clear: both;
 }

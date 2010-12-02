@@ -13,7 +13,18 @@ def perf_stats(node, rowid):
                                spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
                        )
     def perf_group(title='', group=''):
+        group_img_h = {
+                        'trend': 'spark16.png',
+                        'memswap': 'mem16.png',
+                        'cpu': 'cpu16.png',
+                        'proc': 'action16.png',
+                        'block': 'hd16.png',
+                        'blockdev': 'hd16.png',
+                        'netdev': 'action_sync_16.png',
+                        'netdev_err': 'action_sync_16.png',
+                      }
         d = DIV(
+              IMG(_src=URL(r=request,c='static',f=group_img_h[group])),
               A(
                 T(title),
                 _onClick="""sync_ajax("%(url)s",['begin_%(rowid)s', 'end_%(rowid)s'],"%(div)s",function(){eval_js_in_ajax_response('%(rowid)s_plot')});"""%dict(
