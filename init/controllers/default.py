@@ -807,7 +807,7 @@ def ajax_service():
                url=URL(r=request, c='wiki', f='ajax_wiki',
                        args=['tab6_'+str(rowid), request.vars.node])
             ),
-            _name='tab6_%s_to_eval'%rowid,
+            _name='%s_to_eval'%rowid,
           ),
         ),
       ),
