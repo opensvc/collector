@@ -1826,6 +1826,57 @@ function stats_netdev(url, id) {
 	});
     });
 }
+function stat_os(url, id) {
+    $.jqplot.config.enablePlugins = true;
+    $.getJSON(url, function(data) {
+        labels = new Array()
+        for (i=0;i<data[0].length;i++){
+            labels.push({'label': data[0][i]})
+        }
+        if (id == 'stat_os_name') {
+             title = ''
+        } else {
+             title = id.replace('stat_os_','')
+        }
+	$.jqplot(id, data[1], {
+            cursor:{zoom:true, showTooltip:true},
+	    stackSeries: true,
+            title: {
+                text: title,
+            },
+            legend: {
+                show: true,
+                location: 'e',
+                placement: "outside",
+            },
+            gridPadding: {
+                right:90,
+            },
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    seriesDefaults: {
+                fill: true,
+                shadowAngle: 135,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: labels,
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+		    tickOptions:{formatString:'%F'},
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'},
+		}, 
+	    }
+	});
+    });
+}
 function ackpanel(show, s){
     elt = document.getElementById("ackpanel")
     if (show){
