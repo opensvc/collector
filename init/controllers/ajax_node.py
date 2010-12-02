@@ -24,11 +24,6 @@ def perf_stats(node, rowid):
     t = DIV(
           SPAN(
             INPUT(
-              _type='hidden',
-              _value=node,
-              _id='node_'+rowid,
-            ),
-            INPUT(
               _value=s.strftime("%Y-%m-%d %H:%M"),
               _id='begin_'+rowid,
               _class='datetime',
@@ -43,43 +38,17 @@ def perf_stats(node, rowid):
             INPUT(
               _value='gen',
               _type='button',
-              _onClick=format_ajax(rowid, 'ajax_perf_stats_cpu', 'perf_cpu_'+rowid)+\
-                       format_ajax(rowid, 'ajax_perf_stats_mem_u', 'perf_mem_u_'+rowid)+\
-                       format_ajax(rowid, 'ajax_perf_stats_trends', 'perf_trends_'+rowid)+\
-                       format_ajax(rowid, 'ajax_perf_stats_swap', 'perf_swap_'+rowid)+\
-                       format_ajax(rowid, 'ajax_perf_stats_proc', 'perf_proc_'+rowid)+\
-                       format_ajax(rowid, 'ajax_perf_stats_netdev', 'perf_netdev_'+rowid)+\
-                       format_ajax(rowid, 'ajax_perf_stats_netdev_err', 'perf_netdev_err_'+rowid)+\
-                       format_ajax(rowid, 'ajax_perf_stats_block', 'perf_block_'+rowid)+\
-                       format_ajax(rowid, 'ajax_perf_stats_blockdev', 'perf_blockdev_'+rowid)
+              _onClick="""sync_ajax("%(url)s",['begin_%(rowid)s', 'end_%(rowid)s'],"%(div)s",function(){eval_js_in_ajax_response('%(rowid)s_plot')});"""%dict(
+                           url=URL(r=request,c='ajax_perf',f='ajax_perf_plot',
+                                   args=[node, rowid]),
+                           node=node,
+                           rowid=rowid,
+                           div="prf_cont_%s"%rowid),
+
             )
           ),
           DIV(
-            _id='perf_trends_'+rowid
-          ),
-          DIV(
-            _id='perf_cpu_'+rowid
-          ),
-          DIV(
-            _id='perf_mem_u_'+rowid
-          ),
-          DIV(
-            _id='perf_swap_'+rowid
-          ),
-          DIV(
-            _id='perf_proc_'+rowid
-          ),
-          DIV(
-            _id='perf_netdev_'+rowid
-          ),
-          DIV(
-            _id='perf_netdev_err_'+rowid
-          ),
-          DIV(
-            _id='perf_block_'+rowid
-          ),
-          DIV(
-            _id='perf_blockdev_'+rowid
+            _id='prf_cont_%s'%rowid
           ),
         )
     return t

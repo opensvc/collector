@@ -1,5 +1,3 @@
-from pychart import *
-
 def call():
     """
     exposes services. for example:
