@@ -810,3 +810,14 @@ drop view v_gen_filtersets;
 create view v_gen_filtersets as (SELECT fs.fset_name, fs.fset_updated, fs.fset_author, g.fset_id, g.f_order, g.f_id, g.encap_fset_id, (select fset_name from gen_filtersets where id=g.encap_fset_id) as encap_fset_name, g.f_log_op, f.* FROM gen_filtersets fs left join gen_filtersets_filters g on g.fset_id=fs.id left join gen_filters f on g.f_id=f.id order by g.fset_id, g.f_order);
 
 alter table gen_filtersets_filters drop index idx1; 
+
+CREATE TABLE `stats_fs_u` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `date` datetime NOT NULL,
+  `nodename` varchar(60) NOT NULL,
+  `used` int(11) NOT NULL,
+  `free` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `index_1` (`date`,`nodename`)
+);
+

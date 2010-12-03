@@ -235,6 +235,7 @@ class HtmlTable(object):
                            """%URL(r=request,c='static',f=self.colprops[a].img+'.png'),
                   ),
                   BR(),
+                  _style='white-space:nowrap',
                 )
             return s
 

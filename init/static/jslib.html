@@ -116,11 +116,21 @@ function check_toggle_vis(checked, col){
         cells[j].style.display = mode;
     }
 }
+function keep_inside(box){
+    box_l = $(box).offset().left
+    box_w = $(box).width()
+    doc_w = $('body').width()
+    if ((box_l+box_w+20)>doc_w) {
+        new_l = doc_w - box_w
+        $(box).css("left", (doc_w-box_w-20)+'px')
+    }
+}
 function click_toggle_vis(name, mode){
     cells = document.getElementsByName(name);
     for(j = 0; j < cells.length; j++) {
         if (cells[j].style.display == 'none' || cells[j].style.display == "") {
             cells[j].style.display = mode;
+            keep_inside(cells[j])
             register_pop_up(cells[j])
         } else {
             cells[j].style.display = 'none';
