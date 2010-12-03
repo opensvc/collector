@@ -104,14 +104,14 @@ def ajax_perf_proc_plot():
 
 def ajax_perf_memswap_plot():
     return SPAN(
-             _ajax_perf_plot('mem', sub=['_u', '_pct']),
-             _ajax_perf_plot('swap', sub=['_u', '_pct'], last=True)
+             _ajax_perf_plot('mem', sub=['_u', '_pct'], base='memswap'),
+             _ajax_perf_plot('swap', sub=['_u', '_pct'], last=True, base='memswap')
            )
 
 def ajax_perf_trend_plot():
     return SPAN(
-             _ajax_perf_plot('trend_cpu'),
-             _ajax_perf_plot('trend_mem', last=True)
+             _ajax_perf_plot('trend_cpu', base='trend'),
+             _ajax_perf_plot('trend_mem', last=True, base='trend')
            )
 
 @auth.requires_login()
@@ -119,7 +119,9 @@ def ajax_perf_cpu_plot():
     return _ajax_perf_plot('cpu', last=True)
 
 @auth.requires_login()
-def _ajax_perf_plot(group, sub=[''], last=False):
+def _ajax_perf_plot(group, sub=[''], last=False, base=None):
+    if base is None:
+        base = group
     node = request.args[0]
     rowid = request.args[1]
     begin = None
@@ -158,7 +160,7 @@ def _ajax_perf_plot(group, sub=[''], last=False):
     l.append(SPAN(spacer))
     l.append(SCRIPT(
                plots,
-               _name='%s_plot_to_eval'%rowid,
+               _name="prf_cont_%s_%s_to_eval"%(base,rowid)
              ))
     return SPAN(*l)
 

@@ -27,10 +27,9 @@ def perf_stats(node, rowid):
               IMG(_src=URL(r=request,c='static',f=group_img_h[group])),
               A(
                 T(title),
-                _onClick="""sync_ajax("%(url)s",['begin_%(rowid)s', 'end_%(rowid)s'],"%(div)s",function(){eval_js_in_ajax_response('%(rowid)s_plot')});"""%dict(
+                _onClick="""sync_ajax("%(url)s",['begin_%(rowid)s', 'end_%(rowid)s'],'%(div)s',function(){eval_js_in_ajax_response('%(div)s')});"""%dict(
                              url=URL(r=request,c='ajax_perf',f='ajax_perf_%s_plot'%group,
                                      args=[node, rowid]),
-                             node=node,
                              rowid=rowid,
                              div="prf_cont_%s_%s"%(group,rowid)),
               ),
