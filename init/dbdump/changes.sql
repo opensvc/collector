@@ -815,9 +815,10 @@ CREATE TABLE `stats_fs_u` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `date` datetime NOT NULL,
   `nodename` varchar(60) NOT NULL,
+  `mntpt` varchar(200) NOT NULL,
+  `size` int(11) NOT NULL,
   `used` int(11) NOT NULL,
-  `free` int(11) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `index_1` (`date`,`nodename`)
+  UNIQUE KEY `index_1` (`date`,`nodename`,`mntpt`)
 );
 

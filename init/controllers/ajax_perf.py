@@ -99,6 +99,9 @@ def ajax_perf_blockdev_plot():
 def ajax_perf_block_plot():
     return _ajax_perf_plot('block', sub=['_tps', '_bps'], last=True)
 
+def ajax_perf_fs_plot():
+    return _ajax_perf_plot('fs', sub=['_u'], last=True)
+
 def ajax_perf_proc_plot():
     return _ajax_perf_plot('proc', sub=['_runq_sz', '_plist_sz', '_loadavg'], last=True)
 
@@ -229,6 +232,14 @@ def rows_mem(node, s, e):
     q &= db.stats_mem_u.date > s
     q &= db.stats_mem_u.date < e
     rows = db(q).select(orderby=db.stats_mem_u.date)
+    return rows
+
+@auth.requires_login()
+def rows_fs_u(node, s, e):
+    q = db.stats_fs_u.nodename == node
+    q &= db.stats_fs_u.date > s
+    q &= db.stats_fs_u.date < e
+    rows = db(q).select(orderby=db.stats_fs_u.date)
     return rows
 
 @auth.requires_login()
@@ -537,6 +548,31 @@ def json_blockdev():
         svctm.append((r[0], r[14],r[13],r[12]))
         pct_util.append((r[0], r[17],r[16],r[15]))
     return [dev, tps, avgrq_sz, await, svctm, pct_util, [rsecps, wsecps]]
+
+@service.json
+def json_fs():
+    node = request.vars.node
+    begin = request.vars.b
+    end = request.vars.e
+
+    mntpt = []
+    size = []
+    used = {}
+
+    if node is None:
+        return [mntpt, size, used]
+
+    rows = rows_fs_u(node, begin, end)
+    for r in rows:
+        if r.mntpt not in used:
+            used[r.mntpt] = []
+            mntpt.append(r.mntpt)
+            size.append(r.size)
+        used[r.mntpt].append((r.date,r.used))
+    data = []
+    for m in mntpt:
+        data.append(used[m])
+    return [mntpt, size, data]
 
 @service.json
 def json_trend_cpu():

@@ -934,6 +934,10 @@ def register_fs(vars, vals):
     pass
 
 @service.xmlrpc
+def insert_stats_fs_u(vars, vals):
+    generic_insert('stats_fs_u', vars, vals)
+
+@service.xmlrpc
 def insert_stats_cpu(vars, vals):
     generic_insert('stats_cpu', vars, vals)
 

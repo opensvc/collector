@@ -22,6 +22,7 @@ def perf_stats(node, rowid):
                         'blockdev': 'hd16.png',
                         'netdev': 'action_sync_16.png',
                         'netdev_err': 'action_sync_16.png',
+                        'fs': 'hd16.png',
                       }
         d = DIV(
               IMG(_src=URL(r=request,c='static',f=group_img_h[group])),
@@ -68,6 +69,7 @@ def perf_stats(node, rowid):
             SPAN(perf_group('Plot cpu usage', 'cpu')),
             SPAN(perf_group('Plot mem/swap usage', 'memswap')),
             SPAN(perf_group('Plot process activity', 'proc')),
+            SPAN(perf_group('Plot filesystem usage', 'fs')),
             SPAN(perf_group('Plot aggregated block device usage', 'block')),
             SPAN(perf_group('Plot per block device usage', 'blockdev')),
             SPAN(perf_group('Plot per net device usage', 'netdev')),

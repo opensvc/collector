@@ -666,6 +666,15 @@ db.define_table('filters',
     Field('fil_img', 'string', length=30),
     migrate=False)
 
+db.define_table('stats_fs_u',
+    Field('id'),
+    Field('date', 'datetime'),
+    Field('nodename', 'string'),
+    Field('mntpt', 'string'),
+    Field('size', 'integer'),
+    Field('used', 'integer'),
+    migrate=False)
+
 db.define_table('stats_cpu',
     Field('id'),
     Field('nodename', 'string', length=60),

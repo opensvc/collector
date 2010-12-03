@@ -309,11 +309,13 @@ function plot_width_x(id, data) {
     document.getElementById(id).style['width'] = h
 }
 function plot_width(id, data) {
-    w = data[0].length
+    w = 12
     for (i=0; i<data.length; i++) {
         w = Math.max(w, data[i].length)
     }
-    document.getElementById(id).style['width'] += w*12+'px'
+    w -= 12
+    iw = $('#'+id).width()
+    $('#'+id).width(iw+w*5+'px')
 }
 
 function stats_avg_cpu_for_nodes(url, id) {
@@ -550,7 +552,6 @@ function stats_disk_for_svc(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         plot_height(id, data[0])
-        plot_width(id, data[0])
 	$.jqplot(id, [data[1][0]], {
 	    grid: {
                 borderWidth: 0.5,
@@ -589,6 +590,7 @@ function stats_disk_for_svc(url, id) {
 		}, 
 	    }
 	});
+        plot_width(id, data[0])
     });
 }
 function stats_avg_proc_for_nodes(url, id) {
@@ -681,9 +683,11 @@ function stat_day(url, id) {
     $.getJSON(url, function(data) {
 	$.jqplot(id+'_err', [data[2]], {
             cursor:{zoom:true, showTooltip:false},
-	    legend: {
+            legend: {
+                renderer: $.jqplot.EnhancedLegendRenderer,
+                rendererOptions:{numberRows: 1},
                 show: true,
-                location: 'nw',
+                location: 'n',
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -705,14 +709,16 @@ function stat_day(url, id) {
 	});
 	$.jqplot(id+'_apps', [data[11]], {
             cursor:{zoom:true, showTooltip:false},
-	    legend: {
-                show: true,
-                location: 'nw',
-            },
 	    grid: {
                 borderWidth: 0.5,
                 shadowOffset: 1.0,
                 shadowWidth: 2
+            },
+            legend: {
+                renderer: $.jqplot.EnhancedLegendRenderer,
+                rendererOptions:{numberRows: 1},
+                show: true,
+                location: 'n',
             },
 	    series: [
                 {label: 'apps'},
@@ -729,14 +735,16 @@ function stat_day(url, id) {
 	});
 	$.jqplot(id+'_disk', [data[5]], {
             cursor:{zoom:true, showTooltip:false},
-	    legend: {
-                show: true,
-                location: 'nw',
-            },
 	    grid: {
                 borderWidth: 0.5,
                 shadowOffset: 1.0,
                 shadowWidth: 2
+            },
+            legend: {
+                renderer: $.jqplot.EnhancedLegendRenderer,
+                rendererOptions:{numberRows: 1},
+                show: true,
+                location: 'n',
             },
 	    series: [
                 {
@@ -756,9 +764,11 @@ function stat_day(url, id) {
 	});
 	$.jqplot(id+'_accounts', [data[12]], {
             cursor:{zoom:true, showTooltip:false},
-	    legend: {
+            legend: {
+                renderer: $.jqplot.EnhancedLegendRenderer,
+                rendererOptions:{numberRows: 1},
                 show: true,
-                location: 'nw',
+                location: 'n',
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -781,9 +791,11 @@ function stat_day(url, id) {
 	$.jqplot(id+'_actions', [data[4],  data[3], data[2]], {
             cursor:{zoom:true, showTooltip:false},
 	    stackSeries: true,
-	    legend: {
+            legend: {
+                renderer: $.jqplot.EnhancedLegendRenderer,
+                rendererOptions:{numberRows: 1},
                 show: true,
-                location: 'nw'
+                location: 'n',
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -825,9 +837,11 @@ function stat_day(url, id) {
 	$.jqplot(id+'_nodes', [data[17],  data[14]], {
             cursor:{zoom:true, showTooltip:false},
 	    stackSeries: true,
-	    legend: {
+            legend: {
+                renderer: $.jqplot.EnhancedLegendRenderer,
+                rendererOptions:{numberRows: 1},
                 show: true,
-                location: 'nw'
+                location: 'n',
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -863,9 +877,11 @@ function stat_day(url, id) {
 	$.jqplot(id+'_svc_type', [data[15],  data[0]], {
             cursor:{zoom:true, showTooltip:false},
 	    stackSeries: true,
-	    legend: {
+            legend: {
+                renderer: $.jqplot.EnhancedLegendRenderer,
+                rendererOptions:{numberRows: 1},
                 show: true,
-                location: 'nw'
+                location: 'n',
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -879,12 +895,8 @@ function stat_day(url, id) {
                 shadowWidth: 2
             },
 	    series: [
-                {
-                    label: 'PRD svc',
-                },
-                {
-                    label: 'other svc',
-                },
+                {label: 'PRD svc'},
+                {label: 'other svc'},
             ],
 	    axes: {
 		xaxis: {
@@ -901,9 +913,11 @@ function stat_day(url, id) {
 	$.jqplot(id+'_svc_cluster', [data[16],  data[18]], {
             cursor:{zoom:true, showTooltip:false},
 	    stackSeries: true,
-	    legend: {
+            legend: {
+                renderer: $.jqplot.EnhancedLegendRenderer,
+                rendererOptions:{numberRows: 1},
                 show: true,
-                location: 'nw'
+                location: 'n',
             },
 	    seriesDefaults: {
                 breakOnNull: true,
@@ -928,9 +942,11 @@ function stat_day(url, id) {
 	$.jqplot(id+'_svc_drp', [data[13],  data[19]], {
             cursor:{zoom:true, showTooltip:false},
 	    stackSeries: true,
-	    legend: {
+            legend: {
+                renderer: $.jqplot.EnhancedLegendRenderer,
+                rendererOptions:{numberRows: 1},
                 show: true,
-                location: 'nw'
+                location: 'n',
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -1832,6 +1848,51 @@ function stats_netdev(url, id) {
 	});
     });
 }
+function stats_fs(url, id) {
+    $.jqplot.config.enablePlugins = true;
+    $.getJSON(url, function(data) {
+        labels = new Array()
+        for (i=0;i<data[0].length;i++){
+            labels.push({'label': data[0][i]+'<br>'+parseInt(data[1][i]/1024)+' MB'})
+        }
+	$.jqplot(id+'_u', data[2], {
+            cursor:{zoom:true, showTooltip:true},
+            title: {
+                text: 'fs usage %',
+            },
+            legend: {
+                show: true,
+                location: 'e',
+                placement: "outside",
+            },
+            gridPadding: {
+                right:90,
+            },
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    seriesDefaults: {
+                shadowAngle: 135,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: labels,
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+		    tickOptions:{formatString:'<center>%F<br>%R</center>'},
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'},
+		}, 
+	    }
+	});
+        plot_width(id+'_u', data[0])
+    });
+}
 function stat_os(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
@@ -1882,6 +1943,7 @@ function stat_os(url, id) {
 		}, 
 	    }
 	});
+        plot_width(id, data[0])
     });
 }
 function ackpanel(show, s){
