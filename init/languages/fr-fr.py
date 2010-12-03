@@ -401,6 +401,7 @@
 'Record %(id)s created': 'Enregistrement %(id)s créé',
 'Record Created': 'Enregistrement créé',
 'Record ID': "Id d'enregistrement",
+'Records per page:': 'Records per page:',
 'Refresh': 'Rafraichir',
 'Refresh items': 'Rafraîchir les éléments',
 'Register': "S'enregistrer",

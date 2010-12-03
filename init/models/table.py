@@ -319,37 +319,49 @@ class HtmlTable(object):
         if end > self.totalrecs:
             end = self.totalrecs
 
-        num_pages = 10
-        def page_range():
-            s = page - num_pages / 2
-            e = page + num_pages / 2
-            if s <= 0:
-                e = e - s
-                s = 1
-            if e > totalpages:
-                s = s - (e - totalpages)
-                e = totalpages
-            if s <= 0:
-                s = 1
-            return range(s, e+1)
-
-        pr = page_range()
         pager = []
         if page != 1:
-            pager.append(A(T('<< '), _onclick=set_page_js(page-1)))
-        for p in pr:
-            if p == page:
-                pager.append(A(str(p)+' ', _class="current_page"))
+            pager.append(A(
+                           '<< ',
+                           _class="current_page",
+                           _onclick=set_page_js(page-1),
+                         ))
+        pager.append(A(
+                      '%d-%d/%d '%(start+1, end, self.totalrecs),
+                       _class="current_page",
+                       _onclick="""click_toggle_vis('%(div)s','block');"""%dict(
+                          div='perpage',
+                       ),
+                     ))
+        opts_v = [20, 50, 100, 500]
+        opts = []
+        for o in opts_v:
+            if self.perpage == o:
+                c = 'current_page'
             else:
-                pager.append(A(str(p)+' ', _onclick=set_page_js(p)))
+                c = ''
+            opts.append(SPAN(
+                          A(
+                            o,
+                            _class=c,
+                            _onclick=set_perpage_js(o)+self.ajax_submit()
+                          ),
+                          BR(),
+                        ))
+        pager.append(DIV(
+                       SPAN(opts),
+                       _name='perpage',
+                       _class='white_float',
+                       _style='max-width:50%;display:none;text-align:right;',
+                     ))
         if page != totalpages:
-            pager.append(A(T('>> '), _onclick=set_page_js(page+1)))
-        pager.append(A(T('all'), _onclick=set_page_js(0)))
+            pager.append(A(
+                           '>> ',
+                           _class="current_page",
+                           _onclick=set_page_js(page+1),
+                         ))
 
-        # paging toolbar
-        info=T("Showing %(first)d to %(last)d out of %(total)d records",
-               dict(first=start+1, last=end, total=self.totalrecs))
-        nav = DIV(pager, _class='floatw', _title=info)
+        nav = DIV(pager, _class='floatw')
 
         return nav
 
