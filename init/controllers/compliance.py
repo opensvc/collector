@@ -986,32 +986,32 @@ def ajax_comp_rulesets():
 
     err = None
     if len(request.args) == 1:
-       action = request.args[0]
-       try:
-           if action == 'filterset_detach':
-               comp_detach_filterset(v.get_checked())
-           elif action == 'var_name_set':
-               var_name_set()
-           elif action == 'var_value_set':
-               var_value_set()
-           elif action == 'ruleset_var_del':
-               comp_delete_ruleset_var(v.get_checked())
-           elif action == 'ruleset_change_type':
-               ruleset_change_type(v.get_checked())
-           elif action == 'ruleset_clone':
-               ruleset_clone()
-               v.form_filterset_attach = v.comp_filterset_attach_sqlform()
-               v.form_ruleset_var_add = v.comp_ruleset_var_add_sqlform()
-           elif action == 'ruleset_del':
-               comp_delete_ruleset(v.get_checked())
-               v.form_filterset_attach = v.comp_filterset_attach_sqlform()
-               v.form_ruleset_var_add = v.comp_ruleset_var_add_sqlform()
-           elif action == 'ruleset_rename':
-               comp_rename_ruleset(v.get_checked())
-               v.form_filterset_attach = v.comp_filterset_attach_sqlform()
-               v.form_ruleset_var_add = v.comp_ruleset_var_add_sqlform()
-       except ToolError, e:
-           v.flash = str(e)
+        action = request.args[0]
+        try:
+            if action == 'filterset_detach':
+                comp_detach_filterset(v.get_checked())
+            elif action == 'var_name_set':
+                var_name_set()
+            elif action == 'var_value_set':
+                var_value_set()
+            elif action == 'ruleset_var_del':
+                comp_delete_ruleset_var(v.get_checked())
+            elif action == 'ruleset_change_type':
+                ruleset_change_type(v.get_checked())
+            elif action == 'ruleset_clone':
+                ruleset_clone()
+                v.form_filterset_attach = v.comp_filterset_attach_sqlform()
+                v.form_ruleset_var_add = v.comp_ruleset_var_add_sqlform()
+            elif action == 'ruleset_del':
+                comp_delete_ruleset(v.get_checked())
+                v.form_filterset_attach = v.comp_filterset_attach_sqlform()
+                v.form_ruleset_var_add = v.comp_ruleset_var_add_sqlform()
+            elif action == 'ruleset_rename':
+                comp_rename_ruleset(v.get_checked())
+                v.form_filterset_attach = v.comp_filterset_attach_sqlform()
+                v.form_ruleset_var_add = v.comp_ruleset_var_add_sqlform()
+        except ToolError, e:
+            v.flash = str(e)
 
     try:
         if v.form_ruleset_add.accepts(request.vars, formname='add_ruleset'):
@@ -1025,9 +1025,10 @@ def ajax_comp_rulesets():
             response.flash = T("errors in form")
 
         if v.form_filterset_attach.accepts(request.vars):
+            g = db.v_comp_rulesets.fset_id|db.v_comp_rulesets.ruleset_id
             q = db.v_comp_rulesets.fset_id == request.vars.fset_id
             q &= db.v_comp_rulesets.ruleset_id == request.vars.ruleset_id
-            rows = db(q).select()
+            rows = db(q).select(groupby=g)
             if len(rows) != 1:
                 raise ToolError("filterset attach failed: can't find filterset")
             fset = rows[0].fset_name
@@ -1049,6 +1050,8 @@ def ajax_comp_rulesets():
             response.flash = T("errors in form")
     except AttributeError:
         pass
+    except ToolError, e:
+        v.flash = str(e)
 
     o = db.v_comp_rulesets.ruleset_name|db.v_comp_rulesets.var_name
     q = db.v_comp_rulesets.ruleset_id > 0
