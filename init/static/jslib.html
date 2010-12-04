@@ -190,20 +190,15 @@ function comp_status_plot(url, id) {
     $.getJSON(url, function(data) {
 	$.jqplot(id, data[1], {
 	    stackSeries: true,
-	    legend: {
-                show: false,
-                location: 'nw'
-            },
 	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
+                drawGridlines: false,
+                borderWidth: 0,
+                shadow: false,
+                background: 'rgba(0,0,0,0)',
             },
 	    seriesDefaults: {
                 fill: true,
-                shadowAngle: 135,
-                shadowOffset: 1.0,
-                shadowWidth: 2
+                shadow: false,
             },
 	    series: [
                 {
@@ -222,8 +217,14 @@ function comp_status_plot(url, id) {
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
-		    tickOptions: {formatString:'%s'},
+		    tickOptions: {
+                        formatString:'%s',
+                        showMark:false,
+                        showGridline: false,
+                        fontSize:'7pt',
+                    },
                     ticks: data[0],
+                    padMax: 0,
 		}, 
 		yaxis: {
 		    min: 0, 
@@ -590,7 +591,6 @@ function stats_disk_for_svc(url, id) {
 		}, 
 	    }
 	});
-        plot_width(id, data[0])
     });
 }
 function stats_avg_proc_for_nodes(url, id) {
