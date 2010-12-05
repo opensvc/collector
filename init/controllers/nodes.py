@@ -268,7 +268,7 @@ class table_nodes(HtmlTable):
 
 @auth.requires_membership('NodeManager')
 def node_del(ids):
-    q = db.nodes.id.belongs(ids)
+    q = db.nodes.nodename.belongs(ids)
     u = ', '.join([r.nodename for r in db(q).select(db.nodes.nodename)])
     db(q).delete()
     _log('nodes.delete',
