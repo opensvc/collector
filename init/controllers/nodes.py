@@ -111,33 +111,6 @@ def node_edit():
 
     return dict(form=form)
 
-class col_node(HtmlTableColumn):
-    def html(self, o):
-        id = self.t.extra_line_key(o)
-        s = self.get(o)
-        d = DIV(
-              A(
-                IMG(
-                  _src=URL(r=request, c='static', f='edit.png'),
-                  _style='vertical-align:middle',
-                ),
-                _href=URL(r=request, c='nodes', f='node_edit',
-                          vars={'node':o.nodename,
-                                '_next': URL(r=request)}
-                      ),
-              ),
-              node_icon(o.os_name),
-              A(
-                s,
-                _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
-                  url=URL(r=request, c='ajax_node',f='ajax_node',
-                          vars={'node': s, 'rowid': id}),
-                  id=id,
-                ),
-              ),
-            )
-        return d
-
 class table_nodes(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -161,6 +134,7 @@ class table_nodes(HtmlTable):
             self.colprops[c].display = True
         self.colprops['nodename'].t = self
         self.extraline = True
+        self.extrarow = True
         self.checkboxes = True
         self.checkbox_id_col = 'nodename'
         self.dbfilterable = True
@@ -170,6 +144,23 @@ class table_nodes(HtmlTable):
             self.additional_tools.append('node_del')
         self.additional_tools.append('pkgdiff')
         self.additional_tools.append('grpperf')
+
+    def format_extrarow(self, o):
+        id = self.extra_line_key(o)
+        s = self.colprops['nodename'].get(o)
+        d = DIV(
+              A(
+                IMG(
+                  _src=URL(r=request, c='static', f='edit.png'),
+                  _style='vertical-align:middle',
+                ),
+                _href=URL(r=request, c='nodes', f='node_edit',
+                          vars={'node':s,
+                                '_next': URL(r=request)}
+                      ),
+              ),
+            )
+        return d
 
     def node_del(self):
         d = DIV(

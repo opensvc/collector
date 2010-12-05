@@ -8,7 +8,8 @@ sevendays = str(now-datetime.timedelta(days=7,
 
 img_h = {0: 'check16.png',
          1: 'nok.png',
-         2: 'na.png'}
+         2: 'na.png',
+       -15: 'kill16.png'}
 
 import re
 # ex: \x1b[37;44m\x1b[1mContact List\x1b[0m\n
@@ -2587,7 +2588,7 @@ def ajax_comp_log():
     t = table_comp_log('ajax_comp_log', 'ajax_comp_log')
 
     db.commit()
-    o = ~db.comp_log.run_date
+    o = ~db.comp_log.run_date|~db.comp_log.id
     q = _where(None, 'comp_log', domain_perms(), 'run_nodename')
     q &= db.comp_log.run_nodename == db.v_nodes.nodename
     for f in t.cols:
