@@ -1972,7 +1972,7 @@ def comp_rename_moduleset(ids):
     if 'comp_moduleset_rename_input' not in request.vars:
         raise ToolError("rename moduleset failed: new moduleset name is empty")
     new = request.vars['comp_moduleset_rename_input']
-    if len(db(db.comp_modulesets.modset_name==new).select()) > 0:
+    if len(db(db.comp_moduleset.modset_name==new).select()) > 0:
         raise ToolError("rename moduleset failed: new moduleset name already exists")
     id = int(ids[0].split('_')[0])
     rows = db(db.comp_moduleset.id == id).select(db.comp_moduleset.modset_name)
