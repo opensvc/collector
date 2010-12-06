@@ -1847,12 +1847,14 @@ function stats_fs(url, id) {
         for (i=0;i<data[0].length;i++){
             labels.push({'label': data[0][i]+'<br>'+parseInt(data[1][i]/1024)+' MB'})
         }
+        try {
 	$.jqplot(id+'_u', data[2], {
             cursor:{zoom:true, showTooltip:true},
             title: {
                 text: 'fs usage %',
             },
             legend: {
+                renderer: $.jqplot.EnhancedLegendRenderer,
                 show: true,
                 location: 'e',
                 placement: "outside",
@@ -1868,7 +1870,7 @@ function stats_fs(url, id) {
 	    seriesDefaults: {
                 shadowAngle: 135,
                 shadowOffset: 1.0,
-                shadowWidth: 2
+                shadowWidth: 2,
             },
 	    series: labels,
 	    axes: {
@@ -1881,8 +1883,10 @@ function stats_fs(url, id) {
 		    tickOptions:{formatString:'%i'},
 		}, 
 	    }
-	});
-        plot_width(id+'_u', data[0])
+  	});
+        } finally {
+            plot_width(id+'_u', data[0])
+        }
     });
 }
 function stat_os(url, id) {
@@ -1897,6 +1901,7 @@ function stat_os(url, id) {
         } else {
              title = id.replace('stat_os_','')
         }
+        try {
 	$.jqplot(id, data[1], {
             cursor:{zoom:true, showTooltip:true},
 	    stackSeries: true,
@@ -1935,7 +1940,9 @@ function stat_os(url, id) {
 		}, 
 	    }
 	});
-        plot_width(id, data[0])
+        } finally {
+            plot_width(id, data[0])
+        }
     });
 }
 function ackpanel(show, s){
