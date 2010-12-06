@@ -553,6 +553,7 @@ function stats_disk_for_svc(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         plot_height(id, data[0])
+        $('#'+id).width('600px')
 	$.jqplot(id, [data[1][0]], {
 	    grid: {
                 borderWidth: 0.5,
