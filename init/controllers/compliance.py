@@ -2803,10 +2803,16 @@ def comp_query(q, row):
     else:
         if v.f_op == '=':
             qry = db[v.f_table][v.f_field] == v.f_value
+        elif v.f_op == '!=':
+            qry = db[v.f_table][v.f_field] != v.f_value
         elif v.f_op == 'LIKE':
             qry = db[v.f_table][v.f_field].like(v.f_value)
+        elif v.f_op == 'NOT LIKE':
+            qry = ~db[v.f_table][v.f_field].like(v.f_value)
         elif v.f_op == 'IN':
             qry = db[v.f_table][v.f_field].belongs(v.f_value.split(','))
+        elif v.f_op == 'NOT IN':
+            qry = ~db[v.f_table][v.f_field].belongs(v.f_value.split(','))
         elif v.f_op == '>=':
             qry = db[v.f_table][v.f_field] >= v.f_value
         elif v.f_op == '>':
@@ -2821,8 +2827,12 @@ def comp_query(q, row):
         q = qry
     elif v.f_log_op == 'AND':
         q &= qry
+    elif v.f_log_op == 'AND NOT':
+        q &= ~qry
     elif v.f_log_op == 'OR':
         q |= qry
+    elif v.f_log_op == 'OR NOT':
+        q |= ~qry
     return q
 
 def comp_format_filter(q):

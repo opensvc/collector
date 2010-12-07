@@ -822,3 +822,8 @@ CREATE TABLE `stats_fs_u` (
   UNIQUE KEY `index_1` (`date`,`nodename`,`mntpt`)
 );
 
+alter table gen_filtersets_filters modify column f_log_op varchar(8) NOT NULL;
+
+alter table gen_filters modify column f_op varchar(8) NOT NULL;
+
+
