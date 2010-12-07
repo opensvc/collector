@@ -1491,7 +1491,7 @@ def comp_rename_filterset(ids):
        len(request.vars['comp_filterset_rename_input']) == 0:
         raise ToolError("rename filterset failed: new filterset name is empty")
     new = request.vars['comp_filterset_rename_input']
-    if len(db(db.comp_filtersets.fset_name==new).select()) > 0:
+    if len(db(db.gen_filtersets.fset_name==new).select()) > 0:
         raise ToolError("rename filterset failed: new filterset name already exists")
     ids = map(lambda x: int(x.split('_')[0]), ids)
     id = ids[0]
