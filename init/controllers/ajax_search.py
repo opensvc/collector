@@ -18,7 +18,7 @@ def format_svc(pattern):
     q = o.like(pattern)
     q = _where(q, 'svcmon', domain_perms(), 'mon_svcname')
     rows = db(q).select(o, orderby=o, groupby=o, limitby=(0,max_search_result))
-    n = db(q).count()
+    n = len(db(q).select(o, groupby=o))
 
     if len(rows) == 0:
         return ''
@@ -57,7 +57,7 @@ def format_svc(pattern):
               ),
             )
         return d
-    d = [H3(T('Services'), ' (', len(rows), ')')]
+    d = [H3(T('Services'), ' (', n, ')')]
     for row in rows:
         d.append(format_row(row))
     return DIV(*d)
@@ -67,7 +67,7 @@ def format_node(pattern):
     q = o.like(pattern)
     q = _where(q, 'nodes', domain_perms(), 'nodename')
     rows = db(q).select(o, orderby=o, groupby=o, limitby=(0,max_search_result))
-    n = db(q).count()
+    n = len(db(q).select(o, groupby=o))
 
     if len(rows) == 0:
         return ''
@@ -114,7 +114,7 @@ def format_node(pattern):
               ),
             )
         return d
-    d = [H3(T('Nodes'), ' (', len(rows), ')')]
+    d = [H3(T('Nodes'), ' (', n, ')')]
     for row in rows:
         d.append(format_row(row))
     return DIV(*d)
@@ -123,7 +123,7 @@ def format_user(pattern):
     o = db.v_users.fullname
     q = o.like(pattern)
     rows = db(q).select(o, orderby=o, groupby=o, limitby=(0,max_search_result))
-    n = db(q).count()
+    n = len(db(q).select(o, groupby=o))
 
     if len(rows) == 0:
         return ''
@@ -155,7 +155,7 @@ def format_user(pattern):
               ),
             )
         return d
-    d = [H3(T('Users'), ' (', len(rows), ')')]
+    d = [H3(T('Users'), ' (', n, ')')]
     for row in rows:
         d.append(format_row(row))
     return DIV(*d)
