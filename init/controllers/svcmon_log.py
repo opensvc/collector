@@ -1,160 +1,32 @@
-from pychart import *
-
 @auth.requires_login()
-def svcmon_log_global_chart(rows):
-    import datetime
+def ack(ids=[]):
+    if len(ids) == 0:
+        raise ToolError("no range selected")
 
-    begin = rows[0].svcmon_log.mon_begin
-    end = rows[-1].svcmon_log.mon_end
-    interval = datetime.timedelta(minutes=60)
-
-    """ setup the sampling
-    """
-    ticks = []
-    b = begin
-    while b <= end:
-        ticks.append(b)
-        b += interval
-
-    """ determine the chart stacks
-    """
-    cols = set([])
-    for row in rows:
-        cols |= set(['-'.join((row.v_svcmon.mon_nodtype, row.svcmon_log.mon_overallstatus))])
-
-    """ sample
-    """
-    data = []
-    for tick in ticks:
-        d = {}
-        for row in rows:
-            if tick < row.svcmon_log.mon_begin or tick >row.svcmon_log.mon_end:
-                continue
-            key = '-'.join((row.v_svcmon.mon_nodtype,row.svcmon_log.mon_overallstatus)) 
-            if key not in d:
-                d[key] = 1
-            else:
-                d[key] += 1
-        u = [tick]
-        for col in cols:
-            if col in d:
-                u.append(d[col])
-            else:
-                u.append(0)
-        data.append(u)
-
-    """ chart
-    """
-    def tic_start_ts(begin, end):
-        from time import mktime
-        start_date = mktime(begin.timetuple())
-        end_date = mktime(end.timetuple())
-        p = end_date - start_date
-        if p < 86400:
-            """ align start to closest preceding hour
-            """
-            start_date = ((start_date // 3600) + 1) * 3600
-        else:
-            """ align start to closest preceding day
-            """
-            start_date = ((start_date // 86400) + 1) * 86400
-        return start_date
-
-    w = __stats_bar_width(data)
-
-    from time import mktime
-
-    start_date = tic_start_ts(begin, end)
-
-    def format_x(ts):
-        d = datetime.datetime.fromtimestamp(ts+start_date)
-        return "/a50/5{}" + d.strftime("%y-%m-%d %H:%M")
-
-    def format_y(x):
-        return "/6{}" + str(x)
-
-    def format2_y(x):
-        return "/a50/6{}" + str(x)
-
-    import random
-    action = URL(r=request,c='static',f='stats_test.png')
-    path = 'applications'+str(action)
-    can = canvas.init(path)
-    theme.use_color = True
-    theme.scale_factor = 2
-    theme.reinitialize()
-
-    for d in data:
-        d[0] = mktime(d[0].timetuple())-start_date
-
-    ar = area.T(
-           #x_coord = category_coord.T(data, 0),
-           x_coord = linear_coord.T(),
-           y_coord = linear_coord.T(),
-           x_axis = axis.X(
-                      label = '',
-                      format=format_x,
-                      tic_interval=tic_interval_from_ts,
-                    ),
-           y_axis = axis.Y(label = "", format=format_y),
-           x_range = (None, mktime(end.timetuple())-start_date)
-         )
-    bar_plot.fill_styles.reset();
-
-    colors = [color.darkolivegreen1,
-              color.gray10,
-              color.salmon,
-              color.gray30,
-              color.darkkhaki,
-              color.gray50,
-              color.sienna1,
-              color.gray70,
-              color.lightgreen,
-              color.gray90,
-              color.thistle3,
-              color.coral]
-
-    plot = []
-    for i, o in enumerate(cols):
-        if i == 0:
-            stackon = None
-        else:
-            stackon = plot[i-1]
-
-        plot += [bar_plot.T(label=o.replace('/','//'),
-                            hcol=i+1,
-                            fill_style=fill_style.Plain(bgcolor=colors[i%len(colors)]),
-                            stack_on=stackon,
-                            line_style=None,
-                            width = w,
-                            data = data,
-                            data_label_format="",
-                            direction='vertical')]
-        ar.add_plot(plot[i])
-
-    ar.draw(can)
-    can.close()
-
-    return action
-
-@auth.requires_login()
-def _svcmon_log_ack(request):
-    request.vars.ackflag = "0"
-    svcs = set([])
-
-    b = str_to_date(request.vars.ack_begin)
-    e = str_to_date(request.vars.ack_end)
     if request.vars.ac == 'true':
         account = 1
     else:
         account = 0
 
-    for key in [ k for k in request.vars.keys() if 'check_' in k ]:
-        svcs |= set(['_'.join(key.split('_')[1:-1])])
-    for svc in svcs:
-        svcmon_log_ack_write(svc, b, e, 
+    log = ''
+    for id in ids:
+        i = id.split('_')
+        if len(i) != 3:
+            continue
+        svc = i[0]
+        b = str_to_date(i[1])
+        e = str_to_date(i[2])
+        log += '%s (%s>%s) '%(svc, b, e)
+        svcmon_log_ack_write(svc, b, e,
                              request.vars.ackcomment,
                              account)
+
+    if 'ackcomment' in request.vars:
+        del request.vars.ackcomment
+
+    _log('availability.ack',
+         'acknowledged unavailability range: %(g)s',
+         dict(g=log))
 
 @auth.requires_login()
 def service_availability(rows, begin=None, end=None):
@@ -211,15 +83,17 @@ def service_availability(rows, begin=None, end=None):
     """
     for row in rows:
         if row.svcmon_log.mon_svcname not in h:
-            h[row.svcmon_log.mon_svcname] = {'ranges': [],
-                                  'range_count': 0,
-                                  'holes': [],
-                                  'begin': begin,
-                                  'end': end,
-                                  'period': period,
-                                  'downtime': 0,
-                                  'discarded': [],
-                                 }
+            h[row.svcmon_log.mon_svcname] = {
+              'svcname': row.svcmon_log.mon_svcname,
+              'ranges': [],
+              'range_count': 0,
+              'holes': [],
+              'begin': begin,
+              'end': end,
+              'period': period,
+              'downtime': 0,
+              'discarded': [],
+             }
         s = status(row)
         if s not in ['up', 'stdby up with up']:
             h[row.svcmon_log.mon_svcname]['discarded'] += [(row.svcmon_log.id, s)]
@@ -372,6 +246,14 @@ def service_availability(rows, begin=None, end=None):
         if ack_overlap == 0:
             holes += [_hole(_e, b, 0, None)]
 
+        # merge contiguous holes
+        if len(holes) > 1:
+            for i in range(len(holes)-1, 0, -1):
+                if holes[i]['begin'] == holes[i-1]['end'] and \
+                   holes[i]['acked'] == 0 and \
+                   holes[i-1]['acked'] == 0:
+                    holes[i-1]['end'] = holes[i]['begin']
+                    del(holes[i])
         return holes
 
 
@@ -456,228 +338,6 @@ def service_availability(rows, begin=None, end=None):
 
     return h
 
-def service_availability_chart(h):
-    def format_x(ts):
-        d = datetime.date.fromtimestamp(ts)
-        return "/a50/5{}" + d.strftime("%y-%m-%d")
-
-    def sort_by_avail(x, y):
-        return cmp(h[x]['availability'], h[y]['availability'])
-
-    k = h.keys()
-    k.sort(sort_by_avail, reverse=True)
-
-    data = []
-    from time import mktime
-    x_min = 0
-    x_max = 0
-
-    def get_range(holes):
-        last = 0
-        ticks = []
-        for _h in holes:
-            tsb = mktime(_h['begin'].timetuple())
-            tse = mktime(_h['end'].timetuple())
-            d1 = tsb - last
-            if d1 < 0:
-                continue
-            d2 = tse - tsb
-            if d2 == 0:
-                continue
-            last = tse
-            ticks += [d1, d2]
-        if len(ticks) == 0:
-            ticks = [0, 0]
-        return ticks
-
-    for svc in k:
-        if x_min == 0:
-            x_min = mktime(h[svc]['begin'].timetuple())
-        else:
-            x_min = min(mktime(h[svc]['begin'].timetuple()), x_min)
-
-        if x_max == 0:
-            x_max = mktime(h[svc]['end'].timetuple())
-        else:
-            x_max = min(mktime(h[svc]['end'].timetuple()), x_max)
-
-        ticks = get_range([_h for _h in h[svc]['holes'] if _h['acked']==0 or (_h['acked']==1 and _h['acked_account']==1)])
-        ticks_acked = get_range([_h for _h in h[svc]['holes'] if _h['acked']==1 and _h['acked_account']==0])
-
-        data += [(svc, tuple(ticks), tuple(ticks_acked))]
-
-    if len(data) == 0:
-        return
-
-    duration = x_max - x_min
-    if duration < 691200:
-        ti = 86400
-    elif duration < 2764800:
-        ti = 604800
-    else:
-        ti = 2592000
-
-    action = str(URL(r=request,c='static',f='avail.png'))
-    path = 'applications'+action
-    can = canvas.init(path)
-    theme.use_color = True
-    theme.scale_factor = 3
-    theme.reinitialize()
-
-    ar = area.T(y_coord = category_coord.T(data, 0),
-                size = (150,len(data)*8),
-                x_range = (x_min, x_max),
-                x_axis = axis.X(label="", format=format_x, tic_interval=ti),
-                y_axis = axis.Y(label="",  format="/4{}%s"))
-    bar_plot.fill_styles.reset()
-
-    chart_object.set_defaults(interval_bar_plot.T,
-                              direction="horizontal",
-                              width=3,
-                              cluster_sep = 0,
-                              data=data)
-    plot1 = interval_bar_plot.T(
-                fill_styles=[fill_style.Plain(bgcolor=color.salmon), None],
-                line_styles=[None, None],
-                cluster=(0,2),
-                label="/5accounted"
-    )
-    plot2 = interval_bar_plot.T(
-                fill_styles=[fill_style.Plain(bgcolor=color.thistle3), None],
-                line_styles=[None, None],
-                hcol=2, cluster=(1,2),
-                label="/5ignored"
-    )
-    ar.add_plot(plot1, plot2)
-    ar.draw(can)
-    can.close()
-    return action
-
-@auth.requires_login()
-def svcmon_log():
-    if request.vars.ackflag == "1":
-        _svcmon_log_ack(request)
-
-    now = datetime.datetime.now()
-    if request.vars.mon_begin is None or request.vars.mon_begin == "":
-        begin = now - datetime.timedelta(days=7, microseconds=now.microsecond)
-        request.vars.mon_begin = ">"+str(begin)
-    else:
-        begin = str_to_date(request.vars.mon_begin)
-
-    if request.vars.mon_end is None or request.vars.mon_end == "":
-        end = now - datetime.timedelta(seconds=1200, microseconds=now.microsecond)
-        request.vars.mon_end = "<"+str(end)
-    else:
-        end = str_to_date(request.vars.mon_end)
-
-    toggle_db_filters()
-
-    o = db.svcmon_log.mon_begin|db.svcmon_log.mon_end
-    query = db.v_svcmon.mon_svcname==db.svcmon_log.mon_svcname
-    query &= db.v_svcmon.mon_nodname==db.svcmon_log.mon_nodname
-    query &= _where(None, 'svcmon_log', request.vars.mon_svcname, 'mon_svcname')
-    query &= _where(None, 'svcmon_log', request.vars.mon_begin, 'mon_end')
-    query &= _where(None, 'svcmon_log', request.vars.mon_end, 'mon_begin')
-    query &= _where(None, 'svcmon_log', domain_perms(), 'mon_svcname')
-
-    query = apply_db_filters(query, 'v_svcmon')
-
-    rows = db(query).select(orderby=o)
-    nav = DIV()
-
-    h = service_availability(rows, begin, end)
-    img = service_availability_chart(h)
-
-    """
-    if request.vars.chart == "timeline":
-        img = service_availability_chart(h)
-    else:
-        img = svcmon_log_global_chart(rows)
-    """
-
-    return dict(rows=rows,
-                h=h,
-                nav=nav,
-                img=img,
-                active_filters=active_db_filters('v_svcmon'),
-                available_filters=avail_db_filters('v_svcmon'),
-               )
-
-@auth.requires_login()
-def ajax_svcmon_log_transition():
-    svc = request.vars.svcname
-    b = str_to_date(request.vars.begin)
-    e = str_to_date(request.vars.end)
-
-    """ real transition dates
-    """
-    tb = b
-    te = e
-
-    def get_states_at(d, svc):
-        q = (db.svcmon_log.mon_svcname==svc)
-        q &= (db.svcmon_log.mon_begin!=db.svcmon_log.mon_end)
-
-        rows = db(q&(db.svcmon_log.mon_end<=d)).select(orderby=~db.svcmon_log.mon_end, limitby=(0,1))
-        n = len(rows)
-        if n == 0:
-            before = DIV(T("No known state before %(date)s", dict(date=d)))
-        else:
-            before = svc_status(rows[0])
-            tb = rows[0].mon_end
-
-        rows = db(q&(db.svcmon_log.mon_begin>=d)).select(orderby=db.svcmon_log.mon_begin, limitby=(0,1))
-        n = len(rows)
-        if n == 0:
-            after = DIV(T("No known state after %(date)s", dict(date=d)))
-        else:
-            after = svc_status(rows[0])
-            te = rows[0].mon_begin
-
-        return (before, after)
-
-    (bb, ab) = get_states_at(b, svc)
-    (be, ae) = get_states_at(e, svc)
-
-    header = DIV(
-               H3(T("State transitions for %(svc)s", dict(svc=svc))),
-             )
-    t = TABLE(
-          TR(
-            TH(b, _colspan=2, _style="text-align:center"),
-            TH(e, _colspan=2, _style="text-align:center"),
-          ),
-          TR(
-            TD(bb),
-            TD(ab),
-            TD(be),
-            TD(ae),
-          ),
-        )
-    return DIV(header, t)
-
-@auth.requires_login()
-def ajax_svcmon_log_ack_write():
-    svc = request.vars.xi
-    b = str_to_date(request.vars.bi)
-    e = str_to_date(request.vars.ei)
-    comment = request.vars.ci
-
-    if request.vars.ac == 'true':
-        account = 1
-    else:
-        account = 0
-
-    svcmon_log_ack_write(svc, b, e, comment, account)
-
-    input_close = INPUT(_value=T('close & refresh table'), _id='close', _type='submit', _onclick="""
-                    getElementById("panel_ack").className="panel";
-                  """%dict(url=URL(r=request,f='ajax_svcmon_log_ack_write'),
-                           svcname=svc)
-                  )
-    return DIV(T("saved"), P(input_close))
-
 @auth.requires_login()
 def svcmon_log_ack_write(svc, b, e, comment="", account=False):
     def db_insert_ack_segment(svc, begin, end, comment, account):
@@ -721,5 +381,397 @@ def db_delete_ack_overlap(svc, begin, end):
     query &= _where(None, 'svcmon_log_ack', domain_perms(), 'mon_svcname')
     query &= ((db.svcmon_log_ack.mon_end>b)&(db.svcmon_log_ack.mon_end<=e))|((db.svcmon_log_ack.mon_begin>=b)&(db.svcmon_log_ack.mon_begin<e))
     return db(query).delete()
+
+
+#####
+
+class col_avail_svcname(Column):
+    def get(self, o):
+        return o['svcname']
+
+    def html(self, o):
+        val = self.get(o)
+        if val is None:
+            return ''
+        return val
+
+class col_avail_holes(Column):
+    def get(self, o):
+        return o['holes']
+
+    def format_hole(self, svcname, hole):
+        out = """data_%(svc)s[2]=[];$('#%(id)s').empty();avail_plot('%(id)s', data_%(svc)s);"""%dict(
+           id='plot_%s'%svcname,
+           svc=svcname,
+         )
+        over = """data_%(svc)s[2]=[['%(b)s',2],['%(e)s',2]];$('#%(id)s').empty();avail_plot('%(id)s', data_%(svc)s);"""%dict(
+           id='plot_%s'%svcname,
+           b=hole['begin'],
+           e=hole['end'],
+           svc=svcname,
+         )
+        if hole['acked'] == 1:
+            if hole['acked_account'] == 0:
+                c = 'ack_1'
+            else:
+                c = 'ack_2'
+            msg = SPAN(
+                    B("acked by "),
+                    hole['acked_by'],
+                    B(" on "),
+                    hole['acked_on'],
+                    B(" with comment: "),
+                    hole['acked_comment'],
+                  )
+            over += """ackpanel(true, '%s')"""%msg
+            out += """ackpanel(false, '%s')"""%msg
+            disabled = 'disabled'
+            click = ''
+        else:
+            c = ''
+            disabled = False
+            click='this.value=this.checked'
+
+        ckid = '_'.join(('svcmon_log', 'ckid',
+                         svcname,
+                         str(hole['begin']),
+                         str(hole['end'])))
+
+        checked = getattr(request.vars, ckid)
+        if disabled or checked is None or checked == 'false':
+            checked = False
+            value = 'false'
+        else:
+            checked = True
+            value = 'true'
+
+
+        d = DIV(
+              INPUT(
+                _type='checkbox',
+                _id=ckid,
+                _name='avail_ck',
+                _disabled=disabled,
+                _onclick=click,
+                _value=value,
+                value=checked,
+              ),
+              DIV(
+                hole['begin'],
+                _style='display:table-cell;white-space:nowrap;padding-right:1em',
+              ),
+              DIV(
+                '>',
+                _style='display:table-cell',
+              ),
+              DIV(
+                hole['end'],
+                _style='display:table-cell;white-space:nowrap;padding-left:1em;padding-right:1em',
+              ),
+              DIV(
+                '(', hole['end']-hole['begin'], ')',
+                _style='display:table-cell',
+              ),
+              _style='display:table-row',
+              _class=c,
+              _onmouseover=over,
+              _onmouseout=out,
+            )
+        return d
+
+    def html(self, o):
+        val = self.get(o)
+        if len(val) == 0:
+            return ''
+        l = []
+        for hole in val:
+            l.append(self.format_hole(o['svcname'], hole))
+        return SPAN(*l)
+
+class col_avail_pct(Column):
+    def get(self, o):
+        return "%0.2f%%"%o['availability']
+
+    def html(self, o):
+        val = self.get(o)
+        if val is None:
+            return ''
+        return val
+
+class col_avail_downtime(Column):
+    def get(self, o):
+        return o['downtime']
+
+    def html(self, o):
+        val = self.get(o)
+        if val is None:
+            return ''
+        d = datetime.timedelta(minutes=val)
+        return d
+
+class col_avail_plot(Column):
+    def get(self, o):
+        return None
+
+    def html(self, o):
+        down = []
+        acked = []
+        s = ''
+        dh = [h for h in o['holes'] if h['acked'] == 0]
+        last = len(dh)-1
+        for i, r in enumerate(dh):
+            down.append([str(r['begin']), 1])
+            down.append([str(r['end']), 1])
+            if i < last:
+                down.append([str(r['end']+(dh[i+1]['begin']-r['end'])/2), 'null'])
+        dh = [h for h in o['holes'] if h['acked'] == 1]
+        last = len(dh)-1
+        for i, r in enumerate(dh):
+            acked.append([str(r['begin']), 1])
+            acked.append([str(r['end']), 1])
+            if i < last:
+                acked.append([str(r['end']+(dh[i+1]['begin']-r['end'])/2), 'null'])
+        if len(down) == 0:
+            down = [[str(o['begin']),'null']]
+        if len(acked) == 0:
+            acked = [[str(o['begin']),'null']]
+        s += """data_%(svc)s=%(data)s;$('#%(id)s').empty();avail_plot('%(id)s', data_%(svc)s)"""%dict(
+               data=str([str(down).replace("'null'","null"),
+                         str(acked).replace("'null'","null")]).replace('"',''),
+               id='plot_%s'%o['svcname'],
+               svc=o['svcname'],
+             )
+        return DIV(
+                 DIV(
+                   _id='plot_%s'%o['svcname'],
+                   _style='width:300px;height:50px',
+                 ),
+                 SCRIPT(s, _name='svcmon_log_to_eval'),
+               )
+
+class table_avail(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['avail_svcname',
+                     'avail_holes',
+                     'avail_pct',
+                     'avail_downtime',
+                     'avail_plot']
+        self.colprops = {
+            'avail_svcname': col_avail_svcname(
+                     title='Service',
+                     img='svc',
+                     display=True,
+                    ),
+            'avail_holes': col_avail_holes(
+                     title='Unavailabity ranges',
+                     img='time16',
+                     display=True,
+                    ),
+            'avail_pct': col_avail_pct(
+                     title='Availabity',
+                     img='spark16',
+                     display=True,
+                    ),
+            'avail_downtime': col_avail_downtime(
+                     title='Downtime',
+                     img='spark16',
+                     display=True,
+                    ),
+            'avail_plot': col_avail_plot(
+                     title='History',
+                     img='spark16',
+                     display=True,
+                    ),
+        }
+        for c in self.cols:
+            self.colprops[c].t = self
+        self.dbfilterable = False
+        self.filterable = False
+        self.pageable = False
+        self.additional_tools.append('ack')
+        self.checkbox_names = ['avail_ck']
+
+    def sort_objects(self, x, y):
+        return cmp(self.object_list[x]['availability'], self.object_list[y]['availability'])
+
+    def ack(self):
+        d = DIV(
+              A(
+                T("Acknowledge unavailabity"),
+                _onclick="""click_toggle_vis('%(div)s', 'block');$('#ackcomment').focus();"""%dict(div='ackcomment_d'),
+              ),
+              DIV(
+                TABLE(
+                  TR(
+                    TD(
+                      T('Comment'),
+                    ),
+                    TD(
+                      INPUT(
+                       _id='ackcomment',
+                       _onkeypress="if (is_enter(event)) {%s};"%\
+                          self.ajax_submit(additional_inputs=['ackcomment', 'ac'],
+                                           args="ack"),
+
+                      ),
+                    ),
+                  ),
+                  TR(
+                    TD(
+                      T('Account as unavailable'),
+                    ),
+                    TD(
+                      INPUT(
+                       _type='checkbox',
+                       _id='ac',
+                       _onclick='this.value=this.checked',
+                      ),
+                    ),
+                  ),
+                  TR(
+                    TD(
+                      T('Check/Uncheck all'),
+                    ),
+                    TD(
+                      INPUT(
+                        _type='checkbox',
+                        _onclick="check_all('avail_ck',this.checked);",
+                      ),
+                    ),
+                  ),
+                ),
+                _style='display:none',
+                _class='white_float',
+                _name='ackcomment_d',
+                _id='ackcomment_d',
+              ),
+              _class='floatw',
+            )
+        return d
+
+class table_svcmon_log(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['mon_svcname',
+                     'mon_nodname',
+                     'mon_begin',
+                     'mon_end']
+        self.cols += svcmon_cols
+        self.cols += v_services_cols
+        self.cols += v_nodes_cols
+        self.cols.remove('updated')
+        self.cols += ['node_updated']
+        self.colprops = svcmon_colprops
+        self.colprops.update(v_services_colprops)
+        self.colprops.update(v_nodes_colprops)
+        self.colprops.update({
+            'mon_begin': HtmlTableColumn(
+                     title='Begin',
+                     table='svcmon_log',
+                     field='mon_begin',
+                     img='time16',
+                     display=True,
+                    ),
+            'mon_end': HtmlTableColumn(
+                     title='End',
+                     table='svcmon_log',
+                     field='mon_end',
+                     img='time16',
+                     display=True,
+                    ),
+        })
+        self.colprops['svc_updated'].field = 'svc_updated'
+        self.colprops['mon_svcname'].display = True
+        self.colprops['mon_nodname'].display = True
+        for c in self.cols:
+            self.colprops[c].t = self
+        for c in svcmon_cols+v_services_cols+v_nodes_cols+['node_updated']:
+            self.colprops[c].table = 'v_svcmon'
+        for c in ['mon_svcname', 'mon_nodname', 'mon_begin', 'mon_end']:
+            self.colprops[c].table = 'svcmon_log'
+        self.dbfilterable = True
+        self.extraline = True
+        self.checkbox_id_col = 'id'
+        self.checkbox_id_table = 'svcmon_log'
+        self.ajax_col_values = 'ajax_svcmon_log_col_values'
+
+@auth.requires_login()
+def ajax_svcmon_log_col_values():
+    t = table_svcmon_log('svcmon_log', 'ajax_svcmon_log')
+    col = request.args[0]
+    o = db.svcmon_log.mon_begin|db.svcmon_log.mon_end
+    q = db.v_svcmon.mon_svcname==db.svcmon_log.mon_svcname
+    q &= db.v_svcmon.mon_nodname==db.svcmon_log.mon_nodname
+    q = _where(q, 'svcmon_log', domain_perms(), 'mon_svcname')
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    q = apply_db_filters(q, 'v_svcmon')
+    t.object_list = db(q).select(orderby=o, groupby=o)
+    return t.col_values_cloud(col)
+
+@auth.requires_login()
+def ajax_svcmon_log():
+    t = table_svcmon_log('svcmon_log', 'ajax_svcmon_log')
+    v = table_avail('svcmon_log', 'ajax_svcmon_log')
+
+    if len(request.args) == 1:
+        action = request.args[0]
+        try:
+            if action == 'ack':
+                ack(v.get_checked())
+        except ToolError, e:
+            t.flash = str(e)
+
+    if t.filter_parse('mon_begin') == "":
+        begin = now - datetime.timedelta(days=7, microseconds=now.microsecond)
+        t.store_filter_value('mon_begin', ">"+str(begin))
+    else:
+        begin = str_to_date(t.filter_parse('mon_begin'))
+
+    if t.filter_parse('mon_end') == "":
+        end = now - datetime.timedelta(seconds=1200, microseconds=now.microsecond)
+        t.store_filter_value('mon_end', "<"+str(end))
+    else:
+        end = str_to_date(t.filter_parse('mon_end'))
+
+    o = db.svcmon_log.mon_begin|db.svcmon_log.mon_end
+
+    q = db.v_svcmon.mon_svcname==db.svcmon_log.mon_svcname
+    q &= db.v_svcmon.mon_nodname==db.svcmon_log.mon_nodname
+    q = _where(q, 'svcmon_log', domain_perms(), 'mon_svcname')
+
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+
+    q = apply_db_filters(q, 'v_svcmon')
+
+    n = db(q).count()
+    t.setup_pager(n)
+    t.object_list = db(q).select(orderby=o, limitby=(t.pager_start,t.pager_end))
+
+    v.object_list = service_availability(db(q).select(orderby=o), begin, end)
+    #raise Exception(v.object_list)
+
+    return DIV(
+             DIV(
+               _id='ackpanel',
+               _class='ackpanel',
+             ),
+             v.html(),
+             t.html(),
+           )
+
+@auth.requires_login()
+def svcmon_log():
+    t = DIV(
+          ajax_svcmon_log(),
+          _id='svcmon_log',
+        )
+    return dict(table=t)
 
 

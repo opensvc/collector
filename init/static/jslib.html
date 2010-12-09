@@ -175,8 +175,8 @@ function getIdsByName(names){
 }
 function eval_js_in_ajax_response(id) {
     l = document.getElementsByName(id+"_to_eval")
-    for (i = 0; i < l.length; i++) {
-        eval(l[i].innerHTML)
+    for (__i = 0; __i < l.length; __i++) {
+        eval(l[__i].innerHTML)
     }
 }
 function sparkl(url, id) {
@@ -237,6 +237,60 @@ function comp_status_plot(url, id) {
 	    }
 	});
     });
+}
+function avail_plot(id, data) {
+    $.jqplot.config.enablePlugins = true;
+	$.jqplot(id, data, {
+            cursor: {
+                zoom:true,
+                showTooltip:true,
+            },
+            highlighter: {
+                show: false,
+            },
+	    grid: {
+                drawGridlines: false,
+                borderWidth: 0,
+                shadow: false,
+                background: 'rgba(0,0,0,0)',
+            },
+	    seriesDefaults: {
+                breakOnNull: true,
+                fill: false,
+            },
+	    series: [
+                {
+                    label: 'down',
+                    color: 'red'
+                },
+                {
+                    label: 'down acked',
+                    color: 'gray'
+                },
+                {
+                    label: 'ack',
+                    markerOptions:{style:'filledDiamond'},
+                },
+            ],
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+		    tickOptions: {
+                        fontSize:'7pt',
+		        formatString:'<center>%#m/%#d %R</center>',
+                    },
+		}, 
+		yaxis: {
+		    min: 0.8, 
+		    max: 1.2, 
+		    tickOptions:{
+                        showLabel: false,
+                        size: 0,
+                        formatString:'%d'
+                    }
+		}
+	    }
+	})
 }
 function sync_ajax(url, inputs, id, f) {
     s = inputs

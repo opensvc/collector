@@ -216,7 +216,7 @@ def svcmon_not_updated():
 def last_changes_line(line, cellclass):
     d = prettydate(line.svcmon_log.mon_begin, T)
     tr = TR(
-      TD(A(d, _href=URL(r=request, c='svcmon_log', f='svcmon_log', vars={'mon_svcname':line.svcmon_log.mon_svcname, 'clear_filters': 'true'})), _class=cellclass),
+      TD(A(d, _href=URL(r=request, c='svcmon_log', f='svcmon_log', vars={'svcmon_log_f_mon_svcname':line.svcmon_log.mon_svcname, 'clear_filters': 'true'})), _class=cellclass),
       TD(A(line.svcmon_log.mon_svcname, _href=URL(r=request, f='svcmon', vars={'svcmon_f_svc_name':line.svcmon_log.mon_svcname, 'clear_filters': 'true'})), _class=cellclass),
       TD(A(line.svcmon_log.mon_nodname, _href=URL(r=request, f='svcmon', vars={'svcmon_f_mon_nodname':line.svcmon_log.mon_nodname, 'clear_filters': 'true'})), _class=cellclass),
       TD(svc_status(line, cellclass, nestedin='svcmon_log'), _class=cellclass, _style="text-align:center"),

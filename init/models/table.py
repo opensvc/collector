@@ -481,6 +481,8 @@ class HtmlTable(object):
         v = self._filter_parse(f)
         if v == self.column_filter_reset:
             self.drop_filter_value(f)
+            key = self.filter_key(f)
+            del(request.vars[key])
             return ""
         if v == "":
             return self.stored_filter_value(f)
@@ -590,7 +592,17 @@ class HtmlTable(object):
     def table_lines(self):
         lines = []
         line_count = 0
-        for i in self.object_list:
+
+        if hasattr(self, 'sort_objects'):
+            if isinstance(self.object_list, list):
+                object_list = self.object_list.sort(self.sort_objects)
+            elif isinstance(self.object_list, dict):
+                object_list = self.object_list.keys()
+                object_list.sort(self.sort_objects)
+        else:
+            object_list = self.object_list
+
+        for i in object_list:
             if isinstance(i, str) or isinstance(i, unicode) or isinstance(i, int):
                 o = self.object_list[i]
             else:

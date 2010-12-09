@@ -826,4 +826,7 @@ alter table gen_filtersets_filters modify column f_log_op varchar(8) NOT NULL;
 
 alter table gen_filters modify column f_op varchar(8) NOT NULL;
 
+alter table svcmon_log add index mon_begin (mon_begin);
+
+alter table svcmon_log add index mon_end (mon_end);
 
