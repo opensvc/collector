@@ -1106,6 +1106,30 @@ div.sym_detail_visible {
     margin-left:0.5em;
     margin-right:0.5em;
 }
+
+.search {
+    float: right;
+    margin:0.2em;
+    padding:0.3em;
+}
+.search h3 {
+    border-bottom:2px solid darkorange;
+}
+.search input {
+    color: black;
+}
+.search p {
+    font-weight: bold;
+    white-space: nowrap;
+}
+.search img {
+    vertical-align: top;
+    padding-right: 0.2em;
+}
+.search a {
+    padding-right: 0.5em;
+    white-space: nowrap;
+}
  
 .floatw > a {
     color: white;

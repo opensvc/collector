@@ -116,6 +116,21 @@ function check_toggle_vis(checked, col){
         cells[j].style.display = mode;
     }
 }
+function show_result(url, id){
+    clearTimeout(timer)
+    timer=setTimeout(function validate(){
+        sync_ajax(url, ['search'], id, function(){
+            if ($('#'+id).html().length == 0){
+                $('#'+id).hide()
+            } else {
+                $('#'+id).show()
+                $('#'+id).css("left", $('body').width())
+                keep_inside($('#'+id))
+                register_pop_up(document.getElementById(id))
+            }
+        })
+    }, 800)
+}
 function keep_inside(box){
     box_l = $(box).offset().left
     box_w = $(box).width()
@@ -138,7 +153,7 @@ function click_toggle_vis(name, mode){
     }
 }
 function register_pop_up(box){
-    event.stopPropagation()
+    if (event){event.stopPropagation()}
     document.onclick = function(e){
         e = e || event
         var target = e.target || e.srcElement
