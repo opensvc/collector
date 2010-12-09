@@ -560,12 +560,6 @@ ul.web2py-menu li a:hover,
 ul.web2py-menu li a:visited,
 ul.web2py-menu li a:active
 {
-    border-top-left-radius:8px;
-    border-top-right-radius:8px;
-   -moz-border-radius-topleft:8px;
-   -moz-border-radius-topright:8px;
-   -webkit-border-top-left-radius:8px;
-   -webkit-border-top-right-radius:8px;
     text-decoration: none;
 }
 
@@ -576,7 +570,7 @@ ul.web2py-menu li:hover a:active
     background-color: #c00;
 }
 
-ul.web2py-menu li
+ul.web2py-menu > li
 {
     border-top-left-radius:8px;
     border-top-right-radius:8px;

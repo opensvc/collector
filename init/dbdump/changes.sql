@@ -830,3 +830,4 @@ alter table svcmon_log add index mon_begin (mon_begin);
 
 alter table svcmon_log add index mon_end (mon_end);
 
+create unique index idx1 on stats_netdev (date, dev, nodename);
