@@ -158,10 +158,10 @@ def service_availability(rows, begin=None, end=None):
 
     o = db.svcmon_log_ack.mon_begin
     query = (db.svcmon_log_ack.id>0)
-    query &= _where(None, 'svcmon_log_ack', request.vars.mon_svcname, 'mon_svcname')
-    query &= _where(None, 'svcmon_log_ack', request.vars.mon_begin, 'mon_end')
-    query &= _where(None, 'svcmon_log_ack', request.vars.mon_end, 'mon_begin')
-    query &= _where(None, 'svcmon_log_ack', domain_perms(), 'mon_svcname')
+    query = _where(query, 'svcmon_log_ack', domain_perms(), 'mon_svcname')
+    query = _where(query, 'svcmon_log_ack', request.vars.mon_svcname, 'mon_svcname')
+    query = _where(query, 'svcmon_log_ack', '>%s'%begin, 'mon_end')
+    query = _where(query, 'svcmon_log_ack', '<%s'%end, 'mon_begin')
     acked = db(query).select(orderby=o)
 
     def get_holes(svc, _e, b):
@@ -215,6 +215,7 @@ def service_availability(rows, begin=None, end=None):
                 holes += [_hole(_e, ab, 0, None)]
                 holes += [_hole(ab, b, 1, a)]
                 ack_overlap += 1
+                break
 
             elif ab <= _e and ae < b and ae > _e:
                 """ hole is partly acknowledged
@@ -226,8 +227,9 @@ def service_availability(rows, begin=None, end=None):
                     ab       ae
                 """
                 holes += [_hole(_e, ae, 1, a)]
-                holes += [_hole(ae, b, 0, None)]
+                holes += get_holes(svc, ae, b)
                 ack_overlap += 1
+                break
 
             elif ab > _e and ab < b and ae > _e and ae < b:
                 """ hole is partly acknowledged
@@ -240,20 +242,13 @@ def service_availability(rows, begin=None, end=None):
                 """
                 holes += [_hole(_e, ab, 0, None)]
                 holes += [_hole(ab, ae, 1, a)]
-                holes += [_hole(ae, b, 0, None)]
+                holes += get_holes(svc, ae, b)
                 ack_overlap += 1
+                break
 
         if ack_overlap == 0:
             holes += [_hole(_e, b, 0, None)]
 
-        # merge contiguous holes
-        if len(holes) > 1:
-            for i in range(len(holes)-1, 0, -1):
-                if holes[i]['begin'] == holes[i-1]['end'] and \
-                   holes[i]['acked'] == 0 and \
-                   holes[i-1]['acked'] == 0:
-                    holes[i-1]['end'] = holes[i]['begin']
-                    del(holes[i])
         return holes
 
 
@@ -745,8 +740,11 @@ def ajax_svcmon_log():
     q &= db.v_svcmon.mon_nodname==db.svcmon_log.mon_nodname
     q = _where(q, 'svcmon_log', domain_perms(), 'mon_svcname')
 
-    for f in t.cols:
+    for f in set(t.cols)-set(['mon_begin', 'mon_end']):
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+
+    q = _where(q, 'svcmon_log', t.filter_parse('mon_begin'), 'mon_end')
+    q = _where(q, 'svcmon_log', t.filter_parse('mon_end'), 'mon_begin')
 
     q = apply_db_filters(q, 'v_svcmon')
 
