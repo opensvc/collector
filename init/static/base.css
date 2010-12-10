@@ -479,7 +479,7 @@ ul.web2py-menu ul
     border-top: 1px solid white;
     padding: 0.3em;
     padding-left: 0.5em;
-    background-color: rgba(0,0,0,0.7);
+    background-color: rgba(19,67,77,0.8);
 }
 
 * html div.web2py-menu-center
@@ -718,15 +718,15 @@ div.svcstatus td {
 }
 
 .sym_headers {
-    background-color: #13434d;
-    color: white;
+    background-color: #e0e1cd;
+    color: black;
     padding: 0.2em;
     margin-top: 0.3em;
     margin-bottom: 0;
 }
 
 .sym_inputs {
-    background-color: #13434d;
+    background-color: #e0e1cd;
     color: black;
     padding: 0.2em;
     margin: 0.1em;
@@ -882,8 +882,32 @@ ul.login_menu ul {
     color: black;
 }
 
+.filters {
+    background: transparent url('filter16.png') no-repeat;
+    padding-left: 18px;
+}
+.columns {
+    background: transparent url('columns.png') no-repeat;
+    padding-left: 18px;
+}
+.csv {
+    background: transparent url('csv.png') no-repeat;
+    padding-left: 18px;
+}
 .guy16 {
     background: transparent url('guy16.png') no-repeat;
+    padding-left: 18px;
+}
+.svc {
+    background: transparent url('svc.png') no-repeat;
+    padding-left: 18px;
+}
+.node16 {
+    background: transparent url('node16.png') no-repeat;
+    padding-left: 18px;
+}
+.action16 {
+    background: transparent url('action16.png') no-repeat;
     padding-left: 18px;
 }
 .diam {
@@ -922,11 +946,11 @@ ul.login_menu ul {
 }
  
 .floatw > a {
-    color: white;
+    color: black;
 }
 
 .floatw .current_page {
-    color: #ff9999;
+    color: darkred;
     font-weight: bold;
 }
 
@@ -955,8 +979,8 @@ ul.login_menu ul {
 }
 
 .tableo .theader {
-    background-color: #13434d;
-    color: white;
+    background-color: #e0e1cd;
+    color: black;
     padding: 0;
     margin-top: 0;
     margin-bottom: 0;

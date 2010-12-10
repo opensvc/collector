@@ -164,7 +164,10 @@ class HtmlTable(object):
 
         s = SPAN(
               A(
-                T('Persistent filters'),
+                SPAN(
+                  T('Persistent filters'),
+                  _class='filters',
+                ),
                 filters_count,
                 _onclick="""
                   click_toggle_vis('session_filters', 'block');
@@ -261,7 +264,7 @@ class HtmlTable(object):
             )
         d = DIV(
               A(
-                T('Configure columns'),
+                SPAN(T('Configure columns'), _class='columns'),
                 _onclick="click_toggle_vis('%(div)s', 'block')"%dict(
                                                           div=self.col_selector_key()),
               ),
@@ -778,7 +781,10 @@ class HtmlTable(object):
         if self.exportable:
             export = DIV(
                   A(
-                    T('Export to csv'),
+                    SPAN(
+                      T('Export to csv'),
+                      _class='csv',
+                    ),
                     _href=URL(
                             r=request,
                             f=self.func,

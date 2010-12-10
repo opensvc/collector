@@ -68,7 +68,7 @@ def comp_menu(current):
         if i['title'] == current:
             bg = 'orange'
         else:
-            bg = '#DCDDE6'
+            bg = '#f0f1dd'
         d = DIV(
               i['title'],
               _class='menu_item clickable',
