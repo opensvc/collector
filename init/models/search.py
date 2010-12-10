@@ -2,7 +2,6 @@ def tool_search():
     result_id = 'search_result'
     d = DIV(
           SPAN(
-            T('Search'),
             _style='padding-right: 0.5em',
           ),
           INPUT(

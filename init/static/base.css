@@ -86,10 +86,6 @@ select {
     vertical-align: top;
 }
 
-.web2py-menu-active a {
-    background-color: orange;
-}
-
 .menucell {
     padding:0px;
     padding-left:5px;
@@ -363,6 +359,7 @@ div.error {
     background: url('header.gif');
     color: white;
     border-bottom: 1px #000 solid;
+    height: 2.2em;
 }
 
 .statusbar {
@@ -390,13 +387,24 @@ div.error {
 }
 
 ul.web2py-menu,
+ul.web2py-menu > li {
+    float: left;
+}
+
+ul.web2py-menu {
+    margin: 0.6em 0 0 0;
+    padding: 0;
+    white-space: nowrap;
+}
 ul.web2py-menu ul,
 ul.web2py-menu li,
 ul.web2py-menu a
 {
+    color: white;
     display: block;
     margin: 0;
     padding: 0;
+    white-space: nowrap;
 }
 
 ul.web2py-menu,
@@ -424,6 +432,7 @@ ul.web2py-menu li:hover
 
 ul.web2py-menu li:hover > ul
 {
+    color: #ff9999;
     display: block;
     position: absolute;
 }
@@ -432,127 +441,6 @@ ul.web2py-menu-horizontal li
 {
     float: left;
     width: auto;
-}
-
-ul.web2py-menu-hRight li
-{
-    float: right;
-}
-
-ul.web2py-menu-vertical li
-{
-    float: none;
-}
-
-ul.web2py-menu-vertical,
-ul.web2py-menu-vertical ul
-{
-    width: 10em;
-}
-
-ul.web2py-menu-wide
-{
-    width: 100%;
-}
-
-ul.web2py-menu-vRight
-{
-    float: right;
-}
-
-ul.web2py-menu-lFloat
-{
-    float: left;
-}
-
-ul.web2py-menu-noFloat
-{
-    float: none;
-}
-
-div.web2py-menu-center ul.web2py-menu
-{
-    float: left;
-    position: relative;
-    left: 50%;
-}
-
-div.web2py-menu-center ul.web2py-menu li
-{
-    position: relative;
-    left: -50%;
-}
-
-div.web2py-menu-center ul.web2py-menu li li
-{
-    left: auto;
-}
-
-ul.web2py-menu-horizontal ul
-{
-    top: auto;
-    right: auto;
-    left: auto;
-    margin-top: -1px;
-}
-
-ul.web2py-menu-vertical ul
-{
-    left: 60%;
-    right: auto;
-    top: auto;
-    margin-top: -0.5em;
-}
-
-ul.web2py-menu-vRight ul,
-ul.web2py-menu-hRight ul.web2py-menu-vertical ul,
-ul.web2py-menu-dRight,
-ul.web2py-menu-dRight ul
-{
-    left: -60%;
-    right: auto;
-    top: auto;
-    margin-top: -0.5em;
-}
-
-ul.web2py-menu-hRight ul
-{
-    left: auto;
-    right: 0;
-    top: auto;
-    margin-top: -1px;
-}
-
-ul.web2py-menu li a
-{
-    border-left: solid 0px #dddddd
-}
-
-ul.web2py-menu-horizontal li
-{
-    margin-bottom: -1px;
-    margin-left: -1px;
-}
-
-ul.web2py-menu-horizontal
-{
-    padding-left: 1px ;
-}
-
-ul.web2py-menu-vertical li
-{
-    margin-left: 0;
-    margin-top: -1px;
-}
-
-ul.web2py-menu-vertical
-{
-    border-top: solid 1px #fff;
-}
-
-ul.web2py-menu li a
-{
-    padding: 2px 15px 3px;
 }
 
 ul.web2py-menu li a:link,
@@ -563,134 +451,35 @@ ul.web2py-menu li a:active
     text-decoration: none;
 }
 
-ul.web2py-menu li.sfhover a:active,
-ul.web2py-menu li:hover a:active
+ul.web2py-menu li a:active
 {
-    color: #fff;
+    color: #ff9999;
     background-color: #c00;
 }
 
 ul.web2py-menu > li
 {
-    border-top-left-radius:8px;
-    border-top-right-radius:8px;
-   -moz-border-radius-topleft:8px;
-   -moz-border-radius-topright:8px;
-   -webkit-border-top-left-radius:8px;
-   -webkit-border-top-right-radius:8px;
-    background-color: #eee;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
 }
 
 ul.web2py-menu li:hover,
 ul.web2py-menu li.sfhover
 {
-    background-color: #eda;
+    color: #ff9999;
 }
 
 ul.web2py-menu li a:hover
 {
-    border-top-left-radius:8px;
-    border-top-right-radius:8px;
-   -moz-border-radius-topleft:8px;
-   -moz-border-radius-topright:8px;
-   -webkit-border-top-left-radius:8px;
-   -webkit-border-top-right-radius:8px;
-    background-color: #ffc;
-}
-
-ul.web2py-menu li.web2py-menu-expand a,
-ul.web2py-menu li.web2py-menu-expand li.web2py-menu-expand a,
-ul.web2py-menu li.web2py-menu-expand li.web2py-menu-expand li.web2py-menu-expand a
-{
-    /*
-    background-image: url("expand-right.gif");
-    background-repeat: no-repeat;
-    background-position: 100% 50%;
-    */
-}
-
-ul.web2py-menu-vRight li.web2py-menu-expand a,
-ul.web2py-menu-vRight li.web2py-menu-expand li.web2py-menu-expand a,
-ul.web2py-menu-vRight li.web2py-menu-expand li.web2py-menu-expand li.web2py-menu-expand a,
-ul.web2py-menu-hRight li.web2py-menu-expand a,
-ul.web2py-menu-hRight li.web2py-menu-expand li.web2py-menu-expand a,
-ul.web2py-menu-hRight li.web2py-menu-expand li.web2py-menu-expand li.web2py-menu-expand a
-{
-    padding-right: 5px;
-    padding-left: 20px;
-    /*
-    background-image: url("expand-left.gif");
-    background-repeat: no-repeat;
-    background-position: -5px 50%;
-    */
-}
-
-ul.web2py-menu-horizontal li.web2py-menu-expand a
-{
-    /*
-    background-image: url("expand-down.gif");
-    background-position: 100% 50%;
-    */
-}
-
-ul.web2py-menu li.web2py-menu-expand li a,
-ul.web2py-menu li.web2py-menu-expand li.web2py-menu-expand li a,
-ul.web2py-menu li.web2py-menu-expand li.web2py-menu-expand li.web2py-menu-expand li a
-{
-    border-top-left-radius:8px;
-    border-top-right-radius:8px;
-   -moz-border-radius-topleft:0px;
-   -moz-border-radius-topright:0px;
-   -webkit-border-top-left-radius:0px;
-   -webkit-border-top-right-radius:0px;
-    background-image: none;
-    padding-right: 5px;
-    padding-left: 5px;
-}
-
-* html ul.web2py-menu
-{
-    display: inline-block;
-    display: block;
-    position: relative;
-    position: static;
-}
-
-* html ul.web2py-menu ul
-{
-    float: left;
-    float: none;
+    color: #ff9999;
 }
 
 ul.web2py-menu ul
 {
-    background-color: #ddd;
-}
-
-* html ul.web2py-menu-vertical li,
-* html ul.web2py-menu-horizontal li ul.web2py-menu-vertical li
-{
-    
-    width: 100%;
-    float: left;
-    clear: left;
-}
-
-*:first-child+html ul.web2py-menu-vertical > li:hover ul
-{
-    min-width: 0;
-}
-
-ul.web2py-menu li a
-{
-    position: relative;
-    min-width: 0;
-}
-
-* html ul.web2py-menu-horizontal li
-{
-    width: 6em;
-    width: auto;
+    border-top: 1px solid white;
+    padding: 0.3em;
+    padding-left: 0.5em;
+    background-color: rgba(0,0,0,0.7);
 }
 
 * html div.web2py-menu-center
@@ -699,38 +488,9 @@ ul.web2py-menu li a
     z-index: 1;
 }
 
-html:not([lang*=""]) div.web2py-menu-center ul.web2py-menu li a:hover {
-    height: 100%;
-}
-
-html:not([lang*=""])  div.web2py-menu-center ul.web2py-menu li a:hover {
-    height: auto;
-}
-
-* html ul.web2py-menu ul
-{
-    display: block;
-    position: absolute;
-}
-
-* html ul.web2py-menu ul,
-* html ul.web2py-menu-horizontal ul,
-* html ul.web2py-menu-vertical ul,
-* html ul.web2py-menu-vRight ul,
-* html ul.web2py-menu-hRight ul.web2py-menu-vertical ul,
-* html ul.web2py-menu-hRight ul
-{
-    left: -10000px;
-}
-
 * html ul.web2py-menu li.sfhover
 {
     z-index: 999;
-}
-
-* html ul.web2py-menu li.sfhover ul
-{
-    left: auto;
 }
 
 * html ul.web2py-menu li.sfhover ul ul,
@@ -744,46 +504,6 @@ html:not([lang*=""])  div.web2py-menu-center ul.web2py-menu li a:hover {
 * html ul.web2py-menu li li li.sfhover ul
 {
     display: block;
-}
-
-* html ul.web2py-menu-vertical li.sfhover ul
-{
-    left: 60%;
-}
-
-* html ul.web2py-menu-vRight li.sfhover ul,
-* html ul.web2py-menu-hRight ul.web2py-menu-vertical li.sfhover ul
-{
-    left: -60%;
-}
-
-* html ul.web2py-menu iframe
-{
-    position: absolute;
-    left: 0;
-    top: 0;
-    z-index: -1;
-}
-
-.clearfix:after
-{
-    content: ".";
-    display: block;
-    height: 0;
-    clear: both;
-    visibility: hidden;
-}
-
-.clearfix
-{
-    min-width: 0;
-    display: inline-block;
-    display: block;
-}
-
-* html .clearfix
-{
-    height: 1%;
 }
 
 /* info */
@@ -946,6 +666,7 @@ div.container > * {
 }
 
 div.spacer {
+    height: 0px;
     clear: both;
 }
 
@@ -1116,13 +837,18 @@ div.sym_detail_visible {
     white-space: nowrap;
     color: white;
     padding-left: 0.5em;
+    padding-right: 0.5em;
 }
+.login_menu li,
 .login_menu ul {
     list-style: none;
 }
 .login_menu a:hover {
     text-decoration: none;
     color: #ff9999;
+}
+ul.login_menu ul {
+    border-top: 1px solid white;
 }
 .login {
     z-index: 501;
@@ -1156,6 +882,15 @@ div.sym_detail_visible {
     color: black;
 }
 
+.guy16 {
+    background: transparent url('guy16.png') no-repeat;
+    padding-left: 18px;
+}
+.diam {
+    float: left;
+    margin: 0.2em;
+    margin-top: 0.6em;
+}
 .search {
     float: right;
     margin:0.2em;
@@ -1166,6 +901,12 @@ div.sym_detail_visible {
 }
 .search input {
     color: black;
+    padding-left: 18px;
+    background: white url('search.png') no-repeat;
+    width: 6em;
+}
+.search input:focus {
+    background: #edccb1 url('search.png') no-repeat;
 }
 .search p {
     font-weight: bold;
@@ -1285,3 +1026,7 @@ div.sym_detail_visible {
     text-align: left;
     padding: 1em;
 }
+
+input:[type='button'] {
+}
+

@@ -8,49 +8,30 @@
     <link rel="SHORTCUT ICON" href="{{=URL(r=request,c='static',f='favicon.ico')}}">
   </head>
   <body>
-    <table class="layout">
-      <tr class="header">
-        <td style="padding:0">
-	  {{=tool_search()}}
-          <table>
-            <tr>
-              <td width=90>
-                <h3>{{=A((response.title or request.application), _href="http://www.opensvc.com", _style='color:white')}}</h3>
-              </td>
-              <td class=menucell>
-                <table style="line-height:20px">
-                  <tr class=menucell>
-                    <td class=menucell>
-                      {{if response.menu_auth:}}
-                      {{=MENU(response.menu_auth, _class="web2py-menu web2py-menu-horizontal")}}
-                      {{pass}}
-                    </td>
-                    <td class=menucell style="min-width:20em">
-                      {{if response.menu:}}
-                      {{=MENU(response.menu, _class="web2py-menu web2py-menu-horizontal")}}
-                      {{pass}}
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-      <tr>
-        <td style='padding:0px'>
-          <div class="flash">{{=response.flash or ''}}</div>
-          <div align=center>{{include}}</div>
-        </td>
-      </tr>
-      <tr>
-        <td class="footer">
-          <div align="center">
-            {{=T('Copyright')}} &copy; 2009, 2010 - OpenSVC -
-            {{=T('Powered by')}} <a href="http://www.web2py.com">web2py</a>
-          </div>
-        </td>
-      </tr>
-    </table>
+    <div class=header>
+      {{=tool_search()}}
+      <div class='floatw'>
+        <h3>{{=A((response.title or request.application), _href="http://www.opensvc.com", _style='color:white')}}</h3>
+      </div>
+      {{if response.menu_auth:}}
+      {{=MENU(response.menu_auth, _class='web2py-menu')}}
+      <div class='diam'>&diams;</div>
+      {{pass}}
+      {{if response.menu:}}
+      {{=MENU(response.menu, _class='web2py-menu')}}
+      {{pass}}
+    </div>
+    <div class=spacer>&nbsp;</div>
+    <div class=layout>
+      <div class="flash">{{=response.flash or ''}}</div>
+      <div align=center>{{include}}</div>
+    </div>
+    <div class=spacer>&nbsp;</div>
+    <div class=footer>
+      <div align="center">
+        {{=T('Copyright')}} &copy; 2009, 2010 - OpenSVC -
+        {{=T('Powered by')}} <a href="http://www.web2py.com">web2py</a>
+      </div>
+    </div>
   </body>
 </html>
