@@ -1,17 +1,3 @@
-{{extend 'layout.html'}}
-<script type="text/javascript">
-/*
- * browser can fill this field asynchronously
- */
-function email_focus() {
-    document.getElementById('auth_user_email').select();
-}
-
-jQuery(document).ready(function(){
-    document.getElementById('auth_user_email').focus();
-    setTimeout(email_focus, 500);
-});
-</script>
 {{
 title = {'login': 'Login',
          'retrieve_password': 'Password retrieve',
@@ -26,7 +12,49 @@ else:
     t = 'Not found'
 pass
 }}
-<div>
-{{=H2(T(t))}}
-{{=form}}
-</div>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="{{=T.accepted_language or 'en'}}">
+  <head>
+    <title>{{=response.title or request.application}}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />     
+    {{response.files.append(URL(request.application,'static','base.css'))}}
+    {{include 'web2py_ajax.html'}}
+    <link rel="SHORTCUT ICON" href="{{=URL(r=request,c='static',f='favicon.ico')}}">
+    <script type="text/javascript">
+/*
+ * browser can fill this field asynchronously
+ */
+function email_focus() {
+    document.getElementById('auth_user_email').select();
+}
+function margins() {
+    $('.login').css('margin-top', $('body').height()/2-$('.login').height()/2)
+    $('.login').css('margin-left', $('body').width()/2-$('.login').width()/2)
+}
+jQuery(window).resize(function(){
+    margins()
+})
+jQuery(window).ready(function(){
+    margins()
+    $('#auth_user_password').css({width:$('#auth_user_email').width()});
+    $('#auth_user_email').css({width:$('#auth_user_email').width()});
+    document.getElementById('auth_user_email').focus();
+    setTimeout(email_focus, 500);
+});
+    </script>
+  </head>
+  <body>
+    {{if response.menu_auth:}}
+    <div class='login_menu'>
+      {{=MENU(response.menu_auth, _class="login_menu")}}
+    </div>
+    <div class='spacer'>
+       &nbsp;
+    </div>
+    {{pass}}
+    <div class='login'>
+      <h2>{{=T(t)}}</h2>
+      {{=form}}
+    </div>
+  </body>
+</html>

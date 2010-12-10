@@ -1107,6 +1107,49 @@ div.sym_detail_visible {
     margin-right:0.5em;
 }
 
+.login_menu {
+    float: left;
+    color: white;
+}
+.login_menu a,
+.login_menu ul {
+    white-space: nowrap;
+    color: white;
+    padding-left: 0.5em;
+}
+.login_menu ul {
+    list-style: none;
+}
+.login {
+    float:left;
+    padding: 2em;
+    vertical-align: middle;
+    text-align: center;
+    color: white;
+    border-radius:8px;
+   -moz-border-radius:8px;
+   -webkit-border-radius:8px;
+    border-bottom-color: #DDD;
+    border-bottom-style: solid;
+    border-bottom-width: 2px;
+    border-left-color: #AAA;
+    border-left-style: solid;
+    border-left-width: 2px;
+    border-right-color: #DDD;
+    border-right-style: solid;
+    border-right-width: 2px;
+    border-top-color: #AAA;
+    border-top-style: solid;
+    border-top-width: 2px;
+}
+.login h2 {
+    width: 100%;
+    margin: 0 0 1em 0;
+}
+.login input {
+    color: black;
+}
+
 .search {
     float: right;
     margin:0.2em;
