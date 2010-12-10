@@ -1120,8 +1120,14 @@ div.sym_detail_visible {
 .login_menu ul {
     list-style: none;
 }
+.login_menu a:hover {
+    text-decoration: none;
+    color: #ff9999;
+}
 .login {
-    float:left;
+    z-index: 501;
+    background: rgba(0, 0, 0, 0.2);
+    position: absolute;
     padding: 2em;
     vertical-align: middle;
     text-align: center;

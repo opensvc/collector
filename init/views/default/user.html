@@ -27,17 +27,23 @@ pass
 function email_focus() {
     document.getElementById('auth_user_email').select();
 }
+function align_login_inputs() {
+    $('#auth_user_password').css({width:$('#auth_user_email').width()});
+    $('#auth_user_first_name').css({width:$('#auth_user_email').width()});
+    $('#auth_user_last_name').css({width:$('#auth_user_email').width()});
+    $("[name='password_two']").css({width:$('#auth_user_email').width()});
+    $('#auth_user_email').css({width:$('#auth_user_email').width()});
+}
 function margins() {
-    $('.login').css('margin-top', $('body').height()/2-$('.login').height()/2)
-    $('.login').css('margin-left', $('body').width()/2-$('.login').width()/2)
+    $('.login').css('margin-top', $(window).height()/2-$('.login').height()/2)
+    $('.login').css('margin-left', $(window).width()/2-$('.login').width()/2)
 }
 jQuery(window).resize(function(){
     margins()
 })
-jQuery(window).ready(function(){
+jQuery(window).load(function(){
     margins()
-    $('#auth_user_password').css({width:$('#auth_user_email').width()});
-    $('#auth_user_email').css({width:$('#auth_user_email').width()});
+    align_login_inputs()
     document.getElementById('auth_user_email').focus();
     setTimeout(email_focus, 500);
 });
@@ -47,9 +53,6 @@ jQuery(window).ready(function(){
     {{if response.menu_auth:}}
     <div class='login_menu'>
       {{=MENU(response.menu_auth, _class="login_menu")}}
-    </div>
-    <div class='spacer'>
-       &nbsp;
     </div>
     {{pass}}
     <div class='login'>
