@@ -7,11 +7,63 @@ def ajax_search():
         return ''
     pattern = '%'+word+'%'
 
+    svc = format_svc(pattern)
+    node = format_node(pattern)
+    user = format_user(pattern)
+    app = format_app(pattern)
+
+    if len(svc)+len(node)+len(user)+len(app) == 0:
+        return ''
+
     return DIV(
-             format_svc(pattern),
-             format_node(pattern),
-             format_user(pattern),
+             svc,
+             node,
+             user,
+             app,
            )
+
+def format_app(pattern):
+    o = db.apps.app
+    q = o.like(pattern)
+    rows = db(q).select(o, orderby=o, groupby=o, limitby=(0,max_search_result))
+    n = len(db(q).select(o, groupby=o))
+
+    if len(rows) == 0:
+        return ''
+
+    def format_row(row):
+        d = TABLE(
+              TR(
+                TD(
+                  IMG(_src=URL(r=request, c='static', f='svc.png')),
+                ),
+                TD(
+                  P(
+                    row.app
+                  ),
+                  A(
+                    T('status'),
+                    _href=URL(r=request, c='default', f='svcmon',
+                              vars={'svcmon_f_svc_app': row.app})
+                  ),
+                  A(
+                    T('availability'),
+                    _href=URL(r=request, c='svcmon_log', f='svcmon_log',
+                              vars={'svcmon_log_f_svc_app': row.app})
+                  ),
+                  A(
+                    T('application'),
+                    _href=URL(r=request, c='apps', f='apps',
+                              vars={'apps_f_app': row.app})
+                  ),
+                ),
+              ),
+            )
+        return d
+    d = [H3(T('Applications'), ' (', n, ')')]
+    for row in rows:
+        d.append(format_row(row))
+    return DIV(*d)
 
 def format_svc(pattern):
     o = db.svcmon.mon_svcname
