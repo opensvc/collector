@@ -44,17 +44,20 @@ def format_app(pattern):
                   A(
                     T('status'),
                     _href=URL(r=request, c='default', f='svcmon',
-                              vars={'svcmon_f_svc_app': row.app})
+                              vars={'svcmon_f_svc_app': row.app,
+                                    'clear_filters': 'true'})
                   ),
                   A(
                     T('availability'),
                     _href=URL(r=request, c='svcmon_log', f='svcmon_log',
-                              vars={'svcmon_log_f_svc_app': row.app})
+                              vars={'svcmon_log_f_svc_app': row.app,
+                                    'clear_filters': 'true'})
                   ),
                   A(
                     T('application'),
                     _href=URL(r=request, c='apps', f='apps',
-                              vars={'apps_f_app': row.app})
+                              vars={'apps_f_app': row.app,
+                                    'clear_filters': 'true'})
                   ),
                 ),
               ),
@@ -88,22 +91,26 @@ def format_svc(pattern):
                   A(
                     T('status'),
                     _href=URL(r=request, c='default', f='svcmon',
-                              vars={'svcmon_f_svc_name': row.mon_svcname})
+                              vars={'svcmon_f_svc_name': row.mon_svcname,
+                                    'clear_filters': 'true'})
                   ),
                   A(
                     T('actions'),
                     _href=URL(r=request, c='svcactions', f='svcactions',
-                              vars={'actions_f_svcname': row.mon_svcname})
+                              vars={'actions_f_svcname': row.mon_svcname,
+                                    'clear_filters': 'true'})
                   ),
                   A(
                     T('availability'),
                     _href=URL(r=request, c='svcmon_log', f='svcmon_log',
-                              vars={'svcmon_log_f_mon_svcname': row.mon_svcname})
+                              vars={'svcmon_log_f_mon_svcname': row.mon_svcname,
+                                    'clear_filters': 'true'})
                   ),
                   A(
                     T('checks'),
                     _href=URL(r=request, c='checks', f='checks',
-                              vars={'checks_f_chk_svcname': row.mon_svcname})
+                              vars={'checks_f_chk_svcname': row.mon_svcname,
+                                    'clear_filters': 'true'})
                   ),
                 ),
               ),
@@ -135,32 +142,39 @@ def format_node(pattern):
                   A(
                     T('asset'),
                     _href=URL(r=request, c='nodes', f='nodes',
-                              vars={'nodes_f_nodename': row.nodename})
+                              vars={'nodes_f_nodename': row.nodename,
+                                    'clear_filters': 'true'})
                   ),
                   A(
                     T('actions'),
                     _href=URL(r=request, c='svcactions', f='svcactions',
-                              vars={'actions_f_hostname': row.nodename})
+                              vars={'actions_f_hostname': row.nodename,
+                                    'clear_filters': 'true'})
                   ),
                   A(
                     T('services'),
                     _href=URL(r=request, c='default', f='svcmon',
-                              vars={'svcmon_f_mon_nodname': row.nodename})
+                              vars={'svcmon_f_mon_nodname': row.nodename,
+                                    'clear_filters': 'true'})
                   ),
                   A(
                     T('checks'),
                     _href=URL(r=request, c='checks', f='checks',
-                              vars={'checks_f_chk_nodename': row.nodename})
+                              vars={'checks_f_chk_nodename': row.nodename,
+                                    'clear_filters': 'true'})
                   ),
                   A(
                     T('compliance status'),
                     _href=URL(r=request, c='compliance', f='comp_status',
-                              vars={'0_f_run_nodename': row.nodename})
+                              vars={'0_f_run_nodename': row.nodename,
+                                    'clear_filters': 'true'})
                   ),
                   A(
                     T('compliance log'),
                     _href=URL(r=request, c='compliance', f='comp_log',
-                              vars={'ajax_comp_log_f_run_nodename': row.nodename})
+                              vars={'ajax_comp_log_f_run_nodename':
+row.nodename,
+                                    'clear_filters': 'true'})
                   ),
                 ),
               ),
@@ -191,17 +205,20 @@ def format_user(pattern):
                   A(
                     T('user'),
                     _href=URL(r=request, c='users', f='users',
-                              vars={'users_f_fullname': row.fullname})
+                              vars={'users_f_fullname': row.fullname,
+                                    'clear_filters': 'true'})
                   ),
                   A(
                     T('logs'),
                     _href=URL(r=request, c='log', f='log',
-                              vars={'log_f_log_user': row.fullname})
+                              vars={'log_f_log_user': row.fullname,
+                                    'clear_filters': 'true'})
                   ),
                   A(
                     T('apps'),
                     _href=URL(r=request, c='apps', f='apps',
-                              vars={'apps_f_responsibles': '%'+row.fullname+'%'})
+                              vars={'apps_f_responsibles': '%'+row.fullname+'%',
+                                    'clear_filters': 'true'})
                   ),
                 ),
               ),
