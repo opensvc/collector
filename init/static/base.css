@@ -608,6 +608,19 @@ a.xinfo_shown span {
 }
 
 .tab {
+    border-bottom:solid 1px orange;
+    padding:0px;
+}
+.tab ul {
+    padding:0px;
+}
+.tab li {
+    border-top-left-radius:8px;
+    border-top-right-radius:8px;
+   -moz-border-radius-topleft:8px;
+   -moz-border-radius-topright:8px;
+   -webkit-border-top-left-radius:8px;
+   -webkit-border-top-right-radius:8px;
     text-align: center;
     vertical-align: middle;
     padding-left: 0.5em;
@@ -615,18 +628,17 @@ a.xinfo_shown span {
     padding-top: 0.3em;
     padding-bottom: 0.2em;
     cursor: pointer;
+    background-color: #dddddd;
+    color: black;
+    list-style: none;
+    float:left;
 }
-
-.closetab {
-    border-top-left-radius:8px;
-    border-top-right-radius:8px;
-   -moz-border-radius-topleft:8px;
-   -moz-border-radius-topright:8px;
-   -webkit-border-top-left-radius:8px;
-   -webkit-border-top-right-radius:8px;
+.tab .tab_active {
+    background-color: orange;
+}
+.tab .closetab {
     background-color:black;
     color:white;
-    cursor: pointer;
 }
 
 .details_row {
