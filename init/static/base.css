@@ -1,5 +1,9 @@
 @charset "UTF-8";
 
+img {
+    border: 0;
+}
+
 .logo {
     vertical-align: middle;
     padding-right: 0.5em;
@@ -402,7 +406,7 @@ ul.web2py-menu a
     color: white;
     display: block;
     margin: 0;
-    padding: 0;
+    padding: 0.1em;
     white-space: nowrap;
 }
 
@@ -477,7 +481,7 @@ ul.web2py-menu ul
 {
     border-top: 1px solid white;
     padding: 0.3em;
-    padding-left: 0.5em;
+    padding-left: 0.3em;
     background-color: rgba(19,67,77,0.8);
 }
 
@@ -648,10 +652,6 @@ div.float {
     float: left;
     margin-left:1em;
     margin-right:1em;
-}
-  
-div.float img {
-    border: 0;
 }
   
 div.float h2 {
@@ -905,43 +905,64 @@ ul.login_menu ul {
     background: transparent url('csv.png') no-repeat;
     padding-left: 18px;
 }
+
 .hd16 {
     background: transparent url('hd16.png') no-repeat;
-    padding-left: 18px;
+    padding-left: 20px;
 }
 .pkg16 {
     background: transparent url('pkg16.png') no-repeat;
-    padding-left: 18px;
+    padding-left: 20px;
 }
 .log16 {
     background: transparent url('log16.png') no-repeat;
-    padding-left: 18px;
+    padding-left: 20px;
+}
+.bill16 {
+    background: transparent url('bill16.png') no-repeat;
+    padding-left: 20px;
+}
+.os16 {
+    background: transparent url('os16.png') no-repeat;
+    padding-left: 20px;
+}
+.obs16 {
+    background: transparent url('obs16.png') no-repeat;
+    padding-left: 20px;
+}
+.comp16 {
+    background: transparent url('comp16.png') no-repeat;
+    padding-left: 20px;
+}
+.check16 {
+    background: transparent url('check16.png') no-repeat;
+    padding-left: 20px;
 }
 .guys16 {
     background: transparent url('guys16.png') no-repeat;
-    padding-left: 18px;
+    padding-left: 20px;
 }
 .guy16 {
     background: transparent url('guy16.png') no-repeat;
-    padding-left: 18px;
+    padding-left: 20px;
 }
 .svc {
     background: transparent url('svc.png') no-repeat;
-    padding-left: 18px;
+    padding-left: 20px;
 }
 .node16 {
     background: transparent url('node16.png') no-repeat;
-    padding-left: 18px;
+    padding-left: 20px;
+}
+.drp16 {
+    background: transparent url('drp16.png') no-repeat;
+    padding-left: 20px;
 }
 .action16 {
     background: transparent url('action16.png') no-repeat;
-    padding-left: 18px;
+    padding-left: 20px;
 }
-.diam {
-    float: left;
-    margin: 0.2em;
-    margin-top: 0.6em;
-}
+
 .search {
     float: right;
     margin:0.2em;
