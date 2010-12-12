@@ -1002,7 +1002,7 @@ ul.login_menu ul {
     overflow-x: auto;
     overflow-y: hidden;
 }
-.tableo table {
+.tableo > div > table {
     width: 100%;
 }
 
