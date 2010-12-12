@@ -809,9 +809,11 @@ class HtmlTable(object):
                 _class='theader',
               ),
               additional_filters,
-              TABLE(
-                [self.table_header(),
-                 inputs]+lines,
+              DIV(
+                TABLE(
+                  [self.table_header(),
+                   inputs]+lines,
+                ),
               ),
               DIV(
                 INPUT(
@@ -825,7 +827,7 @@ class HtmlTable(object):
                   _value=self.page,
                 ),
               ),
-              DIV('', _class='spacer'),
+              DIV(XML('&nbsp;'), _class='spacer'),
               SCRIPT(
                 "var inputs_%(id)s = %(a)s;"%dict(
                    id=self.id,

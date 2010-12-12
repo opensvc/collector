@@ -79,7 +79,11 @@ def comp_menu(current):
             )
         return d
 
-    d = SPAN(map(lambda x: item(x), m))
+    d = DIV(
+          SPAN(map(lambda x: item(x), m)),
+          DIV(XML('&nbsp;'), _class='spacer'),
+          _style='background-color:#e0e1cd;',
+        )
     return d
 
 #
@@ -426,6 +430,7 @@ def ajax_comp_rulesets_nodes():
                          float:left;
                       """,
              ),
+             DIV(XML('&nbsp;'), _class='spacer'),
            )
 
 class table_comp_rulesets(HtmlTable):

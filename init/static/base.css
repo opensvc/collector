@@ -997,11 +997,12 @@ ul.login_menu ul {
 /*
  * table class
  */
-.tableo {
+.tableo > div {
+    width: 100%;
     overflow-x: auto;
     overflow-y: hidden;
 }
-.tableo > table {
+.tableo table {
     width: 100%;
 }
 
@@ -1009,7 +1010,7 @@ ul.login_menu ul {
     cursor: pointer;
 }
 
-.tableo .theader {
+.theader {
     background-color: #e0e1cd;
     color: black;
     padding: 0;
