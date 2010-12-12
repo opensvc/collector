@@ -313,10 +313,22 @@ def rows_mem(node, s, e):
 
 @auth.requires_login()
 def rows_fs_u(node, s, e):
-    q = db.stats_fs_u.nodename == node
-    q &= db.stats_fs_u.date > s
-    q &= db.stats_fs_u.date < e
-    rows = db(q).select(orderby=db.stats_fs_u.date)
+    sql = """select %(d)s as d,
+                    mntpt,
+                    max(size),
+                    avg(used)
+             from stats_fs_u
+             where date>='%(s)s'
+               and date<='%(e)s'
+               and nodename='%(n)s'
+             group by d, mntpt
+          """%dict(
+                d = period_concat(s, e),
+                s = s,
+                e = e,
+                n = node,
+              )
+    rows = db.executesql(sql)
     return rows
 
 @auth.requires_login()
@@ -641,11 +653,11 @@ def json_fs():
 
     rows = rows_fs_u(node, begin, end)
     for r in rows:
-        if r.mntpt not in used:
-            used[r.mntpt] = []
-            mntpt.append(r.mntpt)
-            size.append(r.size)
-        used[r.mntpt].append((r.date,r.used))
+        if r[1] not in used:
+            used[r[1]] = []
+            mntpt.append(r[1])
+            size.append(int(r[2]))
+        used[r[1]].append((r[0],int(r[3])))
     data = []
     for m in mntpt:
         data.append(used[m])
