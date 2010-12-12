@@ -475,7 +475,7 @@ def json_swap():
     for r in rows:
         kbswpfree.append((r[0], int(r[1])))
         kbswpused.append((r[0], int(r[2]-r[4])))
-        pct_swpused.append((r[0], int(r[2])))
+        pct_swpused.append((r[0], int(r[3])))
         kbswpcad.append((r[0], int(r[4])))
         pct_swpcad.append((r[0], int(r[5])))
     return [kbswpfree, kbswpused, pct_swpused, kbswpcad, pct_swpcad]
