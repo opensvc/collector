@@ -173,65 +173,142 @@ def _ajax_perf_plot(group, sub=[''], last=False, base=None):
 #
 ######################
 
-@auth.requires_login()
-def rows_cpu_one(node, s, e, cpu):
-    q = db.stats_cpu.nodename == node
-    q &= db.stats_cpu.date > s
-    q &= db.stats_cpu.date < e
-    q &= db.stats_cpu.cpu == cpu
-    rows = db(q).select(orderby=db.stats_cpu.date)
-    return rows
+def period_concat(s, e):
+    year = datetime.timedelta(days=365)
+    month = datetime.timedelta(days=30)
+    day = datetime.timedelta(days=1)
+    hour = datetime.timedelta(hours=1)
+    s = str_to_date(s)
+    e = str_to_date(e)
+    period = e - s
+
+    if period >= 20 * year:
+        d = "YEAR(date)"
+    elif period >= 3 * year:
+        d = "concat(YEAR(date), '-', MONTH(date))"
+    elif period >= month:
+        d = "concat(YEAR(date), '-', MONTH(date), '-', DAY(date))"
+    elif period >= 2 * day:
+        d = "concat(YEAR(date), '-', MONTH(date), '-', DAY(date), ' ', HOUR(date), ':00:00')"
+    else:
+        d = "date"
+    return d
 
 @auth.requires_login()
 def rows_cpu(node, s, e):
-    if begin is None or end is None:
-        now = datetime.datetime.now()
-        end = now - datetime.timedelta(days=0, microseconds=now.microsecond)
-        begin = end - datetime.timedelta(days=1)
-    q = db.stats_cpu.nodename == node
-    q &= db.stats_cpu.date > s
-    q &= db.stats_cpu.date < e
-    rows = db(q).select(db.stats_cpu.cpu,
-                        groupby=db.stats_cpu.cpu,
-                        orderby=db.stats_cpu.cpu,
-                       )
-    cpus = [r.cpu for r in rows]
-
-    t = []
-    for cpu in cpus:
-        t += perf_stats_cpu_one(node, s, e, cpu)
-    return t
+    sql = """select %(d)s as d,
+                    avg(usr),
+                    avg(nice),
+                    avg(sys),
+                    avg(iowait),
+                    avg(steal),
+                    avg(irq),
+                    avg(soft),
+                    avg(guest),
+                    avg(idle)
+             from stats_cpu
+             where date>='%(s)s'
+               and date<='%(e)s'
+               and cpu='ALL'
+               and nodename='%(n)s'
+             group by d
+          """%dict(
+                d = period_concat(s, e),
+                s = s,
+                e = e,
+                n = node,
+              )
+    rows = db.executesql(sql)
+    return rows
 
 @auth.requires_login()
 def rows_proc(node, s, e):
-    q = db.stats_proc.nodename == node
-    q &= db.stats_proc.date > s
-    q &= db.stats_proc.date < e
-    rows = db(q).select(orderby=db.stats_proc.date)
+    sql = """select %(d)s as d,
+                    avg(runq_sz),
+                    avg(plist_sz),
+                    avg(ldavg_1),
+                    avg(ldavg_5),
+                    avg(ldavg_15)
+             from stats_proc
+             where date>='%(s)s'
+               and date<='%(e)s'
+               and nodename='%(n)s'
+             group by d
+          """%dict(
+                d = period_concat(s, e),
+                s = s,
+                e = e,
+                n = node,
+              )
+    rows = db.executesql(sql)
     return rows
 
 @auth.requires_login()
 def rows_swap(node, s, e):
-    q = db.stats_swap.nodename == node
-    q &= db.stats_swap.date > s
-    q &= db.stats_swap.date < e
-    rows = db(q).select(orderby=db.stats_swap.date)
+    sql = """select %(d)s as d,
+                    avg(kbswpfree),
+                    avg(kbswpused),
+                    avg(pct_swpused),
+                    avg(kbswpcad),
+                    avg(pct_swpcad)
+             from stats_swap
+             where date>='%(s)s'
+               and date<='%(e)s'
+               and nodename='%(n)s'
+             group by d
+          """%dict(
+                d = period_concat(s, e),
+                s = s,
+                e = e,
+                n = node,
+              )
+    rows = db.executesql(sql)
     return rows
 
 @auth.requires_login()
 def rows_block(node, s, e):
-    q = db.stats_block.nodename == node
-    q &= db.stats_block.date > s
-    q &= db.stats_block.date < e
-    rows = db(q).select(orderby=db.stats_block.date)
+    sql = """select %(d)s as d,
+                    avg(rtps),
+                    avg(wtps),
+                    avg(rbps),
+                    avg(wbps)
+             from stats_block
+             where date>='%(s)s'
+               and date<='%(e)s'
+               and nodename='%(n)s'
+             group by d
+          """%dict(
+                d = period_concat(s, e),
+                s = s,
+                e = e,
+                n = node,
+              )
+    rows = db.executesql(sql)
     return rows
 
 @auth.requires_login()
 def rows_mem(node, s, e):
-    q = db.stats_mem_u.nodename == node
-    q &= db.stats_mem_u.date > s
-    q &= db.stats_mem_u.date < e
-    rows = db(q).select(orderby=db.stats_mem_u.date)
+    sql = """select %(d)s as d,
+                    avg(kbmemfree),
+                    avg(kbmemused),
+                    avg(pct_memused),
+                    avg(kbbuffers),
+                    avg(kbcached),
+                    avg(kbcommit),
+                    avg(pct_commit),
+                    avg(kbmemsys)
+             from stats_mem_u
+             where date>='%(s)s'
+               and date<='%(e)s'
+               and nodename='%(n)s'
+             group by d
+          """%dict(
+                d = period_concat(s, e),
+                s = s,
+                e = e,
+                n = node,
+              )
+    rows = db.executesql(sql)
     return rows
 
 @auth.requires_login()
@@ -328,8 +405,8 @@ def perf_stats_netdev(node, s, e):
 @service.json
 def json_cpu():
     node = request.vars.node
-    begin = request.vars.b
-    end = request.vars.e
+    b = request.vars.b
+    e = request.vars.e
 
     usr = []
     nice = []
@@ -343,16 +420,16 @@ def json_cpu():
     if node is None:
         return [usr, nice, sys, iowait, steal, irq, soft, guest]
 
-    rows = rows_cpu_one(node, begin, end, 'all')
+    rows = rows_cpu(node, b, e)
     for r in rows:
-        usr.append((r.date, r.usr))
-        nice.append((r.date, r.nice))
-        sys.append((r.date, r.sys))
-        iowait.append((r.date, r.iowait))
-        steal.append((r.date, r.steal))
-        irq.append((r.date, r.irq))
-        soft.append((r.date, r.soft))
-        guest.append((r.date, r.guest))
+        usr.append((r[0], r[1]))
+        nice.append((r[0], r[2]))
+        sys.append((r[0], r[3]))
+        iowait.append((r[0], r[4]))
+        steal.append((r[0], r[5]))
+        irq.append((r[0], r[6]))
+        soft.append((r[0], r[7]))
+        guest.append((r[0], r[8]))
     return [usr, nice, sys, iowait, steal, irq, soft, guest]
 
 @service.json
@@ -372,11 +449,11 @@ def json_proc():
 
     rows = rows_proc(node, begin, end)
     for r in rows:
-        runq_sz.append((r.date, r.runq_sz))
-        plist_sz.append((r.date, r.plist_sz))
-        loadavg_1.append((r.date, r.ldavg_1))
-        loadavg_5.append((r.date, r.ldavg_5))
-        loadavg_15.append((r.date, r.ldavg_15))
+        runq_sz.append((r[0], float(r[1])))
+        plist_sz.append((r[0], int(r[2])))
+        loadavg_1.append((r[0], float(r[3])))
+        loadavg_5.append((r[0], float(r[4])))
+        loadavg_15.append((r[0], float(r[5])))
     return [runq_sz, plist_sz, loadavg_1, loadavg_5, loadavg_15]
 
 @service.json
@@ -396,11 +473,11 @@ def json_swap():
 
     rows = rows_swap(node, begin, end)
     for r in rows:
-        kbswpfree.append((r.date, r.kbswpfree))
-        kbswpused.append((r.date, r.kbswpused-r.kbswpcad))
-        pct_swpused.append((r.date, r.pct_swpused))
-        kbswpcad.append((r.date, r.kbswpcad))
-        pct_swpcad.append((r.date, r.pct_swpcad))
+        kbswpfree.append((r[0], int(r[1])))
+        kbswpused.append((r[0], int(r[2]-r[4])))
+        pct_swpused.append((r[0], int(r[2])))
+        kbswpcad.append((r[0], int(r[4])))
+        pct_swpcad.append((r[0], int(r[5])))
     return [kbswpfree, kbswpused, pct_swpused, kbswpcad, pct_swpcad]
 
 @service.json
@@ -419,10 +496,10 @@ def json_block():
 
     rows = rows_block(node, begin, end)
     for r in rows:
-        rtps.append((r.date, r.rtps))
-        wtps.append((r.date, r.wtps))
-        rbps.append((r.date, r.rbps/2))
-        wbps.append((r.date, r.wbps/2))
+        rtps.append((r[0], float(r[1])))
+        wtps.append((r[0], float(r[2])))
+        rbps.append((r[0], float(r[3]/2)))
+        wbps.append((r[0], float(r[4]/2)))
     return [rtps, wtps, rbps, wbps]
 
 @service.json
@@ -452,14 +529,14 @@ def json_mem():
 
     rows = rows_mem(node, begin, end)
     for r in rows:
-        kbmemfree.append((r.date, r.kbmemfree))
-        kbmemused.append((r.date, r.kbmemused-r.kbbuffers-r.kbcached-r.kbmemsys))
-        pct_memused.append((r.date, r.pct_memused))
-        kbbuffers.append((r.date, r.kbbuffers))
-        kbcached.append((r.date, r.kbcached))
-        kbcommit.append((r.date, r.kbcommit))
-        pct_commit.append((r.date, r.pct_commit))
-        kbmemsys.append((r.date, r.kbmemsys))
+        kbmemfree.append((r[0], int(r[1])))
+        kbmemused.append((r[0], int(r[2]-r[4]-r[5]-r[8])))
+        pct_memused.append((r[0], int(r[3])))
+        kbbuffers.append((r[0], int(r[4])))
+        kbcached.append((r[0], int(r[5])))
+        kbcommit.append((r[0], int(r[6])))
+        pct_commit.append((r[0], int(r[7])))
+        kbmemsys.append((r[0], int(r[8])))
     return [kbmemfree,
             kbmemused,
             pct_memused,
