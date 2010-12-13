@@ -269,8 +269,8 @@ class table_drplan(HtmlTable):
         self.checkbox_id_table = 'v_svcmon'
         self.dbfilterable = True
         self.ajax_col_values = 'ajax_drplan_col_values'
+        self.additional_tools.append('tool_project')
         if 'Manager' in user_groups():
-            self.additional_tools.append('tool_project')
             self.additional_tools.append('tool_clone_project')
             self.additional_tools.append('tool_add_project')
             self.additional_tools.append('tool_del_project')
