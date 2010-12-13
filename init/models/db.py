@@ -349,11 +349,13 @@ db.define_table('drpservices',
     Field('drp_svcname'),
     Field('drp_wave'),
     Field('drp_project_id'),
+    primarykey=['drp_svcname'],
     migrate=False)
 
 db.define_table('drpprojects',
     Field('drp_project'),
     Field('drp_project_id'),
+    primarykey=['drp_project_id'],
     migrate=False)
 
 db.define_table('apps',

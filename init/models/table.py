@@ -21,10 +21,14 @@ class HtmlTableColumn(Column):
         self.field = field
 
     def get(self, o):
-        if self.table is None or self.table not in o:
-            return o[self.field]
-        else:
-            return o[self.table][self.field]
+        try:
+            if self.table is None or self.table not in o:
+                return o[self.field]
+            else:
+                return o[self.table][self.field]
+        except KeyError:
+            return ''
+            #raise Exception('KeyError:', self.table, self.field, o)
 
     def html(self, o):
         val = self.get(o)
@@ -721,9 +725,9 @@ class HtmlTable(object):
                   ))
         return inputs
 
-    def ajax_submit(self, args=[], additional_inputs=[]):
+    def ajax_submit(self, args=[], vars={}, additional_inputs=[]):
         return """table_ajax_submit('%(url)s', '%(id)s', %(inputs)s, %(additional_inputs)s, %(input_name)s, '%(spinner)s');"""%dict(
-                         url=URL(r=request,f=self.func, args=args),
+                         url=URL(r=request,f=self.func, args=args, vars=vars),
                          id=self.innerhtml,
                          inputs = 'inputs_'+self.id,
                          additional_inputs = str(additional_inputs),
@@ -1052,7 +1056,7 @@ class col_updated(HtmlTableColumn):
     deadline = now - datetime.timedelta(days=1)
 
     def outdated(self, t):
-         if t is None: return True
+         if t is None or t == '': return True
          if t < self.deadline: return True
          return False
 
@@ -1099,8 +1103,12 @@ class col_node(HtmlTableColumn):
             c = 'font-weight: bold'
         else:
             c = ''
+        if 'os_name' in self.t.colprops:
+            img = node_icon(self.t.colprops['os_name'].get(o))
+        else:
+            img = ''
         d = DIV(
-              node_icon(self.t.colprops['os_name'].get(o)),
+              img,
               A(
                 s,
                 _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(

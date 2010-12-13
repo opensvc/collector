@@ -16,6 +16,8 @@ class log_vfields(object):
                 s = 'error loading JSON: %s'%self.log.log_dict
             except UnicodeEncodeError:
                 s = 'error transcoding: %s'%self.log.log_dict
+            except TypeError:
+                s = 'type error: %s'%self.log.log_dict
             return s
 
 db.log.virtualfields.append(log_vfields())
