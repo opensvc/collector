@@ -396,14 +396,14 @@ class col_avail_holes(Column):
 
     def format_hole(self, svcname, hole):
         out = """data_%(svc)s[2]=[];$('#%(id)s').empty();avail_plot('%(id)s', data_%(svc)s);"""%dict(
-           id='plot_%s'%svcname,
-           svc=svcname,
+           id='plot_%s'%svcname.replace('.','_'),
+           svc=svcname.replace('.','_'),
          )
         over = """data_%(svc)s[2]=[['%(b)s',2],['%(e)s',2]];$('#%(id)s').empty();avail_plot('%(id)s', data_%(svc)s);"""%dict(
-           id='plot_%s'%svcname,
+           id='plot_%s'%svcname.replace('.','_'),
            b=hole['begin'],
            e=hole['end'],
-           svc=svcname,
+           svc=svcname.replace('.','_'),
          )
         if hole['acked'] == 1:
             if hole['acked_account'] == 0:
@@ -533,12 +533,12 @@ class col_avail_plot(Column):
         s += """data_%(svc)s=%(data)s;$('#%(id)s').empty();avail_plot('%(id)s', data_%(svc)s)"""%dict(
                data=str([str(down).replace("'null'","null"),
                          str(acked).replace("'null'","null")]).replace('"',''),
-               id='plot_%s'%o['svcname'],
-               svc=o['svcname'],
+               id='plot_%s'%o['svcname'].replace('.','_'),
+               svc=o['svcname'].replace('.','_'),
              )
         return DIV(
                  DIV(
-                   _id='plot_%s'%o['svcname'],
+                   _id='plot_%s'%o['svcname'].replace('.','_'),
                    _style='width:300px;height:50px',
                  ),
                  SCRIPT(s, _name='svcmon_log_to_eval'),
