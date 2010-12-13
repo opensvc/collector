@@ -231,90 +231,105 @@ class table_actions(HtmlTable):
         self.colprops = {
             'svcname': col_svc(
                 title = 'Service',
+                table = 'v_svcactions',
                 field='svcname',
                 display = True,
                 img = 'svc',
             ),
             'hostname': col_node(
                 title = 'Node name',
+                table = 'v_svcactions',
                 field='hostname',
                 display = True,
                 img = 'node16',
             ),
             'pid': col_pid(
                 title = 'Pid',
+                table = 'v_svcactions',
                 field='pid',
                 display = True,
                 img = 'action16',
             ),
             'action': col_action(
                 title = 'Action',
+                table = 'v_svcactions',
                 field='action',
                 display = True,
                 img = 'action16',
             ),
             'status': col_svcactions_status(
                 title = 'Status',
+                table = 'v_svcactions',
                 field='status',
                 display = True,
                 img = 'action16',
             ),
             'begin': col_begin(
                 title = 'Begin',
+                table = 'v_svcactions',
                 field='begin',
                 display = True,
                 img = 'time16',
             ),
             'end': col_end(
                 title = 'End',
+                table = 'v_svcactions',
                 field='end',
                 display = False,
                 img = 'time16',
             ),
             'status_log': col_status_log(
                 title = 'Log',
+                table = 'v_svcactions',
                 field='status_log',
                 display = True,
                 img = 'action16',
             ),
             'time': HtmlTableColumn(
                 title = 'Duration',
+                table = 'v_svcactions',
                 field='time',
                 display = False,
                 img = 'time16',
             ),
             'id': HtmlTableColumn(
                 title = 'Id',
+                table = 'v_svcactions',
                 field='id',
                 display = False,
                 img = 'action16',
             ),
             'ack': HtmlTableColumn(
                 title = 'Ack',
+                table = 'v_svcactions',
                 field='ack',
                 display = False,
                 img = 'action16',
             ),
             'acked_comment': HtmlTableColumn(
                 title = 'Ack comment',
+                table = 'v_svcactions',
                 field='acked_comment',
                 display = False,
                 img = 'action16',
             ),
             'acked_by': HtmlTableColumn(
                 title = 'Acked by',
+                table = 'v_svcactions',
                 field='acked_by',
                 display = False,
                 img = 'guy16',
             ),
             'acked_date': HtmlTableColumn(
                 title = 'Ack date',
+                table = 'v_svcactions',
                 field='acked_date',
                 display = False,
                 img = 'time16',
             ),
             'app': HtmlTableColumn(
                 title = 'App',
+                table = 'v_svcactions',
                 field='app',
                 display = False,
                 img = 'svc',
@@ -345,6 +360,7 @@ class table_actions(HtmlTable):
         self.sub_span = ['hostname', 'svcname', 'action'] + ncols
         self.dbfilterable = True
         self.checkboxes = True
+        self.checkbox_id_table = 'v_svcactions'
         self.additional_tools.append('ack')
 
     def checkbox_disabled(self, o):
@@ -394,7 +410,7 @@ def ajax_actions_col_values():
     col = request.args[0]
     o = db.v_svcactions[col]
     q = _where(None, 'v_svcactions', domain_perms(), 'hostname')
-    q = apply_db_filters(q, 'v_nodes')
+    q = apply_db_filters(q, 'v_services')
     for f in t.cols:
         q = _where(q, 'v_svcactions', t.filter_parse(f), f)
     t.object_list = db(q).select(db.v_svcactions[col],
@@ -444,7 +460,7 @@ def ajax_actions():
 
     o = ~db.v_svcactions.begin|~db.v_svcactions.end|~db.v_svcactions.id
     q = _where(None, 'v_svcactions', domain_perms(), 'hostname')
-    q = apply_db_filters(q, 'v_nodes')
+    q = apply_db_filters(q, 'v_services')
     for f in t.cols:
         q = _where(q, 'v_svcactions', t.filter_parse(f), f)
     n = db(q).count()
