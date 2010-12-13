@@ -66,7 +66,7 @@ def _pagination(request, query, groupby=None):
     return (start, end, nav)
 
 def user_name():
-    if not hasattr('user', session.auth):
+    if not hasattr(session.auth, 'user'):
         return 'Unknown'
     return ' '.join([session.auth.user.first_name,
                      session.auth.user.last_name])
