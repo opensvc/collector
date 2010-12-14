@@ -1,7 +1,59 @@
 {{extend 'layout.html'}}
 {{include '../static/jslib.html'}}
-{{include 'filters.html'}}
 
+<script>
+var ctrl = false;
+
+document.onkeydown = tofilter;
+document.onkeyup = resetctrl;
+
+function resetctrl(e)
+{
+    var KeyID = (window.event) ? event.keyCode : e.keyCode;
+    if (KeyID == 17) {
+        ctrl = false;
+    }
+}
+
+function tofilter(e) {
+    var KeyID = (window.event) ? event.keyCode : e.keyCode;
+    if (KeyID == 17) {
+        ctrl = true;
+        return;
+    }
+    switch(KeyID)
+    {
+        case 59:
+        case 186:
+        case 190:
+        case 191:
+            if (ctrl) {
+                toggle_menu()
+                var e = document.getElementById('addfilter')
+                if (e) {
+                    e.focus();
+                }
+            }
+            break;
+    }
+}
+function toggle_menu()
+{
+    var menubar = document.getElementById("menubar");
+    var status = document.getElementById("filterbar_status");
+    if (menubar.className=="menubar") {
+        menubar.className="menubar_shown";
+        if (status) {
+            status.value = 'shown';
+        }
+    } else {
+        menubar.className="menubar";
+        if (status) {
+            status.value = 'hidden';
+        }
+    }
+}
+</script>
 {{
 
 def format_sym(sym):
