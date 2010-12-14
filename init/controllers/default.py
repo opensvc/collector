@@ -47,9 +47,9 @@ def index():
               DIV(
                 DIV(
                 DIV(B(T('Report')), _class='title summary_header'),
-                DIV(B(T('Updated')), _class='summary_header'),
-                DIV(_class='summary_header'),
                 DIV(B(T('Status')), _class='summary_header'),
+                DIV(_class='summary_header'),
+                DIV(B(T('Updated')), _class='summary_header'),
                 DIV(B(T('History')), _class='summary_header'),
               ),
               DIV(_id='sum_checks'),

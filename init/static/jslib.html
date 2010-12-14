@@ -2039,17 +2039,17 @@ function dashboard_item(item, url){
         if (data.length >= 6) { unit = data[5] } else { unit = '' }
         $('#'+item).html(data[3])
         sum = '<div class="title">'+title+'</div>'
-        sum += '<div>'+date+'</div>'
-        sum += '<div>'
-        sum += '<a href=#'+item+'><img src=../static/search.png></img></a>'
-        f = 'dashboard_item(\''+item+'\',\''+url+'\')'
-        sum += '<a onclick='+f+'><img src=../static/refresh16.png></img></a>'
-        sum += '</div>'
         if (val>=max || val<min) {
             sum += '<div class="current_page">'+val+'</div>'
         } else {
             sum += '<div>'+val+unit+'</div>'
         }
+        sum += '<div>'
+        sum += '<a href=#'+item+'><img src=../static/search.png></img></a>'
+        f = 'dashboard_item(\''+item+'\',\''+url+'\')'
+        sum += '<a onclick='+f+'><img src=../static/refresh16.png></img></a>'
+        sum += '</div>'
+        sum += '<div>'+date+'</div>'
         bak = ''
         try {
             bak = $('#spark_data_'+item).html()
