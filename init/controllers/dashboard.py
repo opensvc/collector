@@ -370,7 +370,7 @@ def svcwitherrors():
 
 """ pkg differences amongst cluster nodes
 """
-def pkg_diff_line(line, cellclass):
+def pkg_diff_line(data, line, cellclass):
     tr = TR(
       TD(
         line.replace(',', ', '),
@@ -385,7 +385,7 @@ def pkg_diff_line(line, cellclass):
                      nodes=line, a='pkgdiff'),
       ),
       TD(
-        pkgdiff[line],
+        data[line],
         _class=cellclass,
         _style="cursor:help",
         _onclick="""
@@ -406,16 +406,16 @@ def pkg_diff_header():
     )
     return tr
 
-def pkg_diff_table(pkgdiff, title):
+def pkg_diff_table(data, title):
     cellclass = 'cell1'
     cellclasses = {}
     cellclasses['cell1'] = 'cell2'
     cellclasses['cell2'] = 'cell1'
     lines = []
 
-    for line in sorted(pkgdiff, key=pkgdiff.__getitem__):
+    for line in sorted(data, key=data.__getitem__):
         cellclass = cellclasses[cellclass]
-        lines += [pkg_diff_line(line, cellclass)]
+        lines += [pkg_diff_line(data, line, cellclass)]
 
     t = TABLE(
         TR(
@@ -432,17 +432,18 @@ def pkg_diff_table(pkgdiff, title):
 def pkg_diff(data, title):
     if len(data) == 0:
         return DIV()
-    d = SPAN(
+    d = DIV(
       PANEL('pkgdiff'),
       INPUT(_id='node', _type='hidden'),
       pkg_diff_table(data, title),
+      _class='dashboard',
     )
     return d
 
 
 @service.json
 def pkgdiff():
-    pkgdiff = {}
+    data = {}
     clusters = {}
     query = _where(None, 'v_svc_group_status', domain_perms(), 'svcname')
     query &= db.v_svc_group_status.svcname==db.v_svcmon.mon_svcname
@@ -459,7 +460,7 @@ def pkgdiff():
             continue
         nodes.sort()
         key = ','.join(nodes)
-        if key in pkgdiff:
+        if key in data:
             continue
         sql = """select count(id) from (
                    select *,count(pkg_nodename) as c
@@ -473,11 +474,11 @@ def pkgdiff():
         x = db.executesql(sql)
         if len(x) != 1 or len(x[0]) != 1 or x[0][0] == 0:
             continue
-        pkgdiff[key] = x[0][0]
+        data[key] = x[0][0]
 
     title = "Package differences amongst cluster nodes"
-    return [0, 1, len(pkgdiff),
-            str(pkg_diff(pkgdiff, title)), str(T(title))]
+    return [0, 1, len(data),
+            str(pkg_diff(data, title)), str(T(title))]
 
 
 """ Services not up on all nodes
