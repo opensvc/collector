@@ -2029,4 +2029,47 @@ function ackpanel(show, s){
 function refresh_action(url, id){
     spintimer=setTimeout(function validate(){ajax(url, [], 'spin_span_'+id)}, 3000);
 }
+function dashboard_item(item, url){
+    $.getJSON(url, function(data) {
+        date = $.date(Date()).print('%H:%M:%S')
+        min = data[0]
+        max = data[1]
+        val = data[2]
+        title = data[4]
+        if (data.length >= 6) { unit = data[5] } else { unit = '' }
+        $('#'+item).html(data[3])
+        sum = '<div class="title">'+title+'</div>'
+        sum += '<div>'+date+'</div>'
+        sum += '<div>'
+        sum += '<a href=#'+item+'><img src=../static/search.png></img></a>'
+        f = 'dashboard_item(\''+item+'\',\''+url+'\')'
+        sum += '<a onclick='+f+'><img src=../static/refresh16.png></img></a>'
+        sum += '</div>'
+        if (val>=max || val<min) {
+            sum += '<div class="current_page">'+val+'</div>'
+        } else {
+            sum += '<div>'+val+unit+'</div>'
+        }
+        bak = ''
+        try {
+            bak = $('#spark_data_'+item).html()
+            if (bak != null) {
+                b = bak.split(',')
+                if (b.length>15) {
+                    bak = b.slice(-15).join(',')
+                }
+            }
+        } finally {}
+        if (bak != '') {
+            bak += ','+val
+        } else {
+            bak = val
+        }
+        sum += '<div id=spark_'+item+' class=inlinesparkline>'+bak+'</div>'
+        sum += '<div id=spark_data_'+item+' style="display:none">'+bak+'</div>'
+        $('#sum_'+item).html(sum)
+        $('#spark_'+item).sparkline()
+        setTimeout(function(){dashboard_item(item, url)}, 60000)
+    })
+}
 </script>

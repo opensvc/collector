@@ -1,5 +1,6 @@
 # coding: utf8
 {
+'': '',
 '"update" is an optional expression like "field1=\'newvalue\'". You cannot update or delete the results of a JOIN': '"update" is an optional expression like "field1=\'newvalue\'". You cannot update or delete the results of a JOIN',
 '%(count)s application%(s)s deleted': '%(count)s application%(s)s supprimée%(s)s',
 '%(moduleset)s attached to node %(node)s': '%(moduleset)s attaché au noeud %(node)s',

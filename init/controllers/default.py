@@ -36,218 +36,86 @@ def call():
 
 @auth.requires_login()
 def index():
-    toggle_db_filters()
+    def js(item):
+        return """dashboard_item('%(item)s', '%(url)s');"""%dict(
+                    item=item,
+                    url=URL(r=request, c='dashboard', f='call/json/'+item))
 
-    now = datetime.datetime.now()
-    one_days_ago = now - datetime.timedelta(days=1)
-    tmo = now - datetime.timedelta(minutes=15)
-
-    query = db.v_svcmon.mon_frozen==1
-    query &= _where(None, 'v_svcmon', domain_perms(), 'mon_nodname')
-    query = apply_db_filters(query, 'v_svcmon')
-    frozen = db(query).select(db.v_svcmon.mon_svcname, db.v_svcmon.mon_nodname,
-                              orderby=db.v_svcmon.mon_svcname)
-
-    query = ~db.svcmon.mon_nodname.belongs(db()._select(db.nodes.nodename))
-    query &= _where(None, 'svcmon', domain_perms(), 'mon_nodname')
-    nodeswithoutasset = db(query).select(db.svcmon.mon_nodname, groupby=db.svcmon.mon_nodname,)
-
-    query = db.v_svcmon.mon_updated<tmo
-    query &= _where(None, 'v_svcmon', domain_perms(), 'mon_svcname')
-    query = apply_db_filters(query, 'v_svcmon')
-    svcnotupdated = db(query).select(orderby=~db.v_svcmon.mon_updated, limitby=(0,50))
-
-    query = db.svcmon_log.mon_end>one_days_ago
-    query &= db.svcmon_log.mon_svcname==db.v_svcmon.mon_svcname
-    query &= db.svcmon_log.mon_nodname==db.v_svcmon.mon_nodname
-    query &= _where(None, 'svcmon_log', domain_perms(), 'mon_svcname')
-    query = apply_db_filters(query, 'v_svcmon')
-    lastchanges = db(query).select(orderby=~db.svcmon_log.mon_begin, limitby=(0,20))
-
-    query = (db.v_svcmon.err>0)
-    query &= _where(None, 'v_svcmon', domain_perms(), 'mon_svcname')
-    query = apply_db_filters(query, 'v_svcmon')
-    svcwitherrors = db(query).select(orderby=~db.v_svcmon.err, groupby=db.v_svcmon.mon_svcname)
-
-    query = (~db.v_svc_group_status.groupstatus.like("up,%"))
-    query &= (~db.v_svc_group_status.groupstatus.like("%,up,%"))
-    query &= (~db.v_svc_group_status.groupstatus.like("%,up"))
-    query &= (db.v_svc_group_status.groupstatus!="up")
-    query &= _where(None, 'v_svc_group_status', domain_perms(), 'svcname')
-    query &= db.v_svc_group_status.svcname==db.v_svcmon.mon_svcname
-    query = apply_db_filters(query, 'v_svcmon')
-    svcnotup = db(query).select(groupby=db.v_svc_group_status.svcname, orderby=db.v_svc_group_status.svcname)
-
-    query = (db.v_svcmon.svc_autostart==db.v_svcmon.mon_nodname)
-    query &= ((db.v_svcmon.mon_overallstatus!="up")|(db.v_svcmon.mon_updated<tmo))
-    query &= _where(None, 'v_svcmon', domain_perms(), 'mon_svcname')
-    query = apply_db_filters(query, 'v_svcmon')
-    svcnotonprimary = db(query).select()
-
-    query = (db.v_apps.responsibles==None)
-    query |= (db.v_apps.responsibles=="")
-    appwithoutresp = db(query).select(db.v_apps.app)
-
-    query = db.v_nodes.warranty_end < now + datetime.timedelta(days=30)
-    query &= db.v_nodes.warranty_end != "0000-00-00 00:00:00"
-    query &= db.v_nodes.warranty_end is not None
-    query &= _where(None, 'v_nodes', domain_perms(), 'nodename')
-    query = apply_db_filters(query, 'v_nodes')
-    warrantyend = db(query).select(db.v_nodes.nodename,
-                                    db.v_nodes.warranty_end,
-                                    orderby=db.v_nodes.warranty_end
-                                   )
-
-    warn = (db.obsolescence.obs_warn_date!=None)&(db.obsolescence.obs_warn_date!="0000-00-00")&(db.obsolescence.obs_warn_date<now)
-    alert = (db.obsolescence.obs_alert_date==None)|(db.obsolescence.obs_alert_date=="0000-00-00")|(db.obsolescence.obs_alert_date>=now)
-    query = warn & alert
-    query &= _where(None, 'v_nodes', domain_perms(), 'nodename')
-    query = apply_db_filters(query, 'v_nodes')
-    join = db.obsolescence.obs_type=="os"
-    join &= db.obsolescence.obs_name==db.v_nodes.os_concat
-    obsoswarn = db(query).select(db.v_nodes.nodename,
-                                 db.obsolescence.obs_name,
-                                 db.obsolescence.obs_warn_date,
-                                 left=db.v_nodes.on(join),
-                                 orderby=db.obsolescence.obs_warn_date|db.v_nodes.nodename
-                                )
-
-    query = (db.obsolescence.obs_alert_date!=None)&(db.obsolescence.obs_alert_date!="0000-00-00")&(db.obsolescence.obs_alert_date<now)
-    query &= _where(None, 'v_nodes', domain_perms(), 'nodename')
-    query = apply_db_filters(query, 'v_nodes')
-    join = db.obsolescence.obs_type=="os"
-    join &= db.obsolescence.obs_name==db.v_nodes.os_concat
-    obsosalert = db(query).select(db.v_nodes.nodename,
-                                 db.obsolescence.obs_name,
-                                 db.obsolescence.obs_alert_date,
-                                 left=db.v_nodes.on(join),
-                                 orderby=db.obsolescence.obs_alert_date|db.v_nodes.nodename
-                                )
-
-    warn = (db.obsolescence.obs_warn_date!=None)&(db.obsolescence.obs_warn_date!="0000-00-00")&(db.obsolescence.obs_warn_date<now)
-    alert = (db.obsolescence.obs_alert_date==None)|(db.obsolescence.obs_alert_date=="0000-00-00")|(db.obsolescence.obs_alert_date>=now)
-    query = warn & alert
-    query &= _where(None, 'v_nodes', domain_perms(), 'nodename')
-    query = apply_db_filters(query, 'v_nodes')
-    join = db.obsolescence.obs_type=="hw"
-    join &= db.obsolescence.obs_name==db.v_nodes.model
-    obshwwarn = db(query).select(db.v_nodes.nodename,
-                                 db.obsolescence.obs_name,
-                                 db.obsolescence.obs_warn_date,
-                                 left=db.v_nodes.on(join),
-                                 orderby=db.obsolescence.obs_warn_date|db.v_nodes.nodename
-                                )
-
-    query = (db.obsolescence.obs_alert_date!=None)&(db.obsolescence.obs_alert_date!="0000-00-00")&(db.obsolescence.obs_alert_date<now)
-    query &= _where(None, 'v_nodes', domain_perms(), 'nodename')
-    query = apply_db_filters(query, 'v_nodes')
-    join = db.obsolescence.obs_type=="hw"
-    join &= db.obsolescence.obs_name==db.v_nodes.model
-    obshwalert = db(query).select(db.v_nodes.nodename,
-                                 db.obsolescence.obs_name,
-                                 db.obsolescence.obs_alert_date,
-                                 left=db.v_nodes.on(join),
-                                 orderby=db.obsolescence.obs_alert_date|db.v_nodes.nodename
-                                )
-
-    rows = db(db.v_users.id==session.auth.user.id).select(db.v_users.manager)
-    if len(rows) == 1 and rows[0].manager == 1:
-        query = (db.obsolescence.obs_warn_date==None)|(db.obsolescence.obs_warn_date=="0000-00-00")
-        query &= (db.v_nodes.os_concat==db.obsolescence.obs_name)|(db.v_nodes.model==db.obsolescence.obs_name)
-        query &= (~db.v_nodes.model.like("%virtual%"))
-        query &= (~db.v_nodes.model.like("%virtuel%"))
-        query &= (~db.v_nodes.model.like("%cluster%"))
-        query &= _where(None, 'v_nodes', domain_perms(), 'nodename')
-        query = apply_db_filters(query, 'v_nodes')
-        rows = db(query).select(db.obsolescence.obs_name, groupby=db.obsolescence.obs_name)
-        obswarnmiss = len(rows)
-
-        query = (db.obsolescence.obs_alert_date==None)|(db.obsolescence.obs_alert_date=="0000-00-00")
-        query &= (db.v_nodes.os_concat==db.obsolescence.obs_name)|(db.v_nodes.model==db.obsolescence.obs_name)
-        query &= (~db.v_nodes.model.like("%virtual%"))
-        query &= (~db.v_nodes.model.like("%virtuel%"))
-        query &= (~db.v_nodes.model.like("%cluster%"))
-        query &= _where(None, 'v_nodes', domain_perms(), 'nodename')
-        query = apply_db_filters(query, 'v_nodes')
-        rows = db(query).select(db.obsolescence.obs_name, groupby=db.obsolescence.obs_name)
-        obsalertmiss = len(rows)
-    else:
-        obswarnmiss = 0
-        obsalertmiss = 0
-
-    pkgdiff = {}
-    clusters = {}
-    query = _where(None, 'v_svc_group_status', domain_perms(), 'svcname')
-    query &= db.v_svc_group_status.svcname==db.v_svcmon.mon_svcname
-    query = apply_db_filters(query, 'v_svcmon')
-    rows = db(query).select(db.v_svc_group_status.nodes, distinct=True)
-    for row in rows:
-        nodes = row.nodes.split(',')
-        s = set(nodes)
-        if s in clusters.values():
-            continue
-        clusters[row.nodes] = set(nodes)
-        n = len(nodes)
-        if n == 1:
-            continue
-        nodes.sort()
-        key = ','.join(nodes)
-        if key in pkgdiff:
-            continue
-        sql = """select count(id) from (
-                   select *,count(pkg_nodename) as c
-                   from packages
-                   where pkg_nodename in (%(nodes)s)
-                   group by pkg_name,pkg_version,pkg_arch
-                   order by pkg_name,pkg_version,pkg_arch
-                 ) as t
-                 where t.c!=%(n)s;
-              """%dict(n=n, nodes=','.join(map(repr, nodes)))
-        x = db.executesql(sql)
-        if len(x) != 1 or len(x[0]) != 1 or x[0][0] == 0:
-            continue
-        pkgdiff[key] = x[0][0]
-
-    q = db.v_stats_netdev_err_avg_last_day.avgrxerrps > 0
-    q |= db.v_stats_netdev_err_avg_last_day.avgtxerrps > 0
-    q |= db.v_stats_netdev_err_avg_last_day.avgcollps > 0
-    q |= db.v_stats_netdev_err_avg_last_day.avgrxdropps > 0
-    q |= db.v_stats_netdev_err_avg_last_day.avgtxdropps > 0
-    query = _where(None, 'v_stats_netdev_err_avg_last_day', domain_perms(), 'nodename')
-    query &= db.v_stats_netdev_err_avg_last_day.nodename==db.v_nodes.nodename
-    query = apply_db_filters(query, 'v_nodes')
-    query &= q
-    netdeverrs = db(query).select()
-
-    q = db.v_checks.chk_value < db.v_checks.chk_low
-    q |= db.v_checks.chk_value > db.v_checks.chk_high
-    query = _where(None, 'v_checks', domain_perms(), 'chk_nodename')
-    query &= q
-    query &= db.v_checks.chk_nodename==db.v_nodes.nodename
-    query = apply_db_filters(query, 'v_nodes')
-    checks = db(query).select()
-
-    return dict(svcnotupdated=svcnotupdated,
-                frozen=frozen,
-                nodeswithoutasset=nodeswithoutasset,
-                lastchanges=lastchanges,
-                svcwitherrors=svcwitherrors,
-                svcnotonprimary=svcnotonprimary,
-                appwithoutresp=appwithoutresp,
-                warrantyend=warrantyend,
-                obsoswarn=obsoswarn,
-                obsosalert=obsosalert,
-                obshwwarn=obshwwarn,
-                obshwalert=obshwalert,
-                obswarnmiss=obswarnmiss,
-                obsalertmiss=obsalertmiss,
-                svcnotup=svcnotup,
-                active_filters=active_db_filters('v_svcmon'),
-                available_filters=avail_db_filters('v_svcmon'),
-                pkgdiff=pkgdiff,
-                netdeverrs=netdeverrs,
-                checks=checks,
-               )
+    d = DIV(
+          DIV(
+            H2(T('Summary')),
+              DIV(
+                DIV(
+                DIV(B(T('Report')), _class='title summary_header'),
+                DIV(B(T('Updated')), _class='summary_header'),
+                DIV(_class='summary_header'),
+                DIV(B(T('Status')), _class='summary_header'),
+                DIV(B(T('History')), _class='summary_header'),
+              ),
+              DIV(_id='sum_checks'),
+              DIV(_id='sum_svcnotup'),
+              DIV(_id='sum_frozen'),
+              DIV(_id='sum_svcnotupdated'),
+              DIV(_id='sum_svcwitherrors'),
+              DIV(_id='sum_svcnotonprimary'),
+              DIV(_id='sum_lastchanges'),
+              DIV(_id='sum_appwithoutresp'),
+              DIV(_id='sum_warrantyend'),
+              DIV(_id='sum_obsoswarn'),
+              DIV(_id='sum_obsosalert'),
+              DIV(_id='sum_obshwwarn'),
+              DIV(_id='sum_obshwalert'),
+              DIV(_id='sum_obsmiss'),
+              DIV(_id='sum_nodeswithoutasset'),
+              DIV(_id='sum_pkgdiff'),
+              DIV(_id='sum_netdeverrs'),
+              _class='summary',
+            ),
+            _class='container',
+          ),
+          DIV(_id='checks'),
+          DIV(_id='svcnotup'),
+          DIV(_id='frozen'),
+          DIV(_id='svcnotupdated'),
+          DIV(_id='svcwitherrors'),
+          DIV(_id='svcnotonprimary'),
+          DIV(_id='lastchanges'),
+          DIV(_id='appwithoutresp'),
+          DIV(_id='warrantyend'),
+          DIV(_id='obsoswarn'),
+          DIV(_id='obsosalert'),
+          DIV(_id='obshwwarn'),
+          DIV(_id='obshwalert'),
+          DIV(_id='obsmiss'),
+          DIV(_id='nodeswithoutasset'),
+          DIV(_id='pkgdiff'),
+          DIV(_id='netdeverrs'),
+          SCRIPT(
+            js('svcnotupdated'),
+            js('checks'),
+            js('frozen'),
+            js('lastchanges'),
+            js('svcwitherrors'),
+            js('pkgdiff'),
+            js('svcnotup'),
+            js('svcnotonprimary'),
+            js('appwithoutresp'),
+            js('warrantyend'),
+            js('obsosalert'),
+            js('obsoswarn'),
+            js('obshwalert'),
+            js('obshwwarn'),
+            js('obsmiss'),
+            js('nodeswithoutasset'),
+            js('netdeverrs'),
+          ),
+          _style="""
+            column-width:50em;
+            -moz-column-width:50em;
+            -webkit-column-width:50em;
+          """
+        )
+    return dict(dashboard=d)
 
 @auth.requires_login()
 def envfile(svcname):

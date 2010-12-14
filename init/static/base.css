@@ -681,25 +681,6 @@ div.spacer {
     clear: both;
 }
 
-div.dashboard {
-    padding:1em;
-    break-inside: avoid;
-}
-
-div.dashboard table {
-    width: 100%;
-    border-collapse: separate;
-}
-
-div.dashboard h2 {
-    padding:1em;
-    text-align:center
-}
-
-div.dashboard th {
-    border-bottom:4px solid darkorange;
-}
-
 div.svcstatus {
     text-align: center;
     display: inline-block;
@@ -1107,3 +1088,46 @@ ul.login_menu ul {
 input:[type='button'] {
 }
 
+div.dashboard {
+    padding:1em;
+    break-inside: avoid;
+}
+div.dashboard table {
+    width: 100%;
+    border-collapse: separate;
+}
+div.dashboard h2 {
+    padding:1em;
+    text-align:center
+}
+div.dashboard th {
+    border-bottom:4px solid darkorange;
+}
+
+div.summary {
+    margin: 1em;
+    padding: 1em;
+    display: table;
+    width: 100%;
+}
+.summary h2 {
+    display: table-row;
+}
+.summary div {
+    text-align: left;
+}
+.summary > div {
+    display: table-row;
+}
+.summary > div > div {
+    display: table-cell;
+    padding: 0.2em;
+    vertical-align: top;
+}
+.summary .title {
+    //width: 65%;
+    text-align: left;
+}
+.summary .summary_header {
+    border-bottom: solid 4px darkorange
+}
