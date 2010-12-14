@@ -2029,13 +2029,21 @@ function ackpanel(show, s){
 function refresh_action(url, id){
     spintimer=setTimeout(function validate(){ajax(url, [], 'spin_span_'+id)}, 3000);
 }
-function dashboard_item(item, url){
-    $.getJSON(url, function(data) {
-        date = $.date(Date()).print('%H:%M:%S')
+function dashboard_toggle(item, url){
+    $.getJSON(url+'/'+item, function(data){})
+}
+function dashboard_item(item, url, toggle_url, checked){
+    $.getJSON(url+'/'+checked, function(data) {
         min = data[0]
         max = data[1]
         val = data[2]
         title = data[4]
+        if (data[3]=='') {
+            date = ''
+        } else {
+            date = $.date(Date()).print('%H:%M:%S')
+        }
+        ck_item = 'ck_'+item
         if (data.length >= 6) { unit = data[5] } else { unit = '' }
         $('#'+item).html(data[3])
         sum = '<div class="title">'+title+'</div>'
@@ -2044,11 +2052,15 @@ function dashboard_item(item, url){
         } else {
             sum += '<div>'+val+unit+'</div>'
         }
-        sum += '<div>'
-        sum += '<a href=#'+item+'><img src=../static/search.png></img></a>'
+        if (checked) {_checked='checked'} else {_checked=''}
+        sum += '<div><input id='+ck_item+' type=checkbox '+_checked+'></div>'
+        if (data[3]=='') {
+            sum += '<div></div>'
+        } else {
+            sum += '<div><a href=#'+item+'><img src=../static/search.png></img></a></div>'
+        }
         f = 'dashboard_item(\''+item+'\',\''+url+'\')'
-        sum += '<a onclick='+f+'><img src=../static/refresh16.png></img></a>'
-        sum += '</div>'
+        sum += '<div><a onclick='+f+'><img src=../static/refresh16.png></img></a></div>'
         sum += '<div>'+date+'</div>'
         bak = ''
         try {
@@ -2068,8 +2080,17 @@ function dashboard_item(item, url){
         sum += '<div id=spark_'+item+' class=inlinesparkline>'+bak+'</div>'
         sum += '<div id=spark_data_'+item+' style="display:none">'+bak+'</div>'
         $('#sum_'+item).html(sum)
+        $('#'+ck_item).click(function(){
+            dashboard_toggle(item,toggle_url)
+            checked ^= true
+            dashboard_item(item, url, toggle_url, checked)
+        })
         $('#spark_'+item).sparkline()
-        setTimeout(function(){dashboard_item(item, url)}, 60000)
+        if (checked) {
+            setTimeout(function(){
+                dashboard_item(item, url, toggle_url, checked)
+            }, 60000)
+        }
     })
 }
 </script>

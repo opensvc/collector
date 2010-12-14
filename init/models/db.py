@@ -889,6 +889,12 @@ db.define_table('user_prefs_columns',
     Field('upc_visible', 'boolean'),
     migrate=False)
 
+db.define_table('upc_dashboard',
+    Field('id'),
+    Field('upc_user_id', 'integer'),
+    Field('upc_dashboard', 'string'),
+    migrate=False)
+
 db.define_table('sym_upload',
     Field('archive','upload', requires=IS_NOT_EMPTY()),
     Field('batched','integer', writable=False),

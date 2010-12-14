@@ -836,4 +836,12 @@ alter table log add index idx1 (log_user);
 
 alter table log add index idx2 (log_date);
 
+CREATE TABLE `upc_dashboard` (
+  `id` integer  NOT NULL AUTO_INCREMENT,
+  `upc_user_id` integer  NOT NULL,
+  `upc_dashboard` varchar(100)  NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `index_1` (`upc_user_id`,`upc_dashboard`)
+);
+
 

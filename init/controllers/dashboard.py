@@ -171,11 +171,13 @@ def svcmon_not_updated(svcnotupdated, title):
 
 @service.json
 def svcnotupdated():
+    title = 'Service status not updated'
+    if request.args[2] == 'false':
+        return ['', '', '', '', str(T(title))]
     q = db.v_svcmon.mon_updated<tmo
     q &= _where(None, 'v_svcmon', domain_perms(), 'mon_svcname')
     q = apply_db_filters(q, 'v_svcmon')
     svcnotupdated = db(q).select(orderby=~db.v_svcmon.mon_updated, limitby=(0,50))
-    title = 'Service status not updated'
     return [0, 1, len(svcnotupdated), str(svcmon_not_updated(svcnotupdated, title)), str(T(title))]
 
 
@@ -260,6 +262,9 @@ def node_checks(checks, title):
 
 @service.json
 def checks():
+    title = 'Node check alerts'
+    if request.args[2] == 'false':
+        return ['', '', '', '', str(T(title))]
     q = db.v_checks.chk_value < db.v_checks.chk_low
     q |= db.v_checks.chk_value > db.v_checks.chk_high
     query = _where(None, 'v_checks', domain_perms(), 'chk_nodename')
@@ -267,7 +272,6 @@ def checks():
     query &= db.v_checks.chk_nodename==db.v_nodes.nodename
     query = apply_db_filters(query, 'v_nodes')
     checks = db(query).select()
-    title = 'Node check alerts'
     return [0, 1, len(checks), str(node_checks(checks, title)), str(T(title))]
 
 
@@ -323,13 +327,15 @@ def last_changes(data, title):
 
 @service.json
 def lastchanges():
+    title = "Last service status changes"
+    if request.args[2] == 'false':
+        return ['', '', '', '', str(T(title))]
     query = db.svcmon_log.mon_end>one_days_ago
     query &= db.svcmon_log.mon_svcname==db.v_svcmon.mon_svcname
     query &= db.svcmon_log.mon_nodname==db.v_svcmon.mon_nodname
     query &= _where(None, 'svcmon_log', domain_perms(), 'mon_svcname')
     query = apply_db_filters(query, 'v_svcmon')
     lastchanges = db(query).select(orderby=~db.svcmon_log.mon_begin, limitby=(0,20))
-    title = "Last service status changes"
     onehourago = now - datetime.timedelta(minutes=60)
     return [0, 20,
             len([c for c in lastchanges if c.svcmon_log.mon_begin > onehourago]),
@@ -359,12 +365,14 @@ def svc_with_errors(data, title):
 
 @service.json
 def svcwitherrors():
+    title = "Services with errors"
+    if request.args[2] == 'false':
+        return ['', '', '', '', str(T(title))]
     query = (db.v_svcmon.err>0)
     query &= _where(None, 'v_svcmon', domain_perms(), 'mon_svcname')
     query = apply_db_filters(query, 'v_svcmon')
     data = db(query).select(orderby=~db.v_svcmon.err,
                             groupby=db.v_svcmon.mon_svcname)
-    title = "Services with errors"
     return [0, 1, len(data),
             str(svc_with_errors(data, title)), str(T(title))]
 
@@ -443,6 +451,9 @@ def pkg_diff(data, title):
 
 @service.json
 def pkgdiff():
+    title = "Package differences amongst cluster nodes"
+    if request.args[2] == 'false':
+        return ['', '', '', '', str(T(title))]
     data = {}
     clusters = {}
     query = _where(None, 'v_svc_group_status', domain_perms(), 'svcname')
@@ -476,7 +487,6 @@ def pkgdiff():
             continue
         data[key] = x[0][0]
 
-    title = "Package differences amongst cluster nodes"
     return [0, 1, len(data),
             str(pkg_diff(data, title)), str(T(title))]
 
@@ -504,6 +514,9 @@ def svc_not_up(data, title):
 
 @service.json
 def svcnotup():
+    title = "Services not up"
+    if request.args[2] == 'false':
+        return ['', '', '', '', str(T(title))]
     query = (~db.v_svc_group_status.groupstatus.like("up,%"))
     query &= (~db.v_svc_group_status.groupstatus.like("%,up,%"))
     query &= (~db.v_svc_group_status.groupstatus.like("%,up"))
@@ -513,7 +526,6 @@ def svcnotup():
     query = apply_db_filters(query, 'v_svcmon')
     data = db(query).select(groupby=db.v_svc_group_status.svcname, orderby=db.v_svc_group_status.svcname)
 
-    title = "Services not up"
     return [0, 1, len(data),
             str(svc_not_up(data, title)), str(T(title))]
 
@@ -541,6 +553,9 @@ def svc_not_on_primary(data, title):
 
 @service.json
 def svcnotonprimary():
+    title = "Services not up on primary"
+    if request.args[2] == 'false':
+        return ['', '', '', '', str(T(title))]
     query = _where(None, 'v_svcmon', domain_perms(), 'mon_svcname')
     query &= (db.v_svcmon.svc_autostart==db.v_svcmon.mon_nodname)
     query &= ((db.v_svcmon.mon_overallstatus!="up")|(db.v_svcmon.mon_updated<tmo))
@@ -552,7 +567,6 @@ def svcnotonprimary():
     query &= q
     query = apply_db_filters(query, 'v_svcmon')
     data = db(query).select()
-    title = "Services not up on primary"
     return [0, 1, len(data),
             str(svc_not_on_primary(data, title)), str(T(title))]
 
@@ -575,10 +589,12 @@ def app_wo_resp(data, title):
 
 @service.json
 def appwithoutresp():
+    title = "Application without responsibles"
+    if request.args[2] == 'false':
+        return ['', '', '', '', str(T(title))]
     query = (db.v_apps.responsibles==None)
     query |= (db.v_apps.responsibles=="")
     data = db(query).select(db.v_apps.app)
-    title = "Application without responsibles"
     return [0, 1, len(data),
             str(app_wo_resp(data, title)), str(T(title))]
 
@@ -601,6 +617,9 @@ def warranty_end(data, title):
 
 @service.json
 def warrantyend():
+    title = "Nodes close to warranty end"
+    if request.args[2] == 'false':
+        return ['', '', '', '', str(T(title))]
     query = db.v_nodes.warranty_end < now + datetime.timedelta(days=30)
     query &= db.v_nodes.warranty_end != "0000-00-00 00:00:00"
     query &= db.v_nodes.warranty_end is not None
@@ -609,7 +628,6 @@ def warrantyend():
     data = db(query).select(db.v_nodes.nodename,
                             db.v_nodes.warranty_end,
                             orderby=db.v_nodes.warranty_end)
-    title = "Nodes close to warranty end"
     return [0, 1, len(data),
             str(warranty_end(data, title)), str(T(title))]
 
@@ -633,6 +651,9 @@ def obs_os_alert(data, title):
 
 @service.json
 def obsosalert():
+    title = "Nodes with obsolescent operating system (alert)"
+    if request.args[2] == 'false':
+        return ['', '', '', '', str(T(title))]
     query = (db.obsolescence.obs_alert_date!=None)&(db.obsolescence.obs_alert_date!="0000-00-00")&(db.obsolescence.obs_alert_date<now)
     query &= _where(None, 'v_nodes', domain_perms(), 'nodename')
     query = apply_db_filters(query, 'v_nodes')
@@ -644,7 +665,6 @@ def obsosalert():
                             left=db.v_nodes.on(join),
                             orderby=db.obsolescence.obs_alert_date|db.v_nodes.nodename
                            )
-    title = "Nodes with obsolescent operating system (alert)"
     return [0, 1, len(data),
             str(obs_os_alert(data, title)), str(T(title))]
 
@@ -668,6 +688,9 @@ def obs_os_warn(data, title):
 
 @service.json
 def obsoswarn():
+    title = "Nodes with obsolescent operating system (warn)"
+    if request.args[2] == 'false':
+        return ['', '', '', '', str(T(title))]
     warn = (db.obsolescence.obs_warn_date!=None)&(db.obsolescence.obs_warn_date!="0000-00-00")&(db.obsolescence.obs_warn_date<now)
     alert = (db.obsolescence.obs_alert_date==None)|(db.obsolescence.obs_alert_date=="0000-00-00")|(db.obsolescence.obs_alert_date>=now)
     query = warn & alert
@@ -681,7 +704,6 @@ def obsoswarn():
                             left=db.v_nodes.on(join),
                             orderby=db.obsolescence.obs_warn_date|db.v_nodes.nodename
                            )
-    title = "Nodes with obsolescent operating system (warn)"
     return [0, 1, len(data),
             str(obs_os_warn(data, title)), str(T(title))]
 
@@ -705,6 +727,9 @@ def obs_hw_alert(data, title):
 
 @service.json
 def obshwalert():
+    title = "Nodes with obsolescent hardware (alert)"
+    if request.args[2] == 'false':
+        return ['', '', '', '', str(T(title))]
     query = (db.obsolescence.obs_alert_date!=None)&(db.obsolescence.obs_alert_date!="0000-00-00")&(db.obsolescence.obs_alert_date<now)
     query &= _where(None, 'v_nodes', domain_perms(), 'nodename')
     query = apply_db_filters(query, 'v_nodes')
@@ -716,7 +741,6 @@ def obshwalert():
                             left=db.v_nodes.on(join),
                             orderby=db.obsolescence.obs_alert_date|db.v_nodes.nodename
                            )
-    title = "Nodes with obsolescent hardware (alert)"
     return [0, 1, len(data),
             str(obs_hw_alert(data, title)), str(T(title))]
 
@@ -740,6 +764,9 @@ def obs_hw_warn(data, title):
 
 @service.json
 def obshwwarn():
+    title = "Nodes with obsolescent hardware (warn)"
+    if request.args[2] == 'false':
+        return ['', '', '', '', str(T(title))]
     warn = (db.obsolescence.obs_warn_date!=None)&(db.obsolescence.obs_warn_date!="0000-00-00")&(db.obsolescence.obs_warn_date<now)
     alert = (db.obsolescence.obs_alert_date==None)|(db.obsolescence.obs_alert_date=="0000-00-00")|(db.obsolescence.obs_alert_date>=now)
     query = warn & alert
@@ -753,7 +780,6 @@ def obshwwarn():
                             left=db.v_nodes.on(join),
                             orderby=db.obsolescence.obs_warn_date|db.v_nodes.nodename
                            )
-    title = "Nodes with obsolescent hardware (warn)"
     return [0, 1, len(data),
             str(obs_hw_warn(data, title)), str(T(title))]
 
@@ -806,6 +832,9 @@ def obs_miss(obswarnmiss, obsalertmiss, title):
 
 @service.json
 def obsmiss():
+    title = "Items with missing obsolescence information"
+    if request.args[2] == 'false':
+        return ['', '', '', '', str(T(title))]
     rows = db(db.v_users.id==session.auth.user.id).select(db.v_users.manager)
     if len(rows) == 1 and rows[0].manager == 1:
         query = (db.obsolescence.obs_warn_date==None)|(db.obsolescence.obs_warn_date=="0000-00-00")
@@ -832,7 +861,6 @@ groupby=db.obsolescence.obs_name)
     else:
         obswarnmiss = 0
         obsalertmiss = 0
-    title = "Items with missing obsolescence information"
     return [0, 1, obswarnmiss+obsalertmiss,
             str(obs_miss(obswarnmiss, obsalertmiss, title)), str(T(title))]
 
@@ -862,11 +890,13 @@ def nodes_without_asset(data, title):
 
 @service.json
 def nodeswithoutasset():
+    title = "Nodes without asset information"
+    if request.args[2] == 'false':
+        return ['', '', '', '', str(T(title))]
     q = ~db.svcmon.mon_nodname.belongs(db()._select(db.nodes.nodename))
     q &= _where(None, 'svcmon', domain_perms(), 'mon_nodname')
     data = db(q).select(db.svcmon.mon_nodname,
                         groupby=db.svcmon.mon_nodname)
-    title = "Nodes without asset information"
     return [0, 1, len(data),
             str(nodes_without_asset(data, title)), str(T(title))]
 
@@ -905,13 +935,15 @@ def frozen_t(data, title):
 
 @service.json
 def frozen():
+    title = "Frozen services"
+    if request.args[2] == 'false':
+        return ['', '', '', '', str(T(title))]
     query = db.v_svcmon.mon_frozen==1
     query &= _where(None, 'v_svcmon', domain_perms(), 'mon_nodname')
     query = apply_db_filters(query, 'v_svcmon')
     data = db(query).select(db.v_svcmon.mon_svcname,
                             db.v_svcmon.mon_nodname,
                             orderby=db.v_svcmon.mon_svcname)
-    title = "Frozen services"
     return [0, 1, len(data),
             str(frozen_t(data, title)), str(T(title))]
 
@@ -957,6 +989,9 @@ def netdev_err(data, title):
 
 @service.json
 def netdeverrs():
+    title = "Nodes with network device errors in the last day"
+    if request.args[2] == 'false':
+        return ['', '', '', '', str(T(title))]
     q = db.v_stats_netdev_err_avg_last_day.avgrxerrps > 0
     q |= db.v_stats_netdev_err_avg_last_day.avgtxerrps > 0
     q |= db.v_stats_netdev_err_avg_last_day.avgcollps > 0
@@ -967,8 +1002,19 @@ def netdeverrs():
     query = apply_db_filters(query, 'v_nodes')
     query &= q
     data = db(query).select()
-    title = "Nodes with network device errors in the last day"
     return [0, 1, len(data),
             str(netdev_err(data, title)), str(T(title))]
+
+@service.json
+def toggle():
+    dashboard = request.args[2]
+    u = auth.user_id
+    q = db.upc_dashboard.upc_user_id==u
+    q &= db.upc_dashboard.upc_dashboard==dashboard
+    rows = db(q).select()
+    if len(rows) > 0:
+        db(q).delete()
+    else:
+        db.upc_dashboard.insert(upc_user_id=u, upc_dashboard=dashboard)
 
 

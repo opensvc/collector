@@ -36,10 +36,21 @@ def call():
 
 @auth.requires_login()
 def index():
+    q = db.upc_dashboard.upc_user_id==auth.user_id
+    rows = db(q).select(db.upc_dashboard.upc_dashboard)
+    active = map(lambda x: x.upc_dashboard, rows)
+
     def js(item):
-        return """dashboard_item('%(item)s', '%(url)s');"""%dict(
+        if item in active:
+            checked = 'false'
+        else:
+            checked = 'true'
+        return """dashboard_item('%(item)s', '%(url)s', '%(toggle_url)s', %(checked)s);"""%dict(
                     item=item,
-                    url=URL(r=request, c='dashboard', f='call/json/'+item))
+                    checked=checked,
+                    url=URL(r=request, c='dashboard', f='call/json/'+item),
+                    toggle_url=URL(r=request, c='dashboard', f='call/json/toggle'),
+                  )
 
     d = DIV(
           DIV(
@@ -48,6 +59,8 @@ def index():
                 DIV(
                 DIV(B(T('Report')), _class='title summary_header'),
                 DIV(B(T('Status')), _class='summary_header'),
+                DIV(_class='summary_header'),
+                DIV(_class='summary_header'),
                 DIV(_class='summary_header'),
                 DIV(B(T('Updated')), _class='summary_header'),
                 DIV(B(T('History')), _class='summary_header'),
