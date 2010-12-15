@@ -1172,10 +1172,11 @@ class table_svcmon(HtmlTable):
                     ),
                     _href=URL(
                             r=request, c='svcactions',
-                            f='svcactions?svcname=%(svc)s&status_log=empty&begin=>%(b)s'%dict(
-                              svc=o.mon_svcname,
-                              b=yesterday)
-                    ),
+                            f='svcactions',
+                            vars={'actions_f_svcname': o.mon_svcname,
+                                  'actions_f_status_log': 'empty',
+                                  'actions_f_begin': '>'+yesterday,
+                                  'clear_filters': 'true'})
                   )
         else:
             act = ''
