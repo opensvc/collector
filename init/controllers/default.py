@@ -1318,7 +1318,7 @@ def do_action(ids, action=None):
 
 @auth.requires_login()
 def ajax_svcmon_col_values():
-    t = table_svcmon('v_svcmon', 'ajax_svcmon')
+    t = table_svcmon('svcmon', 'ajax_svcmon')
     col = request.args[0]
     o = db.v_svcmon[col]
     q = _where(None, 'v_svcmon', domain_perms(), 'mod_nodname')
