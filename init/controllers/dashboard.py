@@ -132,7 +132,7 @@ def svcmon_not_updated_line(line, cellclass):
       TD(
         A(
           line.mon_svcname,
-          _href=URL(r=request, f='svcmon',
+          _href=URL(r=request, c='default', f='svcmon',
                     vars={'svcmon_f_svc_name':line.mon_svcname,
                           'clear_filters': 'true'})
         ),
@@ -141,7 +141,7 @@ def svcmon_not_updated_line(line, cellclass):
       TD(
         A(
           line.mon_nodname,
-          _href=URL(r=request, f='svcmon',
+          _href=URL(r=request, c='default', f='svcmon',
                     vars={'svcmon_f_mon_nodname':line.mon_nodname,
                           'clear_filters': 'true'})
         ),
@@ -194,7 +194,7 @@ def node_checks_line(line, cellclass):
            TD(
              A(
                line.v_checks.chk_nodename,
-               _href=URL(r=request, f='svcmon',
+               _href=URL(r=request, c='default', f='svcmon',
                          vars={'svcmon_f_mon_nodname':line.v_checks.chk_nodename,
                                'clear_filters': 'true'}),
              ),
@@ -292,7 +292,7 @@ def last_changes_line(line, cellclass):
       TD(
         A(
           line.svcmon_log.mon_svcname,
-          _href=URL(r=request, f='svcmon',
+          _href=URL(r=request, c='default', f='svcmon',
                     vars={'svcmon_f_svc_name':line.svcmon_log.mon_svcname,
                           'clear_filters': 'true'}),
         ),
@@ -301,7 +301,7 @@ def last_changes_line(line, cellclass):
       TD(
         A(
           line.svcmon_log.mon_nodname,
-          _href=URL(r=request, f='svcmon',
+          _href=URL(r=request, c='default', f='svcmon',
                     vars={'svcmon_f_mon_nodname':line.svcmon_log.mon_nodname,
                           'clear_filters': 'true'}),
         ),
@@ -346,10 +346,35 @@ def lastchanges():
 """
 def svc_with_errors_line(line, cellclass):
     tr = TR(
-      TD(A(line.svc_name, _href=URL(r=request, f='svcmon', vars={'svcmon_f_svc_name':line.svc_name, 'clear_filters': 'true'})), _class=cellclass),
-      TD(line.svc_type, _class=cellclass),
-      TD(A(line.err, _href=URL(r=request,c='svcactions',f='svcactions', vars={'actions_f_svcname': line.svc_name, 'actions_f_status': 'err', 'actions_f_ack': '!1|empty', 'clear_filters': 'true'})), _class=cellclass),
-      TD(svc_status(line, cellclass), _class=cellclass, _style="text-align:center"),
+      TD(
+        A(
+          line.svc_name,
+          _href=URL(r=request, c='default', f='svcmon',
+                    vars={'svcmon_f_svc_name':line.svc_name,
+                          'clear_filters': 'true'}),
+        ),
+        _class=cellclass,
+      ),
+      TD(
+        line.svc_type,
+        _class=cellclass,
+      ),
+      TD(
+        A(
+          line.err,
+          _href=URL(r=request,c='svcactions',f='svcactions',
+                    vars={'actions_f_svcname': line.svc_name,
+                          'actions_f_status': 'err',
+                          'actions_f_ack': '!1|empty',
+                          'clear_filters': 'true'}),
+        ),
+        _class=cellclass,
+      ),
+      TD(
+        svc_status(line, cellclass),
+        _class=cellclass,
+        _style="text-align:center",
+      ),
     )
     return tr
 
@@ -495,10 +520,27 @@ def pkgdiff():
 """
 def svc_not_up_line(line, cellclass):
     tr = TR(
-      TD(A(line.v_svc_group_status.svcname, _href=URL(r=request, f='svcmon', vars={'svcmon_f_svc_name':line.v_svc_group_status.svcname, 'clear_filters': 'true'})), _class=cellclass),
-      TD(line.v_svc_group_status.svctype, _class=cellclass),
-      TD(line.v_svc_group_status.nodes.replace(',', ', '), _class=cellclass),
-      TD(line.v_svc_group_status.groupstatus.replace(',', ', '), _class=cellclass),
+      TD(
+        A(
+          line.v_svc_group_status.svcname,
+           _href=URL(r=request, c='default', f='svcmon',
+                     vars={'svcmon_f_svc_name':line.v_svc_group_status.svcname,
+                           'clear_filters': 'true'}),
+        ),
+        _class=cellclass,
+      ),
+      TD(
+        line.v_svc_group_status.svctype,
+        _class=cellclass,
+      ),
+      TD(
+        line.v_svc_group_status.nodes.replace(',', ', '),
+        _class=cellclass,
+      ),
+      TD(
+        line.v_svc_group_status.groupstatus.replace(',', ', '),
+        _class=cellclass,
+      ),
     )
     return tr
 
@@ -534,10 +576,33 @@ def svcnotup():
 """
 def svc_not_on_primary_line(line, cellclass):
     tr = TR(
-      TD(A(line.v_svcmon.svc_name, _href=URL(r=request, f='svcmon', vars={'svcmon_f_svc_name':line.v_svcmon.svc_name, 'clear_filters': 'true'})), _class=cellclass),
-      TD(A(line.v_svcmon.svc_autostart, _href=URL(r=request, f='svcmon', vars={'svcmon_f_mon_nodname':line.v_svcmon.svc_autostart, 'clear_filters': 'true'})), _class=cellclass),
-      TD(line.v_svcmon.svc_type, _class=cellclass),
-      TD(svc_status(line.v_svcmon, cellclass), _class=cellclass, _style="text-align:center"),
+      TD(
+        A(
+          line.v_svcmon.svc_name,
+          _href=URL(r=request, c='default', f='svcmon',
+                    vars={'svcmon_f_svc_name':line.v_svcmon.svc_name,
+                          'clear_filters': 'true'}),
+        ),
+        _class=cellclass,
+      ),
+      TD(
+        A(
+          line.v_svcmon.svc_autostart,
+          _href=URL(r=request, c='default', f='svcmon',
+                    vars={'svcmon_f_mon_nodname':line.v_svcmon.svc_autostart,
+                          'clear_filters': 'true'}),
+        ),
+        _class=cellclass,
+      ),
+      TD(
+        line.v_svcmon.svc_type,
+        _class=cellclass,
+      ),
+      TD(
+        svc_status(line.v_svcmon, cellclass),
+        _class=cellclass,
+        _style="text-align:center",
+      ),
     )
     return tr
 
@@ -603,8 +668,19 @@ def appwithoutresp():
 """
 def warranty_end_line(line, cellclass):
     tr = TR(
-      TD(A(line.nodename, _href=URL(r=request, f='svcmon', vars={'svcmon_f_mon_nodname':line.nodename, 'clear_filters': 'true'})), _class=cellclass),
-      TD(line.warranty_end, _class=cellclass),
+      TD(
+        A(
+          line.nodename,
+          _href=URL(r=request, c='default', f='svcmon',
+                    vars={'svcmon_f_mon_nodname':line.nodename,
+                          'clear_filters': 'true'}),
+        ),
+        _class=cellclass,
+      ),
+      TD(
+        line.warranty_end,
+        _class=cellclass,
+      ),
     )
     return tr
 
@@ -636,9 +712,23 @@ def warrantyend():
 """
 def obs_os_alert_line(line, cellclass):
     tr = TR(
-      TD(A(line.v_nodes.nodename, _href=URL(r=request, f='svcmon', vars={'svcmon_f_mon_nodname':line.v_nodes.nodename, 'clear_filters': 'true'})), _class=cellclass),
-      TD(line.obsolescence.obs_name, _class=cellclass),
-      TD(line.obsolescence.obs_alert_date, _class=cellclass),
+      TD(
+        A(
+          line.v_nodes.nodename,
+          _href=URL(r=request, c='default', f='svcmon',
+                    vars={'svcmon_f_mon_nodname':line.v_nodes.nodename,
+                          'clear_filters': 'true'}),
+        ),
+        _class=cellclass,
+      ),
+      TD(
+        line.obsolescence.obs_name,
+        _class=cellclass,
+      ),
+      TD(
+        line.obsolescence.obs_alert_date,
+        _class=cellclass,
+      ),
     )
     return tr
 
@@ -673,9 +763,23 @@ def obsosalert():
 """
 def obs_os_warn_line(line, cellclass):
     tr = TR(
-      TD(A(line.v_nodes.nodename, _href=URL(r=request, f='svcmon', vars={'svcmon_f_mon_nodname':line.v_nodes.nodename, 'clear_filters': 'true'})), _class=cellclass),
-      TD(line.obsolescence.obs_name, _class=cellclass),
-      TD(line.obsolescence.obs_warn_date, _class=cellclass),
+      TD(
+        A(
+          line.v_nodes.nodename,
+          _href=URL(r=request, c='default', f='svcmon',
+                    vars={'svcmon_f_mon_nodname':line.v_nodes.nodename,
+                          'clear_filters': 'true'}),
+        ),
+        _class=cellclass,
+      ),
+      TD(
+        line.obsolescence.obs_name,
+        _class=cellclass,
+      ),
+      TD(
+        line.obsolescence.obs_warn_date,
+        _class=cellclass,
+      ),
     )
     return tr
 
@@ -712,9 +816,23 @@ def obsoswarn():
 """
 def obs_hw_alert_line(line, cellclass):
     tr = TR(
-      TD(A(line.v_nodes.nodename, _href=URL(r=request, f='svcmon', vars={'svcmon_f_mon_nodname':line.v_nodes.nodename, 'clear_filters': 'true'})), _class=cellclass),
-      TD(line.obsolescence.obs_name, _class=cellclass),
-      TD(line.obsolescence.obs_alert_date, _class=cellclass),
+      TD(
+        A(
+          line.v_nodes.nodename,
+          _href=URL(r=request, c='default', f='svcmon',
+                    vars={'svcmon_f_mon_nodname':line.v_nodes.nodename,
+                          'clear_filters': 'true'}),
+        ),
+        _class=cellclass,
+      ),
+      TD(
+        line.obsolescence.obs_name,
+        _class=cellclass,
+      ),
+      TD(
+        line.obsolescence.obs_alert_date,
+        _class=cellclass,
+      ),
     )
     return tr
 
@@ -749,9 +867,23 @@ def obshwalert():
 """
 def obs_hw_warn_line(line, cellclass):
     tr = TR(
-      TD(A(line.v_nodes.nodename, _href=URL(r=request, f='svcmon', vars={'svcmon_f_mon_nodname':line.v_nodes.nodename, 'clear_filters': 'true'})), _class=cellclass),
-      TD(line.obsolescence.obs_name, _class=cellclass),
-      TD(line.obsolescence.obs_warn_date, _class=cellclass),
+      TD(
+        A(
+          line.v_nodes.nodename,
+          _href=URL(r=request, c='default', f='svcmon',
+                    vars={'svcmon_f_mon_nodname':line.v_nodes.nodename,
+                          'clear_filters': 'true'}),
+        ),
+        _class=cellclass,
+      ),
+      TD(
+        line.obsolescence.obs_name,
+        _class=cellclass,
+      ),
+      TD(
+        line.obsolescence.obs_warn_date,
+        _class=cellclass,
+      ),
     )
     return tr
 
@@ -805,8 +937,7 @@ def obs_miss(obswarnmiss, obsalertmiss, title):
           TD(T("Warn")),
           TD(
             A(obswarnmiss,
-              _href=URL(r=request, c='obsolescence',
-                        f='obsolescence_config',
+              _href=URL(r=request, c='obsolescence', f='obsolescence_config',
                         vars={'obs_f_obs_warn_date': 'empty|0000-00-00 00:00:00',
                               'clear_filters': 'true'})
             ),
@@ -817,8 +948,7 @@ def obs_miss(obswarnmiss, obsalertmiss, title):
           TD(
             A(
               obsalertmiss,
-              _href=URL(r=request, c='obsolescence',
-                        f='obsolescence_config',
+              _href=URL(r=request, c='obsolescence', f='obsolescence_config',
                         vars={'obs_f_obs_alert_date': 'empty|0000-00-00 00:00:00',
                               'clear_filters': 'true'}),
             ),
@@ -872,7 +1002,7 @@ def nodes_without_asset_line(line, cellclass):
       TD(
         A(
           line.mon_nodname,
-          _href=URL(r=request, f='svcmon',
+          _href=URL(r=request, c='default', f='svcmon',
                     vars={'svcmon_f_mon_nodname':line.mon_nodname,
                           'clear_filters': 'true'}),
         ),
@@ -908,7 +1038,7 @@ def frozen_line(line, cellclass):
       TD(
         A(
           line.mon_svcname,
-          _href=URL(r=request, f='svcmon',
+          _href=URL(r=request, c='default', f='svcmon',
                     vars={'svcmon_f_svc_name':line.mon_svcname,
                           'clear_filters': 'true'}),
         ),
@@ -917,7 +1047,7 @@ def frozen_line(line, cellclass):
       TD(
         A(
           line.mon_nodname,
-          _href=URL(r=request, f='svcmon',
+          _href=URL(r=request, c='default', f='svcmon',
                     vars={'svcmon_f_mon_nodname':line.mon_nodname,
                           'clear_filters': 'true'}),
         ),
@@ -955,8 +1085,8 @@ def netdev_err_line(line, cellclass):
       TD(
         A(
           line.v_stats_netdev_err_avg_last_day.nodename,
-          _href=URL(r=request, f='svcmon',
-                    vars={'mon_nodname':line.v_stats_netdev_err_avg_last_day.nodename})
+          _href=URL(r=request, c='default', f='svcmon',
+                    vars={'svcmon_f_mon_nodname':line.v_stats_netdev_err_avg_last_day.nodename})
         ),
         _class=cellclass
       ),
