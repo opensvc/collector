@@ -194,8 +194,8 @@ def node_checks_line(line, cellclass):
            TD(
              A(
                line.v_checks.chk_nodename,
-               _href=URL(r=request, c='default', f='svcmon',
-                         vars={'svcmon_f_mon_nodname':line.v_checks.chk_nodename,
+               _href=URL(r=request, c='checks', f='checks',
+                         vars={'checks_f_chk_nodename':line.v_checks.chk_nodename,
                                'clear_filters': 'true'}),
              ),
              _class=cellclass,
