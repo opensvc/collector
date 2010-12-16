@@ -291,7 +291,7 @@ class table_checks(HtmlTable):
         self.checkboxes = True
         self.extraline = True
         self.span = 'chk_nodename'
-        if 'Manager' in user_groups():
+        if 'CheckManager' in user_groups():
             self.additional_tools.append('set_low_threshold')
             self.additional_tools.append('set_high_threshold')
             self.additional_tools.append('reset_thresholds')
