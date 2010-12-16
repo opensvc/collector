@@ -848,3 +848,6 @@ alter table comp_rulesets_variables drop index idx1;
 
 alter table comp_rulesets_variables modify column var_value text NOT NULL;
 
+ALTER TABLE nodes CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+

@@ -330,16 +330,15 @@ def lastchanges():
     title = "Last service status changes"
     if request.args[2] == 'false':
         return ['', '', '', '', str(T(title))]
-    query = db.svcmon_log.mon_end>one_days_ago
+    onehourago = now - datetime.timedelta(minutes=60)
+    query = db.svcmon_log.mon_begin>onehourago
     query &= db.svcmon_log.mon_svcname==db.v_svcmon.mon_svcname
     query &= db.svcmon_log.mon_nodname==db.v_svcmon.mon_nodname
     query &= _where(None, 'svcmon_log', domain_perms(), 'mon_svcname')
     query = apply_db_filters(query, 'v_svcmon')
+    n = db(query).count()
     lastchanges = db(query).select(orderby=~db.svcmon_log.mon_begin, limitby=(0,20))
-    onehourago = now - datetime.timedelta(minutes=60)
-    return [0, 20,
-            len([c for c in lastchanges if c.svcmon_log.mon_begin > onehourago]),
-            str(last_changes(lastchanges, title)), title, '/h']
+    return [0, 20, n, str(last_changes(lastchanges, title)), title, '/h']
 
 
 """ Services with unacknowleged errors

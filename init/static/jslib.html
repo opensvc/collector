@@ -2048,7 +2048,7 @@ function dashboard_item(item, url, toggle_url, checked){
         $('#'+item).html(data[3])
         sum = '<div class="title">'+title+'</div>'
         if (val>=max || val<min) {
-            sum += '<div class="current_page">'+val+'</div>'
+            sum += '<div class="current_page">'+val+unit+'</div>'
         } else {
             sum += '<div>'+val+unit+'</div>'
         }
