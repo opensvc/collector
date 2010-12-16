@@ -49,7 +49,7 @@ class HtmlTable(object):
         self.id_page = '_'.join((self.id, 'page'))
         self.cellclasses = {'cell1': 'cell2', 'cell2': 'cell1'}
         self.cellclass = 'cell1'
-        self.upc_table = ''
+        self.upc_table = self.id
         self.last = None
         self.column_filter_reset = '**clear**'
 
