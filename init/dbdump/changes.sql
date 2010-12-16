@@ -844,4 +844,7 @@ CREATE TABLE `upc_dashboard` (
   UNIQUE KEY `index_1` (`upc_user_id`,`upc_dashboard`)
 );
 
+alter table comp_rulesets_variables drop index idx1;
+
+alter table comp_rulesets_variables modify column var_value text NOT NULL;
 

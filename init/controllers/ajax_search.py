@@ -23,8 +23,10 @@ def ajax_search():
            )
 
 def format_app(pattern):
-    o = db.apps.app
+    o = db.v_svcmon.svc_app
     q = o.like(pattern)
+    q = _where(q, 'v_svcmon', domain_perms(), 'mon_svcname')
+    q = apply_db_filters(q, 'v_svcmon')
     rows = db(q).select(o, orderby=o, groupby=o, limitby=(0,max_search_result))
     n = len(db(q).select(o, groupby=o))
 
@@ -39,24 +41,24 @@ def format_app(pattern):
                 ),
                 TD(
                   P(
-                    row.app
+                    row.svc_app
                   ),
                   A(
                     T('status'),
                     _href=URL(r=request, c='default', f='svcmon',
-                              vars={'svcmon_f_svc_app': row.app,
+                              vars={'svcmon_f_svc_app': row.svc_app,
                                     'clear_filters': 'true'})
                   ),
                   A(
                     T('availability'),
                     _href=URL(r=request, c='svcmon_log', f='svcmon_log',
-                              vars={'svcmon_log_f_svc_app': row.app,
+                              vars={'svcmon_log_f_svc_app': row.svc_app,
                                     'clear_filters': 'true'})
                   ),
                   A(
                     T('application'),
                     _href=URL(r=request, c='apps', f='apps',
-                              vars={'apps_f_app': row.app,
+                              vars={'apps_f_app': row.svc_app,
                                     'clear_filters': 'true'})
                   ),
                 ),
@@ -69,9 +71,10 @@ def format_app(pattern):
     return DIV(*d)
 
 def format_svc(pattern):
-    o = db.svcmon.mon_svcname
+    o = db.v_svcmon.mon_svcname
     q = o.like(pattern)
-    q = _where(q, 'svcmon', domain_perms(), 'mon_svcname')
+    q = _where(q, 'v_svcmon', domain_perms(), 'mon_svcname')
+    q = apply_db_filters(q, 'v_svcmon')
     rows = db(q).select(o, orderby=o, groupby=o, limitby=(0,max_search_result))
     n = len(db(q).select(o, groupby=o))
 
@@ -122,9 +125,10 @@ def format_svc(pattern):
     return DIV(*d)
 
 def format_node(pattern):
-    o = db.nodes.nodename
+    o = db.v_nodes.nodename
     q = o.like(pattern)
-    q = _where(q, 'nodes', domain_perms(), 'nodename')
+    q = _where(q, 'v_nodes', domain_perms(), 'nodename')
+    q = apply_db_filters(q, 'v_nodes')
     rows = db(q).select(o, orderby=o, groupby=o, limitby=(0,max_search_result))
     n = len(db(q).select(o, groupby=o))
 
