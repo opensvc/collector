@@ -546,6 +546,7 @@
 'Wave': 'Vague',
 'Welcome to web2py': 'Bienvenue sur web2py',
 'You are not authorized to access this function': "Vous n'êtes pas autorisé à accéder à cette fonction",
+'Your browser is not supported.': 'Your browser is not supported.',
 'Your password is: %(password)s': 'Votre mot de passe est %(password)s',
 'ZIP': 'Code postal',
 '[%(app)s] application has no responsible': "[%(app)s] l'application n'a pas de responsable désigné",

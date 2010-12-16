@@ -8,6 +8,9 @@
     <link rel="SHORTCUT ICON" href="{{=URL(r=request,c='static',f='favicon.ico')}}">
   </head>
   <body>
+    {{if 'MSIE 6' in request.env.http_user_agent:}}
+    {{=redirect(URL(r=request, c='unsupported', f='index'))}}
+    {{pass}}
     <div class=header>
       {{=tool_search()}}
       <div class='floatw'>

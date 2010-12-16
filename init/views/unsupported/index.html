@@ -1,18 +1,3 @@
-{{
-title = {'login': 'Login',
-         'retrieve_password': 'Password retrieve',
-         'change_password': 'Change password',
-         'not_authorized': 'You are not authorized to access this function',
-         'profile': 'Edit profile',
-         'register': 'Register'}
-
-if request.args[0] in title:
-    t = title[request.args[0]]
-else:
-    t = 'Not found'
-pass
-}}
-
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="{{=T.accepted_language or 'en'}}">
   <head>
     <title>{{=response.title or request.application}}</title>
@@ -21,12 +6,7 @@ pass
     {{include 'web2py_ajax.html'}}
     <link rel="SHORTCUT ICON" href="{{=URL(r=request,c='static',f='favicon.ico')}}">
     <script type="text/javascript">
-/*
- * browser can fill this field asynchronously
- */
-function email_focus() {
-    document.getElementById('auth_user_email').select();
-}
+
 function align_login_inputs() {
     $('#auth_user_password').css({width:$('#auth_user_email').width()});
     $('#auth_user_first_name').css({width:$('#auth_user_email').width()});
@@ -47,14 +27,8 @@ jQuery(window).load(function(){
     </script>
   </head>
   <body>
-    {{if response.menu_auth:}}
-    <div class='login_menu'>
-      {{=MENU(response.menu_auth, _class="login_menu")}}
-    </div>
-    {{pass}}
     <div class='login'>
-      <h2>{{=T(t)}}</h2>
-      {{=form}}
+      <h2>{{=T('Your browser is not supported.')}}</h2>
     </div>
   </body>
 </html>
