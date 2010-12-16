@@ -20,6 +20,9 @@ pass
     {{response.files.append(URL(request.application,'static','base.css'))}}
     {{include 'web2py_ajax.html'}}
     <link rel="SHORTCUT ICON" href="{{=URL(r=request,c='static',f='favicon.ico')}}">
+    {{if 'MSIE 6' in request.env.http_user_agent:}}
+    {{=redirect(URL(r=request, c='unsupported', f='index'))}}
+    {{pass}}
     <script type="text/javascript">
 /*
  * browser can fill this field asynchronously
