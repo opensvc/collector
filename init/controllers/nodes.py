@@ -144,6 +144,81 @@ class table_nodes(HtmlTable):
             self.additional_tools.append('node_del')
         self.additional_tools.append('pkgdiff')
         self.additional_tools.append('grpperf')
+        if member_of(('Manager', 'Executer')):
+            self.additional_tools.append('tool_action')
+
+    def tool_action(self):
+        cmd = [
+          'check',
+          'fixable',
+          'fix',
+        ]
+        sid = 'action_s'
+        s = []
+        for c in cmd:
+            s.append(TR(
+                       TD(
+                         IMG(
+                           _src=URL(r=request,c='static',f=action_img_h[c]),
+                         ),
+                       ),
+                       TD(
+                         A(
+                           c,
+                           _onclick="""if (confirm("%(text)s")){%(s)s};"""%dict(
+                             s=self.ajax_submit(additional_inputs=[sid], args=['do_action', c]),
+                             text=T("""Are you sure you want to execute a compliance %(a)s action on all selected nodes. Please confirm action""",dict(a=c)),
+                           ),
+                         ),
+                       ),
+                     ))
+
+        q = db.comp_moduleset_modules.id > 0
+        o = db.comp_moduleset_modules.modset_mod_name
+        rows = db(q).select(orderby=o, groupby=o)
+        options = [OPTION(g.modset_mod_name,_value=g.modset_mod_name) for g in rows]
+
+        d = DIV(
+              A(
+                T("Compliance action"),
+                _onclick="""
+                  click_toggle_vis('%(div)s', 'block');
+                """%dict(div='tool_action'),
+              ),
+              DIV(
+                TABLE(
+                  TR(
+                    TH(
+                      T("Action"),
+                    ),
+                    TD(
+                      TABLE(*s),
+                    ),
+                  ),
+                ),
+                TABLE(
+                  TR(
+                    TH(
+                      T("Module"),
+                    ),
+                    TD(
+                      SELECT(
+                        *options,
+                        **dict(_id=sid,
+                               _requires=IS_IN_DB(db, 'comp_modules.id'))
+                      ),
+                    ),
+                  ),
+                ),
+                _style='display:none',
+                _class='white_float',
+                _name='tool_action',
+                _id='tool_action',
+              ),
+              _class='floatw',
+            )
+
+        return d
 
     def format_extrarow(self, o):
         id = self.extra_line_key(o)
@@ -257,6 +332,38 @@ class table_nodes(HtmlTable):
             )
         return d
 
+@auth.requires_membership('CompExec')
+def do_action(ids, action=None):
+    if action is None or len(action) == 0:
+        raise ToolError("no action specified")
+    if len(ids) == 0:
+        raise ToolError("no target to execute %s on"%action)
+    module = request.vars.action_s
+    if module is None:
+        raise ToolError("no module selected"%action)
+
+    q = db.nodes.nodename.belongs(ids)
+    q &= db.nodes.team_responsible.belongs(user_groups())
+    rows = db(q).select(db.nodes.nodename)
+
+    from subprocess import Popen
+    def do_select_action(node, action, module):
+        cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
+                      '-o', 'ForwardX11=no',
+                      '-o', 'PasswordAuthentication=no',
+               'opensvc@'+node,
+               '--',
+               'sudo', '/opt/opensvc/bin/nodemgr', 'compliance', action,
+               '--module', module]
+        process = Popen(cmd, stdin=None, stdout=None, close_fds=True)
+        #process.communicate()
+
+    for row in rows:
+        do_select_action(row.nodename, action, module)
+
+    _log('service.action', 'run %(a)s of module %(m)s on nodes %(s)s', dict(
+          a=action, s=','.join(map(lambda x: x.nodename, rows)), m=module))
+
 @auth.requires_membership('NodeManager')
 def node_del(ids):
     q = db.nodes.nodename.belongs(ids)
@@ -283,11 +390,14 @@ def ajax_nodes_col_values():
 def ajax_nodes():
     t = table_nodes('nodes', 'ajax_nodes')
 
-    if len(request.args) == 1:
+    if len(request.args) >= 1:
         action = request.args[0]
         try:
             if action == 'node_del':
                 node_del(t.get_checked())
+            elif action == 'do_action' and len(request.args) == 2:
+                saction = request.args[1]
+                do_action(t.get_checked(), saction)
         except ToolError, e:
             t.flash = str(e)
 

@@ -1024,6 +1024,11 @@ action_img_h = {
     'syncfullsync': 'action_sync_16.png',
     'postsync': 'action_sync_16.png',
     'push': 'log16.png',
+    'check': 'check16.png',
+    'fixable': 'fixable16.png',
+    'fix': 'comp16.png',
+    'pushstats': 'spark16.png',
+    'pushasset': 'node16.png',
 }
 
 os_img_h = {

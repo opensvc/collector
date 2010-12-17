@@ -1152,8 +1152,8 @@ class table_svcmon(HtmlTable):
         self.checkbox_id_col = 'id'
         self.ajax_col_values = 'ajax_svcmon_col_values'
         self.user_name = user_name()
-        self.additional_tools.append('tool_action')
         self.additional_tools.append('tool_topology')
+        self.additional_tools.append('tool_action')
 
     def checkbox_disabled(self, o):
         responsibles = self.colprops['responsibles'].get(o)
