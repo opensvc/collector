@@ -9,15 +9,17 @@ def ajax_search():
 
     svc = format_svc(pattern)
     node = format_node(pattern)
+    vm = format_vm(pattern)
     user = format_user(pattern)
     app = format_app(pattern)
 
-    if len(svc)+len(node)+len(user)+len(app) == 0:
+    if len(svc)+len(node)+len(user)+len(app)+len(vm) == 0:
         return ''
 
     return DIV(
              svc,
              node,
+             vm,
              user,
              app,
            )
@@ -41,7 +43,7 @@ def format_app(pattern):
                 ),
                 TD(
                   P(
-                    row.svc_app
+                    row.svc_app.upper()
                   ),
                   A(
                     T('status'),
@@ -89,7 +91,7 @@ def format_svc(pattern):
                 ),
                 TD(
                   P(
-                    row.mon_svcname
+                    row.mon_svcname.lower()
                   ),
                   A(
                     T('status'),
@@ -124,6 +126,48 @@ def format_svc(pattern):
         d.append(format_row(row))
     return DIV(*d)
 
+def format_vm(pattern):
+    o = db.v_svcmon.svc_vmname
+    q = o.like(pattern)
+    q = _where(q, 'v_svcmon', domain_perms(), 'mon_svcname')
+    q = apply_db_filters(q, 'v_svcmon')
+    rows = db(q).select(o, orderby=o, groupby=o, limitby=(0,max_search_result))
+    n = len(db(q).select(o, groupby=o))
+
+    if len(rows) == 0:
+        return ''
+
+    def format_row(row):
+        d = TABLE(
+              TR(
+                TD(
+                  IMG(_src=URL(r=request, c='static', f='svc.png')),
+                ),
+                TD(
+                  P(
+                    row.svc_vmname.lower()
+                  ),
+                  A(
+                    T('status'),
+                    _href=URL(r=request, c='default', f='svcmon',
+                              vars={'svcmon_f_svc_vmname': row.svc_vmname,
+                                    'clear_filters': 'true'})
+                  ),
+                  A(
+                    T('availability'),
+                    _href=URL(r=request, c='svcmon_log', f='svcmon_log',
+                              vars={'svcmon_log_f_svc_vmname': row.svc_vmname,
+                                    'clear_filters': 'true'})
+                  ),
+                ),
+              ),
+            )
+        return d
+    d = [H3(T('Virtual Machines'), ' (', n, ')')]
+    for row in rows:
+        d.append(format_row(row))
+    return DIV(*d)
+
 def format_node(pattern):
     o = db.v_nodes.nodename
     q = o.like(pattern)
@@ -142,7 +186,7 @@ def format_node(pattern):
                   IMG(_src=URL(r=request, c='static', f='node16.png')),
                 ),
                 TD(
-                  P(row.nodename),
+                  P(row.nodename.lower()),
                   A(
                     T('asset'),
                     _href=URL(r=request, c='nodes', f='nodes',
