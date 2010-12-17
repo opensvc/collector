@@ -19,6 +19,18 @@ def user_groups():
     rows = db(q).select(db.auth_group.role)
     return map(lambda x: x.role, rows)
 
+def member_of(g):
+    groups = user_groups()
+    if isinstance(g, str) and g in groups:
+        return True
+    elif isinstance(g, list) or isinstance(g, tuple):
+        for _g in g:
+            if _g in groups:
+                return True
+    else:
+        raise Exception("member_of_group param must be a role or a list of roles")
+    return False
+
 class MyAuth(Auth):
     def __init__(self, environment, db = None):
         Auth.__init__(self,environment,db)
