@@ -2055,7 +2055,7 @@ function dashboard_item(item, url, toggle_url, checked){
         }
         if (checked) {_checked='checked'} else {_checked=''}
         sum += '<div><input id='+ck_item+' type=checkbox '+_checked+'></div>'
-        if (data[3]=='') {
+        if (data[3]=='' || val==0) {
             sum += '<div></div>'
         } else {
             sum += '<div><a href=#'+item+'><img src='+url_static+'/search.png></img></a></div>'
