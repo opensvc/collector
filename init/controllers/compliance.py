@@ -2858,7 +2858,11 @@ def comp_get_node_ruleset(nodename):
                'filter': str(q),
                'vars': []}
     for f in db.nodes.fields:
-        ruleset['vars'].append(('nodes.'+f, rows[0][f]))
+        if isinstance(rows[0][f], str):
+            val = repr(rows[0][f])
+        else:
+            val = rows[0][f]
+        ruleset['vars'].append(('nodes.'+f, val))
     return {'osvc_node':ruleset}
 
 def comp_ruleset_vars(ruleset_id, qr=None):
