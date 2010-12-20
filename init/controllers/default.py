@@ -1187,9 +1187,9 @@ class table_svcmon(HtmlTable):
                       _src=URL(r=request,c='static',f='exclamation_red.png'),
                       _title="%d unaknowledged errors"%o.err),
                       _href=URL(r=request,c='svcactions',f='svcactions',
-                                vars={'svcname': o.svc_name,
-                                      'status': 'err',
-                                      'ack': '!1|empty'}
+                                vars={'actions_f_svcname': o.svc_name,
+                                      'actions_f_status': 'err',
+                                      'actions_f_ack': '!1|empty'}
                             )
                   )
         else:
