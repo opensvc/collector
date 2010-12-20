@@ -1189,7 +1189,8 @@ class table_svcmon(HtmlTable):
                       _href=URL(r=request,c='svcactions',f='svcactions',
                                 vars={'actions_f_svcname': o.svc_name,
                                       'actions_f_status': 'err',
-                                      'actions_f_ack': '!1|empty'}
+                                      'actions_f_ack': '!1|empty',
+                                      'clear_filters': 'true'}
                             )
                   )
         else:
