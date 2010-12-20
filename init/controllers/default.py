@@ -1343,9 +1343,9 @@ def ajax_svcmon():
             t.flash = str(e)
 
     o = db.v_svcmon.mon_svcname
-    o |= ~db.v_svcmon.mon_overallstatus
     o |= ~db.v_svcmon.mon_nodtype
     o |= db.v_svcmon.mon_nodname
+    o |= ~db.v_svcmon.mon_overallstatus
 
     q = _where(None, 'v_svcmon', domain_perms(), 'mon_svcname')
     q = apply_db_filters(q, 'v_svcmon')
