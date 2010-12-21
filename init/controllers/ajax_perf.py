@@ -615,6 +615,7 @@ def json_blockdev():
     end = request.vars.e
 
     dev = []
+
     tps = []
     rsecps = []
     wsecps = []
@@ -627,15 +628,45 @@ def json_blockdev():
         return [dev, tps, avgrq_sz, await, svctm, pct_util, [rsecps, wsecps]]
 
     rows = rows_blockdev(node, begin, end)
-    for r in rows:
+
+    l = sorted(rows, key=lambda r: (r[4]+r[5]))
+    l.reverse()
+    for i, r in enumerate(l):
         dev.append(r[0])
         rsecps.append(r[4])
         wsecps.append(r[5])
+        if i >= 10: break
+
+    l = sorted(rows, key=lambda r: r[1])
+    l.reverse()
+    for i, r in enumerate(l):
         tps.append((r[0],r[3],r[2],r[1]))
+        if i >= 10: break
+
+    l = sorted(rows, key=lambda r: r[6])
+    l.reverse()
+    for i, r in enumerate(l):
         avgrq_sz.append((r[0], r[8],r[7],r[6]))
+        if i >= 10: break
+
+    l = sorted(rows, key=lambda r: r[9])
+    l.reverse()
+    for i, r in enumerate(l):
         await.append((r[0], r[11],r[10],r[9]))
+        if i >= 10: break
+
+    l = sorted(rows, key=lambda r: r[12])
+    l.reverse()
+    for i, r in enumerate(l):
         svctm.append((r[0], r[14],r[13],r[12]))
+        if i >= 10: break
+
+    l = sorted(rows, key=lambda r: r[15])
+    l.reverse()
+    for i, r in enumerate(l):
         pct_util.append((r[0], r[17],r[16],r[15]))
+        if i >= 10: break
+
     return [dev, tps, avgrq_sz, await, svctm, pct_util, [rsecps, wsecps]]
 
 @service.json
