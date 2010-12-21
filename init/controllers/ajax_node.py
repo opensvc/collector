@@ -160,9 +160,7 @@ def ajax_node():
             LI(
               P(
                 T("%(n)s", dict(n=request.vars.node)),
-                _onclick="""
-                    getElementById("tr_id_%(id)s").style['display']='none'
-                """%dict(id=rowid),
+                _onclick="""$('#%(id)s').hide()"""%dict(id=rowid),
               ),
               _class="closetab",
             ),
