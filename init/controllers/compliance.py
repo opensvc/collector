@@ -2642,6 +2642,11 @@ def comp_get_moduleset_modules(moduleset):
                         groupby=db.comp_moduleset_modules.modset_mod_name)
     return [r.modset_mod_name for r in rows]
 
+def comp_attached_moduleset_id(nodename):
+    q = db.comp_node_moduleset.modset_node == nodename
+    rows = db(q).select(db.comp_node_moduleset.modset_id)
+    return [r.modset_id for r in rows]
+
 def comp_moduleset_id(moduleset):
     q = db.comp_moduleset.modset_name == moduleset
     rows = db(q).select(db.comp_moduleset.id)
@@ -2695,14 +2700,22 @@ def comp_attach_moduleset(nodename, moduleset):
 def comp_detach_moduleset(nodename, moduleset):
     if len(moduleset) == 0:
         return dict(status=False, msg="no moduleset specified"%moduleset)
-    modset_id = comp_moduleset_id(moduleset)
+    if moduleset == 'all':
+        modset_id = comp_attached_moduleset_id(nodename)
+    else:
+        modset_id = comp_moduleset_id(moduleset)
     if modset_id is None:
         return dict(status=True, msg="moduleset %s does not exist"%moduleset)
-    if not comp_moduleset_attached(nodename, modset_id):
+    elif moduleset == 'all' and len(modset_id) == 0:
+        return dict(status=True, msg="this node has no moduleset attached")
+    if moduleset != 'all' and not comp_moduleset_attached(nodename, modset_id):
         return dict(status=True,
                     msg="moduleset %s is not attached to this node"%moduleset)
     q = db.comp_node_moduleset.modset_node == nodename
-    q &= db.comp_node_moduleset.modset_id == modset_id
+    if isinstance(modset_id, list):
+        q &= db.comp_node_moduleset.modset_id.belongs(modset_id)
+    else:
+        q &= db.comp_node_moduleset.modset_id == modset_id
     n = db(q).delete()
     if n == 0:
         return dict(status=False, msg="failed to detach the moduleset")
