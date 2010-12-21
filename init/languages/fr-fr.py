@@ -413,6 +413,7 @@
 'Power protector breaker': 'Disjoncteur de transfert de charge',
 'Power supply number': "Nombre d'alimentations",
 'Powered by': 'Mu par',
+'Preferred lines per page': 'Preferred lines per page',
 'Preferred node': 'Noeud préferé',
 'Primary': 'Primaire',
 'Primary node': 'Noeud primaire',

@@ -85,9 +85,18 @@ class HtmlTable(object):
         self.totalrecs = n
         if self.pageable:
             if self.id_perpage in request.vars:
+                q = db.auth_user.id==auth.user.id
                 self.perpage = int(request.vars[self.id_perpage])
+                try:
+                    db(q).update(perpage=self.perpage)
+                except:
+                    pass
             else:
-                self.perpage = 20
+                q = db.auth_user.id==auth.user.id
+                try:
+                    self.perpage = db(q).select().first().perpage
+                except:
+                    self.perpage = 20
 
             if self.id_page in request.vars:
                 self.page = int(request.vars[self.id_page])

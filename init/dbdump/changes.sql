@@ -850,4 +850,6 @@ alter table comp_rulesets_variables modify column var_value text NOT NULL;
 
 ALTER TABLE nodes CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+alter table auth_user add column perpage integer default 20;
 
+update auth_user set perpage=20;
