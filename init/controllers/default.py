@@ -1232,24 +1232,66 @@ class table_svcmon(HtmlTable):
           'syncdrp',
           'syncfullsync',
         ]
+        more_cmd = [
+          'stopapp',
+          'startapp',
+          'stopcontainer',
+          'startcontainer',
+          'prstart',
+          'prstop',
+          'push',
+          'syncquiesce',
+          'syncresync',
+          'syncupdate',
+          'syncverify',
+        ]
+        def format_line(c):
+            return TR(
+                     TD(
+                       IMG(
+                         _src=URL(r=request,c='static',f=action_img_h[c]),
+                       ),
+                     ),
+                     TD(
+                       A(
+                         c,
+                         _onclick="""if (confirm("%(text)s")){%(s)s};"""%dict(
+                           s=self.ajax_submit(additional_inputs=['force_ck'],
+                                              args=['do_action', c]),
+                           text=T("""Are you sure you want to execute a %(a)s action on all selected service@node. Please confirm action""",dict(a=c)),
+                         ),
+                       ),
+                     ),
+                   )
+
         s = []
         for c in cmd:
-            s.append(TR(
-                       TD(
-                         IMG(
-                           _src=URL(r=request,c='static',f=action_img_h[c]),
-                         ),
-                       ),
-                       TD(
-                         A(
-                           c,
-                           _onclick="""if (confirm("%(text)s")){%(s)s};"""%dict(
-                             s=self.ajax_submit(args=['do_action', c]),
-                             text=T("""Are you sure you want to execute a %(a)s action on all selected service@node. Please confirm action""",dict(a=c)),
-                           ),
-                         ),
-                       ),
-                     ))
+            s.append(format_line(c))
+
+        t = []
+        for c in more_cmd:
+            t.append(format_line(c))
+        t.append(
+              TR(
+                TD(
+                  B(T('Options')),
+                  _colspan=2,
+                ),
+              ))
+        t.append(
+              TR(
+                TD(
+                  INPUT(
+                    _type='checkbox',
+                    _id='force_ck',
+                    _onclick='this.value=this.checked',
+                    _value='false',
+                  ),
+                ),
+                TD(
+                  'force',
+                ),
+              ))
 
         d = DIV(
               A(
@@ -1260,6 +1302,18 @@ class table_svcmon(HtmlTable):
               ),
               DIV(
                 TABLE(*s),
+                P(
+                  A(
+                    T('more'),
+                    _onclick="""$('#more_actions').toggle('fast');$(this).hide()""",
+                  ),
+                  _style='text-align:center;',
+                ),
+                TABLE(
+                  SPAN(*t),
+                  _id='more_actions',
+                  _style='display:none;',
+                ),
                 _style='display:none',
                 _class='white_float',
                 _name='tool_action',
@@ -1287,6 +1341,10 @@ def do_action(ids, action=None):
         raise ToolError("no action specified")
     if len(ids) == 0:
         raise ToolError("no target to execute %s on"%action)
+    if request.vars.force_ck == 'true':
+        force = '--force'
+    else:
+        force = ''
 
     sql = """select m.mon_nodname, m.mon_svcname
              from v_svcmon m
@@ -1305,7 +1363,7 @@ def do_action(ids, action=None):
                       '-o', 'PasswordAuthentication=no',
                'opensvc@'+node,
                '--',
-               'sudo', '/opt/opensvc/bin/svcmgr', '--service', svc, action]
+               'sudo', '/opt/opensvc/bin/svcmgr', force, '--service', svc, action]
         process = Popen(cmd, stdin=None, stdout=None, close_fds=True)
         #process.communicate()
 

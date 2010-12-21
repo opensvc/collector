@@ -1029,6 +1029,17 @@ action_img_h = {
     'fix': 'comp16.png',
     'pushstats': 'spark16.png',
     'pushasset': 'node16.png',
+    'stopcontainer': 'action_stop_16.png',
+    'startcontainer': 'action_start_16.png',
+    'stopapp': 'action_stop_16.png',
+    'startapp': 'action_start_16.png',
+    'prstop': 'action_stop_16.png',
+    'prstart': 'action_start_16.png',
+    'push': 'svc.png',
+    'syncquiesce': 'action_sync_16.png',
+    'syncresync': 'action_sync_16.png',
+    'syncupdate': 'action_sync_16.png',
+    'syncverify': 'action_sync_16.png',
 }
 
 os_img_h = {
