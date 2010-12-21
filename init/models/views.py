@@ -50,10 +50,13 @@ def _where(query, table, var, field):
     if len(chunk) == 0:
         return query
 
+    # initialize a restrictive filter
+    q = db[table].id < 0
+
     if chunk == 'empty':
         q = (db[table][field]==None)|(db[table][field]=='')
-    elif chunk[0] not in '<>=':
-        q = db[table][field].like(chunk)
+    elif chunk[0] not in '<>=' and db[table][field].type == 'string':
+            q = db[table][field].like(chunk)
     else:
         _op = chunk[0]
 
