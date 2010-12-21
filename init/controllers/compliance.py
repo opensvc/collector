@@ -2992,6 +2992,16 @@ def comp_get_ruleset(nodename):
     for row in rows:
         ruleset.update(comp_ruleset_vars(row.ruleset_id))
 
+    l = {}
+    for rset in ruleset.copy():
+        for i, (var, val) in enumerate(ruleset[rset]['vars']):
+            if var in l:
+                (_rset, _i) = l[var]
+                ruleset[rset]['vars'][i] = ('xxx_'+var+'_xxx', 'Duplicate variable removed')
+                ruleset[_rset]['vars'][_i] = ('xxx_'+var+'_xxx', 'Duplicate variable removed')
+            else:
+                l[var] = (rset, i)
+
     return ruleset
 
 
