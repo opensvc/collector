@@ -69,8 +69,12 @@ def cron_unfinished_actions():
     tmo = now - datetime.timedelta(minutes=120)
     q = (db.SVCactions.begin < tmo)
     q &= (db.SVCactions.end==None)
-    rows = db(q).update(status="err")
-    return "%d actions marked timed out"%rows
+    rows = db(q).select(orderby=db.SVCactions.id)
+    db(q).update(status="err", end='1000-01-01 00:00:00')
+    if len(rows) > 0:
+        _log('action.timeout', "action ids %(ids)s closed on timeout",
+              dict(ids=', '.join([str(r.id) for r in rows])))
+    return "%d actions marked timed out"%len(rows)
 
 #
 # Alerts and purges

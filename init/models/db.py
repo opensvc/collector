@@ -53,6 +53,8 @@ table = db.define_table(auth.settings.table_user_name,
           label=auth.messages.label_reset_password_key),
     Field('email_notifications', 'boolean', default=True,
           label=T('Email notifications')),
+    Field('perpage', 'integer', default=20,
+          label=T('Preferred lines per page')),
     migrate=False)
 
 table.email.requires = [IS_EMAIL(error_message=auth.messages.invalid_email),

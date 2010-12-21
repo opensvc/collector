@@ -7,6 +7,7 @@ def checks_defaults_insert():
     else:
         record = None
 
+    db.checks_defaults.chk_type.default = request.vars.chk_type
     form = SQLFORM(db.checks_defaults,
                  record=record,
                  fields=['chk_type',

@@ -2053,14 +2053,14 @@ function dashboard_item(item, url, toggle_url, checked){
         } else {
             sum += '<div>'+val+unit+'</div>'
         }
-        if (checked) {_checked='checked'} else {_checked=''}
+        if (checked==true) {_checked='checked'} else {_checked=''}
         sum += '<div><input id='+ck_item+' type=checkbox '+_checked+'></div>'
         if (data[3]=='' || val==0) {
             sum += '<div></div>'
         } else {
             sum += '<div><a href=#'+item+'><img src='+url_static+'/search.png></img></a></div>'
         }
-        f = 'dashboard_item(\''+item+'\',\''+url+'\')'
+        f = 'dashboard_item(\''+item+'\',\''+url+'\',\''+toggle_url+'\',\'once\')'
         sum += '<div><a onclick='+f+'><img src='+url_static+'/refresh16.png></img></a></div>'
         sum += '<div>'+date+'</div>'
         bak = ''

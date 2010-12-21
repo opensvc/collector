@@ -980,6 +980,10 @@ ul.login_menu ul {
     color: black;
 }
 
+.highlight {
+    color: darkred;
+    font-weight: bold;
+}
 .floatw .current_page {
     color: darkred;
     font-weight: bold;

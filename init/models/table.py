@@ -85,9 +85,18 @@ class HtmlTable(object):
         self.totalrecs = n
         if self.pageable:
             if self.id_perpage in request.vars:
+                q = db.auth_user.id==auth.user.id
                 self.perpage = int(request.vars[self.id_perpage])
+                try:
+                    db(q).update(perpage=self.perpage)
+                except:
+                    pass
             else:
-                self.perpage = 20
+                q = db.auth_user.id==auth.user.id
+                try:
+                    self.perpage = db(q).select().first().perpage
+                except:
+                    self.perpage = 20
 
             if self.id_page in request.vars:
                 self.page = int(request.vars[self.id_page])
@@ -1029,6 +1038,17 @@ action_img_h = {
     'fix': 'comp16.png',
     'pushstats': 'spark16.png',
     'pushasset': 'node16.png',
+    'stopcontainer': 'action_stop_16.png',
+    'startcontainer': 'action_start_16.png',
+    'stopapp': 'action_stop_16.png',
+    'startapp': 'action_start_16.png',
+    'prstop': 'action_stop_16.png',
+    'prstart': 'action_start_16.png',
+    'push': 'svc.png',
+    'syncquiesce': 'action_sync_16.png',
+    'syncresync': 'action_sync_16.png',
+    'syncupdate': 'action_sync_16.png',
+    'syncverify': 'action_sync_16.png',
 }
 
 os_img_h = {

@@ -170,6 +170,8 @@ class col_end(HtmlTableColumn):
         id = self.t.colprops['id'].get(o)
         if s is None:
             s = ''
+        elif str(s) == '1000-01-01 00:00:00':
+            return SPAN('timed out', _class='highlight')
         return SPAN(
                  s,
                  _id='spin_span_end_%s'%id,
@@ -183,6 +185,10 @@ class col_pid(HtmlTableColumn):
         if s is None:
             pid = ''
         else:
+            if o.end is None:
+                f_end = ''
+            else:
+                f_end = '<'+str(o.end+datetime.timedelta(days=1))
             pid = A(
                  o.pid,
                  _href=URL(
@@ -193,7 +199,7 @@ class col_pid(HtmlTableColumn):
                            'actions_f_hostname':o.hostname,
                            'actions_f_svcname':o.svcname,
                            'actions_f_begin':'>'+str(o.begin-datetime.timedelta(days=1)),
-                           'actions_f_end':'<'+str(o.end+datetime.timedelta(days=1)),
+                           'actions_f_end':f_end,
                            'actions_f_perpage':0,
                            'clear_filters': 'true',
                          }
