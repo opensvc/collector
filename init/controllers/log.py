@@ -1,27 +1,3 @@
-class log_vfields(object):
-        def log_icons(self):
-            return self.log.log_action
-
-        def log_evt(self):
-            try:
-                d = json.loads(self.log.log_dict)
-                for k in d:
-                    if not isinstance(d[k], str):
-                        d[k] = str(d[k])
-                    d[k] = d[k].encode('utf8')
-                s = T.translate(self.log.log_fmt,d)
-            except KeyError:
-                s = 'error parsing: %s'%self.log.log_dict
-            except json.decoder.JSONDecodeError:
-                s = 'error loading JSON: %s'%self.log.log_dict
-            except UnicodeEncodeError:
-                s = 'error transcoding: %s'%self.log.log_dict
-            except TypeError:
-                s = 'type error: %s'%self.log.log_dict
-            return s
-
-db.log.virtualfields.append(log_vfields())
-
 img_h = {
   'service': 'svc.png',
   'apps': 'svc.png',
@@ -44,7 +20,29 @@ img_h = {
   'detach': 'detach16.png',
 }
 
+class col_log_evt(HtmlTableColumn):
+    def get(self, o):
+        try:
+            d = json.loads(o.log_dict)
+            for k in d:
+                if not isinstance(d[k], str):
+                    d[k] = str(d[k])
+                d[k] = d[k].encode('utf8')
+            s = T.translate(o.log_fmt,d)
+        except KeyError:
+            s = 'error parsing: %s'%o.log_dict
+        except json.decoder.JSONDecodeError:
+            s = 'error loading JSON: %s'%o.log_dict
+        except UnicodeEncodeError:
+            s = 'error transcoding: %s'%o.log_dict
+        except TypeError:
+            s = 'type error: %s'%o.log_dict
+        return s
+
 class col_log_icons(HtmlTableColumn):
+    def get(self, o):
+        return o.log_action
+
     def html(self, o):
         t = self.get(o)
         l = t.split('.')
@@ -92,9 +90,9 @@ class table_log(HtmlTable):
                      img='guy16',
                      display=True,
                     ),
-            'log_evt': HtmlTableColumn(
+            'log_evt': col_log_evt(
                      title='Event',
-                     field='log_evt',
+                     field='dummy',
                      img='log16',
                      display=True,
                     ),
