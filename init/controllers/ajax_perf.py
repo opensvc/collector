@@ -94,7 +94,8 @@ def ajax_perf_netdev_plot():
 
 @auth.requires_login()
 def ajax_perf_blockdev_plot():
-    return _ajax_perf_plot('blockdev', sub=['_tps', '_avgrq_sz', '_await', '_svctm', '_pct_util', '_secps'], last=True)
+    sub = ['_pct_util', '_tps', '_secps', '_tm', '_await', '_svctm', '_avgrq_sz']
+    return _ajax_perf_plot('blockdev', sub=sub, last=True)
 
 def ajax_perf_block_plot():
     return _ajax_perf_plot('block', sub=['_tps', '_bps'], last=True)
@@ -615,6 +616,7 @@ def json_blockdev():
     end = request.vars.e
 
     dev = []
+    tm_dev = []
 
     tps = []
     rsecps = []
@@ -623,9 +625,12 @@ def json_blockdev():
     await = []
     svctm = []
     pct_util = []
+    tm_await = []
+    tm_svc = []
 
     if node is None:
-        return [dev, tps, avgrq_sz, await, svctm, pct_util, [rsecps, wsecps]]
+        return [dev, tps, avgrq_sz, await, svctm, pct_util, [rsecps, wsecps],
+                tm_dev, [tm_svc, tm_await]]
 
     rows = rows_blockdev(node, begin, end)
 
@@ -655,6 +660,12 @@ def json_blockdev():
         await.append((r[0], r[11],r[10],r[9]))
         if i >= 10: break
 
+    for i, r in enumerate(l):
+        tm_dev.append(r[0])
+        tm_await.append(r[9]-r[12])
+        tm_svc.append(r[12])
+        if i >= 10: break
+
     l = sorted(rows, key=lambda r: r[12])
     l.reverse()
     for i, r in enumerate(l):
@@ -667,7 +678,8 @@ def json_blockdev():
         pct_util.append((r[0], r[17],r[16],r[15]))
         if i >= 10: break
 
-    return [dev, tps, avgrq_sz, await, svctm, pct_util, [rsecps, wsecps]]
+    return [dev, tps, avgrq_sz, await, svctm, pct_util, [rsecps, wsecps],
+            tm_dev,[tm_svc, tm_await]]
 
 @service.json
 def json_fs():

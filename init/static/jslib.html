@@ -1048,7 +1048,7 @@ function stats_cpu(url, id) {
             cursor:{zoom:true, showTooltip:true},
 	    stackSeries: true,
             title: {
-                text: 'cpu usage',
+                text: 'Cpu usage',
             },
             legend: {
                 show: true,
@@ -1098,7 +1098,7 @@ function stats_proc(url, id) {
 	$.jqplot(id+'_runq_sz', [data[0]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'run queue size',
+                text: 'Run queue size',
             },
             legend: {
                 show: true,
@@ -1135,7 +1135,7 @@ function stats_proc(url, id) {
 	$.jqplot(id+'_plist_sz', [data[1]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'process list size',
+                text: 'Process list size',
             },
             legend: {
                 show: true,
@@ -1172,7 +1172,7 @@ function stats_proc(url, id) {
 	$.jqplot(id+'_loadavg', [data[2],data[3],data[4]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'load average',
+                text: 'Load average',
             },
             legend: {
                 show: true,
@@ -1218,7 +1218,7 @@ function stats_mem(url, id) {
             cursor:{zoom:true, showTooltip:true},
 	    stackSeries: true,
             title: {
-                text: 'memory usage',
+                text: 'Memory usage',
             },
             legend: {
                 show: true,
@@ -1260,7 +1260,7 @@ function stats_mem(url, id) {
 	$.jqplot(id+'_pct', [data[2],data[6]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'memory usage percent',
+                text: 'Memory usage percent',
             },
             legend: {
                 show: true,
@@ -1305,7 +1305,7 @@ function stats_swap(url, id) {
             cursor:{zoom:true, showTooltip:true},
 	    stackSeries: true,
             title: {
-                text: 'swap usage',
+                text: 'Swap usage',
             },
             legend: {
                 show: true,
@@ -1345,7 +1345,7 @@ function stats_swap(url, id) {
 	$.jqplot(id+'_pct', [data[2],data[4]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'swap usage percent',
+                text: 'Swap usage percent',
             },
             legend: {
                 show: true,
@@ -1389,7 +1389,7 @@ function stats_block(url, id) {
 	$.jqplot(id+'_tps', [data[0],data[1]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'block device transactions',
+                text: 'Block device transactions',
             },
             legend: {
                 show: true,
@@ -1428,7 +1428,7 @@ function stats_block(url, id) {
 	$.jqplot(id+'_bps', [data[2],data[3]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'block device bandwidth',
+                text: 'Block device bandwidth',
             },
             legend: {
                 show: true,
@@ -1472,7 +1472,7 @@ function stats_trend_mem(url, id) {
 	$.jqplot(id, [data], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'memory usage trend<br>high/low/average',
+                text: 'Memory usage trend<br>high/low/average',
             },
             legend: {
                 show: true,
@@ -1516,7 +1516,7 @@ function stats_trend_cpu(url, id) {
 	$.jqplot(id, [data], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'cpu usage trend<br>high/low/average',
+                text: 'Cpu usage trend<br>high/low/average',
             },
             legend: {
                 show: true,
@@ -1562,7 +1562,7 @@ function stats_blockdev(url, id) {
 	$.jqplot(id+'_tps', [data[1]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'block device transactions<br>high/low/average',
+                text: 'Block device transactions<br>high/low/average',
             },
             legend: {
                 show: true,
@@ -1599,7 +1599,7 @@ function stats_blockdev(url, id) {
 	$.jqplot(id+'_avgrq_sz', [data[2]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'block device request size<br>high/low/average',
+                text: 'Block device request size<br>high/low/average',
             },
             legend: {
                 show: true,
@@ -1636,7 +1636,7 @@ function stats_blockdev(url, id) {
 	$.jqplot(id+'_await', [data[3]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'block device wait time<br>high/low/average',
+                text: 'Block device wait time<br>high/low/average',
             },
             legend: {
                 show: true,
@@ -1673,7 +1673,7 @@ function stats_blockdev(url, id) {
 	$.jqplot(id+'_svctm', [data[4]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'block device service time<br>high/low/average',
+                text: 'Block device service time<br>high/low/average',
             },
             legend: {
                 show: true,
@@ -1710,7 +1710,7 @@ function stats_blockdev(url, id) {
 	$.jqplot(id+'_pct_util', [data[5]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'block device utilisation<br>high/low/average',
+                text: 'Block device utilisation<br>high/low/average',
             },
             legend: {
                 show: true,
@@ -1745,12 +1745,12 @@ function stats_blockdev(url, id) {
 	});
         plot_width_x(id+'_secps', data[0])
 	$.jqplot(id+'_secps', data[6], {
-	    stackSeries: false,
+	    stackSeries: true,
 	    grid: {
                 borderWidth: 0.5,
             },
             title: {
-                text: 'Block device bandwidth',
+                text: 'Block device bandwidth<br>average',
             },
             legend: {
                 show: true,
@@ -1767,6 +1767,44 @@ function stats_blockdev(url, id) {
 	    series: [
                 {label: 'read (sec/s)'},
                 {label: 'write (sec/s)'},
+            ],
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.CategoryAxisRenderer, 
+                    tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+                    tickOptions: {formatString:'%s', angle: -70},
+                    ticks: data[0],
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'},
+		}, 
+	    }
+	});
+        plot_width_x(id+'_tm', data[7])
+	$.jqplot(id+'_tm', data[8], {
+	    stackSeries: true,
+	    grid: {
+                borderWidth: 0.5,
+            },
+            title: {
+                text: 'Hard/Soft times<br>average',
+            },
+            legend: {
+                show: true,
+                location: 'e',
+                placement: "outside",
+            },
+            gridPadding: {
+                right:90,
+            },
+	    seriesDefaults: {
+                renderer: $.jqplot.BarRenderer, 
+                shadowAngle: 135,
+            },
+	    series: [
+                {label: 'hard (msec)'},
+                {label: 'soft (msec)'},
             ],
 	    axes: {
 		xaxis: {
@@ -1921,7 +1959,7 @@ function stats_fs(url, id) {
 	$.jqplot(id+'_u', data[2], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'fs usage %',
+                text: 'Fs usage %',
             },
             legend: {
                 renderer: $.jqplot.EnhancedLegendRenderer,
