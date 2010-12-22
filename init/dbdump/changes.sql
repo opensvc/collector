@@ -854,3 +854,5 @@ alter table auth_user add column perpage integer default 20;
 
 update auth_user set perpage=20;
 
+alter table log modify column log_dict text;
+
