@@ -687,7 +687,10 @@ class table_svcmon_log(HtmlTable):
             self.colprops[c].t = self
         for c in svcmon_cols+v_services_cols+v_nodes_cols+['node_updated']:
             self.colprops[c].table = 'v_svcmon'
-        for c in ['mon_svcname', 'mon_nodname', 'mon_begin', 'mon_end']:
+        for c in ['mon_svcname', 'mon_nodname', 'mon_begin', 'mon_end',
+                  'mon_overallstatus', 'mon_containerstatus', 'mon_ipstatus',
+                  'mon_fsstatus', 'mon_diskstatus', 'mon_syncstatus',
+                  'mon_appstatus']:
             self.colprops[c].table = 'svcmon_log'
         self.dbfilterable = True
         self.extraline = True
