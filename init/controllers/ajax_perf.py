@@ -17,17 +17,6 @@ def perf_stats_netdev_one(node, s, e, dev):
     rows = db(q).select(orderby=db.stats_netdev.date)
     return rows
 
-def period_to_range(period):
-    if period <= datetime.timedelta(days=1):
-        return ["6 day", "5 day", "4 day", "3 day",
-                "2 day", "1 day", "0 day"]
-    elif period <= datetime.timedelta(days=7):
-        return ["3 week", "2 week", "1 week", "0 week"]
-    elif period <= datetime.timedelta(days=30):
-        return ["2 month", "1 month", "0 month"]
-    else:
-        return []
-
 @auth.requires_login()
 def perf_stats_mem_trend_data(node, s, e, p):
     sql = """select cast(max(kbmemfree+kbcached) as unsigned),
@@ -174,30 +163,9 @@ def _ajax_perf_plot(group, sub=[''], last=False, base=None):
 #
 ######################
 
-def period_concat(s, e):
-    year = datetime.timedelta(days=365)
-    month = datetime.timedelta(days=30)
-    day = datetime.timedelta(days=1)
-    hour = datetime.timedelta(hours=1)
-    s = str_to_date(s)
-    e = str_to_date(e)
-    period = e - s
-
-    if period >= 20 * year:
-        d = "YEAR(date)"
-    elif period >= 3 * year:
-        d = "concat(YEAR(date), '-', MONTH(date))"
-    elif period >= month:
-        d = "concat(YEAR(date), '-', MONTH(date), '-', DAY(date))"
-    elif period >= 2 * day:
-        d = "concat(YEAR(date), '-', MONTH(date), '-', DAY(date), ' ', HOUR(date), ':00:00')"
-    else:
-        d = "date"
-    return d
-
 @auth.requires_login()
 def rows_cpu(node, s, e):
-    sql = """select %(d)s as d,
+    sql = """select date,
                     avg(usr),
                     avg(nice),
                     avg(sys),
@@ -206,7 +174,8 @@ def rows_cpu(node, s, e):
                     avg(irq),
                     avg(soft),
                     avg(guest),
-                    avg(idle)
+                    avg(idle),
+                    %(d)s as d
              from stats_cpu
              where date>='%(s)s'
                and date<='%(e)s'
@@ -224,12 +193,13 @@ def rows_cpu(node, s, e):
 
 @auth.requires_login()
 def rows_proc(node, s, e):
-    sql = """select %(d)s as d,
+    sql = """select date,
                     avg(runq_sz),
                     avg(plist_sz),
                     avg(ldavg_1),
                     avg(ldavg_5),
-                    avg(ldavg_15)
+                    avg(ldavg_15),
+                    %(d)s as d
              from stats_proc
              where date>='%(s)s'
                and date<='%(e)s'
@@ -246,12 +216,13 @@ def rows_proc(node, s, e):
 
 @auth.requires_login()
 def rows_swap(node, s, e):
-    sql = """select %(d)s as d,
+    sql = """select date,
                     avg(kbswpfree),
                     avg(kbswpused),
                     avg(pct_swpused),
                     avg(kbswpcad),
-                    avg(pct_swpcad)
+                    avg(pct_swpcad),
+                    %(d)s as d
              from stats_swap
              where date>='%(s)s'
                and date<='%(e)s'
@@ -268,11 +239,12 @@ def rows_swap(node, s, e):
 
 @auth.requires_login()
 def rows_block(node, s, e):
-    sql = """select %(d)s as d,
+    sql = """select date,
                     avg(rtps),
                     avg(wtps),
                     avg(rbps),
-                    avg(wbps)
+                    avg(wbps),
+                    %(d)s as d
              from stats_block
              where date>='%(s)s'
                and date<='%(e)s'
@@ -289,7 +261,7 @@ def rows_block(node, s, e):
 
 @auth.requires_login()
 def rows_mem(node, s, e):
-    sql = """select %(d)s as d,
+    sql = """select date,
                     avg(kbmemfree),
                     avg(kbmemused),
                     avg(pct_memused),
@@ -297,7 +269,8 @@ def rows_mem(node, s, e):
                     avg(kbcached),
                     avg(kbcommit),
                     avg(pct_commit),
-                    avg(kbmemsys)
+                    avg(kbmemsys),
+                    %(d)s as d
              from stats_mem_u
              where date>='%(s)s'
                and date<='%(e)s'
@@ -314,10 +287,11 @@ def rows_mem(node, s, e):
 
 @auth.requires_login()
 def rows_fs_u(node, s, e):
-    sql = """select %(d)s as d,
+    sql = """select date,
                     mntpt,
                     max(size),
-                    avg(used)
+                    avg(used),
+                    %(d)s as d
              from stats_fs_u
              where date>='%(s)s'
                and date<='%(e)s'

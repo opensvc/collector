@@ -110,7 +110,14 @@ def ajax_perfcmp_plot():
 #
 @auth.requires_login()
 def rows_stat_day():
-    sql = """select * from stat_day order by day"""
+    o = db.stat_day.id
+    q = o > 0
+    b = db(q).select(orderby=o, limitby=(0,1)).first().day
+    e = db(q).select(orderby=~o, limitby=(0,1)).first().day
+    sql = """select *, %(d)s as d
+             from stat_day
+             group by d
+             order by d"""%dict(d=period_concat(b, e, field='day'))
     return db.executesql(sql)
 
 @auth.requires_login()
