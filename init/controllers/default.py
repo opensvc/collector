@@ -750,7 +750,30 @@ def end_action(vars, vals):
     #raise Exception(sql)
     db.executesql(sql)
     db.commit()
+    if h['action'].strip("'") in ('start', 'startcontainer') and \
+       h['status'].strip("'") == 'ok':
+        update_virtual_asset(h['hostname'].strip("'"), h['svcname'].strip("'"))
     return 0
+
+def update_virtual_asset(nodename, svcname):
+    q = db.services.svc_name == svcname
+    svc = db(q).select(db.services.svc_vmname).first()
+    if svc is None:
+        return
+    q = db.nodes.nodename == nodename
+    node = db(q).select().first()
+    if node is None:
+        return
+    fields = ['loc_addr', 'loc_city', 'loc_zip', 'loc_room', 'loc_building',
+              'loc_floor', 'loc_rack', 'power_cabinet1', 'power_cabinet2',
+              'power_supply_nb', 'power_protect', 'power_protect_breaker',
+              'power_breaker1', 'power_breaker2', 'loc_country']
+    sql = "update nodes set "
+    for f in fields:
+        sql += "%s='%s',"%(f, node[f])
+    sql = sql.rstrip(',')
+    sql += "where nodename='%s'"%svc.svc_vmname
+    db.executesql(sql)
 
 @service.xmlrpc
 def update_service(vars, vals):
