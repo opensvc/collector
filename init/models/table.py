@@ -1052,6 +1052,7 @@ action_img_h = {
 }
 
 os_img_h = {
+  'darwin': 'darwin',
   'linux': 'linux',
   'hp-ux': 'hpux',
   'opensolaris': 'opensolaris',
