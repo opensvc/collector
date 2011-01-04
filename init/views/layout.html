@@ -16,6 +16,7 @@
       <div class='floatw'>
         <h3>{{=A((response.title or request.application), _href="http://www.opensvc.com", _style='color:white')}}</h3>
       </div>
+      {{=queued_action_widget()}}
       {{if response.menu_auth:}}
       {{=MENU(response.menu_auth, _class='web2py-menu')}}
       {{pass}}
@@ -24,6 +25,7 @@
       {{pass}}
       <div class=spacer>&nbsp;</div>
     </div>
+    <div class=action_queue id=action_queue></div>
     <div class=spacer>&nbsp;</div>
     <div class=layout>
       <div class=spacer>&nbsp;</div>

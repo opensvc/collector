@@ -856,3 +856,16 @@ update auth_user set perpage=20;
 
 alter table log modify column log_dict text;
 
+CREATE TABLE `action_queue` (
+  `id` integer  NOT NULL AUTO_INCREMENT,
+  `status` varchar(1) default 'W',
+  `command` text  NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx1` (`status`)
+);
+
+alter table action_queue add column date_queued timestamp not null default CURRENT_TIMESTAMP;
+
+alter table action_queue add column date_dequeued timestamp;
+
+

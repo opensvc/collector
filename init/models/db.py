@@ -1078,3 +1078,10 @@ db.define_table('wiki_pages',
     Field('change_note', length=200),
     migrate=False)
 
+db.define_table('action_queue',
+    Field('status', 'string'),
+    Field('command', 'string'),
+    Field('date_queued', 'timestamp'),
+    Field('date_dequeued', 'timestamp'),
+    migrate=False)
+

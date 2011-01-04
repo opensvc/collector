@@ -1370,6 +1370,7 @@ def do_action(ids, action=None):
     else:
         force = ''
 
+    # filter out services we are not responsible for
     sql = """select m.mon_nodname, m.mon_svcname
              from v_svcmon m
              join v_apps_flat a on m.svc_app=a.app
@@ -1380,22 +1381,28 @@ def do_action(ids, action=None):
                    user=user_name())
     rows = db.executesql(sql)
 
-    from subprocess import Popen
-    def do_select_action(node, svc, action):
+    def fmt_action(node, svc, action):
         cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
                       '-o', 'ForwardX11=no',
                       '-o', 'PasswordAuthentication=no',
                'opensvc@'+node,
                '--',
                'sudo', '/opt/opensvc/bin/svcmgr', force, '--service', svc, action]
-        process = Popen(cmd, stdin=None, stdout=None, close_fds=True)
-        #process.communicate()
+        return ' '.join(cmd)
 
     s = []
+    vals = []
+    vars = ['command']
     for row in rows:
-        do_select_action(row[0], row[1], action)
+        vals.append([fmt_action(row[0], row[1], action)])
         s.append('@'.join((row[0], row[1])))
 
+    purge_action_queue()
+    generic_insert('action_queue', vars, vals)
+    from subprocess import Popen
+    actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
+    process = Popen(actiond)
+    process.communicate()
     _log('service.action', 'run %(a)s on %(s)s', dict(a=action, s=', '.join(s)))
 
 

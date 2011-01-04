@@ -1137,3 +1137,12 @@ div.summary {
 .summary .summary_header {
     border-bottom: solid 4px darkorange
 }
+
+.action_queue {
+    width: 100%;
+    display: none;
+    max-height: 150px;
+    overflow: auto;
+    background: white;
+}
+

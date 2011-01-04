@@ -2132,4 +2132,10 @@ function dashboard_item(item, url, toggle_url, checked){
         }
     })
 }
+function click_action_queue(url) {
+    $("#action_queue").toggle('fast')
+    if ($("#action_queue").is(":visible")) {
+        ajax(url, [], 'action_queue')
+    }
+}
 </script>

@@ -144,7 +144,7 @@ class table_nodes(HtmlTable):
             self.additional_tools.append('node_del')
         self.additional_tools.append('pkgdiff')
         self.additional_tools.append('grpperf')
-        if member_of(('Manager', 'Executer')):
+        if member_of(('Manager', 'CompExec')):
             self.additional_tools.append('tool_action')
 
     def tool_action(self):
@@ -346,8 +346,7 @@ def do_action(ids, action=None):
     q &= db.nodes.team_responsible.belongs(user_groups())
     rows = db(q).select(db.nodes.nodename)
 
-    from subprocess import Popen
-    def do_select_action(node, action, module):
+    def fmt_action(node, action, module):
         cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
                       '-o', 'ForwardX11=no',
                       '-o', 'PasswordAuthentication=no',
@@ -355,12 +354,19 @@ def do_action(ids, action=None):
                '--',
                'sudo', '/opt/opensvc/bin/nodemgr', 'compliance', action,
                '--module', module]
-        process = Popen(cmd, stdin=None, stdout=None, close_fds=True)
-        #process.communicate()
+        return ' '.join(cmd)
 
+    vals = []
+    vars = ['command']
     for row in rows:
-        do_select_action(row.nodename, action, module)
+        vals.append([fmt_action(row.nodename, action, module)])
 
+    purge_action_queue()
+    generic_insert('action_queue', vars, vals)
+    from subprocess import Popen
+    actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
+    process = Popen(actiond)
+    process.communicate()
     _log('service.action', 'run %(a)s of module %(m)s on nodes %(s)s', dict(
           a=action, s=','.join(map(lambda x: x.nodename, rows)), m=module))
 
