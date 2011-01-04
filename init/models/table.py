@@ -749,7 +749,7 @@ class HtmlTable(object):
         return inputs
 
     def ajax_submit(self, args=[], vars={}, additional_inputs=[]):
-        return """table_ajax_submit('%(url)s', '%(id)s', %(inputs)s, %(additional_inputs)s, %(input_name)s, '%(spinner)s');"""%dict(
+        return """table_ajax_submit('%(url)s', '%(id)s', %(inputs)s, %(additional_inputs)s, %(input_name)s);"""%dict(
                          url=URL(r=request,f=self.func, args=args, vars=vars),
                          id=self.innerhtml,
                          inputs = 'inputs_'+self.id,
