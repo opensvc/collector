@@ -10,7 +10,7 @@ def perf_stats(node, rowid):
                """%dict(url=URL(r=request,c='ajax_perf',f=f),
                                id=rowid,
                                e=e,
-                               spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
+                               spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')),
                        )
     def perf_group(title='', group=''):
         group_img_h = {

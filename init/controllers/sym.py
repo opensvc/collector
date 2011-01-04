@@ -541,7 +541,7 @@ class table(object):
                 """%dict(url=URL(r=request,f=self.func),
                          innerhtml=self.innerhtml,
                          inputs = ','.join(map(repr, self.ajax_inputs())),
-                         spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
+                         spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')),
                         )
 
     def _ajax(self):
@@ -1367,7 +1367,7 @@ def sym_overview_item(symid, func, count, title):
            };
            toggle_vis_block("%(func)s_%(symid)s");
          """%dict(url=URL(r=request,f=func), func=func,
-                  spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
+                  spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')),
                   symid=symid),
         _onmouseover="this.style.color='orange'",
         _onmouseout="this.style.color='inherit'",

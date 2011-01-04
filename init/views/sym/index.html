@@ -102,7 +102,7 @@ def format_sym(sym):
                  ajax("%(url)s",['arrayid'],"sym_detail_%(symid)s");
                };
             """%dict(url=URL(r=request,f='sym_overview'),
-                     spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
+                     spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')),
                      symid=sym['symid']),
         )
     return d

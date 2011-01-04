@@ -187,7 +187,7 @@ class HtmlTable(object):
                   getElementById("%(div)s").innerHTML='%(spinner)s';
                   ajax('%(url)s', [], '%(div)s');
                 """%dict(div=id_session_div,
-                         spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
+                         spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')),
                          url=URL(r=request,c='ajax', f='ajax_db_filters', args=[id_session_div]),
                         ),
               ),
@@ -298,6 +298,7 @@ class HtmlTable(object):
                   T('Refresh'),
                   _onclick=self.ajax_submit(),
                   _class='refresh16',
+                  _id='refresh_'+self.id,
                 ),
                 _class='floatw',
               ),
@@ -754,7 +755,6 @@ class HtmlTable(object):
                          inputs = 'inputs_'+self.id,
                          additional_inputs = str(additional_inputs),
                          input_name=str(self.checkbox_names),
-                         spinner=IMG(_src=URL(r=request,c='static',f='spinner_16.png')),
                         )
 
     def ajax_enter_submit(self, args=[], additional_inputs=[]):

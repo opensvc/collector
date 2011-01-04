@@ -57,7 +57,7 @@ def ajax_action_status():
                )
     else:
         return IMG(
-                _src=URL(r=request,c='static',f='spinner_16.png'),
+                _src=URL(r=request,c='static',f='spinner.gif'),
                 _border=0,
                 _title=T("unfinished"),
                 _onload="""refresh_action('%(url)s', '%(id)s')"""%dict(
@@ -115,7 +115,7 @@ class col_svcactions_status(HtmlTableColumn):
             action_status = SPAN(
               SPAN(
                 IMG(
-                  _src=URL(r=request,c='static',f='spinner_16.png'),
+                  _src=URL(r=request,c='static',f='spinner.gif'),
                   _border=0,
                   _title=T("unfinished"),
                   _onload="""refresh_action('%(url)s', '%(id)s')"""%dict(

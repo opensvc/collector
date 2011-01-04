@@ -324,7 +324,7 @@ function sync_ajax(url, inputs, id, f) {
          }
     })
 }
-function table_ajax_submit(url, id, inputs, additional_inputs, input_name, spinner) {
+function table_ajax_submit(url, id, inputs, additional_inputs, input_name) {
     s = inputs.concat(additional_inputs).concat(getIdsByName(input_name))
     var query=""
     for (i=0; i<s.length; i++) {
@@ -336,7 +336,7 @@ function table_ajax_submit(url, id, inputs, additional_inputs, input_name, spinn
          url: url,
          data: query,
          beforeSend: function(req){
-	     document.getElementById(id).innerHTML=spinner
+	     $("#refresh_"+id).toggleClass("spinner")
          },
          success: function(msg){
              document.getElementById(id).innerHTML=msg
