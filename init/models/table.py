@@ -291,6 +291,19 @@ class HtmlTable(object):
             )
         return d
 
+    def refresh(self):
+        d = DIV(
+              A(
+                SPAN(
+                  T('Refresh'),
+                  _onclick=self.ajax_submit(),
+                  _class='refresh16',
+                ),
+                _class='floatw',
+              ),
+            )
+        return d
+
     def pager(self):
         if not self.pageable:
             return SPAN()
@@ -814,6 +827,7 @@ class HtmlTable(object):
               self.show_flash(),
               DIV(
                 self.pager(),
+                self.refresh(),
                 export,
                 self.columns_selector(),
                 self.persistent_filters(),

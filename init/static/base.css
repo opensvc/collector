@@ -888,6 +888,10 @@ ul.login_menu ul {
     background: transparent url('csv.png') no-repeat;
     padding-left: 18px;
 }
+.refresh16 {
+    background: transparent url('refresh16.png') no-repeat;
+    padding-left: 18px;
+}
 
 .hd16 {
     background: transparent url('hd16.png') no-repeat;
