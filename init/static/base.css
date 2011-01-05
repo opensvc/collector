@@ -876,6 +876,34 @@ ul.login_menu ul {
     color: black;
 }
 
+.dia16 {
+    background: transparent url('dia16.png') no-repeat;
+    padding-left: 18px;
+}
+.detach16 {
+    background: transparent url('detach16.png') no-repeat;
+    padding-left: 18px;
+}
+.attach16 {
+    background: transparent url('attach16.png') no-repeat;
+    padding-left: 18px;
+}
+.add16 {
+    background: transparent url('add16.png') no-repeat;
+    padding-left: 18px;
+}
+.del16 {
+    background: transparent url('del16.png') no-repeat;
+    padding-left: 18px;
+}
+.edit16 {
+    background: transparent url('edit.png') no-repeat;
+    padding-left: 18px;
+}
+.spark16 {
+    background: transparent url('spark16.png') no-repeat;
+    padding-left: 18px;
+}
 .filters {
     background: transparent url('filter16.png') no-repeat;
     padding-left: 18px;

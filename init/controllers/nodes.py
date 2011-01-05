@@ -181,6 +181,7 @@ class table_nodes(HtmlTable):
         d = DIV(
               A(
                 T("Compliance action"),
+                _class='action16',
                 _onclick="""
                   click_toggle_vis('%(div)s', 'block');
                 """%dict(div='tool_action'),
@@ -241,6 +242,7 @@ class table_nodes(HtmlTable):
         d = DIV(
               A(
                 T("Delete nodes"),
+                _class='del16',
                 _onclick="""if (confirm("%(text)s")){%(s)s};"""%dict(
                    s=self.ajax_submit(args=['node_del']),
                    text=T("Deleting a node also deletes all its asset information. Please confirm user deletion"),
@@ -254,6 +256,7 @@ class table_nodes(HtmlTable):
         d = DIV(
               A(
                 T("Add node"),
+                _class='add16',
                 _onclick="""location.href='node_insert?_next=%s'"""%URL(r=request),
               ),
               _class='floatw',
@@ -273,6 +276,7 @@ class table_nodes(HtmlTable):
         d = DIV(
               A(
                 T("Group performance"),
+                _class='spark16',
                 _onclick="""click_toggle_vis('%(div)s', 'block');"""%dict(
                               div=divid,
                             ),
@@ -315,6 +319,7 @@ class table_nodes(HtmlTable):
         d = DIV(
               A(
                 T("Package differences"),
+                _class='pkg16',
                 _onclick="""click_toggle_vis('%(div)s', 'block');
                             ajax('%(url)s?node='+checked_nodes(), [], '%(div)s');"""%dict(
                               url=URL(r=request,c='pkgdiff',f='ajax_pkgdiff'),

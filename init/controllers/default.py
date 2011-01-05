@@ -1237,6 +1237,7 @@ class table_svcmon(HtmlTable):
         d = DIV(
               A(
                 T("Topology"),
+                _class='dia16',
                 _onclick=self.ajax_submit(args=['topology']),
               ),
               _class='floatw',
@@ -1320,6 +1321,7 @@ class table_svcmon(HtmlTable):
         d = DIV(
               A(
                 T("Service action"),
+                _class='action16',
                 _onclick="""
                   click_toggle_vis('%(div)s', 'block');
                 """%dict(div='tool_action'),

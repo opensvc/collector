@@ -112,6 +112,7 @@ class table_users(HtmlTable):
         d = DIV(
               A(
                 T("Add group"),
+                _class='add16',
                 _onclick="""
                   click_toggle_vis('%(div)s', 'block');
                 """%dict(div='group_add'),
@@ -131,6 +132,7 @@ class table_users(HtmlTable):
         d = DIV(
               A(
                 T("Add user"),
+                _class='add16',
                 _onclick="""
                   click_toggle_vis('%(div)s', 'block');
                 """%dict(div='user_add'),
@@ -146,13 +148,14 @@ class table_users(HtmlTable):
             )
         return d
 
-    def group_select_tool(self, label, action, divid, sid):
+    def group_select_tool(self, label, action, divid, sid, _class=''):
         q = ~db.auth_group.role.like('user_%')
         o = db.auth_group.role
         options = [OPTION(g.role,_value=g.id) for g in db(q).select(orderby=o)]
         d = DIV(
               A(
                 T(label),
+                _class=_class,
                 _onclick="""
                   click_toggle_vis('%(div)s', 'block');
                 """%dict(div=divid),
@@ -193,27 +196,31 @@ class table_users(HtmlTable):
         d = self.group_select_tool(label="Detach group",
                                    action="group_detach",
                                    divid="group_detach",
-                                   sid="group_detach_s")
+                                   sid="group_detach_s",
+                                   _class="attach16")
         return d
 
     def group_attach(self):
         d = self.group_select_tool(label="Attach group",
                                    action="group_attach",
                                    divid="group_attach",
-                                   sid="group_attach_s")
+                                   sid="group_attach_s",
+                                   _class="attach16")
         return d
 
     def group_del(self):
         d = self.group_select_tool(label="Delete group",
                                    action="group_del",
                                    divid="group_del",
-                                   sid="group_del_s")
+                                   sid="group_del_s",
+                                   _class="del16")
         return d
 
     def users_del(self):
         d = DIV(
               A(
                 T("Delete users"),
+                _class='del16',
                 _onclick="""if (confirm("%(text)s")){%(s)s};
                          """%dict(s=self.ajax_submit(args=['users_del']),
                                   text=T("Deleting a user also deletes its group membership. Please confirm user deletion"),

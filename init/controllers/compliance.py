@@ -308,6 +308,7 @@ class table_comp_rulesets_nodes(HtmlTable):
         d = DIV(
               A(
                 T("Detach ruleset"),
+                _class='detach16',
                 _onclick=self.ajax_submit(args=['detach_ruleset'],
                                           additional_inputs=self.rulesets.ajax_inputs()),
               ),
@@ -319,6 +320,7 @@ class table_comp_rulesets_nodes(HtmlTable):
         d = DIV(
               A(
                 T("Attach ruleset"),
+                _class='attach16',
                 _onclick=self.ajax_submit(args=['attach_ruleset'],
                                           additional_inputs=self.rulesets.ajax_inputs()),
               ),
@@ -516,6 +518,7 @@ class table_comp_rulesets(HtmlTable):
         d = DIV(
               A(
                 T(label),
+                _class='edit16',
                 _onclick="""
                   click_toggle_vis('%(div)s', 'block');
                 """%dict(div=divid),
@@ -562,6 +565,7 @@ class table_comp_rulesets(HtmlTable):
         d = DIV(
               A(
                 T(label),
+                _class='add16',
                 _onclick="""
                   click_toggle_vis('%(div)s', 'block');
                 """%dict(div=divid),
@@ -619,6 +623,7 @@ class table_comp_rulesets(HtmlTable):
         d = DIV(
               A(
                 T("Rename ruleset"),
+                _class='edit16',
                 _onclick="""click_toggle_vis('%(div)s', 'block');
                          """%dict(div='comp_ruleset_rename'),
               ),
@@ -641,6 +646,7 @@ class table_comp_rulesets(HtmlTable):
         d = DIV(
               A(
                 T("Delete ruleset"),
+                _class='del16',
                 _onclick="""if (confirm("%(text)s")){%(s)s};
                          """%dict(s=self.ajax_submit(args=['ruleset_del']),
                                   text=T("Deleting a ruleset also deletes the ruleset variables, filters attachments and node attachments. Please confirm ruleset deletion."),
@@ -654,6 +660,7 @@ class table_comp_rulesets(HtmlTable):
         d = DIV(
               A(
                 T("Attach filterset"),
+                _class='attach16',
                 _onclick="""
                   click_toggle_vis('%(div)s', 'block');
                 """%dict(div='comp_filterset_attach'),
@@ -673,6 +680,7 @@ class table_comp_rulesets(HtmlTable):
         d = DIV(
               A(
                 T("Detach filterset"),
+                _class='detach16',
                 _onclick=self.ajax_submit(args=['filterset_detach']),
               ),
               _class='floatw',
@@ -683,6 +691,7 @@ class table_comp_rulesets(HtmlTable):
         d = DIV(
               A(
                 T("Add ruleset"),
+                _class='add16',
                 _onclick="""
                   click_toggle_vis('%(div)s', 'block');
                 """%dict(div='comp_ruleset_add'),
@@ -723,6 +732,7 @@ class table_comp_rulesets(HtmlTable):
         d = DIV(
               A(
                 T("Delete variable"),
+                _class='del16',
                 _onclick=self.ajax_submit(args=['ruleset_var_del']),
               ),
               _class='floatw',
@@ -733,6 +743,7 @@ class table_comp_rulesets(HtmlTable):
         d = DIV(
               A(
                 T("Add variable"),
+                _class='add16',
                 _onclick="""
                   click_toggle_vis('%(div)s', 'block');
                 """%dict(div='comp_ruleset_var_add'),
@@ -1211,6 +1222,7 @@ class table_comp_filtersets(HtmlTable):
         d = DIV(
               A(
                 T("Detach filters"),
+                _class='detach16',
                 _onclick=self.ajax_submit(args=['detach_filters'])
               ),
               _class='floatw',
@@ -1221,6 +1233,7 @@ class table_comp_filtersets(HtmlTable):
         d = DIV(
               A(
                 T("Rename filterset"),
+                _class='edit16',
                 _onclick="""click_toggle_vis('%(div)s', 'block');
                          """%dict(div='comp_filterset_rename'),
               ),
@@ -1243,6 +1256,7 @@ class table_comp_filtersets(HtmlTable):
         d = DIV(
               A(
                 T("Delete filterset"),
+                _class='del16',
                 _onclick="""if (confirm("%(text)s")){%(s)s};
                          """%dict(s=self.ajax_submit(args=['delete_filterset']),
                                   text=T("Deleting a filterset also deletes the filterset filter attachments. Please confirm filterset deletion."),
@@ -1256,6 +1270,7 @@ class table_comp_filtersets(HtmlTable):
         d = DIV(
               A(
                 T("Attach filterset"),
+                _class='attach16',
                 _onclick="""
                   click_toggle_vis('%(div)s', 'block');
                 """%dict(div='comp_encap_filterset_attach'),
@@ -1275,6 +1290,7 @@ class table_comp_filtersets(HtmlTable):
         d = DIV(
               A(
                 T("Attach filter"),
+                _class='attach16',
                 _onclick="""
                   click_toggle_vis('%(div)s', 'block');
                 """%dict(div='comp_filter_attach'),
@@ -1294,6 +1310,7 @@ class table_comp_filtersets(HtmlTable):
         d = DIV(
               A(
                 T("Add filterset"),
+                _class='add16',
                 _onclick="""
                   click_toggle_vis('%(div)s', 'block');
                 """%dict(div='comp_filterset_add'),
@@ -1526,6 +1543,7 @@ class table_comp_filters(HtmlTable):
         d = DIV(
               A(
                 T("Delete filters"),
+                _class='del16',
                 _onclick=self.ajax_submit(args=['delete_filter']),
               ),
               _class='floatw',
@@ -1536,6 +1554,7 @@ class table_comp_filters(HtmlTable):
         d = DIV(
               A(
                 T("Add filter"),
+                _class='add16',
                 _onclick="""
                   click_toggle_vis('%(div)s', 'block');
                 """%dict(div='comp_filter_add'),
@@ -1815,6 +1834,7 @@ class table_comp_moduleset(HtmlTable):
         d = DIV(
               A(
                 T("Rename moduleset"),
+                _class='edit16',
                 _onclick="""click_toggle_vis('%(div)s', 'block');
                          """%dict(div='comp_moduleset_rename'),
               ),
@@ -1837,6 +1857,7 @@ class table_comp_moduleset(HtmlTable):
         d = DIV(
               A(
                 T("Delete moduleset"),
+                _class='del16',
                 _onclick="""if (confirm("%(text)s")){%(s)s};
                          """%dict(s=self.ajax_submit(args=['moduleset_del']),
                                   text=T("Deleting a moduleset also deletes the moduleset module attachments. Please confirm moduleset deletion."),
@@ -1850,6 +1871,7 @@ class table_comp_moduleset(HtmlTable):
         d = DIV(
               A(
                 T("Add moduleset"),
+                _class='add16',
                 _onclick="""
                   click_toggle_vis('%(div)s', 'block');
                 """%dict(div='comp_moduleset_add'),
@@ -1870,6 +1892,7 @@ class table_comp_moduleset(HtmlTable):
         d = DIV(
               A(
                 T("Delete modules"),
+                _class='del16',
                 _onclick=self.ajax_submit(args=['module_del']),
               ),
               _class='floatw',
@@ -1880,6 +1903,7 @@ class table_comp_moduleset(HtmlTable):
         d = DIV(
               A(
                 T("Add module"),
+                _class='add16',
                 _onclick="""
                   click_toggle_vis('%(div)s', 'block');
                 """%dict(div='comp_module_add'),

@@ -51,6 +51,7 @@ class table_apps(HtmlTable):
         d = DIV(
               A(
                 T(label),
+                _class='add16',
                 _onclick="""
                   click_toggle_vis('%(div)s', 'block');
                 """%dict(div=divid),
@@ -86,13 +87,14 @@ class table_apps(HtmlTable):
             )
         return d
 
-    def group_select_tool(self, label, action, divid, sid):
+    def group_select_tool(self, label, action, divid, sid, _class=''):
         q = ~db.auth_group.role.like('user_%')
         o = db.auth_group.role
         options = [OPTION(g.role,_value=g.id) for g in db(q).select(orderby=o)]
         d = DIV(
               A(
                 T(label),
+                _class=_class,
                 _onclick="""
                   click_toggle_vis('%(div)s', 'block');
                 """%dict(div=divid),
@@ -133,20 +135,23 @@ class table_apps(HtmlTable):
         d = self.group_select_tool(label="Detach group",
                                    action="group_detach",
                                    divid="group_detach",
-                                   sid="group_detach_s")
+                                   sid="group_detach_s",
+                                   _class="detach16")
         return d
 
     def group_attach(self):
         d = self.group_select_tool(label="Attach group",
                                    action="group_attach",
                                    divid="group_attach",
-                                   sid="group_attach_s")
+                                   sid="group_attach_s",
+                                   _class="attach16")
         return d
 
     def app_del(self):
         d = DIV(
               A(
                 T("Delete application"),
+                _class='del16',
                 _onclick="""if (confirm("%(text)s")){%(s)s};
                          """%dict(s=self.ajax_submit(args=['app_del']),
                                   text=T("Deleting an application code also deletes its group membership. Please confirm application deletion"),

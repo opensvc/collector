@@ -281,6 +281,7 @@ class table_drplan(HtmlTable):
         d = DIV(
               A(
                 T("Generate scripts"),
+                _class='action16',
                 _href=URL(r=request, f='drplan_scripts',
                           vars={'prj': request.vars.prj}),
               ),
@@ -299,6 +300,7 @@ class table_drplan(HtmlTable):
         d = DIV(
               A(
                 T("Set wave"),
+                _class='edit16',
                 _onclick="""
                   click_toggle_vis('%(div)s', 'block');
                 """%dict(div='wave'),
@@ -324,6 +326,7 @@ class table_drplan(HtmlTable):
         d = DIV(
               A(
                 T(title),
+                _class='add16',
                 _onclick="""
                   click_toggle_vis('%(div)s', 'block');
                 """%dict(div=action),
@@ -371,6 +374,7 @@ class table_drplan(HtmlTable):
         d = DIV(
               A(
                 T("Delete project"),
+                _class='del16',
                 _onclick="""click_toggle_vis('%(div)s', 'block');"""%dict(
                       div='del_project'),
               ),
@@ -407,6 +411,7 @@ class table_drplan(HtmlTable):
         d = DIV(
               A(
                 s,
+                _class='drp16',
                 _onclick="""
                   click_toggle_vis('%(div)s', 'block');
                 """%dict(div='project'),
