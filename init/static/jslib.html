@@ -201,6 +201,9 @@ function sparkl(url, id) {
     });
 }
 function comp_status_plot(url, id) {
+    if (!$("#"+id).is(":visible")) {
+        return
+    }
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
 	$.jqplot(id, data[1], {

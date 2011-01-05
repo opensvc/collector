@@ -69,6 +69,7 @@ class HtmlTable(object):
         self.dbfilterable = True
         self.pageable = True
         self.exportable = True
+        self.refreshable = True
         self.colored_lines = True
         self.additional_tools = []
         self.span = None
@@ -218,7 +219,7 @@ class HtmlTable(object):
                   INPUT(
                     _type='checkbox',
                     _name=id_col,
-                    _onclick="""if (getElementById('%(fid)s').value.length==0) {
+                    _onclick="""if (!getElementById('%(fid)s') || getElementById('%(fid)s').value.length==0) {
                                  check_toggle_vis(this.checked, "%(col_name)s");
                                  getElementById("%(id_set_col_table)s").value="%(table)s";
                                  getElementById("%(id_set_col_field)s").value="%(field)s";
@@ -292,6 +293,8 @@ class HtmlTable(object):
         return d
 
     def refresh(self):
+        if not self.refreshable:
+            return SPAN()
         d = DIV(
               A(
                 SPAN(

@@ -2160,6 +2160,7 @@ class table_comp_mod_status(HtmlTable):
                      _class='comp_plot',
                     ),
         }
+        self.refreshable = False
 
 class table_comp_node_status(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
@@ -2210,6 +2211,7 @@ class table_comp_node_status(HtmlTable):
                      _class='comp_plot',
                     ),
         }
+        self.refreshable = False
 
 @service.json
 def json_nod_status_log(nodename):
@@ -2516,7 +2518,10 @@ def ajax_comp_status():
           id=nod_plot_id(r['mod_node']),
         )
     return DIV(
-             SCRIPT(spark_cmds, _name=t.id+"_to_eval"),
+             SCRIPT(
+               "$(document).ready(function(){%s});"%spark_cmds,
+               _name=t.id+"_to_eval"
+             ),
              mt.html(),
              nt.html(),
              t.html(),
