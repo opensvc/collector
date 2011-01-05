@@ -107,14 +107,14 @@ function toggle_filter_value_input() {
 // table class js functions
 //
 var timer;
-var showMode = 'table-cell';
-if (document.all) showMode='block';
 function check_toggle_vis(checked, col){
-    cells = document.getElementsByName(col);
-    mode = checked ? showMode : 'none';
-    for(j = 0; j < cells.length; j++) {
-        cells[j].style.display = mode;
-    }
+    $('[name='+col+']').each(function(){
+         if (checked) {
+             $(this).fadeIn('slow')
+         } else {
+             $(this).fadeOut('slow')
+         }
+    })
 }
 function show_result(url, id){
     clearTimeout(timer)
