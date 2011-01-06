@@ -1198,7 +1198,8 @@ class col_overallstatus(HtmlTableColumn):
                   'mon_fsstatus',
                   'mon_diskstatus',
                   'mon_syncstatus',
-                  'mon_appstatus']:
+                  'mon_appstatus',
+                  'mon_hbstatus']:
             s = self.t.colprops[k].get(o)
             if s is None:
                 cl[k] = 'status_undef'
@@ -1208,7 +1209,7 @@ class col_overallstatus(HtmlTableColumn):
         t = TABLE(
           TR(
             TD(self.t.colprops['mon_overallstatus'].get(o),
-               _colspan=6,
+               _colspan=7,
                _class='status '+cl['mon_overallstatus'],
             ),
           ),
@@ -1219,6 +1220,7 @@ class col_overallstatus(HtmlTableColumn):
             TD("dg", _class=cl['mon_diskstatus']),
             TD("sync", _class=cl['mon_syncstatus']),
             TD("app", _class=cl['mon_appstatus']),
+            TD("hb", _class=cl['mon_hbstatus']),
           ),
         )
         return t
@@ -1301,7 +1303,8 @@ svcmon_cols = [
     'mon_fsstatus',
     'mon_diskstatus',
     'mon_syncstatus',
-    'mon_appstatus'
+    'mon_appstatus',
+    'mon_hbstatus'
 ]
 
 v_services_colprops = {
@@ -1500,6 +1503,13 @@ svcmon_colprops = {
     'mon_appstatus': col_status(
              title = 'App status',
              field='mon_appstatus',
+             display = False,
+             img = 'svc',
+             table = 'svcmon',
+            ),
+    'mon_hbstatus': col_status(
+             title = 'Hb status',
+             field='mon_hbstatus',
              display = False,
              img = 'svc',
              table = 'svcmon',

@@ -962,6 +962,8 @@ def svcmon_update(vars, vals):
     now = datetime.datetime.now()
     tmo = now - datetime.timedelta(minutes=18)
     h['mon_updated'] = now
+    if 'mon_hbstatus' not in h:
+        h['mon_hbstatus'] = 'undef'
     generic_insert('svcmon', h.keys(), h.values())
 
     query = db.svcmon_log.mon_svcname==h['mon_svcname']
@@ -978,7 +980,8 @@ def svcmon_update(vars, vals):
                  'mon_diskstatus',
                  'mon_containerstatus',
                  'mon_appstatus',
-                 'mon_syncstatus']
+                 'mon_syncstatus',
+                 'mon_hbstatus']
         _vals = [h['mon_updated'],
                  h['mon_updated'],
                  h['mon_svcname'],
@@ -989,7 +992,8 @@ def svcmon_update(vars, vals):
                  h['mon_diskstatus'],
                  h['mon_containerstatus'],
                  h['mon_appstatus'],
-                 h['mon_syncstatus']]
+                 h['mon_syncstatus'],
+                 h['mon_hbstatus']]
         generic_insert('svcmon_log', _vars, _vals)
     elif last[0].mon_end < tmo:
         _vars = ['mon_begin',
@@ -1002,11 +1006,13 @@ def svcmon_update(vars, vals):
                  'mon_diskstatus',
                  'mon_containerstatus',
                  'mon_appstatus',
-                 'mon_syncstatus']
+                 'mon_syncstatus',
+                 'mon_hbstatus']
         _vals = [last[0].mon_end,
                  h['mon_updated'],
                  h['mon_svcname'],
                  h['mon_nodname'],
+                 "undef",
                  "undef",
                  "undef",
                  "undef",
@@ -1025,7 +1031,8 @@ def svcmon_update(vars, vals):
                  'mon_diskstatus',
                  'mon_containerstatus',
                  'mon_appstatus',
-                 'mon_syncstatus']
+                 'mon_syncstatus',
+                 'mon_hbstatus']
         _vals = [h['mon_updated'],
                  h['mon_updated'],
                  h['mon_svcname'],
@@ -1036,6 +1043,7 @@ def svcmon_update(vars, vals):
                  h['mon_diskstatus'],
                  h['mon_containerstatus'],
                  h['mon_appstatus'],
+                 h['mon_hbstatus'],
                  h['mon_syncstatus']]
         generic_insert('svcmon_log', _vars, _vals)
     elif h['mon_overallstatus'] != last[0].mon_overallstatus or \
@@ -1044,6 +1052,7 @@ def svcmon_update(vars, vals):
          h['mon_diskstatus'] != last[0].mon_diskstatus or \
          h['mon_containerstatus'] != last[0].mon_containerstatus or \
          h['mon_appstatus'] != last[0].mon_appstatus or \
+         h['mon_hbstatus'] != last[0].mon_hbstatus or \
          h['mon_syncstatus'] != last[0].mon_syncstatus:
         _vars = ['mon_begin',
                  'mon_end',
@@ -1055,7 +1064,8 @@ def svcmon_update(vars, vals):
                  'mon_diskstatus',
                  'mon_containerstatus',
                  'mon_appstatus',
-                 'mon_syncstatus']
+                 'mon_syncstatus',
+                 'mon_hbstatus']
         _vals = [h['mon_updated'],
                  h['mon_updated'],
                  h['mon_svcname'],
@@ -1066,7 +1076,8 @@ def svcmon_update(vars, vals):
                  h['mon_diskstatus'],
                  h['mon_containerstatus'],
                  h['mon_appstatus'],
-                 h['mon_syncstatus']]
+                 h['mon_syncstatus'],
+                 h['mon_hbstatus']]
         generic_insert('svcmon_log', _vars, _vals)
         db(db.svcmon_log.id==last[0].id).update(mon_end=h['mon_updated'])
     else:
@@ -1110,6 +1121,7 @@ class table_svcmon(HtmlTable):
             'mon_diskstatus',
             'mon_syncstatus',
             'mon_appstatus',
+            'mon_hbstatus',
             'mon_updated',
             'team_responsible',
             'responsibles',

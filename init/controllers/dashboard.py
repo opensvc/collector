@@ -44,7 +44,8 @@ def svc_status(svc, cellclass="cell2", nestedin=None):
               'mon_fsstatus',
               'mon_diskstatus',
               'mon_syncstatus',
-              'mon_appstatus']:
+              'mon_appstatus',
+              'mon_hbstatus']:
         if nestedin is None:
             if svc[k] is None:
                 cl[k] = 'status_undef'
@@ -71,7 +72,7 @@ def svc_status(svc, cellclass="cell2", nestedin=None):
           TABLE(
             TR(
               TD(overallstatus,
-                 _colspan=6, 
+                 _colspan=7,
                  _class=cellclass+' status '+cl['mon_overallstatus'],
               ),
             ),
@@ -82,6 +83,7 @@ def svc_status(svc, cellclass="cell2", nestedin=None):
               TD("dg", _class=cellclass+' '+cl['mon_diskstatus']),
               TD("sync", _class=cellclass+' '+cl['mon_syncstatus']),
               TD("app", _class=cellclass+' '+cl['mon_appstatus']),
+              TD("hb", _class=cellclass+' '+cl['mon_hbstatus']),
             ),
           ),
           _class="svcstatus",

@@ -690,7 +690,7 @@ class table_svcmon_log(HtmlTable):
         for c in ['mon_svcname', 'mon_nodname', 'mon_begin', 'mon_end',
                   'mon_overallstatus', 'mon_containerstatus', 'mon_ipstatus',
                   'mon_fsstatus', 'mon_diskstatus', 'mon_syncstatus',
-                  'mon_appstatus']:
+                  'mon_appstatus', 'mon_hbstatus']:
             self.colprops[c].table = 'svcmon_log'
         self.dbfilterable = True
         self.extraline = True

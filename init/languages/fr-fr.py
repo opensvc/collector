@@ -256,6 +256,7 @@
 'Group uniquely assigned to user %(id)s': "Groupe assigné exclusivement à l'utilisateur %(id)s",
 'Groups': 'Groupes',
 'Guest OS': 'OS du container',
+'Hb status': 'Hb status',
 'Headers:': 'En-têtes:',
 'Hello World': 'Bonjour Monde',
 'Help': 'Aide',
