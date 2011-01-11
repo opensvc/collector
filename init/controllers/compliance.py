@@ -2671,6 +2671,11 @@ def comp_get_moduleset_modules(moduleset):
                         groupby=db.comp_moduleset_modules.modset_mod_name)
     return [r.modset_mod_name for r in rows]
 
+def comp_attached_ruleset_id(nodename):
+    q = db.comp_rulesets_nodes.nodename == nodename
+    rows = db(q).select(db.comp_rulesets_nodes.ruleset_id)
+    return [r.ruleset_id for r in rows]
+
 def comp_attached_moduleset_id(nodename):
     q = db.comp_node_moduleset.modset_node == nodename
     rows = db(q).select(db.comp_node_moduleset.modset_id)
@@ -2784,14 +2789,22 @@ def comp_attach_ruleset(nodename, ruleset):
 def comp_detach_ruleset(nodename, ruleset):
     if len(ruleset) == 0:
         return dict(status=False, msg="no ruleset specified"%ruleset)
-    ruleset_id = comp_ruleset_exists(ruleset)
+    if ruleset == 'all':
+        ruleset_id = comp_attached_ruleset_id(nodename)
+    else:
+        ruleset_id = comp_ruleset_exists(ruleset)
     if ruleset_id is None:
         return dict(status=False, msg="ruleset %s does not exist"%ruleset)
-    if not comp_ruleset_attached(nodename, ruleset_id):
+    elif ruleset == 'all' and len(ruleset_id) == 0:
+        return dict(status=True, msg="this node has no ruleset attached")
+    if ruleset != 'all' and not comp_ruleset_attached(nodename, modset_id):
         return dict(status=True,
-                    msg="ruleset %s is not attached to this node"%ruleset)
+                    msg="ruleset %s is not attached to this node"%moduleset)
     q = db.comp_rulesets_nodes.nodename == nodename
-    q &= db.comp_rulesets_nodes.ruleset_id == ruleset_id
+    if isinstance(ruleset_id, list):
+        q &= db.comp_rulesets_nodes.ruleset_id.belongs(ruleset_id)
+    else:
+        q &= db.comp_rulesets_nodes.ruleset_id == ruleset_id
     n = db(q).delete()
     if n == 0:
         return dict(status=False, msg="failed to detach the ruleset")
