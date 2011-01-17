@@ -1192,6 +1192,10 @@ class col_status(HtmlTableColumn):
 class col_overallstatus(HtmlTableColumn):
     def html(self, o):
         cl = {}
+        if self.t.colprops['mon_updated'].get(o) < now - datetime.timedelta(minutes=12):
+            outdated = True
+        else:
+            outdated = False
         for k in ['mon_overallstatus',
                   'mon_containerstatus',
                   'mon_ipstatus',
@@ -1201,7 +1205,7 @@ class col_overallstatus(HtmlTableColumn):
                   'mon_appstatus',
                   'mon_hbstatus']:
             s = self.t.colprops[k].get(o)
-            if s is None:
+            if s is None or outdated:
                 cl[k] = 'status_undef'
             else:
                 cl[k] = 'status_'+s.replace(" ", "_")
