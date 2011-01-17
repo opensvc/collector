@@ -1147,8 +1147,6 @@ div.dashboard th {
 }
 
 div.summary {
-    margin: 1em;
-    padding: 1em;
     display: table;
     width: 100%;
 }
@@ -1181,4 +1179,3 @@ div.summary {
     overflow: auto;
     background: white;
 }
-
