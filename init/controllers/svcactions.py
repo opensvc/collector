@@ -465,7 +465,7 @@ def ajax_actions():
         except ToolError, e:
             t.flash = str(e)
 
-    o = ~db.v_svcactions.id
+    o = ~db.v_svcactions.begin|~db.v_svcactions.id
     q = _where(None, 'v_svcactions', domain_perms(), 'hostname')
     q = apply_db_filters(q, 'v_svcactions')
     for f in t.cols:
