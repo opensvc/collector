@@ -2141,4 +2141,14 @@ function click_action_queue(url) {
         ajax(url, [], 'action_queue')
     }
 }
+function toggle_plot(url, rowid, id) {
+    if ($("#"+id).is(":visible")) {
+        $("#"+id).hide()
+    } else {
+        $("#"+id).show()
+        sync_ajax(url,['begin_'+rowid, 'end_'+rowid], id, function(){
+            eval_js_in_ajax_response(id)
+        })
+    }
+}
 </script>

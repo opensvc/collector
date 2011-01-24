@@ -24,18 +24,20 @@ def perf_stats(node, rowid):
                         'netdev_err': 'action_sync_16.png',
                         'fs': 'hd16.png',
                       }
+        divid = 'prf_cont_%s_%s'%(group,rowid)
         d = DIV(
               IMG(_src=URL(r=request,c='static',f=group_img_h[group])),
               A(
                 T(title),
-                _onClick="""sync_ajax("%(url)s",['begin_%(rowid)s', 'end_%(rowid)s'],'%(div)s',function(){eval_js_in_ajax_response('%(div)s')});"""%dict(
+                _onClick="""toggle_plot('%(url)s', '%(rowid)s','%(div)s')"""%dict(
                              url=URL(r=request,c='ajax_perf',f='ajax_perf_%s_plot'%group,
                                      args=[node, rowid]),
                              rowid=rowid,
-                             div="prf_cont_%s_%s"%(group,rowid)),
+                             div=divid),
               ),
               DIV(
-               _id='prf_cont_%s_%s'%(group,rowid),
+               _id=divid,
+               _style='display:none',
               ),
               _class='container',
             ),
