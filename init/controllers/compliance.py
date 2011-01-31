@@ -3009,7 +3009,10 @@ def comp_get_ruleset(nodename):
     q &= rset_fset.fset_id == v.fset_id
     rows = db(q).select(orderby=o)
 
+    g = db.nodes.nodename
     q = db.nodes.nodename == nodename
+    j = db.nodes.nodename == db.v_svcmon.mon_nodname
+    l = db.v_svcmon.on(j)
     last_index = len(rows)-1
     qr = db.nodes.id > 0
 
@@ -3022,7 +3025,7 @@ def comp_get_ruleset(nodename):
             end_seq = False
         qr = comp_query(qr, row)
         if end_seq:
-            match = db(q&qr).select(db.nodes.id)
+            match = db(q&qr).select(db.nodes.id, groupby=g, left=l)
             if len(match) == 1:
                 ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr))
             qr = db.nodes.id > 0
