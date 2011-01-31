@@ -146,8 +146,9 @@ def avail_db_filters(table=None):
                            db.filters.fil_column,
                            db.filters.fil_need_value,
                            db.filters.fil_pos,
+                           db.filters.fil_search_table,
                            orderby=o,
-                           groupby=db.filters.fil_name,
+                           groupby=db.filters.fil_name|db.filters.fil_search_table,
                           )
     return filters
 

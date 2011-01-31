@@ -22,9 +22,9 @@ def ajax_set_user_prefs_column():
         raise Exception(sql)
 
 def ajax_filter_cloud():
-    val = request.vars.filtervalue
-    fil = request.vars.addfilter
-    filters = db(db.filters.id==fil).select()
+    fil = request.vars['id_new_filter_name']
+    val = request.vars['id_new_filter_value']
+    filters = db(db.filters.fil_name==fil).select()
     if len(filters) == 0:
         return DIV()
     if filters[0].fil_need_value != 1:
@@ -47,8 +47,8 @@ def ajax_filter_cloud():
     def format_item(i, c, c_max):
         s = float(c) / c_max * 100 + 70
         return SPAN(i+' ',
-                    _onClick="""getElementById("filtervalue").value="%s";
-                                getElementById("filtervalue").focus();
+                    _onClick="""getElementById("id_new_filter_value").value="%s";
+                                getElementById("id_new_filter_value").focus();
                              """%str(i),
                     _style="""font-size:'+str(s)+'%;
                               padding:0.4em;
@@ -60,7 +60,7 @@ def ajax_filter_cloud():
         if i == '':
             continue
         d += [format_item(i, n[i], c_max)]
-    return SPAN(d)
+    return SPAN(H3(T('Candidates')), HR(), *d)
 
 @auth.requires_login()
 def ajax_del_db_filters():
@@ -117,6 +117,14 @@ def ajax_new_db_filters():
                            f='ajax_add_db_filters',
                            args=[div]),
                       div=div),
+             _onKeyUp="""
+               clearTimeout(timer);
+               timer=setTimeout(function validate(){
+                 ajax('%(url)s', ["id_new_filter_value", "id_new_filter_name"], 'filter_cloud')
+               }, 800);
+             """%dict(
+                   url=URL(r=request,c='ajax',f='ajax_filter_cloud'),
+                 ),
            ),
            _class='float',
          ),
@@ -131,11 +139,12 @@ def ajax_db_filters():
     div = request.args[0]
     av_filters = avail_db_filters()
     ac_filters = active_db_filters()
+    avh = {}
     av = []
     ac = []
 
-    for f in av_filters:
-        av.append(SPAN(
+    def format_av_filter(f):
+        return SPAN(
                    IMG(
                      _src=URL(r=request,c='static',f=f.fil_img),
                      _style='margin-right:4px',
@@ -144,6 +153,7 @@ def ajax_db_filters():
                      T(f.fil_name),
                      _onClick="""
                        getElementById('id_new_filter_name').value='%(name)s';
+                       $('#filter_cloud').html('');
                        ajax('%(url)s', ['id_new_filter_name'], '%(div)s');
                      """%dict(url=URL(
                                    r=request, c='ajax',
@@ -156,9 +166,9 @@ def ajax_db_filters():
                    BR(),
                    _style='vertical-align:top',
                  )
-        )
-    for f in ac_filters:
-        ac.append(SPAN(
+
+    def format_ac_filter(f):
+        return SPAN(
                    DIV(
                      IMG(
                        _src=URL(r=request,c='static',f=f.filters.fil_img),
@@ -189,15 +199,41 @@ def ajax_db_filters():
                      _class='spacer',
                    ),
                  )
-        )
+
+    table_fancy_name = {
+        'nodes': 'Nodes',
+        'svcmon': 'Status',
+        'services': 'Services',
+        'v_services': 'Services',
+        'SVCactions': 'Actions',
+        None: 'Misc',
+    }
+    for k in set(table_fancy_name.values()):
+        avh[k] = [H3(T(k))]
+    for f in av_filters:
+        if f.fil_search_table not in table_fancy_name:
+            k = 'Misc'
+        else:
+            k = table_fancy_name[f.fil_search_table]
+        avh[k].append(format_av_filter(f))
+    for k in avh:
+        av += DIV(*avh[k], _style='break-inside:avoid-column;-webkit-column-break-inside:avoid;')
+
+    for f in ac_filters:
+        ac.append(format_ac_filter(f))
+
     s = SPAN(
           INPUT(
             _type='hidden',
             _id='id_new_filter_name',
           ),
           H3(T('Active filters')),
-          SPAN(ac+[DIV(_id='id_new_filter')]),
+          HR(),
+          SPAN(ac),
+          DIV(_id='id_new_filter'),
+          DIV(_id='filter_cloud'),
           H3(T('Available filters')),
-          SPAN(av),
+          HR(),
+          DIV(*av, _style='width:31em;-webkit-columns:15em 2;-moz-column-width:15em;-moz-column-count:2;columns:2 15em'),
         )
     return s
