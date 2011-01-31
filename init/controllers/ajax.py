@@ -217,7 +217,7 @@ def ajax_db_filters():
             k = table_fancy_name[f.fil_search_table]
         avh[k].append(format_av_filter(f))
     for k in avh:
-        av += DIV(*avh[k], _style='break-inside:avoid-column;-webkit-column-break-inside:avoid;')
+        av.append(DIV(SPAN(avh[k]), _style='break-inside:avoid-column;-webkit-column-break-inside:avoid;'))
 
     for f in ac_filters:
         ac.append(format_ac_filter(f))
@@ -234,6 +234,6 @@ def ajax_db_filters():
           DIV(_id='filter_cloud'),
           H3(T('Available filters')),
           HR(),
-          DIV(*av, _style='width:31em;-webkit-columns:15em 2;-moz-column-width:15em;-moz-column-count:2;columns:2 15em'),
+          DIV(SPAN(av), _style='width:31em;-webkit-columns:15em 2;-moz-column-width:15em;-moz-column-count:2;columns:2 15em'),
         )
     return s
