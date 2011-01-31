@@ -2056,16 +2056,24 @@ function stat_os(url, id) {
         }
     });
 }
-function ackpanel(show, s){
-    elt = document.getElementById("ackpanel")
-    if (show){
-        elt.style.posLeft = event.pageX+5
-        elt.style.posTop = event.pageY+5
-        show_eid("ackpanel")
-    } else {
-        hide_eid("ackpanel")
+function ackpanel(e, show, s){
+    if (e.pageX || e.pageY) {
+        posx = e.pageX;
+        posy = e.pageY;
     }
-    elt.innerHTML = s
+    else if (e.clientX || e.clientY) {
+        posx = e.clientX + document.body.scrollLeft
+             + document.documentElement.scrollLeft;
+        posy = e.clientY + document.body.scrollTop
+             + document.documentElement.scrollTop;
+    }
+    if (show) {
+        $("#ackpanel").css({"left": posx + "px", "top": posy + "px"});
+        $("#ackpanel").show();
+    } else {
+        $("#ackpanel").hide();
+    }
+    $("#ackpanel").html(s)
 }
 function refresh_action(url, id){
     spintimer=setTimeout(function validate(){ajax(url, [], 'spin_span_'+id)}, 3000);

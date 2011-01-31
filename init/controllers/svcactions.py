@@ -106,8 +106,8 @@ class col_svcactions_status(HtmlTableColumn):
                     B(" with comment: "),
                     self.t.colprops['acked_comment'].get(o),
                   )
-            over = """ackpanel(true, '%s')"""%msg
-            out = """ackpanel(false, '%s')"""%msg
+            over = """ackpanel(event, true, '%s')"""%msg
+            out = """ackpanel(event, false, '%s')"""%msg
         else:
             over = ''
             out = ''
