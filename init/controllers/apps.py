@@ -53,7 +53,7 @@ class table_apps(HtmlTable):
                 T(label),
                 _class='add16',
                 _onclick="""
-                  click_toggle_vis('%(div)s', 'block');
+                  click_toggle_vis(event,'%(div)s', 'block');
                 """%dict(div=divid),
               ),
               DIV(
@@ -96,7 +96,7 @@ class table_apps(HtmlTable):
                 T(label),
                 _class=_class,
                 _onclick="""
-                  click_toggle_vis('%(div)s', 'block');
+                  click_toggle_vis(event,'%(div)s', 'block');
                 """%dict(div=divid),
               ),
               DIV(

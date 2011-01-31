@@ -184,7 +184,7 @@ class HtmlTable(object):
                 ),
                 filters_count,
                 _onclick="""
-                  click_toggle_vis('session_filters', 'block');
+                  click_toggle_vis(event, 'session_filters', 'block');
                   getElementById("%(div)s").innerHTML='%(spinner)s';
                   ajax('%(url)s', [], '%(div)s');
                 """%dict(div=id_session_div,
@@ -279,7 +279,7 @@ class HtmlTable(object):
         d = DIV(
               A(
                 SPAN(T('Configure columns'), _class='columns'),
-                _onclick="click_toggle_vis('%(div)s', 'block')"%dict(
+                _onclick="click_toggle_vis(event, '%(div)s', 'block')"%dict(
                                                           div=self.col_selector_key()),
               ),
               DIV(
@@ -363,7 +363,7 @@ class HtmlTable(object):
         pager.append(A(
                       '%d-%d/%d '%(start+1, end, self.totalrecs),
                        _class="current_page",
-                       _onclick="""click_toggle_vis('%(div)s','block');"""%dict(
+                       _onclick="""click_toggle_vis(event, '%(div)s','block');"""%dict(
                           div='perpage',
                        ),
                      ))
@@ -703,7 +703,7 @@ class HtmlTable(object):
                             SPAN(
                               IMG(
                                 _src=URL(r=request,c='static',f='filter16.png'),
-                                _onClick="""click_toggle_vis('%(div)s','block');getElementById('%(input)s').focus();ajax('%(url)s', inputs_%(id)s, '%(cloud)s');"""%dict(
+                                _onClick="""click_toggle_vis(event, '%(div)s','block');getElementById('%(input)s').focus();ajax('%(url)s', inputs_%(id)s, '%(cloud)s');"""%dict(
                                     id=self.id,
                                     div=self.filter_div_key(c),
                                     url=URL(r=request,f=self.ajax_col_values, args=[c]),

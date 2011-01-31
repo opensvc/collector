@@ -520,7 +520,7 @@ class table_comp_rulesets(HtmlTable):
                 T(label),
                 _class='edit16',
                 _onclick="""
-                  click_toggle_vis('%(div)s', 'block');
+                  click_toggle_vis(event,'%(div)s', 'block');
                 """%dict(div=divid),
               ),
               DIV(
@@ -567,7 +567,7 @@ class table_comp_rulesets(HtmlTable):
                 T(label),
                 _class='add16',
                 _onclick="""
-                  click_toggle_vis('%(div)s', 'block');
+                  click_toggle_vis(event,'%(div)s', 'block');
                 """%dict(div=divid),
               ),
               DIV(
@@ -624,7 +624,7 @@ class table_comp_rulesets(HtmlTable):
               A(
                 T("Rename ruleset"),
                 _class='edit16',
-                _onclick="""click_toggle_vis('%(div)s', 'block');
+                _onclick="""click_toggle_vis(event,'%(div)s', 'block');
                          """%dict(div='comp_ruleset_rename'),
               ),
               DIV(
@@ -662,7 +662,7 @@ class table_comp_rulesets(HtmlTable):
                 T("Attach filterset"),
                 _class='attach16',
                 _onclick="""
-                  click_toggle_vis('%(div)s', 'block');
+                  click_toggle_vis(event,'%(div)s', 'block');
                 """%dict(div='comp_filterset_attach'),
               ),
               DIV(
@@ -693,7 +693,7 @@ class table_comp_rulesets(HtmlTable):
                 T("Add ruleset"),
                 _class='add16',
                 _onclick="""
-                  click_toggle_vis('%(div)s', 'block');
+                  click_toggle_vis(event,'%(div)s', 'block');
                 """%dict(div='comp_ruleset_add'),
               ),
               DIV(
@@ -745,7 +745,7 @@ class table_comp_rulesets(HtmlTable):
                 T("Add variable"),
                 _class='add16',
                 _onclick="""
-                  click_toggle_vis('%(div)s', 'block');
+                  click_toggle_vis(event,'%(div)s', 'block');
                 """%dict(div='comp_ruleset_var_add'),
               ),
               DIV(
@@ -1234,7 +1234,7 @@ class table_comp_filtersets(HtmlTable):
               A(
                 T("Rename filterset"),
                 _class='edit16',
-                _onclick="""click_toggle_vis('%(div)s', 'block');
+                _onclick="""click_toggle_vis(event,'%(div)s', 'block');
                          """%dict(div='comp_filterset_rename'),
               ),
               DIV(
@@ -1272,7 +1272,7 @@ class table_comp_filtersets(HtmlTable):
                 T("Attach filterset"),
                 _class='attach16',
                 _onclick="""
-                  click_toggle_vis('%(div)s', 'block');
+                  click_toggle_vis(event,'%(div)s', 'block');
                 """%dict(div='comp_encap_filterset_attach'),
               ),
               DIV(
@@ -1292,7 +1292,7 @@ class table_comp_filtersets(HtmlTable):
                 T("Attach filter"),
                 _class='attach16',
                 _onclick="""
-                  click_toggle_vis('%(div)s', 'block');
+                  click_toggle_vis(event,'%(div)s', 'block');
                 """%dict(div='comp_filter_attach'),
               ),
               DIV(
@@ -1312,7 +1312,7 @@ class table_comp_filtersets(HtmlTable):
                 T("Add filterset"),
                 _class='add16',
                 _onclick="""
-                  click_toggle_vis('%(div)s', 'block');
+                  click_toggle_vis(event,'%(div)s', 'block');
                 """%dict(div='comp_filterset_add'),
               ),
               DIV(
@@ -1556,7 +1556,7 @@ class table_comp_filters(HtmlTable):
                 T("Add filter"),
                 _class='add16',
                 _onclick="""
-                  click_toggle_vis('%(div)s', 'block');
+                  click_toggle_vis(event,'%(div)s', 'block');
                 """%dict(div='comp_filter_add'),
               ),
               DIV(
@@ -1835,7 +1835,7 @@ class table_comp_moduleset(HtmlTable):
               A(
                 T("Rename moduleset"),
                 _class='edit16',
-                _onclick="""click_toggle_vis('%(div)s', 'block');
+                _onclick="""click_toggle_vis(event,'%(div)s', 'block');
                          """%dict(div='comp_moduleset_rename'),
               ),
               DIV(
@@ -1873,7 +1873,7 @@ class table_comp_moduleset(HtmlTable):
                 T("Add moduleset"),
                 _class='add16',
                 _onclick="""
-                  click_toggle_vis('%(div)s', 'block');
+                  click_toggle_vis(event,'%(div)s', 'block');
                 """%dict(div='comp_moduleset_add'),
               ),
               DIV(
@@ -1905,7 +1905,7 @@ class table_comp_moduleset(HtmlTable):
                 T("Add module"),
                 _class='add16',
                 _onclick="""
-                  click_toggle_vis('%(div)s', 'block');
+                  click_toggle_vis(event,'%(div)s', 'block');
                 """%dict(div='comp_module_add'),
               ),
               DIV(

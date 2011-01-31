@@ -114,7 +114,7 @@ class table_users(HtmlTable):
                 T("Add group"),
                 _class='add16',
                 _onclick="""
-                  click_toggle_vis('%(div)s', 'block');
+                  click_toggle_vis(event,'%(div)s', 'block');
                 """%dict(div='group_add'),
               ),
               DIV(
@@ -134,7 +134,7 @@ class table_users(HtmlTable):
                 T("Add user"),
                 _class='add16',
                 _onclick="""
-                  click_toggle_vis('%(div)s', 'block');
+                  click_toggle_vis(event,'%(div)s', 'block');
                 """%dict(div='user_add'),
               ),
               DIV(
@@ -157,7 +157,7 @@ class table_users(HtmlTable):
                 T(label),
                 _class=_class,
                 _onclick="""
-                  click_toggle_vis('%(div)s', 'block');
+                  click_toggle_vis(event,'%(div)s', 'block');
                 """%dict(div=divid),
               ),
               DIV(

@@ -116,7 +116,7 @@ function check_toggle_vis(checked, col){
          }
     })
 }
-function show_result(url, id){
+function show_result(e, url, id){
     clearTimeout(timer)
     timer=setTimeout(function validate(){
         sync_ajax(url, ['search'], id, function(){
@@ -126,7 +126,7 @@ function show_result(url, id){
                 $('#'+id).show()
                 $('#'+id).css("left", $('body').width())
                 keep_inside($('#'+id))
-                register_pop_up(document.getElementById(id))
+                register_pop_up(e, document.getElementById(id))
             }
         })
     }, 800)
@@ -140,20 +140,20 @@ function keep_inside(box){
         $(box).css("left", (doc_w-box_w-20)+'px')
     }
 }
-function click_toggle_vis(name, mode){
+function click_toggle_vis(e, name, mode){
     cells = document.getElementsByName(name);
     for(j = 0; j < cells.length; j++) {
         if (cells[j].style.display == 'none' || cells[j].style.display == "") {
             cells[j].style.display = mode;
             keep_inside(cells[j])
-            register_pop_up(cells[j])
+            register_pop_up(e, cells[j])
         } else {
             cells[j].style.display = 'none';
         }
     }
 }
-function register_pop_up(box){
-    if (event){event.stopPropagation()}
+function register_pop_up(e, box){
+    if (e){e.stopPropagation()}
     document.onclick = function(e){
         e = e || event
         var target = e.target || e.srcElement

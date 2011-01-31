@@ -596,7 +596,7 @@ class table_avail(HtmlTable):
         d = DIV(
               A(
                 T("Acknowledge unavailabity"),
-                _onclick="""click_toggle_vis('%(div)s', 'block');$('#ackcomment').focus();"""%dict(div='ackcomment_d'),
+                _onclick="""click_toggle_vis(event,'%(div)s', 'block');$('#ackcomment').focus();"""%dict(div='ackcomment_d'),
               ),
               DIV(
                 TABLE(

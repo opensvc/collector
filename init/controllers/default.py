@@ -1343,7 +1343,7 @@ class table_svcmon(HtmlTable):
                 T("Service action"),
                 _class='action16',
                 _onclick="""
-                  click_toggle_vis('%(div)s', 'block');
+                  click_toggle_vis(event, '%(div)s', 'block');
                 """%dict(div='tool_action'),
               ),
               DIV(

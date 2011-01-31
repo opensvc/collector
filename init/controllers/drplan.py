@@ -302,7 +302,7 @@ class table_drplan(HtmlTable):
                 T("Set wave"),
                 _class='edit16',
                 _onclick="""
-                  click_toggle_vis('%(div)s', 'block');
+                  click_toggle_vis(event,'%(div)s', 'block');
                 """%dict(div='wave'),
               ),
               DIV(
@@ -328,7 +328,7 @@ class table_drplan(HtmlTable):
                 T(title),
                 _class='add16',
                 _onclick="""
-                  click_toggle_vis('%(div)s', 'block');
+                  click_toggle_vis(event,'%(div)s', 'block');
                 """%dict(div=action),
               ),
               DIV(
@@ -375,7 +375,7 @@ class table_drplan(HtmlTable):
               A(
                 T("Delete project"),
                 _class='del16',
-                _onclick="""click_toggle_vis('%(div)s', 'block');"""%dict(
+                _onclick="""click_toggle_vis(event,'%(div)s', 'block');"""%dict(
                       div='del_project'),
               ),
               DIV(
@@ -413,7 +413,7 @@ class table_drplan(HtmlTable):
                 s,
                 _class='drp16',
                 _onclick="""
-                  click_toggle_vis('%(div)s', 'block');
+                  click_toggle_vis(event,'%(div)s', 'block');
                 """%dict(div='project'),
               ),
               DIV(

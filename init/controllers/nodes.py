@@ -183,7 +183,7 @@ class table_nodes(HtmlTable):
                 T("Compliance action"),
                 _class='action16',
                 _onclick="""
-                  click_toggle_vis('%(div)s', 'block');
+                  click_toggle_vis(event,'%(div)s', 'block');
                 """%dict(div='tool_action'),
               ),
               DIV(
@@ -277,7 +277,7 @@ class table_nodes(HtmlTable):
               A(
                 T("Group performance"),
                 _class='spark16',
-                _onclick="""click_toggle_vis('%(div)s', 'block');"""%dict(
+                _onclick="""click_toggle_vis(event,'%(div)s', 'block');"""%dict(
                               div=divid,
                             ),
               ),
@@ -320,7 +320,7 @@ class table_nodes(HtmlTable):
               A(
                 T("Package differences"),
                 _class='pkg16',
-                _onclick="""click_toggle_vis('%(div)s', 'block');
+                _onclick="""click_toggle_vis(event,'%(div)s', 'block');
                             ajax('%(url)s?node='+checked_nodes(), [], '%(div)s');"""%dict(
                               url=URL(r=request,c='pkgdiff',f='ajax_pkgdiff'),
                               div=divid,

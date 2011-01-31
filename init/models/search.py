@@ -6,7 +6,7 @@ def tool_search():
           ),
           INPUT(
             _id='search',
-            _onKeyUp="""show_result('%(url)s', '%(id)s')"""%dict(
+            _onKeyUp="""show_result(event, '%(url)s', '%(id)s')"""%dict(
                 id=result_id,
                 url=URL(r=request, c='ajax_search', f='ajax_search'),
               ),

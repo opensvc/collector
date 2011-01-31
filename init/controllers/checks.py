@@ -308,7 +308,7 @@ class table_checks(HtmlTable):
               A(
                 T("Set %s threshold"%t),
                 _onclick="""
-                  click_toggle_vis('%(div)s', 'block');
+                  click_toggle_vis(event,'%(div)s', 'block');
                 """%dict(div='set_%s_threshold_d'%t),
               ),
               DIV(
