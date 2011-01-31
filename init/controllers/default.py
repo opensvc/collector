@@ -543,6 +543,10 @@ def ajax_service():
         TD(s['svc_comment'])
       ),
       TR(
+        TD(T('created'), _style='font-style:italic'),
+        TD(s['svc_created'])
+      ),
+      TR(
         TD(T('last update'), _style='font-style:italic'),
         TD(s['svc_updated'])
       ),
@@ -1112,6 +1116,7 @@ class table_svcmon(HtmlTable):
             'svc_drpnode',
             'svc_drpnodes',
             'svc_comment',
+            'svc_created',
             'svc_updated',
             'svc_type',
             'environnement',

@@ -1293,6 +1293,7 @@ v_services_cols = [
     'svc_drpnode',
     'svc_drpnodes',
     'svc_comment',
+    'svc_created',
     'svc_updated',
     'responsibles',
     'mailto'
@@ -1408,6 +1409,13 @@ v_services_colprops = {
              field='svc_comment',
              display = False,
              img = 'svc',
+             table = 'v_services',
+            ),
+    'svc_created': HtmlTableColumn(
+             title = 'Service creation date',
+             field='svc_created',
+             display = False,
+             img = 'time16',
              table = 'v_services',
             ),
     'svc_updated': col_updated(
