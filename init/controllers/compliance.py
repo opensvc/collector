@@ -11,6 +11,27 @@ img_h = {0: 'check16.png',
          2: 'na.png',
        -15: 'kill16.png'}
 
+tables = {
+    'nodes':dict(name='nodes', title='nodes', cl='node16', hide=True),
+    'v_nodes':dict(name='v_nodes', title='nodes', cl='node16', hide=False),
+    'v_svcmon':dict(name='v_svcmon', title='services', cl='svc', hide=False),
+}
+operators = [dict(id='op0', title='='),
+             dict(id='op1', title='LIKE'),
+             dict(id='op2', title='>'),
+             dict(id='op3', title='>='),
+             dict(id='op4', title='<'),
+             dict(id='op5', title='<='),
+             dict(id='op6', title='IN')]
+props = v_services_colprops
+props.update(svcmon_colprops)
+props.update(v_svcmon_colprops)
+props.update(v_nodes_colprops)
+fields = {
+    'v_nodes': db.v_nodes.fields,
+    'v_svcmon': set(db.v_svcmon.fields) - set(db.v_nodes.fields),
+}
+
 import re
 # ex: \x1b[37;44m\x1b[1mContact List\x1b[0m\n
 regex = re.compile("\x1b\[([0-9]{1,3}(;[0-9]{1,3})*)?[m|K|G]", re.UNICODE)
@@ -89,6 +110,28 @@ def comp_menu(current):
 #
 # custom column formatting
 #
+class col_comp_filters_table(HtmlTableColumn):
+    def html(self, o):
+        if o.f_table is None:
+            return ''
+        if o.f_table not in tables:
+            return o.f_table
+        return DIV(
+                 tables[o.f_table]['title'],
+                 _class=tables[o.f_table]['cl'],
+               )
+
+class col_comp_filters_field(HtmlTableColumn):
+    def html(self, o):
+        if o.f_field is None:
+            return ''
+        if o.f_field not in props:
+            return o.f_field
+        return DIV(
+                 props[o.f_field].title,
+                 _class=props[o.f_field].img,
+               )
+
 class col_comp_node_status(HtmlTableColumn):
     def html(self, o):
         return DIV(
@@ -1100,13 +1143,13 @@ def comp_rules():
 # Filters sub-view
 #
 filters_colprops = {
-    'f_table': HtmlTableColumn(
+    'f_table': col_comp_filters_table(
              title='Table',
              field='f_table',
              display=True,
              img='filter16',
             ),
-    'f_field': HtmlTableColumn(
+    'f_field': col_comp_filters_field(
              title='Field',
              field='f_field',
              display=True,
@@ -1208,6 +1251,7 @@ class table_comp_filtersets(HtmlTable):
             self.additional_tools.append('filter_attach')
             self.additional_tools.append('filter_detach')
         self.ajax_col_values = ajax_comp_filtersets_col_values
+        self.dbfilterable = False
 
     def checkbox_key(self, o):
         if o is None:
@@ -1537,6 +1581,7 @@ class table_comp_filters(HtmlTable):
             self.additional_tools.append('filter_add')
             self.additional_tools.append('filter_del')
         self.ajax_col_values = 'ajax_comp_filters_col_values'
+        self.dbfilterable = False
 
     def filter_del(self):
         d = DIV(
@@ -1571,24 +1616,6 @@ class table_comp_filters(HtmlTable):
 
     @auth.requires_membership('CompManager')
     def comp_filter_add(self):
-        tables = [dict(name='v_nodes', title='nodes', cl='node16'),
-                  dict(name='v_svcmon', title='services', cl='svc')]
-        operators = [dict(id='op0', title='='),
-                     dict(id='op1', title='LIKE'),
-                     dict(id='op2', title='>'),
-                     dict(id='op3', title='>='),
-                     dict(id='op4', title='<'),
-                     dict(id='op5', title='<='),
-                     dict(id='op6', title='IN')]
-        props = v_services_colprops
-        props.update(svcmon_colprops)
-        props.update(v_svcmon_colprops)
-        props.update(v_nodes_colprops)
-        fields = {
-            'v_nodes': db.v_nodes.fields,
-            'v_svcmon': set(db.v_svcmon.fields) - set(db.v_nodes.fields),
-        }
-
         def format_table(table):
             d = LI(
                   T(table['title']),
@@ -1653,7 +1680,8 @@ class table_comp_filters(HtmlTable):
         tl = []
         fl = []
         ol = []
-        for t in tables:
+        for t in tables.values():
+            if t['hide']: continue
             tl.append(format_table(t))
             fl.append(format_table_fields(t))
         for o in operators:
