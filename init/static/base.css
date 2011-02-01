@@ -634,6 +634,7 @@ a.xinfo_shown span {
     color: black;
     list-style: none;
     float:left;
+    border-left: 1px solid #ccc;
 }
 .tab .tab_active {
     background-color: orange;
@@ -981,6 +982,10 @@ ul.login_menu ul {
 }
 .cpu16 {
     background: transparent url('cpu16.png') no-repeat;
+    padding-left: 20px;
+}
+.edit {
+    background: transparent url('edit.png') no-repeat;
     padding-left: 20px;
 }
 .pwr {
