@@ -70,6 +70,7 @@ class HtmlTable(object):
         self.pageable = True
         self.exportable = True
         self.refreshable = True
+        self.columnable = True
         self.colored_lines = True
         self.additional_tools = []
         self.span = None
@@ -203,6 +204,8 @@ class HtmlTable(object):
         return s
 
     def columns_selector(self):
+        if not self.columnable:
+            return SPAN()
         id_set_col_table = '_'.join((self.id, 'set_col_table'))
         id_set_col_field = '_'.join((self.id, 'set_col_field'))
         id_set_col_value = '_'.join((self.id, 'set_col_value'))

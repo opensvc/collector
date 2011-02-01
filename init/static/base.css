@@ -968,6 +968,10 @@ ul.login_menu ul {
     background: transparent url('svc.png') no-repeat;
     padding-left: 20px;
 }
+.nok {
+    background: transparent url('nok.png') no-repeat;
+    padding-left: 20px;
+}
 .node16 {
     background: transparent url('node16.png') no-repeat;
     padding-left: 20px;
@@ -1235,4 +1239,12 @@ button, input[type=button], input[type=submit] {
     -moz-column-width:15em;
     -moz-column-count:2;
 }
-
+.xset ul li {
+    font-weight: bold;
+    list-style: none;
+}
+.xset ul li ul li {
+    font-weight: normal;
+    font-family: monospace;
+    list-style: none;
+}

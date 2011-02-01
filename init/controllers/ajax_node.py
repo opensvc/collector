@@ -150,7 +150,7 @@ def ajax_node():
 
     def js(tab, rowid):
         buff = ""
-        for i in range(1, 9):
+        for i in range(1, 10):
             buff += """$('#%(tab)s_%(id)s').hide();$('#li%(tab)s_%(id)s').removeClass('tab_active');"""%dict(tab='tab'+str(i), id=rowid)
         buff += """$('#%(tab)s_%(id)s').show();$('#li%(tab)s_%(id)s').addClass('tab_active');"""%dict(tab=tab, id=rowid)
         return buff
@@ -162,6 +162,7 @@ def ajax_node():
             LI(
               P(
                 T("%(n)s", dict(n=request.vars.node)),
+                _class='nok',
                 _onclick="""$('#%(id)s').hide()"""%dict(id=rowid),
               ),
               _class="closetab",
@@ -183,6 +184,7 @@ def ajax_node():
             LI(P(T("stats"), _class='spark16', _onclick=js('tab7', rowid)), _id="litab7_"+str(rowid)),
 
             LI(P(T("wiki"), _class='edit', _onclick=js('tab8', rowid)), _id="litab8_"+str(rowid)),
+            LI(P(T("compliance"), _class='comp16', _onclick=js('tab9', rowid)), _id="litab9_"+str(rowid)),
           ),
           _class="tab",
         ),
@@ -228,11 +230,20 @@ def ajax_node():
             _id='tab8_'+str(rowid),
             _class='cloud',
           ),
+          DIV(
+            _id='tab9_'+str(rowid),
+            _class='cloud',
+          ),
           SCRIPT(
             "ajax('%(url)s', [], '%(id)s')"%dict(
                id='tab8_'+str(rowid),
                url=URL(r=request, c='wiki', f='ajax_wiki',
                        args=['tab8_'+str(rowid), request.vars.node])
+            ),
+            "ajax('%(url)s', [], '%(id)s')"%dict(
+               id='tab9_'+str(rowid),
+               url=URL(r=request, c='compliance', f='ajax_compliance_node',
+                       args=[request.vars.node])
             ),
             _name='%s_to_eval'%rowid,
           ),

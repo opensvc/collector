@@ -3183,3 +3183,79 @@ def comp_get_ruleset(nodename):
     return ruleset
 
 
+#
+# Ajax for node tabs
+#
+def beautify_var(v):
+    d = LI('OSVC_COMP_'+v[0].upper(), '=', v[1])
+    return d
+
+def beautify_ruleset(rset):
+    vl = []
+    for v in rset['vars']:
+        vl.append(beautify_var(v))
+
+    u = UL(
+          LI(
+            rset['name'],
+            P(rset['filter'], _style='font-weight:normal'),
+            UL(vl),
+          ),
+        )
+    return u
+
+def beautify_rulesets(rsets):
+    l = []
+    for rset in rsets:
+        l.append(beautify_ruleset(rsets[rset]))
+    return SPAN(l, _class='xset')
+
+def beautify_moduleset(mset, mods):
+    ml = []
+    for m in mods:
+        ml.append(LI(m))
+
+    u = UL(
+          LI(
+            mset,
+            UL(ml),
+          ),
+        )
+    return u
+
+def beautify_modulesets(msets):
+    l = []
+    for mset in msets:
+        l.append(beautify_moduleset(mset, comp_get_moduleset_modules(mset)))
+    return SPAN(l, _class='xset')
+
+def node_comp_status(node):
+    tid = 'ncs_'+node
+    t = table_comp_status(tid, 'node_comp_status')
+
+    q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
+    q &= db.comp_status.run_nodename == node
+    q &= db.comp_status.run_date > now - datetime.timedelta(days=8)
+    t.object_list = db(q).select()
+    t.pageable = False
+    t.filterable = False
+    t.exportable = False
+    t.dbfilterable = False
+    t.columnable = False
+    t.refreshable = False
+    return t.html()
+
+@auth.requires_login()
+def ajax_compliance_node():
+    node = request.args[0]
+    rsets = comp_get_ruleset(node)
+    msets = comp_get_moduleset(node)
+    d = SPAN(
+          H3(T('Status')),
+          node_comp_status(node),
+          H3(T('Rulesets')),
+          beautify_rulesets(rsets),
+          H3(T('Modulesets')),
+          beautify_modulesets(msets),
+        )
+    return d
