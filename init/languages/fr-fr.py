@@ -125,6 +125,7 @@
 'Check/Uncheck all': 'Tout cocher/décocher',
 'Checks': 'Sondes',
 'Child filterset': 'Jeu de filtres fils',
+'Choose': 'Choose',
 'Choose project': 'Choisir un projet',
 'City': 'Ville',
 'Client IP': 'IP cliente',

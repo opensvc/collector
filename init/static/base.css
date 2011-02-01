@@ -71,14 +71,6 @@ img {
     float:left;
 }
 
-select {
-    float: left;
-    display: inline;
-    margin: 1px 5px 0px 2px;
-    padding:0px;
-    border: 1px solid #cccccc;
-}
-
 .action {
     white-space: nowrap;
     vertical-align: top;
@@ -151,7 +143,7 @@ select {
     font-weight: bold;
 }
 
-body, table, tr, td, th, thead, tfoot, label, h1, h2, h3, h4, h5, h6, p, ul, li, ol, pre, input, button, textarea {
+body, table, tr, td, th, thead, tfoot, label, h1, h2, h3, h4, h5, h6, p, ul, li, ol, pre, input, button, textarea, select {
     border: 0;
     margin: 0;
     outline: 0;
@@ -162,6 +154,12 @@ body, table, tr, td, th, thead, tfoot, label, h1, h2, h3, h4, h5, h6, p, ul, li,
     font-family: inherit;
     vertical-align: baseline;
     font-size: 100%;
+}
+
+select {
+    border: 1px solid #dddddd;
+    background: white;
+    overflow: hidden;
 }
 
 body {
@@ -1127,9 +1125,6 @@ ul.login_menu ul {
     padding: 1em;
 }
 
-input:[type='button'] {
-}
-
 div.dashboard {
     padding:1em;
     break-inside: avoid;
@@ -1178,4 +1173,17 @@ div.summary {
     max-height: 150px;
     overflow: auto;
     background: white;
+}
+button:hover, input[type=button]:hover, input[type=submit]:hover {
+    background: #dedede;
+}
+button, input[type=button], input[type=submit] {
+    background: #eaeaea;
+    color: #555;
+    border: 1px solid #dedede;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+    padding-left: 0.2em;
+    padding-right: 0.2em;
 }
