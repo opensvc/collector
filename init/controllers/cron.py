@@ -22,7 +22,7 @@ def cron_stat_day():
     pairs += ["nb_svc_prd=(select count(distinct svc_name) from services where svc_type='PRD')"]
     pairs += ["nb_svc_cluster=(select sum(length(svc_nodes)-length(replace(svc_nodes,' ',''))+1>1) from services)"]
     pairs += ["nb_nodes=(select count(distinct mon_nodname) from svcmon)"]
-    pairs += ["nb_nodes_prd=(select count(distinct mon_nodname) from v_svcmon where mon_nodtype='PRD')"]
+    pairs += ["nb_nodes_prd=(select count(distinct mon_nodname) from v_svcmon where environnement='PRD')"]
     pairs += ["disk_size=(select ifnull((select sum(t.disk_size) from (select distinct s.disk_id, s.disk_size from svcdisks s) t), 0))"]
     sql = "insert into stat_day set day='%(end)s', %(pairs)s on duplicate key update %(pairs)s"%dict(end=end, pairs=','.join(pairs))
     #raise Exception(sql)

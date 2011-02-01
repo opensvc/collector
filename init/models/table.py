@@ -1302,6 +1302,7 @@ v_services_cols = [
 svcmon_cols = [
     'mon_overallstatus',
     'mon_updated',
+    'mon_changed',
     'mon_frozen',
     'mon_containerstatus',
     'mon_ipstatus',
@@ -1439,6 +1440,30 @@ v_services_colprops = {
              img = 'guy16',
              table = 'v_services',
             ),
+    'svc_version': col_svc(
+             title = 'OpenSVC version',
+             field='svc_version',
+             display = False,
+             img = 'pkg16',
+             table = 'v_svcmon',
+            ),
+    'svc_envdate': col_svc(
+             title = 'Env file date',
+             field='svc_envdate',
+             display = False,
+             img = 'time16',
+             table = 'v_svcmon',
+            ),
+}
+
+v_svcmon_colprops = {
+    'err': col_svc(
+             title = 'Action errors',
+             field='err',
+             display = False,
+             img = 'action16',
+             table = 'v_svcmon',
+            ),
 }
 
 svcmon_colprops = {
@@ -1461,6 +1486,13 @@ svcmon_colprops = {
              field='mon_overallstatus',
              display = False,
              img = 'svc',
+             table = 'svcmon',
+            ),
+    'mon_changed': HtmlTableColumn(
+             title = 'Last status change',
+             field='mon_changed',
+             display = False,
+             img = 'time16',
              table = 'svcmon',
             ),
     'mon_updated': col_updated(
@@ -1529,6 +1561,13 @@ svcmon_colprops = {
 }
 
 v_nodes_colprops = {
+    'id': HtmlTableColumn(
+             title = 'Id',
+             field='id',
+             display = False,
+             img = 'columns',
+             table = 'v_nodes',
+            ),
     'node_updated': col_updated(
              title = 'Last node update',
              field='node_updated',
@@ -1599,6 +1638,13 @@ v_nodes_colprops = {
              img = 'loc',
              table = 'v_nodes',
             ),
+    'os_concat': HtmlTableColumn(
+             title = 'OS full name',
+             field='os_concat',
+             display = False,
+             img = 'os16',
+             table = 'v_nodes',
+            ),
     'os_name': HtmlTableColumn(
              title = 'OS name',
              field='os_name',
@@ -1632,6 +1678,13 @@ v_nodes_colprops = {
              field='os_kernel',
              display = False,
              img = 'os16',
+             table = 'v_nodes',
+            ),
+    'cpu_vendor': HtmlTableColumn(
+             title = 'CPU vendor',
+             field='cpu_vendor',
+             display = False,
+             img = 'cpu16',
              table = 'v_nodes',
             ),
     'cpu_dies': HtmlTableColumn(

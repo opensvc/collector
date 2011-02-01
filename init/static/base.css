@@ -979,6 +979,26 @@ ul.login_menu ul {
     background: transparent url('action16.png') no-repeat;
     padding-left: 20px;
 }
+.cpu16 {
+    background: transparent url('cpu16.png') no-repeat;
+    padding-left: 20px;
+}
+.pwr {
+    background: transparent url('pwr.png') no-repeat;
+    padding-left: 20px;
+}
+.mem16 {
+    background: transparent url('mem16.png') no-repeat;
+    padding-left: 20px;
+}
+.time16 {
+    background: transparent url('time16.png') no-repeat;
+    padding-left: 20px;
+}
+.loc {
+    background: transparent url('loc.png') no-repeat;
+    padding-left: 20px;
+}
 
 .search {
     float: right;
@@ -1187,3 +1207,27 @@ button, input[type=button], input[type=submit] {
     padding-left: 0.2em;
     padding-right: 0.2em;
 }
+.ax_form li {
+    list-style: none;
+    margin-right: 0.5em;
+    margin-left: 0.5em;
+    margin-top: 0.2em;
+    margin-bottom: 0.2em;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+}
+.ax_form .highlight {
+    text-decoration: none;
+    background-color:#e0e1cd;
+    font-weight: inherit;
+    color: inherit;
+}
+.ax_form ul {
+    width:31em;
+    columns:2 15em;
+    -webkit-columns:15em 2;
+    -moz-column-width:15em;
+    -moz-column-count:2;
+}
+

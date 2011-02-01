@@ -1454,7 +1454,7 @@ def ajax_svcmon():
             t.flash = str(e)
 
     o = db.v_svcmon.mon_svcname
-    o |= ~db.v_svcmon.mon_nodtype
+    o |= ~db.v_svcmon.environnement
     o |= db.v_svcmon.mon_nodname
     o |= ~db.v_svcmon.mon_overallstatus
 

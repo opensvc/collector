@@ -1534,7 +1534,6 @@ class table_comp_filters(HtmlTable):
         self.cols = filters_cols
         self.colprops = filters_colprops
         if 'CompManager' in user_groups():
-            self.form_filter_add = self.comp_filters_add_sqlform()
             self.additional_tools.append('filter_add')
             self.additional_tools.append('filter_del')
         self.ajax_col_values = 'ajax_comp_filters_col_values'
@@ -1560,7 +1559,7 @@ class table_comp_filters(HtmlTable):
                 """%dict(div='comp_filter_add'),
               ),
               DIV(
-                self.form_filter_add,
+                self.comp_filter_add(),
                 _style='display:none',
                 _class='white_float',
                 _name='comp_filter_add',
@@ -1571,43 +1570,160 @@ class table_comp_filters(HtmlTable):
         return d
 
     @auth.requires_membership('CompManager')
-    def comp_filters_add_sqlform(self):
-        db.gen_filters.f_op.readable = True
-        db.gen_filters.f_op.writable = True
-        db.gen_filters.f_table.readable = True
-        db.gen_filters.f_table.writable = True
-        db.gen_filters.f_field.readable = True
-        db.gen_filters.f_field.writable = True
-        db.gen_filters.f_value.readable = True
-        db.gen_filters.f_value.writable = True
+    def comp_filter_add(self):
+        tables = [dict(name='v_nodes', title='nodes', cl='node16'),
+                  dict(name='v_svcmon', title='services', cl='svc')]
+        operators = [dict(id='op0', title='='),
+                     dict(id='op1', title='LIKE'),
+                     dict(id='op2', title='>'),
+                     dict(id='op3', title='>='),
+                     dict(id='op4', title='<'),
+                     dict(id='op5', title='<='),
+                     dict(id='op6', title='IN')]
+        props = v_services_colprops
+        props.update(svcmon_colprops)
+        props.update(v_svcmon_colprops)
+        props.update(v_nodes_colprops)
+        fields = {
+            'v_nodes': db.v_nodes.fields,
+            'v_svcmon': set(db.v_svcmon.fields) - set(db.v_nodes.fields),
+        }
 
-        if 'f_op' in request.vars:
-            q = db.gen_filters.f_op == request.vars.f_op
-            q = db.gen_filters.f_table == request.vars.f_table
-            q = db.gen_filters.f_field == request.vars.f_field
-            q = db.gen_filters.f_value == request.vars.f_value
-            existing = db(q)
-            db.gen_filters.f_value.requires = IS_NOT_IN_DB(existing,
-                                                          'gen_filters.f_value')
+        def format_table(table):
+            d = LI(
+                  T(table['title']),
+                  _class=table['cl'],
+                  _name='table_opt',
+                  _id=table['name'],
+                  _onclick="""$('[name=table_opt]').removeClass("highlight");
+                              $('[name=field_opt]').removeClass("highlight");
+                              $('[name=fields]').hide();
+                              $('#%(id)s').toggleClass("highlight");
+                              $('#fields_%(id)s').show();
+                              $('#f_table').val('%(id)s');
+                           """%dict(id=table['name'])
+                )
+            return d
 
-        f = SQLFORM(
-                 db.gen_filters,
-                 fields=['f_table',
-                         'f_field',
-                         'f_op',
-                         'f_value'],
-                 labels={'f_table': T('Table'),
-                         'f_field': T('Field'),
-                         'f_op': T('Operator'),
-                         'f_value': T('Value')},
-                 _name='form_filter_add',
+        def format_op(op):
+            d = LI(
+                  T(op['title']),
+                  _name='op_opt',
+                  _id=op['id'],
+                  _onclick="""$('[name=op_opt]').removeClass("highlight");
+                              $('#%(id)s').toggleClass("highlight");
+                              $('#value').show();
+                              $('#f_op').val('%(val)s');
+                           """%dict(id=op['id'], val=op['title'])
+                )
+            return d
+
+        def __format_table_fields(f):
+            title = props[f].title
+            img = props[f].img
+            d = LI(
+                  T(title),
+                  _class=img.replace('.png',''),
+                  _name='field_opt',
+                  _id=f,
+                  _onclick="""$('[name=field_opt]').removeClass("highlight");
+                              $('#%(id)s').toggleClass("highlight");
+                              $('#ops').show();
+                              $('#f_field').val('%(id)s');
+                           """%dict(id=f)
+                )
+            return d
+
+        def _format_table_fields(table):
+            fl = []
+            for f in fields[table['name']]:
+                fl.append(__format_table_fields(f))
+            return fl
+
+        def format_table_fields(table):
+            s = SPAN(
+                  H3(T('Fields')),
+                  UL(_format_table_fields(table)),
+                  _id='fields_'+table['name'],
+                  _name='fields',
+                  _style='display:none',
+                )
+            return s
+
+        tl = []
+        fl = []
+        ol = []
+        for t in tables:
+            tl.append(format_table(t))
+            fl.append(format_table_fields(t))
+        for o in operators:
+            ol.append(format_op(o))
+
+        d = DIV(
+              H3(T('Tables')),
+              UL(tl),
+              SPAN(fl),
+              SPAN(
+                H3(T('Operator')),
+                UL(ol),
+                _id='ops',
+                _style='display:none',
+              ),
+              SPAN(
+                H3(T('Value')),
+                UL(
+                  INPUT(
+                    _id='f_value',
+                    _onkeypress=self.ajax_enter_submit(additional_inputs=['f_table',
+                                                                          'f_field',
+                                                                          'f_op',
+                                                                          'f_value'],
+                                                       args=['add_filter']),
+                  ),
+                ),
+                _id='value',
+                _style='display:none',
+              ),
+              INPUT(
+                _id='f_table',
+                _style='display:none',
+              ),
+              INPUT(
+                _id='f_field',
+                _style='display:none',
+              ),
+              INPUT(
+                _id='f_op',
+                _style='display:none',
+              ),
+              _class='ax_form',
             )
+        return d
 
-        # default values
-        f.vars.f_op = '='
-        f.vars.f_author = user_name()
+@auth.requires_membership('CompManager')
+def comp_add_filter():
+    f_table = request.vars.f_table
+    f_field = request.vars.f_field
+    f_op = request.vars.f_op
+    f_value = request.vars.f_value
 
-        return f
+    if f_table not in db:
+        raise ToolError("add filter failed: table not found")
+    if f_field not in db[f_table]:
+        raise ToolError("add filter failed: field not found")
+
+    try:
+        db.gen_filters.insert(f_table=f_table,
+                              f_field=f_field,
+                              f_op=f_op,
+                              f_value=f_value,
+                              f_author=user_name())
+    except:
+        raise ToolError("add filter failed: already exist ?")
+
+    f_name = ' '.join([f_table+'.'+f_field, f_op, f_value])
+    _log('compliance.filter.add', 'added filter %(f_name)s',
+         dict(f_name=f_name))
 
 @auth.requires_membership('CompManager')
 def comp_delete_filter(ids=[]):
@@ -1649,21 +1765,10 @@ def ajax_comp_filters():
         try:
             if action == 'delete_filter':
                 comp_delete_filter(v.get_checked())
+            elif action == 'add_filter':
+                comp_add_filter()
         except ToolError, e:
             v.flash = str(e)
-
-    try:
-        if v.form_filter_add.accepts(request.vars):
-            f_name = ' '.join([request.vars.f_table+'.'+request.vars.f_field,
-                               request.vars.f_op,
-                               request.vars.f_value])
-            _log('compliance.filter.add',
-                'added filter %(f_name)s',
-                dict(f_name=f_name))
-        elif v.form_filter_add.errors:
-            response.flash = T("errors in form")
-    except AttributeError:
-        pass
 
     o = db.gen_filters.f_table|db.gen_filters.f_field|db.gen_filters.f_op|db.gen_filters.f_field
     q = db.gen_filters.id > 0
