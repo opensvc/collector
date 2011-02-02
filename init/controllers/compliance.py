@@ -1588,7 +1588,10 @@ class table_comp_filters(HtmlTable):
               A(
                 T("Delete filters"),
                 _class='del16',
-                _onclick=self.ajax_submit(args=['delete_filter']),
+                _onclick="""if (confirm("%(text)s")){%(s)s};"""%dict(
+                   s=self.ajax_submit(args=['delete_filter']),
+                   text=T("Deleting a filter also deletes its membership in filtersets. Please confirm filter deletion"),
+                ),
               ),
               _class='floatw',
             )
@@ -1754,9 +1757,25 @@ def comp_add_filter():
          dict(f_name=f_name))
 
 @auth.requires_membership('CompManager')
+def comp_delete_filtersets_filters(ids, f_names):
+    q = db.gen_filtersets_filters.f_id.belongs(ids)
+    rows = db(q).select()
+    if len(rows) == 0:
+        return
+    fset_ids = [r.fset_id for r in rows]
+    q2 = db.gen_filtersets.id.belongs(fset_ids)
+    fset_names = ', '.join([r.fset_name for r in db(q2).select()])
+    n = db(q).delete()
+    _log('compliance.filter.delete',
+         'deleted filter %(f_names)s membership in filtersets %(fset_names)s',
+         dict(f_names=f_names, fset_names=fset_names))
+
+
+@auth.requires_membership('CompManager')
 def comp_delete_filter(ids=[]):
     if len(ids) == 0:
         raise ToolError("delete filter failed: no filter selected")
+
     q = db.gen_filters.id.belongs(ids)
     rows = db(q).select()
     if len(rows) == 0:
@@ -1765,6 +1784,11 @@ def comp_delete_filter(ids=[]):
                        f.f_table+'.'+f.f_field,
                        f.f_op,
                        f.f_value]), rows))
+
+    # delete filterset membership for the filters
+    comp_delete_filtersets_filters(ids, f_names)
+
+    # delete filters
     n = db(q).delete()
     _log('compliance.filter.delete',
         'deleted filters %(f_names)s',
@@ -1783,18 +1807,25 @@ def ajax_comp_filters_col_values():
 
 @auth.requires_login()
 def ajax_comp_filters():
+    extra = SPAN()
     v = table_comp_filters('ajax_comp_filters',
                            'ajax_comp_filters')
     v.span = 'f_table'
     v.checkboxes = True
+    reload_fsets = SCRIPT(
+                     "table_ajax_submit('/init/compliance/ajax_comp_filtersets', 'ajax_comp_filtersets', inputs_ajax_comp_filtersets, [], ['ajax_comp_filtersets_ck'])",
+                     _name=v.id+"_to_eval",
+                   )
 
     if len(request.args) == 1:
         action = request.args[0]
         try:
             if action == 'delete_filter':
                 comp_delete_filter(v.get_checked())
+                extra = reload_fsets
             elif action == 'add_filter':
                 comp_add_filter()
+                extra = reload_fsets
         except ToolError, e:
             v.flash = str(e)
 
@@ -1807,7 +1838,7 @@ def ajax_comp_filters():
     v.setup_pager(n)
     v.object_list = db(q).select(limitby=(v.pager_start,v.pager_end), orderby=o)
 
-    return v.html()
+    return SPAN(v.html(),extra)
 
 @auth.requires_login()
 def ajax_comp_filtersets_col_values():
