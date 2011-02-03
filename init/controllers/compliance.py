@@ -3215,7 +3215,11 @@ def comp_get_ruleset(nodename):
 # Ajax for node tabs
 #
 def beautify_var(v):
-    d = LI('OSVC_COMP_'+v[0].upper(), '=', v[1])
+    var = v[0].upper()
+    val = v[1]
+    if (isinstance(val, str) or isinstance(val, unicode)) and ' ' in val:
+        val = repr(val)
+    d = LI('OSVC_COMP_'+var, '=', val)
     return d
 
 def beautify_ruleset(rset):
