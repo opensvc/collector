@@ -3172,6 +3172,7 @@ def comp_get_ruleset(nodename):
 
     g = db.nodes.nodename
     q = db.nodes.nodename == nodename
+    q &= db.nodes.nodename == db.v_nodes.nodename
     j = db.nodes.nodename == db.v_svcmon.mon_nodname
     l = db.v_svcmon.on(j)
     last_index = len(rows)-1
