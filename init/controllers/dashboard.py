@@ -612,9 +612,9 @@ def svc_not_on_primary(data, title):
                   id='svc_not_on_primary',
                   title=title,
                   header=["Service",
+                          "Primary node",
                           "Env",
-                          "Cluster",
-                          "Cluster status"],
+                          "Status on primary"],
                   lfmt=svc_not_on_primary_line)
 
 @service.json
