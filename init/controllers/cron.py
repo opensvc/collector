@@ -118,13 +118,15 @@ def alert_format_body(msg="", app=None, svcname=None, node=None, action=None,
 
     header = []
     header.append(header_field("application", app))
-    header.append(header_field("service name", svcname, A(svcname, _href=URL_WITH_HOST(r=request, f='svcmon', vars={'svcname':svcname}))))
+    header.append(header_field("service name", svcname, A(svcname, _href=URL_WITH_HOST(r=request, c='default', f='svcmon', vars={'svcmon_f_svc_name':svcname}))))
     header.append(header_field("service type", svctype))
-    header.append(header_field("node name", node, A(node, _href=URL_WITH_HOST(r=request, f='svcmon', vars={'nodename':node}))))
+    header.append(header_field("node name", node, A(node,
+_href=URL_WITH_HOST(r=request, c='default', f='svcmon', vars={'svcmon_f_mon_nodname':node}))))
     header.append(header_field("action", action))
     header.append(header_field("begin", begin, str(begin)))
     header.append(header_field("end", end, str(end)))
-    header.append(header_field("pid", pid, A(pid, _href=URL_WITH_HOST(r=request, f='svcactions', vars={'pid':pid, 'hostname':node, 'perpage':0}))))
+    header.append(header_field("pid", pid, A(pid,
+_href=URL_WITH_HOST(r=request, c='svcactions', f='svcactions', vars={'actions_f_pid':pid, 'actions_f_hostname':node, 'perpage':0}))))
     header = [TR(TD(h[0], _width="40%"), TD(h[1])) for h in header if h is not None]
 
     out = DIV(
