@@ -846,6 +846,8 @@ class table_comp_rulesets(HtmlTable):
                  _name='form_var_add',
             )
         f.vars.var_author = user_name()
+        if f.vars.var_name is not None:
+            f.vars.var_name = f.vars.var_name.strip()
         return f
 
 @auth.requires_membership('CompManager')
@@ -2580,6 +2582,8 @@ def var_set(t):
     if len(l) != 1:
         raise ToolError("set variable name failed: misformated request")
     new = request.vars[l[0]]
+    if t == 'name':
+        new = new.strip()
     ids = l[0].replace(prefix,'').split('_')
     if ids[0] == 'None':
         # insert
