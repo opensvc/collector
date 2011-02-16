@@ -3102,6 +3102,10 @@ def comp_ruleset_vars(ruleset_id, qr=None):
                           row.comp_rulesets_variables.var_value))
     return {ruleset_name: d}
 
+def ruleset_add_var(d, rset_name, var, val):
+    d[rset_name]['vars'].append((var, val))
+    return d
+
 @service.xmlrpc
 def comp_get_dated_ruleset(nodename, date):
     # initialize ruleset with asset variables
@@ -3147,13 +3151,28 @@ def comp_get_dated_ruleset(nodename, date):
             match = db(q&qr).select(db.nodes.id)
             if len(match) == 1:
                 ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr))
-            qr = db.nodes.id > 0
+                ruleset = ruleset_add_var(
+                        d = ruleset,
+                        rset_name = rows[i].comp_rulesets.ruleset_name,
+                        var = rows[i].comp_rulesets.ruleset_name+'_match_services',
+                        val = ','.join(comp_match_services(q&qr))
+                      )
+        qr = db.nodes.id > 0
 
     # add explicit rulesets variables
     for id in dated_explicit_ruleset_ids:
         ruleset.update(comp_ruleset_vars(id))
 
     return ruleset
+
+def comp_match_services(q):
+    if "v_svcmon.mon_svcname" not in str(q):
+        return []
+    g = db.v_svcmon.mon_svcname
+    j = db.nodes.nodename == db.v_svcmon.mon_nodname
+    l = db.v_svcmon.on(j)
+    match = db(q).select(groupby=g, left=l)
+    return [r.v_svcmon.mon_svcname for r in match]
 
 @service.xmlrpc
 def comp_get_ruleset(nodename):
@@ -3187,9 +3206,15 @@ def comp_get_ruleset(nodename):
             end_seq = False
         qr = comp_query(qr, row)
         if end_seq:
-            match = db(q&qr).select(db.nodes.id, groupby=g, left=l)
+            match = db(q&qr).select(groupby=g, left=l)
             if len(match) == 1:
                 ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr))
+                ruleset = ruleset_add_var(
+                            d = ruleset,
+                            rset_name = rows[i].comp_rulesets.ruleset_name,
+                            var = rows[i].comp_rulesets.ruleset_name+'_match_services',
+                            val = ','.join(comp_match_services(q&qr))
+                          )
             qr = db.nodes.id > 0
 
     # add explicit rulesets variables
