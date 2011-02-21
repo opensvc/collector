@@ -209,6 +209,14 @@ def insert_stats_netdev_err(vars, vals):
     generic_insert('stats_netdev_err', vars, vals)
 
 @service.xmlrpc
+def insert_stats(data):
+    import cPickle
+    h = cPickle.loads(data)
+    for stat in h:
+        vars, vals = h[stat]
+        generic_insert('stats_'+stat, vars, vals)
+
+@service.xmlrpc
 def insert_pkg(vars, vals):
     generic_insert('packages', vars, vals)
 

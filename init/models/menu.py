@@ -83,13 +83,13 @@ response.menu = [
     ],
     [T('Stats'), False, '',
          [
-             [T('Site'), False,
+             [SPAN(T('Site'), _class='wspark16'), False,
               URL(request.application,'stats','stats')],
-             [T('Os lifecycle'), False,
+             [SPAN(T('Os lifecycle'), _class='refresh16'), False,
               URL(request.application,'lifecycle','lifecycle_os')],
-             [T('Availability'), False,
+             [SPAN(T('Availability'), _class='avail16'), False,
               URL(request.application,'svcmon_log','svcmon_log')],
-             [T('Alerts'), False,
+             [SPAN(T('Alerts'), _class='alert16'), False,
               URL(request.application,'alerts','alerts')],
          ]
     ],

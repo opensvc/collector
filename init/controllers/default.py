@@ -83,6 +83,7 @@ def index():
                 DIV(_id='sum_nodeswithoutasset'),
                 DIV(_id='sum_pkgdiff'),
                 DIV(_id='sum_netdeverrs'),
+                DIV(_id='sum_flexerrs'),
                 _class='summary',
               ),
               _style='padding:1em;margin:1em',
@@ -106,6 +107,7 @@ def index():
           DIV(_id='nodeswithoutasset'),
           DIV(_id='pkgdiff'),
           DIV(_id='netdeverrs'),
+          DIV(_id='flexerrs'),
           SCRIPT(
             js('svcnotupdated'),
             js('checks'),
@@ -124,6 +126,7 @@ def index():
             js('obsmiss'),
             js('nodeswithoutasset'),
             js('netdeverrs'),
+            js('flexerrs'),
           ),
           _style="""
             column-width:50em;
@@ -633,6 +636,7 @@ def ajax_service():
             LI(
               P(
                 T("%(n)s", dict(n=request.vars.node)),
+                _class='nok',
               ),
               _onclick="""$('#%(id)s').hide()"""%dict(id=rowid),
               _class="closetab",
@@ -640,16 +644,17 @@ def ajax_service():
             LI(
               P(
                 T("properties"),
+                _class='svc',
                 _onclick=js('tab1', rowid)
                ),
               _id="litab1_"+str(rowid),
               _class="tab_active",
             ),
-            LI(P(T("status"), _onclick=js('tab2', rowid)), _id="litab2_"+str(rowid)),
-            LI(P(T("resources"), _onclick=js('tab3', rowid)), _id="litab3_"+str(rowid)),
-            LI(P(T("env"), _onclick=js('tab4', rowid)), _id="litab4_"+str(rowid)),
-            LI(P(T("topology"), _onclick=js('tab5', rowid)), _id="litab5_"+str(rowid)),
-            LI(P(T("wiki"), _onclick=js('tab6', rowid)), _id="litab6_"+str(rowid)),
+            LI(P(T("status"), _class='svc', _onclick=js('tab2', rowid)), _id="litab2_"+str(rowid)),
+            LI(P(T("resources"), _class='svc', _onclick=js('tab3', rowid)), _id="litab3_"+str(rowid)),
+            LI(P(T("env"), _class='log16', _onclick=js('tab4', rowid)), _id="litab4_"+str(rowid)),
+            LI(P(T("topology"), _class='dia16', _onclick=js('tab5', rowid)), _id="litab5_"+str(rowid)),
+            LI(P(T("wiki"), _class='edit', _onclick=js('tab6', rowid)), _id="litab6_"+str(rowid)),
           ),
           _class="tab",
         ),
@@ -1107,6 +1112,10 @@ class table_svcmon(HtmlTable):
             'svc_app',
             'svc_drptype',
             'svc_containertype',
+            'svc_flex_min_nodes',
+            'svc_flex_max_nodes',
+            'svc_flex_cpu_low_threshold',
+            'svc_flex_cpu_high_threshold',
             'svc_vmname',
             'svc_vcpus',
             'svc_vmem',
@@ -1119,6 +1128,7 @@ class table_svcmon(HtmlTable):
             'svc_created',
             'svc_updated',
             'svc_type',
+            'svc_cluster_type',
             'environnement',
             'mon_nodname',
             'mon_overallstatus',

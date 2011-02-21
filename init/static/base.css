@@ -877,136 +877,148 @@ ul.login_menu ul {
 
 .dia16 {
     background: transparent url('dia16.png') no-repeat;
-    padding-left: 18px;
+    padding: 0 0 0 20px;
 }
 .detach16 {
     background: transparent url('detach16.png') no-repeat;
-    padding-left: 18px;
+    padding: 0 0 0 20px;
 }
 .attach16 {
     background: transparent url('attach16.png') no-repeat;
-    padding-left: 18px;
+    padding: 0 0 0 20px;
 }
 .add16 {
     background: transparent url('add16.png') no-repeat;
-    padding-left: 18px;
+    padding: 0 0 0 20px;
 }
 .del16 {
     background: transparent url('del16.png') no-repeat;
-    padding-left: 18px;
+    padding: 0 0 0 20px;
 }
 .edit16 {
     background: transparent url('edit.png') no-repeat;
-    padding-left: 18px;
+    padding: 0 0 0 20px;
+}
+.alert16 {
+    background: transparent url('alert16.png') no-repeat;
+    padding: 0 0 0 20px;
+}
+.avail16 {
+    background: transparent url('avail16.png') no-repeat;
+    padding: 0 0 0 20px;
+}
+.wspark16 {
+    background: transparent url('wspark16.png') no-repeat;
+    padding: 0 0 0 20px;
 }
 .spark16 {
     background: transparent url('spark16.png') no-repeat;
-    padding-left: 18px;
+    padding: 0 0 0 20px;
 }
 .filters {
     background: transparent url('filter16.png') no-repeat;
-    padding-left: 18px;
+    padding: 0 0 0 20px;
 }
 .columns {
     background: transparent url('columns.png') no-repeat;
-    padding-left: 18px;
+    padding: 0 0 0 20px;
 }
 .csv {
     background: transparent url('csv.png') no-repeat;
-    padding-left: 18px;
+    padding: 0 0 0 20px;
 }
 .refresh16 {
     background: transparent url('refresh16.png') no-repeat;
-    padding-left: 18px;
+    padding: 0 0 0 20px;
 }
 .spinner {
     background: transparent url('spinner.gif') no-repeat;
-    padding-left: 18px;
+    padding: 0 0 0 20px;
 }
 
 .hd16 {
     background: transparent url('hd16.png') no-repeat;
-    padding-left: 20px;
+    padding: 0 0 0 20px;
 }
 .pkg16 {
     background: transparent url('pkg16.png') no-repeat;
-    padding-left: 20px;
+    padding: 0 0 0 20px;
 }
 .log16 {
     background: transparent url('log16.png') no-repeat;
-    padding-left: 20px;
+    padding: 0 0 0 20px;
 }
 .bill16 {
     background: transparent url('bill16.png') no-repeat;
-    padding-left: 20px;
+    padding: 0 0 0 20px;
 }
 .os16 {
     background: transparent url('os16.png') no-repeat;
-    padding-left: 20px;
+    padding: 0 0 0 20px;
 }
 .obs16 {
     background: transparent url('obs16.png') no-repeat;
-    padding-left: 20px;
+    padding: 0 0 0 20px;
 }
 .comp16 {
     background: transparent url('comp16.png') no-repeat;
-    padding-left: 20px;
+    padding: 0 0 0 20px;
 }
 .check16 {
     background: transparent url('check16.png') no-repeat;
-    padding-left: 20px;
+    padding: 0 0 0 20px;
 }
 .guys16 {
     background: transparent url('guys16.png') no-repeat;
-    padding-left: 20px;
+    padding: 0 0 0 20px;
 }
 .guy16 {
     background: transparent url('guy16.png') no-repeat;
-    padding-left: 20px;
+    padding: 0 0 0 20px;
 }
 .svc {
     background: transparent url('svc.png') no-repeat;
-    padding-left: 20px;
+    padding: 0 0 0 20px;
 }
 .nok {
     background: transparent url('nok.png') no-repeat;
-    padding-left: 20px;
+    padding: 0 0 0 20px;
 }
 .node16 {
     background: transparent url('node16.png') no-repeat;
-    padding-left: 20px;
+    padding: 0 0 0 20px;
 }
 .drp16 {
     background: transparent url('drp16.png') no-repeat;
-    padding-left: 20px;
+    padding: 0 0 0 20px;
 }
 .action16 {
     background: transparent url('action16.png') no-repeat;
-    padding-left: 20px;
+    padding: 0 0 0 20px;
 }
 .cpu16 {
     background: transparent url('cpu16.png') no-repeat;
-    padding-left: 20px;
+    padding: 0 0 0 20px;
 }
 .edit {
     background: transparent url('edit.png') no-repeat;
-    padding-left: 20px;
+    padding: 0 0 0 20px;
 }
 .pwr {
     background: transparent url('pwr.png') no-repeat;
-    padding-left: 20px;
+    padding: 0 0 0 20px;
 }
 .mem16 {
     background: transparent url('mem16.png') no-repeat;
-    padding-left: 20px;
+    padding: 0 0 0 20px;
 }
 .time16 {
     background: transparent url('time16.png') no-repeat;
-    padding-left: 20px;
+    padding: 0 0 0 20px;
 }
 .loc {
     background: transparent url('loc.png') no-repeat;
-    padding-left: 20px;
+    padding: 0 0 0 20px;
 }
 
 .search {

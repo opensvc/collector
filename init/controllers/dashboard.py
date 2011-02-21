@@ -1136,6 +1136,103 @@ def netdeverrs():
     return [0, 1, len(data),
             str(netdev_err(data, title)), str(T(title))]
 
+
+""" Flex alerts
+"""
+def flex_err_line(line, cellclass):
+    cl_up = ""
+    cl_min_nodes = ""
+    cl_max_nodes = ""
+    cl_cpu = ""
+    cl_max_cpu = ""
+    cl_min_cpu = ""
+
+    if line.svc_flex_max_nodes == 0:
+        max_nodes = "no limit"
+    else:
+        max_nodes = str(line.svc_flex_max_nodes)
+
+    if line.cpu is None:
+        cpu = "unknown"
+    else:
+        cpu = "%.02f"%line.cpu
+
+    if line.up < line.svc_flex_min_nodes:
+        cl_up = "highlight"
+        cl_min_nodes = "highlight"
+    if line.svc_flex_max_nodes > 0 and line.up > line.svc_flex_max_nodes:
+        cl_up = "highlight"
+        cl_max_nodes = "highlight"
+    if line.cpu > line.svc_flex_cpu_high_threshold:
+        cl_cpu = "highlight"
+        cl_max_cpu = "highlight"
+    if line.cpu < line.svc_flex_cpu_low_threshold:
+        cl_cpu = "highlight"
+        cl_min_cpu = "highlight"
+
+    tr = TR(
+      TD(
+        A(
+          line.svc_name,
+          _href=URL(r=request, c='default', f='svcmon',
+                    vars={'svcmon_f_svc_name':line.svc_name,
+                          'clear_filters': 'true'})
+        ),
+        _class=cellclass
+      ),
+      TD(line.svc_flex_min_nodes,
+         _class=' '.join([cellclass, cl_min_nodes])),
+      TD(max_nodes,
+         _class=' '.join([cellclass, cl_max_nodes])),
+      TD(line.svc_flex_cpu_low_threshold,
+         _class=' '.join([cellclass, cl_min_cpu])),
+      TD(line.svc_flex_cpu_high_threshold,
+         _class=' '.join([cellclass, cl_max_cpu])),
+      TD(line.up,
+         _class=' '.join([cellclass, cl_up])),
+      TD(cpu,
+         _class=' '.join([cellclass, cl_cpu])),
+    )
+    return tr
+
+def flex_err(data, title):
+    return _table(data=data,
+                  id='flex_err',
+                  title=title,
+                  header=["Service",
+                          "Min active nodes",
+                          "Max active nodes",
+                          "Low cpu threshold",
+                          "High cpu threshold",
+                          "Active nodes",
+                          "Cluster avg cpu"],
+                  lfmt=flex_err_line)
+
+@service.json
+def flexerrs():
+    title = "Flex clusters with alerts"
+    if request.args[2] == 'false':
+        return ['', '', '', '', str(T(title))]
+
+    # active nodes < min
+    q = db.v_flex_status.svc_flex_min_nodes > db.v_flex_status.up
+
+    # active nodes > max ... if max > 0
+    q |= ((db.v_flex_status.svc_flex_max_nodes > 0) & \
+          (db.v_flex_status.svc_flex_max_nodes < db.v_flex_status.up))
+
+    # cpu < low thres ... if more than one node is active
+    q |= ((db.v_flex_status.up > 1) & \
+          (db.v_flex_status.svc_flex_cpu_low_threshold > db.v_flex_status.cpu))
+
+    # cpu > high thres
+    q |= db.v_flex_status.svc_flex_cpu_high_threshold < db.v_flex_status.cpu
+
+    data = db(q).select()
+
+    return [0, 1, len(data),
+            str(flex_err(data, title)), str(T(title))]
+
 @service.json
 def toggle():
     dashboard = request.args[2]

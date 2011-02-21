@@ -1144,6 +1144,8 @@ class col_node(HtmlTableColumn):
     def html(self, o):
         id = self.t.extra_line_key(o)
         s = self.get(o)
+        if len(s) == 0:
+            return ''
         if 'svc_autostart' in self.t.cols and \
            self.t.colprops['svc_autostart'].get(o) == s:
             c = 'font-weight: bold'
@@ -1285,6 +1287,11 @@ v_nodes_cols = [
 v_services_cols = [
     'svc_app',
     'svc_type',
+    'svc_cluster_type',
+    'svc_flex_min_nodes',
+    'svc_flex_max_nodes',
+    'svc_flex_cpu_low_threshold',
+    'svc_flex_cpu_high_threshold',
     'svc_drptype',
     'svc_containertype',
     'svc_vmname',
@@ -1441,6 +1448,41 @@ v_services_colprops = {
              field='mailto',
              display = False,
              img = 'guy16',
+             table = 'v_services',
+            ),
+    'svc_cluster_type': HtmlTableColumn(
+             title = 'Cluster type',
+             field='svc_cluster_type',
+             display = True,
+             img = 'svc',
+             table = 'v_services',
+            ),
+    'svc_flex_min_nodes': HtmlTableColumn(
+             title = 'Flex min nodes',
+             field='svc_flex_min_nodes',
+             display = False,
+             img = 'svc',
+             table = 'v_services',
+            ),
+    'svc_flex_max_nodes': HtmlTableColumn(
+             title = 'Flex max nodes',
+             field='svc_flex_max_nodes',
+             display = False,
+             img = 'svc',
+             table = 'v_services',
+            ),
+    'svc_flex_cpu_low_threshold': HtmlTableColumn(
+             title = 'Flex cpu low threshold',
+             field='svc_flex_cpu_low_threshold',
+             display = False,
+             img = 'spark16',
+             table = 'v_services',
+            ),
+    'svc_flex_cpu_high_threshold': HtmlTableColumn(
+             title = 'Flex cpu high threshold',
+             field='svc_flex_cpu_high_threshold',
+             display = False,
+             img = 'spark16',
              table = 'v_services',
             ),
     'svc_version': col_svc(
