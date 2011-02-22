@@ -35,6 +35,26 @@ def perf_stats(node, rowid):
                              rowid=rowid,
                              div=divid),
               ),
+              A(
+                IMG(_src=URL(r=request,c='static',f='nok.png')),
+                _onClick="""toggle_plot('%(url)s', '%(rowid)s','%(div)s')"""%dict(
+                             url=URL(r=request,c='ajax_perf',f='ajax_perf_%s_plot'%group,
+                                     args=[node, rowid]),
+                             rowid=rowid,
+                             div=divid),
+                _id='close_'+divid,
+                _style='float:right;display:none',
+              ),
+              A(
+                IMG(_src=URL(r=request,c='static',f='refresh16.png')),
+                _onClick="""refresh_plot('%(url)s', '%(rowid)s','%(div)s')"""%dict(
+                             url=URL(r=request,c='ajax_perf',f='ajax_perf_%s_plot'%group,
+                                     args=[node, rowid]),
+                             rowid=rowid,
+                             div=divid),
+                _id='refresh_'+divid,
+                _style='float:right;display:none',
+              ),
               DIV(
                _id=divid,
                _style='display:none',

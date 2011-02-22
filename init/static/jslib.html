@@ -2149,14 +2149,21 @@ function click_action_queue(url) {
         ajax(url, [], 'action_queue')
     }
 }
+function refresh_plot(url, rowid, id) {
+    sync_ajax(url,['begin_'+rowid, 'end_'+rowid], id, function(){
+        eval_js_in_ajax_response(id)
+    })
+}
 function toggle_plot(url, rowid, id) {
     if ($("#"+id).is(":visible")) {
         $("#"+id).hide()
+        $("#refresh_"+id).hide()
+        $("#close_"+id).hide()
     } else {
         $("#"+id).show()
-        sync_ajax(url,['begin_'+rowid, 'end_'+rowid], id, function(){
-            eval_js_in_ajax_response(id)
-        })
+        $("#refresh_"+id).show()
+        $("#close_"+id).show()
+        refresh_plot(url, rowid, id)
     }
 }
 </script>
