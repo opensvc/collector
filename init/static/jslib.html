@@ -1958,6 +1958,9 @@ function stats_fs(url, id) {
         for (i=0;i<data[0].length;i++){
             labels.push({'label': data[0][i]+'<br>'+parseInt(data[1][i]/1024)+' MB'})
         }
+        h = labels.length
+        h = Math.max(38*h, 300)
+        $('#'+id+'_u').height(h+'px')
         try {
 	$.jqplot(id+'_u', data[2], {
             cursor:{zoom:true, showTooltip:true},
@@ -2007,6 +2010,9 @@ function stat_os(url, id) {
         for (i=0;i<data[0].length;i++){
             labels.push({'label': data[0][i]})
         }
+        h = labels.length
+        h = Math.max(24*h, 300)
+        $('#'+id).height(h+'px')
         if (id == 'stat_os_name') {
              title = ''
         } else {
@@ -2022,7 +2028,7 @@ function stat_os(url, id) {
             legend: {
                 renderer: $.jqplot.EnhancedLegendRenderer,
                 show: true,
-                location: 'e',
+                location: 'ne',
                 placement: "outside",
             },
             gridPadding: {
