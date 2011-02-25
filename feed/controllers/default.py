@@ -149,12 +149,26 @@ def _resmon_clean(node, svcname):
 
 @service.xmlrpc
 def resmon_update(vars, vals):
+    if len(vals) == 0:
+        return
+    if isinstance(vals[0], list):
+        for v in vals:
+            _resmon_update(vars, v)
+    else:
+        _resmon_update(vars, vals)
+
+def _resmon_update(vars, vals):
     h = {}
     for a,b in zip(vars, vals[0]):
         h[a] = b
     if 'nodename' in h and 'svcname' in h:
         _resmon_clean(h['nodename'], h['svcname'])
     generic_insert('resmon', vars, vals)
+
+@service.xmlrpc
+def svcmon_update_combo(g_vars, g_vals, r_vars, r_vals):
+    svcmon_update(g_vars, g_vals)
+    resmon_update(r_vars, r_vals)
 
 @service.xmlrpc
 def register_disk(vars, vals):
@@ -300,6 +314,15 @@ def delete_disks(svcname, node):
 
 @service.xmlrpc
 def svcmon_update(vars, vals):
+    if len(vals) == 0:
+        return
+    if isinstance(vals[0], list):
+        for v in vals:
+            _svcmon_update(vars, v)
+    else:
+        _svcmon_update(vars, vals)
+
+def _svcmon_update(vars, vals):
     # don't trust the server's time
     h = {}
     for a,b in zip(vars, vals):
