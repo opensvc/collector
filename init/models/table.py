@@ -1331,6 +1331,20 @@ v_services_colprops = {
              img = 'svc',
              table = 'v_services',
             ),
+    'svc_hostid': HtmlTableColumn(
+             title = 'Host id',
+             field='svc_hostid',
+             display = False,
+             img = 'svc',
+             table = 'v_services',
+            ),
+    'svc_wave': HtmlTableColumn(
+             title = 'Drp wave',
+             field='svc_wave',
+             display = False,
+             img = 'svc',
+             table = 'v_services',
+            ),
     'svc_app': HtmlTableColumn(
              title = 'App',
              field='svc_app',
@@ -1483,6 +1497,13 @@ v_services_colprops = {
              field='svc_flex_cpu_high_threshold',
              display = False,
              img = 'spark16',
+             table = 'v_services',
+            ),
+    'svc_envfile': HtmlTableColumn(
+             title = 'Env file',
+             field='svc_envfile',
+             display = False,
+             img = 'svc',
              table = 'v_services',
             ),
     'svc_version': col_svc(

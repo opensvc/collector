@@ -12,9 +12,9 @@ img_h = {0: 'check16.png',
        -15: 'kill16.png'}
 
 tables = {
-    'nodes':dict(name='nodes', title='nodes', cl='node16', hide=True),
-    'v_nodes':dict(name='v_nodes', title='nodes', cl='node16', hide=False),
-    'v_svcmon':dict(name='v_svcmon', title='services', cl='svc', hide=False),
+    'nodes':dict(name='nodes', title='nodes', cl='node16', hide=False),
+    'services':dict(name='services', title='services', cl='svc', hide=False),
+    'svcmon':dict(name='svcmon', title='service status', cl='svc', hide=False),
 }
 operators = [dict(id='op0', title='='),
              dict(id='op1', title='LIKE'),
@@ -28,8 +28,9 @@ props.update(svcmon_colprops)
 props.update(v_svcmon_colprops)
 props.update(v_nodes_colprops)
 fields = {
-    'v_nodes': db.v_nodes.fields,
-    'v_svcmon': set(db.v_svcmon.fields) - set(db.v_nodes.fields),
+    'nodes': db.nodes.fields,
+    'services': db.services.fields,
+    'svcmon': db.svcmon.fields,
 }
 
 import re
@@ -3140,6 +3141,10 @@ def comp_get_dated_ruleset(nodename, date):
     rows = db(q).select(orderby=o)
 
     q = db.nodes.nodename == nodename
+    j = db.nodes.nodename == db.svcmon.mon_nodname
+    l1 = db.svcmon.on(j)
+    j = db.svcmon.mon_svcname == db.services.svc_name
+    l2 = db.services.on(j)
     last_index = len(rows)-1
     qr = db.nodes.id > 0
 
@@ -3152,16 +3157,17 @@ def comp_get_dated_ruleset(nodename, date):
             end_seq = False
         qr = comp_query(qr, row)
         if end_seq:
-            match = db(q&qr).select(db.nodes.id)
-            if len(match) == 1:
+            match = db(q&qr).select(db.nodes.id, db.svcmon.mon_svcname,
+                                    left=(l1,l2))
+            if len(match) > 0:
                 ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr))
                 ruleset = ruleset_add_var(
-                        d = ruleset,
-                        rset_name = rows[i].comp_rulesets.ruleset_name,
-                        var = rows[i].comp_rulesets.ruleset_name+'_match_services',
-                        val = ','.join(comp_match_services(q&qr))
-                      )
-        qr = db.nodes.id > 0
+                            d = ruleset,
+                            rset_name = rows[i].comp_rulesets.ruleset_name,
+                            var = rows[i].comp_rulesets.ruleset_name+'_match_services',
+                            val = ','.join(comp_match_services(q&qr, match))
+                          )
+            qr = db.nodes.id > 0
 
     # add explicit rulesets variables
     for id in dated_explicit_ruleset_ids:
@@ -3169,14 +3175,11 @@ def comp_get_dated_ruleset(nodename, date):
 
     return ruleset
 
-def comp_match_services(q):
-    if "v_svcmon.mon_svcname" not in str(q):
+def comp_match_services(q, match):
+    qs = str(q)
+    if "svcmon." not in qs and 'services.' not in qs:
         return []
-    g = db.v_svcmon.mon_svcname
-    j = db.nodes.nodename == db.v_svcmon.mon_nodname
-    l = db.v_svcmon.on(j)
-    match = db(q).select(groupby=g, left=l)
-    return [r.v_svcmon.mon_svcname for r in match]
+    return set([r.svcmon.mon_svcname for r in match])
 
 @service.xmlrpc
 def comp_get_ruleset(nodename):
@@ -3193,11 +3196,11 @@ def comp_get_ruleset(nodename):
     q &= rset_fset.fset_id == v.fset_id
     rows = db(q).select(orderby=o)
 
-    g = db.nodes.nodename
     q = db.nodes.nodename == nodename
-    q &= db.nodes.nodename == db.v_nodes.nodename
-    j = db.nodes.nodename == db.v_svcmon.mon_nodname
-    l = db.v_svcmon.on(j)
+    j = db.nodes.nodename == db.svcmon.mon_nodname
+    l1 = db.svcmon.on(j)
+    j = db.svcmon.mon_svcname == db.services.svc_name
+    l2 = db.services.on(j)
     last_index = len(rows)-1
     qr = db.nodes.id > 0
 
@@ -3210,14 +3213,15 @@ def comp_get_ruleset(nodename):
             end_seq = False
         qr = comp_query(qr, row)
         if end_seq:
-            match = db(q&qr).select(groupby=g, left=l)
-            if len(match) == 1:
+            match = db(q&qr).select(db.nodes.id, db.svcmon.mon_svcname,
+                                    left=(l1,l2))
+            if len(match) > 0:
                 ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr))
                 ruleset = ruleset_add_var(
                             d = ruleset,
                             rset_name = rows[i].comp_rulesets.ruleset_name,
                             var = rows[i].comp_rulesets.ruleset_name+'_match_services',
-                            val = ','.join(comp_match_services(q&qr))
+                            val = ','.join(comp_match_services(q&qr, match))
                           )
             qr = db.nodes.id > 0
 
