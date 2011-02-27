@@ -378,6 +378,11 @@ def do_action(ids, action=None):
 @auth.requires_membership('NodeManager')
 def node_del(ids):
     q = db.nodes.nodename.belongs(ids)
+    groups = user_groups()
+    if 'Manager' not in groups:
+        # Manager+NodeManager can delete any node
+        # NodeManager can delete the nodes they are responsible of
+        q &= db.nodes.team_responsible.belongs(groups)
     u = ', '.join([r.nodename for r in db(q).select(db.nodes.nodename)])
     db(q).delete()
     _log('nodes.delete',
