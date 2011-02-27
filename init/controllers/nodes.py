@@ -95,9 +95,14 @@ def node_edit():
     query = (db.v_nodes.id>0)
     query &= _where(None, 'v_nodes', request.vars.node, 'nodename')
     query &= _where(None, 'v_nodes', domain_perms(), 'nodename')
+    groups = user_groups()
+    if 'Manager' not in groups:
+        # Manager+NodeManager can edit any node
+        # NodeManager can edit the nodes they are responsible of
+        query &= db.v_nodes.team_responsible.belongs(groups)
     rows = db(query).select()
     if len(rows) != 1:
-        response.flash = "vars: %s"%str(request.vars)
+        response.flash = "node %s not found or insufficient privileges"%request.vars.node
         return dict(form=None)
     record = rows[0]
     id = record.id
