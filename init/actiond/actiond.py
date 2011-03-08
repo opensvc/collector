@@ -98,6 +98,7 @@ def dequeue_worker(i, q):
         now = str(datetime.datetime.now())
         cursor.execute("update action_queue set status='T', date_dequeued='%s' where id=%d"%(now, id))
     cursor.close()
+    sys.exit(0)
 
 def get_conn():
     try:
@@ -110,10 +111,9 @@ def get_conn():
         return None
     return conn
 
-def dequeue():
+def dequeue_this(q, bunch):
     ps = []
-    q = Queue()
-    for id, cmd in get_queued():
+    for id, cmd in bunch:
         q.put((id, cmd))
     for i in range(0, N_THREAD):
         p = Process(target=dequeue_worker, args=(i, q))
@@ -121,6 +121,14 @@ def dequeue():
         ps.append(p)
     for p in ps:
         p.join()
+
+def dequeue():
+    q = Queue()
+    while True:
+        bunch = get_queued()
+        if len(bunch) == 0:
+            break
+        dequeue_this(q, bunch)
 
 try:
     lockfd = actiond_lock(lockfile)
