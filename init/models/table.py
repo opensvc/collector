@@ -1036,6 +1036,8 @@ action_img_h = {
     'stoploop': 'action_stop_16.png',
     'stopip': 'action_stop_16.png',
     'umount': 'action_stop_16.png',
+    'shutdown': 'action_stop_16.png',
+    'boot': 'action_start_16.png',
     'start': 'action_start_16.png',
     'startstandby': 'action_start_16.png',
     'startapp': 'action_start_16.png',
