@@ -2791,6 +2791,12 @@ def ajax_comp_log():
     t = table_comp_log('ajax_comp_log', 'ajax_comp_log')
 
     db.commit()
+    if request.vars.ajax_comp_log_f_run_date is None:
+        d = now - datetime.timedelta(days=20,
+                                     minutes=now.minute+60*now.hour,
+                                     seconds=now.second,
+                                     microseconds=now.microsecond)
+        request.vars.ajax_comp_log_f_run_date = str(d)
     o = ~db.comp_log.run_date|~db.comp_log.id
     q = _where(None, 'comp_log', domain_perms(), 'run_nodename')
     q &= db.comp_log.run_nodename == db.v_nodes.nodename
