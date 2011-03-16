@@ -2972,9 +2972,9 @@ def comp_detach_ruleset(nodename, ruleset):
         return dict(status=False, msg="ruleset %s does not exist"%ruleset)
     elif ruleset == 'all' and len(ruleset_id) == 0:
         return dict(status=True, msg="this node has no ruleset attached")
-    if ruleset != 'all' and not comp_ruleset_attached(nodename, modset_id):
+    if ruleset != 'all' and not comp_ruleset_attached(nodename, ruleset_id):
         return dict(status=True,
-                    msg="ruleset %s is not attached to this node"%moduleset)
+                    msg="ruleset %s is not attached to this node"%ruleset)
     q = db.comp_rulesets_nodes.nodename == nodename
     if isinstance(ruleset_id, list):
         q &= db.comp_rulesets_nodes.ruleset_id.belongs(ruleset_id)
