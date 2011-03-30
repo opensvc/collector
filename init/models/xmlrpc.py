@@ -1,17 +1,23 @@
+import datetime
+
 def value_wrap(a):
     return "%(a)s=values(%(a)s)"%dict(a=a)
 
 def quote_wrap(x):
     if isinstance(x, (int, long, float, complex)):
         return x
-    elif isinstance(x, str) and len(x) == 0:
-        return "''"
-    elif isinstance(x, str) and x[0] == "'" and x[-1] == "'":
-        return x
-    elif isinstance(x, str) and x[0] == '"' and x[-1] == '"':
-        return x
-    else:
-        return "'%s'"%str(x).replace("'", '"')
+    elif isinstance(x, datetime.datetime):
+        return "'%s'"%str(x)
+    elif isinstance(x, (str, unicode)):
+        if len(x) == 0:
+            return "''"
+        elif x[0] == "'" and x[-1] == "'":
+            return x
+        elif x[0] == '"' and x[-1] == '"':
+            return x
+        else:
+            return "'%s'"%x.replace("'", '"')
+    raise Exception("quote_wrap: unhandled type %s"%str(x.__class__))
 
 def insert_multiline(table, vars, valsl):
     value_wrap = lambda a: "%(a)s=values(%(a)s)"%dict(a=a)
