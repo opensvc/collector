@@ -1221,7 +1221,7 @@ class col_availstatus(HtmlTableColumn):
         elif s == 'down': return 'stdby up with down'
         elif s == 'stdby up': return 'stdby up'
         elif s == 'stdby up with up': return 'stdby up with up'
-        elif s == 'stdby up with down': return 'warn'
+        elif s == 'stdby up with down': return 'stdby up with down'
         elif s == 'undef': return 'stdby up'
         else: return 'undef'
 
