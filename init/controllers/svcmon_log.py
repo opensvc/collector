@@ -54,7 +54,7 @@ def service_availability(rows, begin=None, end=None):
         elif s == 'down': return 'stdby up with down'
         elif s == 'stdby up': return 'stdby up'
         elif s == 'stdby up with up': return 'stdby up with up'
-        elif s == 'stdby up with down': return 'warn'
+        elif s == 'stdby up with down': return 'stdby up with down'
         elif s == 'undef': return 'stdby up'
         else: return 'undef'
 
@@ -74,6 +74,10 @@ def service_availability(rows, begin=None, end=None):
             elif row.svcmon_log[sn] == 'down': s = status_merge_down(s)
             elif row.svcmon_log[sn] == 'stdby up': s = status_merge_stdby_up(s)
             else: return 'undef'
+        if s == 'stdby up with up':
+            s = 'up'
+        elif s == 'stdby up with down':
+            s = 'stdby up'
         return s
 
     if end is None or begin is None:
