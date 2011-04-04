@@ -1243,6 +1243,10 @@ class col_availstatus(HtmlTableColumn):
             elif self.t.colprops[sn].get(o) == 'down': s = self.status_merge_down(s)
             elif self.t.colprops[sn].get(o) == 'stdby up': s = self.status_merge_stdby_up(s)
             else: return 'undef'
+        if s == 'stdby up with down':
+            s = 'down'
+        elif s == 'stdby up with up':
+            s = 'up'
         return s
 
     def html(self, o):
