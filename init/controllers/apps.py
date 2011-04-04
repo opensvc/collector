@@ -188,7 +188,7 @@ def group_attach(ids=[]):
             continue
         done.append(id)
         db.apps_responsibles.insert(app_id=id, group_id=gid)
-    rows = db(db.apps_responsibles.id.belongs(done)).select(db.v_apps.app)
+    rows = db(db.apps.id.belongs(done)).select()
     u = ', '.join([r.app for r in rows])
     g = db(db.auth_group.id==gid).select(db.auth_group.role)[0].role
     _log('apps.group.attach',

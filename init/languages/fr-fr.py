@@ -710,6 +710,7 @@
 'delete selected nodes': 'supprimer les noeuds sélectionnés',
 'deleted apps %(u)s': 'applications %(u)s supprimées',
 'deleted filter %(f_names)s': 'filtres %(f_names)s supprimés',
+'deleted filter %(f_names)s membership in filtersets %(fset_names)s': 'deleted filter %(f_names)s membership in filtersets %(fset_names)s',
 'deleted filters %(f_names)s': 'filtres supprimés %(f_names)s',
 'deleted filtersets %(fset_names)s': 'jeux de filtres %(fset_names)s supprimés',
 'deleted group %(g)s': 'groupe %(g)s supprimé',
