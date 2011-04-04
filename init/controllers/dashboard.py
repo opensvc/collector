@@ -624,7 +624,7 @@ def svcnotonprimary():
         return ['', '', '', '', str(T(title))]
     query = _where(None, 'v_svcmon', domain_perms(), 'mon_svcname')
     query &= (db.v_svcmon.svc_autostart==db.v_svcmon.mon_nodname)
-    query &= ((db.v_svcmon.mon_overallstatus!="up")|(db.v_svcmon.mon_updated<tmo))
+    query &= ((db.v_svcmon.mon_availstatus!="up")|(db.v_svcmon.mon_updated<tmo))
     q = db.v_svc_group_status.groupstatus.like("up,%")
     q |= db.v_svc_group_status.groupstatus.like("%,up,%")
     q |= db.v_svc_group_status.groupstatus.like("%,up")

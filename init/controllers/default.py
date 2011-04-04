@@ -999,6 +999,8 @@ def _svcmon_update(vars, vals):
     h['mon_updated'] = now
     if 'mon_hbstatus' not in h:
         h['mon_hbstatus'] = 'undef'
+    if 'mon_availstatus' not in h:
+        h['mon_availstatus'] = 'undef'
     generic_insert('svcmon', h.keys(), h.values())
 
     query = db.svcmon_log.mon_svcname==h['mon_svcname']
@@ -1010,6 +1012,7 @@ def _svcmon_update(vars, vals):
                  'mon_svcname',
                  'mon_nodname',
                  'mon_overallstatus',
+                 'mon_availstatus',
                  'mon_ipstatus',
                  'mon_fsstatus',
                  'mon_diskstatus',
@@ -1022,6 +1025,7 @@ def _svcmon_update(vars, vals):
                  h['mon_svcname'],
                  h['mon_nodname'],
                  h['mon_overallstatus'],
+                 h['mon_availlstatus'],
                  h['mon_ipstatus'],
                  h['mon_fsstatus'],
                  h['mon_diskstatus'],
@@ -1036,6 +1040,7 @@ def _svcmon_update(vars, vals):
                  'mon_svcname',
                  'mon_nodname',
                  'mon_overallstatus',
+                 'mon_availstatus',
                  'mon_ipstatus',
                  'mon_fsstatus',
                  'mon_diskstatus',
@@ -1054,6 +1059,7 @@ def _svcmon_update(vars, vals):
                  "undef",
                  "undef",
                  "undef",
+                 "undef",
                  "undef"]
         generic_insert('svcmon_log', _vars, _vals)
         _vars = ['mon_begin',
@@ -1061,6 +1067,7 @@ def _svcmon_update(vars, vals):
                  'mon_svcname',
                  'mon_nodname',
                  'mon_overallstatus',
+                 'mon_availstatus',
                  'mon_ipstatus',
                  'mon_fsstatus',
                  'mon_diskstatus',
@@ -1073,6 +1080,7 @@ def _svcmon_update(vars, vals):
                  h['mon_svcname'],
                  h['mon_nodname'],
                  h['mon_overallstatus'],
+                 h['mon_availstatus'],
                  h['mon_ipstatus'],
                  h['mon_fsstatus'],
                  h['mon_diskstatus'],
@@ -1081,8 +1089,7 @@ def _svcmon_update(vars, vals):
                  h['mon_hbstatus'],
                  h['mon_syncstatus']]
         generic_insert('svcmon_log', _vars, _vals)
-    elif h['mon_overallstatus'] != last[0].mon_overallstatus or \
-         h['mon_ipstatus'] != last[0].mon_ipstatus or \
+    elif h['mon_ipstatus'] != last[0].mon_ipstatus or \
          h['mon_fsstatus'] != last[0].mon_fsstatus or \
          h['mon_diskstatus'] != last[0].mon_diskstatus or \
          h['mon_containerstatus'] != last[0].mon_containerstatus or \
@@ -1094,6 +1101,7 @@ def _svcmon_update(vars, vals):
                  'mon_svcname',
                  'mon_nodname',
                  'mon_overallstatus',
+                 'mon_availstatus',
                  'mon_ipstatus',
                  'mon_fsstatus',
                  'mon_diskstatus',
@@ -1106,6 +1114,7 @@ def _svcmon_update(vars, vals):
                  h['mon_svcname'],
                  h['mon_nodname'],
                  h['mon_overallstatus'],
+                 h['mon_availstatus'],
                  h['mon_ipstatus'],
                  h['mon_fsstatus'],
                  h['mon_diskstatus'],
@@ -1154,6 +1163,7 @@ class table_svcmon(HtmlTable):
             'svc_cluster_type',
             'environnement',
             'mon_nodname',
+            'mon_availstatus',
             'mon_overallstatus',
             'mon_frozen',
             'mon_containerstatus',
@@ -1218,7 +1228,8 @@ class table_svcmon(HtmlTable):
             self.colprops[i].table = None
             self.colprops[i].t = self
         for i in ['mon_nodname', 'svc_name', 'svc_containertype', 'svc_app',
-                  'svc_type', 'environnement', 'mon_overallstatus', 'mon_syncstatus']:
+                  'svc_type', 'environnement', 'mon_overallstatus',
+                  'mon_availstatus', 'mon_syncstatus']:
             self.colprops[i].display = True
         self.span = 'svc_name'
         self.sub_span = v_services_cols

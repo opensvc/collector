@@ -125,8 +125,13 @@ img {
     color: #009900;
 }
 
-.status_down, .status_err, .status_stdby_down {
+.status_down, .status_err {
     color: #990000;
+}
+
+.status_stdby_down {
+    color: #990000;
+    background-color: rgba(77,77,00,0.4);
 }
 
 .status_warn {

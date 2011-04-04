@@ -59,6 +59,8 @@ def service_availability(rows, begin=None, end=None):
         else: return 'undef'
 
     def status(row):
+        if row.svcmon_log.mon_availstatus != 'undef':
+            return row.svcmon_log.mon_availstatus
         s = 'undef'
         for sn in ['mon_containerstatus',
                   'mon_ipstatus',
@@ -683,6 +685,7 @@ class table_svcmon_log(HtmlTable):
         self.colprops['svc_updated'].field = 'svc_updated'
         self.colprops['mon_svcname'].display = True
         self.colprops['mon_nodname'].display = True
+        self.colprops['mon_overallstatus'].display = False
         for c in self.cols:
             self.colprops[c].t = self
         for c in svcmon_cols+v_services_cols+v_nodes_cols+['node_updated']:
@@ -690,7 +693,7 @@ class table_svcmon_log(HtmlTable):
         for c in ['mon_svcname', 'mon_nodname', 'mon_begin', 'mon_end',
                   'mon_overallstatus', 'mon_containerstatus', 'mon_ipstatus',
                   'mon_fsstatus', 'mon_diskstatus', 'mon_syncstatus',
-                  'mon_appstatus', 'mon_hbstatus']:
+                  'mon_appstatus', 'mon_hbstatus', 'mon_availstatus']:
             self.colprops[c].table = 'svcmon_log'
         self.dbfilterable = True
         self.extraline = True
@@ -702,6 +705,7 @@ class table_svcmon_log(HtmlTable):
 def ajax_svcmon_log_col_values():
     t = table_svcmon_log('svcmon_log', 'ajax_svcmon_log')
     col = request.args[0]
+    g = db.svcmon_log[col]
     o = db.svcmon_log.mon_begin|db.svcmon_log.mon_end
     q = db.v_svcmon.mon_svcname==db.svcmon_log.mon_svcname
     q &= db.v_svcmon.mon_nodname==db.svcmon_log.mon_nodname
@@ -709,7 +713,7 @@ def ajax_svcmon_log_col_values():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_db_filters(q, 'v_svcmon')
-    t.object_list = db(q).select(orderby=o, groupby=o)
+    t.object_list = db(q).select(orderby=o, groupby=g)
     return t.col_values_cloud(col)
 
 @auth.requires_login()

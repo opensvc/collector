@@ -1197,6 +1197,93 @@ class col_status(HtmlTableColumn):
             c = 'status_'+s.replace(" ", "_")
         return SPAN(s, _class=c)
 
+class col_availstatus(HtmlTableColumn):
+    def status_merge_down(self, s):
+        if s == 'up': return 'warn'
+        elif s == 'down': return 'down'
+        elif s == 'stdby up': return 'stdby up with down'
+        elif s == 'stdby up with up': return 'warn'
+        elif s == 'stdby up with down': return 'stdby up with down'
+        elif s == 'undef': return 'down'
+        else: return 'undef'
+
+    def status_merge_up(self, s):
+        if s == 'up': return 'up'
+        elif s == 'down': return 'warn'
+        elif s == 'stdby up': return 'stdby up with up'
+        elif s == 'stdby up with up': return 'stdby up with up'
+        elif s == 'stdby up with down': return 'warn'
+        elif s == 'undef': return 'up'
+        else: return 'undef'
+
+    def status_merge_stdby_up(self, s):
+        if s == 'up': return 'stdby up with up'
+        elif s == 'down': return 'stdby up with down'
+        elif s == 'stdby up': return 'stdby up'
+        elif s == 'stdby up with up': return 'stdby up with up'
+        elif s == 'stdby up with down': return 'warn'
+        elif s == 'undef': return 'stdby up'
+        else: return 'undef'
+
+    def get(self, o):
+        # backward compat: mon_availstatus was not always available
+        v = HtmlTableColumn.get(self, o)
+        if v != 'undef':
+            return v
+        s = 'undef'
+        for sn in ['mon_containerstatus',
+                  'mon_ipstatus',
+                  'mon_fsstatus',
+                  'mon_appstatus',
+                  'mon_diskstatus']:
+            if self.t.colprops[sn].get(o) in ['warn', 'stdby down', 'todo']: return 'warn'
+            elif self.t.colprops[sn].get(o) == 'undef': return 'undef'
+            elif self.t.colprops[sn].get(o) == 'n/a': continue
+            elif self.t.colprops[sn].get(o) == 'up': s = self.status_merge_up(s)
+            elif self.t.colprops[sn].get(o) == 'down': s = self.status_merge_down(s)
+            elif self.t.colprops[sn].get(o) == 'stdby up': s = self.status_merge_stdby_up(s)
+            else: return 'undef'
+        return s
+
+    def html(self, o):
+        cl = {}
+        if self.t.colprops['mon_updated'].get(o) < now - datetime.timedelta(minutes=12):
+            outdated = True
+        else:
+            outdated = False
+        for k in ['mon_availstatus',
+                  'mon_containerstatus',
+                  'mon_ipstatus',
+                  'mon_fsstatus',
+                  'mon_diskstatus',
+                  'mon_appstatus']:
+            if k == 'mon_availstatus':
+                s = self.get(o)
+                a = s
+            else:
+                s = self.t.colprops[k].get(o)
+            if s is None or outdated:
+                cl[k] = 'status_undef'
+            else:
+                cl[k] = 'status_'+s.replace(" ", "_")
+
+        t = TABLE(
+          TR(
+            TD(a,
+               _colspan=5,
+               _class='status '+cl['mon_availstatus'],
+            ),
+          ),
+          TR(
+            TD("vm", _class=cl['mon_containerstatus']),
+            TD("ip", _class=cl['mon_ipstatus']),
+            TD("fs", _class=cl['mon_fsstatus']),
+            TD("dg", _class=cl['mon_diskstatus']),
+            TD("app", _class=cl['mon_appstatus']),
+          ),
+        )
+        return t
+
 class col_overallstatus(HtmlTableColumn):
     def html(self, o):
         cl = {}
@@ -1205,13 +1292,9 @@ class col_overallstatus(HtmlTableColumn):
         else:
             outdated = False
         for k in ['mon_overallstatus',
-                  'mon_containerstatus',
-                  'mon_ipstatus',
-                  'mon_fsstatus',
-                  'mon_diskstatus',
-                  'mon_syncstatus',
-                  'mon_appstatus',
-                  'mon_hbstatus']:
+                  'mon_availstatus',
+                  'mon_hbstatus',
+                  'mon_syncstatus']:
             s = self.t.colprops[k].get(o)
             if s is None or outdated:
                 cl[k] = 'status_undef'
@@ -1221,18 +1304,14 @@ class col_overallstatus(HtmlTableColumn):
         t = TABLE(
           TR(
             TD(self.t.colprops['mon_overallstatus'].get(o),
-               _colspan=7,
+               _colspan=3,
                _class='status '+cl['mon_overallstatus'],
             ),
           ),
           TR(
-            TD("vm", _class=cl['mon_containerstatus']),
-            TD("ip", _class=cl['mon_ipstatus']),
-            TD("fs", _class=cl['mon_fsstatus']),
-            TD("dg", _class=cl['mon_diskstatus']),
-            TD("sync", _class=cl['mon_syncstatus']),
-            TD("app", _class=cl['mon_appstatus']),
+            TD("avail", _class=cl['mon_availstatus']),
             TD("hb", _class=cl['mon_hbstatus']),
+            TD("sync", _class=cl['mon_syncstatus']),
           ),
         )
         return t
@@ -1314,6 +1393,7 @@ v_services_cols = [
 
 svcmon_cols = [
     'mon_overallstatus',
+    'mon_availstatus',
     'mon_updated',
     'mon_changed',
     'mon_frozen',
@@ -1582,6 +1662,13 @@ svcmon_colprops = {
              title = 'Container status',
              field='mon_containerstatus',
              display = False,
+             img = 'svc',
+             table = 'svcmon',
+            ),
+    'mon_availstatus': col_availstatus(
+             title = 'Availability status',
+             field='mon_availstatus',
+             display = True,
              img = 'svc',
              table = 'svcmon',
             ),
