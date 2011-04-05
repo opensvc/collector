@@ -1867,24 +1867,27 @@ def ajax_comp_filtersets():
             if action == 'delete_filterset':
                 comp_delete_filterset(t.get_checked())
                 t.form_filter_attach = t.comp_filter_attach_sqlform()
+                t.form_encap_filterset_attach = t.comp_encap_filterset_attach_sqlform()
             elif action == 'detach_filters':
                 comp_detach_filters(t.get_checked())
             elif action == 'filterset_rename':
                 comp_rename_filterset(t.get_checked())
                 t.form_filter_attach = t.comp_filter_attach_sqlform()
+                t.form_encap_filterset_attach = t.comp_encap_filterset_attach_sqlform()
         except ToolError, e:
             t.flash = str(e)
 
     try:
         if t.form_filterset_add.accepts(request.vars):
             t.form_filter_attach = t.comp_filter_attach_sqlform()
+            t.form_encap_filterset_attach = t.comp_encap_filterset_attach_sqlform()
             _log('compliance.filterset.add',
                 'added filterset %(fset_name)s',
                 dict(fset_name=request.vars.fset_name))
         elif t.form_filterset_add.errors:
             response.flash = T("errors in form")
 
-        if t.form_encap_filterset_attach.accepts(request.vars):
+        if t.form_encap_filterset_attach.accepts(request.vars, formname='form_encap_filterset_attach'):
             q = db.v_gen_filtersets.encap_fset_id==request.vars.encap_fset_id
             q &= db.v_gen_filtersets.fset_id==request.vars.fset_id
             f = db(q).select()[0]
@@ -1896,7 +1899,7 @@ def ajax_comp_filtersets():
         elif t.form_filter_attach.errors:
             response.flash = T("errors in form")
 
-        if t.form_filter_attach.accepts(request.vars):
+        if t.form_filter_attach.accepts(request.vars, formname='form_filter_attach'):
             q = db.v_gen_filtersets.f_id==request.vars.f_id
             q &= db.v_gen_filtersets.fset_id==request.vars.fset_id
             f = db(q).select()[0]
@@ -1908,6 +1911,7 @@ def ajax_comp_filtersets():
                 'filter %(f_name)s attached to filterset %(fset_name)s',
                 dict(f_name=f_name, fset_name=f.fset_name))
         elif t.form_filter_attach.errors:
+            #raise Exception("1:"+str(t.form_filter_attach.errors))
             response.flash = T("errors in form")
     except AttributeError:
         pass
