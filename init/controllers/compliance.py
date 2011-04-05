@@ -1542,6 +1542,16 @@ def comp_delete_filterset(ids=[]):
     if len(ids) == 0:
         raise ToolError("delete filterset failed: no filterset selected")
     ids = map(lambda x: int(x.split('_')[0]), ids)
+
+    # purge filters joins
+    q = db.gen_filtersets_filters.fset_id.belongs(ids)
+    n = db(q).delete()
+
+    # purge ruleset joins
+    q = db.comp_rulesets_filtersets.fset_id.belongs(ids)
+    n = db(q).delete()
+
+    # delete filtersets
     q = db.gen_filtersets.id.belongs(ids)
     rows = db(q).select()
     if len(rows) == 0:
