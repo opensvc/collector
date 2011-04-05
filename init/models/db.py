@@ -949,6 +949,7 @@ db.define_table('v_gen_filtersets',
     db.gen_filtersets_filters,
     db.gen_filters,
     Field('encap_fset_name','string'),
+    Field('join_id','integer'),
     migrate=False)
 
 db.define_table('comp_rulesets',

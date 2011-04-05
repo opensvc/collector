@@ -1926,7 +1926,7 @@ def ajax_comp_filtersets():
     except AttributeError:
         pass
 
-    o = db.v_gen_filtersets.fset_name|db.v_gen_filtersets.f_order
+    o = db.v_gen_filtersets.fset_name|db.v_gen_filtersets.f_order|db.v_gen_filtersets.join_id
     q = db.v_gen_filtersets.fset_id > 0
     for f in t.cols:
         q = _where(q, 'v_gen_filtersets', t.filter_parse(f), f)
