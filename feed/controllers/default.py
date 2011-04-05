@@ -322,6 +322,89 @@ def svcmon_update(vars, vals):
     else:
         _svcmon_update(vars, vals)
 
+def compute_availstatus(h):
+    def status_merge_down(s):
+        if s == 'up': return 'warn'
+        elif s == 'down': return 'down'
+        elif s == 'stdby up': return 'stdby up with down'
+        elif s == 'stdby up with up': return 'warn'
+        elif s == 'stdby up with down': return 'stdby up with down'
+        elif s in ['undef', 'n/a']: return 'down'
+        else: return 'undef'
+
+    def status_merge_up(s):
+        if s == 'up': return 'up'
+        elif s == 'down': return 'warn'
+        elif s == 'stdby up': return 'stdby up with up'
+        elif s == 'stdby up with up': return 'stdby up with up'
+        elif s == 'stdby up with down': return 'warn'
+        elif s in ['undef', 'n/a']: return 'up'
+        else: return 'undef'
+
+    def status_merge_stdby_up(s):
+        if s == 'up': return 'stdby up with up'
+        elif s == 'down': return 'stdby up with down'
+        elif s == 'stdby up': return 'stdby up'
+        elif s == 'stdby up with up': return 'stdby up with up'
+        elif s == 'stdby up with down': return 'stdby up with down'
+        elif s in ['undef', 'n/a']: return 'stdby up'
+        else: return 'undef'
+
+    s = 'undef'
+    for sn in ['mon_containerstatus',
+              'mon_ipstatus',
+              'mon_fsstatus',
+              'mon_appstatus',
+              'mon_diskstatus']:
+        if h[sn] in ['warn', 'stdby down', 'todo']: return 'warn'
+        elif h[sn] == 'undef': return 'undef'
+        elif h[sn] == 'n/a':
+            if s == 'undef': s = 'n/a'
+            else: continue
+        elif h[sn] == 'up': s = status_merge_up(s)
+        elif h[sn] == 'down': s = status_merge_down(s)
+        elif h[sn] == 'stdby up': s = status_merge_stdby_up(s)
+        else: return 'undef'
+    if s == 'stdby up with up':
+        s = 'up'
+    elif s == 'stdby up with down':
+        s = 'stdby up'
+    return s
+
+def svc_status_update(svcname):
+    q = db.svcmon.mon_svcname == svcname
+    rows = db(q).select(db.svcmon.mon_overallstatus,
+                        db.svcmon.mon_availstatus)
+    ostatus = 'undef'
+    astatus = 'undef'
+    for r in rows:
+        #
+        if r.mon_overallstatus == "down":
+            if ostatus == "undef":
+                ostatus = "down"
+        elif r.mon_overallstatus == "warn":
+            ostatus = "warn"
+        elif r.mon_overallstatus == "up":
+            if ostatus != "warn":
+                ostatus = "up"
+
+        #
+        if r.mon_availstatus == "down":
+            if astatus == "undef":
+                astatus = "down"
+        elif r.mon_availstatus == "warn":
+            if astatus != "up":
+                astatus = "warn"
+        elif r.mon_availstatus == "up":
+            astatus = "up"
+        elif r.mon_availstatus == "n/a":
+            if astatus == "undef":
+                astatus = "n/a"
+
+    db(db.services.svc_name==svcname).update(
+      svc_status=ostatus,
+      svc_availstatus=astatus)
+
 def _svcmon_update(vars, vals):
     # don't trust the server's time
     h = {}
@@ -335,8 +418,9 @@ def _svcmon_update(vars, vals):
     if 'mon_hbstatus' not in h:
         h['mon_hbstatus'] = 'undef'
     if 'mon_availstatus' not in h:
-        h['mon_availstatus'] = 'undef'
+        h['mon_availstatus'] = compute_availstatus(h)
     generic_insert('svcmon', h.keys(), h.values())
+    svc_status_update(h['mon_svcname'])
 
     query = db.svcmon_log.mon_svcname==h['mon_svcname']
     query &= db.svcmon_log.mon_nodname==h['mon_nodname']

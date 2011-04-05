@@ -1371,6 +1371,8 @@ v_nodes_cols = [
 ]
 
 v_services_cols = [
+    'svc_status',
+    'svc_availstatus',
     'svc_app',
     'svc_type',
     'svc_cluster_type',
@@ -1429,6 +1431,20 @@ v_services_colprops = {
              title = 'Drp wave',
              field='svc_wave',
              display = False,
+             img = 'svc',
+             table = 'v_services',
+            ),
+    'svc_availstatus': col_status(
+             title = 'Avail status',
+             field='svc_availstatus',
+             display = True,
+             img = 'svc',
+             table = 'v_services',
+            ),
+    'svc_status': col_status(
+             title = 'Status',
+             field='svc_status',
+             display = True,
              img = 'svc',
              table = 'v_services',
             ),

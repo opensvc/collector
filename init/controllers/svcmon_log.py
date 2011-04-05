@@ -37,7 +37,7 @@ def service_availability(rows, begin=None, end=None):
         elif s == 'stdby up': return 'stdby up with down'
         elif s == 'stdby up with up': return 'warn'
         elif s == 'stdby up with down': return 'stdby up with down'
-        elif s == 'undef': return 'down'
+        elif s in ['undef', 'n/a']: return 'down'
         else: return 'undef'
 
     def status_merge_up(s):
@@ -46,7 +46,7 @@ def service_availability(rows, begin=None, end=None):
         elif s == 'stdby up': return 'stdby up with up'
         elif s == 'stdby up with up': return 'stdby up with up'
         elif s == 'stdby up with down': return 'warn'
-        elif s == 'undef': return 'up'
+        elif s in ['undef', 'n/a']: return 'up'
         else: return 'undef'
 
     def status_merge_stdby_up(s):
@@ -55,7 +55,7 @@ def service_availability(rows, begin=None, end=None):
         elif s == 'stdby up': return 'stdby up'
         elif s == 'stdby up with up': return 'stdby up with up'
         elif s == 'stdby up with down': return 'stdby up with down'
-        elif s == 'undef': return 'stdby up'
+        elif s in ['undef', 'n/a']: return 'stdby up'
         else: return 'undef'
 
     def status(row):
@@ -69,7 +69,9 @@ def service_availability(rows, begin=None, end=None):
                   'mon_diskstatus']:
             if row.svcmon_log[sn] in ['warn', 'stdby down', 'todo']: return 'warn'
             elif row.svcmon_log[sn] == 'undef': return 'undef'
-            elif row.svcmon_log[sn] == 'n/a': continue
+            elif row.svcmon_log[sn] == 'n/a':
+                if s == 'undef': s = 'n/a'
+                else: continue
             elif row.svcmon_log[sn] == 'up': s = status_merge_up(s)
             elif row.svcmon_log[sn] == 'down': s = status_merge_down(s)
             elif row.svcmon_log[sn] == 'stdby up': s = status_merge_stdby_up(s)
@@ -78,6 +80,7 @@ def service_availability(rows, begin=None, end=None):
             s = 'up'
         elif s == 'stdby up with down':
             s = 'stdby up'
+        db(db.svcmon_log.id==row.svcmon_log.id).update(mon_availstatus=s)
         return s
 
     if end is None or begin is None:

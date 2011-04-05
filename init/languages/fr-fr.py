@@ -95,6 +95,7 @@
 'Author': 'Auteur',
 'Automatically acknowledged upon ticket generation': 'Acquitté automatiquement à la génération du ticket',
 'Automatically acknowledged upon ticket generation. Assigned to %(to)s': 'Acquitté automatiquement à la génération du ticket. Assigné à %(to)s',
+'Avail status': 'Avail status',
 'Availability': 'Disponibilité',
 'Availability status': 'Etat dispo',
 'Availabity': 'Disponibilité',
