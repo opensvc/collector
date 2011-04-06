@@ -1435,14 +1435,14 @@ v_services_colprops = {
              table = 'v_services',
             ),
     'svc_availstatus': col_status(
-             title = 'Avail status',
+             title = 'Service availability status',
              field='svc_availstatus',
              display = True,
              img = 'svc',
              table = 'v_services',
             ),
     'svc_status': col_status(
-             title = 'Status',
+             title = 'Service overall status',
              field='svc_status',
              display = True,
              img = 'svc',
