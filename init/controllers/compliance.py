@@ -1005,9 +1005,9 @@ def comp_detach_rulesets(node_ids=[], ruleset_ids=[]):
 @auth.requires_membership('CompManager')
 def comp_attach_rulesets(node_ids=[], ruleset_ids=[]):
     if len(node_ids) == 0:
-        raise ToolError("detach ruleset failed: no node selected")
+        raise ToolError("attach ruleset failed: no node selected")
     if len(ruleset_ids) == 0:
-        raise ToolError("detach ruleset failed: no ruleset selected")
+        raise ToolError("attach ruleset failed: no ruleset selected")
 
     q = db.v_nodes.id.belongs(node_ids)
     rows = db(q).select(db.v_nodes.nodename)
@@ -2298,6 +2298,180 @@ def ajax_comp_moduleset():
 
     return t.html()
 
+class table_comp_moduleset_short(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['modset_name']
+        self.colprops = {
+            'modset_name': HtmlTableColumn(
+                     title='Moduleset',
+                     table='comp_moduleset',
+                     field='modset_name',
+                     display=True,
+                     img='action16',
+                    ),
+        }
+        self.checkboxes = True
+        self.dbfilterable = False
+        self.exportable = False
+        self.columnable = False
+
+class table_comp_modulesets_nodes(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['nodename', 'modulesets'] + v_nodes_cols
+        self.colprops = v_nodes_colprops
+        self.colprops['modulesets'] = HtmlTableColumn(
+                     title='Module set',
+                     field='modulesets',
+                     img='comp16',
+                     display=True,
+                    )
+        self.colprops['nodename'].t = self
+        self.colprops['nodename'].display = True
+        self.checkboxes = True
+        self.dbfilterable = False
+        self.additional_tools.append('moduleset_attach')
+        self.additional_tools.append('moduleset_detach')
+        self.ajax_col_values = 'ajax_comp_modulesets_nodes_col_values'
+
+    def moduleset_detach(self):
+        d = DIV(
+              A(
+                T("Detach moduleset"),
+                _class='detach16',
+                _onclick=self.ajax_submit(args=['detach_moduleset'],
+                                          additional_inputs=self.modulesets.ajax_inputs()),
+              ),
+              _class='floatw',
+            )
+        return d
+
+    def moduleset_attach(self):
+        d = DIV(
+              A(
+                T("Attach moduleset"),
+                _class='attach16',
+                _onclick=self.ajax_submit(args=['attach_moduleset'],
+                                          additional_inputs=self.modulesets.ajax_inputs()),
+              ),
+              _class='floatw',
+            )
+        return d
+
+@auth.requires_membership('CompManager')
+def comp_detach_modulesets(node_ids=[], modset_ids=[]):
+    if len(node_ids) == 0:
+        raise ToolError("detach modulesets failed: no node selected")
+    if len(modset_ids) == 0:
+        raise ToolError("detach modulesets failed: no moduleset selected")
+
+    q = db.v_nodes.id.belongs(node_ids)
+    rows = db(q).select(db.v_nodes.nodename)
+    node_names = [r.nodename for r in rows]
+    nodes = ', '.join(node_names)
+
+    for msid in modset_ids:
+        for node in node_names:
+            q = db.comp_node_moduleset.modset_node == node
+            q &= db.comp_node_moduleset.modset_id == msid
+            db(q).delete()
+    q = db.comp_moduleset.id.belongs(modset_ids)
+    rows = db(q).select(db.comp_moduleset.modset_name)
+    modulesets = ', '.join([r.modset_name for r in rows])
+    _log('compliance.moduleset.node.detach',
+         'detached modulesets %(modulesets)s from nodes %(nodes)s',
+         dict(modulesets=modulesets, nodes=nodes))
+
+@auth.requires_membership('CompManager')
+def comp_attach_modulesets(node_ids=[], modset_ids=[]):
+    if len(node_ids) == 0:
+        raise ToolError("attach modulesets failed: no node selected")
+    if len(modset_ids) == 0:
+        raise ToolError("attach modulesets failed: no moduleset selected")
+
+    q = db.v_nodes.id.belongs(node_ids)
+    rows = db(q).select(db.v_nodes.nodename)
+    node_names = [r.nodename for r in rows]
+    nodes = ', '.join(node_names)
+
+    for msid in modset_ids:
+        for node in node_names:
+            q = db.comp_node_moduleset.modset_node == node
+            q &= db.comp_node_moduleset.modset_id == msid
+            if db(q).count() == 0:
+                db.comp_node_moduleset.insert(modset_node=node,
+                                            modset_id=msid)
+
+    q = db.comp_moduleset.id.belongs(modset_ids)
+    rows = db(q).select(db.comp_moduleset.modset_name)
+    modulesets = ', '.join([r.modset_name for r in rows])
+    _log('compliance.moduleset.node.attach',
+         'attached modulesets %(modulesets)s to nodes %(nodes)s',
+         dict(modulesets=modulesets, nodes=nodes))
+
+
+@auth.requires_login()
+def ajax_comp_modulesets_nodes():
+    r = table_comp_moduleset_short('1', 'ajax_comp_modulesets_nodes',
+                                  innerhtml='1')
+    t = table_comp_modulesets_nodes('2', 'ajax_comp_modulesets_nodes',
+                                  innerhtml='1')
+    t.modulesets = r
+    t.checkbox_names.append(r.id+'_ck')
+
+    if len(request.args) == 1 and request.args[0] == 'attach_moduleset':
+        comp_attach_modulesets(t.get_checked(), r.get_checked())
+    elif len(request.args) == 1 and request.args[0] == 'detach_moduleset':
+        comp_detach_modulesets(t.get_checked(), r.get_checked())
+
+    o = db.comp_moduleset.modset_name
+    q = db.comp_moduleset.id > 0
+    for f in r.cols:
+        q = _where(q, 'comp_moduleset', r.filter_parse_glob(f), f)
+
+    n = db(q).count()
+    r.setup_pager(n)
+    r.object_list = db(q).select(limitby=(r.pager_start,r.pager_end), orderby=o)
+
+    r_html = r.html()
+
+    o = db.v_comp_nodes.nodename
+    q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
+    for f in t.cols:
+        q = _where(q, 'v_comp_nodes', t.filter_parse_glob(f), f)
+    q = apply_db_filters(q, 'v_comp_nodes')
+
+    n = db(q).count()
+    t.setup_pager(n)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        return t.csv()
+
+    return DIV(
+             DIV(
+               t.html(),
+               _style="""min-width:60%;
+                         max-width:60%;
+                         float:left;
+                         border-right:0px solid;
+                      """,
+             ),
+             DIV(
+               r_html,
+               _style="""min-width:40%;
+                         max-width:40%;
+                         float:left;
+                      """,
+             ),
+             DIV(XML('&nbsp;'), _class='spacer'),
+           )
+
 @auth.requires_login()
 def comp_modules():
     t = DIV(
@@ -2307,8 +2481,8 @@ def comp_modules():
             _id='ajax_comp_moduleset',
           ),
           DIV(
-            #ajax_comp_modules_nodes(),
-            _id='ajax_comp_modules_nodes',
+            ajax_comp_modulesets_nodes(),
+            _id='1',
           ),
         )
     return dict(table=t)
@@ -2874,6 +3048,13 @@ def comp_moduleset_id(moduleset):
     q = db.comp_moduleset.modset_name == moduleset
     rows = db(q).select(db.comp_moduleset.id)
     if len(rows) == 0:
+        return None
+    return rows[0].id
+
+def comp_moduleset_exists(moduleset):
+    q = db.comp_moduleset.modset_name == moduleset
+    rows = db(q).select(db.comp_moduleset.id)
+    if len(rows) != 1:
         return None
     return rows[0].id
 
