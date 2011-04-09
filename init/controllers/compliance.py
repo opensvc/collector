@@ -309,7 +309,7 @@ sid=sid, iid=iid),
                 _class="clickable",
               ),
               SPAN(
-                INPUT(
+                TEXTAREA(
                   value=s,
                   _id=iid,
                   _onblur="""hide_eid('%(sid)s');show_eid('%(tid)s');"""%dict(sid=sid,
