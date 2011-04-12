@@ -986,11 +986,17 @@ db.define_table('v_comp_rulesets',
     Field('fset_id','integer'),
     Field('ruleset_name','string', requires=IS_NOT_EMPTY()),
     Field('ruleset_type','string', requires=IS_IN_SET(['contextual','explicit'])),
+    Field('teams_responsible','string'),
     Field('fset_name','string'),
     Field('var_name','string'),
     Field('var_value','string'),
     Field('var_author','string', readable=False, writable=False),
     Field('var_updated','datetime', readable=False, writable=False),
+    migrate=False)
+
+db.define_table('comp_ruleset_team_responsible',
+    Field('ruleset_id','string'),
+    Field('group_id','string'),
     migrate=False)
 
 db.define_table('comp_node_ruleset',

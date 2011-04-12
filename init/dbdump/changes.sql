@@ -957,3 +957,17 @@ CREATE VIEW `v_svcmon` AS select (select count(`a`.`ID`) AS `count(a.id)` from `
 drop view v_flex_status;
 
 create view v_flex_status as (select p.id, p.mon_svcname as svc_name, p.svc_flex_min_nodes, p.svc_flex_max_nodes, p.svc_flex_cpu_low_threshold, p.svc_flex_cpu_high_threshold, count(1) as n, (select count(1) from svcmon c where c.mon_svcname=p.mon_svcname and c.mon_availstatus="up") as up, (select 100-c.idle from stats_cpu c, svcmon m where c.nodename=m.mon_nodname and m.mon_svcname=p.mon_svcname and date>adddate(now(), interval - 15 minute) and c.CPU="all" and m.mon_overallstatus="up" group by p.mon_svcname) as cpu from v_svcmon p where svc_cluster_type like "%flex" group by p.mon_svcname);
+
+# 2011-04-11
+
+CREATE TABLE `comp_ruleset_team_responsible` (
+  `id` integer  NOT NULL AUTO_INCREMENT,
+  `ruleset_id` integer NOT NULL,
+  `group_id` integer NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx1` (`ruleset_id`)
+);
+
+drop view v_comp_rulesets;
+
+create view v_comp_rulesets as (select r.id as ruleset_id,r.ruleset_name,r.ruleset_type,group_concat(distinct g.role separator ', ') as teams_responsible,rv.id,rv.var_name,rv.var_value,rv.var_author,rv.var_updated,rf.fset_id,fs.fset_name from comp_rulesets r left join comp_rulesets_variables rv on rv.ruleset_id = r.id left join comp_rulesets_filtersets rf on r.id=rf.ruleset_id left join gen_filtersets fs on fs.id=rf.fset_id left join comp_ruleset_team_responsible rt on r.id=rt.ruleset_id left join auth_group g on rt.group_id=g.id group by r.id, rv.id);

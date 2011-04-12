@@ -263,9 +263,9 @@ class col_var_name(HtmlTableColumn):
             ss = '(no name)'
         else:
             ss = s
-        tid = 'nd_t_%s_%s'%(o.id, o.ruleset_id)
-        iid = 'nd_i_%s_%s'%(o.id, o.ruleset_id)
-        sid = 'nd_s_%s_%s'%(o.id, o.ruleset_id)
+        tid = 'nd_t_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
+        iid = 'nd_i_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
+        sid = 'nd_s_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
         d = SPAN(
               SPAN(
                 ss,
@@ -297,9 +297,9 @@ class col_var_value(HtmlTableColumn):
             ss = '(no value)'
         else:
             ss = s
-        tid = 'vd_t_%s_%s'%(o.id, o.ruleset_id)
-        iid = 'vd_i_%s_%s'%(o.id, o.ruleset_id)
-        sid = 'vd_s_%s_%s'%(o.id, o.ruleset_id)
+        tid = 'vd_t_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
+        iid = 'vd_i_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
+        sid = 'vd_s_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
         d = SPAN(
               SPAN(
                 ss,
@@ -380,15 +380,24 @@ class table_comp_explicit_rules(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['ruleset_name', 'variables']
         self.colprops = {
+            'id': HtmlTableColumn(
+                     title='Ruleset id',
+                     field='id',
+                     table='v_comp_explicit_rulesets',
+                     display=False,
+                     img='action16',
+                    ),
             'ruleset_name': HtmlTableColumn(
                      title='Rule set',
                      field='ruleset_name',
+                     table='v_comp_explicit_rulesets',
                      display=True,
                      img='action16',
                     ),
             'variables': col_variables(
                      title='Variables',
                      field='variables',
+                     table='v_comp_explicit_rulesets',
                      display=True,
                      img='action16',
                     ),
@@ -397,6 +406,9 @@ class table_comp_explicit_rules(HtmlTable):
         self.dbfilterable = False
         self.exportable = False
         self.ajax_col_values = 'ajax_comp_explicit_rules_col_values'
+
+    def checkbox_key(self, o):
+        return str(o.v_comp_explicit_rulesets.id)
 
 @auth.requires_login()
 def ajax_comp_explicit_rules_col_values():
@@ -437,7 +449,9 @@ def ajax_comp_rulesets_nodes():
         comp_detach_rulesets(t.get_checked(), r.get_checked())
 
     o = db.v_comp_explicit_rulesets.ruleset_name
-    q = db.v_comp_explicit_rulesets.id > 0
+    q = db.v_comp_explicit_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
     for f in r.cols:
         q = _where(q, 'v_comp_explicit_rulesets', r.filter_parse_glob(f), f)
 
@@ -449,6 +463,8 @@ def ajax_comp_rulesets_nodes():
 
     o = db.v_comp_nodes.nodename
     q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
+    if 'Manager' not in user_groups():
+        q &= db.v_comp_nodes.team_responsible.belongs(user_groups())
     for f in t.cols:
         q = _where(q, 'v_comp_nodes', t.filter_parse_glob(f), f)
     q = apply_db_filters(q, 'v_comp_nodes')
@@ -486,6 +502,7 @@ class table_comp_rulesets(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['ruleset_name',
                      'ruleset_type',
+                     'teams_responsible',
                      'fset_name',
                      'var_name',
                      'var_value',
@@ -496,42 +513,77 @@ class table_comp_rulesets(HtmlTable):
             'var_updated': HtmlTableColumn(
                      title='Updated',
                      field='var_updated',
+                     table='v_comp_rulesets',
                      display=True,
                      img='action16',
+                    ),
+            'teams_responsible': HtmlTableColumn(
+                     title='Teams responsible',
+                     field='teams_responsible',
+                     table='v_comp_rulesets',
+                     display=True,
+                     img='guy16',
                     ),
             'var_author': HtmlTableColumn(
                      title='Author',
                      field='var_author',
+                     table='v_comp_rulesets',
                      display=True,
                      img='guy16',
+                    ),
+            'id': HtmlTableColumn(
+                     title='Rule id',
+                     field='id',
+                     table='v_comp_rulesets',
+                     display=False,
+                     img='action16',
+                    ),
+            'fset_id': HtmlTableColumn(
+                     title='Filterset id',
+                     field='fset_id',
+                     table='v_comp_rulesets',
+                     display=False,
+                     img='action16',
+                    ),
+            'ruleset_id': HtmlTableColumn(
+                     title='Ruleset id',
+                     field='ruleset_id',
+                     table='v_comp_rulesets',
+                     display=False,
+                     img='action16',
                     ),
             'ruleset_name': HtmlTableColumn(
                      title='Ruleset',
                      field='ruleset_name',
+                     table='v_comp_rulesets',
                      display=True,
                      img='action16',
                     ),
             'ruleset_type': HtmlTableColumn(
                      title='Ruleset type',
                      field='ruleset_type',
+                     table='v_comp_rulesets',
                      display=True,
                      img='action16',
                     ),
             'fset_name': HtmlTableColumn(
                      title='Filterset',
                      field='fset_name',
+                     table='v_comp_rulesets',
                      display=True,
                      img='filter16',
                     ),
             'var_value': col_var_value(
                      title='Value',
                      field='var_value',
+                     table='v_comp_rulesets',
                      display=True,
                      img='action16',
                     ),
             'var_name': col_var_name(
                      title='Variable',
                      field='var_name',
+                     table='v_comp_rulesets',
                      display=True,
                      img='action16',
                     ),
@@ -542,6 +594,8 @@ class table_comp_rulesets(HtmlTable):
             self.form_filterset_attach = self.comp_filterset_attach_sqlform()
             self.form_ruleset_var_add = self.comp_ruleset_var_add_sqlform()
             self.form_ruleset_add = self.comp_ruleset_add_sqlform()
+            self.additional_tools.append('team_responsible_attach')
+            self.additional_tools.append('team_responsible_detach')
             self.additional_tools.append('filterset_attach')
             self.additional_tools.append('filterset_detach')
             self.additional_tools.append('ruleset_var_add')
@@ -658,10 +712,76 @@ class table_comp_rulesets(HtmlTable):
         if o is None:
             return '_'.join((self.id, 'ckid', ''))
         ids = []
-        ids.append(o['ruleset_id'])
-        ids.append(o['fset_id'])
-        ids.append(o['id'])
+        ids.append(self.colprops['ruleset_id'].get(o))
+        ids.append(self.colprops['fset_id'].get(o))
+        ids.append(self.colprops['id'].get(o))
         return '_'.join([self.id, 'ckid']+map(str,ids))
+
+    def team_responsible_select_tool(self, label, action, divid, sid, _class=''):
+        o = db.nodes.team_responsible
+        q = db.nodes.team_responsible == db.auth_group.role
+        if 'Manager' not in user_groups():
+            q &= db.nodes.team_responsible.belongs(user_groups())
+        options = [OPTION(g.auth_group.role,_value=g.auth_group.id) for g in db(q).select(orderby=o, groupby=o)]
+
+        q = db.auth_membership.user_id == auth.user_id
+        q &= db.auth_group.id == db.auth_membership.group_id
+        q &= db.auth_group.role.like('user_%')
+        options += [OPTION(g.auth_group.role,_value=g.auth_group.id) for g in db(q).select()]
+        d = DIV(
+              A(
+                T(label),
+                _class=_class,
+                _onclick="""
+                  click_toggle_vis(event,'%(div)s', 'block');
+                """%dict(div=divid),
+              ),
+              DIV(
+                TABLE(
+                  TR(
+                    TH(T('Team')),
+                    TD(
+                      SELECT(
+                        *options,
+                        **dict(_id=sid)
+                      ),
+                    ),
+                  ),
+                  TR(
+                    TH(),
+                    TD(
+                      INPUT(
+                        _type='submit',
+                        _onclick=self.ajax_submit(additional_inputs=[sid],
+                                                  args=action),
+                      ),
+                    ),
+                  ),
+                ),
+                _style='display:none',
+                _class='white_float',
+                _name=divid,
+                _id=divid,
+              ),
+              _class='floatw',
+            )
+        return d
+
+    def team_responsible_attach(self):
+        d = self.team_responsible_select_tool(label="Attach team responsible",
+                                              action="team_responsible_attach",
+                                              divid="team_responsible_attach",
+                                              sid="team_responsible_attach_s",
+                                              _class="attach16")
+        return d
+
+    def team_responsible_detach(self):
+        d = self.team_responsible_select_tool(label="Detach team responsible",
+                                              action="team_responsible_detach",
+                                              divid="team_responsible_detach",
+                                              sid="team_responsible_detach_s",
+                                              _class="detach16")
+        return d
 
     def ruleset_rename(self):
         d = DIV(
@@ -837,7 +957,13 @@ class table_comp_rulesets(HtmlTable):
     def comp_ruleset_var_add_sqlform(self):
         db.comp_rulesets_variables.id.readable = False
         db.comp_rulesets_variables.id.writable = False
-        db.comp_rulesets_variables.ruleset_id.requires = IS_IN_DB(db,
+        if 'Manager' in user_groups():
+            q = db.comp_rulesets.id > 0
+        else:
+            q = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+            q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+        allowed = db(q)
+        db.comp_rulesets_variables.ruleset_id.requires = IS_IN_DB(allowed,
                     db.comp_rulesets.id, "%(ruleset_name)s", zero=T('choose one'))
         f = SQLFORM(
                  db.comp_rulesets_variables,
@@ -850,6 +976,59 @@ class table_comp_rulesets(HtmlTable):
         if f.vars.var_name is not None:
             f.vars.var_name = f.vars.var_name.strip()
         return f
+
+@auth.requires_membership('CompManager')
+def team_responsible_attach(ids=[]):
+    if len(ids) == 0:
+        raise ToolError("no ruleset selected")
+    ids = map(lambda x: x.split('_')[0], ids)
+    group_id = request.vars.team_responsible_attach_s
+
+    done = []
+    for id in ids:
+        if 'Manager' not in user_groups():
+            q = db.comp_ruleset_team_responsible.ruleset_id == id
+            q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+            if db(q).count() == 0:
+                continue
+        q = db.comp_ruleset_team_responsible.ruleset_id == id
+        q &= db.comp_ruleset_team_responsible.group_id == group_id
+        if db(q).count() != 0:
+            continue
+        done.append(id)
+        db.comp_ruleset_team_responsible.insert(ruleset_id=id, group_id=group_id)
+    if len(done) == 0:
+        return
+    rows = db(db.comp_rulesets.id.belongs(done)).select(db.comp_rulesets.ruleset_name)
+    u = ', '.join([r.ruleset_name for r in rows])
+    _log('ruleset.group.attach',
+         'attached group %(g)s to rulesets %(u)s',
+         dict(g=group_role(group_id), u=u))
+
+@auth.requires_membership('CompManager')
+def team_responsible_detach(ids=[]):
+    if len(ids) == 0:
+        raise ToolError("no ruleset selected")
+    ids = map(lambda x: x.split('_')[0], ids)
+    group_id = request.vars.team_responsible_detach_s
+
+    done = []
+    for id in ids:
+        q = db.comp_ruleset_team_responsible.ruleset_id == id
+        q &= db.comp_ruleset_team_responsible.group_id == group_id
+        if 'Manager' not in user_groups():
+            q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+        if db(q).count() == 0:
+            continue
+        done.append(id)
+        db(q).delete()
+    if len(done) == 0:
+        return
+    rows = db(db.comp_rulesets.id.belongs(done)).select(db.comp_rulesets.ruleset_name)
+    u = ', '.join([r.ruleset_name for r in rows])
+    _log('ruleset.group.detach',
+         'detached group %(g)s from rulesets %(u)s',
+         dict(g=group_role(group_id), u=u))
 
 @auth.requires_membership('CompManager')
 def ruleset_change_type(ids):
@@ -924,8 +1103,17 @@ def comp_delete_ruleset(ids=[]):
     if len(ids) == 0:
         raise ToolError("delete ruleset failed: no ruleset selected")
     ids = map(lambda x: int(x.split('_')[0]), ids)
+    if 'Manager' not in user_groups():
+        # filter ids to not allow a user to delete a ruleset he does not own
+        q = db.comp_ruleset_team_responsible.ruleset_id.belongs(ids)
+        q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+        rows = db(q).select(groupby=db.comp_ruleset_team_responsible.ruleset_id)
+        ids = [r.ruleset_id for r in rows]
+        if len(ids) == 0:
+            raise ToolError("delete ruleset failed: no ruleset deletion allowed")
     rows = db(db.comp_rulesets.id.belongs(ids)).select(db.comp_rulesets.ruleset_name)
     x = ', '.join([str(r.ruleset_name) for r in rows])
+    n = db(db.comp_ruleset_team_responsible.ruleset_id.belongs(ids)).delete()
     n = db(db.comp_rulesets_filtersets.ruleset_id.belongs(ids)).delete()
     n = db(db.comp_rulesets_variables.ruleset_id.belongs(ids)).delete()
     n = db(db.comp_rulesets.id.belongs(ids)).delete()
@@ -1073,6 +1261,10 @@ def ajax_comp_rulesets():
                 comp_rename_ruleset(v.get_checked())
                 v.form_filterset_attach = v.comp_filterset_attach_sqlform()
                 v.form_ruleset_var_add = v.comp_ruleset_var_add_sqlform()
+            elif action == 'team_responsible_attach':
+                team_responsible_attach(v.get_checked())
+            elif action == 'team_responsible_detach':
+                team_responsible_detach(v.get_checked())
         except ToolError, e:
             v.flash = str(e)
 
@@ -1081,6 +1273,7 @@ def ajax_comp_rulesets():
             # refresh forms ruleset comboboxes
             v.form_filterset_attach = v.comp_filterset_attach_sqlform()
             v.form_ruleset_var_add = v.comp_ruleset_var_add_sqlform()
+            add_default_team_responsible(request.vars.ruleset_name)
             _log('compliance.ruleset.add',
                  'added ruleset %(ruleset)s',
                  dict(ruleset=request.vars.ruleset_name))
@@ -1117,15 +1310,33 @@ def ajax_comp_rulesets():
         v.flash = str(e)
 
     o = db.v_comp_rulesets.ruleset_name|db.v_comp_rulesets.var_name
-    q = db.v_comp_rulesets.ruleset_id > 0
+    g = db.v_comp_rulesets.id
+    q = teams_responsible_filter()
     for f in v.cols:
         q = _where(q, 'v_comp_rulesets', v.filter_parse(f), f)
 
     n = db(q).count()
     v.setup_pager(n)
-    v.object_list = db(q).select(limitby=(v.pager_start,v.pager_end), orderby=o)
+    v.object_list = db(q).select(limitby=(v.pager_start,v.pager_end), orderby=o, groupby=g)
 
     return v.html()
+
+def add_default_team_responsible(ruleset_name):
+    q = db.comp_rulesets.ruleset_name == ruleset_name
+    ruleset_id = db(q).select()[0].id
+    q = db.auth_membership.user_id == auth.user_id
+    q &= db.auth_membership.group_id == db.auth_group.id
+    q &= db.auth_group.role.like('user_%')
+    group_id = db(q).select()[0].auth_group.id
+    db.comp_ruleset_team_responsible.insert(ruleset_id=ruleset_id, group_id=group_id)
+
+def teams_responsible_filter():
+    if 'Manager' in user_groups():
+        q = db.v_comp_rulesets.ruleset_id > 0
+    else:
+        q = db.v_comp_rulesets.ruleset_id == db.comp_ruleset_team_responsible.ruleset_id
+        q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    return q
 
 @auth.requires_login()
 def comp_rules():
@@ -2442,6 +2653,8 @@ def ajax_comp_modulesets_nodes():
 
     o = db.v_comp_nodes.nodename
     q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
+    if 'Manager' not in user_groups():
+        q &= db.v_comp_nodes.team_responsible.belongs(user_groups())
     for f in t.cols:
         q = _where(q, 'v_comp_nodes', t.filter_parse_glob(f), f)
     q = apply_db_filters(q, 'v_comp_nodes')
@@ -3129,6 +3342,16 @@ def comp_detach_moduleset(nodename, moduleset):
         user='root@'+nodename)
     return dict(status=True, msg="moduleset %s detached"%moduleset)
 
+def comp_ruleset_attachable(nodename, ruleset_id):
+    q = db.nodes.team_responsible == db.auth_group.role
+    q &= db.auth_group.id == db.comp_ruleset_team_responsible.group_id
+    q &= db.comp_ruleset_team_responsible.ruleset_id == db.comp_rulesets.id
+    q &= db.comp_rulesets.id == ruleset_id
+    rows = db(q).select()
+    if len(rows) != 1:
+        return False
+    return True
+
 @service.xmlrpc
 def comp_attach_ruleset(nodename, ruleset):
     if len(ruleset) == 0:
@@ -3139,6 +3362,9 @@ def comp_attach_ruleset(nodename, ruleset):
     if comp_ruleset_attached(nodename, ruleset_id):
         return dict(status=True,
                     msg="ruleset %s is already attached to this node"%ruleset)
+    if not comp_ruleset_attachable(nodename, ruleset_id):
+        return dict(status=False,
+                    msg="ruleset %s is not attachable"%ruleset)
 
     q = db.comp_rulesets_nodes.nodename == nodename
     q &= db.comp_rulesets_nodes.ruleset_id == ruleset_id
@@ -3185,10 +3411,16 @@ def comp_detach_ruleset(nodename, ruleset):
     return dict(status=True, msg="ruleset %s detached"%ruleset)
 
 @service.xmlrpc
-def comp_list_rulesets(pattern='%'):
-    q = db.v_comp_explicit_rulesets.ruleset_name.like(pattern)
-    rows = db(q).select(groupby=db.v_comp_explicit_rulesets.ruleset_name)
-    return [r.ruleset_name for r in rows]
+def comp_list_rulesets(pattern='%', nodename=None):
+    q = db.comp_rulesets.ruleset_name.like(pattern)
+    q &= db.comp_rulesets.ruleset_type == 'explicit'
+    q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if nodename != None:
+        q &= db.nodes.nodename == nodename
+        q &= db.nodes.team_responsible == db.auth_group.role
+        q &= db.auth_group.id == db.comp_ruleset_team_responsible.group_id
+    rows = db(q).select(groupby=db.comp_rulesets.id)
+    return [r.comp_rulesets.ruleset_name for r in rows]
 
 @service.xmlrpc
 def comp_list_modulesets(pattern='%'):
@@ -3339,6 +3571,8 @@ def comp_get_dated_ruleset(nodename, date):
     q = rset.id>0
     q &= rset.id == rset_fset.ruleset_id
     q &= rset_fset.fset_id == v.fset_id
+    q &= rset.id == db.comp_ruleset_team_responsible.ruleset_id
+    q &= db.comp_ruleset_team_responsible.group_id == node_team_responsible_id(nodename)
     rows = db(q).select(orderby=o)
 
     q = db.nodes.nodename == nodename
@@ -3382,6 +3616,14 @@ def comp_match_services(q, match):
         return []
     return set([r.svcmon.mon_svcname for r in match])
 
+def node_team_responsible_id(nodename):
+    q = db.nodes.nodename == nodename
+    q &= db.nodes.team_responsible == db.auth_group.role
+    rows = db(q).select(db.auth_group.id)
+    if len(rows) != 1:
+        return None
+    return rows[0].id
+
 @service.xmlrpc
 def comp_get_ruleset(nodename):
     # initialize ruleset with asset variables
@@ -3395,6 +3637,8 @@ def comp_get_ruleset(nodename):
     q = rset.id>0
     q &= rset.id == rset_fset.ruleset_id
     q &= rset_fset.fset_id == v.fset_id
+    q &= rset.id == db.comp_ruleset_team_responsible.ruleset_id
+    q &= db.comp_ruleset_team_responsible.group_id == node_team_responsible_id(nodename)
     rows = db(q).select(orderby=o)
 
     q = db.nodes.nodename == nodename
