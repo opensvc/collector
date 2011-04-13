@@ -971,3 +971,7 @@ CREATE TABLE `comp_ruleset_team_responsible` (
 drop view v_comp_rulesets;
 
 create view v_comp_rulesets as (select r.id as ruleset_id,r.ruleset_name,r.ruleset_type,group_concat(distinct g.role separator ', ') as teams_responsible,rv.id,rv.var_name,rv.var_value,rv.var_author,rv.var_updated,rf.fset_id,fs.fset_name from comp_rulesets r left join comp_rulesets_variables rv on rv.ruleset_id = r.id left join comp_rulesets_filtersets rf on r.id=rf.ruleset_id left join gen_filtersets fs on fs.id=rf.fset_id left join comp_ruleset_team_responsible rt on r.id=rt.ruleset_id left join auth_group g on rt.group_id=g.id group by r.id, rv.id);
+
+# 2011-04-13
+
+create view v_outdated_services as (select mon_svcname as svcname, sum(if(mon_updated >= DATE_SUB(CURDATE(), INTERVAL 15 MINUTE), 1, 0)) as uptodate from svcmon group by mon_svcname);

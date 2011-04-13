@@ -1090,3 +1090,7 @@ db.define_table('v_flex_status',
     Field('cpu', 'integer'),
     migrate=False)
 
+db.define_table('v_outdated_services',
+    Field('svcname', 'string'),
+    Field('uptodate', 'integer'),
+    migrate=False)

@@ -1,3 +1,7 @@
+def cron_scrub_svcstatus():
+    sql = """update services set svc_availstatus="undef", svc_status="undef" where svc_name in (select svcname from v_outdated_services where uptodate=0)"""
+    db.executesql(sql)
+
 def cron_stats():
     # refresh db tables
     cron_stat_day()

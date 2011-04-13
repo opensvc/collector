@@ -1,4 +1,5 @@
 #crontab
+0-59/4 * * * * unxdev01 *cron/cron_scrub_svcstatus
 0-59/10 * * * * unxdev01 *cron/cron_unfinished_actions
 59 23 * * * unxdev01 *cron/cron_stats
 59 22 * * * unxdev01 *lifecycle/stats_lifecycle_os
