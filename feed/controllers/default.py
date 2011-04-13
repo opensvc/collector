@@ -326,6 +326,7 @@ def compute_availstatus(h):
     def status_merge_down(s):
         if s == 'up': return 'warn'
         elif s == 'down': return 'down'
+        elif s == 'stdby down': return 'stdby down'
         elif s == 'stdby up': return 'stdby up with down'
         elif s == 'stdby up with up': return 'warn'
         elif s == 'stdby up with down': return 'stdby up with down'
@@ -335,6 +336,7 @@ def compute_availstatus(h):
     def status_merge_up(s):
         if s == 'up': return 'up'
         elif s == 'down': return 'warn'
+        elif s == 'stdby down': return 'warn'
         elif s == 'stdby up': return 'stdby up with up'
         elif s == 'stdby up with up': return 'stdby up with up'
         elif s == 'stdby up with down': return 'warn'
@@ -344,10 +346,21 @@ def compute_availstatus(h):
     def status_merge_stdby_up(s):
         if s == 'up': return 'stdby up with up'
         elif s == 'down': return 'stdby up with down'
+        elif s == 'stdby down': return 'warn'
         elif s == 'stdby up': return 'stdby up'
         elif s == 'stdby up with up': return 'stdby up with up'
         elif s == 'stdby up with down': return 'stdby up with down'
         elif s in ['undef', 'n/a']: return 'stdby up'
+        else: return 'undef'
+
+    def status_merge_stdby_down(s):
+        if s == 'up': return 'stdby down with up'
+        elif s == 'down': return 'stdby down'
+        elif s == 'stdby down': return 'stdby down'
+        elif s == 'stdby up': return 'warn'
+        elif s == 'stdby up with up': return 'warn'
+        elif s == 'stdby up with down': return 'warn'
+        elif s in ['undef', 'n/a']: return 'stdby down'
         else: return 'undef'
 
     s = 'undef'
@@ -356,7 +369,7 @@ def compute_availstatus(h):
               'mon_fsstatus',
               'mon_appstatus',
               'mon_diskstatus']:
-        if h[sn] in ['warn', 'stdby down', 'todo']: return 'warn'
+        if h[sn] in ['warn', 'todo']: return 'warn'
         elif h[sn] == 'undef': return 'undef'
         elif h[sn] == 'n/a':
             if s == 'undef': s = 'n/a'
@@ -364,6 +377,7 @@ def compute_availstatus(h):
         elif h[sn] == 'up': s = status_merge_up(s)
         elif h[sn] == 'down': s = status_merge_down(s)
         elif h[sn] == 'stdby up': s = status_merge_stdby_up(s)
+        elif h[sn] == 'stdby down': s = status_merge_stdby_down(s)
         else: return 'undef'
     if s == 'stdby up with up':
         s = 'up'
@@ -372,34 +386,57 @@ def compute_availstatus(h):
     return s
 
 def svc_status_update(svcname):
+    """ avail and overall status can be:
+        up, down, stdby up, stdby down, warn, undef
+    """
     q = db.svcmon.mon_svcname == svcname
     rows = db(q).select(db.svcmon.mon_overallstatus,
-                        db.svcmon.mon_availstatus)
+                        db.svcmon.mon_availstatus,
+                        db.svcmon.mon_updated)
+
+    tlim = datetime.datetime.now() - datetime.timedelta(minutes=18)
+    ostatus_l = [r.mon_overallstatus for r in rows if r.mon_updated > tlim]
+    astatus_l = [r.mon_availstatus for r in rows if r.mon_updated > tlim]
+    n_trusted_nodes = len(ostatus_l)
+    n_nodes = len(rows)
+    ostatus_l = set(ostatus_l)
+    astatus_l = set(astatus_l)
+
     ostatus = 'undef'
     astatus = 'undef'
-    for r in rows:
-        #
-        if r.mon_overallstatus == "down":
-            if ostatus == "undef":
-                ostatus = "down"
-        elif r.mon_overallstatus == "warn":
-            ostatus = "warn"
-        elif r.mon_overallstatus == "up":
-            if ostatus != "warn":
-                ostatus = "up"
 
-        #
-        if r.mon_availstatus == "down":
-            if astatus == "undef":
-                astatus = "down"
-        elif r.mon_availstatus == "warn":
-            if astatus != "up":
-                astatus = "warn"
-        elif r.mon_availstatus == "up":
-            astatus = "up"
-        elif r.mon_availstatus == "n/a":
-            if astatus == "undef":
-                astatus = "n/a"
+    if 'up' in astatus_l:
+        astatus = 'up'
+    elif n_trusted_nodes == 0:
+        astatus = 'undef'
+    else:
+        if astatus_l == set(['n/a']):
+            astatus = 'n/a'
+        elif 'warn' in astatus_l:
+            astatus = 'warn'
+        else:
+            astatus = 'down'
+
+    if n_trusted_nodes < n_nodes:
+        ostatus = 'warn'
+    elif n_trusted_nodes == 0:
+        ostatus = 'undef'
+    elif 'warn' in ostatus_l or \
+         'stdby down' in ostatus_l or \
+         'undef' in ostatus_l:
+        ostatus = 'warn'
+    elif set(['up']) == ostatus_l or \
+         set(['up', 'down']) == ostatus_l or \
+         set(['up', 'stdby up']) == ostatus_l or \
+         set(['up', 'down', 'stdby up']) == ostatus_l or \
+         set(['up', 'down', 'stdby up', 'n/a']) == ostatus_l:
+        ostatus = 'up'
+    elif set(['down']) == ostatus_l or \
+         set(['down', 'stdby up']) == ostatus_l or \
+         set(['down', 'stdby up', 'n/a']) == ostatus_l:
+        ostatus = 'down'
+    else:
+        ostatus = 'undef'
 
     db(db.services.svc_name==svcname).update(
       svc_status=ostatus,
