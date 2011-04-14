@@ -1026,7 +1026,7 @@ def compute_availstatus(h):
         elif s == 'stdby up with up': return 'warn'
         elif s == 'stdby up with down': return 'warn'
         elif s in ['undef', 'n/a']: return 'stdby down'
-                                                                                                                                          363,5
+
     s = 'undef'
     for sn in ['mon_containerstatus',
               'mon_ipstatus',
