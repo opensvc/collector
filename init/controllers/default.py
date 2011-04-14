@@ -1058,7 +1058,7 @@ def svc_status_update(svcname):
                         db.svcmon.mon_availstatus,
                         db.svcmon.mon_updated)
 
-    tlim = datetime.datetime.now() - datetime.timedelta(minutes=18)
+    tlim = datetime.datetime.now() - datetime.timedelta(minutes=15)
     ostatus_l = [r.mon_overallstatus for r in rows if r.mon_updated > tlim]
     astatus_l = [r.mon_availstatus for r in rows if r.mon_updated > tlim]
     n_trusted_nodes = len(ostatus_l)
@@ -1135,7 +1135,7 @@ def _svcmon_update(vars, vals):
             continue
         h[a] = b
     now = datetime.datetime.now()
-    tmo = now - datetime.timedelta(minutes=18)
+    tmo = now - datetime.timedelta(minutes=15)
     h['mon_updated'] = now
     if 'mon_hbstatus' not in h:
         h['mon_hbstatus'] = 'undef'

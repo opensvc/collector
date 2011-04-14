@@ -394,7 +394,7 @@ def svc_status_update(svcname):
                         db.svcmon.mon_availstatus,
                         db.svcmon.mon_updated)
 
-    tlim = datetime.datetime.now() - datetime.timedelta(minutes=18)
+    tlim = datetime.datetime.now() - datetime.timedelta(minutes=15)
     ostatus_l = [r.mon_overallstatus for r in rows if r.mon_updated > tlim]
     astatus_l = [r.mon_availstatus for r in rows if r.mon_updated > tlim]
     n_trusted_nodes = len(ostatus_l)
@@ -438,6 +438,13 @@ def svc_status_update(svcname):
     else:
         ostatus = 'undef'
 
+    svc_log_update(svcname, astatus)
+
+    db(db.services.svc_name==svcname).update(
+      svc_status=ostatus,
+      svc_availstatus=astatus)
+
+def svc_log_update(svcname, astatus):
     q = db.services_log.svc_name == svcname
     o = ~db.services_log.id
     rows = db(q).select(orderby=o, limitby=(0,1))
@@ -459,10 +466,6 @@ def svc_status_update(svcname):
                                svc_end=end,
                                svc_availstatus=astatus)
 
-    db(db.services.svc_name==svcname).update(
-      svc_status=ostatus,
-      svc_availstatus=astatus)
-
 def _svcmon_update(vars, vals):
     # don't trust the server's time
     h = {}
@@ -471,7 +474,7 @@ def _svcmon_update(vars, vals):
             continue
         h[a] = b
     now = datetime.datetime.now()
-    tmo = now - datetime.timedelta(minutes=18)
+    tmo = now - datetime.timedelta(minutes=15)
     h['mon_updated'] = now
     if 'mon_hbstatus' not in h:
         h['mon_hbstatus'] = 'undef'

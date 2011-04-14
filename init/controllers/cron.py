@@ -1,6 +1,33 @@
+def svc_log_update(svcname, astatus):
+    q = db.services_log.svc_name == svcname
+    o = ~db.services_log.id
+    rows = db(q).select(orderby=o, limitby=(0,1))
+    end = datetime.datetime.now()
+    if len(rows) == 1:
+        prev = rows[0]
+        if prev.svc_availstatus == astatus:
+            id = prev.id
+            q = db.services_log.id == id
+            db(q).update(svc_end=end)
+        else:
+            db.services_log.insert(svc_name=svcname,
+                                   svc_begin=prev.svc_end,
+                                   svc_end=end,
+                                   svc_availstatus=astatus)
+    else:
+        db.services_log.insert(svc_name=svcname,
+                               svc_begin=end,
+                               svc_end=end,
+                               svc_availstatus=astatus)
+
 def cron_scrub_svcstatus():
-    sql = """update services set svc_availstatus="undef", svc_status="undef" where svc_name in (select svcname from v_outdated_services where uptodate=0)"""
-    db.executesql(sql)
+    q = db.v_outdated_services.uptodate == 0
+    svcs = [r.svcname for r in db(q).select(db.v_outdated_services.svcname)]
+    q = db.services.svc_name.belongs(svcs)
+    if len(svcs) > 0:
+        db(q).update(svc_status="undef", svc_availstatus="undef")
+    for svcname in svcs:
+        svc_log_update(svcname, "undef")
 
 def cron_stats():
     # refresh db tables
