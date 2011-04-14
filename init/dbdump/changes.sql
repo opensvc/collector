@@ -975,3 +975,17 @@ create view v_comp_rulesets as (select r.id as ruleset_id,r.ruleset_name,r.rules
 # 2011-04-13
 
 create view v_outdated_services as (select mon_svcname as svcname, sum(if(mon_updated >= DATE_SUB(NOW(), INTERVAL 15 MINUTE), 1, 0)) as uptodate from svcmon group by mon_svcname);
+
+# 2011-04-14
+
+CREATE TABLE `services_log` (
+  `id` integer  NOT NULL AUTO_INCREMENT,
+  `svc_name` varchar(60) NOT NULL,
+  `svc_availstatus` varchar(10) NOT NULL,
+  `svc_begin` datetime NOT NULL,
+  `svc_end` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx1` (`svc_name`)
+);
+
+

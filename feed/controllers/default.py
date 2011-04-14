@@ -438,6 +438,27 @@ def svc_status_update(svcname):
     else:
         ostatus = 'undef'
 
+    q = db.services_log.svc_name == svcname
+    o = ~db.services_log.id
+    rows = db(q).select(orderby=o, limitby=(0,1))
+    end = datetime.datetime.now()
+    if len(rows) == 1:
+        prev = rows[0]
+        if prev.svc_availstatus == astatus:
+            id = prev.id
+            q = db.services_log.id == id
+            db(q).update(svc_end=end)
+        else:
+            db.services_log.insert(svc_name=svcname,
+                                   svc_begin=prev.svc_end,
+                                   svc_end=end,
+                                   svc_availstatus=astatus)
+    else:
+        db.services_log.insert(svc_name=svcname,
+                               svc_begin=end,
+                               svc_end=end,
+                               svc_availstatus=astatus)
+
     db(db.services.svc_name==svcname).update(
       svc_status=ostatus,
       svc_availstatus=astatus)

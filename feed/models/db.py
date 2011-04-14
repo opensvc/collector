@@ -490,3 +490,10 @@ db.define_table('comp_node_moduleset',
     Field('modset_author','string'),
     migrate=False)
 
+db.define_table('services_log',
+    Field('svc_name', 'string'),
+    Field('svc_availstatus', 'string'),
+    Field('svc_begin', 'datetime'),
+    Field('svc_end', 'datetime'),
+    migrate=False)
+

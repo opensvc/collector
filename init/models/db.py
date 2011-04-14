@@ -1094,3 +1094,10 @@ db.define_table('v_outdated_services',
     Field('svcname', 'string'),
     Field('uptodate', 'integer'),
     migrate=False)
+
+db.define_table('services_log',
+    Field('svc_name', 'string'),
+    Field('svc_availstatus', 'string'),
+    Field('svc_begin', 'datetime'),
+    Field('svc_end', 'datetime'),
+    migrate=False)
