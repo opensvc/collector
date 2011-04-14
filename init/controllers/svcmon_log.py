@@ -28,6 +28,50 @@ def ack(ids=[]):
          'acknowledged unavailability range: %(g)s',
          dict(g=log))
 
+def migrate_to_services_log():
+    q = db.svcmon_log.id > 0
+    q = db.svcmon_log.mon_svcname == db.services.svc_name
+    rows = db(q).select(orderby=db.svcmon_log.id)
+    begin = rows.first().svcmon_log.mon_begin
+    end = rows.last().svcmon_log.mon_end
+    h = service_availability(rows, begin, end)
+    for svcname in h:
+        ranges = h[svcname]['ranges']
+        if len(ranges) == 0:
+            # no ranges: service always down
+            db.services_log.insert(svc_name=svcname,
+                                   svc_begin=begin,
+                                   svc_end=end,
+                                   svc_availstatus="down")
+            continue
+        first_range_begin = ranges[0][0]
+        last_range_end = ranges[-1][1]
+        prev_end = begin
+        if first_range_begin > begin:
+            # create heading unvail segment
+            db.services_log.insert(svc_name=svcname,
+                                   svc_begin=begin,
+                                   svc_end=first_range_begin,
+                                   svc_availstatus="down")
+            prev_end = first_range_begin
+        for b, e in h[svcname]['ranges']:
+            if prev_end < b:
+                db.services_log.insert(svc_name=svcname,
+                                       svc_begin=prev_end,
+                                       svc_end=b,
+                                       svc_availstatus="down")
+            db.services_log.insert(svc_name=svcname,
+                                   svc_begin=b,
+                                   svc_end=e,
+                                   svc_availstatus="up")
+            prev_end = e
+        if last_range_end < end:
+            # create trailing unvail segment
+            db.services_log.insert(svc_name=svcname,
+                                   svc_begin=last_range_end,
+                                   svc_end=end,
+                                   svc_availstatus="down")
+
 @auth.requires_login()
 def service_availability(rows, begin=None, end=None):
     h = {}
