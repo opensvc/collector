@@ -974,4 +974,4 @@ create view v_comp_rulesets as (select r.id as ruleset_id,r.ruleset_name,r.rules
 
 # 2011-04-13
 
-create view v_outdated_services as (select mon_svcname as svcname, sum(if(mon_updated >= DATE_SUB(CURDATE(), INTERVAL 15 MINUTE), 1, 0)) as uptodate from svcmon group by mon_svcname);
+create view v_outdated_services as (select mon_svcname as svcname, sum(if(mon_updated >= DATE_SUB(NOW(), INTERVAL 15 MINUTE), 1, 0)) as uptodate from svcmon group by mon_svcname);
