@@ -620,7 +620,7 @@ def ajax_service():
 
     def js(tab, rowid):
         buff = ""
-        for i in range(1, 7):
+        for i in range(1, 8):
             buff += """$('#%(tab)s_%(id)s').hide();
                        $('#li%(tab)s_%(id)s').removeClass('tab_active');
                     """%dict(tab='tab'+str(i), id=rowid)
@@ -655,6 +655,7 @@ def ajax_service():
             LI(P(T("env"), _class='log16', _onclick=js('tab4', rowid)), _id="litab4_"+str(rowid)),
             LI(P(T("topology"), _class='dia16', _onclick=js('tab5', rowid)), _id="litab5_"+str(rowid)),
             LI(P(T("wiki"), _class='edit', _onclick=js('tab6', rowid)), _id="litab6_"+str(rowid)),
+            LI(P(T("avail"), _class='svc', _onclick=js('tab7', rowid)), _id="litab7_"+str(rowid)),
           ),
           _class="tab",
         ),
@@ -690,7 +691,28 @@ def ajax_service():
             _id='tab6_'+str(rowid),
             _class='cloud',
           ),
+          DIV(
+            _id='tab7_'+str(rowid),
+            _class='cloud',
+          ),
           SCRIPT(
+            """
+                query="";
+                $.ajax({
+                     type: "POST",
+                     url: "%(url)s",
+                     data: query,
+                     success: function(msg){
+                         document.getElementById("%(id)s").innerHTML=msg
+                         eval_js_in_ajax_response("%(rowid)s")
+                     }
+                })
+            """%dict(
+               id='tab7_'+str(rowid),
+               rowid='avail_'+rowid,
+               url=URL(r=request, c='svcmon_log', f='ajax_svcmon_log_1',
+                       vars={'svcname':request.vars.node, 'rowid':'avail_'+rowid})
+            ),
             "ajax('%(url)s', [], '%(id)s')"%dict(
                id='tab6_'+str(rowid),
                url=URL(r=request, c='wiki', f='ajax_wiki',

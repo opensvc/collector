@@ -387,6 +387,216 @@ def service_availability(rows, begin=None, end=None):
     return h
 
 @auth.requires_login()
+def service_availability_2(rows, begin=None, end=None):
+    h = {}
+
+    if end is None or begin is None:
+        return {}
+    period = end - begin
+
+    """ First pass at range construction:
+        for each row in resultset, create a new range
+    """
+    for row in rows:
+        if row.services_log.svc_name not in h:
+            h[row.services_log.svc_name] = {
+              'svcname': row.services_log.svc_name,
+              'ranges': [],
+              'range_count': 0,
+              'holes': [],
+              'begin': begin,
+              'end': end,
+              'period': period,
+              'downtime': 0,
+             }
+        if row.services_log.svc_availstatus not in ['up']:
+            continue
+
+        (b, e) = (row.services_log.svc_begin, row.services_log.svc_end)
+        h[row.services_log.svc_name]['ranges'] += [(b, e)]
+        h[row.services_log.svc_name]['range_count'] += 1
+
+    def delta_to_min(d):
+        return (d.days*1440)+(d.seconds//60)
+
+    o = db.svcmon_log_ack.mon_begin
+    query = (db.svcmon_log_ack.id>0)
+    query = _where(query, 'svcmon_log_ack', domain_perms(), 'mon_svcname')
+    query = _where(query, 'svcmon_log_ack', request.vars.mon_svcname, 'mon_svcname')
+    query = _where(query, 'svcmon_log_ack', '>%s'%begin, 'mon_end')
+    query = _where(query, 'svcmon_log_ack', '<%s'%end, 'mon_begin')
+    acked = db(query).select(orderby=o)
+
+    def get_holes(svc, _e, b):
+        ack_overlap = 0
+        holes = []
+
+        def _hole(b, e, acked, a):
+            if a is None:
+                a = dict(mon_acked_by='',
+                         mon_acked_on='',
+                         mon_comment='',
+                         mon_account=1,
+                         id='',
+                        )
+            h = dict(begin=b,
+                     end=e,
+                     acked=acked,
+                     acked_by=a['mon_acked_by'],
+                     acked_on=a['mon_acked_on'],
+                     acked_comment=a['mon_comment'],
+                     acked_account=a['mon_account'],
+                     id=a['id'],
+                    )
+            return h
+
+        for a in [ack for ack in acked if ack.mon_svcname == svc]:
+            (ab, ae) = (a.mon_begin, a.mon_end)
+
+            if _e >= ab and b <= ae:
+                """ hole is completely acknowledged
+                      XXXXX
+                          _e
+                                   XXXXXXXXXX
+                                   b
+                         ============= acked segment
+                        ab           ae
+                """
+                holes += [_hole(_e, b, 1, a)]
+                ack_overlap += 1
+                break
+
+            elif _e <= ab and ab < b and ae >= b:
+                """ hole is partly acknowledged
+                      XXXXX
+                          _e
+                                   XXXXXXXXXX
+                                   b
+                               =========== acked segment
+                              ab         ae
+                """
+                holes += [_hole(_e, ab, 0, None)]
+                holes += [_hole(ab, b, 1, a)]
+                ack_overlap += 1
+                break
+
+            elif ab <= _e and ae < b and ae > _e:
+                """ hole is partly acknowledged
+                      XXXXX
+                          _e
+                                   XXXXXXXXXX
+                                   b
+                     ========= acked segment
+                    ab       ae
+                """
+                holes += [_hole(_e, ae, 1, a)]
+                holes += get_holes(svc, ae, b)
+                ack_overlap += 1
+                break
+
+            elif ab > _e and ab < b and ae > _e and ae < b:
+                """ hole is partly acknowledged
+                      XXXXX
+                          _e
+                                        XXXXXXXXXX
+                                        b
+                               ====== acked segment
+                              ab    ae
+                """
+                holes += [_hole(_e, ab, 0, None)]
+                holes += [_hole(ab, ae, 1, a)]
+                holes += get_holes(svc, ae, b)
+                ack_overlap += 1
+                break
+
+        if ack_overlap == 0:
+            holes += [_hole(_e, b, 0, None)]
+
+        return holes
+
+
+    for svc in h:
+        _e = None
+
+        for i, (b, e) in enumerate(h[svc]['ranges']):
+            """ Merge overlapping ranges
+                      begin                            end
+                init:   |                              _e
+                        |                               |
+                prev:   |   XXXXXXXXXXXXXXXXX           |
+                        |                   _e          |
+                curr:   |                 XXXXXXXXXXXX  |
+                        |                 b          e  |
+            """
+            if _e is not None and b < _e:
+                b = _e
+
+            """ Discard segment heading part outside scope
+                      begin                            end
+                        |                               |
+                    XXXXXXXXXXXXXXXXX                   |
+                    b   |           e                   |
+            """
+            if b < begin:
+                b = begin
+
+            """ Discard segment trailing part outside scope
+                      begin                            end
+                        |                               |
+                        |                    XXXXXXXXXXXXXXXX
+                        |                    b          |   e
+            """
+            if e > end:
+                e = end
+
+            """ Store changed range
+            """
+            h[svc]['ranges'][i] = (b, e)
+
+            """ Store holes
+            """
+            if _e is not None and _e < b:
+                h[svc]['holes'] += get_holes(svc, _e, b)
+
+            """ Store the current segment endpoint for use in the
+                next loop iteration
+            """
+            _e = e
+
+        if len(h[svc]['ranges']) == 0:
+            h[svc]['holes'] += get_holes(svc, begin, end)
+        else:
+            """ Add heading hole
+            """
+            (b, e) = h[svc]['ranges'][0]
+            if b > begin:
+                h[svc]['holes'] = get_holes(svc, begin, b) + h[svc]['holes']
+
+            """ Add trailing hole
+            """
+            (b, e) = h[svc]['ranges'][-1]
+            if e < end:
+                h[svc]['holes'] = h[svc]['holes'] + get_holes(svc, e, end)
+
+        """ Account acknowledged time
+        """
+        for _h in h[svc]['holes']:
+            if _h['acked'] == 1 and _h['acked_account'] == 0:
+                continue
+            h[svc]['downtime'] += delta_to_min(_h['end'] - _h['begin'])
+
+        """ Compute availability
+        """
+        h[svc]['period_min'] = delta_to_min(h[svc]['period'])
+
+        if h[svc]['period_min'] == 0:
+            h[svc]['availability'] = 0
+        else:
+            h[svc]['availability'] = (h[svc]['period_min'] - h[svc]['downtime']) * 100.0 / h[svc]['period_min']
+
+    return h
+
+@auth.requires_login()
 def svcmon_log_ack_write(svc, b, e, comment="", account=False):
     def db_insert_ack_segment(svc, begin, end, comment, account):
         r = db.svcmon_log_ack.insert(
@@ -594,7 +804,7 @@ class col_avail_plot(Column):
                    _id='plot_%s'%o['svcname'].replace('.','_'),
                    _style='width:300px;height:50px',
                  ),
-                 SCRIPT(s, _name='svcmon_log_to_eval'),
+                 SCRIPT(s, _name=self.t.id+'_to_eval'),
                )
 
 class table_avail(HtmlTable):
@@ -649,7 +859,7 @@ class table_avail(HtmlTable):
         d = DIV(
               A(
                 T("Acknowledge unavailabity"),
-                _onclick="""click_toggle_vis(event,'%(div)s', 'block');$('#ackcomment').focus();"""%dict(div='ackcomment_d'),
+                _onclick="""click_toggle_vis(event,'%(div)s', 'block');$('#ackcomment').focus();"""%dict(div='ackcomment_d_'+self.id),
               ),
               DIV(
                 TABLE(
@@ -693,8 +903,8 @@ class table_avail(HtmlTable):
                 ),
                 _style='display:none',
                 _class='white_float',
-                _name='ackcomment_d',
-                _id='ackcomment_d',
+                _name='ackcomment_d_'+self.id,
+                _id='ackcomment_d_'+self.id,
               ),
               _class='floatw',
             )
@@ -705,52 +915,45 @@ class table_svcmon_log(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['mon_svcname',
-                     'mon_nodname',
-                     'mon_begin',
-                     'mon_end']
-        self.cols += svcmon_cols
+        self.cols = ['svc_name',
+                     'svc_begin',
+                     'svc_end']
         self.cols += v_services_cols
-        self.cols += v_nodes_cols
-        self.cols.remove('updated')
-        self.cols += ['node_updated']
+        self.cols.remove('svc_status')
         self.colprops = svcmon_colprops
         self.colprops.update(v_services_colprops)
-        self.colprops.update(v_nodes_colprops)
         self.colprops.update({
-            'mon_begin': HtmlTableColumn(
+            'svc_begin': HtmlTableColumn(
                      title='Begin',
-                     table='svcmon_log',
-                     field='mon_begin',
+                     table='services_log',
+                     field='svc_begin',
                      img='time16',
                      display=True,
                     ),
-            'mon_end': HtmlTableColumn(
+            'svc_end': HtmlTableColumn(
                      title='End',
-                     table='svcmon_log',
-                     field='mon_end',
+                     table='services_log',
+                     field='svc_end',
                      img='time16',
                      display=True,
                     ),
         })
         self.colprops['svc_updated'].field = 'svc_updated'
-        self.colprops['mon_svcname'].display = True
-        self.colprops['mon_nodname'].display = True
-        self.colprops['mon_overallstatus'].display = False
+        self.colprops['svc_name'].display = True
         for c in self.cols:
             self.colprops[c].t = self
-        for c in svcmon_cols+v_services_cols+v_nodes_cols+['node_updated']:
-            self.colprops[c].table = 'v_svcmon'
-        for c in ['mon_svcname', 'mon_nodname', 'mon_begin', 'mon_end',
-                  'mon_overallstatus', 'mon_containerstatus', 'mon_ipstatus',
-                  'mon_fsstatus', 'mon_diskstatus', 'mon_syncstatus',
-                  'mon_appstatus', 'mon_hbstatus', 'mon_availstatus']:
-            self.colprops[c].table = 'svcmon_log'
+        for c in v_services_cols:
+            self.colprops[c].table = 'v_services'
+        self.colprops['svc_availstatus'].table = 'services_log'
+        self.colprops['svc_availstatus'].display = True
         self.dbfilterable = True
         self.extraline = True
         self.checkbox_id_col = 'id'
-        self.checkbox_id_table = 'svcmon_log'
+        self.checkbox_id_table = 'services_log'
         self.ajax_col_values = 'ajax_svcmon_log_col_values'
+        self.span = 'svc_name'
+        self.sub_span = v_services_cols
+        self.sub_span.remove('svc_availstatus')
 
 @auth.requires_login()
 def ajax_svcmon_log_col_values():
@@ -780,38 +983,35 @@ def ajax_svcmon_log():
         except ToolError, e:
             t.flash = str(e)
 
-    if t.filter_parse('mon_begin') == "":
+    if t.filter_parse('svc_begin') == "":
         begin = now - datetime.timedelta(days=7, microseconds=now.microsecond)
-        t.store_filter_value('mon_begin', ">"+str(begin))
+        t.store_filter_value('svc_begin', ">"+str(begin))
     else:
-        begin = str_to_date(t.filter_parse('mon_begin'))
+        begin = str_to_date(t.filter_parse('svc_begin'))
 
-    if t.filter_parse('mon_end') == "":
+    if t.filter_parse('svc_end') == "":
         end = now - datetime.timedelta(seconds=1200, microseconds=now.microsecond)
-        t.store_filter_value('mon_end', "<"+str(end))
+        t.store_filter_value('svc_end', "<"+str(end))
     else:
-        end = str_to_date(t.filter_parse('mon_end'))
+        end = str_to_date(t.filter_parse('svc_end'))
 
-    o = db.svcmon_log.mon_begin|db.svcmon_log.mon_end
+    o = db.services_log.svc_name|db.services_log.svc_begin|db.services_log.svc_end
 
-    q = db.v_svcmon.mon_svcname==db.svcmon_log.mon_svcname
-    q &= db.v_svcmon.mon_nodname==db.svcmon_log.mon_nodname
-    q = _where(q, 'svcmon_log', domain_perms(), 'mon_svcname')
+    q = db.v_services.svc_name==db.services_log.svc_name
+    q = _where(q, 'services_log', domain_perms(), 'svc_name')
 
-    for f in set(t.cols)-set(['mon_begin', 'mon_end']):
+    for f in set(t.cols)-set(['svc_begin', 'svc_end']):
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
-    q = _where(q, 'svcmon_log', t.filter_parse('mon_begin'), 'mon_end')
-    q = _where(q, 'svcmon_log', t.filter_parse('mon_end'), 'mon_begin')
+    q = _where(q, 'services_log', t.filter_parse('svc_begin'), 'svc_end')
+    q = _where(q, 'services_log', t.filter_parse('svc_end'), 'svc_begin')
 
-    q = apply_db_filters(q, 'v_svcmon')
+    q = apply_db_filters(q, 'v_services')
 
     n = db(q).count()
     t.setup_pager(n)
     t.object_list = db(q).select(orderby=o, limitby=(t.pager_start,t.pager_end))
-
-    v.object_list = service_availability(db(q).select(orderby=o), begin, end)
-    #raise Exception(v.object_list)
+    v.object_list = service_availability_2(db(q).select(orderby=o), begin, end)
 
     return DIV(
              DIV(
@@ -820,6 +1020,43 @@ def ajax_svcmon_log():
              ),
              v.html(),
              t.html(),
+           )
+
+@auth.requires_login()
+def ajax_svcmon_log_1():
+    v = table_avail(request.vars.rowid, request.vars.rowid)
+    v.colprops['avail_svcname'].display = False
+    v.columnable = False
+    v.refreshable = False
+    v.exportable = False
+    v.additional_tools = []
+
+    if len(request.args) == 1:
+        action = request.args[0]
+        try:
+            if action == 'ack':
+                ack(v.get_checked())
+        except ToolError, e:
+            t.flash = str(e)
+
+    begin = now - datetime.timedelta(days=7, microseconds=now.microsecond)
+    end = now - datetime.timedelta(seconds=1200, microseconds=now.microsecond)
+
+    o = db.services_log.svc_begin|db.services_log.svc_end
+    q = db.v_services.svc_name==db.services_log.svc_name
+    q &= db.services_log.svc_name==request.vars.svcname
+    q &= db.services_log.svc_begin<end
+    q &= db.services_log.svc_end>begin
+    q = _where(q, 'services_log', domain_perms(), 'svc_name')
+
+    v.object_list = service_availability_2(db(q).select(orderby=o), begin, end)
+
+    return DIV(
+             DIV(
+               _id='ackpanel',
+               _class='ackpanel',
+             ),
+             v.html(),
            )
 
 @auth.requires_login()

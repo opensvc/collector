@@ -671,6 +671,7 @@
 'attached group %(g)s to users %(u)s': 'groupe %(g)s attaché aux utilisateurs %(u)s',
 'attached modulesets %(modulesets)s to nodes %(nodes)s': 'attached modulesets %(modulesets)s to nodes %(nodes)s',
 'attached rulesets %(rulesets)s to nodes %(nodes)s': 'jeux de règles %(rulesets)s attachés aux noeuds %(nodes)s',
+'avail': 'avail',
 'availability': 'disponibilité',
 'begin': 'début',
 'billing': 'facturation',
