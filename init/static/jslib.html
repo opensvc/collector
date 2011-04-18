@@ -132,12 +132,18 @@ function show_result(e, url, id){
     }, 800)
 }
 function keep_inside(box){
-    box_l = $(box).offset().left
+    box_off_l = $(box).offset().left
+    box_pos_l = $(box).position().left
     box_w = $(box).width()
     doc_w = $('body').width()
-    if ((box_l+box_w+20)>doc_w) {
-        new_l = doc_w - box_w
-        $(box).css("left", (doc_w-box_w-20)+'px')
+    if ((box_off_l+box_w+20)>doc_w) {
+        if (box_off_l != box_pos_l) {
+            over = doc_w-(box_off_l+box_w+20)
+            $(box).css("left", over+'px')
+        } else {
+            new_l = doc_w - box_w - 20
+            $(box).css("left", new_l+'px')
+        }
     }
 }
 function click_toggle_vis(e, name, mode){

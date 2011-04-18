@@ -557,8 +557,7 @@ class table_comp_rulesets_nodes(HtmlTable):
             self.colprops['nodename'].t = self
         self.colprops['nodename'].display = True
         self.checkboxes = True
-        self.additional_tools.append('ruleset_attach')
-        self.additional_tools.append('ruleset_detach')
+        self += HtmlTableMenu('Ruleset', 'comp16', ['ruleset_attach', 'ruleset_detach'], id='menu_ruleset2')
         self.ajax_col_values = 'ajax_comp_rulesets_rules_col_values'
 
     def ruleset_detach(self):
@@ -569,7 +568,6 @@ class table_comp_rulesets_nodes(HtmlTable):
                 _onclick=self.ajax_submit(args=['detach_ruleset'],
                                           additional_inputs=self.rulesets.ajax_inputs()),
               ),
-              _class='floatw',
             )
         return d
 
@@ -581,7 +579,6 @@ class table_comp_rulesets_nodes(HtmlTable):
                 _onclick=self.ajax_submit(args=['attach_ruleset'],
                                           additional_inputs=self.rulesets.ajax_inputs()),
               ),
-              _class='floatw',
             )
         return d
 
@@ -619,9 +616,7 @@ class table_comp_explicit_rules(HtmlTable):
         self.dbfilterable = False
         self.exportable = False
         self.ajax_col_values = 'ajax_comp_explicit_rules_col_values'
-
-    def checkbox_key(self, o):
-        return str(o.v_comp_explicit_rulesets.id)
+        self.checkbox_id_table = 'v_comp_explicit_rulesets'
 
 @auth.requires_login()
 def ajax_comp_explicit_rules_col_values():
@@ -670,7 +665,7 @@ def ajax_comp_rulesets_nodes():
 
     n = db(q).count()
     r.setup_pager(n)
-    r.object_list = db(q).select(limitby=(r.pager_start,r.pager_end), orderby=o)
+    r.object_list = db(q).select(limitby=(r.pager_start,r.pager_end), orderby=o, groupby=o)
 
     r_html = r.html()
 
@@ -815,17 +810,10 @@ class table_comp_rulesets(HtmlTable):
             self.form_filterset_attach = self.comp_filterset_attach_sqlform()
             self.form_ruleset_var_add = self.comp_ruleset_var_add_sqlform()
             self.form_ruleset_add = self.comp_ruleset_add_sqlform()
-            self.additional_tools.append('team_responsible_attach')
-            self.additional_tools.append('team_responsible_detach')
-            self.additional_tools.append('filterset_attach')
-            self.additional_tools.append('filterset_detach')
-            self.additional_tools.append('ruleset_var_add')
-            self.additional_tools.append('ruleset_var_del')
-            self.additional_tools.append('ruleset_del')
-            self.additional_tools.append('ruleset_add')
-            self.additional_tools.append('ruleset_rename')
-            self.additional_tools.append('ruleset_clone')
-            self.additional_tools.append('ruleset_change_type')
+            self += HtmlTableMenu('Team responsible', 'guys16', ['team_responsible_attach', 'team_responsible_detach'])
+            self += HtmlTableMenu('Filterset', 'filters', ['filterset_attach', 'filterset_detach'])
+            self += HtmlTableMenu('Variable', 'comp16', ['ruleset_var_add', 'ruleset_var_del'])
+            self += HtmlTableMenu('Ruleset', 'comp16', ['ruleset_add', 'ruleset_del', 'ruleset_rename', 'ruleset_clone', 'ruleset_change_type'])
         self.ajax_col_values = 'ajax_comp_rulesets_col_values'
 
     def ruleset_change_type(self):
@@ -868,7 +856,6 @@ class table_comp_rulesets(HtmlTable):
                 _class='white_float',
                 _name=divid,
               ),
-              _class='floatw',
             )
         return d
 
@@ -925,7 +912,6 @@ class table_comp_rulesets(HtmlTable):
                 _class='white_float',
                 _name=divid,
               ),
-              _class='floatw',
             )
         return d
 
@@ -984,12 +970,11 @@ class table_comp_rulesets(HtmlTable):
                 _name=divid,
                 _id=divid,
               ),
-              _class='floatw',
             )
         return d
 
     def team_responsible_attach(self):
-        d = self.team_responsible_select_tool(label="Attach team responsible",
+        d = self.team_responsible_select_tool(label="Attach",
                                               action="team_responsible_attach",
                                               divid="team_responsible_attach",
                                               sid="team_responsible_attach_s",
@@ -997,7 +982,7 @@ class table_comp_rulesets(HtmlTable):
         return d
 
     def team_responsible_detach(self):
-        d = self.team_responsible_select_tool(label="Detach team responsible",
+        d = self.team_responsible_select_tool(label="Detach",
                                               action="team_responsible_detach",
                                               divid="team_responsible_detach",
                                               sid="team_responsible_detach_s",
@@ -1023,7 +1008,6 @@ class table_comp_rulesets(HtmlTable):
                 _name='comp_ruleset_rename',
                 _id='comp_ruleset_rename',
               ),
-              _class='floatw',
             )
         return d
 
@@ -1037,14 +1021,13 @@ class table_comp_rulesets(HtmlTable):
                                   text=T("Deleting a ruleset also deletes the ruleset variables, filters attachments and node attachments. Please confirm ruleset deletion."),
                                  ),
               ),
-              _class='floatw',
             )
         return d
 
     def filterset_attach(self):
         d = DIV(
               A(
-                T("Attach filterset"),
+                T("Attach"),
                 _class='attach16',
                 _onclick="""
                   click_toggle_vis(event,'%(div)s', 'block');
@@ -1057,18 +1040,16 @@ class table_comp_rulesets(HtmlTable):
                 _name='comp_filterset_attach',
                 _id='comp_filterset_attach',
               ),
-              _class='floatw',
             )
         return d
 
     def filterset_detach(self):
         d = DIV(
               A(
-                T("Detach filterset"),
+                T("Detach"),
                 _class='detach16',
                 _onclick=self.ajax_submit(args=['filterset_detach']),
               ),
-              _class='floatw',
             )
         return d
 
@@ -1088,7 +1069,6 @@ class table_comp_rulesets(HtmlTable):
                 _name='comp_ruleset_add',
                 _id='comp_ruleset_add',
               ),
-              _class='floatw',
             )
         return d
 
@@ -1116,18 +1096,17 @@ class table_comp_rulesets(HtmlTable):
     def ruleset_var_del(self):
         d = DIV(
               A(
-                T("Delete variable"),
+                T("Delete"),
                 _class='del16',
                 _onclick=self.ajax_submit(args=['ruleset_var_del']),
               ),
-              _class='floatw',
             )
         return d
 
     def ruleset_var_add(self):
         d = DIV(
               A(
-                T("Add variable"),
+                T("Add"),
                 _class='add16',
                 _onclick="""
                   click_toggle_vis(event,'%(div)s', 'block');
@@ -1140,7 +1119,6 @@ class table_comp_rulesets(HtmlTable):
                 _name='comp_ruleset_var_add',
                 _id='comp_ruleset_var_add',
               ),
-              _class='floatw',
             )
         return d
 
@@ -1687,12 +1665,8 @@ class table_comp_filtersets(HtmlTable):
             self.form_encap_filterset_attach = self.comp_encap_filterset_attach_sqlform()
             self.form_filterset_add = self.comp_filterset_add_sqlform()
             self.form_filter_attach = self.comp_filter_attach_sqlform()
-            self.additional_tools.append('filterset_rename')
-            self.additional_tools.append('filterset_add')
-            self.additional_tools.append('filterset_del')
-            self.additional_tools.append('encap_filterset_attach')
-            self.additional_tools.append('filter_attach')
-            self.additional_tools.append('filter_detach')
+            self += HtmlTableMenu('Filter', 'filters', ['filter_attach', 'filter_detach'])
+            self += HtmlTableMenu('Filterset', 'filters', ['filterset_add', 'filterset_del', 'filterset_rename', 'encap_filterset_attach', 'filter_detach'])
         self.ajax_col_values = ajax_comp_filtersets_col_values
         self.dbfilterable = False
 
@@ -1708,18 +1682,17 @@ class table_comp_filtersets(HtmlTable):
     def filter_detach(self):
         d = DIV(
               A(
-                T("Detach filters"),
+                T("Detach"),
                 _class='detach16',
                 _onclick=self.ajax_submit(args=['detach_filters'])
               ),
-              _class='floatw',
             )
         return d
 
     def filterset_rename(self):
         d = DIV(
               A(
-                T("Rename filterset"),
+                T("Rename"),
                 _class='edit16',
                 _onclick="""click_toggle_vis(event,'%(div)s', 'block');
                          """%dict(div='comp_filterset_rename'),
@@ -1735,28 +1708,26 @@ class table_comp_filtersets(HtmlTable):
                 _name='comp_filterset_rename',
                 _id='comp_filterset_rename',
               ),
-              _class='floatw',
             )
         return d
 
     def filterset_del(self):
         d = DIV(
               A(
-                T("Delete filterset"),
+                T("Delete"),
                 _class='del16',
                 _onclick="""if (confirm("%(text)s")){%(s)s};
                          """%dict(s=self.ajax_submit(args=['delete_filterset']),
                                   text=T("Deleting a filterset also deletes the filterset filter attachments. Please confirm filterset deletion."),
                                  ),
               ),
-              _class='floatw',
             )
         return d
 
     def encap_filterset_attach(self):
         d = DIV(
               A(
-                T("Attach filterset"),
+                T("Attach"),
                 _class='attach16',
                 _onclick="""
                   click_toggle_vis(event,'%(div)s', 'block');
@@ -1769,14 +1740,13 @@ class table_comp_filtersets(HtmlTable):
                 _name='comp_encap_filterset_attach',
                 _id='comp_encap_filterset_attach',
               ),
-              _class='floatw',
             )
         return d
 
     def filter_attach(self):
         d = DIV(
               A(
-                T("Attach filter"),
+                T("Attach"),
                 _class='attach16',
                 _onclick="""
                   click_toggle_vis(event,'%(div)s', 'block');
@@ -1789,14 +1759,13 @@ class table_comp_filtersets(HtmlTable):
                 _name='comp_filter_attach',
                 _id='comp_filter_attach',
               ),
-              _class='floatw',
             )
         return d
 
     def filterset_add(self):
         d = DIV(
               A(
-                T("Add filterset"),
+                T("Add"),
                 _class='add16',
                 _onclick="""
                   click_toggle_vis(event,'%(div)s', 'block');
@@ -1809,7 +1778,6 @@ class table_comp_filtersets(HtmlTable):
                 _name='comp_filterset_add',
                 _id='comp_filterset_add',
               ),
-              _class='floatw',
             )
         return d
 
@@ -2031,29 +1999,27 @@ class table_comp_filters(HtmlTable):
         self.cols = filters_cols
         self.colprops = filters_colprops
         if 'CompManager' in user_groups():
-            self.additional_tools.append('filter_add')
-            self.additional_tools.append('filter_del')
+            self += HtmlTableMenu('Filter', 'filters', ['filter_add', 'filter_del'], id='menu_filters1')
         self.ajax_col_values = 'ajax_comp_filters_col_values'
         self.dbfilterable = False
 
     def filter_del(self):
         d = DIV(
               A(
-                T("Delete filters"),
+                T("Delete"),
                 _class='del16',
                 _onclick="""if (confirm("%(text)s")){%(s)s};"""%dict(
                    s=self.ajax_submit(args=['delete_filter']),
                    text=T("Deleting a filter also deletes its membership in filtersets. Please confirm filter deletion"),
                 ),
               ),
-              _class='floatw',
             )
         return d
 
     def filter_add(self):
         d = DIV(
               A(
-                T("Add filter"),
+                T("Add"),
                 _class='add16',
                 _onclick="""
                   click_toggle_vis(event,'%(div)s', 'block');
@@ -2066,7 +2032,6 @@ class table_comp_filters(HtmlTable):
                 _name='comp_filter_add',
                 _id='comp_filter_add',
               ),
-              _class='floatw',
             )
         return d
 
@@ -2438,11 +2403,8 @@ class table_comp_moduleset(HtmlTable):
         if 'CompManager' in user_groups():
             self.form_module_add = self.comp_module_add_sqlform()
             self.form_moduleset_add = self.comp_moduleset_add_sqlform()
-            self.additional_tools.append('module_add')
-            self.additional_tools.append('module_del')
-            self.additional_tools.append('moduleset_add')
-            self.additional_tools.append('moduleset_del')
-            self.additional_tools.append('moduleset_rename')
+            self += HtmlTableMenu('Module', 'action16', ['module_add', 'module_del'])
+            self += HtmlTableMenu('Moduleset', 'action16', ['moduleset_add', 'moduleset_del', 'moduleset_rename'])
 
     def checkbox_key(self, o):
         if o is None:
@@ -2454,7 +2416,7 @@ class table_comp_moduleset(HtmlTable):
     def moduleset_rename(self):
         d = DIV(
               A(
-                T("Rename moduleset"),
+                T("Rename"),
                 _class='edit16',
                 _onclick="""click_toggle_vis(event,'%(div)s', 'block');
                          """%dict(div='comp_moduleset_rename'),
@@ -2470,28 +2432,26 @@ class table_comp_moduleset(HtmlTable):
                 _name='comp_moduleset_rename',
                 _id='comp_moduleset_rename',
               ),
-              _class='floatw',
             )
         return d
 
     def moduleset_del(self):
         d = DIV(
               A(
-                T("Delete moduleset"),
+                T("Delete"),
                 _class='del16',
                 _onclick="""if (confirm("%(text)s")){%(s)s};
                          """%dict(s=self.ajax_submit(args=['moduleset_del']),
                                   text=T("Deleting a moduleset also deletes the moduleset module attachments. Please confirm moduleset deletion."),
                                  ),
               ),
-              _class='floatw',
             )
         return d
 
     def moduleset_add(self):
         d = DIV(
               A(
-                T("Add moduleset"),
+                T("Add"),
                 _class='add16',
                 _onclick="""
                   click_toggle_vis(event,'%(div)s', 'block');
@@ -2504,7 +2464,6 @@ class table_comp_moduleset(HtmlTable):
                 _name='comp_moduleset_add',
                 _id='comp_moduleset_add',
               ),
-              _class='floatw',
             )
         return d
 
@@ -2512,18 +2471,17 @@ class table_comp_moduleset(HtmlTable):
     def module_del(self):
         d = DIV(
               A(
-                T("Delete modules"),
+                T("Delete"),
                 _class='del16',
                 _onclick=self.ajax_submit(args=['module_del']),
               ),
-              _class='floatw',
             )
         return d
 
     def module_add(self):
         d = DIV(
               A(
-                T("Add module"),
+                T("Add"),
                 _class='add16',
                 _onclick="""
                   click_toggle_vis(event,'%(div)s', 'block');
@@ -2536,7 +2494,6 @@ class table_comp_moduleset(HtmlTable):
                 _name='comp_module_add',
                 _id='comp_module_add',
               ),
-              _class='floatw',
             )
         return d
 
@@ -2775,31 +2732,28 @@ class table_comp_modulesets_nodes(HtmlTable):
         self.colprops['nodename'].display = True
         self.checkboxes = True
         self.dbfilterable = False
-        self.additional_tools.append('moduleset_attach')
-        self.additional_tools.append('moduleset_detach')
+        self += HtmlTableMenu('Moduleset', 'action16', ['moduleset_attach', 'moduleset_detach'], id='menu_moduleset2')
         self.ajax_col_values = 'ajax_comp_modulesets_nodes_col_values'
 
     def moduleset_detach(self):
         d = DIV(
               A(
-                T("Detach moduleset"),
+                T("Detach"),
                 _class='detach16',
                 _onclick=self.ajax_submit(args=['detach_moduleset'],
                                           additional_inputs=self.modulesets.ajax_inputs()),
               ),
-              _class='floatw',
             )
         return d
 
     def moduleset_attach(self):
         d = DIV(
               A(
-                T("Attach moduleset"),
+                T("Attach"),
                 _class='attach16',
                 _onclick=self.ajax_submit(args=['attach_moduleset'],
                                           additional_inputs=self.modulesets.ajax_inputs()),
               ),
-              _class='floatw',
             )
         return d
 

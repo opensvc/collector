@@ -6,6 +6,37 @@ class ToolError(Exception):
     def __str__(self):
         return str(self.value)
 
+class HtmlTableMenu(object):
+    def __init__(self, title, img='default', options=[], id=None):
+        self.title = title
+        self.options = options
+        self.img = img
+        if id is not None:
+           self.mid = id
+        else:
+            self.mid = 'menu_'+str(self.title.replace(' ','_'))
+
+    def html(self):
+        l = []
+        for o in self.options:
+             l.append(getattr(self.table, o)())
+        return DIV(
+                 A(
+                   SPAN(
+                     T(self.title),
+                     _class=self.img
+                   ),
+                   _onclick="click_toggle_vis(event,'%s','block')"%self.mid,
+                 ),
+                 DIV(
+                   l,
+                   _name=self.mid,
+                   _style='display:none;position:absolute',
+                   _class='white_float',
+                 ),
+                 _class='floatw',
+               )
+
 class Column(object):
     def __init__(self, title, display=False, img='generic', _class=''):
         self.title = title
@@ -82,6 +113,12 @@ class HtmlTable(object):
 
         # drop stored filters if request asks for it
         self.drop_filters()
+
+    def __iadd__(self, o):
+        if isinstance(o, HtmlTableMenu):
+            o.table = self
+            self.additional_tools.append(o)
+        return self
 
     def setup_pager(self, n=0):
         self.totalrecs = n
@@ -806,11 +843,14 @@ class HtmlTable(object):
         else:
             additional_filters = SPAN()
 
-        if len(self.additional_tools) > 0:
-            additional_tools = SPAN(map(lambda x: getattr(self, x)(),
-                                   self.additional_tools))
-        else:
-            additional_tools = SPAN()
+        atl = []
+        for o in self.additional_tools:
+            if isinstance(o, HtmlTableMenu):
+                atl.append(o.html())
+            else:
+                atl.append(getattr(self, o)())
+
+        additional_tools = SPAN(atl)
 
         if self.exportable:
             export = DIV(

@@ -99,19 +99,15 @@ class table_users(HtmlTable):
         self.dbfilterable = False
         self.checkboxes = True
         if 'Manager' in user_groups():
-            self.additional_tools.append('group_del')
-            self.additional_tools.append('group_add')
-            self.additional_tools.append('users_del')
-            self.additional_tools.append('user_add')
-            self.additional_tools.append('group_detach')
-            self.additional_tools.append('group_attach')
+            self += HtmlTableMenu('Group', 'guys16', ['group_add', 'group_del', 'group_attach', 'group_detach'])
+            self += HtmlTableMenu('User', 'guy16', ['user_add', 'users_del'])
             self.form_group_add = self.group_add_sqlform()
             self.form_user_add = self.user_add_sqlform()
 
     def group_add(self):
         d = DIV(
               A(
-                T("Add group"),
+                T("Add"),
                 _class='add16',
                 _onclick="""
                   click_toggle_vis(event,'%(div)s', 'block');
@@ -124,14 +120,13 @@ class table_users(HtmlTable):
                 _name='group_add',
                 _id='group_add',
               ),
-              _class='floatw',
             )
         return d
 
     def user_add(self):
         d = DIV(
               A(
-                T("Add user"),
+                T("Add"),
                 _class='add16',
                 _onclick="""
                   click_toggle_vis(event,'%(div)s', 'block');
@@ -144,7 +139,6 @@ class table_users(HtmlTable):
                 _name='user_add',
                 _id='user_add',
               ),
-              _class='floatw',
             )
         return d
 
@@ -188,12 +182,11 @@ class table_users(HtmlTable):
                 _name=divid,
                 _id=divid,
               ),
-              _class='floatw',
             )
         return d
 
     def group_detach(self):
-        d = self.group_select_tool(label="Detach group",
+        d = self.group_select_tool(label="Detach",
                                    action="group_detach",
                                    divid="group_detach",
                                    sid="group_detach_s",
@@ -201,7 +194,7 @@ class table_users(HtmlTable):
         return d
 
     def group_attach(self):
-        d = self.group_select_tool(label="Attach group",
+        d = self.group_select_tool(label="Attach",
                                    action="group_attach",
                                    divid="group_attach",
                                    sid="group_attach_s",
@@ -209,7 +202,7 @@ class table_users(HtmlTable):
         return d
 
     def group_del(self):
-        d = self.group_select_tool(label="Delete group",
+        d = self.group_select_tool(label="Delete",
                                    action="group_del",
                                    divid="group_del",
                                    sid="group_del_s",
@@ -219,14 +212,13 @@ class table_users(HtmlTable):
     def users_del(self):
         d = DIV(
               A(
-                T("Delete users"),
+                T("Delete"),
                 _class='del16',
                 _onclick="""if (confirm("%(text)s")){%(s)s};
                          """%dict(s=self.ajax_submit(args=['users_del']),
                                   text=T("Deleting a user also deletes its group membership. Please confirm user deletion"),
                                  ),
               ),
-              _class='floatw',
             )
         return d
 
