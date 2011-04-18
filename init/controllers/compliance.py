@@ -1,4 +1,5 @@
 import datetime
+import json
 now=datetime.datetime.today()
 sevendays = str(now-datetime.timedelta(days=7,
                                        hours=now.hour,
@@ -256,6 +257,11 @@ tid=tid),
             )
         return d
 
+class col_ruleset_name(HtmlTableColumn):
+    def html(self, o):
+        s = self.get(o)
+        return DIV(s, _class="postit", _style="width:95%")
+
 class col_var_name(HtmlTableColumn):
     def html(self, o):
         s = self.get(o)
@@ -266,15 +272,15 @@ class col_var_name(HtmlTableColumn):
         tid = 'nd_t_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
         iid = 'nd_i_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
         sid = 'nd_s_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
-        d = SPAN(
-              SPAN(
+        d = DIV(
+              DIV(
                 ss,
                 _id=tid,
                 _onclick="""hide_eid('%(tid)s');show_eid('%(sid)s');getElementById('%(iid)s').focus()"""%dict(tid=tid,
 sid=sid, iid=iid),
                 _class="clickable",
               ),
-              SPAN(
+              DIV(
                 INPUT(
                   value=s,
                   _id=iid,
@@ -291,38 +297,245 @@ tid=tid),
         return d
 
 class col_var_value(HtmlTableColumn):
-    def html(self, o):
+    def html_raw(self, o):
         s = self.get(o)
         if s == '':
             ss = '(no value)'
         else:
             ss = s
-        tid = 'vd_t_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
+        d = DIV(
+              PRE(ss),
+              _class="comp16",
+              _style="min-height:16px",
+            )
+        return d
+
+    def form_raw(self, o):
+        s = self.get(o)
+        if s == '':
+            ss = '(no value)'
+        else:
+            ss = s
         iid = 'vd_i_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
-        sid = 'vd_s_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
-        d = SPAN(
-              SPAN(
-                ss,
-                _id=tid,
-                _onclick="""hide_eid('%(tid)s');show_eid('%(sid)s');getElementById('%(iid)s').focus()"""%dict(tid=tid,
-sid=sid, iid=iid),
-                _class="clickable",
-              ),
-              SPAN(
-                TEXTAREA(
-                  value=s,
-                  _id=iid,
-                  _onblur="""hide_eid('%(sid)s');show_eid('%(tid)s');"""%dict(sid=sid,
-tid=tid),
-                  _onkeypress="if (is_enter(event)) {%s};"%\
-                     self.t.ajax_submit(additional_inputs=[iid],
-                                        args="var_value_set"),
-                ),
-                _id=sid,
-                _style="display:none",
+        d = DIV(
+              TEXTAREA(
+                value=s,
+                _id=iid,
+                _onkeypress="if (is_enter(event)) {%s};"%\
+                   self.t.ajax_submit(additional_inputs=[iid],
+                                      args="var_value_set"),
               ),
             )
         return d
+
+    def html_user(self, o):
+        v = self.get(o)
+        l = [DIV(
+               DIV('user', _style='display:table-cell;font-weight:bold', _class="comp16"),
+               DIV('uid', _style='display:table-cell'),
+               DIV('gid', _style='display:table-cell'),
+               DIV('shell', _style='display:table-cell'),
+               DIV('home', _style='display:table-cell'),
+               DIV('gecos', _style='display:table-cell'),
+               _style="display:table-row",
+             )]
+        try:
+            users = json.loads(v)
+        except:
+            return "malformed value", v
+        for user, u in users.items():
+            if 'uid' in u:
+                uid = '%d'%u['uid']
+            else:
+                uid = "-"
+            if 'gid' in u:
+                gid = '%d'%u['gid']
+            else:
+                gid = "-"
+            if 'shell' in u:
+                shell = '%s'%u['shell']
+            else:
+                shell = "-"
+            if 'homedir' in u:
+                homedir = '%s'%u['homedir']
+            else:
+                homedir = "-"
+            if 'gecos' in u:
+                gecos = '%s'%u['gecos']
+            else:
+                gecos = "-"
+            l += [DIV(
+                    DIV('%s '%user, _style='display:table-cell', _class="guy16"),
+                    DIV(uid, _style='display:table-cell'),
+                    DIV(gid, _style='display:table-cell'),
+                    DIV(shell, _style='display:table-cell'),
+                    DIV(homedir, _style='display:table-cell'),
+                    DIV(gecos, _style='display:table-cell'),
+                    _style="display:table-row",
+                  )]
+        return DIV(l, _class="comp_var_table")
+
+    def html_group(self, o):
+        v = self.get(o)
+        l = [DIV(
+               DIV('group', _style='display:table-cell;font-weight:bold', _class="comp16"),
+               DIV('gid', _style='display:table-cell'),
+               DIV('members', _style='display:table-cell'),
+               _style="display:table-row",
+             )]
+        try:
+            groups = json.loads(v)
+        except:
+            return "malformed value", v
+        for group, g in groups.items():
+            if 'gid' in g:
+                gid = '%d'%g['gid']
+            else:
+                gid = "-"
+            if 'members' in g:
+                members = '%s'%', '.join(g['members'])
+            else:
+                members = "-"
+            l += [DIV(
+                    DIV('%s '%group, _style='display:table-cell', _class="guys16"),
+                    DIV(gid, _style='display:table-cell'),
+                    DIV(members, _style='display:table-cell'),
+                    _style="display:table-row",
+                  )]
+        return DIV(l, _class="comp_var_table")
+
+    def html_file(self, o):
+        v = self.get(o)
+        try:
+            f = json.loads(v)
+        except:
+            return "malformed value", v
+        l = [DIV(
+               DIV('file', _style='display:table-cell;font-weight:bold', _class="comp16"),
+               DIV(f['path'], _style='display:table-cell'),
+               _style="display:table-row",
+             )]
+        if 'fmt' in f:
+            l += [DIV(
+                    DIV('fmt', _style='display:table-cell', _class="hd16"),
+                    DIV(f['fmt'], _style='display:table-cell'),
+                    _style="display:table-row",
+                  )]
+        if 'ref' in f:
+            l += [DIV(
+                    DIV('ref', _style='display:table-cell', _class="hd16"),
+                    DIV(f['ref'], _style='display:table-cell'),
+                    _style="display:table-row",
+                  )]
+        if 'uid' in f:
+            l += [DIV(
+                    DIV('uid', _style='display:table-cell', _class="guy16"),
+                    DIV(str(f['uid']), _style='display:table-cell'),
+                    _style="display:table-row",
+                  )]
+        if 'gid' in f:
+            l += [DIV(
+                    DIV('gid', _style='display:table-cell', _class="guys16"),
+                    DIV(str(f['gid']), _style='display:table-cell'),
+                    _style="display:table-row",
+                  )]
+        return DIV(l, _class="comp_var_table")
+
+    def html_package(self, o):
+        v = self.get(o)
+        l = [DIV(
+               DIV('package', _style='display:table-cell;font-weight:bold', _class="comp16"),
+               _style="display:table-row",
+             )]
+        try:
+            packages = json.loads(v)
+        except:
+            return "malformed value", v
+        for pkg in packages:
+            l += [DIV(
+                    DIV(pkg, _style='display:table-cell', _class="pkg16"),
+                    _style="display:table-row",
+                  )]
+        return DIV(l, _class="comp_var_table")
+
+    def form_package(self, o):
+        name = 'pack_n_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
+        l = []
+        v = self.get(o)
+        try:
+            packages = json.loads(v)
+        except:
+            return "malformed value", v
+        for i, package in enumerate(packages):
+            l.append(DIV(
+                       SPAN("", _class="pkg16"),
+                       INPUT(_name=name, _id="%s_%d"%(name, i), _value=package),
+                       _style="display:table-row",
+                     ))
+        form = DIV(
+                 SPAN(l, _id=name+'_container'),
+                 BR(),
+                 INPUT(
+                   _value="Add",
+                   _type="submit",
+                   _onclick="""d=new
+Date();$("#%(n)s_container").append("<div style='display:table-row'><span class='pkg16'></span><input name='%(n)s' id='%(n)s_"+d.getTime()+"'></div>")"""%dict(n=name),
+                 ),
+                 " ",
+                 INPUT(
+                   _type="submit",
+                   _onclick=self.t.ajax_submit(additional_input_name=name,
+                                               args=["var_value_set_list", name]),
+                 ),
+                 _class="comp_var_table",
+               )
+        return form
+
+    def _html(self, o):
+        c = self.t.colprops['var_class'].get(o)
+        if not hasattr(self, 'html_'+str(c)):
+            return self.html_raw(o)
+        return getattr(self, 'html_'+str(c))(o)
+
+    def _form(self, o):
+        c = self.t.colprops['var_class'].get(o)
+        if not hasattr(self, 'form_'+str(c)):
+            return self.form_raw(o)
+        return getattr(self, 'form_'+str(c))(o)
+
+    def html(self, o):
+        hid = 'vd_h_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
+        fid = 'vd_f_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
+        cid = 'vd_c_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
+        eid = 'vd_e_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
+        return DIV(
+                 A(
+                   IMG(_src=URL(r=request, c='static', f='edit.png')),
+                   _id=eid,
+                   _onclick="""hide_eid('%(hid)s');hide_eid('%(eid)s');show_eid('%(fid)s');show_eid('%(cid)s');"""%dict(hid=hid, fid=fid, eid=eid, cid=cid),
+                   _label=T("edit"),
+                   _style='position: absolute; top: 2px; right: 2px; z-index: 400',
+                 ),
+                 A(
+                   IMG(_src=URL(r=request, c='static', f='cancel.png')),
+                   _id=cid,
+                   _onclick="""hide_eid('%(fid)s');hide_eid('%(cid)s');show_eid('%(hid)s');show_eid('%(eid)s');"""%dict(hid=hid, fid=fid, eid=eid, cid=cid),
+                   _label=T("cancel"),
+                   _style='display:none;position: absolute; top: 2px; right: 2px; z-index: 400',
+                 ),
+                 DIV(
+                   self._html(o),
+                   _id=hid,
+                   _style="position: relative;",
+                 ),
+                 DIV(
+                   self._form(o),
+                   _id=fid,
+                   _style="display:none",
+                 ),
+                 _class="postit",
+                 _style="position: relative;",
+               )
 
 #
 # Rules sub-view
@@ -504,6 +717,7 @@ class table_comp_rulesets(HtmlTable):
                      'ruleset_type',
                      'teams_responsible',
                      'fset_name',
+                     'var_class',
                      'var_name',
                      'var_value',
                      'var_updated',
@@ -552,7 +766,7 @@ class table_comp_rulesets(HtmlTable):
                      display=False,
                      img='action16',
                     ),
-            'ruleset_name': HtmlTableColumn(
+            'ruleset_name': col_ruleset_name(
                      title='Ruleset',
                      field='ruleset_name',
                      table='v_comp_rulesets',
@@ -585,6 +799,13 @@ class table_comp_rulesets(HtmlTable):
                      field='var_name',
                      table='v_comp_rulesets',
                      display=True,
+                     img='action16',
+                    ),
+            'var_class': HtmlTableColumn(
+                     title='Class',
+                     field='var_class',
+                     table='v_comp_rulesets',
+                     display=False,
                      img='action16',
                     ),
         }
@@ -1265,6 +1486,14 @@ def ajax_comp_rulesets():
                 team_responsible_attach(v.get_checked())
             elif action == 'team_responsible_detach':
                 team_responsible_detach(v.get_checked())
+        except ToolError, e:
+            v.flash = str(e)
+    elif len(request.args) == 2:
+        action = request.args[0]
+        name = request.args[1]
+        try:
+            if action == 'var_value_set_list':
+                var_value_set_list(name)
         except ToolError, e:
             v.flash = str(e)
 
@@ -3034,6 +3263,15 @@ def var_set(t):
                  dict(on=oldn, ov=oldv, x=iid, d=new))
         else:
             raise Exception()
+
+@auth.requires_membership('CompManager')
+def var_value_set_list(name):
+    l = []
+    vid = int(name.split('_')[2])
+    for i in [v for v in request.vars if name in v]:
+        if request.vars[i] is not None and len(request.vars[i])>0:
+            l.append(request.vars[i])
+    db(db.comp_rulesets_variables.id==vid).update(var_value=json.dumps(l))
 
 @auth.requires_login()
 def ajax_comp_log_col_values():

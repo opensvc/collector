@@ -284,7 +284,7 @@ button {
 
 input:focus,
 textarea:focus {
-    background: #edccb1;
+    background: #FFFF92;
 }
 
 html {
@@ -1266,4 +1266,19 @@ button, input[type=button], input[type=submit] {
     font-weight: normal;
     font-family: monospace;
     list-style: none;
+}
+
+.comp_var_table div {
+    padding-right: 1em;
+}
+
+.postit {
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    padding: 3px;
+    background-color: #FFFB82;
+    border-color: #FFFB82 #918F4A #918F4A #FFFB82;
+    border-width: 1px;
+    border-style: solid;
 }
