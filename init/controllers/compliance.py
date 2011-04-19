@@ -427,6 +427,12 @@ class col_var_value(HtmlTableColumn):
                     DIV(f['ref'], _style='display:table-cell'),
                     _style="display:table-row",
                   )]
+        if 'mode' in f:
+            l += [DIV(
+                    DIV('mode', _style='display:table-cell', _class="action16"),
+                    DIV(str(f['mode']), _style='display:table-cell'),
+                    _style="display:table-row",
+                  )]
         if 'uid' in f:
             l += [DIV(
                     DIV('uid', _style='display:table-cell', _class="guy16"),
