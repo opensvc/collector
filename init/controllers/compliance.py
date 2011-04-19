@@ -1434,7 +1434,7 @@ def ajax_comp_rulesets_col_values():
 def ajax_comp_rulesets():
     v = table_comp_rulesets('0', 'ajax_comp_rulesets')
     v.span = 'ruleset_name'
-    v.sub_span = ['ruleset_type', 'fset_name']
+    v.sub_span = ['ruleset_type', 'fset_name', 'teams_responsible']
     v.checkboxes = True
 
     err = None
@@ -1537,7 +1537,11 @@ def add_default_team_responsible(ruleset_name):
     q = db.auth_membership.user_id == auth.user_id
     q &= db.auth_membership.group_id == db.auth_group.id
     q &= db.auth_group.role.like('user_%')
-    group_id = db(q).select()[0].auth_group.id
+    try:
+        group_id = db(q).select()[0].auth_group.id
+    except:
+        q = db.auth_group.role == 'Manager'
+        group_id = db(q).select()[0].id
     db.comp_ruleset_team_responsible.insert(ruleset_id=ruleset_id, group_id=group_id)
 
 def teams_responsible_filter():

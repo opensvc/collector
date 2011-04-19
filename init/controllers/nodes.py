@@ -363,6 +363,7 @@ def do_action(ids, action=None):
                'opensvc@'+node,
                '--',
                'sudo', '/opt/opensvc/bin/nodemgr', 'compliance', action,
+               '--force',
                '--module', module]
         return ' '.join(cmd)
 
