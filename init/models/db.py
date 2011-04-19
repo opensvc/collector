@@ -965,9 +965,9 @@ db.define_table('comp_rulesets',
 
 db.define_table('comp_rulesets_variables',
     Field('ruleset_id','integer', requires=IS_NOT_EMPTY()),
-    Field('var_class','string', requires=IS_IN_SET("raw", "file", "group", "group membership", "package", "user"), default="raw"),
+    Field('var_class','string', requires=IS_IN_SET(("raw", "file", "group", "package", "user")), default="raw"),
     Field('var_name','string', requires=IS_NOT_EMPTY()),
-    Field('var_value','string', requires=IS_NOT_EMPTY()),
+    Field('var_value','string'),
     Field('var_author','string', readable=False, writable=False),
     Field('var_updated','datetime', readable=False, writable=False),
     migrate=False)

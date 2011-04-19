@@ -342,7 +342,7 @@ class col_var_value(HtmlTableColumn):
         try:
             users = json.loads(v)
         except:
-            return "malformed value", v
+            return SPAN("malformed value", PRE(v))
         for user, u in users.items():
             if 'uid' in u:
                 uid = '%d'%u['uid']
@@ -386,7 +386,7 @@ class col_var_value(HtmlTableColumn):
         try:
             groups = json.loads(v)
         except:
-            return "malformed value", v
+            return SPAN("malformed value", PRE(v))
         for group, g in groups.items():
             if 'gid' in g:
                 gid = '%d'%g['gid']
@@ -409,7 +409,7 @@ class col_var_value(HtmlTableColumn):
         try:
             f = json.loads(v)
         except:
-            return "malformed value", v
+            return SPAN("malformed value", PRE(v))
         l = [DIV(
                DIV('file', _style='display:table-cell;font-weight:bold', _class="comp16"),
                DIV(f['path'], _style='display:table-cell'),
@@ -450,7 +450,7 @@ class col_var_value(HtmlTableColumn):
         try:
             packages = json.loads(v)
         except:
-            return "malformed value", v
+            return SPAN("malformed value", PRE(v))
         for pkg in packages:
             l += [DIV(
                     DIV(pkg, _style='display:table-cell', _class="pkg16"),
@@ -462,10 +462,13 @@ class col_var_value(HtmlTableColumn):
         name = 'pack_n_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
         l = []
         v = self.get(o)
-        try:
-            packages = json.loads(v)
-        except:
-            return "malformed value", v
+        if v is None or v == "":
+            packages = []
+        else:
+            try:
+                packages = json.loads(v)
+            except:
+                return self.form_raw(o)
         for i, package in enumerate(packages):
             l.append(DIV(
                        SPAN("", _class="pkg16"),
