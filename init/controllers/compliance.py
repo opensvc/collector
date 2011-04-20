@@ -404,6 +404,55 @@ class col_var_value(HtmlTableColumn):
                   )]
         return DIV(l, _class="comp_var_table")
 
+    def html_cron(self, o):
+        v = self.get(o)
+        f = v.split(':')
+        if len(f) == 5:
+            act, usr, sch, cmd, fil = f
+        elif len(f) == 4:
+            act, usr, sch, cmd = f
+            fil = None
+        else:
+            return SPAN("malformed value", PRE(v))
+        l = [DIV(
+               DIV('cron', _style='display:table-cell;font-weight:bold', _class="comp16"),
+               DIV(_style='display:table-cell'),
+               _style="display:table-row",
+             )]
+        if act == "add":
+            act_cl = "add16"
+        elif act == "del":
+            act_cl = "del16"
+        else:
+            act_cl = "alert16"
+        l += [DIV(
+                DIV('action', _style='display:table-cell', _class=act_cl),
+                DIV(act, _style='display:table-cell'),
+                _style="display:table-row",
+              )]
+        l += [DIV(
+                DIV('user', _style='display:table-cell', _class="guy16"),
+                DIV(usr, _style='display:table-cell'),
+                _style="display:table-row",
+              )]
+        l += [DIV(
+                DIV('sched', _style='display:table-cell', _class="time16"),
+                DIV(sch, _style='display:table-cell'),
+                _style="display:table-row",
+              )]
+        l += [DIV(
+                DIV('command', _style='display:table-cell', _class="action16"),
+                DIV(cmd, _style='display:table-cell'),
+                _style="display:table-row",
+              )]
+        if fil is not None:
+            l += [DIV(
+                    DIV('file', _style='display:table-cell', _class="hd16"),
+                    DIV(fil, _style='display:table-cell'),
+                    _style="display:table-row",
+                  )]
+        return DIV(l, _class="comp_var_table")
+
     def html_file(self, o):
         v = self.get(o)
         try:
