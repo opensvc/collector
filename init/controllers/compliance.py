@@ -356,10 +356,10 @@ class col_var_value(HtmlTableColumn):
                 shell = '%s'%u['shell']
             else:
                 shell = "-"
-            if 'homedir' in u:
-                homedir = '%s'%u['homedir']
+            if 'home' in u:
+                home = '%s'%u['home']
             else:
-                homedir = "-"
+                home = "-"
             if 'gecos' in u:
                 gecos = '%s'%u['gecos']
             else:
@@ -369,11 +369,81 @@ class col_var_value(HtmlTableColumn):
                     DIV(uid, _style='display:table-cell'),
                     DIV(gid, _style='display:table-cell'),
                     DIV(shell, _style='display:table-cell'),
-                    DIV(homedir, _style='display:table-cell'),
+                    DIV(home, _style='display:table-cell'),
                     DIV(gecos, _style='display:table-cell'),
                     _style="display:table-row",
                   )]
         return DIV(l, _class="comp_var_table")
+
+    def form_user(self, o):
+        name = 'group_n_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
+        l = [DIV(
+               DIV('user', _style='display:table-cell;font-weight:bold', _class="comp16"),
+               DIV('uid', _style='display:table-cell'),
+               DIV('gid', _style='display:table-cell'),
+               DIV('shell', _style='display:table-cell'),
+               DIV('home', _style='display:table-cell'),
+               DIV('gecos', _style='display:table-cell'),
+               _style="display:table-row",
+             )]
+        v = self.get(o)
+        if v is None or v == "":
+            f = {}
+        else:
+            try:
+                f = json.loads(v)
+            except:
+                return self.form_raw(o)
+        for i, user in enumerate(f):
+            ll = [DIV(
+                    INPUT(
+                      _name=name,
+                      _id="%s_%d_%s"%(name, i, 'user'),
+                      _value=user,
+                      _style='width:5em',
+                    ),
+                    _style='display:table-cell',
+                    _class="guy16",
+                  )]
+            for key,w in (('uid', '3em'),
+                          ('gid', '3em'),
+                          ('shell', '5em'),
+                          ('home', '5em'),
+                          ('gecos', 'auto')):
+                if key not in f[user]:
+                    value = ""
+                else:
+                    value = f[user][key]
+                ll += [DIV(
+                         INPUT(
+                           _name=name,
+                           _id="%s_%d_%s"%(name, i, key),
+                           _value=value,
+                           _style='width:%s'%w,
+                         ),
+                         _style='display:table-cell',
+                       )]
+            l += [DIV(
+                    ll,
+                    _style="display:table-row",
+                  )]
+        form = DIV(
+                 SPAN(l, _id=name+'_container'),
+                 BR(),
+                 INPUT(
+                   _value="Add",
+                   _type="submit",
+                   _onclick="""d=new Date(); i=d.getTime();$("#%(n)s_container").append("<div style='display:table-row'><div style='display:table-cell'><span class='guy16'></span><input style='width:5em' name='%(n)s' id='%(n)s_"+i+"_user'></div><div style='display:table-cell'><input style='width:3em' name='%(n)s' id='%(n)s_"+i+"_uid'></div><div style='display:table-cell'><input style='width:3em' name='%(n)s' id='%(n)s_"+i+"_gid'></div><div style='display:table-cell'><input style='width:5em' name='%(n)s' id='%(n)s_"+i+"_shell'></div><div style='display:table-cell'><input style='width:5em' name='%(n)s' id='%(n)s_"+i+"_home'></div><div style='display:table-cell'><input name='%(n)s' id='%(n)s_"+i+"_gecos'></div></div>")"""%dict(n=name),
+                 ),
+                 " ",
+                 INPUT(
+                   _type="submit",
+                   _onclick=self.t.ajax_submit(additional_input_name=name,
+                                               args=["var_value_set_user", name]),
+                 ),
+                 _class="comp_var_table",
+               )
+        return form
 
     def html_group(self, o):
         v = self.get(o)
@@ -403,6 +473,61 @@ class col_var_value(HtmlTableColumn):
                     _style="display:table-row",
                   )]
         return DIV(l, _class="comp_var_table")
+
+    def form_group(self, o):
+        name = 'group_n_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
+        l = [DIV(
+               DIV('group', _style='display:table-cell;font-weight:bold', _class="comp16"),
+               DIV('gid', _style='display:table-cell'),
+               DIV('members', _style='display:table-cell'),
+               _style="display:table-row",
+             )]
+        v = self.get(o)
+        if v is None or v == "":
+            f = {}
+        else:
+            try:
+                f = json.loads(v)
+            except:
+                return self.form_raw(o)
+        for i, group in enumerate(f):
+            ll = [DIV(
+                    SPAN("", _class="guys16"),
+                    INPUT(_name=name, _id="%s_%d_%s"%(name, i, 'group'), _value=group),
+                    _style='display:table-cell',
+                  )]
+            for key in ('gid', 'members'):
+                if key not in f[group]:
+                    value = ""
+                else:
+                    value = f[group][key]
+                if key == 'members':
+                    value = ','.join(value)
+                ll += [DIV(
+                         INPUT(_name=name, _id="%s_%d_%s"%(name, i, key), _value=value),
+                         _style='display:table-cell',
+                       )]
+            l += [DIV(
+                    ll,
+                    _style="display:table-row",
+                  )]
+        form = DIV(
+                 SPAN(l, _id=name+'_container'),
+                 BR(),
+                 INPUT(
+                   _value="Add",
+                   _type="submit",
+                   _onclick="""d=new Date(); i=d.getTime(); $("#%(n)s_container").append("<div style='display:table-row'><div style='display:table-cell'><span class='guys16'></span><input name='%(n)s' id='%(n)s_"+i+"_group'></div><div style='display:table-cell'><input name='%(n)s' id='%(n)s_"+i+"_gid'></div><div style='display:table-cell'><input name='%(n)s' id='%(n)s_"+i+"_members'></div></div>")"""%dict(n=name),
+                 ),
+                 " ",
+                 INPUT(
+                   _type="submit",
+                   _onclick=self.t.ajax_submit(additional_input_name=name,
+                                               args=["var_value_set_group", name]),
+                 ),
+                 _class="comp_var_table",
+               )
+        return form
 
     def html_cron(self, o):
         v = self.get(o)
@@ -1570,6 +1695,10 @@ def ajax_comp_rulesets():
                 var_value_set_list(name)
             elif action == 'var_value_set_dict':
                 var_value_set_dict(name)
+            elif action == 'var_value_set_group':
+                var_value_set_dict_dict(name, 'group')
+            elif action == 'var_value_set_user':
+                var_value_set_dict_dict(name, 'user')
         except ToolError, e:
             v.flash = str(e)
 
@@ -3319,6 +3448,36 @@ def var_set(t):
                  dict(on=oldn, ov=oldv, x=iid, d=new))
         else:
             raise Exception()
+
+@auth.requires_membership('CompManager')
+def var_value_set_dict_dict(name, mainkey):
+    d = {}
+    f = {}
+    idx = {}
+    vid = int(name.split('_')[2])
+    for i in [v for v in request.vars if name in v]:
+        if request.vars[i] is None or len(request.vars[i]) == 0:
+            continue
+        s = i[len(name)+1:]
+        index = s.split('_')[0]
+        key = s[len(index)+1:]
+        if key == mainkey and key not in idx:
+            idx[index] = request.vars[i]
+            continue
+        if index not in d:
+            d[index] = {}
+        try:
+            val = int(request.vars[i])
+        except:
+            val = request.vars[i]
+        if key == 'members':
+            val = val.split(',')
+            val = map(lambda x: x.strip(), val)
+        d[index][key] = val
+    for i in d:
+        if i in idx:
+            f[idx[i]] = d[i]
+    db(db.comp_rulesets_variables.id==vid).update(var_value=json.dumps(f))
 
 @auth.requires_membership('CompManager')
 def var_value_set_dict(name):
