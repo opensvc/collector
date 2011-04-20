@@ -578,6 +578,48 @@ class col_var_value(HtmlTableColumn):
                   )]
         return DIV(l, _class="comp_var_table")
 
+    def form_cron(self, o):
+        name = 'cron_n_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
+        l = []
+        v = self.get(o)
+        if v is None or v == "":
+            f = {}
+        else:
+            vl = v.split(':')
+            f = {}
+            if len(vl) == 5:
+                f['action'], f['user'], f['sched'], f['command'], f['file'] = vl
+            elif len(vl) == 4:
+                f['action'], f['user'], f['sched'], f['command'] = vl
+                f['file'] = ""
+            else:
+                return self.form_raw(o)
+        for key, img in (('action', 'action16'),
+                         ('user', 'guy16'),
+                         ('sched', 'time16'),
+                         ('command', 'action16'),
+                         ('file', 'hd16')):
+            if key not in f:
+                value = ""
+            else:
+                value = f[key]
+            l += [DIV(
+                   DIV(key, _style='display:table-cell;font-weight:bold', _class=img),
+                   DIV(INPUT(_name=name, _id="%s_%s"%(name, key), _value=value), _style='display:table-cell'),
+                   _style="display:table-row",
+                 )]
+        form = DIV(
+                 SPAN(l, _id=name+'_container'),
+                 BR(),
+                 INPUT(
+                   _type="submit",
+                   _onclick=self.t.ajax_submit(additional_input_name=name,
+                                               args=["var_value_set_cron", name]),
+                 ),
+                 _class="comp_var_table",
+               )
+        return form
+
     def html_file(self, o):
         v = self.get(o)
         try:
@@ -1699,6 +1741,8 @@ def ajax_comp_rulesets():
                 var_value_set_dict_dict(name, 'group')
             elif action == 'var_value_set_user':
                 var_value_set_dict_dict(name, 'user')
+            elif action == 'var_value_set_cron':
+                var_value_set_cron(name)
         except ToolError, e:
             v.flash = str(e)
 
@@ -3478,6 +3522,20 @@ def var_value_set_dict_dict(name, mainkey):
         if i in idx:
             f[idx[i]] = d[i]
     db(db.comp_rulesets_variables.id==vid).update(var_value=json.dumps(f))
+
+@auth.requires_membership('CompManager')
+def var_value_set_cron(name):
+    d = {}
+    vid = int(name.split('_')[2])
+    l = []
+    for i in ('action', 'user', 'sched', 'command', 'file'):
+        id = '_'.join((name, i))
+        if id in request.vars:
+            l.append(request.vars[id])
+        else:
+            l.append("")
+    val = ':'.join(l)
+    db(db.comp_rulesets_variables.id==vid).update(var_value=val)
 
 @auth.requires_membership('CompManager')
 def var_value_set_dict(name):
