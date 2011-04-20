@@ -472,7 +472,7 @@ class col_var_value(HtmlTableColumn):
                   )]
         if 'ref' in f:
             l += [DIV(
-                    DIV('ref', _style='display:table-cell', _class="hd16"),
+                    DIV('ref', _style='display:table-cell', _class="loc"),
                     DIV(f['ref'], _style='display:table-cell'),
                     _style="display:table-row",
                   )]
@@ -495,6 +495,44 @@ class col_var_value(HtmlTableColumn):
                     _style="display:table-row",
                   )]
         return DIV(l, _class="comp_var_table")
+
+    def form_file(self, o):
+        name = 'file_n_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
+        l = []
+        v = self.get(o)
+        if v is None or v == "":
+            f = {}
+        else:
+            try:
+                f = json.loads(v)
+            except:
+                return self.form_raw(o)
+        for key, img in (('path', 'hd16'),
+                         ('fmt', 'hd16'),
+                         ('ref', 'loc'),
+                         ('mode', 'action16'),
+                         ('uid', 'guy16'),
+                         ('gid', 'guys16')):
+            if key not in f:
+                value = ""
+            else:
+                value = f[key]
+            l += [DIV(
+                   DIV(key, _style='display:table-cell;font-weight:bold', _class=img),
+                   DIV(INPUT(_name=name, _id="%s_%s"%(name, key), _value=value), _style='display:table-cell'),
+                   _style="display:table-row",
+                 )]
+        form = DIV(
+                 SPAN(l, _id=name+'_container'),
+                 BR(),
+                 INPUT(
+                   _type="submit",
+                   _onclick=self.t.ajax_submit(additional_input_name=name,
+                                               args=["var_value_set_dict", name]),
+                 ),
+                 _class="comp_var_table",
+               )
+        return form
 
     def html_package(self, o):
         v = self.get(o)
@@ -1530,6 +1568,8 @@ def ajax_comp_rulesets():
         try:
             if action == 'var_value_set_list':
                 var_value_set_list(name)
+            elif action == 'var_value_set_dict':
+                var_value_set_dict(name)
         except ToolError, e:
             v.flash = str(e)
 
@@ -3279,6 +3319,20 @@ def var_set(t):
                  dict(on=oldn, ov=oldv, x=iid, d=new))
         else:
             raise Exception()
+
+@auth.requires_membership('CompManager')
+def var_value_set_dict(name):
+    d = {}
+    vid = int(name.split('_')[2])
+    for i in [v for v in request.vars if name in v]:
+        if request.vars[i] is not None and len(request.vars[i])>0:
+            key = i[len(name)+1:]
+            try:
+                val = int(request.vars[i])
+            except:
+                val = request.vars[i]
+            d[key] = val
+    db(db.comp_rulesets_variables.id==vid).update(var_value=json.dumps(d))
 
 @auth.requires_membership('CompManager')
 def var_value_set_list(name):
