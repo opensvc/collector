@@ -1103,3 +1103,8 @@ db.define_table('services_log',
     Field('svc_begin', 'datetime'),
     Field('svc_end', 'datetime'),
     migrate=False)
+
+db.define_table('auth_node',
+    Field('nodename', 'string'),
+    Field('uuid', 'string'),
+    migrate=False)

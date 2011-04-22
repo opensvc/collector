@@ -39,16 +39,27 @@ def call():
 # XMLRPC
 #
 #########
+def auth_uuid(fn):
+    def new(*args):
+        uuid, node = args['auth']
+        rows = db(db.auth_node.nodename==node&db.auth_node.uuid==uuid).select()
+        if len(rows) != 1:
+            return
+        return fn(*args)
+    return new
+
+@auth_uuid
 @service.xmlrpc
-def delete_services(hostid=None):
+def delete_services(hostid=None, auth=("", "")):
     if hostid is None:
         return 0
     db(db.services.svc_hostid==hostid).delete()
     db.commit()
     return 0
 
+@auth_uuid
 @service.xmlrpc
-def delete_service_list(hostid=None, svcnames=[]):
+def delete_service_list(hostid=None, svcnames=[], auth=("", "")):
     if hostid is None or len(svcnames) == 0:
         return 0
     for svcname in svcnames:
@@ -58,15 +69,17 @@ def delete_service_list(hostid=None, svcnames=[]):
         db.commit()
     return 0
 
+@auth_uuid
 @service.xmlrpc
-def begin_action(vars, vals):
+def begin_action(vars, vals, auth):
     sql="""insert delayed into SVCactions (%s) values (%s)""" % (','.join(vars), ','.join(vals))
     db.executesql(sql)
     db.commit()
     return 0
 
+@auth_uuid
 @service.xmlrpc
-def res_action(vars, vals):
+def res_action(vars, vals, auth):
     upd = []
     for a, b in zip(vars, vals):
         upd.append("%s=%s" % (a, b))
@@ -75,8 +88,9 @@ def res_action(vars, vals):
     db.commit()
     return 0
 
+@auth_uuid
 @service.xmlrpc
-def end_action(vars, vals):
+def end_action(vars, vals, auth):
     upd = []
     h = {}
     for a, b in zip(vars, vals):
@@ -113,8 +127,9 @@ def update_virtual_asset(nodename, svcname):
     sql += "where nodename='%s'"%svc.svc_vmname
     db.executesql(sql)
 
+@auth_uuid
 @service.xmlrpc
-def update_service(vars, vals):
+def update_service(vars, vals, auth):
     if 'svc_hostid' not in vars:
         return
     if 'updated' not in vars:
@@ -122,19 +137,22 @@ def update_service(vars, vals):
         vals += [datetime.datetime.now()]
     generic_insert('services', vars, vals)
 
+@auth_uuid
 @service.xmlrpc
-def push_checks(vars, vals):
+def push_checks(vars, vals, auth):
     generic_insert('checks_live', vars, vals)
 
+@auth_uuid
 @service.xmlrpc
-def update_asset(vars, vals):
+def update_asset(vars, vals, auth):
     now = datetime.datetime.now()
     vars.append('updated')
     vals.append(now)
     generic_insert('nodes', vars, vals)
 
+@auth_uuid
 @service.xmlrpc
-def res_action_batch(vars, vals):
+def res_action_batch(vars, vals, auth):
     generic_insert('SVCactions', vars, vals)
 
 def _resmon_clean(node, svcname):
@@ -147,17 +165,21 @@ def _resmon_clean(node, svcname):
     db(q).delete()
     db.commit()
 
+@auth_uuid
 @service.xmlrpc
-def resmon_update(vars, vals):
+def resmon_update(vars, vals, auth):
+    _resmon_update(vars, vals)
+
+def _resmon_update(vars, vals):
     if len(vals) == 0:
         return
     if isinstance(vals[0], list):
         for v in vals:
-            _resmon_update(vars, v)
+            __resmon_update(vars, v)
     else:
-        _resmon_update(vars, vals)
+        __resmon_update(vars, vals)
 
-def _resmon_update(vars, vals):
+def __resmon_update(vars, vals):
     h = {}
     for a,b in zip(vars, vals[0]):
         h[a] = b
@@ -165,77 +187,94 @@ def _resmon_update(vars, vals):
         _resmon_clean(h['nodename'], h['svcname'])
     generic_insert('resmon', vars, vals)
 
+@auth_uuid
 @service.xmlrpc
-def svcmon_update_combo(g_vars, g_vals, r_vars, r_vals):
-    svcmon_update(g_vars, g_vals)
-    resmon_update(r_vars, r_vals)
+def svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
+    _svcmon_update(g_vars, g_vals)
+    _resmon_update(r_vars, r_vals)
 
+@auth_uuid
 @service.xmlrpc
-def register_disk(vars, vals):
+def register_disk(vars, vals, auth):
     generic_insert('svcdisks', vars, vals)
 
+@auth_uuid
 @service.xmlrpc
-def register_sync(vars, vals):
+def register_sync(vars, vals, auth):
     pass
 
+@auth_uuid
 @service.xmlrpc
-def register_ip(vars, vals):
+def register_ip(vars, vals, auth):
     pass
 
+@auth_uuid
 @service.xmlrpc
-def register_fs(vars, vals):
+def register_fs(vars, vals, auth):
     pass
 
+@auth_uuid
 @service.xmlrpc
-def insert_stats_fs_u(vars, vals):
+def insert_stats_fs_u(vars, vals, auth):
     generic_insert('stats_fs_u', vars, vals)
 
+@auth_uuid
 @service.xmlrpc
-def insert_stats_cpu(vars, vals):
+def insert_stats_cpu(vars, vals, auth):
     generic_insert('stats_cpu', vars, vals)
 
+@auth_uuid
 @service.xmlrpc
-def insert_stats_mem_u(vars, vals):
+def insert_stats_mem_u(vars, vals, auth):
     generic_insert('stats_mem_u', vars, vals)
 
+@auth_uuid
 @service.xmlrpc
-def insert_stats_proc(vars, vals):
+def insert_stats_proc(vars, vals, auth):
     generic_insert('stats_proc', vars, vals)
 
+@auth_uuid
 @service.xmlrpc
-def insert_stats_swap(vars, vals):
+def insert_stats_swap(vars, vals, auth):
     generic_insert('stats_swap', vars, vals)
 
+@auth_uuid
 @service.xmlrpc
-def insert_stats_block(vars, vals):
+def insert_stats_block(vars, vals, auth):
     generic_insert('stats_block', vars, vals)
 
+@auth_uuid
 @service.xmlrpc
-def insert_stats_blockdev(vars, vals):
+def insert_stats_blockdev(vars, vals, auth):
     generic_insert('stats_blockdev', vars, vals)
 
+@auth_uuid
 @service.xmlrpc
-def insert_stats_netdev(vars, vals):
+def insert_stats_netdev(vars, vals, auth):
     generic_insert('stats_netdev', vars, vals)
 
+@auth_uuid
 @service.xmlrpc
-def insert_stats_netdev_err(vars, vals):
+def insert_stats_netdev_err(vars, vals, auth):
     generic_insert('stats_netdev_err', vars, vals)
 
+@auth_uuid
 @service.xmlrpc
-def insert_stats(data):
+def insert_stats(data, auth):
     import cPickle
     h = cPickle.loads(data)
     for stat in h:
         vars, vals = h[stat]
         generic_insert('stats_'+stat, vars, vals)
 
+@auth_uuid
 @service.xmlrpc
-def insert_pkg(vars, vals):
+def insert_pkg(vars, vals, auth):
     generic_insert('packages', vars, vals)
 
+@auth_uuid
 @service.xmlrpc
-def update_sym_xml(symid, vars, vals):
+def update_sym_xml(symid, vars, vals, auth):
     import os
 
     dir = 'applications'+str(URL(r=request,c='uploads',f='symmetrix'))
@@ -275,52 +314,77 @@ def update_sym_xml(symid, vars, vals):
         vals.append([dev.wwn, devname, symid])
     generic_insert('diskinfo', vars, vals)
 
+@auth_uuid
 @service.xmlrpc
-def delete_pkg(node):
+def delete_pkg(node, auth):
     if node is None or node == '':
         return 0
     db(db.packages.pkg_nodename==node).delete()
     db.commit()
 
+@auth_uuid
 @service.xmlrpc
-def insert_patch(vars, vals):
+def insert_patch(vars, vals, auth):
     generic_insert('patches', vars, vals)
 
+@auth_uuid
 @service.xmlrpc
-def delete_patch(node):
+def delete_patch(node, auth):
     if node is None or node == '':
         return 0
     db(db.patches.patch_nodename==node).delete()
     db.commit()
 
+@auth_uuid
 @service.xmlrpc
-def delete_syncs(svcname):
+def delete_syncs(svcname, auth):
     pass
 
+@auth_uuid
 @service.xmlrpc
-def delete_ips(svcname, node):
+def delete_ips(svcname, node, auth):
     pass
 
+@auth_uuid
 @service.xmlrpc
-def delete_fss(svcname):
+def delete_fss(svcname, auth):
     pass
 
+@auth_uuid
 @service.xmlrpc
-def delete_disks(svcname, node):
+def delete_disks(svcname, node, auth):
     if svcname is None or svcname == '':
         return 0
     db((db.svcdisks.disk_svcname==svcname)&(db.svcdisks.disk_nodename==node)).delete()
     db.commit()
 
 @service.xmlrpc
-def svcmon_update(vars, vals):
+def register_node(node):
+    if node is None or node == '':
+        return ["no node name provided"]
+    q = db.auth_node.nodename == node
+    rows = db(q).select()
+    if len(rows) != 0:
+        return ["already registered"]
+    import uuid
+    u = str(uuid.uuid4())
+    db.auth_node.insert(nodename=node, uuid=u)
+    db.commit()
+    return u
+
+@auth_uuid
+@service.xmlrpc
+def svcmon_update(vars, vals, auth):
+    _svcmon_update(vars, vals)
+
+def _svcmon_update(vars, vals):
     if len(vals) == 0:
         return
     if isinstance(vals[0], list):
         for v in vals:
-            _svcmon_update(vars, v)
+            __svcmon_update(vars, v)
     else:
-        _svcmon_update(vars, vals)
+        __svcmon_update(vars, vals)
 
 def compute_availstatus(h):
     def status_merge_down(s):
@@ -466,7 +530,7 @@ def svc_log_update(svcname, astatus):
                                svc_end=end,
                                svc_availstatus=astatus)
 
-def _svcmon_update(vars, vals):
+def __svcmon_update(vars, vals):
     # don't trust the server's time
     h = {}
     for a,b in zip(vars, vals):

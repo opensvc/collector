@@ -3757,8 +3757,18 @@ def call():
     session.forget()
     return service()
 
+def auth_uuid(fn):
+    def new(*args):
+        uuid, node = args['auth']
+        rows = db(db.auth_node.nodename==node&db.auth_node.uuid==uuid).select()
+        if len(rows) != 1:
+            return
+        return fn(*args)
+    return new
+
+@auth_uuid
 @service.xmlrpc
-def comp_get_moduleset_modules(moduleset):
+def comp_get_moduleset_modules(moduleset, auth):
     if isinstance(moduleset, list):
         if len(moduleset) == 0:
             return []
@@ -3817,8 +3827,9 @@ def comp_ruleset_attached(nodename, ruleset_id):
         return False
     return True
 
+@auth_uuid
 @service.xmlrpc
-def comp_attach_moduleset(nodename, moduleset):
+def comp_attach_moduleset(nodename, moduleset, auth):
     if len(moduleset) == 0:
         return dict(status=False, msg="no moduleset specified"%moduleset)
     modset_id = comp_moduleset_id(moduleset)
@@ -3838,8 +3849,9 @@ def comp_attach_moduleset(nodename, moduleset):
         user='root@'+nodename)
     return dict(status=True, msg="moduleset %s attached"%moduleset)
 
+@auth_uuid
 @service.xmlrpc
-def comp_detach_moduleset(nodename, moduleset):
+def comp_detach_moduleset(nodename, moduleset, auth):
     if len(moduleset) == 0:
         return dict(status=False, msg="no moduleset specified"%moduleset)
     if moduleset == 'all':
@@ -3877,8 +3889,9 @@ def comp_ruleset_attachable(nodename, ruleset_id):
         return False
     return True
 
+@auth_uuid
 @service.xmlrpc
-def comp_attach_ruleset(nodename, ruleset):
+def comp_attach_ruleset(nodename, ruleset, auth):
     if len(ruleset) == 0:
         return dict(status=False, msg="no ruleset specified"%ruleset)
     ruleset_id = comp_ruleset_exists(ruleset)
@@ -3906,8 +3919,9 @@ def comp_attach_ruleset(nodename, ruleset):
         user='root@'+nodename)
     return dict(status=True, msg="ruleset %s attached"%ruleset)
 
+@auth_uuid
 @service.xmlrpc
-def comp_detach_ruleset(nodename, ruleset):
+def comp_detach_ruleset(nodename, ruleset, auth):
     if len(ruleset) == 0:
         return dict(status=False, msg="no ruleset specified"%ruleset)
     if ruleset == 'all':
@@ -3935,8 +3949,9 @@ def comp_detach_ruleset(nodename, ruleset):
         user='root@'+nodename)
     return dict(status=True, msg="ruleset %s detached"%ruleset)
 
+@auth_uuid
 @service.xmlrpc
-def comp_list_rulesets(pattern='%', nodename=None):
+def comp_list_rulesets(pattern='%', nodename=None, auth=("", "")):
     q = db.comp_rulesets.ruleset_name.like(pattern)
     q &= db.comp_rulesets.ruleset_type == 'explicit'
     q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
@@ -3947,22 +3962,25 @@ def comp_list_rulesets(pattern='%', nodename=None):
     rows = db(q).select(groupby=db.comp_rulesets.id)
     return [r.comp_rulesets.ruleset_name for r in rows]
 
+@auth_uuid
 @service.xmlrpc
-def comp_list_modulesets(pattern='%'):
+def comp_list_modulesets(pattern='%', auth=("", "")):
     q = db.comp_moduleset.modset_name.like(pattern)
     rows = db(q).select()
     return [r.modset_name for r in rows]
 
+@auth_uuid
 @service.xmlrpc
-def comp_get_moduleset(nodename):
+def comp_get_moduleset(nodename, auth):
     q = db.comp_node_moduleset.modset_node == nodename
     q &= db.comp_node_moduleset.modset_id == db.comp_moduleset.id
     rows = db(q).select(db.comp_moduleset.modset_name,
                         groupby=db.comp_node_moduleset.modset_id)
     return [r.modset_name for r in rows]
 
+@auth_uuid
 @service.xmlrpc
-def comp_log_action(vars, vals):
+def comp_log_action(vars, vals, auth):
     now = datetime.datetime.now()
     for i, (a, b) in enumerate(zip(vars, vals)):
         if a == 'run_action':
@@ -4069,8 +4087,9 @@ def ruleset_add_var(d, rset_name, var, val):
     d[rset_name]['vars'].append((var, val))
     return d
 
+@auth_uuid
 @service.xmlrpc
-def comp_get_dated_ruleset(nodename, date):
+def comp_get_dated_ruleset(nodename, date, auth):
     # initialize ruleset with asset variables
     ruleset = comp_get_node_ruleset(nodename)
 
@@ -4149,8 +4168,9 @@ def node_team_responsible_id(nodename):
         return None
     return rows[0].id
 
+@auth_uuid
 @service.xmlrpc
-def comp_get_ruleset(nodename):
+def comp_get_ruleset(nodename, auth):
     # initialize ruleset with asset variables
     ruleset = comp_get_node_ruleset(nodename)
 
