@@ -883,8 +883,8 @@ class table_comp_explicit_rules(HtmlTable):
 
 @auth.requires_login()
 def ajax_comp_explicit_rules_col_values():
-    t = table_comp_explicit_rules('1', 'ajax_comp_rulesets_nodes',
-                                  innerhtml='1')
+    t = table_comp_explicit_rules('crn1', 'ajax_comp_rulesets_nodes',
+                                  innerhtml='crn1')
     col = request.args[0]
     o = db.v_comp_explicit_rulesets[col]
     q = db.v_comp_explicit_rulesets.id > 0
@@ -895,8 +895,8 @@ def ajax_comp_explicit_rules_col_values():
 
 @auth.requires_login()
 def ajax_comp_rulesets_rules_col_values():
-    t = table_comp_rulesets_nodes('2', 'ajax_comp_rulesets_nodes',
-                                  innerhtml='1')
+    t = table_comp_rulesets_nodes('crn2', 'ajax_comp_rulesets_nodes',
+                                  innerhtml='crn1')
     col = request.args[0]
     o = db.v_comp_nodes[col]
     q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
@@ -907,10 +907,10 @@ def ajax_comp_rulesets_rules_col_values():
 
 @auth.requires_login()
 def ajax_comp_rulesets_nodes():
-    r = table_comp_explicit_rules('1', 'ajax_comp_rulesets_nodes',
-                                  innerhtml='1')
-    t = table_comp_rulesets_nodes('2', 'ajax_comp_rulesets_nodes',
-                                  innerhtml='1')
+    r = table_comp_explicit_rules('crn1', 'ajax_comp_rulesets_nodes',
+                                  innerhtml='crn1')
+    t = table_comp_rulesets_nodes('crn2', 'ajax_comp_rulesets_nodes',
+                                  innerhtml='crn1')
     t.rulesets = r
     t.checkbox_names.append(r.id+'_ck')
 
@@ -1681,7 +1681,7 @@ def comp_attach_rulesets(node_ids=[], ruleset_ids=[]):
 
 @auth.requires_login()
 def ajax_comp_rulesets_col_values():
-    t = table_comp_rulesets('0', 'ajax_comp_rulesets')
+    t = table_comp_rulesets('cr0', 'ajax_comp_rulesets')
     col = request.args[0]
     o = db.v_comp_rulesets[col]
     q = db.v_comp_rulesets.id > 0
@@ -1692,7 +1692,7 @@ def ajax_comp_rulesets_col_values():
 
 @auth.requires_login()
 def ajax_comp_rulesets():
-    v = table_comp_rulesets('0', 'ajax_comp_rulesets')
+    v = table_comp_rulesets('cr0', 'ajax_comp_rulesets')
     v.span = 'ruleset_name'
     v.sub_span = ['ruleset_type', 'fset_name', 'teams_responsible']
     v.checkboxes = True
@@ -1826,11 +1826,11 @@ def comp_rules():
           comp_menu('Rules'),
           DIV(
             ajax_comp_rulesets(),
-            _id='0',
+            _id='cr0',
           ),
           DIV(
             ajax_comp_rulesets_nodes(),
-            _id='1',
+            _id='crn1',
           ),
         )
     return dict(table=t)
@@ -3242,10 +3242,10 @@ def comp_attach_modulesets(node_ids=[], modset_ids=[]):
 
 @auth.requires_login()
 def ajax_comp_modulesets_nodes():
-    r = table_comp_moduleset_short('1', 'ajax_comp_modulesets_nodes',
-                                  innerhtml='1')
-    t = table_comp_modulesets_nodes('2', 'ajax_comp_modulesets_nodes',
-                                  innerhtml='1')
+    r = table_comp_moduleset_short('cmn1', 'ajax_comp_modulesets_nodes',
+                                  innerhtml='cmn1')
+    t = table_comp_modulesets_nodes('cmn2', 'ajax_comp_modulesets_nodes',
+                                  innerhtml='cmn1')
     t.modulesets = r
     t.checkbox_names.append(r.id+'_ck')
 
@@ -3313,7 +3313,7 @@ def comp_modules():
           ),
           DIV(
             ajax_comp_modulesets_nodes(),
-            _id='1',
+            _id='cmn1',
           ),
         )
     return dict(table=t)
@@ -3735,7 +3735,7 @@ def ajax_comp_log_col_values():
 
 @auth.requires_login()
 def ajax_comp_status_col_values():
-    t = table_comp_status('0', 'ajax_comp_status')
+    t = table_comp_status('cs0', 'ajax_comp_status')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
@@ -3748,7 +3748,7 @@ def ajax_comp_status_col_values():
 
 @auth.requires_login()
 def ajax_comp_status():
-    t = table_comp_status('0', 'ajax_comp_status')
+    t = table_comp_status('cs0', 'ajax_comp_status')
 
     o = ~db.comp_status.run_nodename
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
@@ -3763,14 +3763,14 @@ def ajax_comp_status():
     table_comp_status_add_vfields(t)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
 
-    mt = table_comp_mod_status('1', 'ajax_comp_mod_status')
+    mt = table_comp_mod_status('cs1', 'ajax_comp_mod_status')
     mt.object_list = compute_mod_status(all)
     mt.pageable = False
     mt.filterable = False
     mt.exportable = False
     mt.dbfilterable = False
 
-    nt = table_comp_node_status('2', 'ajax_comp_node_status')
+    nt = table_comp_node_status('cs2', 'ajax_comp_node_status')
     nt.object_list = compute_node_status(all)
     nt.pageable = False
     nt.filterable = False
@@ -3854,7 +3854,7 @@ def comp_status():
           comp_menu('Status'),
           DIV(
             ajax_comp_status(),
-            _id='0',
+            _id='cs0',
           ),
         )
     return dict(table=t)
