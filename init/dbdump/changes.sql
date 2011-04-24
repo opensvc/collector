@@ -1004,4 +1004,26 @@ CREATE TABLE auth_node (
   `uuid` varchar(36) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `idx1` (`nodename`)
+)
+
+# 2011-04-22
+
+CREATE TABLE `comp_moduleset_team_responsible` (
+  `id` integer  NOT NULL AUTO_INCREMENT,
+  `modset_id` integer NOT NULL,
+  `group_id` integer NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx1` (`modset_id`)
 );
+
+CREATE TABLE `gen_filterset_team_responsible` (
+  `id` integer  NOT NULL AUTO_INCREMENT,
+  `fset_id` integer NOT NULL,
+  `group_id` integer NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx1` (`fset_id`)
+);
+
+create view v_comp_moduleset_teams_responsible as (select m.id as modset_id, group_concat(g.role separator ', ') as teams_responsible from comp_moduleset m left join comp_moduleset_team_responsible j on m.id=j.modset_id left join auth_group g on j.group_id=g.id group by m.id);
+
+create view v_gen_filterset_teams_responsible as (select m.id as fset_id, group_concat(g.role separator ', ') as teams_responsible from gen_filtersets m left join gen_filterset_team_responsible j on m.id=j.fset_id left join auth_group g on j.group_id=g.id group by m.id);

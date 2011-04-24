@@ -1108,3 +1108,24 @@ db.define_table('auth_node',
     Field('nodename', 'string'),
     Field('uuid', 'string'),
     migrate=False)
+
+db.define_table('v_comp_moduleset_teams_responsible',
+    Field('modset_id', 'integer'),
+    Field('teams_responsible', 'string'),
+    migrate=False)
+
+db.define_table('v_gen_filterset_teams_responsible',
+    Field('fset_id', 'integer'),
+    Field('teams_responsible', 'string'),
+    migrate=False)
+
+db.define_table('comp_moduleset_team_responsible',
+    Field('modset_id','string'),
+    Field('group_id','string'),
+    migrate=False)
+
+db.define_table('gen_filterset_team_responsible',
+    Field('fset_id','string'),
+    Field('group_id','string'),
+    migrate=False)
+
