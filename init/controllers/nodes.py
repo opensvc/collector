@@ -401,7 +401,7 @@ def ajax_nodes_col_values():
     col = request.args[0]
     o = db['v_nodes'][col]
     q = db.v_nodes.id > 0
-    q = _where(q, 'v_nodes', domain_perms(), 'pkg_nodename')
+    q = _where(q, 'v_nodes', domain_perms(), 'nodename')
     q = apply_db_filters(q, 'v_nodes')
     for f in t.cols:
         q = _where(q, 'v_nodes', t.filter_parse(f), f)
