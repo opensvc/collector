@@ -187,24 +187,24 @@ def svcnotupdated():
 """
 def node_checks_line(line, cellclass):
     vars = {
-        'chk_nodename':line.v_checks.chk_nodename,
-        'chk_svcname':line.v_checks.chk_svcname,
-        'chk_type':line.v_checks.chk_type,
-        'chk_instance':line.v_checks.chk_instance,
+        'chk_nodename':line.checks_live.chk_nodename,
+        'chk_svcname':line.checks_live.chk_svcname,
+        'chk_type':line.checks_live.chk_type,
+        'chk_instance':line.checks_live.chk_instance,
     }
     tr = TR(
            TD(
              A(
-               line.v_checks.chk_nodename,
+               line.checks_live.chk_nodename,
                _href=URL(r=request, c='checks', f='checks',
-                         vars={'checks_f_chk_nodename':line.v_checks.chk_nodename,
+                         vars={'checks_f_chk_nodename':line.checks_live.chk_nodename,
                                'clear_filters': 'true'}),
              ),
              _class=cellclass,
            ),
            TD(
              A(
-               line.v_checks.chk_svcname,
+               line.checks_live.chk_svcname,
                _href=URL(r=request, c='checks',
                          f='checks_settings_insert', vars=vars),
              ),
@@ -212,7 +212,7 @@ def node_checks_line(line, cellclass):
            ),
            TD(
              A(
-               line.v_checks.chk_type,
+               line.checks_live.chk_type,
                _href=URL(r=request, c='checks',
                          f='checks_defaults_insert', vars=vars),
              ),
@@ -220,19 +220,19 @@ def node_checks_line(line, cellclass):
            ),
            TD(
              A(
-               line.v_checks.chk_instance,
+               line.checks_live.chk_instance,
                _href=URL(r=request, c='checks',
                          f='checks_settings_insert', vars=vars),
              ),
              _class=cellclass,
            ),
            TD(
-              line.v_checks.chk_value,
+              line.checks_live.chk_value,
               _class=cellclass,
            ),
            TD(
              A(
-               line.v_checks.chk_low,
+               line.checks_live.chk_low,
                _href=URL(r=request, c='checks',
                          f='checks_settings_insert', vars=vars),
              ),
@@ -240,7 +240,7 @@ def node_checks_line(line, cellclass):
            ),
            TD(
              A(
-               line.v_checks.chk_high,
+               line.checks_live.chk_high,
                _href=URL(r=request, c='checks',
                          f='checks_settings_insert', vars=vars),
              ),
@@ -267,11 +267,11 @@ def checks():
     title = 'Node check alerts'
     if request.args[2] == 'false':
         return ['', '', '', '', str(T(title))]
-    q = db.v_checks.chk_value < db.v_checks.chk_low
-    q |= db.v_checks.chk_value > db.v_checks.chk_high
-    query = _where(None, 'v_checks', domain_perms(), 'chk_nodename')
+    q = db.checks_live.chk_value < db.checks_live.chk_low
+    q |= db.checks_live.chk_value > db.checks_live.chk_high
+    query = _where(None, 'checks_live', domain_perms(), 'chk_nodename')
     query &= q
-    query &= db.v_checks.chk_nodename==db.v_nodes.nodename
+    query &= db.checks_live.chk_nodename==db.v_nodes.nodename
     query = apply_db_filters(query, 'v_nodes')
     checks = db(query).select()
     return [0, 1, len(checks), str(node_checks(checks, title)), str(T(title))]
@@ -557,7 +557,7 @@ def svc_not_up(data, title):
 
 @service.json
 def svcnotup():
-    title = "Services not up"
+    title = "Services not available"
     if request.args[2] == 'false':
         return ['', '', '', '', str(T(title))]
     query = (~db.v_svc_group_status.groupstatus.like("up,%"))
@@ -571,6 +571,67 @@ def svcnotup():
 
     return [0, 1, len(data),
             str(svc_not_up(data, title)), str(T(title))]
+
+
+
+""" Services up but degraded
+"""
+def svc_degraded_line(line, cellclass):
+    tr = TR(
+      TD(
+        A(
+          line.mon_svcname,
+           _href=URL(r=request, c='default', f='svcmon',
+                     vars={'svcmon_f_svc_name':line.mon_svcname,
+                           'clear_filters': 'true'}),
+        ),
+        _class=cellclass,
+      ),
+      TD(
+        line.mon_nodname,
+        _class=cellclass,
+      ),
+      TD(
+        svc_status(line, cellclass),
+        _class=cellclass,
+        _style="text-align:center",
+      ),
+    )
+    return tr
+
+def svc_degraded(data, title):
+    return _table(data=data,
+                  id='svc_degraded',
+                  title=title,
+                  header=["Service",
+                          "Node",
+                          "Status"],
+                  lfmt=svc_degraded_line)
+
+@service.json
+def svcdegraded():
+    title = "Services available but degraded"
+    if request.args[2] == 'false':
+        return ['', '', '', '', str(T(title))]
+    query = (~db.v_svc_group_status.groupstatus.like("up,%"))
+    query &= (~db.v_svc_group_status.groupstatus.like("%,up,%"))
+    query &= (~db.v_svc_group_status.groupstatus.like("%,up"))
+    query &= (db.v_svc_group_status.groupstatus!="up")
+    query &= _where(None, 'v_svc_group_status', domain_perms(), 'svcname')
+    query &= db.v_svc_group_status.svcname==db.v_svcmon.mon_svcname
+    query = apply_db_filters(query, 'v_svcmon')
+    data = db(query).select(groupby=db.v_svc_group_status.svcname, orderby=db.v_svc_group_status.svcname)
+    svcnotup = [r.v_svc_group_status.svcname for r in data]
+
+    q = ~db.svcmon.mon_overallstatus.belongs(['up', 'down', 'stdby up'])
+    if len(svcnotup) > 0:
+        q &= ~db.svcmon.mon_svcname.belongs(svcnotup)
+    q &= _where(None, 'svcmon', domain_perms(), 'mon_svcname')
+    q &= db.svcmon.mon_updated >= tmo
+    data = db(q).select(orderby=db.svcmon.mon_svcname)
+
+    return [0, 1, len(data),
+            str(svc_degraded(data, title)), str(T(title))]
 
 
 """ Services not up on their primary node
