@@ -387,6 +387,26 @@ db.define_table('checks_live',
     Field('chk_updated', 'timestamp'),
     Field('chk_created', 'timestamp'),
     Field('chk_value', 'integer'),
+    Field('chk_low', 'integer'),
+    Field('chk_high', 'integer'),
+    Field('chk_threshold_provider', 'string', length=60),
+    migrate=False)
+
+db.define_table('checks_defaults',
+    Field('chk_type', 'string', length=10, writable=False),
+    Field('chk_low', 'integer'),
+    Field('chk_high', 'integer'),
+    migrate=False)
+
+db.define_table('checks_settings',
+    Field('chk_nodename', 'string', length=60, writable=False),
+    Field('chk_svcname', 'string', length=60, writable=False),
+    Field('chk_instance', 'string', length=60, writable=False),
+    Field('chk_type', 'string', length=10, writable=False),
+    Field('chk_changed', 'datetime', writable=False),
+    Field('chk_changed_by', 'string', length=60, writable=False),
+    Field('chk_low', 'integer'),
+    Field('chk_high', 'integer'),
     migrate=False)
 
 db.define_table('sym_upload',
@@ -454,6 +474,15 @@ db.define_table('gen_filters',
     Field('f_updated','datetime', readable=False, writable=False),
     migrate=False)
 
+db.define_table('v_gen_filtersets',
+    db.gen_filtersets,
+    db.gen_filtersets_filters,
+    db.gen_filters,
+    Field('encap_fset_name','string'),
+    Field('join_id','integer'),
+    Field('fset_id','integer'),
+    migrate=False)
+
 db.define_table('comp_rulesets',
     Field('ruleset_name','string', requires=IS_NOT_EMPTY()),
     Field('ruleset_type','string', requires=IS_IN_SET(['contextual','explicit'])),
@@ -500,5 +529,13 @@ db.define_table('services_log',
 db.define_table('auth_node',
     Field('nodename', 'string'),
     Field('uuid', 'string'),
+    migrate=False)
+
+db.define_table('gen_filterset_check_threshold',
+    Field('fset_id','string'),
+    Field('chk_type','string'),
+    Field('chk_instance','string'),
+    Field('chk_low','integer'),
+    Field('chk_high','integer'),
     migrate=False)
 

@@ -805,6 +805,9 @@ db.define_table('checks_live',
     Field('chk_updated', 'timestamp'),
     Field('chk_created', 'timestamp'),
     Field('chk_value', 'integer'),
+    Field('chk_low', 'integer'),
+    Field('chk_high', 'integer'),
+    Field('chk_threshold_provider', 'string', length=60),
     migrate=False)
 
 db.define_table('checks_defaults',
@@ -820,19 +823,6 @@ db.define_table('checks_settings',
     Field('chk_type', 'string', length=10, writable=False),
     Field('chk_changed', 'datetime', writable=False),
     Field('chk_changed_by', 'string', length=60, writable=False),
-    Field('chk_low', 'integer'),
-    Field('chk_high', 'integer'),
-    migrate=False)
-
-db.define_table('v_checks',
-    Field('id'),
-    Field('chk_nodename', 'string', length=60),
-    Field('chk_svcname', 'string', length=60),
-    Field('chk_instance', 'string', length=60),
-    Field('chk_type', 'string', length=10),
-    Field('chk_updated', 'timestamp'),
-    Field('chk_created', 'timestamp'),
-    Field('chk_value', 'integer'),
     Field('chk_low', 'integer'),
     Field('chk_high', 'integer'),
     migrate=False)
@@ -956,6 +946,7 @@ db.define_table('v_gen_filtersets',
     db.gen_filters,
     Field('encap_fset_name','string'),
     Field('join_id','integer'),
+    Field('fset_id','integer'),
     migrate=False)
 
 db.define_table('comp_rulesets',
@@ -1127,5 +1118,13 @@ db.define_table('comp_moduleset_team_responsible',
 db.define_table('gen_filterset_team_responsible',
     Field('fset_id','string'),
     Field('group_id','string'),
+    migrate=False)
+
+db.define_table('gen_filterset_check_threshold',
+    Field('fset_id','string'),
+    Field('chk_type','string'),
+    Field('chk_instance','string'),
+    Field('chk_low','integer'),
+    Field('chk_high','integer'),
     migrate=False)
 

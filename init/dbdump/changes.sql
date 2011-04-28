@@ -1027,3 +1027,22 @@ CREATE TABLE `gen_filterset_team_responsible` (
 create view v_comp_moduleset_teams_responsible as (select m.id as modset_id, group_concat(g.role separator ', ') as teams_responsible from comp_moduleset m left join comp_moduleset_team_responsible j on m.id=j.modset_id left join auth_group g on j.group_id=g.id group by m.id);
 
 create view v_gen_filterset_teams_responsible as (select m.id as fset_id, group_concat(g.role separator ', ') as teams_responsible from gen_filtersets m left join gen_filterset_team_responsible j on m.id=j.fset_id left join auth_group g on j.group_id=g.id group by m.id);
+
+# 2011-04-26
+
+CREATE TABLE `gen_filterset_check_threshold` (
+  `id` integer  NOT NULL AUTO_INCREMENT,
+  `fset_id` integer NOT NULL,
+  `chk_type` varchar(10) NOT NULL,
+  `chk_low` int(11) NOT NULL,
+  `chk_high` int(11) NOT NULL,
+  `chk_instance` varchar(60) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx1` (`fset_id`)
+);
+
+alter table checks_live add column chk_low integer;
+alter table checks_live add column chk_high integer;
+alter table checks_live add column chk_threshold_provider varchar(60);
+
+drop view v_checks;

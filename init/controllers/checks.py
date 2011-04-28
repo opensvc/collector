@@ -215,6 +215,7 @@ class table_checks(HtmlTable):
                      'chk_value',
                      'chk_low',
                      'chk_high',
+                     'chk_threshold_provider',
                      'chk_created',
                      'chk_updated']
         self.colprops = {
@@ -222,63 +223,70 @@ class table_checks(HtmlTable):
                 title = 'Nodename',
                 field = 'chk_nodename',
                 display = True,
-                table = 'v_checks',
+                table = 'checks_live',
                 img = 'node16'
             ),
             'chk_svcname': col_svc(
                 title = 'Service',
                 field = 'chk_svcname',
                 display = True,
-                table = 'v_checks',
+                table = 'checks_live',
                 img = 'check16'
             ),
             'chk_type': col_chk_type(
                 title = 'Type',
                 field = 'chk_type',
                 display = True,
-                table = 'v_checks',
+                table = 'checks_live',
                 img = 'check16'
             ),
             'chk_instance': HtmlTableColumn(
                 title = 'Instance',
                 field = 'chk_instance',
                 display = True,
-                table = 'v_checks',
+                table = 'checks_live',
                 img = 'check16'
             ),
             'chk_value': col_chk_value(
                 title = 'Value',
                 field = 'chk_value',
                 display = True,
-                table = 'v_checks',
+                table = 'checks_live',
                 img = 'check16'
             ),
             'chk_low': col_chk_low(
                 title = 'Low threshold',
                 field = 'chk_low',
                 display = True,
-                table = 'v_checks',
+                table = 'checks_live',
                 img = 'check16'
             ),
             'chk_high': col_chk_high(
                 title = 'High threshold',
                 field = 'chk_high',
                 display = True,
-                table = 'v_checks',
+                table = 'checks_live',
                 img = 'check16'
             ),
             'chk_created': HtmlTableColumn(
                 title = 'Created',
                 field = 'chk_created',
                 display = False,
-                table = 'v_checks',
+                table = 'checks_live',
                 img = 'check16'
             ),
             'chk_updated': col_updated(
                 title = 'Last check update',
                 field = 'chk_updated',
                 display = True,
-                table = 'v_checks',
+                table = 'checks_live',
+                img = 'check16'
+            ),
+            'chk_threshold_provider': HtmlTableColumn(
+                title = 'Threshold provider',
+                field = 'chk_threshold_provider',
+                display = True,
+                table = 'checks_live',
                 img = 'check16'
             ),
         }
@@ -288,20 +296,60 @@ class table_checks(HtmlTable):
             self.colprops[c].t = self
         self.ajax_col_values = 'ajax_checks_col_values'
         self.dbfilterable = False
-        self.checkbox_id_table = 'v_checks'
+        self.checkbox_id_table = 'checks_live'
         self.checkboxes = True
         self.extraline = True
         self.span = 'chk_nodename'
+
+        self.form_add_fset_threshold = self.add_fset_threshold_sqlform()
+
         if 'CheckManager' in user_groups():
             self.additional_tools.append('set_low_threshold')
             self.additional_tools.append('set_high_threshold')
             self.additional_tools.append('reset_thresholds')
+            self.additional_tools.append('add_fset_threshold')
 
     def set_low_threshold(self):
         return self.set_threshold('low')
 
     def set_high_threshold(self):
         return self.set_threshold('high')
+
+    def add_fset_threshold(self):
+        d = DIV(
+              A(
+                T("Add fset threshold"),
+                _onclick="""
+                  click_toggle_vis(event,'%(div)s', 'block');
+                """%dict(div='add_fset_threshold_d'),
+              ),
+              DIV(
+                self.form_add_fset_threshold,
+                _style='display:none',
+                _class='white_float',
+                _name='add_fset_threshold_d',
+                _id='add_fset_threshold_d',
+              ),
+              _class='floatw',
+            )
+        return d
+
+    @auth.requires_membership('CheckManager')
+    def add_fset_threshold_sqlform(self):
+        db.gen_filterset_check_threshold.fset_id.requires = IS_IN_DB(db, db.gen_filtersets.id, "%(fset_name)s", zero=T('choose one'))
+        allowed = db(db.checks_live.id>0).select(db.checks_live.chk_type, groupby=db.checks_live.chk_type, orderby=db.checks_live.chk_type)
+        allowed = map(lambda x: x.chk_type, allowed)
+        db.gen_filterset_check_threshold.chk_type.requires = IS_IN_SET(allowed, zero=T('choose one'))
+        f = SQLFORM(
+                 db.gen_filterset_check_threshold,
+                 labels={'fset_id': T('Filterset'),
+                         'chk_type': T('Type'),
+                         'chk_low': T('Low threshold'),
+                         'chk_high': T('High threshold'),
+                         'chk_instance': T('Instance')},
+                 _name='form_add_fset_threshold',
+            )
+        return f
 
     def set_threshold(self, t):
         d = DIV(
@@ -379,13 +427,34 @@ def ajax_checks():
         except ToolError, e:
             t.flash = str(e)
 
-    o = db.v_checks.chk_nodename
-    o |= db.v_checks.chk_type
-    o |= db.v_checks.chk_instance
-    q = db.v_checks.id>0
-    q = _where(q, 'v_checks', domain_perms(), 'chk_nodename')
+    try:
+        if t.form_add_fset_threshold.accepts(request.vars):
+            db.gen_filterset_check_threshold.insert(fset_id=request.vars.fset_id,
+                                                    chk_type=request.vars.chk_type,
+                                                    chk_instance=request.vars.chk_instance,
+                                                    chk_low=request.vars.chk_low,
+                                                    chk_high=request.vars.chk_high)
+            _log('checks.threshold.add',
+                 'added threshold %(low)s,%(high)s to check %(chk_type)s.%(chk_instance)s matching fset %(fset_id)s',
+                 dict(low=request.vars.chk_low,
+                      high=request.vars.chk_high,
+                      chk_type=request.vars.chk_type,
+                      chk_instance=request.vars.chk_instance or '*',
+                      fset_id=request.vars.fset_id))
+        elif t.form_add_fset_threshold.errors:
+            response.flash = T("errors in form")
+    except AttributeError:
+        pass
+    except ToolError, e:
+        t.flash = str(e)
+
+    o = db.checks_live.chk_nodename
+    o |= db.checks_live.chk_type
+    o |= db.checks_live.chk_instance
+    q = db.checks_live.id>0
+    q = _where(q, 'checks_live', domain_perms(), 'chk_nodename')
     q = apply_db_filters(q, 'v_nodes')
-    q &= db.v_checks.chk_nodename==db.v_nodes.nodename
+    q &= db.checks_live.chk_nodename==db.v_nodes.nodename
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     n = db(q).count()
