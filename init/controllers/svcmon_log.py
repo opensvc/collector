@@ -772,6 +772,8 @@ class col_avail_plot(Column):
         return None
 
     def html(self, o):
+        if len(o['holes']) == 0:
+            return ""
         down = []
         acked = []
         s = ''
