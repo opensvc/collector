@@ -1788,7 +1788,7 @@ def ajax_comp_rulesets():
         v.flash = str(e)
 
     o = db.v_comp_rulesets.ruleset_name|db.v_comp_rulesets.var_name
-    g = db.v_comp_rulesets.id
+    g = db.v_comp_rulesets.ruleset_id|db.v_comp_rulesets.id
     q = teams_responsible_filter()
     for f in v.cols:
         q = _where(q, 'v_comp_rulesets', v.filter_parse(f), f)
