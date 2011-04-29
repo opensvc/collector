@@ -2897,7 +2897,13 @@ _class=''):
 def comp_delete_module(ids=[]):
     if len(ids) == 0:
         raise ToolError("delete module failed: no module selected")
-    ids = map(lambda x: int(x.split('_')[1]), ids)
+    l = []
+    for id in ids:
+        i = id.split('_')[1]
+        if i == "None":
+            continue
+        l.append(i)
+    ids =l
     rows = db(db.comp_moduleset_modules.id.belongs(ids)).select(db.comp_moduleset_modules.modset_mod_name)
     if len(rows) == 0:
         raise ToolError("delete module failed: can't find selected modules")
@@ -3086,19 +3092,20 @@ def ajax_comp_moduleset():
         pass
 
     o = db.comp_moduleset.modset_name
-    g = db.comp_moduleset_modules.id
+    g = db.comp_moduleset.modset_name|db.comp_moduleset_modules.id
     q = db.comp_moduleset.id > 0
-    q &= db.comp_moduleset.id == db.v_comp_moduleset_teams_responsible.modset_id
     j = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
     l1 = db.comp_moduleset_team_responsible.on(j)
     j = db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
     l2 = db.comp_moduleset_modules.on(j)
+    j = db.comp_moduleset.id == db.v_comp_moduleset_teams_responsible.modset_id
+    l3 = db.v_comp_moduleset_teams_responsible.on(j)
     if 'Manager' not in user_groups():
         q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
-    rows = db(q).select(db.comp_moduleset_modules.id, left=(l1,l2), groupby=g)
+    rows = db(q).select(db.comp_moduleset_modules.id, left=(l1,l2,l3), groupby=g)
     t.setup_pager(len(rows))
     t.object_list = db(q).select(db.comp_moduleset_modules.ALL,
                                  db.comp_moduleset.modset_name,
@@ -3106,7 +3113,7 @@ def ajax_comp_moduleset():
                                  db.v_comp_moduleset_teams_responsible.teams_responsible,
                                  orderby=o,
                                  groupby=g,
-                                 left=(l1,l2),
+                                 left=(l1,l2,l3),
                                  limitby=(t.pager_start,t.pager_end))
 
     return t.html()
