@@ -684,9 +684,13 @@ class col_var_value(HtmlTableColumn):
                 value = ""
             else:
                 value = f[key]
+            if key == 'fmt':
+                _WIDGET = TEXTAREA
+            else:
+                _WIDGET = INPUT
             l += [DIV(
                    DIV(key, _style='display:table-cell;font-weight:bold', _class=img),
-                   DIV(INPUT(_name=name, _id="%s_%s"%(name, key), _value=value), _style='display:table-cell'),
+                   DIV(_WIDGET(_name=name, _id="%s_%s"%(name, key), value=value), _style='display:table-cell'),
                    _style="display:table-row",
                  )]
         form = DIV(
