@@ -422,7 +422,8 @@ def ajax_actions_col_values():
         q = _where(q, 'v_svcactions', t.filter_parse(f), f)
     t.object_list = db(q).select(db.v_svcactions[col],
                                  groupby=o,
-                                 orderby=o)
+                                 orderby=o,
+                                 limitby=default_limitby)
     return t.col_values_cloud(col)
 
 @auth.requires_login()
@@ -470,9 +471,8 @@ def ajax_actions():
     q = apply_db_filters(q, 'v_svcactions')
     for f in t.cols:
         q = _where(q, 'v_svcactions', t.filter_parse(f), f)
-    n = db(q).count()
+    n = len(db(q).select(db.v_svcactions.id,limitby=default_limitby))
     t.setup_pager(n)
-    #raise Exception(db(q)._select(limitby=(t.pager_start,t.pager_end), orderby=o))
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
     return SPAN(
               DIV(

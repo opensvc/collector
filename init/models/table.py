@@ -122,6 +122,10 @@ class HtmlTable(object):
 
     def setup_pager(self, n=0):
         self.totalrecs = n
+        if n == default_max_lines:
+            self.overlimit = "+"
+        else:
+            self.overlimit = ""
         if self.pageable:
             if self.id_perpage in request.vars:
                 q = db.auth_user.id==auth.user.id
@@ -378,9 +382,13 @@ class HtmlTable(object):
                      ),
                      _class='floatw',
                    )
-        totalpages = self.totalrecs / self.perpage
-        if self.totalrecs % self.perpage > 0:
-            totalpages = totalpages + 1
+        if self.totalrecs == default_max_lines:
+            # unknown total pages. arbitrary high value.
+            totalpages = 999999
+        else:
+            totalpages = self.totalrecs / self.perpage
+            if self.totalrecs % self.perpage > 0:
+                totalpages = totalpages + 1
 
         # out of range conditions
         page = self.page
@@ -390,7 +398,7 @@ class HtmlTable(object):
             page = 1
         start = (page-1) * self.perpage
         end = start + self.perpage
-        if end > self.totalrecs:
+        if end > self.totalrecs and self.totalrecs != default_max_lines:
             end = self.totalrecs
 
         pager = []
@@ -401,7 +409,7 @@ class HtmlTable(object):
                            _onclick=set_page_js(page-1),
                          ))
         pager.append(A(
-                      '%d-%d/%d '%(start+1, end, self.totalrecs),
+                      '%d-%d/%d%s '%(start+1, end, self.totalrecs, self.overlimit),
                        _class="current_page",
                        _onclick="""click_toggle_vis(event, '%(div)s','block');"""%dict(
                           div='perpage',

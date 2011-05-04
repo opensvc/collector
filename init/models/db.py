@@ -81,6 +81,9 @@ mail.settings.server='localhost:25'
 mail.settings.sender='admin@opensvc.com'
 auth.settings.mailer=mail
 
+default_max_lines = 1000
+default_limitby = (0, default_max_lines)
+
 #########################################################################
 ## Define your tables below, for example
 ##
