@@ -715,6 +715,8 @@ def get_filters(row):
     for fset in fsets:
         qr = db.v_gen_filtersets.fset_id == fset.fset_id
         filters = db(qr).select(db.v_gen_filtersets.ALL, orderby=db.v_gen_filtersets.f_order|db.v_gen_filtersets.id)
+        if len(filters) == 0:
+            continue
         qr = db.nodes.nodename == row.chk_nodename
         qr &= db.nodes.nodename == db.svcmon.mon_nodname
         qr &= db.svcmon.mon_svcname == db.services.svc_name
