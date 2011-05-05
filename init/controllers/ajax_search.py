@@ -108,7 +108,7 @@ def format_svc(pattern):
                   A(
                     T('availability'),
                     _href=URL(r=request, c='svcmon_log', f='svcmon_log',
-                              vars={'svcmon_log_f_mon_svcname': row.mon_svcname,
+                              vars={'svcmon_log_f_svc_name': row.mon_svcname,
                                     'clear_filters': 'true'})
                   ),
                   A(
