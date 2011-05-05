@@ -264,6 +264,7 @@ def node_checks(checks, title):
 
 @service.json
 def checks():
+    thres = now - datetime.timedelta(days=2)
     title = 'Node check alerts'
     if request.args[2] == 'false':
         return ['', '', '', '', str(T(title))]
@@ -271,6 +272,7 @@ def checks():
     q |= db.checks_live.chk_value > db.checks_live.chk_high
     query = _where(None, 'checks_live', domain_perms(), 'chk_nodename')
     query &= q
+    query &= db.checks_live.chk_updated > thres
     query &= db.checks_live.chk_nodename==db.v_nodes.nodename
     query = apply_db_filters(query, 'v_nodes')
     checks = db(query).select()

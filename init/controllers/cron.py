@@ -108,6 +108,11 @@ def cron_unfinished_actions():
               user='collector')
     return "%d actions marked timed out"%len(rows)
 
+def cron_scrub_checks():
+    thres = now - datetime.timedelta(days=2)
+    q = db.checks_live.chk_updated < thres
+    return db(q).delete()
+
 #
 # Alerts and purges
 #
