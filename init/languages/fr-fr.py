@@ -957,6 +957,7 @@
 'symmetrix': 'symmetrix',
 'table': 'tableau',
 'team responsible': 'équipe responsable',
+'template recorded': 'template recorded',
 'topology': 'topologie',
 'trash the current project': 'effacer le projet courrant',
 'type': 'type',

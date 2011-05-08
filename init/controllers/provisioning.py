@@ -167,7 +167,7 @@ def ajax_prov_inputs():
     tpl_id = request.args[0]
     q = db.prov_templates.id == tpl_id
     tpl = db(q).select().first()
-    keys = set(re.findall("%\(\w+\)s", tpl.tpl_command))
+    keys = set(re.findall("%\(\w+\)s", tpl.tpl_command))-set(['%(node)s'])
     keys = map(lambda x: x.replace('%(','').replace(')s',''), keys)
     keys = ['node'] + sorted(list(keys))
     ids = ','.join(map(lambda x: "'prov_"+x+"'", keys))
