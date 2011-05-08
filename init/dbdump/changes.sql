@@ -1046,3 +1046,26 @@ alter table checks_live add column chk_high integer;
 alter table checks_live add column chk_threshold_provider varchar(60);
 
 drop view v_checks;
+
+# 2011-05-07
+
+CREATE TABLE `prov_templates` (
+  `id` integer  NOT NULL AUTO_INCREMENT,
+  `tpl_name` varchar(100) NOT NULL,
+  `tpl_command` text NOT NULL,
+  `tpl_comment` text NOT NULL,
+  `tpl_author` varchar(100) NOT NULL,
+  `tpl_created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx1` (`tpl_name`)
+);
+
+CREATE TABLE `prov_template_team_responsible` (
+  `id` integer  NOT NULL AUTO_INCREMENT,
+  `tpl_id` integer NOT NULL,
+  `group_id` integer NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx1` (`tpl_id`),
+  KEY `idx2` (`group_id`)
+);
+

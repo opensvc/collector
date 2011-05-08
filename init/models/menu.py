@@ -107,6 +107,8 @@ response.menu = [
               URL(request.application,'drplan','drplan')],
              [SPAN(T('Billing'), _class='bill16'), False,
               URL(request.application,'billing','billing')],
+             [SPAN(T('Provisioning'), _class='prov'), False,
+              URL(request.application,'provisioning','prov_admin')],
          ]
     ],
 ]

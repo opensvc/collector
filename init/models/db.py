@@ -1071,7 +1071,7 @@ db.define_table('wiki_pages',
 
 db.define_table('action_queue',
     Field('status', 'string'),
-    Field('command', 'string'),
+    Field('command', 'text'),
     Field('date_queued', 'timestamp'),
     Field('date_dequeued', 'timestamp'),
     migrate=False)
@@ -1119,8 +1119,8 @@ db.define_table('comp_moduleset_team_responsible',
     migrate=False)
 
 db.define_table('gen_filterset_team_responsible',
-    Field('fset_id','string'),
-    Field('group_id','string'),
+    Field('fset_id','integer'),
+    Field('group_id','integer'),
     migrate=False)
 
 db.define_table('gen_filterset_check_threshold',
@@ -1129,5 +1129,18 @@ db.define_table('gen_filterset_check_threshold',
     Field('chk_instance','string'),
     Field('chk_low','integer'),
     Field('chk_high','integer'),
+    migrate=False)
+
+db.define_table('prov_templates',
+    Field('tpl_name','string'),
+    Field('tpl_command','text'),
+    Field('tpl_comment','text'),
+    Field('tpl_author','string'),
+    Field('tpl_created','datetime'),
+    migrate=False)
+
+db.define_table('prov_template_team_responsible',
+    Field('tpl_id','integer'),
+    Field('group_id','integer'),
     migrate=False)
 

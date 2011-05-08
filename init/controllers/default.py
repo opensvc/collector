@@ -851,6 +851,7 @@ class table_svcmon(HtmlTable):
         self.user_name = user_name()
         self.additional_tools.append('tool_topology')
         self.additional_tools.append('tool_action')
+        self.additional_tools.append('tool_provisioning')
 
     def checkbox_disabled(self, o):
         responsibles = self.colprops['responsibles'].get(o)
@@ -916,6 +917,26 @@ class table_svcmon(HtmlTable):
               _class='floatw',
             )
         return d
+
+    def tool_provisioning(self):
+        d = DIV(
+              A(
+                T("Provisioning"),
+                _class='prov',
+                _onclick="""$('#prov_container').toggle();ajax('%(url)s', [], '%(id)s')"""%dict(
+                  url=URL(r=request, c='provisioning', f='prov_list'),
+                  id="prov_container",
+                ),
+              ),
+              DIV(
+                _style='display:none',
+                _class='white_float',
+                _id="prov_container",
+              ),
+              _class='floatw',
+            )
+        return d
+
 
     def tool_action(self):
         cmd = [

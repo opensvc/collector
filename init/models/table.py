@@ -1096,6 +1096,7 @@ action_img_h = {
     'startip': 'action_start_16.png',
     'mount': 'action_start_16.png',
     'restart': 'action_restart_16.png',
+    'provision': 'prov.png',
     'switch': 'action_restart_16.png',
     'freeze': 'frozen16.png',
     'thaw': 'frozen16.png',
