@@ -739,15 +739,32 @@ class HtmlTable(object):
             inputs.append(TD(''))
         for c in self.cols:
             if len(self.filter_parse(c)) > 0:
-                clear = IMG(
-                          _src=URL(r=request,c='static',f='clear16.png'),
-                          _onclick="getElementById('%s').value='%s';"%(
-                             self.filter_key(c),
-                             self.column_filter_reset)+self.ajax_submit(),
-                          _style="margin-right:4px",
+                clear = SPAN(
+                          IMG(
+                            _src=URL(r=request,c='static',f='invert16.png'),
+                            _title=T("Invert filter"),
+                            _class='clickable',
+                            _onclick="""invert_filter("%(did)s");"""%dict(
+                                    did=self.filter_key(c))+self.ajax_submit(),
+                          ),
+                          IMG(
+                            _src=URL(r=request,c='static',f='clear16.png'),
+                            _onclick="getElementById('%s').value='%s';"%(
+                               self.filter_key(c),
+                               self.column_filter_reset)+self.ajax_submit(),
+                            _style="margin-right:4px",
+                          ),
                         )
             else:
                 clear = SPAN()
+            filter_text = self.filter_parse(c)
+            if len(filter_text) > 20:
+                filter_span = SPAN(
+                                filter_text[0:17] + "...",
+                                _title=filter_text,
+                              )
+            else:
+                filter_span = SPAN(filter_text)
             inputs.append(TD(
                             SPAN(
                               IMG(
@@ -762,7 +779,7 @@ class HtmlTable(object):
                                 _class='clickable',
                               ),
                               clear,
-                              self.filter_parse(c),
+                              filter_span,
                               _style="vertical-align:top",
                             ),
                             DIV(
@@ -776,6 +793,14 @@ class HtmlTable(object):
                                     inputs=','.join(map(repr, self.ajax_inputs())),
                                     cloud=self.filter_cloud_key(c)
                                   ),
+                              ),
+                              IMG(
+                                _src=URL(r=request,c='static',f='values_to_filter.png'),
+                                _title=T("Use column values as filter"),
+                                _class='clickable',
+                                _onclick="""values_to_filter("%(iid)s", "%(did)s");"""%dict(
+                                        iid=self.filter_key(c),
+                                        did=self.filter_cloud_key(c))+self.ajax_submit(),
                               ),
                               BR(),
                               SPAN(

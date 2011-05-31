@@ -1,4 +1,44 @@
 <script language="JavaScript" type="text/javascript">
+function values_to_filter(iid, did){
+	l = []
+	$("#"+did).contents().find("a").each(function(){
+		l.push(this.text)
+	})
+        v = l.join("|")
+	var reg = new RegExp("[ ]+", "g");
+        v = v.replace(reg, "")
+	$("#"+iid).val(v)
+}
+function invert_filter(did){
+	var v = $('#'+did).val()
+	var reg = new RegExp("[|]+", "g");
+	var l = v.split(reg);
+        if (l.length > 1) {
+		for (var i=0; i<l.length; i++) {
+			if (l[i][0] == '!') {
+				l[i] = l[i].substr(1)
+			} else {
+				l[i] = '!'+l[i]
+			}
+		}
+		v = l.join("&")
+		$('#'+did).val(v)
+		return
+	} else {
+		var reg = new RegExp("[&]+", "g");
+		var l = v.split(reg);
+		for (var i=0; i<l.length; i++) {
+			if (l[i][0] == '!') {
+				l[i] = l[i].substr(1)
+			} else {
+				l[i] = '!'+l[i]
+			}
+		}
+		v = l.join("|")
+		$('#'+did).val(v)
+		return
+	}
+}
 function toggle_vis(name){
 	_toggle_vis(name,'table-row')
 }
