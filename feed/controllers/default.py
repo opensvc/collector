@@ -105,7 +105,26 @@ def end_action(vars, vals, auth):
     if h['action'].strip("'") in ('start', 'startcontainer') and \
        h['status'].strip("'") == 'ok':
         update_virtual_asset(h['hostname'].strip("'"), h['svcname'].strip("'"))
+    if h['status'].strip("'") == 'err':
+        update_action_errors(h['svcname'], h['hostname'])
     return 0
+
+def update_action_errors(svcname, nodename):
+    sql = """insert into b_action_errors set svcname=%(svcname)s, nodename=%(nodename)s, err=(
+               select count(a.id) from SVCactions a
+                 where a.svcname = %(svcname)s and
+                       a.hostname = %(nodename)s and
+                       a.status = 'err' and
+                       ((a.ack <> 1) or isnull(a.ack)))
+             on duplicate key update err=(
+               select count(a.id) from SVCactions a
+                 where a.svcname = %(svcname)s and
+                       a.hostname = %(nodename)s and
+                       a.status = 'err' and
+                       ((a.ack <> 1) or isnull(a.ack)))
+          """%dict(svcname=svcname, nodename=nodename)
+    #raise Exception(sql)
+    db.executesql(sql)
 
 def update_virtual_asset(nodename, svcname):
     q = db.services.svc_name == svcname

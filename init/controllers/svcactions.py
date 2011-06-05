@@ -3,6 +3,25 @@ def pid_to_filter(pid):
         return ''
     return pid.replace(',', '|')
 
+def update_action_errors(actionid):
+    sql = """insert into b_action_errors set
+               svcname=(select svcname from SVCactions where id=%(id)d),
+               nodename=(select hostname from SVCactions where id=%(id)d),
+               err=(
+                 select count(a.id) from SVCactions a
+                   where a.svcname = (select svcname from SVCactions where id=%(id)d) and
+                         a.hostname = (select hostname from SVCactions where id=%(id)d) and
+                         a.status = 'err' and
+                         ((a.ack <> 1) or isnull(a.ack)))
+             on duplicate key update err=(
+               select count(a.id) from SVCactions a
+                 where a.svcname = (select svcname from SVCactions where id=%(id)d) and
+                       a.hostname = (select hostname from SVCactions where id=%(id)d) and
+                       a.status = 'err' and
+                       ((a.ack <> 1) or isnull(a.ack)))
+          """%dict(id=actionid)
+    db.executesql(sql)
+
 @auth.requires_login()
 def ajax_action_status():
     if len(request.args) == 0:
@@ -448,11 +467,12 @@ def ack(ids=[]):
 
 @auth.requires_login()
 def _svcaction_ack_one(ackcomment, action_id):
-        query = (db.SVCactions.id == action_id)&(db.SVCactions.status != "ok")
-        db(query).update(ack=1,
-                         acked_comment=ackcomment,
-                         acked_by=user_name(),
-                         acked_date=datetime.datetime.now())
+    query = (db.SVCactions.id == action_id)&(db.SVCactions.status != "ok")
+    db(query).update(ack=1,
+                     acked_comment=ackcomment,
+                     acked_by=user_name(),
+                     acked_date=datetime.datetime.now())
+    update_action_errors(action_id)
 
 @auth.requires_login()
 def ajax_actions():
@@ -466,7 +486,7 @@ def ajax_actions():
         except ToolError, e:
             t.flash = str(e)
 
-    o = ~db.v_svcactions.begin|~db.v_svcactions.id
+    o = ~db.v_svcactions.id
     q = _where(None, 'v_svcactions', domain_perms(), 'hostname')
     q = apply_db_filters(q, 'v_svcactions')
     for f in t.cols:
