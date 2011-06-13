@@ -1148,3 +1148,20 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`opensvc`@`unxdevweb` SQL SECURITY DEFINER VI
 
 truncate b_action_errors; insert into b_action_errors select NULL, m.mon_svcname, m.mon_nodname, count(a.id) from svcmon m left join SVCactions a on m.mon_svcname=a.svcname and m.mon_nodname=a.hostname where a.status='err' and (a.ack=0 or isnull(a.ack)) group by m.mon_svcname, m.mon_nodname;
 
+#
+# 2011-06-06
+#
+create tables services2 like services;
+
+create table services2 like services;
+
+alter table services2 drop index svc_hostid_3;
+
+alter table services2 add unique index i_svc_name (svc_name);
+
+insert into services2 select * from services group by svc_name;
+
+alter table services rename services_old;
+
+alter table services2 rename services;
+

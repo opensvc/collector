@@ -623,7 +623,7 @@ def ajax_service():
 
     def js(tab, rowid):
         buff = ""
-        for i in range(1, 8):
+        for i in range(1, 9):
             buff += """$('#%(tab)s_%(id)s').hide();
                        $('#li%(tab)s_%(id)s').removeClass('tab_active');
                     """%dict(tab='tab'+str(i), id=rowid)
@@ -631,6 +631,55 @@ def ajax_service():
                    $('#li%(tab)s_%(id)s').addClass('tab_active');
                 """%dict(tab=tab, id=rowid)
         return buff
+
+    def grpprf(rowid):
+        now = datetime.datetime.now()
+        b = now - datetime.timedelta(days=0,
+                                     hours=now.hour,
+                                     minutes=now.minute,
+                                     microseconds=now.microsecond)
+        e = b + datetime.timedelta(days=1)
+
+        timepicker = """Calendar.setup({inputField:this.id, ifFormat:"%Y-%m-%d %H:%M:%S", showsTime: true,timeFormat: "24" });"""
+        d = DIV(
+              SPAN(
+                IMG(
+                  _title=T('Start'),
+                  _src=URL(r=request, c='static', f='begin16.png'),
+                  _style="vertical-align:middle",
+                ),
+                INPUT(
+                  _value=b.strftime("%Y-%m-%d %H:%M"),
+                  _id='grpprf_begin_'+str(rowid),
+                  _class='datetime',
+                  _onfocus=timepicker,
+                ),
+                INPUT(
+                  _value=e.strftime("%Y-%m-%d %H:%M"),
+                  _id='grpprf_end_'+str(rowid),
+                  _class='datetime',
+                  _onfocus=timepicker,
+                ),
+                IMG(
+                  _title=T('End'),
+                  _src=URL(r=request, c='static', f='end16.png'),
+                  _style="vertical-align:middle",
+                ),
+                IMG(
+                  _title=T('Refresh'),
+                  _src=URL(r=request, c='static', f='refresh16.png'),
+                  _style="vertical-align:middle",
+                  _onclick="sync_ajax('%(url)s', ['grpprf_begin_%(id)s', 'grpprf_end_%(id)s'], 'grpprf_%(id)s', function(){eval_js_in_ajax_response('plot')});"%dict(
+                    id=str(rowid),
+                    url=URL(r=request, c='stats', f='ajax_perfcmp_plot?node=%s'%','.join(s['svc_nodes'].split()+s['svc_drpnodes'].split())),
+                  ),
+                ),
+                SPAN(
+                  _id='grpprf_'+str(rowid),
+                ),
+              ),
+            )
+        return d
 
     t = TABLE(
       TR(
@@ -657,8 +706,9 @@ def ajax_service():
             LI(P(T("resources"), _class='svc', _onclick=js('tab3', rowid)), _id="litab3_"+str(rowid)),
             LI(P(T("env"), _class='log16', _onclick=js('tab4', rowid)), _id="litab4_"+str(rowid)),
             LI(P(T("topology"), _class='dia16', _onclick=js('tab5', rowid)), _id="litab5_"+str(rowid)),
-            LI(P(T("wiki"), _class='edit', _onclick=js('tab6', rowid)), _id="litab6_"+str(rowid)),
-            LI(P(T("avail"), _class='svc', _onclick=js('tab7', rowid)), _id="litab7_"+str(rowid)),
+            LI(P(T("stats"), _class='spark16', _onclick=js('tab6', rowid)), _id="litab6_"+str(rowid)),
+            LI(P(T("wiki"), _class='edit', _onclick=js('tab7', rowid)), _id="litab7_"+str(rowid)),
+            LI(P(T("avail"), _class='svc', _onclick=js('tab8', rowid)), _id="litab8_"+str(rowid)),
           ),
           _class="tab",
         ),
@@ -691,11 +741,16 @@ def ajax_service():
             _class='cloud',
           ),
           DIV(
+            grpprf(rowid),
             _id='tab6_'+str(rowid),
             _class='cloud',
           ),
           DIV(
             _id='tab7_'+str(rowid),
+            _class='cloud',
+          ),
+          DIV(
+            _id='tab8_'+str(rowid),
             _class='cloud',
           ),
           SCRIPT(
@@ -711,15 +766,19 @@ def ajax_service():
                      }
                 })
             """%dict(
-               id='tab7_'+str(rowid),
+               id='tab8_'+str(rowid),
                rowid='avail_'+rowid,
                url=URL(r=request, c='svcmon_log', f='ajax_svcmon_log_1',
                        vars={'svcname':request.vars.node, 'rowid':'avail_'+rowid})
             ),
             "ajax('%(url)s', [], '%(id)s')"%dict(
-               id='tab6_'+str(rowid),
+               id='tab7_'+str(rowid),
                url=URL(r=request, c='wiki', f='ajax_wiki',
-                       args=['tab6_'+str(rowid), request.vars.node])
+                       args=['tab7_'+str(rowid), request.vars.node])
+            ),
+            "sync_ajax('%(url)s', ['grpprf_begin_%(id)s', 'grpprf_end_%(id)s'], 'grpprf_%(id)s', function(){eval_js_in_ajax_response('plot')});"%dict(
+               id=str(rowid),
+               url=URL(r=request, c='stats', f='ajax_perfcmp_plot?node=%s'%','.join(s['svc_nodes'].split()+s['svc_drpnodes'].split())),
             ),
             _name='%s_to_eval'%rowid,
           ),

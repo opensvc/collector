@@ -16,8 +16,11 @@ def stats():
 @auth.requires_login()
 def ajax_perfcmp_plot():
     nodes = request.vars.node
-    b = request.vars.begin
-    e = request.vars.end
+    b = None
+    e = None
+    for v in request.vars:
+       if 'begin' in v: b = request.vars[v]
+       if 'end' in v: e = request.vars[v]
 
     if len(request.vars.node.split(',')) == 0:
          return DIV(T("No nodes selected"))
@@ -443,8 +446,8 @@ def json_stat_day():
 @service.json
 def json_avg_cpu_for_nodes():
     nodes = request.vars.node
-    begin = request.vars.begin
-    end = request.vars.end
+    begin = request.vars.b
+    end = request.vars.e
     lower = request.vars.lower
     higher = request.vars.higher
 
@@ -480,8 +483,8 @@ def json_avg_cpu_for_nodes():
 @service.json
 def json_avg_swp_for_nodes():
     nodes = request.vars.node
-    begin = request.vars.begin
-    end = request.vars.end
+    begin = request.vars.b
+    end = request.vars.e
     lower = request.vars.lower
     higher = request.vars.higher
 
@@ -504,8 +507,8 @@ def json_avg_swp_for_nodes():
 @service.json
 def json_avg_proc_for_nodes():
     nodes = request.vars.node
-    begin = request.vars.begin
-    end = request.vars.end
+    begin = request.vars.b
+    end = request.vars.e
     lower = request.vars.lower
     higher = request.vars.higher
 
@@ -533,8 +536,8 @@ def json_avg_proc_for_nodes():
 
 @service.json
 def json_avg_mem_for_nodes():
-    begin = request.vars.begin
-    end = request.vars.end
+    begin = request.vars.b
+    end = request.vars.e
     nodes = request.vars.node
     lower = request.vars.lower
     higher = request.vars.higher
@@ -558,8 +561,8 @@ def json_avg_mem_for_nodes():
 @service.json
 def json_avg_block_for_nodes():
     nodes = request.vars.node
-    begin = request.vars.begin
-    end = request.vars.end
+    begin = request.vars.b
+    end = request.vars.e
     lower = request.vars.lower
     higher = request.vars.higher
 
@@ -586,8 +589,8 @@ def json_avg_block_for_nodes():
 @service.json
 def json_disk_for_svc():
     nodes = request.vars.node
-    begin = request.vars.begin
-    end = request.vars.end
+    begin = request.vars.b
+    end = request.vars.e
     lower = request.vars.lower
     higher = request.vars.higher
 

@@ -73,19 +73,27 @@ def perf_stats(node, rowid):
     timepicker = """Calendar.setup({inputField:this.id, ifFormat:"%Y-%m-%d %H:%M:%S", showsTime: true,timeFormat: "24" });"""
     t = DIV(
           SPAN(
-            T('Start'),
+            IMG(
+              _title=T('Start'),
+              _src=URL(r=request, c='static', f='begin16.png'),
+              _style="vertical-align:middle",
+            ),
             INPUT(
               _value=s.strftime("%Y-%m-%d %H:%M"),
               _id='begin_'+rowid,
               _class='datetime',
               _onfocus=timepicker,
             ),
-            T('End'),
             INPUT(
               _value=e.strftime("%Y-%m-%d %H:%M"),
               _id='end_'+rowid,
               _class='datetime',
               _onfocus=timepicker,
+            ),
+            IMG(
+              _title=T('End'),
+              _src=URL(r=request, c='static', f='end16.png'),
+              _style="vertical-align:middle",
             ),
             SPAN(perf_group('Plot resource usage trends', 'trend')),
             SPAN(perf_group('Plot cpu usage', 'cpu')),
