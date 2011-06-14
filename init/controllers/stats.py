@@ -93,19 +93,19 @@ def ajax_perfcmp_plot():
             _class='float',
           ),
           DIV(
-            _id=add_rowid('avg_proc_for_nodes_plot_runq_sz'),
+            _id=add_rowid('runq_sz_avg_proc_for_nodes_plot'),
             _class='float',
           ),
           DIV(
-            _id=add_rowid('avg_proc_for_nodes_plot_plist_sz'),
+            _id=add_rowid('plist_sz_avg_proc_for_nodes_plot'),
             _class='float',
           ),
           DIV(
-            _id=add_rowid('avg_block_for_nodes_plot_tps'),
+            _id=add_rowid('tps_avg_block_for_nodes_plot'),
             _class='float',
           ),
           DIV(
-            _id=add_rowid('avg_block_for_nodes_plot_bps'),
+            _id=add_rowid('bps_avg_block_for_nodes_plot'),
             _class='float',
           ),
           DIV(

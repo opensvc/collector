@@ -584,8 +584,8 @@ function stats_avg_mem_for_nodes(url, id) {
 function stats_avg_block_for_nodes(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
-        plot_height(id+'_tps', data[0])
-	$.jqplot(id+'_tps', [data[1][0], data[1][1]], {
+        plot_height('tps_'+id, data[0])
+	$.jqplot('tps_'+id, [data[1][0], data[1][1]], {
 	    stackSeries: true,
 	    grid: {
                 borderWidth: 0.5,
@@ -625,8 +625,8 @@ function stats_avg_block_for_nodes(url, id) {
 		}, 
 	    }
 	});
-        plot_height(id+'_bps', data[0])
-	$.jqplot(id+'_bps', [data[1][2], data[1][3]], {
+        plot_height('bps_'+id, data[0])
+	$.jqplot('bps'+id, [data[1][2], data[1][3]], {
 	    stackSeries: true,
 	    grid: {
                 borderWidth: 0.5,
@@ -716,8 +716,8 @@ function stats_disk_for_svc(url, id) {
 function stats_avg_proc_for_nodes(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
-        plot_height(id+'_runq_sz', data[0])
-	$.jqplot(id+'_runq_sz', [data[1][0]], {
+        plot_height('runq_sz_'+id, data[0])
+	$.jqplot(id+'runq_sz_'+id, [data[1][0]], {
 	    stackSeries: true,
 	    grid: {
                 borderWidth: 0.5,
@@ -756,8 +756,8 @@ function stats_avg_proc_for_nodes(url, id) {
 		}, 
 	    }
 	});
-        plot_height(id+'_plist_sz', data[0])
-	$.jqplot(id+'_plist_sz', [data[1][1]], {
+        plot_height('plist_sz_'+id, data[0])
+	$.jqplot('plist_sz_'+id, [data[1][1]], {
 	    stackSeries: true,
 	    grid: {
                 borderWidth: 0.5,
