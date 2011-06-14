@@ -305,7 +305,10 @@ function comp_status_plot(url, id) {
 }
 function avail_plot(id, data) {
     $.jqplot.config.enablePlugins = true;
+        document.getElementById(id).style['height'] = '50px'
 	$.jqplot(id, data, {
+            width: 300,
+            height: 50,
             cursor: {
                 zoom:true,
                 showTooltip:true,

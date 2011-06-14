@@ -754,18 +754,7 @@ def ajax_service():
             _class='cloud',
           ),
           SCRIPT(
-            """
-                query="";
-                $.ajax({
-                     type: "POST",
-                     url: "%(url)s",
-                     data: query,
-                     success: function(msg){
-                         document.getElementById("%(id)s").innerHTML=msg
-                         eval_js_in_ajax_response("%(rowid)s")
-                     }
-                })
-            """%dict(
+            """$("#%(id)s").show(); sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(rowid)s');$("#%(id)s").hide()});"""%dict(
                id='tab8_'+str(rowid),
                rowid='avail_'+rowid,
                url=URL(r=request, c='svcmon_log', f='ajax_svcmon_log_1',
