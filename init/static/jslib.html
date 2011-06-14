@@ -723,7 +723,7 @@ function stats_avg_proc_for_nodes(url, id) {
     $.getJSON(url, function(data) {
         if (data[0].length == 0) { return }
         plot_height('runq_sz_'+id, data[0])
-	$.jqplot(id+'runq_sz_'+id, [data[1][0]], {
+	$.jqplot('runq_sz_'+id, [data[1][0]], {
 	    stackSeries: true,
 	    grid: {
                 borderWidth: 0.5,
