@@ -1,5 +1,10 @@
 def svc_status(svc, cellclass="cell2"):
     cl = {}
+    if svc['mon_updated'] < now - datetime.timedelta(minutes=15):
+        outdated = True
+    else:
+        outdated = False
+
     for k in ['mon_overallstatus',
               'mon_containerstatus',
               'mon_ipstatus',
@@ -8,7 +13,7 @@ def svc_status(svc, cellclass="cell2"):
               'mon_syncstatus',
               'mon_appstatus',
               'mon_hbstatus']:
-        if svc[k] is None:
+        if svc[k] is None or outdated:
             cl[k] = 'status_undef'
         else:
             cl[k] = 'status_'+svc[k].replace(" ", "_")
