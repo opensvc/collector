@@ -1222,7 +1222,7 @@ class col_node(HtmlTableColumn):
     def html(self, o):
         id = self.t.extra_line_key(o)
         s = self.get(o)
-        if len(s) == 0:
+        if s is None or len(s) == 0:
             return ''
         if 'svc_autostart' in self.t.cols and \
            self.t.colprops['svc_autostart'].get(o) == s:

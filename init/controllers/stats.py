@@ -18,45 +18,61 @@ def ajax_perfcmp_plot():
     nodes = request.vars.node
     b = None
     e = None
+    rowid = ''
+
+    def add_rowid(s):
+        if rowid is None: return s
+        return '_'.join((s, rowid))
+
     for v in request.vars:
-       if 'begin' in v: b = request.vars[v]
-       if 'end' in v: e = request.vars[v]
+       if 'begin' in v:
+           b = request.vars[v]
+           l = v.split('_')
+           if l > 1: rowid = l[-1]
+       if 'end' in v:
+           e = request.vars[v]
 
     if len(request.vars.node.split(',')) == 0:
          return DIV(T("No nodes selected"))
 
     plots = []
-    plots.append("stats_avg_cpu_for_nodes('%(url)s', 'avg_cpu_for_nodes_plot');"%dict(
+    plots.append("stats_avg_cpu_for_nodes('%(url)s', '%(did)s');"%dict(
+      did=add_rowid('avg_cpu_for_nodes_plot'),
       url=URL(r=request,
               f='call/json/json_avg_cpu_for_nodes',
               vars={'node':nodes, 'b':b, 'e':e}
           )
     ))
-    plots.append("stats_avg_mem_for_nodes('%(url)s', 'avg_mem_for_nodes_plot');"%dict(
+    plots.append("stats_avg_mem_for_nodes('%(url)s', '%(did)s');"%dict(
+      did=add_rowid('avg_mem_for_nodes_plot'),
       url=URL(r=request,
               f='call/json/json_avg_mem_for_nodes',
               vars={'node':nodes, 'b':b, 'e':e}
           )
     ))
-    plots.append("stats_avg_swp_for_nodes('%(url)s', 'avg_swp_for_nodes_plot');"%dict(
+    plots.append("stats_avg_swp_for_nodes('%(url)s', '%(did)s');"%dict(
+      did=add_rowid('avg_swp_for_nodes_plot'),
       url=URL(r=request,
               f='call/json/json_avg_swp_for_nodes',
               vars={'node':nodes, 'b':b, 'e':e}
           )
     ))
-    plots.append("stats_avg_proc_for_nodes('%(url)s', 'avg_proc_for_nodes_plot');"%dict(
+    plots.append("stats_avg_proc_for_nodes('%(url)s', '%(did)s');"%dict(
+      did=add_rowid('avg_proc_for_nodes_plot'),
       url=URL(r=request,
               f='call/json/json_avg_proc_for_nodes',
               vars={'node':nodes, 'b':b, 'e':e}
           )
     ))
-    plots.append("stats_avg_block_for_nodes('%(url)s', 'avg_block_for_nodes_plot');"%dict(
+    plots.append("stats_avg_block_for_nodes('%(url)s', '%(did)s');"%dict(
+      did=add_rowid('avg_block_for_nodes_plot'),
       url=URL(r=request,
               f='call/json/json_avg_block_for_nodes',
               vars={'node':nodes, 'b':b, 'e':e}
           )
     ))
-    plots.append("stats_disk_for_svc('%(url)s', 'disk_for_svc_plot');"%dict(
+    plots.append("stats_disk_for_svc('%(url)s', '%(did)s');"%dict(
+      did=add_rowid('disk_for_svc_plot'),
       url=URL(r=request,
               f='call/json/json_disk_for_svc',
               vars={'node':nodes, 'b':b, 'e':e}
@@ -65,35 +81,35 @@ def ajax_perfcmp_plot():
 
     d = DIV(
           DIV(
-            _id='avg_cpu_for_nodes_plot',
+            _id=add_rowid('avg_cpu_for_nodes_plot'),
             _class='float',
           ),
           DIV(
-            _id='avg_mem_for_nodes_plot',
+            _id=add_rowid('avg_mem_for_nodes_plot'),
             _class='float',
           ),
           DIV(
-            _id='avg_swp_for_nodes_plot',
+            _id=add_rowid('avg_swp_for_nodes_plot'),
             _class='float',
           ),
           DIV(
-            _id='avg_proc_for_nodes_plot_runq_sz',
+            _id=add_rowid('avg_proc_for_nodes_plot_runq_sz'),
             _class='float',
           ),
           DIV(
-            _id='avg_proc_for_nodes_plot_plist_sz',
+            _id=add_rowid('avg_proc_for_nodes_plot_plist_sz'),
             _class='float',
           ),
           DIV(
-            _id='avg_block_for_nodes_plot_tps',
+            _id=add_rowid('avg_block_for_nodes_plot_tps'),
             _class='float',
           ),
           DIV(
-            _id='avg_block_for_nodes_plot_bps',
+            _id=add_rowid('avg_block_for_nodes_plot_bps'),
             _class='float',
           ),
           DIV(
-            _id='disk_for_svc_plot',
+            _id=add_rowid('disk_for_svc_plot'),
             _class='float',
           ),
           DIV(
