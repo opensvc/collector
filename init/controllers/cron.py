@@ -239,8 +239,6 @@ def alerts_services_not_updated(user):
     for row in rows:
         msg = DIV(
                 "Last status update occured on %s."%str(row.updated),
-                BR(),
-                "This service will be purged on %s"%str(row.updated + datetime.timedelta(days=3)),
               )
         body.append(alert_format_body(msg, svcname=row.svc_name, app=row.svc_app, svctype=row.svc_type))
 
@@ -256,19 +254,6 @@ def alerts_services_not_updated(user):
                          sent_to=h['mailto'])
 
     return dict(alerts=[r.svc_name for r in rows])
-
-def purge_services_not_updated():
-    import datetime
-    now = datetime.datetime.now()
-    three_days_ago = now - datetime.timedelta(days=3)
-    """ Remove the service after 3 days
-    """
-    rows = db(db.v_services.updated<three_days_ago).select()
-    for row in rows:
-        db(db.svcmon.mon_svcname==row.svc_name).delete()
-        db(db.services.svc_name==row.svc_name).delete()
-
-    return dict(deleted=rows)
 
 def alerts_svcmon_not_updated(user):
     """ Alert if svcmon is not updated for 2h
@@ -301,13 +286,7 @@ def alerts_svcmon_not_updated(user):
 
         alert.append(row.mon_svcname)
         h['mailto'] = user.email
-        h['body'] = alert_format_body(
-          "Service will be purged from database on %s"%str(row.mon_updated+datetime.timedelta(days=1)),
-          svcname=row.mon_svcname,
-          app=row.svc_app,
-          node=row.mon_nodname,
-          svctype=row.svc_type
-        )
+        h['body'] = ""
         send_alert(h)
         db.alerts.insert(subject=h['subject'],
                          body=['body'],
@@ -315,20 +294,6 @@ def alerts_svcmon_not_updated(user):
                          domain=domainname(row.mon_svcname),
                          sent_to=h['mailto'])
     return dict(cancelled=dup, alerts=alert)
-
-def purge_svcmon_not_updated():
-    """ Remove the service after 24h
-    """
-    import datetime
-    now = datetime.datetime.now()
-    one_day_ago = now - datetime.timedelta(days=1)
-
-    rows = db(db.v_svcmon.mon_updated<one_day_ago).select()
-    for row in rows:
-        db(db.svcmon.mon_svcname==row.mon_svcname).delete()
-        db(db.services.svc_name==row.mon_svcname).delete()
-
-    return dict(deleted=[r.mon_svcname for r in rows])
 
 def alerts_failed_actions_not_acked(user):
     """ Actions not ackowleged : Alert responsibles & Acknowledge
@@ -441,8 +406,6 @@ def cron_alerts_daily():
         rids |= set(h[user.email]['failed_actions_not_acked']['alert'])
 
     purge_failed_actions_not_acked(rids)
-    purge_services_not_updated()
-    purge_svcmon_not_updated()
 
     return dict(done=h)
 
