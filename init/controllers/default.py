@@ -900,6 +900,7 @@ class table_svcmon(HtmlTable):
         self.additional_tools.append('tool_topology')
         self.additional_tools.append('tool_action')
         self.additional_tools.append('tool_provisioning')
+        self.additional_tools.append('svc_del')
 
     def checkbox_disabled(self, o):
         responsibles = self.colprops['responsibles'].get(o)
@@ -954,6 +955,20 @@ class table_svcmon(HtmlTable):
                  err,
                  frozen,
                )
+
+    def svc_del(self):
+        d = DIV(
+              A(
+                T("Delete instance"),
+                _class='del16',
+                _onclick="""if (confirm("%(text)s")){%(s)s};"""%dict(
+                   s=self.ajax_submit(args=['svc_del']),
+                   text=T("Please confirm service instances deletion"),
+                ),
+              ),
+              _class='floatw',
+            )
+        return d
 
     def tool_topology(self):
         d = DIV(
@@ -1093,6 +1108,29 @@ class table_svcmon(HtmlTable):
         return d
 
 @auth.requires_login()
+def svc_del(ids):
+    groups = user_groups()
+
+    q = db.svcmon.id.belongs(ids)
+    q &= db.svcmon.mon_svcname == db.services.svc_name
+    q &= db.services.svc_app == db.apps.app
+    q &= db.apps.id == db.apps_responsibles.app_id
+    q &= db.apps_responsibles.group_id == db.auth_group.id
+    if 'Manager' not in groups:
+        # Manager can delete any svc
+        # A user can delete only services he is responsible of
+       q &= db.auth_group.id.belongs(groups)
+    rows = db(q).select()
+    l = ['@'.join((r.svcmon.mon_svcname, r.svcmon.mon_nodname)) for r in rows]
+    u = ', '.join(l)
+    l = [r.svcmon.id for r in rows]
+    q = db.svcmon.id.belongs(l)
+    db(q).delete()
+    _log('service.delete',
+         'deleted service instances %(u)s',
+         dict(u=u))
+
+@auth.requires_login()
 def service_action():
     action = request.vars.select_action
     request.vars.select_action = 'choose'
@@ -1166,7 +1204,14 @@ def ajax_svcmon_col_values():
 def ajax_svcmon():
     t = table_svcmon('svcmon', 'ajax_svcmon')
 
-    if len(request.args) == 2:
+    if len(request.args) == 1:
+        action = request.args[0]
+        try:
+            if action == 'svc_del':
+                svc_del(t.get_checked())
+        except ToolError, e:
+            t.flash = str(e)
+    elif len(request.args) == 2:
         action = request.args[0]
         saction = request.args[1]
         try:
