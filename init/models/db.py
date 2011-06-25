@@ -33,6 +33,10 @@ auth.settings.expiration=36000
 #
 # custom auth_user table. new field: email_notifications
 #
+db.define_table('im_types',
+    Field('im_type','string'),
+    migrate=False)
+
 table = db.define_table(auth.settings.table_user_name,
     Field('first_name', length=128, default='',
           label=auth.messages.label_first_name,
@@ -53,8 +57,14 @@ table = db.define_table(auth.settings.table_user_name,
           label=auth.messages.label_reset_password_key),
     Field('email_notifications', 'boolean', default=True,
           label=T('Email notifications')),
+    Field('im_notifications', 'boolean', default=True,
+          label=T('Instant messaging notifications')),
     Field('perpage', 'integer', default=20,
           label=T('Preferred lines per page')),
+    Field('im_type', 'integer',
+          label=T('Instant messaging protocol')),
+          requires=IS_IN_DB(db, db.im_types.id, "%(im_type)s", zero=T('choose one'))),
+    Field('im_username', 'string', label=T("Instant messaging user name")),
     migrate=False)
 
 table.email.requires = [IS_EMAIL(error_message=auth.messages.invalid_email),
@@ -1143,4 +1153,5 @@ db.define_table('prov_template_team_responsible',
     Field('tpl_id','integer'),
     Field('group_id','integer'),
     migrate=False)
+
 

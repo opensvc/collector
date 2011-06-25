@@ -1165,3 +1165,22 @@ alter table services rename services_old;
 
 alter table services2 rename services;
 
+#
+# 2011-06-23
+#
+CREATE TABLE `im_types` (
+  `id` integer  NOT NULL AUTO_INCREMENT,
+  `im_type` varchar(64)  NOT NULL,
+  PRIMARY KEY (`id`)
+);
+
+insert into im_types set im_type="gtalk";
+
+alter table auth_user add column im_notifications varchar(1) default 'T';
+
+alter table auth_user add column im_type integer;
+
+alter table auth_user add column im_username varchar(100);
+
+drop table user_im;
+

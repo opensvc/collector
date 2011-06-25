@@ -1379,4 +1379,3 @@ def sym_overview_item(symid, func, count, title):
         )
     return SPAN(h, d)
 
-

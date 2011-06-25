@@ -53,7 +53,11 @@ def cron_scrub_svcstatus():
     svcs = [r.svcname for r in db(q).select(db.v_outdated_services.svcname)]
     q = db.services.svc_name.belongs(svcs)
     if len(svcs) > 0:
+        q &= (db.services.svc_status != 'undef') | (db.services.svc_availstatus != 'undef')
+        svcs_new = [r.svc_name for r in db(q).select(db.services.svc_name)]
         db(q).update(svc_status="undef", svc_availstatus="undef")
+        for svcname in svcs_new:
+            im_log_svc(svcname, "[%s] not updating its status"%svcname)
     for svcname in svcs:
         svc_log_update(svcname, "undef")
 
@@ -134,6 +138,8 @@ def cron_unfinished_actions():
         _log('action.timeout', "action ids %(ids)s closed on timeout",
               dict(ids=', '.join([str(r.id) for r in rows])),
               user='collector')
+    for r in rows:
+        im_log_svc(r.svcname, "[%s] action %s longer than 2h"%(r.svcname, r.action))
     return "%d actions marked timed out"%len(rows)
 
 def cron_scrub_checks():

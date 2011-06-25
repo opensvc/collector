@@ -75,6 +75,11 @@ def begin_action(vars, vals, auth):
     sql="""insert delayed into SVCactions (%s) values (%s)""" % (','.join(vars), ','.join(vals))
     db.executesql(sql)
     db.commit()
+    h = {}
+    for a, b in zip(vars, vals):
+        h[a] = b
+    h['svcname'] = h['svcname'].strip('\\').strip("'")
+    im_log_svc(h['svcname'], "[%s] action:%s"%(h['svcname'], h['action']))
     return 0
 
 @auth_uuid
@@ -107,6 +112,8 @@ def end_action(vars, vals, auth):
         update_virtual_asset(h['hostname'].strip("'"), h['svcname'].strip("'"))
     if h['status'].strip("'") == 'err':
         update_action_errors(h['svcname'], h['hostname'])
+        h['svcname'] = h['svcname'].strip('\\').strip("'")
+        im_log_svc(h['svcname'], "[%s] action error:%s"%(h['svcname'], h['action']))
     return 0
 
 def update_action_errors(svcname, nodename):
@@ -400,11 +407,13 @@ def register_node(node):
     q = db.auth_node.nodename == node
     rows = db(q).select()
     if len(rows) != 0:
+        im_log_node(node, "[%s] double registration attempt"%node)
         return ["already registered"]
     import uuid
     u = str(uuid.uuid4())
     db.auth_node.insert(nodename=node, uuid=u)
     db.commit()
+    im_log_node(node, "[%s] registered"%node)
     return u
 
 @auth_uuid
@@ -613,6 +622,7 @@ def __svcmon_update(vars, vals):
                  h['mon_syncstatus'],
                  h['mon_hbstatus']]
         generic_insert('svcmon_log', _vars, _vals)
+        im_log_svc(h['mon_svcname'], "[%s] state changed to avail:%s overall:%s"%(h['mon_svcname'], h['mon_availstatus'], h['mon_overallstatus']))
     elif last[0].mon_end < tmo:
         _vars = ['mon_begin',
                  'mon_end',
@@ -668,6 +678,7 @@ def __svcmon_update(vars, vals):
                  h['mon_hbstatus'],
                  h['mon_syncstatus']]
         generic_insert('svcmon_log', _vars, _vals)
+        im_log_svc(h['mon_svcname'], "[%s] state changed to avail:%s overall:%s"%(h['mon_svcname'], h['mon_availstatus'], h['mon_overallstatus']))
     elif h['mon_ipstatus'] != last[0].mon_ipstatus or \
          h['mon_fsstatus'] != last[0].mon_fsstatus or \
          h['mon_diskstatus'] != last[0].mon_diskstatus or \
@@ -703,6 +714,7 @@ def __svcmon_update(vars, vals):
                  h['mon_hbstatus']]
         generic_insert('svcmon_log', _vars, _vals)
         db(db.svcmon_log.id==last[0].id).update(mon_end=h['mon_updated'])
+        im_log_svc(h['mon_svcname'], "[%s] state changed to avail:%s overall:%s"%(h['mon_svcname'], h['mon_availstatus'], h['mon_overallstatus']))
     else:
         db(db.svcmon_log.id==last[0].id).update(mon_end=h['mon_updated'])
 

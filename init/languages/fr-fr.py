@@ -315,6 +315,8 @@
 'Insert new node': 'Ajouter un noeud',
 'Insert node': 'Ajout de noeud',
 'Instance': 'Instance',
+'Instant messaging notifications': 'Instant messaging notifications',
+'Instant messaging user name': 'Instant messaging user name',
 'Insufficient privileges': 'Privilèges insuffisants',
 'Internal State': 'Etat interne',
 'Invalid Query': 'Requête Invalide',

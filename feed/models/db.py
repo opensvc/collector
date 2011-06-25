@@ -539,3 +539,35 @@ db.define_table('gen_filterset_check_threshold',
     Field('chk_high','integer'),
     migrate=False)
 
+db.define_table('log',
+    Field('log_action','string'),
+    Field('log_user','string'),
+    Field('log_fmt','string'),
+    Field('log_dict','string'),
+    Field('log_date','datetime'),
+    migrate=False)
+
+db.define_table('auth_user',
+    Field('im_notifications', 'boolean'),
+    Field('im_type', 'integer'),
+    Field('im_username', 'string'),
+    migrate=False)
+
+db.define_table('auth_group',
+    Field('role', 'string'),
+    migrate=False)
+
+db.define_table('auth_membership',
+    Field('user_id', 'integer'),
+    Field('group_id', 'integer'),
+    migrate=False)
+
+db.define_table('apps',
+    Field('app', 'string'),
+    migrate=False)
+
+db.define_table('apps_responsibles',
+    Field('app_id', 'integer'),
+    Field('group_id', 'integer'),
+    migrate=False)
+
