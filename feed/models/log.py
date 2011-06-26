@@ -14,7 +14,7 @@ def _log(action, fmt, d, user=None):
     generic_insert('log', vars, vals)
 
 def im_log(to, msg):
-    im = local_import('im', reload=True)
+    import applications.init.modules.im as im
     im.gtalk().send(to, msg)
 
 def im_log_node(node, msg):
@@ -30,7 +30,7 @@ def im_log_node(node, msg):
     users = db(q).select(db.auth_user.im_username)
     if len(users) == 0:
         return
-    im = local_import('im', reload=True)
+    import applications.init.modules.im as im
     g = im.gtalk()
     for u in users:
         g.send(u.im_username, msg)
@@ -49,7 +49,7 @@ def im_log_svc(svc, msg):
     users = db(q).select(db.auth_user.im_username)
     if len(users) == 0:
         return
-    im = local_import('im', reload=True)
+    import applications.init.modules.im as im
     g = im.gtalk()
     for u in users:
         g.send(u.im_username, msg)
