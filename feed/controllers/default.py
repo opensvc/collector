@@ -79,7 +79,8 @@ def begin_action(vars, vals, auth):
     for a, b in zip(vars, vals):
         h[a] = b
     h['svcname'] = h['svcname'].strip('\\').strip("'")
-    im_log_svc(h['svcname'], "[%s] action:%s"%(h['svcname'], h['action']))
+    if 'cron' not in h or h['cron'] == 'False':
+        im_log_svc(h['svcname'], "[%s] action:%s"%(h['svcname'], h['action']))
     return 0
 
 @auth_uuid

@@ -156,6 +156,18 @@ class col_svcactions_status(HtmlTableColumn):
             )
         return d
 
+class col_cron(HtmlTableColumn):
+    def html(self, o):
+        s = self.get(o)
+        if s == 1:
+            img = IMG(_src=URL(r=request,c='static',f='time16.png'))
+        else:
+            img = ''
+        d = SPAN(
+              img,
+            )
+        return d
+
 class col_action(HtmlTableColumn):
     def html(self, o):
         s = self.get(o)
@@ -248,6 +260,7 @@ class table_actions(HtmlTable):
                      'time',
                      'id',
                      'status_log',
+                     'cron',
                      'ack',
                      'acked_by',
                      'acked_date',
@@ -307,6 +320,13 @@ class table_actions(HtmlTable):
                 title = 'Log',
                 table = 'v_svcactions',
                 field='status_log',
+                display = True,
+                img = 'action16',
+            ),
+            'cron': col_cron(
+                title = 'Scheduled',
+                table = 'v_svcactions',
+                field='cron',
                 display = True,
                 img = 'action16',
             ),

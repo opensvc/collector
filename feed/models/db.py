@@ -104,6 +104,7 @@ db.define_table('SVCactions',
     Field('svcname'),
     Field('pid'),
     Field('status_log'),
+    Field('cron'),
     migrate=False)
 
 db.define_table('services',
