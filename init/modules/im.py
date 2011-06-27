@@ -20,4 +20,4 @@ class gtalk(object):
         return
 
     def send(self, to, msg):
-        self.c.send(xmpp.Message(to, msg))
+        self.c.send(xmpp.Message(to.strip("'"), msg))
