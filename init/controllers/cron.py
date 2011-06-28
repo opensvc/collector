@@ -1,3 +1,17 @@
+def refresh_b_action_errors():
+    sql = """truncate b_action_errors;"""
+    db.executesql(sql)
+    sql = """insert into b_action_errors
+               select NULL, m.mon_svcname, m.mon_nodname, count(a.id)
+               from svcmon m
+                 left join SVCactions a
+                 on m.mon_svcname=a.svcname and m.mon_nodname=a.hostname
+               where a.status='err'
+                 and (a.ack=0 or isnull(a.ack))
+               group by m.mon_svcname, m.mon_nodname;
+          """
+    db.executesql(sql)
+
 def refresh_b_apps():
     try:
         sql = "drop table if exists b_apps_new"
@@ -411,6 +425,7 @@ def purge_failed_actions_not_acked(rids):
                          acked_comment=ack_comment,
                          acked_date=now,
                          acked_by="admin@opensvc.com")
+    refresh_b_action_errors()
     return dict(acked=count)
 
 def cron_alerts_daily():
