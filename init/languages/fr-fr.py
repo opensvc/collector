@@ -986,6 +986,7 @@
 'vmem': 'vmem',
 'warranty end': 'fin de garantie',
 'wiki': 'wiki',
+'yes': 'yes',
 'you are not allowed to delete the Manager group': 'il ne vous est pas permis de supprimer le groupe Manager',
 'zip': 'code postal',
 }

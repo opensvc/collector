@@ -875,10 +875,10 @@ class table_svcmon(HtmlTable):
             'mem_bytes',
         ]
         self.colprops = {
-            'err': HtmlTableColumn(
+            'err': col_err(
                      title = 'Action errors',
                      field='err',
-                     display = False,
+                     display = True,
                      img = 'action16',
                     ),
         }
@@ -933,21 +933,6 @@ class table_svcmon(HtmlTable):
         else:
             act = ''
 
-        if o.err>0:
-            err = A(
-                    IMG(
-                      _src=URL(r=request,c='static',f='exclamation_red.png'),
-                      _title="%d unaknowledged errors"%o.err),
-                      _href=URL(r=request,c='svcactions',f='svcactions',
-                                vars={'actions_f_svcname': o.svc_name,
-                                      'actions_f_status': 'err',
-                                      'actions_f_ack': '!1|empty',
-                                      'clear_filters': 'true'}
-                            )
-                  )
-        else:
-            err = ''
-
         if o.mon_frozen == 1:
             frozen = IMG(
                        _src=URL(r=request,c='static',f='frozen16.png'),
@@ -957,7 +942,6 @@ class table_svcmon(HtmlTable):
 
         return SPAN(
                  act,
-                 err,
                  frozen,
                )
 

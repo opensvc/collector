@@ -1176,6 +1176,21 @@ def node_icon(os_name):
 
 now = datetime.datetime.now()
 
+class col_err(HtmlTableColumn):
+    def html(self, o):
+       d = self.get(o)
+       if d is not None and d != "":
+           return A(
+                    DIV(d, _class="boxed_small bgred"),
+                    _href=URL(r=request,c='svcactions',f='svcactions',
+                              vars={'actions_f_svcname': o.svc_name,
+                                    'actions_f_status': 'err',
+                                    'actions_f_ack': '!1|empty',
+                                    'clear_filters': 'true'}),
+                  )
+
+       return ""
+
 class col_svc_ha(HtmlTableColumn):
     def html(self, o):
        d = self.get(o)
@@ -1276,8 +1291,8 @@ class col_status(HtmlTableColumn):
         s = self.get(o)
         c = 'status_undef'
         if s is not None:
-            c = 'status_'+s.replace(" ", "_")
-        return SPAN(s, _class=c)
+            c = 'boxed_small boxed_status boxed_status_'+s.replace(" ", "_")
+        return DIV(s, _class=c)
 
 class col_availstatus(HtmlTableColumn):
     def status_merge_down(self, s):
@@ -1716,7 +1731,7 @@ v_services_colprops = {
 }
 
 v_svcmon_colprops = {
-    'err': col_svc(
+    'err': col_err(
              title = 'Action errors',
              field='err',
              display = False,
