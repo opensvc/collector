@@ -109,6 +109,7 @@ db.define_table('SVCactions',
 
 db.define_table('services',
     Field('svc_vmname'),
+    Field('svc_ha'),
     Field('svc_status'),
     Field('svc_availstatus'),
     Field('svc_guestos'),

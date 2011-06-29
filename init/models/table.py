@@ -1176,6 +1176,13 @@ def node_icon(os_name):
 
 now = datetime.datetime.now()
 
+class col_svc_ha(HtmlTableColumn):
+    def html(self, o):
+       d = self.get(o)
+       if d == 1:
+           return DIV("HA", _class="boxed_small")
+       return ""
+
 class col_updated(HtmlTableColumn):
     deadline = now - datetime.timedelta(days=1)
 
@@ -1450,6 +1457,7 @@ v_services_cols = [
     'svc_availstatus',
     'svc_app',
     'svc_type',
+    'svc_ha',
     'svc_cluster_type',
     'svc_flex_min_nodes',
     'svc_flex_max_nodes',
@@ -1527,6 +1535,13 @@ v_services_colprops = {
              title = 'App',
              field='svc_app',
              display = False,
+             img = 'svc',
+             table = 'v_services',
+            ),
+    'svc_ha': col_svc_ha(
+             title = 'HA',
+             field='svc_ha',
+             display = True,
              img = 'svc',
              table = 'v_services',
             ),

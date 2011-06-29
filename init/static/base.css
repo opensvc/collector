@@ -24,6 +24,21 @@ img {
     text-decoration: none;
 }
 
+.boxed_small {
+    font-weight: bold;
+    font-size: 75%;
+    color: white;
+    border-radius:4px;
+   -moz-border-radius:4px;
+   -webkit-border-radius:4px;
+    background-color:#009900;
+    padding-left:0.25em;
+    padding-right:0.2em;
+    padding-top:0.1em;
+    padding-bottom:0.1em;
+    overflow:hidden;
+}
+
 .boxed {
     border-radius:8px;
    -moz-border-radius:8px;

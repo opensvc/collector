@@ -541,6 +541,10 @@ def ajax_service():
         TD(s['svc_type'])
       ),
       TR(
+        TD(T('HA'), _style='font-style:italic'),
+        TD(T('yes') if s['svc_ha'] == 1 else T('no'))
+      ),
+      TR(
         TD(T('application'), _style='font-style:italic'),
         TD(s['svc_app'])
       ),
@@ -796,6 +800,7 @@ class table_svcmon(HtmlTable):
         self.cols = [
             'svc_name',
             'err',
+            'svc_ha',
             'svc_availstatus',
             'svc_status',
             'svc_app',
