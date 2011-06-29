@@ -467,8 +467,12 @@ def send_alert(h):
     server = smtplib.SMTP('localhost')
     botaddr = 'admin@opensvc.com'
     msg = "To: %s\r\nFrom: %s\r\nSubject: %s\r\nContent-type: text/html;charset=utf-8\r\n\r\n%s"%(h['mailto'], botaddr, h['subject'], h['body'])
-    server.sendmail(botaddr, h['mailto'].split(", "), msg)
-    server.quit()
+    try:
+        server.sendmail(botaddr, h['mailto'].split(", "), msg)
+        server.quit()
+    except:
+        import sys
+        print >>sys.stderr, "failed to send email\n%s"%msg
 
     return dict(alert_sent=h)
 
