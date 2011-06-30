@@ -1179,7 +1179,7 @@ now = datetime.datetime.now()
 class col_err(HtmlTableColumn):
     def html(self, o):
        d = self.get(o)
-       if d is not None and d != "":
+       if d is not None and d != "" and d != 0:
            return A(
                     DIV(d, _class="boxed_small bgred"),
                     _href=URL(r=request,c='svcactions',f='svcactions',
