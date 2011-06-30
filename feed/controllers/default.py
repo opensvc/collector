@@ -79,7 +79,7 @@ def begin_action(vars, vals, auth):
     for a, b in zip(vars, vals):
         h[a] = b
     if 'cron' not in h or h['cron'] == '0':
-        im_log_svc(h['svcname'], "[%s] action:%s"%(h['svcname'], h['action']))
+        im_log_svc(h['svcname'], "[%s] action '%s' on node '%s'"%(h['svcname'], h['action'], h['hostname']))
     return 0
 
 @auth_uuid
@@ -113,7 +113,7 @@ def end_action(vars, vals, auth):
     if h['status'].strip("'") == 'err':
         update_action_errors(h['svcname'], h['hostname'])
         h['svcname'] = h['svcname'].strip('\\').strip("'")
-        im_log_svc(h['svcname'], "[%s] action error:%s"%(h['svcname'], h['action']))
+        im_log_svc(h['svcname'], "[%s] action '%s' error on node '%s'"%(h['svcname'], h['action'], h['hostname']))
     return 0
 
 def update_action_errors(svcname, nodename):
