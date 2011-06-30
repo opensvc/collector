@@ -63,6 +63,8 @@ def svc_log_update(svcname, astatus):
                                svc_availstatus=astatus)
 
 def cron_scrub_svcstatus():
+    """ Mark undef the services with 0 instance updating their status
+    """
     q = db.v_outdated_services.uptodate == 0
     svcs = [r.svcname for r in db(q).select(db.v_outdated_services.svcname)]
     q = db.services.svc_name.belongs(svcs)
@@ -71,7 +73,7 @@ def cron_scrub_svcstatus():
         svcs_new = [r.svc_name for r in db(q).select(db.services.svc_name)]
         db(q).update(svc_status="undef", svc_availstatus="undef")
         for svcname in svcs_new:
-            im_log_svc(svcname, "[%s] not updating its status"%svcname)
+            im_log_svc(svcname, "[%s] has zero live instance. Status flagged 'undef'"%svcname)
     for svcname in svcs:
         svc_log_update(svcname, "undef")
 
