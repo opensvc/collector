@@ -622,7 +622,13 @@ def __svcmon_update(vars, vals):
                  h['mon_syncstatus'],
                  h['mon_hbstatus']]
         generic_insert('svcmon_log', _vars, _vals)
-        im_log_svc(h['mon_svcname'], "[%s] state changed to avail:%s overall:%s"%(h['mon_svcname'], h['mon_availstatus'], h['mon_overallstatus']))
+        im_log_svc(h['mon_svcname'], "[%s] state changed on %s: avail(%s=>%s) overall(%s=>%s)"%(
+          h['mon_svcname'],
+          h['mon_nodname'],
+          "none",
+          h['mon_availstatus'],
+          "none",
+          h['mon_overallstatus']))
     elif last[0].mon_end < tmo:
         _vars = ['mon_begin',
                  'mon_end',
@@ -678,7 +684,13 @@ def __svcmon_update(vars, vals):
                  h['mon_hbstatus'],
                  h['mon_syncstatus']]
         generic_insert('svcmon_log', _vars, _vals)
-        im_log_svc(h['mon_svcname'], "[%s] state changed to avail:%s overall:%s"%(h['mon_svcname'], h['mon_availstatus'], h['mon_overallstatus']))
+        im_log_svc(h['mon_svcname'], "[%s] state changed on %s: avail(%s=>%s) overall(%s=>%s)"%(
+          h['mon_svcname'],
+          h['mon_nodname'],
+          "undef",
+          h['mon_availstatus'],
+          "undef",
+          h['mon_overallstatus']))
     elif h['mon_ipstatus'] != last[0].mon_ipstatus or \
          h['mon_fsstatus'] != last[0].mon_fsstatus or \
          h['mon_diskstatus'] != last[0].mon_diskstatus or \
@@ -714,7 +726,13 @@ def __svcmon_update(vars, vals):
                  h['mon_hbstatus']]
         generic_insert('svcmon_log', _vars, _vals)
         db(db.svcmon_log.id==last[0].id).update(mon_end=h['mon_updated'])
-        im_log_svc(h['mon_svcname'], "[%s] state changed to avail:%s overall:%s"%(h['mon_svcname'], h['mon_availstatus'], h['mon_overallstatus']))
+        im_log_svc(h['mon_svcname'], "[%s] state changed on %s: avail(%s=>%s) overall(%s=>%s)"%(
+          h['mon_svcname'],
+          h['mon_nodname'],
+          last[0].mon_availstatus,
+          h['mon_availstatus'],
+          last[0].mon_overallstatus,
+          h['mon_overallstatus']))
     else:
         db(db.svcmon_log.id==last[0].id).update(mon_end=h['mon_updated'])
 
