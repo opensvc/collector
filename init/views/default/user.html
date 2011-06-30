@@ -31,19 +31,20 @@ function email_focus() {
     document.getElementById('auth_user_email').select();
 }
 function align_login_inputs() {
-    $('#auth_user_password').css({width:$('#auth_user_email').width()});
-    $('#auth_user_first_name').css({width:$('#auth_user_email').width()});
-    $('#auth_user_last_name').css({width:$('#auth_user_email').width()});
-    $("[name='password_two']").css({width:$('#auth_user_email').width()});
-    $('#auth_user_email').css({width:$('#auth_user_email').width()});
+    var w = "250px"
+    $('#auth_user_email').width(w);
+    $('#auth_user_password').width(w);
+    $('#auth_user_first_name').width(w);
+    $('#auth_user_last_name').width(w);
+    $("[name='password_two']").width(w);
 }
 function margins() {
-    $('.login').css('margin-top', -$('.login').height()/2)
+    $('.login').css('margin-top', -$('.login').height()/2-10)
     $('.login').css('margin-left', -$('.login').width()/2-10)
 }
 jQuery(window).load(function(){
-    margins()
     align_login_inputs()
+    margins()
     document.getElementById('auth_user_email').focus();
     setTimeout(email_focus, 500);
 });
