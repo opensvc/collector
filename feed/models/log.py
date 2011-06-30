@@ -15,7 +15,10 @@ def _log(action, fmt, d, user=None):
 
 def im_log(to, msg):
     import applications.init.modules.im as im
-    im.gtalk().send(to, msg)
+    try:
+        im.gtalk().send(to, msg)
+    except:
+        pass
 
 def im_log_node(node, msg):
     """ given a node name, lookup all responsibles flagged with
@@ -31,9 +34,12 @@ def im_log_node(node, msg):
     if len(users) == 0:
         return
     import applications.init.modules.im as im
-    g = im.gtalk()
-    for u in users:
-        g.send(u.im_username, msg)
+    try:
+        g = im.gtalk()
+        for u in users:
+            g.send(u.im_username, msg)
+    except:
+        pass
 
 def im_log_svc(svc, msg):
     """ given a service name, lookup all responsibles flagged with
@@ -50,6 +56,9 @@ def im_log_svc(svc, msg):
     if len(users) == 0:
         return
     import applications.init.modules.im as im
-    g = im.gtalk()
-    for u in users:
-        g.send(u.im_username, msg)
+    try:
+        g = im.gtalk()
+        for u in users:
+            g.send(u.im_username, msg)
+    except:
+        pass
