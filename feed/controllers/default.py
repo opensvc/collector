@@ -72,14 +72,13 @@ def delete_service_list(hostid=None, svcnames=[], auth=("", "")):
 @auth_uuid
 @service.xmlrpc
 def begin_action(vars, vals, auth):
-    sql="""insert delayed into SVCactions (%s) values (%s)""" % (','.join(vars), ','.join(vals))
+    sql="""insert into SVCactions (%s) values (%s)""" % (','.join(vars), ','.join(vals))
     db.executesql(sql)
     db.commit()
     h = {}
     for a, b in zip(vars, vals):
         h[a] = b
-    h['svcname'] = h['svcname'].strip('\\').strip("'")
-    if 'cron' not in h or h['cron'] == 'False':
+    if 'cron' not in h or h['cron'] == '0':
         im_log_svc(h['svcname'], "[%s] action:%s"%(h['svcname'], h['action']))
     return 0
 
