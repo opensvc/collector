@@ -1087,6 +1087,7 @@ db.define_table('wiki_pages',
 
 db.define_table('action_queue',
     Field('status', 'string'),
+    Field('ret', 'integer'),
     Field('command', 'text'),
     Field('date_queued', 'timestamp'),
     Field('date_dequeued', 'timestamp'),

@@ -1,9 +1,30 @@
+class col_ret(HtmlTableColumn):
+    def html(self, o):
+        s = self.get(o)
+        if s == 0:
+            return DIV(s, _class="boxed_small bggreen")
+        return DIV(s, _class="boxed_small bgred")
+
+class col_action_status(HtmlTableColumn):
+    def html(self, o):
+        s = self.get(o)
+        if s == 'T':
+            return DIV(T('done'), _class="boxed_small bggreen")
+        elif s == 'R':
+            return DIV(T('running'), _class="boxed_small bgred")
+        elif s == 'W':
+            return DIV(T('waiting'), _class="boxed_small")
+        elif s == 'Q':
+            return DIV(T('queued'), _class="boxed_small")
+        else:
+            return DIV(s, _class="boxed_small")
+
 class table_actions(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['id', 'status', 'date_queued', 'date_dequeued', 'command']
+        self.cols = ['id', 'status', 'date_queued', 'date_dequeued', 'ret', 'command']
         self.colprops = {
             'id': HtmlTableColumn(
                      title='Id',
@@ -11,9 +32,15 @@ class table_actions(HtmlTable):
                      img='action16',
                      display=False,
                     ),
-            'status': HtmlTableColumn(
+            'status': col_action_status(
                      title='Status',
                      field='status',
+                     img='action16',
+                     display=True,
+                    ),
+            'ret': col_ret(
+                     title='Return code',
+                     field='ret',
                      img='action16',
                      display=True,
                     ),

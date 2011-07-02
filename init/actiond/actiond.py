@@ -2,9 +2,10 @@
 
 import os
 import sys
+import time
 import datetime
 import MySQLdb
-from multiprocessing import Process, Queue
+from multiprocessing import Process, JoinableQueue, Queue
 from subprocess import Popen
 
 basedir = os.path.realpath(os.path.dirname(__file__))
@@ -79,16 +80,29 @@ def get_queued():
         if row is None:
             break
         cmds.append((row[0], row[1]))
+    ids = map(lambda x: str(x[0]), cmds)
+    if len(ids) > 0:
+        cursor.execute("update action_queue set status='Q' where id in (%s)"%(','.join(ids)))
     cursor.close()
+    conn.close()
     return cmds
 
 def dequeue_worker(i, q):
-    conn = get_conn()
-    if conn is None:
-        return
-    cursor = conn.cursor()
-    while (not q.empty()):
-        (id, cmd) = q.get()
+    idle = False
+    while True:
+        try:
+            (id, cmd) = q.get()
+        except Queue.Empty:
+            if not idle:
+                print '[%d] idle'%(i)
+                idle = True
+            time.sleep(1)
+            continue
+        idle = False
+        conn = get_conn()
+        if conn is None:
+            return
+        cursor = conn.cursor()
         cursor.execute("update action_queue set status='R' where id=%d"%id)
         conn.commit()
         print '[%d] %d: %s'%(i, id, cmd)
@@ -96,8 +110,12 @@ def dequeue_worker(i, q):
         process = Popen(cmd, stdin=None)
         process.communicate()
         now = str(datetime.datetime.now())
-        cursor.execute("update action_queue set status='T', date_dequeued='%s' where id=%d"%(now, id))
-    cursor.close()
+        cursor = conn.cursor()
+        cursor.execute("update action_queue set status='T', date_dequeued='%s', ret=%d where id=%d"%(now, process.returncode, id))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        q.task_done()
     sys.exit(0)
 
 def get_conn():
@@ -111,24 +129,37 @@ def get_conn():
         return None
     return conn
 
-def dequeue_this(q, bunch):
-    ps = []
-    for id, cmd in bunch:
-        q.put((id, cmd))
+ps = []
+
+def start_workers(q):
     for i in range(0, N_THREAD):
-        p = Process(target=dequeue_worker, args=(i, q))
+        p = Process(target=dequeue_worker, args=(i, q), name='[worker%d]'%i)
         p.start()
         ps.append(p)
+
+def stop_workers():
+    """ TODO: need to wait for worker idling before stop """
+    for p in ps:
+        p.terminate()
     for p in ps:
         p.join()
 
 def dequeue():
-    q = Queue()
+    idle = False
+    q = JoinableQueue()
+    start_workers(q)
     while True:
         bunch = get_queued()
         if len(bunch) == 0:
-            break
-        dequeue_this(q, bunch)
+            if not idle:
+                print "[Queue manager] idle"
+                idle = True
+            time.sleep(1)
+            continue
+        idle = False
+        for id, cmd in bunch:
+            q.put((id, cmd), block=True)
+    #stop_workers()
 
 try:
     lockfd = actiond_lock(lockfile)
