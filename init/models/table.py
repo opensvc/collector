@@ -145,12 +145,15 @@ class HtmlTable(object):
                 self.page = int(request.vars[self.id_page])
             else:
                 self.page = 1
+
             if self.page == 0:
                 self.perpage = 0
                 self.pager_start = 0
                 self.pager_end = n
             else:
                 self.pager_start = (self.page-1) * self.perpage
+                if self.pager_start > self.totalrecs:
+                    self.pager_start = 0
                 self.pager_end = self.pager_start + self.perpage - 1
         else:
             self.perpage = 0
