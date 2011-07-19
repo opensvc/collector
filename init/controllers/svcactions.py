@@ -470,29 +470,27 @@ def ack(ids=[]):
     if len(ids) == 0:
         raise ToolError("no action selected")
     ackcomment = request.vars.ackcomment
-    for action_id in ids:
-        query = (db.SVCactions.id == action_id)&(db.SVCactions.status != "ok")
-        rows = db(query).select()
-        if len(rows) != 1:
-            continue
-        a = rows[0]
-        _svcaction_ack_one(ackcomment, action_id)
+    q = db.SVCactions.id.belongs(ids)
+    q &= db.SVCactions.status != "ok"
+    rows = db(q).select()
+    user = user_name()
+
+    db(q).update(ack=1,
+                 acked_comment=ackcomment,
+                 acked_by=user,
+                 acked_date=datetime.datetime.now())
 
     if 'ackcomment' in request.vars:
         del request.vars.ackcomment
 
-    _log('action.ack',
-         'acknowledged action error with pids %(g)s',
-         dict(g=', '.join(map(str, ids))))
-
-@auth.requires_login()
-def _svcaction_ack_one(ackcomment, action_id):
-    query = (db.SVCactions.id == action_id)&(db.SVCactions.status != "ok")
-    db(query).update(ack=1,
-                     acked_comment=ackcomment,
-                     acked_by=user_name(),
-                     acked_date=datetime.datetime.now())
-    update_action_errors(action_id)
+    for r in rows:
+        update_action_errors(r.id)
+        _log('action.ack',
+             'acknowledged action error with id %(g)s: %(action)s on %(svc)s@%(node)s',
+             dict(g=r.id, action=r.action, svc=r.svcname, node=r.hostname),
+             user=user,
+             svcname=r.svcname,
+             nodename=r.hostname)
 
 @auth.requires_login()
 def ajax_actions():

@@ -73,7 +73,10 @@ def cron_scrub_svcstatus():
         svcs_new = [r.svc_name for r in db(q).select(db.services.svc_name)]
         db(q).update(svc_status="undef", svc_availstatus="undef")
         for svcname in svcs_new:
-            im_log_svc(svcname, "[%s] has zero live instance. Status flagged 'undef'"%svcname)
+            _log("service.status",
+                 "service '%(svc)s' has zero live instance. Status flagged 'undef'",
+                 dict(svc=svcname),
+                 svcname=svcname)
     for svcname in svcs:
         svc_log_update(svcname, "undef")
 
@@ -150,12 +153,12 @@ def cron_unfinished_actions():
     q &= (db.SVCactions.end==None)
     rows = db(q).select(orderby=db.SVCactions.id)
     db(q).update(status="err", end='1000-01-01 00:00:00')
-    if len(rows) > 0:
-        _log('action.timeout', "action ids %(ids)s closed on timeout",
-              dict(ids=', '.join([str(r.id) for r in rows])),
-              user='collector')
     for r in rows:
-        im_log_svc(r.svcname, "[%s] action %s longer than 2h"%(r.svcname, r.action))
+        _log('action.timeout', "action ids %(ids)s closed on timeout",
+              dict(ids=r.id),
+              user='collector',
+              svcname=r.svcname,
+              nodename=r.hostname)
     return "%d actions marked timed out"%len(rows)
 
 def cron_scrub_checks():

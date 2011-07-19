@@ -79,7 +79,13 @@ def begin_action(vars, vals, auth):
     for a, b in zip(vars, vals):
         h[a] = b
     if 'cron' not in h or h['cron'] == '0':
-        im_log_svc(h['svcname'], "[%s] action '%s' on node '%s'"%(h['svcname'], h['action'], h['hostname']))
+        _log("service.action",
+             "action '%(a)s' on %(svc)s@%(node)s",
+             dict(a=h['action'].strip("'"),
+                  svc=h['svcname'].strip("'"),
+                  node=h['hostname'].strip("'")),
+             svcname=h['svcname'].strip("'"),
+             nodename=h['hostname'].strip("'"))
     return 0
 
 @auth_uuid
@@ -113,7 +119,13 @@ def end_action(vars, vals, auth):
     if h['status'].strip("'") == 'err':
         update_action_errors(h['svcname'], h['hostname'])
         h['svcname'] = h['svcname'].strip('\\').strip("'")
-        im_log_svc(h['svcname'], "[%s] action '%s' error on node '%s'"%(h['svcname'], h['action'], h['hostname']))
+        _log("service.action",
+             "action '%(a)s' error on %(svc)s@%(node)s",
+             dict(a=h['action'].strip("'"),
+                  svc=h['svcname'].strip("'"),
+                  node=h['hostname'].strip("'")),
+             svcname=h['svcname'].strip("'"),
+             nodename=h['hostname'].strip("'"))
     return 0
 
 def update_action_errors(svcname, nodename):
@@ -407,13 +419,19 @@ def register_node(node):
     q = db.auth_node.nodename == node
     rows = db(q).select()
     if len(rows) != 0:
-        im_log_node(node, "[%s] double registration attempt"%node)
+        _log("node.register",
+             "node '%(node)s' double registration attempt",
+             dict(node=node),
+             nodename=node)
         return ["already registered"]
     import uuid
     u = str(uuid.uuid4())
     db.auth_node.insert(nodename=node, uuid=u)
     db.commit()
-    im_log_node(node, "[%s] registered"%node)
+    _log("node.register",
+         "node '%(node)s' registered",
+         dict(node=node),
+         nodename=node)
     return u
 
 @auth_uuid
@@ -622,13 +640,17 @@ def __svcmon_update(vars, vals):
                  h['mon_syncstatus'],
                  h['mon_hbstatus']]
         generic_insert('svcmon_log', _vars, _vals)
-        im_log_svc(h['mon_svcname'], "[%s] state changed on %s: avail(%s=>%s) overall(%s=>%s)"%(
-          h['mon_svcname'],
-          h['mon_nodname'],
-          "none",
-          h['mon_availstatus'],
-          "none",
-          h['mon_overallstatus']))
+        _log("service.status",
+             "service '%(svc)s' state changed on '%(node)s': avail(%(a1)s=>%(a2)s) overall(%(o1)s=>%(o2)s)",
+             dict(
+               svc=h['mon_svcname'],
+               node=h['mon_nodname'],
+               a1="none",
+               a2=h['mon_availstatus'],
+               o1="none",
+               o2=h['mon_overallstatus']),
+             svcname=h['mon_svcname'],
+             nodename=h['mon_nodname'])
     elif last[0].mon_end < tmo:
         _vars = ['mon_begin',
                  'mon_end',
@@ -684,13 +706,17 @@ def __svcmon_update(vars, vals):
                  h['mon_hbstatus'],
                  h['mon_syncstatus']]
         generic_insert('svcmon_log', _vars, _vals)
-        im_log_svc(h['mon_svcname'], "[%s] state changed on %s: avail(%s=>%s) overall(%s=>%s)"%(
-          h['mon_svcname'],
-          h['mon_nodname'],
-          "undef",
-          h['mon_availstatus'],
-          "undef",
-          h['mon_overallstatus']))
+        _log("service.status",
+             "service '%(svc)s' state changed on '%(node)s': avail(%(a1)s=>%(a2)s) overall(%(o1)s=>%(o2)s)",
+             dict(
+               svc=h['mon_svcname'],
+               node=h['mon_nodname'],
+               a1="undef",
+               a2=h['mon_availstatus'],
+               o1="undef",
+               o2=h['mon_overallstatus']),
+             svcname=h['mon_svcname'],
+             nodename=h['mon_nodname'])
     elif h['mon_ipstatus'] != last[0].mon_ipstatus or \
          h['mon_fsstatus'] != last[0].mon_fsstatus or \
          h['mon_diskstatus'] != last[0].mon_diskstatus or \
@@ -726,13 +752,17 @@ def __svcmon_update(vars, vals):
                  h['mon_hbstatus']]
         generic_insert('svcmon_log', _vars, _vals)
         db(db.svcmon_log.id==last[0].id).update(mon_end=h['mon_updated'])
-        im_log_svc(h['mon_svcname'], "[%s] state changed on %s: avail(%s=>%s) overall(%s=>%s)"%(
-          h['mon_svcname'],
-          h['mon_nodname'],
-          last[0].mon_availstatus,
-          h['mon_availstatus'],
-          last[0].mon_overallstatus,
-          h['mon_overallstatus']))
+        _log("service.status",
+             "service '%(svc)s' state changed on '%(node)s': avail(%(a1)s=>%(a2)s) overall(%(o1)s=>%(o2)s)",
+             dict(
+               svc=h['mon_svcname'],
+               node=h['mon_nodname'],
+               a1=last[0].mon_availstatus,
+               a2=h['mon_availstatus'],
+               o1=last[0].mon_overallstatus,
+               o2=h['mon_overallstatus']),
+             svcname=h['mon_svcname'],
+             nodename=h['mon_nodname'])
     else:
         db(db.svcmon_log.id==last[0].id).update(mon_end=h['mon_updated'])
 

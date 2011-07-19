@@ -1110,14 +1110,15 @@ def svc_del(ids):
         # A user can delete only services he is responsible of
        q &= db.auth_group.id.belongs(groups)
     rows = db(q).select()
-    l = ['@'.join((r.svcmon.mon_svcname, r.svcmon.mon_nodname)) for r in rows]
-    u = ', '.join(l)
     l = [r.svcmon.id for r in rows]
     q = db.svcmon.id.belongs(l)
     db(q).delete()
-    _log('service.delete',
-         'deleted service instances %(u)s',
-         dict(u=u))
+    for r in rows:
+        _log('service.delete',
+             'deleted service instance %(u)s',
+              dict(u='@'.join((r.svcmon.mon_svcname, r.svcmon.mon_nodname))),
+             svcname=r.svcmon.mon_svcname,
+             nodename=r.svcmon.mon_nodname)
 
 @auth.requires_login()
 def service_action():
@@ -1161,12 +1162,10 @@ def do_action(ids, action=None):
                'sudo', '/opt/opensvc/bin/svcmgr', force, '--service', svc, action]
         return ' '.join(cmd)
 
-    s = []
     vals = []
     vars = ['command']
     for row in rows:
         vals.append([fmt_action(row[0], row[1], action)])
-        s.append('@'.join((row[0], row[1])))
 
     purge_action_queue()
     generic_insert('action_queue', vars, vals)
@@ -1174,7 +1173,12 @@ def do_action(ids, action=None):
     actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
     process = Popen(actiond)
     process.communicate()
-    _log('service.action', 'run %(a)s on %(s)s', dict(a=action, s=', '.join(s)))
+    for row in rows:
+        _log('service.action',
+             'run %(a)s on %(s)s',
+             dict(a=action, s='@'.join((row[1], row[0]))),
+             svcname=row[1],
+             nodename=row[0])
 
 
 @auth.requires_login()

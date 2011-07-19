@@ -1046,9 +1046,12 @@ db.define_table('v_comp_explicit_rulesets',
 db.define_table('log',
     Field('log_action','string'),
     Field('log_user','string'),
+    Field('log_svcname','string'),
+    Field('log_nodename','string'),
     Field('log_fmt','string'),
     Field('log_dict','string'),
     Field('log_date','datetime'),
+    Field('log_gtalk_sent','integer'),
     migrate=False)
 
 db.define_table('v_comp_node_status_weekly',

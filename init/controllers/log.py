@@ -62,8 +62,10 @@ class table_log(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['log_date',
                      'log_icons',
-                     'log_action',
+                     'log_svcname',
+                     'log_nodename',
                      'log_user',
+                     'log_action',
                      'log_evt']
         self.colprops = {
             'log_date': HtmlTableColumn(
@@ -82,6 +84,18 @@ class table_log(HtmlTable):
                      title='Action',
                      field='log_action',
                      img='action16',
+                     display=True,
+                    ),
+            'log_svcname': HtmlTableColumn(
+                     title='Service',
+                     field='log_svcname',
+                     img='svc',
+                     display=True,
+                    ),
+            'log_nodename': HtmlTableColumn(
+                     title='Node',
+                     field='log_nodename',
+                     img='node16',
                      display=True,
                     ),
             'log_user': HtmlTableColumn(

@@ -15,6 +15,8 @@ def quote_wrap(x):
             return x
         else:
             return "'%s'"%x.replace("'", '"')
+    elif x is None:
+        return "NULL"
     raise Exception("quote_wrap: unhandled type %s"%str(x.__class__))
 
 def insert_multiline(table, vars, valsl):

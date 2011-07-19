@@ -4512,3 +4512,9 @@ def ajax_compliance_node():
           beautify_modulesets(msets),
         )
     return d
+
+@service.xmlrpc
+def register_node(node):
+    """ placeholder to signal the registration support
+    """
+    pass
