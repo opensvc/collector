@@ -1054,7 +1054,17 @@ db.define_table('log',
     Field('log_gtalk_sent','integer'),
     migrate=False)
 
-db.define_table('v_comp_node_status_weekly',
+db.define_table('b_comp_module_status_weekly_series',
+    Field('run_module','string'),
+    Field('log','string'),
+    migrate=False)
+
+db.define_table('b_comp_node_status_weekly_series',
+    Field('run_nodename','string'),
+    Field('log','string'),
+    migrate=False)
+
+db.define_table('b_comp_node_status_weekly',
     Field('year','string'),
     Field('week','string'),
     Field('run_nodename','string'),
@@ -1063,7 +1073,7 @@ db.define_table('v_comp_node_status_weekly',
     Field('nb_na','integer'),
     migrate=False)
 
-db.define_table('v_comp_module_status_weekly',
+db.define_table('b_comp_module_status_weekly',
     Field('year','string'),
     Field('week','string'),
     Field('run_module','string'),

@@ -134,19 +134,57 @@ class col_comp_filters_field(HtmlTableColumn):
                  _class=props[o.f_field].img,
                )
 
+def plot_log(s):
+    height = 30
+    cols = 20
+    col_width = 4
+    weeks = []
+    for i in range(cols-1, -1, -1):
+        d = now - datetime.timedelta(days=7*i)
+        weeks.append(d.isocalendar()[1])
+    import json
+    try:
+        week, ok, nok, na = json.loads(s)
+    except:
+        return SPAN()
+    h = {}
+    _max = 0
+    for i, v in enumerate(week):
+        h[v] = (ok[i], nok[i], na[i])
+        total = ok[i] + nok[i] + na[i]
+        if total > _max:
+            _max = total
+    ratio = float(height) / _max
+    for i in weeks:
+        if i not in week:
+            h[i] = (0, 0, 0)
+    l = []
+    for i in weeks:
+        if h[i] == (0, 0, 0):
+            l.append(DIV(
+                   _style="background-color:#ececaa;float:left;width:%dpx;height:%dpx"%(col_width, height),
+                 ))
+        else:
+            h0 = int(h[i][0] * ratio)
+            h1 = int(h[i][1] * ratio)
+            h2 = int(h[i][2] * ratio)
+            cc = height - h0 - h1 - h2
+            l.append(DIV(
+                   DIV("", _style="background-color:rgba(0,0,0,0);height:%dpx"%cc),
+                   DIV("", _style="background-color:lightgreen;height:%dpx"%h0) if h0 > 0 else "",
+                   DIV("", _style="background-color:#ff7863;height:%dpx"%h1) if h1 > 0 else "",
+                   DIV("", _style="background-color:#008099;height:%dpx"%h2) if h2 > 0 else "",
+                   _style="float:left;width:%dpx"%col_width,
+                 ))
+    return DIV(l)
+
 class col_comp_node_status(HtmlTableColumn):
     def html(self, o):
-        return DIV(
-                 _id=nod_plot_id(o['mod_node']),
-                 _style="height:50px;width:300px;",
-               )
+        return plot_log(self.get(o))
 
 class col_comp_mod_status(HtmlTableColumn):
     def html(self, o):
-        return DIV(
-                 _id=mod_plot_id(o['mod_name']),
-                 _style="height:50px;width:300px;",
-               )
+        return plot_log(self.get(o))
 
 class col_variables(HtmlTableColumn):
     def html(self, o):
@@ -3375,7 +3413,7 @@ class table_comp_mod_status(HtmlTable):
                     ),
             'mod_log': col_comp_mod_status(
                      title='History',
-                     field='mod_name',
+                     field='mod_log',
                      display=True,
                      img='log16',
                      _class='comp_plot',
@@ -3426,7 +3464,7 @@ class table_comp_node_status(HtmlTable):
                     ),
             'mod_log': col_comp_node_status(
                      title='History',
-                     field='mod_node',
+                     field='mod_log',
                      display=True,
                      img='log16',
                      _class='comp_plot',
@@ -3434,9 +3472,50 @@ class table_comp_node_status(HtmlTable):
         }
         self.refreshable = False
 
+def cron_comp_status_log():
+    cron_nod_status_log()
+    cron_mod_status_log()
+    cron_nod_status_log_series()
+    cron_mod_status_log_series()
+
+def cron_nod_status_log():
+    sql = """replace into b_comp_node_status_weekly (id, year, week, run_nodename,
+nb_ok, nb_nok, nb_na) select id, year, week, run_nodename, nb_ok, nb_nok, nb_na
+from v_comp_node_status_current_week"""
+    db.executesql(sql)
+
+def cron_mod_status_log():
+    sql = """replace into b_comp_module_status_weekly (id, year, week, run_module,
+nb_ok, nb_nok, nb_na) select id, year, week, run_module, nb_ok, nb_nok, nb_na
+from v_comp_module_status_current_week"""
+
+def cron_nod_status_log_series():
+    sql = """drop table if exists b_comp_node_status_weekly_series"""
+    db.executesql(sql)
+    sql = """create table b_comp_node_status_weekly_series as (select id,
+run_nodename, concat('[', concat('[', group_concat(week order by year, week
+separator ', '), ']'), ', ', concat('[', group_concat(nb_ok order by year, week
+separator ', '), ']'), ', ', concat('[', group_concat(nb_nok order by year,
+week separator ', '), ']'), ', ', concat('[', group_concat(nb_na order by year,
+week separator ', '), ']'), ']') as log from b_comp_node_status_weekly where
+year*52+week>year(now())*52+week(now())-20 group by run_nodename);"""
+    db.executesql(sql)
+
+def cron_mod_status_log_series():
+    sql = """drop table if exists b_comp_module_status_weekly_series"""
+    db.executesql(sql)
+    sql = """create table b_comp_module_status_weekly_series as (select id,
+run_module, concat('[', concat('[', group_concat(week order by year, week
+separator ', '), ']'), ', ', concat('[', group_concat(nb_ok order by year, week
+separator ', '), ']'), ', ', concat('[', group_concat(nb_nok order by year,
+week separator ', '), ']'), ', ', concat('[', group_concat(nb_na order by year,
+week separator ', '), ']'), ']') as log from b_comp_module_status_weekly where
+year*52+week>year(now())*52+week(now())-20 group by run_module);"""
+    db.executesql(sql)
+
 @service.json
 def json_nod_status_log(nodename):
-    t = db.v_comp_node_status_weekly
+    t = db.b_comp_node_status_weekly
     o = ~t.year|~t.week
     q = t.run_nodename == nodename
     d = []
@@ -3454,7 +3533,7 @@ def json_nod_status_log(nodename):
 
 @service.json
 def json_mod_status_log(module):
-    t = db.v_comp_module_status_weekly
+    t = db.b_comp_module_status_weekly
     o = ~t.year|~t.week
     q = t.run_module == module
     d = []
@@ -3827,6 +3906,7 @@ def compute_mod_status(rows):
               'mod_ok': 0,
               'mod_percent': 0,
               'mod_nodes': [],
+              'mod_log': "[[], [], [], []]",
             }
         h[r.comp_status.run_module]['mod_total'] += 1
         h[r.comp_status.run_module]['mod_nodes'].append(r.comp_status.run_nodename)
@@ -3836,6 +3916,11 @@ def compute_mod_status(rows):
         if m['mod_total'] == 0:
             continue
         m['mod_percent'] = int(100*m['mod_ok']/m['mod_total'])
+    if len(h) > 0:
+        q = db.b_comp_module_status_weekly_series.run_module.belongs(h.keys())
+        rows = db(q).select()
+        for r in rows:
+            h[r.run_module]['mod_log'] = r.log
     return sorted(h.values(), key=lambda x: (x['mod_percent'], x['mod_name']))
 
 def compute_node_status(rows):
@@ -3848,6 +3933,7 @@ def compute_node_status(rows):
               'mod_ok': 0,
               'mod_percent': 0,
               'mod_node': r.comp_status.run_nodename,
+              'mod_log': "[[], [], [], []]",
             }
         h[r.comp_status.run_nodename]['mod_total'] += 1
         h[r.comp_status.run_nodename]['mod_names'].append(r.comp_status.run_module)
@@ -3857,6 +3943,11 @@ def compute_node_status(rows):
         if m['mod_total'] == 0:
             continue
         m['mod_percent'] = int(100*m['mod_ok']/m['mod_total'])
+    if len(h) > 0:
+        q = db.b_comp_node_status_weekly_series.run_nodename.belongs(h.keys())
+        rows = db(q).select()
+        for r in rows:
+            h[r.run_nodename]['mod_log'] = r.log
     return sorted(h.values(), key=lambda x: (x['mod_percent'],x['mod_node']))
 
 @auth.requires_login()
