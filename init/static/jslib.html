@@ -378,12 +378,14 @@ function sync_ajax(url, inputs, id, f) {
     })
 }
 function table_ajax_submit(url, id, inputs, additional_inputs, input_name, additional_input_name) {
-    s = inputs.concat(additional_inputs).concat(getIdsByName(input_name))
+    var s = inputs.concat(additional_inputs).concat(getIdsByName(input_name))
     $("[name="+additional_input_name+"]").each(function(){s.push(this.id)});
     var query=""
     for (i=0; i<s.length; i++) {
         if (i > 0) {query=query+"&"}
-        query=query+encodeURIComponent(s[i])+"="+encodeURIComponent(document.getElementById(s[i]).value);
+        try {
+            query=query+encodeURIComponent(s[i])+"="+encodeURIComponent(document.getElementById(s[i]).value);
+        } catch(e) {}
     }
     $.ajax({
          type: "POST",

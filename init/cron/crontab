@@ -1,11 +1,10 @@
 #crontab
-0-59/4 * * * * unxdev01 *cron/cron_scrub_svcstatus
+#0-59/4 * * * * unxdev01 *cron/cron_scrub_svcstatus
 14 5 * * * unxdev01 *cron/cron_scrub_checks
 0-59/10 * * * * unxdev01 *cron/cron_unfinished_actions
 59 23 * * * unxdev01 *cron/cron_stats
 55 23 * * * unxdev01 *obsolescence/refresh_obsolescence
-50 23 * * * unxdev01 *compliance/cron_comp_status_log
 0 1 * * * unxdev01 *default/viz_cron_cleanup
 1 5 * * * unxdev01 *cron/cron_alerts_daily
-1 * * * * unxdev01 *cron/cron_alerts_hourly
+#1 * * * * unxdev01 *cron/cron_alerts_hourly
 * * * * * unxdev01 *cron/refresh_b_apps

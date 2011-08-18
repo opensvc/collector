@@ -85,6 +85,7 @@ class HtmlTable(object):
         self.column_filter_reset = '**clear**'
 
         # to be set by children
+        self.additional_inputs = []
         self.additional_filters = []
         self.cols = []
         self.colprops = {}
@@ -121,6 +122,9 @@ class HtmlTable(object):
         return self
 
     def setup_pager(self, n=0):
+        """ pass n=-1 to display a simple pager
+            to use when computing the total records number is too costly
+        """
         self.totalrecs = n
         if n == default_max_lines:
             self.overlimit = "+"
@@ -152,7 +156,7 @@ class HtmlTable(object):
                 self.pager_end = n
             else:
                 self.pager_start = (self.page-1) * self.perpage
-                if self.pager_start > self.totalrecs:
+                if self.totalrecs > 0 and self.pager_start > self.totalrecs:
                     self.pager_start = 0
                 self.pager_end = self.pager_start + self.perpage - 1
         else:
@@ -385,7 +389,7 @@ class HtmlTable(object):
                      ),
                      _class='floatw',
                    )
-        if self.totalrecs == default_max_lines:
+        if self.totalrecs == default_max_lines or self.totalrecs < 0:
             # unknown total pages. arbitrary high value.
             totalpages = 999999
         else:
@@ -401,8 +405,13 @@ class HtmlTable(object):
             page = 1
         start = (page-1) * self.perpage
         end = start + self.perpage
-        if end > self.totalrecs and self.totalrecs != default_max_lines:
+        if end > self.totalrecs and self.totalrecs != default_max_lines and self.totalrecs > 0:
             end = self.totalrecs
+
+        if self.totalrecs >= 0:
+            total = "/%d%s"%(self.totalrecs, self.overlimit)
+        else:
+            total = ""
 
         pager = []
         if page != 1:
@@ -412,7 +421,7 @@ class HtmlTable(object):
                            _onclick=set_page_js(page-1),
                          ))
         pager.append(A(
-                      '%d-%d/%d%s '%(start+1, end, self.totalrecs, self.overlimit),
+                      '%d-%d%s '%(start+1, end, total),
                        _class="current_page",
                        _onclick="""click_toggle_vis(event, '%(div)s','block');"""%dict(
                           div='perpage',
@@ -520,6 +529,8 @@ class HtmlTable(object):
         return ids
 
     def stored_filter_field(self, f):
+        if f not in self.colprops:
+            return None
         cp = self.colprops[f]
         if cp.table is None:
             return cp.field
@@ -534,6 +545,8 @@ class HtmlTable(object):
 
     def drop_filter_value(self, f):
         field = self.stored_filter_field(f)
+        if field is None:
+            return
         q = db.column_filters.col_tableid==self.id
         q &= db.column_filters.col_name==field
         q &= db.column_filters.user_id==session.auth.user.id
@@ -541,6 +554,8 @@ class HtmlTable(object):
 
     def store_filter_value(self, f, v):
         field = self.stored_filter_field(f)
+        if field is None:
+            return
         q = db.column_filters.col_tableid==self.id
         q &= db.column_filters.col_name==field
         q &= db.column_filters.user_id==session.auth.user.id
@@ -554,6 +569,8 @@ class HtmlTable(object):
 
     def stored_filter_value(self, f):
         field = self.stored_filter_field(f)
+        if field is None:
+            return ""
         q = db.column_filters.col_tableid==self.id
         q &= db.column_filters.col_name==field
         q &= db.column_filters.user_id==session.auth.user.id
@@ -832,8 +849,8 @@ class HtmlTable(object):
         return """table_ajax_submit('%(url)s', '%(id)s', %(inputs)s, %(additional_inputs)s, %(input_name)s, "%(additional_input_name)s");"""%dict(
                          url=URL(r=request,f=self.func, args=args, vars=vars),
                          id=self.innerhtml,
-                         inputs = 'inputs_'+self.id,
-                         additional_inputs = str(additional_inputs),
+                         inputs = str(self.ajax_inputs()),
+                         additional_inputs = str(additional_inputs+self.additional_inputs),
                          input_name=str(self.checkbox_names),
                          additional_input_name = str(additional_input_name),
                         )

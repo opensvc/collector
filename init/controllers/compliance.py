@@ -3375,41 +3375,63 @@ class table_comp_mod_status(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['mod_name', 'mod_total', 'mod_ok', 'mod_percent',
-                     'mod_log', 'mod_nodes']
+        self.cols = ['mod_name', 'total', 'ok', 'nok', 'na', 'obs', 'pct',
+                     'mod_log']
         self.colprops = {
             'mod_name': HtmlTableColumn(
                      title='Module',
                      field='mod_name',
+                     table='comp_mod_status',
                      display=True,
                      img='check16',
                     ),
-            'mod_total': HtmlTableColumn(
+            'total': HtmlTableColumn(
                      title='Total',
-                     field='mod_total',
+                     field='total',
+                     table='comp_mod_status',
                      display=True,
                      img='check16',
                      _class='numeric',
                     ),
-            'mod_ok': HtmlTableColumn(
+            'ok': HtmlTableColumn(
                      title='Ok',
-                     field='mod_ok',
+                     field='ok',
+                     table='comp_mod_status',
                      display=True,
                      img='check16',
                      _class='numeric',
                     ),
-            'mod_percent': col_mod_percent(
+            'nok': HtmlTableColumn(
+                     title='Not Ok',
+                     field='nok',
+                     table='comp_mod_status',
+                     display=True,
+                     img='check16',
+                     _class='numeric',
+                    ),
+            'na': HtmlTableColumn(
+                     title='N/A',
+                     field='na',
+                     table='comp_mod_status',
+                     display=True,
+                     img='check16',
+                     _class='numeric',
+                    ),
+            'obs': HtmlTableColumn(
+                     title='Obsolete',
+                     field='obs',
+                     table='comp_mod_status',
+                     display=True,
+                     img='check16',
+                     _class='numeric',
+                    ),
+            'pct': col_mod_percent(
                      title='Percent',
-                     field='mod_percent',
+                     field='pct',
+                     table='comp_mod_status',
                      display=True,
                      img='check16',
                      _class='comp_pct',
-                    ),
-            'mod_nodes': col_concat_list(
-                     title='Nodes',
-                     field='mod_nodes',
-                     display=False,
-                     img='node16',
                     ),
             'mod_log': col_comp_mod_status(
                      title='History',
@@ -3419,135 +3441,78 @@ class table_comp_mod_status(HtmlTable):
                      _class='comp_plot',
                     ),
         }
-        self.refreshable = False
 
 class table_comp_node_status(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['mod_node', 'mod_total', 'mod_ok', 'mod_percent',
-                     'mod_log', 'mod_names']
+        self.cols = ['node_name', 'total', 'ok', 'nok', 'na', 'obs', 'pct',
+                     "node_log"]
         self.colprops = {
-            'mod_node': HtmlTableColumn(
+            'node_name': HtmlTableColumn(
                      title='Node',
-                     field='mod_node',
+                     field='node_name',
+                     table='comp_node_status',
                      display=True,
                      img='node16',
                     ),
-            'mod_total': HtmlTableColumn(
+            'total': HtmlTableColumn(
                      title='Total',
-                     field='mod_total',
+                     field='total',
+                     table='comp_node_status',
                      display=True,
                      img='check16',
                      _class='numeric',
                     ),
-            'mod_ok': HtmlTableColumn(
+            'ok': HtmlTableColumn(
                      title='Ok',
-                     field='mod_ok',
+                     field='ok',
+                     table='comp_node_status',
                      display=True,
                      img='check16',
                      _class='numeric',
                     ),
-            'mod_percent': col_mod_percent(
+            'nok': HtmlTableColumn(
+                     title='Not Ok',
+                     field='nok',
+                     table='comp_node_status',
+                     display=True,
+                     img='check16',
+                     _class='numeric',
+                    ),
+            'na': HtmlTableColumn(
+                     title='N/A',
+                     field='na',
+                     table='comp_node_status',
+                     display=True,
+                     img='check16',
+                     _class='numeric',
+                    ),
+            'obs': HtmlTableColumn(
+                     title='Obsolete',
+                     field='obs',
+                     table='comp_node_status',
+                     display=True,
+                     img='check16',
+                     _class='numeric',
+                    ),
+            'pct': col_mod_percent(
                      title='Percent',
-                     field='mod_percent',
+                     field='pct',
+                     table='comp_node_status',
                      display=True,
                      img='check16',
                      _class='comp_pct',
                     ),
-            'mod_names': col_concat_list(
-                     title='Modules',
-                     field='mod_names',
-                     display=False,
-                     img='check16',
-                    ),
-            'mod_log': col_comp_node_status(
+            'node_log': col_comp_node_status(
                      title='History',
-                     field='mod_log',
+                     field='node_log',
                      display=True,
                      img='log16',
                      _class='comp_plot',
                     ),
         }
-        self.refreshable = False
-
-def cron_comp_status_log():
-    cron_nod_status_log()
-    cron_mod_status_log()
-    cron_nod_status_log_series()
-    cron_mod_status_log_series()
-
-def cron_nod_status_log():
-    sql = """replace into b_comp_node_status_weekly (id, year, week, run_nodename,
-nb_ok, nb_nok, nb_na) select id, year, week, run_nodename, nb_ok, nb_nok, nb_na
-from v_comp_node_status_current_week"""
-    db.executesql(sql)
-
-def cron_mod_status_log():
-    sql = """replace into b_comp_module_status_weekly (id, year, week, run_module,
-nb_ok, nb_nok, nb_na) select id, year, week, run_module, nb_ok, nb_nok, nb_na
-from v_comp_module_status_current_week"""
-
-def cron_nod_status_log_series():
-    sql = """drop table if exists b_comp_node_status_weekly_series"""
-    db.executesql(sql)
-    sql = """create table b_comp_node_status_weekly_series as (select id,
-run_nodename, concat('[', concat('[', group_concat(week order by year, week
-separator ', '), ']'), ', ', concat('[', group_concat(nb_ok order by year, week
-separator ', '), ']'), ', ', concat('[', group_concat(nb_nok order by year,
-week separator ', '), ']'), ', ', concat('[', group_concat(nb_na order by year,
-week separator ', '), ']'), ']') as log from b_comp_node_status_weekly where
-year*52+week>year(now())*52+week(now())-20 group by run_nodename);"""
-    db.executesql(sql)
-
-def cron_mod_status_log_series():
-    sql = """drop table if exists b_comp_module_status_weekly_series"""
-    db.executesql(sql)
-    sql = """create table b_comp_module_status_weekly_series as (select id,
-run_module, concat('[', concat('[', group_concat(week order by year, week
-separator ', '), ']'), ', ', concat('[', group_concat(nb_ok order by year, week
-separator ', '), ']'), ', ', concat('[', group_concat(nb_nok order by year,
-week separator ', '), ']'), ', ', concat('[', group_concat(nb_na order by year,
-week separator ', '), ']'), ']') as log from b_comp_module_status_weekly where
-year*52+week>year(now())*52+week(now())-20 group by run_module);"""
-    db.executesql(sql)
-
-@service.json
-def json_nod_status_log(nodename):
-    t = db.b_comp_node_status_weekly
-    o = ~t.year|~t.week
-    q = t.run_nodename == nodename
-    d = []
-    d_ok = []
-    d_nok = []
-    d_na = []
-    rows = db(q).select(orderby=o, limitby=(0,50))
-    for i in range(len(rows)-1, -1, -1):
-        r = rows[i]
-        d.append('w%d'%r.week)
-        d_ok.append(int(r.nb_ok))
-        d_nok.append(int(r.nb_nok))
-        d_na.append(int(r.nb_na))
-    return [d, [d_ok, d_nok, d_na]]
-
-@service.json
-def json_mod_status_log(module):
-    t = db.b_comp_module_status_weekly
-    o = ~t.year|~t.week
-    q = t.run_module == module
-    d = []
-    d_ok = []
-    d_nok = []
-    d_na = []
-    rows = db(q).select(orderby=o, limitby=(0,50))
-    for i in range(len(rows)-1, -1, -1):
-        r = rows[i]
-        d.append('w%d'%r.week)
-        d_ok.append(int(r.nb_ok))
-        d_nok.append(int(r.nb_nok))
-        d_na.append(int(r.nb_na))
-    return [d, [d_ok, d_nok, d_na]]
 
 @service.json
 def json_run_status_log(nodename, module):
@@ -3564,24 +3529,6 @@ def json_run_status_log(nodename, module):
         else: return 0
     data = map(lambda x: enc(x), data)
     return data
-
-def nod_plot_id(nodename):
-    return 'nod_sparkl_%s'%(nodename).replace('.','_')
-
-def nod_plot_url(nodename):
-    return URL(r=request,
-               f='call/json/json_nod_status_log/%(nodename)s'%dict(
-                 nodename=nodename)
-           )
-
-def mod_plot_id(module):
-    return 'mod_plot_%s'%(module).replace('.','_')
-
-def mod_plot_url(module):
-    return URL(r=request,
-               f='call/json/json_mod_status_log/%(module)s'%dict(
-                 module=module)
-           )
 
 def spark_id(nodename, module):
     return 'rh_%s_%s'%(nodename, module)
@@ -3604,6 +3551,22 @@ def table_comp_status_add_vfields(t):
     db.comp_status.virtualfields.append(table_comp_status_vfields())
     t.cols.insert(5, 'run_status_log')
 
+class col_run_date(HtmlTableColumn):
+    deadline = now - datetime.timedelta(days=7)
+
+    def outdated(self, t):
+         if t is None or t == '': return True
+         if t < self.deadline: return True
+         return False
+
+    def html(self, o):
+       d = self.get(o)
+       if self.outdated(d):
+           alert = 'color:darkred;font-weight:bold'
+       else:
+           alert = ''
+       return SPAN(d, _style=alert)
+
 class table_comp_status(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -3617,7 +3580,7 @@ class table_comp_status(HtmlTable):
                      'run_ruleset']
         self.cols += v_nodes_cols
         self.colprops = {
-            'run_date': HtmlTableColumn(
+            'run_date': col_run_date(
                      title='Run date',
                      field='run_date',
                      table='comp_status',
@@ -3833,7 +3796,7 @@ def ajax_comp_status_col_values():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_db_filters(q, 'v_nodes')
-    t.object_list = db(q).select(orderby=o, groupby=o)
+    t.object_list = db(q).select(o, orderby=o, groupby=o)
     return t.col_values_cloud(col)
 
 @auth.requires_login()
@@ -3847,25 +3810,79 @@ def ajax_comp_status():
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_db_filters(q, 'v_nodes')
 
-    n = db(q).count()
+    n = len(db(q).select(db.comp_status.id, limitby=default_limitby))
     t.setup_pager(n)
-    all = db(q).select(db.comp_status.ALL, db.v_nodes.id)
+    #all = db(q).select(db.comp_status.ALL, db.v_nodes.id)
     table_comp_status_add_vfields(t)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
 
-    mt = table_comp_mod_status('cs1', 'ajax_comp_mod_status')
-    mt.object_list = compute_mod_status(all)
-    mt.pageable = False
-    mt.filterable = False
-    mt.exportable = False
-    mt.dbfilterable = False
+    def chart(a, b, c, d):
+        total = a + b + c + d
+        pa = "%d%%"%int(a*100/total)
+        pb = "%d%%"%int(b*100/total)
+        pc = "%d%%"%int(c*100/total)
 
-    nt = table_comp_node_status('cs2', 'ajax_comp_node_status')
-    nt.object_list = compute_node_status(all)
-    nt.pageable = False
-    nt.filterable = False
-    nt.exportable = False
-    nt.dbfilterable = False
+        d = DIV(
+              DIV(
+                DIV(
+                  _style="""font-size: 0px;
+                            line-height: 0px;
+                            height: 8px;
+                            float: left;
+                            min-width: 0%%;
+                            max-width: %(p)s;
+                            width: %(p)s;
+                            background: #15367A;
+                         """%dict(p=pa),
+                ),
+                DIV(
+                  _style="""font-size: 0px;
+                            line-height: 0px;
+                            height: 8px;
+                            float: left;
+                            min-width: 0%%;
+                            max-width: %(p)s;
+                            width: %(p)s;
+                            background: #3aaa50;
+                         """%dict(p=pb),
+                ),
+                DIV(
+                  _style="""font-size: 0px;
+                            line-height: 0px;
+                            height: 8px;
+                            float: left;
+                            min-width: 0%%;
+                            max-width: %(p)s;
+                            width: %(p)s;
+                            background: #dcdcdc;
+                         """%dict(p=pc),
+                ),
+                _style="""text-align: left;
+                          margin: 2px auto;
+                          background: #FF7863;
+                          overflow: hidden;
+                       """,
+              ),
+              DIV("%d %s, %d %s, %d %s, %d %s"%(a, T("obsolete"), b, T("ok"), c, T("n/a"), d, T("not ok"))),
+              _style="""margin: auto;
+                        text-align: center;
+                        width: 100%;
+                     """,
+            ),
+        return d
+
+    q_obs = q & (db.comp_status.run_date < now - datetime.timedelta(days=7))
+    q_nok = q & (db.comp_status.run_date > now - datetime.timedelta(days=7)) & (db.comp_status.run_status == 1)
+    q_na = q & (db.comp_status.run_date > now - datetime.timedelta(days=7)) & (db.comp_status.run_status == 2)
+    q_ok = q & (db.comp_status.run_date > now - datetime.timedelta(days=7)) & (db.comp_status.run_status == 0)
+
+    obs = db(q_obs).count()
+    nok = db(q_nok).count()
+    na = db(q_na).count()
+    ok = db(q_ok).count()
+
+    mt = table_comp_mod_status('cms', 'ajax_comp_mod_status')
+    nt = table_comp_mod_status('cns', 'ajax_comp_node_status')
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         return t.csv()
@@ -3876,79 +3893,200 @@ def ajax_comp_status():
           url=spark_url(r.comp_status.run_nodename, r.comp_status.run_module),
           id=spark_id(r.comp_status.run_nodename, r.comp_status.run_module),
         )
-    for r in mt.object_list:
-        spark_cmds += "comp_status_plot('%(url)s', '%(id)s');"%dict(
-          url=mod_plot_url(r['mod_name']),
-          id=mod_plot_id(r['mod_name']),
-        )
-    for r in nt.object_list:
-        spark_cmds += "comp_status_plot('%(url)s', '%(id)s');"%dict(
-          url=nod_plot_url(r['mod_node']),
-          id=nod_plot_id(r['mod_node']),
-        )
     return DIV(
              SCRIPT(
                "$(document).ready(function(){%s});"%spark_cmds,
+               mt.ajax_submit(additional_inputs=t.ajax_inputs()),
+               nt.ajax_submit(additional_inputs=t.ajax_inputs()),
                _name=t.id+"_to_eval"
              ),
-             mt.html(),
-             nt.html(),
+             DIV(chart(obs, ok, na, nok), _style="padding:4px"),
+             DIV(_id="cms"),
+             DIV(_id="cns"),
              t.html(),
            )
 
-def compute_mod_status(rows):
-    h = {}
-    for r in rows:
-        if r.comp_status.run_module not in h:
-            h[r.comp_status.run_module] = {
-              'mod_name': r.comp_status.run_module,
-              'mod_total': 0,
-              'mod_ok': 0,
-              'mod_percent': 0,
-              'mod_nodes': [],
-              'mod_log': "[[], [], [], []]",
-            }
-        h[r.comp_status.run_module]['mod_total'] += 1
-        h[r.comp_status.run_module]['mod_nodes'].append(r.comp_status.run_nodename)
-        if r.comp_status.run_status == 0:
-            h[r.comp_status.run_module]['mod_ok'] += 1
-    for m in h.values():
-        if m['mod_total'] == 0:
-            continue
-        m['mod_percent'] = int(100*m['mod_ok']/m['mod_total'])
-    if len(h) > 0:
-        q = db.b_comp_module_status_weekly_series.run_module.belongs(h.keys())
-        rows = db(q).select()
-        for r in rows:
-            h[r.run_module]['mod_log'] = r.log
-    return sorted(h.values(), key=lambda x: (x['mod_percent'], x['mod_name']))
+@auth.requires_login()
+def ajax_comp_node_status():
+    t = table_comp_status('cs0', 'ajax_comp_status')
+    mt = table_comp_node_status('cns', 'ajax_comp_node_status')
 
-def compute_node_status(rows):
-    h = {}
-    for r in rows:
-        if r.comp_status.run_nodename not in h:
-            h[r.comp_status.run_nodename] = {
-              'mod_names': [],
-              'mod_total': 0,
-              'mod_ok': 0,
-              'mod_percent': 0,
-              'mod_node': r.comp_status.run_nodename,
-              'mod_log': "[[], [], [], []]",
-            }
-        h[r.comp_status.run_nodename]['mod_total'] += 1
-        h[r.comp_status.run_nodename]['mod_names'].append(r.comp_status.run_module)
-        if r.comp_status.run_status == 0:
-            h[r.comp_status.run_nodename]['mod_ok'] += 1
-    for m in h.values():
-        if m['mod_total'] == 0:
-            continue
-        m['mod_percent'] = int(100*m['mod_ok']/m['mod_total'])
-    if len(h) > 0:
-        q = db.b_comp_node_status_weekly_series.run_nodename.belongs(h.keys())
-        rows = db(q).select()
-        for r in rows:
-            h[r.run_nodename]['mod_log'] = r.log
-    return sorted(h.values(), key=lambda x: (x['mod_percent'],x['mod_node']))
+    o = ~db.comp_status.run_nodename
+    q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
+    q &= db.comp_status.run_nodename == db.v_nodes.nodename
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    q = apply_db_filters(q, 'v_nodes')
+    sql1 = db(q)._select().rstrip(';').replace('v_nodes.id, ','').replace('comp_status.id>0 AND', '')
+    regex = re.compile("SELECT .* FROM")
+    sql1 = regex.sub('', sql1)
+
+    q = db.comp_node_status.id > 0
+    for f in mt.cols:
+        q = _where(q, mt.colprops[f].table, mt.filter_parse(f), f)
+    where = str(q).replace("comp_node_status.", "u.")
+
+    mt.setup_pager(-1)
+    mt.dbfilterable = False
+    mt.filterable = True
+    mt.additional_inputs = t.ajax_inputs()
+
+    sql2 = """select * from (
+                select t.id,
+                     t.run_nodename as node_name,
+                     t.ok+t.nok+t.na+t.obs as total,
+                     t.ok,
+                     t.nok,
+                     t.na,
+                     t.obs,
+                     floor((t.ok+t.na)*100/(t.ok+t.nok+t.na+t.obs)) as pct
+                from (select comp_status.id,
+                           run_nodename,
+                           sum(if(run_date>="%(d)s" and run_status=0, 1, 0)) as ok,
+                           sum(if(run_date>="%(d)s" and run_status=1, 1, 0)) as nok,
+                           sum(if(run_date>="%(d)s" and run_status=2, 1, 0)) as na,
+                           sum(if(run_date<"%(d)s", 1, 0)) as obs
+                    from %(sql)s group by run_nodename) t) u
+              where %(where)s
+              order by pct, node_name
+              limit %(limit)d
+              offset %(offset)d"""%dict(
+                sql=sql1,
+                where=where,
+                d=(now-datetime.timedelta(days=7)),
+                limit=mt.perpage,
+                offset=mt.pager_start,
+           )
+
+    rows = db.executesql(sql2)
+
+    mt.object_list = map(lambda x: {'node_name': x[1],
+                                    'total':x[2],
+                                    'ok':x[3],
+                                    'nok': x[4],
+                                    'na': x[5],
+                                    'obs': x[6],
+                                    'pct':x[7]},
+                          rows)
+
+    for i, row in enumerate(mt.object_list):
+        sql = """select week(run_date) as week,
+                        sum(if(run_status=0, 1, 0)) as ok,
+                        sum(if(run_status=1, 1, 0)) as nok,
+                        sum(if(run_status=2, 1, 0)) as na
+                 from comp_log
+                 where run_nodename="%(node)s"
+                 group by week(run_date),run_nodename
+                 order by run_date desc
+                 limit 20"""%dict(node=row['node_name'])
+        week = []
+        ok = []
+        nok = []
+        na = []
+        for r in db.executesql(sql):
+            week.append(int(r[0]))
+            ok.append(int(r[1]))
+            nok.append(int(r[2]))
+            na.append(int(r[3]))
+        mt.object_list[i]['node_log'] = json.dumps([week, ok, nok, na])
+
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        return mt.csv()
+
+    return DIV(
+             mt.html(),
+           )
+
+@auth.requires_login()
+def ajax_comp_mod_status():
+    t = table_comp_status('cs0', 'ajax_comp_status')
+    mt = table_comp_mod_status('cms', 'ajax_comp_mod_status')
+
+    o = ~db.comp_status.run_nodename
+    q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
+    q &= db.comp_status.run_nodename == db.v_nodes.nodename
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    q = apply_db_filters(q, 'v_nodes')
+    sql1 = db(q)._select().rstrip(';').replace('v_nodes.id, ','').replace('comp_status.id>0 AND', '')
+    regex = re.compile("SELECT .* FROM")
+    sql1 = regex.sub('', sql1)
+
+    q = db.comp_mod_status.id > 0
+    for f in mt.cols:
+        q = _where(q, mt.colprops[f].table, mt.filter_parse(f), f)
+    where = str(q).replace("comp_mod_status.", "u.")
+
+    mt.setup_pager(-1)
+    mt.dbfilterable = False
+    mt.filterable = True
+    mt.additional_inputs = t.ajax_inputs()
+
+    sql2 = """select * from (
+                select t.id,
+                     t.run_module as mod_name,
+                     t.ok+t.nok+t.na+t.obs as total,
+                     t.ok,
+                     t.nok,
+                     t.na,
+                     t.obs,
+                     floor((t.ok+t.na)*100/(t.ok+t.nok+t.na+t.obs)) as pct
+                from (select comp_status.id,
+                           run_module,
+                           sum(if(run_date>="%(d)s" and run_status=0, 1, 0)) as ok,
+                           sum(if(run_date>="%(d)s" and run_status=1, 1, 0)) as nok,
+                           sum(if(run_date>="%(d)s" and run_status=2, 1, 0)) as na,
+                           sum(if(run_date<"%(d)s", 1, 0)) as obs
+                    from %(sql)s group by run_module) t) u
+              where %(where)s
+              order by pct, mod_name
+              limit %(limit)d
+              offset %(offset)d"""%dict(
+                sql=sql1,
+                where=where,
+                d=(now-datetime.timedelta(days=7)),
+                limit=mt.perpage,
+                offset=mt.pager_start,
+           )
+
+    rows = db.executesql(sql2)
+
+    mt.object_list = map(lambda x: {'mod_name': x[1],
+                                    'total':x[2],
+                                    'ok':x[3],
+                                    'nok': x[4],
+                                    'na': x[5],
+                                    'obs': x[6],
+                                    'pct':x[7]},
+                          rows)
+
+    for i, row in enumerate(mt.object_list):
+        sql = """select week(run_date) as week,
+                        sum(if(run_status=0, 1, 0)) as ok,
+                        sum(if(run_status=1, 1, 0)) as nok,
+                        sum(if(run_status=2, 1, 0)) as na
+                 from comp_log
+                 where run_module="%(module)s"
+                 group by week(run_date),run_module
+                 order by run_date desc
+                 limit 20"""%dict(module=row['mod_name'])
+        week = []
+        ok = []
+        nok = []
+        na = []
+        for r in db.executesql(sql):
+            week.append(int(r[0]))
+            ok.append(int(r[1]))
+            nok.append(int(r[2]))
+            na.append(int(r[3]))
+        mt.object_list[i]['mod_log'] = json.dumps([week, ok, nok, na])
+
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        return mt.csv()
+
+    return DIV(
+             mt.html(),
+           )
 
 @auth.requires_login()
 def comp_status():
@@ -3985,15 +4123,14 @@ def ajax_comp_log():
                                      seconds=now.second,
                                      microseconds=now.microsecond)
         request.vars.ajax_comp_log_f_run_date = '>'+str(d)
-    o = ~db.comp_log.run_date|~db.comp_log.id
+    o = ~db.comp_log.run_date
     q = _where(None, 'comp_log', domain_perms(), 'run_nodename')
     q &= db.comp_log.run_nodename == db.v_nodes.nodename
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_db_filters(q, 'v_nodes')
 
-    n = db(q).count()
-    t.setup_pager(n)
+    t.setup_pager(-1)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
     return t.html()
 
@@ -4257,6 +4394,9 @@ def comp_list_modulesets(pattern='%', auth=("", "")):
 @auth_uuid
 @service.xmlrpc
 def comp_get_moduleset(nodename, auth):
+    return _comp_get_moduleset(nodename)
+
+def _comp_get_moduleset(nodename):
     q = db.comp_node_moduleset.modset_node == nodename
     q &= db.comp_node_moduleset.modset_id == db.comp_moduleset.id
     q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
@@ -4459,6 +4599,9 @@ def node_team_responsible_id(nodename):
 @auth_uuid
 @service.xmlrpc
 def comp_get_ruleset(nodename, auth):
+    return _comp_get_ruleset(nodename)
+
+def _comp_get_ruleset(nodename):
     # initialize ruleset with asset variables
     ruleset = comp_get_node_ruleset(nodename)
 
@@ -4592,8 +4735,8 @@ def node_comp_status(node):
 @auth.requires_login()
 def ajax_compliance_node():
     node = request.args[0]
-    rsets = comp_get_ruleset(node)
-    msets = comp_get_moduleset(node)
+    rsets = _comp_get_ruleset(node)
+    msets = _comp_get_moduleset(node)
     d = SPAN(
           H3(T('Status')),
           node_comp_status(node),

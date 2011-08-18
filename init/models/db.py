@@ -932,6 +932,26 @@ db.define_table('comp_status',
     Field('run_action','string'),
     migrate=False)
 
+db.define_table('comp_node_status',
+    Field('node_name','string'),
+    Field('total','integer'),
+    Field('ok','integer'),
+    Field('nok','integer'),
+    Field('na','integer'),
+    Field('obs','integer'),
+    Field('pct','integer'),
+    migrate=True)
+
+db.define_table('comp_mod_status',
+    Field('mod_name','string'),
+    Field('total','integer'),
+    Field('ok','integer'),
+    Field('nok','integer'),
+    Field('na','integer'),
+    Field('obs','integer'),
+    Field('pct','integer'),
+    migrate=True)
+
 db.define_table('gen_filtersets',
     Field('fset_name','string', requires=IS_NOT_EMPTY()),
     Field('fset_author','string'),
@@ -1052,34 +1072,6 @@ db.define_table('log',
     Field('log_dict','string'),
     Field('log_date','datetime'),
     Field('log_gtalk_sent','integer'),
-    migrate=False)
-
-db.define_table('b_comp_module_status_weekly_series',
-    Field('run_module','string'),
-    Field('log','string'),
-    migrate=False)
-
-db.define_table('b_comp_node_status_weekly_series',
-    Field('run_nodename','string'),
-    Field('log','string'),
-    migrate=False)
-
-db.define_table('b_comp_node_status_weekly',
-    Field('year','string'),
-    Field('week','string'),
-    Field('run_nodename','string'),
-    Field('nb_ok','integer'),
-    Field('nb_nok','integer'),
-    Field('nb_na','integer'),
-    migrate=False)
-
-db.define_table('b_comp_module_status_weekly',
-    Field('year','string'),
-    Field('week','string'),
-    Field('run_module','string'),
-    Field('nb_ok','integer'),
-    Field('nb_nok','integer'),
-    Field('nb_na','integer'),
     migrate=False)
 
 db.define_table('column_filters',
