@@ -1281,3 +1281,18 @@ drop table b_comp_module_status_weekly;
 
 drop table b_comp_node_status_weekly;
 
+alter table log add column log_entry_id varchar(32);
+
+update log set log_entry_id=md5(id);
+
+alter table log add unique index idx3 (log_entry_id);
+
+alter table log add column log_email_sent tinyint(1) default 0 after log_gtalk_sent;
+
+alter table log add index idx4 (log_nodename);
+
+alter table log add index idx5 (log_svcname);
+
+# CREATE TABLE b_obj_responsibles (`id` int(11) NOT NULL AUTO_INCREMENT, `svcname` varchar(60) DEFAULT NULL, `nodename` varchar(60) DEFAULT NULL, `first_name` varchar(128) DEFAULT NULL, `last_name` varchar(128) DEFAULT NULL, `email` varchar(512) DEFAULT NULL, `email_notifications` varchar(1) DEFAULT 'T', `im_notifications` varchar(1) DEFAULT 'T', `im_type` int(11) DEFAULT NULL, `im_username` varchar(100) DEFAULT NULL, PRIMARY KEY (`id`)) DEFAULT CHARSET=utf8;
+# insert into b_obj_responsibles (select NULL, NULL, n.nodename, u.first_name, u.last_name, u.email, u.email_notifications, u.im_notifications, u.im_type, u.im_username from nodes n join auth_group g on n.team_responsible=g.role join auth_membership m on g.id=m.group_id join auth_user u on m.user_id=u.id);
+# insert into b_obj_responsibles (select NULL, m.mon_svcname, m.mon_nodname, u.first_name, u.last_name, u.email, u.email_notifications, u.im_notifications, u.im_type, u.im_username from svcmon m join services s on m.mon_svcname=s.svc_name join apps a on s.svc_app=a.app join apps_responsibles ar on a.id=ar.app_id join auth_membership am on ar.group_id=am.group_id join auth_user u on am.user_id=u.id);

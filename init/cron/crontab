@@ -6,5 +6,5 @@
 55 23 * * * unxdev01 *obsolescence/refresh_obsolescence
 0 1 * * * unxdev01 *default/viz_cron_cleanup
 1 5 * * * unxdev01 *cron/cron_alerts_daily
-#1 * * * * unxdev01 *cron/cron_alerts_hourly
+1 * * * * unxdev01 *cron/cron_alerts_hourly
 * * * * * unxdev01 *cron/refresh_b_apps

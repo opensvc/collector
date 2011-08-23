@@ -1072,6 +1072,8 @@ db.define_table('log',
     Field('log_dict','string'),
     Field('log_date','datetime'),
     Field('log_gtalk_sent','integer'),
+    Field('log_email_sent','integer'),
+    Field('log_entry_id','string'),
     migrate=False)
 
 db.define_table('column_filters',

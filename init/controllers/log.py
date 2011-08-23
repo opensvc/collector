@@ -66,7 +66,12 @@ class table_log(HtmlTable):
                      'log_nodename',
                      'log_user',
                      'log_action',
-                     'log_evt']
+                     'log_evt',
+                     'log_fmt',
+                     'log_dict',
+                     'log_entry_id',
+                     'log_gtalk_sent',
+                     'log_email_sent']
         self.colprops = {
             'log_date': HtmlTableColumn(
                      title='Date',
@@ -110,6 +115,36 @@ class table_log(HtmlTable):
                      img='log16',
                      display=True,
                     ),
+            'log_fmt': HtmlTableColumn(
+                     title='Format',
+                     field='log_fmt',
+                     img='log16',
+                     display=False,
+                    ),
+            'log_dict': HtmlTableColumn(
+                     title='Dictionary',
+                     field='log_dict',
+                     img='log16',
+                     display=False,
+                    ),
+            'log_entry_id': HtmlTableColumn(
+                     title='Entry id',
+                     field='log_entry_id',
+                     img='log16',
+                     display=False,
+                    ),
+            'log_gtalk_sent': HtmlTableColumn(
+                     title='Sent via gtalk',
+                     field='log_gtalk_sent',
+                     img='log16',
+                     display=False,
+                    ),
+            'log_email_sent': HtmlTableColumn(
+                     title='Sent via email',
+                     field='log_email_sent',
+                     img='log16',
+                     display=False,
+                    ),
         }
         self.dbfilterable = False
         self.ajax_col_values = 'ajax_log_col_values'
@@ -121,21 +156,9 @@ def ajax_log_col_values():
     col = request.args[0]
     o = db.log[col]
     q = db.log.id > 0
-    t.object_list = db(q).select(orderby=o, groupby=o)
     for f in set(t.cols)-set(t.special_filtered_cols):
         q = _where(q, 'log', t.filter_parse(f), f)
-    all = db(q).select()
-    ids = []
-    for i, row in enumerate(all):
-        for f in t.special_filtered_cols:
-            if not t.match_col(t.filter_parse(f), row, f):
-                ids.append(row.id)
-    if len(ids) > 0:
-        q = ~db.log.id.belongs(ids)
-
-    rows = db(q).select(orderby=o)
-    t.object_list = map(lambda x: {col: x}, set([r[col] for r in rows]))
-
+    t.object_list = db(q).select(orderby=o, groupby=o)
     return t.col_values_cloud(col)
 
 @auth.requires_login()
@@ -147,16 +170,6 @@ def ajax_log():
         q = _where(q, 'log', t.filter_parse(f), f)
     n = db(q).count()
     t.setup_pager(n)
-
-    all = db(q).select()
-    ids = []
-    for i, row in enumerate(all):
-        for f in t.special_filtered_cols:
-            if not t.match_col(t.filter_parse(f), row, f):
-                ids.append(row.id)
-    if len(ids) > 0:
-        q = ~db.log.id.belongs(ids)
-
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
 
     return t.html()
