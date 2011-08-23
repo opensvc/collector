@@ -1167,6 +1167,9 @@ action_img_h = {
     'syncresync': 'action_sync_16.png',
     'syncupdate': 'action_sync_16.png',
     'syncverify': 'action_sync_16.png',
+    'toc': 'action_toc_16.png',
+    'stonith': 'action_stonith_16.png',
+    'switch': 'action_switch_16.png',
 }
 
 os_img_h = {
