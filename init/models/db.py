@@ -1168,4 +1168,47 @@ db.define_table('prov_template_team_responsible',
     Field('group_id','integer'),
     migrate=False)
 
+db.define_table('pdns_domains',
+    Field('name','string'),
+    Field('master','string'),
+    Field('last_check','integer'),
+    Field('type','string', requires=IS_IN_SET(['MASTER', 'NATIVE', 'SLAVE']), default='MASTER'),
+    Field('notified_serial','integer'),
+    Field('account','string'),
+    migrate=False)
+
+db.define_table('pdns_records',
+    Field('domain_id','integer',
+          requires=IS_IN_DB(db, db.pdns_domains.id, "%(name)s", zero=T("choose domain"))),
+    Field('name','string',
+          requires=IS_NOT_EMPTY()),
+    Field('type','string',
+          requires=IS_IN_SET(['A', 'CNAME', 'NS', 'SOA', 'TXT', 'PTR']),
+          default='A'),
+    Field('content','string',
+          requires=IS_NOT_EMPTY()),
+    Field('ttl','integer', default=120),
+    Field('prio','integer'),
+    Field('change_date','integer'),
+    migrate=False)
+
+db.pdns_domains.name.requires = [IS_NOT_EMPTY(),
+                                 IS_NOT_IN_DB(db, db.pdns_domains.name)]
+
+db.define_table('networks',
+    Field('name','string'),
+    Field('network','string'),
+    Field('broadcast','string'),
+    Field('netmask','integer',
+          requires=IS_INT_IN_RANGE(0, 33)),
+    Field('team_responsible','string',
+          requires=IS_IN_DB(db, db.auth_group.role, "%(role)s", zero=T('choose team'))),
+    migrate=False)
+
+db.networks.name.requires = [IS_NOT_EMPTY(),
+                             IS_NOT_IN_DB(db, db.networks.name)]
+db.networks.network.requires = [IS_NOT_EMPTY(),
+                                IS_NOT_IN_DB(db, db.networks.network)]
+db.networks.broadcast.requires = [IS_NOT_EMPTY(),
+                                 IS_NOT_IN_DB(db, db.networks.broadcast)]
 

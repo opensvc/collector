@@ -988,6 +988,10 @@ ul.login_menu ul {
     padding: 0 0 0 20px;
 }
 
+.dns16 {
+    background: transparent url('dns16.png') no-repeat;
+    padding: 0 0 0 20px;
+}
 .hd16 {
     background: transparent url('hd16.png') no-repeat;
     padding: 0 0 0 20px;

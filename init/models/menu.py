@@ -77,6 +77,10 @@ response.menu = [
               URL(request.application,'compliance','comp_status',
                   vars={'0_f_run_date': '>'+sevendays,
                         'clear_filters': 'true'})],
+             [SPAN(T('Networks'), _class='hd16'), False,
+              URL(request.application,'networks','networks')],
+             [SPAN(T('Domain Name Service'), _class='dns16'), False,
+              URL(request.application,'dns','dns')],
              [SPAN(T('Storage'), _class='hd16'), False,
               URL(request.application,'sym','index')],
          ]

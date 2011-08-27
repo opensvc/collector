@@ -1293,6 +1293,53 @@ alter table log add index idx4 (log_nodename);
 
 alter table log add index idx5 (log_svcname);
 
-# CREATE TABLE b_obj_responsibles (`id` int(11) NOT NULL AUTO_INCREMENT, `svcname` varchar(60) DEFAULT NULL, `nodename` varchar(60) DEFAULT NULL, `first_name` varchar(128) DEFAULT NULL, `last_name` varchar(128) DEFAULT NULL, `email` varchar(512) DEFAULT NULL, `email_notifications` varchar(1) DEFAULT 'T', `im_notifications` varchar(1) DEFAULT 'T', `im_type` int(11) DEFAULT NULL, `im_username` varchar(100) DEFAULT NULL, PRIMARY KEY (`id`)) DEFAULT CHARSET=utf8;
-# insert into b_obj_responsibles (select NULL, NULL, n.nodename, u.first_name, u.last_name, u.email, u.email_notifications, u.im_notifications, u.im_type, u.im_username from nodes n join auth_group g on n.team_responsible=g.role join auth_membership m on g.id=m.group_id join auth_user u on m.user_id=u.id);
-# insert into b_obj_responsibles (select NULL, m.mon_svcname, m.mon_nodname, u.first_name, u.last_name, u.email, u.email_notifications, u.im_notifications, u.im_type, u.im_username from svcmon m join services s on m.mon_svcname=s.svc_name join apps a on s.svc_app=a.app join apps_responsibles ar on a.id=ar.app_id join auth_membership am on ar.group_id=am.group_id join auth_user u on am.user_id=u.id);
+create table pdns_domains (
+ id		 INT auto_increment,
+ name		 VARCHAR(255) NOT NULL,
+ master		 VARCHAR(128) DEFAULT NULL,
+ last_check	 INT DEFAULT NULL,
+ type		 VARCHAR(6) NOT NULL,
+ notified_serial INT DEFAULT NULL, 
+ account         VARCHAR(40) DEFAULT NULL,
+ primary key (id)
+) Engine=InnoDB;
+
+CREATE UNIQUE INDEX name_index ON pdns_domains(name);
+
+CREATE TABLE pdns_records (
+  id              INT auto_increment,
+  domain_id       INT DEFAULT NULL,
+  name            VARCHAR(255) DEFAULT NULL,
+  type            VARCHAR(10) DEFAULT NULL,
+  content         VARCHAR(255) DEFAULT NULL,
+  ttl             INT DEFAULT NULL,
+  prio            INT DEFAULT NULL,
+  change_date     INT DEFAULT NULL,
+  primary key(id)
+)Engine=InnoDB;
+
+CREATE INDEX rec_name_index ON pdns_records(name);
+CREATE INDEX nametype_index ON pdns_records(name,type);
+CREATE INDEX domain_id ON pdns_records(domain_id);
+
+create table pdns_supermasters (
+  ip VARCHAR(25) NOT NULL, 
+  nameserver VARCHAR(255) NOT NULL, 
+  account VARCHAR(40) DEFAULT NULL
+) Engine=InnoDB;
+
+alter table pdns_records add CONSTRAINT `records_ibfk_1` FOREIGN KEY (`domain_id`) REFERENCES `pdns_domains` (`id`) ON DELETE CASCADE;
+
+CREATE TABLE networks (
+  id              INT auto_increment,
+  name            VARCHAR(255) DEFAULT NULL,
+  network         VARCHAR(40) DEFAULT NULL,
+  broadcast       VARCHAR(40) DEFAULT NULL,
+  netmask         SMALLINT UNSIGNED DEFAULT NULL,
+  team_responsible VARCHAR(255) DEFAULT NULL,
+  primary key(id)
+) Engine=InnoDB;
+
+alter table networks add unique index idx1 (name);
+
+alter table networks add unique index idx2 (network, broadcast);

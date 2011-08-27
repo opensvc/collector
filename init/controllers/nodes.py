@@ -250,7 +250,7 @@ class table_nodes(HtmlTable):
                 _class='del16',
                 _onclick="""if (confirm("%(text)s")){%(s)s};"""%dict(
                    s=self.ajax_submit(args=['node_del']),
-                   text=T("Deleting a node also deletes all its asset information. Please confirm user deletion"),
+                   text=T("Deleting a node also deletes all its asset information. Please confirm node deletion"),
                 ),
               ),
               _class='floatw',
