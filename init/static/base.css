@@ -992,6 +992,10 @@ ul.login_menu ul {
     background: transparent url('dns16.png') no-repeat;
     padding: 0 0 0 20px;
 }
+.net16 {
+    background: transparent url('net16.png') no-repeat;
+    padding: 0 0 0 20px;
+}
 .hd16 {
     background: transparent url('hd16.png') no-repeat;
     padding: 0 0 0 20px;
@@ -1348,5 +1352,9 @@ button, input[type=button], input[type=submit] {
 
 .bggreen {
     background-color: #009900;
+}
+
+.bgblack {
+    background-color: #2d2d2d;
 }
 

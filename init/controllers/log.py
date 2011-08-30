@@ -1,4 +1,6 @@
 img_h = {
+  'networks': 'net16.png',
+  'dns': 'dns16.png',
   'service': 'svc.png',
   'apps': 'svc.png',
   'auth': 'guys16.png',

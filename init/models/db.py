@@ -1189,7 +1189,7 @@ db.define_table('pdns_records',
           requires=IS_NOT_EMPTY()),
     Field('ttl','integer', default=120),
     Field('prio','integer'),
-    Field('change_date','integer'),
+    Field('change_date','integer', default=request.now),
     migrate=False)
 
 db.pdns_domains.name.requires = [IS_NOT_EMPTY(),
@@ -1211,4 +1211,13 @@ db.networks.network.requires = [IS_NOT_EMPTY(),
                                 IS_NOT_IN_DB(db, db.networks.network)]
 db.networks.broadcast.requires = [IS_NOT_EMPTY(),
                                  IS_NOT_IN_DB(db, db.networks.broadcast)]
+
+db.define_table('appinfo',
+    Field('app_svcname','string'),
+    Field('app_launcher','string'),
+    Field('app_key','string'),
+    Field('app_value','string'),
+    Field('app_updated','datetime'),
+    migrate=False)
+
 

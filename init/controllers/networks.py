@@ -37,37 +37,37 @@ class table_networks(HtmlTable):
             'id': HtmlTableColumn(
                      title='Network Id',
                      field='id',
-                     img='network16',
+                     img='net16',
                      display=True,
                     ),
             'name': HtmlTableColumn(
                      title='Name',
                      field='name',
-                     img='network16',
+                     img='net16',
                      display=True,
                     ),
             'network': HtmlTableColumn(
                      title='Network',
                      field='network',
-                     img='network16',
+                     img='net16',
                      display=True,
                     ),
             'broadcast': HtmlTableColumn(
                      title='Broadcast',
                      field='broadcast',
-                     img='network16',
+                     img='net16',
                      display=True,
                     ),
             'netmask': HtmlTableColumn(
                      title='Netmask',
                      field='netmask',
-                     img='network16',
+                     img='net16',
                      display=True,
                     ),
             'team_responsible': HtmlTableColumn(
                      title='Team Responsible',
                      field='team_responsible',
-                     img='network16',
+                     img='guys16',
                      display=True,
                     ),
         }
@@ -175,11 +175,11 @@ def network_edit():
 
 @auth.requires_login()
 def ajax_networks_col_values():
-    t = table_dns_domains('networks', 'ajax_networks')
+    t = table_networks('networks', 'ajax_networks')
     col = request.args[0]
     o = db.networks[col]
     q = db.networks.id > 0
-    for f in set(t.cols)-set(t.special_filtered_cols):
+    for f in t.cols:
         q = _where(q, 'networks', t.filter_parse(f), f)
     t.object_list = db(q).select(orderby=o, groupby=o)
     return t.col_values_cloud(col)

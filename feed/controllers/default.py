@@ -167,6 +167,15 @@ def update_virtual_asset(nodename, svcname):
 
 @auth_uuid
 @service.xmlrpc
+def update_appinfo(vars, vals, auth):
+    h = {}
+    for a,b in zip(vars, vals[0]):
+        h[a] = b
+    db.executesql("delete from appinfo where app_svcname='%s'"%h['app_svcname'])
+    generic_insert('appinfo', vars, vals)
+
+@auth_uuid
+@service.xmlrpc
 def update_service(vars, vals, auth):
     if 'svc_hostid' not in vars:
         return

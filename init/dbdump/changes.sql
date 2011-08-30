@@ -1343,3 +1343,14 @@ CREATE TABLE networks (
 alter table networks add unique index idx1 (name);
 
 alter table networks add unique index idx2 (network, broadcast);
+
+CREATE TABLE appinfo (
+  id              INT auto_increment,
+  app_svcname     VARCHAR(60) DEFAULT NULL,
+  app_launcher    VARCHAR(255) DEFAULT NULL,
+  app_key         VARCHAR(40) DEFAULT NULL,
+  app_value       VARCHAR(255) DEFAULT NULL,
+  app_updated     timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  primary key(id)
+) Engine=InnoDB;
+

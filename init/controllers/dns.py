@@ -214,12 +214,44 @@ def ajax_dns_domains():
 #
 # Records
 #
+class col_type(HtmlTableColumn):
+    def html(self, o):
+       d = self.get(o)
+       if d in ["A", "PTR"]:
+           return DIV(d, _class="boxed_small bgblack")
+       elif d == "CNAME":
+           return DIV(d, _class="boxed_small bggreen")
+       else:
+           return DIV(d, _class="boxed_small bgred")
+
 @auth.requires_membership('DnsManager')
 def _record_form(record=None):
     if record is not None:
         deletable = True
     else:
         deletable = False
+    js = """if ($("#pdns_records_content").is(":visible")) {
+            $("#pdns_records_content").hide();
+            $("#pdns_records_content").parent().append("<div id=pdns_records_content_1>loading...</div>");
+            $("#pdns_records_content").parent().append("<div id=pdns_records_content_2></div>");
+            function g() {
+                $("#pdns_records_content_2 > select").click(function(){
+                    $("#pdns_records_content").val($(this).val());
+                });
+            };
+            function f() {
+                $("#pdns_records_content_1 > select").click(function(){
+                    sync_ajax("%(url2)s"+"/"+$(this).val(), [], "pdns_records_content_2", g);
+                });
+            };
+            sync_ajax("%(url1)s", [], "pdns_records_content_1", f);
+            } else {
+                $("#pdns_records_content").show();
+                $("#pdns_records_content_1").remove();
+                $("#pdns_records_content_2").remove();
+            }
+         """%dict(url1=URL(r=request, f="networks"),
+                  url2=URL(r=request, f="ips"))
     return SQLFORM(db.pdns_records,
                  record=record,
                  deletable=deletable,
@@ -238,6 +270,9 @@ def _record_form(record=None):
                      'content': 'Content',
                      'ttl': 'Time to Live',
                      'prio': 'Priority',
+                 },
+                 col3={
+                     'content': IMG(_src=URL(r=request, c='static', f='wizard16.png'), _onclick=js)
                  })
 
 class table_dns_records(HtmlTable):
@@ -265,7 +300,7 @@ class table_dns_records(HtmlTable):
                      img='dns16',
                      display=True,
                     ),
-            'type': HtmlTableColumn(
+            'type': col_type(
                      title='Type',
                      field='type',
                      img='dns16',
@@ -293,7 +328,7 @@ class table_dns_records(HtmlTable):
                      title='Last change',
                      field='change_date',
                      img='time16',
-                     display=True,
+                     display=False,
                     ),
         }
         self.dbfilterable = False
@@ -346,6 +381,26 @@ class table_dns_records(HtmlTable):
             )
         return d
 
+def ptr_add():
+    if request.vars.type != 'A':
+        return
+    request.vars.type = 'PTR'
+    tmp = request.vars.content
+    l = tmp.split('.')
+    l.reverse()
+    tmp = '.'.join(l)
+    tmp += ".in-addr.arpa"
+    request.vars.content = request.vars.name
+    request.vars.name = tmp
+    form = _record_form()
+    if form.accepts(request.vars):
+        response.flash = T("a and ptr recorded")
+        _log('dns.records.add',
+             'added record %(u)s',
+             dict(u=request.vars.name))
+    elif form.errors:
+        response.flash = T("errors in ptr form")
+
 @auth.requires_login()
 def record_add():
     form = _record_form()
@@ -354,6 +409,7 @@ def record_add():
         _log('dns.records.add',
              'added record %(u)s',
              dict(u=request.vars.name))
+        ptr_add()
         redirect(URL(r=request, f='dns'))
     elif form.errors:
         response.flash = T("errors in form")
@@ -431,6 +487,33 @@ def ajax_dns_records():
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
 
     return t.html()
+
+@auth.requires_login()
+def networks():
+    rows = db(db.networks.id>0).select()
+    l = map(lambda r: OPTION(r.name, " - ", "/".join((r.network, str(r.netmask))), _value=r.id), rows)
+    return SELECT(l)
+
+@auth.requires_login()
+def ips():
+    from socket import inet_ntoa
+    from struct import pack
+    network_id = request.args[0]
+    sql = """select inet_aton(network), inet_aton(broadcast) from networks where id=%s"""%network_id
+    rows = db.executesql(sql)
+    ipl = map(lambda x: inet_ntoa(pack('>l', x)), range(rows[0][0], rows[0][1]))
+    if len(ipl) == 0:
+        return SPAN()
+    sql = """select content from pdns_records where content in (%s)"""%','.join(map(repr, ipl))
+    rows = db.executesql(sql)
+    alloc_ips = map(lambda r: r[0], rows)
+    for i, ip in enumerate(ipl):
+        if ip in alloc_ips:
+           ipl[i] += " *"
+    l = map(lambda r: OPTION(r), ipl)
+    return SELECT(l)
+
+
 
 #
 # Common
