@@ -48,13 +48,13 @@ class table_dns_domains(HtmlTable):
                      title='Master',
                      field='master',
                      img='dns16',
-                     display=True,
+                     display=False,
                     ),
             'last_check': HtmlTableColumn(
                      title='Last Check',
                      field='last_check',
                      img='time16',
-                     display=True,
+                     display=False,
                     ),
             'type': HtmlTableColumn(
                      title='Type',
@@ -72,7 +72,7 @@ class table_dns_domains(HtmlTable):
                      title='Account',
                      field='account',
                      img='guy16',
-                     display=True,
+                     display=False,
                     ),
         }
         self.dbfilterable = False
