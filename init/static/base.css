@@ -996,6 +996,14 @@ ul.login_menu ul {
     background: transparent url('net16.png') no-repeat;
     padding: 0 0 0 20px;
 }
+.down16 {
+    background: transparent url('down16.png') no-repeat;
+    padding: 0 0 0 20px;
+}
+.right16 {
+    background: transparent url('right16.png') no-repeat;
+    padding: 0 0 0 20px;
+}
 .hd16 {
     background: transparent url('hd16.png') no-repeat;
     padding: 0 0 0 20px;

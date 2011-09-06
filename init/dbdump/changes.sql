@@ -1354,3 +1354,30 @@ CREATE TABLE appinfo (
   primary key(id)
 ) Engine=InnoDB;
 
+alter table comp_status add column run_svcname varchar(64);
+
+alter table comp_log add column run_svcname varchar(64);
+
+alter table comp_status drop index idx1;
+
+create unique index idx1 on comp_status (run_nodename, run_svcname, run_module);
+
+CREATE TABLE `comp_rulesets_services` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `ruleset_id` int(11) NOT NULL,
+  `svcname` varchar(100) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx1` (`ruleset_id`,`svcname`),
+  KEY `idx2` (`svcname`)
+);
+
+CREATE TABLE `comp_modulesets_services` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `modset_svcname` varchar(60) NOT NULL,
+  `modset_id` int(11) NOT NULL,
+  `modset_mod_author` varchar(100) DEFAULT '',
+  `modset_updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx1` (`modset_svcname`,`modset_id`),
+  KEY `idx2` (`modset_svcname`)
+);

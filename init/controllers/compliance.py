@@ -154,6 +154,8 @@ def plot_log(s):
         total = ok[i] + nok[i] + na[i]
         if total > _max:
             _max = total
+    if _max == 0:
+        return SPAN("no data")
     ratio = float(height) / _max
     for i in weeks:
         if i not in week:
@@ -796,6 +798,75 @@ Date();$("#%(n)s_container").append("<div style='display:table-row'><span class=
                )
         return form
 
+    def html_cve(self, o):
+        v = self.get(o)
+        l = [DIV(
+               DIV('cve', _style='display:table-cell;font-weight:bold', _class="comp16"),
+               _style="display:table-row",
+             )]
+        try:
+            cve = json.loads(v)
+            if 'product' not in cve:
+                raise
+        except:
+            return SPAN("malformed value", PRE(v))
+        l += [DIV(
+                DIV(T('Product'), _style='display:table-cell', _class="pkg16"),
+                DIV(cve['product'], _style='display:table-cell'),
+                _style="display:table-row",
+              )]
+        l += [DIV(
+                DIV(T('Minimum version'), _style='display:table-cell', _class="pkg16"),
+                DIV(cve['minver'], _style='display:table-cell'),
+                _style="display:table-row",
+              )]
+        l += [DIV(
+                DIV(T('Maximum version'), _style='display:table-cell', _class="pkg16"),
+                DIV(cve['maxver'], _style='display:table-cell'),
+                _style="display:table-row",
+              )]
+        return DIV(l, _class="comp_var_table")
+
+    def form_cve(self, o):
+        name = 'pack_n_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
+        l = []
+        v = self.get(o)
+        if v is None or v == "":
+            cve = {'product':'', 'minver':'', 'maxver':''}
+        else:
+            try:
+                cve = json.loads(v)
+                if 'product' not in cve:
+                    raise
+            except:
+                return self.form_raw(o)
+        l.append(DIV(
+                   DIV(T("Product"), _class="pkg16"),
+                   INPUT(_name=name, _id="%s_product"%name, _value=cve['product']),
+                   _style="display:table-row",
+                 ))
+        l.append(DIV(
+                   DIV(T("Minimum version"), _class="pkg16"),
+                   INPUT(_name=name, _id="%s_minver"%name, _value=cve['minver']),
+                   _style="display:table-row",
+                 ))
+        l.append(DIV(
+                   DIV(T("Maximum version"), _class="pkg16"),
+                   INPUT(_name=name, _id="%s_maxver"%name, _value=cve['maxver']),
+                   _style="display:table-row",
+                 ))
+        form = DIV(
+                 SPAN(l, _id=name+'_container'),
+                 BR(),
+                 INPUT(
+                   _type="submit",
+                   _onclick=self.t.ajax_submit(additional_input_name=name,
+                                               args=["var_value_set_dict", name]),
+                 ),
+                 _class="comp_var_table",
+               )
+        return form
+
     def _html(self, o):
         c = self.t.colprops['var_class'].get(o)
         if not hasattr(self, 'html_'+str(c)):
@@ -1118,8 +1189,20 @@ class table_comp_rulesets(HtmlTable):
             self += HtmlTableMenu('Team responsible', 'guys16', ['team_responsible_attach', 'team_responsible_detach'])
             self += HtmlTableMenu('Filterset', 'filters', ['filterset_attach', 'filterset_detach'])
             self += HtmlTableMenu('Variable', 'comp16', ['ruleset_var_add', 'ruleset_var_del'])
-            self += HtmlTableMenu('Ruleset', 'comp16', ['ruleset_add', 'ruleset_del', 'ruleset_rename', 'ruleset_clone', 'ruleset_change_type'])
+            self += HtmlTableMenu('Ruleset', 'comp16', ['ruleset_add',
+                                                        'ruleset_del',
+                                                        'ruleset_rename',
+                                                        'ruleset_clone',
+                                                        'ruleset_change_type',
+                                                        'ruleset_node_attach'])
         self.ajax_col_values = 'ajax_comp_rulesets_col_values'
+
+    def ruleset_node_attach(self):
+        return A(
+                 T("Rulesets/Nodes attachment"),
+                 _href=URL(r=request, f="comp_rulesets_nodes_attachment"),
+                 _class="attach16",
+               )
 
     def ruleset_change_type(self):
         label = 'Change ruleset type'
@@ -1870,6 +1953,13 @@ def comp_rules():
             ajax_comp_rulesets(),
             _id='cr0',
           ),
+        )
+    return dict(table=t)
+
+@auth.requires_login()
+def comp_rulesets_nodes_attachment():
+    t = DIV(
+          comp_menu('Rules'),
           DIV(
             ajax_comp_rulesets_nodes(),
             _id='crn1',
@@ -2729,9 +2819,19 @@ class table_comp_moduleset(HtmlTable):
             self.form_module_add = self.comp_module_add_sqlform()
             self.form_moduleset_add = self.comp_moduleset_add_sqlform()
             self += HtmlTableMenu('Module', 'action16', ['module_add', 'module_del'])
-            self += HtmlTableMenu('Moduleset', 'action16', ['moduleset_add', 'moduleset_del', 'moduleset_rename'])
+            self += HtmlTableMenu('Moduleset', 'action16', ['moduleset_add',
+                                                            'moduleset_del',
+                                                            'moduleset_rename',
+                                                            'moduleset_node_attach'])
             self += HtmlTableMenu('Team responsible', 'guys16', ['team_responsible_attach', 'team_responsible_detach'])
         self.sub_span = ['teams_responsible']
+
+    def moduleset_node_attach(self):
+        return A(
+                 T("Modulesets/Nodes attachment"),
+                 _href=URL(r=request, f="comp_modulesets_nodes"),
+                 _class="attach16",
+               )
 
     def checkbox_key(self, o):
         if o is None:
@@ -3360,6 +3460,13 @@ def comp_modules():
             ajax_comp_moduleset(),
             _id='ajax_comp_moduleset',
           ),
+        )
+    return dict(table=t)
+
+@auth.requires_login()
+def comp_modulesets_nodes():
+    t = DIV(
+          comp_menu('Modules'),
           DIV(
             ajax_comp_modulesets_nodes(),
             _id='cmn1',
@@ -3436,6 +3543,78 @@ class table_comp_mod_status(HtmlTable):
             'mod_log': col_comp_mod_status(
                      title='History',
                      field='mod_log',
+                     display=True,
+                     img='log16',
+                     _class='comp_plot',
+                    ),
+        }
+
+class table_comp_svc_status(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['svc_name', 'total', 'ok', 'nok', 'na', 'obs', 'pct',
+                     "svc_log"]
+        self.colprops = {
+            'svc_name': HtmlTableColumn(
+                     title='Service',
+                     field='svc_name',
+                     table='comp_svc_status',
+                     display=True,
+                     img='node16',
+                    ),
+            'total': HtmlTableColumn(
+                     title='Total',
+                     field='total',
+                     table='comp_svc_status',
+                     display=True,
+                     img='check16',
+                     _class='numeric',
+                    ),
+            'ok': HtmlTableColumn(
+                     title='Ok',
+                     field='ok',
+                     table='comp_svc_status',
+                     display=True,
+                     img='check16',
+                     _class='numeric',
+                    ),
+            'nok': HtmlTableColumn(
+                     title='Not Ok',
+                     field='nok',
+                     table='comp_svc_status',
+                     display=True,
+                     img='check16',
+                     _class='numeric',
+                    ),
+            'na': HtmlTableColumn(
+                     title='N/A',
+                     field='na',
+                     table='comp_svc_status',
+                     display=True,
+                     img='check16',
+                     _class='numeric',
+                    ),
+            'obs': HtmlTableColumn(
+                     title='Obsolete',
+                     field='obs',
+                     table='comp_svc_status',
+                     display=True,
+                     img='check16',
+                     _class='numeric',
+                    ),
+            'pct': col_mod_percent(
+                     title='Percent',
+                     field='pct',
+                     table='comp_svc_status',
+                     display=True,
+                     img='check16',
+                     _class='comp_pct',
+                    ),
+            'svc_log': col_comp_node_status(
+                     title='History',
+                     field='svc_log',
                      display=True,
                      img='log16',
                      _class='comp_plot',
@@ -3574,6 +3753,7 @@ class table_comp_status(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['run_date',
                      'run_nodename',
+                     'run_svcname',
                      'run_module',
                      'run_action',
                      'run_status',
@@ -3588,8 +3768,15 @@ class table_comp_status(HtmlTable):
                      display=True,
                     ),
             'run_nodename': HtmlTableColumn(
-                     title='Node name',
+                     title='Node',
                      field='run_nodename',
+                     table='comp_status',
+                     img='node16',
+                     display=True,
+                    ),
+            'run_svcname': HtmlTableColumn(
+                     title='Service',
+                     field='run_svcname',
                      table='comp_status',
                      img='node16',
                      display=True,
@@ -3863,7 +4050,12 @@ def ajax_comp_status():
                           overflow: hidden;
                        """,
               ),
-              DIV("%d %s, %d %s, %d %s, %d %s"%(a, T("obsolete"), b, T("ok"), c, T("n/a"), d, T("not ok"))),
+              DIV(
+                SPAN(a, " ", T("obsolete"), _style="color:#15367A;padding:3px"),
+                SPAN(b, " ", T("ok"), _style="color:#3aaa50;padding:3px"),
+                SPAN(c, " ", T("n/a"), _style="color:#acacac;padding:3px"),
+                SPAN(d, " ", T("not ok"), _style="color:#FF7863;padding:3px"),
+              ),
               _style="""margin: auto;
                         text-align: center;
                         width: 100%;
@@ -3882,7 +4074,8 @@ def ajax_comp_status():
     ok = db(q_ok).count()
 
     mt = table_comp_mod_status('cms', 'ajax_comp_mod_status')
-    nt = table_comp_mod_status('cns', 'ajax_comp_node_status')
+    nt = table_comp_node_status('cns', 'ajax_comp_node_status')
+    st = table_comp_svc_status('css', 'ajax_comp_svc_status')
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         return t.csv()
@@ -3896,14 +4089,159 @@ def ajax_comp_status():
     return DIV(
              SCRIPT(
                "$(document).ready(function(){%s});"%spark_cmds,
+               'if ($("#cms").is(":visible")) {',
                mt.ajax_submit(additional_inputs=t.ajax_inputs()),
+               "}",
+               'if ($("#cns").is(":visible")) {',
                nt.ajax_submit(additional_inputs=t.ajax_inputs()),
+               "}",
+               'if ($("#css").is(":visible")) {',
+               st.ajax_submit(additional_inputs=t.ajax_inputs()),
+               "}",
                _name=t.id+"_to_eval"
              ),
              DIV(chart(obs, ok, na, nok), _style="padding:4px"),
-             DIV(_id="cms"),
-             DIV(_id="cns"),
+             DIV(
+               T("Modules aggregation"),
+               _style="text-align:left;font-size:120%;background-color:#e0e1cd",
+               _class="right16 clickable",
+               _onclick="""
+               if (!$("#cms").is(":visible")) {
+                 $(this).addClass("down16");
+                 $(this).removeClass("right16");
+                 $("#cms").show(); %s;
+               } else {
+                 $(this).addClass("right16");
+                 $(this).removeClass("down16");
+                 $("#cms").hide();
+               }"""%mt.ajax_submit(additional_inputs=t.ajax_inputs())
+             ),
+             DIV(IMG(_src=URL(r=request,c='static',f='spinner.gif')), _id="cms", _style="display:none"),
+             DIV(
+               T("Nodes aggregation"),
+               _style="text-align:left;font-size:120%;background-color:#e0e1cd",
+               _class="right16 clickable",
+               _onclick="""
+               if (!$("#cns").is(":visible")) {
+                 $(this).addClass("down16");
+                 $(this).removeClass("right16");
+                 $("#cns").show(); %s;
+               } else {
+                 $(this).addClass("right16");
+                 $(this).removeClass("down16");
+                 $("#cns").hide();
+               }"""%nt.ajax_submit(additional_inputs=t.ajax_inputs())
+             ),
+             DIV(IMG(_src=URL(r=request,c='static',f='spinner.gif')), _id="cns", _style="display:none"),
+             DIV(
+               T("Services aggregation"),
+               _style="text-align:left;font-size:120%;background-color:#e0e1cd",
+               _class="right16 clickable",
+               _onclick="""
+               if (!$("#css").is(":visible")) {
+                 $(this).addClass("down16");
+                 $(this).removeClass("right16");
+                 $("#css").show(); %s;
+               } else {
+                 $(this).addClass("right16");
+                 $(this).removeClass("down16");
+                 $("#css").hide();
+               }"""%st.ajax_submit(additional_inputs=t.ajax_inputs())
+             ),
+             DIV(IMG(_src=URL(r=request,c='static',f='spinner.gif')), _id="css", _style="display:none"),
              t.html(),
+           )
+
+@auth.requires_login()
+def ajax_comp_svc_status():
+    t = table_comp_status('cs0', 'ajax_comp_status')
+    mt = table_comp_svc_status('css', 'ajax_comp_svc_status')
+
+    o = ~db.comp_status.run_svcname
+    q = _where(None, 'comp_status', domain_perms(), 'run_svcname')
+    #q &= db.comp_status.run_svcname == db.v_svcmon.mon_svcname
+    q &= db.comp_status.run_svcname != None
+    #for f in t.cols:
+    #    q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    #q = apply_db_filters(q, 'v_svcmon')
+    sql1 = db(q)._select().rstrip(';').replace('v_svcmon.id, ','').replace('comp_status.id>0 AND', '')
+    regex = re.compile("SELECT .* FROM")
+    sql1 = regex.sub('', sql1)
+
+    q = db.comp_svc_status.id > 0
+    for f in mt.cols:
+        q = _where(q, mt.colprops[f].table, mt.filter_parse(f), f)
+    where = str(q).replace("comp_svc_status.", "u.")
+
+    mt.setup_pager(-1)
+    mt.dbfilterable = False
+    mt.filterable = True
+    mt.additional_inputs = t.ajax_inputs()
+
+    sql2 = """select * from (
+                select t.id,
+                     t.run_svcname as svc_name,
+                     t.ok+t.nok+t.na+t.obs as total,
+                     t.ok,
+                     t.nok,
+                     t.na,
+                     t.obs,
+                     floor((t.ok+t.na)*100/(t.ok+t.nok+t.na+t.obs)) as pct
+                from (select comp_status.id,
+                           run_svcname,
+                           sum(if(run_date>="%(d)s" and run_status=0, 1, 0)) as ok,
+                           sum(if(run_date>="%(d)s" and run_status=1, 1, 0)) as nok,
+                           sum(if(run_date>="%(d)s" and run_status=2, 1, 0)) as na,
+                           sum(if(run_date<"%(d)s", 1, 0)) as obs
+                    from %(sql)s group by run_svcname) t) u
+              where %(where)s
+              order by pct, svc_name
+              limit %(limit)d
+              offset %(offset)d"""%dict(
+                sql=sql1,
+                where=where,
+                d=(now-datetime.timedelta(days=7)),
+                limit=mt.perpage,
+                offset=mt.pager_start,
+           )
+
+    rows = db.executesql(sql2)
+
+    mt.object_list = map(lambda x: {'svc_name': x[1],
+                                    'total':x[2],
+                                    'ok':x[3],
+                                    'nok': x[4],
+                                    'na': x[5],
+                                    'obs': x[6],
+                                    'pct':x[7]},
+                          rows)
+
+    for i, row in enumerate(mt.object_list):
+        sql = """select week(run_date) as week,
+                        sum(if(run_status=0, 1, 0)) as ok,
+                        sum(if(run_status=1, 1, 0)) as nok,
+                        sum(if(run_status=2, 1, 0)) as na
+                 from comp_log
+                 where run_svcname="%(svcname)s"
+                 group by week(run_date),run_svcname
+                 order by run_date desc
+                 limit 20"""%dict(svcname=row['svc_name'])
+        week = []
+        ok = []
+        nok = []
+        na = []
+        for r in db.executesql(sql):
+            week.append(int(r[0]))
+            ok.append(int(r[1]))
+            nok.append(int(r[2]))
+            na.append(int(r[3]))
+        mt.object_list[i]['svc_log'] = json.dumps([week, ok, nok, na])
+
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        return mt.csv()
+
+    return DIV(
+             mt.html(),
            )
 
 @auth.requires_login()
@@ -3914,6 +4252,7 @@ def ajax_comp_node_status():
     o = ~db.comp_status.run_nodename
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
     q &= db.comp_status.run_nodename == db.v_nodes.nodename
+    q &= db.comp_status.run_svcname == None
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_db_filters(q, 'v_nodes')
@@ -4104,8 +4443,14 @@ class table_comp_log(table_comp_status):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         table_comp_status.__init__(self, id, 'ajax_comp_log', innerhtml)
-        self.cols = ['run_date', 'run_nodename', 'run_module', 'run_action',
-                     'run_status', 'run_log', 'run_ruleset']
+        self.cols = ['run_date',
+                     'run_nodename',
+                     'run_svcname',
+                     'run_module',
+                     'run_action',
+                     'run_status',
+                     'run_log',
+                     'run_ruleset']
         self.cols += v_nodes_cols
         for c in self.colprops:
             if 'run_' in c:
@@ -4191,6 +4536,11 @@ def comp_attached_ruleset_id(nodename):
     rows = db(q).select(db.comp_rulesets_nodes.ruleset_id)
     return [r.ruleset_id for r in rows]
 
+def comp_attached_svc_moduleset_id(svcname):
+    q = db.comp_modulesets_services.modset_svcname == svcname
+    rows = db(q).select(db.comp_modulesets_services.modset_id)
+    return [r.modset_id for r in rows]
+
 def comp_attached_moduleset_id(nodename):
     q = db.comp_node_moduleset.modset_node == nodename
     rows = db(q).select(db.comp_node_moduleset.modset_id)
@@ -4209,6 +4559,13 @@ def comp_moduleset_exists(moduleset):
     if len(rows) != 1:
         return None
     return rows[0].id
+
+def comp_moduleset_svc_attached(svcname, modset_id):
+    q = db.comp_modulesets_services.modset_svcname == svcname
+    q &= db.comp_modulesets_services.modset_id == modset_id
+    if len(db(q).select(db.comp_modulesets_services.id)) == 0:
+        return False
+    return True
 
 def comp_moduleset_attached(nodename, modset_id):
     q = db.comp_node_moduleset.modset_node == nodename
@@ -4233,6 +4590,29 @@ def comp_ruleset_attached(nodename, ruleset_id):
 
 @auth_uuid
 @service.xmlrpc
+def comp_attach_svc_moduleset(svcname, moduleset, auth):
+    if len(moduleset) == 0:
+        return dict(status=False, msg="no moduleset specified"%moduleset)
+    modset_id = comp_moduleset_id(moduleset)
+    if modset_id is None:
+        return dict(status=False, msg="moduleset %s does not exist"%moduleset)
+    if comp_moduleset_svc_attached(svcname, modset_id):
+        return dict(status=True, msg="moduleset %s is already attached to this service"%moduleset)
+    if not comp_moduleset_svc_attachable(svcname, modset_id):
+        return dict(status=False, msg="moduleset %s is not attachable"%moduleset)
+
+    n = db.comp_modulesets_services.insert(modset_svcname=svcname,
+                                           modset_id=modset_id)
+    if n == 0:
+        return dict(status=False, msg="failed to attach moduleset %s"%moduleset)
+    _log('compliance.moduleset.service.attach',
+         '%(moduleset)s attached to service %(svcname)s',
+        dict(svcname=svcname, moduleset=moduleset),
+        user='root@'+svcname)
+    return dict(status=True, msg="moduleset %s attached"%moduleset)
+
+@auth_uuid
+@service.xmlrpc
 def comp_attach_moduleset(nodename, moduleset, auth):
     if len(moduleset) == 0:
         return dict(status=False, msg="no moduleset specified"%moduleset)
@@ -4253,6 +4633,36 @@ def comp_attach_moduleset(nodename, moduleset, auth):
         dict(node=nodename, moduleset=moduleset),
         user='root@'+nodename)
     return dict(status=True, msg="moduleset %s attached"%moduleset)
+
+@auth_uuid
+@service.xmlrpc
+def comp_detach_svc_moduleset(svcname, moduleset, auth):
+    if len(moduleset) == 0:
+        return dict(status=False, msg="no moduleset specified"%moduleset)
+    if moduleset == 'all':
+        modset_id = comp_attached_svc_moduleset_id(svcname)
+    else:
+        modset_id = comp_moduleset_id(moduleset)
+    if modset_id is None:
+        return dict(status=True, msg="moduleset %s does not exist"%moduleset)
+    elif moduleset == 'all' and len(modset_id) == 0:
+        return dict(status=True, msg="this service has no moduleset attached")
+    if moduleset != 'all' and not comp_moduleset_svc_attached(svcname, modset_id):
+        return dict(status=True,
+                    msg="moduleset %s is not attached to this service"%moduleset)
+    q = db.comp_modulesets_services.modset_svcname == svcname
+    if isinstance(modset_id, list):
+        q &= db.comp_modulesets_services.modset_id.belongs(modset_id)
+    else:
+        q &= db.comp_modulesets_services.modset_id == modset_id
+    n = db(q).delete()
+    if n == 0:
+        return dict(status=False, msg="failed to detach the moduleset")
+    _log('compliance.moduleset.service.detach',
+        '%(moduleset)s detached from service %(svcname)s',
+        dict(svcname=svcname, moduleset=moduleset),
+        user='root@'+svcname)
+    return dict(status=True, msg="moduleset %s detached"%moduleset)
 
 @auth_uuid
 @service.xmlrpc
@@ -4283,6 +4693,19 @@ def comp_detach_moduleset(nodename, moduleset, auth):
         dict(node=nodename, moduleset=moduleset),
         user='root@'+nodename)
     return dict(status=True, msg="moduleset %s detached"%moduleset)
+
+def comp_moduleset_svc_attachable(svcname, modset_id):
+    q = db.services.svc_name == svcname
+    q &= db.services.svc_app == db.apps.app
+    q &= db.apps.id == db.apps_responsibles.app_id
+    q &= db.apps_responsibles.group_id == db.auth_group.id
+    q &= db.auth_group.id == db.comp_moduleset_team_responsible.group_id
+    q &= db.comp_moduleset_team_responsible.modset_id == db.comp_moduleset.id
+    q &= db.comp_moduleset.id == modset_id
+    rows = db(q).select(db.nodes.team_responsible)
+    if len(rows) == 0:
+        return False
+    return True
 
 def comp_moduleset_attachable(nodename, modset_id):
     q = db.nodes.team_responsible == db.auth_group.role
@@ -4393,8 +4816,25 @@ def comp_list_modulesets(pattern='%', auth=("", "")):
 
 @auth_uuid
 @service.xmlrpc
+def comp_get_svc_moduleset(svcname, auth):
+    return _comp_get_svc_moduleset(svcname)
+
+@auth_uuid
+@service.xmlrpc
 def comp_get_moduleset(nodename, auth):
     return _comp_get_moduleset(nodename)
+
+def _comp_get_svc_moduleset(svcname):
+    q = db.comp_modulesets_services.modset_svcname == svcname
+    q &= db.comp_modulesets_services.modset_id == db.comp_moduleset.id
+    q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
+    q &= db.auth_group.id == db.comp_moduleset_team_responsible.group_id
+    q &= db.services.svc_name == svcname
+    q &= db.services.svc_app == db.apps.app
+    q &= db.apps.id == db.apps_responsibles.app_id
+    q &= db.apps_responsibles.group_id == db.auth_group.id
+    rows = db(q).select(db.comp_moduleset.modset_name, groupby=db.comp_modulesets_services.modset_id)
+    return [r.modset_name for r in rows]
 
 def _comp_get_moduleset(nodename):
     q = db.comp_node_moduleset.modset_node == nodename
@@ -4476,6 +4916,19 @@ def comp_format_filter(q):
     #s = s.replace(')','')
     s = s.replace('nodes.id>0 AND ','')
     return s
+
+def comp_get_service_ruleset(svcname):
+    q = db.services.svc_name == svcname
+    rows = db(q).select()
+    if len(rows) != 1:
+        return {}
+    ruleset = {'name': 'osvc_service',
+               'filter': str(q),
+               'vars': []}
+    for f in db.services.fields:
+        val = rows[0][f]
+        ruleset['vars'].append(('services.'+f, val))
+    return {'osvc_service':ruleset}
 
 def comp_get_node_ruleset(nodename):
     q = db.v_nodes.nodename == nodename
@@ -4568,12 +5021,6 @@ def comp_get_dated_ruleset(nodename, date, auth):
                                     left=(l1,l2))
             if len(match) > 0:
                 ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr))
-                ruleset = ruleset_add_var(
-                            d = ruleset,
-                            rset_name = rows[i].comp_rulesets.ruleset_name,
-                            var = rows[i].comp_rulesets.ruleset_name+'_match_services',
-                            val = ','.join(comp_match_services(q&qr, match))
-                          )
             qr = db.nodes.id > 0
 
     # add explicit rulesets variables
@@ -4582,11 +5029,13 @@ def comp_get_dated_ruleset(nodename, date, auth):
 
     return ruleset
 
-def comp_match_services(q, match):
-    qs = str(q)
-    if "svcmon." not in qs and 'services.' not in qs:
-        return []
-    return set([r.svcmon.mon_svcname for r in match])
+def svc_team_responsible_id(svcname):
+    q = db.services.svc_name == svcname
+    q &= db.services.svc_app == db.apps.app
+    q &= db.apps.id == db.apps_responsibles.app_id
+    q &= db.apps_responsibles.group_id == db.auth_group.id
+    rows = db(q).select(db.auth_group.id, groupby=db.auth_group.id)
+    return map(lambda x: x['id'], rows)
 
 def node_team_responsible_id(nodename):
     q = db.nodes.nodename == nodename
@@ -4600,6 +5049,69 @@ def node_team_responsible_id(nodename):
 @service.xmlrpc
 def comp_get_ruleset(nodename, auth):
     return _comp_get_ruleset(nodename)
+
+@auth_uuid
+@service.xmlrpc
+def comp_get_svc_ruleset(svcname, auth):
+    return _comp_get_svc_ruleset(svcname)
+
+def _comp_get_svc_ruleset(svcname):
+    # initialize ruleset with asset variables
+    ruleset = comp_get_service_ruleset(svcname)
+
+    # add contextual rulesets variables
+    v = db.v_gen_filtersets
+    rset = db.comp_rulesets
+    rset_fset = db.comp_rulesets_filtersets
+    o = rset.ruleset_name|v.f_order
+    q = rset.id>0
+    q &= rset.id == rset_fset.ruleset_id
+    q &= rset_fset.fset_id == v.fset_id
+    q &= rset.id == db.comp_ruleset_team_responsible.ruleset_id
+    q &= db.comp_ruleset_team_responsible.group_id.belongs(svc_team_responsible_id(svcname))
+    rows = db(q).select(orderby=o)
+
+    q = db.services.svc_name == svcname
+    j = db.nodes.nodename == db.svcmon.mon_nodname
+    l1 = db.nodes.on(j)
+    j = db.svcmon.mon_svcname == db.services.svc_name
+    l2 = db.svcmon.on(j)
+    last_index = len(rows)-1
+    qr = db.services.id > 0
+
+    for i, row in enumerate(rows):
+        if i == last_index:
+            end_seq = True
+        elif rows[i].comp_rulesets.ruleset_name != rows[i+1].comp_rulesets.ruleset_name:
+            end_seq = True
+        else:
+            end_seq = False
+        qr = comp_query(qr, row)
+        if end_seq:
+            match = db(q&qr).select(db.nodes.id, db.svcmon.mon_svcname,
+                                    left=(l2,l1))
+            if len(match) > 0:
+                ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr))
+            qr = db.services.id > 0
+
+    # add explicit rulesets variables
+    q = db.comp_rulesets_services.svcname == svcname
+    rows = db(q).select(db.comp_rulesets_services.ruleset_id,
+                        orderby=db.comp_rulesets_services.ruleset_id)
+    for row in rows:
+        ruleset.update(comp_ruleset_vars(row.ruleset_id))
+
+    l = {}
+    for rset in ruleset.copy():
+        for i, (var, val) in enumerate(ruleset[rset]['vars']):
+            if var in l:
+                (_rset, _i) = l[var]
+                ruleset[rset]['vars'][i] = ('xxx_'+var+'_xxx', 'Duplicate variable removed')
+                ruleset[_rset]['vars'][_i] = ('xxx_'+var+'_xxx', 'Duplicate variable removed')
+            else:
+                l[var] = (rset, i)
+
+    return ruleset
 
 def _comp_get_ruleset(nodename):
     # initialize ruleset with asset variables
@@ -4638,12 +5150,6 @@ def _comp_get_ruleset(nodename):
                                     left=(l1,l2))
             if len(match) > 0:
                 ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr))
-                ruleset = ruleset_add_var(
-                            d = ruleset,
-                            rset_name = rows[i].comp_rulesets.ruleset_name,
-                            var = rows[i].comp_rulesets.ruleset_name+'_match_services',
-                            val = ','.join(comp_match_services(q&qr, match))
-                          )
             qr = db.nodes.id > 0
 
     # add explicit rulesets variables
@@ -4752,3 +5258,78 @@ def register_node(node):
     """ placeholder to signal the registration support
     """
     pass
+
+
+#
+# CVE batch
+#
+def run_cve():
+    q = db.comp_rulesets_variables.var_class == 'cve'
+    rows = db(q).select(db.comp_rulesets_variables.var_name,
+                        db.comp_rulesets_variables.var_value)
+    for row in rows:
+        run_cve_one(row)
+
+def run_cve_one(row):
+    try:
+        cve = json.loads(row['var_value'])
+    except:
+        return
+    cve['name'] = row['var_name']
+
+    def on_packages(cve):
+        sql = """select distinct pkg_nodename
+                 from packages
+                 where
+                   pkg_updated > DATE_SUB(NOW(), INTERVAL 2 DAY) and
+                   pkg_name="%s" and
+                   greatest(pkg_version, "%s")=pkg_version and
+                   least(pkg_version, "%s")=pkg_version
+              """%(cve['product'], cve['minver'], cve['maxver'])
+        rows = db.executesql(sql)
+        if len(rows) == 0:
+            return []
+        return map(lambda x: x[0], rows)
+
+    nodes = on_packages(cve)
+    if len(nodes) > 0:
+        where = "where nodename in (%s)"%','.join(map(lambda x: '"'+x+'"', nodes))
+        sql = """insert into comp_status
+                   select
+                     NULL,
+                     nodename,
+                     "%(cve_name)s",
+                     1,
+                     "",
+                     "%(now)s",
+                     "cve",
+                     "check"
+                   from nodes
+                   %(where)s
+                   on duplicate key update
+                     run_status=1,
+                     run_date="%(now)s"
+              """%dict(where=where, cve_name=cve['name'], now=now)
+        db.executesql(sql)
+
+    if len(nodes) > 0:
+        where = "where nodename not in (%s)"%','.join(map(lambda x: '"'+x+'"', nodes))
+    else:
+        where = ""
+    sql = """insert into comp_status
+               select
+                 NULL,
+                 nodename,
+                 "%(cve_name)s",
+                 0,
+                 "",
+                 "%(now)s",
+                 "cve",
+                 "check"
+               from nodes
+               %(where)s
+               on duplicate key update
+                 run_status=0,
+                 run_date="%(now)s"
+          """%dict(where=where, cve_name=cve['name'], now=now)
+    db.executesql(sql)
