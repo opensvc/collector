@@ -10,6 +10,8 @@ import smtplib
 import xmpp
 from multiprocessing import Process, JoinableQueue, Queue
 from subprocess import Popen
+import logging
+import logging.handlers
 
 basedir = os.path.realpath(os.path.dirname(__file__))
 sys.path.append(basedir)
@@ -18,11 +20,22 @@ import lock
 
 lockfile = __file__+'.lock'
 N_THREAD = 10
-sender = 'opensvc@'+os.uname()[1]
+max_entries_per_msg = 10
 
 import xmpp
 import sys
 import config
+
+def setup_log():
+    logfile = os.path.join(basedir, 'alertd.log')
+    log = logging.getLogger()
+    fileformatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    filehandler = logging.handlers.RotatingFileHandler(logfile,
+                                                       maxBytes=5242880,
+                                                       backupCount=5)
+    filehandler.setFormatter(fileformatter)
+    log.addHandler(filehandler)
+    log.setLevel(logging.INFO)
 
 def alertd_lock(lockfile):
     try:
@@ -84,6 +97,7 @@ class im_job(object):
         self.addr = row[3]
         self.lines = []
         self += row
+        self.name = "Instant messaging job"
 
     def __iadd__(self, row):
         fmt = row[1]
@@ -91,7 +105,7 @@ class im_job(object):
             dic = json.loads(row[2])
             l = (row[0], row[5], row[6], fmt%dic)
         except:
-            print "skip on json error:", fmt, row[2]
+            jlog.warning("skip on json error:", fmt, row[2])
             return self
         self.lines.append(l)
         return self
@@ -117,6 +131,7 @@ class email_job(object):
         self.addr = row[3]
         self.lines = []
         self += row
+        self.name = "Email job"
 
     def __iadd__(self, row):
         fmt = row[1]
@@ -124,7 +139,7 @@ class email_job(object):
             dic = json.loads(row[2])
             l = (row[0], row[5], row[6], fmt%dic)
         except:
-            print "skip on json error:", fmt, row[2]
+            jlog.warning("skip on json error:", fmt, row[2])
             return self
         self.lines.append(l)
         return self
@@ -142,16 +157,15 @@ To: %(rcpt)s
 Subject: OpenSVC events
 
 %(body)s
-"""%dict(sender=sender, rcpt=self.addr, body=str(self))
+"""%dict(sender=config.email_from, rcpt=self.addr, body=str(self))
 
         try:
-            smtpObj = smtplib.SMTP('localhost')
-            smtpObj.sendmail(sender, receivers, message)
+            smtpObj = smtplib.SMTP(config.email_host)
+            smtpObj.sendmail(config.email_from, receivers, message)
         except smtplib.SMTPException:
             raise SendError()
 
 def get_im_queued_node(q):
-    max_entries_per_msg = 10
     conn = get_conn()
     if conn is None:
         return []
@@ -170,6 +184,7 @@ def get_im_queued_node(q):
                join auth_user u on am.user_id=u.id
              where
                u.im_notifications = 'T' and
+               u.im_username is not NULL and
                l.log_svcname is NULL and
                l.log_nodename is not NULL and
                l.log_gtalk_sent=0
@@ -194,7 +209,8 @@ def get_im_queued_node(q):
         if addr is None:
             addr = row[3]
             j = im_job(row)
-        if row[3] == addr and len(j.lines) <= max_entries_per_msg:
+            ids |= set([row[4]])
+        elif row[3] == addr and len(j.lines) <= max_entries_per_msg:
             j += row
             ids |= set([row[4]])
         else:
@@ -202,7 +218,6 @@ def get_im_queued_node(q):
             n_job += 1
             addr = row[3]
             j = im_job(row)
-            j += row
             ids |= set([row[4]])
     cursor.close()
     conn.close()
@@ -226,6 +241,7 @@ def get_im_queued_manager(q):
                  join auth_group g on am.group_id=g.id
                 where
                   g.role="Manager" and
+                  u.im_username is not NULL and
                   u.im_notifications = 'T') t
              where
                l.log_svcname is NULL and
@@ -252,7 +268,8 @@ def get_im_queued_manager(q):
         if addr is None:
             addr = row[3]
             j = im_job(row)
-        if row[3] == addr:
+            ids |= set([row[4]])
+        elif row[3] == addr and len(j.lines) <= max_entries_per_msg:
             j += row
             ids |= set([row[4]])
         else:
@@ -260,14 +277,12 @@ def get_im_queued_manager(q):
             n_job += 1
             addr = row[3]
             j = im_job(row)
-            j += row
             ids |= set([row[4]])
     cursor.close()
     conn.close()
     return {'n_job': n_job, 'n_entry': n_entry, 'ids': ids}
 
 def get_im_queued_svc(q):
-    max_entries_per_msg = 10
     conn = get_conn()
     if conn is None:
         return []
@@ -287,6 +302,7 @@ def get_im_queued_svc(q):
                join auth_user u on am.user_id=u.id
              where
                u.im_notifications = 'T' and
+               u.im_username is not NULL and
                l.log_svcname is not NULL and
                l.log_gtalk_sent=0
              order by u.im_username, l.id
@@ -310,7 +326,8 @@ def get_im_queued_svc(q):
         if addr is None:
             addr = row[3]
             j = im_job(row)
-        if row[3] == addr and len(j.lines) <= max_entries_per_msg:
+            ids |= set([row[4]])
+        elif row[3] == addr and len(j.lines) <= max_entries_per_msg:
             j += row
             ids |= set([row[4]])
         else:
@@ -318,7 +335,6 @@ def get_im_queued_svc(q):
             n_job += 1
             addr = row[3]
             j = im_job(row)
-            j += row
             ids |= set([row[4]])
     cursor.close()
     conn.close()
@@ -367,6 +383,7 @@ def get_email_queued_node(q):
                join auth_user u on am.user_id=u.id
              where
                u.email_notifications = 'T' and
+               u.email is not NULL and
                l.log_svcname is NULL and
                l.log_nodename is not NULL and
                l.log_email_sent=0
@@ -391,7 +408,8 @@ def get_email_queued_node(q):
         if addr is None:
             addr = row[3]
             j = email_job(row)
-        if row[3] == addr:
+            ids |= set([row[4]])
+        elif row[3] == addr:
             j += row
             ids |= set([row[4]])
         else:
@@ -399,7 +417,6 @@ def get_email_queued_node(q):
             n_job += 1
             addr = row[3]
             j = email_job(row)
-            j += row
             ids |= set([row[4]])
     cursor.close()
     conn.close()
@@ -423,6 +440,7 @@ def get_email_queued_manager(q):
                  join auth_group g on am.group_id=g.id
                 where
                   g.role="Manager" and
+                  u.email is not NULL and
                   u.email_notifications = 'T') t
              where
                l.log_svcname is NULL and
@@ -449,7 +467,8 @@ def get_email_queued_manager(q):
         if addr is None:
             addr = row[3]
             j = email_job(row)
-        if row[3] == addr:
+            ids |= set([row[4]])
+        elif row[3] == addr:
             j += row
             ids |= set([row[4]])
         else:
@@ -457,7 +476,6 @@ def get_email_queued_manager(q):
             n_job += 1
             addr = row[3]
             j = email_job(row)
-            j += row
             ids |= set([row[4]])
     cursor.close()
     conn.close()
@@ -483,6 +501,7 @@ def get_email_queued_svc(q):
                join auth_user u on am.user_id=u.id
              where
                u.email_notifications = 'T' and
+               u.email is not NULL and
                l.log_svcname is not NULL and
                l.log_email_sent=0
              order by u.email, l.id
@@ -506,7 +525,8 @@ def get_email_queued_svc(q):
         if addr is None:
             addr = row[3]
             j = email_job(row)
-        if row[3] == addr:
+            ids |= set([row[4]])
+        elif row[3] == addr:
             j += row
             ids |= set([row[4]])
         else:
@@ -514,31 +534,32 @@ def get_email_queued_svc(q):
             n_job += 1
             addr = row[3]
             j = email_job(row)
-            j += row
             ids |= set([row[4]])
     cursor.close()
     conn.close()
     return {'n_job': n_job, 'n_entry': n_entry, 'ids': ids}
 
 def dequeue_worker_int(i, q):
+    log = logging.getLogger("WORKER.%d"%i)
     try:
         dequeue_worker(i, q)
     except KeyboardInterrupt:
-        print "[%d] keyboard interrupt"%(i)
+        log.info("keyboard interrupt")
         pass
 
 def dequeue_worker(i, q):
-    print "[%d] start"%(i)
+    log = logging.getLogger("WORKER.%d"%i)
+    log.debug("start worker")
     while True:
         job = q.get()
         if job is None:
-            print "[%d] stop on poison pill"%(i)
+            log.debug("stop on poison pill")
             break
-        print '[%d] %s'%(i, str(job))
+        log.info("%s for %s\n%s"%(job.name, job.addr, str(job)))
         try:
             job()
         except SendError:
-            print '[%d] error sending message to %s'%(i, job.addr)
+            log.error('error sending message to %s'%job.addr)
         q.task_done()
     sys.exit(0)
 
@@ -549,7 +570,7 @@ def get_conn():
                                passwd="opensvc",
                                db="opensvc")
     except MySQLdb.Error, e:
-        print "Error %d: %s" % (e.args[0], e.args[1])
+        qlog.error("Error %d: %s" % (e.args[0], e.args[1]))
         return None
     return conn
 
@@ -572,62 +593,60 @@ def stop_workers(q):
 
 def dequeue(q):
     while True:
-        n_entry = 0
-        n_job = 0
-        ids = []
+        if config.email:
+            n_entry = 0
+            n_job = 0
+            ids = []
 
-        d = get_email_queued_svc(q)
-        n_entry += d['n_entry']
-        n_job += d['n_job']
-        ids += d['ids']
+            d = get_email_queued_svc(q)
+            n_entry += d['n_entry']
+            n_job += d['n_job']
+            ids += d['ids']
 
-        d = get_email_queued_node(q)
-        n_entry += d['n_entry']
-        n_job += d['n_job']
-        ids += d['ids']
+            d = get_email_queued_node(q)
+            n_entry += d['n_entry']
+            n_job += d['n_job']
+            ids += d['ids']
 
-        d = get_email_queued_manager(q)
-        n_entry += d['n_entry']
-        n_job += d['n_job']
-        ids += d['ids']
+            d = get_email_queued_manager(q)
+            n_entry += d['n_entry']
+            n_job += d['n_job']
+            ids += d['ids']
 
-        if n_job > 0:
-            start_workers(q)
-            print "[Queue manager] queued %d log entries in %d emails"%(n_entry, n_job)
-            stop_workers(q)
-            email_done(ids)
+            if n_job > 0:
+                start_workers(q)
+                qlog.info("queued %d log entries in %d emails"%(n_entry, n_job))
+                stop_workers(q)
+                email_done(ids)
 
-        if not config.gtalk:
-            time.sleep(1)
-            continue
+        if config.gtalk:
+            n_entry = 0
+            n_job = 0
+            ids = []
 
-        n_entry = 0
-        n_job = 0
-        ids = []
+            d = get_im_queued_svc(q)
+            n_entry += d['n_entry']
+            n_job += d['n_job']
+            ids += d['ids']
+            ids += d['ids']
 
-        d = get_im_queued_svc(q)
-        n_entry += d['n_entry']
-        n_job += d['n_job']
-        ids += d['ids']
+            d = get_im_queued_node(q)
+            n_entry += d['n_entry']
+            n_job += d['n_job']
+            ids += d['ids']
 
-        d = get_im_queued_node(q)
-        n_entry += d['n_entry']
-        n_job += d['n_job']
-        ids += d['ids']
+            d = get_im_queued_manager(q)
+            n_entry += d['n_entry']
+            n_job += d['n_job']
+            ids += d['ids']
 
-        d = get_im_queued_manager(q)
-        n_entry += d['n_entry']
-        n_job += d['n_job']
-        ids += d['ids']
-
-        if n_job > 0:
-            start_workers(q)
-            print "[Queue manager] queued %d log entries in %d instant messages"%(d['n_entry'], d['n_job'])
-            stop_workers(q)
-            im_done(ids)
+            if n_job > 0:
+                start_workers(q)
+                qlog.info("queued %d log entries in %d instant messages"%(n_entry, n_job))
+                stop_workers(q)
+                im_done(ids)
 
         time.sleep(1)
-        continue
     #stop_workers()
 
 def dequeue_int():
@@ -635,18 +654,19 @@ def dequeue_int():
     try:
         dequeue(q)
     except KeyboardInterrupt:
-        print "[Queue manager] keyboard interrupt"
+        qlog.info("keyboard interrupt")
         stop_workers(q)
         pass
 
-dequeue_int()
-"""
+#dequeue_int()
+setup_log()
+qlog = logging.getLogger("QUEUE.MANAGER")
+jlog = logging.getLogger("JOB")
 try:
     lockfd = alertd_lock(lockfile)
-    fork(dequeue)
+    fork(dequeue_int)
     alertd_unlock(lockfd)
 except lock.lockError:
     sys.exit(0)
 except:
     sys.exit(1)
-"""
