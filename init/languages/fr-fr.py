@@ -219,6 +219,7 @@
 'Deleting a filter also deletes its membership in filtersets. Please confirm filter deletion': 'Supprimer un filtre supprime également ses appartenances aux jeux de filtres. Merci de confirmer la suppression.',
 'Deleting a filterset also deletes the filterset filter attachments. Please confirm filterset deletion.': 'Supprimer un jeu de filtres supprime également ses attachements de filtres. Merci de confirmer la suppression.',
 'Deleting a moduleset also deletes the moduleset module attachments. Please confirm moduleset deletion.': 'Supprimer un jeu de modules supprime également ses attachements de modules. Merci de confirmer la suppression.',
+'Deleting a node also deletes all its asset information. Please confirm node deletion': 'Deleting a node also deletes all its asset information. Please confirm node deletion',
 'Deleting a node also deletes all its asset information. Please confirm user deletion': 'Supprimer un noeud supprime également ses informations de bien. Merci de confirmer la suppression',
 'Deleting a project also deletes its wave assignments. Please confirm project deletion': 'Supprimer un projet supprime également les ses assignations de vague. Merci de confirmer la suppression',
 'Deleting a ruleset also deletes the ruleset variables, filters attachments and node attachments. Please confirm ruleset deletion.': 'Supprimer un jeu de règles supprime également ses attachements de variables, de filtres et de noeuds. Merci de confirmer la suppression.',

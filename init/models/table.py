@@ -173,11 +173,11 @@ class HtmlTable(object):
                        self.colprops[c].get(o),
                        ' ',
                        _class="cloud_tag",
-                       _onclick="""
-                         getElementById('%(id)s').value='%(val)s';
-                       """%dict(id=self.filter_key(c),
+                       _onclick="filter_submit_%(id)s('%(iid)s','%(val)s')"%dict(
+                                id=self.id,
+                                iid=self.filter_key(c),
                                 val=self.colprops[c].get(o),
-                               )+self.ajax_submit(),
+                               ),
                     ))
         return SPAN(l)
 
@@ -350,7 +350,7 @@ class HtmlTable(object):
               A(
                 SPAN(
                   T('Refresh'),
-                  _onclick=self.ajax_submit(),
+                  _onclick="ajax_submit_%s()"%self.id,
                   _class='refresh16',
                   _id='refresh_'+self.id,
                 ),
@@ -364,16 +364,17 @@ class HtmlTable(object):
             return SPAN()
 
         def set_perpage_js(n):
-            js = 'getElementById("%(id)s").value=%(n)s;'%dict(
-                   id=self.id_perpage,
+            js = 'filter_submit_%(id)s("%(iid)s",%(n)s)'%dict(
+                   id=self.id,
+                   iid=self.id_perpage,
                    n=n)
             return js
 
         def set_page_js(page):
-            js = 'getElementById("%(id)s").value=%(page)s;'%dict(
-                   id=self.id_page,
+            js = 'filter_submit_%(id)s("%(iid)s",%(page)s)'%dict(
+                   id=self.id,
+                   iid=self.id_page,
                    page=page)
-            js += self.ajax_submit()
             return js
 
         start = 0
@@ -438,7 +439,7 @@ class HtmlTable(object):
                           A(
                             o,
                             _class=c,
-                            _onclick=set_perpage_js(o)+self.ajax_submit()
+                            _onclick=set_perpage_js(o)
                           ),
                           BR(),
                         ))
@@ -669,10 +670,11 @@ class HtmlTable(object):
                             _name=self.col_key(c),
                             _style=self.col_hide(c),
                             _class=self.colprops[c]._class,
-                            _ondblclick="getElementById('%(k)s').value='%(v)s';"%dict(
+                            _ondblclick="filter_submit_%(id)s('%(k)s','%(v)s')"%dict(
+                              id=self.id,
                               k=self.filter_key(c),
                               v=v,
-                             )+self.ajax_submit(),
+                             ),
                          ))
         return TR(cells, _class=self.cellclass)
 
@@ -764,14 +766,16 @@ class HtmlTable(object):
                             _src=URL(r=request,c='static',f='invert16.png'),
                             _title=T("Invert filter"),
                             _class='clickable',
-                            _onclick="""invert_filter("%(did)s");"""%dict(
-                                    did=self.filter_key(c))+self.ajax_submit(),
+                            _onclick="""invert_filter("%(did)s");ajax_submit_%(id)s()"""%dict(
+                                    id=self.id,
+                                    did=self.filter_key(c)),
                           ),
                           IMG(
                             _src=URL(r=request,c='static',f='clear16.png'),
-                            _onclick="getElementById('%s').value='%s';"%(
-                               self.filter_key(c),
-                               self.column_filter_reset)+self.ajax_submit(),
+                            _onclick="filter_submit_%(id)s('%(k)s','%(v)s')"%dict(
+                               id=self.id,
+                               k=self.filter_key(c),
+                               v=self.column_filter_reset),
                             _style="margin-right:4px",
                           ),
                         )
@@ -806,11 +810,10 @@ class HtmlTable(object):
                               INPUT(
                                 _id=self.filter_key(c),
                                 _value=self.filter_parse(c),
-                                _onKeyPress=self.ajax_enter_submit(),
-                                _onKeyUp="""clearTimeout(timer);timer=setTimeout(function validate(){ajax('%(url)s', inputs_%(id)s, '%(cloud)s')}, 800);"""%dict(
+                                _onKeyPress="ajax_enter_submit_%s(event)"%self.id,
+                                _onKeyUp="""if(!is_enter(event)){clearTimeout(timer);timer=setTimeout(function validate(){ajax('%(url)s', inputs_%(id)s, '%(cloud)s')}, 1000)}"""%dict(
                                     id=self.id,
                                     url=URL(r=request,f=self.func+'_col_values', args=[c]),
-                                    inputs=','.join(map(repr, self.ajax_inputs())),
                                     cloud=self.filter_cloud_key(c)
                                   ),
                               ),
@@ -818,9 +821,10 @@ class HtmlTable(object):
                                 _src=URL(r=request,c='static',f='values_to_filter.png'),
                                 _title=T("Use column values as filter"),
                                 _class='clickable',
-                                _onclick="""values_to_filter("%(iid)s", "%(did)s");"""%dict(
+                                _onclick="""values_to_filter("%(iid)s","%(did)s");ajax_submit_%(id)s()"""%dict(
+                                        id=self.id,
                                         iid=self.filter_key(c),
-                                        did=self.filter_cloud_key(c))+self.ajax_submit(),
+                                        did=self.filter_cloud_key(c)),
                               ),
                               BR(),
                               SPAN(
@@ -841,22 +845,22 @@ class HtmlTable(object):
             inputs.append(INPUT(
                     _id=self.filter_key(c),
                     _value=self.filter_parse(c),
-                    _onKeyPress=self.ajax_enter_submit()
+                    _onKeyPress="ajax_enter_submit_%s(event)"%self.id,
                   ))
         return inputs
 
     def ajax_submit(self, args=[], vars={}, additional_inputs=[], additional_input_name=None):
-        return """table_ajax_submit('%(url)s', '%(id)s', %(inputs)s, %(additional_inputs)s, %(input_name)s, "%(additional_input_name)s");"""%dict(
+        return """if(typeof(inputs_%(id)s)!='undefined'){i=inputs_%(id)s}else{i=[]};table_ajax_submit('%(url)s', '%(divid)s', i, %(additional_inputs)s, %(input_name)s, "%(additional_input_name)s");"""%dict(
                          url=URL(r=request,f=self.func, args=args, vars=vars),
-                         id=self.innerhtml,
-                         inputs = str(self.ajax_inputs()),
+                         divid=self.innerhtml,
+                         id=self.id,
                          additional_inputs = str(additional_inputs+self.additional_inputs),
                          input_name=str(self.checkbox_names),
                          additional_input_name = str(additional_input_name),
                         )
 
     def ajax_enter_submit(self, args=[], additional_inputs=[]):
-        return """if (is_enter(event)){getElementById("tableid").value="%(id)s";%(ajax)s};"""%dict(
+        return """if (is_enter(event)){clearTimeout(timer);$("#tableid").val("%(id)s");%(ajax)s};"""%dict(
                  ajax=self.ajax_submit(args=args,
                                        additional_inputs=additional_inputs),
                  id=self.id)
@@ -957,10 +961,17 @@ class HtmlTable(object):
               ),
               DIV(XML('&nbsp;'), _class='spacer'),
               SCRIPT(
-                "var inputs_%(id)s = %(a)s;"%dict(
+                """
+function ajax_submit_%(id)s(){%(ajax_submit)s};
+function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
+function filter_submit_%(id)s(k,v){$("#"+k).val(v);ajax_submit_%(id)s()};
+var inputs_%(id)s = %(a)s;"""%dict(
                    id=self.id,
                    a=self.ajax_inputs(),
+                   ajax_submit=self.ajax_submit(),
+                   ajax_enter_submit=self.ajax_enter_submit(),
                 ),
+                _name=self.id+"_to_eval",
               ),
               _class='tableo',
             )

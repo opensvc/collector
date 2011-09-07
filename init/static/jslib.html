@@ -237,7 +237,7 @@ function getIdsByName(names){
 function eval_js_in_ajax_response(id) {
     l = document.getElementsByName(id+"_to_eval")
     for (__i = 0; __i < l.length; __i++) {
-        eval(l[__i].innerHTML)
+        window.eval(l[__i].innerHTML)
     }
     $("[name="+id+"_to_eval]").remove()
 }
