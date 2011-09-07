@@ -230,7 +230,7 @@ def get_im_queued_manager(q):
              where
                l.log_svcname is NULL and
                l.log_nodename is NULL and
-               l.log_im_sent=0
+               l.log_gtalk_sent=0
              order by t.im_username, l.id
              limit 1000
     """
