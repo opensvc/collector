@@ -969,7 +969,7 @@ def ajax_svcmon_log_col_values():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_db_filters(q, 'v_svcmon')
-    t.object_list = db(q).select(orderby=o, groupby=g)
+    t.object_list = db(q).select(o, orderby=o, groupby=g)
     return t.col_values_cloud(col)
 
 @auth.requires_login()
@@ -1010,8 +1010,7 @@ def ajax_svcmon_log():
 
     q = apply_db_filters(q, 'v_services')
 
-    n = db(q).count()
-    t.setup_pager(n)
+    t.setup_pager(-1)
     t.object_list = db(q).select(orderby=o, limitby=(t.pager_start,t.pager_end))
     v.object_list = service_availability_2(db(q).select(orderby=o), begin, end)
 

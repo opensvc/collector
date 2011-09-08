@@ -186,7 +186,7 @@ def ajax_dns_domains_col_values():
     q = db.pdns_domains.id > 0
     for f in set(t.cols)-set(t.special_filtered_cols):
         q = _where(q, 'pdns_domains', t.filter_parse(f), f)
-    t.object_list = db(q).select(orderby=o, groupby=o)
+    t.object_list = db(q).select(o, orderby=o, groupby=o)
     return t.col_values_cloud(col)
 
 @auth.requires_login()

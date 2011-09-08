@@ -179,7 +179,7 @@ def ajax_log_col_values():
     q = db.log.id > 0
     for f in set(t.cols)-set(t.special_filtered_cols):
         q = _where(q, 'log', t.filter_parse(f), f)
-    t.object_list = db(q).select(orderby=o, groupby=o)
+    t.object_list = db(q).select(o, orderby=o, groupby=o)
     return t.col_values_cloud(col)
 
 @auth.requires_login()

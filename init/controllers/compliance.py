@@ -1003,7 +1003,7 @@ def ajax_comp_explicit_rules_col_values():
     q = db.v_comp_explicit_rulesets.id > 0
     for f in t.cols:
         q = _where(q, 'v_comp_explicit_rulesets', t.filter_parse_glob(f), f)
-    t.object_list = db(q).select(orderby=o, groupby=o)
+    t.object_list = db(q).select(o, orderby=o, groupby=o)
     return t.col_values_cloud(col)
 
 @auth.requires_login()
@@ -1015,7 +1015,7 @@ def ajax_comp_rulesets_rules_col_values():
     q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
     for f in t.cols:
         q = _where(q, 'v_comp_nodes', t.filter_parse_glob(f), f)
-    t.object_list = db(q).select(orderby=o, groupby=o)
+    t.object_list = db(q).select(o, orderby=o, groupby=o)
     return t.col_values_cloud(col)
 
 @auth.requires_login()
@@ -1812,7 +1812,7 @@ def ajax_comp_rulesets_col_values():
     q = db.v_comp_rulesets.id > 0
     for f in t.cols:
         q = _where(q, 'v_comp_rulesets', t.filter_parse_glob(f), f)
-    t.object_list = db(q).select(orderby=o, groupby=o)
+    t.object_list = db(q).select(o, orderby=o, groupby=o)
     return t.col_values_cloud(col)
 
 @auth.requires_login()
@@ -2627,7 +2627,7 @@ def ajax_comp_filters_col_values():
     q = db.gen_filters.id > 0
     for f in t.cols:
         q = _where(q, 'gen_filters', t.filter_parse(f), f)
-    t.object_list = db(q).select(orderby=o, groupby=o)
+    t.object_list = db(q).select(o, orderby=o, groupby=o)
     return t.col_values_cloud(col)
 
 @auth.requires_login()
@@ -2673,7 +2673,7 @@ def ajax_comp_filtersets_col_values():
     q = db.v_gen_filtersets.fset_id > 0
     for f in t.cols:
         q = _where(q, 'v_gen_filtersets', t.filter_parse(f), f)
-    t.object_list = db(q).select(orderby=o, groupby=o)
+    t.object_list = db(q).select(o, orderby=o, groupby=o)
     return t.col_values_cloud(col)
 
 @auth.requires_login()
@@ -3970,7 +3970,7 @@ def ajax_comp_log_col_values():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_db_filters(q, 'v_nodes')
-    t.object_list = db(q).select(orderby=o, groupby=o)
+    t.object_list = db(q).select(o, orderby=o, groupby=o)
     return t.col_values_cloud(col)
 
 @auth.requires_login()

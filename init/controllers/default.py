@@ -1190,7 +1190,7 @@ def ajax_svcmon_col_values():
     q = apply_db_filters(q, 'v_svcmon')
     for f in t.cols:
         q = _where(q, 'v_svcmon', t.filter_parse(f), f)
-    t.object_list = db(q).select(orderby=o, groupby=o)
+    t.object_list = db(q).select(db.v_svcmon[col], orderby=o, groupby=o, limitby=default_limitby)
     return t.col_values_cloud(col)
 
 @auth.requires_login()
@@ -1214,16 +1214,13 @@ def ajax_svcmon():
             t.flash = str(e)
 
     o = db.v_svcmon.mon_svcname
-    o |= ~db.v_svcmon.environnement
     o |= db.v_svcmon.mon_nodname
-    o |= ~db.v_svcmon.mon_overallstatus
 
     q = _where(None, 'v_svcmon', domain_perms(), 'mon_svcname')
     q = apply_db_filters(q, 'v_svcmon')
     for f in t.cols:
         q = _where(q, 'v_svcmon', t.filter_parse(f), f)
-    n = db(q).count()
-    t.setup_pager(n)
+    t.setup_pager(-1)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
 
     if len(request.args) == 1:

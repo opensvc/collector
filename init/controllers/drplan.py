@@ -441,7 +441,7 @@ def ajax_drplan_col_values():
     q = apply_db_filters(q, 'v_svcmon')
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    t.object_list = db(q).select(orderby=o,
+    t.object_list = db(q).select(o, orderby=o,
                                  left=db.drpservices.on(j),
                                  groupby=o)
     return t.col_values_cloud(col)

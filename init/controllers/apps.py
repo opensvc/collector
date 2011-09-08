@@ -171,7 +171,7 @@ def ajax_apps_col_values():
     for f in t.cols:
         q = _where(q, 'v_users', t.filter_parse(f), f)
     q = apply_db_filters(q, 'v_apps')
-    t.object_list = db(q).select(orderby=o, groupby=o)
+    t.object_list = db(q).select(o, orderby=o, groupby=o)
     return t.col_values_cloud(col)
 
 @auth.requires_membership('Manager')

@@ -275,7 +275,7 @@ def checks():
     query &= db.checks_live.chk_updated > thres
     query &= db.checks_live.chk_nodename==db.v_nodes.nodename
     query = apply_db_filters(query, 'v_nodes')
-    checks = db(query).select()
+    checks = db(query).select(limitby=(0,20))
     return [0, 1, len(checks), str(node_checks(checks, title)), str(T(title))]
 
 
@@ -569,7 +569,9 @@ def svcnotup():
     query &= _where(None, 'v_svc_group_status', domain_perms(), 'svcname')
     query &= db.v_svc_group_status.svcname==db.v_svcmon.mon_svcname
     query = apply_db_filters(query, 'v_svcmon')
-    data = db(query).select(groupby=db.v_svc_group_status.svcname, orderby=db.v_svc_group_status.svcname)
+    data = db(query).select(groupby=db.v_svc_group_status.svcname,
+                            orderby=db.v_svc_group_status.svcname,
+                            limitby=(0,20))
 
     return [0, 1, len(data),
             str(svc_not_up(data, title)), str(T(title))]
@@ -622,7 +624,9 @@ def svcdegraded():
     query &= _where(None, 'v_svc_group_status', domain_perms(), 'svcname')
     query &= db.v_svc_group_status.svcname==db.v_svcmon.mon_svcname
     query = apply_db_filters(query, 'v_svcmon')
-    data = db(query).select(groupby=db.v_svc_group_status.svcname, orderby=db.v_svc_group_status.svcname)
+    data = db(query).select(groupby=db.v_svc_group_status.svcname,
+                            orderby=db.v_svc_group_status.svcname,
+                            limitby=(0,20))
     svcnotup = [r.v_svc_group_status.svcname for r in data]
 
     q = ~db.svcmon.mon_overallstatus.belongs(['up', 'down', 'stdby up'])
@@ -695,7 +699,7 @@ def svcnotonprimary():
     query &= db.v_svc_group_status.svcname==db.v_svcmon.mon_svcname
     query &= q
     query = apply_db_filters(query, 'v_svcmon')
-    data = db(query).select()
+    data = db(query).select(limitby=(0,20))
     return [0, 1, len(data),
             str(svc_not_on_primary(data, title)), str(T(title))]
 
@@ -767,7 +771,8 @@ def warrantyend():
     query = apply_db_filters(query, 'v_nodes')
     data = db(query).select(db.v_nodes.nodename,
                             db.v_nodes.warranty_end,
-                            orderby=db.v_nodes.warranty_end)
+                            orderby=db.v_nodes.warranty_end,
+                            limitby=(0,20))
     return [0, 1, len(data),
             str(warranty_end(data, title)), str(T(title))]
 
@@ -817,7 +822,8 @@ def obsosalert():
                             db.obsolescence.obs_name,
                             db.obsolescence.obs_alert_date,
                             left=db.v_nodes.on(join),
-                            orderby=db.obsolescence.obs_alert_date|db.v_nodes.nodename
+                            orderby=db.obsolescence.obs_alert_date|db.v_nodes.nodename,
+                            limitby=(0,20)
                            )
     return [0, 1, len(data),
             str(obs_os_alert(data, title)), str(T(title))]
@@ -870,7 +876,8 @@ def obsoswarn():
                             db.obsolescence.obs_name,
                             db.obsolescence.obs_warn_date,
                             left=db.v_nodes.on(join),
-                            orderby=db.obsolescence.obs_warn_date|db.v_nodes.nodename
+                            orderby=db.obsolescence.obs_warn_date|db.v_nodes.nodename,
+                            limitby=(0,20)
                            )
     return [0, 1, len(data),
             str(obs_os_warn(data, title)), str(T(title))]
@@ -921,7 +928,8 @@ def obshwalert():
                             db.obsolescence.obs_name,
                             db.obsolescence.obs_alert_date,
                             left=db.v_nodes.on(join),
-                            orderby=db.obsolescence.obs_alert_date|db.v_nodes.nodename
+                            orderby=db.obsolescence.obs_alert_date|db.v_nodes.nodename,
+                            limitby=(0,20)
                            )
     return [0, 1, len(data),
             str(obs_hw_alert(data, title)), str(T(title))]
@@ -974,7 +982,8 @@ def obshwwarn():
                             db.obsolescence.obs_name,
                             db.obsolescence.obs_warn_date,
                             left=db.v_nodes.on(join),
-                            orderby=db.obsolescence.obs_warn_date|db.v_nodes.nodename
+                            orderby=db.obsolescence.obs_warn_date|db.v_nodes.nodename,
+                            limitby=(0,20)
                            )
     return [0, 1, len(data),
             str(obs_hw_warn(data, title)), str(T(title))]
@@ -1090,7 +1099,8 @@ def nodeswithoutasset():
     q = ~db.svcmon.mon_nodname.belongs(db()._select(db.nodes.nodename))
     q &= _where(None, 'svcmon', domain_perms(), 'mon_nodname')
     data = db(q).select(db.svcmon.mon_nodname,
-                        groupby=db.svcmon.mon_nodname)
+                        groupby=db.svcmon.mon_nodname,
+                        limitby=(0,20))
     return [0, 1, len(data),
             str(nodes_without_asset(data, title)), str(T(title))]
 
@@ -1195,7 +1205,7 @@ def netdeverrs():
     query &= db.v_stats_netdev_err_avg_last_day.nodename==db.v_nodes.nodename
     query = apply_db_filters(query, 'v_nodes')
     query &= q
-    data = db(query).select()
+    data = db(query).select(limitby=(0,20))
     return [0, 1, len(data),
             str(netdev_err(data, title)), str(T(title))]
 

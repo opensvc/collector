@@ -66,7 +66,7 @@ def ajax_appinfo_col_values():
     q = db.appinfo.id > 0
     for f in t.cols:
         q = _where(q, 'appinfo', t.filter_parse(f), f)
-    t.object_list = db(q).select(orderby=o, groupby=o)
+    t.object_list = db(q).select(o, orderby=o, groupby=o)
     return t.col_values_cloud(col)
 
 @auth.requires_login()
