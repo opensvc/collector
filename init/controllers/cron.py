@@ -276,7 +276,7 @@ def alerts_failed_actions_not_acked():
                  begin>date_sub(now(), interval 7 day) and
                  begin<date_sub(now(), interval %(age)d day);"""%dict(age=age)
     rows = db.executesql(sql)
-    ids = map(lambda x: x[0], rows)
+    ids = map(lambda x: str(x[0]), rows)
 
     if len(ids) == 0:
         return
@@ -287,13 +287,14 @@ def alerts_failed_actions_not_acked():
                       "service.action.notacked",
                       "feed",
                       "unacknowledged failed action '%%(action)s' at '%%(begin)s'",
-                      concat('{"action": "', action, '"begin": ', begin, '"}'),
+                      concat('{"action": "', action, '", "begin": "', begin, '"}'),
                       now(),
                       svcname,
                       hostname,
                       0,
                       0,
-                      md5(concat("service.action.notacked",hostname,svcname,begin))
+                      md5(concat("service.action.notacked",hostname,svcname,begin)),
+                      "warning"
                from SVCactions
                where
                  id in (%(ids)s);"""%dict(ids=','.join(ids))
@@ -306,10 +307,12 @@ def alerts_failed_actions_not_acked():
     """
     sql = """update SVCactions set
                ack=1,
-               ack_date="%(date)s",
-               ack_comment="Automatically acknowledged",
+               acked_date="%(date)s",
+               acked_comment="Automatically acknowledged",
                acked_by="admin@opensvc.com"
              where id in (%(ids)s);"""%dict(ids=','.join(ids), date=now)
+    db.executesql(sql)
+    refresh_b_action_errors()
 
 def cron_alerts_daily():
     alerts_apps_without_responsible()

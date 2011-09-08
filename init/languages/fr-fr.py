@@ -1042,6 +1042,7 @@
 'type': 'type',
 'unable to parse csv file': "incapable d'analyser le fichier csv",
 'unacknowledged errors': 'erreurs non-acquittées',
+"unacknowledged failed action '%(action)s' at '%(begin)s'": "unacknowledged failed action '%(action)s' at '%(begin)s'",
 'unacknowledged failed actions': 'actions en erreur et non-acquittées',
 'undefined': 'indéfini',
 'unfinished': 'non terminé',
