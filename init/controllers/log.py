@@ -57,6 +57,18 @@ class col_log_icons(HtmlTableColumn):
             i.append(IMG( _src=URL(r=request,c='static',f=img_h[w])))
         return SPAN(i)
 
+class col_log_level(HtmlTableColumn):
+    def html(self, o):
+       d = self.get(o)
+       if d == "info":
+           return DIV(d, _class="boxed_small bggreen")
+       elif d == "warning":
+           return DIV(d, _class="boxed_small bgorange")
+       elif d == "error":
+           return DIV(d, _class="boxed_small bgred")
+       else:
+           return DIV(d, _class="boxed_small bgblack")
+
 class table_log(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -64,6 +76,7 @@ class table_log(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['log_date',
                      'log_icons',
+                     'log_level',
                      'log_svcname',
                      'log_nodename',
                      'log_user',
@@ -84,6 +97,12 @@ class table_log(HtmlTable):
             'log_icons': col_log_icons(
                      title='Icons',
                      field='log_icons',
+                     img='action16',
+                     display=True,
+                    ),
+            'log_level': col_log_level(
+                     title='Icons',
+                     field='log_level',
                      img='action16',
                      display=True,
                     ),

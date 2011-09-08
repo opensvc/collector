@@ -92,6 +92,25 @@ def fork(fn, kwargs={}):
 class SendError(Exception):
     pass
 
+class counters(object):
+    def __init__(self, n_job=0, n_entry=0, ids=set([])):
+        self.n_job = n_job
+        self.n_entry = n_entry
+        self.ids = ids
+
+    def __str__(self):
+        return "jobs: %d, entries %d, ids: %s"%(
+          self.n_job, self.n_entry, ','.join(map(lambda x: str(x), self.ids)))
+
+    def __iadd__(self, o):
+        self.n_job += o.n_job
+        self.n_entry += o.n_entry
+        self.ids |= o.ids
+        return self
+
+    def reset(self):
+        self.__init__()
+
 class im_job(object):
     def __init__(self, row):
         self.addr = row[3]
@@ -103,7 +122,7 @@ class im_job(object):
         fmt = row[1]
         try:
             dic = json.loads(row[2])
-            l = (row[0], row[5], row[6], fmt%dic)
+            l = (row[0], row[7], row[5], row[6], fmt%dic)
         except:
             jlog.warning("skip on json error:", fmt, row[2])
             return self
@@ -113,7 +132,7 @@ class im_job(object):
     def __str__(self):
         s = ""
         for l in self.lines:
-            s += "%s | %20s | %20s | %s\n"%(str(l[0]), l[1], l[2], l[3])
+            s += "%s | %8s | %20s | %20s | %s\n"%(str(l[0]), l[1], l[2], l[3], l[4])
         return s
 
     def __call__(self):
@@ -176,7 +195,8 @@ def get_im_queued_node(q):
                u.im_username,
                l.id,
                l.log_nodename,
-               ""
+               "",
+               l.log_level
              from log l
                join nodes n on l.log_nodename=n.nodename
                join auth_group g on n.team_responsible=g.role
@@ -185,6 +205,7 @@ def get_im_queued_node(q):
              where
                u.im_notifications = 'T' and
                u.im_username is not NULL and
+               u.im_log_level <= l.log_level and
                l.log_svcname is NULL and
                l.log_nodename is not NULL and
                l.log_gtalk_sent=0
@@ -221,7 +242,7 @@ def get_im_queued_node(q):
             ids |= set([row[4]])
     cursor.close()
     conn.close()
-    return {'n_job': n_job, 'n_entry': n_entry, 'ids': ids}
+    return counters(n_job=n_job, n_entry=n_entry, ids=ids)
 
 def get_im_queued_manager(q):
     conn = get_conn()
@@ -234,9 +255,10 @@ def get_im_queued_manager(q):
                t.im_username,
                l.id,
                "",
-               ""
+               "",
+               l.log_level
              from log l,
-               (select im_username from auth_user u
+               (select im_username, im_log_level from auth_user u
                  join auth_membership am on u.id=am.user_id
                  join auth_group g on am.group_id=g.id
                 where
@@ -244,6 +266,7 @@ def get_im_queued_manager(q):
                   u.im_username is not NULL and
                   u.im_notifications = 'T') t
              where
+               t.im_log_level <= l.log_level and
                l.log_svcname is NULL and
                l.log_nodename is NULL and
                l.log_gtalk_sent=0
@@ -280,7 +303,7 @@ def get_im_queued_manager(q):
             ids |= set([row[4]])
     cursor.close()
     conn.close()
-    return {'n_job': n_job, 'n_entry': n_entry, 'ids': ids}
+    return counters(n_job=n_job, n_entry=n_entry, ids=ids)
 
 def get_im_queued_svc(q):
     conn = get_conn()
@@ -293,7 +316,8 @@ def get_im_queued_svc(q):
                u.im_username,
                l.id,
                l.log_nodename,
-               l.log_svcname
+               l.log_svcname,
+               l.log_level
              from log l
                join services s on l.log_svcname=s.svc_name
                join apps a on s.svc_app=a.app
@@ -301,6 +325,7 @@ def get_im_queued_svc(q):
                join auth_membership am on ar.group_id=am.group_id
                join auth_user u on am.user_id=u.id
              where
+               u.im_log_level <= l.log_level and
                u.im_notifications = 'T' and
                u.im_username is not NULL and
                l.log_svcname is not NULL and
@@ -338,7 +363,7 @@ def get_im_queued_svc(q):
             ids |= set([row[4]])
     cursor.close()
     conn.close()
-    return {'n_job': n_job, 'n_entry': n_entry, 'ids': ids}
+    return counters(n_job=n_job, n_entry=n_entry, ids=ids)
 
 def im_done(ids):
     if len(ids) == 0:
@@ -375,13 +400,15 @@ def get_email_queued_node(q):
                u.email,
                l.id,
                l.log_nodename,
-               ""
+               "",
+               l.log_level
              from log l
                join nodes n on l.log_nodename=n.nodename
                join auth_group g on n.team_responsible=g.role
                join auth_membership am on am.group_id=g.id
                join auth_user u on am.user_id=u.id
              where
+               u.email_log_level <= l.log_level and
                u.email_notifications = 'T' and
                u.email is not NULL and
                l.log_svcname is NULL and
@@ -420,7 +447,7 @@ def get_email_queued_node(q):
             ids |= set([row[4]])
     cursor.close()
     conn.close()
-    return {'n_job': n_job, 'n_entry': n_entry, 'ids': ids}
+    return counters(n_job=n_job, n_entry=n_entry, ids=ids)
 
 def get_email_queued_manager(q):
     conn = get_conn()
@@ -433,9 +460,10 @@ def get_email_queued_manager(q):
                t.email,
                l.id,
                "",
-               ""
+               "",
+               l.log_level
              from log l,
-               (select email from auth_user u
+               (select email, email_log_level from auth_user u
                  join auth_membership am on u.id=am.user_id
                  join auth_group g on am.group_id=g.id
                 where
@@ -443,6 +471,7 @@ def get_email_queued_manager(q):
                   u.email is not NULL and
                   u.email_notifications = 'T') t
              where
+               t.email_log_level <= l.log_level and
                l.log_svcname is NULL and
                l.log_nodename is NULL and
                l.log_email_sent=0
@@ -479,7 +508,7 @@ def get_email_queued_manager(q):
             ids |= set([row[4]])
     cursor.close()
     conn.close()
-    return {'n_job': n_job, 'n_entry': n_entry, 'ids': ids}
+    return counters(n_job=n_job, n_entry=n_entry, ids=ids)
 
 def get_email_queued_svc(q):
     conn = get_conn()
@@ -492,7 +521,8 @@ def get_email_queued_svc(q):
                u.email,
                l.id,
                l.log_nodename,
-               l.log_svcname
+               l.log_svcname,
+               l.log_level
              from log l
                join services s on l.log_svcname=s.svc_name
                join apps a on s.svc_app=a.app
@@ -500,6 +530,7 @@ def get_email_queued_svc(q):
                join auth_membership am on ar.group_id=am.group_id
                join auth_user u on am.user_id=u.id
              where
+               u.email_log_level <= l.log_level and
                u.email_notifications = 'T' and
                u.email is not NULL and
                l.log_svcname is not NULL and
@@ -537,7 +568,7 @@ def get_email_queued_svc(q):
             ids |= set([row[4]])
     cursor.close()
     conn.close()
-    return {'n_job': n_job, 'n_entry': n_entry, 'ids': ids}
+    return counters(n_job=n_job, n_entry=n_entry, ids=ids)
 
 def dequeue_worker_int(i, q):
     log = logging.getLogger("WORKER.%d"%i)
@@ -592,62 +623,34 @@ def stop_workers(q):
         p.join()
 
 def dequeue(q):
+    qlog.info("email enabled:%s, im enabled:%s"%(str(config.email), str(config.gtalk)))
+    c = counters()
     while True:
         if config.email:
-            n_entry = 0
-            n_job = 0
-            ids = []
+            c.reset()
+            c += get_email_queued_svc(q)
+            c += get_email_queued_node(q)
+            c += get_email_queued_manager(q)
 
-            d = get_email_queued_svc(q)
-            n_entry += d['n_entry']
-            n_job += d['n_job']
-            ids += d['ids']
-
-            d = get_email_queued_node(q)
-            n_entry += d['n_entry']
-            n_job += d['n_job']
-            ids += d['ids']
-
-            d = get_email_queued_manager(q)
-            n_entry += d['n_entry']
-            n_job += d['n_job']
-            ids += d['ids']
-
-            if n_job > 0:
+            if c.n_job > 0:
                 start_workers(q)
-                qlog.info("queued %d log entries in %d emails"%(n_entry, n_job))
+                qlog.info("queued %d log entries in %d emails"%(c.n_entry, c.n_job))
                 stop_workers(q)
-                email_done(ids)
+                email_done(c.ids)
 
         if config.gtalk:
-            n_entry = 0
-            n_job = 0
-            ids = []
+            c.reset()
+            c += get_im_queued_svc(q)
+            c += get_im_queued_node(q)
+            c += get_im_queued_manager(q)
 
-            d = get_im_queued_svc(q)
-            n_entry += d['n_entry']
-            n_job += d['n_job']
-            ids += d['ids']
-            ids += d['ids']
-
-            d = get_im_queued_node(q)
-            n_entry += d['n_entry']
-            n_job += d['n_job']
-            ids += d['ids']
-
-            d = get_im_queued_manager(q)
-            n_entry += d['n_entry']
-            n_job += d['n_job']
-            ids += d['ids']
-
-            if n_job > 0:
+            if c.n_job > 0:
                 start_workers(q)
-                qlog.info("queued %d log entries in %d instant messages"%(n_entry, n_job))
+                qlog.info("queued %d log entries in %d instant messages"%(c.n_entry, c.n_job))
                 stop_workers(q)
-                im_done(ids)
+                im_done(c.ids)
 
         time.sleep(1)
-    #stop_workers()
 
 def dequeue_int():
     q = JoinableQueue()
@@ -658,10 +661,10 @@ def dequeue_int():
         stop_workers(q)
         pass
 
-#dequeue_int()
 setup_log()
 qlog = logging.getLogger("QUEUE.MANAGER")
 jlog = logging.getLogger("JOB")
+#dequeue_int()
 try:
     lockfd = alertd_lock(lockfile)
     fork(dequeue_int)

@@ -1,3 +1,40 @@
+def rotate_stats():
+    """ lower data resolution with ageing
+    """
+    thres1 = now - datetime.timedelta(days=30)
+    thres2 = now - datetime.timedelta(days=180)
+
+    sql = """
+     delete from stats_fs_u
+     where date<"%(thres1)s" and date>="%(thres2)s" and
+     id not in (
+       select id from (
+         select MAX(id) as id,
+         CONCAT(YEAR(date),'-',MONTH(date),'-',DAY(date),' ',HOUR(date)) as d,
+         nodename
+         from stats_fs_u
+         where date<"%(thres1)s" and date>"%(thres2)s"
+         group by d,nodename,mntpt
+       ) tmp1
+     )
+    """%dict(thres1=thres1, thres2=thres2)
+    db.executesql(sql)
+    sql = """
+     delete from stats_fs_u
+     where date<"%(thres2)s" and
+     id not in (
+       select id from (
+         select MAX(id) as id,
+         CONCAT(YEAR(date),'-',MONTH(date),'-',DAY(date)) as d,
+         nodename
+         from stats_fs_u
+         where date<"%(thres2)s"
+         group by d,nodename,mntpt
+       ) tmp1
+     )
+    """%dict(thres1=thres1, thres2=thres2)
+    db.executesql(sql)
+
 def refresh_b_action_errors():
     sql = """truncate b_action_errors;"""
     db.executesql(sql)
@@ -76,7 +113,8 @@ def cron_scrub_svcstatus():
             _log("service.status",
                  "service '%(svc)s' has zero live instance. Status flagged 'undef'",
                  dict(svc=svcname),
-                 svcname=svcname)
+                 svcname=svcname,
+                 level="error")
     for svcname in svcs:
         svc_log_update(svcname, "undef")
 
@@ -158,7 +196,8 @@ def cron_unfinished_actions():
               dict(ids=r.id),
               user='collector',
               svcname=r.svcname,
-              nodename=r.hostname)
+              nodename=r.hostname,
+              level="warning")
     return "%d actions marked timed out"%len(rows)
 
 def cron_scrub_checks():
@@ -181,7 +220,7 @@ def alerts_apps_without_responsible():
 
     _log("app",
          "applications with no declared responsibles '%(app)s'",
-         dict(app=', '.join(apps)))
+         dict(app=', '.join(apps)),level="warning")
 
 def alerts_services_not_updated():
     """ Alert if service is not updated for 48h

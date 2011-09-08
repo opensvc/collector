@@ -1354,14 +1354,15 @@ button, input[type=button], input[type=submit] {
     color: red;
 }
 
+.bgorange {
+    background-color: orange;
+}
 .bgred {
     background-color: #990000;
 }
-
 .bggreen {
     background-color: #009900;
 }
-
 .bgblack {
     background-color: #2d2d2d;
 }

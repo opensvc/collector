@@ -125,7 +125,8 @@ def end_action(vars, vals, auth):
                   svc=h['svcname'].strip("'"),
                   node=h['hostname'].strip("'")),
              svcname=h['svcname'].strip("'"),
-             nodename=h['hostname'].strip("'"))
+             nodename=h['hostname'].strip("'"),
+             level="error")
     return 0
 
 def update_action_errors(svcname, nodename):
@@ -431,7 +432,8 @@ def register_node(node):
         _log("node.register",
              "node '%(node)s' double registration attempt",
              dict(node=node),
-             nodename=node)
+             nodename=node,
+             level="warning")
         return ["already registered"]
     import uuid
     u = str(uuid.uuid4())
@@ -649,8 +651,12 @@ def __svcmon_update(vars, vals):
                  h['mon_syncstatus'],
                  h['mon_hbstatus']]
         generic_insert('svcmon_log', _vars, _vals)
+        if h['mon_overallstatus'] == 'warn':
+            level = "warning"
+        else:
+            level = "info"
         _log("service.status",
-             "service '%(svc)s' state changed on '%(node)s': avail(%(a1)s=>%(a2)s) overall(%(o1)s=>%(o2)s)",
+             "service '%(svc)s' state initialized on '%(node)s': avail(%(a1)s=>%(a2)s) overall(%(o1)s=>%(o2)s)",
              dict(
                svc=h['mon_svcname'],
                node=h['mon_nodname'],
@@ -659,7 +665,8 @@ def __svcmon_update(vars, vals):
                o1="none",
                o2=h['mon_overallstatus']),
              svcname=h['mon_svcname'],
-             nodename=h['mon_nodname'])
+             nodename=h['mon_nodname'],
+             level=level)
     elif last[0].mon_end < tmo:
         _vars = ['mon_begin',
                  'mon_end',
@@ -715,6 +722,10 @@ def __svcmon_update(vars, vals):
                  h['mon_hbstatus'],
                  h['mon_syncstatus']]
         generic_insert('svcmon_log', _vars, _vals)
+        if h['mon_overallstatus'] == 'warn':
+            level = "warning"
+        else:
+            level = "info"
         _log("service.status",
              "service '%(svc)s' state changed on '%(node)s': avail(%(a1)s=>%(a2)s) overall(%(o1)s=>%(o2)s)",
              dict(
@@ -725,14 +736,10 @@ def __svcmon_update(vars, vals):
                o1="undef",
                o2=h['mon_overallstatus']),
              svcname=h['mon_svcname'],
-             nodename=h['mon_nodname'])
-    elif h['mon_ipstatus'] != last[0].mon_ipstatus or \
-         h['mon_fsstatus'] != last[0].mon_fsstatus or \
-         h['mon_diskstatus'] != last[0].mon_diskstatus or \
-         h['mon_containerstatus'] != last[0].mon_containerstatus or \
-         h['mon_appstatus'] != last[0].mon_appstatus or \
-         h['mon_hbstatus'] != last[0].mon_hbstatus or \
-         h['mon_syncstatus'] != last[0].mon_syncstatus:
+             nodename=h['mon_nodname'],
+             level=level)
+    elif h['mon_overallstatus'] != last[0].mon_overallstatus or \
+         h['mon_availstatus'] != last[0].mon_availstatus:
         _vars = ['mon_begin',
                  'mon_end',
                  'mon_svcname',
@@ -761,6 +768,10 @@ def __svcmon_update(vars, vals):
                  h['mon_hbstatus']]
         generic_insert('svcmon_log', _vars, _vals)
         db(db.svcmon_log.id==last[0].id).update(mon_end=h['mon_updated'])
+        if h['mon_overallstatus'] == 'warn':
+            level = "warning"
+        else:
+            level = "info"
         _log("service.status",
              "service '%(svc)s' state changed on '%(node)s': avail(%(a1)s=>%(a2)s) overall(%(o1)s=>%(o2)s)",
              dict(
@@ -771,7 +782,8 @@ def __svcmon_update(vars, vals):
                o1=last[0].mon_overallstatus,
                o2=h['mon_overallstatus']),
              svcname=h['mon_svcname'],
-             nodename=h['mon_nodname'])
+             nodename=h['mon_nodname'],
+             level=level)
     else:
         db(db.svcmon_log.id==last[0].id).update(mon_end=h['mon_updated'])
 

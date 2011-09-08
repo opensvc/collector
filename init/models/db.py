@@ -65,6 +65,10 @@ table = db.define_table(auth.settings.table_user_name,
           label=T('Instant messaging protocol'),
           requires=IS_IN_DB(db, db.im_types.id, "%(im_type)s", zero=T('choose one'))),
     Field('im_username', 'string', label=T("Instant messaging user name")),
+    Field('im_log_level', 'string', label=T("Instant messaging log level"),
+          requires=IS_IN_SET(["debug", "info", "warning", "error", "critical"])),
+    Field('email_log_level', 'string', label=T("Email messaging log level"),
+          requires=IS_IN_SET(["debug", "info", "warning", "error", "critical"])),
     migrate=False)
 
 table.email.requires = [IS_EMAIL(error_message=auth.messages.invalid_email),
@@ -1098,6 +1102,7 @@ db.define_table('log',
     Field('log_gtalk_sent','integer'),
     Field('log_email_sent','integer'),
     Field('log_entry_id','string'),
+    Field('log_level','string'),
     migrate=False)
 
 db.define_table('column_filters',

@@ -1381,3 +1381,9 @@ CREATE TABLE `comp_modulesets_services` (
   UNIQUE KEY `idx1` (`modset_svcname`,`modset_id`),
   KEY `idx2` (`modset_svcname`)
 );
+
+alter table log add column log_level enum("debug", "info", "warning", "error", "critical") default "info";
+
+alter table auth_user add column email_log_level enum("debug", "info", "warning", "error", "critical") default "warning";
+
+alter table auth_user add column im_log_level enum("debug", "info", "warning", "error", "critical") default "warning";
