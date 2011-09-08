@@ -509,8 +509,7 @@ def ajax_actions():
     q = apply_db_filters(q, 'v_svcactions')
     for f in t.cols:
         q = _where(q, 'v_svcactions', t.filter_parse(f), f)
-    n = len(db(q).select(db.v_svcactions.id,limitby=default_limitby))
-    t.setup_pager(n)
+    t.setup_pager(-1)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
     return SPAN(
               DIV(
