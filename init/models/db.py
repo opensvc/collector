@@ -499,15 +499,6 @@ db.define_table('v_nodes',
     Field('updated'),
     migrate=False)
 
-db.define_table('alerts',
-    Field('id'),
-    Field('sent_at'),
-    Field('sent_to'),
-    Field('subject'),
-    Field('body'),
-    Field('domain'),
-    migrate=False)
-
 db.define_table('v_users',
     Field('fullname'),
     Field('domains'),

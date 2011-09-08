@@ -95,8 +95,6 @@ response.menu = [
               URL(request.application,'lifecycle','lifecycle_os')],
              [SPAN(T('Availability'), _class='avail16'), False,
               URL(request.application,'svcmon_log','svcmon_log')],
-             [SPAN(T('Alerts'), _class='alert16'), False,
-              URL(request.application,'alerts','alerts')],
          ]
     ],
     [T('Admin'), False, '',

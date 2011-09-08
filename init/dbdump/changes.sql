@@ -1387,3 +1387,5 @@ alter table log add column log_level enum("debug", "info", "warning", "error", "
 alter table auth_user add column email_log_level enum("debug", "info", "warning", "error", "critical") default "warning";
 
 alter table auth_user add column im_log_level enum("debug", "info", "warning", "error", "critical") default "warning";
+
+drop table alerts;
