@@ -238,7 +238,8 @@ def alerts_services_not_updated():
                       NULL,
                       0,
                       0,
-                      md5(concat("service.config.notupdated",svc_name,updated))
+                      md5(concat("service.config.notupdated",svc_name,updated)),
+                      "warning"
                from services
                where updated<date_sub(now(), interval %(age)d day);"""%dict(age=age)
     return db.executesql(sql)
