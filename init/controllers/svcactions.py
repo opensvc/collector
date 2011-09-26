@@ -16,9 +16,9 @@ def update_dash_action_errors(svc_name, nodename):
 
     if len(rows) == 1:
         if rows[0][1] == 'PRD':
-            sev = 2
+            sev = 4
         else:
-            sev = 1
+            sev = 3
         sql = """insert into dashboard
                  set
                    dash_type="action errors",

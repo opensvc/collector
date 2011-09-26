@@ -1445,9 +1445,9 @@ def update_dash_flex_cpu(svcname):
     rows = db.executesql(sql)
 
     if len(rows) == 1 and rows[0][0] == 'PRD':
-        sev = 2
+        sev = 4
     else:
-        sev = 1
+        sev = 3
 
     sql = """insert ignore into dashboard
                select
@@ -1552,9 +1552,9 @@ def update_dash_checks(nodename):
     rows = db.executesql(sql)
 
     if len(rows) == 1 and rows[0][0] == 'PRD':
-        sev = 1
+        sev = 3
     else:
-        sev = 0
+        sev = 2
 
     sql = """insert ignore into dashboard
                select
@@ -1662,9 +1662,9 @@ def update_dash_action_errors(svc_name, nodename):
 
     if len(rows) == 1:
         if rows[0][1] == 'PRD':
-            sev = 2
+            sev = 4
         else:
-            sev = 1
+            sev = 3
         sql = """insert into dashboard
                  set
                    dash_type="action errors",
@@ -1696,9 +1696,9 @@ def update_dash_action_errors(svc_name, nodename):
 
 def update_dash_service_available_but_degraded(svc_name, svc_type, svc_availstatus, svc_status):
     if svc_type == 'PRD':
-        sev = 1
+        sev = 3
     else:
-        sev = 0
+        sev = 2
     if svc_availstatus == "up" and svc_status != "up":
         sql = """delete from dashboard
                  where
@@ -1730,9 +1730,9 @@ def update_dash_service_available_but_degraded(svc_name, svc_type, svc_availstat
 
 def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
     if svc_type == 'PRD':
-        sev = 2
+        sev = 4
     else:
-        sev = 1
+        sev = 3
     if svc_availstatus == "up":
         sql = """delete from dashboard
                  where
@@ -1765,9 +1765,9 @@ def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
 
 def update_dash_service_frozen(svc_name, nodename, svc_type, frozen):
     if svc_type == 'PRD':
-        sev = 1
+        sev = 2
     else:
-        sev = 0
+        sev = 1
     if frozen == "0":
         sql = """delete from dashboard
                  where

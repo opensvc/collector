@@ -381,6 +381,8 @@ class col_dash_severity(HtmlTableColumn):
            c += "bgorange"
        elif d == 2:
            c += "bgred"
+       elif d == 3:
+           c += "bgdarkred"
        else:
            c += "bgblack"
        return DIV(d, _class=c)
