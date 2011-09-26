@@ -1102,7 +1102,7 @@ def cron_dash_checks_not_updated():
                from checks_live c
                  join nodes n on c.chk_nodename=n.nodename
                where
-                 chk_updated < date_sub(now(), interval 15 minute)"""
+                 chk_updated < date_sub(now(), interval 1 day)"""
     db.executesql(sql)
 
 def cron_dash_app_without_responsible():

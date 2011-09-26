@@ -1437,6 +1437,8 @@ alter table comp_status modify run_svcname varchar(60) default "";
 
 alter table dashboard add column dash_dict_md5 varchar(32) default "";
 
+alter table dashboard drop key idx1;
+
 alter table dashboard add unique key idx1 (dash_type, dash_svcname, dash_nodename, dash_dict_md5);
 
 CREATE TABLE `feed_queue` (
