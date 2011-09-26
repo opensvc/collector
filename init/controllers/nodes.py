@@ -404,10 +404,7 @@ def node_del(ids):
     rows = db(q).select(db.nodes.nodename)
     u = ', '.join([r.nodename for r in rows])
     for nodename in rows:
-        delete_dash_node_without_warranty_end(nodename)
-        delete_dash_node_near_warranty_end(nodename)
-        delete_dash_node_beyond_warranty_end(nodename)
-        delete_dash_node_not_updated(nodename)
+        delete_dash_node(nodename)
 
     db(q).delete()
     _log('nodes.delete',
@@ -464,27 +461,10 @@ def nodes():
 #
 # Dashboard updates
 #
-def delete_dash_node_near_warranty_end(nodename):
+def delete_dash_node(nodename):
     sql = """delete from dashboard
                where
-                 dash_nodename="%(nodename)s" and
-                 dash_type = "node close to warranty end"
-          """%dict(nodename=nodename)
-    rows = db.executesql(sql)
-
-def delete_dash_node_beyond_warranty_end(nodename):
-    sql = """delete from dashboard
-               where
-                 dash_nodename="%(nodename)s" and
-                 dash_type = "node warranty expired"
-          """%dict(nodename=nodename)
-    rows = db.executesql(sql)
-
-def delete_dash_node_without_warranty_end(nodename):
-    sql = """delete from dashboard
-               where
-                 dash_nodename="%(nodename)s" and
-                 dash_type = "node without warranty end date"
+                 dash_nodename="%(nodename)s"
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
 
