@@ -55,7 +55,7 @@ response.menu = [
     [XML('&diams;'), _f == '',
      '',[]],
     [T('Dashboard'), _f == 'index',
-     URL(request.application,'default','index'), []],
+     URL(request.application,'dashboard','index'), []],
     [T('Views'), False, '',
          [
              [SPAN(T('Services'), _class='svc'), False,

@@ -360,6 +360,18 @@ function avail_plot(id, data) {
 	    }
 	})
 }
+function ajax_changed(url1, last, f) {
+    $.ajax({
+         type: "POST",
+         url: url1,
+         data: "",
+         success: function(msg){
+             if (parseInt(msg) < last) {
+                 f()
+             }
+         }
+    })
+}
 function sync_ajax(url, inputs, id, f) {
     s = inputs
     var query=""

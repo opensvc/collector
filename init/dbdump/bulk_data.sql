@@ -26,3 +26,10 @@ insert into comp_status (run_nodename, run_module, run_status, run_date, run_act
 # load 100 modules log lines over 10 weeks on 10000 nodes
 #
 insert into comp_log (run_nodename, run_module, run_status, run_date, run_action) select n.nodename, m.module, ROUND(RAND()), d.date, "check" from (select concat('node', "0", d.i, c.i, b.i, a.i) as nodename from digit a join digit b join digit c join digit d) as n, (select concat('mod', b.i, a.i) as module from digit a join digit b) as m, (select DATE_SUB(NOW(), INTERVAL a.i week) as date from digit a) as d;
+
+#
+# refresh 10000 services status
+#
+update into svcmon set mon_updated=now() where mon_svcname like "svc0%";
+
+

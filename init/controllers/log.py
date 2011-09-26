@@ -27,9 +27,8 @@ class col_log_evt(HtmlTableColumn):
         try:
             d = json.loads(o.log_dict)
             for k in d:
-                if not isinstance(d[k], str):
-                    d[k] = str(d[k])
-                d[k] = d[k].encode('utf8')
+                if isinstance(d[k], str) or isinstance(d[k], unicode):
+                    d[k] = d[k].encode('utf8')
             s = T.translate(o.log_fmt,d)
         except KeyError:
             s = 'error parsing: %s'%o.log_dict
@@ -101,7 +100,7 @@ class table_log(HtmlTable):
                      display=True,
                     ),
             'log_level': col_log_level(
-                     title='Icons',
+                     title='Severity',
                      field='log_level',
                      img='action16',
                      display=True,

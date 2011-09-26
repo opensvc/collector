@@ -188,12 +188,20 @@ def group_attach(ids=[]):
             continue
         done.append(id)
         db.apps_responsibles.insert(app_id=id, group_id=gid)
+
+
     rows = db(db.apps.id.belongs(done)).select()
     u = ', '.join([r.app for r in rows])
     g = db(db.auth_group.id==gid).select(db.auth_group.role)[0].role
     _log('apps.group.attach',
          'attached group %(g)s to apps %(u)s',
          dict(g=g, u=u))
+
+    # remove dashboard alerts
+    for r in rows:
+        q = db.dashboard.dash_type == "application code without responsible"
+        q &= db.dashboard.dash_dict.like('%%:"%s"%%'%r.app)
+        db(q).delete()
 
 @auth.requires_membership('Manager')
 def group_detach(ids=[]):

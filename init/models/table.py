@@ -91,6 +91,7 @@ class HtmlTable(object):
         self.colprops = {}
 
         # to be set be instanciers
+        self.autorefresh = 0
         self.checkboxes = False
         self.checkbox_names = [self.id+'_ck']
         self.checkbox_id_col = 'id'
@@ -340,6 +341,23 @@ class HtmlTable(object):
                 _name=self.col_selector_key(),
               ),
               _class='floatw',
+            )
+        return d
+
+    def countdown(self):
+        if not self.autorefresh:
+            return SPAN()
+        d = SPAN(
+              DIV(
+                self.autorefresh/1000,
+                _id='countdown_'+self.id,
+                _class='floatw',
+              ),
+              DIV(
+                0,
+                _id='countup_'+self.id,
+                _class='floatw',
+              ),
             )
         return d
 
@@ -930,6 +948,7 @@ class HtmlTable(object):
               DIV(
                 self.pager(),
                 self.refresh(),
+                self.countdown(),
                 export,
                 self.columns_selector(),
                 self.persistent_filters(),
@@ -968,11 +987,47 @@ var inputs_%(id)s = %(a)s;"""%dict(
                    ajax_submit=self.ajax_submit(),
                    ajax_enter_submit=self.ajax_enter_submit(),
                 ),
+                self.js_autorefresh(),
                 _name=self.id+"_to_eval",
               ),
               _class='tableo',
             )
         return d
+
+    def js_autorefresh(self):
+        if self.autorefresh == 0:
+            return ""
+        else:
+            return """
+total=0
+function autorefresh_%(id)s(){
+  $("#%(id)s").stopTime();
+  ajax_submit_%(id)s();
+};
+function countdown(){
+  i=$("#countdown_%(id)s").html();
+  if (i==0){
+    ajax_changed("%(url)s", total, autorefresh_%(id)s)
+    i=%(ar)d/1000;
+    $("#countdown_%(id)s").html(i);
+  };
+  i--;
+  total++
+  $("#countdown_%(id)s").html(i)
+  if (total < 60) {j=total + " seconds"}
+  else if (total < 120) {j="1 minute"}
+  else if (total < 3600) {j=parseInt(total/60) + " minutes"}
+  else if (total < 7200) {j="1 hour"}
+  else if (total < 86400) {j=parseInt(total/3600) + " hours"}
+  else if (total < 172800) {j="1 day"}
+  else {j=parseInt(total/86400) + " days"}
+  $("#countup_%(id)s").html("refreshed "+j+" ago")
+};
+$("#%(id)s").stopTime();
+$("#%(id)s").everyTime(1000, function(i){
+  countdown()
+});
+"""%dict(id=self.id, ar=self.autorefresh, url=URL(r=request, c="dashboard", f="dash_changed"))
 
     def change_line_data(self, o):
         pass

@@ -142,17 +142,17 @@ def index():
 @auth.requires_login()
 def envfile(svcname):
     query = _where(None, 'services', svcname, 'svc_name')
-    query &= _where(None, 'v_svcmon', domain_perms(), 'svc_name')
+    query &= _where(None, 'services', domain_perms(), 'svc_name')
     rows = db(query).select()
     if len(rows) == 0:
         return "None"
     #return dict(svc=rows[0])
-    envfile = rows[0]['services']['svc_envfile']
+    envfile = rows[0]['svc_envfile']
     if envfile is None:
         return "None"
     return DIV(
              P(T("updated: %(upd)s",dict(
-                     upd=rows[0]['services']['updated']
+                     upd=rows[0]['updated']
                    ),
                 ),
                 _style='text-align:center',
@@ -518,7 +518,7 @@ def res_status(svcname, node):
 @auth.requires_login()
 def ajax_service():
     rowid = request.vars.rowid
-    rows = db(db.v_svcmon.mon_svcname==request.vars.node).select()
+    rows = db(db.v_svcmon.mon_svcname==request.vars.node).select(limitby=(0,1))
     viz = svcmon_viz_img(rows)
     if len(rows) == 0:
         return DIV(

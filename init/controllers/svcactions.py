@@ -3,6 +3,51 @@ def pid_to_filter(pid):
         return ''
     return pid.replace(',', '|')
 
+def update_dash_action_errors(svc_name, nodename):
+    svc_name = svc_name.strip("'")
+    nodename = nodename.strip("'")
+    sql = """select e.err, s.svc_type from b_action_errors e
+             join services s on e.svcname=s.svc_name
+             where
+               svcname="%(svcname)s" and
+               nodename="%(nodename)s"
+          """%dict(svcname=svc_name, nodename=nodename)
+    rows = db.executesql(sql)
+
+    if len(rows) == 1:
+        if rows[0][1] == 'PRD':
+            sev = 2
+        else:
+            sev = 1
+        sql = """insert into dashboard
+                 set
+                   dash_type="action errors",
+                   dash_svcname="%(svcname)s",
+                   dash_nodename="%(nodename)s",
+                   dash_severity=%(sev)d,
+                   dash_fmt="%(err)s action errors",
+                   dash_dict='{"err": "%(err)d"}',
+                   dash_created="%(now)s"
+                 on duplicate key update
+                   dash_severity=%(sev)d,
+                   dash_fmt="%(err)s action errors",
+                   dash_dict='{"err": "%(err)d"}',
+                   dash_created="%(now)s"
+              """%dict(svcname=svc_name,
+                       nodename=nodename,
+                       sev=sev,
+                       now=str(datetime.datetime.now()),
+                       err=rows[0][0])
+    else:
+        sql = """delete from dashboard
+                 where
+                   dash_type="action errors" and
+                   dash_svcname="%(svcname)s" and
+                   dash_nodename="%(nodename)s"
+              """%dict(svcname=svc_name,
+                       nodename=nodename)
+    db.executesql(sql)
+ 
 def update_action_errors(actionid):
     sql = """insert into b_action_errors set
                svcname=(select svcname from SVCactions where id=%(id)d),
@@ -20,6 +65,8 @@ def update_action_errors(actionid):
                        a.status = 'err' and
                        ((a.ack <> 1) or isnull(a.ack)))
           """%dict(id=actionid)
+    db.executesql(sql)
+    sql = """delete from b_action_errors where err=0"""
     db.executesql(sql)
 
 @auth.requires_login()
@@ -485,6 +532,7 @@ def ack(ids=[]):
 
     for r in rows:
         update_action_errors(r.id)
+        update_dash_action_errors(r.svcname, r.hostname)
         _log('action.ack',
              'acknowledged action error with id %(g)s: %(action)s on %(svc)s@%(node)s',
              dict(g=r.id, action=r.action, svc=r.svcname, node=r.hostname),

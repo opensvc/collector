@@ -84,6 +84,11 @@ def _node_form(record=None):
 def node_insert():
     form = _node_form()
     if form.accepts(request.vars):
+        update_dash_node_without_warranty_end(request.vars.nodename)
+        update_dash_node_beyond_warranty_end(request.vars.nodename)
+        update_dash_node_near_warranty_end(request.vars.nodename)
+        delete_dash_node_not_updated(request.vars.nodename)
+        delete_dash_node_without_asset(request.vars.nodename)
         response.flash = T("edition recorded")
         redirect(URL(r=request, f='nodes'))
     elif form.errors:
@@ -109,6 +114,13 @@ def node_edit():
     record = db(db.v_nodes.id==id).select()[0]
     form = _node_form(record)
     if form.accepts(request.vars):
+        # update dashboard
+        update_dash_node_without_warranty_end(request.vars.node)
+        update_dash_node_beyond_warranty_end(request.vars.node)
+        update_dash_node_near_warranty_end(request.vars.node)
+        delete_dash_node_not_updated(request.vars.node)
+        delete_dash_node_without_asset(request.vars.node)
+
         response.flash = T("edition recorded")
         redirect(URL(r=request, f='nodes'))
     elif form.errors:
@@ -389,7 +401,14 @@ def node_del(ids):
         # Manager+NodeManager can delete any node
         # NodeManager can delete the nodes they are responsible of
         q &= db.nodes.team_responsible.belongs(groups)
-    u = ', '.join([r.nodename for r in db(q).select(db.nodes.nodename)])
+    rows = db(q).select(db.nodes.nodename)
+    u = ', '.join([r.nodename for r in rows])
+    for nodename in rows:
+        delete_dash_node_without_warranty_end(nodename)
+        delete_dash_node_near_warranty_end(nodename)
+        delete_dash_node_beyond_warranty_end(nodename)
+        delete_dash_node_not_updated(nodename)
+
     db(q).delete()
     _log('nodes.delete',
          'deleted nodes %(u)s',
@@ -442,4 +461,94 @@ def nodes():
         )
     return dict(table=t)
 
+#
+# Dashboard updates
+#
+def delete_dash_node_near_warranty_end(nodename):
+    sql = """delete from dashboard
+               where
+                 dash_nodename="%(nodename)s" and
+                 dash_type = "node close to warranty end"
+          """%dict(nodename=nodename)
+    rows = db.executesql(sql)
+
+def delete_dash_node_beyond_warranty_end(nodename):
+    sql = """delete from dashboard
+               where
+                 dash_nodename="%(nodename)s" and
+                 dash_type = "node warranty expired"
+          """%dict(nodename=nodename)
+    rows = db.executesql(sql)
+
+def delete_dash_node_without_warranty_end(nodename):
+    sql = """delete from dashboard
+               where
+                 dash_nodename="%(nodename)s" and
+                 dash_type = "node without warranty end date"
+          """%dict(nodename=nodename)
+    rows = db.executesql(sql)
+
+def delete_dash_node_without_asset(nodename):
+    sql = """delete from dashboard
+               where
+                 dash_nodename="%(nodename)s" and
+                 dash_type = "node without asset information"
+          """%dict(nodename=nodename)
+    rows = db.executesql(sql)
+
+def update_dash_node_beyond_warranty_end(nodename):
+    sql = """delete from dashboard
+               where
+                 dash_nodename in (
+                   select nodename
+                   from nodes
+                   where
+                     nodename="%(nodename)s" and
+                     warranty_end is not NULL and
+                     warranty_end != "0000-00-00 00:00:00" and
+                     warranty_end > now()
+                 ) and
+                 dash_type = "node warranty expired"
+          """%dict(nodename=nodename)
+    rows = db.executesql(sql)
+
+def update_dash_node_near_warranty_end(nodename):
+    sql = """delete from dashboard
+               where
+                 dash_nodename in (
+                   select nodename
+                   from nodes
+                   where
+                     nodename="%(nodename)s" and
+                     warranty_end is not NULL and
+                     warranty_end != "0000-00-00 00:00:00" and
+                     warranty_end < now() and
+                     warranty_end > date_sub(now(), interval 30 day)
+                 ) and
+                 dash_type = "node warranty expired"
+          """%dict(nodename=nodename)
+    rows = db.executesql(sql)
+
+def update_dash_node_without_warranty_end(nodename):
+    sql = """delete from dashboard
+               where
+                 dash_nodename in (
+                   select nodename
+                   from nodes
+                   where
+                     nodename="%(nodename)s" and 
+                     warranty_end != "0000-00-00 00:00:00" and
+                     warranty_end is not NULL
+                 ) and
+                 dash_type = "node without warranty end date"
+          """%dict(nodename=nodename)
+    rows = db.executesql(sql)
+
+def delete_dash_node_not_updated(nodename):
+    sql = """delete from dashboard
+               where
+                 dash_nodename = "%(nodename)s" and
+                 dash_type = "node information not updated"
+          """%dict(nodename=nodename)
+    rows = db.executesql(sql)
 

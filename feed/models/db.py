@@ -590,3 +590,8 @@ db.define_table('apps_responsibles',
     Field('group_id', 'integer'),
     migrate=False)
 
+db.define_table('feed_queue',
+    Field('q_fn', 'string'),
+    Field('q_args', 'blob'),
+    migrate=False)
+

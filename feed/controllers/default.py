@@ -102,6 +102,9 @@ def res_action(vars, vals, auth):
 @auth_uuid
 @service.xmlrpc
 def end_action(vars, vals, auth):
+    feed_enqueue("_end_action", vars, vals)
+
+def _end_action(vars, vals):
     upd = []
     h = {}
     for a, b in zip(vars, vals):
@@ -118,6 +121,7 @@ def end_action(vars, vals, auth):
         update_virtual_asset(h['hostname'].strip("'"), h['svcname'].strip("'"))
     if h['status'].strip("'") == 'err':
         update_action_errors(h['svcname'], h['hostname'])
+        update_dash_action_errors(h['svcname'], h['hostname'])
         h['svcname'] = h['svcname'].strip('\\').strip("'")
         _log("service.action",
              "action '%(a)s' error on %(svc)s@%(node)s",
@@ -178,16 +182,26 @@ def update_appinfo(vars, vals, auth):
 @auth_uuid
 @service.xmlrpc
 def update_service(vars, vals, auth):
+    feed_enqueue("_update_service", vars, vals)
+
+def _update_service(vars, vals):
+    h = {}
+    for a,b in zip(vars, vals[0]):
+        h[a] = b
     if 'svc_hostid' not in vars:
         return
     if 'updated' not in vars:
         vars += ['updated']
         vals += [datetime.datetime.now()]
     generic_insert('services', vars, vals)
+    update_dash_service_not_updated(h['svc_name'])
 
 @auth_uuid
 @service.xmlrpc
 def push_checks(vars, vals, auth):
+    feed_enqueue("_push_checks", vars, vals)
+
+def _push_checks(vars, vals):
     """
         chk_nodename
         chk_svcname
@@ -205,14 +219,22 @@ def push_checks(vars, vals, auth):
         q |= qr
     rows = db(q).select()
     update_thresholds_batch(rows)
+    if len(vals) > 0:
+        update_dash_checks(vals[0][0])
 
 @auth_uuid
 @service.xmlrpc
 def update_asset(vars, vals, auth):
+    feed_enqueue("_update_asset", vars, vals, auth)
+
+def _update_asset(vars, vals, auth):
     now = datetime.datetime.now()
     vars.append('updated')
     vals.append(now)
     generic_insert('nodes', vars, vals)
+    update_dash_node_not_updated(auth[1])
+    update_dash_node_without_warranty_end(auth[1])
+    update_dash_node_without_asset(auth[1])
 
 @auth_uuid
 @service.xmlrpc
@@ -254,8 +276,8 @@ def __resmon_update(vars, vals):
 @auth_uuid
 @service.xmlrpc
 def svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
-    _svcmon_update(g_vars, g_vals)
-    _resmon_update(r_vars, r_vals)
+    feed_enqueue("_svcmon_update", g_vars, g_vals)
+    feed_enqueue("_resmon_update", r_vars, r_vals)
 
 @auth_uuid
 @service.xmlrpc
@@ -325,16 +347,24 @@ def insert_stats_netdev_err(vars, vals, auth):
 @auth_uuid
 @service.xmlrpc
 def insert_stats(data, auth):
+    feed_enqueue("_insert_stats", data, auth)
+
+def _insert_stats(data, auth):
     import cPickle
     h = cPickle.loads(data)
     for stat in h:
         vars, vals = h[stat]
         generic_insert('stats_'+stat, vars, vals)
+    update_dash_netdev_errors(auth[1])
 
 @auth_uuid
 @service.xmlrpc
 def insert_pkg(vars, vals, auth):
+    feed_enqueue("_insert_pkg", vars, vals, auth)
+
+def _insert_pkg(vars, vals, auth):
     generic_insert('packages', vars, vals)
+    update_dash_pkgdiff(auth[1])
 
 @auth_uuid
 @service.xmlrpc
@@ -448,7 +478,7 @@ def register_node(node):
 @auth_uuid
 @service.xmlrpc
 def svcmon_update(vars, vals, auth):
-    _svcmon_update(vars, vals)
+    feed_enqueue("_svcmon_update", vars, vals)
 
 def _svcmon_update(vars, vals):
     if len(vals) == 0:
@@ -529,7 +559,9 @@ def svc_status_update(svcname):
     q = db.svcmon.mon_svcname == svcname
     rows = db(q).select(db.svcmon.mon_overallstatus,
                         db.svcmon.mon_availstatus,
-                        db.svcmon.mon_updated)
+                        db.svcmon.mon_updated,
+                        db.svcmon.mon_svctype,
+                        db.svcmon.mon_frozen)
 
     tlim = datetime.datetime.now() - datetime.timedelta(minutes=15)
     ostatus_l = [r.mon_overallstatus for r in rows if r.mon_updated > tlim]
@@ -576,6 +608,8 @@ def svc_status_update(svcname):
         ostatus = 'undef'
 
     svc_log_update(svcname, astatus)
+    update_dash_service_unavailable(svcname, rows[0].mon_svctype, astatus)
+    update_dash_service_available_but_degraded(svcname, rows[0].mon_svctype, astatus, ostatus)
 
     db(db.services.svc_name==svcname).update(
       svc_status=ostatus,
@@ -619,6 +653,11 @@ def __svcmon_update(vars, vals):
         h['mon_availstatus'] = compute_availstatus(h)
     generic_insert('svcmon', h.keys(), h.values())
     svc_status_update(h['mon_svcname'])
+    update_dash_service_frozen(h['mon_svcname'], h['mon_nodname'], h['mon_svctype'], h['mon_frozen'])
+    update_dash_service_not_on_primary(h['mon_svcname'], h['mon_nodname'], h['mon_svctype'], h['mon_availstatus'])
+    update_dash_svcmon_not_updated(h['mon_svcname'], h['mon_nodname'])
+    update_dash_flex_instances_started(h['mon_svcname'])
+    update_dash_flex_cpu(h['mon_svcname'])
 
     query = db.svcmon_log.mon_svcname==h['mon_svcname']
     query &= db.svcmon_log.mon_nodname==h['mon_nodname']
@@ -904,4 +943,1028 @@ def comp_query(q, row):
     elif v.f_log_op == 'OR NOT':
         q |= ~qry
     return q
+
+#
+# Dashboard updates
+#
+#   Used by background feed dequeue process for periodic dashboard alerts
+#
+def cron_dash_service_not_updated():
+    sql = """insert ignore
+             into dashboard
+               select
+                 NULL,
+                 "service configuration not updated",
+                 svc_name,
+                 "",
+                 0,
+                 "",
+                 "",
+                 updated,
+                 ""
+               from services
+               where updated < date_sub(now(), interval 25 hour)
+          """
+    db.executesql(sql)
+
+def cron_dash_svcmon_not_updated():
+    sql = """insert ignore
+             into dashboard
+               select
+                 NULL,
+                 "service status not updated",
+                 mon_svcname,
+                 mon_nodname,
+                 if(mon_svctype="PRD", 1, 0),
+                 "",
+                 "",
+                 mon_updated,
+                 ""
+               from svcmon
+               where mon_updated < date_sub(now(), interval 15 minute)
+          """
+    db.executesql(sql)
+
+def cron_dash_node_not_updated():
+    sql = """insert ignore
+             into dashboard
+               select
+                 NULL,
+                 "node information not updated",
+                 "",
+                 nodename,
+                 0,
+                 "",
+                 "",
+                 updated,
+                 ""
+               from nodes
+               where updated < date_sub(now(), interval 25 hour)
+          """
+    db.executesql(sql)
+
+def cron_dash_node_without_asset():
+    sql = """insert ignore
+             into dashboard
+               select
+                 NULL,
+                 "node without asset information",
+                 "",
+                 mon_nodname,
+                 0,
+                 "",
+                 "",
+                 now(),
+                 ""
+               from svcmon
+               where
+                 mon_nodname not in (
+                   select nodename from nodes
+                 )
+          """
+    db.executesql(sql)
+
+def cron_dash_node_beyond_warranty_date():
+    sql = """insert ignore
+             into dashboard
+               select
+                 NULL,
+                 "node warranty expired",
+                 "",
+                 nodename,
+                 1,
+                 "",
+                 "",
+                 now(),
+                 ""
+               from nodes
+               where
+                 warranty_end is not NULL and
+                 warranty_end != "0000-00-00 00:00:00" and
+                 warranty_end < now()
+          """
+    db.executesql(sql)
+
+def cron_dash_node_near_warranty_date():
+    sql = """insert ignore
+             into dashboard
+               select
+                 NULL,
+                 "node close to warranty end",
+                 "",
+                 nodename,
+                 0,
+                 "",
+                 "",
+                 now(),
+                 ""
+               from nodes
+               where
+                 warranty_end is not NULL and
+                 warranty_end != "0000-00-00 00:00:00" and
+                 warranty_end > date_sub(now(), interval 30 day) and
+                 warranty_end < now()
+          """
+    db.executesql(sql)
+
+def cron_dash_node_without_warranty_date():
+    sql = """insert ignore
+             into dashboard
+               select
+                 NULL,
+                 "node without warranty end date",
+                 "",
+                 nodename,
+                 0,
+                 "",
+                 "",
+                 now(),
+                 ""
+               from nodes
+               where
+                 warranty_end is NULL or
+                 warranty_end = "0000-00-00 00:00:00"
+          """
+    db.executesql(sql)
+
+def cron_dash_checks_not_updated():
+    sql = """insert ignore into dashboard
+               select
+                 NULL,
+                 "check value not updated",
+                 "",
+                 c.chk_nodename,
+                 if(n.environnement="PRD", 1, 0),
+                 "%(t)s:%(i)s",
+                 concat('{"i":"', chk_instance, '", "t":"', chk_type, '"}'),
+                 chk_updated,
+                 md5(concat('{"i":"', chk_instance, '", "t":"', chk_type, '"}'))
+               from checks_live c
+                 join nodes n on c.chk_nodename=n.nodename
+               where
+                 chk_updated < date_sub(now(), interval 15 minute)"""
+    db.executesql(sql)
+
+def cron_dash_app_without_responsible():
+    sql = """insert ignore into dashboard
+               select
+                 NULL,
+                 "application code without responsible",
+                 "",
+                 "",
+                 2,
+                 "%(a)s",
+                 concat('{"a":"', app, '"}'),
+                 now(),
+                 md5(concat('{"a":"', app, '"}'))
+               from v_apps
+               where
+                 roles is NULL
+          """
+    db.executesql(sql)
+
+def cron_dash_obs_hw_without_alert():
+    cron_dash_obs_without('hw', 'alert')
+
+def cron_dash_obs_os_without_alert():
+    cron_dash_obs_without('os', 'alert')
+
+def cron_dash_obs_hw_without_warn():
+    cron_dash_obs_without('hw', 'warn')
+
+def cron_dash_obs_os_without_warn():
+    cron_dash_obs_without('os', 'warn')
+
+def cron_dash_obs_without(t, a):
+    if t == "hw":
+        tl = "hardware"
+    else:
+        tl = t
+    if a == "warn":
+        al = "warning"
+    else:
+        al = a
+    sql = """insert ignore into dashboard
+               select
+                 NULL,
+                 "%(tl)s obsolescence %(al)s date not set",
+                 "",
+                 "",
+                 0,
+                 "%(t)s: %%(o)s",
+                 concat('{"o": "', o.obs_name, '"}'),
+                 now(),
+                 md5(concat('{"o": "', o.obs_name, '"}'))
+               from obsolescence o
+                 join nodes n on
+                   o.obs_name = n.model or
+                   o.obs_name = concat_ws(' ',n.os_name,n.os_vendor,n.os_release,n.os_update)
+               where
+                 o.obs_type = "%(t)s" and
+                 (
+                   o.obs_%(a)s_date is NULL or
+                   o.obs_%(a)s_date = "0000-00-00 00:00:00"
+                 )
+          """%dict(t=t, tl=tl, a=a, al=al)
+    db.executesql(sql)
+
+def cron_dash_obs_os_alert():
+    sql = """insert ignore into dashboard
+               select
+                 NULL,
+                 "os obsolescence alert",
+                 "",
+                 n.nodename,
+                 1,
+                 "%(o)s obsolete since %(a)s",
+                 concat('{"a": "', o.obs_alert_date,
+                        '", "o": "', o.obs_name,
+                        '"}'),
+                 now(),
+                 ""
+               from obsolescence o
+                 join nodes n on
+                   o.obs_name = concat_ws(' ',n.os_name,n.os_vendor,n.os_release,n.os_update)
+               where
+                 o.obs_alert_date is not NULL and
+                 o.obs_alert_date != "0000-00-00 00:00:00" and
+                 o.obs_alert_date < now() and
+                 o.obs_type = "os"
+          """
+    db.executesql(sql)
+
+def cron_dash_obs_os_warn():
+    sql = """insert ignore into dashboard
+               select
+                 NULL,
+                 "os obsolescence warning",
+                 "",
+                 n.nodename,
+                 0,
+                 "%(o)s warning since %(a)s",
+                 concat('{"a": "', o.obs_warn_date,
+                        '", "o": "', o.obs_name,
+                        '"}'),
+                 now(),
+                 ""
+               from obsolescence o
+                 join nodes n on
+                   o.obs_name = concat_ws(' ',n.os_name,n.os_vendor,n.os_release,n.os_update)
+               where
+                 o.obs_alert_date is not NULL and
+                 o.obs_alert_date != "0000-00-00 00:00:00" and
+                 o.obs_warn_date < now() and
+                 o.obs_alert_date > now() and
+                 o.obs_type = "os"
+          """
+    db.executesql(sql)
+
+def cron_dash_obs_hw_alert():
+    sql = """insert ignore into dashboard
+               select
+                 NULL,
+                 "hardware obsolescence warning",
+                 "",
+                 n.nodename,
+                 1,
+                 "%(o)s obsolete since %(a)s",
+                 concat('{"a": "', o.obs_alert_date,
+                        '", "o": "', o.obs_name,
+                        '"}'),
+                 now(),
+                 ""
+               from obsolescence o
+                 join nodes n on
+                   o.obs_name = n.model
+               where
+                 o.obs_alert_date is not NULL and
+                 o.obs_alert_date != "0000-00-00 00:00:00" and
+                 o.obs_alert_date < now() and
+                 o.obs_type = "hw"
+          """
+    db.executesql(sql)
+
+def cron_dash_obs_hw_warn():
+    sql = """insert ignore into dashboard
+               select
+                 NULL,
+                 "hardware obsolescence warning",
+                 "",
+                 n.nodename,
+                 0,
+                 "%(o)s warning since %(a)s",
+                 concat('{"a": "', o.obs_warn_date,
+                        '", "o": "', o.obs_name,
+                        '"}'),
+                 now(),
+                 ""
+               from obsolescence o
+                 join nodes n on
+                   o.obs_name = n.model
+               where
+                 o.obs_alert_date is not NULL and
+                 o.obs_alert_date != "0000-00-00 00:00:00" and
+                 o.obs_warn_date < now() and
+                 o.obs_alert_date > now() and
+                 o.obs_type = "hw"
+          """
+    db.executesql(sql)
+
+#
+# Dashboard updates
+#
+#   Used by xmlrpc processors for event based dashboard alerts
+#
+def update_dash_node_beyond_warranty_end(nodename):
+    sql = """delete from dashboard
+               where
+                 dash_nodename in (
+                   select nodename
+                   from nodes
+                   where
+                     nodename="%(nodename)s" and
+                     warranty_end is not NULL and
+                     warranty_end != "0000-00-00 00:00:00" and
+                     warranty_end < now()
+                 ) and
+                 dash_type = "node warranty expired"
+          """%dict(nodename=nodename)
+    rows = db.executesql(sql)
+
+def update_dash_node_near_warranty_end(nodename):
+    sql = """delete from dashboard
+               where
+                 dash_nodename in (
+                   select nodename
+                   from nodes
+                   where
+                     nodename="%(nodename)s" and
+                     warranty_end is not NULL and
+                     warranty_end != "0000-00-00 00:00:00" and
+                     warranty_end > now() and
+                     warranty_end < date_sub(now(), interval 30 day)
+                 ) and
+                 dash_type = "node warranty expired"
+          """%dict(nodename=nodename)
+    rows = db.executesql(sql)
+
+def update_dash_node_without_asset(nodename):
+    sql = """delete from dashboard
+               where
+                 dash_nodename in (
+                   select nodename
+                   from nodes
+                   where
+                     nodename="%(nodename)s"
+                 ) and
+                 dash_type = "node without asset information"
+          """%dict(nodename=nodename)
+    rows = db.executesql(sql)
+
+def update_dash_node_without_warranty_end(nodename):
+    sql = """delete from dashboard
+               where
+                 dash_nodename in (
+                   select nodename
+                   from nodes
+                   where
+                     nodename="%(nodename)s" and
+                     warranty_end != "0000-00-00 00:00:00" and
+                     warranty_end is not NULL
+                 ) and
+                 dash_type = "node without warranty end date"
+          """%dict(nodename=nodename)
+    rows = db.executesql(sql)
+
+def update_dash_service_not_updated(svcname):
+    sql = """delete from dashboard
+               where
+                 dash_svcname = "%(svcname)s" and
+                 dash_type = "service configuration not updated"
+          """%dict(svcname=svcname)
+    rows = db.executesql(sql)
+
+def update_dash_svcmon_not_updated(svcname, nodename):
+    sql = """delete from dashboard
+               where
+                 dash_svcname = "%(svcname)s" and
+                 dash_nodename = "%(nodename)s" and
+                 dash_type = "service status not updated"
+          """%dict(svcname=svcname, nodename=nodename)
+    rows = db.executesql(sql)
+
+def update_dash_node_not_updated(nodename):
+    sql = """delete from dashboard
+               where
+                 dash_nodename = "%(nodename)s" and
+                 dash_type = "node information not updated"
+          """%dict(nodename=nodename)
+    rows = db.executesql(sql)
+
+def update_dash_pkgdiff(nodename):
+    nodename = nodename.strip("'")
+    q = db.svcmon.mon_nodname == nodename
+    q &= db.svcmon.mon_updated > datetime.datetime.now() - datetime.timedelta(minutes=20)
+    for row in db(q).select(db.svcmon.mon_svcname,
+                            db.svcmon.mon_svctype):
+        svcname = row.mon_svcname
+
+        sql = """delete from dashboard
+                   where
+                     dash_svcname = "%(svcname)s" and
+                     dash_type = "package differences in cluster"
+              """%dict(svcname=svcname)
+        rows = db.executesql(sql)
+
+        q = db.svcmon.mon_svcname == svcname
+        q &= db.svcmon.mon_updated > datetime.datetime.now() - datetime.timedelta(minutes=20)
+        nodes = map(lambda x: repr(x.mon_nodname),
+                    db(q).select(db.svcmon.mon_nodname))
+        n = len(nodes)
+
+        sql = """select count(id) from (
+                   select
+                     id,
+                     count(pkg_nodename) as c
+                   from packages
+                   where
+                     pkg_nodename in (%(nodes)s)
+                   group by
+                     pkg_name,
+                     pkg_version,
+                     pkg_arch
+                  ) as t
+                  where
+                    t.c!=%(n)s
+              """%dict(nodes=','.join(nodes), n=n)
+
+        rows = db.executesql(sql)
+
+        if rows[0][0] == 0:
+            continue
+
+        if row.mon_svctype == 'PRD':
+            sev = 1
+        else:
+            sev = 0
+
+        sql = """insert ignore into dashboard
+                 set
+                   dash_type="package differences in cluster",
+                   dash_svcname="%(svcname)s",
+                   dash_nodename="",
+                   dash_severity=%(sev)d,
+                   dash_fmt="%%(n)s package differences in cluster %%(nodes)s",
+                   dash_dict='{"n": %(n)d, "nodes": "%(nodes)s"}',
+                   dash_dict_md5=md5('{"n": %(n)d, "nodes": "%(nodes)s"}'),
+                   dash_created="%(now)s"
+              """%dict(svcname=svcname,
+                       sev=sev,
+                       now=str(datetime.datetime.now()),
+                       n=rows[0][0],
+                       nodes=','.join(nodes).replace("'", ""))
+
+        with open("/tmp/bar", "a") as f:
+            f.write(sql)
+
+        rows = db.executesql(sql)
+
+def update_dash_flex_cpu(svcname):
+    sql = """delete from dashboard
+               where
+                 dash_svcname = "%(svcname)s" and
+                 dash_type = "flex error" and
+                 dash_fmt like "%%average cpu usage%%"
+          """%dict(svcname=svcname)
+    rows = db.executesql(sql)
+
+    sql = """select svc_type from services
+             where
+               svc_name="%(svcname)s"
+          """%dict(svcname=svcname)
+    rows = db.executesql(sql)
+
+    if len(rows) == 1 and rows[0][0] == 'PRD':
+        sev = 2
+    else:
+        sev = 1
+
+    sql = """insert ignore into dashboard
+               select
+                 NULL,
+                 "flex error",
+                 "%(svcname)s",
+                 "",
+                 %(sev)d,
+                 "%%(n)d average cpu usage. thresholds: %%(cmin)d - %%(cmax)d",
+                 concat('{"n": "', t.up,
+                        ', "cmin": ', t.svc_flex_cpu_low_threshold,
+                        ', "cmax": ', t.svc_flex_cpu_high_threshold,
+                        '}'),
+                 now(),
+                 md5(concat('{"n": "', t.cpu,
+                        ', "cmin": ', t.svc_flex_cpu_low_threshold,
+                        ', "cmax": ', t.svc_flex_cpu_high_threshold,
+                        '}'))
+               from (
+                 select *
+                 from v_flex_status
+                 where
+                   cpu > svc_flex_cpu_high_threshold or
+                   (
+                      svc_name="%(svcname)s" and
+                      up > 1 and
+                      cpu < svc_flex_cpu_low_threshold
+                   )
+               ) t
+          """%dict(svcname=svcname,
+                   sev=sev,
+                  )
+    db.executesql(sql)
+
+def update_dash_flex_instances_started(svcname):
+    sql = """delete from dashboard
+               where
+                 dash_svcname = "%(svcname)s" and
+                 dash_type = "flex error" and
+                 dash_fmt like "%%instances started%%"
+          """%dict(svcname=svcname)
+    rows = db.executesql(sql)
+
+    sql = """select svc_type from services
+             where
+               svc_name="%(svcname)s"
+          """%dict(svcname=svcname)
+    rows = db.executesql(sql)
+
+    if len(rows) == 1 and rows[0][0] == 'PRD':
+        sev = 2
+    else:
+        sev = 1
+
+    sql = """insert ignore into dashboard
+               select
+                 NULL,
+                 "flex error",
+                 "%(svcname)s",
+                 "",
+                 %(sev)d,
+                 "%%(n)d instances started. thresholds: %%(smin)d - %%(smax)d",
+                 concat('{"n": "', t.up,
+                        ', "smin": ', t.svc_flex_min_nodes,
+                        ', "smax": ', t.svc_flex_max_nodes,
+                        '}'),
+                 now(),
+                 md5(concat('{"n": "', t.up,
+                        ', "smin": ', t.svc_flex_min_nodes,
+                        ', "smax": ', t.svc_flex_max_nodes,
+                        '}'))
+               from (
+                 select *
+                 from v_flex_status
+                 where
+                   up < svc_flex_min_nodes or
+                   (
+                      svc_name="%(svcname)s" and
+                      svc_flex_max_nodes > 0 and
+                      up > svc_flex_max_nodes
+                   )
+               ) t
+          """%dict(svcname=svcname,
+                   sev=sev,
+                  )
+    db.executesql(sql)
+
+def update_dash_checks(nodename):
+    nodename = nodename.strip("'")
+    sql = """delete from dashboard
+               where
+                 dash_nodename = "%(nodename)s" and
+                 dash_type = "check out of bounds" or
+                 dash_type = "check value not updated"
+          """%dict(nodename=nodename)
+    rows = db.executesql(sql)
+
+    sql = """select environnement from nodes
+             where
+               nodename="%(nodename)s"
+          """%dict(nodename=nodename)
+    rows = db.executesql(sql)
+
+    if len(rows) == 1 and rows[0][0] == 'PRD':
+        sev = 1
+    else:
+        sev = 0
+
+    sql = """insert ignore into dashboard
+               select
+                 NULL,
+                 "check out of bounds",
+                 t.svcname,
+                 "%(nodename)s",
+                 %(sev)d,
+                 "%%(ctype)s:%%(inst)s check value %%(val)d. %%(ttype)s thresholds: %%(min)d - %%(max)d",
+                 concat('{"ctype": "', t.ctype,
+                        '", "inst": "', t.inst,
+                        '", "ttype": "', t.ttype,
+                        '", "val": ', t.val,
+                        ', "min": ', t.min,
+                        ', "max": ', t.max,
+                        '}'),
+                 "%(now)s",
+                 md5(concat('{"ctype": "', t.ctype,
+                        '", "inst": "', t.inst,
+                        '", "ttype": "', t.ttype,
+                        '", "val": ', t.val,
+                        ', "min": ', t.min,
+                        ', "max": ', t.max,
+                        '}'))
+               from (
+                 select
+                   chk_svcname as svcname,
+                   chk_type as ctype,
+                   chk_instance as inst,
+                   chk_threshold_provider as ttype,
+                   chk_value as val,
+                   chk_low as min,
+                   chk_high as max
+                 from checks_live
+                 where
+                   chk_value < chk_low or
+                   chk_value > chk_high
+               ) t
+          """%dict(nodename=nodename,
+                   sev=sev,
+                   now=str(datetime.datetime.now()),
+                  )
+    db.executesql(sql)
+
+def update_dash_netdev_errors(nodename):
+    nodename = nodename.strip("'")
+    sql = """select avg(rxerrps+txerrps+collps+rxdropps+rxdropps)
+               from stats_netdev_err
+               where
+                 nodename = "%(nodename)s" and
+                 date > "%(date)s"
+          """%dict(nodename=nodename,
+                   date=str(datetime.datetime.now()-datetime.timedelta(days=1)),
+                  )
+    rows = db.executesql(sql)
+
+    if len(rows) > 0 and rows[0][0] > 0:
+        sql = """select environnement from nodes
+                 where
+                   nodename="%(nodename)s"
+              """%dict(nodename=nodename)
+        rows = db.executesql(sql)
+
+        if len(rows) == 1 and rows[0][0] == 'PRD':
+            sev = 1
+        else:
+            sev = 0
+
+        sql = """insert into dashboard
+                 set
+                   dash_type="network device errors in the last day",
+                   dash_svcname="",
+                   dash_nodename="%(nodename)s",
+                   dash_severity=%(sev)d,
+                   dash_fmt="%(err)s errors per second average",
+                   dash_dict='{"err": "%(err)d"}',
+                   dash_created="%(now)s"
+                 on duplicate key update
+                   dash_severity=%(sev)d,
+                   dash_fmt="%(err)s errors per second average",
+                   dash_dict='{"err": "%(err)d"}',
+                   dash_created="%(now)s"
+              """%dict(nodename=nodename,
+                       sev=sev,
+                       now=str(datetime.datetime.now()),
+                       err=rows[0][0])
+    else:
+        sql = """delete from dashboard
+                 where
+                   dash_type="network device errors in the last day" and
+                   dash_nodename="%(nodename)s"
+              """%dict(nodename=nodename)
+    db.executesql(sql)
+
+def update_dash_action_errors(svc_name, nodename):
+    svc_name = svc_name.strip("'")
+    nodename = nodename.strip("'")
+    sql = """select e.err, s.svc_type from b_action_errors e
+             join services s on e.svcname=s.svc_name
+             where
+               svcname="%(svcname)s" and
+               nodename="%(nodename)s"
+          """%dict(svcname=svc_name, nodename=nodename)
+    rows = db.executesql(sql)
+
+    if len(rows) == 1:
+        if rows[0][1] == 'PRD':
+            sev = 2
+        else:
+            sev = 1
+        sql = """insert into dashboard
+                 set
+                   dash_type="action errors",
+                   dash_svcname="%(svcname)s",
+                   dash_nodename="%(nodename)s",
+                   dash_severity=%(sev)d,
+                   dash_fmt="%(err)s action errors",
+                   dash_dict='{"err": "%(err)d"}',
+                   dash_created="%(now)s"
+                 on duplicate key update
+                   dash_severity=%(sev)d,
+                   dash_fmt="%(err)s action errors",
+                   dash_dict='{"err": "%(err)d"}',
+                   dash_created="%(now)s"
+              """%dict(svcname=svc_name,
+                       nodename=nodename,
+                       sev=sev,
+                       now=str(datetime.datetime.now()),
+                       err=rows[0][0])
+    else:
+        sql = """delete from dashboard
+                 where
+                   dash_type="action errors" and
+                   dash_svcname="%(svcname)s" and
+                   dash_nodename="%(nodename)s"
+              """%dict(svcname=svc_name,
+                       nodename=nodename)
+    db.executesql(sql)
+
+def update_dash_service_available_but_degraded(svc_name, svc_type, svc_availstatus, svc_status):
+    if svc_type == 'PRD':
+        sev = 1
+    else:
+        sev = 0
+    if svc_availstatus == "up" and svc_status != "up":
+        sql = """delete from dashboard
+                 where
+                   dash_type="service available but degraded" and
+                   dash_dict!='{"s": "%s"}' and
+                   dash_svcname="%s"
+              """%(svc_name,svc_status)
+        db.executesql(sql)
+        sql = """insert ignore into dashboard
+                 set
+                   dash_type="service available but degraded",
+                   dash_svcname="%(svcname)s",
+                   dash_nodename="",
+                   dash_severity=%(sev)d,
+                   dash_fmt="current overall status: %%(s)s",
+                   dash_dict='{"s": "%(status)s"}',
+                   dash_created=now()
+              """%dict(svcname=svc_name,
+                       sev=sev,
+                       status=svc_status)
+        db.executesql(sql)
+    else:
+        sql = """delete from dashboard
+                 where
+                   dash_type="service available but degraded" and
+                   dash_svcname="%s"
+              """%svc_name
+        db.executesql(sql)
+
+def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
+    if svc_type == 'PRD':
+        sev = 2
+    else:
+        sev = 1
+    if svc_availstatus == "up":
+        sql = """delete from dashboard
+                 where
+                   dash_type="service unavailable" and
+                   dash_svcname="%s"
+              """%svc_name
+        db.executesql(sql)
+    else:
+        sql = """delete from dashboard
+                 where
+                   dash_type="service unavailable" and
+                   dash_svcname="%s" and
+                   dash_dict!='{"s": "%s"}'
+              """%(svc_name,svc_availstatus)
+        db.executesql(sql)
+        sql = """insert ignore into dashboard
+                 set
+                   dash_type="service unavailable",
+                   dash_svcname="%(svcname)s",
+                   dash_nodename="",
+                   dash_severity=%(sev)d,
+                   dash_fmt="current availability status: %%(s)s",
+                   dash_dict='{"s": "%(status)s"}',
+                   dash_created="%(now)s"
+              """%dict(svcname=svc_name,
+                       sev=sev,
+                       now=str(datetime.datetime.now()),
+                       status=svc_availstatus)
+        db.executesql(sql)
+
+def update_dash_service_frozen(svc_name, nodename, svc_type, frozen):
+    if svc_type == 'PRD':
+        sev = 1
+    else:
+        sev = 0
+    if frozen == "0":
+        sql = """delete from dashboard
+                 where
+                   dash_type="service frozen" and
+                   dash_svcname="%s"
+              """%svc_name
+    else:
+        sql = """insert ignore into dashboard
+                 set
+                   dash_type="service frozen",
+                   dash_svcname="%(svcname)s",
+                   dash_nodename="%(nodename)s",
+                   dash_severity=%(sev)d,
+                   dash_fmt="",
+                   dash_dict="",
+                   dash_created=now()
+              """%dict(svcname=svc_name,
+                       nodename=nodename,
+                       sev=sev,
+                      )
+    db.executesql(sql)
+
+def update_dash_service_not_on_primary(svc_name, nodename, svc_type, availstatus):
+    if svc_type == 'PRD':
+        sev = 1
+    else:
+        sev = 0
+
+    q = db.services.svc_name == svc_name
+    rows = db(q).select(db.services.svc_autostart,
+                        db.services.svc_availstatus)
+
+    if len(rows) == 0:
+        return
+
+    if rows[0].svc_autostart != nodename or availstatus == "up" or rows[0].svc_availstatus != "up":
+        sql = """delete from dashboard
+                 where
+                   dash_type="service not started on primary node" and
+                   dash_svcname="%s" and
+                   dash_nodename="%s"
+              """%(svc_name,nodename)
+        db.executesql(sql)
+        return
+
+    sql = """insert ignore into dashboard
+             set
+               dash_type="service not started on primary node",
+               dash_svcname="%(svcname)s",
+               dash_nodename="%(nodename)s",
+               dash_severity=%(sev)d,
+               dash_fmt="",
+               dash_dict="",
+               dash_created=now()
+          """%dict(svcname=svc_name,
+                   nodename=nodename,
+                   sev=sev,
+                  )
+    db.executesql(sql)
+
+#
+# Feed enqueue/dequeue
+#
+#   Feed processors can be heavy and suturate the httpd server process/thread
+#   pool. Enqueue fast to release the client, then asynchronously dequeue
+#   from a single background process.
+#
+def feed_enqueue(f, *args):
+    import cPickle
+    db.feed_queue.insert(q_fn=f, q_args=cPickle.dumps(args))
+
+def dash_crons2():
+    # ~1/j
+    cron_dash_obs_os_alert()
+    cron_dash_obs_os_warn()
+    cron_dash_obs_hw_alert()
+    cron_dash_obs_hw_warn()
+    cron_dash_obs_os_without_alert()
+    cron_dash_obs_os_without_warn()
+    cron_dash_obs_hw_without_alert()
+    cron_dash_obs_hw_without_warn()
+    cron_dash_node_without_warranty_date()
+    cron_dash_node_near_warranty_date()
+    cron_dash_node_beyond_warranty_date()
+
+def dash_crons1():
+    # ~1/h
+    cron_dash_checks_not_updated()
+    cron_dash_service_not_updated()
+    cron_dash_app_without_responsible()
+    cron_dash_node_not_updated()
+    cron_dash_node_without_asset()
+
+def dash_crons0():
+    # ~1/min
+    cron_dash_svcmon_not_updated()
+
+def feed_dequeue():
+    """ launched as a background process
+    """
+    import time
+    import cPickle
+
+    class QueueStats(object):
+        def __init__(self):
+            self.reset_stats()
+
+        def __str__(self):
+            s = "feed queue stats since %s\n"%str(self.start)
+            for fn in self.s:
+                s += "%20s %10d %10f\n"%(fn, self.count(fn), self.avg(fn))
+            return s
+
+        def dbdump(self):
+            if len(self.s) == 0:
+               return
+            now = datetime.datetime.now()
+            sql = """truncate table feed_queue_stats"""
+            db.executesql(sql)
+            sql = """insert into feed_queue_stats (q_start, q_end, q_fn, q_count, q_avg) values """
+            values = []
+            for fn in self.s:
+                values.append("""("%s", "%s", "%s", %d, %f)"""%(str(self.start), str(now), fn, self.count(fn), self.avg(fn)))
+            sql += ','.join(values)
+            print sql
+            db.executesql(sql)
+
+        def reset_stats(self):
+            self.s = {}
+            self.start = datetime.datetime.now()
+
+        def begin(self, fn):
+            self.fn = fn
+            self.t = datetime.datetime.now()
+
+        def end(self):
+            elapsed = datetime.datetime.now() -self.t
+            elapsed = elapsed.total_seconds()
+            if self.fn not in self.s:
+                self.s[self.fn] = {'count': 1, 'cumul': elapsed, 'avg': elapsed}
+            else:
+                self.s[self.fn]['count'] += 1
+                self.s[self.fn]['cumul'] += elapsed
+                print self.fn, self.s[self.fn]['count'], "+", elapsed, "cumul", self.s[self.fn]['cumul'], "avg", self.s[self.fn]['cumul']/self.s[self.fn]['count']
+
+        def count(self, fn):
+            if self.fn not in self.s:
+                return 0
+            return self.s[fn]['count']
+
+        def avg(self, fn):
+            if self.fn not in self.s:
+                return 0
+            return self.s[fn]['cumul']/self.s[fn]['count']
+
+    n0 = 0
+    n1 = 0
+    n2 = 0
+    stats = QueueStats()
+
+    while True:
+        n0 += 1
+        n1 += 1
+        n2 += 1
+
+        if n0 == 90:
+            n0 = 0
+            dash_crons0()
+
+        if n1 == 3600:
+            n1 = 0
+            dash_crons1()
+
+        if n2 == 86400:
+            n2 = 0
+            dash_crons2()
+
+        entries = db(db.feed_queue.id>0).select(limitby=(0,20))
+        if len(entries) == 0:
+            time.sleep(1)
+            continue
+        elif n1 % 5 == 0:
+            # every 100 xmlrpc calls save stats
+            stats.dbdump()
+
+        for e in entries:
+            try:
+                if not e.q_fn in globals():
+                    continue
+                args = cPickle.loads(e.q_args)
+                stats.begin(e.q_fn)
+                globals()[e.q_fn](*args)
+                stats.end()
+                db(db.feed_queue.id==e.id).delete()
+            except:
+                print "Error: %s(%s)"%(e.q_fn, str(e.q_args))
+                db(db.feed_queue.id==e.id).delete()
+                import traceback
+                traceback.print_exc()
 

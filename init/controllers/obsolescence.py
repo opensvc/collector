@@ -281,6 +281,13 @@ def date_set(t):
     _log('obsolescence.item.change',
          'set %(t)s date %(d)s for obsolescence item %(x)s',
          dict(t=t, x=iid, d=new))
+    if rows[0].obs_type == "os":
+        update_dash_obs_os_warn(iid)
+        update_dash_obs_os_alert(iid)
+    elif rows[0].obs_type == "hw":
+        update_dash_obs_hw_alert(iid)
+        update_dash_obs_hw_warn(iid)
+    delete_dash_obs_without(iid, rows[0].obs_type, t)
 
 @auth.requires_login()
 def ajax_obs():
@@ -331,5 +338,161 @@ def obsolescence_config():
           _id='obs',
         )
     return dict(table=t)
+
+
+#
+# Dashboard updates
+#
+def update_dash_obs_hw_warn(obs_name):
+    sql = """delete from dashboard
+              where
+                dash_dict = '{"o": "%(obs_name)s"}' and
+                dash_type="hardware obsolescence warning"
+          """%dict(obs_name=obs_name)
+    db.executesql(sql)
+
+    sql = """insert ignore into dashboard
+               select
+                 NULL,
+                 "hardware obsolescence warning",
+                 "",
+                 n.nodename,
+                 0,
+                 "%%(o)s warning since %%(a)s",
+                 concat('{"a": "', o.obs_warn_date,
+                        '", "o": "', o.obs_name,
+                        '"}'),
+                 now(),
+                 ""
+               from obsolescence o
+                 join nodes n on
+                   o.obs_name = n.model
+               where
+                 o.obs_name = "%(obs_name)s" and
+                 o.obs_alert_date is not NULL and
+                 o.obs_alert_date != "0000-00-00 00:00:00" and
+                 o.obs_warn_date < now() and
+                 o.obs_alert_date > now() and
+                 o.obs_type = "hw"
+          """%dict(obs_name=obs_name)
+    db.executesql(sql)
+
+def update_dash_obs_hw_alert(obs_name):
+    sql = """delete from dashboard
+              where
+                dash_dict = '{"o": "%(obs_name)s"}' and
+                dash_type="hardware obsolescence alert"
+          """%dict(obs_name=obs_name)
+    db.executesql(sql)
+
+    sql = """insert ignore into dashboard
+               select
+                 NULL,
+                 "hardware obsolescence alert",
+                 "",
+                 n.nodename,
+                 1,
+                 "%%(o)s obsolete since %%(a)s",
+                 concat('{"a": "', o.obs_alert_date,
+                        '", "o": "', o.obs_name,
+                        '"}'),
+                 now(),
+                 ""
+               from obsolescence o
+                 join nodes n on
+                   o.obs_name = n.model
+               where
+                 o.obs_name = "%(obs_name)s" and
+                 o.obs_alert_date is not NULL and
+                 o.obs_alert_date != "0000-00-00 00:00:00" and
+                 o.obs_warn_date < now() and
+                 o.obs_alert_date > now() and
+                 o.obs_type = "hw"
+          """%dict(obs_name=obs_name)
+    db.executesql(sql)
+
+def update_dash_obs_os_warn(obs_name):
+    sql = """delete from dashboard
+              where
+                dash_dict = '{"o": "%(obs_name)s"}' and
+                dash_type="os obsolescence warning"
+          """%dict(obs_name=obs_name)
+    db.executesql(sql)
+
+    sql = """insert ignore into dashboard
+               select
+                 NULL,
+                 "os obsolescence warning",
+                 "",
+                 n.nodename,
+                 0,
+                 "%%(o)s warning since %%(a)s",
+                 concat('{"a": "', o.obs_warn_date,
+                        '", "o": "', o.obs_name,
+                        '"}'),
+                 now(),
+                 ""
+               from obsolescence o
+                 join nodes n on
+                   o.obs_name = concat_ws(' ',n.os_name,n.os_vendor,n.os_release,n.os_update)
+               where
+                 o.obs_name = "%(obs_name)s" and
+                 o.obs_alert_date is not NULL and
+                 o.obs_alert_date != "0000-00-00 00:00:00" and
+                 o.obs_warn_date < now() and
+                 o.obs_alert_date > now() and
+                 o.obs_type = "os"
+          """%dict(obs_name=obs_name)
+    db.executesql(sql)
+
+def update_dash_obs_os_alert(obs_name):
+    sql = """delete from dashboard
+              where
+                dash_dict = '{"o": "%(obs_name)s"}' and
+                dash_type="os obsolescence alert"
+          """%dict(obs_name=obs_name)
+    db.executesql(sql)
+
+    sql = """insert ignore into dashboard
+               select
+                 NULL,
+                 "os obsolescence alert",
+                 "",
+                 n.nodename,
+                 1,
+                 "%%(o)s obsolete since %%(a)s",
+                 concat('{"a": "', o.obs_alert_date,
+                        '", "o": "', o.obs_name,
+                        '"}'),
+                 now(),
+                 ""
+               from obsolescence o
+                 join nodes n on
+                   o.obs_name = concat_ws(' ',n.os_name,n.os_vendor,n.os_release,n.os_update)
+               where
+                 o.obs_name = "%(obs_name)s" and
+                 o.obs_alert_date is not NULL and
+                 o.obs_alert_date != "0000-00-00 00:00:00" and
+                 o.obs_warn_date < now() and
+                 o.obs_alert_date > now() and
+                 o.obs_type = "os"
+          """%dict(obs_name=obs_name)
+    db.executesql(sql)
+
+def delete_dash_obs_without(obs_name, t, a):
+    if t == "hw":
+        tl = "hardware"
+    else:
+        tl = t
+    if a == "warn": 
+        al = "warning"
+    else:
+        al = a
+    sql = """delete from dashboard
+             where
+               dash_dict = '{"o": "%(obs_name)s"}' and
+               dash_type="%(tl)s obsolescence %(al)s date not set"
+          """%dict(obs_name=obs_name, tl=tl, al=al)
+    db.executesql(sql)
 
 

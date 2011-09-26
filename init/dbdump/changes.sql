@@ -1389,3 +1389,76 @@ alter table auth_user add column email_log_level enum("debug", "info", "warning"
 alter table auth_user add column im_log_level enum("debug", "info", "warning", "error", "critical") default "warning";
 
 drop table alerts;
+
+#
+# remove join key conversion to utf8
+#
+alter table services modify column svc_name varchar(60) character set utf8;
+
+drop view v_svcactions;
+
+CREATE VIEW `v_svcactions` AS select `ac`.`cron` AS `cron`,`ac`.`time` AS `time`,`ac`.`version` AS `version`,`ac`.`svcname` AS `svcname`,`ac`.`action` AS `action`,`ac`.`status` AS `status`,`ac`.`begin` AS `begin`,`ac`.`end` AS `end`,`ac`.`hostname` AS `hostname`,`ac`.`hostid` AS `hostid`,`ac`.`status_log` AS `status_log`,`ac`.`pid` AS `pid`,`ac`.`ID` AS `ID`,`ac`.`ack` AS `ack`,`ac`.`alert` AS `alert`,`ac`.`acked_by` AS `acked_by`,`ac`.`acked_comment` AS `acked_comment`,`ac`.`acked_date` AS `acked_date`,`s`.`svc_ha` AS `svc_ha`,`s`.`svc_app` AS `app`,`a`.`mailto` AS `mailto`,`a`.`responsibles` AS `responsibles`,`n`.`nodename` AS `nodename`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`team_responsible` AS `team_responsible`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`status` AS `asset_status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2` from `SVCactions` `ac` join `services` `s` on `s`.`svc_name` = `ac`.`svcname` join `nodes` `n` on `ac`.`hostname` = `n`.`nodename` join `b_apps` `a` on `a`.`app` = `s`.`svc_app`;
+
+CREATE TABLE `dashboard` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `dash_type` varchar(60) NOT NULL,
+  `dash_svcname` varchar(60) NOT NULL,
+  `dash_nodename` varchar(60) NOT NULL,
+  `dash_severity` tinyint(4) NOT NULL,
+  `dash_fmt` varchar(100) DEFAULT '',
+  `dash_dict` varchar(200) DEFAULT '',
+  `dash_created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx1` (`dash_type`)
+);
+
+CREATE TABLE `dashboard_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `dash_type` varchar(60) NOT NULL,
+  `dash_filters_md5` varchar(32) NOT NULL,
+  `dash_alerts` integer DEFAULT NULL,
+  `dash_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx1` (`dash_type`, `dash_date`)
+);
+
+alter table comp_status modify run_svcname varchar(60) default "";
+
+# re-factorize comp_status
+# alter table comp_status rename comp_status_old
+# create table comp_status like comp_status_old
+# insert into comp_status select a.* from comp_status_old a inner join (select max(id) as maxid from comp_status_old group by run_nodename, run_module) as b on a.id=b.maxid;
+
+# use rw compression for data with high compression ratio ?
+# alter table comp_log engine=innodb ROW_FORMAT=COMPRESSED;
+# alter table stats_netdev_err engine=innodb ROW_FORMAT=COMPRESSED;
+# alter table stats_netdev engine=innodb ROW_FORMAT=COMPRESSED;
+# alter table stats_fs_u engine=innodb ROW_FORMAT=COMPRESSED;
+
+alter table dashboard add column dash_dict_md5 varchar(32) default "";
+
+alter table dashboard add unique key idx1 (dash_type, dash_svcname, dash_nodename, dash_dict_md5);
+
+CREATE TABLE `feed_queue` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `q_fn` varchar(60) NOT NULL,
+  `q_args` longblob NOT NULL,
+  PRIMARY KEY (`id`)
+);
+
+CREATE TABLE `feed_queue_stats` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `q_start` timestamp NOT NULL,
+  `q_end` timestamp NOT NULL,
+  `q_fn` varchar(60) NOT NULL,
+  `q_count` integer NOT NULL,
+  `q_avg` float NOT NULL,
+  PRIMARY KEY (`id`)
+);
+
+# optimize v_flex_status
+alter table services add index idx2 (svc_cluster_type);
+
+drop view v_flex_status;
+
+CREATE VIEW `v_flex_status` AS (select `p`.`ID` AS `id`,`p`.`mon_svcname` AS `svc_name`,`p`.`svc_flex_min_nodes` AS `svc_flex_min_nodes`,`p`.`svc_flex_max_nodes` AS `svc_flex_max_nodes`,`p`.`svc_flex_cpu_low_threshold` AS `svc_flex_cpu_low_threshold`,`p`.`svc_flex_cpu_high_threshold` AS `svc_flex_cpu_high_threshold`,count(1) AS `n`,(select count(1) AS `count(1)` from `svcmon` `c` where ((`c`.`mon_svcname` = `p`.`mon_svcname`) and (`c`.`mon_availstatus` = 'up'))) AS `up`,(select (100 - `c`.`idle`) AS `100-c.idle` from (`stats_cpu` `c` join `svcmon` `m`) where ((`c`.`nodename` = `m`.`mon_nodname`) and (`m`.`mon_svcname` = `p`.`mon_svcname`) and (`c`.`date` > (now() + interval -(15) minute)) and (`c`.`cpu` = 'all') and (`m`.`mon_overallstatus` = 'up')) group by `p`.`mon_svcname`) AS `cpu` from `v_svcmon` `p` where (`p`.`svc_cluster_type` in ('flex','autoflex')) group by `p`.`mon_svcname`);
