@@ -405,6 +405,7 @@ def node_del(ids):
     u = ', '.join([r.nodename for r in rows])
     for nodename in [r.nodename for r in rows]:
         delete_dash_node(nodename)
+        delete_svcmon(nodename)
 
     db(q).delete()
     _log('nodes.delete',
@@ -457,6 +458,13 @@ def nodes():
           _id='nodes',
         )
     return dict(table=t)
+
+def delete_svcmon(nodename):
+    sql = """delete from svcmon
+               where
+                 mon_nodname="%(nodename)s"
+          """%dict(nodename=nodename)
+    rows = db.executesql(sql)
 
 #
 # Dashboard updates
