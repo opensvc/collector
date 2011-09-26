@@ -403,7 +403,7 @@ def node_del(ids):
         q &= db.nodes.team_responsible.belongs(groups)
     rows = db(q).select(db.nodes.nodename)
     u = ', '.join([r.nodename for r in rows])
-    for nodename in rows:
+    for nodename in [r.nodename for r in rows]:
         delete_dash_node(nodename)
 
     db(q).delete()
