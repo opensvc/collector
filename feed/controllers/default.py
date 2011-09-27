@@ -1417,10 +1417,9 @@ def update_dash_pkgdiff(nodename):
                    dash_fmt="%%(n)s package differences in cluster %%(nodes)s",
                    dash_dict='{"n": %(n)d, "nodes": "%(nodes)s"}',
                    dash_dict_md5=md5('{"n": %(n)d, "nodes": "%(nodes)s"}'),
-                   dash_created="%(now)s"
+                   dash_created=now()
               """%dict(svcname=svcname,
                        sev=sev,
-                       now=str(datetime.datetime.now()),
                        n=rows[0][0],
                        nodes=','.join(nodes).replace("'", ""))
 
@@ -1561,7 +1560,7 @@ def update_dash_checks(nodename):
                  NULL,
                  "check out of bounds",
                  t.svcname,
-                 "%(nodename)s",
+                 t.nodename,
                  %(sev)d,
                  "%%(ctype)s:%%(inst)s check value %%(val)d. %%(ttype)s thresholds: %%(min)d - %%(max)d",
                  concat('{"ctype": "', t.ctype,
@@ -1571,7 +1570,7 @@ def update_dash_checks(nodename):
                         ', "min": ', t.min,
                         ', "max": ', t.max,
                         '}'),
-                 "%(now)s",
+                 now(),
                  md5(concat('{"ctype": "', t.ctype,
                         '", "inst": "', t.inst,
                         '", "ttype": "', t.ttype,
@@ -1582,6 +1581,7 @@ def update_dash_checks(nodename):
                from (
                  select
                    chk_svcname as svcname,
+                   chk_nodename as nodename,
                    chk_type as ctype,
                    chk_instance as inst,
                    chk_threshold_provider as ttype,
@@ -1590,12 +1590,14 @@ def update_dash_checks(nodename):
                    chk_high as max
                  from checks_live
                  where
-                   chk_value < chk_low or
-                   chk_value > chk_high
+                   chk_nodename = "%(nodename)s" and
+                   (
+                     chk_value < chk_low or
+                     chk_value > chk_high 
+                   )
                ) t
           """%dict(nodename=nodename,
                    sev=sev,
-                   now=str(datetime.datetime.now()),
                   )
     db.executesql(sql)
 
@@ -1631,15 +1633,14 @@ def update_dash_netdev_errors(nodename):
                    dash_severity=%(sev)d,
                    dash_fmt="%(err)s errors per second average",
                    dash_dict='{"err": "%(err)d"}',
-                   dash_created="%(now)s"
+                   dash_created=now()
                  on duplicate key update
                    dash_severity=%(sev)d,
                    dash_fmt="%(err)s errors per second average",
                    dash_dict='{"err": "%(err)d"}',
-                   dash_created="%(now)s"
+                   dash_created=now()
               """%dict(nodename=nodename,
                        sev=sev,
-                       now=str(datetime.datetime.now()),
                        err=rows[0][0])
     else:
         sql = """delete from dashboard
@@ -1673,16 +1674,15 @@ def update_dash_action_errors(svc_name, nodename):
                    dash_severity=%(sev)d,
                    dash_fmt="%(err)s action errors",
                    dash_dict='{"err": "%(err)d"}',
-                   dash_created="%(now)s"
+                   dash_created=now()
                  on duplicate key update
                    dash_severity=%(sev)d,
                    dash_fmt="%(err)s action errors",
                    dash_dict='{"err": "%(err)d"}',
-                   dash_created="%(now)s"
+                   dash_created=now()
               """%dict(svcname=svc_name,
                        nodename=nodename,
                        sev=sev,
-                       now=str(datetime.datetime.now()),
                        err=rows[0][0])
     else:
         sql = """delete from dashboard
@@ -1756,10 +1756,9 @@ def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
                    dash_severity=%(sev)d,
                    dash_fmt="current availability status: %%(s)s",
                    dash_dict='{"s": "%(status)s"}',
-                   dash_created="%(now)s"
+                   dash_created=now()
               """%dict(svcname=svc_name,
                        sev=sev,
-                       now=str(datetime.datetime.now()),
                        status=svc_availstatus)
         db.executesql(sql)
 
