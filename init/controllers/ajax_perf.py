@@ -290,7 +290,7 @@ def rows_fs_u(node, s, e):
     sql = """select date,
                     mntpt,
                     max(size),
-                    avg(used),
+                    max(used),
                     %(d)s as d
              from stats_fs_u
              where date>='%(s)s'
