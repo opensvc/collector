@@ -71,12 +71,135 @@ def checks_settings_insert():
     request.vars['chk_changed'] = str(now)
     if form.accepts(request.vars):
         response.flash = T("edition recorded")
+        update_thresholds_batch()
         db(q).update(chk_changed=now,
                      chk_changed_by=user_name())
         redirect(URL(r=request, c='checks', f='checks'))
     elif form.errors:
         response.flash = T("errors in form")
     return dict(form=form, record=record)
+
+def update_thresholds_batch(rows=None):
+    # maintenance batch
+    if rows is None:
+        q = db.checks_live.id > 0
+        q = db.checks_live.chk_threshold_provider.like("fset%")|db.checks_live.chk_threshold_provider == "defaults"
+        rows = db(q).select()
+    for row in rows:
+        update_thresholds(row)
+
+def update_thresholds(row):
+    # try to find most precise settings
+    t = get_settings(row)
+    if t is not None:
+        db(db.checks_live.id==row.id).update(chk_low=t[0], chk_high=t[1], chk_threshold_provider=t[2])
+        update_dash_checks(row.chk_nodename)
+        return
+
+    # try to find filter-match thresholds
+    t = get_filters(row)
+    if t is not None:
+        db(db.checks_live.id==row.id).update(chk_low=t[0], chk_high=t[1], chk_threshold_provider=t[2])
+        update_dash_checks(row.chk_nodename)
+        return
+
+    # try to find least precise settings (ie defaults)
+    t = get_defaults(row)
+    if t is not None:
+        db(db.checks_live.id==row.id).update(chk_low=t[0], chk_high=t[1], chk_threshold_provider=t[2])
+        update_dash_checks(row.chk_nodename)
+        return
+
+    # no threshold found, leave as-is
+    return
+
+def get_defaults(row):
+    q = db.checks_defaults.chk_type == row.chk_type
+    rows = db(q).select()
+    if len(rows) == 0:
+        return
+    return (rows[0].chk_low, rows[0].chk_high, 'defaults')
+
+def get_settings(row):
+    q = db.checks_settings.chk_nodename == row.chk_nodename
+    q &= db.checks_settings.chk_type == row.chk_type
+    q &= db.checks_settings.chk_instance == row.chk_instance
+    rows = db(q).select()
+    if len(rows) == 0:
+        return
+    return (rows[0].chk_low, rows[0].chk_high, 'settings')
+
+def get_filters(row):
+    qr = db.gen_filterset_check_threshold.chk_type == row.chk_type
+    q1 = db.gen_filterset_check_threshold.chk_instance == row.chk_instance
+    q2 = db.gen_filterset_check_threshold.chk_instance == None
+    q3 = db.gen_filterset_check_threshold.chk_instance == ""
+    qr &= (q1|q2|q3)
+    fsets = db(qr).select()
+    if len(fsets) == 0:
+        return
+    for fset in fsets:
+        qr = db.v_gen_filtersets.fset_id == fset.fset_id
+        filters = db(qr).select(db.v_gen_filtersets.ALL, orderby=db.v_gen_filtersets.f_order|db.v_gen_filtersets.id)
+        if len(filters) == 0:
+            continue
+        qr = db.nodes.nodename == row.chk_nodename
+        qr &= db.nodes.nodename == db.svcmon.mon_nodname
+        qr &= db.svcmon.mon_svcname == db.services.svc_name
+        for f in filters:
+            qr = comp_query(qr, f)
+        n = db(qr).count()
+        if n == 0:
+            continue
+        return (fset.chk_low, fset.chk_high, 'fset: '+f.fset_name)
+    return
+
+def comp_query(q, row):
+    if 'v_gen_filtersets' in row:
+        v = row.v_gen_filtersets
+    else:
+        v = row
+    if v.encap_fset_id > 0:
+        o = db.v_gen_filtersets.f_order
+        qr = db.v_gen_filtersets.fset_id == v.encap_fset_id
+        rows = db(qr).select(orderby=o)
+        qry = None
+        for r in rows:
+            qry = comp_query(qry, r)
+    else:
+        if v.f_op == '=':
+            qry = db[v.f_table][v.f_field] == v.f_value
+        elif v.f_op == '!=':
+            qry = db[v.f_table][v.f_field] != v.f_value
+        elif v.f_op == 'LIKE':
+            qry = db[v.f_table][v.f_field].like(v.f_value)
+        elif v.f_op == 'NOT LIKE':
+            qry = ~db[v.f_table][v.f_field].like(v.f_value)
+        elif v.f_op == 'IN':
+            qry = db[v.f_table][v.f_field].belongs(v.f_value.split(','))
+        elif v.f_op == 'NOT IN':
+            qry = ~db[v.f_table][v.f_field].belongs(v.f_value.split(','))
+        elif v.f_op == '>=':
+            qry = db[v.f_table][v.f_field] >= v.f_value
+        elif v.f_op == '>':
+            qry = db[v.f_table][v.f_field] > v.f_value
+        elif v.f_op == '<=':
+            qry = db[v.f_table][v.f_field] <= v.f_value
+        elif v.f_op == '<':
+            qry = db[v.f_table][v.f_field] < v.f_value
+        else:
+            return q
+    if q is None:
+        q = qry
+    elif v.f_log_op == 'AND':
+        q &= qry
+    elif v.f_log_op == 'AND NOT':
+        q &= ~qry
+    elif v.f_log_op == 'OR':
+        q |= qry
+    elif v.f_log_op == 'OR NOT':
+        q |= ~qry
+    return q
 
 @auth.requires_login()
 def set_low_threshold(ids):
@@ -115,6 +238,7 @@ def set_low_threshold(ids):
             db(q).update(chk_low=val,
                          chk_changed_by=user_name(),
                          chk_changed=now)
+        update_thresholds(rows[0])
 
 @auth.requires_login()
 def set_high_threshold(ids):
@@ -153,6 +277,7 @@ def set_high_threshold(ids):
             db(q).update(chk_high=val,
                          chk_changed_by=user_name(),
                          chk_changed=now)
+        update_thresholds(rows[0])
 
 @auth.requires_login()
 def reset_thresholds(ids):
@@ -167,6 +292,7 @@ def reset_thresholds(ids):
         q &= db.checks_settings.chk_type==chk.chk_type
         q &= db.checks_settings.chk_instance==chk.chk_instance
         settings = db(q).delete()
+        update_thresholds(chk)
 
 class col_chk_value(HtmlTableColumn):
     def html(self, o):
@@ -470,4 +596,70 @@ def checks():
         )
     return dict(table=t)
 
+def update_dash_checks(nodename):
+    nodename = nodename.strip("'")
+    sql = """delete from dashboard
+               where
+                 dash_nodename = "%(nodename)s" and
+                 dash_type = "check out of bounds"
+          """%dict(nodename=nodename)
+    rows = db.executesql(sql)
+
+    sql = """select environnement from nodes
+             where
+               nodename="%(nodename)s"
+          """%dict(nodename=nodename)
+    rows = db.executesql(sql)
+
+    if len(rows) == 1 and rows[0][0] == 'PRD':
+        sev = 3
+    else:
+        sev = 2
+
+    sql = """insert ignore into dashboard
+               select
+                 NULL,
+                 "check out of bounds",
+                 t.svcname,
+                 t.nodename,
+                 %(sev)d,
+                 "%%(ctype)s:%%(inst)s check value %%(val)d. %%(ttype)s thresholds: %%(min)d - %%(max)d",
+                 concat('{"ctype": "', t.ctype,
+                        '", "inst": "', t.inst,
+                        '", "ttype": "', t.ttype,
+                        '", "val": ', t.val,
+                        ', "min": ', t.min,
+                        ', "max": ', t.max,
+                        '}'),
+                 now(),
+                 md5(concat('{"ctype": "', t.ctype,
+                        '", "inst": "', t.inst,
+                        '", "ttype": "', t.ttype,
+                        '", "val": ', t.val,
+                        ', "min": ', t.min,
+                        ', "max": ', t.max,
+                        '}'))
+               from (
+                 select
+                   chk_svcname as svcname,
+                   chk_nodename as nodename,
+                   chk_type as ctype,
+                   chk_instance as inst,
+                   chk_threshold_provider as ttype,
+                   chk_value as val,
+                   chk_low as min,
+                   chk_high as max
+                 from checks_live
+                 where
+                   chk_nodename = "%(nodename)s" and
+                   chk_updated = date_sub(now(), interval 1 day) and
+                   (
+                     chk_value < chk_low or
+                     chk_value > chk_high
+                   )
+               ) t
+          """%dict(nodename=nodename,
+                   sev=sev,
+                  )
+    db.executesql(sql)
 
