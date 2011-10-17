@@ -18,7 +18,13 @@ class col_dash_icons(HtmlTableColumn):
 
 class col_dash_history(HtmlTableColumn):
     def html(self, o):
-        return plot_log(self.get(o))
+        id = self.get(o)
+        d = DIV(
+              T("loading"),
+              _class="dynamicsparkline",
+              _id=id
+            )
+        return d
 
 class col_dash_alerts(HtmlTableColumn):
     def html(self, o):
@@ -27,6 +33,32 @@ class col_dash_alerts(HtmlTableColumn):
 class col_dash_cumulated_severity(HtmlTableColumn):
     def html(self, o):
         return html_bar(o['dash_severity'], self.t.total_severity)
+
+def spark_data(data):
+    if len(data) == 0:
+        l = [None]
+    elif len(data) == 1:
+        l = [str(data[0][1])]
+    else:
+        d = {}
+        l = []
+        last_value = data[-1][1]
+        begin = data[0][0]
+        if begin == 0:
+            return str(data[0][1])
+        if begin > 20:
+            begin = 20
+        for a, b in data:
+            d[a] = b
+        for i in range(0, begin):
+            if i in d:
+                l.append(d[i])
+                last_value = d[i]
+            else:
+                #l.append(last_value)
+                l.append(None)
+        l.reverse()
+    return l
 
 def html_bar(val, total):
     if total ==  0:
@@ -103,6 +135,7 @@ class table_dash_agg(HtmlTable):
                      table='dash_agg',
                      display=True,
                      img='alert16',
+                     _class='numeric',
                     ),
         }
         self.colprops['dash_alerts'].t = self
@@ -170,6 +203,9 @@ def ajax_dash_agg():
     row = db(q).select(db.dashboard_log.dash_date,
                        orderby=~db.dashboard_log.id,
                        limitby=(0,1)).first()
+
+    now = datetime.datetime.now()
+
     if row is None:
         last_date = now - datetime.timedelta(minutes=2)
     else:
@@ -189,72 +225,78 @@ def ajax_dash_agg():
             db.dashboard_log.insert(dash_filters_md5=filters_md5,
                                     dash_alerts=mt.object_list[i]['dash_alerts'],
                                     dash_type=mt.object_list[i]['dash_type'])
-        q = db.dashboard_log.dash_filters_md5 == filters_md5
-        q &= db.dashboard_log.dash_type == mt.object_list[i]['dash_type']
-        q &= db.dashboard_log.dash_date > now - datetime.timedelta(minutes=21)
-        rows = db(q).select()
-        dates = []
-        alerts = []
-        dummy = []
-        for row in rows:
-            dates.append(row.dash_date.toordinal()*1440+row.dash_date.hour*60+row.dash_date.minute)
-            alerts.append(row.dash_alerts)
-            dummy.append(0)
-        mt.object_list[i]['dash_history'] = json.dumps([dates, alerts, dummy, dummy])
+        mt.object_list[i]['dash_history'] = '-'.join((filters_md5, mt.object_list[i]['dash_type'].replace(" ","_")))
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         return mt.csv()
 
     return DIV(
              mt.html(),
+             SCRIPT(
+               """
+function refresh_sparklines() {
+ $('.dynamicsparkline').each(function(i){
+  id=$(this).attr("id")
+  $.getJSON("%(url)s/"+id, function(data) {
+        $('#'+data[0]).sparkline(data[1])
+  })
+ })
+}
+refresh_sparklines()
+$('#dash_agg').stopTime();
+$('#dash_agg').everyTime(60000,function(){
+ refresh_sparklines()
+})
+"""%dict(url=URL(r=request, f='call/json/update_dashboard_log')),
+               _name=mt.id+"_to_eval"
+             ),
            )
 
-def plot_log(s):
-    height = 30
-    cols = 20
-    col_width = 4
-    minutes = []
-    for i in range(cols-1, -1, -1):
-        d = now - datetime.timedelta(minutes=i)
-        minutes.append(d.toordinal()*1440+d.hour*60+d.minute)
-    import json
+@service.json
+def update_dashboard_log(s):
     try:
-        minute, ok, nok, na = json.loads(s)
+        md5, dash_type = s.split('-')
+        dash_type = dash_type.replace("_", " ")
     except:
-        return SPAN()
-    h = {}
-    _max = 0
-    for i, v in enumerate(minute):
-        h[v] = (ok[i], nok[i], na[i])
-        total = ok[i] + nok[i] + na[i]
-        if total > _max:
-            _max = total
-    if _max == 0:
-        return SPAN("no data")
-    ratio = float(height) / _max
-    for i in minutes:
-        if i not in minute:
-            h[i] = (0, 0, 0)
-    l = []
-    for i in minutes:
-        if h[i] == (0, 0, 0):
-            l.append(DIV(
-                   _style="background-color:#ececaa;float:left;width:%dpx;height:%dpx"%(col_width, height),
-                 ))
-        else:
-            h0 = int(h[i][0] * ratio)
-            h1 = int(h[i][1] * ratio)
-            h2 = int(h[i][2] * ratio)
-            cc = height - h0 - h1 - h2
-            l.append(DIV(
-                   DIV("", _style="background-color:rgba(0,0,0,0);height:%dpx"%cc),
-                   DIV("", _style="background-color:lightgreen;height:%dpx"%h0) if h0 > 0 else "",
-                   DIV("", _style="background-color:#ff7863;height:%dpx"%h1) if h1 > 0 else "",
-                   DIV("", _style="background-color:#008099;height:%dpx"%h2) if h2 > 0 else "",
-                   _style="float:left;width:%dpx"%col_width,
-                 ))
-    return DIV(l)
+        return [None]
 
+    """ Insert a datapoint in dashboard_log with
+        the same value as the last point for dash_filters_md5/dash_type
+        If a point already has been inserted in the last minute, skip.
+    """
+    sql = """insert into dashboard_log
+               select
+                 NULL,
+                 dash_type,
+                 dash_filters_md5,
+                 dash_alerts,
+                 now()
+               from dashboard_log
+               where
+                 dash_filters_md5="%(md5)s" and
+                 dash_type="%(dash_type)s" and
+                 dash_date < date_sub(now(), interval 1 minute)
+               order by dash_date desc
+               limit 1
+          """%dict(md5=md5, dash_type=dash_type)
+    db.executesql(sql)
+    with open("/tmp/bar", "w") as f:
+        f.write(sql+'\n')
+
+    now = datetime.datetime.now()
+    thisminute = now.toordinal()*1440+now.hour*60+now.minute
+
+    q = db.dashboard_log.dash_filters_md5 == md5
+    q &= db.dashboard_log.dash_type == dash_type
+    q &= db.dashboard_log.dash_date > now - datetime.timedelta(minutes=21)
+    rows = db(q).select()
+    data = []
+    for row in rows:
+        rowminute = row.dash_date.toordinal()*1440+row.dash_date.hour*60+row.dash_date.minute
+        data.append((thisminute-rowminute,
+                     row.dash_alerts))
+
+    return s, spark_data(data)
 
 
 #############################################################################
