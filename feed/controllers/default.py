@@ -1591,9 +1591,10 @@ def update_dash_checks(nodename):
                  from checks_live
                  where
                    chk_nodename = "%(nodename)s" and
+                   chk_updated = date_sub(now(), interval 1 day) and
                    (
                      chk_value < chk_low or
-                     chk_value > chk_high 
+                     chk_value > chk_high
                    )
                ) t
           """%dict(nodename=nodename,
