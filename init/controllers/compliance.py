@@ -660,6 +660,104 @@ class col_var_value(HtmlTableColumn):
                )
         return form
 
+    def html_authkey(self, o):
+        def truncate_key(key):
+            if len(key) < 50:
+                return key
+            else:
+                return key[0:17] + "..." + key[-30:]
+
+        v = self.get(o)
+        try:
+            f = json.loads(v)
+        except:
+            return SPAN("malformed value", PRE(v))
+        l = [DIV(
+               DIV('authentication key', _style='display:table-cell;font-weight:bold', _class="comp16"),
+               _style="display:table-row",
+             )]
+        l += [DIV(
+               DIV('user', _style='display:table-cell', _class="guy16"),
+               DIV(f['user'], _style='display:table-cell'),
+               _style="display:table-row",
+             )]
+        l += [DIV(
+               DIV('key', _style='display:table-cell', _class="key16"),
+               DIV(truncate_key(f['key']), _style='display:table-cell'),
+               _style="display:table-row",
+             )]
+        if 'action' in f:
+            l += [DIV(
+                    DIV('action', _style='display:table-cell', _class="action16"),
+                    DIV(f['action'], _style='display:table-cell'),
+                    _style="display:table-row",
+                  )]
+        if 'authfile' in f:
+            l += [DIV(
+                    DIV('file', _style='display:table-cell', _class="edit16"),
+                    DIV(f['authfile'], _style='display:table-cell'),
+                    _style="display:table-row",
+                  )]
+        return DIV(l, _class="comp_var_table")
+
+    def form_authkey(self, o):
+        name = 'authkey_n_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
+        l = []
+        v = self.get(o)
+        if v is None or v == "":
+            f = {}
+        else:
+            try:
+                f = json.loads(v)
+            except:
+                return self.form_raw(o)
+        for key, img in (('user', 'guy16'),
+                         ('key', 'key16'),
+                         ('action', 'action16'),
+                         ('authfile', 'edit16')):
+            if key not in f:
+                value = ""
+            else:
+                value = f[key]
+            if key == 'key':
+                _WIDGET = TEXTAREA(_name=name, _id="%s_%s"%(name, key), value=value)
+            elif key == 'action':
+                _WIDGET = SELECT(
+                            (
+                               OPTION("add", _value="add"),
+                               OPTION("del", _value="del")
+                            ),
+                            _name=name,
+                            _id="%s_%s"%(name, key),
+                          )
+            elif key == 'authfile':
+                _WIDGET = SELECT(
+                            (
+                               OPTION("authorized_keys", _value="authorized_keys"),
+                               OPTION("authorized_keys2", _value="authorized_keys2")
+                            ),
+                            _name=name,
+                            _id="%s_%s"%(name, key),
+                          )
+            else:
+                _WIDGET = INPUT(_name=name, _id="%s_%s"%(name, key), value=value)
+            l += [DIV(
+                   DIV(key, _style='display:table-cell;font-weight:bold', _class=img),
+                   DIV(_WIDGET, _style='display:table-cell'),
+                   _style="display:table-row",
+                 )]
+        form = DIV(
+                 SPAN(l, _id=name+'_container'),
+                 BR(),
+                 INPUT(
+                   _type="submit",
+                   _onclick=self.t.ajax_submit(additional_input_name=name,
+                                               args=["var_value_set_dict", name]),
+                 ),
+                 _class="comp_var_table",
+               )
+        return form
+
     def html_file(self, o):
         v = self.get(o)
         try:
