@@ -56,7 +56,9 @@ def _where(query, table, var, field):
     if chunk == 'empty':
         q = (db[table][field]==None)|(db[table][field]=='')
     elif chunk[0] not in '<>=':
-        if db[table][field].type == 'string':
+        if field not in db[table]:
+            pass
+        elif db[table][field].type == 'string':
             q = db[table][field].like(chunk)
         elif db[table][field].type in ('id', 'integer'):
             try:
