@@ -529,11 +529,13 @@ class table_checks(HtmlTable):
 def ajax_checks_col_values():
     t = table_checks('checks', 'ajax_checks')
     col = request.args[0]
-    o = db.v_users[col]
-    q = db.v_users.id > 0
-    t.object_list = db(q).select(orderby=o, groupby=o)
+    q = db.checks_live.id>0
+    q = _where(q, 'checks_live', domain_perms(), 'chk_nodename')
+    q = apply_db_filters(q, 'v_nodes')
+    q &= db.checks_live.chk_nodename==db.v_nodes.nodename
+    o = db.checks_live[col]
     for f in t.cols:
-        q = _where(q, 'v_users', t.filter_parse(f), f)
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     t.object_list = db(q).select(orderby=o, groupby=o)
     return t.col_values_cloud(col)
 
