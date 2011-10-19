@@ -417,7 +417,7 @@ def res_status(svcname, node):
 @auth.requires_login()
 def ajax_service():
     rowid = request.vars.rowid
-    rows = db(db.v_svcmon.mon_svcname==request.vars.node).select(limitby=(0,1))
+    rows = db(db.v_svcmon.mon_svcname==request.vars.node).select()
     viz = svcmon_viz_img(rows)
     if len(rows) == 0:
         return DIV(
