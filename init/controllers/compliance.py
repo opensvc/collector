@@ -569,6 +569,79 @@ class col_var_value(HtmlTableColumn):
                )
         return form
 
+    def html_vuln(self, o):
+        v = self.get(o)
+        l = [DIV(
+               DIV('package name', _style='display:table-cell;font-weight:bold', _class="comp16"),
+               DIV('minimum version', _style='display:table-cell'),
+               _style="display:table-row",
+             )]
+        try:
+            vulns = json.loads(v)
+        except:
+            return SPAN("malformed value", PRE(v))
+        for vuln in vulns:
+            l += [DIV(
+                    DIV('%s '%vuln['pkgname'], _style='display:table-cell', _class="pkg16"),
+                    DIV(vuln['minver'], _style='display:table-cell'),
+                    _style="display:table-row",
+                  )]
+        return DIV(l, _class="comp_var_table")
+
+    def form_vuln(self, o):
+        name = 'vuln_n_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
+        l = [DIV(
+               DIV('package name', _style='display:table-cell;font-weight:bold', _class="comp16"),
+               DIV('minimum version', _style='display:table-cell'),
+               _style="display:table-row",
+             )]
+        v = self.get(o)
+        if v is None or v == "":
+            f = {}
+        else:
+            try:
+                f = json.loads(v)
+            except:
+                return self.form_raw(o)
+        for i, vuln in enumerate(f):
+            ll = [DIV(
+                    SPAN("", _class="pkg16"),
+                    INPUT(_name=name, _id="%s_%d_%s"%(name, i, 'pkgname'), _value=vuln['pkgname']),
+                    _style='display:table-cell',
+                  )]
+            for key in ['minver']:
+                if key not in vuln:
+                    value = ""
+                else:
+                    value = vuln[key]
+                if key == 'members':
+                    value = ','.join(value)
+                ll += [DIV(
+                         INPUT(_name=name, _id="%s_%d_%s"%(name, i, key), _value=value),
+                         _style='display:table-cell',
+                       )]
+            l += [DIV(
+                    ll,
+                    _style="display:table-row",
+                  )]
+        form = DIV(
+                 SPAN(l, _id=name+'_container'),
+                 BR(),
+                 INPUT(
+                   _value="Add",
+                   _type="submit",
+                   _onclick="""d=new Date(); i=d.getTime(); $("#%(n)s_container").append("<div style='display:table-row'><div style='display:table-cell'><span class='guys16'></span><input name='%(n)s' id='%(n)s_"+i+"_pkgname'></div><div style='display:table-cell'><input name='%(n)s' id='%(n)s_"+i+"_minver'></div><div style='display:table-cell'></div></div>")"""%dict(n=name),
+                 ),
+                 " ",
+                 INPUT(
+                   _type="submit",
+                   _onclick=self.t.ajax_submit(additional_input_name=name,
+                                               args=["var_value_set_vuln", name]),
+                 ),
+                 _class="comp_var_table",
+               )
+        return form
+
     def html_cron(self, o):
         v = self.get(o)
         f = v.split(':')
@@ -1960,6 +2033,8 @@ def ajax_comp_rulesets():
                 var_value_set_list(name)
             elif action == 'var_value_set_dict':
                 var_value_set_dict(name)
+            elif action == 'var_value_set_vuln':
+                var_value_set_list_of_dict(name, 'pkgname')
             elif action == 'var_value_set_group':
                 var_value_set_dict_dict(name, 'group')
             elif action == 'var_value_set_user':
@@ -4034,6 +4109,35 @@ def var_value_set_cron(name):
             l.append("")
     val = ':'.join(l)
     db(db.comp_rulesets_variables.id==vid).update(var_value=val)
+
+@auth.requires_membership('CompManager')
+def var_value_set_list_of_dict(name, mainkey):
+    d = {}
+    f = {}
+    idx = {}
+    vid = int(name.split('_')[2])
+    for i in [v for v in request.vars if name in v]:
+        if request.vars[i] is None or len(request.vars[i]) == 0:
+            continue
+        s = i[len(name)+1:]
+        index = s.split('_')[0]
+        key = s[len(index)+1:]
+        if key == mainkey and key not in idx:
+            idx[index] = request.vars[i]
+        if index not in d:
+            d[index] = {}
+        try:
+            val = int(request.vars[i])
+        except:
+            val = request.vars[i]
+        if key == 'members':
+            val = val.split(',')
+            val = map(lambda x: x.strip(), val)
+        d[index][key] = val
+    for i in d:
+        if i in idx:
+            f[idx[i]] = d[i]
+    db(db.comp_rulesets_variables.id==vid).update(var_value=json.dumps(f.values()))
 
 @auth.requires_membership('CompManager')
 def var_value_set_dict(name):

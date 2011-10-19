@@ -1002,7 +1002,7 @@ db.define_table('comp_rulesets',
 
 db.define_table('comp_rulesets_variables',
     Field('ruleset_id','integer', requires=IS_NOT_EMPTY()),
-    Field('var_class','string', requires=IS_IN_SET(("raw", "authkey", "file", "group", "package", "user", "cve")), default="raw"),
+    Field('var_class','string', requires=IS_IN_SET(("raw", "authkey", "file", "group", "package", "user", "vuln")), default="raw"),
     Field('var_name','string', requires=IS_NOT_EMPTY()),
     Field('var_value','string'),
     Field('var_author','string', readable=False, writable=False),
