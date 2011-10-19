@@ -1423,9 +1423,6 @@ def update_dash_pkgdiff(nodename):
                        n=rows[0][0],
                        nodes=','.join(nodes).replace("'", ""))
 
-        with open("/tmp/bar", "a") as f:
-            f.write(sql)
-
         rows = db.executesql(sql)
 
 def update_dash_flex_cpu(svcname):
@@ -1539,9 +1536,12 @@ def update_dash_checks(nodename):
     sql = """delete from dashboard
                where
                  dash_nodename = "%(nodename)s" and
-                 dash_type = "check out of bounds" or
-                 dash_type = "check value not updated"
+                 (
+                   dash_type = "check out of bounds" or
+                   dash_type = "check value not updated"
+                 )
           """%dict(nodename=nodename)
+
     rows = db.executesql(sql)
 
     sql = """select environnement from nodes
@@ -1899,13 +1899,16 @@ def feed_dequeue():
             self.s = {}
             self.start = datetime.datetime.now()
 
+        def get_total_seconds(td):
+            return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 1e6) / 1e6
+
         def begin(self, fn):
             self.fn = fn
             self.t = datetime.datetime.now()
 
         def end(self):
             elapsed = datetime.datetime.now() -self.t
-            elapsed = elapsed.total_seconds()
+            elapsed = get_total_seconds(elapsed)
             if self.fn not in self.s:
                 self.s[self.fn] = {'count': 1, 'cumul': elapsed, 'avg': elapsed}
             else:
