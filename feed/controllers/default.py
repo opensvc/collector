@@ -1734,7 +1734,7 @@ def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
         sev = 4
     else:
         sev = 3
-    if svc_availstatus == "up":
+    if svc_availstatus in ["up", "n/a"]:
         sql = """delete from dashboard
                  where
                    dash_type="service unavailable" and
