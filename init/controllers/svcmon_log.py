@@ -681,8 +681,8 @@ class col_avail_holes(Column):
                     B(" with comment: "),
                     hole['acked_comment'],
                   )
-            over += """ackpanel(true, '%s')"""%msg
-            out += """ackpanel(false, '%s')"""%msg
+            over += """ackpanel(event, true, '%s')"""%msg
+            out += """ackpanel(event, false, '%s')"""%msg
             disabled = 'disabled'
             click = ''
         else:
