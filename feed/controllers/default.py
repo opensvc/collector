@@ -7,7 +7,7 @@
 ## - download is for downloading files uploaded in the db (does streaming)
 ## - call exposes all registered services (none by default)
 #########################################################################
-import datetime
+import datetime, time
 
 def user():
     """
@@ -946,6 +946,73 @@ def comp_query(q, row):
     elif v.f_log_op == 'OR NOT':
         q |= ~qry
     return q
+
+#
+# collector actions
+#
+def str_to_datetime(s):
+    time_formats = ["%Y-%m-%d %H:%M:%S","%Y-%m-%d %H:%M","%Y-%m-%d", "%Y-%m"]
+    d = None
+    for t in time_formats:
+       try:
+           d = datetime.datetime.fromtimestamp(time.mktime(time.strptime(s, t)))
+           break
+       except:
+           continue
+    return d
+
+@auth_uuid
+@service.xmlrpc
+def collector_ack_unavailability(cmd, auth):
+    d = {}
+    nodename = auth[1]
+    d["mon_acked_on"] = datetime.datetime.now()
+
+    if "svcname" not in cmd:
+        return {"ret": 1, "msg": "svcname not found in command block"}
+    else:
+        q = db.svcmon.mon_svcname == cmd["svcname"]
+        q &= db.svcmon.mon_nodname == nodename
+        n = db(q).count()
+        if n == 0:
+            return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
+        d["mon_svcname"] = cmd["svcname"]
+
+    if "begin" not in cmd:
+        d["mon_begin"] = d["mon_acked_on"]
+    else:
+        d["mon_begin"] = str_to_datetime(cmd["begin"])
+        if d["mon_begin"] is None:
+            return {"ret": 1, "msg": "could not parse --begin as a date"}
+
+    if "end" not in cmd:
+        if "duration" in cmd:
+            # todo: fancy duration parsing
+            d["mon_end"] = d["mon_begin"] + datetime.timedelta(minutes=cmd["duration"])
+        else:
+            return {"ret": 1, "msg": "need either --end or --duration"}
+    else:
+        d["mon_end"] = str_to_datetime(cmd["end"])
+        if d["mon_end"] is None:
+            return {"ret": 1, "msg": "could not parse --end as a date"}
+
+    if "comment" not in cmd:
+        d["mon_comment"] = "no comment"
+    else:
+        d["mon_comment"] = cmd["comment"]
+
+    if "author" not in cmd:
+        d["mon_acked_by"] = "root@%s"%nodename
+    else:
+        d["mon_acked_by"] = cmd["author"]
+
+    if "account" not in cmd:
+        d["mon_account"] = "1"
+    else:
+        d["mon_account"] = cmd["account"]
+
+    generic_insert('svcmon_log_ack', d.keys(), d.values())
+    return {"ret": 0, "msg": ""}
 
 #
 # Dashboard updates
