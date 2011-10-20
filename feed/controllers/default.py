@@ -1270,6 +1270,13 @@ def cron_dash_obs_hw_warn():
           """
     db.executesql(sql)
 
+def cron_dash_action_errors_cleanup():
+    sql = """delete from dashboard
+             where
+               dash_dict='{"err": "0"}' and
+               dash_type='action errors'
+          """
+    db.executesql(sql)
 #
 # Dashboard updates
 #
@@ -1673,7 +1680,7 @@ def update_dash_action_errors(svc_name, nodename):
                    dash_svcname="%(svcname)s",
                    dash_nodename="%(nodename)s",
                    dash_severity=%(sev)d,
-                   dash_fmt="%(err)s action errors",
+                   dash_fmt="%%(err)s action errors",
                    dash_dict='{"err": "%(err)d"}',
                    dash_created=now()
                  on duplicate key update
@@ -1860,6 +1867,7 @@ def dash_crons1():
     cron_dash_app_without_responsible()
     cron_dash_node_not_updated()
     cron_dash_node_without_asset()
+    cron_dash_action_errors_cleanup()
 
 def dash_crons0():
     # ~1/min
