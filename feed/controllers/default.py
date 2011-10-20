@@ -366,11 +366,6 @@ def _insert_pkg(vars, vals, auth):
     generic_insert('packages', vars, vals)
     update_dash_pkgdiff(auth[1])
 
-from gluon.fileutils import abspath
-path = abspath('applications', request.application, 'modules')
-if path not in sys.path:
-        sys.path.append(path)
-
 @auth_uuid
 @service.xmlrpc
 def update_sym_xml(symid, vars, vals, auth):
