@@ -59,7 +59,10 @@ def _where(query, table, var, field):
         if field not in db[table]:
             pass
         elif db[table][field].type == 'string':
-            q = db[table][field].like(chunk)
+            if '%' in chunk:
+                q = db[table][field].like(chunk)
+            else:
+                q = db[table][field]==chunk
         elif db[table][field].type in ('id', 'integer'):
             try:
                c = int(chunk)
