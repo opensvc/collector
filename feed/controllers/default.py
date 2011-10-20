@@ -210,6 +210,9 @@ def _push_checks(vars, vals):
         chk_value
         chk_updated
     """
+    if len(vals) > 0:
+        nodename = vals[0][0]
+        db(db.checks_live.chk_nodename==nodename).delete()
     generic_insert('checks_live', vars, vals)
     q = db.checks_live.id < 0
     for v in vals:
@@ -1907,7 +1910,7 @@ def feed_dequeue():
             self.s = {}
             self.start = datetime.datetime.now()
 
-        def get_total_seconds(td):
+        def get_total_seconds(self, td):
             return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 1e6) / 1e6
 
         def begin(self, fn):
@@ -1916,7 +1919,7 @@ def feed_dequeue():
 
         def end(self):
             elapsed = datetime.datetime.now() -self.t
-            elapsed = get_total_seconds(elapsed)
+            elapsed = self.get_total_seconds(elapsed)
             if self.fn not in self.s:
                 self.s[self.fn] = {'count': 1, 'cumul': elapsed, 'avg': elapsed}
             else:
