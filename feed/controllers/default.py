@@ -1014,6 +1014,107 @@ def collector_ack_unavailability(cmd, auth):
     generic_insert('svcmon_log_ack', d.keys(), d.values())
     return {"ret": 0, "msg": ""}
 
+@auth_uuid
+@service.xmlrpc
+def collector_list_unavailability_ack(cmd, auth):
+    d = {}
+    nodename = auth[1]
+    d["mon_acked_on"] = datetime.datetime.now()
+
+    if "svcname" not in cmd:
+        return {"ret": 1, "msg": "svcname not found in command block"}
+    else:
+        q = db.svcmon.mon_svcname == cmd["svcname"]
+        q &= db.svcmon.mon_nodname == nodename
+        n = db(q).count()
+        if n == 0:
+            return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
+
+    q = db.svcmon_log_ack.mon_svcname == cmd["svcname"]
+
+    if "begin" not in cmd:
+        b = datetime.datetime.now() - datetime.timedelta(days=7)
+    else:
+        b = str_to_datetime(cmd["begin"])
+        if b is None:
+            return {"ret": 1, "msg": "could not parse --begin as a date"}
+    q &= db.svcmon_log_ack.mon_end >= b
+
+    if "end" not in cmd:
+        e = datetime.datetime.now()
+    else:
+        e = str_to_datetime(cmd["end"])
+        if e is None:
+            return {"ret": 1, "msg": "could not parse --end as a date"}
+    q &= db.svcmon_log_ack.mon_begin <= e
+
+    if "comment" in cmd:
+        if '%' in cmd["comment"]:
+            q &= db.svcmon_log_ack.mon_comment.like(cmd["comment"])
+        else:
+            q &= db.svcmon_log_ack.mon_comment == cmd["comment"]
+
+    if "author" in cmd:
+        if '%' in cmd["author"]:
+            q &= db.svcmon_log_ack.mon_acked_by.like(cmd["author"])
+        else:
+            q &= db.svcmon_log_ack.mon_acked_by == cmd["author"]
+
+    if "account" in cmd:
+        if cmd["account"]:
+            q &= db.svcmon_log_ack.mon_account == 0
+        else:
+            q &= db.svcmon_log_ack.mon_account == 1
+
+    rows = db(q).select()
+    return {"ret": 0, "msg": "", "data":str(rows)}
+
+@auth_uuid
+@service.xmlrpc
+def collector_list_actions(cmd, auth):
+    d = {}
+    nodename = auth[1]
+    d["mon_acked_on"] = datetime.datetime.now()
+
+    if "svcname" not in cmd:
+        return {"ret": 1, "msg": "svcname not found in command block"}
+    else:
+        q = db.svcmon.mon_svcname == cmd["svcname"]
+        q &= db.svcmon.mon_nodname == nodename
+        n = db(q).count()
+        if n == 0:
+            return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
+
+    q = db.SVCactions.svcname == cmd["svcname"]
+
+    if "begin" not in cmd:
+        b = datetime.datetime.now() - datetime.timedelta(days=7)
+    else:
+        b = str_to_datetime(cmd["begin"])
+        if b is None:
+            return {"ret": 1, "msg": "could not parse --begin as a date"}
+    q &= db.SVCactions.end >= b
+
+    if "end" not in cmd:
+        e = datetime.datetime.now()
+    else:
+        e = str_to_datetime(cmd["end"])
+        if e is None:
+            return {"ret": 1, "msg": "could not parse --end as a date"}
+    q &= db.SVCactions.begin <= e
+
+    q &= (db.SVCactions.status_log == "") | (db.SVCactions.status_log == None)
+    rows = db(q).select(db.SVCactions.id,
+                        db.SVCactions.hostname,
+                        db.SVCactions.begin,
+                        db.SVCactions.end,
+                        db.SVCactions.action,
+                        db.SVCactions.status,
+                        db.SVCactions.ack,
+                        db.SVCactions.cron
+                       )
+    return {"ret": 0, "msg": "", "data":str(rows)}
+
 #
 # Dashboard updates
 #
@@ -1819,6 +1920,22 @@ def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
               """%svc_name
         db.executesql(sql)
     else:
+        sql = """select count(id) from svcmon_log_ack
+                 where
+                   mon_svcname="%s" and
+                   mon_begin <= now() and
+                   mon_end >= now()
+              """%(svc_name)
+        n = db.executesql(sql)[0][0]
+        if n > 0:
+            sql = """delete from dashboard
+                     where
+                       dash_type="service unavailable" and
+                       dash_svcname="%s"
+                  """%(svc_name)
+            db.executesql(sql)
+            return
+
         sql = """delete from dashboard
                  where
                    dash_type="service unavailable" and
@@ -1826,6 +1943,7 @@ def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
                    dash_dict!='{"s": "%s"}'
               """%(svc_name,svc_availstatus)
         db.executesql(sql)
+
         sql = """insert ignore into dashboard
                  set
                    dash_type="service unavailable",
