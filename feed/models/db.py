@@ -235,6 +235,16 @@ db.define_table('resmon',
     Field('updated'),
     migrate=False)
 
+db.define_table('svcmon_log_ack',
+    Field('mon_begin'),
+    Field('mon_end'),
+    Field('mon_svcname'),
+    Field('mon_acked_by'),
+    Field('mon_acked_on'),
+    Field('mon_account'),
+    Field('mon_comment'),
+    migrate=False)
+
 db.define_table('svcmon_log',
     Field('id'),
     Field('mon_begin'),
@@ -593,5 +603,15 @@ db.define_table('apps_responsibles',
 db.define_table('feed_queue',
     Field('q_fn', 'string'),
     Field('q_args', 'blob'),
+    migrate=False)
+
+db.define_table('dashboard',
+    Field('dash_type','string'),
+    Field('dash_svcname','string'),
+    Field('dash_nodename','string'),
+    Field('dash_severity','integer'),
+    Field('dash_fmt','string'),
+    Field('dash_dict','string'),
+    Field('dash_created','datetime'),
     migrate=False)
 

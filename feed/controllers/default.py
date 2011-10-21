@@ -963,6 +963,49 @@ def str_to_datetime(s):
 
 @auth_uuid
 @service.xmlrpc
+def collector_ack_action(cmd, auth):
+    d = {}
+    nodename = auth[1]
+    d["acked_date"] = datetime.datetime.now()
+
+    if "svcname" not in cmd:
+        return {"ret": 1, "msg": "svcname not found in command block"}
+    else:
+        q = db.SVCactions.svcname == cmd["svcname"]
+        q &= db.SVCactions.hostname == nodename
+        n = db(q).count()
+        if n == 0:
+            return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
+        d["svcname"] = cmd["svcname"]
+
+    if "id" not in cmd:
+        return {"ret": 1, "msg": "no action id specified"}
+
+    if "comment" not in cmd:
+        d["acked_comment"] = "no comment"
+    else:
+        d["acked_comment"] = cmd["comment"]
+
+    if "author" not in cmd:
+        d["acked_by"] = "root@%s"%nodename
+    else:
+        d["acked_by"] = cmd["author"]
+
+    q = db.SVCactions.status == "err"
+    q &= db.SVCactions.id == cmd["id"]
+
+    if db(q).count() == 0:
+        return {"ret": 1, "msg": "action id not found or not ackable"}
+
+    db(q).update(ack=1,
+                 acked_comment=d["acked_comment"],
+                 acked_date=d["acked_date"],
+                 acked_by=d["acked_by"])
+
+    return {"ret": 0, "msg": ""}
+
+@auth_uuid
+@service.xmlrpc
 def collector_ack_unavailability(cmd, auth):
     d = {}
     nodename = auth[1]
@@ -1114,6 +1157,90 @@ def collector_list_actions(cmd, auth):
                         db.SVCactions.cron
                        )
     return {"ret": 0, "msg": "", "data":str(rows)}
+
+@auth_uuid
+@service.xmlrpc
+def collector_status(cmd, auth):
+    d = {}
+    nodename = auth[1]
+    d["mon_acked_on"] = datetime.datetime.now()
+
+    if "svcname" not in cmd:
+        return {"ret": 1, "msg": "svcname not found in command block"}
+    else:
+        q = db.svcmon.mon_svcname == cmd["svcname"]
+        q &= db.svcmon.mon_nodname == nodename
+        n = db(q).count()
+        if n == 0:
+            return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
+
+    q = db.svcmon.mon_svcname == cmd["svcname"]
+    q &= db.svcmon.mon_nodname == db.nodes.nodename
+    rows = db(q).select(db.svcmon.mon_nodname,
+                        db.nodes.environnement,
+                        db.svcmon.mon_availstatus,
+                        db.svcmon.mon_overallstatus
+                       )
+    return {"ret": 0, "msg": "", "data":str(rows)}
+
+@auth_uuid
+@service.xmlrpc
+def collector_checks(cmd, auth):
+    d = {}
+    nodename = auth[1]
+    d["mon_acked_on"] = datetime.datetime.now()
+
+    if "svcname" not in cmd:
+        return {"ret": 1, "msg": "svcname not found in command block"}
+    else:
+        q = db.svcmon.mon_svcname == cmd["svcname"]
+        q &= db.svcmon.mon_nodname == nodename
+        n = db(q).count()
+        if n == 0:
+            return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
+
+    q = db.checks_live.chk_svcname == cmd["svcname"]
+    q &= db.checks_live.chk_nodename == nodename
+    rows = db(q).select(db.checks_live.chk_instance,
+                        db.checks_live.chk_type,
+                        db.checks_live.chk_value,
+                        db.checks_live.chk_low,
+                        db.checks_live.chk_high,
+                        db.checks_live.chk_threshold_provider,
+                        db.checks_live.chk_created,
+                        db.checks_live.chk_updated,
+                       )
+    return {"ret": 0, "msg": "", "data":str(rows)}
+
+@auth_uuid
+@service.xmlrpc
+def collector_alerts(cmd, auth):
+    d = {}
+    nodename = auth[1]
+    d["mon_acked_on"] = datetime.datetime.now()
+
+    if "svcname" not in cmd:
+        return {"ret": 1, "msg": "svcname not found in command block"}
+    else:
+        q = db.svcmon.mon_svcname == cmd["svcname"]
+        q &= db.svcmon.mon_nodname == nodename
+        n = db(q).count()
+        if n == 0:
+            return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
+
+    labels = ["dash_severity", "dash_type", "dash_created", "dash_fmt", "dash_dict", "dash_nodename"]
+    sql = """select %s from dashboard where dash_svcname='%s' order by dash_severity desc"""%(','.join(labels), cmd["svcname"])
+    rows = db.executesql(sql)
+    data = [["dash_severity", "dash_type", "dash_nodename", "dash_alert", "dash_created"]]
+    for row in rows:
+        fmt = row[3]
+        try:
+            d = json.loads(row[4])
+            alert = fmt%d
+        except:
+            alert = ""
+        data += [[str(row[0]), str(row[1]), row[5], alert, str(row[2])]]
+    return {"ret": 0, "msg": "", "data":data}
 
 #
 # Dashboard updates
@@ -1810,12 +1937,12 @@ def update_dash_netdev_errors(nodename):
                    dash_svcname="",
                    dash_nodename="%(nodename)s",
                    dash_severity=%(sev)d,
-                   dash_fmt="%(err)s errors per second average",
+                   dash_fmt="%%(err)s errors per second average",
                    dash_dict='{"err": "%(err)d"}',
                    dash_created=now()
                  on duplicate key update
                    dash_severity=%(sev)d,
-                   dash_fmt="%(err)s errors per second average",
+                   dash_fmt="%%(err)s errors per second average",
                    dash_dict='{"err": "%(err)d"}',
                    dash_created=now()
               """%dict(nodename=nodename,
@@ -1856,7 +1983,7 @@ def update_dash_action_errors(svc_name, nodename):
                    dash_created=now()
                  on duplicate key update
                    dash_severity=%(sev)d,
-                   dash_fmt="%(err)s action errors",
+                   dash_fmt="%%(err)s action errors",
                    dash_dict='{"err": "%(err)d"}',
                    dash_created=now()
               """%dict(svcname=svc_name,
