@@ -185,16 +185,13 @@ def update_service(vars, vals, auth):
     feed_enqueue("_update_service", vars, vals)
 
 def _update_service(vars, vals):
-    h = {}
-    for a,b in zip(vars, vals[0]):
-        h[a] = b
     if 'svc_hostid' not in vars:
         return
     if 'updated' not in vars:
         vars += ['updated']
         vals += [datetime.datetime.now()]
     generic_insert('services', vars, vals)
-    update_dash_service_not_updated(h['svc_name'])
+    update_dash_service_not_updated(vals[1].strip("'"))
 
 @auth_uuid
 @service.xmlrpc
