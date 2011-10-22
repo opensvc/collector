@@ -1111,6 +1111,67 @@ def collector_list_unavailability_ack(cmd, auth):
 
 @auth_uuid
 @service.xmlrpc
+def collector_show_actions(cmd, auth):
+    d = {}
+    nodename = auth[1]
+
+    if "svcname" not in cmd:
+        return {"ret": 1, "msg": "svcname not found in command block"}
+    else:
+        q = db.svcmon.mon_svcname == cmd["svcname"]
+        q &= db.svcmon.mon_nodname == nodename
+        n = db(q).count()
+        if n == 0:
+            return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
+
+    q = db.SVCactions.svcname == cmd["svcname"]
+
+    if "id" in cmd:
+        q1 = db.SVCactions.id == cmd['id']
+        rows = db(q1).select()
+        if len(rows) == 0:
+            q &= q1
+        else:
+            q &= db.SVCactions.begin >= rows[0].begin
+            q &= db.SVCactions.end <= rows[0].end
+    else:
+        if "begin" not in cmd:
+            b = datetime.datetime.now() - datetime.timedelta(days=7)
+        else:
+            b = str_to_datetime(cmd["begin"])
+            if b is None:
+                return {"ret": 1, "msg": "could not parse --begin as a date"}
+        q &= db.SVCactions.end >= b
+
+        if "end" not in cmd:
+            e = datetime.datetime.now()
+        else:
+            e = str_to_datetime(cmd["end"])
+            if e is None:
+                return {"ret": 1, "msg": "could not parse --end as a date"}
+        q &= db.SVCactions.begin <= e
+
+    rows = db(q).select(db.SVCactions.id,
+                        db.SVCactions.hostname,
+                        db.SVCactions.begin,
+                        db.SVCactions.action,
+                        db.SVCactions.status,
+                        db.SVCactions.ack,
+                        db.SVCactions.status_log,
+                       )
+    data = [["id", "hostname", "begin", "action", "status", "ack", "log"]]
+    for row in rows:
+        data.append([str(row.id),
+                     str(row.hostname),
+                     str(row.begin),
+                     str(row.action),
+                     str(row.status),
+                     str(row.ack),
+                     str(row.status_log)])
+    return {"ret": 0, "msg": "", "data":data}
+
+@auth_uuid
+@service.xmlrpc
 def collector_list_actions(cmd, auth):
     d = {}
     nodename = auth[1]
