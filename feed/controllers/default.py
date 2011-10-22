@@ -134,20 +134,32 @@ def _end_action(vars, vals):
     return 0
 
 def update_action_errors(svcname, nodename):
-    sql = """insert into b_action_errors set svcname=%(svcname)s, nodename=%(nodename)s, err=(
-               select count(a.id) from SVCactions a
-                 where a.svcname = %(svcname)s and
-                       a.hostname = %(nodename)s and
-                       a.status = 'err' and
-                       ((a.ack <> 1) or isnull(a.ack)))
-             on duplicate key update err=(
-               select count(a.id) from SVCactions a
-                 where a.svcname = %(svcname)s and
-                       a.hostname = %(nodename)s and
-                       a.status = 'err' and
-                       ((a.ack <> 1) or isnull(a.ack)))
-          """%dict(svcname=svcname, nodename=nodename)
-    #raise Exception(sql)
+    svcname = svcname.strip("'")
+    nodename = nodename.strip("'")
+    sql = """select count(id) from SVCactions a
+             where
+               a.svcname = "%(svcname)s" and
+               a.hostname = "%(nodename)s" and
+               a.status = "err" and
+               ((a.ack <> 1) or isnull(a.ack))
+    """%dict(svcname=svcname, nodename=nodename)
+    err = db.executesql(sql)[0][0]
+
+    if err == 0:
+         sql = """delete from b_action_errors
+                  where
+                    svcname = "%(svcname)s" and
+                    nodename = "%(nodename)s"
+         """%dict(svcname=svcname, nodename=nodename)
+    else:
+        sql = """insert into b_action_errors
+                 set
+                   svcname="%(svcname)s",
+                   nodename="%(nodename)s",
+                   err=%(err)d
+                 on duplicate key update
+                   err=%(err)d
+              """%dict(svcname=svcname, nodename=nodename, err=err)
     db.executesql(sql)
 
 def update_virtual_asset(nodename, svcname):
@@ -988,8 +1000,15 @@ def collector_ack_action(cmd, auth):
     else:
         d["acked_by"] = cmd["author"]
 
+    q1 = db.SVCactions.id == cmd['id']
+    rows = db(q1).select()
+    if len(rows) == 0:
+        q &= q1
+    else:
+        q &= db.SVCactions.begin >= rows[0].begin
+        q &= db.SVCactions.end <= rows[0].end
+
     q = db.SVCactions.status == "err"
-    q &= db.SVCactions.id == cmd["id"]
 
     if db(q).count() == 0:
         return {"ret": 1, "msg": "action id not found or not ackable"}
@@ -998,6 +1017,9 @@ def collector_ack_action(cmd, auth):
                  acked_comment=d["acked_comment"],
                  acked_date=d["acked_date"],
                  acked_by=d["acked_by"])
+
+    update_action_errors(cmd['svcname'], nodename)
+    update_dash_action_errors(cmd['svcname'], nodename)
 
     return {"ret": 0, "msg": ""}
 
@@ -1237,7 +1259,8 @@ def collector_status(cmd, auth):
     rows = db(q).select(db.svcmon.mon_nodname,
                         db.nodes.environnement,
                         db.svcmon.mon_availstatus,
-                        db.svcmon.mon_overallstatus
+                        db.svcmon.mon_overallstatus,
+                        db.svcmon.mon_updated
                        )
     return {"ret": 0, "msg": "", "data":str(rows)}
 
