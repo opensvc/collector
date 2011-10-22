@@ -126,6 +126,22 @@ def ajax_node():
                  ),
                )
 
+    q = db.auth_node.nodename == request.vars.node
+    rows = db(q).select(db.auth_node.uuid)
+
+    if len(rows) == 0:
+        node_uuid = T("not registered")
+    else:
+        q &= db.auth_node.nodename == db.nodes.nodename
+        ug = user_groups()
+        if "Manager" not in ug:
+            q &= db.nodes.team_responsible.belongs(ug)
+        rows = db(q).select(db.auth_node.uuid)
+        if len(rows) == 0:
+            node_uuid = T("hidden (you are not responsible of this node)")
+        else:
+            node_uuid = rows[0].uuid
+
     node = nodes[0]
     loc = TABLE(
       TR(TD(T('country'), _style='font-style:italic'), TD(node['loc_country'])),
@@ -155,6 +171,7 @@ def ajax_node():
       TR(TD(T('status'), _style='font-style:italic'), TD(node['status'])),
       TR(TD(T('role'), _style='font-style:italic'), TD(node['role'])),
       TR(TD(T('env'), _style='font-style:italic'), TD(node['environnement'])),
+      TR(TD(T('uuid'), _style='font-style:italic'), TD(node_uuid)),
     )
     cpu = TABLE(
       TR(TD(T('cpu frequency'), _style='font-style:italic'), TD(node['cpu_freq'])),
