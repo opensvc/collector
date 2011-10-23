@@ -1350,6 +1350,54 @@ def collector_alerts(cmd, auth):
         data += [[str(row[0]), str(row[1]), row[5], row[6], alert, str(row[2])]]
     return {"ret": 0, "msg": "", "data":data}
 
+@auth_uuid
+@service.xmlrpc
+def collector_events(cmd, auth):
+    d = {}
+    nodename = auth[1]
+
+    if "svcname" in cmd:
+        q = db.svcmon.mon_svcname == cmd["svcname"]
+        q &= db.svcmon.mon_nodname == nodename
+        n = db(q).count()
+        if n == 0:
+            return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
+
+    if "svcname" in cmd:
+        where = "where log_svcname='%s'"%cmd["svcname"]
+    else:
+        where = "where log_nodename='%s'"%nodename
+
+    if "begin" not in cmd:
+        b = datetime.datetime.now() - datetime.timedelta(days=7)
+    else:
+        b = str_to_datetime(cmd["begin"])
+        if b is None:
+            return {"ret": 1, "msg": "could not parse --begin as a date"}
+    where += """ and log_date >= "%s" """%str(b)
+
+    if "end" not in cmd:
+        e = datetime.datetime.now()
+    else:
+        e = str_to_datetime(cmd["end"])
+        if e is None:
+            return {"ret": 1, "msg": "could not parse --end as a date"}
+    where += """ and log_date <= "%s" """%str(e)
+
+    labels = ["log_date", "log_nodename", "log_svcname", "log_level", "log_action", "log_fmt", "log_dict"]
+    sql = """select %s from log %s order by log_date limit 0,1000"""%(','.join(labels), where)
+    rows = db.executesql(sql)
+    data = [["date", "nodename", "svcname", "level", "action", "event"]]
+    for row in rows:
+        fmt = row[5]
+        try:
+            d = json.loads(row[6])
+            msg = fmt%d
+        except:
+            msg = ""
+        data += [[str(row[0]), str(row[1]), str(row[2]), str(row[3]), str(row[4]), msg]]
+    return {"ret": 0, "msg": "", "data":data}
+
 #
 # Dashboard updates
 #
