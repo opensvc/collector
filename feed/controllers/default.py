@@ -977,9 +977,7 @@ def collector_ack_action(cmd, auth):
     nodename = auth[1]
     d["acked_date"] = datetime.datetime.now()
 
-    if "svcname" not in cmd:
-        return {"ret": 1, "msg": "svcname not found in command block"}
-    else:
+    if "svcname" in cmd:
         q = db.SVCactions.svcname == cmd["svcname"]
         q &= db.SVCactions.hostname == nodename
         n = db(q).count()
@@ -1000,15 +998,22 @@ def collector_ack_action(cmd, auth):
     else:
         d["acked_by"] = cmd["author"]
 
+    q = db.SVCactions.status == "err"
+
     q1 = db.SVCactions.id == cmd['id']
     rows = db(q1).select()
+
     if len(rows) == 0:
         q &= q1
     else:
-        q &= db.SVCactions.begin >= rows[0].begin
-        q &= db.SVCactions.end <= rows[0].end
-
-    q = db.SVCactions.status == "err"
+        if rows[0].status_log is None or rows[0].status_log == "":
+            q &= db.SVCactions.hostname == rows[0].hostname
+            q &= db.SVCactions.svcname == rows[0].svcname
+            q &= ((db.SVCactions.pid.belongs(rows[0].pid.split(',')))|(db.SVCactions.id==rows[0].id))
+            q &= db.SVCactions.begin >= rows[0].begin
+            q &= db.SVCactions.end <= rows[0].end
+        else:
+            q &= q1
 
     if db(q).count() == 0:
         return {"ret": 1, "msg": "action id not found or not ackable"}
@@ -1018,8 +1023,8 @@ def collector_ack_action(cmd, auth):
                  acked_date=d["acked_date"],
                  acked_by=d["acked_by"])
 
-    update_action_errors(cmd['svcname'], nodename)
-    update_dash_action_errors(cmd['svcname'], nodename)
+    update_action_errors(rows[0].svcname, nodename)
+    update_dash_action_errors(rows[0].svcname, nodename)
 
     return {"ret": 0, "msg": ""}
 
@@ -1137,16 +1142,17 @@ def collector_show_actions(cmd, auth):
     d = {}
     nodename = auth[1]
 
-    if "svcname" not in cmd:
-        return {"ret": 1, "msg": "svcname not found in command block"}
-    else:
+    if "svcname" in cmd:
         q = db.svcmon.mon_svcname == cmd["svcname"]
         q &= db.svcmon.mon_nodname == nodename
         n = db(q).count()
         if n == 0:
             return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
 
-    q = db.SVCactions.svcname == cmd["svcname"]
+    if "svcname" in cmd:
+        q = db.SVCactions.svcname == cmd["svcname"]
+    else:
+        q = db.SVCactions.hostname == nodename
 
     if "id" in cmd:
         q1 = db.SVCactions.id == cmd['id']
@@ -1154,8 +1160,14 @@ def collector_show_actions(cmd, auth):
         if len(rows) == 0:
             q &= q1
         else:
-            q &= db.SVCactions.begin >= rows[0].begin
-            q &= db.SVCactions.end <= rows[0].end
+            if rows[0].status_log is None or rows[0].status_log == "":
+                q &= db.SVCactions.hostname == rows[0].hostname
+                q &= db.SVCactions.svcname == rows[0].svcname
+                q &= ((db.SVCactions.pid.belongs(rows[0].pid.split(',')))|(db.SVCactions.id==rows[0].id))
+                q &= db.SVCactions.begin >= rows[0].begin
+                q &= db.SVCactions.end <= rows[0].end
+            else:
+                q &= q1
     else:
         if "begin" not in cmd:
             b = datetime.datetime.now() - datetime.timedelta(days=7)
@@ -1175,16 +1187,19 @@ def collector_show_actions(cmd, auth):
 
     rows = db(q).select(db.SVCactions.id,
                         db.SVCactions.hostname,
+                        db.SVCactions.svcname,
                         db.SVCactions.begin,
                         db.SVCactions.action,
                         db.SVCactions.status,
                         db.SVCactions.ack,
                         db.SVCactions.status_log,
+                        orderby=db.SVCactions.id
                        )
-    data = [["id", "hostname", "begin", "action", "status", "ack", "log"]]
+    data = [["id", "hostname", "svcname", "begin", "action", "status", "ack", "log"]]
     for row in rows:
         data.append([str(row.id),
                      str(row.hostname),
+                     str(row.svcname),
                      str(row.begin),
                      str(row.action),
                      str(row.status),
@@ -1199,16 +1214,17 @@ def collector_list_actions(cmd, auth):
     nodename = auth[1]
     d["mon_acked_on"] = datetime.datetime.now()
 
-    if "svcname" not in cmd:
-        return {"ret": 1, "msg": "svcname not found in command block"}
-    else:
+    if "svcname" in cmd:
         q = db.svcmon.mon_svcname == cmd["svcname"]
         q &= db.svcmon.mon_nodname == nodename
         n = db(q).count()
         if n == 0:
             return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
 
-    q = db.SVCactions.svcname == cmd["svcname"]
+    if "svcname" in cmd:
+        q = db.SVCactions.svcname == cmd["svcname"]
+    else:
+        q = db.SVCactions.hostname == nodename
 
     if "begin" not in cmd:
         b = datetime.datetime.now() - datetime.timedelta(days=7)
@@ -1229,6 +1245,7 @@ def collector_list_actions(cmd, auth):
     q &= (db.SVCactions.status_log == "") | (db.SVCactions.status_log == None)
     rows = db(q).select(db.SVCactions.id,
                         db.SVCactions.hostname,
+                        db.SVCactions.svcname,
                         db.SVCactions.begin,
                         db.SVCactions.end,
                         db.SVCactions.action,
@@ -1243,24 +1260,30 @@ def collector_list_actions(cmd, auth):
 def collector_status(cmd, auth):
     d = {}
     nodename = auth[1]
-    d["mon_acked_on"] = datetime.datetime.now()
 
-    if "svcname" not in cmd:
-        return {"ret": 1, "msg": "svcname not found in command block"}
-    else:
+    if "svcname" in cmd:
         q = db.svcmon.mon_svcname == cmd["svcname"]
         q &= db.svcmon.mon_nodname == nodename
         n = db(q).count()
         if n == 0:
             return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
 
-    q = db.svcmon.mon_svcname == cmd["svcname"]
-    q &= db.svcmon.mon_nodname == db.nodes.nodename
+    o = db.svcmon.mon_svcname
+    q = db.svcmon.mon_nodname == db.nodes.nodename
+    if "svcname" in cmd:
+        q &= db.svcmon.mon_svcname == cmd["svcname"]
+    else:
+        rows = db(db.svcmon.mon_nodname==nodename).select(db.svcmon.mon_svcname)
+        svcs = map(lambda x: x.mon_svcname, rows)
+        q &= db.svcmon.mon_svcname.belongs(svcs)
     rows = db(q).select(db.svcmon.mon_nodname,
+                        db.svcmon.mon_svcname,
                         db.nodes.environnement,
                         db.svcmon.mon_availstatus,
                         db.svcmon.mon_overallstatus,
-                        db.svcmon.mon_updated
+                        db.svcmon.mon_updated,
+                        orderby=o,
+                        limitby=(0,100)
                        )
     return {"ret": 0, "msg": "", "data":str(rows)}
 
@@ -1269,20 +1292,21 @@ def collector_status(cmd, auth):
 def collector_checks(cmd, auth):
     d = {}
     nodename = auth[1]
-    d["mon_acked_on"] = datetime.datetime.now()
 
-    if "svcname" not in cmd:
-        return {"ret": 1, "msg": "svcname not found in command block"}
-    else:
+    if "svcname" in cmd:
         q = db.svcmon.mon_svcname == cmd["svcname"]
         q &= db.svcmon.mon_nodname == nodename
         n = db(q).count()
         if n == 0:
             return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
 
-    q = db.checks_live.chk_svcname == cmd["svcname"]
-    q &= db.checks_live.chk_nodename == nodename
-    rows = db(q).select(db.checks_live.chk_instance,
+    if "svcname" in cmd:
+        q = db.checks_live.chk_svcname == cmd["svcname"]
+    else:
+        q = db.checks_live.chk_nodename == nodename
+
+    rows = db(q).select(db.checks_live.chk_svcname,
+                        db.checks_live.chk_instance,
                         db.checks_live.chk_type,
                         db.checks_live.chk_value,
                         db.checks_live.chk_low,
@@ -1290,6 +1314,7 @@ def collector_checks(cmd, auth):
                         db.checks_live.chk_threshold_provider,
                         db.checks_live.chk_created,
                         db.checks_live.chk_updated,
+                        limitby=(0,1000)
                        )
     return {"ret": 0, "msg": "", "data":str(rows)}
 
@@ -1298,21 +1323,23 @@ def collector_checks(cmd, auth):
 def collector_alerts(cmd, auth):
     d = {}
     nodename = auth[1]
-    d["mon_acked_on"] = datetime.datetime.now()
 
-    if "svcname" not in cmd:
-        return {"ret": 1, "msg": "svcname not found in command block"}
-    else:
+    if "svcname" in cmd:
         q = db.svcmon.mon_svcname == cmd["svcname"]
         q &= db.svcmon.mon_nodname == nodename
         n = db(q).count()
         if n == 0:
             return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
 
-    labels = ["dash_severity", "dash_type", "dash_created", "dash_fmt", "dash_dict", "dash_nodename"]
-    sql = """select %s from dashboard where dash_svcname='%s' order by dash_severity desc"""%(','.join(labels), cmd["svcname"])
+    if "svcname" in cmd:
+        where = "where dash_svcname='%s'"%cmd["svcname"]
+    else:
+        where = "where dash_nodename='%s'"%nodename
+
+    labels = ["dash_severity", "dash_type", "dash_created", "dash_fmt", "dash_dict", "dash_nodename", "dash_svcname"]
+    sql = """select %s from dashboard %s order by dash_severity desc limit 0,1000"""%(','.join(labels), where)
     rows = db.executesql(sql)
-    data = [["dash_severity", "dash_type", "dash_nodename", "dash_alert", "dash_created"]]
+    data = [["dash_severity", "dash_type", "dash_nodename", "dash_svcname", "dash_alert", "dash_created"]]
     for row in rows:
         fmt = row[3]
         try:
@@ -1320,7 +1347,7 @@ def collector_alerts(cmd, auth):
             alert = fmt%d
         except:
             alert = ""
-        data += [[str(row[0]), str(row[1]), row[5], alert, str(row[2])]]
+        data += [[str(row[0]), str(row[1]), row[5], row[6], alert, str(row[2])]]
     return {"ret": 0, "msg": "", "data":data}
 
 #
