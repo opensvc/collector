@@ -1007,7 +1007,7 @@ def svc_del(ids):
     if 'Manager' not in groups:
         # Manager can delete any svc
         # A user can delete only services he is responsible of
-       q &= db.auth_group.id.belongs(groups)
+       q &= db.auth_group.role.belongs(groups)
     rows = db(q).select()
     l = [r.svcmon.id for r in rows]
     q = db.svcmon.id.belongs(l)
