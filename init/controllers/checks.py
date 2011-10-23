@@ -1,4 +1,4 @@
-@auth.requires_login()
+@auth.requires_membership('CheckManager')
 def checks_defaults_insert():
     q = (db.checks_defaults.chk_type==request.vars.chk_type)
     rows = db(q).select()
@@ -24,7 +24,7 @@ def checks_defaults_insert():
         response.flash = T("errors in form")
     return dict(form=form)
 
-@auth.requires_login()
+@auth.requires_membership('CheckManager')
 def checks_settings_insert():
     q = (db.checks_settings.chk_nodename==request.vars.chk_nodename)
     q &= (db.checks_settings.chk_svcname==request.vars.chk_svcname)
@@ -82,8 +82,8 @@ def checks_settings_insert():
 def update_thresholds_batch(rows=None):
     # maintenance batch
     if rows is None:
-        q = db.checks_live.id > 0
-        q = db.checks_live.chk_threshold_provider.like("fset%")|db.checks_live.chk_threshold_provider == "defaults"
+        q = db.checks_live.chk_threshold_provider.like("fset%")
+        q |= db.checks_live.chk_threshold_provider == "defaults"
         rows = db(q).select()
     for row in rows:
         update_thresholds(row)
@@ -201,7 +201,12 @@ def comp_query(q, row):
         q |= ~qry
     return q
 
-@auth.requires_login()
+@auth.requires_membership('CheckManager')
+def del_fset_threshold(id):
+    q = db.gen_filterset_check_threshold.id == id
+    db(q).delete()
+
+@auth.requires_membership('CheckManager')
 def set_low_threshold(ids):
     if len(ids) == 0:
         raise ToolError("No check selected")
@@ -240,7 +245,7 @@ def set_low_threshold(ids):
                          chk_changed=now)
         update_thresholds(rows[0])
 
-@auth.requires_login()
+@auth.requires_membership('CheckManager')
 def set_high_threshold(ids):
     if len(ids) == 0:
         raise ToolError("No check selected")
@@ -279,7 +284,7 @@ def set_high_threshold(ids):
                          chk_changed=now)
         update_thresholds(rows[0])
 
-@auth.requires_login()
+@auth.requires_membership('CheckManager')
 def reset_thresholds(ids):
     if len(ids) == 0:
         raise ToolError("No check selected")
@@ -427,13 +432,13 @@ class table_checks(HtmlTable):
         self.extraline = True
         self.span = 'chk_nodename'
 
-        self.form_add_fset_threshold = self.add_fset_threshold_sqlform()
-
         if 'CheckManager' in user_groups():
+            self.form_add_fset_threshold = self.add_fset_threshold_sqlform()
+            self.form_del_fset_threshold = self.del_fset_threshold()
             self.additional_tools.append('set_low_threshold')
             self.additional_tools.append('set_high_threshold')
             self.additional_tools.append('reset_thresholds')
-            self.additional_tools.append('add_fset_threshold')
+            self += HtmlTableMenu('Contuextual threshold', 'filter16', ['add_fset_threshold', 'del_fset_threshold'])
 
     def set_low_threshold(self):
         return self.set_threshold('low')
@@ -444,7 +449,8 @@ class table_checks(HtmlTable):
     def add_fset_threshold(self):
         d = DIV(
               A(
-                T("Add fset threshold"),
+                T("Add"),
+                _class='add16',
                 _onclick="""
                   click_toggle_vis(event,'%(div)s', 'block');
                 """%dict(div='add_fset_threshold_d'),
@@ -456,7 +462,6 @@ class table_checks(HtmlTable):
                 _name='add_fset_threshold_d',
                 _id='add_fset_threshold_d',
               ),
-              _class='floatw',
             )
         return d
 
@@ -476,6 +481,65 @@ class table_checks(HtmlTable):
                  _name='form_add_fset_threshold',
             )
         return f
+
+    @auth.requires_membership('CheckManager')
+    def del_fset_threshold(self):
+        q = db.gen_filterset_check_threshold.id > 0
+        q &= db.gen_filterset_check_threshold.fset_id == db.gen_filtersets.id
+        rows = db(q).select()
+
+        if len(rows) == 0:
+            d = DIV("No contuextual thresholds")
+
+        options = map(lambda x: OPTION("%d: %s - %s:%s %d<>%d "%(
+                    x.gen_filterset_check_threshold.id,
+                    x.gen_filtersets.fset_name,
+                    x.gen_filterset_check_threshold.chk_type,
+                    x.gen_filterset_check_threshold.chk_instance,
+                    x.gen_filterset_check_threshold.chk_low,
+                    x.gen_filterset_check_threshold.chk_high),
+                    _value=x.gen_filterset_check_threshold.id), rows)
+
+        label = 'Delete'
+        action = 'del_fset_threshold'
+        divid = 'del_fset_threshold'
+        sid = 'del_fset_threshold_s'
+        d = DIV(
+              A(
+                T(label),
+                _class='del16',
+                _onclick="""
+                  click_toggle_vis(event,'%(div)s', 'block');
+                """%dict(div=divid),
+              ),
+              DIV(
+                TABLE(
+                  TR(
+                    TH(T('Thresholds')),
+                    TD(
+                      SELECT(
+                        *options,
+                        **dict(_id=sid)
+                      ),
+                    ),
+                  ),
+                  TR(
+                    TH(),
+                    TD(
+                      INPUT(
+                        _type='submit',
+                        _onclick=self.ajax_submit(additional_inputs=[sid],
+                                                  args=action),
+                      ),
+                    ),
+                  ),
+                ),
+                _style='display:none',
+                _class='white_float',
+                _name=divid,
+              ),
+            )
+        return d
 
     def set_threshold(self, t):
         d = DIV(
@@ -552,16 +616,41 @@ def ajax_checks():
                 set_high_threshold(t.get_checked())
             elif action == 'reset_thresholds':
                 reset_thresholds(t.get_checked())
+            elif action == 'del_fset_threshold':
+                del_fset_threshold(request.vars.del_fset_threshold_s)
+                update_thresholds_batch()
         except ToolError, e:
             t.flash = str(e)
 
     try:
-        if t.form_add_fset_threshold.accepts(request.vars):
-            db.gen_filterset_check_threshold.insert(fset_id=request.vars.fset_id,
-                                                    chk_type=request.vars.chk_type,
-                                                    chk_instance=request.vars.chk_instance,
-                                                    chk_low=request.vars.chk_low,
-                                                    chk_high=request.vars.chk_high)
+        r = False
+        try:
+            r = t.form_add_fset_threshold.accepts(request.vars)
+        except:
+            if request.vars.fset_id is not None and \
+               request.vars.chk_type is not None and \
+               request.vars.chk_instance is not None and \
+               request.vars.chk_low is not None and \
+               request.vars.chk_high is not None:
+                sql = """insert into gen_filterset_check_threshold
+                         set
+                           fset_id=%(fset_id)s,
+                           chk_type="%(chk_type)s",
+                           chk_instance="%(chk_instance)s",
+                           chk_low=%(chk_low)s,
+                           chk_high=%(chk_high)s
+                         on duplicate key update
+                           chk_low=%(chk_low)s,
+                           chk_high=%(chk_high)s
+                """%dict(fset_id=request.vars.fset_id,
+                         chk_type=request.vars.chk_type,
+                         chk_instance=request.vars.chk_instance,
+                         chk_low=request.vars.chk_low,
+                         chk_high=request.vars.chk_high)
+                db.executesql(sql)
+                r = True
+        if r:
+            update_thresholds_batch()
             _log('checks.threshold.add',
                  'added threshold %(low)s,%(high)s to check %(chk_type)s.%(chk_instance)s matching fset %(fset_id)s',
                  dict(low=request.vars.chk_low,
@@ -654,7 +743,7 @@ def update_dash_checks(nodename):
                  from checks_live
                  where
                    chk_nodename = "%(nodename)s" and
-                   chk_updated = date_sub(now(), interval 1 day) and
+                   chk_updated >= date_sub(now(), interval 1 day) and
                    (
                      chk_value < chk_low or
                      chk_value > chk_high

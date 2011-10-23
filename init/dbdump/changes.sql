@@ -1466,3 +1466,6 @@ drop view v_flex_status;
 CREATE VIEW `v_flex_status` AS (select `p`.`ID` AS `id`,`p`.`mon_svcname` AS `svc_name`,`p`.`svc_flex_min_nodes` AS `svc_flex_min_nodes`,`p`.`svc_flex_max_nodes` AS `svc_flex_max_nodes`,`p`.`svc_flex_cpu_low_threshold` AS `svc_flex_cpu_low_threshold`,`p`.`svc_flex_cpu_high_threshold` AS `svc_flex_cpu_high_threshold`,count(1) AS `n`,(select count(1) AS `count(1)` from `svcmon` `c` where ((`c`.`mon_svcname` = `p`.`mon_svcname`) and (`c`.`mon_availstatus` = 'up'))) AS `up`,(select (100 - `c`.`idle`) AS `100-c.idle` from (`stats_cpu` `c` join `svcmon` `m`) where ((`c`.`nodename` = `m`.`mon_nodname`) and (`m`.`mon_svcname` = `p`.`mon_svcname`) and (`c`.`date` > (now() + interval -(15) minute)) and (`c`.`cpu` = 'all') and (`m`.`mon_overallstatus` = 'up')) group by `p`.`mon_svcname`) AS `cpu` from `v_svcmon` `p` where (`p`.`svc_cluster_type` in ('flex','autoflex')) group by `p`.`mon_svcname`);
 
 alter table dashboard_log drop column dash_nodename;
+
+# 2011-10-22
+alter table gen_filterset_check_threshold add unique key idx2 (fset_id, chk_type, chk_instance);
