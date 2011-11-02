@@ -4207,9 +4207,14 @@ def ajax_comp_status():
 
     def chart(a, b, c, d):
         total = a + b + c + d
-        pa = "%d%%"%int(a*100/total)
-        pb = "%d%%"%int(b*100/total)
-        pc = "%d%%"%int(c*100/total)
+        if total == 0:
+            pa = 0
+            pb = 0
+            pc = 0
+        else:
+            pa = "%d%%"%int(a*100/total)
+            pb = "%d%%"%int(b*100/total)
+            pc = "%d%%"%int(c*100/total)
 
         d = DIV(
               DIV(
