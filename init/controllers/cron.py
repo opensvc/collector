@@ -265,13 +265,57 @@ def alerts_svcmon_not_updated():
                where mon_updated<date_sub(now(), interval %(age)d hour);"""%dict(age=age)
     return db.executesql(sql)
 
+def update_dash_action_errors(svc_name, nodename):
+    svc_name = svc_name.strip("'")
+    nodename = nodename.strip("'")
+    sql = """select e.err, s.svc_type from b_action_errors e
+             join services s on e.svcname=s.svc_name
+             where
+               svcname="%(svcname)s" and
+               nodename="%(nodename)s"
+          """%dict(svcname=svc_name, nodename=nodename)
+    rows = db.executesql(sql)
+
+    if len(rows) == 1:
+        if rows[0][1] == 'PRD':
+            sev = 4
+        else:
+            sev = 3
+        sql = """insert into dashboard
+                 set
+                   dash_type="action errors",
+                   dash_svcname="%(svcname)s",
+                   dash_nodename="%(nodename)s",
+                   dash_severity=%(sev)d,
+                   dash_fmt="%%(err)s action errors",
+                   dash_dict='{"err": "%(err)d"}',
+                   dash_created=now()
+                 on duplicate key update
+                   dash_severity=%(sev)d,
+                   dash_fmt="%%(err)s action errors",
+                   dash_dict='{"err": "%(err)d"}',
+                   dash_created=now()
+              """%dict(svcname=svc_name,
+                       nodename=nodename,
+                       sev=sev,
+                       err=rows[0][0])
+    else:
+        sql = """delete from dashboard
+                 where
+                   dash_type="action errors" and
+                   dash_svcname="%(svcname)s" and
+                   dash_nodename="%(nodename)s"
+              """%dict(svcname=svc_name,
+                       nodename=nodename)
+    db.executesql(sql)
+
 def alerts_failed_actions_not_acked():
     """ Actions not ackowleged : Alert responsibles & Acknowledge
         This function is meant to be scheduled daily, at night,
         and alerts generated should be sent as soon as possible.
     """
     age = 1
-    sql = """select id from SVCactions where
+    sql = """select id, svcname, hostname from SVCactions where
                  status="err" and
                  (ack=0 or ack is NULL) and
                  begin>date_sub(now(), interval 7 day) and
@@ -314,6 +358,13 @@ def alerts_failed_actions_not_acked():
              where id in (%(ids)s);"""%dict(ids=','.join(ids), date=now)
     db.executesql(sql)
     refresh_b_action_errors()
+
+    """ Update dashboard
+    """
+    for row in rows:
+        update_dash_action_errors(row[1], row[2])
+
+    return ids
 
 def cron_alerts_daily():
     alerts_apps_without_responsible()
