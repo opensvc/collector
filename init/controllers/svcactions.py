@@ -25,12 +25,12 @@ def update_dash_action_errors(svc_name, nodename):
                    dash_svcname="%(svcname)s",
                    dash_nodename="%(nodename)s",
                    dash_severity=%(sev)d,
-                   dash_fmt="%(err)s action errors",
+                   dash_fmt="%%(err)s action errors",
                    dash_dict='{"err": "%(err)d"}',
                    dash_created="%(now)s"
                  on duplicate key update
                    dash_severity=%(sev)d,
-                   dash_fmt="%(err)s action errors",
+                   dash_fmt="%%(err)s action errors",
                    dash_dict='{"err": "%(err)d"}',
                    dash_created="%(now)s"
               """%dict(svcname=svc_name,
