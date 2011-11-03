@@ -184,7 +184,7 @@ def ajax_dns_domains_col_values():
     col = request.args[0]
     o = db.pdns_domains[col]
     q = db.pdns_domains.id > 0
-    for f in set(t.cols)-set(t.special_filtered_cols):
+    for f in set(t.cols):
         q = _where(q, 'pdns_domains', t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o, groupby=o)
     return t.col_values_cloud(col)
@@ -461,7 +461,7 @@ def ajax_dns_records_col_values():
     col = request.args[0]
     o = db.pdns_records[col]
     q = db.pdns_records.id > 0
-    for f in set(t.cols)-set(t.special_filtered_cols):
+    for f in set(t.cols):
         q = _where(q, 'pdns_records', t.filter_parse(f), f)
     t.object_list = db(q).select(orderby=o, groupby=o)
     return t.col_values_cloud(col)
