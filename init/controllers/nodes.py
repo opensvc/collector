@@ -426,6 +426,9 @@ def node_del(ids):
     for nodename in [r.nodename for r in rows]:
         delete_dash_node(nodename)
         delete_svcmon(nodename)
+        delete_pkg(nodename)
+        delete_patches(nodename)
+        delete_checks(nodename)
 
     db(q).delete()
     _log('nodes.delete',
@@ -479,6 +482,18 @@ def nodes():
           _id='nodes',
         )
     return dict(table=t)
+
+def delete_pkg(nodename):
+    q = db.packages.pkg_nodename == nodename
+    db(q).delete()
+
+def delete_patches(nodename):
+    q = db.patches.patch_nodename == nodename
+    db(q).delete()
+
+def delete_checks(nodename):
+    q = db.checks_live.chk_nodename == nodename
+    db(q).delete()
 
 def delete_svcmon(nodename):
     sql = """delete from svcmon

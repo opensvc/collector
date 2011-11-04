@@ -995,6 +995,27 @@ class table_svcmon(HtmlTable):
 
         return d
 
+def dash_purge_svc(svcname):
+    q = db.dashboard.dash_svcname == svcname
+    db(q).delete()
+
+def check_purge_svc(svcname):
+    q = db.checks_live.chk_svcname == svcname
+    db(q).delete()
+
+def appinfo_purge_svc(svcname):
+    q = db.appinfo.app_svcname == svcname
+    db(q).delete()
+
+def purge_svc(svcname):
+    q = db.svcmon.mon_svcname == svcname
+    if db(q).count() == 0:
+        dash_purge_svc(svcname)
+        check_purge_svc(svcname)
+        appinfo_purge_svc(svcname)
+        q = db.services.svc_name == svcname
+        db(q).delete()
+
 @auth.requires_login()
 def svc_del(ids):
     groups = user_groups()
@@ -1009,15 +1030,15 @@ def svc_del(ids):
         # A user can delete only services he is responsible of
        q &= db.auth_group.role.belongs(groups)
     rows = db(q).select()
-    l = [r.svcmon.id for r in rows]
-    q = db.svcmon.id.belongs(l)
-    db(q).delete()
     for r in rows:
+        q = db.svcmon.id == r.svcmon.id
+        db(q).delete()
         _log('service.delete',
              'deleted service instance %(u)s',
               dict(u='@'.join((r.svcmon.mon_svcname, r.svcmon.mon_nodname))),
              svcname=r.svcmon.mon_svcname,
              nodename=r.svcmon.mon_nodname)
+        purge_svc(r.svcmon.mon_svcname)
 
 @auth.requires_login()
 def service_action():
