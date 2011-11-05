@@ -405,10 +405,8 @@ div.error {
 }
 
 .header {
-    //background: url('header.gif');
     background: #2d2d2d;
     color: white;
-    border-bottom: 1px #000 solid;
 }
 
 .statusbar {
@@ -516,6 +514,13 @@ ul.web2py-menu li:hover,
 ul.web2py-menu li.sfhover
 {
     color: #fff;
+    background-color: #555;
+    border-top-left-radius:6px;
+    border-top-right-radius:6px;
+   -moz-border-radius-topleft:6px;
+   -moz-border-radius-topright:6px;
+   -webkit-border-top-left-radius:6px;
+   -webkit-border-top-right-radius:6px;
 }
 
 ul.web2py-menu li a:hover
@@ -525,10 +530,19 @@ ul.web2py-menu li a:hover
 
 ul.web2py-menu ul
 {
-    border-top: 1px solid white;
     padding: 0.3em;
     padding-left: 0.3em;
-    background: #2d2d2d;
+    margin-left: -0.5em;
+    background-color: #555;
+    border-bottom-left-radius:6px;
+    border-bottom-right-radius:6px;
+    border-top-right-radius:6px;
+   -moz-border-radius-bottomleft:6px;
+   -moz-border-radius-bottomright:6px;
+   -moz-border-radius-topright:6px;
+   -webkit-border-bottom-left-radius:6px;
+   -webkit-border-bottom-right-radius:6px;
+   -webkit-border-top-right-radius:6px;
 }
 
 * html div.web2py-menu-center
