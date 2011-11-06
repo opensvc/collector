@@ -97,6 +97,16 @@ class table_dns_domains(HtmlTable):
                                 '_next': URL(r=request)}
                       ),
               ),
+              A(
+                IMG(
+                  _src=URL(r=request, c='static', f='action_sync_16.png'),
+                  _style='vertical-align:middle',
+                ),
+                _href=URL(r=request, c='dns', f='domain_sync',
+                          vars={'domain_id':s,
+                                '_next': URL(r=request)}
+                      ),
+              ),
             )
         return d
 
@@ -151,6 +161,33 @@ def domain_del(ids):
     _log('dns.domains.delete',
          'deleted domains %(u)s',
          dict(u=u))
+
+@auth.requires_login()
+def domain_sync():
+    q = (db.pdns_domains.id>0)
+    q &= _where(None, 'pdns_domains', request.vars.domain_id, 'id')
+    rows = db(q).select()
+    dname = rows[0].name
+
+    q = db.pdns_records.name == dname
+    q &= db.pdns_records.type == "SOA"
+    rows = db(q).select()
+
+    if len(rows) != 1:
+        response.flash = "no single SOA found for domain %s"%dname
+        redirect(URL(r=request, f='dns'))
+
+    l = rows[0].content.split()
+
+    if len(l) < 3:
+        response.flash = "SOA has less than 3 fields found for domain %s"%dname
+        redirect(URL(r=request, f='dns'))
+
+    new = int(l[2]) + 1
+    l[2] = str(new)
+    db(q).update(content=' '.join(l))
+    response.flash = "SOA incremented to %d for domain %s"%(new, dname)
+    redirect(URL(r=request, f='dns'))
 
 @auth.requires_login()
 def domain_edit():

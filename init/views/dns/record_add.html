@@ -13,3 +13,16 @@
      )
    )
 }}
+
+<script>
+$("#pdns_records_domain_id").change(
+  function(){
+    var reg = new RegExp("[.]+", "g");
+    var l = $("#pdns_records_name").val().split(reg);
+    $("#pdns_records_name").val(
+      l[0]+'.'+$("#pdns_records_domain_id :selected").text()
+    )
+    $("#pdns_records_name").focus()
+  }
+)
+</script>
