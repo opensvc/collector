@@ -60,14 +60,7 @@ def delete_services(hostid=None, auth=("", "")):
 @auth_uuid
 @service.xmlrpc
 def delete_service_list(hostid=None, svcnames=[], auth=("", "")):
-    if hostid is None or len(svcnames) == 0:
-        return 0
-    for svcname in svcnames:
-        q = (db.services.svc_name==svcname)
-        q &= (db.services.svc_hostid==hostid)
-        db(q).delete()
-        db.commit()
-    return 0
+    return
 
 @auth_uuid
 @service.xmlrpc
