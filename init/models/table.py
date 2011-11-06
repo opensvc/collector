@@ -756,6 +756,8 @@ class HtmlTable(object):
         n = len(self.cols)
         if self.checkboxes:
             n += 1
+        if self.extrarow:
+            n += 1
         return TR(
                  TD(
                    _colspan=n,
