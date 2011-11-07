@@ -1396,3 +1396,18 @@ button, input[type=button], input[type=submit] {
     background-color: #2d2d2d;
 }
 
+
+.table0 {
+    display:table;
+}
+
+.table0 > div {
+    display:table-row;
+}
+
+.table0 > div > div {
+    display:table-cell;
+    padding:0 0.5em 0 0;
+    vertical-align: middle;
+    height: 1.5em;
+}

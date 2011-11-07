@@ -271,9 +271,12 @@ def _record_form(record=None):
             $("#pdns_records_content").hide();
             $("#pdns_records_content").parent().append("<div id=pdns_records_content_1>loading...</div>");
             $("#pdns_records_content").parent().append("<div id=pdns_records_content_2></div>");
+            $("#pdns_records_content").parent().append("<div id=pdns_records_content_3></div>");
             function g() {
-                $("#pdns_records_content_2 > select").click(function(){
+                $("#pdns_records_content_2 > select").change(function(){
                     $("#pdns_records_content").val($(this).val());
+                    $("#pdns_records_content_3").text("%(pingmsg)s");
+                    ajax("%(url3)s"+"/"+$(this).val(), [], "pdns_records_content_3");
                 });
             };
             function f() {
@@ -288,7 +291,9 @@ def _record_form(record=None):
                 $("#pdns_records_content_2").remove();
             }
          """%dict(url1=URL(r=request, f="networks"),
-                  url2=URL(r=request, f="ips"))
+                  url2=URL(r=request, f="ips"),
+                  url3=URL(r=request, f="ping"),
+                  pingmsg=T("testing ip ..."))
     return SQLFORM(db.pdns_records,
                  record=record,
                  deletable=deletable,
@@ -536,21 +541,66 @@ def ips():
     from socket import inet_ntoa
     from struct import pack
     network_id = request.args[0]
-    sql = """select inet_aton(network), inet_aton(broadcast) from networks where id=%s"""%network_id
+    sql = """select count(id) from network_segments where net_id=%s"""%network_id
+    n_segs = db.executesql(sql)[0][0]
+
+    sql = """select
+               inet_aton(s.seg_begin),
+               inet_aton(s.seg_end),
+               s.seg_type
+             from
+               network_segments s,
+               network_segment_responsibles sr,
+               auth_group g
+             where
+               s.net_id = %s and
+               s.id = sr.seg_id and
+               sr.group_id = g.id and
+               g.role in (%s)
+             group by s.id
+             order by inet_aton(seg_begin)
+          """%(network_id, ','.join(map(lambda x: "'"+x+"'", user_groups())))
     rows = db.executesql(sql)
-    ipl = map(lambda x: inet_ntoa(pack('>l', x)), range(rows[0][0], rows[0][1]))
+    ipl = []
+
+    if n_segs > 0:
+        if len(rows) == 0:
+            return T("you are owner of no segment of this network")
+        for row in rows:
+            if row[2] == "dynamic":
+                ipl += map(lambda x: [inet_ntoa(pack('>l', x)), T("dynamic")], range(row[0], row[1]))
+            else:
+                ipl += map(lambda x: [inet_ntoa(pack('>l', x)), T("")], range(row[0], row[1]))
+    else:
+        sql = """select inet_aton(network), inet_aton(broadcast) from networks where id=%s"""%network_id
+        rows = db.executesql(sql)
+        if len(rows) == 0:
+            return T("you are not owner of this network")
+        ipl = map(lambda x: [inet_ntoa(pack('>l', x)), ""], range(rows[0][0], rows[0][1]))
     if len(ipl) == 0:
         return SPAN()
-    sql = """select content from pdns_records where content in (%s)"""%','.join(map(repr, ipl))
+    sql = """select content from pdns_records where content in (%s)"""%','.join(map(lambda x: repr(x[0]), ipl))
     rows = db.executesql(sql)
     alloc_ips = map(lambda r: r[0], rows)
-    for i, ip in enumerate(ipl):
+    for i, (ip, ip_type) in enumerate(ipl):
         if ip in alloc_ips:
-           ipl[i] += " *"
-    l = map(lambda r: OPTION(r), ipl)
-    return SELECT(l)
+           ipl[i][1] = T("allocated")
+    l = map(lambda r: OPTION("%16s %s"%(r[0], r[1]), _value=r[0]), ipl)
+    return SELECT(l, _id="pdns_records_content_select")
 
-
+@auth.requires_login()
+def ping():
+    ip = request.args[0]
+    from subprocess import *
+    cmd = ['fping', ip]
+    p = Popen(cmd)
+    out, err = p.communicate()
+    if p.returncode == 0:
+        return DIV(
+                 T("ip is alive"),
+                 _style="font-weight:bold;color:darkred",
+               )
+    return SPAN(T("ip is not alive"))
 
 #
 # Common

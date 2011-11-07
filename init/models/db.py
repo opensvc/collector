@@ -1203,13 +1203,13 @@ db.define_table('pdns_records',
     Field('name','string',
           requires=IS_NOT_EMPTY()),
     Field('type','string',
-          requires=IS_IN_SET(['A', 'CNAME', 'NS', 'SOA', 'TXT', 'PTR']),
+          requires=IS_IN_SET(['A', 'AAAA', 'A6', 'AFSDB', 'CNAME', 'DNAME', 'DNSKEY', 'DS', 'HINFO', 'ISDN', 'KEY', 'LOC', 'MX', 'NAPTR', 'NS', 'NSEC', 'NXT', 'PTR', 'RP', 'RRSIG', 'RT', 'SIG', 'SOA', 'SPF', 'SRV', 'TXT', 'WKS', 'X25']),
           default='A'),
     Field('content','string',
           requires=IS_NOT_EMPTY()),
     Field('ttl','integer', default=120),
     Field('prio','integer'),
-    Field('change_date','integer', default=request.now),
+    Field('change_date','integer'),
     migrate=False)
 
 db.pdns_domains.name.requires = [IS_NOT_EMPTY(),
@@ -1231,6 +1231,26 @@ db.networks.network.requires = [IS_NOT_EMPTY(),
                                 IS_NOT_IN_DB(db, db.networks.network)]
 db.networks.broadcast.requires = [IS_NOT_EMPTY(),
                                  IS_NOT_IN_DB(db, db.networks.broadcast)]
+
+db.define_table('network_segments',
+    Field('seg_type','string', requires=IS_IN_SET(["static", "dynamic"])),
+    Field('seg_begin','string'),
+    Field('seg_end','string'),
+    Field('net_id','integer', default="static", requires=[IS_NOT_EMPTY(), IS_IN_DB(db, db.networks.id)]),
+    migrate=False)
+
+db.define_table('v_network_segments',
+    Field('seg_type','string', requires=IS_IN_SET(["static", "dynamic"])),
+    Field('seg_begin','string'),
+    Field('seg_end','string'),
+    Field('net_id','integer', default="static", requires=[IS_NOT_EMPTY(), IS_IN_DB(db, db.networks.id)]),
+    Field('teams_responsible','string'),
+    migrate=False)
+
+db.define_table('network_segment_responsibles',
+    Field('seg_id','integer'),
+    Field('group_id','integer'),
+    migrate=False)
 
 db.define_table('appinfo',
     Field('app_svcname','string'),
@@ -1261,5 +1281,10 @@ db.define_table('dashboard_log',
     Field('dash_alerts','integer'),
     Field('dash_date','string'),
     Field('dash_filters_md5','string'),
+    migrate=False)
+
+db.define_table('gen_filterset_user',
+    Field('fset_id','integer'),
+    Field('user_id','integer'),
     migrate=False)
 
