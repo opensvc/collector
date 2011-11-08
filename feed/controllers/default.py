@@ -2420,7 +2420,13 @@ def feed_dequeue():
             n2 = 0
             dash_crons2()
 
-        entries = db(db.feed_queue.id>0).select(limitby=(0,20))
+        try:
+            entries = db(db.feed_queue.id>0).select(limitby=(0,20))
+        except:
+            # lost mysql ?
+            time.sleep(10)
+            continue
+
         if len(entries) == 0:
             time.sleep(1)
             continue
