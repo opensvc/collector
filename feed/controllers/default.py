@@ -1817,18 +1817,14 @@ def update_dash_node_not_updated(nodename):
 
 def update_dash_pkgdiff(nodename):
     nodename = nodename.strip("'")
+    q = db.dash_nodename == nodename
+    db(q).delete()
+
     q = db.svcmon.mon_nodname == nodename
     q &= db.svcmon.mon_updated > datetime.datetime.now() - datetime.timedelta(minutes=20)
     for row in db(q).select(db.svcmon.mon_svcname,
                             db.svcmon.mon_svctype):
         svcname = row.mon_svcname
-
-        sql = """delete from dashboard
-                   where
-                     dash_svcname = "%(svcname)s" and
-                     dash_type = "package differences in cluster"
-              """%dict(svcname=svcname)
-        rows = db.executesql(sql)
 
         q = db.svcmon.mon_svcname == svcname
         q &= db.svcmon.mon_updated > datetime.datetime.now() - datetime.timedelta(minutes=20)
