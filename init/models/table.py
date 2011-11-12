@@ -838,9 +838,10 @@ class HtmlTable(object):
                                 _src=URL(r=request,c='static',f='values_to_filter.png'),
                                 _title=T("Use column values as filter"),
                                 _class='clickable',
-                                _onclick="""values_to_filter("%(iid)s","%(did)s");ajax_submit_%(id)s()"""%dict(
+                                _onclick="""function f() {values_to_filter("%(iid)s","%(did)s");ajax_submit_%(id)s()};sync_ajax('%(url)s', inputs_%(id)s, '%(did)s', f)"""%dict(
                                         id=self.id,
                                         iid=self.filter_key(c),
+                                        url=URL(r=request,f=self.func+'_col_values', args=[c]),
                                         did=self.filter_cloud_key(c)),
                               ),
                               BR(),
