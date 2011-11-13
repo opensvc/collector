@@ -162,7 +162,10 @@ class table_nodes(HtmlTable):
         self.additional_tools.append('pkgdiff')
         self.additional_tools.append('grpperf')
         if member_of(('Manager', 'CompExec')):
-            self += HtmlTableMenu('Compliance action', 'comp16', ['tool_action_module', 'tool_action_moduleset'], id='menu_comp_action')
+            self += HtmlTableMenu('Action', 'action16', ['tool_action_node', 'tool_action_module', 'tool_action_moduleset'], id='menu_comp_action')
+
+    def tool_action_node(self):
+        return self._tool_action("node")
 
     def tool_action_module(self):
         return self._tool_action("module")
@@ -171,14 +174,35 @@ class table_nodes(HtmlTable):
         return self._tool_action("moduleset")
 
     def _tool_action(self, mode):
-        cmd = [
-          'check',
-          'fixable',
-          'fix',
-        ]
+        if mode in ["module", "moduleset"]:
+            cmd = [
+              'check',
+              'fixable',
+              'fix',
+            ]
+            cl = "comp16"
+        else:
+            cmd = [
+              'checks',
+              'pushasset',
+              'pushservices',
+              'pushstats',
+              'pushpkg',
+              'pushpatch',
+              'reboot',
+              'shutdown',
+              'syncservices',
+              'updateservices',
+            ]
+            cl = "node16"
+
         sid = 'action_s_'+mode
         s = []
         for c in cmd:
+            if mode in ["module", "moduleset"]:
+                confirm=T("""Are you sure you want to execute a %(a)s action on all selected nodes. Please confirm action""",dict(a=c))
+            else:
+                confirm=T("""Are you sure you want to execute a compliance %(a)s action on all selected nodes. Please confirm action""",dict(a=c))
             s.append(TR(
                        TD(
                          IMG(
@@ -190,7 +214,7 @@ class table_nodes(HtmlTable):
                            c,
                            _onclick="""if (confirm("%(text)s")){%(s)s};"""%dict(
                              s=self.ajax_submit(additional_inputs=[sid], args=['do_action', c, mode]),
-                             text=T("""Are you sure you want to execute a compliance %(a)s action on all selected nodes. Please confirm action""",dict(a=c)),
+                             text=confirm,
                            ),
                          ),
                        ),
@@ -209,41 +233,47 @@ class table_nodes(HtmlTable):
             options = [OPTION(g.modset_name,_value=g.modset_name) for g in rows]
             id_col = 'comp_moduleset.id'
 
-        fancy_mode = mode[0].upper()+mode[1:].lower()
+        if mode in ["module", "modeleset"]:
+            fancy_mode = mode[0].upper()+mode[1:].lower()
+            actions = TABLE(
+                          TR(
+                            TH(
+                              T("Action"),
+                            ),
+                            TD(
+                              TABLE(*s),
+                            ),
+                          ),
+                        )
+            selector = TABLE(
+                          TR(
+                            TH(
+                              T(fancy_mode),
+                            ),
+                            TD(
+                              SELECT(
+                                *options,
+                                **dict(_id=sid,
+                                       _requires=IS_IN_DB(db, id_col))
+                              ),
+                            ),
+                          ),
+                        )
+        else:
+            actions = TABLE(*s)
+            selector = SPAN()
 
         d = DIV(
               A(
                 T("Run "+mode),
-                _class='action16',
+                _class=cl,
                 _onclick="""
                   click_toggle_vis(event,'%(div)s', 'block');
                 """%dict(div='tool_action_'+mode),
               ),
               DIV(
-                TABLE(
-                  TR(
-                    TH(
-                      T("Action"),
-                    ),
-                    TD(
-                      TABLE(*s),
-                    ),
-                  ),
-                ),
-                TABLE(
-                  TR(
-                    TH(
-                      T(fancy_mode),
-                    ),
-                    TD(
-                      SELECT(
-                        *options,
-                        **dict(_id=sid,
-                               _requires=IS_IN_DB(db, id_col))
-                      ),
-                    ),
-                  ),
-                ),
+                actions,
+                selector,
                 _style='display:none',
                 _class='white_float',
                 _name='tool_action_'+mode,
@@ -371,35 +401,47 @@ class table_nodes(HtmlTable):
 
 @auth.requires_membership('CompExec')
 def do_action(ids, action=None, mode=None):
-    if mode not in ("module", "moduleset"):
+    if mode not in ("module", "moduleset", "node"):
         raise ToolError("unsupported mode")
     if action is None or len(action) == 0:
         raise ToolError("no action specified")
     if len(ids) == 0:
         raise ToolError("no target to execute %s on"%action)
-    if not hasattr(request.vars, 'action_s_'+mode):
-        raise ToolError("no module or moduleset selected")
-    mod = request.vars['action_s_'+mode]
+
+    if mode in ("module", "moduleset"):
+        if not hasattr(request.vars, 'action_s_'+mode):
+            raise ToolError("no module or moduleset selected")
+        mod = request.vars['action_s_'+mode]
+
+        def fmt_action(node, action, mode):
+            cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
+                          '-o', 'ForwardX11=no',
+                          '-o', 'PasswordAuthentication=no',
+                   'opensvc@'+node,
+                   '--',
+                   'sudo', '/opt/opensvc/bin/nodemgr', 'compliance', action,
+                   '--force',
+                   '--'+mode, mod]
+            return ' '.join(cmd)
+    elif mode == "node":
+        def fmt_action(node, action, mode):
+            cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
+                          '-o', 'ForwardX11=no',
+                          '-o', 'PasswordAuthentication=no',
+                   'opensvc@'+node,
+                   '--',
+                   'sudo', '/opt/opensvc/bin/nodemgr', action,
+                   '--force']
+            return ' '.join(cmd)
 
     q = db.nodes.nodename.belongs(ids)
     q &= db.nodes.team_responsible.belongs(user_groups())
     rows = db(q).select(db.nodes.nodename)
 
-    def fmt_action(node, action, mode, mod):
-        cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
-                      '-o', 'ForwardX11=no',
-                      '-o', 'PasswordAuthentication=no',
-               'opensvc@'+node,
-               '--',
-               'sudo', '/opt/opensvc/bin/nodemgr', 'compliance', action,
-               '--force',
-               '--'+mode, mod]
-        return ' '.join(cmd)
-
     vals = []
     vars = ['command']
     for row in rows:
-        vals.append([fmt_action(row.nodename, action, mode, mod)])
+        vals.append([fmt_action(row.nodename, action, mode)])
 
     purge_action_queue()
     generic_insert('action_queue', vars, vals)
@@ -407,11 +449,17 @@ def do_action(ids, action=None, mode=None):
     actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
     process = Popen(actiond)
     process.communicate()
-    _log('service.action', 'run %(a)s of %(mode)s %(m)s on nodes %(s)s', dict(
-          a=action,
-          mode=mode,
-          s=','.join(map(lambda x: x.nodename, rows)),
-          m=mod))
+    if mode in ("module", "moduleset"):
+        _log('node.action', 'run %(a)s of %(mode)s %(m)s on nodes %(s)s', dict(
+              a=action,
+              mode=mode,
+              s=','.join(map(lambda x: x.nodename, rows)),
+              m=mod))
+    elif mode == "node":
+        _log('node.action', 'run %(a)s on nodes %(s)s', dict(
+              a=action,
+              s=','.join(map(lambda x: x.nodename, rows)),
+              ))
 
 @auth.requires_membership('NodeManager')
 def node_del(ids):

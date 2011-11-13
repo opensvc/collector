@@ -1191,6 +1191,14 @@ $("#%(id)s").everyTime(1000, function(i){
 # common column formatting
 #
 action_img_h = {
+    'checks': 'check16.png',
+    'pushservices': 'svc.png',
+    'pushpkg': 'pkg16.png',
+    'pushpatch': 'pkg16.png',
+    'reboot': 'action_restart_16.png',
+    'shutdown': 'action_stop_16.png',
+    'syncservices': 'action_sync_16.png',
+    'updateservices': 'action16.png',
     'stop': 'action_stop_16.png',
     'stopapp': 'action_stop_16.png',
     'stopdisk': 'action_stop_16.png',
