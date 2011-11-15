@@ -198,13 +198,17 @@ def gen_filterset_query(q, row, tables=[]):
                         # available through t
                         f_table = t
                     else:
-                        q &= j
+                        if q is None:
+                            q = j
+                        else:
+                            q &= j
                         tables.add(v.f_table)
                     joined = True
                     break
-                except:
+                except KeyError:
                     continue
             if not joined:
+                raise Exception(v.f_table, t, q)
                 # can not apply filter
                 return q
         if v.f_op == '=':
@@ -229,6 +233,8 @@ def gen_filterset_query(q, row, tables=[]):
             qry = db[f_table][v.f_field] < v.f_value
         else:
             return q
+    if qry is None:
+       return q
     if q is None:
         q = qry
     elif v.f_log_op == 'AND':

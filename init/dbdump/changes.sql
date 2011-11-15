@@ -1684,11 +1684,11 @@ alter table packages ADD CONSTRAINT packages_fk1 FOREIGN KEY (pkg_nodename) REFE
 
 delete from gen_filtersets_filters where fset_id not in (select id from gen_filtersets);
 
-alter table gen_filtersets_filters ADD CONSTRAINT gen_filtersets_filters_fk1 FOREIGN KEY (fset_id) REFERENCES gen_filtersets(id) ON DELETE CASCADE;
+#alter table gen_filtersets_filters ADD CONSTRAINT gen_filtersets_filters_fk1 FOREIGN KEY (fset_id) REFERENCES gen_filtersets(id) ON DELETE CASCADE;
 
 delete from gen_filtersets_filters where f_id not in (select id from gen_filters);
 
-alter table gen_filtersets_filters ADD CONSTRAINT gen_filtersets_filters_fk2 FOREIGN KEY (f_id) REFERENCES gen_filters(id) ON DELETE CASCADE;
+#alter table gen_filtersets_filters ADD CONSTRAINT gen_filtersets_filters_fk2 FOREIGN KEY (f_id) REFERENCES gen_filters(id) ON DELETE CASCADE;
 
 alter table gen_filterset_user ADD CONSTRAINT gen_filterset_user_fk1 FOREIGN KEY (fset_id) REFERENCES gen_filtersets(id) ON DELETE CASCADE;
 

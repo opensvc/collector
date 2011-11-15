@@ -148,10 +148,6 @@ def ajax_dash_agg():
     mt.colprops['dash_icons'].t = t
 
     q = db.dashboard.id > 0
-    j = db.dashboard.dash_nodename == db.nodes.nodename
-    l1 = db.nodes.on(j)
-    j = db.dashboard.dash_svcname == db.services.svc_name
-    l2 = db.services.on(j)
     for f in set(t.cols)-set(t.special_filtered_cols):
         q = _where(q, 'dashboard', t.filter_parse(f), f)
     q &= _where(None, 'dashboard', domain_perms(), 'dash_svcname')|_where(None, 'dashboard', domain_perms(), 'dash_nodename')
@@ -543,6 +539,7 @@ def ajax_dashboard_col_values():
 def ajax_dashboard():
     t = table_dashboard('dashboard', 'ajax_dashboard')
     o = ~db.dashboard.dash_severity|db.dashboard.dash_type
+    g = db.dashboard.id
     q = db.dashboard.id > 0
     for f in set(t.cols)-set(t.special_filtered_cols):
         q = _where(q, 'dashboard', t.filter_parse(f), f)
@@ -551,7 +548,7 @@ def ajax_dashboard():
 
     n = db(q).count()
     t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o, groupby=g)
 
     mt = table_dash_agg('dash_agg', 'ajax_dash_agg')
 
