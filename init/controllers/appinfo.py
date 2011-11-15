@@ -64,6 +64,8 @@ def ajax_appinfo_col_values():
     col = request.args[0]
     o = db.appinfo[col]
     q = db.appinfo.id > 0
+    q = apply_gen_filters(q, t.tables())
+
     for f in t.cols:
         q = _where(q, 'appinfo', t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o, groupby=o)
@@ -75,6 +77,8 @@ def ajax_appinfo():
 
     o = db.appinfo.app_svcname | db.appinfo.app_launcher | db.appinfo.app_key
     q = db.appinfo.id > 0
+    q = apply_gen_filters(q, t.tables())
+
     for f in set(t.cols):
         q = _where(q, 'appinfo', t.filter_parse(f), f)
     n = db(q).count()

@@ -144,7 +144,7 @@ class table_nodes(HtmlTable):
                     ),
         })
         for c in self.cols:
-            self.colprops[c].table = None
+            self.colprops[c].table = 'v_nodes'
         for c in ['loc_building', 'loc_floor', 'loc_rack',
                   'cpu_dies', 'cpu_cores', 'cpu_model', 'mem_bytes',
                   'serial', 'team_responsible', 'environnement', 'status']:
@@ -490,7 +490,7 @@ def ajax_nodes_col_values():
     o = db['v_nodes'][col]
     q = db.v_nodes.id > 0
     q = _where(q, 'v_nodes', domain_perms(), 'nodename')
-    q = apply_db_filters(q, 'v_nodes')
+    q = apply_gen_filters(q, t.tables())
     for f in t.cols:
         q = _where(q, 'v_nodes', t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o, groupby=o)
@@ -515,7 +515,7 @@ def ajax_nodes():
     o = db.v_nodes.nodename
     q = db.v_nodes.id>0
     q = _where(q, 'v_nodes', domain_perms(), 'nodename')
-    q = apply_db_filters(q, 'v_nodes')
+    q = apply_gen_filters(q, t.tables())
     for f in t.cols:
         q = _where(q, 'v_nodes', t.filter_parse(f), f)
     n = db(q).count()

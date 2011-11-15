@@ -109,76 +109,128 @@ def domainname(fqdn):
     l[0] = ""
     return '.'.join(l)
 
-def apply_db_filters(query, table=None):
-    q = db.auth_filters.fil_uid==session.auth.user.id
-    q &= db.auth_filters.fil_active==1
-    q &= db.filters.fil_table==table
-    filters = db(q).select(db.auth_filters.fil_value,
-                           db.filters.fil_name,
-                           db.filters.fil_table,
-                           db.filters.fil_column,
-                           left=db.filters.on(db.filters.id==db.auth_filters.fil_id))
-    for f in filters:
-        if 'ref' not in f.filters.fil_column:
-            if table not in db or f.filters.fil_column not in db[table]:
-                continue
-            query &= _where(None, table, f.auth_filters.fil_value, f.filters.fil_column)
-        elif f.filters.fil_column == 'ref1':
-            """ only primary nodes
-            """
-            query &= db.v_svcmon.mon_nodname==db.v_svcmon.svc_autostart
-        elif f.filters.fil_column == 'ref2':
-            """ only nodes with services
-            """
-            query &= db.v_nodes.nodename.belongs(db()._select(db.svcmon.mon_nodname))
-        elif f.filters.fil_column == 'ref3':
-            """ only not acknowledged actions
-            """
-            q1 = db.v_svcactions.ack!=1
-            q2 = db.v_svcactions.ack==None
-            q3 = db.v_svcactions.status=='err'
-            query = (q1 | q2) & q3
-    return query
+def apply_gen_filters(q, tables=[]):
+    v = db.v_gen_filtersets
+    o = v.f_order
+    qry = db.gen_filterset_user.fset_id == v.fset_id
+    qry &= db.gen_filterset_user.user_id == auth.user_id
+    rows = db(qry).select()
+    for row in rows:
+        q = gen_filterset_query(q, row, tables)
+    return q
 
-def avail_db_filters(table=None):
-    o = db.filters.fil_pos|db.filters.fil_img|db.filters.fil_name
-    active_fid = db(db.auth_filters.fil_uid==session.auth.user.id)._select(db.auth_filters.fil_id)
-    q = ~db.filters.id.belongs(active_fid)
-    filters = db(q).select(db.filters.id,
-                           db.filters.fil_name,
-                           db.filters.fil_img,
-                           db.filters.fil_table,
-                           db.filters.fil_column,
-                           db.filters.fil_need_value,
-                           db.filters.fil_pos,
-                           db.filters.fil_search_table,
-                           orderby=o,
-                           groupby=db.filters.fil_name|db.filters.fil_search_table,
-                          )
-    return filters
-
-def active_db_filters(table=None):
-    o = db.filters.fil_pos|db.filters.fil_img|db.filters.fil_name
-    q = db.auth_filters.fil_uid==session.auth.user.id
-    filters = db(q).select(db.auth_filters.fil_value,
-                           db.auth_filters.id,
-                           db.auth_filters.fil_active,
-                           db.filters.fil_name,
-                           db.filters.fil_img,
-                           db.filters.fil_table,
-                           db.filters.fil_column,
-                           left=db.filters.on(db.filters.id==db.auth_filters.fil_id),
-                           groupby=db.filters.fil_name,
-                           orderby=o
-                          )
-    return filters
-
-def active_db_filters_count():
-    g = db.filters.fil_name
-    q = db.auth_filters.fil_uid==session.auth.user.id
-    rows = db(q).select(g,
-                        left=db.filters.on(db.filters.id==db.auth_filters.fil_id),
-                        orderby=g,
-                        groupby=g)
-    return len(rows)
+joins = {
+  'svcmon':{
+    'svcmon': None,
+    'dashboard': (db.svcmon.mon_svcname == db.dashboard.dash_svcname) & \
+                 (db.svcmon.mon_nodname == db.dashboard.dash_nodename),
+    'v_svcmon': None,
+    'checks_live': (db.svcmon.mon_svcname == db.checks_live.chk_svcname) & \
+                   (db.svcmon.mon_nodname == db.checks_live.chk_nodename),
+    'comp_log': (db.svcmon.mon_svcname == db.comp_log.run_svcname) & \
+                (db.svcmon.mon_nodname == db.comp_log.run_nodename),
+    'comp_status': (db.svcmon.mon_svcname == db.comp_status.run_svcname) & \
+                   (db.svcmon.mon_nodname == db.comp_status.run_nodename),
+    'svcmon_log': (db.svcmon.mon_svcname == db.svcmon_log.mon_svcname) & \
+                  (db.svcmon.mon_nodname == db.svcmon_log.mon_nodname),
+    'services_log': db.svcmon.mon_svcname == db.services_log.svc_name,
+    'svcmon_log': (db.svcmon.mon_svcname == db.svcmon_log.mon_svcname) & \
+                  (db.svcmon.mon_nodname == db.svcmon_log.mon_nodname),
+  },
+  'services':{
+    'services': None,
+    'dashboard': db.services.svc_name == db.dashboard.dash_svcname,
+    'v_svcmon': None,
+    'checks_live': db.services.svc_name == db.checks_live.chk_svcname,
+    'appinfo': db.services.svc_name == db.appinfo.app_svcname,
+    'comp_log': db.services.svc_name == db.comp_log.run_svcname,
+    'comp_status': db.services.svc_name == db.comp_status.run_svcname,
+    'svcmon_log': db.services.svc_name == db.svcmon_log.mon_svcname,
+    'services_log': db.services.svc_name == db.services_log.svc_name,
+    'v_apps': db.services.svc_app == db.apps.app,
+  },
+  'nodes':{
+    'nodes': None,
+    'dashboard': db.nodes.nodename == db.dashboard.dash_nodename,
+    'v_svcmon': None,
+    'v_nodes': None,
+    'v_svcactions': None,
+    'checks_live': db.nodes.nodename == db.checks_live.chk_nodename,
+    'packages': db.nodes.nodename == db.packages.pkg_nodename,
+    'patches': db.nodes.nodename == db.patches.patch_nodename,
+    'comp_rulesets_nodes': db.nodes.nodename == db.comp_rulesets_nodes.nodename,
+    'v_comp_nodes': None,
+    'comp_log': db.nodes.nodename == db.comp_log.run_nodename,
+    'comp_status': db.nodes.nodename == db.comp_status.run_nodename,
+    'svcmon_log': db.nodes.nodename == db.svcmon_log.mon_nodname,
+    'services_log': (db.svcmon.mon_svcname == db.services_log.svc_name) & (db.svcmon.mon_nodname == db.nodes.nodename),
+    'v_apps': (db.nodes.team_responsible == db.auth_group.role) & \
+              (db.auth_group.id == db.apps_responsibles.group_id) & \
+              (db.apps_responsibles.app_id) & (db.apps.id),
+  },
+}
+def gen_filterset_query(q, row, tables=[]):
+    if 'v_gen_filtersets' in row:
+        v = row.v_gen_filtersets
+    else:
+        v = row
+    if v.encap_fset_id > 0:
+        o = db.v_gen_filtersets.f_order
+        qr = db.v_gen_filtersets.fset_id == v.encap_fset_id
+        rows = db(qr).select(orderby=o)
+        qry = None
+        for r in rows:
+            qry = gen_filterset_query(qry, r)
+    else:
+        if v.f_table not in tables:
+            joined = False
+            for t in tables:
+                try:
+                    j = joins[v.f_table][t]
+                    if j is None:
+                        f_table = t
+                    else:
+                        f_table = v.f_table
+                        q &= j
+                        tables.add(v.f_table)
+                    joined = True
+                    break
+                except:
+                    continue
+            if not joined:
+                # can not apply filter
+                return q
+        if v.f_op == '=':
+            qry = db[f_table][v.f_field] == v.f_value
+        elif v.f_op == '!=':
+            qry = db[f_table][v.f_field] != v.f_value
+        elif v.f_op == 'LIKE':
+            qry = db[f_table][v.f_field].like(v.f_value)
+        elif v.f_op == 'NOT LIKE':
+            qry = ~db[f_table][v.f_field].like(v.f_value)
+        elif v.f_op == 'IN':
+            qry = db[f_table][v.f_field].belongs(v.f_value.split(','))
+        elif v.f_op == 'NOT IN':
+            qry = ~db[f_table][v.f_field].belongs(v.f_value.split(','))
+        elif v.f_op == '>=':
+            qry = db[f_table][v.f_field] >= v.f_value
+        elif v.f_op == '>':
+            qry = db[f_table][v.f_field] > v.f_value
+        elif v.f_op == '<=':
+            qry = db[f_table][v.f_field] <= v.f_value
+        elif v.f_op == '<':
+            qry = db[f_table][v.f_field] < v.f_value
+        else:
+            return q
+    if q is None:
+        q = qry
+    elif v.f_log_op == 'AND':
+        q &= qry
+    elif v.f_log_op == 'AND NOT':
+        q &= ~qry
+    elif v.f_log_op == 'OR':
+        q |= qry
+    elif v.f_log_op == 'OR NOT':
+        q |= ~qry
+    return q
 

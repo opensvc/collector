@@ -968,7 +968,7 @@ def ajax_svcmon_log_col_values():
     q = _where(q, 'svcmon_log', domain_perms(), 'mon_svcname')
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_db_filters(q, 'v_svcmon')
+    q = apply_gen_filters(q, t.tables())
     t.object_list = db(q).select(o, orderby=o, groupby=g)
     return t.col_values_cloud(col)
 
@@ -1008,7 +1008,7 @@ def ajax_svcmon_log():
     q = _where(q, 'services_log', t.filter_parse('svc_begin'), 'svc_end')
     q = _where(q, 'services_log', t.filter_parse('svc_end'), 'svc_begin')
 
-    q = apply_db_filters(q, 'v_services')
+    q = apply_gen_filters(q, t.tables())
 
     t.setup_pager(-1)
     t.object_list = db(q).select(orderby=o, limitby=(t.pager_start,t.pager_end))

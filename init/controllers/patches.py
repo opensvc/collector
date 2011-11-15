@@ -88,7 +88,8 @@ def ajax_patches_col_values():
     o = db[t.colprops[col].table][col]
     q = db.patches.patch_nodename==db.v_nodes.nodename
     q = _where(q, 'patches', domain_perms(), 'patch_nodename')
-    q = apply_db_filters(q, 'v_nodes')
+    q = apply_gen_filters(q, t.tables())
+
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o, groupby=o)
@@ -104,7 +105,8 @@ def ajax_patches():
     q = db.patches.id>0
     q &= db.patches.patch_nodename==db.v_nodes.nodename
     q = _where(q, 'patches', domain_perms(), 'patch_nodename')
-    q = apply_db_filters(q, 'v_nodes')
+    q = apply_gen_filters(q, t.tables())
+
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     n = db(q).count()

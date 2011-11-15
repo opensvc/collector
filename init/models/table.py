@@ -122,6 +122,15 @@ class HtmlTable(object):
             self.additional_tools.append(o)
         return self
 
+    def tables(self):
+        t = set([])
+        for c in self.cols:
+            if c in self.colprops and \
+               hasattr(self.colprops[c], 'table') and \
+               self.colprops[c].table is not None:
+                t.add(self.colprops[c].table)
+        return t
+
     def setup_pager(self, n=0):
         """ pass n=-1 to display a simple pager
             to use when computing the total records number is too costly
@@ -215,38 +224,51 @@ class HtmlTable(object):
         else:
             return "display:none"
 
+    def format_av_filter(self, f):
+        if f is None:
+            name = T("None")
+            fset_id = 0
+        else:
+            name = f.fset_name
+            fset_id = f.id
+        div = "foo"
+        return OPTION(
+                 name,
+                 _value=fset_id,
+                 _onClick="""
+                       ajax('%(url)s', [], '%(div)s');
+                   """%dict(url=URL(
+                                   r=request, c='ajax',
+                                   f='ajax_select_filter',
+                                   args=[fset_id]),
+                              div=div,
+                             )+self.ajax_submit(),
+                 )
+
     def persistent_filters(self):
+        q = db.gen_filterset_user.user_id == auth.user_id
+        q &= db.gen_filterset_user.fset_id == db.gen_filtersets.id
+        rows = db(q).select()
+        active_fset_id = 0
+        for row in rows:
+            active_fset_id = row.gen_filtersets.id
+
+        q = db.gen_filtersets.id > 0
+        rows = db(q).select()
+        av = [self.format_av_filter(None)]
+        for row in rows:
+            av.append(self.format_av_filter(row))
+
         if not self.dbfilterable:
             return SPAN()
 
         id_session_div = '_'.join((self.id, 'session_div'))
-        filters_count = active_db_filters_count()
-        if filters_count > 0:
-            filters_count = ' (%d)'%filters_count
-        else:
-            filters_count = ''
 
         s = SPAN(
-              A(
-                SPAN(
-                  T('Persistent filters'),
-                  _class='filters',
-                ),
-                filters_count,
-                _onclick="""
-                  click_toggle_vis(event, 'session_filters', 'block');
-                  getElementById("%(div)s").innerHTML='%(spinner)s';
-                  ajax('%(url)s', [], '%(div)s');
-                """%dict(div=id_session_div,
-                         spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')),
-                         url=URL(r=request,c='ajax', f='ajax_db_filters', args=[id_session_div]),
-                        ),
-              ),
-              DIV(
-                _style='display:none',
-                _class='white_float',
-                _name='session_filters',
-                _id=id_session_div,
+              T('Filter'),
+              SELECT(
+                av,
+                value=active_fset_id,
               ),
               _class='floatw',
             )

@@ -28,7 +28,7 @@ def format_app(pattern):
     o = db.v_svcmon.svc_app
     q = o.like(pattern)
     q = _where(q, 'v_svcmon', domain_perms(), 'mon_svcname')
-    q = apply_db_filters(q, 'v_svcmon')
+    q = apply_gen_filters(q, ["v_svcmon"])
     rows = db(q).select(o, orderby=o, groupby=o, limitby=(0,max_search_result))
     n = len(db(q).select(o, groupby=o))
 
@@ -76,7 +76,7 @@ def format_svc(pattern):
     o = db.v_svcmon.mon_svcname
     q = o.like(pattern)
     q = _where(q, 'v_svcmon', domain_perms(), 'mon_svcname')
-    q = apply_db_filters(q, 'v_svcmon')
+    q = apply_gen_filters(q, ["v_svcmon"])
     rows = db(q).select(o, orderby=o, groupby=o, limitby=(0,max_search_result))
     n = len(db(q).select(o, groupby=o))
 
@@ -130,7 +130,7 @@ def format_vm(pattern):
     o = db.v_svcmon.svc_vmname
     q = o.like(pattern)
     q = _where(q, 'v_svcmon', domain_perms(), 'mon_svcname')
-    q = apply_db_filters(q, 'v_svcmon')
+    q = apply_gen_filters(q, ["v_svcmon"])
     rows = db(q).select(o, orderby=o, groupby=o, limitby=(0,max_search_result))
     n = len(db(q).select(o, groupby=o))
 
@@ -172,7 +172,7 @@ def format_node(pattern):
     o = db.v_nodes.nodename
     q = o.like(pattern)
     q = _where(q, 'v_nodes', domain_perms(), 'nodename')
-    q = apply_db_filters(q, 'v_nodes')
+    q = apply_gen_filters(q, ["v_nodes"])
     rows = db(q).select(o, orderby=o, groupby=o, limitby=(0,max_search_result))
     n = len(db(q).select(o, groupby=o))
 

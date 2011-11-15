@@ -1482,3 +1482,322 @@ alter table svcmon drop key mon_svcname_2;
 alter table svcmon drop key mon_svcname_3;
 alter table svcmon drop key mon_svcname_4;
 alter table svcmon drop key mon_hostid;
+
+CREATE TABLE network_segments (
+  id              INT auto_increment,
+  net_id          INTEGER DEFAULT NULL,
+  seg_type        ENUM("dynamic", "static") DEFAULT "static",
+  seg_begin       VARCHAR(40) DEFAULT NULL,
+  seg_end         VARCHAR(40) DEFAULT NULL,
+  primary key(id)
+) Engine=InnoDB;
+
+CREATE TABLE network_segment_responsibles (
+  id              INT auto_increment,
+  seg_id          INTEGER DEFAULT NULL,
+  group_id        INTEGER DEFAULT NULL,
+  primary key(id)
+) Engine=InnoDB;
+
+alter table auth_user engine=InnoDB;
+
+alter table comp_moduleset engine=InnoDB;
+
+alter table comp_moduleset_modules engine=InnoDB;
+
+alter table gen_filtersets engine=InnoDB;
+
+alter table gen_filtersets_filters engine=InnoDB;
+
+alter table gen_filters engine=InnoDB;
+
+alter table upc_dashboard engine=InnoDB;
+
+alter table user_prefs_columns engine=InnoDB;
+
+alter table auth_group engine=InnoDB;
+
+alter table resmon engine=InnoDB;
+
+alter table prov_templates engine=InnoDB;
+
+alter table prov_template_team_responsible engine=InnoDB;
+
+alter table nodes engine=InnoDB;
+
+alter table patches engine=InnoDB;
+
+alter table packages engine=InnoDB;
+
+alter table gen_filterset_user engine=InnoDB;
+
+alter table gen_filterset_team_responsible engine=InnoDB;
+
+alter table gen_filterset_check_threshold engine=InnoDB;
+
+alter table drpservices engine=InnoDB;
+
+alter table drpprojects engine=InnoDB;
+
+alter table services engine=InnoDB;
+
+alter table domain_permissions engine=InnoDB;
+
+alter table dashboard engine=InnoDB;
+
+alter table comp_rulesets_variables engine=InnoDB;
+
+alter table comp_rulesets_services engine=InnoDB;
+
+alter table comp_rulesets_nodes engine=InnoDB;
+
+alter table comp_rulesets engine=InnoDB;
+
+alter table comp_rulesets_filtersets engine=InnoDB;
+
+alter table comp_ruleset_team_responsible engine=InnoDB;
+
+alter table comp_node_moduleset engine=InnoDB;
+
+alter table comp_moduleset engine=InnoDB;
+
+alter table comp_modulesets_services engine=InnoDB;
+
+alter table comp_moduleset_team_responsible engine=InnoDB;
+
+alter table column_filters engine=InnoDB;
+
+alter table auth_membership engine=InnoDB;
+
+alter table apps_responsibles engine=InnoDB;
+
+alter table apps engine=InnoDB;
+
+alter table drpservices charset=utf8;
+
+alter table drpprojects charset=utf8;
+
+alter table domain_permissions charset=utf8;
+
+alter table resmon charset utf8;
+
+alter table patches charset=utf8;
+
+alter table packages charset=utf8;
+
+alter table packages modify `pkg_nodename` varchar(60) character set utf8 not null;
+
+alter table packages modify `pkg_name` varchar(100) character set utf8 not null;
+
+alter table packages modify `pkg_version` varchar(64) character set utf8 not null;
+
+alter table packages modify `pkg_arch` varchar(8) character set utf8 not null;
+
+alter table patches modify patch_nodename varchar(60) CHARACTER SET utf8 not null;
+
+alter table patches modify patch_num varchar(100) CHARACTER SET utf8 not null;
+
+alter table patches modify patch_rev varchar(32) CHARACTER SET utf8 not null;
+
+alter table resmon modify svcname varchar(60);
+
+alter table resmon modify nodename varchar(60);
+
+alter table resmon modify rid varchar(10);
+
+alter table resmon modify res_status enum('up','down','warn','n/a','undef','stdby up','stdby down') DEFAULT 'undef';
+
+alter table resmon modify res_desc varchar(200);
+
+alter table resmon modify res_log varchar(200) default "";
+
+alter table svcmon rename svcmon2;
+
+CREATE TABLE `svcmon` (
+  `mon_svcname` varchar(60) NOT NULL,
+  `mon_svctype` varchar(10) DEFAULT NULL,
+  `mon_drptype` varchar(10) DEFAULT NULL,
+  `mon_nodname` varchar(50) DEFAULT NULL,
+  `mon_nodtype` varchar(10) DEFAULT NULL,
+  `mon_nodmode` varchar(10) DEFAULT NULL,
+  `mon_ipstatus` enum('up','down','warn','n/a','undef','stdby up','stdby down') DEFAULT 'undef',
+  `mon_fsstatus` enum('up','down','warn','n/a','undef','stdby up','stdby down') DEFAULT 'undef',
+  `mon_prinodes` varchar(255) DEFAULT NULL,
+  `mon_updated` datetime DEFAULT NULL,
+  `mon_hostid` varchar(30) DEFAULT NULL,
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `mon_frozen` int(11) DEFAULT NULL,
+  `mon_frozentxt` varchar(255) DEFAULT NULL,
+  `mon_changed` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `mon_diskstatus` enum('up','down','warn','n/a','undef','stdby up','stdby down') DEFAULT 'undef',
+  `mon_containerstatus` enum('up','down','warn','n/a','undef','stdby up','stdby down') DEFAULT 'undef',
+  `mon_overallstatus` enum('up','down','warn','n/a','undef','stdby up','stdby down') DEFAULT 'undef',
+  `mon_syncstatus` enum('up','down','warn','n/a','undef','stdby up','stdby down') DEFAULT 'undef',
+  `mon_appstatus` enum('up','down','warn','n/a','undef','stdby up','stdby down') DEFAULT 'undef',
+  `mon_hbstatus` enum('up','down','warn','n/a','undef','stdby up','stdby down') DEFAULT 'undef',
+  `mon_availstatus` enum('up','down','warn','n/a','undef','stdby up','stdby down') DEFAULT 'undef',
+  PRIMARY KEY (`ID`),
+  UNIQUE KEY `mon_svcname_5` (`mon_svcname`,`mon_nodname`),
+  KEY `mon_svcname` (`mon_svcname`),
+  KEY `mon_nodname` (`mon_nodname`)
+) ENGINE=InnoDB AUTO_INCREMENT=206504424 DEFAULT CHARSET=utf8;
+
+alter table svcmon_log charset utf8;
+
+alter table svcmon_log modify `mon_overallstatus` enum('up','down','warn','n/a','undef','stdby up','stdby down') DEFAULT 'undef';
+alter table svcmon_log modify `mon_ipstatus` enum('up','down','warn','n/a','undef','stdby up','stdby down') DEFAULT 'undef';
+alter table svcmon_log modify `mon_fsstatus` enum('up','down','warn','n/a','undef','stdby up','stdby down') DEFAULT 'undef';
+alter table svcmon_log modify `mon_diskstatus` enum('up','down','warn','n/a','undef','stdby up','stdby down') DEFAULT 'undef';
+alter table svcmon_log modify `mon_containerstatus` enum('up','down','warn','n/a','undef','stdby up','stdby down') DEFAULT 'undef';
+alter table svcmon_log modify `mon_syncstatus` enum('up','down','warn','n/a','undef','stdby up','stdby down') DEFAULT 'undef';
+alter table svcmon_log modify `mon_appstatus` enum('up','down','warn','n/a','undef','stdby up','stdby down') DEFAULT 'undef';
+alter table svcmon_log modify `mon_hbstatus` enum('up','down','warn','n/a','undef','stdby up','stdby down') DEFAULT 'undef';
+alter table svcmon_log modify `mon_availstatus` enum('up','down','warn','n/a','undef','stdby up','stdby down') DEFAULT 'undef';
+alter table svcmon_log modify `mon_svcname` varchar(60);
+alter table svcmon_log modify `mon_nodname` varchar(60);
+
+insert into svcmon (select * from svcmon2);
+
+drop table svcmon2;
+
+alter table network_segments ADD CONSTRAINT network_segments_fk1 FOREIGN KEY (net_id) REFERENCES networks(id) ON DELETE CASCADE;
+
+alter table network_segment_responsibles ADD CONSTRAINT network_segment_responsibles_fk1 FOREIGN KEY (seg_id) REFERENCES network_segments(id) ON DELETE CASCADE;
+
+alter table network_segment_responsibles ADD CONSTRAINT network_segment_responsibles_fk2 FOREIGN KEY (group_id) REFERENCES auth_group(id) ON DELETE CASCADE;
+
+alter table user_prefs_columns ADD CONSTRAINT user_prefs_columns_fk1 FOREIGN KEY (upc_user_id) REFERENCES auth_user(id) ON DELETE CASCADE;
+
+alter table upc_dashboard ADD CONSTRAINT upc_dashboard_fk1 FOREIGN KEY (upc_user_id) REFERENCES auth_user(id) ON DELETE CASCADE;
+
+delete from resmon where concat(svcname,nodename) not in (select concat(mon_svcname,mon_nodname) from svcmon);
+
+alter table resmon ADD CONSTRAINT resmon_fk1 FOREIGN KEY (svcname, nodename) REFERENCES svcmon(mon_svcname, mon_nodname) ON DELETE CASCADE;
+
+alter table prov_template_team_responsible ADD CONSTRAINT prov_template_team_responsible_fk1 FOREIGN KEY (tpl_id) REFERENCES prov_templates(id) ON DELETE CASCADE;
+
+alter table patches ADD CONSTRAINT patches_fk1 FOREIGN KEY (patch_nodename) REFERENCES nodes(nodename) ON DELETE CASCADE;
+
+delete from packages where pkg_nodename not in (select nodename from nodes);
+
+alter table packages ADD CONSTRAINT packages_fk1 FOREIGN KEY (pkg_nodename) REFERENCES nodes(nodename) ON DELETE CASCADE;
+
+delete from gen_filtersets_filters where fset_id not in (select id from gen_filtersets);
+
+alter table gen_filtersets_filters ADD CONSTRAINT gen_filtersets_filters_fk1 FOREIGN KEY (fset_id) REFERENCES gen_filtersets(id) ON DELETE CASCADE;
+
+delete from gen_filtersets_filters where f_id not in (select id from gen_filters);
+
+alter table gen_filtersets_filters ADD CONSTRAINT gen_filtersets_filters_fk2 FOREIGN KEY (f_id) REFERENCES gen_filters(id) ON DELETE CASCADE;
+
+alter table gen_filterset_user ADD CONSTRAINT gen_filterset_user_fk1 FOREIGN KEY (fset_id) REFERENCES gen_filtersets(id) ON DELETE CASCADE;
+
+alter table gen_filterset_user ADD CONSTRAINT gen_filterset_user_fk2 FOREIGN KEY (user_id) REFERENCES auth_user(id) ON DELETE CASCADE;
+
+alter table gen_filterset_team_responsible ADD CONSTRAINT gen_filterset_team_responsible_fk1 FOREIGN KEY (fset_id) REFERENCES gen_filtersets(id) ON DELETE CASCADE;
+
+alter table gen_filterset_team_responsible ADD CONSTRAINT gen_filterset_team_responsible_fk2 FOREIGN KEY (group_id) REFERENCES auth_group(id) ON DELETE CASCADE;
+
+alter table gen_filterset_check_threshold ADD CONSTRAINT gen_filterset_check_threshold_fk1 FOREIGN KEY (fset_id) REFERENCES gen_filtersets(id) ON DELETE CASCADE;
+
+alter table drpprojects drop key drp_project_index;
+
+delete from drpservices where drp_project_id not in (select drp_project_id from drpprojects);
+
+alter table drpservices ADD CONSTRAINT drpservices_fk1 FOREIGN KEY (drp_project_id) REFERENCES drpprojects(drp_project_id) ON DELETE CASCADE;
+
+delete from drpservices where drp_svcname not in (select svc_name from services);
+
+alter table drpservices modify drp_wave varchar(10);
+
+alter table drpservices modify drp_svcname varchar(60);
+
+alter table drpservices ADD CONSTRAINT drpservices_fk2 FOREIGN KEY (drp_svcname) REFERENCES services(svc_name) ON DELETE CASCADE;
+
+alter table domain_permissions ADD CONSTRAINT domain_permissions_fk1 FOREIGN KEY (group_id) REFERENCES auth_group(id) ON DELETE CASCADE;
+
+alter table comp_rulesets_variables ADD CONSTRAINT comp_rulesets_variables_fk1 FOREIGN KEY (ruleset_id) REFERENCES comp_rulesets(id) ON DELETE CASCADE;
+
+alter table comp_rulesets_services charset utf8;
+
+alter table comp_rulesets_services modify svcname varchar(100) character set utf8 not null;
+
+alter table comp_rulesets_services ADD CONSTRAINT comp_rulesets_services_fk1 FOREIGN KEY (ruleset_id) REFERENCES comp_rulesets(id) ON DELETE CASCADE;
+
+alter table comp_rulesets_services ADD CONSTRAINT comp_rulesets_services_fk2 FOREIGN KEY (svcname) REFERENCES services(svc_name) ON DELETE CASCADE;
+
+delete from comp_rulesets_nodes where ruleset_id not in (select id from comp_rulesets);
+
+alter table comp_rulesets_nodes ADD CONSTRAINT comp_rulesets_nodes_fk1 FOREIGN KEY (ruleset_id) REFERENCES comp_rulesets(id) ON DELETE CASCADE;
+
+alter table comp_rulesets_nodes ADD CONSTRAINT comp_rulesets_nodes_fk2 FOREIGN KEY (nodename) REFERENCES nodes(nodename) ON DELETE CASCADE;
+
+alter table comp_rulesets_filtersets ADD CONSTRAINT comp_rulesets_filtersets_fk1 FOREIGN KEY (ruleset_id) REFERENCES comp_rulesets(id) ON DELETE CASCADE;
+
+alter table comp_rulesets_filtersets ADD CONSTRAINT comp_rulesets_filtersets_fk2 FOREIGN KEY (fset_id) REFERENCES gen_filtersets(id) ON DELETE CASCADE;
+
+alter table comp_ruleset_team_responsible ADD CONSTRAINT comp_ruleset_team_responsible_fk1 FOREIGN KEY (ruleset_id) REFERENCES comp_rulesets(id) ON DELETE CASCADE;
+
+alter table comp_ruleset_team_responsible ADD CONSTRAINT comp_ruleset_team_responsible_fk2 FOREIGN KEY (group_id) REFERENCES auth_group(id) ON DELETE CASCADE;
+
+delete from comp_node_moduleset where modset_id not in (select id from comp_moduleset);
+
+alter table comp_node_moduleset ADD CONSTRAINT comp_node_moduleset_fk1 FOREIGN KEY (modset_id) REFERENCES comp_moduleset(id) ON DELETE CASCADE;
+
+delete from comp_node_moduleset where modset_node not in (select nodename from nodes);
+
+alter table comp_node_moduleset ADD CONSTRAINT comp_node_moduleset_fk2 FOREIGN KEY (modset_node) REFERENCES nodes(nodename) ON DELETE CASCADE;
+
+alter table comp_modulesets_services charset=utf8;
+
+alter table comp_modulesets_services modify modset_svcname varchar(60) character set utf8 not null;
+
+alter table comp_modulesets_services modify modset_mod_author varchar(100) character set utf8 default '';
+
+alter table comp_modulesets_services ADD CONSTRAINT comp_modulesets_services_fk1 FOREIGN KEY (modset_id) REFERENCES comp_moduleset(id) ON DELETE CASCADE;
+
+alter table comp_modulesets_services ADD CONSTRAINT comp_modulesets_services_fk2 FOREIGN KEY (modset_svcname) REFERENCES services(svc_name) ON DELETE CASCADE;
+
+delete from comp_moduleset_team_responsible where modset_id not in (select id from comp_moduleset);
+
+alter table comp_moduleset_team_responsible ADD CONSTRAINT comp_moduleset_team_responsible_fk1 FOREIGN KEY (modset_id) REFERENCES comp_moduleset(id) ON DELETE CASCADE;
+
+alter table comp_moduleset_team_responsible ADD CONSTRAINT comp_moduleset_team_responsible_fk2 FOREIGN KEY (group_id) REFERENCES auth_group(id) ON DELETE CASCADE;
+
+alter table comp_moduleset_modules ADD CONSTRAINT comp_moduleset_modules_fk1 FOREIGN KEY (modset_id) REFERENCES comp_moduleset(id) ON DELETE CASCADE;
+
+alter table column_filters ADD CONSTRAINT column_filters_fk1 FOREIGN KEY (user_id) REFERENCES auth_user(id) ON DELETE CASCADE;
+
+alter table auth_membership ADD CONSTRAINT auth_membership_fk1 FOREIGN KEY (user_id) REFERENCES auth_user(id) ON DELETE CASCADE;
+
+alter table auth_membership ADD CONSTRAINT auth_membership_fk2 FOREIGN KEY (group_id) REFERENCES auth_group(id) ON DELETE CASCADE;
+
+alter table apps_responsibles ADD CONSTRAINT apps_responsibles_fk2 FOREIGN KEY (group_id) REFERENCES auth_group(id) ON DELETE CASCADE;
+
+alter table apps_responsibles ADD CONSTRAINT apps_responsibles_fk1 FOREIGN KEY (app_id) REFERENCES apps(id) ON DELETE CASCADE;
+
+alter table appinfo charset=utf8;
+
+alter table appinfo modify `app_svcname` varchar(60) character set utf8 default null;
+
+alter table appinfo modify `app_launcher` varchar(255) character set utf8 default null;
+
+alter table appinfo modify `app_key` varchar(40) character set utf8 default null;
+
+alter table appinfo modify `app_value` varchar(255) character set utf8 default null;
+
+alter table appinfo ADD CONSTRAINT appinfo_fk1 FOREIGN KEY (app_svcname) REFERENCES services(svc_name) ON DELETE CASCADE;
+
+delete from svcmon where mon_nodname not in (select distinct nodename from nodes);
+
+alter table svcmon ADD CONSTRAINT svcmon_fk1 FOREIGN KEY (mon_nodname) REFERENCES nodes(nodename) ON DELETE CASCADE;
+
+drop table services2;
+
+drop table dashboard_old;
+
+drop table dashboard_tmp;
+
+create view v_network_segments as (select s.*, group_concat(g.role separator ", ") as teams_responsible from network_segments s left join network_segment_responsibles sr on s.id=sr.seg_id left join auth_group g on sr.group_id=g.id group by s.id);
+
+alter table services modify svc_vcpus float default 0;

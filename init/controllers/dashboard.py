@@ -155,7 +155,7 @@ def ajax_dash_agg():
     for f in set(t.cols)-set(t.special_filtered_cols):
         q = _where(q, 'dashboard', t.filter_parse(f), f)
     q &= _where(None, 'dashboard', domain_perms(), 'dash_svcname')|_where(None, 'dashboard', domain_perms(), 'dash_nodename')
-    q = apply_db_filters(q, 'nodes')
+    q = apply_gen_filters(q, t.tables())
 
     sql1 = db(q)._select().rstrip(';').replace('services.id, ','').replace('nodes.id, ','').replace('dashboard.id>0 AND', '')
     regex = re.compile("SELECT .* FROM")
@@ -304,29 +304,32 @@ def update_dashboard_log(s):
 
 class col_dash_entry(HtmlTableColumn):
     def get(self, o):
-        if o.dash_dict is None or len(o.dash_dict) == 0:
+        dash_dict = self.t.colprops['dash_dict'].get(o)
+        dash_fmt = self.t.colprops['dash_fmt'].get(o)
+        if dash_dict is None or len(dash_dict) == 0:
             return ""
         try:
-            d = json.loads(o.dash_dict)
+            d = json.loads(dash_dict)
             for k in d:
                 if isinstance(d[k], str) or isinstance(d[k], unicode):
                     d[k] = d[k].encode('utf8')
-            s = T.translate(o.dash_fmt,d)
+            s = T.translate(dash_fmt, d)
         except KeyError:
-            s = 'error parsing: %s'%o.dash_dict
+            s = 'error parsing: %s'%dash_dict
         except json.decoder.JSONDecodeError:
-            s = 'error loading JSON: %s'%o.dash_dict
+            s = 'error loading JSON: %s'%dash_dict
         except UnicodeEncodeError:
-            s = 'error transcoding: %s'%o.dash_dict
+            s = 'error transcoding: %s'%dash_dict
         except TypeError:
-            s = 'type error: %s'%o.dash_dict
+            s = 'type error: %s'%dash_dict
         return s
 
 class col_dash_links(HtmlTableColumn):
     def link_action_errors(self, o):
+       dash_svcname = self.t.colprops['dash_svcname'].get(o)
        i = A(
              _href=URL(r=request,c='svcactions',f='svcactions',
-                    vars={'actions_f_svcname': o.dash_svcname,
+                    vars={'actions_f_svcname': dash_svcname,
                           'actions_f_status': 'err',
                           'actions_f_ack': '!1|empty',
                           'clear_filters': 'true'}),
@@ -336,9 +339,10 @@ class col_dash_links(HtmlTableColumn):
        return i
 
     def link_actions(self, o):
+       dash_svcname = self.t.colprops['dash_svcname'].get(o)
        i = A(
              _href=URL(r=request,c='svcactions',f='svcactions',
-                    vars={'actions_f_svcname': o.dash_svcname,
+                    vars={'actions_f_svcname': dash_svcname,
                           'actions_f_begin': '>%s'%str(now-datetime.timedelta(days=7)),
                           'clear_filters': 'true'}),
              _title=T("Service actions"),
@@ -347,9 +351,10 @@ class col_dash_links(HtmlTableColumn):
        return i
 
     def link_svcmon(self, o):
+       dash_svcname = self.t.colprops['dash_svcname'].get(o)
        i = A(
              _href=URL(r=request,c='default',f='svcmon',
-                    vars={'svcmon_f_svc_name': o.dash_svcname,
+                    vars={'svcmon_f_svc_name': dash_svcname,
                           'clear_filters': 'true'}),
              _title=T("Service status"),
              _class='svc clickable',
@@ -357,9 +362,10 @@ class col_dash_links(HtmlTableColumn):
        return i
 
     def link_checks(self, o):
+       dash_nodename = self.t.colprops['dash_nodename'].get(o)
        i = A(
              _href=URL(r=request,c='checks',f='checks',
-                    vars={'checks_f_chk_nodename': o.dash_nodename,
+                    vars={'checks_f_chk_nodename': dash_nodename,
                           'clear_filters': 'true'}),
              _title=T("Checks"),
              _class='check16 clickable',
@@ -367,9 +373,10 @@ class col_dash_links(HtmlTableColumn):
        return i
 
     def link_nodes(self, o):
+       dash_nodename = self.t.colprops['dash_nodename'].get(o)
        i = A(
              _href=URL(r=request,c='nodes',f='nodes',
-                    vars={'nodes_f_nodename': o.dash_nodename,
+                    vars={'nodes_f_nodename': dash_nodename,
                           'clear_filters': 'true'}),
              _title=T("Node"),
              _class='node16 clickable',
@@ -388,27 +395,28 @@ class col_dash_links(HtmlTableColumn):
 
     def html(self, o):
        l = []
-       if o.dash_type == "action errors":
+       dash_type = self.t.colprops['dash_type'].get(o)
+       if dash_type == "action errors":
            l.append(self.link_action_errors(o))
            l.append(self.link_actions(o))
-       elif o.dash_type == "check out of bounds" or \
-            o.dash_type == "check value not updated":
+       elif dash_type == "check out of bounds" or \
+            dash_type == "check value not updated":
            l.append(self.link_checks(o))
-       elif o.dash_type == "service status not updated" or \
-            o.dash_type == "service configuration not updated" or \
-            o.dash_type == "service available but degraded" or \
-            o.dash_type == "service frozen" or \
-            o.dash_type == "service unavailable":
+       elif dash_type == "service status not updated" or \
+            dash_type == "service configuration not updated" or \
+            dash_type == "service available but degraded" or \
+            dash_type == "service frozen" or \
+            dash_type == "service unavailable":
            l.append(self.link_svcmon(o))
-       elif o.dash_type == "node warranty expired" or \
-            o.dash_type == "node information not updated" or \
-            o.dash_type == "node without warranty end date" or \
-            o.dash_type == "node without asset information" or \
-            o.dash_type == "node close to warranty end":
+       elif dash_type == "node warranty expired" or \
+            dash_type == "node information not updated" or \
+            dash_type == "node without warranty end date" or \
+            dash_type == "node without asset information" or \
+            dash_type == "node close to warranty end":
            l.append(self.link_nodes(o))
-       elif "os obsolescence" in o.dash_type:
+       elif "os obsolescence" in dash_type:
            l.append(self.link_obsolescence(o, 'os'))
-       elif "obsolescence" in o.dash_type:
+       elif "obsolescence" in dash_type:
            l.append(self.link_obsolescence(o, 'hw'))
 
        return SPAN(l)
@@ -452,48 +460,56 @@ class table_dashboard(HtmlTable):
                     ),
             'dash_created': HtmlTableColumn(
                      title='Begin date',
+                     table='dashboard',
                      field='dash_created',
                      img='time16',
                      display=True,
                     ),
             'dash_severity': col_dash_severity(
                      title='Severity',
+                     table='dashboard',
                      field='dash_severity',
                      img='action16',
                      display=True,
                     ),
             'dash_svcname': col_svc(
                      title='Service',
+                     table='dashboard',
                      field='dash_svcname',
                      img='svc',
                      display=True,
                     ),
             'dash_nodename': col_node(
                      title='Node',
+                     table='dashboard',
                      field='dash_nodename',
                      img='node16',
                      display=True,
                     ),
             'dash_entry': col_dash_entry(
                      title='Alert',
+                     table='dashboard',
                      field='dummy',
                      img='log16',
                      display=True,
                     ),
             'dash_fmt': HtmlTableColumn(
                      title='Format',
+                     table='dashboard',
                      field='dash_fmt',
                      img='log16',
                      display=False,
                     ),
             'dash_dict': HtmlTableColumn(
                      title='Dictionary',
+                     table='dashboard',
                      field='dash_dict',
                      img='log16',
                      display=False,
                     ),
             'dash_type': HtmlTableColumn(
                      title='Type',
+                     table='dashboard',
                      field='dash_type',
                      img='log16',
                      display=True,
@@ -502,8 +518,11 @@ class table_dashboard(HtmlTable):
         self.colprops['dash_svcname'].t = self
         self.colprops['dash_nodename'].t = self
         self.colprops['dash_links'].t = self
+        self.colprops['dash_entry'].t = self
         self.dbfilterable = True
         self.extraline = True
+        self.checkbox_id_table = 'dashboard'
+        self.checkbox_id_col = 'id'
         self.special_filtered_cols = ['dash_entry']
         self.autorefresh = 60000
 
@@ -513,15 +532,11 @@ def ajax_dashboard_col_values():
     col = request.args[0]
     o = db.dashboard[col]
     q = db.dashboard.id > 0
-    j = db.dashboard.dash_nodename == db.nodes.nodename
-    l1 = db.nodes.on(j)
-    j = db.dashboard.dash_svcname == db.services.svc_name
-    l2 = db.services.on(j)
     for f in set(t.cols)-set(t.special_filtered_cols):
         q = _where(q, 'dashboard', t.filter_parse(f), f)
     q &= _where(None, 'dashboard', domain_perms(), 'dash_svcname')|_where(None, 'dashboard', domain_perms(), 'dash_nodename')
-    q = apply_db_filters(q, 'nodes')
-    t.object_list = db(q).select(o, orderby=o, groupby=o, left=(l1,l2))
+    q = apply_gen_filters(q, t.tables())
+    t.object_list = db(q).select(o, orderby=o, groupby=o)
     return t.col_values_cloud(col)
 
 @auth.requires_login()
@@ -529,18 +544,14 @@ def ajax_dashboard():
     t = table_dashboard('dashboard', 'ajax_dashboard')
     o = ~db.dashboard.dash_severity|db.dashboard.dash_type
     q = db.dashboard.id > 0
-    j = db.dashboard.dash_nodename == db.nodes.nodename
-    l1 = db.nodes.on(j)
-    j = db.dashboard.dash_svcname == db.services.svc_name
-    l2 = db.services.on(j)
     for f in set(t.cols)-set(t.special_filtered_cols):
         q = _where(q, 'dashboard', t.filter_parse(f), f)
     q &= _where(None, 'dashboard', domain_perms(), 'dash_svcname')|_where(None, 'dashboard', domain_perms(), 'dash_nodename')
-    q = apply_db_filters(q, 'nodes')
+    q = apply_gen_filters(q, t.tables())
 
     n = db(q).count()
     t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o, left=(l1,l2))
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
 
     mt = table_dash_agg('dash_agg', 'ajax_dash_agg')
 

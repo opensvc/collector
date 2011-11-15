@@ -438,7 +438,7 @@ def ajax_drplan_col_values():
     q = db.v_svcmon.svc_drpnode!=None
     q &= db.v_svcmon.svc_drpnode!=''
     q = _where(q, 'v_svcmon', domain_perms(), 'svc_name')
-    q = apply_db_filters(q, 'v_svcmon')
+    q = apply_gen_filters(q, t.tables())
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o,
@@ -477,7 +477,7 @@ def ajax_drplan():
     q = db.v_svcmon.svc_drpnode!=None
     q &= db.v_svcmon.svc_drpnode!=''
     q = _where(q, 'v_svcmon', domain_perms(), 'mon_svcname')
-    q = apply_db_filters(q, 'v_svcmon')
+    q = apply_gen_filters(q, t.tables())
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     n = db(q).count()

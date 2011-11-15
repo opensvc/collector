@@ -6,7 +6,8 @@ def ajax_obsolete_os_nodes():
     else:
         return DIV()
 
-    query = apply_db_filters(query, 'v_nodes')
+    q = apply_gen_filters(q, ['v_nodes', 'obsolescence'])
+
     rows = db(query).select(db.v_nodes.nodename, orderby=db.v_nodes.nodename, groupby=db.v_nodes.nodename)
     nodes = [row.nodename for row in rows]
     return DIV(
@@ -232,7 +233,8 @@ def ajax_obs_col_values():
     q &= ~db.v_nodes.model.like("%cluster%")
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_db_filters(q, 'v_nodes')
+    q = apply_gen_filters(q, ['v_nodes', 'obsolescence'])
+
     t.object_list = db(q).select(o, orderby=o, groupby=o)
     return t.col_values_cloud(col)
 
@@ -321,7 +323,7 @@ def ajax_obs():
     q &= ~db.v_nodes.model.like("%cluster%")
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_db_filters(q, 'v_nodes')
+    q = apply_gen_filters(q, ['v_nodes', 'obsolescence'])
 
     n = len(db(q).select(g, groupby=g))
     t.setup_pager(n)
