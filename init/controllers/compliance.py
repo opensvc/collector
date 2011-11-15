@@ -3922,7 +3922,8 @@ class table_comp_status(HtmlTable):
                      'run_module',
                      'run_action',
                      'run_status',
-                     'run_ruleset']
+                     'run_ruleset',
+                     'run_log']
         self.cols += v_nodes_cols
         self.colprops = {
             'run_date': col_run_date(
@@ -3979,7 +3980,7 @@ class table_comp_status(HtmlTable):
                      field='run_log',
                      table='comp_status',
                      img='check16',
-                     display=True,
+                     display=False,
                     ),
             'run_ruleset': col_run_ruleset(
                      title='Rule set',
