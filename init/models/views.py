@@ -174,23 +174,30 @@ def gen_filterset_query(q, row, tables=[]):
         v = row.v_gen_filtersets
     else:
         v = row
+
     if v.encap_fset_id > 0:
         o = db.v_gen_filtersets.f_order
         qr = db.v_gen_filtersets.fset_id == v.encap_fset_id
         rows = db(qr).select(orderby=o)
         qry = None
         for r in rows:
-            qry = gen_filterset_query(qry, r)
+            qry = gen_filterset_query(qry, r, tables)
+    elif v.f_table is None or v.f_field is None:
+        return q
     else:
+        f_table = v.f_table
         if v.f_table not in tables:
             joined = False
             for t in tables:
+                if t is None:
+                    continue
                 try:
                     j = joins[v.f_table][t]
                     if j is None:
+                        # for views, where the fields of v.f_table are
+                        # available through t
                         f_table = t
                     else:
-                        f_table = v.f_table
                         q &= j
                         tables.add(v.f_table)
                     joined = True
