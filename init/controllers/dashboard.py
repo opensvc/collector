@@ -548,7 +548,7 @@ def ajax_dashboard():
 
     n = db(q).count()
     t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o, groupby=g)
+    t.object_list = db(q).select(db.dashboard.ALL, limitby=(t.pager_start,t.pager_end), orderby=o, groupby=g)
 
     mt = table_dash_agg('dash_agg', 'ajax_dash_agg')
 

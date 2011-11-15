@@ -208,7 +208,6 @@ def gen_filterset_query(q, row, tables=[]):
                 except KeyError:
                     continue
             if not joined:
-                raise Exception(v.f_table, t, q)
                 # can not apply filter
                 return q
         if v.f_op == '=':
