@@ -303,6 +303,7 @@
 'Filter set': 'Jeu de filtres',
 'Filter set name': 'Nom du jeu de filtres',
 'Filter:': 'Filtre:',
+'Filters': 'Filters',
 'Filters:': 'Filtres:',
 'Filterset': 'Jeu de filtres',
 'Filterset name': 'Nom du jeu de filtres',

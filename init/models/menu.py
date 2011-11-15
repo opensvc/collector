@@ -113,6 +113,8 @@ response.menu = [
               URL(request.application,'billing','billing')],
              [SPAN(T('Provisioning'), _class='prov'), False,
               URL(request.application,'provisioning','prov_admin')],
+             [SPAN(T('Filters'), _class='filters'), False,
+              URL(request.application,'compliance','comp_filters')],
          ]
     ],
 ]

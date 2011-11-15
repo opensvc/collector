@@ -77,14 +77,6 @@ def comp_menu(current):
                    'comp_modules'
                  ),
          },
-         {
-          'title': 'Filters',
-          'url': URL(
-                   request.application,
-                   'compliance',
-                   'comp_filters'
-                 ),
-         },
         ]
 
     def item(i):
