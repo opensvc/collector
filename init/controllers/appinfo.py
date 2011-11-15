@@ -53,7 +53,7 @@ class table_appinfo(HtmlTable):
                      display=True,
                     ),
         }
-        self.dbfilterable = False
+        self.dbfilterable = True
         self.ajax_col_values = 'ajax_appinfo_col_values'
         self.span = 'app_svcname'
         self.sub_span = ['app_launcher']
