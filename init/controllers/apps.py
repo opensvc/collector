@@ -175,7 +175,7 @@ def ajax_apps_col_values():
     q = db.v_apps.id > 0
     t.object_list = db(q).select(orderby=o, groupby=o)
     for f in t.cols:
-        q = _where(q, 'v_users', t.filter_parse(f), f)
+        q = _where(q, 'v_apps', t.filter_parse(f), f)
     q = apply_gen_filters(q, t.tables())
     t.object_list = db(q).select(o, orderby=o, groupby=o)
     return t.col_values_cloud(col)
