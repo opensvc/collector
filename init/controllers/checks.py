@@ -79,6 +79,14 @@ def checks_settings_insert():
         response.flash = T("errors in form")
     return dict(form=form, record=record)
 
+def update_thresholds_batch2():
+    # maintenance batch
+    q = db.checks_live.chk_threshold_provider.like("fset%")
+    q |= db.checks_live.chk_threshold_provider == "defaults"
+    rows = db(q).select()
+    for row in rows:
+        update_thresholds(row)
+
 def update_thresholds_batch(rows=None):
     # maintenance batch
     if rows is None:
@@ -135,23 +143,19 @@ def get_filters(row):
     q2 = db.gen_filterset_check_threshold.chk_instance == None
     q3 = db.gen_filterset_check_threshold.chk_instance == ""
     qr &= (q1|q2|q3)
+    qr &= db.gen_filterset_check_threshold.fset_id == db.gen_filtersets.id
     fsets = db(qr).select()
     if len(fsets) == 0:
         return
     for fset in fsets:
-        qr = db.v_gen_filtersets.fset_id == fset.fset_id
-        filters = db(qr).select(db.v_gen_filtersets.ALL, orderby=db.v_gen_filtersets.f_order|db.v_gen_filtersets.id)
-        if len(filters) == 0:
-            continue
-        qr = db.nodes.nodename == row.chk_nodename
-        qr &= db.nodes.nodename == db.svcmon.mon_nodname
-        qr &= db.svcmon.mon_svcname == db.services.svc_name
-        for f in filters:
-            qr = comp_query(qr, f)
+        qr = db.checks_live.id == row.id
+        qr = apply_filters(qr, db.checks_live.chk_nodename, db.checks_live.chk_svcname)
         n = db(qr).count()
         if n == 0:
             continue
-        return (fset.chk_low, fset.chk_high, 'fset: '+f.fset_name)
+        return (fset.gen_filterset_check_threshold.chk_low,
+                fset.gen_filterset_check_threshold.chk_high,
+                'fset: '+fset.gen_filtersets.fset_name)
     return
 
 def comp_query(q, row):
