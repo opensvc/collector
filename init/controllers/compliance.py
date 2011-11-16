@@ -4164,7 +4164,7 @@ def ajax_comp_log_col_values():
     q &= db.comp_log.run_nodename == db.v_nodes.nodename
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_gen_filters(q, t.tables())
+    q = apply_filters(q, db.comp_log.run_nodename, db.comp_log.run_svcname)
     t.object_list = db(q).select(o, orderby=o, groupby=o)
     return t.col_values_cloud(col)
 
@@ -4177,7 +4177,7 @@ def ajax_comp_status_col_values():
     q &= db.comp_status.run_nodename == db.v_nodes.nodename
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_gen_filters(q, t.tables())
+    q = apply_filters(q, db.comp_status.run_nodename, db.comp_status.run_svcname)
     t.object_list = db(q).select(o, orderby=o, groupby=o)
     return t.col_values_cloud(col)
 
@@ -4190,7 +4190,7 @@ def ajax_comp_status():
     q &= db.comp_status.run_nodename == db.v_nodes.nodename
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_gen_filters(q, t.tables())
+    q = apply_filters(q, db.comp_status.run_nodename, db.comp_status.run_svcname)
 
     n = len(db(q).select(db.comp_status.id, limitby=default_limitby))
     t.setup_pager(n)
@@ -4363,7 +4363,7 @@ def ajax_comp_svc_status():
     q &= db.comp_status.run_svcname != None
     #for f in t.cols:
     #    q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_gen_filters(q, t.tables())
+    q = apply_filters(q, db.comp_status.run_nodename, db.comp_status.run_svcname)
     sql1 = db(q)._select().rstrip(';').replace('v_svcmon.id, ','').replace('comp_status.id>0 AND', '')
     regex = re.compile("SELECT .* FROM")
     sql1 = regex.sub('', sql1)
@@ -4455,7 +4455,7 @@ def ajax_comp_node_status():
     q &= db.comp_status.run_svcname == None
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_gen_filters(q, t.tables())
+    q = apply_filters(q, db.comp_status.run_nodename, db.comp_status.run_svcname)
     sql1 = db(q)._select().rstrip(';').replace('v_nodes.id, ','').replace('comp_status.id>0 AND', '')
     regex = re.compile("SELECT .* FROM")
     sql1 = regex.sub('', sql1)
@@ -4546,7 +4546,7 @@ def ajax_comp_mod_status():
     q &= db.comp_status.run_nodename == db.v_nodes.nodename
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_gen_filters(q, t.tables())
+    q = apply_filters(q, db.comp_status.run_nodename, db.comp_status.run_svcname)
     sql1 = db(q)._select().rstrip(';').replace('v_nodes.id, ','').replace('comp_status.id>0 AND', '')
     regex = re.compile("SELECT .* FROM")
     sql1 = regex.sub('', sql1)
@@ -4673,7 +4673,7 @@ def ajax_comp_log():
     q &= db.comp_log.run_nodename == db.v_nodes.nodename
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_gen_filters(q, t.tables())
+    q = apply_filters(q, db.comp_log.run_nodename, db.comp_log.run_svcname)
 
     t.setup_pager(-1)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
