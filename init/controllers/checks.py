@@ -595,7 +595,7 @@ def ajax_checks_col_values():
     col = request.args[0]
     q = db.checks_live.id>0
     q = _where(q, 'checks_live', domain_perms(), 'chk_nodename')
-    q = apply_gen_filters(q, t.tables())
+    q = apply_filters(q, db.checks_live.chk_nodename, db.checks_live.chk_svcname)
     q &= db.checks_live.chk_nodename==db.v_nodes.nodename
     o = db.checks_live[col]
     for f in t.cols:
@@ -670,7 +670,7 @@ def ajax_checks():
     o |= db.checks_live.chk_instance
     q = db.checks_live.id>0
     q = _where(q, 'checks_live', domain_perms(), 'chk_nodename')
-    q = apply_gen_filters(q, t.tables())
+    q = apply_filters(q, db.checks_live.chk_nodename, db.checks_live.chk_svcname)
     q &= db.checks_live.chk_nodename==db.v_nodes.nodename
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
