@@ -1823,6 +1823,7 @@ def ruleset_clone():
                                           var_name=row.var_name,
                                           var_value=row.var_value,
                                           var_author=user_name())
+    add_default_team_responsible(iid)
     _log('comp.ruleset.clone',
          'cloned ruleset %(o)s from %(n)s',
          dict(o=orig, n=iid))
