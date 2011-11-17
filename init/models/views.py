@@ -109,7 +109,7 @@ def domainname(fqdn):
     l[0] = ""
     return '.'.join(l)
 
-def apply_filters(q, node_field, service_field, fset_id=None):
+def apply_filters(q, node_field=None, service_field=None, fset_id=None):
     if fset_id is None:
         v = db.v_gen_filtersets
         o = v.f_order
@@ -127,11 +127,11 @@ def apply_filters(q, node_field, service_field, fset_id=None):
     n_nodes = len(nodes)
     n_services = len(services)
 
-    if n_nodes > 0 and n_services > 0:
+    if n_nodes > 0 and n_services > 0 and node_field is not None and service_field is not None:
         q &= (node_field.belongs(nodes)) | (service_field.belongs(services))
-    elif len(nodes) > 0:
+    elif len(nodes) > 0 and node_field is not None:
         q &= node_field.belongs(nodes)
-    elif len(services) > 0:
+    elif len(services) > 0 and service_field is not None:
         q &= service_field.belongs(services)
 
     return q
@@ -264,6 +264,7 @@ joins = {
   },
   'nodes':{
     'nodes': None,
+    'v_nodes': None,
     'dashboard': db.nodes.nodename == db.dashboard.dash_nodename,
     'dashboard': db.nodes.nodename == db.dashboard.dash_nodename,
     'v_svcmon': None,

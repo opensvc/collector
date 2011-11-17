@@ -961,14 +961,19 @@ class table_svcmon_log(HtmlTable):
 def ajax_svcmon_log_col_values():
     t = table_svcmon_log('svcmon_log', 'ajax_svcmon_log')
     col = request.args[0]
-    g = db.svcmon_log[col]
-    o = db.svcmon_log.mon_begin|db.svcmon_log.mon_end
-    q = db.v_svcmon.mon_svcname==db.svcmon_log.mon_svcname
-    q &= db.v_svcmon.mon_nodname==db.svcmon_log.mon_nodname
-    q = _where(q, 'svcmon_log', domain_perms(), 'mon_svcname')
-    for f in t.cols:
+    g = db.services_log[col]
+    o = db.services_log.svc_name|db.services_log.svc_begin|db.services_log.svc_end
+
+    q = db.v_services.svc_name==db.services_log.svc_name
+    q = _where(q, 'services_log', domain_perms(), 'svc_name')
+
+    for f in set(t.cols)-set(['svc_begin', 'svc_end']):
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_gen_filters(q, t.tables())
+
+    q = _where(q, 'services_log', t.filter_parse('svc_begin'), 'svc_end')
+    q = _where(q, 'services_log', t.filter_parse('svc_end'), 'svc_begin')
+
+    q = apply_filters(q, None, db.services_log.svc_name)
     t.object_list = db(q).select(o, orderby=o, groupby=g)
     return t.col_values_cloud(col)
 
@@ -1008,7 +1013,7 @@ def ajax_svcmon_log():
     q = _where(q, 'services_log', t.filter_parse('svc_begin'), 'svc_end')
     q = _where(q, 'services_log', t.filter_parse('svc_end'), 'svc_begin')
 
-    q = apply_gen_filters(q, t.tables())
+    q = apply_filters(q, None, db.services_log.svc_name)
 
     t.setup_pager(-1)
     t.object_list = db(q).select(orderby=o, limitby=(t.pager_start,t.pager_end))

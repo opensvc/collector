@@ -54,7 +54,7 @@ def ajax_packages_col_values():
     o = db[t.colprops[col].table][col]
     q = db.packages.pkg_nodename==db.v_nodes.nodename
     q = _where(q, 'packages', domain_perms(), 'pkg_nodename')
-    q = apply_gen_filters(q, t.tables())
+    q = apply_filters(q, db.packages.pkg_nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o, groupby=o)
@@ -70,7 +70,7 @@ def ajax_packages():
     q = db.packages.id>0
     q &= db.packages.pkg_nodename==db.v_nodes.nodename
     q = _where(q, 'packages', domain_perms(), 'pkg_nodename')
-    q = apply_gen_filters(q, t.tables())
+    q = apply_filters(q, db.packages.pkg_nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     n = db(q).count()
