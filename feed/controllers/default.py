@@ -1813,7 +1813,7 @@ def update_dash_node_not_updated(nodename):
 
 def update_dash_pkgdiff(nodename):
     nodename = nodename.strip("'")
-    q = db.dash_nodename == nodename
+    q = db.dashboard.dash_nodename == nodename
     db(q).delete()
 
     q = db.svcmon.mon_nodname == nodename
@@ -2061,6 +2061,7 @@ def update_dash_netdev_errors(nodename):
     rows = db.executesql(sql)
 
     if len(rows) > 0 and rows[0][0] > 0:
+        errs = rows[0][0]
         sql = """select environnement from nodes
                  where
                    nodename="%(nodename)s"
@@ -2088,7 +2089,7 @@ def update_dash_netdev_errors(nodename):
                    dash_created=now()
               """%dict(nodename=nodename,
                        sev=sev,
-                       err=rows[0][0])
+                       err=errs)
     else:
         sql = """delete from dashboard
                  where
