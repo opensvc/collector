@@ -557,8 +557,13 @@ def ajax_actions():
     q = apply_gen_filters(q, t.tables())
     for f in t.cols:
         q = _where(q, 'v_svcactions', t.filter_parse(f), f)
-    t.setup_pager(-1)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    n = db(q).count()
+    t.setup_pager(n)
+    if n < t.pager_end - t.pager_start:
+        end = t.pager_start + n
+    else:
+        end = t.pager_end
+    t.object_list = db(q).select(limitby=(t.pager_start,end), orderby=o)
     return SPAN(
               DIV(
                _id='ackpanel',
