@@ -109,11 +109,15 @@ def domainname(fqdn):
     l[0] = ""
     return '.'.join(l)
 
-def apply_filters(q, node_field, service_field):
-    v = db.v_gen_filtersets
-    o = v.f_order
-    qry = db.gen_filterset_user.fset_id == v.fset_id
-    qry &= db.gen_filterset_user.user_id == auth.user_id
+def apply_filters(q, node_field, service_field, fset_id=None):
+    if fset_id is None:
+        v = db.v_gen_filtersets
+        o = v.f_order
+        qry = db.gen_filterset_user.fset_id == v.fset_id
+        qry &= db.gen_filterset_user.user_id == auth.user_id
+    else:
+        qry = db.v_gen_filtersets.fset_id == fset_id
+
     rows = db(qry).select()
     nodes = set([])
     services = set([])

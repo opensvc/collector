@@ -83,6 +83,9 @@ def update_thresholds_batch2():
     # maintenance batch
     q = db.checks_live.chk_threshold_provider.like("fset%")
     q |= db.checks_live.chk_threshold_provider == "defaults"
+    if len(request.args) == 1:
+        node = request.args[0]
+        q &= db.checks_live.chk_nodename == node
     rows = db(q).select()
     for row in rows:
         update_thresholds(row)
@@ -149,7 +152,7 @@ def get_filters(row):
         return
     for fset in fsets:
         qr = db.checks_live.id == row.id
-        qr = apply_filters(qr, db.checks_live.chk_nodename, db.checks_live.chk_svcname)
+        qr = apply_filters(qr, db.checks_live.chk_nodename, db.checks_live.chk_svcname, fset.gen_filtersets.id)
         n = db(qr).count()
         if n == 0:
             continue

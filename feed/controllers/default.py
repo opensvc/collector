@@ -853,23 +853,19 @@ def get_filters(row):
     q2 = db.gen_filterset_check_threshold.chk_instance == None
     q3 = db.gen_filterset_check_threshold.chk_instance == ""
     qr &= (q1|q2|q3)
+    qr &= db.gen_filterset_check_threshold.fset_id == db.gen_filtersets.id
     fsets = db(qr).select()
     if len(fsets) == 0:
         return
     for fset in fsets:
-        qr = db.v_gen_filtersets.fset_id == fset.fset_id
-        filters = db(qr).select(db.v_gen_filtersets.ALL, orderby=db.v_gen_filtersets.f_order|db.v_gen_filtersets.id)
-        if len(filters) == 0:
-            continue
-        qr = db.nodes.nodename == row.chk_nodename
-        qr &= db.nodes.nodename == db.svcmon.mon_nodname
-        qr &= db.svcmon.mon_svcname == db.services.svc_name
-        for f in filters:
-            qr = comp_query(qr, f)
+        qr = db.checks_live.id == row.id
+        qr = apply_filters(qr, fset.gen_filtersets.id, db.checks_live.chk_nodename, db.checks_live.chk_svcname)
         n = db(qr).count()
         if n == 0:
             continue
-        return (fset.chk_low, fset.chk_high, 'fset: '+f.fset_name)
+        return (fset.gen_filterset_check_threshold.chk_low,
+                fset.gen_filterset_check_threshold.chk_high,
+                'fset: '+fset.gen_filtersets.fset_name)
     return
 
 def update_thresholds_batch(rows=None):
@@ -2441,7 +2437,7 @@ def feed_dequeue():
                 db(db.feed_queue.id==e.id).delete()
             except:
                 print "Error: %s(%s)"%(e.q_fn, str(e.q_args))
-                db(db.feed_queue.id==e.id).delete()
                 import traceback
                 traceback.print_exc()
+                time.sleep(2)
 
