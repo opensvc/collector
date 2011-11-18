@@ -1544,6 +1544,22 @@ class col_env(HtmlTableColumn):
             c = 'b'
         return SPAN(s, _class=c)
 
+class col_vcpus(HtmlTableColumn):
+    def html(self, o):
+        s = self.get(o)
+        c = ''
+        if s > 0:
+            c = s
+        return SPAN(c, _class=c)
+
+class col_vmem(HtmlTableColumn):
+    def html(self, o):
+        s = self.get(o)
+        c = ''
+        if s > 0:
+            c = s
+        return SPAN(c, _class=c)
+
 #
 # colprops definitions
 #
@@ -1700,14 +1716,14 @@ v_services_colprops = {
              img = 'svc',
              table = 'v_services',
             ),
-    'svc_vcpus': HtmlTableColumn(
+    'svc_vcpus': col_vcpus(
              title = 'Vcpus',
              field='svc_vcpus',
              display = False,
              img = 'svc',
              table = 'v_services',
             ),
-    'svc_vmem': HtmlTableColumn(
+    'svc_vmem': col_vmem(
              title = 'Vmem',
              field='svc_vmem',
              display = False,
