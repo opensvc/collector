@@ -6,7 +6,8 @@ def ajax_obsolete_os_nodes():
     else:
         return DIV()
 
-    q = apply_gen_filters(q, ['v_nodes', 'obsolescence'])
+    q = db.obsolescence.id > 0
+    q = apply_filters(q, db.v_nodes.nodename, None)
 
     rows = db(query).select(db.v_nodes.nodename, orderby=db.v_nodes.nodename, groupby=db.v_nodes.nodename)
     nodes = [row.nodename for row in rows]
