@@ -154,6 +154,7 @@ def update_action_errors(svcname, nodename):
                    err=%(err)d
               """%dict(svcname=svcname, nodename=nodename, err=err)
     db.executesql(sql)
+    db.commit()
 
 def update_virtual_asset(nodename, svcname):
     q = db.services.svc_name == svcname
@@ -1409,6 +1410,7 @@ def cron_dash_service_not_updated():
                where updated < date_sub(now(), interval 25 hour)
           """
     db.executesql(sql)
+    db.commit()
 
 def cron_dash_svcmon_not_updated():
     sql = """insert ignore
@@ -1427,6 +1429,7 @@ def cron_dash_svcmon_not_updated():
                where mon_updated < date_sub(now(), interval 15 minute)
           """
     db.executesql(sql)
+    db.commit()
 
 def cron_dash_node_not_updated():
     sql = """insert ignore
@@ -1445,6 +1448,7 @@ def cron_dash_node_not_updated():
                where updated < date_sub(now(), interval 25 hour)
           """
     db.executesql(sql)
+    db.commit()
 
 def cron_dash_node_without_asset():
     sql = """insert ignore
@@ -1466,6 +1470,7 @@ def cron_dash_node_without_asset():
                  )
           """
     db.executesql(sql)
+    db.commit()
 
 def cron_dash_node_beyond_warranty_date():
     sql = """insert ignore
@@ -1487,6 +1492,7 @@ def cron_dash_node_beyond_warranty_date():
                  warranty_end < now()
           """
     db.executesql(sql)
+    db.commit()
 
 def cron_dash_node_near_warranty_date():
     sql = """insert ignore
@@ -1508,6 +1514,7 @@ def cron_dash_node_near_warranty_date():
                  warranty_end > date_sub(now(), interval 30 day) and
                  warranty_end < now()
           """
+    db.commit()
     db.executesql(sql)
 
 def cron_dash_node_without_warranty_date():
@@ -1529,6 +1536,7 @@ def cron_dash_node_without_warranty_date():
                  warranty_end = "0000-00-00 00:00:00"
           """
     db.executesql(sql)
+    db.commit()
 
 def cron_dash_checks_not_updated():
     sql = """insert ignore into dashboard
@@ -1547,6 +1555,7 @@ def cron_dash_checks_not_updated():
                where
                  chk_updated < date_sub(now(), interval 1 day)"""
     db.executesql(sql)
+    db.commit()
 
 def cron_dash_app_without_responsible():
     sql = """insert ignore into dashboard
@@ -1565,6 +1574,14 @@ def cron_dash_app_without_responsible():
                  roles is NULL
           """
     db.executesql(sql)
+    db.commit()
+
+def cron_dash_obs_purge():
+    sql = """delete from dashboard
+             where dash_type like "%obsolescence%"
+          """
+    db.executesql(sql)
+    db.commit()
 
 def cron_dash_obs_hw_without_alert():
     cron_dash_obs_without('hw', 'alert')
@@ -1604,12 +1621,16 @@ def cron_dash_obs_without(t, a):
                    o.obs_name = concat_ws(' ',n.os_name,n.os_vendor,n.os_release,n.os_update)
                where
                  o.obs_type = "%(t)s" and
+                 o.obs_name not like "%%virtual%%" and
+                 o.obs_name not like "%%virtuel%%" and
+                 o.obs_name not like "%%cluster%%" and
                  (
                    o.obs_%(a)s_date is NULL or
                    o.obs_%(a)s_date = "0000-00-00 00:00:00"
                  )
           """%dict(t=t, tl=tl, a=a, al=al)
     db.executesql(sql)
+    db.commit()
 
 def cron_dash_obs_os_alert():
     sql = """insert ignore into dashboard
@@ -1635,6 +1656,7 @@ def cron_dash_obs_os_alert():
                  o.obs_type = "os"
           """
     db.executesql(sql)
+    db.commit()
 
 def cron_dash_obs_os_warn():
     sql = """insert ignore into dashboard
@@ -1661,6 +1683,7 @@ def cron_dash_obs_os_warn():
                  o.obs_type = "os"
           """
     db.executesql(sql)
+    db.commit()
 
 def cron_dash_obs_hw_alert():
     sql = """insert ignore into dashboard
@@ -1680,12 +1703,16 @@ def cron_dash_obs_hw_alert():
                  join nodes n on
                    o.obs_name = n.model
                where
+                 o.obs_name not like "%virtual%" and
+                 o.obs_name not like "%virtuel%" and
+                 o.obs_name not like "%cluster%" and
                  o.obs_alert_date is not NULL and
                  o.obs_alert_date != "0000-00-00 00:00:00" and
                  o.obs_alert_date < now() and
                  o.obs_type = "hw"
           """
     db.executesql(sql)
+    db.commit()
 
 def cron_dash_obs_hw_warn():
     sql = """insert ignore into dashboard
@@ -1705,6 +1732,9 @@ def cron_dash_obs_hw_warn():
                  join nodes n on
                    o.obs_name = n.model
                where
+                 o.obs_name not like "%virtual%" and
+                 o.obs_name not like "%virtuel%" and
+                 o.obs_name not like "%cluster%" and
                  o.obs_alert_date is not NULL and
                  o.obs_alert_date != "0000-00-00 00:00:00" and
                  o.obs_warn_date < now() and
@@ -1712,6 +1742,7 @@ def cron_dash_obs_hw_warn():
                  o.obs_type = "hw"
           """
     db.executesql(sql)
+    db.commit()
 
 def cron_dash_action_errors_cleanup():
     sql = """delete from dashboard
@@ -1720,6 +1751,7 @@ def cron_dash_action_errors_cleanup():
                dash_type='action errors'
           """
     db.executesql(sql)
+    db.commit()
 #
 # Dashboard updates
 #
@@ -1740,6 +1772,7 @@ def update_dash_node_beyond_warranty_end(nodename):
                  dash_type = "node warranty expired"
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
+    db.commit()
 
 def update_dash_node_near_warranty_end(nodename):
     sql = """delete from dashboard
@@ -1757,6 +1790,7 @@ def update_dash_node_near_warranty_end(nodename):
                  dash_type = "node warranty expired"
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
+    db.commit()
 
 def update_dash_node_without_asset(nodename):
     sql = """delete from dashboard
@@ -1770,6 +1804,7 @@ def update_dash_node_without_asset(nodename):
                  dash_type = "node without asset information"
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
+    db.commit()
 
 def update_dash_node_without_warranty_end(nodename):
     sql = """delete from dashboard
@@ -1785,6 +1820,7 @@ def update_dash_node_without_warranty_end(nodename):
                  dash_type = "node without warranty end date"
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
+    db.commit()
 
 def update_dash_service_not_updated(svcname):
     sql = """delete from dashboard
@@ -1793,6 +1829,7 @@ def update_dash_service_not_updated(svcname):
                  dash_type = "service configuration not updated"
           """%dict(svcname=svcname)
     rows = db.executesql(sql)
+    db.commit()
 
 def update_dash_svcmon_not_updated(svcname, nodename):
     sql = """delete from dashboard
@@ -1802,6 +1839,7 @@ def update_dash_svcmon_not_updated(svcname, nodename):
                  dash_type = "service status not updated"
           """%dict(svcname=svcname, nodename=nodename)
     rows = db.executesql(sql)
+    db.commit()
 
 def update_dash_node_not_updated(nodename):
     sql = """delete from dashboard
@@ -1810,6 +1848,7 @@ def update_dash_node_not_updated(nodename):
                  dash_type = "node information not updated"
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
+    db.commit()
 
 def update_dash_pkgdiff(nodename):
     nodename = nodename.strip("'")
@@ -1870,6 +1909,7 @@ def update_dash_pkgdiff(nodename):
                        nodes=','.join(nodes).replace("'", ""))
 
         rows = db.executesql(sql)
+        db.commit()
 
 def update_dash_flex_cpu(svcname):
     sql = """delete from dashboard
@@ -1879,6 +1919,7 @@ def update_dash_flex_cpu(svcname):
                  dash_fmt like "%%average cpu usage%%"
           """%dict(svcname=svcname)
     rows = db.executesql(sql)
+    db.commit()
 
     sql = """select svc_type from services
              where
@@ -1923,6 +1964,7 @@ def update_dash_flex_cpu(svcname):
                    sev=sev,
                   )
     db.executesql(sql)
+    db.commit()
 
 def update_dash_flex_instances_started(svcname):
     sql = """delete from dashboard
@@ -1932,6 +1974,7 @@ def update_dash_flex_instances_started(svcname):
                  dash_fmt like "%%instances started%%"
           """%dict(svcname=svcname)
     rows = db.executesql(sql)
+    db.commit()
 
     sql = """select svc_type from services
              where
@@ -1976,6 +2019,7 @@ def update_dash_flex_instances_started(svcname):
                    sev=sev,
                   )
     db.executesql(sql)
+    db.commit()
 
 def update_dash_checks(nodename):
     nodename = nodename.strip("'")
@@ -1989,6 +2033,7 @@ def update_dash_checks(nodename):
           """%dict(nodename=nodename)
 
     rows = db.executesql(sql)
+    db.commit()
 
     sql = """select environnement from nodes
              where
@@ -2047,6 +2092,7 @@ def update_dash_checks(nodename):
                    sev=sev,
                   )
     db.executesql(sql)
+    db.commit()
 
 def update_dash_netdev_errors(nodename):
     nodename = nodename.strip("'")
@@ -2097,6 +2143,7 @@ def update_dash_netdev_errors(nodename):
                    dash_nodename="%(nodename)s"
               """%dict(nodename=nodename)
     db.executesql(sql)
+    db.commit()
 
 def update_dash_action_errors(svc_name, nodename):
     svc_name = svc_name.strip("'")
@@ -2141,6 +2188,7 @@ def update_dash_action_errors(svc_name, nodename):
               """%dict(svcname=svc_name,
                        nodename=nodename)
     db.executesql(sql)
+    db.commit()
 
 def update_dash_service_available_but_degraded(svc_name, svc_type, svc_availstatus, svc_status):
     if svc_type == 'PRD':
@@ -2155,6 +2203,7 @@ def update_dash_service_available_but_degraded(svc_name, svc_type, svc_availstat
                    dash_svcname="%s"
               """%(svc_name,svc_status)
         db.executesql(sql)
+        db.commit()
         sql = """insert ignore into dashboard
                  set
                    dash_type="service available but degraded",
@@ -2168,6 +2217,7 @@ def update_dash_service_available_but_degraded(svc_name, svc_type, svc_availstat
                        sev=sev,
                        status=svc_status)
         db.executesql(sql)
+        db.commit()
     else:
         sql = """delete from dashboard
                  where
@@ -2175,6 +2225,7 @@ def update_dash_service_available_but_degraded(svc_name, svc_type, svc_availstat
                    dash_svcname="%s"
               """%svc_name
         db.executesql(sql)
+        db.commit()
 
 def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
     if svc_type == 'PRD':
@@ -2188,6 +2239,7 @@ def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
                    dash_svcname="%s"
               """%svc_name
         db.executesql(sql)
+        db.commit()
     else:
         sql = """select count(id) from svcmon_log_ack
                  where
@@ -2203,6 +2255,7 @@ def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
                        dash_svcname="%s"
                   """%(svc_name)
             db.executesql(sql)
+            db.commit()
             return
 
         sql = """delete from dashboard
@@ -2212,6 +2265,7 @@ def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
                    dash_dict!='{"s": "%s"}'
               """%(svc_name,svc_availstatus)
         db.executesql(sql)
+        db.commit()
 
         sql = """insert ignore into dashboard
                  set
@@ -2226,6 +2280,7 @@ def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
                        sev=sev,
                        status=svc_availstatus)
         db.executesql(sql)
+        db.commit()
 
 def update_dash_service_frozen(svc_name, nodename, svc_type, frozen):
     if svc_type == 'PRD':
@@ -2238,6 +2293,7 @@ def update_dash_service_frozen(svc_name, nodename, svc_type, frozen):
                    dash_type="service frozen" and
                    dash_svcname="%s"
               """%svc_name
+        db.commit()
     else:
         sql = """insert ignore into dashboard
                  set
@@ -2253,6 +2309,7 @@ def update_dash_service_frozen(svc_name, nodename, svc_type, frozen):
                        sev=sev,
                       )
     db.executesql(sql)
+    db.commit()
 
 def update_dash_service_not_on_primary(svc_name, nodename, svc_type, availstatus):
     if svc_type == 'PRD':
@@ -2275,6 +2332,7 @@ def update_dash_service_not_on_primary(svc_name, nodename, svc_type, availstatus
                    dash_nodename="%s"
               """%(svc_name,nodename)
         db.executesql(sql)
+        db.commit()
         return
 
     sql = """insert ignore into dashboard
@@ -2291,6 +2349,7 @@ def update_dash_service_not_on_primary(svc_name, nodename, svc_type, availstatus
                    sev=sev,
                   )
     db.executesql(sql)
+    db.commit()
 
 #
 # Feed enqueue/dequeue
@@ -2305,6 +2364,7 @@ def feed_enqueue(f, *args):
 
 def dash_crons2():
     # ~1/j
+    cron_dash_obs_purge()
     cron_dash_obs_os_alert()
     cron_dash_obs_os_warn()
     cron_dash_obs_hw_alert()
