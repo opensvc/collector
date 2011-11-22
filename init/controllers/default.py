@@ -803,6 +803,11 @@ class table_svcmon(HtmlTable):
         self.user_name = user_name()
         self.additional_tools.append('tool_topology')
         self.additional_tools.append('tool_action')
+        self += HtmlTableMenu('Node actions', 'action16', [
+                               'tool_action_node',
+                               'tool_action_module',
+                               'tool_action_moduleset'],
+                              id='menu_comp_action')
         self.additional_tools.append('tool_provisioning')
         self.additional_tools.append('svc_del')
 
@@ -843,6 +848,126 @@ class table_svcmon(HtmlTable):
                  act,
                  frozen,
                )
+
+    def tool_action_node(self):
+        return self._tool_action("node")
+
+    def tool_action_module(self):
+        return self._tool_action("module")
+
+    def tool_action_moduleset(self):
+        return self._tool_action("moduleset")
+
+    def _tool_action(self, mode):
+        if mode in ["module", "moduleset"]:
+            cmd = [
+              'check',
+              'fixable',
+              'fix',
+            ]
+            cl = "comp16"
+        else:
+            cmd = [
+              'checks',
+              'pushasset',
+              'pushservices',
+              'pushstats',
+              'pushpkg',
+              'pushpatch',
+              'reboot',
+              'shutdown',
+              'syncservices',
+              'updateservices',
+            ]
+            cl = "node16"
+
+        sid = 'action_s_'+mode
+        s = []
+        for c in cmd:
+            if mode in ["module", "moduleset"]:
+                confirm=T("""Are you sure you want to execute a %(a)s action on all selected nodes. Please confirm action""",dict(a=c))
+            else:
+                confirm=T("""Are you sure you want to execute a compliance %(a)s action on all selected nodes. Please confirm action""",dict(a=c))
+            s.append(TR(
+                       TD(
+                         IMG(
+                           _src=URL(r=request,c='static',f=action_img_h[c]),
+                         ),
+                       ),
+                       TD(
+                         A(
+                           c,
+                           _onclick="""if (confirm("%(text)s")){%(s)s};"""%dict(
+                             s=self.ajax_submit(additional_inputs=[sid], args=['do_action', c, mode]),
+                             text=confirm,
+                           ),
+                         ),
+                       ),
+                     ))
+
+        if mode == "module":
+            q = db.comp_moduleset_modules.id > 0
+            o = db.comp_moduleset_modules.modset_mod_name
+            rows = db(q).select(orderby=o, groupby=o)
+            options = [OPTION(g.modset_mod_name,_value=g.modset_mod_name) for g in rows]
+            id_col = 'comp_modules.id'
+        elif mode == "moduleset":
+            q = db.comp_moduleset.id > 0
+            o = db.comp_moduleset.modset_name
+            rows = db(q).select(orderby=o)
+            options = [OPTION(g.modset_name,_value=g.modset_name) for g in rows]
+            id_col = 'comp_moduleset.id'
+
+        if mode in ["module", "modeleset"]:
+            fancy_mode = mode[0].upper()+mode[1:].lower()
+            actions = TABLE(
+                          TR(
+                            TH(
+                              T("Action"),
+                            ),
+                            TD(
+                              TABLE(*s),
+                            ),
+                          ),
+                        )
+            selector = TABLE(
+                          TR(
+                            TH(
+                              T(fancy_mode),
+                            ),
+                            TD(
+                              SELECT(
+                                *options,
+                                **dict(_id=sid,
+                                       _requires=IS_IN_DB(db, id_col))
+                              ),
+                            ),
+                          ),
+                        )
+        else:
+            actions = TABLE(*s)
+            selector = SPAN()
+
+        d = DIV(
+              A(
+                T("Run "+mode),
+                _class=cl,
+                _onclick="""
+                  click_toggle_vis(event,'%(div)s', 'block');
+                """%dict(div='tool_action_'+mode),
+              ),
+              DIV(
+                actions,
+                selector,
+                _style='display:none',
+                _class='white_float',
+                _name='tool_action_'+mode,
+                _id='tool_action_'+mode,
+              ),
+            )
+
+        return d
+
 
     def svc_del(self):
         d = DIV(
@@ -1052,6 +1177,68 @@ def service_action():
     for key in [ k for k in request.vars.keys() if 'check_' in k ]:
         ids += ([key[6:]])
 
+@auth.requires_membership('CompExec')
+def do_node_action(ids, action=None, mode=None):
+    if mode not in ("module", "moduleset", "node"):
+        raise ToolError("unsupported mode")
+    if action is None or len(action) == 0:
+        raise ToolError("no action specified")
+    if len(ids) == 0:
+        raise ToolError("no target to execute %s on"%action)
+
+    if mode in ("module", "moduleset"):
+        if not hasattr(request.vars, 'action_s_'+mode):
+            raise ToolError("no module or moduleset selected")
+        mod = request.vars['action_s_'+mode]
+
+        def fmt_action(node, action, mode):
+            cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
+                          '-o', 'ForwardX11=no',
+                          '-o', 'PasswordAuthentication=no',
+                   'opensvc@'+node,
+                   '--',
+                   'sudo', '/opt/opensvc/bin/nodemgr', 'compliance', action,
+                   '--force',
+                   '--'+mode, mod]
+            return ' '.join(cmd)
+    elif mode == "node":
+        def fmt_action(node, action, mode):
+            cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
+                          '-o', 'ForwardX11=no',
+                          '-o', 'PasswordAuthentication=no',
+                   'opensvc@'+node,
+                   '--',
+                   'sudo', '/opt/opensvc/bin/nodemgr', action,
+                   '--force']
+            return ' '.join(cmd)
+
+    q = db.v_svcmon.id.belongs(ids)
+    q &= db.v_svcmon.team_responsible.belongs(user_groups())
+    rows = db(q).select(db.v_svcmon.mon_nodname)
+
+    vals = []
+    vars = ['command']
+    for row in rows:
+        vals.append([fmt_action(row.mon_nodname, action, mode)])
+
+    purge_action_queue()
+    generic_insert('action_queue', vars, vals)
+    from subprocess import Popen
+    actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
+    process = Popen(actiond)
+    process.communicate()
+    if mode in ("module", "moduleset"):
+        _log('node.action', 'run %(a)s of %(mode)s %(m)s on nodes %(s)s', dict(
+              a=action,
+              mode=mode,
+              s=','.join(map(lambda x: x.mon_nodname, rows)),
+              m=mod))
+    elif mode == "node":
+        _log('node.action', 'run %(a)s on nodes %(s)s', dict(
+              a=action,
+              s=','.join(map(lambda x: x.mon_nodname, rows)),
+              ))
+
 def do_action(ids, action=None):
     if action is None or len(action) == 0:
         raise ToolError("no action specified")
@@ -1130,6 +1317,15 @@ def ajax_svcmon():
         try:
             if action == 'do_action':
                 do_action(t.get_checked(), saction)
+        except ToolError, e:
+            t.flash = str(e)
+    elif len(request.args) == 3:
+        action = request.args[0]
+        saction = request.args[1]
+        mode = request.args[2]
+        try:
+            if action == 'do_action':
+                do_node_action(t.get_checked(), saction, mode)
         except ToolError, e:
             t.flash = str(e)
 

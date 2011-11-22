@@ -457,6 +457,7 @@
 'No service information for %(node)s': "Pas d'informations sur le service %(node)s",
 'No service selected': 'Aucun service sélectionné',
 'Node': 'Noeud',
+'Node actions': 'Actions de noeud',
 'Node check alerts': 'Alertes des sondes de noeud',
 'Node name': 'Nom de noeud',
 'Node type': 'Type de noeud',
