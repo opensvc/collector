@@ -24,7 +24,7 @@ def insert_multiline(table, vars, valsl):
     line_wrap = lambda x: "(%(x)s)"%dict(x=','.join(map(quote_wrap, x)))
     upd = map(value_wrap, vars)
     lines = map(line_wrap, valsl)
-    sql="""insert delayed into %s (%s) values %s on duplicate key update %s""" % (table, ','.join(vars), ','.join(lines), ','.join(upd))
+    sql="""insert into %s (%s) values %s on duplicate key update %s""" % (table, ','.join(vars), ','.join(lines), ','.join(upd))
     db.executesql(sql)
     db.commit()
 

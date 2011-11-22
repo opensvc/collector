@@ -87,7 +87,7 @@ def res_action(vars, vals, auth):
     upd = []
     for a, b in zip(vars, vals):
         upd.append("%s=%s" % (a, b))
-    sql="""insert delayed into SVCactions (%s) values (%s)""" % (','.join(vars), ','.join(vals))
+    sql="""insert into SVCactions (%s) values (%s)""" % (','.join(vars), ','.join(vals))
     db.executesql(sql)
     db.commit()
     return 0
@@ -216,6 +216,7 @@ def _push_checks(vars, vals):
     if len(vals) > 0:
         nodename = vals[0][0]
         db(db.checks_live.chk_nodename==nodename).delete()
+        db.commit()
     generic_insert('checks_live', vars, vals)
     q = db.checks_live.id < 0
     for v in vals:
@@ -370,20 +371,28 @@ def insert_pkg(vars, vals, auth):
 
 def _insert_pkg(vars, vals, auth):
     now = datetime.datetime.now()
+    vars.append("pkg_updated")
+    for i, val in enumerate(vals):
+        vals[i].append(str(now))
+    threshold = now - datetime.timedelta(minutes=1)
     generic_insert('packages', vars, vals)
     nodename = auth[1].strip("'")
-    delete_old_pkg(now, nodename)
+    delete_old_pkg(threshold, nodename)
     update_dash_pkgdiff(nodename)
 
 def delete_old_pkg(threshold, nodename):
     q = db.packages.pkg_nodename == nodename
     q &= db.packages.pkg_updated < threshold
+    db.commit()
     db(q).delete()
+    db.commit()
 
 def delete_old_patches(threshold, nodename):
     q = db.patches.patch_nodename == nodename
     q &= db.patches.patch_updated < threshold
+    db.commit()
     db(q).delete()
+    db.commit()
 
 @auth_uuid
 @service.xmlrpc
@@ -392,9 +401,13 @@ def insert_patch(vars, vals, auth):
 
 def _insert_patch(vars, vals, auth):
     now = datetime.datetime.now()
+    vars.append("patch_updated")
+    for i, val in enumerate(vals):
+        vals[i].append(str(now))
+    threshold = now - datetime.timedelta(minutes=1)
     generic_insert('patches', vars, vals)
     nodename = auth[1].strip("'")
-    delete_old_patches(now, nodename)
+    delete_old_patches(threshold, nodename)
 
 @auth_uuid
 @service.xmlrpc
@@ -633,6 +646,7 @@ def svc_status_update(svcname):
     db(db.services.svc_name==svcname).update(
       svc_status=ostatus,
       svc_availstatus=astatus)
+    db.commit()
 
 def svc_log_update(svcname, astatus):
     q = db.services_log.svc_name == svcname
@@ -645,16 +659,19 @@ def svc_log_update(svcname, astatus):
             id = prev.id
             q = db.services_log.id == id
             db(q).update(svc_end=end)
+            db.commit()
         else:
             db.services_log.insert(svc_name=svcname,
                                    svc_begin=prev.svc_end,
                                    svc_end=end,
                                    svc_availstatus=astatus)
+            db.commit()
     else:
         db.services_log.insert(svc_name=svcname,
                                svc_begin=end,
                                svc_end=end,
                                svc_availstatus=astatus)
+        db.commit()
 
 def __svcmon_update(vars, vals):
     # don't trust the server's time
@@ -826,6 +843,7 @@ def __svcmon_update(vars, vals):
                  h['mon_hbstatus']]
         generic_insert('svcmon_log', _vars, _vals)
         db(db.svcmon_log.id==last[0].id).update(mon_end=h['mon_updated'])
+        db.commit()
         if h['mon_overallstatus'] == 'warn':
             level = "warning"
         else:
@@ -844,6 +862,7 @@ def __svcmon_update(vars, vals):
              level=level)
     else:
         db(db.svcmon_log.id==last[0].id).update(mon_end=h['mon_updated'])
+        db.commit()
 
 def get_defaults(row):
     q = db.checks_defaults.chk_type == row.chk_type
@@ -895,18 +914,21 @@ def update_thresholds(row):
     t = get_settings(row)
     if t is not None:
         db(db.checks_live.id==row.id).update(chk_low=t[0], chk_high=t[1], chk_threshold_provider=t[2])
+        db.commit()
         return
 
     # try to find filter-match thresholds
     t = get_filters(row)
     if t is not None:
         db(db.checks_live.id==row.id).update(chk_low=t[0], chk_high=t[1], chk_threshold_provider=t[2])
+        db.commit()
         return
 
     # try to find least precise settings (ie defaults)
     t = get_defaults(row)
     if t is not None:
         db(db.checks_live.id==row.id).update(chk_low=t[0], chk_high=t[1], chk_threshold_provider=t[2])
+        db.commit()
         return
 
     # no threshold found, leave as-is
@@ -1025,6 +1047,7 @@ def collector_ack_action(cmd, auth):
                  acked_comment=d["acked_comment"],
                  acked_date=d["acked_date"],
                  acked_by=d["acked_by"])
+    db.commit()
 
     update_action_errors(rows[0].svcname, nodename)
     update_dash_action_errors(rows[0].svcname, nodename)
@@ -1875,6 +1898,7 @@ def update_dash_pkgdiff(nodename):
         q = db.dashboard.dash_svcname.belongs(svcnames)
         q &= db.dashboard.dash_type == "package differences in cluster"
         db(q).delete()
+        db.commit()
 
     for row in rows:
         svcname = row.mon_svcname
@@ -1884,6 +1908,9 @@ def update_dash_pkgdiff(nodename):
         nodes = map(lambda x: repr(x.mon_nodname),
                     db(q).select(db.svcmon.mon_nodname))
         n = len(nodes)
+
+        if n < 2:
+            continue
 
         sql = """select count(id) from (
                    select
@@ -2379,6 +2406,7 @@ def update_dash_service_not_on_primary(svc_name, nodename, svc_type, availstatus
 def feed_enqueue(f, *args):
     import cPickle
     db.feed_queue.insert(q_fn=f, q_args=cPickle.dumps(args))
+    db.commit()
 
 def dash_crons2():
     # ~1/j
@@ -2514,6 +2542,7 @@ def feed_dequeue():
                 globals()[e.q_fn](*args)
                 stats.end()
                 db(db.feed_queue.id==e.id).delete()
+                db.commit()
             except:
                 print "Error: %s(%s)"%(e.q_fn, str(e.q_args))
                 import traceback
