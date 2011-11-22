@@ -1066,7 +1066,7 @@ $("#%(id)s").everyTime(1000, function(i){
                 o = i
             inf = []
             for c in self.cols:
-                inf.append(repr(str(self.colprops[c].get(o))))
+                inf.append(repr(self.colprops[c].get(o)))
             lines.append(';'.join(inf))
         return '\n'.join(lines)
 

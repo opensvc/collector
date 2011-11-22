@@ -567,6 +567,11 @@ def ajax_actions():
     else:
         end = t.pager_end
     t.object_list = db(q).select(limitby=(t.pager_start,end), orderby=o)
+
+    if len(request.args) == 1:
+        if request.args[0] == 'csv':
+            return t.csv()
+
     return SPAN(
               DIV(
                _id='ackpanel',
