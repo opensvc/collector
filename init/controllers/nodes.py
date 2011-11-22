@@ -549,6 +549,7 @@ def delete_svcmon(nodename):
                  mon_nodname="%(nodename)s"
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
+    db.commit()
 
 #
 # Dashboard updates
@@ -559,6 +560,7 @@ def delete_dash_node(nodename):
                  dash_nodename="%(nodename)s"
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
+    db.commit()
 
 def delete_dash_node_without_asset(nodename):
     sql = """delete from dashboard
@@ -567,6 +569,7 @@ def delete_dash_node_without_asset(nodename):
                  dash_type = "node without asset information"
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
+    db.commit()
 
 def update_dash_node_beyond_warranty_end(nodename):
     sql = """delete from dashboard
@@ -583,6 +586,7 @@ def update_dash_node_beyond_warranty_end(nodename):
                  dash_type = "node warranty expired"
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
+    db.commit()
 
 def update_dash_node_near_warranty_end(nodename):
     sql = """delete from dashboard
@@ -600,6 +604,7 @@ def update_dash_node_near_warranty_end(nodename):
                  dash_type = "node warranty expired"
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
+    db.commit()
 
 def update_dash_node_without_warranty_end(nodename):
     sql = """delete from dashboard
@@ -615,6 +620,7 @@ def update_dash_node_without_warranty_end(nodename):
                  dash_type = "node without warranty end date"
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
+    db.commit()
 
 def delete_dash_node_not_updated(nodename):
     sql = """delete from dashboard
@@ -623,4 +629,5 @@ def delete_dash_node_not_updated(nodename):
                  dash_type = "node information not updated"
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
+    db.commit()
 

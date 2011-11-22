@@ -5512,6 +5512,7 @@ def run_cve_one(row):
                      run_date="%(now)s"
               """%dict(where=where, cve_name=cve['name'], now=now)
         db.executesql(sql)
+        db.commit()
 
     if len(nodes) > 0:
         where = "where nodename not in (%s)"%','.join(map(lambda x: '"'+x+'"', nodes))
@@ -5534,3 +5535,4 @@ def run_cve_one(row):
                  run_date="%(now)s"
           """%dict(where=where, cve_name=cve['name'], now=now)
     db.executesql(sql)
+    db.commit()

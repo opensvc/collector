@@ -19,6 +19,7 @@ def rotate_stats():
      )
     """%dict(thres1=thres1, thres2=thres2)
     db.executesql(sql)
+    db.commit()
     sql = """
      delete from stats_fs_u
      where date<"%(thres2)s" and
@@ -34,6 +35,7 @@ def rotate_stats():
      )
     """%dict(thres1=thres1, thres2=thres2)
     db.executesql(sql)
+    db.commit()
 
 def refresh_b_action_errors():
     sql = """truncate b_action_errors;"""
@@ -48,6 +50,7 @@ def refresh_b_action_errors():
                group by m.mon_svcname, m.mon_nodname;
           """
     db.executesql(sql)
+    db.commit()
 
 def refresh_b_apps():
     try:
@@ -76,6 +79,7 @@ def refresh_b_apps():
         db.executesql(sql)
         sql = "insert into b_apps select * from v_apps"
         db.executesql(sql)
+    db.commit()
 
 def svc_log_update(svcname, astatus):
     q = db.services_log.svc_name == svcname
@@ -147,6 +151,7 @@ def cron_stat_day():
     sql = "insert into stat_day set day='%(end)s', %(pairs)s on duplicate key update %(pairs)s"%dict(end=end, pairs=','.join(pairs))
     #raise Exception(sql)
     db.executesql(sql)
+    db.commit()
 
     # os lifecycle
     sql2 = """replace into lifecycle_os
@@ -155,6 +160,7 @@ def cron_stat_day():
                      count(nodename),CURDATE(), os_name, os_vendor
               from nodes group by c;"""
     db.executesql(sql2)
+    db.commit()
 
     return dict(sql=sql, sql2=sql2)
 
@@ -177,6 +183,7 @@ def cron_stat_day_svc():
         sql = "insert into stat_day_svc set day='%(end)s', svcname='%(svc)s', %(pairs)s on duplicate key update %(pairs)s"%dict(end=end, svc=svc, pairs=','.join(pairs))
         #raise Exception(sql)
         db.executesql(sql)
+    db.commit()
     return dict(sql=sql)
 
 
@@ -243,6 +250,7 @@ def alerts_services_not_updated():
                from services
                where updated<date_sub(now(), interval %(age)d day);"""%dict(age=age)
     return db.executesql(sql)
+    db.commit()
 
 def alerts_svcmon_not_updated():
     """ Alert if svcmon is not updated for 2h
@@ -264,6 +272,7 @@ def alerts_svcmon_not_updated():
                from v_svcmon
                where mon_updated<date_sub(now(), interval %(age)d hour);"""%dict(age=age)
     return db.executesql(sql)
+    db.commit()
 
 def update_dash_action_errors(svc_name, nodename):
     svc_name = svc_name.strip("'")
@@ -308,6 +317,7 @@ def update_dash_action_errors(svc_name, nodename):
               """%dict(svcname=svc_name,
                        nodename=nodename)
     db.executesql(sql)
+    db.commit()
 
 def alerts_failed_actions_not_acked():
     """ Actions not ackowleged : Alert responsibles & Acknowledge
@@ -344,6 +354,7 @@ def alerts_failed_actions_not_acked():
                where
                  id in (%(ids)s);"""%dict(ids=','.join(ids))
     db.executesql(sql)
+    db.commit()
 
     import datetime
     now = datetime.datetime.now()
@@ -357,6 +368,7 @@ def alerts_failed_actions_not_acked():
                acked_by="admin@opensvc.com"
              where id in (%(ids)s);"""%dict(ids=','.join(ids), date=now)
     db.executesql(sql)
+    db.commit()
     refresh_b_action_errors()
 
     """ Update dashboard

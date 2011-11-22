@@ -655,6 +655,7 @@ def ajax_checks():
                          chk_low=request.vars.chk_low,
                          chk_high=request.vars.chk_high)
                 db.executesql(sql)
+                db.commit()
                 r = True
         if r:
             update_thresholds_batch()
@@ -702,6 +703,7 @@ def update_dash_checks(nodename):
                  dash_type = "check out of bounds"
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
+    db.commit()
 
     sql = """select environnement from nodes
              where
@@ -760,4 +762,5 @@ def update_dash_checks(nodename):
                    sev=sev,
                   )
     db.executesql(sql)
+    db.commit()
 

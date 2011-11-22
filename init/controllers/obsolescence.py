@@ -28,6 +28,7 @@ def cron_obsolescence_hw():
              group by model;
           """
     db.executesql(sql)
+    db.commit()
     update_dash_obs_hw_alert()
     update_dash_obs_hw_warn()
     return dict(message=T("done"))
@@ -40,6 +41,7 @@ def cron_obsolescence_os():
              group by os_name, os_vendor, os_release, os_update;
           """
     db.executesql(sql)
+    db.commit()
     update_dash_obs_os_alert()
     update_dash_obs_os_warn()
     return dict(message=T("done"))
@@ -364,6 +366,7 @@ def update_dash_obs_hw_warn(obs_name=None):
                 dash_type="hardware obsolescence warning"
           """%dict(where_dash_dict=where_dash_dict)
     db.executesql(sql)
+    db.commit()
 
     sql = """insert ignore into dashboard
                select
@@ -393,6 +396,7 @@ def update_dash_obs_hw_warn(obs_name=None):
                  o.obs_type = "hw"
           """%dict(where_obs_name=where_obs_name)
     db.executesql(sql)
+    db.commit()
 
 def update_dash_obs_hw_alert(obs_name=None):
     if obs_name is None:
@@ -408,6 +412,7 @@ def update_dash_obs_hw_alert(obs_name=None):
                 dash_type="hardware obsolescence alert"
           """%dict(where_dash_dict=where_dash_dict)
     db.executesql(sql)
+    db.commit()
 
     sql = """insert ignore into dashboard
                select
@@ -436,6 +441,7 @@ def update_dash_obs_hw_alert(obs_name=None):
                  o.obs_type = "hw"
           """%dict(where_obs_name=where_obs_name)
     db.executesql(sql)
+    db.commit()
 
 def update_dash_obs_os_warn(obs_name=None):
     if obs_name is None:
@@ -451,6 +457,7 @@ def update_dash_obs_os_warn(obs_name=None):
                 dash_type="os obsolescence warning"
           """%dict(where_dash_dict=where_dash_dict)
     db.executesql(sql)
+    db.commit()
 
     sql = """insert ignore into dashboard
                select
@@ -477,6 +484,7 @@ def update_dash_obs_os_warn(obs_name=None):
                  o.obs_type = "os"
           """%dict(where_obs_name=where_obs_name)
     db.executesql(sql)
+    db.commit()
 
 def update_dash_obs_os_alert(obs_name=None):
     if obs_name is None:
@@ -492,6 +500,7 @@ def update_dash_obs_os_alert(obs_name=None):
                 dash_type="os obsolescence alert"
           """%dict(where_dash_dict=where_dash_dict)
     db.executesql(sql)
+    db.commit()
 
     sql = """insert ignore into dashboard
                select
@@ -517,6 +526,7 @@ def update_dash_obs_os_alert(obs_name=None):
                  o.obs_type = "os"
           """%dict(where_obs_name=where_obs_name)
     db.executesql(sql)
+    db.commit()
 
 def delete_dash_obs_without(obs_name, t, a):
     if t == "hw":
@@ -533,5 +543,6 @@ def delete_dash_obs_without(obs_name, t, a):
                dash_type="%(tl)s obsolescence %(al)s date not set"
           """%dict(obs_name=obs_name, tl=tl, al=al)
     db.executesql(sql)
+    db.commit()
 
 

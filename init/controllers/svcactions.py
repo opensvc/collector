@@ -47,6 +47,7 @@ def update_dash_action_errors(svc_name, nodename):
               """%dict(svcname=svc_name,
                        nodename=nodename)
     db.executesql(sql)
+    db.commit()
  
 def update_action_errors(actionid):
     sql = """insert into b_action_errors set
@@ -66,8 +67,10 @@ def update_action_errors(actionid):
                        ((a.ack <> 1) or isnull(a.ack)))
           """%dict(id=actionid)
     db.executesql(sql)
+    db.commit()
     sql = """delete from b_action_errors where err=0"""
     db.executesql(sql)
+    db.commit()
 
 @auth.requires_login()
 def ajax_action_status():

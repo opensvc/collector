@@ -20,6 +20,7 @@ def ajax_set_user_prefs_column():
         db.executesql(sql)
     except:
         raise Exception(sql)
+    db.commit()
 
 @auth.requires_login()
 def ajax_select_filter():
