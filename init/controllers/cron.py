@@ -40,6 +40,7 @@ def rotate_stats():
 def refresh_b_action_errors():
     sql = """truncate b_action_errors;"""
     db.executesql(sql)
+    db.commit()
     sql = """insert into b_action_errors
                select NULL, m.mon_svcname, m.mon_nodname, count(a.id)
                from svcmon m
