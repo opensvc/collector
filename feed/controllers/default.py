@@ -369,8 +369,32 @@ def insert_pkg(vars, vals, auth):
     feed_enqueue("_insert_pkg", vars, vals, auth)
 
 def _insert_pkg(vars, vals, auth):
+    now = datetime.datetime.now()
     generic_insert('packages', vars, vals)
-    update_dash_pkgdiff(auth[1])
+    nodename = auth[1].strip("'")
+    delete_old_pkg(now, nodename)
+    update_dash_pkgdiff(nodename)
+
+def delete_old_pkg(threshold, nodename):
+    q = db.packages.pkg_nodename == nodename
+    q &= db.packages.pkg_updated < threshold
+    db(q).delete()
+
+def delete_old_patches(threshold, nodename):
+    q = db.patches.patch_nodename == nodename
+    q &= db.patches.patch_updated < threshold
+    db(q).delete()
+
+@auth_uuid
+@service.xmlrpc
+def insert_patch(vars, vals, auth):
+    feed_enqueue("_insert_patch", vars, vals, auth)
+
+def _insert_patch(vars, vals, auth):
+    now = datetime.datetime.now()
+    generic_insert('patches', vars, vals)
+    nodename = auth[1].strip("'")
+    delete_old_patches(now, nodename)
 
 @auth_uuid
 @service.xmlrpc
@@ -417,23 +441,12 @@ def update_sym_xml(symid, vars, vals, auth):
 @auth_uuid
 @service.xmlrpc
 def delete_pkg(node, auth):
-    if node is None or node == '':
-        return 0
-    db(db.packages.pkg_nodename==node).delete()
-    db.commit()
-
-@auth_uuid
-@service.xmlrpc
-def insert_patch(vars, vals, auth):
-    generic_insert('patches', vars, vals)
+    pass
 
 @auth_uuid
 @service.xmlrpc
 def delete_patch(node, auth):
-    if node is None or node == '':
-        return 0
-    db(db.patches.patch_nodename==node).delete()
-    db.commit()
+    pass
 
 @auth_uuid
 @service.xmlrpc
@@ -1852,13 +1865,18 @@ def update_dash_node_not_updated(nodename):
 
 def update_dash_pkgdiff(nodename):
     nodename = nodename.strip("'")
-    q = db.dashboard.dash_nodename == nodename
-    db(q).delete()
 
     q = db.svcmon.mon_nodname == nodename
     q &= db.svcmon.mon_updated > datetime.datetime.now() - datetime.timedelta(minutes=20)
-    for row in db(q).select(db.svcmon.mon_svcname,
-                            db.svcmon.mon_svctype):
+    rows = db(q).select(db.svcmon.mon_svcname, db.svcmon.mon_svctype)
+    svcnames = map(lambda x: x.mon_svcname, rows)
+
+    if len(rows) > 0:
+        q = db.dashboard.dash_svcname.belongs(svcnames)
+        q &= db.dashboard.dash_type == "package differences in cluster"
+        db(q).delete()
+
+    for row in rows:
         svcname = row.mon_svcname
 
         q = db.svcmon.mon_svcname == svcname
