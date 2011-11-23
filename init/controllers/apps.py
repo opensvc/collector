@@ -1,3 +1,33 @@
+def refresh_b_apps():
+    try:
+        sql = "drop table if exists b_apps_new"
+        db.executesql(sql)
+        sql = "create table b_apps_new like b_apps"
+        db.executesql(sql)
+        sql = "insert into b_apps_new select * from v_apps"
+        db.executesql(sql)
+        sql = "drop table if exists b_apps_old"
+        db.executesql(sql)
+        sql = "rename table b_apps to b_apps_old, b_apps_new to b_apps"
+        db.executesql(sql)
+    except:
+        sql = "drop table if exists b_apps"
+        db.executesql(sql)
+        sql = """CREATE TABLE `b_apps` (
+  `id` int(11) NOT NULL DEFAULT '0',
+  `app` varchar(20) CHARACTER SET latin1 NOT NULL,
+  `roles` varchar(342) DEFAULT NULL,
+  `responsibles` varchar(342) DEFAULT NULL,
+  `mailto` varchar(342) DEFAULT NULL,
+  KEY `i_app` (`app`)
+)
+"""
+        db.executesql(sql)
+        sql = "insert into b_apps select * from v_apps"
+        db.executesql(sql)
+    db.commit()
+
+
 class table_apps(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -233,6 +263,8 @@ def app_add():
     if db(q).count() > 0:
         raise ToolError("add application failed: application already exists")
     db.apps.insert(app=app)
+    db.commit()
+    refresh_b_apps()
     _log('apps.app.add',
          'added app %(a)s',
          dict(a=app))
@@ -244,6 +276,8 @@ def app_del(ids):
     g = db(q).select(db.apps.app)[0].app
     db(db.apps_responsibles.app_id.belongs(ids)).delete()
     db(q).delete()
+    db.commit()
+    refresh_b_apps()
     _log('apps.app.delete',
          'deleted apps %(u)s',
          dict(u=u))
