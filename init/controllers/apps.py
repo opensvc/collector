@@ -38,7 +38,7 @@ class table_apps(HtmlTable):
                     ),
         }
         self.ajax_col_values = 'ajax_apps_col_values'
-        self.dbfilterable = True
+        #self.dbfilterable = True
         self.checkboxes = True
         self.checkbox_id_table = 'v_apps'
         self.checkbox_id_col = 'id'
@@ -176,7 +176,6 @@ def ajax_apps_col_values():
     t.object_list = db(q).select(orderby=o, groupby=o)
     for f in t.cols:
         q = _where(q, 'v_apps', t.filter_parse(f), f)
-    q = apply_gen_filters(q, t.tables())
     t.object_list = db(q).select(o, orderby=o, groupby=o)
     return t.col_values_cloud(col)
 
@@ -271,7 +270,6 @@ def ajax_apps():
     q = db.v_apps.id > 0
     for f in t.cols:
         q = _where(q, 'v_apps', t.filter_parse(f), f)
-    q = apply_gen_filters(q, t.tables())
     t.setup_pager()
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
                                  orderby=o, groupby=o)
