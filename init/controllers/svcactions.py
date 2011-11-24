@@ -506,7 +506,7 @@ def ajax_actions_col_values():
     col = request.args[0]
     o = db.v_svcactions[col]
     q = _where(None, 'v_svcactions', domain_perms(), 'hostname')
-    q = apply_gen_filters(q, t.tables())
+    q = apply_filters(q, db.v_svcactions.hostname, db.v_svcactions.svcname)
     for f in t.cols:
         q = _where(q, 'v_svcactions', t.filter_parse(f), f)
     t.object_list = db(q).select(db.v_svcactions[col],
@@ -557,7 +557,7 @@ def ajax_actions():
 
     o = ~db.v_svcactions.id
     q = _where(None, 'v_svcactions', domain_perms(), 'hostname')
-    q = apply_gen_filters(q, t.tables())
+    q = apply_filters(q, db.v_svcactions.hostname, db.v_svcactions.svcname)
     for f in t.cols:
         q = _where(q, 'v_svcactions', t.filter_parse(f), f)
     n = db(q).count()
