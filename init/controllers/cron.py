@@ -370,7 +370,6 @@ def alerts_failed_actions_not_acked():
              where id in (%(ids)s);"""%dict(ids=','.join(ids), date=now)
     db.executesql(sql)
     db.commit()
-    refresh_b_action_errors()
 
     """ Update dashboard
     """
@@ -383,6 +382,7 @@ def cron_alerts_daily():
     alerts_apps_without_responsible()
     alerts_services_not_updated()
     alerts_failed_actions_not_acked()
+    refresh_b_action_errors()
 
 def cron_alerts_hourly():
     rets = []
