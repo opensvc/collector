@@ -26,7 +26,6 @@ def ajax_stats():
     d = DIV(
      DIV(
        t.html(),
-       _id="stats",
      ),
      DIV(
        H2(T("Services")),
@@ -191,6 +190,7 @@ def ajax_stats():
        ),
        _name=t.id+'_to_eval',
      ),
+     _id="stats",
    )
     return d
 
