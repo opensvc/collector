@@ -1801,3 +1801,28 @@ drop table dashboard_tmp;
 create view v_network_segments as (select s.*, group_concat(g.role separator ", ") as teams_responsible from network_segments s left join network_segment_responsibles sr on s.id=sr.seg_id left join auth_group g on sr.group_id=g.id group by s.id);
 
 alter table services modify svc_vcpus float default 0;
+
+#
+
+alter table stat_day add column fset_id integer default 0;
+
+alter table stat_day drop key new_index;
+
+alter table stat_day add unique key stat_day_uk1 (day, fset_id);
+
+alter table lifecycle_os add column fset_id integer default 0;
+
+alter table lifecycle_os drop key idx1;
+
+alter table lifecycle_os add unique key lifecycle_os_uk1 (lc_os_concat, lc_date, fset_id);
+
+alter table stat_day modify column ram_size int(11) default 0;
+alter table stat_day modify column nb_cpu_core int(11) default 0;
+alter table stat_day modify column nb_cpu_die int(11) default 0;
+alter table stat_day modify column watt int(11) default 0;
+alter table stat_day modify column rackunit int(11) default 0;
+
+drop view v_lifecycle_os_name;
+
+CREATE VIEW `v_lifecycle_os_name` AS select `lifecycle_os`.`id` AS `id`,`lifecycle_os`.`fset_id` AS `fset_id`, `lifecycle_os`.`lc_date` AS `lc_date`,sum(`lifecycle_os`.`lc_count`) AS `lc_count`,`lifecycle_os`.`lc_os_name` AS `lc_os_name` from `lifecycle_os` group by `lifecycle_os`.`lc_date`,`lifecycle_os`.`lc_os_name`,`lifecycle_os`.`fset_id` order by `lifecycle_os`.`lc_date`,`lifecycle_os`.`lc_os_name`;
+

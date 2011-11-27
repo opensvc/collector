@@ -109,6 +109,48 @@ def domainname(fqdn):
     l[0] = ""
     return '.'.join(l)
 
+def user_fset_id():
+    q = db.gen_filterset_user.user_id == auth.user_id
+    row = db(q).select(db.gen_filterset_user.fset_id).first()
+    if row is None:
+        return 0
+    return row.fset_id
+
+def user_fset_name():
+    q = db.gen_filterset_user.user_id == auth.user_id
+    q &= db.gen_filterset_user.fset_id == db.gen_filtersets.id
+    row = db(q).select(db.gen_filtersets.fset_name).first()
+    if row is None:
+        return 0
+    return row.gen_filtersets.fset_name
+
+def or_apply_filters(q, node_field=None, service_field=None, fset_id=None):
+    if fset_id is None:
+        v = db.v_gen_filtersets
+        o = v.f_order
+        qry = db.gen_filterset_user.fset_id == v.fset_id
+        qry &= db.gen_filterset_user.user_id == auth.user_id
+    else:
+        qry = db.v_gen_filtersets.fset_id == fset_id
+
+    rows = db(qry).select()
+    nodes = set([])
+    services = set([])
+    for row in rows:
+        nodes, services = filterset_query(row, nodes, services)
+
+    n_nodes = len(nodes)
+    n_services = len(services)
+
+    if n_nodes > 0 and n_services > 0 and node_field is not None and service_field is not None:
+        q |= (node_field.belongs(nodes)) | (service_field.belongs(services))
+    elif len(nodes) > 0 and node_field is not None:
+        q |= node_field.belongs(nodes)
+    elif len(services) > 0 and service_field is not None:
+        q |= service_field.belongs(services)
+
+    return q
+
 def apply_filters(q, node_field=None, service_field=None, fset_id=None):
     if fset_id is None:
         v = db.v_gen_filtersets

@@ -8,10 +8,195 @@ def call():
     session.forget()
     return service()
 
+class table_stats(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.dbfilterable = True
+        self.refreshable = False
+        self.pageable = False
+        self.exportable = False
+        self.columnable = False
+        self.object_list = []
+
+@auth.requires_login()
+def ajax_stats():
+    t = table_stats('stats', 'ajax_stats')
+    d = DIV(
+     DIV(
+       t.html(),
+       _id="stats",
+     ),
+     DIV(
+       H2(T("Services")),
+       DIV(
+         _id='stat_day_svc_drp',
+         _class='float',
+       ),
+       DIV(
+         _id='stat_day_svc_cluster',
+         _class='float',
+       ),
+       DIV(
+         _id='stat_day_svc_type',
+         _class='float',
+       ),
+       DIV(
+         _id='stat_day_apps',
+         _class='float',
+       ),
+       DIV(
+         XML('&nbsp;'),
+         _class='spacer',
+       ),
+       _class='container',
+     ),
+     DIV(
+       H2(T("Nodes")),
+       DIV(
+         _id='stat_day_nodes',
+         _class='float',
+       ),
+       DIV(
+         XML('&nbsp;'),
+         _class='spacer',
+       ),
+       _class='container',
+     ),
+     DIV(
+       H2(T("Actions")),
+       DIV(
+         _id='stat_day_actions',
+         _class='float',
+       ),
+       DIV(
+         _id='stat_day_err',
+         _class='float',
+       ),
+       DIV(
+         XML('&nbsp;'),
+         _class='spacer',
+       ),
+       _class='container',
+     ),
+     DIV(
+       H2(T("Disks")),
+       DIV(
+         _id='stat_day_disk',
+         _class='float',
+       ),
+       DIV(
+         _id='stat_day_svc_disk',
+         _class='float',
+       ),
+       DIV(
+         _id='stat_day_svc_disk',
+         _class='float',
+       ),
+       DIV(
+         XML('&nbsp;'),
+         _class='spacer',
+       ),
+       _class='container',
+     ),
+     DIV(
+       H2(T("Computing ressource usage")),
+       DIV(
+         _id='stat_day_node_cpu',
+         _class='float',
+       ),
+       DIV(
+         _id='stat_day_node_mem',
+         _class='float',
+       ),
+       DIV(
+         _id='stat_day_node_swp',
+         _class='float',
+       ),
+       DIV(
+         _id='stat_day_node_proc_runq_sz',
+         _class='float',
+       ),
+       DIV(
+         _id='stat_day_node_proc_plist_sz',
+         _class='float',
+       ),
+       DIV(
+         _id='stat_day_node_block_tps',
+         _class='float',
+       ),
+       DIV(
+         _id='stat_day_node_block_bps',
+         _class='float',
+       ),
+       DIV(
+         XML('&nbsp;'),
+         _class='spacer',
+       ),
+       _class='container',
+     ),
+     DIV(
+       H2(T("Collector user accounts")),
+       DIV(
+         _class='float',
+         _id='stat_day_accounts',
+       ),
+       DIV(
+         XML('&nbsp;'),
+         _class='spacer',
+       ),
+       _class='container',
+     ),
+     SCRIPT(
+       "stat_day('%(url)s', 'stat_day');"%dict(
+         url=URL(r=request,
+                 f='call/json/json_stat_day'),
+       ),
+       "stats_avg_cpu_for_nodes('%(url)s', 'stat_day_node_cpu');"%dict(
+         url=URL(r=request,
+                 f='call/json/json_avg_cpu_for_nodes',
+                 vars={'higher':15}
+          )
+       ),
+       "stats_avg_mem_for_nodes('%(url)s', 'stat_day_node_mem');"%dict(
+         url=URL(r=request,
+                 f='call/json/json_avg_mem_for_nodes',
+                 vars={'lower':15}
+          )
+       ),
+       "stats_avg_proc_for_nodes('%(url)s', 'stat_day_node_proc');"%dict(
+         url=URL(r=request,
+                 f='call/json/json_avg_proc_for_nodes',
+                 vars={'higher':15}
+          )
+       ),
+       "stats_avg_block_for_nodes('%(url)s', 'stat_day_node_block');"%dict(
+         url=URL(r=request,
+                 f='call/json/json_avg_block_for_nodes',
+                 vars={'higher':15}
+          )
+       ),
+       "stats_avg_swp_for_nodes('%(url)s', 'stat_day_node_swp');"%dict(
+         url=URL(r=request,
+                 f='call/json/json_avg_swp_for_nodes',
+                 vars={'lower':15}
+          )
+       ),
+       "stats_disk_for_svc('%(url)s', 'stat_day_svc_disk');"%dict(
+         url=URL(r=request,
+                 f='call/json/json_disk_for_svc',
+                 vars={'higher':15}
+          )
+       ),
+       _name=t.id+'_to_eval',
+     ),
+   )
+    return d
+
 @auth.requires_login()
 def stats():
-    d = {}
-    return d
+    return dict(table=ajax_stats())
 
 @auth.requires_login()
 def ajax_perfcmp_plot():
@@ -129,23 +314,30 @@ def ajax_perfcmp_plot():
 #
 @auth.requires_login()
 def rows_stat_day():
+    fset_id = user_fset_id()
     o = db.stat_day.id
     q = o > 0
+    q &= db.stat_day.fset_id == fset_id
     b = db(q).select(orderby=o, limitby=(0,1)).first().day
     e = db(q).select(orderby=~o, limitby=(0,1)).first().day
     sql = """select *, %(d)s as d
              from stat_day
+             where fset_id=%(fset_id)d
              group by d
-             order by d"""%dict(d=period_concat(b, e, field='day'))
+             order by d"""%dict(d=period_concat(b, e, field='day'),
+                                fset_id=fset_id)
     return db.executesql(sql)
 
 @auth.requires_login()
 def rows_stats_disks_per_svc(nodes=[], begin=None, end=None, lower=None, higher=None):
     if len(nodes) > 0:
         nodes = map(repr, nodes)
-        nodes = 'and v.mon_nodname in (%s)'%','.join(nodes)
     else:
-        nodes = ''
+        q = db.nodes.id > 0
+        q = apply_filters(q, db.nodes.nodename)
+        nodes = [repr(r.nodename) for r in db(q).select(db.nodes.nodename)]
+    nodes = 'and v.mon_nodname in (%s)'%','.join(nodes)
+
     dom = _domain_perms()
     if begin is None or end is None:
         now = datetime.datetime.now()
@@ -186,9 +378,12 @@ def rows_avg_cpu_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=No
     """
     if len(nodes) > 0:
         nodes = map(repr, nodes)
-        nodes = 'and nodename in (%s)'%','.join(nodes)
     else:
-        nodes = ''
+        q = db.nodes.id > 0
+        q = apply_filters(q, db.nodes.nodename)
+        nodes = [repr(r.nodename) for r in db(q).select(db.nodes.nodename)]
+    nodes = 'and nodename in (%s)'%','.join(nodes)
+
     dom = _domain_perms()
     if begin is None or end is None:
         now = datetime.datetime.now()
@@ -229,9 +424,12 @@ def rows_avg_mem_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=No
     """
     if len(nodes) > 0:
         nodes = map(repr, nodes)
-        nodes = 'and nodename in (%s)'%','.join(nodes)
     else:
-        nodes = ''
+        q = db.nodes.id > 0
+        q = apply_filters(q, db.nodes.nodename)
+        nodes = [repr(r.nodename) for r in db(q).select(db.nodes.nodename)]
+    nodes = 'and nodename in (%s)'%','.join(nodes)
+
     dom = _domain_perms()
     if begin is None or end is None:
         now = datetime.datetime.now()
@@ -267,9 +465,12 @@ def rows_avg_mem_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=No
 def rows_avg_swp_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=None):
     if len(nodes) > 0:
         nodes = map(repr, nodes)
-        nodes = 'and nodename in (%s)'%','.join(nodes)
     else:
-        nodes = ''
+        q = db.nodes.id > 0
+        q = apply_filters(q, db.nodes.nodename)
+        nodes = [repr(r.nodename) for r in db(q).select(db.nodes.nodename)]
+    nodes = 'and nodename in (%s)'%','.join(nodes)
+
     dom = _domain_perms()
     if begin is None or end is None:
         now = datetime.datetime.now()
@@ -304,9 +505,12 @@ def rows_avg_swp_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=No
 def rows_avg_proc_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=None):
     if len(nodes) > 0:
         nodes = map(repr, nodes)
-        nodes = 'and nodename in (%s)'%','.join(nodes)
     else:
-        nodes = ''
+        q = db.nodes.id > 0
+        q = apply_filters(q, db.nodes.nodename)
+        nodes = [repr(r.nodename) for r in db(q).select(db.nodes.nodename)]
+    nodes = 'and nodename in (%s)'%','.join(nodes)
+
     dom = _domain_perms()
     if begin is None or end is None:
         now = datetime.datetime.now()
@@ -344,9 +548,12 @@ def rows_avg_proc_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=N
 def rows_avg_block_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=None):
     if len(nodes) > 0:
         nodes = map(repr, nodes)
-        nodes = 'and nodename in (%s)'%','.join(nodes)
     else:
-        nodes = ''
+        q = db.nodes.id > 0
+        q = apply_filters(q, db.nodes.nodename)
+        nodes = [repr(r.nodename) for r in db(q).select(db.nodes.nodename)]
+    nodes = 'and nodename in (%s)'%','.join(nodes)
+
     dom = _domain_perms()
     if begin is None or end is None:
         now = datetime.datetime.now()

@@ -129,6 +129,8 @@ def cron_stats():
     cron_stat_day_svc()
 
 def cron_stat_day():
+    # global stats
+
     #when = datetime.datetime.now()-datetime.timedelta(days=14)
     when = None
     if when is None:
@@ -136,34 +138,177 @@ def cron_stat_day():
     begin = datetime.datetime(year=when.year, month=when.month, day=when.day, hour=0, minute=0, second=0)
     end = begin + datetime.timedelta(days=1, seconds=-1)
 
-    pairs = ["nb_svc=(select count(distinct svc_name) from services)"]
-    pairs += ["nb_action=(select count(distinct id) from SVCactions where begin>'%s' and begin<'%s')"%(begin, end)]
-    pairs += ["nb_action_err=(select count(distinct id) from SVCactions where begin>'%s' and begin<'%s' and status='err')"%(begin, end)]
-    pairs += ["nb_action_warn=(select count(distinct id) from SVCactions where begin>'%s' and begin<'%s' and status='warn')"%(begin, end)]
-    pairs += ["nb_action_ok=(select count(distinct id) from SVCactions where begin>'%s' and begin<'%s' and status='ok')"%(begin, end)]
-    pairs += ["nb_apps=(select count(distinct svc_app) from services)"]
-    pairs += ["nb_accounts=(select count(distinct id) from auth_user)"]
-    pairs += ["nb_svc_with_drp=(select count(distinct svc_name) from services where svc_drpnode is not NULL and svc_drpnode!='')"]
-    pairs += ["nb_svc_prd=(select count(distinct svc_name) from services where svc_type='PRD')"]
-    pairs += ["nb_svc_cluster=(select sum(length(svc_nodes)-length(replace(svc_nodes,' ',''))+1>1) from services)"]
-    pairs += ["nb_nodes=(select count(distinct mon_nodname) from svcmon)"]
-    pairs += ["nb_nodes_prd=(select count(distinct mon_nodname) from v_svcmon where environnement='PRD')"]
-    pairs += ["disk_size=(select ifnull((select sum(t.disk_size) from (select distinct s.disk_id, s.disk_size from svcdisks s) t), 0))"]
-    sql = "insert into stat_day set day='%(end)s', %(pairs)s on duplicate key update %(pairs)s"%dict(end=end, pairs=','.join(pairs))
-    #raise Exception(sql)
-    db.executesql(sql)
+    _cron_stat_day(end)
+
+    # per filterset stats
+    rows = db(db.gen_filtersets.id>0).select(db.gen_filtersets.id)
+    for row in rows:
+        _cron_stat_day(end, row.id)
+
+def stat_nb_nodes(fset_id):
+    q = db.nodes.id < 0
+    q = or_apply_filters(q, db.nodes.nodename, None, fset_id)
+    n = db(q).count()
+    print "stat_nb_nodes():", str(n)
+    return n
+
+def stat_nb_nodes_prd(fset_id):
+    q = db.nodes.environnement.like("%pr%")
+    q = apply_filters(q, db.nodes.nodename, None, fset_id)
+    n = db(q).count()
+    print "stat_nb_nodes_prd():", str(n)
+    return n
+
+def stat_nb_svc(fset_id):
+    q = db.services.id < 0
+    q = or_apply_filters(q, None, db.services.svc_name, fset_id)
+    n = db(q).count()
+    print "stat_nb_svc():", str(n)
+    return n
+
+def stat_nb_svc_cluster(fset_id):
+    q = db.services.svc_nodes.like("%,%")
+    q = apply_filters(q, None, db.services.svc_name, fset_id)
+    n = db(q).count()
+    print "stat_nb_svc_cluster():", str(n)
+    return n
+
+def stat_nb_svc_prd(fset_id):
+    q = db.services.svc_type == "PRD"
+    q = apply_filters(q, None, db.services.svc_name, fset_id)
+    n = db(q).count()
+    print "stat_nb_svc_prd():", str(n)
+    return n
+
+def stat_nb_svc_with_drp(fset_id):
+    q = db.services.svc_drpnodes != None
+    q &= db.services.svc_drpnodes != ""
+    q = apply_filters(q, None, db.services.svc_name, fset_id)
+    n = db(q).count()
+    print "stat_nb_svc_with_drp():", str(n)
+    return n
+
+def stat_nb_action(fset_id):
+    q = db.SVCactions.id > 0
+    q = apply_filters(q, db.SVCactions.hostname, db.SVCactions.svcname, fset_id)
+    n = db(q).count()
+    print "stat_nb_action():", str(n)
+    return n
+
+def stat_nb_action_err(fset_id):
+    q = db.SVCactions.status == "err"
+    q = apply_filters(q, db.SVCactions.hostname, db.SVCactions.svcname, fset_id)
+    n = db(q).count()
+    print "stat_nb_action_err():", str(n)
+    return n
+
+def stat_nb_action_warn(fset_id):
+    q = db.SVCactions.status == "warn"
+    q = apply_filters(q, db.SVCactions.hostname, db.SVCactions.svcname, fset_id)
+    n = db(q).count()
+    print "stat_nb_action_warn():", str(n)
+    return n
+
+def stat_nb_action_ok(fset_id):
+    q = db.SVCactions.status == "ok"
+    q = apply_filters(q, db.SVCactions.hostname, db.SVCactions.svcname, fset_id)
+    n = db(q).count()
+    print "stat_nb_action_ok():", str(n)
+    return n
+
+def stat_nb_apps(fset_id):
+    q = db.apps.app == db.services.svc_app
+    q = apply_filters(q, None, db.services.svc_name, fset_id)
+    n = len(db(q).select(groupby=db.apps.app))
+    print "stat_nb_apps():", str(n)
+    return n
+
+def stat_nb_accounts(fset_id):
+    q = db.auth_user.id == db.auth_membership.user_id
+    q &= db.auth_group.id == db.auth_membership.group_id
+    q &= db.services.svc_app == db.apps.app
+    q &= db.apps_responsibles.app_id == db.apps.id
+    q &= db.apps_responsibles.group_id == db.auth_group.id
+    q = apply_filters(q, None, db.services.svc_name, fset_id)
+    n = len(db(q).select(db.auth_user.id, groupby=db.auth_user.id))
+    print "stat_nb_accounts():", str(n)
+    return n
+
+def stat_disk_size(fset_id):
+    q = db.svcdisks.id > 0
+    q = apply_filters(q, db.svcdisks.disk_nodename, db.svcdisks.disk_svcname, fset_id)
+    rows = db(q).select(groupby=db.svcdisks.id)
+    s = 0
+    for row in rows:
+        if row.disk_size is None:
+            continue
+        s += row.disk_size
+    print "stat_disk_size():", str(s)
+    return s
+
+def _cron_stat_day(end, fset_id=None):
+    q = db.stat_day.day == end
+    if fset_id is None:
+        q &= db.stat_day.fset_id == 0
+    else:
+        q &= db.stat_day.fset_id == fset_id
+    print "stat_day:", end, "fset_id:", fset_id if fset_id is not None else 0
+    if db(q).count() == 0:
+        db.stat_day.insert(
+          day=end,
+          fset_id=fset_id if fset_id is not None else 0,
+          nb_svc=stat_nb_svc(fset_id),
+          nb_action=stat_nb_action(fset_id),
+          nb_action_err=stat_nb_action_err(fset_id),
+          nb_action_warn=stat_nb_action_warn(fset_id),
+          nb_action_ok=stat_nb_action_ok(fset_id),
+          nb_apps=stat_nb_apps(fset_id),
+          nb_accounts=stat_nb_accounts(fset_id),
+          nb_svc_with_drp=stat_nb_svc_with_drp(fset_id),
+          nb_svc_prd=stat_nb_svc_prd(fset_id),
+          nb_svc_cluster=stat_nb_svc_cluster(fset_id),
+          nb_nodes=stat_nb_nodes(fset_id),
+          nb_nodes_prd=stat_nb_nodes_prd(fset_id),
+          disk_size=stat_disk_size(fset_id),
+        )
+    else:
+        db(q).update(
+          day=end,
+          fset_id=fset_id if fset_id is not None else 0,
+          nb_svc=stat_nb_svc(fset_id),
+          nb_action=stat_nb_action(fset_id),
+          nb_action_err=stat_nb_action_err(fset_id),
+          nb_action_warn=stat_nb_action_warn(fset_id),
+          nb_action_ok=stat_nb_action_ok(fset_id),
+          nb_apps=stat_nb_apps(fset_id),
+          nb_accounts=stat_nb_accounts(fset_id),
+          nb_svc_with_drp=stat_nb_svc_with_drp(fset_id),
+          nb_svc_prd=stat_nb_svc_prd(fset_id),
+          nb_svc_cluster=stat_nb_svc_cluster(fset_id),
+          nb_nodes=stat_nb_nodes(fset_id),
+          nb_nodes_prd=stat_nb_nodes_prd(fset_id),
+          disk_size=stat_disk_size(fset_id),
+        )
     db.commit()
 
     # os lifecycle
+    print "os lifecycle: %s, fset_id: %d"%(end, fset_id if fset_id is not None else 0)
+    q = db.nodes.id < 0
+    q = or_apply_filters(q, db.nodes.nodename, None, fset_id)
+    nodes = ','.join([repr(r.nodename) for r in db(q).select()])
+    if len(nodes) >0:
+        where_nodes = "where nodename in (%s)"%nodes
+    else:
+        where_nodes = ""
+
     sql2 = """replace into lifecycle_os
-              (lc_os_concat, lc_count, lc_date, lc_os_name, lc_os_vendor)
-              select concat_ws(' ', os_name, os_vendor, os_release, os_arch) c,
+              (fset_id, lc_os_concat, lc_count, lc_date, lc_os_name, lc_os_vendor)
+              select %d,
+                     concat_ws(' ', os_name, os_vendor, os_release, os_arch) c,
                      count(nodename),CURDATE(), os_name, os_vendor
-              from nodes group by c;"""
+              from nodes %s group by c;"""%(fset_id if fset_id is not None else 0, where_nodes)
     db.executesql(sql2)
     db.commit()
-
-    return dict(sql=sql, sql2=sql2)
 
 def cron_stat_day_svc():
     when = None
