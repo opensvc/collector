@@ -420,6 +420,17 @@ def alerts_svcmon_not_updated():
     return db.executesql(sql)
     db.commit()
 
+def refresh_dash_action_errors():
+    sql = """delete from dashboard
+             where
+               dash_type like "%action err%" and
+               (dash_svcname, dash_nodename) not in (
+                 select nodename, svcname
+                 from b_action_errors
+               )"""
+    db.executesql(sql)
+    db.commit()
+
 def update_dash_action_errors(svc_name, nodename):
     svc_name = svc_name.strip("'")
     nodename = nodename.strip("'")
@@ -528,6 +539,7 @@ def cron_alerts_daily():
     alerts_services_not_updated()
     alerts_failed_actions_not_acked()
     refresh_b_action_errors()
+    refresh_dash_action_errors()
 
 def cron_alerts_hourly():
     rets = []
