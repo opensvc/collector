@@ -116,6 +116,10 @@ class HtmlTable(object):
         # drop stored filters if request asks for it
         self.drop_filters()
 
+        # csv
+        self.csv_q = None
+        self.csv_orderby = None
+
     def __iadd__(self, o):
         if isinstance(o, HtmlTableMenu):
             o.table = self
@@ -1057,11 +1061,20 @@ $("#%(id)s").everyTime(1000, function(i){
     def change_line_data(self, o):
         pass
 
+    def csv_object_list(self):
+        if self.csv_q is None:
+            return self.object_list
+        if self.csv_orderby is None:
+            return db(self.csv_q).select(limitby=(0,1000))
+        else:
+            return db(self.csv_q).select(orderby=self.csv_orderby, limitby=(0,1000))
+
     def _csv(self):
         lines = [';'.join(self.cols)]
-        for i in self.object_list:
+        object_list = self.csv_object_list()
+        for i in object_list:
             if isinstance(i, str) or isinstance(i, unicode) or isinstance(i, int):
-                o = self.object_list[i]
+                o = object_list[i]
             else:
                 o = i
             inf = []

@@ -4198,6 +4198,8 @@ def ajax_comp_status():
     #all = db(q).select(db.comp_status.ALL, db.v_nodes.id)
     table_comp_status_add_vfields(t)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    t.csv_q = q
+    t.csv_orderby = o
 
     def chart(a, b, c, d):
         total = a + b + c + d
