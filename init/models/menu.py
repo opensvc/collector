@@ -75,7 +75,7 @@ response.menu = [
               URL(request.application,'patches','patches')],
              [SPAN(T('Compliance'), _class='comp16'), False,
               URL(request.application,'compliance','comp_status',
-                  vars={'0_f_run_date': '>'+sevendays,
+                  vars={'cs0_f_run_date': '>'+sevendays,
                         'clear_filters': 'true'})],
              [SPAN(T('App Info'), _class='svc'), False,
               URL(request.application,'appinfo','appinfo')],
