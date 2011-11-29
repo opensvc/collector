@@ -4405,7 +4405,7 @@ def ajax_comp_svc_status():
     o = ~db.comp_status.run_svcname
     q = _where(None, 'comp_status', domain_perms(), 'run_svcname')
     #q &= db.comp_status.run_svcname == db.v_svcmon.mon_svcname
-    q &= db.comp_status.run_svcname != None
+    q &= (db.comp_status.run_svcname != None) & (db.comp_status.run_svcname != "")
     #for f in t.cols:
     #    q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.comp_status.run_nodename, db.comp_status.run_svcname)
@@ -4497,7 +4497,7 @@ def ajax_comp_node_status():
     o = ~db.comp_status.run_nodename
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
     q &= db.comp_status.run_nodename == db.v_nodes.nodename
-    q &= db.comp_status.run_svcname == None
+    q &= (db.comp_status.run_svcname == None) | (db.comp_status.run_svcname == "")
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.comp_status.run_nodename, db.comp_status.run_svcname)
