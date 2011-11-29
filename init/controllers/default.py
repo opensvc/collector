@@ -736,6 +736,7 @@ class table_svcmon(HtmlTable):
             'mon_hbstatus',
             'mon_updated',
             'team_responsible',
+            'team_integ',
             'responsibles',
             'mailto',
             'serial',

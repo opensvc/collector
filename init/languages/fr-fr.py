@@ -365,6 +365,7 @@
 'Instant messaging protocol': 'Protocole de messagerie instantanée',
 'Instant messaging user name': "Nom d'utilisateur de messagerie instantanée",
 'Insufficient privileges': 'Privilèges insuffisants',
+'Integrator': 'Integrator',
 'Internal State': 'Etat interne',
 'Invalid Query': 'Requête Invalide',
 'Invalid email': 'Adresse mèl invalide',

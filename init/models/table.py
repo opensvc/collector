@@ -1598,6 +1598,7 @@ v_nodes_cols = [
     'mem_slots',
     'mem_bytes',
     'team_responsible',
+    'team_integ',
     'serial',
     'model',
     'role',
@@ -2189,6 +2190,13 @@ v_nodes_colprops = {
     'team_responsible': HtmlTableColumn(
              title = 'Team responsible',
              field='team_responsible',
+             display = False,
+             img = 'guy16',
+             table = 'v_nodes',
+            ),
+    'team_integ': HtmlTableColumn(
+             title = 'Integrator',
+             field='team_integ',
              display = False,
              img = 'guy16',
              table = 'v_nodes',
