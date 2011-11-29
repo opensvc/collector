@@ -3993,6 +3993,24 @@ class table_comp_status(HtmlTable):
         }
         self.colprops.update(v_nodes_colprops)
         self.ajax_col_values = 'ajax_comp_status_col_values'
+        self.checkboxes = True
+        self.checkbox_id_table = 'comp_status'
+        if 'CompManager' in user_groups():
+            self.additional_tools.append('check_del')
+
+    def check_del(self):
+        d = DIV(
+              A(
+                T("Delete check"),
+                _class='del16',
+                _onclick="""if (confirm("%(text)s")){%(s)s};"""%dict(
+                   s=self.ajax_submit(args=['check_del']),
+                   text=T("Please confirm deletion"),
+                ),
+              ),
+              _class='floatw',
+            )
+        return d
 
 @auth.requires_membership('CompManager')
 def var_name_set():
@@ -4156,6 +4174,22 @@ def var_value_set_list(name):
             l.append(request.vars[i])
     db(db.comp_rulesets_variables.id==vid).update(var_value=json.dumps(l))
 
+@auth.requires_membership('CompManager')
+def check_del(ids):
+    q = db.comp_status.id.belongs(ids)
+    groups = user_groups()
+    if 'Manager' not in groups:
+        # Manager+CompManager can delete any check
+        # CompManager can delete the nodes they are responsible of
+        q &= db.comp_status.run_nodename.belongs(db(db.nodes.team_responsible.belongs(groups)).select(db.nodes.nodename))
+    rows = db(q).select()
+    u = ', '.join([r.run_module+'@'+r.run_nodename for r in rows])
+
+    db(q).delete()
+    _log('compliance.status.delete',
+         'deleted module status %(u)s',
+         dict(u=u))
+
 @auth.requires_login()
 def ajax_comp_log_col_values():
     t = table_comp_log('ajax_comp_log', 'ajax_comp_log')
@@ -4185,6 +4219,14 @@ def ajax_comp_status_col_values():
 @auth.requires_login()
 def ajax_comp_status():
     t = table_comp_status('cs0', 'ajax_comp_status')
+
+    if len(request.args) >= 1:
+        action = request.args[0]
+        try:
+            if action == 'check_del':
+                check_del(t.get_checked())
+        except ToolError, e:
+            t.flash = str(e)
 
     o = ~db.comp_status.run_nodename
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
