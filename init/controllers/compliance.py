@@ -4701,6 +4701,7 @@ class table_comp_log(table_comp_status):
             if 'run_' in c:
                 self.colprops[c].table = 'comp_log'
         self.ajax_col_values = 'ajax_comp_log_col_values'
+        self.checkboxes = False
 
 @auth.requires_login()
 def ajax_comp_log():
