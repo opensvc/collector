@@ -233,7 +233,7 @@ def filterset_query(row, nodes, services):
         elif v.f_table == 'svcmon':
             rows = db(qry).select(db.svcmon.mon_nodname,
                                   db.svcmon.mon_svcname,
-                                  groupby=db.nodes.nodename)
+                                  groupby=db.svcmon.mon_nodname)
             n_nodes = set(map(lambda x: x.mon_nodname, rows))
             n_services = set(map(lambda x: x.mon_svcname, rows))
         else:
