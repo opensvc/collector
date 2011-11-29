@@ -4181,7 +4181,7 @@ def check_del(ids):
     if 'Manager' not in groups:
         # Manager+CompManager can delete any check
         # CompManager can delete the nodes they are responsible of
-        q &= db.comp_status.run_nodename.belongs(db(db.nodes.team_responsible.belongs(groups)).select(db.nodes.nodename))
+        q &= db.comp_status.run_nodename.belongs([r.nodename for r in db(db.nodes.team_responsible.belongs(groups)).select(db.nodes.nodename)])
     rows = db(q).select()
     u = ', '.join([r.run_module+'@'+r.run_nodename for r in rows])
 
