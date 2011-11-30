@@ -289,6 +289,13 @@ tid=tid),
             )
         return d
 
+class col_encap_rset(HtmlTableColumn):
+    def html(self, o):
+        s = self.get(o)
+        if s is None:
+            return ""
+        return s
+
 class col_ruleset_name(HtmlTableColumn):
     def html(self, o):
         s = self.get(o)
@@ -1251,6 +1258,7 @@ class table_comp_rulesets(HtmlTable):
                      'ruleset_type',
                      'teams_responsible',
                      'fset_name',
+                     'encap_rset',
                      'var_class',
                      'var_name',
                      'var_value',
@@ -1296,6 +1304,20 @@ class table_comp_rulesets(HtmlTable):
             'ruleset_id': HtmlTableColumn(
                      title='Ruleset id',
                      field='ruleset_id',
+                     table='v_comp_rulesets',
+                     display=False,
+                     img='action16',
+                    ),
+            'encap_rset': col_encap_rset(
+                     title='Encapsulated ruleset',
+                     field='encap_rset',
+                     table='v_comp_rulesets',
+                     display=True,
+                     img='action16',
+                    ),
+            'encap_rset_id': HtmlTableColumn(
+                     title='Encapsulated ruleset id',
+                     field='encap_rset_id',
                      table='v_comp_rulesets',
                      display=False,
                      img='action16',
@@ -1349,6 +1371,7 @@ class table_comp_rulesets(HtmlTable):
             self.form_filterset_attach = self.comp_filterset_attach_sqlform()
             self.form_ruleset_var_add = self.comp_ruleset_var_add_sqlform()
             self.form_ruleset_add = self.comp_ruleset_add_sqlform()
+            self.form_ruleset_attach = self.comp_ruleset_attach_sqlform()
             self += HtmlTableMenu('Team responsible', 'guys16', ['team_responsible_attach', 'team_responsible_detach'])
             self += HtmlTableMenu('Filterset', 'filters', ['filterset_attach', 'filterset_detach'])
             self += HtmlTableMenu('Variable', 'comp16', ['ruleset_var_add', 'ruleset_var_del'])
@@ -1357,6 +1380,8 @@ class table_comp_rulesets(HtmlTable):
                                                         'ruleset_rename',
                                                         'ruleset_clone',
                                                         'ruleset_change_type',
+                                                        'ruleset_attach',
+                                                        'ruleset_detach',
                                                         'ruleset_node_attach'])
         self.ajax_col_values = 'ajax_comp_rulesets_col_values'
 
@@ -1473,6 +1498,7 @@ class table_comp_rulesets(HtmlTable):
         ids.append(self.colprops['ruleset_id'].get(o))
         ids.append(self.colprops['fset_id'].get(o))
         ids.append(self.colprops['id'].get(o))
+        ids.append(self.colprops['encap_rset_id'].get(o))
         return '_'.join([self.id, 'ckid']+map(str,ids))
 
     def team_responsible_select_tool(self, label, action, divid, sid, _class=''):
@@ -1604,6 +1630,35 @@ class table_comp_rulesets(HtmlTable):
             )
         return d
 
+    def ruleset_detach(self):
+        d = DIV(
+              A(
+                T("Detach child ruleset"),
+                _class='detach16',
+                _onclick=self.ajax_submit(args=['ruleset_detach']),
+              ),
+            )
+        return d
+
+    def ruleset_attach(self):
+        d = DIV(
+              A(
+                T("Attach child ruleset"),
+                _class='attach16',
+                _onclick="""
+                  click_toggle_vis(event,'%(div)s', 'block');
+                """%dict(div='comp_ruleset_attach'),
+              ),
+              DIV(
+                self.form_ruleset_attach,
+                _style='display:none',
+                _class='white_float',
+                _name='comp_ruleset_attach',
+                _id='comp_ruleset_attach',
+              ),
+            )
+        return d
+
     def ruleset_add(self):
         d = DIV(
               A(
@@ -1622,6 +1677,30 @@ class table_comp_rulesets(HtmlTable):
               ),
             )
         return d
+
+    @auth.requires_membership('CompManager')
+    def comp_ruleset_attach_sqlform(self):
+        db.comp_rulesets_rulesets.parent_rset_id.requires = IS_IN_DB(
+          db,
+          db.comp_rulesets.id,
+          "%(ruleset_name)s",
+          zero=T('choose one')
+        )
+        db.comp_rulesets_rulesets.child_rset_id.requires = IS_IN_DB(
+          db,
+          db.comp_rulesets.id,
+          "%(ruleset_name)s",
+          zero=T('choose one')
+        )
+        f = SQLFORM(
+                 db.comp_rulesets_rulesets,
+                 labels={
+                         'parent_rset_id': T('Parent ruleset'),
+                         'child_rset_id': T('Parent ruleset'),
+                        },
+                 _name='form_ruleset_attach',
+            )
+        return f
 
     @auth.requires_membership('CompManager')
     def comp_ruleset_add_sqlform(self):
@@ -1754,6 +1833,40 @@ def team_responsible_attach(ids=[]):
     _log('ruleset.group.attach',
          'attached group %(g)s to rulesets %(u)s',
          dict(g=group_role(group_id), u=u))
+
+@auth.requires_membership('CompManager')
+def comp_ruleset_detach(ids=[]):
+    if len(ids) == 0:
+        raise ToolError("no ruleset selected")
+    ids = map(lambda x: (x.split('_')[0], x.split('_')[3]), ids)
+
+    done = []
+    for parent_rset_id, child_rset_id in ids:
+        # skip if not owner or Manager
+        if 'Manager' not in user_groups():
+            q = db.comp_ruleset_team_responsible.ruleset_id == parent_rset_id
+            q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+            if db(q).count() == 0:
+                continue
+
+        q = db.comp_rulesets.id == parent_rset_id
+        parent_rset_name = db(q).select().first().ruleset_name
+
+        q = db.comp_rulesets.id == child_rset_id
+        child_rset_name = db(q).select().first().ruleset_name
+
+        q = db.comp_rulesets_rulesets.parent_rset_id == parent_rset_id
+        q &= db.comp_rulesets_rulesets.child_rset_id == child_rset_id
+        db(q).delete()
+
+        done.append((parent_rset_name, child_rset_name))
+    if len(done) == 0:
+        return
+
+    u = ', '.join([r[1]+" from "+r[0] for r in done])
+    _log('ruleset.ruleset.detach',
+         'detached ruleset %(u)s',
+         dict(u=u))
 
 @auth.requires_membership('CompManager')
 def team_responsible_detach(ids=[]):
@@ -2008,6 +2121,8 @@ def ajax_comp_rulesets():
                 comp_delete_ruleset(v.get_checked())
                 v.form_filterset_attach = v.comp_filterset_attach_sqlform()
                 v.form_ruleset_var_add = v.comp_ruleset_var_add_sqlform()
+            elif action == 'ruleset_detach':
+                comp_ruleset_detach(v.get_checked())
             elif action == 'ruleset_rename':
                 comp_rename_ruleset(v.get_checked())
                 v.form_filterset_attach = v.comp_filterset_attach_sqlform()
@@ -2038,6 +2153,14 @@ def ajax_comp_rulesets():
             v.flash = str(e)
 
     try:
+        if v.form_ruleset_attach.accepts(request.vars, formname='attach_ruleset'):
+            _log('compliance.ruleset.ruleset.attach',
+                 'attach ruleset %(child)s to %(parent)s',
+                 dict(parent=db(db.comp_rulesets.id==request.vars.parent_rset_id).select().first().ruleset_name,
+                      child=db(db.comp_rulesets.id==request.vars.child_rset_id).select().first().ruleset_name))
+        elif v.form_ruleset_attach.errors:
+            response.flash = T("errors in form")
+
         if v.form_ruleset_add.accepts(request.vars, formname='add_ruleset'):
             # refresh forms ruleset comboboxes
             v.form_filterset_attach = v.comp_filterset_attach_sqlform()
@@ -5194,8 +5317,10 @@ def comp_ruleset_vars(ruleset_id, qr=None):
         f = 'explicit attachment'
     else:
         f = comp_format_filter(qr)
-    q = db.comp_rulesets_variables.ruleset_id==ruleset_id
-    q &= db.comp_rulesets.id == db.comp_rulesets_variables.ruleset_id
+    q = db.comp_rulesets.id==ruleset_id
+    q &= db.comp_rulesets.id == db.comp_rulesets_rulesets.parent_rset_id
+    q &= (db.comp_rulesets.id == db.comp_rulesets_variables.ruleset_id)|\
+         (db.comp_rulesets_rulesets.child_rset_id == db.comp_rulesets_variables.ruleset_id)
     rows = db(q).select()
     if len(rows) == 0:
         return dict()

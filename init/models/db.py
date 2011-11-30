@@ -1007,6 +1007,11 @@ db.define_table('comp_rulesets',
     Field('ruleset_type','string', requires=IS_IN_SET(['contextual','explicit'])),
     migrate=False)
 
+db.define_table('comp_rulesets_rulesets',
+    Field('parent_rset_id','integer'),
+    Field('child_rset_id','integer'),
+    migrate=False)
+
 db.define_table('comp_rulesets_variables',
     Field('ruleset_id','integer', requires=IS_NOT_EMPTY()),
     Field('var_class','string', requires=IS_IN_SET(("raw", "authkey", "file", "group", "package", "user", "vuln")), default="raw"),
@@ -1034,6 +1039,8 @@ db.define_table('comp_rulesets_services',
 db.define_table('v_comp_rulesets',
     Field('ruleset_id','integer'),
     Field('fset_id','integer'),
+    Field('encap_rset','string'),
+    Field('encap_rset_id','integer'),
     Field('ruleset_name','string', requires=IS_NOT_EMPTY()),
     Field('ruleset_type','string', requires=IS_IN_SET(['contextual','explicit'])),
     Field('teams_responsible','string'),
