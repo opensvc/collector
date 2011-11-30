@@ -5317,11 +5317,12 @@ def comp_ruleset_vars(ruleset_id, qr=None):
         f = 'explicit attachment'
     else:
         f = comp_format_filter(qr)
+    j = db.comp_rulesets.id == db.comp_rulesets_rulesets.parent_rset_id
+    l = db.comp_rulesets_rulesets.on(j)
     q = db.comp_rulesets.id==ruleset_id
-    q &= db.comp_rulesets.id == db.comp_rulesets_rulesets.parent_rset_id
     q &= (db.comp_rulesets.id == db.comp_rulesets_variables.ruleset_id)|\
          (db.comp_rulesets_rulesets.child_rset_id == db.comp_rulesets_variables.ruleset_id)
-    rows = db(q).select()
+    rows = db(q).select(left=l)
     if len(rows) == 0:
         return dict()
     ruleset_name = rows[0].comp_rulesets.ruleset_name
