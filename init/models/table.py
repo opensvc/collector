@@ -1065,9 +1065,9 @@ $("#%(id)s").everyTime(1000, function(i){
         if self.csv_q is None:
             return self.object_list
         if self.csv_orderby is None:
-            return db(self.csv_q).select(limitby=(0,1000))
+            return db(self.csv_q).select(limitby=(0,2000))
         else:
-            return db(self.csv_q).select(orderby=self.csv_orderby, limitby=(0,1000))
+            return db(self.csv_q).select(orderby=self.csv_orderby, limitby=(0,2000))
 
     def _csv(self):
         lines = [';'.join(self.cols)]
