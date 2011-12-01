@@ -1599,6 +1599,7 @@ v_nodes_cols = [
     'mem_bytes',
     'team_responsible',
     'team_integ',
+    'project',
     'serial',
     'model',
     'role',
@@ -2199,6 +2200,13 @@ v_nodes_colprops = {
              field='team_integ',
              display = False,
              img = 'guy16',
+             table = 'v_nodes',
+            ),
+    'project': HtmlTableColumn(
+             title = 'Project',
+             field='project',
+             display = False,
+             img = 'svc',
              table = 'v_nodes',
             ),
     'role': HtmlTableColumn(

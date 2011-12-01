@@ -563,6 +563,7 @@
 'Processor usage per node': 'Utilisation des processeurs par noeud',
 'Product': 'Produit',
 'Profile updated': 'Profil mis à jour',
+'Project': 'Project',
 'Project ': 'Projet ',
 'Provisioning': 'Provisioning',
 'Provisioning command': 'Commande de provisioning',
