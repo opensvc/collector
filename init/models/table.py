@@ -793,6 +793,31 @@ class HtmlTable(object):
                  _class=self.cellclass,
                )
 
+    def header_slim(self):
+        inputs = []
+        if self.checkboxes:
+            inputs.append(TD(''))
+        if self.extrarow:
+            inputs.append(TD(''))
+        for c in self.cols:
+            if len(self.filter_parse(c)) > 0:
+                cl = 'bgred'
+            else:
+                cl = ''
+            inputs.append(
+              TD(
+                '',
+                 _class=cl,
+                 _style=self.col_hide(c),
+                 _name=self.col_key(c),
+              ),
+            )
+        return TR(
+          inputs,
+          _class='theader_slim',
+          _onclick="""$(".sym_headers").toggle()"""
+        )
+
     def table_inputs(self):
         inputs = []
         if self.checkboxes:
@@ -989,7 +1014,8 @@ class HtmlTable(object):
               DIV(
                 TABLE(
                   [self.table_header(),
-                   inputs]+lines,
+                   inputs,
+                   self.header_slim()]+lines,
                 ),
               ),
               DIV(
