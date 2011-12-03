@@ -650,7 +650,7 @@ def dequeue(q):
                 stop_workers(q)
                 im_done(c.ids)
 
-        time.sleep(1)
+        time.sleep(10)
 
 def dequeue_int():
     q = JoinableQueue()
