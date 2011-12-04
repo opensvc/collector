@@ -1,55 +1,5 @@
 @charset "UTF-8";
 
-@media all and (max-width:480px) {
-* {
-    font-size: 1.05em;
-}
-.theader {
-    background-color: #e0e1cd;
-    color: black;
-    padding: 0;
-    margin-top: 0;
-    margin-bottom: 0;
-    max-height: 1.2em;
-}
-.theader:hover {
-    max-height: none;
-}
-.floatw {
-    float: right;
-    width: 100%;
-    text-align: center;
-    margin-left:0.5em;
-    margin-right:0.5em;
-}
-.white_float {
-    border-radius:8px;
-   -moz-border-radius:8px;
-   -webkit-border-radius:8px;
-    border-bottom-color: black;
-    border-bottom-style: solid;
-    border-bottom-width: 2px;
-    border-left-color: #AAA;
-    border-left-style: solid;
-    border-left-width: 2px;
-    border-right-color: black;
-    border-right-style: solid;
-    border-right-width: 2px;
-    border-top-color: #AAA;
-    border-top-style: solid;
-    border-top-width: 2px;
-    color: black;
-    cursor: default;
-    margin: 8px;
-    padding: 8px;
-    text-align: left;
-    z-index: 499;
-    background-color: white;
-    width: 95%;
-}
-
-} /* end small screen */
-
 .theader_slim {
     background-color: #e0e1cd;
     min-height: 5px;
@@ -1475,3 +1425,69 @@ button, input[type=button], input[type=submit] {
     vertical-align: middle;
     height: 1.5em;
 }
+
+
+@media screen and (max-width:640px) and (orientation: landscape) {
+  body {
+   -webkit-text-size-adjust: 70%;
+  }
+}
+
+@media all and (max-width:480px) {
+html {
+    font-size: 14pt;
+    -webkit-text-size-adjust: none;
+}
+textarea, table, td, th, code, pre, samp {
+    word-wrap: break-word; /* césure forcée */
+}
+img, table, td, blockquote, code, pre, textarea, input, iframe, object, embed, video {
+    max-width: 100%;
+}
+.theader {
+    background-color: #e0e1cd;
+    color: black;
+    padding: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    max-height: 1.2em;
+}
+.theader:hover {
+    max-height: none;
+}
+.floatw {
+    float: right;
+    width: 100%;
+    text-align: center;
+    margin-left:0.5em;
+    margin-right:0.5em;
+}
+.white_float {
+    border-radius:8px;
+   -moz-border-radius:8px;
+   -webkit-border-radius:8px;
+    border-bottom-color: black;
+    border-bottom-style: solid;
+    border-bottom-width: 2px;
+    border-left-color: #AAA;
+    border-left-style: solid;
+    border-left-width: 2px;
+    border-right-color: black;
+    border-right-style: solid;
+    border-right-width: 2px;
+    border-top-color: #AAA;
+    border-top-style: solid;
+    border-top-width: 2px;
+    color: black;
+    cursor: default;
+    margin: 8px;
+    padding: 8px;
+    text-align: left;
+    z-index: 499;
+    background-color: white;
+    width: 95%;
+}
+
+} /* end small screen */
+
+
