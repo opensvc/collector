@@ -1427,13 +1427,13 @@ button, input[type=button], input[type=submit] {
 }
 
 
-@media screen and (max-width:640px) and (orientation: landscape) {
+@media screen and (max-width:960px) and (orientation: landscape) {
   body {
    -webkit-text-size-adjust: 70%;
   }
 }
 
-@media all and (max-width:480px) {
+@media all and (max-width:640px) {
 html {
     font-size: 14pt;
     -webkit-text-size-adjust: none;
