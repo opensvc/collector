@@ -167,7 +167,7 @@ def stat_nb_svc(fset_id):
     return n
 
 def stat_nb_svc_cluster(fset_id):
-    q = db.services.svc_nodes.like("%,%")
+    q = db.services.svc_nodes.like("% %")
     q = apply_filters(q, None, db.services.svc_name, fset_id)
     n = db(q).count()
     print "stat_nb_svc_cluster():", str(n)
@@ -188,29 +188,43 @@ def stat_nb_svc_with_drp(fset_id):
     print "stat_nb_svc_with_drp():", str(n)
     return n
 
+now = datetime.datetime.now()
+today = now - datetime.timedelta(hours=now.hour,
+                                 minutes=now.minute,
+                                 seconds=now.second,
+                                 microseconds=now.microsecond)
+yesterday = today - datetime.timedelta(days=1)
+
 def stat_nb_action(fset_id):
-    q = db.SVCactions.id > 0
+    q = db.SVCactions.begin > yesterday
+    q &= db.SVCactions.end < today
     q = apply_filters(q, db.SVCactions.hostname, db.SVCactions.svcname, fset_id)
     n = db(q).count()
     print "stat_nb_action():", str(n)
     return n
 
 def stat_nb_action_err(fset_id):
-    q = db.SVCactions.status == "err"
+    q = db.SVCactions.begin > yesterday
+    q &= db.SVCactions.end < today
+    q &= db.SVCactions.status == "err"
     q = apply_filters(q, db.SVCactions.hostname, db.SVCactions.svcname, fset_id)
     n = db(q).count()
     print "stat_nb_action_err():", str(n)
     return n
 
 def stat_nb_action_warn(fset_id):
-    q = db.SVCactions.status == "warn"
+    q = db.SVCactions.begin > yesterday
+    q &= db.SVCactions.end < today
+    q &= db.SVCactions.status == "warn"
     q = apply_filters(q, db.SVCactions.hostname, db.SVCactions.svcname, fset_id)
     n = db(q).count()
     print "stat_nb_action_warn():", str(n)
     return n
 
 def stat_nb_action_ok(fset_id):
-    q = db.SVCactions.status == "ok"
+    q = db.SVCactions.begin > yesterday
+    q &= db.SVCactions.end < today
+    q &= db.SVCactions.status == "ok"
     q = apply_filters(q, db.SVCactions.hostname, db.SVCactions.svcname, fset_id)
     n = db(q).count()
     print "stat_nb_action_ok():", str(n)

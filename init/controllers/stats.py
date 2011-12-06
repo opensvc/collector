@@ -357,6 +357,7 @@ def rows_stats_disks_per_svc(nodes=[], begin=None, end=None, lower=None, higher=
                    and s.day<'%(end)s'
                    and s.svcname=v.mon_svcname
                    and v.mon_nodname like '%(dom)s'
+                   and s.disk_size is not NULL
                    %(nodes)s
              group by s.svcname
              order by s.disk_size
@@ -822,11 +823,12 @@ def json_disk_for_svc():
     else:
         nodes = nodes.split(',')
 
-    rows = rows_stats_disks_per_svc(nodes, begin, end, lower, higher)
+    rows = rows_stats_disks_per_svc(nodes, begin, end, 15, higher)
     d = []
     disk_size = []
+    n = len(rows)
     for i, r in enumerate(rows):
-        j = i+1
+        j = n-i
         d.append(r[0])
         disk_size.append([r[1], j])
     return [d, [disk_size]]
