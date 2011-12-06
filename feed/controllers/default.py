@@ -2544,8 +2544,10 @@ def feed_dequeue():
                 db(db.feed_queue.id==e.id).delete()
                 db.commit()
             except:
-                print "Error: %s(%s)"%(e.q_fn, str(e.q_args))
+                print "Error: %s(%s)"%(e.q_fn, str(args))
                 import traceback
                 traceback.print_exc()
-                time.sleep(2)
+                db(db.feed_queue.id==e.id).delete()
+                db.commit()
+                #time.sleep(2)
 
