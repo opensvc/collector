@@ -784,7 +784,6 @@ div.svcstatus td {
 }
 
 .sym_headers {
-    display: none;
     background-color: #e0e1cd;
     color: black;
     padding: 0.2em;
@@ -1458,6 +1457,9 @@ textarea, table, td, th, code, pre, samp {
     text-align: center;
     margin-left:0.5em;
     margin-right:0.5em;
+}
+.sym_headers {
+    display: none;
 }
 } /* end small screen */
 
