@@ -577,7 +577,9 @@ class HtmlTable(object):
         if f not in self.colprops:
             return None
         cp = self.colprops[f]
-        if cp.table is None:
+        if not hasattr(cp, 'table') and not hasattr(cp, 'field'):
+            return None
+        if not hasattr(cp, 'table') or cp.table is None:
             return cp.field
         return '.'.join((cp.table, cp.field))
 
