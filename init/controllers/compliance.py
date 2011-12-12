@@ -4882,6 +4882,9 @@ def auth_uuid(fn):
 @auth_uuid
 @service.xmlrpc
 def comp_get_moduleset_modules(moduleset, auth):
+    return _comp_get_moduleset_modules(moduleset)
+
+def _comp_get_moduleset_modules(moduleset):
     if isinstance(moduleset, list):
         if len(moduleset) == 0:
             return []
@@ -5591,7 +5594,7 @@ def beautify_moduleset(mset, mods):
 def beautify_modulesets(msets):
     l = []
     for mset in msets:
-        l.append(beautify_moduleset(mset, comp_get_moduleset_modules(mset)))
+        l.append(beautify_moduleset(mset, _comp_get_moduleset_modules(mset)))
     return SPAN(l, _class='xset')
 
 def node_comp_status(node):
