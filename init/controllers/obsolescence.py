@@ -201,7 +201,7 @@ class table_obs(HtmlTable):
         self.dbfilterable = True
         self.checkboxes = True
         self.extraline = True
-        if 'Manager' in user_groups():
+        if 'ObsManager' in user_groups():
             self.additional_tools.append('item_del')
             self.additional_tools.append('item_refresh')
 
@@ -245,7 +245,7 @@ def ajax_obs_col_values():
     t.object_list = db(q).select(o, orderby=o, groupby=o)
     return t.col_values_cloud(col)
 
-@auth.requires_membership('Manager')
+@auth.requires_membership('ObsManager')
 def item_del(ids=[]):
     if len(ids) == 0:
         raise ToolError("delete item failed: no item selected")
@@ -257,15 +257,15 @@ def item_del(ids=[]):
          'deleted items %(x)s',
          dict(x=x))
 
-@auth.requires_membership('Manager')
+@auth.requires_membership('ObsManager')
 def warn_date_set():
     date_set('warn')
 
-@auth.requires_membership('Manager')
+@auth.requires_membership('ObsManager')
 def alert_date_set():
     date_set('alert')
 
-@auth.requires_membership('Manager')
+@auth.requires_membership('ObsManager')
 def date_set(t):
     prefix = t[0]+'d_i_'
     l = [k for k in request.vars if prefix in k]
