@@ -496,6 +496,8 @@ class col_var_value(HtmlTableColumn):
             groups = json.loads(v)
         except:
             return SPAN("malformed value", PRE(v))
+        if type(groups) != dict:
+            return v
         for group, g in groups.items():
             if 'gid' in g:
                 gid = '%d'%g['gid']
@@ -529,6 +531,8 @@ class col_var_value(HtmlTableColumn):
                 f = json.loads(v)
             except:
                 return self.form_raw(o)
+        if type(f) != dict:
+            return self.form_raw(o)
         for i, group in enumerate(f):
             ll = [DIV(
                     SPAN("", _class="guys16"),
