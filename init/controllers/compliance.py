@@ -4886,9 +4886,9 @@ def auth_uuid(fn):
 @auth_uuid
 @service.xmlrpc
 def comp_get_moduleset_modules(moduleset, auth):
-    return _comp_get_moduleset_modules(moduleset)
+    return _comp_get_moduleset_modules(moduleset, auth[1])
 
-def _comp_get_moduleset_modules(moduleset):
+def _comp_get_moduleset_modules(moduleset, node):
     if isinstance(moduleset, list):
         if len(moduleset) == 0:
             return []
@@ -4897,7 +4897,6 @@ def _comp_get_moduleset_modules(moduleset):
         q = db.comp_moduleset.modset_name == moduleset
     else:
         return []
-    node = auth[1]
     q &= db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
     q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
     q &= db.auth_group.id == db.comp_moduleset_team_responsible.group_id
@@ -5595,10 +5594,10 @@ def beautify_moduleset(mset, mods):
         )
     return u
 
-def beautify_modulesets(msets):
+def beautify_modulesets(msets, node):
     l = []
     for mset in msets:
-        l.append(beautify_moduleset(mset, _comp_get_moduleset_modules(mset)))
+        l.append(beautify_moduleset(mset, _comp_get_moduleset_modules(mset, node)))
     return SPAN(l, _class='xset')
 
 def node_comp_status(node):
@@ -5628,7 +5627,7 @@ def ajax_compliance_node():
           H3(T('Rulesets')),
           beautify_rulesets(rsets),
           H3(T('Modulesets')),
-          beautify_modulesets(msets),
+          beautify_modulesets(msets, node),
         )
     return d
 
