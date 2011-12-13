@@ -956,7 +956,7 @@ class HtmlTable(object):
         if self.filterable:
             inputs = self.table_inputs()
         else:
-            inputs = SPAN()
+            inputs = None
 
         if self.filterable and len(self.additional_filters) > 0:
             additional_filters = DIV(
@@ -999,6 +999,17 @@ class HtmlTable(object):
         else:
             export = SPAN()
 
+        table_lines = [self.table_header()]
+
+        if inputs is not None:
+            table_lines.append(inputs)
+            table_lines.append(self.header_slim())
+
+        if len(lines) > 0:
+            table_lines += lines
+        else:
+            table_lines.append(T("no data"))
+
         d = DIV(
               self.show_flash(),
               DIV(
@@ -1015,9 +1026,7 @@ class HtmlTable(object):
               additional_filters,
               DIV(
                 TABLE(
-                  [self.table_header(),
-                   inputs,
-                   self.header_slim()]+lines,
+                   table_lines
                 ),
               ),
               DIV(
