@@ -1998,11 +1998,17 @@ def update_dash_flex_cpu(svcname):
                  select *
                  from v_flex_status
                  where
-                   cpu > svc_flex_cpu_high_threshold or
+                   svc_name="%(svcname)s" and
+                   up > 0 and
                    (
-                      svc_name="%(svcname)s" and
-                      up > 1 and
-                      cpu < svc_flex_cpu_low_threshold
+                     (
+                       svc_flex_cpu_high_threshold > 0 and
+                       cpu > svc_flex_cpu_high_threshold
+                     ) or
+                     (
+                       svc_flex_cpu_low_threshold > 0 and
+                       cpu < svc_flex_cpu_low_threshold
+                     )
                    )
                ) t
           """%dict(svcname=svcname,
@@ -2053,11 +2059,14 @@ def update_dash_flex_instances_started(svcname):
                  select *
                  from v_flex_status
                  where
-                   up < svc_flex_min_nodes or
+                   svc_name="%(svcname)s" and
                    (
-                      svc_name="%(svcname)s" and
-                      svc_flex_max_nodes > 0 and
-                      up > svc_flex_max_nodes
+                     svc_flex_min_nodes > 0 and
+                     up < svc_flex_min_nodes
+                   ) or
+                   (
+                     svc_flex_max_nodes > 0 and
+                     up > svc_flex_max_nodes
                    )
                ) t
           """%dict(svcname=svcname,
