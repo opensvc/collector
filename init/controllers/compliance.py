@@ -1938,9 +1938,18 @@ def ruleset_clone():
     for row in rows:
         db.comp_rulesets_variables.insert(ruleset_id=newid,
                                           var_name=row.var_name,
+                                          var_class=row.var_class,
                                           var_value=row.var_value,
                                           var_author=user_name())
     add_default_team_responsible(iid)
+
+    # clone parent to children relations
+    q = db.comp_rulesets_rulesets.parent_rset_id==sid
+    rows = db(q).select()
+    for child_rset_id in [r.child_rset_id for r in rows]:
+        db.comp_rulesets_rulesets.insert(parent_rset_id=newid,
+                                         child_rset_id=child_rset_id)
+
     _log('comp.ruleset.clone',
          'cloned ruleset %(o)s from %(n)s',
          dict(o=orig, n=iid))
