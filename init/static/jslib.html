@@ -978,6 +978,30 @@ function stat_day(url, id) {
 		}, 
 	    }
 	});
+	$.jqplot(id+'_resp_accounts', [data[22]], {
+            cursor:{zoom:true, showTooltip:false},
+            legend: {
+                show: true,
+                location: 'n',
+            },
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: [
+                {label: 'sys responsible accounts'},
+            ],
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'},
+		}, 
+	    }
+	});
 	$.jqplot(id+'_actions', [data[4],  data[3], data[2]], {
             cursor:{zoom:true, showTooltip:false},
 	    stackSeries: true,

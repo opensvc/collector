@@ -1882,3 +1882,8 @@ drop view v_comp_nodes;
 
 create view v_comp_nodes as (select n.*,group_concat(distinct r.ruleset_name separator ', ') as rulesets, group_concat(distinct m.modset_name separator ', ') as modulesets from v_nodes n left join comp_rulesets_nodes rn on n.nodename=rn.nodename left join comp_rulesets r on r.id=rn.ruleset_id left join comp_node_moduleset mn on mn.modset_node=n.nodename left join comp_moduleset m on m.id=mn.modset_id group by n.nodename);
 
+alter table nodes modify model varchar(50);
+
+alter table stat_day add column nb_vcpu int(11) default 0;
+alter table stat_day add column nb_vmem int(11) default 0;
+alter table stat_day add column nb_resp_accounts int(11) default 0;

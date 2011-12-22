@@ -258,6 +258,12 @@ def stat_nb_apps(fset_id):
     return n
 
 def stat_nb_accounts(fset_id):
+    q = db.auth_user.id > 0
+    n = len(db(q).select())
+    print "stat_nb_accounts():", str(n)
+    return n
+
+def stat_nb_resp_accounts(fset_id):
     q = db.auth_user.id == db.auth_membership.user_id
     q &= db.auth_group.id == db.auth_membership.group_id
     q &= db.services.svc_app == db.apps.app
@@ -273,7 +279,7 @@ def stat_nb_accounts(fset_id):
     uids |= set([row.id for row in db(q).select(db.auth_user.id, groupby=db.auth_user.id)])
 
     n = len(uids)
-    print "stat_nb_accounts():", str(n)
+    print "stat_nb_resp_accounts():", str(n)
     return n
 
 def stat_disk_size(fset_id):
@@ -306,6 +312,7 @@ def _cron_stat_day(end, fset_id=None):
           nb_action_ok=stat_nb_action_ok(fset_id),
           nb_apps=stat_nb_apps(fset_id),
           nb_accounts=stat_nb_accounts(fset_id),
+          nb_resp_accounts=stat_nb_resp_accounts(fset_id),
           nb_svc_with_drp=stat_nb_svc_with_drp(fset_id),
           nb_svc_prd=stat_nb_svc_prd(fset_id),
           nb_vcpu=stat_nb_vcpu(fset_id),
@@ -326,6 +333,7 @@ def _cron_stat_day(end, fset_id=None):
           nb_action_ok=stat_nb_action_ok(fset_id),
           nb_apps=stat_nb_apps(fset_id),
           nb_accounts=stat_nb_accounts(fset_id),
+          nb_resp_accounts=stat_nb_resp_accounts(fset_id),
           nb_svc_with_drp=stat_nb_svc_with_drp(fset_id),
           nb_svc_prd=stat_nb_svc_prd(fset_id),
           nb_vcpu=stat_nb_vcpu(fset_id),
