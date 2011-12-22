@@ -42,6 +42,14 @@ def ajax_stats():
          _class='float',
        ),
        DIV(
+         _id='stat_day_nb_vcpu',
+         _class='float',
+       ),
+       DIV(
+         _id='stat_day_nb_vmem',
+         _class='float',
+       ),
+       DIV(
          _id='stat_day_apps',
          _class='float',
        ),
@@ -609,6 +617,8 @@ def json_stat_day():
     nb_nodes_prd = []
     nb_svc_not_cluster = []
     nb_svc_without_drp = []
+    nb_vcpu = []
+    nb_vmem = []
     for r in rows:
         if r[2] is None or r[17] is None:
             v = None
@@ -646,6 +656,8 @@ def json_stat_day():
         else:
             v = r[2]-r[18]
         nb_svc_not_cluster.append([r[1], v])
+        nb_vcpu.append([r[1], r[21]])
+        nb_vmem.append([r[1], r[22]])
     return [nb_svc_not_prd,
             nb_action,
             nb_action_err,
@@ -665,7 +677,9 @@ def json_stat_day():
             nb_svc_cluster,
             nb_nodes_prd,
             nb_svc_not_cluster,
-            nb_svc_without_drp]
+            nb_svc_without_drp,
+            nb_vcpu,
+            nb_vmem]
 
 @service.json
 def json_avg_cpu_for_nodes():

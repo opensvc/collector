@@ -180,6 +180,26 @@ def stat_nb_svc_prd(fset_id):
     print "stat_nb_svc_prd():", str(n)
     return n
 
+def stat_nb_vcpu(fset_id):
+    q = db.services.id < 0
+    q = or_apply_filters(q, None, db.services.svc_name, fset_id)
+    rows = db(q).select(db.services.svc_vcpus)
+    n = 0
+    for row in rows:
+        n += row.svc_vcpus
+    print "stat_nb_vcpu():", str(n)
+    return n
+
+def stat_nb_vmem(fset_id):
+    q = db.services.id < 0
+    q = or_apply_filters(q, None, db.services.svc_name, fset_id)
+    rows = db(q).select(db.services.svc_vmem)
+    n = 0
+    for row in rows:
+        n += row.svc_vmem
+    print "stat_nb_vmem():", str(n)
+    return n
+
 def stat_nb_svc_with_drp(fset_id):
     q = db.services.svc_drpnodes != None
     q &= db.services.svc_drpnodes != ""
@@ -244,7 +264,15 @@ def stat_nb_accounts(fset_id):
     q &= db.apps_responsibles.app_id == db.apps.id
     q &= db.apps_responsibles.group_id == db.auth_group.id
     q = apply_filters(q, None, db.services.svc_name, fset_id)
-    n = len(db(q).select(db.auth_user.id, groupby=db.auth_user.id))
+    uids = set([row.id for row in db(q).select(db.auth_user.id, groupby=db.auth_user.id)])
+
+    q = db.auth_user.id == db.auth_membership.user_id
+    q &= db.auth_group.id == db.auth_membership.group_id
+    q &= db.auth_group.role == db.nodes.team_responsible
+    q = apply_filters(q, db.nodes.nodename, None, fset_id)
+    uids |= set([row.id for row in db(q).select(db.auth_user.id, groupby=db.auth_user.id)])
+
+    n = len(uids)
     print "stat_nb_accounts():", str(n)
     return n
 
@@ -280,6 +308,8 @@ def _cron_stat_day(end, fset_id=None):
           nb_accounts=stat_nb_accounts(fset_id),
           nb_svc_with_drp=stat_nb_svc_with_drp(fset_id),
           nb_svc_prd=stat_nb_svc_prd(fset_id),
+          nb_vcpu=stat_nb_vcpu(fset_id),
+          nb_vmem=stat_nb_vmem(fset_id),
           nb_svc_cluster=stat_nb_svc_cluster(fset_id),
           nb_nodes=stat_nb_nodes(fset_id),
           nb_nodes_prd=stat_nb_nodes_prd(fset_id),
@@ -298,6 +328,8 @@ def _cron_stat_day(end, fset_id=None):
           nb_accounts=stat_nb_accounts(fset_id),
           nb_svc_with_drp=stat_nb_svc_with_drp(fset_id),
           nb_svc_prd=stat_nb_svc_prd(fset_id),
+          nb_vcpu=stat_nb_vcpu(fset_id),
+          nb_vmem=stat_nb_vmem(fset_id),
           nb_svc_cluster=stat_nb_svc_cluster(fset_id),
           nb_nodes=stat_nb_nodes(fset_id),
           nb_nodes_prd=stat_nb_nodes_prd(fset_id),

@@ -873,6 +873,60 @@ function stat_day(url, id) {
 		}, 
 	    }
 	});
+	$.jqplot(id+'_nb_vcpu', [data[20]], {
+            cursor:{zoom:true, showTooltip:false},
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+            legend: {
+                show: true,
+                location: 'n',
+            },
+	    series: [
+                {
+                    label: 'vcpu',
+                    breakOnNull: true,
+                },
+            ],
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'},
+		}, 
+	    }
+	});
+	$.jqplot(id+'_nb_vmem', [data[21]], {
+            cursor:{zoom:true, showTooltip:false},
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+            legend: {
+                show: true,
+                location: 'n',
+            },
+	    series: [
+                {
+                    label: 'vmem (MB)',
+                    breakOnNull: true,
+                },
+            ],
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'},
+		}, 
+	    }
+	});
 	$.jqplot(id+'_disk', [data[5]], {
             cursor:{zoom:true, showTooltip:false},
 	    grid: {

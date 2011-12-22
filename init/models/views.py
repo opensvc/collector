@@ -134,6 +134,13 @@ def or_apply_filters(q, node_field=None, service_field=None, fset_id=None):
         qry = db.v_gen_filtersets.fset_id == fset_id
 
     rows = db(qry).select()
+    if len(rows) == 0:
+        if node_field is not None:
+            q |= node_field.like("%")
+        if service_field is not None:
+            q |= service_field.like("%")
+        return q
+
     nodes = set([])
     services = set([])
     for row in rows:
@@ -161,6 +168,9 @@ def apply_filters(q, node_field=None, service_field=None, fset_id=None):
         qry = db.v_gen_filtersets.fset_id == fset_id
 
     rows = db(qry).select()
+    if len(rows) == 0:
+        return q
+
     nodes = set([])
     services = set([])
     for row in rows:
