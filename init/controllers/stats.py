@@ -19,6 +19,7 @@ class table_stats(HtmlTable):
         self.exportable = False
         self.columnable = False
         self.object_list = []
+        self.nodatabanner = False
 
 @auth.requires_login()
 def ajax_stats():

@@ -109,6 +109,7 @@ class HtmlTable(object):
         self.span = None
         self.flash = None
         self.sub_span = []
+        self.nodatabanner = True
 
         # initialize the pager, to be re-executed by instanciers
         self.setup_pager()
@@ -1007,7 +1008,7 @@ class HtmlTable(object):
 
         if len(lines) > 0:
             table_lines += lines
-        else:
+        elif self.nodatabanner:
             table_lines.append(T("no data"))
 
         d = DIV(

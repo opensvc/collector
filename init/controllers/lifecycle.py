@@ -107,6 +107,7 @@ class table_lifecycle_os(HtmlTable):
         self.exportable = False
         self.columnable = False
         self.object_list = []
+        self.nodatabanner = False
 
 @auth.requires_login()
 def lifecycle_os():
