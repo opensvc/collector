@@ -67,6 +67,14 @@ def ajax_stats():
          _class='float',
        ),
        DIV(
+         _id='stat_day_nodes_core',
+         _class='float',
+       ),
+       DIV(
+         _id='stat_day_nodes_ram',
+         _class='float',
+       ),
+       DIV(
          XML('&nbsp;'),
          _class='spacer',
        ),

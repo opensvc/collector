@@ -200,6 +200,28 @@ def stat_nb_vmem(fset_id):
     print "stat_nb_vmem():", str(n)
     return n
 
+def stat_nb_core(fset_id):
+    q = db.nodes.id < 0
+    q = or_apply_filters(q, db.nodes.nodename, None, fset_id)
+    rows = db(q).select(db.nodes.cpu_cores)
+    n = 0
+    for row in rows:
+        n += row.cpu_cores
+    print "stat_nb_cores():", str(n)
+    return n
+
+def stat_nb_mem(fset_id):
+    q = db.nodes.id < 0
+    q = or_apply_filters(q, db.nodes.nodename, None, fset_id)
+    rows = db(q).select(db.nodes.mem_bytes)
+    n = 0
+    for row in rows:
+        n += row.mem_bytes
+    # convert to GB
+    n = n / 1024
+    print "stat_nb_mem():", str(n)
+    return n
+
 def stat_nb_svc_with_drp(fset_id):
     q = db.services.svc_drpnodes != None
     q &= db.services.svc_drpnodes != ""
@@ -321,6 +343,8 @@ def _cron_stat_day(end, fset_id=None):
           nb_nodes=stat_nb_nodes(fset_id),
           nb_nodes_prd=stat_nb_nodes_prd(fset_id),
           disk_size=stat_disk_size(fset_id),
+          nb_cpu_core=stat_nb_core(fset_id),
+          ram_size=stat_nb_mem(fset_id),
         )
     else:
         db(q).update(
@@ -342,6 +366,8 @@ def _cron_stat_day(end, fset_id=None):
           nb_nodes=stat_nb_nodes(fset_id),
           nb_nodes_prd=stat_nb_nodes_prd(fset_id),
           disk_size=stat_disk_size(fset_id),
+          nb_cpu_core=stat_nb_core(fset_id),
+          ram_size=stat_nb_mem(fset_id),
         )
     db.commit()
 

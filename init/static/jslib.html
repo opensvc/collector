@@ -954,6 +954,60 @@ function stat_day(url, id) {
 		}, 
 	    }
 	});
+	$.jqplot(id+'_nodes_ram', [data[6]], {
+            cursor:{zoom:true, showTooltip:false},
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+            legend: {
+                show: true,
+                location: 'n',
+            },
+	    series: [
+                {
+                    label: 'ram size (GB)',
+                    breakOnNull: true,
+                },
+            ],
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'},
+		}, 
+	    }
+	});
+	$.jqplot(id+'_nodes_core', [data[7]], {
+            cursor:{zoom:true, showTooltip:false},
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+            legend: {
+                show: true,
+                location: 'n',
+            },
+	    series: [
+                {
+                    label: 'cores',
+                    breakOnNull: true,
+                },
+            ],
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'},
+		}, 
+	    }
+	});
 	$.jqplot(id+'_accounts', [data[12]], {
             cursor:{zoom:true, showTooltip:false},
             legend: {
