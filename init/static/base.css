@@ -221,6 +221,7 @@ select {
     border: 1px solid #dddddd;
     background: white;
     overflow: hidden;
+    color: black;
 }
 
 body {
