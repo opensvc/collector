@@ -251,30 +251,44 @@ class HtmlTable(object):
                  )
 
     def persistent_filters(self):
+        if not self.dbfilterable:
+            return SPAN()
+
+        q = db.auth_user.id == auth.user_id
+        rows = db(q).select(db.auth_user.lock_filter)
+        if len(rows) != 1:
+            return SPAN()
+
+        if rows.first().lock_filter:
+            lock_filter = True
+        else:
+            lock_filter = False
+
         q = db.gen_filterset_user.user_id == auth.user_id
         q &= db.gen_filterset_user.fset_id == db.gen_filtersets.id
         rows = db(q).select()
         active_fset_id = 0
         for row in rows:
             active_fset_id = row.gen_filtersets.id
+            active_fset_name = row.gen_filtersets.fset_name
 
-        q = db.gen_filtersets.id > 0
-        rows = db(q).select()
-        av = [self.format_av_filter(None)]
-        for row in rows:
-            av.append(self.format_av_filter(row))
-
-        if not self.dbfilterable:
-            return SPAN()
-
-        id_session_div = '_'.join((self.id, 'session_div'))
+        if lock_filter:
+            content = active_fset_name
+        else:
+            q = db.gen_filtersets.id > 0
+            rows = db(q).select()
+            av = [self.format_av_filter(None)]
+            for row in rows:
+                av.append(self.format_av_filter(row))
+            content = SELECT(
+                        av,
+                        value=active_fset_id,
+                      )
 
         s = SPAN(
               T('Filter'),
-              SELECT(
-                av,
-                value=active_fset_id,
-              ),
+              ' ',
+              content,
               _class='floatw',
             )
         return s

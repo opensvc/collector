@@ -1887,3 +1887,11 @@ alter table nodes modify model varchar(50);
 alter table stat_day add column nb_vcpu int(11) default 0;
 alter table stat_day add column nb_vmem int(11) default 0;
 alter table stat_day add column nb_resp_accounts int(11) default 0;
+
+alter table auth_user add column lock_filter varchar(1) default 'F';
+
+drop view v_users;
+
+CREATE VIEW `v_users` AS (select (select `e`.`time_stamp` AS `time_stamp` from `auth_event` `e` where (`e`.`user_id` = `u`.`id`) order by `e`.`time_stamp` desc limit 1) AS `last`,`u`.`id` AS `id`,concat_ws(' ',`u`.`first_name`,`u`.`last_name`) AS `fullname`,`u`.`email` AS `email`,group_concat(`d`.`domains` separator ', ') AS `domains`,sum((select count(0) AS `count(*)` from `auth_group` `gg` where ((`gg`.`role` = 'Manager') and (`gg`.`id` = `g`.`id`)))) AS `manager`,group_concat(`g`.`role` separator ', ') AS `groups`, u.lock_filter as lock_filter, fs.fset_name as fset_name from (((`auth_user` `u` left join `auth_membership` `m` on((`u`.`id` = `m`.`user_id`))) left join `auth_group` `g` on(((`m`.`group_id` = `g`.`id`) and (not((`g`.`role` like 'user_%')))))) left join `domain_permissions` `d` on((`m`.`group_id` = `d`.`group_id`))) left join gen_filterset_user fsu on fsu.user_id = u.id left join gen_filtersets fs on fs.id = fsu.fset_id group by id);
+
+

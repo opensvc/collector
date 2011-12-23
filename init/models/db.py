@@ -69,6 +69,9 @@ table = db.define_table(auth.settings.table_user_name,
           requires=IS_IN_SET(["debug", "info", "warning", "error", "critical"])),
     Field('email_log_level', 'string', label=T("Email messaging log level"),
           requires=IS_IN_SET(["debug", "info", "warning", "error", "critical"])),
+    Field('lock_filter', 'boolean', default=False,
+          label=T("Lock user's session filter"),
+          writable=False, readable=False),
     migrate=False)
 
 table.email.requires = [IS_EMAIL(error_message=auth.messages.invalid_email),
@@ -514,6 +517,8 @@ db.define_table('v_users',
     Field('email'),
     Field('last'),
     Field('groups'),
+    Field('lock_filter'),
+    Field('fset_name'),
     migrate=False)
 
 db.define_table('svcdisks',
