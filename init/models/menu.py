@@ -83,7 +83,9 @@ response.menu = [
               URL(request.application,'networks','networks')],
              [SPAN(T('Domain Name Service'), _class='dns16'), False,
               URL(request.application,'dns','dns')],
-             [SPAN(T('Storage'), _class='hd16'), False,
+             [SPAN(T('Disks'), _class='hd16'), False,
+              URL(request.application,'disks','disks')],
+             [SPAN(T('Storage Arrays'), _class='hd16'), False,
               URL(request.application,'sym','index')],
          ]
     ],
