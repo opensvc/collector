@@ -1142,6 +1142,46 @@ function stat_day(url, id) {
 	});
     });
     $.getJSON(url, function(data) {
+	$.jqplot(id+'_virt_nodes', [data[23],  data[24]], {
+            cursor:{zoom:true, showTooltip:false},
+	    stackSeries: true,
+            legend: {
+                renderer: $.jqplot.EnhancedLegendRenderer,
+                rendererOptions:{numberRows: 1},
+                show: true,
+                location: 'n',
+            },
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    seriesDefaults: {
+                fill: true,
+                shadowAngle: 135,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: [
+                {
+                    label: 'virtual nodes',
+                },
+                {
+                    label: 'physical nodes',
+                },
+            ],
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'},
+		}, 
+	    }
+	});
+    });
+    $.getJSON(url, function(data) {
 	$.jqplot(id+'_svc_type', [data[15],  data[0]], {
             cursor:{zoom:true, showTooltip:false},
 	    stackSeries: true,
