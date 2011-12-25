@@ -201,8 +201,8 @@ def stat_nb_vmem(fset_id):
     return n
 
 def stat_nb_core(fset_id):
-    q = db.nodes.id < 0
-    q = or_apply_filters(q, db.nodes.nodename, None, fset_id)
+    q = ~db.nodes.nodename.belongs(db(db.services.id > 0).select(db.services.svc_name))
+    q = apply_filters(q, db.nodes.nodename, None, fset_id)
     rows = db(q).select(db.nodes.cpu_cores)
     n = 0
     for row in rows:
@@ -211,8 +211,8 @@ def stat_nb_core(fset_id):
     return n
 
 def stat_nb_mem(fset_id):
-    q = db.nodes.id < 0
-    q = or_apply_filters(q, db.nodes.nodename, None, fset_id)
+    q = ~db.nodes.nodename.belongs(db(db.services.id > 0).select(db.services.svc_name))
+    q = apply_filters(q, db.nodes.nodename, None, fset_id)
     rows = db(q).select(db.nodes.mem_bytes)
     n = 0
     for row in rows:
@@ -220,6 +220,13 @@ def stat_nb_mem(fset_id):
     # convert to GB
     n = n / 1024
     print "stat_nb_mem():", str(n)
+    return n
+
+def stat_nb_virt_nodes(fset_id):
+    q = db.nodes.nodename.belongs(db(db.services.id > 0).select(db.services.svc_name))
+    q = apply_filters(q, db.nodes.nodename, None, fset_id)
+    n = db(q).count()
+    print "stat_nb_virt_nodes():", str(n)
     return n
 
 def stat_nb_svc_with_drp(fset_id):
@@ -341,6 +348,7 @@ def _cron_stat_day(end, fset_id=None):
           nb_vmem=stat_nb_vmem(fset_id),
           nb_svc_cluster=stat_nb_svc_cluster(fset_id),
           nb_nodes=stat_nb_nodes(fset_id),
+          nb_virt_nodes=stat_nb_virt_nodes(fset_id),
           nb_nodes_prd=stat_nb_nodes_prd(fset_id),
           disk_size=stat_disk_size(fset_id),
           nb_cpu_core=stat_nb_core(fset_id),
@@ -363,6 +371,7 @@ def _cron_stat_day(end, fset_id=None):
           nb_vcpu=stat_nb_vcpu(fset_id),
           nb_vmem=stat_nb_vmem(fset_id),
           nb_svc_cluster=stat_nb_svc_cluster(fset_id),
+          nb_virt_nodes=stat_nb_virt_nodes(fset_id),
           nb_nodes=stat_nb_nodes(fset_id),
           nb_nodes_prd=stat_nb_nodes_prd(fset_id),
           disk_size=stat_disk_size(fset_id),

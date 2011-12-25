@@ -607,6 +607,7 @@ db.define_table('stat_day',
     Field('nb_accounts'),
     Field('nb_svc_with_drp'),
     Field('nb_nodes'),
+    Field('nb_virt_nodes'),
     Field('nb_nodes_prd'),
     Field('nb_resp_accounts'),
     migrate=False)
