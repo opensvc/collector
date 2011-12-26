@@ -1296,6 +1296,7 @@ function stat_compare_day(url, id) {
         for (i=0; i<data[0].length; i++){
             labels.push({'label': data[0][i]})
         }
+        try {
 	$.jqplot(id+'_svc', data[1][25], {
             cursor:{zoom:true, showTooltip:false},
             legend: {
@@ -1318,6 +1319,127 @@ function stat_compare_day(url, id) {
 		}, 
 	    }
 	});
+        } catch(e) {};
+        try {
+	$.jqplot(id+'_nodes', data[1][26], {
+            cursor:{zoom:true, showTooltip:false},
+            legend: {
+                show: true,
+                location: 'n',
+            },
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: labels,
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'},
+		}, 
+	    }
+	});
+        } catch(e) {};
+        try {
+	$.jqplot(id+'_nodes_virt_ratio', data[1][27], {
+            cursor:{zoom:true, showTooltip:false},
+            legend: {
+                show: true,
+                location: 'n',
+            },
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: labels,
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'},
+		}, 
+	    }
+	});
+        } catch(e) {};
+        try {
+	$.jqplot(id+'_svc_prd_ratio', data[1][28], {
+            cursor:{zoom:true, showTooltip:false},
+            legend: {
+                show: true,
+                location: 'n',
+            },
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: labels,
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'},
+		}, 
+	    }
+	});
+        } catch(e) {};
+        try {
+	$.jqplot(id+'_svc_drp_ratio', data[1][29], {
+            cursor:{zoom:true, showTooltip:false},
+            legend: {
+                show: true,
+                location: 'n',
+            },
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: labels,
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'},
+		}, 
+	    }
+	});
+        } catch(e) {};
+        try {
+	$.jqplot(id+'_svc_clu_ratio', data[1][30], {
+            cursor:{zoom:true, showTooltip:false},
+            legend: {
+                show: true,
+                location: 'n',
+            },
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: labels,
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'},
+		}, 
+	    }
+	});
+        } catch(e) {};
     });
 }
 function stats_cpu(url, id) {

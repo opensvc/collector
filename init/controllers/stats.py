@@ -81,8 +81,60 @@ def ajax_compare():
      DIV(
        H2(T("Services")),
        DIV(
-         _id='stat_day_svc',
+         DIV(T("Number of services")),
+         DIV(
+           _id='stat_day_svc',
+         ),
          _class='float',
+         _style='min-width:400px',
+       ),
+       DIV(
+         DIV(T("Production ratio")),
+         DIV(
+           _id='stat_day_svc_prd_ratio',
+         ),
+         _class='float',
+         _style='min-width:400px',
+       ),
+       DIV(
+         DIV(T("DRP ratio")),
+         DIV(
+           _id='stat_day_svc_drp_ratio',
+         ),
+         _class='float',
+         _style='min-width:400px',
+       ),
+       DIV(
+         DIV(T("Clustering ratio")),
+         DIV(
+           _id='stat_day_svc_clu_ratio',
+         ),
+         _class='float',
+         _style='min-width:400px',
+       ),
+       DIV(
+         XML('&nbsp;'),
+         _class='spacer',
+       ),
+       _class='container',
+     ),
+     DIV(
+       H2(T("Nodes")),
+       DIV(
+         DIV(T("Number of nodes")),
+         DIV(
+           _id='stat_day_nodes',
+         ),
+         _class='float',
+         _style='min-width:400px',
+       ),
+       DIV(
+         DIV(T("Virtualization ratio")),
+         DIV(
+           _id='stat_day_nodes_virt_ratio',
+         ),
+         _class='float',
+         _style='min-width:400px',
        ),
        DIV(
          XML('&nbsp;'),
@@ -773,7 +825,12 @@ def _json_stat_day(rows=None):
     nb_resp_accounts = []
     nb_virt_nodes = []
     nb_phys_nodes = []
+    nb_virt_ratio = []
     nb_svc = []
+    nb_nodes = []
+    nb_svc_prd_ratio = []
+    nb_svc_drp_ratio = []
+    nb_svc_clu_ratio = []
     for r in rows:
         if r[2] is None or r[17] is None:
             v = None
@@ -821,6 +878,23 @@ def _json_stat_day(rows=None):
             v = r[16]-r[24]
         nb_phys_nodes.append([r[1], v])
         nb_svc.append([r[1], r[2]])
+        nb_nodes.append([r[1], r[16]])
+        try:
+            nb_virt_ratio.append([r[1], int(r[16]/r[24]*100)])
+        except:
+            nb_virt_ratio.append([r[1], 0])
+        try:
+            nb_svc_prd_ratio.append([r[1], int(r[17]/r[2]*100)])
+        except:
+            nb_svc_prd_ratio.append([r[1], 0])
+        try:
+            nb_svc_drp_ratio.append([r[1], int(r[15]/r[2]*100)])
+        except:
+            nb_svc_drp_ratio.append([r[1], 0])
+        try:
+            nb_svc_clu_ratio.append([r[1], int(r[18]/r[2]*100)])
+        except:
+            nb_svc_clu_ratio.append([r[1], 0])
     return [nb_svc_not_prd,
             nb_action,
             nb_action_err,
@@ -846,7 +920,12 @@ def _json_stat_day(rows=None):
             nb_resp_accounts,
             nb_virt_nodes,
             nb_phys_nodes,
-            nb_svc]
+            nb_svc,
+            nb_nodes,
+            nb_virt_ratio,
+            nb_svc_prd_ratio,
+            nb_svc_drp_ratio,
+            nb_svc_clu_ratio]
 
 @service.json
 def json_avg_cpu_for_nodes():
