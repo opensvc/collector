@@ -93,6 +93,8 @@ response.menu = [
          [
              [SPAN(T('Site'), _class='wspark16'), False,
               URL(request.application,'stats','stats')],
+             [SPAN(T('Compare'), _class='wspark16'), False,
+              URL(request.application,'stats','compare')],
              [SPAN(T('Os lifecycle'), _class='refresh16'), False,
               URL(request.application,'lifecycle','lifecycle_os')],
              [SPAN(T('Availability'), _class='avail16'), False,

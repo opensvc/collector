@@ -1100,8 +1100,6 @@ function stat_day(url, id) {
 		}, 
 	    }
 	});
-    });
-    $.getJSON(url, function(data) {
 	$.jqplot(id+'_nodes', [data[17],  data[14]], {
             cursor:{zoom:true, showTooltip:false},
 	    stackSeries: true,
@@ -1140,8 +1138,6 @@ function stat_day(url, id) {
 		}, 
 	    }
 	});
-    });
-    $.getJSON(url, function(data) {
 	$.jqplot(id+'_virt_nodes', [data[23],  data[24]], {
             cursor:{zoom:true, showTooltip:false},
 	    stackSeries: true,
@@ -1180,8 +1176,6 @@ function stat_day(url, id) {
 		}, 
 	    }
 	});
-    });
-    $.getJSON(url, function(data) {
 	$.jqplot(id+'_svc_type', [data[15],  data[0]], {
             cursor:{zoom:true, showTooltip:false},
 	    stackSeries: true,
@@ -1216,8 +1210,6 @@ function stat_day(url, id) {
 		}, 
 	    }
 	});
-    });
-    $.getJSON(url, function(data) {
 	$.jqplot(id+'_svc_cluster', [data[16],  data[18]], {
             cursor:{zoom:true, showTooltip:false},
 	    stackSeries: true,
@@ -1245,8 +1237,6 @@ function stat_day(url, id) {
 		}, 
 	    }
 	});
-    });
-    $.getJSON(url, function(data) {
 	$.jqplot(id+'_svc_drp', [data[13],  data[19]], {
             cursor:{zoom:true, showTooltip:false},
 	    stackSeries: true,
@@ -1275,6 +1265,37 @@ function stat_day(url, id) {
                     label: 'svc without drp',
                 },
             ],
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'},
+		}, 
+	    }
+	});
+    });
+}
+function stat_compare_day(url, id) {
+    $.jqplot.config.enablePlugins = true;
+    $.getJSON(url, function(data) {
+        labels = new Array()
+        for (i=0; i<data[0].length; i++){
+            labels.push({'label': data[0][i]})
+        }
+	$.jqplot(id+'_svc', data[1][25], {
+            cursor:{zoom:true, showTooltip:false},
+            legend: {
+                show: true,
+                location: 'n',
+            },
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: labels,
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 

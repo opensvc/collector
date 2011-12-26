@@ -1895,3 +1895,32 @@ drop view v_users;
 CREATE VIEW `v_users` AS (select (select `e`.`time_stamp` AS `time_stamp` from `auth_event` `e` where (`e`.`user_id` = `u`.`id`) order by `e`.`time_stamp` desc limit 1) AS `last`,`u`.`id` AS `id`,concat_ws(' ',`u`.`first_name`,`u`.`last_name`) AS `fullname`,`u`.`email` AS `email`,group_concat(`d`.`domains` separator ', ') AS `domains`,sum((select count(0) AS `count(*)` from `auth_group` `gg` where ((`gg`.`role` = 'Manager') and (`gg`.`id` = `g`.`id`)))) AS `manager`,group_concat(`g`.`role` separator ', ') AS `groups`, u.lock_filter as lock_filter, fs.fset_name as fset_name from (((`auth_user` `u` left join `auth_membership` `m` on((`u`.`id` = `m`.`user_id`))) left join `auth_group` `g` on(((`m`.`group_id` = `g`.`id`) and (not((`g`.`role` like 'user_%')))))) left join `domain_permissions` `d` on((`m`.`group_id` = `d`.`group_id`))) left join gen_filterset_user fsu on fsu.user_id = u.id left join gen_filtersets fs on fs.id = fsu.fset_id group by id);
 
 alter table stat_day add column nb_virt_nodes int(11) default 0;
+
+CREATE TABLE  `opensvc`.`stats_compare` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(60) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB CHARSET=utf8;
+
+CREATE TABLE  `opensvc`.`stats_compare_fset` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `compare_id` int(11) NOT NULL,
+  `fset_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY stats_compare_fset_uk1 (`compare_id`, fset_id)
+) ENGINE=InnoDB CHARSET=utf8;
+
+alter table stats_compare_fset add CONSTRAINT `stats_compare_fset_ibfk_1` FOREIGN KEY (`fset_id`) REFERENCES `gen_filtersets` (`id`) ON DELETE CASCADE;
+alter table stats_compare_fset add CONSTRAINT `stats_compare_fset_ibfk_2` FOREIGN KEY (`compare_id`) REFERENCES `stats_compare` (`id`) ON DELETE CASCADE;
+
+CREATE TABLE  `opensvc`.`stats_compare_user` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `compare_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY stats_compare_user_uk1 (`compare_id`, user_id)
+) ENGINE=InnoDB CHARSET=utf8;
+
+alter table stats_compare_user add CONSTRAINT `stats_compare_user_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`) ON DELETE CASCADE;
+alter table stats_compare_user add CONSTRAINT `stats_compare_user_ibfk_2` FOREIGN KEY (`compare_id`) REFERENCES `stats_compare` (`id`) ON DELETE CASCADE;
+

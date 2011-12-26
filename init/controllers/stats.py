@@ -8,6 +8,103 @@ def call():
     session.forget()
     return service()
 
+class table_compare(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.dbfilterable = False
+        self.refreshable = False
+        self.pageable = False
+        self.exportable = False
+        self.columnable = False
+        self.object_list = []
+        self.nodatabanner = False
+        self.additional_tools.append('compare')
+
+    def format_compare_option(self, row):
+        if row is None:
+            name = T("None")
+            compare_id = 0
+        else:
+            name = row.name
+            compare_id = row.id
+        div = "foo"
+        return OPTION(
+                 name,
+                 _value=compare_id,
+                 _onClick="""
+                       ajax('%(url)s', [], '%(div)s');
+                   """%dict(url=URL(
+                                   r=request, c='ajax',
+                                   f='ajax_select_compare',
+                                   args=[compare_id]),
+                              div=div,
+                             )+self.ajax_submit(),
+                 )
+
+    def compare(self):
+        # get user's current selected compare
+        q = db.stats_compare_user.user_id == auth.user_id
+        row = db(q).select().first()
+        if row is None:
+            active_compare_id = 0
+        else:
+            active_compare_id = row.compare_id
+
+        # create the compare select()
+        q = db.stats_compare.id > 0
+        rows = db(q).select()
+        av = [self.format_compare_option(None)]
+        for row in rows:
+            av.append(self.format_compare_option(row))
+        content = SELECT(
+                    av,
+                    value=active_compare_id,
+                  )
+
+        return SPAN(
+                 T("Compare"),
+                 " ",
+                 content,
+                 _class='floatw',
+               )
+
+
+@auth.requires_login()
+def ajax_compare():
+    t = table_compare('stats', 'ajax_compare')
+    d = DIV(
+     DIV(
+       t.html(),
+     ),
+     DIV(
+       H2(T("Services")),
+       DIV(
+         _id='stat_day_svc',
+         _class='float',
+       ),
+       DIV(
+         XML('&nbsp;'),
+         _class='spacer',
+       ),
+       _class='container',
+     ),
+     SCRIPT(
+       "stat_compare_day('%(url)s', 'stat_day');"%dict(
+         url=URL(r=request,
+                 f='call/json/json_stat_compare_day'),
+       ),
+       _name=t.id+'_to_eval',
+     ),
+     _id="stats",
+    )
+    return d
+
+@auth.requires_login()
+def compare():
+    return dict(table=ajax_compare())
+
 class table_stats(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -338,13 +435,30 @@ def ajax_perfcmp_plot():
 # raw data extractors
 #
 @auth.requires_login()
-def rows_stat_day():
-    fset_id = user_fset_id()
+def rows_stat_compare_day():
+    q = db.stats_compare_user.user_id == auth.user_id
+    q &= db.stats_compare_fset.compare_id == db.stats_compare_user.compare_id
+    q &= db.stats_compare_fset.fset_id == db.gen_filtersets.id
+    rows = db(q).select()
+    fset_ids = [0] + [r.gen_filtersets.id for r in rows]
+    labels = ['total'] + [r.gen_filtersets.fset_name for r in rows]
+    data = []
+    for fset_id in fset_ids:
+        data.append(rows_stat_day(fset_id))
+    return labels, data
+
+@auth.requires_login()
+def rows_stat_day(fset_id=None):
+    if fset_id is None:
+        fset_id = user_fset_id()
     o = db.stat_day.id
     q = o > 0
     q &= db.stat_day.fset_id == fset_id
-    b = db(q).select(orderby=o, limitby=(0,1)).first().day
-    e = db(q).select(orderby=~o, limitby=(0,1)).first().day
+    try:
+        b = db(q).select(orderby=o, limitby=(0,1)).first().day
+        e = db(q).select(orderby=~o, limitby=(0,1)).first().day
+    except:
+        return []
     sql = """select *, %(d)s as d
              from stat_day
              where fset_id=%(fset_id)d
@@ -611,8 +725,28 @@ def rows_avg_block_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=
 # json data servers
 #
 @service.json
+def json_stat_compare_day():
+    labels, data = rows_stat_compare_day()
+    data = map(_json_stat_day, data)
+    d = []
+    n = len(data)
+    if n == 0:
+        return [[],[]]
+    for i, foo in enumerate(data[0]):
+        t = []
+        for j in range(0, n):
+            t.append(data[j][i])
+        d.append(t)
+    return [labels, d]
+
+@service.json
 def json_stat_day():
-    rows = rows_stat_day()
+    return _json_stat_day()
+
+@service.json
+def _json_stat_day(rows=None):
+    if rows is None:
+        rows = rows_stat_day()
     d = []
     nb_svc_not_prd = []
     nb_action = []
@@ -639,6 +773,7 @@ def json_stat_day():
     nb_resp_accounts = []
     nb_virt_nodes = []
     nb_phys_nodes = []
+    nb_svc = []
     for r in rows:
         if r[2] is None or r[17] is None:
             v = None
@@ -685,6 +820,7 @@ def json_stat_day():
         else:
             v = r[16]-r[24]
         nb_phys_nodes.append([r[1], v])
+        nb_svc.append([r[1], r[2]])
     return [nb_svc_not_prd,
             nb_action,
             nb_action_err,
@@ -709,7 +845,8 @@ def json_stat_day():
             nb_vmem,
             nb_resp_accounts,
             nb_virt_nodes,
-            nb_phys_nodes]
+            nb_phys_nodes,
+            nb_svc]
 
 @service.json
 def json_avg_cpu_for_nodes():

@@ -37,3 +37,19 @@ def ajax_select_filter():
             db(q).update(fset_id=fset_id)
         elif n == 0:
             db.gen_filterset_user.insert(user_id=auth.user_id, fset_id=fset_id)
+
+@auth.requires_login()
+def ajax_select_compare():
+    compare_id = request.args[0]
+    q = db.stats_compare_user.user_id == auth.user_id
+    if compare_id == "0":
+        db(q).delete()
+    else:
+        n = db(q).count()
+        if n > 1:
+            db(q).delete()
+            n = 0
+        if n == 1:
+            db(q).update(compare_id=compare_id)
+        elif n == 0:
+            db.stats_compare_user.insert(user_id=auth.user_id, compare_id=compare_id)

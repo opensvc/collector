@@ -1315,3 +1315,17 @@ db.define_table('gen_filterset_user',
     Field('user_id','integer'),
     migrate=False)
 
+db.define_table('stats_compare_user',
+    Field('compare_id','integer'),
+    Field('user_id','integer'),
+    migrate=False)
+
+db.define_table('stats_compare_fset',
+    Field('compare_id','integer'),
+    Field('fset_id','integer'),
+    migrate=False)
+
+db.define_table('stats_compare',
+    Field('name','string'),
+    migrate=False)
+

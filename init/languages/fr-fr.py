@@ -181,6 +181,7 @@
 'Command': 'Commande',
 'Commande': 'Commande',
 'Comment': 'Commentaire',
+'Compare': 'Compare',
 'Compliance': 'Conformité',
 'Compliance action': 'Action de conformité',
 'Computing ressource usage': 'Utilisation des ressources informatiques',
