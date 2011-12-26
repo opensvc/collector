@@ -1056,6 +1056,7 @@ function stat_day(url, id) {
 		}, 
 	    }
 	});
+        try {
 	$.jqplot(id+'_actions', [data[4],  data[3], data[2]], {
             cursor:{zoom:true, showTooltip:false},
 	    stackSeries: true,
@@ -1100,6 +1101,8 @@ function stat_day(url, id) {
 		}, 
 	    }
 	});
+        } catch(e) {};
+        try {
 	$.jqplot(id+'_nodes', [data[17],  data[14]], {
             cursor:{zoom:true, showTooltip:false},
 	    stackSeries: true,
@@ -1138,6 +1141,8 @@ function stat_day(url, id) {
 		}, 
 	    }
 	});
+        } catch(e) {};
+        try {
 	$.jqplot(id+'_virt_nodes', [data[23],  data[24]], {
             cursor:{zoom:true, showTooltip:false},
 	    stackSeries: true,
@@ -1176,6 +1181,8 @@ function stat_day(url, id) {
 		}, 
 	    }
 	});
+        } catch(e) {};
+        try {
 	$.jqplot(id+'_svc_type', [data[15],  data[0]], {
             cursor:{zoom:true, showTooltip:false},
 	    stackSeries: true,
@@ -1210,6 +1217,8 @@ function stat_day(url, id) {
 		}, 
 	    }
 	});
+        } catch(e) {};
+        try {
 	$.jqplot(id+'_svc_cluster', [data[16],  data[18]], {
             cursor:{zoom:true, showTooltip:false},
 	    stackSeries: true,
@@ -1237,6 +1246,8 @@ function stat_day(url, id) {
 		}, 
 	    }
 	});
+        } catch(e) {};
+        try {
 	$.jqplot(id+'_svc_drp', [data[13],  data[19]], {
             cursor:{zoom:true, showTooltip:false},
 	    stackSeries: true,
@@ -1275,6 +1286,7 @@ function stat_day(url, id) {
 		}, 
 	    }
 	});
+        } catch(e) {};
     });
 }
 function stat_compare_day(url, id) {
