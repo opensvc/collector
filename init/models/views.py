@@ -198,8 +198,35 @@ def filterset_query(row, nodes, services):
         o = db.v_gen_filtersets.f_order
         qr = db.v_gen_filtersets.fset_id == v.encap_fset_id
         rows = db(qr).select(orderby=o)
+        n_nodes = set([])
+        n_services = set([])
         for r in rows:
-            nodes, services = filterset_query(r, nodes, services)
+            n_nodes, n_services = filterset_query(r, n_nodes, n_services)
+        if 'NOT' in v.f_log_op:
+            all_nodes = set([r.nodename for r in db(db.nodes.id>0).select(db.nodes.nodename)])
+            all_services = set([r.svc_name for r in db(db.services.id>0).select(db.services.svc_name)])
+            n_nodes = all_nodes - n_nodes
+            n_services = all_services - n_services
+        if v.f_log_op == 'AND':
+            if nodes == set([]):
+                nodes = n_nodes
+            else:
+                nodes &= n_nodes
+            if services == set([]):
+                services = n_services
+            else:
+                services &= n_services
+        elif v.f_log_op == 'OR':
+            if nodes == set([]):
+                nodes = n_nodes
+            else:
+                nodes |= n_nodes
+            if services == set([]):
+                services = n_services
+            else:
+                services |= n_services
+        return nodes, services
+
     elif v.f_table is None or v.f_field is None:
         return nodes, services
 
