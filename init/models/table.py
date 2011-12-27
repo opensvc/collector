@@ -1134,7 +1134,16 @@ $("#%(id)s").everyTime(1000, function(i){
                 o = i
             inf = []
             for c in self.cols:
-                inf.append(repr(self.colprops[c].get(o)))
+                v = self.colprops[c].get(o)
+                if isinstance(v, str) or isinstance(v, unicode):
+                    v = repr(v).replace('\\n', '')
+                elif isinstance(v, datetime.datetime):
+                    v = v.strftime("%Y-%m-%d %H:%M:%S")
+                elif v is None:
+                    v = ""
+                else:
+                    v = str(v)
+                inf.append(v)
             lines.append(';'.join(inf))
         return '\n'.join(lines)
 
