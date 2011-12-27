@@ -4070,14 +4070,14 @@ class table_comp_status(HtmlTable):
                      img='check16',
                      display=True,
                     ),
-            'run_nodename': HtmlTableColumn(
+            'run_nodename': col_node(
                      title='Node',
                      field='run_nodename',
                      table='comp_status',
                      img='node16',
                      display=True,
                     ),
-            'run_svcname': HtmlTableColumn(
+            'run_svcname': col_svc(
                      title='Service',
                      field='run_svcname',
                      table='comp_status',
@@ -4128,7 +4128,10 @@ class table_comp_status(HtmlTable):
                     ),
         }
         self.colprops.update(v_nodes_colprops)
+        for i in self.cols:
+            self.colprops[i].t = self
         self.ajax_col_values = 'ajax_comp_status_col_values'
+        self.extraline = True
         self.checkboxes = True
         self.checkbox_id_table = 'comp_status'
         if 'CompManager' in user_groups():
@@ -4834,10 +4837,12 @@ class table_comp_log(table_comp_status):
                      'run_ruleset']
         self.cols += v_nodes_cols
         for c in self.colprops:
+            self.colprops[c].t = self
             if 'run_' in c:
                 self.colprops[c].table = 'comp_log'
         self.ajax_col_values = 'ajax_comp_log_col_values'
         self.checkboxes = False
+        self.checkbox_id_table = 'comp_log'
 
 @auth.requires_login()
 def ajax_comp_log():

@@ -1470,6 +1470,8 @@ class col_svc(HtmlTableColumn):
     def html(self, o):
         id = self.t.extra_line_key(o)
         s = self.get(o)
+        if s is None:
+            return ""
         d = DIV(
               A(
                 s,
