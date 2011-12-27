@@ -697,7 +697,7 @@ def rows_stat_compare_day():
     q &= db.stats_compare_fset.fset_id == db.gen_filtersets.id
     rows = db(q).select()
     fset_ids = [0] + [r.gen_filtersets.id for r in rows]
-    labels = ['total'] + [r.gen_filtersets.fset_name for r in rows]
+    labels = ['global'] + [r.gen_filtersets.fset_name for r in rows]
     data = []
     for fset_id in fset_ids:
         data.append(rows_stat_day(fset_id))
@@ -1084,19 +1084,19 @@ def _json_stat_day(rows=None):
         nb_svc.append([r[1], r[2]])
         nb_nodes.append([r[1], r[16]])
         try:
-            nb_virt_ratio.append([r[1], int(r[16]/r[24]*100)])
+            nb_virt_ratio.append([r[1], int(100*r[24]/r[16])])
         except:
             nb_virt_ratio.append([r[1], 0])
         try:
-            nb_svc_prd_ratio.append([r[1], int(r[17]/r[2]*100)])
+            nb_svc_prd_ratio.append([r[1], int(100*r[17]/r[2])])
         except:
             nb_svc_prd_ratio.append([r[1], 0])
         try:
-            nb_svc_drp_ratio.append([r[1], int(r[15]/r[2]*100)])
+            nb_svc_drp_ratio.append([r[1], int(100*r[15]/r[2])])
         except:
             nb_svc_drp_ratio.append([r[1], 0])
         try:
-            nb_svc_clu_ratio.append([r[1], int(r[18]/r[2]*100)])
+            nb_svc_clu_ratio.append([r[1], int(100*r[18]/r[2])])
         except:
             nb_svc_clu_ratio.append([r[1], 0])
     return [nb_svc_not_prd,
