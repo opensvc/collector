@@ -202,6 +202,10 @@ def stat_nb_vmem(fset_id):
 
 def stat_nb_core(fset_id):
     q = ~db.nodes.nodename.belongs(db(db.services.id > 0).select(db.services.svc_name))
+    q &= ~db.nodes.model.like("%virtuel%")
+    q &= ~db.nodes.model.like("%VMware%")
+    q &= ~db.nodes.model.like("%KVM%")
+    q &= ~db.nodes.model.like("%QEMU%")
     q = apply_filters(q, db.nodes.nodename, None, fset_id)
     rows = db(q).select(db.nodes.cpu_cores)
     n = 0
@@ -212,6 +216,10 @@ def stat_nb_core(fset_id):
 
 def stat_nb_mem(fset_id):
     q = ~db.nodes.nodename.belongs(db(db.services.id > 0).select(db.services.svc_name))
+    q &= ~db.nodes.model.like("%virtuel%")
+    q &= ~db.nodes.model.like("%VMware%")
+    q &= ~db.nodes.model.like("%KVM%")
+    q &= ~db.nodes.model.like("%QEMU%")
     q = apply_filters(q, db.nodes.nodename, None, fset_id)
     rows = db(q).select(db.nodes.mem_bytes)
     n = 0
@@ -224,6 +232,10 @@ def stat_nb_mem(fset_id):
 
 def stat_nb_virt_nodes(fset_id):
     q = db.nodes.nodename.belongs(db(db.services.id > 0).select(db.services.svc_name))
+    q |= db.nodes.model.like("%virtuel%")
+    q |= db.nodes.model.like("%VMware%")
+    q |= db.nodes.model.like("%KVM%")
+    q |= db.nodes.model.like("%QEMU%")
     q = apply_filters(q, db.nodes.nodename, None, fset_id)
     n = db(q).count()
     print "stat_nb_virt_nodes():", str(n)
