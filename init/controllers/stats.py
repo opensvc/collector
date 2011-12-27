@@ -162,10 +162,207 @@ class table_stats(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['fset_name',
+                     'day',
+                     'nb_svc',
+                     'nb_svc_prd',
+                     'nb_svc_cluster',
+                     'nb_action',
+                     'nb_action_err',
+                     'nb_action_warn',
+                     'nb_action_ok',
+                     'disk_size',
+                     'ram_size',
+                     'nb_cpu_core',
+                     'nb_cpu_die',
+                     'nb_vcpu',
+                     'nb_vmem',
+                     'watt',
+                     'rackunit',
+                     'nb_apps',
+                     'nb_accounts',
+                     'nb_svc_with_drp',
+                     'nb_nodes',
+                     'nb_virt_nodes',
+                     'nb_nodes_prd',
+                     'nb_resp_accounts']
+        self.colprops = {
+            'fset_name': HtmlTableColumn(
+                     title='Filterset',
+                     table='gen_filtersets',
+                     field='fset_name',
+                     img='filter16',
+                     display=True,
+                    ),
+            'day': HtmlTableColumn(
+                     title='Day',
+                     table='stat_day',
+                     field='day',
+                     img='time16',
+                     display=True,
+                    ),
+            'nb_svc': HtmlTableColumn(
+                     title='Number of service',
+                     table='stat_day',
+                     field='nb_svc',
+                     img='spark16',
+                     display=True,
+                    ),
+            'nb_svc_prd': HtmlTableColumn(
+                     title='Number of production service',
+                     table='stat_day',
+                     field='nb_svc_prd',
+                     img='spark16',
+                     display=True,
+                    ),
+            'nb_svc_cluster': HtmlTableColumn(
+                     title='Number of clustered service',
+                     table='stat_day',
+                     field='nb_svc_cluster',
+                     img='spark16',
+                     display=True,
+                    ),
+            'nb_action': HtmlTableColumn(
+                     title='Number of actions',
+                     table='stat_day',
+                     field='nb_action',
+                     img='spark16',
+                     display=True,
+                    ),
+            'nb_action_err': HtmlTableColumn(
+                     title='Number of error actions',
+                     table='stat_day',
+                     field='nb_action_err',
+                     img='spark16',
+                     display=True,
+                    ),
+            'nb_action_warn': HtmlTableColumn(
+                     title='Number of warn actions',
+                     table='stat_day',
+                     field='nb_action_warn',
+                     img='spark16',
+                     display=True,
+                    ),
+            'nb_action_ok': HtmlTableColumn(
+                     title='Number of ok actions',
+                     table='stat_day',
+                     field='nb_action_ok',
+                     img='spark16',
+                     display=True,
+                    ),
+            'disk_size': HtmlTableColumn(
+                     title='Disk size (GB)',
+                     table='stat_day',
+                     field='disk_size',
+                     img='spark16',
+                     display=True,
+                    ),
+            'ram_size': HtmlTableColumn(
+                     title='Ram size (GB)',
+                     table='stat_day',
+                     field='ram_size',
+                     img='spark16',
+                     display=True,
+                    ),
+            'nb_cpu_core': HtmlTableColumn(
+                     title='Number of cpu cores',
+                     table='stat_day',
+                     field='nb_cpu_core',
+                     img='spark16',
+                     display=True,
+                    ),
+            'nb_cpu_die': HtmlTableColumn(
+                     title='Number of cpu dies',
+                     table='stat_day',
+                     field='nb_cpu_die',
+                     img='spark16',
+                     display=True,
+                    ),
+            'nb_vmem': HtmlTableColumn(
+                     title='Vram size (GB)',
+                     table='stat_day',
+                     field='nb_vmem',
+                     img='spark16',
+                     display=True,
+                    ),
+            'nb_vcpu': HtmlTableColumn(
+                     title='Number of vcpus',
+                     table='stat_day',
+                     field='nb_vcpu',
+                     img='spark16',
+                     display=True,
+                    ),
+            'watt': HtmlTableColumn(
+                     title='Watt',
+                     table='stat_day',
+                     field='watt',
+                     img='spark16',
+                     display=True,
+                    ),
+            'rackunit': HtmlTableColumn(
+                     title='Number of rack units',
+                     table='stat_day',
+                     field='rackunit',
+                     img='spark16',
+                     display=True,
+                    ),
+            'nb_apps': HtmlTableColumn(
+                     title='Number of apps',
+                     table='stat_day',
+                     field='nb_apps',
+                     img='spark16',
+                     display=True,
+                    ),
+            'nb_accounts': HtmlTableColumn(
+                     title='Number of accounts',
+                     table='stat_day',
+                     field='nb_accounts',
+                     img='spark16',
+                     display=True,
+                    ),
+            'nb_svc_with_drp': HtmlTableColumn(
+                     title='Number of services with DRP',
+                     table='stat_day',
+                     field='nb_svc_with_drp',
+                     img='spark16',
+                     display=True,
+                    ),
+            'nb_nodes': HtmlTableColumn(
+                     title='Number of nodes',
+                     table='stat_day',
+                     field='nb_nodes',
+                     img='spark16',
+                     display=True,
+                    ),
+            'nb_virt_nodes': HtmlTableColumn(
+                     title='Number of virtual nodes',
+                     table='stat_day',
+                     field='nb_virt_nodes',
+                     img='spark16',
+                     display=True,
+                    ),
+            'nb_nodes_prd': HtmlTableColumn(
+                     title='Number of production nodes',
+                     table='stat_day',
+                     field='nb_nodes_prd',
+                     img='spark16',
+                     display=True,
+                    ),
+            'nb_resp_accounts': HtmlTableColumn(
+                     title='Number of sysresponsible',
+                     table='stat_day',
+                     field='nb_resp_accounts',
+                     img='spark16',
+                     display=True,
+                    ),
+        }
+
         self.dbfilterable = True
+        self.headers = False
+        self.filterable = False
         self.refreshable = False
         self.pageable = False
-        self.exportable = False
+        self.exportable = True
         self.columnable = False
         self.object_list = []
         self.nodatabanner = False
@@ -173,6 +370,13 @@ class table_stats(HtmlTable):
 @auth.requires_login()
 def ajax_stats():
     t = table_stats('stats', 'ajax_stats')
+
+    q = db.stat_day.id > 0
+    q &= db.stat_day.fset_id == db.gen_filtersets.id
+    t.csv_q = q
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        return t.csv()
+
     d = DIV(
      DIV(
        t.html(),

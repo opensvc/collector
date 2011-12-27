@@ -104,6 +104,7 @@ class HtmlTable(object):
         self.exportable = True
         self.refreshable = True
         self.columnable = True
+        self.headers = True
         self.colored_lines = True
         self.additional_tools = []
         self.span = None
@@ -1014,7 +1015,9 @@ class HtmlTable(object):
         else:
             export = SPAN()
 
-        table_lines = [self.table_header()]
+        table_lines = []
+        if self.headers:
+            table_lines.append(self.table_header())
 
         if inputs is not None:
             table_lines.append(inputs)
