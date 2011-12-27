@@ -11,7 +11,9 @@ class table_disks(HtmlTable):
                      'disk_model',
                      'disk_dg',
                      'disk_target_port_id',
-                     'disk_updated']
+                     'disk_updated',
+                     'disk_devid',
+                     'disk_arrayid']
         self.colprops.update({
             'disk_id': HtmlTableColumn(
                      title='Disk Id',
@@ -20,14 +22,14 @@ class table_disks(HtmlTable):
                      img='hd16',
                      display=True,
                     ),
-            'disk_svcname': HtmlTableColumn(
+            'disk_svcname': col_svc(
                      title='Service',
                      table='svcdisks',
                      field='disk_svcname',
                      img='svc',
                      display=True,
                     ),
-            'disk_nodename': HtmlTableColumn(
+            'disk_nodename': col_node(
                      title='Nodename',
                      table='svcdisks',
                      field='disk_nodename',
@@ -76,10 +78,26 @@ class table_disks(HtmlTable):
                      img='time16',
                      display=True,
                     ),
+            'disk_arrayid': HtmlTableColumn(
+                     title='Array Id',
+                     table='diskinfo',
+                     field='disk_arrayid',
+                     img='hd16',
+                     display=True,
+                    ),
+            'disk_devid': HtmlTableColumn(
+                     title='Array device Id',
+                     table='diskinfo',
+                     field='disk_devid',
+                     img='hd16',
+                     display=True,
+                    ),
         })
+        for i in self.cols:
+            self.colprops[i].t = self
         self.extraline = True
-        #self.checkbox_id_col = 'id'
-        #self.checkbox_id_table = 'svcdisks'
+        self.checkbox_id_col = 'id'
+        self.checkbox_id_table = 'svcdisks'
         self.dbfilterable = True
         self.ajax_col_values = 'ajax_disks_col_values'
 
@@ -89,11 +107,12 @@ def ajax_disks_col_values():
     col = request.args[0]
     o = db[t.colprops[col].table][col]
     q = db.svcdisks.id > 0
+    l = db.diskinfo.on(db.diskinfo.disk_id==db.svcdisks.disk_id)
     q = _where(q, 'svcdisks', domain_perms(), 'disk_nodename')
     q = apply_filters(q, db.svcdisks.disk_nodename, db.svcdisks.disk_svcname)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o, groupby=o)
+    t.object_list = db(q).select(o, orderby=o, groupby=o, left=l)
     return t.col_values_cloud(col)
 
 @auth.requires_login()
@@ -101,6 +120,7 @@ def ajax_disks():
     t = table_disks('disks', 'ajax_disks')
     o = db.svcdisks.disk_id
     q = db.svcdisks.id>0
+    l = db.diskinfo.on(db.diskinfo.disk_id==db.svcdisks.disk_id)
     #q &= db.svcdisks.disk_nodename==db.v_nodes.nodename
     q = _where(q, 'svcdisks', domain_perms(), 'disk_nodename')
     q = apply_filters(q, db.svcdisks.disk_nodename, db.svcdisks.disk_svcname)
@@ -108,7 +128,7 @@ def ajax_disks():
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     n = db(q).count()
     t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o, left=l)
 
     t.csv_q = q
     t.csv_orderby = o

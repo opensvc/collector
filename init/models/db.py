@@ -521,6 +521,14 @@ db.define_table('v_users',
     Field('fset_name'),
     migrate=False)
 
+db.define_table('diskinfo',
+    Field('id'),
+    Field('disk_id'),
+    Field('disk_devid'),
+    Field('disk_arrayid'),
+    Field('disk_updated'),
+    migrate=False)
+
 db.define_table('svcdisks',
     Field('id'),
     Field('disk_id'),

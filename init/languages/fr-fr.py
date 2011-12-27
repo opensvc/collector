@@ -107,6 +107,8 @@
 'Are you sure you want to execute a %(a)s action on all selected nodes. Please confirm action': "Etes-vous sûr de vouloir exécuter l'action %(a)s sur tous les noeuds sélectionnés. Merci de confirmer",
 'Are you sure you want to execute a %(a)s action on all selected service@node. Please confirm action': "Etes-vous sûr de vouloir exécuter l'action %(a)s sur tous les service@noeud sélectionnés. Merci de confirmer",
 'Are you sure you want to execute a compliance %(a)s action on all selected nodes. Please confirm action': "Etes-vous sur de vouloir exécuter l'action de confirmité %(a)s sur les noeuds sélectionnés. Merci de confirmer l'action",
+'Array Id': 'Array Id',
+'Array device Id': 'Array device Id',
 'Assigned to': 'Assigné à',
 'Attach': 'Attacher',
 'Attach child ruleset': 'Attacher un jeu de règles fils',
