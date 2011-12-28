@@ -1924,3 +1924,16 @@ CREATE TABLE  `opensvc`.`stats_compare_user` (
 alter table stats_compare_user add CONSTRAINT `stats_compare_user_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`) ON DELETE CASCADE;
 alter table stats_compare_user add CONSTRAINT `stats_compare_user_ibfk_2` FOREIGN KEY (`compare_id`) REFERENCES `stats_compare` (`id`) ON DELETE CASCADE;
 
+
+alter table svcdisks engine=InnoDB;
+alter table svcdisks charset=utf8;
+alter table svcdisks modify column disk_svcname varchar(60) CHARACTER SET utf8;
+alter table svcdisks modify column disk_nodename varchar(60) CHARACTER SET utf8;
+alter table svcdisks modify column disk_id varchar(60) CHARACTER SET utf8;
+alter table svcdisks modify column disk_vendor varchar(60) CHARACTER SET utf8;
+alter table svcdisks modify column disk_model varchar(60) CHARACTER SET utf8;
+alter table svcdisks modify column disk_dg varchar(60) CHARACTER SET utf8;
+alter table svcdisks modify column disk_target_port_id varchar(60) CHARACTER SET utf8;
+alter table svcmon add key svcmon_k1 (disk_nodename, disk_svcname);
+alter table svcdisks add key svcdisks_k1 (disk_nodename, disk_svcname);
+alter table svcdisks add CONSTRAINT `svcdisks_ibfk_1` FOREIGN KEY (disk_nodename, disk_svcname) REFERENCES `svcmon` (mon_nodname, mon_svcname) ON DELETE CASCADE;
