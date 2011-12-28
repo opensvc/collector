@@ -306,6 +306,11 @@ def register_disk(vars, vals, auth):
         # the foreign key on svcdisk may prevent insertion if svcmon is not yet
         # populated
         pass
+    if h["disk_id"].strip("'").startswith(h["disk_nodename"].strip("'")+'.'):
+        vars = ['disk_id', 'disk_arrayid', 'disk_devid']
+        vals = [h["disk_id"], h['disk_nodename'], repr(h['disk_id'].strip("'").split('.')[-1])]
+        generic_insert('diskinfo', vars, vals)
+
 
 @auth_uuid
 @service.xmlrpc
