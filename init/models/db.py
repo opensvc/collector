@@ -538,6 +538,7 @@ db.define_table('svcdisks',
     Field('disk_vendor'),
     Field('disk_model'),
     Field('disk_dg'),
+    Field('disk_updated'),
     Field('disk_target_port_id'),
     migrate=False)
 
