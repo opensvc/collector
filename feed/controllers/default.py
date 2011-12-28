@@ -289,7 +289,23 @@ def svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
 @auth_uuid
 @service.xmlrpc
 def register_disk(vars, vals, auth):
-    generic_insert('svcdisks', vars, vals)
+    h = {}
+    for a,b in zip(vars, vals):
+        h[a] = b
+    if 'disk_updated' not in h:
+        h['disk_updated'] = datetime.datetime.now()
+    # purge old disks
+    if 'disk_svcname' in h and h['disk_svcname'] is not None and h['disk_svcname'] != '':
+        q = db.svcdisks.disk_svcname==h['disk_svcname']
+        q &= db.svcdisks.disk_nodename==h['disk_nodename']
+        db(q).delete()
+        db.commit()
+    try:
+        generic_insert('svcdisks', h.keys(), h.values())
+    except _mysql_exceptions.IntegrityError:
+        # the foreign key on svcdisk may prevent insertion if svcmon is not yet
+        # populated
+        pass
 
 @auth_uuid
 @service.xmlrpc
