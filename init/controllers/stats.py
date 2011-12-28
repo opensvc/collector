@@ -727,10 +727,13 @@ def rows_stat_day(fset_id=None):
 def rows_stats_disks_per_svc(nodes=[], begin=None, end=None, lower=None, higher=None):
     if len(nodes) > 0:
         nodes = map(repr, nodes)
+        svcnames = ""
     else:
-        q = db.nodes.id > 0
-        q = apply_filters(q, db.nodes.nodename)
-        nodes = [repr(r.nodename) for r in db(q).select(db.nodes.nodename)]
+        q = db.svcmon.id > 0
+        q = apply_filters(q, db.svcmon.mon_nodname, db.svcmon.mon_svcname)
+        nodes = [repr(r.mon_nodname) for r in db(q).select(db.svcmon.mon_nodname)]
+        svcnames = [repr(r.mon_svcname) for r in db(q).select(db.svcmon.mon_svcname)]
+        svcnames = 'and v.mon_svcname in (%s)'%','.join(svcnames)
     nodes = 'and v.mon_nodname in (%s)'%','.join(nodes)
 
     dom = _domain_perms()
@@ -754,9 +757,10 @@ def rows_stats_disks_per_svc(nodes=[], begin=None, end=None, lower=None, higher=
                    and v.mon_nodname like '%(dom)s'
                    and s.disk_size is not NULL
                    %(nodes)s
+                   %(svcnames)s
              group by s.svcname
              order by s.disk_size
-          """%dict(dom=dom, begin=begin, end=end, nodes=nodes)
+          """%dict(dom=dom, begin=begin, end=end, nodes=nodes, svcnames=svcnames)
 
     if lower is not None:
         sql += ' desc limit %d;'%int(lower)
@@ -1295,6 +1299,7 @@ def json_disk_for_svc():
         j = n-i
         d.append(r[0])
         disk_size.append([r[1], j])
+    d.reverse()
     return [d, [disk_size]]
 
 
