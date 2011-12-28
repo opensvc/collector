@@ -107,6 +107,7 @@ def ajax_disks_col_values():
     col = request.args[0]
     o = db[t.colprops[col].table][col]
     q = db.svcdisks.id > 0
+    q &= db.diskinfo.id>0
     l = db.diskinfo.on(db.diskinfo.disk_id==db.svcdisks.disk_id)
     q = _where(q, 'svcdisks', domain_perms(), 'disk_nodename')
     q = apply_filters(q, db.svcdisks.disk_nodename, db.svcdisks.disk_svcname)
@@ -120,13 +121,14 @@ def ajax_disks():
     t = table_disks('disks', 'ajax_disks')
     o = db.svcdisks.disk_id
     q = db.svcdisks.id>0
+    q &= db.diskinfo.id>0
     l = db.diskinfo.on(db.diskinfo.disk_id==db.svcdisks.disk_id)
     #q &= db.svcdisks.disk_nodename==db.v_nodes.nodename
     q = _where(q, 'svcdisks', domain_perms(), 'disk_nodename')
     q = apply_filters(q, db.svcdisks.disk_nodename, db.svcdisks.disk_svcname)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    n = db(q).count()
+    n = len(db(q).select(left=l))
     t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o, left=l)
 
