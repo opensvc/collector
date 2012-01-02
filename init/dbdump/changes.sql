@@ -1935,5 +1935,37 @@ alter table svcdisks modify column disk_model varchar(60) CHARACTER SET utf8;
 alter table svcdisks modify column disk_dg varchar(60) CHARACTER SET utf8;
 alter table svcdisks modify column disk_target_port_id varchar(60) CHARACTER SET utf8;
 alter table svcmon add key svcmon_k1 (disk_nodename, disk_svcname);
-alter table svcdisks add key svcdisks_k1 (disk_nodename, disk_svcname);
+alter table svcdisks add key svcdisks_k1 (mon_nodname, mon_svcname);
 alter table svcdisks add CONSTRAINT `svcdisks_ibfk_1` FOREIGN KEY (disk_nodename, disk_svcname) REFERENCES `svcmon` (mon_nodname, mon_svcname) ON DELETE CASCADE;
+
+
+# zstat format
+# datenow, z, stor[z]['SWAP'], stor[z]['RSS'], stor[z]['CAP'], stor[z]['at'], stor[z]['avgat'], stor[z]['pg'], stor[z]['avgpg'], stor[z]['NPROC'], stor[z]['mem'], stor[z]['cpu'], stor[z]['TIME'], txt[-3], txt[-2], txt[-1]
+# 2011-12-31 16:24:00 v11z5 29M 35M 0 0 0 0 0 22 2.3% 0.0% 0:06:57 Nov 9 21:47
+
+CREATE TABLE `stats_svc` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `date` datetime NOT NULL,
+  `svcname` varchar(60) NOT NULL,
+  `swap` integer NOT NULL,
+  `rss` integer NOT NULL,
+  `cap` float NOT NULL,
+  `at` float NOT NULL,
+  `avgat` float NOT NULL,
+  `pg` float NOT NULL,
+  `avgpg` float NOT NULL,
+  `nproc` float NOT NULL,
+  `mem` float NOT NULL,
+  `cpu` float NOT NULL,
+  `nodename` varchar(60) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `index_1` (`date`,`svcname`,`nodename`)
+);
+
+alter table svcdisks modify column disk_id varchar(120);
+
+alter table stat_day add column local_disk_size int(11) NOT NULL default 0;
+
+alter table stat_day_svc add column local_disk_size int(11) NOT NULL default 0;
+
+alter table svcdisks add column disk_local varchar(1) default 'T';

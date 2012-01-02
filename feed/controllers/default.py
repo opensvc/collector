@@ -300,16 +300,19 @@ def register_disk(vars, vals, auth):
         q &= db.svcdisks.disk_nodename==h['disk_nodename']
         db(q).delete()
         db.commit()
+    if h["disk_id"].strip("'").startswith(h["disk_nodename"].strip("'")+'.'):
+        h['disk_local'] = 'T'
+        vars = ['disk_id', 'disk_arrayid', 'disk_devid']
+        vals = [h["disk_id"], h['disk_nodename'], repr(h['disk_id'].strip("'").split('.')[-1])]
+        generic_insert('diskinfo', vars, vals)
+    else:
+        h['disk_local'] = 'F'
     try:
         generic_insert('svcdisks', h.keys(), h.values())
     except _mysql_exceptions.IntegrityError:
         # the foreign key on svcdisk may prevent insertion if svcmon is not yet
         # populated
         pass
-    if h["disk_id"].strip("'").startswith(h["disk_nodename"].strip("'")+'.'):
-        vars = ['disk_id', 'disk_arrayid', 'disk_devid']
-        vals = [h["disk_id"], h['disk_nodename'], repr(h['disk_id'].strip("'").split('.')[-1])]
-        generic_insert('diskinfo', vars, vals)
 
 
 @auth_uuid
