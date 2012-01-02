@@ -929,6 +929,7 @@ function stat_day(url, id) {
 	});
 	$.jqplot(id+'_disk', [data[5], data[25]], {
             cursor:{zoom:true, showTooltip:false},
+	    stackSeries: true,
 	    grid: {
                 borderWidth: 0.5,
                 shadowOffset: 1.0,
@@ -937,6 +938,12 @@ function stat_day(url, id) {
             legend: {
                 show: true,
                 location: 'n',
+            },
+	    seriesDefaults: {
+                fill: true,
+                shadowAngle: 135,
+                shadowOffset: 1.0,
+                shadowWidth: 2
             },
 	    series: [
                 {
