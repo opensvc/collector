@@ -927,7 +927,7 @@ function stat_day(url, id) {
 		}, 
 	    }
 	});
-	$.jqplot(id+'_disk', [data[5]], {
+	$.jqplot(id+'_disk', [data[5], data[25]], {
             cursor:{zoom:true, showTooltip:false},
 	    grid: {
                 borderWidth: 0.5,
@@ -940,7 +940,11 @@ function stat_day(url, id) {
             },
 	    series: [
                 {
-                    label: 'size (GB)',
+                    label: 'SAN disk size (GB)',
+                    breakOnNull: true,
+                },
+                {
+                    label: 'DAS disk size (GB)',
                     breakOnNull: true,
                 },
             ],

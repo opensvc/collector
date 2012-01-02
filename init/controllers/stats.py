@@ -172,6 +172,7 @@ class table_stats(HtmlTable):
                      'nb_action_warn',
                      'nb_action_ok',
                      'disk_size',
+                     'local_disk_size',
                      'ram_size',
                      'nb_cpu_core',
                      'nb_cpu_die',
@@ -251,9 +252,16 @@ class table_stats(HtmlTable):
                      display=True,
                     ),
             'disk_size': HtmlTableColumn(
-                     title='Disk size (GB)',
+                     title='SAN Disk size (GB)',
                      table='stat_day',
                      field='disk_size',
+                     img='spark16',
+                     display=True,
+                    ),
+            'local_disk_size': HtmlTableColumn(
+                     title='DAS Disk size (GB)',
+                     table='stat_day',
+                     field='local_disk_size',
                      img='spark16',
                      display=True,
                     ),
@@ -1014,6 +1022,7 @@ def _json_stat_day(rows=None):
     nb_action_warn = []
     nb_action_ok = []
     disk_size = []
+    local_disk_size = []
     ram_size = []
     nb_cpu_core = []
     nb_cpu_die = []
@@ -1050,6 +1059,7 @@ def _json_stat_day(rows=None):
         nb_action_warn.append([r[1], r[5]])
         nb_action_ok.append([r[1], r[6]])
         disk_size.append([r[1], r[7]])
+        local_disk_size.append([r[1], r[7]])
         ram_size.append([r[1], r[8]])
         nb_cpu_core.append([r[1], r[9]])
         nb_cpu_die.append([r[1], r[10]])
@@ -1133,7 +1143,8 @@ def _json_stat_day(rows=None):
             nb_virt_ratio,
             nb_svc_prd_ratio,
             nb_svc_drp_ratio,
-            nb_svc_clu_ratio]
+            nb_svc_clu_ratio,
+            local_disk_size]
 
 @service.json
 def json_avg_cpu_for_nodes():
