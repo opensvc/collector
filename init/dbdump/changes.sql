@@ -1971,3 +1971,9 @@ alter table stat_day_svc add column local_disk_size int(11) NOT NULL default 0;
 alter table svcdisks add column disk_local varchar(1) default 'T';
 
 alter table stat_day_svc modify column local_disk_size int(11) DEFAULT '0';
+
+update stat_day_svc set disk_size = 0 where disk_size is NULL;
+
+update stat_day_svc set local_disk_size = 0 where local_disk_size is NULL;
+
+
