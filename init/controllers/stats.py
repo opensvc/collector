@@ -753,7 +753,8 @@ def rows_stats_disks_per_svc(nodes=[], begin=None, end=None, lower=None, higher=
                       s.svcname, '@',
                       group_concat(v.mon_nodname separator ',')
                     ),
-                    s.disk_size
+                    s.disk_size,
+                    s.local_disk_size
              from stat_day_svc s, svcmon v
              where day=(select max(day)
                         from stat_day_svc
@@ -763,11 +764,10 @@ def rows_stats_disks_per_svc(nodes=[], begin=None, end=None, lower=None, higher=
                    and s.day<'%(end)s'
                    and s.svcname=v.mon_svcname
                    and v.mon_nodname like '%(dom)s'
-                   and s.disk_size is not NULL
                    %(nodes)s
                    %(svcnames)s
              group by s.svcname
-             order by s.disk_size
+             order by s.disk_size + s.local_disk_size
           """%dict(dom=dom, begin=begin, end=end, nodes=nodes, svcnames=svcnames)
 
     if lower is not None:
@@ -1305,12 +1305,14 @@ def json_disk_for_svc():
     rows = rows_stats_disks_per_svc(nodes, begin, end, 15, higher)
     d = []
     disk_size = []
+    local_disk_size = []
     n = len(rows)
     for i, r in enumerate(rows):
         j = n-i
         d.append(r[0])
         disk_size.append([r[1], j])
+        local_disk_size.append([r[2], j])
     d.reverse()
-    return [d, [disk_size]]
+    return [d, [disk_size, local_disk_size]]
 
 

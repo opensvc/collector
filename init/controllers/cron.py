@@ -440,8 +440,8 @@ def cron_stat_day_svc():
         pairs += ["nb_action_err=(select count(distinct id) from SVCactions where begin>'%s' and begin<'%s' and status='err' and hostname='%s')"%(begin, end, svc)]
         pairs += ["nb_action_warn=(select count(distinct id) from SVCactions where begin>'%s' and begin<'%s' and status='warn' and hostname='%s')"%(begin, end, svc)]
         pairs += ["nb_action_ok=(select count(distinct id) from SVCactions where begin>'%s' and begin<'%s' and status='ok' and hostname='%s')"%(begin, end, svc)]
-        pairs += ["disk_size=(select sum(t.disk_size) from (select distinct s.disk_id, s.disk_size from svcdisks s where s.disk_svcname='%s' and s.disk_local='F') t)"%svc]
-        pairs += ["local_disk_size=(select sum(t.disk_size) from (select distinct s.disk_id, s.disk_size from svcdisks s where s.disk_svcname='%s' and s.disk_local='T') t)"%svc]
+        pairs += ["disk_size=(select if(sum(t.disk_size) is NULL, 0, sum(t.disk_size)) from (select distinct s.disk_id, s.disk_size from svcdisks s where s.disk_svcname='%s' and s.disk_local='F') t)"%svc]
+        pairs += ["local_disk_size=(select if(sum(t.disk_size) is NULL, 0, sum(t.disk_size)) from (select distinct s.disk_id, s.disk_size from svcdisks s where s.disk_svcname='%s' and s.disk_local='T') t)"%svc]
         sql = "insert into stat_day_svc set day='%(end)s', svcname='%(svc)s', %(pairs)s on duplicate key update %(pairs)s"%dict(end=end, svc=svc, pairs=','.join(pairs))
         #raise Exception(sql)
         db.executesql(sql)
