@@ -324,7 +324,7 @@ def stat_nb_resp_accounts(fset_id):
     return n
 
 def stat_disk_size(fset_id):
-    q = db.svcdisks.id > 0
+    q = db.svcdisks.disk_local == False
     q = apply_filters(q, db.svcdisks.disk_nodename, db.svcdisks.disk_svcname, fset_id)
     rows = db(q).select(groupby=db.svcdisks.id)
     s = 0
@@ -333,6 +333,18 @@ def stat_disk_size(fset_id):
             continue
         s += row.disk_size
     print "stat_disk_size():", str(s)
+    return s
+
+def stat_local_disk_size(fset_id):
+    q = db.svcdisks.disk_local == True
+    q = apply_filters(q, db.svcdisks.disk_nodename, db.svcdisks.disk_svcname, fset_id)
+    rows = db(q).select(groupby=db.svcdisks.id)
+    s = 0
+    for row in rows:
+        if row.disk_size is None:
+            continue
+        s += row.disk_size
+    print "stat_local_disk_size():", str(s)
     return s
 
 def _cron_stat_day(end, fset_id=None):
@@ -365,6 +377,7 @@ def _cron_stat_day(end, fset_id=None):
           disk_size=stat_disk_size(fset_id),
           nb_cpu_core=stat_nb_core(fset_id),
           ram_size=stat_nb_mem(fset_id),
+          local_disk_size=stat_local_disk_size(fset_id),
         )
     else:
         db(q).update(
@@ -389,6 +402,7 @@ def _cron_stat_day(end, fset_id=None):
           disk_size=stat_disk_size(fset_id),
           nb_cpu_core=stat_nb_core(fset_id),
           ram_size=stat_nb_mem(fset_id),
+          local_disk_size=stat_local_disk_size(fset_id),
         )
     db.commit()
 
@@ -426,7 +440,8 @@ def cron_stat_day_svc():
         pairs += ["nb_action_err=(select count(distinct id) from SVCactions where begin>'%s' and begin<'%s' and status='err' and hostname='%s')"%(begin, end, svc)]
         pairs += ["nb_action_warn=(select count(distinct id) from SVCactions where begin>'%s' and begin<'%s' and status='warn' and hostname='%s')"%(begin, end, svc)]
         pairs += ["nb_action_ok=(select count(distinct id) from SVCactions where begin>'%s' and begin<'%s' and status='ok' and hostname='%s')"%(begin, end, svc)]
-        pairs += ["disk_size=(select sum(t.disk_size) from (select distinct s.disk_id, s.disk_size from svcdisks s where s.disk_svcname='%s') t)"%svc]
+        pairs += ["disk_size=(select sum(t.disk_size) from (select distinct s.disk_id, s.disk_size from svcdisks s where s.disk_svcname='%s' and s.disk_local='F') t)"%svc]
+        pairs += ["local_disk_size=(select sum(t.disk_size) from (select distinct s.disk_id, s.disk_size from svcdisks s where s.disk_svcname='%s' and s.disk_local='T') t)"%svc]
         sql = "insert into stat_day_svc set day='%(end)s', svcname='%(svc)s', %(pairs)s on duplicate key update %(pairs)s"%dict(end=end, svc=svc, pairs=','.join(pairs))
         #raise Exception(sql)
         db.executesql(sql)
