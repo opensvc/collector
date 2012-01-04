@@ -189,10 +189,17 @@ def apply_filters(q, node_field=None, service_field=None, fset_id=None):
 
     if n_nodes > 0 and n_services > 0 and node_field is not None and service_field is not None:
         q &= (node_field.belongs(nodes)) | (service_field.belongs(services))
-    elif len(nodes) > 0 and node_field is not None:
-        q &= node_field.belongs(nodes)
-    elif len(services) > 0 and service_field is not None:
-        q &= service_field.belongs(services)
+    else:
+        if node_field is not None:
+            if n_nodes > 0:
+                q &= node_field.belongs(nodes)
+            elif service_field is None:
+                q &= node_field == '.'
+        if service_field is not None:
+            if n_services > 0:
+                q &= service_field.belongs(services)
+            elif node_field is None:
+                q &= service_field == '.'
 
     return q
 
