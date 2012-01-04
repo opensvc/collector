@@ -15,7 +15,6 @@ import logging.handlers
 basedir = os.path.realpath(os.path.dirname(__file__))
 sys.path.append(basedir)
 
-import xmpp
 import lock
 
 lockfile = __file__+'.lock'
