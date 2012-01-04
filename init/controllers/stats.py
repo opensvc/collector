@@ -1056,7 +1056,7 @@ def _json_stat_day(rows=None):
         nb_action_warn.append([r[1], r[5]])
         nb_action_ok.append([r[1], r[6]])
         disk_size.append([r[1], r[7]])
-        local_disk_size.append([r[1], r[7]])
+        local_disk_size.append([r[1], r[25]])
         ram_size.append([r[1], r[8]])
         nb_cpu_core.append([r[1], r[9]])
         nb_cpu_die.append([r[1], r[10]])
