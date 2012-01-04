@@ -195,8 +195,8 @@ def apply_filters(q, node_field=None, service_field=None, fset_id=None):
         q &= service_field.belongs(services)
     elif len(nodes) == 0 and node_field is not None:
         q &= node_field == '.'
-    elif len(services) == 0 and services_field is not None:
-        q &= services_field == '.'
+    elif len(services) == 0 and service_field is not None:
+        q &= service_field == '.'
 
     return q
 

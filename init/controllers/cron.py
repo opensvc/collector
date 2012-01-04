@@ -259,7 +259,7 @@ yesterday = today - datetime.timedelta(days=1)
 def stat_nb_action(fset_id):
     q = db.SVCactions.begin > yesterday
     q &= db.SVCactions.end < today
-    q = apply_filters(q, db.SVCactions.hostname, db.SVCactions.svcname, fset_id)
+    q = apply_filters(q, db.SVCactions.hostname, None, fset_id)
     n = db(q).count()
     print "stat_nb_action():", str(n)
     return n
@@ -268,7 +268,7 @@ def stat_nb_action_err(fset_id):
     q = db.SVCactions.begin > yesterday
     q &= db.SVCactions.end < today
     q &= db.SVCactions.status == "err"
-    q = apply_filters(q, db.SVCactions.hostname, db.SVCactions.svcname, fset_id)
+    q = apply_filters(q, db.SVCactions.hostname, None, fset_id)
     n = db(q).count()
     print "stat_nb_action_err():", str(n)
     return n
@@ -277,7 +277,7 @@ def stat_nb_action_warn(fset_id):
     q = db.SVCactions.begin > yesterday
     q &= db.SVCactions.end < today
     q &= db.SVCactions.status == "warn"
-    q = apply_filters(q, db.SVCactions.hostname, db.SVCactions.svcname, fset_id)
+    q = apply_filters(q, db.SVCactions.hostname, None, fset_id)
     n = db(q).count()
     print "stat_nb_action_warn():", str(n)
     return n
@@ -286,7 +286,7 @@ def stat_nb_action_ok(fset_id):
     q = db.SVCactions.begin > yesterday
     q &= db.SVCactions.end < today
     q &= db.SVCactions.status == "ok"
-    q = apply_filters(q, db.SVCactions.hostname, db.SVCactions.svcname, fset_id)
+    q = apply_filters(q, db.SVCactions.hostname, None, fset_id)
     n = db(q).count()
     print "stat_nb_action_ok():", str(n)
     return n
@@ -325,7 +325,7 @@ def stat_nb_resp_accounts(fset_id):
 
 def stat_disk_size(fset_id):
     q = db.svcdisks.disk_local == False
-    q = apply_filters(q, db.svcdisks.disk_nodename, db.svcdisks.disk_svcname, fset_id)
+    q = apply_filters(q, db.svcdisks.disk_nodename, None, fset_id)
     rows = db(q).select(groupby=db.svcdisks.id)
     s = 0
     for row in rows:
@@ -337,7 +337,7 @@ def stat_disk_size(fset_id):
 
 def stat_local_disk_size(fset_id):
     q = db.svcdisks.disk_local == True
-    q = apply_filters(q, db.svcdisks.disk_nodename, db.svcdisks.disk_svcname, fset_id)
+    q = apply_filters(q, db.svcdisks.disk_nodename, None, fset_id)
     rows = db(q).select(groupby=db.svcdisks.id)
     s = 0
     for row in rows:

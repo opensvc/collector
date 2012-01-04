@@ -749,10 +749,7 @@ def rows_stats_disks_per_svc(nodes=[], begin=None, end=None, lower=None, higher=
         now = datetime.datetime.now()
         end = now - datetime.timedelta(days=0, microseconds=now.microsecond)
         begin = end - datetime.timedelta(days=1)
-    sql = """select concat(
-                      s.svcname, '@',
-                      group_concat(v.mon_nodname separator ',')
-                    ),
+    sql = """select s.svcname,
                     s.disk_size,
                     s.local_disk_size
              from stat_day_svc s, svcmon v

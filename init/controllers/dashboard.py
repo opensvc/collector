@@ -151,7 +151,7 @@ def ajax_dash_agg():
     for f in set(t.cols)-set(t.special_filtered_cols):
         q = _where(q, 'dashboard', t.filter_parse(f), f)
     q &= _where(None, 'dashboard', domain_perms(), 'dash_svcname')|_where(None, 'dashboard', domain_perms(), 'dash_nodename')
-    q = apply_filters(q, db.dashboard.dash_nodename, db.dashboard.dash_svcname)
+    q = apply_filters(q, db.dashboard.dash_nodename)
 
     sql1 = db(q)._select().rstrip(';').replace('services.id, ','').replace('nodes.id, ','').replace('dashboard.id>0 AND', '')
     regex = re.compile("SELECT .* FROM")
@@ -531,7 +531,7 @@ def ajax_dashboard_col_values():
     for f in set(t.cols)-set(t.special_filtered_cols):
         q = _where(q, 'dashboard', t.filter_parse(f), f)
     q &= _where(None, 'dashboard', domain_perms(), 'dash_svcname')|_where(None, 'dashboard', domain_perms(), 'dash_nodename')
-    q = apply_filters(q, db.dashboard.dash_nodename, db.dashboard.dash_svcname)
+    q = apply_filters(q, db.dashboard.dash_nodename)
     t.object_list = db(q).select(o, orderby=o, groupby=o)
     return t.col_values_cloud(col)
 
