@@ -347,17 +347,14 @@ def stat_local_disk_size(fset_id):
     print "stat_local_disk_size():", str(s)
     return s
 
-def _cron_stat_day(end, fset_id=None):
+def _cron_stat_day(end, fset_id=0):
     q = db.stat_day.day == end
-    if fset_id is None:
-        q &= db.stat_day.fset_id == 0
-    else:
-        q &= db.stat_day.fset_id == fset_id
-    print "stat_day:", end, "fset_id:", fset_id if fset_id is not None else 0
+    q &= db.stat_day.fset_id == fset_id
+    print "stat_day:", end, "fset_id:", fset_id
     if db(q).count() == 0:
         db.stat_day.insert(
           day=end,
-          fset_id=fset_id if fset_id is not None else 0,
+          fset_id=fset_id,
           nb_svc=stat_nb_svc(fset_id),
           nb_action=stat_nb_action(fset_id),
           nb_action_err=stat_nb_action_err(fset_id),
@@ -382,7 +379,7 @@ def _cron_stat_day(end, fset_id=None):
     else:
         db(q).update(
           day=end,
-          fset_id=fset_id if fset_id is not None else 0,
+          fset_id=fset_id,
           nb_svc=stat_nb_svc(fset_id),
           nb_action=stat_nb_action(fset_id),
           nb_action_err=stat_nb_action_err(fset_id),
@@ -407,9 +404,9 @@ def _cron_stat_day(end, fset_id=None):
     db.commit()
 
     # os lifecycle
-    print "os lifecycle: %s, fset_id: %d"%(end, fset_id if fset_id is not None else 0)
+    print "os lifecycle: %s, fset_id: %d"%(end, fset_id)
     q = db.nodes.id < 0
-    q = or_apply_filters(q, db.nodes.nodename, None, fset_id)
+    q = or_apply_filters(q, db.nodes.nodename, None, fset_id if fset_id != 0 else None)
     nodes = ','.join([repr(r.nodename) for r in db(q).select()])
     if len(nodes) >0:
         where_nodes = "where nodename in (%s)"%nodes
@@ -421,7 +418,7 @@ def _cron_stat_day(end, fset_id=None):
               select %d,
                      concat_ws(' ', os_name, os_vendor, os_release, os_arch) c,
                      count(nodename),CURDATE(), os_name, os_vendor
-              from nodes %s group by c;"""%(fset_id if fset_id is not None else 0, where_nodes)
+              from nodes %s group by c;"""%(fset_id, where_nodes)
     db.executesql(sql2)
     db.commit()
 

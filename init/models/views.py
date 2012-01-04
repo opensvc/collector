@@ -125,7 +125,13 @@ def user_fset_name():
     return row.gen_filtersets.fset_name
 
 def or_apply_filters(q, node_field=None, service_field=None, fset_id=None):
-    if fset_id is None:
+    if fset_id is None or fset_id == 0:
+        if auth.user_id is None:
+            if node_field is not None:
+                q |= node_field.like('%')
+            if service_field is not None:
+                q |= service_field.like('%')
+            return q
         v = db.v_gen_filtersets
         o = v.f_order
         qry = db.gen_filterset_user.fset_id == v.fset_id
@@ -159,7 +165,9 @@ def or_apply_filters(q, node_field=None, service_field=None, fset_id=None):
     return q
 
 def apply_filters(q, node_field=None, service_field=None, fset_id=None):
-    if fset_id is None:
+    if fset_id is None or fset_id == 0:
+        if auth.user_id is None:
+            return q
         v = db.v_gen_filtersets
         o = v.f_order
         qry = db.gen_filterset_user.fset_id == v.fset_id
