@@ -544,7 +544,7 @@ def ajax_dashboard():
     for f in set(t.cols)-set(t.special_filtered_cols):
         q = _where(q, 'dashboard', t.filter_parse(f), f)
     q &= _where(None, 'dashboard', domain_perms(), 'dash_svcname')|_where(None, 'dashboard', domain_perms(), 'dash_nodename')
-    q = apply_filters(q, db.dashboard.dash_nodename, db.dashboard.dash_svcname)
+    q = apply_filters(q, db.dashboard.dash_nodename)
 
     n = db(q).count()
     t.setup_pager(n)
