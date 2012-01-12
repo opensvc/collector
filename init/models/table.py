@@ -237,19 +237,10 @@ class HtmlTable(object):
         else:
             name = f.fset_name
             fset_id = f.id
-        div = "foo"
         return OPTION(
                  name,
                  _value=fset_id,
-                 _onClick="""
-                       ajax('%(url)s', [], '%(div)s');
-                   """%dict(url=URL(
-                                   r=request, c='ajax',
-                                   f='ajax_select_filter',
-                                   args=[fset_id]),
-                              div=div,
-                             )+self.ajax_submit(),
-                 )
+               )
 
     def persistent_filters(self):
         if not self.dbfilterable:
@@ -284,6 +275,14 @@ class HtmlTable(object):
             content = SELECT(
                         av,
                         value=active_fset_id,
+                        _onchange="""ajax('%(url)s/'+this.options[this.selectedIndex].value, [], '%(div)s');"""%dict(
+                              url=URL(
+                                   r=request, c='ajax',
+                                   f='ajax_select_filter',
+                                  ),
+                              div="avs"+self.id,
+                             )+self.ajax_submit(),
+                        _id="avs"+self.id,
                       )
 
         s = SPAN(
