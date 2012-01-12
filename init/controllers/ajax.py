@@ -37,6 +37,7 @@ def ajax_select_filter():
             db(q).update(fset_id=fset_id)
         elif n == 0:
             db.gen_filterset_user.insert(user_id=auth.user_id, fset_id=fset_id)
+    return "saved fset id %s"%fset_id
 
 @auth.requires_login()
 def ajax_select_compare():
