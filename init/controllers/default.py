@@ -816,14 +816,6 @@ class table_svcmon(HtmlTable):
         self.additional_tools.append('tool_provisioning')
         self.additional_tools.append('svc_del')
 
-    def checkbox_disabled(self, o):
-        responsibles = self.colprops['responsibles'].get(o)
-        if responsibles is None:
-            return True
-        if self.user_name in responsibles.split(', '):
-            return False
-        return True
-
     def format_extrarow(self, o):
         if not self.spaning_line(o):
             act = A(
