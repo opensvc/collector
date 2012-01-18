@@ -195,6 +195,37 @@ def ajax_node():
       TR(TD(T('os arch'), _style='font-style:italic'), TD(node['os_arch'])),
     )
 
+    # storage
+    q = db.node_hba.nodename == request.vars.node
+    hbas = db(q).select()
+    _hbas = []
+    for hba in hbas:
+        _hbas.append(P(hba.hba_id))
+
+    q = db.svcdisks.disk_nodename == request.vars.node
+    q &= db.diskinfo.id > 0
+    disks = db(q).select(left=db.diskinfo.on(db.svcdisks.disk_id==db.diskinfo.disk_id))
+    _disks = [TR(
+          TH("wwid"),
+          TH("size"),
+          TH("service"),
+          TH("array id"),
+        )]
+    for disk in disks:
+        _disks.append(TR(
+          TD(disk.svcdisks.disk_id),
+          TD(disk.svcdisks.disk_size),
+          TD(disk.svcdisks.disk_svcname),
+          TD(disk.diskinfo.disk_arrayid),
+        ))
+
+    stor = DIV(
+      H3(T("Host Bus Adapters")),
+      SPAN(_hbas),
+      H3(T("Disks")),
+      TABLE(_disks),
+    )
+
     def js(tab, rowid):
         buff = ""
         for i in range(1, 10):
@@ -226,12 +257,13 @@ def ajax_node():
             LI(P(T("os"), _class='os16', _onclick=js('tab2', rowid)), _id="litab2_"+str(rowid)),
             LI(P(T("mem"), _class='mem16', _onclick=js('tab3', rowid)), _id="litab3_"+str(rowid)),
             LI(P(T("cpu"), _class='cpu16', _onclick=js('tab4', rowid)), _id="litab4_"+str(rowid)),
-            LI(P(T("location"), _class='loc', _onclick=js('tab5', rowid)), _id="litab5_"+str(rowid)),
-            LI(P(T("power"), _class='pwr', _onclick=js('tab6', rowid)), _id="litab6_"+str(rowid)),
-            LI(P(T("stats"), _class='spark16', _onclick=js('tab7', rowid)), _id="litab7_"+str(rowid)),
+            LI(P(T("storage"), _class='hd16', _onclick=js('tab5', rowid)), _id="litab5_"+str(rowid)),
+            LI(P(T("location"), _class='loc', _onclick=js('tab6', rowid)), _id="litab6_"+str(rowid)),
+            LI(P(T("power"), _class='pwr', _onclick=js('tab7', rowid)), _id="litab7_"+str(rowid)),
+            LI(P(T("stats"), _class='spark16', _onclick=js('tab8', rowid)), _id="litab8_"+str(rowid)),
 
-            LI(P(T("wiki"), _class='edit', _onclick=js('tab8', rowid)), _id="litab8_"+str(rowid)),
-            LI(P(T("compliance"), _class='comp16', _onclick=js('tab9', rowid)), _id="litab9_"+str(rowid)),
+            LI(P(T("wiki"), _class='edit', _onclick=js('tab9', rowid)), _id="litab9_"+str(rowid)),
+            LI(P(T("compliance"), _class='comp16', _onclick=js('tab10', rowid)), _id="litab10_"+str(rowid)),
           ),
           _class="tab",
         ),
@@ -259,21 +291,22 @@ def ajax_node():
             _class='cloud',
           ),
           DIV(
-            loc,
+            stor,
             _id='tab5_'+str(rowid),
             _class='cloud',
           ),
           DIV(
-            power,
+            loc,
             _id='tab6_'+str(rowid),
             _class='cloud',
           ),
           DIV(
-            perf_stats(request.vars.node, rowid),
+            power,
             _id='tab7_'+str(rowid),
             _class='cloud',
           ),
           DIV(
+            perf_stats(request.vars.node, rowid),
             _id='tab8_'+str(rowid),
             _class='cloud',
           ),
@@ -281,14 +314,18 @@ def ajax_node():
             _id='tab9_'+str(rowid),
             _class='cloud',
           ),
+          DIV(
+            _id='tab10_'+str(rowid),
+            _class='cloud',
+          ),
           SCRIPT(
             "ajax('%(url)s', [], '%(id)s')"%dict(
                id='tab8_'+str(rowid),
                url=URL(r=request, c='wiki', f='ajax_wiki',
-                       args=['tab8_'+str(rowid), request.vars.node])
+                       args=['tab9_'+str(rowid), request.vars.node])
             ),
             "ajax('%(url)s', [], '%(id)s')"%dict(
-               id='tab9_'+str(rowid),
+               id='tab10_'+str(rowid),
                url=URL(r=request, c='compliance', f='ajax_compliance_node',
                        args=[request.vars.node])
             ),

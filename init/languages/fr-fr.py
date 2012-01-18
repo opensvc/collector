@@ -362,6 +362,7 @@
 'High threshold': 'Seuil haut',
 'High threshold value': 'Valeur de seuil haut',
 'History': 'Historique',
+'Host Bus Adapters': 'Host Bus Adapters',
 'Host id': "Id d'hôte",
 'IN': 'IN',
 'Icons': 'Icônes',
