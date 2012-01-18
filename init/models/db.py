@@ -1340,3 +1340,9 @@ db.define_table('stats_compare',
     Field('name','string'),
     migrate=False)
 
+db.define_table('node_hba',
+    Field('nodename','string'),
+    Field('hba_id','string'),
+    Field('updated','datetime'),
+    migrate=False)
+

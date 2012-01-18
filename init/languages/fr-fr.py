@@ -984,6 +984,7 @@
 'insert': 'ajouter',
 'insert new': 'insérer nouveau',
 'insert new %s': 'insérer nouveau %s',
+'integration': 'integration',
 'invalid request': 'requête invalide',
 'invalid role name': 'nom de noeud invalide',
 'ip is alive': "l'ip répond",

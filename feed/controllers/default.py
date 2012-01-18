@@ -231,6 +231,26 @@ def _push_checks(vars, vals):
 
 @auth_uuid
 @service.xmlrpc
+def insert_generic(data, auth):
+    feed_enqueue("_insert_generic", data, auth)
+
+def _insert_generic(data, auth):
+    now = datetime.datetime.now()
+    if type(data) != dict:
+        return
+    if 'hba' in data:
+        vars, vals = data['hba']
+        if 'updated' not in vars:
+            vars.append('updated')
+            for i, val in enumerate(vals):
+                vals[i].append(now)
+        sql = """delete from node_hba where nodename="%s" """%auth[1]
+        db.executesql(sql)
+        generic_insert('node_hba', vars, vals)
+    db.commit()
+
+@auth_uuid
+@service.xmlrpc
 def update_asset(vars, vals, auth):
     feed_enqueue("_update_asset", vars, vals, auth)
 

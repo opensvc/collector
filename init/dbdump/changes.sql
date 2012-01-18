@@ -1977,3 +1977,13 @@ update stat_day_svc set disk_size = 0 where disk_size is NULL;
 update stat_day_svc set local_disk_size = 0 where local_disk_size is NULL;
 
 
+CREATE TABLE `node_hba` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `updated` datetime NOT NULL,
+  `nodename` varchar(60) NOT NULL,
+  `hba_id` varchar(60) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `index_1` (`nodename`,`hba_id`)
+);
+
+alter table node_hba ADD CONSTRAINT node_hba_fk1 FOREIGN KEY (nodename) REFERENCES nodes(nodename) ON DELETE CASCADE;
