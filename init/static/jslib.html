@@ -199,18 +199,17 @@ function click_toggle_vis(e, name, mode){
 }
 function register_pop_up(e, box){
     if (e){e.stopPropagation()}
-    $(document).click(function(e){
-        var clickedOutside = true;
-        $(e).parents().andSelf().each(function () {
-            if (box.get(0) == this) {
+    $(document).click(function(e) {
+        e = e || event
+        var target = e.target || e.srcElement
+        do {
+            if (box.get(0) == target) {
                 // click inside
-                clickedOutside = false;
                 return
             }
-        })
-        if (clickedOutside) {
-           box.hide()
-        }
+            target = target.parentNode
+        } while(target)
+        box.hide()
     })
 }
 function check_all(name, checked){
