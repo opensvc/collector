@@ -187,33 +187,31 @@ function keep_inside(box){
     }
 }
 function click_toggle_vis(e, name, mode){
-    cells = document.getElementsByName(name);
-    for(j = 0; j < cells.length; j++) {
-        if (cells[j].style.display == 'none' || cells[j].style.display == "") {
-            cells[j].style.display = mode;
-            keep_inside(cells[j])
-            register_pop_up(e, cells[j])
+    $("[name="+name+"]").each(function () {
+        if ($(this).css("display") == 'none' || $(this).css("display") == "") {
+            $(this).show()
+            keep_inside($(this))
+            register_pop_up(e, $(this))
         } else {
-            cells[j].style.display = 'none';
+            $(this).hide()
         }
-    }
+    })
 }
 function register_pop_up(e, box){
     if (e){e.stopPropagation()}
-    document.onclick = function(e){
-        e = e || event
-        var target = e.target || e.srcElement
-        //var box = document.getElementById(id)
-        do {
-            if (box == target) {
+    $(document).click(function(e){
+        var clickedOutside = true;
+        $(e).parents().andSelf().each(function () {
+            if (box.get(0) == this) {
                 // click inside
+                clickedOutside = false;
                 return
             }
-            target = target.parentNode
-        } while(target)
-        // click outside
-        box.style.display = 'none'
-    }
+        })
+        if (clickedOutside) {
+           box.hide()
+        }
+    })
 }
 function check_all(name, checked){
     c = document.getElementsByName(name);
@@ -227,10 +225,9 @@ function check_all(name, checked){
 function getIdsByName(names){
     ids = []
     for (j = 0; j < names.length; j++) {
-        c = document.getElementsByName(names[j]);
-        for (i = 0; i < c.length; i++) {
-            ids.push(c[i].id)
-        }
+        $("[name="+names[j]+"]").each(function(){
+            ids.push($(this).attr('id'))
+        })
     }
     return ids
 }
@@ -259,11 +256,11 @@ function comp_status_plot(url, id) {
                 drawGridlines: false,
                 borderWidth: 0,
                 shadow: false,
-                background: 'rgba(0,0,0,0)',
+                background: 'rgba(0,0,0,0)'
             },
 	    seriesDefaults: {
                 fill: true,
-                shadow: false,
+                shadow: false
             },
 	    series: [
                 {
@@ -286,10 +283,10 @@ function comp_status_plot(url, id) {
                         formatString:'%s',
                         showMark:false,
                         showGridline: false,
-                        fontSize:'7pt',
+                        fontSize:'7pt'
                     },
                     ticks: data[0],
-                    padMax: 0,
+                    padMax: 0
 		}, 
 		yaxis: {
 		    min: 0, 
@@ -311,20 +308,20 @@ function avail_plot(id, data) {
             height: 50,
             cursor: {
                 zoom:true,
-                showTooltip:true,
+                showTooltip:true
             },
             highlighter: {
-                show: false,
+                show: false
             },
 	    grid: {
                 drawGridlines: false,
                 borderWidth: 0,
                 shadow: false,
-                background: 'rgba(0,0,0,0)',
+                background: 'rgba(0,0,0,0)'
             },
 	    seriesDefaults: {
                 breakOnNull: true,
-                fill: false,
+                fill: false
             },
 	    series: [
                 {
@@ -337,16 +334,16 @@ function avail_plot(id, data) {
                 },
                 {
                     label: 'ack',
-                    markerOptions:{style:'filledDiamond'},
-                },
+                    markerOptions:{style:'filledDiamond'}
+                }
             ],
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
 		    tickOptions: {
                         fontSize:'7pt',
-		        formatString:'<center>%#m/%#d %R</center>',
-                    },
+		        formatString:'<center>%#m/%#d %R</center>'
+                    }
 		}, 
 		yaxis: {
 		    min: 0.8, 
@@ -464,18 +461,18 @@ function stats_avg_cpu_for_nodes(url, id) {
 	$.jqplot(id, data[1], {
 	    stackSeries: true,
 	    grid: {
-                borderWidth: 0.5,
+                borderWidth: 0.5
             },
             title: {
-                text: 'Average cpu utilisation',
+                text: 'Average cpu utilisation'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.BarRenderer, 
@@ -484,7 +481,7 @@ function stats_avg_cpu_for_nodes(url, id) {
                     barPadding: 6,
                     barMargin:15
                 }, 
-                shadowAngle: 135,
+                shadowAngle: 135
             },
 	    series: [
                 {label: 'usr (%)'},
@@ -494,16 +491,16 @@ function stats_avg_cpu_for_nodes(url, id) {
                 {label: 'steal (%)'},
                 {label: 'irq (%)'},
                 {label: 'soft (%)'},
-                {label: 'guest (%)'},
+                {label: 'guest (%)'}
             ],
 	    axes: {
 		xaxis: {
-		    min: 0, 
+		    min: 0
 		},
 		yaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
-                    ticks: data[0],
-		}, 
+                    ticks: data[0]
+		}
 	    }
 	});
     });
@@ -516,18 +513,18 @@ function stats_avg_swp_for_nodes(url, id) {
 	$.jqplot(id, data[1], {
 	    stackSeries: true,
 	    grid: {
-                borderWidth: 0.5,
+                borderWidth: 0.5
             },
             title: {
-                text: 'Average swap utilisation',
+                text: 'Average swap utilisation'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.BarRenderer, 
@@ -536,21 +533,21 @@ function stats_avg_swp_for_nodes(url, id) {
                     barPadding: 6,
                     barMargin:15
                 }, 
-                shadowAngle: 135,
+                shadowAngle: 135
             },
 	    series: [
                 {label: 'free (MB)'},
-                {label: 'used (MB)'},
+                {label: 'used (MB)'}
             ],
 	    axes: {
 		xaxis: {
 		    min: 0, 
-		    tickOptions:{formatString:'%i'},
+		    tickOptions:{formatString:'%i'}
 		},
 		yaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
-                    ticks: data[0],
-		}, 
+                    ticks: data[0]
+		}
 	    }
 	});
     });
@@ -563,18 +560,18 @@ function stats_avg_mem_for_nodes(url, id) {
 	$.jqplot(id, data[1], {
 	    stackSeries: true,
 	    grid: {
-                borderWidth: 0.5,
+                borderWidth: 0.5
             },
             title: {
-                text: 'Average memory utilisation',
+                text: 'Average memory utilisation'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.BarRenderer, 
@@ -583,21 +580,21 @@ function stats_avg_mem_for_nodes(url, id) {
                     barPadding: 6,
                     barMargin:15
                 }, 
-                shadowAngle: 135,
+                shadowAngle: 135
             },
 	    series: [
                 {label: 'free (MB)'},
-                {label: 'cache (MB)'},
+                {label: 'cache (MB)'}
             ],
 	    axes: {
 		xaxis: {
 		    min: 0, 
-		    tickOptions:{formatString:'%i'},
+		    tickOptions:{formatString:'%i'}
 		},
 		yaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
-                    ticks: data[0],
-		}, 
+                    ticks: data[0]
+		}
 	    }
 	});
     });
@@ -610,18 +607,18 @@ function stats_avg_block_for_nodes(url, id) {
 	$.jqplot('tps_'+id, [data[1][0], data[1][1]], {
 	    stackSeries: true,
 	    grid: {
-                borderWidth: 0.5,
+                borderWidth: 0.5
             },
             title: {
-                text: 'Average io/s',
+                text: 'Average io/s'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.BarRenderer, 
@@ -630,39 +627,39 @@ function stats_avg_block_for_nodes(url, id) {
                     barPadding: 6,
                     barMargin:15
                 }, 
-                shadowAngle: 135,
+                shadowAngle: 135
             },
 	    series: [
                 {label: 'read'},
-                {label: 'write'},
+                {label: 'write'}
             ],
 	    axes: {
 		xaxis: {
 		    min: 0, 
-		    tickOptions:{formatString:'%i'},
+		    tickOptions:{formatString:'%i'}
 		},
 		yaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
-                    ticks: data[0],
-		}, 
+                    ticks: data[0]
+		}
 	    }
 	});
         plot_height('bps_'+id, data[0])
 	$.jqplot('bps_'+id, [data[1][2], data[1][3]], {
 	    stackSeries: true,
 	    grid: {
-                borderWidth: 0.5,
+                borderWidth: 0.5
             },
             title: {
-                text: 'Average block devices bandwidth',
+                text: 'Average block devices bandwidth'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.BarRenderer, 
@@ -671,21 +668,21 @@ function stats_avg_block_for_nodes(url, id) {
                     barPadding: 6,
                     barMargin:15
                 }, 
-                shadowAngle: 135,
+                shadowAngle: 135
             },
 	    series: [
                 {label: 'read (KB/s)'},
-                {label: 'write (KB/s)'},
+                {label: 'write (KB/s)'}
             ],
 	    axes: {
 		xaxis: {
 		    min: 0, 
-		    tickOptions:{formatString:'%i'},
+		    tickOptions:{formatString:'%i'}
 		},
 		yaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
-                    ticks: data[0],
-		}, 
+                    ticks: data[0]
+		}
 	    }
 	});
     });
@@ -699,18 +696,18 @@ function stats_disk_for_svc(url, id) {
 	$.jqplot(id, data[1], {
 	    stackSeries: true,
 	    grid: {
-                borderWidth: 0.5,
+                borderWidth: 0.5
             },
             title: {
-                text: 'Disk size per service',
+                text: 'Disk size per service'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.BarRenderer, 
@@ -719,21 +716,21 @@ function stats_disk_for_svc(url, id) {
                     barPadding: 6,
                     barMargin:10
                 }, 
-                shadowAngle: 135,
+                shadowAngle: 135
             },
 	    series: [
                 {label: 'SAN disk size (GB)'},
-                {label: 'DAS disk size (GB)'},
+                {label: 'DAS disk size (GB)'}
             ],
 	    axes: {
 		xaxis: {
 		    min: 0, 
-		    tickOptions:{formatString:'%i'},
+		    tickOptions:{formatString:'%i'}
 		},
 		yaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
-                    ticks: data[0],
-		}, 
+                    ticks: data[0]
+		}
 	    }
 	});
     });
@@ -746,18 +743,18 @@ function stats_avg_proc_for_nodes(url, id) {
 	$.jqplot('runq_sz_'+id, [data[1][0]], {
 	    stackSeries: true,
 	    grid: {
-                borderWidth: 0.5,
+                borderWidth: 0.5
             },
             title: {
-                text: 'Average run queue size',
+                text: 'Average run queue size'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.BarRenderer, 
@@ -766,38 +763,38 @@ function stats_avg_proc_for_nodes(url, id) {
                     barPadding: 6,
                     barMargin:15
                 }, 
-                shadowAngle: 135,
+                shadowAngle: 135
             },
 	    series: [
-                {label: 'runq sz'},
+                {label: 'runq sz'}
             ],
 	    axes: {
 		xaxis: {
 		    min: 0, 
-		    tickOptions:{formatString:'%i'},
+		    tickOptions:{formatString:'%i'}
 		},
 		yaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
-                    ticks: data[0],
-		}, 
+                    ticks: data[0]
+		}
 	    }
 	});
         plot_height('plist_sz_'+id, data[0])
 	$.jqplot('plist_sz_'+id, [data[1][1]], {
 	    stackSeries: true,
 	    grid: {
-                borderWidth: 0.5,
+                borderWidth: 0.5
             },
             title: {
-                text: 'Average process list size',
+                text: 'Average process list size'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.BarRenderer, 
@@ -806,20 +803,20 @@ function stats_avg_proc_for_nodes(url, id) {
                     barPadding: 6,
                     barMargin:15
                 }, 
-                shadowAngle: 135,
+                shadowAngle: 135
             },
 	    series: [
-                {label: 'plist sz'},
+                {label: 'plist sz'}
             ],
 	    axes: {
 		xaxis: {
 		    min: 0, 
-		    tickOptions:{formatString:'%i'},
+		    tickOptions:{formatString:'%i'}
 		},
 		yaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
-                    ticks: data[0],
-		}, 
+                    ticks: data[0]
+		}
 	    }
 	});
     });
@@ -831,7 +828,7 @@ function stat_day(url, id) {
             cursor:{zoom:true, showTooltip:false},
             legend: {
                 show: true,
-                location: 'n',
+                location: 'n'
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -839,16 +836,16 @@ function stat_day(url, id) {
                 shadowWidth: 2
             },
 	    series: [
-                {label: 'err', color: 'red'},
+                {label: 'err', color: 'red'}
             ],
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer, 
+		    renderer: $.jqplot.DateAxisRenderer
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
 	$.jqplot(id+'_apps', [data[11]], {
@@ -860,19 +857,19 @@ function stat_day(url, id) {
             },
             legend: {
                 show: true,
-                location: 'n',
+                location: 'n'
             },
 	    series: [
-                {label: 'apps'},
+                {label: 'apps'}
             ],
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer, 
+		    renderer: $.jqplot.DateAxisRenderer
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
 	$.jqplot(id+'_nb_vcpu', [data[20]], {
@@ -884,22 +881,22 @@ function stat_day(url, id) {
             },
             legend: {
                 show: true,
-                location: 'n',
+                location: 'n'
             },
 	    series: [
                 {
                     label: 'vcpu',
-                    breakOnNull: true,
-                },
+                    breakOnNull: true
+                }
             ],
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer, 
+		    renderer: $.jqplot.DateAxisRenderer
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
 	$.jqplot(id+'_nb_vmem', [data[21]], {
@@ -911,22 +908,22 @@ function stat_day(url, id) {
             },
             legend: {
                 show: true,
-                location: 'n',
+                location: 'n'
             },
 	    series: [
                 {
                     label: 'vmem (MB)',
-                    breakOnNull: true,
-                },
+                    breakOnNull: true
+                }
             ],
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer, 
+		    renderer: $.jqplot.DateAxisRenderer
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
 	$.jqplot(id+'_disk', [data[5], data[31]], {
@@ -939,7 +936,7 @@ function stat_day(url, id) {
             },
             legend: {
                 show: true,
-                location: 'n',
+                location: 'n'
             },
 	    seriesDefaults: {
                 fill: true,
@@ -950,21 +947,21 @@ function stat_day(url, id) {
 	    series: [
                 {
                     label: 'SAN disk size (GB)',
-                    breakOnNull: true,
+                    breakOnNull: true
                 },
                 {
                     label: 'DAS disk size (GB)',
-                    breakOnNull: true,
-                },
+                    breakOnNull: true
+                }
             ],
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer, 
+		    renderer: $.jqplot.DateAxisRenderer
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
 	$.jqplot(id+'_nodes_ram', [data[6]], {
@@ -976,22 +973,22 @@ function stat_day(url, id) {
             },
             legend: {
                 show: true,
-                location: 'n',
+                location: 'n'
             },
 	    series: [
                 {
                     label: 'ram size (GB)',
-                    breakOnNull: true,
-                },
+                    breakOnNull: true
+                }
             ],
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer, 
+		    renderer: $.jqplot.DateAxisRenderer
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
 	$.jqplot(id+'_nodes_core', [data[7]], {
@@ -1003,29 +1000,29 @@ function stat_day(url, id) {
             },
             legend: {
                 show: true,
-                location: 'n',
+                location: 'n'
             },
 	    series: [
                 {
                     label: 'cores',
-                    breakOnNull: true,
-                },
+                    breakOnNull: true
+                }
             ],
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer, 
+		    renderer: $.jqplot.DateAxisRenderer
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
 	$.jqplot(id+'_accounts', [data[12]], {
             cursor:{zoom:true, showTooltip:false},
             legend: {
                 show: true,
-                location: 'n',
+                location: 'n'
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -1033,23 +1030,23 @@ function stat_day(url, id) {
                 shadowWidth: 2
             },
 	    series: [
-                {label: 'accounts'},
+                {label: 'accounts'}
             ],
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer, 
+		    renderer: $.jqplot.DateAxisRenderer
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
 	$.jqplot(id+'_resp_accounts', [data[22]], {
             cursor:{zoom:true, showTooltip:false},
             legend: {
                 show: true,
-                location: 'n',
+                location: 'n'
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -1057,16 +1054,16 @@ function stat_day(url, id) {
                 shadowWidth: 2
             },
 	    series: [
-                {label: 'sys responsible accounts'},
+                {label: 'sys responsible accounts'}
             ],
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer, 
+		    renderer: $.jqplot.DateAxisRenderer
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
         try {
@@ -1077,7 +1074,7 @@ function stat_day(url, id) {
                 renderer: $.jqplot.EnhancedLegendRenderer,
                 rendererOptions:{numberRows: 1},
                 show: true,
-                location: 'n',
+                location: 'n'
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -1106,12 +1103,12 @@ function stat_day(url, id) {
             ],
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer, 
+		    renderer: $.jqplot.DateAxisRenderer
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
         } catch(e) {};
@@ -1123,7 +1120,7 @@ function stat_day(url, id) {
                 renderer: $.jqplot.EnhancedLegendRenderer,
                 rendererOptions:{numberRows: 1},
                 show: true,
-                location: 'n',
+                location: 'n'
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -1138,20 +1135,20 @@ function stat_day(url, id) {
             },
 	    series: [
                 {
-                    label: 'PRD nodes',
+                    label: 'PRD nodes'
                 },
                 {
-                    label: 'other nodes',
-                },
+                    label: 'other nodes'
+                }
             ],
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer, 
+		    renderer: $.jqplot.DateAxisRenderer
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
         } catch(e) {};
@@ -1163,7 +1160,7 @@ function stat_day(url, id) {
                 renderer: $.jqplot.EnhancedLegendRenderer,
                 rendererOptions:{numberRows: 1},
                 show: true,
-                location: 'n',
+                location: 'n'
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -1178,20 +1175,20 @@ function stat_day(url, id) {
             },
 	    series: [
                 {
-                    label: 'virtual nodes',
+                    label: 'virtual nodes'
                 },
                 {
-                    label: 'physical nodes',
-                },
+                    label: 'physical nodes'
+                }
             ],
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer, 
-		}, 
+		    renderer: $.jqplot.DateAxisRenderer
+		},
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
         } catch(e) {};
@@ -1203,7 +1200,7 @@ function stat_day(url, id) {
                 renderer: $.jqplot.EnhancedLegendRenderer,
                 rendererOptions:{numberRows: 1},
                 show: true,
-                location: 'n',
+                location: 'n'
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -1218,16 +1215,16 @@ function stat_day(url, id) {
             },
 	    series: [
                 {label: 'PRD svc'},
-                {label: 'other svc'},
+                {label: 'other svc'}
             ],
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer, 
+		    renderer: $.jqplot.DateAxisRenderer
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
         } catch(e) {};
@@ -1239,24 +1236,24 @@ function stat_day(url, id) {
                 renderer: $.jqplot.EnhancedLegendRenderer,
                 rendererOptions:{numberRows: 1},
                 show: true,
-                location: 'n',
+                location: 'n'
             },
 	    seriesDefaults: {
                 breakOnNull: true,
-                fill: true,
+                fill: true
             },
 	    series: [
                 {label: 'clustered svc'},
-                {label: 'not clustered svc'},
+                {label: 'not clustered svc'}
             ],
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer, 
+		    renderer: $.jqplot.DateAxisRenderer
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
         } catch(e) {};
@@ -1268,7 +1265,7 @@ function stat_day(url, id) {
                 renderer: $.jqplot.EnhancedLegendRenderer,
                 rendererOptions:{numberRows: 1},
                 show: true,
-                location: 'n',
+                location: 'n'
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -1283,20 +1280,20 @@ function stat_day(url, id) {
             },
 	    series: [
                 {
-                    label: 'svc with drp',
+                    label: 'svc with drp'
                 },
                 {
-                    label: 'svc without drp',
-                },
+                    label: 'svc without drp'
+                }
             ],
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer, 
+		    renderer: $.jqplot.DateAxisRenderer
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
         } catch(e) {};
@@ -1314,7 +1311,7 @@ function stat_compare_day(url, id) {
             cursor:{zoom:true, showTooltip:false},
             legend: {
                 show: true,
-                location: 'n',
+                location: 'n'
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -1324,12 +1321,12 @@ function stat_compare_day(url, id) {
 	    series: labels,
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer, 
+		    renderer: $.jqplot.DateAxisRenderer
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
         } catch(e) {};
@@ -1338,7 +1335,7 @@ function stat_compare_day(url, id) {
             cursor:{zoom:true, showTooltip:false},
             legend: {
                 show: true,
-                location: 'n',
+                location: 'n'
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -1348,12 +1345,12 @@ function stat_compare_day(url, id) {
 	    series: labels,
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer, 
+		    renderer: $.jqplot.DateAxisRenderer
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
         } catch(e) {};
@@ -1362,7 +1359,7 @@ function stat_compare_day(url, id) {
             cursor:{zoom:true, showTooltip:false},
             legend: {
                 show: true,
-                location: 'n',
+                location: 'n'
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -1372,12 +1369,12 @@ function stat_compare_day(url, id) {
 	    series: labels,
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer, 
+		    renderer: $.jqplot.DateAxisRenderer
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
         } catch(e) {};
@@ -1386,7 +1383,7 @@ function stat_compare_day(url, id) {
             cursor:{zoom:true, showTooltip:false},
             legend: {
                 show: true,
-                location: 'n',
+                location: 'n'
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -1396,12 +1393,12 @@ function stat_compare_day(url, id) {
 	    series: labels,
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer, 
+		    renderer: $.jqplot.DateAxisRenderer
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
         } catch(e) {};
@@ -1410,7 +1407,7 @@ function stat_compare_day(url, id) {
             cursor:{zoom:true, showTooltip:false},
             legend: {
                 show: true,
-                location: 'n',
+                location: 'n'
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -1420,12 +1417,12 @@ function stat_compare_day(url, id) {
 	    series: labels,
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer, 
+		    renderer: $.jqplot.DateAxisRenderer
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
         } catch(e) {};
@@ -1434,7 +1431,7 @@ function stat_compare_day(url, id) {
             cursor:{zoom:true, showTooltip:false},
             legend: {
                 show: true,
-                location: 'n',
+                location: 'n'
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -1444,12 +1441,12 @@ function stat_compare_day(url, id) {
 	    series: labels,
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer, 
+		    renderer: $.jqplot.DateAxisRenderer
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
         } catch(e) {};
@@ -1462,15 +1459,15 @@ function stats_cpu(url, id) {
             cursor:{zoom:true, showTooltip:true},
 	    stackSeries: true,
             title: {
-                text: 'Cpu usage',
+                text: 'Cpu usage'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -1491,17 +1488,17 @@ function stats_cpu(url, id) {
                 { label: 'steal' },
                 { label: 'irq' },
                 { label: 'soft' },
-                { label: 'guest' },
+                { label: 'guest' }
             ],
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
-		    tickOptions:{formatString:'<center>%F<br>%R</center>'},
+		    tickOptions:{formatString:'<center>%F<br>%R</center>'}
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
     });
@@ -1512,15 +1509,15 @@ function stats_proc(url, id) {
 	$.jqplot(id+'_runq_sz', [data[0]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'Run queue size',
+                text: 'Run queue size'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -1533,31 +1530,31 @@ function stats_proc(url, id) {
                 shadowWidth: 2
             },
 	    series: [
-                { label: 'runq_sz' },
+                { label: 'runq_sz' }
             ],
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
-		    tickOptions:{formatString:'<center>%F<br>%R</center>'},
+		    tickOptions:{formatString:'<center>%F<br>%R</center>'}
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
 	$.jqplot(id+'_plist_sz', [data[1]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'Process list size',
+                text: 'Process list size'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -1570,31 +1567,31 @@ function stats_proc(url, id) {
                 shadowWidth: 2
             },
 	    series: [
-                { label: 'plist_sz' },
+                { label: 'plist_sz' }
             ],
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
-		    tickOptions:{formatString:'<center>%F<br>%R</center>'},
+		    tickOptions:{formatString:'<center>%F<br>%R</center>'}
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
 	$.jqplot(id+'_loadavg', [data[2],data[3],data[4]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'Load average',
+                text: 'Load average'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -1610,17 +1607,17 @@ function stats_proc(url, id) {
 	    series: [
                 { label: 'loadavg 1\'' },
                 { label: 'loadavg 5\'' },
-                { label: 'loadavg 15\'' },
+                { label: 'loadavg 15\'' }
             ],
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
-		    tickOptions:{formatString:'<center>%F<br>%R</center>'},
+		    tickOptions:{formatString:'<center>%F<br>%R</center>'}
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
     });
@@ -1632,15 +1629,15 @@ function stats_mem(url, id) {
             cursor:{zoom:true, showTooltip:true},
 	    stackSeries: true,
             title: {
-                text: 'Memory usage',
+                text: 'Memory usage'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -1658,31 +1655,31 @@ function stats_mem(url, id) {
                 { label: 'used, buffer' },
                 { label: 'used, cache' },
                 { label: 'used, sys' },
-                { label: 'free' },
+                { label: 'free' }
             ],
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
-		    tickOptions:{formatString:'<center>%F<br>%R</center>'},
+		    tickOptions:{formatString:'<center>%F<br>%R</center>'}
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
 	$.jqplot(id+'_pct', [data[2],data[6]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'Memory usage percent',
+                text: 'Memory usage percent'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -1697,17 +1694,17 @@ function stats_mem(url, id) {
             },
 	    series: [
                 { label: 'used/mem %' },
-                { label: 'promised/(mem+swap) %' },
+                { label: 'promised/(mem+swap) %' }
             ],
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
-		    tickOptions:{formatString:'<center>%F<br>%R</center>'},
+		    tickOptions:{formatString:'<center>%F<br>%R</center>'}
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
     });
@@ -1719,15 +1716,15 @@ function stats_swap(url, id) {
             cursor:{zoom:true, showTooltip:true},
 	    stackSeries: true,
             title: {
-                text: 'Swap usage',
+                text: 'Swap usage'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -1743,31 +1740,31 @@ function stats_swap(url, id) {
 	    series: [
                 { label: 'used' },
                 { label: 'used, cached' },
-                { label: 'free' },
+                { label: 'free' }
             ],
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
-		    tickOptions:{formatString:'<center>%F<br>%R</center>'},
+		    tickOptions:{formatString:'<center>%F<br>%R</center>'}
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
 	$.jqplot(id+'_pct', [data[2],data[4]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'Swap usage percent',
+                text: 'Swap usage percent'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -1782,17 +1779,17 @@ function stats_swap(url, id) {
             },
 	    series: [
                 { label: 'used/total %' },
-                { label: 'cached/used' },
+                { label: 'cached/used' }
             ],
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
-		    tickOptions:{formatString:'<center>%F<br>%R</center>'},
+		    tickOptions:{formatString:'<center>%F<br>%R</center>'}
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
     });
@@ -1803,15 +1800,15 @@ function stats_block(url, id) {
 	$.jqplot(id+'_tps', [data[0],data[1]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'Block device transactions',
+                text: 'Block device transactions'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -1826,31 +1823,31 @@ function stats_block(url, id) {
             },
 	    series: [
                 { label: 'read io/s' },
-                { label: 'write io/s' },
+                { label: 'write io/s' }
             ],
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
-		    tickOptions:{formatString:'<center>%F<br>%R</center>'},
+		    tickOptions:{formatString:'<center>%F<br>%R</center>'}
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
 	$.jqplot(id+'_bps', [data[2],data[3]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'Block device bandwidth',
+                text: 'Block device bandwidth'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -1865,17 +1862,17 @@ function stats_block(url, id) {
             },
 	    series: [
                 { label: 'read KB/s' },
-                { label: 'write KB/s' },
+                { label: 'write KB/s' }
             ],
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
-		    tickOptions:{formatString:'<center>%F<br>%R</center>'},
+		    tickOptions:{formatString:'<center>%F<br>%R</center>'}
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
     });
@@ -1886,15 +1883,15 @@ function stats_trend_mem(url, id) {
 	$.jqplot(id, [data], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'Memory usage trend<br>high/low/average',
+                text: 'Memory usage trend<br>high/low/average'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -1909,17 +1906,17 @@ function stats_trend_mem(url, id) {
                 shadowWidth: 2
             },
 	    series: [
-                { label: 'mem usage KB' },
+                { label: 'mem usage KB' }
             ],
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
-		    tickOptions: {formatString:'%s'},
+		    tickOptions: {formatString:'%s'}
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
     });
@@ -1930,15 +1927,15 @@ function stats_trend_cpu(url, id) {
 	$.jqplot(id, [data], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'Cpu usage trend<br>high/low/average',
+                text: 'Cpu usage trend<br>high/low/average'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -1953,18 +1950,18 @@ function stats_trend_cpu(url, id) {
                 shadowWidth: 2
             },
 	    series: [
-                { label: 'cpu usage %' },
+                { label: 'cpu usage %' }
             ],
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
-		    tickOptions: {formatString:'%s'},
+		    tickOptions: {formatString:'%s'}
 		}, 
 		yaxis: {
 		    min: 0,
 		    max: 100,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
     });
@@ -1976,15 +1973,15 @@ function stats_blockdev(url, id) {
 	$.jqplot(id+'_tps', [data[1]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'Block device transactions<br>high/low/average',
+                text: 'Block device transactions<br>high/low/average'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -1992,36 +1989,36 @@ function stats_blockdev(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
-                renderer: $.jqplot.OHLCRenderer, 
+                renderer: $.jqplot.OHLCRenderer
             },
 	    series: [
-                { label: 'io/s' },
+                { label: 'io/s' }
             ],
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
                     tickRenderer: $.jqplot.CanvasAxisTickRenderer,
-                    tickOptions: {formatString:'%s', angle: -70},
+                    tickOptions: {formatString:'%s', angle: -70}
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
         plot_width_x(id+'_avgrq_sz', data[0])
 	$.jqplot(id+'_avgrq_sz', [data[2]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'Block device request size<br>high/low/average',
+                text: 'Block device request size<br>high/low/average'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -2029,36 +2026,36 @@ function stats_blockdev(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
-                renderer: $.jqplot.OHLCRenderer, 
+                renderer: $.jqplot.OHLCRenderer
             },
 	    series: [
-                { label: 'rq sz (sectors)' },
+                { label: 'rq sz (sectors)' }
             ],
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
                     tickRenderer: $.jqplot.CanvasAxisTickRenderer,
-                    tickOptions: {formatString:'%s', angle: -70},
+                    tickOptions: {formatString:'%s', angle: -70}
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
         plot_width_x(id+'_await', data[0])
 	$.jqplot(id+'_await', [data[3]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'Block device wait time<br>high/low/average',
+                text: 'Block device wait time<br>high/low/average'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -2066,36 +2063,36 @@ function stats_blockdev(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
-                renderer: $.jqplot.OHLCRenderer, 
+                renderer: $.jqplot.OHLCRenderer
             },
 	    series: [
-                { label: 'wait (msec)' },
+                { label: 'wait (msec)' }
             ],
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
                     tickRenderer: $.jqplot.CanvasAxisTickRenderer,
-                    tickOptions: {formatString:'%s', angle: -70},
+                    tickOptions: {formatString:'%s', angle: -70}
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
         plot_width_x(id+'_svctm', data[0])
 	$.jqplot(id+'_svctm', [data[4]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'Block device service time<br>high/low/average',
+                text: 'Block device service time<br>high/low/average'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -2103,36 +2100,36 @@ function stats_blockdev(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
-                renderer: $.jqplot.OHLCRenderer, 
+                renderer: $.jqplot.OHLCRenderer
             },
 	    series: [
-                { label: 'svc time (msec)' },
+                { label: 'svc time (msec)' }
             ],
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
                     tickRenderer: $.jqplot.CanvasAxisTickRenderer,
-                    tickOptions: {formatString:'%s', angle: -70},
+                    tickOptions: {formatString:'%s', angle: -70}
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
         plot_width_x(id+'_pct_util', data[0])
 	$.jqplot(id+'_pct_util', [data[5]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'Block device utilisation<br>high/low/average',
+                text: 'Block device utilisation<br>high/low/average'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -2140,97 +2137,97 @@ function stats_blockdev(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
-                renderer: $.jqplot.OHLCRenderer, 
+                renderer: $.jqplot.OHLCRenderer
             },
 	    series: [
-                { label: 'util (%)' },
+                { label: 'util (%)' }
             ],
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
                     tickRenderer: $.jqplot.CanvasAxisTickRenderer,
-                    tickOptions: {formatString:'%s', angle: -70},
+                    tickOptions: {formatString:'%s', angle: -70}
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
         plot_width_x(id+'_secps', data[0])
 	$.jqplot(id+'_secps', data[6], {
 	    stackSeries: true,
 	    grid: {
-                borderWidth: 0.5,
+                borderWidth: 0.5
             },
             title: {
-                text: 'Block device bandwidth<br>average',
+                text: 'Block device bandwidth<br>average'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.BarRenderer, 
-                shadowAngle: 135,
+                shadowAngle: 135
             },
 	    series: [
                 {label: 'read (sec/s)'},
-                {label: 'write (sec/s)'},
+                {label: 'write (sec/s)'}
             ],
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
                     tickRenderer: $.jqplot.CanvasAxisTickRenderer,
                     tickOptions: {formatString:'%s', angle: -70},
-                    ticks: data[0],
+                    ticks: data[0]
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
         plot_width_x(id+'_tm', data[7])
 	$.jqplot(id+'_tm', data[8], {
 	    stackSeries: true,
 	    grid: {
-                borderWidth: 0.5,
+                borderWidth: 0.5
             },
             title: {
-                text: 'Hard/Soft times<br>average',
+                text: 'Hard/Soft times<br>average'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.BarRenderer, 
-                shadowAngle: 135,
+                shadowAngle: 135
             },
 	    series: [
                 {label: 'hard (msec)'},
-                {label: 'soft (msec)'},
+                {label: 'soft (msec)'}
             ],
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
                     tickRenderer: $.jqplot.CanvasAxisTickRenderer,
                     tickOptions: {formatString:'%s', angle: -70},
-                    ticks: data[0],
+                    ticks: data[0]
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
     });
@@ -2242,41 +2239,41 @@ function stats_netdev_err(url, id) {
 	$.jqplot(id, data[1], {
 	    stackSeries: false,
 	    grid: {
-                borderWidth: 0.5,
+                borderWidth: 0.5
             },
             title: {
-                text: 'Net device errors',
+                text: 'Net device errors'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.BarRenderer, 
-                shadowAngle: 135,
+                shadowAngle: 135
             },
 	    series: [
                 {label: 'rx err/s'},
                 {label: 'tx err/s'},
                 {label: 'collision/s'},
                 {label: 'rx drop/s'},
-                {label: 'tx drop/s'},
+                {label: 'tx drop/s'}
             ],
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
                     tickRenderer: $.jqplot.CanvasAxisTickRenderer,
                     tickOptions: {formatString:'%s', angle: -70},
-                    ticks: data[0],
+                    ticks: data[0]
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
     });
@@ -2288,76 +2285,76 @@ function stats_netdev(url, id) {
 	$.jqplot(id+'_kBps', data[1], {
 	    stackSeries: false,
 	    grid: {
-                borderWidth: 0.5,
+                borderWidth: 0.5
             },
             title: {
-                text: 'Net device bandwidth',
+                text: 'Net device bandwidth'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.BarRenderer, 
-                shadowAngle: 135,
+                shadowAngle: 135
             },
 	    series: [
                 {label: 'avg rcv (kB/s)'},
-                {label: 'avg send (kB/s)'},
+                {label: 'avg send (kB/s)'}
             ],
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
                     tickRenderer: $.jqplot.CanvasAxisTickRenderer,
                     tickOptions: {formatString:'%s', angle: -70},
-                    ticks: data[0],
+                    ticks: data[0]
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
         plot_width_x(id+'_pckps', data[0])
 	$.jqplot(id+'_pckps', data[2], {
 	    stackSeries: false,
 	    grid: {
-                borderWidth: 0.5,
+                borderWidth: 0.5
             },
             title: {
-                text: 'Net device packet rate',
+                text: 'Net device packet rate'
             },
             legend: {
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.BarRenderer, 
-                shadowAngle: 135,
+                shadowAngle: 135
             },
 	    series: [
                 {label: 'avg rcv (pck/s)'},
-                {label: 'avg send (pck/s)'},
+                {label: 'avg send (pck/s)'}
             ],
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
                     tickRenderer: $.jqplot.CanvasAxisTickRenderer,
                     tickOptions: {formatString:'%s', angle: -70},
-                    ticks: data[0],
+                    ticks: data[0]
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
     });
@@ -2376,16 +2373,16 @@ function stats_fs(url, id) {
 	$.jqplot(id+'_u', data[2], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'Fs usage %',
+                text: 'Fs usage %'
             },
             legend: {
                 renderer: $.jqplot.EnhancedLegendRenderer,
                 show: true,
                 location: 'e',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -2395,18 +2392,18 @@ function stats_fs(url, id) {
 	    seriesDefaults: {
                 shadowAngle: 135,
                 shadowOffset: 1.0,
-                shadowWidth: 2,
+                shadowWidth: 2
             },
 	    series: labels,
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
-		    tickOptions:{formatString:'<center>%F<br>%R</center>'},
+		    tickOptions:{formatString:'<center>%F<br>%R</center>'}
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
   	});
         } finally {
@@ -2434,16 +2431,16 @@ function stat_os(url, id) {
             cursor:{zoom:true, showTooltip:true},
 	    stackSeries: true,
             title: {
-                text: title,
+                text: title
             },
             legend: {
                 renderer: $.jqplot.EnhancedLegendRenderer,
                 show: true,
                 location: 'ne',
-                placement: "outside",
+                placement: "outside"
             },
             gridPadding: {
-                right:90,
+                right:90
             },
 	    grid: {
                 borderWidth: 0.5,
@@ -2460,12 +2457,12 @@ function stat_os(url, id) {
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
-		    tickOptions:{formatString:'%F'},
+		    tickOptions:{formatString:'%F'}
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'},
-		}, 
+		    tickOptions:{formatString:'%i'}
+		}
 	    }
 	});
         } finally {

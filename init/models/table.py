@@ -312,11 +312,11 @@ class HtmlTable(object):
                   INPUT(
                     _type='checkbox',
                     _name=id_col,
-                    _onclick="""if (!getElementById('%(fid)s') || getElementById('%(fid)s').value.length==0) {
+                    _onclick="""if (!$("#%(fid)s") || $("#%(fid)s").val().length==0) {
                                  check_toggle_vis(this.checked, "%(col_name)s");
-                                 getElementById("%(id_set_col_table)s").value="%(table)s";
-                                 getElementById("%(id_set_col_field)s").value="%(field)s";
-                                 getElementById("%(id_set_col_value)s").value=this.checked;
+                                 $("#%(id_set_col_table)s").val("%(table)s");
+                                 $("#%(id_set_col_field)s").val("%(field)s");
+                                 $("#%(id_set_col_value)s").val(this.checked);
                                  ajax("%(url)s",
                                       ["%(id_set_col_table)s",
                                        "%(id_set_col_field)s",

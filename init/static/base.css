@@ -917,6 +917,10 @@ div.sym_detail_visible {
 ul.login_menu ul {
     border-top: 1px solid white;
 }
+.login label {
+    color: white;
+}
+
 .login {
     z-index: 501;
     background: rgba(0, 0, 0, 0.2);
