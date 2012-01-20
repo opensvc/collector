@@ -267,8 +267,9 @@ class HtmlTable(object):
         if lock_filter:
             content = active_fset_name
         else:
+            o = db.gen_filtersets.fset_name
             q = db.gen_filtersets.id > 0
-            rows = db(q).select()
+            rows = db(q).select(orderby=o)
             av = [self.format_av_filter(None)]
             for row in rows:
                 av.append(self.format_av_filter(row))
