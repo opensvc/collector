@@ -262,7 +262,6 @@ def ajax_node():
             LI(P(T("location"), _class='loc', _onclick=js('tab6', rowid)), _id="litab6_"+str(rowid)),
             LI(P(T("power"), _class='pwr', _onclick=js('tab7', rowid)), _id="litab7_"+str(rowid)),
             LI(P(T("stats"), _class='spark16', _onclick=js('tab8', rowid)), _id="litab8_"+str(rowid)),
-
             LI(P(T("wiki"), _class='edit', _onclick=js('tab9', rowid)), _id="litab9_"+str(rowid)),
             LI(P(T("compliance"), _class='comp16', _onclick=js('tab10', rowid)), _id="litab10_"+str(rowid)),
           ),
@@ -321,7 +320,7 @@ def ajax_node():
           ),
           SCRIPT(
             "ajax('%(url)s', [], '%(id)s')"%dict(
-               id='tab8_'+str(rowid),
+               id='tab9_'+str(rowid),
                url=URL(r=request, c='wiki', f='ajax_wiki',
                        args=['tab9_'+str(rowid), request.vars.node])
             ),
