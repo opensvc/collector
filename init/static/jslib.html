@@ -198,7 +198,11 @@ function click_toggle_vis(e, name, mode){
     })
 }
 function register_pop_up(e, box){
-    if (e){e.stopPropagation()}
+    if (e) {
+        // IE event does not support stopPropagation
+        if (!e.stopPropagation) {return}
+        e.stopPropagation()
+    }
     $(document).click(function(e) {
         e = e || event
         var target = e.target || e.srcElement

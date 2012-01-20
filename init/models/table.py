@@ -882,7 +882,7 @@ class HtmlTable(object):
                             SPAN(
                               IMG(
                                 _src=URL(r=request,c='static',f='filter16.png'),
-                                _onClick="""click_toggle_vis(event, '%(div)s','block');getElementById('%(input)s').focus()"""%dict(
+                                _onClick="""click_toggle_vis(event, '%(div)s','block');$("#%(input)s").focus()"""%dict(
                                     div=self.filter_div_key(c),
                                     input=self.filter_key(c),
                                   ),
