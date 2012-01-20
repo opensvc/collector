@@ -215,7 +215,6 @@ body, table, tr, td, th, thead, tfoot, label, h1, h2, h3, h4, h5, h6, p, ul, li,
     font-family: inherit;
     vertical-align: baseline;
     font-size: 100%;
-    overflow: auto;
 }
 
 select {
@@ -228,6 +227,7 @@ select {
 body {
     background: transparent;
     width:100%;
+    overflow-x: hidden;
 }
 
 table {
