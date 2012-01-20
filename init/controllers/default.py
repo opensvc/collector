@@ -740,6 +740,7 @@ class table_svcmon(HtmlTable):
             'mon_updated',
             'team_responsible',
             'team_integ',
+            'team_support',
             'project',
             'responsibles',
             'mailto',

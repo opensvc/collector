@@ -169,6 +169,7 @@ def ajax_node():
       TR(TD(T('warranty end'), _style='font-style:italic'), TD(node['warranty_end'])),
       TR(TD(T('team responsible'), _style='font-style:italic'), TD(node['team_responsible'])),
       TR(TD(T('integration'), _style='font-style:italic'), TD(node['team_integ'])),
+      TR(TD(T('support'), _style='font-style:italic'), TD(node['team_support'])),
       TR(TD(T('project'), _style='font-style:italic'), TD(node['project'])),
       TR(TD(T('status'), _style='font-style:italic'), TD(node['status'])),
       TR(TD(T('role'), _style='font-style:italic'), TD(node['role'])),
