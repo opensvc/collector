@@ -1347,6 +1347,7 @@ db.define_table('stats_compare',
 db.define_table('node_hba',
     Field('nodename','string'),
     Field('hba_id','string'),
+    Field('hba_type','string'),
     Field('updated','datetime'),
     migrate=False)
 

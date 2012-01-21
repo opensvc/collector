@@ -199,9 +199,20 @@ def ajax_node():
     # storage
     q = db.node_hba.nodename == request.vars.node
     hbas = db(q).select()
-    _hbas = []
+    _hbas = [TR(
+               TH("id"),
+               TH("type"),
+             )]
     for hba in hbas:
-        _hbas.append(P(hba.hba_id))
+        _hbas.append(TR(
+                       TD(hba.hba_id),
+                       TD(hba.hba_type),
+                     ))
+    if len(_hbas) == 1:
+        _hbas.append(TR(
+                       TD('-'),
+                       TD('-'),
+                     ))
 
     q = db.svcdisks.disk_nodename == request.vars.node
     q &= db.diskinfo.id > 0
@@ -219,10 +230,17 @@ def ajax_node():
           TD(disk.svcdisks.disk_svcname),
           TD(disk.diskinfo.disk_arrayid),
         ))
+    if len(_disks) == 1:
+        _disks.append(TR(
+          TD('-'),
+          TD('-'),
+          TD('-'),
+          TD('-'),
+        ))
 
     stor = DIV(
       H3(T("Host Bus Adapters")),
-      SPAN(_hbas),
+      TABLE(_hbas),
       H3(T("Disks")),
       TABLE(_disks),
     )
