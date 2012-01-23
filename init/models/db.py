@@ -1375,6 +1375,8 @@ db.define_table('stor_array_tgtid',
 db.define_table('stor_zone',
     Field('tgt_id','string'),
     Field('hba_id','string'),
+    Field('nodename','string'),
+    Field('updated','datetime'),
     migrate=False)
 
 db.define_table('stor_array_proxy',

@@ -247,6 +247,19 @@ def _insert_generic(data, auth):
         sql = """delete from node_hba where nodename="%s" """%auth[1]
         db.executesql(sql)
         generic_insert('node_hba', vars, vals)
+    if 'targets' in data:
+        vars, vals = data['targets']
+        if 'updated' not in vars:
+            vars.append('updated')
+            for i, val in enumerate(vals):
+                vals[i].append(now)
+        if 'nodename' not in vars:
+            vars.append('nodename')
+            for i, val in enumerate(vals):
+                vals[i].append(auth[1])
+        sql = """delete from stor_zone where nodename="%s" """%auth[1]
+        db.executesql(sql)
+        generic_insert('stor_zone', vars, vals)
     db.commit()
 
 @auth_uuid

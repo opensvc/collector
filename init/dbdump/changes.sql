@@ -2071,3 +2071,6 @@ CREATE TABLE `stor_zone` (
 );
 
 alter table stor_array add column array_model varchar(30) not null;
+
+alter table stor_zone add column nodename varchar(60);
+alter table stor_zone add column updated timestamp;
