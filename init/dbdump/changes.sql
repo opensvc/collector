@@ -2074,3 +2074,10 @@ alter table stor_array add column array_model varchar(30) not null;
 
 alter table stor_zone add column nodename varchar(60);
 alter table stor_zone add column updated timestamp;
+
+alter table stor_array add column array_cache integer;
+alter table stor_array add column array_firmware varchar(60);
+alter table stor_array add column array_updated timestamp;
+
+alter table stor_array_dg add column dg_updated timestamp;
+

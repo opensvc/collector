@@ -488,25 +488,48 @@ def update_sym_xml(symid, vars, vals, auth):
         except:
             pass
 
-    symmetrix = local_import('symmetrix', reload=True)
-    s = symmetrix.get_sym(dir)
-    if s is None:
-        return
+    insert_syms()
 
-    #
-    # better to create hashes from the batch rather than
-    # during an interactive session
-    #
-    s.get_sym_all()
+def insert_syms():
+    import glob
+    import os
+    from applications.init.modules import symmetrix
+    now = datetime.datetime.now()
 
-    #
-    # populate the diskinfo table
-    #
-    vars = ['disk_id', 'disk_devid', 'disk_arrayid']
-    vals = []
-    for devname, dev in s.dev.items():
-        vals.append([dev.wwn, devname, symid])
-    generic_insert('diskinfo', vars, vals)
+    dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='symmetrix'))
+    pattern = "[0-9]*"
+    sym_dirs = glob.glob(os.path.join(dir, pattern))
+    syms = []
+
+    for d in sym_dirs:
+        s = symmetrix.get_sym(d)
+        if s is not None:
+            # stor_array
+            s.get_sym_info()
+            vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
+            vals = []
+            vals.append([s.info['symid'],
+                         s.info['model'],
+                         s.info['cache_megabytes'],
+                         '.'.join((s.info['version'],
+                                   s.info['patch_level'],
+                                   s.info['symmwin_version'])),
+                         now])
+            generic_insert('stor_array', vars, vals)
+
+            sql = """select id from stor_array where array_name="%s" """%s.info['symid']
+            array_id = str(db.executesql(sql)[0][0])
+
+            # stor_array_dg
+            s.get_sym_diskgroup()
+            vars = ['array_id', 'dg_name', 'dg_free', 'dg_updated']
+            vals = []
+            for dg in s.diskgroup.values():
+                vals.append([array_id,
+                             dg.info['disk_group_name'],
+                             dg.info['free'],
+                             now])
+            generic_insert('stor_array_dg', vars, vals)
 
 @auth_uuid
 @service.xmlrpc

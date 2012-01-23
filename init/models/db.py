@@ -1354,11 +1354,16 @@ db.define_table('node_hba',
 db.define_table('stor_array',
     Field('array_name','string'),
     Field('array_model','string'),
+    Field('array_firmware','string'),
+    Field('array_cache','integer'),
+    Field('array_updated','datetime'),
     migrate=False)
 
 db.define_table('stor_array_dg',
     Field('array_id','integer'),
     Field('dg_name','string'),
+    Field('dg_free','integer'),
+    Field('dg_updated','datetime'),
     migrate=False)
 
 db.define_table('stor_array_dg_quota',
