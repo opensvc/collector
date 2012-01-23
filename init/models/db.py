@@ -1351,3 +1351,34 @@ db.define_table('node_hba',
     Field('updated','datetime'),
     migrate=False)
 
+db.define_table('stor_array',
+    Field('array_name','string'),
+    Field('array_model','string'),
+    migrate=False)
+
+db.define_table('stor_array_dg',
+    Field('array_id','integer'),
+    Field('dg_name','string'),
+    migrate=False)
+
+db.define_table('stor_array_dg_quota',
+    Field('dg_id','integer'),
+    Field('app_id','integer'),
+    Field('quota','integer'),
+    migrate=False)
+
+db.define_table('stor_array_tgtid',
+    Field('array_id','integer'),
+    Field('array_tgtid','string'),
+    migrate=False)
+
+db.define_table('stor_zone',
+    Field('tgt_id','string'),
+    Field('hba_id','string'),
+    migrate=False)
+
+db.define_table('stor_array_proxy',
+    Field('array_id','integer'),
+    Field('nodename','string'),
+    migrate=False)
+
