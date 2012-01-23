@@ -34,6 +34,7 @@ class SymMask(object):
 
 class SymDirector(object):
     def __init__(self, xml):
+        self.port_wwn = [m.text for m in xml.findall("Port/Port_Info/port_wwn")]
         self.info = {}
         for e in list(xml.find("Dir_Info")):
             self.info[e.tag] = e.text
@@ -50,6 +51,7 @@ class SymDirector(object):
         l = []
         l += self.prefix("type: "+self.info['type'])
         l += self.prefix("slot: "+self.info['slot'])
+        l += self.prefix("port_wwn: "+','.join(self.port_wwn))
         return '\n'.join(l)
 
 class SymMeta(object):

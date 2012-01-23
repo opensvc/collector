@@ -488,16 +488,30 @@ def update_sym_xml(symid, vars, vals, auth):
         except:
             pass
 
-    insert_syms()
+    insert_sym(symid)
+
+    # stor_array_proxy
+    sql = """select id from stor_array where array_name="%s" """%symid
+    array_id = str(db.executesql(sql)[0][0])
+
+    vars = ['array_id', 'nodename']
+    vals = [array_id, auth[1]]
+    generic_insert('stor_array_proxy', vars, vals)
 
 def insert_syms():
+    insert_sym()
+
+def insert_sym(symid=None):
     import glob
     import os
     from applications.init.modules import symmetrix
     now = datetime.datetime.now()
 
     dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='symmetrix'))
-    pattern = "[0-9]*"
+    if symid is None:
+        pattern = "[0-9]*"
+    else:
+        pattern = symid
     sym_dirs = glob.glob(os.path.join(dir, pattern))
     syms = []
 
@@ -530,6 +544,15 @@ def insert_syms():
                              dg.info['free'],
                              now])
             generic_insert('stor_array_dg', vars, vals)
+
+            # stor_array_tgtid
+            s.get_sym_director()
+            vars = ['array_id', 'array_tgtid']
+            vals = []
+            for dir in s.director.values():
+                for wwn in dir.port_wwn:
+                    vals.append([array_id, wwn])
+            generic_insert('stor_array_tgtid', vars, vals)
 
 @auth_uuid
 @service.xmlrpc
