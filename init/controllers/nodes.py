@@ -521,6 +521,12 @@ def ajax_nodes():
     n = db(q).count()
     t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+
+    t.csv_q = q
+    t.csv_orderby = o
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        return t.csv()
+
     return t.html()
 
 @auth.requires_login()
