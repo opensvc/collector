@@ -530,6 +530,9 @@ db.define_table('diskinfo',
     Field('disk_id'),
     Field('disk_devid'),
     Field('disk_arrayid'),
+    Field('disk_size'),
+    Field('disk_raid'),
+    Field('disk_group'),
     Field('disk_updated'),
     migrate=False)
 

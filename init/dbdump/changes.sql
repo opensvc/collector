@@ -2081,3 +2081,6 @@ alter table stor_array add column array_updated timestamp;
 
 alter table stor_array_dg add column dg_updated timestamp;
 
+alter table diskinfo add column disk_raid varchar(16);
+alter table diskinfo add column disk_size integer;
+alter table diskinfo add column disk_group varchar(60);

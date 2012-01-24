@@ -499,7 +499,7 @@ def update_sym_xml(symid, vars, vals, auth):
     generic_insert('stor_array_proxy', vars, vals)
 
 def insert_syms():
-    insert_sym()
+    return insert_sym()
 
 def insert_sym(symid=None):
     import glob
@@ -544,6 +544,7 @@ def insert_sym(symid=None):
                              dg.info['free'],
                              now])
             generic_insert('stor_array_dg', vars, vals)
+            del(s.diskgroup)
 
             # stor_array_tgtid
             s.get_sym_director()
@@ -553,6 +554,30 @@ def insert_sym(symid=None):
                 for wwn in dir.port_wwn:
                     vals.append([array_id, wwn])
             generic_insert('stor_array_tgtid', vars, vals)
+            del(s.director)
+
+            # diskinfo
+            s.get_sym_dev()
+            vars = ['disk_id',
+                    'disk_arrayid',
+                    'disk_devid',
+                    'disk_size',
+                    'disk_raid',
+                    'disk_group',
+                    'disk_updated']
+            vals = []
+            for dev in s.dev.values():
+                if dev.flags['meta'] != 'Head':
+                    continue
+                vals.append([dev.wwn,
+                             s.info['symid'],
+                             dev.info['dev_name'],
+                             str(dev.megabytes/1024),
+                             "Meta-%d %s"%(dev.meta_count, dev.info['configuration']),
+                             dev.diskgroup_name,
+                             now])
+            generic_insert('diskinfo', vars, vals)
+            del(s.dev)
 
 @auth_uuid
 @service.xmlrpc

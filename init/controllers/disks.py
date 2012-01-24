@@ -10,7 +10,8 @@ class table_disks(HtmlTable):
                      'disk_vendor',
                      'disk_model',
                      'disk_dg',
-                     'disk_target_port_id',
+                     'disk_group',
+                     'disk_raid',
                      'disk_updated',
                      'disk_devid',
                      'disk_arrayid']
@@ -58,16 +59,23 @@ class table_disks(HtmlTable):
                      display=True,
                     ),
             'disk_dg': HtmlTableColumn(
-                     title='Disk group',
+                     title='System disk group',
                      table='svcdisks',
                      field='disk_dg',
                      img='hd16',
                      display=True,
                     ),
-            'disk_target_port_id': HtmlTableColumn(
-                     title='Target port Id',
-                     table='svcdisks',
-                     field='disk_target_port_id',
+            'disk_group': HtmlTableColumn(
+                     title='Array disk group',
+                     table='diskinfo',
+                     field='disk_group',
+                     img='hd16',
+                     display=True,
+                    ),
+            'disk_raid': HtmlTableColumn(
+                     title='Raid',
+                     table='diskinfo',
+                     field='disk_raid',
                      img='hd16',
                      display=True,
                     ),
