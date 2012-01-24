@@ -111,13 +111,13 @@ class table_log(HtmlTable):
                      img='action16',
                      display=True,
                     ),
-            'log_svcname': HtmlTableColumn(
+            'log_svcname': col_svc(
                      title='Service',
                      field='log_svcname',
                      img='svc',
                      display=True,
                     ),
-            'log_nodename': HtmlTableColumn(
+            'log_nodename': col_node(
                      title='Node',
                      field='log_nodename',
                      img='node16',
@@ -166,7 +166,10 @@ class table_log(HtmlTable):
                      display=False,
                     ),
         }
+        self.colprops['log_nodename'].t = self
+        self.colprops['log_svcname'].t = self
         self.dbfilterable = False
+        self.extraline = True
         self.ajax_col_values = 'ajax_log_col_values'
         self.special_filtered_cols = ['log_icons', 'log_evt']
 
