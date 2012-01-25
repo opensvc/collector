@@ -10,6 +10,7 @@ class table_disks(HtmlTable):
                      'disk_model',
                      'disk_dg',
                      'disk_updated',
+                     'disk_array_updated',
                      'disk_size',
                      'disk_group',
                      'disk_raid',
@@ -80,8 +81,15 @@ class table_disks(HtmlTable):
                      display=True,
                     ),
             'disk_updated': HtmlTableColumn(
-                     title='Updated',
+                     title='System Updated',
                      table='svcdisks',
+                     field='disk_updated',
+                     img='time16',
+                     display=True,
+                    ),
+            'disk_array_updated': HtmlTableColumn(
+                     title='Storage Updated',
+                     table='diskinfo',
                      field='disk_updated',
                      img='time16',
                      display=True,
@@ -384,7 +392,7 @@ def ajax_disks_col_values():
     col = request.args[0]
     o = db[t.colprops[col].table][col]
     q = db.diskinfo.id>0
-    q |= db.svcdisks.id>0
+    q |= db.svcdisks.id<0
     l = db.svcdisks.on(db.diskinfo.disk_id==db.svcdisks.disk_id)
     q = _where(q, 'svcdisks', domain_perms(), 'disk_nodename')
     q = apply_filters(q, db.svcdisks.disk_nodename, db.svcdisks.disk_svcname)
@@ -398,7 +406,7 @@ def ajax_disks():
     t = table_disks('disks', 'ajax_disks')
     o = db.svcdisks.disk_id
     q = db.diskinfo.id>0
-    q |= db.svcdisks.id>0
+    q |= db.svcdisks.id<0
     l = db.svcdisks.on(db.diskinfo.disk_id==db.svcdisks.disk_id)
     #q &= db.svcdisks.disk_nodename==db.v_nodes.nodename
     q = _where(q, 'svcdisks', domain_perms(), 'disk_nodename')
