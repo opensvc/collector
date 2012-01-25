@@ -1,3 +1,8 @@
+class col_disk_id(HtmlTableColumn):
+    def html(self, o):
+       d = self.get(o)
+       return PRE(d)
+
 class table_disks(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -17,7 +22,7 @@ class table_disks(HtmlTable):
                      'disk_devid',
                      'disk_arrayid']
         self.colprops.update({
-            'disk_id': HtmlTableColumn(
+            'disk_id': col_disk_id(
                      title='Disk Id',
                      table='diskinfo',
                      field='disk_id',
