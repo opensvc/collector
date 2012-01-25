@@ -6,19 +6,19 @@ class table_disks(HtmlTable):
         self.cols = ['disk_id',
                      'disk_svcname',
                      'disk_nodename',
-                     'disk_size',
                      'disk_vendor',
                      'disk_model',
                      'disk_dg',
+                     'disk_updated',
+                     'disk_size',
                      'disk_group',
                      'disk_raid',
-                     'disk_updated',
                      'disk_devid',
                      'disk_arrayid']
         self.colprops.update({
             'disk_id': HtmlTableColumn(
                      title='Disk Id',
-                     table='svcdisks',
+                     table='diskinfo',
                      field='disk_id',
                      img='hd16',
                      display=True,
@@ -39,7 +39,7 @@ class table_disks(HtmlTable):
                     ),
             'disk_size': HtmlTableColumn(
                      title='Size (GB)',
-                     table='svcdisks',
+                     table='diskinfo',
                      field='disk_size',
                      img='hd16',
                      display=True,
@@ -108,6 +108,9 @@ class table_disks(HtmlTable):
         self.checkbox_id_table = 'svcdisks'
         self.dbfilterable = True
         self.ajax_col_values = 'ajax_disks_col_values'
+        self.span = 'disk_id'
+        self.sub_span = ['disk_svcname', 'disk_size', 'disk_arrayid', 'disk_devid', 'disk_raid', 'disk_group']
+
         if 'StorageManager' in user_groups() or \
            'StorageManager' in user_groups():
             self.additional_tools.append('provision')
@@ -380,9 +383,9 @@ def ajax_disks_col_values():
     t = table_disks('disks', 'ajax_disks')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
-    q = db.svcdisks.id > 0
-    q &= db.diskinfo.id>0
-    l = db.diskinfo.on(db.diskinfo.disk_id==db.svcdisks.disk_id)
+    q = db.diskinfo.id>0
+    q |= db.svcdisks.id>0
+    l = db.svcdisks.on(db.diskinfo.disk_id==db.svcdisks.disk_id)
     q = _where(q, 'svcdisks', domain_perms(), 'disk_nodename')
     q = apply_filters(q, db.svcdisks.disk_nodename, db.svcdisks.disk_svcname)
     for f in t.cols:
@@ -394,9 +397,9 @@ def ajax_disks_col_values():
 def ajax_disks():
     t = table_disks('disks', 'ajax_disks')
     o = db.svcdisks.disk_id
-    q = db.svcdisks.id>0
-    q &= db.diskinfo.id>0
-    l = db.diskinfo.on(db.diskinfo.disk_id==db.svcdisks.disk_id)
+    q = db.diskinfo.id>0
+    q |= db.svcdisks.id>0
+    l = db.svcdisks.on(db.diskinfo.disk_id==db.svcdisks.disk_id)
     #q &= db.svcdisks.disk_nodename==db.v_nodes.nodename
     q = _where(q, 'svcdisks', domain_perms(), 'disk_nodename')
     q = apply_filters(q, db.svcdisks.disk_nodename, db.svcdisks.disk_svcname)

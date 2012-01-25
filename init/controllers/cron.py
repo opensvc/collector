@@ -647,12 +647,18 @@ def alerts_failed_actions_not_acked():
 
     return ids
 
+def purge_svcdisks():
+    sql = """delete from svcdisks where disk_updated < DATE_SUB(NOW(), INTERVAL 2 day)"""
+    db.executesql(sql)
+    db.commit()
+
 def cron_alerts_daily():
     alerts_apps_without_responsible()
     alerts_services_not_updated()
     alerts_failed_actions_not_acked()
     refresh_b_action_errors()
     refresh_dash_action_errors()
+    purge_svcdisks()
 
 def cron_alerts_hourly():
     rets = []

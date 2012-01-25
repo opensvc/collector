@@ -323,29 +323,36 @@ def svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
 @service.xmlrpc
 def register_disk(vars, vals, auth):
     h = {}
+    now = datetime.datetime.now()
     for a,b in zip(vars, vals):
         h[a] = b
     if 'disk_updated' not in h:
-        h['disk_updated'] = datetime.datetime.now()
-    # purge old disks
-    if 'disk_svcname' in h and h['disk_svcname'] is not None and h['disk_svcname'] != '':
-        q = db.svcdisks.disk_svcname==h['disk_svcname']
-        q &= db.svcdisks.disk_nodename==h['disk_nodename']
-        db(q).delete()
-        db.commit()
+        h['disk_updated'] = now
     if h["disk_id"].strip("'").startswith(h["disk_nodename"].strip("'")+'.'):
         h['disk_local'] = 'T'
-        vars = ['disk_id', 'disk_arrayid', 'disk_devid']
-        vals = [h["disk_id"], h['disk_nodename'], repr(h['disk_id'].strip("'").split('.')[-1])]
+        vars = ['disk_id', 'disk_arrayid', 'disk_devid', 'disk_size']
+        vals = [h["disk_id"],
+                h['disk_nodename'],
+                repr(h['disk_id'].strip("'").split('.')[-1]),
+                h['disk_size']]
         generic_insert('diskinfo', vars, vals)
     else:
         h['disk_local'] = 'F'
+        generic_insert('diskinfo', ['disk_id', 'disk_size'], [h["disk_id"], h['disk_size']])
     try:
         generic_insert('svcdisks', h.keys(), h.values())
     except _mysql_exceptions.IntegrityError:
         # the foreign key on svcdisk may prevent insertion if svcmon is not yet
         # populated
         pass
+
+    # purge old disks
+    if 'disk_svcname' in h and h['disk_svcname'] is not None and h['disk_svcname'] != '':
+        q = db.svcdisks.disk_svcname==h['disk_svcname']
+        q &= db.svcdisks.disk_nodename==h['disk_nodename']
+        q &= db.svcdisks.disk_updated<now
+        db(q).delete()
+        db.commit()
 
 
 @auth_uuid
@@ -561,6 +568,28 @@ def insert_eva(name=None):
             for wwn in s.ports:
                 vals.append([array_id, wwn])
             generic_insert('stor_array_tgtid', vars, vals)
+
+            # diskinfo
+            vars = ['disk_id',
+                    'disk_arrayid',
+                    'disk_devid',
+                    'disk_size',
+                    'disk_raid',
+                    'disk_group',
+                    'disk_updated']
+            vals = []
+            for d in s.vdisk:
+                vals.append([d['wwlunid'],
+                             s.name,
+                             d['objectid'],
+                             str(d['allocatedcapacity']),
+                             d['redundancy'],
+                             d['diskgroupname'],
+                             now])
+            generic_insert('diskinfo', vars, vals)
+            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
+            db.executesql(sql)
+
 
 def insert_syms():
     return insert_sym()

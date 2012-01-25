@@ -9,6 +9,7 @@ class Eva(object):
         self.name = os.path.basename(xml_dir)
         self.controller()
         self.disk_group()
+        self.vdisk()
 
     def xmltree(self, xml):
         f = os.path.join(self.xml_dir, xml)
@@ -40,14 +41,29 @@ class Eva(object):
             self.dg.append(dg)
         del tree
 
+    def vdisk(self):
+        tree = self.xmltree('vdisk')
+        self.vdisk = []
+        for e in tree.getiterator('object'):
+            d = {}
+            d['wwlunid'] = e.find("wwlunid").text.replace('-', '')
+            d['objectid'] = e.find('objectid').text
+            d['allocatedcapacity'] = int(e.find('allocatedcapacity').text)
+            d['redundancy'] = e.find('redundancy').text
+            d['diskgroupname'] = e.find('diskgroupname').text.split('\\')[-1]
+            self.vdisk.append(d)
+        del tree
+
     def __str__(self):
         s = "name: %s\n" % self.name
         s += "modelnumber: %s\n" % self.modelnumber
         s += "controllermainmemory: %d\n" % self.controllermainmemory
         s += "firmwareversion: %s\n" % self.firmwareversion
+        s += "ports: %s\n"%','.join(self.ports)
         for dg in self.dg:
             s += "dg %s: free %s\n"%(dg['diskgroupname'], str(dg['freestoragespacegb']))
-        s += "ports: %s\n"%','.join(self.ports)
+        for d in self.vdisk:
+            s += "vdisk %s: size %s\n"%(d['wwlunid'], str(d['allocatedcapacity']))
         return s
 
 
