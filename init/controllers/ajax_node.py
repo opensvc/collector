@@ -216,22 +216,30 @@ def ajax_node():
 
     q = db.svcdisks.disk_nodename == request.vars.node
     q &= db.diskinfo.id > 0
-    disks = db(q).select(left=db.diskinfo.on(db.svcdisks.disk_id==db.diskinfo.disk_id))
+    q &= db.svcdisks.disk_id==db.diskinfo.disk_id
+    q &= db.diskinfo.disk_arrayid==db.stor_array.array_name
+    disks = db(q).select()
     _disks = [TR(
           TH("wwid"),
           TH("size"),
           TH("service"),
+          TH("array model"),
           TH("array id"),
+          TH("array disk group"),
         )]
     for disk in disks:
         _disks.append(TR(
           TD(disk.svcdisks.disk_id),
-          TD(disk.svcdisks.disk_size),
+          TD(disk.svcdisks.disk_size, T('GB')),
           TD(disk.svcdisks.disk_svcname),
+          TD(disk.stor_array.array_model),
           TD(disk.diskinfo.disk_arrayid),
+          TD(disk.diskinfo.disk_group),
         ))
     if len(_disks) == 1:
         _disks.append(TR(
+          TD('-'),
+          TD('-'),
           TD('-'),
           TD('-'),
           TD('-'),

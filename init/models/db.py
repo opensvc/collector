@@ -547,6 +547,19 @@ db.define_table('svcdisks',
     Field('disk_local', 'boolean'),
     migrate=False)
 
+db.define_table('v_svcdisks',
+    Field('disk_id', 'string'),
+    Field('disk_devid', 'string'),
+    Field('disk_arrayid', 'string'),
+    Field('disk_size', 'string'),
+    Field('disk_svcname', 'string'),
+    Field('disk_nodename', 'string'),
+    Field('disk_vendor', 'string'),
+    Field('disk_model', 'string'),
+    Field('disk_dg', 'string'),
+    Field('disk_updated', 'datetime'),
+    migrate=False)
+
 db.define_table('svc_res_sync',
     Field('id'),
     Field('sync_svcname'),
