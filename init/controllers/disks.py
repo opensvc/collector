@@ -20,6 +20,7 @@ class table_disks(HtmlTable):
                      'disk_group',
                      'disk_raid',
                      'disk_devid',
+                     'array_model',
                      'disk_arrayid']
         self.colprops.update({
             'disk_id': col_disk_id(
@@ -113,6 +114,13 @@ class table_disks(HtmlTable):
                      img='hd16',
                      display=True,
                     ),
+            'array_model': HtmlTableColumn(
+                     title='Array Model',
+                     table='stor_array',
+                     field='array_model',
+                     img='hd16',
+                     display=True,
+                    ),
         })
         for i in self.cols:
             self.colprops[i].t = self
@@ -122,7 +130,8 @@ class table_disks(HtmlTable):
         self.dbfilterable = True
         self.ajax_col_values = 'ajax_disks_col_values'
         self.span = 'disk_id'
-        self.sub_span = ['disk_svcname', 'disk_size', 'disk_arrayid', 'disk_devid', 'disk_raid', 'disk_group']
+        self.sub_span = ['disk_svcname', 'disk_size', 'disk_arrayid',
+                         'disk_devid', 'disk_raid', 'disk_group', 'array_model']
 
         if 'StorageManager' in user_groups() or \
            'StorageManager' in user_groups():
@@ -412,6 +421,7 @@ def ajax_disks():
     o = db.svcdisks.disk_id
     q = db.diskinfo.id>0
     q |= db.svcdisks.id<0
+    q &= db.diskinfo.disk_arrayid == db.stor_array.array_name
     l = db.svcdisks.on(db.diskinfo.disk_id==db.svcdisks.disk_id)
     #q &= db.svcdisks.disk_nodename==db.v_nodes.nodename
     q = _where(q, 'svcdisks', domain_perms(), 'disk_nodename')
