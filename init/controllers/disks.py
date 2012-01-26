@@ -3,6 +3,343 @@ class col_disk_id(HtmlTableColumn):
        d = self.get(o)
        return PRE(d)
 
+class col_quota(HtmlTableColumn):
+    def html(self, o):
+        s = self.get(o)
+        if s is None:
+            ss = '-'
+        else:
+            ss = s
+        tid = 'd_t_%s'%o.stor_array_dg_quota.id
+        iid = 'd_i_%s'%o.stor_array_dg_quota.id
+        sid = 'd_s_%s'%o.stor_array_dg_quota.id
+        d = SPAN(
+              SPAN(
+                ss,
+                _id=tid,
+                _onclick="""hide_eid('%(tid)s');show_eid('%(sid)s');getElementById('%(iid)s').focus()"""%dict(tid=tid, sid=sid, iid=iid),
+                _class="clickable",
+              ),
+              SPAN(
+                INPUT(
+                  value=s,
+                  _id=iid,
+                  _onkeypress="if (is_enter(event)) {%s};"%\
+                     self.t.ajax_submit(additional_inputs=[iid],
+                                        args="quota_set"),
+                ),
+                _id=sid,
+                _style="display:none",
+              ),
+            )
+        return d
+
+class table_quota(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['array_name',
+                     'array_model',
+                     'dg_name',
+                     'dg_free',
+                     'app',
+                     'quota']
+        self.colprops.update({
+            'array_name': HtmlTableColumn(
+                     title='Array',
+                     table='stor_array',
+                     field='array_name',
+                     img='hd16',
+                     display=True,
+                    ),
+            'array_model': HtmlTableColumn(
+                     title='Array Model',
+                     table='stor_array',
+                     field='array_model',
+                     img='hd16',
+                     display=True,
+                    ),
+            'array_id': HtmlTableColumn(
+                     title='Array Id',
+                     table='stor_array',
+                     field='id',
+                     img='hd16',
+                     display=True,
+                    ),
+            'dg_name': HtmlTableColumn(
+                     title='Array Disk Group',
+                     table='stor_array_dg',
+                     field='dg_name',
+                     img='hd16',
+                     display=True,
+                    ),
+            'dg_free': HtmlTableColumn(
+                     title='Free (GB)',
+                     table='stor_array_dg',
+                     field='dg_free',
+                     img='hd16',
+                     display=True,
+                    ),
+            'dg_id': HtmlTableColumn(
+                     title='Array Disk Group Id',
+                     table='stor_array_dg',
+                     field='id',
+                     img='hd16',
+                     display=True,
+                    ),
+            'app': HtmlTableColumn(
+                     title='App',
+                     table='apps',
+                     field='app',
+                     img='svc',
+                     display=True,
+                    ),
+            'app_id': HtmlTableColumn(
+                     title='App Id',
+                     table='apps',
+                     field='id',
+                     img='svc',
+                     display=True,
+                    ),
+            'quota': col_quota(
+                     title='Quota (GB)',
+                     table='stor_array_dg_quota',
+                     field='quota',
+                     img='hd16',
+                     display=True,
+                    ),
+        })
+        for i in self.cols:
+            self.colprops[i].t = self
+        self.extraline = True
+        self.checkboxes = True
+        self.dbfilterable = False
+        self.ajax_col_values = 'ajax_quota_col_values'
+        self.span = 'dg_name'
+        self.sub_span = ['dg_free', 'array_model', 'array_name']
+
+        if 'StorageManager' in user_groups() or \
+           'StorageManager' in user_groups():
+            self.additional_tools.append('app_attach')
+            self.additional_tools.append('app_detach')
+
+    def checkbox_key(self, o):
+        if o is None:
+            return '_'.join((self.id, 'ckid', ''))
+        ids = []
+        ids.append(self.colprops['dg_id'].get(o))
+        ids.append(self.colprops['array_id'].get(o))
+        ids.append(self.colprops['app_id'].get(o))
+        return '_'.join([self.id, 'ckid']+map(str,ids))
+
+    def app_select_tool(self, label, action, divid, sid, _class=''):
+        q = db.apps.id > 0
+        o = db.apps.app
+        options = [OPTION(g.app,_value=g.id) for g in db(q).select(orderby=o)]
+        d = DIV(
+              A(
+                T(label),
+                _class=_class,
+                _onclick="""
+                  click_toggle_vis(event,'%(div)s', 'block');
+                """%dict(div=divid),
+              ),
+              DIV(
+                TABLE(
+                  TR(
+                    TH(T('App')),
+                    TD(
+                      SELECT(
+                        *options,
+                        **dict(_id=sid,
+                               _requires=IS_IN_DB(db, 'apps.id'))
+                      ),
+                    ),
+                  ),
+                  TR(
+                    TH(),
+                    TD(
+                      INPUT(
+                        _type='submit',
+                        _onclick=self.ajax_submit(additional_inputs=[sid],
+                                                  args=action),
+                      ),
+                    ),
+                  ),
+                ),
+                _style='display:none',
+                _class='white_float',
+                _name=divid,
+                _id=divid,
+              ),
+              _class="floatw",
+            )
+        return d
+
+    def app_attach(self):
+        d = self.app_select_tool(label="Attach app",
+                                 action="app_attach",
+                                 divid="app_attach",
+                                 sid="app_attach_s",
+                                 _class="attach16")
+        return d
+
+    def app_detach(self):
+        d = DIV(
+              A(
+                T("Detach app"),
+                _class='detach16',
+                _onclick="""if (confirm("%(text)s")){%(s)s};
+                         """%dict(s=self.ajax_submit(args=['app_detach']),
+                                  text=T("Detaching applications from disk groups also drops quota information. Please confirm application detach"),
+                                 ),
+              ),
+              _class="floatw",
+            )
+        return d
+
+@auth.requires_membership('StorageManager')
+def quota_set():
+    l = [k for k in request.vars if 'd_i_' in k]
+    if len(l) != 1:
+        raise ToolError("one quota must be selected")
+    qid = int(l[0].replace('d_i_',''))
+    new = request.vars[l[0]]
+    try:
+        new = int(new)
+    except:
+        raise ToolError("quota must be an integer value")
+
+    q = db.stor_array_dg_quota.id == qid
+    q &= db.stor_array_dg_quota.app_id == db.apps.id
+    q &= db.stor_array_dg_quota.dg_id == db.stor_array_dg.id
+    q &= db.stor_array_dg.array_id == db.stor_array.id
+    info = db(q).select().first()
+    if info is None:
+        raise ToolError("quota not found")
+
+    q = db.stor_array_dg_quota.id == qid
+    db(q).update(quota=new)
+    _log('storage.quota.change',
+         'set quota from %(old)s to %(new)s for application %(app)s in disk group %(dg)s of array %(array)s',
+         dict(app=info.apps.app,
+              new=str(new),
+              old=str(info.stor_array_dg_quota.quota),
+              dg=info.stor_array_dg.dg_name,
+              array=info.stor_array.array_name))
+
+
+@auth.requires_membership('StorageManager')
+def app_detach(ids=[]):
+    if len(ids) == 0:
+        raise ToolError("no application selected")
+
+    for id in ids:
+        dg_id, array_id, app_id = id.split('_')
+        q = db.stor_array_dg_quota.dg_id == int(dg_id)
+        q &= db.stor_array_dg_quota.app_id == int(app_id)
+        if db(q).count() == 0:
+            continue
+        db(q).delete()
+
+        app = db(db.apps.id==app_id).select().first().app
+        q = db.stor_array_dg.id == dg_id
+        q &= db.stor_array_dg.array_id == db.stor_array.id
+        info = db(q).select().first()
+        _log('storage.quota.detach',
+             'detached application quota %(app)s from disk group %(dg)s of array %(array)s',
+             dict(app=app, dg=info.stor_array_dg.dg_name, array=info.stor_array.array_name))
+
+
+@auth.requires_membership('StorageManager')
+def app_attach(ids=[]):
+    if len(ids) == 0:
+        raise ToolError("no disk group selected")
+    app_id = request.vars.app_attach_s
+    app = db(db.apps.id==app_id).select().first().app
+
+    for id in ids:
+        dg_id, array_id, _app_id = id.split('_')
+        q = db.stor_array_dg_quota.dg_id == int(dg_id)
+        q &= db.stor_array_dg_quota.app_id == int(app_id)
+        if db(q).count() != 0:
+            continue
+        db.stor_array_dg_quota.insert(dg_id=dg_id, app_id=app_id)
+
+        q = db.stor_array_dg.id == dg_id
+        q &= db.stor_array_dg.array_id == db.stor_array.id
+        info = db(q).select().first()
+        _log('storage.quota.attach',
+             'attached application quota %(app)s to disk group %(dg)s of array %(array)s',
+             dict(app=app, dg=info.stor_array_dg.dg_name, array=info.stor_array.array_name))
+
+@auth.requires_login()
+def ajax_quota_col_values():
+    t = table_quota('quota', 'ajax_quota')
+    col = request.args[0]
+    o = db[t.colprops[col].table][col]
+    q = db.stor_array_dg.id>0
+    q |= db.stor_array_dg_quota.id<0
+    q |= db.apps.id<0
+    q &= db.stor_array_dg.array_id == db.stor_array.id
+    l1 = db.stor_array_dg_quota.on(db.stor_array_dg.id==db.stor_array_dg_quota.dg_id)
+    l2 = db.apps.on(db.apps.id==db.stor_array_dg_quota.app_id)
+    q = _where(q, 'stor_array', domain_perms(), 'array_name')
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    t.object_list = db(q).select(o, orderby=o, groupby=o, left=[l1,l2])
+    return t.col_values_cloud(col)
+
+@auth.requires_login()
+def ajax_quota():
+    t = table_quota('quota', 'ajax_quota')
+
+    if len(request.args) == 1:
+        action = request.args[0]
+        try:
+            if action == 'app_attach':
+                app_attach(t.get_checked())
+            elif action == 'app_detach':
+                app_detach(t.get_checked())
+            elif action == 'quota_set':
+                quota_set()
+        except ToolError, e:
+            t.flash = str(e)
+
+    o = db.stor_array.array_name | db.stor_array_dg.dg_name
+    q = db.stor_array_dg.id>0
+    q |= db.stor_array_dg_quota.id<0
+    q |= db.apps.id<0
+    q &= db.stor_array_dg.array_id == db.stor_array.id
+    l1 = db.stor_array_dg_quota.on(db.stor_array_dg.id==db.stor_array_dg_quota.dg_id)
+    l2 = db.apps.on(db.apps.id==db.stor_array_dg_quota.app_id)
+    q = _where(q, 'stor_array', domain_perms(), 'array_name')
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    n = len(db(q).select(left=[l1,l2]))
+    t.setup_pager(n)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o, left=[l1,l2])
+
+    t.csv_q = q
+    t.csv_orderby = o
+
+    return t.html()
+
+@auth.requires_login()
+def quota():
+    t = DIV(
+          ajax_quota(),
+          _id='quota',
+        )
+    return dict(table=t)
+
+
+
+
+
+
+
 class table_disks(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -134,8 +471,21 @@ class table_disks(HtmlTable):
                          'disk_devid', 'disk_raid', 'disk_group', 'array_model']
 
         if 'StorageManager' in user_groups() or \
-           'StorageManager' in user_groups():
+           'StorageExec' in user_groups():
             self.additional_tools.append('provision')
+        self.additional_tools.append('quota')
+
+    def quota(self):
+        d = DIV(
+              A(
+                T("Quota"),
+                _class='add16',
+                _href=URL(r=request, f='quota'),
+              ),
+              _class='floatw',
+            )
+        return d
+
 
     def provision(self):
         d = DIV(
