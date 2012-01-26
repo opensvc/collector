@@ -21,15 +21,16 @@ class col_quota(HtmlTableColumn):
             ss = ""
         else:
             ss = s
+            s = "%s GB"%s
         tid = 'd_t_%s'%o.stor_array_dg_quota.id
         iid = 'd_i_%s'%o.stor_array_dg_quota.id
         sid = 'd_s_%s'%o.stor_array_dg_quota.id
         d = SPAN(
-              SPAN(
+              DIV(
                 s,
                 _id=tid,
                 _onclick="""hide_eid('%(tid)s');show_eid('%(sid)s');getElementById('%(iid)s').focus()"""%dict(tid=tid, sid=sid, iid=iid),
-                _class="clickable",
+                _class="clickable numeric",
               ),
               SPAN(
                 INPUT(
@@ -130,7 +131,7 @@ class table_quota(HtmlTable):
                      display=True,
                     ),
             'quota': col_quota(
-                     title='Quota (GB)',
+                     title='Quota',
                      table='stor_array_dg_quota',
                      field='quota',
                      img='hd16',
