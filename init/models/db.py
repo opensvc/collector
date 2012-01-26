@@ -1362,6 +1362,8 @@ db.define_table('stor_array_dg',
     Field('array_id','integer'),
     Field('dg_name','string'),
     Field('dg_free','integer'),
+    Field('dg_used','integer'),
+    Field('dg_size','integer'),
     Field('dg_updated','datetime'),
     migrate=False)
 

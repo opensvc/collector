@@ -2087,3 +2087,5 @@ alter table diskinfo add column disk_group varchar(60);
 
 alter table svcdisks drop column disk_target_port_id;
 
+alter table stor_array_dg add column dg_size int(11);
+alter table stor_array_dg add column dg_used int(11);

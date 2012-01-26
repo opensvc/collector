@@ -3,11 +3,22 @@ class col_disk_id(HtmlTableColumn):
        d = self.get(o)
        return PRE(d)
 
+class col_size_mb(HtmlTableColumn):
+    def html(self, o):
+       d = self.get(o)
+       if d is None:
+           return ''
+       unit = 'GB'
+       return DIV("%d %s"%(d/1024, unit), _class="numeric")
+
 class col_quota(HtmlTableColumn):
     def html(self, o):
+        if o.apps.app is None:
+            return ""
         s = self.get(o)
         if s is None:
-            ss = '-'
+            s = "-"
+            ss = ""
         else:
             ss = s
         tid = 'd_t_%s'%o.stor_array_dg_quota.id
@@ -15,14 +26,14 @@ class col_quota(HtmlTableColumn):
         sid = 'd_s_%s'%o.stor_array_dg_quota.id
         d = SPAN(
               SPAN(
-                ss,
+                s,
                 _id=tid,
                 _onclick="""hide_eid('%(tid)s');show_eid('%(sid)s');getElementById('%(iid)s').focus()"""%dict(tid=tid, sid=sid, iid=iid),
                 _class="clickable",
               ),
               SPAN(
                 INPUT(
-                  value=s,
+                  value=ss,
                   _id=iid,
                   _onkeypress="if (is_enter(event)) {%s};"%\
                      self.t.ajax_submit(additional_inputs=[iid],
@@ -43,6 +54,8 @@ class table_quota(HtmlTable):
                      'array_model',
                      'dg_name',
                      'dg_free',
+                     'dg_used',
+                     'dg_size',
                      'app',
                      'quota']
         self.colprops.update({
@@ -74,10 +87,24 @@ class table_quota(HtmlTable):
                      img='hd16',
                      display=True,
                     ),
-            'dg_free': HtmlTableColumn(
-                     title='Free (GB)',
+            'dg_free': col_size_mb(
+                     title='Free',
                      table='stor_array_dg',
                      field='dg_free',
+                     img='hd16',
+                     display=True,
+                    ),
+            'dg_used': col_size_mb(
+                     title='Used',
+                     table='stor_array_dg',
+                     field='dg_used',
+                     img='hd16',
+                     display=True,
+                    ),
+            'dg_size': col_size_mb(
+                     title='Size',
+                     table='stor_array_dg',
+                     field='dg_size',
                      img='hd16',
                      display=True,
                     ),

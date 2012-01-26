@@ -551,12 +551,14 @@ def insert_eva(name=None):
             array_id = str(db.executesql(sql)[0][0])
 
             # stor_array_dg
-            vars = ['array_id', 'dg_name', 'dg_free', 'dg_updated']
+            vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
             vals = []
             for dg in s.dg:
                 vals.append([array_id,
                              dg['diskgroupname'],
-                             str(dg['freestoragespacegb']),
+                             str(dg['freestoragespace']),
+                             str(dg['usedstoragespace']),
+                             str(dg['totalstoragespace']),
                              now])
             generic_insert('stor_array_dg', vars, vals)
             sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
@@ -629,12 +631,14 @@ def insert_sym(symid=None):
 
             # stor_array_dg
             s.get_sym_diskgroup()
-            vars = ['array_id', 'dg_name', 'dg_free', 'dg_updated']
+            vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
             vals = []
             for dg in s.diskgroup.values():
                 vals.append([array_id,
                              dg.info['disk_group_name'],
-                             dg.info['free'],
+                             str(dg.total-dg.used),
+                             str(dg.used),
+                             str(dg.total),
                              now])
             generic_insert('stor_array_dg', vars, vals)
             del(s.diskgroup)

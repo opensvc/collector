@@ -35,9 +35,9 @@ class Eva(object):
         for e in tree.getiterator('object'):
             dg = {}
             dg['diskgroupname'] = e.find("diskgroupname").text
-            dg['totalstoragespacegb'] = float(e.find("totalstoragespacegb").text)
-            dg['usedstoragespacegb'] = float(e.find("usedstoragespacegb").text)
-            dg['freestoragespacegb'] = dg['totalstoragespacegb'] - dg['usedstoragespacegb']
+            dg['totalstoragespace'] = int(e.find("totalstoragespace").text) / 1024 / 2
+            dg['usedstoragespace'] = int(e.find("usedstoragespace").text) / 1024 / 2
+            dg['freestoragespace'] = dg['totalstoragespace'] - dg['usedstoragespace']
             self.dg.append(dg)
         del tree
 
@@ -61,9 +61,11 @@ class Eva(object):
         s += "firmwareversion: %s\n" % self.firmwareversion
         s += "ports: %s\n"%','.join(self.ports)
         for dg in self.dg:
-            s += "dg %s: free %s\n"%(dg['diskgroupname'], str(dg['freestoragespacegb']))
+            s += "dg %s: free %s MB\n"%(dg['diskgroupname'], str(dg['freestoragespace']))
+            s += "dg %s: used %s MB\n"%(dg['diskgroupname'], str(dg['usedstoragespace']))
+            s += "dg %s: total %s MB\n"%(dg['diskgroupname'], str(dg['totalstoragespace']))
         for d in self.vdisk:
-            s += "vdisk %s: size %s\n"%(d['wwlunid'], str(d['allocatedcapacity']))
+            s += "vdisk %s: size %s GB\n"%(d['wwlunid'], str(d['allocatedcapacity']))
         return s
 
 
