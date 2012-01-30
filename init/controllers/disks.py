@@ -3,6 +3,14 @@ class col_disk_id(HtmlTableColumn):
        d = self.get(o)
        return PRE(d)
 
+class col_size_gb(HtmlTableColumn):
+    def html(self, o):
+       d = self.get(o)
+       if d is None:
+           return ''
+       unit = 'GB'
+       return DIV("%d %s"%(d, unit), _class="numeric")
+
 class col_size_mb(HtmlTableColumn):
     def html(self, o):
        d = self.get(o)
@@ -813,7 +821,36 @@ def ajax_disks():
     t.csv_q = q
     t.csv_orderby = o
 
-    return t.html()
+    nt = table_disk_app('apps', 'ajax_disk_app')
+
+    return DIV(
+             SCRIPT(
+               'if ($("#apps").is(":visible")) {',
+               nt.ajax_submit(additional_inputs=t.ajax_inputs()),
+               "}",
+             ),
+             DIV(
+               T("Applications"),
+               _style="text-align:left;font-size:120%;background-color:#e0e1cd",
+               _class="right16 clickable",
+               _onclick="""
+               if (!$("#apps").is(":visible")) {
+                 $(this).addClass("down16");
+                 $(this).removeClass("right16");
+                 $("#apps").show(); %s;
+               } else {
+                 $(this).addClass("right16");
+                 $(this).removeClass("down16");
+                 $("#apps").hide();
+               }"""%nt.ajax_submit(additional_inputs=t.ajax_inputs())
+             ),
+             DIV(
+               IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+               _id="apps",
+               _style="display:none"
+             ),
+             t.html(),
+           )
 
 @auth.requires_login()
 def disks():
@@ -822,5 +859,103 @@ def disks():
           _id='disks',
         )
     return dict(table=t)
+
+
+@auth.requires_login()
+def ajax_disk_app():
+    t = table_disks('disks', 'ajax_disks')
+    nt = table_disk_app('apps', 'ajax_disk_app')
+
+    o = db.svcdisks.disk_id
+    q = db.diskinfo.id>0
+    q |= db.svcdisks.id<0
+    q &= db.diskinfo.disk_arrayid == db.stor_array.array_name
+    q = _where(q, 'svcdisks', domain_perms(), 'disk_nodename')
+    q = apply_filters(q, db.svcdisks.disk_nodename, db.svcdisks.disk_svcname)
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+
+    nt.setup_pager(-1)
+    nt.dbfilterable = False
+    nt.filterable = True
+    nt.additional_inputs = t.ajax_inputs()
+
+    sql = """select
+               t.svc_app,
+               sum(t.disk_size) size,
+               t.disk_arrayid,
+               t.disk_group
+             from (
+               select
+                 services.svc_app,
+                 diskinfo.disk_size,
+                 diskinfo.disk_arrayid,
+                 diskinfo.disk_group
+               from
+                 diskinfo
+               left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+               left join services on svcdisks.disk_svcname=services.svc_name
+               left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
+               where %(q)s
+               group by diskinfo.disk_id
+             ) t
+             group by t.svc_app, t.disk_group
+             order by t.svc_app, size desc, t.disk_arrayid, t.disk_group"""%dict(q=q)
+    rows = db.executesql(sql)
+
+    nt.object_list = map(lambda x: {'svc_app': x[0],
+                                    'size':x[1],
+                                    'array_name':x[2],
+                                    'disk_group': x[3]},
+                          rows)
+
+    return nt.html()
+
+
+class table_disk_app(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['svc_app',
+                     'size',
+                     'array_name',
+                     'disk_group',
+                     'chart']
+        self.colprops.update({
+            'svc_app': HtmlTableColumn(
+                     title='App',
+                     field='svc_app',
+                     img='svc',
+                     display=True,
+                    ),
+            'size': col_size_gb(
+                     title='Size',
+                     field='size',
+                     img='hd16',
+                     display=True,
+                    ),
+            'array_name': HtmlTableColumn(
+                     title='Array Name',
+                     field='array_name',
+                     img='hd16',
+                     display=True,
+                    ),
+            'disk_group': HtmlTableColumn(
+                     title='Array Disk Group',
+                     field='disk_group',
+                     img='hd16',
+                     display=True,
+                    ),
+            'chart': HtmlTableColumn(
+                     title='Chart',
+                     field='chart',
+                     img='spark16',
+                     display=True,
+                    ),
+        })
+        for i in self.cols:
+            self.colprops[i].t = self
+        self.dbfilterable = False
 
 
