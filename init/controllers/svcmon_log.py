@@ -660,13 +660,13 @@ class col_avail_holes(Column):
     def format_hole(self, svcname, hole):
         out = """data_%(svc)s[2]=[];$('#%(id)s').empty();avail_plot('%(id)s', data_%(svc)s);"""%dict(
            id='plot_%s'%svcname.replace('.','_'),
-           svc=svcname.replace('.','_'),
+           svc=svcname.replace('.','_').replace('-','_'),
          )
         over = """data_%(svc)s[2]=[['%(b)s',2],['%(e)s',2]];$('#%(id)s').empty();avail_plot('%(id)s', data_%(svc)s);"""%dict(
            id='plot_%s'%svcname.replace('.','_'),
            b=hole['begin'],
            e=hole['end'],
-           svc=svcname.replace('.','_'),
+           svc=svcname.replace('.','_').replace('-','_'),
          )
         if hole['acked'] == 1:
             if hole['acked_account'] == 0:
@@ -799,7 +799,7 @@ class col_avail_plot(Column):
                data=str([str(down).replace("'null'","null"),
                          str(acked).replace("'null'","null")]).replace('"',''),
                id='plot_%s'%o['svcname'].replace('.','_'),
-               svc=o['svcname'].replace('.','_'),
+               svc=o['svcname'].replace('.','_').replace('-','_'),
              )
         return DIV(
                  DIV(
