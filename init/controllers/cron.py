@@ -551,7 +551,7 @@ def update_dash_action_errors():
     rows = db.executesql(sql)
 
     for row in rows:
-        if rows[1] == 'PRD':
+        if row[1] == 'PRD':
             sev = 4
         else:
             sev = 3

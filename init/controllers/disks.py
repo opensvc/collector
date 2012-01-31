@@ -1,3 +1,25 @@
+class col_app_chart(HtmlTableColumn):
+    def html(self, o):
+       return DIV(
+                H2(o['svc_app']),
+                DIV(
+                  H3(T("Disk Group Usage")),
+                  DIV(
+                    o['chart_dg'],
+                    _id='app_chart_dg_%s'%o['svc_app'],
+                  ),
+                  _style="float:left;width:500px",
+                ),
+                DIV(
+                  H3(T("Disk Array Usage")),
+                  DIV(
+                    o['chart_ar'],
+                    _id='app_chart_ar_%s'%o['svc_app'],
+                  ),
+                  _style="float:left;width:500px",
+                ),
+              )
+
 class col_disk_id(HtmlTableColumn):
     def html(self, o):
        d = self.get(o)
@@ -903,13 +925,76 @@ def ajax_disk_app():
              order by t.svc_app, size desc, t.disk_arrayid, t.disk_group"""%dict(q=q)
     rows = db.executesql(sql)
 
-    nt.object_list = map(lambda x: {'svc_app': x[0],
-                                    'size':x[1],
-                                    'array_name':x[2],
-                                    'disk_group': x[3]},
-                          rows)
+    dg = {}
+    ar = {}
+    s = {}
+    for row in rows:
+        svc_app = row[0]
+        size = int(row[1])
+        array_name = row[2]
 
-    return nt.html()
+        label = ' '.join(row[2:])
+        t = [label, size]
+        if svc_app not in dg:
+            dg[svc_app] = [t]
+            s[svc_app] = size
+        else:
+            dg[svc_app] += [t]
+            s[svc_app] += size
+
+        if svc_app not in ar:
+            ar[svc_app] = {array_name: size}
+        elif array_name not in ar[svc_app]:
+            ar[svc_app][array_name] = size
+        else:
+            ar[svc_app][array_name] += size
+
+    nt.object_list = []
+    for svc_app, data_dg in dg.items():
+        for i, (label, size) in enumerate(data_dg):
+            data_dg[i] = (label +' (%d GB)'%size, 100*size//s[svc_app])
+
+        ardata = ar[svc_app]
+        data_ar = []
+        for array_name, size in ardata.items():
+            data_ar.append([array_name + ' (%d GB)'%size, 100*size//s[svc_app]])
+
+        nt.object_list.append({'svc_app': svc_app,
+                               'chart': '',
+                               'chart_dg': json.dumps(data_dg),
+                               'chart_ar': json.dumps(data_ar)})
+
+
+    return DIV(
+             nt.html(),
+             SCRIPT(
+"""
+function diskpie(o) {
+  var data = $.parseJSON(o.html())
+  o.html("")
+  $.jqplot(o.attr('id'), [data],
+    {
+      seriesDefaults: {
+        renderer: $.jqplot.PieRenderer,
+        rendererOptions: {
+          sliceMargin: 4,
+          showDataLabels: true
+        }
+      },
+      legend: { show:true, location: 'e' }
+    }
+  );
+}
+$("[id^=app_chart_dg]").each(function(){
+  diskpie($(this))
+})
+$("[id^=app_chart_ar]").each(function(){
+  diskpie($(this))
+})
+""",
+               _name="apps_to_eval",
+             ),
+           )
 
 
 class table_disk_app(HtmlTable):
@@ -917,37 +1002,9 @@ class table_disk_app(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['svc_app',
-                     'size',
-                     'array_name',
-                     'disk_group',
-                     'chart']
+        self.cols = ['chart']
         self.colprops.update({
-            'svc_app': HtmlTableColumn(
-                     title='App',
-                     field='svc_app',
-                     img='svc',
-                     display=True,
-                    ),
-            'size': col_size_gb(
-                     title='Size',
-                     field='size',
-                     img='hd16',
-                     display=True,
-                    ),
-            'array_name': HtmlTableColumn(
-                     title='Array Name',
-                     field='array_name',
-                     img='hd16',
-                     display=True,
-                    ),
-            'disk_group': HtmlTableColumn(
-                     title='Array Disk Group',
-                     field='disk_group',
-                     img='hd16',
-                     display=True,
-                    ),
-            'chart': HtmlTableColumn(
+            'chart': col_app_chart(
                      title='Chart',
                      field='chart',
                      img='spark16',
@@ -957,5 +1014,11 @@ class table_disk_app(HtmlTable):
         for i in self.cols:
             self.colprops[i].t = self
         self.dbfilterable = False
+        self.filterable = False
+        self.pageable = False
+        self.exportable = False
+        self.refreshable = False
+        self.columnable = False
+        self.headers = False
 
 
