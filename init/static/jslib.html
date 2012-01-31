@@ -461,6 +461,7 @@ function stats_avg_cpu_for_nodes(url, id) {
     $.getJSON(url, function(data) {
         if (data[0].length == 0) { return }
         plot_height(id, data[0])
+        $('#'+id).width('300px')
 	$.jqplot(id, data[1], {
 	    stackSeries: true,
 	    grid: {

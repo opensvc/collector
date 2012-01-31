@@ -504,11 +504,11 @@ def ajax_stats():
          _class='float',
        ),
        DIV(
-         _id='stat_day_node_block_tps',
+         _id='tps_stat_day_node_block',
          _class='float',
        ),
        DIV(
-         _id='stat_day_node_block_bps',
+         _id='bps_stat_day_node_block',
          _class='float',
        ),
        DIV(
