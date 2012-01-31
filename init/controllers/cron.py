@@ -538,25 +538,20 @@ def refresh_dash_action_errors():
              where
                dash_type like "%action err%" and
                (dash_svcname, dash_nodename) not in (
-                 select nodename, svcname
+                 select svcname, nodename
                  from b_action_errors
                )"""
     db.executesql(sql)
     db.commit()
 
-def update_dash_action_errors(svc_name, nodename):
-    svc_name = svc_name.strip("'")
-    nodename = nodename.strip("'")
-    sql = """select e.err, s.svc_type from b_action_errors e
+def update_dash_action_errors():
+    sql = """select e.err, s.svc_type, e.svcname, e.nodename from b_action_errors e
              join services s on e.svcname=s.svc_name
-             where
-               svcname="%(svcname)s" and
-               nodename="%(nodename)s"
-          """%dict(svcname=svc_name, nodename=nodename)
+          """
     rows = db.executesql(sql)
 
-    if len(rows) == 1:
-        if rows[0][1] == 'PRD':
+    for row in rows:
+        if rows[1] == 'PRD':
             sev = 4
         else:
             sev = 3
@@ -574,20 +569,14 @@ def update_dash_action_errors(svc_name, nodename):
                    dash_fmt="%%(err)s action errors",
                    dash_dict='{"err": "%(err)d"}',
                    dash_created=now()
-              """%dict(svcname=svc_name,
-                       nodename=nodename,
+              """%dict(svcname=row[2],
+                       nodename=row[3],
                        sev=sev,
-                       err=rows[0][0])
-    else:
-        sql = """delete from dashboard
-                 where
-                   dash_type="action errors" and
-                   dash_svcname="%(svcname)s" and
-                   dash_nodename="%(nodename)s"
-              """%dict(svcname=svc_name,
-                       nodename=nodename)
-    db.executesql(sql)
-    db.commit()
+                       err=row[0])
+        db.executesql(sql)
+        db.commit()
+
+    refresh_dash_action_errors()
 
 def alerts_failed_actions_not_acked():
     """ Actions not ackowleged : Alert responsibles & Acknowledge
@@ -642,8 +631,7 @@ def alerts_failed_actions_not_acked():
 
     """ Update dashboard
     """
-    for row in rows:
-        update_dash_action_errors(row[1], row[2])
+    update_dash_action_errors()
 
     return ids
 
