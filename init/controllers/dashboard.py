@@ -8,6 +8,30 @@ def call():
     session.forget()
     return service()
 
+class col_dash_chart(HtmlTableColumn):
+    def html(self, o):
+       h = self.get(o)
+       if len(h['nb']) < 2:
+           return SPAN()
+       return DIV(
+                DIV(
+                  H3(T("Number of alerts")),
+                  DIV(
+                    json.dumps(h['nb']),
+                    _id='nb_chart',
+                  ),
+                  _style="float:left;width:500px",
+                ),
+                DIV(
+                  H3(T("Alerts severity")),
+                  DIV(
+                    json.dumps(h['sev']),
+                    _id='sev_chart',
+                  ),
+                  _style="float:left;width:500px",
+                ),
+              )
+
 class col_dash_icons(HtmlTableColumn):
     def html(self, o):
         d = SPAN(
@@ -98,54 +122,28 @@ class table_dash_agg(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['dash_icons', 'dash_type', 'dash_alerts', 'dash_severity', 'dash_history']
+        self.cols = ['chart']
         self.colprops = {
-            'dash_icons': col_dash_icons(
-                     title='Filter',
-                     field='dummy',
+            'chart': col_dash_chart(
+                     title='Chart',
+                     field='chart',
                      display=True,
-                     img='search',
-                    ),
-            'dash_type': HtmlTableColumn(
-                     title='Type',
-                     field='dash_type',
-                     table='dash_agg',
-                     display=True,
-                     img='alert16',
-                    ),
-            'dash_severity': col_dash_cumulated_severity(
-                     title='Cumulated severity',
-                     field='dash_severity',
-                     table='dash_agg',
-                     display=True,
-                     img='alert16',
-                     _class='numeric',
-                    ),
-            'dash_alerts': col_dash_alerts(
-                     title='Number of alerts',
-                     field='dash_alerts',
-                     table='dash_agg',
-                     display=True,
-                     img='alert16',
-                     _class='numeric',
-                    ),
-            'dash_history': col_dash_history(
-                     title='History',
-                     field='dash_history',
-                     table='dash_agg',
-                     display=True,
-                     img='alert16',
-                     _class='numeric',
+                     img='spark16',
                     ),
         }
-        self.colprops['dash_alerts'].t = self
-        self.colprops['dash_severity'].t = self
+        self.dbfilterable = False
+        self.filterable = False
+        self.pageable = False
+        self.exportable = False
+        self.refreshable = False
+        self.columnable = False
+        self.headers = False
+
 
 @auth.requires_login()
 def ajax_dash_agg():
     t = table_dashboard('dashboard', 'ajax_dashboard')
     mt = table_dash_agg('dash_agg', 'ajax_dash_agg')
-    mt.colprops['dash_icons'].t = t
 
     q = db.dashboard.id > 0
     for f in set(t.cols)-set(t.special_filtered_cols):
@@ -185,10 +183,16 @@ def ajax_dash_agg():
 
     rows = db.executesql(sql2)
 
-    mt.object_list = map(lambda x: {'dash_type': x[1],
-                                    'dash_alerts':x[2],
-                                    'dash_severity':x[3]},
-                          rows)
+    l = map(lambda x: {'dash_type': x[1],
+                       'dash_alerts':x[2],
+                       'dash_severity':x[3]},
+             rows)
+    h = {'nb': [], 'sev': []}
+    for line in l:
+        h['nb'].append([unicode(T(line['dash_type'])), int(line['dash_alerts'])])
+        h['sev'].append([unicode(T(line['dash_type'])), int(line['dash_severity'])])
+    h['nb'].sort(lambda x, y: cmp(y[1], x[1]))
+    mt.object_list = [{'chart': h}]
 
     from hashlib import md5
     o = md5()
@@ -214,14 +218,14 @@ def ajax_dash_agg():
 
     mt.total_alerts = 0
     mt.total_severity = 0
-    for i, r in enumerate(mt.object_list):
-        mt.total_alerts += mt.object_list[i]['dash_alerts']
-        mt.total_severity += mt.object_list[i]['dash_severity']
+    for i, r in enumerate(l):
+        mt.total_alerts += l[i]['dash_alerts']
+        mt.total_severity += l[i]['dash_severity']
         if now > last_date + datetime.timedelta(minutes=1):
             db.dashboard_log.insert(dash_filters_md5=filters_md5,
-                                    dash_alerts=mt.object_list[i]['dash_alerts'],
-                                    dash_type=mt.object_list[i]['dash_type'])
-        mt.object_list[i]['dash_history'] = '-'.join((filters_md5, mt.object_list[i]['dash_type'].replace(" ","_")))
+                                    dash_alerts=l[i]['dash_alerts'],
+                                    dash_type=l[i]['dash_type'])
+        l[i]['dash_history'] = '-'.join((filters_md5, l[i]['dash_type'].replace(" ","_")))
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         return mt.csv()
@@ -230,21 +234,39 @@ def ajax_dash_agg():
              mt.html(),
              SCRIPT(
                """
-function refresh_sparklines() {
- $('.dynamicsparkline').each(function(i){
-  id=$(this).attr("id")
-  $.getJSON("%(url)s/"+id, function(data) {
-        $('#'+data[0]).sparkline(data[1])
+function dashpie(o) {
+  var data = $.parseJSON(o.html())
+  o.html("")
+  o.height("350px")
+  $.jqplot(o.attr('id'), [data],
+    {
+      seriesDefaults: {
+        renderer: $.jqplot.PieRenderer,
+        rendererOptions: {
+          sliceMargin: 4,
+          dataLabelPositionFactor: 0.7,
+          startAngle: -90,
+          dataLabels: 'value',
+          showDataLabels: true
+        }
+      },
+      legend: { show:true, location: 'e' }
+    }
+  );
+  o.bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
+    dash_type = data[seriesIndex]
+    $("#dashboard_f_dash_type").val(dash_type)
+    %(submit)s
   })
- })
 }
-refresh_sparklines()
-$('#dash_agg').stopTime();
-$('#dash_agg').everyTime(60000,function(){
- refresh_sparklines()
+$("#nb_chart").each(function(){
+  dashpie($(this))
 })
-"""%dict(url=URL(r=request, f='call/json/update_dashboard_log')),
-               _name=mt.id+"_to_eval"
+$("#sev_chart").each(function(){
+  dashpie($(this))
+})
+"""%dict(submit=t.ajax_submit()),
+               _name="dash_agg_to_eval",
              ),
            )
 
