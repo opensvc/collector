@@ -2439,7 +2439,8 @@ function stats_fs(url, id) {
 function stat_os(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
-        plot_width(id, data[0])
+        $("#"+id).width("600px")
+        //plot_width(id, data[0])
         labels = new Array()
         for (i=0;i<data[0].length;i++){
             labels.push({'label': data[0][i]})
