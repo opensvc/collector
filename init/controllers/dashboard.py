@@ -20,7 +20,7 @@ class col_dash_chart(HtmlTableColumn):
                     json.dumps(h['nb']),
                     _id='nb_chart',
                   ),
-                  _style="float:left;width:500px",
+                  _style="float:left;width:550px",
                 ),
                 DIV(
                   H3(T("Alerts severity")),
@@ -28,7 +28,7 @@ class col_dash_chart(HtmlTableColumn):
                     json.dumps(h['sev']),
                     _id='sev_chart',
                   ),
-                  _style="float:left;width:500px",
+                  _style="float:left;width:550px",
                 ),
               )
 
@@ -237,7 +237,7 @@ def ajax_dash_agg():
 function dashpie(o) {
   var data = $.parseJSON(o.html())
   o.html("")
-  o.height("350px")
+  o.height("400px")
   $.jqplot(o.attr('id'), [data],
     {
       seriesDefaults: {
