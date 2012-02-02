@@ -237,7 +237,7 @@ def ajax_dash_agg():
 function dashpie(o) {
   var data = $.parseJSON(o.html())
   o.html("")
-  o.height("400px")
+  o.height("500px")
   $.jqplot(o.attr('id'), [data],
     {
       seriesDefaults: {
