@@ -1,3 +1,17 @@
+class col_arrays_chart(HtmlTableColumn):
+    def html(self, o):
+       return DIV(
+                H2(o['array_name']),
+                DIV(
+                  H3(T("Disk Array Usage")),
+                  DIV(
+                    o['chart_ar'],
+                    _id='arrays_chart_ar_%s'%o['array_name'],
+                  ),
+                  _style="float:left;width:500px",
+                ),
+              )
+
 class col_app_chart(HtmlTableColumn):
     def html(self, o):
        return DIV(
@@ -843,12 +857,16 @@ def ajax_disks():
     t.csv_q = q
     t.csv_orderby = o
 
-    nt = table_disk_app('apps', 'ajax_disk_app')
+    nt = table_disk_apps('apps', 'ajax_disk_app')
+    mt = table_disk_arrays('arrays', 'ajax_disk_arrays')
 
     return DIV(
              SCRIPT(
                'if ($("#apps").is(":visible")) {',
                nt.ajax_submit(additional_inputs=t.ajax_inputs()),
+               "}",
+               'if ($("#arrays").is(":visible")) {',
+               mt.ajax_submit(additional_inputs=t.ajax_inputs()),
                "}",
              ),
              DIV(
@@ -871,6 +889,26 @@ def ajax_disks():
                _id="apps",
                _style="display:none"
              ),
+             DIV(
+               T("Arrays"),
+               _style="text-align:left;font-size:120%;background-color:#e0e1cd",
+               _class="right16 clickable",
+               _onclick="""
+               if (!$("#arrays").is(":visible")) {
+                 $(this).addClass("down16");
+                 $(this).removeClass("right16");
+                 $("#arrays").show(); %s;
+               } else {
+                 $(this).addClass("right16");
+                 $(this).removeClass("down16");
+                 $("#arrays").hide();
+               }"""%mt.ajax_submit(additional_inputs=t.ajax_inputs())
+             ),
+             DIV(
+               IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+               _id="arrays",
+               _style="display:none"
+             ),
              t.html(),
            )
 
@@ -886,7 +924,7 @@ def disks():
 @auth.requires_login()
 def ajax_disk_app():
     t = table_disks('disks', 'ajax_disks')
-    nt = table_disk_app('apps', 'ajax_disk_app')
+    nt = table_disk_apps('apps', 'ajax_disk_app')
 
     o = db.svcdisks.disk_id
     q = db.diskinfo.id>0
@@ -997,7 +1035,102 @@ $("[id^=app_chart_ar]").each(function(){
            )
 
 
-class table_disk_app(HtmlTable):
+@auth.requires_login()
+def ajax_disk_arrays():
+    t = table_disks('disks', 'ajax_disks')
+    nt = table_disk_arrays('arrays', 'ajax_disk_arrays')
+
+    o = db.svcdisks.disk_id
+    q = db.diskinfo.id>0
+    q |= db.svcdisks.id<0
+    q &= db.diskinfo.disk_arrayid == db.stor_array.array_name
+    q = _where(q, 'svcdisks', domain_perms(), 'disk_nodename')
+    q = apply_filters(q, db.svcdisks.disk_nodename, db.svcdisks.disk_svcname)
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+
+    nt.setup_pager(-1)
+    nt.dbfilterable = False
+    nt.filterable = True
+    nt.additional_inputs = t.ajax_inputs()
+
+    sql = """select
+               t.svc_app,
+               sum(t.disk_size) size,
+               t.disk_arrayid
+             from (
+               select
+                 services.svc_app,
+                 diskinfo.disk_size,
+                 diskinfo.disk_arrayid
+               from
+                 diskinfo
+               left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+               left join services on svcdisks.disk_svcname=services.svc_name
+               left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
+               where %(q)s
+               group by diskinfo.disk_id
+             ) t
+             group by t.svc_app, t.disk_arrayid
+             order by t.disk_arrayid, t.svc_app, size desc"""%dict(q=q)
+    rows = db.executesql(sql)
+
+    ar = {}
+    for row in rows:
+        svc_app = row[0]
+        size = int(row[1])
+        array_name = row[2]
+
+        label = svc_app
+        t = [label, size]
+        if array_name not in ar:
+            ar[array_name] = [t]
+        else:
+            ar[array_name] += [t]
+
+    nt.object_list = []
+    for array_name, data_array in ar.items():
+        for i, (label, size) in enumerate(data_array):
+            data_array[i] = (str(label) +' (%d GB)'%size, size)
+
+        nt.object_list.append({'array_name': array_name,
+                               'chart': '',
+                               'chart_dg': json.dumps([]),
+                               'chart_ar': json.dumps(data_array)})
+
+    return DIV(
+             nt.html(),
+             SCRIPT(
+"""
+function diskpie(o) {
+  var data = $.parseJSON(o.html())
+  o.html("")
+  $.jqplot(o.attr('id'), [data],
+    {
+      seriesDefaults: {
+        renderer: $.jqplot.PieRenderer,
+        rendererOptions: {
+          sliceMargin: 4,
+          showDataLabels: true
+        }
+      },
+      legend: { show:true, location: 'e' }
+    }
+  );
+}
+$("[id^=arrays_chart_dg]").each(function(){
+  diskpie($(this))
+})
+$("[id^=arrays_chart_ar]").each(function(){
+  diskpie($(this))
+})
+""",
+               _name="arrays_to_eval",
+             ),
+           )
+
+
+class table_disk_apps(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
@@ -1005,6 +1138,30 @@ class table_disk_app(HtmlTable):
         self.cols = ['chart']
         self.colprops.update({
             'chart': col_app_chart(
+                     title='Chart',
+                     field='chart',
+                     img='spark16',
+                     display=True,
+                    ),
+        })
+        for i in self.cols:
+            self.colprops[i].t = self
+        self.dbfilterable = False
+        self.filterable = False
+        self.pageable = False
+        self.exportable = False
+        self.refreshable = False
+        self.columnable = False
+        self.headers = False
+
+class table_disk_arrays(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['chart']
+        self.colprops.update({
+            'chart': col_arrays_chart(
                      title='Chart',
                      field='chart',
                      img='spark16',
