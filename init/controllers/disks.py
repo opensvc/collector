@@ -6,7 +6,7 @@ class col_arrays_chart(HtmlTableColumn):
                   H3(T("Disk Array Usage")),
                   DIV(
                     o['chart_ar'],
-                    _id='arrays_chart_ar_%s'%o['array_name'],
+                    _id='arrays_chart_ar_%s'%o['array_name'].replace(" ", "_"),
                   ),
                   _style="float:left;width:500px",
                 ),
@@ -1056,6 +1056,36 @@ def ajax_disk_arrays():
 
     sql = """select
                t.svc_app,
+               sum(t.disk_size) size
+             from (
+               select
+                 services.svc_app,
+                 diskinfo.disk_size
+               from
+                 diskinfo
+               left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+               left join services on svcdisks.disk_svcname=services.svc_name
+               left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
+               where %(q)s
+               group by diskinfo.disk_id
+             ) t
+             group by t.svc_app
+             order by t.svc_app, size desc"""%dict(q=q)
+    rows = db.executesql(sql)
+
+    data_array = []
+    for row in rows:
+        label = row[0]
+        size = int(row[1])
+        data_array += [[str(label) +' (%d GB)'%size, size]]
+
+    nt.object_list = [{'array_name': "All arrays in cursor",
+                       'chart': '',
+                       'chart_dg': json.dumps([]),
+                       'chart_ar': json.dumps(data_array)}]
+
+    sql = """select
+               t.svc_app,
                sum(t.disk_size) size,
                t.disk_arrayid
              from (
@@ -1088,7 +1118,6 @@ def ajax_disk_arrays():
         else:
             ar[array_name] += [t]
 
-    nt.object_list = []
     for array_name, data_array in ar.items():
         for i, (label, size) in enumerate(data_array):
             data_array[i] = (str(label) +' (%d GB)'%size, size)
