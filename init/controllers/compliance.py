@@ -384,11 +384,11 @@ class col_var_value(HtmlTableColumn):
             return SPAN("malformed value", PRE(v))
         for user, u in users.items():
             if 'uid' in u:
-                uid = '%d'%u['uid']
+                uid = '%s'%str(u['uid'])
             else:
                 uid = "-"
             if 'gid' in u:
-                gid = '%d'%u['gid']
+                gid = '%s'%str(u['gid'])
             else:
                 gid = "-"
             if 'shell' in u:
