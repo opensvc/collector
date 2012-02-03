@@ -483,6 +483,11 @@ def update_sym_xml(symid, vars, vals, auth):
 def update_eva_xml(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "eva", insert_eva)
 
+@auth_uuid
+@service.xmlrpc
+def update_ibmsvc(name, vars, vals, auth):
+    update_array_xml(name, vars, vals, auth, "ibmsvc", insert_ibmsvc)
+
 def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
     import os
 
@@ -516,6 +521,81 @@ def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
     vars = ['array_id', 'nodename']
     vals = [array_id, auth[1]]
     generic_insert('stor_array_proxy', vars, vals)
+
+def insert_ibmsvcs():
+    return insert_ibmsvc()
+
+def insert_ibmsvc(name=None):
+    import glob
+    import os
+    from applications.init.modules import ibmsvc
+    now = datetime.datetime.now()
+
+    dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='ibmsvc'))
+    if name is None:
+        pattern = "*"
+    else:
+        pattern = name
+    dirs = glob.glob(os.path.join(dir, pattern))
+
+    for d in dirs:
+        s = ibmsvc.get_ibmsvc(d)
+        if s is not None:
+            # stor_array
+            vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
+            vals = []
+            vals.append([s.array_name,
+                         s.modelnumber,
+                         str(s.controllermainmemory),
+                         s.firmwareversion,
+                         now])
+            generic_insert('stor_array', vars, vals)
+
+            sql = """select id from stor_array where array_name="%s" """%s.array_name
+            array_id = str(db.executesql(sql)[0][0])
+
+            # stor_array_dg
+            vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
+            vals = []
+            for dg in s.dg:
+                vals.append([array_id,
+                             dg['name'],
+                             str(dg['free_capacity']),
+                             str(dg['capacity']-dg['free_capacity']),
+                             str(dg['capacity']),
+                             now])
+            generic_insert('stor_array_dg', vars, vals)
+            sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
+            db.executesql(sql)
+
+            # stor_array_tgtid
+            vars = ['array_id', 'array_tgtid']
+            vals = []
+            for wwn in s.ports:
+                vals.append([array_id, wwn])
+            generic_insert('stor_array_tgtid', vars, vals)
+
+            # diskinfo
+            vars = ['disk_id',
+                    'disk_arrayid',
+                    'disk_devid',
+                    'disk_size',
+                    'disk_raid',
+                    'disk_group',
+                    'disk_updated']
+            vals = []
+            for d in s.vdisk:
+                vals.append([d['vdisk_UID'],
+                             s.array_name,
+                             d['name'],
+                             str(d['capacity']),
+                             d['type'],
+                             d['mdisk_grp_name'],
+                             now])
+            generic_insert('diskinfo', vars, vals)
+            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
+            db.executesql(sql)
+
 
 def insert_evas():
     return insert_eva()
