@@ -44,10 +44,10 @@ class IbmSvc(object):
         self.controllermainmemory = 0
         self.firmwareversion = ""
 
-        l = self.readlines('lsnode', sep="!")
+        l = self.readlines('lsfabric')
         ports = set([])
-        for node in l:
-            ports.add(node['WWNN'])
+        for line in l:
+            ports.add(line['local_wwpn'])
         self.ports = list(ports)
 
     def to_mb(self, size):
