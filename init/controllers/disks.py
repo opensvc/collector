@@ -655,15 +655,16 @@ def ajax_dg_list():
     q &= db.apps.id == db.stor_array_dg_quota.app_id
     q &= db.stor_array_dg_quota.dg_id == db.stor_array_dg.id
     q &= db.stor_array_dg.array_id == db.stor_array.id
+    q &= db.stor_array_dg_quota.quota != None
     rows = db(q).select()
 
     l = [OPTION(T("Choose one"))]
     for s in rows:
         o = OPTION(
-                "%s %s - %s - quota %d GB"%(s.stor_array.array_model,
+                "%s %s - %s - quota %s GB"%(s.stor_array.array_model,
                                             s.stor_array.array_name,
                                             s.stor_array_dg.dg_name,
-                                            s.stor_array_dg_quota.quota),
+                                            str(s.stor_array_dg_quota.quota)),
                 _value=s.stor_array_dg.id,
             )
         l.append(o)
