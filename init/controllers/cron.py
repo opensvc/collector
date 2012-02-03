@@ -326,7 +326,7 @@ def stat_nb_resp_accounts(fset_id):
 def stat_disk_size(fset_id):
     q = db.svcdisks.disk_local == False
     q = apply_filters(q, db.svcdisks.disk_nodename, None, fset_id)
-    rows = db(q).select(groupby=db.svcdisks.id)
+    rows = db(q).select(groupby=db.svcdisks.disk_id)
     s = 0
     for row in rows:
         if row.disk_size is None:
@@ -338,7 +338,7 @@ def stat_disk_size(fset_id):
 def stat_local_disk_size(fset_id):
     q = db.svcdisks.disk_local == True
     q = apply_filters(q, db.svcdisks.disk_nodename, None, fset_id)
-    rows = db(q).select(groupby=db.svcdisks.id)
+    rows = db(q).select(groupby=db.svcdisks.disk_id)
     s = 0
     for row in rows:
         if row.disk_size is None:
