@@ -488,6 +488,11 @@ def update_eva_xml(name, vars, vals, auth):
 def update_ibmsvc(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "ibmsvc", insert_ibmsvc)
 
+@auth_uuid
+@service.xmlrpc
+def update_dcs(name, vars, vals, auth):
+    update_array_xml(name, vars, vals, auth, "dcs", insert_dcs)
+
 def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
     import os
 
@@ -521,6 +526,12 @@ def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
     vars = ['array_id', 'nodename']
     vals = [array_id, auth[1]]
     generic_insert('stor_array_proxy', vars, vals)
+
+def insert_dcss():
+    return insert_dcs()
+
+def insert_dcs(name=None):
+    pass
 
 def insert_ibmsvcs():
     return insert_ibmsvc()
