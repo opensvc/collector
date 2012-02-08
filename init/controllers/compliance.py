@@ -5493,16 +5493,23 @@ def _comp_get_svc_ruleset(svcname):
     for row in rows:
         ruleset.update(comp_ruleset_vars(row.ruleset_id))
 
+    ruleset = _comp_remove_dup_vars(ruleset)
+
+    return ruleset
+
+def _comp_remove_dup_vars(ruleset):
     l = {}
     for rset in ruleset.copy():
         for i, (var, val) in enumerate(ruleset[rset]['vars']):
+            removed_s = 'Duplicate variable removed'
             if var in l:
-                (_rset, _i) = l[var]
-                ruleset[rset]['vars'][i] = ('xxx_'+var+'_xxx', 'Duplicate variable removed')
-                ruleset[_rset]['vars'][_i] = ('xxx_'+var+'_xxx', 'Duplicate variable removed')
+                (_rset, _i, _val) = l[var][0]
+                if _val != ruleset[rset]['vars'][i][1] or _val == removed_s:
+                    for _rset, _i, _val in l[var]:
+                        ruleset[_rset]['vars'][_i] = ('xxx_'+var+'_xxx', removed_s)
+                    ruleset[rset]['vars'][i] = ('xxx_'+var+'_xxx', removed_s)
             else:
-                l[var] = (rset, i)
-
+                l[var] = [(rset, i, ruleset[rset]['vars'][i][1])]
     return ruleset
 
 def _comp_get_ruleset(nodename):
@@ -5551,15 +5558,7 @@ def _comp_get_ruleset(nodename):
     for row in rows:
         ruleset.update(comp_ruleset_vars(row.ruleset_id))
 
-    l = {}
-    for rset in ruleset.copy():
-        for i, (var, val) in enumerate(ruleset[rset]['vars']):
-            if var in l:
-                (_rset, _i) = l[var]
-                ruleset[rset]['vars'][i] = ('xxx_'+var+'_xxx', 'Duplicate variable removed')
-                ruleset[_rset]['vars'][_i] = ('xxx_'+var+'_xxx', 'Duplicate variable removed')
-            else:
-                l[var] = (rset, i)
+    ruleset = _comp_remove_dup_vars(ruleset)
 
     return ruleset
 
