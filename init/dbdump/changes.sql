@@ -2089,3 +2089,8 @@ alter table svcdisks drop column disk_target_port_id;
 
 alter table stor_array_dg add column dg_size int(11);
 alter table stor_array_dg add column dg_used int(11);
+
+drop view v_comp_nodes;
+
+create view v_comp_nodes as (select n.*,group_concat(distinct r.ruleset_name separator ', ') as rulesets, group_concat(distinct m.modset_name separator ', ') as modulesets from v_nodes n left join comp_rulesets_nodes rn on n.nodename=rn.nodename left join comp_rulesets r on r.id=rn.ruleset_id left join comp_node_moduleset mn on mn.modset_node=n.nodename left join comp_moduleset m on m.id=mn.modset_id group by n.nodename);
+
