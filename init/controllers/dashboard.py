@@ -15,18 +15,18 @@ class col_dash_chart(HtmlTableColumn):
            return SPAN()
        return DIV(
                 DIV(
-                  H3(T("Number of alerts")),
-                  DIV(
-                    json.dumps(h['nb']),
-                    _id='nb_chart',
-                  ),
-                  _style="float:left;width:550px",
-                ),
-                DIV(
                   H3(T("Alerts severity")),
                   DIV(
                     json.dumps(h['sev']),
                     _id='sev_chart',
+                  ),
+                  _style="float:left;width:400px",
+                ),
+                DIV(
+                  H3(T("Number of alerts")),
+                  DIV(
+                    json.dumps(h['nb']),
+                    _id='nb_chart',
                   ),
                   _style="float:left;width:550px",
                 ),
@@ -158,24 +158,21 @@ def ajax_dash_agg():
     q = db.dash_agg.id > 0
     for f in mt.cols:
         q = _where(q, mt.colprops[f].table, mt.filter_parse(f), f)
-    where = str(q).replace("dash_agg.", "t.")
+    where = str(q).replace("dash_agg.", "dashboard.")
 
     mt.dbfilterable = False
     mt.pageable = False
     mt.filterable = True
     mt.additional_inputs = t.ajax_inputs()
 
-    sql2 = """select * from (
-                select
+    h = {'nb': [], 'sev': []}
+
+    sql2 = """ select
                   dashboard.id,
                   dashboard.dash_type,
-                  count(dashboard.dash_type) as dash_alerts,
-                  sum(dashboard.dash_severity) as dash_severity
+                  count(dashboard.dash_type)
                 from %(sql)s
                 group by dash_type
-                order by dash_severity desc
-              ) t
-              where %(where)s
               """%dict(
                 sql=sql1,
                 where=where,
@@ -184,14 +181,55 @@ def ajax_dash_agg():
     rows = db.executesql(sql2)
 
     l = map(lambda x: {'dash_type': x[1],
-                       'dash_alerts':x[2],
-                       'dash_severity':x[3]},
+                       'dash_alerts':x[2]},
              rows)
-    h = {'nb': [], 'sev': []}
+
     for line in l:
         h['nb'].append([unicode(T(line['dash_type'])), int(line['dash_alerts'])])
-        h['sev'].append([unicode(T(line['dash_type'])), int(line['dash_severity'])])
     h['nb'].sort(lambda x, y: cmp(y[1], x[1]))
+
+    """
+    if row is None:
+        last_date = now - datetime.timedelta(minutes=2)
+    else:
+        last_date = row.dash_date
+
+    if now > last_date + datetime.timedelta(minutes=1):
+        # purge old entries
+        q = db.dashboard_log.dash_date < now - datetime.timedelta(hours=24)
+        db(q).delete()
+
+    mt.total_alerts = 0
+    for i, r in enumerate(l):
+        mt.total_alerts += l[i]['dash_alerts']
+        if now > last_date + datetime.timedelta(minutes=1):
+            db.dashboard_log.insert(dash_filters_md5=filters_md5,
+                                    dash_alerts=l[i]['dash_alerts'],
+                                    dash_type=l[i]['dash_type'])
+        l[i]['dash_history'] = '-'.join((filters_md5, l[i]['dash_type'].replace(" ","_")))
+    """
+
+    sql2 = """ select
+                  dashboard.id,
+                  dashboard.dash_severity,
+                  count(dashboard.id)
+                from %(sql)s
+                group by dash_severity
+              """%dict(
+                sql=sql1,
+                where=where,
+           )
+
+    rows = db.executesql(sql2)
+
+    l = map(lambda x: {'dash_severity': x[1],
+                       'dash_alerts':x[2]},
+             rows)
+
+    for line in l:
+        h['sev'].append([unicode(T("Severity %(s)s"%dict(s=line['dash_severity']))), int(line['dash_alerts'])])
+    h['sev'].sort(lambda x, y: cmp(y[0], x[0]))
+
     mt.object_list = [{'chart': h}]
 
     from hashlib import md5
@@ -206,27 +244,6 @@ def ajax_dash_agg():
 
     now = datetime.datetime.now()
 
-    if row is None:
-        last_date = now - datetime.timedelta(minutes=2)
-    else:
-        last_date = row.dash_date
-
-    if now > last_date + datetime.timedelta(minutes=1):
-        # purge old entries
-        q = db.dashboard_log.dash_date < now - datetime.timedelta(hours=24)
-        db(q).delete()
-
-    mt.total_alerts = 0
-    mt.total_severity = 0
-    for i, r in enumerate(l):
-        mt.total_alerts += l[i]['dash_alerts']
-        mt.total_severity += l[i]['dash_severity']
-        if now > last_date + datetime.timedelta(minutes=1):
-            db.dashboard_log.insert(dash_filters_md5=filters_md5,
-                                    dash_alerts=l[i]['dash_alerts'],
-                                    dash_type=l[i]['dash_type'])
-        l[i]['dash_history'] = '-'.join((filters_md5, l[i]['dash_type'].replace(" ","_")))
-
     if len(request.args) == 1 and request.args[0] == 'csv':
         return mt.csv()
 
@@ -234,12 +251,11 @@ def ajax_dash_agg():
              mt.html(),
              SCRIPT(
                """
-function dashpie(o) {
+function dashpie_nb(o) {
   var data = $.parseJSON(o.html())
   o.html("")
   o.height("500px")
-  $.jqplot(o.attr('id'), [data],
-    {
+  options = {
       seriesDefaults: {
         renderer: $.jqplot.PieRenderer,
         rendererOptions: {
@@ -252,18 +268,54 @@ function dashpie(o) {
       },
       legend: { show:true, location: 'e' }
     }
-  );
+  $.jqplot(o.attr('id'), [data], options)
   o.bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
     dash_type = data[seriesIndex]
     $("#dashboard_f_dash_type").val(dash_type)
     %(submit)s
   })
 }
+function dashpie_sev(o) {
+  var data = $.parseJSON(o.html())
+  o.html("")
+  o.height("500px")
+  colors = {
+    "4": "#2d2d2d",
+    "3": "#660000",
+    "2": "#990000",
+    "1": "#ffa500",
+    "0": "#009900"
+  }
+  c = []
+  for (i=0;i<data.length;i++) {
+      c.push(colors[data[i][0][data[i][0].length-1]])
+  }
+  options = {
+      seriesDefaults: {
+        renderer: $.jqplot.PieRenderer,
+        seriesColors: c,
+        rendererOptions: {
+          sliceMargin: 4,
+          dataLabelPositionFactor: 0.7,
+          startAngle: -90,
+          dataLabels: 'value',
+          showDataLabels: true
+        }
+      },
+      legend: { show:true, location: 'e' }
+    }
+  $.jqplot(o.attr('id'), [data], options)
+  o.bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
+    dash_severity = data[seriesIndex][data[seriesIndex].length-1]
+    $("#dashboard_f_dash_severity").val(dash_severity)
+    %(submit)s
+  })
+}
 $("#nb_chart").each(function(){
-  dashpie($(this))
+  dashpie_nb($(this))
 })
 $("#sev_chart").each(function(){
-  dashpie($(this))
+  dashpie_sev($(this))
 })
 """%dict(submit=t.ajax_submit()),
                _name="dash_agg_to_eval",
