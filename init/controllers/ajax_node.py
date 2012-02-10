@@ -23,6 +23,7 @@ def perf_stats(node, rowid):
                         'netdev': 'action_sync_16.png',
                         'netdev_err': 'action_sync_16.png',
                         'fs': 'hd16.png',
+                        'svc': 'svc.png',
                       }
         divid = 'prf_cont_%s_%s'%(group,rowid)
         d = DIV(
@@ -95,6 +96,7 @@ def perf_stats(node, rowid):
               _src=URL(r=request, c='static', f='end16.png'),
               _style="vertical-align:middle",
             ),
+            SPAN(perf_group('Plot service resource usage', 'svc')),
             SPAN(perf_group('Plot resource usage trends', 'trend')),
             SPAN(perf_group('Plot cpu usage', 'cpu')),
             SPAN(perf_group('Plot mem/swap usage', 'memswap')),

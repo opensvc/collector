@@ -63,6 +63,30 @@ def perf_stats_cpu_trend_data(node, s, e, p):
     return [(p, r[0], r[1], r[2])]
 
 @auth.requires_login()
+def perf_stats_svc_cpu(node, s, e):
+    sql = """select
+               svcname,
+               date,
+               cpu
+             from stats_svc
+             where
+               nodename="%(node)s"
+               and date>"%(s)s"
+               and date<"%(e)s"
+          """%dict(s=s,e=e,node=node)
+    rows = db.executesql(sql)
+    h = {}
+    for row in rows:
+        svcname = row[0]
+        date = row[1]
+        cpu = row[2]
+        if svcname not in h:
+            h[svcname] = [(date, cpu)]
+        else:
+            h[svcname] += [(date, cpu)]
+    return h.keys(), h.values()
+
+@auth.requires_login()
 def perf_stats_cpu_trend(node, s, e):
     data = []
     start = str_to_date(s)
@@ -105,6 +129,11 @@ def ajax_perf_trend_plot():
     return SPAN(
              _ajax_perf_plot('trend_cpu', base='trend'),
              _ajax_perf_plot('trend_mem', last=True, base='trend')
+           )
+
+def ajax_perf_svc_plot():
+    return SPAN(
+             _ajax_perf_plot('svc_cpu', base='svc', last=True),
            )
 
 @auth.requires_login()
@@ -388,6 +417,13 @@ def perf_stats_netdev(node, s, e):
 # json servers
 #
 ###############
+
+@service.json
+def json_svc_cpu():
+    node = request.vars.node
+    b = request.vars.b
+    e = request.vars.e
+    return perf_stats_svc_cpu(node, b, e)
 
 @service.json
 def json_cpu():

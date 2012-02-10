@@ -1645,6 +1645,54 @@ function stats_proc(url, id) {
 	});
     });
 }
+function stats_svc_cpu(url, id) {
+    $.jqplot.config.enablePlugins = true;
+    $.getJSON(url, function(data) {
+        if (data.length < 2) { return }
+        if (data[1].length == 0) { return }
+        svcnames = data[0]
+        series = []
+        for (i=0; i<svcnames.length; i++) {
+            series.push({ label: svcnames[i] })
+        }
+	$.jqplot(id, data[1], {
+            cursor:{zoom:true, showTooltip:true},
+	    stackSeries: true,
+            title: {
+                text: 'cpu usage'
+            },
+            legend: {
+                show: true,
+                location: 'e',
+                placement: "outside"
+            },
+            gridPadding: {
+                right:90
+            },
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    seriesDefaults: {
+                fill: true,
+                shadowAngle: 135,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: series,
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'}
+		}
+	    }
+	});
+    });
+}
 function stats_mem(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
