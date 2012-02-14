@@ -1621,7 +1621,10 @@ def collector_status(cmd, auth):
     else:
         rows = db(db.svcmon.mon_nodname==nodename).select(db.svcmon.mon_svcname)
         svcs = map(lambda x: x.mon_svcname, rows)
-        q &= db.svcmon.mon_svcname.belongs(svcs)
+        if len(svcs) > 0:
+            q &= db.svcmon.mon_svcname.belongs(svcs)
+        else:
+            q &= db.svcmon.id < 0
     rows = db(q).select(db.svcmon.mon_nodname,
                         db.svcmon.mon_svcname,
                         db.nodes.environnement,

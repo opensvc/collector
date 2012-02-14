@@ -1700,7 +1700,7 @@ class table_comp_rulesets(HtmlTable):
                  db.comp_rulesets_rulesets,
                  labels={
                          'parent_rset_id': T('Parent ruleset'),
-                         'child_rset_id': T('Parent ruleset'),
+                         'child_rset_id': T('Child ruleset'),
                         },
                  _name='form_ruleset_attach',
             )
