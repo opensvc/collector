@@ -413,12 +413,11 @@ function table_ajax_submit(url, id, inputs, additional_inputs, input_name, addit
     })
 }
 function toggle_extra(url, id) {
-    e = document.getElementById(id)
-    if (e.style['display']=='none') {
-        e.style['display']='table-cell'
+    if ($('#'+id).css("display") == 'none') {
+        $('#'+id).show()
         sync_ajax(url, [], id, function(){eval_js_in_ajax_response(id)})
     } else {
-        e.style['display']='none'
+        $('#'+id).hide()
     }
 }
 function timepicker(e) {
@@ -684,7 +683,7 @@ function stats_avg_block_for_nodes(url, id) {
             ],
 	    axes: {
 		xaxis: {
-		    min: 0, 
+		    min: 0
 		},
 		yaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
@@ -777,7 +776,7 @@ function stats_avg_proc_for_nodes(url, id) {
             ],
 	    axes: {
 		xaxis: {
-		    min: 0, 
+		    min: 0
 		},
 		yaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
@@ -976,7 +975,7 @@ function stat_day(url, id) {
 		    renderer: $.jqplot.DateAxisRenderer
 		}, 
 		yaxis: {
-		    min: 0,
+		    min: 0
 		}
 	    }
 	});
@@ -1085,7 +1084,7 @@ function stat_day(url, id) {
 		    renderer: $.jqplot.DateAxisRenderer
 		}, 
 		yaxis: {
-		    min: 0,
+		    min: 0
 		}
 	    }
 	});
@@ -1683,7 +1682,7 @@ function stats_svc_cpu(url, id) {
 	    series: series,
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer, 
+		    renderer: $.jqplot.DateAxisRenderer
 		}, 
 		yaxis: {
 		    min: 0,
@@ -1902,7 +1901,7 @@ function stats_block(url, id) {
 		    tickOptions:{formatString:'<center>%F<br>%R</center>'}
 		}, 
 		yaxis: {
-		    min: 0,
+		    min: 0
 		}
 	    }
 	});
@@ -1940,7 +1939,7 @@ function stats_block(url, id) {
 		    tickOptions:{formatString:'<center>%F<br>%R</center>'}
 		}, 
 		yaxis: {
-		    min: 0,
+		    min: 0
 		}
 	    }
 	});
@@ -2070,7 +2069,7 @@ function stats_blockdev(url, id) {
                     tickOptions: {formatString:'%s', angle: -70}
 		}, 
 		yaxis: {
-		    min: 0,
+		    min: 0
 		}
 	    }
 	});
