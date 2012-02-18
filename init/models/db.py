@@ -28,7 +28,7 @@ else:                                         # else use a normal relational dat
 from gluon.tools import *
 auth=MyAuth(globals(),db)                      # authentication/authorization
 auth.settings.hmac_key='sha512:7755f108-1b83-45dc-8302-54be8f3616a1'
-auth.settings.expiration=36000
+auth.settings.expiration=36000000
 
 #
 # custom auth_user table. new field: email_notifications
