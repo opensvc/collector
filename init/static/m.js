@@ -1,6 +1,12 @@
 function format_filters(d) {
         fset_id = d[0]
         s = ""
+	if (fset_id == 0) {
+		selected = "selected"
+	} else {
+		selected = ""
+	}
+	s += "<option value=0 "+selected+">none</option>"
         for (id in d[1]) {
                 data = d[1][id]
                 if (data['id'] == fset_id) {
