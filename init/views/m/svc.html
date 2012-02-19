@@ -1,0 +1,167 @@
+<!DOCTYPE html> 
+
+<html> 
+	<head> 
+	<title>OpenSVC</title> 
+	<meta name="viewport" content="width=device-width, initial-scale=1"> 
+        <link rel="stylesheet" href="{{=URL(request.application,'static','m.css')}}" />
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.0.1/jquery.mobile-1.0.1.min.css" />
+	<script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
+	<script src="http://code.jquery.com/mobile/1.0.1/jquery.mobile-1.0.1.min.js"></script>
+</head> 
+<body> 
+
+<div data-role="page" id="svcpage">	
+
+	<div data-position="fixed" data-role="header">
+		<a href="{{=URL(r=request, f='nav')}}" data-rel="dialog">Nav</a> 
+		<h1>{{=svcname}}</h1>
+	</div><!-- /header -->
+
+	<div data-role="content">	
+		<div data-role="collapsible" id="svcinfo" data-collapsed="false">
+		   <h3>Information</h3>
+		</div>
+		<div data-role="collapsible" id="svcstatus">
+		   <h3>Status</h3>
+		</div>
+	</div><!-- /content -->
+
+	<div data-position="fixed" data-id="footer" data-role="footer" class="ui-bar">
+		<label for="select-choice-0" class="select">Filter:</label>
+		<select name="select-choice-0" id="filters">
+		</select>
+	</div>
+</div><!-- /page -->
+
+</body>
+
+<script>
+
+{{include '../static/m.js'}}
+
+function format_svcstatus(d) {
+	s = ""
+	for (var nodename in d) {
+		s += "<h3>"+nodename+"</h3>"
+		s += "<div class='ui-grid-b ui-collapsible-content'>"
+		data = d[nodename]
+		for (var id in data) {
+			s += "<div class='ui-block-a'>"+data[id]['rid']+"</div>"
+			s += "<div class='ui-block-b status_"+data[id]['res_status']+"'>"+data[id]['res_status']+"</div>"
+			s += "<div class='ui-block-c'>"+data[id]['res_desc']+"</div>"
+		}
+		s += "</div>"
+	}
+	return s
+}
+
+function format_svcinfo(d) {
+	s = "<div class='ui-grid-a ui-collapsible-content'>"
+
+        s += "<div class='ui-block-a'><strong>Type</strong></div>"
+        s += "<div class='ui-block-b'>"+d['svc_type']+"</div>"
+
+        s += "<div class='ui-block-a'><strong>High Availability</strong></div>"
+	if (d['svc_ha'] == 1) { ha = "yes" } else { ha = "no" }
+        s += "<div class='ui-block-b'>"+ha+"</div>"
+
+        s += "<div class='ui-block-a'><strong>Cluster Type</strong></div>"
+        s += "<div class='ui-block-b'>"+d['svc_cluster_type']+"</div>"
+
+	if (d['svc_cluster_type'] == 'flex' || d['svc_cluster_type'] == 'autoflex') {
+		s += "<div class='ui-block-a'><strong>Flex minimum nodes</strong></div>"
+		s += "<div class='ui-block-b'>"+d['svc_flex_min_nodes']+"</div>"
+
+		s += "<div class='ui-block-a'><strong>Flex maximum nodes</strong></div>"
+		s += "<div class='ui-block-b'>"+d['svc_flex_max_nodes']+"</div>"
+
+		s += "<div class='ui-block-a'><strong>Flex cpu low threshold</strong></div>"
+		s += "<div class='ui-block-b'>"+d['svc_flex_cpu_low_threshold']+"</div>"
+
+		s += "<div class='ui-block-a'><strong>Flex cpu high threshold</strong></div>"
+		s += "<div class='ui-block-b'>"+d['svc_flex_cpu_high_threshold']+"</div>"
+	}
+
+        s += "<div class='ui-block-a'><strong>Container Type</strong></div>"
+        s += "<div class='ui-block-b'>"+d['svc_containertype']+"</div>"
+
+	if (d['svc_vmname'].length > 0) {
+		s += "<div class='ui-block-a'><strong>Container name</strong></div>"
+		s += "<div class='ui-block-b'>"+d['svc_vmname']+"</div>"
+
+		s += "<div class='ui-block-a'><strong>Container OS</strong></div>"
+		s += "<div class='ui-block-b'>"+d['svc_guestos']+"</div>"
+
+		s += "<div class='ui-block-a'><strong>vcpus</strong></div>"
+		s += "<div class='ui-block-b'>"+d['svc_vcpus']+"</div>"
+
+		s += "<div class='ui-block-a'><strong>vmem</strong></div>"
+		s += "<div class='ui-block-b'>"+d['svc_vmem']+"</div>"
+	}
+
+        s += "<div class='ui-block-a'><strong>Created</strong></div>"
+        s += "<div class='ui-block-b'>"+d['svc_created']+"</div>"
+
+        s += "<div class='ui-block-a'><strong>Updated</strong></div>"
+        s += "<div class='ui-block-b'>"+d['updated']+"</div>"
+
+        s += "<div class='ui-block-a'><strong>App Code</strong></div>"
+        s += "<div class='ui-block-b'>"+d['svc_app']+"</div>"
+
+        s += "<div class='ui-block-a'><strong>Comment</strong></div>"
+        s += "<div class='ui-block-b'>"+d['svc_comment']+"</div>"
+
+        s += "<div class='ui-block-a'><strong>Availability Status</strong></div>"
+        s += "<div class='ui-block-b status_"+d['svc_availstatus']+"'>"+d['svc_availstatus']+"</div>"
+
+        s += "<div class='ui-block-a'><strong>Overall Status</strong></div>"
+        s += "<div class='ui-block-b status_"+d['svc_status']+"'>"+d['svc_status']+"</div>"
+
+	s += "</div>"
+
+	s += "<div data-role='collapsible' class='ui-collapsible ui-collapsible-collapsed' data-content-theme='d' data-theme='d'>"
+	s += "<h3>Configuration file</h3>"
+	s += "<code>"+d['svc_envfile'].replace(/\\n/g, "<br\>")+"</code>"
+	return s
+}
+
+function init_svcinfo(event, data) {
+        if (svcinfo_initialized) {
+		return
+	}
+	$.getJSON("{{=URL(r=request, f='call/json/json_service', args=[svcname])}}", function(data) {
+		e = format_svcinfo(data)
+		$("#svcinfo").children("div").html(e).trigger('create')
+		$("#svcinfo").collapsible({refresh:true})
+	});
+	svcinfo_initialized = true
+}
+
+function init_svcstatus(event, data) {
+        if (svcstatus_initialized) {
+		return
+	}
+	$.getJSON("{{=URL(r=request, f='call/json/json_service_resstatus', args=[svcname])}}", function(data) {
+		e = format_svcstatus(data)
+		$("#svcstatus").children("div").html(e).trigger('create')
+		$("#svcstatus").collapsible({refresh:true})
+	});
+	svcstatus_initialized = true
+}
+
+function init(event, data) {
+	init_svcstatus(event, data)
+	init_filters(event, data)
+}
+
+svcinfo_initialized = false
+svcstatus_initialized = false
+
+$('#svcpage').bind('pageinit', init)
+$('#svcinfo').bind('expand', init_svcinfo)
+$('#svcstatus').bind('expand', init_svcstatus)
+
+</script>
+
+</html>

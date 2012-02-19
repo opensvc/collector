@@ -21,6 +21,64 @@ class table_compare(HtmlTable):
         self.object_list = []
         self.nodatabanner = False
         self.additional_tools.append('compare')
+        self.additional_tools.append('compare_add')
+
+    def compare_add(self):
+        d = DIV(
+              A(
+                T("Add scenario"),
+                _class='add16',
+                _onclick="""
+                  click_toggle_vis(event,'%(div)s', 'block');
+                """%dict(div='compare_add'),
+              ),
+              DIV(
+                self.form_compare_add(),
+                _style='display:none',
+                _class='white_float',
+                _name='compare_add',
+                _id='compare_add',
+              ),
+              _class="floatw",
+            )
+        return d
+
+    def form_compare_add(self):
+        name = DIV(
+                 T("Name"),
+                 INPUT(
+                   _id="compare_name",
+                 )
+               )
+        q = db.gen_filtersets.id > 0
+        o = db.gen_filtersets.fset_name
+        rows = db(q).select()
+        opts = []
+        for row in rows:
+            o = DIV(
+                  DIV(
+                    INPUT(
+                      _type="checkbox",
+                      _name="ckfset",
+                      _id="ckfset_%d"%row.id,
+                    ),
+                  ),
+                  DIV(
+                    row.fset_name,
+                  ),
+                )
+            opts.append(o)
+        filters = DIV(opts)
+        submit = INPUT(
+                   _type="submit",
+                   _onclick=self.ajax_submit(additional_inputs=['ckfset'],args=['compare_add']),
+                 )
+        d = DIV(
+              name,
+              filters,
+              submit,
+            )
+        return d
 
     def format_compare_option(self, row):
         if row is None:

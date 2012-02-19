@@ -1,0 +1,58 @@
+<!DOCTYPE html> 
+<html> 
+	<head> 
+	<title>OpenSVC</title> 
+	<meta name="viewport" content="width=device-width, initial-scale=1"> 
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.0.1/jquery.mobile-1.0.1.min.css" />
+	<script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
+	<script src="http://code.jquery.com/mobile/1.0.1/jquery.mobile-1.0.1.min.js"></script>
+</head> 
+<body> 
+
+<div data-role="page" id="servicepage">	
+
+	<div data-position="fixed" data-role="header" id="serviceheader">
+		<a href="{{=URL(r=request, f='nav')}}" data-rel="dialog" data-icon="home">Nav</a> 
+		<h1>OpenSVC services</h1>
+	</div><!-- /header -->
+
+	<div data-role="content">	
+		<ul id="servicelist" data-role="listview" data-theme="g" data-filter="true">
+		</ul>
+	</div><!-- /content -->
+
+	<div data-position="fixed" data-id="footer" data-role="footer" class="ui-bar">
+		<label for="select-choice-0" class="select">Filter:</label>
+		<select name="select-choice-0" id="select-choice-1">
+		   <option value="standard">Standard: 7 day</option>
+		   <option value="rush">Rush: 3 days</option>
+		   <option value="express">Express: next day</option>
+		   <option value="overnight">Overnight</option>
+		</select>
+	</div>
+</div><!-- /page -->
+
+</body>
+
+<script>
+
+function format_service(svcname) {
+	return svcname
+}
+
+function init_servicelist(event, data) {
+	$.getJSON("{{=URL(r=request, f='call/json/json_services')}}", function(data) {
+		$("#servicelist").html("")
+		for (i=0; i<data.length; i++) {
+			e = "<li><a href='Acura.html'>" + format_service(data[i]) + "</a></li>"
+			$("#servicelist").append(e)
+			$('#servicelist').listview('refresh')
+		}
+	});
+}
+
+$('#servicepage').bind("pageinit", init_servicelist)
+
+</script>
+
+</html>
