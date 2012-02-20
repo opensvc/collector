@@ -49,3 +49,37 @@ function format_node(data) {
         return s
 }
 
+function format_alert(d) {
+        s =  "<div style='display:table;width:100%'>"
+        s +=  "<div style='display:table-row'>"
+        s +=  "<div class='sev sev"+d['dash_severity']+"'>&nbsp;</div>"
+        s +=  "<div style='display:table-cell;padding-left:1em;vertical-align:middle'>"
+        s +=   "<div class='ui-li-desc'>"+d['dash_created']+"</div>"
+        s +=   "<div>"+d['dash_type']+"</div>"
+        s +=   "<div>"+d['body']+"</div>"
+        s +=  "</div>"
+        s +=  "<div style='display:table-cell;padding-left:1em;width:10em'>"
+        if (d['dash_svcname'].length > 0 || d['dash_nodename'].length > 0) {
+                s += "<div data-type='vertical' data-role='controlgroup'>"
+                if (d['dash_svcname'].length > 0) {
+                        s += "<a rel='external' href='{{=URL(r=request, f='svc')}}/"+d['dash_svcname']+"' data-role='button'>"+d['dash_svcname']+"</a>"
+                }
+                if (d['dash_nodename'].length > 0) {
+                        s += "<a rel='external' href='{{=URL(r=request, f='node')}}/"+d['dash_nodename']+"' data-role='button'>"+d['dash_nodename']+"</a>"
+                }
+                s += "</div>"
+        }
+        s +=  "</div>"
+        s += "</div>"
+        s += "</div>"
+        return s
+}
+
+function format_alerts(data) {
+	s = ""
+	for (i=0; i<data.length; i++) {
+		s += "<li>" + format_alert(data[i]) + "</li>"
+	}
+	return s
+}
+

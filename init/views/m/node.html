@@ -27,6 +27,11 @@
 			<ul id="servicelist" data-role="listview" data-theme="g">
 			</ul>
 		</div>
+                <div data-role="collapsible" id="alerts">
+                        <h3>Alerts</h3>
+                        <ul id="alertlist" data-role="listview" data-theme="g">
+                        </ul>
+                </div>
 	</div><!-- /content -->
 
 	<div data-position="fixed" data-id="footer" data-role="footer" class="ui-bar">
@@ -203,11 +208,25 @@ function init_servicelist(event, data) {
         });
 }
 
+function init_alerts(event, data) {
+        if (alerts_initialized) {
+                return
+        }
+        $.getJSON("{{=URL(r=request, f='call/json/json_node_alerts', args=[nodename])}}", function(data) {
+                e = format_alerts(data)
+                $("#alertlist").append(e).trigger('create')
+                $("#alerts").collapsible({refresh:true})
+        });
+        alerts_initialized = true
+}
+
 nodeinfo_initialized = false
 nodeservices_initialized = false
+alerts_initialized = false
 
 $('#nodepage').bind('pageinit', init)
 $('#nodeinfo').bind('expand', init_nodeinfo)
+$('#alerts').bind('expand', init_alerts)
 
 </script>
 

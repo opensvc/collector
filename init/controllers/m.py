@@ -164,10 +164,36 @@ def json_services(start, end, s):
 
 @service.json
 def json_alerts(start, end, s):
-    start = int(start)
-    end = int(end)
+    return get_alerts(start, end, s)
+
+@service.json
+def json_node_alerts(nodename):
+    return get_alerts(nodename=nodename)
+
+@service.json
+def json_service_alerts(svcname):
+    return get_alerts(svcname=svcname)
+
+def get_alerts(start=None, end=None, s="", svcname=None, nodename=None):
+    if start is None:
+        start = 0
+    else:
+        start = int(start)
+
+    if end is None:
+        end = 50
+    else:
+        end = int(end)
+
     o = ~db.dashboard.dash_severity
     q = db.dashboard.id > 0
+
+    if svcname is not None:
+        q &= db.dashboard.dash_svcname == svcname
+
+    if nodename is not None:
+        q &= db.dashboard.dash_nodename == nodename
+
     if len(s) > 0 and s != "null":
         s = "%"+s+"%"
         q &= (db.dashboard.dash_dict.like(s) | \
@@ -175,6 +201,7 @@ def json_alerts(start, end, s):
               db.dashboard.dash_svcname.like(s) | \
               db.dashboard.dash_nodename.like(s) | \
               db.dashboard.dash_type.like(s))
+
     q &= _where(None, 'dashboard', domain_perms(), 'dash_svcname')|_where(None, 'dashboard', domain_perms(), 'dash_nodename')
     q = apply_filters(q, db.dashboard.dash_nodename, db.dashboard.dash_svcname)
 
