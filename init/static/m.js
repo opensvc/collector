@@ -143,33 +143,27 @@ function format_action(d) {
 	url = "{{=URL(r=request, c='static', f='foo')}}"
         s =  "<div style='display:table;width:100%'>"
         s +=  "<div style='display:table-row'>"
-        s +=  "<div class='sev sev"+d['status']+"'>&nbsp;</div>"
-        s +=  "<div style='display:table-cell;padding-left:1em;vertical-align:middle'>"
-        s +=   "<div class='ui-li-desc'>"+d['begin']+"</div>"
-        s +=   "<div class='ui-li-desc'>pid: "+d['pid']+"</div>"
-        s +=   "<a data-role='button' rel='external' data-rel='dialog' href={{=URL(r=request, f='show_action')}}/"+d['id']+">"
-        s +=    "<img src='"+url.replace("foo", action_img_h[d['action']])+"'>"
+        s +=   "<div class='sev sev"+d['status']+"'>&nbsp;</div>"
+        s +=   "<div style='display:table-cell;padding-left:1em;vertical-align:middle'>"
+        s +=    "<div data-type='horizontal' data-role='controlgroup'>"
+        s +=     "<a style='width:33%' data-role='button' rel='external' data-rel='dialog' href={{=URL(r=request, f='show_action')}}/"+d['id']+">"
+        s +=      "<img width='12px' src='"+url.replace("foo", action_img_h[d['action']])+"'>"
         if (d['cron'] == 1) {
-		s += "<img style='padding-left:6px' src='{{=URL(r=request, c='static', f='time16.png')}}'>"
+		s += "<img width='12px' style='padding-left:6px' src='{{=URL(r=request, c='static', f='time16.png')}}'>"
 	}
-        s +=     "<span style='padding-left:6px'>"+d['action']+"</span>"
-	s +=    "</a>"
-        s +=   "<div>"
-        s +=   "</div>"
+        s +=      "<span style='padding-left:6px'>"+d['action']+"</span>"
+	s +=     "</a>"
+	s +=     "<a style='width:33%' rel='external' href='{{=URL(r=request, f='svc')}}/"+d['svcname']+"' data-role='button'>"+d['svcname']+"</a>"
+	s +=     "<a style='width:33%' rel='external' href='{{=URL(r=request, f='node')}}/"+d['hostname']+"' data-role='button'>"+d['hostname']+"</a>"
+	s +=    "</div>"
+        s +=    "<div class='ui-li-desc'>pid: "+d['pid']+"</div>"
+        s +=    "<div class='ui-li-desc'>"+d['begin']+"</div>"
+	if (d['ack'] == 1) {
+		s += "<div class='ui-li-desc'>Acked by "+d['acked_by']+" on "+d['acked_date']+" with comment:</div>"
+		s += "<div class='ui-li-desc'>"+d['acked_comment']+"</div>"
+	}
+	s +=   "</div>"
         s +=  "</div>"
-        s +=  "<div style='display:table-cell;padding-left:1em;width:10em'>"
-        if (d['svcname'].length > 0 || d['hostname'].length > 0) {
-                s += "<div data-type='vertical' data-role='controlgroup'>"
-                if (d['svcname'].length > 0) {
-                        s += "<a rel='external' href='{{=URL(r=request, f='svc')}}/"+d['svcname']+"' data-role='button'>"+d['svcname']+"</a>"
-                }
-                if (d['hostname'].length > 0) {
-                        s += "<a rel='external' href='{{=URL(r=request, f='node')}}/"+d['hostname']+"' data-role='button'>"+d['hostname']+"</a>"
-                }
-                s += "</div>"
-        }
-        s +=  "</div>"
-        s += "</div>"
         s += "</div>"
         return s
 }

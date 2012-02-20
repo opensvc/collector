@@ -274,7 +274,7 @@ def get_actions(start=None, end=None, s="", svcname=None, nodename=None):
               db.SVCactions.status.like(s))
 
     q &= _where(None, 'SVCactions', domain_perms(), 'svcname')
-    q = apply_filters(q, db.SVCactions.hostname, db.SVCactions.svcname)
+    q = apply_filters(q, db.SVCactions.hostname, None)
 
     rows = db(q).select(orderby=o,
                         limitby=(start, end))
