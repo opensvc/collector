@@ -1,0 +1,216 @@
+<!DOCTYPE html> 
+
+<html> 
+	<head> 
+	<title>OpenSVC</title> 
+	<meta name="viewport" content="width=device-width, initial-scale=1"> 
+        <link rel="stylesheet" href="{{=URL(request.application,'static','m.css')}}" />
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.0.1/jquery.mobile-1.0.1.min.css" />
+	<script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
+	<script src="http://code.jquery.com/mobile/1.0.1/jquery.mobile-1.0.1.min.js"></script>
+</head> 
+<body> 
+
+<div data-role="page" id="nodepage">	
+
+	<div data-position="fixed" data-role="header">
+		<a href="{{=URL(r=request, f='nav')}}" data-rel="dialog">Nav</a> 
+		<h1>{{=nodename}}</h1>
+	</div><!-- /header -->
+
+	<div data-role="content">	
+		<div data-role="collapsible" id="nodeinfo" data-collapsed="false">
+		   <h3>Information</h3>
+		</div>
+		<div data-role="collapsible" id="nodeservices">
+		   <h3>Services</h3>
+		</div>
+	</div><!-- /content -->
+
+	<div data-position="fixed" data-id="footer" data-role="footer" class="ui-bar">
+		<label for="select-choice-0" class="select">Filter:</label>
+		<select name="select-choice-0" id="filters">
+		</select>
+	</div>
+</div><!-- /page -->
+
+</body>
+
+<script>
+
+{{include '../static/m.js'}}
+
+function format_nodeservices(d) {
+	s = ""
+	for (var nodename in d) {
+		s += "<h3>"+nodename+"</h3>"
+		s += "<div class='ui-grid-b ui-collapsible-content'>"
+		data = d[nodename]
+		for (var id in data) {
+			s += "<div class='ui-block-a'>"+data[id]['rid']+"</div>"
+			s += "<div class='ui-block-b status_"+data[id]['res_status']+"'>"+data[id]['res_status']+"</div>"
+			s += "<div class='ui-block-c'>"+data[id]['res_desc']+"</div>"
+		}
+		s += "</div>"
+	}
+	return s
+}
+
+function format_nodeinfo(d) {
+	s = ""
+
+        s += "<div data-role='collapsible' class='ui-collapsible' data-content-theme='d' data-theme='d' data-collapsed='false'>"
+        s +=  "<h3>Administrative</h3>"
+	s +=  "<div class='ui-grid-a'>"
+        s +=   "<div class='ui-block-a'><strong>System Team</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['team_responsible']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Integration Team</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['team_integ']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Production Team</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['team_support']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Project</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['project']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Environment</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['environnement']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Role</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['role']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Type</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['type']+" MB</div>"
+        s +=   "<div class='ui-block-a'><strong>Warranty End</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['warranty_end']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Updated</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['updated']+"</div>"
+	s +=  "</div>"
+	s += "</div>"
+
+        s += "<div data-role='collapsible' class='ui-collapsible' data-content-theme='d' data-theme='d' data-collapsed='false'>"
+        s +=  "<h3>Hardware</h3>"
+	s +=  "<div class='ui-grid-a'>"
+        s +=   "<div class='ui-block-a'><strong>Model</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['model']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Serial</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['serial']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>CPU Frequency</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['cpu_freq']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>CPU Cores</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['cpu_cores']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>CPU Dies</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['cpu_dies']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>CPU Vendor</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['cpu_vendor']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Memory Size</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['mem_bytes']+" MB</div>"
+        s +=   "<div class='ui-block-a'><strong>Memory Slots</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['mem_slots']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Memory Banks</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['mem_banks']+"</div>"
+	s +=  "</div>"
+	s += "</div>"
+
+        s += "<div data-role='collapsible' class='ui-collapsible' data-content-theme='d' data-theme='d' data-collapsed='false'>"
+        s +=  "<h3>Operating system</h3>"
+	s +=  "<div class='ui-grid-a'>"
+        s +=   "<div class='ui-block-a'><strong>Vendor</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['os_vendor']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Name</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['os_name']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Release</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['os_release']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Update</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['os_update']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Architecture</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['os_arch']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Kernel</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['os_kernel']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Segment</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['os_segment']+"</div>"
+	s +=  "</div>"
+	s += "</div>"
+
+        s += "<div data-role='collapsible' class='ui-collapsible' data-content-theme='d' data-theme='d' data-collapsed='false'>"
+        s +=  "<h3>Location</h3>"
+	s +=  "<div class='ui-grid-a'>"
+        s +=   "<div class='ui-block-a'><strong>Country</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['loc_country']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>City</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['loc_city']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Address</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['loc_addr']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Zip</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['loc_zip']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Building</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['loc_building']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Floor</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['loc_floor']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Room</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['loc_room']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Rack</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['loc_rack']+"</div>"
+	s +=  "</div>"
+	s += "</div>"
+
+        s += "<div data-role='collapsible' class='ui-collapsible' data-content-theme='d' data-theme='d' data-collapsed='false'>"
+        s +=  "<h3>Power</h3>"
+	s +=  "<div class='ui-grid-a'>"
+        s +=   "<div class='ui-block-a'><strong>Cabinet #1</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['power_cabinet1']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Cabinet #2</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['power_cabinet2']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Breaker #1</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['power_breaker1']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Breaker #2</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['power_breaker2']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Power Supplies</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['power_supply_nb']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Power Protect</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['power_protect']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Power Protect Breaker</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['power_protect_breaker']+"</div>"
+        s +=   "<div class='ui-block-a'><strong>Rack</strong></div>"
+        s +=   "<div class='ui-block-b'>"+d['loc_rack']+"</div>"
+	s +=  "</div>"
+	s += "</div>"
+
+	return s
+}
+
+function init_nodeinfo(event, data) {
+        if (nodeinfo_initialized) {
+		return
+	}
+	$.getJSON("{{=URL(r=request, f='call/json/json_node', args=[nodename])}}", function(data) {
+		e = format_nodeinfo(data)
+		$("#nodeinfo").children("div").html(e).trigger('create')
+		$("#nodeinfo").collapsible({refresh:true})
+		$("#nodeservices").children("[data-role=collapsible]").collapsible({refresh:true})
+	});
+	nodeinfo_initialized = true
+}
+
+function init_nodeservices(event, data) {
+        if (nodeservices_initialized) {
+		return
+	}
+	$.getJSON("{{=URL(r=request, f='call/json/json_node_services', args=[nodename])}}", function(data) {
+		e = format_nodeservices(data)
+		$("#nodeservices").children("div").html(e).trigger('create')
+		$("#nodeservices").collapsible({refresh:true})
+	});
+	nodeservices_initialized = true
+}
+
+function init(event, data) {
+	init_nodeservices(event, data)
+	init_filters(event, data)
+}
+
+nodeinfo_initialized = false
+nodeservices_initialized = false
+
+$('#nodepage').bind('pageinit', init)
+$('#nodeinfo').bind('expand', init_nodeinfo)
+$('#nodeservices').bind('expand', init_nodeservices)
+
+</script>
+
+</html>
