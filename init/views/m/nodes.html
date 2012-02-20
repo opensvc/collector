@@ -1,0 +1,68 @@
+<!DOCTYPE html> 
+
+<html> 
+	<head> 
+	<title>OpenSVC</title> 
+	<meta name="viewport" content="width=device-width, initial-scale=1"> 
+        <link rel="stylesheet" href="{{=URL(request.application,'static','m.css')}}" />
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.0.1/jquery.mobile-1.0.1.min.css" />
+	<script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
+	<script src="http://code.jquery.com/mobile/1.0.1/jquery.mobile-1.0.1.min.js"></script>
+</head> 
+<body> 
+
+<div data-role="page" id="nodepage">	
+
+	<div data-position="fixed" data-role="header">
+		<a href="{{=URL(r=request, f='nav')}}" data-rel="dialog" data-icon="home">Nav</a> 
+		<h1>OSVC nodes</h1>
+	</div><!-- /header -->
+
+	<div data-role="content">	
+		<ul id="nodelist" data-role="listview" data-theme="g" data-filter="true">
+		</ul>
+	</div><!-- /content -->
+
+	<div data-position="fixed" data-id="footer" data-role="footer" class="ui-bar">
+		<label for="select-choice-0" class="select">Filter:</label>
+		<select name="select-choice-0" id="filters">
+		</select>
+	</div>
+</div><!-- /page -->
+
+</body>
+
+<script>
+
+{{include '../static/m.js'}}
+
+function init_nodelist(event, data) {
+        append_nodelist(0, 20, null) 
+}
+
+function append_nodelist(start, end, s) {
+	$.getJSON("{{=URL(r=request, f='call/json/json_nodes')}}/"+start+"/"+end+"/"+s, function(data) {
+		$("#nodelist").html("")
+		e = format_node(data)
+		$("#nodelist").append(e)
+		$('#nodelist').listview('refresh')
+	});
+}
+
+function search(event, data) {
+        s = $("[data-type=search]").val()
+        $("#nodelist").empty()
+        append_nodelist(0, 20, s) 
+}
+
+function init(event, data) {
+        init_nodelist(event, data)
+        init_filters(event, data)
+        $("[role=search]").bind('submit', search)
+}
+
+$('#nodepage').bind("pageinit", init)
+
+</script>
+
+</html>
