@@ -10,7 +10,7 @@ def call():
 
 @auth.requires_login()
 def index():
-    return dict()
+    redirect(URL(r=request, f='alerts'))
 
 @auth.requires_login()
 def nav():
@@ -22,11 +22,60 @@ def alerts():
 
 @auth.requires_login()
 def node():
-    return dict()
+    return dict(nodename=request.args[0])
 
 @auth.requires_login()
 def svc():
     return dict(svcname=request.args[0])
+
+@service.json
+def json_node(nodename):
+    q = db.nodes.nodename == nodename
+    q &= _where(None, 'nodes', domain_perms(), 'nodename')
+    row = db(q).select(
+            db.nodes.warranty_end,
+            db.nodes.status,
+            db.nodes.role,
+            db.nodes.environnement,
+            db.nodes.mem_bytes,
+            db.nodes.mem_banks,
+            db.nodes.mem_slots,
+            db.nodes.os_vendor,
+            db.nodes.os_name,
+            db.nodes.os_kernel,
+            db.nodes.os_release,
+            db.nodes.os_arch,
+            db.nodes.cpu_freq,
+            db.nodes.cpu_dies,
+            db.nodes.cpu_cores,
+            db.nodes.cpu_model,
+            db.nodes.cpu_vendor,
+            db.nodes.type,
+            db.nodes.nodename,
+            db.nodes.team_responsible,
+            db.nodes.team_integ,
+            db.nodes.team_support,
+            db.nodes.project,
+            db.nodes.serial,
+            db.nodes.model,
+            db.nodes.loc_addr,
+            db.nodes.loc_city,
+            db.nodes.loc_zip,
+            db.nodes.loc_rack,
+            db.nodes.loc_floor,
+            db.nodes.loc_country,
+            db.nodes.loc_building,
+            db.nodes.loc_room,
+            db.nodes.power_supply_nb,
+            db.nodes.power_cabinet1,
+            db.nodes.power_cabinet2,
+            db.nodes.power_protect,
+            db.nodes.power_protect_breaker,
+            db.nodes.power_breaker1,
+            db.nodes.power_breaker2,
+            db.nodes.updated,
+          ).first()
+    return row
 
 @service.json
 def json_service(svcname):
@@ -105,11 +154,14 @@ def json_alerts(start, end, s):
 
     l = []
     for row in rows:
-        try:
-            d = json.loads(row.dash_dict)
-            body = row.dash_fmt % d
-        except:
-            body = "alert body corrupted"
+        if len(row.dash_dict) > 0 and len(row.dash_fmt) > 0:
+            try:
+                d = json.loads(row.dash_dict)
+                body = row.dash_fmt % d
+            except:
+                body = "alert body corrupted"
+        else:
+            body = ""
         h = {'body': body}
         for field in row:
             if field in ('update_record', 'delete_record'):
