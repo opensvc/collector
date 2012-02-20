@@ -85,17 +85,38 @@ def json_services():
     return l
 
 @service.json
-def json_alerts():
-    start = 0
-    end = 20
+def json_alerts(start, end, s):
+    start = int(start)
+    end = int(end)
     o = ~db.dashboard.dash_severity
     q = db.dashboard.id > 0
+    if len(s) > 0 and s != "null":
+        s = "%"+s+"%"
+        q &= (db.dashboard.dash_dict.like(s) | \
+              db.dashboard.dash_fmt.like(s) | \
+              db.dashboard.dash_svcname.like(s) | \
+              db.dashboard.dash_nodename.like(s) | \
+              db.dashboard.dash_type.like(s))
     q &= _where(None, 'dashboard', domain_perms(), 'dash_svcname')|_where(None, 'dashboard', domain_perms(), 'dash_nodename')
     q = apply_filters(q, db.dashboard.dash_nodename, db.dashboard.dash_svcname)
 
     rows = db(q).select(orderby=o,
                         limitby=(start, end))
-    return rows
+
+    l = []
+    for row in rows:
+        try:
+            d = json.loads(row.dash_dict)
+            body = row.dash_fmt % d
+        except:
+            body = "alert body corrupted"
+        h = {'body': body}
+        for field in row:
+            if field in ('update_record', 'delete_record'):
+                continue
+            h[field] = row[field]
+        l.append(h)
+    return l
 
 @service.json
 def json_filters():
