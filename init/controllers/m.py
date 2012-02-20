@@ -21,12 +21,20 @@ def alerts():
     return dict()
 
 @auth.requires_login()
+def actions():
+    return dict()
+
+@auth.requires_login()
 def node():
     return dict(nodename=request.args[0])
 
 @auth.requires_login()
 def svc():
     return dict(svcname=request.args[0])
+
+@auth.requires_login()
+def show_action():
+    return dict(action_id=request.args[0])
 
 @service.json
 def json_node(nodename):
@@ -225,6 +233,70 @@ def get_alerts(start=None, end=None, s="", svcname=None, nodename=None):
             h[field] = row[field]
         l.append(h)
     return l
+
+@service.json
+def json_actions(start, end, s):
+    return get_actions(start, end, s)
+
+@service.json
+def json_node_actions(nodename):
+    return get_actions(nodename=nodename)
+
+@service.json
+def json_service_actions(svcname):
+    return get_actions(svcname=svcname)
+
+def get_actions(start=None, end=None, s="", svcname=None, nodename=None):
+    if start is None:
+        start = 0
+    else:
+        start = int(start)
+
+    if end is None:
+        end = 50
+    else:
+        end = int(end)
+
+    o = ~db.SVCactions.id
+    q = db.SVCactions.status_log == None
+
+    if svcname is not None:
+        q &= db.SVCactions.svcname == svcname
+
+    if nodename is not None:
+        q &= db.SVCactions.hostname == nodename
+
+    if len(s) > 0 and s != "null":
+        s = "%"+s+"%"
+        q &= (db.SVCactions.svcname.like(s) | \
+              db.SVCactions.hostname.like(s) | \
+              db.SVCactions.action.like(s) | \
+              db.SVCactions.status.like(s))
+
+    q &= _where(None, 'SVCactions', domain_perms(), 'svcname')
+    q = apply_filters(q, db.SVCactions.hostname, db.SVCactions.svcname)
+
+    rows = db(q).select(orderby=o,
+                        limitby=(start, end))
+    return rows
+
+@service.json
+def json_show_action(action_id):
+    q = db.SVCactions.id == action_id
+    action = db(q).select().first()
+    if action.pid is None:
+        return []
+
+    o = ~db.SVCactions.id
+    q = db.SVCactions.pid.belongs(map(lambda x: int(x), action.pid.split(',')))
+    q &= ((db.SVCactions.hostname == action.hostname) | \
+          (db.SVCactions.svcname == action.svcname))
+    q &= db.SVCactions.begin >= action.begin
+    q &= db.SVCactions.begin <= datetime.datetime.now() + datetime.timedelta(days=1)
+    q &= _where(None, 'SVCactions', domain_perms(), 'svcname')
+
+    rows = db(q).select(orderby=o)
+    return rows
 
 @service.json
 def json_filters():
