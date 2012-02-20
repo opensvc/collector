@@ -43,7 +43,7 @@
 function format_svcstatus(d) {
 	s = ""
 	for (var nodename in d) {
-		s += "<h3>"+nodename+"</h3>"
+		s += "<a rel='external' href='{{=URL(r=request, f='node')}}/"+nodename+"'>"+nodename+"</a>"
 		s += "<div class='ui-grid-b ui-collapsible-content'>"
 		data = d[nodename]
 		for (var id in data) {

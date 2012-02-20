@@ -33,3 +33,19 @@ function select_filter(event, data) {
         });
 }
 
+function format_service(data) {
+	s = ""
+	for (i=0; i<data.length; i++) {
+		s += "<li><a rel='external' href='{{=URL(r=request, f='svc')}}/"+data[i]+"'>" + data[i] + "</a></li>"
+	}
+        return s
+}
+
+function format_node(data) {
+	s = ""
+	for (i=0; i<data.length; i++) {
+		s += "<li><a rel='external' href='{{=URL(r=request, f='node')}}/"+data[i]+"'>" + data[i] + "</a></li>"
+	}
+        return s
+}
+

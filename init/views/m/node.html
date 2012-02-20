@@ -20,10 +20,12 @@
 
 	<div data-role="content">	
 		<div data-role="collapsible" id="nodeinfo" data-collapsed="false">
-		   <h3>Information</h3>
+			<h3>Information</h3>
 		</div>
-		<div data-role="collapsible" id="nodeservices">
-		   <h3>Services</h3>
+		<div data-role="collapsible" id="nodeservices" data-collapsed="false">
+			<h3>Services</h3>
+			<ul id="servicelist" data-role="listview" data-theme="g">
+			</ul>
 		</div>
 	</div><!-- /content -->
 
@@ -75,7 +77,7 @@ function format_nodeinfo(d) {
         s +=   "<div class='ui-block-a'><strong>Role</strong></div>"
         s +=   "<div class='ui-block-b'>"+d['role']+"</div>"
         s +=   "<div class='ui-block-a'><strong>Type</strong></div>"
-        s +=   "<div class='ui-block-b'>"+d['type']+" MB</div>"
+        s +=   "<div class='ui-block-b'>"+d['type']+"</div>"
         s +=   "<div class='ui-block-a'><strong>Warranty End</strong></div>"
         s +=   "<div class='ui-block-b'>"+d['warranty_end']+"</div>"
         s +=   "<div class='ui-block-a'><strong>Updated</strong></div>"
@@ -187,21 +189,18 @@ function init_nodeinfo(event, data) {
 	nodeinfo_initialized = true
 }
 
-function init_nodeservices(event, data) {
-        if (nodeservices_initialized) {
-		return
-	}
-	$.getJSON("{{=URL(r=request, f='call/json/json_node_services', args=[nodename])}}", function(data) {
-		e = format_nodeservices(data)
-		$("#nodeservices").children("div").html(e).trigger('create')
-		$("#nodeservices").collapsible({refresh:true})
-	});
-	nodeservices_initialized = true
+function init(event, data) {
+	init_servicelist(event, data)
+	init_filters(event, data)
 }
 
-function init(event, data) {
-	init_nodeservices(event, data)
-	init_filters(event, data)
+function init_servicelist(event, data) {
+        $.getJSON("{{=URL(r=request, f='call/json/json_node_services', args=[nodename])}}", function(data) {
+		$("#servicelist").html("")
+		e = format_service(data)
+		$("#servicelist").append(e)
+		$('#servicelist').listview('refresh')
+        });
 }
 
 nodeinfo_initialized = false
@@ -209,7 +208,6 @@ nodeservices_initialized = false
 
 $('#nodepage').bind('pageinit', init)
 $('#nodeinfo').bind('expand', init_nodeinfo)
-$('#nodeservices').bind('expand', init_nodeservices)
 
 </script>
 

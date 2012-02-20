@@ -36,24 +36,29 @@
 
 {{include '../static/m.js'}}
 
-function format_service(svcname) {
-	return svcname
+function init_servicelist(event, data) {
+        append_servicelist(0, 20, null) 
 }
 
-function init_servicelist(event, data) {
-	$.getJSON("{{=URL(r=request, f='call/json/json_services')}}", function(data) {
+function append_servicelist(start, end, s) {
+	$.getJSON("{{=URL(r=request, f='call/json/json_services')}}/"+start+"/"+end+"/"+s, function(data) {
 		$("#servicelist").html("")
-		for (i=0; i<data.length; i++) {
-			e = "<li><a rel='external' href='{{=URL(r=request, f='svc')}}/"+data[i]+"'>" + format_service(data[i]) + "</a></li>"
-			$("#servicelist").append(e)
-			$('#servicelist').listview('refresh')
-		}
+		e = format_service(data)
+		$("#servicelist").append(e)
+		$('#servicelist').listview('refresh')
 	});
+}
+
+function search(event, data) {
+        s = $("[data-type=search]").val()
+        $("#servicelist").empty()
+        append_servicelist(0, 20, s) 
 }
 
 function init(event, data) {
         init_servicelist(event, data)
         init_filters(event, data)
+        $("[role=search]").bind('submit', search)
 }
 
 $('#servicepage').bind("pageinit", init)

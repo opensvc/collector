@@ -122,11 +122,40 @@ def json_service_resstatus(svcname):
 def services():
     return dict()
 
+@auth.requires_login()
+def nodes():
+    return dict()
+
 @service.json
-def json_services():
-    start = 0
-    end = 20
+def json_node_services(nodename):
+    q = db.svcmon.mon_nodname == nodename
+    q &= _where(None, 'svcmon', domain_perms(), 'mon_svcname')
+    rows = db(q).select(db.svcmon.mon_svcname)
+    l = map(lambda x: x.mon_svcname, rows)
+    return l
+
+@service.json
+def json_nodes(start, end, s):
+    start = int(start)
+    end = int(end)
+    q = db.nodes.id > 0
+    if len(s) > 0 and s != "null":
+        s = "%"+s+"%"
+        q &= db.nodes.nodename.like(s)
+    q &= _where(None, 'nodes', domain_perms(), 'nodename')
+    q = apply_filters(q, None, db.nodes.nodename)
+    rows = db(q).select(db.nodes.nodename, limitby=(start, end))
+    l = map(lambda x: x.nodename, rows)
+    return l
+
+@service.json
+def json_services(start, end, s):
+    start = int(start)
+    end = int(end)
     q = db.services.id > 0
+    if len(s) > 0 and s != "null":
+        s = "%"+s+"%"
+        q &= db.services.svc_name.like(s)
     q &= _where(None, 'services', domain_perms(), 'svc_name')
     q = apply_filters(q, None, db.services.svc_name)
     rows = db(q).select(db.services.svc_name, limitby=(start, end))
