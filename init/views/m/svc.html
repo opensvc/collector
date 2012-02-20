@@ -30,6 +30,11 @@
                         <ul id="alertlist" data-role="listview" data-theme="g">
                         </ul>
                 </div>
+                <div data-role="collapsible" id="actions">
+                        <h3>Actions</h3>
+                        <ul id="actionlist" data-role="listview" data-theme="g">
+                        </ul>
+                </div>
 	</div><!-- /content -->
 
 	<div data-position="fixed" data-id="footer" data-role="footer" class="ui-bar">
@@ -167,6 +172,18 @@ function init_alerts(event, data) {
 	alerts_initialized = true
 }
 
+function init_actions(event, data) {
+        if (actions_initialized) {
+		return
+	}
+	$.getJSON("{{=URL(r=request, f='call/json/json_service_actions', args=[svcname])}}", function(data) {
+		e = format_actions(data)
+		$("#actionlist").append(e).trigger('create')
+		$("#actions").collapsible({refresh:true})
+	});
+	actions_initialized = true
+}
+
 function init(event, data) {
 	init_svcstatus(event, data)
 	init_filters(event, data)
@@ -175,11 +192,13 @@ function init(event, data) {
 svcinfo_initialized = false
 svcstatus_initialized = false
 alerts_initialized = false
+actions_initialized = false
 
 $('#svcpage').bind('pageinit', init)
 $('#svcinfo').bind('expand', init_svcinfo)
 $('#svcstatus').bind('expand', init_svcstatus)
 $('#alerts').bind('expand', init_alerts)
+$('#actions').bind('expand', init_actions)
 
 </script>
 

@@ -287,7 +287,7 @@ def json_show_action(action_id):
     if action.pid is None:
         return []
 
-    o = ~db.SVCactions.id
+    o = db.SVCactions.id
     q = db.SVCactions.pid.belongs(map(lambda x: int(x), action.pid.split(',')))
     q &= ((db.SVCactions.hostname == action.hostname) | \
           (db.SVCactions.svcname == action.svcname))
