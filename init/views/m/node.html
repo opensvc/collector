@@ -8,6 +8,18 @@
 	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.0.1/jquery.mobile-1.0.1.min.css" />
 	<script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
 	<script src="http://code.jquery.com/mobile/1.0.1/jquery.mobile-1.0.1.min.js"></script>
+        <link rel="stylesheet" href="{{=URL(r=request,c='static',f='jqplot/jquery.jqplot.min.css')}}" />
+        <script src="{{=URL(request.application, c='static', f='jqplot/jquery.jqplot.min.js')}}"></script>
+        <script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.highlighter.min.js')}}"></script>
+        <script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.canvasTextRenderer.min.js')}}"></script>
+        <script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js')}}"></script>
+        <script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.categoryAxisRenderer.min.js')}}"></script>
+        <script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.dateAxisRenderer.min.js')}}"></script>
+        <script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.barRenderer.min.js')}}"></script>
+        <script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.ohlcRenderer.min.js')}}"></script>
+        <script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.cursor.min.js')}}"></script>
+        <script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.enhancedLegendRenderer.min.js')}}"></script>
+        <script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.pieRenderer.min.js')}}"></script>
 </head> 
 <body> 
 
@@ -42,9 +54,16 @@
                         <ul id="compliancelist" data-role="listview" data-theme="g">
                         </ul>
                 </div>
+                <div data-role="collapsible" id="stats">
+                        <h3>Stats</h3>
+			<div id="stats_cpu"></div>
+			<div id="stats_proc_runq_sz"></div>
+			<div id="stats_proc_plist_sz"></div>
+			<div id="stats_proc_loadavg"></div>
+                </div>
 	</div><!-- /content -->
 
-	<div data-position="fixed" data-id="footer" data-role="footer" class="ui-bar">
+	<div data-id="footer" data-role="footer">
 		<label for="select-choice-0" class="select">Filter:</label>
 		<select name="select-choice-0" id="filters">
 		</select>
@@ -52,6 +71,8 @@
 </div><!-- /page -->
 
 </body>
+
+{{include '../static/jslib.html'}}
 
 <script>
 
@@ -254,17 +275,38 @@ function init_compliance(event, data) {
         compliance_initialized = true
 }
 
+{{
+_end = datetime.datetime.now()
+_begin = _end - datetime.timedelta(days=2)
+_end = _end.strftime("%Y-%m-%d %H:%M:%S")
+_begin =_begin.strftime("%Y-%m-%d %H:%M:%S")
+}}
+
+function init_stats(event, data) {
+        if (stats_initialized) {
+                return
+        }
+        stats_cpu("{{=URL(r=request, c='ajax_perf', f='call/json/json_cpu', vars={'node': nodename, 'b': _begin, 'e': _end})}}", "stats_cpu")
+	try{
+		stats_proc("{{=URL(r=request, c='ajax_perf', f='call/json/json_proc', vars={'node': nodename, 'b': _begin, 'e': _end})}}", "stats_proc")
+	} catch(e) {}
+        $("#stats").collapsible({refresh:true})
+        stats_initialized = true
+}
+
 nodeinfo_initialized = false
 nodeservices_initialized = false
 alerts_initialized = false
 actions_initialized = false
 compliance_initialized = false
+stats_initialized = false
 
 $('#nodepage').bind('pageinit', init)
 $('#nodeinfo').bind('expand', init_nodeinfo)
 $('#alerts').bind('expand', init_alerts)
 $('#actions').bind('expand', init_actions)
 $('#compliance').bind('expand', init_compliance)
+$('#stats').bind('expand', init_stats)
 
 </script>
 

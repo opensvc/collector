@@ -13,10 +13,21 @@
 
 <div data-role="page" id="logpage">	
 
+        <div data-position="fixed" data-role="header">
+                <a href="{{=URL(r=request, f='nav')}}" data-rel="dialog" data-icon="home">Nav</a>
+                <h1>OSVC services</h1>
+        </div><!-- /header -->
+
 	<div data-role="content">	
 		<ul id="loglist" data-role="listview" data-theme="g">
 		</ul>
 	</div><!-- /content -->
+
+        <div data-id="footer" data-role="footer">
+                <label for="select-choice-0" class="select">Filter:</label>
+                <select name="select-choice-0" id="filters">
+                </select>
+        </div>
 
 </div><!-- /page -->
 
