@@ -223,3 +223,28 @@ function format_compliance(data) {
 	return s
 }
 
+function format_log(d) {
+        s =  ""
+        s += "<div style='display:table;width:100%'>"
+        s +=  "<div style='display:table-row'>"
+        s +=   "<div class='sev sev"+d['log_level']+"'>&nbsp;</div>"
+        s +=   "<div style='display:table-cell;padding-left:1em;vertical-align:middle'>"
+        s +=    "<div class='ui-li-aside ui-li-desc'>"
+        s +=     "<div>"+d['log_date']+"</div>"
+        s +=    "</div>"
+        s +=   "<div class='ui-li-desc'>"+d['log_action']+"</div>"
+        s +=   "<div class='ui-li-desc'>"+d['log_user']+"</div>"
+        s +=   "<strong>"+d['body']+"</strong>"
+        s +=  "</div>"
+        s += "</div>"
+        return s
+}
+
+function format_logs(data) {
+	s = ""
+	for (i=0; i<data.length; i++) {
+		s += "<li>" + format_log(data[i]) + "</li>"
+	}
+	return s
+}
+

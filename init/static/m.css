@@ -2,6 +2,18 @@
     display: table-cell;
     width: 6px;
 }
+.sevinfo {
+    background-color: #009900;
+}
+.sevwarning {
+    background-color: orange;
+}
+.severror {
+    background-color: #660000;
+}
+.sevcritical {
+    background-color: #2d2d2d;
+}
 .comp_status_0 {
     background-color: #009900;
 }

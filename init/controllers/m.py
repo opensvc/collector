@@ -25,6 +25,14 @@ def actions():
     return dict()
 
 @auth.requires_login()
+def stats():
+    return dict()
+
+@auth.requires_login()
+def log():
+    return dict()
+
+@auth.requires_login()
 def node():
     return dict(nodename=request.args[0])
 
@@ -325,6 +333,69 @@ def get_actions(start=None, end=None, s="", svcname=None, nodename=None):
     rows = db(q).select(orderby=o,
                         limitby=(start, end))
     return rows
+
+@service.json
+def json_logs(start, end, s):
+    return get_logs(start, end, s)
+
+@service.json
+def json_node_logs(nodename):
+    return get_logs(nodename=nodename)
+
+@service.json
+def json_service_logs(svcname):
+    return get_logs(svcname=svcname)
+
+def get_logs(start=None, end=None, s="", svcname=None, nodename=None):
+    if start is None:
+        start = 0
+    else:
+        start = int(start)
+
+    if end is None:
+        end = 50
+    else:
+        end = int(end)
+
+    o = ~db.log.id
+    q = db.log.id > 0
+
+    if svcname is not None:
+        q &= db.log.log_svcname == svcname
+
+    if nodename is not None:
+        q &= db.log.log_nodename == nodename
+
+    if len(s) > 0 and s != "null":
+        s = "%"+s+"%"
+        q &= (db.log.log_svcname.like(s) | \
+              db.log.log_nodename.like(s) | \
+              db.log.log_action.like(s) | \
+              db.log.log_dict.like(s))
+
+    q &= _where(None, 'log', domain_perms(), 'log_nodename')
+    q = apply_filters(q, db.log.log_nodename, None)
+
+    rows = db(q).select(orderby=o,
+                        limitby=(start, end))
+    l = []
+    for row in rows:
+        if len(row.log_dict) > 0 and len(row.log_fmt) > 0:
+            try:
+                d = json.loads(row.log_dict)
+                body = row.log_fmt % d
+            except:
+                body = "log body corrupted"
+        else:
+            body = ""
+        h = {'body': body}
+        for field in row:
+            if field in ('update_record', 'delete_record'):
+                continue
+            h[field] = row[field]
+        l.append(h)
+
+    return l
 
 @service.json
 def json_show_action(action_id):

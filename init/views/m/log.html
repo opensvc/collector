@@ -1,0 +1,68 @@
+<!DOCTYPE html> 
+
+<html> 
+	<head> 
+	<title>OpenSVC</title> 
+	<meta name="viewport" content="width=device-width, initial-scale=1"> 
+        <link rel="stylesheet" href="{{=URL(request.application,'static','m.css')}}" />
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.0.1/jquery.mobile-1.0.1.min.css" />
+	<script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
+	<script src="http://code.jquery.com/mobile/1.0.1/jquery.mobile-1.0.1.min.js"></script>
+</head> 
+<body> 
+
+<div data-role="page" id="logpage">	
+
+	<div data-position="fixed" data-role="header">
+		<a href="{{=URL(r=request, f='nav')}}" data-rel="dialog" data-icon="home">Nav</a> 
+		<h1>OSVC logs</h1>
+	</div><!-- /header -->
+
+	<div data-role="content">	
+		<ul id="loglist" data-role="listview" data-theme="g" data-filter="true">
+		</ul>
+	</div><!-- /content -->
+
+	<div data-id="footer" data-role="footer">
+		<label for="select-choice-0" class="select">Filter:</label>
+		<select name="select-choice-0" id="filters">
+		</select>
+	</div>
+</div><!-- /page -->
+
+</body>
+
+<script>
+
+{{include '../static/m.js'}}
+
+function init_loglist(event, data) {
+        append_loglist(0, 20, null) 
+}
+
+function append_loglist(start, end, s) {
+	$.getJSON("{{=URL(r=request, f='call/json/json_logs')}}/"+start+"/"+end+"/"+s, function(data) {
+		$("#loglist").html("")
+		e = format_logs(data)
+		$("#loglist").append(e)
+		$('#loglist').listview('refresh')
+	});
+}
+
+function search(event, data) {
+        s = $("[data-type=search]").val()
+        $("#loglist").empty()
+        append_loglist(0, 20, s) 
+}
+
+function init(event, data) {
+        init_loglist(event, data)
+        init_filters(event, data)
+        $("[role=search]").bind('submit', search)
+}
+
+$('#logpage').bind("pageinit", init)
+
+</script>
+
+</html>

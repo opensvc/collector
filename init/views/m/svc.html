@@ -56,6 +56,11 @@
                         <ul id="compliancelist" data-role="listview" data-theme="g">
                         </ul>
                 </div>
+                <div data-role="collapsible" id="log">
+                        <h3>Logs</h3>
+                        <ul id="loglist" data-role="listview" data-theme="g">
+                        </ul>
+                </div>
 	</div><!-- /content -->
 
 	<div data-id="footer" data-role="footer">
@@ -229,6 +234,18 @@ function init_compliance(event, data) {
 	compliance_initialized = true
 }
 
+function init_log(event, data) {
+        if (log_initialized) {
+		return
+	}
+	$.getJSON("{{=URL(r=request, f='call/json/json_service_logs', args=[svcname])}}", function(data) {
+		e = format_logs(data)
+		$("#loglist").append(e).trigger('create')
+		$("#log").collapsible({refresh:true})
+	});
+	log_initialized = true
+}
+
 
 function init(event, data) {
 	init_svcstatus(event, data)
@@ -241,6 +258,7 @@ alerts_initialized = false
 actions_initialized = false
 availability_initialized = false
 compliance_initialized = false
+log_initialized = false
 
 $('#svcpage').bind('pageinit', init)
 $('#svcinfo').bind('expand', init_svcinfo)
@@ -249,6 +267,7 @@ $('#alerts').bind('expand', init_alerts)
 $('#actions').bind('expand', init_actions)
 $('#availability').bind('expand', init_availability)
 $('#compliance').bind('expand', init_compliance)
+$('#log').bind('expand', init_log)
 
 </script>
 

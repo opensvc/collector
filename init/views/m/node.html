@@ -68,6 +68,12 @@
 			<div id="stats_block_bps"></div>
 			<div id="stats_fs_u"></div>
                 </div>
+                <div data-role="collapsible" id="log">
+                        <h3>Logs</h3>
+                        <ul id="loglist" data-role="listview" data-theme="g">
+                        </ul>
+                </div>
+
 	</div><!-- /content -->
 
 	<div data-id="footer" data-role="footer">
@@ -282,6 +288,18 @@ function init_compliance(event, data) {
         compliance_initialized = true
 }
 
+function init_log(event, data) {
+        if (log_initialized) {
+                return
+        }
+        $.getJSON("{{=URL(r=request, f='call/json/json_node_logs', args=[nodename])}}", function(data) {
+                e = format_logs(data)
+                $("#loglist").append(e).trigger('create')
+                $("#log").collapsible({refresh:true})
+        });
+        log_initialized = true
+}
+
 {{
 _end = datetime.datetime.now()
 _begin = _end - datetime.timedelta(days=2)
@@ -311,6 +329,7 @@ alerts_initialized = false
 actions_initialized = false
 compliance_initialized = false
 stats_initialized = false
+log_initialized = false
 
 $('#nodepage').bind('pageinit', init)
 $('#nodeinfo').bind('expand', init_nodeinfo)
@@ -318,6 +337,7 @@ $('#alerts').bind('expand', init_alerts)
 $('#actions').bind('expand', init_actions)
 $('#compliance').bind('expand', init_compliance)
 $('#stats').bind('expand', init_stats)
+$('#log').bind('expand', init_log)
 
 </script>
 
