@@ -200,3 +200,26 @@ function format_show_actions(data) {
 	return s
 }
 
+function format_compliance_li(d) {
+        s =  ""
+        s += "<div style='display:table;width:100%'>"
+        s +=  "<div style='display:table-row'>"
+        s +=   "<div class='sev comp_status_"+d['run_status']+"'>&nbsp;</div>"
+        s +=   "<div style='display:table-cell;padding-left:1em;vertical-align:middle'>"
+        s +=    "<div class='ui-li-aside ui-li-desc'>"
+        s +=     "<div>"+d['run_date']+"</div>"
+        s +=    "</div>"
+        s +=   "<strong>"+d['run_module']+"</strong>"
+        s +=  "</div>"
+        s += "</div>"
+        return s
+}
+
+function format_compliance(data) {
+	s = ""
+	for (i=0; i<data.length; i++) {
+		s += "<li>" + format_compliance_li(data[i]) + "</li>"
+	}
+	return s
+}
+

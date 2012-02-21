@@ -2,6 +2,15 @@
     display: table-cell;
     width: 6px;
 }
+.comp_status_0 {
+    background-color: #009900;
+}
+.comp_status_1 {
+    background-color: #660000;
+}
+.comp_status_2 {
+    background-color: #666666;
+}
 .sevok {
     background-color: #009900;
 }

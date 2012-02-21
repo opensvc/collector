@@ -235,6 +235,52 @@ def get_alerts(start=None, end=None, s="", svcname=None, nodename=None):
     return l
 
 @service.json
+def json_compliance(start, end, s):
+    return get_compliance(start, end, s)
+
+@service.json
+def json_node_compliance(nodename):
+    return get_compliance(nodename=nodename)
+
+@service.json
+def json_service_compliance(svcname):
+    return get_compliance(svcname=svcname)
+
+def get_compliance(start=None, end=None, s="", svcname=None, nodename=None):
+    if start is None:
+        start = 0
+    else:
+        start = int(start)
+
+    if end is None:
+        end = 50
+    else:
+        end = int(end)
+
+    o = db.comp_status.run_nodename|db.comp_status.run_svcname|db.comp_status.run_module
+    q = db.comp_status.id > 0
+
+    if svcname is not None:
+        q &= db.comp_status.run_svcname == svcname
+
+    if nodename is not None:
+        q &= db.comp_status.run_nodename == nodename
+
+    if len(s) > 0 and s != "null":
+        s = "%"+s+"%"
+        q &= (db.comp_status.run_svcname.like(s) | \
+              db.comp_status.run_nodename.like(s) | \
+              db.comp_status.run_log.like(s) | \
+              db.comp_status.run_module.like(s))
+
+    q &= _where(None, 'comp_status', domain_perms(), 'run_nodename')
+    q = apply_filters(q, db.comp_status.run_nodename, None)
+
+    rows = db(q).select(orderby=o,
+                        limitby=(start, end))
+    return rows
+
+@service.json
 def json_actions(start, end, s):
     return get_actions(start, end, s)
 

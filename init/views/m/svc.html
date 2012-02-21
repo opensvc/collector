@@ -49,7 +49,12 @@
                 </div>
                 <div data-role="collapsible" id="availability">
                         <h3>Availability</h3>
-			<div id="availdiv"><div>
+			<div id="availdiv"></div>
+                </div>
+                <div data-role="collapsible" id="compliance">
+                        <h3>Compliance</h3>
+                        <ul id="compliancelist" data-role="listview" data-theme="g">
+                        </ul>
                 </div>
 	</div><!-- /content -->
 
@@ -212,6 +217,19 @@ function init_availability(event, data) {
 	availability_initialized = true
 }
 
+function init_compliance(event, data) {
+        if (compliance_initialized) {
+		return
+	}
+	$.getJSON("{{=URL(r=request, f='call/json/json_service_compliance', args=[svcname])}}", function(data) {
+		e = format_compliance(data)
+		$("#compliancelist").append(e).trigger('create')
+		$("#compliance").collapsible({refresh:true})
+	});
+	compliance_initialized = true
+}
+
+
 function init(event, data) {
 	init_svcstatus(event, data)
 	init_filters(event, data)
@@ -222,6 +240,7 @@ svcstatus_initialized = false
 alerts_initialized = false
 actions_initialized = false
 availability_initialized = false
+compliance_initialized = false
 
 $('#svcpage').bind('pageinit', init)
 $('#svcinfo').bind('expand', init_svcinfo)
@@ -229,6 +248,7 @@ $('#svcstatus').bind('expand', init_svcstatus)
 $('#alerts').bind('expand', init_alerts)
 $('#actions').bind('expand', init_actions)
 $('#availability').bind('expand', init_availability)
+$('#compliance').bind('expand', init_compliance)
 
 </script>
 

@@ -37,6 +37,11 @@
                         <ul id="actionlist" data-role="listview" data-theme="g">
                         </ul>
                 </div>
+                <div data-role="collapsible" id="compliance">
+                        <h3>Compliance</h3>
+                        <ul id="compliancelist" data-role="listview" data-theme="g">
+                        </ul>
+                </div>
 	</div><!-- /content -->
 
 	<div data-position="fixed" data-id="footer" data-role="footer" class="ui-bar">
@@ -237,15 +242,29 @@ function init_actions(event, data) {
         actions_initialized = true
 }
 
+function init_compliance(event, data) {
+        if (compliance_initialized) {
+                return
+        }
+        $.getJSON("{{=URL(r=request, f='call/json/json_node_compliance', args=[nodename])}}", function(data) {
+                e = format_compliance(data)
+                $("#compliancelist").append(e).trigger('create')
+                $("#compliance").collapsible({refresh:true})
+        });
+        compliance_initialized = true
+}
+
 nodeinfo_initialized = false
 nodeservices_initialized = false
 alerts_initialized = false
 actions_initialized = false
+compliance_initialized = false
 
 $('#nodepage').bind('pageinit', init)
 $('#nodeinfo').bind('expand', init_nodeinfo)
 $('#alerts').bind('expand', init_alerts)
 $('#actions').bind('expand', init_actions)
+$('#compliance').bind('expand', init_compliance)
 
 </script>
 
