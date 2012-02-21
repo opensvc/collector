@@ -60,6 +60,13 @@
 			<div id="stats_proc_runq_sz"></div>
 			<div id="stats_proc_plist_sz"></div>
 			<div id="stats_proc_loadavg"></div>
+			<div id="stats_mem_u"></div>
+			<div id="stats_mem_pct"></div>
+			<div id="stats_swap_u"></div>
+			<div id="stats_swap_pct"></div>
+			<div id="stats_block_tps"></div>
+			<div id="stats_block_bps"></div>
+			<div id="stats_fs_u"></div>
                 </div>
 	</div><!-- /content -->
 
@@ -289,6 +296,10 @@ function init_stats(event, data) {
         stats_cpu("{{=URL(r=request, c='ajax_perf', f='call/json/json_cpu', vars={'node': nodename, 'b': _begin, 'e': _end})}}", "stats_cpu")
 	try{
 		stats_proc("{{=URL(r=request, c='ajax_perf', f='call/json/json_proc', vars={'node': nodename, 'b': _begin, 'e': _end})}}", "stats_proc")
+		stats_mem("{{=URL(r=request, c='ajax_perf', f='call/json/json_mem', vars={'node': nodename, 'b': _begin, 'e': _end})}}", "stats_mem")
+		stats_swap("{{=URL(r=request, c='ajax_perf', f='call/json/json_swap', vars={'node': nodename, 'b': _begin, 'e': _end})}}", "stats_swap")
+		stats_block("{{=URL(r=request, c='ajax_perf', f='call/json/json_block', vars={'node': nodename, 'b': _begin, 'e': _end})}}", "stats_block")
+		stats_fs("{{=URL(r=request, c='ajax_perf', f='call/json/json_fs', vars={'node': nodename, 'b': _begin, 'e': _end})}}", "stats_fs")
 	} catch(e) {}
         $("#stats").collapsible({refresh:true})
         stats_initialized = true
