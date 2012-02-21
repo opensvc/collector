@@ -8,7 +8,19 @@
 	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.0.1/jquery.mobile-1.0.1.min.css" />
 	<script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
 	<script src="http://code.jquery.com/mobile/1.0.1/jquery.mobile-1.0.1.min.js"></script>
-</head> 
+	<link rel="stylesheet" href="{{=URL(r=request,c='static',f='jqplot/jquery.jqplot.min.css')}}" />
+	<script src="{{=URL(request.application, c='static', f='jqplot/jquery.jqplot.min.js')}}"></script>
+	<script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.highlighter.min.js')}}"></script>
+	<script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.canvasTextRenderer.min.js')}}"></script>
+	<script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js')}}"></script>
+	<script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.categoryAxisRenderer.min.js')}}"></script>
+	<script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.dateAxisRenderer.min.js')}}"></script>
+	<script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.barRenderer.min.js')}}"></script>
+	<script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.ohlcRenderer.min.js')}}"></script>
+	<script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.cursor.min.js')}}"></script>
+	<script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.enhancedLegendRenderer.min.js')}}"></script>
+	<script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.pieRenderer.min.js')}}"></script>
+	</head> 
 <body> 
 
 <div data-role="page" id="svcpage">	
@@ -35,6 +47,10 @@
                         <ul id="actionlist" data-role="listview" data-theme="g">
                         </ul>
                 </div>
+                <div data-role="collapsible" id="availability">
+                        <h3>Availability</h3>
+			<div id="availdiv"><div>
+                </div>
 	</div><!-- /content -->
 
 	<div data-position="fixed" data-id="footer" data-role="footer" class="ui-bar">
@@ -46,6 +62,7 @@
 
 </body>
 
+{{include '../static/jslib.html'}}
 <script>
 
 {{include '../static/m.js'}}
@@ -184,6 +201,17 @@ function init_actions(event, data) {
 	actions_initialized = true
 }
 
+function init_availability(event, data) {
+        if (availability_initialized) {
+		return
+	}
+	$.getJSON("{{=URL(r=request, c='svcmon_log', f='call/json/json_availability', args=[svcname])}}", function(data) {
+		avail_plot("availdiv", data)
+		$("#availability").collapsible({refresh:true})
+	});
+	availability_initialized = true
+}
+
 function init(event, data) {
 	init_svcstatus(event, data)
 	init_filters(event, data)
@@ -193,12 +221,14 @@ svcinfo_initialized = false
 svcstatus_initialized = false
 alerts_initialized = false
 actions_initialized = false
+availability_initialized = false
 
 $('#svcpage').bind('pageinit', init)
 $('#svcinfo').bind('expand', init_svcinfo)
 $('#svcstatus').bind('expand', init_svcstatus)
 $('#alerts').bind('expand', init_alerts)
 $('#actions').bind('expand', init_actions)
+$('#availability').bind('expand', init_availability)
 
 </script>
 

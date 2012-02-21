@@ -1,3 +1,13 @@
+def call():
+    """
+    exposes services. for example:
+    http://..../[app]/default/call/jsonrpc
+    decorate with @services.jsonrpc the functions to expose
+    supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv
+    """
+    session.forget()
+    return service()
+
 @auth.requires_login()
 def ack(ids=[]):
     if len(ids) == 0:
@@ -652,6 +662,45 @@ class col_avail_svcname(Column):
         if val is None:
             return ''
         return val
+
+@service.json
+def json_availability(svcname):
+    begin = now - datetime.timedelta(days=7, microseconds=now.microsecond)
+    end = now - datetime.timedelta(seconds=1200, microseconds=now.microsecond)
+
+    o = db.services_log.svc_name|db.services_log.svc_begin|db.services_log.svc_end
+    q = db.v_services.svc_name==db.services_log.svc_name
+    q = _where(q, 'services_log', domain_perms(), 'svc_name')
+    q &= db.services_log.svc_name == svcname
+    q &= db.services_log.svc_begin <= end
+    q &= db.services_log.svc_end >= begin
+
+    o = service_availability_2(db(q).select(orderby=o), begin, end)[svcname]
+
+    if len(o) == 0:
+        return ""
+    down = []
+    acked = []
+    s = ''
+    dh = [h for h in o['holes'] if h['acked'] == 0]
+    last = len(dh)-1
+    for i, r in enumerate(dh):
+        down.append([r['begin'], 1])
+        down.append([r['end'], 1])
+        if i < last:
+            down.append([r['end']+(dh[i+1]['begin']-r['end'])/2, None])
+    dh = [h for h in o['holes'] if h['acked'] == 1]
+    last = len(dh)-1
+    for i, r in enumerate(dh):
+        acked.append([r['begin'], 1])
+        acked.append([r['end'], 1])
+        if i < last:
+            acked.append([r['end']+(dh[i+1]['begin']-r['end'])/2, None])
+    if len(down) == 0:
+        down = [[o['begin'], None]]
+    if len(acked) == 0:
+        acked = [[o['begin'], None]]
+    return [down, acked]
 
 class col_avail_holes(Column):
     def get(self, o):
