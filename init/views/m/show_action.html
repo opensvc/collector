@@ -42,6 +42,7 @@ function init(event, data) {
 		e = format_show_actions(data)
 		$("#loglist").append(e).trigger('create')
 	});
+        init_filters(event, data)
 }
 
 $('#logpage').bind('pageinit', init)
