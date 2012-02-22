@@ -209,7 +209,8 @@ function format_compliance_li(d) {
         s +=    "<div class='ui-li-aside ui-li-desc'>"
         s +=     "<div>"+d['run_date']+"</div>"
         s +=    "</div>"
-        s +=   "<strong>"+d['run_module']+"</strong>"
+        s +=    "<strong>"+d['run_module']+"</strong>"
+        s +=   "</div>"
         s +=  "</div>"
         s += "</div>"
         return s
@@ -232,9 +233,10 @@ function format_log(d) {
         s +=    "<div class='ui-li-aside ui-li-desc'>"
         s +=     "<div>"+d['log_date']+"</div>"
         s +=    "</div>"
-        s +=   "<div class='ui-li-desc'>"+d['log_action']+"</div>"
-        s +=   "<div class='ui-li-desc'>"+d['log_user']+"</div>"
-        s +=   "<strong>"+d['body']+"</strong>"
+        s +=    "<div class='ui-li-desc'>"+d['log_action']+"</div>"
+        s +=    "<div class='ui-li-desc'>"+d['log_user']+"</div>"
+        s +=    "<strong>"+d['body']+"</strong>"
+        s +=   "</div>"
         s +=  "</div>"
         s += "</div>"
         return s
