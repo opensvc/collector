@@ -1193,6 +1193,7 @@ def do_node_action(ids, action=None, mode=None):
             cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
                           '-o', 'ForwardX11=no',
                           '-o', 'PasswordAuthentication=no',
+                          '-tt',
                    'opensvc@'+node,
                    '--',
                    'sudo', '/opt/opensvc/bin/nodemgr', 'compliance', action,
@@ -1204,6 +1205,7 @@ def do_node_action(ids, action=None, mode=None):
             cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
                           '-o', 'ForwardX11=no',
                           '-o', 'PasswordAuthentication=no',
+                          '-tt',
                    'opensvc@'+node,
                    '--',
                    'sudo', '/opt/opensvc/bin/nodemgr', action,
@@ -1262,6 +1264,7 @@ def do_action(ids, action=None):
         cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
                       '-o', 'ForwardX11=no',
                       '-o', 'PasswordAuthentication=no',
+                      '-tt',
                'opensvc@'+node,
                '--',
                'sudo', '/opt/opensvc/bin/svcmgr', force, '--service', svc, action]

@@ -249,7 +249,7 @@ def batch_files():
         binfile = os.path.join(dst_dir, binfiles[0])
 
         # run nodemgr on archive content
-        cmd = ssh + [config.sym_node, 'sudo', '-E',
+        cmd = ssh + ['-tt', config.sym_node, 'sudo', '-E',
                      '/opt/opensvc/bin/nodemgr',
                      '--symcli-db-file', binfile, 'pushsym']
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)

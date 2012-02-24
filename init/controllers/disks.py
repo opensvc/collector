@@ -805,6 +805,7 @@ def ajax_disk_provision():
     cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
                   '-o', 'ForwardX11=no',
                   '-o', 'PasswordAuthentication=no',
+                  '-tt',
            'opensvc@'+info.stor_array_proxy.nodename,
            '--',
            """(sudo /opt/opensvc/bin/svcmgr -s %(svcname)s create --resource "%(d)s" --provision ; sudo /opt/opensvc/bin/svcmgr -s %(svcname)s delete)"""%dict(svcname=tmp_svcname, d=json.dumps(d))

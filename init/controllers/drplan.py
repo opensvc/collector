@@ -16,8 +16,8 @@ def _drplan_scripts_header(phase):
     return l
 
 def _scripts(rows, title, action, nodecol=None, service=False):
-    ssh = '/usr/bin/ssh -F /tmp/ssh_config_drp'
-    cmd = '/service/bin/svcmgr'
+    ssh = '/usr/bin/ssh -tt -F /tmp/ssh_config_drp'
+    cmd = '/opt/opensvc/bin/svcmgr'
     lines = _drplan_scripts_header(title)
     for row in rows:
         _cmd = ' '.join([ssh, row.services[nodecol], '--'])
