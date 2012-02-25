@@ -45,9 +45,12 @@ class MyAuth(Auth):
         self.log_patterns = [T(m).replace('%(id)s','(?P<id>[0-9]+)').replace('%(id)s','(?P<group_id>[0-9]+)') for m in self.log_messages]
 
 
-    def log_event(self, description, origin='auth'):
-        Auth.log_event(self, description, origin)
+    def log_event(self, description, vars=None, origin='auth'):
+        Auth.log_event(self, description, vars, origin)
         # user_id is now set
+
+        if description is None:
+            return
 
         for i, p in enumerate(self.log_patterns):
             v = re.search(p, description)
