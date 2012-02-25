@@ -4,29 +4,14 @@
 	<head> 
 	<title>OpenSVC</title> 
 	<meta name="viewport" content="width=device-width, initial-scale=1"> 
-        <link rel="stylesheet" href="{{=URL(request.application,'static','m.css')}}" />
-	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.0.1/jquery.mobile-1.0.1.min.css" />
-	<script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
-	<script src="http://code.jquery.com/mobile/1.0.1/jquery.mobile-1.0.1.min.js"></script>
-        <link rel="stylesheet" href="{{=URL(r=request,c='static',f='jqplot/jquery.jqplot.min.css')}}" />
-        <script src="{{=URL(request.application, c='static', f='jqplot/jquery.jqplot.min.js')}}"></script>
-        <script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.highlighter.min.js')}}"></script>
-        <script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.canvasTextRenderer.min.js')}}"></script>
-        <script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js')}}"></script>
-        <script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.categoryAxisRenderer.min.js')}}"></script>
-        <script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.dateAxisRenderer.min.js')}}"></script>
-        <script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.barRenderer.min.js')}}"></script>
-        <script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.ohlcRenderer.min.js')}}"></script>
-        <script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.cursor.min.js')}}"></script>
-        <script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.enhancedLegendRenderer.min.js')}}"></script>
-        <script src="{{=URL(request.application, c='static', f='jqplot/plugins/jqplot.pieRenderer.min.js')}}"></script>
+	{{include '../views/m/inc.html'}}
 </head> 
 <body> 
 
 <div data-role="page" id="nodepage">	
 
 	<div data-position="fixed" data-role="header">
-		<a href="{{=URL(r=request, f='nav')}}" data-rel="dialog">Nav</a> 
+		<a href="#nav" data-icon="home">Nav</a> 
 		<h1>{{=nodename}}</h1>
 	</div><!-- /header -->
 
@@ -82,6 +67,8 @@
 		</select>
 	</div>
 </div><!-- /page -->
+
+{{include '../views/m/nav.html'}}
 
 </body>
 
@@ -241,6 +228,12 @@ function init_nodeinfo(event, data) {
 function init(event, data) {
 	init_servicelist(event, data)
 	init_filters(event, data)
+        web2py_comet('ws://{{=request.env.http_host.split(':')[0]}}:8889/realtime/generic', ws_switch)
+}
+
+function ws_switch(e) {
+        data = eval('('+e.data+')')
+        ws_action_switch(data)
 }
 
 function init_servicelist(event, data) {

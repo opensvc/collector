@@ -67,18 +67,28 @@ def delete_service_list(hostid=None, svcnames=[], auth=("", "")):
 def begin_action(vars, vals, auth):
     sql="""insert into SVCactions (%s) values (%s)""" % (','.join(vars), ','.join(vals))
     db.executesql(sql)
+    i = db.executesql("SELECT LAST_INSERT_ID()")[0][0]
     db.commit()
     h = {}
     for a, b in zip(vars, vals):
         h[a] = b
+    h['svcname'] = h['svcname'].strip("'")
+    h['hostname'] = h['hostname'].strip("'")
+    h['action'] = h['action'].strip("'")
+    h['begin'] = h['begin'].strip("'").split('.')[0]
+    h['id'] = i
+    _comet_send(json.dumps({
+                 'event': 'begin_action',
+                 'data': h
+                }))
     if 'cron' not in h or h['cron'] == '0':
         _log("service.action",
              "action '%(a)s' on %(svc)s@%(node)s",
-             dict(a=h['action'].strip("'"),
-                  svc=h['svcname'].strip("'"),
-                  node=h['hostname'].strip("'")),
-             svcname=h['svcname'].strip("'"),
-             nodename=h['hostname'].strip("'"))
+             dict(a=h['action'],
+                  svc=h['svcname'],
+                  node=h['hostname']),
+             svcname=h['svcname'],
+             nodename=h['hostname'])
     return 0
 
 @auth_uuid
@@ -104,25 +114,42 @@ def _end_action(vars, vals):
         h[a] = b
         if a not in ['hostname', 'svcname', 'begin', 'action', 'hostid']:
             upd.append("%s=%s" % (a, b))
-    sql="""update SVCactions set %s where hostname=%s and svcname=%s and begin=%s and action=%s""" %\
-        (','.join(upd), h['hostname'], h['svcname'], h['begin'], h['action'])
-    #raise Exception(sql)
+    sql="""select id from SVCactions where hostname=%s and svcname=%s and begin=%s and action=%s""" %\
+        (h['hostname'], h['svcname'], h['begin'], h['action'])
+    ids = map(lambda x: x[0], db.executesql(sql))
+    if len(ids) == 0:
+        return
+
+    sql="""update SVCactions set %s where id in (%s)""" %\
+        (','.join(upd), ','.join(map(str, ids)))
     db.executesql(sql)
     db.commit()
-    if h['action'].strip("'") in ('start', 'startcontainer') and \
-       h['status'].strip("'") == 'ok':
-        update_virtual_asset(h['hostname'].strip("'"), h['svcname'].strip("'"))
-    if h['status'].strip("'") == 'err':
+
+    sql = """select * from SVCactions where id in (%s)""" %\
+          ','.join(map(str, ids))
+    h = db.executesql(sql, as_dict=True)[0]
+    h['begin'] = h['begin'].strftime("%Y-%m-%d %H:%M:%S")
+    h['end'] = h['end'].strftime("%Y-%m-%d %H:%M:%S")
+    h['id'] = h['ID']
+
+    _comet_send(json.dumps({
+                 'event': 'end_action',
+                 'data': h
+                }))
+
+    if h['action'] in ('start', 'startcontainer') and \
+       h['status'] == 'ok':
+        update_virtual_asset(h['hostname'], h['svcname'])
+    if h['status'] == 'err':
         update_action_errors(h['svcname'], h['hostname'])
         update_dash_action_errors(h['svcname'], h['hostname'])
-        h['svcname'] = h['svcname'].strip('\\').strip("'")
         _log("service.action",
              "action '%(a)s' error on %(svc)s@%(node)s",
-             dict(a=h['action'].strip("'"),
-                  svc=h['svcname'].strip("'"),
-                  node=h['hostname'].strip("'")),
-             svcname=h['svcname'].strip("'"),
-             nodename=h['hostname'].strip("'"),
+             dict(a=h['action'],
+                  svc=h['svcname'],
+                  node=h['hostname']),
+             svcname=h['svcname'],
+             nodename=h['hostname'],
              level="error")
     return 0
 
@@ -1050,6 +1077,12 @@ def __svcmon_update(vars, vals):
             level = "warning"
         else:
             level = "info"
+        _comet_send(json.dumps({
+                     'nodename': h['mon_nodname'],
+                     'svcname': h['mon_svcname'],
+                     'table': 'svcmon',
+                     'event': 'change'
+                    }))
         _log("service.status",
              "service '%(svc)s' state initialized on '%(node)s': avail(%(a1)s=>%(a2)s) overall(%(o1)s=>%(o2)s)",
              dict(
@@ -1121,6 +1154,10 @@ def __svcmon_update(vars, vals):
             level = "warning"
         else:
             level = "info"
+        _comet_send({'nodename': h['mon_nodname'],
+                     'svcname': h['mon_svcname'],
+                     'table': 'svcmon',
+                     'event': 'change'})
         _log("service.status",
              "service '%(svc)s' state changed on '%(node)s': avail(%(a1)s=>%(a2)s) overall(%(o1)s=>%(o2)s)",
              dict(
@@ -1168,6 +1205,10 @@ def __svcmon_update(vars, vals):
             level = "warning"
         else:
             level = "info"
+        _comet_send({'nodename': h['mon_nodname'],
+                     'svcname': h['mon_svcname'],
+                     'table': 'svcmon',
+                     'event': 'change'})
         _log("service.status",
              "service '%(svc)s' state changed on '%(node)s': avail(%(a1)s=>%(a2)s) overall(%(o1)s=>%(o2)s)",
              dict(

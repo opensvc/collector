@@ -4,17 +4,14 @@
 	<head> 
 	<title>OpenSVC</title> 
 	<meta name="viewport" content="width=device-width, initial-scale=1"> 
-        <link rel="stylesheet" href="{{=URL(request.application,'static','m.css')}}" />
-	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.0.1/jquery.mobile-1.0.1.min.css" />
-	<script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
-	<script src="http://code.jquery.com/mobile/1.0.1/jquery.mobile-1.0.1.min.js"></script>
+        {{include '../views/m/inc.html'}}
 </head> 
 <body> 
 
 <div data-role="page" id="logpage">	
 
 	<div data-position="fixed" data-role="header">
-		<a href="{{=URL(r=request, f='nav')}}" data-rel="dialog" data-icon="home">Nav</a> 
+		<a href="#nav" data-icon="home">Nav</a> 
 		<h1>OSVC logs</h1>
 	</div><!-- /header -->
 
@@ -29,6 +26,8 @@
 		</select>
 	</div>
 </div><!-- /page -->
+
+{{include '../views/m/nav.html'}}
 
 </body>
 

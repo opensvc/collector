@@ -171,12 +171,16 @@ function format_action(d) {
 function format_actions(data) {
 	s = ""
 	for (i=0; i<data.length; i++) {
-		s += "<li>" + format_action(data[i]) + "</li>"
+		s += "<li id=action_"+data[i]['id']+">" + format_action(data[i]) + "</li>"
 	}
 	return s
 }
 
 function format_show_action(d) {
+	log = ""
+        try {
+		log = d['status_log'].replace(/\n/g, "<br\>")
+	} catch(e) {}
         s =  "<div style='display:table;width:100%'>"
         s +=  "<div style='display:table-row'>"
         s +=   "<div class='sev sev"+d['status']+"'>&nbsp;</div>"
@@ -186,7 +190,7 @@ function format_show_action(d) {
         s +=     "<div>"+d['begin']+"</div>"
         s +=    "</div>"
         s +=   "<div>&nbsp;</div>"
-        s +=   "<code>"+d['status_log'].replace(/\n/g, "<br\>")+"</code>"
+        s +=   "<code>"+log+"</code>"
         s +=  "</div>"
         s += "</div>"
         return s
@@ -248,5 +252,31 @@ function format_logs(data) {
 		s += "<li>" + format_log(data[i]) + "</li>"
 	}
 	return s
+}
+
+//
+// Comet events
+//
+function ws_action_switch(data) {
+        if (data["event"] == "begin_action") {
+                ws_begin_action(data["data"])
+        } else if (data["event"] == "end_action") {
+                ws_end_action(data["data"])
+        }
+}
+
+function ws_begin_action(data) {
+        e = format_actions([data])
+        $("#actionlist").prepend(e).trigger("create")
+        $("#actionlist").listview("refresh")
+        $("#actionlist").children(":first-child").find(".sev").effect("pulsate", {"times": 2}, 2000)
+}
+
+function ws_end_action(data) {
+        e = format_actions([data])
+        $("#action_"+data["id"]).replaceWith(e)
+        $("#actionlist").trigger("create")
+        $("#actionlist").listview("refresh")
+        $("#action_"+data["id"]).find(".sev").effect("pulsate", {"times": 2}, 2000)
 }
 

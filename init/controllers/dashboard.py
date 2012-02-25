@@ -625,7 +625,6 @@ def ajax_dashboard():
     t.object_list = db(q).select(db.dashboard.ALL, limitby=(t.pager_start,t.pager_end), orderby=o, groupby=g)
 
     mt = table_dash_agg('dash_agg', 'ajax_dash_agg')
-
     return DIV(
              SCRIPT(
                mt.ajax_submit(additional_inputs=t.ajax_inputs()),

@@ -406,10 +406,13 @@ def json_show_action(action_id):
 
     o = db.SVCactions.id
     q = db.SVCactions.pid.belongs(map(lambda x: int(x), action.pid.split(',')))
-    q &= ((db.SVCactions.hostname == action.hostname) | \
-          (db.SVCactions.svcname == action.svcname))
+    q &= db.SVCactions.hostname == action.hostname
+    q &= db.SVCactions.svcname == action.svcname
     q &= db.SVCactions.begin >= action.begin
-    q &= db.SVCactions.begin <= datetime.datetime.now() + datetime.timedelta(days=1)
+    if action.end is not None:
+        q &= db.SVCactions.end <= action.end
+    else:
+        q &= db.SVCactions.end <= action.begin + datetime.timedelta(days=1)
     q &= _where(None, 'SVCactions', domain_perms(), 'svcname')
 
     rows = db(q).select(orderby=o)
