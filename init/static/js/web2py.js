@@ -98,10 +98,13 @@ function web2py_component(action,target) {
 function web2py_comet(url,onmessage,onopen,onclose) {
   if ("WebSocket" in window) {
     var ws = new WebSocket(url);
-    ws.onopen = onopen?onopen:(function(){});
-    ws.onmessage = onmessage;
-    ws.onclose = onclose?onclose:(function(){});
-    return true; // supported
+  } else if ("MozWebSocket" in window) {
+    var ws = new MozWebSocket(url);
   } else return false; // not supported
+
+  ws.onopen = onopen?onopen:(function(){});
+  ws.onmessage = onmessage;
+  ws.onclose = onclose?onclose:(function(){});
+  return true; // supported
 }
 
