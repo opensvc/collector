@@ -234,4 +234,6 @@
 .ui-icon-switch {
     background: transparent url('action_switch_16.png') no-repeat;
 }
-
+.elist {
+    padding-top: 15px;
+}

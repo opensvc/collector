@@ -60,10 +60,10 @@ function format_alert(d) {
         if (d['dash_svcname'].length > 0 || d['dash_nodename'].length > 0) {
                 s += "<div data-type='vertical' data-role='controlgroup'>"
                 if (d['dash_svcname'].length > 0) {
-                        s += "<a rel='external' href='{{=URL(r=request, f='svc')}}/"+d['dash_svcname']+"' data-role='button'>"+d['dash_svcname']+"</a>"
+                        s += "<a data-icon='svc' rel='external' href='{{=URL(r=request, f='svc')}}/"+d['dash_svcname']+"' data-role='button'>"+d['dash_svcname']+"</a>"
                 }
                 if (d['dash_nodename'].length > 0) {
-                        s += "<a rel='external' href='{{=URL(r=request, f='node')}}/"+d['dash_nodename']+"' data-role='button'>"+d['dash_nodename']+"</a>"
+                        s += "<a data-icon='node' rel='external' href='{{=URL(r=request, f='node')}}/"+d['dash_nodename']+"' data-role='button'>"+d['dash_nodename']+"</a>"
                 }
                 s += "</div>"
         }
