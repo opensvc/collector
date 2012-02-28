@@ -81,64 +81,7 @@ function format_alerts(data) {
 	return s
 }
 
-action_img_h = {
-    'checks': 'check16.png',
-    'pushservices': 'svc.png',
-    'pushpkg': 'pkg16.png',
-    'pushpatch': 'pkg16.png',
-    'reboot': 'action_restart_16.png',
-    'shutdown': 'action_stop_16.png',
-    'syncservices': 'action_sync_16.png',
-    'updateservices': 'action16.png',
-    'stop': 'action_stop_16.png',
-    'stopapp': 'action_stop_16.png',
-    'stopdisk': 'action_stop_16.png',
-    'stoploop': 'action_stop_16.png',
-    'stopip': 'action_stop_16.png',
-    'umount': 'action_stop_16.png',
-    'shutdown': 'action_stop_16.png',
-    'boot': 'action_start_16.png',
-    'start': 'action_start_16.png',
-    'startstandby': 'action_start_16.png',
-    'startapp': 'action_start_16.png',
-    'startdisk': 'action_start_16.png',
-    'startloop': 'action_start_16.png',
-    'startip': 'action_start_16.png',
-    'mount': 'action_start_16.png',
-    'restart': 'action_restart_16.png',
-    'provision': 'prov.png',
-    'switch': 'action_restart_16.png',
-    'freeze': 'frozen16.png',
-    'thaw': 'frozen16.png',
-    'syncall': 'action_sync_16.png',
-    'syncnodes': 'action_sync_16.png',
-    'syncdrp': 'action_sync_16.png',
-    'syncfullsync': 'action_sync_16.png',
-    'postsync': 'action_sync_16.png',
-    'push': 'log16.png',
-    'check': 'check16.png',
-    'fixable': 'fixable16.png',
-    'fix': 'comp16.png',
-    'pushstats': 'spark16.png',
-    'pushasset': 'node16.png',
-    'stopcontainer': 'action_stop_16.png',
-    'startcontainer': 'action_start_16.png',
-    'stopapp': 'action_stop_16.png',
-    'startapp': 'action_start_16.png',
-    'prstop': 'action_stop_16.png',
-    'prstart': 'action_start_16.png',
-    'push': 'svc.png',
-    'syncquiesce': 'action_sync_16.png',
-    'syncresync': 'action_sync_16.png',
-    'syncupdate': 'action_sync_16.png',
-    'syncverify': 'action_sync_16.png',
-    'toc': 'action_toc_16.png',
-    'stonith': 'action_stonith_16.png',
-    'switch': 'action_switch_16.png'
-}
-
 function format_action(d) {
-	url = "{{=URL(r=request, c='static', f='foo')}}"
         s =  "<div style='display:table;width:100%'>"
         s +=  "<div style='display:table-row'>"
         s +=   "<div class='sev sev"+d['status']+"'>&nbsp;</div>"
@@ -152,15 +95,18 @@ function format_action(d) {
 		s += "<div>"+d['acked_comment']+"</div>"
 	}
         s +=    "<div data-type='vertical' data-role='controlgroup'>"
-        s +=     "<a data-role='button' rel='external' data-rel='dialog' href={{=URL(r=request, f='show_action')}}/"+d['id']+">"
-        s +=      "<img width='12px' src='"+url.replace("foo", action_img_h[d['action']])+"'>"
+        s +=     "<a data-icon='"+d['action']+"' data-role='button' rel='external' data-rel='dialog' href={{=URL(r=request, f='show_action')}}/"+d['id']+">"
         if (d['cron'] == 1) {
 		s += "<img width='12px' style='padding-left:6px' src='{{=URL(r=request, c='static', f='time16.png')}}'>"
 	}
         s +=      "<span style='padding-left:6px'>"+d['action']+"</span>"
 	s +=     "</a>"
-	s +=     "<a rel='external' href='{{=URL(r=request, f='svc')}}/"+d['svcname']+"' data-role='button'>"+d['svcname']+"</a>"
-	s +=     "<a rel='external' href='{{=URL(r=request, f='node')}}/"+d['hostname']+"' data-role='button'>"+d['hostname']+"</a>"
+	s +=     "<a data-icon='svc' rel='external' href='{{=URL(r=request, f='svc')}}/"+d['svcname']+"' data-role='button'>"
+	s +=      d['svcname']
+	s +=     "</a>"
+	s +=     "<a data-icon='node' rel='external' href='{{=URL(r=request, f='node')}}/"+d['hostname']+"' data-role='button'>"
+	s +=      d['hostname']
+	s +=     "</a>"
 	s +=    "</div>"
 	s +=   "</div>"
         s +=  "</div>"
