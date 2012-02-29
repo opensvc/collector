@@ -5189,7 +5189,7 @@ def comp_list_rulesets(pattern='%', nodename=None, auth=("", "")):
         q &= db.nodes.team_responsible == db.auth_group.role
         q &= db.auth_group.id == db.comp_ruleset_team_responsible.group_id
     rows = db(q).select(groupby=db.comp_rulesets.id)
-    return [r.comp_rulesets.ruleset_name for r in rows]
+    return sorted([r.comp_rulesets.ruleset_name for r in rows])
 
 @auth_uuid
 @service.xmlrpc
@@ -5201,7 +5201,7 @@ def comp_list_modulesets(pattern='%', auth=("", "")):
     q &= db.nodes.team_responsible == db.auth_group.role
     q &= db.nodes.nodename == node
     rows = db(q).select(db.comp_moduleset.modset_name, groupby=db.comp_moduleset.modset_name)
-    return [r.modset_name for r in rows]
+    return sorted([r.modset_name for r in rows])
 
 @auth_uuid
 @service.xmlrpc
