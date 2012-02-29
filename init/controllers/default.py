@@ -1261,6 +1261,7 @@ def do_action(ids, action=None):
     rows = db.executesql(sql)
 
     def fmt_action(node, svc, action):
+        action = action.replace('"', '\"').replace("'", "\'")
         cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
                       '-o', 'ForwardX11=no',
                       '-o', 'PasswordAuthentication=no',

@@ -4935,6 +4935,13 @@ def comp_attached_moduleset_id(nodename):
     rows = db(q).select(db.comp_node_moduleset.modset_id)
     return [r.modset_id for r in rows]
 
+def comp_ruleset_id(ruleset):
+    q = db.comp_rulesets.ruleset_name == ruleset
+    rows = db(q).select(db.comp_rulesets.id)
+    if len(rows) == 0:
+        return None
+    return rows[0].id
+
 def comp_moduleset_id(moduleset):
     q = db.comp_moduleset.modset_name == moduleset
     rows = db(q).select(db.comp_moduleset.id)
@@ -4948,6 +4955,13 @@ def comp_moduleset_exists(moduleset):
     if len(rows) != 1:
         return None
     return rows[0].id
+
+def comp_ruleset_svc_attached(svcname, rset_id):
+    q = db.comp_rulesets_services.svcname == svcname
+    q &= db.comp_rulesets_services.ruleset_id == rset_id
+    if len(db(q).select(db.comp_rulesets_services.id)) == 0:
+        return False
+    return True
 
 def comp_moduleset_svc_attached(svcname, modset_id):
     q = db.comp_modulesets_services.modset_svcname == svcname
@@ -4976,6 +4990,29 @@ def comp_ruleset_attached(nodename, ruleset_id):
     if len(db(q).select(db.comp_rulesets_nodes.id)) == 0:
         return False
     return True
+
+@auth_uuid
+@service.xmlrpc
+def comp_attach_svc_ruleset(svcname, ruleset, auth):
+    if len(ruleset) == 0:
+        return dict(status=False, msg="no ruleset specified"%ruleset)
+    rset_id = comp_ruleset_id(ruleset)
+    if rset_id is None:
+        return dict(status=False, msg="ruleset %s does not exist"%ruleset)
+    if comp_ruleset_svc_attached(svcname, rset_id):
+        return dict(status=True, msg="ruleset %s is already attached to this service"%ruleset)
+    if not comp_ruleset_svc_attachable(svcname, rset_id):
+        return dict(status=False, msg="ruleset %s is not attachable"%ruleset)
+
+    n = db.comp_rulesets_services.insert(svcname=svcname,
+                                           ruleset_id=rset_id)
+    if n == 0:
+        return dict(status=False, msg="failed to attach ruleset %s"%ruleset)
+    _log('compliance.ruleset.service.attach',
+         '%(ruleset)s attached to service %(svcname)s',
+        dict(svcname=svcname, ruleset=ruleset),
+        user='root@'+svcname)
+    return dict(status=True, msg="ruleset %s attached"%ruleset)
 
 @auth_uuid
 @service.xmlrpc
@@ -5022,6 +5059,36 @@ def comp_attach_moduleset(nodename, moduleset, auth):
         dict(node=nodename, moduleset=moduleset),
         user='root@'+nodename)
     return dict(status=True, msg="moduleset %s attached"%moduleset)
+
+@auth_uuid
+@service.xmlrpc
+def comp_detach_svc_ruleset(svcname, ruleset, auth):
+    if len(ruleset) == 0:
+        return dict(status=False, msg="no ruleset specified"%ruleset)
+    if ruleset == 'all':
+        rset_id = comp_attached_svc_ruleset_id(svcname)
+    else:
+        rset_id = comp_ruleset_id(ruleset)
+    if rset_id is None:
+        return dict(status=True, msg="ruleset %s does not exist"%ruleset)
+    elif ruleset == 'all' and len(rset_id) == 0:
+        return dict(status=True, msg="this service has no ruleset attached")
+    if ruleset != 'all' and not comp_ruleset_svc_attached(svcname, rset_id):
+        return dict(status=True,
+                    msg="ruleset %s is not attached to this service"%ruleset)
+    q = db.comp_rulesets_services.svcname == svcname
+    if isinstance(rset_id, list):
+        q &= db.comp_rulesets_services.ruleset_id.belongs(rset_id)
+    else:
+        q &= db.comp_rulesets_services.ruleset_id == rset_id
+    n = db(q).delete()
+    if n == 0:
+        return dict(status=False, msg="failed to detach the ruleset")
+    _log('compliance.ruleset.service.detach',
+        '%(ruleset)s detached from service %(svcname)s',
+        dict(svcname=svcname, ruleset=ruleset),
+        user='root@'+svcname)
+    return dict(status=True, msg="ruleset %s detached"%ruleset)
 
 @auth_uuid
 @service.xmlrpc
@@ -5091,6 +5158,19 @@ def comp_moduleset_svc_attachable(svcname, modset_id):
     q &= db.auth_group.id == db.comp_moduleset_team_responsible.group_id
     q &= db.comp_moduleset_team_responsible.modset_id == db.comp_moduleset.id
     q &= db.comp_moduleset.id == modset_id
+    rows = db(q).select(db.nodes.team_responsible)
+    if len(rows) == 0:
+        return False
+    return True
+
+def comp_ruleset_svc_attachable(svcname, rset_id):
+    q = db.services.svc_name == svcname
+    q &= db.services.svc_app == db.apps.app
+    q &= db.apps.id == db.apps_responsibles.app_id
+    q &= db.apps_responsibles.group_id == db.auth_group.id
+    q &= db.auth_group.id == db.comp_ruleset_team_responsible.group_id
+    q &= db.comp_ruleset_team_responsible.ruleset_id == db.comp_rulesets.id
+    q &= db.comp_rulesets.id == rset_id
     rows = db(q).select(db.nodes.team_responsible)
     if len(rows) == 0:
         return False
@@ -5189,7 +5269,7 @@ def comp_list_rulesets(pattern='%', nodename=None, auth=("", "")):
         q &= db.nodes.team_responsible == db.auth_group.role
         q &= db.auth_group.id == db.comp_ruleset_team_responsible.group_id
     rows = db(q).select(groupby=db.comp_rulesets.id)
-    return [r.comp_rulesets.ruleset_name for r in rows]
+    return sorted([r.comp_rulesets.ruleset_name for r in rows])
 
 @auth_uuid
 @service.xmlrpc
@@ -5201,7 +5281,7 @@ def comp_list_modulesets(pattern='%', auth=("", "")):
     q &= db.nodes.team_responsible == db.auth_group.role
     q &= db.nodes.nodename == node
     rows = db(q).select(db.comp_moduleset.modset_name, groupby=db.comp_moduleset.modset_name)
-    return [r.modset_name for r in rows]
+    return sorted([r.modset_name for r in rows])
 
 @auth_uuid
 @service.xmlrpc
