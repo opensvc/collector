@@ -484,6 +484,228 @@ class col_var_value(HtmlTableColumn):
                )
         return form
 
+    def html_fs(self, o):
+        v = self.get(o)
+        l = []
+        try:
+            fss = json.loads(v)
+        except:
+            return SPAN("malformed value", PRE(v))
+        if type(fss) != list:
+            return v
+        for fs in fss:
+            if 'mnt' in fs:
+                mnt = fs['mnt']
+            else:
+                mnt = "-"
+            if 'dev' in fs:
+                dev = fs['dev']
+            else:
+                dev = "-"
+            if 'type' in fs:
+                t = fs['type']
+            else:
+                t = "-"
+            if 'size' in fs:
+                size = fs['size']
+            else:
+                size = "-"
+            if 'opts' in fs:
+                opts = fs['opts']
+            else:
+                opts = "-"
+            if 'vg' in fs:
+                vg = map(lambda x: P(x), fs['vg'])
+            else:
+                vg = "-"
+            l += [DIV(
+                    DIV('fs', _style='display:table-cell;font-weight:bold', _class="comp16"),
+                    _style="display:table-row",
+                  ),
+                  DIV(
+                    DIV('dev', _style='display:table-cell', _class="hd16"),
+                    DIV('%s '%dev, _style='display:table-cell'),
+                    _style="display:table-row",
+                  ),
+                  DIV(
+                    DIV('mnt', _style='display:table-cell;padding-left:20px'),
+                    DIV(mnt, _style='display:table-cell'),
+                    _style="display:table-row",
+                  ),
+                  DIV(
+                    DIV('type', _style='display:table-cell;padding-left:20px'),
+                    DIV(t, _style='display:table-cell'),
+                    _style="display:table-row",
+                  ),
+                  DIV(
+                    DIV('opts', _style='display:table-cell;padding-left:20px'),
+                    DIV(opts, _style='display:table-cell'),
+                    _style="display:table-row",
+                  ),
+                  DIV(
+                    DIV('size', _style='display:table-cell;padding-left:20px'),
+                    DIV(size, _style='display:table-cell'),
+                    _style="display:table-row",
+                  ),
+                  DIV(
+                    DIV('vg', _style='display:table-cell;padding-left:20px'),
+                    DIV(vg, _style='display:table-cell'),
+                    _style="display:table-row",
+                  )]
+        return DIV(l, _class="comp_var_table")
+
+    def form_fs(self, o):
+        name = 'fs_n_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
+        l = []
+        v = self.get(o)
+        if v is None or v == "":
+            f = {}
+        else:
+            try:
+                f = json.loads(v)
+            except:
+                return self.form_raw(o)
+        if type(f) != list:
+            return self.form_raw(o)
+        for i, fs in enumerate(f):
+            if 'mnt' in fs:
+                mnt = fs['mnt']
+            else:
+                mnt = ""
+            if 'dev' in fs:
+                dev = fs['dev']
+            else:
+                dev = ""
+            if 'type' in fs:
+                t = fs['type']
+            else:
+                t = ""
+            if 'size' in fs:
+                size = fs['size']
+            else:
+                size = ""
+            if 'opts' in fs:
+                opts = fs['opts']
+            else:
+                opts = ""
+            if 'vg' in fs:
+                vg = ','.join(fs['vg'])
+            else:
+                vg = ""
+
+            l += [DIV(
+                    SPAN("fs", _class="comp16"),
+                    _style="display:table-row",
+                  ),
+                  DIV(
+                    DIV('dev', _style='display:table-cell;padding-left:20px'),
+                    DIV(
+                      INPUT(_name=name, _id="%s_%d_%s"%(name, i, 'dev'), _value=dev),
+                      _style='display:table-cell',
+                    ),
+                    _style="display:table-row",
+                  ),
+                  DIV(
+                    DIV('mnt', _style='display:table-cell;padding-left:20px'),
+                    DIV(
+                      INPUT(_name=name, _id="%s_%d_%s"%(name, i, 'mnt'), _value=mnt),
+                      _style='display:table-cell',
+                    ),
+                    _style="display:table-row",
+                  ),
+                  DIV(
+                    DIV('type', _style='display:table-cell;padding-left:20px'),
+                    DIV(
+                      INPUT(_name=name, _id="%s_%d_%s"%(name, i, 'type'), _value=t),
+                      _style='display:table-cell',
+                    ),
+                    _style="display:table-row",
+                  ),
+                  DIV(
+                    DIV('opts', _style='display:table-cell;padding-left:20px'),
+                    DIV(
+                      INPUT(_name=name, _id="%s_%d_%s"%(name, i, 'opts'), _value=opts),
+                      _style='display:table-cell',
+                    ),
+                    _style="display:table-row",
+                  ),
+                  DIV(
+                    DIV('size', _style='display:table-cell;padding-left:20px'),
+                    DIV(
+                      INPUT(_name=name, _id="%s_%d_%s"%(name, i, 'size'), _value=size),
+                      _style='display:table-cell',
+                    ),
+                    _style="display:table-row",
+                  ),
+                  DIV(
+                    DIV('vg', _style='display:table-cell;padding-left:20px'),
+                    DIV(
+                      INPUT(_name=name, _id="%s_%d_%s"%(name, i, 'vg'), _value=vg),
+                      _style='display:table-cell',
+                    ),
+                    _style="display:table-row",
+                  )]
+        form = DIV(
+                 SPAN(l, _id=name+'_container'),
+                 BR(),
+                 INPUT(
+                   _value="Add",
+                   _type="submit",
+                   _onclick="""
+d=new Date();
+i=d.getTime();
+$("#%(n)s_container").append("\
+ <div style='display:table-row'>\
+   <span class='comp16'>fs</span>\
+ </div>\
+ <div style='display:table-row'>\
+  <div style='display:table-cell;padding-left:20px'>dev</div>\
+  <div style='display:table-cell'>\
+   <input name='%(n)s' id='%(n)s_"+i+"_dev'>\
+  </div>\
+ </div>\
+ <div style='display:table-row'>\
+  <div style='display:table-cell;padding-left:20px'>mnt</div>\
+  <div style='display:table-cell'>\
+   <input name='%(n)s' id='%(n)s_"+i+"_mnt'>\
+  </div>\
+ </div>\
+ <div style='display:table-row'>\
+  <div style='display:table-cell;padding-left:20px'>type</div>\
+  <div style='display:table-cell'>\
+   <input name='%(n)s' id='%(n)s_"+i+"_type'>\
+  </div>\
+ </div>\
+ <div style='display:table-row'>\
+  <div style='display:table-cell;padding-left:20px'>opts</div>\
+  <div style='display:table-cell'>\
+   <input name='%(n)s' id='%(n)s_"+i+"_opts'>\
+  </div>\
+ </div>\
+ <div style='display:table-row'>\
+  <div style='display:table-cell;padding-left:20px'>size</div>\
+  <div style='display:table-cell'>\
+   <input name='%(n)s' id='%(n)s_"+i+"_size'>\
+  </div>\
+ </div>\
+ <div style='display:table-row'>\
+  <div style='display:table-cell;padding-left:20px'>vg</div>\
+  <div style='display:table-cell'>\
+   <input name='%(n)s' id='%(n)s_"+i+"_vg'>\
+  </div>\
+ </div>\
+")"""%dict(n=name),
+                 ),
+                 " ",
+                 INPUT(
+                   _type="submit",
+                   _onclick=self.t.ajax_submit(additional_input_name=name,
+                                               args=["var_value_set_fs", name]),
+                 ),
+                 _class="comp_var_table",
+               )
+        return form
+
     def html_group(self, o):
         v = self.get(o)
         l = [DIV(
@@ -2156,6 +2378,8 @@ def ajax_comp_rulesets():
                 var_value_set_dict(name)
             elif action == 'var_value_set_vuln':
                 var_value_set_list_of_dict(name, 'pkgname')
+            elif action == 'var_value_set_fs':
+                var_value_set_list_of_dict(name, 'mnt')
             elif action == 'var_value_set_group':
                 var_value_set_dict_dict(name, 'group')
             elif action == 'var_value_set_user':
@@ -4282,6 +4506,9 @@ def var_value_set_list_of_dict(name, mainkey):
         except:
             val = request.vars[i]
         if key == 'members':
+            val = val.split(',')
+            val = map(lambda x: x.strip(), val)
+        elif key == 'vg':
             val = val.split(',')
             val = map(lambda x: x.strip(), val)
         d[index][key] = val
