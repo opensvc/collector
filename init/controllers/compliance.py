@@ -1330,7 +1330,7 @@ class table_comp_rulesets_nodes(HtmlTable):
         self.colprops['nodename'].display = True
         self.checkboxes = True
         self += HtmlTableMenu('Ruleset', 'comp16', ['ruleset_attach', 'ruleset_detach'], id='menu_ruleset2')
-        self.ajax_col_values = 'ajax_comp_rulesets_rules_col_values'
+        self.ajax_col_values = 'ajax_comp_rulesets_nodes_col_values'
 
     def ruleset_detach(self):
         d = DIV(
@@ -1403,7 +1403,7 @@ def ajax_comp_explicit_rules_col_values():
     return t.col_values_cloud(col)
 
 @auth.requires_login()
-def ajax_comp_rulesets_rules_col_values():
+def ajax_comp_rulesets_nodes_col_values():
     t = table_comp_rulesets_nodes('crn2', 'ajax_comp_rulesets_nodes',
                                   innerhtml='crn1')
     col = request.args[0]
