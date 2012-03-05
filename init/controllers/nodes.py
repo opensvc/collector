@@ -30,7 +30,7 @@ def _node_form(record=None):
                                 'cpu_cores',
                                 'cpu_model',
                                 'cpu_vendor',
-                                'environnement',
+                                'host_mode',
                                 'serial',
                                 'model'],
                  fields=['nodename',
@@ -147,7 +147,7 @@ class table_nodes(HtmlTable):
             self.colprops[c].table = 'v_nodes'
         for c in ['loc_building', 'loc_floor', 'loc_rack',
                   'cpu_dies', 'cpu_cores', 'cpu_model', 'mem_bytes',
-                  'serial', 'team_responsible', 'environnement', 'status']:
+                  'serial', 'team_responsible', 'host_mode', 'status']:
             self.colprops[c].display = True
         self.colprops['nodename'].t = self
         self.extraline = True

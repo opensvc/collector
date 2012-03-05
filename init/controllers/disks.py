@@ -691,7 +691,7 @@ def ajax_nodes_list():
     svcname = request.args[0]
     dg_id = request.args[1]
 
-    o = db.stor_array_tgtid.array_tgtid | db.nodes.environnement | db.nodes.nodename
+    o = db.stor_array_tgtid.array_tgtid | db.nodes.host_mode | db.nodes.nodename
 
     # select nodes who see tgt ids
     q = db.stor_array_dg.id == dg_id
@@ -730,7 +730,7 @@ def ajax_nodes_list():
             TD(path.stor_array_tgtid.array_tgtid),
             TD(path.node_hba.hba_id),
             TD(path.nodes.nodename),
-            TD(path.nodes.environnement),
+            TD(path.nodes.host_mode),
         )
         l.append(o)
     return DIV(

@@ -153,7 +153,7 @@ def stat_nb_nodes(fset_id):
     return n
 
 def stat_nb_nodes_prd(fset_id):
-    q = db.nodes.environnement.like("%pr%")
+    q = db.nodes.host_mode.like("%pr%")
     q = apply_filters(q, db.nodes.nodename, None, fset_id)
     n = db(q).count()
     print "stat_nb_nodes_prd():", str(n)

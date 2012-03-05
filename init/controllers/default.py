@@ -726,6 +726,7 @@ class table_svcmon(HtmlTable):
             'svc_type',
             'svc_cluster_type',
             'environnement',
+            'host_mode',
             'mon_nodname',
             'mon_availstatus',
             'mon_overallstatus',
@@ -795,7 +796,7 @@ class table_svcmon(HtmlTable):
             self.colprops[i].table = 'v_svcmon'
             self.colprops[i].t = self
         for i in ['mon_nodname', 'svc_name', 'svc_containertype', 'svc_app',
-                  'svc_type', 'environnement', 'mon_overallstatus',
+                  'svc_type', 'host_mode', 'mon_overallstatus',
                   'mon_availstatus', 'mon_syncstatus']:
             self.colprops[i].display = True
         self.span = 'svc_name'

@@ -705,7 +705,7 @@ def update_dash_checks(nodename):
     rows = db.executesql(sql)
     db.commit()
 
-    sql = """select environnement from nodes
+    sql = """select host_mode from nodes
              where
                nodename="%(nodename)s"
           """%dict(nodename=nodename)

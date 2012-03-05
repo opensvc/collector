@@ -1672,6 +1672,7 @@ v_nodes_cols = [
     'serial',
     'model',
     'role',
+    'host_mode',
     'environnement',
     'warranty_end',
     'status',
@@ -2288,6 +2289,13 @@ v_nodes_colprops = {
     'role': HtmlTableColumn(
              title = 'Role',
              field='role',
+             display = False,
+             img = 'node16',
+             table = 'v_nodes',
+            ),
+    'host_mode': col_env(
+             title = 'Host Mode',
+             field='host_mode',
              display = False,
              img = 'node16',
              table = 'v_nodes',

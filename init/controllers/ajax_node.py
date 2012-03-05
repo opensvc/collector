@@ -175,6 +175,7 @@ def ajax_node():
       TR(TD(T('project'), _style='font-style:italic'), TD(node['project'])),
       TR(TD(T('status'), _style='font-style:italic'), TD(node['status'])),
       TR(TD(T('role'), _style='font-style:italic'), TD(node['role'])),
+      TR(TD(T('host mode'), _style='font-style:italic'), TD(node['host_mode'])),
       TR(TD(T('env'), _style='font-style:italic'), TD(node['environnement'])),
       TR(TD(T('uuid'), _style='font-style:italic'), TD(node_uuid)),
     )

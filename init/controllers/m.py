@@ -53,6 +53,7 @@ def json_node(nodename):
             db.nodes.status,
             db.nodes.role,
             db.nodes.environnement,
+            db.nodes.host_mode,
             db.nodes.mem_bytes,
             db.nodes.mem_banks,
             db.nodes.mem_slots,

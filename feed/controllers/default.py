@@ -295,10 +295,18 @@ def update_asset(vars, vals, auth):
     feed_enqueue("_update_asset", vars, vals, auth)
 
 def _update_asset(vars, vals, auth):
+    h = {}
+    for a,b in zip(vars, vals):
+        h[a] = b
     now = datetime.datetime.now()
-    vars.append('updated')
-    vals.append(now)
-    generic_insert('nodes', vars, vals)
+    h['updated'] = now
+    if 'environnement' in h and 'host_mode' not in h:
+        h['host_mode'] = h['environnement']
+        del(h['environnement'])
+    if 'environment' in h:
+        h['environnement'] = h['environment']
+        del(h['environment'])
+    generic_insert('nodes', h.keys(), h.values())
     update_dash_node_not_updated(auth[1])
     update_dash_node_without_warranty_end(auth[1])
     update_dash_node_without_asset(auth[1])
@@ -1668,7 +1676,7 @@ def collector_status(cmd, auth):
             q &= db.svcmon.id < 0
     rows = db(q).select(db.svcmon.mon_nodname,
                         db.svcmon.mon_svcname,
-                        db.nodes.environnement,
+                        db.nodes.host_mode,
                         db.svcmon.mon_availstatus,
                         db.svcmon.mon_overallstatus,
                         db.svcmon.mon_updated,
@@ -1945,7 +1953,7 @@ def cron_dash_checks_not_updated():
                  "check value not updated",
                  "",
                  c.chk_nodename,
-                 if(n.environnement="PRD", 1, 0),
+                 if(n.host_mode="PRD", 1, 0),
                  "%(t)s:%(i)s",
                  concat('{"i":"', chk_instance, '", "t":"', chk_type, '"}'),
                  chk_updated,
@@ -2453,7 +2461,7 @@ def update_dash_checks(nodename):
     rows = db.executesql(sql)
     db.commit()
 
-    sql = """select environnement from nodes
+    sql = """select host_mode from nodes
              where
                nodename="%(nodename)s"
           """%dict(nodename=nodename)
@@ -2526,7 +2534,7 @@ def update_dash_netdev_errors(nodename):
 
     if len(rows) > 0 and rows[0][0] > 0:
         errs = rows[0][0]
-        sql = """select environnement from nodes
+        sql = """select host_mode from nodes
                  where
                    nodename="%(nodename)s"
               """%dict(nodename=nodename)
