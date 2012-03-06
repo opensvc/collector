@@ -1821,6 +1821,14 @@ def cron_dash_service_not_updated():
     db.commit()
 
 def cron_dash_svcmon_not_updated():
+    sql = """delete from dashboard
+             where
+               dash_svcname!="" and
+               dash_nodename!="" and
+               concat(dash_svcname, '@', dash_nodename) not in
+                 (select distinct concat(mon_svcname, '@', mon_nodname) from svcmon)
+          """
+    db.executesql(sql)
     sql = """insert ignore
              into dashboard
                select
