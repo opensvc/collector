@@ -375,6 +375,7 @@ class col_var_value(HtmlTableColumn):
                DIV('gid', _style='display:table-cell'),
                DIV('shell', _style='display:table-cell'),
                DIV('home', _style='display:table-cell'),
+               DIV('pwd', _style='display:table-cell'),
                DIV('gecos', _style='display:table-cell'),
                _style="display:table-row",
              )]
@@ -399,6 +400,10 @@ class col_var_value(HtmlTableColumn):
                 home = '%s'%u['home']
             else:
                 home = "-"
+            if 'password' in u:
+                pwd = '%s'%u['password']
+            else:
+                pwd = "-"
             if 'gecos' in u:
                 gecos = '%s'%u['gecos']
             else:
@@ -409,6 +414,7 @@ class col_var_value(HtmlTableColumn):
                     DIV(gid, _style='display:table-cell'),
                     DIV(shell, _style='display:table-cell'),
                     DIV(home, _style='display:table-cell'),
+                    DIV(pwd, _style='display:table-cell'),
                     DIV(gecos, _style='display:table-cell'),
                     _style="display:table-row",
                   )]
@@ -422,6 +428,7 @@ class col_var_value(HtmlTableColumn):
                DIV('gid', _style='display:table-cell'),
                DIV('shell', _style='display:table-cell'),
                DIV('home', _style='display:table-cell'),
+               DIV('pwd', _style='display:table-cell'),
                DIV('gecos', _style='display:table-cell'),
                _style="display:table-row",
              )]
@@ -448,6 +455,7 @@ class col_var_value(HtmlTableColumn):
                           ('gid', '3em'),
                           ('shell', '5em'),
                           ('home', '5em'),
+                          ('password', '3em'),
                           ('gecos', 'auto')):
                 if key not in f[user]:
                     value = ""
@@ -472,7 +480,7 @@ class col_var_value(HtmlTableColumn):
                  INPUT(
                    _value="Add",
                    _type="submit",
-                   _onclick="""d=new Date(); i=d.getTime();$("#%(n)s_container").append("<div style='display:table-row'><div style='display:table-cell'><span class='guy16'></span><input style='width:5em' name='%(n)s' id='%(n)s_"+i+"_user'></div><div style='display:table-cell'><input style='width:3em' name='%(n)s' id='%(n)s_"+i+"_uid'></div><div style='display:table-cell'><input style='width:3em' name='%(n)s' id='%(n)s_"+i+"_gid'></div><div style='display:table-cell'><input style='width:5em' name='%(n)s' id='%(n)s_"+i+"_shell'></div><div style='display:table-cell'><input style='width:5em' name='%(n)s' id='%(n)s_"+i+"_home'></div><div style='display:table-cell'><input name='%(n)s' id='%(n)s_"+i+"_gecos'></div></div>")"""%dict(n=name),
+                   _onclick="""d=new Date(); i=d.getTime();$("#%(n)s_container").append("<div style='display:table-row'><div style='display:table-cell'><span class='guy16'></span><input style='width:5em' name='%(n)s' id='%(n)s_"+i+"_user'></div><div style='display:table-cell'><input style='width:3em' name='%(n)s' id='%(n)s_"+i+"_uid'></div><div style='display:table-cell'><input style='width:3em' name='%(n)s' id='%(n)s_"+i+"_gid'></div><div style='display:table-cell'><input style='width:5em' name='%(n)s' id='%(n)s_"+i+"_shell'></div><div style='display:table-cell'><input style='width:5em' name='%(n)s' id='%(n)s_"+i+"_home'></div><div style='display:table-cell'><input name='%(n)s' id='%(n)s_"+i+"_password'></div><div style='display:table-cell'><input name='%(n)s' id='%(n)s_"+i+"_gecos'></div></div>")"""%dict(n=name),
                  ),
                  " ",
                  INPUT(
