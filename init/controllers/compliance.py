@@ -567,7 +567,7 @@ class col_var_value(HtmlTableColumn):
         l = []
         v = self.get(o)
         if v is None or v == "":
-            f = {}
+            f = []
         else:
             try:
                 f = json.loads(v)
