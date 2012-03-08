@@ -384,6 +384,16 @@ def _register_disk(vars, vals, auth):
     else:
         h['disk_local'] = 'F'
         generic_insert('diskinfo', ['disk_id', 'disk_size'], [h["disk_id"], h['disk_size']])
+
+        # if no array claimed that disk, give it to the node
+        sql = """update diskinfo
+                 set disk_arrayid="%s"
+                 where
+                   disk_id="%s" and
+                   (disk_arrayid = "" or disk_arrayid is NULL)
+              """%(h['disk_nodename'].strip("'"), h["disk_id"].strip("'"))
+        db.executesql(sql)
+        db.commit()
     try:
         generic_insert('svcdisks', h.keys(), h.values())
     except _mysql_exceptions.IntegrityError:
