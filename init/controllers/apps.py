@@ -15,7 +15,7 @@ def refresh_b_apps():
         db.executesql(sql)
         sql = """CREATE TABLE `b_apps` (
   `id` int(11) NOT NULL DEFAULT '0',
-  `app` varchar(20) CHARACTER SET latin1 NOT NULL,
+  `app` varchar(64) CHARACTER SET latin1 NOT NULL,
   `roles` varchar(342) DEFAULT NULL,
   `responsibles` varchar(342) DEFAULT NULL,
   `mailto` varchar(342) DEFAULT NULL,
