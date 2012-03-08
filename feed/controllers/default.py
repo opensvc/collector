@@ -356,7 +356,17 @@ def svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
 
 @auth_uuid
 @service.xmlrpc
+def register_disks(vars, vals, auth):
+    db(db.svcdisks.disk_nodename==auth[1].strip("'")).delete()
+    for v in vals:
+        _register_disk(vars, v, auth)
+
+@auth_uuid
+@service.xmlrpc
 def register_disk(vars, vals, auth):
+    _register_disk(vars, vals, auth)
+
+def _register_disk(vars, vals, auth):
     h = {}
     now = datetime.datetime.now()
     for a,b in zip(vars, vals):
