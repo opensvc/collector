@@ -97,6 +97,7 @@ mail=Mail()
 mail.settings.server='localhost:25'
 mail.settings.sender='admin@opensvc.com'
 auth.settings.mailer=mail
+mail.settings.tls = False
 
 default_max_lines = 1000
 default_limitby = (0, default_max_lines)
