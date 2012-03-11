@@ -2127,3 +2127,7 @@ alter table apps add unique key i_app (app);
 alter table apps modify column app varchar(64);
 
 alter table services modify column svc_app varchar(64);
+
+alter table svcdisks drop foreign key svcdisks_ibfk_1;
+
+alter table svcdisks add CONSTRAINT `svcdisks_ibfk_1` FOREIGN KEY (disk_nodename) REFERENCES nodes (nodename) ON DELETE CASCADE;
