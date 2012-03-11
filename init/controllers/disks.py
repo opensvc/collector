@@ -45,15 +45,15 @@ class col_size_gb(HtmlTableColumn):
        if d is None:
            return ''
        unit = 'GB'
-       return DIV("%d %s"%(d, unit), _class="numeric")
+       return DIV("%d %s"%(d/1024, unit), _class="numeric")
 
 class col_size_mb(HtmlTableColumn):
     def html(self, o):
        d = self.get(o)
        if d is None:
            return ''
-       unit = 'GB'
-       return DIV("%d %s"%(d/1024, unit), _class="numeric")
+       unit = 'MB'
+       return DIV("%d %s"%(d, unit), _class="numeric")
 
 class col_quota(HtmlTableColumn):
     def html(self, o):
@@ -425,6 +425,7 @@ class table_disks(HtmlTable):
                      'disk_dg',
                      'disk_updated',
                      'disk_array_updated',
+                     'disk_used',
                      'disk_size',
                      'disk_group',
                      'disk_raid',
@@ -453,8 +454,15 @@ class table_disks(HtmlTable):
                      img='hw16',
                      display=True,
                     ),
+            'disk_used': HtmlTableColumn(
+                     title='Used (MB)',
+                     table='svcdisks',
+                     field='disk_used',
+                     img='hd16',
+                     display=True,
+                    ),
             'disk_size': HtmlTableColumn(
-                     title='Size (GB)',
+                     title='Size (MB)',
                      table='diskinfo',
                      field='disk_size',
                      img='hd16',
@@ -831,12 +839,13 @@ def ajax_disks_col_values():
     o = db[t.colprops[col].table][col]
     q = db.diskinfo.id>0
     q |= db.svcdisks.id<0
-    l = db.svcdisks.on(db.diskinfo.disk_id==db.svcdisks.disk_id)
+    l1 = db.stor_array.on(db.diskinfo.disk_arrayid == db.stor_array.array_name)
+    l2 = db.svcdisks.on(db.diskinfo.disk_id==db.svcdisks.disk_id)
     q = _where(q, 'svcdisks', domain_perms(), 'disk_nodename')
     q = apply_filters(q, db.svcdisks.disk_nodename, db.svcdisks.disk_svcname)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o, groupby=o, left=l)
+    t.object_list = db(q).select(o, orderby=o, groupby=o, left=(l1,l2))
     return t.col_values_cloud(col)
 
 @auth.requires_login()
@@ -845,16 +854,16 @@ def ajax_disks():
     o = db.svcdisks.disk_id
     q = db.diskinfo.id>0
     q |= db.svcdisks.id<0
-    q &= db.diskinfo.disk_arrayid == db.stor_array.array_name
-    l = db.svcdisks.on(db.diskinfo.disk_id==db.svcdisks.disk_id)
+    l1 = db.stor_array.on(db.diskinfo.disk_arrayid == db.stor_array.array_name)
+    l2 = db.svcdisks.on(db.diskinfo.disk_id==db.svcdisks.disk_id)
     #q &= db.svcdisks.disk_nodename==db.v_nodes.nodename
     q = _where(q, 'svcdisks', domain_perms(), 'disk_nodename')
     q = apply_filters(q, db.svcdisks.disk_nodename, db.svcdisks.disk_svcname)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    n = len(db(q).select(left=l))
+    n = len(db(q).select(left=(l1,l2)))
     t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o, left=l)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o, left=(l1,l2))
 
     t.csv_q = q
     t.csv_orderby = o
@@ -931,7 +940,6 @@ def ajax_disk_app():
     o = db.svcdisks.disk_id
     q = db.diskinfo.id>0
     q |= db.svcdisks.id<0
-    q &= db.diskinfo.disk_arrayid == db.stor_array.array_name
     q = _where(q, 'svcdisks', domain_perms(), 'disk_nodename')
     q = apply_filters(q, db.svcdisks.disk_nodename, db.svcdisks.disk_svcname)
     for f in t.cols:
@@ -972,8 +980,14 @@ def ajax_disk_app():
         svc_app = row[0]
         size = int(row[1])
         array_name = row[2]
+        array_dg = row[3]
 
-        label = ' '.join(row[2:])
+        if array_name is None:
+            array_name = ''
+        if array_dg is None:
+            array_dg = ''
+
+        label = ' '.join((array_name, array_dg))
         t = [label, size]
         if svc_app not in dg:
             dg[svc_app] = [t]
@@ -992,12 +1006,12 @@ def ajax_disk_app():
     nt.object_list = []
     for svc_app, data_dg in dg.items():
         for i, (label, size) in enumerate(data_dg):
-            data_dg[i] = (label +' (%d GB)'%size, 100*size//s[svc_app])
+            data_dg[i] = (label +' (%d MB)'%size, 100*size//s[svc_app])
 
         ardata = ar[svc_app]
         data_ar = []
         for array_name, size in ardata.items():
-            data_ar.append([array_name + ' (%d GB)'%size, 100*size//s[svc_app]])
+            data_ar.append([array_name + ' (%d MB)'%size, 100*size//s[svc_app]])
 
         nt.object_list.append({'svc_app': svc_app,
                                'chart': '',
@@ -1079,7 +1093,7 @@ def ajax_disk_arrays():
     for row in rows:
         label = row[0]
         size = int(row[1])
-        data_array += [[str(label) +' (%d GB)'%size, size]]
+        data_array += [[str(label) +' (%d MB)'%size, size]]
 
     nt.object_list = [{'array_name': "All arrays in cursor",
                        'chart': '',
@@ -1122,7 +1136,7 @@ def ajax_disk_arrays():
 
     for array_name, data_array in ar.items():
         for i, (label, size) in enumerate(data_array):
-            data_array[i] = (str(label) +' (%d GB)'%size, size)
+            data_array[i] = (str(label) +' (%d MB)'%size, size)
 
         nt.object_list.append({'array_name': array_name,
                                'chart': '',
