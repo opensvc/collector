@@ -5520,6 +5520,22 @@ def comp_list_modulesets(pattern='%', auth=("", "")):
 
 @auth_uuid
 @service.xmlrpc
+def comp_show_status(svcname="", pattern='%', auth=("", "")):
+    node = auth[1]
+    q = db.comp_status.run_module.like(pattern)
+    q &= db.comp_status.run_nodename == node
+    q &= db.comp_status.run_svcname == svcname
+    rows = db(q).select(orderby=db.comp_status.run_module)
+    l = [('module', 'status', 'date', 'log')]
+    for row in rows:
+        l.append((row.run_module,
+                  str(row.run_status),
+                  row.run_date.strftime("%Y-%m-%d %H:%M:%S"),
+                  row.run_log))
+    return l
+
+@auth_uuid
+@service.xmlrpc
 def comp_get_svc_moduleset(svcname, auth):
     return _comp_get_svc_moduleset(svcname)
 
