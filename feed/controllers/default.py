@@ -817,7 +817,7 @@ def insert_sym(symid=None):
                 vals.append([dev.wwn,
                              s.info['symid'],
                              dev.info['dev_name'],
-                             str(dev.megabytes/1024),
+                             str(dev.megabytes),
                              "Meta-%d %s"%(dev.meta_count, dev.info['configuration']),
                              dev.diskgroup_name,
                              now])

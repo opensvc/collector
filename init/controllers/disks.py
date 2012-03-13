@@ -842,7 +842,7 @@ def ajax_disks_col_values():
     l1 = db.stor_array.on(db.diskinfo.disk_arrayid == db.stor_array.array_name)
     l2 = db.svcdisks.on(db.diskinfo.disk_id==db.svcdisks.disk_id)
     q = _where(q, 'svcdisks', domain_perms(), 'disk_nodename')
-    q = apply_filters(q, db.svcdisks.disk_nodename, db.svcdisks.disk_svcname)
+    q = apply_filters(q, db.svcdisks.disk_nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o, groupby=o, left=(l1,l2))
@@ -858,7 +858,7 @@ def ajax_disks():
     l2 = db.svcdisks.on(db.diskinfo.disk_id==db.svcdisks.disk_id)
     #q &= db.svcdisks.disk_nodename==db.v_nodes.nodename
     q = _where(q, 'svcdisks', domain_perms(), 'disk_nodename')
-    q = apply_filters(q, db.svcdisks.disk_nodename, db.svcdisks.disk_svcname)
+    q = apply_filters(q, db.svcdisks.disk_nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     n = len(db(q).select(left=(l1,l2)))
@@ -1024,6 +1024,7 @@ def ajax_disk_app():
              SCRIPT(
 """
 function diskpie(o) {
+  try{
   var data = $.parseJSON(o.html())
   o.html("")
   $.jqplot(o.attr('id'), [data],
@@ -1038,6 +1039,7 @@ function diskpie(o) {
       legend: { show:true, location: 'e' }
     }
   );
+  } catch(e) {}
 }
 $("[id^=app_chart_dg]").each(function(){
   diskpie($(this))
@@ -1056,12 +1058,9 @@ def ajax_disk_arrays():
     t = table_disks('disks', 'ajax_disks')
     nt = table_disk_arrays('arrays', 'ajax_disk_arrays')
 
-    o = db.svcdisks.disk_id
     q = db.diskinfo.id>0
-    q |= db.svcdisks.id<0
-    q &= db.diskinfo.disk_arrayid == db.stor_array.array_name
     q = _where(q, 'svcdisks', domain_perms(), 'disk_nodename')
-    q = apply_filters(q, db.svcdisks.disk_nodename, db.svcdisks.disk_svcname)
+    q = apply_filters(q, db.svcdisks.disk_nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
@@ -1071,22 +1070,41 @@ def ajax_disk_arrays():
     nt.additional_inputs = t.ajax_inputs()
 
     sql = """select
-               t.svc_app,
-               sum(t.disk_size) size
+               t.app,
+               sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
+               t.disk_arrayid
              from (
                select
-                 services.svc_app,
-                 diskinfo.disk_size
+                 services.svc_app as app,
+                 svcdisks.disk_used,
+                 svcdisks.disk_size,
+                 diskinfo.disk_arrayid
                from
                  diskinfo
                left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
                left join services on svcdisks.disk_svcname=services.svc_name
                left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
                where %(q)s
+               and svcdisks.disk_svcname != ""
+               group by diskinfo.disk_id
+              union
+               select
+                 nodes.project as app,
+                 svcdisks.disk_used,
+                 svcdisks.disk_size,
+                 diskinfo.disk_arrayid
+               from
+                 diskinfo
+               left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+               left join nodes on svcdisks.disk_nodename=nodes.nodename
+               left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
+               where %(q)s
+               and svcdisks.disk_svcname = ""
                group by diskinfo.disk_id
              ) t
-             group by t.svc_app
-             order by t.svc_app, size desc"""%dict(q=q)
+             group by t.app
+             order by t.app, size desc
+             """%dict(q=q)
     rows = db.executesql(sql)
 
     data_array = []
@@ -1101,13 +1119,14 @@ def ajax_disk_arrays():
                        'chart_ar': json.dumps(data_array)}]
 
     sql = """select
-               t.svc_app,
-               sum(t.disk_size) size,
+               t.app,
+               sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
                t.disk_arrayid
              from (
                select
-                 services.svc_app,
-                 diskinfo.disk_size,
+                 services.svc_app as app,
+                 svcdisks.disk_used,
+                 svcdisks.disk_size,
                  diskinfo.disk_arrayid
                from
                  diskinfo
@@ -1115,16 +1134,37 @@ def ajax_disk_arrays():
                left join services on svcdisks.disk_svcname=services.svc_name
                left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
                where %(q)s
+               and svcdisks.disk_svcname != ""
+               group by diskinfo.disk_id
+              union
+               select
+                 nodes.project as app,
+                 svcdisks.disk_used,
+                 svcdisks.disk_size,
+                 diskinfo.disk_arrayid
+               from
+                 diskinfo
+               left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+               left join nodes on svcdisks.disk_nodename=nodes.nodename
+               left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
+               where %(q)s
+               and svcdisks.disk_svcname = ""
                group by diskinfo.disk_id
              ) t
-             group by t.svc_app, t.disk_arrayid
-             order by t.disk_arrayid, t.svc_app, size desc"""%dict(q=q)
+             group by t.app, t.disk_arrayid
+             order by t.disk_arrayid, t.app, size desc"""%dict(q=q)
     rows = db.executesql(sql)
 
     ar = {}
     for row in rows:
-        svc_app = row[0]
-        size = int(row[1])
+        if row[0] is None:
+            svc_app = "unknown"
+        else:
+            svc_app = row[0]
+        if row[1] is None:
+            size = 0
+        else:
+            size = int(row[1])
         array_name = row[2]
 
         label = svc_app
@@ -1148,6 +1188,7 @@ def ajax_disk_arrays():
              SCRIPT(
 """
 function diskpie(o) {
+  try {
   var data = $.parseJSON(o.html())
   o.html("")
   $.jqplot(o.attr('id'), [data],
@@ -1162,6 +1203,7 @@ function diskpie(o) {
       legend: { show:true, location: 'e' }
     }
   );
+  } catch(e) {}
 }
 $("[id^=arrays_chart_dg]").each(function(){
   diskpie($(this))

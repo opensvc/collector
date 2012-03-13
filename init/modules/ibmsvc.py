@@ -94,7 +94,7 @@ id:name:IO_group_id:IO_group_name:status:mdisk_grp_id:mdisk_grp_name:capacity:ty
         """
         self.vdisk = self.readlines('lsvdisk')
         for vdisk in self.vdisk:
-            vdisk["capacity"] = self.to_gb(vdisk["capacity"])
+            vdisk["capacity"] = self.to_mb(vdisk["capacity"])
 
     def __str__(self):
         s = "name: %s\n" % self.name
@@ -106,7 +106,7 @@ id:name:IO_group_id:IO_group_name:status:mdisk_grp_id:mdisk_grp_name:capacity:ty
             s += "dg %s: free %s MB\n"%(dg['name'], str(dg['free_capacity']))
             s += "dg %s: total %s MB\n"%(dg['name'], str(dg['capacity']))
         for d in self.vdisk:
-            s += "vdisk %s: size %s GB\n"%(d['vdisk_UID'], str(d['capacity']))
+            s += "vdisk %s: size %s MB\n"%(d['vdisk_UID'], str(d['capacity']))
         return s
 
 

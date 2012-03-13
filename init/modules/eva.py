@@ -48,7 +48,7 @@ class Eva(object):
             d = {}
             d['wwlunid'] = e.find("wwlunid").text.replace('-', '')
             d['objectid'] = e.find('objectid').text
-            d['allocatedcapacity'] = int(e.find('allocatedcapacity').text)
+            d['allocatedcapacity'] = int(e.find('allocatedcapacity').text)*1024
             d['redundancy'] = e.find('redundancy').text
             d['diskgroupname'] = e.find('diskgroupname').text.split('\\')[-1]
             self.vdisk.append(d)
