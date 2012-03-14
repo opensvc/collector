@@ -951,13 +951,14 @@ def ajax_disk_app():
     nt.additional_inputs = t.ajax_inputs()
 
     sql = """select
-               t.svc_app,
-               sum(t.disk_size) size,
+               t.app,
+               sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
                t.disk_arrayid,
                t.disk_group
              from (
                select
-                 services.svc_app,
+                 services.svc_app as app,
+                 svcdisks.disk_used,
                  diskinfo.disk_size,
                  diskinfo.disk_arrayid,
                  diskinfo.disk_group
@@ -967,10 +968,26 @@ def ajax_disk_app():
                left join services on svcdisks.disk_svcname=services.svc_name
                left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
                where %(q)s
+               and svcdisks.disk_svcname != ""
+               group by diskinfo.disk_id
+              union all
+               select
+                 nodes.project as app,
+                 svcdisks.disk_used,
+                 diskinfo.disk_size,
+                 diskinfo.disk_arrayid,
+                 diskinfo.disk_group
+               from
+                 diskinfo
+               left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+               left join nodes on svcdisks.disk_nodename=nodes.nodename
+               left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
+               where %(q)s
+               and svcdisks.disk_svcname = ""
                group by diskinfo.disk_id
              ) t
-             group by t.svc_app, t.disk_group
-             order by t.svc_app, size desc, t.disk_arrayid, t.disk_group"""%dict(q=q)
+             group by t.app, t.disk_arrayid, t.disk_group
+             order by t.app, size desc, t.disk_arrayid, t.disk_group"""%dict(q=q)
     rows = db.executesql(sql)
 
     dg = {}
@@ -1006,13 +1023,15 @@ def ajax_disk_app():
     nt.object_list = []
     for svc_app, data_dg in dg.items():
         for i, (label, size) in enumerate(data_dg):
-            data_dg[i] = (label +' (%d MB)'%size, 100*size//s[svc_app])
+            data_dg[i] = (label +' (%d MB)'%size, size)
 
         ardata = ar[svc_app]
         data_ar = []
         for array_name, size in ardata.items():
-            data_ar.append([array_name + ' (%d MB)'%size, 100*size//s[svc_app]])
+            data_ar.append([array_name + ' (%d MB)'%size, size])
 
+        data_dg.sort(lambda x, y: cmp(y[1], x[1]))
+        data_ar.sort(lambda x, y: cmp(y[1], x[1]))
         nt.object_list.append({'svc_app': svc_app,
                                'chart': '',
                                'chart_dg': json.dumps(data_dg),
@@ -1087,7 +1106,7 @@ def ajax_disk_arrays():
                where %(q)s
                and svcdisks.disk_svcname != ""
                group by diskinfo.disk_id
-              union
+              union all
                select
                  nodes.project as app,
                  svcdisks.disk_used,
@@ -1136,7 +1155,7 @@ def ajax_disk_arrays():
                where %(q)s
                and svcdisks.disk_svcname != ""
                group by diskinfo.disk_id
-              union
+              union all
                select
                  nodes.project as app,
                  svcdisks.disk_used,

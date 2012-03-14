@@ -227,6 +227,7 @@ class SymDev(object):
         if isinstance(o, SymMeta):
             self.meta = o.meta
             self.meta_count = len(o.meta)
+        elif isinstance(o, SymDevWwn):
             self.wwn = o.wwn
         elif isinstance(o, SymDevRdf):
             self.rdf = o
@@ -234,6 +235,14 @@ class SymDev(object):
 
     def set_membership(self, devname):
         self.memberof = devname
+
+class SymDevWwn(object):
+    def __init__(self, xml):
+        self.dev_name = xml.find("dev_name").text
+        self.wwn = xml.find("wwn").text
+
+    def __str__(self):
+        return ''
 
 class SymDiskGroup(object):
     def __init__(self, xml):
@@ -353,6 +362,7 @@ class Sym(object):
                         'sym_diskgroup',
                         'sym_disk',
                         'sym_dev',
+                        'sym_dev_wwn',
                         'sym_devrdfa',
                         'sym_ficondev',
                         'sym_meta',
@@ -455,9 +465,14 @@ class Sym(object):
             self.add_sym_dev(o)
         elif isinstance(o, SymDirector):
             self.add_sym_director(o)
+        elif isinstance(o, SymDevWwn):
+            self.add_sym_dev_wwn(o)
         elif isinstance(o, SymMeta):
             self.add_sym_meta(o)
         return self
+
+    def add_sym_dev_wwn(self, o):
+        self.dev[o.dev_name] += o
 
     def add_sym_meta(self, o):
         self.dev[o.dev_name] += o
@@ -526,6 +541,12 @@ class Sym(object):
         tree = self.xmltree('sym_dev_info')
         for e in tree.getiterator('Device'):
             self += SymDev(e)
+        del tree
+
+    def sym_dev_wwn(self):
+        tree = self.xmltree('sym_dev_wwn_info')
+        for e in tree.getiterator('Device'):
+            self += SymDevWwn(e)
         del tree
 
     def sym_devrdfa(self):

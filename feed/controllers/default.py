@@ -812,7 +812,7 @@ def insert_sym(symid=None):
                     'disk_updated']
             vals = []
             for dev in s.dev.values():
-                if dev.flags['meta'] != 'Head':
+                if dev.flags['meta'] not in ('Head', 'None'):
                     continue
                 vals.append([dev.wwn,
                              s.info['symid'],
