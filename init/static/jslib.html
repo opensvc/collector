@@ -2426,6 +2426,20 @@ function stats_netdev(url, id) {
 	});
     });
 }
+function fancy_size_mb(size) {
+    if (size<1024) {
+        unit = 'MB'
+        _size = size
+    } else if (size<1048576) {
+        unit = 'GB'
+        _size = size / 1024
+    } else {
+        unit = 'TB'
+        _size = size / 1048576
+    }
+    _size = Math.round(_size*100)/100
+    return _size + ' ' + unit
+}
 function stats_fs(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
