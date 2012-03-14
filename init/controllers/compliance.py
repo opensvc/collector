@@ -105,6 +105,25 @@ def comp_menu(current):
 #
 # custom column formatting
 #
+class col_rset_md5(HtmlTableColumn):
+    def html(self, o):
+        id = self.t.extra_line_key(o)
+        s = self.get(o)
+        if s is None or len(s) == 0:
+            return ''
+        d = DIV(
+              A(
+                s,
+                _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                  url=URL(r=request, c='compliance',f='ajax_rset_md5',
+                          vars={'rset_md5': s}),
+                  id=id,
+                ),
+              ),
+              _class='nowrap',
+            )
+        return d
+
 class col_comp_filters_table(HtmlTableColumn):
     def html(self, o):
         if o.f_table is None:
@@ -4293,6 +4312,7 @@ class table_comp_status(HtmlTable):
                      'run_action',
                      'run_status',
                      'run_ruleset',
+                     'rset_md5',
                      'run_log']
         self.cols += v_nodes_cols
         self.colprops = {
@@ -4330,6 +4350,13 @@ class table_comp_status(HtmlTable):
                      table='comp_status',
                      img='check16',
                      display=True,
+                    ),
+            'rset_md5': col_rset_md5(
+                     title='Ruleset md5',
+                     field='rset_md5',
+                     table='comp_status',
+                     img='check16',
+                     display=False,
                     ),
             'run_status': col_run_status(
                      title='Status',
@@ -5070,11 +5097,12 @@ class table_comp_log(table_comp_status):
                      'run_action',
                      'run_status',
                      'run_log',
+                     'rset_md5',
                      'run_ruleset']
         self.cols += v_nodes_cols
         for c in self.colprops:
             self.colprops[c].t = self
-            if 'run_' in c:
+            if 'run_' in c or c == 'rset_md5':
                 self.colprops[c].table = 'comp_log'
         self.ajax_col_values = 'ajax_comp_log_col_values'
         self.checkboxes = False
@@ -5979,6 +6007,20 @@ def node_comp_status(node):
     t.columnable = False
     t.refreshable = False
     return t.html()
+
+@auth.requires_login()
+def ajax_rset_md5():
+    rset_md5 = request.vars.rset_md5
+    row = db(db.comp_run_ruleset.rset_md5==rset_md5).select().first()
+    if row is None:
+        return ''
+    import cPickle
+    rsets = cPickle.loads(row.rset)
+    d = SPAN(
+          H3(T('Ruleset %s'%rset_md5)),
+          beautify_rulesets(rsets),
+        )
+    return d
 
 @auth.requires_login()
 def ajax_compliance_node():

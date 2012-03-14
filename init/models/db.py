@@ -957,6 +957,7 @@ db.define_table('comp_log',
     Field('run_ruleset','string'),
     Field('run_date','datetime'),
     Field('run_action','string'),
+    Field('rset_md5','string'),
     migrate=False)
 
 db.define_table('comp_status',
@@ -968,6 +969,7 @@ db.define_table('comp_status',
     Field('run_ruleset','string'),
     Field('run_date','datetime'),
     Field('run_action','string'),
+    Field('rset_md5','string'),
     migrate=False)
 
 db.define_table('comp_svc_status',
