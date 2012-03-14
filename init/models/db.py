@@ -1399,3 +1399,8 @@ db.define_table('stor_array_proxy',
     Field('nodename','string'),
     migrate=False)
 
+db.define_table('comp_run_ruleset',
+    Field('rset_md5','string'),
+    Field('rset','text'),
+    migrate=False)
+

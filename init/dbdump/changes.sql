@@ -2131,3 +2131,16 @@ alter table services modify column svc_app varchar(64);
 alter table svcdisks drop foreign key svcdisks_ibfk_1;
 
 alter table svcdisks add CONSTRAINT `svcdisks_ibfk_1` FOREIGN KEY (disk_nodename) REFERENCES nodes (nodename) ON DELETE CASCADE;
+
+CREATE TABLE  `opensvc`.`comp_run_ruleset` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `rset_md5` varchar(32) NOT NULL,
+  `rset` longblob NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `new_index` (`rset_md5`)
+) ENGINE=InnoDB CHARSET=utf8;
+
+
+alter table comp_log add column rset_md5 varchar(32);
+
+alter table comp_status add column rset_md5 varchar(32);

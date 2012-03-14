@@ -1,3 +1,4 @@
+from hashlib import md5
 import datetime
 import json
 now=datetime.datetime.today()
@@ -5826,7 +5827,24 @@ def _comp_get_svc_ruleset(svcname):
 
     ruleset = _comp_remove_dup_vars(ruleset)
 
+    insert_run_rset(ruleset)
+
     return ruleset
+
+def insert_run_rset(ruleset):
+    import cPickle
+    o = md5()
+    s = cPickle.dumps(ruleset)
+    o.update(s)
+    rset_md5 = str(o.hexdigest())
+    try:
+        db.comp_run_ruleset.insert(rset_md5=rset_md5, rset=s)
+    except:
+        pass
+    rset = {'name': 'osvc_collector',
+            'filter': '',
+            'vars': [('ruleset_md5', rset_md5)]}
+    return ruleset.update({'osvc_collector': rset})
 
 def _comp_remove_dup_vars(ruleset):
     l = {}
@@ -5890,6 +5908,8 @@ def _comp_get_ruleset(nodename):
         ruleset.update(comp_ruleset_vars(row.ruleset_id))
 
     ruleset = _comp_remove_dup_vars(ruleset)
+
+    insert_run_rset(ruleset)
 
     return ruleset
 
