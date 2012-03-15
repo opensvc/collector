@@ -51,6 +51,19 @@ class col_size_mb(HtmlTableColumn):
        unit = 'MB'
        return DIV("%d %s"%(d, unit), _class="numeric")
 
+class col_quota_used(HtmlTableColumn):
+    def html(self, o):
+        if o.app is None:
+            return ""
+        s = self.get(o)
+        c = ""
+        if s is None:
+            s = "-"
+        elif s > o.quota:
+            c = "highlight"
+            s = "%s MB"%s
+        return SPAN(s, _class=c)
+
 class col_quota(HtmlTableColumn):
     def html(self, o):
         if o.app is None:
@@ -178,7 +191,7 @@ class table_quota(HtmlTable):
                      img='hd16',
                      display=True,
                     ),
-            'quota_used': col_quota(
+            'quota_used': col_quota_used(
                      title='Quota Used',
                      #table='stor_array_dg_quota',
                      field='quota_used',
