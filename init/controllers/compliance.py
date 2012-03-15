@@ -5722,63 +5722,16 @@ def ruleset_add_var(d, rset_name, var, val):
 
 @auth_uuid
 @service.xmlrpc
-def comp_get_dated_ruleset(nodename, date, auth):
-    # initialize ruleset with asset variables
-    ruleset = comp_get_node_ruleset(nodename)
-
-    # lookup the rulesets valid for specified date
-    o = db.comp_log.run_date
-    q = db.comp_log.run_date >= date
-    q &= db.comp_log.run_nodename == nodename
-    rows = db(q).select(limitby=(0,1))
-    if len(rows) == 0:
-        # no trace of a previous run
-        return ruleset
-    found_date = rows[0].run_date
-    dated_ruleset_names = rows[0].run_ruleset.split(',')
-    q = db.comp_rulesets.ruleset_name.belongs(dated_ruleset_names)
-    q &= db.comp_rulesets.ruleset_type=='explicit'
-    dated_explicit_ruleset_ids = [r.id for r in db(q).select()]
-
-    # add contextual rulesets variables
-    v = db.v_gen_filtersets
-    rset = db.comp_rulesets
-    rset_fset = db.comp_rulesets_filtersets
-    o = rset.ruleset_name|v.f_order
-    q = rset.id>0
-    q &= rset.id == rset_fset.ruleset_id
-    q &= rset_fset.fset_id == v.fset_id
-    q &= rset.id == db.comp_ruleset_team_responsible.ruleset_id
-    q &= db.comp_ruleset_team_responsible.group_id == node_team_responsible_id(nodename)
-    rows = db(q).select(orderby=o)
-
-    q = db.nodes.nodename == nodename
-    j = db.nodes.nodename == db.svcmon.mon_nodname
-    l1 = db.svcmon.on(j)
-    j = db.svcmon.mon_svcname == db.services.svc_name
-    l2 = db.services.on(j)
-    last_index = len(rows)-1
-    qr = db.nodes.id > 0
-
-    for i, row in enumerate(rows):
-        if i == last_index:
-            end_seq = True
-        elif rows[i].comp_rulesets.ruleset_name != rows[i+1].comp_rulesets.ruleset_name:
-            end_seq = True
-        else:
-            end_seq = False
-        qr = comp_query(qr, row)
-        if end_seq:
-            match = db(q&qr).select(db.nodes.id, db.svcmon.mon_svcname,
-                                    left=(l1,l2))
-            if len(match) > 0:
-                ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr))
-            qr = db.nodes.id > 0
-
-    # add explicit rulesets variables
-    for id in dated_explicit_ruleset_ids:
-        ruleset.update(comp_ruleset_vars(id))
-
+def comp_get_ruleset_md5(rset_md5, auth):
+    q = db.comp_run_ruleset.rset_md5 == rset_md5
+    row = db(q).select(db.comp_run_ruleset.rset).first()
+    if row is None:
+        return
+    import cPickle
+    try:
+        ruleset = cPickle.loads(row.rset)
+    except:
+        return
     return ruleset
 
 def svc_team_responsible_id(svcname):
