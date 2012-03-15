@@ -1,24 +1,34 @@
-class col_app_chart(HtmlTableColumn):
+class col_chart(HtmlTableColumn):
     def html(self, o):
-       return DIV(
-                H2(o['svc_app']),
-                DIV(
-                  H3(T("Disk Group Usage")),
+       l = []
+       l += [DIV(
+                  H3(T("Applications")),
+                  DIV(
+                    o['chart_ap'],
+                    _id='chart_ap',
+                  ),
+                  _style="float:left;width:500px",
+                )]
+       if len(o['chart_dg']) > 2:
+           l += [DIV(
+                  H3(T("Disk Groups")),
                   DIV(
                     o['chart_dg'],
-                    _id='app_chart_dg_%s'%o['svc_app'],
+                    _id='chart_dg',
                   ),
                   _style="float:left;width:500px",
-                ),
-                DIV(
-                  H3(T("Disk Array Usage")),
+                )]
+
+       if len(o['chart_ar']) > 2:
+           l += [DIV(
+                  H3(T("Disk Arrays")),
                   DIV(
                     o['chart_ar'],
-                    _id='app_chart_ar_%s'%o['svc_app'],
+                    _id='chart_ar',
                   ),
                   _style="float:left;width:500px",
-                ),
-              )
+                )]
+       return DIV(l)
 
 class col_disk_id(HtmlTableColumn):
     def html(self, o):
@@ -174,8 +184,8 @@ class table_quota(HtmlTable):
         self.checkboxes = True
         self.dbfilterable = False
         self.ajax_col_values = 'ajax_quota_col_values'
-        self.span = 'dg_name'
-        self.sub_span = ['dg_free', 'array_model', 'array_name']
+        self.span = 'array_name'
+        #self.sub_span = ['dg_free', 'array_model', 'array_name']
 
         if 'StorageManager' in user_groups() or \
            'StorageManager' in user_groups():
@@ -296,6 +306,13 @@ def app_detach(ids=[]):
     for id in ids:
         dg_id, array_id, app_id = id.split('_')
         q = db.stor_array_dg_quota.dg_id == int(dg_id)
+        try:
+            app_id = int(app_id)
+        except:
+            apps = db(db.apps.id>0).select(db.apps.id)
+            qq = ~db.stor_array_dg_quota.app_id.belongs(apps)
+            db(qq).delete()
+            continue
         q &= db.stor_array_dg_quota.app_id == int(app_id)
         if db(q).count() == 0:
             continue
@@ -617,6 +634,7 @@ def ajax_service_list():
     q &= db.auth_membership.user_id == auth.user_id
     services = db(q).select(db.services.svc_name,
                             db.services.svc_app,
+                            groupby=o,
                             orderby=o)
 
     l = [OPTION(T("Choose one"))]
@@ -854,7 +872,7 @@ def ajax_disks():
     t.csv_q = q
     t.csv_orderby = o
 
-    nt = table_disk_apps('apps', 'ajax_disk_app')
+    nt = table_disk_charts('charts', 'ajax_disk_charts')
 
     return DIV(
              SCRIPT(
@@ -863,44 +881,23 @@ def ajax_disks():
                "}",
              ),
              DIV(
-               T("Applications"),
+               T("Statistics"),
                _style="text-align:left;font-size:120%;background-color:#e0e1cd",
                _class="right16 clickable",
                _onclick="""
-               if (!$("#apps").is(":visible")) {
+               if (!$("#charts").is(":visible")) {
                  $(this).addClass("down16");
                  $(this).removeClass("right16");
-                 $("#apps").show(); %s;
+                 $("#charts").show(); %s;
                } else {
                  $(this).addClass("right16");
                  $(this).removeClass("down16");
-                 $("#apps").hide();
+                 $("#charts").hide();
                }"""%nt.ajax_submit(additional_inputs=t.ajax_inputs())
              ),
              DIV(
                IMG(_src=URL(r=request,c='static',f='spinner.gif')),
-               _id="apps",
-               _style="display:none"
-             ),
-             DIV(
-               T("Arrays"),
-               _style="text-align:left;font-size:120%;background-color:#e0e1cd",
-               _class="right16 clickable",
-               _onclick="""
-               if (!$("#arrays").is(":visible")) {
-                 $(this).addClass("down16");
-                 $(this).removeClass("right16");
-                 $("#arrays").show();
-                 $.ajax('%s', 'arrays');
-               } else {
-                 $(this).addClass("right16");
-                 $(this).removeClass("down16");
-                 $("#arrays").hide();
-               }"""%URL(r=request, f='ajax_disk_array'),
-             ),
-             DIV(
-               IMG(_src=URL(r=request,c='static',f='spinner.gif')),
-               _id="arrays",
+               _id="charts",
                _style="display:none"
              ),
              t.html(),
@@ -916,15 +913,15 @@ def disks():
 
 
 @auth.requires_login()
-def ajax_disk_app():
+def ajax_disk_charts():
     t = table_disks('disks', 'ajax_disks')
-    nt = table_disk_apps('apps', 'ajax_disk_app')
+    nt = table_disk_charts('charts', 'ajax_disk_charts')
 
     o = db.svcdisks.disk_id
     q = db.diskinfo.id>0
     q |= db.svcdisks.id<0
     q = _where(q, 'svcdisks', domain_perms(), 'disk_nodename')
-    q = apply_filters(q, db.svcdisks.disk_nodename, db.svcdisks.disk_svcname)
+    q = apply_filters(q, db.svcdisks.disk_nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
@@ -932,140 +929,6 @@ def ajax_disk_app():
     nt.dbfilterable = False
     nt.filterable = True
     nt.additional_inputs = t.ajax_inputs()
-
-    sql = """select
-               t.app,
-               sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
-               t.disk_arrayid,
-               t.disk_group
-             from (
-               select
-                 services.svc_app as app,
-                 svcdisks.disk_used,
-                 diskinfo.disk_size,
-                 diskinfo.disk_arrayid,
-                 diskinfo.disk_group
-               from
-                 diskinfo
-               left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
-               left join services on svcdisks.disk_svcname=services.svc_name
-               left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
-               where %(q)s
-               and svcdisks.disk_svcname != ""
-               group by diskinfo.disk_id
-              union all
-               select
-                 nodes.project as app,
-                 svcdisks.disk_used,
-                 diskinfo.disk_size,
-                 diskinfo.disk_arrayid,
-                 diskinfo.disk_group
-               from
-                 diskinfo
-               left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
-               left join nodes on svcdisks.disk_nodename=nodes.nodename
-               left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
-               where %(q)s
-               and (svcdisks.disk_svcname = "" or svcdisks.disk_svcname is NULL)
-               group by diskinfo.disk_id
-             ) t
-             group by t.app, t.disk_arrayid, t.disk_group
-             order by t.app, size desc, t.disk_arrayid, t.disk_group"""%dict(q=q)
-    rows = db.executesql(sql)
-
-    dg = {}
-    ar = {}
-    s = {}
-    for row in rows:
-        svc_app = row[0]
-        size = int(row[1])
-        array_name = row[2]
-        array_dg = row[3]
-
-        if array_name is None:
-            array_name = ''
-        if array_dg is None:
-            array_dg = ''
-
-        label = ' '.join((array_name, array_dg))
-        t = [label, size]
-        if svc_app not in dg:
-            dg[svc_app] = [t]
-            s[svc_app] = size
-        else:
-            dg[svc_app] += [t]
-            s[svc_app] += size
-
-        if svc_app not in ar:
-            ar[svc_app] = {array_name: size}
-        elif array_name not in ar[svc_app]:
-            ar[svc_app][array_name] = size
-        else:
-            ar[svc_app][array_name] += size
-
-    nt.object_list = []
-    for svc_app, data_dg in dg.items():
-        for i, (label, size) in enumerate(data_dg):
-            data_dg[i] = (label +' (%d MB)'%size, size)
-
-        ardata = ar[svc_app]
-        data_ar = []
-        if svc_app is None:
-            svc_app = 'unknown'
-        for array_name, size in ardata.items():
-            data_ar.append([array_name + ' (%d MB)'%size, size])
-
-        data_dg.sort(lambda x, y: cmp(y[1], x[1]))
-        data_ar.sort(lambda x, y: cmp(y[1], x[1]))
-        nt.object_list.append({'svc_app': svc_app,
-                               'chart': '',
-                               'chart_dg': json.dumps(data_dg),
-                               'chart_ar': json.dumps(data_ar)})
-
-
-    return DIV(
-             nt.html(),
-             SCRIPT(
-"""
-function diskpie(o) {
-  try{
-  var data = $.parseJSON(o.html())
-  o.html("")
-  $.jqplot(o.attr('id'), [data],
-    {
-      seriesDefaults: {
-        renderer: $.jqplot.PieRenderer,
-        rendererOptions: {
-          sliceMargin: 4,
-          showDataLabels: true
-        }
-      },
-      legend: { show:true, location: 'e' }
-    }
-  );
-  } catch(e) {}
-}
-$("[id^=app_chart_dg]").each(function(){
-  diskpie($(this))
-})
-$("[id^=app_chart_ar]").each(function(){
-  diskpie($(this))
-})
-""",
-               _name="apps_to_eval",
-             ),
-           )
-
-
-@auth.requires_login()
-def ajax_disk_arrays():
-    t = table_disks('disks', 'ajax_disks')
-
-    q = db.diskinfo.id>0
-    q = _where(q, 'svcdisks', domain_perms(), 'disk_nodename')
-    q = apply_filters(q, db.svcdisks.disk_nodename, None)
-    for f in t.cols:
-        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
     sql = """select
                t.app,
@@ -1107,7 +970,10 @@ def ajax_disk_arrays():
 
     data_app = []
     for row in rows:
-        label = row[0]
+        if row[0] is None:
+            label = 'unknown'
+        else:
+            label = row[0]
         try:
             size = int(row[1])
         except:
@@ -1115,14 +981,6 @@ def ajax_disk_arrays():
         data_app += [[str(label) +' (%d MB)'%size, size]]
 
     data_app.sort(lambda x, y: cmp(y[1], x[1]))
-    l = [DIV(
-          H3(T("Applications Usage")),
-          DIV(
-            json.dumps(data_app),
-            _id='arrays_chart_ar',
-          ),
-          _style="float:left;width:500px",
-        )]
 
     sql = """select count(distinct disk_arrayid)
              from
@@ -1156,33 +1014,21 @@ def ajax_disk_arrays():
 
         data_dg = []
         for row in rows:
-            if row[1] is None:
-                array = ''
-            else:
-                array = row[1]
             if row[2] is None:
                 dg = ''
             else:
                 dg = row[2]
 
-            label = ':'.join((array, dg))
+            label = dg
             try:
                 size = int(row[0])
             except:
                 continue
             data_dg += [[str(label) +' (%d MB)'%size, size]]
-        data_array = [[]]
+        data_array = ""
         data_dg.sort(lambda x, y: cmp(y[1], x[1]))
-        l += [DIV(
-              H3(T("Array Usage")),
-              DIV(
-                json.dumps(data_array),
-                _id='arrays_chart_ar',
-              ),
-              _style="float:left;width:500px",
-            )]
     else:
-        data_dg = [[]]
+        data_dg = ""
         sql = """select
                    sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
                    t.disk_arrayid
@@ -1215,21 +1061,18 @@ def ajax_disk_arrays():
                 continue
             data_array += [[str(label) +' (%d MB)'%size, size]]
         data_array.sort(lambda x, y: cmp(y[1], x[1]))
-        l += [DIV(
-              H3(T("Disk Groups Usage")),
-              DIV(
-                json.dumps(data_dg),
-                _id='arrays_chart_dg',
-              ),
-              _style="float:left;width:500px",
-            )]
+
+
+    nt.object_list = [{'chart_ap': json.dumps(data_app),
+                       'chart_dg': json.dumps(data_dg),
+                       'chart_ar': json.dumps(data_array)}]
 
     return DIV(
-             DIV(l),
+             nt.html(),
              SCRIPT(
 """
 function diskpie(o) {
-  try {
+  try{
   var data = $.parseJSON(o.html())
   var total = 0
   for (i=0;i<data.length;i++) {total += data[i][1]}
@@ -1243,35 +1086,42 @@ function diskpie(o) {
           showDataLabels: true
         }
       },
-      legend: { show:true, location: 'e' },
-      title: { text: 'Total: '+fancy_size_mb(total) }
+      title: { text: 'Total: '+fancy_size_mb(total) },
+      legend: {
+        renderer: $.jqplot.EnhancedLegendRenderer,
+        rendererOptions: {
+          numberRows: 11,
+          numberColumns: 1
+        },
+        show:true,
+        location: 'e'
+      }
     }
   );
   } catch(e) {}
 }
-$("[id^=arrays_chart_dg]").each(function(){
+$("[id^=chart_ap]").each(function(){
   diskpie($(this))
 })
-$("[id^=arrays_chart_ar]").each(function(){
+$("[id^=chart_dg]").each(function(){
   diskpie($(this))
 })
-$("[id^=arrays_chart_ap]").each(function(){
+$("[id^=chart_ar]").each(function(){
   diskpie($(this))
 })
 """,
-               _name="arrays_to_eval",
+               _name="charts_to_eval",
              ),
            )
 
-
-class table_disk_apps(HtmlTable):
+class table_disk_charts(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['chart']
         self.colprops.update({
-            'chart': col_app_chart(
+            'chart': col_chart(
                      title='Chart',
                      field='chart',
                      img='spark16',

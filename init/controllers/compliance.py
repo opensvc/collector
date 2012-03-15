@@ -4309,7 +4309,6 @@ class table_comp_status(HtmlTable):
                      'run_nodename',
                      'run_svcname',
                      'run_module',
-                     'run_action',
                      'run_status',
                      'run_ruleset',
                      'rset_md5',
