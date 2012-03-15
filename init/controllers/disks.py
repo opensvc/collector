@@ -53,7 +53,7 @@ class col_size_mb(HtmlTableColumn):
 
 class col_quota(HtmlTableColumn):
     def html(self, o):
-        if o.apps.app is None:
+        if o.app is None:
             return ""
         s = self.get(o)
         if s is None:
@@ -61,10 +61,10 @@ class col_quota(HtmlTableColumn):
             ss = ""
         else:
             ss = s
-            s = "%s GB"%s
-        tid = 'd_t_%s'%o.stor_array_dg_quota.id
-        iid = 'd_i_%s'%o.stor_array_dg_quota.id
-        sid = 'd_s_%s'%o.stor_array_dg_quota.id
+            s = "%s MB"%s
+        tid = 'd_t_%s'%o.id
+        iid = 'd_i_%s'%o.id
+        sid = 'd_s_%s'%o.id
         d = SPAN(
               DIV(
                 s,
@@ -98,82 +98,90 @@ class table_quota(HtmlTable):
                      'dg_used',
                      'dg_size',
                      'app',
+                     'quota_used',
                      'quota']
         self.colprops.update({
             'array_name': HtmlTableColumn(
                      title='Array',
-                     table='stor_array',
+                     #table='stor_array',
                      field='array_name',
                      img='hd16',
                      display=True,
                     ),
             'array_model': HtmlTableColumn(
                      title='Array Model',
-                     table='stor_array',
+                     #table='stor_array',
                      field='array_model',
                      img='hd16',
                      display=True,
                     ),
             'array_id': HtmlTableColumn(
                      title='Array Id',
-                     table='stor_array',
+                     #table='stor_array',
                      field='id',
                      img='hd16',
                      display=True,
                     ),
             'dg_name': HtmlTableColumn(
                      title='Array Disk Group',
-                     table='stor_array_dg',
+                     #table='stor_array_dg',
                      field='dg_name',
                      img='hd16',
                      display=True,
                     ),
             'dg_free': col_size_mb(
                      title='Free',
-                     table='stor_array_dg',
+                     #table='stor_array_dg',
                      field='dg_free',
                      img='hd16',
                      display=True,
                     ),
             'dg_used': col_size_mb(
                      title='Used',
-                     table='stor_array_dg',
+                     #table='stor_array_dg',
                      field='dg_used',
                      img='hd16',
                      display=True,
                     ),
             'dg_size': col_size_mb(
                      title='Size',
-                     table='stor_array_dg',
+                     #table='stor_array_dg',
                      field='dg_size',
                      img='hd16',
                      display=True,
                     ),
             'dg_id': HtmlTableColumn(
                      title='Array Disk Group Id',
-                     table='stor_array_dg',
+                     #table='stor_array_dg',
                      field='id',
                      img='hd16',
                      display=True,
                     ),
             'app': HtmlTableColumn(
                      title='App',
-                     table='apps',
+                     #table='apps',
                      field='app',
                      img='svc',
                      display=True,
                     ),
             'app_id': HtmlTableColumn(
                      title='App Id',
-                     table='apps',
+                     #table='apps',
                      field='id',
                      img='svc',
                      display=True,
                     ),
             'quota': col_quota(
                      title='Quota',
-                     table='stor_array_dg_quota',
+                     #table='stor_array_dg_quota',
                      field='quota',
+                     img='hd16',
+                     display=True,
+                    ),
+            'quota_used': col_quota(
+                     title='Quota Used',
+                     #table='stor_array_dg_quota',
+                     field='quota_used',
                      img='hd16',
                      display=True,
                     ),
@@ -354,16 +362,11 @@ def ajax_quota_col_values():
     t = table_quota('quota', 'ajax_quota')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
-    q = db.stor_array_dg.id>0
-    q |= db.stor_array_dg_quota.id<0
-    q |= db.apps.id<0
-    q &= db.stor_array_dg.array_id == db.stor_array.id
-    l1 = db.stor_array_dg_quota.on(db.stor_array_dg.id==db.stor_array_dg_quota.dg_id)
-    l2 = db.apps.on(db.apps.id==db.stor_array_dg_quota.app_id)
-    q = _where(q, 'stor_array', domain_perms(), 'array_name')
+    q = db.v_disk_quota.id>0
+    q = _where(q, 'v_disk_quota', domain_perms(), 'array_name')
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o, groupby=o, left=[l1,l2])
+    t.object_list = db(q).select(o, orderby=o, groupby=o)
     return t.col_values_cloud(col)
 
 @auth.requires_login()
@@ -382,19 +385,14 @@ def ajax_quota():
         except ToolError, e:
             t.flash = str(e)
 
-    o = db.stor_array.array_name | db.stor_array_dg.dg_name
-    q = db.stor_array_dg.id>0
-    q |= db.stor_array_dg_quota.id<0
-    q |= db.apps.id<0
-    q &= db.stor_array_dg.array_id == db.stor_array.id
-    l1 = db.stor_array_dg_quota.on(db.stor_array_dg.id==db.stor_array_dg_quota.dg_id)
-    l2 = db.apps.on(db.apps.id==db.stor_array_dg_quota.app_id)
-    q = _where(q, 'stor_array', domain_perms(), 'array_name')
+    o = db.v_disk_quota.array_name | db.v_disk_quota.dg_name
+    q = db.v_disk_quota.array_id > 0
+    q = _where(q, 'v_disk_quota', domain_perms(), 'array_name')
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    n = len(db(q).select(left=[l1,l2]))
+    n = len(db(q).select())
     t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o, left=[l1,l2])
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
 
     t.csv_q = q
     t.csv_orderby = o

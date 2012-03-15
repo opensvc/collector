@@ -1406,3 +1406,19 @@ db.define_table('comp_run_ruleset',
     Field('rset','text'),
     migrate=False)
 
+db.define_table('v_disk_quota',
+    Field('array_name','string'),
+    Field('array_model','string'),
+    Field('dg_name','string'),
+    Field('dg_free','integer'),
+    Field('dg_used','integer'),
+    Field('dg_size','integer'),
+    Field('app','string'),
+    Field('quota','integer'),
+    Field('quota_used','integer'),
+    Field('dg_id','integer'),
+    Field('array_id','integer'),
+    Field('app_id','integer'),
+    migrate=False)
+
+
