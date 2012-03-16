@@ -2153,3 +2153,11 @@ drop view v_disk_quota;
 
 create view v_disk_quota as (SELECT stor_array_dg_quota.id, stor_array.id as array_id, stor_array_dg.id as dg_id, apps.id as app_id, stor_array.array_name, stor_array_dg.dg_name, stor_array_dg.dg_free, stor_array_dg.dg_size, stor_array_dg.dg_used, stor_array.array_model, apps.app, stor_array_dg_quota.quota, (select sum(disk_used) from v_disk_app where project=apps.app and disk_arrayid=stor_array.array_name and stor_array_dg.dg_name=disk_group) as quota_used FROM stor_array, stor_array_dg LEFT JOIN stor_array_dg_quota ON (stor_array_dg.id = stor_array_dg_quota.dg_id) LEFT JOIN apps ON (apps.id = stor_array_dg_quota.app_id) WHERE stor_array_dg.array_id = stor_array.id ORDER BY stor_array.array_name, stor_array_dg.dg_name);
 
+CREATE TABLE  `opensvc`.`disk_blacklist` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `disk_id` varchar(120) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx1` (`disk_id`)
+) ENGINE=InnoDB CHARSET=utf8;
+
+

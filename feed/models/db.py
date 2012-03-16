@@ -189,6 +189,10 @@ db.define_table('nodes',
     Field('updated'),
     migrate=False)
 
+db.define_table('disk_blacklist',
+    Field('disk_id', 'string'),
+    migrate=False)
+
 db.define_table('svcdisks',
     Field('id'),
     Field('disk_id'),

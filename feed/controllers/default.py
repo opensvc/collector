@@ -363,6 +363,11 @@ def register_disks(vars, vals, auth):
 
 @auth_uuid
 @service.xmlrpc
+def register_disk_blacklist(vars, vals, auth):
+    generic_insert('disk_blacklist', vars, vals)
+
+@auth_uuid
+@service.xmlrpc
 def register_disk(vars, vals, auth):
     _register_disk(vars, vals, auth)
 
@@ -371,14 +376,23 @@ def _register_disk(vars, vals, auth):
     now = datetime.datetime.now()
     for a,b in zip(vars, vals):
         h[a] = b
+
+    disk_id = h["disk_id"].strip("'")
+
+    # don't register blacklisted disks (might be VM disks, already accounted)
+    n = db(db.disk_blacklist.disk_id==disk_id).count()
+    if n > 0:
+        purge_old_disks(h, now)
+        return
+
     if 'disk_updated' not in h:
         h['disk_updated'] = now
-    if h["disk_id"].strip("'").startswith(h["disk_nodename"].strip("'")+'.'):
+    if disk_id.startswith(h["disk_nodename"].strip("'")+'.'):
         h['disk_local'] = 'T'
         vars = ['disk_id', 'disk_arrayid', 'disk_devid', 'disk_size']
         vals = [h["disk_id"],
                 h['disk_nodename'],
-                repr(h['disk_id'].strip("'").split('.')[-1]),
+                repr(disk_id.split('.')[-1]),
                 h['disk_size']]
         generic_insert('diskinfo', vars, vals)
     else:
@@ -391,7 +405,7 @@ def _register_disk(vars, vals, auth):
                  where
                    disk_id="%s" and
                    (disk_arrayid = "" or disk_arrayid is NULL)
-              """%(h['disk_nodename'].strip("'"), h["disk_id"].strip("'"))
+              """%(h['disk_nodename'].strip("'"), disk_id)
         db.executesql(sql)
         db.commit()
     try:
@@ -400,8 +414,9 @@ def _register_disk(vars, vals, auth):
         # the foreign key on svcdisk may prevent insertion if svcmon is not yet
         # populated
         pass
+    purge_old_disks(h, now)
 
-    # purge old disks
+def purge_old_disks(h, now):
     if 'disk_svcname' in h and h['disk_svcname'] is not None and h['disk_svcname'] != '':
         q = db.svcdisks.disk_svcname==h['disk_svcname']
         q &= db.svcdisks.disk_nodename==h['disk_nodename']

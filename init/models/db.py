@@ -530,6 +530,10 @@ db.define_table('v_users',
     Field('fset_name'),
     migrate=False)
 
+db.define_table('disk_blacklist',
+    Field('disk_id', 'string'),
+    migrate=False)
+
 db.define_table('diskinfo',
     Field('disk_id', 'string'),
     Field('disk_devid', 'string'),
