@@ -2147,7 +2147,7 @@ alter table comp_status add column rset_md5 varchar(32);
 
 drop view v_disk_app;
 
-create view v_disk_app as select n.project, group_concat(sd.disk_nodename) as object, d.*, if(max(sd.disk_used)>0, max(sd.disk_used), max(sd.disk_size)) as disk_used from diskinfo d left join svcdisks sd on d.disk_id=sd.disk_id join nodes n on sd.disk_nodename=n.nodename where sd.disk_nodename != "" and sd.disk_svcname = "" group by d.disk_id union all select s.svc_app, group_concat(sd.disk_svcname) as object, d.*, if(max(sd.disk_used)>0, max(sd.disk_used), max(sd.disk_size)) as disk_used from diskinfo d left join svcdisks sd on d.disk_id=sd.disk_id join services s on sd.disk_svcname=s.svc_name where sd.disk_svcname != "" group by d.disk_id;
+create view v_disk_app as select n.project, group_concat(sd.disk_nodename) as object, d.*, if(max(sd.disk_used)>0, max(sd.disk_used), max(sd.disk_size)) as disk_used from diskinfo d left join svcdisks sd on d.disk_id=sd.disk_id join nodes n on sd.disk_nodename=n.nodename where sd.disk_nodename != "" and sd.disk_svcname = "" group by d.disk_id union all select s.svc_app, group_concat(sd.disk_svcname) as object, d.*, if(max(sd.disk_used)>0, max(sd.disk_used), max(sd.disk_size)) as disk_used from diskinfo d left join svcdisks sd on d.disk_id=sd.disk_id join services s on sd.disk_svcname=s.svc_name where sd.disk_svcname != "" group by d.disk_id, s.svc_app;
 
 drop view v_disk_quota;
 

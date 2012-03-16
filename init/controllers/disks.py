@@ -948,7 +948,7 @@ def ajax_disk_charts():
              from (
                select
                  services.svc_app as app,
-                 svcdisks.disk_used,
+                 sum(svcdisks.disk_used) as disk_used,
                  diskinfo.disk_size,
                  diskinfo.disk_arrayid
                from
@@ -958,11 +958,11 @@ def ajax_disk_charts():
                left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
                where %(q)s
                and svcdisks.disk_svcname != ""
-               group by diskinfo.disk_id
+               group by diskinfo.disk_id, services.svc_app
               union all
                select
                  nodes.project as app,
-                 svcdisks.disk_used,
+                 sum(svcdisks.disk_used) as disk_used,
                  diskinfo.disk_size,
                  diskinfo.disk_arrayid
                from
@@ -993,22 +993,37 @@ def ajax_disk_charts():
 
     data_app.sort(lambda x, y: cmp(y[1], x[1]))
 
-    sql = """select count(distinct disk_arrayid)
+    sql = """select count(distinct diskinfo.disk_arrayid)
              from
                  diskinfo
                left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
                left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
-               where %(q)s
+               where
+                 %(q)s
           """%dict(q=q)
-    n = db.executesql(sql)[0][0]
-    if n == 1:
+    n_arrays = db.executesql(sql)[0][0]
+
+    sql = """select count(distinct diskinfo.disk_group)
+             from
+                 diskinfo
+               left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+               left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
+               where
+                 %(q)s
+          """%dict(q=q)
+    n_dg = db.executesql(sql)[0][0]
+
+    data_dg = ""
+    data_array = ""
+
+    if n_arrays == 1 and n_dg > 1:
         sql = """select
                    sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
                    t.disk_arrayid,
                    t.disk_group
                  from (
                    select
-                     svcdisks.disk_used,
+                     sum(svcdisks.disk_used) as disk_used,
                      diskinfo.disk_size,
                      diskinfo.disk_arrayid,
                      diskinfo.disk_group
@@ -1036,16 +1051,15 @@ def ajax_disk_charts():
             except:
                 continue
             data_dg += [[str(label) +' (%d MB)'%size, size]]
-        data_array = ""
         data_dg.sort(lambda x, y: cmp(y[1], x[1]))
-    else:
-        data_dg = ""
+
+    if n_arrays > 1:
         sql = """select
                    sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
                    t.disk_arrayid
                  from (
                    select
-                     svcdisks.disk_used,
+                     sum(svcdisks.disk_used) as disk_used,
                      diskinfo.disk_size,
                      diskinfo.disk_arrayid
                    from
