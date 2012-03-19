@@ -555,6 +555,7 @@ db.define_table('svcdisks',
     Field('disk_dg', 'string'),
     Field('disk_updated', 'datetime'),
     Field('disk_local', 'boolean'),
+    Field('disk_region', 'integer'),
     migrate=False)
 
 db.define_table('v_svcdisks',

@@ -1,14 +1,24 @@
 class col_chart(HtmlTableColumn):
     def html(self, o):
        l = []
-       l += [DIV(
-                  H3(T("Applications")),
-                  DIV(
-                    o['chart_ap'],
-                    _id='chart_ap',
-                  ),
-                  _style="float:left;width:500px",
-                )]
+       if len(o['chart_svc']) > 2:
+           l += [DIV(
+                      H3(T("Services")),
+                      DIV(
+                        o['chart_svc'],
+                        _id='chart_svc',
+                      ),
+                      _style="float:left;width:500px",
+                    )]
+       if len(o['chart_ap']) > 2:
+           l += [DIV(
+                      H3(T("Applications")),
+                      DIV(
+                        o['chart_ap'],
+                        _id='chart_ap',
+                      ),
+                      _style="float:left;width:500px",
+                    )]
        if len(o['chart_dg']) > 2:
            l += [DIV(
                   H3(T("Disk Groups")),
@@ -941,57 +951,174 @@ def ajax_disk_charts():
     nt.filterable = True
     nt.additional_inputs = t.ajax_inputs()
 
-    sql = """select
-               t.app,
-               sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
-               t.disk_arrayid
+    data_svc = ""
+    data_app = ""
+    data_dg = ""
+    data_array = ""
+
+    sql = """select count(distinct t.app)
              from (
-               select
-                 services.svc_app as app,
-                 sum(svcdisks.disk_used) as disk_used,
-                 diskinfo.disk_size,
-                 diskinfo.disk_arrayid
+               select distinct(services.svc_app) as app
                from
                  diskinfo
                left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+               left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
                left join services on svcdisks.disk_svcname=services.svc_name
-               left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
-               where %(q)s
-               and svcdisks.disk_svcname != ""
-               group by diskinfo.disk_id, services.svc_app
-              union all
-               select
-                 nodes.project as app,
-                 sum(svcdisks.disk_used) as disk_used,
-                 diskinfo.disk_size,
-                 diskinfo.disk_arrayid
+               where
+                 %(q)s
+             union all
+               select distinct(nodes.project) as app
                from
                  diskinfo
                left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
-               left join nodes on svcdisks.disk_nodename=nodes.nodename
                left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
-               where %(q)s
-               and (svcdisks.disk_svcname = "" or svcdisks.disk_svcname is NULL)
-               group by diskinfo.disk_id
+               left join nodes on svcdisks.disk_nodename=nodes.nodename
+               where
+                 %(q)s
              ) t
-             group by t.app
-             order by t.app, size desc
-             """%dict(q=q)
-    rows = db.executesql(sql)
+           """%dict(q=q)
+    n_app = db.executesql(sql)[0][0]
 
-    data_app = []
-    for row in rows:
-        if row[0] is None:
-            label = 'unknown'
-        else:
-            label = row[0]
-        try:
-            size = int(row[1])
-        except:
-            continue
-        data_app += [[str(label) +' (%d MB)'%size, size]]
+    if n_app == 1:
+        sql = """select
+                   t.obj,
+                   sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size
+                 from (
+                   select
+                     u.obj,
+                     sum(u.disk_used) as disk_used,
+                     u.disk_size
+                   from
+                   (
+                     select
+                       svcdisks.disk_id,
+                       services.svc_name as obj,
+                       max(svcdisks.disk_used) as disk_used,
+                       diskinfo.disk_size
+                     from
+                       diskinfo
+                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+                     left join services on svcdisks.disk_svcname=services.svc_name
+                     left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
+                     where %(q)s
+                     and svcdisks.disk_svcname != ""
+                     group by diskinfo.disk_id, svcdisks.disk_region
+                   ) u
+                   group by u.disk_id, u.obj
+                  union all
+                   select
+                     u.obj,
+                     sum(u.disk_used) as disk_used,
+                     u.disk_size
+                   from
+                   (
+                     select
+                       diskinfo.disk_id,
+                       nodes.nodename as obj,
+                       max(svcdisks.disk_used) as disk_used,
+                       diskinfo.disk_size
+                     from
+                       diskinfo
+                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+                     left join nodes on svcdisks.disk_nodename=nodes.nodename
+                     left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
+                     where %(q)s
+                     and (svcdisks.disk_svcname = "" or svcdisks.disk_svcname is NULL)
+                     group by diskinfo.disk_id, svcdisks.disk_region
+                   ) u
+                   group by u.disk_id
+                 ) t
+                 group by t.obj
+                 order by t.obj, size desc
+                 """%dict(q=q)
+        rows = db.executesql(sql)
 
-    data_app.sort(lambda x, y: cmp(y[1], x[1]))
+        data_svc = []
+        for row in rows:
+            if row[0] is None:
+                label = 'unknown'
+            else:
+                label = row[0]
+            try:
+                size = int(row[1])
+            except:
+                continue
+            data_svc += [[str(label) +' (%d MB)'%size, size]]
+
+        data_svc.sort(lambda x, y: cmp(y[1], x[1]))
+
+    if n_app > 1:
+        sql = """select
+                   t.app,
+                   sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
+                   t.disk_arrayid
+                 from (
+                   select
+                     u.app,
+                     sum(u.disk_used) as disk_used,
+                     u.disk_size,
+                     u.disk_arrayid
+                   from
+                   (
+                     select
+                       svcdisks.disk_id,
+                       services.svc_app as app,
+                       max(svcdisks.disk_used) as disk_used,
+                       diskinfo.disk_size,
+                       diskinfo.disk_arrayid
+                     from
+                       diskinfo
+                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+                     left join services on svcdisks.disk_svcname=services.svc_name
+                     left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
+                     where %(q)s
+                     and svcdisks.disk_svcname != ""
+                     group by diskinfo.disk_id, svcdisks.disk_region
+                   ) u
+                   group by u.disk_id, u.app
+                  union all
+                   select
+                     u.app,
+                     sum(u.disk_used) as disk_used,
+                     u.disk_size,
+                     u.disk_arrayid
+                   from
+                   (
+                     select
+                       diskinfo.disk_id,
+                       nodes.project as app,
+                       max(svcdisks.disk_used) as disk_used,
+                       diskinfo.disk_size,
+                       diskinfo.disk_arrayid
+                     from
+                       diskinfo
+                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+                     left join nodes on svcdisks.disk_nodename=nodes.nodename
+                     left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
+                     where %(q)s
+                     and (svcdisks.disk_svcname = "" or svcdisks.disk_svcname is NULL)
+                     group by diskinfo.disk_id, svcdisks.disk_region
+                   ) u
+                   group by u.disk_id
+                 ) t
+                 group by t.app
+                 order by t.app, size desc
+                 """%dict(q=q)
+        rows = db.executesql(sql)
+
+        data_app = []
+        for row in rows:
+            if row[0] is None:
+                label = 'unknown'
+            else:
+                label = row[0]
+            try:
+                size = int(row[1])
+            except:
+                continue
+            data_app += [[str(label) +' (%d MB)'%size, size]]
+
+        data_app.sort(lambda x, y: cmp(y[1], x[1]))
 
     sql = """select count(distinct diskinfo.disk_arrayid)
              from
@@ -1013,9 +1140,6 @@ def ajax_disk_charts():
           """%dict(q=q)
     n_dg = db.executesql(sql)[0][0]
 
-    data_dg = ""
-    data_array = ""
-
     if n_arrays == 1 and n_dg > 1:
         sql = """select
                    sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
@@ -1023,16 +1147,26 @@ def ajax_disk_charts():
                    t.disk_group
                  from (
                    select
-                     sum(svcdisks.disk_used) as disk_used,
-                     diskinfo.disk_size,
-                     diskinfo.disk_arrayid,
-                     diskinfo.disk_group
+                     sum(u.disk_used) as disk_used,
+                     u.disk_size,
+                     u.disk_arrayid,
+                     u.disk_group
                    from
-                     diskinfo
-                   left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
-                   left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
-                   where %(q)s
-                   group by diskinfo.disk_id
+                   (
+                     select
+                       diskinfo.disk_id,
+                       max(svcdisks.disk_used) as disk_used,
+                       diskinfo.disk_size,
+                       diskinfo.disk_arrayid,
+                       diskinfo.disk_group
+                     from
+                       diskinfo
+                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+                     left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
+                     where %(q)s
+                     group by diskinfo.disk_id, svcdisks.disk_region
+                   ) u
+                   group by u.disk_id
                  ) t
                  group by t.disk_arrayid, t.disk_group
                  order by size desc, t.disk_arrayid, t.disk_group"""%dict(q=q)
@@ -1059,15 +1193,24 @@ def ajax_disk_charts():
                    t.disk_arrayid
                  from (
                    select
-                     sum(svcdisks.disk_used) as disk_used,
-                     diskinfo.disk_size,
-                     diskinfo.disk_arrayid
+                     sum(u.disk_used) as disk_used,
+                     u.disk_size,
+                     u.disk_arrayid
                    from
-                     diskinfo
-                   left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
-                   left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
-                   where %(q)s
-                   group by diskinfo.disk_id
+                   (
+                     select
+                       diskinfo.disk_id,
+                       max(svcdisks.disk_used) as disk_used,
+                       diskinfo.disk_size,
+                       diskinfo.disk_arrayid
+                     from
+                       diskinfo
+                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+                     left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
+                     where %(q)s
+                     group by diskinfo.disk_id, svcdisks.disk_region
+                   ) u
+                   group by u.disk_id
                  ) t
                  group by t.disk_arrayid
                  order by size desc, t.disk_arrayid"""%dict(q=q)
@@ -1088,7 +1231,8 @@ def ajax_disk_charts():
         data_array.sort(lambda x, y: cmp(y[1], x[1]))
 
 
-    nt.object_list = [{'chart_ap': json.dumps(data_app),
+    nt.object_list = [{'chart_svc': json.dumps(data_svc),
+                       'chart_ap': json.dumps(data_app),
                        'chart_dg': json.dumps(data_dg),
                        'chart_ar': json.dumps(data_array)}]
 
@@ -1125,6 +1269,9 @@ function diskpie(o) {
   );
   } catch(e) {}
 }
+$("[id^=chart_svc]").each(function(){
+  diskpie($(this))
+})
 $("[id^=chart_ap]").each(function(){
   diskpie($(this))
 })

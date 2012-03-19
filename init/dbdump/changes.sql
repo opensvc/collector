@@ -2160,4 +2160,6 @@ CREATE TABLE  `opensvc`.`disk_blacklist` (
   UNIQUE KEY `idx1` (`disk_id`)
 ) ENGINE=InnoDB CHARSET=utf8;
 
+alter table svcdisks add column disk_region integer default 0;
+
 

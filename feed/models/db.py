@@ -204,6 +204,7 @@ db.define_table('svcdisks',
     Field('disk_model'),
     Field('disk_dg'),
     Field('disk_updated'),
+    Field('disk_region', 'integer'),
     migrate=False)
 
 db.define_table('stat_day',

@@ -410,7 +410,7 @@ def _register_disk(vars, vals, auth):
         db.commit()
     try:
         generic_insert('svcdisks', h.keys(), h.values())
-    except _mysql_exceptions.IntegrityError:
+    except:
         # the foreign key on svcdisk may prevent insertion if svcmon is not yet
         # populated
         pass
