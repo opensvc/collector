@@ -1,3 +1,78 @@
+def call():
+    """
+    exposes services. for example:
+    http://..../[app]/default/call/jsonrpc
+    decorate with @services.jsonrpc the functions to expose
+    supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv
+    """
+    session.forget()
+    return service()
+
+array_img_h = {
+  'DMX3-24': 'emc',
+  '3000-M2': 'emc',
+  'HSV210': 'hp',
+  'HSV340': 'hp',
+  'HSV400': 'hp',
+}
+
+def array_icon(array_model):
+    if array_model is None:
+        return ''
+    array_model = array_model.lower()
+    if array_model in array_img_h:
+        img = IMG(
+                _src=URL(r=request,c='static',f=array_img_h[array_model]+'.png'),
+                _class='logo'
+              )
+    else:
+        img = ''
+    return img
+
+class col_array_dg(HtmlTableColumn):
+    def html(self, o):
+        id = self.t.extra_line_key(o)
+        dg = self.get(o)
+        s = self.t.colprops['disk_arrayid'].get(o)
+        if s is None or len(s) == 0:
+            return ''
+        d = DIV(
+              A(
+                dg,
+                _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                  url=URL(r=request, c='disks',f='ajax_array_dg',
+                          vars={'array': s, 'dg': dg, 'rowid': id}),
+                  id=id,
+                ),
+              ),
+              _class='nowrap',
+            )
+        return d
+
+class col_array(HtmlTableColumn):
+    def html(self, o):
+        id = self.t.extra_line_key(o)
+        s = self.get(o)
+        if s is None or len(s) == 0:
+            return ''
+        if 'array_model' in self.t.colprops:
+            img = array_icon(self.t.colprops['array_model'].get(o))
+        else:
+            img = ''
+        d = DIV(
+              img,
+              A(
+                s,
+                _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                  url=URL(r=request, c='disks',f='ajax_array',
+                          vars={'array': s, 'rowid': id}),
+                  id=id,
+                ),
+              ),
+              _class='nowrap',
+            )
+        return d
+
 class col_chart(HtmlTableColumn):
     def html(self, o):
        l = []
@@ -58,8 +133,16 @@ class col_size_mb(HtmlTableColumn):
        d = self.get(o)
        if d is None:
            return ''
-       unit = 'MB'
-       return DIV("%d %s"%(d, unit), _class="numeric")
+       if d < 1024:
+           v = 1.0 * d
+           unit = 'MB'
+       elif d < 1048576:
+           v = 1.0 * d / 1024
+           unit = 'GB'
+       else:
+           v = 1.0 * d / 1048576
+           unit = 'TB'
+       return DIV("%.2f %s"%(v, unit), _class="numeric")
 
 class col_quota_used(HtmlTableColumn):
     def html(self, o):
@@ -478,15 +561,15 @@ class table_disks(HtmlTable):
                      img='hw16',
                      display=True,
                     ),
-            'disk_used': HtmlTableColumn(
-                     title='Used (MB)',
+            'disk_used': col_size_mb(
+                     title='Disk Used',
                      table='svcdisks',
                      field='disk_used',
                      img='hd16',
                      display=True,
                     ),
-            'disk_size': HtmlTableColumn(
-                     title='Size (MB)',
+            'disk_size': col_size_mb(
+                     title='Disk Size',
                      table='diskinfo',
                      field='disk_size',
                      img='hd16',
@@ -513,7 +596,7 @@ class table_disks(HtmlTable):
                      img='hd16',
                      display=True,
                     ),
-            'disk_group': HtmlTableColumn(
+            'disk_group': col_array_dg(
                      title='Array disk group',
                      table='diskinfo',
                      field='disk_group',
@@ -541,7 +624,7 @@ class table_disks(HtmlTable):
                      img='time16',
                      display=True,
                     ),
-            'disk_arrayid': HtmlTableColumn(
+            'disk_arrayid': col_array(
                      title='Array Id',
                      table='diskinfo',
                      field='disk_arrayid',
@@ -879,6 +962,7 @@ def ajax_disks():
     o = db.svcdisks.disk_id
     q = db.diskinfo.id>0
     q |= db.svcdisks.id<0
+    q |= db.stor_array.id<0
     l1 = db.stor_array.on(db.diskinfo.disk_arrayid == db.stor_array.array_name)
     l2 = db.svcdisks.on(db.diskinfo.disk_id==db.svcdisks.disk_id)
     #q &= db.svcdisks.disk_nodename==db.v_nodes.nodename
@@ -886,7 +970,7 @@ def ajax_disks():
     q = apply_filters(q, db.svcdisks.disk_nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    n = len(db(q).select(left=(l1,l2)))
+    n = db(q).select(db.diskinfo.id.count(), left=(l1,l2)).first()._extra[db.diskinfo.id.count()]
     t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o, left=(l1,l2))
 
@@ -1310,3 +1394,78 @@ class table_disk_charts(HtmlTable):
         self.columnable = False
         self.headers = False
 
+@auth.requires_login()
+def ajax_array_dg():
+    array_name = request.vars.array
+    dg_name = request.vars.dg
+    row_id = request.vars.rowid
+    id = 'chart_'+array_name.replace(" ", "").replace("-", "")+'_'+dg_name.replace(" ", "")
+    d = DIV(
+          H3(T("Array disk group usage history")),
+          DIV(
+            _id=id,
+          ),
+          SCRIPT(
+           "stats_disk_array('%(url)s', '%(id)s');"%dict(
+                  id=id,
+                  url=URL(r=request,
+                          f='call/json/json_disk_array_dg',
+                          args=[array_name, dg_name]
+                      )
+                ),
+            _name='%s_to_eval'%row_id,
+          ),
+          _style="float:left;width:500px",
+        )
+    return d
+
+@auth.requires_login()
+def ajax_array():
+    array_name = request.vars.array
+    row_id = request.vars.rowid
+    id = 'chart_'+array_name.replace(" ", "").replace("-", "")
+    d = DIV(
+          H3(T("Array usage history")),
+          DIV(
+            _id=id,
+          ),
+          SCRIPT(
+           "stats_disk_array('%(url)s', '%(id)s');"%dict(
+                  id=id,
+                  url=URL(r=request,
+                          f='call/json/json_disk_array',
+                          args=[array_name]
+                      )
+                ),
+            _name='%s_to_eval'%row_id,
+          ),
+          _style="float:left;width:500px",
+        )
+    return d
+
+@service.json
+def json_disk_array_dg(array_name, dg_name):
+    q = db.stat_day_disk_array_dg.array_name == array_name
+    q &= db.stat_day_disk_array_dg.array_dg == dg_name
+    q &= db.stat_day_disk_array_dg.disk_size != None
+    q &= db.stat_day_disk_array_dg.disk_size != 0
+    rows = db(q).select()
+    disk_used = []
+    disk_free = []
+    for r in rows:
+        disk_used.append([r.day, r.disk_used])
+        disk_free.append([r.day, r.disk_size-r.disk_used])
+    return [disk_used, disk_free]
+
+@service.json
+def json_disk_array(array_name):
+    q = db.stat_day_disk_array.array_name == array_name
+    q &= db.stat_day_disk_array.disk_size != None
+    q &= db.stat_day_disk_array.disk_size != 0
+    rows = db(q).select()
+    disk_used = []
+    disk_free = []
+    for r in rows:
+        disk_used.append([r.day, r.disk_used])
+        disk_free.append([r.day, r.disk_size-r.disk_used])
+    return [disk_used, disk_free]

@@ -134,41 +134,6 @@ def cron_stat_day_disk():
     cron_stat_day_disk_array()
     cron_stat_day_disk_array_dg()
 
-def cron_stat_day_disk_array_dg():
-    sql = """insert into stat_day_disk_array_dg
-             select
-               NULL,
-               NOW(),
-               t.disk_arrayid,
-               t.disk_group,
-               sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) used,
-               sum(t.disk_size) size
-             from (
-               select
-                 sum(u.disk_used) as disk_used,
-                 sum(u.disk_size) as disk_size,
-                 u.disk_arrayid,
-                 u.disk_group
-               from
-               (
-                 select
-                   diskinfo.disk_id,
-                   max(svcdisks.disk_used) as disk_used,
-                   diskinfo.disk_size,
-                   diskinfo.disk_arrayid,
-                   diskinfo.disk_group
-                 from
-                   diskinfo
-                 left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
-                 left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
-                 group by diskinfo.disk_id, svcdisks.disk_region
-               ) u
-               group by u.disk_id
-             ) t
-             group by t.disk_arrayid, t.disk_group
-             order by size desc, t.disk_arrayid, t.disk_group"""
-    rows = db.executesql(sql)
-
 def cron_stat_day_disk_app():
     sql = """insert into stat_day_disk_app
              select
@@ -228,32 +193,34 @@ def cron_stat_day_disk_array():
              select
                NULL,
                NOW(),
-               t.disk_arrayid,
-               sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) used,
-               sum(t.disk_used) size
-             from (
-               select
-                 sum(u.disk_used) as disk_used,
-                 sum(u.disk_size) as disk_size,
-                 u.disk_arrayid
-               from
-               (
-                 select
-                   diskinfo.disk_id,
-                   max(svcdisks.disk_used) as disk_used,
-                   diskinfo.disk_size,
-                   diskinfo.disk_arrayid
-                 from
-                   diskinfo
-                 left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
-                 left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
-                 group by diskinfo.disk_id, svcdisks.disk_region
-               ) u
-               group by u.disk_id
-             ) t
-             group by t.disk_arrayid
-             order by size desc, t.disk_arrayid
+               stor_array.array_name,
+               sum(dg_used),
+               sum(dg_size)
+             from
+               stor_array_dg,
+               stor_array
+             where
+               stor_array.id=stor_array_dg.array_id
+             group by
+               stor_array.array_name
           """
+    rows = db.executesql(sql)
+
+def cron_stat_day_disk_array_dg():
+    sql = """insert into stat_day_disk_array_dg
+             select
+               NULL,
+               NOW(),
+               stor_array.array_name,
+               stor_array_dg.dg_name,
+               stor_array_dg.dg_used,
+               stor_array_dg.dg_size
+             from
+               stor_array_dg,
+               stor_array
+             where
+               stor_array.id=stor_array_dg.array_id
+           """
     rows = db.executesql(sql)
 
 def cron_stat_day():

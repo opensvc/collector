@@ -2591,47 +2591,44 @@ function toggle_plot(url, rowid, id) {
         refresh_plot(url, rowid, id)
     }
 }
-function stats_disk_app(url, id) {
-    $.jqplot.config.enablePlugins = true;
+function stats_disk_array(url, id) {
     $.getJSON(url, function(data) {
-	$.jqplot(id, data, {
-            cursor:{zoom:true, showTooltip:true},
-	    stackSeries: true,
-            title: {
-                text: 'Used (MB)'
-            },
+        $.jqplot(id, data, {
+            cursor:{zoom:true, showTooltip:false},
+            stackSeries: true,
             legend: {
+                renderer: $.jqplot.EnhancedLegendRenderer,
+                rendererOptions:{numberRows: 1},
                 show: true,
-                location: 'e',
-                placement: "outside"
+                location: 'n'
             },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
+            grid: {
                 borderWidth: 0.5,
                 shadowOffset: 1.0,
                 shadowWidth: 2
             },
-	    seriesDefaults: {
+            seriesDefaults: {
                 fill: true,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
                 shadowWidth: 2
             },
-	    series: [
-                { label: 'used' }
+            series: [
+                {label: 'used (MB)'},
+                {label: 'free (MB)'}
             ],
-	    axes: {
-		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer, 
-		    tickOptions:{formatString:'<center>%F<br>%R</center>'}
-		}, 
-		yaxis: {
-		    min: 0,
-		    tickOptions:{formatString:'%i'}
-		}
-	    }
+            axes: {
+                xaxis: {
+                    renderer: $.jqplot.DateAxisRenderer,
+                    numberTicks: 5,
+                    tickOptions:{formatString:'%Y-%m-%d'}
+                },
+                yaxis: {
+                    min: 0,
+                    tickOptions:{formatString:'%i'}
+                }
+            }
+
 	});
     });
 }

@@ -2191,3 +2191,5 @@ CREATE TABLE `stat_day_disk_array_dg` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `new_index` (`day`,`array_name`, `array_dg`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+alter table stor_array add column array_size integer default 0;
