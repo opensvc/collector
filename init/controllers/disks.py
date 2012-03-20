@@ -545,6 +545,7 @@ class table_disks(HtmlTable):
                      field='disk_id',
                      img='hd16',
                      display=True,
+                     _dataclass="bluer",
                     ),
             'disk_svcname': col_svc(
                      title='Service',
@@ -573,6 +574,7 @@ class table_disks(HtmlTable):
                      field='disk_size',
                      img='hd16',
                      display=True,
+                     _dataclass="bluer",
                     ),
             'disk_vendor': HtmlTableColumn(
                      title='Disk Vendor',
@@ -601,6 +603,7 @@ class table_disks(HtmlTable):
                      field='disk_group',
                      img='hd16',
                      display=True,
+                     _dataclass="bluer",
                     ),
             'disk_raid': HtmlTableColumn(
                      title='Raid',
@@ -608,6 +611,7 @@ class table_disks(HtmlTable):
                      field='disk_raid',
                      img='hd16',
                      display=True,
+                     _dataclass="bluer",
                     ),
             'disk_updated': HtmlTableColumn(
                      title='System Updated',
@@ -622,6 +626,7 @@ class table_disks(HtmlTable):
                      field='disk_updated',
                      img='time16',
                      display=True,
+                     _dataclass="bluer",
                     ),
             'disk_arrayid': col_array(
                      title='Array Id',
@@ -629,6 +634,7 @@ class table_disks(HtmlTable):
                      field='disk_arrayid',
                      img='hd16',
                      display=True,
+                     _dataclass="bluer",
                     ),
             'disk_devid': col_disk_id(
                      title='Array device Id',
@@ -636,6 +642,7 @@ class table_disks(HtmlTable):
                      field='disk_devid',
                      img='hd16',
                      display=True,
+                     _dataclass="bluer",
                     ),
             'array_model': HtmlTableColumn(
                      title='Array Model',
@@ -643,6 +650,7 @@ class table_disks(HtmlTable):
                      field='array_model',
                      img='hd16',
                      display=True,
+                     _dataclass="bluer",
                     ),
         })
         for i in self.cols:

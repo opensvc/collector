@@ -38,16 +38,17 @@ class HtmlTableMenu(object):
                )
 
 class Column(object):
-    def __init__(self, title, display=False, img='generic', _class=''):
+    def __init__(self, title, display=False, img='generic', _class='', _dataclass=''):
         self.title = title
         self.display = display
         self.img = img
         self._class = _class
+        self._dataclass = _dataclass
 
 class HtmlTableColumn(Column):
     def __init__(self, title, field, table=None, display=False,
-                 img='generic', _class=''):
-        Column.__init__(self, title, display, img, _class)
+                 img='generic', _class='', _dataclass=''):
+        Column.__init__(self, title, display, img, _class, _dataclass)
         self.table = table
         self.field = field
 
@@ -731,7 +732,7 @@ class HtmlTable(object):
             cells.append(TD(content,
                             _name=self.col_key(c),
                             _style=self.col_hide(c),
-                            _class=self.colprops[c]._class,
+                            _class=' '.join([self.colprops[c]._class, self.colprops[c]._dataclass]),
                             _ondblclick="filter_submit_%(id)s('%(k)s','%(v)s')"%dict(
                               id=self.id,
                               k=self.filter_key(c),
@@ -923,6 +924,7 @@ class HtmlTable(object):
                             ),
                             _name=self.col_key(c),
                             _style=self.col_hide(c),
+                            _class=self.colprops[c]._class,
                           ))
         return TR(inputs, _class='sym_headers')
 
