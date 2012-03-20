@@ -11,15 +11,14 @@ def call():
 array_img_h = {
   'DMX3-24': 'emc',
   '3000-M2': 'emc',
-  'HSV210': 'hp',
-  'HSV340': 'hp',
-  'HSV400': 'hp',
+  'HSV210': 'hpux',
+  'HSV340': 'hpux',
+  'HSV400': 'hpux',
 }
 
 def array_icon(array_model):
     if array_model is None:
         return ''
-    array_model = array_model.lower()
     if array_model in array_img_h:
         img = IMG(
                 _src=URL(r=request,c='static',f=array_img_h[array_model]+'.png'),
