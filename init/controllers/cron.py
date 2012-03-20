@@ -127,6 +127,134 @@ def cron_stats():
     # refresh db tables
     cron_stat_day()
     cron_stat_day_svc()
+    cron_stat_day_disk()
+
+def cron_stat_day_disk():
+    cron_stat_day_disk_app()
+    cron_stat_day_disk_array()
+    cron_stat_day_disk_array_dg()
+
+def cron_stat_day_disk_array_dg():
+    sql = """insert into stat_day_disk_array_dg
+             select
+               NULL,
+               NOW(),
+               t.disk_arrayid,
+               t.disk_group,
+               sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) used,
+               sum(t.disk_size) size
+             from (
+               select
+                 sum(u.disk_used) as disk_used,
+                 sum(u.disk_size) as disk_size,
+                 u.disk_arrayid,
+                 u.disk_group
+               from
+               (
+                 select
+                   diskinfo.disk_id,
+                   max(svcdisks.disk_used) as disk_used,
+                   diskinfo.disk_size,
+                   diskinfo.disk_arrayid,
+                   diskinfo.disk_group
+                 from
+                   diskinfo
+                 left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+                 left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
+                 group by diskinfo.disk_id, svcdisks.disk_region
+               ) u
+               group by u.disk_id
+             ) t
+             group by t.disk_arrayid, t.disk_group
+             order by size desc, t.disk_arrayid, t.disk_group"""
+    rows = db.executesql(sql)
+
+def cron_stat_day_disk_app():
+    sql = """insert into stat_day_disk_app
+             select
+               NULL,
+               NOW(),
+               t.app,
+               sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size
+             from (
+               select
+                 u.app,
+                 sum(u.disk_used) as disk_used,
+                 u.disk_size
+               from
+               (
+                 select
+                   svcdisks.disk_id,
+                   services.svc_app as app,
+                   max(svcdisks.disk_used) as disk_used,
+                   diskinfo.disk_size
+                 from
+                   diskinfo
+                 left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+                 left join services on svcdisks.disk_svcname=services.svc_name
+                 left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
+                 and svcdisks.disk_svcname != ""
+                 group by diskinfo.disk_id, svcdisks.disk_region
+               ) u
+               group by u.disk_id, u.app
+              union all
+               select
+                 u.app,
+                 sum(u.disk_used) as disk_used,
+                 u.disk_size
+               from
+               (
+                 select
+                   diskinfo.disk_id,
+                   nodes.project as app,
+                   max(svcdisks.disk_used) as disk_used,
+                   diskinfo.disk_size
+                 from
+                   diskinfo
+                 left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+                 left join nodes on svcdisks.disk_nodename=nodes.nodename
+                 left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
+                 and (svcdisks.disk_svcname = "" or svcdisks.disk_svcname is NULL)
+                 group by diskinfo.disk_id, svcdisks.disk_region
+               ) u
+               group by u.disk_id
+             ) t
+             group by t.app
+          """
+    rows = db.executesql(sql)
+
+def cron_stat_day_disk_array():
+    sql = """insert into stat_day_disk_array
+             select
+               NULL,
+               NOW(),
+               t.disk_arrayid,
+               sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) used,
+               sum(t.disk_used) size
+             from (
+               select
+                 sum(u.disk_used) as disk_used,
+                 sum(u.disk_size) as disk_size,
+                 u.disk_arrayid
+               from
+               (
+                 select
+                   diskinfo.disk_id,
+                   max(svcdisks.disk_used) as disk_used,
+                   diskinfo.disk_size,
+                   diskinfo.disk_arrayid
+                 from
+                   diskinfo
+                 left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+                 left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
+                 group by diskinfo.disk_id, svcdisks.disk_region
+               ) u
+               group by u.disk_id
+             ) t
+             group by t.disk_arrayid
+             order by size desc, t.disk_arrayid
+          """
+    rows = db.executesql(sql)
 
 def cron_stat_day():
     # global stats

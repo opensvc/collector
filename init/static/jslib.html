@@ -2591,4 +2591,48 @@ function toggle_plot(url, rowid, id) {
         refresh_plot(url, rowid, id)
     }
 }
+function stats_disk_app(url, id) {
+    $.jqplot.config.enablePlugins = true;
+    $.getJSON(url, function(data) {
+	$.jqplot(id, data, {
+            cursor:{zoom:true, showTooltip:true},
+	    stackSeries: true,
+            title: {
+                text: 'Used (MB)'
+            },
+            legend: {
+                show: true,
+                location: 'e',
+                placement: "outside"
+            },
+            gridPadding: {
+                right:90
+            },
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    seriesDefaults: {
+                fill: true,
+                shadowAngle: 135,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: [
+                { label: 'used' }
+            ],
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+		    tickOptions:{formatString:'<center>%F<br>%R</center>'}
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'}
+		}
+	    }
+	});
+    });
+}
 </script>

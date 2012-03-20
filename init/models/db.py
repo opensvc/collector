@@ -1426,4 +1426,25 @@ db.define_table('v_disk_quota',
     Field('app_id','integer'),
     migrate=False)
 
+db.define_table('stat_day_disk_app',
+    Field('app','string'),
+    Field('day','datetime'),
+    Field('disk_used','integer'),
+    migrate=False)
+
+db.define_table('stat_day_disk_array',
+    Field('array_name','string'),
+    Field('day','datetime'),
+    Field('disk_used','integer'),
+    Field('disk_size','integer'),
+    migrate=False)
+
+db.define_table('stat_day_disk_array_dg',
+    Field('array_name','string'),
+    Field('array_dg','string'),
+    Field('day','datetime'),
+    Field('disk_used','integer'),
+    Field('disk_size','integer'),
+    migrate=False)
+
 

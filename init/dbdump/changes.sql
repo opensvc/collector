@@ -2162,4 +2162,32 @@ CREATE TABLE  `opensvc`.`disk_blacklist` (
 
 alter table svcdisks add column disk_region integer default 0;
 
+CREATE TABLE `stat_day_disk_app` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `day` datetime NOT NULL,
+  `app` varchar(100) NOT NULL,
+  `disk_used` int(11) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `new_index` (`day`,`app`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE `stat_day_disk_array` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `day` datetime NOT NULL,
+  `array_name` varchar(100) NOT NULL,
+  `disk_used` int(11) DEFAULT '0',
+  `disk_size` int(11) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `new_index` (`day`,`array_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `stat_day_disk_array_dg` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `day` datetime NOT NULL,
+  `array_name` varchar(100) NOT NULL,
+  `array_dg` varchar(100) NOT NULL,
+  `disk_used` int(11) DEFAULT '0',
+  `disk_size` int(11) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `new_index` (`day`,`array_name`, `array_dg`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
