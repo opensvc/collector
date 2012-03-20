@@ -33,7 +33,7 @@ class col_array_dg(HtmlTableColumn):
         id = self.t.extra_line_key(o)
         dg = self.get(o)
         s = self.t.colprops['disk_arrayid'].get(o)
-        if s is None or len(s) == 0:
+        if dg is None or len(dg) == 0:
             return ''
         d = DIV(
               A(
@@ -141,7 +141,7 @@ class col_size_mb(HtmlTableColumn):
        else:
            v = 1.0 * d / 1048576
            unit = 'TB'
-       return DIV("%.2f %s"%(v, unit), _class="numeric")
+       return DIV("%.2f %s"%(v, unit), _class="numeric nowrap")
 
 class col_quota_used(HtmlTableColumn):
     def html(self, o):
@@ -524,20 +524,20 @@ class table_disks(HtmlTable):
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['disk_id',
-                     'disk_svcname',
-                     'disk_nodename',
                      'disk_vendor',
                      'disk_model',
                      'disk_dg',
+                     'disk_svcname',
+                     'disk_nodename',
                      'disk_updated',
-                     'disk_array_updated',
                      'disk_used',
                      'disk_size',
-                     'disk_group',
-                     'disk_raid',
                      'disk_devid',
+                     'disk_raid',
+                     'disk_group',
+                     'disk_arrayid',
                      'array_model',
-                     'disk_arrayid']
+                     'disk_array_updated']
         self.colprops.update({
             'disk_id': col_disk_id(
                      title='Disk Id',
@@ -575,14 +575,14 @@ class table_disks(HtmlTable):
                      display=True,
                     ),
             'disk_vendor': HtmlTableColumn(
-                     title='Vendor',
+                     title='Disk Vendor',
                      table='svcdisks',
                      field='disk_vendor',
                      img='hd16',
                      display=True,
                     ),
             'disk_model': HtmlTableColumn(
-                     title='Model',
+                     title='Disk Model',
                      table='svcdisks',
                      field='disk_model',
                      img='hd16',
@@ -630,7 +630,7 @@ class table_disks(HtmlTable):
                      img='hd16',
                      display=True,
                     ),
-            'disk_devid': HtmlTableColumn(
+            'disk_devid': col_disk_id(
                      title='Array device Id',
                      table='diskinfo',
                      field='disk_devid',
@@ -653,7 +653,7 @@ class table_disks(HtmlTable):
         self.dbfilterable = True
         self.ajax_col_values = 'ajax_disks_col_values'
         self.span = 'disk_id'
-        self.sub_span = ['disk_svcname', 'disk_size', 'disk_arrayid',
+        self.sub_span = ['disk_size', 'disk_arrayid',
                          'disk_devid', 'disk_raid', 'disk_group', 'array_model']
 
         if 'StorageManager' in user_groups() or \
@@ -958,7 +958,7 @@ def ajax_disks_col_values():
 @auth.requires_login()
 def ajax_disks():
     t = table_disks('disks', 'ajax_disks')
-    o = db.svcdisks.disk_id
+    o = db.svcdisks.disk_id | db.svcdisks.disk_svcname | db.svcdisks.disk_nodename
     q = db.diskinfo.id>0
     q |= db.svcdisks.id<0
     q |= db.stor_array.id<0
