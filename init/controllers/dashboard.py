@@ -185,7 +185,8 @@ def ajax_dash_agg():
              rows)
 
     for line in l:
-        h['nb'].append([unicode(T(line['dash_type'])), int(line['dash_alerts'])])
+        s = T.translate(line['dash_type'], dict())
+        h['nb'].append([s, int(line['dash_alerts'])])
     h['nb'].sort(lambda x, y: cmp(y[1], x[1]))
 
     """
@@ -227,7 +228,8 @@ def ajax_dash_agg():
              rows)
 
     for line in l:
-        h['sev'].append([unicode(T("Severity %(s)s"%dict(s=line['dash_severity']))), int(line['dash_alerts'])])
+        s = T.translate("Severity %(s)s", dict(s=line['dash_severity']))
+        h['sev'].append([s, int(line['dash_alerts'])])
     h['sev'].sort(lambda x, y: cmp(y[0], x[0]))
 
     mt.object_list = [{'chart': h}]

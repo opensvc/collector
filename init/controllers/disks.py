@@ -134,6 +134,9 @@ class col_size_mb(HtmlTableColumn):
        d = self.get(o)
        if d is None:
            return ''
+       return DIV(beautify_size_mb(d), _class="numeric nowrap")
+
+def beautify_size_mb(d):
        if d < 1024:
            v = 1.0 * d
            unit = 'MB'
@@ -143,7 +146,14 @@ class col_size_mb(HtmlTableColumn):
        else:
            v = 1.0 * d / 1048576
            unit = 'TB'
-       return DIV("%.2f %s"%(v, unit), _class="numeric nowrap")
+       if v >= 100:
+           fmt = "%d"
+       elif v >= 10:
+           fmt = "%.1f"
+       else:
+           fmt = "%.2f"
+       fmt = fmt + " %s"
+       return fmt%(v, unit)
 
 class col_quota_used(HtmlTableColumn):
     def html(self, o):
@@ -211,6 +221,7 @@ class table_quota(HtmlTable):
             'array_name': HtmlTableColumn(
                      title='Array',
                      #table='stor_array',
+                     table='v_disk_quota',
                      field='array_name',
                      img='hd16',
                      display=True,
@@ -218,6 +229,7 @@ class table_quota(HtmlTable):
             'array_model': HtmlTableColumn(
                      title='Array Model',
                      #table='stor_array',
+                     table='v_disk_quota',
                      field='array_model',
                      img='hd16',
                      display=True,
@@ -225,6 +237,7 @@ class table_quota(HtmlTable):
             'array_id': HtmlTableColumn(
                      title='Array Id',
                      #table='stor_array',
+                     table='v_disk_quota',
                      field='id',
                      img='hd16',
                      display=True,
@@ -232,6 +245,7 @@ class table_quota(HtmlTable):
             'dg_name': HtmlTableColumn(
                      title='Array Disk Group',
                      #table='stor_array_dg',
+                     table='v_disk_quota',
                      field='dg_name',
                      img='hd16',
                      display=True,
@@ -239,6 +253,7 @@ class table_quota(HtmlTable):
             'dg_free': col_size_mb(
                      title='Free',
                      #table='stor_array_dg',
+                     table='v_disk_quota',
                      field='dg_free',
                      img='hd16',
                      display=True,
@@ -246,6 +261,7 @@ class table_quota(HtmlTable):
             'dg_used': col_size_mb(
                      title='Used',
                      #table='stor_array_dg',
+                     table='v_disk_quota',
                      field='dg_used',
                      img='hd16',
                      display=True,
@@ -253,6 +269,7 @@ class table_quota(HtmlTable):
             'dg_size': col_size_mb(
                      title='Size',
                      #table='stor_array_dg',
+                     table='v_disk_quota',
                      field='dg_size',
                      img='hd16',
                      display=True,
@@ -260,6 +277,7 @@ class table_quota(HtmlTable):
             'dg_id': HtmlTableColumn(
                      title='Array Disk Group Id',
                      #table='stor_array_dg',
+                     table='v_disk_quota',
                      field='id',
                      img='hd16',
                      display=True,
@@ -267,6 +285,7 @@ class table_quota(HtmlTable):
             'app': HtmlTableColumn(
                      title='App',
                      #table='apps',
+                     table='v_disk_quota',
                      field='app',
                      img='svc',
                      display=True,
@@ -274,6 +293,7 @@ class table_quota(HtmlTable):
             'app_id': HtmlTableColumn(
                      title='App Id',
                      #table='apps',
+                     table='v_disk_quota',
                      field='id',
                      img='svc',
                      display=True,
@@ -281,6 +301,7 @@ class table_quota(HtmlTable):
             'quota': col_quota(
                      title='Quota',
                      #table='stor_array_dg_quota',
+                     table='v_disk_quota',
                      field='quota',
                      img='hd16',
                      display=True,
@@ -288,6 +309,7 @@ class table_quota(HtmlTable):
             'quota_used': col_quota_used(
                      title='Quota Used',
                      #table='stor_array_dg_quota',
+                     table='v_disk_quota',
                      field='quota_used',
                      img='hd16',
                      display=True,
@@ -1136,7 +1158,7 @@ def ajax_disk_charts():
                 size = int(row[1])
             except:
                 continue
-            data_svc += [[str(label) +' (%d MB)'%size, size]]
+            data_svc += [[str(label) +' (%s)'%beautify_size_mb(size), size]]
 
         data_svc.sort(lambda x, y: cmp(y[1], x[1]))
 
@@ -1209,7 +1231,7 @@ def ajax_disk_charts():
                 size = int(row[1])
             except:
                 continue
-            data_app += [[str(label) +' (%d MB)'%size, size]]
+            data_app += [[str(label) +' (%s)'%beautify_size_mb(size), size]]
 
         data_app.sort(lambda x, y: cmp(y[1], x[1]))
 
@@ -1277,7 +1299,7 @@ def ajax_disk_charts():
                 size = int(row[0])
             except:
                 continue
-            data_dg += [[str(label) +' (%d MB)'%size, size]]
+            data_dg += [[str(label) +' (%s)'%beautify_size_mb(size), size]]
         data_dg.sort(lambda x, y: cmp(y[1], x[1]))
 
     if n_arrays > 1:
@@ -1320,7 +1342,7 @@ def ajax_disk_charts():
                 size = int(row[0])
             except:
                 continue
-            data_array += [[str(label) +' (%d MB)'%size, size]]
+            data_array += [[str(label) +' (%s)'%beautify_size_mb(size), size]]
         data_array.sort(lambda x, y: cmp(y[1], x[1]))
 
 

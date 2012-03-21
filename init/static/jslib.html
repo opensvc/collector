@@ -2437,7 +2437,13 @@ function fancy_size_mb(size) {
         unit = 'TB'
         _size = size / 1048576
     }
-    _size = Math.round(_size*100)/100
+    if (_size>=100) {
+        _size = Math.round(_size)
+    } else if (_size>=10) {
+        _size = Math.round(_size*10)/10
+    } else {
+        _size = Math.round(_size*100)/100
+    }
     return _size + ' ' + unit
 }
 function stats_fs(url, id) {
