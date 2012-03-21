@@ -43,6 +43,7 @@ class col_array_dg(HtmlTableColumn):
                           vars={'array': s, 'dg': dg, 'rowid': id}),
                   id=id,
                 ),
+                _class="bluer",
               ),
               _class='nowrap',
             )
@@ -67,6 +68,7 @@ class col_array(HtmlTableColumn):
                           vars={'array': s, 'rowid': id}),
                   id=id,
                 ),
+                _class="bluer",
               ),
               _class='nowrap',
             )
