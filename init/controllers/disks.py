@@ -1165,22 +1165,20 @@ def ajax_disk_charts():
     if n_app > 1:
         sql = """select
                    t.app,
-                   sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
-                   t.disk_arrayid
+                   sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size
                  from (
                    select
                      u.app,
-                     sum(u.disk_used) as disk_used,
-                     u.disk_size,
-                     u.disk_arrayid
+                     max(u.disk_used) as disk_used,
+                     u.disk_size
                    from
                    (
                      select
                        svcdisks.disk_id,
+                       svcdisks.disk_region,
                        services.svc_app as app,
-                       max(svcdisks.disk_used) as disk_used,
-                       diskinfo.disk_size,
-                       diskinfo.disk_arrayid
+                       svcdisks.disk_used,
+                       diskinfo.disk_size
                      from
                        diskinfo
                      left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
@@ -1188,23 +1186,13 @@ def ajax_disk_charts():
                      left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
                      where %(q)s
                      and svcdisks.disk_svcname != ""
-                     group by diskinfo.disk_id, svcdisks.disk_region
-                   ) u
-                   group by u.disk_id, u.app
-                  union all
-                   select
-                     u.app,
-                     sum(u.disk_used) as disk_used,
-                     u.disk_size,
-                     u.disk_arrayid
-                   from
-                   (
+                     union all
                      select
                        diskinfo.disk_id,
+                       svcdisks.disk_region,
                        nodes.project as app,
-                       max(svcdisks.disk_used) as disk_used,
-                       diskinfo.disk_size,
-                       diskinfo.disk_arrayid
+                       svcdisks.disk_used,
+                       diskinfo.disk_size
                      from
                        diskinfo
                      left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
@@ -1212,9 +1200,8 @@ def ajax_disk_charts():
                      left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
                      where %(q)s
                      and (svcdisks.disk_svcname = "" or svcdisks.disk_svcname is NULL)
-                     group by diskinfo.disk_id, svcdisks.disk_region
                    ) u
-                   group by u.disk_id
+                   group by u.disk_id, u.disk_region
                  ) t
                  group by t.app
                  order by t.app, size desc
