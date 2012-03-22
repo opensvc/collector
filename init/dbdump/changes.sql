@@ -2192,3 +2192,4 @@ CREATE TABLE `stat_day_disk_array_dg` (
   UNIQUE KEY `new_index` (`day`,`array_name`, `array_dg`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+alter table svcdisks modify column disk_region varchar(32) default "0";
