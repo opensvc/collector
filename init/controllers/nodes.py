@@ -35,6 +35,7 @@ def _node_form(record=None):
                                 'model'],
                  fields=['nodename',
                          'team_responsible',
+                         'project',
                          'warranty_end',
                          'status',
                          'role',
@@ -58,6 +59,7 @@ def _node_form(record=None):
                  labels={
                          'nodename': _label('nodename'),
                          'team_responsible': _label('team_responsible'),
+                         'project': _label('project'),
                          'warranty_end': _label('warranty_end'),
                          'status': _label('status'),
                          'role': _label('role'),
