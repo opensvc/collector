@@ -1868,11 +1868,12 @@ def cron_dash_svcmon_not_updated():
     rows = db.executesql(sql)
     ids = map(lambda x: "'%d'"%x[0], rows)
 
-    sql = """delete from dashboard
-             where
-               id in (%s)
-          """%','.join(ids)
-    db.executesql(sql)
+    if len(ids) > 0:
+        sql = """delete from dashboard
+                 where
+                   id in (%s)
+              """%','.join(ids)
+        db.executesql(sql)
 
     sql = """insert ignore
              into dashboard
