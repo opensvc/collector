@@ -209,7 +209,10 @@ def update_appinfo(vars, vals, auth):
     h = {}
     for a,b in zip(vars, vals[0]):
         h[a] = b
-    db.executesql("delete from appinfo where app_svcname='%s'"%h['app_svcname'])
+    if "cluster_type" in h and "flex" in h["cluster_type"]:
+        db.executesql("delete from appinfo where app_svcname='%s' and app_nodename='%s'"%(h['app_svcname'], h['app_nodename']))
+    else:
+        db.executesql("delete from appinfo where app_svcname='%s'"%h['app_svcname'])
     generic_insert('appinfo', vars, vals)
 
 @auth_uuid

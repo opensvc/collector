@@ -1311,6 +1311,7 @@ db.define_table('network_segment_responsibles',
 
 db.define_table('appinfo',
     Field('app_svcname','string'),
+    Field('app_nodename','string'),
     Field('app_launcher','string'),
     Field('app_key','string'),
     Field('app_value','string'),

@@ -11,6 +11,7 @@ class table_appinfo(HtmlTable):
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['app_svcname',
+                     'app_nodename',
                      'app_launcher',
                      'app_key',
                      'app_value',
@@ -22,10 +23,16 @@ class table_appinfo(HtmlTable):
                      img='svc',
                      display=True,
                     ),
-            'app_svcname': HtmlTableColumn(
+            'app_svcname': col_svc(
                      title='Service',
                      field='app_svcname',
                      img='svc',
+                     display=True,
+                    ),
+            'app_nodename': col_node(
+                     title='Node',
+                     field='app_nodename',
+                     img='hw16',
                      display=True,
                     ),
             'app_launcher': HtmlTableColumn(
@@ -53,6 +60,9 @@ class table_appinfo(HtmlTable):
                      display=True,
                     ),
         }
+        for c in self.cols:
+            self.colprops[c].t = self
+        self.extraline = True
         self.dbfilterable = True
         self.ajax_col_values = 'ajax_appinfo_col_values'
         self.span = 'app_svcname'
@@ -76,7 +86,7 @@ def ajax_appinfo_col_values():
 def ajax_appinfo():
     t = table_appinfo('appinfo', 'ajax_appinfo')
 
-    o = db.appinfo.app_svcname | db.appinfo.app_launcher | db.appinfo.app_key
+    o = db.appinfo.app_svcname | db.appinfo.app_nodename | db.appinfo.app_launcher | db.appinfo.app_key
     q = db.appinfo.id > 0
     q = apply_filters(q, None, db.appinfo.app_svcname)
     q = _where(q, 'appinfo', domain_perms(), 'app_svcname')
