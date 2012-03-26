@@ -2195,3 +2195,4 @@ CREATE TABLE `stat_day_disk_array_dg` (
 alter table svcdisks modify column disk_region varchar(32) default "0";
 
 alter table appinfo add column app_nodename varchar(60) default "";
+alter table appinfo add column cluster_type varchar(10) default "";
