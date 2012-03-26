@@ -446,6 +446,7 @@ class table_checks(HtmlTable):
             self.additional_tools.append('set_low_threshold')
             self.additional_tools.append('reset_thresholds')
             self += HtmlTableMenu('Contuextual threshold', 'filter16', ['add_fset_threshold', 'del_fset_threshold'])
+            self.additional_tools.append('delete_checks')
 
     def set_low_threshold(self):
         return self.set_threshold('low')
@@ -469,6 +470,17 @@ class table_checks(HtmlTable):
                 _name='add_fset_threshold_d',
                 _id='add_fset_threshold_d',
               ),
+            )
+        return d
+
+    def delete_checks(self):
+        d = DIV(
+              A(
+                T("Delete"),
+                _class='del16',
+                _onclick=self.ajax_submit(args=['check_del']),
+              ),
+              _class='floatw',
             )
         return d
 
@@ -596,6 +608,32 @@ class table_checks(HtmlTable):
         return d
 
 
+@auth.requires_membership('NodeManager')
+def check_del(ids):
+    if len(ids) == 0:
+        raise ToolError("No check selected")
+
+    q = db.checks_live.id.belongs(ids)
+    q &= db.checks_live.chk_nodename == db.nodes.nodename
+    groups = user_groups()
+    if 'Manager' not in groups:
+        q &= db.nodes.team_responsible.belongs(groups)
+    rows = db(q).select(db.checks_live.ALL)
+    u = ', '.join([":".join((r.chk_nodename,
+                             r.chk_type,
+                             r.chk_instance)) for r in rows])
+
+    ids = [r.id for r in rows]
+    q = db.checks_live.id.belongs(ids)
+    db(q).delete()
+
+    for nodename in set([r.chk_nodename for r in rows]):
+        update_dash_checks(nodename)
+
+    _log('checks.delete',
+         'deleted checks %(u)s',
+         dict(u=u))
+
 @auth.requires_login()
 def ajax_checks_col_values():
     t = table_checks('checks', 'ajax_checks')
@@ -617,7 +655,9 @@ def ajax_checks():
     if len(request.args) == 1:
         action = request.args[0]
         try:
-            if action == 'set_low_threshold':
+            if action == 'check_del':
+                check_del(t.get_checked())
+            elif action == 'set_low_threshold':
                 set_low_threshold(t.get_checked())
             elif action == 'set_high_threshold':
                 set_high_threshold(t.get_checked())
