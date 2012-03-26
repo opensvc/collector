@@ -195,6 +195,7 @@ function click_toggle_vis(e, name, mode){
         } else {
             $(this).hide()
         }
+        $(this).find('input[type=text],textarea,select').filter(':visible:first').focus()
     })
 }
 function register_pop_up(e, box){

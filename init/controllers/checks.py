@@ -442,8 +442,8 @@ class table_checks(HtmlTable):
         if 'CheckManager' in user_groups():
             self.form_add_fset_threshold = self.add_fset_threshold_sqlform()
             self.form_del_fset_threshold = self.del_fset_threshold()
-            self.additional_tools.append('set_low_threshold')
             self.additional_tools.append('set_high_threshold')
+            self.additional_tools.append('set_low_threshold')
             self.additional_tools.append('reset_thresholds')
             self += HtmlTableMenu('Contuextual threshold', 'filter16', ['add_fset_threshold', 'del_fset_threshold'])
 

@@ -1308,6 +1308,9 @@ def get_filters(row):
                 'fset: '+fset.gen_filtersets.fset_name)
     return
 
+def b_update_thresholds_batch():
+    update_thresholds_batch()
+
 def update_thresholds_batch(rows=None):
     # maintenance batch
     if rows is None:
