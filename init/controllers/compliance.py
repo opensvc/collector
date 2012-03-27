@@ -5143,7 +5143,7 @@ def ajax_comp_log():
                                      seconds=now.second,
                                      microseconds=now.microsecond)
         request.vars.ajax_comp_log_f_run_date = '>'+str(d)
-    o = ~db.comp_log.run_date
+    o = ~db.comp_log.id
     q = _where(None, 'comp_log', domain_perms(), 'run_nodename')
     q &= db.comp_log.run_nodename == db.v_nodes.nodename
     for f in t.cols:
