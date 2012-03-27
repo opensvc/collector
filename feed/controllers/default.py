@@ -2007,21 +2007,40 @@ def cron_dash_node_without_warranty_date():
     db.commit()
 
 def cron_dash_checks_not_updated():
-    sql = """delete from dashboard where
-             dash_type="check value not updated" and
-             dash_dict_md5 not in (
-               select
-                  md5(concat('{"ctype": "', chk_type,
-                        '", "inst": "', chk_instance,
-                        '", "ttype": "', chk_threshold_provider,
-                        '", "val": ', chk_value,
-                        ', "min": ', chk_low,
-                        ', "max": ', chk_high,
-                        '}'))
-               from checks_live
-             )
+    sql = """select d.id from dashboard d
+             left join checks_live c on
+               d.dash_dict_md5=md5(concat(
+                 '{"ctype": "', c.chk_type,
+                 '", "inst": "', c.chk_instance,
+                 '", "ttype": "', c.chk_threshold_provider,
+                 '", "val": ', c.chk_value,
+                 ', "min": ', c.chk_low,
+                 ', "max": ', c.chk_high, '}'))
+               and d.dash_nodename=c.chk_nodename
+             where
+               d.dash_type="check out of bounds"
+               and c.id is NULL
           """
-    db.executesql(sql)
+    rows = db.executesql(sql)
+    ids = map(lambda x: str(x[0]), rows)
+    if len(ids) > 0:
+        sql = """delete from dashboard where id in (%s)"""%','.join(ids)
+        db.executesql(sql)
+
+    sql = """select d.id from dashboard d
+             left join checks_live c on
+               d.dash_dict_md5=md5(concat('{"i":"', c.chk_instance, '", "t":"', c.chk_type, '"}'))
+               and d.dash_nodename=c.chk_nodename
+             where
+               d.dash_type="check value not updated"
+               and c.id is NULL
+          """
+    rows = db.executesql(sql)
+    ids = map(lambda x: str(x[0]), rows)
+    if len(ids) > 0:
+        sql = """delete from dashboard where id in (%s)"""%','.join(ids)
+        db.executesql(sql)
+
     sql = """insert ignore into dashboard
                select
                  NULL,

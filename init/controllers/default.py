@@ -1145,24 +1145,26 @@ def svc_del(ids):
     groups = user_groups()
 
     q = db.svcmon.id.belongs(ids)
-    q &= db.svcmon.mon_svcname == db.services.svc_name
-    q &= db.services.svc_app == db.apps.app
-    q &= db.apps.id == db.apps_responsibles.app_id
-    q &= db.apps_responsibles.group_id == db.auth_group.id
     if 'Manager' not in groups:
         # Manager can delete any svc
         # A user can delete only services he is responsible of
-       q &= db.auth_group.role.belongs(groups)
+        q &= db.svcmon.mon_svcname == db.services.svc_name
+        q &= db.services.svc_app == db.apps.app
+        q &= db.apps.id == db.apps_responsibles.app_id
+        q &= db.apps_responsibles.group_id == db.auth_group.id
+        q &= db.auth_group.role.belongs(groups)
+        ids = map(lambda x: x.id, db(q).select(db.svcmon.id))
+        q = db.svcmon.id.belongs(ids)
     rows = db(q).select()
     for r in rows:
-        q = db.svcmon.id == r.svcmon.id
+        q = db.svcmon.id == r.id
         db(q).delete()
         _log('service.delete',
              'deleted service instance %(u)s',
-              dict(u='@'.join((r.svcmon.mon_svcname, r.svcmon.mon_nodname))),
-             svcname=r.svcmon.mon_svcname,
-             nodename=r.svcmon.mon_nodname)
-        purge_svc(r.svcmon.mon_svcname)
+              dict(u='@'.join((r.mon_svcname, r.mon_nodname))),
+             svcname=r.mon_svcname,
+             nodename=r.mon_nodname)
+        purge_svc(r.mon_svcname)
 
 @auth.requires_login()
 def service_action():
