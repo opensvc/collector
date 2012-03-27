@@ -301,6 +301,7 @@
 'Disk Groups Usage': 'Utilisation de disk groups',
 'Disk Id': ' Id de disques',
 'Disk Model': 'Modèle de disque',
+'Disk Region': 'Disk Region',
 'Disk Size': 'Taille de disque',
 'Disk Used': 'Utilisation de disque',
 'Disk Vendor': 'Marque de disque',

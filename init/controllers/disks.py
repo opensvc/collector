@@ -548,6 +548,7 @@ class table_disks(HtmlTable):
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['disk_id',
+                     'disk_region',
                      'disk_vendor',
                      'disk_model',
                      'disk_nodename',
@@ -563,6 +564,13 @@ class table_disks(HtmlTable):
                      'array_model',
                      'disk_array_updated']
         self.colprops.update({
+            'disk_region': col_disk_id(
+                     title='Disk Region',
+                     table='svcdisks',
+                     field='disk_region',
+                     img='hd16',
+                     display=False,
+                    ),
             'disk_id': col_disk_id(
                      title='Disk Id',
                      table='diskinfo',
