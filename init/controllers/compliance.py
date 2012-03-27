@@ -3572,7 +3572,17 @@ _class=''):
         db.comp_moduleset_modules.modset_mod_author.writable = False
         db.comp_moduleset_modules.modset_mod_updated.readable = False
         db.comp_moduleset_modules.modset_mod_updated.writable = False
-        db.comp_moduleset_modules.modset_id.requires = IS_IN_DB(db,
+
+        if "Manager" in user_groups():
+            q = db.comp_moduleset.id > 0
+        else:
+            q = db.comp_moduleset_team_responsible.modset_id == db.comp_moduleset.id
+            q &= db.comp_moduleset_team_responsible.group_id == db.auth_group.id
+            q &= db.auth_group.id == db.auth_membership.group_id
+            q &= db.auth_user.id == db.auth_membership.user_id
+            q &= db.auth_user.id == auth.user_id
+
+        db.comp_moduleset_modules.modset_id.requires = IS_IN_DB(db(q),
                                                 db.comp_moduleset.id,
                                                 "%(modset_name)s",
                                                 zero=T('choose one'))
@@ -3600,9 +3610,24 @@ def comp_delete_module(ids=[]):
             continue
         l.append(i)
     ids =l
-    rows = db(db.comp_moduleset_modules.id.belongs(ids)).select(db.comp_moduleset_modules.modset_mod_name)
+    q = db.comp_moduleset_modules.id.belongs(ids)
+    if "Manager" not in user_groups():
+        q = db.comp_moduleset_modules.id.belongs(ids)
+        q &= db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
+        q &= db.comp_moduleset_team_responsible.modset_id == db.comp_moduleset.id
+        q &= db.comp_moduleset_team_responsible.group_id == db.auth_group.id
+        q &= db.auth_group.id == db.auth_membership.group_id
+        q &= db.auth_user.id == db.auth_membership.user_id
+        q &= db.auth_user.id == auth.user_id
+        rows = db(q).select(db.comp_moduleset_modules.id)
+        ids = map(lambda x: x.id, rows)
+        q = db.comp_moduleset_modules.id.belongs(ids)
+
+    rows = db(q).select(db.comp_moduleset_modules.modset_mod_name)
+
     if len(rows) == 0:
         raise ToolError("delete module failed: can't find selected modules")
+
     mod_names = ', '.join([r.modset_mod_name for r in rows])
     n = db(db.comp_moduleset_modules.id.belongs(ids)).delete()
     _log('compliance.moduleset.module.delete',
@@ -3769,8 +3794,8 @@ def ajax_comp_moduleset():
 
     try:
         if t.form_moduleset_add.accepts(request.vars, formname='add_moduleset'):
-            t.form_module_add = t.comp_module_add_sqlform()
             add_modset_default_team_responsible(request.vars.modset_name)
+            t.form_module_add = t.comp_module_add_sqlform()
             _log('compliance.moduleset.add',
                 'added moduleset %(modset_name)s',
                 dict(modset_name=request.vars.modset_name))
