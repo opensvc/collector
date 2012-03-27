@@ -1012,9 +1012,10 @@ def ajax_disks():
 
     return DIV(
              SCRIPT(
-               'if ($("#apps").is(":visible")) {',
+               #'if ($("#charts").is(":visible")) {',
                nt.ajax_submit(additional_inputs=t.ajax_inputs()),
-               "}",
+               #"}",
+               _name="disks_to_eval",
              ),
              DIV(
                T("Statistics"),
@@ -1034,7 +1035,6 @@ def ajax_disks():
              DIV(
                IMG(_src=URL(r=request,c='static',f='spinner.gif')),
                _id="charts",
-               _style="display:none"
              ),
              t.html(),
            )
@@ -1371,11 +1371,25 @@ $("[id^=chart_ap]").each(function(){
 })
 $("[id^=chart_dg]").each(function(){
   diskpie($(this))
+  $(this).bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
+    d = data[seriesIndex]
+    var reg = new RegExp(" \(.*\)", "g");
+    d = d.replace(reg, "")
+    $("#disks_f_disk_group").val(d)
+    %(submit)s
+  })
 })
 $("[id^=chart_ar]").each(function(){
   diskpie($(this))
+  $(this).bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
+    d = data[seriesIndex]
+    var reg = new RegExp(" \(.*\)", "g");
+    d = d.replace(reg, "")
+    $("#disks_f_disk_arrayid").val(d)
+    %(submit)s
+  })
 })
-""",
+"""%dict(submit=t.ajax_submit()),
                _name="charts_to_eval",
              ),
            )
