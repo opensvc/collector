@@ -1101,14 +1101,15 @@ def ajax_disk_charts():
                  from (
                    select
                      u.obj,
-                     sum(u.disk_used) as disk_used,
+                     max(u.disk_used) as disk_used,
                      u.disk_size
                    from
                    (
                      select
                        svcdisks.disk_id,
+                       svcdisks.disk_region,
                        services.svc_name as obj,
-                       max(svcdisks.disk_used) as disk_used,
+                       svcdisks.disk_used as disk_used,
                        diskinfo.disk_size
                      from
                        diskinfo
@@ -1117,20 +1118,12 @@ def ajax_disk_charts():
                      left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
                      where %(q)s
                      and svcdisks.disk_svcname != ""
-                     group by diskinfo.disk_id, svcdisks.disk_region
-                   ) u
-                   group by u.disk_id, u.obj
-                  union all
-                   select
-                     u.obj,
-                     sum(u.disk_used) as disk_used,
-                     u.disk_size
-                   from
-                   (
+                     union all
                      select
                        diskinfo.disk_id,
+                       svcdisks.disk_region,
                        nodes.nodename as obj,
-                       max(svcdisks.disk_used) as disk_used,
+                       svcdisks.disk_used as disk_used,
                        diskinfo.disk_size
                      from
                        diskinfo
@@ -1139,9 +1132,8 @@ def ajax_disk_charts():
                      left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
                      where %(q)s
                      and (svcdisks.disk_svcname = "" or svcdisks.disk_svcname is NULL)
-                     group by diskinfo.disk_id, svcdisks.disk_region
                    ) u
-                   group by u.disk_id
+                   group by u.disk_id, u.disk_region
                  ) t
                  group by t.obj
                  order by t.obj, size desc
