@@ -360,7 +360,9 @@ def svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
 @auth_uuid
 @service.xmlrpc
 def register_disks(vars, vals, auth):
-    db(db.svcdisks.disk_nodename==auth[1].strip("'")).delete()
+    nodename = auth[1].strip("'")
+    db(db.svcdisks.disk_nodename==nodename).delete()
+    db(db.diskinfo.disk_arrayid==nodename).delete()
     for v in vals:
         _register_disk(vars, v, auth)
 
@@ -420,13 +422,11 @@ def _register_disk(vars, vals, auth):
     purge_old_disks(h, now)
 
 def purge_old_disks(h, now):
-    if 'disk_svcname' in h and h['disk_svcname'] is not None and h['disk_svcname'] != '':
-        q = db.svcdisks.disk_svcname==h['disk_svcname']
-        q &= db.svcdisks.disk_nodename==h['disk_nodename']
+    if 'disk_nodename' in h and h['disk_nodename'] is not None and h['disk_nodename'] != '':
+        q = db.svcdisks.disk_nodename==h['disk_nodename']
         q &= db.svcdisks.disk_updated<now
         db(q).delete()
         db.commit()
-
 
 @auth_uuid
 @service.xmlrpc

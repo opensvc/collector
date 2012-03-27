@@ -193,6 +193,16 @@ db.define_table('disk_blacklist',
     Field('disk_id', 'string'),
     migrate=False)
 
+db.define_table('diskinfo',
+    Field('disk_id', 'string'),
+    Field('disk_devid', 'string'),
+    Field('disk_arrayid', 'string'),
+    Field('disk_size', 'integer'),
+    Field('disk_group', 'string'),
+    Field('disk_raid', 'string'),
+    Field('disk_updated', 'datetime'),
+    migrate=False)
+
 db.define_table('svcdisks',
     Field('id'),
     Field('disk_id'),
