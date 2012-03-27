@@ -272,7 +272,7 @@ def app_add():
 @auth.requires_membership('Manager')
 def app_del(ids):
     q = db.apps.id.belongs(ids)
-    u = ', '.join([r.app for r in db(q).select(db.apps.app)])
+    u = ', '.join([r.app for r in db(q).select(db.apps.app) if r.app is not None])
     g = db(q).select(db.apps.app)[0].app
     db(db.apps_responsibles.app_id.belongs(ids)).delete()
     db(q).delete()
@@ -304,7 +304,8 @@ def ajax_apps():
     q = db.v_apps.id > 0
     for f in t.cols:
         q = _where(q, 'v_apps', t.filter_parse(f), f)
-    t.setup_pager()
+    n = db(q).count()
+    t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
                                  orderby=o, groupby=o)
     return t.html()

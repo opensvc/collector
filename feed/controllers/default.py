@@ -2026,6 +2026,18 @@ def cron_dash_checks_not_updated():
     db.commit()
 
 def cron_dash_app_without_responsible():
+    sql = """delete from dashboard where
+             dash_type="application code without responsible" and
+             dash_dict in (
+               select
+                 concat('{"a":"', app, '"}')
+               from v_apps
+               where
+                 roles is not NULL
+             ) or dash_dict = "" or dash_dict is NULL
+          """
+    db.executesql(sql)
+
     sql = """insert ignore into dashboard
                select
                  NULL,
