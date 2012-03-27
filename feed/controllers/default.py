@@ -2007,6 +2007,21 @@ def cron_dash_node_without_warranty_date():
     db.commit()
 
 def cron_dash_checks_not_updated():
+    sql = """delete from dashboard where
+             dash_type="check value not updated" and
+             dash_dict_md5 not in (
+               select
+                  md5(concat('{"ctype": "', chk_type,
+                        '", "inst": "', chk_instance,
+                        '", "ttype": "', chk_threshold_provider,
+                        '", "val": ', chk_value,
+                        ', "min": ', chk_low,
+                        ', "max": ', chk_high,
+                        '}'))
+               from checks_live
+             )
+          """
+    db.executesql(sql)
     sql = """insert ignore into dashboard
                select
                  NULL,
