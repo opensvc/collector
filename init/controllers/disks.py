@@ -160,12 +160,13 @@ class col_quota_used(HtmlTableColumn):
         if o.app is None:
             return ""
         s = self.get(o)
-        c = ""
+        c = "numeric nowrap"
         if s is None:
             s = "-"
         elif s > o.quota:
-            c = "highlight"
-            s = "%s MB"%s
+            c += " highlight"
+        if s != "-":
+            s = beautify_size_mb(int(s))
         return SPAN(s, _class=c)
 
 class col_quota(HtmlTableColumn):
@@ -178,7 +179,7 @@ class col_quota(HtmlTableColumn):
             ss = ""
         else:
             ss = s
-            s = "%s MB"%s
+            s = beautify_size_mb(int(s))
         tid = 'd_t_%s'%o.id
         iid = 'd_i_%s'%o.id
         sid = 'd_s_%s'%o.id
@@ -238,7 +239,7 @@ class table_quota(HtmlTable):
                      title='Array Id',
                      #table='stor_array',
                      table='v_disk_quota',
-                     field='id',
+                     field='array_id',
                      img='hd16',
                      display=True,
                     ),
@@ -278,7 +279,7 @@ class table_quota(HtmlTable):
                      title='Array Disk Group Id',
                      #table='stor_array_dg',
                      table='v_disk_quota',
-                     field='id',
+                     field='dg_id',
                      img='hd16',
                      display=True,
                     ),
@@ -294,7 +295,7 @@ class table_quota(HtmlTable):
                      title='App Id',
                      #table='apps',
                      table='v_disk_quota',
-                     field='id',
+                     field='app_id',
                      img='svc',
                      display=True,
                     ),

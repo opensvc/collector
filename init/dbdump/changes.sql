@@ -2196,3 +2196,90 @@ alter table svcdisks modify column disk_region varchar(32) default "0";
 
 alter table appinfo add column app_nodename varchar(60) default "";
 alter table appinfo add column cluster_type varchar(10) default "";
+
+
+drop view v_disk_quota;
+
+drop table v_disk_app;
+
+create view v_disk_app as 
+                     select
+                       diskinfo.disk_id,
+                       svcdisks.disk_region,
+                       services.svc_app as app,
+                       svcdisks.disk_used as disk_used,
+                       diskinfo.disk_size,
+                       diskinfo.disk_arrayid,
+                       diskinfo.disk_group
+                     from
+                       diskinfo
+                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+                     left join services on svcdisks.disk_svcname=services.svc_name
+                     where svcdisks.disk_svcname != ""
+                     union all
+                     select
+                       diskinfo.disk_id,
+                       svcdisks.disk_region,
+                       nodes.project as app,
+                       svcdisks.disk_used as disk_used,
+                       diskinfo.disk_size,
+                       diskinfo.disk_arrayid,
+                       diskinfo.disk_group
+                     from
+                       diskinfo
+                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+                     left join nodes on svcdisks.disk_nodename=nodes.nodename
+                     where (svcdisks.disk_svcname = "" or svcdisks.disk_svcname is NULL)
+;
+
+create view v_disk_app_dedup as 
+                   select
+                     app,
+                     max(disk_used) as disk_used,
+                     disk_size,
+                     disk_arrayid,
+                     disk_group
+                   from
+                     v_disk_app
+                   group by disk_id, disk_region
+;
+
+create view v_disks_app as 
+                 select
+                   app,
+                   sum(if(disk_used is not NULL and disk_used>0, disk_used, disk_size)) as disk_used,
+                   disk_arrayid,
+                   disk_group
+                 from 
+                   v_disk_app_dedup
+                 group by app, disk_arrayid, disk_group
+;
+
+create view v_disk_quota as 
+  SELECT
+    stor_array_dg_quota.id,
+    stor_array.id as array_id,
+    stor_array_dg.id as dg_id,
+    apps.id as app_id,
+    stor_array.array_name,
+    stor_array_dg.dg_name,
+    stor_array_dg.dg_free,
+    stor_array_dg.dg_size,
+    stor_array_dg.dg_used,
+    stor_array.array_model,
+    apps.app,
+    stor_array_dg_quota.quota,
+    v_disks_app.disk_used as quota_used
+  FROM
+    stor_array
+    JOIN stor_array_dg ON (stor_array_dg.array_id = stor_array.id)
+    LEFT JOIN stor_array_dg_quota ON (stor_array_dg.id = stor_array_dg_quota.dg_id)
+    LEFT JOIN apps ON (apps.id = stor_array_dg_quota.app_id)
+    LEFT JOIN v_disks_app ON (
+          v_disks_app.app=apps.app and
+          v_disks_app.disk_arrayid=stor_array.array_name and
+          v_disks_app.disk_group=stor_array_dg.dg_name
+    )
+  ORDER BY
+    stor_array.array_name, stor_array_dg.dg_name
+;
