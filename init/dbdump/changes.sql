@@ -2266,6 +2266,7 @@ create view v_disk_quota as
     stor_array_dg.dg_free,
     stor_array_dg.dg_size,
     stor_array_dg.dg_used,
+    stor_array_dg.dg_reserved,
     stor_array.array_model,
     apps.app,
     stor_array_dg_quota.quota,
@@ -2280,8 +2281,33 @@ create view v_disk_quota as
           v_disks_app.disk_arrayid=stor_array.array_name and
           v_disks_app.disk_group=stor_array_dg.dg_name
     )
-  ORDER BY
-    stor_array.array_name, stor_array_dg.dg_name
+  UNION ALL
+  SELECT
+    stor_array_dg_quota.id,
+    stor_array.id as array_id,
+    stor_array_dg.id as dg_id,
+    NULL as app_id,
+    stor_array.array_name,
+    stor_array_dg.dg_name,
+    stor_array_dg.dg_free,
+    stor_array_dg.dg_size,
+    stor_array_dg.dg_used,
+    stor_array_dg.dg_reserved,
+    stor_array.array_model,
+    "unkown",
+    stor_array_dg.dg_used - sum(v_disks_app.disk_used) as quota,
+    stor_array_dg.dg_used - sum(v_disks_app.disk_used) as quota_used
+  FROM
+    stor_array
+    JOIN stor_array_dg ON (stor_array_dg.array_id = stor_array.id)
+    LEFT JOIN stor_array_dg_quota ON (stor_array_dg.id = stor_array_dg_quota.dg_id)
+    LEFT JOIN apps ON (apps.id = stor_array_dg_quota.app_id)
+    LEFT JOIN v_disks_app ON (
+          v_disks_app.app=apps.app and
+          v_disks_app.disk_arrayid=stor_array.array_name and
+          v_disks_app.disk_group=stor_array_dg.dg_name
+    )
+  GROUP BY stor_array.id, stor_array_dg.id
 ;
 
 alter table  stat_day_disk_app add column quota integer default 0;
@@ -2297,4 +2323,7 @@ CREATE TABLE `stat_day_disk_app_dg` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `new_index` (`day`,`app`, `dg_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+alter table stor_array_dg add column dg_reserved integer default 0;
+
 

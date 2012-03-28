@@ -161,6 +161,10 @@ class col_size_mb(HtmlTableColumn):
        return DIV(beautify_size_mb(d), _class="numeric nowrap")
 
 def beautify_size_mb(d):
+       try:
+          d = int(d)
+       except:
+          return '-'
        if d < 1024:
            v = 1.0 * d
            unit = 'MB'
@@ -204,6 +208,10 @@ class col_quota(HtmlTableColumn):
         else:
             ss = s
             s = beautify_size_mb(int(s))
+
+        if o.app == "unknown":
+            return DIV(s, _class="highlight numeric")
+
         tid = 'd_t_%s'%o.id
         iid = 'd_i_%s'%o.id
         sid = 'd_s_%s'%o.id
@@ -236,12 +244,13 @@ class table_quota(HtmlTable):
         self.cols = ['array_name',
                      'array_model',
                      'dg_name',
-                     'dg_free',
-                     'dg_used',
                      'dg_size',
+                     'dg_reserved',
+                     'dg_used',
+                     'dg_free',
                      'app',
-                     'quota_used',
-                     'quota']
+                     'quota',
+                     'quota_used']
         self.colprops.update({
             'array_name': col_array(
                      title='Array',
@@ -289,6 +298,14 @@ class table_quota(HtmlTable):
                      #table='stor_array_dg',
                      table='v_disk_quota',
                      field='dg_used',
+                     img='hd16',
+                     display=True,
+                    ),
+            'dg_reserved': col_size_mb(
+                     title='Reserved',
+                     #table='stor_array_dg',
+                     table='v_disk_quota',
+                     field='dg_reserved',
                      img='hd16',
                      display=True,
                     ),
@@ -430,6 +447,16 @@ class table_quota(HtmlTable):
             )
         return d
 
+def update_dg_reserved(dg_id):
+    sql = """update stor_array_dg set dg_reserved=(
+               select sum(v_disk_quota.quota) as reserved
+               from v_disk_quota
+               where dg_id=%(dg_id)s
+             ) where id=%(dg_id)s
+          """%dict(dg_id=dg_id)
+    db.executesql(sql)
+    db.commit()
+
 @auth.requires_membership('StorageManager')
 def quota_set():
     l = [k for k in request.vars if 'd_i_' in k]
@@ -459,6 +486,8 @@ def quota_set():
               old=str(info.stor_array_dg_quota.quota),
               dg=info.stor_array_dg.dg_name,
               array=info.stor_array.array_name))
+
+    update_dg_reserved(info.stor_array_dg_quota.dg_id)
 
 
 @auth.requires_membership('StorageManager')

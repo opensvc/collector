@@ -669,6 +669,7 @@
 'Rename moduleset': 'Renommer un jeu de modules',
 'Rename ruleset': 'Renommer un jeu de règles',
 'Report': 'Rapport',
+'Reserved': 'Reserved',
 'Reset Password key': 'Remise à zéro de la clé du mot de passe',
 'Reset thresholds': 'Remise aux défauts des seuils',
 'Resetting thresholds will definitively lose the custom thresholds of the selected checks. Please confirm reset': 'La remise aux défauts des seuils efface définitivement les personnalisations des seuils de sonde. Merci de confirmer la remise aux défauts',

@@ -125,9 +125,18 @@ def cron_scrub_svcstatus():
 
 def cron_stats():
     # refresh db tables
-    cron_stat_day()
-    cron_stat_day_svc()
-    cron_stat_day_disk()
+    try:
+        cron_stat_day()
+    except:
+        pass
+    try:
+        cron_stat_day_svc()
+    except:
+        pass
+    try:
+        cron_stat_day_disk()
+    except:
+        pass
 
 def cron_stat_day_disk():
     cron_stat_day_disk_app()
@@ -152,6 +161,7 @@ def cron_stat_day_disk_app():
              group by t.app;
           """
     rows = db.executesql(sql)
+    print "cron_stat_day_disk_app", str(rows)
 
 def cron_stat_day_disk_app_dg():
     sql = """insert into stat_day_disk_app_dg
@@ -169,6 +179,7 @@ def cron_stat_day_disk_app_dg():
              left join stor_array_dg_quota dgq on ap.id=dgq.app_id and dg.id=dgq.dg_id
           """
     rows = db.executesql(sql)
+    print "cron_stat_day_disk_app_dg", str(rows)
 
 def cron_stat_day_disk_array():
     sql = """insert into stat_day_disk_array
@@ -187,6 +198,7 @@ def cron_stat_day_disk_array():
                stor_array.array_name
           """
     rows = db.executesql(sql)
+    print "cron_stat_day_disk_array", str(rows)
 
 def cron_stat_day_disk_array_dg():
     sql = """insert into stat_day_disk_array_dg
@@ -204,6 +216,7 @@ def cron_stat_day_disk_array_dg():
                stor_array.id=stor_array_dg.array_id
            """
     rows = db.executesql(sql)
+    print "cron_stat_day_disk_array_dg", str(rows)
 
 def cron_stat_day():
     # global stats
