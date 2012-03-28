@@ -1279,6 +1279,7 @@
 'unacknowledged failed actions': 'actions en erreur et non-acquittées',
 'undefined': 'indéfini',
 'unfinished': 'non terminé',
+'unknown': 'unknown',
 'unlock filter for users %(u)s': 'Filtre verrouillé pour les utilisateurs %(u)s',
 'updated: %(upd)s': 'mise à jour: %(upd)s',
 'user': 'utilisateur',

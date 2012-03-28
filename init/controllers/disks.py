@@ -34,6 +34,8 @@ class col_app(HtmlTableColumn):
         app = self.get(o)
         app_id = self.t.colprops['app_id'].get(o)
         dg_id = self.t.colprops['dg_id'].get(o)
+        if app == 'unknown':
+            return T(app)
         if app_id is None:
             return ''
         d = DIV(
