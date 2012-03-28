@@ -731,7 +731,7 @@ class table_disks(HtmlTable):
         d = DIV(
               A(
                 T("Quota"),
-                _class='add16',
+                _class='lock',
                 _href=URL(r=request, f='quota'),
               ),
               _class='floatw',
