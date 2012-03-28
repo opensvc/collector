@@ -2294,7 +2294,7 @@ create view v_disk_quota as
     stor_array_dg.dg_used,
     stor_array_dg.dg_reserved,
     stor_array.array_model,
-    "unkown",
+    "unknown",
     stor_array_dg.dg_used - sum(v_disks_app.disk_used) as quota,
     stor_array_dg.dg_used - sum(v_disks_app.disk_used) as quota_used
   FROM
