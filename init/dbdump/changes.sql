@@ -2287,3 +2287,14 @@ create view v_disk_quota as
 alter table  stat_day_disk_app add column quota integer default 0;
 
 
+CREATE TABLE `stat_day_disk_app_dg` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `day` datetime NOT NULL,
+  `dg_id` integer NOT NULL,
+  `app` varchar(100) NOT NULL,
+  `disk_used` int(11) DEFAULT '0',
+  `quota` int(11) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `new_index` (`day`,`app`, `dg_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+

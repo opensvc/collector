@@ -32,15 +32,16 @@ class col_app(HtmlTableColumn):
     def html(self, o):
         id = self.t.extra_line_key(o)
         app = self.get(o)
-        s = self.t.colprops['app'].get(o)
-        if app is None or len(app) == 0:
+        app_id = self.t.colprops['app_id'].get(o)
+        dg_id = self.t.colprops['dg_id'].get(o)
+        if app_id is None:
             return ''
         d = DIV(
               A(
                 app,
                 _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
                   url=URL(r=request, c='disks',f='ajax_app',
-                          vars={'app': s, 'rowid': id}),
+                          vars={'app_id': app_id, 'dg_id': dg_id, 'rowid': id}),
                   id=id,
                 ),
               ),
@@ -346,7 +347,7 @@ class table_quota(HtmlTable):
         self.checkboxes = True
         self.dbfilterable = False
         self.ajax_col_values = 'ajax_quota_col_values'
-        self.span = 'array_name'
+        #self.span = 'array_name'
         #self.sub_span = ['dg_free', 'array_model', 'array_name']
 
         if 'StorageManager' in user_groups() or \
@@ -1502,25 +1503,42 @@ def ajax_array():
 
 @auth.requires_login()
 def ajax_app():
-    app = request.vars.app
+    app_id = request.vars.app_id
+    dg_id = request.vars.dg_id
     row_id = request.vars.rowid
-    id = 'chart_'+app.replace(" ", "").replace("-", "")
+    id = row_id + '_chart'
     d = DIV(
+        DIV(
+          H3(T("Application usage history")),
+          DIV(
+            _id=id+'_dg',
+          ),
+          _style="float:left;width:500px",
+        ),
+        DIV(
           H3(T("Application usage history (all disk groups)")),
           DIV(
             _id=id,
           ),
-          SCRIPT(
+          _style="float:left;width:500px",
+        ),
+        SCRIPT(
+           "stats_disk_app('%(url)s', '%(id)s');"%dict(
+                  id=id+'_dg',
+                  url=URL(r=request,
+                          f='call/json/json_disk_app_dg',
+                          args=[app_id, dg_id]
+                      )
+                ),
            "stats_disk_app('%(url)s', '%(id)s');"%dict(
                   id=id,
                   url=URL(r=request,
                           f='call/json/json_disk_app',
-                          args=[app]
+                          args=[app_id]
                       )
                 ),
             _name='%s_to_eval'%row_id,
-          ),
-          _style="float:left;width:500px",
+        ),
         )
     return d
 
@@ -1552,12 +1570,26 @@ def json_disk_array(array_name):
     return [disk_used, disk_free]
 
 @service.json
-def json_disk_app(app):
-    q = db.stat_day_disk_app.app == app
+def json_disk_app(app_id):
+    q = db.apps.id == int(app_id)
+    q &= db.stat_day_disk_app.app == db.apps.app
     rows = db(q).select()
     disk_used = []
     disk_quota = []
     for r in rows:
-        disk_used.append([r.day, r.disk_used])
-        disk_quota.append([r.day, r.quota])
+        disk_used.append([r.stat_day_disk_app.day, r.stat_day_disk_app.disk_used])
+        disk_quota.append([r.stat_day_disk_app.day, r.stat_day_disk_app.quota])
+    return [disk_used, disk_quota]
+
+@service.json
+def json_disk_app_dg(app_id, dg_id):
+    q = db.apps.id == int(app_id)
+    q &= db.stat_day_disk_app_dg.app == db.apps.app
+    q &= db.stat_day_disk_app_dg.dg_id == int(dg_id)
+    rows = db(q).select()
+    disk_used = []
+    disk_quota = []
+    for r in rows:
+        disk_used.append([r.stat_day_disk_app_dg.day, r.stat_day_disk_app_dg.disk_used])
+        disk_quota.append([r.stat_day_disk_app_dg.day, r.stat_day_disk_app_dg.quota])
     return [disk_used, disk_quota]

@@ -1427,6 +1427,14 @@ db.define_table('v_disk_quota',
     Field('app_id','integer'),
     migrate=False)
 
+db.define_table('stat_day_disk_app_dg',
+    Field('app','string'),
+    Field('dg_id','integer'),
+    Field('day','datetime'),
+    Field('disk_used','integer'),
+    Field('quota','integer'),
+    migrate=False)
+
 db.define_table('stat_day_disk_app',
     Field('app','string'),
     Field('day','datetime'),

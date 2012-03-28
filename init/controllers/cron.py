@@ -131,6 +131,7 @@ def cron_stats():
 
 def cron_stat_day_disk():
     cron_stat_day_disk_app()
+    cron_stat_day_disk_app_dg()
     cron_stat_day_disk_array()
     cron_stat_day_disk_array_dg()
 
@@ -149,6 +150,23 @@ def cron_stat_day_disk_app():
                ) as quota
              from v_disks_app t
              group by t.app;
+          """
+    rows = db.executesql(sql)
+
+def cron_stat_day_disk_app_dg():
+    sql = """insert into stat_day_disk_app_dg
+             select
+               NULL,
+               NOW(),
+               dg.id,
+               t.app,
+               t.disk_used,
+               dgq.quota
+             from v_disks_app t
+             join apps ap on ap.app=t.app
+             join stor_array ar on ar.array_name=t.disk_arrayid
+             join stor_array_dg dg on ar.id=dg.array_id and dg.dg_name=t.disk_group
+             left join stor_array_dg_quota dgq on ap.id=dgq.app_id and dg.id=dgq.dg_id
           """
     rows = db.executesql(sql)
 
