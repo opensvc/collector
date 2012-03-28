@@ -729,6 +729,18 @@ def purge_svcdisks():
     db.executesql(sql)
     db.commit()
 
+def update_dg_quota():
+    sql = """insert ignore into stor_array_dg_quota
+             select NULL, dg.id, ap.id, NULL
+             from
+               v_disks_app v
+               join stor_array ar on (v.disk_arrayid=ar.array_name)
+               join stor_array_dg dg on (v.disk_group=dg.dg_name and dg.array_id=ar.id)
+               join apps ap on v.app=ap.app
+          """
+    db.executesql(sql)
+    db.commit()
+
 def cron_alerts_daily():
     alerts_apps_without_responsible()
     alerts_services_not_updated()
@@ -736,6 +748,7 @@ def cron_alerts_daily():
     refresh_b_action_errors()
     refresh_dash_action_errors()
     purge_svcdisks()
+    update_dg_quota()
 
 def cron_alerts_hourly():
     rets = []
