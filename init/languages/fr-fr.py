@@ -107,6 +107,8 @@
 'App status': 'Etat app',
 'Application code': "Code d'application",
 'Application codes': 'Codes applicatifs',
+'Application usage history': 'Application usage history',
+'Application usage history (all disk groups)': 'Application usage history (all disk groups)',
 'Application without responsibles': 'Application sans responsables',
 'Applications': 'Applications',
 'Applications Usage': 'Utilisation des applications',

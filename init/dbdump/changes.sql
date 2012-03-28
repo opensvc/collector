@@ -2283,3 +2283,7 @@ create view v_disk_quota as
   ORDER BY
     stor_array.array_name, stor_array_dg.dg_name
 ;
+
+alter table  stat_day_disk_app add column quota integer default 0;
+
+

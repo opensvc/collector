@@ -137,48 +137,18 @@ def cron_stat_day_disk():
 def cron_stat_day_disk_app():
     sql = """insert into stat_day_disk_app
              select
-                   NULL,
-                   NOW(),
-                   t.app,
-                   sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size
-                 from (
-                   select
-                     u.app,
-                     max(u.disk_used) as disk_used,
-                     u.disk_size
-                   from
-                   (
-                     select
-                       svcdisks.disk_id,
-                       svcdisks.disk_region,
-                       services.svc_app as app,
-                       svcdisks.disk_used,
-                       diskinfo.disk_size
-                     from
-                       diskinfo
-                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
-                     left join services on svcdisks.disk_svcname=services.svc_name
-                     left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
-                     where
-                       svcdisks.disk_svcname != ""
-                     union all
-                     select
-                       diskinfo.disk_id,
-                       svcdisks.disk_region,
-                       nodes.project as app,
-                       svcdisks.disk_used,
-                       diskinfo.disk_size
-                     from
-                       diskinfo
-                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
-                     left join nodes on svcdisks.disk_nodename=nodes.nodename
-                     left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
-                     where
-                       (svcdisks.disk_svcname = "" or svcdisks.disk_svcname is NULL)
-                   ) u
-                   group by u.disk_id, u.disk_region
-                 ) t
-                 group by t.app
+               NULL,
+               NOW(),
+               t.app,
+               sum(t.disk_used) as disk_used,
+               (
+                 select sum(quota)
+                 from stor_array_dg_quota
+                 join apps on apps.id=stor_array_dg_quota.app_id
+                 where apps.app=t.app
+               ) as quota
+             from v_disks_app t
+             group by t.app;
           """
     rows = db.executesql(sql)
 

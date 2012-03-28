@@ -567,7 +567,7 @@ class HtmlTable(object):
             id = str(self.span_line_id(o))
         else:
             id = str(self.line_id(o))
-        id = id.replace('.','_').replace(',','_')
+        id = id.replace('.','_').replace(',','_').replace('-', '_')
         return '_'.join((self.id, 'x', id))
 
     def checkbox_key(self, o):

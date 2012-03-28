@@ -2639,4 +2639,43 @@ function stats_disk_array(url, id) {
 	});
     });
 }
+function stats_disk_app(url, id) {
+    $.getJSON(url, function(data) {
+        $.jqplot(id, data, {
+            cursor:{zoom:true, showTooltip:false},
+            legend: {
+                renderer: $.jqplot.EnhancedLegendRenderer,
+                rendererOptions:{numberRows: 1},
+                show: true,
+                location: 'n'
+            },
+            grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+            seriesDefaults: {
+                shadowAngle: 135,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+            series: [
+                {label: 'used (MB)'},
+                {label: 'quota (MB)'}
+            ],
+            axes: {
+                xaxis: {
+                    renderer: $.jqplot.DateAxisRenderer,
+                    numberTicks: 5,
+                    tickOptions:{formatString:'%Y-%m-%d'}
+                },
+                yaxis: {
+                    min: 0,
+                    tickOptions:{formatString:'%i'}
+                }
+            }
+
+	});
+    });
+}
 </script>

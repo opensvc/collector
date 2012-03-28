@@ -1431,6 +1431,7 @@ db.define_table('stat_day_disk_app',
     Field('app','string'),
     Field('day','datetime'),
     Field('disk_used','integer'),
+    Field('quota','integer'),
     migrate=False)
 
 db.define_table('stat_day_disk_array',

@@ -28,11 +28,34 @@ def array_icon(array_model):
         img = ''
     return img
 
+class col_app(HtmlTableColumn):
+    def html(self, o):
+        id = self.t.extra_line_key(o)
+        app = self.get(o)
+        s = self.t.colprops['app'].get(o)
+        if app is None or len(app) == 0:
+            return ''
+        d = DIV(
+              A(
+                app,
+                _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                  url=URL(r=request, c='disks',f='ajax_app',
+                          vars={'app': s, 'rowid': id}),
+                  id=id,
+                ),
+              ),
+              _class='nowrap',
+            )
+        return d
+
 class col_array_dg(HtmlTableColumn):
     def html(self, o):
         id = self.t.extra_line_key(o)
         dg = self.get(o)
-        s = self.t.colprops['disk_arrayid'].get(o)
+        try:
+            s = self.t.colprops['disk_arrayid'].get(o)
+        except:
+            s = self.t.colprops['array_name'].get(o)
         if dg is None or len(dg) == 0:
             return ''
         d = DIV(
@@ -219,7 +242,7 @@ class table_quota(HtmlTable):
                      'quota_used',
                      'quota']
         self.colprops.update({
-            'array_name': HtmlTableColumn(
+            'array_name': col_array(
                      title='Array',
                      #table='stor_array',
                      table='v_disk_quota',
@@ -234,6 +257,7 @@ class table_quota(HtmlTable):
                      field='array_model',
                      img='hd16',
                      display=True,
+                     _dataclass="bluer",
                     ),
             'array_id': HtmlTableColumn(
                      title='Array Id',
@@ -243,7 +267,7 @@ class table_quota(HtmlTable):
                      img='hd16',
                      display=True,
                     ),
-            'dg_name': HtmlTableColumn(
+            'dg_name': col_array_dg(
                      title='Array Disk Group',
                      #table='stor_array_dg',
                      table='v_disk_quota',
@@ -283,7 +307,7 @@ class table_quota(HtmlTable):
                      img='hd16',
                      display=True,
                     ),
-            'app': HtmlTableColumn(
+            'app': col_app(
                      title='App',
                      #table='apps',
                      table='v_disk_quota',
@@ -1476,6 +1500,30 @@ def ajax_array():
         )
     return d
 
+@auth.requires_login()
+def ajax_app():
+    app = request.vars.app
+    row_id = request.vars.rowid
+    id = 'chart_'+app.replace(" ", "").replace("-", "")
+    d = DIV(
+          H3(T("Application usage history (all disk groups)")),
+          DIV(
+            _id=id,
+          ),
+          SCRIPT(
+           "stats_disk_app('%(url)s', '%(id)s');"%dict(
+                  id=id,
+                  url=URL(r=request,
+                          f='call/json/json_disk_app',
+                          args=[app]
+                      )
+                ),
+            _name='%s_to_eval'%row_id,
+          ),
+          _style="float:left;width:500px",
+        )
+    return d
+
 @service.json
 def json_disk_array_dg(array_name, dg_name):
     q = db.stat_day_disk_array_dg.array_name == array_name
@@ -1502,3 +1550,14 @@ def json_disk_array(array_name):
         disk_used.append([r.day, r.disk_used])
         disk_free.append([r.day, r.disk_size-r.disk_used])
     return [disk_used, disk_free]
+
+@service.json
+def json_disk_app(app):
+    q = db.stat_day_disk_app.app == app
+    rows = db(q).select()
+    disk_used = []
+    disk_quota = []
+    for r in rows:
+        disk_used.append([r.day, r.disk_used])
+        disk_quota.append([r.day, r.quota])
+    return [disk_used, disk_quota]
