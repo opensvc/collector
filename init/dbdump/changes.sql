@@ -2200,7 +2200,7 @@ alter table appinfo add column cluster_type varchar(10) default "";
 
 drop view v_disk_quota;
 
-drop table v_disk_app;
+drop view v_disk_app;
 
 create view v_disk_app as 
                      select
@@ -2254,6 +2254,8 @@ create view v_disks_app as
                    v_disk_app_dedup
                  group by app, disk_arrayid, disk_group
 ;
+
+alter table stor_array_dg add column dg_reserved integer default 0;
 
 create view v_disk_quota as 
   SELECT
@@ -2327,8 +2329,6 @@ CREATE TABLE `stat_day_disk_app_dg` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `new_index` (`day`,`app`, `dg_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-alter table stor_array_dg add column dg_reserved integer default 0;
 
 alter table stat_day_disk_array_dg add column reserved integer default 0;
 
