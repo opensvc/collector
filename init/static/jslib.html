@@ -1549,11 +1549,12 @@ function stats_cpu(url, id) {
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
-		    tickOptions:{formatString:'<center>%F<br>%R</center>'}
+                    numberTicks: 5,
+                    tickOptions:{formatString:'%Y-%m-%d'}
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'}
+		    tickOptions:{formatString:'%.2f'}
 		}
 	    }
 	});
@@ -1591,11 +1592,12 @@ function stats_proc(url, id) {
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
-		    tickOptions:{formatString:'<center>%F<br>%R</center>'}
+                    numberTicks: 5,
+                    tickOptions:{formatString:'%Y-%m-%d'}
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'}
+		    tickOptions:{formatString:'%.2f'}
 		}
 	    }
 	});
@@ -1628,7 +1630,8 @@ function stats_proc(url, id) {
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
-		    tickOptions:{formatString:'<center>%F<br>%R</center>'}
+                    numberTicks: 5,
+                    tickOptions:{formatString:'%Y-%m-%d'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -1668,11 +1671,12 @@ function stats_proc(url, id) {
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
-		    tickOptions:{formatString:'<center>%F<br>%R</center>'}
+                    numberTicks: 5,
+                    tickOptions:{formatString:'%Y-%m-%d'}
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'}
+		    tickOptions:{formatString:'%.2f'}
 		}
 	    }
 	});
@@ -1764,7 +1768,8 @@ function stats_mem(url, id) {
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
-		    tickOptions:{formatString:'<center>%F<br>%R</center>'}
+                    numberTicks: 5,
+                    tickOptions:{formatString:'%Y-%m-%d'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -1803,11 +1808,12 @@ function stats_mem(url, id) {
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
-		    tickOptions:{formatString:'<center>%F<br>%R</center>'}
+                    numberTicks: 5,
+                    tickOptions:{formatString:'%Y-%m-%d'}
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'}
+		    tickOptions:{formatString:'%.2f'}
 		}
 	    }
 	});
@@ -1849,7 +1855,8 @@ function stats_swap(url, id) {
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
-		    tickOptions:{formatString:'<center>%F<br>%R</center>'}
+                    numberTicks: 5,
+                    tickOptions:{formatString:'%Y-%m-%d'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -1888,11 +1895,12 @@ function stats_swap(url, id) {
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
-		    tickOptions:{formatString:'<center>%F<br>%R</center>'}
+                    numberTicks: 5,
+                    tickOptions:{formatString:'%Y-%m-%d'}
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'}
+		    tickOptions:{formatString:'%.2f'}
 		}
 	    }
 	});
@@ -1932,7 +1940,8 @@ function stats_block(url, id) {
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
-		    tickOptions:{formatString:'<center>%F<br>%R</center>'}
+                    numberTicks: 5,
+                    tickOptions:{formatString:'%Y-%m-%d'}
 		}, 
 		yaxis: {
 		    min: 0
@@ -1970,7 +1979,8 @@ function stats_block(url, id) {
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
-		    tickOptions:{formatString:'<center>%F<br>%R</center>'}
+                    numberTicks: 5,
+                    tickOptions:{formatString:'%Y-%m-%d'}
 		}, 
 		yaxis: {
 		    min: 0
@@ -2062,7 +2072,7 @@ function stats_trend_cpu(url, id) {
 		yaxis: {
 		    min: 0,
 		    max: 100,
-		    tickOptions:{formatString:'%i'}
+		    tickOptions:{formatString:'%.2f'}
 		}
 	    }
 	});
@@ -2140,7 +2150,7 @@ function stats_blockdev(url, id) {
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'}
+		    tickOptions:{formatString:'%.2f'}
 		}
 	    }
 	});
@@ -2177,7 +2187,7 @@ function stats_blockdev(url, id) {
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'}
+		    tickOptions:{formatString:'%.2f'}
 		}
 	    }
 	});
@@ -2214,7 +2224,7 @@ function stats_blockdev(url, id) {
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'}
+		    tickOptions:{formatString:'%.2f'}
 		}
 	    }
 	});
@@ -2251,7 +2261,7 @@ function stats_blockdev(url, id) {
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'}
+		    tickOptions:{formatString:'%.2f'}
 		}
 	    }
 	});
@@ -2289,7 +2299,7 @@ function stats_blockdev(url, id) {
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'}
+		    tickOptions:{formatString:'%.2f'}
 		}
 	    }
 	});
@@ -2327,7 +2337,7 @@ function stats_blockdev(url, id) {
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'}
+		    tickOptions:{formatString:'%.2f'}
 		}
 	    }
 	});
@@ -2373,7 +2383,7 @@ function stats_netdev_err(url, id) {
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'}
+		    tickOptions:{formatString:'%.2f'}
 		}
 	    }
 	});
@@ -2416,7 +2426,7 @@ function stats_netdev(url, id) {
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'}
+		    tickOptions:{formatString:'%.2f'}
 		}
 	    }
 	});
@@ -2454,7 +2464,7 @@ function stats_netdev(url, id) {
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'}
+		    tickOptions:{formatString:'%.2f'}
 		}
 	    }
 	});
@@ -2519,11 +2529,12 @@ function stats_fs(url, id) {
 	    axes: {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
-		    tickOptions:{formatString:'<center>%F<br>%R</center>'}
+                    numberTicks: 5,
+                    tickOptions:{formatString:'%Y-%m-%d'}
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'}
+		    tickOptions:{formatString:'%.2f'}
 		}
 	    }
   	});
