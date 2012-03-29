@@ -1341,7 +1341,9 @@ def ajax_svcmon():
     q = apply_filters(q, db.v_svcmon.mon_nodname, db.v_svcmon.mon_svcname)
     for f in t.cols:
         q = _where(q, 'v_svcmon', t.filter_parse(f), f)
-    t.setup_pager(-1)
+
+    n = db(q).count()
+    t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
 
     if len(request.args) == 1:
