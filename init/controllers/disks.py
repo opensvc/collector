@@ -158,9 +158,16 @@ class col_size_gb(HtmlTableColumn):
 class col_size_mb(HtmlTableColumn):
     def html(self, o):
        d = self.get(o)
+       try:
+           d = int(d)
+       except:
+           return ''
+       c = "nowrap"
+       if d < 0:
+           c += " highlight"
        if d is None:
            return ''
-       return DIV(beautify_size_mb(d), _class="nowrap")
+       return DIV(beautify_size_mb(d), _class=c)
 
 def beautify_size_mb(d):
        try:
@@ -212,7 +219,7 @@ class col_quota(HtmlTableColumn):
             s = beautify_size_mb(int(s))
 
         if o.app == "unknown":
-            return DIV(s, _class="metaaction")
+            return DIV(s, _class="status_undef")
 
         tid = 'd_t_%s'%o.id
         iid = 'd_i_%s'%o.id
@@ -382,6 +389,18 @@ class table_quota(HtmlTable):
            'StorageManager' in user_groups():
             self.additional_tools.append('app_attach')
             self.additional_tools.append('app_detach')
+        self.additional_tools.append('disks_link')
+
+    def disks_link(self):
+        d = DIV(
+              A(
+                T("Disks"),
+                _class='hd16',
+                _href=URL(r=request, f='disks'),
+              ),
+              _class='floatw',
+            )
+        return d
 
     def checkbox_key(self, o):
         if o is None:
