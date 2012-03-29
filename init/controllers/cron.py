@@ -186,16 +186,25 @@ def cron_stat_day_disk_array():
              select
                NULL,
                NOW(),
-               stor_array.array_name,
-               sum(dg_used),
-               sum(dg_size)
-             from
-               stor_array_dg,
-               stor_array
-             where
-               stor_array.id=stor_array_dg.array_id
+               t.array_name,
+               sum(t.dg_used),
+               sum(t.dg_size),
+               sum(t.dg_reserved),
+               sum(t.dg_reservable)
+             from (
+               select
+                 array_name,
+                 dg_used,
+                 dg_size,
+                 dg_reserved,
+                 dg_reservable
+               from
+                 v_disk_quota
+               group by
+                 array_name, dg_name
+             ) t
              group by
-               stor_array.array_name
+               t.array_name
           """
     rows = db.executesql(sql)
     print "cron_stat_day_disk_array", str(rows)
@@ -205,15 +214,16 @@ def cron_stat_day_disk_array_dg():
              select
                NULL,
                NOW(),
-               stor_array.array_name,
-               stor_array_dg.dg_name,
-               stor_array_dg.dg_used,
-               stor_array_dg.dg_size
+               array_name,
+               dg_name,
+               dg_used,
+               dg_size,
+               dg_reserved,
+               dg_reservable
              from
-               stor_array_dg,
-               stor_array
-             where
-               stor_array.id=stor_array_dg.array_id
+               v_disk_quota
+             group by
+               array_name, dg_name
            """
     rows = db.executesql(sql)
     print "cron_stat_day_disk_array_dg", str(rows)

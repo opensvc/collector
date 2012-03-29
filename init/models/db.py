@@ -1450,6 +1450,8 @@ db.define_table('stat_day_disk_array',
     Field('day','datetime'),
     Field('disk_used','integer'),
     Field('disk_size','integer'),
+    Field('reserved','integer'),
+    Field('reservable','integer'),
     migrate=False)
 
 db.define_table('stat_day_disk_array_dg',
@@ -1458,6 +1460,8 @@ db.define_table('stat_day_disk_array_dg',
     Field('day','datetime'),
     Field('disk_used','integer'),
     Field('disk_size','integer'),
+    Field('reserved','integer'),
+    Field('reservable','integer'),
     migrate=False)
 
 

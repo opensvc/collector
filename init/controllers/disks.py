@@ -458,7 +458,20 @@ class table_quota(HtmlTable):
             )
         return d
 
-def update_dg_reserved(dg_id):
+def update_dg_reserved():
+    sql = """select dg_id, sum(v_disk_quota.quota)
+             from v_disk_quota
+             group by dg_id
+          """
+    rows = db.executesql(sql)
+    for row in rows:
+        sql = """update stor_array_dg set dg_reserved=%(reserved)s
+                 where id=%(dg_id)s
+              """%dict(reserved=row[1], dg_id=row[0])
+        db.executesql(sql)
+    db.commit()
+
+def _update_dg_reserved(dg_id):
     sql = """update stor_array_dg set dg_reserved=(
                select sum(v_disk_quota.quota) as reserved
                from v_disk_quota
@@ -535,7 +548,7 @@ def quota_set():
               dg=info.stor_array_dg.dg_name,
               array=info.stor_array.array_name))
 
-    update_dg_reserved(info.stor_array_dg_quota.dg_id)
+    #_update_dg_reserved(info.stor_array_dg_quota.dg_id)
 
 
 @auth.requires_membership('StorageManager')
@@ -616,6 +629,8 @@ def ajax_quota():
                 quota_set()
         except ToolError, e:
             t.flash = str(e)
+
+    update_dg_reserved()
 
     o = db.v_disk_quota.array_name | db.v_disk_quota.dg_name
     q = db.v_disk_quota.array_id > 0
@@ -1628,10 +1643,14 @@ def json_disk_array_dg(array_name, dg_name):
     rows = db(q).select()
     disk_used = []
     disk_free = []
+    disk_reserved = []
+    disk_reservable = []
     for r in rows:
         disk_used.append([r.day, r.disk_used])
         disk_free.append([r.day, r.disk_size-r.disk_used])
-    return [disk_used, disk_free]
+        disk_reserved.append([r.day, r.reserved])
+        disk_reservable.append([r.day, r.reservable])
+    return [disk_used, disk_free, disk_reserved, disk_reservable]
 
 @service.json
 def json_disk_array(array_name):
@@ -1641,10 +1660,14 @@ def json_disk_array(array_name):
     rows = db(q).select()
     disk_used = []
     disk_free = []
+    disk_reserved = []
+    disk_reservable = []
     for r in rows:
         disk_used.append([r.day, r.disk_used])
         disk_free.append([r.day, r.disk_size-r.disk_used])
-    return [disk_used, disk_free]
+        disk_reserved.append([r.day, r.reserved])
+        disk_reservable.append([r.day, r.reservable])
+    return [disk_used, disk_free, disk_reserved, disk_reservable]
 
 @service.json
 def json_disk_app(app_id):

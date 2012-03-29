@@ -2330,4 +2330,12 @@ CREATE TABLE `stat_day_disk_app_dg` (
 
 alter table stor_array_dg add column dg_reserved integer default 0;
 
+alter table stat_day_disk_array_dg add column reserved integer default 0;
+
+alter table stat_day_disk_array_dg add column reservable integer default 0;
+
+alter table stat_day_disk_array add column reserved integer default 0;
+
+alter table stat_day_disk_array add column reservable integer default 0;
+
 

@@ -2622,7 +2622,9 @@ function stats_disk_array(url, id) {
             },
             series: [
                 {label: 'used (MB)'},
-                {label: 'free (MB)'}
+                {label: 'free (MB)'},
+                {label: 'reserved (MB)', fill: false, disableStack: true},
+                {label: 'reservable (MB)', fill: false, disableStack: true}
             ],
             axes: {
                 xaxis: {
