@@ -391,6 +391,14 @@ class table_quota(HtmlTable):
             self.additional_tools.append('app_detach')
         self.additional_tools.append('disks_link')
 
+    def extra_line_key(self, o):
+        l = [self.id,
+             'x',
+             str(self.colprops['dg_id'].get(o)),
+             str(self.colprops['array_id'].get(o)),
+             str(self.colprops['app_id'].get(o))]
+        return '_'.join(l)
+
     def disks_link(self):
         d = DIV(
               A(
