@@ -2267,6 +2267,7 @@ create view v_disk_quota as
     stor_array_dg.dg_size,
     stor_array_dg.dg_used,
     stor_array_dg.dg_reserved,
+    stor_array_dg.dg_size - stor_array_dg.dg_reserved as dg_reservable,
     stor_array.array_model,
     apps.app,
     stor_array_dg_quota.quota,
@@ -2281,6 +2282,8 @@ create view v_disk_quota as
           v_disks_app.disk_arrayid=stor_array.array_name and
           v_disks_app.disk_group=stor_array_dg.dg_name
     )
+  WHERE
+    apps.id is not NULL
   UNION ALL
   SELECT
     stor_array_dg_quota.id,
@@ -2293,10 +2296,11 @@ create view v_disk_quota as
     stor_array_dg.dg_size,
     stor_array_dg.dg_used,
     stor_array_dg.dg_reserved,
+    stor_array_dg.dg_size - stor_array_dg.dg_reserved as dg_reservable,
     stor_array.array_model,
     "unknown",
-    stor_array_dg.dg_used - sum(v_disks_app.disk_used) as quota,
-    stor_array_dg.dg_used - sum(v_disks_app.disk_used) as quota_used
+    stor_array_dg.dg_used - if(sum(v_disks_app.disk_used) is NULL, 0, sum(v_disks_app.disk_used)) as quota,
+    stor_array_dg.dg_used - if(sum(v_disks_app.disk_used) is NULL, 0, sum(v_disks_app.disk_used)) as quota_used
   FROM
     stor_array
     JOIN stor_array_dg ON (stor_array_dg.array_id = stor_array.id)

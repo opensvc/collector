@@ -669,6 +669,7 @@
 'Rename moduleset': 'Renommer un jeu de modules',
 'Rename ruleset': 'Renommer un jeu de règles',
 'Report': 'Rapport',
+'Reservable': 'Reservable',
 'Reserved': 'Reserved',
 'Reset Password key': 'Remise à zéro de la clé du mot de passe',
 'Reset thresholds': 'Remise aux défauts des seuils',

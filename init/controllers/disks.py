@@ -153,14 +153,14 @@ class col_size_gb(HtmlTableColumn):
        if d is None:
            return ''
        unit = 'GB'
-       return DIV("%d %s"%(d/1024, unit), _class="numeric")
+       return DIV("%d %s"%(d/1024, unit))
 
 class col_size_mb(HtmlTableColumn):
     def html(self, o):
        d = self.get(o)
        if d is None:
            return ''
-       return DIV(beautify_size_mb(d), _class="numeric nowrap")
+       return DIV(beautify_size_mb(d), _class="nowrap")
 
 def beautify_size_mb(d):
        try:
@@ -190,7 +190,7 @@ class col_quota_used(HtmlTableColumn):
         if o.app is None:
             return ""
         s = self.get(o)
-        c = "numeric nowrap"
+        c = "nowrap"
         if s is None:
             s = "-"
         elif s > o.quota:
@@ -212,7 +212,7 @@ class col_quota(HtmlTableColumn):
             s = beautify_size_mb(int(s))
 
         if o.app == "unknown":
-            return DIV(s, _class="highlight numeric")
+            return DIV(s, _class="metaaction")
 
         tid = 'd_t_%s'%o.id
         iid = 'd_i_%s'%o.id
@@ -222,7 +222,7 @@ class col_quota(HtmlTableColumn):
                 s,
                 _id=tid,
                 _onclick="""hide_eid('%(tid)s');show_eid('%(sid)s');getElementById('%(iid)s').focus()"""%dict(tid=tid, sid=sid, iid=iid),
-                _class="clickable numeric",
+                _class="clickable",
               ),
               SPAN(
                 INPUT(
@@ -248,6 +248,7 @@ class table_quota(HtmlTable):
                      'dg_name',
                      'dg_size',
                      'dg_reserved',
+                     'dg_reservable',
                      'dg_used',
                      'dg_free',
                      'app',
@@ -300,6 +301,14 @@ class table_quota(HtmlTable):
                      #table='stor_array_dg',
                      table='v_disk_quota',
                      field='dg_used',
+                     img='hd16',
+                     display=True,
+                    ),
+            'dg_reservable': col_size_mb(
+                     title='Reservable',
+                     #table='stor_array_dg',
+                     table='v_disk_quota',
+                     field='dg_reservable',
                      img='hd16',
                      display=True,
                     ),
@@ -466,8 +475,45 @@ def quota_set():
         raise ToolError("one quota must be selected")
     qid = int(l[0].replace('d_i_',''))
     new = request.vars[l[0]]
+    new = new.replace(' ', '')
+
     try:
-        new = int(new)
+        if new.endswith('M'):
+            new = new.replace('M', '')
+            new = int(new)
+        elif new.endswith('m'):
+            new = new.replace('m', '')
+            new = int(new)
+        elif new.endswith('MB'):
+            new = new.replace('MB', '')
+            new = int(new)
+        elif new.endswith('mb'):
+            new = new.replace('mb', '')
+            new = int(new)
+        elif new.endswith('G'):
+            new = new.replace('G', '')
+            new = int(new) * 1024
+        elif new.endswith('g'):
+            new = new.replace('g', '')
+            new = int(new) * 1024
+        elif new.endswith('GB'):
+            new = new.replace('GB', '')
+            new = int(new) * 1024
+        elif new.endswith('gb'):
+            new = new.replace('gb', '')
+            new = int(new) * 1024
+        elif new.endswith('T'):
+            new = new.replace('T', '')
+            new = int(new) * 1024 * 1024
+        elif new.endswith('t'):
+            new = new.replace('t', '')
+            new = int(new) * 1024 * 1024
+        elif new.endswith('TB'):
+            new = new.replace('TB', '')
+            new = int(new) * 1024 * 1024
+        elif new.endswith('tb'):
+            new = new.replace('tb', '')
+            new = int(new) * 1024 * 1024
     except:
         raise ToolError("quota must be an integer value")
 
