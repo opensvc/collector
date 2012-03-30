@@ -385,10 +385,12 @@ class table_quota(HtmlTable):
         #self.span = 'array_name'
         #self.sub_span = ['dg_free', 'array_model', 'array_name']
 
-        if 'StorageManager' in user_groups() or \
-           'StorageManager' in user_groups():
+        if 'StorageManager' in user_groups():
             self.additional_tools.append('app_attach')
             self.additional_tools.append('app_detach')
+        if 'StorageManager' in user_groups() or \
+           'StorageExec' in user_groups():
+            self.additional_tools.append('provision')
         self.additional_tools.append('disks_link')
 
     def extra_line_key(self, o):
