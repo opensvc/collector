@@ -393,6 +393,25 @@ class table_quota(HtmlTable):
             self.additional_tools.append('provision')
         self.additional_tools.append('disks_link')
 
+    def provision(self):
+        d = DIV(
+              A(
+                T("Provision"),
+                _class='prov',
+                _onclick="""$('#prov_container').toggle();ajax('%(url)s', [], '%(id)s')"""%dict(
+                  url=URL(r=request, c='disks', f='ajax_provision'),
+                  id="prov_container",
+                ),
+              ),
+              DIV(
+                _style='display:none',
+                _class='white_float',
+                _id="prov_container",
+              ),
+              _class='floatw',
+            )
+        return d
+
     def extra_line_key(self, o):
         l = [self.id,
              'x',
