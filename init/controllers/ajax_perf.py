@@ -64,26 +64,66 @@ def perf_stats_cpu_trend_data(node, s, e, p):
 
 @auth.requires_login()
 def perf_stats_svc_cpu(node, s, e):
+    return perf_stats_svc_data(node, s, e, 'cpu')
+
+@auth.requires_login()
+def perf_stats_svc_mem(node, s, e):
+    return perf_stats_svc_data(node, s, e, 'mem')
+
+@auth.requires_login()
+def perf_stats_svc_pg(node, s, e):
+    return perf_stats_svc_data(node, s, e, 'pg')
+
+@auth.requires_login()
+def perf_stats_svc_avgpg(node, s, e):
+    return perf_stats_svc_data(node, s, e, 'avgpg')
+
+@auth.requires_login()
+def perf_stats_svc_at(node, s, e):
+    return perf_stats_svc_data(node, s, e, 'at')
+
+@auth.requires_login()
+def perf_stats_svc_avgat(node, s, e):
+    return perf_stats_svc_data(node, s, e, 'avgat')
+
+@auth.requires_login()
+def perf_stats_svc_rss(node, s, e):
+    return perf_stats_svc_data(node, s, e, 'rss')
+
+@auth.requires_login()
+def perf_stats_svc_swap(node, s, e):
+    return perf_stats_svc_data(node, s, e, 'swap')
+
+@auth.requires_login()
+def perf_stats_svc_nproc(node, s, e):
+    return perf_stats_svc_data(node, s, e, 'nproc')
+
+@auth.requires_login()
+def perf_stats_svc_cap(node, s, e):
+    return perf_stats_svc_data(node, s, e, 'cap')
+
+@auth.requires_login()
+def perf_stats_svc_data(node, s, e, col):
     sql = """select
                svcname,
                date,
-               cpu
+               %(col)s
              from stats_svc
              where
                nodename="%(node)s"
                and date>"%(s)s"
                and date<"%(e)s"
-          """%dict(s=s,e=e,node=node)
+          """%dict(s=s,e=e,node=node,col=col)
     rows = db.executesql(sql)
     h = {}
     for row in rows:
         svcname = row[0]
         date = row[1]
-        cpu = row[2]
+        data = row[2]
         if svcname not in h:
-            h[svcname] = [(date, cpu)]
+            h[svcname] = [(date, data)]
         else:
-            h[svcname] += [(date, cpu)]
+            h[svcname] += [(date, data)]
     return h.keys(), h.values()
 
 @auth.requires_login()
@@ -133,7 +173,16 @@ def ajax_perf_trend_plot():
 
 def ajax_perf_svc_plot():
     return SPAN(
-             _ajax_perf_plot('svc_cpu', base='svc', last=True),
+             _ajax_perf_plot('svc_cpu', base='svc'),
+             _ajax_perf_plot('svc_cap', base='svc'),
+             _ajax_perf_plot('svc_nproc', base='svc'),
+             _ajax_perf_plot('svc_pg', base='svc'),
+             _ajax_perf_plot('svc_avgpg', base='svc'),
+             _ajax_perf_plot('svc_at', base='svc'),
+             _ajax_perf_plot('svc_avgat', base='svc'),
+             _ajax_perf_plot('svc_swap', base='svc'),
+             _ajax_perf_plot('svc_rss', base='svc'),
+             _ajax_perf_plot('svc_mem', base='svc', last=True),
            )
 
 @auth.requires_login()
@@ -424,6 +473,69 @@ def json_svc_cpu():
     b = request.vars.b
     e = request.vars.e
     return perf_stats_svc_cpu(node, b, e)
+
+@service.json
+def json_svc_mem():
+    node = request.vars.node
+    b = request.vars.b
+    e = request.vars.e
+    return perf_stats_svc_mem(node, b, e)
+
+@service.json
+def json_svc_at():
+    node = request.vars.node
+    b = request.vars.b
+    e = request.vars.e
+    return perf_stats_svc_at(node, b, e)
+
+@service.json
+def json_svc_avgat():
+    node = request.vars.node
+    b = request.vars.b
+    e = request.vars.e
+    return perf_stats_svc_avgat(node, b, e)
+
+@service.json
+def json_svc_pg():
+    node = request.vars.node
+    b = request.vars.b
+    e = request.vars.e
+    return perf_stats_svc_pg(node, b, e)
+
+@service.json
+def json_svc_avgpg():
+    node = request.vars.node
+    b = request.vars.b
+    e = request.vars.e
+    return perf_stats_svc_avgpg(node, b, e)
+
+@service.json
+def json_svc_rss():
+    node = request.vars.node
+    b = request.vars.b
+    e = request.vars.e
+    return perf_stats_svc_rss(node, b, e)
+
+@service.json
+def json_svc_swap():
+    node = request.vars.node
+    b = request.vars.b
+    e = request.vars.e
+    return perf_stats_svc_swap(node, b, e)
+
+@service.json
+def json_svc_cap():
+    node = request.vars.node
+    b = request.vars.b
+    e = request.vars.e
+    return perf_stats_svc_cap(node, b, e)
+
+@service.json
+def json_svc_nproc():
+    node = request.vars.node
+    b = request.vars.b
+    e = request.vars.e
+    return perf_stats_svc_nproc(node, b, e)
 
 @service.json
 def json_cpu():

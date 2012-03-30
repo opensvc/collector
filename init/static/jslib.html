@@ -1683,6 +1683,36 @@ function stats_proc(url, id) {
     });
 }
 function stats_svc_cpu(url, id) {
+    stats_svc(url, id, "cpu usage (%)")
+}
+function stats_svc_mem(url, id) {
+    stats_svc(url, id, "mem usage (%)")
+}
+function stats_svc_nproc(url, id) {
+    stats_svc(url, id, "nproc")
+}
+function stats_svc_rss(url, id) {
+    stats_svc(url, id, "rss (MB)")
+}
+function stats_svc_swap(url, id) {
+    stats_svc(url, id, "swap (MB)")
+}
+function stats_svc_pg(url, id) {
+    stats_svc(url, id, "paging (MB)")
+}
+function stats_svc_avgpg(url, id) {
+    stats_svc(url, id, "average paging (MB)")
+}
+function stats_svc_at(url, id) {
+    stats_svc(url, id, "at (MB)")
+}
+function stats_svc_avgat(url, id) {
+    stats_svc(url, id, "average at (MB)")
+}
+function stats_svc_cap(url, id) {
+    stats_svc(url, id, "mem cap (MB)")
+}
+function stats_svc(url, id, title) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         if (data.length < 2) { return }
@@ -1696,7 +1726,7 @@ function stats_svc_cpu(url, id) {
             cursor:{zoom:true, showTooltip:true},
 	    stackSeries: true,
             title: {
-                text: 'cpu usage'
+                text: title
             },
             legend: {
                 show: true,
@@ -1720,11 +1750,13 @@ function stats_svc_cpu(url, id) {
 	    series: series,
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer
+		    renderer: $.jqplot.DateAxisRenderer,
+                    numberTicks: 5,
+                    tickOptions:{formatString:'%Y-%m-%d'}
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'}
+		    tickOptions:{formatString:'%.2f'}
 		}
 	    }
 	});
