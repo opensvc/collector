@@ -39,8 +39,8 @@ class table_patches(HtmlTable):
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['nodename']+v_nodes_cols
-        self.cols += ['patch_rev',
-                      'patch_num',
+        self.cols += ['patch_num',
+                      'patch_rev',
                       'patch_updated']
         self.colprops = v_nodes_colprops
         self.colprops.update({
