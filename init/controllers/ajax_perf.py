@@ -106,25 +106,36 @@ def perf_stats_svc_cap(node, s, e):
 def perf_stats_svc_data(node, s, e, col):
     sql = """select
                svcname,
-               date,
+               %(d)s,
                %(col)s
              from stats_svc
              where
                nodename="%(node)s"
                and date>"%(s)s"
                and date<"%(e)s"
-          """%dict(s=s,e=e,node=node,col=col)
+          """%dict(s=s,e=e,node=node,col=col, d=period_concat(s, e, field='date'))
     rows = db.executesql(sql)
+    dates = set([r[1] for r in rows])
+    svcnames = set([r[0] for r in rows])
+
     h = {}
+    import copy
+    d = {}
+
+    for date in dates:
+        d[date] = 0
+
+    for svcname in svcnames:
+        h[svcname] = copy.copy(d)
+
     for row in rows:
         svcname = row[0]
         date = row[1]
         data = row[2]
-        if svcname not in h:
-            h[svcname] = [(date, data)]
-        else:
-            h[svcname] += [(date, data)]
-    return h.keys(), h.values()
+
+        h[svcname][date] = data
+
+    return h.keys(), map(lambda x: x.items(), h.values())
 
 @auth.requires_login()
 def perf_stats_cpu_trend(node, s, e):
