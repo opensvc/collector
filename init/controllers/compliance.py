@@ -387,6 +387,104 @@ class col_var_value(HtmlTableColumn):
             )
         return d
 
+    def html_rc(self, o):
+        v = self.get(o)
+        l = [DIV(
+               DIV('service', _style='display:table-cell;font-weight:bold', _class="comp16"),
+               DIV('level', _style='display:table-cell'),
+               DIV('state', _style='display:table-cell'),
+               _style="display:table-row",
+             )]
+        try:
+            lines = json.loads(v)
+        except:
+            return SPAN("malformed value", PRE(v))
+        for line in lines:
+            if 'service' in line:
+                service = '%s'%str(line['service'])
+            else:
+                service = "-"
+            if 'level' in line:
+                level = '%s'%str(line['level'])
+            else:
+                level = "-"
+            if 'state' in line:
+                state = '%s'%line['state']
+            else:
+                state = "-"
+            l += [DIV(
+                    DIV('%s '%service, _style='display:table-cell', _class="action16"),
+                    DIV(level, _style='display:table-cell'),
+                    DIV(state, _style='display:table-cell'),
+                    _style="display:table-row",
+                  )]
+        return DIV(l, _class="comp_var_table")
+
+    def form_rc(self, o):
+        name = 'rc_n_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
+        l = [DIV(
+               DIV('service', _style='display:table-cell;font-weight:bold', _class="comp16"),
+               DIV('level', _style='display:table-cell'),
+               DIV('state', _style='display:table-cell'),
+               _style="display:table-row",
+             )]
+        v = self.get(o)
+        if v is None or v == "":
+            f = {}
+        else:
+            try:
+                f = json.loads(v)
+            except:
+                return self.form_raw(o)
+        for i, line in enumerate(f):
+            ll = [DIV(
+                    INPUT(
+                      _name=name,
+                      _id="%s_%d_%s"%(name, i, 'service'),
+                      _value=line['service'],
+                      _style='width:5em',
+                    ),
+                    _style='display:table-cell',
+                    _class="action16",
+                  )]
+            for key,w in (('level', '3em'),
+                          ('state', 'auto')):
+                if key not in line:
+                    value = ""
+                else:
+                    value = line[key]
+                ll += [DIV(
+                         INPUT(
+                           _name=name,
+                           _id="%s_%d_%s"%(name, i, key),
+                           _value=value,
+                           _style='width:%s'%w,
+                         ),
+                         _style='display:table-cell',
+                       )]
+            l += [DIV(
+                    ll,
+                    _style="display:table-row",
+                  )]
+        form = DIV(
+                 SPAN(l, _id=name+'_container'),
+                 BR(),
+                 INPUT(
+                   _value="Add",
+                   _type="submit",
+                   _onclick="""d=new Date();
+i=d.getTime();$("#%(n)s_container").append("<div style='display:table-row'><div style='display:table-cell'><span class='action16'></span><input style='width:5em' name='%(n)s' id='%(n)s_"+i+"_service'></div><div style='display:table-cell'><input style='width:3em' name='%(n)s' id='%(n)s_"+i+"_level'></div><div style='display:table-cell'><input style='width:3em' name='%(n)s' id='%(n)s_"+i+"_state'></div></div>")"""%dict(n=name),
+                 ),
+                 " ",
+                 INPUT(
+                   _type="submit",
+                   _onclick=self.t.ajax_submit(additional_input_name=name,
+                                               args=["var_value_set_rc", name]),
+                 ),
+                 _class="comp_var_table",
+               )
+        return form
+
     def html_user(self, o):
         v = self.get(o)
         l = [DIV(
@@ -2405,11 +2503,13 @@ def ajax_comp_rulesets():
             elif action == 'var_value_set_dict':
                 var_value_set_dict(name)
             elif action == 'var_value_set_vuln':
-                var_value_set_list_of_dict(name, 'pkgname')
+                var_value_set_list_of_dict(name)
             elif action == 'var_value_set_fs':
-                var_value_set_list_of_dict(name, 'mnt')
+                var_value_set_list_of_dict(name)
             elif action == 'var_value_set_group':
                 var_value_set_dict_dict(name, 'group')
+            elif action == 'var_value_set_rc':
+                var_value_set_list_of_dict(name)
             elif action == 'var_value_set_user':
                 var_value_set_dict_dict(name, 'user')
             elif action == 'var_value_set_cron':
@@ -4546,10 +4646,8 @@ def var_value_set_cron(name):
     db(db.comp_rulesets_variables.id==vid).update(var_value=val)
 
 @auth.requires_membership('CompManager')
-def var_value_set_list_of_dict(name, mainkey):
+def var_value_set_list_of_dict(name):
     d = {}
-    f = {}
-    idx = {}
     vid = int(name.split('_')[2])
     for i in [v for v in request.vars if name in v]:
         if request.vars[i] is None or len(request.vars[i]) == 0:
@@ -4557,14 +4655,15 @@ def var_value_set_list_of_dict(name, mainkey):
         s = i[len(name)+1:]
         index = s.split('_')[0]
         key = s[len(index)+1:]
-        if key == mainkey and key not in idx:
-            idx[index] = request.vars[i]
         if index not in d:
             d[index] = {}
-        try:
-            val = int(request.vars[i])
-        except:
+        if key == 'level':
             val = request.vars[i]
+        else:
+            try:
+                val = int(request.vars[i])
+            except:
+                val = request.vars[i]
         if key == 'members':
             val = val.split(',')
             val = map(lambda x: x.strip(), val)
@@ -4572,10 +4671,7 @@ def var_value_set_list_of_dict(name, mainkey):
             val = val.split(',')
             val = map(lambda x: x.strip(), val)
         d[index][key] = val
-    for i in d:
-        if i in idx:
-            f[idx[i]] = d[i]
-    db(db.comp_rulesets_variables.id==vid).update(var_value=json.dumps(f.values()))
+    db(db.comp_rulesets_variables.id==vid).update(var_value=json.dumps(d.values()))
 
 @auth.requires_membership('CompManager')
 def var_value_set_dict(name):
