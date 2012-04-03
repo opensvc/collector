@@ -1059,6 +1059,7 @@ comp_var_types = (
  'fs',
  'group',
  'package',
+ 'process',
  'user',
  'raw',
  'rc',
