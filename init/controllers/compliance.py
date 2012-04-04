@@ -6287,6 +6287,7 @@ def beautify_modulesets(msets, node):
 def node_comp_status(node):
     tid = 'ncs_'+node
     t = table_comp_status(tid, 'node_comp_status')
+    t.cols.remove('run_status_log')
 
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
     q &= db.comp_status.run_nodename == node
