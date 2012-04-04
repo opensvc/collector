@@ -4618,9 +4618,14 @@ def spark_url(nodename, module):
 
 class col_run_status_log(HtmlTableColumn):
     def html(self, o):
+        if hasattr(o, 'comp_status'):
+            nodename = o.comp_status.run_nodename
+            module = o.comp_status.run_module
+        else:
+            nodename = ""
+            module = ""
         return DIV(
-                 _id=spark_id(o.comp_status.run_nodename,
-                              o.comp_status.run_module)
+                 _id=spark_id(nodename, module)
                )
 
 class col_run_date(HtmlTableColumn):
