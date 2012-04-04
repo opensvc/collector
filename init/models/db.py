@@ -1055,6 +1055,7 @@ db.define_table('comp_rulesets_rulesets',
 
 comp_var_types = (
  'authkey',
+ 'etcsystem',
  'file',
  'fs',
  'group',

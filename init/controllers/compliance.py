@@ -501,6 +501,104 @@ i=d.getTime();$("#%(n)s_container").append("<div style='display:table-row'><div 
                )
         return form
 
+    def html_etcsystem(self, o):
+        v = self.get(o)
+        l = [DIV(
+               DIV('key', _style='display:table-cell;font-weight:bold', _class="comp16"),
+               DIV('op', _style='display:table-cell'),
+               DIV('value', _style='display:table-cell'),
+               _style="display:table-row",
+             )]
+        try:
+            lines = json.loads(v)
+        except:
+            return SPAN("malformed value", PRE(v))
+        for line in lines:
+            if 'key' in line:
+                key = '%s'%str(line['key'])
+            else:
+                key = "-"
+            if 'op' in line:
+                op = '%s'%str(line['op'])
+            else:
+                op = "-"
+            if 'value' in line:
+                value = '%s'%line['value']
+            else:
+                value = "-"
+            l += [DIV(
+                    DIV('%s '%key, _style='display:table-cell', _class="action16"),
+                    DIV(op, _style='display:table-cell'),
+                    DIV(value, _style='display:table-cell'),
+                    _style="display:table-row",
+                  )]
+        return DIV(l, _class="comp_var_table")
+
+    def form_etcsystem(self, o):
+        name = 'etcsystem_n_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
+        l = [DIV(
+               DIV('key', _style='display:table-cell;font-weight:bold', _class="comp16"),
+               DIV('op', _style='display:table-cell'),
+               DIV('value', _style='display:table-cell'),
+               _style="display:table-row",
+             )]
+        v = self.get(o)
+        if v is None or v == "":
+            f = {}
+        else:
+            try:
+                f = json.loads(v)
+            except:
+                return self.form_raw(o)
+        for i, line in enumerate(f):
+            ll = [DIV(
+                    INPUT(
+                      _name=name,
+                      _id="%s_%d_%s"%(name, i, 'key'),
+                      _value=line['key'],
+                      _style='width:5em',
+                    ),
+                    _style='display:table-cell',
+                    _class="action16",
+                  )]
+            for key,w in (('op', '3em'),
+                          ('value', 'auto')):
+                if key not in line:
+                    value = ""
+                else:
+                    value = line[key]
+                ll += [DIV(
+                         INPUT(
+                           _name=name,
+                           _id="%s_%d_%s"%(name, i, key),
+                           _value=value,
+                           _style='width:%s'%w,
+                         ),
+                         _style='display:table-cell',
+                       )]
+            l += [DIV(
+                    ll,
+                    _style="display:table-row",
+                  )]
+        form = DIV(
+                 SPAN(l, _id=name+'_container'),
+                 BR(),
+                 INPUT(
+                   _value="Add",
+                   _type="submit",
+                   _onclick="""d=new Date();
+i=d.getTime();$("#%(n)s_container").append("<div style='display:table-row'><div style='display:table-cell'><span class='action16'></span><input style='width:5em' name='%(n)s' id='%(n)s_"+i+"_key'></div><div style='display:table-cell'><input style='width:3em' name='%(n)s' id='%(n)s_"+i+"_op'></div><div style='display:table-cell'><input style='width:3em' name='%(n)s' id='%(n)s_"+i+"_value'></div></div>")"""%dict(n=name),
+                 ),
+                 " ",
+                 INPUT(
+                   _type="submit",
+                   _onclick=self.t.ajax_submit(additional_input_name=name,
+                                               args=["var_value_set_etcsystem", name]),
+                 ),
+                 _class="comp_var_table",
+               )
+        return form
+
     def html_rc(self, o):
         v = self.get(o)
         l = [DIV(
@@ -2621,6 +2719,8 @@ def ajax_comp_rulesets():
             elif action == 'var_value_set_fs':
                 var_value_set_list_of_dict(name)
             elif action == 'var_value_set_process':
+                var_value_set_list_of_dict(name)
+            elif action == 'var_value_set_etcsystem':
                 var_value_set_list_of_dict(name)
             elif action == 'var_value_set_rc':
                 var_value_set_list_of_dict(name)
