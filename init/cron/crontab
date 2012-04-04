@@ -2,6 +2,7 @@
 #0-59/4 * * * * unxdev01 *cron/cron_scrub_svcstatus
 14 5 * * * unxdev01 *cron/cron_scrub_checks
 0-59/10 * * * * unxdev01 *cron/cron_unfinished_actions
+0-59/5 * * * * unxdev01 *cron/cron_feed_monitor
 59 23 * * * unxdev01 *cron/cron_stats
 55 23 * * * unxdev01 *obsolescence/refresh_obsolescence
 0 1 * * * unxdev01 *default/viz_cron_cleanup

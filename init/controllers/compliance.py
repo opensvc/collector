@@ -556,7 +556,7 @@ i=d.getTime();$("#%(n)s_container").append("<div style='display:table-row'><div 
                       _name=name,
                       _id="%s_%d_%s"%(name, i, 'key'),
                       _value=line['key'],
-                      _style='width:5em',
+                      _style='width:9em',
                     ),
                     _style='display:table-cell',
                     _class="action16",
@@ -587,7 +587,7 @@ i=d.getTime();$("#%(n)s_container").append("<div style='display:table-row'><div 
                    _value="Add",
                    _type="submit",
                    _onclick="""d=new Date();
-i=d.getTime();$("#%(n)s_container").append("<div style='display:table-row'><div style='display:table-cell'><span class='action16'></span><input style='width:5em' name='%(n)s' id='%(n)s_"+i+"_key'></div><div style='display:table-cell'><input style='width:3em' name='%(n)s' id='%(n)s_"+i+"_op'></div><div style='display:table-cell'><input style='width:3em' name='%(n)s' id='%(n)s_"+i+"_value'></div></div>")"""%dict(n=name),
+i=d.getTime();$("#%(n)s_container").append("<div style='display:table-row'><div style='display:table-cell'><span class='action16'></span><input style='width:9em' name='%(n)s' id='%(n)s_"+i+"_key'></div><div style='display:table-cell'><input style='width:3em' name='%(n)s' id='%(n)s_"+i+"_op'></div><div style='display:table-cell'><input style='width:auto' name='%(n)s' id='%(n)s_"+i+"_value'></div></div>")"""%dict(n=name),
                  ),
                  " ",
                  INPUT(

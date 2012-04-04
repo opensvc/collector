@@ -1477,4 +1477,9 @@ db.define_table('stat_day_disk_array_dg',
     Field('reservable','integer'),
     migrate=False)
 
+db.define_table('feed_queue',
+    Field('q_fn', 'string'),
+    Field('q_args', 'blob'),
+    Field('created', 'datetime'),
+    migrate=False)
 
