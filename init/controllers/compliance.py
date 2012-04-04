@@ -4289,6 +4289,8 @@ def json_run_status_log(nodename, module):
     return data
 
 def spark_id(nodename, module):
+    module = module.replace('.', '_')
+    module = module.replace('-', '_')
     return 'rh_%s_%s'%(nodename, module)
 
 def spark_url(nodename, module):
@@ -4298,16 +4300,12 @@ def spark_url(nodename, module):
                  module=module)
            )
 
-class table_comp_status_vfields(object):
-        def run_status_log(self):
-            return SPAN(
-                     _id=spark_id(self.comp_status.run_nodename,
-                                  self.comp_status.run_module)
-                   )
-
-def table_comp_status_add_vfields(t):
-    db.comp_status.virtualfields.append(table_comp_status_vfields())
-    t.cols.insert(5, 'run_status_log')
+class col_run_status_log(HtmlTableColumn):
+    def html(self, o):
+        return DIV(
+                 _id=spark_id(o.comp_status.run_nodename,
+                              o.comp_status.run_module)
+               )
 
 class col_run_date(HtmlTableColumn):
     deadline = now - datetime.timedelta(days=7)
@@ -4335,6 +4333,7 @@ class table_comp_status(HtmlTable):
                      'run_svcname',
                      'run_module',
                      'run_status',
+                     'run_status_log',
                      'run_ruleset',
                      'rset_md5',
                      'run_log']
@@ -4389,7 +4388,7 @@ class table_comp_status(HtmlTable):
                      img='check16',
                      display=True,
                     ),
-            'run_status_log': col_run_status(
+            'run_status_log': col_run_status_log(
                      title='History',
                      field='run_status_log',
                      table='comp_status',
@@ -4664,7 +4663,6 @@ def ajax_comp_status():
     n = len(db(q).select(db.comp_status.id, limitby=default_limitby))
     t.setup_pager(n)
     #all = db(q).select(db.comp_status.ALL, db.v_nodes.id)
-    table_comp_status_add_vfields(t)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
     t.csv_q = q
     t.csv_orderby = o
