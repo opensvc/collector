@@ -3008,8 +3008,12 @@ def feed_dequeue():
 
         try:
             entries = db(db.feed_queue.id>0).select(limitby=(0,20))
+            print "got", len(entries), "to dequeue"
         except:
             # lost mysql ?
+            import traceback
+            traceback.print_exc()
+            print "lost mysql ? sleep 10 sec"
             time.sleep(10)
             continue
 
@@ -3021,6 +3025,7 @@ def feed_dequeue():
             stats.dbdump()
 
         for e in entries:
+            print "dequeue", e.q_fn
             try:
                 if not e.q_fn in globals():
                     continue
