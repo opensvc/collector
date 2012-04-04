@@ -1053,10 +1053,22 @@ db.define_table('comp_rulesets_rulesets',
     Field('child_rset_id','integer'),
     migrate=False)
 
+comp_var_types = (
+ 'authkey',
+ 'file',
+ 'fs',
+ 'group',
+ 'package',
+ 'process',
+ 'user',
+ 'raw',
+ 'rc',
+ 'vuln'
+)
+
 db.define_table('comp_rulesets_variables',
     Field('ruleset_id','integer', requires=IS_NOT_EMPTY()),
-    Field('var_class','string', requires=IS_IN_SET(("raw", "authkey", "file",
-"fs", "group", "package", "user", "vuln")), default="raw"),
+    Field('var_class','string', requires=IS_IN_SET(comp_var_types), default="raw"),
     Field('var_name','string', requires=IS_NOT_EMPTY()),
     Field('var_value','text'),
     Field('var_author','string', readable=False, writable=False),

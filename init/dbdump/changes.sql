@@ -2338,4 +2338,4 @@ alter table stat_day_disk_array add column reserved integer default 0;
 
 alter table stat_day_disk_array add column reservable integer default 0;
 
-
+alter table diskinfo modify disk_id varchar(120);
