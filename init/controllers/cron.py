@@ -766,3 +766,26 @@ def cron_alerts_hourly():
     rets.append(alerts_svcmon_not_updated())
     return rets
 
+def cron_feed_monitor():
+    sql = """delete from dashboard where dash_type = "feed queue" """
+    db.executesql(sql)
+
+    e = db(db.feed_queue.id>0).select(limitby=(0,1)).first()
+    if e is None:
+        db.commit()
+        return
+
+    limit = now - datetime.timedelta(minutes=5)
+    if e.created < limit:
+        n = db(db.feed_queue.created<limit).count()
+        sql = """insert into dashboard
+                 set
+                   dash_type="feed queue",
+                   dash_severity=4,
+                   dash_fmt="%%(n)s entries stalled in feed queue",
+                   dash_dict='{"n": "%(n)d"}',
+                   dash_created=now()
+              """%dict(n=n)
+        db.executesql(sql)
+    db.commit()
+

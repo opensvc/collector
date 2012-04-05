@@ -301,7 +301,7 @@ class viz(object):
         if d.disk_id.startswith(d.disk_nodename):
             key = d.disk_arrayid,d.disk_nodename,d.disk_dg
         else:
-            key = d.disk_arrayid,d.disk_svcname,d.disk_dg
+            key = d.disk_arrayid,d.disk_dg
         cdg = 'cdg_'+str(len(self.vidcdg))
         if key not in self.vidcdg:
             self.vidcdg[key] = cdg

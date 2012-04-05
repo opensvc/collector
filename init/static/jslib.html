@@ -243,6 +243,9 @@ function eval_js_in_ajax_response(id) {
     $("[name="+id+"_to_eval]").remove()
 }
 function sparkl(url, id) {
+    if (!$("#"+id).is(":visible")) {
+        return
+    }
     chartoptions = {type: 'tristate'};
     $.getJSON(url, function(data) {
         $(document.getElementById(id)).sparkline(data, chartoptions);
@@ -854,7 +857,7 @@ function stat_day(url, id) {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer,
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%Y<br>%b,%d<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -882,7 +885,7 @@ function stat_day(url, id) {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer,
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%Y<br>%b,%d<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -913,7 +916,7 @@ function stat_day(url, id) {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer,
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%Y<br>%b,%d<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -944,7 +947,7 @@ function stat_day(url, id) {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer,
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%Y<br>%b,%d<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -986,7 +989,7 @@ function stat_day(url, id) {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer,
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%Y<br>%b,%d<center>'}
 		}, 
 		yaxis: {
 		    min: 0
@@ -1016,7 +1019,7 @@ function stat_day(url, id) {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer,
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%Y<br>%b,%d<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -1047,7 +1050,7 @@ function stat_day(url, id) {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer,
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%Y<br>%b,%d<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -1075,7 +1078,7 @@ function stat_day(url, id) {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer,
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%Y<br>%b,%d<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -1103,7 +1106,7 @@ function stat_day(url, id) {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer,
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%Y<br>%b,%d<center>'}
 		}, 
 		yaxis: {
 		    min: 0
@@ -1150,7 +1153,7 @@ function stat_day(url, id) {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer,
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%Y<br>%b,%d<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -1192,7 +1195,7 @@ function stat_day(url, id) {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer,
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%Y<br>%b,%d<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -1234,7 +1237,7 @@ function stat_day(url, id) {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer,
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%Y<br>%b,%d<center>'}
 		},
 		yaxis: {
 		    min: 0,
@@ -1272,7 +1275,7 @@ function stat_day(url, id) {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer,
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%Y<br>%b,%d<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -1303,7 +1306,7 @@ function stat_day(url, id) {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer,
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%Y<br>%b,%d<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -1345,7 +1348,7 @@ function stat_day(url, id) {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer,
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%Y<br>%b,%d<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -1378,7 +1381,9 @@ function stat_compare_day(url, id) {
 	    series: labels,
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer
+		    renderer: $.jqplot.DateAxisRenderer,
+                    numberTicks: 5,
+                    tickOptions:{formatString:'<center>%Y<br>%b,%d<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -1402,7 +1407,9 @@ function stat_compare_day(url, id) {
 	    series: labels,
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer
+		    renderer: $.jqplot.DateAxisRenderer,
+                    numberTicks: 5,
+                    tickOptions:{formatString:'<center>%Y<br>%b,%d<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -1426,7 +1433,9 @@ function stat_compare_day(url, id) {
 	    series: labels,
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer
+		    renderer: $.jqplot.DateAxisRenderer,
+                    numberTicks: 5,
+                    tickOptions:{formatString:'<center>%Y<br>%b,%d<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -1450,7 +1459,9 @@ function stat_compare_day(url, id) {
 	    series: labels,
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer
+		    renderer: $.jqplot.DateAxisRenderer,
+                    numberTicks: 5,
+                    tickOptions:{formatString:'<center>%Y<br>%b,%d<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -1474,7 +1485,9 @@ function stat_compare_day(url, id) {
 	    series: labels,
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer
+		    renderer: $.jqplot.DateAxisRenderer,
+                    numberTicks: 5,
+                    tickOptions:{formatString:'<center>%Y<br>%b,%d<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -1498,7 +1511,9 @@ function stat_compare_day(url, id) {
 	    series: labels,
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer
+		    renderer: $.jqplot.DateAxisRenderer,
+                    numberTicks: 5,
+                    tickOptions:{formatString:'<center>%Y<br>%b,%d<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -1550,7 +1565,7 @@ function stats_cpu(url, id) {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%b,%d<br>%H:%M<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -1593,7 +1608,7 @@ function stats_proc(url, id) {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%b,%d<br>%H:%M<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -1631,7 +1646,7 @@ function stats_proc(url, id) {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%b,%d<br>%H:%M<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -1672,7 +1687,7 @@ function stats_proc(url, id) {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%b,%d<br>%H:%M<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -1729,6 +1744,7 @@ function stats_svc(url, id, title) {
                 text: title
             },
             legend: {
+                renderer: $.jqplot.EnhancedLegendRenderer,
                 show: true,
                 location: 'e',
                 placement: "outside"
@@ -1752,7 +1768,7 @@ function stats_svc(url, id, title) {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer,
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%b,%d<br>%H:%M<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -1801,7 +1817,7 @@ function stats_mem(url, id) {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%b,%d<br>%H:%M<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -1841,7 +1857,7 @@ function stats_mem(url, id) {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%b,%d<br>%H:%M<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -1888,7 +1904,7 @@ function stats_swap(url, id) {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%b,%d<br>%H:%M<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -1928,7 +1944,7 @@ function stats_swap(url, id) {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%b,%d<br>%H:%M<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -1973,7 +1989,7 @@ function stats_block(url, id) {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%b,%d<br>%H:%M<center>'}
 		}, 
 		yaxis: {
 		    min: 0
@@ -2012,7 +2028,7 @@ function stats_block(url, id) {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%b,%d<br>%H:%M<center>'}
 		}, 
 		yaxis: {
 		    min: 0
@@ -2562,7 +2578,7 @@ function stats_fs(url, id) {
 		xaxis: {
 		    renderer: $.jqplot.DateAxisRenderer, 
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%b,%d<br>%H:%M<center>'}
 		}, 
 		yaxis: {
 		    min: 0,
@@ -2706,7 +2722,7 @@ function stats_disk_array(url, id) {
                 xaxis: {
                     renderer: $.jqplot.DateAxisRenderer,
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%b,%d<br>%H:%M<center>'}
                 },
                 yaxis: {
                     min: 0,
@@ -2745,7 +2761,7 @@ function stats_disk_app(url, id) {
                 xaxis: {
                     renderer: $.jqplot.DateAxisRenderer,
                     numberTicks: 5,
-                    tickOptions:{formatString:'%Y-%m-%d'}
+                    tickOptions:{formatString:'<center>%b,%d<br>%H:%M<center>'}
                 },
                 yaxis: {
                     min: 0,

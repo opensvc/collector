@@ -620,6 +620,7 @@ db.define_table('apps_responsibles',
 db.define_table('feed_queue',
     Field('q_fn', 'string'),
     Field('q_args', 'blob'),
+    Field('created', 'datetime'),
     migrate=False)
 
 db.define_table('dashboard',

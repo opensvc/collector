@@ -501,6 +501,104 @@ i=d.getTime();$("#%(n)s_container").append("<div style='display:table-row'><div 
                )
         return form
 
+    def html_etcsystem(self, o):
+        v = self.get(o)
+        l = [DIV(
+               DIV('key', _style='display:table-cell;font-weight:bold', _class="comp16"),
+               DIV('op', _style='display:table-cell'),
+               DIV('value', _style='display:table-cell'),
+               _style="display:table-row",
+             )]
+        try:
+            lines = json.loads(v)
+        except:
+            return SPAN("malformed value", PRE(v))
+        for line in lines:
+            if 'key' in line:
+                key = '%s'%str(line['key'])
+            else:
+                key = "-"
+            if 'op' in line:
+                op = '%s'%str(line['op'])
+            else:
+                op = "-"
+            if 'value' in line:
+                value = '%s'%line['value']
+            else:
+                value = "-"
+            l += [DIV(
+                    DIV('%s '%key, _style='display:table-cell', _class="action16"),
+                    DIV(op, _style='display:table-cell'),
+                    DIV(value, _style='display:table-cell'),
+                    _style="display:table-row",
+                  )]
+        return DIV(l, _class="comp_var_table")
+
+    def form_etcsystem(self, o):
+        name = 'etcsystem_n_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
+        l = [DIV(
+               DIV('key', _style='display:table-cell;font-weight:bold', _class="comp16"),
+               DIV('op', _style='display:table-cell'),
+               DIV('value', _style='display:table-cell'),
+               _style="display:table-row",
+             )]
+        v = self.get(o)
+        if v is None or v == "":
+            f = {}
+        else:
+            try:
+                f = json.loads(v)
+            except:
+                return self.form_raw(o)
+        for i, line in enumerate(f):
+            ll = [DIV(
+                    INPUT(
+                      _name=name,
+                      _id="%s_%d_%s"%(name, i, 'key'),
+                      _value=line['key'],
+                      _style='width:9em',
+                    ),
+                    _style='display:table-cell',
+                    _class="action16",
+                  )]
+            for key,w in (('op', '3em'),
+                          ('value', 'auto')):
+                if key not in line:
+                    value = ""
+                else:
+                    value = line[key]
+                ll += [DIV(
+                         INPUT(
+                           _name=name,
+                           _id="%s_%d_%s"%(name, i, key),
+                           _value=value,
+                           _style='width:%s'%w,
+                         ),
+                         _style='display:table-cell',
+                       )]
+            l += [DIV(
+                    ll,
+                    _style="display:table-row",
+                  )]
+        form = DIV(
+                 SPAN(l, _id=name+'_container'),
+                 BR(),
+                 INPUT(
+                   _value="Add",
+                   _type="submit",
+                   _onclick="""d=new Date();
+i=d.getTime();$("#%(n)s_container").append("<div style='display:table-row'><div style='display:table-cell'><span class='action16'></span><input style='width:9em' name='%(n)s' id='%(n)s_"+i+"_key'></div><div style='display:table-cell'><input style='width:3em' name='%(n)s' id='%(n)s_"+i+"_op'></div><div style='display:table-cell'><input style='width:auto' name='%(n)s' id='%(n)s_"+i+"_value'></div></div>")"""%dict(n=name),
+                 ),
+                 " ",
+                 INPUT(
+                   _type="submit",
+                   _onclick=self.t.ajax_submit(additional_input_name=name,
+                                               args=["var_value_set_etcsystem", name]),
+                 ),
+                 _class="comp_var_table",
+               )
+        return form
+
     def html_rc(self, o):
         v = self.get(o)
         l = [DIV(
@@ -2622,6 +2720,8 @@ def ajax_comp_rulesets():
                 var_value_set_list_of_dict(name)
             elif action == 'var_value_set_process':
                 var_value_set_list_of_dict(name)
+            elif action == 'var_value_set_etcsystem':
+                var_value_set_list_of_dict(name)
             elif action == 'var_value_set_rc':
                 var_value_set_list_of_dict(name)
             elif action == 'var_value_set_user':
@@ -4505,6 +4605,8 @@ def json_run_status_log(nodename, module):
     return data
 
 def spark_id(nodename, module):
+    module = module.replace('.', '_')
+    module = module.replace('-', '_')
     return 'rh_%s_%s'%(nodename, module)
 
 def spark_url(nodename, module):
@@ -4514,16 +4616,17 @@ def spark_url(nodename, module):
                  module=module)
            )
 
-class table_comp_status_vfields(object):
-        def run_status_log(self):
-            return SPAN(
-                     _id=spark_id(self.comp_status.run_nodename,
-                                  self.comp_status.run_module)
-                   )
-
-def table_comp_status_add_vfields(t):
-    db.comp_status.virtualfields.append(table_comp_status_vfields())
-    t.cols.insert(5, 'run_status_log')
+class col_run_status_log(HtmlTableColumn):
+    def html(self, o):
+        if hasattr(o, 'comp_status'):
+            nodename = o.comp_status.run_nodename
+            module = o.comp_status.run_module
+        else:
+            nodename = ""
+            module = ""
+        return DIV(
+                 _id=spark_id(nodename, module)
+               )
 
 class col_run_date(HtmlTableColumn):
     deadline = now - datetime.timedelta(days=7)
@@ -4551,6 +4654,7 @@ class table_comp_status(HtmlTable):
                      'run_svcname',
                      'run_module',
                      'run_status',
+                     'run_status_log',
                      'run_ruleset',
                      'rset_md5',
                      'run_log']
@@ -4605,7 +4709,7 @@ class table_comp_status(HtmlTable):
                      img='check16',
                      display=True,
                     ),
-            'run_status_log': col_run_status(
+            'run_status_log': col_run_status_log(
                      title='History',
                      field='run_status_log',
                      table='comp_status',
@@ -4876,7 +4980,6 @@ def ajax_comp_status():
     n = len(db(q).select(db.comp_status.id, limitby=default_limitby))
     t.setup_pager(n)
     #all = db(q).select(db.comp_status.ALL, db.v_nodes.id)
-    table_comp_status_add_vfields(t)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
     t.csv_q = q
     t.csv_orderby = o
@@ -6184,6 +6287,7 @@ def beautify_modulesets(msets, node):
 def node_comp_status(node):
     tid = 'ncs_'+node
     t = table_comp_status(tid, 'node_comp_status')
+    t.cols.remove('run_status_log')
 
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
     q &= db.comp_status.run_nodename == node
