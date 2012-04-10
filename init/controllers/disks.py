@@ -174,6 +174,11 @@ def beautify_size_mb(d):
           d = int(d)
        except:
           return '-'
+       if d < 0:
+           neg = True
+           d = -d
+       else:
+           neg = False
        if d < 1024:
            v = 1.0 * d
            unit = 'MB'
@@ -190,6 +195,8 @@ def beautify_size_mb(d):
        else:
            fmt = "%.2f"
        fmt = fmt + " %s"
+       if neg:
+           v = -v
        return fmt%(v, unit)
 
 class col_quota_used(HtmlTableColumn):
