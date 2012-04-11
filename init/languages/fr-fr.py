@@ -694,6 +694,7 @@
 'Rule set': 'Jeu de règle',
 'Rule set name': 'Nom du jeu de règles',
 'Ruleset': 'Jeu de règles',
+'Ruleset 1a1875a29f3337ce0aa72be2e3fcf987': 'Ruleset 1a1875a29f3337ce0aa72be2e3fcf987',
 'Ruleset 64936807fcbf1341b994db905eae80c6': 'Ruleset 64936807fcbf1341b994db905eae80c6',
 'Ruleset eec60c0f3042e7bddef3117ed98d5873': 'Ruleset eec60c0f3042e7bddef3117ed98d5873',
 'Ruleset md5': 'Ruleset md5',

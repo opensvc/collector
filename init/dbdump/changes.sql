@@ -2345,3 +2345,8 @@ alter table feed_queue add column created timestamp NOT NULL DEFAULT CURRENT_TIM
 alter table stor_array add column array_level integer not null default 0;
 
 alter table diskinfo add column disk_level integer not null default 0;
+
+alter table diskinfo modify column disk_arrayid varchar(300);
+
+alter table stor_array modify column array_name varchar(300);
+
