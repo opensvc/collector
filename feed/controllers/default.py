@@ -363,6 +363,7 @@ def register_disks(vars, vals, auth):
     nodename = auth[1].strip("'")
     db(db.svcdisks.disk_nodename==nodename).delete()
     db(db.diskinfo.disk_arrayid==nodename).delete()
+    db.commit()
     for v in vals:
         _register_disk(vars, v, auth)
 
@@ -469,11 +470,12 @@ def _register_disk(vars, vals, auth):
     #    purge_old_disks(h, now)
     #    return
 
-    if 'disk_updated' not in h:
-        h['disk_updated'] = now
+    h['disk_updated'] = now
 
-    if disk_id.startswith(h["disk_nodename"].strip("'")+'.') and \
-       db(db.diskinfo.disk_id==disk_id).count() == 0:
+    q = db.diskinfo.disk_id==disk_id
+    q &= db.diskinfo.disk_level > 0
+    n = db(q).count()
+    if disk_id.startswith(h["disk_nodename"].strip("'")+'.') and n == 0:
         h['disk_local'] = 'T'
         vars = ['disk_id', 'disk_arrayid', 'disk_devid', 'disk_size']
         vals = [h["disk_id"],
@@ -481,7 +483,7 @@ def _register_disk(vars, vals, auth):
                 repr(disk_id.split('.')[-1]),
                 h['disk_size']]
         generic_insert('diskinfo', vars, vals)
-    else:
+    elif n == 0:
         h['disk_local'] = 'F'
         vars = ['disk_id', 'disk_size']
         vals = [h["disk_id"], h['disk_size']]
