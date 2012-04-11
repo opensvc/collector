@@ -371,6 +371,85 @@ def register_disks(vars, vals, auth):
 def register_disk_blacklist(vars, vals, auth):
     generic_insert('disk_blacklist', vars, vals)
 
+def disk_level(dev_id, level=0):
+    q = db.diskinfo.disk_id == dev_id
+    q &= db.diskinfo.disk_id != db.diskinfo.disk_devid
+    rows = db(q).select(db.diskinfo.disk_devid)
+    if len(rows) == 0:
+        return level
+    return disk_level(rows.first().disk_devid, level+1)
+
+@auth_uuid
+@service.xmlrpc
+#def register_diskinfo(vars, vals, auth):
+#    feed_enqueue("_register_diskinfo", vars, vals, auth)
+
+def register_diskinfo(vars, vals, auth):
+    now = datetime.datetime.now()
+    nodename = auth[1]
+    vars.append("disk_updated")
+    vars.append("disk_level")
+
+    # insert diskinfo
+    # here the array can be a cluster. the field contains the member list.
+    # in this case, the node has to be added to the cluster members when the
+    # disk id is already known in diskinfo
+    arrays = set([])
+    for val in vals:
+        disk_id = val[0]
+        dev_id = val[2]
+        val.append(now)
+        val.append(str(disk_level(dev_id)))
+        sql = """select disk_arrayid from diskinfo where disk_id="%s" """%disk_id
+        rows = db.executesql(sql)
+        if len(rows) == 1:
+            array = rows[0][0]
+            cluster = array.split(',')
+            if nodename not in cluster:
+                cluster.append(nodename)
+                cluster.sort()
+                array = ','.join(cluster)
+            val[1] = array
+            arrays.add(array)
+        else:
+            arrays.add(nodename)
+        generic_insert('diskinfo', vars, val)
+
+    # purge diskinfo
+    if len(arrays) > 0:
+        sql = """ update diskinfo
+                    set disk_arrayid=replace(replace(replace(disk_arrayid, "%(nodename)s,", ""), ",%(nodename)s", ""), "%(nodename)s", "")
+                  where
+                    disk_arrayid in (%(l)s) and
+                    disk_updated < "%(now)s" """%dict(nodename=nodename, l=','.join(map(lambda x: repr(str(x)), arrays)), now=now)
+        db.executesql(sql)
+
+    sql = """ delete from diskinfo where disk_arrayid = "" """
+    db.executesql(sql)
+
+    # register cluster as array
+    for array in arrays:
+        node = db(db.nodes.nodename==nodename).select().first()
+        if node is not None:
+            array_cache = node.mem_bytes
+            array_firmware = " ".join((node.os_name, node.os_vendor, node.os_release, node.os_kernel))
+        else:
+            array_cache = 0
+            array_firwmare = "unknown"
+
+        vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
+        vals = [
+          array,
+          "vdisk provider",
+          str(array_cache),
+          array_firmware,
+          now
+        ]
+        generic_insert('stor_array', vars, vals)
+        sql = """ delete from stor_array where array_name = "%s" and array_updated < "%s" """%(array, now)
+        db.executesql(sql)
+    db.commit()
+
 @auth_uuid
 @service.xmlrpc
 def register_disk(vars, vals, auth):
@@ -385,14 +464,16 @@ def _register_disk(vars, vals, auth):
     disk_id = h["disk_id"].strip("'")
 
     # don't register blacklisted disks (might be VM disks, already accounted)
-    n = db(db.disk_blacklist.disk_id==disk_id).count()
-    if n > 0:
-        purge_old_disks(h, now)
-        return
+    #n = db(db.disk_blacklist.disk_id==disk_id).count()
+    #if n > 0:
+    #    purge_old_disks(h, now)
+    #    return
 
     if 'disk_updated' not in h:
         h['disk_updated'] = now
-    if disk_id.startswith(h["disk_nodename"].strip("'")+'.'):
+
+    if disk_id.startswith(h["disk_nodename"].strip("'")+'.') and \
+       db(db.diskinfo.disk_id==disk_id).count() == 0:
         h['disk_local'] = 'T'
         vars = ['disk_id', 'disk_arrayid', 'disk_devid', 'disk_size']
         vals = [h["disk_id"],
@@ -402,7 +483,9 @@ def _register_disk(vars, vals, auth):
         generic_insert('diskinfo', vars, vals)
     else:
         h['disk_local'] = 'F'
-        generic_insert('diskinfo', ['disk_id', 'disk_size'], [h["disk_id"], h['disk_size']])
+        vars = ['disk_id', 'disk_size']
+        vals = [h["disk_id"], h['disk_size']]
+        generic_insert('diskinfo', vars, vals)
 
         # if no array claimed that disk, give it to the node
         sql = """update diskinfo
@@ -413,6 +496,7 @@ def _register_disk(vars, vals, auth):
               """%(h['disk_nodename'].strip("'"), disk_id)
         db.executesql(sql)
         db.commit()
+
     try:
         generic_insert('svcdisks', h.keys(), h.values())
     except:

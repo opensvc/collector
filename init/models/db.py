@@ -542,6 +542,7 @@ db.define_table('diskinfo',
     Field('disk_group', 'string'),
     Field('disk_raid', 'string'),
     Field('disk_updated', 'datetime'),
+    Field('disk_level', 'integer'),
     migrate=False)
 
 db.define_table('svcdisks',
@@ -1386,6 +1387,7 @@ db.define_table('stor_array',
     Field('array_firmware','string'),
     Field('array_cache','integer'),
     Field('array_updated','datetime'),
+    Field('array_level','integer'),
     migrate=False)
 
 db.define_table('stor_array_dg',

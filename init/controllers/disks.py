@@ -140,6 +140,12 @@ class col_chart(HtmlTableColumn):
                   ),
                   _style="float:left;width:500px",
                 )]
+       l += [DIV(
+               _class='spacer',
+             )]
+       l += [DIV(
+               _id='chart_info',
+             )]
        return DIV(l)
 
 class col_disk_id(HtmlTableColumn):
@@ -734,6 +740,7 @@ class table_disks(HtmlTable):
                      'disk_raid',
                      'disk_group',
                      'disk_arrayid',
+                     'disk_level',
                      'array_model',
                      'disk_array_updated']
         self.colprops.update({
@@ -806,6 +813,14 @@ class table_disks(HtmlTable):
                      title='Array disk group',
                      table='diskinfo',
                      field='disk_group',
+                     img='hd16',
+                     display=True,
+                     _dataclass="bluer",
+                    ),
+            'disk_level': HtmlTableColumn(
+                     title='Level',
+                     table='diskinfo',
+                     field='disk_level',
                      img='hd16',
                      display=True,
                      _dataclass="bluer",
@@ -1275,7 +1290,20 @@ def ajax_disk_charts():
            """%dict(q=q)
     n_app = db.executesql(sql)[0][0]
 
-    if n_app == 1:
+    sql = """select max(diskinfo.disk_level)
+             from
+                 diskinfo
+               left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+               left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
+               where
+                 %(q)s
+          """%dict(q=q)
+    max_level = db.executesql(sql)[0][0]
+    if max_level is None:
+        return ''
+    levels = range(0, max_level+1)
+
+    def pie_data_svc(q, level=0):
         sql = """select
                    t.obj,
                    sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size
@@ -1298,6 +1326,7 @@ def ajax_disk_charts():
                      left join services on svcdisks.disk_svcname=services.svc_name
                      left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
                      where %(q)s
+                     and diskinfo.disk_level=%(level)d
                      and svcdisks.disk_svcname != ""
                      union all
                      select
@@ -1312,30 +1341,39 @@ def ajax_disk_charts():
                      left join nodes on svcdisks.disk_nodename=nodes.nodename
                      left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
                      where %(q)s
+                     and diskinfo.disk_level=%(level)d
                      and (svcdisks.disk_svcname = "" or svcdisks.disk_svcname is NULL)
                    ) u
                    group by u.disk_id, u.disk_region
                  ) t
                  group by t.obj
                  order by t.obj, size desc
-                 """%dict(q=q)
+                 """%dict(q=q, level=level)
         rows = db.executesql(sql)
+        return rows
 
+    if n_app == 1:
         data_svc = []
-        for row in rows:
-            if row[0] is None:
-                label = 'unknown'
-            else:
-                label = row[0]
-            try:
-                size = int(row[1])
-            except:
-                continue
-            data_svc += [[str(label) +' (%s)'%beautify_size_mb(size), size]]
+        for level in levels:
+            _data_svc = []
+            rows = pie_data_svc(q, level)
+            for row in rows:
+                if row[0] is None:
+                    label = 'unknown'
+                else:
+                    label = row[0]
+                try:
+                    size = int(row[1])
+                except:
+                    continue
+                _data_svc += [[str(label) +' (%s)'%beautify_size_mb(size), size]]
 
-        data_svc.sort(lambda x, y: cmp(y[1], x[1]))
+            _data_svc.sort(lambda x, y: cmp(y[1], x[1]))
+            if len(_data_svc) == 0:
+                _data_svc = [["", 0]]
+            data_svc.append(_data_svc)
 
-    if n_app > 1:
+    def pie_data_app(q, level=0):
         sql = """select
                    t.app,
                    sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size
@@ -1358,6 +1396,7 @@ def ajax_disk_charts():
                      left join services on svcdisks.disk_svcname=services.svc_name
                      left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
                      where %(q)s
+                     and diskinfo.disk_level=%(level)d
                      and svcdisks.disk_svcname != ""
                      union all
                      select
@@ -1372,28 +1411,37 @@ def ajax_disk_charts():
                      left join nodes on svcdisks.disk_nodename=nodes.nodename
                      left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
                      where %(q)s
+                     and diskinfo.disk_level=%(level)d
                      and (svcdisks.disk_svcname = "" or svcdisks.disk_svcname is NULL)
                    ) u
                    group by u.disk_id, u.disk_region
                  ) t
                  group by t.app
                  order by t.app, size desc
-                 """%dict(q=q)
+                 """%dict(q=q, level=level)
         rows = db.executesql(sql)
+        return rows
 
+    if n_app > 1:
         data_app = []
-        for row in rows:
-            if row[0] is None:
-                label = 'unknown'
-            else:
-                label = row[0]
-            try:
-                size = int(row[1])
-            except:
-                continue
-            data_app += [[str(label) +' (%s)'%beautify_size_mb(size), size]]
+        for level in levels:
+            rows = pie_data_app(q, level)
+            _data_app = []
+            for row in rows:
+                if row[0] is None:
+                    label = 'unknown'
+                else:
+                    label = row[0]
+                try:
+                    size = int(row[1])
+                except:
+                    continue
+                _data_app += [[str(label) +' (%s)'%beautify_size_mb(size), size]]
 
-        data_app.sort(lambda x, y: cmp(y[1], x[1]))
+            _data_app.sort(lambda x, y: cmp(y[1], x[1]))
+            if len(_data_app) == 0:
+                _data_app = [["", 0]]
+            data_app.append(_data_app)
 
     sql = """select count(distinct diskinfo.disk_arrayid)
              from
@@ -1462,7 +1510,7 @@ def ajax_disk_charts():
             data_dg += [[str(label) +' (%s)'%beautify_size_mb(size), size]]
         data_dg.sort(lambda x, y: cmp(y[1], x[1]))
 
-    if n_arrays > 1:
+    def pie_data_array(q, level=0):
         sql = """select
                    sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
                    t.disk_arrayid
@@ -1483,27 +1531,36 @@ def ajax_disk_charts():
                      left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
                      left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
                      where %(q)s
+                     and diskinfo.disk_level=%(level)d
                      group by diskinfo.disk_id, svcdisks.disk_region
                    ) u
                    group by u.disk_id
                  ) t
                  group by t.disk_arrayid
-                 order by size desc, t.disk_arrayid"""%dict(q=q)
+                 order by size desc, t.disk_arrayid"""%dict(q=q, level=level)
         rows = db.executesql(sql)
+        return rows
 
+    if n_arrays > 1:
         data_array = []
-        for row in rows:
-            if row[1] is None:
-                array = ''
-            else:
-                array = row[1]
-            label = array
-            try:
-                size = int(row[0])
-            except:
-                continue
-            data_array += [[str(label) +' (%s)'%beautify_size_mb(size), size]]
-        data_array.sort(lambda x, y: cmp(y[1], x[1]))
+        for level in levels:
+            rows = pie_data_array(q, level)
+            _data_array = []
+            for row in rows:
+                if row[1] is None:
+                    array = ''
+                else:
+                    array = row[1]
+                label = array
+                try:
+                    size = int(row[0])
+                except:
+                    continue
+                _data_array += [[str(label) +' (%s)'%beautify_size_mb(size), size]]
+            _data_array.sort(lambda x, y: cmp(y[1], x[1]))
+            if len(_data_array) == 0:
+                _data_array = [["", 0]]
+            data_array.append(_data_array)
 
 
     nt.object_list = [{'chart_svc': json.dumps(data_svc),
@@ -1515,40 +1572,50 @@ def ajax_disk_charts():
              nt.html(),
              SCRIPT(
 """
-function diskpie(o) {
+function diskdonut(o) {
   try{
   var data = $.parseJSON(o.html())
-  var total = 0
-  for (i=0;i<data.length;i++) {total += data[i][1]}
+  var title = ""
+  for (i=0;i<data.length;i++) {
+    var total = 0
+    for (j=0;j<data[i].length;j++) {total += data[i][j][1]}
+    total = fancy_size_mb(total)
+    if (i==0){
+      title = i+":"+total
+    } else {
+      title = title+", "+i+":"+total
+    }
+  }
   o.html("")
-  $.jqplot(o.attr('id'), [data],
+  $.jqplot(o.attr('id'), data,
     {
       seriesDefaults: {
-        renderer: $.jqplot.PieRenderer,
+        renderer: $.jqplot.DonutRenderer,
         rendererOptions: {
-          sliceMargin: 4,
+          sliceMargin: 0,
           showDataLabels: true
         }
       },
-      title: { text: 'Total: '+fancy_size_mb(total) },
-      legend: {
-        renderer: $.jqplot.EnhancedLegendRenderer,
-        rendererOptions: {
-          numberRows: 11,
-          numberColumns: 1
-        },
-        show:true,
-        location: 'e'
-      }
+      title: { text: title }
     }
   );
+  $('#'+o.attr('id')).bind('jqplotDataHighlight', 
+        function (ev, seriesIndex, pointIndex, data) {
+            $('#chart_info').html('level: '+seriesIndex+', data: '+data[0]);
+        }
+  );
+  $('#'+o.attr('id')).bind('jqplotDataUnhighlight', 
+        function (ev) {
+            $('#chart_info').html('%(msg)s');
+        }
+  ); 
   } catch(e) {}
 }
 $("[id^=chart_svc]").each(function(){
-  diskpie($(this))
+  diskdonut($(this))
 })
 $("[id^=chart_ap]").each(function(){
-  diskpie($(this))
+  diskdonut($(this))
 })
 $("[id^=chart_dg]").each(function(){
   diskpie($(this))
@@ -1561,7 +1628,7 @@ $("[id^=chart_dg]").each(function(){
   })
 })
 $("[id^=chart_ar]").each(function(){
-  diskpie($(this))
+  diskdonut($(this))
   $(this).bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
     d = data[seriesIndex]
     var reg = new RegExp(" \(.*\)", "g");
@@ -1570,7 +1637,10 @@ $("[id^=chart_ar]").each(function(){
     %(submit)s
   })
 })
-"""%dict(submit=t.ajax_submit()),
+"""%dict(
+      submit=t.ajax_submit(),
+      msg=T("Hover over a slice to show data"),
+    ),
                _name="charts_to_eval",
              ),
            )

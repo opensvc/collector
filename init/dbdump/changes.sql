@@ -2341,3 +2341,7 @@ alter table stat_day_disk_array add column reservable integer default 0;
 alter table diskinfo modify disk_id varchar(120);
 
 alter table feed_queue add column created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+alter table stor_array add column array_level integer not null default 0;
+
+alter table diskinfo add column disk_level integer not null default 0;
