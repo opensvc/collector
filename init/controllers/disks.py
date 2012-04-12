@@ -1352,6 +1352,12 @@ def ajax_disk_charts():
         rows = db.executesql(sql)
         return rows
 
+    def data_total(data):
+        total = 0
+        for l in data:
+            total += l[1]
+        return total
+
     if n_app == 1:
         data_svc = []
         for level in levels:
@@ -1371,6 +1377,11 @@ def ajax_disk_charts():
             _data_svc.sort(lambda x, y: cmp(y[1], x[1]))
             if len(_data_svc) == 0:
                 _data_svc = [["", 0]]
+            if level == 0:
+                total = data_total(_data_svc)
+            else:
+                diff = total - data_total(_data_svc)
+                _data_svc += [["n/a", diff]]
             data_svc.append(_data_svc)
 
     def pie_data_app(q, level=0):
@@ -1441,6 +1452,11 @@ def ajax_disk_charts():
             _data_app.sort(lambda x, y: cmp(y[1], x[1]))
             if len(_data_app) == 0:
                 _data_app = [["", 0]]
+            if level == 0:
+                total = data_total(_data_app)
+            else:
+                diff = total - data_total(_data_app)
+                _data_app += [["n/a", diff]]
             data_app.append(_data_app)
 
     sql = """select count(distinct diskinfo.disk_arrayid)
@@ -1560,6 +1576,11 @@ def ajax_disk_charts():
             _data_array.sort(lambda x, y: cmp(y[1], x[1]))
             if len(_data_array) == 0:
                 _data_array = [["", 0]]
+            if level == 0:
+                total = data_total(_data_array)
+            else:
+                diff = total - data_total(_data_array)
+                _data_array += [["n/a", diff]]
             data_array.append(_data_array)
 
 
