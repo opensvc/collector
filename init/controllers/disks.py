@@ -1381,7 +1381,7 @@ def ajax_disk_charts():
                 total = data_total(_data_svc)
             else:
                 diff = total - data_total(_data_svc)
-                _data_svc += [["n/a", diff]]
+                _data_svc += [["n/a " +' (%s)'%beautify_size_mb(diff), diff]]
             data_svc.append(_data_svc)
 
     def pie_data_app(q, level=0):
@@ -1456,7 +1456,7 @@ def ajax_disk_charts():
                 total = data_total(_data_app)
             else:
                 diff = total - data_total(_data_app)
-                _data_app += [["n/a", diff]]
+                _data_app += [["n/a " +' (%s)'%beautify_size_mb(diff), diff]]
             data_app.append(_data_app)
 
     sql = """select count(distinct diskinfo.disk_arrayid)
@@ -1516,7 +1516,7 @@ def ajax_disk_charts():
             if row[2] is None:
                 dg = ''
             else:
-                dg = row[2]
+                dg = ' '.join((row[1],row[2]))
 
             label = dg
             try:
@@ -1525,6 +1525,7 @@ def ajax_disk_charts():
                 continue
             data_dg += [[str(label) +' (%s)'%beautify_size_mb(size), size]]
         data_dg.sort(lambda x, y: cmp(y[1], x[1]))
+        data_dg = [data_dg]
 
     def pie_data_array(q, level=0):
         sql = """select
@@ -1580,7 +1581,7 @@ def ajax_disk_charts():
                 total = data_total(_data_array)
             else:
                 diff = total - data_total(_data_array)
-                _data_array += [["n/a", diff]]
+                _data_array += [["n/a " +' (%s)'%beautify_size_mb(diff), diff]]
             data_array.append(_data_array)
 
 
@@ -1601,11 +1602,8 @@ function diskdonut(o) {
     var total = 0
     for (j=0;j<data[i].length;j++) {total += data[i][j][1]}
     total = fancy_size_mb(total)
-    if (i==0){
-      title = i+":"+total
-    } else {
-      title = title+", "+i+":"+total
-    }
+    title = total
+    break
   }
   o.html("")
   $.jqplot(o.attr('id'), data,
@@ -1639,14 +1637,7 @@ $("[id^=chart_ap]").each(function(){
   diskdonut($(this))
 })
 $("[id^=chart_dg]").each(function(){
-  diskpie($(this))
-  $(this).bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
-    d = data[seriesIndex]
-    var reg = new RegExp(" \(.*\)", "g");
-    d = d.replace(reg, "")
-    $("#disks_f_disk_group").val(d)
-    %(submit)s
-  })
+  diskdonut($(this))
 })
 $("[id^=chart_ar]").each(function(){
   diskdonut($(this))
