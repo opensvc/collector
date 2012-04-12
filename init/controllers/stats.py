@@ -450,27 +450,27 @@ def ajax_stats():
      DIV(
        H2(T("Services")),
        DIV(
-         _id='stat_day_svc_drp',
+         DIV(_id='stat_day_svc_drp'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_svc_cluster',
+         DIV(_id='stat_day_svc_cluster'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_svc_type',
+         DIV(_id='stat_day_svc_type'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_nb_vcpu',
+         DIV(_id='stat_day_nb_vcpu'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_nb_vmem',
+         DIV(_id='stat_day_nb_vmem'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_apps',
+         DIV(_id='stat_day_apps'),
          _class='float',
        ),
        DIV(
@@ -482,19 +482,19 @@ def ajax_stats():
      DIV(
        H2(T("Nodes")),
        DIV(
-         _id='stat_day_nodes',
+         DIV(_id='stat_day_nodes'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_virt_nodes',
+         DIV(_id='stat_day_virt_nodes'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_nodes_core',
+         DIV(_id='stat_day_nodes_core'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_nodes_ram',
+         DIV(_id='stat_day_nodes_ram'),
          _class='float',
        ),
        DIV(
@@ -506,11 +506,11 @@ def ajax_stats():
      DIV(
        H2(T("Actions")),
        DIV(
-         _id='stat_day_actions',
+         DIV(_id='stat_day_actions'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_err',
+         DIV(_id='stat_day_err'),
          _class='float',
        ),
        DIV(
@@ -522,15 +522,15 @@ def ajax_stats():
      DIV(
        H2(T("Disks")),
        DIV(
-         _id='stat_day_disk',
+         DIV(_id='stat_day_disk'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_svc_disk',
+         DIV(_id='stat_day_svc_disk'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_svc_disk',
+         DIV(_id='stat_day_svc_disk'),
          _class='float',
        ),
        DIV(
@@ -542,31 +542,31 @@ def ajax_stats():
      DIV(
        H2(T("Computing ressource usage")),
        DIV(
-         _id='stat_day_node_cpu',
+         DIV(_id='stat_day_node_cpu'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_node_mem',
+         DIV(_id='stat_day_node_mem'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_node_swp',
+         DIV(_id='stat_day_node_swp'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_node_proc_runq_sz',
+         DIV(_id='stat_day_node_proc_runq_sz'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_node_proc_plist_sz',
+         DIV(_id='stat_day_node_proc_plist_sz'),
          _class='float',
        ),
        DIV(
-         _id='tps_stat_day_node_block',
+         DIV(_id='tps_stat_day_node_block'),
          _class='float',
        ),
        DIV(
-         _id='bps_stat_day_node_block',
+         DIV(_id='bps_stat_day_node_block'),
          _class='float',
        ),
        DIV(
@@ -578,12 +578,12 @@ def ajax_stats():
      DIV(
        H2(T("Collector user accounts")),
        DIV(
+         DIV(_id='stat_day_accounts'),
          _class='float',
-         _id='stat_day_accounts',
        ),
        DIV(
+         DIV(_id='stat_day_resp_accounts'),
          _class='float',
-         _id='stat_day_resp_accounts',
        ),
        DIV(
          XML('&nbsp;'),
@@ -632,6 +632,7 @@ def ajax_stats():
                  vars={'higher':15}
           )
        ),
+       "jqplot_img()",
        _name=t.id+'_to_eval',
      ),
      _id="stats",

@@ -865,6 +865,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_err'))
+
         $('#'+id+'_apps').height('300px')
         $('#'+id+'_apps').width('300px')
 	$.jqplot(id+'_apps', [data[11]], {
@@ -893,6 +895,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_apps'))
+
         $('#'+id+'_nb_vcpu').height('300px')
         $('#'+id+'_nb_vcpu').width('300px')
 	$.jqplot(id+'_nb_vcpu', [data[20]], {
@@ -924,6 +928,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_nb_vcpu'))
+
         $('#'+id+'_nb_vmem').height('300px')
         $('#'+id+'_nb_vmem').width('300px')
 	$.jqplot(id+'_nb_vmem', [data[21]], {
@@ -955,6 +961,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_nb_vmem'))
+
         $('#'+id+'_disk').height('300px')
         $('#'+id+'_disk').width('300px')
 	$.jqplot(id+'_disk', [data[5], data[31]], {
@@ -996,6 +1004,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_disk'))
+
         $('#'+id+'_nodes_ram').height('300px')
         $('#'+id+'_nodes_ram').width('300px')
 	$.jqplot(id+'_nodes_ram', [data[6]], {
@@ -1027,6 +1037,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_nodes_ram'))
+
         $('#'+id+'_nodes_core').height('300px')
         $('#'+id+'_nodes_core').width('300px')
 	$.jqplot(id+'_nodes_core', [data[7]], {
@@ -1058,6 +1070,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_nodes_core'))
+
         $('#'+id+'_accounts').height('300px')
         $('#'+id+'_accounts').width('300px')
 	$.jqplot(id+'_accounts', [data[12]], {
@@ -1086,6 +1100,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_accounts'))
+
         $('#'+id+'_resp_accounts').height('300px')
         $('#'+id+'_resp_accounts').width('300px')
 	$.jqplot(id+'_resp_accounts', [data[22]], {
@@ -1113,6 +1129,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_resp_accounts'))
+
         $('#'+id+'_actions').height('300px')
         $('#'+id+'_actions').width('300px')
 	$.jqplot(id+'_actions', [data[4],  data[3], data[2]], {
@@ -1161,6 +1179,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_actions'))
+
         $('#'+id+'_nodes').height('300px')
         $('#'+id+'_nodes').width('300px')
 	$.jqplot(id+'_nodes', [data[17],  data[14]], {
@@ -1203,6 +1223,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_nodes'))
+
         $('#'+id+'_virt_nodes').height('300px')
         $('#'+id+'_virt_nodes').width('300px')
 	$.jqplot(id+'_virt_nodes', [data[23],  data[24]], {
@@ -1245,6 +1267,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_virt_nodes'))
+
         $('#'+id+'_svc_type').height('300px')
         $('#'+id+'_svc_type').width('300px')
 	$.jqplot(id+'_svc_type', [data[15],  data[0]], {
@@ -1283,6 +1307,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_svc_type'))
+
         $('#'+id+'_svc_cluster').height('300px')
         $('#'+id+'_svc_cluster').width('300px')
 	$.jqplot(id+'_svc_cluster', [data[16],  data[18]], {
@@ -1314,6 +1340,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_svc_cluster'))
+
         $('#'+id+'_svc_drp').height('300px')
         $('#'+id+'_svc_drp').width('300px')
 	$.jqplot(id+'_svc_drp', [data[13],  data[19]], {
@@ -1356,6 +1384,7 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_svc_drp'))
     });
 }
 function stat_compare_day(url, id) {
@@ -2771,5 +2800,59 @@ function stats_disk_app(url, id) {
 
 	});
     });
+}
+function jqplot_img(){
+    if (!$.jqplot.use_excanvas) {
+        $('div.jqplot-target').each(function(){
+            _jqplot_img(this)
+        })
+    }
+}
+
+function _jqplot_img(e){
+            var outerDiv = $(document.createElement('div'));
+            var header = $(document.createElement('div'));
+            var div = $(document.createElement('div'));
+
+            outerDiv.append(header);
+            outerDiv.append(div);
+
+            outerDiv.addClass('jqplot-image-container');
+            header.addClass('jqplot-image-container-header');
+            div.addClass('jqplot-image-container-content');
+
+            header.html('Right Click to Save Image As...');
+
+            var close = $(document.createElement('a'));
+            close.addClass('jqplot-image-container-close');
+            close.html('Close');
+            close.attr('href', '#');
+            close.click(function() {
+                $(e).parents('div.jqplot-image-container').hide(500);
+            })
+            header.append(close);
+
+            $(e).after(outerDiv);
+            outerDiv.hide();
+
+            outerDiv = header = div = close = null;
+
+            if (!$.jqplot._noToImageButton) {
+                var btn = $(document.createElement('button'));
+                btn.text('View Plot Image');
+                btn.addClass('jqplot-image-button');
+                btn.bind('click', {chart: $(e)}, function(evt) {
+                    var imgelem = evt.data.chart.jqplotToImageElem();
+                    var div = $(e).nextAll('div.jqplot-image-container').first();
+                    div.children('div.jqplot-image-container-content').empty();
+                    div.children('div.jqplot-image-container-content').append(imgelem);
+                    div.show(500);
+                    div = null;
+                });
+
+                $(e).after(btn);
+                btn.after('<br />');
+                btn = null;
+            }
 }
 </script>
