@@ -236,7 +236,7 @@ def _ajax_perf_plot(group, sub=[''], last=False, base=None):
     l = []
     for s in sub:
         l.append(DIV(
-                  _id='perf_%s_%s%s'%(group,rowid,s),
+                  DIV(_id='perf_%s_%s%s'%(group,rowid,s)),
                   _class='float',
                  ))
     l.append(SPAN(spacer))

@@ -511,6 +511,7 @@ function stats_avg_cpu_for_nodes(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id))
     });
 }
 function stats_avg_swp_for_nodes(url, id) {
@@ -559,6 +560,7 @@ function stats_avg_swp_for_nodes(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id))
     });
 }
 function stats_avg_mem_for_nodes(url, id) {
@@ -607,6 +609,7 @@ function stats_avg_mem_for_nodes(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id))
     });
 }
 function stats_avg_block_for_nodes(url, id) {
@@ -655,6 +658,8 @@ function stats_avg_block_for_nodes(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#tps_'+id))
+
         plot_height('bps_'+id, data[0])
         $('#bps_'+id).width('450px')
 	$.jqplot('bps_'+id, [data[1][2], data[1][3]], {
@@ -697,6 +702,7 @@ function stats_avg_block_for_nodes(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#bps_'+id))
     });
 }
 function stats_disk_for_svc(url, id) {
@@ -744,6 +750,7 @@ function stats_disk_for_svc(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id))
     });
 }
 function stats_avg_proc_for_nodes(url, id) {
@@ -791,6 +798,8 @@ function stats_avg_proc_for_nodes(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_runq_sz'))
+
         plot_height(id+'_plist_sz', data[0])
         $('#'+id+'_plist_sz').width('450px')
 	$.jqplot(id+'_plist_sz', [data[1][1]], {
@@ -832,6 +841,7 @@ function stats_avg_proc_for_nodes(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_plist_sz'))
     });
 }
 function stat_day(url, id) {
@@ -1645,6 +1655,8 @@ function stats_proc(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_runq_sz'))
+
 	$.jqplot(id+'_plist_sz', [data[1]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
@@ -1683,6 +1695,8 @@ function stats_proc(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_plist_sz'))
+
 	$.jqplot(id+'_loadavg', [data[2],data[3],data[4]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
@@ -1724,6 +1738,7 @@ function stats_proc(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_loadavg'))
     });
 }
 function stats_svc_cpu(url, id) {
@@ -1805,6 +1820,7 @@ function stats_svc(url, id, title) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id))
     });
 }
 function stats_mem(url, id) {
@@ -1854,6 +1870,8 @@ function stats_mem(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_u'))
+
 	$.jqplot(id+'_pct', [data[2],data[6]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
@@ -1894,6 +1912,8 @@ function stats_mem(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_pct'))
+
     });
 }
 function stats_swap(url, id) {
@@ -1941,6 +1961,8 @@ function stats_swap(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_u'))
+
 	$.jqplot(id+'_pct', [data[2],data[4]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
@@ -1981,6 +2003,7 @@ function stats_swap(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_pct'))
     });
 }
 function stats_block(url, id) {
@@ -2025,6 +2048,8 @@ function stats_block(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_tps'))
+
 	$.jqplot(id+'_bps', [data[2],data[3]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
@@ -2064,6 +2089,7 @@ function stats_block(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_bps'))
     });
 }
 function stats_trend_mem(url, id) {
@@ -2108,6 +2134,7 @@ function stats_trend_mem(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id))
     });
 }
 function stats_trend_cpu(url, id) {
@@ -2153,6 +2180,7 @@ function stats_trend_cpu(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id))
     });
 }
 function stats_blockdev(url, id) {
@@ -2194,6 +2222,8 @@ function stats_blockdev(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_tps'))
+
         plot_width_x(id+'_avgrq_sz', data[0])
 	$.jqplot(id+'_avgrq_sz', [data[2]], {
             cursor:{zoom:true, showTooltip:true},
@@ -2231,6 +2261,8 @@ function stats_blockdev(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_avgrq_sz'))
+
         plot_width_x(id+'_await', data[0])
 	$.jqplot(id+'_await', [data[3]], {
             cursor:{zoom:true, showTooltip:true},
@@ -2268,6 +2300,8 @@ function stats_blockdev(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_await'))
+
         plot_width_x(id+'_svctm', data[0])
 	$.jqplot(id+'_svctm', [data[4]], {
             cursor:{zoom:true, showTooltip:true},
@@ -2305,6 +2339,8 @@ function stats_blockdev(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_svctm'))
+
         plot_width_x(id+'_pct_util', data[0])
 	$.jqplot(id+'_pct_util', [data[5]], {
             cursor:{zoom:true, showTooltip:true},
@@ -2342,6 +2378,8 @@ function stats_blockdev(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_pct_util'))
+
         plot_width_x(id+'_secps', data[0])
 	$.jqplot(id+'_secps', data[6], {
 	    stackSeries: true,
@@ -2380,6 +2418,8 @@ function stats_blockdev(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_secps'))
+
         plot_width_x(id+'_tm', data[7])
 	$.jqplot(id+'_tm', data[8], {
 	    stackSeries: true,
@@ -2418,6 +2458,7 @@ function stats_blockdev(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_tm'))
     });
 }
 function stats_netdev_err(url, id) {
@@ -2464,6 +2505,7 @@ function stats_netdev_err(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id))
     });
 }
 function stats_netdev(url, id) {
@@ -2507,6 +2549,8 @@ function stats_netdev(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_kBps'))
+
         plot_width_x(id+'_pckps', data[0])
 	$.jqplot(id+'_pckps', data[2], {
 	    stackSeries: false,
@@ -2545,6 +2589,7 @@ function stats_netdev(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_pckps'))
     });
 }
 function fancy_size_mb(size) {
@@ -2615,6 +2660,7 @@ function stats_fs(url, id) {
 		}
 	    }
   	});
+        _jqplot_img($('#'+id+'_u'))
     });
 }
 function stat_os(url, id) {
@@ -2672,6 +2718,7 @@ function stat_os(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id))
     });
 }
 function ackpanel(e, show, s){
@@ -2760,6 +2807,7 @@ function stats_disk_array(url, id) {
             }
 
 	});
+        _jqplot_img($('#'+id))
     });
 }
 function stats_disk_app(url, id) {
@@ -2799,6 +2847,7 @@ function stats_disk_app(url, id) {
             }
 
 	});
+        _jqplot_img($('#'+id))
     });
 }
 function jqplot_img(){

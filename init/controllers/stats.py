@@ -711,35 +711,35 @@ def ajax_perfcmp_plot():
 
     d = DIV(
           DIV(
-            _id=add_rowid('avg_cpu_for_nodes_plot'),
+            DIV(_id=add_rowid('avg_cpu_for_nodes_plot')),
             _class='float',
           ),
           DIV(
-            _id=add_rowid('avg_mem_for_nodes_plot'),
+            DIV(_id=add_rowid('avg_mem_for_nodes_plot')),
             _class='float',
           ),
           DIV(
-            _id=add_rowid('avg_swp_for_nodes_plot'),
+            DIV(_id=add_rowid('avg_swp_for_nodes_plot')),
             _class='float',
           ),
           DIV(
-            _id=add_rowid('runq_sz_avg_proc_for_nodes_plot'),
+            DIV(_id=add_rowid('runq_sz_avg_proc_for_nodes_plot')),
             _class='float',
           ),
           DIV(
-            _id=add_rowid('plist_sz_avg_proc_for_nodes_plot'),
+            DIV(_id=add_rowid('plist_sz_avg_proc_for_nodes_plot')),
             _class='float',
           ),
           DIV(
-            _id=add_rowid('tps_avg_block_for_nodes_plot'),
+            DIV(_id=add_rowid('tps_avg_block_for_nodes_plot')),
             _class='float',
           ),
           DIV(
-            _id=add_rowid('bps_avg_block_for_nodes_plot'),
+            DIV(_id=add_rowid('bps_avg_block_for_nodes_plot')),
             _class='float',
           ),
           DIV(
-            _id=add_rowid('disk_for_svc_plot'),
+            DIV(_id=add_rowid('disk_for_svc_plot')),
             _class='float',
           ),
           DIV(
