@@ -2005,9 +2005,14 @@ class table_comp_rulesets(HtmlTable):
         divid = 'rset_clone'
         sid = 'rset_clone_s'
         iid = 'rset_clone_i'
-        q = db.comp_rulesets.id > 0
         o = db.comp_rulesets.ruleset_name
-        options = [OPTION(g.ruleset_name,_value=g.id) for g in db(q).select(orderby=o)]
+        if 'Manager' in user_groups():
+            q = db.comp_rulesets.id > 0
+            options = [OPTION(g.ruleset_name,_value=g.id) for g in db(q).select(orderby=o)]
+        else:
+            q = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+            q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+            options = [OPTION(g.comp_rulesets.ruleset_name,_value=g.id) for g in db(q).select(orderby=o)]
         d = DIV(
               A(
                 T(label),
@@ -2244,17 +2249,30 @@ class table_comp_rulesets(HtmlTable):
 
     @auth.requires_membership('CompManager')
     def comp_ruleset_attach_sqlform(self):
+        if 'Manager' in user_groups():
+            qu = db.comp_rulesets.id > 0
+        else:
+            qu = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+            qu &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+        allowed = db(qu)
+
         db.comp_rulesets_rulesets.parent_rset_id.requires = IS_IN_DB(
-          db,
+          allowed,
           db.comp_rulesets.id,
           "%(ruleset_name)s",
           zero=T('choose one')
         )
+        q = db.comp_rulesets_rulesets.id > 0
+        rows = db(q).select(db.comp_rulesets_rulesets.parent_rset_id,
+                            groupby=db.comp_rulesets_rulesets.parent_rset_id)
+        parent_rset_ids = [r.parent_rset_id for r in rows]
+        q = ~db.comp_rulesets.id.belongs(parent_rset_ids)
+        q &= db.comp_rulesets.id.belongs(allowed.select(db.comp_rulesets.id))
         db.comp_rulesets_rulesets.child_rset_id.requires = IS_IN_DB(
-          db,
+          db(q),
           db.comp_rulesets.id,
           "%(ruleset_name)s",
-          zero=T('choose one')
+          zero=T('choose one'),
         )
         f = SQLFORM(
                  db.comp_rulesets_rulesets,
