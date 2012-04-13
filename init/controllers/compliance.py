@@ -2012,7 +2012,7 @@ class table_comp_rulesets(HtmlTable):
         else:
             q = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
             q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
-            options = [OPTION(g.comp_rulesets.ruleset_name,_value=g.id) for g in db(q).select(orderby=o)]
+            options = [OPTION(g.comp_rulesets.ruleset_name,_value=g.comp_rulesets.id) for g in db(q).select(orderby=o)]
         d = DIV(
               A(
                 T(label),
