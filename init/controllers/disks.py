@@ -1196,7 +1196,7 @@ def ajax_disks():
     q = _where(q, 'svcdisks', domain_perms(), 'disk_nodename')
     q = apply_filters(q, db.svcdisks.disk_nodename, None)
     for f in t.cols:
-        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), t.colprops[f].field)
     n = db(q).select(db.diskinfo.id.count(), left=(l1,l2)).first()._extra[db.diskinfo.id.count()]
     t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o, left=(l1,l2))
