@@ -3702,6 +3702,7 @@ class table_comp_moduleset(HtmlTable):
                      img='guy16',
                     ),
         }
+        self.ajax_col_values = ajax_comp_moduleset_col_values
         self.colprops['modset_mod_name'].t = self
         if 'CompManager' in user_groups():
             self.form_module_add = self.comp_module_add_sqlform()
@@ -4097,6 +4098,34 @@ def modset_team_responsible_detach(ids=[]):
     _log('modset.group.detach',
          'detached group %(g)s from modsets %(u)s',
          dict(g=group_role(group_id), u=u))
+
+@auth.requires_login()
+def ajax_comp_moduleset_col_values():
+    t = table_comp_moduleset('ajax_comp_moduleset', 'ajax_comp_moduleset')
+    col = request.args[0]
+    o = db.comp_moduleset[col]
+
+    g = db.comp_moduleset.modset_name|db.comp_moduleset_modules.id
+    q = db.comp_moduleset.id > 0
+    j = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
+    l1 = db.comp_moduleset_team_responsible.on(j)
+    j = db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
+    l2 = db.comp_moduleset_modules.on(j)
+    j = db.comp_moduleset.id == db.v_comp_moduleset_teams_responsible.modset_id
+    l3 = db.v_comp_moduleset_teams_responsible.on(j)
+    if 'Manager' not in user_groups():
+        q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    t.object_list = db(q).select(db.comp_moduleset_modules.ALL,
+                                 db.comp_moduleset.modset_name,
+                                 db.comp_moduleset.id,
+                                 db.v_comp_moduleset_teams_responsible.teams_responsible,
+                                 orderby=o,
+                                 groupby=g,
+                                 left=(l1,l2,l3)
+                                 )
+    return t.col_values_cloud(col)
 
 @auth.requires_login()
 def ajax_comp_moduleset():

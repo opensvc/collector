@@ -670,7 +670,8 @@ def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
         except:
             pass
 
-    fn(arrayid)
+    #fn(arrayid)
+    feed_enqueue(fn.__name__, arrayid)
 
     # stor_array_proxy
     sql = """select id from stor_array where array_name="%s" """%arrayid
