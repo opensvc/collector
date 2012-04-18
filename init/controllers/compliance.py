@@ -1374,6 +1374,7 @@ $("#%(n)s_container").append("\
                             ),
                             _name=name,
                             _id="%s_%s"%(name, key),
+                            value=f['authfile'],
                           )
             else:
                 _WIDGET = INPUT(_name=name, _id="%s_%s"%(name, key), value=value)
