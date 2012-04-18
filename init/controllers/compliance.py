@@ -4106,7 +4106,6 @@ def ajax_comp_moduleset_col_values():
     col = request.args[0]
     o = db.comp_moduleset[col]
 
-    g = db.comp_moduleset.modset_name|db.comp_moduleset_modules.id
     q = db.comp_moduleset.id > 0
     j = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
     l1 = db.comp_moduleset_team_responsible.on(j)
@@ -4123,7 +4122,7 @@ def ajax_comp_moduleset_col_values():
                                  db.comp_moduleset.id,
                                  db.v_comp_moduleset_teams_responsible.teams_responsible,
                                  orderby=o,
-                                 groupby=g,
+                                 groupby=o,
                                  left=(l1,l2,l3)
                                  )
     return t.col_values_cloud(col)
