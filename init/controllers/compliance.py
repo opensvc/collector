@@ -2492,7 +2492,7 @@ def ruleset_change_type(ids):
 
     x = ', '.join(['from %s on %s'%(r.ruleset_type,r.ruleset_name) for r in rows])
     db(q).update(ruleset_type=sid)
-    _log('comp.ruleset.type.change',
+    _log('compliance.ruleset.type.change',
          'changed ruleset type to %(s)s %(x)s',
          dict(s=sid, x=x))
 
@@ -2529,7 +2529,7 @@ def ruleset_clone():
         db.comp_rulesets_rulesets.insert(parent_rset_id=newid,
                                          child_rset_id=child_rset_id)
 
-    _log('comp.ruleset.clone',
+    _log('compliance.ruleset.clone',
          'cloned ruleset %(o)s from %(n)s',
          dict(o=orig, n=iid))
 
@@ -4022,7 +4022,7 @@ def mod_name_set():
         db.comp_moduleset_modules.insert(modset_mod_name=new,
                                          modset_id=modset_id,
                                          modset_mod_author=user_name())
-        _log('comp.moduleset.module.add',
+        _log('compliance.moduleset.module.add',
              'add module %(d)s in moduleset %(x)s',
              dict(x=modset_name, d=new))
     else:
@@ -4044,7 +4044,7 @@ def mod_name_set():
         db(q).update(modset_mod_name=new,
                      modset_mod_author=user_name(),
                      modset_mod_updated=now)
-        _log('comp.moduleset.module.change',
+        _log('compliance.moduleset.module.change',
              'change module name from %(on)s to %(d)s in moduleset %(x)s',
              dict(on=oldn, x=modset_name, d=new))
 
@@ -4837,7 +4837,7 @@ def var_set(t):
                                               var_author=user_name())
         else:
             raise Exception()
-        _log('comp.ruleset.variable.add',
+        _log('compliance.ruleset.variable.add',
              'add variable %(t)s %(d)s for ruleset %(x)s',
              dict(t=t, x=iid, d=new))
     else:
@@ -4856,14 +4856,14 @@ def var_set(t):
             db(q).update(var_name=new,
                          var_author=user_name(),
                          var_updated=now)
-            _log('comp.ruleset.variable.change',
+            _log('compliance.ruleset.variable.change',
                  'renamed variable %(on)s to %(d)s in ruleset %(x)s',
                  dict(on=oldn, x=iid, d=new))
         elif t == 'value':
             db(q).update(var_value=new,
                          var_author=user_name(),
                          var_updated=now)
-            _log('comp.ruleset.variable.change',
+            _log('compliance.ruleset.variable.change',
                  'change variable %(on)s value from %(ov)s to %(d)s in ruleset %(x)s',
                  dict(on=oldn, ov=oldv, x=iid, d=new))
         else:
