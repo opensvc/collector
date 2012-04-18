@@ -579,7 +579,7 @@ def cron_scrub_checks():
 def alerts_apps_without_responsible():
     q = db.v_apps.mailto == None
     rows = db(q).select()
-    apps = [r.v_apps.app for r in rows]
+    apps = [r.app for r in rows]
 
     if len(apps) == 0:
         return
