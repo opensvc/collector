@@ -70,12 +70,12 @@ def refresh_b_apps():
         db.executesql(sql)
         sql = """CREATE TABLE `b_apps` (
   `id` int(11) NOT NULL DEFAULT '0',
-  `app` varchar(64) CHARACTER SET latin1 NOT NULL,
+  `app` varchar(64),
   `roles` varchar(342) DEFAULT NULL,
   `responsibles` varchar(342) DEFAULT NULL,
   `mailto` varchar(342) DEFAULT NULL,
   KEY `i_app` (`app`)
-)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8
 """
         db.executesql(sql)
         sql = "insert into b_apps select * from v_apps"
@@ -579,7 +579,7 @@ def cron_scrub_checks():
 def alerts_apps_without_responsible():
     q = db.v_apps.mailto == None
     rows = db(q).select()
-    apps = [r.v_apps.app for r in rows]
+    apps = [r.app for r in rows]
 
     if len(apps) == 0:
         return
