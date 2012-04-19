@@ -91,14 +91,6 @@ class table_compare(HtmlTable):
         return OPTION(
                  name,
                  _value=compare_id,
-                 _onClick="""
-                       ajax('%(url)s', [], '%(div)s');
-                   """%dict(url=URL(
-                                   r=request, c='ajax',
-                                   f='ajax_select_compare',
-                                   args=[compare_id]),
-                              div=div,
-                             )+self.ajax_submit(),
                  )
 
     def compare(self):
@@ -119,7 +111,15 @@ class table_compare(HtmlTable):
         content = SELECT(
                     av,
                     value=active_compare_id,
-                  )
+                    _onchange="""
+                       ajax('%(url)s/'+this.options[this.selectedIndex].value, [], '%(div)s');
+                    """%dict(url=URL(
+                                   r=request, c='ajax',
+                                   f='ajax_select_compare',
+                                ),
+                              div="foo",
+                             )+self.ajax_submit(),
+)
 
         return SPAN(
                  T("Compare"),

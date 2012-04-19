@@ -1430,6 +1430,8 @@ function stat_compare_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_svc'))
+
         $('#'+id+'_nodes').height('300px')
         $('#'+id+'_nodes').width('300px')
 	$.jqplot(id+'_nodes', data[1][26], {
@@ -1456,6 +1458,8 @@ function stat_compare_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_nodes'))
+
         $('#'+id+'_nodes_virt_ratio').height('300px')
         $('#'+id+'_nodes_virt_ratio').width('300px')
 	$.jqplot(id+'_nodes_virt_ratio', data[1][27], {
@@ -1482,6 +1486,8 @@ function stat_compare_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_nodes_virt_ratio'))
+
         $('#'+id+'_svc_prd_ratio').height('300px')
         $('#'+id+'_svc_prd_ratio').width('300px')
 	$.jqplot(id+'_svc_prd_ratio', data[1][28], {
@@ -1508,6 +1514,8 @@ function stat_compare_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_svc_prd_ratio'))
+
         $('#'+id+'_svc_drp_ratio').height('300px')
         $('#'+id+'_svc_drp_ratio').width('300px')
 	$.jqplot(id+'_svc_drp_ratio', data[1][29], {
@@ -1534,6 +1542,8 @@ function stat_compare_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_svc_drp_ratio'))
+
         $('#'+id+'_svc_clu_ratio').height('300px')
         $('#'+id+'_svc_clu_ratio').width('300px')
 	$.jqplot(id+'_svc_clu_ratio', data[1][30], {
@@ -1560,6 +1570,7 @@ function stat_compare_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_svc_clu_ratio'))
     });
 }
 function stats_cpu(url, id) {
