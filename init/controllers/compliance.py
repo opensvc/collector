@@ -6357,7 +6357,7 @@ def ajax_rset_md5():
     import cPickle
     rsets = cPickle.loads(row.rset)
     d = SPAN(
-          H3(T('Ruleset %(rset_md5)s'%dict(rset_md5=rset_md5))),
+          H3(T('Ruleset %(rset_md5)s',dict(rset_md5=rset_md5))),
           beautify_rulesets(rsets),
         )
     return d
