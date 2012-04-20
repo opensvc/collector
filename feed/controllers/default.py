@@ -387,6 +387,7 @@ def disk_level(dev_id, level=0):
 
 def register_diskinfo(vars, vals, auth):
     now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
     nodename = auth[1]
     vars.append("disk_updated")
     vars.append("disk_level")
@@ -646,6 +647,11 @@ def update_ibmsvc(name, vars, vals, auth):
 
 @auth_uuid
 @service.xmlrpc
+def update_vioserver(name, vars, vals, auth):
+    update_array_xml(name, vars, vals, auth, "vioserver", insert_vioserver)
+
+@auth_uuid
+@service.xmlrpc
 def update_dcs(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "dcs", insert_dcs)
 
@@ -690,6 +696,12 @@ def insert_dcss():
 def insert_dcs(name=None):
     pass
 
+def insert_vioservers():
+    return insert_ibmsvc()
+
+def insert_vioserver(name=None):
+    pass
+
 def insert_ibmsvcs():
     return insert_ibmsvc()
 
@@ -698,6 +710,7 @@ def insert_ibmsvc(name=None):
     import os
     from applications.init.modules import ibmsvc
     now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
 
     dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='ibmsvc'))
     if name is None:
@@ -773,6 +786,7 @@ def insert_eva(name=None):
     import os
     from applications.init.modules import eva
     now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
 
     dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='eva'))
     if name is None:
@@ -849,6 +863,7 @@ def insert_sym(symid=None):
     import os
     from applications.init.modules import symmetrix
     now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
 
     dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='symmetrix'))
     if symid is None:
