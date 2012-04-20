@@ -47,6 +47,7 @@ class table_compare(HtmlTable):
         name = DIV(
                  T("Name"),
                  INPUT(
+                   _name="compare_name",
                    _id="compare_name",
                  )
                )
@@ -61,6 +62,9 @@ class table_compare(HtmlTable):
                       _type="checkbox",
                       _name="ckfset",
                       _id="ckfset_%d"%row.id,
+                      _value='false',
+                      _onclick='this.value=this.checked',
+                      value=False,
                     ),
                   ),
                   DIV(
@@ -71,7 +75,9 @@ class table_compare(HtmlTable):
         filters = DIV(opts)
         submit = INPUT(
                    _type="submit",
-                   _onclick=self.ajax_submit(additional_inputs=['ckfset'],args=['compare_add']),
+                   _onclick=self.ajax_submit(additional_inputs=['compare_name'],
+                                             additional_input_name="ckfset",
+                                             args=['compare_add']),
                  )
         d = DIV(
               name,
@@ -128,10 +134,38 @@ class table_compare(HtmlTable):
                  _class='floatw',
                )
 
+@auth.requires_login()
+def compare_add():
+    l = [k for k in request.vars if 'ckfset_' in k and request.vars[k] == 'true']
+    if len(l) == 0:
+        raise ToolError("at least one filterset must be selected")
+    fset_ids = map(lambda x: x.replace('ckfset_',''), l)
+    cname = request.vars['compare_name']
+    rows = db(db.stats_compare.name==cname).select()
+    if len(rows) > 0:
+        raise ToolError("compare scenario name already exists")
+    db.stats_compare.insert(name=cname)
+    cid = db(db.stats_compare.name==cname).select().first()
+    if cid is None:
+        raise ToolError("error creating compare scenario")
+    cid = cid.id
+    db.stats_compare_user.insert(compare_id=cid, user_id=auth.user_id)
+    for i in fset_ids:
+        db.stats_compare_fset.insert(compare_id=cid, fset_id=i)
 
 @auth.requires_login()
 def ajax_compare():
     t = table_compare('stats', 'ajax_compare')
+
+    if len(request.args) == 1:
+        action = request.args[0]
+        try:
+            if action == 'compare_add':
+                compare_add()
+        except ToolError, e:
+            t.flash = str(e)
+
+
     d = DIV(
      DIV(
        t.html(),
