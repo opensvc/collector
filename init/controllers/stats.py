@@ -53,11 +53,11 @@ class table_compare(HtmlTable):
                )
         q = db.gen_filtersets.id > 0
         o = db.gen_filtersets.fset_name
-        rows = db(q).select()
+        rows = db(q).select(orderby=o)
         opts = []
         for row in rows:
-            o = DIV(
-                  DIV(
+            o = SPAN(
+                  SPAN(
                     INPUT(
                       _type="checkbox",
                       _name="ckfset",
@@ -67,9 +67,12 @@ class table_compare(HtmlTable):
                       value=False,
                     ),
                   ),
-                  DIV(
+                  SPAN(
                     row.fset_name,
+                    _style="margin:2px",
                   ),
+                  BR(),
+                  _style="white-space:nowrap",
                 )
             opts.append(o)
         filters = DIV(opts)
@@ -81,7 +84,9 @@ class table_compare(HtmlTable):
                  )
         d = DIV(
               name,
+              HR(),
               filters,
+              HR(),
               submit,
             )
         return d
