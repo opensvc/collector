@@ -460,6 +460,7 @@ def register_disk(vars, vals, auth):
 def _register_disk(vars, vals, auth):
     h = {}
     now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
     for a,b in zip(vars, vals):
         h[a] = b
 
