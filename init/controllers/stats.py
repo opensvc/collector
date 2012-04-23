@@ -21,12 +21,35 @@ class table_compare(HtmlTable):
         self.object_list = []
         self.nodatabanner = False
         self.additional_tools.append('compare')
-        self.additional_tools.append('compare_add')
+        self += HtmlTableMenu('Scenario', 'spark16', [
+                                'compare_add',
+                                'compare_del',
+                               ]
+                )
+
+    def compare_del(self):
+        d = DIV(
+              A(
+                T("Delete"),
+                _class='del16',
+                _onclick="""
+                  click_toggle_vis(event,'%(div)s', 'block');
+                """%dict(div='compare_del'),
+              ),
+              DIV(
+                self.form_compare_del(),
+                _style='display:none',
+                _class='white_float',
+                _name='compare_del',
+                _id='compare_del',
+              ),
+            )
+        return d
 
     def compare_add(self):
         d = DIV(
               A(
-                T("Add scenario"),
+                T("Add"),
                 _class='add16',
                 _onclick="""
                   click_toggle_vis(event,'%(div)s', 'block');
@@ -39,9 +62,12 @@ class table_compare(HtmlTable):
                 _name='compare_add',
                 _id='compare_add',
               ),
-              _class="floatw",
             )
         return d
+
+    def form_compare_del(self):
+        action = 'ajax_del_compare'
+        return self.compare_selector("del_compare", action)
 
     def form_compare_add(self):
         name = DIV(
@@ -98,20 +124,23 @@ class table_compare(HtmlTable):
         else:
             name = row.name
             compare_id = row.id
-        div = "foo"
         return OPTION(
                  name,
                  _value=compare_id,
                  )
 
-    def compare(self):
-        # get user's current selected compare
+    def get_current_scenario(self):
         q = db.stats_compare_user.user_id == auth.user_id
         row = db(q).select().first()
         if row is None:
             active_compare_id = 0
         else:
             active_compare_id = row.compare_id
+        return active_compare_id
+
+    def compare_selector(self, id, action):
+        # get user's current selected compare
+        active_compare_id = self.get_current_scenario()
 
         # create the compare select()
         q = db.stats_compare.id > 0
@@ -126,18 +155,20 @@ class table_compare(HtmlTable):
                        ajax('%(url)s/'+this.options[this.selectedIndex].value, [], '%(div)s');
                     """%dict(url=URL(
                                    r=request, c='ajax',
-                                   f='ajax_select_compare',
+                                   f=action,
                                 ),
                               div="foo",
                              )+self.ajax_submit(),
-)
+                  )
 
         return SPAN(
-                 T("Compare"),
-                 " ",
                  content,
                  _class='floatw',
                )
+
+    def compare(self):
+        action = 'ajax_select_compare'
+        return self.compare_selector("foo", action)
 
 @auth.requires_login()
 def compare_add():
