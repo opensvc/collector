@@ -491,7 +491,7 @@ class col_dash_links(HtmlTableColumn):
        elif "obsolescence" in dash_type:
            l.append(self.link_obsolescence(o, 'hw'))
 
-       return SPAN(l)
+       return DIV(l)
 
 class col_dash_severity(HtmlTableColumn):
     def html(self, o):
