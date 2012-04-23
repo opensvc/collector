@@ -697,10 +697,58 @@ def insert_dcs(name=None):
     pass
 
 def insert_vioservers():
-    return insert_ibmsvc()
+    return insert_vioserver()
 
 def insert_vioserver(name=None):
-    pass
+    import glob
+    import os
+    from applications.init.modules import vioserver
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+
+    dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='vioserver'))
+    if name is None:
+        pattern = "*"
+    else:
+        pattern = name
+    dirs = glob.glob(os.path.join(dir, pattern))
+
+    for d in dirs:
+        s = vioserver.get_vioserver(d)
+        if s is not None:
+            # stor_array
+            vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
+            vals = []
+            vals.append([s.array_name,
+                         s.modelnumber,
+                         str(s.controllermainmemory),
+                         s.firmwareversion,
+                         now])
+            generic_insert('stor_array', vars, vals)
+
+            sql = """select id from stor_array where array_name="%s" """%s.array_name
+            array_id = str(db.executesql(sql)[0][0])
+
+            # diskinfo
+            vars = ['disk_id',
+                    'disk_arrayid',
+                    'disk_devid',
+                    'disk_size',
+                    'disk_raid',
+                    'disk_group',
+                    'disk_updated']
+            vals = []
+            for d in s.vdisk:
+                vals.append([d['did'],
+                             s.array_name,
+                             d['backingdevid'],
+                             str(d['size']),
+                             "",
+                             "",
+                             now])
+            generic_insert('diskinfo', vars, vals)
+            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
+            db.executesql(sql)
 
 def insert_ibmsvcs():
     return insert_ibmsvc()
