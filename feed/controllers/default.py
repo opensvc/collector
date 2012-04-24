@@ -422,6 +422,7 @@ def register_diskinfo(vars, vals, auth):
         sql = """ update diskinfo
                     set disk_arrayid=replace(replace(replace(disk_arrayid, "%(nodename)s,", ""), ",%(nodename)s", ""), "%(nodename)s", "")
                   where
+                    disk_group = "virtual" and
                     disk_arrayid in (%(l)s) and
                     disk_updated < "%(now)s" """%dict(nodename=nodename, l=','.join(map(lambda x: repr(str(x)), arrays)), now=now)
         db.executesql(sql)
