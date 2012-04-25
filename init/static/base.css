@@ -357,23 +357,15 @@ a {
     z-index: 2;
     position: absolute;
     bottom: 0px;
-    right: 20%;
-    width: 60%;
-    height: 20px;
     opacity: 1.00;
     margin: 0 auto;
+    width: 100%;
     text-align: center;
     clear: both;
     color: black;
     font-size: 11pt;
     cursor: pointer;
     background: yellow;
-    border-top-left-radius:8px;
-    border-top-right-radius:8px;
-   -moz-border-radius-topleft:8px;
-   -moz-border-radius-topright:8px;
-   -webkit-border-top-left-radius:8px;
-   -webkit-border-top-right-radius:8px;
 }
 
 html>body .flash {
