@@ -1367,6 +1367,10 @@ $("#%(n)s_container").append("\
                             _id="%s_%s"%(name, key),
                           )
             elif key == 'authfile':
+                if 'authfile' in f:
+                    authfile = f['authfile']
+                else:
+                    authfile = "authorized_keys"
                 _WIDGET = SELECT(
                             (
                                OPTION("authorized_keys", _value="authorized_keys"),
@@ -1374,7 +1378,7 @@ $("#%(n)s_container").append("\
                             ),
                             _name=name,
                             _id="%s_%s"%(name, key),
-                            value=f['authfile'],
+                            value=authfile,
                           )
             else:
                 _WIDGET = INPUT(_name=name, _id="%s_%s"%(name, key), value=value)
