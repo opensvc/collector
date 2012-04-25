@@ -1248,6 +1248,36 @@ ul.login_menu ul {
    white-space: nowrap;
 }
 
+.right_click_menu {
+    display: none;
+    position: absolute;
+    background: white;
+    z-index: 502;
+    border-radius:8px;
+   -moz-border-radius:8px;
+   -webkit-border-radius:8px;
+    border-bottom-color: #DDD;
+    border-bottom-style: solid;
+    border-bottom-width: 2px;
+    border-left-color: #AAA;
+    border-left-style: solid;
+    border-left-width: 2px;
+    border-right-color: #DDD;
+    border-right-style: solid;
+    border-right-width: 2px;
+    border-top-color: #AAA;
+    border-top-style: solid;
+    border-top-width: 2px;
+    text-align: left;
+    padding: 0.5em;
+}
+
+.right_click_menu td:hover {
+    cursor: pointer;
+    background: #2d2d2d;
+    color: #aaaaaa;
+}
+
 .ackpanel {
     display: none;
     position: absolute;

@@ -733,7 +733,10 @@ class HtmlTable(object):
                             _name=self.col_key(c),
                             _style=self.col_hide(c),
                             _class=' '.join([self.colprops[c]._class, self.colprops[c]._dataclass]),
-                            _ondblclick="filter_submit_%(id)s('%(k)s','%(v)s')"%dict(
+                            _onclick="""$("#fsr%(id)s").hide()"""%dict(
+                              id=self.id,
+                            ),
+                            _ondblclick="filter_selector_%(id)s(event, '%(k)s','%(v)s')"%dict(
                               id=self.id,
                               k=self.filter_key(c),
                               v=v,
@@ -954,6 +957,30 @@ class HtmlTable(object):
                                        additional_inputs=additional_inputs),
                  id=self.id)
 
+    def right_click_menu(self):
+        d = SPAN(
+              TABLE(
+                TR(
+                  TD("=", _id="fsreq"),
+                  TD("&=", _id="fsrandeq"),
+                  TD("|=", _id="fsroreq"),
+                ),
+                TR(
+                  TD(">", _id="fsrsup"),
+                  TD("&>", _id="fsrandsup"),
+                  TD("|>", _id="fsrorsup"),
+                ),
+                TR(
+                  TD("<", _id="fsrinf"),
+                  TD("&<", _id="fsrandinf"),
+                  TD("|<", _id="fsrorinf"),
+                ),
+              ),
+              _class='right_click_menu',
+              _id='fsr'+self.id,
+            )
+        return d
+
     def show_flash(self):
         if self.flash is None:
             return SPAN()
@@ -1032,6 +1059,7 @@ class HtmlTable(object):
 
         d = DIV(
               self.show_flash(),
+              self.right_click_menu(),
               DIV(
                 self.pager(),
                 self.refresh(),
@@ -1067,6 +1095,88 @@ class HtmlTable(object):
 function ajax_submit_%(id)s(){%(ajax_submit)s};
 function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
 function filter_submit_%(id)s(k,v){$("#"+k).val(v);ajax_submit_%(id)s()};
+function filter_selector_%(id)s(e,k,v){
+  $("#fsr%(id)s").show()
+  if (e.pageX || e.pageY) {
+      posx = e.pageX;
+      posy = e.pageY;
+  }
+  else if (e.clientX || e.clientY) {
+      posx = e.clientX + document.body.scrollLeft
+           + document.documentElement.scrollLeft;
+      posy = e.clientY + document.body.scrollTop
+           + document.documentElement.scrollTop;
+  }
+  $("#fsr%(id)s").css({"left": posx + "px", "top": posy + "px"})
+  $("#fsr%(id)s").find("#fsreq").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      filter_submit_%(id)s(k,v)
+    })
+  })
+  $("#fsr%(id)s").find("#fsrandeq").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = $("#"+k).val()
+      val = val + '&' + v
+      filter_submit_%(id)s(k,val)
+    })
+  })
+  $("#fsr%(id)s").find("#fsroreq").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = $("#"+k).val()
+      val = val + '|' + v
+      filter_submit_%(id)s(k,val)
+    })
+  })
+  $("#fsr%(id)s").find("#fsrsup").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = '>' + v
+      filter_submit_%(id)s(k,val)
+    })
+  })
+  $("#fsr%(id)s").find("#fsrandsup").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = $("#"+k).val()
+      val = val + '&>' + v
+      filter_submit_%(id)s(k,val)
+    })
+  })
+  $("#fsr%(id)s").find("#fsrorsup").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = $("#"+k).val()
+      val = val + '|>' + v
+      filter_submit_%(id)s(k,val)
+    })
+  })
+  $("#fsr%(id)s").find("#fsrinf").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = '<' + v
+      filter_submit_%(id)s(k,val)
+    })
+  })
+  $("#fsr%(id)s").find("#fsrandinf").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = $("#"+k).val()
+      val = val + '&<' + v
+      filter_submit_%(id)s(k,val)
+    })
+  })
+  $("#fsr%(id)s").find("#fsrorinf").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = $("#"+k).val()
+      val = val + '|<' + v
+      filter_submit_%(id)s(k,val)
+    })
+  })
+};
 var inputs_%(id)s = %(a)s;"""%dict(
                    id=self.id,
                    a=self.ajax_inputs(),
