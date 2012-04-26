@@ -736,7 +736,7 @@ class HtmlTable(object):
                             _onclick="""$("#fsr%(id)s").hide()"""%dict(
                               id=self.id,
                             ),
-                            _ondblclick="filter_selector_%(id)s(event, '%(k)s','%(v)s')"%dict(
+                            _ONMOUSEUP="filter_selector_%(id)s(event, '%(k)s','%(v)s')"%dict(
                               id=self.id,
                               k=self.filter_key(c),
                               v=v,
@@ -975,6 +975,11 @@ class HtmlTable(object):
                   TD("&<", _id="fsrandinf"),
                   TD("|<", _id="fsrorinf"),
                 ),
+                TR(
+                  TD("empty", _id="fsrempty"),
+                  TD("&empty", _id="fsrandempty"),
+                  TD("|empty", _id="fsrorempty"),
+                ),
               ),
               _class='right_click_menu',
               _id='fsr'+self.id,
@@ -1096,6 +1101,10 @@ function ajax_submit_%(id)s(){%(ajax_submit)s};
 function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
 function filter_submit_%(id)s(k,v){$("#"+k).val(v);ajax_submit_%(id)s()};
 function filter_selector_%(id)s(e,k,v){
+  var sel = window.getSelection().toString()
+  if (sel.length == 0) {
+    sel = v
+  }
   $("#fsr%(id)s").show()
   if (e.pageX || e.pageY) {
       posx = e.pageX;
@@ -1111,14 +1120,14 @@ function filter_selector_%(id)s(e,k,v){
   $("#fsr%(id)s").find("#fsreq").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      filter_submit_%(id)s(k,v)
+      filter_submit_%(id)s(k,sel)
     })
   })
   $("#fsr%(id)s").find("#fsrandeq").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
       val = $("#"+k).val()
-      val = val + '&' + v
+      val = val + '&' + sel
       filter_submit_%(id)s(k,val)
     })
   })
@@ -1126,14 +1135,14 @@ function filter_selector_%(id)s(e,k,v){
     $(this).unbind()
     $(this).bind("click", function(){
       val = $("#"+k).val()
-      val = val + '|' + v
+      val = val + '|' + sel
       filter_submit_%(id)s(k,val)
     })
   })
   $("#fsr%(id)s").find("#fsrsup").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = '>' + v
+      val = '>' + sel
       filter_submit_%(id)s(k,val)
     })
   })
@@ -1141,7 +1150,7 @@ function filter_selector_%(id)s(e,k,v){
     $(this).unbind()
     $(this).bind("click", function(){
       val = $("#"+k).val()
-      val = val + '&>' + v
+      val = val + '&>' + sel
       filter_submit_%(id)s(k,val)
     })
   })
@@ -1149,14 +1158,14 @@ function filter_selector_%(id)s(e,k,v){
     $(this).unbind()
     $(this).bind("click", function(){
       val = $("#"+k).val()
-      val = val + '|>' + v
+      val = val + '|>' + sel
       filter_submit_%(id)s(k,val)
     })
   })
   $("#fsr%(id)s").find("#fsrinf").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = '<' + v
+      val = '<' + sel
       filter_submit_%(id)s(k,val)
     })
   })
@@ -1164,7 +1173,7 @@ function filter_selector_%(id)s(e,k,v){
     $(this).unbind()
     $(this).bind("click", function(){
       val = $("#"+k).val()
-      val = val + '&<' + v
+      val = val + '&<' + sel
       filter_submit_%(id)s(k,val)
     })
   })
@@ -1172,7 +1181,30 @@ function filter_selector_%(id)s(e,k,v){
     $(this).unbind()
     $(this).bind("click", function(){
       val = $("#"+k).val()
-      val = val + '|<' + v
+      val = val + '|<' + sel
+      filter_submit_%(id)s(k,val)
+    })
+  })
+  $("#fsr%(id)s").find("#fsrempty").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = 'empty'
+      filter_submit_%(id)s(k,val)
+    })
+  })
+  $("#fsr%(id)s").find("#fsrandempty").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = $("#"+k).val()
+      val = val + '&empty'
+      filter_submit_%(id)s(k,val)
+    })
+  })
+  $("#fsr%(id)s").find("#fsrorempty").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = $("#"+k).val()
+      val = val + '|empty'
       filter_submit_%(id)s(k,val)
     })
   })

@@ -1249,6 +1249,7 @@ ul.login_menu ul {
 }
 
 .right_click_menu {
+    text-align: center;
     display: none;
     position: absolute;
     background: white;
