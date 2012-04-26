@@ -961,6 +961,18 @@ class HtmlTable(object):
         d = SPAN(
               TABLE(
                 TR(
+                  TD("", _id="fsrview", _colspan=3),
+                ),
+                TR(
+                  TD("clear", _id="fsrclear"),
+                  TD("reset", _id="fsrreset", _colspan=2),
+                ),
+                TR(
+                  TD("%..", _id="fsrwildleft"),
+                  TD("..%", _id="fsrwildright"),
+                  TD("%..%", _id="fsrwildboth"),
+                ),
+                TR(
                   TD("=", _id="fsreq"),
                   TD("&=", _id="fsrandeq"),
                   TD("|=", _id="fsroreq"),
@@ -1101,6 +1113,14 @@ function ajax_submit_%(id)s(){%(ajax_submit)s};
 function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
 function filter_submit_%(id)s(k,v){$("#"+k).val(v);ajax_submit_%(id)s()};
 function filter_selector_%(id)s(e,k,v){
+  if(e.button != 2) {
+    return
+  }
+  $("#fsr%(id)s").each( function() {
+    $(this)[0].oncontextmenu = function() {
+      return false;
+    }
+  });
   var sel = window.getSelection().toString()
   if (sel.length == 0) {
     sel = v
@@ -1116,96 +1136,242 @@ function filter_selector_%(id)s(e,k,v){
       posy = e.clientY + document.body.scrollTop
            + document.documentElement.scrollTop;
   }
+  $("#fsr%(id)s").find("[id^=fsrwild]").each(function(){
+    $(this).removeClass("bgred")
+  })
   $("#fsr%(id)s").css({"left": posx + "px", "top": posy + "px"})
+  $("#fsr%(id)s").find("#fsrview").each(function(){
+    $(this).html($("#"+k).val())
+    $(this).unbind()
+    $(this).bind("dblclick", function(){
+      sel = $(this).html()
+      $("#"+k).val(sel)
+      filter_submit_%(id)s(k,sel)
+    })
+    $(this).bind("click", function(){
+      sel = $(this).html()
+      $("#"+k).val(sel)
+      $(this).removeClass("highlight")
+      $(this).addClass("b")
+      colname = $("#"+k).parents("td").attr("name")
+      $(".theader_slim").find("[name="+colname+"]").each(function(){
+        $(this).removeClass("bgred")
+        $(this).addClass("bgorange")
+      })
+    })
+  })
+  $("#fsr%(id)s").find("#fsrreset").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).html("")
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr%(id)s").find("#fsrclear").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).html("**clear**")
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr%(id)s").find("#fsrwildboth").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      sel = sel.replace(/^%%+|%%+$/g,"")
+      if ($(this).hasClass("bgred")) {
+        $(this).removeClass("bgred")
+      } else {
+        sel = "%%" + sel + "%%"
+        $("#fsr%(id)s").find("[id^=fsrwild]").each(function(){
+          $(this).removeClass("bgred")
+        })
+        $(this).addClass("bgred")
+      }
+    })
+  })
+  $("#fsr%(id)s").find("#fsrwildleft").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      sel = sel.replace(/^%%+|%%+$/g,"")
+      if ($(this).hasClass("bgred")) {
+        $(this).removeClass("bgred")
+      } else {
+        sel = "%%" + sel
+        $("#fsr%(id)s").find("[id^=fsrwild]").each(function(){
+          $(this).removeClass("bgred")
+        })
+        $(this).addClass("bgred")
+      }
+    })
+  })
+  $("#fsr%(id)s").find("#fsrwildright").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      sel = sel.replace(/^%%+|%%+$/g,"")
+      if ($(this).hasClass("bgred")) {
+        $(this).removeClass("bgred")
+      } else {
+        sel = sel + "%%"
+        $("#fsr%(id)s").find("[id^=fsrwild]").each(function(){
+          $(this).removeClass("bgred")
+        })
+        $(this).addClass("bgred")
+      }
+    })
+  })
   $("#fsr%(id)s").find("#fsreq").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      filter_submit_%(id)s(k,sel)
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).html(sel)
+        $(this).addClass("highlight")
+      })
     })
   })
   $("#fsr%(id)s").find("#fsrandeq").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#"+k).val()
+      val = $("#fsr%(id)s").find("#fsrview").html()
+      if (val.length==0) {
+        val = $("#"+k).val()
+      }
       val = val + '&' + sel
-      filter_submit_%(id)s(k,val)
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).html(val)
+        $(this).addClass("highlight")
+      })
     })
   })
   $("#fsr%(id)s").find("#fsroreq").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#"+k).val()
+      val = $("#fsr%(id)s").find("#fsrview").html()
+      if (val.length==0) {
+        val = $("#"+k).val()
+      }
       val = val + '|' + sel
-      filter_submit_%(id)s(k,val)
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).html(val)
+        $(this).addClass("highlight")
+      })
     })
   })
   $("#fsr%(id)s").find("#fsrsup").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
       val = '>' + sel
-      filter_submit_%(id)s(k,val)
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).html(val)
+        $(this).addClass("highlight")
+      })
     })
   })
   $("#fsr%(id)s").find("#fsrandsup").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#"+k).val()
+      val = $("#fsr%(id)s").find("#fsrview").html()
+      if (val.length==0) {
+        val = $("#"+k).val()
+      }
       val = val + '&>' + sel
-      filter_submit_%(id)s(k,val)
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).html(val)
+        $(this).addClass("highlight")
+      })
     })
   })
   $("#fsr%(id)s").find("#fsrorsup").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#"+k).val()
+      val = $("#fsr%(id)s").find("#fsrview").html()
+      if (val.length==0) {
+        val = $("#"+k).val()
+      }
       val = val + '|>' + sel
-      filter_submit_%(id)s(k,val)
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).html(val)
+        $(this).addClass("highlight")
+      })
     })
   })
   $("#fsr%(id)s").find("#fsrinf").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
       val = '<' + sel
-      filter_submit_%(id)s(k,val)
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).html(val)
+        $(this).addClass("highlight")
+      })
     })
   })
   $("#fsr%(id)s").find("#fsrandinf").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#"+k).val()
+      val = $("#fsr%(id)s").find("#fsrview").html()
+      if (val.length==0) {
+        val = $("#"+k).val()
+      }
       val = val + '&<' + sel
-      filter_submit_%(id)s(k,val)
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).html(val)
+        $(this).addClass("highlight")
+      })
     })
   })
   $("#fsr%(id)s").find("#fsrorinf").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#"+k).val()
+      val = $("#fsr%(id)s").find("#fsrview").html()
+      if (val.length==0) {
+        val = $("#"+k).val()
+      }
       val = val + '|<' + sel
-      filter_submit_%(id)s(k,val)
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).html(val)
+        $(this).addClass("highlight")
+      })
     })
   })
   $("#fsr%(id)s").find("#fsrempty").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
       val = 'empty'
-      filter_submit_%(id)s(k,val)
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).html(val)
+        $(this).addClass("highlight")
+      })
     })
   })
   $("#fsr%(id)s").find("#fsrandempty").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#"+k).val()
+      val = $("#fsr%(id)s").find("#fsrview").html()
+      if (val.length==0) {
+        val = $("#"+k).val()
+      }
       val = val + '&empty'
-      filter_submit_%(id)s(k,val)
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).html(val)
+        $(this).addClass("highlight")
+      })
     })
   })
   $("#fsr%(id)s").find("#fsrorempty").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#"+k).val()
+      val = $("#fsr%(id)s").find("#fsrview").html()
+      if (val.length==0) {
+        val = $("#"+k).val()
+      }
       val = val + '|empty'
-      filter_submit_%(id)s(k,val)
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).html(val)
+        $(this).addClass("highlight")
+      })
     })
   })
 };

@@ -1249,7 +1249,6 @@ ul.login_menu ul {
 }
 
 .right_click_menu {
-    text-align: center;
     display: none;
     position: absolute;
     background: white;
@@ -1273,7 +1272,12 @@ ul.login_menu ul {
     padding: 0.5em;
 }
 
+.right_click_menu td {
+    text-align: center;
+}
+
 .right_click_menu td:hover {
+    text-align: center;
     cursor: pointer;
     background: #2d2d2d;
     color: #aaaaaa;
