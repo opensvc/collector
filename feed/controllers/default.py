@@ -65,6 +65,9 @@ def delete_service_list(hostid=None, svcnames=[], auth=("", "")):
 @auth_uuid
 @service.xmlrpc
 def begin_action(vars, vals, auth):
+    feed_enqueue("_begin_action", vars, vals, auth)
+
+def _begin_action(vars, vals, auth):
     sql="""insert into SVCactions (%s) values (%s)""" % (','.join(vars), ','.join(vals))
     db.executesql(sql)
     i = db.executesql("SELECT LAST_INSERT_ID()")[0][0]
@@ -114,6 +117,7 @@ def _end_action(vars, vals):
         h[a] = b
         if a not in ['hostname', 'svcname', 'begin', 'action', 'hostid']:
             upd.append("%s=%s" % (a, b))
+    h['begin'] = repr(h['begin'].strip("'").split('.')[0])
     sql="""select id from SVCactions where hostname=%s and svcname=%s and begin=%s and action=%s""" %\
         (h['hostname'], h['svcname'], h['begin'], h['action'])
     ids = map(lambda x: x[0], db.executesql(sql))
