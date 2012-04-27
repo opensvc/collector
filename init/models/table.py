@@ -741,6 +741,7 @@ class HtmlTable(object):
                               k=self.filter_key(c),
                               v=v,
                              ),
+                            _oncontextmenu="return false;",
                          ))
         return TR(cells, _class=self.cellclass)
 
@@ -965,7 +966,8 @@ class HtmlTable(object):
                 ),
                 TR(
                   TD("clear", _id="fsrclear"),
-                  TD("reset", _id="fsrreset", _colspan=2),
+                  TD("reset", _id="fsrreset"),
+                  TD("!", _id="fsrneg"),
                 ),
                 TR(
                   TD("%..", _id="fsrwildleft"),
@@ -1116,7 +1118,7 @@ function filter_selector_%(id)s(e,k,v){
   if(e.button != 2) {
     return
   }
-  $("#fsr%(id)s").each( function() {
+  $("#fsr%(id)s").each(function() {
     $(this)[0].oncontextmenu = function() {
       return false;
     }
@@ -1124,6 +1126,11 @@ function filter_selector_%(id)s(e,k,v){
   var sel = window.getSelection().toString()
   if (sel.length == 0) {
     sel = v
+  }
+  _sel = sel
+  cur = $("#fsr%(id)s").find("#fsrview").text()
+  if (cur.length==0) {
+    cur = $("#"+k).val()
   }
   $("#fsr%(id)s").show()
   if (e.pageX || e.pageY) {
@@ -1136,20 +1143,37 @@ function filter_selector_%(id)s(e,k,v){
       posy = e.clientY + document.body.scrollTop
            + document.documentElement.scrollTop;
   }
-  $("#fsr%(id)s").find("[id^=fsrwild]").each(function(){
+  $("#fsr%(id)s").find(".bgred").each(function(){
     $(this).removeClass("bgred")
   })
+  function getsel(){
+    __sel = _sel
+    if ($("#fsr%(id)s").find("#fsrwildboth").hasClass("bgred")) {
+      __sel = '%%' + __sel + '%%'
+    } else
+    if ($("#fsr%(id)s").find("#fsrwildleft").hasClass("bgred")) {
+      __sel = '%%' + __sel
+    } else
+    if ($("#fsr%(id)s").find("#fsrwildright").hasClass("bgred")) {
+      __sel = __sel + '%%'
+    }
+    if ($("#fsr%(id)s").find("#fsrneg").hasClass("bgred")) {
+      __sel = '!' + __sel
+    }
+    return __sel
+  }
   $("#fsr%(id)s").css({"left": posx + "px", "top": posy + "px"})
   $("#fsr%(id)s").find("#fsrview").each(function(){
-    $(this).html($("#"+k).val())
+    $(this).text($("#"+k).val())
     $(this).unbind()
     $(this).bind("dblclick", function(){
-      sel = $(this).html()
+      sel = $(this).text()
       $("#"+k).val(sel)
       filter_submit_%(id)s(k,sel)
     })
     $(this).bind("click", function(){
-      sel = $(this).html()
+      sel = $(this).text()
+      cur = sel
       $("#"+k).val(sel)
       $(this).removeClass("highlight")
       $(this).addClass("b")
@@ -1164,7 +1188,7 @@ function filter_selector_%(id)s(e,k,v){
     $(this).unbind()
     $(this).bind("click", function(){
       $("#fsr%(id)s").find("#fsrview").each(function(){
-        $(this).html("")
+        $(this).text("")
         $(this).addClass("highlight")
       })
     })
@@ -1173,61 +1197,69 @@ function filter_selector_%(id)s(e,k,v){
     $(this).unbind()
     $(this).bind("click", function(){
       $("#fsr%(id)s").find("#fsrview").each(function(){
-        $(this).html("**clear**")
+        $(this).text("**clear**")
         $(this).addClass("highlight")
       })
+    })
+  })
+  $("#fsr%(id)s").find("#fsrneg").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      if ($(this).hasClass("bgred")) {
+        $(this).removeClass("bgred")
+      } else {
+        $(this).addClass("bgred")
+      }
+      sel = getsel()
     })
   })
   $("#fsr%(id)s").find("#fsrwildboth").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      sel = sel.replace(/^%%+|%%+$/g,"")
       if ($(this).hasClass("bgred")) {
         $(this).removeClass("bgred")
       } else {
-        sel = "%%" + sel + "%%"
         $("#fsr%(id)s").find("[id^=fsrwild]").each(function(){
           $(this).removeClass("bgred")
         })
         $(this).addClass("bgred")
       }
+      sel = getsel()
     })
   })
   $("#fsr%(id)s").find("#fsrwildleft").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      sel = sel.replace(/^%%+|%%+$/g,"")
       if ($(this).hasClass("bgred")) {
         $(this).removeClass("bgred")
       } else {
-        sel = "%%" + sel
         $("#fsr%(id)s").find("[id^=fsrwild]").each(function(){
           $(this).removeClass("bgred")
         })
         $(this).addClass("bgred")
       }
+      sel = getsel()
     })
   })
   $("#fsr%(id)s").find("#fsrwildright").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      sel = sel.replace(/^%%+|%%+$/g,"")
       if ($(this).hasClass("bgred")) {
         $(this).removeClass("bgred")
       } else {
-        sel = sel + "%%"
         $("#fsr%(id)s").find("[id^=fsrwild]").each(function(){
           $(this).removeClass("bgred")
         })
         $(this).addClass("bgred")
       }
+      sel = getsel()
     })
   })
   $("#fsr%(id)s").find("#fsreq").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
       $("#fsr%(id)s").find("#fsrview").each(function(){
-        $(this).html(sel)
+        $(this).text(sel)
         $(this).addClass("highlight")
       })
     })
@@ -1235,13 +1267,9 @@ function filter_selector_%(id)s(e,k,v){
   $("#fsr%(id)s").find("#fsrandeq").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#fsr%(id)s").find("#fsrview").html()
-      if (val.length==0) {
-        val = $("#"+k).val()
-      }
-      val = val + '&' + sel
+      val = cur + '&' + sel
       $("#fsr%(id)s").find("#fsrview").each(function(){
-        $(this).html(val)
+        $(this).text(val)
         $(this).addClass("highlight")
       })
     })
@@ -1249,13 +1277,9 @@ function filter_selector_%(id)s(e,k,v){
   $("#fsr%(id)s").find("#fsroreq").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#fsr%(id)s").find("#fsrview").html()
-      if (val.length==0) {
-        val = $("#"+k).val()
-      }
-      val = val + '|' + sel
+      val = cur + '|' + sel
       $("#fsr%(id)s").find("#fsrview").each(function(){
-        $(this).html(val)
+        $(this).text(val)
         $(this).addClass("highlight")
       })
     })
@@ -1265,7 +1289,7 @@ function filter_selector_%(id)s(e,k,v){
     $(this).bind("click", function(){
       val = '>' + sel
       $("#fsr%(id)s").find("#fsrview").each(function(){
-        $(this).html(val)
+        $(this).text(val)
         $(this).addClass("highlight")
       })
     })
@@ -1273,13 +1297,13 @@ function filter_selector_%(id)s(e,k,v){
   $("#fsr%(id)s").find("#fsrandsup").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#fsr%(id)s").find("#fsrview").html()
+      val = $("#fsr%(id)s").find("#fsrview").text()
       if (val.length==0) {
         val = $("#"+k).val()
       }
       val = val + '&>' + sel
       $("#fsr%(id)s").find("#fsrview").each(function(){
-        $(this).html(val)
+        $(this).text(val)
         $(this).addClass("highlight")
       })
     })
@@ -1287,13 +1311,13 @@ function filter_selector_%(id)s(e,k,v){
   $("#fsr%(id)s").find("#fsrorsup").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#fsr%(id)s").find("#fsrview").html()
+      val = $("#fsr%(id)s").find("#fsrview").text()
       if (val.length==0) {
         val = $("#"+k).val()
       }
       val = val + '|>' + sel
       $("#fsr%(id)s").find("#fsrview").each(function(){
-        $(this).html(val)
+        $(this).text(val)
         $(this).addClass("highlight")
       })
     })
@@ -1303,7 +1327,7 @@ function filter_selector_%(id)s(e,k,v){
     $(this).bind("click", function(){
       val = '<' + sel
       $("#fsr%(id)s").find("#fsrview").each(function(){
-        $(this).html(val)
+        $(this).text(val)
         $(this).addClass("highlight")
       })
     })
@@ -1311,13 +1335,13 @@ function filter_selector_%(id)s(e,k,v){
   $("#fsr%(id)s").find("#fsrandinf").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#fsr%(id)s").find("#fsrview").html()
+      val = $("#fsr%(id)s").find("#fsrview").text()
       if (val.length==0) {
         val = $("#"+k).val()
       }
       val = val + '&<' + sel
       $("#fsr%(id)s").find("#fsrview").each(function(){
-        $(this).html(val)
+        $(this).text(val)
         $(this).addClass("highlight")
       })
     })
@@ -1325,13 +1349,13 @@ function filter_selector_%(id)s(e,k,v){
   $("#fsr%(id)s").find("#fsrorinf").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#fsr%(id)s").find("#fsrview").html()
+      val = $("#fsr%(id)s").find("#fsrview").text()
       if (val.length==0) {
         val = $("#"+k).val()
       }
       val = val + '|<' + sel
       $("#fsr%(id)s").find("#fsrview").each(function(){
-        $(this).html(val)
+        $(this).text(val)
         $(this).addClass("highlight")
       })
     })
@@ -1341,7 +1365,7 @@ function filter_selector_%(id)s(e,k,v){
     $(this).bind("click", function(){
       val = 'empty'
       $("#fsr%(id)s").find("#fsrview").each(function(){
-        $(this).html(val)
+        $(this).text(val)
         $(this).addClass("highlight")
       })
     })
@@ -1349,13 +1373,13 @@ function filter_selector_%(id)s(e,k,v){
   $("#fsr%(id)s").find("#fsrandempty").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#fsr%(id)s").find("#fsrview").html()
+      val = $("#fsr%(id)s").find("#fsrview").text()
       if (val.length==0) {
         val = $("#"+k).val()
       }
       val = val + '&empty'
       $("#fsr%(id)s").find("#fsrview").each(function(){
-        $(this).html(val)
+        $(this).text(val)
         $(this).addClass("highlight")
       })
     })
@@ -1363,13 +1387,13 @@ function filter_selector_%(id)s(e,k,v){
   $("#fsr%(id)s").find("#fsrorempty").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#fsr%(id)s").find("#fsrview").html()
+      val = $("#fsr%(id)s").find("#fsrview").text()
       if (val.length==0) {
         val = $("#"+k).val()
       }
       val = val + '|empty'
       $("#fsr%(id)s").find("#fsrview").each(function(){
-        $(this).html(val)
+        $(this).text(val)
         $(this).addClass("highlight")
       })
     })
