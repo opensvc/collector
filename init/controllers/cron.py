@@ -158,6 +158,7 @@ def cron_stat_day_disk_app():
                  where apps.app=t.app
                ) as quota
              from v_disks_app t
+             where t.app != ""
              group by t.app;
           """
     rows = db.executesql(sql)
