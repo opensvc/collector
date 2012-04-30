@@ -730,6 +730,7 @@ class table_disks(HtmlTable):
                      'disk_region',
                      'disk_vendor',
                      'disk_model',
+                     'app',
                      'disk_nodename',
                      'disk_svcname',
                      'disk_dg',
@@ -871,6 +872,13 @@ class table_disks(HtmlTable):
                      img='hd16',
                      display=True,
                      _dataclass="bluer",
+                    ),
+            'app': HtmlTableColumn(
+                     title='App',
+                     table='v_disk_app',
+                     field='app',
+                     img='svc',
+                     display=True,
                     ),
         })
         for i in self.cols:
@@ -1176,11 +1184,13 @@ def ajax_disks_col_values():
     q |= db.svcdisks.id<0
     l1 = db.stor_array.on(db.diskinfo.disk_arrayid == db.stor_array.array_name)
     l2 = db.svcdisks.on(db.diskinfo.disk_id==db.svcdisks.disk_id)
+    l3 = db.v_disk_app.on(db.diskinfo.disk_id==db.v_disk_app.disk_id)
+    l4 = db.nodes.on(db.diskinfo.disk_arrayid==db.nodes.nodename)
     q = _where(q, 'svcdisks', domain_perms(), 'disk_nodename')
     q = apply_filters(q, db.svcdisks.disk_nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o, groupby=o, left=(l1,l2))
+    t.object_list = db(q).select(o, orderby=o, groupby=o, left=(l1,l2,l3,l4))
     return t.col_values_cloud(col)
 
 @auth.requires_login()
@@ -1190,16 +1200,19 @@ def ajax_disks():
     q = db.diskinfo.id>0
     q |= db.svcdisks.id<0
     q |= db.stor_array.id<0
+    q |= db.v_disk_app.id<0
     l1 = db.stor_array.on(db.diskinfo.disk_arrayid == db.stor_array.array_name)
     l2 = db.svcdisks.on(db.diskinfo.disk_id==db.svcdisks.disk_id)
+    l3 = db.v_disk_app.on(db.diskinfo.disk_id==db.v_disk_app.disk_id)
+    l4 = db.nodes.on(db.diskinfo.disk_arrayid==db.nodes.nodename)
     #q &= db.svcdisks.disk_nodename==db.v_nodes.nodename
     q = _where(q, 'svcdisks', domain_perms(), 'disk_nodename')
     q = apply_filters(q, db.svcdisks.disk_nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), t.colprops[f].field)
-    n = db(q).select(db.diskinfo.id.count(), left=(l1,l2)).first()._extra[db.diskinfo.id.count()]
+    n = db(q).select(db.diskinfo.id.count(), left=(l1,l2,l3,l4)).first()._extra[db.diskinfo.id.count()]
     t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o, left=(l1,l2))
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o, left=(l1,l2,l3,l4))
 
     t.csv_q = q
     t.csv_orderby = o
