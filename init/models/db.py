@@ -1436,6 +1436,10 @@ db.define_table('v_disk_app',
     Field('disk_size', 'integer'),
     Field('disk_arrayid', 'string'),
     Field('disk_group', 'string'),
+    Field('disk_devid', 'string'),
+    Field('disk_updated', 'string'),
+    Field('disk_level', 'string'),
+    Field('disk_raid', 'string'),
     migrate=False)
 
 db.define_table('v_disk_quota',

@@ -2530,7 +2530,11 @@ create view v_disk_app as
                        svcdisks.disk_used as disk_used,
                        diskinfo.disk_size,
                        diskinfo.disk_arrayid,
-                       diskinfo.disk_group
+                       diskinfo.disk_group,
+                       diskinfo.disk_devid,
+                       diskinfo.disk_updated,
+                       diskinfo.disk_raid,
+                       diskinfo.disk_level
                      from
                        diskinfo
                      left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
@@ -2545,7 +2549,11 @@ create view v_disk_app as
                        svcdisks.disk_used as disk_used,
                        diskinfo.disk_size,
                        diskinfo.disk_arrayid,
-                       diskinfo.disk_group
+                       diskinfo.disk_group,
+                       diskinfo.disk_devid,
+                       diskinfo.disk_updated,
+                       diskinfo.disk_raid,
+                       diskinfo.disk_level
                      from
                        diskinfo
                      left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
