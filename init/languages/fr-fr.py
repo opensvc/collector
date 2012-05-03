@@ -708,6 +708,7 @@
 'Run node': 'Lancer une action sur le noeud',
 'Save': 'Sauvegarde',
 'Save profile': 'Sauvegarde le profil',
+'Scenario': 'Scenario',
 'Scheduled': 'Planifié',
 'Scheduled at': 'Planifié pour',
 'Search': 'Recherche',

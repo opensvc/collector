@@ -194,7 +194,7 @@ def ajax_dash_agg():
         data = []
         for line in l:
             s = T.translate(line['dash_type'], dict())
-            data.append([s, int(line['dash_alerts'])])
+            data.append([s, int(line['dash_alerts']), line['dash_type']])
         data.sort(lambda x, y: cmp(y[1], x[1]))
         h['nb'].append(data)
 
@@ -276,7 +276,7 @@ function dashdonut(o) {
   ); 
   $('#'+o.attr('id')).bind('jqplotDataClick',
         function(ev, seriesIndex, pointIndex, data) {
-            dash_type = data[0]
+            dash_type = data[2]
             $("#dashboard_f_dash_type").val(dash_type)
             $("#dashboard_f_dash_severity").val(seriesIndex)
             %(submit)s
