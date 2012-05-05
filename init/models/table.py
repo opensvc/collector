@@ -404,6 +404,21 @@ class HtmlTable(object):
             )
         return d
 
+    def link(self):
+        d = DIV(
+              A(
+                SPAN(
+                  T('Link'),
+                  _title=T("Share your view using this hyperlink"),
+                  _onclick="js_link_%s()"%self.id,
+                  _class='link16',
+                  _id='link_'+self.id,
+                ),
+                _class='floatw',
+              ),
+            )
+        return d
+
     def refresh(self):
         if not self.refreshable:
             return SPAN()
@@ -900,6 +915,7 @@ class HtmlTable(object):
                             DIV(
                               INPUT(
                                 _id=self.filter_key(c),
+                                _name="fi",
                                 _value=self.filter_parse(c),
                                 _onKeyPress="ajax_enter_submit_%s(event)"%self.id,
                                 _onKeyUp="""if(!is_enter(event)){clearTimeout(timer);timer=setTimeout(function validate(){ajax('%(url)s', inputs_%(id)s, '%(cloud)s')}, 1000)}"""%dict(
@@ -1082,6 +1098,7 @@ class HtmlTable(object):
               DIV(
                 self.pager(),
                 self.refresh(),
+                self.link(),
                 self.countdown(),
                 export,
                 self.columns_selector(),
@@ -1399,6 +1416,22 @@ function filter_selector_%(id)s(e,k,v){
     })
   })
 };
+function js_link_%(id)s(){
+  url=$(location).attr('href')
+  if (url.indexOf('?')>0) {
+    url=url.substring(0, url.indexOf('?'))
+  }
+  $("#%(id)s").find("[name=fi]").each(function(){
+    if ($(this).val().length==0) {return}
+    if (url.indexOf('?')<0) {
+      url=url+"?"
+    } else {
+      url=url+"&"
+    }
+    url=url+$(this).attr('id')+"="+$(this).val()
+  })
+  alert(url)
+}
 var inputs_%(id)s = %(a)s;"""%dict(
                    id=self.id,
                    a=self.ajax_inputs(),

@@ -1008,6 +1008,10 @@ ul.login_menu ul {
     background: transparent url('csv.png') no-repeat;
     padding: 0 0 0 20px;
 }
+.link16 {
+    background: transparent url('link16.png') no-repeat;
+    padding: 0 0 0 20px;
+}
 .refresh16 {
     background: transparent url('refresh16.png') no-repeat;
     padding: 0 0 0 20px;
