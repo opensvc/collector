@@ -1380,7 +1380,11 @@ function filter_selector_%(id)s(e,k,v){
   $("#fsr%(id)s").find("#fsrempty").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = 'empty'
+      if ($("#fsr%(id)s").find("#fsrneg").hasClass("bgred")) {
+        val = '!empty'
+      } else {
+        val = 'empty'
+      }
       $("#fsr%(id)s").find("#fsrview").each(function(){
         $(this).text(val)
         $(this).addClass("highlight")
@@ -1394,7 +1398,11 @@ function filter_selector_%(id)s(e,k,v){
       if (val.length==0) {
         val = $("#"+k).val()
       }
-      val = val + '&empty'
+      if ($("#fsr%(id)s").find("#fsrneg").hasClass("bgred")) {
+        val = val + '&!empty'
+      } else {
+        val = val + '&empty'
+      }
       $("#fsr%(id)s").find("#fsrview").each(function(){
         $(this).text(val)
         $(this).addClass("highlight")
@@ -1408,7 +1416,11 @@ function filter_selector_%(id)s(e,k,v){
       if (val.length==0) {
         val = $("#"+k).val()
       }
-      val = val + '|empty'
+      if ($("#fsr%(id)s").find("#fsrneg").hasClass("bgred")) {
+        val = val + '|!empty'
+      } else {
+        val = val + '|empty'
+      }
       $("#fsr%(id)s").find("#fsrview").each(function(){
         $(this).text(val)
         $(this).addClass("highlight")
