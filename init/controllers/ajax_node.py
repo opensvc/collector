@@ -233,7 +233,7 @@ def ajax_node():
     for disk in disks:
         _disks.append(TR(
           TD(disk.svcdisks.disk_id),
-          TD(disk.svcdisks.disk_size, T('GB')),
+          TD(disk.svcdisks.disk_size, T('MB')),
           TD(disk.svcdisks.disk_svcname),
           TD(disk.stor_array.array_model),
           TD(disk.diskinfo.disk_arrayid),
