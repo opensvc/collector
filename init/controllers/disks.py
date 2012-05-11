@@ -1237,6 +1237,10 @@ def ajax_disks():
 
     t.csv_q = q
     t.csv_orderby = o
+    t.csv_left = (l1,l2)
+
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        return t.csv()
 
     nt = table_disk_charts('charts', 'ajax_disk_charts')
 

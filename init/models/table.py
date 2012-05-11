@@ -122,6 +122,7 @@ class HtmlTable(object):
         # csv
         self.csv_q = None
         self.csv_orderby = None
+        self.csv_left = None
 
     def __iadd__(self, o):
         if isinstance(o, HtmlTableMenu):
@@ -1486,10 +1487,16 @@ $("#%(id)s").everyTime(1000, function(i){
     def csv_object_list(self):
         if self.csv_q is None:
             return self.object_list
-        if self.csv_orderby is None:
-            return db(self.csv_q).select(limitby=(0,2000))
+        if self.csv_left is None:
+            if self.csv_orderby is None:
+                return db(self.csv_q).select(limitby=(0,2000))
+            else:
+                return db(self.csv_q).select(orderby=self.csv_orderby, limitby=(0,2000))
         else:
-            return db(self.csv_q).select(orderby=self.csv_orderby, limitby=(0,2000))
+            if self.csv_orderby is None:
+                return db(self.csv_q).select(limitby=(0,2000), left=self.csv_left)
+            else:
+                return db(self.csv_q).select(orderby=self.csv_orderby, limitby=(0,2000), left=self.csv_left)
 
     def _csv(self):
         lines = [';'.join(self.cols)]
@@ -1517,6 +1524,7 @@ $("#%(id)s").everyTime(1000, function(i){
     def csv(self):
         import gluon.contenttype
         response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
+        response.headers['Content-disposition'] = 'attachment; filename=%s.csv' % self.id
         return self._csv()
 
     def int_match(self, value, num):
