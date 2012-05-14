@@ -165,7 +165,8 @@ def update_action_errors(svcname, nodename):
                a.svcname = "%(svcname)s" and
                a.hostname = "%(nodename)s" and
                a.status = "err" and
-               ((a.ack <> 1) or isnull(a.ack))
+               ((a.ack <> 1) or isnull(a.ack)) and
+               a.begin > date_sub(now(), interval 2 day)
     """%dict(svcname=svcname, nodename=nodename)
     err = db.executesql(sql)[0][0]
 
