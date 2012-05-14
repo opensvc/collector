@@ -628,7 +628,8 @@ def alerts_svcmon_not_updated():
                       mon_nodname,
                       0,
                       0,
-                      md5(concat("service.status.notupdated",mon_nodname,mon_svcname,mon_updated))
+                      md5(concat("service.status.notupdated",mon_nodname,mon_svcname,mon_updated)),
+                      "warning"
                from v_svcmon
                where mon_updated<date_sub(now(), interval %(age)d hour);"""%dict(age=age)
     return db.executesql(sql)
