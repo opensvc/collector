@@ -1075,6 +1075,15 @@ class HtmlTable(object):
                             vars=request.vars,
                             args=['csv']
                           ),
+                    _onclick="""$(this).hide();$("#csv%(id)s").show()"""%dict(id=self.id),
+                  ),
+                  DIV(
+                    SPAN(
+                      T('Export to csv'),
+                      _class='csv_disabled',
+                    ),
+                    _style="display:none",
+                    _id="csv"+self.id,
                   ),
                   _class='floatw',
                 )

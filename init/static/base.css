@@ -1008,6 +1008,11 @@ ul.login_menu ul {
     background: transparent url('csv.png') no-repeat;
     padding: 0 0 0 20px;
 }
+.csv_disabled {
+    background: transparent url('csv.png') no-repeat;
+    padding: 0 0 0 20px;
+    color: rgba(0, 0, 0, 0.5);
+}
 .link16 {
     background: transparent url('link16.png') no-repeat;
     padding: 0 0 0 20px;
