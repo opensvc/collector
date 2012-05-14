@@ -1238,6 +1238,7 @@ def ajax_disks():
     t.csv_q = q
     t.csv_orderby = o
     t.csv_left = (l1,l2)
+    t.csv_limit = 20000
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         return t.csv()

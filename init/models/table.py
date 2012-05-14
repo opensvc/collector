@@ -123,6 +123,7 @@ class HtmlTable(object):
         self.csv_q = None
         self.csv_orderby = None
         self.csv_left = None
+        self.csv_limit = 2000
 
     def __iadd__(self, o):
         if isinstance(o, HtmlTableMenu):
@@ -1501,14 +1502,14 @@ $("#%(id)s").everyTime(1000, function(i){
             return self.object_list
         if self.csv_left is None:
             if self.csv_orderby is None:
-                return db(self.csv_q).select(limitby=(0,2000))
+                return db(self.csv_q).select(limitby=(0,self.csv_limit))
             else:
-                return db(self.csv_q).select(orderby=self.csv_orderby, limitby=(0,2000))
+                return db(self.csv_q).select(orderby=self.csv_orderby, limitby=(0,self.csv_limit))
         else:
             if self.csv_orderby is None:
-                return db(self.csv_q).select(limitby=(0,2000), left=self.csv_left)
+                return db(self.csv_q).select(limitby=(0,self.csv_limit), left=self.csv_left)
             else:
-                return db(self.csv_q).select(orderby=self.csv_orderby, limitby=(0,2000), left=self.csv_left)
+                return db(self.csv_q).select(orderby=self.csv_orderby, limitby=(0,self.csv_limit), left=self.csv_left)
 
     def _csv(self):
         lines = [';'.join(self.cols)]
