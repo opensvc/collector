@@ -630,10 +630,11 @@ def alerts_svcmon_not_updated():
                       0,
                       md5(concat("service.status.notupdated",mon_nodname,mon_svcname,mon_updated)),
                       "warning"
-               from v_svcmon
+               from svcmon
                where mon_updated<date_sub(now(), interval %(age)d hour);"""%dict(age=age)
-    return db.executesql(sql)
+    n = db.executesql(sql)
     db.commit()
+    return n
 
 def refresh_dash_action_errors():
     sql = """delete from dashboard
