@@ -2580,3 +2580,6 @@ create view v_disk_app as
 
 alter table diskinfo modify column disk_raid varchar(24);
 
+alter table diskinfo drop key new_index;
+
+alter table diskinfo add key new_index (disk_id, disk_group);

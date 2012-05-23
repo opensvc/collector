@@ -770,7 +770,7 @@ def insert_dcs(name=None):
             vals = []
             for d in s.vdisk.values():
                 for poolid in d['poolid']:
-                    vals.append([d['id'],
+                    vals.append([d['wwid'],
                                  name,
                                  d['id'],
                                  str(d['size']),
@@ -778,7 +778,7 @@ def insert_dcs(name=None):
                                  s.pool[poolid]['caption'],
                                  now])
             generic_insert('diskinfo', vars, vals)
-            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
+            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(name, str(now))
             db.executesql(sql)
 
 def insert_necisms():

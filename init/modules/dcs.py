@@ -13,6 +13,7 @@ class Dcs(object):
         #self.pool_member()
         self.pool_perf()
         self.vdisk()
+        self.physical_disk()
         self.logical_disk()
         self.logical_disk_perf()
 
@@ -243,6 +244,75 @@ Internal         : False
                 self.vdisk[self.ld[self.ld_list[i]]['vdiskid']]['alloc'] = self.to_mb(line.split(': ')[-1].strip())
 
 
+    def physical_disk(self):
+        """
+PoolMemberId     : 643135e6-66c1-40a8-a5b0-eda75534eb32
+HostId           : 6FC0981F-4668-441D-907F-EFF6346BCBE2
+PresenceStatus   : Present
+Size             : 1,04 TB
+FreeSpace        : 0,00 B
+InquiryData      : NEC      DISK ARRAY       1000 0000943000010020
+ScsiPath         : Port 4, Bus 0, Target 2, LUN 1
+DiskIndex        : 28
+SystemName       :
+DiskHealth       : Healthy
+BusType          : Unknown
+Type             : Pool
+DiskStatus       : Online
+Partitioned      : True
+InUse            : True
+IsBootDisk       : False
+Protected        : False
+UniqueIdentifier : eui.00255c3a11010020
+Id               : {5c20afb9-61cc-4b26-8be4-9afe912a7559}
+Caption          : Disk 28
+ExtendedCaption  : Disk 28 on SDSERT01
+Internal         : False
+
+LocalLogicalDiskId  : LD:E1505D31-44D1-4219-9741-4E1263B05195_V.{7f4f2e6b-8fa4-
+                      11e1-a292-441ea14c8982}-00000025
+RemoteLogicalDiskId : LD:6FC0981F-4668-441D-907F-EFF6346BCBE2_V.{0db47608-8eec-
+                      11e1-9b73-441ea14c69ea}-0000002E
+PresenceStatus      : Present
+Size                : 0,00 B
+FreeSpace           : 0,00 B
+InquiryData         :    
+ScsiPath            : Port 0, Bus 0, Target 0, LUN 0
+DiskIndex           : 84
+SystemName          : 
+DiskHealth          : Healthy
+BusType             : Unknown
+Type                : MirrorDisk
+DiskStatus          : Online
+PoolMemberId        : 
+Partitioned         : True
+InUse               : True
+IsBootDisk          : False
+Protected           : False
+HostId              : E1505D31-44D1-4219-9741-4E1263B05195
+UniqueIdentifier    : naa.60030d90d650fe015195013693e59e9b
+Id                  : V.{0db47608-8eec-11e1-9b73-441ea14c69ea}-0000002E_N.22FE0
+                      030D9311308
+Caption             : Mirror of S64ertbicbh_01
+ExtendedCaption     : Mirror of S64ertbicbh_01 on SDSERT02
+Internal            : False
+        """
+        buff = self.readfile('dcsphysicaldisk')
+        lines = buff.strip().split('\n')
+        self.pd = {}
+        pd = {}
+        for i, line in enumerate(lines):
+            if len(line) == 0:
+                if 'id' in pd:
+                    self.pd[pd["id"]] = pd
+                pd = {}
+            elif line.startswith('LocalLogicalDiskId'):
+                pd["id"] = line.split(': ')[-1].strip()+lines[i+1].strip()
+            elif line.startswith('UniqueIdentifier'):
+                pd["wwid"] = line.split(': ')[-1].strip().split('.')[-1]
+        if 'id' in pd:
+            self.pd[pd["id"]] = pd
+
     def logical_disk(self):
         """
 StreamDiskId       : 
@@ -296,6 +366,8 @@ Internal           : False
                 ld["size"] = self.to_mb(line.split(': ')[-1].strip())
             elif line.startswith('Id'):
                 ld["id"] = line.split(': ')[-1].strip()+lines[i+1].strip()
+                if ld["id"] in self.pd and ld["vdiskid"] in self.vdisk:
+                    self.vdisk[ld["vdiskid"]]['wwid'] = self.pd[ld["id"]]['wwid']
             elif line.startswith('PoolId'):
                 ld["poolid"] = line.split(': ')[-1].strip()+lines[i+1].strip()
             elif line.startswith('VirtualDiskId'):
@@ -374,7 +446,7 @@ Internal                 : False
             poolcap = []
             for poolid in d['poolid']:
                 poolcap.append(self.pool[poolid]['caption'])
-            s += "vdisk %s %s: size %d/%d MB\n"%(','.join(poolcap), d['id'], d['alloc'], d['size'])
+            s += "vdisk %s %s: size %d/%d MB\n"%(','.join(poolcap), d['wwid'], d['alloc'], d['size'])
         return s
 
 
