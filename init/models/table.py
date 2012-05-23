@@ -188,8 +188,11 @@ class HtmlTable(object):
     def col_values_cloud(self, c):
         l = []
         for o in self.object_list:
+            s = self.colprops[c].get(o)
+            if s is None:
+                s = 'empty'
             l.append(A(
-                       self.colprops[c].get(o),
+                       s,
                        ' ',
                        _class="cloud_tag",
                        _onclick="filter_submit_%(id)s('%(iid)s','%(val)s')"%dict(

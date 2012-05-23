@@ -1,12 +1,14 @@
 <script language="JavaScript" type="text/javascript">
 function values_to_filter(iid, did){
 	l = []
+	var reg = new RegExp("[ ]+$", "g");
 	$("#"+did).contents().find("a").each(function(){
-		l.push(this.text)
+                s = this.text
+      		s = s.replace(reg, "")
+		if (s == "None") {s = "empty"}
+		l.push(s)
 	})
         v = l.join("|")
-	var reg = new RegExp("[ ]+", "g");
-        v = v.replace(reg, "")
 	$("#"+iid).val(v)
 }
 function invert_filter(did){
