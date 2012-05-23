@@ -706,7 +706,80 @@ def insert_dcss():
     return insert_dcs()
 
 def insert_dcs(name=None):
-    pass
+    import glob
+    import os
+    from applications.init.modules import dcs
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+
+    dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='dcs'))
+    if name is None:
+        pattern = "*"
+    else:
+        pattern = name
+    dirs = glob.glob(os.path.join(dir, pattern))
+
+    for d in dirs:
+        s = dcs.get_dcs(d)
+        if s is not None:
+            # stor_array
+            vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
+            vals = []
+            name = s.sg['caption']
+            for server in s.server.values():
+                break
+            vals.append([s.sg['caption'],
+                         server['modelnumber'],
+                         str(s.sg['memory']),
+                         server['firmwareversion'],
+                         now])
+            generic_insert('stor_array', vars, vals)
+
+            sql = """select id from stor_array where array_name="%s" """%name
+            array_id = str(db.executesql(sql)[0][0])
+
+            # stor_array_dg
+            vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
+            vals = []
+            for dg in s.pool.values():
+                vals.append([array_id,
+                             dg['caption'],
+                             str(dg['avail']),
+                             str(dg['alloc']),
+                             str(dg['total']),
+                             now])
+            generic_insert('stor_array_dg', vars, vals)
+            sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
+            db.executesql(sql)
+
+            # stor_array_tgtid
+            vars = ['array_id', 'array_tgtid']
+            vals = []
+            for wwn in s.port_list:
+                vals.append([array_id, wwn])
+            generic_insert('stor_array_tgtid', vars, vals)
+
+            # diskinfo
+            vars = ['disk_id',
+                    'disk_arrayid',
+                    'disk_devid',
+                    'disk_size',
+                    'disk_raid',
+                    'disk_group',
+                    'disk_updated']
+            vals = []
+            for d in s.vdisk.values():
+                for poolid in d['poolid']:
+                    vals.append([d['id'],
+                                 name,
+                                 d['id'],
+                                 str(d['size']),
+                                 d['type'],
+                                 s.pool[poolid]['caption'],
+                                 now])
+            generic_insert('diskinfo', vars, vals)
+            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
+            db.executesql(sql)
 
 def insert_necisms():
     return insert_necism()
