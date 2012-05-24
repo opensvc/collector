@@ -16,6 +16,29 @@ array_img_h = {
   'HSV400': 'hpux',
 }
 
+def refresh_b_disk_app():
+    sql = """select max(update_time)>(select update_time from
+information_schema.tables where table_schema="opensvc" and
+table_name='b_disk_app') as need_update , max(update_time) as
+src_tables_last_update, (select update_time from information_schema.tables
+where table_schema="opensvc" and table_name='b_disk_app') as
+b_disk_app_last_update from information_schema.tables where
+table_schema="opensvc" and table_name in ('nodes', 'services', 'apps',
+'svcdisks', 'diskinfo')"""
+    rows = db.executesql(sql)
+    if rows[0][0] != 1:
+        return "skip " + str(rows)
+    sql = """drop table if exists b_disk_app_old"""
+    db.executesql(sql)
+    sql = """drop table if exists b_disk_app_tmp"""
+    db.executesql(sql)
+    sql = """create table b_disk_app_tmp as select * from v_disk_app"""
+    db.executesql(sql)
+    sql = """rename table b_disk_app to b_disk_app_old, b_disk_app_tmp to b_disk_app"""
+    db.executesql(sql)
+    sql = """drop table if exists b_disk_app_old"""
+    db.executesql(sql)
+
 def array_icon(array_model):
     if array_model is None:
         return ''
@@ -762,14 +785,14 @@ class table_disks(HtmlTable):
         self.colprops.update({
             'disk_region': col_disk_id(
                      title='Disk Region',
-                     table='v_disk_app',
+                     table='b_disk_app',
                      field='disk_region',
                      img='hd16',
                      display=False,
                     ),
             'disk_id': col_disk_id(
                      title='Disk Id',
-                     table='v_disk_app',
+                     table='b_disk_app',
                      field='disk_id',
                      img='hd16',
                      display=True,
@@ -777,28 +800,28 @@ class table_disks(HtmlTable):
                     ),
             'disk_svcname': col_svc(
                      title='Service',
-                     table='v_disk_app',
+                     table='b_disk_app',
                      field='disk_svcname',
                      img='svc',
                      display=True,
                     ),
             'disk_nodename': col_node(
                      title='Nodename',
-                     table='v_disk_app',
+                     table='b_disk_app',
                      field='disk_nodename',
                      img='hw16',
                      display=True,
                     ),
             'disk_used': col_size_mb(
                      title='Disk Used',
-                     table='v_disk_app',
+                     table='b_disk_app',
                      field='disk_used',
                      img='hd16',
                      display=True,
                     ),
             'disk_size': col_size_mb(
                      title='Disk Size',
-                     table='v_disk_app',
+                     table='b_disk_app',
                      field='disk_size',
                      img='hd16',
                      display=True,
@@ -806,28 +829,28 @@ class table_disks(HtmlTable):
                     ),
             'disk_vendor': HtmlTableColumn(
                      title='Disk Vendor',
-                     table='v_disk_app',
+                     table='b_disk_app',
                      field='disk_vendor',
                      img='hd16',
                      display=True,
                     ),
             'disk_model': HtmlTableColumn(
                      title='Disk Model',
-                     table='v_disk_app',
+                     table='b_disk_app',
                      field='disk_model',
                      img='hd16',
                      display=True,
                     ),
             'disk_dg': HtmlTableColumn(
                      title='System disk group',
-                     table='v_disk_app',
+                     table='b_disk_app',
                      field='disk_dg',
                      img='hd16',
                      display=True,
                     ),
             'disk_group': col_array_dg(
                      title='Array disk group',
-                     table='v_disk_app',
+                     table='b_disk_app',
                      field='disk_group',
                      img='hd16',
                      display=True,
@@ -835,7 +858,7 @@ class table_disks(HtmlTable):
                     ),
             'disk_level': HtmlTableColumn(
                      title='Level',
-                     table='v_disk_app',
+                     table='b_disk_app',
                      field='disk_level',
                      img='hd16',
                      display=True,
@@ -843,7 +866,7 @@ class table_disks(HtmlTable):
                     ),
             'disk_raid': HtmlTableColumn(
                      title='Raid',
-                     table='v_disk_app',
+                     table='b_disk_app',
                      field='disk_raid',
                      img='hd16',
                      display=True,
@@ -851,14 +874,14 @@ class table_disks(HtmlTable):
                     ),
             'svcdisk_updated': HtmlTableColumn(
                      title='System Updated',
-                     table='v_disk_app',
+                     table='b_disk_app',
                      field='svcdisk_updated',
                      img='time16',
                      display=True,
                     ),
             'disk_updated': HtmlTableColumn(
                      title='Storage Updated',
-                     table='v_disk_app',
+                     table='b_disk_app',
                      field='disk_updated',
                      img='time16',
                      display=True,
@@ -866,7 +889,7 @@ class table_disks(HtmlTable):
                     ),
             'svcdisk_id': col_array(
                      title='System Disk Id',
-                     table='v_disk_app',
+                     table='b_disk_app',
                      field='svcdisk_id',
                      img='hd16',
                      display=True,
@@ -874,7 +897,7 @@ class table_disks(HtmlTable):
                     ),
             'disk_arrayid': col_array(
                      title='Array Id',
-                     table='v_disk_app',
+                     table='b_disk_app',
                      field='disk_arrayid',
                      img='hd16',
                      display=True,
@@ -882,7 +905,7 @@ class table_disks(HtmlTable):
                     ),
             'disk_devid': col_disk_id(
                      title='Array device Id',
-                     table='v_disk_app',
+                     table='b_disk_app',
                      field='disk_devid',
                      img='hd16',
                      display=True,
@@ -898,7 +921,7 @@ class table_disks(HtmlTable):
                     ),
             'app': HtmlTableColumn(
                      title='App',
-                     table='v_disk_app',
+                     table='b_disk_app',
                      field='app',
                      img='svc',
                      display=True,
@@ -913,7 +936,7 @@ class table_disks(HtmlTable):
             self.colprops[i].t = self
         self.extraline = True
         self.checkbox_id_col = 'svcdisks_id'
-        self.checkbox_id_table = 'v_disk_app'
+        self.checkbox_id_table = 'b_disk_app'
         self.dbfilterable = True
         self.ajax_col_values = 'ajax_disks_col_values'
         self.span = 'disk_id'
@@ -1208,12 +1231,12 @@ def ajax_disks_col_values():
     t = table_disks('disks', 'ajax_disks')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
-    q = db.v_disk_app.id>0
+    q = db.b_disk_app.id>0
     q |= db.stor_array.id<0
-    l1 = db.stor_array.on(db.v_disk_app.disk_arrayid == db.stor_array.array_name)
-    l2 = db.nodes.on(db.v_disk_app.disk_arrayid==db.nodes.nodename)
-    q = _where(q, 'v_disk_app', domain_perms(), 'disk_nodename')
-    q = apply_filters(q, db.v_disk_app.disk_nodename, None)
+    l1 = db.stor_array.on(db.b_disk_app.disk_arrayid == db.stor_array.array_name)
+    l2 = db.nodes.on(db.b_disk_app.disk_arrayid==db.nodes.nodename)
+    q = _where(q, 'b_disk_app', domain_perms(), 'disk_nodename')
+    q = apply_filters(q, db.b_disk_app.disk_nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o, groupby=o, left=(l1,l2))
@@ -1222,16 +1245,16 @@ def ajax_disks_col_values():
 @auth.requires_login()
 def ajax_disks():
     t = table_disks('disks', 'ajax_disks')
-    o = db.v_disk_app.disk_id | db.v_disk_app.disk_svcname | db.v_disk_app.disk_nodename
-    q = db.v_disk_app.id>0
+    o = db.b_disk_app.disk_id | db.b_disk_app.disk_svcname | db.b_disk_app.disk_nodename
+    q = db.b_disk_app.id>0
     q |= db.stor_array.id<0
-    l1 = db.stor_array.on(db.v_disk_app.disk_arrayid == db.stor_array.array_name)
-    l2 = db.nodes.on(db.v_disk_app.disk_arrayid==db.nodes.nodename)
-    q = _where(q, 'v_disk_app', domain_perms(), 'disk_nodename')
-    q = apply_filters(q, db.v_disk_app.disk_nodename, None)
+    l1 = db.stor_array.on(db.b_disk_app.disk_arrayid == db.stor_array.array_name)
+    l2 = db.nodes.on(db.b_disk_app.disk_arrayid==db.nodes.nodename)
+    q = _where(q, 'b_disk_app', domain_perms(), 'disk_nodename')
+    q = apply_filters(q, db.b_disk_app.disk_nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), t.colprops[f].field)
-    n = db(q).select(db.v_disk_app.id.count(), left=(l1,l2)).first()._extra[db.v_disk_app.id.count()]
+    n = db(q).select(db.b_disk_app.id.count(), left=(l1,l2)).first()._extra[db.b_disk_app.id.count()]
     t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o, left=(l1,l2))
 
@@ -1288,10 +1311,10 @@ def ajax_disk_charts():
     t = table_disks('disks', 'ajax_disks')
     nt = table_disk_charts('charts', 'ajax_disk_charts')
 
-    o = db.v_disk_app.disk_id
-    q = db.v_disk_app.id>0
-    q = _where(q, 'v_disk_app', domain_perms(), 'disk_nodename')
-    q = apply_filters(q, db.v_disk_app.disk_nodename, None)
+    o = db.b_disk_app.disk_id
+    q = db.b_disk_app.id>0
+    q = _where(q, 'b_disk_app', domain_perms(), 'disk_nodename')
+    q = apply_filters(q, db.b_disk_app.disk_nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
@@ -1306,12 +1329,12 @@ def ajax_disk_charts():
     data_array = ""
 
     sql = """  select
-                 count(distinct(v_disk_app.app)),
-                 max(v_disk_app.disk_level)
+                 count(distinct(b_disk_app.app)),
+                 max(b_disk_app.disk_level)
                from
-                 v_disk_app
-               left join stor_array on v_disk_app.disk_arrayid=stor_array.array_name
-               left join nodes on v_disk_app.disk_arrayid=nodes.nodename
+                 b_disk_app
+               left join stor_array on b_disk_app.disk_arrayid=stor_array.array_name
+               left join nodes on b_disk_app.disk_arrayid=nodes.nodename
                where
                  %(q)s
            """%dict(q=q)
@@ -1334,32 +1357,32 @@ def ajax_disk_charts():
                    from
                    (
                      select
-                       v_disk_app.disk_id,
-                       v_disk_app.disk_region,
-                       v_disk_app.disk_svcname as obj,
-                       v_disk_app.disk_used as disk_used,
-                       v_disk_app.disk_size
+                       b_disk_app.disk_id,
+                       b_disk_app.disk_region,
+                       b_disk_app.disk_svcname as obj,
+                       b_disk_app.disk_used as disk_used,
+                       b_disk_app.disk_size
                      from
-                       v_disk_app
-                     left join stor_array on v_disk_app.disk_arrayid=stor_array.array_name
-                     left join nodes on v_disk_app.disk_arrayid=nodes.nodename
+                       b_disk_app
+                     left join stor_array on b_disk_app.disk_arrayid=stor_array.array_name
+                     left join nodes on b_disk_app.disk_arrayid=nodes.nodename
                      where %(q)s
-                     and v_disk_app.disk_level=%(level)d
-                     and v_disk_app.disk_svcname != ""
+                     and b_disk_app.disk_level=%(level)d
+                     and b_disk_app.disk_svcname != ""
                      union all
                      select
-                       v_disk_app.disk_id,
-                       v_disk_app.disk_region,
-                       v_disk_app.disk_nodename as obj,
-                       v_disk_app.disk_used as disk_used,
-                       v_disk_app.disk_size
+                       b_disk_app.disk_id,
+                       b_disk_app.disk_region,
+                       b_disk_app.disk_nodename as obj,
+                       b_disk_app.disk_used as disk_used,
+                       b_disk_app.disk_size
                      from
-                       v_disk_app
-                     left join stor_array on v_disk_app.disk_arrayid=stor_array.array_name
-                     left join nodes on v_disk_app.disk_arrayid=nodes.nodename
+                       b_disk_app
+                     left join stor_array on b_disk_app.disk_arrayid=stor_array.array_name
+                     left join nodes on b_disk_app.disk_arrayid=nodes.nodename
                      where %(q)s
-                     and v_disk_app.disk_level=%(level)d
-                     and (v_disk_app.disk_svcname = "" or v_disk_app.disk_svcname is NULL)
+                     and b_disk_app.disk_level=%(level)d
+                     and (b_disk_app.disk_svcname = "" or b_disk_app.disk_svcname is NULL)
                    ) u
                    group by u.disk_id, u.disk_region
                  ) t
@@ -1413,32 +1436,32 @@ def ajax_disk_charts():
                    from
                    (
                      select
-                       v_disk_app.disk_id,
-                       v_disk_app.disk_region,
-                       v_disk_app.app as app,
-                       v_disk_app.disk_used,
-                       v_disk_app.disk_size
+                       b_disk_app.disk_id,
+                       b_disk_app.disk_region,
+                       b_disk_app.app as app,
+                       b_disk_app.disk_used,
+                       b_disk_app.disk_size
                      from
-                       v_disk_app
-                     left join stor_array on v_disk_app.disk_arrayid=stor_array.array_name
-                     left join nodes on v_disk_app.disk_arrayid=nodes.nodename
+                       b_disk_app
+                     left join stor_array on b_disk_app.disk_arrayid=stor_array.array_name
+                     left join nodes on b_disk_app.disk_arrayid=nodes.nodename
                      where %(q)s
-                     and v_disk_app.disk_level=%(level)d
-                     and v_disk_app.disk_svcname != ""
+                     and b_disk_app.disk_level=%(level)d
+                     and b_disk_app.disk_svcname != ""
                      union all
                      select
-                       v_disk_app.disk_id,
-                       v_disk_app.disk_region,
-                       v_disk_app.app as app,
-                       v_disk_app.disk_used,
-                       v_disk_app.disk_size
+                       b_disk_app.disk_id,
+                       b_disk_app.disk_region,
+                       b_disk_app.app as app,
+                       b_disk_app.disk_used,
+                       b_disk_app.disk_size
                      from
-                       v_disk_app
-                     left join stor_array on v_disk_app.disk_arrayid=stor_array.array_name
-                     left join nodes on v_disk_app.disk_arrayid=nodes.nodename
+                       b_disk_app
+                     left join stor_array on b_disk_app.disk_arrayid=stor_array.array_name
+                     left join nodes on b_disk_app.disk_arrayid=nodes.nodename
                      where %(q)s
-                     and v_disk_app.disk_level=%(level)d
-                     and (v_disk_app.disk_svcname = "" or v_disk_app.disk_svcname is NULL)
+                     and b_disk_app.disk_level=%(level)d
+                     and (b_disk_app.disk_svcname = "" or b_disk_app.disk_svcname is NULL)
                    ) u
                    group by u.disk_id, u.disk_region
                  ) t
@@ -1474,21 +1497,21 @@ def ajax_disk_charts():
                 _data_app += [["n/a " +' (%s)'%beautify_size_mb(diff), diff]]
             data_app.append(_data_app)
 
-    sql = """select count(distinct v_disk_app.disk_arrayid)
+    sql = """select count(distinct b_disk_app.disk_arrayid)
              from
-                 v_disk_app
-               left join stor_array on v_disk_app.disk_arrayid=stor_array.array_name
-               left join nodes on v_disk_app.disk_arrayid=nodes.nodename
+                 b_disk_app
+               left join stor_array on b_disk_app.disk_arrayid=stor_array.array_name
+               left join nodes on b_disk_app.disk_arrayid=nodes.nodename
                where
                  %(q)s
           """%dict(q=q)
     n_arrays = db.executesql(sql)[0][0]
 
-    sql = """select count(distinct v_disk_app.disk_group)
+    sql = """select count(distinct b_disk_app.disk_group)
              from
-                 v_disk_app
-               left join stor_array on v_disk_app.disk_arrayid=stor_array.array_name
-               left join nodes on v_disk_app.disk_arrayid=nodes.nodename
+                 b_disk_app
+               left join stor_array on b_disk_app.disk_arrayid=stor_array.array_name
+               left join nodes on b_disk_app.disk_arrayid=nodes.nodename
                where
                  %(q)s
           """%dict(q=q)
@@ -1508,17 +1531,17 @@ def ajax_disk_charts():
                    from
                    (
                      select
-                       v_disk_app.disk_id,
-                       max(v_disk_app.disk_used) as disk_used,
-                       v_disk_app.disk_size,
-                       v_disk_app.disk_arrayid,
-                       v_disk_app.disk_group
+                       b_disk_app.disk_id,
+                       max(b_disk_app.disk_used) as disk_used,
+                       b_disk_app.disk_size,
+                       b_disk_app.disk_arrayid,
+                       b_disk_app.disk_group
                      from
-                       v_disk_app
-                     left join stor_array on v_disk_app.disk_arrayid=stor_array.array_name
-                     left join nodes on v_disk_app.disk_arrayid=nodes.nodename
+                       b_disk_app
+                     left join stor_array on b_disk_app.disk_arrayid=stor_array.array_name
+                     left join nodes on b_disk_app.disk_arrayid=nodes.nodename
                      where %(q)s
-                     group by v_disk_app.disk_id, v_disk_app.disk_region
+                     group by b_disk_app.disk_id, b_disk_app.disk_region
                    ) u
                    group by u.disk_id
                  ) t
@@ -1554,17 +1577,17 @@ def ajax_disk_charts():
                    from
                    (
                      select
-                       v_disk_app.disk_id,
-                       max(v_disk_app.disk_used) as disk_used,
-                       v_disk_app.disk_size,
-                       v_disk_app.disk_arrayid
+                       b_disk_app.disk_id,
+                       max(b_disk_app.disk_used) as disk_used,
+                       b_disk_app.disk_size,
+                       b_disk_app.disk_arrayid
                      from
-                       v_disk_app
-                     left join stor_array on v_disk_app.disk_arrayid=stor_array.array_name
-                     left join nodes on v_disk_app.disk_arrayid=nodes.nodename
+                       b_disk_app
+                     left join stor_array on b_disk_app.disk_arrayid=stor_array.array_name
+                     left join nodes on b_disk_app.disk_arrayid=nodes.nodename
                      where %(q)s
-                     and v_disk_app.disk_level=%(level)d
-                     group by v_disk_app.disk_id, v_disk_app.disk_region
+                     and b_disk_app.disk_level=%(level)d
+                     group by b_disk_app.disk_id, b_disk_app.disk_region
                    ) u
                    group by u.disk_id
                  ) t

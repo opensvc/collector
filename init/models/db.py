@@ -1450,6 +1450,10 @@ db.define_table('v_disk_app',
     Field('disk_local', 'boolean'),
     migrate=False)
 
+db.define_table('b_disk_app',
+    db.v_disk_app,
+    migrate=False)
+
 db.define_table('v_disk_quota',
     Field('array_name','string'),
     Field('array_model','string'),

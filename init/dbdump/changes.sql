@@ -2582,4 +2582,8 @@ alter table diskinfo modify column disk_raid varchar(24);
 
 alter table diskinfo drop key new_index;
 
-alter table diskinfo add key new_index (disk_id, disk_group);
+alter table diskinfo modify column disk_group varchar(60) default "";
+
+update diskinfo set disk_group="" where disk_group is NULL;
+
+alter table diskinfo add unique key new_index (disk_id, disk_group);
