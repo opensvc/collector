@@ -1103,7 +1103,7 @@ def rows_avg_block_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=
                and nodename like '%(dom)s'
                %(nodes)s
              group by nodename
-             order by avg(rtps)+avg(wtps)"""%dict(begin=str(begin),end=str(end),dom=dom,nodes=nodes)
+             order by avg(rbps)+avg(wbps)"""%dict(begin=str(begin),end=str(end),dom=dom,nodes=nodes)
 
     if lower is not None:
         sql += ' desc limit %d;'%int(lower)
