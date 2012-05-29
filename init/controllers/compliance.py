@@ -6087,12 +6087,14 @@ def comp_ruleset_vars(ruleset_id, qr=None):
         f = 'explicit attachment'
     else:
         f = comp_format_filter(qr)
-    j = db.comp_rulesets.id == db.comp_rulesets_rulesets.parent_rset_id
-    l = db.comp_rulesets_rulesets.on(j)
-    q = db.comp_rulesets.id==ruleset_id
-    q &= (db.comp_rulesets.id == db.comp_rulesets_variables.ruleset_id)|\
-         (db.comp_rulesets_rulesets.child_rset_id == db.comp_rulesets_variables.ruleset_id)
-    rows = db(q).select(left=l)
+    q1 = db.comp_rulesets_rulesets.parent_rset_id==ruleset_id
+    q = db.comp_rulesets.id == ruleset_id
+    children = db(q1).select(db.comp_rulesets_rulesets.child_rset_id)
+    children = map(lambda x: x.child_rset_id, children)
+    if len(children) > 0:
+        q |= db.comp_rulesets.id.belongs(children)
+    q &= db.comp_rulesets.id == db.comp_rulesets_variables.ruleset_id
+    rows = db(q).select()
     if len(rows) == 0:
         return dict()
     ruleset_name = rows[0].comp_rulesets.ruleset_name
@@ -6270,7 +6272,6 @@ def _comp_get_ruleset(nodename):
             if len(match) > 0:
                 ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr))
             qr = db.nodes.id > 0
-
     # add explicit rulesets variables
     q = db.comp_rulesets_nodes.nodename == nodename
     rows = db(q).select(db.comp_rulesets_nodes.ruleset_id,
