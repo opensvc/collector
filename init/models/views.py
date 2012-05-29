@@ -175,7 +175,7 @@ def apply_filters(q, node_field=None, service_field=None, fset_id=None):
     else:
         qry = db.v_gen_filtersets.fset_id == fset_id
 
-    rows = db(qry).select()
+    rows = db(qry).select(orderby=db.v_gen_filtersets.f_order)
     if len(rows) == 0:
         return q
 
