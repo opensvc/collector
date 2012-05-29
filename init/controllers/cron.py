@@ -46,8 +46,10 @@ def refresh_b_action_errors():
                from svcmon m
                  left join SVCactions a
                  on m.mon_svcname=a.svcname and m.mon_nodname=a.hostname
-               where a.status='err'
+               where
+                 a.status='err'
                  and (a.ack=0 or isnull(a.ack))
+                 and a.end is not NULL
                group by m.mon_svcname, m.mon_nodname;
           """
     db.executesql(sql)
@@ -648,7 +650,13 @@ def refresh_dash_action_errors():
     db.commit()
 
 def update_dash_action_errors():
-    sql = """select e.err, s.svc_type, e.svcname, e.nodename from b_action_errors e
+    sql = """select
+               e.err,
+               s.svc_type,
+               e.svcname,
+               e.nodename
+             from
+               b_action_errors e
              join services s on e.svcname=s.svc_name
           """
     rows = db.executesql(sql)
