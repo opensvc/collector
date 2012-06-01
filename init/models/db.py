@@ -1511,3 +1511,15 @@ db.define_table('feed_queue',
     Field('created', 'datetime'),
     migrate=False)
 
+db.define_table('switches',
+    Field('sw_name', 'string'),
+    Field('sw_slot', 'integer'),
+    Field('sw_port', 'integer'),
+    Field('sw_portspeed', 'integer'),
+    Field('sw_portnego', 'boolean'),
+    Field('sw_portstate', 'string'),
+    Field('sw_porttype', 'string'),
+    Field('sw_portname', 'string'),
+    Field('sw_rportname', 'string'),
+    Field('sw_updated', 'datetime'),
+    migrate=False)

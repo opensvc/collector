@@ -2593,3 +2593,19 @@ drop view v_comp_rulesets;
 create view v_comp_rulesets as (select `r`.`id` AS `ruleset_id`,`r`.`ruleset_name` AS `ruleset_name`,`r`.`ruleset_type` AS `ruleset_type`,group_concat(distinct `g`.`role` separator ', ') AS `teams_responsible`,(select ruleset_name from comp_rulesets where id=rr.child_rset_id) as encap_rset, rr.child_rset_id as encap_rset_id, `rv`.`id` AS `id`,`rv`.`var_name` AS `var_name`,`rv`.`var_class` AS `var_class`,`rv`.`var_value` AS `var_value`,`rv`.`var_author` AS `var_author`,`rv`.`var_updated` AS `var_updated`,`rf`.`fset_id` AS `fset_id`,`fs`.`fset_name` AS `fset_name` from (((((`comp_rulesets` `r` left join comp_rulesets_rulesets rr on r.id=rr.parent_rset_id left join `comp_rulesets_variables` `rv` on(((`rv`.`ruleset_id` = `r`.`id` and rr.child_rset_id is NULL) or rv.ruleset_id = rr.child_rset_id))) left join `comp_rulesets_filtersets` `rf` on((`r`.`id` = `rf`.`ruleset_id`))) left join `gen_filtersets` `fs` on((`fs`.`id` = `rf`.`fset_id`))) left join `comp_ruleset_team_responsible` `rt` on((`r`.`id` = `rt`.`ruleset_id`))) left join `auth_group` `g` on((`rt`.`group_id` = `g`.`id`))) group by `r`.`id`,`rv`.`id`, rr.id);
 
 alter table gen_filters modify column f_value varchar(256);
+
+CREATE TABLE `switches` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `sw_name` varchar(64) NOT NULL,
+  `sw_slot` int(11),
+  `sw_port` int(11),
+  `sw_portspeed` int(11),
+  `sw_portnego` varchar(1) DEFAULT '',
+  `sw_porttype` varchar(16) DEFAULT '',
+  `sw_portstate` varchar(16) DEFAULT '',
+  `sw_portname` varchar(16) DEFAULT '',
+  `sw_rportname` varchar(16) DEFAULT '',
+  `sw_updated` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx1` (`sw_name`, `sw_slot`, `sw_port`)
+);

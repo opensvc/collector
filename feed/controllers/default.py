@@ -653,6 +653,11 @@ def update_ibmsvc(name, vars, vals, auth):
 
 @auth_uuid
 @service.xmlrpc
+def update_brocade(name, vars, vals, auth):
+    update_array_xml(name, vars, vals, auth, "brocade", insert_brocade)
+
+@auth_uuid
+@service.xmlrpc
 def update_vioserver(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "vioserver", insert_vioserver)
 
@@ -855,6 +860,53 @@ def insert_necism(name=None):
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
             db.executesql(sql)
 
+
+def insert_brocades():
+    return insert_brocade()
+
+def insert_brocade(name=None):
+    import glob
+    import os
+    from applications.init.modules import brocade
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+
+    dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='brocade'))
+    if name is None:
+        pattern = "*"
+    else:
+        pattern = name
+    dirs = glob.glob(os.path.join(dir, pattern))
+
+    vars = ['sw_name',
+            'sw_slot',
+            'sw_port',
+            'sw_portspeed',
+            'sw_portnego',
+            'sw_portstate',
+            'sw_porttype',
+            'sw_rportname',
+            'sw_updated']
+    for d in dirs:
+        vals = []
+        s = brocade.get_brocade(d)
+        if s is None:
+            continue
+        for p in s.ports:
+            vals.append([
+                s.name,
+                str(p['Slot']),
+                str(p['Port']),
+                str(p['Speed']),
+                str(p['Nego']),
+                str(p['State']),
+                str(p['Type']),
+                str(p['RemotePortName']),
+                now
+            ])
+        generic_insert('switches', vars, vals)
+        sql = """delete from switches where sw_name="%s" and sw_updated < "%s" """%(s.name, str(now))
+        db.executesql(sql)
 
 def insert_vioservers():
     return insert_vioserver()
