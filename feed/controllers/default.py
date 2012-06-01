@@ -481,9 +481,8 @@ def _register_disk(vars, vals, auth):
     h['disk_updated'] = now
 
     q = db.diskinfo.disk_id==disk_id
-    q &= db.diskinfo.disk_level > 0
     n = db(q).count()
-    if disk_id.startswith(h["disk_nodename"].strip("'")+'.') and n == 0:
+    if disk_id.startswith(h["disk_nodename"].strip("'")+'.'):
         h['disk_local'] = 'T'
         vars = ['disk_id', 'disk_arrayid', 'disk_devid', 'disk_size']
         vals = [h["disk_id"],
