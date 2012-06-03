@@ -26,7 +26,7 @@ b_disk_app_last_update from information_schema.tables where
 table_schema="opensvc" and table_name in ('nodes', 'services', 'apps',
 'svcdisks', 'diskinfo')"""
     rows = db.executesql(sql)
-    if rows[0][0] != 1:
+    if rows[0][0] is not None and rows[0][0] != 1:
         return "skip " + str(rows)
     sql = """drop table if exists b_disk_app_old"""
     db.executesql(sql)
