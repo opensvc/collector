@@ -2609,3 +2609,16 @@ CREATE TABLE `switches` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx1` (`sw_name`, `sw_slot`, `sw_port`)
 );
+
+CREATE TABLE `node_ip` (
+  `nodename` varchar(64) DEFAULT '',
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `mac` varchar(17) NOT NULL,
+  `intf` varchar(12) NOT NULL,
+  `type` enum('ipv4', 'ipv6') default 'ipv4',
+  `addr` varchar(128) DEFAULT '',
+  `mask` varchar(64) DEFAULT '',
+  `updated` datetime not null,
+  PRIMARY KEY (`id`)
+);
+
