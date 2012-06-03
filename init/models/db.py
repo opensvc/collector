@@ -1523,3 +1523,14 @@ db.define_table('switches',
     Field('sw_rportname', 'string'),
     Field('sw_updated', 'datetime'),
     migrate=False)
+
+db.define_table('node_ip',
+    Field('nodename', 'string'),
+    Field('mac', 'string'),
+    Field('intf', 'string'),
+    Field('type', 'string'),
+    Field('addr', 'string'),
+    Field('mask', 'string'),
+    Field('updated', 'datetime'),
+    migrate=False)
+
