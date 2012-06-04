@@ -315,7 +315,7 @@ class viz(object):
         self.add_array(cdg, d.disk_arrayid, d.disk_vendor, d.disk_model)
         if cdg not in self.cdg:
             self.cdg[cdg] = []
-        label="<tr><td>%(name)s</td><td>%(devid)s</td><td>%(size)s GB</td></tr>"%(dict(id=vid, name=d.disk_id, size=d.disk_size, img=self.img_disk, devid=d.disk_devid))
+        label="<tr><td>%(name)s</td><td>%(devid)s</td><td>%(size)s MB</td></tr>"%(dict(id=vid, name=d.disk_id, size=d.disk_size, img=self.img_disk, devid=d.disk_devid))
         if label not in self.cdg[cdg]:
             self.cdg[cdg].append(label)
 
