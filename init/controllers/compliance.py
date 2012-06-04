@@ -599,6 +599,150 @@ i=d.getTime();$("#%(n)s_container").append("<div style='display:table-row'><div 
                )
         return form
 
+    def html_crontabentry(self, o):
+        v = self.get(o)
+        try:
+            e = json.loads(v)
+        except:
+            return SPAN("malformed value", PRE(v))
+        l = [DIV(
+               DIV('check', _style='display:table-cell;font-weight:bold', _class="comp16"),
+               DIV(e['check'], _style='display:table-cell'),
+               _style="display:table-row",
+             )]
+        if 'user' in e:
+            l += [DIV(
+                    DIV('user', _style='display:table-cell', _class="guy16"),
+                    DIV(e['user'], _style='display:table-cell'),
+                    _style="display:table-row",
+                  )]
+        if 'entry' in e:
+            l += [DIV(
+                    DIV('entry', _style='display:table-cell', _class="action16"),
+                    DIV(e['entry'], _style='display:table-cell'),
+                    _style="display:table-row",
+                  )]
+        if 'ref' in e:
+            l += [DIV(
+                    DIV('ref', _style='display:table-cell', _class="loc"),
+                    DIV(e['ref'], _style='display:table-cell'),
+                    _style="display:table-row",
+                  )]
+
+        return DIV(l, _class="comp_var_table")
+
+    def form_crontabentry(self, o):
+        name = 'crontabentry_n_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
+        l = []
+        v = self.get(o)
+        if v is None or v == "":
+            e = {}
+        else:
+            try:
+                e = json.loads(v)
+            except:
+                return self.form_raw(o)
+        for key, img in (('check', 'comp16'),
+                         ('user', 'guy16'),
+                         ('entry', 'action16'),
+                         ('ref', 'loc')):
+            if key not in e:
+                value = ""
+            else:
+                value = e[key]
+            if key == 'entry':
+                _WIDGET = TEXTAREA
+            else:
+                _WIDGET = INPUT
+            l += [DIV(
+                   DIV(key, _style='display:table-cell;font-weight:bold', _class=img),
+                   DIV(_WIDGET(_name=name, _id="%s_%s"%(name, key), value=value), _style='display:table-cell'),
+                   _style="display:table-row",
+                 )]
+        form = DIV(
+                 SPAN(l, _id=name+'_container'),
+                 BR(),
+                 INPUT(
+                   _type="submit",
+                   _onclick=self.t.ajax_submit(additional_input_name=name,
+                                               args=["var_value_set_dict", name]),
+                 ),
+                 _class="comp_var_table",
+               )
+        return form
+
+    def html_fileinc(self, o):
+        v = self.get(o)
+        try:
+            e = json.loads(v)
+        except:
+            return SPAN("malformed value", PRE(v))
+        l = [DIV(
+               DIV('file', _style='display:table-cell;font-weight:bold', _class="comp16"),
+               DIV(e['path'], _style='display:table-cell'),
+               _style="display:table-row",
+             )]
+        if 'check' in e:
+            l += [DIV(
+                    DIV('check', _style='display:table-cell', _class="action16"),
+                    DIV(e['check'], _style='display:table-cell'),
+                    _style="display:table-row",
+                  )]
+        if 'fmt' in e:
+            l += [DIV(
+                    DIV('fmt', _style='display:table-cell', _class="hd16"),
+                    DIV(e['fmt'], _style='display:table-cell'),
+                    _style="display:table-row",
+                  )]
+        if 'ref' in e:
+            l += [DIV(
+                    DIV('ref', _style='display:table-cell', _class="loc"),
+                    DIV(e['ref'], _style='display:table-cell'),
+                    _style="display:table-row",
+                  )]
+
+        return DIV(l, _class="comp_var_table")
+
+    def form_fileinc(self, o):
+        name = 'fileinc_n_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
+        l = []
+        v = self.get(o)
+        if v is None or v == "":
+            e = {}
+        else:
+            try:
+                e = json.loads(v)
+            except:
+                return self.form_raw(o)
+        for key, img in (('check', 'comp16'),
+                         ('path', 'hd16'),
+                         ('fmt', 'action16'),
+                         ('ref', 'loc')):
+            if key not in e:
+                value = ""
+            else:
+                value = e[key]
+            if key == 'fmt':
+                _WIDGET = TEXTAREA
+            else:
+                _WIDGET = INPUT
+            l += [DIV(
+                   DIV(key, _style='display:table-cell;font-weight:bold', _class=img),
+                   DIV(_WIDGET(_name=name, _id="%s_%s"%(name, key), value=value), _style='display:table-cell'),
+                   _style="display:table-row",
+                 )]
+        form = DIV(
+                 SPAN(l, _id=name+'_container'),
+                 BR(),
+                 INPUT(
+                   _type="submit",
+                   _onclick=self.t.ajax_submit(additional_input_name=name,
+                                               args=["var_value_set_dict", name]),
+                 ),
+                 _class="comp_var_table",
+               )
+        return form
+
     def html_rc(self, o):
         v = self.get(o)
         l = [DIV(
@@ -2721,6 +2865,10 @@ def ajax_comp_rulesets():
             elif action == 'var_value_set_process':
                 var_value_set_list_of_dict(name)
             elif action == 'var_value_set_etcsystem':
+                var_value_set_list_of_dict(name)
+            elif action == 'var_value_set_crontabentry':
+                var_value_set_list_of_dict(name)
+            elif action == 'var_value_set_fileinc':
                 var_value_set_list_of_dict(name)
             elif action == 'var_value_set_rc':
                 var_value_set_list_of_dict(name)
