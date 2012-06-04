@@ -491,15 +491,12 @@ def insert_stats_netdev_err(vars, vals, auth):
 @auth_uuid
 @service.xmlrpc
 def insert_stats(data, auth):
-    feed_enqueue("_insert_stats", data, auth)
-
-def _insert_stats(data, auth):
     import cPickle
     h = cPickle.loads(data)
     for stat in h:
         vars, vals = h[stat]
         generic_insert('stats_'+stat, vars, vals)
-    update_dash_netdev_errors(auth[1])
+    feed_enqueue("update_dash_netdev_errors" , auth[1])
 
 @auth_uuid
 @service.xmlrpc
