@@ -273,6 +273,7 @@ db.define_table('services',
     Field('svc_envfile'),
     Field('svc_vcpus'),
     Field('svc_vmem'),
+    Field('svc_containerpath'),
     migrate=False)
 
 db.define_table('v_svcmon',
