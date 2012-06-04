@@ -923,7 +923,7 @@ def rows_avg_cpu_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=No
         end = now - datetime.timedelta(days=0, microseconds=now.microsecond)
         begin = end - datetime.timedelta(days=1)
     sql = """select nodename,
-                    100-avg(idle) as avg,
+                    0,
                     cpu,
                     avg(usr) as avg_usr,
                     avg(nice) as avg_nice,
@@ -940,7 +940,7 @@ def rows_avg_cpu_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=No
                and nodename like '%(dom)s'
                %(nodes)s
              group by nodename
-             order by avg"""%dict(begin=str(begin),end=str(end),dom=dom,nodes=nodes)
+             order by 100-avg(usr+sys)"""%dict(begin=str(begin),end=str(end),dom=dom,nodes=nodes)
 
     if lower is not None:
         sql += ' desc limit %d;'%int(lower)
