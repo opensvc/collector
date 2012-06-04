@@ -2339,3 +2339,286 @@ alter table stat_day_disk_array add column reserved integer default 0;
 alter table stat_day_disk_array add column reservable integer default 0;
 
 alter table diskinfo modify disk_id varchar(120);
+
+alter table feed_queue add column created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+alter table stor_array add column array_level integer not null default 0;
+
+alter table diskinfo add column disk_level integer not null default 0;
+
+alter table diskinfo modify column disk_arrayid varchar(300);
+
+alter table stor_array modify column array_name varchar(300);
+
+ALTER TABLE apps CONVERT TO CHARACTER SET utf8;
+
+alter table apps modify column app varchar(64) CHARACTER SET utf8;
+
+drop view v_apps_flat;
+
+create view v_apps_flat  AS (select `a`.`id` AS `id`,`a`.`app` AS `app`,`g`.`role` AS `role`,concat_ws(' ',`u`.`first_name`,`u`.`last_name`) AS `responsible`,`u`.`email` AS `email` from ((((`apps` `a` left join `apps_responsibles` `ar` on((`ar`.`app_id` = `a`.`id`))) left join `auth_group` `g` on((`g`.`id` = `ar`.`group_id`))) left join `auth_membership` `am` on((`am`.`group_id` = `g`.`id`))) left join `auth_user` `u` on((`u`.`id` = `am`.`user_id`))) order by `a`.`app`);
+
+drop view v_apps;
+
+CREATE VIEW `v_apps` AS (select `v_apps_flat`.`id` AS `id`,`v_apps_flat`.`app` AS `app`,group_concat(distinct `v_apps_flat`.`role` separator ', ') AS `roles`,group_concat(distinct `v_apps_flat`.`responsible` separator ', ') AS `responsibles`,group_concat(distinct `v_apps_flat`.`email` separator ', ') AS `mailto` from `v_apps_flat` group by `v_apps_flat`.`app`);
+
+drop view v_svcactions;
+
+CREATE VIEW `v_svcactions` AS select `ac`.`cron` AS `cron`,`ac`.`time` AS `time`,`ac`.`version` AS `version`,`ac`.`svcname` AS `svcname`,`ac`.`action` AS `action`,`ac`.`status` AS `status`,`ac`.`begin` AS `begin`,`ac`.`end` AS `end`,`ac`.`hostname` AS `hostname`,`ac`.`hostid` AS `hostid`,`ac`.`status_log` AS `status_log`,`ac`.`pid` AS `pid`,`ac`.`ID` AS `ID`,`ac`.`ack` AS `ack`,`ac`.`alert` AS `alert`,`ac`.`acked_by` AS `acked_by`,`ac`.`acked_comment` AS `acked_comment`,`ac`.`acked_date` AS `acked_date`,`s`.`svc_ha` AS `svc_ha`,`s`.`svc_app` AS `app`,`a`.`mailto` AS `mailto`,`a`.`responsibles` AS `responsibles`,`n`.`nodename` AS `nodename`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`team_responsible` AS `team_responsible`, n.team_integ as team_integ, n.team_support as team_support, n.project as project, `n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`status` AS `asset_status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`, n.host_mode AS host_mode, `n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2` from (((`SVCactions` `ac` join `services` `s` on((`s`.`svc_name` = `ac`.`svcname`))) join `nodes` `n` on((`ac`.`hostname` = `n`.`nodename`))) join `b_apps` `a` on((`a`.`app` = `s`.`svc_app`)));
+
+alter table comp_log drop key idx2;
+
+alter table comp_log add key idx2 (`run_date`);
+
+CREATE TABLE `comp_log2` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `run_nodename` varchar(64) NOT NULL,
+  `run_module` varchar(64) NOT NULL,
+  `run_status` int(11) NOT NULL DEFAULT '1',
+  `run_log` text NOT NULL,
+  `run_date` datetime NOT NULL,
+  `run_ruleset` varchar(500) DEFAULT '',
+  `run_action` varchar(7) DEFAULT '',
+  `run_svcname` varchar(64) DEFAULT NULL,
+  `rset_md5` varchar(32) DEFAULT NULL,
+  PRIMARY KEY (`id`, `run_date`),
+  KEY `idx1` (`run_nodename`),
+  KEY `idx2` (`run_action`),
+  KEY `idx3` (`run_module`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+PARTITION BY RANGE (TO_DAYS(run_date))
+(
+ PARTITION pNULL VALUES LESS THAN (0),
+ PARTITION p201010 VALUES LESS THAN (TO_DAYS('2010-10-01')),
+ PARTITION p201011 VALUES LESS THAN (TO_DAYS('2010-11-01')),
+ PARTITION p201012 VALUES LESS THAN (TO_DAYS('2010-12-01')),
+ PARTITION p201101 VALUES LESS THAN (TO_DAYS('2011-01-01')),
+ PARTITION p201102 VALUES LESS THAN (TO_DAYS('2011-02-01')),
+ PARTITION p201103 VALUES LESS THAN (TO_DAYS('2011-03-01')),
+ PARTITION p201104 VALUES LESS THAN (TO_DAYS('2011-04-01')),
+ PARTITION p201105 VALUES LESS THAN (TO_DAYS('2011-05-01')),
+ PARTITION p201106 VALUES LESS THAN (TO_DAYS('2011-06-01')),
+ PARTITION p201107 VALUES LESS THAN (TO_DAYS('2011-07-01')),
+ PARTITION p201108 VALUES LESS THAN (TO_DAYS('2011-08-01')),
+ PARTITION p201109 VALUES LESS THAN (TO_DAYS('2011-09-01')),
+ PARTITION p201110 VALUES LESS THAN (TO_DAYS('2011-10-01')),
+ PARTITION p201111 VALUES LESS THAN (TO_DAYS('2011-11-01')),
+ PARTITION p201112 VALUES LESS THAN (TO_DAYS('2011-12-01')),
+ PARTITION p201201 VALUES LESS THAN (TO_DAYS('2012-01-01')),
+ PARTITION p201202 VALUES LESS THAN (TO_DAYS('2012-02-01')),
+ PARTITION p201203 VALUES LESS THAN (TO_DAYS('2012-03-01')),
+ PARTITION p201204 VALUES LESS THAN (TO_DAYS('2012-04-01')),
+ PARTITION p201205 VALUES LESS THAN (TO_DAYS('2012-05-01')),
+ PARTITION p201206 VALUES LESS THAN (TO_DAYS('2012-06-01')),
+ PARTITION p201207 VALUES LESS THAN (TO_DAYS('2012-07-01')),
+ PARTITION p201208 VALUES LESS THAN (TO_DAYS('2012-08-01')),
+ PARTITION p201209 VALUES LESS THAN (TO_DAYS('2012-09-01')),
+ PARTITION p201210 VALUES LESS THAN (TO_DAYS('2012-10-01')),
+ PARTITION p201211 VALUES LESS THAN (TO_DAYS('2012-11-01')),
+ PARTITION p201212 VALUES LESS THAN (TO_DAYS('2012-12-01')),
+ PARTITION pNew VALUES LESS THAN MAXVALUE
+);
+
+insert into comp_log2 (select * from comp_log);
+
+alter table comp_log rename to comp_log_old;
+
+alter table comp_log2 rename to comp_log;
+
+ALTER TABLE comp_log REORGANIZE PARTITION pNew INTO (
+  PARTITION p201301 VALUES LESS THAN (TO_DAYS('2013-01-01')),
+  PARTITION p201302 VALUES LESS THAN (TO_DAYS('2013-02-01')),
+  PARTITION p201303 VALUES LESS THAN (TO_DAYS('2013-03-01')),
+  PARTITION p201304 VALUES LESS THAN (TO_DAYS('2013-04-01')),
+  PARTITION p201305 VALUES LESS THAN (TO_DAYS('2013-05-01')),
+  PARTITION p201306 VALUES LESS THAN (TO_DAYS('2013-06-01')),
+  PARTITION p201307 VALUES LESS THAN (TO_DAYS('2013-07-01')),
+  PARTITION p201308 VALUES LESS THAN (TO_DAYS('2013-08-01')),
+  PARTITION p201309 VALUES LESS THAN (TO_DAYS('2013-09-01')),
+  PARTITION p201310 VALUES LESS THAN (TO_DAYS('2013-10-01')),
+  PARTITION p201311 VALUES LESS THAN (TO_DAYS('2013-11-01')),
+  PARTITION p201312 VALUES LESS THAN (TO_DAYS('2013-12-01')),
+  PARTITION pNew VALUES LESS THAN (MAXVALUE)
+);
+
+CREATE TABLE `SVCactions2` (
+  `svcname` varchar(60) DEFAULT NULL,
+  `action` varchar(30) CHARACTER SET latin1 DEFAULT NULL,
+  `status` enum('err','ok','warn') NOT NULL,
+  `begin` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `end` datetime DEFAULT NULL,
+  `hostname` varchar(50) NOT NULL DEFAULT '',
+  `hostid` varchar(30) DEFAULT NULL,
+  `status_log` text CHARACTER SET latin1,
+  `pid` varchar(32) DEFAULT NULL,
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `ack` tinyint(4) DEFAULT NULL,
+  `alert` tinyint(1) DEFAULT NULL,
+  `acked_by` varchar(50) CHARACTER SET latin1 DEFAULT NULL,
+  `acked_comment` text CHARACTER SET latin1,
+  `acked_date` datetime NOT NULL,
+  `version` varchar(20) CHARACTER SET latin1 DEFAULT NULL,
+  `cron` tinyint(1) DEFAULT '0',
+  `time` datetime DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`ID`, `begin`),
+  KEY `hostname` (`hostname`),
+  KEY `svcname` (`svcname`),
+  KEY `hostid` (`hostid`),
+  KEY `action` (`action`),
+  KEY `end` (`end`),
+  KEY `status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+PARTITION BY RANGE (TO_DAYS(begin))
+(
+ PARTITION pNULL VALUES LESS THAN (0),
+ PARTITION p201010 VALUES LESS THAN (TO_DAYS('2010-10-01')),
+ PARTITION p201011 VALUES LESS THAN (TO_DAYS('2010-11-01')),
+ PARTITION p201012 VALUES LESS THAN (TO_DAYS('2010-12-01')),
+ PARTITION p201101 VALUES LESS THAN (TO_DAYS('2011-01-01')),
+ PARTITION p201102 VALUES LESS THAN (TO_DAYS('2011-02-01')),
+ PARTITION p201103 VALUES LESS THAN (TO_DAYS('2011-03-01')),
+ PARTITION p201104 VALUES LESS THAN (TO_DAYS('2011-04-01')),
+ PARTITION p201105 VALUES LESS THAN (TO_DAYS('2011-05-01')),
+ PARTITION p201106 VALUES LESS THAN (TO_DAYS('2011-06-01')),
+ PARTITION p201107 VALUES LESS THAN (TO_DAYS('2011-07-01')),
+ PARTITION p201108 VALUES LESS THAN (TO_DAYS('2011-08-01')),
+ PARTITION p201109 VALUES LESS THAN (TO_DAYS('2011-09-01')),
+ PARTITION p201110 VALUES LESS THAN (TO_DAYS('2011-10-01')),
+ PARTITION p201111 VALUES LESS THAN (TO_DAYS('2011-11-01')),
+ PARTITION p201112 VALUES LESS THAN (TO_DAYS('2011-12-01')),
+ PARTITION p201201 VALUES LESS THAN (TO_DAYS('2012-01-01')),
+ PARTITION p201202 VALUES LESS THAN (TO_DAYS('2012-02-01')),
+ PARTITION p201203 VALUES LESS THAN (TO_DAYS('2012-03-01')),
+ PARTITION p201204 VALUES LESS THAN (TO_DAYS('2012-04-01')),
+ PARTITION p201205 VALUES LESS THAN (TO_DAYS('2012-05-01')),
+ PARTITION p201206 VALUES LESS THAN (TO_DAYS('2012-06-01')),
+ PARTITION p201207 VALUES LESS THAN (TO_DAYS('2012-07-01')),
+ PARTITION p201208 VALUES LESS THAN (TO_DAYS('2012-08-01')),
+ PARTITION p201209 VALUES LESS THAN (TO_DAYS('2012-09-01')),
+ PARTITION p201210 VALUES LESS THAN (TO_DAYS('2012-10-01')),
+ PARTITION p201211 VALUES LESS THAN (TO_DAYS('2012-11-01')),
+ PARTITION p201212 VALUES LESS THAN (TO_DAYS('2012-12-01')),
+ PARTITION p201301 VALUES LESS THAN (TO_DAYS('2013-01-01')),
+ PARTITION p201302 VALUES LESS THAN (TO_DAYS('2013-02-01')),
+ PARTITION p201303 VALUES LESS THAN (TO_DAYS('2013-03-01')),
+ PARTITION p201304 VALUES LESS THAN (TO_DAYS('2013-04-01')),
+ PARTITION p201305 VALUES LESS THAN (TO_DAYS('2013-05-01')),
+ PARTITION p201306 VALUES LESS THAN (TO_DAYS('2013-06-01')),
+ PARTITION p201307 VALUES LESS THAN (TO_DAYS('2013-07-01')),
+ PARTITION p201308 VALUES LESS THAN (TO_DAYS('2013-08-01')),
+ PARTITION p201309 VALUES LESS THAN (TO_DAYS('2013-09-01')),
+ PARTITION p201310 VALUES LESS THAN (TO_DAYS('2013-10-01')),
+ PARTITION p201311 VALUES LESS THAN (TO_DAYS('2013-11-01')),
+ PARTITION p201312 VALUES LESS THAN (TO_DAYS('2013-12-01')),
+ PARTITION pNew VALUES LESS THAN MAXVALUE
+);
+
+insert into SVCactions2 (select * from SVCactions);
+
+alter table SVCactions rename to SVCactionsold;
+
+alter table SVCactions2 rename to SVCactions;
+
+drop view v_disk_app;
+
+create view v_disk_app as 
+                     select
+                       diskinfo.id,
+                       diskinfo.disk_id,
+                       svcdisks.disk_region,
+                       svcdisks.disk_svcname,
+                       svcdisks.disk_nodename,
+                       svcdisks.disk_vendor,
+                       svcdisks.disk_model,
+                       svcdisks.disk_dg,
+                       svcdisks.disk_updated as svcdisk_updated,
+                       svcdisks.id as svcdisk_id,
+                       svcdisks.disk_local,
+                       services.svc_app as app,
+                       svcdisks.disk_used as disk_used,
+                       diskinfo.disk_size,
+                       diskinfo.disk_arrayid,
+                       diskinfo.disk_group,
+                       diskinfo.disk_devid,
+                       diskinfo.disk_updated,
+                       diskinfo.disk_raid,
+                       diskinfo.disk_level
+                     from
+                       diskinfo
+                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+                     left join services on svcdisks.disk_svcname=services.svc_name
+                     where svcdisks.disk_svcname != ""
+                     union all
+                     select
+                       diskinfo.id,
+                       diskinfo.disk_id,
+                       svcdisks.disk_region,
+                       svcdisks.disk_svcname,
+                       svcdisks.disk_nodename,
+                       svcdisks.disk_vendor,
+                       svcdisks.disk_model,
+                       svcdisks.disk_dg,
+                       svcdisks.disk_updated as svcdisk_updated,
+                       svcdisks.id as svcdisk_id,
+                       svcdisks.disk_local,
+                       nodes.project as app,
+                       svcdisks.disk_used as disk_used,
+                       diskinfo.disk_size,
+                       diskinfo.disk_arrayid,
+                       diskinfo.disk_group,
+                       diskinfo.disk_devid,
+                       diskinfo.disk_updated,
+                       diskinfo.disk_raid,
+                       diskinfo.disk_level
+                     from
+                       diskinfo
+                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+                     left join nodes on svcdisks.disk_nodename=nodes.nodename
+                     where (svcdisks.disk_svcname = "" or svcdisks.disk_svcname is NULL)
+;
+
+
+alter table diskinfo modify column disk_raid varchar(24);
+
+alter table diskinfo drop key new_index;
+
+alter table diskinfo modify column disk_group varchar(60) default "";
+
+update diskinfo set disk_group="" where disk_group is NULL;
+
+alter table diskinfo add unique key new_index (disk_id, disk_group);
+
+drop view v_comp_rulesets;
+
+create view v_comp_rulesets as (select `r`.`id` AS `ruleset_id`,`r`.`ruleset_name` AS `ruleset_name`,`r`.`ruleset_type` AS `ruleset_type`,group_concat(distinct `g`.`role` separator ', ') AS `teams_responsible`,(select ruleset_name from comp_rulesets where id=rr.child_rset_id) as encap_rset, rr.child_rset_id as encap_rset_id, `rv`.`id` AS `id`,`rv`.`var_name` AS `var_name`,`rv`.`var_class` AS `var_class`,`rv`.`var_value` AS `var_value`,`rv`.`var_author` AS `var_author`,`rv`.`var_updated` AS `var_updated`,`rf`.`fset_id` AS `fset_id`,`fs`.`fset_name` AS `fset_name` from (((((`comp_rulesets` `r` left join comp_rulesets_rulesets rr on r.id=rr.parent_rset_id left join `comp_rulesets_variables` `rv` on(((`rv`.`ruleset_id` = `r`.`id` and rr.child_rset_id is NULL) or rv.ruleset_id = rr.child_rset_id))) left join `comp_rulesets_filtersets` `rf` on((`r`.`id` = `rf`.`ruleset_id`))) left join `gen_filtersets` `fs` on((`fs`.`id` = `rf`.`fset_id`))) left join `comp_ruleset_team_responsible` `rt` on((`r`.`id` = `rt`.`ruleset_id`))) left join `auth_group` `g` on((`rt`.`group_id` = `g`.`id`))) group by `r`.`id`,`rv`.`id`, rr.id);
+
+alter table gen_filters modify column f_value varchar(256);
+
+CREATE TABLE `switches` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `sw_name` varchar(64) NOT NULL,
+  `sw_slot` int(11),
+  `sw_port` int(11),
+  `sw_portspeed` int(11),
+  `sw_portnego` varchar(1) DEFAULT '',
+  `sw_porttype` varchar(16) DEFAULT '',
+  `sw_portstate` varchar(16) DEFAULT '',
+  `sw_portname` varchar(16) DEFAULT '',
+  `sw_rportname` varchar(16) DEFAULT '',
+  `sw_updated` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx1` (`sw_name`, `sw_slot`, `sw_port`)
+);
+
+CREATE TABLE `node_ip` (
+  `nodename` varchar(64) DEFAULT '',
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `mac` varchar(17) NOT NULL,
+  `intf` varchar(12) NOT NULL,
+  `type` enum('ipv4', 'ipv6') default 'ipv4',
+  `addr` varchar(128) DEFAULT '',
+  `mask` varchar(64) DEFAULT '',
+  `updated` datetime not null,
+  PRIMARY KEY (`id`)
+);
+

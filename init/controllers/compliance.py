@@ -1511,6 +1511,10 @@ $("#%(n)s_container").append("\
                             _id="%s_%s"%(name, key),
                           )
             elif key == 'authfile':
+                if 'authfile' in f:
+                    authfile = f['authfile']
+                else:
+                    authfile = "authorized_keys"
                 _WIDGET = SELECT(
                             (
                                OPTION("authorized_keys", _value="authorized_keys"),
@@ -1518,6 +1522,7 @@ $("#%(n)s_container").append("\
                             ),
                             _name=name,
                             _id="%s_%s"%(name, key),
+                            value=authfile,
                           )
             else:
                 _WIDGET = INPUT(_name=name, _id="%s_%s"%(name, key), value=value)
@@ -2149,9 +2154,14 @@ class table_comp_rulesets(HtmlTable):
         divid = 'rset_clone'
         sid = 'rset_clone_s'
         iid = 'rset_clone_i'
-        q = db.comp_rulesets.id > 0
         o = db.comp_rulesets.ruleset_name
-        options = [OPTION(g.ruleset_name,_value=g.id) for g in db(q).select(orderby=o)]
+        if 'Manager' in user_groups():
+            q = db.comp_rulesets.id > 0
+            options = [OPTION(g.ruleset_name,_value=g.id) for g in db(q).select(orderby=o)]
+        else:
+            q = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+            q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+            options = [OPTION(g.comp_rulesets.ruleset_name,_value=g.comp_rulesets.id) for g in db(q).select(orderby=o)]
         d = DIV(
               A(
                 T(label),
@@ -2388,17 +2398,30 @@ class table_comp_rulesets(HtmlTable):
 
     @auth.requires_membership('CompManager')
     def comp_ruleset_attach_sqlform(self):
+        if 'Manager' in user_groups():
+            qu = db.comp_rulesets.id > 0
+        else:
+            qu = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+            qu &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+        allowed = db(qu)
+
         db.comp_rulesets_rulesets.parent_rset_id.requires = IS_IN_DB(
-          db,
+          allowed,
           db.comp_rulesets.id,
           "%(ruleset_name)s",
           zero=T('choose one')
         )
+        q = db.comp_rulesets_rulesets.id > 0
+        rows = db(q).select(db.comp_rulesets_rulesets.parent_rset_id,
+                            groupby=db.comp_rulesets_rulesets.parent_rset_id)
+        parent_rset_ids = [r.parent_rset_id for r in rows]
+        q = ~db.comp_rulesets.id.belongs(parent_rset_ids)
+        q &= db.comp_rulesets.id.belongs(allowed.select(db.comp_rulesets.id))
         db.comp_rulesets_rulesets.child_rset_id.requires = IS_IN_DB(
-          db,
+          db(q),
           db.comp_rulesets.id,
           "%(ruleset_name)s",
-          zero=T('choose one')
+          zero=T('choose one'),
         )
         f = SQLFORM(
                  db.comp_rulesets_rulesets,
@@ -2617,7 +2640,7 @@ def ruleset_change_type(ids):
 
     x = ', '.join(['from %s on %s'%(r.ruleset_type,r.ruleset_name) for r in rows])
     db(q).update(ruleset_type=sid)
-    _log('comp.ruleset.type.change',
+    _log('compliance.ruleset.type.change',
          'changed ruleset type to %(s)s %(x)s',
          dict(s=sid, x=x))
 
@@ -2654,7 +2677,7 @@ def ruleset_clone():
         db.comp_rulesets_rulesets.insert(parent_rset_id=newid,
                                          child_rset_id=child_rset_id)
 
-    _log('comp.ruleset.clone',
+    _log('compliance.ruleset.clone',
          'cloned ruleset %(o)s from %(n)s',
          dict(o=orig, n=iid))
 
@@ -3832,6 +3855,7 @@ class table_comp_moduleset(HtmlTable):
                      img='guy16',
                     ),
         }
+        self.ajax_col_values = ajax_comp_moduleset_col_values
         self.colprops['modset_mod_name'].t = self
         if 'CompManager' in user_groups():
             self.form_module_add = self.comp_module_add_sqlform()
@@ -4150,7 +4174,7 @@ def mod_name_set():
         db.comp_moduleset_modules.insert(modset_mod_name=new,
                                          modset_id=modset_id,
                                          modset_mod_author=user_name())
-        _log('comp.moduleset.module.add',
+        _log('compliance.moduleset.module.add',
              'add module %(d)s in moduleset %(x)s',
              dict(x=modset_name, d=new))
     else:
@@ -4172,7 +4196,7 @@ def mod_name_set():
         db(q).update(modset_mod_name=new,
                      modset_mod_author=user_name(),
                      modset_mod_updated=now)
-        _log('comp.moduleset.module.change',
+        _log('compliance.moduleset.module.change',
              'change module name from %(on)s to %(d)s in moduleset %(x)s',
              dict(on=oldn, x=modset_name, d=new))
 
@@ -4227,6 +4251,33 @@ def modset_team_responsible_detach(ids=[]):
     _log('modset.group.detach',
          'detached group %(g)s from modsets %(u)s',
          dict(g=group_role(group_id), u=u))
+
+@auth.requires_login()
+def ajax_comp_moduleset_col_values():
+    t = table_comp_moduleset('ajax_comp_moduleset', 'ajax_comp_moduleset')
+    col = request.args[0]
+    o = db.comp_moduleset[col]
+
+    q = db.comp_moduleset.id > 0
+    j = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
+    l1 = db.comp_moduleset_team_responsible.on(j)
+    j = db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
+    l2 = db.comp_moduleset_modules.on(j)
+    j = db.comp_moduleset.id == db.v_comp_moduleset_teams_responsible.modset_id
+    l3 = db.v_comp_moduleset_teams_responsible.on(j)
+    if 'Manager' not in user_groups():
+        q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    t.object_list = db(q).select(db.comp_moduleset_modules.ALL,
+                                 db.comp_moduleset.modset_name,
+                                 db.comp_moduleset.id,
+                                 db.v_comp_moduleset_teams_responsible.teams_responsible,
+                                 orderby=o,
+                                 groupby=o,
+                                 left=(l1,l2,l3)
+                                 )
+    return t.col_values_cloud(col)
 
 @auth.requires_login()
 def ajax_comp_moduleset():
@@ -4937,7 +4988,7 @@ def var_set(t):
                                               var_author=user_name())
         else:
             raise Exception()
-        _log('comp.ruleset.variable.add',
+        _log('compliance.ruleset.variable.add',
              'add variable %(t)s %(d)s for ruleset %(x)s',
              dict(t=t, x=iid, d=new))
     else:
@@ -4956,14 +5007,14 @@ def var_set(t):
             db(q).update(var_name=new,
                          var_author=user_name(),
                          var_updated=now)
-            _log('comp.ruleset.variable.change',
+            _log('compliance.ruleset.variable.change',
                  'renamed variable %(on)s to %(d)s in ruleset %(x)s',
                  dict(on=oldn, x=iid, d=new))
         elif t == 'value':
             db(q).update(var_value=new,
                          var_author=user_name(),
                          var_updated=now)
-            _log('comp.ruleset.variable.change',
+            _log('compliance.ruleset.variable.change',
                  'change variable %(on)s value from %(ov)s to %(d)s in ruleset %(x)s',
                  dict(on=oldn, ov=oldv, x=iid, d=new))
         else:
@@ -5608,7 +5659,7 @@ def ajax_comp_log():
         request.vars.ajax_comp_log_f_run_date = '>'+str(d)
     o = ~db.comp_log.id
     q = _where(None, 'comp_log', domain_perms(), 'run_nodename')
-    q &= db.comp_log.run_nodename == db.v_nodes.nodename
+    q &= db.comp_log.run_nodename == db.nodes.nodename
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.comp_log.run_nodename)
@@ -6184,12 +6235,14 @@ def comp_ruleset_vars(ruleset_id, qr=None):
         f = 'explicit attachment'
     else:
         f = comp_format_filter(qr)
-    j = db.comp_rulesets.id == db.comp_rulesets_rulesets.parent_rset_id
-    l = db.comp_rulesets_rulesets.on(j)
-    q = db.comp_rulesets.id==ruleset_id
-    q &= (db.comp_rulesets.id == db.comp_rulesets_variables.ruleset_id)|\
-         (db.comp_rulesets_rulesets.child_rset_id == db.comp_rulesets_variables.ruleset_id)
-    rows = db(q).select(left=l)
+    q1 = db.comp_rulesets_rulesets.parent_rset_id==ruleset_id
+    q = db.comp_rulesets.id == ruleset_id
+    children = db(q1).select(db.comp_rulesets_rulesets.child_rset_id)
+    children = map(lambda x: x.child_rset_id, children)
+    if len(children) > 0:
+        q |= db.comp_rulesets.id.belongs(children)
+    q &= db.comp_rulesets.id == db.comp_rulesets_variables.ruleset_id
+    rows = db(q).select()
     if len(rows) == 0:
         return dict()
     ruleset_name = rows[0].comp_rulesets.ruleset_name
@@ -6367,7 +6420,6 @@ def _comp_get_ruleset(nodename):
             if len(match) > 0:
                 ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr))
             qr = db.nodes.id > 0
-
     # add explicit rulesets variables
     q = db.comp_rulesets_nodes.nodename == nodename
     rows = db(q).select(db.comp_rulesets_nodes.ruleset_id,
@@ -6458,7 +6510,7 @@ def ajax_rset_md5():
     import cPickle
     rsets = cPickle.loads(row.rset)
     d = SPAN(
-          H3(T('Ruleset %s'%rset_md5)),
+          H3(T('Ruleset %(rset_md5)s',dict(rset_md5=rset_md5))),
           beautify_rulesets(rsets),
         )
     return d

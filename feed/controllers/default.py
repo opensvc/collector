@@ -65,6 +65,9 @@ def delete_service_list(hostid=None, svcnames=[], auth=("", "")):
 @auth_uuid
 @service.xmlrpc
 def begin_action(vars, vals, auth):
+    feed_enqueue("_begin_action", vars, vals, auth)
+
+def _begin_action(vars, vals, auth):
     sql="""insert into SVCactions (%s) values (%s)""" % (','.join(vars), ','.join(vals))
     db.executesql(sql)
     i = db.executesql("SELECT LAST_INSERT_ID()")[0][0]
@@ -114,6 +117,7 @@ def _end_action(vars, vals):
         h[a] = b
         if a not in ['hostname', 'svcname', 'begin', 'action', 'hostid']:
             upd.append("%s=%s" % (a, b))
+    h['begin'] = repr(h['begin'].strip("'").split('.')[0])
     sql="""select id from SVCactions where hostname=%s and svcname=%s and begin=%s and action=%s""" %\
         (h['hostname'], h['svcname'], h['begin'], h['action'])
     ids = map(lambda x: x[0], db.executesql(sql))
@@ -161,7 +165,8 @@ def update_action_errors(svcname, nodename):
                a.svcname = "%(svcname)s" and
                a.hostname = "%(nodename)s" and
                a.status = "err" and
-               ((a.ack <> 1) or isnull(a.ack))
+               ((a.ack <> 1) or isnull(a.ack)) and
+               a.begin > date_sub(now(), interval 2 day)
     """%dict(svcname=svcname, nodename=nodename)
     err = db.executesql(sql)[0][0]
 
@@ -290,6 +295,19 @@ def _insert_generic(data, auth):
         sql = """delete from stor_zone where nodename="%s" """%auth[1]
         db.executesql(sql)
         generic_insert('stor_zone', vars, vals)
+    if 'lan' in data:
+        vars, vals = data['lan']
+        if 'updated' not in vars:
+            vars.append('updated')
+            for i, val in enumerate(vals):
+                vals[i].append(now)
+        if 'nodename' not in vars:
+            vars.append('nodename')
+            for i, val in enumerate(vals):
+                vals[i].append(auth[1])
+        sql = """delete from node_ip where nodename="%s" """%auth[1]
+        db.executesql(sql)
+        generic_insert('node_ip', vars, vals)
     db.commit()
 
 @auth_uuid
@@ -363,6 +381,7 @@ def register_disks(vars, vals, auth):
     nodename = auth[1].strip("'")
     db(db.svcdisks.disk_nodename==nodename).delete()
     db(db.diskinfo.disk_arrayid==nodename).delete()
+    db.commit()
     for v in vals:
         _register_disk(vars, v, auth)
 
@@ -370,6 +389,87 @@ def register_disks(vars, vals, auth):
 @service.xmlrpc
 def register_disk_blacklist(vars, vals, auth):
     generic_insert('disk_blacklist', vars, vals)
+
+def disk_level(dev_id, level=0):
+    q = db.diskinfo.disk_id == dev_id
+    q &= db.diskinfo.disk_id != db.diskinfo.disk_devid
+    rows = db(q).select(db.diskinfo.disk_devid)
+    if len(rows) == 0:
+        return level
+    return disk_level(rows.first().disk_devid, level+1)
+
+@auth_uuid
+@service.xmlrpc
+#def register_diskinfo(vars, vals, auth):
+#    feed_enqueue("_register_diskinfo", vars, vals, auth)
+
+def register_diskinfo(vars, vals, auth):
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+    nodename = auth[1]
+    vars.append("disk_updated")
+    vars.append("disk_level")
+
+    # insert diskinfo
+    # here the array can be a cluster. the field contains the member list.
+    # in this case, the node has to be added to the cluster members when the
+    # disk id is already known in diskinfo
+    arrays = set([])
+    for val in vals:
+        disk_id = val[0]
+        dev_id = val[2]
+        val.append(now)
+        val.append(str(disk_level(dev_id)))
+        sql = """select disk_arrayid from diskinfo where disk_id="%s" """%disk_id
+        rows = db.executesql(sql)
+        if len(rows) == 1:
+            array = rows[0][0]
+            cluster = array.split(',')
+            if nodename not in cluster:
+                cluster.append(nodename)
+                cluster.sort()
+                array = ','.join(cluster)
+            val[1] = array
+            arrays.add(array)
+        else:
+            arrays.add(nodename)
+        generic_insert('diskinfo', vars, val)
+
+    # purge diskinfo
+    if len(arrays) > 0:
+        sql = """ update diskinfo
+                    set disk_arrayid=replace(replace(replace(disk_arrayid, "%(nodename)s,", ""), ",%(nodename)s", ""), "%(nodename)s", "")
+                  where
+                    disk_group = "virtual" and
+                    disk_arrayid in (%(l)s) and
+                    disk_updated < "%(now)s" """%dict(nodename=nodename, l=','.join(map(lambda x: repr(str(x)), arrays)), now=now)
+        db.executesql(sql)
+
+    sql = """ delete from diskinfo where disk_arrayid = "" """
+    db.executesql(sql)
+
+    # register cluster as array
+    for array in arrays:
+        node = db(db.nodes.nodename==nodename).select().first()
+        if node is not None:
+            array_cache = node.mem_bytes
+            array_firmware = " ".join((node.os_name, node.os_vendor, node.os_release, node.os_kernel))
+        else:
+            array_cache = 0
+            array_firwmare = "unknown"
+
+        vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
+        vals = [
+          array,
+          "vdisk provider",
+          str(array_cache),
+          array_firmware,
+          now
+        ]
+        generic_insert('stor_array', vars, vals)
+        sql = """ delete from stor_array where array_name = "%s" and array_updated < "%s" """%(array, now)
+        db.executesql(sql)
+    db.commit()
 
 @auth_uuid
 @service.xmlrpc
@@ -379,19 +479,22 @@ def register_disk(vars, vals, auth):
 def _register_disk(vars, vals, auth):
     h = {}
     now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
     for a,b in zip(vars, vals):
         h[a] = b
 
     disk_id = h["disk_id"].strip("'")
 
     # don't register blacklisted disks (might be VM disks, already accounted)
-    n = db(db.disk_blacklist.disk_id==disk_id).count()
-    if n > 0:
-        purge_old_disks(h, now)
-        return
+    #n = db(db.disk_blacklist.disk_id==disk_id).count()
+    #if n > 0:
+    #    purge_old_disks(h, now)
+    #    return
 
-    if 'disk_updated' not in h:
-        h['disk_updated'] = now
+    h['disk_updated'] = now
+
+    q = db.diskinfo.disk_id==disk_id
+    n = db(q).count()
     if disk_id.startswith(h["disk_nodename"].strip("'")+'.'):
         h['disk_local'] = 'T'
         vars = ['disk_id', 'disk_arrayid', 'disk_devid', 'disk_size']
@@ -400,9 +503,11 @@ def _register_disk(vars, vals, auth):
                 repr(disk_id.split('.')[-1]),
                 h['disk_size']]
         generic_insert('diskinfo', vars, vals)
-    else:
+    elif n == 0:
         h['disk_local'] = 'F'
-        generic_insert('diskinfo', ['disk_id', 'disk_size'], [h["disk_id"], h['disk_size']])
+        vars = ['disk_id', 'disk_size']
+        vals = [h["disk_id"], h['disk_size']]
+        generic_insert('diskinfo', vars, vals)
 
         # if no array claimed that disk, give it to the node
         sql = """update diskinfo
@@ -413,6 +518,7 @@ def _register_disk(vars, vals, auth):
               """%(h['disk_nodename'].strip("'"), disk_id)
         db.executesql(sql)
         db.commit()
+
     try:
         generic_insert('svcdisks', h.keys(), h.values())
     except:
@@ -560,6 +666,21 @@ def update_ibmsvc(name, vars, vals, auth):
 
 @auth_uuid
 @service.xmlrpc
+def update_brocade(name, vars, vals, auth):
+    update_array_xml(name, vars, vals, auth, "brocade", insert_brocade)
+
+@auth_uuid
+@service.xmlrpc
+def update_vioserver(name, vars, vals, auth):
+    update_array_xml(name, vars, vals, auth, "vioserver", insert_vioserver)
+
+@auth_uuid
+@service.xmlrpc
+def update_necism(name, vars, vals, auth):
+    update_array_xml(name, vars, vals, auth, "necism", insert_necism)
+
+@auth_uuid
+@service.xmlrpc
 def update_dcs(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "dcs", insert_dcs)
 
@@ -584,7 +705,8 @@ def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
         except:
             pass
 
-    fn(arrayid)
+    #fn(arrayid)
+    feed_enqueue(fn.__name__, arrayid)
 
     # stor_array_proxy
     sql = """select id from stor_array where array_name="%s" """%arrayid
@@ -601,7 +723,257 @@ def insert_dcss():
     return insert_dcs()
 
 def insert_dcs(name=None):
-    pass
+    import glob
+    import os
+    from applications.init.modules import dcs
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+
+    dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='dcs'))
+    if name is None:
+        pattern = "*"
+    else:
+        pattern = name
+    dirs = glob.glob(os.path.join(dir, pattern))
+
+    for d in dirs:
+        s = dcs.get_dcs(d)
+        if s is not None:
+            # stor_array
+            vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
+            vals = []
+            name = s.sg['caption']
+            for server in s.server.values():
+                break
+            vals.append([s.sg['caption'],
+                         server['modelnumber'],
+                         str(s.sg['memory']),
+                         server['firmwareversion'],
+                         now])
+            generic_insert('stor_array', vars, vals)
+
+            sql = """select id from stor_array where array_name="%s" """%name
+            array_id = str(db.executesql(sql)[0][0])
+
+            # stor_array_dg
+            vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
+            vals = []
+            for dg in s.pool.values():
+                vals.append([array_id,
+                             dg['caption'],
+                             str(dg['avail']),
+                             str(dg['alloc']),
+                             str(dg['total']),
+                             now])
+            generic_insert('stor_array_dg', vars, vals)
+            sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
+            db.executesql(sql)
+
+            # stor_array_tgtid
+            vars = ['array_id', 'array_tgtid']
+            vals = []
+            for wwn in s.port_list:
+                vals.append([array_id, wwn])
+            generic_insert('stor_array_tgtid', vars, vals)
+
+            # diskinfo
+            vars = ['disk_id',
+                    'disk_arrayid',
+                    'disk_devid',
+                    'disk_size',
+                    'disk_raid',
+                    'disk_group',
+                    'disk_updated']
+            vals = []
+            for d in s.vdisk.values():
+                for poolid in d['poolid']:
+                    vals.append([d['wwid'],
+                                 name,
+                                 d['id'],
+                                 str(d['size']),
+                                 d['type'],
+                                 s.pool[poolid]['caption'],
+                                 now])
+            generic_insert('diskinfo', vars, vals)
+            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(name, str(now))
+            db.executesql(sql)
+
+def insert_necisms():
+    return insert_necism()
+
+def insert_necism(name=None):
+    import glob
+    import os
+    from applications.init.modules import necism
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+
+    dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='necism'))
+    if name is None:
+        pattern = "*"
+    else:
+        pattern = name
+    dirs = glob.glob(os.path.join(dir, pattern))
+
+    for d in dirs:
+        s = necism.get_necism(d)
+        if s is not None:
+            # stor_array
+            vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
+            vals = []
+            vals.append([s.name,
+                         s.model,
+                         str(s.cache),
+                         s.firmware,
+                         now])
+            generic_insert('stor_array', vars, vals)
+
+            sql = """select id from stor_array where array_name="%s" """%s.name
+            array_id = str(db.executesql(sql)[0][0])
+
+            # stor_array_dg
+            vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
+            vals = []
+            for dg in s.pool:
+                vals.append([array_id,
+                             dg['name'],
+                             str(dg['free']),
+                             str(dg['used']),
+                             str(dg['size']),
+                             now])
+            generic_insert('stor_array_dg', vars, vals)
+            sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
+            db.executesql(sql)
+
+            # stor_array_tgtid
+            vars = ['array_id', 'array_tgtid']
+            vals = []
+            for wwn in s.ports:
+                vals.append([array_id, wwn])
+            generic_insert('stor_array_tgtid', vars, vals)
+
+            # diskinfo
+            vars = ['disk_id',
+                    'disk_arrayid',
+                    'disk_devid',
+                    'disk_size',
+                    'disk_raid',
+                    'disk_group',
+                    'disk_updated']
+            vals = []
+            for d in s.vdisk:
+                vals.append([d['wwid'],
+                             s.name,
+                             d['name'],
+                             str(d['size']),
+                             d['raid'],
+                             d['disk_group'],
+                             now])
+            generic_insert('diskinfo', vars, vals)
+            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
+            db.executesql(sql)
+
+
+def insert_brocades():
+    return insert_brocade()
+
+def insert_brocade(name=None):
+    import glob
+    import os
+    from applications.init.modules import brocade
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+
+    dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='brocade'))
+    if name is None:
+        pattern = "*"
+    else:
+        pattern = name
+    dirs = glob.glob(os.path.join(dir, pattern))
+
+    vars = ['sw_name',
+            'sw_slot',
+            'sw_port',
+            'sw_portspeed',
+            'sw_portnego',
+            'sw_portstate',
+            'sw_porttype',
+            'sw_rportname',
+            'sw_updated']
+    for d in dirs:
+        vals = []
+        s = brocade.get_brocade(d)
+        if s is None:
+            continue
+        for p in s.ports:
+            vals.append([
+                s.name,
+                str(p['Slot']),
+                str(p['Port']),
+                str(p['Speed']),
+                str(p['Nego']),
+                str(p['State']),
+                str(p['Type']),
+                str(p['RemotePortName']),
+                now
+            ])
+        generic_insert('switches', vars, vals)
+        sql = """delete from switches where sw_name="%s" and sw_updated < "%s" """%(s.name, str(now))
+        db.executesql(sql)
+
+def insert_vioservers():
+    return insert_vioserver()
+
+def insert_vioserver(name=None):
+    import glob
+    import os
+    from applications.init.modules import vioserver
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+
+    dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='vioserver'))
+    if name is None:
+        pattern = "*"
+    else:
+        pattern = name
+    dirs = glob.glob(os.path.join(dir, pattern))
+
+    for d in dirs:
+        s = vioserver.get_vioserver(d)
+        if s is not None:
+            # stor_array
+            vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
+            vals = []
+            vals.append([s.array_name,
+                         s.modelnumber,
+                         str(s.controllermainmemory),
+                         s.firmwareversion,
+                         now])
+            generic_insert('stor_array', vars, vals)
+
+            sql = """select id from stor_array where array_name="%s" """%s.array_name
+            array_id = str(db.executesql(sql)[0][0])
+
+            # diskinfo
+            vars = ['disk_id',
+                    'disk_arrayid',
+                    'disk_devid',
+                    'disk_size',
+                    'disk_raid',
+                    'disk_group',
+                    'disk_updated']
+            vals = []
+            for d in s.vdisk:
+                vals.append([d['did'],
+                             s.array_name,
+                             d['backingdevid'],
+                             str(d['size']),
+                             "",
+                             "",
+                             now])
+            generic_insert('diskinfo', vars, vals)
+            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
+            db.executesql(sql)
 
 def insert_ibmsvcs():
     return insert_ibmsvc()
@@ -611,6 +983,7 @@ def insert_ibmsvc(name=None):
     import os
     from applications.init.modules import ibmsvc
     now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
 
     dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='ibmsvc'))
     if name is None:
@@ -686,6 +1059,7 @@ def insert_eva(name=None):
     import os
     from applications.init.modules import eva
     now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
 
     dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='eva'))
     if name is None:
@@ -762,6 +1136,7 @@ def insert_sym(symid=None):
     import os
     from applications.init.modules import symmetrix
     now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
 
     dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='symmetrix'))
     if symid is None:

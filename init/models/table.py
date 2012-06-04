@@ -122,6 +122,8 @@ class HtmlTable(object):
         # csv
         self.csv_q = None
         self.csv_orderby = None
+        self.csv_left = None
+        self.csv_limit = 2000
 
     def __iadd__(self, o):
         if isinstance(o, HtmlTableMenu):
@@ -186,8 +188,11 @@ class HtmlTable(object):
     def col_values_cloud(self, c):
         l = []
         for o in self.object_list:
+            s = self.colprops[c].get(o)
+            if s is None:
+                s = 'empty'
             l.append(A(
-                       self.colprops[c].get(o),
+                       s,
                        ' ',
                        _class="cloud_tag",
                        _onclick="filter_submit_%(id)s('%(iid)s','%(val)s')"%dict(
@@ -399,6 +404,21 @@ class HtmlTable(object):
               DIV(
                 0,
                 _id='countup_'+self.id,
+                _class='floatw',
+              ),
+            )
+        return d
+
+    def link(self):
+        d = DIV(
+              A(
+                SPAN(
+                  T('Link'),
+                  _title=T("Share your view using this hyperlink"),
+                  _onclick="js_link_%s()"%self.id,
+                  _class='link16',
+                  _id='link_'+self.id,
+                ),
                 _class='floatw',
               ),
             )
@@ -733,11 +753,15 @@ class HtmlTable(object):
                             _name=self.col_key(c),
                             _style=self.col_hide(c),
                             _class=' '.join([self.colprops[c]._class, self.colprops[c]._dataclass]),
-                            _ondblclick="filter_submit_%(id)s('%(k)s','%(v)s')"%dict(
+                            _onclick="""$("#fsr%(id)s").hide()"""%dict(
+                              id=self.id,
+                            ),
+                            _ONMOUSEUP="filter_selector_%(id)s(event, '%(k)s','%(v)s')"%dict(
                               id=self.id,
                               k=self.filter_key(c),
                               v=v,
                              ),
+                            _oncontextmenu="return false;",
                          ))
         return TR(cells, _class=self.cellclass)
 
@@ -896,6 +920,7 @@ class HtmlTable(object):
                             DIV(
                               INPUT(
                                 _id=self.filter_key(c),
+                                _name="fi",
                                 _value=self.filter_parse(c),
                                 _onKeyPress="ajax_enter_submit_%s(event)"%self.id,
                                 _onKeyUp="""if(!is_enter(event)){clearTimeout(timer);timer=setTimeout(function validate(){ajax('%(url)s', inputs_%(id)s, '%(cloud)s')}, 1000)}"""%dict(
@@ -954,6 +979,48 @@ class HtmlTable(object):
                                        additional_inputs=additional_inputs),
                  id=self.id)
 
+    def right_click_menu(self):
+        d = SPAN(
+              TABLE(
+                TR(
+                  TD("", _id="fsrview", _colspan=3),
+                ),
+                TR(
+                  TD("clear", _id="fsrclear"),
+                  TD("reset", _id="fsrreset"),
+                  TD("!", _id="fsrneg"),
+                ),
+                TR(
+                  TD("%..", _id="fsrwildleft"),
+                  TD("..%", _id="fsrwildright"),
+                  TD("%..%", _id="fsrwildboth"),
+                ),
+                TR(
+                  TD("=", _id="fsreq"),
+                  TD("&=", _id="fsrandeq"),
+                  TD("|=", _id="fsroreq"),
+                ),
+                TR(
+                  TD(">", _id="fsrsup"),
+                  TD("&>", _id="fsrandsup"),
+                  TD("|>", _id="fsrorsup"),
+                ),
+                TR(
+                  TD("<", _id="fsrinf"),
+                  TD("&<", _id="fsrandinf"),
+                  TD("|<", _id="fsrorinf"),
+                ),
+                TR(
+                  TD("empty", _id="fsrempty"),
+                  TD("&empty", _id="fsrandempty"),
+                  TD("|empty", _id="fsrorempty"),
+                ),
+              ),
+              _class='right_click_menu',
+              _id='fsr'+self.id,
+            )
+        return d
+
     def show_flash(self):
         if self.flash is None:
             return SPAN()
@@ -1011,6 +1078,15 @@ class HtmlTable(object):
                             vars=request.vars,
                             args=['csv']
                           ),
+                    _onclick="""$(this).hide();$("#csv%(id)s").show()"""%dict(id=self.id),
+                  ),
+                  DIV(
+                    SPAN(
+                      T('Export to csv'),
+                      _class='csv_disabled',
+                    ),
+                    _style="display:none",
+                    _id="csv"+self.id,
                   ),
                   _class='floatw',
                 )
@@ -1032,9 +1108,11 @@ class HtmlTable(object):
 
         d = DIV(
               self.show_flash(),
+              self.right_click_menu(),
               DIV(
                 self.pager(),
                 self.refresh(),
+                self.link(),
                 self.countdown(),
                 export,
                 self.columns_selector(),
@@ -1067,6 +1145,319 @@ class HtmlTable(object):
 function ajax_submit_%(id)s(){%(ajax_submit)s};
 function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
 function filter_submit_%(id)s(k,v){$("#"+k).val(v);ajax_submit_%(id)s()};
+function filter_selector_%(id)s(e,k,v){
+  if(e.button != 2) {
+    return
+  }
+  $("#fsr%(id)s").each(function() {
+    $(this)[0].oncontextmenu = function() {
+      return false;
+    }
+  });
+  var sel = window.getSelection().toString()
+  if (sel.length == 0) {
+    sel = v
+  }
+  _sel = sel
+  cur = $("#fsr%(id)s").find("#fsrview").text()
+  if (cur.length==0) {
+    cur = $("#"+k).val()
+  }
+  $("#fsr%(id)s").show()
+  if (e.pageX || e.pageY) {
+      posx = e.pageX;
+      posy = e.pageY;
+  }
+  else if (e.clientX || e.clientY) {
+      posx = e.clientX + document.body.scrollLeft
+           + document.documentElement.scrollLeft;
+      posy = e.clientY + document.body.scrollTop
+           + document.documentElement.scrollTop;
+  }
+  $("#fsr%(id)s").find(".bgred").each(function(){
+    $(this).removeClass("bgred")
+  })
+  function getsel(){
+    __sel = _sel
+    if ($("#fsr%(id)s").find("#fsrwildboth").hasClass("bgred")) {
+      __sel = '%%' + __sel + '%%'
+    } else
+    if ($("#fsr%(id)s").find("#fsrwildleft").hasClass("bgred")) {
+      __sel = '%%' + __sel
+    } else
+    if ($("#fsr%(id)s").find("#fsrwildright").hasClass("bgred")) {
+      __sel = __sel + '%%'
+    }
+    if ($("#fsr%(id)s").find("#fsrneg").hasClass("bgred")) {
+      __sel = '!' + __sel
+    }
+    return __sel
+  }
+  $("#fsr%(id)s").css({"left": posx + "px", "top": posy + "px"})
+  $("#fsr%(id)s").find("#fsrview").each(function(){
+    $(this).text($("#"+k).val())
+    $(this).unbind()
+    $(this).bind("dblclick", function(){
+      sel = $(this).text()
+      $("#"+k).val(sel)
+      filter_submit_%(id)s(k,sel)
+    })
+    $(this).bind("click", function(){
+      sel = $(this).text()
+      cur = sel
+      $("#"+k).val(sel)
+      $(this).removeClass("highlight")
+      $(this).addClass("b")
+      colname = $("#"+k).parents("td").attr("name")
+      $(".theader_slim").find("[name="+colname+"]").each(function(){
+        $(this).removeClass("bgred")
+        $(this).addClass("bgorange")
+      })
+    })
+  })
+  $("#fsr%(id)s").find("#fsrreset").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).text("")
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr%(id)s").find("#fsrclear").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).text("**clear**")
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr%(id)s").find("#fsrneg").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      if ($(this).hasClass("bgred")) {
+        $(this).removeClass("bgred")
+      } else {
+        $(this).addClass("bgred")
+      }
+      sel = getsel()
+    })
+  })
+  $("#fsr%(id)s").find("#fsrwildboth").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      if ($(this).hasClass("bgred")) {
+        $(this).removeClass("bgred")
+      } else {
+        $("#fsr%(id)s").find("[id^=fsrwild]").each(function(){
+          $(this).removeClass("bgred")
+        })
+        $(this).addClass("bgred")
+      }
+      sel = getsel()
+    })
+  })
+  $("#fsr%(id)s").find("#fsrwildleft").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      if ($(this).hasClass("bgred")) {
+        $(this).removeClass("bgred")
+      } else {
+        $("#fsr%(id)s").find("[id^=fsrwild]").each(function(){
+          $(this).removeClass("bgred")
+        })
+        $(this).addClass("bgred")
+      }
+      sel = getsel()
+    })
+  })
+  $("#fsr%(id)s").find("#fsrwildright").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      if ($(this).hasClass("bgred")) {
+        $(this).removeClass("bgred")
+      } else {
+        $("#fsr%(id)s").find("[id^=fsrwild]").each(function(){
+          $(this).removeClass("bgred")
+        })
+        $(this).addClass("bgred")
+      }
+      sel = getsel()
+    })
+  })
+  $("#fsr%(id)s").find("#fsreq").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).text(sel)
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr%(id)s").find("#fsrandeq").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = cur + '&' + sel
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).text(val)
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr%(id)s").find("#fsroreq").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = cur + '|' + sel
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).text(val)
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr%(id)s").find("#fsrsup").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = '>' + sel
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).text(val)
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr%(id)s").find("#fsrandsup").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = $("#fsr%(id)s").find("#fsrview").text()
+      if (val.length==0) {
+        val = $("#"+k).val()
+      }
+      val = val + '&>' + sel
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).text(val)
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr%(id)s").find("#fsrorsup").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = $("#fsr%(id)s").find("#fsrview").text()
+      if (val.length==0) {
+        val = $("#"+k).val()
+      }
+      val = val + '|>' + sel
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).text(val)
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr%(id)s").find("#fsrinf").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = '<' + sel
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).text(val)
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr%(id)s").find("#fsrandinf").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = $("#fsr%(id)s").find("#fsrview").text()
+      if (val.length==0) {
+        val = $("#"+k).val()
+      }
+      val = val + '&<' + sel
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).text(val)
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr%(id)s").find("#fsrorinf").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = $("#fsr%(id)s").find("#fsrview").text()
+      if (val.length==0) {
+        val = $("#"+k).val()
+      }
+      val = val + '|<' + sel
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).text(val)
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr%(id)s").find("#fsrempty").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      if ($("#fsr%(id)s").find("#fsrneg").hasClass("bgred")) {
+        val = '!empty'
+      } else {
+        val = 'empty'
+      }
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).text(val)
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr%(id)s").find("#fsrandempty").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = $("#fsr%(id)s").find("#fsrview").text()
+      if (val.length==0) {
+        val = $("#"+k).val()
+      }
+      if ($("#fsr%(id)s").find("#fsrneg").hasClass("bgred")) {
+        val = val + '&!empty'
+      } else {
+        val = val + '&empty'
+      }
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).text(val)
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr%(id)s").find("#fsrorempty").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = $("#fsr%(id)s").find("#fsrview").text()
+      if (val.length==0) {
+        val = $("#"+k).val()
+      }
+      if ($("#fsr%(id)s").find("#fsrneg").hasClass("bgred")) {
+        val = val + '|!empty'
+      } else {
+        val = val + '|empty'
+      }
+      $("#fsr%(id)s").find("#fsrview").each(function(){
+        $(this).text(val)
+        $(this).addClass("highlight")
+      })
+    })
+  })
+};
+function js_link_%(id)s(){
+  url=$(location).attr('href')
+  if (url.indexOf('?')>0) {
+    url=url.substring(0, url.indexOf('?'))
+  }
+  $("#%(id)s").find("[name=fi]").each(function(){
+    if ($(this).val().length==0) {return}
+    if (url.indexOf('?')<0) {
+      url=url+"?"
+    } else {
+      url=url+"&"
+    }
+    url=url+$(this).attr('id')+"="+$(this).val()
+  })
+  alert(url)
+}
 var inputs_%(id)s = %(a)s;"""%dict(
                    id=self.id,
                    a=self.ajax_inputs(),
@@ -1121,10 +1512,16 @@ $("#%(id)s").everyTime(1000, function(i){
     def csv_object_list(self):
         if self.csv_q is None:
             return self.object_list
-        if self.csv_orderby is None:
-            return db(self.csv_q).select(limitby=(0,2000))
+        if self.csv_left is None:
+            if self.csv_orderby is None:
+                return db(self.csv_q).select(limitby=(0,self.csv_limit))
+            else:
+                return db(self.csv_q).select(orderby=self.csv_orderby, limitby=(0,self.csv_limit))
         else:
-            return db(self.csv_q).select(orderby=self.csv_orderby, limitby=(0,2000))
+            if self.csv_orderby is None:
+                return db(self.csv_q).select(limitby=(0,self.csv_limit), left=self.csv_left)
+            else:
+                return db(self.csv_q).select(orderby=self.csv_orderby, limitby=(0,self.csv_limit), left=self.csv_left)
 
     def _csv(self):
         lines = [';'.join(self.cols)]
@@ -1152,6 +1549,7 @@ $("#%(id)s").everyTime(1000, function(i){
     def csv(self):
         import gluon.contenttype
         response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
+        response.headers['Content-disposition'] = 'attachment; filename=%s.csv' % self.id
         return self._csv()
 
     def int_match(self, value, num):

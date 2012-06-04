@@ -46,8 +46,10 @@ def refresh_b_action_errors():
                from svcmon m
                  left join SVCactions a
                  on m.mon_svcname=a.svcname and m.mon_nodname=a.hostname
-               where a.status='err'
+               where
+                 a.status='err'
                  and (a.ack=0 or isnull(a.ack))
+                 and a.end is not NULL
                group by m.mon_svcname, m.mon_nodname;
           """
     db.executesql(sql)
@@ -70,12 +72,12 @@ def refresh_b_apps():
         db.executesql(sql)
         sql = """CREATE TABLE `b_apps` (
   `id` int(11) NOT NULL DEFAULT '0',
-  `app` varchar(64) CHARACTER SET latin1 NOT NULL,
+  `app` varchar(64),
   `roles` varchar(342) DEFAULT NULL,
   `responsibles` varchar(342) DEFAULT NULL,
   `mailto` varchar(342) DEFAULT NULL,
   KEY `i_app` (`app`)
-)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8
 """
         db.executesql(sql)
         sql = "insert into b_apps select * from v_apps"
@@ -158,6 +160,7 @@ def cron_stat_day_disk_app():
                  where apps.app=t.app
                ) as quota
              from v_disks_app t
+             where t.app != ""
              group by t.app;
           """
     rows = db.executesql(sql)
@@ -579,7 +582,7 @@ def cron_scrub_checks():
 def alerts_apps_without_responsible():
     q = db.v_apps.mailto == None
     rows = db(q).select()
-    apps = [r.v_apps.app for r in rows]
+    apps = [r.app for r in rows]
 
     if len(apps) == 0:
         return
@@ -627,11 +630,13 @@ def alerts_svcmon_not_updated():
                       mon_nodname,
                       0,
                       0,
-                      md5(concat("service.status.notupdated",mon_nodname,mon_svcname,mon_updated))
-               from v_svcmon
+                      md5(concat("service.status.notupdated",mon_nodname,mon_svcname,mon_updated)),
+                      "warning"
+               from svcmon
                where mon_updated<date_sub(now(), interval %(age)d hour);"""%dict(age=age)
-    return db.executesql(sql)
+    n = db.executesql(sql)
     db.commit()
+    return n
 
 def refresh_dash_action_errors():
     sql = """delete from dashboard
@@ -645,7 +650,13 @@ def refresh_dash_action_errors():
     db.commit()
 
 def update_dash_action_errors():
-    sql = """select e.err, s.svc_type, e.svcname, e.nodename from b_action_errors e
+    sql = """select
+               e.err,
+               s.svc_type,
+               e.svcname,
+               e.nodename
+             from
+               b_action_errors e
              join services s on e.svcname=s.svc_name
           """
     rows = db.executesql(sql)

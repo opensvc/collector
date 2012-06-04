@@ -542,6 +542,7 @@ db.define_table('diskinfo',
     Field('disk_group', 'string'),
     Field('disk_raid', 'string'),
     Field('disk_updated', 'datetime'),
+    Field('disk_level', 'integer'),
     migrate=False)
 
 db.define_table('svcdisks',
@@ -1388,6 +1389,7 @@ db.define_table('stor_array',
     Field('array_firmware','string'),
     Field('array_cache','integer'),
     Field('array_updated','datetime'),
+    Field('array_level','integer'),
     migrate=False)
 
 db.define_table('stor_array_dg',
@@ -1426,6 +1428,32 @@ db.define_table('stor_array_proxy',
 db.define_table('comp_run_ruleset',
     Field('rset_md5','string'),
     Field('rset','text'),
+    migrate=False)
+
+db.define_table('v_disk_app',
+    Field('disk_id', 'string'),
+    Field('disk_region', 'string'),
+    Field('app', 'string'),
+    Field('disk_used', 'string'),
+    Field('disk_size', 'integer'),
+    Field('disk_arrayid', 'string'),
+    Field('disk_group', 'string'),
+    Field('disk_devid', 'string'),
+    Field('disk_updated', 'string'),
+    Field('disk_level', 'string'),
+    Field('disk_raid', 'string'),
+    Field('disk_svcname', 'string'),
+    Field('disk_nodename', 'string'),
+    Field('disk_vendor', 'string'),
+    Field('disk_model', 'string'),
+    Field('disk_dg', 'string'),
+    Field('svcdisk_updated', 'datetime'),
+    Field('svcdisk_id', 'integer'),
+    Field('disk_local', 'boolean'),
+    migrate=False)
+
+db.define_table('b_disk_app',
+    db.v_disk_app,
     migrate=False)
 
 db.define_table('v_disk_quota',
@@ -1483,5 +1511,28 @@ db.define_table('feed_queue',
     Field('q_fn', 'string'),
     Field('q_args', 'blob'),
     Field('created', 'datetime'),
+    migrate=False)
+
+db.define_table('switches',
+    Field('sw_name', 'string'),
+    Field('sw_slot', 'integer'),
+    Field('sw_port', 'integer'),
+    Field('sw_portspeed', 'integer'),
+    Field('sw_portnego', 'boolean'),
+    Field('sw_portstate', 'string'),
+    Field('sw_porttype', 'string'),
+    Field('sw_portname', 'string'),
+    Field('sw_rportname', 'string'),
+    Field('sw_updated', 'datetime'),
+    migrate=False)
+
+db.define_table('node_ip',
+    Field('nodename', 'string'),
+    Field('mac', 'string'),
+    Field('intf', 'string'),
+    Field('type', 'string'),
+    Field('addr', 'string'),
+    Field('mask', 'string'),
+    Field('updated', 'datetime'),
     migrate=False)
 

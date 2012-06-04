@@ -21,12 +21,35 @@ class table_compare(HtmlTable):
         self.object_list = []
         self.nodatabanner = False
         self.additional_tools.append('compare')
-        self.additional_tools.append('compare_add')
+        self += HtmlTableMenu('Scenario', 'spark16', [
+                                'compare_add',
+                                'compare_del',
+                               ]
+                )
+
+    def compare_del(self):
+        d = DIV(
+              A(
+                T("Delete"),
+                _class='del16',
+                _onclick="""
+                  click_toggle_vis(event,'%(div)s', 'block');
+                """%dict(div='compare_del'),
+              ),
+              DIV(
+                self.form_compare_del(),
+                _style='display:none',
+                _class='white_float',
+                _name='compare_del',
+                _id='compare_del',
+              ),
+            )
+        return d
 
     def compare_add(self):
         d = DIV(
               A(
-                T("Add scenario"),
+                T("Add"),
                 _class='add16',
                 _onclick="""
                   click_toggle_vis(event,'%(div)s', 'block');
@@ -39,43 +62,57 @@ class table_compare(HtmlTable):
                 _name='compare_add',
                 _id='compare_add',
               ),
-              _class="floatw",
             )
         return d
+
+    def form_compare_del(self):
+        action = 'ajax_del_compare'
+        return self.compare_selector("del_compare", action)
 
     def form_compare_add(self):
         name = DIV(
                  T("Name"),
                  INPUT(
+                   _name="compare_name",
                    _id="compare_name",
                  )
                )
         q = db.gen_filtersets.id > 0
         o = db.gen_filtersets.fset_name
-        rows = db(q).select()
+        rows = db(q).select(orderby=o)
         opts = []
         for row in rows:
-            o = DIV(
-                  DIV(
+            o = SPAN(
+                  SPAN(
                     INPUT(
                       _type="checkbox",
                       _name="ckfset",
                       _id="ckfset_%d"%row.id,
+                      _value='false',
+                      _onclick='this.value=this.checked',
+                      value=False,
                     ),
                   ),
-                  DIV(
+                  SPAN(
                     row.fset_name,
+                    _style="margin:2px",
                   ),
+                  BR(),
+                  _style="white-space:nowrap",
                 )
             opts.append(o)
         filters = DIV(opts)
         submit = INPUT(
                    _type="submit",
-                   _onclick=self.ajax_submit(additional_inputs=['ckfset'],args=['compare_add']),
+                   _onclick=self.ajax_submit(additional_inputs=['compare_name'],
+                                             additional_input_name="ckfset",
+                                             args=['compare_add']),
                  )
         d = DIV(
               name,
+              HR(),
               filters,
+              HR(),
               submit,
             )
         return d
@@ -87,28 +124,23 @@ class table_compare(HtmlTable):
         else:
             name = row.name
             compare_id = row.id
-        div = "foo"
         return OPTION(
                  name,
                  _value=compare_id,
-                 _onClick="""
-                       ajax('%(url)s', [], '%(div)s');
-                   """%dict(url=URL(
-                                   r=request, c='ajax',
-                                   f='ajax_select_compare',
-                                   args=[compare_id]),
-                              div=div,
-                             )+self.ajax_submit(),
                  )
 
-    def compare(self):
-        # get user's current selected compare
+    def get_current_scenario(self):
         q = db.stats_compare_user.user_id == auth.user_id
         row = db(q).select().first()
         if row is None:
             active_compare_id = 0
         else:
             active_compare_id = row.compare_id
+        return active_compare_id
+
+    def compare_selector(self, id, action):
+        # get user's current selected compare
+        active_compare_id = self.get_current_scenario()
 
         # create the compare select()
         q = db.stats_compare.id > 0
@@ -119,19 +151,57 @@ class table_compare(HtmlTable):
         content = SELECT(
                     av,
                     value=active_compare_id,
+                    _onchange="""
+                       ajax('%(url)s/'+this.options[this.selectedIndex].value, [], '%(div)s');
+                    """%dict(url=URL(
+                                   r=request, c='ajax',
+                                   f=action,
+                                ),
+                              div="foo",
+                             )+self.ajax_submit(),
                   )
 
         return SPAN(
-                 T("Compare"),
-                 " ",
                  content,
                  _class='floatw',
                )
 
+    def compare(self):
+        action = 'ajax_select_compare'
+        return self.compare_selector("foo", action)
+
+@auth.requires_login()
+def compare_add():
+    l = [k for k in request.vars if 'ckfset_' in k and request.vars[k] == 'true']
+    if len(l) == 0:
+        raise ToolError("at least one filterset must be selected")
+    fset_ids = map(lambda x: x.replace('ckfset_',''), l)
+    cname = request.vars['compare_name']
+    rows = db(db.stats_compare.name==cname).select()
+    if len(rows) > 0:
+        raise ToolError("compare scenario name already exists")
+    db.stats_compare.insert(name=cname)
+    cid = db(db.stats_compare.name==cname).select().first()
+    if cid is None:
+        raise ToolError("error creating compare scenario")
+    cid = cid.id
+    db.stats_compare_user.insert(compare_id=cid, user_id=auth.user_id)
+    for i in fset_ids:
+        db.stats_compare_fset.insert(compare_id=cid, fset_id=i)
 
 @auth.requires_login()
 def ajax_compare():
     t = table_compare('stats', 'ajax_compare')
+
+    if len(request.args) == 1:
+        action = request.args[0]
+        try:
+            if action == 'compare_add':
+                compare_add()
+        except ToolError, e:
+            t.flash = str(e)
+
+
     d = DIV(
      DIV(
        t.html(),
@@ -450,27 +520,27 @@ def ajax_stats():
      DIV(
        H2(T("Services")),
        DIV(
-         _id='stat_day_svc_drp',
+         DIV(_id='stat_day_svc_drp'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_svc_cluster',
+         DIV(_id='stat_day_svc_cluster'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_svc_type',
+         DIV(_id='stat_day_svc_type'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_nb_vcpu',
+         DIV(_id='stat_day_nb_vcpu'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_nb_vmem',
+         DIV(_id='stat_day_nb_vmem'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_apps',
+         DIV(_id='stat_day_apps'),
          _class='float',
        ),
        DIV(
@@ -482,19 +552,19 @@ def ajax_stats():
      DIV(
        H2(T("Nodes")),
        DIV(
-         _id='stat_day_nodes',
+         DIV(_id='stat_day_nodes'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_virt_nodes',
+         DIV(_id='stat_day_virt_nodes'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_nodes_core',
+         DIV(_id='stat_day_nodes_core'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_nodes_ram',
+         DIV(_id='stat_day_nodes_ram'),
          _class='float',
        ),
        DIV(
@@ -506,11 +576,11 @@ def ajax_stats():
      DIV(
        H2(T("Actions")),
        DIV(
-         _id='stat_day_actions',
+         DIV(_id='stat_day_actions'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_err',
+         DIV(_id='stat_day_err'),
          _class='float',
        ),
        DIV(
@@ -522,15 +592,15 @@ def ajax_stats():
      DIV(
        H2(T("Disks")),
        DIV(
-         _id='stat_day_disk',
+         DIV(_id='stat_day_disk'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_svc_disk',
+         DIV(_id='stat_day_svc_disk'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_svc_disk',
+         DIV(_id='stat_day_svc_disk'),
          _class='float',
        ),
        DIV(
@@ -542,31 +612,31 @@ def ajax_stats():
      DIV(
        H2(T("Computing ressource usage")),
        DIV(
-         _id='stat_day_node_cpu',
+         DIV(_id='stat_day_node_cpu'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_node_mem',
+         DIV(_id='stat_day_node_mem'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_node_swp',
+         DIV(_id='stat_day_node_swp'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_node_proc_runq_sz',
+         DIV(_id='stat_day_node_proc_runq_sz'),
          _class='float',
        ),
        DIV(
-         _id='stat_day_node_proc_plist_sz',
+         DIV(_id='stat_day_node_proc_plist_sz'),
          _class='float',
        ),
        DIV(
-         _id='tps_stat_day_node_block',
+         DIV(_id='tps_stat_day_node_block'),
          _class='float',
        ),
        DIV(
-         _id='bps_stat_day_node_block',
+         DIV(_id='bps_stat_day_node_block'),
          _class='float',
        ),
        DIV(
@@ -578,12 +648,12 @@ def ajax_stats():
      DIV(
        H2(T("Collector user accounts")),
        DIV(
+         DIV(_id='stat_day_accounts'),
          _class='float',
-         _id='stat_day_accounts',
        ),
        DIV(
+         DIV(_id='stat_day_resp_accounts'),
          _class='float',
-         _id='stat_day_resp_accounts',
        ),
        DIV(
          XML('&nbsp;'),
@@ -632,6 +702,7 @@ def ajax_stats():
                  vars={'higher':15}
           )
        ),
+       "jqplot_img()",
        _name=t.id+'_to_eval',
      ),
      _id="stats",
@@ -710,35 +781,35 @@ def ajax_perfcmp_plot():
 
     d = DIV(
           DIV(
-            _id=add_rowid('avg_cpu_for_nodes_plot'),
+            DIV(_id=add_rowid('avg_cpu_for_nodes_plot')),
             _class='float',
           ),
           DIV(
-            _id=add_rowid('avg_mem_for_nodes_plot'),
+            DIV(_id=add_rowid('avg_mem_for_nodes_plot')),
             _class='float',
           ),
           DIV(
-            _id=add_rowid('avg_swp_for_nodes_plot'),
+            DIV(_id=add_rowid('avg_swp_for_nodes_plot')),
             _class='float',
           ),
           DIV(
-            _id=add_rowid('runq_sz_avg_proc_for_nodes_plot'),
+            DIV(_id=add_rowid('runq_sz_avg_proc_for_nodes_plot')),
             _class='float',
           ),
           DIV(
-            _id=add_rowid('plist_sz_avg_proc_for_nodes_plot'),
+            DIV(_id=add_rowid('plist_sz_avg_proc_for_nodes_plot')),
             _class='float',
           ),
           DIV(
-            _id=add_rowid('tps_avg_block_for_nodes_plot'),
+            DIV(_id=add_rowid('tps_avg_block_for_nodes_plot')),
             _class='float',
           ),
           DIV(
-            _id=add_rowid('bps_avg_block_for_nodes_plot'),
+            DIV(_id=add_rowid('bps_avg_block_for_nodes_plot')),
             _class='float',
           ),
           DIV(
-            _id=add_rowid('disk_for_svc_plot'),
+            DIV(_id=add_rowid('disk_for_svc_plot')),
             _class='float',
           ),
           DIV(
@@ -1032,7 +1103,7 @@ def rows_avg_block_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=
                and nodename like '%(dom)s'
                %(nodes)s
              group by nodename
-             order by avg(rtps)+avg(wtps)"""%dict(begin=str(begin),end=str(end),dom=dom,nodes=nodes)
+             order by avg(rbps)+avg(wbps)"""%dict(begin=str(begin),end=str(end),dom=dom,nodes=nodes)
 
     if lower is not None:
         sql += ' desc limit %d;'%int(lower)

@@ -16,6 +16,29 @@ array_img_h = {
   'HSV400': 'hpux',
 }
 
+def refresh_b_disk_app():
+    sql = """select max(update_time)>(select update_time from
+information_schema.tables where table_schema="opensvc" and
+table_name='b_disk_app') as need_update , max(update_time) as
+src_tables_last_update, (select update_time from information_schema.tables
+where table_schema="opensvc" and table_name='b_disk_app') as
+b_disk_app_last_update from information_schema.tables where
+table_schema="opensvc" and table_name in ('nodes', 'services', 'apps',
+'svcdisks', 'diskinfo')"""
+    rows = db.executesql(sql)
+    if rows[0][0] is not None and rows[0][0] != 1:
+        return "skip " + str(rows)
+    sql = """drop table if exists b_disk_app_old"""
+    db.executesql(sql)
+    sql = """drop table if exists b_disk_app_tmp"""
+    db.executesql(sql)
+    sql = """create table b_disk_app_tmp as select * from v_disk_app"""
+    db.executesql(sql)
+    sql = """rename table b_disk_app to b_disk_app_old, b_disk_app_tmp to b_disk_app"""
+    db.executesql(sql)
+    sql = """drop table if exists b_disk_app_old"""
+    db.executesql(sql)
+
 def array_icon(array_model):
     if array_model is None:
         return ''
@@ -140,6 +163,12 @@ class col_chart(HtmlTableColumn):
                   ),
                   _style="float:left;width:500px",
                 )]
+       l += [DIV(
+               _class='spacer',
+             )]
+       l += [DIV(
+               _id='chart_info',
+             )]
        return DIV(l)
 
 class col_disk_id(HtmlTableColumn):
@@ -174,6 +203,11 @@ def beautify_size_mb(d):
           d = int(d)
        except:
           return '-'
+       if d < 0:
+           neg = True
+           d = -d
+       else:
+           neg = False
        if d < 1024:
            v = 1.0 * d
            unit = 'MB'
@@ -190,6 +224,8 @@ def beautify_size_mb(d):
        else:
            fmt = "%.2f"
        fmt = fmt + " %s"
+       if neg:
+           v = -v
        return fmt%(v, unit)
 
 class col_quota_used(HtmlTableColumn):
@@ -717,29 +753,46 @@ class table_disks(HtmlTable):
                      'disk_region',
                      'disk_vendor',
                      'disk_model',
+                     'app',
                      'disk_nodename',
                      'disk_svcname',
                      'disk_dg',
-                     'disk_updated',
+                     'svcdisk_updated',
                      'disk_used',
                      'disk_size',
                      'disk_devid',
                      'disk_raid',
                      'disk_group',
                      'disk_arrayid',
+                     'disk_level',
                      'array_model',
-                     'disk_array_updated']
+                     'disk_updated',
+                     'loc_country',
+                     'loc_zip',
+                     'loc_city',
+                     'loc_addr',
+                     'loc_building',
+                     'loc_floor',
+                     'loc_room',
+                     'loc_rack',
+                     'power_supply_nb',
+                     'power_cabinet1',
+                     'power_cabinet2',
+                     'power_protect',
+                     'power_protect_breaker',
+                     'power_breaker1',
+                     'power_breaker2']
         self.colprops.update({
             'disk_region': col_disk_id(
                      title='Disk Region',
-                     table='svcdisks',
+                     table='b_disk_app',
                      field='disk_region',
                      img='hd16',
                      display=False,
                     ),
             'disk_id': col_disk_id(
                      title='Disk Id',
-                     table='diskinfo',
+                     table='b_disk_app',
                      field='disk_id',
                      img='hd16',
                      display=True,
@@ -747,28 +800,28 @@ class table_disks(HtmlTable):
                     ),
             'disk_svcname': col_svc(
                      title='Service',
-                     table='svcdisks',
+                     table='b_disk_app',
                      field='disk_svcname',
                      img='svc',
                      display=True,
                     ),
             'disk_nodename': col_node(
                      title='Nodename',
-                     table='svcdisks',
+                     table='b_disk_app',
                      field='disk_nodename',
                      img='hw16',
                      display=True,
                     ),
             'disk_used': col_size_mb(
                      title='Disk Used',
-                     table='svcdisks',
+                     table='b_disk_app',
                      field='disk_used',
                      img='hd16',
                      display=True,
                     ),
             'disk_size': col_size_mb(
                      title='Disk Size',
-                     table='diskinfo',
+                     table='b_disk_app',
                      field='disk_size',
                      img='hd16',
                      display=True,
@@ -776,59 +829,75 @@ class table_disks(HtmlTable):
                     ),
             'disk_vendor': HtmlTableColumn(
                      title='Disk Vendor',
-                     table='svcdisks',
+                     table='b_disk_app',
                      field='disk_vendor',
                      img='hd16',
                      display=True,
                     ),
             'disk_model': HtmlTableColumn(
                      title='Disk Model',
-                     table='svcdisks',
+                     table='b_disk_app',
                      field='disk_model',
                      img='hd16',
                      display=True,
                     ),
             'disk_dg': HtmlTableColumn(
                      title='System disk group',
-                     table='svcdisks',
+                     table='b_disk_app',
                      field='disk_dg',
                      img='hd16',
                      display=True,
                     ),
             'disk_group': col_array_dg(
                      title='Array disk group',
-                     table='diskinfo',
+                     table='b_disk_app',
                      field='disk_group',
+                     img='hd16',
+                     display=True,
+                     _dataclass="bluer",
+                    ),
+            'disk_level': HtmlTableColumn(
+                     title='Level',
+                     table='b_disk_app',
+                     field='disk_level',
                      img='hd16',
                      display=True,
                      _dataclass="bluer",
                     ),
             'disk_raid': HtmlTableColumn(
                      title='Raid',
-                     table='diskinfo',
+                     table='b_disk_app',
                      field='disk_raid',
                      img='hd16',
                      display=True,
                      _dataclass="bluer",
                     ),
-            'disk_updated': HtmlTableColumn(
+            'svcdisk_updated': HtmlTableColumn(
                      title='System Updated',
-                     table='svcdisks',
-                     field='disk_updated',
+                     table='b_disk_app',
+                     field='svcdisk_updated',
                      img='time16',
                      display=True,
                     ),
-            'disk_array_updated': HtmlTableColumn(
+            'disk_updated': HtmlTableColumn(
                      title='Storage Updated',
-                     table='diskinfo',
+                     table='b_disk_app',
                      field='disk_updated',
                      img='time16',
                      display=True,
                      _dataclass="bluer",
                     ),
+            'svcdisk_id': col_array(
+                     title='System Disk Id',
+                     table='b_disk_app',
+                     field='svcdisk_id',
+                     img='hd16',
+                     display=True,
+                     _dataclass="bluer",
+                    ),
             'disk_arrayid': col_array(
                      title='Array Id',
-                     table='diskinfo',
+                     table='b_disk_app',
                      field='disk_arrayid',
                      img='hd16',
                      display=True,
@@ -836,7 +905,7 @@ class table_disks(HtmlTable):
                     ),
             'disk_devid': col_disk_id(
                      title='Array device Id',
-                     table='diskinfo',
+                     table='b_disk_app',
                      field='disk_devid',
                      img='hd16',
                      display=True,
@@ -850,12 +919,24 @@ class table_disks(HtmlTable):
                      display=True,
                      _dataclass="bluer",
                     ),
+            'app': HtmlTableColumn(
+                     title='App',
+                     table='b_disk_app',
+                     field='app',
+                     img='svc',
+                     display=True,
+                    ),
         })
+        import copy
+        nodes_colprops = copy.copy(v_nodes_colprops)
+        for i in nodes_colprops:
+            nodes_colprops[i].table = 'nodes'
+        self.colprops.update(nodes_colprops)
         for i in self.cols:
             self.colprops[i].t = self
         self.extraline = True
-        self.checkbox_id_col = 'id'
-        self.checkbox_id_table = 'svcdisks'
+        self.checkbox_id_col = 'svcdisks_id'
+        self.checkbox_id_table = 'b_disk_app'
         self.dbfilterable = True
         self.ajax_col_values = 'ajax_disks_col_values'
         self.span = 'disk_id'
@@ -1150,12 +1231,12 @@ def ajax_disks_col_values():
     t = table_disks('disks', 'ajax_disks')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
-    q = db.diskinfo.id>0
-    q |= db.svcdisks.id<0
-    l1 = db.stor_array.on(db.diskinfo.disk_arrayid == db.stor_array.array_name)
-    l2 = db.svcdisks.on(db.diskinfo.disk_id==db.svcdisks.disk_id)
-    q = _where(q, 'svcdisks', domain_perms(), 'disk_nodename')
-    q = apply_filters(q, db.svcdisks.disk_nodename, None)
+    q = db.b_disk_app.id>0
+    q |= db.stor_array.id<0
+    l1 = db.stor_array.on(db.b_disk_app.disk_arrayid == db.stor_array.array_name)
+    l2 = db.nodes.on(db.b_disk_app.disk_arrayid==db.nodes.nodename)
+    q = _where(q, 'b_disk_app', domain_perms(), 'disk_nodename')
+    q = apply_filters(q, db.b_disk_app.disk_nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o, groupby=o, left=(l1,l2))
@@ -1164,23 +1245,26 @@ def ajax_disks_col_values():
 @auth.requires_login()
 def ajax_disks():
     t = table_disks('disks', 'ajax_disks')
-    o = db.svcdisks.disk_id | db.svcdisks.disk_svcname | db.svcdisks.disk_nodename
-    q = db.diskinfo.id>0
-    q |= db.svcdisks.id<0
+    o = db.b_disk_app.disk_id | db.b_disk_app.disk_svcname | db.b_disk_app.disk_nodename
+    q = db.b_disk_app.id>0
     q |= db.stor_array.id<0
-    l1 = db.stor_array.on(db.diskinfo.disk_arrayid == db.stor_array.array_name)
-    l2 = db.svcdisks.on(db.diskinfo.disk_id==db.svcdisks.disk_id)
-    #q &= db.svcdisks.disk_nodename==db.v_nodes.nodename
-    q = _where(q, 'svcdisks', domain_perms(), 'disk_nodename')
-    q = apply_filters(q, db.svcdisks.disk_nodename, None)
+    l1 = db.stor_array.on(db.b_disk_app.disk_arrayid == db.stor_array.array_name)
+    l2 = db.nodes.on(db.b_disk_app.disk_arrayid==db.nodes.nodename)
+    q = _where(q, 'b_disk_app', domain_perms(), 'disk_nodename')
+    q = apply_filters(q, db.b_disk_app.disk_nodename, None)
     for f in t.cols:
-        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    n = db(q).select(db.diskinfo.id.count(), left=(l1,l2)).first()._extra[db.diskinfo.id.count()]
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), t.colprops[f].field)
+    n = db(q).select(db.b_disk_app.id.count(), left=(l1,l2)).first()._extra[db.b_disk_app.id.count()]
     t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o, left=(l1,l2))
 
     t.csv_q = q
     t.csv_orderby = o
+    t.csv_left = (l1,l2)
+    t.csv_limit = 60000
+
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        return t.csv()
 
     nt = table_disk_charts('charts', 'ajax_disk_charts')
 
@@ -1227,11 +1311,10 @@ def ajax_disk_charts():
     t = table_disks('disks', 'ajax_disks')
     nt = table_disk_charts('charts', 'ajax_disk_charts')
 
-    o = db.svcdisks.disk_id
-    q = db.diskinfo.id>0
-    q |= db.svcdisks.id<0
-    q = _where(q, 'svcdisks', domain_perms(), 'disk_nodename')
-    q = apply_filters(q, db.svcdisks.disk_nodename, None)
+    o = db.b_disk_app.disk_id
+    q = db.b_disk_app.id>0
+    q = _where(q, 'b_disk_app', domain_perms(), 'disk_nodename')
+    q = apply_filters(q, db.b_disk_app.disk_nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
@@ -1245,30 +1328,24 @@ def ajax_disk_charts():
     data_dg = ""
     data_array = ""
 
-    sql = """select count(distinct t.app)
-             from (
-               select distinct(services.svc_app) as app
+    sql = """  select
+                 count(distinct(b_disk_app.app)),
+                 max(b_disk_app.disk_level)
                from
-                 diskinfo
-               left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
-               left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
-               left join services on svcdisks.disk_svcname=services.svc_name
+                 b_disk_app
+               left join stor_array on b_disk_app.disk_arrayid=stor_array.array_name
+               left join nodes on b_disk_app.disk_arrayid=nodes.nodename
                where
                  %(q)s
-             union all
-               select distinct(nodes.project) as app
-               from
-                 diskinfo
-               left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
-               left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
-               left join nodes on svcdisks.disk_nodename=nodes.nodename
-               where
-                 %(q)s
-             ) t
            """%dict(q=q)
     n_app = db.executesql(sql)[0][0]
+    max_level = db.executesql(sql)[0][1]
 
-    if n_app == 1:
+    if max_level is None:
+        return ''
+    levels = range(0, max_level+1)
+
+    def pie_data_svc(q, level=0):
         sql = """select
                    t.obj,
                    sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size
@@ -1280,55 +1357,74 @@ def ajax_disk_charts():
                    from
                    (
                      select
-                       svcdisks.disk_id,
-                       svcdisks.disk_region,
-                       services.svc_name as obj,
-                       svcdisks.disk_used as disk_used,
-                       diskinfo.disk_size
+                       b_disk_app.disk_id,
+                       b_disk_app.disk_region,
+                       b_disk_app.disk_svcname as obj,
+                       b_disk_app.disk_used as disk_used,
+                       b_disk_app.disk_size
                      from
-                       diskinfo
-                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
-                     left join services on svcdisks.disk_svcname=services.svc_name
-                     left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
+                       b_disk_app
+                     left join stor_array on b_disk_app.disk_arrayid=stor_array.array_name
+                     left join nodes on b_disk_app.disk_arrayid=nodes.nodename
                      where %(q)s
-                     and svcdisks.disk_svcname != ""
+                     and b_disk_app.disk_level=%(level)d
+                     and b_disk_app.disk_svcname != ""
                      union all
                      select
-                       diskinfo.disk_id,
-                       svcdisks.disk_region,
-                       nodes.nodename as obj,
-                       svcdisks.disk_used as disk_used,
-                       diskinfo.disk_size
+                       b_disk_app.disk_id,
+                       b_disk_app.disk_region,
+                       b_disk_app.disk_nodename as obj,
+                       b_disk_app.disk_used as disk_used,
+                       b_disk_app.disk_size
                      from
-                       diskinfo
-                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
-                     left join nodes on svcdisks.disk_nodename=nodes.nodename
-                     left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
+                       b_disk_app
+                     left join stor_array on b_disk_app.disk_arrayid=stor_array.array_name
+                     left join nodes on b_disk_app.disk_arrayid=nodes.nodename
                      where %(q)s
-                     and (svcdisks.disk_svcname = "" or svcdisks.disk_svcname is NULL)
+                     and b_disk_app.disk_level=%(level)d
+                     and (b_disk_app.disk_svcname = "" or b_disk_app.disk_svcname is NULL)
                    ) u
                    group by u.disk_id, u.disk_region
                  ) t
                  group by t.obj
                  order by t.obj, size desc
-                 """%dict(q=q)
+                 """%dict(q=q, level=level)
         rows = db.executesql(sql)
+        return rows
 
+    def data_total(data):
+        total = 0
+        for l in data:
+            total += l[1]
+        return total
+
+    if n_app == 1:
         data_svc = []
-        for row in rows:
-            if row[0] is None:
-                label = 'unknown'
+        for level in levels:
+            _data_svc = []
+            rows = pie_data_svc(q, level)
+            for row in rows:
+                if row[0] is None:
+                    label = 'unknown'
+                else:
+                    label = row[0]
+                try:
+                    size = int(row[1])
+                except:
+                    continue
+                _data_svc += [[str(label) +' (%s)'%beautify_size_mb(size), size]]
+
+            _data_svc.sort(lambda x, y: cmp(y[1], x[1]))
+            if len(_data_svc) == 0:
+                _data_svc = [["", 0]]
+            if level == 0:
+                total = data_total(_data_svc)
             else:
-                label = row[0]
-            try:
-                size = int(row[1])
-            except:
-                continue
-            data_svc += [[str(label) +' (%s)'%beautify_size_mb(size), size]]
+                diff = total - data_total(_data_svc)
+                _data_svc += [["n/a " +' (%s)'%beautify_size_mb(diff), diff]]
+            data_svc.append(_data_svc)
 
-        data_svc.sort(lambda x, y: cmp(y[1], x[1]))
-
-    if n_app > 1:
+    def pie_data_app(q, level=0):
         sql = """select
                    t.app,
                    sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size
@@ -1340,69 +1436,82 @@ def ajax_disk_charts():
                    from
                    (
                      select
-                       svcdisks.disk_id,
-                       svcdisks.disk_region,
-                       services.svc_app as app,
-                       svcdisks.disk_used,
-                       diskinfo.disk_size
+                       b_disk_app.disk_id,
+                       b_disk_app.disk_region,
+                       b_disk_app.app as app,
+                       b_disk_app.disk_used,
+                       b_disk_app.disk_size
                      from
-                       diskinfo
-                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
-                     left join services on svcdisks.disk_svcname=services.svc_name
-                     left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
+                       b_disk_app
+                     left join stor_array on b_disk_app.disk_arrayid=stor_array.array_name
+                     left join nodes on b_disk_app.disk_arrayid=nodes.nodename
                      where %(q)s
-                     and svcdisks.disk_svcname != ""
+                     and b_disk_app.disk_level=%(level)d
+                     and b_disk_app.disk_svcname != ""
                      union all
                      select
-                       diskinfo.disk_id,
-                       svcdisks.disk_region,
-                       nodes.project as app,
-                       svcdisks.disk_used,
-                       diskinfo.disk_size
+                       b_disk_app.disk_id,
+                       b_disk_app.disk_region,
+                       b_disk_app.app as app,
+                       b_disk_app.disk_used,
+                       b_disk_app.disk_size
                      from
-                       diskinfo
-                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
-                     left join nodes on svcdisks.disk_nodename=nodes.nodename
-                     left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
+                       b_disk_app
+                     left join stor_array on b_disk_app.disk_arrayid=stor_array.array_name
+                     left join nodes on b_disk_app.disk_arrayid=nodes.nodename
                      where %(q)s
-                     and (svcdisks.disk_svcname = "" or svcdisks.disk_svcname is NULL)
+                     and b_disk_app.disk_level=%(level)d
+                     and (b_disk_app.disk_svcname = "" or b_disk_app.disk_svcname is NULL)
                    ) u
                    group by u.disk_id, u.disk_region
                  ) t
                  group by t.app
                  order by t.app, size desc
-                 """%dict(q=q)
+                 """%dict(q=q, level=level)
         rows = db.executesql(sql)
+        return rows
 
+    if n_app > 1:
         data_app = []
-        for row in rows:
-            if row[0] is None:
-                label = 'unknown'
+        for level in levels:
+            rows = pie_data_app(q, level)
+            _data_app = []
+            for row in rows:
+                if row[0] is None:
+                    label = 'unknown'
+                else:
+                    label = row[0]
+                try:
+                    size = int(row[1])
+                except:
+                    continue
+                _data_app += [[str(label) +' (%s)'%beautify_size_mb(size), size]]
+
+            _data_app.sort(lambda x, y: cmp(y[1], x[1]))
+            if len(_data_app) == 0:
+                _data_app = [["", 0]]
+            if level == 0:
+                total = data_total(_data_app)
             else:
-                label = row[0]
-            try:
-                size = int(row[1])
-            except:
-                continue
-            data_app += [[str(label) +' (%s)'%beautify_size_mb(size), size]]
+                diff = total - data_total(_data_app)
+                _data_app += [["n/a " +' (%s)'%beautify_size_mb(diff), diff]]
+            data_app.append(_data_app)
 
-        data_app.sort(lambda x, y: cmp(y[1], x[1]))
-
-    sql = """select count(distinct diskinfo.disk_arrayid)
+    sql = """select count(distinct b_disk_app.disk_arrayid)
              from
-                 diskinfo
-               left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
-               left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
+                 b_disk_app
+               left join stor_array on b_disk_app.disk_arrayid=stor_array.array_name
+               left join nodes on b_disk_app.disk_arrayid=nodes.nodename
                where
                  %(q)s
           """%dict(q=q)
     n_arrays = db.executesql(sql)[0][0]
 
-    sql = """select count(distinct diskinfo.disk_group)
+    sql = """select count(distinct b_disk_app.disk_group)
              from
-                 diskinfo
-               left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
-               left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
+                 b_disk_app
+               left join stor_array on b_disk_app.disk_arrayid=stor_array.array_name
+               left join nodes on b_disk_app.disk_arrayid=nodes.nodename
                where
                  %(q)s
           """%dict(q=q)
@@ -1422,17 +1531,17 @@ def ajax_disk_charts():
                    from
                    (
                      select
-                       diskinfo.disk_id,
-                       max(svcdisks.disk_used) as disk_used,
-                       diskinfo.disk_size,
-                       diskinfo.disk_arrayid,
-                       diskinfo.disk_group
+                       b_disk_app.disk_id,
+                       max(b_disk_app.disk_used) as disk_used,
+                       b_disk_app.disk_size,
+                       b_disk_app.disk_arrayid,
+                       b_disk_app.disk_group
                      from
-                       diskinfo
-                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
-                     left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
+                       b_disk_app
+                     left join stor_array on b_disk_app.disk_arrayid=stor_array.array_name
+                     left join nodes on b_disk_app.disk_arrayid=nodes.nodename
                      where %(q)s
-                     group by diskinfo.disk_id, svcdisks.disk_region
+                     group by b_disk_app.disk_id, b_disk_app.disk_region
                    ) u
                    group by u.disk_id
                  ) t
@@ -1445,7 +1554,7 @@ def ajax_disk_charts():
             if row[2] is None:
                 dg = ''
             else:
-                dg = row[2]
+                dg = ' '.join((row[1],row[2]))
 
             label = dg
             try:
@@ -1454,8 +1563,9 @@ def ajax_disk_charts():
                 continue
             data_dg += [[str(label) +' (%s)'%beautify_size_mb(size), size]]
         data_dg.sort(lambda x, y: cmp(y[1], x[1]))
+        data_dg = [data_dg]
 
-    if n_arrays > 1:
+    def pie_data_array(q, level=0):
         sql = """select
                    sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
                    t.disk_arrayid
@@ -1467,36 +1577,50 @@ def ajax_disk_charts():
                    from
                    (
                      select
-                       diskinfo.disk_id,
-                       max(svcdisks.disk_used) as disk_used,
-                       diskinfo.disk_size,
-                       diskinfo.disk_arrayid
+                       b_disk_app.disk_id,
+                       max(b_disk_app.disk_used) as disk_used,
+                       b_disk_app.disk_size,
+                       b_disk_app.disk_arrayid
                      from
-                       diskinfo
-                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
-                     left join stor_array on diskinfo.disk_arrayid=stor_array.array_name
+                       b_disk_app
+                     left join stor_array on b_disk_app.disk_arrayid=stor_array.array_name
+                     left join nodes on b_disk_app.disk_arrayid=nodes.nodename
                      where %(q)s
-                     group by diskinfo.disk_id, svcdisks.disk_region
+                     and b_disk_app.disk_level=%(level)d
+                     group by b_disk_app.disk_id, b_disk_app.disk_region
                    ) u
                    group by u.disk_id
                  ) t
                  group by t.disk_arrayid
-                 order by size desc, t.disk_arrayid"""%dict(q=q)
+                 order by size desc, t.disk_arrayid"""%dict(q=q, level=level)
         rows = db.executesql(sql)
+        return rows
 
+    if n_arrays > 1:
         data_array = []
-        for row in rows:
-            if row[1] is None:
-                array = ''
+        for level in levels:
+            rows = pie_data_array(q, level)
+            _data_array = []
+            for row in rows:
+                if row[1] is None:
+                    array = ''
+                else:
+                    array = row[1]
+                label = array
+                try:
+                    size = int(row[0])
+                except:
+                    continue
+                _data_array += [[str(label) +' (%s)'%beautify_size_mb(size), size]]
+            _data_array.sort(lambda x, y: cmp(y[1], x[1]))
+            if len(_data_array) == 0:
+                _data_array = [["", 0]]
+            if level == 0:
+                total = data_total(_data_array)
             else:
-                array = row[1]
-            label = array
-            try:
-                size = int(row[0])
-            except:
-                continue
-            data_array += [[str(label) +' (%s)'%beautify_size_mb(size), size]]
-        data_array.sort(lambda x, y: cmp(y[1], x[1]))
+                diff = total - data_total(_data_array)
+                _data_array += [["n/a " +' (%s)'%beautify_size_mb(diff), diff]]
+            data_array.append(_data_array)
 
 
     nt.object_list = [{'chart_svc': json.dumps(data_svc),
@@ -1508,53 +1632,53 @@ def ajax_disk_charts():
              nt.html(),
              SCRIPT(
 """
-function diskpie(o) {
+function diskdonut(o) {
   try{
   var data = $.parseJSON(o.html())
-  var total = 0
-  for (i=0;i<data.length;i++) {total += data[i][1]}
+  var title = ""
+  for (i=0;i<data.length;i++) {
+    var total = 0
+    for (j=0;j<data[i].length;j++) {total += data[i][j][1]}
+    total = fancy_size_mb(total)
+    title = total
+    break
+  }
   o.html("")
-  $.jqplot(o.attr('id'), [data],
+  $.jqplot(o.attr('id'), data,
     {
       seriesDefaults: {
-        renderer: $.jqplot.PieRenderer,
+        renderer: $.jqplot.DonutRenderer,
         rendererOptions: {
-          sliceMargin: 4,
+          sliceMargin: 0,
           showDataLabels: true
         }
       },
-      title: { text: 'Total: '+fancy_size_mb(total) },
-      legend: {
-        renderer: $.jqplot.EnhancedLegendRenderer,
-        rendererOptions: {
-          numberRows: 11,
-          numberColumns: 1
-        },
-        show:true,
-        location: 'e'
-      }
+      title: { text: title }
     }
   );
+  $('#'+o.attr('id')).bind('jqplotDataHighlight', 
+        function (ev, seriesIndex, pointIndex, data) {
+            $('#chart_info').html('level: '+seriesIndex+', data: '+data[0]);
+        }
+  );
+  $('#'+o.attr('id')).bind('jqplotDataUnhighlight', 
+        function (ev) {
+            $('#chart_info').html('%(msg)s');
+        }
+  ); 
   } catch(e) {}
 }
 $("[id^=chart_svc]").each(function(){
-  diskpie($(this))
+  diskdonut($(this))
 })
 $("[id^=chart_ap]").each(function(){
-  diskpie($(this))
+  diskdonut($(this))
 })
 $("[id^=chart_dg]").each(function(){
-  diskpie($(this))
-  $(this).bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
-    d = data[seriesIndex]
-    var reg = new RegExp(" \(.*\)", "g");
-    d = d.replace(reg, "")
-    $("#disks_f_disk_group").val(d)
-    %(submit)s
-  })
+  diskdonut($(this))
 })
 $("[id^=chart_ar]").each(function(){
-  diskpie($(this))
+  diskdonut($(this))
   $(this).bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
     d = data[seriesIndex]
     var reg = new RegExp(" \(.*\)", "g");
@@ -1563,7 +1687,10 @@ $("[id^=chart_ar]").each(function(){
     %(submit)s
   })
 })
-"""%dict(submit=t.ajax_submit()),
+"""%dict(
+      submit=t.ajax_submit(),
+      msg=T("Hover over a slice to show data"),
+    ),
                _name="charts_to_eval",
              ),
            )
@@ -1693,6 +1820,8 @@ def json_disk_array_dg(array_name, dg_name):
     disk_free = []
     disk_reserved = []
     disk_reservable = []
+    if len(rows) < 2:
+        return [disk_used, disk_free, disk_reserved, disk_reservable]
     for r in rows:
         disk_used.append([r.day, r.disk_used])
         disk_free.append([r.day, r.disk_size-r.disk_used])
@@ -1710,6 +1839,8 @@ def json_disk_array(array_name):
     disk_free = []
     disk_reserved = []
     disk_reservable = []
+    if len(rows) < 2:
+        return [disk_used, disk_free, disk_reserved, disk_reservable]
     for r in rows:
         disk_used.append([r.day, r.disk_used])
         disk_free.append([r.day, r.disk_size-r.disk_used])
@@ -1724,6 +1855,8 @@ def json_disk_app(app_id):
     rows = db(q).select()
     disk_used = []
     disk_quota = []
+    if len(rows) < 2:
+        return [disk_used, disk_quota]
     for r in rows:
         disk_used.append([r.stat_day_disk_app.day, r.stat_day_disk_app.disk_used])
         disk_quota.append([r.stat_day_disk_app.day, r.stat_day_disk_app.quota])
@@ -1737,7 +1870,13 @@ def json_disk_app_dg(app_id, dg_id):
     rows = db(q).select()
     disk_used = []
     disk_quota = []
+    if len(rows) < 2:
+        return [disk_used, disk_quota]
     for r in rows:
         disk_used.append([r.stat_day_disk_app_dg.day, r.stat_day_disk_app_dg.disk_used])
-        disk_quota.append([r.stat_day_disk_app_dg.day, r.stat_day_disk_app_dg.quota])
+        if r.stat_day_disk_app_dg.quota is None:
+            quota = 0
+        else:
+            quota = r.stat_day_disk_app_dg.quota
+        disk_quota.append([r.stat_day_disk_app_dg.day, quota])
     return [disk_used, disk_quota]

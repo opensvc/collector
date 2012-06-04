@@ -1,12 +1,14 @@
 <script language="JavaScript" type="text/javascript">
 function values_to_filter(iid, did){
 	l = []
+	var reg = new RegExp("[ ]+$", "g");
 	$("#"+did).contents().find("a").each(function(){
-		l.push(this.text)
+                s = this.text
+      		s = s.replace(reg, "")
+		if (s == "None") {s = "empty"}
+		l.push(s)
 	})
         v = l.join("|")
-	var reg = new RegExp("[ ]+", "g");
-        v = v.replace(reg, "")
 	$("#"+iid).val(v)
 }
 function invert_filter(did){
@@ -511,6 +513,7 @@ function stats_avg_cpu_for_nodes(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id))
     });
 }
 function stats_avg_swp_for_nodes(url, id) {
@@ -559,6 +562,7 @@ function stats_avg_swp_for_nodes(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id))
     });
 }
 function stats_avg_mem_for_nodes(url, id) {
@@ -607,6 +611,7 @@ function stats_avg_mem_for_nodes(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id))
     });
 }
 function stats_avg_block_for_nodes(url, id) {
@@ -655,6 +660,8 @@ function stats_avg_block_for_nodes(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#tps_'+id))
+
         plot_height('bps_'+id, data[0])
         $('#bps_'+id).width('450px')
 	$.jqplot('bps_'+id, [data[1][2], data[1][3]], {
@@ -697,6 +704,7 @@ function stats_avg_block_for_nodes(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#bps_'+id))
     });
 }
 function stats_disk_for_svc(url, id) {
@@ -731,7 +739,7 @@ function stats_disk_for_svc(url, id) {
                 shadowAngle: 135
             },
 	    series: [
-                {label: 'SAN disk size (GB)'}
+                {label: 'SAN disk size (MB)'}
             ],
 	    axes: {
 		xaxis: {
@@ -744,6 +752,7 @@ function stats_disk_for_svc(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id))
     });
 }
 function stats_avg_proc_for_nodes(url, id) {
@@ -791,6 +800,8 @@ function stats_avg_proc_for_nodes(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_runq_sz'))
+
         plot_height(id+'_plist_sz', data[0])
         $('#'+id+'_plist_sz').width('450px')
 	$.jqplot(id+'_plist_sz', [data[1][1]], {
@@ -832,6 +843,7 @@ function stats_avg_proc_for_nodes(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_plist_sz'))
     });
 }
 function stat_day(url, id) {
@@ -865,6 +877,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_err'))
+
         $('#'+id+'_apps').height('300px')
         $('#'+id+'_apps').width('300px')
 	$.jqplot(id+'_apps', [data[11]], {
@@ -893,6 +907,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_apps'))
+
         $('#'+id+'_nb_vcpu').height('300px')
         $('#'+id+'_nb_vcpu').width('300px')
 	$.jqplot(id+'_nb_vcpu', [data[20]], {
@@ -924,6 +940,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_nb_vcpu'))
+
         $('#'+id+'_nb_vmem').height('300px')
         $('#'+id+'_nb_vmem').width('300px')
 	$.jqplot(id+'_nb_vmem', [data[21]], {
@@ -955,6 +973,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_nb_vmem'))
+
         $('#'+id+'_disk').height('300px')
         $('#'+id+'_disk').width('300px')
 	$.jqplot(id+'_disk', [data[5], data[31]], {
@@ -996,6 +1016,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_disk'))
+
         $('#'+id+'_nodes_ram').height('300px')
         $('#'+id+'_nodes_ram').width('300px')
 	$.jqplot(id+'_nodes_ram', [data[6]], {
@@ -1027,6 +1049,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_nodes_ram'))
+
         $('#'+id+'_nodes_core').height('300px')
         $('#'+id+'_nodes_core').width('300px')
 	$.jqplot(id+'_nodes_core', [data[7]], {
@@ -1058,6 +1082,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_nodes_core'))
+
         $('#'+id+'_accounts').height('300px')
         $('#'+id+'_accounts').width('300px')
 	$.jqplot(id+'_accounts', [data[12]], {
@@ -1086,6 +1112,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_accounts'))
+
         $('#'+id+'_resp_accounts').height('300px')
         $('#'+id+'_resp_accounts').width('300px')
 	$.jqplot(id+'_resp_accounts', [data[22]], {
@@ -1113,6 +1141,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_resp_accounts'))
+
         $('#'+id+'_actions').height('300px')
         $('#'+id+'_actions').width('300px')
 	$.jqplot(id+'_actions', [data[4],  data[3], data[2]], {
@@ -1161,6 +1191,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_actions'))
+
         $('#'+id+'_nodes').height('300px')
         $('#'+id+'_nodes').width('300px')
 	$.jqplot(id+'_nodes', [data[17],  data[14]], {
@@ -1203,6 +1235,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_nodes'))
+
         $('#'+id+'_virt_nodes').height('300px')
         $('#'+id+'_virt_nodes').width('300px')
 	$.jqplot(id+'_virt_nodes', [data[23],  data[24]], {
@@ -1245,6 +1279,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_virt_nodes'))
+
         $('#'+id+'_svc_type').height('300px')
         $('#'+id+'_svc_type').width('300px')
 	$.jqplot(id+'_svc_type', [data[15],  data[0]], {
@@ -1283,6 +1319,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_svc_type'))
+
         $('#'+id+'_svc_cluster').height('300px')
         $('#'+id+'_svc_cluster').width('300px')
 	$.jqplot(id+'_svc_cluster', [data[16],  data[18]], {
@@ -1314,6 +1352,8 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_svc_cluster'))
+
         $('#'+id+'_svc_drp').height('300px')
         $('#'+id+'_svc_drp').width('300px')
 	$.jqplot(id+'_svc_drp', [data[13],  data[19]], {
@@ -1356,6 +1396,7 @@ function stat_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_svc_drp'))
     });
 }
 function stat_compare_day(url, id) {
@@ -1391,6 +1432,8 @@ function stat_compare_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_svc'))
+
         $('#'+id+'_nodes').height('300px')
         $('#'+id+'_nodes').width('300px')
 	$.jqplot(id+'_nodes', data[1][26], {
@@ -1417,6 +1460,8 @@ function stat_compare_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_nodes'))
+
         $('#'+id+'_nodes_virt_ratio').height('300px')
         $('#'+id+'_nodes_virt_ratio').width('300px')
 	$.jqplot(id+'_nodes_virt_ratio', data[1][27], {
@@ -1443,6 +1488,8 @@ function stat_compare_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_nodes_virt_ratio'))
+
         $('#'+id+'_svc_prd_ratio').height('300px')
         $('#'+id+'_svc_prd_ratio').width('300px')
 	$.jqplot(id+'_svc_prd_ratio', data[1][28], {
@@ -1469,6 +1516,8 @@ function stat_compare_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_svc_prd_ratio'))
+
         $('#'+id+'_svc_drp_ratio').height('300px')
         $('#'+id+'_svc_drp_ratio').width('300px')
 	$.jqplot(id+'_svc_drp_ratio', data[1][29], {
@@ -1495,6 +1544,8 @@ function stat_compare_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_svc_drp_ratio'))
+
         $('#'+id+'_svc_clu_ratio').height('300px')
         $('#'+id+'_svc_clu_ratio').width('300px')
 	$.jqplot(id+'_svc_clu_ratio', data[1][30], {
@@ -1521,6 +1572,7 @@ function stat_compare_day(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_svc_clu_ratio'))
     });
 }
 function stats_cpu(url, id) {
@@ -1616,6 +1668,8 @@ function stats_proc(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_runq_sz'))
+
 	$.jqplot(id+'_plist_sz', [data[1]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
@@ -1654,6 +1708,8 @@ function stats_proc(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_plist_sz'))
+
 	$.jqplot(id+'_loadavg', [data[2],data[3],data[4]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
@@ -1695,6 +1751,7 @@ function stats_proc(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_loadavg'))
     });
 }
 function stats_svc_cpu(url, id) {
@@ -1776,6 +1833,7 @@ function stats_svc(url, id, title) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id))
     });
 }
 function stats_mem(url, id) {
@@ -1825,6 +1883,8 @@ function stats_mem(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_u'))
+
 	$.jqplot(id+'_pct', [data[2],data[6]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
@@ -1865,6 +1925,8 @@ function stats_mem(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_pct'))
+
     });
 }
 function stats_swap(url, id) {
@@ -1912,6 +1974,8 @@ function stats_swap(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_u'))
+
 	$.jqplot(id+'_pct', [data[2],data[4]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
@@ -1952,6 +2016,7 @@ function stats_swap(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_pct'))
     });
 }
 function stats_block(url, id) {
@@ -1996,6 +2061,8 @@ function stats_block(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_tps'))
+
 	$.jqplot(id+'_bps', [data[2],data[3]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
@@ -2035,6 +2102,7 @@ function stats_block(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_bps'))
     });
 }
 function stats_trend_mem(url, id) {
@@ -2079,6 +2147,7 @@ function stats_trend_mem(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id))
     });
 }
 function stats_trend_cpu(url, id) {
@@ -2124,6 +2193,7 @@ function stats_trend_cpu(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id))
     });
 }
 function stats_blockdev(url, id) {
@@ -2165,6 +2235,8 @@ function stats_blockdev(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_tps'))
+
         plot_width_x(id+'_avgrq_sz', data[0])
 	$.jqplot(id+'_avgrq_sz', [data[2]], {
             cursor:{zoom:true, showTooltip:true},
@@ -2202,6 +2274,8 @@ function stats_blockdev(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_avgrq_sz'))
+
         plot_width_x(id+'_await', data[0])
 	$.jqplot(id+'_await', [data[3]], {
             cursor:{zoom:true, showTooltip:true},
@@ -2239,6 +2313,8 @@ function stats_blockdev(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_await'))
+
         plot_width_x(id+'_svctm', data[0])
 	$.jqplot(id+'_svctm', [data[4]], {
             cursor:{zoom:true, showTooltip:true},
@@ -2276,6 +2352,8 @@ function stats_blockdev(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_svctm'))
+
         plot_width_x(id+'_pct_util', data[0])
 	$.jqplot(id+'_pct_util', [data[5]], {
             cursor:{zoom:true, showTooltip:true},
@@ -2313,6 +2391,8 @@ function stats_blockdev(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_pct_util'))
+
         plot_width_x(id+'_secps', data[0])
 	$.jqplot(id+'_secps', data[6], {
 	    stackSeries: true,
@@ -2351,6 +2431,8 @@ function stats_blockdev(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_secps'))
+
         plot_width_x(id+'_tm', data[7])
 	$.jqplot(id+'_tm', data[8], {
 	    stackSeries: true,
@@ -2389,6 +2471,7 @@ function stats_blockdev(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_tm'))
     });
 }
 function stats_netdev_err(url, id) {
@@ -2435,6 +2518,7 @@ function stats_netdev_err(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id))
     });
 }
 function stats_netdev(url, id) {
@@ -2478,6 +2562,8 @@ function stats_netdev(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_kBps'))
+
         plot_width_x(id+'_pckps', data[0])
 	$.jqplot(id+'_pckps', data[2], {
 	    stackSeries: false,
@@ -2516,6 +2602,7 @@ function stats_netdev(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id+'_pckps'))
     });
 }
 function fancy_size_mb(size) {
@@ -2586,6 +2673,7 @@ function stats_fs(url, id) {
 		}
 	    }
   	});
+        _jqplot_img($('#'+id+'_u'))
     });
 }
 function stat_os(url, id) {
@@ -2643,6 +2731,7 @@ function stat_os(url, id) {
 		}
 	    }
 	});
+        _jqplot_img($('#'+id))
     });
 }
 function ackpanel(e, show, s){
@@ -2731,6 +2820,7 @@ function stats_disk_array(url, id) {
             }
 
 	});
+        _jqplot_img($('#'+id))
     });
 }
 function stats_disk_app(url, id) {
@@ -2770,6 +2860,60 @@ function stats_disk_app(url, id) {
             }
 
 	});
+        _jqplot_img($('#'+id))
     });
+}
+function jqplot_img(){
+    if (!$.jqplot.use_excanvas) {
+        $('div.jqplot-target').each(function(){
+            _jqplot_img(this)
+        })
+    }
+}
+
+function _jqplot_img(e){
+            var outerDiv = $(document.createElement('div'));
+            var header = $(document.createElement('div'));
+            var div = $(document.createElement('div'));
+
+            outerDiv.append(header);
+            outerDiv.append(div);
+
+            outerDiv.addClass('jqplot-image-container');
+            header.addClass('jqplot-image-container-header');
+            div.addClass('jqplot-image-container-content');
+
+            header.html('Right Click to Save Image As...');
+
+            var close = $(document.createElement('a'));
+            close.addClass('jqplot-image-container-close');
+            close.html('Close');
+            close.click(function() {
+                $(this).parents('div.jqplot-image-container').hide(500);
+            })
+            header.append(close);
+
+            $(e).after(outerDiv);
+            outerDiv.hide();
+
+            outerDiv = header = div = close = null;
+
+            if (!$.jqplot._noToImageButton) {
+                var btn = $(document.createElement('button'));
+                btn.text('View Plot Image');
+                btn.addClass('jqplot-image-button');
+                btn.bind('click', {chart: $(e)}, function(evt) {
+                    var imgelem = evt.data.chart.jqplotToImageElem();
+                    var div = $(e).nextAll('div.jqplot-image-container').first();
+                    div.children('div.jqplot-image-container-content').empty();
+                    div.children('div.jqplot-image-container-content').append(imgelem);
+                    div.show(500);
+                    div = null;
+                });
+
+                $(e).after(btn);
+                btn.after('<br />');
+                btn = null;
+            }
 }
 </script>

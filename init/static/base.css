@@ -357,23 +357,15 @@ a {
     z-index: 2;
     position: absolute;
     bottom: 0px;
-    right: 20%;
-    width: 60%;
-    height: 20px;
     opacity: 1.00;
     margin: 0 auto;
+    width: 100%;
     text-align: center;
     clear: both;
     color: black;
     font-size: 11pt;
     cursor: pointer;
     background: yellow;
-    border-top-left-radius:8px;
-    border-top-right-radius:8px;
-   -moz-border-radius-topleft:8px;
-   -moz-border-radius-topright:8px;
-   -webkit-border-top-left-radius:8px;
-   -webkit-border-top-right-radius:8px;
 }
 
 html>body .flash {
@@ -1016,6 +1008,15 @@ ul.login_menu ul {
     background: transparent url('csv.png') no-repeat;
     padding: 0 0 0 20px;
 }
+.csv_disabled {
+    background: transparent url('csv.png') no-repeat;
+    padding: 0 0 0 20px;
+    color: rgba(0, 0, 0, 0.5);
+}
+.link16 {
+    background: transparent url('link16.png') no-repeat;
+    padding: 0 0 0 20px;
+}
 .refresh16 {
     background: transparent url('refresh16.png') no-repeat;
     padding: 0 0 0 20px;
@@ -1256,6 +1257,41 @@ ul.login_menu ul {
    white-space: nowrap;
 }
 
+.right_click_menu {
+    display: none;
+    position: absolute;
+    background: white;
+    z-index: 502;
+    border-radius:8px;
+   -moz-border-radius:8px;
+   -webkit-border-radius:8px;
+    border-bottom-color: #DDD;
+    border-bottom-style: solid;
+    border-bottom-width: 2px;
+    border-left-color: #AAA;
+    border-left-style: solid;
+    border-left-width: 2px;
+    border-right-color: #DDD;
+    border-right-style: solid;
+    border-right-width: 2px;
+    border-top-color: #AAA;
+    border-top-style: solid;
+    border-top-width: 2px;
+    text-align: left;
+    padding: 0.5em;
+}
+
+.right_click_menu td {
+    text-align: center;
+}
+
+.right_click_menu td:hover {
+    text-align: center;
+    cursor: pointer;
+    background: #2d2d2d;
+    color: #aaaaaa;
+}
+
 .ackpanel {
     display: none;
     position: absolute;
@@ -1437,6 +1473,34 @@ button, input[type=button], input[type=submit] {
 
 .bluer {
     color: #333388;
+}
+
+.jqplot-image-button {
+    margin-bottom: 15px;
+    margin-top: 15px;
+}
+
+div.jqplot-image-container {
+    display: none;
+    background-color: #fff;
+    border: 1px solid #999;
+    display: inline-block;
+    margin-top: 25px;
+}
+
+div.jqplot-image-container-header {
+    font-size: 1.0em;
+    font-weight: bold;
+    padding: 5px 15px;
+    background-color: #eee;
+}
+
+div.jqplot-image-container-content {
+    padding: 15px;
+}
+
+a.jqplot-image-container-close {
+    float: right;
 }
 
 

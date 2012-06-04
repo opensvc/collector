@@ -121,7 +121,7 @@ def ajax_lifecycle_os():
     for o in os:
         l.append(SPAN(
                    DIV(
-                     _id='stat_os_%s'%o,
+                     DIV(_id='stat_os_%s'%o),
                      _class='float',
                    ),
                    SCRIPT(
@@ -140,7 +140,7 @@ def ajax_lifecycle_os():
           DIV(
             H2(T("Operating systems lifecycle")),
             DIV(
-              _id='stat_os_name',
+              DIV(_id='stat_os_name'),
               _class='float',
             ),
             DIV(
