@@ -2627,3 +2627,6 @@ alter table switches drop key idx1;
 alter table switches add unique key idx1 (`sw_name`,`sw_slot`,`sw_port`,`sw_rportname`);
 
 alter table switches add column sw_fabric varchar(128);
+
+alter table services add column svc_containerpath varchar(512);
+
