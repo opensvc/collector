@@ -1516,6 +1516,7 @@ db.define_table('feed_queue',
 
 db.define_table('switches',
     Field('sw_name', 'string'),
+    Field('sw_fabric', 'string'),
     Field('sw_slot', 'integer'),
     Field('sw_port', 'integer'),
     Field('sw_portspeed', 'integer'),

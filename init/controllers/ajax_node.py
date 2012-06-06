@@ -201,23 +201,44 @@ def ajax_node():
 
     # storage
     q = db.node_hba.nodename == request.vars.node
-    hbas = db(q).select()
+    l = db.switches.on(db.node_hba.hba_id==db.switches.sw_rportname)
+    hbas = db(q).select(db.node_hba.ALL, db.switches.ALL, left=l)
     _hbas = [TR(
                TH("id"),
                TH("type"),
+               TH("switch"),
+               TH("slot"),
+               TH("port"),
+               TH("speed"),
+               TH("autoneg"),
              )]
     for hba in hbas:
         _hbas.append(TR(
-                       TD(hba.hba_id),
-                       TD(hba.hba_type),
+                       TD(hba.node_hba.hba_id),
+                       TD(hba.node_hba.hba_type),
+                       TD(hba.switches.sw_name) if not hba.switches.sw_name is None else '-',
+                       TD(hba.switches.sw_slot) if not hba.switches.sw_slot is None else '-',
+                       TD(hba.switches.sw_port) if not hba.switches.sw_port is None else '-',
+                       TD(str(hba.switches.sw_portspeed)+' Gb/s') if not hba.switches.sw_portspeed is None else '-',
+                       TD(hba.switches.sw_portnego) if not hba.switches.sw_portnego is None else '-',
                      ))
     if len(_hbas) == 1:
         _hbas.append(TR(
                        TD('-'),
                        TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
                      ))
     if len(_hbas) == 1:
         _hbas.append(TR(
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
                        TD('-'),
                        TD('-'),
                      ))
@@ -266,7 +287,7 @@ def ajax_node():
     for disk in disks:
         _disks.append(TR(
           TD(disk.svcdisks.disk_id),
-          TD(disk.svcdisks.disk_size, T('MB')),
+          TD(disk.svcdisks.disk_used, T('MB')),
           TD(disk.svcdisks.disk_svcname),
           TD(disk.stor_array.array_model),
           TD(disk.diskinfo.disk_arrayid),

@@ -892,6 +892,7 @@ def insert_brocade(name=None):
     dirs = glob.glob(os.path.join(dir, pattern))
 
     vars = ['sw_name',
+            'sw_portname',
             'sw_slot',
             'sw_port',
             'sw_portspeed',
@@ -905,9 +906,10 @@ def insert_brocade(name=None):
         s = brocade.get_brocade(d)
         if s is None:
             continue
-        for p in s.ports:
+        for p in s.ports.values():
             vals.append([
                 s.name,
+                s.wwn,
                 str(p['Slot']),
                 str(p['Port']),
                 str(p['Speed']),
@@ -917,6 +919,21 @@ def insert_brocade(name=None):
                 str(p['RemotePortName']),
                 now
             ])
+            for nse in p['nse']:
+                if nse == p['RemotePortName']:
+                    continue
+                vals.append([
+                    s.name,
+                    s.wwn,
+                    str(p['Slot']),
+                    str(p['Port']),
+                    str(p['Speed']),
+                    str(p['Nego']),
+                    str(p['State']),
+                    str(p['Type']),
+                    nse,
+                    now
+                ])
         generic_insert('switches', vars, vals)
         sql = """delete from switches where sw_name="%s" and sw_updated < "%s" """%(s.name, str(now))
         db.executesql(sql)
