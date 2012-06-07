@@ -3,6 +3,8 @@
 *.pyc
 *.swp
 *.class
+stat_lifecycle*
+tempviz*
 viz*.png
 viz*.dot
 /*/cache/

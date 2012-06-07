@@ -893,6 +893,7 @@ def insert_brocade(name=None):
 
     vars = ['sw_name',
             'sw_portname',
+            'sw_index',
             'sw_slot',
             'sw_port',
             'sw_portspeed',
@@ -910,6 +911,7 @@ def insert_brocade(name=None):
             vals.append([
                 s.name,
                 s.wwn,
+                str(p['Index']),
                 str(p['Slot']),
                 str(p['Port']),
                 str(p['Speed']),
@@ -925,6 +927,7 @@ def insert_brocade(name=None):
                 vals.append([
                     s.name,
                     s.wwn,
+                    str(p['Index']),
                     str(p['Slot']),
                     str(p['Port']),
                     str(p['Speed']),

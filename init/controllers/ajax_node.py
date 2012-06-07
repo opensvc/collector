@@ -110,6 +110,133 @@ def perf_stats(node, rowid):
         )
     return t
 
+class sandata(object):
+    def __init__(self, nodenames):
+        self.nodenames = nodenames
+        self.n_server = 0
+        self.n_array = 0
+        self.n_switch = 0
+        self.d = {
+          'server': {},
+          'array': {},
+          'switch': {},
+          'link': {},
+        }
+        self.valid_switch = set([])
+
+    def get_endpoints(self, nodename):
+        q = db.node_hba.nodename == nodename
+        l1 = db.stor_zone.on(db.node_hba.hba_id==db.stor_zone.hba_id)
+        l2 = db.stor_array_tgtid.on(db.stor_zone.tgt_id==db.stor_array_tgtid.array_tgtid)
+        l3 = db.stor_array.on(db.stor_array_tgtid.array_id==db.stor_array.id)
+        l = []
+        for r in db(q).select(db.node_hba.hba_id, db.stor_zone.tgt_id, db.stor_array.array_name, left=(l1,l2,l3)):
+            l.append((
+              r.node_hba.hba_id,
+              r.stor_zone.tgt_id,
+              r.stor_array.array_name
+            ))
+        return l
+
+    def get_relations(self, portname, endpoints):
+        q = db.switches.sw_rportname == portname
+        q |= (db.switches.sw_portname==portname)&(db.switches.sw_rportname==endpoints[2])
+        return db(q).select()
+
+    def recurse_relations(self, portname, portindex, endpoints, chain=[]):
+        rels = self.get_relations(portname, endpoints)
+        #if endpoints[1].endswith("0992") and portname.endswith("266e"):
+        #    raise Exception(portname, portindex, endpoints, rels)
+        if len(rels) == 0:
+            return
+        for rel in rels:
+            if rel.sw_rportname not in self.array_ports and rel.sw_portname in chain:
+                # loop
+                continue
+            _chain = chain + [rel.sw_portname]
+            if rel.sw_portname not in self.d['switch']:
+                # new switch
+                id = 'sw%d'%self.n_switch
+                self.n_switch += 1
+                s = {'id': id, 'label': rel.sw_name, 'rank': len(chain)}
+                self.d['switch'][rel.sw_portname] = s
+            elif len(chain) > self.d['switch'][rel.sw_portname]['rank']:
+                self.d['switch'][rel.sw_portname]['rank'] = len(chain)
+            id = [rel.sw_rportname, rel.sw_portname]
+            id.sort()
+            id = '-'.join(id)
+            if id not in self.d['link']:
+                # new link
+                if rel.sw_rportname == endpoints[2]:
+                    # sw -> array
+                    head = endpoints[3]
+                    headlabel = rel.sw_rportname
+                    tail = rel.sw_portname
+                    taillabel = str(rel.sw_index)
+                    self.valid_switch |= set(_chain)
+                elif rel.sw_rportname == endpoints[1]:
+                    # node -> sw
+                    head = rel.sw_portname
+                    headlabel = str(rel.sw_index)
+                    tail = endpoints[0]
+                    taillabel = rel.sw_rportname
+                else:
+                    # sw -> sw
+                    head = rel.sw_portname
+                    headlabel = str(rel.sw_index)
+                    tail = rel.sw_rportname
+                    taillabel = str(portindex)
+                s = {
+                  'tail': tail,
+                  'taillabel': taillabel,
+                  'head': head,
+                  'headlabel': headlabel,
+                  'count': 1,
+                }
+                self.d['link'][id] = s
+                if rel.sw_rportname not in self.array_ports:
+                    self.recurse_relations(rel.sw_portname, rel.sw_index, endpoints, _chain)
+            elif rel.sw_rportname == endpoints[1]:
+                self.d['link'][id]['count'] += 1
+                if portindex is not None:
+                    self.d['link'][id]['headlabel'] += ',%d'%rel.sw_index
+                    self.d['link'][id]['taillabel'] += ',%d'%portindex
+
+
+    def main(self):
+        for nodename in self.nodenames:
+            id = 's%d'%self.n_server
+            self.n_server += 1
+            s = {
+                 'id': id,
+                 'label': nodename,
+                }
+            self.d['server'][nodename] = s
+
+            endpoints = self.get_endpoints(nodename)
+            self.array_ports = {}
+            for sp, ap, an in endpoints:
+                if an not in self.d['array']:
+                    # new array
+                    id = 'a%d'%self.n_array
+                    self.n_array += 1
+                    s = {'id': id, 'label': an}
+                    self.d['array'][an] = s
+                self.array_ports[ap] = an
+
+            for sp, ap, an in endpoints:
+                self.recurse_relations(sp, None, (nodename, sp, ap, an))
+
+        # purge unused switches
+        import copy
+        for switch in copy.copy(self.d['switch'].keys()):
+            if switch not in self.valid_switch:
+                del(self.d['switch'][switch])
+
+        #raise Exception(self.d)
+        return self.d
+
+
 @auth.requires_login()
 def ajax_node():
     rowid = request.vars.rowid
@@ -191,7 +318,7 @@ def ajax_node():
       TR(TD(T('memory slots'), _style='font-style:italic'), TD(node['mem_slots'])),
       TR(TD(T('memory total'), _style='font-style:italic'), TD(node['mem_bytes'])),
     )
-    os = TABLE(
+    ops = TABLE(
       TR(TD(T('os name'), _style='font-style:italic'), TD(node['os_name'])),
       TR(TD(T('os vendor'), _style='font-style:italic'), TD(node['os_vendor'])),
       TR(TD(T('os release'), _style='font-style:italic'), TD(node['os_release'])),
@@ -308,12 +435,18 @@ def ajax_node():
       TABLE(_nets),
     )
 
-    stor = DIV(
-      H3(T("Host Bus Adapters")),
-      TABLE(_hbas),
-      H3(T("Disks")),
-      TABLE(_disks),
-    )
+    # san graphviz
+    from applications.init.modules import san
+    import tempfile
+    import os
+    vizdir = os.path.join(os.getcwd(), 'applications', 'init', 'static')
+    d = sandata([request.vars.node]).main()
+    o = san.Viz(d)
+    f = tempfile.NamedTemporaryFile(dir=vizdir, prefix='tempviz')
+    sanviz = f.name
+    f.close()
+    o.write(sanviz)
+    sanviz = URL(r=request,c='static',f=os.path.basename(sanviz))
 
     def js(tab, rowid):
         buff = ""
@@ -321,6 +454,17 @@ def ajax_node():
             buff += """$('#%(tab)s_%(id)s').hide();$('#li%(tab)s_%(id)s').removeClass('tab_active');"""%dict(tab='tab'+str(i), id=rowid)
         buff += """$('#%(tab)s_%(id)s').show();$('#li%(tab)s_%(id)s').addClass('tab_active');"""%dict(tab=tab, id=rowid)
         return buff
+
+    stor = DIV(
+      H3("SAN"),
+      #P(d),
+      #PRE(str(o)),
+      IMG(_src=sanviz),
+      H3(T("Host Bus Adapters")),
+      TABLE(_hbas),
+      H3(T("Disks")),
+      TABLE(_disks),
+    )
 
     t = TABLE(
       TR(
@@ -365,7 +509,7 @@ def ajax_node():
             _class='cloud_shown',
           ),
           DIV(
-            os,
+            ops,
             _id='tab2_'+str(rowid),
             _class='cloud',
           ),

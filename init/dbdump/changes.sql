@@ -2630,3 +2630,4 @@ alter table switches add column sw_fabric varchar(128);
 
 alter table services add column svc_containerpath varchar(512);
 
+alter table switches add column sw_index integer;
