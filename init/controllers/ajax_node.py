@@ -145,12 +145,11 @@ class sandata(object):
 
     def recurse_relations(self, portname, portindex, endpoints, chain=[]):
         rels = self.get_relations(portname, endpoints)
-        #if endpoints[1].endswith("0992") and portname.endswith("266e"):
-        #    raise Exception(portname, portindex, endpoints, rels)
         if len(rels) == 0:
             return
         for rel in rels:
-            if rel.sw_rportname not in self.array_ports and rel.sw_portname in chain:
+            if rel.sw_rportname not in self.array_ports and \
+               rel.sw_portname in chain:
                 # loop
                 continue
             _chain = chain + [rel.sw_portname]
@@ -167,6 +166,7 @@ class sandata(object):
             id = '-'.join(id)
             if id not in self.d['link']:
                 # new link
+                count = 1
                 if rel.sw_rportname == endpoints[2]:
                     # sw -> array
                     head = endpoints[3]
@@ -181,27 +181,36 @@ class sandata(object):
                     tail = endpoints[0]
                     taillabel = rel.sw_rportname
                 else:
-                    # sw -> sw
+                    # sw -> sw, single isl or trunks
                     head = rel.sw_portname
                     headlabel = str(rel.sw_index)
                     tail = rel.sw_rportname
-                    taillabel = str(portindex)
+                    rportindex = self.get_remote_port_index(rel.sw_portname, rel.sw_rportname)
+                    count = len(rportindex)
+                    taillabel = ','.join(map(lambda x: str(x), rportindex))
+                    if count > 1:
+                        _rportindex = self.get_remote_port_index(rel.sw_rportname, rel.sw_portname)
+                        headlabel = ','.join(map(lambda x: str(x), _rportindex))
                 s = {
                   'tail': tail,
                   'taillabel': taillabel,
                   'head': head,
                   'headlabel': headlabel,
-                  'count': 1,
+                  'count': count,
                 }
                 self.d['link'][id] = s
-                if rel.sw_rportname not in self.array_ports:
-                    self.recurse_relations(rel.sw_portname, rel.sw_index, endpoints, _chain)
             elif rel.sw_rportname == endpoints[1]:
-                self.d['link'][id]['count'] += 1
+                #self.d['link'][id]['count'] += 1
                 if portindex is not None:
                     self.d['link'][id]['headlabel'] += ',%d'%rel.sw_index
                     self.d['link'][id]['taillabel'] += ',%d'%portindex
+            if rel.sw_rportname not in self.array_ports:
+                self.recurse_relations(rel.sw_portname, rel.sw_index, endpoints, _chain)
 
+    def get_remote_port_index(self, portname, rportname):
+        q = db.switches.sw_portname == rportname
+        q &= db.switches.sw_rportname == portname
+        return [r.sw_index for r in db(q).select(db.switches.sw_index, orderby=db.switches.sw_index)]
 
     def main(self):
         for nodename in self.nodenames:
@@ -232,6 +241,9 @@ class sandata(object):
         for switch in copy.copy(self.d['switch'].keys()):
             if switch not in self.valid_switch:
                 del(self.d['switch'][switch])
+                for link, linkd in copy.copy(self.d['link'].items()):
+                    if switch == linkd['tail'] or switch == linkd['head']:
+                        del(self.d['link'][link])
 
         #raise Exception(self.d)
         return self.d
