@@ -1857,10 +1857,11 @@ class col_node(HtmlTableColumn):
               img,
               A(
                 s,
-                _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                _onclick="getElementById('%(id)s').innerHTML='%(spinner)s';toggle_extra('%(url)s', '%(id)s');"%dict(
                   url=URL(r=request, c='ajax_node',f='ajax_node',
                           vars={'node': s, 'rowid': id}),
                   id=id,
+                  spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')),
                 ),
                 _style=c,
               ),
@@ -1877,10 +1878,11 @@ class col_svc(HtmlTableColumn):
         d = DIV(
               A(
                 s,
-                _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                _onclick="getElementById('%(id)s').innerHTML='%(spinner)s';toggle_extra('%(url)s', '%(id)s');"%dict(
                   url=URL(r=request, c='default',f='ajax_service',
                           vars={'node': s, 'rowid': id}),
                   id=id,
+                  spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')),
                 ),
               ),
             )

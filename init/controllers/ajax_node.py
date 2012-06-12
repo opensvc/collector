@@ -167,6 +167,7 @@ class sandata(object):
             if id not in self.d['link']:
                 # new link
                 count = 1
+                speed = [rel.sw_portspeed]
                 if rel.sw_rportname == endpoints[2]:
                     # sw -> array
                     head = endpoints[3]
@@ -191,12 +192,14 @@ class sandata(object):
                     if count > 1:
                         _rportindex = self.get_remote_port_index(rel.sw_rportname, rel.sw_portname)
                         headlabel = ','.join(map(lambda x: str(x), _rportindex))
+                        speed = self.get_remote_port_speed(rel.sw_rportname, rel.sw_portname)
                 s = {
                   'tail': tail,
                   'taillabel': taillabel,
                   'head': head,
                   'headlabel': headlabel,
                   'count': count,
+                  'speed': speed,
                 }
                 self.d['link'][id] = s
             elif rel.sw_rportname == endpoints[1]:
@@ -206,6 +209,11 @@ class sandata(object):
                     self.d['link'][id]['taillabel'] += ',%d'%portindex
             if rel.sw_rportname not in self.array_ports:
                 self.recurse_relations(rel.sw_portname, rel.sw_index, endpoints, _chain)
+
+    def get_remote_port_speed(self, portname, rportname):
+        q = db.switches.sw_portname == rportname
+        q &= db.switches.sw_rportname == portname
+        return [r.sw_portspeed for r in db(q).select(db.switches.sw_portspeed, orderby=db.switches.sw_index)]
 
     def get_remote_port_index(self, portname, rportname):
         q = db.switches.sw_portname == rportname
@@ -459,6 +467,7 @@ def ajax_node():
     f.close()
     o.write(sanviz)
     sanviz = URL(r=request,c='static',f=os.path.basename(sanviz))
+    sanviz_legend = o.html_legend()
 
     def js(tab, rowid):
         buff = ""
@@ -469,8 +478,7 @@ def ajax_node():
 
     stor = DIV(
       H3("SAN"),
-      #P(d),
-      #PRE(str(o)),
+      XML(sanviz_legend),
       IMG(_src=sanviz),
       H3(T("Host Bus Adapters")),
       TABLE(_hbas),

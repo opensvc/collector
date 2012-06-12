@@ -19,6 +19,13 @@ class Viz(object):
     switch_opt = "shape=Mrecord"
     server_opt = "shape=Mrecord"
     array_opt = "shape=Mrecord"
+    colors = {
+      1: '#ffefb6',
+      2: '#fec3ac',
+      4: '#ff5e4d',
+      8: '#b9121b',
+      16: '#6b0d0d',
+    }
 
     def __init__(self, d):
         self.data = d
@@ -40,6 +47,12 @@ class Viz(object):
             self.ports[link['head']] |= set([link['headlabel']])
         for k in self.ports:
             self.ports[k] = sorted(list(self.ports[k]-set([''])), key=tonum)
+
+    def html_legend(self):
+        s = ""
+        for i in sorted(self.colors.keys()):
+            s += "<span style='padding:0.2em;border-bottom:solid %s'>%d Gb/s</span>"%(self.colors[i], i)
+        return "<div>"+s+"</div>"
 
     def __str__(self):
         s = """
@@ -131,12 +144,11 @@ digraph G {
 
     def fmt_links(self):
         s = ""
-        linkcolor = "#dd0000"
         print self.index
         for link in self.data['link'].values():
             l = []
-            for i in range(link['count']):
-                l.append(linkcolor)
+            for speed in link['speed']:
+                l.append(self.colors[speed])
             color = ':'.join(l)
             if not link['tail'] in self.index or not link['head'] in self.index:
                 print "discard", link['tail'], link['head']
