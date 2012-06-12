@@ -517,7 +517,7 @@ def ajax_node_stor():
         switches.sw_portspeed,
         switches.sw_portnego,
         san_zone_alias.alias,
-        group_concat(san_zone.zone separator ', ')
+        group_concat(san_zone.zone order by san_zone.zone separator ', ')
       from
         node_hba
         left join switches on node_hba.hba_id=switches.sw_rportname
