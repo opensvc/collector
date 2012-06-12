@@ -600,7 +600,7 @@ def ajax_node_stor():
         stor_zone.nodename = "%s"
       group by stor_zone.hba_id, stor_zone.tgt_id, san_zone.zone
       ) t
-      where t.c=2
+      where t.c=2 or t.c=0
       group by t.hba_id, t.tgt_id
       order by t.hba_id, t.tgt_id
     """%nodename
