@@ -2631,3 +2631,25 @@ alter table switches add column sw_fabric varchar(128);
 alter table services add column svc_containerpath varchar(512);
 
 alter table switches add column sw_index integer;
+
+CREATE TABLE `san_zone` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `cfg` varchar(128) DEFAULT '',
+  `zone` varchar(128) DEFAULT '',
+  `port` varchar(16) DEFAULT '',
+  `updated` datetime not null,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx1` (`cfg`, `zone`, `port`)
+);
+
+CREATE TABLE `san_zone_alias` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `cfg` varchar(128) DEFAULT '',
+  `alias` varchar(128) DEFAULT '',
+  `port` varchar(16) DEFAULT '',
+  `updated` datetime not null,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx1` (`cfg`, `alias`, `port`)
+);
+
+

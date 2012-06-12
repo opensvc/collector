@@ -1539,3 +1539,17 @@ db.define_table('node_ip',
     Field('updated', 'datetime'),
     migrate=False)
 
+db.define_table('san_zone',
+    Field('cfg', 'string'),
+    Field('zone', 'string'),
+    Field('port', 'string'),
+    Field('updated', 'datetime'),
+    migrate=False)
+
+db.define_table('san_zone_alias',
+    Field('cfg', 'string'),
+    Field('alias', 'string'),
+    Field('port', 'string'),
+    Field('updated', 'datetime'),
+    migrate=False)
+

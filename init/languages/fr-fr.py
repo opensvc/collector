@@ -786,6 +786,7 @@
 'Table name': 'Nom de table',
 'Tables': 'Tables',
 'Target port Id': 'Target port Id',
+'Targets': 'Targets',
 'Team': 'Equipe',
 'Team Responsible': 'Equipe Responsable',
 'Team responsible': 'Equipe responsable',

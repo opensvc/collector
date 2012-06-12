@@ -902,11 +902,50 @@ def insert_brocade(name=None):
             'sw_porttype',
             'sw_rportname',
             'sw_updated']
+    avars = ['cfg',
+             'alias',
+             'port',
+             'updated']
+    zvars = ['cfg',
+             'zone',
+             'port',
+             'updated']
     for d in dirs:
-        vals = []
         s = brocade.get_brocade(d)
+
+        # alias
+        for cfg in s.alias:
+            vals = []
+            for alias, port in s.alias[cfg].items():
+                vals.append([
+                    cfg,
+                    alias,
+                    port,
+                    now
+                ])
+            generic_insert('san_zone_alias', avars, vals)
+            sql = """delete from san_zone_alias where cfg="%s" and updated < "%s" """%(cfg, str(now))
+            db.executesql(sql)
+
+        # zones
+        vals = []
         if s is None:
             continue
+        if s.cfg is not None:
+            for zone, ports in s.zone.items():
+                for port in ports:
+                    vals.append([
+                        s.cfg,
+                        zone,
+                        port,
+                        now
+                    ])
+            generic_insert('san_zone', zvars, vals)
+            sql = """delete from san_zone where cfg="%s" and updated < "%s" """%(s.cfg, str(now))
+            db.executesql(sql)
+
+        # ports-portname
+        vals = []
         for p in s.ports.values():
             vals.append([
                 s.name,

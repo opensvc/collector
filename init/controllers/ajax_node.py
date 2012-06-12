@@ -507,27 +507,50 @@ def ajax_node_stor():
     nodename = request.args[1]
 
     # storage adapters
-    q = db.node_hba.nodename == nodename
-    l = db.switches.on(db.node_hba.hba_id==db.switches.sw_rportname)
-    hbas = db(q).select(db.node_hba.ALL, db.switches.ALL, left=l)
+    sql = """
+      select
+        node_hba.hba_id,
+        node_hba.hba_type,
+        switches.sw_name,
+        switches.sw_slot,
+        switches.sw_port,
+        switches.sw_portspeed,
+        switches.sw_portnego,
+        san_zone_alias.alias,
+        group_concat(san_zone.zone separator ', ')
+      from
+        node_hba
+        left join switches on node_hba.hba_id=switches.sw_rportname
+        left join san_zone_alias on node_hba.hba_id=san_zone_alias.port
+        left join san_zone on node_hba.hba_id=san_zone.port
+      where
+        node_hba.nodename = "%s"
+      group by node_hba.hba_id
+      order by node_hba.hba_id
+    """%nodename
+    hbas = db.executesql(sql)
     _hbas = [TR(
-               TH("id"),
+               TH("hba id"),
                TH("type"),
                TH("switch"),
                TH("slot"),
                TH("port"),
                TH("speed"),
                TH("autoneg"),
+               TH("alias"),
+               TH("zones"),
              )]
     for hba in hbas:
         _hbas.append(TR(
-                       TD(hba.node_hba.hba_id),
-                       TD(hba.node_hba.hba_type),
-                       TD(hba.switches.sw_name) if not hba.switches.sw_name is None else '-',
-                       TD(hba.switches.sw_slot) if not hba.switches.sw_slot is None else '-',
-                       TD(hba.switches.sw_port) if not hba.switches.sw_port is None else '-',
-                       TD(str(hba.switches.sw_portspeed)+' Gb/s') if not hba.switches.sw_portspeed is None else '-',
-                       TD(hba.switches.sw_portnego) if not hba.switches.sw_portnego is None else '-',
+                       TD(hba[0]),
+                       TD(hba[1]),
+                       TD(hba[2]) if not hba[2] is None else '-',
+                       TD(hba[3]) if not hba[3] is None else '-',
+                       TD(hba[4]) if not hba[4] is None else '-',
+                       TD(str(hba[5])+' Gb/s') if not hba[5] is None else '-',
+                       TD(hba[6]) if not hba[6] is None else '-',
+                       TD(hba[7]) if not hba[7] is None else '-',
+                       TD(hba[8]) if not hba[8] is None else '-',
                      ))
     if len(_hbas) == 1:
         _hbas.append(TR(
@@ -538,9 +561,89 @@ def ajax_node_stor():
                        TD('-'),
                        TD('-'),
                        TD('-'),
+                       TD('-'),
+                       TD('-'),
                      ))
     if len(_hbas) == 1:
         _hbas.append(TR(
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                     ))
+
+    # storage adapters
+    sql = """
+      select * from
+      (select
+        stor_zone.hba_id,
+        stor_zone.tgt_id,
+        switches.sw_name,
+        switches.sw_slot,
+        switches.sw_port,
+        switches.sw_portspeed,
+        switches.sw_portnego,
+        san_zone_alias.alias,
+        san_zone.zone,
+        count(san_zone.zone) as c
+      from
+        stor_zone
+        left join switches on stor_zone.tgt_id=switches.sw_rportname
+        left join san_zone_alias on stor_zone.tgt_id=san_zone_alias.port
+        left join san_zone on stor_zone.tgt_id=san_zone.port or stor_zone.hba_id=san_zone.port
+      where
+        stor_zone.nodename = "%s"
+      group by stor_zone.hba_id, stor_zone.tgt_id, san_zone.zone
+      ) t
+      where t.c=2
+      group by t.hba_id, t.tgt_id
+      order by t.hba_id, t.tgt_id
+    """%nodename
+    tgts = db.executesql(sql)
+    _tgts = [TR(
+               TH("hba id"),
+               TH("tgt id"),
+               TH("switch"),
+               TH("slot"),
+               TH("port"),
+               TH("speed"),
+               TH("autoneg"),
+               TH("alias"),
+               TH("zone"),
+             )]
+    for tgt in tgts:
+        _tgts.append(TR(
+                       TD(tgt[0]),
+                       TD(tgt[1]),
+                       TD(tgt[2]) if not tgt[2] is None else '-',
+                       TD(tgt[3]) if not tgt[3] is None else '-',
+                       TD(tgt[4]) if not tgt[4] is None else '-',
+                       TD(str(tgt[5])+' Gb/s') if not tgt[5] is None else '-',
+                       TD(tgt[6]) if not tgt[6] is None else '-',
+                       TD(tgt[7]) if not tgt[7] is None else '-',
+                       TD(tgt[8]) if not tgt[8] is None else '-',
+                     ))
+    if len(_tgts) == 1:
+        _tgts.append(TR(
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                     ))
+    if len(_tgts) == 1:
+        _tgts.append(TR(
+                       TD('-'),
+                       TD('-'),
                        TD('-'),
                        TD('-'),
                        TD('-'),
@@ -601,8 +704,13 @@ def ajax_node_stor():
       H3("SAN"),
       XML(sanviz_legend),
       IMG(_src=sanviz),
+      BR(),
       H3(T("Host Bus Adapters")),
       TABLE(_hbas),
+      BR(),
+      H3(T("Targets")),
+      TABLE(_tgts),
+      BR(),
       H3(T("Disks")),
       TABLE(_disks),
     )

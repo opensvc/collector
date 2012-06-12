@@ -8,12 +8,69 @@ class Brocade(object):
         self.name = os.path.basename(dir)
         self.load_switchshow()
         self.load_nsshow()
+        self.load_zoneshow()
 
     def readfile(self, fname):
         fpath = os.path.join(self.dir, fname)
         with open(fpath, 'r') as f:
             buff = f.read()
         return buff
+
+    def load_zoneshow(self):
+        """
+ alias: DMX0197_8A0
+                50:06:04:84:52:A4:F9:47
+ alias: Wdms01  10:00:00:00:C9:24:32:8C
+        """
+        self.alias = {}
+        self.zone = {}
+        self.cfg = None
+        effective_cfg_offset = 0
+        lines = self.readfile("brocadezoneshow").split('\n')
+        for i, line in enumerate(lines):
+            line = line.strip()
+            if line.startswith('alias:'):
+                l = line.split()
+                length = len(l)
+                if length == 2:
+                    alias = l[-1]
+                    port = lines[i+1].strip().replace(':','').lower()
+                elif length == 3:
+                    alias = l[-2]
+                    port = l[-1].replace(':','').lower()
+                else:
+                    continue
+                self.alias[cfg][alias] = port
+            elif line.startswith('Effective configuration:'):
+                effective_cfg_offset = i
+                break
+            elif line.startswith('cfg:'):
+                cfg = line.split(':')[-1].strip()
+                self.alias[cfg] = {}
+        #print self.alias
+
+        """
+ zone:  Wzzs01_DMX1370_9B1
+                50:06:04:84:52:a6:1e:b8
+                10:00:00:00:c9:3a:12:72
+        """
+        lines = lines[effective_cfg_offset:]
+        for i, line in enumerate(lines):
+            line = line.strip()
+            if line.startswith('zone:'):
+                l = line.split()
+                zone = l[-1]
+                self.zone[zone] = []
+                for _line in lines[i+1:]:
+                    _line = _line.strip()
+                    if _line.startswith('zone:') or len(_line) == 0:
+                        break
+                    port = _line.replace(':','').lower()
+                    self.zone[zone].append(port)
+            elif line.startswith('cfg:'):
+                self.cfg = line.split(':')[-1].strip()
+        #print self.zone
+
 
     def load_nsshow(self):
         """
