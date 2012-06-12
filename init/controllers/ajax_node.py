@@ -346,50 +346,6 @@ def ajax_node():
       TR(TD(T('os arch'), _style='font-style:italic'), TD(node['os_arch'])),
     )
 
-    # storage
-    q = db.node_hba.nodename == request.vars.node
-    l = db.switches.on(db.node_hba.hba_id==db.switches.sw_rportname)
-    hbas = db(q).select(db.node_hba.ALL, db.switches.ALL, left=l)
-    _hbas = [TR(
-               TH("id"),
-               TH("type"),
-               TH("switch"),
-               TH("slot"),
-               TH("port"),
-               TH("speed"),
-               TH("autoneg"),
-             )]
-    for hba in hbas:
-        _hbas.append(TR(
-                       TD(hba.node_hba.hba_id),
-                       TD(hba.node_hba.hba_type),
-                       TD(hba.switches.sw_name) if not hba.switches.sw_name is None else '-',
-                       TD(hba.switches.sw_slot) if not hba.switches.sw_slot is None else '-',
-                       TD(hba.switches.sw_port) if not hba.switches.sw_port is None else '-',
-                       TD(str(hba.switches.sw_portspeed)+' Gb/s') if not hba.switches.sw_portspeed is None else '-',
-                       TD(hba.switches.sw_portnego) if not hba.switches.sw_portnego is None else '-',
-                     ))
-    if len(_hbas) == 1:
-        _hbas.append(TR(
-                       TD('-'),
-                       TD('-'),
-                       TD('-'),
-                       TD('-'),
-                       TD('-'),
-                       TD('-'),
-                       TD('-'),
-                     ))
-    if len(_hbas) == 1:
-        _hbas.append(TR(
-                       TD('-'),
-                       TD('-'),
-                       TD('-'),
-                       TD('-'),
-                       TD('-'),
-                       TD('-'),
-                       TD('-'),
-                     ))
-
 
     # net
     q = db.node_ip.nodename == request.vars.node
@@ -418,56 +374,10 @@ def ajax_node():
                        TD('-'),
                      ))
 
-    q = db.svcdisks.disk_nodename == request.vars.node
-    q &= db.diskinfo.id > 0
-    q &= db.svcdisks.disk_id==db.diskinfo.disk_id
-    q &= db.diskinfo.disk_arrayid==db.stor_array.array_name
-    disks = db(q).select()
-    _disks = [TR(
-          TH("wwid"),
-          TH("size"),
-          TH("service"),
-          TH("array model"),
-          TH("array id"),
-          TH("array disk group"),
-        )]
-    for disk in disks:
-        _disks.append(TR(
-          TD(disk.svcdisks.disk_id),
-          TD(disk.svcdisks.disk_used, T('MB')),
-          TD(disk.svcdisks.disk_svcname),
-          TD(disk.stor_array.array_model),
-          TD(disk.diskinfo.disk_arrayid),
-          TD(disk.diskinfo.disk_group),
-        ))
-    if len(_disks) == 1:
-        _disks.append(TR(
-          TD('-'),
-          TD('-'),
-          TD('-'),
-          TD('-'),
-          TD('-'),
-          TD('-'),
-        ))
-
     nets = DIV(
       H3(T("Networks")),
       TABLE(_nets),
     )
-
-    # san graphviz
-    from applications.init.modules import san
-    import tempfile
-    import os
-    vizdir = os.path.join(os.getcwd(), 'applications', 'init', 'static')
-    d = sandata([request.vars.node]).main()
-    o = san.Viz(d)
-    f = tempfile.NamedTemporaryFile(dir=vizdir, prefix='tempviz')
-    sanviz = f.name
-    f.close()
-    o.write(sanviz)
-    sanviz = URL(r=request,c='static',f=os.path.basename(sanviz))
-    sanviz_legend = o.html_legend()
 
     def js(tab, rowid):
         buff = ""
@@ -475,16 +385,6 @@ def ajax_node():
             buff += """$('#%(tab)s_%(id)s').hide();$('#li%(tab)s_%(id)s').removeClass('tab_active');"""%dict(tab='tab'+str(i), id=rowid)
         buff += """$('#%(tab)s_%(id)s').show();$('#li%(tab)s_%(id)s').addClass('tab_active');"""%dict(tab=tab, id=rowid)
         return buff
-
-    stor = DIV(
-      H3("SAN"),
-      XML(sanviz_legend),
-      IMG(_src=sanviz),
-      H3(T("Host Bus Adapters")),
-      TABLE(_hbas),
-      H3(T("Disks")),
-      TABLE(_disks),
-    )
 
     t = TABLE(
       TR(
@@ -544,7 +444,7 @@ def ajax_node():
             _class='cloud',
           ),
           DIV(
-            stor,
+            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
             _id='tab5_'+str(rowid),
             _class='cloud',
           ),
@@ -578,6 +478,11 @@ def ajax_node():
           ),
           SCRIPT(
             "ajax('%(url)s', [], '%(id)s')"%dict(
+               id='tab5_'+str(rowid),
+               url=URL(r=request, c='ajax_node', f='ajax_node_stor',
+                       args=['tab10_'+str(rowid), request.vars.node])
+            ),
+            "ajax('%(url)s', [], '%(id)s')"%dict(
                id='tab10_'+str(rowid),
                url=URL(r=request, c='wiki', f='ajax_wiki',
                        args=['tab10_'+str(rowid), request.vars.node])
@@ -593,5 +498,112 @@ def ajax_node():
       ),
     )
     return t
+
+@auth.requires_login()
+def ajax_node_stor():
+    id = request.args[0]
+    nodename = request.args[1]
+
+    # storage adapters
+    q = db.node_hba.nodename == nodename
+    l = db.switches.on(db.node_hba.hba_id==db.switches.sw_rportname)
+    hbas = db(q).select(db.node_hba.ALL, db.switches.ALL, left=l)
+    _hbas = [TR(
+               TH("id"),
+               TH("type"),
+               TH("switch"),
+               TH("slot"),
+               TH("port"),
+               TH("speed"),
+               TH("autoneg"),
+             )]
+    for hba in hbas:
+        _hbas.append(TR(
+                       TD(hba.node_hba.hba_id),
+                       TD(hba.node_hba.hba_type),
+                       TD(hba.switches.sw_name) if not hba.switches.sw_name is None else '-',
+                       TD(hba.switches.sw_slot) if not hba.switches.sw_slot is None else '-',
+                       TD(hba.switches.sw_port) if not hba.switches.sw_port is None else '-',
+                       TD(str(hba.switches.sw_portspeed)+' Gb/s') if not hba.switches.sw_portspeed is None else '-',
+                       TD(hba.switches.sw_portnego) if not hba.switches.sw_portnego is None else '-',
+                     ))
+    if len(_hbas) == 1:
+        _hbas.append(TR(
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                     ))
+    if len(_hbas) == 1:
+        _hbas.append(TR(
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                     ))
+
+    # node disk list
+    q = db.svcdisks.disk_nodename == nodename
+    q &= db.diskinfo.id > 0
+    q &= db.svcdisks.disk_id==db.diskinfo.disk_id
+    q &= db.diskinfo.disk_arrayid==db.stor_array.array_name
+    disks = db(q).select()
+    _disks = [TR(
+          TH("wwid"),
+          TH("size"),
+          TH("service"),
+          TH("array model"),
+          TH("array id"),
+          TH("array disk group"),
+        )]
+    for disk in disks:
+        _disks.append(TR(
+          TD(disk.svcdisks.disk_id),
+          TD(disk.svcdisks.disk_used, T('MB')),
+          TD(disk.svcdisks.disk_svcname),
+          TD(disk.stor_array.array_model),
+          TD(disk.diskinfo.disk_arrayid),
+          TD(disk.diskinfo.disk_group),
+        ))
+    if len(_disks) == 1:
+        _disks.append(TR(
+          TD('-'),
+          TD('-'),
+          TD('-'),
+          TD('-'),
+          TD('-'),
+          TD('-'),
+        ))
+
+    # san graphviz
+    from applications.init.modules import san
+    import tempfile
+    import os
+    vizdir = os.path.join(os.getcwd(), 'applications', 'init', 'static')
+    d = sandata([nodename]).main()
+    o = san.Viz(d)
+    f = tempfile.NamedTemporaryFile(dir=vizdir, prefix='tempviz')
+    sanviz = f.name
+    f.close()
+    o.write(sanviz)
+    sanviz = URL(r=request,c='static',f=os.path.basename(sanviz))
+    sanviz_legend = o.html_legend()
+
+    stor = DIV(
+      H3("SAN"),
+      XML(sanviz_legend),
+      IMG(_src=sanviz),
+      H3(T("Host Bus Adapters")),
+      TABLE(_hbas),
+      H3(T("Disks")),
+      TABLE(_disks),
+    )
+    return stor
 
 
