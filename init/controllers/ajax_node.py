@@ -473,8 +473,10 @@ def ajax_node():
             _class='cloud',
           ),
           DIV(
+            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
             _id='tab11_'+str(rowid),
             _class='cloud',
+            _style='max-width:80em',
           ),
           SCRIPT(
             "ajax('%(url)s', [], '%(id)s')"%dict(
