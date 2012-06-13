@@ -2189,6 +2189,13 @@ v_services_colprops = {
              img = 'svc',
              table = 'v_services',
             ),
+    'svc_containerpath': HtmlTableColumn(
+             title = 'Container path',
+             field='svc_containerpath',
+             display = False,
+             img = 'svc',
+             table = 'v_services',
+            ),
     'svc_type': col_env(
              title = 'Service type',
              field='svc_type',

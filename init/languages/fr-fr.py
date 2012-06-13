@@ -219,6 +219,7 @@
 'Computing ressource usage': 'Utilisation des ressources informatiques',
 'Configure columns': 'Colonnage',
 'Container name': 'Nom du container',
+'Container path': 'Chemin du container',
 'Container status': 'Etat du container',
 'Container type': 'Type de container',
 'Content': 'Contenu',
