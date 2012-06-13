@@ -482,7 +482,7 @@ def ajax_node():
             "ajax('%(url)s', [], '%(id)s')"%dict(
                id='tab5_'+str(rowid),
                url=URL(r=request, c='ajax_node', f='ajax_node_stor',
-                       args=['tab10_'+str(rowid), request.vars.node])
+                       args=['tab5_'+str(rowid), request.vars.node])
             ),
             "ajax('%(url)s', [], '%(id)s')"%dict(
                id='tab10_'+str(rowid),
@@ -705,6 +705,249 @@ def ajax_node_stor():
     import os
     vizdir = os.path.join(os.getcwd(), 'applications', 'init', 'static')
     d = sandata([nodename]).main()
+    o = san.Viz(d)
+    f = tempfile.NamedTemporaryFile(dir=vizdir, prefix='tempviz')
+    sanviz = f.name
+    f.close()
+    o.write(sanviz)
+    sanviz = URL(r=request,c='static',f=os.path.basename(sanviz))
+    sanviz_legend = o.html_legend()
+
+    stor = DIV(
+      H3("SAN"),
+      XML(sanviz_legend),
+      IMG(_src=sanviz),
+      BR(),
+      H3(T("Host Bus Adapters")),
+      TABLE(_hbas),
+      BR(),
+      H3(T("Targets")),
+      TABLE(_tgts),
+      BR(),
+      H3(T("Disks")),
+      TABLE(_disks),
+    )
+    return stor
+
+@auth.requires_login()
+def ajax_svc_stor():
+    id = request.args[0]
+    svcname = request.args[1]
+
+    # storage adapters
+    sql = """
+      select
+        node_hba.hba_id,
+        node_hba.hba_type,
+        switches.sw_name,
+        switches.sw_slot,
+        switches.sw_port,
+        switches.sw_portspeed,
+        switches.sw_portnego,
+        san_zone_alias.alias,
+        group_concat(san_zone.zone order by san_zone.zone separator ', '),
+        switches.sw_index,
+        svcmon.mon_nodname
+      from
+        svcmon
+        left join node_hba on svcmon.mon_nodname=node_hba.nodename
+        left join switches on node_hba.hba_id=switches.sw_rportname
+        left join san_zone_alias on node_hba.hba_id=san_zone_alias.port
+        left join san_zone on node_hba.hba_id=san_zone.port
+      where
+        svcmon.mon_svcname = "%s"
+      group by node_hba.hba_id
+      order by node_hba.hba_id
+    """%svcname
+    hbas = db.executesql(sql)
+    _hbas = [TR(
+               TH("nodename"),
+               TH("hba id"),
+               TH("type"),
+               TH("switch"),
+               TH("index"),
+               TH("slot"),
+               TH("port"),
+               TH("speed"),
+               TH("autoneg"),
+               TH("alias"),
+               TH("zones"),
+             )]
+    for hba in hbas:
+        _hbas.append(TR(
+                       TD(hba[10]),
+                       TD(hba[0]) if not hba[0] is None else '-',
+                       TD(hba[1]) if not hba[1] is None else '-',
+                       TD(hba[2]) if not hba[2] is None else '-',
+                       TD(hba[9]) if not hba[9] is None else '-',
+                       TD(hba[3]) if not hba[3] is None else '-',
+                       TD(hba[4]) if not hba[4] is None else '-',
+                       TD(str(hba[5])+' Gb/s') if not hba[5] is None else '-',
+                       TD(hba[6]) if not hba[6] is None else '-',
+                       TD(hba[7]) if not hba[7] is None else '-',
+                       TD(hba[8]) if not hba[8] is None else '-',
+                     ))
+    if len(_hbas) == 1:
+        _hbas.append(TR(
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                     ))
+    if len(_hbas) == 1:
+        _hbas.append(TR(
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                     ))
+
+    # storage adapters
+    sql = """
+      select
+        stor_zone.hba_id,
+        stor_zone.tgt_id,
+        switches.sw_name,
+        switches.sw_slot,
+        switches.sw_port,
+        switches.sw_portspeed,
+        switches.sw_portnego,
+        san_zone_alias.alias,
+        san_zone.zone,
+        count(san_zone.zone) as c,
+        stor_array.array_name,
+        switches.sw_index,
+        svcmon.mon_nodname
+      from
+        svcmon
+        left join stor_zone on svcmon.mon_nodname=stor_zone.nodename
+        left join switches on stor_zone.tgt_id=switches.sw_rportname
+        left join san_zone_alias on stor_zone.tgt_id=san_zone_alias.port
+        left join san_zone on stor_zone.tgt_id=san_zone.port and san_zone.zone in (select zone from san_zone where port=stor_zone.hba_id)
+        left join stor_array_tgtid on stor_zone.tgt_id=stor_array_tgtid.array_tgtid
+        left join stor_array on stor_array_tgtid.array_id=stor_array.id
+      where
+        svcmon.mon_svcname = "%s"
+      group by stor_zone.hba_id, stor_zone.tgt_id
+      order by svcmon.mon_nodname, stor_zone.hba_id, stor_zone.tgt_id
+    """%svcname
+    tgts = db.executesql(sql)
+    _tgts = [TR(
+               TH("nodename"),
+               TH("hba id"),
+               TH("tgt id"),
+               TH("array"),
+               TH("switch"),
+               TH("index"),
+               TH("slot"),
+               TH("port"),
+               TH("speed"),
+               TH("autoneg"),
+               TH("alias"),
+               TH("zone"),
+             )]
+    for tgt in tgts:
+        _tgts.append(TR(
+                       TD(tgt[12]),
+                       TD(tgt[0]) if not tgt[0] is None else '-',
+                       TD(tgt[1]) if not tgt[1] is None else '-',
+                       TD(tgt[10]) if not tgt[10] is None else '-',
+                       TD(tgt[2]) if not tgt[2] is None else '-',
+                       TD(tgt[11]) if not tgt[11] is None else '-',
+                       TD(tgt[3]) if not tgt[3] is None else '-',
+                       TD(tgt[4]) if not tgt[4] is None else '-',
+                       TD(str(tgt[5])+' Gb/s') if not tgt[5] is None else '-',
+                       TD(tgt[6]) if not tgt[6] is None else '-',
+                       TD(tgt[7]) if not tgt[7] is None else '-',
+                       TD(tgt[8]) if not tgt[8] is None else '-',
+                     ))
+    if len(_tgts) == 1:
+        _tgts.append(TR(
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                     ))
+    if len(_tgts) == 1:
+        _tgts.append(TR(
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                     ))
+
+    # node disk list
+    q = db.svcdisks.disk_svcname == svcname
+    q &= db.diskinfo.id > 0
+    q &= db.svcdisks.disk_id==db.diskinfo.disk_id
+    q &= db.diskinfo.disk_arrayid==db.stor_array.array_name
+    disks = db(q).select(groupby=db.svcdisks.disk_id)
+    _disks = [TR(
+          TH("wwid"),
+          TH("size"),
+          TH("nodename"),
+          TH("array model"),
+          TH("array id"),
+          TH("array disk group"),
+        )]
+    for disk in disks:
+        _disks.append(TR(
+          TD(disk.svcdisks.disk_id),
+          TD(disk.svcdisks.disk_used, T('MB')),
+          TD(disk.svcdisks.disk_nodename),
+          TD(disk.stor_array.array_model),
+          TD(disk.diskinfo.disk_arrayid),
+          TD(disk.diskinfo.disk_group),
+        ))
+    if len(_disks) == 1:
+        _disks.append(TR(
+          TD('-'),
+          TD('-'),
+          TD('-'),
+          TD('-'),
+          TD('-'),
+          TD('-'),
+        ))
+
+    # san graphviz
+    q = db.svcmon.mon_svcname == svcname
+    rows = db(q).select(db.svcmon.mon_nodname)
+
+    from applications.init.modules import san
+    import tempfile
+    import os
+    vizdir = os.path.join(os.getcwd(), 'applications', 'init', 'static')
+    d = sandata([r.mon_nodname for r in rows]).main()
     o = san.Viz(d)
     f = tempfile.NamedTemporaryFile(dir=vizdir, prefix='tempviz')
     sanviz = f.name
