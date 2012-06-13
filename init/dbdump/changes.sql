@@ -2652,4 +2652,20 @@ CREATE TABLE `san_zone_alias` (
   UNIQUE KEY `idx1` (`cfg`, `alias`, `port`)
 );
 
+CREATE TABLE `billing_agent` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `bill_min_agt` int(11) NOT NULL,
+  `bill_os_name` varchar(50) NOT NULL,
+  `bill_cost` float NOT NULL,
+  `bill_max_agt` int(11) NOT NULL,
+  `bill_env` enum('prd', 'nonprd') default 'prd' NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=19 DEFAULT CHARSET=utf8;
+
+INSERT INTO `billing_agent` VALUES (null,1000,'AIX',20,999999, 'prd'),(null,1000,'SunOS',20,999999, 'prd'),(null,1000,'HP-UX',20,999999, 'prd'),(null,1000,'OpenSolaris',10,999999, 'prd'),(null,1000,'FreeBSD',10,999999, 'prd'),(null,1000,'Linux',10,999999, 'prd'),(null,500,'AIX',24,999, 'prd'),(null,500,'SunOS',24,999, 'prd'),(null,500,'HP-UX',24,999, 'prd'),(null,500,'OpenSolaris',12,999, 'prd'),(null,500,'FreeBSD',12,999, 'prd'),(null,500,'Linux',12,999, 'prd'),(null,0,'AIX',30,499, 'prd'),(null,0,'OpenSolaris',15,499, 'prd'),(null,0,'SunOS',30,499, 'prd'),(null,0,'HP-UX',30,499, 'prd'),(null,0,'FreeBSD',15,499, 'prd'),(null,0,'Linux',15,499, 'prd'),  (null,1000,'AIX',20,999999, 'nonprd'),(null,1000,'SunOS',20,999999, 'nonprd'),(null,1000,'HP-UX',20,999999, 'nonprd'),(null,1000,'OpenSolaris',10,999999, 'nonprd'),(null,1000,'FreeBSD',10,999999, 'nonprd'),(null,1000,'Linux',10,999999, 'nonprd'),(null,500,'AIX',24,999, 'nonprd'),(null,500,'SunOS',24,999, 'nonprd'),(null,500,'HP-UX',24,999, 'nonprd'),(null,500,'OpenSolaris',12,999, 'nonprd'),(null,500,'FreeBSD',12,999, 'nonprd'),(null,500,'Linux',12,999, 'nonprd'),(null,0,'AIX',30,499, 'nonprd'),(null,0,'OpenSolaris',15,499, 'nonprd'),(null,0,'SunOS',30,499, 'nonprd'),(null,0,'HP-UX',30,499, 'nonprd'),(null,0,'FreeBSD',15,499, 'nonprd'),(null,0,'Linux',15,499, 'nonprd');
+
+alter table billing add column `bill_env` enum('prd', 'nonprd') default 'prd' NOT NULL;
+
+INSERT INTO `billing` VALUES (null,1000,'AIX',100,999999, 'nonprd'),(null,1000,'SunOS',100,999999, 'nonprd'),(null,1000,'HP-UX',100,999999, 'nonprd'),(null,1000,'OpenSolaris',50,999999, 'nonprd'),(null,1000,'FreeBSD',50,999999, 'nonprd'),(null,1000,'Linux',50,999999, 'nonprd'),(null,500,'AIX',120,999, 'nonprd'),(null,500,'SunOS',120,999, 'nonprd'),(null,500,'HP-UX',120,999, 'nonprd'),(null,500,'OpenSolaris',60,999, 'nonprd'),(null,500,'FreeBSD',60,999, 'nonprd'),(null,500,'Linux',60,999, 'nonprd'),(null,0,'AIX',150,499, 'nonprd'),(null,0,'OpenSolaris',75,499, 'nonprd'),(null,0,'SunOS',150,499, 'nonprd'),(null,0,'HP-UX',150,499, 'nonprd'),(null,0,'FreeBSD',75,499, 'nonprd'),(null,0,'Linux',75,499, 'nonprd');
+
 

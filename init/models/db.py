@@ -887,6 +887,22 @@ db.define_table('checks_settings',
     Field('chk_high', 'integer'),
     migrate=False)
 
+db.define_table('billing',
+    Field('bill_os_name', 'string'),
+    Field('bill_min_svc', 'integer'),
+    Field('bill_max_svc', 'integer'),
+    Field('bill_env', 'string'),
+    Field('bill_cost', 'integer'),
+    migrate=False)
+
+db.define_table('billing_agent',
+    Field('bill_os_name', 'string'),
+    Field('bill_min_agt', 'integer'),
+    Field('bill_max_agt', 'integer'),
+    Field('bill_env', 'string'),
+    Field('bill_cost', 'integer'),
+    migrate=False)
+
 db.define_table('v_billing_per_os',
     Field('id'),
     Field('svc_list', 'string'),
