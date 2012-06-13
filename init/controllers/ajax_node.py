@@ -579,8 +579,7 @@ def ajax_node_stor():
 
     # storage adapters
     sql = """
-      select * from
-      (select
+      select
         stor_zone.hba_id,
         stor_zone.tgt_id,
         switches.sw_name,
@@ -596,16 +595,13 @@ def ajax_node_stor():
         stor_zone
         left join switches on stor_zone.tgt_id=switches.sw_rportname
         left join san_zone_alias on stor_zone.tgt_id=san_zone_alias.port
-        left join san_zone on stor_zone.tgt_id=san_zone.port or stor_zone.hba_id=san_zone.port
+        left join san_zone on stor_zone.tgt_id=san_zone.port and san_zone.zone in (select zone from san_zone where port=stor_zone.hba_id)
         left join stor_array_tgtid on stor_zone.tgt_id=stor_array_tgtid.array_tgtid
         left join stor_array on stor_array_tgtid.array_id=stor_array.id
       where
         stor_zone.nodename = "%s"
-      group by stor_zone.hba_id, stor_zone.tgt_id, san_zone.zone
-      ) t
-      where t.c=2 or t.c=0
-      group by t.hba_id, t.tgt_id
-      order by t.hba_id, t.tgt_id
+      group by stor_zone.hba_id, stor_zone.tgt_id
+      order by stor_zone.hba_id, stor_zone.tgt_id
     """%nodename
     tgts = db.executesql(sql)
     _tgts = [TR(
