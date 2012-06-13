@@ -916,13 +916,14 @@ def insert_brocade(name=None):
         # alias
         for cfg in s.alias:
             vals = []
-            for alias, port in s.alias[cfg].items():
-                vals.append([
-                    cfg,
-                    alias,
-                    port,
-                    now
-                ])
+            for alias, ports in s.alias[cfg].items():
+                for port in ports:
+                    vals.append([
+                        cfg,
+                        alias,
+                        port,
+                        now
+                    ])
             generic_insert('san_zone_alias', avars, vals)
             sql = """delete from san_zone_alias where cfg="%s" and updated < "%s" """%(cfg, str(now))
             db.executesql(sql)

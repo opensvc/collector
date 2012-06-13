@@ -21,6 +21,9 @@ class Brocade(object):
  alias: DMX0197_8A0
                 50:06:04:84:52:A4:F9:47
  alias: Wdms01  10:00:00:00:C9:24:32:8C
+ alias: EVA04   50:00:1F:E1:50:21:90:19; 50:00:1F:E1:50:21:90:1F; 
+                50:00:1F:E1:50:21:90:1B; 50:00:1F:E1:50:21:90:1D
+
         """
         self.alias = {}
         self.zone = {}
@@ -34,10 +37,21 @@ class Brocade(object):
                 length = len(l)
                 if length == 2:
                     alias = l[-1]
-                    port = lines[i+1].strip().replace(':','').lower()
+                    port = [lines[i+1].strip().replace(':','').lower()]
                 elif length == 3:
                     alias = l[-2]
-                    port = l[-1].replace(':','').lower()
+                    port = [l[-1].replace(':','').lower()]
+                elif length == 4:
+                    alias = l[1]
+                    port = [l[2].replace(':','').replace(';','').lower()]
+                    port += [l[3].replace(':','').replace(';','').lower()]
+                    _line = lines[i+1]
+                    j = i+1
+                    while 'alias' not in _line and len(_line) > 0:
+                        for w in _line.split():
+                            port.append(w.replace(':','').replace(';','').lower())
+                        j += 1
+                        _line = lines[j]
                 else:
                     continue
                 self.alias[cfg][alias] = port
