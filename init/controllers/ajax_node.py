@@ -517,7 +517,7 @@ def ajax_node_stor():
         switches.sw_portspeed,
         switches.sw_portnego,
         san_zone_alias.alias,
-        group_concat(san_zone.zone separator ', ')
+        group_concat(san_zone.zone order by san_zone.zone separator ', ')
       from
         node_hba
         left join switches on node_hba.hba_id=switches.sw_rportname
@@ -590,17 +590,20 @@ def ajax_node_stor():
         switches.sw_portnego,
         san_zone_alias.alias,
         san_zone.zone,
-        count(san_zone.zone) as c
+        count(san_zone.zone) as c,
+        stor_array.array_name
       from
         stor_zone
         left join switches on stor_zone.tgt_id=switches.sw_rportname
         left join san_zone_alias on stor_zone.tgt_id=san_zone_alias.port
         left join san_zone on stor_zone.tgt_id=san_zone.port or stor_zone.hba_id=san_zone.port
+        left join stor_array_tgtid on stor_zone.tgt_id=stor_array_tgtid.array_tgtid
+        left join stor_array on stor_array_tgtid.array_id=stor_array.id
       where
         stor_zone.nodename = "%s"
       group by stor_zone.hba_id, stor_zone.tgt_id, san_zone.zone
       ) t
-      where t.c=2
+      where t.c=2 or t.c=0
       group by t.hba_id, t.tgt_id
       order by t.hba_id, t.tgt_id
     """%nodename
@@ -608,6 +611,7 @@ def ajax_node_stor():
     _tgts = [TR(
                TH("hba id"),
                TH("tgt id"),
+               TH("array"),
                TH("switch"),
                TH("slot"),
                TH("port"),
@@ -620,6 +624,7 @@ def ajax_node_stor():
         _tgts.append(TR(
                        TD(tgt[0]),
                        TD(tgt[1]),
+                       TD(tgt[10]) if not tgt[10] is None else '-',
                        TD(tgt[2]) if not tgt[2] is None else '-',
                        TD(tgt[3]) if not tgt[3] is None else '-',
                        TD(tgt[4]) if not tgt[4] is None else '-',
@@ -639,9 +644,11 @@ def ajax_node_stor():
                        TD('-'),
                        TD('-'),
                        TD('-'),
+                       TD('-'),
                      ))
     if len(_tgts) == 1:
         _tgts.append(TR(
+                       TD('-'),
                        TD('-'),
                        TD('-'),
                        TD('-'),

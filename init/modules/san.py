@@ -26,6 +26,7 @@ class Viz(object):
       8: '#b9121b',
       16: '#6b0d0d',
     }
+    color_other = '#999999'
 
     def __init__(self, d):
         self.data = d
@@ -52,6 +53,7 @@ class Viz(object):
         s = ""
         for i in sorted(self.colors.keys()):
             s += "<span style='padding:0.2em;border-bottom:solid %s'>%d Gb/s</span>"%(self.colors[i], i)
+        s += "<span style='padding:0.2em;border-bottom:solid %s'>%s</span>"%(self.color_other, 'other')
         return "<div>"+s+"</div>"
 
     def __str__(self):
@@ -98,7 +100,12 @@ digraph G {
                 l.append("<p%s> %s"%(i, port))
             if len(l) == 0:
                 continue
-            label = data['label']+'|'+'|'.join(l)
+            ports = '|'.join(l)
+            label = data['label']
+            if label is None:
+                label = "?"
+            if ports is not None:
+                label += '|'+'|'.join(l)
             s += """\t\t%s [label="%s" %s]\n"""%(data['id'], label, self.server_opt)
         s += "\t}\n"
         return s
@@ -116,7 +123,12 @@ digraph G {
                 l.append("<p%s> %s"%(i, port))
             if len(l) == 0:
                 continue
-            label = data['label']+'|'+'|'.join(l)
+            ports = '|'.join(l)
+            label = data['label']
+            if label is None:
+                label = "?"
+            if ports is not None:
+                label += '|'+'|'.join(l)
             s += """\t\t%s [label="%s" %s]\n"""%(data['id'], label, self.array_opt)
         s += "\t}\n"
         return s
@@ -135,7 +147,12 @@ digraph G {
                     l.append("<p%s> %s"%(i, port))
                 if len(l) == 0:
                     continue
-                label = data['label']+'|'+'|'.join(l)
+                ports = '|'.join(l)
+                label = data['label']
+                if label is None:
+                    label = "?"
+                if ports is not None:
+                    label += '|'+'|'.join(l)
                 if data['rank'] != rank:
                     continue
                 s += """\t\t%s [label="%s" %s]\n"""%(data['id'], label, self.switch_opt)
