@@ -517,7 +517,8 @@ def ajax_node_stor():
         switches.sw_portspeed,
         switches.sw_portnego,
         san_zone_alias.alias,
-        group_concat(san_zone.zone order by san_zone.zone separator ', ')
+        group_concat(san_zone.zone order by san_zone.zone separator ', '),
+        switches.sw_index
       from
         node_hba
         left join switches on node_hba.hba_id=switches.sw_rportname
@@ -533,6 +534,7 @@ def ajax_node_stor():
                TH("hba id"),
                TH("type"),
                TH("switch"),
+               TH("index"),
                TH("slot"),
                TH("port"),
                TH("speed"),
@@ -545,6 +547,7 @@ def ajax_node_stor():
                        TD(hba[0]),
                        TD(hba[1]),
                        TD(hba[2]) if not hba[2] is None else '-',
+                       TD(hba[9]) if not hba[9] is None else '-',
                        TD(hba[3]) if not hba[3] is None else '-',
                        TD(hba[4]) if not hba[4] is None else '-',
                        TD(str(hba[5])+' Gb/s') if not hba[5] is None else '-',
@@ -563,9 +566,11 @@ def ajax_node_stor():
                        TD('-'),
                        TD('-'),
                        TD('-'),
+                       TD('-'),
                      ))
     if len(_hbas) == 1:
         _hbas.append(TR(
+                       TD('-'),
                        TD('-'),
                        TD('-'),
                        TD('-'),
@@ -590,7 +595,8 @@ def ajax_node_stor():
         san_zone_alias.alias,
         san_zone.zone,
         count(san_zone.zone) as c,
-        stor_array.array_name
+        stor_array.array_name,
+        switches.sw_index
       from
         stor_zone
         left join switches on stor_zone.tgt_id=switches.sw_rportname
@@ -609,6 +615,7 @@ def ajax_node_stor():
                TH("tgt id"),
                TH("array"),
                TH("switch"),
+               TH("index"),
                TH("slot"),
                TH("port"),
                TH("speed"),
@@ -622,6 +629,7 @@ def ajax_node_stor():
                        TD(tgt[1]),
                        TD(tgt[10]) if not tgt[10] is None else '-',
                        TD(tgt[2]) if not tgt[2] is None else '-',
+                       TD(tgt[11]) if not tgt[11] is None else '-',
                        TD(tgt[3]) if not tgt[3] is None else '-',
                        TD(tgt[4]) if not tgt[4] is None else '-',
                        TD(str(tgt[5])+' Gb/s') if not tgt[5] is None else '-',
@@ -641,9 +649,11 @@ def ajax_node_stor():
                        TD('-'),
                        TD('-'),
                        TD('-'),
+                       TD('-'),
                      ))
     if len(_tgts) == 1:
         _tgts.append(TR(
+                       TD('-'),
                        TD('-'),
                        TD('-'),
                        TD('-'),
