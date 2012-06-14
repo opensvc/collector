@@ -51,7 +51,7 @@ def comp_menu(current):
           'url': URL(
                    request.application,
                    'compliance',
-                   'comp_status?ajax_comp_status_filter_run_date=>'+sevendays
+                   'comp_status'
                  ),
          },
          {
