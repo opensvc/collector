@@ -1,13 +1,144 @@
-@auth.requires_membership('Manager')
-def billing():
-    query = (db.v_billing_per_os.nb!=0)
-    billing_per_os = db(query).select(orderby=~db.v_billing_per_os.nb)
-    query = (db.v_billing_per_app.nb!=0)
-    billing_per_app = db(query).select(orderby=~db.v_billing_per_app.nb)
-    return dict(billing_per_os=billing_per_os, billing_per_app=billing_per_app)
+class table_billing(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = []
+        self.colprops = {}
+        self.dbfilterable = True
+        self.headers = False
+        self.filterable = False
+        self.refreshable = False
+        self.pageable = False
+        self.exportable = True
+        self.columnable = False
+        self.object_list = []
+        self.nodatabanner = False
+
+@auth.requires_login()
+def ajax_billing():
+    t = table_billing('billing', 'ajax_billing')
+
+    fset_id = user_fset_id()
+
+    q = db.stat_day_billing.id > 0
+    q &= db.stat_day_billing.fset_id == fset_id
+    t.csv_q = q
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        return t.csv()
+
+    rows = db(q).select()
+
+    table = DIV(
+     t.html(),
+     billing_fmt(t.html()),
+     _id="billing",
+    )
+    return table
+
+def billing_fmt(table):
+    data, billing, token = billing_data()
+
+    lines = []
+    for os in data['os']:
+        line = [TD(os)]
+        for k in ('svc_prd', 'agents_without_svc_prd', 'svc_nonprd', 'agents_without_svc_nonprd'):
+            line.append(TD(len(data[k][os]), _class="numeric"))
+            line.append(TD(billing[k][os], _class="numeric lighter"))
+            line.append(TD(token[k][os], _class="numeric"))
+        line.append(TD(data['ostotal'][os]['svc'], _class="numeric"))
+        line.append(TD(token['ostotal'][os]['svc'], _class="numeric"))
+        line.append(TD(data['ostotal'][os]['agents_without_svc'], _class="numeric"))
+        line.append(TD(token['ostotal'][os]['agents_without_svc'], _class="numeric"))
+        lines.append(TR(line))
+
+    lines.append(TR(
+      TH("Total"),
+      TD(data['total']['svc_prd'], _class="numeric"),
+      TD(),
+      TD(token['total']['svc_prd'], _class="numeric"),
+      TD(data['total']['agents_without_svc_prd'], _class="numeric"),
+      TD(),
+      TD(token['total']['agents_without_svc_prd'], _class="numeric"),
+      TD(data['total']['svc_nonprd'], _class="numeric"),
+      TD(),
+      TD(token['total']['svc_nonprd'], _class="numeric"),
+      TD(data['total']['agents_without_svc_nonprd'], _class="numeric"),
+      TD(),
+      TD(token['total']['agents_without_svc_nonprd'], _class="numeric"),
+      TD(data['total']['svc'], _class="numeric"),
+      TD(token['total']['svc'], _class="numeric"),
+      TD(data['total']['agents_without_svc'], _class="numeric"),
+      TD(token['total']['agents_without_svc'], _class="numeric"),
+    ))
+
+    t = TABLE(
+          TR(
+            TH("OS Name", _rowspan=3, _class="head1"),
+            TH("PRD", _colspan=6, _class="head1"),
+            TH("Non PRD", _colspan=6, _class="head1"),
+            TH("Total", _colspan=4, _class="head1"),
+          ),
+          TR(
+            TH("Services", _colspan=3, _class="head2"),
+            TH("Agents without services", _colspan=3, _class="head2"),
+            TH("Services", _colspan=3, _class="head2"),
+            TH("Agents without services", _colspan=3, _class="head2"),
+            TH("Services", _colspan=2, _class="head2"),
+            TH("Agents without services", _colspan=2, _class="head2"),
+          ),
+          TR(
+            TH("Count", _class="head3"),
+            TH("Tokens/Unit", _class="head3"),
+            TH("Tokens", _class="head3"),
+            TH("Count", _class="head3"),
+            TH("Tokens/Unit", _class="head3"),
+            TH("Tokens", _class="head3"),
+            TH("Count", _class="head3"),
+            TH("Tokens/Unit", _class="head3"),
+            TH("Tokens", _class="head3"),
+            TH("Count", _class="head3"),
+            TH("Tokens/Unit", _class="head3"),
+            TH("Tokens", _class="head3"),
+            TH("Count", _class="head3"),
+            TH("Tokens", _class="head3"),
+            TH("Count", _class="head3"),
+            TH("Tokens", _class="head3"),
+          ),
+          lines,
+          _class="billing",
+        )
+
+    headings = {
+      'svc_prd': 'PRD Services',
+      'svc_nonprd': 'Non PRD Services',
+      'agents_without_svc_prd': 'PRD Agents without services',
+      'agents_without_svc_nonprd': 'Non PRD Agents without services',
+    }
+    details = []
+
+    for k in ('svc_prd', 'agents_without_svc_prd', 'svc_nonprd', 'agents_without_svc_nonprd'):
+        for os in data[k]:
+            if len(data[k][os]) == 0:
+                continue
+            l = []
+            for o in data[k][os]:
+                l.append(SPAN(o.lower()+" "))
+            details.append(SPAN(
+              H2(headings[k]+" : "+os),
+              SPAN(l)
+            ))
+
+    d = DIV(
+      t,
+      HR(),
+      DIV(details, _style="text-align:left", _class="billing")
+    )
+    return d
+
 
 @auth.requires_membership('Manager')
-def billing2():
+def billing_data():
     data = {}
     billing = {}
     token = {}
@@ -32,6 +163,7 @@ def billing2():
     #
     q = db.nodes.nodename.belongs(data['agents_without_svc'])
     q &= db.nodes.host_mode == 'PRD'
+    q = apply_filters(q, db.nodes.nodename, None)
     rows = db(q).select(db.nodes.nodename, db.nodes.os_name)
     agents_without_svc_prd = {}
     for row in rows:
@@ -44,6 +176,7 @@ def billing2():
     #
     q = db.nodes.nodename.belongs(data['agents_without_svc'])
     q &= db.nodes.host_mode != 'PRD'
+    q = apply_filters(q, db.nodes.nodename, None)
     rows = db(q).select(db.nodes.nodename, db.nodes.os_name)
     agents_without_svc_nonprd = {}
     for row in rows:
@@ -58,6 +191,7 @@ def billing2():
     q = db.services.svc_type == 'PRD'
     q &= db.svcmon.mon_svcname == db.services.svc_name
     q &= db.svcmon.mon_nodname == db.nodes.nodename
+    q = apply_filters(q, db.svcmon.mon_nodname, db.svcmon.mon_svcname)
     rows = db(q).select(db.svcmon.mon_svcname, db.nodes.os_name, groupby=db.services.svc_name)
     svc_prd = {}
     for row in rows:
@@ -71,6 +205,7 @@ def billing2():
     q = db.services.svc_type != 'PRD'
     q &= db.svcmon.mon_svcname == db.services.svc_name
     q &= db.svcmon.mon_nodname == db.nodes.nodename
+    q = apply_filters(q, db.svcmon.mon_nodname, db.svcmon.mon_svcname)
     rows = db(q).select(db.svcmon.mon_svcname, db.nodes.os_name, groupby=db.services.svc_name)
     svc_nonprd = {}
     for row in rows:
@@ -80,7 +215,7 @@ def billing2():
             svc_nonprd[row.nodes.os_name] += [row.svcmon.mon_svcname]
     data['svc_nonprd'] = svc_nonprd
 
-    # fill the blanks
+    # fill the blanks and compute total counts
     data['ostotal'] = {}
     data['total'] = {'svc_prd': 0, 'agents_without_svc_prd': 0, 'svc_nonprd': 0, 'agents_without_svc_nonprd': 0, 'svc': 0, 'agents_without_svc': 0}
     for os in data['os']:
@@ -103,10 +238,10 @@ def billing2():
         q = qb & (db.billing.bill_os_name == os)
         b = db(q & (db.billing.bill_env=="prd")).select().first()
         val = 0 if b is None else b.bill_cost
-        billing['svc_prd'][os] = val
+        billing['svc_prd'][os] = int(val)
         b = db(q & (db.billing.bill_env=="nonprd")).select().first()
         val = 0 if b is None else b.bill_cost
-        billing['svc_nonprd'][os] = val
+        billing['svc_nonprd'][os] = int(val)
 
     # billing agt
     qb = db.billing_agent.bill_min_agt <= data['total']['agents_without_svc']
@@ -117,10 +252,10 @@ def billing2():
         q = qb & (db.billing_agent.bill_os_name == os)
         b = db(q & (db.billing_agent.bill_env=="prd")).select().first()
         val = 0 if b is None else b.bill_cost
-        billing['agents_without_svc_prd'][os] = val
+        billing['agents_without_svc_prd'][os] = int(val)
         b = db(q & (db.billing_agent.bill_env=="nonprd")).select().first()
         val = 0 if b is None else b.bill_cost
-        billing['agents_without_svc_nonprd'][os] = val
+        billing['agents_without_svc_nonprd'][os] = int(val)
 
     # token svc
     token = {
@@ -154,5 +289,9 @@ def billing2():
         token['total']['agents_without_svc_nonprd'] += token['agents_without_svc_nonprd'][os]
         token['total']['agents_without_svc'] += token['agents_without_svc_prd'][os]
         token['total']['agents_without_svc'] += token['agents_without_svc_nonprd'][os]
+    return data, billing, token
 
-    return dict(data=data, billing=billing, token=token)
+@auth.requires_login()
+def billing():
+    return dict(table=ajax_billing())
+

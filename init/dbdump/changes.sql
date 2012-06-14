@@ -2671,7 +2671,7 @@ INSERT INTO `billing` VALUES (null,1000,'AIX',100,999999, 'nonprd'),(null,1000,'
 CREATE TABLE `stat_day_billing` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `fset_id` int(11) not null default 0,
-  `day` date NOT NULL,
+  `day` datetime NOT NULL,
   `os_name` varchar(100) NOT NULL,
   `nb_svc_prd` int(11) DEFAULT 0,
   `nb_svc_nonprd` int(11) DEFAULT 0,
@@ -2681,4 +2681,4 @@ CREATE TABLE `stat_day_billing` (
   UNIQUE KEY `new_index` (`day`,`fset_id`,`os_name`)
 );
 
-
+alter table stat_day_billing modify column day datetime not null;
