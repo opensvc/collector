@@ -1891,7 +1891,7 @@ class col_svc(HtmlTableColumn):
 class col_status(HtmlTableColumn):
     def html(self, o):
         s = self.get(o)
-        if s is None or (type(self.t.colprops['mon_updated'].get(o)) == 'datetime' and self.t.colprops['mon_updated'].get(o) < now - datetime.timedelta(minutes=15)):
+        if s is None or (type(self.t.colprops['mon_updated'].get(o)) == datetime.datetime and self.t.colprops['mon_updated'].get(o) < now - datetime.timedelta(minutes=15)):
             c = 'boxed_small boxed_status boxed_status_undef'
         else:
             c = 'boxed_small boxed_status boxed_status_'+s.replace(" ", "_")
