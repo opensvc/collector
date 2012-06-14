@@ -41,31 +41,33 @@ def billing_fmt(table):
 
     lines = []
     for os in data['os']:
+        if data['ostotal'][os]['svc'] == 0 and data['ostotal'][os]['agents_without_svc'] == 0:
+            continue
         line = [TD(os)]
         for k in ('svc_prd', 'agents_without_svc_prd', 'svc_nonprd', 'agents_without_svc_nonprd'):
-            line.append(TD(len(data[k][os]), _class="numeric"))
-            line.append(TD(billing[k][os], _class="numeric lighter"))
-            line.append(TD(token[k][os], _class="numeric"))
-        line.append(TD(data['ostotal'][os]['svc'], _class="numeric"))
-        line.append(TD(token['ostotal'][os]['svc'], _class="numeric"))
-        line.append(TD(data['ostotal'][os]['agents_without_svc'], _class="numeric"))
-        line.append(TD(token['ostotal'][os]['agents_without_svc'], _class="numeric"))
+            line.append(TD(len(data[k][os]) if token[k][os]>0 else '', _class="numeric"))
+            line.append(TD(billing[k][os] if token[k][os]>0 else '', _class="numeric lighter"))
+            line.append(TD(token[k][os] if token[k][os]>0 else '', _class="numeric"))
+        line.append(TD(data['ostotal'][os]['svc'] if data['ostotal'][os]['svc']>0 else '', _class="numeric"))
+        line.append(TD(token['ostotal'][os]['svc'] if token['ostotal'][os]['svc']>0 else '', _class="numeric"))
+        line.append(TD(data['ostotal'][os]['agents_without_svc'] if data['ostotal'][os]['agents_without_svc']>0 else '', _class="numeric"))
+        line.append(TD(token['ostotal'][os]['agents_without_svc'] if token['ostotal'][os]['agents_without_svc']>0 else '', _class="numeric"))
         lines.append(TR(line))
 
     lines.append(TR(
       TH("Total"),
-      TD(data['total']['svc_prd'], _class="numeric"),
+      TD(data['total']['svc_prd'] if data['total']['svc_prd']>0 else '', _class="numeric"),
       TD(),
-      TD(token['total']['svc_prd'], _class="numeric"),
-      TD(data['total']['agents_without_svc_prd'], _class="numeric"),
+      TD(token['total']['svc_prd'] if token['total']['svc_prd']>0 else '', _class="numeric"),
+      TD(data['total']['agents_without_svc_prd'] if data['total']['agents_without_svc_prd']>0 else '', _class="numeric"),
       TD(),
-      TD(token['total']['agents_without_svc_prd'], _class="numeric"),
-      TD(data['total']['svc_nonprd'], _class="numeric"),
+      TD(token['total']['agents_without_svc_prd'] if token['total']['agents_without_svc_prd']>0 else '', _class="numeric"),
+      TD(data['total']['svc_nonprd'] if data['total']['svc_nonprd']>0 else '', _class="numeric"),
       TD(),
-      TD(token['total']['svc_nonprd'], _class="numeric"),
-      TD(data['total']['agents_without_svc_nonprd'], _class="numeric"),
+      TD(token['total']['svc_nonprd'] if token['total']['svc_nonprd']>0 else '', _class="numeric"),
+      TD(data['total']['agents_without_svc_nonprd'] if data['total']['agents_without_svc_nonprd']>0 else '', _class="numeric"),
       TD(),
-      TD(token['total']['agents_without_svc_nonprd'], _class="numeric"),
+      TD(token['total']['agents_without_svc_nonprd'] if token['total']['agents_without_svc_nonprd']>0 else '', _class="numeric"),
       TD(data['total']['svc'], _class="numeric"),
       TD(token['total']['svc'], _class="numeric"),
       TD(data['total']['agents_without_svc'], _class="numeric"),
@@ -129,9 +131,18 @@ def billing_fmt(table):
               SPAN(l)
             ))
 
+    summary = DIV(
+      H2(T("Accounting")),
+      SPAN(T("%(n)d tokens", dict(n=token['total']['svc']+token['total']['agents_without_svc']))),
+      _style="text-align:left", _class="billing"
+    )
+
     d = DIV(
+      summary,
+      BR(),
+      DIV(H2(T("Detailled Accounting")), _style="text-align:left", _class="billing"),
       t,
-      HR(),
+      BR(),
       DIV(details, _style="text-align:left", _class="billing")
     )
     return d
