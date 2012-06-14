@@ -388,8 +388,15 @@ def ajax_res_status():
 
 def res_status(svcname, node):
     rows = db((db.resmon.svcname==svcname)&(db.resmon.nodename==node)).select(orderby=db.resmon.rid)
+    if len(rows) == 0:
+        return SPAN()
+    updated = rows.first().updated
+
     def print_row(row):
-        cssclass = 'status_'+row.res_status.replace(" ", "_")
+        if row.updated < now - datetime.timedelta(minutes=15):
+            cssclass = 'status_undef'
+        else:
+            cssclass = 'status_'+row.res_status.replace(" ", "_")
         return (TR(
                  TD(row.rid),
                  TD(row.res_status, _class='%s'%cssclass),
@@ -409,9 +416,10 @@ def res_status(svcname, node):
           map(print_row, rows)
     )
     return DIV(
-             P(
-               H2("%(svc)s@%(node)s"%dict(svc=svcname, node=node),
-               _style="text-align:center")
+             DIV(
+               H2("%(svc)s@%(node)s"%dict(svc=svcname, node=node)),
+               T("(updated on %(d)s)", dict(d=str(updated))),
+               _style="text-align:center;margin-bottom:20px",
              ),
              t,
              _class="dashboard",

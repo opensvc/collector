@@ -38,6 +38,7 @@
 '%d years ago': '%d ans',
 '%s rows deleted': '%s rangées effacées',
 '%s rows updated': '%s rangées mises à jour',
+'(updated on %(d)s)': '(updated on %(d)s)',
 "(yesterday's average)": "(moyenne d'hier)",
 '1 day ago': '1 jour',
 '1 hour ago': '1 heure',
