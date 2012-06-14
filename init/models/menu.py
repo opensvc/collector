@@ -114,7 +114,7 @@ response.menu = [
              [DIV(T('Drplan'), _class='drp16'), False,
               URL(request.application,'drplan','drplan')],
              [DIV(T('Billing'), _class='bill16'), False,
-              URL(request.application,'billing','billing2')],
+              URL(request.application,'billing','billing')],
              [DIV(T('Provisioning'), _class='prov'), False,
               URL(request.application,'provisioning','prov_admin')],
              [DIV(T('Filters'), _class='filters'), False,
