@@ -1569,3 +1569,13 @@ db.define_table('san_zone_alias',
     Field('updated', 'datetime'),
     migrate=False)
 
+db.define_table('stat_day_billing',
+    Field('day', 'datetime'),
+    Field('fset_id', 'integer'),
+    Field('os_name', 'string'),
+    Field('nb_svc_prd', 'integer'),
+    Field('nb_svc_nonprd', 'integer'),
+    Field('nb_agents_without_svc_prd', 'integer'),
+    Field('nb_agents_without_svc_nonprd', 'integer'),
+    migrate=False)
+

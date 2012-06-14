@@ -2668,4 +2668,17 @@ alter table billing add column `bill_env` enum('prd', 'nonprd') default 'prd' NO
 
 INSERT INTO `billing` VALUES (null,1000,'AIX',100,999999, 'nonprd'),(null,1000,'SunOS',100,999999, 'nonprd'),(null,1000,'HP-UX',100,999999, 'nonprd'),(null,1000,'OpenSolaris',50,999999, 'nonprd'),(null,1000,'FreeBSD',50,999999, 'nonprd'),(null,1000,'Linux',50,999999, 'nonprd'),(null,500,'AIX',120,999, 'nonprd'),(null,500,'SunOS',120,999, 'nonprd'),(null,500,'HP-UX',120,999, 'nonprd'),(null,500,'OpenSolaris',60,999, 'nonprd'),(null,500,'FreeBSD',60,999, 'nonprd'),(null,500,'Linux',60,999, 'nonprd'),(null,0,'AIX',150,499, 'nonprd'),(null,0,'OpenSolaris',75,499, 'nonprd'),(null,0,'SunOS',150,499, 'nonprd'),(null,0,'HP-UX',150,499, 'nonprd'),(null,0,'FreeBSD',75,499, 'nonprd'),(null,0,'Linux',75,499, 'nonprd');
 
+CREATE TABLE `stat_day_billing` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `fset_id` int(11) not null default 0,
+  `day` date NOT NULL,
+  `os_name` varchar(100) NOT NULL,
+  `nb_svc_prd` int(11) DEFAULT 0,
+  `nb_svc_nonprd` int(11) DEFAULT 0,
+  `nb_agents_without_svc_prd` int(11) DEFAULT 0,
+  `nb_agents_without_svc_nonprd` int(11) DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `new_index` (`day`,`fset_id`,`os_name`)
+);
+
 

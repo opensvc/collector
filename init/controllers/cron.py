@@ -242,11 +242,13 @@ def cron_stat_day():
     end = begin + datetime.timedelta(days=1, seconds=-1)
 
     _cron_stat_day(end)
+    _cron_stat_day_billing(end)
 
     # per filterset stats
     rows = db(db.gen_filtersets.id>0).select(db.gen_filtersets.id)
     for row in rows:
         _cron_stat_day(end, row.id)
+        _cron_stat_day_billing(end, row.id)
 
 def stat_nb_nodes(fset_id):
     q = db.nodes.id < 0
@@ -351,6 +353,32 @@ def stat_nb_svc_with_drp(fset_id):
     n = db(q).count()
     print "stat_nb_svc_with_drp():", str(n)
     return n
+
+def stat_billing_nb_svc_prd(fset_id, os):
+    q = db.services.svc_type == "PRD"
+    q &= db.services.svc_name == db.svcmon.mon_svcname
+    q &= db.svcmon.mon_nodname == db.nodes.nodename
+    q &= db.nodes.os_name == os
+    q = apply_filters(q, None, db.services.svc_name, fset_id)
+    n = db(q).count()
+    print "stat_nb_svc_nonprd():", str(n)
+    return n
+
+def stat_billing_nb_svc_nonprd(fset_id, os):
+    q = db.services.svc_type != "PRD"
+    q &= db.services.svc_name == db.svcmon.mon_svcname
+    q &= db.svcmon.mon_nodname == db.nodes.nodename
+    q &= db.nodes.os_name == os
+    q = apply_filters(q, None, db.services.svc_name, fset_id)
+    n = db(q).count()
+    print "stat_nb_svc_nonprd():", str(n)
+    return n
+
+def stat_billing_nb_agents_without_svc_prd(fset_id, os):
+    return 0
+
+def stat_billing_nb_agents_without_svc_nonprd(fset_id, os):
+    return 0
 
 now = datetime.datetime.now()
 today = now - datetime.timedelta(hours=now.hour,
@@ -799,4 +827,30 @@ def cron_feed_monitor():
               """%dict(n=n)
         db.executesql(sql)
     db.commit()
+
+def _cron_stat_day_billing(end, fset_id=0):
+    q = db.stat_day_billing.day == end
+    q &= db.stat_day_billing.fset_id == fset_id
+    print "stat_day_billing:", end, "fset_id:", fset_id
+    for os in [r.os_name for r in dq(db.nodes.id>0).select(db.nodes.os_name, groupby=db.nodes.os_name]:
+        if db(q).count() == 0:
+            db.stat_day_billing.insert(
+              day=end,
+              fset_id=fset_id,
+              nb_svc_prd=stat_billing_nb_svc_prd(fset_id, os),
+              nb_svc_prd=stat_billing_nb_svc_nonprd(fset_id, os),
+              nb_agents_without_svc_prd=stat_billing_nb_agents_without_svc_prd(fset_id, os),
+              nb_agents_without_svc_nonprd=stat_billing_nb_agents_without_svc_nonprd(fset_id, os),
+            )
+        else:
+            db(q).update(
+              day=end,
+              fset_id=fset_id,
+              nb_svc_prd=stat_billing_nb_svc_prd(fset_id, os),
+              nb_svc_prd=stat_billing_nb_svc_nonprd(fset_id, os),
+              nb_agents_without_svc_prd=stat_billing_nb_agents_without_svc_prd(fset_id, os),
+              nb_agents_without_svc_nonprd=stat_billing_nb_agents_without_svc_nonprd(fset_id, os),
+            )
+    db.commit()
+
 
