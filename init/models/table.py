@@ -1447,14 +1447,10 @@ function js_link_%(id)s(){
   if (url.indexOf('?')>0) {
     url=url.substring(0, url.indexOf('?'))
   }
+  url=url+"?clear_filters=true"
   $("#%(id)s").find("[name=fi]").each(function(){
     if ($(this).val().length==0) {return}
-    if (url.indexOf('?')<0) {
-      url=url+"?"
-    } else {
-      url=url+"&"
-    }
-    url=url+$(this).attr('id')+"="+$(this).val()
+    url=url+'&'+$(this).attr('id')+"="+$(this).val()
   })
   alert(url)
 }
