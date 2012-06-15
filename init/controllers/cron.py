@@ -241,13 +241,13 @@ def cron_stat_day():
     begin = datetime.datetime(year=when.year, month=when.month, day=when.day, hour=0, minute=0, second=0)
     end = begin + datetime.timedelta(days=1, seconds=-1)
 
-    #_cron_stat_day(end)
+    _cron_stat_day(end)
     _cron_stat_day_billing(end)
 
     # per filterset stats
     rows = db(db.gen_filtersets.id>0).select(db.gen_filtersets.id)
     for row in rows:
-        #_cron_stat_day(end, row.id)
+        _cron_stat_day(end, row.id)
         _cron_stat_day_billing(end, row.id)
 
 def stat_nb_nodes(fset_id):
