@@ -36,6 +36,21 @@ def ajax_billing():
     )
     return table
 
+def name_fmt(a, b):
+    a = a.replace('-','_')
+    b = b.replace('-','_')
+    return '_'.join((a, b))
+
+def num_fmt(n, k, os, token, _class=""):
+    return A(
+             n if token[k][os]>0 else '',
+             _href="#%s"%name_fmt(k,os),
+             _onclick="""
+              $("#%s").effect("highlight", {}, 3000)
+             """%name_fmt(k,os),
+             _class=_class,
+           )
+
 def billing_fmt(table):
     data, billing, token = billing_data()
 
@@ -45,9 +60,9 @@ def billing_fmt(table):
             continue
         line = [TD(os)]
         for k in ('svc_prd', 'agents_without_svc_prd', 'svc_nonprd', 'agents_without_svc_nonprd'):
-            line.append(TD(len(data[k][os]) if token[k][os]>0 else '', _class="numeric"))
-            line.append(TD(billing[k][os] if token[k][os]>0 else '', _class="numeric lighter"))
-            line.append(TD(token[k][os] if token[k][os]>0 else '', _class="numeric"))
+            line.append(TD(num_fmt(len(data[k][os]), k, os, token), _class="numeric"))
+            line.append(TD(num_fmt(billing[k][os], k, os, token, "lighter"), _class="numeric"))
+            line.append(TD(num_fmt(token[k][os], k, os, token), _class="numeric"))
         line.append(TD(data['ostotal'][os]['svc'] if data['ostotal'][os]['svc']>0 else '', _class="numeric"))
         line.append(TD(token['ostotal'][os]['svc'] if token['ostotal'][os]['svc']>0 else '', _class="numeric"))
         line.append(TD(data['ostotal'][os]['agents_without_svc'] if data['ostotal'][os]['agents_without_svc']>0 else '', _class="numeric"))
@@ -127,8 +142,10 @@ def billing_fmt(table):
             for o in data[k][os]:
                 l.append(SPAN(o.lower()+" "))
             details.append(SPAN(
+              A(_name=name_fmt(k,os)),
               H2(headings[k]+" : "+os),
-              SPAN(l)
+              SPAN(l),
+              _id=name_fmt(k,os),
             ))
 
     summary = DIV(
