@@ -1747,6 +1747,7 @@ os_img_h = {
   'darwin': 'darwin',
   'linux': 'linux',
   'hp-ux': 'hpux',
+  'osf1': 'tru64',
   'opensolaris': 'opensolaris',
   'solaris': 'solaris',
   'sunos': 'solaris',
