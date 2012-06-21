@@ -6204,8 +6204,11 @@ def comp_format_filter(q):
     s = s.replace('nodes.id>0 AND ','')
     return s
 
-def comp_get_service_ruleset(svcname):
-    q = db.services.svc_name == svcname
+def comp_get_service_ruleset(svcname, virt=False):
+    if virt:
+        q = db.services.svc_vmname == svcname
+    else:
+        q = db.services.svc_name == svcname
     rows = db(q).select()
     if len(rows) != 1:
         return {}
@@ -6385,6 +6388,9 @@ def _comp_remove_dup_vars(ruleset):
 def _comp_get_ruleset(nodename):
     # initialize ruleset with asset variables
     ruleset = comp_get_node_ruleset(nodename)
+
+    # if the node is driven by a opensvc service, add the service ruleset
+    ruleset.update(comp_get_service_ruleset(nodename, virt=True))
 
     # add contextual rulesets variables
     v = db.v_gen_filtersets
