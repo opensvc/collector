@@ -552,6 +552,7 @@ class table_dashboard(HtmlTable):
                      'dash_type',
                      'dash_svcname',
                      'dash_nodename',
+                     'dash_env',
                      'dash_entry',
                      'dash_fmt',
                      'dash_dict',
@@ -596,6 +597,13 @@ class table_dashboard(HtmlTable):
                      table='dashboard',
                      field='dummy',
                      img='log16',
+                     display=True,
+                    ),
+            'dash_env': HtmlTableColumn(
+                     title='Env',
+                     table='dashboard',
+                     field='dash_env',
+                     img='svc',
                      display=True,
                     ),
             'dash_fmt': HtmlTableColumn(

@@ -686,7 +686,8 @@ def update_dash_action_errors():
                e.err,
                s.svc_type,
                e.svcname,
-               e.nodename
+               e.nodename,
+               s.svc_type
              from
                b_action_errors e
              join services s on e.svcname=s.svc_name
@@ -706,7 +707,8 @@ def update_dash_action_errors():
                    dash_severity=%(sev)d,
                    dash_fmt="%%(err)s action errors",
                    dash_dict='{"err": "%(err)d"}',
-                   dash_created=now()
+                   dash_created=now(),
+                   dash_env="%(env)s"
                  on duplicate key update
                    dash_severity=%(sev)d,
                    dash_fmt="%%(err)s action errors",
@@ -715,6 +717,7 @@ def update_dash_action_errors():
               """%dict(svcname=row[2],
                        nodename=row[3],
                        sev=sev,
+                       env=row[4],
                        err=row[0])
         db.executesql(sql)
         db.commit()
@@ -827,7 +830,8 @@ def cron_feed_monitor():
                    dash_severity=4,
                    dash_fmt="%%(n)s entries stalled in feed queue",
                    dash_dict='{"n": "%(n)d"}',
-                   dash_created=now()
+                   dash_created=now(),
+                   dash_env="PRD",
               """%dict(n=n)
         db.executesql(sql)
     db.commit()

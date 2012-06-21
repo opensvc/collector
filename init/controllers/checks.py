@@ -751,7 +751,8 @@ def update_dash_checks(nodename):
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
 
-    if len(rows) == 1 and rows[0][0] == 'PRD':
+    env = rows[0][0]
+    if len(rows) == 1 and env == 'PRD':
         sev = 3
     else:
         sev = 2
@@ -778,7 +779,8 @@ def update_dash_checks(nodename):
                         '", "val": ', t.val,
                         ', "min": ', t.min,
                         ', "max": ', t.max,
-                        '}'))
+                        '}')),
+                 "%(env)s"
                from (
                  select
                    chk_svcname as svcname,
@@ -800,6 +802,7 @@ def update_dash_checks(nodename):
                ) t
           """%dict(nodename=nodename,
                    sev=sev,
+                   env=env,
                   )
     db.executesql(sql)
     db.commit()

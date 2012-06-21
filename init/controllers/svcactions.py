@@ -27,6 +27,7 @@ def update_dash_action_errors(svc_name, nodename):
                    dash_severity=%(sev)d,
                    dash_fmt="%%(err)s action errors",
                    dash_dict='{"err": "%(err)d"}',
+                   dash_env='%(env)s',
                    dash_created="%(now)s"
                  on duplicate key update
                    dash_severity=%(sev)d,
@@ -36,6 +37,7 @@ def update_dash_action_errors(svc_name, nodename):
               """%dict(svcname=svc_name,
                        nodename=nodename,
                        sev=sev,
+                       env=rows[0][1],
                        now=str(datetime.datetime.now()),
                        err=rows[0][0])
     else:
