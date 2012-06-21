@@ -2286,7 +2286,8 @@ def cron_dash_service_not_updated():
                  "",
                  "",
                  updated,
-                 ""
+                 "",
+                 svc_type
                from services
                where updated < date_sub(now(), interval 25 hour)
           """
@@ -2324,7 +2325,8 @@ def cron_dash_svcmon_not_updated():
                  "",
                  "",
                  mon_updated,
-                 ""
+                 "",
+                 mon_svctype
                from svcmon
                where mon_updated < date_sub(now(), interval 15 minute)
           """
@@ -2343,7 +2345,8 @@ def cron_dash_node_not_updated():
                  "",
                  "",
                  updated,
-                 ""
+                 "",
+                 host_mode
                from nodes
                where updated < date_sub(now(), interval 25 hour)
           """
@@ -2362,7 +2365,8 @@ def cron_dash_node_without_asset():
                  "",
                  "",
                  now(),
-                 ""
+                 "",
+                 mon_svctype
                from svcmon
                where
                  mon_nodname not in (
@@ -2384,7 +2388,8 @@ def cron_dash_node_beyond_warranty_date():
                  "",
                  "",
                  now(),
-                 ""
+                 "",
+                 host_mode
                from nodes
                where
                  warranty_end is not NULL and
@@ -2406,7 +2411,8 @@ def cron_dash_node_near_warranty_date():
                  "",
                  "",
                  now(),
-                 ""
+                 "",
+                 host_mode
                from nodes
                where
                  warranty_end is not NULL and
@@ -2429,7 +2435,8 @@ def cron_dash_node_without_warranty_date():
                  "",
                  "",
                  now(),
-                 ""
+                 "",
+                 host_mode
                from nodes
                where
                  warranty_end is NULL or
@@ -2483,7 +2490,8 @@ def cron_dash_checks_not_updated():
                  "%(t)s:%(i)s",
                  concat('{"i":"', chk_instance, '", "t":"', chk_type, '"}'),
                  chk_updated,
-                 md5(concat('{"i":"', chk_instance, '", "t":"', chk_type, '"}'))
+                 md5(concat('{"i":"', chk_instance, '", "t":"', chk_type, '"}')),
+                 n.host_mode
                from checks_live c
                  join nodes n on c.chk_nodename=n.nodename
                where
@@ -2514,7 +2522,8 @@ def cron_dash_app_without_responsible():
                  "%(a)s",
                  concat('{"a":"', app, '"}'),
                  now(),
-                 md5(concat('{"a":"', app, '"}'))
+                 md5(concat('{"a":"', app, '"}')),
+                 ""
                from v_apps
                where
                  roles is NULL
@@ -2560,7 +2569,8 @@ def cron_dash_obs_without(t, a):
                  "%(t)s: %%(o)s",
                  concat('{"o": "', o.obs_name, '"}'),
                  now(),
-                 md5(concat('{"o": "', o.obs_name, '"}'))
+                 md5(concat('{"o": "', o.obs_name, '"}')),
+                 ""
                from obsolescence o
                  join nodes n on
                    o.obs_name = n.model or
@@ -2591,6 +2601,7 @@ def cron_dash_obs_os_alert():
                         '", "o": "', o.obs_name,
                         '"}'),
                  now(),
+                 "",
                  ""
                from obsolescence o
                  join nodes n on
@@ -2617,6 +2628,7 @@ def cron_dash_obs_os_warn():
                         '", "o": "', o.obs_name,
                         '"}'),
                  now(),
+                 "",
                  ""
                from obsolescence o
                  join nodes n on
@@ -2644,6 +2656,7 @@ def cron_dash_obs_hw_alert():
                         '", "o": "', o.obs_name,
                         '"}'),
                  now(),
+                 "",
                  ""
                from obsolescence o
                  join nodes n on
@@ -2673,6 +2686,7 @@ def cron_dash_obs_hw_warn():
                         '", "o": "', o.obs_name,
                         '"}'),
                  now(),
+                 "",
                  ""
                from obsolescence o
                  join nodes n on
@@ -2857,9 +2871,11 @@ def update_dash_pkgdiff(nodename):
                    dash_fmt="%%(n)s package differences in cluster %%(nodes)s",
                    dash_dict='{"n": %(n)d, "nodes": "%(nodes)s"}',
                    dash_dict_md5=md5('{"n": %(n)d, "nodes": "%(nodes)s"}'),
-                   dash_created=now()
+                   dash_created=now(),
+                   dash_env="%(env)s",
               """%dict(svcname=svcname,
                        sev=sev,
+                       env=row.mon_svctype,
                        n=rows[0][0],
                        nodes=','.join(nodes).replace("'", ""))
 
@@ -2903,7 +2919,8 @@ def update_dash_flex_cpu(svcname):
                  md5(concat('{"n": "', t.cpu,
                         ', "cmin": ', t.svc_flex_cpu_low_threshold,
                         ', "cmax": ', t.svc_flex_cpu_high_threshold,
-                        '}'))
+                        '}')),
+                 "%(env)s"
                from (
                  select *
                  from v_flex_status
@@ -2923,6 +2940,7 @@ def update_dash_flex_cpu(svcname):
                ) t
           """%dict(svcname=svcname,
                    sev=sev,
+                   env=rows[0][0],
                   )
     db.executesql(sql)
     db.commit()
@@ -2964,7 +2982,8 @@ def update_dash_flex_instances_started(svcname):
                  md5(concat('{"n": ', t.up,
                         ', "smin": ', t.svc_flex_min_nodes,
                         ', "smax": ', t.svc_flex_max_nodes,
-                        '}'))
+                        '}')),
+                 "%(env)s"
                from (
                  select *
                  from v_flex_status
@@ -2981,6 +3000,7 @@ def update_dash_flex_instances_started(svcname):
                ) t
           """%dict(svcname=svcname,
                    sev=sev,
+                   env=rows[0][0],
                   )
     db.executesql(sql)
     db.commit()
@@ -3032,7 +3052,8 @@ def update_dash_checks(nodename):
                         '", "val": ', t.val,
                         ', "min": ', t.min,
                         ', "max": ', t.max,
-                        '}'))
+                        '}')),
+                 "%(env)s"
                from (
                  select
                    chk_svcname as svcname,
@@ -3054,6 +3075,7 @@ def update_dash_checks(nodename):
                ) t
           """%dict(nodename=nodename,
                    sev=sev,
+                   env=rows[0][0],
                   )
     db.executesql(sql)
     db.commit()
@@ -3091,7 +3113,8 @@ def update_dash_netdev_errors(nodename):
                    dash_severity=%(sev)d,
                    dash_fmt="%%(err)s errors per second average",
                    dash_dict='{"err": "%(err)d"}',
-                   dash_created=now()
+                   dash_created=now(),
+                   dash_env="%(env)s"
                  on duplicate key update
                    dash_severity=%(sev)d,
                    dash_fmt="%%(err)s errors per second average",
@@ -3099,6 +3122,7 @@ def update_dash_netdev_errors(nodename):
                    dash_created=now()
               """%dict(nodename=nodename,
                        sev=sev,
+                       env=rows[0][0],
                        err=errs)
     else:
         sql = """delete from dashboard
@@ -3133,15 +3157,18 @@ def update_dash_action_errors(svc_name, nodename):
                    dash_severity=%(sev)d,
                    dash_fmt="%%(err)s action errors",
                    dash_dict='{"err": "%(err)d"}',
-                   dash_created=now()
+                   dash_created=now(),
+                   dash_env="%(env)s"
                  on duplicate key update
                    dash_severity=%(sev)d,
                    dash_fmt="%%(err)s action errors",
                    dash_dict='{"err": "%(err)d"}',
-                   dash_created=now()
+                   dash_created=now(),
+                   dash_env="%(env)s"
               """%dict(svcname=svc_name,
                        nodename=nodename,
                        sev=sev,
+                       env=rows[0][1],
                        err=rows[0][0])
     else:
         sql = """delete from dashboard
@@ -3176,9 +3203,11 @@ def update_dash_service_available_but_degraded(svc_name, svc_type, svc_availstat
                    dash_severity=%(sev)d,
                    dash_fmt="current overall status: %%(s)s",
                    dash_dict='{"s": "%(status)s"}',
-                   dash_created=now()
+                   dash_created=now(),
+                   dash_env="%(env)s"
               """%dict(svcname=svc_name,
                        sev=sev,
+                       env=svc_type,
                        status=svc_status)
         db.executesql(sql)
         db.commit()
@@ -3239,9 +3268,11 @@ def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
                    dash_severity=%(sev)d,
                    dash_fmt="current availability status: %%(s)s",
                    dash_dict='{"s": "%(status)s"}',
-                   dash_created=now()
+                   dash_created=now(),
+                   dash_env="%(env)s"
               """%dict(svcname=svc_name,
                        sev=sev,
+                       env=svc_type,
                        status=svc_availstatus)
         db.executesql(sql)
         db.commit()
@@ -3267,10 +3298,12 @@ def update_dash_service_frozen(svc_name, nodename, svc_type, frozen):
                    dash_severity=%(sev)d,
                    dash_fmt="",
                    dash_dict="",
-                   dash_created=now()
+                   dash_created=now(),
+                   dash_env="%(env)s"
               """%dict(svcname=svc_name,
                        nodename=nodename,
                        sev=sev,
+                       env=svc_type,
                       )
     db.executesql(sql)
     db.commit()
@@ -3307,10 +3340,12 @@ def update_dash_service_not_on_primary(svc_name, nodename, svc_type, availstatus
                dash_severity=%(sev)d,
                dash_fmt="",
                dash_dict="",
-               dash_created=now()
+               dash_created=now(),
+               dash_env="%(env)s"
           """%dict(svcname=svc_name,
                    nodename=nodename,
                    sev=sev,
+                   env=svc_type,
                   )
     db.executesql(sql)
     db.commit()
