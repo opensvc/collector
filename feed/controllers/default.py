@@ -1032,7 +1032,7 @@ def insert_vioserver(name=None):
                              "",
                              now])
             generic_insert('diskinfo', vars, vals)
-            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
+            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.array_name, str(now))
             db.executesql(sql)
 
 def insert_ibmsvcs():
@@ -1107,7 +1107,7 @@ def insert_ibmsvc(name=None):
                              d['mdisk_grp_name'],
                              now])
             generic_insert('diskinfo', vars, vals)
-            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
+            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.array_name, str(now))
             db.executesql(sql)
 
 
