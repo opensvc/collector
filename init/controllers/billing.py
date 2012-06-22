@@ -189,8 +189,9 @@ def billing_data():
     data['agents_without_svc'] = set(data['agents_with_agent']) - set(data['agents_with_svc'])
 
     #
-    q = db.nodes.nodename.belongs(data['agents_without_svc'])
-    q &= db.nodes.host_mode == 'PRD'
+    q = db.nodes.host_mode == 'PRD'
+    if len(data['agents_without_svc']) > 0:
+        q &= db.nodes.nodename.belongs(data['agents_without_svc'])
     q = apply_filters(q, db.nodes.nodename, None)
     rows = db(q).select(db.nodes.nodename, db.nodes.os_name)
     agents_without_svc_prd = {}
@@ -202,8 +203,9 @@ def billing_data():
     data['agents_without_svc_prd'] = agents_without_svc_prd
 
     #
-    q = db.nodes.nodename.belongs(data['agents_without_svc'])
-    q &= db.nodes.host_mode != 'PRD'
+    q = db.nodes.host_mode != 'PRD'
+    if len(data['agents_without_svc']) > 0:
+        q &= db.nodes.nodename.belongs(data['agents_without_svc'])
     q = apply_filters(q, db.nodes.nodename, None)
     rows = db(q).select(db.nodes.nodename, db.nodes.os_name)
     agents_without_svc_nonprd = {}

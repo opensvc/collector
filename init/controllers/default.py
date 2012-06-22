@@ -476,7 +476,7 @@ def ajax_service():
       ),
       TR(
         TD(T('container name'), _style='font-style:italic'),
-        TD(s['svc_vmname'])
+        TD(s['mon_vmname'])
       ),
       TR(
         TD(T('responsibles'), _style='font-style:italic'),
@@ -504,11 +504,11 @@ def ajax_service():
       ),
       TR(
         TD(T('vcpus'), _style='font-style:italic'),
-        TD(s['svc_vcpus'])
+        TD(s['mon_vcpus'])
       ),
       TR(
         TD(T('vmem'), _style='font-style:italic'),
-        TD(s['svc_vmem'])
+        TD(s['mon_vmem'])
       ),
     )
 
@@ -732,10 +732,6 @@ class table_svcmon(HtmlTable):
             'svc_flex_max_nodes',
             'svc_flex_cpu_low_threshold',
             'svc_flex_cpu_high_threshold',
-            'svc_vmname',
-            'svc_vcpus',
-            'svc_vmem',
-            'svc_guestos',
             'svc_autostart',
             'svc_nodes',
             'svc_drpnode',
@@ -745,6 +741,10 @@ class table_svcmon(HtmlTable):
             'svc_updated',
             'svc_type',
             'svc_cluster_type',
+            'mon_vmname',
+            'mon_vcpus',
+            'mon_vmem',
+            'mon_guestos',
             'environnement',
             'host_mode',
             'mon_nodname',

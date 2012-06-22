@@ -189,8 +189,9 @@ def update_action_errors(svcname, nodename):
     db.commit()
 
 def update_virtual_asset(nodename, svcname):
-    q = db.services.svc_name == svcname
-    svc = db(q).select(db.services.svc_vmname).first()
+    q = db.svcmon.mon_svcname == svcname
+    q &= db.svcmon.mon_nodname == nodename
+    svc = db(q).select(db.svcmon.mon_vmname).first()
     if svc is None:
         return
     q = db.nodes.nodename == nodename
@@ -205,7 +206,7 @@ def update_virtual_asset(nodename, svcname):
     for f in fields:
         sql += "%s='%s',"%(f, node[f])
     sql = sql.rstrip(',')
-    sql += "where nodename='%s'"%svc.svc_vmname
+    sql += "where nodename='%s'"%svc.mon_vmname
     db.executesql(sql)
 
 @auth_uuid
@@ -223,16 +224,40 @@ def update_appinfo(vars, vals, auth):
 @auth_uuid
 @service.xmlrpc
 def update_service(vars, vals, auth):
-    feed_enqueue("_update_service", vars, vals)
+    feed_enqueue("_update_service", vars, vals, auth)
 
-def _update_service(vars, vals):
+def _update_service(vars, vals, auth):
     if 'svc_hostid' not in vars:
         return
     if 'updated' not in vars:
         vars += ['updated']
         vals += [datetime.datetime.now()]
+    h = {}
+    for a,b in zip(vars, vals):
+        h[a] = b
+    vars = []
+    vals = []
+    for var, val in h.items():
+        if var not in ('mon_vmname', 'mon_guestos', 'mon_vcpus', 'mon_vmem'):
+            vars.append(var)
+            vals.append(val)
     generic_insert('services', vars, vals)
     update_dash_service_not_updated(vals[1].strip("'"))
+    if 'svc_vmname' in vars:
+        vars = ['mon_svcname',
+                'mon_nodname',
+                'mon_vmname',
+                'mon_guestos',
+                'mon_vcpus',
+                'mon_vmem']
+        vals = [h['svc_name'],
+                auth[1],
+                h['svc_vmname'],
+                h['svc_guestos'],
+                h['svc_vcpus'],
+                h['svc_vmem'],
+               ]
+        generic_insert('svcmon', vars, vals)
 
 @auth_uuid
 @service.xmlrpc

@@ -6206,9 +6206,12 @@ def comp_format_filter(q):
 
 def comp_get_service_ruleset(svcname, virt=False):
     if virt:
-        q = db.services.svc_vmname == svcname
-    else:
-        q = db.services.svc_name == svcname
+        q = db.svcmon.mon_vmname == svcname
+        row = db(q).select(db.svcmon.mon_svcname).first()
+        if row is None:
+            return {}
+        svcname = row.mon_svcname
+    q = db.services.svc_name == svcname
     rows = db(q).select()
     if len(rows) != 1:
         return {}

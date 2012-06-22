@@ -127,7 +127,7 @@ def format_svc(pattern):
     return DIV(*d)
 
 def format_vm(pattern):
-    o = db.v_svcmon.svc_vmname
+    o = db.v_svcmon.mon_vmname
     q = o.like(pattern)
     q = _where(q, 'v_svcmon', domain_perms(), 'mon_svcname')
     q = apply_gen_filters(q, ["v_svcmon"])
@@ -145,18 +145,18 @@ def format_vm(pattern):
                 ),
                 TD(
                   P(
-                    row.svc_vmname.lower()
+                    row.mon_vmname.lower()
                   ),
                   A(
                     T('status'),
                     _href=URL(r=request, c='default', f='svcmon',
-                              vars={'svcmon_f_svc_vmname': row.svc_vmname,
+                              vars={'svcmon_f_mon_vmname': row.mon_vmname,
                                     'clear_filters': 'true'})
                   ),
                   A(
                     T('availability'),
                     _href=URL(r=request, c='svcmon_log', f='svcmon_log',
-                              vars={'svcmon_log_f_svc_vmname': row.svc_vmname,
+                              vars={'svcmon_log_f_mon_vmname': row.mon_vmname,
                                     'clear_filters': 'true'})
                   ),
                 ),

@@ -1813,7 +1813,7 @@ class col_containertype(HtmlTableColumn):
     def html(self, o):
         id = self.t.extra_line_key(o)
         s = self.get(o)
-        os = self.t.colprops['svc_guestos'].get(o)
+        os = self.t.colprops['mon_guestos'].get(o)
         if (os is None or len(os) == 0):
             key = None
             if 'os_name' in self.t.cols:
@@ -1826,7 +1826,7 @@ class col_containertype(HtmlTableColumn):
                 s,
                 _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
                   url=URL(r=request, c='ajax_node',f='ajax_node',
-                          vars={'node': self.t.colprops['svc_vmname'].get(o),
+                          vars={'node': self.t.colprops['mon_vmname'].get(o),
                                 'rowid': id}),
                   id=id,
                 ),
@@ -2100,10 +2100,6 @@ v_services_cols = [
     'svc_flex_cpu_high_threshold',
     'svc_drptype',
     'svc_containertype',
-    'svc_vmname',
-    'svc_vcpus',
-    'svc_vmem',
-    'svc_guestos',
     'svc_autostart',
     'svc_nodes',
     'svc_drpnode',
@@ -2116,6 +2112,10 @@ v_services_cols = [
 ]
 
 svcmon_cols = [
+    'mon_vmname',
+    'mon_guestos',
+    'mon_vcpus',
+    'mon_vmem',
     'mon_overallstatus',
     'mon_availstatus',
     'mon_updated',
@@ -2197,34 +2197,6 @@ v_services_colprops = {
     'svc_type': col_env(
              title = 'Service type',
              field='svc_type',
-             display = False,
-             img = 'svc',
-             table = 'v_services',
-            ),
-    'svc_vmname': col_node(
-             title = 'Container name',
-             field='svc_vmname',
-             display = False,
-             img = 'svc',
-             table = 'v_services',
-            ),
-    'svc_vcpus': col_vcpus(
-             title = 'Vcpus',
-             field='svc_vcpus',
-             display = False,
-             img = 'svc',
-             table = 'v_services',
-            ),
-    'svc_vmem': col_vmem(
-             title = 'Vmem',
-             field='svc_vmem',
-             display = False,
-             img = 'svc',
-             table = 'v_services',
-            ),
-    'svc_guestos': HtmlTableColumn(
-             title = 'Guest OS',
-             field='svc_guestos',
              display = False,
              img = 'svc',
              table = 'v_services',
@@ -2462,6 +2434,34 @@ svcmon_colprops = {
     'mon_hbstatus': col_status(
              title = 'Hb status',
              field='mon_hbstatus',
+             display = False,
+             img = 'svc',
+             table = 'svcmon',
+            ),
+    'mon_vmname': col_node(
+             title = 'Container name',
+             field='mon_vmname',
+             display = False,
+             img = 'svc',
+             table = 'svcmon',
+            ),
+    'mon_vcpus': col_vcpus(
+             title = 'Vcpus',
+             field='mon_vcpus',
+             display = False,
+             img = 'svc',
+             table = 'svcmon',
+            ),
+    'mon_vmem': col_vmem(
+             title = 'Vmem',
+             field='mon_vmem',
+             display = False,
+             img = 'svc',
+             table = 'svcmon',
+            ),
+    'mon_guestos': HtmlTableColumn(
+             title = 'Guest OS',
+             field='mon_guestos',
              display = False,
              img = 'svc',
              table = 'svcmon',

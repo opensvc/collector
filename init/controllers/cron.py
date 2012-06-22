@@ -286,22 +286,22 @@ def stat_nb_svc_prd(fset_id):
     return n
 
 def stat_nb_vcpu(fset_id):
-    q = db.services.id < 0
-    q = or_apply_filters(q, None, db.services.svc_name, fset_id)
-    rows = db(q).select(db.services.svc_vcpus)
+    q = db.svcmon.id < 0
+    q = or_apply_filters(q, None, db.svcmon.mon_svcname, fset_id)
+    rows = db(q).select(db.svcmon.mon_vcpus, groupby=db.svcmon.mon_vmname)
     n = 0
     for row in rows:
-        n += row.svc_vcpus
+        n += row.mon_vcpus
     print "stat_nb_vcpu():", str(n)
     return n
 
 def stat_nb_vmem(fset_id):
-    q = db.services.id < 0
-    q = or_apply_filters(q, None, db.services.svc_name, fset_id)
-    rows = db(q).select(db.services.svc_vmem)
+    q = db.svcmon.id < 0
+    q = or_apply_filters(q, None, db.svcmon.mon_svcname, fset_id)
+    rows = db(q).select(db.svcmon.mon_vmem, groupby=db.svcmon.mon_vmname)
     n = 0
     for row in rows:
-        n += row.svc_vmem
+        n += row.mon_vmem
     print "stat_nb_vmem():", str(n)
     return n
 
