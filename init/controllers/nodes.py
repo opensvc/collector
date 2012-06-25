@@ -89,16 +89,20 @@ def _node_form(record=None):
 @auth.requires_login()
 def node_insert():
     form = _node_form()
-    if form.accepts(request.vars):
-        update_dash_node_without_warranty_end(request.vars.nodename)
-        update_dash_node_beyond_warranty_end(request.vars.nodename)
-        update_dash_node_near_warranty_end(request.vars.nodename)
-        delete_dash_node_not_updated(request.vars.nodename)
-        delete_dash_node_without_asset(request.vars.nodename)
-        response.flash = T("edition recorded")
-        redirect(URL(r=request, f='nodes'))
-    elif form.errors:
-        response.flash = T("errors in form")
+    import gluon.contrib.pymysql.err
+    try:
+        if form.accepts(request.vars):
+            update_dash_node_without_warranty_end(request.vars.nodename)
+            update_dash_node_beyond_warranty_end(request.vars.nodename)
+            update_dash_node_near_warranty_end(request.vars.nodename)
+            delete_dash_node_not_updated(request.vars.nodename)
+            delete_dash_node_without_asset(request.vars.nodename)
+            response.flash = T("edition recorded")
+            redirect(URL(r=request, f='nodes'))
+        elif form.errors:
+            response.flash = T("errors in form")
+    except gluon.contrib.pymysql.err.IntegrityError:
+        response.flash = T("Integrity Error")
     return dict(form=form)
 
 @auth.requires_login()
