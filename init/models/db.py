@@ -137,6 +137,7 @@ db.define_table('svcmon',
     Field('mon_guestos'),
     Field('mon_vmem'),
     Field('mon_vcpus'),
+    Field('mon_containerpath'),
     migrate=False)
 
 db.define_table('SVCactions',
@@ -269,7 +270,6 @@ db.define_table('services',
     Field('svc_envdate'),
     Field('svc_containertype'),
     Field('svc_envfile'),
-    Field('svc_containerpath'),
     migrate=False)
 
 db.define_table('v_svcmon',

@@ -238,7 +238,7 @@ def _update_service(vars, vals, auth):
     vars = []
     vals = []
     for var, val in h.items():
-        if var not in ('mon_vmname', 'mon_guestos', 'mon_vcpus', 'mon_vmem'):
+        if var not in ('svc_vmname', 'svc_guestos', 'svc_vcpus', 'svc_vmem', 'svc_containerpath'):
             vars.append(var)
             vals.append(val)
     generic_insert('services', vars, vals)
@@ -249,13 +249,15 @@ def _update_service(vars, vals, auth):
                 'mon_vmname',
                 'mon_guestos',
                 'mon_vcpus',
-                'mon_vmem']
+                'mon_vmem',
+                'mon_containerpath']
         vals = [h['svc_name'],
                 auth[1],
                 h['svc_vmname'],
                 h['svc_guestos'],
                 h['svc_vcpus'],
                 h['svc_vmem'],
+                h['svc_containerpath'],
                ]
         generic_insert('svcmon', vars, vals)
 

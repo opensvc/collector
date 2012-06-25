@@ -6204,6 +6204,28 @@ def comp_format_filter(q):
     s = s.replace('nodes.id>0 AND ','')
     return s
 
+def comp_get_svcmon_ruleset(svcname, nodename, virt=False):
+    if virt:
+        q = db.svcmon.mon_vmname == svcname
+        q &= db.svcmon.mon_availstatus == "up"
+        row = db(q).select(db.svcmon.mon_svcname, db.svcmon.mon_nodname).first()
+        if row is None:
+            return {}
+        svcname = row.mon_svcname
+        nodename = row.mon_nodname
+    q = db.svcmon.mon_svcname == svcname
+    q &= db.svcmon.mon_nodname == nodename
+    rows = db(q).select()
+    if len(rows) != 1:
+        return {}
+    ruleset = {'name': 'osvc_svcmon',
+               'filter': str(q),
+               'vars': []}
+    for f in db.svcmon.fields:
+        val = rows[0][f]
+        ruleset['vars'].append(('svcmon.'+f, val))
+    return {'osvc_svcmon':ruleset}
+
 def comp_get_service_ruleset(svcname, virt=False):
     if virt:
         q = db.svcmon.mon_vmname == svcname
@@ -6304,11 +6326,12 @@ def comp_get_ruleset(nodename, auth):
 @auth_uuid
 @service.xmlrpc
 def comp_get_svc_ruleset(svcname, auth):
-    return _comp_get_svc_ruleset(svcname)
+    return _comp_get_svc_ruleset(svcname, auth)
 
-def _comp_get_svc_ruleset(svcname):
+def _comp_get_svc_ruleset(svcname, auth):
     # initialize ruleset with asset variables
     ruleset = comp_get_service_ruleset(svcname)
+    ruleset.update(comp_get_svcmon_ruleset(svcname, auth[1]))
 
     # add contextual rulesets variables
     v = db.v_gen_filtersets
@@ -6394,6 +6417,7 @@ def _comp_get_ruleset(nodename):
 
     # if the node is driven by a opensvc service, add the service ruleset
     ruleset.update(comp_get_service_ruleset(nodename, virt=True))
+    ruleset.update(comp_get_svcmon_ruleset(nodename, None, virt=True))
 
     # add contextual rulesets variables
     v = db.v_gen_filtersets
