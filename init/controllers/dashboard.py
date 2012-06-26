@@ -155,7 +155,7 @@ def ajax_dash_agg():
     q = apply_filters(q, db.dashboard.dash_nodename, db.dashboard.dash_svcname)
 
     sql1 = db(q)._select().rstrip(';').replace('services.id, ','').replace('nodes.id, ','').replace('dashboard.id>0 AND', '')
-    regex = re.compile("SELECT .* FROM")
+    regex = re.compile("SELECT .* FROM dashboard")
     sql1 = regex.sub('', sql1)
 
     q = db.dash_agg.id > 0
@@ -175,7 +175,7 @@ def ajax_dash_agg():
                       dashboard.id,
                       dashboard.dash_type,
                       count(dashboard.dash_type)
-                    from
+                    from dashboard ignore index (idx1)
                       %(sql)s
                       and dash_severity=%(sev)d
                     group by dash_type
@@ -204,7 +204,8 @@ def ajax_dash_agg():
                   dashboard.id,
                   dashboard.dash_severity,
                   count(dashboard.id)
-                from %(sql)s
+                from dashboard ignore index (idx1)
+                  %(sql)s
                 group by dash_severity
               """%dict(
                 sql=sql1,
@@ -658,16 +659,23 @@ def ajax_dashboard_col_values():
 def ajax_dashboard():
     t = table_dashboard('dashboard', 'ajax_dashboard')
     o = ~db.dashboard.dash_severity|db.dashboard.dash_type
-    g = db.dashboard.id
     q = db.dashboard.id > 0
     for f in set(t.cols)-set(t.special_filtered_cols):
         q = _where(q, 'dashboard', t.filter_parse(f), f)
     q &= _where(None, 'dashboard', domain_perms(), 'dash_svcname')|_where(None, 'dashboard', domain_perms(), 'dash_nodename')
     q = apply_filters(q, db.dashboard.dash_nodename, db.dashboard.dash_svcname)
 
-    n = db(q).count()
+    sql = "select count(id) from dashboard ignore index (idx1) where "+str(q)
+    n = db.executesql(sql)[0][0]
+    #n = db(q).count()
     t.setup_pager(n)
-    t.object_list = db(q).select(db.dashboard.ALL, limitby=(t.pager_start,t.pager_end), orderby=o, groupby=g)
+    sql = """select *
+             from dashboard ignore index (idx1)
+             where %s
+             order by dash_severity desc, dash_type
+             limit %d offset %d"""%(str(q), t.pager_end-t.pager_start, t.pager_start)
+    # t.object_list = db(q).select(db.dashboard.ALL, limitby=(t.pager_start,t.pager_end), orderby=o)
+    t.object_list = db.executesql(sql, as_dict=True)
 
     mt = table_dash_agg('dash_agg', 'ajax_dash_agg')
     return DIV(
