@@ -196,6 +196,8 @@ def ajax_dash_agg():
             s = T.translate(line['dash_type'], dict())
             data.append([s, int(line['dash_alerts']), line['dash_type']])
         data.sort(lambda x, y: cmp(y[1], x[1]))
+        if len(data) == 0:
+            data = ['', 0, '']
         h['nb'].append(data)
 
     sql2 = """ select
