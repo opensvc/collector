@@ -279,6 +279,9 @@ def _push_checks(vars, vals):
         nodename = vals[0][0]
         db(db.checks_live.chk_nodename==nodename).delete()
         db.commit()
+    while len(vals) > 500:
+        generic_insert('checks_live', vars, vals[:500])
+        vals = vals[500:]
     generic_insert('checks_live', vars, vals)
     q = db.checks_live.id < 0
     for v in vals:
