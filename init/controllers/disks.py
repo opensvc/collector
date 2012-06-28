@@ -1283,7 +1283,7 @@ def ajax_disk_provision():
     try:
         lusize = int(lusize)
     except:
-        return "invalid size"
+        return T("invalid size")
 
     q = db.stor_array_dg.id == dg_id
     q &= db.stor_array.id == db.stor_array_dg.array_id
@@ -1291,11 +1291,23 @@ def ajax_disk_provision():
     infos = db(q).select()
 
     if len(infos) == 0:
-        return "no proxy server to provision on this array"
+        return T("no proxy server to provision on this array")
+
+    provtype = {
+      'EVA340': 'eva',
+      'EVA400': 'eva',
+      'Symmetrix': 'sym',
+      'SANsymphony-V': 'dcs',
+    }
+    if info.stor_array.array_model not in provtype:
+        return T("%s array model is not supported by the provisioning agent")
+
+    t = provtype[info.stor_array.array_model]
 
     info = infos.first()
     d = {
       'rtype': 'disk',
+      'type': t,
       'array_model': info.stor_array.array_model,
       'array_name': info.stor_array.array_name,
       'dg_name': info.stor_array_dg.dg_name,
