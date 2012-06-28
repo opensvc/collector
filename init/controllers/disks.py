@@ -988,7 +988,7 @@ def ajax_provision():
               _value=False,
               _type='radio',
               _id="radio_service",
-              _onclick="""$("#stage2").html("");$("#stage3").html("");$("#stage4").html("");ajax('%(url)s', [], '%(id)s')"""%dict(
+              _onclick="""$("#radio_node").prop('checked',false);$("#stage2").html("");$("#stage3").html("");$("#stage4").html("");ajax('%(url)s', [], '%(id)s')"""%dict(
                 id="stage1",
                 url=URL(r=request, c='disks', f='ajax_service_list'),
               ),
@@ -996,6 +996,20 @@ def ajax_provision():
           ),
           TD(
             T("Allocate to service"),
+          ),
+          TD(
+            INPUT(
+              _value=False,
+              _type='radio',
+              _id="radio_node",
+              _onclick="""$("#radio_service").prop('checked',false);$("#stage2").html("");$("#stage3").html("");$("#stage4").html("");ajax('%(url)s', [], '%(id)s')"""%dict(
+                id="stage1",
+                url=URL(r=request, c='disks', f='ajax_node_list'),
+              ),
+            ),
+          ),
+          TD(
+            T("Allocate to node"),
           ),
         ))
     d = DIV(
@@ -1014,6 +1028,42 @@ def ajax_provision():
           ),
         )
     return d
+
+@auth.requires_login()
+def ajax_node_list():
+    o = db.nodes.project | db.nodes.nodename
+    q = db.node_hba.nodename == db.nodes.nodename
+    q &= db.apps_responsibles.app_id == db.apps.id
+    q &= db.apps_responsibles.group_id == db.auth_membership.group_id
+    q &= db.auth_membership.user_id == auth.user_id
+    q &= db.auth_membership.group_id == db.auth_group.id
+    q &= db.nodes.team_responsible == db.auth_group.role
+    nodes = db(q).select(db.nodes.nodename,
+                         db.nodes.project,
+                         groupby=o,
+                         orderby=o)
+
+    l = [OPTION(T("Choose one"))]
+    for n in nodes:
+        o = OPTION(
+                "%s - %s"%(n.project, n.nodename),
+                _value=n.nodename
+            )
+        l.append(o)
+
+    return DIV(
+             H3(T("Node")),
+             SELECT(
+                l,
+                _onchange="""$("#stage3").html("");$("#stage4").html("");ajax('%(url)s/'+this.options[this.selectedIndex].value, [], '%(div)s');"""%dict(
+                              url=URL(
+                                   r=request, c='disks',
+                                   f='ajax_dg_list_by_node',
+                                  ),
+                              div="stage2"
+                             ),
+             ),
+           )
 
 @auth.requires_login()
 def ajax_service_list():
@@ -1042,7 +1092,7 @@ def ajax_service_list():
                 _onchange="""$("#stage3").html("");$("#stage4").html("");ajax('%(url)s/'+this.options[this.selectedIndex].value, [], '%(div)s');"""%dict(
                               url=URL(
                                    r=request, c='disks',
-                                   f='ajax_dg_list',
+                                   f='ajax_dg_list_by_svc',
                                   ),
                               div="stage2"
                              ),
@@ -1050,23 +1100,33 @@ def ajax_service_list():
            )
 
 @auth.requires_login()
-def ajax_dg_list():
+def ajax_dg_list_by_node():
     o = db.stor_array.array_name | db.stor_array_dg.dg_name
-    q = db.services.svc_name == request.args[0]
-    q &= db.services.svc_app == db.apps.app
+    q = db.nodes.nodename == request.args[0]
+    q &= db.nodes.project == db.apps.app
     q &= db.apps.id == db.stor_array_dg_quota.app_id
     q &= db.stor_array_dg_quota.dg_id == db.stor_array_dg.id
     q &= db.stor_array_dg.array_id == db.stor_array.id
-    q &= db.stor_array_dg_quota.quota != None
-    rows = db(q).select()
+    #q &= db.stor_array_dg_quota.quota != None
+    q &= db.node_hba.nodename == request.args[0]
+    q &= db.node_hba.hba_id == db.stor_zone.hba_id
+    q &= db.stor_zone.tgt_id == db.stor_array_tgtid.array_tgtid
+    q &= db.stor_array_tgtid.array_id == db.stor_array_dg.array_id
+    rows = db(q).select(groupby=db.stor_array_dg.id)
+    return dg_list(rows, 'ajax_path_list_by_node')
 
+def dg_list(rows, fn):
     l = [OPTION(T("Choose one"))]
     for s in rows:
+        if s.stor_array_dg_quota.quota is None:
+            quota = 0
+        else:
+            quota = s.stor_array_dg_quota.quota
         o = OPTION(
                 "%s %s - %s - quota %s GB"%(s.stor_array.array_model,
                                             s.stor_array.array_name,
                                             s.stor_array_dg.dg_name,
-                                            str(s.stor_array_dg_quota.quota)),
+                                            str(quota)),
                 _value=s.stor_array_dg.id,
             )
         l.append(o)
@@ -1080,18 +1140,60 @@ def ajax_dg_list():
                               svcname=request.args[0],
                               url=URL(
                                    r=request, c='disks',
-                                   f='ajax_nodes_list',
+                                   f=fn,
                                   ),
                               div="stage3"
                              ),
              ),
            )
 
+@auth.requires_login()
+def ajax_dg_list_by_svc():
+    o = db.stor_array.array_name | db.stor_array_dg.dg_name
+    q = db.services.svc_name == request.args[0]
+    q &= db.services.svc_app == db.apps.app
+    q &= db.apps.id == db.stor_array_dg_quota.app_id
+    q &= db.stor_array_dg_quota.dg_id == db.stor_array_dg.id
+    q &= db.stor_array_dg.array_id == db.stor_array.id
+    #q &= db.stor_array_dg_quota.quota != None
+    q &= db.svcmon.mon_svcname == request.args[0]
+    q &= db.svcmon.mon_nodname == db.node_hba.nodename
+    q &= db.node_hba.hba_id == db.stor_zone.hba_id
+    q &= db.stor_zone.tgt_id == db.stor_array_tgtid.array_tgtid
+    q &= db.stor_array_tgtid.array_id == db.stor_array_dg.array_id
+    rows = db(q).select(groupby=db.stor_array_dg.id)
+    return dg_list(rows, 'ajax_path_list_by_svc')
 
 @auth.requires_login()
-def ajax_nodes_list():
+def ajax_path_list_by_node():
+    nodename = request.args[0]
+    dg_id = request.args[1]
+
+    try:
+        int(dg_id)
+    except:
+        return ""
+
+    o = db.stor_array_tgtid.array_tgtid | db.nodes.host_mode | db.nodes.nodename
+
+    # select nodes who see tgt ids
+    q = db.stor_array_dg.id == dg_id
+    q &= db.stor_array_tgtid.array_id == db.stor_array_dg.array_id
+    q &= db.stor_array_tgtid.array_tgtid == db.stor_zone.tgt_id
+    q &= db.stor_zone.hba_id == db.node_hba.hba_id
+    q &= db.node_hba.nodename == db.nodes.nodename
+    q &= db.nodes.nodename == nodename
+    paths = db(q).select()
+    return path_list(paths, dg_id)
+
+def ajax_path_list_by_svc():
     svcname = request.args[0]
     dg_id = request.args[1]
+
+    try:
+        int(dg_id)
+    except:
+        return ""
 
     o = db.stor_array_tgtid.array_tgtid | db.nodes.host_mode | db.nodes.nodename
 
@@ -1104,7 +1206,9 @@ def ajax_nodes_list():
     q &= db.svcmon.mon_svcname == svcname
     q &= db.svcmon.mon_nodname == db.nodes.nodename
     paths = db(q).select()
+    return path_list(paths, dg_id)
 
+def path_list(paths, dg_id):
     if len(paths) == 0:
         return DIV(
                  H3(T("Presentation")),
@@ -1158,12 +1262,11 @@ if(is_enter(event)){
   $("#paths").val(s)
   ajax('%(url)s', ["lusize", "paths"], '%(div)s')
 }"""%dict(
-                              svcname=svcname,
                               dg_id=dg_id,
                               url=URL(
                                    r=request, c='disks',
                                    f='ajax_disk_provision',
-                                   args=[svcname, dg_id]
+                                   args=[dg_id]
                                   ),
                               div="stage4"
                              ),
@@ -1173,8 +1276,7 @@ if(is_enter(event)){
 
 @auth.requires_login()
 def ajax_disk_provision():
-    svcname = request.args[0]
-    dg_id = request.args[1]
+    dg_id = request.args[0]
     paths = request.vars.paths
     lusize = request.vars.lusize
 
@@ -1193,8 +1295,7 @@ def ajax_disk_provision():
 
     info = infos.first()
     d = {
-      'rtype': 'vg',
-      'type': 'raw',
+      'rtype': 'disk',
       'array_model': info.stor_array.array_model,
       'array_name': info.stor_array.array_name,
       'dg_name': info.stor_array_dg.dg_name,
@@ -1202,15 +1303,13 @@ def ajax_disk_provision():
       'paths': paths,
     }
     import json
-    import uuid
-    tmp_svcname = str(uuid.uuid4())
     cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
                   '-o', 'ForwardX11=no',
                   '-o', 'PasswordAuthentication=no',
                   '-tt',
            'opensvc@'+info.stor_array_proxy.nodename,
            '--',
-           """(sudo /opt/opensvc/bin/svcmgr -s %(svcname)s create --resource "%(d)s" --provision ; sudo /opt/opensvc/bin/svcmgr -s %(svcname)s delete)"""%dict(svcname=tmp_svcname, d=json.dumps(d))
+           """sudo /opt/opensvc/bin/nodemgr provision --resource "%(d)s" """%dict(d=json.dumps(d))
           ]
 
     s = "create a %(size)s GB volume in disk group %(dg_name)s of %(array_model)s array %(array_name)s and present it through paths %(paths)s"%dict(
