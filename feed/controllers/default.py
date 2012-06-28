@@ -243,7 +243,7 @@ def _update_service(vars, vals, auth):
             vals.append(val)
     generic_insert('services', vars, vals)
     update_dash_service_not_updated(vals[1].strip("'"))
-    if 'svc_vmname' in vars:
+    if 'svc_vmname' in h:
         vars = ['mon_svcname',
                 'mon_nodname',
                 'mon_vmname',
@@ -257,7 +257,7 @@ def _update_service(vars, vals, auth):
                 h['svc_guestos'],
                 h['svc_vcpus'],
                 h['svc_vmem'],
-                h['svc_containerpath'],
+                h['svc_containerpath'] if 'svc_containerpath' in h else '',
                ]
         generic_insert('svcmon', vars, vals)
 
@@ -776,9 +776,9 @@ def insert_dcs(name=None):
             for server in s.server.values():
                 break
             vals.append([s.sg['caption'],
-                         server['modelnumber'],
+                         server['model'],
                          str(s.sg['memory']),
-                         server['firmwareversion'],
+                         server['productbuild'],
                          now])
             generic_insert('stor_array', vars, vals)
 

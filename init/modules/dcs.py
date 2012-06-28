@@ -52,13 +52,13 @@ class Dcs(object):
                     self.server[server['id']] = server
                     server = {}
             if line.startswith('ProductName'):
-                server['modelnumber'] = line.split(": ")[-1].strip()
+                server['model'] = line.split(": ")[-1].strip()
             elif line.startswith('ProductType'):
-                server['modelnumber'] += " "+line.split(": ")[-1].strip()
+                server['producttype'] = " "+line.split(": ")[-1].strip()
             elif line.startswith('ProductVersion'):
-                server['modelnumber'] = line.split(": ")[-1].strip()
+                server['productversion'] = line.split(": ")[-1].strip()
             elif line.startswith('ProductBuild'):
-                server['firmwareversion'] = line.split(": ")[-1].strip()
+                server['productbuild'] = line.split(": ")[-1].strip()
             elif line.startswith('TotalSystemMemory'):
                 n, u = line.split(": ")[-1].strip().split()
                 n = float(n.replace(',', '.'))
@@ -433,9 +433,11 @@ Internal                 : False
             s += " %s\n" % port
         for server in self.server.values():
             s += " hostname: %s\n" % server['hostname']
-            s += "  modelnumber: %s\n" % server['modelnumber']
+            s += "  model: %s\n" % server['model']
+            s += "  producttype: %s\n" % server['producttype']
+            s += "  productversion: %s\n" % server['productversion']
             s += "  memory: %d\n" % server['memory']
-            s += "  firmwareversion: %s\n" % server['firmwareversion']
+            s += "  productbuild: %s\n" % server['productbuild']
         for pool in self.pool.values():
             s += "pool %s (%s)\n"%(pool['caption'], pool['id'])
             s += " alloc: %d MB\n"%pool['alloc']
