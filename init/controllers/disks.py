@@ -1294,17 +1294,17 @@ def ajax_disk_provision():
         return T("no proxy server to provision on this array")
 
     provtype = {
-      'EVA340': 'eva',
-      'EVA400': 'eva',
+      'HSV340': 'eva',
+      'HSV400': 'eva',
       'Symmetrix': 'sym',
       'SANsymphony-V': 'dcs',
     }
-    if info.stor_array.array_model not in provtype:
-        return T("%s array model is not supported by the provisioning agent")
-
-    t = provtype[info.stor_array.array_model]
 
     info = infos.first()
+    if info.stor_array.array_model not in provtype:
+        return T("%s array model is not supported by the provisioning agent"%info.stor_array.array_model)
+    t = provtype[info.stor_array.array_model]
+
     d = {
       'rtype': 'disk',
       'type': t,

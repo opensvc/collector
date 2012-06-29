@@ -774,7 +774,8 @@ def insert_dcs(name=None):
             vals = []
             name = s.sg['caption']
             for server in s.server.values():
-                break
+                if len(server['model']) > 0:
+                    break
             vals.append([s.sg['caption'],
                          server['model'],
                          str(s.sg['memory']),
