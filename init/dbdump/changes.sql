@@ -2684,3 +2684,5 @@ CREATE TABLE `stat_day_billing` (
 alter table stat_day_billing modify column day datetime not null;
 
 alter table dashboard add column dash_env enum ('DEV', 'PRD', 'TST', 'REC', 'INT', '') default '';
+
+alter table diskinfo add column disk_controller varchar(32);

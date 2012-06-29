@@ -540,6 +540,7 @@ db.define_table('diskinfo',
     Field('disk_raid', 'string'),
     Field('disk_updated', 'datetime'),
     Field('disk_level', 'integer'),
+    Field('disk_controller', 'string'),
     migrate=False)
 
 db.define_table('svcdisks',
