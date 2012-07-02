@@ -549,6 +549,8 @@ def update_dg_reserved():
           """
     rows = db.executesql(sql)
     for row in rows:
+        if row[0] is None or row[1] is None:
+           continue
         sql = """update stor_array_dg set dg_reserved=%(reserved)s
                  where id=%(dg_id)s
               """%dict(reserved=row[1], dg_id=row[0])
