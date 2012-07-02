@@ -736,23 +736,26 @@ def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
             pass
 
     #fn(arrayid)
-    feed_enqueue(fn.__name__, arrayid)
+    feed_enqueue(fn.__name__, arrayid, auth[1])
 
     # stor_array_proxy
-    sql = """select id from stor_array where array_name="%s" """%arrayid
+    insert_array_proxy(auth[1], arrayid)
+
+def insert_dcss():
+    return insert_dcs()
+
+def insert_array_proxy(nodename, array_name):
+    sql = """select id from stor_array where array_name="%s" """%array_name
     rows = db.executesql(sql)
     if len(rows) == 0:
         return
     array_id = str(rows[0][0])
 
     vars = ['array_id', 'nodename']
-    vals = [array_id, auth[1]]
+    vals = [array_id, nodename]
     generic_insert('stor_array_proxy', vars, vals)
 
-def insert_dcss():
-    return insert_dcs()
-
-def insert_dcs(name=None):
+def insert_dcs(name=None, nodename=None):
     import glob
     import os
     from applications.init.modules import dcs
@@ -769,6 +772,10 @@ def insert_dcs(name=None):
     for d in dirs:
         s = dcs.get_dcs(d)
         if s is not None:
+            # stor_array_proxy
+            if nodename is not None:
+                insert_array_proxy(nodename, s.sg['caption'])
+
             # stor_array
             vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
             vals = []
@@ -832,7 +839,7 @@ def insert_dcs(name=None):
 def insert_necisms():
     return insert_necism()
 
-def insert_necism(name=None):
+def insert_necism(name=None, nodename=None):
     import glob
     import os
     from applications.init.modules import necism
@@ -908,7 +915,7 @@ def insert_necism(name=None):
 def insert_brocades():
     return insert_brocade()
 
-def insert_brocade(name=None):
+def insert_brocade(name=None, nodename=None):
     import glob
     import os
     from applications.init.modules import brocade
@@ -1015,7 +1022,7 @@ def insert_brocade(name=None):
 def insert_vioservers():
     return insert_vioserver()
 
-def insert_vioserver(name=None):
+def insert_vioserver(name=None, nodename=None):
     import glob
     import os
     from applications.init.modules import vioserver
@@ -1069,7 +1076,7 @@ def insert_vioserver(name=None):
 def insert_ibmsvcs():
     return insert_ibmsvc()
 
-def insert_ibmsvc(name=None):
+def insert_ibmsvc(name=None, nodename=None):
     import glob
     import os
     from applications.init.modules import ibmsvc
@@ -1145,7 +1152,7 @@ def insert_ibmsvc(name=None):
 def insert_evas():
     return insert_eva()
 
-def insert_eva(name=None):
+def insert_eva(name=None, nodename=None):
     import glob
     import os
     from applications.init.modules import eva
@@ -1222,7 +1229,7 @@ def insert_eva(name=None):
 def insert_syms():
     return insert_sym()
 
-def insert_sym(symid=None):
+def insert_sym(symid=None, nodename=None):
     import glob
     import os
     from applications.init.modules import symmetrix

@@ -1128,6 +1128,7 @@
 'no data': 'aucune donnée',
 'no node hbas': 'aucun hba',
 'no nodes': 'aucun noeud',
+'no proxy server to provision on this array': 'no proxy server to provision on this array',
 'no user selected': 'aucun utilisateur sélectionné',
 'node': 'noeud',
 'node "%(node)s" double registration attempt': 'noeud "%(node)s", tentative de double enregistrement',
