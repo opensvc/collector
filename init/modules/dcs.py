@@ -130,17 +130,25 @@ Internal             : False
         port = {}
         lines = buff.split('\n')
         for i, line in enumerate(lines):
-            if line.startswith('StateInfo'):
-                if len(port) > 0 and port['porttype'] == "FibreChannel" and port['portmode'] == "Target":
+            if line.startswith('Internal'):
+                if len(port) > 0 and \
+                   (port['porttype'] == "FibreChannel" or port['porttype'] =='iSCSI') and \
+                   port['portmode'] == "Target":
+                    if port['porttype'] == "FibreChannel":
+                        port["portname"] = port["portname"].replace('-', '')
                     self.port_list.append(port["portname"])
-                port = {'size': 0}
+                port = {}
             elif line.startswith('PortType'):
                 port["porttype"] = self.get_val(lines, i)
             elif line.startswith('PortMode'):
                 port["portmode"] = self.get_val(lines, i)
             elif line.startswith('PortName'):
-                port["portname"] = self.get_val(lines, i).replace('-', '')
-        if len(port) > 0:
+                port["portname"] = self.get_val(lines, i)
+        if len(port) > 0 and \
+           (port['porttype'] == "FibreChannel" or port['porttype'] =='iSCSI') and \
+           port['portmode'] == "Target":
+            if port['porttype'] == "FibreChannel":
+                port["portname"] = port["portname"].replace('-', '')
             self.port_list.append(port["portname"])
 
     def pool(self):
