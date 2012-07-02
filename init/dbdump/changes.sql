@@ -2701,3 +2701,80 @@ CREATE VIEW `v_services` AS select s.svc_ha, s.svc_status, s.svc_availstatus, s.
 alter table svcmon add column mon_containerpath varchar(512);
 
 alter table diskinfo add column disk_controller varchar(32);
+
+drop view v_disk_quota;
+
+create view v_disk_quota as 
+  SELECT
+    stor_array_dg_quota.id,
+    stor_array.id as array_id,
+    stor_array_dg.id as dg_id,
+    apps.id as app_id,
+    stor_array.array_name,
+    stor_array_dg.dg_name,
+    stor_array_dg.dg_free,
+    stor_array_dg.dg_size,
+    stor_array_dg.dg_used,
+    stor_array_dg.dg_reserved,
+    stor_array_dg.dg_size - stor_array_dg.dg_reserved as dg_reservable,
+    stor_array.array_model,
+    apps.app,
+    stor_array_dg_quota.quota,
+    sum(v_disks_app.disk_used) as quota_used
+  FROM
+    stor_array
+    JOIN stor_array_dg ON (stor_array_dg.array_id = stor_array.id)
+    LEFT JOIN stor_array_dg_quota ON (stor_array_dg.id = stor_array_dg_quota.dg_id)
+    LEFT JOIN v_disks_app ON (
+          v_disks_app.disk_arrayid=stor_array.array_name and
+          v_disks_app.disk_group=stor_array_dg.dg_name
+    )
+    LEFT JOIN apps ON (apps.app = v_disks_app.app)
+  WHERE
+    apps.id is not NULL
+  GROUP BY apps.id, stor_array.id, stor_array_dg.id
+  UNION ALL
+  SELECT
+    stor_array_dg_quota.id,
+    stor_array.id as array_id,
+    stor_array_dg.id as dg_id,
+    NULL as app_id,
+    stor_array.array_name,
+    stor_array_dg.dg_name,
+    stor_array_dg.dg_free,
+    stor_array_dg.dg_size,
+    stor_array_dg.dg_used,
+    stor_array_dg.dg_reserved,
+    stor_array_dg.dg_size - stor_array_dg.dg_reserved as dg_reservable,
+    stor_array.array_model,
+    "unknown",
+    if(sum(b_disk_app.disk_size) is NULL, 0, sum(b_disk_app.disk_size)) as quota,
+    if(sum(b_disk_app.disk_size) is NULL, 0, sum(b_disk_app.disk_size)) as quota_used
+  FROM
+    stor_array
+    JOIN stor_array_dg ON (stor_array_dg.array_id = stor_array.id)
+    LEFT JOIN stor_array_dg_quota ON (stor_array_dg.id = stor_array_dg_quota.dg_id)
+    LEFT JOIN b_disk_app ON (
+          b_disk_app.disk_arrayid=stor_array.array_name and
+          b_disk_app.disk_group=stor_array_dg.dg_name
+    )
+  WHERE
+    b_disk_app.app is NULL
+  GROUP BY stor_array.id, stor_array_dg.id
+;
+
+drop view v_disk_app_dedup;
+
+create view v_disk_app_dedup as
+                   select
+                     app,
+                     max(disk_used) as disk_used,
+                     disk_size,
+                     disk_arrayid,
+                     disk_group
+                   from
+                     v_disk_app
+                   group by disk_id, disk_region, disk_arrayid, disk_group
+;
+
+

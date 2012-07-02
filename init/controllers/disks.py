@@ -1057,12 +1057,13 @@ def ajax_node_list():
              H3(T("Node")),
              SELECT(
                 l,
-                _onchange="""$("#stage3").html("");$("#stage4").html("");ajax('%(url)s/'+this.options[this.selectedIndex].value, [], '%(div)s');"""%dict(
+                _onchange="""$("#stage2").html('%(spinner)s');$("#stage3").html("");$("#stage4").html("");ajax('%(url)s/'+this.options[this.selectedIndex].value, [], '%(div)s');"""%dict(
                               url=URL(
                                    r=request, c='disks',
                                    f='ajax_dg_list_by_node',
                                   ),
-                              div="stage2"
+                              div="stage2",
+                              spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')).xml(),
                              ),
              ),
            )
@@ -1091,12 +1092,13 @@ def ajax_service_list():
              H3(T("Service")),
              SELECT(
                 l,
-                _onchange="""$("#stage3").html("");$("#stage4").html("");ajax('%(url)s/'+this.options[this.selectedIndex].value, [], '%(div)s');"""%dict(
+                _onchange="""$("#stage2").html('%(spinner)s');$("#stage3").html("");$("#stage4").html("");ajax('%(url)s/'+this.options[this.selectedIndex].value, [], '%(div)s');"""%dict(
                               url=URL(
                                    r=request, c='disks',
                                    f='ajax_dg_list_by_svc',
                                   ),
-                              div="stage2"
+                              div="stage2",
+                              spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')).xml(),
                              ),
              ),
            )
@@ -1106,8 +1108,8 @@ def ajax_dg_list_by_node():
     o = db.stor_array.array_name | db.stor_array_dg.dg_name
     q = db.nodes.nodename == request.args[0]
     q &= db.nodes.project == db.apps.app
-    q &= db.apps.id == db.stor_array_dg_quota.app_id
-    q &= db.stor_array_dg_quota.dg_id == db.stor_array_dg.id
+    q &= db.apps.id == db.v_disk_quota.app_id
+    q &= db.v_disk_quota.dg_id == db.stor_array_dg.id
     q &= db.stor_array_dg.array_id == db.stor_array.id
     #q &= db.stor_array_dg_quota.quota != None
     q &= db.node_hba.nodename == request.args[0]
@@ -1117,18 +1119,54 @@ def ajax_dg_list_by_node():
     rows = db(q).select(groupby=db.stor_array_dg.id)
     return dg_list(rows, 'ajax_path_list_by_node')
 
+def get_free_quota(dg_id, obj):
+    sql = """
+      select
+        (quota-quota_used)/1024
+      from
+        v_disk_quota
+      where
+        dg_id=%(dg_id)s and
+        app in (
+          select
+            project
+          from
+            nodes
+          where
+            nodename="%(obj)s"
+          union all
+          select
+            svc_app
+          from
+            services
+          where
+            svc_name="%(obj)s"
+        )
+    """%dict(
+      dg_id=dg_id,
+      obj=obj,
+    )
+    rows = db.executesql(sql)
+    if len(rows) == 0:
+        return 0
+    return rows[0][0]
+
 def dg_list(rows, fn):
     l = [OPTION(T("Choose one"))]
     for s in rows:
-        if s.stor_array_dg_quota.quota is None:
+        if s.v_disk_quota.quota is None:
             quota = 0
+            quota_free = 0
         else:
-            quota = s.stor_array_dg_quota.quota
+            quota = s.v_disk_quota.quota//1024
+            quota_free = quota - s.v_disk_quota.quota_used//1024
         o = OPTION(
-                "%s %s - %s - quota %s GB"%(s.stor_array.array_model,
-                                            s.stor_array.array_name,
-                                            s.stor_array_dg.dg_name,
-                                            str(quota)),
+                T("%(model)s %(name)s - %(dg)s - available quota %(free)d/%(quota)d GB",dict(
+                  model=s.stor_array.array_model,
+                  name=s.stor_array.array_name,
+                  dg=s.stor_array_dg.dg_name,
+                  free=quota_free,
+                  quota=quota)),
                 _value=s.stor_array_dg.id,
             )
         l.append(o)
@@ -1154,8 +1192,8 @@ def ajax_dg_list_by_svc():
     o = db.stor_array.array_name | db.stor_array_dg.dg_name
     q = db.services.svc_name == request.args[0]
     q &= db.services.svc_app == db.apps.app
-    q &= db.apps.id == db.stor_array_dg_quota.app_id
-    q &= db.stor_array_dg_quota.dg_id == db.stor_array_dg.id
+    q &= db.apps.id == db.v_disk_quota.app_id
+    q &= db.v_disk_quota.dg_id == db.stor_array_dg.id
     q &= db.stor_array_dg.array_id == db.stor_array.id
     #q &= db.stor_array_dg_quota.quota != None
     q &= db.svcmon.mon_svcname == request.args[0]
@@ -1186,7 +1224,7 @@ def ajax_path_list_by_node():
     q &= db.node_hba.nodename == db.nodes.nodename
     q &= db.nodes.nodename == nodename
     paths = db(q).select()
-    return path_list(paths, dg_id)
+    return path_list(paths, dg_id, nodename)
 
 def ajax_path_list_by_svc():
     svcname = request.args[0]
@@ -1208,9 +1246,9 @@ def ajax_path_list_by_svc():
     q &= db.svcmon.mon_svcname == svcname
     q &= db.svcmon.mon_nodname == db.nodes.nodename
     paths = db(q).select()
-    return path_list(paths, dg_id)
+    return path_list(paths, dg_id, svcname)
 
-def path_list(paths, dg_id):
+def path_list(paths, dg_id, obj):
     if len(paths) == 0:
         return DIV(
                  H3(T("Presentation")),
@@ -1241,9 +1279,27 @@ def path_list(paths, dg_id):
             TD(path.nodes.host_mode),
         )
         l.append(o)
+
+    q = db.stor_array_dg.id == dg_id
+    q &= db.stor_array.id == db.stor_array_dg.array_id
+    infos = db(q).select()
+    info = infos.first()
+
+    extra_html = ""
+    extra_id = []
+
+    if info.stor_array.array_model == 'SANsymphony-V':
+        extra_id, extra_html = sansymphony_v()
+
     return DIV(
+             extra_html,
              H3(T("Presentation")),
              TABLE(l),
+             INPUT(
+               _id="target",
+               _type="hidden",
+               _value=obj,
+             ),
              INPUT(
                _id="paths",
                _type="hidden",
@@ -1262,9 +1318,11 @@ if(is_enter(event)){
   })
   s = l.join(",")
   $("#paths").val(s)
-  ajax('%(url)s', ["lusize", "paths"], '%(div)s')
+  ajax('%(url)s', %(ids)s, '%(div)s')
 }"""%dict(
+                              obj=obj,
                               dg_id=dg_id,
+                              ids=["lusize", "paths", "target"]+extra_id,
                               url=URL(
                                    r=request, c='disks',
                                    f='ajax_disk_provision',
@@ -1276,16 +1334,50 @@ if(is_enter(event)){
              T("GB"),
            )
 
+def sansymphony_v_dg_name(array_name, dg_name, mirror):
+    import config
+    array_name = array_name.lower()
+    if mirror == "0":
+        h = 'sansymphony_v_pool'
+    else:
+        h = 'sansymphony_v_mirrored_pool'
+
+    if not hasattr(config, h):
+        raise Exception("'%s' is not set in collector configuration"%h)
+    _h = getattr(config, h)
+    if array_name not in _h:
+        raise Exception("'%s' is not set in pool configuration '%s'"%(array_name, h))
+    _h = _h[array_name]
+    if dg_name not in _h:
+        raise Exception("'%s' is not set in '%s' pool configuration '%s'"%(dg_name, array_name, h))
+    return _h[dg_name]
+
+def sansymphony_v():
+    d = DIV(
+      H3(T("Mirroring")),
+      SELECT(
+        OPTION(T("no"), _value="0"),
+        OPTION(T("yes"), _value="1"),
+        _id="mirror",
+      ),
+    )
+    return ["mirror"], d
+
 @auth.requires_login()
 def ajax_disk_provision():
     dg_id = request.args[0]
     paths = request.vars.paths
+    target = request.vars.target
     lusize = request.vars.lusize
 
     try:
         lusize = int(lusize)
     except:
-        return T("invalid size")
+        return SPAN(HR(), T("Invalid size"), HR())
+
+    quota_free = get_free_quota(dg_id, target)
+    if quota_free < lusize:
+        return  SPAN(HR(), T("Insufficent quota in this disk group"), HR())
 
     q = db.stor_array_dg.id == dg_id
     q &= db.stor_array.id == db.stor_array_dg.array_id
@@ -1293,7 +1385,7 @@ def ajax_disk_provision():
     infos = db(q).select()
 
     if len(infos) == 0:
-        return T("no proxy server to provision on this array")
+        return SPAN(HR(), T("No proxy server to provision on this array"), HR())
 
     provtype = {
       'HSV340': 'eva',
@@ -1304,7 +1396,11 @@ def ajax_disk_provision():
 
     info = infos.first()
     if info.stor_array.array_model not in provtype:
-        return T("%s array model is not supported by the provisioning agent"%info.stor_array.array_model)
+        return SPAN(
+                 HR(),
+                 T("%s array model is not supported by the provisioning agent"%info.stor_array.array_model),
+                 HR(),
+               )
     t = provtype[info.stor_array.array_model]
 
     d = {
@@ -1315,7 +1411,14 @@ def ajax_disk_provision():
       'dg_name': info.stor_array_dg.dg_name,
       'size': lusize,
       'paths': paths,
+      'disk_name': target,
     }
+
+    if info.stor_array.array_model == 'SANsymphony-V' and 'mirror' in request.vars:
+         d['dg_name'] = sansymphony_v_dg_name(info.stor_array.array_name,
+                                              d['dg_name'],
+                                              request.vars.mirror)
+
     import json
     cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
                   '-o', 'ForwardX11=no',
@@ -1323,10 +1426,11 @@ def ajax_disk_provision():
                   '-tt',
            'opensvc@'+info.stor_array_proxy.nodename,
            '--',
-           """sudo /opt/opensvc/bin/nodemgr provision --resource "%(d)s" """%dict(d=json.dumps(d))
+           """ sudo /opt/opensvc/bin/nodemgr provision --resource '%(d)s' """%dict(d=json.dumps(d))
           ]
 
-    s = "create a %(size)s GB volume in disk group %(dg_name)s of %(array_model)s array %(array_name)s and present it through paths %(paths)s"%dict(
+    s = "create a %(size)s GB volume in disk group %(dg_name)s of %(array_model)s array %(array_name)s and present it to %(target)s through paths %(paths)s"%dict(
+           target=target,
            dg_name=info.stor_array_dg.dg_name,
            array_name=info.stor_array.array_name,
            array_model=info.stor_array.array_model,
@@ -1336,8 +1440,15 @@ def ajax_disk_provision():
     _log('storage.add',
          '%(s)s',
          dict(s=s))
+    purge_action_queue()
+    db.action_queue.insert(command=' '.join(cmd))
+    from subprocess import Popen
+    actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
+    process = Popen(actiond)
+    process.communicate()
 
-    return SPAN(HR(), s, HR(), ' '.join(cmd))
+    #return SPAN(HR(), s, HR(), ' '.join(cmd))
+    return SPAN(HR(), s, HR())
 
 @auth.requires_login()
 def ajax_disks_col_values():
