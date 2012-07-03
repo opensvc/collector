@@ -1048,7 +1048,7 @@ def ajax_node_list():
     l = [OPTION(T("Choose one"))]
     for n in nodes:
         o = OPTION(
-                "%s - %s"%(n.project, n.nodename),
+                "%s - %s"%(str(n.project).upper(), str(n.nodename).lower()),
                 _value=n.nodename
             )
         l.append(o)
@@ -1083,7 +1083,7 @@ def ajax_service_list():
     l = [OPTION(T("Choose one"))]
     for s in services:
         o = OPTION(
-                "%s - %s"%(s.svc_app, s.svc_name),
+                "%s - %s"%(str(s.svc_app).upper(), str(s.svc_name).lower()),
                 _value=s.svc_name
             )
         l.append(o)
@@ -1273,10 +1273,10 @@ def path_list(paths, dg_id, obj):
               _name="ck_path",
               _id="-".join((path.node_hba.hba_id, path.stor_array_tgtid.array_tgtid)),
             ),
-            TD(path.stor_array_tgtid.array_tgtid),
-            TD(path.node_hba.hba_id),
-            TD(path.nodes.nodename),
-            TD(path.nodes.host_mode),
+            TD(path.stor_array_tgtid.array_tgtid.lower()),
+            TD(path.node_hba.hba_id.lower()),
+            TD(path.nodes.nodename.lower()),
+            TD(path.nodes.host_mode.upper()),
         )
         l.append(o)
 
@@ -1310,6 +1310,8 @@ def path_list(paths, dg_id, obj):
                _id="lusize",
                _onKeyUp="""
 if(is_enter(event)){
+  $("#lusize").attr('disabled', 'disabled')
+  $("#lusize").blur()
   $("#stage4").html('<hr>%(spinner)s<hr>')
   l = new Array()
   $("[name=ck_path]").each(function(){
@@ -1321,7 +1323,9 @@ if(is_enter(event)){
   $("#paths").val(s)
   sync_ajax('%(url)s', %(ids)s, '%(div)s', function(){
     dst=$("#%(div)s").find("[name=res]").attr('id')
-    ajax('%(waiturl)s/'+dst, [], dst)
+    sync_ajax('%(waiturl)s/'+dst, [], dst, function(){
+      $("#lusize").removeAttr('disabled')
+    })
   })
 }"""%dict(
                               spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')).xml(),
@@ -1343,22 +1347,26 @@ if(is_enter(event)){
              T("GB"),
            )
 
+class ProvError(Exception):
+    pass
+
 def sansymphony_v_dg_name(array_name, dg_name, mirror):
     import config
     array_name = array_name.lower()
+    dg_name = dg_name.lower()
     if mirror == "0":
         h = 'sansymphony_v_pool'
     else:
         h = 'sansymphony_v_mirrored_pool'
 
     if not hasattr(config, h):
-        raise Exception("'%s' is not set in collector configuration"%h)
+        raise ProvError("'%s' is not set in collector configuration"%h)
     _h = getattr(config, h)
     if array_name not in _h:
-        raise Exception("'%s' is not set in pool configuration '%s'"%(array_name, h))
+        raise ProvError("'%s' is not set in pool configuration '%s'"%(array_name, h))
     _h = _h[array_name]
     if dg_name not in _h:
-        raise Exception("'%s' is not set in '%s' pool configuration '%s'"%(dg_name, array_name, h))
+        raise ProvError("'%s' is not set in '%s' pool configuration '%s'"%(dg_name, array_name, h))
     return _h[dg_name]
 
 def sansymphony_v():
@@ -1424,9 +1432,12 @@ def ajax_disk_provision():
     }
 
     if info.stor_array.array_model == 'SANsymphony-V' and 'mirror' in request.vars:
-         d['dg_name'] = sansymphony_v_dg_name(info.stor_array.array_name,
-                                              d['dg_name'],
-                                              request.vars.mirror)
+        try:
+            d['dg_name'] = sansymphony_v_dg_name(info.stor_array.array_name,
+                                                 d['dg_name'],
+                                                 request.vars.mirror)
+        except ProvError, e:
+            return SPAN(HR(), str(e), HR())
 
     import json
     cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
@@ -1440,7 +1451,7 @@ def ajax_disk_provision():
 
     s = "create a %(size)s GB volume in disk group %(dg_name)s of %(array_model)s array %(array_name)s and present it to %(target)s through paths %(paths)s"%dict(
            target=target,
-           dg_name=info.stor_array_dg.dg_name,
+           dg_name=d['dg_name'],
            array_name=info.stor_array.array_name,
            array_model=info.stor_array.array_model,
            size=lusize,
@@ -1455,6 +1466,45 @@ def ajax_disk_provision():
     actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
     process = Popen(actiond)
     process.communicate()
+
+    # update tables in interim of the array refresh
+    import uuid
+    disk_id = str(uuid.uuid4()).replace('-','')
+    for dg in d['dg_name'].split(','):
+        dg = dg.split(':')[-1]
+        db.diskinfo.insert(
+          disk_id=disk_id,
+          disk_size=lusize*1024,
+          disk_group=dg,
+          disk_arrayid=info.stor_array.array_name,
+          disk_updated=datetime.datetime.now()
+        )
+
+    q = db.services.svc_name == target
+    svc = db(q).select().first()
+    if svc is not None:
+        svcname = svc.svc_name
+    else:
+        svcname = ""
+
+    ports = []
+    for path in paths.split(','):
+        port = path.split('-iqn')[0]
+        ports.append(port)
+    q = db.node_hba.hba_id.belongs(ports)
+    q &= db.nodes.nodename == db.node_hba.nodename
+    rows = db(q).select(groupby=db.node_hba.nodename)
+    for row in rows:
+        db.svcdisks.insert(
+          disk_id=disk_id,
+          disk_nodename=row.nodes.nodename,
+          disk_svcname=svcname,
+          disk_size=lusize*1024,
+          disk_used=lusize*1024,
+          disk_local='F',
+          disk_region='0',
+          disk_updated=datetime.datetime.now()
+        )
 
     #return SPAN(HR(), s, HR(), ' '.join(cmd))
     return DIV(
@@ -1473,6 +1523,7 @@ def ajax_disk_provision():
            )
 
 def ajax_disk_provision_wait():
+    refresh_b_disk_app()
     id = request.args[0]
     import time
     q = db.action_queue.id == id
@@ -1486,11 +1537,10 @@ def ajax_disk_provision_wait():
         break
     if action.ret == 0:
         img = 'check16.png'
-        label = ''
     else:
         img = 'nok.png'
-        label = ', '.join((action.stdout, action.stderr))
-    return IMG(_src=URL(r=request,c='static',f=img), _label=label)
+    title = ', '.join((str(action.stdout), str(action.stderr)))
+    return IMG(_src=URL(r=request,c='static',f=img), _title=title)
 
 @auth.requires_login()
 def ajax_disks_col_values():
