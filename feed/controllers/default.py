@@ -434,6 +434,9 @@ def disk_level(dev_id, level=0):
 #    feed_enqueue("_register_diskinfo", vars, vals, auth)
 
 def register_diskinfo(vars, vals, auth):
+    if len(vals) == 0:
+        return
+
     now = datetime.datetime.now()
     now -= datetime.timedelta(microseconds=now.microsecond)
     nodename = auth[1]
@@ -446,59 +449,40 @@ def register_diskinfo(vars, vals, auth):
     # disk id is already known in diskinfo
     arrays = set([])
     for val in vals:
-        disk_id = val[0]
+        cluster = val[1]
         dev_id = val[2]
         val.append(now)
         val.append(str(disk_level(dev_id)))
-        sql = """select disk_arrayid from diskinfo where disk_id="%s" """%disk_id
-        rows = db.executesql(sql)
-        if len(rows) == 1:
-            array = rows[0][0]
-            cluster = array.split(',')
-            if nodename not in cluster:
-                cluster.append(nodename)
-                cluster.sort()
-                array = ','.join(cluster)
-            val[1] = array
-            arrays.add(array)
-        else:
-            arrays.add(nodename)
         generic_insert('diskinfo', vars, val)
 
     # purge diskinfo
-    if len(arrays) > 0:
-        sql = """ update diskinfo
-                    set disk_arrayid=replace(replace(replace(disk_arrayid, "%(nodename)s,", ""), ",%(nodename)s", ""), "%(nodename)s", "")
-                  where
-                    disk_group = "virtual" and
-                    disk_arrayid in (%(l)s) and
-                    disk_updated < "%(now)s" """%dict(nodename=nodename, l=','.join(map(lambda x: repr(str(x)), arrays)), now=now)
-        db.executesql(sql)
-
-    sql = """ delete from diskinfo where disk_arrayid = "" """
+    sql = """ delete from diskinfo
+              where
+                disk_arrayid = "%(cluster)s" and
+                disk_updated < "%(now)s"
+          """ % dict(cluster=val[1], now=now)
     db.executesql(sql)
 
     # register cluster as array
-    for array in arrays:
-        node = db(db.nodes.nodename==nodename).select().first()
-        if node is not None:
-            array_cache = node.mem_bytes
-            array_firmware = " ".join((node.os_name, node.os_vendor, node.os_release, node.os_kernel))
-        else:
-            array_cache = 0
-            array_firwmare = "unknown"
+    node = db(db.nodes.nodename==nodename).select().first()
+    if node is not None:
+        array_cache = node.mem_bytes
+        array_firmware = " ".join((node.os_name, node.os_vendor, node.os_release, node.os_kernel))
+    else:
+        array_cache = 0
+        array_firwmare = "unknown"
 
-        vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
-        vals = [
-          array,
-          "vdisk provider",
-          str(array_cache),
-          array_firmware,
-          now
-        ]
-        generic_insert('stor_array', vars, vals)
-        sql = """ delete from stor_array where array_name = "%s" and array_updated < "%s" """%(array, now)
-        db.executesql(sql)
+    vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
+    vals = [
+      cluster,
+      "vdisk provider",
+      str(array_cache),
+      array_firmware,
+      now
+    ]
+    generic_insert('stor_array', vars, vals)
+    sql = """ delete from stor_array where array_name = "%s" and array_updated < "%s" """%(cluster, now)
+    db.executesql(sql)
     db.commit()
 
 @auth_uuid
