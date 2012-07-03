@@ -1203,6 +1203,8 @@ db.define_table('action_queue',
     Field('status', 'string'),
     Field('ret', 'integer'),
     Field('command', 'text'),
+    Field('stdout', 'text'),
+    Field('stderr', 'text'),
     Field('date_queued', 'timestamp'),
     Field('date_dequeued', 'timestamp'),
     migrate=False)

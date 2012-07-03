@@ -2777,4 +2777,6 @@ create view v_disk_app_dedup as
                    group by disk_id, disk_region, disk_arrayid, disk_group
 ;
 
+alter table action_queue add column stdout text;
 
+alter table action_queue add column stderr text;

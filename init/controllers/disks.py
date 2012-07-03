@@ -1271,7 +1271,7 @@ def path_list(paths, dg_id, obj):
             INPUT(
               _type="checkbox",
               _name="ck_path",
-              _id="-".join((path.stor_array_tgtid.array_tgtid, path.node_hba.hba_id)),
+              _id="-".join((path.node_hba.hba_id, path.stor_array_tgtid.array_tgtid)),
             ),
             TD(path.stor_array_tgtid.array_tgtid),
             TD(path.node_hba.hba_id),
@@ -1310,6 +1310,7 @@ def path_list(paths, dg_id, obj):
                _id="lusize",
                _onKeyUp="""
 if(is_enter(event)){
+  $("#stage4").html('<hr>%(spinner)s<hr>')
   l = new Array()
   $("[name=ck_path]").each(function(){
     if (this.checked) {
@@ -1318,8 +1319,12 @@ if(is_enter(event)){
   })
   s = l.join(",")
   $("#paths").val(s)
-  ajax('%(url)s', %(ids)s, '%(div)s')
+  sync_ajax('%(url)s', %(ids)s, '%(div)s', function(){
+    dst=$("#%(div)s").find("[name=res]").attr('id')
+    ajax('%(waiturl)s/'+dst, [], dst)
+  })
 }"""%dict(
+                              spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')).xml(),
                               obj=obj,
                               dg_id=dg_id,
                               ids=["lusize", "paths", "target"]+extra_id,
@@ -1327,6 +1332,10 @@ if(is_enter(event)){
                                    r=request, c='disks',
                                    f='ajax_disk_provision',
                                    args=[dg_id]
+                                  ),
+                              waiturl=URL(
+                                   r=request, c='disks',
+                                   f='ajax_disk_provision_wait',
                                   ),
                               div="stage4"
                              ),
@@ -1441,14 +1450,47 @@ def ajax_disk_provision():
          '%(s)s',
          dict(s=s))
     purge_action_queue()
-    db.action_queue.insert(command=' '.join(cmd))
+    action_id = db.action_queue.insert(command=' '.join(cmd))
     from subprocess import Popen
     actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
     process = Popen(actiond)
     process.communicate()
 
     #return SPAN(HR(), s, HR(), ' '.join(cmd))
-    return SPAN(HR(), s, HR())
+    return DIV(
+             HR(),
+             DIV(
+              IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+              _id=action_id,
+              _name="res",
+              _style="width:5%;display:table-cell",
+             ),
+             DIV(
+               s,
+              _style="width:95%;display:table-cell",
+             ),
+             HR()
+           )
+
+def ajax_disk_provision_wait():
+    id = request.args[0]
+    import time
+    q = db.action_queue.id == id
+    for i in range(300):
+        action = db(q).select().first()
+        if action is None:
+            return T("Action is not queued")
+        if action.status != 'T':
+            time.sleep(1)
+            continue
+        break
+    if action.ret == 0:
+        img = 'check16.png'
+        label = ''
+    else:
+        img = 'nok.png'
+        label = ', '.join((action.stdout, action.stderr))
+    return IMG(_src=URL(r=request,c='static',f=img), _label=label)
 
 @auth.requires_login()
 def ajax_disks_col_values():

@@ -71,6 +71,7 @@
 'Acknowledge with comment': 'Acquitter avec commentaire',
 'Action': 'Action',
 'Action errors': "Erreurs d'action",
+'Action is not queued': 'Action is not queued',
 'Actions': 'Actions',
 'Active columns': 'Colonnes actives',
 'Active filters': 'Filtres actifs',
