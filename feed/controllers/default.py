@@ -525,7 +525,7 @@ def _register_disk(vars, vals, auth):
 
     q = db.diskinfo.disk_id==disk_id
     n = db(q).count()
-    if disk_id.startswith(h["disk_nodename"].strip("'")+'.'):
+    if disk_id.startswith(h["disk_nodename"].strip("'")+'.') and n == 0:
         h['disk_local'] = 'T'
         vars = ['disk_id', 'disk_arrayid', 'disk_devid', 'disk_size']
         vals = [h["disk_id"],
