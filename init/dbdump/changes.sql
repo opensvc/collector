@@ -2720,16 +2720,19 @@ create view v_disk_quota as
     stor_array.array_model,
     apps.app,
     stor_array_dg_quota.quota,
-    sum(v_disks_app.disk_used) as quota_used
+    v_disks_app.disk_used as quota_used
   FROM
     stor_array
     JOIN stor_array_dg ON (stor_array_dg.array_id = stor_array.id)
-    LEFT JOIN stor_array_dg_quota ON (stor_array_dg.id = stor_array_dg_quota.dg_id)
     LEFT JOIN v_disks_app ON (
           v_disks_app.disk_arrayid=stor_array.array_name and
           v_disks_app.disk_group=stor_array_dg.dg_name
     )
     LEFT JOIN apps ON (apps.app = v_disks_app.app)
+    LEFT JOIN stor_array_dg_quota ON (
+      stor_array_dg.id = stor_array_dg_quota.dg_id and
+      apps.id = stor_array_dg_quota.app_id
+    )
   WHERE
     apps.id is not NULL
   GROUP BY apps.id, stor_array.id, stor_array_dg.id
@@ -2748,18 +2751,18 @@ create view v_disk_quota as
     stor_array_dg.dg_size - stor_array_dg.dg_reserved as dg_reservable,
     stor_array.array_model,
     "unknown",
-    if(sum(b_disk_app.disk_size) is NULL, 0, sum(b_disk_app.disk_size)) as quota,
-    if(sum(b_disk_app.disk_size) is NULL, 0, sum(b_disk_app.disk_size)) as quota_used
+    v_disks_app.disk_used as quota,
+    v_disks_app.disk_used as quota_used
   FROM
     stor_array
     JOIN stor_array_dg ON (stor_array_dg.array_id = stor_array.id)
     LEFT JOIN stor_array_dg_quota ON (stor_array_dg.id = stor_array_dg_quota.dg_id)
-    LEFT JOIN b_disk_app ON (
-          b_disk_app.disk_arrayid=stor_array.array_name and
-          b_disk_app.disk_group=stor_array_dg.dg_name
+    LEFT JOIN v_disks_app ON (
+          v_disks_app.disk_arrayid=stor_array.array_name and
+          v_disks_app.disk_group=stor_array_dg.dg_name
     )
   WHERE
-    b_disk_app.app is NULL
+    v_disks_app.app is NULL
   GROUP BY stor_array.id, stor_array_dg.id
 ;
 
@@ -2773,10 +2776,76 @@ create view v_disk_app_dedup as
                      disk_arrayid,
                      disk_group
                    from
-                     v_disk_app
+                     b_disk_app
                    group by disk_id, disk_region, disk_arrayid, disk_group
 ;
 
 alter table action_queue add column stdout text;
 
 alter table action_queue add column stderr text;
+
+CREATE TABLE `stats_fs_u2` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `date` datetime NOT NULL,
+  `nodename` varchar(60) NOT NULL,
+  `mntpt` varchar(200) NOT NULL,
+  `size` bigint(20) DEFAULT NULL,
+  `used` int(11) NOT NULL,
+  PRIMARY KEY (`id`, `date`),
+  UNIQUE KEY `index_1` (`date`,`nodename`,`mntpt`)
+) ENGINE=InnoDB AUTO_INCREMENT=179025 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPRESSED
+PARTITION BY RANGE (TO_DAYS(date))
+(
+ PARTITION pNULL VALUES LESS THAN (0),
+ PARTITION p201010 VALUES LESS THAN (TO_DAYS('2010-10-01')),
+ PARTITION p201011 VALUES LESS THAN (TO_DAYS('2010-11-01')),
+ PARTITION p201012 VALUES LESS THAN (TO_DAYS('2010-12-01')),
+ PARTITION p201101 VALUES LESS THAN (TO_DAYS('2011-01-01')),
+ PARTITION p201102 VALUES LESS THAN (TO_DAYS('2011-02-01')),
+ PARTITION p201103 VALUES LESS THAN (TO_DAYS('2011-03-01')),
+ PARTITION p201104 VALUES LESS THAN (TO_DAYS('2011-04-01')),
+ PARTITION p201105 VALUES LESS THAN (TO_DAYS('2011-05-01')),
+ PARTITION p201106 VALUES LESS THAN (TO_DAYS('2011-06-01')),
+ PARTITION p201107 VALUES LESS THAN (TO_DAYS('2011-07-01')),
+ PARTITION p201108 VALUES LESS THAN (TO_DAYS('2011-08-01')),
+ PARTITION p201109 VALUES LESS THAN (TO_DAYS('2011-09-01')),
+ PARTITION p201110 VALUES LESS THAN (TO_DAYS('2011-10-01')),
+ PARTITION p201111 VALUES LESS THAN (TO_DAYS('2011-11-01')),
+ PARTITION p201112 VALUES LESS THAN (TO_DAYS('2011-12-01')),
+ PARTITION p201201 VALUES LESS THAN (TO_DAYS('2012-01-01')),
+ PARTITION p201202 VALUES LESS THAN (TO_DAYS('2012-02-01')),
+ PARTITION p201203 VALUES LESS THAN (TO_DAYS('2012-03-01')),
+ PARTITION p201204 VALUES LESS THAN (TO_DAYS('2012-04-01')),
+ PARTITION p201205 VALUES LESS THAN (TO_DAYS('2012-05-01')),
+ PARTITION p201206 VALUES LESS THAN (TO_DAYS('2012-06-01')),
+ PARTITION p201207 VALUES LESS THAN (TO_DAYS('2012-07-01')),
+ PARTITION p201208 VALUES LESS THAN (TO_DAYS('2012-08-01')),
+ PARTITION p201209 VALUES LESS THAN (TO_DAYS('2012-09-01')),
+ PARTITION p201210 VALUES LESS THAN (TO_DAYS('2012-10-01')),
+ PARTITION p201211 VALUES LESS THAN (TO_DAYS('2012-11-01')),
+ PARTITION p201212 VALUES LESS THAN (TO_DAYS('2012-12-01')),
+ PARTITION pNew VALUES LESS THAN MAXVALUE
+);
+
+ALTER TABLE stats_fs_u REORGANIZE PARTITION pNew INTO (
+  PARTITION p201301 VALUES LESS THAN (TO_DAYS('2013-01-01')),
+  PARTITION p201302 VALUES LESS THAN (TO_DAYS('2013-02-01')),
+  PARTITION p201303 VALUES LESS THAN (TO_DAYS('2013-03-01')),
+  PARTITION p201304 VALUES LESS THAN (TO_DAYS('2013-04-01')),
+  PARTITION p201305 VALUES LESS THAN (TO_DAYS('2013-05-01')),
+  PARTITION p201306 VALUES LESS THAN (TO_DAYS('2013-06-01')),
+  PARTITION p201307 VALUES LESS THAN (TO_DAYS('2013-07-01')),
+  PARTITION p201308 VALUES LESS THAN (TO_DAYS('2013-08-01')),
+  PARTITION p201309 VALUES LESS THAN (TO_DAYS('2013-09-01')),
+  PARTITION p201310 VALUES LESS THAN (TO_DAYS('2013-10-01')),
+  PARTITION p201311 VALUES LESS THAN (TO_DAYS('2013-11-01')),
+  PARTITION p201312 VALUES LESS THAN (TO_DAYS('2013-12-01')),
+  PARTITION pNew VALUES LESS THAN (MAXVALUE)
+);
+
+insert into stats_fs_u2 (select * from stats_fs_u);
+
+alter table stats_fs_u rename to stats_fs_uold;
+
+alter table stats_fs_u2 rename to stats_fs_u;
+
