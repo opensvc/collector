@@ -1737,7 +1737,8 @@ def ajax_disk_charts():
                 total = data_total(_data_svc)
             else:
                 diff = total - data_total(_data_svc)
-                _data_svc += [["n/a " +' (%s)'%beautify_size_mb(diff), diff]]
+                if diff > 0:
+                    _data_svc += [["n/a " +' (%s)'%beautify_size_mb(diff), diff]]
             data_svc.append(_data_svc)
 
     def pie_data_app(q, level=0):
@@ -1810,7 +1811,8 @@ def ajax_disk_charts():
                 total = data_total(_data_app)
             else:
                 diff = total - data_total(_data_app)
-                _data_app += [["n/a " +' (%s)'%beautify_size_mb(diff), diff]]
+                if diff > 0:
+                    _data_app += [["n/a " +' (%s)'%beautify_size_mb(diff), diff]]
             data_app.append(_data_app)
 
     sql = """select count(distinct b_disk_app.disk_arrayid)
@@ -1935,7 +1937,8 @@ def ajax_disk_charts():
                 total = data_total(_data_array)
             else:
                 diff = total - data_total(_data_array)
-                _data_array += [["n/a " +' (%s)'%beautify_size_mb(diff), diff]]
+                if diff > 0:
+                    _data_array += [["n/a " +' (%s)'%beautify_size_mb(diff), diff]]
             data_array.append(_data_array)
 
 
