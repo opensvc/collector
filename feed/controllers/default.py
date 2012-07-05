@@ -551,19 +551,19 @@ def _register_disk(vars, vals, auth):
            len(disk.disk_arrayid) == 0:
             # diskinfo registered as a stub for a local disk
             h['disk_local'] = 'T'
+
+            if n == 1:
+                # update diskinfo timestamp
+                if disk.disk_arrayid is None:
+                    array_id = 'NULL'
+                else:
+                    array_id = disk.disk_arrayid
+                vars = ['disk_id', 'disk_arrayid', 'disk_updated']
+                vals = [h["disk_id"], array_id, h['disk_updated']]
+                generic_insert('diskinfo', vars, vals)
         else:
             # diskinfo registered by a array parser or an hv pushdisks
             h['disk_local'] = 'F'
-
-    if n == 1:
-        # update diskinfo timestamp
-        if disk.disk_arrayid is None:
-            array_id = 'NULL'
-        else:
-            array_id = disk.disk_arrayid
-        vars = ['disk_id', 'disk_arrayid', 'disk_updated']
-        vals = [h["disk_id"], array_id, h['disk_updated']]
-        generic_insert('diskinfo', vars, vals)
 
     if disk_id.startswith(disk_nodename+'.') and n == 0:
         h['disk_local'] = 'T'
