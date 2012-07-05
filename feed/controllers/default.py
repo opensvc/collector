@@ -498,6 +498,16 @@ def _register_disk(vars, vals, auth):
         h[a] = b
 
     disk_id = h["disk_id"].strip("'")
+    disk_svcname = h["disk_svcname"].strip("'")
+    disk_nodename = h["disk_nodename"].strip("'")
+
+    if len(disk_svcname) == 0:
+        # if no service name is provided and the node is actually
+        # a service encpasulated vm, add the encapsulating svcname
+        q = db.svcmon.mon_vmname == disk_nodename
+        row = db(q).select().first()
+        if row is not None:
+            h["disk_svcname"] = repr(row.mon_svcname)
 
     # don't register blacklisted disks (might be VM disks, already accounted)
     #n = db(db.disk_blacklist.disk_id==disk_id).count()

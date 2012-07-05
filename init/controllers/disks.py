@@ -1960,7 +1960,7 @@ function diskdonut(o) {
     for (j=0;j<data[i].length;j++) {total += data[i][j][1]}
     total = fancy_size_mb(total)
     title = total
-    break
+    if (total>0) {break}
   }
   o.html("")
   $.jqplot(o.attr('id'), data,
