@@ -408,12 +408,31 @@ def svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
 @auth_uuid
 @service.xmlrpc
 def register_disks(vars, vals, auth):
-    nodename = auth[1].strip("'")
-    db(db.svcdisks.disk_nodename==nodename).delete()
-    db(db.diskinfo.disk_arrayid==nodename).delete()
-    db.commit()
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+
     for v in vals:
         _register_disk(vars, v, auth)
+
+    nodename = auth[1].strip("'")
+
+    # purge svcdisks
+    sql = """ delete from svcdisks
+              where
+                disk_nodename = "%(nodename)s" and
+                disk_updated < "%(now)s"
+          """ % dict(nodename=nodename, now=now)
+    db.executesql(sql)
+
+    # purge diskinfo
+    sql = """ delete from diskinfo
+              where
+                disk_arrayid = "%(nodename)s" and
+                disk_updated < "%(now)s"
+          """ % dict(nodename=nodename, now=now)
+    db.executesql(sql)
+
+    db.commit()
 
 @auth_uuid
 @service.xmlrpc
@@ -518,8 +537,25 @@ def _register_disk(vars, vals, auth):
     h['disk_updated'] = now
 
     q = db.diskinfo.disk_id==disk_id
-    n = db(q).count()
-    if disk_id.startswith(h["disk_nodename"].strip("'")+'.') and n == 0:
+    disks = db(q).select()
+    n = len(disks)
+
+    if n > 0:
+        # diskinfo exists. is it a local or remote disk
+        disk = disks.first()
+        if disk.disk_arrayid == disk_nodename or \
+           disk.disk_arrayid is None or \
+           len(disk.disk_arrayid) == 0:
+            # diskinfo registered as a stub for a local disk
+            h['disk_local'] = 'T'
+        else:
+            # diskinfo registered by a array parser or an hv pushdisks
+            h['disk_local'] = 'F'
+        vars = ['disk_id', 'disk_updated']
+        vals = [h["disk_id"], h['disk_updated']]
+        generic_insert('diskinfo', vars, vals)
+
+    if disk_id.startswith(disk_nodename+'.') and n == 0:
         h['disk_local'] = 'T'
         vars = ['disk_id', 'disk_arrayid', 'disk_devid', 'disk_size']
         vals = [h["disk_id"],
