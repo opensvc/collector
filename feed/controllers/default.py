@@ -424,10 +424,13 @@ def register_disks(vars, vals, auth):
           """ % dict(nodename=nodename, now=now)
     db.executesql(sql)
 
-    # purge diskinfo
+    # purge diskinfo stubs
     sql = """ delete from diskinfo
               where
-                disk_arrayid = "%(nodename)s" and
+                (disk_arrayid = "%(nodename)s" or
+                 disk_arrayid = "" or
+                 disk_arrayid = "None" or
+                 disk_arrayid is NULL) and
                 disk_updated < "%(now)s"
           """ % dict(nodename=nodename, now=now)
     db.executesql(sql)
@@ -551,8 +554,15 @@ def _register_disk(vars, vals, auth):
         else:
             # diskinfo registered by a array parser or an hv pushdisks
             h['disk_local'] = 'F'
-        vars = ['disk_id', 'disk_updated']
-        vals = [h["disk_id"], h['disk_updated']]
+
+    if n == 1:
+        # update diskinfo timestamp
+        if disk.disk_arrayid is None:
+            array_id = 'NULL'
+        else:
+            array_id = disk.disk_arrayid
+        vars = ['disk_id', 'disk_arrayid', 'disk_updated']
+        vals = [h["disk_id"], array_id, h['disk_updated']]
         generic_insert('diskinfo', vars, vals)
 
     if disk_id.startswith(disk_nodename+'.') and n == 0:
