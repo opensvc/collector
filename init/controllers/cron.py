@@ -786,6 +786,11 @@ def purge_svcdisks():
     db.executesql(sql)
     db.commit()
 
+def purge_diskinfo():
+    sql = """delete from diskinfo where disk_updated < DATE_SUB(NOW(), INTERVAL 2 day)"""
+    db.executesql(sql)
+    db.commit()
+
 def update_dg_quota():
     sql = """insert ignore into stor_array_dg_quota
              select NULL, dg.id, ap.id, NULL
@@ -805,6 +810,7 @@ def cron_alerts_daily():
     refresh_b_action_errors()
     refresh_dash_action_errors()
     purge_svcdisks()
+    purge_diskinfo()
     update_dg_quota()
 
 def cron_alerts_hourly():
