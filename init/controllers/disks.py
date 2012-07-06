@@ -1035,11 +1035,12 @@ def ajax_provision():
 def ajax_node_list():
     o = db.nodes.project | db.nodes.nodename
     q = db.node_hba.nodename == db.nodes.nodename
-    q &= db.apps_responsibles.app_id == db.apps.id
-    q &= db.apps_responsibles.group_id == db.auth_membership.group_id
-    q &= db.auth_membership.user_id == auth.user_id
-    q &= db.auth_membership.group_id == db.auth_group.id
-    q &= db.nodes.team_responsible == db.auth_group.role
+    if 'StorageManager' not in user_groups():
+        q &= db.apps_responsibles.app_id == db.apps.id
+        q &= db.apps_responsibles.group_id == db.auth_membership.group_id
+        q &= db.auth_membership.user_id == auth.user_id
+        q &= db.auth_membership.group_id == db.auth_group.id
+        q &= db.nodes.team_responsible == db.auth_group.role
     nodes = db(q).select(db.nodes.nodename,
                          db.nodes.project,
                          groupby=o,
@@ -1072,9 +1073,12 @@ def ajax_node_list():
 def ajax_service_list():
     o = db.services.svc_app | db.services.svc_name
     q = db.services.svc_app == db.apps.app
-    q &= db.apps_responsibles.app_id == db.apps.id
-    q &= db.apps_responsibles.group_id == db.auth_membership.group_id
-    q &= db.auth_membership.user_id == auth.user_id
+    q &= db.services.svc_name == db.svcmon.mon_svcname
+    q &= db.svcmon.mon_nodname == db.node_hba.nodename
+    if 'StorageManager' not in user_groups():
+        q &= db.apps_responsibles.app_id == db.apps.id
+        q &= db.apps_responsibles.group_id == db.auth_membership.group_id
+        q &= db.auth_membership.user_id == auth.user_id
     services = db(q).select(db.services.svc_name,
                             db.services.svc_app,
                             groupby=o,
