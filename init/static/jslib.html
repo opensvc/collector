@@ -711,6 +711,16 @@ function stats_disk_for_svc(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         if (data[0].length == 0) { return }
+
+        max = 0
+        for (i=0; i<data[1][0].length; i++) {
+            max = Math.max(max, data[1][0][i][0])
+        }
+        d = best_unit_mb(max)
+        for (i=0; i<data[1][0].length; i++) {
+            data[1][0][i][0] /= d['div']
+        }
+
         plot_height(id, data[0])
         $('#'+id).width('450px')
 	$.jqplot(id, [data[1][0]], {
@@ -739,12 +749,12 @@ function stats_disk_for_svc(url, id) {
                 shadowAngle: 135
             },
 	    series: [
-                {label: 'SAN disk size (MB)'}
+                {label: 'SAN disk size'}
             ],
 	    axes: {
 		xaxis: {
 		    min: 0, 
-		    tickOptions:{formatString:'%i'}
+                    tickOptions:{formatString: d['fmt']+' '+d['unit']}
 		},
 		yaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
@@ -944,6 +954,16 @@ function stat_day(url, id) {
 
         $('#'+id+'_nb_vmem').height('300px')
         $('#'+id+'_nb_vmem').width('300px')
+
+        max = 0
+        for (i=0; i<data[21].length; i++) {
+            max = Math.max(max, data[21][i][1])
+        }
+        d = best_unit_mb(max)
+        for (i=0; i<data[21].length; i++) {
+            data[21][i][1] /= d['div']
+        }
+
 	$.jqplot(id+'_nb_vmem', [data[21]], {
             cursor:{zoom:true, showTooltip:false},
 	    grid: {
@@ -957,7 +977,7 @@ function stat_day(url, id) {
             },
 	    series: [
                 {
-                    label: 'vmem (MB)',
+                    label: 'vmem',
                     breakOnNull: true
                 }
             ],
@@ -969,7 +989,7 @@ function stat_day(url, id) {
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'}
+                    tickOptions:{formatString: d['fmt']+' '+d['unit']}
 		}
 	    }
 	});
@@ -977,6 +997,17 @@ function stat_day(url, id) {
 
         $('#'+id+'_disk').height('300px')
         $('#'+id+'_disk').width('300px')
+
+        max = 0
+        for (i=0; i<data[5].length; i++) {
+            max = Math.max(max, data[5][i][1]+data[31][i][1])
+        }
+        d = best_unit_mb(max)
+        for (i=0; i<data[5].length; i++) {
+            data[5][i][1] /= d['div']
+            data[31][i][1] /= d['div']
+        }
+
 	$.jqplot(id+'_disk', [data[5], data[31]], {
             cursor:{zoom:true, showTooltip:false},
 	    stackSeries: true,
@@ -997,11 +1028,11 @@ function stat_day(url, id) {
             },
 	    series: [
                 {
-                    label: 'SAN disk size (GB)',
+                    label: 'SAN disk size',
                     breakOnNull: true
                 },
                 {
-                    label: 'DAS disk size (GB)',
+                    label: 'DAS disk size',
                     breakOnNull: true
                 }
             ],
@@ -1012,7 +1043,8 @@ function stat_day(url, id) {
                     tickOptions:{formatString:'<center>%Y<br>%b,%d<center>'}
 		}, 
 		yaxis: {
-		    min: 0
+		    min: 0,
+                    tickOptions:{formatString: d['fmt']+' '+d['unit']}
 		}
 	    }
 	});
@@ -1020,6 +1052,17 @@ function stat_day(url, id) {
 
         $('#'+id+'_nodes_ram').height('300px')
         $('#'+id+'_nodes_ram').width('300px')
+
+        max = 0
+        for (i=0; i<data[6].length; i++) {
+            max = Math.max(max, data[6][i][1])
+        }
+        d = best_unit_mb(max*1024)
+        for (i=0; i<data[6].length; i++) {
+            data[6][i][1] *= 1024
+            data[6][i][1] /= d['div']
+        }
+
 	$.jqplot(id+'_nodes_ram', [data[6]], {
             cursor:{zoom:true, showTooltip:false},
 	    grid: {
@@ -1033,7 +1076,7 @@ function stat_day(url, id) {
             },
 	    series: [
                 {
-                    label: 'ram size (GB)',
+                    label: 'ram size',
                     breakOnNull: true
                 }
             ],
@@ -1045,7 +1088,7 @@ function stat_day(url, id) {
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'}
+                    tickOptions:{formatString: d['fmt']+' '+d['unit']}
 		}
 	    }
 	});
