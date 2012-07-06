@@ -151,17 +151,11 @@ def cron_stat_day_disk_app():
              select
                NULL,
                NOW(),
-               t.app,
-               sum(t.disk_used) as disk_used,
-               (
-                 select sum(quota)
-                 from stor_array_dg_quota
-                 join apps on apps.id=stor_array_dg_quota.app_id
-                 where apps.app=t.app
-               ) as quota
-             from v_disks_app t
-             where t.app != ""
-             group by t.app;
+               app,
+               sum(quota_used) as quota_used,
+               sum(quota) as quota
+             from v_disk_quota
+             group by app;
           """
     rows = db.executesql(sql)
     print "cron_stat_day_disk_app", str(rows)
@@ -791,6 +785,11 @@ def purge_diskinfo():
     db.executesql(sql)
     db.commit()
 
+def purge_stor_array():
+    sql = """delete from stor_array where array_updated < DATE_SUB(NOW(), INTERVAL 2 day)"""
+    db.executesql(sql)
+    db.commit()
+
 def update_dg_quota():
     sql = """insert ignore into stor_array_dg_quota
              select NULL, dg.id, ap.id, NULL
@@ -811,6 +810,7 @@ def cron_alerts_daily():
     refresh_dash_action_errors()
     purge_svcdisks()
     purge_diskinfo()
+    purge_stor_array()
     update_dg_quota()
 
 def cron_alerts_hourly():

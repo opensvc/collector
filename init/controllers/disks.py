@@ -14,6 +14,7 @@ array_img_h = {
   'HSV210': 'hpux',
   'HSV340': 'hpux',
   'HSV400': 'hpux',
+  'SANsymphony-V': 'datacore',
 }
 
 def refresh_b_disk_app():
@@ -2058,7 +2059,8 @@ def ajax_array_dg():
                   id=id,
                   url=URL(r=request,
                           f='call/json/json_disk_array_dg',
-                          args=[array_name, dg_name]
+                          vars={'array_name': array_name,
+                                'dg_name': dg_name},
                       )
                 ),
             _name='%s_to_eval'%row_id,
@@ -2082,7 +2084,7 @@ def ajax_array():
                   id=id,
                   url=URL(r=request,
                           f='call/json/json_disk_array',
-                          args=[array_name]
+                          vars={'array_name': array_name},
                       )
                 ),
             _name='%s_to_eval'%row_id,
@@ -2133,7 +2135,9 @@ def ajax_app():
     return d
 
 @service.json
-def json_disk_array_dg(array_name, dg_name):
+def json_disk_array_dg():
+    array_name = request.vars.array_name
+    dg_name = request.vars.dg_name
     q = db.stat_day_disk_array_dg.array_name == array_name
     q &= db.stat_day_disk_array_dg.array_dg == dg_name
     q &= db.stat_day_disk_array_dg.disk_size != None
@@ -2153,7 +2157,8 @@ def json_disk_array_dg(array_name, dg_name):
     return [disk_used, disk_free, disk_reserved, disk_reservable]
 
 @service.json
-def json_disk_array(array_name):
+def json_disk_array():
+    array_name = request.vars.array_name
     q = db.stat_day_disk_array.array_name == array_name
     q &= db.stat_day_disk_array.disk_size != None
     q &= db.stat_day_disk_array.disk_size != 0
