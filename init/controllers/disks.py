@@ -234,14 +234,19 @@ class col_quota_used(HtmlTableColumn):
         if o.app is None:
             return ""
         s = self.get(o)
+        ss = s
         c = "nowrap"
         if s is None:
-            s = "-"
+            ss = "-"
         elif s > o.quota:
             c += " highlight"
-        if s != "-":
-            s = beautify_size_mb(int(s))
-        return SPAN(s, _class=c)
+        if ss != "-":
+            ss = beautify_size_mb(int(s))
+        return SPAN(
+                 ss,
+                 _class=c,
+                 _title="%d MB"%s,
+               )
 
 class col_quota(HtmlTableColumn):
     def html(self, o):
@@ -261,12 +266,14 @@ class col_quota(HtmlTableColumn):
         tid = 'd_t_%s'%o.id
         iid = 'd_i_%s'%o.id
         sid = 'd_s_%s'%o.id
-        d = SPAN(
+        if 'StorageManager' in user_groups():
+            d = SPAN(
               DIV(
                 s,
                 _id=tid,
                 _onclick="""hide_eid('%(tid)s');show_eid('%(sid)s');getElementById('%(iid)s').focus()"""%dict(tid=tid, sid=sid, iid=iid),
                 _class="clickable",
+                _title="%d MB"%ss,
               ),
               SPAN(
                 INPUT(
@@ -280,6 +287,8 @@ class col_quota(HtmlTableColumn):
                 _style="display:none",
               ),
             )
+        else:
+            d = SPAN(s)
         return d
 
 class table_quota(HtmlTable):
