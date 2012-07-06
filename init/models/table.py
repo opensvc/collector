@@ -1447,12 +1447,13 @@ function js_link_%(id)s(){
   if (url.indexOf('?')>0) {
     url=url.substring(0, url.indexOf('?'))
   }
-  url=url+"?clear_filters=true"
+  url=url+"?"
+  args="clear_filters=true"
   $("#%(id)s").find("[name=fi]").each(function(){
     if ($(this).val().length==0) {return}
-    url=url+'&'+$(this).attr('id')+"="+$(this).val()
+    args=args+'&'+$(this).attr('id')+"="+$(this).val()
   })
-  alert(url)
+  alert(url+encodeURIComponent(args))
 }
 var inputs_%(id)s = %(a)s;"""%dict(
                    id=self.id,
