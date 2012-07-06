@@ -2802,6 +2802,18 @@ function toggle_plot(url, rowid, id) {
 }
 function stats_disk_array(url, id) {
     $.getJSON(url, function(data) {
+        max = 0
+        for (i=0; i<data.length; i++) {
+            for (j=0; j<data[i].length; j++) {
+                max = Math.max(max, data[i][j][1])
+            }
+        }
+        d = best_unit_mb(max)
+        for (i=0; i<data.length; i++) {
+            for (j=0; j<data[i].length; j++) {
+                data[i][j][1] /= d['div']
+            }
+        }
         $.jqplot(id, data, {
             cursor:{zoom:true, showTooltip:false},
             stackSeries: true,
@@ -2823,10 +2835,10 @@ function stats_disk_array(url, id) {
                 shadowWidth: 2
             },
             series: [
-                {label: 'used (MB)'},
-                {label: 'free (MB)'},
-                {label: 'reserved (MB)', fill: false, disableStack: true},
-                {label: 'reservable (MB)', fill: false, disableStack: true}
+                {label: 'used'},
+                {label: 'free'},
+                {label: 'reserved', fill: false, disableStack: true},
+                {label: 'reservable', fill: false, disableStack: true}
             ],
             axes: {
                 xaxis: {
@@ -2836,7 +2848,7 @@ function stats_disk_array(url, id) {
                 },
                 yaxis: {
                     min: 0,
-                    tickOptions:{formatString:'%i'}
+                    tickOptions:{formatString: d['fmt']+' '+d['unit']}
                 }
             }
 
