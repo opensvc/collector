@@ -237,15 +237,16 @@ class col_quota_used(HtmlTableColumn):
         ss = s
         c = "nowrap"
         if s is None:
-            ss = "-"
+            s = "-"
+            ss = ""
         elif s > o.quota:
             c += " highlight"
-        if ss != "-":
-            ss = beautify_size_mb(int(s))
+        if s != "-":
+            s = beautify_size_mb(int(s))
         return SPAN(
-                 ss,
+                 s,
                  _class=c,
-                 _title="%d MB"%s,
+                 _title="%s MB"%str(ss),
                )
 
 class col_quota(HtmlTableColumn):
@@ -273,12 +274,13 @@ class col_quota(HtmlTableColumn):
                 _id=tid,
                 _onclick="""hide_eid('%(tid)s');show_eid('%(sid)s');getElementById('%(iid)s').focus()"""%dict(tid=tid, sid=sid, iid=iid),
                 _class="clickable",
-                _title="%d MB"%ss,
+                _title="%s MB"%str(ss),
               ),
               SPAN(
                 INPUT(
                   value=ss,
                   _id=iid,
+                  _onblur="""hide_eid('%(sid)s');show_eid('%(tid)s')"""%dict(tid=tid, sid=sid),
                   _onkeypress="if (is_enter(event)) {%s};"%\
                      self.t.ajax_submit(additional_inputs=[iid],
                                         args="quota_set"),
