@@ -8,20 +8,78 @@ def call():
     session.forget()
     return service()
 
+def get_current_top_ten(fset_id, os_name):
+    sql = """select lc_os_concat from lifecycle_os
+             where
+               fset_id=%(fset_id)d and
+               lc_os_name="%(os_name)s"
+             group by lc_os_concat
+             order by 
+               sum(lc_count/(to_days(now())-to_days(lc_date)))
+             desc
+             limit 10
+          """%dict(
+               fset_id=fset_id,
+               os_name=os_name,
+             )
+    rows = db.executesql(sql)
+    return [r[0] for r in rows]
+
 @service.json
 def json_stat_os_release():
     os_name = request.vars.os_name
     if os_name is None or os_name == "":
         return [[], []]
 
-    today = datetime.datetime.today().toordinal()
-    o = db.lifecycle_os.lc_date
     fset_id = user_fset_id()
     if fset_id is None:
         fset_id = 0
-    q = db.lifecycle_os.lc_os_name==os_name
-    q &= db.lifecycle_os.fset_id==fset_id
-    rows = db(q).select(orderby=o)
+
+    top = get_current_top_ten(fset_id, os_name)
+    if len(top) > 0:
+       _top = "lc_os_concat in (%s)"%','.join(map(lambda x: '"'+str(x)+'"', top))
+       other = "lc_os_concat not in (%s)"%','.join(map(lambda x: '"'+str(x)+'"', top))
+    else:
+       _top = "1=1"
+       other = "0=0"
+
+    e = now
+    b = now - datetime.timedelta(days=1000)
+    sql = """select * from (
+             select 
+               lc_os_concat,
+               lc_date,
+               lc_count,
+               %(d)s as d
+             from lifecycle_os
+             where
+               fset_id=%(fset_id)d and
+               lc_os_name="%(os_name)s" and
+               %(top)s
+             group by d, lc_os_concat
+             union all
+             select 
+               "other",
+               lc_date,
+               sum(lc_count) as lc_count,
+               %(d)s as d
+             from lifecycle_os
+             where
+               fset_id=%(fset_id)d and
+               lc_os_name="%(os_name)s" and
+               %(other)s
+             group by d
+             ) t
+             order by t.d
+          """%dict(
+               d=period_concat(b, e, field='lc_date'),
+               fset_id=fset_id,
+               os_name=os_name,
+               top=_top,
+               other=other,
+             )
+
+    rows = db.executesql(sql, as_dict=True)
 
     if len(rows) == 0:
         return [[], []]
@@ -30,12 +88,12 @@ def json_stat_os_release():
     os = set()
     data = []
     for r in rows:
-        o = r.lc_os_concat
+        o = r['lc_os_concat']
         os |= set([o])
-        day = r.lc_date.toordinal()
+        day = r['lc_date'].toordinal()
         if day not in h:
             h[day] = {}
-        h[day][o] = r.lc_count
+        h[day][o] = int(r['lc_count'])
     os = list(os)
     for o in os:
         e = []
@@ -50,12 +108,22 @@ def json_stat_os_release():
 
 @service.json
 def json_stat_os_name():
-    o = db.v_lifecycle_os_name.lc_date
     fset_id = user_fset_id()
     if fset_id is None:
         fset_id = 0
-    q = db.v_lifecycle_os_name.fset_id == fset_id
-    rows = db(q).select(orderby=o)
+
+    e = now
+    b = now - datetime.timedelta(days=1000)
+    sql = """select *, %(d)s as d
+             from v_lifecycle_os_name
+             where
+               fset_id=%(fset_id)d
+             group by d, lc_os_name
+             order by d"""%dict(
+               d=period_concat(b, e, field='lc_date'),
+               fset_id=fset_id,
+             )
+    rows = db.executesql(sql, as_dict=True)
 
     if len(rows) == 0:
         return []
@@ -64,12 +132,12 @@ def json_stat_os_name():
     os = set()
     data = []
     for r in rows:
-        o = r.lc_os_name
+        o = r['lc_os_name']
         os |= set([o])
-        day = r.lc_date.toordinal()
+        day = r['lc_date'].toordinal()
         if day not in h:
             h[day] = {}
-        h[day][o] = int(r.lc_count)
+        h[day][o] = int(r['lc_count'])
     os = list(os)
     for o in os:
         e = []
