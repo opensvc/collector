@@ -3473,6 +3473,7 @@ def feed_dequeue():
     """
     import time
     import cPickle
+    import multiprocessing
 
     class QueueStats(object):
         def __init__(self):
@@ -3533,8 +3534,62 @@ def feed_dequeue():
     n1 = 0
     n2 = 0
     stats = QueueStats()
+    workers = {}
+    queues = {}
+
+    import sys
+    import logging
+    log = logging.getLogger('sched')
+    #logfile = "/tmp/feed_dequeue.log"
+    #logfilehandler = logging.FileHandler(logfile)
+    #logfilehandler.setFormatter(logformatter)
+    #log.addHandler(logfilehandler)
+    log.setLevel(logging.INFO)
+    log.info("logger initialized")
+
+    def dequeue_process(name, queue):
+        log = logging.getLogger(name)
+        log.info("init")
+        try:
+            _dequeue_process(name, queue)
+        except KeyboardInterrupt:
+             log.error("exit on KeyboardInterrupt")
+
+    def _dequeue_process(name, queue):
+        log = logging.getLogger('sched.'+name)
+
+        from gluon.shell import exec_environment
+        m = exec_environment('applications/feed/models/db.py')
+        global db
+        db = m.db
+        log.info("db loaded")
+        while True:
+            sys.stdout.flush()
+            data = queue.get()
+            if data is None or type(data) != tuple or len(data) != 3:
+                log.info("got poison pill")
+                break
+            id, fn, args = data
+            log.info('process %s %s'%(id, fn))
+            if not fn in globals():
+                log.error("%s not found in globals"%fn)
+                continue
+            try:
+                args = cPickle.loads(args)
+                globals()[fn](*args)
+                db(db.feed_queue.id==id).delete()
+                db.commit()
+            except:
+                log.error("%s(%s)"%(fn, str(args)))
+                import traceback
+                traceback.print_exc()
+
+    do_break = False
+    e = None
 
     while True:
+        if do_break:
+            break
         n0 += 1
         n1 += 1
         n2 += 1
@@ -3552,39 +3607,42 @@ def feed_dequeue():
             dash_crons2()
 
         try:
-            entries = db(db.feed_queue.id>0).select(limitby=(0,20))
-            print "got", len(entries), "to dequeue"
+            if e is not None:
+                # don't fetch already scheduled entries
+                entries = db(db.feed_queue.id>e.id).select(limitby=(0,20))
+            else:
+                # cold start
+                entries = db(db.feed_queue.id>0).select(limitby=(0,20))
+            log.debug("got %d entries to dequeue"% len(entries))
         except:
             # lost mysql ?
             import traceback
             traceback.print_exc()
-            print "lost mysql ? sleep 10 sec"
-            time.sleep(10)
+            log.error("lost mysql ? sleep 10 sec")
+            try: time.sleep(10)
+            except KeyboardInterrupt: break
             continue
 
         if len(entries) == 0:
-            time.sleep(1)
+            try: time.sleep(1)
+            except KeyboardInterrupt: break
             continue
-        elif n1 % 5 == 0:
+        #elif n1 % 5 == 0:
             # every 100 xmlrpc calls save stats
-            stats.dbdump()
+        #    stats.dbdump()
 
         for e in entries:
-            print "dequeue", e.q_fn
             try:
-                if not e.q_fn in globals():
-                    continue
-                args = cPickle.loads(e.q_args)
-                stats.begin(e.q_fn)
-                globals()[e.q_fn](*args)
-                stats.end()
-                db(db.feed_queue.id==e.id).delete()
-                db.commit()
-            except:
-                print "Error: %s(%s)"%(e.q_fn, str(args))
-                import traceback
-                traceback.print_exc()
-                db(db.feed_queue.id==e.id).delete()
-                db.commit()
-                #time.sleep(2)
-
+                log.info("dequeue %s" % e.q_fn)
+                if e.q_fn not in workers:
+                    log.info("start %s worker" % e.q_fn)
+                    queues[e.q_fn] = multiprocessing.Queue()
+                    workers[e.q_fn] = multiprocessing.Process(target=dequeue_process, args=(e.q_fn, queues[e.q_fn]))
+                    workers[e.q_fn].start()
+                queues[e.q_fn].put((e.id, e.q_fn, e.q_args), block=True)
+            except KeyboardInterrupt:
+                for fn in workers:
+                    queues[fn].put(None)
+                    workers[fn].join()
+                do_break = True
+                break
