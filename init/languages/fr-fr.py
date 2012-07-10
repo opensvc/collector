@@ -169,6 +169,7 @@
 'Avg rx err/s': 'Avg rx err/s',
 'Avg tx drop/s': 'Avg tx drop/s',
 'Avg tx err/s': 'Avg tx err/s',
+'Batchs': 'Batchs',
 'Begin': 'Début',
 'Begin date': 'Date de début',
 'Billing': 'Facturation',

@@ -113,6 +113,8 @@ response.menu = [
               URL(request.application,'apps','apps')],
              [DIV(T('Drplan'), _class='drp16'), False,
               URL(request.application,'drplan','drplan')],
+             [DIV(T('Batchs'), _class='action16'), False,
+              URL(request.application,'batchs','batchs')],
              [DIV(T('Billing'), _class='bill16'), False,
               URL(request.application,'billing','billing')],
              [DIV(T('Provisioning'), _class='prov'), False,
