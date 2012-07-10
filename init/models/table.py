@@ -1451,9 +1451,9 @@ function js_link_%(id)s(){
   args="clear_filters=true"
   $("#%(id)s").find("[name=fi]").each(function(){
     if ($(this).val().length==0) {return}
-    args=args+'&'+$(this).attr('id')+"="+$(this).val()
+    args=args+'&'+$(this).attr('id')+"="+encodeURIComponent($(this).val())
   })
-  alert(url+encodeURIComponent(args))
+  alert(url+args)
 }
 var inputs_%(id)s = %(a)s;"""%dict(
                    id=self.id,
