@@ -1882,6 +1882,20 @@ function stats_svc(url, id, title) {
 function stats_mem(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
+
+        max = 0
+        for (i=0; i<data[1].length; i++) {
+            max = Math.max(max, (data[1][i][1]+data[3][i][1]+data[4][i][1]+data[7][i][1]+data[0][i][1])/1024)
+        }
+        d = best_unit_mb(max)
+        for (i=0; i<data[1].length; i++) {
+            data[1][i][1] /= d['div']*1024
+            data[3][i][1] /= d['div']*1024
+            data[4][i][1] /= d['div']*1024
+            data[7][i][1] /= d['div']*1024
+            data[0][i][1] /= d['div']*1024
+        }
+
 	$.jqplot(id+'_u', [data[1], data[3], data[4], data[7], data[0]], {
             cursor:{zoom:true, showTooltip:true},
 	    stackSeries: true,
@@ -1922,7 +1936,7 @@ function stats_mem(url, id) {
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'}
+                    tickOptions:{formatString: d['fmt']+' '+d['unit']}
 		}
 	    }
 	});
@@ -1953,8 +1967,8 @@ function stats_mem(url, id) {
                 shadowWidth: 2
             },
 	    series: [
-                { label: 'used/mem %' },
-                { label: 'promised/(mem+swap) %' }
+                { label: 'used/mem' },
+                { label: 'promised/(mem+swap)' }
             ],
 	    axes: {
 		xaxis: {
@@ -1964,7 +1978,7 @@ function stats_mem(url, id) {
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%.2f'}
+		    tickOptions:{formatString:'%.2f%%'}
 		}
 	    }
 	});
@@ -1975,6 +1989,18 @@ function stats_mem(url, id) {
 function stats_swap(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
+
+        max = 0
+        for (i=0; i<data[1].length; i++) {
+            max = Math.max(max, (data[1][i][1]+data[3][i][1]+data[0][i][1])/1024)
+        }
+        d = best_unit_mb(max)
+        for (i=0; i<data[1].length; i++) {
+            data[1][i][1] /= d['div']*1024
+            data[3][i][1] /= d['div']*1024
+            data[0][i][1] /= d['div']*1024
+        }
+
 	$.jqplot(id+'_u', [data[1], data[3], data[0]], {
             cursor:{zoom:true, showTooltip:true},
 	    stackSeries: true,
@@ -2013,7 +2039,7 @@ function stats_swap(url, id) {
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%i'}
+                    tickOptions:{formatString: d['fmt']+' '+d['unit']}
 		}
 	    }
 	});
@@ -2044,7 +2070,7 @@ function stats_swap(url, id) {
                 shadowWidth: 2
             },
 	    series: [
-                { label: 'used/total %' },
+                { label: 'used/total' },
                 { label: 'cached/used' }
             ],
 	    axes: {
@@ -2055,7 +2081,7 @@ function stats_swap(url, id) {
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%.2f'}
+		    tickOptions:{formatString:'%.2f%%'}
 		}
 	    }
 	});
