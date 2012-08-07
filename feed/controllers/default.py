@@ -3041,6 +3041,8 @@ def update_dash_flex_instances_started(svcname):
 
     if len(rows) == 1 and rows[0][0] == 'PRD':
         sev = 2
+    elif len(rows) == 0:
+        return
     else:
         sev = 1
 
