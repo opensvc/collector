@@ -254,9 +254,9 @@ def _update_service(vars, vals, auth):
         vals = [h['svc_name'],
                 auth[1],
                 h['svc_vmname'],
-                h['svc_guestos'],
-                h['svc_vcpus'],
-                h['svc_vmem'],
+                h['svc_guestos'] if 'svc_guestos' in h else '',
+                h['svc_vcpus'] if 'svc_vcpus' in h else '0',
+                h['svc_vmem'] if 'svc_vmem' in h else '0',
                 h['svc_containerpath'] if 'svc_containerpath' in h else '',
                ]
         generic_insert('svcmon', vars, vals)
