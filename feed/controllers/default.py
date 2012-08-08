@@ -991,6 +991,10 @@ def insert_brocade(name=None, nodename=None):
     for d in dirs:
         s = brocade.get_brocade(d)
 
+        if s is None:
+            print "get_brocade: %s is corrupted"%d
+            continue
+
         # alias
         for cfg in s.alias:
             vals = []
@@ -2950,7 +2954,7 @@ def update_dash_pkgdiff(nodename):
                    dash_dict='{"n": %(n)d, "nodes": "%(nodes)s"}',
                    dash_dict_md5=md5('{"n": %(n)d, "nodes": "%(nodes)s"}'),
                    dash_created=now(),
-                   dash_env="%(env)s",
+                   dash_env="%(env)s"
               """%dict(svcname=svcname,
                        sev=sev,
                        env=row.mon_svctype,
@@ -3585,6 +3589,7 @@ def feed_dequeue():
                 log.error("%s(%s)"%(fn, str(args)))
                 import traceback
                 traceback.print_exc()
+                return
 
     do_break = False
     e = None
@@ -3609,12 +3614,12 @@ def feed_dequeue():
             dash_crons2()
 
         try:
-            if e is not None:
+            if e is None or n0 == 0:
+                # cold start, or retry errored entries
+                entries = db(db.feed_queue.id>0).select(limitby=(0,20))
+            else:
                 # don't fetch already scheduled entries
                 entries = db(db.feed_queue.id>e.id).select(limitby=(0,20))
-            else:
-                # cold start
-                entries = db(db.feed_queue.id>0).select(limitby=(0,20))
             log.debug("got %d entries to dequeue"% len(entries))
         except:
             # lost mysql ?
@@ -3636,6 +3641,10 @@ def feed_dequeue():
         for e in entries:
             try:
                 log.info("dequeue %s" % e.q_fn)
+                if e.q_fn in workers and not workers[e.q_fn].is_alive():
+                    # clean up dead processes, so we can restart them
+                    workers[e.q_fn].join()
+                    del(workers[e.q_fn])
                 if e.q_fn not in workers:
                     log.info("start %s worker" % e.q_fn)
                     queues[e.q_fn] = multiprocessing.Queue()
