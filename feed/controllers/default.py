@@ -1358,6 +1358,8 @@ def insert_sym(symid=None, nodename=None):
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.info['symid'], str(now))
             db.executesql(sql)
 
+            del(s)
+
 @auth_uuid
 @service.xmlrpc
 def delete_pkg(node, auth):
@@ -3545,6 +3547,10 @@ def feed_dequeue():
 
     import sys
     import logging
+    import copy
+    import traceback
+    from gluon.shell import exec_environment
+
     log = logging.getLogger('sched')
     #logfile = "/tmp/feed_dequeue.log"
     #logfilehandler = logging.FileHandler(logfile)
@@ -3564,7 +3570,6 @@ def feed_dequeue():
     def _dequeue_process(name, queue):
         log = logging.getLogger('sched.'+name)
 
-        from gluon.shell import exec_environment
         m = exec_environment('applications/feed/models/db.py')
         global db
         db = m.db
@@ -3587,12 +3592,15 @@ def feed_dequeue():
                 db.commit()
             except:
                 log.error("%s(%s)"%(fn, str(args)))
-                import traceback
                 traceback.print_exc()
                 return
+            if queue.empty():
+                log.info("stop idle process")
+                break
 
     do_break = False
     e = None
+    last = 0
 
     while True:
         if do_break:
@@ -3604,26 +3612,28 @@ def feed_dequeue():
         if n0 == 90:
             n0 = 0
             dash_crons0()
-
-        if n1 == 3600:
+        elif n1 == 3600:
             n1 = 0
             dash_crons1()
-
-        if n2 == 86400:
+        elif n2 == 86400:
             n2 = 0
             dash_crons2()
 
         try:
-            if e is None or n0 == 0:
-                # cold start, or retry errored entries
-                entries = db(db.feed_queue.id>0).select(limitby=(0,20))
+            queues_empty = True
+            for q in queues.values():
+                if not q.empty():
+                    queues_empty = False
+                    break
+            if last > 0 and queues_empty and n0 == 0 and db(db.feed_queue.id<last).count() > 0:
+                # once in a while, if queues are empty, retry errored entries
+                entries = db(db.feed_queue.id<last).select(limitby=(0,20), orderby=db.feed_queue.id)
             else:
                 # don't fetch already scheduled entries
-                entries = db(db.feed_queue.id>e.id).select(limitby=(0,20))
+                entries = db(db.feed_queue.id>last).select(limitby=(0,20), orderby=db.feed_queue.id)
             log.debug("got %d entries to dequeue"% len(entries))
         except:
             # lost mysql ?
-            import traceback
             traceback.print_exc()
             log.error("lost mysql ? sleep 10 sec")
             try: time.sleep(10)
@@ -3638,9 +3648,14 @@ def feed_dequeue():
             # every 100 xmlrpc calls save stats
         #    stats.dbdump()
 
+        for w in copy.copy(workers.keys()):
+            if not workers[w].is_alive():
+                workers[w].join()
+                del(workers[w])
+
         for e in entries:
             try:
-                log.info("dequeue %s" % e.q_fn)
+                log.info("dequeue %s (id=%d)" % (e.q_fn, e.id))
                 if e.q_fn in workers and not workers[e.q_fn].is_alive():
                     # clean up dead processes, so we can restart them
                     workers[e.q_fn].join()
@@ -3651,6 +3666,8 @@ def feed_dequeue():
                     workers[e.q_fn] = multiprocessing.Process(target=dequeue_process, args=(e.q_fn, queues[e.q_fn]))
                     workers[e.q_fn].start()
                 queues[e.q_fn].put((e.id, e.q_fn, e.q_args), block=True)
+                if e.id > last:
+                    last = e.id
             except KeyboardInterrupt:
                 for fn in workers:
                     queues[fn].put(None)
