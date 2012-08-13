@@ -2849,3 +2849,9 @@ alter table stats_fs_u rename to stats_fs_uold;
 
 alter table stats_fs_u2 rename to stats_fs_u;
 
+
+alter table checks_defaults add column chk_inst varchar(128) default NULL;
+
+alter table checks_defaults drop key idx1;
+
+alter table checks_defaults add unique key idx1 (`chk_type`, `chk_inst`);

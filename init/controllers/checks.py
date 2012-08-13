@@ -1,6 +1,7 @@
 @auth.requires_membership('CheckManager')
 def checks_defaults_insert():
-    q = (db.checks_defaults.chk_type==request.vars.chk_type)
+    q = db.checks_defaults.chk_type==request.vars.chk_type
+    q &= db.checks_defaults.chk_inst==None
     rows = db(q).select()
     if len(rows) == 1:
         record = rows[0]
@@ -32,13 +33,17 @@ def checks_settings_insert():
     q &= (db.checks_settings.chk_instance==request.vars.chk_instance)
     rows = db(q).select()
     if len(rows) == 0:
-        defaults = db(db.checks_defaults.chk_type==request.vars.chk_type).select().first()
+        chk = {
+         'chk_type': request.vars.chk_type,
+         'chk_instance': request.vars.chk_instance,
+        }
+        defaults = get_defaults(chk)
         db.checks_settings.insert(chk_nodename=request.vars.chk_nodename,
                                   chk_svcname=request.vars.chk_svcname,
                                   chk_type=request.vars.chk_type,
                                   chk_instance=request.vars.chk_instance,
-                                  chk_low=defaults.chk_low,
-                                  chk_high=defaults.chk_high,
+                                  chk_low=defaults[0],
+                                  chk_high=defaults[1],
                                  )
         rows = db(q).select()
     record = rows[0]
@@ -125,7 +130,16 @@ def update_thresholds(row):
     return
 
 def get_defaults(row):
-    q = db.checks_defaults.chk_type == row.chk_type
+    q = db.checks_defaults.chk_type == row['chk_type']
+    q &= db.checks_defaults.chk_inst != None
+    rows = db(q).select()
+    for r in rows:
+        if re.match(str(r.chk_inst), row['chk_instance']) is None:
+            continue
+        return (r.chk_low, r.chk_high, 'defaults')
+
+    q = db.checks_defaults.chk_type == row['chk_type']
+    q &= db.checks_defaults.chk_inst == None
     rows = db(q).select()
     if len(rows) == 0:
         return
@@ -232,17 +246,12 @@ def set_low_threshold(ids):
         settings = db(q).select()
         if len(settings) == 0:
             # insert
-            defq = db.checks_defaults.chk_type==chk.chk_type
-            defq &= db.checks_defaults.chk_type==chk.chk_type
-            defaults = db(defq).select()
-            if len(defaults) != 1:
-                continue
-            default = defaults[0]
+            chk_default = get_defaults(chk)
             db.checks_settings.insert(chk_nodename=chk.chk_nodename,
                                       chk_type=chk.chk_type,
                                       chk_instance=chk.chk_instance,
                                       chk_low=val,
-                                      chk_high=default.chk_high,
+                                      chk_high=default[1],
                                       chk_changed_by=user_name(),
                                       chk_changed=now)
         elif len(settings) == 1:
@@ -271,17 +280,12 @@ def set_high_threshold(ids):
         settings = db(q).select()
         if len(settings) == 0:
             # insert
-            defq = db.checks_defaults.chk_type==chk.chk_type
-            defq &= db.checks_defaults.chk_type==chk.chk_type
-            chk_defaults = db(defq).select()
-            if len(chk_defaults) != 1:
-                continue
-            chk_default = chk_defaults[0]
+            chk_default = get_defaults(chk)
             db.checks_settings.insert(chk_nodename=chk.chk_nodename,
                                       chk_type=chk.chk_type,
                                       chk_instance=chk.chk_instance,
                                       chk_high=val,
-                                      chk_low=chk_default.chk_low,
+                                      chk_low=chk_default[0],
                                       chk_changed_by=user_name(),
                                       chk_changed=now)
         elif len(settings) == 1:

@@ -8,6 +8,7 @@
 ## - call exposes all registered services (none by default)
 #########################################################################
 import datetime, time
+import re
 
 def user():
     """
@@ -1789,6 +1790,15 @@ def __svcmon_update(vars, vals):
 
 def get_defaults(row):
     q = db.checks_defaults.chk_type == row.chk_type
+    q &= db.checks_defaults.chk_inst != None
+    rows = db(q).select()
+    for r in rows:
+        if re.match(str(r.chk_inst), row.chk_instance) is None:
+            continue
+        return (r.chk_low, r.chk_high, 'defaults')
+
+    q = db.checks_defaults.chk_type == row.chk_type
+    q &= db.checks_defaults.chk_inst == None
     rows = db(q).select()
     if len(rows) == 0:
         return
