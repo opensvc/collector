@@ -67,6 +67,31 @@ data = {
      },
    ],
  },
+ 'obsolescence': {
+   'title': 'Obsolescence',
+   'batchs': [
+     {
+       'url': URL(r=request, c='obsolescence', f='_update_dash_obs_os_alert'),
+       'comment': "Refresh os alerts",
+     },
+     {
+       'url': URL(r=request, c='obsolescence', f='_update_dash_obs_os_warn'),
+       'comment': "Refresh os warnings",
+     },
+     {
+       'url': URL(r=request, c='obsolescence', f='_update_dash_obs_hw_alert'),
+       'comment': "Refresh hardware alerts",
+     },
+     {
+       'url': URL(r=request, c='obsolescence', f='_update_dash_obs_hw_warn'),
+       'comment': "Refresh hardware warnings",
+     },
+     {
+       'url': URL(r=request, c='obsolescence', f='purge_dash_obs_without'),
+       'comment': "Purge obsolescence alerts and warnings",
+     },
+   ],
+ },
 }
 
 def batchs():
