@@ -251,7 +251,7 @@ def set_low_threshold(ids):
                                       chk_type=chk.chk_type,
                                       chk_instance=chk.chk_instance,
                                       chk_low=val,
-                                      chk_high=default[1],
+                                      chk_high=chk_default[1],
                                       chk_changed_by=user_name(),
                                       chk_changed=now)
         elif len(settings) == 1:
