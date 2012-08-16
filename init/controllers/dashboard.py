@@ -677,6 +677,9 @@ def ajax_dashboard():
     # t.object_list = db(q).select(db.dashboard.ALL, limitby=(t.pager_start,t.pager_end), orderby=o)
     t.object_list = db.executesql(sql, as_dict=True)
 
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        return t.csv()
+
     mt = table_dash_agg('dash_agg', 'ajax_dash_agg')
     return DIV(
              SCRIPT(
