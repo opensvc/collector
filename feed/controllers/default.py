@@ -2658,7 +2658,7 @@ def cron_dash_obs_without(t, a):
                  NULL,
                  "%(tl)s obsolescence %(al)s date not set",
                  "",
-                 "",
+                 n.nodename,
                  0,
                  "%(t)s: %%(o)s",
                  concat('{"o": "', o.obs_name, '"}'),
