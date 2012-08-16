@@ -8,7 +8,7 @@ function values_to_filter(iid, did){
 		if (s == "None") {s = "empty"}
 		l.push(s)
 	})
-        v = l.join("|")
+        v = '(' + l.join(",") + ')'
 	$("#"+iid).val(v)
 }
 function invert_filter(did){

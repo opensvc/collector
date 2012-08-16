@@ -55,6 +55,11 @@ def _where(query, table, var, field):
 
     if chunk == 'empty':
         q = (db[table][field]==None)|(db[table][field]=='')
+    elif chunk[0] == '(' and chunk[-1] == ')' and len(chunk) > 2:
+        chunk = chunk[1:-1]
+        if field not in db[table]:
+            pass
+        q = db[table][field].belongs(chunk.split(','))
     elif chunk[0] not in '<>=':
         if field not in db[table]:
             pass
