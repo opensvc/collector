@@ -100,9 +100,11 @@ class HtmlTable(object):
         self.extraline = False
         self.extrarow = False
         self.filterable = True
+        self.hide_tools = False
         self.dbfilterable = True
         self.pageable = True
         self.exportable = True
+        self.linkable = True
         self.refreshable = True
         self.columnable = True
         self.headers = True
@@ -410,6 +412,8 @@ class HtmlTable(object):
         return d
 
     def link(self):
+        if not self.linkable:
+            return SPAN()
         d = DIV(
               A(
                 SPAN(
@@ -1056,14 +1060,16 @@ class HtmlTable(object):
         else:
             additional_filters = SPAN()
 
-        atl = []
-        for o in self.additional_tools:
-            if isinstance(o, HtmlTableMenu):
-                atl.append(o.html())
-            else:
-                atl.append(getattr(self, o)())
-
-        additional_tools = SPAN(atl)
+        if not self.hide_tools:
+            atl = []
+            for o in self.additional_tools:
+                if isinstance(o, HtmlTableMenu):
+                    atl.append(o.html())
+                else:
+                    atl.append(getattr(self, o)())
+            additional_tools = SPAN(atl)
+        else:
+            additional_tools = SPAN()
 
         if self.exportable:
             export = DIV(

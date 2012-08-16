@@ -6526,7 +6526,9 @@ def node_comp_status(node):
     q &= db.comp_status.run_nodename == node
     q &= db.comp_status.run_date > now - datetime.timedelta(days=8)
     t.object_list = db(q).select()
+    t.hide_tools = True
     t.pageable = False
+    t.linkable = False
     t.filterable = False
     t.exportable = False
     t.dbfilterable = False

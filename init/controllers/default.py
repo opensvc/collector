@@ -1384,4 +1384,23 @@ def svcmon():
         )
     return dict(table=t)
 
+@auth.requires_login()
+def svcmon_node():
+    node = request.args[0]
+    tid = 'svcmon_'+node
+    t = table_svcmon(tid, 'ajax_svcmon')
+    t.cols.remove('mon_nodname')
+
+    q = _where(None, 'v_svcmon', domain_perms(), 'mon_nodname')
+    q &= db.v_svcmon.mon_nodname == node
+    t.object_list = db(q).select()
+    t.hide_tools = True
+    t.pageable = False
+    t.linkable = False
+    t.filterable = False
+    t.exportable = False
+    t.dbfilterable = False
+    t.columnable = False
+    t.refreshable = False
+    return t.html()
 
