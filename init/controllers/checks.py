@@ -726,6 +726,12 @@ def ajax_checks():
     q &= db.checks_live.chk_nodename==db.v_nodes.nodename
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+
+    t.csv_q = q
+    t.csv_orderby = o
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        return t.csv()
+
     n = db(q).count()
     t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
