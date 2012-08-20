@@ -1,20 +1,23 @@
 @auth.requires_membership('CheckManager')
 def checks_defaults_insert():
-    q = db.checks_defaults.chk_type==request.vars.chk_type
-    q &= db.checks_defaults.chk_inst==None
-    rows = db(q).select()
-    if len(rows) == 1:
-        record = rows[0]
-    else:
-        record = None
+    record = None
+    if request.vars.chk_id is not None:
+        q = db.checks_defaults.id==request.vars.chk_id
+        rows = db(q).select()
+        if len(rows) == 1:
+            record = rows[0]
 
     db.checks_defaults.chk_type.default = request.vars.chk_type
+
     form = SQLFORM(db.checks_defaults,
                  record=record,
+                 deletable=True,
                  fields=['chk_type',
+                         'chk_inst',
                          'chk_low',
                          'chk_high'],
                  labels={'chk_type': T('Check type'),
+                         'chk_inst': T('Instance'),
                          'chk_low': T('Low threshold'),
                          'chk_high': T('High threshold')},
                 )
@@ -344,6 +347,121 @@ class col_chk_type(HtmlTableColumn):
                         vars={'chk_type': s})
             )
         return d
+
+class col_chk_type(HtmlTableColumn):
+    def html(self, o):
+        s = self.get(o)
+        nodename = self.t.colprops["chk_nodename"].get(o)
+
+        d = DIV(
+              A(
+                s,
+                _onclick="""
+if ($("#checks_x_%(nodename)s").is(":visible")) {
+  $("#checks_x_%(nodename)s").hide()
+} else {
+  $("#checks_x_%(nodename)s").show()
+  ajax("%(url)s", [], "checks_x_%(nodename)s")
+}
+"""%dict(nodename=nodename,
+         url=URL(r=request, f="ajax_chk_type_defaults", args=[s]),
+        ),
+              ),
+            )
+        return d
+
+@auth.requires_login()
+def ajax_chk_type_defaults():
+    chk_type = request.args[0]
+    q = db.checks_defaults.chk_type == chk_type
+    rows = db(q).select()
+
+    l = []
+    l.append(DIV(
+                 DIV(
+                   T("Edit"),
+                   _style="font-weight:bold"
+                 ),
+                 DIV(
+                   T("Type"),
+                   _style="font-weight:bold"
+                 ),
+                 DIV(
+                   T("Instance"),
+                   _style="font-weight:bold"
+                 ),
+                 DIV(
+                   T("Low threshold"),
+                   _style="font-weight:bold"
+                 ),
+                 DIV(
+                   T("High threshold"),
+                   _style="font-weight:bold"
+                 ),
+               ))
+
+    if len(rows) == 0:
+        l.append(DIV(
+                 DIV(
+                   "-",
+                 ),
+                 DIV(
+                   "-",
+                 ),
+                 DIV(
+                   "-",
+                 ),
+                 DIV(
+                   "-",
+                 ),
+                 DIV(
+                   "-",
+                 ),
+               ))
+
+    for row in rows:
+        l.append(DIV(
+                 DIV(
+                   A(
+                     IMG(_src=URL(r=request, c='static', f='edit.png')),
+                     _href=URL(r=request, f='checks_defaults_insert', vars={'chk_type': row.chk_type, 'chk_id': row.id}),
+                   ),
+                 ),
+                 DIV(
+                   row.chk_type,
+                 ),
+                 DIV(
+                   row.chk_inst if row.chk_inst is not None else "",
+                 ),
+                 DIV(
+                   row.chk_low,
+                 ),
+                 DIV(
+                   row.chk_high,
+                 ),
+               ))
+
+    l.append(DIV(
+             DIV(
+               A(
+                 IMG(_src=URL(r=request, c='static', f='add16.png')),
+                 _href=URL(r=request, f='checks_defaults_insert', vars={'chk_type': row.chk_type}),
+               ),
+             ),
+             DIV(
+               T("Add threshold defaults"),
+             ),
+           ))
+
+
+    return DIV(
+             DIV(
+               H3(T("Threshold defaults")),
+             ),
+             DIV(
+               DIV(l, _class="table0"),
+             ),
+           )
 
 class table_checks(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
