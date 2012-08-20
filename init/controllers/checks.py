@@ -445,7 +445,7 @@ def ajax_chk_type_defaults():
              DIV(
                A(
                  IMG(_src=URL(r=request, c='static', f='add16.png')),
-                 _href=URL(r=request, f='checks_defaults_insert', vars={'chk_type': row.chk_type}),
+                 _href=URL(r=request, f='checks_defaults_insert', vars={'chk_type': chk_type}),
                ),
              ),
              DIV(
