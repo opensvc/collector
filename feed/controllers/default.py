@@ -2540,6 +2540,15 @@ def cron_dash_node_without_warranty_date():
     db.commit()
 
 def cron_dash_checks_not_updated():
+    sql = """delete from dashboard
+             where
+               dash_type="check value not updated"
+               and dash_nodename not in (
+                 select distinct chk_nodename from checks_live
+               )
+          """
+    rows = db.executesql(sql)
+
     sql = """select d.id from dashboard d
              left join checks_live c on
                d.dash_dict_md5=md5(concat(
