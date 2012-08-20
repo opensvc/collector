@@ -2862,3 +2862,7 @@ CREATE VIEW `v_svcmon` AS select `e`.`err` AS `err`,`s`.`svc_ha` AS `svc_ha`,`s`
 
 alter table svcmon drop key svcmon_k1;
 
+alter table dashboard add index i_dash_type (dash_type);
+alter table dashboard add index i_dash_nodename (dash_nodename);
+alter table dashboard engine=InnoDB;
+
