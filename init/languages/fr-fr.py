@@ -1189,6 +1189,7 @@
 'packages': 'paquetages',
 'patches': 'patches',
 'pid': 'pid',
+'pkgdiff': 'pkgdiff',
 'please input your password again': 'merci de saisir à nouveau votre mot de passe',
 'power': 'électricité',
 'power breaker #1': 'disjoncteur #1',

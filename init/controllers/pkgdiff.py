@@ -1,7 +1,17 @@
 @auth.requires_login()
+def svc_pkgdiff():
+    svcname = request.args[0]
+    rows = db(db.svcmon.mon_svcname==svcname).select(db.svcmon.mon_nodname)
+    nodes = [row.mon_nodname for row in rows]
+    return _ajax_pkgdiff(nodes)
+
+@auth.requires_login()
 def ajax_pkgdiff():
     nodes = set(request.vars.node.split(','))
     nodes -= set([""])
+    return _ajax_pkgdiff(nodes)
+
+def _ajax_pkgdiff(nodes):
     n = len(nodes)
 
     if n == 0:
@@ -10,6 +20,7 @@ def ajax_pkgdiff():
     if list(nodes)[0][0] in "0123456789":
         # received node ids
         nodes = [r.nodename for r in db(db.nodes.id.belongs(nodes)).select(db.nodes.nodename)]
+
     sql = """select * from (
                select group_concat(pkg_nodename order by pkg_nodename),
                       pkg_name,
