@@ -3628,15 +3628,19 @@ def feed_dequeue():
         n1 += 1
         n2 += 1
 
-        if n0 == 90:
-            n0 = 0
-            dash_crons0()
-        elif n1 == 3600:
-            n1 = 0
-            dash_crons1()
-        elif n2 == 86400:
-            n2 = 0
-            dash_crons2()
+        try:
+            if n0 == 90:
+                n0 = 0
+                dash_crons0()
+            elif n1 == 3600:
+                n1 = 0
+                dash_crons1()
+            elif n2 == 86400:
+                n2 = 0
+                dash_crons2()
+        except:
+            traceback.print_exc()
+
 
         try:
             queues_empty = True
