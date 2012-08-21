@@ -381,7 +381,7 @@ def ajax_node():
 
     def js(tab, rowid):
         buff = ""
-        for i in range(1, 13):
+        for i in range(1, 14):
             buff += """$('#%(tab)s_%(id)s').hide();$('#li%(tab)s_%(id)s').removeClass('tab_active');"""%dict(tab='tab'+str(i), id=rowid)
         buff += """$('#%(tab)s_%(id)s').show();$('#li%(tab)s_%(id)s').addClass('tab_active');"""%dict(tab=tab, id=rowid)
         return buff
@@ -417,7 +417,8 @@ def ajax_node():
             LI(P(T("power"), _class='pwr', _onclick=js('tab9', rowid)), _id="litab9_"+str(rowid)),
             LI(P(T("stats"), _class='spark16', _onclick=js('tab10', rowid)), _id="litab10_"+str(rowid)),
             LI(P(T("wiki"), _class='edit', _onclick=js('tab11', rowid)), _id="litab11_"+str(rowid)),
-            LI(P(T("compliance"), _class='comp16', _onclick=js('tab12', rowid)), _id="litab12_"+str(rowid)),
+            LI(P(T("checks"), _class='check16', _onclick=js('tab12', rowid)), _id="litab12_"+str(rowid)),
+            LI(P(T("compliance"), _class='comp16', _onclick=js('tab13', rowid)), _id="litab13_"+str(rowid)),
           ),
           _class="tab",
         ),
@@ -485,6 +486,12 @@ def ajax_node():
             _class='cloud',
             _style='max-width:80em',
           ),
+          DIV(
+            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            _id='tab13_'+str(rowid),
+            _class='cloud',
+            _style='max-width:80em',
+          ),
           SCRIPT(
             "ajax('%(url)s', [], '%(id)s')"%dict(
                id='tab6_'+str(rowid),
@@ -498,6 +505,11 @@ def ajax_node():
             ),
             "ajax('%(url)s', [], '%(id)s')"%dict(
                id='tab12_'+str(rowid),
+               url=URL(r=request, c='checks', f='checks_node',
+                       args=[request.vars.node])
+            ),
+            "ajax('%(url)s', [], '%(id)s')"%dict(
+               id='tab13_'+str(rowid),
                url=URL(r=request, c='compliance', f='ajax_compliance_node',
                        args=[request.vars.node])
             ),

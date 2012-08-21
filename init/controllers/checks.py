@@ -935,3 +935,24 @@ def update_dash_checks(nodename):
     db.executesql(sql)
     db.commit()
 
+@auth.requires_login()
+def checks_node():
+    node = request.args[0]
+    tid = 'checks_'+node
+    t = table_checks(tid, 'ajax_checks')
+    #t.cols.remove('mon_nodname')
+
+    q = _where(None, 'checks_live', domain_perms(), 'chk_nodename')
+    q &= db.checks_live.chk_nodename == node
+    t.object_list = db(q).select()
+    t.hide_tools = True
+    t.pageable = False
+    t.linkable = False
+    t.filterable = False
+    t.exportable = False
+    t.dbfilterable = False
+    t.columnable = False
+    t.refreshable = False
+    t.checkboxes = False
+    return t.html()
+
