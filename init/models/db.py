@@ -873,7 +873,7 @@ db.define_table('checks_live',
 
 db.define_table('checks_defaults',
     Field('chk_type', 'string', length=10, writable=False),
-    Field('chk_inst', 'string', length=10),
+    Field('chk_inst', 'string', length=128),
     Field('chk_low', 'integer'),
     Field('chk_high', 'integer'),
     migrate=False)
