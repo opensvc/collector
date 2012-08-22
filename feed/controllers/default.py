@@ -2422,7 +2422,7 @@ def cron_dash_svcmon_not_updated():
                  "",
                  mon_svctype
                from svcmon
-               where mon_updated < date_sub(now(), interval 15 minute)
+               where mon_updated < date_sub(now(), interval 16 minute)
           """
     db.executesql(sql)
     db.commit()
