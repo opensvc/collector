@@ -696,14 +696,14 @@ def ajax_service():
                url=URL(r=request, c='stats', f='ajax_perfcmp_plot?node=%s'%','.join(s['svc_nodes'].split()+s['svc_drpnodes'].split())),
             ),
             "ajax('%(url)s', [], '%(id)s')"%dict(
-               id='tab6_'+str(rowid),
-               url=URL(r=request, c='ajax_node', f='ajax_svc_stor',
-                       args=['tab6_'+str(rowid), request.vars.node])
-            ),
-            "ajax('%(url)s', [], '%(id)s')"%dict(
                id='tab10_'+str(rowid),
                url=URL(r=request, c='pkgdiff', f='svc_pkgdiff',
                        args=[request.vars.node])
+            ),
+            "ajax('%(url)s', [], '%(id)s')"%dict(
+               id='tab6_'+str(rowid),
+               url=URL(r=request, c='ajax_node', f='ajax_svc_stor',
+                       args=['tab6_'+str(rowid), request.vars.node])
             ),
 
             _name='%s_to_eval'%rowid,
