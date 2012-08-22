@@ -39,6 +39,7 @@ def _node_form(record=None):
                          'team_support',
                          'project',
                          'warranty_end',
+                         'maintenance_end',
                          'status',
                          'role',
                          'type',
@@ -65,6 +66,7 @@ def _node_form(record=None):
                          'team_support': _label('team_support'),
                          'project': _label('project'),
                          'warranty_end': _label('warranty_end'),
+                         'maintenance_end': _label('maintenance_end'),
                          'status': _label('status'),
                          'role': _label('role'),
                          'type': _label('type'),
@@ -92,9 +94,9 @@ def node_insert():
     import gluon.contrib.pymysql.err
     try:
         if form.accepts(request.vars):
-            update_dash_node_without_warranty_end(request.vars.nodename)
-            update_dash_node_beyond_warranty_end(request.vars.nodename)
-            update_dash_node_near_warranty_end(request.vars.nodename)
+            update_dash_node_without_maintenance_end(request.vars.nodename)
+            update_dash_node_beyond_maintenance_end(request.vars.nodename)
+            update_dash_node_near_maintenance_end(request.vars.nodename)
             delete_dash_node_not_updated(request.vars.nodename)
             delete_dash_node_without_asset(request.vars.nodename)
             response.flash = T("edition recorded")
@@ -125,9 +127,9 @@ def node_edit():
     form = _node_form(record)
     if form.accepts(request.vars):
         # update dashboard
-        update_dash_node_without_warranty_end(request.vars.node)
-        update_dash_node_beyond_warranty_end(request.vars.node)
-        update_dash_node_near_warranty_end(request.vars.node)
+        update_dash_node_without_maintenance_end(request.vars.node)
+        update_dash_node_beyond_maintenance_end(request.vars.node)
+        update_dash_node_near_maintenance_end(request.vars.node)
         delete_dash_node_not_updated(request.vars.node)
         delete_dash_node_without_asset(request.vars.node)
 
@@ -589,7 +591,7 @@ def delete_dash_node_without_asset(nodename):
     rows = db.executesql(sql)
     db.commit()
 
-def update_dash_node_beyond_warranty_end(nodename):
+def update_dash_node_beyond_maintenance_end(nodename):
     sql = """delete from dashboard
                where
                  dash_nodename in (
@@ -597,16 +599,16 @@ def update_dash_node_beyond_warranty_end(nodename):
                    from nodes
                    where
                      nodename="%(nodename)s" and
-                     warranty_end is not NULL and
-                     warranty_end != "0000-00-00 00:00:00" and
-                     warranty_end > now()
+                     maintenance_end is not NULL and
+                     maintenance_end != "0000-00-00 00:00:00" and
+                     maintenance_end > now()
                  ) and
-                 dash_type = "node warranty expired"
+                 dash_type = "node maintenance expired"
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
     db.commit()
 
-def update_dash_node_near_warranty_end(nodename):
+def update_dash_node_near_maintenance_end(nodename):
     sql = """delete from dashboard
                where
                  dash_nodename in (
@@ -614,17 +616,17 @@ def update_dash_node_near_warranty_end(nodename):
                    from nodes
                    where
                      nodename="%(nodename)s" and
-                     warranty_end is not NULL and
-                     warranty_end != "0000-00-00 00:00:00" and
-                     warranty_end < now() and
-                     warranty_end > date_sub(now(), interval 30 day)
+                     maintenance_end is not NULL and
+                     maintenance_end != "0000-00-00 00:00:00" and
+                     maintenance_end < now() and
+                     maintenance_end > date_sub(now(), interval 30 day)
                  ) and
-                 dash_type = "node warranty expired"
+                 dash_type = "node maintenance expired"
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
     db.commit()
 
-def update_dash_node_without_warranty_end(nodename):
+def update_dash_node_without_maintenance_end(nodename):
     sql = """delete from dashboard
                where
                  dash_nodename in (
@@ -632,10 +634,10 @@ def update_dash_node_without_warranty_end(nodename):
                    from nodes
                    where
                      nodename="%(nodename)s" and 
-                     warranty_end != "0000-00-00 00:00:00" and
-                     warranty_end is not NULL
+                     maintenance_end != "0000-00-00 00:00:00" and
+                     maintenance_end is not NULL
                  ) and
-                 dash_type = "node without warranty end date"
+                 dash_type = "node without maintenance end date"
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
     db.commit()

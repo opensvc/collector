@@ -360,7 +360,7 @@ def _update_asset(vars, vals, auth):
         del(h['environment'])
     generic_insert('nodes', h.keys(), h.values())
     update_dash_node_not_updated(auth[1])
-    update_dash_node_without_warranty_end(auth[1])
+    update_dash_node_without_maintenance_end(auth[1])
     update_dash_node_without_asset(auth[1])
 
 @auth_uuid
@@ -2470,12 +2470,12 @@ def cron_dash_node_without_asset():
     db.executesql(sql)
     db.commit()
 
-def cron_dash_node_beyond_warranty_date():
+def cron_dash_node_beyond_maintenance_date():
     sql = """insert ignore
              into dashboard
                select
                  NULL,
-                 "node warranty expired",
+                 "node maintenance expired",
                  "",
                  nodename,
                  1,
@@ -2486,19 +2486,19 @@ def cron_dash_node_beyond_warranty_date():
                  host_mode
                from nodes
                where
-                 warranty_end is not NULL and
-                 warranty_end != "0000-00-00 00:00:00" and
-                 warranty_end < now()
+                 maintenance_end is not NULL and
+                 maintenance_end != "0000-00-00 00:00:00" and
+                 maintenance_end < now()
           """
     db.executesql(sql)
     db.commit()
 
-def cron_dash_node_near_warranty_date():
+def cron_dash_node_near_maintenance_date():
     sql = """insert ignore
              into dashboard
                select
                  NULL,
-                 "node close to warranty end",
+                 "node close to maintenance end",
                  "",
                  nodename,
                  0,
@@ -2509,20 +2509,21 @@ def cron_dash_node_near_warranty_date():
                  host_mode
                from nodes
                where
-                 warranty_end is not NULL and
-                 warranty_end != "0000-00-00 00:00:00" and
-                 warranty_end > date_sub(now(), interval 30 day) and
-                 warranty_end < now()
+                 maintenance_end is not NULL and
+                 maintenance_end != "0000-00-00 00:00:00" and
+                 maintenance_end > date_sub(now(), interval 30 day) and
+                 maintenance_end < now()
           """
     db.commit()
     db.executesql(sql)
 
-def cron_dash_node_without_warranty_date():
+def cron_dash_node_without_maintenance_date():
+    # do not alert for nodes under warranty
     sql = """insert ignore
              into dashboard
                select
                  NULL,
-                 "node without warranty end date",
+                 "node without maintenance end date",
                  "",
                  nodename,
                  0,
@@ -2533,8 +2534,14 @@ def cron_dash_node_without_warranty_date():
                  host_mode
                from nodes
                where
-                 warranty_end is NULL or
-                 warranty_end = "0000-00-00 00:00:00"
+                 (warranty_end is NULL or
+                  warranty_end = "0000-00-00 00:00:00" or
+                  warranty_end < now()) and
+                 (maintenance_end is NULL or
+                  maintenance_end = "0000-00-00 00:00:00") and
+                 model not like "%virt%" and
+                 model not like "%Not Specified%" and
+                 model not like "%KVM%"
           """
     db.executesql(sql)
     db.commit()
@@ -2820,7 +2827,7 @@ def cron_dash_action_errors_cleanup():
 #
 #   Used by xmlrpc processors for event based dashboard alerts
 #
-def update_dash_node_beyond_warranty_end(nodename):
+def update_dash_node_beyond_maintenance_end(nodename):
     sql = """delete from dashboard
                where
                  dash_nodename in (
@@ -2828,16 +2835,16 @@ def update_dash_node_beyond_warranty_end(nodename):
                    from nodes
                    where
                      nodename="%(nodename)s" and
-                     warranty_end is not NULL and
-                     warranty_end != "0000-00-00 00:00:00" and
-                     warranty_end < now()
+                     maintenance_end is not NULL and
+                     maintenance_end != "0000-00-00 00:00:00" and
+                     maintenance_end < now()
                  ) and
-                 dash_type = "node warranty expired"
+                 dash_type = "node maintenance expired"
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
     db.commit()
 
-def update_dash_node_near_warranty_end(nodename):
+def update_dash_node_near_maintenance_end(nodename):
     sql = """delete from dashboard
                where
                  dash_nodename in (
@@ -2845,12 +2852,12 @@ def update_dash_node_near_warranty_end(nodename):
                    from nodes
                    where
                      nodename="%(nodename)s" and
-                     warranty_end is not NULL and
-                     warranty_end != "0000-00-00 00:00:00" and
-                     warranty_end > now() and
-                     warranty_end < date_sub(now(), interval 30 day)
+                     maintenance_end is not NULL and
+                     maintenance_end != "0000-00-00 00:00:00" and
+                     maintenance_end > now() and
+                     maintenance_end < date_sub(now(), interval 30 day)
                  ) and
-                 dash_type = "node warranty expired"
+                 dash_type = "node maintenance expired"
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
     db.commit()
@@ -2869,7 +2876,7 @@ def update_dash_node_without_asset(nodename):
     rows = db.executesql(sql)
     db.commit()
 
-def update_dash_node_without_warranty_end(nodename):
+def update_dash_node_without_maintenance_end(nodename):
     sql = """delete from dashboard
                where
                  dash_nodename in (
@@ -2877,10 +2884,10 @@ def update_dash_node_without_warranty_end(nodename):
                    from nodes
                    where
                      nodename="%(nodename)s" and
-                     warranty_end != "0000-00-00 00:00:00" and
-                     warranty_end is not NULL
+                     maintenance_end != "0000-00-00 00:00:00" and
+                     maintenance_end is not NULL
                  ) and
-                 dash_type = "node without warranty end date"
+                 dash_type = "node without maintenance end date"
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
     db.commit()
@@ -3478,9 +3485,9 @@ def dash_crons2():
     cron_dash_obs_os_without_warn()
     cron_dash_obs_hw_without_alert()
     cron_dash_obs_hw_without_warn()
-    cron_dash_node_without_warranty_date()
-    cron_dash_node_near_warranty_date()
-    cron_dash_node_beyond_warranty_date()
+    cron_dash_node_without_maintenance_date()
+    cron_dash_node_near_maintenance_date()
+    cron_dash_node_beyond_maintenance_date()
 
 def dash_crons1():
     # ~1/h

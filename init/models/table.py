@@ -2083,6 +2083,7 @@ v_nodes_cols = [
     'host_mode',
     'environnement',
     'warranty_end',
+    'maintenance_end',
     'status',
     'type',
     'updated',
@@ -2725,6 +2726,13 @@ v_nodes_colprops = {
     'warranty_end': HtmlTableColumn(
              title = 'Warranty end',
              field='warranty_end',
+             display = False,
+             img = 'node16',
+             table = 'v_nodes',
+            ),
+    'maintenance_end': HtmlTableColumn(
+             title = 'Maintenance end',
+             field='maintenance_end',
              display = False,
              img = 'node16',
              table = 'v_nodes',

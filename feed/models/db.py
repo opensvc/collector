@@ -150,6 +150,7 @@ db.define_table('services',
 
 db.define_table('nodes',
     Field('warranty_end', 'datetime', default=request.now),
+    Field('maintenance_end', 'datetime', default=request.now),
     Field('status'),
     Field('role'),
     Field('environnement'),
