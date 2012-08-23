@@ -2884,8 +2884,11 @@ def update_dash_node_without_maintenance_end(nodename):
                    from nodes
                    where
                      nodename="%(nodename)s" and
-                     maintenance_end != "0000-00-00 00:00:00" and
-                     maintenance_end is not NULL
+                     ((maintenance_end != "0000-00-00 00:00:00" and
+                       maintenance_end is not NULL) or
+                       model like "%%virt%%" or
+                       model like "%%Not Specified%%" or
+                       model like "%%KVM%%")
                  ) and
                  dash_type = "node without maintenance end date"
           """%dict(nodename=nodename)
