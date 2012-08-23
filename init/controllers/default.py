@@ -159,18 +159,28 @@ class viz(object):
         pass
 
     def vid_svc(self, svc, nodename):
+        if nodename is None or svc is None:
+            return "unknown"
         return "svc_"+nodename.replace(".", "_").replace("-", "_")+"_"+svc.replace(".", "_").replace("-", "_")
 
     def vid_svc_dg(self, svc, dg):
+        if svc is None:
+            return "unknown"
         return "dg_"+svc.replace(".", "_").replace("-", "_")+"_"+dg
 
     def vid_node(self, node):
+        if node is None:
+            return "unknown"
         return 'node_'+node.replace(".", "_").replace("-", "_")
 
     def vid_disk(self, id):
+        if id is None:
+            return "unknown"
         return 'disk_'+str(id).replace(".", "_").replace("-", "_")
 
     def vid_loc(self, id):
+        if id is None:
+            return "unknown"
         return str(id).replace(".", "_").replace("-", "_").replace(" ", "_")
 
     def add_service(self, svc):
@@ -428,15 +438,24 @@ def res_status(svcname, node):
 @auth.requires_login()
 def ajax_service():
     rowid = request.vars.rowid
-    rows = db(db.v_svcmon.mon_svcname==request.vars.node).select()
-    viz = svcmon_viz_img(rows)
+
+    rows = db(db.services.svc_name==request.vars.node).select()
     if len(rows) == 0:
         return DIV(
                  T("No service information for %(node)s",
                    dict(node=request.vars.node)),
                )
 
+    rows = db(db.v_svcmon.mon_svcname==request.vars.node).select()
+    if len(rows) == 0:
+        return DIV(
+                 T("No service information for %(node)s",
+                   dict(node=request.vars.node)),
+               )
+
+    viz = svcmon_viz_img(rows)
     s = rows[0]
+
     t_misc = TABLE(
       TR(
         TD(T('opensvc version'), _style='font-style:italic'),
@@ -547,6 +566,8 @@ def ajax_service():
         return buff
 
     def grpprf(rowid):
+        if s['svc_nodes'] is None or s['svc_drpnodes'] is None:
+            return SPAN()
         now = datetime.datetime.now()
         b = now - datetime.timedelta(days=0,
                                      hours=now.hour,
@@ -693,7 +714,7 @@ def ajax_service():
             ),
             "sync_ajax('%(url)s', ['grpprf_begin_%(id)s', 'grpprf_end_%(id)s'], 'grpprf_%(id)s', function(){eval_js_in_ajax_response('plot')});"%dict(
                id=str(rowid),
-               url=URL(r=request, c='stats', f='ajax_perfcmp_plot?node=%s'%','.join(s['svc_nodes'].split()+s['svc_drpnodes'].split())),
+               url=URL(r=request, c='stats', f='ajax_perfcmp_plot?node=%s'%','.join(str(s['svc_nodes']).split()+str(s['svc_drpnodes']).split())),
             ),
             "ajax('%(url)s', [], '%(id)s')"%dict(
                id='tab10_'+str(rowid),
