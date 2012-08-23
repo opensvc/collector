@@ -137,10 +137,13 @@ def _end_action(vars, vals):
     h['end'] = h['end'].strftime("%Y-%m-%d %H:%M:%S")
     h['id'] = h['ID']
 
-    _comet_send(json.dumps({
+    try:
+        _comet_send(json.dumps({
                  'event': 'end_action',
                  'data': h
                 }))
+    except:
+        pass
 
     if h['action'] in ('start', 'startcontainer') and \
        h['status'] == 'ok':
@@ -3011,7 +3014,9 @@ def update_dash_flex_cpu(svcname):
           """%dict(svcname=svcname)
     rows = db.executesql(sql)
 
-    if len(rows) == 1 and rows[0][0] == 'PRD':
+    if len(rows) == 0:
+        return
+    elif len(rows) == 1 and rows[0][0] == 'PRD':
         sev = 4
     else:
         sev = 3
