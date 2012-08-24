@@ -139,7 +139,7 @@ def _where(query, table, var, field):
 
         if field not in db[table]:
             pass
-        elif db[table][field].type == 'datetime':
+        elif db[table][field].type in ('datetime', 'timestamp'):
             chunk = delta_to_date(chunk)
 
         if _op == '>':
