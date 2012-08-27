@@ -12,7 +12,10 @@ def delta_to_date(s):
         return s
 
     regex = re.compile(r"[-]{0,1}([0-9]+w){0,1}([0-9]+d){0,1}([0-9]+h){0,1}([0-9]+m){0,1}([0-9]+s){0,1}")
-    if regex.match(s) is None:
+    _s = regex.match(s)
+    if _s is None:
+        return s
+    if len(_s.group(0)) == 0:
         return s
 
     argv = {}
