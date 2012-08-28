@@ -47,10 +47,11 @@ class Column(object):
 
 class HtmlTableColumn(Column):
     def __init__(self, title, field, table=None, display=False,
-                 img='generic', _class='', _dataclass=''):
+                 img='generic', _class='', _dataclass='', filter_redirect=None):
         Column.__init__(self, title, display, img, _class, _dataclass)
         self.table = table
         self.field = field
+        self.filter_redirect = filter_redirect
 
     def get(self, o):
         try:
@@ -560,6 +561,8 @@ class HtmlTable(object):
         return '_'.join((self.id, 'c', f))
 
     def filter_key(self, f):
+        if self.colprops[f].filter_redirect is not None:
+            f = self.colprops[f].filter_redirect
         return '_'.join((self.id, 'f', f))
 
     def filter_div_key(self, f):

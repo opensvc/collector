@@ -149,8 +149,8 @@ def ajax_dash_agg():
     mt = table_dash_agg('dash_agg', 'ajax_dash_agg')
 
     q = db.dashboard.id > 0
-    for f in set(t.cols)-set(t.special_filtered_cols):
-        q = _where(q, 'dashboard', t.filter_parse(f), f)
+    for f in set(t.cols):
+        q = _where(q, 'dashboard', t.filter_parse(f),  f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
     q &= _where(None, 'dashboard', domain_perms(), 'dash_svcname')|_where(None, 'dashboard', domain_perms(), 'dash_nodename')
     q = apply_filters(q, db.dashboard.dash_nodename, db.dashboard.dash_svcname)
 
@@ -557,8 +557,6 @@ class table_dashboard(HtmlTable):
                      'dash_nodename',
                      'dash_env',
                      'dash_entry',
-                     'dash_fmt',
-                     'dash_dict',
                      'dash_created']
         self.colprops = {
             'dash_links': col_dash_links(
@@ -599,6 +597,7 @@ class table_dashboard(HtmlTable):
                      title='Alert',
                      table='dashboard',
                      field='dummy',
+                     filter_redirect='dash_dict',
                      img='log16',
                      display=True,
                     ),
@@ -648,8 +647,8 @@ def ajax_dashboard_col_values():
     col = request.args[0]
     o = db.dashboard[col]
     q = db.dashboard.id > 0
-    for f in set(t.cols)-set(t.special_filtered_cols):
-        q = _where(q, 'dashboard', t.filter_parse(f), f)
+    for f in set(t.cols):
+        q = _where(q, 'dashboard', t.filter_parse(f),  f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
     q &= _where(None, 'dashboard', domain_perms(), 'dash_svcname')|_where(None, 'dashboard', domain_perms(), 'dash_nodename')
     q = apply_filters(q, db.dashboard.dash_nodename, db.dashboard.dash_svcname)
     t.object_list = db(q).select(o, orderby=o, groupby=o)
@@ -660,8 +659,8 @@ def ajax_dashboard():
     t = table_dashboard('dashboard', 'ajax_dashboard')
     o = ~db.dashboard.dash_severity|db.dashboard.dash_type
     q = db.dashboard.id > 0
-    for f in set(t.cols)-set(t.special_filtered_cols):
-        q = _where(q, 'dashboard', t.filter_parse(f), f)
+    for f in set(t.cols):
+        q = _where(q, 'dashboard', t.filter_parse(f), f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
     q &= _where(None, 'dashboard', domain_perms(), 'dash_svcname')|_where(None, 'dashboard', domain_perms(), 'dash_nodename')
     q = apply_filters(q, db.dashboard.dash_nodename, db.dashboard.dash_svcname)
 
