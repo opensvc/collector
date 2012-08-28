@@ -760,6 +760,7 @@ def update_dcs(name, vars, vals, auth):
 
 def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
     import os
+    import codecs
 
     dir = 'applications'+str(URL(r=request,a='init', c='uploads',f=subdir))
     if not os.path.exists(dir):
@@ -772,7 +773,7 @@ def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
     for a,b in zip(vars, vals):
         a = os.path.join(dir, a)
         try:
-            f = open(a, 'w')
+            f = codecs.open(a, "w", "utf-8")
             f.write(b)
             f.sync()
             f.close()
@@ -814,71 +815,76 @@ def insert_dcs(name=None, nodename=None):
     dirs = glob.glob(os.path.join(dir, pattern))
 
     for d in dirs:
+        print d
         s = dcs.get_dcs(d)
-        if s is not None:
-            # stor_array_proxy
-            if nodename is not None:
-                insert_array_proxy(nodename, s.sg['caption'])
+        if s is None:
+            print "error parsing data"
+            continue
 
-            # stor_array
-            vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
-            vals = []
-            name = s.sg['caption']
-            for server in s.server.values():
-                if len(server['model']) > 0:
-                    break
-            vals.append([s.sg['caption'],
-                         server['model'],
-                         str(s.sg['memory']),
-                         server['productbuild'],
+        # stor_array_proxy
+        if nodename is not None:
+            print " insert %s as proxy node"%nodename
+            insert_array_proxy(nodename, s.sg['caption'])
+
+        # stor_array
+        vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
+        vals = []
+        name = s.sg['caption']
+        for server in s.server.values():
+            if len(server['model']) > 0:
+                break
+        vals.append([s.sg['caption'],
+                     server['model'],
+                     str(s.sg['memory']),
+                     server['productbuild'],
+                     now])
+        generic_insert('stor_array', vars, vals)
+
+        sql = """select id from stor_array where array_name="%s" """%name
+        array_id = str(db.executesql(sql)[0][0])
+
+        # stor_array_dg
+        vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
+        vals = []
+        for dg in s.pool.values():
+            vals.append([array_id,
+                         dg['caption'],
+                         str(dg['avail']),
+                         str(dg['alloc']),
+                         str(dg['total']),
                          now])
-            generic_insert('stor_array', vars, vals)
+        generic_insert('stor_array_dg', vars, vals)
+        sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
+        db.executesql(sql)
 
-            sql = """select id from stor_array where array_name="%s" """%name
-            array_id = str(db.executesql(sql)[0][0])
+        # stor_array_tgtid
+        vars = ['array_id', 'array_tgtid']
+        vals = []
+        for wwn in s.port_list:
+            vals.append([array_id, wwn])
+        generic_insert('stor_array_tgtid', vars, vals)
 
-            # stor_array_dg
-            vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
-            vals = []
-            for dg in s.pool.values():
-                vals.append([array_id,
-                             dg['caption'],
-                             str(dg['avail']),
-                             str(dg['alloc']),
-                             str(dg['total']),
+        # diskinfo
+        vars = ['disk_id',
+                'disk_arrayid',
+                'disk_devid',
+                'disk_size',
+                'disk_raid',
+                'disk_group',
+                'disk_updated']
+        vals = []
+        for d in s.vdisk.values():
+            for poolid in d['poolid']:
+                vals.append([d['wwid'],
+                             name,
+                             d['id'],
+                             str(d['size']),
+                             d['type'],
+                             s.pool[poolid]['caption'],
                              now])
-            generic_insert('stor_array_dg', vars, vals)
-            sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
-            db.executesql(sql)
-
-            # stor_array_tgtid
-            vars = ['array_id', 'array_tgtid']
-            vals = []
-            for wwn in s.port_list:
-                vals.append([array_id, wwn])
-            generic_insert('stor_array_tgtid', vars, vals)
-
-            # diskinfo
-            vars = ['disk_id',
-                    'disk_arrayid',
-                    'disk_devid',
-                    'disk_size',
-                    'disk_raid',
-                    'disk_group',
-                    'disk_updated']
-            vals = []
-            for d in s.vdisk.values():
-                for poolid in d['poolid']:
-                    vals.append([d['wwid'],
-                                 name,
-                                 d['id'],
-                                 str(d['size']),
-                                 d['type'],
-                                 s.pool[poolid]['caption'],
-                                 now])
-            generic_insert('diskinfo', vars, vals)
-            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(name, str(now))
-            db.executesql(sql)
+        generic_insert('diskinfo', vars, vals)
+        sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(name, str(now))
+        db.executesql(sql)
 
 def insert_necisms():
     return insert_necism()
