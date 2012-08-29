@@ -48,9 +48,20 @@ class Eva(object):
             d = {}
             d['wwlunid'] = e.find("wwlunid").text.replace('-', '')
             d['objectid'] = e.find('objectid').text
+            d['objectname'] = e.find('objectname').text.lstrip("\\Virtual Disk\\").rstrip("\\ACTIVE")
             d['allocatedcapacity'] = int(e.find('allocatedcapacity').text)*1024
             d['redundancy'] = e.find('redundancy').text
             d['diskgroupname'] = e.find('diskgroupname').text.split('\\')[-1]
+            d['alloc'] = d['allocatedcapacity']
+            if d['redundancy'] == 'vraid0':
+                d['alloc'] *= 1
+            elif d['redundancy'] in ('vraid1', 'vraid10'):
+                d['alloc'] *= 2
+            elif d['redundancy'] == 'vraid5':
+                d['alloc'] = int(1.*d['alloc']*5/4)
+            elif d['redundancy'] == 'vraid6':
+                d['alloc'] = int(1.*d['alloc']*6/4)
+
             self.vdisk.append(d)
         del tree
 

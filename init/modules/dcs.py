@@ -260,7 +260,7 @@ Internal         : False
             if line.startswith('DestageTime'):
                 i += 1
             elif line.startswith('BytesAllocated'):
-                self.vdisk[self.ld[self.ld_list[i]]['vdiskid']]['alloc'] = self.to_mb(line.split(': ')[-1].strip())
+                self.vdisk[self.ld[self.ld_list[i]]['vdiskid']]['alloc'] += self.to_mb(line.split(': ')[-1].strip())
 
 
     def get_val(self, lines, i):
@@ -458,7 +458,7 @@ Internal                 : False
                 vdisk["size"] = self.to_mb(self.get_val(lines, i))
             elif line.startswith('Id'):
                 vdisk["id"] = self.get_val(lines, i)
-            elif line.startswith('caption'):
+            elif line.startswith('Caption'):
                 vdisk["caption"] = self.get_val(lines, i)
             elif line.startswith('Type'):
                 vdisk["type"] = self.get_val(lines, i)

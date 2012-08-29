@@ -867,8 +867,10 @@ def insert_dcs(name=None, nodename=None):
         # diskinfo
         vars = ['disk_id',
                 'disk_arrayid',
+                'disk_name',
                 'disk_devid',
                 'disk_size',
+                'disk_alloc',
                 'disk_raid',
                 'disk_group',
                 'disk_updated']
@@ -877,8 +879,10 @@ def insert_dcs(name=None, nodename=None):
             for poolid in d['poolid']:
                 vals.append([d['wwid'],
                              name,
+                             d['caption'],
                              d['id'],
                              str(d['size']),
+                             str(d['alloc']),
                              d['type'],
                              s.pool[poolid]['caption'],
                              now])
@@ -1261,8 +1265,10 @@ def insert_eva(name=None, nodename=None):
             # diskinfo
             vars = ['disk_id',
                     'disk_arrayid',
+                    'disk_name',
                     'disk_devid',
                     'disk_size',
+                    'disk_alloc',
                     'disk_raid',
                     'disk_group',
                     'disk_updated']
@@ -1270,8 +1276,10 @@ def insert_eva(name=None, nodename=None):
             for d in s.vdisk:
                 vals.append([d['wwlunid'],
                              s.name,
+                             d['objectname'],
                              d['objectid'],
                              str(d['allocatedcapacity']),
+                             str(d['alloc']),
                              d['redundancy'],
                              d['diskgroupname'],
                              now])

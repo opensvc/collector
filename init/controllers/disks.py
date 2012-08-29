@@ -774,6 +774,8 @@ class table_disks(HtmlTable):
                      'svcdisk_updated',
                      'disk_used',
                      'disk_size',
+                     'disk_alloc',
+                     'disk_name',
                      'disk_devid',
                      'disk_raid',
                      'disk_group',
@@ -812,6 +814,14 @@ class table_disks(HtmlTable):
                      display=True,
                      _dataclass="bluer",
                     ),
+            'disk_name': col_disk_id(
+                     title='Disk Name',
+                     table='b_disk_app',
+                     field='disk_name',
+                     img='hd16',
+                     display=True,
+                     _dataclass="bluer",
+                    ),
             'disk_svcname': col_svc(
                      title='Service',
                      table='b_disk_app',
@@ -837,6 +847,14 @@ class table_disks(HtmlTable):
                      title='Disk Size',
                      table='b_disk_app',
                      field='disk_size',
+                     img='hd16',
+                     display=True,
+                     _dataclass="bluer",
+                    ),
+            'disk_alloc': col_size_mb(
+                     title='Disk Allocation',
+                     table='b_disk_app',
+                     field='disk_alloc',
                      img='hd16',
                      display=True,
                      _dataclass="bluer",
@@ -954,8 +972,8 @@ class table_disks(HtmlTable):
         self.dbfilterable = True
         self.ajax_col_values = 'ajax_disks_col_values'
         self.span = 'disk_id'
-        self.sub_span = ['disk_size', 'disk_arrayid', 'disk_array_updated',
-                         'disk_devid', 'disk_raid', 'disk_group', 'array_model']
+        self.sub_span = ['disk_size', 'disk_alloc', 'disk_arrayid', 'disk_array_updated',
+                         'disk_devid', 'disk_name', 'disk_raid', 'disk_group', 'array_model']
 
         if 'StorageManager' in user_groups() or \
            'StorageExec' in user_groups():

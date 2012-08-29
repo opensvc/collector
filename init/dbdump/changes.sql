@@ -2885,4 +2885,76 @@ drop view v_comp_nodes;
 
 create view v_comp_nodes as (select n.*,group_concat(distinct r.ruleset_name separator ', ') as rulesets, group_concat(distinct m.modset_name separator ', ') as modulesets from v_nodes n left join comp_rulesets_nodes rn on n.nodename=rn.nodename left join comp_rulesets r on r.id=rn.ruleset_id left join comp_node_moduleset mn on mn.modset_node=n.nodename left join comp_moduleset m on m.id=mn.modset_id group by n.nodename);
 
-alter table dashboard add column dash_updated datetime;
+#alter table dashboard add column dash_updated datetime;
+
+alter table diskinfo add column disk_name varchar(120) default "";
+
+alter table diskinfo add column disk_alloc int(11);
+
+drop view v_svcdisks;
+
+CREATE VIEW `v_svcdisks` AS select `s`.`id` AS `id`,`s`.`disk_id` AS `disk_id`,`s`.`disk_svcname` AS `disk_svcname`,`s`.`disk_nodename` AS `disk_nodename`,`s`.`disk_size` AS `disk_size`,s.disk_used as disk_used, `s`.`disk_vendor` AS `disk_vendor`,`s`.`disk_model` AS `disk_model`,`s`.`disk_dg` AS `disk_dg`,`s`.`disk_updated` AS `disk_updated`,`i`.`disk_devid` AS `disk_devid`,`i`.`disk_name` AS `disk_name`,`i`.`disk_alloc` AS `disk_alloc`,`i`.`disk_arrayid` AS `disk_arrayid` from (`svcdisks` `s` left join `diskinfo` `i` on((`s`.`disk_id` = convert(`i`.`disk_id` using utf8))));
+
+drop view v_disk_app;
+
+create view v_disk_app as 
+                     select
+                       diskinfo.id,
+                       diskinfo.disk_id,
+                       svcdisks.disk_region,
+                       svcdisks.disk_svcname,
+                       svcdisks.disk_nodename,
+                       svcdisks.disk_vendor,
+                       svcdisks.disk_model,
+                       svcdisks.disk_dg,
+                       svcdisks.disk_updated as svcdisk_updated,
+                       svcdisks.id as svcdisk_id,
+                       svcdisks.disk_local,
+                       services.svc_app as app,
+                       svcdisks.disk_used as disk_used,
+                       diskinfo.disk_size,
+                       diskinfo.disk_arrayid,
+                       diskinfo.disk_group,
+                       diskinfo.disk_devid,
+                       diskinfo.disk_name,
+                       diskinfo.disk_alloc,
+                       diskinfo.disk_updated,
+                       diskinfo.disk_raid,
+                       diskinfo.disk_level
+                     from
+                       diskinfo
+                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+                     left join services on svcdisks.disk_svcname=services.svc_name
+                     where svcdisks.disk_svcname != ""
+                     union all
+                     select
+                       diskinfo.id,
+                       diskinfo.disk_id,
+                       svcdisks.disk_region,
+                       svcdisks.disk_svcname,
+                       svcdisks.disk_nodename,
+                       svcdisks.disk_vendor,
+                       svcdisks.disk_model,
+                       svcdisks.disk_dg,
+                       svcdisks.disk_updated as svcdisk_updated,
+                       svcdisks.id as svcdisk_id,
+                       svcdisks.disk_local,
+                       nodes.project as app,
+                       svcdisks.disk_used as disk_used,
+                       diskinfo.disk_size,
+                       diskinfo.disk_arrayid,
+                       diskinfo.disk_group,
+                       diskinfo.disk_devid,
+                       diskinfo.disk_name,
+                       diskinfo.disk_alloc,
+                       diskinfo.disk_updated,
+                       diskinfo.disk_raid,
+                       diskinfo.disk_level
+                     from
+                       diskinfo
+                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+                     left join nodes on svcdisks.disk_nodename=nodes.nodename
+                     where (svcdisks.disk_svcname = "" or svcdisks.disk_svcname is NULL)
+;
+
+
