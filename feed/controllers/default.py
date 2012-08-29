@@ -1357,6 +1357,7 @@ def insert_sym(symid=None, nodename=None):
                     'disk_arrayid',
                     'disk_devid',
                     'disk_size',
+                    'disk_alloc',
                     'disk_raid',
                     'disk_group',
                     'disk_updated']
@@ -1368,6 +1369,7 @@ def insert_sym(symid=None, nodename=None):
                              s.info['symid'],
                              dev.info['dev_name'],
                              str(dev.megabytes),
+                             str(dev.alloc),
                              "Meta-%d %s"%(dev.meta_count, dev.info['configuration']),
                              dev.diskgroup_name,
                              now])
