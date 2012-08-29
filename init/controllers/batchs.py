@@ -3,27 +3,27 @@ data = {
    'title': 'Parsers',
    'batchs': [
      {
-       'url': URL(r=request, a='feed',  c='default', f='insert_eva'),
+       'url': URL(r=request, a='feed',  c='default', f='insert_evas'),
        'comment': "Insert EVA arrays data from uploads",
      },
      {
-       'url': URL(r=request, a='feed',  c='default', f='insert_sym'),
+       'url': URL(r=request, a='feed',  c='default', f='insert_syms'),
        'comment': "Insert Symmetrix arrays data from uploads",
      },
      {
-       'url': URL(r=request, a='feed',  c='default', f='insert_dcs'),
+       'url': URL(r=request, a='feed',  c='default', f='insert_dcss'),
        'comment': "Insert DataCore arrays data from uploads",
      },
      {
-       'url': URL(r=request, a='feed',  c='default', f='insert_ibmsvc'),
+       'url': URL(r=request, a='feed',  c='default', f='insert_ibmsvcs'),
        'comment': "Insert IBM SVC arrays data from uploads",
      },
      {
-       'url': URL(r=request, a='feed',  c='default', f='insert_necism'),
+       'url': URL(r=request, a='feed',  c='default', f='insert_necisms'),
        'comment': "Insert NEC ISM arrays data from uploads",
      },
      {
-       'url': URL(r=request, a='feed',  c='default', f='insert_brocade'),
+       'url': URL(r=request, a='feed',  c='default', f='insert_brocades'),
        'comment': "Insert Brocade switches data from uploads",
      },
    ],
