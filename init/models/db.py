@@ -121,6 +121,7 @@ default_limitby = (0, default_max_lines)
 db.define_table('svcmon',
     Field('mon_svcname'),
     Field('mon_nodname'),
+    Field('mon_svctype'),
     Field('mon_ipstatus'),
     Field('mon_fsstatus'),
     Field('mon_containerstatus'),

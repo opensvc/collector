@@ -6147,6 +6147,7 @@ def comp_log_action(vars, vals, auth):
     generic_insert('comp_log', vars, vals)
     if action == 'check':
         generic_insert('comp_status', vars, vals)
+        update_dash_compdiff(auth[1])
 
 def comp_query(q, row):
     if 'v_gen_filtersets' in row:
@@ -6647,3 +6648,91 @@ def run_cve_one(row):
           """%dict(where=where, cve_name=cve['name'], now=now)
     db.executesql(sql)
     db.commit()
+
+
+#
+# Dashboard alerts
+#
+def update_dash_compdiff(nodename):
+    nodename = nodename.strip("'")
+
+    q = db.svcmon.mon_nodname == nodename
+    q &= db.svcmon.mon_updated > datetime.datetime.now() - datetime.timedelta(minutes=20)
+    rows = db(q).select(db.svcmon.mon_svcname, db.svcmon.mon_svctype)
+    svcnames = map(lambda x: x.mon_svcname, rows)
+
+    if len(rows) > 0:
+        q = db.dashboard.dash_svcname.belongs(svcnames)
+        q &= db.dashboard.dash_type == "compliance differences in cluster"
+        db(q).delete()
+        db.commit()
+
+    for row in rows:
+        svcname = row.mon_svcname
+
+        q = db.svcmon.mon_svcname == svcname
+        q &= db.svcmon.mon_updated > datetime.datetime.now() - datetime.timedelta(minutes=1440)
+        nodes = map(lambda x: repr(x.mon_nodname),
+                    db(q).select(db.svcmon.mon_nodname,
+                                 orderby=db.svcmon.mon_nodname))
+        n = len(nodes)
+
+        if n < 2:
+            continue
+
+        sql = """select count(id) from (
+                   select
+                     id,
+                     count(run_nodename) as c
+                   from comp_status
+                   where
+                     run_nodename in (%(nodes)s)
+                   group by
+                     run_svcname,
+                     run_module,
+                     run_status
+                  ) as t
+                  where
+                    t.c!=%(n)s
+              """%dict(nodes=','.join(nodes), n=n)
+
+        rows = db.executesql(sql)
+
+        if rows[0][0] == 0:
+            continue
+
+        if row.mon_svctype == 'PRD':
+            sev = 1
+        else:
+            sev = 0
+
+        skip = 0
+        trail = ""
+        while True:
+            nodes_s = ','.join(nodes).replace("'", "")+trail
+            if len(nodes_s) < 50:
+                break
+            skip += 1
+            nodes = nodes[:-1]
+            trail = ", ... (+%d)"%skip
+
+        sql = """insert ignore into dashboard
+                 set
+                   dash_type="compliance differences in cluster",
+                   dash_svcname="%(svcname)s",
+                   dash_nodename="",
+                   dash_severity=%(sev)d,
+                   dash_fmt="%%(n)s compliance differences in cluster %%(nodes)s",
+                   dash_dict='{"n": %(n)d, "nodes": "%(nodes)s"}',
+                   dash_dict_md5=md5('{"n": %(n)d, "nodes": "%(nodes)s"}'),
+                   dash_created=now(),
+                   dash_env="%(env)s"
+              """%dict(svcname=svcname,
+                       sev=sev,
+                       env=row.mon_svctype,
+                       n=rows[0][0],
+                       nodes=nodes_s)
+
+        rows = db.executesql(sql)
+        db.commit()
+
