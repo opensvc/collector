@@ -1673,10 +1673,10 @@ def ajax_disk_charts():
     nt.filterable = True
     nt.additional_inputs = t.ajax_inputs()
 
-    data_svc = ""
-    data_app = ""
-    data_dg = ""
-    data_array = ""
+    h_data_svc = ""
+    h_data_app = ""
+    h_data_dg = ""
+    h_data_array = ""
 
     sql = """  select
                  count(distinct(b_disk_app.app)),
@@ -1698,12 +1698,15 @@ def ajax_disk_charts():
     def pie_data_svc(q, level=0):
         sql = """select
                    t.obj,
-                   sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size
-                 from (
+                   sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
+                   sum(if(t.disk_alloc is not NULL and t.disk_alloc>0, t.disk_alloc, t.disk_size)) alloc
+                 from
+                   (
                    select
                      u.obj,
                      max(u.disk_used) as disk_used,
-                     u.disk_size
+                     u.disk_size,
+                     u.disk_alloc
                    from
                    (
                      select
@@ -1711,7 +1714,8 @@ def ajax_disk_charts():
                        b_disk_app.disk_region,
                        b_disk_app.disk_svcname as obj,
                        b_disk_app.disk_used as disk_used,
-                       b_disk_app.disk_size
+                       b_disk_app.disk_size,
+                       b_disk_app.disk_alloc
                      from
                        b_disk_app
                      left join stor_array on b_disk_app.disk_arrayid=stor_array.array_name
@@ -1725,7 +1729,8 @@ def ajax_disk_charts():
                        b_disk_app.disk_region,
                        b_disk_app.disk_nodename as obj,
                        b_disk_app.disk_used as disk_used,
-                       b_disk_app.disk_size
+                       b_disk_app.disk_size,
+                       b_disk_app.disk_alloc
                      from
                        b_disk_app
                      left join stor_array on b_disk_app.disk_arrayid=stor_array.array_name
@@ -1744,9 +1749,11 @@ def ajax_disk_charts():
 
     def data_total(data):
         total = 0
+        backend_total = 0
         for l in data:
             total += l[1]
-        return total
+            backend_total += l[2]
+        return int(total), int(backend_total)
 
     if n_app == 1:
         data_svc = []
@@ -1768,22 +1775,29 @@ def ajax_disk_charts():
             if len(_data_svc) == 0:
                 _data_svc = [["", 0]]
             if level == 0:
-                total = data_total(_data_svc)
+                total, backend_total = data_total(rows)
             else:
-                diff = total - data_total(_data_svc)
+                diff = total - data_total(_data_svc)[0]
                 if diff > 0:
                     _data_svc += [["n/a " +' (%s)'%beautify_size_mb(diff), diff]]
             data_svc.append(_data_svc)
+        h_data_svc = {
+          'total': total,
+          'backend_total': backend_total,
+          'data': data_svc,
+        }
 
     def pie_data_app(q, level=0):
         sql = """select
                    t.app,
-                   sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size
+                   sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
+                   sum(if(t.disk_alloc > 0, t.disk_alloc, t.disk_used)) alloc
                  from (
                    select
                      u.app,
                      max(u.disk_used) as disk_used,
-                     u.disk_size
+                     u.disk_size,
+                     u.disk_alloc
                    from
                    (
                      select
@@ -1791,7 +1805,8 @@ def ajax_disk_charts():
                        b_disk_app.disk_region,
                        b_disk_app.app as app,
                        b_disk_app.disk_used,
-                       b_disk_app.disk_size
+                       b_disk_app.disk_size,
+                       b_disk_app.disk_alloc
                      from
                        b_disk_app
                      left join stor_array on b_disk_app.disk_arrayid=stor_array.array_name
@@ -1805,7 +1820,8 @@ def ajax_disk_charts():
                        b_disk_app.disk_region,
                        b_disk_app.app as app,
                        b_disk_app.disk_used,
-                       b_disk_app.disk_size
+                       b_disk_app.disk_size,
+                       b_disk_app.disk_alloc
                      from
                        b_disk_app
                      left join stor_array on b_disk_app.disk_arrayid=stor_array.array_name
@@ -1842,12 +1858,18 @@ def ajax_disk_charts():
             if len(_data_app) == 0:
                 _data_app = [["", 0]]
             if level == 0:
-                total = data_total(_data_app)
+                total, backend_total = data_total(rows)
             else:
-                diff = total - data_total(_data_app)
+                diff = total - data_total(_data_app)[0]
                 if diff > 0:
                     _data_app += [["n/a " +' (%s)'%beautify_size_mb(diff), diff]]
             data_app.append(_data_app)
+        h_data_app = {
+          'total': total,
+          'backend_total': backend_total,
+          'data': data_app,
+        }
+
 
     sql = """select count(distinct b_disk_app.disk_arrayid)
              from
@@ -1871,13 +1893,15 @@ def ajax_disk_charts():
 
     if n_arrays == 1 and n_dg > 1:
         sql = """select
-                   sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
                    t.disk_arrayid,
+                   sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
+                   sum(if(t.disk_alloc > 0, t.disk_alloc, t.disk_used)) alloc,
                    t.disk_group
                  from (
                    select
                      sum(u.disk_used) as disk_used,
                      u.disk_size,
+                     u.disk_alloc,
                      u.disk_arrayid,
                      u.disk_group
                    from
@@ -1886,6 +1910,7 @@ def ajax_disk_charts():
                        b_disk_app.disk_id,
                        max(b_disk_app.disk_used) as disk_used,
                        b_disk_app.disk_size,
+                       b_disk_app.disk_alloc,
                        b_disk_app.disk_arrayid,
                        b_disk_app.disk_group
                      from
@@ -1903,28 +1928,37 @@ def ajax_disk_charts():
 
         data_dg = []
         for row in rows:
-            if row[2] is None:
+            if row[3] is None:
                 dg = ''
             else:
-                dg = ' '.join((row[1],row[2]))
+                dg = ' '.join((row[0],row[3]))
 
             label = dg
             try:
-                size = int(row[0])
+                size = int(row[1])
             except:
                 continue
             data_dg += [[str(label) +' (%s)'%beautify_size_mb(size), size]]
+        total, backend_total = data_total(rows)
         data_dg.sort(lambda x, y: cmp(y[1], x[1]))
         data_dg = [data_dg]
+        h_data_dg = {
+          'total': total,
+          'backend_total': backend_total,
+          'data': data_dg,
+        }
+
 
     def pie_data_array(q, level=0):
         sql = """select
+                   t.disk_arrayid,
                    sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
-                   t.disk_arrayid
+                   sum(if(t.disk_alloc > 0, t.disk_alloc, t.disk_used)) alloc
                  from (
                    select
                      sum(u.disk_used) as disk_used,
                      u.disk_size,
+                     u.disk_alloc,
                      u.disk_arrayid
                    from
                    (
@@ -1932,6 +1966,7 @@ def ajax_disk_charts():
                        b_disk_app.disk_id,
                        max(b_disk_app.disk_used) as disk_used,
                        b_disk_app.disk_size,
+                       b_disk_app.disk_alloc,
                        b_disk_app.disk_arrayid
                      from
                        b_disk_app
@@ -1954,13 +1989,13 @@ def ajax_disk_charts():
             rows = pie_data_array(q, level)
             _data_array = []
             for row in rows:
-                if row[1] is None:
+                if row[0] is None:
                     array = ''
                 else:
-                    array = row[1]
+                    array = row[0]
                 label = array
                 try:
-                    size = int(row[0])
+                    size = int(row[1])
                 except:
                     continue
                 _data_array += [[str(label) +' (%s)'%beautify_size_mb(size), size]]
@@ -1968,18 +2003,23 @@ def ajax_disk_charts():
             if len(_data_array) == 0:
                 _data_array = [["", 0]]
             if level == 0:
-                total = data_total(_data_array)
+                total, backend_total = data_total(rows)
             else:
-                diff = total - data_total(_data_array)
+                diff = total - data_total(_data_array)[0]
                 if diff > 0:
                     _data_array += [["n/a " +' (%s)'%beautify_size_mb(diff), diff]]
             data_array.append(_data_array)
+        h_data_array = {
+          'total': total,
+          'backend_total': backend_total,
+          'data': data_array,
+        }
 
 
-    nt.object_list = [{'chart_svc': json.dumps(data_svc),
-                       'chart_ap': json.dumps(data_app),
-                       'chart_dg': json.dumps(data_dg),
-                       'chart_ar': json.dumps(data_array)}]
+    nt.object_list = [{'chart_svc': json.dumps(h_data_svc),
+                       'chart_ap': json.dumps(h_data_app),
+                       'chart_dg': json.dumps(h_data_dg),
+                       'chart_ar': json.dumps(h_data_array)}]
 
     return DIV(
              nt.html(),
@@ -1987,17 +2027,12 @@ def ajax_disk_charts():
 """
 function diskdonut(o) {
   try{
-  var data = $.parseJSON(o.html())
-  var title = ""
-  for (i=0;i<data.length;i++) {
-    var total = 0
-    for (j=0;j<data[i].length;j++) {total += data[i][j][1]}
-    total = fancy_size_mb(total)
-    title = total
-    if (total>0) {break}
-  }
+  var d = $.parseJSON(o.html())
+  var total = fancy_size_mb(d['total'])
+  var backend_total = fancy_size_mb(d['backend_total'])
+  var title = total + ' (' + backend_total + ')'
   o.html("")
-  $.jqplot(o.attr('id'), data,
+  $.jqplot(o.attr('id'), d['data'],
     {
       seriesDefaults: {
         renderer: $.jqplot.DonutRenderer,
@@ -2018,7 +2053,7 @@ function diskdonut(o) {
         function (ev) {
             $('#chart_info').html('%(msg)s');
         }
-  ); 
+  );
   } catch(e) {}
 }
 $("[id^=chart_svc]").each(function(){
