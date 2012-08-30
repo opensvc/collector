@@ -2994,6 +2994,16 @@ def update_dash_pkgdiff(nodename):
         else:
             sev = 0
 
+        skip = 0
+        trail = ""
+        while True:
+            nodes_s = ','.join(nodes).replace("'", "")+trail
+            if len(nodes_s) < 50:
+                break
+            skip += 1
+            nodes = nodes[:-1]
+            trail = ", ... (+%d)"%skip
+
         sql = """insert ignore into dashboard
                  set
                    dash_type="package differences in cluster",
@@ -3009,7 +3019,7 @@ def update_dash_pkgdiff(nodename):
                        sev=sev,
                        env=row.mon_svctype,
                        n=rows[0][0],
-                       nodes=','.join(nodes).replace("'", ""))
+                       nodes=nodes_s)
 
         rows = db.executesql(sql)
         db.commit()
