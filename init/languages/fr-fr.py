@@ -734,6 +734,7 @@
 'Run module': 'Lancer un module',
 'Run moduleset': 'Lancer un jeu de modules',
 'Run node': 'Lancer une action sur le noeud',
+'SAN topology': 'SAN topology',
 'Save': 'Sauvegarde',
 'Save profile': 'Sauvegarde le profil',
 'Scenario': 'Scenario',

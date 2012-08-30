@@ -755,6 +755,34 @@ def ajax_node_stor():
     return stor
 
 @auth.requires_login()
+def ajax_nodes_stor():
+    nodes = request.vars.nodes
+    if nodes is None:
+        return "No data"
+    nodes = set(nodes.split(','))
+    nodes -= set([""])
+
+    # san graphviz
+    from applications.init.modules import san
+    import tempfile
+    import os
+    vizdir = os.path.join(os.getcwd(), 'applications', 'init', 'static')
+    d = sandata(nodes).main()
+    o = san.Viz(d)
+    f = tempfile.NamedTemporaryFile(dir=vizdir, prefix='tempviz')
+    sanviz = f.name
+    f.close()
+    o.write(sanviz)
+    sanviz = URL(r=request,c='static',f=os.path.basename(sanviz))
+    sanviz_legend = o.html_legend()
+
+    stor = DIV(
+      XML(sanviz_legend),
+      IMG(_src=sanviz),
+    )
+    return stor
+
+@auth.requires_login()
 def ajax_svc_stor():
     id = request.args[0]
     svcname = request.args[1]

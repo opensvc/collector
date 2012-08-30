@@ -173,6 +173,7 @@ class table_nodes(HtmlTable):
             self.additional_tools.append('node_del')
         self.additional_tools.append('pkgdiff')
         self.additional_tools.append('grpperf')
+        self.additional_tools.append('santopo')
         if member_of(('Manager', 'CompExec')):
             self += HtmlTableMenu('Action', 'action16', ['tool_action_node', 'tool_action_module', 'tool_action_moduleset'], id='menu_comp_action')
 
@@ -384,6 +385,29 @@ class table_nodes(HtmlTable):
                 _name=divid,
                 _id=divid,
               ),
+              _class='floatw',
+            )
+        return d
+
+    def santopo(self):
+        divid = 'santopo'
+        d = DIV(
+              A(
+                T("SAN topology"),
+                _class='hd16',
+                _onclick="""click_toggle_vis(event,'%(div)s', 'block');
+                            ajax('%(url)s?nodes='+checked_nodes(), [], '%(div)s');"""%dict(
+                              url=URL(r=request,c='ajax_node',f='ajax_nodes_stor'),
+                              div=divid,
+                            ),
+              ),
+              DIV(
+                _style='display:none',
+                _class='white_float',
+                _name=divid,
+                _id=divid,
+              ),
+
               _class='floatw',
             )
         return d
