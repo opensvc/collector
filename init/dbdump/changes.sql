@@ -2958,3 +2958,8 @@ create view v_disk_app as
 ;
 
 
+alter table packages drop index idx3;
+
+alter table packages add unique key idx3 (`pkg_nodename`,`pkg_name`,`pkg_arch`,`pkg_version`);
+
+

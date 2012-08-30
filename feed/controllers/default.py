@@ -2962,7 +2962,8 @@ def update_dash_pkgdiff(nodename):
         q = db.svcmon.mon_svcname == svcname
         q &= db.svcmon.mon_updated > datetime.datetime.now() - datetime.timedelta(minutes=20)
         nodes = map(lambda x: repr(x.mon_nodname),
-                    db(q).select(db.svcmon.mon_nodname))
+                    db(q).select(db.svcmon.mon_nodname,
+                                 orderby=db.svcmon.mon_nodname))
         n = len(nodes)
 
         if n < 2:
