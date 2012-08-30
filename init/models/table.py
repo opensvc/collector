@@ -561,7 +561,7 @@ class HtmlTable(object):
         return '_'.join((self.id, 'c', f))
 
     def filter_key(self, f):
-        if self.colprops[f].filter_redirect is not None:
+        if hasattr(self.colprops[f], 'filter_redirect') and self.colprops[f].filter_redirect is not None:
             f = self.colprops[f].filter_redirect
         return '_'.join((self.id, 'f', f))
 
