@@ -1273,7 +1273,7 @@ def insert_eva(name=None, nodename=None):
                     'disk_group',
                     'disk_updated']
             vals = []
-            for d in s.vdisk:
+            for d in s.vdisk.values():
                 vals.append([d['wwlunid'],
                              s.name,
                              d['objectname'],

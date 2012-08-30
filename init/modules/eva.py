@@ -7,9 +7,10 @@ class Eva(object):
             return
         self.xml_dir = xml_dir
         self.name = os.path.basename(xml_dir)
-        self.controller()
-        self.disk_group()
-        self.vdisk()
+        self.get_controller()
+        self.get_disk_group()
+        self.get_vdisk()
+        self.get_snapshots()
 
     def xmltree(self, xml):
         f = os.path.join(self.xml_dir, xml)
@@ -17,7 +18,7 @@ class Eva(object):
         tree.parse(f)
         return tree
 
-    def controller(self):
+    def get_controller(self):
         tree = self.xmltree('controller')
         self.controllermainmemory = 0
         self.ports = []
@@ -29,7 +30,7 @@ class Eva(object):
             self.ports = map(lambda x: x.replace(' ', '').lower(), self.ports)
         del tree
 
-    def disk_group(self):
+    def get_disk_group(self):
         tree = self.xmltree('disk_group')
         self.dg = []
         for e in tree.getiterator('object'):
@@ -41,15 +42,20 @@ class Eva(object):
             self.dg.append(dg)
         del tree
 
-    def vdisk(self):
+    def get_vdisk(self):
         tree = self.xmltree('vdisk')
-        self.vdisk = []
+        self.vdisk = {}
         for e in tree.getiterator('object'):
             d = {}
             d['wwlunid'] = e.find("wwlunid").text.replace('-', '')
             d['objectid'] = e.find('objectid').text
+            d['objecttype'] = e.find('objecttype').text
+            if d['objecttype'] == 'snapshot':
+                s = e.find('sharinginformation/parentvdiskid')
+                if s is not None:
+                    d['parentvdiskid'] = s.text
             d['objectname'] = e.find('objectname').text.lstrip("\\Virtual Disk\\").rstrip("\\ACTIVE")
-            d['allocatedcapacity'] = int(e.find('allocatedcapacity').text)*1024
+            d['allocatedcapacity'] = int(e.find('allocatedcapacityblocks').text)//2//1024
             d['redundancy'] = e.find('redundancy').text
             d['diskgroupname'] = e.find('diskgroupname').text.split('\\')[-1]
             d['alloc'] = d['allocatedcapacity']
@@ -62,8 +68,22 @@ class Eva(object):
             elif d['redundancy'] == 'vraid6':
                 d['alloc'] = int(1.*d['alloc']*6/4)
 
-            self.vdisk.append(d)
+            self.vdisk[d['objectid']] = d
         del tree
+
+    def get_snapshots(self):
+        for d in self.vdisk.values():
+            if d['objecttype'] != 'snapshot' or 'parentvdiskid' not in d:
+                continue
+            _d = d
+            while True:
+                pid = _d['parentvdiskid']
+                p = self.vdisk[pid]
+                if p['objecttype'] != 'snapshot':
+                    d['allocatedcapacity'] = p['allocatedcapacity']
+                    break
+                else:
+                    _d = p
 
     def __str__(self):
         s = "name: %s\n" % self.name
@@ -75,7 +95,7 @@ class Eva(object):
             s += "dg %s: free %s MB\n"%(dg['diskgroupname'], str(dg['freestoragespace']))
             s += "dg %s: used %s MB\n"%(dg['diskgroupname'], str(dg['usedstoragespace']))
             s += "dg %s: total %s MB\n"%(dg['diskgroupname'], str(dg['totalstoragespace']))
-        for d in self.vdisk:
+        for d in self.vdisk.values():
             s += "vdisk %s: size %s GB\n"%(d['wwlunid'], str(d['allocatedcapacity']))
         return s
 
@@ -88,7 +108,7 @@ def get_eva(xml_dir=None):
 
 import sys
 def main():
-    s = get_eva(sys.argv[1])
+    s = Eva(sys.argv[1])
     print s
 
 if __name__ == "__main__":
