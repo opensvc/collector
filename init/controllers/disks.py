@@ -1777,7 +1777,7 @@ def ajax_disk_charts():
             if level == 0:
                 total, backend_total = data_total(rows)
             else:
-                diff = total - data_total(_data_svc)[0]
+                diff = total - data_total(rows)[0]
                 if diff > 0:
                     _data_svc += [["n/a " +' (%s)'%beautify_size_mb(diff), diff]]
             data_svc.append(_data_svc)
@@ -1791,7 +1791,7 @@ def ajax_disk_charts():
         sql = """select
                    t.app,
                    sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
-                   sum(if(t.disk_alloc > 0, t.disk_alloc, t.disk_used)) alloc
+                   sum(if(t.disk_alloc is not NULL and t.disk_alloc>0, t.disk_alloc, t.disk_size)) alloc
                  from (
                    select
                      u.app,
@@ -1860,7 +1860,7 @@ def ajax_disk_charts():
             if level == 0:
                 total, backend_total = data_total(rows)
             else:
-                diff = total - data_total(_data_app)[0]
+                diff = total - data_total(rows)[0]
                 if diff > 0:
                     _data_app += [["n/a " +' (%s)'%beautify_size_mb(diff), diff]]
             data_app.append(_data_app)
@@ -1895,7 +1895,7 @@ def ajax_disk_charts():
         sql = """select
                    t.disk_arrayid,
                    sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
-                   sum(if(t.disk_alloc > 0, t.disk_alloc, t.disk_used)) alloc,
+                   sum(if(t.disk_alloc is not NULL and t.disk_alloc>0, t.disk_alloc, t.disk_size)) alloc
                    t.disk_group
                  from (
                    select
@@ -1953,7 +1953,7 @@ def ajax_disk_charts():
         sql = """select
                    t.disk_arrayid,
                    sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
-                   sum(if(t.disk_alloc > 0, t.disk_alloc, t.disk_used)) alloc
+                   sum(if(t.disk_alloc is not NULL and t.disk_alloc>0, t.disk_alloc, t.disk_size)) alloc
                  from (
                    select
                      sum(u.disk_used) as disk_used,
@@ -2005,7 +2005,7 @@ def ajax_disk_charts():
             if level == 0:
                 total, backend_total = data_total(rows)
             else:
-                diff = total - data_total(_data_array)[0]
+                diff = total - data_total(rows)[0]
                 if diff > 0:
                     _data_array += [["n/a " +' (%s)'%beautify_size_mb(diff), diff]]
             data_array.append(_data_array)
