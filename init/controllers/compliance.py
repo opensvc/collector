@@ -6800,3 +6800,79 @@ def update_dash_compdiff(nodename):
         rows = db.executesql(sql)
         db.commit()
 
+def cron_dash_moddiff():
+    q = db.services.updated > now - datetime.timedelta(days=2)
+    svcnames = [r.svc_name for r in db(q).select(db.services.svc_name)]
+
+    for svcname in svcnames:
+        update_dash_moddiff(svcname)
+
+def update_dash_moddiff(svcname):
+    rows = db(db.svcmon.mon_svcname==svcname).select()
+    nodes = [r.mon_nodname for r in rows]
+    n = len(nodes)
+
+    sql = """delete from dashboard
+             where
+               dash_type="compliance moduleset attachment differences in cluster" and
+               dash_svcname="%s"
+          """%svcname
+    db.executesql(sql)
+    db.commit()
+
+    if n < 2:
+        return
+
+    if rows.first().mon_svctype == 'PRD':
+        sev = 1
+    else:
+        sev = 0
+
+    skip = 0
+    trail = ""
+    while True:
+        nodes_s = ','.join(nodes).replace("'", "")+trail
+        if len(nodes_s) < 50:
+            break
+        skip += 1
+        nodes = nodes[:-1]
+        trail = ", ... (+%d)"%skip
+
+    sql = """
+           insert ignore into dashboard
+           select
+             NULL,
+             "compliance moduleset attachment differences in cluster",
+             "%(svcname)s",
+             "",
+             %(sev)d,
+             "%%(n)d differences in cluster %%(nodes)s",
+             concat('{"n": ', count(t.n),
+                    ', "nodes": "%(nodes)s"}'),
+             now(),
+             md5(concat('{"n": ', t.n,
+                        ', "nodes": "%(nodes)s"}')),
+             "%(env)s"
+           from
+            (
+             select
+               count(nm.modset_node) as n,
+               group_concat(nm.modset_node) as nodes,
+               ms.modset_name as modset
+             from
+               comp_node_moduleset nm,
+               svcmon m,
+               comp_moduleset ms
+             where
+               m.mon_svcname="%(svcname)s" and
+               m.mon_nodname=nm.modset_node and
+               nm.modset_id=ms.id
+             group by
+               modset_name
+             order by
+               modset_name
+            ) t
+            where t.n != %(n)d
+    """%dict(svcname=svcname, nodes=nodes_s, n=n, sev=sev, env=rows.first().mon_svctype)
+    db.executesql(sql)
+    db.commit()
