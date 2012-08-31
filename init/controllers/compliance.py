@@ -6327,12 +6327,14 @@ def comp_get_ruleset(nodename, auth):
 @auth_uuid
 @service.xmlrpc
 def comp_get_svc_ruleset(svcname, auth):
-    return _comp_get_svc_ruleset(svcname, auth)
+    ruleset =  _comp_get_svc_ruleset(svcname)
+    ruleset.update(comp_get_svcmon_ruleset(svcname, auth[1]))
+    ruleset.update(comp_get_node_ruleset(auth[1]))
+    return ruleset
 
-def _comp_get_svc_ruleset(svcname, auth):
+def _comp_get_svc_ruleset(svcname):
     # initialize ruleset with asset variables
     ruleset = comp_get_service_ruleset(svcname)
-    ruleset.update(comp_get_svcmon_ruleset(svcname, auth[1]))
 
     # add contextual rulesets variables
     v = db.v_gen_filtersets
@@ -6353,6 +6355,7 @@ def _comp_get_svc_ruleset(svcname, auth):
     l2 = db.svcmon.on(j)
     last_index = len(rows)-1
     qr = db.services.id > 0
+    need = False
 
     for i, row in enumerate(rows):
         if i == last_index:
@@ -6362,11 +6365,15 @@ def _comp_get_svc_ruleset(svcname, auth):
         else:
             end_seq = False
         qr = comp_query(qr, row)
+        if row.v_gen_filtersets.f_table in ('svcmon', 'services'):
+            need = True
         if end_seq:
-            match = db(q&qr).select(db.nodes.id, db.svcmon.mon_svcname,
-                                    left=(l2,l1))
-            if len(match) > 0:
-                ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr))
+            if need:
+                match = db(q&qr).select(db.nodes.id, db.svcmon.mon_svcname,
+                                        left=(l2,l1))
+                if len(match) > 0:
+                    ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr))
+                need = False
             qr = db.services.id > 0
 
     # add explicit rulesets variables
@@ -6484,12 +6491,22 @@ def beautify_ruleset(rset):
     for v in rset['vars']:
         vl.append(beautify_var(v))
 
+    import uuid
+    did = "i"+uuid.uuid1().hex
     u = UL(
           LI(
-            rset['name'],
-            P(rset['filter'], _style='font-weight:normal'),
-            UL(vl),
+            DIV(
+              rset['name'],
+              P(rset['filter'], _style='font-weight:normal'),
+              _onclick="""$("#%s").toggle();"""%did,
+            ),
+            UL(
+              vl,
+              _id=did,
+              _style="display:none",
+            ),
           ),
+          _class="clickable",
         )
     return u
 
@@ -6518,6 +6535,24 @@ def beautify_modulesets(msets, node):
         l.append(beautify_moduleset(mset, _comp_get_moduleset_modules(mset, node)))
     return SPAN(l, _class='xset')
 
+def svc_comp_status(svcname):
+    tid = 'scs_'+svcname
+    t = table_comp_status(tid, 'svc_comp_status')
+    t.cols.remove('run_status_log')
+
+    q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
+    q &= db.comp_status.run_svcname == svcname
+    t.object_list = db(q).select()
+    t.hide_tools = True
+    t.pageable = False
+    t.linkable = False
+    t.filterable = False
+    t.exportable = False
+    t.dbfilterable = False
+    t.columnable = False
+    t.refreshable = False
+    return t.html()
+
 def node_comp_status(node):
     tid = 'ncs_'+node
     t = table_comp_status(tid, 'node_comp_status')
@@ -6525,7 +6560,6 @@ def node_comp_status(node):
 
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
     q &= db.comp_status.run_nodename == node
-    q &= db.comp_status.run_date > now - datetime.timedelta(days=8)
     t.object_list = db(q).select()
     t.hide_tools = True
     t.pageable = False
@@ -6552,6 +6586,36 @@ def ajax_rset_md5():
     return d
 
 @auth.requires_login()
+def ajax_compliance_svc():
+    svcname = request.args[0]
+    rsets = _comp_get_svc_ruleset(svcname)
+    msets = _comp_get_svc_moduleset(svcname)
+
+    d = []
+    q = db.svcmon.mon_svcname==svcname
+    q &= db.svcmon.mon_updated > now - datetime.timedelta(days=1)
+    rows = db(q).select(db.svcmon.mon_nodname)
+    nodes = [r.mon_nodname for r in rows]
+
+    for node in nodes:
+        n_rsets = comp_get_svcmon_ruleset(svcname, node)
+        n_rsets.update(comp_get_node_ruleset(node))
+        d.append(B(node))
+        d.append(beautify_rulesets(n_rsets))
+
+    d = SPAN(
+          H3(T('Status')),
+          svc_comp_status(svcname),
+          H3(T('Modulesets')),
+          beautify_modulesets(msets, svcname),
+          H3(T('Rulesets')),
+          beautify_rulesets(rsets),
+          H3(T('Per node additional rulesets')),
+          SPAN(d),
+        )
+    return d
+
+@auth.requires_login()
 def ajax_compliance_node():
     node = request.args[0]
     rsets = _comp_get_ruleset(node)
@@ -6559,10 +6623,10 @@ def ajax_compliance_node():
     d = SPAN(
           H3(T('Status')),
           node_comp_status(node),
-          H3(T('Rulesets')),
-          beautify_rulesets(rsets),
           H3(T('Modulesets')),
           beautify_modulesets(msets, node),
+          H3(T('Rulesets')),
+          beautify_rulesets(rsets),
         )
     return d
 

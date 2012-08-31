@@ -556,7 +556,7 @@ def ajax_service():
 
     def js(tab, rowid):
         buff = ""
-        for i in range(1, 11):
+        for i in range(1, 12):
             buff += """$('#%(tab)s_%(id)s').hide();
                        $('#li%(tab)s_%(id)s').removeClass('tab_active');
                     """%dict(tab='tab'+str(i), id=rowid)
@@ -646,6 +646,7 @@ def ajax_service():
             LI(P(T("wiki"), _class='edit', _onclick=js('tab8', rowid)), _id="litab8_"+str(rowid)),
             LI(P(T("avail"), _class='svc', _onclick=js('tab9', rowid)), _id="litab9_"+str(rowid)),
             LI(P(T("pkgdiff"), _class='pkg16', _onclick=js('tab10', rowid)), _id="litab10_"+str(rowid)),
+            LI(P(T("compliance"), _class='comp16', _onclick=js('tab11', rowid)), _id="litab11_"+str(rowid)),
           ),
           _class="tab",
         ),
@@ -700,6 +701,12 @@ def ajax_service():
             _id='tab10_'+str(rowid),
             _class='cloud',
           ),
+          DIV(
+            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            _id='tab11_'+str(rowid),
+            _class='cloud',
+            _style='max-width:80em',
+          ),
           SCRIPT(
             """$("#%(id)s").show(); sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(rowid)s');$("#%(id)s").hide()});"""%dict(
                id='tab9_'+str(rowid),
@@ -719,6 +726,11 @@ def ajax_service():
             "ajax('%(url)s', [], '%(id)s')"%dict(
                id='tab10_'+str(rowid),
                url=URL(r=request, c='pkgdiff', f='svc_pkgdiff',
+                       args=[request.vars.node])
+            ),
+            "ajax('%(url)s', [], '%(id)s')"%dict(
+               id='tab11_'+str(rowid),
+               url=URL(r=request, c='compliance', f='ajax_compliance_svc',
                        args=[request.vars.node])
             ),
             "ajax('%(url)s', [], '%(id)s')"%dict(

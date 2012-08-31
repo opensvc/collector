@@ -2366,6 +2366,13 @@ svcmon_colprops = {
              img = 'node16',
              table = 'svcmon',
             ),
+    'mon_svctype': col_env(
+             title = 'Service type',
+             field='mon_svctype',
+             display = False,
+             img = 'svc',
+             table = 'svcmon',
+            ),
     'mon_overallstatus': col_overallstatus(
              title = 'Status',
              field='mon_overallstatus',

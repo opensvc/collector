@@ -632,6 +632,7 @@
 'Patchnum': 'Patchnum',
 'Patchrev': 'Patchrev',
 'Per application billing': 'Facturation par application',
+'Per node additional rulesets': 'Per node additional rulesets',
 'Per operating system billing': "Facturation par système d'exploitation",
 'Per operating system lifecycle': "Cycle de vie par système d'exploitation",
 'Percent': 'Pourcentage',
