@@ -182,11 +182,13 @@ class SymDev(object):
         self.rdf = SymDevRdf()
         self.memberof = ""
         self.alloc = 0
+        self.backend_alloc = 0
 
         try:
             self.megabytes = int(xml.find("Capacity/megabytes").text)
         except:
             self.megabytes = 0
+        self.alloc = self.megabytes
         for e in list(xml.find("Dev_Info")):
             self.info[e.tag] = e.text
         for e in list(xml.find("Flags")):
@@ -220,7 +222,8 @@ class SymDev(object):
             for key in be:
                 l += self.prefix("be[%d].%s: %s"%(i, key, be[key]))
         l += self.prefix('megabytes: %d'%self.megabytes)
-        l += self.prefix('backend megabytes: %d'%self.alloc)
+        l += self.prefix('alloc megabytes: %d'%self.alloc)
+        l += self.prefix('backend megabytes: %d'%self.backend_alloc)
         l += self.prefix('diskgroup: %s'%str(self.diskgroup))
         l += self.prefix('diskgroup_name: %s'%str(self.diskgroup_name))
         l += self.prefix('meta: %s'%','.join(self.meta))
@@ -236,17 +239,17 @@ class SymDev(object):
         if isinstance(o, SymMeta):
             self.tracks_per_stripe = o.tracks_per_stripe
             if self.info['configuration'] == "RAID-5" and self.tracks_per_stripe == 4:
-                self.alloc = int(1. * self.megabytes * 4 / 3)
+                self.backend_alloc = int(1. * self.megabytes * 4 / 3)
             elif self.info['configuration'] == "RAID-5" and self.tracks_per_stripe == 8:
-                self.alloc = int(1. * self.megabytes * 8 / 7)
+                self.backend_alloc = int(1. * self.megabytes * 8 / 7)
             elif self.info['configuration'] == "RAID-6" and self.tracks_per_stripe == 8:
-                self.alloc = int(1. * self.megabytes * 8 / 6)
+                self.backend_alloc = int(1. * self.megabytes * 8 / 6)
             elif self.info['configuration'] == "RAID-6" and self.tracks_per_stripe == 16:
-                self.alloc = int(1. * self.megabytes * 16 / 14)
+                self.backend_alloc = int(1. * self.megabytes * 16 / 14)
             elif self.info['configuration'] == "2-Way Mir":
-                self.alloc = 2 * self.megabytes
+                self.backend_alloc = 2 * self.megabytes
             else:
-                self.alloc = 0
+                self.backend_alloc = 0
                 print "could not determine backend allocation for ", self.info['dev_name'], self.tracks_per_stripe, self.info['configuration']
 
             self.meta = o.meta

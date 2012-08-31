@@ -60,13 +60,13 @@ class Eva(object):
             d['diskgroupname'] = e.find('diskgroupname').text.split('\\')[-1]
             d['alloc'] = d['allocatedcapacity']
             if d['redundancy'] == 'vraid0':
-                d['alloc'] *= 1
+                d['backend_alloc'] = d['alloc']
             elif d['redundancy'] in ('vraid1', 'vraid10'):
-                d['alloc'] *= 2
+                d['backend_alloc'] = d['alloc'] * 2
             elif d['redundancy'] == 'vraid5':
-                d['alloc'] = int(1.*d['alloc']*5/4)
+                d['backend_alloc'] = int(1.*d['alloc']*5/4)
             elif d['redundancy'] == 'vraid6':
-                d['alloc'] = int(1.*d['alloc']*6/4)
+                d['backend_alloc'] = int(1.*d['alloc']*6/4)
 
             self.vdisk[d['objectid']] = d
         del tree

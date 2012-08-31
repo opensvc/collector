@@ -261,6 +261,9 @@ Internal         : False
                 i += 1
             elif line.startswith('BytesAllocated'):
                 self.vdisk[self.ld[self.ld_list[i]]['vdiskid']]['alloc'] += self.to_mb(line.split(': ')[-1].strip())
+                self.vdisk[self.ld[self.ld_list[i]]['vdiskid']]['n_alloc'] += 1
+        for key in self.vdisk:
+            self.vdisk[key]['alloc'] = int(self.vdisk[key]['alloc']/self.vdisk[key]['n_alloc'])
 
 
     def get_val(self, lines, i):
@@ -469,6 +472,7 @@ Internal                 : False
         for k in self.vdisk:
             if 'alloc' not in self.vdisk[k]:
                 self.vdisk[k]['alloc'] = 0
+                self.vdisk[k]['n_alloc'] = 0
 
     def __str__(self):
         s = "servergroup: %s (%s) used %d MB\n" % (self.sg['caption'], self.sg['id'], self.sg['used'])
