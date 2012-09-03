@@ -4474,6 +4474,8 @@ def comp_attach_modulesets(node_ids=[], modset_ids=[]):
             if db(q).count() == 0:
                 db.comp_node_moduleset.insert(modset_node=node,
                                             modset_id=msid)
+    for node in node_names:
+        update_dash_moddiff_node(node)
 
     q = db.comp_moduleset.id.belongs(modset_ids)
     rows = db(q).select(db.comp_moduleset.modset_name)
@@ -5854,6 +5856,8 @@ def comp_attach_moduleset(nodename, moduleset, auth):
 
     n = db.comp_node_moduleset.insert(modset_node=nodename,
                                       modset_id=modset_id)
+    update_dash_moddiff_node(nodename)
+
     if n == 0:
         return dict(status=False, msg="failed to attach moduleset %s"%moduleset)
     _log('compliance.moduleset.node.attach',
@@ -5946,6 +5950,8 @@ def comp_detach_moduleset(nodename, moduleset, auth):
     n = db(q).delete()
     if n == 0:
         return dict(status=False, msg="failed to detach the moduleset")
+    update_dash_moddiff_node(nodename)
+
     _log('compliance.moduleset.node.detach',
         '%(moduleset)s detached from node %(node)s',
         dict(node=nodename, moduleset=moduleset),
@@ -6805,6 +6811,17 @@ def update_dash_compdiff(nodename):
 def cron_dash_moddiff():
     q = db.services.updated > now - datetime.timedelta(days=2)
     svcnames = [r.svc_name for r in db(q).select(db.services.svc_name)]
+
+    r = []
+    for svcname in svcnames:
+        r.append(update_dash_moddiff(svcname))
+
+    return str(r)
+
+def update_dash_moddiff_node(nodename):
+    q = db.svcmon.mon_nodname == nodename
+    q &= db.svcmon.mon_updated > now - datetime.timedelta(days=2)
+    svcnames = [r.mon_svcname for r in db(q).select(db.svcmon.mon_svcname)]
 
     r = []
     for svcname in svcnames:
