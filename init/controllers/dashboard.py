@@ -501,6 +501,36 @@ class col_dash_links(HtmlTableColumn):
            )
        return i
 
+    def link_compliance_tab(self, o):
+       id = self.t.extra_line_key(o)
+       i = A(
+             _title=T("Compliance tab"),
+             _class='comp16 clickable',
+             _onclick="""toggle_extra('%(url)s', '%(id)s')"""%dict(
+                  url=URL(r=request, c='default',f='ajax_service',
+                          vars={'node': self.t.colprops['dash_svcname'].get(o),
+                                'rowid': id,
+                                'tab': 'tab11'}),
+                  id=id,
+                      ),
+           )
+       return i
+
+    def link_pkgdiff_tab(self, o):
+       id = self.t.extra_line_key(o)
+       i = A(
+             _title=T("Pkgdiff tab"),
+             _class='pkg16 clickable',
+             _onclick="""toggle_extra('%(url)s', '%(id)s')"""%dict(
+                  url=URL(r=request, c='default',f='ajax_service',
+                          vars={'node': self.t.colprops['dash_svcname'].get(o),
+                                'rowid': id,
+                                'tab': 'tab10'}),
+                  id=id,
+                      ),
+           )
+       return i
+
     def html(self, o):
        l = []
        dash_type = self.t.colprops['dash_type'].get(o)
@@ -526,6 +556,10 @@ class col_dash_links(HtmlTableColumn):
            l.append(self.link_obsolescence(o, 'os'))
        elif "obsolescence" in dash_type:
            l.append(self.link_obsolescence(o, 'hw'))
+       elif dash_type.startswith('comp'):
+           l.append(self.link_compliance_tab(o))
+       elif dash_type.startswith('package'):
+           l.append(self.link_pkgdiff_tab(o))
 
        return DIV(l)
 

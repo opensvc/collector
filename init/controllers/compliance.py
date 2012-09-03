@@ -6875,7 +6875,9 @@ def show_compdiff(svcname):
                  count(cs.run_nodename) as c,
                  group_concat(cs.run_nodename order by cs.run_nodename) as node,
                  cs.run_module,
-                 cs.run_status
+                 cs.run_status,
+                 cs.run_log,
+                 cs.run_date
                from
                  comp_status cs,
                  svcmon m
@@ -6902,18 +6904,33 @@ def show_compdiff(svcname):
 
     def fmt_header():
         return TR(
+                 TH(T("Date")),
                  TH(T("Node")),
                  TH(T("Module")),
                  TH(T("Status")),
                )
 
+    deadline = now - datetime.timedelta(days=7)
+
+
+    def outdated(t):
+         if t is None or t == '': return True
+         if t < deadline: return True
+         return False
+
     def fmt_line(row):
+        if outdated(row[5]):
+            d = 'color:darkred;font-weight:bold'
+        else:
+            d = ''
         return TR(
+                 TD(row[5], _style=d),
                  TD(row[1]),
                  TD(row[2]),
                  TD(IMG(
                   _src=URL(r=request,c='static',f=img_h[row[3]]),
                  )),
+                 _title=row[4]
                )
 
     def fmt_table(rows):

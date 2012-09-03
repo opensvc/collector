@@ -438,6 +438,9 @@ def res_status(svcname, node):
 @auth.requires_login()
 def ajax_service():
     rowid = request.vars.rowid
+    tab = request.vars.tab
+    if tab is None:
+        tab = "tab1"
 
     rows = db(db.services.svc_name==request.vars.node).select()
     if len(rows) == 0:
@@ -738,7 +741,7 @@ def ajax_service():
                url=URL(r=request, c='ajax_node', f='ajax_svc_stor',
                        args=['tab6_'+str(rowid), request.vars.node])
             ),
-
+            js(tab, rowid),
             _name='%s_to_eval'%rowid,
           ),
         ),

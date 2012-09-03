@@ -260,6 +260,10 @@ class sandata(object):
 @auth.requires_login()
 def ajax_node():
     rowid = request.vars.rowid
+    tab = request.vars.tab
+    if tab is None:
+        tab = "tab1"
+
     nodes = db(db.v_nodes.nodename==request.vars.node).select()
     if len(nodes) == 0:
         return DIV(
@@ -494,6 +498,7 @@ def ajax_node():
             _style='max-width:80em',
           ),
           SCRIPT(
+            js(tab, rowid),
             "ajax('%(url)s', [], '%(id)s')"%dict(
                id='tab6_'+str(rowid),
                url=URL(r=request, c='ajax_node', f='ajax_node_stor',
