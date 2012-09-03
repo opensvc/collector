@@ -6631,12 +6631,35 @@ def ajax_compliance_svc():
           beautify_rulesets(rsets),
           H3(T('Per node additional rulesets')),
           SPAN(d),
-          H3(T('Moduleset attachment differences in cluster')),
-          show_moddiff(svcname),
-          H3(T('Ruleset attachment differences in cluster')),
-          show_rsetdiff(svcname),
+          SPAN(show_diff(svcname)),
         )
     return d
+
+def show_diff(svcname):
+    l = []
+    compdiff = show_compdiff(svcname)
+    moddiff = show_moddiff(svcname)
+    rsetdiff = show_rsetdiff(svcname)
+
+    if compdiff is not None or moddiff is not None or rsetdiff is not None:
+        l.append(HR())
+
+    if compdiff is not None:
+        l.append(SPAN(
+          H3(T('Module status differences in cluster')),
+          compdiff))
+
+    if moddiff is not None:
+        l.append(SPAN(
+          H3(T('Moduleset attachment differences in cluster')),
+          moddiff))
+
+    if rsetdiff is not None:
+        l.append(SPAN(
+          H3(T('Ruleset attachment differences in cluster')),
+          rsetdiff))
+
+    return l
 
 @auth.requires_login()
 def ajax_compliance_node():
@@ -6827,6 +6850,66 @@ def update_dash_compdiff(nodename):
         rows = db.executesql(sql)
         db.commit()
 
+def show_compdiff(svcname):
+    rows = db(db.svcmon.mon_svcname==svcname).select()
+    nodes = [r.mon_nodname for r in rows]
+    n = len(nodes)
+    nodes = map(lambda x: repr(x), nodes)
+
+    if n < 2:
+        return
+
+    sql = """select t.* from (
+               select
+                 count(run_nodename) as c,
+                 group_concat(run_nodename) as node,
+                 run_module,
+                 run_status
+               from comp_status
+               where
+                 run_nodename in (%(nodes)s)
+               group by
+                 run_svcname,
+                 run_module,
+                 run_status
+              ) as t
+              where
+                t.c!=%(n)s
+              group by t.node, run_module, run_status
+              order by
+                run_module,
+                node,
+                run_status
+              """%dict(nodes=','.join(nodes), n=n)
+
+    _rows = db.executesql(sql)
+
+    if len(_rows) == 0:
+        return
+
+    def fmt_header():
+        return TR(
+                 TH(T("Node")),
+                 TH(T("Module")),
+                 TH(T("Status")),
+               )
+
+    def fmt_line(row):
+        return TR(
+                 TD(row[1]),
+                 TD(row[2]),
+                 TD(row[3]),
+               )
+
+    def fmt_table(rows):
+        return TABLE(
+                 fmt_header(),
+                 map(fmt_line, rows),
+               )
+
+    return DIV(fmt_table(_rows))
+
+
 def cron_dash_moddiff():
     q = db.services.updated > now - datetime.timedelta(days=2)
     svcnames = [r.svc_name for r in db(q).select(db.services.svc_name)]
@@ -6929,7 +7012,7 @@ def show_moddiff(svcname):
     n = len(nodes)
 
     if n < 2:
-        return "No data"
+        return
 
     sql = """
             select t.* from
@@ -6954,6 +7037,9 @@ def show_moddiff(svcname):
             where t.n != %(n)d
     """%dict(svcname=svcname, n=n)
     _rows = db.executesql(sql)
+
+    if len(_rows) == 0:
+        return
 
     def fmt_header():
         return TR(
@@ -7080,7 +7166,7 @@ def show_rsetdiff(svcname):
     n = len(nodes)
 
     if n < 2:
-        return "No data"
+        return
 
     sql = """
             select t.* from
@@ -7105,6 +7191,9 @@ def show_rsetdiff(svcname):
             where t.n != %(n)d
     """%dict(svcname=svcname, n=n)
     _rows = db.executesql(sql)
+
+    if len(_rows) == 0:
+        return
 
     def fmt_header():
         return TR(

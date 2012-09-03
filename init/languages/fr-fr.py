@@ -519,6 +519,7 @@
 'Module': 'Module',
 'Module name': 'Nom de module',
 'Module set': 'Jeu de modules',
+'Module status differences in cluster': 'Module status differences in cluster',
 'Modules': 'Modules',
 'Modules aggregation': 'Aggrégation par module',
 'Moduleset': 'Jeu de modules',
