@@ -6548,6 +6548,14 @@ def beautify_moduleset(mset, mods):
         )
     return u
 
+def beautify_svc_modulesets(msets, svcname):
+    q = db.svcmon.mon_svcname == svcname
+    node = db(q).select()
+    if node is None:
+        return ""
+    node = node.first().mon_nodname
+    return beautify_modulesets(msets, node)
+
 def beautify_modulesets(msets, node):
     l = []
     for mset in msets:
@@ -6626,7 +6634,7 @@ def ajax_compliance_svc():
           H3(T('Status')),
           svc_comp_status(svcname),
           H3(T('Modulesets')),
-          beautify_modulesets(msets, svcname),
+          beautify_svc_modulesets(msets, svcname),
           H3(T('Rulesets')),
           beautify_rulesets(rsets),
           H3(T('Per node additional rulesets')),
@@ -6786,7 +6794,7 @@ def update_dash_compdiff(nodename):
 
         q = db.svcmon.mon_svcname == svcname
         q &= db.svcmon.mon_updated > datetime.datetime.now() - datetime.timedelta(minutes=1440)
-        nodes = map(lambda x: repr(x.mon_nodname),
+        nodes = map(lambda x: x.mon_nodname,
                     db(q).select(db.svcmon.mon_nodname,
                                  orderby=db.svcmon.mon_nodname))
         n = len(nodes)
@@ -6794,21 +6802,25 @@ def update_dash_compdiff(nodename):
         if n < 2:
             continue
 
-        sql = """select count(id) from (
+        sql = """select count(t.id) from (
                    select
-                     id,
-                     count(run_nodename) as c
-                   from comp_status
+                     cs.id,
+                     count(cs.run_nodename) as c
+                   from
+                     comp_status cs,
+                     svcmon m
                    where
-                     run_nodename in (%(nodes)s)
+                     (cs.run_svcname is NULL or cs.run_svcname="") and
+                     m.mon_svcname="%(svcname)s" and
+                     m.mon_nodname=cs.run_nodename
                    group by
-                     run_svcname,
-                     run_module,
-                     run_status
+                     cs.run_svcname,
+                     cs.run_module,
+                     cs.run_status
                   ) as t
                   where
                     t.c!=%(n)s
-              """%dict(nodes=','.join(nodes), n=n)
+              """%dict(svcname=svcname, n=n)
 
         rows = db.executesql(sql)
 
@@ -6854,33 +6866,34 @@ def show_compdiff(svcname):
     rows = db(db.svcmon.mon_svcname==svcname).select()
     nodes = [r.mon_nodname for r in rows]
     n = len(nodes)
-    nodes = map(lambda x: repr(x), nodes)
 
     if n < 2:
         return
 
     sql = """select t.* from (
                select
-                 count(run_nodename) as c,
-                 group_concat(run_nodename) as node,
-                 run_module,
-                 run_status
-               from comp_status
+                 count(cs.run_nodename) as c,
+                 group_concat(cs.run_nodename order by cs.run_nodename) as node,
+                 cs.run_module,
+                 cs.run_status
+               from
+                 comp_status cs,
+                 svcmon m
                where
-                 run_nodename in (%(nodes)s)
+                 (cs.run_svcname is NULL or cs.run_svcname="") and
+                 m.mon_svcname="%(svcname)s" and
+                 m.mon_nodname=cs.run_nodename
                group by
-                 run_svcname,
-                 run_module,
-                 run_status
+                 cs.run_module,
+                 cs.run_status
               ) as t
               where
                 t.c!=%(n)s
-              group by t.node, run_module, run_status
               order by
-                run_module,
-                node,
-                run_status
-              """%dict(nodes=','.join(nodes), n=n)
+                t.run_module,
+                t.node,
+                t.run_status
+              """%dict(svcname=svcname, n=n)
 
     _rows = db.executesql(sql)
 
@@ -6898,7 +6911,9 @@ def show_compdiff(svcname):
         return TR(
                  TD(row[1]),
                  TD(row[2]),
-                 TD(row[3]),
+                 TD(IMG(
+                  _src=URL(r=request,c='static',f=img_h[row[3]]),
+                 )),
                )
 
     def fmt_table(rows):
