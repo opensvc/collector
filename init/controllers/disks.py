@@ -1895,7 +1895,7 @@ def ajax_disk_charts():
         sql = """select
                    t.disk_arrayid,
                    sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
-                   sum(if(t.disk_alloc is not NULL and t.disk_alloc>0, t.disk_alloc, t.disk_size)) alloc
+                   sum(if(t.disk_alloc is not NULL and t.disk_alloc>0, t.disk_alloc, t.disk_size)) alloc,
                    t.disk_group
                  from (
                    select
