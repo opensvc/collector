@@ -522,6 +522,7 @@
 'Modules': 'Modules',
 'Modules aggregation': 'Aggrégation par module',
 'Moduleset': 'Jeu de modules',
+'Moduleset attachment differences in cluster': 'Moduleset attachment differences in cluster',
 'Moduleset name': 'Nom de jeu de modules',
 'Modulesets': 'Jeux de modules',
 'Modulesets/Nodes attachment': 'Attache Jeux de modules/Noeuds',

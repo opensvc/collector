@@ -6612,6 +6612,8 @@ def ajax_compliance_svc():
           beautify_rulesets(rsets),
           H3(T('Per node additional rulesets')),
           SPAN(d),
+          H3(T('Moduleset attachment differences in cluster')),
+          show_moddiff(svcname),
         )
     return d
 
@@ -6804,8 +6806,11 @@ def cron_dash_moddiff():
     q = db.services.updated > now - datetime.timedelta(days=2)
     svcnames = [r.svc_name for r in db(q).select(db.services.svc_name)]
 
+    r = []
     for svcname in svcnames:
-        update_dash_moddiff(svcname)
+        r.append(update_dash_moddiff(svcname))
+
+    return str(r)
 
 def update_dash_moddiff(svcname):
     rows = db(db.svcmon.mon_svcname==svcname).select()
@@ -6839,21 +6844,7 @@ def update_dash_moddiff(svcname):
         trail = ", ... (+%d)"%skip
 
     sql = """
-           insert ignore into dashboard
-           select
-             NULL,
-             "compliance moduleset attachment differences in cluster",
-             "%(svcname)s",
-             "",
-             %(sev)d,
-             "%%(n)d differences in cluster %%(nodes)s",
-             concat('{"n": ', count(t.n),
-                    ', "nodes": "%(nodes)s"}'),
-             now(),
-             md5(concat('{"n": ', t.n,
-                        ', "nodes": "%(nodes)s"}')),
-             "%(env)s"
-           from
+            select count(t.n) from
             (
              select
                count(nm.modset_node) as n,
@@ -6873,6 +6864,78 @@ def update_dash_moddiff(svcname):
                modset_name
             ) t
             where t.n != %(n)d
-    """%dict(svcname=svcname, nodes=nodes_s, n=n, sev=sev, env=rows.first().mon_svctype)
+    """%dict(svcname=svcname, n=n)
+    _rows = db.executesql(sql)
+
+    if _rows[0][0] == 0:
+        return
+
+    sql = """
+           insert ignore into dashboard set
+             dash_type="compliance moduleset attachment differences in cluster",
+             dash_svcname="%(svcname)s",
+             dash_nodename="",
+             dash_severity=%(sev)d,
+             dash_fmt="%%(n)d differences in cluster %%(nodes)s",
+             dash_dict='{"n": %(ndiff)d, "nodes": "%(nodes)s"}',
+             dash_created=now(),
+             dash_dict_md5=md5('{"n": %(ndiff)d, "nodes": "%(nodes)s"}'),
+             dash_env="%(env)s"
+    """%dict(svcname=svcname, nodes=nodes_s, ndiff=_rows[0][0], sev=sev, env=rows.first().mon_svctype)
     db.executesql(sql)
     db.commit()
+
+    return svcname, _rows[0][0]
+
+def show_moddiff(svcname):
+    rows = db(db.svcmon.mon_svcname==svcname).select()
+    nodes = [r.mon_nodname for r in rows]
+    n = len(nodes)
+
+    if n < 2:
+        return "No data"
+
+    sql = """
+            select t.* from
+            (
+             select
+               count(nm.modset_node) as n,
+               group_concat(nm.modset_node) as nodes,
+               ms.modset_name as modset
+             from
+               comp_node_moduleset nm,
+               svcmon m,
+               comp_moduleset ms
+             where
+               m.mon_svcname="%(svcname)s" and
+               m.mon_nodname=nm.modset_node and
+               nm.modset_id=ms.id
+             group by
+               modset_name
+             order by
+               modset_name
+            ) t
+            where t.n != %(n)d
+    """%dict(svcname=svcname, n=n)
+    _rows = db.executesql(sql)
+
+    def fmt_header():
+        return TR(
+                 TH(T("Node")),
+                 TH(T("Moduleset")),
+               )
+
+    def fmt_line(row):
+        return TR(
+                 TD(row[1]),
+                 TD(row[2]),
+               )
+
+    def fmt_table(rows):
+        return TABLE(
+                 fmt_header(),
+                 map(fmt_line, rows),
+               )
+
+    return DIV(fmt_table(_rows))
+
