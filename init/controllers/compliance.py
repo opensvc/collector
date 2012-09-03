@@ -2787,6 +2787,10 @@ def comp_detach_rulesets(node_ids=[], ruleset_ids=[]):
             q = db.comp_rulesets_nodes.nodename == node
             q &= db.comp_rulesets_nodes.ruleset_id == rsid
             db(q).delete()
+
+    for node in node_names:
+        update_dash_rsetdiff_node(node)
+
     q = db.comp_rulesets.id.belongs(ruleset_ids)
     rows = db(q).select(db.comp_rulesets.ruleset_name)
     rulesets = ', '.join([r.ruleset_name for r in rows])
@@ -2813,6 +2817,9 @@ def comp_attach_rulesets(node_ids=[], ruleset_ids=[]):
             if db(q).count() == 0:
                 db.comp_rulesets_nodes.insert(nodename=node,
                                             ruleset_id=rsid)
+
+    for node in node_names:
+        update_dash_rsetdiff_node(node)
 
     q = db.comp_rulesets.id.belongs(ruleset_ids)
     rows = db(q).select(db.comp_rulesets.ruleset_name)
@@ -4448,6 +4455,9 @@ def comp_detach_modulesets(node_ids=[], modset_ids=[]):
             q = db.comp_node_moduleset.modset_node == node
             q &= db.comp_node_moduleset.modset_id == msid
             db(q).delete()
+    for node in node_names:
+        update_dash_moddiff_node(node)
+
     q = db.comp_moduleset.id.belongs(modset_ids)
     rows = db(q).select(db.comp_moduleset.modset_name)
     modulesets = ', '.join([r.modset_name for r in rows])
@@ -6028,6 +6038,8 @@ def comp_attach_ruleset(nodename, ruleset, auth):
 
     n = db.comp_rulesets_nodes.insert(nodename=nodename,
                                       ruleset_id=ruleset_id)
+    update_dash_rsetdiff_node(nodename)
+
     if n == 0:
         return dict(status=False, msg="failed to attach ruleset %s"%ruleset)
     _log('compliance.ruleset.node.attach',
@@ -6060,6 +6072,7 @@ def comp_detach_ruleset(nodename, ruleset, auth):
     n = db(q).delete()
     if n == 0:
         return dict(status=False, msg="failed to detach the ruleset")
+    update_dash_rsetdiff_node(nodename)
     _log('compliance.ruleset.node.detach',
         '%(ruleset)s detached from node %(node)s',
         dict(node=nodename, ruleset=ruleset),
@@ -6620,6 +6633,8 @@ def ajax_compliance_svc():
           SPAN(d),
           H3(T('Moduleset attachment differences in cluster')),
           show_moddiff(svcname),
+          H3(T('Ruleset attachment differences in cluster')),
+          show_rsetdiff(svcname),
         )
     return d
 
@@ -6725,6 +6740,10 @@ def run_cve_one(row):
 #
 # Dashboard alerts
 #
+def cron_dash_comp():
+    cron_dash_moddiff()
+    cron_dash_rsetdiff()
+
 def update_dash_compdiff(nodename):
     nodename = nodename.strip("'")
 
@@ -6940,6 +6959,157 @@ def show_moddiff(svcname):
         return TR(
                  TH(T("Node")),
                  TH(T("Moduleset")),
+               )
+
+    def fmt_line(row):
+        return TR(
+                 TD(row[1]),
+                 TD(row[2]),
+               )
+
+    def fmt_table(rows):
+        return TABLE(
+                 fmt_header(),
+                 map(fmt_line, rows),
+               )
+
+    return DIV(fmt_table(_rows))
+
+
+
+#
+def cron_dash_rsetdiff():
+    q = db.services.updated > now - datetime.timedelta(days=2)
+    svcnames = [r.svc_name for r in db(q).select(db.services.svc_name)]
+
+    r = []
+    for svcname in svcnames:
+        r.append(update_dash_rsetdiff(svcname))
+
+    return str(r)
+
+def update_dash_rsetdiff_node(nodename):
+    q = db.svcmon.mon_nodname == nodename
+    q &= db.svcmon.mon_updated > now - datetime.timedelta(days=2)
+    svcnames = [r.mon_svcname for r in db(q).select(db.svcmon.mon_svcname)]
+
+    r = []
+    for svcname in svcnames:
+        r.append(update_dash_rsetdiff(svcname))
+
+    return str(r)
+
+def update_dash_rsetdiff(svcname):
+    rows = db(db.svcmon.mon_svcname==svcname).select()
+    nodes = [r.mon_nodname for r in rows]
+    n = len(nodes)
+
+    sql = """delete from dashboard
+             where
+               dash_type="compliance ruleset attachment differences in cluster" and
+               dash_svcname="%s"
+          """%svcname
+    db.executesql(sql)
+    db.commit()
+
+    if n < 2:
+        return
+
+    if rows.first().mon_svctype == 'PRD':
+        sev = 1
+    else:
+        sev = 0
+
+    skip = 0
+    trail = ""
+    while True:
+        nodes_s = ','.join(nodes).replace("'", "")+trail
+        if len(nodes_s) < 50:
+            break
+        skip += 1
+        nodes = nodes[:-1]
+        trail = ", ... (+%d)"%skip
+
+    sql = """
+            select count(t.n) from
+            (
+             select
+               count(rn.nodename) as n,
+               group_concat(rn.nodename) as nodes,
+               rs.ruleset_name as ruleset
+             from
+               comp_rulesets_nodes rn,
+               svcmon m,
+               comp_rulesets rs
+             where
+               m.mon_svcname="%(svcname)s" and
+               m.mon_nodname=rn.nodename and
+               rn.ruleset_id=rs.id
+             group by
+               ruleset_name
+             order by
+               ruleset_name
+            ) t
+            where t.n != %(n)d
+    """%dict(svcname=svcname, n=n)
+    _rows = db.executesql(sql)
+
+    if _rows[0][0] == 0:
+        return
+
+    sql = """
+           insert ignore into dashboard set
+             dash_type="compliance ruleset attachment differences in cluster",
+             dash_svcname="%(svcname)s",
+             dash_nodename="",
+             dash_severity=%(sev)d,
+             dash_fmt="%%(n)d differences in cluster %%(nodes)s",
+             dash_dict='{"n": %(ndiff)d, "nodes": "%(nodes)s"}',
+             dash_created=now(),
+             dash_dict_md5=md5('{"n": %(ndiff)d, "nodes": "%(nodes)s"}'),
+             dash_env="%(env)s"
+    """%dict(svcname=svcname, nodes=nodes_s, ndiff=_rows[0][0], sev=sev, env=rows.first().mon_svctype)
+    db.executesql(sql)
+    db.commit()
+
+    return svcname, _rows[0][0]
+
+def show_rsetdiff(svcname):
+    rows = db(db.svcmon.mon_svcname==svcname).select()
+    nodes = [r.mon_nodname for r in rows]
+    n = len(nodes)
+
+    if n < 2:
+        return "No data"
+
+    sql = """
+            select t.* from
+            (
+             select
+               count(rn.nodename) as n,
+               group_concat(rn.nodename) as nodes,
+               rs.ruleset_name as ruleset
+             from
+               comp_rulesets_nodes rn,
+               svcmon m,
+               comp_rulesets rs
+             where
+               m.mon_svcname="%(svcname)s" and
+               m.mon_nodname=rn.nodename and
+               rn.ruleset_id=rs.id
+             group by
+               ruleset_name
+             order by
+               ruleset_name
+            ) t
+            where t.n != %(n)d
+    """%dict(svcname=svcname, n=n)
+    _rows = db.executesql(sql)
+
+    def fmt_header():
+        return TR(
+                 TH(T("Node")),
+                 TH(T("Ruleset")),
                )
 
     def fmt_line(row):
