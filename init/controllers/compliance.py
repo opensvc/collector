@@ -6346,9 +6346,58 @@ def comp_get_ruleset(nodename, auth):
 @auth_uuid
 @service.xmlrpc
 def comp_get_svc_ruleset(svcname, auth):
-    ruleset =  _comp_get_svc_ruleset(svcname)
+    ruleset = _comp_get_svc_ruleset(svcname)
+    ruleset.update(_comp_get_svc_per_node_ruleset(svcname, auth[1]))
     ruleset.update(comp_get_svcmon_ruleset(svcname, auth[1]))
     ruleset.update(comp_get_node_ruleset(auth[1]))
+    ruleset = _comp_remove_dup_vars(ruleset)
+    insert_run_rset(ruleset)
+    return ruleset
+
+def _comp_get_svc_per_node_ruleset(svcname, nodename):
+    ruleset = {}
+
+    # add contextual rulesets variables
+    v = db.v_gen_filtersets
+    rset = db.comp_rulesets
+    rset_fset = db.comp_rulesets_filtersets
+    o = rset.ruleset_name|v.f_order
+    q = rset.id>0
+    q &= rset.id == rset_fset.ruleset_id
+    q &= rset_fset.fset_id == v.fset_id
+    q &= rset.id == db.comp_ruleset_team_responsible.ruleset_id
+    q &= db.comp_ruleset_team_responsible.group_id.belongs(svc_team_responsible_id(svcname))
+    rows = db(q).select(orderby=o)
+
+    q = db.services.svc_name == svcname
+    q &= db.svcmon.mon_nodname == nodename
+    j = db.nodes.nodename == db.svcmon.mon_nodname
+    l1 = db.nodes.on(j)
+    j = db.svcmon.mon_svcname == db.services.svc_name
+    l2 = db.svcmon.on(j)
+    last_index = len(rows)-1
+    qr = db.services.id > 0
+    need = False
+
+    for i, row in enumerate(rows):
+        if i == last_index:
+            end_seq = True
+        elif rows[i].comp_rulesets.ruleset_name != rows[i+1].comp_rulesets.ruleset_name:
+            end_seq = True
+        else:
+            end_seq = False
+        qr = comp_query(qr, row)
+        if row.v_gen_filtersets.f_table in ('svcmon', 'services'):
+            need = True
+        if end_seq:
+            if not need:
+                match = db(q&qr).select(db.nodes.id, db.svcmon.mon_svcname,
+                                        left=(l2,l1))
+                if len(match) > 0:
+                    ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr))
+                need = False
+            qr = db.services.id > 0
+
     return ruleset
 
 def _comp_get_svc_ruleset(svcname):
@@ -6401,10 +6450,6 @@ def _comp_get_svc_ruleset(svcname):
                         orderby=db.comp_rulesets_services.ruleset_id)
     for row in rows:
         ruleset.update(comp_ruleset_vars(row.ruleset_id))
-
-    ruleset = _comp_remove_dup_vars(ruleset)
-
-    insert_run_rset(ruleset)
 
     return ruleset
 
@@ -6627,6 +6672,7 @@ def ajax_compliance_svc():
     for node in nodes:
         n_rsets = comp_get_svcmon_ruleset(svcname, node)
         n_rsets.update(comp_get_node_ruleset(node))
+        n_rsets.update(_comp_get_svc_per_node_ruleset(svcname, node))
         d.append(B(node))
         d.append(beautify_rulesets(n_rsets))
 
