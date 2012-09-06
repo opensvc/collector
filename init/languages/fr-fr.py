@@ -196,6 +196,7 @@
 'Change password': 'Changer le mot de passe',
 'Change ruleset type': 'Changer le type de jeu de règles',
 'Change type': 'Changer le type',
+'Changing the ruleset type resets all attachments to nodes and services. Please confirm ruleset type change.': 'Changing the ruleset type resets all attachments to nodes and services. Please confirm ruleset type change.',
 'Chart': 'Courbe',
 'Check': 'Sonde',
 'Check instance': 'Instance de sonde',

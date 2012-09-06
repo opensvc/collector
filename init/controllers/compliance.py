@@ -2135,8 +2135,10 @@ class table_comp_rulesets(HtmlTable):
                     TD(
                       INPUT(
                         _type='submit',
-                        _onclick=self.ajax_submit(additional_inputs=[sid],
-                                                  args=action),
+                        _onclick="""if (confirm("%(text)s")){%(s)s};
+                                 """%dict(s=self.ajax_submit(additional_inputs=[sid], args=action),
+                                          text=T("Changing the ruleset type resets all attachments to nodes and services. Please confirm ruleset type change."),
+                                 ),
                       ),
                     ),
                   ),
@@ -2640,6 +2642,14 @@ def ruleset_change_type(ids):
 
     x = ', '.join(['from %s on %s'%(r.ruleset_type,r.ruleset_name) for r in rows])
     db(q).update(ruleset_type=sid)
+
+    # purge attachments
+    if sid == "contextual":
+        q = db.comp_rulesets_nodes.ruleset_id.belongs(ids)
+        db(q).delete()
+        q = db.comp_rulesets_services.ruleset_id.belongs(ids)
+        db(q).delete()
+
     _log('compliance.ruleset.type.change',
          'changed ruleset type to %(s)s %(x)s',
          dict(s=sid, x=x))
@@ -2721,6 +2731,8 @@ def comp_delete_ruleset(ids=[]):
     n = db(db.comp_rulesets_filtersets.ruleset_id.belongs(ids)).delete()
     n = db(db.comp_rulesets_variables.ruleset_id.belongs(ids)).delete()
     n = db(db.comp_rulesets.id.belongs(ids)).delete()
+    n = db(db.comp_rulesets_nodes.ruleset_id.belongs(ids)).delete()
+    n = db(db.comp_rulesets_services.ruleset_id.belongs(ids)).delete()
     _log('compliance.ruleset.delete',
          'deleted rulesets %(x)s',
          dict(x=x))
