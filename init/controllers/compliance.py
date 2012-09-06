@@ -6576,12 +6576,14 @@ def beautify_ruleset(rset):
             DIV(
               rset['name'],
               P(rset['filter'], _style='font-weight:normal'),
-              _onclick="""$("#%s").toggle();"""%did,
+              _onclick="""$("#%s").toggle();$(this).toggleClass("down16").toggleClass("right16")"""%did,
+              _class="right16",
             ),
             UL(
               vl,
               _id=did,
               _style="display:none",
+              _class="pre",
             ),
           ),
           _class="clickable",
@@ -6684,19 +6686,40 @@ def ajax_compliance_svc():
     nodes = [r.mon_nodname for r in rows]
 
     for node in nodes:
+        did = 'nrs_'+node.replace('.','').replace('-','')
         n_rsets = comp_get_svcmon_ruleset(svcname, node)
         n_rsets.update(comp_get_node_ruleset(node))
         n_rsets.update(_comp_get_svc_per_node_ruleset(svcname, node))
-        d.append(B(node))
-        d.append(beautify_rulesets(n_rsets))
+        d.append(DIV(
+                   B(node),
+                   _onclick="""$("#%s").toggle();$(this).toggleClass("down16").toggleClass("right16")"""%did,
+                   _class="clickable right16",
+                )
+        )
+        d.append(DIV(
+                   beautify_rulesets(n_rsets),
+                   _style="display:none",
+                   _id=did,
+                 )
+        )
 
+    did = 'srs_'+svcname.replace('.','').replace('-','')
     d = SPAN(
           H3(T('Status')),
           svc_comp_status(svcname),
           H3(T('Modulesets')),
           beautify_svc_modulesets(msets, svcname),
           H3(T('Rulesets')),
-          beautify_rulesets(rsets),
+          DIV(
+            B(svcname),
+            _onclick="""$("#%s").toggle();$(this).toggleClass("down16").toggleClass("right16")"""%did,
+            _class="clickable right16",
+          ),
+          DIV(
+            beautify_rulesets(rsets),
+            _style="display:none",
+            _id=did,
+          ),
           H3(T('Per node additional rulesets')),
           SPAN(d),
           SPAN(show_diff(svcname)),
