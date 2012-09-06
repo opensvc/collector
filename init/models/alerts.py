@@ -97,7 +97,7 @@ def update_dash_moddiff_node(nodename):
     return str(r)
 
 def update_dash_moddiff(svcname):
-    rows = db(db.svcmon.mon_svcname==svcname).select()
+    rows = db(db.svcmon.mon_svcname==svcname).select(orderby=db.svcmon.mon_nodname)
     nodes = [r.mon_nodname for r in rows]
     n = len(nodes)
 
@@ -183,7 +183,7 @@ def update_dash_rsetdiff_node(nodename):
     return str(r)
 
 def update_dash_rsetdiff(svcname):
-    rows = db(db.svcmon.mon_svcname==svcname).select()
+    rows = db(db.svcmon.mon_svcname==svcname).select(orderby=db.svcmon.mon_nodname)
     nodes = [r.mon_nodname for r in rows]
     n = len(nodes)
 
