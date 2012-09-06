@@ -6561,7 +6561,7 @@ def beautify_var(v):
     val = v[1]
     if (isinstance(val, str) or isinstance(val, unicode)) and ' ' in val:
         val = repr(val)
-    d = LI('OSVC_COMP_'+var, '=', val)
+    d = LI('OSVC_COMP_'+var, '=', val, _style="word-wrap:break-word")
     return d
 
 def beautify_ruleset(rset):
