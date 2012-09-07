@@ -1891,15 +1891,28 @@ def ajax_comp_explicit_rules_col_values():
 
 @auth.requires_login()
 def ajax_comp_rulesets_nodes_col_values():
+    r = table_comp_explicit_rules('crn1', 'ajax_comp_rulesets_nodes',
+                                  innerhtml='crn1')
     t = table_comp_rulesets_nodes('crn2', 'ajax_comp_rulesets_nodes',
                                   innerhtml='crn1')
     col = request.args[0]
-    o = db.v_comp_nodes[col]
-    q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
-    for f in t.cols:
-        q = _where(q, 'v_comp_nodes', t.filter_parse_glob(f), f)
-    t.object_list = db(q).select(o, orderby=o, groupby=o)
-    return t.col_values_cloud(col)
+    if col in t.cols:
+        o = db.v_comp_nodes[col]
+        q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
+        for f in t.cols:
+            q = _where(q, 'v_comp_nodes', t.filter_parse_glob(f), f)
+        t.object_list = db(q).select(o, orderby=o, groupby=o)
+        return t.col_values_cloud(col)
+    else:
+        o = db.v_comp_explicit_rulesets[col]
+        q = db.v_comp_explicit_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+        if 'Manager' not in user_groups():
+            q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+        for f in r.cols:
+            q = _where(q, 'v_comp_explicit_rulesets', r.filter_parse_glob(f), f)
+        r.object_list = db(q).select(o, orderby=o, groupby=o)
+        return r.col_values_cloud(col)
+
 
 @auth.requires_login()
 def ajax_comp_rulesets_nodes():
@@ -4506,6 +4519,34 @@ def comp_attach_modulesets(node_ids=[], modset_ids=[]):
          'attached modulesets %(modulesets)s to nodes %(nodes)s',
          dict(modulesets=modulesets, nodes=nodes))
 
+
+@auth.requires_login()
+def ajax_comp_modulesets_nodes_col_values():
+    r = table_comp_moduleset_short('cmn1', 'ajax_comp_modulesets_nodes',
+                                  innerhtml='cmn1')
+    t = table_comp_modulesets_nodes('cmn2', 'ajax_comp_modulesets_nodes',
+                                  innerhtml='cmn1')
+    t.modulesets = r
+    col = request.args[0]
+    if col in t.cols:
+        o = db.v_comp_nodes[col]
+        q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
+        if 'Manager' not in user_groups():
+            q &= db.v_comp_nodes.team_responsible.belongs(user_groups())
+        for f in t.cols:
+            q = _where(q, 'v_comp_nodes', t.filter_parse_glob(f), f)
+        q = apply_gen_filters(q, r.tables())
+        t.object_list = db(q).select(o, orderby=o, groupby=o)
+        return t.col_values_cloud(col)
+    else:
+        o = db.comp_moduleset[col]
+        q = db.comp_moduleset.id > 0
+        if 'Manager' not in user_groups():
+            q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+        for f in r.cols:
+            q = _where(q, 'comp_moduleset', r.filter_parse_glob(f), f)
+        r.object_list = db(q).select(o, orderby=o, groupby=o)
+        return r.col_values_cloud(col)
 
 @auth.requires_login()
 def ajax_comp_modulesets_nodes():
