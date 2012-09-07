@@ -1959,7 +1959,8 @@ class col_availstatus(HtmlTableColumn):
 
     def html(self, o):
         cl = {}
-        if self.t.colprops['mon_updated'].get(o) < now - datetime.timedelta(minutes=15):
+        mon_updated = self.t.colprops['mon_updated'].get(o)
+        if mon_updated is None or mon_updated < now - datetime.timedelta(minutes=15):
             outdated = True
         else:
             outdated = False
