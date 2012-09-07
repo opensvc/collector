@@ -279,13 +279,24 @@ def _push_checks(vars, vals):
         chk_value
         chk_updated
     """
+    # purge old checks
     if len(vals) > 0:
         nodename = vals[0][0]
         db(db.checks_live.chk_nodename==nodename).delete()
         db.commit()
-    while len(vals) > 500:
-        generic_insert('checks_live', vars, vals[:500])
-        vals = vals[500:]
+
+    # insert new checks
+    while len(vals) > 100:
+        generic_insert('checks_live', vars, vals[:100])
+        q = db.checks_live.id < 0
+        for v in vals[:100]:
+            qr = db.checks_live.chk_nodename == v[0]
+            qr &= db.checks_live.chk_type == v[2]
+            qr &= db.checks_live.chk_instance == v[3]
+            q |= qr
+        rows = db(q).select()
+        update_thresholds_batch(rows)
+        vals = vals[100:]
     generic_insert('checks_live', vars, vals)
     q = db.checks_live.id < 0
     for v in vals:
@@ -295,6 +306,8 @@ def _push_checks(vars, vals):
         q |= qr
     rows = db(q).select()
     update_thresholds_batch(rows)
+
+    # update dashboard alerts
     if len(vals) > 0:
         update_dash_checks(vals[0][0])
 
