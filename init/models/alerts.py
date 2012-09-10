@@ -1,20 +1,22 @@
 def update_dash_compdiff(nodename):
     nodename = nodename.strip("'")
-
     q = db.svcmon.mon_nodname == nodename
     q &= db.svcmon.mon_updated > datetime.datetime.now() - datetime.timedelta(minutes=20)
     rows = db(q).select(db.svcmon.mon_svcname, db.svcmon.mon_svctype)
     svcnames = map(lambda x: x.mon_svcname, rows)
+    update_dash_compdiff_svc(svcnames)
 
-    if len(rows) > 0:
+def update_dash_compdiff_svc(svcnames):
+    if type(svcnames) != list:
+        svcnames = [svcnames]
+
+    if len(svcnames) > 0:
         q = db.dashboard.dash_svcname.belongs(svcnames)
         q &= db.dashboard.dash_type == "compliance differences in cluster"
         db(q).delete()
         db.commit()
 
-    for row in rows:
-        svcname = row.mon_svcname
-
+    for svcname in svcnames:
         q = db.svcmon.mon_svcname == svcname
         q &= db.svcmon.mon_updated > datetime.datetime.now() - datetime.timedelta(minutes=1440)
         nodes = map(lambda x: x.mon_nodname,

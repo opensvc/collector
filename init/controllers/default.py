@@ -1232,9 +1232,9 @@ def svc_del(ids):
              svcname=r.mon_svcname,
              nodename=r.mon_nodname)
         purge_svc(r.mon_svcname)
-        update_dash_compdiff(r.mon_nodname)
-        update_dash_moddiff(r.mon_nodname)
-        update_dash_rsetdiff(r.mon_nodname)
+        update_dash_compdiff_svc(r.mon_svcname)
+        update_dash_moddiff(r.mon_svcname)
+        update_dash_rsetdiff(r.mon_svcname)
 
 @auth.requires_login()
 def service_action():
