@@ -1538,8 +1538,10 @@ def svc_status_update(svcname):
                         db.svcmon.mon_frozen)
 
     tlim = datetime.datetime.now() - datetime.timedelta(minutes=15)
-    ostatus_l = [r.mon_overallstatus for r in rows if r.mon_updated > tlim]
-    astatus_l = [r.mon_availstatus for r in rows if r.mon_updated > tlim]
+    ostatus_l = [r.mon_overallstatus for r in rows if r.mon_updated is not None
+and r.mon_updated > tlim]
+    astatus_l = [r.mon_availstatus for r in rows if r.mon_updated is not None
+and r.mon_updated > tlim]
     n_trusted_nodes = len(ostatus_l)
     n_nodes = len(rows)
     ostatus_l = set(ostatus_l)
