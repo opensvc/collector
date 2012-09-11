@@ -19,13 +19,16 @@ def update_dash_compdiff_svc(svcnames):
     for svcname in svcnames:
         q = db.svcmon.mon_svcname == svcname
         q &= db.svcmon.mon_updated > datetime.datetime.now() - datetime.timedelta(minutes=1440)
-        nodes = map(lambda x: x.mon_nodname,
-                    db(q).select(db.svcmon.mon_nodname,
-                                 orderby=db.svcmon.mon_nodname))
+        rows = db(q).select(db.svcmon.mon_nodname,
+                            db.svcmon.mon_svctype,
+                            orderby=db.svcmon.mon_nodname)
+        nodes = map(lambda x: x.mon_nodname, rows)
         n = len(nodes)
 
         if n < 2:
             continue
+
+        row = rows[0]
 
         sql = """select count(t.id) from (
                    select

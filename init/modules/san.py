@@ -161,7 +161,6 @@ digraph G {
 
     def fmt_links(self):
         s = ""
-        print self.index
         for link in self.data['link'].values():
             l = []
             for speed in link['speed']:
