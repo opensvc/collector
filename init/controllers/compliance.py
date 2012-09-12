@@ -6340,15 +6340,16 @@ def comp_ruleset_vars(ruleset_id, qr=None):
         f = comp_format_filter(qr)
     q1 = db.comp_rulesets_rulesets.parent_rset_id==ruleset_id
     q = db.comp_rulesets.id == ruleset_id
+    head_rset = db(q).select(db.comp_rulesets.ruleset_name).first()
+    if head_rset is None:
+        return dict()
     children = db(q1).select(db.comp_rulesets_rulesets.child_rset_id)
     children = map(lambda x: x.child_rset_id, children)
     if len(children) > 0:
         q |= db.comp_rulesets.id.belongs(children)
     q &= db.comp_rulesets.id == db.comp_rulesets_variables.ruleset_id
     rows = db(q).select()
-    if len(rows) == 0:
-        return dict()
-    ruleset_name = rows[0].comp_rulesets.ruleset_name
+    ruleset_name = head_rset.ruleset_name
     d = dict(
           name=ruleset_name,
           filter=f,
