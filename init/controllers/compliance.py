@@ -2759,7 +2759,13 @@ def comp_delete_ruleset_var(ids=[]):
     ids = map(lambda x: int(x), ids)
     if len(ids) == 0:
         raise ToolError("delete variables failed: no variable selected")
-    rows = db(db.v_comp_rulesets.id.belongs(ids)).select()
+    q = db.v_comp_rulesets.id.belongs(ids)
+    n = db(q).count()
+    q &= db.v_comp_rulesets.encap_rset_id == None
+    rows = db(q).select()
+    diff = n - len(rows)
+    if diff > 0:
+        raise ToolError("Deleting variables in a encapsulated ruleset is not allowed. Please detach the encapsulated ruleset, or delete the variables from the ruleset owning the variables directly.")
     x = map(lambda r: ' '.join((
                        r.var_name+'.'+r.var_value,
                        'from ruleset',
