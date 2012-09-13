@@ -7044,6 +7044,7 @@ def show_moddiff(svcname):
     rows = db(db.svcmon.mon_svcname==svcname).select()
     nodes = [r.mon_nodname for r in rows]
     n = len(nodes)
+    nodes.sort()
 
     if n < 2:
         return
@@ -7075,27 +7076,48 @@ def show_moddiff(svcname):
     if len(_rows) == 0:
         return
 
-    def fmt_header():
+    def fmt_header1():
         return TR(
-                 TH(T("Node")),
-                 TH(T("Moduleset")),
+                 TH("", _colspan=1),
+                 TH(T("Nodes"), _colspan=n, _style="text-align:center"),
                )
 
-    def fmt_line(row):
-        return TR(
-                 TD(row[1]),
-                 TD(row[2]),
-               )
+    def fmt_header2():
+        h = [TH(T("Moduleset"))]
+        for node in nodes:
+            h.append(TH(
+              node.split('.')[0],
+              _style="text-align:center",
+            ))
+        return TR(h)
+
+    def fmt_line(row, bg):
+        h = [TD(row[2])]
+        l = row[1].split(',')
+        for node in nodes:
+            if node in l:
+                h.append(TD(
+                  IMG(_src=URL(r=request,c='static',f='attach16.png')),
+                  _style="text-align:center",
+                ))
+            else:
+                h.append(TD(""))
+        return TR(h, _class=bg)
 
     def fmt_table(rows):
-        return TABLE(
-                 fmt_header(),
-                 map(fmt_line, rows),
-               )
+        last = ""
+        bgl = {'cell1': 'cell3', 'cell3': 'cell1'}
+        bg = "cell1"
+        lines = [fmt_header1(),
+                 fmt_header2()]
+        for row in rows:
+            if last != row[2]:
+                bg = bgl[bg]
+                last = row[2]
+            lines.append(fmt_line(row, bg))
+        return TABLE(lines)
 
     return DIV(fmt_table(_rows))
-
-
 
 #
 def cron_dash_rsetdiff():
@@ -7112,6 +7134,7 @@ def show_rsetdiff(svcname):
     rows = db(db.svcmon.mon_svcname==svcname).select()
     nodes = [r.mon_nodname for r in rows]
     n = len(nodes)
+    nodes.sort()
 
     if n < 2:
         return
@@ -7143,23 +7166,46 @@ def show_rsetdiff(svcname):
     if len(_rows) == 0:
         return
 
-    def fmt_header():
+    def fmt_header1():
         return TR(
-                 TH(T("Node")),
-                 TH(T("Ruleset")),
+                 TH("", _colspan=1),
+                 TH(T("Nodes"), _colspan=n, _style="text-align:center"),
                )
 
-    def fmt_line(row):
-        return TR(
-                 TD(row[1]),
-                 TD(row[2]),
-               )
+    def fmt_header2():
+        h = [TH(T("Ruleset"))]
+        for node in nodes:
+            h.append(TH(
+              node.split('.')[0],
+              _style="text-align:center",
+            ))
+        return TR(h)
+
+    def fmt_line(row, bg):
+        h = [TD(row[2])]
+        l = row[1].split(',')
+        for node in nodes:
+            if node in l:
+                h.append(TD(
+                  IMG(_src=URL(r=request,c='static',f='attach16.png')),
+                  _style="text-align:center",
+                ))
+            else:
+                h.append(TD(""))
+        return TR(h, _class=bg)
 
     def fmt_table(rows):
-        return TABLE(
-                 fmt_header(),
-                 map(fmt_line, rows),
-               )
+        last = ""
+        bgl = {'cell1': 'cell3', 'cell3': 'cell1'}
+        bg = "cell1"
+        lines = [fmt_header1(),
+                 fmt_header2()]
+        for row in rows:
+            if last != row[2]:
+                bg = bgl[bg]
+                last = row[2]
+            lines.append(fmt_line(row, bg))
+        return TABLE(lines)
 
     return DIV(fmt_table(_rows))
 
