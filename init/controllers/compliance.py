@@ -6909,6 +6909,7 @@ def cron_dash_comp():
 def show_compdiff(svcname):
     rows = db(db.svcmon.mon_svcname==svcname).select()
     nodes = [r.mon_nodname for r in rows]
+    nodes.sort()
     n = len(nodes)
 
     if n < 2:
@@ -6917,11 +6918,9 @@ def show_compdiff(svcname):
     sql = """select t.* from (
                select
                  count(cs.run_nodename) as c,
-                 group_concat(cs.run_nodename order by cs.run_nodename) as node,
                  cs.run_module,
-                 cs.run_status,
-                 cs.run_log,
-                 cs.run_date
+                 cs.run_nodename,
+                 cs.run_status
                from
                  comp_status cs,
                  svcmon m
@@ -6937,7 +6936,7 @@ def show_compdiff(svcname):
                 t.c!=%(n)s
               order by
                 t.run_module,
-                t.node,
+                t.run_nodename,
                 t.run_status
               """%dict(svcname=svcname, n=n)
 
@@ -6946,13 +6945,52 @@ def show_compdiff(svcname):
     if len(_rows) == 0:
         return
 
-    def fmt_header():
+    mods = [r[1] for r in _rows]
+
+    sql = """select
+               cs.run_nodename,
+               cs.run_module,
+               cs.run_status,
+               cs.run_log,
+               cs.run_date
+             from
+               comp_status cs,
+               svcmon m
+             where
+               cs.run_module in (%(mods)s) and
+               m.mon_svcname="%(svcname)s" and
+               m.mon_nodname=cs.run_nodename
+             order by
+               cs.run_module,
+               cs.run_nodename
+         """%dict(svcname=svcname, mods=','.join(map(lambda x: repr(str(x)), mods)))
+    _rows = db.executesql(sql)
+
+    if len(_rows) == 0:
+        return
+
+    data = {}
+    for row in _rows:
+        module = row[1]
+        if module not in data:
+            data[module] = [row]
+        else:
+            data[module] += [row]
+
+    def fmt_header1():
         return TR(
-                 TH(T("Date")),
-                 TH(T("Node")),
-                 TH(T("Module")),
-                 TH(T("Status")),
+                 TH("", _colspan=1),
+                 TH(T("Nodes"), _colspan=n, _style="text-align:center"),
                )
+
+    def fmt_header2():
+        h = [TH(T("Module"))]
+        for node in nodes:
+            h.append(TH(
+              node.split('.')[0],
+              _style="text-align:center",
+            ))
+        return TR(h)
 
     deadline = now - datetime.timedelta(days=7)
 
@@ -6962,26 +7000,32 @@ def show_compdiff(svcname):
          if t < deadline: return True
          return False
 
-    def fmt_line(row):
-        if outdated(row[5]):
-            d = 'color:darkred;font-weight:bold'
-        else:
-            d = ''
-        return TR(
-                 TD(row[5], _style=d),
-                 TD(row[1]),
-                 TD(row[2]),
-                 TD(IMG(
-                  _src=URL(r=request,c='static',f=img_h[row[3]]),
-                 )),
-                 _title=row[4]
-               )
+    def fmt_line(module, rows, bg):
+        h = [TD(module)]
+        for row in rows:
+            if outdated(row[4]):
+                d = 'background-color:lightgrey'
+            else:
+                d = ''
+            h.append(TD(
+              IMG(_src=URL(r=request,c='static',f=img_h[row[2]])),
+              _style="text-align:center"+d,
+              _title=str(row[4]) + '\n' + row[3]
+            ))
+        return TR(h, _class=bg)
 
     def fmt_table(rows):
-        return TABLE(
-                 fmt_header(),
-                 map(fmt_line, rows),
-               )
+        last = ""
+        bgl = {'cell1': 'cell3', 'cell3': 'cell1'}
+        bg = "cell1"
+        lines = [fmt_header1(),
+                 fmt_header2()]
+        for module, rows in data.items():
+            if last != module:
+                bg = bgl[bg]
+                last = module
+            lines.append(fmt_line(module, rows, bg))
+        return TABLE(lines)
 
     return DIV(fmt_table(_rows))
 
