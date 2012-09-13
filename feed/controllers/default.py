@@ -738,6 +738,11 @@ def _insert_patch(vars, vals, auth):
 
 @auth_uuid
 @service.xmlrpc
+def update_hds(symid, vars, vals, auth):
+    update_array_xml(symid, vars, vals, auth, "hds", insert_hds)
+
+@auth_uuid
+@service.xmlrpc
 def update_sym_xml(symid, vars, vals, auth):
     update_array_xml(symid, vars, vals, auth, "symmetrix", insert_sym)
 
@@ -902,6 +907,82 @@ def insert_dcs(name=None, nodename=None):
         generic_insert('diskinfo', vars, vals)
         sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(name, str(now))
         db.executesql(sql)
+
+def insert_hdss():
+    return insert_hds()
+
+def insert_hds(name=None, nodename=None):
+    import glob
+    import os
+    from applications.init.modules import hds
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+
+    dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='hds'))
+    if name is None:
+        pattern = "*"
+    else:
+        pattern = name
+    dirs = glob.glob(os.path.join(dir, pattern))
+
+    for d in dirs:
+        s = hds.get_hds(d)
+        if s is not None:
+            # stor_array
+            vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
+            vals = []
+            vals.append([s.name,
+                         s.model,
+                         str(s.cache),
+                         s.firmware,
+                         now])
+            generic_insert('stor_array', vars, vals)
+
+            sql = """select id from stor_array where array_name="%s" """%s.name
+            array_id = str(db.executesql(sql)[0][0])
+
+            # stor_array_dg
+            vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
+            vals = []
+            for pname, dg in s.pool.items():
+                vals.append([array_id,
+                             dg['name'],
+                             str(dg['free']),
+                             str(dg['used']),
+                             str(dg['size']),
+                             now])
+            generic_insert('stor_array_dg', vars, vals)
+            sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
+            db.executesql(sql)
+
+            # stor_array_tgtid
+            vars = ['array_id', 'array_tgtid']
+            vals = []
+            for wwn in s.ports:
+                vals.append([array_id, wwn])
+            generic_insert('stor_array_tgtid', vars, vals)
+
+            # diskinfo
+            vars = ['disk_id',
+                    'disk_arrayid',
+                    'disk_devid',
+                    'disk_size',
+                    'disk_raid',
+                    'disk_group',
+                    'disk_updated']
+            vals = []
+            for d in s.vdisk:
+                vals.append([d['wwid'],
+                             s.name,
+                             d['name'],
+                             str(d['size']),
+                             d['raid'],
+                             d['disk_group'],
+                             now])
+            generic_insert('diskinfo', vars, vals)
+            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
+            db.executesql(sql)
+
 
 def insert_necisms():
     return insert_necism()

@@ -2963,3 +2963,4 @@ alter table packages drop index idx3;
 alter table packages add unique key idx3 (`pkg_nodename`,`pkg_name`,`pkg_arch`,`pkg_version`);
 
 
+alter table column_filters modify col_filter text;
