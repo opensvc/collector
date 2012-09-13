@@ -21,6 +21,9 @@ def _ajax_pkgdiff(nodes):
         # received node ids
         nodes = [r.nodename for r in db(db.nodes.id.belongs(nodes)).select(db.nodes.nodename)]
 
+    nodes = list(set(nodes) - set(['']))
+    nodes.sort()
+
     sql = """select * from (
                select group_concat(pkg_nodename order by pkg_nodename),
                       pkg_name,
@@ -36,27 +39,50 @@ def _ajax_pkgdiff(nodes):
           """%dict(n=n, nodes=','.join(map(repr, nodes)))
     rows = db.executesql(sql)
 
-    def fmt_header():
+    def fmt_header1():
         return TR(
-                 TH(T("Node")),
-                 TH(T("Package")),
-                 TH(T("Version")),
-                 TH(T("Arch")),
+                 TH("", _colspan=3),
+                 TH(T("Nodes"), _colspan=n, _style="text-align:center"),
                )
+    def fmt_header2():
+        h = [TH(T("Package")),
+             TH(T("Version")),
+             TH(T("Arch"))]
+        for node in nodes:
+            h.append(TH(
+              node.split('.')[0],
+              _style="text-align:center",
+            ))
+        return TR(h)
 
-    def fmt_line(row):
-        return TR(
-                 TD(row[0]),
-                 TD(row[1]),
-                 TD(row[2]),
-                 TD(row[3]),
-               )
+    def fmt_line(row, bg):
+        h = [TD(row[1]),
+             TD(row[2]),
+             TD(row[3])]
+        l = row[0].split(',')
+        for node in nodes:
+            if node in l:
+                h.append(TD(
+                  IMG(_src=URL(r=request,c='static',f='check16.png')),
+                  _style="text-align:center",
+                ))
+            else:
+                h.append(TD(""))
+                #h.append(TD(IMG( _src=URL(r=request,c='static',f='na.png'))))
+        return TR(h, _class=bg)
 
     def fmt_table(rows):
-        return TABLE(
-                 fmt_header(),
-                 map(fmt_line, rows),
-               )
+        last = ""
+        bgl = {'cell1': 'cell3', 'cell3': 'cell1'}
+        bg = "cell1"
+        lines = [fmt_header1(),
+                 fmt_header2()]
+        for row in rows:
+            if last != row[1]:
+                bg = bgl[bg]
+                last = row[1]
+            lines.append(fmt_line(row, bg))
+        return TABLE(lines)
 
     return DIV(fmt_table(rows))
 

@@ -148,6 +148,10 @@ img {
 .cell2 {
 }
 
+.cell3 {
+    background: white;
+}
+
 .boxed_status {
     width: 4em;
 }
@@ -1194,6 +1198,7 @@ ul.login_menu ul {
     margin: 0.2em;
     float: left;
 }
+
 
 /*
  * table class
