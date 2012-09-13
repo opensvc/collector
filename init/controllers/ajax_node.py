@@ -388,7 +388,12 @@ def ajax_node():
         buff = ""
         for i in range(1, 14):
             buff += """$('#%(tab)s_%(id)s').hide();$('#li%(tab)s_%(id)s').removeClass('tab_active');"""%dict(tab='tab'+str(i), id=rowid)
-        buff += """$('#%(tab)s_%(id)s').show();$('#li%(tab)s_%(id)s').addClass('tab_active');"""%dict(tab=tab, id=rowid)
+        buff += """$('#%(tab)s_%(id)s').show();$('#li%(tab)s_%(id)s').addClass('tab_active');
+                   if ("%(tab)s" in callbacks) {
+                     callbacks["%(tab)s"]();
+                     delete callbacks["%(tab)s"];
+                   }
+                """%dict(tab=tab, id=rowid)
         return buff
 
     t = TABLE(
@@ -498,32 +503,42 @@ def ajax_node():
             _style='max-width:80em',
           ),
           SCRIPT(
-            js(tab, rowid),
-            "ajax('%(url)s', [], '%(id)s')"%dict(
+            "function n%(rid)s_load_node_stor(){ajax('%(url)s', [], '%(id)s')}"%dict(
                id='tab6_'+str(rowid),
+               rid=str(rowid),
                url=URL(r=request, c='ajax_node', f='ajax_node_stor',
                        args=['tab5_'+str(rowid), request.vars.node])
             ),
-            "ajax('%(url)s', [], '%(id)s')"%dict(
+            "function n%(rid)s_load_wiki(){ajax('%(url)s', [], '%(id)s')}"%dict(
                id='tab11_'+str(rowid),
+               rid=str(rowid),
                url=URL(r=request, c='wiki', f='ajax_wiki',
                        args=['tab10_'+str(rowid), request.vars.node])
             ),
-            "ajax('%(url)s', [], '%(id)s')"%dict(
+            "function n%(rid)s_load_checks(){ajax('%(url)s', [], '%(id)s')}"%dict(
                id='tab12_'+str(rowid),
+               rid=str(rowid),
                url=URL(r=request, c='checks', f='checks_node',
                        args=[request.vars.node])
             ),
-            "ajax('%(url)s', [], '%(id)s')"%dict(
+            "function n%(rid)s_load_comp(){ajax('%(url)s', [], '%(id)s')}"%dict(
                id='tab13_'+str(rowid),
+               rid=str(rowid),
                url=URL(r=request, c='compliance', f='ajax_compliance_node',
                        args=[request.vars.node])
             ),
-            "ajax('%(url)s', [], '%(id)s')"%dict(
+            "function n%(rid)s_load_svcmon_node(){ajax('%(url)s', [], '%(id)s')}"%dict(
                id='tab5_'+str(rowid),
+               rid=str(rowid),
                url=URL(r=request, c='default', f='svcmon_node',
                        args=[request.vars.node])
             ),
+            """callbacks = {"tab6": %(id)s_load_node_stor,
+                            "tab11": %(id)s_load_wiki,
+                            "tab12": %(id)s_load_checks,
+                            "tab13": %(id)s_load_comp,
+                            "tab5": %(id)s_load_svcmon_node}"""%dict(id='n'+str(rowid)),
+            js(tab, rowid),
             _name='%s_to_eval'%rowid,
           ),
         ),

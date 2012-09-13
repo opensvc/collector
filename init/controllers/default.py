@@ -716,37 +716,48 @@ def ajax_service():
             _style='max-width:80em',
           ),
           SCRIPT(
-            """function load_svcmon_log(){sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(rowid)s')});}"""%dict(
+            """function s%(rid)s_load_svcmon_log(){sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(rowid)s')});}"""%dict(
                id='tab9_'+str(rowid),
+               rid=str(rowid),
                rowid='avail_'+rowid,
                url=URL(r=request, c='svcmon_log', f='ajax_svcmon_log_1',
                        vars={'svcname':request.vars.node, 'rowid':'avail_'+rowid})
             ),
-            "function load_wiki(){ajax('%(url)s', [], '%(id)s')}"%dict(
+            "function s%(rid)s_load_wiki(){ajax('%(url)s', [], '%(id)s')}"%dict(
                id='tab8_'+str(rowid),
+               rid=str(rowid),
                url=URL(r=request, c='wiki', f='ajax_wiki',
                        args=['tab8_'+str(rowid), request.vars.node])
             ),
-            "function load_grpprf() {sync_ajax('%(url)s', ['grpprf_begin_%(id)s', 'grpprf_end_%(id)s'], 'grpprf_%(id)s', function(){eval_js_in_ajax_response('plot')})};"%dict(
+            "function s%(rid)s_load_grpprf() {sync_ajax('%(url)s', ['grpprf_begin_%(id)s', 'grpprf_end_%(id)s'], 'grpprf_%(id)s', function(){eval_js_in_ajax_response('plot')})};"%dict(
                id=str(rowid),
+               rid=str(rowid),
                url=URL(r=request, c='stats', f='ajax_perfcmp_plot?node=%s'%','.join(str(s['svc_nodes']).split()+str(s['svc_drpnodes']).split())),
             ),
-            "function load_pkgdiff(){ajax('%(url)s', [], '%(id)s')}"%dict(
+            "function s%(rid)s_load_pkgdiff(){ajax('%(url)s', [], '%(id)s')}"%dict(
                id='tab10_'+str(rowid),
+               rid=str(rowid),
                url=URL(r=request, c='pkgdiff', f='svc_pkgdiff',
                        args=[request.vars.node])
             ),
-            "function load_comp(){ajax('%(url)s', [], '%(id)s')}"%dict(
+            "function s%(rid)s_load_comp(){ajax('%(url)s', [], '%(id)s')}"%dict(
                id='tab11_'+str(rowid),
+               rid=str(rowid),
                url=URL(r=request, c='compliance', f='ajax_compliance_svc',
                        args=[request.vars.node])
             ),
-            "function load_stor(){ajax('%(url)s', [], '%(id)s')}"%dict(
+            "function s%(rid)s_load_stor(){ajax('%(url)s', [], '%(id)s')}"%dict(
                id='tab6_'+str(rowid),
+               rid=str(rowid),
                url=URL(r=request, c='ajax_node', f='ajax_svc_stor',
                        args=['tab6_'+str(rowid), request.vars.node])
             ),
-            """callbacks = {"tab6": load_stor, "tab7": load_grpprf, "tab8": load_wiki, "tab9": load_svcmon_log, "tab10": load_pkgdiff, "tab11": load_comp}""",
+            """callbacks = {"tab6": %(id)s_load_stor,
+                            "tab7": %(id)s_load_grpprf,
+                            "tab8": %(id)s_load_wiki,
+                            "tab9": %(id)s_load_svcmon_log,
+                            "tab10": %(id)s_load_pkgdiff,
+                            "tab11": %(id)s_load_comp}"""%dict(id='s'+str(rowid)),
             js(tab, rowid),
             _name='%s_to_eval'%rowid,
           ),
