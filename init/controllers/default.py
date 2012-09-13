@@ -565,6 +565,10 @@ def ajax_service():
                     """%dict(tab='tab'+str(i), id=rowid)
         buff += """$('#%(tab)s_%(id)s').show();
                    $('#li%(tab)s_%(id)s').addClass('tab_active');
+                   if ("%(tab)s" in callbacks) {
+                     callbacks["%(tab)s"]();
+                     delete callbacks["%(tab)s"];
+                   }
                 """%dict(tab=tab, id=rowid)
         return buff
 
@@ -696,6 +700,7 @@ def ajax_service():
             _class='cloud',
           ),
           DIV(
+            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
             _id='tab9_'+str(rowid),
             _class='cloud',
           ),
@@ -711,36 +716,37 @@ def ajax_service():
             _style='max-width:80em',
           ),
           SCRIPT(
-            """$("#%(id)s").show(); sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(rowid)s');$("#%(id)s").hide()});"""%dict(
+            """function load_svcmon_log(){sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(rowid)s')});}"""%dict(
                id='tab9_'+str(rowid),
                rowid='avail_'+rowid,
                url=URL(r=request, c='svcmon_log', f='ajax_svcmon_log_1',
                        vars={'svcname':request.vars.node, 'rowid':'avail_'+rowid})
             ),
-            "ajax('%(url)s', [], '%(id)s')"%dict(
+            "function load_wiki(){ajax('%(url)s', [], '%(id)s')}"%dict(
                id='tab8_'+str(rowid),
                url=URL(r=request, c='wiki', f='ajax_wiki',
                        args=['tab8_'+str(rowid), request.vars.node])
             ),
-            "sync_ajax('%(url)s', ['grpprf_begin_%(id)s', 'grpprf_end_%(id)s'], 'grpprf_%(id)s', function(){eval_js_in_ajax_response('plot')});"%dict(
+            "function load_grpprf() {sync_ajax('%(url)s', ['grpprf_begin_%(id)s', 'grpprf_end_%(id)s'], 'grpprf_%(id)s', function(){eval_js_in_ajax_response('plot')})};"%dict(
                id=str(rowid),
                url=URL(r=request, c='stats', f='ajax_perfcmp_plot?node=%s'%','.join(str(s['svc_nodes']).split()+str(s['svc_drpnodes']).split())),
             ),
-            "ajax('%(url)s', [], '%(id)s')"%dict(
+            "function load_pkgdiff(){ajax('%(url)s', [], '%(id)s')}"%dict(
                id='tab10_'+str(rowid),
                url=URL(r=request, c='pkgdiff', f='svc_pkgdiff',
                        args=[request.vars.node])
             ),
-            "ajax('%(url)s', [], '%(id)s')"%dict(
+            "function load_comp(){ajax('%(url)s', [], '%(id)s')}"%dict(
                id='tab11_'+str(rowid),
                url=URL(r=request, c='compliance', f='ajax_compliance_svc',
                        args=[request.vars.node])
             ),
-            "ajax('%(url)s', [], '%(id)s')"%dict(
+            "function load_stor(){ajax('%(url)s', [], '%(id)s')}"%dict(
                id='tab6_'+str(rowid),
                url=URL(r=request, c='ajax_node', f='ajax_svc_stor',
                        args=['tab6_'+str(rowid), request.vars.node])
             ),
+            """callbacks = {"tab6": load_stor, "tab7": load_grpprf, "tab8": load_wiki, "tab9": load_svcmon_log, "tab10": load_pkgdiff, "tab11": load_comp}""",
             js(tab, rowid),
             _name='%s_to_eval'%rowid,
           ),
