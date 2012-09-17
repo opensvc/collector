@@ -1190,40 +1190,66 @@ def insert_vioserver(name=None, nodename=None):
 
     for d in dirs:
         s = vioserver.get_vioserver(d)
-        if s is not None:
-            # stor_array
-            vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
-            vals = []
-            vals.append([s.array_name,
-                         s.modelnumber,
-                         str(s.controllermainmemory),
-                         s.firmwareversion,
+        if s is None:
+            continue
+
+        # stor_array
+        vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
+        vals = []
+        vals.append([s.array_name,
+                     s.modelnumber,
+                     str(s.controllermainmemory),
+                     s.firmwareversion,
+                     now])
+        generic_insert('stor_array', vars, vals)
+
+        sql = """select id from stor_array where array_name="%s" """%s.array_name
+        array_id = str(db.executesql(sql)[0][0])
+
+        # diskinfo
+        vars = ['disk_id',
+                'disk_arrayid',
+                'disk_devid',
+                'disk_size',
+                'disk_alloc',
+                'disk_raid',
+                'disk_group',
+                'disk_level',
+                'disk_updated']
+        vals = []
+        for d in s.vdisk:
+            vals.append([d['did'],
+                         s.array_name,
+                         d['backingdevid'],
+                         str(d['size']),
+                         str(d['size']),
+                         "",
+                         "",
+                         str(disk_level(d['backingdevid'])),
                          now])
-            generic_insert('stor_array', vars, vals)
+        generic_insert('diskinfo', vars, vals)
+        sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.array_name, str(now))
+        db.executesql(sql)
 
-            sql = """select id from stor_array where array_name="%s" """%s.array_name
-            array_id = str(db.executesql(sql)[0][0])
+        # svcdisks
+        vars = ['disk_id',
+                'disk_size',
+                'disk_used',
+                'disk_vendor',
+                'disk_model',
+                'disk_nodename']
+        vals = []
+        for d in s.pdisk.values():
+            vals.append([d['wwid'],
+                         d['size'],
+                         d['size'],
+                         d['vendor'],
+                         d['model'],
+                         s.array_name])
+        generic_insert('svcdisks', vars, vals)
+        sql = """delete from svcdisks where disk_nodename="%s" and disk_updated < "%s" """%(s.array_name, str(now))
+        db.executesql(sql)
 
-            # diskinfo
-            vars = ['disk_id',
-                    'disk_arrayid',
-                    'disk_devid',
-                    'disk_size',
-                    'disk_raid',
-                    'disk_group',
-                    'disk_updated']
-            vals = []
-            for d in s.vdisk:
-                vals.append([d['did'],
-                             s.array_name,
-                             d['backingdevid'],
-                             str(d['size']),
-                             "",
-                             "",
-                             now])
-            generic_insert('diskinfo', vars, vals)
-            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.array_name, str(now))
-            db.executesql(sql)
 
 def insert_ibmsvcs():
     return insert_ibmsvc()

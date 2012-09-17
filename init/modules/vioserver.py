@@ -7,8 +7,8 @@ class VioServer(object):
         self.dir = dir
         self.name = os.path.basename(dir)
         self.load_controller()
-        self.load_lsdevattr()
         self.load_bootinfo()
+        self.load_pdisk()
         self.load_vdisk()
 
     def readfile(self, fname):
@@ -42,14 +42,52 @@ class VioServer(object):
                 continue
             self.disk_size[l[0]] = l[1]
 
-    def load_lsdevattr(self):
-        self.disk_wwid = {}
-        lines = self.readfile('lsdevattr').split('\n')
+    def load_pdisk(self):
+        self.load_lsdevvpd()
+        self.load_devsize()
+
+    def load_devsize(self):
+        lines = self.readfile('devsize').split('\n')
         for line in lines:
             l = line.split()
-            if len(l) < 3:
+            if len(l) != 2:
                 continue
-            self.disk_wwid[l[0]] = l[2].replace('0x', '')
+            if l[0] not in self.pdisk:
+                continue
+            self.pdisk[l[0]]['size'] = l[1]
+
+    def load_lsdevvpd(self):
+        self.pdisk = {}
+        lines = self.readfile('lsdevvpd').split('\n')
+
+        def get_val(line):
+            s = line[36:].strip()
+            return s
+
+        for line in lines:
+            if len(line) == 0:
+                continue
+            elif line[0] != " ":
+                disk = line
+            elif "Manufacturer" in line:
+                manufacturer = get_val(line)
+            elif "Model" in line:
+                model = get_val(line)
+            elif "Serial" in line:
+                serial = get_val(line)
+                if model == "OPEN-V":
+                    serial = serial.split()[-1]
+                    serial = int(serial, 16)
+            elif "(Z1)" in line:
+                dev = get_val(line)
+                if model == "OPEN-V":
+                    dev = dev.split()[0]
+                    dev = int(dev, 16)
+                    wwid = '.'.join((str(serial), str(dev)))
+                    self.pdisk[disk] = {'dev': disk, 'wwid': wwid, 'vendor': manufacturer, 'model': model}
+            elif "(Z9)" in line:
+                wwid = get_val(line)
+                self.pdisk[disk] = {'dev': disk, 'wwid': wwid, 'vendor': manufacturer, 'model': model}
 
     def load_vdisk(self):
         """vhost0:U7778.23X.0682A6A-V1-C11:0x00000006:vd_sys_ene:Available:0x8100000000000000:hdisk1:U78A5.001.WIH6A76-P1-C11-L1-T1-W50060E80164DAB01-L0:false"""
@@ -69,8 +107,8 @@ class VioServer(object):
                     size = self.disk_size[backingdev]
                 else:
                     size = 0
-                if backingdev in self.disk_wwid:
-                    backingdevid = self.disk_wwid[backingdev]
+                if backingdev in self.pdisk:
+                    backingdevid = self.pdisk[backingdev]['wwid']
                 else:
                     backingdevid = backingdev
 
@@ -95,6 +133,8 @@ class VioServer(object):
         s += "vpartid: %s\n"%str(self.vpartid)
         for d in self.vdisk:
             s += "vdisk %s: size %s MB\n"%(d['did'], str(d['size']))
+        for d in self.pdisk.values():
+            s += "pdisk %s: size %s MB\n"%(d['wwid'], str(d['size']))
         return s
 
 
