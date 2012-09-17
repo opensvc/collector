@@ -2504,6 +2504,63 @@ def collector_events(cmd, auth):
         data += [[str(row[0]), str(row[1]), str(row[2]), str(row[3]), str(row[4]), msg]]
     return {"ret": 0, "msg": "", "data":data}
 
+@auth_uuid
+@service.xmlrpc
+def collector_list_nodes(cmd, auth):
+    d = {}
+    nodename = auth[1]
+    if "fset" not in cmd:
+        return {"ret": 1, "msg": "fset not specified"}
+    fset = cmd['fset']
+    q = db.gen_filtersets.fset_name == fset
+    row = db(q).select().first()
+    if row is None:
+        return {"ret": 1, "msg": "filterset not found"}
+    fset_id = row.id
+    q = db.nodes.id > 0
+    q = apply_filters(q, fset_id, db.nodes.nodename, None)
+    rows = db(q).select(db.nodes.nodename, orderby=db.nodes.nodename)
+    nodes = [r.nodename.lower() for r in rows]
+    return {"ret": 0, "msg": "", "data": nodes}
+
+@auth_uuid
+@service.xmlrpc
+def collector_list_services(cmd, auth):
+    d = {}
+    nodename = auth[1]
+    if "fset" not in cmd:
+        return {"ret": 1, "msg": "fset not specified"}
+    fset = cmd['fset']
+    q = db.gen_filtersets.fset_name == fset
+    row = db(q).select().first()
+    if row is None:
+        return {"ret": 1, "msg": "filterset not found"}
+    fset_id = row.id
+    q = db.svcmon.mon_nodname == db.nodes.nodename
+    q = apply_filters(q, fset_id, db.svcmon.mon_nodname, db.svcmon.mon_svcname)
+    rows = db(q).select(db.svcmon.mon_svcname,
+                        orderby=db.svcmon.mon_svcname,
+                        groupby=db.svcmon.mon_svcname)
+    services = [r.mon_svcname.lower() for r in rows]
+    return {"ret": 0, "msg": "", "data": services}
+
+@auth_uuid
+@service.xmlrpc
+def collector_list_filtersets(cmd, auth):
+    d = {}
+    nodename = auth[1]
+    if "fset" in cmd:
+        q = db.gen_filtersets.fset_name.like(cmd['fset'])
+    else:
+        q = db.gen_filtersets.id > 0
+    rows = db(q).select(db.gen_filtersets.fset_name,
+                        orderby=db.gen_filtersets.fset_name)
+    fsets = [r.fset_name.lower() for r in rows]
+    return {"ret": 0, "msg": "", "data": fsets}
+
+
+
+
 #
 # Dashboard updates
 #
