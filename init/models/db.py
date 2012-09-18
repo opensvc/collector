@@ -1372,6 +1372,21 @@ db.define_table('dashboard',
     Field('dash_md5','string'),
     migrate=False)
 
+db.define_table('dashboard_events',
+    Field('dash_svcname','string'),
+    Field('dash_nodename','string'),
+    Field('dash_begin','datetime'),
+    Field('dash_end','datetime'),
+    Field('dash_md5','string'),
+    migrate=False)
+
+db.define_table('dashboard_ref',
+    Field('dash_type','string'),
+    Field('dash_fmt','string'),
+    Field('dash_dict','string'),
+    Field('dash_md5','string'),
+    migrate=False)
+
 db.define_table('dash_agg',
     Field('dash_type','string'),
     Field('dash_alerts','integer'),
