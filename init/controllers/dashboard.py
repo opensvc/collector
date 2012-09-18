@@ -439,6 +439,7 @@ class col_dash_entry(HtmlTableColumn):
                           vars={'dash_nodename': self.t.colprops['dash_nodename'].get(o),
                                 'dash_svcname': self.t.colprops['dash_svcname'].get(o),
                                 'dash_md5': self.t.colprops['dash_md5'].get(o),
+                                'dash_created': self.t.colprops['dash_created'].get(o),
                                 'rowid': id,
                                }),
                   id=id,
@@ -771,7 +772,7 @@ def dash_changed():
 
 @auth.requires_login()
 def ajax_alert_events():
-    limit = datetime.datetime.now() - datetime.timedelta(days=300)
+    limit = datetime.datetime.now() - datetime.timedelta(days=30)
     q = db.dashboard_events.dash_md5 == request.vars.dash_md5
     q &= db.dashboard_events.dash_nodename == request.vars.dash_nodename
     q &= db.dashboard_events.dash_svcname == request.vars.dash_svcname
@@ -781,10 +782,12 @@ def ajax_alert_events():
                         db.dashboard_events.dash_end)
 
     if len(rows) == 0:
-        return T("no data")
-
-    data_on = []
-    last = len(rows)
+        data_on = [[str(request.vars.dash_created), 1],
+                   [str(now), 1],
+                   [str(now), 'null']]
+    else:
+        data_on = []
+        last = len(rows)
 
     for i, row in enumerate(rows):
         data_on += [[str(row.dash_begin), 1]]
