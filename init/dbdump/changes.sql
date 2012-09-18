@@ -2964,3 +2964,49 @@ alter table packages add unique key idx3 (`pkg_nodename`,`pkg_name`,`pkg_arch`,`
 
 
 alter table column_filters modify col_filter text;
+
+drop table if exists dashboard_events;
+
+CREATE TABLE `dashboard_events` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `dash_nodename` varchar(60) DEFAULT NULL,
+  `dash_svcname` varchar(60) DEFAULT NULL,
+  `dash_md5` varchar(32) DEFAULT NULL,
+  `dash_begin` datetime NOT NULL,
+  `dash_end` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx1` (`dash_md5`)
+);
+
+drop table if exists dashboard_ref;
+
+CREATE TABLE `dashboard_ref` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `dash_md5` varchar(32) DEFAULT NULL,
+  `dash_type` varchar(60) DEFAULT NULL,
+  `dash_fmt` varchar(100) DEFAULT NULL,
+  `dash_dict` varchar(200) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx1` (`dash_md5`)
+);
+
+
+alter table dashboard add column dash_md5 varchar(32);
+ 
+drop trigger if exists dash_add;
+
+create trigger dash_add before insert on dashboard for each row set new.dash_md5 = md5(concat(new.dash_type, new.dash_fmt, new.dash_dict));
+
+drop trigger if exists dash_add_evt;
+delimiter #
+create trigger dash_add_evt after insert on dashboard for each row
+begin
+ insert ignore into dashboard_ref (dash_md5, dash_fmt, dash_dict, dash_type) values (new.dash_md5, new.dash_fmt, new.dash_dict, new.dash_type) ; 
+ insert into dashboard_events (dash_md5, dash_nodename, dash_svcname, dash_begin) values (new.dash_md5, new.dash_nodename, new.dash_svcname, now()) ; 
+end#
+delimiter ;
+
+drop trigger if exists dash_del_evt;
+delimiter #
+create trigger dash_del_evt before delete on dashboard for each row begin update dashboard_events set dash_end=now() where dash_md5=old.dash_md5 and dash_nodename=old.dash_nodename and dash_svcname=old.dash_svcname and dash_end is null ; end#
+delimiter ;

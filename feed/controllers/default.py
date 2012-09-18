@@ -2549,7 +2549,7 @@ def collector_list_services(cmd, auth):
 def collector_list_filtersets(cmd, auth):
     d = {}
     nodename = auth[1]
-    if "fset" in cmd:
+    if "fset" in cmd and len(cmd['fset']) > 0:
         q = db.gen_filtersets.fset_name.like(cmd['fset'])
     else:
         q = db.gen_filtersets.id > 0
@@ -2579,7 +2579,8 @@ def cron_dash_service_not_updated():
                  "",
                  updated,
                  "",
-                 svc_type
+                 svc_type,
+                 ""
                from services
                where updated < date_sub(now(), interval 25 hour)
           """
@@ -2618,7 +2619,8 @@ def cron_dash_svcmon_not_updated():
                  "",
                  mon_updated,
                  "",
-                 mon_svctype
+                 mon_svctype,
+                 ""
                from svcmon
                where mon_updated < date_sub(now(), interval 16 minute)
           """
@@ -2638,7 +2640,8 @@ def cron_dash_node_not_updated():
                  "",
                  updated,
                  "",
-                 host_mode
+                 host_mode,
+                 ""
                from nodes
                where updated < date_sub(now(), interval 25 hour)
           """
@@ -2658,7 +2661,8 @@ def cron_dash_node_without_asset():
                  "",
                  now(),
                  "",
-                 mon_svctype
+                 mon_svctype,
+                 ""
                from svcmon
                where
                  mon_nodname not in (
@@ -2681,7 +2685,8 @@ def cron_dash_node_beyond_maintenance_date():
                  "",
                  now(),
                  "",
-                 host_mode
+                 host_mode,
+                 ""
                from nodes
                where
                  maintenance_end is not NULL and
@@ -2704,7 +2709,8 @@ def cron_dash_node_near_maintenance_date():
                  "",
                  now(),
                  "",
-                 host_mode
+                 host_mode,
+                 ""
                from nodes
                where
                  maintenance_end is not NULL and
@@ -2729,7 +2735,8 @@ def cron_dash_node_without_maintenance_date():
                  "",
                  now(),
                  "",
-                 host_mode
+                 host_mode,
+                 ""
                from nodes
                where
                  (warranty_end is NULL or
@@ -2799,7 +2806,8 @@ def cron_dash_checks_not_updated():
                  concat('{"i":"', chk_instance, '", "t":"', chk_type, '"}'),
                  chk_updated,
                  md5(concat('{"i":"', chk_instance, '", "t":"', chk_type, '"}')),
-                 n.host_mode
+                 n.host_mode,
+                 ""
                from checks_live c
                  join nodes n on c.chk_nodename=n.nodename
                where
@@ -2831,6 +2839,7 @@ def cron_dash_app_without_responsible():
                  concat('{"a":"', app, '"}'),
                  now(),
                  md5(concat('{"a":"', app, '"}')),
+                 "",
                  ""
                from v_apps
                where
@@ -2878,6 +2887,7 @@ def cron_dash_obs_without(t, a):
                  concat('{"o": "', o.obs_name, '"}'),
                  now(),
                  md5(concat('{"o": "', o.obs_name, '"}')),
+                 "",
                  ""
                from obsolescence o
                  join nodes n on
@@ -2910,6 +2920,7 @@ def cron_dash_obs_os_alert():
                         '"}'),
                  now(),
                  "",
+                 "",
                  ""
                from obsolescence o
                  join nodes n on
@@ -2936,6 +2947,7 @@ def cron_dash_obs_os_warn():
                         '", "o": "', o.obs_name,
                         '"}'),
                  now(),
+                 "",
                  "",
                  ""
                from obsolescence o
@@ -2964,6 +2976,7 @@ def cron_dash_obs_hw_alert():
                         '", "o": "', o.obs_name,
                         '"}'),
                  now(),
+                 "",
                  "",
                  ""
                from obsolescence o
@@ -2994,6 +3007,7 @@ def cron_dash_obs_hw_warn():
                         '", "o": "', o.obs_name,
                         '"}'),
                  now(),
+                 "",
                  "",
                  ""
                from obsolescence o
@@ -3244,7 +3258,8 @@ def update_dash_flex_cpu(svcname):
                         ', "cmin": ', t.svc_flex_cpu_low_threshold,
                         ', "cmax": ', t.svc_flex_cpu_high_threshold,
                         '}')),
-                 "%(env)s"
+                 "%(env)s",
+                 ""
                from (
                  select *
                  from v_flex_status
@@ -3309,7 +3324,8 @@ def update_dash_flex_instances_started(svcname):
                         ', "smin": ', t.svc_flex_min_nodes,
                         ', "smax": ', t.svc_flex_max_nodes,
                         '}')),
-                 "%(env)s"
+                 "%(env)s",
+                 ""
                from (
                  select *
                  from v_flex_status
@@ -3379,7 +3395,8 @@ def update_dash_checks(nodename):
                         ', "min": ', t.min,
                         ', "max": ', t.max,
                         '}')),
-                 "%(env)s"
+                 "%(env)s",
+                 ""
                from (
                  select
                    chk_svcname as svcname,

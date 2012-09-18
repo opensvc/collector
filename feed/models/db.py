@@ -640,5 +640,6 @@ db.define_table('dashboard',
     Field('dash_fmt','string'),
     Field('dash_dict','string'),
     Field('dash_created','datetime'),
+    Field('dash_md5','string'),
     migrate=False)
 

@@ -908,7 +908,8 @@ def update_dash_checks(nodename):
                         ', "min": ', t.min,
                         ', "max": ', t.max,
                         '}')),
-                 "%(env)s"
+                 "%(env)s",
+                 ""
                from (
                  select
                    chk_svcname as svcname,

@@ -1369,6 +1369,7 @@ db.define_table('dashboard',
     Field('dash_dict','string'),
     Field('dash_created','datetime'),
     Field('dash_env','string'),
+    Field('dash_md5','string'),
     migrate=False)
 
 db.define_table('dash_agg',

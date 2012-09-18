@@ -385,7 +385,8 @@ def update_dash_obs_hw_warn(obs_name=None):
                         '"}'),
                  now(),
                  "",
-                 n.host_mode
+                 n.host_mode,
+                 ""
                from obsolescence o
                  join nodes n on
                    o.obs_name = n.model
@@ -435,7 +436,8 @@ def update_dash_obs_hw_alert(obs_name=None):
                         '"}'),
                  now(),
                  "",
-                 n.host_mode
+                 n.host_mode,
+                 ""
                from obsolescence o
                  join nodes n on
                    o.obs_name = n.model
@@ -484,7 +486,8 @@ def update_dash_obs_os_warn(obs_name=None):
                         '"}'),
                  now(),
                  "",
-                 n.host_mode
+                 n.host_mode,
+                 ""
                from obsolescence o
                  join nodes n on
                    o.obs_name = concat_ws(' ',n.os_name,n.os_vendor,n.os_release,n.os_update)
@@ -531,7 +534,8 @@ def update_dash_obs_os_alert(obs_name=None):
                         '"}'),
                  now(),
                  "",
-                 n.host_mode
+                 n.host_mode,
+                 ""
                from obsolescence o
                  join nodes n on
                    o.obs_name = concat_ws(' ',n.os_name,n.os_vendor,n.os_release,n.os_update)
