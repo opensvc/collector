@@ -113,6 +113,7 @@
 'Alert date': "Date d'alerte",
 'Alert id': "Id d'alerte",
 'Alert since': 'Alerte depuis',
+'Alert timeline': 'Alert timeline',
 'Alerts': 'Alertes',
 'Alerts severity': 'Sévérité des alertes',
 'Allocate to node': 'Allouer à un noeud',

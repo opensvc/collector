@@ -412,6 +412,7 @@ def update_dashboard_log(s):
 
 class col_dash_entry(HtmlTableColumn):
     def get(self, o):
+        id = self.t.extra_line_key(o)
         dash_dict = self.t.colprops['dash_dict'].get(o)
         dash_fmt = self.t.colprops['dash_fmt'].get(o)
         if dash_dict is None or len(dash_dict) == 0:
@@ -430,7 +431,20 @@ class col_dash_entry(HtmlTableColumn):
             s = 'error transcoding: %s'%dash_dict
         except TypeError:
             s = 'type error: %s'%dash_dict
-        return s
+
+        d = A(
+          s,
+          _onclick="""toggle_extra('%(url)s', '%(id)s')"""%dict(
+                  url=URL(r=request, c='dashboard',f='ajax_alert_events',
+                          vars={'dash_nodename': self.t.colprops['dash_nodename'].get(o),
+                                'dash_svcname': self.t.colprops['dash_svcname'].get(o),
+                                'dash_md5': self.t.colprops['dash_md5'].get(o),
+                                'rowid': id,
+                               }),
+                  id=id,
+                      ),
+        )
+        return d
 
 class col_dash_links(HtmlTableColumn):
     def link_action_errors(self, o):
@@ -649,6 +663,13 @@ class table_dashboard(HtmlTable):
                      img='log16',
                      display=False,
                     ),
+            'dash_md5': HtmlTableColumn(
+                     title='Alert md5',
+                     table='dashboard',
+                     field='dash_md5',
+                     img='log16',
+                     display=False,
+                    ),
             'dash_dict': HtmlTableColumn(
                      title='Dictionary',
                      table='dashboard',
@@ -746,4 +767,47 @@ def dash_changed():
           """
     rows = db.executesql(sql)
     return rows[0][0]
+
+
+@auth.requires_login()
+def ajax_alert_events():
+    limit = datetime.datetime.now() - datetime.timedelta(days=300)
+    q = db.dashboard_events.dash_md5 == request.vars.dash_md5
+    q &= db.dashboard_events.dash_nodename == request.vars.dash_nodename
+    q &= db.dashboard_events.dash_svcname == request.vars.dash_svcname
+    q &= db.dashboard_events.dash_begin > limit
+    q &= _where(None, 'dashboard_events', domain_perms(), 'dash_svcname')|_where(None, 'dashboard_events', domain_perms(), 'dash_nodename')
+    rows = db(q).select(db.dashboard_events.dash_begin,
+                        db.dashboard_events.dash_end)
+
+    if len(rows) == 0:
+        return T("no data")
+
+    data_on = []
+    last = len(rows)
+
+    for i, row in enumerate(rows):
+        data_on += [[str(row.dash_begin), 1]]
+        if row.dash_end is None:
+            data_on += [[str(now), 1]]
+            data_on += [[str(now), 'null']]
+        elif i == last:
+            data_on += [[str(row.dash_end), 1]]
+            data_on += [[str(row.dash_end), 'null']]
+
+    data = str([str(data_on).replace("'null'","null"), [[str(now), 1]]]).replace('"','')
+    s = """data_%(rowid)s=%(data)s;$('#%(id)s').empty();avail_plot('%(id)s', data_%(rowid)s)"""%dict(
+           data=data,
+           id='plot_%s'%request.vars.rowid,
+           rowid=request.vars.rowid,
+         )
+    return DIV(
+             H2(T("Alert timeline")),
+             DIV(
+               data,
+               _id='plot_%s'%request.vars.rowid,
+               _style='width:300px;height:50px',
+             ),
+             SCRIPT(s, _name='%s_to_eval'%request.vars.rowid),
+           )
 
