@@ -1086,6 +1086,7 @@ comp_var_types = (
  'fileinc',
  'fs',
  'group',
+ 'nodeconf',
  'package',
  'process',
  'user',
