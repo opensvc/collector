@@ -794,7 +794,7 @@ def ajax_alert_events():
         if row.dash_end is None:
             data_on += [[str(now), 1]]
             data_on += [[str(now), 'null']]
-        elif i == last:
+        else:
             data_on += [[str(row.dash_end), 1]]
             data_on += [[str(row.dash_end), 'null']]
 
