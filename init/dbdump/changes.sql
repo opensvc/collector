@@ -3010,3 +3010,9 @@ drop trigger if exists dash_del_evt;
 delimiter #
 create trigger dash_del_evt before delete on dashboard for each row begin update dashboard_events set dash_end=now() where dash_md5=old.dash_md5 and dash_nodename=old.dash_nodename and dash_svcname=old.dash_svcname and dash_end is null ; end#
 delimiter ;
+
+
+alter table checks_live modify column chk_instance varchar(100);
+
+alter table checks_settings modify column chk_instance varchar(100);
+
