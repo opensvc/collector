@@ -3455,13 +3455,13 @@ def update_dash_netdev_errors(nodename):
                    dash_nodename="%(nodename)s",
                    dash_severity=%(sev)d,
                    dash_fmt="%%(err)s errors per second average",
-                   dash_dict='{"err": "%(err).2f"}',
+                   dash_dict='{"err": "%(err).3f"}',
                    dash_created=now(),
                    dash_env="%(env)s"
                  on duplicate key update
                    dash_severity=%(sev)d,
                    dash_fmt="%%(err)s errors per second average",
-                   dash_dict='{"err": "%(err).2f"}',
+                   dash_dict='{"err": "%(err).3f"}',
                    dash_created=now()
               """%dict(nodename=nodename,
                        sev=sev,
