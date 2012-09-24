@@ -804,10 +804,18 @@ def ajax_alert_events():
            id='plot_%s'%request.vars.rowid,
            rowid=request.vars.rowid,
          )
+    wikipage_name = "alert"
+    if request.vars.dash_nodename is not None:
+        wikipage_name += "_"+request.vars.dash_nodename
+    if request.vars.dash_svcname is not None:
+        wikipage_name += "_"+request.vars.dash_svcname
+    if request.vars.dash_md5 is not None:
+        wikipage_name += "_"+request.vars.dash_md5
+
     s += "ajax('%(url)s', [], '%(id)s');"%dict(
                id='wiki_%s'%request.vars.rowid,
                url=URL(r=request, c='wiki', f='ajax_wiki',
-                       args=['wiki_%s'%request.vars.rowid, 'alert'+request.vars.dash_md5]),
+                       args=['wiki_%s'%request.vars.rowid, wikipage_name]),
          )
 
     return DIV(
