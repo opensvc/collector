@@ -5794,7 +5794,7 @@ def ajax_comp_log():
     t = table_comp_log('ajax_comp_log', 'ajax_comp_log')
 
     db.commit()
-    if request.vars.ajax_comp_log_f_run_date is None:
+    if request.vars.ajax_comp_log_f_run_date is None or request.vars.ajax_comp_log_f_run_date == t.column_filter_reset:
         request.vars.ajax_comp_log_f_run_date = '>-1d'
     o = ~db.comp_log.id
     q = _where(None, 'comp_log', domain_perms(), 'run_nodename')
