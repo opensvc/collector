@@ -440,6 +440,7 @@
 'Initiators': 'Initiateurs',
 'Insert new node': 'Ajouter un noeud',
 'Insert node': 'Ajout de noeud',
+'Insert signature and timestamp': 'Insert signature and timestamp',
 'Instance': 'Instance',
 'Instant messaging log level': "Niveau d'alerte par messagerie instantanée",
 'Instant messaging notifications': 'Notifications par messagerie instantanée',
