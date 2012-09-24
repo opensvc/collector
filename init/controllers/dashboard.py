@@ -799,17 +799,27 @@ def ajax_alert_events():
             data_on += [[str(row.dash_end), 'null']]
 
     data = str([str(data_on).replace("'null'","null"), [[str(now), 1]]]).replace('"','')
-    s = """data_%(rowid)s=%(data)s;$('#%(id)s').empty();avail_plot('%(id)s', data_%(rowid)s)"""%dict(
+    s = """data_%(rowid)s=%(data)s;$('#%(id)s').empty();avail_plot('%(id)s', data_%(rowid)s);"""%dict(
            data=data,
            id='plot_%s'%request.vars.rowid,
            rowid=request.vars.rowid,
          )
+    s += "ajax('%(url)s', [], '%(id)s');"%dict(
+               id='wiki_%s'%request.vars.rowid,
+               url=URL(r=request, c='wiki', f='ajax_wiki',
+                       args=['wiki_%s'%request.vars.rowid, 'alert'+request.vars.dash_md5]),
+         )
+
     return DIV(
              H2(T("Alert timeline")),
              DIV(
                data,
                _id='plot_%s'%request.vars.rowid,
                _style='width:300px;height:50px',
+             ),
+             BR(),
+             DIV(
+               _id='wiki_%s'%request.vars.rowid,
              ),
              SCRIPT(s, _name='%s_to_eval'%request.vars.rowid),
            )
