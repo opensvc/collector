@@ -341,16 +341,6 @@ class col_chk_low(HtmlTableColumn):
 class col_chk_type(HtmlTableColumn):
     def html(self, o):
         s = self.get(o)
-        d = A(
-              s,
-              _href=URL(r=request, c='checks', f='checks_defaults_insert',
-                        vars={'chk_type': s})
-            )
-        return d
-
-class col_chk_type(HtmlTableColumn):
-    def html(self, o):
-        s = self.get(o)
         nodename = self.t.colprops["chk_nodename"].get(o)
 
         d = DIV(
@@ -363,7 +353,7 @@ if ($("#checks_x_%(nodename)s").is(":visible")) {
   $("#checks_x_%(nodename)s").show()
   ajax("%(url)s", [], "checks_x_%(nodename)s")
 }
-"""%dict(nodename=nodename,
+"""%dict(nodename=nodename.replace('.','_'),
          url=URL(r=request, f="ajax_chk_type_defaults", args=[s]),
         ),
               ),
