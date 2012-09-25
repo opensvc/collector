@@ -205,6 +205,8 @@ class table_nodes(HtmlTable):
               'reboot',
               'shutdown',
               'syncservices',
+              'updatecomp',
+              'updatepkg',
               'updateservices',
             ]
             cl = "node16"
