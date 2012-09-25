@@ -1705,6 +1705,8 @@ action_img_h = {
     'shutdown': 'action_stop_16.png',
     'syncservices': 'action_sync_16.png',
     'updateservices': 'action16.png',
+    'updatepkg': 'pkg16.png',
+    'updatecomp': 'pkg16.png',
     'stop': 'action_stop_16.png',
     'stopapp': 'action_stop_16.png',
     'stopdisk': 'action_stop_16.png',
