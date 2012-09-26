@@ -60,7 +60,7 @@ class table_templates(HtmlTable):
         self.checkboxes = False
         self.extrarow = True
 
-        if 'Manager' in user_groups():
+        if 'ProvisioningManager' in user_groups():
             self.additional_tools.append('add_template')
 
     def format_extrarow(self, o):
@@ -194,11 +194,25 @@ def ajax_prov_inputs():
                    ),
                  ),
                ),
+               TD(
+                 INPUT(
+                   _type="submit",
+                   _value=T("Show command"),
+                   _onclick="ajax('%(url)s', [%(ids)s], 'prov_container')"%dict(
+                     ids=ids,
+                     url=URL(r=request, c='provisioning', f='ajax_provision', args=[tpl_id, "showcommand"]),
+                   ),
+                 ),
+               ),
              ),
            )
 
 def ajax_provision():
     tpl_id = request.args[0]
+    if len(request.args) == 2 and request.args[1] == "showcommand":
+        showcommand = True
+    else:
+        showcommand = False
     q = db.prov_templates.id == tpl_id
     tpl = db(q).select().first()
     import re
@@ -212,6 +226,9 @@ def ajax_provision():
 
     if 'prov_node' not in request.vars:
         return T("node is mandatory")
+
+    if showcommand:
+        return command
 
     prov_enqueue(request.vars.prov_node, command)
     request.flash = T("Provisioning queued")

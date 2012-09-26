@@ -2592,7 +2592,7 @@ drop view v_comp_rulesets;
 
 create view v_comp_rulesets as (select `r`.`id` AS `ruleset_id`,`r`.`ruleset_name` AS `ruleset_name`,`r`.`ruleset_type` AS `ruleset_type`,group_concat(distinct `g`.`role` separator ', ') AS `teams_responsible`,(select ruleset_name from comp_rulesets where id=rr.child_rset_id) as encap_rset, rr.child_rset_id as encap_rset_id, `rv`.`id` AS `id`,`rv`.`var_name` AS `var_name`,`rv`.`var_class` AS `var_class`,`rv`.`var_value` AS `var_value`,`rv`.`var_author` AS `var_author`,`rv`.`var_updated` AS `var_updated`,`rf`.`fset_id` AS `fset_id`,`fs`.`fset_name` AS `fset_name` from (((((`comp_rulesets` `r` left join comp_rulesets_rulesets rr on r.id=rr.parent_rset_id left join `comp_rulesets_variables` `rv` on(((`rv`.`ruleset_id` = `r`.`id` and rr.child_rset_id is NULL) or rv.ruleset_id = rr.child_rset_id))) left join `comp_rulesets_filtersets` `rf` on((`r`.`id` = `rf`.`ruleset_id`))) left join `gen_filtersets` `fs` on((`fs`.`id` = `rf`.`fset_id`))) left join `comp_ruleset_team_responsible` `rt` on((`r`.`id` = `rt`.`ruleset_id`))) left join `auth_group` `g` on((`rt`.`group_id` = `g`.`id`))) group by `r`.`id`,`rv`.`id`, rr.id);
 
-alter table gen_filters modify column f_value varchar(256);
+alter table gen_filters modify column f_value varchar(128);
 
 CREATE TABLE `switches` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -2684,3 +2684,335 @@ CREATE TABLE `stat_day_billing` (
 alter table stat_day_billing modify column day datetime not null;
 
 alter table dashboard add column dash_env enum ('DEV', 'PRD', 'TST', 'REC', 'INT', '') default '';
+
+alter table svcmon add column mon_vmname varchar(30);
+alter table svcmon add column mon_guestos varchar(30);
+alter table svcmon add column mon_vmem integer default 0;
+alter table svcmon add column mon_vcpus float default 0;
+
+drop view v_svcmon;
+
+CREATE VIEW `v_svcmon` AS select `e`.`err` AS `err`,`s`.`svc_ha` AS `svc_ha`,`s`.`svc_cluster_type` AS `svc_cluster_type`,`s`.`svc_status` AS `svc_status`,`s`.`svc_availstatus` AS `svc_availstatus`,`s`.`svc_flex_min_nodes` AS `svc_flex_min_nodes`,`s`.`svc_flex_max_nodes` AS `svc_flex_max_nodes`,`s`.`svc_flex_cpu_low_threshold` AS `svc_flex_cpu_low_threshold`,`s`.`svc_flex_cpu_high_threshold` AS `svc_flex_cpu_high_threshold`,`m`.`mon_vmname` AS `mon_vmname`,`m`.`mon_guestos` AS `mon_guestos`,`s`.`svc_version` AS `svc_version`,`s`.`svc_name` AS `svc_name`,`s`.`svc_nodes` AS `svc_nodes`,`s`.`svc_drpnode` AS `svc_drpnode`,`s`.`svc_drpnodes` AS `svc_drpnodes`,`s`.`svc_drptype` AS `svc_drptype`,`s`.`svc_autostart` AS `svc_autostart`,`s`.`svc_type` AS `svc_type`,`s`.`svc_comment` AS `svc_comment`,`s`.`svc_app` AS `svc_app`,`s`.`svc_drnoaction` AS `svc_drnoaction`,`s`.`svc_created` AS `svc_created`,`s`.`updated` AS `svc_updated`,`s`.`svc_envdate` AS `svc_envdate`,`s`.`svc_containertype` AS `svc_containertype`,`s`.`svc_metrocluster` AS `svc_metrocluster`,`m`.`mon_vcpus` AS `mon_vcpus`,`m`.`mon_vmem` AS `mon_vmem`,`m`.`mon_svcname` AS `mon_svcname`,`m`.`mon_svctype` AS `mon_svctype`,`m`.`mon_drptype` AS `mon_drptype`,`m`.`mon_nodname` AS `mon_nodname`,`m`.`mon_nodtype` AS `mon_nodtype`,`m`.`mon_nodmode` AS `mon_nodmode`,`m`.`mon_ipstatus` AS `mon_ipstatus`,`m`.`mon_fsstatus` AS `mon_fsstatus`,`m`.`mon_prinodes` AS `mon_prinodes`,`m`.`mon_hostid` AS `mon_hostid`,`m`.`ID` AS `ID`,`m`.`mon_frozen` AS `mon_frozen`,`m`.`mon_frozentxt` AS `mon_frozentxt`,`m`.`mon_changed` AS `mon_changed`,`m`.`mon_updated` AS `mon_updated`,`m`.`mon_diskstatus` AS `mon_diskstatus`,`m`.`mon_containerstatus` AS `mon_containerstatus`,`m`.`mon_overallstatus` AS `mon_overallstatus`,`n`.`nodename` AS `nodename`,`n`.`updated` AS `node_updated`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`team_responsible` AS `team_responsible`, n.team_integ as team_integ, n.team_support as team_support, n.project as project, `n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,n.host_mode as host_mode,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,`m`.`mon_syncstatus` AS `mon_syncstatus`,`m`.`mon_hbstatus` AS `mon_hbstatus`,`m`.`mon_availstatus` AS `mon_availstatus`,`m`.`mon_appstatus` AS `mon_appstatus`,`ap`.`responsibles` AS `responsibles`,`ap`.`mailto` AS `mailto` from ((((`svcmon` `m` left join `services` `s` on((`s`.`svc_name` = `m`.`mon_svcname`))) left join `nodes` `n` on((convert(`m`.`mon_nodname` using utf8) = `n`.`nodename`))) left join `b_apps` `ap` on((`ap`.`app` = `s`.`svc_app`))) left join `b_action_errors` `e` on(((`e`.`svcname` = convert(`s`.`svc_name` using utf8)) and (`e`.`nodename` = convert(`m`.`mon_nodname` using utf8)))));
+
+drop view v_services;
+
+CREATE VIEW `v_services` AS select s.svc_ha, s.svc_status, s.svc_availstatus, s.svc_cluster_type, s.svc_flex_min_nodes, s.svc_flex_max_nodes, s.svc_flex_cpu_low_threshold, s.svc_flex_cpu_high_threshold, `s`.`svc_version` AS `svc_version`,`s`.`svc_hostid` AS `svc_hostid`,`s`.`svc_name` AS `svc_name`,`s`.`svc_nodes` AS `svc_nodes`,`s`.`svc_drpnode` AS `svc_drpnode`,`s`.`svc_ipname` AS `svc_ipname`,`s`.`svc_ipdev` AS `svc_ipdev`,`s`.`svc_drpipname` AS `svc_drpipname`,`s`.`svc_drpipdev` AS `svc_drpipdev`,`s`.`svc_drptype` AS `svc_drptype`,`s`.`svc_fs` AS `svc_fs`,`s`.`svc_dev` AS `svc_dev`,`s`.`svc_autostart` AS `svc_autostart`,`s`.`svc_mntopt` AS `svc_mntopt`,`s`.`svc_scsi` AS `svc_scsi`,`s`.`svc_type` AS `svc_type`,`s`.`svc_drpnodes` AS `svc_drpnodes`,`s`.`svc_comment` AS `svc_comment`,`s`.`svc_app` AS `svc_app`,`s`.`svc_drnoaction` AS `svc_drnoaction`,svc_created,`s`.`updated` AS `updated`,`s`.`cksum` AS `cksum`,`s`.`svc_envdate` AS `svc_envdate`,`s`.`svc_containertype` AS `svc_containertype`,`s`.`svc_metrocluster` AS `svc_metrocluster`,`s`.`id` AS `id`,`s`.`svc_hasec` AS `svc_hasec`,`s`.`svc_hapri` AS `svc_hapri`,`s`.`svc_hastonith` AS `svc_hastonith`,`s`.`svc_hastartup` AS `svc_hastartup`,`s`.`svc_wave` AS `svc_wave`,`a`.`app` AS `app`,`a`.`responsibles` AS `responsibles`,`a`.`mailto` AS `mailto` from (`services` `s` left join `v_apps` `a` on((`a`.`app` = `s`.`svc_app`))) ;
+
+alter table svcmon add column mon_containerpath varchar(512);
+
+alter table diskinfo add column disk_controller varchar(32);
+
+drop view v_disk_quota;
+
+create view v_disk_quota as 
+  SELECT
+    stor_array_dg_quota.id,
+    stor_array.id as array_id,
+    stor_array_dg.id as dg_id,
+    apps.id as app_id,
+    stor_array.array_name,
+    stor_array_dg.dg_name,
+    stor_array_dg.dg_free,
+    stor_array_dg.dg_size,
+    stor_array_dg.dg_used,
+    stor_array_dg.dg_reserved,
+    stor_array_dg.dg_size - stor_array_dg.dg_reserved as dg_reservable,
+    stor_array.array_model,
+    apps.app,
+    stor_array_dg_quota.quota,
+    v_disks_app.disk_used as quota_used
+  FROM
+    stor_array
+    JOIN stor_array_dg ON (stor_array_dg.array_id = stor_array.id)
+    LEFT JOIN v_disks_app ON (
+          v_disks_app.disk_arrayid=stor_array.array_name and
+          v_disks_app.disk_group=stor_array_dg.dg_name
+    )
+    LEFT JOIN apps ON (apps.app = v_disks_app.app)
+    LEFT JOIN stor_array_dg_quota ON (
+      stor_array_dg.id = stor_array_dg_quota.dg_id and
+      apps.id = stor_array_dg_quota.app_id
+    )
+  WHERE
+    apps.id is not NULL
+  GROUP BY apps.id, stor_array.id, stor_array_dg.id
+  UNION ALL
+  SELECT
+    stor_array_dg_quota.id,
+    stor_array.id as array_id,
+    stor_array_dg.id as dg_id,
+    NULL as app_id,
+    stor_array.array_name,
+    stor_array_dg.dg_name,
+    stor_array_dg.dg_free,
+    stor_array_dg.dg_size,
+    stor_array_dg.dg_used,
+    stor_array_dg.dg_reserved,
+    stor_array_dg.dg_size - stor_array_dg.dg_reserved as dg_reservable,
+    stor_array.array_model,
+    "unknown",
+    v_disks_app.disk_used as quota,
+    v_disks_app.disk_used as quota_used
+  FROM
+    stor_array
+    JOIN stor_array_dg ON (stor_array_dg.array_id = stor_array.id)
+    LEFT JOIN stor_array_dg_quota ON (stor_array_dg.id = stor_array_dg_quota.dg_id)
+    LEFT JOIN v_disks_app ON (
+          v_disks_app.disk_arrayid=stor_array.array_name and
+          v_disks_app.disk_group=stor_array_dg.dg_name
+    )
+  WHERE
+    v_disks_app.app is NULL
+  GROUP BY stor_array.id, stor_array_dg.id
+;
+
+drop view v_disk_app_dedup;
+
+create view v_disk_app_dedup as
+                   select
+                     app,
+                     max(disk_used) as disk_used,
+                     disk_size,
+                     disk_arrayid,
+                     disk_group
+                   from
+                     b_disk_app
+                   group by disk_id, disk_region, disk_arrayid, disk_group
+;
+
+alter table action_queue add column stdout text;
+
+alter table action_queue add column stderr text;
+
+CREATE TABLE `stats_fs_u2` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `date` datetime NOT NULL,
+  `nodename` varchar(60) NOT NULL,
+  `mntpt` varchar(200) NOT NULL,
+  `size` bigint(20) DEFAULT NULL,
+  `used` int(11) NOT NULL,
+  PRIMARY KEY (`id`, `date`),
+  UNIQUE KEY `index_1` (`date`,`nodename`,`mntpt`)
+) ENGINE=InnoDB AUTO_INCREMENT=179025 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPRESSED
+PARTITION BY RANGE (TO_DAYS(date))
+(
+ PARTITION pNULL VALUES LESS THAN (0),
+ PARTITION p201010 VALUES LESS THAN (TO_DAYS('2010-10-01')),
+ PARTITION p201011 VALUES LESS THAN (TO_DAYS('2010-11-01')),
+ PARTITION p201012 VALUES LESS THAN (TO_DAYS('2010-12-01')),
+ PARTITION p201101 VALUES LESS THAN (TO_DAYS('2011-01-01')),
+ PARTITION p201102 VALUES LESS THAN (TO_DAYS('2011-02-01')),
+ PARTITION p201103 VALUES LESS THAN (TO_DAYS('2011-03-01')),
+ PARTITION p201104 VALUES LESS THAN (TO_DAYS('2011-04-01')),
+ PARTITION p201105 VALUES LESS THAN (TO_DAYS('2011-05-01')),
+ PARTITION p201106 VALUES LESS THAN (TO_DAYS('2011-06-01')),
+ PARTITION p201107 VALUES LESS THAN (TO_DAYS('2011-07-01')),
+ PARTITION p201108 VALUES LESS THAN (TO_DAYS('2011-08-01')),
+ PARTITION p201109 VALUES LESS THAN (TO_DAYS('2011-09-01')),
+ PARTITION p201110 VALUES LESS THAN (TO_DAYS('2011-10-01')),
+ PARTITION p201111 VALUES LESS THAN (TO_DAYS('2011-11-01')),
+ PARTITION p201112 VALUES LESS THAN (TO_DAYS('2011-12-01')),
+ PARTITION p201201 VALUES LESS THAN (TO_DAYS('2012-01-01')),
+ PARTITION p201202 VALUES LESS THAN (TO_DAYS('2012-02-01')),
+ PARTITION p201203 VALUES LESS THAN (TO_DAYS('2012-03-01')),
+ PARTITION p201204 VALUES LESS THAN (TO_DAYS('2012-04-01')),
+ PARTITION p201205 VALUES LESS THAN (TO_DAYS('2012-05-01')),
+ PARTITION p201206 VALUES LESS THAN (TO_DAYS('2012-06-01')),
+ PARTITION p201207 VALUES LESS THAN (TO_DAYS('2012-07-01')),
+ PARTITION p201208 VALUES LESS THAN (TO_DAYS('2012-08-01')),
+ PARTITION p201209 VALUES LESS THAN (TO_DAYS('2012-09-01')),
+ PARTITION p201210 VALUES LESS THAN (TO_DAYS('2012-10-01')),
+ PARTITION p201211 VALUES LESS THAN (TO_DAYS('2012-11-01')),
+ PARTITION p201212 VALUES LESS THAN (TO_DAYS('2012-12-01')),
+ PARTITION pNew VALUES LESS THAN MAXVALUE
+);
+
+ALTER TABLE stats_fs_u2 REORGANIZE PARTITION pNew INTO (
+  PARTITION p201301 VALUES LESS THAN (TO_DAYS('2013-01-01')),
+  PARTITION p201302 VALUES LESS THAN (TO_DAYS('2013-02-01')),
+  PARTITION p201303 VALUES LESS THAN (TO_DAYS('2013-03-01')),
+  PARTITION p201304 VALUES LESS THAN (TO_DAYS('2013-04-01')),
+  PARTITION p201305 VALUES LESS THAN (TO_DAYS('2013-05-01')),
+  PARTITION p201306 VALUES LESS THAN (TO_DAYS('2013-06-01')),
+  PARTITION p201307 VALUES LESS THAN (TO_DAYS('2013-07-01')),
+  PARTITION p201308 VALUES LESS THAN (TO_DAYS('2013-08-01')),
+  PARTITION p201309 VALUES LESS THAN (TO_DAYS('2013-09-01')),
+  PARTITION p201310 VALUES LESS THAN (TO_DAYS('2013-10-01')),
+  PARTITION p201311 VALUES LESS THAN (TO_DAYS('2013-11-01')),
+  PARTITION p201312 VALUES LESS THAN (TO_DAYS('2013-12-01')),
+  PARTITION pNew VALUES LESS THAN (MAXVALUE)
+);
+
+insert into stats_fs_u2 (select * from stats_fs_u);
+
+alter table stats_fs_u rename to stats_fs_uold;
+
+alter table stats_fs_u2 rename to stats_fs_u;
+
+
+alter table checks_defaults add column chk_inst varchar(128) default NULL;
+
+alter table checks_defaults drop key idx1;
+
+alter table checks_defaults add unique key idx1 (`chk_type`, `chk_inst`);
+
+drop view v_svcmon;
+
+CREATE VIEW `v_svcmon` AS select `e`.`err` AS `err`,`s`.`svc_ha` AS `svc_ha`,`s`.`svc_cluster_type` AS `svc_cluster_type`,`s`.`svc_status` AS `svc_status`,`s`.`svc_availstatus` AS `svc_availstatus`,`s`.`svc_flex_min_nodes` AS `svc_flex_min_nodes`,`s`.`svc_flex_max_nodes` AS `svc_flex_max_nodes`,`s`.`svc_flex_cpu_low_threshold` AS `svc_flex_cpu_low_threshold`,`s`.`svc_flex_cpu_high_threshold` AS `svc_flex_cpu_high_threshold`,`m`.`mon_vmname` AS `mon_vmname`,`m`.`mon_guestos` AS `mon_guestos`,`s`.`svc_version` AS `svc_version`,`s`.`svc_name` AS `svc_name`,`s`.`svc_nodes` AS `svc_nodes`,`s`.`svc_drpnode` AS `svc_drpnode`,`s`.`svc_drpnodes` AS `svc_drpnodes`,`s`.`svc_drptype` AS `svc_drptype`,`s`.`svc_autostart` AS `svc_autostart`,`s`.`svc_type` AS `svc_type`,`s`.`svc_comment` AS `svc_comment`,`s`.`svc_app` AS `svc_app`,`s`.`svc_drnoaction` AS `svc_drnoaction`,`s`.`svc_created` AS `svc_created`,`s`.`updated` AS `svc_updated`,`s`.`svc_envdate` AS `svc_envdate`,`s`.`svc_containertype` AS `svc_containertype`,`s`.`svc_metrocluster` AS `svc_metrocluster`,`m`.`mon_vcpus` AS `mon_vcpus`,`m`.`mon_vmem` AS `mon_vmem`,`m`.`mon_svcname` AS `mon_svcname`,`m`.`mon_svctype` AS `mon_svctype`,`m`.`mon_drptype` AS `mon_drptype`,`m`.`mon_nodname` AS `mon_nodname`,`m`.`mon_nodtype` AS `mon_nodtype`,`m`.`mon_nodmode` AS `mon_nodmode`,`m`.`mon_ipstatus` AS `mon_ipstatus`,`m`.`mon_fsstatus` AS `mon_fsstatus`,`m`.`mon_prinodes` AS `mon_prinodes`,`m`.`mon_hostid` AS `mon_hostid`,`m`.`ID` AS `ID`,`m`.`mon_frozen` AS `mon_frozen`,`m`.`mon_frozentxt` AS `mon_frozentxt`,`m`.`mon_changed` AS `mon_changed`,`m`.`mon_updated` AS `mon_updated`,`m`.`mon_diskstatus` AS `mon_diskstatus`,`m`.`mon_containerstatus` AS `mon_containerstatus`,`m`.`mon_overallstatus` AS `mon_overallstatus`,`n`.`nodename` AS `nodename`,`n`.`updated` AS `node_updated`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`team_responsible` AS `team_responsible`,`n`.`team_integ` AS `team_integ`,`n`.`team_support` AS `team_support`,`n`.`project` AS `project`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,`n`.`host_mode` AS `host_mode`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,`m`.`mon_syncstatus` AS `mon_syncstatus`,`m`.`mon_hbstatus` AS `mon_hbstatus`,`m`.`mon_availstatus` AS `mon_availstatus`,`m`.`mon_appstatus` AS `mon_appstatus`,`ap`.`responsibles` AS `responsibles`,`ap`.`mailto` AS `mailto` from `svcmon` `m` left join `services` `s` on `s`.`svc_name` = `m`.`mon_svcname` left join `nodes` `n` on `m`.`mon_nodname` = `n`.`nodename` left join `b_apps` `ap` on `ap`.`app` = `s`.`svc_app` left join `b_action_errors` `e` on `e`.`svcname` = `s`.`svc_name` and `e`.`nodename` = `m`.`mon_nodname`;
+
+alter table svcmon drop key svcmon_k1;
+
+alter table dashboard add index i_dash_type (dash_type);
+alter table dashboard add index i_dash_nodename (dash_nodename);
+alter table dashboard engine=InnoDB;
+
+alter table nodes add column maintenance_end datetime;
+
+drop view v_nodes;
+
+CREATE VIEW `v_nodes` AS (select `n`.`nodename` AS `nodename`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`id` AS `id`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`team_responsible` AS `team_responsible`, n.team_integ as team_integ, n.team_support as team_support, n.project as project, `n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`maintenance_end` AS `maintenance_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,n.host_mode as host_mode, `n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,concat_ws(' ',`n`.`os_name`,`n`.`os_vendor`,`n`.`os_release`,`n`.`os_update`) AS `os_concat`,`n`.`updated` AS `updated` from `nodes` `n`);
+
+drop view v_svcmon;
+
+CREATE VIEW `v_svcmon` AS select `e`.`err` AS `err`,`s`.`svc_ha` AS `svc_ha`,`s`.`svc_cluster_type` AS `svc_cluster_type`,`s`.`svc_status` AS `svc_status`,`s`.`svc_availstatus` AS `svc_availstatus`,`s`.`svc_flex_min_nodes` AS `svc_flex_min_nodes`,`s`.`svc_flex_max_nodes` AS `svc_flex_max_nodes`,`s`.`svc_flex_cpu_low_threshold` AS `svc_flex_cpu_low_threshold`,`s`.`svc_flex_cpu_high_threshold` AS `svc_flex_cpu_high_threshold`,`m`.`mon_vmname` AS `mon_vmname`,`m`.`mon_guestos` AS `mon_guestos`,`s`.`svc_version` AS `svc_version`,`s`.`svc_name` AS `svc_name`,`s`.`svc_nodes` AS `svc_nodes`,`s`.`svc_drpnode` AS `svc_drpnode`,`s`.`svc_drpnodes` AS `svc_drpnodes`,`s`.`svc_drptype` AS `svc_drptype`,`s`.`svc_autostart` AS `svc_autostart`,`s`.`svc_type` AS `svc_type`,`s`.`svc_comment` AS `svc_comment`,`s`.`svc_app` AS `svc_app`,`s`.`svc_drnoaction` AS `svc_drnoaction`,`s`.`svc_created` AS `svc_created`,`s`.`updated` AS `svc_updated`,`s`.`svc_envdate` AS `svc_envdate`,`s`.`svc_containertype` AS `svc_containertype`,`s`.`svc_metrocluster` AS `svc_metrocluster`,`m`.`mon_vcpus` AS `mon_vcpus`,`m`.`mon_vmem` AS `mon_vmem`,`m`.`mon_svcname` AS `mon_svcname`,`m`.`mon_svctype` AS `mon_svctype`,`m`.`mon_drptype` AS `mon_drptype`,`m`.`mon_nodname` AS `mon_nodname`,`m`.`mon_nodtype` AS `mon_nodtype`,`m`.`mon_nodmode` AS `mon_nodmode`,`m`.`mon_ipstatus` AS `mon_ipstatus`,`m`.`mon_fsstatus` AS `mon_fsstatus`,`m`.`mon_prinodes` AS `mon_prinodes`,`m`.`mon_hostid` AS `mon_hostid`,`m`.`ID` AS `ID`,`m`.`mon_frozen` AS `mon_frozen`,`m`.`mon_frozentxt` AS `mon_frozentxt`,`m`.`mon_changed` AS `mon_changed`,`m`.`mon_updated` AS `mon_updated`,`m`.`mon_diskstatus` AS `mon_diskstatus`,`m`.`mon_containerstatus` AS `mon_containerstatus`,`m`.`mon_overallstatus` AS `mon_overallstatus`,`n`.`nodename` AS `nodename`,`n`.`updated` AS `node_updated`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`team_responsible` AS `team_responsible`,`n`.`team_integ` AS `team_integ`,`n`.`team_support` AS `team_support`,`n`.`project` AS `project`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`maintenance_end` AS `maintenance_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,`n`.`host_mode` AS `host_mode`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,`m`.`mon_syncstatus` AS `mon_syncstatus`,`m`.`mon_hbstatus` AS `mon_hbstatus`,`m`.`mon_availstatus` AS `mon_availstatus`,`m`.`mon_appstatus` AS `mon_appstatus`,`ap`.`responsibles` AS `responsibles`,`ap`.`mailto` AS `mailto` from `svcmon` `m` left join `services` `s` on `s`.`svc_name` = `m`.`mon_svcname` left join `nodes` `n` on `m`.`mon_nodname` = `n`.`nodename` left join `b_apps` `ap` on `ap`.`app` = `s`.`svc_app` left join `b_action_errors` `e` on `e`.`svcname` = `s`.`svc_name` and `e`.`nodename` = `m`.`mon_nodname`;
+
+drop view v_svcactions;
+
+CREATE VIEW `v_svcactions` AS select `ac`.`cron` AS `cron`,`ac`.`time` AS `time`,`ac`.`version` AS `version`,`ac`.`svcname` AS `svcname`,`ac`.`action` AS `action`,`ac`.`status` AS `status`,`ac`.`begin` AS `begin`,`ac`.`end` AS `end`,`ac`.`hostname` AS `hostname`,`ac`.`hostid` AS `hostid`,`ac`.`status_log` AS `status_log`,`ac`.`pid` AS `pid`,`ac`.`ID` AS `ID`,`ac`.`ack` AS `ack`,`ac`.`alert` AS `alert`,`ac`.`acked_by` AS `acked_by`,`ac`.`acked_comment` AS `acked_comment`,`ac`.`acked_date` AS `acked_date`,`s`.`svc_ha` AS `svc_ha`,`s`.`svc_app` AS `app`,`a`.`mailto` AS `mailto`,`a`.`responsibles` AS `responsibles`,`n`.`nodename` AS `nodename`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`team_responsible` AS `team_responsible`, n.team_integ as team_integ, n.team_support as team_support, n.project as project, `n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`maintenance_end` AS `maintenance_end`,`n`.`status` AS `asset_status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`, n.host_mode AS host_mode, `n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2` from (((`SVCactions` `ac` join `services` `s` on((`s`.`svc_name` = `ac`.`svcname`))) join `nodes` `n` on((`ac`.`hostname` = `n`.`nodename`))) join `b_apps` `a` on((`a`.`app` = `s`.`svc_app`)));
+
+
+drop view v_comp_nodes;
+
+create view v_comp_nodes as (select n.*,group_concat(distinct r.ruleset_name separator ', ') as rulesets, group_concat(distinct m.modset_name separator ', ') as modulesets from v_nodes n left join comp_rulesets_nodes rn on n.nodename=rn.nodename left join comp_rulesets r on r.id=rn.ruleset_id left join comp_node_moduleset mn on mn.modset_node=n.nodename left join comp_moduleset m on m.id=mn.modset_id group by n.nodename);
+
+#alter table dashboard add column dash_updated datetime;
+
+alter table diskinfo add column disk_name varchar(120) default "";
+
+alter table diskinfo add column disk_alloc int(11);
+
+drop view v_svcdisks;
+
+CREATE VIEW `v_svcdisks` AS select `s`.`id` AS `id`,`s`.`disk_id` AS `disk_id`,`s`.`disk_svcname` AS `disk_svcname`,`s`.`disk_nodename` AS `disk_nodename`,`s`.`disk_size` AS `disk_size`,s.disk_used as disk_used, `s`.`disk_vendor` AS `disk_vendor`,`s`.`disk_model` AS `disk_model`,`s`.`disk_dg` AS `disk_dg`,`s`.`disk_updated` AS `disk_updated`,`i`.`disk_devid` AS `disk_devid`,`i`.`disk_name` AS `disk_name`,`i`.`disk_alloc` AS `disk_alloc`,`i`.`disk_arrayid` AS `disk_arrayid` from (`svcdisks` `s` left join `diskinfo` `i` on((`s`.`disk_id` = convert(`i`.`disk_id` using utf8))));
+
+drop view v_disk_app;
+
+create view v_disk_app as 
+                     select
+                       diskinfo.id,
+                       diskinfo.disk_id,
+                       svcdisks.disk_region,
+                       svcdisks.disk_svcname,
+                       svcdisks.disk_nodename,
+                       svcdisks.disk_vendor,
+                       svcdisks.disk_model,
+                       svcdisks.disk_dg,
+                       svcdisks.disk_updated as svcdisk_updated,
+                       svcdisks.id as svcdisk_id,
+                       svcdisks.disk_local,
+                       services.svc_app as app,
+                       svcdisks.disk_used as disk_used,
+                       diskinfo.disk_size,
+                       diskinfo.disk_arrayid,
+                       diskinfo.disk_group,
+                       diskinfo.disk_devid,
+                       diskinfo.disk_name,
+                       diskinfo.disk_alloc,
+                       diskinfo.disk_updated,
+                       diskinfo.disk_raid,
+                       diskinfo.disk_level
+                     from
+                       diskinfo
+                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+                     left join services on svcdisks.disk_svcname=services.svc_name
+                     where svcdisks.disk_svcname != ""
+                     union all
+                     select
+                       diskinfo.id,
+                       diskinfo.disk_id,
+                       svcdisks.disk_region,
+                       svcdisks.disk_svcname,
+                       svcdisks.disk_nodename,
+                       svcdisks.disk_vendor,
+                       svcdisks.disk_model,
+                       svcdisks.disk_dg,
+                       svcdisks.disk_updated as svcdisk_updated,
+                       svcdisks.id as svcdisk_id,
+                       svcdisks.disk_local,
+                       nodes.project as app,
+                       svcdisks.disk_used as disk_used,
+                       diskinfo.disk_size,
+                       diskinfo.disk_arrayid,
+                       diskinfo.disk_group,
+                       diskinfo.disk_devid,
+                       diskinfo.disk_name,
+                       diskinfo.disk_alloc,
+                       diskinfo.disk_updated,
+                       diskinfo.disk_raid,
+                       diskinfo.disk_level
+                     from
+                       diskinfo
+                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+                     left join nodes on svcdisks.disk_nodename=nodes.nodename
+                     where (svcdisks.disk_svcname = "" or svcdisks.disk_svcname is NULL)
+;
+
+
+alter table packages drop index idx3;
+
+alter table packages add unique key idx3 (`pkg_nodename`,`pkg_name`,`pkg_arch`,`pkg_version`);
+
+
+alter table column_filters modify col_filter text;
+
+drop table if exists dashboard_events;
+
+CREATE TABLE `dashboard_events` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `dash_nodename` varchar(60) DEFAULT NULL,
+  `dash_svcname` varchar(60) DEFAULT NULL,
+  `dash_md5` varchar(32) DEFAULT NULL,
+  `dash_begin` datetime NOT NULL,
+  `dash_end` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx1` (`dash_md5`)
+);
+
+drop table if exists dashboard_ref;
+
+CREATE TABLE `dashboard_ref` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `dash_md5` varchar(32) DEFAULT NULL,
+  `dash_type` varchar(60) DEFAULT NULL,
+  `dash_fmt` varchar(100) DEFAULT NULL,
+  `dash_dict` varchar(200) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx1` (`dash_md5`)
+);
+
+
+alter table dashboard add column dash_md5 varchar(32);
+ 
+drop trigger if exists dash_add;
+
+create trigger dash_add before insert on dashboard for each row set new.dash_md5 = md5(concat(new.dash_type, new.dash_fmt, new.dash_dict));
+
+drop trigger if exists dash_add_evt;
+delimiter #
+create trigger dash_add_evt after insert on dashboard for each row
+begin
+ insert ignore into dashboard_ref (dash_md5, dash_fmt, dash_dict, dash_type) values (new.dash_md5, new.dash_fmt, new.dash_dict, new.dash_type) ; 
+ insert into dashboard_events (dash_md5, dash_nodename, dash_svcname, dash_begin) values (new.dash_md5, new.dash_nodename, new.dash_svcname, now()) ; 
+end#
+delimiter ;
+
+drop trigger if exists dash_del_evt;
+delimiter #
+create trigger dash_del_evt before delete on dashboard for each row begin update dashboard_events set dash_end=now() where dash_md5=old.dash_md5 and dash_nodename=old.dash_nodename and dash_svcname=old.dash_svcname and dash_end is null ; end#
+delimiter ;
+
+
+alter table checks_live modify column chk_instance varchar(100);
+
+alter table checks_settings modify column chk_instance varchar(100);
+

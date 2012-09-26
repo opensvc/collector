@@ -149,13 +149,13 @@ def ajax_dash_agg():
     mt = table_dash_agg('dash_agg', 'ajax_dash_agg')
 
     q = db.dashboard.id > 0
-    for f in set(t.cols)-set(t.special_filtered_cols):
-        q = _where(q, 'dashboard', t.filter_parse(f), f)
+    for f in set(t.cols):
+        q = _where(q, 'dashboard', t.filter_parse(f),  f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
     q &= _where(None, 'dashboard', domain_perms(), 'dash_svcname')|_where(None, 'dashboard', domain_perms(), 'dash_nodename')
     q = apply_filters(q, db.dashboard.dash_nodename, db.dashboard.dash_svcname)
 
     sql1 = db(q)._select().rstrip(';').replace('services.id, ','').replace('nodes.id, ','').replace('dashboard.id>0 AND', '')
-    regex = re.compile("SELECT .* FROM")
+    regex = re.compile("SELECT .* FROM dashboard")
     sql1 = regex.sub('', sql1)
 
     q = db.dash_agg.id > 0
@@ -175,7 +175,7 @@ def ajax_dash_agg():
                       dashboard.id,
                       dashboard.dash_type,
                       count(dashboard.dash_type)
-                    from
+                    from dashboard ignore index (idx1)
                       %(sql)s
                       and dash_severity=%(sev)d
                     group by dash_type
@@ -196,13 +196,16 @@ def ajax_dash_agg():
             s = T.translate(line['dash_type'], dict())
             data.append([s, int(line['dash_alerts']), line['dash_type']])
         data.sort(lambda x, y: cmp(y[1], x[1]))
+        if len(data) == 0:
+            data = ['', 0, '']
         h['nb'].append(data)
 
     sql2 = """ select
                   dashboard.id,
                   dashboard.dash_severity,
                   count(dashboard.id)
-                from %(sql)s
+                from dashboard ignore index (idx1)
+                  %(sql)s
                 group by dash_severity
               """%dict(
                 sql=sql1,
@@ -409,6 +412,7 @@ def update_dashboard_log(s):
 
 class col_dash_entry(HtmlTableColumn):
     def get(self, o):
+        id = self.t.extra_line_key(o)
         dash_dict = self.t.colprops['dash_dict'].get(o)
         dash_fmt = self.t.colprops['dash_fmt'].get(o)
         if dash_dict is None or len(dash_dict) == 0:
@@ -427,7 +431,21 @@ class col_dash_entry(HtmlTableColumn):
             s = 'error transcoding: %s'%dash_dict
         except TypeError:
             s = 'type error: %s'%dash_dict
-        return s
+
+        d = A(
+          s,
+          _onclick="""toggle_extra('%(url)s', '%(id)s')"""%dict(
+                  url=URL(r=request, c='dashboard',f='ajax_alert_events',
+                          vars={'dash_nodename': self.t.colprops['dash_nodename'].get(o),
+                                'dash_svcname': self.t.colprops['dash_svcname'].get(o),
+                                'dash_md5': self.t.colprops['dash_md5'].get(o),
+                                'dash_created': self.t.colprops['dash_created'].get(o),
+                                'rowid': id,
+                               }),
+                  id=id,
+                      ),
+        )
+        return d
 
 class col_dash_links(HtmlTableColumn):
     def link_action_errors(self, o):
@@ -498,6 +516,36 @@ class col_dash_links(HtmlTableColumn):
            )
        return i
 
+    def link_compliance_tab(self, o):
+       id = self.t.extra_line_key(o)
+       i = A(
+             _title=T("Compliance tab"),
+             _class='comp16 clickable',
+             _onclick="""toggle_extra('%(url)s', '%(id)s')"""%dict(
+                  url=URL(r=request, c='default',f='ajax_service',
+                          vars={'node': self.t.colprops['dash_svcname'].get(o),
+                                'rowid': id,
+                                'tab': 'tab11'}),
+                  id=id,
+                      ),
+           )
+       return i
+
+    def link_pkgdiff_tab(self, o):
+       id = self.t.extra_line_key(o)
+       i = A(
+             _title=T("Pkgdiff tab"),
+             _class='pkg16 clickable',
+             _onclick="""toggle_extra('%(url)s', '%(id)s')"""%dict(
+                  url=URL(r=request, c='default',f='ajax_service',
+                          vars={'node': self.t.colprops['dash_svcname'].get(o),
+                                'rowid': id,
+                                'tab': 'tab10'}),
+                  id=id,
+                      ),
+           )
+       return i
+
     def html(self, o):
        l = []
        dash_type = self.t.colprops['dash_type'].get(o)
@@ -523,6 +571,10 @@ class col_dash_links(HtmlTableColumn):
            l.append(self.link_obsolescence(o, 'os'))
        elif "obsolescence" in dash_type:
            l.append(self.link_obsolescence(o, 'hw'))
+       elif dash_type.startswith('comp'):
+           l.append(self.link_compliance_tab(o))
+       elif dash_type.startswith('package'):
+           l.append(self.link_pkgdiff_tab(o))
 
        return DIV(l)
 
@@ -554,8 +606,6 @@ class table_dashboard(HtmlTable):
                      'dash_nodename',
                      'dash_env',
                      'dash_entry',
-                     'dash_fmt',
-                     'dash_dict',
                      'dash_created']
         self.colprops = {
             'dash_links': col_dash_links(
@@ -596,6 +646,7 @@ class table_dashboard(HtmlTable):
                      title='Alert',
                      table='dashboard',
                      field='dummy',
+                     filter_redirect='dash_dict',
                      img='log16',
                      display=True,
                     ),
@@ -610,6 +661,13 @@ class table_dashboard(HtmlTable):
                      title='Format',
                      table='dashboard',
                      field='dash_fmt',
+                     img='log16',
+                     display=False,
+                    ),
+            'dash_md5': HtmlTableColumn(
+                     title='Alert md5',
+                     table='dashboard',
+                     field='dash_md5',
                      img='log16',
                      display=False,
                     ),
@@ -645,8 +703,8 @@ def ajax_dashboard_col_values():
     col = request.args[0]
     o = db.dashboard[col]
     q = db.dashboard.id > 0
-    for f in set(t.cols)-set(t.special_filtered_cols):
-        q = _where(q, 'dashboard', t.filter_parse(f), f)
+    for f in set(t.cols):
+        q = _where(q, 'dashboard', t.filter_parse(f),  f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
     q &= _where(None, 'dashboard', domain_perms(), 'dash_svcname')|_where(None, 'dashboard', domain_perms(), 'dash_nodename')
     q = apply_filters(q, db.dashboard.dash_nodename, db.dashboard.dash_svcname)
     t.object_list = db(q).select(o, orderby=o, groupby=o)
@@ -656,16 +714,26 @@ def ajax_dashboard_col_values():
 def ajax_dashboard():
     t = table_dashboard('dashboard', 'ajax_dashboard')
     o = ~db.dashboard.dash_severity|db.dashboard.dash_type
-    g = db.dashboard.id
     q = db.dashboard.id > 0
-    for f in set(t.cols)-set(t.special_filtered_cols):
-        q = _where(q, 'dashboard', t.filter_parse(f), f)
+    for f in set(t.cols):
+        q = _where(q, 'dashboard', t.filter_parse(f), f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
     q &= _where(None, 'dashboard', domain_perms(), 'dash_svcname')|_where(None, 'dashboard', domain_perms(), 'dash_nodename')
     q = apply_filters(q, db.dashboard.dash_nodename, db.dashboard.dash_svcname)
 
-    n = db(q).count()
+    sql = "select count(id) from dashboard ignore index (idx1) where "+str(q)
+    n = db.executesql(sql)[0][0]
+    #n = db(q).count()
     t.setup_pager(n)
-    t.object_list = db(q).select(db.dashboard.ALL, limitby=(t.pager_start,t.pager_end), orderby=o, groupby=g)
+    sql = """select *
+             from dashboard ignore index (idx1)
+             where %s
+             order by dash_severity desc, dash_type
+             limit %d offset %d"""%(str(q), t.pager_end-t.pager_start, t.pager_start)
+    # t.object_list = db(q).select(db.dashboard.ALL, limitby=(t.pager_start,t.pager_end), orderby=o)
+    t.object_list = db.executesql(sql, as_dict=True)
+
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        return t.csv()
 
     mt = table_dash_agg('dash_agg', 'ajax_dash_agg')
     return DIV(
@@ -700,4 +768,67 @@ def dash_changed():
           """
     rows = db.executesql(sql)
     return rows[0][0]
+
+
+@auth.requires_login()
+def ajax_alert_events():
+    limit = datetime.datetime.now() - datetime.timedelta(days=30)
+    q = db.dashboard_events.dash_md5 == request.vars.dash_md5
+    q &= db.dashboard_events.dash_nodename == request.vars.dash_nodename
+    q &= db.dashboard_events.dash_svcname == request.vars.dash_svcname
+    q &= db.dashboard_events.dash_begin > limit
+    q &= _where(None, 'dashboard_events', domain_perms(), 'dash_svcname')|_where(None, 'dashboard_events', domain_perms(), 'dash_nodename')
+    rows = db(q).select(db.dashboard_events.dash_begin,
+                        db.dashboard_events.dash_end)
+
+    if len(rows) == 0:
+        data_on = [[str(request.vars.dash_created), 1],
+                   [str(now), 1],
+                   [str(now), 'null']]
+    else:
+        data_on = []
+        last = len(rows)
+
+    for i, row in enumerate(rows):
+        data_on += [[str(row.dash_begin), 1]]
+        if row.dash_end is None:
+            data_on += [[str(now), 1]]
+            data_on += [[str(now), 'null']]
+        else:
+            data_on += [[str(row.dash_end), 1]]
+            data_on += [[str(row.dash_end), 'null']]
+
+    data = str([str(data_on).replace("'null'","null"), [[str(now), 1]]]).replace('"','')
+    s = """data_%(rowid)s=%(data)s;$('#%(id)s').empty();avail_plot('%(id)s', data_%(rowid)s);"""%dict(
+           data=data,
+           id='plot_%s'%request.vars.rowid,
+           rowid=request.vars.rowid,
+         )
+    wikipage_name = "alert"
+    if request.vars.dash_nodename is not None:
+        wikipage_name += "_"+request.vars.dash_nodename
+    if request.vars.dash_svcname is not None:
+        wikipage_name += "_"+request.vars.dash_svcname
+    if request.vars.dash_md5 is not None:
+        wikipage_name += "_"+request.vars.dash_md5
+
+    s += "ajax('%(url)s', [], '%(id)s');"%dict(
+               id='wiki_%s'%request.vars.rowid,
+               url=URL(r=request, c='wiki', f='ajax_wiki',
+                       args=['wiki_%s'%request.vars.rowid, wikipage_name]),
+         )
+
+    return DIV(
+             H2(T("Alert timeline")),
+             DIV(
+               data,
+               _id='plot_%s'%request.vars.rowid,
+               _style='width:300px;height:50px',
+             ),
+             BR(),
+             DIV(
+               _id='wiki_%s'%request.vars.rowid,
+             ),
+             SCRIPT(s, _name='%s_to_eval'%request.vars.rowid),
+           )
 

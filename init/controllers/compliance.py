@@ -501,6 +501,74 @@ i=d.getTime();$("#%(n)s_container").append("<div style='display:table-row'><div 
                )
         return form
 
+    def html_nodeconf(self, o):
+        return self.html_etcsystem(o)
+
+    def form_nodeconf(self, o):
+        name = 'nodeconf_n_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
+        l = [DIV(
+               DIV('key', _style='display:table-cell;font-weight:bold', _class="comp16"),
+               DIV('op', _style='display:table-cell'),
+               DIV('value', _style='display:table-cell'),
+               _style="display:table-row",
+             )]
+        v = self.get(o)
+        if v is None or v == "":
+            f = {}
+        else:
+            try:
+                f = json.loads(v)
+            except:
+                return self.form_raw(o)
+        for i, line in enumerate(f):
+            ll = [DIV(
+                    INPUT(
+                      _name=name,
+                      _id="%s_%d_%s"%(name, i, 'key'),
+                      _value=line['key'],
+                      _style='width:9em',
+                    ),
+                    _style='display:table-cell',
+                    _class="action16",
+                  )]
+            for key,w in (('op', '3em'),
+                          ('value', 'auto')):
+                if key not in line:
+                    value = ""
+                else:
+                    value = line[key]
+                ll += [DIV(
+                         INPUT(
+                           _name=name,
+                           _id="%s_%d_%s"%(name, i, key),
+                           _value=value,
+                           _style='width:%s'%w,
+                         ),
+                         _style='display:table-cell',
+                       )]
+            l += [DIV(
+                    ll,
+                    _style="display:table-row",
+                  )]
+        form = DIV(
+                 SPAN(l, _id=name+'_container'),
+                 BR(),
+                 INPUT(
+                   _value="Add",
+                   _type="submit",
+                   _onclick="""d=new Date();
+i=d.getTime();$("#%(n)s_container").append("<div style='display:table-row'><div style='display:table-cell'><span class='action16'></span><input style='width:9em' name='%(n)s' id='%(n)s_"+i+"_key'></div><div style='display:table-cell'><input style='width:3em' name='%(n)s' id='%(n)s_"+i+"_op'></div><div style='display:table-cell'><input style='width:auto' name='%(n)s' id='%(n)s_"+i+"_value'></div></div>")"""%dict(n=name),
+                 ),
+                 " ",
+                 INPUT(
+                   _type="submit",
+                   _onclick=self.t.ajax_submit(additional_input_name=name,
+                                               args=["var_value_set_nodeconf", name]),
+                 ),
+                 _class="comp_var_table",
+               )
+        return form
+
     def html_etcsystem(self, o):
         v = self.get(o)
         l = [DIV(
@@ -2013,15 +2081,28 @@ def ajax_comp_explicit_rules_col_values():
 
 @auth.requires_login()
 def ajax_comp_rulesets_nodes_col_values():
+    r = table_comp_explicit_rules('crn1', 'ajax_comp_rulesets_nodes',
+                                  innerhtml='crn1')
     t = table_comp_rulesets_nodes('crn2', 'ajax_comp_rulesets_nodes',
                                   innerhtml='crn1')
     col = request.args[0]
-    o = db.v_comp_nodes[col]
-    q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
-    for f in t.cols:
-        q = _where(q, 'v_comp_nodes', t.filter_parse_glob(f), f)
-    t.object_list = db(q).select(o, orderby=o, groupby=o)
-    return t.col_values_cloud(col)
+    if col in t.cols:
+        o = db.v_comp_nodes[col]
+        q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
+        for f in t.cols:
+            q = _where(q, 'v_comp_nodes', t.filter_parse_glob(f), f)
+        t.object_list = db(q).select(o, orderby=o, groupby=o)
+        return t.col_values_cloud(col)
+    else:
+        o = db.v_comp_explicit_rulesets[col]
+        q = db.v_comp_explicit_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+        if 'Manager' not in user_groups():
+            q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+        for f in r.cols:
+            q = _where(q, 'v_comp_explicit_rulesets', r.filter_parse_glob(f), f)
+        r.object_list = db(q).select(o, orderby=o, groupby=o)
+        return r.col_values_cloud(col)
+
 
 @auth.requires_login()
 def ajax_comp_rulesets_nodes():
@@ -2257,8 +2338,10 @@ class table_comp_rulesets(HtmlTable):
                     TD(
                       INPUT(
                         _type='submit',
-                        _onclick=self.ajax_submit(additional_inputs=[sid],
-                                                  args=action),
+                        _onclick="""if (confirm("%(text)s")){%(s)s};
+                                 """%dict(s=self.ajax_submit(additional_inputs=[sid], args=action),
+                                          text=T("Changing the ruleset type resets all attachments to nodes and services. Please confirm ruleset type change."),
+                                 ),
                       ),
                     ),
                   ),
@@ -2762,6 +2845,14 @@ def ruleset_change_type(ids):
 
     x = ', '.join(['from %s on %s'%(r.ruleset_type,r.ruleset_name) for r in rows])
     db(q).update(ruleset_type=sid)
+
+    # purge attachments
+    if sid == "contextual":
+        q = db.comp_rulesets_nodes.ruleset_id.belongs(ids)
+        db(q).delete()
+        q = db.comp_rulesets_services.ruleset_id.belongs(ids)
+        db(q).delete()
+
     _log('compliance.ruleset.type.change',
          'changed ruleset type to %(s)s %(x)s',
          dict(s=sid, x=x))
@@ -2843,6 +2934,8 @@ def comp_delete_ruleset(ids=[]):
     n = db(db.comp_rulesets_filtersets.ruleset_id.belongs(ids)).delete()
     n = db(db.comp_rulesets_variables.ruleset_id.belongs(ids)).delete()
     n = db(db.comp_rulesets.id.belongs(ids)).delete()
+    n = db(db.comp_rulesets_nodes.ruleset_id.belongs(ids)).delete()
+    n = db(db.comp_rulesets_services.ruleset_id.belongs(ids)).delete()
     _log('compliance.ruleset.delete',
          'deleted rulesets %(x)s',
          dict(x=x))
@@ -2856,7 +2949,13 @@ def comp_delete_ruleset_var(ids=[]):
     ids = map(lambda x: int(x), ids)
     if len(ids) == 0:
         raise ToolError("delete variables failed: no variable selected")
-    rows = db(db.v_comp_rulesets.id.belongs(ids)).select()
+    q = db.v_comp_rulesets.id.belongs(ids)
+    n = db(q).count()
+    q &= db.v_comp_rulesets.encap_rset_id == None
+    rows = db(q).select()
+    diff = n - len(rows)
+    if diff > 0:
+        raise ToolError("Deleting variables in a encapsulated ruleset is not allowed. Please detach the encapsulated ruleset, or delete the variables from the ruleset owning the variables directly.")
     x = map(lambda r: ' '.join((
                        r.var_name+'.'+r.var_value,
                        'from ruleset',
@@ -2909,6 +3008,10 @@ def comp_detach_rulesets(node_ids=[], ruleset_ids=[]):
             q = db.comp_rulesets_nodes.nodename == node
             q &= db.comp_rulesets_nodes.ruleset_id == rsid
             db(q).delete()
+
+    for node in node_names:
+        update_dash_rsetdiff_node(node)
+
     q = db.comp_rulesets.id.belongs(ruleset_ids)
     rows = db(q).select(db.comp_rulesets.ruleset_name)
     rulesets = ', '.join([r.ruleset_name for r in rows])
@@ -2935,6 +3038,9 @@ def comp_attach_rulesets(node_ids=[], ruleset_ids=[]):
             if db(q).count() == 0:
                 db.comp_rulesets_nodes.insert(nodename=node,
                                             ruleset_id=rsid)
+
+    for node in node_names:
+        update_dash_rsetdiff_node(node)
 
     q = db.comp_rulesets.id.belongs(ruleset_ids)
     rows = db(q).select(db.comp_rulesets.ruleset_name)
@@ -3008,6 +3114,8 @@ def ajax_comp_rulesets():
             elif action == 'var_value_set_fs':
                 var_value_set_list_of_dict(name)
             elif action == 'var_value_set_process':
+                var_value_set_list_of_dict(name)
+            elif action == 'var_value_set_nodeconf':
                 var_value_set_list_of_dict(name)
             elif action == 'var_value_set_etcsystem':
                 var_value_set_list_of_dict(name)
@@ -4572,6 +4680,9 @@ def comp_detach_modulesets(node_ids=[], modset_ids=[]):
             q = db.comp_node_moduleset.modset_node == node
             q &= db.comp_node_moduleset.modset_id == msid
             db(q).delete()
+    for node in node_names:
+        update_dash_moddiff_node(node)
+
     q = db.comp_moduleset.id.belongs(modset_ids)
     rows = db(q).select(db.comp_moduleset.modset_name)
     modulesets = ', '.join([r.modset_name for r in rows])
@@ -4598,6 +4709,8 @@ def comp_attach_modulesets(node_ids=[], modset_ids=[]):
             if db(q).count() == 0:
                 db.comp_node_moduleset.insert(modset_node=node,
                                             modset_id=msid)
+    for node in node_names:
+        update_dash_moddiff_node(node)
 
     q = db.comp_moduleset.id.belongs(modset_ids)
     rows = db(q).select(db.comp_moduleset.modset_name)
@@ -4606,6 +4719,34 @@ def comp_attach_modulesets(node_ids=[], modset_ids=[]):
          'attached modulesets %(modulesets)s to nodes %(nodes)s',
          dict(modulesets=modulesets, nodes=nodes))
 
+
+@auth.requires_login()
+def ajax_comp_modulesets_nodes_col_values():
+    r = table_comp_moduleset_short('cmn1', 'ajax_comp_modulesets_nodes',
+                                  innerhtml='cmn1')
+    t = table_comp_modulesets_nodes('cmn2', 'ajax_comp_modulesets_nodes',
+                                  innerhtml='cmn1')
+    t.modulesets = r
+    col = request.args[0]
+    if col in t.cols:
+        o = db.v_comp_nodes[col]
+        q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
+        if 'Manager' not in user_groups():
+            q &= db.v_comp_nodes.team_responsible.belongs(user_groups())
+        for f in t.cols:
+            q = _where(q, 'v_comp_nodes', t.filter_parse_glob(f), f)
+        q = apply_gen_filters(q, r.tables())
+        t.object_list = db(q).select(o, orderby=o, groupby=o)
+        return t.col_values_cloud(col)
+    else:
+        o = db.comp_moduleset[col]
+        q = db.comp_moduleset.id > 0
+        if 'Manager' not in user_groups():
+            q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+        for f in r.cols:
+            q = _where(q, 'comp_moduleset', r.filter_parse_glob(f), f)
+        r.object_list = db(q).select(o, orderby=o, groupby=o)
+        return r.col_values_cloud(col)
 
 @auth.requires_login()
 def ajax_comp_modulesets_nodes():
@@ -5251,6 +5392,8 @@ def check_del(ids):
     u = ', '.join([r.run_module+'@'+r.run_nodename for r in rows])
 
     db(q).delete()
+    for node in [r.run_nodename for r in rows]:
+        update_dash_compdiff(node)
     _log('compliance.status.delete',
          'deleted module status %(u)s',
          dict(u=u))
@@ -5775,17 +5918,13 @@ def ajax_comp_log():
     t = table_comp_log('ajax_comp_log', 'ajax_comp_log')
 
     db.commit()
-    if request.vars.ajax_comp_log_f_run_date is None:
-        d = now - datetime.timedelta(days=20,
-                                     minutes=now.minute+60*now.hour,
-                                     seconds=now.second,
-                                     microseconds=now.microsecond)
-        request.vars.ajax_comp_log_f_run_date = '>'+str(d)
+    if request.vars.ajax_comp_log_f_run_date is None or request.vars.ajax_comp_log_f_run_date == t.column_filter_reset:
+        request.vars.ajax_comp_log_f_run_date = '>-1d'
     o = ~db.comp_log.id
     q = _where(None, 'comp_log', domain_perms(), 'run_nodename')
-    q &= db.comp_log.run_nodename == db.nodes.nodename
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    q &= db.comp_log.run_nodename == db.v_nodes.nodename
     q = apply_filters(q, db.comp_log.run_nodename)
 
     t.setup_pager(-1)
@@ -5978,6 +6117,8 @@ def comp_attach_moduleset(nodename, moduleset, auth):
 
     n = db.comp_node_moduleset.insert(modset_node=nodename,
                                       modset_id=modset_id)
+    update_dash_moddiff_node(nodename)
+
     if n == 0:
         return dict(status=False, msg="failed to attach moduleset %s"%moduleset)
     _log('compliance.moduleset.node.attach',
@@ -6070,6 +6211,8 @@ def comp_detach_moduleset(nodename, moduleset, auth):
     n = db(q).delete()
     if n == 0:
         return dict(status=False, msg="failed to detach the moduleset")
+    update_dash_moddiff_node(nodename)
+
     _log('compliance.moduleset.node.detach',
         '%(moduleset)s detached from node %(node)s',
         dict(node=nodename, moduleset=moduleset),
@@ -6146,6 +6289,8 @@ def comp_attach_ruleset(nodename, ruleset, auth):
 
     n = db.comp_rulesets_nodes.insert(nodename=nodename,
                                       ruleset_id=ruleset_id)
+    update_dash_rsetdiff_node(nodename)
+
     if n == 0:
         return dict(status=False, msg="failed to attach ruleset %s"%ruleset)
     _log('compliance.ruleset.node.attach',
@@ -6178,6 +6323,7 @@ def comp_detach_ruleset(nodename, ruleset, auth):
     n = db(q).delete()
     if n == 0:
         return dict(status=False, msg="failed to detach the ruleset")
+    update_dash_rsetdiff_node(nodename)
     _log('compliance.ruleset.node.detach',
         '%(ruleset)s detached from node %(node)s',
         dict(node=nodename, ruleset=ruleset),
@@ -6271,6 +6417,7 @@ def comp_log_action(vars, vals, auth):
     generic_insert('comp_log', vars, vals)
     if action == 'check':
         generic_insert('comp_status', vars, vals)
+        update_dash_compdiff(auth[1])
 
 def comp_query(q, row):
     if 'v_gen_filtersets' in row:
@@ -6328,6 +6475,28 @@ def comp_format_filter(q):
     s = s.replace('nodes.id>0 AND ','')
     return s
 
+def comp_get_svcmon_ruleset(svcname, nodename, virt=False):
+    if virt:
+        q = db.svcmon.mon_vmname == svcname
+        q &= db.svcmon.mon_availstatus == "up"
+        row = db(q).select(db.svcmon.mon_svcname, db.svcmon.mon_nodname).first()
+        if row is None:
+            return {}
+        svcname = row.mon_svcname
+        nodename = row.mon_nodname
+    q = db.svcmon.mon_svcname == svcname
+    q &= db.svcmon.mon_nodname == nodename
+    rows = db(q).select()
+    if len(rows) != 1:
+        return {}
+    ruleset = {'name': 'osvc_svcmon',
+               'filter': str(q),
+               'vars': []}
+    for f in db.svcmon.fields:
+        val = rows[0][f]
+        ruleset['vars'].append(('svcmon.'+f, val))
+    return {'osvc_svcmon':ruleset}
+
 def comp_get_service_ruleset(svcname, virt=False):
     if virt:
         q = db.svcmon.mon_vmname == svcname
@@ -6367,15 +6536,16 @@ def comp_ruleset_vars(ruleset_id, qr=None):
         f = comp_format_filter(qr)
     q1 = db.comp_rulesets_rulesets.parent_rset_id==ruleset_id
     q = db.comp_rulesets.id == ruleset_id
+    head_rset = db(q).select(db.comp_rulesets.ruleset_name).first()
+    if head_rset is None:
+        return dict()
     children = db(q1).select(db.comp_rulesets_rulesets.child_rset_id)
     children = map(lambda x: x.child_rset_id, children)
     if len(children) > 0:
         q |= db.comp_rulesets.id.belongs(children)
     q &= db.comp_rulesets.id == db.comp_rulesets_variables.ruleset_id
     rows = db(q).select()
-    if len(rows) == 0:
-        return dict()
-    ruleset_name = rows[0].comp_rulesets.ruleset_name
+    ruleset_name = head_rset.ruleset_name
     d = dict(
           name=ruleset_name,
           filter=f,
@@ -6428,7 +6598,59 @@ def comp_get_ruleset(nodename, auth):
 @auth_uuid
 @service.xmlrpc
 def comp_get_svc_ruleset(svcname, auth):
-    return _comp_get_svc_ruleset(svcname)
+    ruleset = _comp_get_svc_ruleset(svcname)
+    ruleset.update(_comp_get_svc_per_node_ruleset(svcname, auth[1]))
+    ruleset.update(comp_get_svcmon_ruleset(svcname, auth[1]))
+    ruleset.update(comp_get_node_ruleset(auth[1]))
+    ruleset = _comp_remove_dup_vars(ruleset)
+    insert_run_rset(ruleset)
+    return ruleset
+
+def _comp_get_svc_per_node_ruleset(svcname, nodename):
+    ruleset = {}
+
+    # add contextual rulesets variables
+    v = db.v_gen_filtersets
+    rset = db.comp_rulesets
+    rset_fset = db.comp_rulesets_filtersets
+    o = rset.ruleset_name|v.f_order
+    q = rset.id>0
+    q &= rset.id == rset_fset.ruleset_id
+    q &= rset_fset.fset_id == v.fset_id
+    q &= rset.id == db.comp_ruleset_team_responsible.ruleset_id
+    q &= db.comp_ruleset_team_responsible.group_id.belongs(svc_team_responsible_id(svcname))
+    rows = db(q).select(orderby=o)
+
+    q = db.services.svc_name == svcname
+    q &= db.svcmon.mon_nodname == nodename
+    j = db.nodes.nodename == db.svcmon.mon_nodname
+    l1 = db.nodes.on(j)
+    j = db.svcmon.mon_svcname == db.services.svc_name
+    l2 = db.svcmon.on(j)
+    last_index = len(rows)-1
+    qr = db.services.id > 0
+    need = False
+
+    for i, row in enumerate(rows):
+        if i == last_index:
+            end_seq = True
+        elif rows[i].comp_rulesets.ruleset_name != rows[i+1].comp_rulesets.ruleset_name:
+            end_seq = True
+        else:
+            end_seq = False
+        qr = comp_query(qr, row)
+        if row.v_gen_filtersets.f_table in ('svcmon', 'services'):
+            need = True
+        if end_seq:
+            if not need:
+                match = db(q&qr).select(db.nodes.id, db.svcmon.mon_svcname,
+                                        left=(l2,l1))
+                if len(match) > 0:
+                    ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr))
+                need = False
+            qr = db.services.id > 0
+
+    return ruleset
 
 def _comp_get_svc_ruleset(svcname):
     # initialize ruleset with asset variables
@@ -6453,6 +6675,7 @@ def _comp_get_svc_ruleset(svcname):
     l2 = db.svcmon.on(j)
     last_index = len(rows)-1
     qr = db.services.id > 0
+    need = False
 
     for i, row in enumerate(rows):
         if i == last_index:
@@ -6462,11 +6685,15 @@ def _comp_get_svc_ruleset(svcname):
         else:
             end_seq = False
         qr = comp_query(qr, row)
+        if row.v_gen_filtersets.f_table in ('svcmon', 'services'):
+            need = True
         if end_seq:
-            match = db(q&qr).select(db.nodes.id, db.svcmon.mon_svcname,
-                                    left=(l2,l1))
-            if len(match) > 0:
-                ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr))
+            if need:
+                match = db(q&qr).select(db.nodes.id, db.svcmon.mon_svcname,
+                                        left=(l2,l1))
+                if len(match) > 0:
+                    ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr))
+                need = False
             qr = db.services.id > 0
 
     # add explicit rulesets variables
@@ -6475,10 +6702,6 @@ def _comp_get_svc_ruleset(svcname):
                         orderby=db.comp_rulesets_services.ruleset_id)
     for row in rows:
         ruleset.update(comp_ruleset_vars(row.ruleset_id))
-
-    ruleset = _comp_remove_dup_vars(ruleset)
-
-    insert_run_rset(ruleset)
 
     return ruleset
 
@@ -6518,6 +6741,7 @@ def _comp_get_ruleset(nodename):
 
     # if the node is driven by a opensvc service, add the service ruleset
     ruleset.update(comp_get_service_ruleset(nodename, virt=True))
+    ruleset.update(comp_get_svcmon_ruleset(nodename, None, virt=True))
 
     # add contextual rulesets variables
     v = db.v_gen_filtersets
@@ -6575,7 +6799,7 @@ def beautify_var(v):
     val = v[1]
     if (isinstance(val, str) or isinstance(val, unicode)) and ' ' in val:
         val = repr(val)
-    d = LI('OSVC_COMP_'+var, '=', val)
+    d = LI('OSVC_COMP_'+var, '=', val, _style="word-wrap:break-word")
     return d
 
 def beautify_ruleset(rset):
@@ -6583,12 +6807,24 @@ def beautify_ruleset(rset):
     for v in rset['vars']:
         vl.append(beautify_var(v))
 
+    import uuid
+    did = "i"+uuid.uuid1().hex
     u = UL(
           LI(
-            rset['name'],
-            P(rset['filter'], _style='font-weight:normal'),
-            UL(vl),
+            DIV(
+              rset['name'],
+              P(rset['filter'], _style='font-weight:normal'),
+              _onclick="""$("#%s").toggle();$(this).toggleClass("down16").toggleClass("right16")"""%did,
+              _class="right16",
+            ),
+            UL(
+              vl,
+              _id=did,
+              _style="display:none",
+              _class="pre",
+            ),
           ),
+          _class="clickable",
         )
     return u
 
@@ -6611,11 +6847,37 @@ def beautify_moduleset(mset, mods):
         )
     return u
 
+def beautify_svc_modulesets(msets, svcname):
+    q = db.svcmon.mon_svcname == svcname
+    node = db(q).select()
+    if node is None:
+        return ""
+    node = node.first().mon_nodname
+    return beautify_modulesets(msets, node)
+
 def beautify_modulesets(msets, node):
     l = []
     for mset in msets:
         l.append(beautify_moduleset(mset, _comp_get_moduleset_modules(mset, node)))
     return SPAN(l, _class='xset')
+
+def svc_comp_status(svcname):
+    tid = 'scs_'+svcname
+    t = table_comp_status(tid, 'svc_comp_status')
+    t.cols.remove('run_status_log')
+
+    q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
+    q &= db.comp_status.run_svcname == svcname
+    t.object_list = db(q).select()
+    t.hide_tools = True
+    t.pageable = False
+    t.linkable = False
+    t.filterable = False
+    t.exportable = False
+    t.dbfilterable = False
+    t.columnable = False
+    t.refreshable = False
+    return t.html()
 
 def node_comp_status(node):
     tid = 'ncs_'+node
@@ -6624,9 +6886,10 @@ def node_comp_status(node):
 
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
     q &= db.comp_status.run_nodename == node
-    q &= db.comp_status.run_date > now - datetime.timedelta(days=8)
     t.object_list = db(q).select()
+    t.hide_tools = True
     t.pageable = False
+    t.linkable = False
     t.filterable = False
     t.exportable = False
     t.dbfilterable = False
@@ -6649,6 +6912,85 @@ def ajax_rset_md5():
     return d
 
 @auth.requires_login()
+def ajax_compliance_svc():
+    svcname = request.args[0]
+    rsets = _comp_get_svc_ruleset(svcname)
+    msets = _comp_get_svc_moduleset(svcname)
+
+    d = []
+    q = db.svcmon.mon_svcname==svcname
+    q &= db.svcmon.mon_updated > now - datetime.timedelta(days=1)
+    rows = db(q).select(db.svcmon.mon_nodname)
+    nodes = [r.mon_nodname for r in rows]
+
+    for node in nodes:
+        did = 'nrs_'+node.replace('.','').replace('-','')
+        n_rsets = comp_get_svcmon_ruleset(svcname, node)
+        n_rsets.update(comp_get_node_ruleset(node))
+        n_rsets.update(_comp_get_svc_per_node_ruleset(svcname, node))
+        d.append(DIV(
+                   B(node),
+                   _onclick="""$("#%s").toggle();$(this).toggleClass("down16").toggleClass("right16")"""%did,
+                   _class="clickable right16",
+                )
+        )
+        d.append(DIV(
+                   beautify_rulesets(n_rsets),
+                   _style="display:none",
+                   _id=did,
+                 )
+        )
+
+    did = 'srs_'+svcname.replace('.','').replace('-','')
+    d = SPAN(
+          H3(T('Status')),
+          svc_comp_status(svcname),
+          H3(T('Modulesets')),
+          beautify_svc_modulesets(msets, svcname),
+          H3(T('Rulesets')),
+          DIV(
+            B(svcname),
+            _onclick="""$("#%s").toggle();$(this).toggleClass("down16").toggleClass("right16")"""%did,
+            _class="clickable right16",
+          ),
+          DIV(
+            beautify_rulesets(rsets),
+            _style="display:none",
+            _id=did,
+          ),
+          H3(T('Per node additional rulesets')),
+          SPAN(d),
+          SPAN(show_diff(svcname)),
+        )
+    return d
+
+def show_diff(svcname):
+    l = []
+    compdiff = show_compdiff(svcname)
+    moddiff = show_moddiff(svcname)
+    rsetdiff = show_rsetdiff(svcname)
+
+    if compdiff is not None or moddiff is not None or rsetdiff is not None:
+        l.append(HR())
+
+    if compdiff is not None:
+        l.append(SPAN(
+          H3(T('Module status differences in cluster')),
+          compdiff))
+
+    if moddiff is not None:
+        l.append(SPAN(
+          H3(T('Moduleset attachment differences in cluster')),
+          moddiff))
+
+    if rsetdiff is not None:
+        l.append(SPAN(
+          H3(T('Ruleset attachment differences in cluster')),
+          rsetdiff))
+
+    return l
+
+@auth.requires_login()
 def ajax_compliance_node():
     node = request.args[0]
     rsets = _comp_get_ruleset(node)
@@ -6656,10 +6998,10 @@ def ajax_compliance_node():
     d = SPAN(
           H3(T('Status')),
           node_comp_status(node),
-          H3(T('Rulesets')),
-          beautify_rulesets(rsets),
           H3(T('Modulesets')),
           beautify_modulesets(msets, node),
+          H3(T('Rulesets')),
+          beautify_rulesets(rsets),
         )
     return d
 
@@ -6745,3 +7087,316 @@ def run_cve_one(row):
           """%dict(where=where, cve_name=cve['name'], now=now)
     db.executesql(sql)
     db.commit()
+
+
+#
+# Dashboard alerts
+#
+def cron_dash_comp():
+    cron_dash_moddiff()
+    cron_dash_rsetdiff()
+
+def show_compdiff(svcname):
+    rows = db(db.svcmon.mon_svcname==svcname).select()
+    nodes = [r.mon_nodname for r in rows]
+    nodes.sort()
+    n = len(nodes)
+
+    if n < 2:
+        return
+
+    sql = """select t.* from (
+               select
+                 count(cs.run_nodename) as c,
+                 cs.run_module,
+                 cs.run_nodename,
+                 cs.run_status
+               from
+                 comp_status cs,
+                 svcmon m
+               where
+                 (cs.run_svcname is NULL or cs.run_svcname="") and
+                 m.mon_svcname="%(svcname)s" and
+                 m.mon_nodname=cs.run_nodename
+               group by
+                 cs.run_module,
+                 cs.run_status
+              ) as t
+              where
+                t.c!=%(n)s
+              order by
+                t.run_module,
+                t.run_nodename,
+                t.run_status
+              """%dict(svcname=svcname, n=n)
+
+    _rows = db.executesql(sql)
+
+    if len(_rows) == 0:
+        return
+
+    mods = [r[1] for r in _rows]
+
+    sql = """select
+               cs.run_nodename,
+               cs.run_module,
+               cs.run_status,
+               cs.run_log,
+               cs.run_date
+             from
+               comp_status cs,
+               svcmon m
+             where
+               (cs.run_svcname is NULL or cs.run_svcname="") and
+               cs.run_module in (%(mods)s) and
+               m.mon_svcname="%(svcname)s" and
+               m.mon_nodname=cs.run_nodename
+             order by
+               cs.run_module,
+               cs.run_nodename
+         """%dict(svcname=svcname, mods=','.join(map(lambda x: repr(str(x)), mods)))
+    _rows = db.executesql(sql)
+
+    if len(_rows) == 0:
+        return
+
+    data = {}
+    for row in _rows:
+        module = row[1]
+        if module not in data:
+            data[module] = [row]
+        else:
+            data[module] += [row]
+
+    def fmt_header1():
+        return TR(
+                 TH("", _colspan=1),
+                 TH(T("Nodes"), _colspan=n, _style="text-align:center"),
+               )
+
+    def fmt_header2():
+        h = [TH(T("Module"))]
+        for node in nodes:
+            h.append(TH(
+              node.split('.')[0],
+              _style="text-align:center",
+            ))
+        return TR(h)
+
+    deadline = now - datetime.timedelta(days=7)
+
+
+    def outdated(t):
+         if t is None or t == '': return True
+         if t < deadline: return True
+         return False
+
+    def fmt_line(module, rows, bg):
+        h = [TD(module)]
+        for row in rows:
+            if outdated(row[4]):
+                d = 'background-color:lightgrey'
+            else:
+                d = ''
+            h.append(TD(
+              IMG(_src=URL(r=request,c='static',f=img_h[row[2]])),
+              _style="text-align:center"+d,
+              _title=str(row[4]) + '\n' + row[3]
+            ))
+        return TR(h, _class=bg)
+
+    def fmt_table(rows):
+        last = ""
+        bgl = {'cell1': 'cell3', 'cell3': 'cell1'}
+        bg = "cell1"
+        lines = [fmt_header1(),
+                 fmt_header2()]
+        for module, rows in data.items():
+            if last != module:
+                bg = bgl[bg]
+                last = module
+            lines.append(fmt_line(module, rows, bg))
+        return TABLE(lines)
+
+    return DIV(fmt_table(_rows))
+
+
+def cron_dash_moddiff():
+    q = db.services.updated > now - datetime.timedelta(days=2)
+    svcnames = [r.svc_name for r in db(q).select(db.services.svc_name)]
+
+    r = []
+    for svcname in svcnames:
+        r.append(update_dash_moddiff(svcname))
+
+    return str(r)
+
+def show_moddiff(svcname):
+    rows = db(db.svcmon.mon_svcname==svcname).select()
+    nodes = [r.mon_nodname for r in rows]
+    n = len(nodes)
+    nodes.sort()
+
+    if n < 2:
+        return
+
+    sql = """
+            select t.* from
+            (
+             select
+               count(nm.modset_node) as n,
+               group_concat(nm.modset_node) as nodes,
+               ms.modset_name as modset
+             from
+               comp_node_moduleset nm,
+               svcmon m,
+               comp_moduleset ms
+             where
+               m.mon_svcname="%(svcname)s" and
+               m.mon_nodname=nm.modset_node and
+               nm.modset_id=ms.id
+             group by
+               modset_name
+             order by
+               modset_name
+            ) t
+            where t.n != %(n)d
+    """%dict(svcname=svcname, n=n)
+    _rows = db.executesql(sql)
+
+    if len(_rows) == 0:
+        return
+
+    def fmt_header1():
+        return TR(
+                 TH("", _colspan=1),
+                 TH(T("Nodes"), _colspan=n, _style="text-align:center"),
+               )
+
+    def fmt_header2():
+        h = [TH(T("Moduleset"))]
+        for node in nodes:
+            h.append(TH(
+              node.split('.')[0],
+              _style="text-align:center",
+            ))
+        return TR(h)
+
+    def fmt_line(row, bg):
+        h = [TD(row[2])]
+        l = row[1].split(',')
+        for node in nodes:
+            if node in l:
+                h.append(TD(
+                  IMG(_src=URL(r=request,c='static',f='attach16.png')),
+                  _style="text-align:center",
+                ))
+            else:
+                h.append(TD(""))
+        return TR(h, _class=bg)
+
+    def fmt_table(rows):
+        last = ""
+        bgl = {'cell1': 'cell3', 'cell3': 'cell1'}
+        bg = "cell1"
+        lines = [fmt_header1(),
+                 fmt_header2()]
+        for row in rows:
+            if last != row[2]:
+                bg = bgl[bg]
+                last = row[2]
+            lines.append(fmt_line(row, bg))
+        return TABLE(lines)
+
+    return DIV(fmt_table(_rows))
+
+#
+def cron_dash_rsetdiff():
+    q = db.services.updated > now - datetime.timedelta(days=2)
+    svcnames = [r.svc_name for r in db(q).select(db.services.svc_name)]
+
+    r = []
+    for svcname in svcnames:
+        r.append(update_dash_rsetdiff(svcname))
+
+    return str(r)
+
+def show_rsetdiff(svcname):
+    rows = db(db.svcmon.mon_svcname==svcname).select()
+    nodes = [r.mon_nodname for r in rows]
+    n = len(nodes)
+    nodes.sort()
+
+    if n < 2:
+        return
+
+    sql = """
+            select t.* from
+            (
+             select
+               count(rn.nodename) as n,
+               group_concat(rn.nodename) as nodes,
+               rs.ruleset_name as ruleset
+             from
+               comp_rulesets_nodes rn,
+               svcmon m,
+               comp_rulesets rs
+             where
+               m.mon_svcname="%(svcname)s" and
+               m.mon_nodname=rn.nodename and
+               rn.ruleset_id=rs.id
+             group by
+               ruleset_name
+             order by
+               ruleset_name
+            ) t
+            where t.n != %(n)d
+    """%dict(svcname=svcname, n=n)
+    _rows = db.executesql(sql)
+
+    if len(_rows) == 0:
+        return
+
+    def fmt_header1():
+        return TR(
+                 TH("", _colspan=1),
+                 TH(T("Nodes"), _colspan=n, _style="text-align:center"),
+               )
+
+    def fmt_header2():
+        h = [TH(T("Ruleset"))]
+        for node in nodes:
+            h.append(TH(
+              node.split('.')[0],
+              _style="text-align:center",
+            ))
+        return TR(h)
+
+    def fmt_line(row, bg):
+        h = [TD(row[2])]
+        l = row[1].split(',')
+        for node in nodes:
+            if node in l:
+                h.append(TD(
+                  IMG(_src=URL(r=request,c='static',f='attach16.png')),
+                  _style="text-align:center",
+                ))
+            else:
+                h.append(TD(""))
+        return TR(h, _class=bg)
+
+    def fmt_table(rows):
+        last = ""
+        bgl = {'cell1': 'cell3', 'cell3': 'cell1'}
+        bg = "cell1"
+        lines = [fmt_header1(),
+                 fmt_header2()]
+        for row in rows:
+            if last != row[2]:
+                bg = bgl[bg]
+                last = row[2]
+            lines.append(fmt_line(row, bg))
+        return TABLE(lines)
+
+    return DIV(fmt_table(_rows))
+

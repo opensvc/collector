@@ -10,3 +10,4 @@
 1 5 * * * unxdev01 *cron/cron_alerts_daily
 1 * * * * unxdev01 *cron/cron_alerts_hourly
 2 * * * * unxdev01 *cron/refresh_b_apps
+50 23 * * * unxdev01 *compliance/cron_dash_comp

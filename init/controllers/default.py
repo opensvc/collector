@@ -159,18 +159,28 @@ class viz(object):
         pass
 
     def vid_svc(self, svc, nodename):
+        if nodename is None or svc is None:
+            return "unknown"
         return "svc_"+nodename.replace(".", "_").replace("-", "_")+"_"+svc.replace(".", "_").replace("-", "_")
 
     def vid_svc_dg(self, svc, dg):
+        if svc is None:
+            return "unknown"
         return "dg_"+svc.replace(".", "_").replace("-", "_")+"_"+dg
 
     def vid_node(self, node):
+        if node is None:
+            return "unknown"
         return 'node_'+node.replace(".", "_").replace("-", "_")
 
     def vid_disk(self, id):
+        if id is None:
+            return "unknown"
         return 'disk_'+str(id).replace(".", "_").replace("-", "_")
 
     def vid_loc(self, id):
+        if id is None:
+            return "unknown"
         return str(id).replace(".", "_").replace("-", "_").replace(" ", "_")
 
     def add_service(self, svc):
@@ -428,15 +438,27 @@ def res_status(svcname, node):
 @auth.requires_login()
 def ajax_service():
     rowid = request.vars.rowid
-    rows = db(db.v_svcmon.mon_svcname==request.vars.node).select()
-    viz = svcmon_viz_img(rows)
+    tab = request.vars.tab
+    if tab is None:
+        tab = "tab1"
+
+    rows = db(db.services.svc_name==request.vars.node).select()
     if len(rows) == 0:
         return DIV(
                  T("No service information for %(node)s",
                    dict(node=request.vars.node)),
                )
 
+    rows = db(db.v_svcmon.mon_svcname==request.vars.node).select()
+    if len(rows) == 0:
+        return DIV(
+                 T("No service information for %(node)s",
+                   dict(node=request.vars.node)),
+               )
+
+    viz = svcmon_viz_img(rows)
     s = rows[0]
+
     t_misc = TABLE(
       TR(
         TD(T('opensvc version'), _style='font-style:italic'),
@@ -537,16 +559,22 @@ def ajax_service():
 
     def js(tab, rowid):
         buff = ""
-        for i in range(1, 10):
+        for i in range(1, 12):
             buff += """$('#%(tab)s_%(id)s').hide();
                        $('#li%(tab)s_%(id)s').removeClass('tab_active');
                     """%dict(tab='tab'+str(i), id=rowid)
         buff += """$('#%(tab)s_%(id)s').show();
                    $('#li%(tab)s_%(id)s').addClass('tab_active');
+                   if ("%(tab)s" in callbacks) {
+                     callbacks["%(tab)s"]();
+                     delete callbacks["%(tab)s"];
+                   }
                 """%dict(tab=tab, id=rowid)
         return buff
 
     def grpprf(rowid):
+        if s['svc_nodes'] is None or s['svc_drpnodes'] is None:
+            return SPAN()
         now = datetime.datetime.now()
         b = now - datetime.timedelta(days=0,
                                      hours=now.hour,
@@ -624,6 +652,8 @@ def ajax_service():
             LI(P(T("stats"), _class='spark16', _onclick=js('tab7', rowid)), _id="litab7_"+str(rowid)),
             LI(P(T("wiki"), _class='edit', _onclick=js('tab8', rowid)), _id="litab8_"+str(rowid)),
             LI(P(T("avail"), _class='svc', _onclick=js('tab9', rowid)), _id="litab9_"+str(rowid)),
+            LI(P(T("pkgdiff"), _class='pkg16', _onclick=js('tab10', rowid)), _id="litab10_"+str(rowid)),
+            LI(P(T("compliance"), _class='comp16', _onclick=js('tab11', rowid)), _id="litab11_"+str(rowid)),
           ),
           _class="tab",
         ),
@@ -670,31 +700,65 @@ def ajax_service():
             _class='cloud',
           ),
           DIV(
+            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
             _id='tab9_'+str(rowid),
             _class='cloud',
           ),
+          DIV(
+            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            _id='tab10_'+str(rowid),
+            _class='cloud',
+          ),
+          DIV(
+            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            _id='tab11_'+str(rowid),
+            _class='cloud',
+            _style='max-width:80em',
+          ),
           SCRIPT(
-            """$("#%(id)s").show(); sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(rowid)s');$("#%(id)s").hide()});"""%dict(
+            """function s%(rid)s_load_svcmon_log(){sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(rowid)s')});}"""%dict(
                id='tab9_'+str(rowid),
+               rid=str(rowid),
                rowid='avail_'+rowid,
                url=URL(r=request, c='svcmon_log', f='ajax_svcmon_log_1',
                        vars={'svcname':request.vars.node, 'rowid':'avail_'+rowid})
             ),
-            "ajax('%(url)s', [], '%(id)s')"%dict(
+            "function s%(rid)s_load_wiki(){ajax('%(url)s', [], '%(id)s')}"%dict(
                id='tab8_'+str(rowid),
+               rid=str(rowid),
                url=URL(r=request, c='wiki', f='ajax_wiki',
                        args=['tab8_'+str(rowid), request.vars.node])
             ),
-            "sync_ajax('%(url)s', ['grpprf_begin_%(id)s', 'grpprf_end_%(id)s'], 'grpprf_%(id)s', function(){eval_js_in_ajax_response('plot')});"%dict(
+            "function s%(rid)s_load_grpprf() {sync_ajax('%(url)s', ['grpprf_begin_%(id)s', 'grpprf_end_%(id)s'], 'grpprf_%(id)s', function(){eval_js_in_ajax_response('plot')})};"%dict(
                id=str(rowid),
-               url=URL(r=request, c='stats', f='ajax_perfcmp_plot?node=%s'%','.join(s['svc_nodes'].split()+s['svc_drpnodes'].split())),
+               rid=str(rowid),
+               url=URL(r=request, c='stats', f='ajax_perfcmp_plot?node=%s'%','.join(str(s['svc_nodes']).split()+str(s['svc_drpnodes']).split())),
             ),
-            "ajax('%(url)s', [], '%(id)s')"%dict(
+            "function s%(rid)s_load_pkgdiff(){ajax('%(url)s', [], '%(id)s')}"%dict(
+               id='tab10_'+str(rowid),
+               rid=str(rowid),
+               url=URL(r=request, c='pkgdiff', f='svc_pkgdiff',
+                       args=[request.vars.node])
+            ),
+            "function s%(rid)s_load_comp(){ajax('%(url)s', [], '%(id)s')}"%dict(
+               id='tab11_'+str(rowid),
+               rid=str(rowid),
+               url=URL(r=request, c='compliance', f='ajax_compliance_svc',
+                       args=[request.vars.node])
+            ),
+            "function s%(rid)s_load_stor(){ajax('%(url)s', [], '%(id)s')}"%dict(
                id='tab6_'+str(rowid),
+               rid=str(rowid),
                url=URL(r=request, c='ajax_node', f='ajax_svc_stor',
                        args=['tab6_'+str(rowid), request.vars.node])
             ),
-
+            """callbacks = {"tab6": %(id)s_load_stor,
+                            "tab7": %(id)s_load_grpprf,
+                            "tab8": %(id)s_load_wiki,
+                            "tab9": %(id)s_load_svcmon_log,
+                            "tab10": %(id)s_load_pkgdiff,
+                            "tab11": %(id)s_load_comp}"""%dict(id='s'+str(rowid)),
+            js(tab, rowid),
             _name='%s_to_eval'%rowid,
           ),
         ),
@@ -1185,6 +1249,9 @@ def svc_del(ids):
              svcname=r.mon_svcname,
              nodename=r.mon_nodname)
         purge_svc(r.mon_svcname)
+        update_dash_compdiff_svc(r.mon_svcname)
+        update_dash_moddiff(r.mon_svcname)
+        update_dash_rsetdiff(r.mon_svcname)
 
 @auth.requires_login()
 def service_action():
@@ -1384,4 +1451,23 @@ def svcmon():
         )
     return dict(table=t)
 
+@auth.requires_login()
+def svcmon_node():
+    node = request.args[0]
+    tid = 'svcmon_'+node
+    t = table_svcmon(tid, 'ajax_svcmon')
+    t.cols.remove('mon_nodname')
+
+    q = _where(None, 'v_svcmon', domain_perms(), 'mon_nodname')
+    q &= db.v_svcmon.mon_nodname == node
+    t.object_list = db(q).select()
+    t.hide_tools = True
+    t.pageable = False
+    t.linkable = False
+    t.filterable = False
+    t.exportable = False
+    t.dbfilterable = False
+    t.columnable = False
+    t.refreshable = False
+    return t.html()
 

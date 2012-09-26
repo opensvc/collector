@@ -47,10 +47,11 @@ class Column(object):
 
 class HtmlTableColumn(Column):
     def __init__(self, title, field, table=None, display=False,
-                 img='generic', _class='', _dataclass=''):
+                 img='generic', _class='', _dataclass='', filter_redirect=None):
         Column.__init__(self, title, display, img, _class, _dataclass)
         self.table = table
         self.field = field
+        self.filter_redirect = filter_redirect
 
     def get(self, o):
         try:
@@ -100,9 +101,11 @@ class HtmlTable(object):
         self.extraline = False
         self.extrarow = False
         self.filterable = True
+        self.hide_tools = False
         self.dbfilterable = True
         self.pageable = True
         self.exportable = True
+        self.linkable = True
         self.refreshable = True
         self.columnable = True
         self.headers = True
@@ -410,6 +413,8 @@ class HtmlTable(object):
         return d
 
     def link(self):
+        if not self.linkable:
+            return SPAN()
         d = DIV(
               A(
                 SPAN(
@@ -556,6 +561,8 @@ class HtmlTable(object):
         return '_'.join((self.id, 'c', f))
 
     def filter_key(self, f):
+        if hasattr(self.colprops[f], 'filter_redirect') and self.colprops[f].filter_redirect is not None:
+            f = self.colprops[f].filter_redirect
         return '_'.join((self.id, 'f', f))
 
     def filter_div_key(self, f):
@@ -1056,14 +1063,16 @@ class HtmlTable(object):
         else:
             additional_filters = SPAN()
 
-        atl = []
-        for o in self.additional_tools:
-            if isinstance(o, HtmlTableMenu):
-                atl.append(o.html())
-            else:
-                atl.append(getattr(self, o)())
-
-        additional_tools = SPAN(atl)
+        if not self.hide_tools:
+            atl = []
+            for o in self.additional_tools:
+                if isinstance(o, HtmlTableMenu):
+                    atl.append(o.html())
+                else:
+                    atl.append(getattr(self, o)())
+            additional_tools = SPAN(atl)
+        else:
+            additional_tools = SPAN()
 
         if self.exportable:
             export = DIV(
@@ -1447,12 +1456,13 @@ function js_link_%(id)s(){
   if (url.indexOf('?')>0) {
     url=url.substring(0, url.indexOf('?'))
   }
-  url=url+"?clear_filters=true"
+  url=url+"?"
+  args="clear_filters=true"
   $("#%(id)s").find("[name=fi]").each(function(){
     if ($(this).val().length==0) {return}
-    url=url+'&'+$(this).attr('id')+"="+$(this).val()
+    args=args+'&'+$(this).attr('id')+"="+encodeURIComponent($(this).val())
   })
-  alert(url)
+  alert(url+args)
 }
 var inputs_%(id)s = %(a)s;"""%dict(
                    id=self.id,
@@ -1532,6 +1542,7 @@ $("#%(id)s").everyTime(1000, function(i){
                 v = self.colprops[c].get(o)
                 if isinstance(v, str) or isinstance(v, unicode):
                     v = repr(v).replace('\\n', '&#10;')
+                    if v.startswith("u'"): v = v[1:]
                 elif isinstance(v, datetime.datetime):
                     v = v.strftime("%Y-%m-%d %H:%M:%S")
                 elif v is None:
@@ -1694,6 +1705,8 @@ action_img_h = {
     'shutdown': 'action_stop_16.png',
     'syncservices': 'action_sync_16.png',
     'updateservices': 'action16.png',
+    'updatepkg': 'pkg16.png',
+    'updatecomp': 'pkg16.png',
     'stop': 'action_stop_16.png',
     'stopapp': 'action_stop_16.png',
     'stopdisk': 'action_stop_16.png',
@@ -1948,7 +1961,8 @@ class col_availstatus(HtmlTableColumn):
 
     def html(self, o):
         cl = {}
-        if self.t.colprops['mon_updated'].get(o) < now - datetime.timedelta(minutes=15):
+        mon_updated = self.t.colprops['mon_updated'].get(o)
+        if mon_updated is None or mon_updated < now - datetime.timedelta(minutes=15):
             outdated = True
         else:
             outdated = False
@@ -2075,6 +2089,7 @@ v_nodes_cols = [
     'host_mode',
     'environnement',
     'warranty_end',
+    'maintenance_end',
     'status',
     'type',
     'updated',
@@ -2183,13 +2198,6 @@ v_services_colprops = {
     'svc_containertype': col_containertype(
              title = 'Container type',
              field='svc_containertype',
-             display = False,
-             img = 'svc',
-             table = 'v_services',
-            ),
-    'svc_containerpath': HtmlTableColumn(
-             title = 'Container path',
-             field='svc_containerpath',
              display = False,
              img = 'svc',
              table = 'v_services',
@@ -2340,6 +2348,13 @@ v_svcmon_colprops = {
 }
 
 svcmon_colprops = {
+    'mon_containerpath': HtmlTableColumn(
+             title = 'Container path',
+             field='mon_containerpath',
+             display = False,
+             img = 'svc',
+             table = 'svcmon',
+            ),
     'mon_svcname': col_svc(
              title = 'Service',
              field='mon_svcname',
@@ -2352,6 +2367,13 @@ svcmon_colprops = {
              field='mon_nodname',
              display = False,
              img = 'node16',
+             table = 'svcmon',
+            ),
+    'mon_svctype': col_env(
+             title = 'Service type',
+             field='mon_svctype',
+             display = False,
+             img = 'svc',
              table = 'svcmon',
             ),
     'mon_overallstatus': col_overallstatus(
@@ -2717,6 +2739,13 @@ v_nodes_colprops = {
     'warranty_end': HtmlTableColumn(
              title = 'Warranty end',
              field='warranty_end',
+             display = False,
+             img = 'node16',
+             table = 'v_nodes',
+            ),
+    'maintenance_end': HtmlTableColumn(
+             title = 'Maintenance end',
+             field='maintenance_end',
              display = False,
              img = 'node16',
              table = 'v_nodes',

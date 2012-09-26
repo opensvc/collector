@@ -8,6 +8,7 @@
 ## - call exposes all registered services (none by default)
 #########################################################################
 import datetime, time
+import re
 
 def user():
     """
@@ -136,10 +137,13 @@ def _end_action(vars, vals):
     h['end'] = h['end'].strftime("%Y-%m-%d %H:%M:%S")
     h['id'] = h['ID']
 
-    _comet_send(json.dumps({
+    try:
+        _comet_send(json.dumps({
                  'event': 'end_action',
                  'data': h
                 }))
+    except:
+        pass
 
     if h['action'] in ('start', 'startcontainer') and \
        h['status'] == 'ok':
@@ -238,24 +242,26 @@ def _update_service(vars, vals, auth):
     vars = []
     vals = []
     for var, val in h.items():
-        if var not in ('mon_vmname', 'mon_guestos', 'mon_vcpus', 'mon_vmem'):
+        if var not in ('svc_vmname', 'svc_guestos', 'svc_vcpus', 'svc_vmem', 'svc_containerpath'):
             vars.append(var)
             vals.append(val)
     generic_insert('services', vars, vals)
     update_dash_service_not_updated(vals[1].strip("'"))
-    if 'svc_vmname' in vars:
+    if 'svc_vmname' in h:
         vars = ['mon_svcname',
                 'mon_nodname',
                 'mon_vmname',
                 'mon_guestos',
                 'mon_vcpus',
-                'mon_vmem']
+                'mon_vmem',
+                'mon_containerpath']
         vals = [h['svc_name'],
                 auth[1],
                 h['svc_vmname'],
-                h['svc_guestos'],
-                h['svc_vcpus'],
-                h['svc_vmem'],
+                h['svc_guestos'] if 'svc_guestos' in h else '',
+                h['svc_vcpus'] if 'svc_vcpus' in h else '0',
+                h['svc_vmem'] if 'svc_vmem' in h else '0',
+                h['svc_containerpath'] if 'svc_containerpath' in h else '',
                ]
         generic_insert('svcmon', vars, vals)
 
@@ -273,10 +279,24 @@ def _push_checks(vars, vals):
         chk_value
         chk_updated
     """
+    # purge old checks
     if len(vals) > 0:
         nodename = vals[0][0]
         db(db.checks_live.chk_nodename==nodename).delete()
         db.commit()
+
+    # insert new checks
+    while len(vals) > 100:
+        generic_insert('checks_live', vars, vals[:100])
+        q = db.checks_live.id < 0
+        for v in vals[:100]:
+            qr = db.checks_live.chk_nodename == v[0]
+            qr &= db.checks_live.chk_type == v[2]
+            qr &= db.checks_live.chk_instance == v[3]
+            q |= qr
+        rows = db(q).select()
+        update_thresholds_batch(rows)
+        vals = vals[100:]
     generic_insert('checks_live', vars, vals)
     q = db.checks_live.id < 0
     for v in vals:
@@ -286,6 +306,8 @@ def _push_checks(vars, vals):
         q |= qr
     rows = db(q).select()
     update_thresholds_batch(rows)
+
+    # update dashboard alerts
     if len(vals) > 0:
         update_dash_checks(vals[0][0])
 
@@ -354,7 +376,7 @@ def _update_asset(vars, vals, auth):
         del(h['environment'])
     generic_insert('nodes', h.keys(), h.values())
     update_dash_node_not_updated(auth[1])
-    update_dash_node_without_warranty_end(auth[1])
+    update_dash_node_without_maintenance_end(auth[1])
     update_dash_node_without_asset(auth[1])
 
 @auth_uuid
@@ -403,12 +425,34 @@ def svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
 @auth_uuid
 @service.xmlrpc
 def register_disks(vars, vals, auth):
-    nodename = auth[1].strip("'")
-    db(db.svcdisks.disk_nodename==nodename).delete()
-    db(db.diskinfo.disk_arrayid==nodename).delete()
-    db.commit()
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+
     for v in vals:
         _register_disk(vars, v, auth)
+
+    nodename = auth[1].strip("'")
+
+    # purge svcdisks
+    sql = """ delete from svcdisks
+              where
+                disk_nodename = "%(nodename)s" and
+                disk_updated < "%(now)s"
+          """ % dict(nodename=nodename, now=now)
+    db.executesql(sql)
+
+    # purge diskinfo stubs
+    sql = """ delete from diskinfo
+              where
+                (disk_arrayid = "%(nodename)s" or
+                 disk_arrayid = "" or
+                 disk_arrayid = "None" or
+                 disk_arrayid is NULL) and
+                disk_updated < "%(now)s"
+          """ % dict(nodename=nodename, now=now)
+    db.executesql(sql)
+
+    db.commit()
 
 @auth_uuid
 @service.xmlrpc
@@ -429,6 +473,9 @@ def disk_level(dev_id, level=0):
 #    feed_enqueue("_register_diskinfo", vars, vals, auth)
 
 def register_diskinfo(vars, vals, auth):
+    if len(vals) == 0:
+        return
+
     now = datetime.datetime.now()
     now -= datetime.timedelta(microseconds=now.microsecond)
     nodename = auth[1]
@@ -441,59 +488,40 @@ def register_diskinfo(vars, vals, auth):
     # disk id is already known in diskinfo
     arrays = set([])
     for val in vals:
-        disk_id = val[0]
+        cluster = val[1]
         dev_id = val[2]
         val.append(now)
         val.append(str(disk_level(dev_id)))
-        sql = """select disk_arrayid from diskinfo where disk_id="%s" """%disk_id
-        rows = db.executesql(sql)
-        if len(rows) == 1:
-            array = rows[0][0]
-            cluster = array.split(',')
-            if nodename not in cluster:
-                cluster.append(nodename)
-                cluster.sort()
-                array = ','.join(cluster)
-            val[1] = array
-            arrays.add(array)
-        else:
-            arrays.add(nodename)
         generic_insert('diskinfo', vars, val)
 
     # purge diskinfo
-    if len(arrays) > 0:
-        sql = """ update diskinfo
-                    set disk_arrayid=replace(replace(replace(disk_arrayid, "%(nodename)s,", ""), ",%(nodename)s", ""), "%(nodename)s", "")
-                  where
-                    disk_group = "virtual" and
-                    disk_arrayid in (%(l)s) and
-                    disk_updated < "%(now)s" """%dict(nodename=nodename, l=','.join(map(lambda x: repr(str(x)), arrays)), now=now)
-        db.executesql(sql)
-
-    sql = """ delete from diskinfo where disk_arrayid = "" """
+    sql = """ delete from diskinfo
+              where
+                disk_arrayid = "%(cluster)s" and
+                disk_updated < "%(now)s"
+          """ % dict(cluster=val[1], now=now)
     db.executesql(sql)
 
     # register cluster as array
-    for array in arrays:
-        node = db(db.nodes.nodename==nodename).select().first()
-        if node is not None:
-            array_cache = node.mem_bytes
-            array_firmware = " ".join((node.os_name, node.os_vendor, node.os_release, node.os_kernel))
-        else:
-            array_cache = 0
-            array_firwmare = "unknown"
+    node = db(db.nodes.nodename==nodename).select().first()
+    if node is not None:
+        array_cache = node.mem_bytes
+        array_firmware = " ".join((node.os_name, node.os_vendor, node.os_release, node.os_kernel))
+    else:
+        array_cache = 0
+        array_firwmare = "unknown"
 
-        vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
-        vals = [
-          array,
-          "vdisk provider",
-          str(array_cache),
-          array_firmware,
-          now
-        ]
-        generic_insert('stor_array', vars, vals)
-        sql = """ delete from stor_array where array_name = "%s" and array_updated < "%s" """%(array, now)
-        db.executesql(sql)
+    vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
+    vals = [
+      cluster,
+      "vdisk provider",
+      str(array_cache),
+      array_firmware,
+      now
+    ]
+    generic_insert('stor_array', vars, vals)
+    sql = """ delete from stor_array where array_name = "%s" and array_updated < "%s" """%(cluster, now)
+    db.executesql(sql)
     db.commit()
 
 @auth_uuid
@@ -509,6 +537,16 @@ def _register_disk(vars, vals, auth):
         h[a] = b
 
     disk_id = h["disk_id"].strip("'")
+    disk_svcname = h["disk_svcname"].strip("'")
+    disk_nodename = h["disk_nodename"].strip("'")
+
+    if len(disk_svcname) == 0:
+        # if no service name is provided and the node is actually
+        # a service encpasulated vm, add the encapsulating svcname
+        q = db.svcmon.mon_vmname == disk_nodename
+        row = db(q).select().first()
+        if row is not None:
+            h["disk_svcname"] = repr(row.mon_svcname)
 
     # don't register blacklisted disks (might be VM disks, already accounted)
     #n = db(db.disk_blacklist.disk_id==disk_id).count()
@@ -519,8 +557,32 @@ def _register_disk(vars, vals, auth):
     h['disk_updated'] = now
 
     q = db.diskinfo.disk_id==disk_id
-    n = db(q).count()
-    if disk_id.startswith(h["disk_nodename"].strip("'")+'.'):
+    disks = db(q).select()
+    n = len(disks)
+
+    if n > 0:
+        # diskinfo exists. is it a local or remote disk
+        disk = disks.first()
+        if disk.disk_arrayid == disk_nodename or \
+           disk.disk_arrayid is None or \
+           len(disk.disk_arrayid) == 0:
+            # diskinfo registered as a stub for a local disk
+            h['disk_local'] = 'T'
+
+            if n == 1:
+                # update diskinfo timestamp
+                if disk.disk_arrayid is None:
+                    array_id = 'NULL'
+                else:
+                    array_id = disk.disk_arrayid
+                vars = ['disk_id', 'disk_arrayid', 'disk_updated']
+                vals = [h["disk_id"], array_id, h['disk_updated']]
+                generic_insert('diskinfo', vars, vals)
+        else:
+            # diskinfo registered by a array parser or an hv pushdisks
+            h['disk_local'] = 'F'
+
+    if disk_id.startswith(disk_nodename+'.') and n == 0:
         h['disk_local'] = 'T'
         vars = ['disk_id', 'disk_arrayid', 'disk_devid', 'disk_size']
         vals = [h["disk_id"],
@@ -676,6 +738,11 @@ def _insert_patch(vars, vals, auth):
 
 @auth_uuid
 @service.xmlrpc
+def update_hds(symid, vars, vals, auth):
+    update_array_xml(symid, vars, vals, auth, "hds", insert_hds)
+
+@auth_uuid
+@service.xmlrpc
 def update_sym_xml(symid, vars, vals, auth):
     update_array_xml(symid, vars, vals, auth, "symmetrix", insert_sym)
 
@@ -711,6 +778,7 @@ def update_dcs(name, vars, vals, auth):
 
 def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
     import os
+    import codecs
 
     dir = 'applications'+str(URL(r=request,a='init', c='uploads',f=subdir))
     if not os.path.exists(dir):
@@ -723,7 +791,7 @@ def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
     for a,b in zip(vars, vals):
         a = os.path.join(dir, a)
         try:
-            f = open(a, 'w')
+            f = codecs.open(a, "w", "utf-8")
             f.write(b)
             f.sync()
             f.close()
@@ -731,23 +799,26 @@ def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
             pass
 
     #fn(arrayid)
-    feed_enqueue(fn.__name__, arrayid)
+    feed_enqueue(fn.__name__, arrayid, auth[1])
 
     # stor_array_proxy
-    sql = """select id from stor_array where array_name="%s" """%arrayid
+    insert_array_proxy(auth[1], arrayid)
+
+def insert_dcss():
+    return insert_dcs()
+
+def insert_array_proxy(nodename, array_name):
+    sql = """select id from stor_array where array_name="%s" """%array_name
     rows = db.executesql(sql)
     if len(rows) == 0:
         return
     array_id = str(rows[0][0])
 
     vars = ['array_id', 'nodename']
-    vals = [array_id, auth[1]]
+    vals = [array_id, nodename]
     generic_insert('stor_array_proxy', vars, vals)
 
-def insert_dcss():
-    return insert_dcs()
-
-def insert_dcs(name=None):
+def insert_dcs(name=None, nodename=None):
     import glob
     import os
     from applications.init.modules import dcs
@@ -762,33 +833,123 @@ def insert_dcs(name=None):
     dirs = glob.glob(os.path.join(dir, pattern))
 
     for d in dirs:
+        print d
         s = dcs.get_dcs(d)
+        if s is None:
+            print "error parsing data"
+            continue
+
+        # stor_array_proxy
+        if nodename is not None:
+            print " insert %s as proxy node"%nodename
+            insert_array_proxy(nodename, s.sg['caption'])
+
+        # stor_array
+        vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
+        vals = []
+        name = s.sg['caption']
+        for server in s.server.values():
+            if len(server['model']) > 0:
+                break
+        vals.append([s.sg['caption'],
+                     server['model'],
+                     str(s.sg['memory']),
+                     server['productbuild'],
+                     now])
+        generic_insert('stor_array', vars, vals)
+
+        sql = """select id from stor_array where array_name="%s" """%name
+        array_id = str(db.executesql(sql)[0][0])
+
+        # stor_array_dg
+        vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
+        vals = []
+        for dg in s.pool.values():
+            vals.append([array_id,
+                         dg['caption'],
+                         str(dg['avail']),
+                         str(dg['alloc']),
+                         str(dg['total']),
+                         now])
+        generic_insert('stor_array_dg', vars, vals)
+        sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
+        db.executesql(sql)
+
+        # stor_array_tgtid
+        vars = ['array_id', 'array_tgtid']
+        vals = []
+        for wwn in s.port_list:
+            vals.append([array_id, wwn])
+        generic_insert('stor_array_tgtid', vars, vals)
+
+        # diskinfo
+        vars = ['disk_id',
+                'disk_arrayid',
+                'disk_name',
+                'disk_devid',
+                'disk_size',
+                'disk_alloc',
+                'disk_raid',
+                'disk_group',
+                'disk_updated']
+        vals = []
+        for d in s.vdisk.values():
+            for poolid in d['poolid']:
+                vals.append([d['wwid'],
+                             name,
+                             d['caption'],
+                             d['id'],
+                             str(d['size']),
+                             str(d['alloc']),
+                             d['type'],
+                             s.pool[poolid]['caption'],
+                             now])
+        generic_insert('diskinfo', vars, vals)
+        sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(name, str(now))
+        db.executesql(sql)
+
+def insert_hdss():
+    return insert_hds()
+
+def insert_hds(name=None, nodename=None):
+    import glob
+    import os
+    from applications.init.modules import hds
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+
+    dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='hds'))
+    if name is None:
+        pattern = "*"
+    else:
+        pattern = name
+    dirs = glob.glob(os.path.join(dir, pattern))
+
+    for d in dirs:
+        s = hds.get_hds(d)
         if s is not None:
             # stor_array
             vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
             vals = []
-            name = s.sg['caption']
-            for server in s.server.values():
-                break
-            vals.append([s.sg['caption'],
-                         server['modelnumber'],
-                         str(s.sg['memory']),
-                         server['firmwareversion'],
+            vals.append([s.name,
+                         s.model,
+                         str(s.cache),
+                         s.firmware,
                          now])
             generic_insert('stor_array', vars, vals)
 
-            sql = """select id from stor_array where array_name="%s" """%name
+            sql = """select id from stor_array where array_name="%s" """%s.name
             array_id = str(db.executesql(sql)[0][0])
 
             # stor_array_dg
             vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
             vals = []
-            for dg in s.pool.values():
+            for pname, dg in s.pool.items():
                 vals.append([array_id,
-                             dg['caption'],
-                             str(dg['avail']),
-                             str(dg['alloc']),
-                             str(dg['total']),
+                             dg['name'],
+                             str(dg['free']),
+                             str(dg['used']),
+                             str(dg['size']),
                              now])
             generic_insert('stor_array_dg', vars, vals)
             sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
@@ -797,7 +958,7 @@ def insert_dcs(name=None):
             # stor_array_tgtid
             vars = ['array_id', 'array_tgtid']
             vals = []
-            for wwn in s.port_list:
+            for wwn in s.ports:
                 vals.append([array_id, wwn])
             generic_insert('stor_array_tgtid', vars, vals)
 
@@ -810,23 +971,23 @@ def insert_dcs(name=None):
                     'disk_group',
                     'disk_updated']
             vals = []
-            for d in s.vdisk.values():
-                for poolid in d['poolid']:
-                    vals.append([d['wwid'],
-                                 name,
-                                 d['id'],
-                                 str(d['size']),
-                                 d['type'],
-                                 s.pool[poolid]['caption'],
-                                 now])
+            for d in s.vdisk:
+                vals.append([d['wwid'],
+                             s.name,
+                             d['name'],
+                             str(d['size']),
+                             d['raid'],
+                             d['disk_group'],
+                             now])
             generic_insert('diskinfo', vars, vals)
-            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(name, str(now))
+            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
             db.executesql(sql)
+
 
 def insert_necisms():
     return insert_necism()
 
-def insert_necism(name=None):
+def insert_necism(name=None, nodename=None):
     import glob
     import os
     from applications.init.modules import necism
@@ -902,7 +1063,7 @@ def insert_necism(name=None):
 def insert_brocades():
     return insert_brocade()
 
-def insert_brocade(name=None):
+def insert_brocade(name=None, nodename=None):
     import glob
     import os
     from applications.init.modules import brocade
@@ -937,6 +1098,10 @@ def insert_brocade(name=None):
              'updated']
     for d in dirs:
         s = brocade.get_brocade(d)
+
+        if s is None:
+            print "get_brocade: %s is corrupted"%d
+            continue
 
         # alias
         for cfg in s.alias:
@@ -1009,7 +1174,7 @@ def insert_brocade(name=None):
 def insert_vioservers():
     return insert_vioserver()
 
-def insert_vioserver(name=None):
+def insert_vioserver(name=None, nodename=None):
     import glob
     import os
     from applications.init.modules import vioserver
@@ -1025,45 +1190,71 @@ def insert_vioserver(name=None):
 
     for d in dirs:
         s = vioserver.get_vioserver(d)
-        if s is not None:
-            # stor_array
-            vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
-            vals = []
-            vals.append([s.array_name,
-                         s.modelnumber,
-                         str(s.controllermainmemory),
-                         s.firmwareversion,
+        if s is None:
+            continue
+
+        # stor_array
+        vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
+        vals = []
+        vals.append([s.array_name,
+                     s.modelnumber,
+                     str(s.controllermainmemory),
+                     s.firmwareversion,
+                     now])
+        generic_insert('stor_array', vars, vals)
+
+        sql = """select id from stor_array where array_name="%s" """%s.array_name
+        array_id = str(db.executesql(sql)[0][0])
+
+        # diskinfo
+        vars = ['disk_id',
+                'disk_arrayid',
+                'disk_devid',
+                'disk_size',
+                'disk_alloc',
+                'disk_raid',
+                'disk_group',
+                'disk_level',
+                'disk_updated']
+        vals = []
+        for d in s.vdisk:
+            vals.append([d['did'],
+                         s.array_name,
+                         d['backingdevid'],
+                         str(d['size']),
+                         str(d['size']),
+                         "",
+                         "",
+                         str(disk_level(d['backingdevid'])),
                          now])
-            generic_insert('stor_array', vars, vals)
+        generic_insert('diskinfo', vars, vals)
+        sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.array_name, str(now))
+        db.executesql(sql)
 
-            sql = """select id from stor_array where array_name="%s" """%s.array_name
-            array_id = str(db.executesql(sql)[0][0])
+        # svcdisks
+        vars = ['disk_id',
+                'disk_size',
+                'disk_used',
+                'disk_vendor',
+                'disk_model',
+                'disk_nodename']
+        vals = []
+        for d in s.pdisk.values():
+            vals.append([d['wwid'],
+                         d['size'],
+                         d['size'],
+                         d['vendor'],
+                         d['model'],
+                         s.array_name])
+        generic_insert('svcdisks', vars, vals)
+        sql = """delete from svcdisks where disk_nodename="%s" and disk_updated < "%s" """%(s.array_name, str(now))
+        db.executesql(sql)
 
-            # diskinfo
-            vars = ['disk_id',
-                    'disk_arrayid',
-                    'disk_devid',
-                    'disk_size',
-                    'disk_raid',
-                    'disk_group',
-                    'disk_updated']
-            vals = []
-            for d in s.vdisk:
-                vals.append([d['did'],
-                             s.array_name,
-                             d['backingdevid'],
-                             str(d['size']),
-                             "",
-                             "",
-                             now])
-            generic_insert('diskinfo', vars, vals)
-            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.array_name, str(now))
-            db.executesql(sql)
 
 def insert_ibmsvcs():
     return insert_ibmsvc()
 
-def insert_ibmsvc(name=None):
+def insert_ibmsvc(name=None, nodename=None):
     import glob
     import os
     from applications.init.modules import ibmsvc
@@ -1139,7 +1330,7 @@ def insert_ibmsvc(name=None):
 def insert_evas():
     return insert_eva()
 
-def insert_eva(name=None):
+def insert_eva(name=None, nodename=None):
     import glob
     import os
     from applications.init.modules import eva
@@ -1194,17 +1385,21 @@ def insert_eva(name=None):
             # diskinfo
             vars = ['disk_id',
                     'disk_arrayid',
+                    'disk_name',
                     'disk_devid',
                     'disk_size',
+                    'disk_alloc',
                     'disk_raid',
                     'disk_group',
                     'disk_updated']
             vals = []
-            for d in s.vdisk:
+            for d in s.vdisk.values():
                 vals.append([d['wwlunid'],
                              s.name,
+                             d['objectname'],
                              d['objectid'],
                              str(d['allocatedcapacity']),
+                             str(d['alloc']),
                              d['redundancy'],
                              d['diskgroupname'],
                              now])
@@ -1216,7 +1411,7 @@ def insert_eva(name=None):
 def insert_syms():
     return insert_sym()
 
-def insert_sym(symid=None):
+def insert_sym(symid=None, nodename=None):
     import glob
     import os
     from applications.init.modules import symmetrix
@@ -1282,6 +1477,7 @@ def insert_sym(symid=None):
                     'disk_arrayid',
                     'disk_devid',
                     'disk_size',
+                    'disk_alloc',
                     'disk_raid',
                     'disk_group',
                     'disk_updated']
@@ -1293,6 +1489,7 @@ def insert_sym(symid=None):
                              s.info['symid'],
                              dev.info['dev_name'],
                              str(dev.megabytes),
+                             str(dev.alloc),
                              "Meta-%d %s"%(dev.meta_count, dev.info['configuration']),
                              dev.diskgroup_name,
                              now])
@@ -1300,6 +1497,8 @@ def insert_sym(symid=None):
             del(s.dev)
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.info['symid'], str(now))
             db.executesql(sql)
+
+            del(s)
 
 @auth_uuid
 @service.xmlrpc
@@ -1446,8 +1645,10 @@ def svc_status_update(svcname):
                         db.svcmon.mon_frozen)
 
     tlim = datetime.datetime.now() - datetime.timedelta(minutes=15)
-    ostatus_l = [r.mon_overallstatus for r in rows if r.mon_updated > tlim]
-    astatus_l = [r.mon_availstatus for r in rows if r.mon_updated > tlim]
+    ostatus_l = [r.mon_overallstatus for r in rows if r.mon_updated is not None
+and r.mon_updated > tlim]
+    astatus_l = [r.mon_availstatus for r in rows if r.mon_updated is not None
+and r.mon_updated > tlim]
     n_trusted_nodes = len(ostatus_l)
     n_nodes = len(rows)
     ostatus_l = set(ostatus_l)
@@ -1730,6 +1931,15 @@ def __svcmon_update(vars, vals):
 
 def get_defaults(row):
     q = db.checks_defaults.chk_type == row.chk_type
+    q &= db.checks_defaults.chk_inst != None
+    rows = db(q).select()
+    for r in rows:
+        if re.match(str(r.chk_inst), row.chk_instance) is None:
+            continue
+        return (r.chk_low, r.chk_high, 'defaults')
+
+    q = db.checks_defaults.chk_type == row.chk_type
+    q &= db.checks_defaults.chk_inst == None
     rows = db(q).select()
     if len(rows) == 0:
         return
@@ -2294,6 +2504,63 @@ def collector_events(cmd, auth):
         data += [[str(row[0]), str(row[1]), str(row[2]), str(row[3]), str(row[4]), msg]]
     return {"ret": 0, "msg": "", "data":data}
 
+@auth_uuid
+@service.xmlrpc
+def collector_list_nodes(cmd, auth):
+    d = {}
+    nodename = auth[1]
+    if "fset" not in cmd:
+        return {"ret": 1, "msg": "fset not specified"}
+    fset = cmd['fset']
+    q = db.gen_filtersets.fset_name == fset
+    row = db(q).select().first()
+    if row is None:
+        return {"ret": 1, "msg": "filterset not found"}
+    fset_id = row.id
+    q = db.nodes.id > 0
+    q = apply_filters(q, fset_id, db.nodes.nodename, None)
+    rows = db(q).select(db.nodes.nodename, orderby=db.nodes.nodename)
+    nodes = [r.nodename.lower() for r in rows]
+    return {"ret": 0, "msg": "", "data": nodes}
+
+@auth_uuid
+@service.xmlrpc
+def collector_list_services(cmd, auth):
+    d = {}
+    nodename = auth[1]
+    if "fset" not in cmd:
+        return {"ret": 1, "msg": "fset not specified"}
+    fset = cmd['fset']
+    q = db.gen_filtersets.fset_name == fset
+    row = db(q).select().first()
+    if row is None:
+        return {"ret": 1, "msg": "filterset not found"}
+    fset_id = row.id
+    q = db.svcmon.mon_nodname == db.nodes.nodename
+    q = apply_filters(q, fset_id, db.svcmon.mon_nodname, db.svcmon.mon_svcname)
+    rows = db(q).select(db.svcmon.mon_svcname,
+                        orderby=db.svcmon.mon_svcname,
+                        groupby=db.svcmon.mon_svcname)
+    services = [r.mon_svcname.lower() for r in rows]
+    return {"ret": 0, "msg": "", "data": services}
+
+@auth_uuid
+@service.xmlrpc
+def collector_list_filtersets(cmd, auth):
+    d = {}
+    nodename = auth[1]
+    if "fset" in cmd and len(cmd['fset']) > 0:
+        q = db.gen_filtersets.fset_name.like(cmd['fset'])
+    else:
+        q = db.gen_filtersets.id > 0
+    rows = db(q).select(db.gen_filtersets.fset_name,
+                        orderby=db.gen_filtersets.fset_name)
+    fsets = [r.fset_name.lower() for r in rows]
+    return {"ret": 0, "msg": "", "data": fsets}
+
+
+
+
 #
 # Dashboard updates
 #
@@ -2312,7 +2579,8 @@ def cron_dash_service_not_updated():
                  "",
                  updated,
                  "",
-                 svc_type
+                 svc_type,
+                 ""
                from services
                where updated < date_sub(now(), interval 25 hour)
           """
@@ -2351,9 +2619,10 @@ def cron_dash_svcmon_not_updated():
                  "",
                  mon_updated,
                  "",
-                 mon_svctype
+                 mon_svctype,
+                 ""
                from svcmon
-               where mon_updated < date_sub(now(), interval 15 minute)
+               where mon_updated < date_sub(now(), interval 16 minute)
           """
     db.executesql(sql)
     db.commit()
@@ -2371,7 +2640,8 @@ def cron_dash_node_not_updated():
                  "",
                  updated,
                  "",
-                 host_mode
+                 host_mode,
+                 ""
                from nodes
                where updated < date_sub(now(), interval 25 hour)
           """
@@ -2391,7 +2661,8 @@ def cron_dash_node_without_asset():
                  "",
                  now(),
                  "",
-                 mon_svctype
+                 mon_svctype,
+                 ""
                from svcmon
                where
                  mon_nodname not in (
@@ -2401,12 +2672,12 @@ def cron_dash_node_without_asset():
     db.executesql(sql)
     db.commit()
 
-def cron_dash_node_beyond_warranty_date():
+def cron_dash_node_beyond_maintenance_date():
     sql = """insert ignore
              into dashboard
                select
                  NULL,
-                 "node warranty expired",
+                 "node maintenance expired",
                  "",
                  nodename,
                  1,
@@ -2414,22 +2685,23 @@ def cron_dash_node_beyond_warranty_date():
                  "",
                  now(),
                  "",
-                 host_mode
+                 host_mode,
+                 ""
                from nodes
                where
-                 warranty_end is not NULL and
-                 warranty_end != "0000-00-00 00:00:00" and
-                 warranty_end < now()
+                 maintenance_end is not NULL and
+                 maintenance_end != "0000-00-00 00:00:00" and
+                 maintenance_end < now()
           """
     db.executesql(sql)
     db.commit()
 
-def cron_dash_node_near_warranty_date():
+def cron_dash_node_near_maintenance_date():
     sql = """insert ignore
              into dashboard
                select
                  NULL,
-                 "node close to warranty end",
+                 "node close to maintenance end",
                  "",
                  nodename,
                  0,
@@ -2437,23 +2709,25 @@ def cron_dash_node_near_warranty_date():
                  "",
                  now(),
                  "",
-                 host_mode
+                 host_mode,
+                 ""
                from nodes
                where
-                 warranty_end is not NULL and
-                 warranty_end != "0000-00-00 00:00:00" and
-                 warranty_end > date_sub(now(), interval 30 day) and
-                 warranty_end < now()
+                 maintenance_end is not NULL and
+                 maintenance_end != "0000-00-00 00:00:00" and
+                 maintenance_end > date_sub(now(), interval 30 day) and
+                 maintenance_end < now()
           """
     db.commit()
     db.executesql(sql)
 
-def cron_dash_node_without_warranty_date():
+def cron_dash_node_without_maintenance_date():
+    # do not alert for nodes under warranty
     sql = """insert ignore
              into dashboard
                select
                  NULL,
-                 "node without warranty end date",
+                 "node without maintenance end date",
                  "",
                  nodename,
                  0,
@@ -2461,16 +2735,32 @@ def cron_dash_node_without_warranty_date():
                  "",
                  now(),
                  "",
-                 host_mode
+                 host_mode,
+                 ""
                from nodes
                where
-                 warranty_end is NULL or
-                 warranty_end = "0000-00-00 00:00:00"
+                 (warranty_end is NULL or
+                  warranty_end = "0000-00-00 00:00:00" or
+                  warranty_end < now()) and
+                 (maintenance_end is NULL or
+                  maintenance_end = "0000-00-00 00:00:00") and
+                 model not like "%virt%" and
+                 model not like "%Not Specified%" and
+                 model not like "%KVM%"
           """
     db.executesql(sql)
     db.commit()
 
 def cron_dash_checks_not_updated():
+    sql = """delete from dashboard
+             where
+               dash_type="check value not updated"
+               and dash_nodename not in (
+                 select distinct chk_nodename from checks_live
+               )
+          """
+    rows = db.executesql(sql)
+
     sql = """select d.id from dashboard d
              left join checks_live c on
                d.dash_dict_md5=md5(concat(
@@ -2516,7 +2806,8 @@ def cron_dash_checks_not_updated():
                  concat('{"i":"', chk_instance, '", "t":"', chk_type, '"}'),
                  chk_updated,
                  md5(concat('{"i":"', chk_instance, '", "t":"', chk_type, '"}')),
-                 n.host_mode
+                 n.host_mode,
+                 ""
                from checks_live c
                  join nodes n on c.chk_nodename=n.nodename
                where
@@ -2548,6 +2839,7 @@ def cron_dash_app_without_responsible():
                  concat('{"a":"', app, '"}'),
                  now(),
                  md5(concat('{"a":"', app, '"}')),
+                 "",
                  ""
                from v_apps
                where
@@ -2589,12 +2881,13 @@ def cron_dash_obs_without(t, a):
                  NULL,
                  "%(tl)s obsolescence %(al)s date not set",
                  "",
-                 "",
+                 n.nodename,
                  0,
                  "%(t)s: %%(o)s",
                  concat('{"o": "', o.obs_name, '"}'),
                  now(),
                  md5(concat('{"o": "', o.obs_name, '"}')),
+                 "",
                  ""
                from obsolescence o
                  join nodes n on
@@ -2627,6 +2920,7 @@ def cron_dash_obs_os_alert():
                         '"}'),
                  now(),
                  "",
+                 "",
                  ""
                from obsolescence o
                  join nodes n on
@@ -2653,6 +2947,7 @@ def cron_dash_obs_os_warn():
                         '", "o": "', o.obs_name,
                         '"}'),
                  now(),
+                 "",
                  "",
                  ""
                from obsolescence o
@@ -2681,6 +2976,7 @@ def cron_dash_obs_hw_alert():
                         '", "o": "', o.obs_name,
                         '"}'),
                  now(),
+                 "",
                  "",
                  ""
                from obsolescence o
@@ -2712,6 +3008,7 @@ def cron_dash_obs_hw_warn():
                         '"}'),
                  now(),
                  "",
+                 "",
                  ""
                from obsolescence o
                  join nodes n on
@@ -2742,7 +3039,7 @@ def cron_dash_action_errors_cleanup():
 #
 #   Used by xmlrpc processors for event based dashboard alerts
 #
-def update_dash_node_beyond_warranty_end(nodename):
+def update_dash_node_beyond_maintenance_end(nodename):
     sql = """delete from dashboard
                where
                  dash_nodename in (
@@ -2750,16 +3047,16 @@ def update_dash_node_beyond_warranty_end(nodename):
                    from nodes
                    where
                      nodename="%(nodename)s" and
-                     warranty_end is not NULL and
-                     warranty_end != "0000-00-00 00:00:00" and
-                     warranty_end < now()
+                     maintenance_end is not NULL and
+                     maintenance_end != "0000-00-00 00:00:00" and
+                     maintenance_end < now()
                  ) and
-                 dash_type = "node warranty expired"
+                 dash_type = "node maintenance expired"
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
     db.commit()
 
-def update_dash_node_near_warranty_end(nodename):
+def update_dash_node_near_maintenance_end(nodename):
     sql = """delete from dashboard
                where
                  dash_nodename in (
@@ -2767,12 +3064,12 @@ def update_dash_node_near_warranty_end(nodename):
                    from nodes
                    where
                      nodename="%(nodename)s" and
-                     warranty_end is not NULL and
-                     warranty_end != "0000-00-00 00:00:00" and
-                     warranty_end > now() and
-                     warranty_end < date_sub(now(), interval 30 day)
+                     maintenance_end is not NULL and
+                     maintenance_end != "0000-00-00 00:00:00" and
+                     maintenance_end > now() and
+                     maintenance_end < date_sub(now(), interval 30 day)
                  ) and
-                 dash_type = "node warranty expired"
+                 dash_type = "node maintenance expired"
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
     db.commit()
@@ -2791,7 +3088,7 @@ def update_dash_node_without_asset(nodename):
     rows = db.executesql(sql)
     db.commit()
 
-def update_dash_node_without_warranty_end(nodename):
+def update_dash_node_without_maintenance_end(nodename):
     sql = """delete from dashboard
                where
                  dash_nodename in (
@@ -2799,10 +3096,13 @@ def update_dash_node_without_warranty_end(nodename):
                    from nodes
                    where
                      nodename="%(nodename)s" and
-                     warranty_end != "0000-00-00 00:00:00" and
-                     warranty_end is not NULL
+                     ((maintenance_end != "0000-00-00 00:00:00" and
+                       maintenance_end is not NULL) or
+                       model like "%%virt%%" or
+                       model like "%%Not Specified%%" or
+                       model like "%%KVM%%")
                  ) and
-                 dash_type = "node without warranty end date"
+                 dash_type = "node without maintenance end date"
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
     db.commit()
@@ -2855,7 +3155,8 @@ def update_dash_pkgdiff(nodename):
         q = db.svcmon.mon_svcname == svcname
         q &= db.svcmon.mon_updated > datetime.datetime.now() - datetime.timedelta(minutes=20)
         nodes = map(lambda x: repr(x.mon_nodname),
-                    db(q).select(db.svcmon.mon_nodname))
+                    db(q).select(db.svcmon.mon_nodname,
+                                 orderby=db.svcmon.mon_nodname))
         n = len(nodes)
 
         if n < 2:
@@ -2887,6 +3188,16 @@ def update_dash_pkgdiff(nodename):
         else:
             sev = 0
 
+        skip = 0
+        trail = ""
+        while True:
+            nodes_s = ','.join(nodes).replace("'", "")+trail
+            if len(nodes_s) < 50:
+                break
+            skip += 1
+            nodes = nodes[:-1]
+            trail = ", ... (+%d)"%skip
+
         sql = """insert ignore into dashboard
                  set
                    dash_type="package differences in cluster",
@@ -2897,12 +3208,12 @@ def update_dash_pkgdiff(nodename):
                    dash_dict='{"n": %(n)d, "nodes": "%(nodes)s"}',
                    dash_dict_md5=md5('{"n": %(n)d, "nodes": "%(nodes)s"}'),
                    dash_created=now(),
-                   dash_env="%(env)s",
+                   dash_env="%(env)s"
               """%dict(svcname=svcname,
                        sev=sev,
                        env=row.mon_svctype,
                        n=rows[0][0],
-                       nodes=','.join(nodes).replace("'", ""))
+                       nodes=nodes_s)
 
         rows = db.executesql(sql)
         db.commit()
@@ -2923,7 +3234,9 @@ def update_dash_flex_cpu(svcname):
           """%dict(svcname=svcname)
     rows = db.executesql(sql)
 
-    if len(rows) == 1 and rows[0][0] == 'PRD':
+    if len(rows) == 0:
+        return
+    elif len(rows) == 1 and rows[0][0] == 'PRD':
         sev = 4
     else:
         sev = 3
@@ -2945,7 +3258,8 @@ def update_dash_flex_cpu(svcname):
                         ', "cmin": ', t.svc_flex_cpu_low_threshold,
                         ', "cmax": ', t.svc_flex_cpu_high_threshold,
                         '}')),
-                 "%(env)s"
+                 "%(env)s",
+                 ""
                from (
                  select *
                  from v_flex_status
@@ -2988,6 +3302,8 @@ def update_dash_flex_instances_started(svcname):
 
     if len(rows) == 1 and rows[0][0] == 'PRD':
         sev = 2
+    elif len(rows) == 0:
+        return
     else:
         sev = 1
 
@@ -3008,7 +3324,8 @@ def update_dash_flex_instances_started(svcname):
                         ', "smin": ', t.svc_flex_min_nodes,
                         ', "smax": ', t.svc_flex_max_nodes,
                         '}')),
-                 "%(env)s"
+                 "%(env)s",
+                 ""
                from (
                  select *
                  from v_flex_status
@@ -3078,7 +3395,8 @@ def update_dash_checks(nodename):
                         ', "min": ', t.min,
                         ', "max": ', t.max,
                         '}')),
-                 "%(env)s"
+                 "%(env)s",
+                 ""
                from (
                  select
                    chk_svcname as svcname,
@@ -3137,13 +3455,13 @@ def update_dash_netdev_errors(nodename):
                    dash_nodename="%(nodename)s",
                    dash_severity=%(sev)d,
                    dash_fmt="%%(err)s errors per second average",
-                   dash_dict='{"err": "%(err)d"}',
+                   dash_dict='{"err": "%(err).3f"}',
                    dash_created=now(),
                    dash_env="%(env)s"
                  on duplicate key update
                    dash_severity=%(sev)d,
                    dash_fmt="%%(err)s errors per second average",
-                   dash_dict='{"err": "%(err)d"}',
+                   dash_dict='{"err": "%(err).3f"}',
                    dash_created=now()
               """%dict(nodename=nodename,
                        sev=sev,
@@ -3398,9 +3716,9 @@ def dash_crons2():
     cron_dash_obs_os_without_warn()
     cron_dash_obs_hw_without_alert()
     cron_dash_obs_hw_without_warn()
-    cron_dash_node_without_warranty_date()
-    cron_dash_node_near_warranty_date()
-    cron_dash_node_beyond_warranty_date()
+    cron_dash_node_without_maintenance_date()
+    cron_dash_node_near_maintenance_date()
+    cron_dash_node_beyond_maintenance_date()
 
 def dash_crons1():
     # ~1/h
@@ -3420,6 +3738,7 @@ def feed_dequeue():
     """
     import time
     import cPickle
+    import multiprocessing
 
     class QueueStats(object):
         def __init__(self):
@@ -3480,58 +3799,139 @@ def feed_dequeue():
     n1 = 0
     n2 = 0
     stats = QueueStats()
+    workers = {}
+    queues = {}
+
+    import sys
+    import logging
+    import copy
+    import traceback
+    from gluon.shell import exec_environment
+
+    log = logging.getLogger('sched')
+    #logfile = "/tmp/feed_dequeue.log"
+    #logfilehandler = logging.FileHandler(logfile)
+    #logfilehandler.setFormatter(logformatter)
+    #log.addHandler(logfilehandler)
+    log.setLevel(logging.INFO)
+    log.info("logger initialized")
+
+    def dequeue_process(name, queue):
+        log = logging.getLogger(name)
+        log.info("init")
+        try:
+            _dequeue_process(name, queue)
+        except KeyboardInterrupt:
+             log.error("exit on KeyboardInterrupt")
+
+    def _dequeue_process(name, queue):
+        log = logging.getLogger('sched.'+name)
+
+        m = exec_environment('applications/feed/models/db.py')
+        global db
+        db = m.db
+        log.info("db loaded")
+        while True:
+            sys.stdout.flush()
+            data = queue.get()
+            if data is None or type(data) != tuple or len(data) != 3:
+                log.info("got poison pill")
+                break
+            id, fn, args = data
+            log.info('process %s %s'%(id, fn))
+            if not fn in globals():
+                log.error("%s not found in globals"%fn)
+                continue
+            try:
+                args = cPickle.loads(args)
+                globals()[fn](*args)
+                db(db.feed_queue.id==id).delete()
+                db.commit()
+            except:
+                log.error("%s(%s)"%(fn, str(args)))
+                traceback.print_exc()
+                return
+            if queue.empty():
+                log.info("stop idle process")
+                break
+
+    do_break = False
+    e = None
+    last = 0
 
     while True:
+        if do_break:
+            break
         n0 += 1
         n1 += 1
         n2 += 1
 
-        if n0 == 90:
-            n0 = 0
-            dash_crons0()
+        try:
+            if n0 == 90:
+                n0 = 0
+                dash_crons0()
+            elif n1 == 3600:
+                n1 = 0
+                dash_crons1()
+            elif n2 == 86400:
+                n2 = 0
+                dash_crons2()
+        except:
+            traceback.print_exc()
 
-        if n1 == 3600:
-            n1 = 0
-            dash_crons1()
-
-        if n2 == 86400:
-            n2 = 0
-            dash_crons2()
 
         try:
-            entries = db(db.feed_queue.id>0).select(limitby=(0,20))
-            print "got", len(entries), "to dequeue"
+            queues_empty = True
+            for q in queues.values():
+                if not q.empty():
+                    queues_empty = False
+                    break
+            if last > 0 and queues_empty and n0 == 0 and db(db.feed_queue.id<last).count() > 0:
+                # once in a while, if queues are empty, retry errored entries
+                entries = db(db.feed_queue.id<last).select(limitby=(0,20), orderby=db.feed_queue.id)
+            else:
+                # don't fetch already scheduled entries
+                entries = db(db.feed_queue.id>last).select(limitby=(0,20), orderby=db.feed_queue.id)
+            log.debug("got %d entries to dequeue"% len(entries))
         except:
             # lost mysql ?
-            import traceback
             traceback.print_exc()
-            print "lost mysql ? sleep 10 sec"
-            time.sleep(10)
+            log.error("lost mysql ? sleep 10 sec")
+            try: time.sleep(10)
+            except KeyboardInterrupt: break
             continue
 
         if len(entries) == 0:
-            time.sleep(1)
+            try: time.sleep(1)
+            except KeyboardInterrupt: break
             continue
-        elif n1 % 5 == 0:
+        #elif n1 % 5 == 0:
             # every 100 xmlrpc calls save stats
-            stats.dbdump()
+        #    stats.dbdump()
+
+        for w in copy.copy(workers.keys()):
+            if not workers[w].is_alive():
+                workers[w].join()
+                del(workers[w])
 
         for e in entries:
-            print "dequeue", e.q_fn
             try:
-                if not e.q_fn in globals():
-                    continue
-                args = cPickle.loads(e.q_args)
-                stats.begin(e.q_fn)
-                globals()[e.q_fn](*args)
-                stats.end()
-                db(db.feed_queue.id==e.id).delete()
-                db.commit()
-            except:
-                print "Error: %s(%s)"%(e.q_fn, str(args))
-                import traceback
-                traceback.print_exc()
-                db(db.feed_queue.id==e.id).delete()
-                db.commit()
-                #time.sleep(2)
-
+                log.info("dequeue %s (id=%d)" % (e.q_fn, e.id))
+                if e.q_fn in workers and not workers[e.q_fn].is_alive():
+                    # clean up dead processes, so we can restart them
+                    workers[e.q_fn].join()
+                    del(workers[e.q_fn])
+                if e.q_fn not in workers:
+                    log.info("start %s worker" % e.q_fn)
+                    queues[e.q_fn] = multiprocessing.Queue()
+                    workers[e.q_fn] = multiprocessing.Process(target=dequeue_process, args=(e.q_fn, queues[e.q_fn]))
+                    workers[e.q_fn].start()
+                queues[e.q_fn].put((e.id, e.q_fn, e.q_args), block=True)
+                if e.id > last:
+                    last = e.id
+            except KeyboardInterrupt:
+                for fn in workers:
+                    queues[fn].put(None)
+                    workers[fn].join()
+                do_break = True
+                break

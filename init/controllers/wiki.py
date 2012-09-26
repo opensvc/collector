@@ -90,6 +90,54 @@ def wiki_edit(id, page_name):
                  url=URL(r=request, c='wiki', f='ajax_wiki_syntax'),
                ),
              ),
+             ' ',
+             A(
+               T('Insert signature and timestamp'),
+               _onclick="""
+jQuery.fn.extend({
+insertAtCaret: function(myValue){
+  return this.each(function(i) {
+    if (document.selection) {
+      //For browsers like Internet Explorer
+      this.focus();
+      sel = document.selection.createRange();
+      sel.text = myValue;
+      this.focus();
+    }
+    else if (this.selectionStart || this.selectionStart == '0') {
+      //For browsers like Firefox and Webkit based
+      var startPos = this.selectionStart;
+      var endPos = this.selectionEnd;
+      var scrollTop = this.scrollTop;
+      this.value = this.value.substring(0,
+startPos)+myValue+this.value.substring(endPos,this.value.length);
+      this.focus();
+      this.selectionStart = startPos + myValue.length;
+      this.selectionEnd = startPos + myValue.length;
+      this.scrollTop = scrollTop;
+    } else {
+      this.value += myValue;
+      this.focus();
+    }
+  })
+}
+});
+var currentTime = new Date()
+var day = currentTime.getDate()
+var month = currentTime.getMonth()+1
+var year = currentTime.getFullYear()
+var hours = currentTime.getHours()
+var minutes = currentTime.getMinutes()
+if (month<10) { month = "0"+month }
+if (day<10) { day = "0"+day }
+if (hours<10) { hours = "0"+hours }
+if (minutes<10) { minutes = "0"+minutes }
+var ds = day+"-"+month+"-"+year+" "+hours+":"+minutes
+$("#wiki_e_body_%(id)s").insertAtCaret("*" + ds + ", %(user)s*\\n") """%dict(
+                 id=id,
+                 user=' '.join((auth.user.first_name, auth.user.last_name)),
+               ),
+             ),
              DIV(
                _id='wiki_e_syntax_%(id)s'%dict(id=id),
              ),

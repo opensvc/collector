@@ -1,8 +1,60 @@
+import re
+import datetime
+
 def user_name():
     if not hasattr(session.auth, 'user'):
         return 'Unknown'
     return ' '.join([session.auth.user.first_name,
                      session.auth.user.last_name])
+
+def delta_to_date(s):
+    if len(s) == 0:
+        return s
+
+    regex = re.compile(r"[-]{0,1}([0-9]+w){0,1}([0-9]+d){0,1}([0-9]+h){0,1}([0-9]+m){0,1}([0-9]+s){0,1}")
+    _s = regex.match(s)
+    if _s is None:
+        return s
+    if len(_s.group(0)) == 0:
+        return s
+
+    argv = {}
+
+    regex = re.compile(r"[0-9]+w")
+    _s = regex.search(s)
+    if _s is not None:
+        argv["weeks"] = int(_s.group(0)[:-1])
+
+    regex = re.compile(r"[0-9]+d")
+    _s = regex.search(s)
+    if _s is not None:
+        argv["days"] = int(_s.group(0)[:-1])
+
+    regex = re.compile(r"[0-9]+h")
+    _s = regex.search(s)
+    if _s is not None:
+        argv["hours"] = int(_s.group(0)[:-1])
+
+    regex = re.compile(r"[0-9]+m")
+    _s = regex.search(s)
+    if _s is not None:
+        argv["minutes"] = int(_s.group(0)[:-1])
+
+    regex = re.compile(r"[0-9]+s")
+    _s = regex.search(s)
+    if _s is not None:
+        argv["seconds"] = int(_s.group(0)[:-1])
+
+    d = datetime.timedelta(**argv)
+    now = datetime.datetime.now()
+
+    if s[0] == '-':
+        r = now - d
+    else:
+        r = now + d
+
+    return str(r)
+
 
 def _where(query, table, var, field):
     if query is None:
@@ -55,6 +107,11 @@ def _where(query, table, var, field):
 
     if chunk == 'empty':
         q = (db[table][field]==None)|(db[table][field]=='')
+    elif chunk[0] == '(' and chunk[-1] == ')' and len(chunk) > 2:
+        chunk = chunk[1:-1]
+        if field not in db[table]:
+            pass
+        q = db[table][field].belongs(chunk.split(','))
     elif chunk[0] not in '<>=':
         if field not in db[table]:
             pass
@@ -82,6 +139,12 @@ def _where(query, table, var, field):
             return query
 
         chunk = chunk[1:]
+
+        if field not in db[table]:
+            pass
+        elif db[table][field].type in ('datetime', 'timestamp'):
+            chunk = delta_to_date(chunk)
+
         if _op == '>':
             q = db[table][field]>chunk
         elif _op == '<':

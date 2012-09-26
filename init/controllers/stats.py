@@ -878,15 +878,20 @@ def rows_stats_disks_per_svc(nodes=[], begin=None, end=None, lower=None, higher=
         now = datetime.datetime.now()
         end = now - datetime.timedelta(days=0, microseconds=now.microsecond)
         begin = end - datetime.timedelta(days=1)
+        end = end + datetime.timedelta(days=0,
+                                       hours=23-end.hour,
+                                       minutes=59-end.minute,
+                                       seconds=59-end.second,
+                                      )
     sql = """select s.svcname,
                     s.disk_size
              from stat_day_svc s, svcmon v
              where day=(select max(day)
                         from stat_day_svc
                         where day>'%(begin)s'
-                              and day<'%(end)s')
+                              and day<='%(end)s')
                    and s.day>'%(begin)s'
-                   and s.day<'%(end)s'
+                   and s.day<='%(end)s'
                    and s.svcname=v.mon_svcname
                    and v.mon_nodname like '%(dom)s'
                    %(nodes)s

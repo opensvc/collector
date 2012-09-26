@@ -557,6 +557,9 @@ def ajax_actions():
         except ToolError, e:
             t.flash = str(e)
 
+    if request.vars.actions_f_begin is None or request.vars.actions_f_begin == t.column_filter_reset:
+        request.vars.actions_f_begin = '>-1d'
+
     o = ~db.v_svcactions.id
     q = _where(None, 'v_svcactions', domain_perms(), 'hostname')
     q = apply_filters(q, db.v_svcactions.hostname, db.v_svcactions.svcname)

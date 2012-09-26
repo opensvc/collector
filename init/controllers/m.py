@@ -91,6 +91,7 @@ def json_node(nodename):
             db.nodes.power_breaker1,
             db.nodes.power_breaker2,
             db.nodes.updated,
+            db.nodes.maintenance_end,
           ).first()
     return row
 

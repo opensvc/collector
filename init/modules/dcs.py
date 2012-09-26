@@ -16,12 +16,21 @@ class Dcs(object):
         self.physical_disk()
         self.logical_disk()
         self.logical_disk_perf()
+        self.purge_vdisk()
 
     def readfile(self, fname):
         fpath = os.path.join(self.dir, fname)
         with open(fpath, 'r') as f:
             buff = f.read()
         return buff
+
+    def purge_vdisk(self):
+        purge = []
+        for k in self.vdisk:
+            if len(self.vdisk[k]['poolid']) == 0:
+                purge.append(k)
+        for k in purge:
+            del(self.vdisk[k])
 
     def servergroup(self):
         buff = self.readfile('dcsservergroup')
@@ -52,13 +61,13 @@ class Dcs(object):
                     self.server[server['id']] = server
                     server = {}
             if line.startswith('ProductName'):
-                server['modelnumber'] = line.split(": ")[-1].strip()
+                server['model'] = line.split(": ")[-1].strip()
             elif line.startswith('ProductType'):
-                server['modelnumber'] += " "+line.split(": ")[-1].strip()
+                server['producttype'] = " "+line.split(": ")[-1].strip()
             elif line.startswith('ProductVersion'):
-                server['modelnumber'] = line.split(": ")[-1].strip()
+                server['productversion'] = line.split(": ")[-1].strip()
             elif line.startswith('ProductBuild'):
-                server['firmwareversion'] = line.split(": ")[-1].strip()
+                server['productbuild'] = line.split(": ")[-1].strip()
             elif line.startswith('TotalSystemMemory'):
                 n, u = line.split(": ")[-1].strip().split()
                 n = float(n.replace(',', '.'))
@@ -87,6 +96,8 @@ class Dcs(object):
             size = float(size.replace(" MB", ""))
         elif "KB" in size:
             size = float(size.replace(" MB", "")) // 1024
+        elif "B" in size:
+            size = float(size.replace(" B", "")) // 1024 // 1024
         else:
             size = float(size.replace(" MB", "")) // 1024 // 1024
         return size
@@ -119,17 +130,25 @@ Internal             : False
         port = {}
         lines = buff.split('\n')
         for i, line in enumerate(lines):
-            if line.startswith('StateInfo'):
-                if len(port) > 0 and port['porttype'] == "FibreChannel" and port['portmode'] == "Target":
+            if line.startswith('Internal'):
+                if len(port) > 0 and \
+                   (port['porttype'] == "FibreChannel" or port['porttype'] =='iSCSI') and \
+                   port['portmode'] == "Target":
+                    if port['porttype'] == "FibreChannel":
+                        port["portname"] = port["portname"].replace('-', '')
                     self.port_list.append(port["portname"])
-                port = {'size': 0}
+                port = {}
             elif line.startswith('PortType'):
-                port["porttype"] = line.split(': ')[-1].strip()
+                port["porttype"] = self.get_val(lines, i)
             elif line.startswith('PortMode'):
-                port["portmode"] = line.split(': ')[-1].strip()
+                port["portmode"] = self.get_val(lines, i)
             elif line.startswith('PortName'):
-                port["portname"] = line.split(': ')[-1].strip().replace('-', '')
-        if len(port) > 0:
+                port["portname"] = self.get_val(lines, i)
+        if len(port) > 0 and \
+           (port['porttype'] == "FibreChannel" or port['porttype'] =='iSCSI') and \
+           port['portmode'] == "Target":
+            if port['porttype'] == "FibreChannel":
+                port["portname"] = port["portname"].replace('-', '')
             self.port_list.append(port["portname"])
 
     def pool(self):
@@ -161,11 +180,11 @@ Internal        : False
                     self.pool_list.append(pool["id"])
                 pool = {'size': 0}
             elif line.startswith('Caption'):
-                pool["caption"] = line.split(': ')[-1].strip()
+                pool["caption"] = self.get_val(lines, i)
             elif line.startswith('Size'):
-                pool["size"] = self.to_mb(line.split(': ')[-1].strip())
+                pool["size"] = self.to_mb(self.get_val(lines, i))
             elif line.startswith('Id'):
-                pool["id"] = line.split(': ')[-1].strip()+lines[i+1].strip()
+                pool["id"] = self.get_val(lines, i)
         if len(pool) > 0:
             self.pool[pool["id"]] = pool
             self.pool_list.append(pool["id"])
@@ -229,9 +248,9 @@ Internal         : False
         for i, line in enumerate(lines):
             if line.startswith('DiskPoolId'):
                 member = {}
-                member["poolid"] = line.split(': ')[-1].strip()+lines[i+1].strip()
+                member["poolid"] = self.get_val(lines, i)
             elif line.startswith('Size'):
-                member["size"] = self.to_mb(line.split(': ')[-1].strip())
+                member["size"] = self.to_mb(self.get_val(lines, i))
 
     def logical_disk_perf(self):
         buff = self.readfile('dcslogicaldiskperf')
@@ -241,8 +260,21 @@ Internal         : False
             if line.startswith('DestageTime'):
                 i += 1
             elif line.startswith('BytesAllocated'):
-                self.vdisk[self.ld[self.ld_list[i]]['vdiskid']]['alloc'] = self.to_mb(line.split(': ')[-1].strip())
+                self.vdisk[self.ld[self.ld_list[i]]['vdiskid']]['alloc'] += self.to_mb(line.split(': ')[-1].strip())
+                self.vdisk[self.ld[self.ld_list[i]]['vdiskid']]['n_alloc'] += 1
+        for key in self.vdisk:
+            self.vdisk[key]['alloc'] = int(self.vdisk[key]['alloc']/self.vdisk[key]['n_alloc'])
 
+
+    def get_val(self, lines, i):
+        line = lines[i]
+        val = line.split(': ')[-1].strip()
+        if len(lines) < i:
+            return val
+        next = lines[i+1]
+        if len(next) > 0 and next.startswith(" "):
+            val += next.strip()
+        return val
 
     def physical_disk(self):
         """
@@ -307,9 +339,9 @@ Internal            : False
                     self.pd[pd["id"]] = pd
                 pd = {}
             elif line.startswith('LocalLogicalDiskId'):
-                pd["id"] = line.split(': ')[-1].strip()+lines[i+1].strip()
+                pd["id"] = self.get_val(lines, i)
             elif line.startswith('UniqueIdentifier'):
-                pd["wwid"] = line.split(': ')[-1].strip().split('.')[-1]
+                pd["wwid"] = self.get_val(lines, i).split('.')[-1].lower()
         if 'id' in pd:
             self.pd[pd["id"]] = pd
 
@@ -363,15 +395,18 @@ Internal           : False
                         self.vdisk[ld["vdiskid"]]['poolid'] = sorted(self.vdisk[ld["vdiskid"]]['poolid'])
                 ld = {}
             elif line.startswith('Size'):
-                ld["size"] = self.to_mb(line.split(': ')[-1].strip())
+                ld["size"] = self.to_mb(self.get_val(lines, i))
             elif line.startswith('Id'):
-                ld["id"] = line.split(': ')[-1].strip()+lines[i+1].strip()
-                if ld["id"] in self.pd and ld["vdiskid"] in self.vdisk:
+                ld["id"] = self.get_val(lines, i)
+                if ld["id"] in self.pd and \
+                   ld["vdiskid"] in self.vdisk and \
+                   'wwid' in self.pd[ld["id"]] and \
+                   len(self.pd[ld["id"]]['wwid']) > 0:
                     self.vdisk[ld["vdiskid"]]['wwid'] = self.pd[ld["id"]]['wwid']
             elif line.startswith('PoolId'):
-                ld["poolid"] = line.split(': ')[-1].strip()+lines[i+1].strip()
+                ld["poolid"] = self.get_val(lines, i)
             elif line.startswith('VirtualDiskId'):
-                ld["vdiskid"] = line.split(': ')[-1].strip()
+                ld["vdiskid"] = self.get_val(lines, i).lower()
         if len(ld) > 0:
             self.ld[ld["id"]] = ld
             self.ld_list.append(ld["id"])
@@ -379,6 +414,12 @@ Internal           : False
                 if 'poolid' not in self.vdisk[ld["vdiskid"]]:
                     self.vdisk[ld["vdiskid"]]['poolid'] = []
                 self.vdisk[ld["vdiskid"]]['poolid'].append(ld["poolid"])
+                self.vdisk[ld["vdiskid"]]['poolid'] = sorted(self.vdisk[ld["vdiskid"]]['poolid'])
+        for k in self.vdisk:
+            if 'poolid' not in self.vdisk[k]:
+                self.vdisk[k]['poolid'] = []
+            if 'wwid' not in self.vdisk[k] or len(self.vdisk[k]['wwid']) == 0:
+                self.vdisk[k]['wwid'] = self.vdisk[k]['id']
 
     def vdisk(self):
         """
@@ -410,21 +451,28 @@ Internal                 : False
         buff = self.readfile('dcsvirtualdisk')
         self.vdisk = {}
         vdisk = {}
-        for i, line in enumerate(buff.split('\n')):
+        lines = buff.split('\n')
+        for i, line in enumerate(lines):
             if line.startswith('VirtualDiskGroupId'):
                 if len(vdisk) > 0:
                     self.vdisk[vdisk['id']] = vdisk
                 vdisk = {}
             elif line.startswith('Size'):
-                vdisk["size"] = self.to_mb(line.split(': ')[-1].strip())
+                vdisk["size"] = self.to_mb(self.get_val(lines, i))
             elif line.startswith('Id'):
-                vdisk["id"] = line.split(': ')[-1].strip()
-            elif line.startswith('caption'):
-                vdisk["caption"] = line.split(': ')[-1].strip()
+                vdisk["id"] = self.get_val(lines, i)
+            elif line.startswith('Caption'):
+                vdisk["caption"] = self.get_val(lines, i)
             elif line.startswith('Type'):
-                vdisk["type"] = line.split(': ')[-1].strip()
+                vdisk["type"] = self.get_val(lines, i)
+            elif line.startswith('ScsiDeviceIdString'):
+                vdisk["wwid"] = self.get_val(lines, i).lower()
         if len(vdisk) > 0:
             self.vdisk[vdisk['id']] = vdisk
+        for k in self.vdisk:
+            if 'alloc' not in self.vdisk[k]:
+                self.vdisk[k]['alloc'] = 0
+                self.vdisk[k]['n_alloc'] = 0
 
     def __str__(self):
         s = "servergroup: %s (%s) used %d MB\n" % (self.sg['caption'], self.sg['id'], self.sg['used'])
@@ -433,9 +481,11 @@ Internal                 : False
             s += " %s\n" % port
         for server in self.server.values():
             s += " hostname: %s\n" % server['hostname']
-            s += "  modelnumber: %s\n" % server['modelnumber']
+            s += "  model: %s\n" % server['model']
+            s += "  producttype: %s\n" % server['producttype']
+            s += "  productversion: %s\n" % server['productversion']
             s += "  memory: %d\n" % server['memory']
-            s += "  firmwareversion: %s\n" % server['firmwareversion']
+            s += "  productbuild: %s\n" % server['productbuild']
         for pool in self.pool.values():
             s += "pool %s (%s)\n"%(pool['caption'], pool['id'])
             s += " alloc: %d MB\n"%pool['alloc']

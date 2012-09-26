@@ -148,6 +148,10 @@ img {
 .cell2 {
 }
 
+.cell3 {
+    background: white;
+}
+
 .boxed_status {
     width: 4em;
 }
@@ -1195,6 +1199,7 @@ ul.login_menu ul {
     float: left;
 }
 
+
 /*
  * table class
  */
@@ -1530,6 +1535,18 @@ a.jqplot-image-container-close {
 
 .lighter {
   color: #999999;
+}
+
+.batchs h1 {
+  text-align: left;
+}
+
+.batchs li {
+  list-style: none;
+}
+
+.batchs p:hover {
+  background-color: #f0f0ff;
 }
 
 @media screen and (max-width:960px) and (orientation: landscape) {

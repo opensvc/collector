@@ -14,6 +14,7 @@ array_img_h = {
   'HSV210': 'hpux',
   'HSV340': 'hpux',
   'HSV400': 'hpux',
+  'SANsymphony-V': 'datacore',
 }
 
 def refresh_b_disk_app():
@@ -233,14 +234,20 @@ class col_quota_used(HtmlTableColumn):
         if o.app is None:
             return ""
         s = self.get(o)
+        ss = s
         c = "nowrap"
         if s is None:
             s = "-"
+            ss = ""
         elif s > o.quota:
             c += " highlight"
         if s != "-":
             s = beautify_size_mb(int(s))
-        return SPAN(s, _class=c)
+        return SPAN(
+                 s,
+                 _class=c,
+                 _title="%s MB"%str(ss),
+               )
 
 class col_quota(HtmlTableColumn):
     def html(self, o):
@@ -260,17 +267,20 @@ class col_quota(HtmlTableColumn):
         tid = 'd_t_%s'%o.id
         iid = 'd_i_%s'%o.id
         sid = 'd_s_%s'%o.id
-        d = SPAN(
+        if 'StorageManager' in user_groups():
+            d = SPAN(
               DIV(
                 s,
                 _id=tid,
                 _onclick="""hide_eid('%(tid)s');show_eid('%(sid)s');getElementById('%(iid)s').focus()"""%dict(tid=tid, sid=sid, iid=iid),
                 _class="clickable",
+                _title="%s MB"%str(ss),
               ),
               SPAN(
                 INPUT(
                   value=ss,
                   _id=iid,
+                  _onblur="""hide_eid('%(sid)s');show_eid('%(tid)s')"""%dict(tid=tid, sid=sid),
                   _onkeypress="if (is_enter(event)) {%s};"%\
                      self.t.ajax_submit(additional_inputs=[iid],
                                         args="quota_set"),
@@ -279,6 +289,8 @@ class col_quota(HtmlTableColumn):
                 _style="display:none",
               ),
             )
+        else:
+            d = SPAN(s)
         return d
 
 class table_quota(HtmlTable):
@@ -549,6 +561,8 @@ def update_dg_reserved():
           """
     rows = db.executesql(sql)
     for row in rows:
+        if row[0] is None or row[1] is None:
+           continue
         sql = """update stor_array_dg set dg_reserved=%(reserved)s
                  where id=%(dg_id)s
               """%dict(reserved=row[1], dg_id=row[0])
@@ -760,6 +774,8 @@ class table_disks(HtmlTable):
                      'svcdisk_updated',
                      'disk_used',
                      'disk_size',
+                     'disk_alloc',
+                     'disk_name',
                      'disk_devid',
                      'disk_raid',
                      'disk_group',
@@ -798,6 +814,14 @@ class table_disks(HtmlTable):
                      display=True,
                      _dataclass="bluer",
                     ),
+            'disk_name': col_disk_id(
+                     title='Disk Name',
+                     table='b_disk_app',
+                     field='disk_name',
+                     img='hd16',
+                     display=True,
+                     _dataclass="bluer",
+                    ),
             'disk_svcname': col_svc(
                      title='Service',
                      table='b_disk_app',
@@ -823,6 +847,14 @@ class table_disks(HtmlTable):
                      title='Disk Size',
                      table='b_disk_app',
                      field='disk_size',
+                     img='hd16',
+                     display=True,
+                     _dataclass="bluer",
+                    ),
+            'disk_alloc': col_size_mb(
+                     title='Disk Allocation',
+                     table='b_disk_app',
+                     field='disk_alloc',
                      img='hd16',
                      display=True,
                      _dataclass="bluer",
@@ -940,8 +972,8 @@ class table_disks(HtmlTable):
         self.dbfilterable = True
         self.ajax_col_values = 'ajax_disks_col_values'
         self.span = 'disk_id'
-        self.sub_span = ['disk_size', 'disk_arrayid', 'disk_array_updated',
-                         'disk_devid', 'disk_raid', 'disk_group', 'array_model']
+        self.sub_span = ['disk_size', 'disk_alloc', 'disk_arrayid', 'disk_array_updated',
+                         'disk_devid', 'disk_name', 'disk_raid', 'disk_group', 'array_model']
 
         if 'StorageManager' in user_groups() or \
            'StorageExec' in user_groups():
@@ -988,7 +1020,7 @@ def ajax_provision():
               _value=False,
               _type='radio',
               _id="radio_service",
-              _onclick="""$("#stage2").html("");$("#stage3").html("");$("#stage4").html("");ajax('%(url)s', [], '%(id)s')"""%dict(
+              _onclick="""$("#radio_node").prop('checked',false);$("#stage2").html("");$("#stage3").html("");$("#stage4").html("");ajax('%(url)s', [], '%(id)s')"""%dict(
                 id="stage1",
                 url=URL(r=request, c='disks', f='ajax_service_list'),
               ),
@@ -996,6 +1028,20 @@ def ajax_provision():
           ),
           TD(
             T("Allocate to service"),
+          ),
+          TD(
+            INPUT(
+              _value=False,
+              _type='radio',
+              _id="radio_node",
+              _onclick="""$("#radio_service").prop('checked',false);$("#stage2").html("");$("#stage3").html("");$("#stage4").html("");ajax('%(url)s', [], '%(id)s')"""%dict(
+                id="stage1",
+                url=URL(r=request, c='disks', f='ajax_node_list'),
+              ),
+            ),
+          ),
+          TD(
+            T("Allocate to node"),
           ),
         ))
     d = DIV(
@@ -1016,12 +1062,53 @@ def ajax_provision():
     return d
 
 @auth.requires_login()
+def ajax_node_list():
+    o = db.nodes.project | db.nodes.nodename
+    q = db.node_hba.nodename == db.nodes.nodename
+    if 'StorageManager' not in user_groups():
+        q &= db.apps_responsibles.app_id == db.apps.id
+        q &= db.apps_responsibles.group_id == db.auth_membership.group_id
+        q &= db.auth_membership.user_id == auth.user_id
+        q &= db.auth_membership.group_id == db.auth_group.id
+        q &= db.nodes.team_responsible == db.auth_group.role
+    nodes = db(q).select(db.nodes.nodename,
+                         db.nodes.project,
+                         groupby=o,
+                         orderby=o)
+
+    l = [OPTION(T("Choose one"))]
+    for n in nodes:
+        o = OPTION(
+                "%s - %s"%(str(n.project).upper(), str(n.nodename).lower()),
+                _value=n.nodename
+            )
+        l.append(o)
+
+    return DIV(
+             H3(T("Node")),
+             SELECT(
+                l,
+                _onchange="""$("#stage2").html('%(spinner)s');$("#stage3").html("");$("#stage4").html("");ajax('%(url)s/'+this.options[this.selectedIndex].value, [], '%(div)s');"""%dict(
+                              url=URL(
+                                   r=request, c='disks',
+                                   f='ajax_dg_list_by_node',
+                                  ),
+                              div="stage2",
+                              spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')).xml(),
+                             ),
+             ),
+           )
+
+@auth.requires_login()
 def ajax_service_list():
     o = db.services.svc_app | db.services.svc_name
     q = db.services.svc_app == db.apps.app
-    q &= db.apps_responsibles.app_id == db.apps.id
-    q &= db.apps_responsibles.group_id == db.auth_membership.group_id
-    q &= db.auth_membership.user_id == auth.user_id
+    q &= db.services.svc_name == db.svcmon.mon_svcname
+    q &= db.svcmon.mon_nodname == db.node_hba.nodename
+    if 'StorageManager' not in user_groups():
+        q &= db.apps_responsibles.app_id == db.apps.id
+        q &= db.apps_responsibles.group_id == db.auth_membership.group_id
+        q &= db.auth_membership.user_id == auth.user_id
     services = db(q).select(db.services.svc_name,
                             db.services.svc_app,
                             groupby=o,
@@ -1030,7 +1117,7 @@ def ajax_service_list():
     l = [OPTION(T("Choose one"))]
     for s in services:
         o = OPTION(
-                "%s - %s"%(s.svc_app, s.svc_name),
+                "%s - %s"%(str(s.svc_app).upper(), str(s.svc_name).lower()),
                 _value=s.svc_name
             )
         l.append(o)
@@ -1039,34 +1126,81 @@ def ajax_service_list():
              H3(T("Service")),
              SELECT(
                 l,
-                _onchange="""$("#stage3").html("");$("#stage4").html("");ajax('%(url)s/'+this.options[this.selectedIndex].value, [], '%(div)s');"""%dict(
+                _onchange="""$("#stage2").html('%(spinner)s');$("#stage3").html("");$("#stage4").html("");ajax('%(url)s/'+this.options[this.selectedIndex].value, [], '%(div)s');"""%dict(
                               url=URL(
                                    r=request, c='disks',
-                                   f='ajax_dg_list',
+                                   f='ajax_dg_list_by_svc',
                                   ),
-                              div="stage2"
+                              div="stage2",
+                              spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')).xml(),
                              ),
              ),
            )
 
 @auth.requires_login()
-def ajax_dg_list():
+def ajax_dg_list_by_node():
     o = db.stor_array.array_name | db.stor_array_dg.dg_name
-    q = db.services.svc_name == request.args[0]
-    q &= db.services.svc_app == db.apps.app
-    q &= db.apps.id == db.stor_array_dg_quota.app_id
-    q &= db.stor_array_dg_quota.dg_id == db.stor_array_dg.id
+    q = db.nodes.nodename == request.args[0]
+    q &= db.nodes.project == db.apps.app
+    q &= db.apps.id == db.v_disk_quota.app_id
+    q &= db.v_disk_quota.dg_id == db.stor_array_dg.id
     q &= db.stor_array_dg.array_id == db.stor_array.id
-    q &= db.stor_array_dg_quota.quota != None
-    rows = db(q).select()
+    #q &= db.stor_array_dg_quota.quota != None
+    q &= db.node_hba.nodename == request.args[0]
+    q &= db.node_hba.hba_id == db.stor_zone.hba_id
+    q &= db.stor_zone.tgt_id == db.stor_array_tgtid.array_tgtid
+    q &= db.stor_array_tgtid.array_id == db.stor_array_dg.array_id
+    rows = db(q).select(groupby=db.stor_array_dg.id)
+    return dg_list(rows, 'ajax_path_list_by_node')
 
+def get_free_quota(dg_id, obj):
+    sql = """
+      select
+        (quota-quota_used)/1024
+      from
+        v_disk_quota
+      where
+        dg_id=%(dg_id)s and
+        app in (
+          select
+            project
+          from
+            nodes
+          where
+            nodename="%(obj)s"
+          union all
+          select
+            svc_app
+          from
+            services
+          where
+            svc_name="%(obj)s"
+        )
+    """%dict(
+      dg_id=dg_id,
+      obj=obj,
+    )
+    rows = db.executesql(sql)
+    if len(rows) == 0:
+        return 0
+    return rows[0][0]
+
+def dg_list(rows, fn):
     l = [OPTION(T("Choose one"))]
     for s in rows:
+        if s.v_disk_quota.quota is None:
+            quota = 0
+            quota_free = 0
+        else:
+            quota = s.v_disk_quota.quota//1024
+            quota_free = quota - s.v_disk_quota.quota_used//1024
         o = OPTION(
-                "%s %s - %s - quota %s GB"%(s.stor_array.array_model,
-                                            s.stor_array.array_name,
-                                            s.stor_array_dg.dg_name,
-                                            str(s.stor_array_dg_quota.quota)),
+                T("%(model)s %(name)s - %(dg)s - available quota %(free)d/%(quota)d GB",dict(
+                  model=s.stor_array.array_model,
+                  name=s.stor_array.array_name,
+                  dg=s.stor_array_dg.dg_name,
+                  free=quota_free,
+                  quota=quota)),
                 _value=s.stor_array_dg.id,
             )
         l.append(o)
@@ -1080,18 +1214,60 @@ def ajax_dg_list():
                               svcname=request.args[0],
                               url=URL(
                                    r=request, c='disks',
-                                   f='ajax_nodes_list',
+                                   f=fn,
                                   ),
                               div="stage3"
                              ),
              ),
            )
 
+@auth.requires_login()
+def ajax_dg_list_by_svc():
+    o = db.stor_array.array_name | db.stor_array_dg.dg_name
+    q = db.services.svc_name == request.args[0]
+    q &= db.services.svc_app == db.apps.app
+    q &= db.apps.id == db.v_disk_quota.app_id
+    q &= db.v_disk_quota.dg_id == db.stor_array_dg.id
+    q &= db.stor_array_dg.array_id == db.stor_array.id
+    #q &= db.stor_array_dg_quota.quota != None
+    q &= db.svcmon.mon_svcname == request.args[0]
+    q &= db.svcmon.mon_nodname == db.node_hba.nodename
+    q &= db.node_hba.hba_id == db.stor_zone.hba_id
+    q &= db.stor_zone.tgt_id == db.stor_array_tgtid.array_tgtid
+    q &= db.stor_array_tgtid.array_id == db.stor_array_dg.array_id
+    rows = db(q).select(groupby=db.stor_array_dg.id)
+    return dg_list(rows, 'ajax_path_list_by_svc')
 
 @auth.requires_login()
-def ajax_nodes_list():
+def ajax_path_list_by_node():
+    nodename = request.args[0]
+    dg_id = request.args[1]
+
+    try:
+        int(dg_id)
+    except:
+        return ""
+
+    o = db.stor_array_tgtid.array_tgtid | db.nodes.host_mode | db.nodes.nodename
+
+    # select nodes who see tgt ids
+    q = db.stor_array_dg.id == dg_id
+    q &= db.stor_array_tgtid.array_id == db.stor_array_dg.array_id
+    q &= db.stor_array_tgtid.array_tgtid == db.stor_zone.tgt_id
+    q &= db.stor_zone.hba_id == db.node_hba.hba_id
+    q &= db.node_hba.nodename == db.nodes.nodename
+    q &= db.nodes.nodename == nodename
+    paths = db(q).select()
+    return path_list(paths, dg_id, nodename)
+
+def ajax_path_list_by_svc():
     svcname = request.args[0]
     dg_id = request.args[1]
+
+    try:
+        int(dg_id)
+    except:
+        return ""
 
     o = db.stor_array_tgtid.array_tgtid | db.nodes.host_mode | db.nodes.nodename
 
@@ -1104,7 +1280,9 @@ def ajax_nodes_list():
     q &= db.svcmon.mon_svcname == svcname
     q &= db.svcmon.mon_nodname == db.nodes.nodename
     paths = db(q).select()
+    return path_list(paths, dg_id, svcname)
 
+def path_list(paths, dg_id, obj):
     if len(paths) == 0:
         return DIV(
                  H3(T("Presentation")),
@@ -1127,17 +1305,35 @@ def ajax_nodes_list():
             INPUT(
               _type="checkbox",
               _name="ck_path",
-              _id="-".join((path.stor_array_tgtid.array_tgtid, path.node_hba.hba_id)),
+              _id="-".join((path.node_hba.hba_id, path.stor_array_tgtid.array_tgtid)),
             ),
-            TD(path.stor_array_tgtid.array_tgtid),
-            TD(path.node_hba.hba_id),
-            TD(path.nodes.nodename),
-            TD(path.nodes.host_mode),
+            TD(path.stor_array_tgtid.array_tgtid.lower()),
+            TD(path.node_hba.hba_id.lower()),
+            TD(path.nodes.nodename.lower()),
+            TD(path.nodes.host_mode.upper()),
         )
         l.append(o)
+
+    q = db.stor_array_dg.id == dg_id
+    q &= db.stor_array.id == db.stor_array_dg.array_id
+    infos = db(q).select()
+    info = infos.first()
+
+    extra_html = ""
+    extra_id = []
+
+    if info.stor_array.array_model == 'SANsymphony-V':
+        extra_id, extra_html = sansymphony_v()
+
     return DIV(
+             extra_html,
              H3(T("Presentation")),
              TABLE(l),
+             INPUT(
+               _id="target",
+               _type="hidden",
+               _value=obj,
+             ),
              INPUT(
                _id="paths",
                _type="hidden",
@@ -1148,6 +1344,9 @@ def ajax_nodes_list():
                _id="lusize",
                _onKeyUp="""
 if(is_enter(event)){
+  $("#lusize").attr('disabled', 'disabled')
+  $("#lusize").blur()
+  $("#stage4").html('<hr>%(spinner)s<hr>')
   l = new Array()
   $("[name=ck_path]").each(function(){
     if (this.checked) {
@@ -1156,14 +1355,25 @@ if(is_enter(event)){
   })
   s = l.join(",")
   $("#paths").val(s)
-  ajax('%(url)s', ["lusize", "paths"], '%(div)s')
+  sync_ajax('%(url)s', %(ids)s, '%(div)s', function(){
+    dst=$("#%(div)s").find("[name=res]").attr('id')
+    sync_ajax('%(waiturl)s/'+dst, [], dst, function(){
+      $("#lusize").removeAttr('disabled')
+    })
+  })
 }"""%dict(
-                              svcname=svcname,
+                              spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')).xml(),
+                              obj=obj,
                               dg_id=dg_id,
+                              ids=["lusize", "paths", "target"]+extra_id,
                               url=URL(
                                    r=request, c='disks',
                                    f='ajax_disk_provision',
-                                   args=[svcname, dg_id]
+                                   args=[dg_id]
+                                  ),
+                              waiturl=URL(
+                                   r=request, c='disks',
+                                   f='ajax_disk_provision_wait',
                                   ),
                               div="stage4"
                              ),
@@ -1171,17 +1381,54 @@ if(is_enter(event)){
              T("GB"),
            )
 
+class ProvError(Exception):
+    pass
+
+def sansymphony_v_dg_name(array_name, dg_name, mirror):
+    import config
+    array_name = array_name.lower()
+    dg_name = dg_name.lower()
+    if mirror == "0":
+        h = 'sansymphony_v_pool'
+    else:
+        h = 'sansymphony_v_mirrored_pool'
+
+    if not hasattr(config, h):
+        raise ProvError("'%s' is not set in collector configuration"%h)
+    _h = getattr(config, h)
+    if array_name not in _h:
+        raise ProvError("'%s' is not set in pool configuration '%s'"%(array_name, h))
+    _h = _h[array_name]
+    if dg_name not in _h:
+        raise ProvError("'%s' is not set in '%s' pool configuration '%s'"%(dg_name, array_name, h))
+    return _h[dg_name]
+
+def sansymphony_v():
+    d = DIV(
+      H3(T("Mirroring")),
+      SELECT(
+        OPTION(T("no"), _value="0"),
+        OPTION(T("yes"), _value="1"),
+        _id="mirror",
+      ),
+    )
+    return ["mirror"], d
+
 @auth.requires_login()
 def ajax_disk_provision():
-    svcname = request.args[0]
-    dg_id = request.args[1]
+    dg_id = request.args[0]
     paths = request.vars.paths
+    target = request.vars.target
     lusize = request.vars.lusize
 
     try:
         lusize = int(lusize)
     except:
-        return "invalid size"
+        return SPAN(HR(), T("Invalid size"), HR())
+
+    quota_free = get_free_quota(dg_id, target)
+    if quota_free < lusize:
+        return  SPAN(HR(), T("Insufficent quota in this disk group"), HR())
 
     q = db.stor_array_dg.id == dg_id
     q &= db.stor_array.id == db.stor_array_dg.array_id
@@ -1189,32 +1436,56 @@ def ajax_disk_provision():
     infos = db(q).select()
 
     if len(infos) == 0:
-        return "no proxy server to provision on this array"
+        return SPAN(HR(), T("No proxy server to provision on this array"), HR())
+
+    provtype = {
+      'HSV340': 'eva',
+      'HSV400': 'eva',
+      'Symmetrix': 'sym',
+      'SANsymphony-V': 'dcs',
+    }
 
     info = infos.first()
+    if info.stor_array.array_model not in provtype:
+        return SPAN(
+                 HR(),
+                 T("%s array model is not supported by the provisioning agent"%info.stor_array.array_model),
+                 HR(),
+               )
+    t = provtype[info.stor_array.array_model]
+
     d = {
-      'rtype': 'vg',
-      'type': 'raw',
+      'rtype': 'disk',
+      'type': t,
       'array_model': info.stor_array.array_model,
       'array_name': info.stor_array.array_name,
       'dg_name': info.stor_array_dg.dg_name,
       'size': lusize,
       'paths': paths,
+      'disk_name': target,
     }
+
+    if info.stor_array.array_model == 'SANsymphony-V' and 'mirror' in request.vars:
+        try:
+            d['dg_name'] = sansymphony_v_dg_name(info.stor_array.array_name,
+                                                 d['dg_name'],
+                                                 request.vars.mirror)
+        except ProvError, e:
+            return SPAN(HR(), str(e), HR())
+
     import json
-    import uuid
-    tmp_svcname = str(uuid.uuid4())
     cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
                   '-o', 'ForwardX11=no',
                   '-o', 'PasswordAuthentication=no',
                   '-tt',
            'opensvc@'+info.stor_array_proxy.nodename,
            '--',
-           """(sudo /opt/opensvc/bin/svcmgr -s %(svcname)s create --resource "%(d)s" --provision ; sudo /opt/opensvc/bin/svcmgr -s %(svcname)s delete)"""%dict(svcname=tmp_svcname, d=json.dumps(d))
+           """ sudo /opt/opensvc/bin/nodemgr provision --resource '%(d)s' """%dict(d=json.dumps(d))
           ]
 
-    s = "create a %(size)s GB volume in disk group %(dg_name)s of %(array_model)s array %(array_name)s and present it through paths %(paths)s"%dict(
-           dg_name=info.stor_array_dg.dg_name,
+    s = "create a %(size)s GB volume in disk group %(dg_name)s of %(array_model)s array %(array_name)s and present it to %(target)s through paths %(paths)s"%dict(
+           target=target,
+           dg_name=d['dg_name'],
            array_name=info.stor_array.array_name,
            array_model=info.stor_array.array_model,
            size=lusize,
@@ -1223,8 +1494,87 @@ def ajax_disk_provision():
     _log('storage.add',
          '%(s)s',
          dict(s=s))
+    purge_action_queue()
+    action_id = db.action_queue.insert(command=' '.join(cmd))
+    from subprocess import Popen
+    actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
+    process = Popen(actiond)
+    process.communicate()
 
-    return SPAN(HR(), s, HR(), ' '.join(cmd))
+    # update tables in interim of the array refresh
+    import uuid
+    disk_id = str(uuid.uuid4()).replace('-','')
+    for dg in d['dg_name'].split(','):
+        dg = dg.split(':')[-1]
+        db.diskinfo.insert(
+          disk_id=disk_id,
+          disk_size=lusize*1024,
+          disk_group=dg,
+          disk_arrayid=info.stor_array.array_name,
+          disk_updated=datetime.datetime.now()
+        )
+
+    q = db.services.svc_name == target
+    svc = db(q).select().first()
+    if svc is not None:
+        svcname = svc.svc_name
+    else:
+        svcname = ""
+
+    ports = []
+    for path in paths.split(','):
+        port = path.split('-iqn')[0]
+        ports.append(port)
+    q = db.node_hba.hba_id.belongs(ports)
+    q &= db.nodes.nodename == db.node_hba.nodename
+    rows = db(q).select(groupby=db.node_hba.nodename)
+    for row in rows:
+        db.svcdisks.insert(
+          disk_id=disk_id,
+          disk_nodename=row.nodes.nodename,
+          disk_svcname=svcname,
+          disk_size=lusize*1024,
+          disk_used=lusize*1024,
+          disk_local='F',
+          disk_region='0',
+          disk_updated=datetime.datetime.now()
+        )
+
+    #return SPAN(HR(), s, HR(), ' '.join(cmd))
+    return DIV(
+             HR(),
+             DIV(
+              IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+              _id=action_id,
+              _name="res",
+              _style="width:5%;display:table-cell",
+             ),
+             DIV(
+               s,
+              _style="width:95%;display:table-cell",
+             ),
+             HR()
+           )
+
+def ajax_disk_provision_wait():
+    refresh_b_disk_app()
+    id = request.args[0]
+    import time
+    q = db.action_queue.id == id
+    for i in range(300):
+        action = db(q).select().first()
+        if action is None:
+            return T("Action is not queued")
+        if action.status != 'T':
+            time.sleep(1)
+            continue
+        break
+    if action.ret == 0:
+        img = 'check16.png'
+    else:
+        img = 'nok.png'
+    title = ', '.join((str(action.stdout), str(action.stderr)))
+    return IMG(_src=URL(r=request,c='static',f=img), _title=title)
 
 @auth.requires_login()
 def ajax_disks_col_values():
@@ -1323,10 +1673,10 @@ def ajax_disk_charts():
     nt.filterable = True
     nt.additional_inputs = t.ajax_inputs()
 
-    data_svc = ""
-    data_app = ""
-    data_dg = ""
-    data_array = ""
+    h_data_svc = ""
+    h_data_app = ""
+    h_data_dg = ""
+    h_data_array = ""
 
     sql = """  select
                  count(distinct(b_disk_app.app)),
@@ -1348,12 +1698,15 @@ def ajax_disk_charts():
     def pie_data_svc(q, level=0):
         sql = """select
                    t.obj,
-                   sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size
-                 from (
+                   sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
+                   sum(if(t.disk_alloc is not NULL and t.disk_alloc>0, t.disk_alloc, t.disk_size)) alloc
+                 from
+                   (
                    select
                      u.obj,
                      max(u.disk_used) as disk_used,
-                     u.disk_size
+                     u.disk_size,
+                     u.disk_alloc
                    from
                    (
                      select
@@ -1361,7 +1714,8 @@ def ajax_disk_charts():
                        b_disk_app.disk_region,
                        b_disk_app.disk_svcname as obj,
                        b_disk_app.disk_used as disk_used,
-                       b_disk_app.disk_size
+                       b_disk_app.disk_size,
+                       b_disk_app.disk_alloc
                      from
                        b_disk_app
                      left join stor_array on b_disk_app.disk_arrayid=stor_array.array_name
@@ -1375,7 +1729,8 @@ def ajax_disk_charts():
                        b_disk_app.disk_region,
                        b_disk_app.disk_nodename as obj,
                        b_disk_app.disk_used as disk_used,
-                       b_disk_app.disk_size
+                       b_disk_app.disk_size,
+                       b_disk_app.disk_alloc
                      from
                        b_disk_app
                      left join stor_array on b_disk_app.disk_arrayid=stor_array.array_name
@@ -1394,9 +1749,11 @@ def ajax_disk_charts():
 
     def data_total(data):
         total = 0
+        backend_total = 0
         for l in data:
             total += l[1]
-        return total
+            backend_total += l[2]
+        return int(total), int(backend_total)
 
     if n_app == 1:
         data_svc = []
@@ -1418,21 +1775,29 @@ def ajax_disk_charts():
             if len(_data_svc) == 0:
                 _data_svc = [["", 0]]
             if level == 0:
-                total = data_total(_data_svc)
+                total, backend_total = data_total(rows)
             else:
-                diff = total - data_total(_data_svc)
-                _data_svc += [["n/a " +' (%s)'%beautify_size_mb(diff), diff]]
+                diff = total - data_total(rows)[0]
+                if diff > 0:
+                    _data_svc += [["n/a " +' (%s)'%beautify_size_mb(diff), diff]]
             data_svc.append(_data_svc)
+        h_data_svc = {
+          'total': total,
+          'backend_total': backend_total,
+          'data': data_svc,
+        }
 
     def pie_data_app(q, level=0):
         sql = """select
                    t.app,
-                   sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size
+                   sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
+                   sum(if(t.disk_alloc is not NULL and t.disk_alloc>0, t.disk_alloc, t.disk_size)) alloc
                  from (
                    select
                      u.app,
                      max(u.disk_used) as disk_used,
-                     u.disk_size
+                     u.disk_size,
+                     u.disk_alloc
                    from
                    (
                      select
@@ -1440,7 +1805,8 @@ def ajax_disk_charts():
                        b_disk_app.disk_region,
                        b_disk_app.app as app,
                        b_disk_app.disk_used,
-                       b_disk_app.disk_size
+                       b_disk_app.disk_size,
+                       b_disk_app.disk_alloc
                      from
                        b_disk_app
                      left join stor_array on b_disk_app.disk_arrayid=stor_array.array_name
@@ -1454,7 +1820,8 @@ def ajax_disk_charts():
                        b_disk_app.disk_region,
                        b_disk_app.app as app,
                        b_disk_app.disk_used,
-                       b_disk_app.disk_size
+                       b_disk_app.disk_size,
+                       b_disk_app.disk_alloc
                      from
                        b_disk_app
                      left join stor_array on b_disk_app.disk_arrayid=stor_array.array_name
@@ -1491,11 +1858,18 @@ def ajax_disk_charts():
             if len(_data_app) == 0:
                 _data_app = [["", 0]]
             if level == 0:
-                total = data_total(_data_app)
+                total, backend_total = data_total(rows)
             else:
-                diff = total - data_total(_data_app)
-                _data_app += [["n/a " +' (%s)'%beautify_size_mb(diff), diff]]
+                diff = total - data_total(rows)[0]
+                if diff > 0:
+                    _data_app += [["n/a " +' (%s)'%beautify_size_mb(diff), diff]]
             data_app.append(_data_app)
+        h_data_app = {
+          'total': total,
+          'backend_total': backend_total,
+          'data': data_app,
+        }
+
 
     sql = """select count(distinct b_disk_app.disk_arrayid)
              from
@@ -1519,13 +1893,15 @@ def ajax_disk_charts():
 
     if n_arrays == 1 and n_dg > 1:
         sql = """select
-                   sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
                    t.disk_arrayid,
+                   sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
+                   sum(if(t.disk_alloc is not NULL and t.disk_alloc>0, t.disk_alloc, t.disk_size)) alloc,
                    t.disk_group
                  from (
                    select
                      sum(u.disk_used) as disk_used,
                      u.disk_size,
+                     u.disk_alloc,
                      u.disk_arrayid,
                      u.disk_group
                    from
@@ -1534,6 +1910,7 @@ def ajax_disk_charts():
                        b_disk_app.disk_id,
                        max(b_disk_app.disk_used) as disk_used,
                        b_disk_app.disk_size,
+                       b_disk_app.disk_alloc,
                        b_disk_app.disk_arrayid,
                        b_disk_app.disk_group
                      from
@@ -1551,28 +1928,37 @@ def ajax_disk_charts():
 
         data_dg = []
         for row in rows:
-            if row[2] is None:
+            if row[3] is None:
                 dg = ''
             else:
-                dg = ' '.join((row[1],row[2]))
+                dg = ' '.join((row[0],row[3]))
 
             label = dg
             try:
-                size = int(row[0])
+                size = int(row[1])
             except:
                 continue
             data_dg += [[str(label) +' (%s)'%beautify_size_mb(size), size]]
+        total, backend_total = data_total(rows)
         data_dg.sort(lambda x, y: cmp(y[1], x[1]))
         data_dg = [data_dg]
+        h_data_dg = {
+          'total': total,
+          'backend_total': backend_total,
+          'data': data_dg,
+        }
+
 
     def pie_data_array(q, level=0):
         sql = """select
+                   t.disk_arrayid,
                    sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
-                   t.disk_arrayid
+                   sum(if(t.disk_alloc is not NULL and t.disk_alloc>0, t.disk_alloc, t.disk_size)) alloc
                  from (
                    select
                      sum(u.disk_used) as disk_used,
                      u.disk_size,
+                     u.disk_alloc,
                      u.disk_arrayid
                    from
                    (
@@ -1580,6 +1966,7 @@ def ajax_disk_charts():
                        b_disk_app.disk_id,
                        max(b_disk_app.disk_used) as disk_used,
                        b_disk_app.disk_size,
+                       b_disk_app.disk_alloc,
                        b_disk_app.disk_arrayid
                      from
                        b_disk_app
@@ -1602,13 +1989,13 @@ def ajax_disk_charts():
             rows = pie_data_array(q, level)
             _data_array = []
             for row in rows:
-                if row[1] is None:
+                if row[0] is None:
                     array = ''
                 else:
-                    array = row[1]
+                    array = row[0]
                 label = array
                 try:
-                    size = int(row[0])
+                    size = int(row[1])
                 except:
                     continue
                 _data_array += [[str(label) +' (%s)'%beautify_size_mb(size), size]]
@@ -1616,17 +2003,23 @@ def ajax_disk_charts():
             if len(_data_array) == 0:
                 _data_array = [["", 0]]
             if level == 0:
-                total = data_total(_data_array)
+                total, backend_total = data_total(rows)
             else:
-                diff = total - data_total(_data_array)
-                _data_array += [["n/a " +' (%s)'%beautify_size_mb(diff), diff]]
+                diff = total - data_total(rows)[0]
+                if diff > 0:
+                    _data_array += [["n/a " +' (%s)'%beautify_size_mb(diff), diff]]
             data_array.append(_data_array)
+        h_data_array = {
+          'total': total,
+          'backend_total': backend_total,
+          'data': data_array,
+        }
 
 
-    nt.object_list = [{'chart_svc': json.dumps(data_svc),
-                       'chart_ap': json.dumps(data_app),
-                       'chart_dg': json.dumps(data_dg),
-                       'chart_ar': json.dumps(data_array)}]
+    nt.object_list = [{'chart_svc': json.dumps(h_data_svc),
+                       'chart_ap': json.dumps(h_data_app),
+                       'chart_dg': json.dumps(h_data_dg),
+                       'chart_ar': json.dumps(h_data_array)}]
 
     return DIV(
              nt.html(),
@@ -1634,17 +2027,12 @@ def ajax_disk_charts():
 """
 function diskdonut(o) {
   try{
-  var data = $.parseJSON(o.html())
-  var title = ""
-  for (i=0;i<data.length;i++) {
-    var total = 0
-    for (j=0;j<data[i].length;j++) {total += data[i][j][1]}
-    total = fancy_size_mb(total)
-    title = total
-    break
-  }
+  var d = $.parseJSON(o.html())
+  var total = fancy_size_mb(d['total'])
+  var backend_total = fancy_size_mb(d['backend_total'])
+  var title = total + ' (' + backend_total + ')'
   o.html("")
-  $.jqplot(o.attr('id'), data,
+  $.jqplot(o.attr('id'), d['data'],
     {
       seriesDefaults: {
         renderer: $.jqplot.DonutRenderer,
@@ -1665,7 +2053,7 @@ function diskdonut(o) {
         function (ev) {
             $('#chart_info').html('%(msg)s');
         }
-  ); 
+  );
   } catch(e) {}
 }
 $("[id^=chart_svc]").each(function(){
@@ -1735,7 +2123,8 @@ def ajax_array_dg():
                   id=id,
                   url=URL(r=request,
                           f='call/json/json_disk_array_dg',
-                          args=[array_name, dg_name]
+                          vars={'array_name': array_name,
+                                'dg_name': dg_name},
                       )
                 ),
             _name='%s_to_eval'%row_id,
@@ -1759,7 +2148,7 @@ def ajax_array():
                   id=id,
                   url=URL(r=request,
                           f='call/json/json_disk_array',
-                          args=[array_name]
+                          vars={'array_name': array_name},
                       )
                 ),
             _name='%s_to_eval'%row_id,
@@ -1810,7 +2199,9 @@ def ajax_app():
     return d
 
 @service.json
-def json_disk_array_dg(array_name, dg_name):
+def json_disk_array_dg():
+    array_name = request.vars.array_name
+    dg_name = request.vars.dg_name
     q = db.stat_day_disk_array_dg.array_name == array_name
     q &= db.stat_day_disk_array_dg.array_dg == dg_name
     q &= db.stat_day_disk_array_dg.disk_size != None
@@ -1830,7 +2221,8 @@ def json_disk_array_dg(array_name, dg_name):
     return [disk_used, disk_free, disk_reserved, disk_reservable]
 
 @service.json
-def json_disk_array(array_name):
+def json_disk_array():
+    array_name = request.vars.array_name
     q = db.stat_day_disk_array.array_name == array_name
     q &= db.stat_day_disk_array.disk_size != None
     q &= db.stat_day_disk_array.disk_size != 0

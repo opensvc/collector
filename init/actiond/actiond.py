@@ -6,7 +6,7 @@ import time
 import datetime
 import MySQLdb
 from multiprocessing import Process, JoinableQueue, Queue
-from subprocess import Popen
+from subprocess import *
 
 basedir = os.path.realpath(os.path.dirname(__file__))
 sys.path.append(basedir)
@@ -107,11 +107,19 @@ def dequeue_worker(i, q):
         conn.commit()
         print '[%d] %d: %s'%(i, id, cmd)
         cmd = cmd.split()
-        process = Popen(cmd, stdin=None)
-        process.communicate()
+        process = Popen(cmd, stdout=PIPE, stderr=PIPE, stdin=None)
+        out, err = process.communicate()
         now = str(datetime.datetime.now())
         cursor = conn.cursor()
-        cursor.execute("update action_queue set status='T', date_dequeued='%s', ret=%d where id=%d"%(now, process.returncode, id))
+        sql = """update action_queue set
+                   status='T',
+                   date_dequeued='%s',
+                   ret=%d,
+                   stdout=%s,
+                   stderr=%s
+                 where id=%d
+              """%(now, process.returncode, repr(out), repr(err), id)
+        cursor.execute(sql)
         conn.commit()
         cursor.close()
         conn.close()

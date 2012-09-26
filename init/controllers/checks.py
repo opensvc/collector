@@ -1,19 +1,23 @@
 @auth.requires_membership('CheckManager')
 def checks_defaults_insert():
-    q = (db.checks_defaults.chk_type==request.vars.chk_type)
-    rows = db(q).select()
-    if len(rows) == 1:
-        record = rows[0]
-    else:
-        record = None
+    record = None
+    if request.vars.chk_id is not None:
+        q = db.checks_defaults.id==request.vars.chk_id
+        rows = db(q).select()
+        if len(rows) == 1:
+            record = rows[0]
 
     db.checks_defaults.chk_type.default = request.vars.chk_type
+
     form = SQLFORM(db.checks_defaults,
                  record=record,
+                 deletable=True,
                  fields=['chk_type',
+                         'chk_inst',
                          'chk_low',
                          'chk_high'],
                  labels={'chk_type': T('Check type'),
+                         'chk_inst': T('Instance'),
                          'chk_low': T('Low threshold'),
                          'chk_high': T('High threshold')},
                 )
@@ -32,13 +36,17 @@ def checks_settings_insert():
     q &= (db.checks_settings.chk_instance==request.vars.chk_instance)
     rows = db(q).select()
     if len(rows) == 0:
-        defaults = db(db.checks_defaults.chk_type==request.vars.chk_type).select().first()
+        chk = {
+         'chk_type': request.vars.chk_type,
+         'chk_instance': request.vars.chk_instance,
+        }
+        defaults = get_defaults(chk)
         db.checks_settings.insert(chk_nodename=request.vars.chk_nodename,
                                   chk_svcname=request.vars.chk_svcname,
                                   chk_type=request.vars.chk_type,
                                   chk_instance=request.vars.chk_instance,
-                                  chk_low=defaults.chk_low,
-                                  chk_high=defaults.chk_high,
+                                  chk_low=defaults[0],
+                                  chk_high=defaults[1],
                                  )
         rows = db(q).select()
     record = rows[0]
@@ -125,7 +133,16 @@ def update_thresholds(row):
     return
 
 def get_defaults(row):
-    q = db.checks_defaults.chk_type == row.chk_type
+    q = db.checks_defaults.chk_type == row['chk_type']
+    q &= db.checks_defaults.chk_inst != None
+    rows = db(q).select()
+    for r in rows:
+        if re.match(str(r.chk_inst), row['chk_instance']) is None:
+            continue
+        return (r.chk_low, r.chk_high, 'defaults')
+
+    q = db.checks_defaults.chk_type == row['chk_type']
+    q &= db.checks_defaults.chk_inst == None
     rows = db(q).select()
     if len(rows) == 0:
         return
@@ -232,17 +249,12 @@ def set_low_threshold(ids):
         settings = db(q).select()
         if len(settings) == 0:
             # insert
-            defq = db.checks_defaults.chk_type==chk.chk_type
-            defq &= db.checks_defaults.chk_type==chk.chk_type
-            defaults = db(defq).select()
-            if len(defaults) != 1:
-                continue
-            default = defaults[0]
+            chk_default = get_defaults(chk)
             db.checks_settings.insert(chk_nodename=chk.chk_nodename,
                                       chk_type=chk.chk_type,
                                       chk_instance=chk.chk_instance,
                                       chk_low=val,
-                                      chk_high=default.chk_high,
+                                      chk_high=chk_default[1],
                                       chk_changed_by=user_name(),
                                       chk_changed=now)
         elif len(settings) == 1:
@@ -271,17 +283,12 @@ def set_high_threshold(ids):
         settings = db(q).select()
         if len(settings) == 0:
             # insert
-            defq = db.checks_defaults.chk_type==chk.chk_type
-            defq &= db.checks_defaults.chk_type==chk.chk_type
-            chk_defaults = db(defq).select()
-            if len(chk_defaults) != 1:
-                continue
-            chk_default = chk_defaults[0]
+            chk_default = get_defaults(chk)
             db.checks_settings.insert(chk_nodename=chk.chk_nodename,
                                       chk_type=chk.chk_type,
                                       chk_instance=chk.chk_instance,
                                       chk_high=val,
-                                      chk_low=chk_default.chk_low,
+                                      chk_low=chk_default[0],
                                       chk_changed_by=user_name(),
                                       chk_changed=now)
         elif len(settings) == 1:
@@ -334,12 +341,117 @@ class col_chk_low(HtmlTableColumn):
 class col_chk_type(HtmlTableColumn):
     def html(self, o):
         s = self.get(o)
-        d = A(
-              s,
-              _href=URL(r=request, c='checks', f='checks_defaults_insert',
-                        vars={'chk_type': s})
+        nodename = self.t.colprops["chk_nodename"].get(o)
+
+        d = DIV(
+              A(
+                s,
+                _onclick="""
+if ($("#checks_x_%(nodename)s").is(":visible")) {
+  $("#checks_x_%(nodename)s").hide()
+} else {
+  $("#checks_x_%(nodename)s").show()
+  ajax("%(url)s", [], "checks_x_%(nodename)s")
+}
+"""%dict(nodename=nodename.replace('.','_'),
+         url=URL(r=request, f="ajax_chk_type_defaults", args=[s]),
+        ),
+              ),
             )
         return d
+
+@auth.requires_login()
+def ajax_chk_type_defaults():
+    chk_type = request.args[0]
+    q = db.checks_defaults.chk_type == chk_type
+    rows = db(q).select()
+
+    l = []
+    l.append(DIV(
+                 DIV(
+                   T("Edit"),
+                   _style="font-weight:bold"
+                 ),
+                 DIV(
+                   T("Type"),
+                   _style="font-weight:bold"
+                 ),
+                 DIV(
+                   T("Instance"),
+                   _style="font-weight:bold"
+                 ),
+                 DIV(
+                   T("Low threshold"),
+                   _style="font-weight:bold"
+                 ),
+                 DIV(
+                   T("High threshold"),
+                   _style="font-weight:bold"
+                 ),
+               ))
+
+    if len(rows) == 0:
+        l.append(DIV(
+                 DIV(
+                   "-",
+                 ),
+                 DIV(
+                   "-",
+                 ),
+                 DIV(
+                   "-",
+                 ),
+                 DIV(
+                   "-",
+                 ),
+                 DIV(
+                   "-",
+                 ),
+               ))
+
+    for row in rows:
+        l.append(DIV(
+                 DIV(
+                   A(
+                     IMG(_src=URL(r=request, c='static', f='edit.png')),
+                     _href=URL(r=request, f='checks_defaults_insert', vars={'chk_type': row.chk_type, 'chk_id': row.id}),
+                   ),
+                 ),
+                 DIV(
+                   row.chk_type,
+                 ),
+                 DIV(
+                   row.chk_inst if row.chk_inst is not None else "",
+                 ),
+                 DIV(
+                   row.chk_low,
+                 ),
+                 DIV(
+                   row.chk_high,
+                 ),
+               ))
+
+    l.append(DIV(
+             DIV(
+               A(
+                 IMG(_src=URL(r=request, c='static', f='add16.png')),
+                 _href=URL(r=request, f='checks_defaults_insert', vars={'chk_type': chk_type}),
+               ),
+             ),
+             DIV(
+               T("Add threshold defaults"),
+             ),
+           ))
+
+
+    return DIV(
+             DIV(
+               H3(T("Threshold defaults")),
+             ),
+             DIV(
+               DIV(l, _class="table0"),
+             ),
+           )
 
 class table_checks(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
@@ -722,6 +834,12 @@ def ajax_checks():
     q &= db.checks_live.chk_nodename==db.v_nodes.nodename
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+
+    t.csv_q = q
+    t.csv_orderby = o
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        return t.csv()
+
     n = db(q).count()
     t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
@@ -780,7 +898,8 @@ def update_dash_checks(nodename):
                         ', "min": ', t.min,
                         ', "max": ', t.max,
                         '}')),
-                 "%(env)s"
+                 "%(env)s",
+                 ""
                from (
                  select
                    chk_svcname as svcname,
@@ -806,4 +925,25 @@ def update_dash_checks(nodename):
                   )
     db.executesql(sql)
     db.commit()
+
+@auth.requires_login()
+def checks_node():
+    node = request.args[0]
+    tid = 'checks_'+node
+    t = table_checks(tid, 'ajax_checks')
+    #t.cols.remove('mon_nodname')
+
+    q = _where(None, 'checks_live', domain_perms(), 'chk_nodename')
+    q &= db.checks_live.chk_nodename == node
+    t.object_list = db(q).select()
+    t.hide_tools = True
+    t.pageable = False
+    t.linkable = False
+    t.filterable = False
+    t.exportable = False
+    t.dbfilterable = False
+    t.columnable = False
+    t.refreshable = False
+    t.checkboxes = False
+    return t.html()
 

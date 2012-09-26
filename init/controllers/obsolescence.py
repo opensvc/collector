@@ -19,6 +19,7 @@ def ajax_obsolete_os_nodes():
 def refresh_obsolescence():
     cron_obsolescence_os()
     cron_obsolescence_hw()
+    purge_dash_obs_without()
 
 def cron_obsolescence_hw():
     sql = """insert ignore into obsolescence (obs_type, obs_name)
@@ -352,6 +353,9 @@ def obsolescence_config():
 #
 # Dashboard updates
 #
+def _update_dash_obs_hw_warn():
+    update_dash_obs_hw_warn()
+
 def update_dash_obs_hw_warn(obs_name=None):
     if obs_name is None:
         where_obs_name = ""
@@ -381,15 +385,16 @@ def update_dash_obs_hw_warn(obs_name=None):
                         '"}'),
                  now(),
                  "",
-                 n.host_mode
+                 n.host_mode,
+                 ""
                from obsolescence o
                  join nodes n on
                    o.obs_name = n.model
                where
                  %(where_obs_name)s
-                 o.obs_name not like "%virtual%" and
-                 o.obs_name not like "%virtuel%" and
-                 o.obs_name not like "%cluster%" and
+                 o.obs_name not like "%%virtual%%" and
+                 o.obs_name not like "%%virtuel%%" and
+                 o.obs_name not like "%%cluster%%" and
                  o.obs_alert_date is not NULL and
                  o.obs_alert_date != "0000-00-00 00:00:00" and
                  o.obs_warn_date < now() and
@@ -398,6 +403,9 @@ def update_dash_obs_hw_warn(obs_name=None):
           """%dict(where_obs_name=where_obs_name)
     db.executesql(sql)
     db.commit()
+
+def _update_dash_obs_hw_alert():
+    update_dash_obs_hw_alert()
 
 def update_dash_obs_hw_alert(obs_name=None):
     if obs_name is None:
@@ -428,22 +436,26 @@ def update_dash_obs_hw_alert(obs_name=None):
                         '"}'),
                  now(),
                  "",
-                 n.host_mode
+                 n.host_mode,
+                 ""
                from obsolescence o
                  join nodes n on
                    o.obs_name = n.model
                where
                  %(where_obs_name)s
                  o.obs_alert_date is not NULL and
-                 o.obs_name not like "%virtual%" and
-                 o.obs_name not like "%virtuel%" and
-                 o.obs_name not like "%cluster%" and
+                 o.obs_name not like "%%virtual%%" and
+                 o.obs_name not like "%%virtuel%%" and
+                 o.obs_name not like "%%cluster%%" and
                  o.obs_alert_date != "0000-00-00 00:00:00" and
                  o.obs_alert_date < now() and
                  o.obs_type = "hw"
           """%dict(where_obs_name=where_obs_name)
     db.executesql(sql)
     db.commit()
+
+def _update_dash_obs_os_warn():
+    update_dash_obs_os_warn()
 
 def update_dash_obs_os_warn(obs_name=None):
     if obs_name is None:
@@ -474,7 +486,8 @@ def update_dash_obs_os_warn(obs_name=None):
                         '"}'),
                  now(),
                  "",
-                 n.host_mode
+                 n.host_mode,
+                 ""
                from obsolescence o
                  join nodes n on
                    o.obs_name = concat_ws(' ',n.os_name,n.os_vendor,n.os_release,n.os_update)
@@ -488,6 +501,9 @@ def update_dash_obs_os_warn(obs_name=None):
           """%dict(where_obs_name=where_obs_name)
     db.executesql(sql)
     db.commit()
+
+def _update_dash_obs_os_alert():
+    update_dash_obs_os_alert()
 
 def update_dash_obs_os_alert(obs_name=None):
     if obs_name is None:
@@ -518,7 +534,8 @@ def update_dash_obs_os_alert(obs_name=None):
                         '"}'),
                  now(),
                  "",
-                 n.host_mode
+                 n.host_mode,
+                 ""
                from obsolescence o
                  join nodes n on
                    o.obs_name = concat_ws(' ',n.os_name,n.os_vendor,n.os_release,n.os_update)
@@ -549,4 +566,55 @@ def delete_dash_obs_without(obs_name, t, a):
     db.executesql(sql)
     db.commit()
 
+def purge_dash_obs_without():
+    data_hw = (
+             ("hardware obsolescence warning date not set", "hw"),
+             ("hardware obsolescence alert date not set", "hw"),
+           )
+    data_os = (
+             ("os obsolescence alert date not set", "os"),
+             ("os obsolescence warning date not set", "os")
+           )
+
+    for dash_type, obs_type in data_hw:
+        sql = """select d.id from dashboard d
+                 join nodes n on d.dash_nodename=n.nodename
+                 where
+                   d.dash_type="%(dash_type)s" and
+                   d.dash_dict != concat('{"o": "', n.model, '"}')
+        """%dict(dash_type=dash_type)
+        rows = db.executesql(sql, as_dict=True)
+
+        q = db.dashboard.id.belongs([r["id"] for r in rows])
+        db(q).delete()
+        db.commit()
+
+    for dash_type, obs_type in data_os:
+        sql = """select d.id from dashboard d
+                 join nodes n on d.dash_nodename=n.nodename
+                 where
+                   d.dash_type="%(dash_type)s" and
+                   d.dash_dict != concat('{"o": "', n.os_name, " ", n.os_vendor, " ", n.os_release, ' "}')
+        """%dict(dash_type=dash_type)
+        rows = db.executesql(sql, as_dict=True)
+
+        q = db.dashboard.id.belongs([r["id"] for r in rows])
+        db(q).delete()
+        db.commit()
+
+    for dash_type, obs_type in data_os + data_hw:
+        sql = """delete from dashboard
+                 where
+                   dash_type = "%(dash_type)s" and
+                   dash_dict in (
+                     select
+                       concat('{"o": "', obs_name, '"}')
+                     from obsolescence
+                     where
+                       obs_warn_date is not null and
+                       obs_type = "%(obs_type)s"
+                   )
+        """%dict(dash_type=dash_type, obs_type=obs_type)
+        db.executesql(sql)
+        db.commit()
 
