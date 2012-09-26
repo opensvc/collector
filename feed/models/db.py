@@ -433,6 +433,7 @@ db.define_table('checks_defaults',
     Field('chk_inst', 'string', length=10),
     Field('chk_low', 'integer'),
     Field('chk_high', 'integer'),
+    Field('chk_prio', 'integer'),
     migrate=False)
 
 db.define_table('checks_settings',

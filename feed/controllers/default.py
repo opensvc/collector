@@ -1932,7 +1932,8 @@ def __svcmon_update(vars, vals):
 def get_defaults(row):
     q = db.checks_defaults.chk_type == row.chk_type
     q &= db.checks_defaults.chk_inst != None
-    rows = db(q).select()
+    o = ~db.checks_defaults.chk_prio
+    rows = db(q).select(orderby=o)
     for r in rows:
         if re.match(str(r.chk_inst), row.chk_instance) is None:
             continue

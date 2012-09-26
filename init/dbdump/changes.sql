@@ -3016,3 +3016,4 @@ alter table checks_live modify column chk_instance varchar(100);
 
 alter table checks_settings modify column chk_instance varchar(100);
 
+alter table checks_defaults add column chk_prio integer default 0;
