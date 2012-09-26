@@ -1073,6 +1073,7 @@ comp_var_types = (
  'etcsystem',
  'file',
  'fileinc',
+ 'fileprop',
  'fs',
  'group',
  'package',
@@ -1080,6 +1081,7 @@ comp_var_types = (
  'user',
  'raw',
  'rc',
+ 'symlink',
  'vuln'
 )
 
