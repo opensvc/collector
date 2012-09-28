@@ -792,7 +792,7 @@ class table_svcmon(HtmlTable):
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = [
-            'svc_name',
+            'mon_svcname',
             'err',
             'svc_ha',
             'svc_availstatus',
@@ -887,11 +887,11 @@ class table_svcmon(HtmlTable):
         for i in self.cols:
             self.colprops[i].table = 'v_svcmon'
             self.colprops[i].t = self
-        for i in ['mon_nodname', 'svc_name', 'svc_containertype', 'svc_app',
+        for i in ['mon_nodname', 'mon_svcname', 'svc_containertype', 'svc_app',
                   'svc_type', 'host_mode', 'mon_overallstatus',
                   'mon_availstatus', 'mon_syncstatus']:
             self.colprops[i].display = True
-        self.span = 'svc_name'
+        self.span = 'mon_svcname'
         self.sub_span = v_services_cols
         self.dbfilterable = True
         self.extraline = True
@@ -1225,6 +1225,7 @@ def appinfo_purge_svc(svcname):
 
 def purge_svc(svcname):
     q = db.svcmon.mon_svcname == svcname
+    print db(q).count()
     if db(q).count() == 0:
         dash_purge_svc(svcname)
         check_purge_svc(svcname)

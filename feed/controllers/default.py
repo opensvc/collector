@@ -2848,6 +2848,16 @@ def cron_dash_app_without_responsible():
     db.executesql(sql)
     db.commit()
 
+def cron_dash_purge():
+    sql = """delete from dashboard where
+              dash_svcname != "" and
+              dash_svcname not in (
+                select distinct mon_svcname from svcmon
+              )
+          """
+    db.executesql(sql)
+    db.commit()
+
 def cron_dash_obs_purge():
     sql = """delete from dashboard
              where dash_type like "%obsolescence%"
@@ -3707,6 +3717,7 @@ def feed_enqueue(f, *args):
 
 def dash_crons2():
     # ~1/j
+    cron_dash_purge()
     cron_dash_obs_purge()
     cron_dash_obs_os_alert()
     cron_dash_obs_os_warn()
