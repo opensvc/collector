@@ -49,6 +49,13 @@ def envfile(svcname):
     envfile = rows[0]['svc_envfile']
     if envfile is None:
         return "None"
+
+    envfile = envfile.replace('\\n', '\n')
+    envfile = re.sub(r'([@\w]+)\s*\=\s*', r'<span class=syntax_green>\1</span> = ', envfile)
+    envfile = re.sub(r'(\[[#\w]+\])', r'<br><span class=syntax_red>\1</span>', envfile)
+    envfile = re.sub(r'(@\w+)', r'<span class=syntax_blue>\1</span>', envfile)
+    envfile = re.sub(r'\n', r'<br>', envfile)
+
     return DIV(
              P(T("updated: %(upd)s",dict(
                      upd=rows[0]['updated']
@@ -56,7 +63,8 @@ def envfile(svcname):
                 ),
                 _style='text-align:center',
              ),
-             PRE(envfile.replace('\\n','\n'), _style="text-align:left"),
+             #envfile,
+             TT(XML(envfile), _style="text-align:left"),
            )
 
 class viz(object):
