@@ -667,6 +667,60 @@ i=d.getTime();$("#%(n)s_container").append("<div style='display:table-row'><div 
                )
         return form
 
+    def html_symlink(self, o):
+        v = self.get(o)
+        try:
+            e = json.loads(v)
+        except:
+            return SPAN("malformed value", PRE(v))
+        l = [DIV(
+               DIV('symlink', _style='display:table-cell;font-weight:bold', _class="comp16"),
+               DIV(e['symlink'], _style='display:table-cell'),
+               _style="display:table-row",
+             )]
+        if 'target' in e:
+            l += [DIV(
+                    DIV('target', _style='display:table-cell', _class="hd16"),
+                    DIV(e['target'], _style='display:table-cell'),
+                    _style="display:table-row",
+                  )]
+        return DIV(l, _class="comp_var_table")
+
+    def form_symlink(self, o):
+        name = 'symlink_n_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
+        l = []
+        v = self.get(o)
+        if v is None or v == "":
+            e = {}
+        else:
+            try:
+                e = json.loads(v)
+            except:
+                return self.form_raw(o)
+        for key, img in (('symlink', 'comp16'),
+                         ('target', 'hd16')):
+            if key not in e:
+                value = ""
+            else:
+                value = e[key]
+            _WIDGET = INPUT
+            l += [DIV(
+                   DIV(key, _style='display:table-cell;font-weight:bold', _class=img),
+                   DIV(_WIDGET(_name=name, _id="%s_%s"%(name, key), value=value), _style='display:table-cell'),
+                   _style="display:table-row",
+                 )]
+        form = DIV(
+                 SPAN(l, _id=name+'_container'),
+                 BR(),
+                 INPUT(
+                   _type="submit",
+                   _onclick=self.t.ajax_submit(additional_input_name=name,
+                                               args=["var_value_set_dict", name]),
+                 ),
+                 _class="comp_var_table",
+               )
+        return form
+
     def html_crontabentry(self, o):
         v = self.get(o)
         try:
@@ -797,6 +851,74 @@ i=d.getTime();$("#%(n)s_container").append("<div style='display:table-row'><div 
             l += [DIV(
                    DIV(key, _style='display:table-cell;font-weight:bold', _class=img),
                    DIV(_WIDGET(_name=name, _id="%s_%s"%(name, key), value=value), _style='display:table-cell'),
+                   _style="display:table-row",
+                 )]
+        form = DIV(
+                 SPAN(l, _id=name+'_container'),
+                 BR(),
+                 INPUT(
+                   _type="submit",
+                   _onclick=self.t.ajax_submit(additional_input_name=name,
+                                               args=["var_value_set_dict", name]),
+                 ),
+                 _class="comp_var_table",
+               )
+        return form
+
+    def html_fileprop(self, o):
+        v = self.get(o)
+        try:
+            e = json.loads(v)
+        except:
+            return SPAN("malformed value", PRE(v))
+        l = [DIV(
+               DIV('path', _style='display:table-cell;font-weight:bold', _class="comp16"),
+               DIV(e['path'], _style='display:table-cell'),
+               _style="display:table-row",
+             )]
+        if 'mode' in e:
+            l += [DIV(
+                    DIV('mode', _style='display:table-cell', _class="action16"),
+                    DIV(e['mode'], _style='display:table-cell'),
+                    _style="display:table-row",
+                  )]
+        if 'uid' in e:
+            l += [DIV(
+                    DIV('gid', _style='display:table-cell', _class="guy16"),
+                    DIV(e['gid'], _style='display:table-cell'),
+                    _style="display:table-row",
+                  )]
+        if 'gid' in e:
+            l += [DIV(
+                    DIV('gid', _style='display:table-cell', _class="guys16"),
+                    DIV(e['gid'], _style='display:table-cell'),
+                    _style="display:table-row",
+                  )]
+
+        return DIV(l, _class="comp_var_table")
+
+    def form_fileprop(self, o):
+        name = 'fileprop_n_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
+        l = []
+        v = self.get(o)
+        if v is None or v == "":
+            e = {}
+        else:
+            try:
+                e = json.loads(v)
+            except:
+                return self.form_raw(o)
+        for key, img in (('path', 'hd16'),
+                         ('mode', 'action16'),
+                         ('uid', 'guy16'),
+                         ('gid', 'guys16')):
+            if key not in e:
+                value = ""
+            else:
+                value = e[key]
+            l += [DIV(
+                   DIV(key, _style='display:table-cell;font-weight:bold', _class=img),
+                   DIV(INPUT(_name=name, _id="%s_%s"%(name, key), value=value), _style='display:table-cell'),
                    _style="display:table-row",
                  )]
         form = DIV(
@@ -3000,6 +3122,8 @@ def ajax_comp_rulesets():
             elif action == 'var_value_set_crontabentry':
                 var_value_set_list_of_dict(name)
             elif action == 'var_value_set_fileinc':
+                var_value_set_list_of_dict(name)
+            elif action == 'var_value_set_fileprop':
                 var_value_set_list_of_dict(name)
             elif action == 'var_value_set_rc':
                 var_value_set_list_of_dict(name)

@@ -881,6 +881,7 @@ db.define_table('checks_defaults',
     Field('chk_inst', 'string', length=128),
     Field('chk_low', 'integer'),
     Field('chk_high', 'integer'),
+    Field('chk_prio', 'integer'),
     migrate=False)
 
 db.define_table('checks_settings',
@@ -1084,6 +1085,7 @@ comp_var_types = (
  'etcsystem',
  'file',
  'fileinc',
+ 'fileprop',
  'fs',
  'group',
  'nodeconf',
@@ -1092,6 +1094,7 @@ comp_var_types = (
  'user',
  'raw',
  'rc',
+ 'symlink',
  'vuln'
 )
 

@@ -8,6 +8,7 @@ def checks_defaults_insert():
             record = rows[0]
 
     db.checks_defaults.chk_type.default = request.vars.chk_type
+    db.checks_defaults.chk_prio.default = 0
 
     form = SQLFORM(db.checks_defaults,
                  record=record,
@@ -15,12 +16,18 @@ def checks_defaults_insert():
                  fields=['chk_type',
                          'chk_inst',
                          'chk_low',
-                         'chk_high'],
+                         'chk_high',
+                         'chk_prio'],
                  labels={'chk_type': T('Check type'),
                          'chk_inst': T('Instance'),
                          'chk_low': T('Low threshold'),
-                         'chk_high': T('High threshold')},
+                         'chk_high': T('High threshold'),
+                         'chk_prio': T('Evaluation priority')},
                 )
+
+    if request.vars.chk_prio is None and request.vars.chk_inst is not None:
+        request.vars.chk_prio = len(request.vars.chk_inst)
+
     if form.accepts(request.vars):
         response.flash = T("edition recorded")
         redirect(URL(r=request, c='checks', f='checks'))
@@ -135,7 +142,8 @@ def update_thresholds(row):
 def get_defaults(row):
     q = db.checks_defaults.chk_type == row['chk_type']
     q &= db.checks_defaults.chk_inst != None
-    rows = db(q).select()
+    o = ~db.checks_defaults.chk_prio
+    rows = db(q).select(orderby=o)
     for r in rows:
         if re.match(str(r.chk_inst), row['chk_instance']) is None:
             continue
@@ -341,16 +349,6 @@ class col_chk_low(HtmlTableColumn):
 class col_chk_type(HtmlTableColumn):
     def html(self, o):
         s = self.get(o)
-        d = A(
-              s,
-              _href=URL(r=request, c='checks', f='checks_defaults_insert',
-                        vars={'chk_type': s})
-            )
-        return d
-
-class col_chk_type(HtmlTableColumn):
-    def html(self, o):
-        s = self.get(o)
         nodename = self.t.colprops["chk_nodename"].get(o)
 
         d = DIV(
@@ -363,7 +361,7 @@ if ($("#checks_x_%(nodename)s").is(":visible")) {
   $("#checks_x_%(nodename)s").show()
   ajax("%(url)s", [], "checks_x_%(nodename)s")
 }
-"""%dict(nodename=nodename,
+"""%dict(nodename=nodename.replace('.','_'),
          url=URL(r=request, f="ajax_chk_type_defaults", args=[s]),
         ),
               ),
@@ -374,7 +372,8 @@ if ($("#checks_x_%(nodename)s").is(":visible")) {
 def ajax_chk_type_defaults():
     chk_type = request.args[0]
     q = db.checks_defaults.chk_type == chk_type
-    rows = db(q).select()
+    o = ~db.checks_defaults.chk_prio
+    rows = db(q).select(orderby=o)
 
     l = []
     l.append(DIV(
@@ -384,6 +383,10 @@ def ajax_chk_type_defaults():
                  ),
                  DIV(
                    T("Type"),
+                   _style="font-weight:bold"
+                 ),
+                 DIV(
+                   T("Prio"),
                    _style="font-weight:bold"
                  ),
                  DIV(
@@ -417,6 +420,9 @@ def ajax_chk_type_defaults():
                  DIV(
                    "-",
                  ),
+                 DIV(
+                   "-",
+                 ),
                ))
 
     for row in rows:
@@ -429,6 +435,9 @@ def ajax_chk_type_defaults():
                  ),
                  DIV(
                    row.chk_type,
+                 ),
+                 DIV(
+                   row.chk_prio,
                  ),
                  DIV(
                    row.chk_inst if row.chk_inst is not None else "",
