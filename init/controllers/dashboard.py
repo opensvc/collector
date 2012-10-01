@@ -477,7 +477,7 @@ class col_dash_links(HtmlTableColumn):
        dash_svcname = self.t.colprops['dash_svcname'].get(o)
        i = A(
              _href=URL(r=request,c='default',f='svcmon',
-                    vars={'svcmon_f_svc_name': dash_svcname,
+                    vars={'svcmon_f_mon_svcname': dash_svcname,
                           'clear_filters': 'true'}),
              _title=T("Service status"),
              _class='svc clickable',
