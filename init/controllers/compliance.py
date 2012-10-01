@@ -5347,7 +5347,7 @@ def var_value_set_list_of_dict(name):
             try:
                 val = int(request.vars[i])
             except:
-                val = request.vars[i]
+                val = request.vars[i].strip()
         if key == 'members':
             val = val.split(',')
             val = map(lambda x: x.strip(), val)
