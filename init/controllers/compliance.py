@@ -192,13 +192,60 @@ def plot_log(s):
                  ))
     return DIV(l)
 
+class col_comp_svc_status(HtmlTableColumn):
+    def html(self, o):
+        id = self.t.extra_line_key(o)
+        return A(
+                 IMG(
+                   _src=URL(r=request, c="static", f="spark16.png"),
+                 ),
+                 _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                          url=URL(
+                                r=request,
+                                c='compliance',
+                                f='ajax_svc_history',
+                                vars={'svcname': self.t.colprops['svc_name'].get(o), 'rowid': id}
+                              ),
+                          id=id,
+                            ),
+               )
+
 class col_comp_node_status(HtmlTableColumn):
     def html(self, o):
-        return plot_log(self.get(o))
+        id = self.t.extra_line_key(o)
+        return A(
+                 IMG(
+                   _src=URL(r=request, c="static", f="spark16.png"),
+                 ),
+                 _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                          url=URL(
+                                r=request,
+                                c='compliance',
+                                f='ajax_node_history',
+                                vars={'nodename': self.t.colprops['node_name'].get(o), 'rowid': id}
+                              ),
+                          id=id,
+                            ),
+               )
 
 class col_comp_mod_status(HtmlTableColumn):
     def html(self, o):
-        return plot_log(self.get(o))
+        id = self.t.extra_line_key(o)
+        return A(
+                 IMG(
+                   _src=URL(r=request, c="static", f="spark16.png"),
+                 ),
+                 _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                          url=URL(
+                                r=request,
+                                c='compliance',
+                                f='ajax_mod_history',
+                                vars={'modname': self.t.colprops['mod_name'].get(o), 'rowid': id}
+                              ),
+                          id=id,
+                            ),
+               )
+
 
 class col_variables(HtmlTableColumn):
     def html(self, o):
@@ -4907,6 +4954,14 @@ class table_comp_mod_status(HtmlTable):
                      _class='comp_plot',
                     ),
         }
+        for i in self.cols:
+            self.colprops[i].t = self
+
+        self.extraline = True
+
+    def extra_line_key(self, o):
+        return self.id+'_'+self.colprops['mod_name'].get(o).replace('.','_')
+
 
 class table_comp_svc_status(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
@@ -4916,7 +4971,7 @@ class table_comp_svc_status(HtmlTable):
         self.cols = ['svc_name', 'total', 'ok', 'nok', 'na', 'obs', 'pct',
                      "svc_log"]
         self.colprops = {
-            'svc_name': HtmlTableColumn(
+            'svc_name': col_svc(
                      title='Service',
                      field='svc_name',
                      table='comp_svc_status',
@@ -4971,7 +5026,7 @@ class table_comp_svc_status(HtmlTable):
                      img='check16',
                      _class='comp_pct',
                     ),
-            'svc_log': col_comp_node_status(
+            'svc_log': col_comp_svc_status(
                      title='History',
                      field='svc_log',
                      display=True,
@@ -4979,6 +5034,14 @@ class table_comp_svc_status(HtmlTable):
                      _class='comp_plot',
                     ),
         }
+        for i in self.cols:
+            self.colprops[i].t = self
+
+        self.extraline = True
+
+    def extra_line_key(self, o):
+        return self.id+'_'+self.colprops['svc_name'].get(o).replace('.','_')
+
 
 class table_comp_node_status(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
@@ -4988,7 +5051,7 @@ class table_comp_node_status(HtmlTable):
         self.cols = ['node_name', 'total', 'ok', 'nok', 'na', 'obs', 'pct',
                      "node_log"]
         self.colprops = {
-            'node_name': HtmlTableColumn(
+            'node_name': col_node(
                      title='Node',
                      field='node_name',
                      table='comp_node_status',
@@ -5051,6 +5114,13 @@ class table_comp_node_status(HtmlTable):
                      _class='comp_plot',
                     ),
         }
+        for i in self.cols:
+            self.colprops[i].t = self
+
+        self.extraline = True
+
+    def extra_line_key(self, o):
+        return self.id+'_'+self.colprops['node_name'].get(o).replace('.','_')
 
 @service.json
 def json_run_status_log(nodename, module):
@@ -5668,27 +5738,6 @@ def ajax_comp_svc_status():
                                     'pct':x[7]},
                           rows)
 
-    for i, row in enumerate(mt.object_list):
-        sql = """select week(run_date) as week,
-                        sum(if(run_status=0, 1, 0)) as ok,
-                        sum(if(run_status=1, 1, 0)) as nok,
-                        sum(if(run_status=2, 1, 0)) as na
-                 from comp_log
-                 where run_svcname="%(svcname)s"
-                 group by week(run_date),run_svcname
-                 order by run_date desc
-                 limit 20"""%dict(svcname=row['svc_name'])
-        week = []
-        ok = []
-        nok = []
-        na = []
-        for r in db.executesql(sql):
-            week.append(int(r[0]))
-            ok.append(int(r[1]))
-            nok.append(int(r[2]))
-            na.append(int(r[3]))
-        mt.object_list[i]['svc_log'] = json.dumps([week, ok, nok, na])
-
     if len(request.args) == 1 and request.args[0] == 'csv':
         return mt.csv()
 
@@ -5760,33 +5809,163 @@ def ajax_comp_node_status():
                                     'pct':x[7]},
                           rows)
 
-    for i, row in enumerate(mt.object_list):
-        sql = """select week(run_date) as week,
-                        sum(if(run_status=0, 1, 0)) as ok,
-                        sum(if(run_status=1, 1, 0)) as nok,
-                        sum(if(run_status=2, 1, 0)) as na
-                 from comp_log
-                 where run_nodename="%(node)s"
-                 group by week(run_date),run_nodename
-                 order by run_date desc
-                 limit 20"""%dict(node=row['node_name'])
-        week = []
-        ok = []
-        nok = []
-        na = []
-        for r in db.executesql(sql):
-            week.append(int(r[0]))
-            ok.append(int(r[1]))
-            nok.append(int(r[2]))
-            na.append(int(r[3]))
-        mt.object_list[i]['node_log'] = json.dumps([week, ok, nok, na])
-
     if len(request.args) == 1 and request.args[0] == 'csv':
         return mt.csv()
 
     return DIV(
              mt.html(),
            )
+
+@auth.requires_login()
+def ajax_svc_history():
+    id = request.vars.rowid
+    id_chart = id+'_chart'
+    d = DIV(
+          DIV(
+            DIV(_id=id_chart),
+          ),
+          SCRIPT(
+            "comp_history('%(url)s', '%(id)s');"%dict(
+               url=URL(r=request, f='call/json/json_svc_history', vars={'svcname': request.vars.svcname}),
+               id=id_chart,
+            ),
+            _name=id+'_to_eval'
+          ),
+        )
+    return d
+
+@service.json
+def json_svc_history():
+    sql = """select
+               t.run_date,
+               t.week,
+               sum(t.ok) as ok,
+               sum(t.nok) as nok,
+               sum(t.na) as na
+              from
+              (
+                select week(run_date) as week,
+                    if(run_status=0, 1, 0) as ok,
+                    if(run_status=1, 1, 0) as nok,
+                    if(run_status=2, 1, 0) as na,
+                    run_date
+                from comp_log
+                where run_svcname="%(svcname)s" and
+                    run_date>date_sub(now(), interval 1 year)
+                group by week(run_date), run_module, run_nodename
+              ) t
+              group by t.week
+              order by t.week
+             """%dict(svcname=request.vars.svcname)
+    ok = []
+    nok = []
+    na = []
+    for r in db.executesql(sql):
+        ok.append((r[0], int(r[2])))
+        nok.append((r[0], int(r[3])))
+        na.append((r[0], int(r[4])))
+    return [ok, nok, na]
+
+
+@auth.requires_login()
+def ajax_mod_history():
+    id = request.vars.rowid
+    id_chart = id+'_chart'
+    d = DIV(
+          DIV(
+            DIV(_id=id_chart),
+          ),
+          SCRIPT(
+            "comp_history('%(url)s', '%(id)s');"%dict(
+               url=URL(r=request, f='call/json/json_mod_history', vars={'modname': request.vars.modname}),
+               id=id_chart,
+            ),
+            _name=id+'_to_eval'
+          ),
+        )
+    return d
+
+@service.json
+def json_mod_history():
+    sql = """select
+               t.run_date,
+               t.week,
+               sum(t.ok) as ok,
+               sum(t.nok) as nok,
+               sum(t.na) as na
+              from
+              (
+                select week(run_date) as week,
+                    if(run_status=0, 1, 0) as ok,
+                    if(run_status=1, 1, 0) as nok,
+                    if(run_status=2, 1, 0) as na,
+                    run_date
+                from comp_log
+                where run_module="%(mod)s" and
+                    run_date>date_sub(now(), interval 1 year)
+                group by week(run_date), run_nodename, run_svcname
+              ) t
+              group by t.week
+              order by t.week
+             """%dict(mod=request.vars.modname)
+    ok = []
+    nok = []
+    na = []
+    for r in db.executesql(sql):
+        ok.append((r[0], int(r[2])))
+        nok.append((r[0], int(r[3])))
+        na.append((r[0], int(r[4])))
+    return [ok, nok, na]
+
+@auth.requires_login()
+def ajax_node_history():
+    id = request.vars.rowid
+    id_chart = id+'_chart'
+    d = DIV(
+          DIV(
+            DIV(_id=id_chart),
+          ),
+          SCRIPT(
+            "comp_history('%(url)s', '%(id)s');"%dict(
+               url=URL(r=request, f='call/json/json_node_history', vars={'nodename': request.vars.nodename}),
+               id=id_chart,
+            ),
+            _name=id+'_to_eval'
+          ),
+        )
+    return d
+
+@service.json
+def json_node_history():
+    sql = """select
+               t.run_date,
+               t.week,
+               sum(t.ok) as ok,
+               sum(t.nok) as nok,
+               sum(t.na) as na
+              from
+              (
+                select week(run_date) as week,
+                    if(run_status=0, 1, 0) as ok,
+                    if(run_status=1, 1, 0) as nok,
+                    if(run_status=2, 1, 0) as na,
+                    run_date
+                from comp_log
+                where run_nodename="%(node)s" and
+                    run_date>date_sub(now(), interval 1 year)
+                group by week(run_date), run_module
+              ) t
+              group by t.week
+              order by t.week
+             """%dict(node=request.vars.nodename)
+    ok = []
+    nok = []
+    na = []
+    for r in db.executesql(sql):
+        ok.append((r[0], int(r[2])))
+        nok.append((r[0], int(r[3])))
+        na.append((r[0], int(r[4])))
+    return [ok, nok, na]
 
 @auth.requires_login()
 def ajax_comp_mod_status():
@@ -5851,8 +6030,9 @@ def ajax_comp_mod_status():
                                     'pct':x[7]},
                           rows)
 
+    """
     for i, row in enumerate(mt.object_list):
-        sql = """select week(run_date) as week,
+        sql = "select week(run_date) as week,
                         sum(if(run_status=0, 1, 0)) as ok,
                         sum(if(run_status=1, 1, 0)) as nok,
                         sum(if(run_status=2, 1, 0)) as na
@@ -5860,7 +6040,7 @@ def ajax_comp_mod_status():
                  where run_module="%(module)s"
                  group by week(run_date),run_module
                  order by run_date desc
-                 limit 20"""%dict(module=row['mod_name'])
+                 limit 20"%dict(module=row['mod_name'])
         week = []
         ok = []
         nok = []
@@ -5871,6 +6051,7 @@ def ajax_comp_mod_status():
             nok.append(int(r[2]))
             na.append(int(r[3]))
         mt.object_list[i]['mod_log'] = json.dumps([week, ok, nok, na])
+    """
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         return mt.csv()
