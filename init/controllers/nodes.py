@@ -248,7 +248,7 @@ class table_nodes(HtmlTable):
             options = [OPTION(g.modset_name,_value=g.modset_name) for g in rows]
             id_col = 'comp_moduleset.id'
 
-        if mode in ["module", "modeleset"]:
+        if mode in ["module", "moduleset"]:
             fancy_mode = mode[0].upper()+mode[1:].lower()
             actions = TABLE(
                           TR(
