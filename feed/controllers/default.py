@@ -3342,14 +3342,14 @@ def update_dash_flex_instances_started(svcname):
                  from v_flex_status
                  where
                    svc_name="%(svcname)s" and
-                   (
+                   ((
                      svc_flex_min_nodes > 0 and
                      up < svc_flex_min_nodes
                    ) or
                    (
                      svc_flex_max_nodes > 0 and
                      up > svc_flex_max_nodes
-                   )
+                   ))
                ) t
           """%dict(svcname=svcname,
                    sev=sev,
