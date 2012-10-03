@@ -50,7 +50,7 @@ def update_dash_action_errors(svc_name, nodename):
                        nodename=nodename)
     db.executesql(sql)
     db.commit()
- 
+
 def update_action_errors(actionid):
     sql = """insert into b_action_errors set
                svcname=(select svcname from SVCactions where id=%(id)d),
@@ -531,6 +531,7 @@ def ack(ids=[]):
                  acked_comment=ackcomment,
                  acked_by=user,
                  acked_date=datetime.datetime.now())
+    db.commit()
 
     if 'ackcomment' in request.vars:
         del request.vars.ackcomment
