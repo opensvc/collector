@@ -282,7 +282,9 @@ def _push_checks(vars, vals):
     # purge old checks
     if len(vals) > 0:
         nodename = vals[0][0]
-        db(db.checks_live.chk_nodename==nodename).delete()
+        q = db.checks_live.chk_nodename==nodename
+        q &= db.checks_live.chk_type != "netdev_err"
+        db(q).delete()
         db.commit()
 
     # insert new checks
@@ -3436,56 +3438,66 @@ def update_dash_checks(nodename):
 
 def update_dash_netdev_errors(nodename):
     nodename = nodename.strip("'")
-    sql = """select avg(rxerrps+txerrps+collps+rxdropps+rxdropps)
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+    sql = """select dev, sum(rxerrps+txerrps+collps+rxdropps+rxdropps) as errs
                from stats_netdev_err
                where
                  nodename = "%(nodename)s" and
-                 date > "%(date)s"
-          """%dict(nodename=nodename,
-                   date=str(datetime.datetime.now()-datetime.timedelta(days=1)),
-                  )
-    rows = db.executesql(sql)
+                 date > date_sub(now(), interval 1 day)
+               group by dev
+          """%dict(nodename=nodename)
+    rows = db.executesql(sql, as_dict=True)
 
-    if len(rows) > 0 and rows[0][0] > 0:
-        errs = rows[0][0]
-        sql = """select host_mode from nodes
+    if len(rows) == 0:
+        sql = """delete from checks_live
                  where
-                   nodename="%(nodename)s"
-              """%dict(nodename=nodename)
-        rows = db.executesql(sql)
+                  chk_nodename="%(nodename)s" and
+                  chk_type = "netdev_err"
+              """
+        db.executesql(sql)
+        return
 
-        if len(rows) == 1 and rows[0][0] == 'PRD':
-            sev = 1
-        else:
-            sev = 0
-
-        sql = """insert into dashboard
+    for row in rows:
+        sql = """insert into checks_live
                  set
-                   dash_type="network device errors in the last day",
-                   dash_svcname="",
-                   dash_nodename="%(nodename)s",
-                   dash_severity=%(sev)d,
-                   dash_fmt="%%(err)s errors per second average",
-                   dash_dict='{"err": "%(err).3f"}',
-                   dash_created=now(),
-                   dash_env="%(env)s"
+                   chk_type="netdev_err",
+                   chk_svcname="",
+                   chk_nodename="%(nodename)s",
+                   chk_value=%(errs)d,
+                   chk_updated="%(now)s",
+                   chk_instance="%(dev)s"
                  on duplicate key update
-                   dash_severity=%(sev)d,
-                   dash_fmt="%%(err)s errors per second average",
-                   dash_dict='{"err": "%(err).3f"}',
-                   dash_created=now()
+                   chk_type="netdev_err",
+                   chk_svcname="",
+                   chk_nodename="%(nodename)s",
+                   chk_value=%(errs)d,
+                   chk_updated="%(now)s",
+                   chk_instance="%(dev)s"
               """%dict(nodename=nodename,
-                       sev=sev,
-                       env=rows[0][0],
-                       err=errs)
-    else:
-        sql = """delete from dashboard
-                 where
-                   dash_type="network device errors in the last day" and
-                   dash_nodename="%(nodename)s"
-              """%dict(nodename=nodename)
+                       now=now,
+                       dev=row['dev'],
+                       errs=int(row['errs']))
+        db.executesql(sql)
+
+    sql = """delete from checks_live
+             where
+               chk_type="netdev_err" and
+               chk_updated < "%(now)s" and
+               chk_nodename="%(nodename)s"
+          """%dict(nodename=nodename,
+                   now=now,
+                  )
     db.executesql(sql)
     db.commit()
+
+    q = db.checks_live.chk_nodename == nodename
+    q &= db.checks_live.chk_type == "netdev_err"
+    checks = db(q).select()
+    update_thresholds_batch(checks)
+
+    update_dash_checks(nodename)
+
 
 def update_dash_action_errors(svc_name, nodename):
     svc_name = svc_name.strip("'")
