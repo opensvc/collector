@@ -806,6 +806,8 @@
 'Stats': 'Stats',
 'Status': 'Etat',
 'Status on primary': 'Etat sur le primaire',
+'Stderr': 'Stderr',
+'Stdout': 'Stdout',
 'Storage': 'Stockage',
 'Storage Arrays': 'Baies de stockage',
 'Storage Updated': 'Mise à jour baie',

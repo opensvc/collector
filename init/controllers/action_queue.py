@@ -1,3 +1,9 @@
+class col_std(HtmlTableColumn):
+    def html(self, o):
+        s = self.get(o)
+        return PRE(s)
+
+
 class col_ret(HtmlTableColumn):
     def html(self, o):
         s = self.get(o)
@@ -24,7 +30,14 @@ class table_actions(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['id', 'status', 'date_queued', 'date_dequeued', 'ret', 'command']
+        self.cols = ['id',
+                     'status',
+                     'date_queued',
+                     'date_dequeued',
+                     'ret',
+                     'command',
+                     'stdout',
+                     'stderr']
         self.colprops = {
             'id': HtmlTableColumn(
                      title='Id',
@@ -59,6 +72,18 @@ class table_actions(HtmlTable):
             'command': HtmlTableColumn(
                      title='Commande',
                      field='command',
+                     img='action16',
+                     display=True,
+                    ),
+            'stdout': col_std(
+                     title='Stdout',
+                     field='stdout',
+                     img='action16',
+                     display=True,
+                    ),
+            'stderr': col_std(
+                     title='Stderr',
+                     field='stderr',
                      img='action16',
                      display=True,
                     ),
