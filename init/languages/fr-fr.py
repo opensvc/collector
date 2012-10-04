@@ -115,6 +115,8 @@
 'Alert since': 'Alerte depuis',
 'Alert timeline': 'Alert timeline',
 'Alerts': 'Alertes',
+'Alerts History': 'Alerts History',
+'Alerts Statistics': 'Alerts Statistics',
 'Alerts severity': 'Sévérité des alertes',
 'Allocate to node': 'Allouer à un noeud',
 'Allocate to service': 'Allouer à un service',

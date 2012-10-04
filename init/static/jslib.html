@@ -856,6 +856,46 @@ function stats_avg_proc_for_nodes(url, id) {
         _jqplot_img($('#'+id+'_plist_sz'))
     });
 }
+function dash_history(url, id) {
+    $.jqplot.config.enablePlugins = true;
+    $.getJSON(url, function(data) {
+        //$('#'+id).height('300px')
+        $('#'+id).width('100%')
+        $.jqplot(id, [data], {
+            cursor:{zoom:true, showTooltip:false},
+            stackSeries: true,
+            grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+            seriesDefaults: {
+                renderer: $.jqplot.BarRenderer,
+                rendererOptions: {
+                    barDirection:'vertical',
+                    barPadding: 6,
+                    barMargin:10
+                },
+                shadowAngle: 135
+            },
+            series: [
+                { label: 'alerts' },
+            ],
+            axes: {
+                xaxis: {
+                    renderer: $.jqplot.DateAxisRenderer,
+                    numberTicks: 5,
+                    tickOptions:{formatString:'<center>%Y<br>%b,%d<center>'}
+                },
+                yaxis: {
+                    min: 0,
+                    tickOptions:{formatString:'%i'}
+                }
+            }
+        });
+        _jqplot_img($('#'+id))
+    });
+}
 function comp_history(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {

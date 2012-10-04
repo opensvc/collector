@@ -143,6 +143,86 @@ class table_dash_agg(HtmlTable):
         self.headers = False
 
 
+def ajax_dash_history():
+    id = request.vars.divid
+    id_chart = 'dh_chart'
+    d = DIV(
+          DIV(
+            #IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            _id=id_chart,
+            _style="height:300px",
+          ),
+          SCRIPT(
+            "dash_history('%(url)s', '%(id)s');"%dict(
+               url=URL(r=request, f='call/json/json_dash_history'),
+               id=id_chart,
+            ),
+            _name='dh_to_eval'
+          ),
+        )
+    return d
+
+@service.json
+def json_dash_history():
+    t = table_dashboard('dashboard', 'ajax_dashboard')
+
+    q = db.dashboard_events.id > 0
+    for f in set(t.cols):
+        if t.colprops[f].filter_redirect is not None:
+            _f = t.colprops[f].filter_redirect
+            _t = "dashboard_ref"
+        elif f == "dash_type":
+            _f = f
+            _t = "dashboard_ref"
+        else:
+            _f = f
+            _t = "dashboard_events"
+        q = _where(q, _t, t.filter_parse(f),  _f)
+    q &= _where(None, 'dashboard_events', domain_perms(), 'dash_svcname')|_where(None, 'dashboard_events', domain_perms(), 'dash_nodename')
+    q = apply_filters(q, db.dashboard_events.dash_nodename, db.dashboard_events.dash_svcname)
+
+    sql = """select
+               v.begin,
+               count(v.begin)
+             from (
+               select
+                 t.begin,
+                 t.end,
+                 dashboard_events.dash_md5,
+                 dashboard_events.dash_nodename,
+                 dashboard_events.dash_svcname
+               from
+                 dashboard_events
+                 join (
+                   select
+                     date(date_sub(now(), interval inc-1 day)) as begin,
+                     date(date_sub(now(), interval inc-2 day)) as end
+                   from
+                     u_inc
+                   where
+                     inc<=10
+                   order by inc desc
+                 ) t on
+                   dashboard_events.dash_begin <= t.end and
+                   (dashboard_events.dash_end >= t.begin or dashboard_events.dash_end is null)
+                 join dashboard_ref on
+                   dashboard_events.dash_md5 = dashboard_ref.dash_md5
+               where %(where)s
+               group by
+                 t.begin,
+                 t.end,
+                 dashboard_events.dash_md5,
+                 dashboard_events.dash_nodename,
+                 dashboard_events.dash_svcname
+             ) v
+             group by v.begin, v.end;
+    """%dict(where=str(q))
+    rows = db.executesql(sql)
+    data = []
+    for row in rows:
+        data.append((row[0], row[1]))
+    return data
+
 @auth.requires_login()
 def ajax_dash_agg():
     t = table_dashboard('dashboard', 'ajax_dashboard')
@@ -737,14 +817,42 @@ def ajax_dashboard():
 
     mt = table_dash_agg('dash_agg', 'ajax_dash_agg')
     return DIV(
-             SCRIPT(
-               mt.ajax_submit(additional_inputs=t.ajax_inputs()),
-               _name=t.id+"_to_eval"
+             DIV(
+               T("Alerts Statistics"),
+               _style="text-align:left;font-size:120%;background-color:#e0e1cd",
+               _class="right16 clickable",
+               _onclick="""
+               if (!$("#dash_agg").is(":visible")) {
+                 $(this).addClass("down16");
+                 $(this).removeClass("right16");
+                 $("#dash_agg").show(); %s ;
+               } else {
+                 $(this).addClass("right16");
+                 $(this).removeClass("down16");
+                 $("#dash_agg").hide();
+               }"""%mt.ajax_submit(additional_inputs=t.ajax_inputs()),
              ),
              DIV(
                IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+                _style="display:none",
                _id="dash_agg",
              ),
+             DIV(
+               T("Alerts History"),
+               _style="text-align:left;font-size:120%;background-color:#e0e1cd",
+               _class="right16 clickable",
+               _onclick="""
+               if (!$("#dh").is(":visible")) {
+                 $(this).addClass("down16");
+                 $(this).removeClass("right16");
+                 $("#dh").show(); sync_ajax("%(url)s", [], "dh", function(){eval_js_in_ajax_response("dh")});
+               } else {
+                 $(this).addClass("right16");
+                 $(this).removeClass("down16");
+                 $("#dh").hide();
+               }"""%dict(url=URL(r=request,f='ajax_dash_history', vars={"divid": "dh"})),
+             ),
+             DIV(_id="dh", _style="display:none"),
              t.html(),
            )
 
