@@ -81,8 +81,6 @@ class table_log(HtmlTable):
                      'log_user',
                      'log_action',
                      'log_evt',
-                     'log_fmt',
-                     'log_dict',
                      'log_entry_id',
                      'log_gtalk_sent',
                      'log_email_sent']
@@ -133,6 +131,7 @@ class table_log(HtmlTable):
                      title='Event',
                      field='dummy',
                      img='log16',
+                     filter_redirect='log_dict',
                      display=True,
                     ),
             'log_fmt': HtmlTableColumn(
@@ -179,8 +178,8 @@ def ajax_log_col_values():
     col = request.args[0]
     o = db.log[col]
     q = db.log.id > 0
-    for f in set(t.cols)-set(t.special_filtered_cols):
-        q = _where(q, 'log', t.filter_parse(f), f)
+    for f in set(t.cols):
+        q = _where(q, 'log', t.filter_parse(f),  f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
     t.object_list = db(q).select(o, orderby=o, groupby=o)
     return t.col_values_cloud(col)
 
@@ -189,8 +188,8 @@ def ajax_log():
     t = table_log('log', 'ajax_log')
     o = ~db.log.log_date
     q = db.log.id > 0
-    for f in set(t.cols)-set(t.special_filtered_cols):
-        q = _where(q, 'log', t.filter_parse(f), f)
+    for f in set(t.cols):
+        q = _where(q, 'log', t.filter_parse(f),  f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
     n = db(q).count()
     t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
