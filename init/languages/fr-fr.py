@@ -366,6 +366,7 @@
 'Enable paging': 'Activer la pagination',
 'Encap filterset': 'Jeu de filtres fils',
 'Encapsulated ruleset': 'Jeu de règles encapsulé',
+'Enclosure': 'Enclosure',
 'End': 'Fin',
 'Entry id': "Id d'enregistrement",
 'Env': 'Env',

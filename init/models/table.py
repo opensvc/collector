@@ -2086,6 +2086,7 @@ v_nodes_cols = [
     'project',
     'serial',
     'model',
+    'enclosure',
     'role',
     'host_mode',
     'environnement',
@@ -2670,6 +2671,13 @@ v_nodes_colprops = {
     'nodename': col_node(
              title = 'Node name',
              field='nodename',
+             display = False,
+             img = 'node16',
+             table = 'v_nodes',
+            ),
+    'enclosure': HtmlTableColumn(
+             title = 'Enclosure',
+             field='enclosure',
              display = False,
              img = 'node16',
              table = 'v_nodes',

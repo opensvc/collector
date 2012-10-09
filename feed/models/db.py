@@ -192,6 +192,7 @@ db.define_table('nodes',
     Field('power_breaker1'),
     Field('power_breaker2'),
     Field('updated'),
+    Field('enclosure'),
     migrate=False)
 
 db.define_table('disk_blacklist',

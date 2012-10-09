@@ -361,6 +361,7 @@ db.define_table('v_svcmon',
     Field('mon_guestos'),
     Field('mon_vmem'),
     Field('mon_vcpus'),
+    Field('enclosure'),
     migrate=False)
 
 db.define_table('v_svcmon_clusters',
@@ -472,6 +473,7 @@ db.define_table('nodes',
     Field('power_breaker1'),
     Field('power_breaker2'),
     Field('updated', 'datetime'),
+    Field('enclosure'),
     migrate=False)
 
 db.define_table('v_nodes',
@@ -519,6 +521,7 @@ db.define_table('v_nodes',
     Field('power_breaker1'),
     Field('power_breaker2'),
     Field('updated', 'datetime'),
+    Field('enclosure'),
     migrate=False)
 
 db.define_table('v_users',
