@@ -1085,6 +1085,7 @@
 'edited network segment %(u)s': 'segment de réseau %(u)s édité',
 'edited record %(u)s': 'Enregistrement %(u)s édité',
 'enable/disable filter': 'activer/désactiver le filtre',
+'enclosure': 'enclosure',
 'end': 'fin',
 'enter a value': 'entrer une valeur',
 'enter an integer between %(min)g and %(max)g': 'entrer une valeur entière entre %(min)g et %(max)g',
