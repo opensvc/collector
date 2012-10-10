@@ -492,7 +492,6 @@ def update_dashboard_log(s):
 
 class col_dash_entry(HtmlTableColumn):
     def get(self, o):
-        id = self.t.extra_line_key(o)
         dash_dict = self.t.colprops['dash_dict'].get(o)
         dash_fmt = self.t.colprops['dash_fmt'].get(o)
         if dash_dict is None or len(dash_dict) == 0:
@@ -511,7 +510,11 @@ class col_dash_entry(HtmlTableColumn):
             s = 'error transcoding: %s'%dash_dict
         except TypeError:
             s = 'type error: %s'%dash_dict
+        return s
 
+    def html(self, o):
+        id = self.t.extra_line_key(o)
+        s = self.get(o)
         d = A(
           s,
           _onclick="""toggle_extra('%(url)s', '%(id)s')"""%dict(
@@ -781,7 +784,10 @@ class table_dashboard(HtmlTable):
 def ajax_dashboard_col_values():
     t = table_dashboard('dashboard', 'ajax_dashboard')
     col = request.args[0]
-    o = db.dashboard[col]
+    if t.colprops[col].filter_redirect is None:
+        o = db.dashboard[col]
+    else:
+        o = db.dashboard[t.colprops[col].filter_redirect]
     q = db.dashboard.id > 0
     for f in set(t.cols):
         q = _where(q, 'dashboard', t.filter_parse(f),  f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)

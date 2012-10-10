@@ -176,7 +176,10 @@ class table_log(HtmlTable):
 def ajax_log_col_values():
     t = table_log('log', 'ajax_log')
     col = request.args[0]
-    o = db.log[col]
+    if t.colprops[col].filter_redirect is None:
+        o = db.log[col]
+    else:
+        o = db.log[t.colprops[col].filter_redirect]
     q = db.log.id > 0
     for f in set(t.cols):
         q = _where(q, 'log', t.filter_parse(f),  f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
