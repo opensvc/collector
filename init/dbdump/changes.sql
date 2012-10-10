@@ -3049,3 +3049,6 @@ create view v_comp_nodes as (select n.*,group_concat(distinct r.ruleset_name sep
 
 #create table nodes_import as select * from nodes;
 
+alter table dashboard add column dash_updated datetime;
+
+

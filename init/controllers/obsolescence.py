@@ -389,7 +389,7 @@ def update_dash_obs_hw_warn(obs_name=None):
         db.executesql(sql)
     db.commit()
 
-    sql = """insert ignore into dashboard
+    sql = """insert into dashboard
                select
                  NULL,
                  "hardware obsolescence warning",
@@ -403,7 +403,8 @@ def update_dash_obs_hw_warn(obs_name=None):
                  now(),
                  "",
                  n.host_mode,
-                 ""
+                 "",
+                 now()
                from obsolescence o
                  join nodes n on
                    o.obs_name = n.model
@@ -417,6 +418,8 @@ def update_dash_obs_hw_warn(obs_name=None):
                  o.obs_warn_date < now() and
                  o.obs_alert_date > now() and
                  o.obs_type = "hw"
+               on duplicate key update
+                 dash_updated=now()
           """%dict(where_obs_name=where_obs_name)
     db.executesql(sql)
     db.commit()
@@ -458,7 +461,7 @@ def update_dash_obs_hw_alert(obs_name=None):
     db.commit()
 
 
-    sql = """insert ignore into dashboard
+    sql = """insert into dashboard
                select
                  NULL,
                  "hardware obsolescence alert",
@@ -472,7 +475,8 @@ def update_dash_obs_hw_alert(obs_name=None):
                  now(),
                  "",
                  n.host_mode,
-                 ""
+                 "",
+                 now()
                from obsolescence o
                  join nodes n on
                    o.obs_name = n.model
@@ -485,6 +489,8 @@ def update_dash_obs_hw_alert(obs_name=None):
                  o.obs_alert_date != "0000-00-00 00:00:00" and
                  o.obs_alert_date < now() and
                  o.obs_type = "hw"
+               on duplicate key update
+                 dash_updated=now()
           """%dict(where_obs_name=where_obs_name)
     db.executesql(sql)
     db.commit()
@@ -523,7 +529,7 @@ def update_dash_obs_os_warn(obs_name=None):
         db.executesql(sql)
     db.commit()
 
-    sql = """insert ignore into dashboard
+    sql = """insert into dashboard
                select
                  NULL,
                  "os obsolescence warning",
@@ -537,7 +543,8 @@ def update_dash_obs_os_warn(obs_name=None):
                  now(),
                  "",
                  n.host_mode,
-                 ""
+                 "",
+                 now()
                from obsolescence o
                  join nodes n on
                    o.obs_name = concat_ws(' ',n.os_name,n.os_vendor,n.os_release,n.os_update)
@@ -548,6 +555,8 @@ def update_dash_obs_os_warn(obs_name=None):
                  o.obs_warn_date < now() and
                  o.obs_alert_date > now() and
                  o.obs_type = "os"
+               on duplicate key update
+                 dash_updated=now()
           """%dict(where_obs_name=where_obs_name)
     db.executesql(sql)
     db.commit()
@@ -584,7 +593,7 @@ def update_dash_obs_os_alert(obs_name=None):
         db.executesql(sql)
     db.commit()
 
-    sql = """insert ignore into dashboard
+    sql = """insert into dashboard
                select
                  NULL,
                  "os obsolescence alert",
@@ -598,7 +607,8 @@ def update_dash_obs_os_alert(obs_name=None):
                  now(),
                  "",
                  n.host_mode,
-                 ""
+                 "",
+                 now()
                from obsolescence o
                  join nodes n on
                    o.obs_name = concat_ws(' ',n.os_name,n.os_vendor,n.os_release,n.os_update)
@@ -608,6 +618,8 @@ def update_dash_obs_os_alert(obs_name=None):
                  o.obs_alert_date != "0000-00-00 00:00:00" and
                  o.obs_alert_date < now() and
                  o.obs_type = "os"
+               on duplicate key update
+                 dash_updated=now()
           """%dict(where_obs_name=where_obs_name)
     db.executesql(sql)
     db.commit()
@@ -617,7 +629,7 @@ def delete_dash_obs_without(obs_name, t, a):
         tl = "hardware"
     else:
         tl = t
-    if a == "warn": 
+    if a == "warn":
         al = "warning"
     else:
         al = a

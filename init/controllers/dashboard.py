@@ -689,7 +689,8 @@ class table_dashboard(HtmlTable):
                      'dash_nodename',
                      'dash_env',
                      'dash_entry',
-                     'dash_created']
+                     'dash_created',
+                     'dash_updated']
         self.colprops = {
             'dash_links': col_dash_links(
                      title='Links',
@@ -701,6 +702,13 @@ class table_dashboard(HtmlTable):
                      title='Begin date',
                      table='dashboard',
                      field='dash_created',
+                     img='time16',
+                     display=True,
+                    ),
+            'dash_updated': HtmlTableColumn(
+                     title='Last update',
+                     table='dashboard',
+                     field='dash_updated',
                      img='time16',
                      display=True,
                     ),

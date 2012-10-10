@@ -874,14 +874,8 @@ def checks():
 
 def update_dash_checks(nodename):
     nodename = nodename.strip("'")
-    sql = """delete from dashboard
-               where
-                 dash_nodename = "%(nodename)s" and
-                 dash_type = "check out of bounds"
-          """%dict(nodename=nodename)
-    rows = db.executesql(sql)
-    db.commit()
-
+    now = datetime.datetime.now()
+    now = now - datetime.timedelta(microseconds=now.microsecond)
     sql = """select host_mode from nodes
              where
                nodename="%(nodename)s"
@@ -894,7 +888,7 @@ def update_dash_checks(nodename):
     else:
         sev = 2
 
-    sql = """insert ignore into dashboard
+    sql = """insert into dashboard
                select
                  NULL,
                  "check out of bounds",
@@ -909,7 +903,7 @@ def update_dash_checks(nodename):
                         ', "min": ', t.min,
                         ', "max": ', t.max,
                         '}'),
-                 now(),
+                 "%(now)s",
                  md5(concat('{"ctype": "', t.ctype,
                         '", "inst": "', t.inst,
                         '", "ttype": "', t.ttype,
@@ -918,7 +912,8 @@ def update_dash_checks(nodename):
                         ', "max": ', t.max,
                         '}')),
                  "%(env)s",
-                 ""
+                 "",
+                 "%(now)s"
                from (
                  select
                    chk_svcname as svcname,
@@ -938,12 +933,25 @@ def update_dash_checks(nodename):
                      chk_value > chk_high
                    )
                ) t
+               on duplicate key update
+                 dash_updated="%(now)s"
           """%dict(nodename=nodename,
                    sev=sev,
                    env=env,
+                   now=str(now),
                   )
     db.executesql(sql)
     db.commit()
+
+    sql = """delete from dashboard
+               where
+                 dash_nodename = "%(nodename)s" and
+                 dash_type = "check out of bounds" and
+                 dash_updated < "%(now)s"
+          """%dict(nodename=nodename, now=str(now))
+    rows = db.executesql(sql)
+    db.commit()
+
 
 @auth.requires_login()
 def checks_node():

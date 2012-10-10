@@ -702,12 +702,13 @@ def update_dash_action_errors():
                    dash_fmt="%%(err)s action errors",
                    dash_dict='{"err": "%(err)d"}',
                    dash_created=now(),
-                   dash_env="%(env)s"
+                   dash_env="%(env)s",
+                   dash_updated=now()
                  on duplicate key update
                    dash_severity=%(sev)d,
                    dash_fmt="%%(err)s action errors",
                    dash_dict='{"err": "%(err)d"}',
-                   dash_created=now()
+                   dash_updated=now()
               """%dict(svcname=row[2],
                        nodename=row[3],
                        sev=sev,
@@ -819,14 +820,13 @@ def cron_alerts_hourly():
     return rets
 
 def cron_feed_monitor():
-    sql = """delete from dashboard where dash_type = "feed queue" """
-    db.executesql(sql)
-
     e = db(db.feed_queue.id>0).select(limitby=(0,1)).first()
     if e is None:
         db.commit()
         return
 
+    now = datetime.datetime.now()
+    now = now - datetime.timedelta(microseconds=now.microsecond)
     limit = now - datetime.timedelta(minutes=5)
     if e.created < limit:
         n = db(db.feed_queue.created<limit).count()
@@ -836,11 +836,21 @@ def cron_feed_monitor():
                    dash_severity=4,
                    dash_fmt="%%(n)s entries stalled in feed queue",
                    dash_dict='{"n": "%(n)d"}',
-                   dash_created=now(),
+                   dash_created="%(now)s",
                    dash_env="PRD",
-              """%dict(n=n)
+                   dash_updated="%(now)s"
+                 on duplicate key update
+                   dash_updated="%(now)s"
+              """%dict(n=n, now=str(now))
         db.executesql(sql)
     db.commit()
+
+    sql = """delete from dashboard
+             where
+               dash_type = "feed queue" and
+               dash_updated < "%(now)s" """%dict(now=str(now))
+    db.executesql(sql)
+
 
 def _cron_stat_day_billing(end, fset_id=0):
     q = db.stat_day_billing.day == end

@@ -2570,7 +2570,7 @@ def collector_list_filtersets(cmd, auth):
 #   Used by background feed dequeue process for periodic dashboard alerts
 #
 def cron_dash_service_not_updated():
-    sql = """insert ignore
+    sql = """insert
              into dashboard
                select
                  NULL,
@@ -2583,9 +2583,12 @@ def cron_dash_service_not_updated():
                  updated,
                  "",
                  svc_type,
-                 ""
+                 "",
+                 now()
                from services
                where updated < date_sub(now(), interval 25 hour)
+               on duplicate key update
+                 dash_updated=now()
           """
     db.executesql(sql)
     db.commit()
@@ -2610,8 +2613,7 @@ def cron_dash_svcmon_not_updated():
               """%','.join(ids)
         db.executesql(sql)
 
-    sql = """insert ignore
-             into dashboard
+    sql = """insert into dashboard
                select
                  NULL,
                  "service status not updated",
@@ -2623,16 +2625,18 @@ def cron_dash_svcmon_not_updated():
                  mon_updated,
                  "",
                  mon_svctype,
-                 ""
+                 "",
+                 now()
                from svcmon
                where mon_updated < date_sub(now(), interval 16 minute)
+               on duplicate key update
+                 dash_updated=now()
           """
     db.executesql(sql)
     db.commit()
 
 def cron_dash_node_not_updated():
-    sql = """insert ignore
-             into dashboard
+    sql = """insert into dashboard
                select
                  NULL,
                  "node information not updated",
@@ -2644,16 +2648,18 @@ def cron_dash_node_not_updated():
                  updated,
                  "",
                  host_mode,
-                 ""
+                 "",
+                 now()
                from nodes
                where updated < date_sub(now(), interval 25 hour)
+               on duplicate key update
+                 dash_updated=now()
           """
     db.executesql(sql)
     db.commit()
 
 def cron_dash_node_without_asset():
-    sql = """insert ignore
-             into dashboard
+    sql = """insert into dashboard
                select
                  NULL,
                  "node without asset information",
@@ -2665,19 +2671,24 @@ def cron_dash_node_without_asset():
                  now(),
                  "",
                  mon_svctype,
-                 ""
+                 "",
+                 now()
                from svcmon
                where
                  mon_nodname not in (
                    select nodename from nodes
                  )
+               on duplicate key update
+                 dash_updated=now()
           """
     db.executesql(sql)
     db.commit()
 
 def cron_dash_node_beyond_maintenance_date():
-    sql = """insert ignore
-             into dashboard
+    now = datetime.datetime.now()
+    now = now - datetime.timedelta(microseconds=now.microsecond)
+
+    sql = """insert into dashboard
                select
                  NULL,
                  "node maintenance expired",
@@ -2686,22 +2697,34 @@ def cron_dash_node_beyond_maintenance_date():
                  1,
                  "",
                  "",
-                 now(),
+                 "%(now)s",
                  "",
                  host_mode,
-                 ""
+                 "",
+                 "%(now)s"
                from nodes
                where
                  maintenance_end is not NULL and
                  maintenance_end != "0000-00-00 00:00:00" and
                  maintenance_end < now()
-          """
+               on duplicate key update
+                 dash_updated="%(now)s"
+          """%dict(now=str(now))
     db.executesql(sql)
     db.commit()
 
+    sql = """delete from dashboard where
+               dash_type="node maintenance expired" and
+               (
+                 dash_updated < "%(now)s" or
+                 dash_updated is null
+               )
+          """%dict(now=str(now))
+    db.executesql(sql)
+
+
 def cron_dash_node_near_maintenance_date():
-    sql = """insert ignore
-             into dashboard
+    sql = """insert into dashboard
                select
                  NULL,
                  "node close to maintenance end",
@@ -2713,21 +2736,23 @@ def cron_dash_node_near_maintenance_date():
                  now(),
                  "",
                  host_mode,
-                 ""
+                 "",
+                 now()
                from nodes
                where
                  maintenance_end is not NULL and
                  maintenance_end != "0000-00-00 00:00:00" and
                  maintenance_end > date_sub(now(), interval 30 day) and
                  maintenance_end < now()
+               on duplicate key update
+                 dash_updated=now()
           """
     db.commit()
     db.executesql(sql)
 
 def cron_dash_node_without_maintenance_date():
     # do not alert for nodes under warranty
-    sql = """insert ignore
-             into dashboard
+    sql = """insert into dashboard
                select
                  NULL,
                  "node without maintenance end date",
@@ -2739,7 +2764,8 @@ def cron_dash_node_without_maintenance_date():
                  now(),
                  "",
                  host_mode,
-                 ""
+                 "",
+                 now()
                from nodes
                where
                  (warranty_end is NULL or
@@ -2750,6 +2776,8 @@ def cron_dash_node_without_maintenance_date():
                  model not like "%virt%" and
                  model not like "%Not Specified%" and
                  model not like "%KVM%"
+               on duplicate key update
+                 dash_updated=now()
           """
     db.executesql(sql)
     db.commit()
@@ -2798,7 +2826,7 @@ def cron_dash_checks_not_updated():
         sql = """delete from dashboard where id in (%s)"""%','.join(ids)
         db.executesql(sql)
 
-    sql = """insert ignore into dashboard
+    sql = """insert into dashboard
                select
                  NULL,
                  "check value not updated",
@@ -2810,11 +2838,14 @@ def cron_dash_checks_not_updated():
                  chk_updated,
                  md5(concat('{"i":"', chk_instance, '", "t":"', chk_type, '"}')),
                  n.host_mode,
-                 ""
+                 "",
+                 now()
                from checks_live c
                  join nodes n on c.chk_nodename=n.nodename
                where
-                 chk_updated < date_sub(now(), interval 1 day)"""
+                 chk_updated < date_sub(now(), interval 1 day)
+               on duplicate key update
+                 dash_updated=now()"""
     db.executesql(sql)
     db.commit()
 
@@ -2831,7 +2862,7 @@ def cron_dash_app_without_responsible():
           """
     db.executesql(sql)
 
-    sql = """insert ignore into dashboard
+    sql = """insert into dashboard
                select
                  NULL,
                  "application code without responsible",
@@ -2843,10 +2874,13 @@ def cron_dash_app_without_responsible():
                  now(),
                  md5(concat('{"a":"', app, '"}')),
                  "",
-                 ""
+                 "",
+                 now()
                from v_apps
                where
                  roles is NULL
+               on duplicate key update
+                 dash_updated=now()
           """
     db.executesql(sql)
     db.commit()
@@ -2889,7 +2923,7 @@ def cron_dash_obs_without(t, a):
         al = "warning"
     else:
         al = a
-    sql = """insert ignore into dashboard
+    sql = """insert into dashboard
                select
                  NULL,
                  "%(tl)s obsolescence %(al)s date not set",
@@ -2901,7 +2935,8 @@ def cron_dash_obs_without(t, a):
                  now(),
                  md5(concat('{"o": "', o.obs_name, '"}')),
                  "",
-                 ""
+                 "",
+                 now()
                from obsolescence o
                  join nodes n on
                    o.obs_name = n.model or
@@ -2915,12 +2950,14 @@ def cron_dash_obs_without(t, a):
                    o.obs_%(a)s_date is NULL or
                    o.obs_%(a)s_date = "0000-00-00 00:00:00"
                  )
+               on duplicate key update
+                 dash_updated=now()
           """%dict(t=t, tl=tl, a=a, al=al)
     db.executesql(sql)
     db.commit()
 
 def cron_dash_obs_os_alert():
-    sql = """insert ignore into dashboard
+    sql = """insert into dashboard
                select
                  NULL,
                  "os obsolescence alert",
@@ -2934,7 +2971,8 @@ def cron_dash_obs_os_alert():
                  now(),
                  "",
                  "",
-                 ""
+                 "",
+                 now()
                from obsolescence o
                  join nodes n on
                    o.obs_name = concat_ws(' ',n.os_name,n.os_vendor,n.os_release,n.os_update)
@@ -2943,12 +2981,14 @@ def cron_dash_obs_os_alert():
                  o.obs_alert_date != "0000-00-00 00:00:00" and
                  o.obs_alert_date < now() and
                  o.obs_type = "os"
+               on duplicate key update
+                 dash_updated=now()
           """
     db.executesql(sql)
     db.commit()
 
 def cron_dash_obs_os_warn():
-    sql = """insert ignore into dashboard
+    sql = """insert into dashboard
                select
                  NULL,
                  "os obsolescence warning",
@@ -2962,7 +3002,8 @@ def cron_dash_obs_os_warn():
                  now(),
                  "",
                  "",
-                 ""
+                 "",
+                 now()
                from obsolescence o
                  join nodes n on
                    o.obs_name = concat_ws(' ',n.os_name,n.os_vendor,n.os_release,n.os_update)
@@ -2972,12 +3013,14 @@ def cron_dash_obs_os_warn():
                  o.obs_warn_date < now() and
                  o.obs_alert_date > now() and
                  o.obs_type = "os"
+               on duplicate key update
+                 dash_updated=now()
           """
     db.executesql(sql)
     db.commit()
 
 def cron_dash_obs_hw_alert():
-    sql = """insert ignore into dashboard
+    sql = """insert into dashboard
                select
                  NULL,
                  "hardware obsolescence warning",
@@ -2991,7 +3034,8 @@ def cron_dash_obs_hw_alert():
                  now(),
                  "",
                  "",
-                 ""
+                 "",
+                 now()
                from obsolescence o
                  join nodes n on
                    o.obs_name = n.model
@@ -3003,12 +3047,14 @@ def cron_dash_obs_hw_alert():
                  o.obs_alert_date != "0000-00-00 00:00:00" and
                  o.obs_alert_date < now() and
                  o.obs_type = "hw"
+               on duplicate key update
+                 dash_updated=now()
           """
     db.executesql(sql)
     db.commit()
 
 def cron_dash_obs_hw_warn():
-    sql = """insert ignore into dashboard
+    sql = """insert into dashboard
                select
                  NULL,
                  "hardware obsolescence warning",
@@ -3022,7 +3068,8 @@ def cron_dash_obs_hw_warn():
                  now(),
                  "",
                  "",
-                 ""
+                 "",
+                 now()
                from obsolescence o
                  join nodes n on
                    o.obs_name = n.model
@@ -3035,6 +3082,8 @@ def cron_dash_obs_hw_warn():
                  o.obs_warn_date < now() and
                  o.obs_alert_date > now() and
                  o.obs_type = "hw"
+               on duplicate key update
+                 dash_updated=now()
           """
     db.executesql(sql)
     db.commit()
@@ -3211,7 +3260,7 @@ def update_dash_pkgdiff(nodename):
             nodes = nodes[:-1]
             trail = ", ... (+%d)"%skip
 
-        sql = """insert ignore into dashboard
+        sql = """insert into dashboard
                  set
                    dash_type="package differences in cluster",
                    dash_svcname="%(svcname)s",
@@ -3221,7 +3270,10 @@ def update_dash_pkgdiff(nodename):
                    dash_dict='{"n": %(n)d, "nodes": "%(nodes)s"}',
                    dash_dict_md5=md5('{"n": %(n)d, "nodes": "%(nodes)s"}'),
                    dash_created=now(),
+                   dash_updated=now(),
                    dash_env="%(env)s"
+                 on duplicate key update
+                   dash_updated=now()
               """%dict(svcname=svcname,
                        sev=sev,
                        env=row.mon_svctype,
@@ -3254,7 +3306,7 @@ def update_dash_flex_cpu(svcname):
     else:
         sev = 3
 
-    sql = """insert ignore into dashboard
+    sql = """insert into dashboard
                select
                  NULL,
                  "flex error",
@@ -3272,7 +3324,8 @@ def update_dash_flex_cpu(svcname):
                         ', "cmax": ', t.svc_flex_cpu_high_threshold,
                         '}')),
                  "%(env)s",
-                 ""
+                 "",
+                 now()
                from (
                  select *
                  from v_flex_status
@@ -3290,6 +3343,8 @@ def update_dash_flex_cpu(svcname):
                      )
                    )
                ) t
+               on duplicate key update
+                 dash_updated=now()
           """%dict(svcname=svcname,
                    sev=sev,
                    env=rows[0][0],
@@ -3320,7 +3375,7 @@ def update_dash_flex_instances_started(svcname):
     else:
         sev = 1
 
-    sql = """insert ignore into dashboard
+    sql = """insert into dashboard
                select
                  NULL,
                  "flex error",
@@ -3338,7 +3393,8 @@ def update_dash_flex_instances_started(svcname):
                         ', "smax": ', t.svc_flex_max_nodes,
                         '}')),
                  "%(env)s",
-                 ""
+                 "",
+                 now()
                from (
                  select *
                  from v_flex_status
@@ -3353,6 +3409,8 @@ def update_dash_flex_instances_started(svcname):
                      up > svc_flex_max_nodes
                    ))
                ) t
+               on duplicate key update
+                 dash_updated=now()
           """%dict(svcname=svcname,
                    sev=sev,
                    env=rows[0][0],
@@ -3362,18 +3420,6 @@ def update_dash_flex_instances_started(svcname):
 
 def update_dash_checks(nodename):
     nodename = nodename.strip("'")
-    sql = """delete from dashboard
-               where
-                 dash_nodename = "%(nodename)s" and
-                 (
-                   dash_type = "check out of bounds" or
-                   dash_type = "check value not updated"
-                 )
-          """%dict(nodename=nodename)
-
-    rows = db.executesql(sql)
-    db.commit()
-
     sql = """select host_mode from nodes
              where
                nodename="%(nodename)s"
@@ -3385,7 +3431,10 @@ def update_dash_checks(nodename):
     else:
         sev = 2
 
-    sql = """insert ignore into dashboard
+    now = datetime.datetime.now()
+    now = now - datetime.timedelta(microseconds=now.microsecond)
+
+    sql = """insert into dashboard
                select
                  NULL,
                  "check out of bounds",
@@ -3400,7 +3449,7 @@ def update_dash_checks(nodename):
                         ', "min": ', t.min,
                         ', "max": ', t.max,
                         '}'),
-                 now(),
+                 "%(now)s",
                  md5(concat('{"ctype": "', t.ctype,
                         '", "inst": "', t.inst,
                         '", "ttype": "', t.ttype,
@@ -3409,7 +3458,8 @@ def update_dash_checks(nodename):
                         ', "max": ', t.max,
                         '}')),
                  "%(env)s",
-                 ""
+                 "",
+                 "%(now)s"
                from (
                  select
                    chk_svcname as svcname,
@@ -3429,11 +3479,29 @@ def update_dash_checks(nodename):
                      chk_value > chk_high
                    )
                ) t
+               on duplicate key update
+                 dash_updated="%(now)s"
           """%dict(nodename=nodename,
                    sev=sev,
                    env=rows[0][0],
+                   now=str(now),
                   )
     db.executesql(sql)
+    db.commit()
+
+    sql = """delete from dashboard
+               where
+                 dash_nodename = "%(nodename)s" and
+                 (
+                   (
+                     dash_type = "check out of bounds" and
+                     ( dash_updated < "%(now)s" or dash_updated is null )
+                   ) or
+                   dash_type = "check value not updated"
+                 )
+          """%dict(nodename=nodename, now=str(now))
+
+    rows = db.executesql(sql)
     db.commit()
 
 def update_dash_netdev_errors(nodename):
@@ -3524,12 +3592,13 @@ def update_dash_action_errors(svc_name, nodename):
                    dash_fmt="%%(err)s action errors",
                    dash_dict='{"err": "%(err)d"}',
                    dash_created=now(),
+                   dash_updated=now(),
                    dash_env="%(env)s"
                  on duplicate key update
                    dash_severity=%(sev)d,
                    dash_fmt="%%(err)s action errors",
                    dash_dict='{"err": "%(err)d"}',
-                   dash_created=now(),
+                   dash_updated=now(),
                    dash_env="%(env)s"
               """%dict(svcname=svc_name,
                        nodename=nodename,
@@ -3561,7 +3630,7 @@ def update_dash_service_available_but_degraded(svc_name, svc_type, svc_availstat
               """%(svc_name,svc_status)
         db.executesql(sql)
         db.commit()
-        sql = """insert ignore into dashboard
+        sql = """insert into dashboard
                  set
                    dash_type="service available but degraded",
                    dash_svcname="%(svcname)s",
@@ -3570,6 +3639,12 @@ def update_dash_service_available_but_degraded(svc_name, svc_type, svc_availstat
                    dash_fmt="current overall status: %%(s)s",
                    dash_dict='{"s": "%(status)s"}',
                    dash_created=now(),
+                   dash_updated=now(),
+                   dash_env="%(env)s"
+                 on duplicate key update
+                   dash_severity=%(sev)d,
+                   dash_fmt="current overall status: %%(s)s",
+                   dash_updated=now(),
                    dash_env="%(env)s"
               """%dict(svcname=svc_name,
                        sev=sev,
@@ -3626,7 +3701,7 @@ def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
         db.executesql(sql)
         db.commit()
 
-        sql = """insert ignore into dashboard
+        sql = """insert into dashboard
                  set
                    dash_type="service unavailable",
                    dash_svcname="%(svcname)s",
@@ -3635,6 +3710,12 @@ def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
                    dash_fmt="current availability status: %%(s)s",
                    dash_dict='{"s": "%(status)s"}',
                    dash_created=now(),
+                   dash_updated=now(),
+                   dash_env="%(env)s"
+                 on duplicate key update
+                   dash_severity=%(sev)d,
+                   dash_fmt="current availability status: %%(s)s",
+                   dash_updated=now(),
                    dash_env="%(env)s"
               """%dict(svcname=svc_name,
                        sev=sev,
@@ -3656,7 +3737,7 @@ def update_dash_service_frozen(svc_name, nodename, svc_type, frozen):
               """%svc_name
         db.commit()
     else:
-        sql = """insert ignore into dashboard
+        sql = """insert into dashboard
                  set
                    dash_type="service frozen",
                    dash_svcname="%(svcname)s",
@@ -3665,6 +3746,12 @@ def update_dash_service_frozen(svc_name, nodename, svc_type, frozen):
                    dash_fmt="",
                    dash_dict="",
                    dash_created=now(),
+                   dash_updated=now(),
+                   dash_env="%(env)s"
+                 on duplicate key update
+                   dash_severity=%(sev)d,
+                   dash_fmt="",
+                   dash_updated=now(),
                    dash_env="%(env)s"
               """%dict(svcname=svc_name,
                        nodename=nodename,
@@ -3698,7 +3785,7 @@ def update_dash_service_not_on_primary(svc_name, nodename, svc_type, availstatus
         db.commit()
         return
 
-    sql = """insert ignore into dashboard
+    sql = """insert into dashboard
              set
                dash_type="service not started on primary node",
                dash_svcname="%(svcname)s",
@@ -3707,7 +3794,14 @@ def update_dash_service_not_on_primary(svc_name, nodename, svc_type, availstatus
                dash_fmt="",
                dash_dict="",
                dash_created=now(),
+               dash_updated=now(),
                dash_env="%(env)s"
+             on duplicate key update
+               dash_severity=%(sev)d,
+               dash_fmt="",
+               dash_updated=now(),
+               dash_env="%(env)s"
+
           """%dict(svcname=svc_name,
                    nodename=nodename,
                    sev=sev,
