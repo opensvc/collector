@@ -3199,17 +3199,13 @@ def update_dash_node_not_updated(nodename):
 
 def update_dash_pkgdiff(nodename):
     nodename = nodename.strip("'")
+    now = datetime.datetime.now()
+    now = now - datetime.timedelta(microseconds=now.microsecond)
 
     q = db.svcmon.mon_nodname == nodename
     q &= db.svcmon.mon_updated > datetime.datetime.now() - datetime.timedelta(minutes=20)
     rows = db(q).select(db.svcmon.mon_svcname, db.svcmon.mon_svctype)
     svcnames = map(lambda x: x.mon_svcname, rows)
-
-    if len(rows) > 0:
-        q = db.dashboard.dash_svcname.belongs(svcnames)
-        q &= db.dashboard.dash_type == "package differences in cluster"
-        db(q).delete()
-        db.commit()
 
     for row in rows:
         svcname = row.mon_svcname
@@ -3269,12 +3265,13 @@ def update_dash_pkgdiff(nodename):
                    dash_fmt="%%(n)s package differences in cluster %%(nodes)s",
                    dash_dict='{"n": %(n)d, "nodes": "%(nodes)s"}',
                    dash_dict_md5=md5('{"n": %(n)d, "nodes": "%(nodes)s"}'),
-                   dash_created=now(),
-                   dash_updated=now(),
+                   dash_created="%(now)s",
+                   dash_updated="%(now)s",
                    dash_env="%(env)s"
                  on duplicate key update
-                   dash_updated=now()
+                   dash_updated="%(now)s"
               """%dict(svcname=svcname,
+                       now=str(now),
                        sev=sev,
                        env=row.mon_svctype,
                        n=rows[0][0],
@@ -3282,6 +3279,14 @@ def update_dash_pkgdiff(nodename):
 
         rows = db.executesql(sql)
         db.commit()
+
+    # clean old
+    q = db.dashboard.dash_svcname.belongs(svcnames)
+    q &= db.dashboard.dash_type == "package differences in cluster"
+    q &= db.dashboard.dash_updated < now
+    db(q).delete()
+    db.commit()
+
 
 def update_dash_flex_cpu(svcname):
     sql = """delete from dashboard
