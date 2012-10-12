@@ -3779,15 +3779,17 @@ def update_dash_service_not_on_primary(svc_name, nodename, svc_type, availstatus
     if len(rows) == 0:
         return
 
-    if rows[0].svc_autostart != nodename or availstatus == "up" or rows[0].svc_availstatus != "up":
+    if rows[0].svc_autostart != nodename or \
+       availstatus == "up" or \
+       rows[0].svc_availstatus != "up" or \
+       rows[0].svc_autostart is None or \
+       rows[0].svc_autostart == "":
         sql = """delete from dashboard
                  where
                    dash_type="service not started on primary node" and
-                   dash_svcname="%s" and
-                   dash_nodename="%s"
-              """%(svc_name,nodename)
+                   dash_svcname="%s"
+              """%svc_name
         db.executesql(sql)
-        db.commit()
         return
 
     sql = """insert into dashboard
