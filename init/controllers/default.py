@@ -1241,12 +1241,12 @@ def svc_del(ids):
     if 'Manager' not in groups:
         # Manager can delete any svc
         # A user can delete only services he is responsible of
-        q &= db.svcmon.mon_svcname == db.services.svc_name
-        q &= db.services.svc_app == db.apps.app
-        q &= db.apps.id == db.apps_responsibles.app_id
-        q &= db.apps_responsibles.group_id == db.auth_group.id
-        q &= db.auth_group.role.belongs(groups)
-        ids = map(lambda x: x.id, db(q).select(db.svcmon.id))
+        l1 = db.services.on(db.svcmon.mon_svcname == db.services.svc_name)
+        l2 = db.apps.on(db.services.svc_app == db.apps.app)
+        l3 = db.apps_responsibles.on(db.apps.id == db.apps_responsibles.app_id)
+        l4 = db.auth_group.on(db.apps_responsibles.group_id == db.auth_group.id)
+        q &= (db.auth_group.role.belongs(groups)) | (db.auth_group.role==None)
+        ids = map(lambda x: x.id, db(q).select(db.svcmon.id, left=(l1,l2,l3,l4)))
         q = db.svcmon.id.belongs(ids)
     rows = db(q).select()
     for r in rows:
