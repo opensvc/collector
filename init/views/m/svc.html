@@ -110,20 +110,6 @@ function format_svcinfo(d) {
         s += "<div class='ui-block-a'><strong>Container Type</strong></div>"
         s += "<div class='ui-block-b'>"+d['svc_containertype']+"</div>"
 
-	if (d['svc_vmname'].length > 0) {
-		s += "<div class='ui-block-a'><strong>Container name</strong></div>"
-		s += "<div class='ui-block-b'>"+d['svc_vmname']+"</div>"
-
-		s += "<div class='ui-block-a'><strong>Container OS</strong></div>"
-		s += "<div class='ui-block-b'>"+d['svc_guestos']+"</div>"
-
-		s += "<div class='ui-block-a'><strong>vcpus</strong></div>"
-		s += "<div class='ui-block-b'>"+d['svc_vcpus']+"</div>"
-
-		s += "<div class='ui-block-a'><strong>vmem</strong></div>"
-		s += "<div class='ui-block-b'>"+d['svc_vmem']+"</div>"
-	}
-
         s += "<div class='ui-block-a'><strong>Created</strong></div>"
         s += "<div class='ui-block-b'>"+d['svc_created']+"</div>"
 
