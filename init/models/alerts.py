@@ -94,7 +94,7 @@ def update_dash_compdiff_svc(svcnames):
     if len(svcnames) > 0:
         q = db.dashboard.dash_svcname.belongs(svcnames)
         q &= db.dashboard.dash_type == "compliance differences in cluster"
-        q &= db.dashboard.dash_updated < now
+        q &= (db.dashboard.dash_updated < now) | (db.dashboard.dash_updated == None)
         db(q).delete()
         db.commit()
 
