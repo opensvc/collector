@@ -822,6 +822,12 @@ def cron_alerts_hourly():
 def cron_feed_monitor():
     e = db(db.feed_queue.id>0).select(limitby=(0,1)).first()
     if e is None:
+        # clean all
+        sql = """delete from dashboard
+                 where
+                   dash_type = "feed queue"
+              """
+        db.executesql(sql)
         db.commit()
         return
 
@@ -845,6 +851,7 @@ def cron_feed_monitor():
         db.executesql(sql)
     db.commit()
 
+    # clean old
     sql = """delete from dashboard
              where
                dash_type = "feed queue" and
