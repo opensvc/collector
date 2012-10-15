@@ -189,6 +189,10 @@ def ajax_log_col_values():
 @auth.requires_login()
 def ajax_log():
     t = table_log('log', 'ajax_log')
+
+    if request.vars.log_f_log_date is None or request.vars.log_f_log_date == t.column_filter_reset:
+        request.vars.log_f_log_date = '>-1d'
+
     o = ~db.log.log_date
     q = db.log.id > 0
     for f in set(t.cols):
