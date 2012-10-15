@@ -7346,9 +7346,8 @@ def show_compdiff(svcname):
     for row in _rows:
         module = row[1]
         if module not in data:
-            data[module] = [row]
-        else:
-            data[module] += [row]
+            data[module] = {}
+        data[module][row[0]] = row
 
     def fmt_header1():
         return TR(
@@ -7380,6 +7379,9 @@ def show_compdiff(svcname):
                 d = 'background-color:lightgrey'
             else:
                 d = ''
+            if row[2] == "":
+                h.append(TD("", _style="text-align:center"+d))
+                continue
             h.append(TD(
               IMG(_src=URL(r=request,c='static',f=img_h[row[2]])),
               _style="text-align:center"+d,
@@ -7388,15 +7390,18 @@ def show_compdiff(svcname):
         return TR(h, _class=bg)
 
     def fmt_table(rows):
-        last = ""
         bgl = {'cell1': 'cell3', 'cell3': 'cell1'}
         bg = "cell1"
         lines = [fmt_header1(),
                  fmt_header2()]
-        for module, rows in data.items():
-            if last != module:
-                bg = bgl[bg]
-                last = module
+        for module in sorted((data.keys())):
+            bg = bgl[bg]
+            rows = []
+            for node in nodes:
+                if node not in data[module]:
+                    rows.append([node, module, "", "", ""])
+                else:
+                    rows.append(data[module][node])
             lines.append(fmt_line(module, rows, bg))
         return TABLE(lines)
 
