@@ -246,7 +246,8 @@ def _update_service(vars, vals, auth):
             vars.append(var)
             vals.append(val)
     generic_insert('services', vars, vals)
-    update_dash_service_not_updated(vals[1].strip("'"))
+    db.commit()
+    update_dash_service_not_updated(h['svc_name'].strip("'"))
     if 'svc_vmname' in h:
         vars = ['mon_svcname',
                 'mon_nodname',
