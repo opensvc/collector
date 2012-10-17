@@ -803,6 +803,17 @@ def update_dg_quota():
     db.executesql(sql)
     db.commit()
 
+def purge_alerts_on_nodes_without_asset():
+    l = db.nodes.on(db.dashboard.dash_nodename==db.nodes.nodename)
+    q = db.dashboard.dash_type == "node information not updated"
+    q &= db.nodes.nodename == None
+    ids = map(lambda x: x.id, db(q).select(db.dashboard.id, left=l))
+    if len(ids) == 0:
+        return
+    q = db.dashboard.id.belongs(ids)
+    db(q).delete()
+    db.commit()
+
 def cron_alerts_daily():
     alerts_apps_without_responsible()
     alerts_services_not_updated()
@@ -813,6 +824,7 @@ def cron_alerts_daily():
     purge_diskinfo()
     purge_stor_array()
     update_dg_quota()
+    purge_alerts_on_nodes_without_asset()
 
 def cron_alerts_hourly():
     rets = []
