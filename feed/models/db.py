@@ -646,3 +646,31 @@ db.define_table('dashboard',
     Field('dash_md5','string'),
     migrate=False)
 
+db.define_table('v_disk_app',
+    Field('disk_id', 'string'),
+    Field('disk_region', 'string'),
+    Field('app', 'string'),
+    Field('disk_used', 'string'),
+    Field('disk_size', 'integer'),
+    Field('disk_arrayid', 'string'),
+    Field('disk_group', 'string'),
+    Field('disk_devid', 'string'),
+    Field('disk_name', 'string'),
+    Field('disk_alloc', 'integer'),
+    Field('disk_updated', 'datetime'),
+    Field('disk_level', 'string'),
+    Field('disk_raid', 'string'),
+    Field('disk_svcname', 'string'),
+    Field('disk_nodename', 'string'),
+    Field('disk_vendor', 'string'),
+    Field('disk_model', 'string'),
+    Field('disk_dg', 'string'),
+    Field('svcdisk_updated', 'datetime'),
+    Field('svcdisk_id', 'integer'),
+    Field('disk_local', 'boolean'),
+    migrate=False)
+
+db.define_table('b_disk_app',
+    db.v_disk_app,
+    migrate=False)
+

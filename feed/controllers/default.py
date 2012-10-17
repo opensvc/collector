@@ -2510,6 +2510,52 @@ def collector_events(cmd, auth):
 
 @auth_uuid
 @service.xmlrpc
+def collector_disks(cmd, auth):
+    d = {}
+    nodename = auth[1]
+
+    if "svcname" in cmd:
+        q = db.svcmon.mon_svcname == cmd["svcname"]
+        q &= db.svcmon.mon_nodname == nodename
+        n = db(q).count()
+        if n == 0:
+            return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
+
+    if "svcname" in cmd:
+        q = db.b_disk_app.disk_svcname == cmd["svcname"]
+    else:
+        q = db.b_disk_app.disk_nodename == nodename
+
+    o = db.b_disk_app.disk_id | db.b_disk_app.disk_svcname | db.b_disk_app.disk_nodename
+    rows = db(q).select(db.b_disk_app.disk_nodename,
+                        db.b_disk_app.disk_svcname,
+                        db.b_disk_app.disk_id,
+                        db.b_disk_app.disk_size,
+                        db.b_disk_app.disk_alloc,
+                        db.b_disk_app.disk_devid,
+                        db.b_disk_app.disk_name,
+                        db.b_disk_app.disk_raid,
+                        db.b_disk_app.disk_arrayid,
+                        db.b_disk_app.disk_group
+                       )
+
+    labels = ["nodename", "svcname", "id", "size", "alloc", "devid", "name", "raid", "arrayid", "group"]
+    data = [labels]
+    for row in rows:
+        data += [[str(row.disk_nodename),
+                  str(row.disk_svcname),
+                  str(row.disk_id),
+                  str(row.disk_size),
+                  str(row.disk_alloc),
+                  str(row.disk_devid),
+                  str(row.disk_name),
+                  str(row.disk_raid),
+                  str(row.disk_arrayid),
+                  str(row.disk_group)]]
+    return {"ret": 0, "msg": "", "data":data}
+
+@auth_uuid
+@service.xmlrpc
 def collector_list_nodes(cmd, auth):
     d = {}
     nodename = auth[1]
