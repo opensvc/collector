@@ -756,6 +756,11 @@ def update_eva_xml(name, vars, vals, auth):
 
 @auth_uuid
 @service.xmlrpc
+def update_netapp(name, vars, vals, auth):
+    update_array_xml(name, vars, vals, auth, "netapp", insert_netapp)
+
+@auth_uuid
+@service.xmlrpc
 def update_ibmsvc(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "ibmsvc", insert_ibmsvc)
 
@@ -1252,6 +1257,82 @@ def insert_vioserver(name=None, nodename=None):
         generic_insert('svcdisks', vars, vals)
         sql = """delete from svcdisks where disk_nodename="%s" and disk_updated < "%s" """%(s.array_name, str(now))
         db.executesql(sql)
+
+
+def insert_netapps():
+    return insert_netapp()
+
+def insert_netapp(name=None, nodename=None):
+    import glob
+    import os
+    from applications.init.modules import netapp
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+
+    dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='netapp'))
+    if name is None:
+        pattern = "*"
+    else:
+        pattern = name
+    dirs = glob.glob(os.path.join(dir, pattern))
+
+    for d in dirs:
+        s = netapp.get_netapp(d)
+        if s is not None:
+            # stor_array
+            vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
+            vals = []
+            vals.append([s.array_name,
+                         s.modelnumber,
+                         str(s.controllermainmemory),
+                         s.firmwareversion,
+                         now])
+            generic_insert('stor_array', vars, vals)
+
+            sql = """select id from stor_array where array_name="%s" """%s.array_name
+            array_id = str(db.executesql(sql)[0][0])
+
+            # stor_array_dg
+            vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
+            vals = []
+            for dg in s.dg:
+                vals.append([array_id,
+                             dg['name'],
+                             str(dg['free_capacity']),
+                             str(dg['capacity']-dg['free_capacity']),
+                             str(dg['capacity']),
+                             now])
+            generic_insert('stor_array_dg', vars, vals)
+            sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
+            db.executesql(sql)
+
+            # stor_array_tgtid
+            vars = ['array_id', 'array_tgtid']
+            vals = []
+            for wwn in s.ports:
+                vals.append([array_id, wwn])
+            generic_insert('stor_array_tgtid', vars, vals)
+
+            # diskinfo
+            vars = ['disk_id',
+                    'disk_arrayid',
+                    'disk_devid',
+                    'disk_size',
+                    'disk_raid',
+                    'disk_group',
+                    'disk_updated']
+            vals = []
+            for d in s.vdisk:
+                vals.append([d['vdisk_UID'],
+                             s.array_name,
+                             d['name'],
+                             str(d['capacity']),
+                             d['type'],
+                             d['mdisk_grp_name'],
+                             now])
+            generic_insert('diskinfo', vars, vals)
+            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.array_name, str(now))
+            db.executesql(sql)
 
 
 def insert_ibmsvcs():
