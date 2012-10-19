@@ -985,6 +985,7 @@ i=d.getTime();$("#%(n)s_container").append("<div style='display:table-row'><div 
         l = [DIV(
                DIV('service', _style='display:table-cell;font-weight:bold', _class="comp16"),
                DIV('level', _style='display:table-cell'),
+               DIV('seq', _style='display:table-cell'),
                DIV('state', _style='display:table-cell'),
                _style="display:table-row",
              )]
@@ -1001,6 +1002,10 @@ i=d.getTime();$("#%(n)s_container").append("<div style='display:table-row'><div 
                 level = '%s'%str(line['level'])
             else:
                 level = "-"
+            if 'seq' in line:
+                seq = '%s'%str(line['seq'])
+            else:
+                seq = "-"
             if 'state' in line:
                 state = '%s'%line['state']
             else:
@@ -1008,6 +1013,7 @@ i=d.getTime();$("#%(n)s_container").append("<div style='display:table-row'><div 
             l += [DIV(
                     DIV('%s '%service, _style='display:table-cell', _class="action16"),
                     DIV(level, _style='display:table-cell'),
+                    DIV(seq, _style='display:table-cell'),
                     DIV(state, _style='display:table-cell'),
                     _style="display:table-row",
                   )]
@@ -1018,6 +1024,7 @@ i=d.getTime();$("#%(n)s_container").append("<div style='display:table-row'><div 
         l = [DIV(
                DIV('service', _style='display:table-cell;font-weight:bold', _class="comp16"),
                DIV('level', _style='display:table-cell'),
+               DIV('seq', _style='display:table-cell'),
                DIV('state', _style='display:table-cell'),
                _style="display:table-row",
              )]
@@ -1041,6 +1048,7 @@ i=d.getTime();$("#%(n)s_container").append("<div style='display:table-row'><div 
                     _class="action16",
                   )]
             for key,w in (('level', '3em'),
+                          ('seq', '3em'),
                           ('state', 'auto')):
                 if key not in line:
                     value = ""
@@ -1066,7 +1074,7 @@ i=d.getTime();$("#%(n)s_container").append("<div style='display:table-row'><div 
                    _value="Add",
                    _type="submit",
                    _onclick="""d=new Date();
-i=d.getTime();$("#%(n)s_container").append("<div style='display:table-row'><div style='display:table-cell'><span class='action16'></span><input style='width:5em' name='%(n)s' id='%(n)s_"+i+"_service'></div><div style='display:table-cell'><input style='width:3em' name='%(n)s' id='%(n)s_"+i+"_level'></div><div style='display:table-cell'><input style='width:3em' name='%(n)s' id='%(n)s_"+i+"_state'></div></div>")"""%dict(n=name),
+i=d.getTime();$("#%(n)s_container").append("<div style='display:table-row'><div style='display:table-cell'><span class='action16'></span><input style='width:5em' name='%(n)s' id='%(n)s_"+i+"_service'></div><div style='display:table-cell'><input style='width:3em' name='%(n)s' id='%(n)s_"+i+"_level'></div><div style='display:table-cell'><input style='width:3em' name='%(n)s' id='%(n)s_"+i+"_seq'></div><div style='display:table-cell'><input style='width:3em' name='%(n)s' id='%(n)s_"+i+"_state'></div></div>")"""%dict(n=name),
                  ),
                  " ",
                  INPUT(
