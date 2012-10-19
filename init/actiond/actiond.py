@@ -83,6 +83,7 @@ def get_queued():
     ids = map(lambda x: str(x[0]), cmds)
     if len(ids) > 0:
         cursor.execute("update action_queue set status='Q' where id in (%s)"%(','.join(ids)))
+        conn.commit()
     cursor.close()
     conn.close()
     return cmds
