@@ -455,7 +455,7 @@ class table_actions(HtmlTable):
         self.ajax_col_values = 'ajax_actions_col_values'
         self.extraline = True
         self.span = 'pid'
-        self.sub_span = ['hostname', 'svcname', 'action'] + ncols
+        #self.sub_span = ['hostname', 'svcname', 'action'] + ncols
         self.dbfilterable = True
         self.checkboxes = True
         self.checkbox_id_table = 'v_svcactions'
