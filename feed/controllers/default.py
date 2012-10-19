@@ -66,7 +66,7 @@ def delete_service_list(hostid=None, svcnames=[], auth=("", "")):
 @auth_uuid
 @service.xmlrpc
 def begin_action(vars, vals, auth):
-    feed_enqueue("_begin_action", vars, vals, auth)
+    feed_enqueue("_action_wrapper", "_begin_action", vars, vals, auth)
 
 def _begin_action(vars, vals, auth):
     sql="""insert into SVCactions (%s) values (%s)""" % (','.join(vars), ','.join(vals))
@@ -109,7 +109,13 @@ def res_action(vars, vals, auth):
 @auth_uuid
 @service.xmlrpc
 def end_action(vars, vals, auth):
-    feed_enqueue("_end_action", vars, vals)
+    feed_enqueue("_action_wrapper", "_end_action", vars, vals, auth)
+
+def _action_wrapper(a, vars, vals, auth):
+    if a == "_end_action":
+        _end_action(vars, vals)
+    elif a == "_begin_action":
+        _begin_action(vars, vals, auth)
 
 def _end_action(vars, vals):
     upd = []
