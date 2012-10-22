@@ -5282,6 +5282,130 @@ class table_comp_status(HtmlTable):
         self.checkbox_id_table = 'comp_status'
         if 'CompManager' in user_groups():
             self.additional_tools.append('check_del')
+        if member_of(('Manager', 'CompExec')):
+            self += HtmlTableMenu('Action', 'action16', ['tool_action_node', 'tool_action_module', 'tool_action_moduleset'], id='menu_comp_action')
+
+    def tool_action_node(self):
+        return self._tool_action("node")
+
+    def tool_action_module(self):
+        return self._tool_action("module")
+
+    def tool_action_moduleset(self):
+        return self._tool_action("moduleset")
+
+    def _tool_action(self, mode):
+        if mode in ["module", "moduleset"]:
+            cmd = [
+              'check',
+              'fixable',
+              'fix',
+            ]
+            cl = "comp16"
+        else:
+            cmd = [
+              'checks',
+              'pushasset',
+              'pushservices',
+              'pushstats',
+              'pushpkg',
+              'pushpatch',
+              'reboot',
+              'shutdown',
+              'syncservices',
+              'updatecomp',
+              'updatepkg',
+              'updateservices',
+            ]
+            cl = "node16"
+
+        sid = 'action_s_'+mode
+        s = []
+        for c in cmd:
+            if mode in ["module", "moduleset"]:
+                confirm=T("""Are you sure you want to execute a %(a)s action on all selected nodes. Please confirm action""",dict(a=c))
+            else:
+                confirm=T("""Are you sure you want to execute a compliance %(a)s action on all selected nodes. Please confirm action""",dict(a=c))
+            s.append(TR(
+                       TD(
+                         IMG(
+                           _src=URL(r=request,c='static',f=action_img_h[c]),
+                         ),
+                       ),
+                       TD(
+                         A(
+                           c,
+                           _onclick="""if (confirm("%(text)s")){%(s)s};"""%dict(
+                             s=self.ajax_submit(additional_inputs=[sid], args=['do_action', c, mode]),
+                             text=confirm,
+                           ),
+                         ),
+                       ),
+                     ))
+
+        if mode == "module":
+            q = db.comp_moduleset_modules.id > 0
+            o = db.comp_moduleset_modules.modset_mod_name
+            rows = db(q).select(orderby=o, groupby=o)
+            options = [OPTION(g.modset_mod_name,_value=g.modset_mod_name) for g in rows]
+            id_col = 'comp_modules.id'
+        elif mode == "moduleset":
+            q = db.comp_moduleset.id > 0
+            o = db.comp_moduleset.modset_name
+            rows = db(q).select(orderby=o)
+            options = [OPTION(g.modset_name,_value=g.modset_name) for g in rows]
+            id_col = 'comp_moduleset.id'
+
+        if mode in ["module", "moduleset"]:
+            fancy_mode = mode[0].upper()+mode[1:].lower()
+            actions = TABLE(
+                          TR(
+                            TH(
+                              T("Action"),
+                            ),
+                            TD(
+                              TABLE(*s),
+                            ),
+                          ),
+                        )
+            selector = TABLE(
+                          TR(
+                            TH(
+                              T(fancy_mode),
+                            ),
+                            TD(
+                              SELECT(
+                                *options,
+                                **dict(_id=sid,
+                                       _requires=IS_IN_DB(db, id_col))
+                              ),
+                            ),
+                          ),
+                        )
+        else:
+            actions = TABLE(*s)
+            selector = SPAN()
+
+        d = DIV(
+              A(
+                T("Run "+mode),
+                _class=cl,
+                _onclick="""
+                  click_toggle_vis(event,'%(div)s', 'block');
+                """%dict(div='tool_action_'+mode),
+              ),
+              DIV(
+                actions,
+                selector,
+                _style='display:none',
+                _class='white_float',
+                _name='tool_action_'+mode,
+                _id='tool_action_'+mode,
+              ),
+            )
+
+        return d
+
 
     def check_del(self):
         d = DIV(
@@ -5296,6 +5420,70 @@ class table_comp_status(HtmlTable):
               _class='floatw',
             )
         return d
+
+@auth.requires_membership('CompExec')
+def do_action(ids, action=None, mode=None):
+    if mode not in ("module", "moduleset", "node"):
+        raise ToolError("unsupported mode")
+    if action is None or len(action) == 0:
+        raise ToolError("no action specified")
+    if len(ids) == 0:
+        raise ToolError("no target to execute %s on"%action)
+
+    if mode in ("module", "moduleset"):
+        if not hasattr(request.vars, 'action_s_'+mode):
+            raise ToolError("no module or moduleset selected")
+        mod = request.vars['action_s_'+mode]
+
+        def fmt_action(node, action, mode):
+            cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
+                          '-o', 'ForwardX11=no',
+                          '-o', 'PasswordAuthentication=no',
+                          '-tt',
+                   'opensvc@'+node,
+                   '--',
+                   'sudo', '/opt/opensvc/bin/nodemgr', 'compliance', action,
+                   '--'+mode, mod]
+            return ' '.join(cmd)
+    elif mode == "node":
+        def fmt_action(node, action, mode):
+            cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
+                          '-o', 'ForwardX11=no',
+                          '-o', 'PasswordAuthentication=no',
+                          '-tt',
+                   'opensvc@'+node,
+                   '--',
+                   'sudo', '/opt/opensvc/bin/nodemgr', action,
+                   '--force']
+            return ' '.join(cmd)
+
+    q = db.comp_status.id.belongs(ids)
+    q &= db.comp_status.run_nodename == db.nodes.nodename
+    q &= db.nodes.team_responsible.belongs(user_groups())
+    rows = db(q).select(db.nodes.nodename)
+
+    vals = []
+    vars = ['command']
+    for row in rows:
+        vals.append([fmt_action(row.nodename, action, mode)])
+
+    purge_action_queue()
+    generic_insert('action_queue', vars, vals)
+    from subprocess import Popen
+    actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
+    process = Popen(actiond)
+    process.communicate()
+    if mode in ("module", "moduleset"):
+        _log('node.action', 'run %(a)s of %(mode)s %(m)s on nodes %(s)s', dict(
+              a=action,
+              mode=mode,
+              s=','.join(map(lambda x: x.nodename, rows)),
+              m=mod))
+    elif mode == "node":
+        _log('node.action', 'run %(a)s on nodes %(s)s', dict(
+              a=action,
+              s=','.join(map(lambda x: x.nodename, rows)),
+              ))
 
 @auth.requires_membership('CompManager')
 def var_name_set():
@@ -5511,6 +5699,10 @@ def ajax_comp_status():
         try:
             if action == 'check_del':
                 check_del(t.get_checked())
+            elif action == 'do_action' and len(request.args) == 3:
+                saction = request.args[1]
+                mode = request.args[2]
+                do_action(t.get_checked(), saction, mode)
         except ToolError, e:
             t.flash = str(e)
 
