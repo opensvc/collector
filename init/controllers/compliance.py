@@ -5918,7 +5918,7 @@ def ajax_comp_svc_status():
                            sum(if(run_date<"%(d)s", 1, 0)) as obs
                     from %(sql)s group by run_svcname) t) u
               where %(where)s
-              order by pct, svc_name
+              order by pct, total desc, svc_name
               limit %(limit)d
               offset %(offset)d"""%dict(
                 sql=sql1,
@@ -5989,7 +5989,7 @@ def ajax_comp_node_status():
                            sum(if(run_date<"%(d)s", 1, 0)) as obs
                     from %(sql)s group by run_nodename) t) u
               where %(where)s
-              order by pct, node_name
+              order by pct, total desc, node_name
               limit %(limit)d
               offset %(offset)d"""%dict(
                 sql=sql1,
@@ -6210,7 +6210,7 @@ def ajax_comp_mod_status():
                            sum(if(run_date<"%(d)s", 1, 0)) as obs
                     from %(sql)s group by run_module) t) u
               where %(where)s
-              order by pct, mod_name
+              order by pct, total desc, mod_name
               limit %(limit)d
               offset %(offset)d"""%dict(
                 sql=sql1,
