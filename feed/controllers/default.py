@@ -371,6 +371,11 @@ def _insert_generic(data, auth):
 def update_asset(vars, vals, auth):
     feed_enqueue("_update_asset", vars, vals, auth)
 
+@auth_uuid
+@service.xmlrpc
+def update_asset_sync(vars, vals, auth):
+    _update_asset(vars, vals, auth)
+
 def _update_asset(vars, vals, auth):
     h = {}
     for a,b in zip(vars, vals):
