@@ -145,7 +145,11 @@ def get_defaults(row):
     o = ~db.checks_defaults.chk_prio
     rows = db(q).select(orderby=o)
     for r in rows:
-        if re.match(str(r.chk_inst), row['chk_instance']) is None:
+        try:
+            if re.match(str(r.chk_inst), row['chk_instance']) is None:
+                continue
+        except:
+            # error in pattern or row.chk_instance is None
             continue
         return (r.chk_low, r.chk_high, 'defaults')
 
