@@ -5283,49 +5283,20 @@ class table_comp_status(HtmlTable):
         if 'CompManager' in user_groups():
             self.additional_tools.append('check_del')
         if member_of(('Manager', 'CompExec')):
-            self += HtmlTableMenu('Action', 'action16', ['tool_action_node', 'tool_action_module', 'tool_action_moduleset'], id='menu_comp_action')
-
-    def tool_action_node(self):
-        return self._tool_action("node")
+            self += HtmlTableMenu('Action', 'action16', ['tool_action_module'], id='menu_comp_action')
 
     def tool_action_module(self):
-        return self._tool_action("module")
+        cmd = [
+          'check',
+          'fixable',
+          'fix',
+        ]
+        cl = "comp16"
 
-    def tool_action_moduleset(self):
-        return self._tool_action("moduleset")
-
-    def _tool_action(self, mode):
-        if mode in ["module", "moduleset"]:
-            cmd = [
-              'check',
-              'fixable',
-              'fix',
-            ]
-            cl = "comp16"
-        else:
-            cmd = [
-              'checks',
-              'pushasset',
-              'pushservices',
-              'pushstats',
-              'pushpkg',
-              'pushpatch',
-              'reboot',
-              'shutdown',
-              'syncservices',
-              'updatecomp',
-              'updatepkg',
-              'updateservices',
-            ]
-            cl = "node16"
-
-        sid = 'action_s_'+mode
+        sid = 'action_s_module'
         s = []
         for c in cmd:
-            if mode in ["module", "moduleset"]:
-                confirm=T("""Are you sure you want to execute a %(a)s action on all selected nodes. Please confirm action""",dict(a=c))
-            else:
-                confirm=T("""Are you sure you want to execute a compliance %(a)s action on all selected nodes. Please confirm action""",dict(a=c))
+            confirm=T("""Are you sure you want to execute a %(a)s action on all selected objects. Please confirm action""",dict(a=c))
             s.append(TR(
                        TD(
                          IMG(
@@ -5336,71 +5307,38 @@ class table_comp_status(HtmlTable):
                          A(
                            c,
                            _onclick="""if (confirm("%(text)s")){%(s)s};"""%dict(
-                             s=self.ajax_submit(additional_inputs=[sid], args=['do_action', c, mode]),
+                             s=self.ajax_submit(additional_inputs=[sid], args=['do_action', c]),
                              text=confirm,
                            ),
                          ),
                        ),
                      ))
 
-        if mode == "module":
-            q = db.comp_moduleset_modules.id > 0
-            o = db.comp_moduleset_modules.modset_mod_name
-            rows = db(q).select(orderby=o, groupby=o)
-            options = [OPTION(g.modset_mod_name,_value=g.modset_mod_name) for g in rows]
-            id_col = 'comp_modules.id'
-        elif mode == "moduleset":
-            q = db.comp_moduleset.id > 0
-            o = db.comp_moduleset.modset_name
-            rows = db(q).select(orderby=o)
-            options = [OPTION(g.modset_name,_value=g.modset_name) for g in rows]
-            id_col = 'comp_moduleset.id'
-
-        if mode in ["module", "moduleset"]:
-            fancy_mode = mode[0].upper()+mode[1:].lower()
-            actions = TABLE(
-                          TR(
-                            TH(
-                              T("Action"),
-                            ),
-                            TD(
-                              TABLE(*s),
-                            ),
-                          ),
-                        )
-            selector = TABLE(
-                          TR(
-                            TH(
-                              T(fancy_mode),
-                            ),
-                            TD(
-                              SELECT(
-                                *options,
-                                **dict(_id=sid,
-                                       _requires=IS_IN_DB(db, id_col))
-                              ),
-                            ),
-                          ),
-                        )
-        else:
-            actions = TABLE(*s)
-            selector = SPAN()
+        actions = TABLE(
+                      TR(
+                        TH(
+                          T("Action"),
+                        ),
+                        TD(
+                          TABLE(*s),
+                        ),
+                      ),
+                    )
 
         d = DIV(
               A(
-                T("Run "+mode),
+                T("Run selected modules"),
                 _class=cl,
                 _onclick="""
                   click_toggle_vis(event,'%(div)s', 'block');
-                """%dict(div='tool_action_'+mode),
+                """%dict(div='tool_action_module'),
               ),
               DIV(
                 actions,
-                selector,
                 _style='display:none',
                 _class='white_float',
-                _name='tool_action_'+mode,
-                _id='tool_action_'+mode,
+                _name='tool_action_module',
+                _id='tool_action_module',
               ),
             )
 
@@ -5422,50 +5360,49 @@ class table_comp_status(HtmlTable):
         return d
 
 @auth.requires_membership('CompExec')
-def do_action(ids, action=None, mode=None):
-    if mode not in ("module", "moduleset", "node"):
-        raise ToolError("unsupported mode")
+def do_action(ids, action=None):
     if action is None or len(action) == 0:
         raise ToolError("no action specified")
     if len(ids) == 0:
         raise ToolError("no target to execute %s on"%action)
 
-    if mode in ("module", "moduleset"):
-        if not hasattr(request.vars, 'action_s_'+mode):
-            raise ToolError("no module or moduleset selected")
-        mod = request.vars['action_s_'+mode]
-
-        def fmt_action(node, action, mode):
-            cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
-                          '-o', 'ForwardX11=no',
-                          '-o', 'PasswordAuthentication=no',
-                          '-tt',
-                   'opensvc@'+node,
-                   '--',
-                   'sudo', '/opt/opensvc/bin/nodemgr', 'compliance', action,
-                   '--'+mode, mod]
-            return ' '.join(cmd)
-    elif mode == "node":
-        def fmt_action(node, action, mode):
-            cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
-                          '-o', 'ForwardX11=no',
-                          '-o', 'PasswordAuthentication=no',
-                          '-tt',
-                   'opensvc@'+node,
-                   '--',
-                   'sudo', '/opt/opensvc/bin/nodemgr', action,
-                   '--force']
-            return ' '.join(cmd)
+    def fmt_action(nodename, svcname, action, mod):
+        if svcname is None or svcname == "":
+            _cmd = ["/opt/opensvc/bin/nodemgr"]
+        else:
+            _cmd = ["/opt/opensvc/bin/svcmgr", "-s", svcname]
+        cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
+                      '-o', 'ForwardX11=no',
+                      '-o', 'PasswordAuthentication=no',
+                      '-tt',
+               'opensvc@'+nodename,
+               '--',
+               'sudo'] + _cmd + ['compliance', action,
+               '--module', mod]
+        return ' '.join(cmd)
 
     q = db.comp_status.id.belongs(ids)
     q &= db.comp_status.run_nodename == db.nodes.nodename
     q &= db.nodes.team_responsible.belongs(user_groups())
-    rows = db(q).select(db.nodes.nodename)
+    rows = db(q).select(db.comp_status.run_nodename,
+                        db.comp_status.run_svcname,
+                        db.comp_status.run_module)
 
     vals = []
     vars = ['command']
+    tolog_node = []
+    tolog_svc = []
     for row in rows:
-        vals.append([fmt_action(row.nodename, action, mode)])
+        if row.run_svcname is None or row.run_svcname == "":
+            tolog_node.append([row.run_nodename,
+                               row.run_module])
+        else:
+            tolog_svc.append([row.run_svcname,
+                              row.run_module])
+        vals.append([fmt_action(row.run_nodename,
+                                row.run_svcname,
+                                action,
+                                row.run_module)])
 
     purge_action_queue()
     generic_insert('action_queue', vars, vals)
@@ -5473,17 +5410,17 @@ def do_action(ids, action=None, mode=None):
     actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
     process = Popen(actiond)
     process.communicate()
-    if mode in ("module", "moduleset"):
-        _log('node.action', 'run %(a)s of %(mode)s %(m)s on nodes %(s)s', dict(
+
+    if len(tolog_node) > 0:
+        tolog_node_s = ', '.join(map(lambda x: "%s:%s"%(x[0], x[1]), tolog_node))
+        _log('node.action', 'run compliance %(a)s of %(s)s', dict(
               a=action,
-              mode=mode,
-              s=','.join(map(lambda x: x.nodename, rows)),
-              m=mod))
-    elif mode == "node":
-        _log('node.action', 'run %(a)s on nodes %(s)s', dict(
+              s=tolog_node_s))
+    if len(tolog_svc) > 0:
+        tolog_svc_s = ', '.join(map(lambda x: "%s:%s"%(x[0], x[1]), tolog_svc))
+        _log('service.action', 'run compliance %(a)s of %(s)s', dict(
               a=action,
-              s=','.join(map(lambda x: x.nodename, rows)),
-              ))
+              s=tolog_svc_s))
 
 @auth.requires_membership('CompManager')
 def var_name_set():
@@ -5699,10 +5636,9 @@ def ajax_comp_status():
         try:
             if action == 'check_del':
                 check_del(t.get_checked())
-            elif action == 'do_action' and len(request.args) == 3:
+            elif action == 'do_action' and len(request.args) == 2:
                 saction = request.args[1]
-                mode = request.args[2]
-                do_action(t.get_checked(), saction, mode)
+                do_action(t.get_checked(), saction)
         except ToolError, e:
             t.flash = str(e)
 
