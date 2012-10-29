@@ -3051,4 +3051,19 @@ create view v_comp_nodes as (select n.*,group_concat(distinct r.ruleset_name sep
 
 alter table dashboard add column dash_updated datetime;
 
+CREATE TABLE  `opensvc`.`saves` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `save_nodename` varchar(60) NOT NULL,
+  `save_svcname` varchar(60) NOT NULL,
+  `save_name` varchar(200) NOT NULL,
+  `save_group` varchar(100) NOT NULL,
+  `save_size` int(11) NOT NULL,
+  `save_date` datetime NOT NULL,
+  `save_retention` datetime NOT NULL,
+  `save_volume` varchar(16) NOT NULL,
+  `save_level` varchar(8) NOT NULL,
+  `save_server` varchar(60) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx1` (`save_nodename`,`save_svcname`,`save_name`, `save_level`)
+) ENGINE=InnoDB;
 

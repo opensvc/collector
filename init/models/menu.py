@@ -80,6 +80,8 @@ response.menu = [
               URL(request.application,'dns','dns')],
              [DIV(T('Disks'), _class='hd16'), False,
               URL(request.application,'disks','disks')],
+             [DIV(T('Saves'), _class='save16'), False,
+              URL(request.application,'saves','saves')],
              [DIV(T('Storage Arrays'), _class='hd16'), False,
               URL(request.application,'sym','index')],
          ]

@@ -767,6 +767,11 @@ def update_eva_xml(name, vars, vals, auth):
 
 @auth_uuid
 @service.xmlrpc
+def update_nsr(name, vars, vals, auth):
+    update_array_xml(name, vars, vals, auth, "nsr", insert_nsr)
+
+@auth_uuid
+@service.xmlrpc
 def update_netapp(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "netapp", insert_netapp)
 
@@ -1268,6 +1273,73 @@ def insert_vioserver(name=None, nodename=None):
         generic_insert('svcdisks', vars, vals)
         sql = """delete from svcdisks where disk_nodename="%s" and disk_updated < "%s" """%(s.array_name, str(now))
         db.executesql(sql)
+
+
+def insert_nsrs():
+    return insert_nsr()
+
+def insert_nsr(name=None, nodename=None):
+    import glob
+    import os
+    import socket
+
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+
+    dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='nsr'))
+    if name is None:
+        pattern = "*"
+    else:
+        pattern = name
+    dirs = glob.glob(os.path.join(dir, pattern))
+
+    # load node ip cache
+    sql = "select nodename, addr from node_ip"
+    rows = db.executesql(sql)
+    node_ip = {}
+    for row in rows:
+        node_ip[row[1]] = row[0]
+
+    # load svc ip cache
+    sql = """select svcname, res_desc from resmon where rid like "%ip#%" """
+    rows = db.executesql(sql)
+    svc_ip = {}
+    for row in rows:
+        try:
+            addr = row[1].split('@')[0]
+            a = socket.getaddrinfo(addr, None)
+            ip = a[0][-1][0]
+            svc_ip[ip] = row[0]
+        except:
+            continue
+
+    for d in dirs:
+        server = os.path.basename(d)
+        fpath = os.path.join(d, "mminfo")
+
+        vars = ['save_server', 'save_nodename', 'save_svcname', 'save_name',
+                'save_group', 'save_size', 'save_date', 'save_retention',
+                'save_volume', 'save_level']
+        vals = []
+
+        with open(fpath, 'r') as f:
+            lines = f.read().split('\n')
+
+        for line in lines:
+            l = line.split(';')
+            if len(l) != 8:
+                continue
+            if l[0] in node_ip:
+                nodename = node_ip[l[0]]
+            else:
+                nodename = l[0]
+            if l[0] in svc_ip:
+                svcname = svc_ip[l[0]]
+            else:
+                svcname = ''
+            vals.append([server, nodename, svcname]+l[1:])
+            if len(vals[-1]) != 10: print len(vals[-1]), vals[-1]
+        generic_insert('saves', vars, vals)
 
 
 def insert_netapps():

@@ -1615,3 +1615,16 @@ db.define_table('stat_day_billing',
     Field('nb_agents_without_svc_nonprd', 'integer'),
     migrate=False)
 
+db.define_table('saves',
+    Field('save_date', 'datetime'),
+    Field('save_retention', 'datetime'),
+    Field('save_size', 'integer'),
+    Field('save_nodename', 'string'),
+    Field('save_svcname', 'string'),
+    Field('save_name', 'string'),
+    Field('save_group', 'string'),
+    Field('save_volume', 'string'),
+    Field('save_level', 'string'),
+    Field('save_server', 'string'),
+    migrate=False)
+
