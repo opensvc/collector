@@ -65,6 +65,14 @@ data = {
        'url': URL(r=request, c='cron', f='cron_alerts_daily'),
        'comment': "Daily alert janitoring",
      },
+     {
+       'url': URL(r=request, a='feed', c='default', f='update_save_checks'),
+       'comment': "Refresh save checks thresholds and alerts",
+     },
+     {
+       'url': URL(r=request, a='feed', c='default', f='update_dash_checks_all'),
+       'comment': "Refresh checks alerts",
+     },
    ],
  },
  'obsolescence': {

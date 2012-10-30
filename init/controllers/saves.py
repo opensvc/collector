@@ -1,3 +1,53 @@
+class col_size_b(HtmlTableColumn):
+    def html(self, o):
+       d = self.get(o)
+       try:
+           d = int(d)
+       except:
+           return ''
+       c = "nowrap"
+       if d < 0:
+           c += " highlight"
+       if d is None:
+           return ''
+       return DIV(beautify_size_b(d), _class=c)
+
+def beautify_size_b(d):
+       try:
+          d = int(d)
+       except:
+          return '-'
+       if d < 0:
+           neg = True
+           d = -d
+       else:
+           neg = False
+       if d < 1024:
+           v = 1.0 * d
+           unit = 'B'
+       elif d < 1048576:
+           v = 1.0 * d / 1024
+           unit = 'KB'
+       elif d < 1073741824:
+           v = 1.0 * d / 1048576
+           unit = 'MB'
+       elif d < 1099511627776:
+           v = 1.0 * d / 1073741824
+           unit = 'GB'
+       else:
+           v = 1.0 * d / 1099511627776
+           unit = 'TB'
+       if v >= 100:
+           fmt = "%d"
+       elif v >= 10:
+           fmt = "%.1f"
+       else:
+           fmt = "%.2f"
+       fmt = fmt + " %s"
+       if neg:
+           v = -v
+       return fmt%(v, unit)
+
 class table_saves(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -65,7 +115,7 @@ class table_saves(HtmlTable):
                      img='save16',
                      display=True,
                     ),
-            'save_size': HtmlTableColumn(
+            'save_size': col_size_b(
                      title='Size',
                      table='saves',
                      field='save_size',

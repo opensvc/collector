@@ -807,7 +807,7 @@ def ajax_dashboard_col_values():
 @auth.requires_login()
 def ajax_dashboard():
     t = table_dashboard('dashboard', 'ajax_dashboard')
-    o = ~db.dashboard.dash_severity|db.dashboard.dash_type
+    o = ~db.dashboard.dash_severity|db.dashboard.dash_type|db.dashboard.dash_nodename
     q = db.dashboard.id > 0
     for f in set(t.cols):
         q = _where(q, 'dashboard', t.filter_parse(f), f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
@@ -821,7 +821,7 @@ def ajax_dashboard():
     sql = """select *
              from dashboard ignore index (idx1)
              where %s
-             order by dash_severity desc, dash_type
+             order by dash_severity desc, dash_type, dash_nodename
              limit %d offset %d"""%(str(q), t.pager_end-t.pager_start, t.pager_start)
     # t.object_list = db(q).select(db.dashboard.ALL, limitby=(t.pager_start,t.pager_end), orderby=o)
     t.object_list = db.executesql(sql, as_dict=True)

@@ -1341,6 +1341,77 @@ def insert_nsr(name=None, nodename=None):
             if len(vals[-1]) != 10: print len(vals[-1]), vals[-1]
         generic_insert('saves', vars, vals)
 
+    update_save_checks()
+
+def update_save_checks():
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+
+    sql = """
+           insert into checks_live (chk_nodename, chk_svcname, chk_type, chk_updated, chk_value, chk_created, chk_instance)
+             select
+               checks_live.chk_nodename as chk_nodename,
+               checks_live.chk_svcname as chk_svcname,
+               "save",
+               now(),
+               1000000 as chk_value,
+               now(),
+               checks_live.chk_instance as chk_instance
+             from
+               checks_live
+               left join saves on
+                 checks_live.chk_nodename = saves.save_nodename and
+                 (checks_live.chk_svcname = saves.save_svcname or saves.save_svcname = "" or checks_live.chk_svcname = "") and
+                 checks_live.chk_instance = saves.save_name
+             where
+               checks_live.chk_type="fs_u" and
+               checks_live.chk_instance not in ("/dev/shm", "/tmp", "/var/lib/xenstored", "/var/adm/crash", "/var/adm/ras/livedump") and
+               saves.save_name is null
+           on duplicate key update
+             chk_updated=now(),
+             chk_value=if(datediff(now(), saves.save_date) is null, 1000000, datediff(now(), saves.save_date))
+          """
+    db.executesql(sql)
+    db.commit()
+
+    sql = """
+           insert into checks_live (chk_nodename, chk_svcname, chk_type, chk_updated, chk_value, chk_created, chk_instance)
+             select
+               saves.save_nodename as chk_nodename,
+               saves.save_svcname as chk_svcname,
+               "save",
+               now(),
+               datediff(now(), saves.save_date) as chk_value,
+               now(),
+               concat(if (saves.save_level is null, "", concat(saves.save_level, ":")), saves.save_name) as chk_instance
+             from
+               saves
+             where
+               not substring(lower(saves.save_nodename),1,1) between '0' and '9' and
+               saves.save_name not in ("/dev/shm", "/tmp", "/var/lib/xenstored", "/var/adm/crash", "/var/adm/ras/livedump")
+             order by
+               saves.save_date
+           on duplicate key update
+             chk_updated=now(),
+             chk_value=datediff(now(), saves.save_date)
+          """
+    db.executesql(sql)
+    db.commit()
+
+    sql = """delete from checks_live
+             where
+               chk_type="save" and
+               chk_updated < "%(now)s"
+          """%dict(now=now)
+    db.executesql(sql)
+    db.commit()
+
+    q = db.checks_live.chk_type == "save"
+    checks = db(q).select()
+    update_thresholds_batch(checks)
+
+    update_dash_checks_all()
+
 
 def insert_netapps():
     return insert_netapp()
@@ -3636,6 +3707,75 @@ def update_dash_flex_instances_started(svcname):
                    env=rows[0][0],
                   )
     db.executesql(sql)
+    db.commit()
+
+def update_dash_checks_all():
+    now = datetime.datetime.now()
+    now = now - datetime.timedelta(microseconds=now.microsecond)
+
+    sql = """insert into dashboard
+               select
+                 NULL,
+                 "check out of bounds",
+                 t.svcname,
+                 t.nodename,
+                 if (t.host_mode="PRD", 3, 2),
+                 "%%(ctype)s:%%(inst)s check value %%(val)d. %%(ttype)s thresholds: %%(min)d - %%(max)d",
+                 concat('{"ctype": "', t.ctype,
+                        '", "inst": "', t.inst,
+                        '", "ttype": "', t.ttype,
+                        '", "val": ', t.val,
+                        ', "min": ', t.min,
+                        ', "max": ', t.max,
+                        '}'),
+                 "%(now)s",
+                 md5(concat('{"ctype": "', t.ctype,
+                        '", "inst": "', t.inst,
+                        '", "ttype": "', t.ttype,
+                        '", "val": ', t.val,
+                        ', "min": ', t.min,
+                        ', "max": ', t.max,
+                        '}')),
+                 t.host_mode,
+                 "",
+                 "%(now)s"
+               from (
+                 select
+                   c.chk_svcname as svcname,
+                   c.chk_nodename as nodename,
+                   c.chk_type as ctype,
+                   c.chk_instance as inst,
+                   c.chk_threshold_provider as ttype,
+                   c.chk_value as val,
+                   c.chk_low as min,
+                   c.chk_high as max,
+                   n.host_mode
+                 from checks_live c left join nodes n on c.chk_nodename=n.nodename
+                 where
+                   c.chk_updated >= date_sub(now(), interval 1 day) and
+                   (
+                     c.chk_value < c.chk_low or
+                     c.chk_value > c.chk_high
+                   )
+               ) t
+               on duplicate key update
+                 dash_updated="%(now)s"
+          """%dict(now=str(now))
+    db.executesql(sql)
+    db.commit()
+
+    sql = """delete from dashboard
+               where
+                 (
+                   (
+                     dash_type = "check out of bounds" and
+                     ( dash_updated < "%(now)s" or dash_updated is null )
+                   ) or
+                   dash_type = "check value not updated"
+                 )
+          """%dict(now=str(now))
+
+    rows = db.executesql(sql)
     db.commit()
 
 def update_dash_checks(nodename):
