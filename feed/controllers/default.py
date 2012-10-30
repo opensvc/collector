@@ -1388,7 +1388,8 @@ def update_save_checks():
                saves
              where
                not substring(lower(saves.save_nodename),1,1) between '0' and '9' and
-               saves.save_name not in ("/dev/shm", "/tmp", "/var/lib/xenstored", "/var/adm/crash", "/var/adm/ras/livedump")
+               saves.save_name not in ("/dev/shm", "/tmp", "/var/lib/xenstored", "/var/adm/crash", "/var/adm/ras/livedump", "bootstrap") and
+               saves.save_name not like "index%"
              order by
                saves.save_date
            on duplicate key update
