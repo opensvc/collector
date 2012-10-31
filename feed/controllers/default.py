@@ -1395,7 +1395,7 @@ def update_save_checks():
                now(),
                datediff(now(), saves.save_date) as chk_value,
                now(),
-               saves.save_name as chk_instance
+               if (substring(saves.save_name, 1, 4) = "RMAN", substring_index(saves.save_name, '_', 1), saves.save_name) as chk_instance
              from
                saves
              where
