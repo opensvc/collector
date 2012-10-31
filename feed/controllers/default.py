@@ -286,13 +286,25 @@ def _push_checks(vars, vals):
         chk_value
         chk_updated
     """
+
     # purge old checks
     if len(vals) > 0:
         nodename = vals[0][0]
         q = db.checks_live.chk_nodename==nodename
         q &= db.checks_live.chk_type != "netdev_err"
+        q &= db.checks_live.chk_type != "save"
         db(q).delete()
         db.commit()
+
+        # for checks coming from vservice, update the svcname field
+        svcname = vals[0][1]
+        if svcname == "":
+            q = db.svcmon.mon_vmname == nodename
+            rows = db(q).select(db.svcmon.mon_svcname)
+            if len(rows) > 0:
+                svcname = rows[0].mon_svcname
+                for i, val in enumerate(vals):
+                    vals[i][1] = svcname
 
     # insert new checks
     while len(vals) > 100:
@@ -1383,7 +1395,7 @@ def update_save_checks():
                now(),
                datediff(now(), saves.save_date) as chk_value,
                now(),
-               concat(if (saves.save_level is null, "", concat(saves.save_level, ":")), saves.save_name) as chk_instance
+               saves.save_name as chk_instance
              from
                saves
              where
