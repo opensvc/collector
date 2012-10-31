@@ -2999,18 +2999,22 @@ def comp_delete_ruleset(ids=[]):
 def comp_delete_ruleset_var(ids=[]):
     if len(ids) == 0:
         raise ToolError("delete variables failed: no variable selected")
-    ids = map(lambda x: x.split('_')[2], ids)
-    ids = [id for id in ids if id != 'None']
-    ids = map(lambda x: int(x), ids)
+    _ids = []
+    for s in ids:
+        l = s.split('_')
+        if len(l) != 4:
+            continue
+        if l[2] == "None":
+            continue
+        if l[3] != "None":
+            raise ToolError("Deleting variables in a encapsulated ruleset is not allowed. Please detach the encapsulated ruleset, or delete the variables from the ruleset owning the variables directly.")
+        _ids.append(int(l[2]))
+    ids = _ids
     if len(ids) == 0:
         raise ToolError("delete variables failed: no variable selected")
     q = db.v_comp_rulesets.id.belongs(ids)
-    n = db(q).count()
     q &= db.v_comp_rulesets.encap_rset_id == None
     rows = db(q).select()
-    diff = n - len(rows)
-    if diff > 0:
-        raise ToolError("Deleting variables in a encapsulated ruleset is not allowed. Please detach the encapsulated ruleset, or delete the variables from the ruleset owning the variables directly.")
     x = map(lambda r: ' '.join((
                        r.var_name+'.'+r.var_value,
                        'from ruleset',
@@ -5544,7 +5548,7 @@ def var_value_set_list_of_dict(name):
         key = s[len(index)+1:]
         if index not in d:
             d[index] = {}
-        if key == 'level':
+        if key in ('level', 'seq'):
             val = request.vars[i]
         else:
             try:
