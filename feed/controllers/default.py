@@ -1337,6 +1337,7 @@ def insert_nsr(name=None, nodename=None):
         with open(fpath, 'r') as f:
             lines = f.read().split('\n')
 
+        i = 0
         for line in lines:
             l = line.split(';')
             if len(l) != 8:
@@ -1350,8 +1351,13 @@ def insert_nsr(name=None, nodename=None):
             else:
                 svcname = ''
             vals.append([server, nodename, svcname]+l[1:])
-            if len(vals[-1]) != 10: print len(vals[-1]), vals[-1]
+            i += 1
+            if i > 300:
+                i = 0
+                generic_insert('saves', vars, vals)
+                vals = []
         generic_insert('saves', vars, vals)
+        db.commit()
 
     update_save_checks()
 
@@ -2181,21 +2187,20 @@ def __svcmon_update(vars, vals):
         db.commit()
 
 def get_defaults(row):
-    q = db.checks_defaults.chk_type == row.chk_type
-    q &= db.checks_defaults.chk_inst != None
-    o = ~db.checks_defaults.chk_prio
-    rows = db(q).select(orderby=o)
-    for r in rows:
-        try:
-            if re.match(str(r.chk_inst), row.chk_instance) is None:
-                continue
-        except:
-            # error in pattern or row.chk_instance is None
-            continue
-        return (r.chk_low, r.chk_high, 'defaults')
+    if row['chk_instance'] is not None:
+        q = db.checks_defaults.chk_type == row['chk_type']
+        q &= db.checks_defaults.chk_inst != None
+        o = ~db.checks_defaults.chk_prio
+        rows = db(q).select(orderby=o)
+        for r in rows:
+            pattern = str(r.chk_inst)
+            if not pattern.endswith('$'):
+                pattern += '$'
+            if re.match(pattern, row['chk_instance']) is not None:
+                return (r.chk_low, r.chk_high, 'defaults')
 
     q = db.checks_defaults.chk_type == row.chk_type
-    q &= db.checks_defaults.chk_inst == None
+    q &= (db.checks_defaults.chk_inst == None) | (db.checks_defaults.chk_inst == "")
     rows = db(q).select()
     if len(rows) == 0:
         return
