@@ -3096,3 +3096,10 @@ alter table comp_rulesets_nodes add foreign key comp_rulesets_nodes_fk2 (`nodena
 alter table svcmon drop foreign key svcmon_ibfk_1;
 
 alter table svcmon add foreign key svcmon_ibfk_1 (`mon_nodname`) REFERENCES `nodes` (`nodename`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+alter table svcdisks drop foreign key svcdisks_ibfk_1;
+
+alter table svcdisks add foreign key svcdisks_ibfk_1 (disk_nodename) REFERENCES nodes (nodename) ON DELETE CASCADE ON UPDATE CASCADE;
+
+alter table svcmon modify column mon_vmname varchar(192);
+
