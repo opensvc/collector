@@ -172,12 +172,15 @@ def ajax_saves_col_values():
 @auth.requires_login()
 def ajax_saves():
     t = table_saves('saves', 'ajax_saves')
+
+    if request.vars.saves_f_save_retention is None or request.vars.saves_f_save_retention == t.column_filter_reset:
+        request.vars.saves_f_save_retention = '>0d'
+
     o = ~db.saves.save_date
     o |= db.saves.save_nodename
 
     q = db.saves.id>0
     l = db.v_nodes.on(db.saves.save_nodename==db.v_nodes.nodename)
-    q &= db.saves.save_nodename==db.v_nodes.nodename
     q = _where(q, 'saves', domain_perms(), 'save_nodename') | _where(q, 'saves', domain_perms(), 'save_svcname')
     q = apply_filters(q, db.saves.save_nodename, db.saves.save_svcname)
     for f in t.cols:
@@ -188,6 +191,7 @@ def ajax_saves():
 
     t.csv_q = q
     t.csv_orderby = o
+    t.csv_left = l
 
     nt = table_saves_charts('charts', 'ajax_saves_charts')
 
@@ -291,9 +295,10 @@ def ajax_saves_charts():
     sql = """select
                count(distinct(saves.save_app))
              from
-               saves, nodes
+               saves
+               left join nodes on
+               saves.save_nodename = nodes.nodename
              where
-               saves.save_nodename = nodes.nodename and
                %(q)s
           """%dict(q=q)
     n_app = db.executesql(sql)[0][0]
@@ -307,9 +312,10 @@ def ajax_saves_charts():
                      if(saves.save_svcname != "", saves.save_svcname, saves.save_nodename) as obj,
                      saves.save_size as size
                    from
-                     saves, nodes
+                     saves
+                     left join nodes on
+                     saves.save_nodename = nodes.nodename
                    where
-                     saves.save_nodename = nodes.nodename and
                      %(q)s
                  ) t
                  group by t.obj
@@ -327,7 +333,7 @@ def ajax_saves_charts():
         data_svc = []
         rows = pie_data_svc(q)
         for row in rows:
-            if row[0] is None:
+            if row[0] is None or row[0] == "":
                 label = 'unknown'
             else:
                 label = row[0]
@@ -352,9 +358,10 @@ def ajax_saves_charts():
                    saves.save_app,
                    sum(saves.save_size)
                  from
-                   saves, nodes
+                   saves
+                   left join nodes on
+                   saves.save_nodename = nodes.nodename
                  where
-                   saves.save_nodename = nodes.nodename and
                    %(q)s
                  group by saves.save_app
                  """%dict(q=q)
@@ -365,7 +372,7 @@ def ajax_saves_charts():
         data_app = []
         rows = pie_data_app(q)
         for row in rows:
-            if row[0] is None:
+            if row[0] is None or row[0] == "":
                 label = 'unknown'
             else:
                 label = row[0]
@@ -387,9 +394,10 @@ def ajax_saves_charts():
 
 
     sql = """select distinct(saves.save_server) from
-             saves, nodes where
-             save_nodename = nodes.nodename and
-             %(q)s"""%dict(q=q)
+               saves left join nodes on
+               save_nodename = nodes.nodename
+             where
+               %(q)s"""%dict(q=q)
     n_servers = len(db.executesql(sql))
 
     if n_servers > 1:
@@ -397,9 +405,10 @@ def ajax_saves_charts():
                    saves.save_server,
                    sum(saves.save_size)
                  from
-                   saves, nodes
+                   saves
+                   left join nodes on
+                   saves.save_nodename = nodes.nodename
                  where
-                   saves.save_nodename = nodes.nodename and
                    %(q)s
                  group by saves.save_server
                  """%dict(q=q)
@@ -407,7 +416,7 @@ def ajax_saves_charts():
 
         data_server = []
         for row in rows:
-            if row[0] is None:
+            if row[0] is None or row[0] == "":
                 label = 'unknown'
             else:
                 label = row[0]
