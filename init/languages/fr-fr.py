@@ -890,6 +890,7 @@
 'Virtualization ratio': 'Ratio de virtualisation',
 'Vmem': 'Vmem',
 'Volume': 'Volume',
+'Volumes': 'Volumes',
 'Vram size (GB)': 'Vram size (GB)',
 'Warn': 'Attention',
 'Warn date': "Date d'attention",

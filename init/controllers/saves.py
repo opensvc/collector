@@ -253,6 +253,15 @@ class col_chart(HtmlTableColumn):
                       ),
                       _style="float:left;width:500px",
                     )]
+       if len(o['chart_group']) > 2:
+           l += [DIV(
+                  H3(T("Groups")),
+                  DIV(
+                    o['chart_group'],
+                    _id='chart_group',
+                  ),
+                  _style="float:left;width:500px",
+                )]
        if len(o['chart_server']) > 2:
            l += [DIV(
                   H3(T("Servers")),
@@ -291,6 +300,7 @@ def ajax_saves_charts():
     h_data_svc = ""
     h_data_app = ""
     h_data_server = ""
+    h_data_group = ""
 
     sql = """select
                count(distinct(saves.save_app))
@@ -400,6 +410,42 @@ def ajax_saves_charts():
                %(q)s"""%dict(q=q)
     n_servers = len(db.executesql(sql))
 
+    if n_servers == 1:
+        sql = """select
+                   saves.save_group,
+                   sum(saves.save_size)
+                 from
+                   saves
+                   left join nodes on
+                   saves.save_nodename = nodes.nodename
+                 where
+                   %(q)s
+                 group by saves.save_group
+                 """%dict(q=q)
+        rows = db.executesql(sql)
+
+        data_group = []
+        for row in rows:
+            if row[0] is None or row[0] == "":
+                label = 'unknown'
+            else:
+                label = row[0]
+            try:
+                size = int(row[1])
+            except:
+                continue
+            data_group += [[str(label) +' (%s)'%beautify_size_b(size), size]]
+
+        data_group.sort(lambda x, y: cmp(y[1], x[1]))
+        if len(data_group) == 0:
+            data_group = [["", 0]]
+
+        total = data_total(rows)
+        h_data_group = {
+          'total': int(total//1024//1024),
+          'data': [data_group],
+        }
+
     if n_servers > 1:
         sql = """select
                    saves.save_server,
@@ -438,6 +484,7 @@ def ajax_saves_charts():
 
     nt.object_list = [{'chart_svc': json.dumps(h_data_svc),
                        'chart_ap': json.dumps(h_data_app),
+                       'chart_group': json.dumps(h_data_group),
                        'chart_server': json.dumps(h_data_server)}]
 
     return DIV(
@@ -484,6 +531,16 @@ $("[id^=chart_ap]").each(function(){
     i = d.lastIndexOf(" (")
     d = d.substring(0, i)
     $("#saves_f_save_app").val(d)
+    %(submit)s
+  })
+})
+$("[id^=chart_group]").each(function(){
+  savedonut($(this))
+  $(this).bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
+    d = data[seriesIndex]
+    i = d.lastIndexOf(" (")
+    d = d.substring(0, i)
+    $("#saves_f_save_group").val(d)
     %(submit)s
   })
 })
