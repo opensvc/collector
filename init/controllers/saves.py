@@ -54,6 +54,7 @@ class table_saves(HtmlTable):
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols =  ['save_server',
+                      'save_id',
                       'save_app',
                       'save_nodename',
                       'save_svcname',
@@ -73,6 +74,13 @@ class table_saves(HtmlTable):
                      field='save_server',
                      img='save16',
                      display=True,
+                    ),
+            'save_id': HtmlTableColumn(
+                     title='Id',
+                     table='saves',
+                     field='save_id',
+                     img='save16',
+                     display=False,
                     ),
             'save_nodename': col_node(
                      title='Nodename',

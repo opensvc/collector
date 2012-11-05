@@ -1344,7 +1344,7 @@ def insert_nsr(name=None, nodename=None):
 
         vars = ['save_server', 'save_nodename', 'save_svcname', 'save_name',
                 'save_group', 'save_size', 'save_date', 'save_retention',
-                'save_volume', 'save_level', 'save_app']
+                'save_volume', 'save_level', 'save_id', 'save_app']
         vals = []
 
         with open(fpath, 'r') as f:
@@ -1353,7 +1353,7 @@ def insert_nsr(name=None, nodename=None):
         i = 0
         for line in lines:
             l = line.split(';')
-            if len(l) != 8:
+            if len(l) != 9:
                 continue
             if l[0] in node_ip:
                 nodename = node_ip[l[0]]

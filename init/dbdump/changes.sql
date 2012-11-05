@@ -3060,7 +3060,7 @@ CREATE TABLE  `opensvc`.`saves` (
   `save_size` int(11) NOT NULL,
   `save_date` datetime NOT NULL,
   `save_retention` datetime NOT NULL,
-  `save_volume` varchar(16) NOT NULL,
+  `save_volume` varchar(64) NOT NULL,
   `save_level` varchar(8) NOT NULL,
   `save_server` varchar(60) NOT NULL,
   PRIMARY KEY (`id`),
@@ -3071,4 +3071,9 @@ alter table saves modify column save_size bigint;
 
 alter table saves add save_app varchar(64);
 
+alter table saves add column save_id varchar(64);
+
+alter table saves drop key idx1;
+
+alter table saves add unique key idx1 (save_server, save_id, save_volume);
 

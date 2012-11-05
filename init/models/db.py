@@ -1627,5 +1627,6 @@ db.define_table('saves',
     Field('save_level', 'string'),
     Field('save_server', 'string'),
     Field('save_app', 'string'),
+    Field('save_id', 'string'),
     migrate=False)
 
