@@ -1626,5 +1626,6 @@ db.define_table('saves',
     Field('save_volume', 'string'),
     Field('save_level', 'string'),
     Field('save_server', 'string'),
+    Field('save_app', 'string'),
     migrate=False)
 

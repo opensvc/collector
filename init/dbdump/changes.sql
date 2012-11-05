@@ -3067,3 +3067,8 @@ CREATE TABLE  `opensvc`.`saves` (
   UNIQUE KEY `idx1` (`save_nodename`,`save_svcname`,`save_name`, `save_level`)
 ) ENGINE=InnoDB;
 
+alter table saves modify column save_size bigint;
+
+alter table saves add save_app varchar(64);
+
+

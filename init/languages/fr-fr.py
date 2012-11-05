@@ -768,6 +768,7 @@
 'Sent via gtalk': 'Envoyer par gtalk',
 'Serial': 'Numéro de série',
 'Server': 'Serveur',
+'Servers': 'Servers',
 'Service': 'Service',
 'Service action': 'Action de service',
 'Service action errors': 'Actions de service en erreur',

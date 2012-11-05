@@ -1325,13 +1325,26 @@ def insert_nsr(name=None, nodename=None):
         except:
             continue
 
+    # load app cache
+    sql = """select svc_name, svc_app from services"""
+    rows = db.executesql(sql)
+    svc_app = {}
+    for row in rows:
+        svc_app[row[0]] = row[1]
+
+    sql = """select nodename, project from nodes"""
+    rows = db.executesql(sql)
+    node_app = {}
+    for row in rows:
+        node_app[row[0]] = row[1]
+
     for d in dirs:
         server = os.path.basename(d)
         fpath = os.path.join(d, "mminfo")
 
         vars = ['save_server', 'save_nodename', 'save_svcname', 'save_name',
                 'save_group', 'save_size', 'save_date', 'save_retention',
-                'save_volume', 'save_level']
+                'save_volume', 'save_level', 'save_app']
         vals = []
 
         with open(fpath, 'r') as f:
@@ -1350,7 +1363,13 @@ def insert_nsr(name=None, nodename=None):
                 svcname = svc_ip[l[0]]
             else:
                 svcname = ''
-            vals.append([server, nodename, svcname]+l[1:])
+            if svcname != '' and svcname in svc_app:
+                app = svc_app[svcname]
+            elif nodename in node_app:
+                app = node_app[nodename]
+            else:
+                app = ''
+            vals.append([server, nodename, svcname]+l[1:]+[app])
             i += 1
             if i > 300:
                 i = 0
