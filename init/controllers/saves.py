@@ -286,8 +286,7 @@ def ajax_saves_charts():
 
     h_data_svc = ""
     h_data_app = ""
-    h_data_dg = ""
-    h_data_array = ""
+    h_data_server = ""
 
     sql = """select
                count(distinct(saves.save_app))
@@ -471,6 +470,13 @@ $("[id^=chart_svc]").each(function(){
 })
 $("[id^=chart_ap]").each(function(){
   savedonut($(this))
+  $(this).bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
+    d = data[seriesIndex]
+    i = d.lastIndexOf(" (")
+    d = d.substring(0, i)
+    $("#saves_f_save_app").val(d)
+    %(submit)s
+  })
 })
 $("[id^=chart_server]").each(function(){
   savedonut($(this))

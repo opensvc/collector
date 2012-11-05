@@ -2061,6 +2061,13 @@ $("[id^=chart_svc]").each(function(){
 })
 $("[id^=chart_ap]").each(function(){
   diskdonut($(this))
+  $(this).bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
+    d = data[seriesIndex]
+    i = d.lastIndexOf(" (")
+    d = d.substring(0, i)
+    $("#disks_f_app").val(d)
+    %(submit)s
+  })
 })
 $("[id^=chart_dg]").each(function(){
   diskdonut($(this))
