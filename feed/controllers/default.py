@@ -1978,8 +1978,12 @@ and r.mon_updated > tlim]
         ostatus = 'undef'
 
     svc_log_update(svcname, astatus)
-    update_dash_service_unavailable(svcname, rows[0].mon_svctype, astatus)
-    update_dash_service_available_but_degraded(svcname, rows[0].mon_svctype, astatus, ostatus)
+    try:
+        svctype = rows[0].mon_svctype
+    except:
+        svctype = 'TST'
+    update_dash_service_unavailable(svcname, svctype, astatus)
+    update_dash_service_available_but_degraded(svcname, svctype, astatus, ostatus)
 
     db(db.services.svc_name==svcname).update(
       svc_status=ostatus,
