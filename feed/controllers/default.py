@@ -1355,7 +1355,7 @@ def insert_nsr(name=None, nodename=None):
             l = line.split(';')
             if len(l) != 9:
                 continue
-            if l[8].endswith('.RO'):
+            if l[6].endswith('.RO'):
                 # nsr read-lonly device. don't import as it would
                 # account twice the size.
                 continue

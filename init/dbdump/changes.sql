@@ -3104,3 +3104,7 @@ alter table svcdisks add foreign key svcdisks_ibfk_1 (disk_nodename) REFERENCES 
 alter table svcmon modify column mon_vmname varchar(192);
 
 alter table saves add key idx2 (save_nodename, save_svcname);
+
+delete from comp_run_ruleset where rset_md5 not in (select distinct rset_md5 from comp_log);
+
+
