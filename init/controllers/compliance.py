@@ -7031,7 +7031,8 @@ def insert_run_rset(ruleset):
     import cPickle
     o = md5()
     s = cPickle.dumps(ruleset)
-    o.update(s)
+    for key in ruleset:
+        o.update(str(ruleset[key]))
     rset_md5 = str(o.hexdigest())
     try:
         db.comp_run_ruleset.insert(rset_md5=rset_md5, rset=s)
