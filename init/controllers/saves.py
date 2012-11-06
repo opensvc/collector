@@ -181,8 +181,8 @@ def ajax_saves_col_values():
 def ajax_saves():
     t = table_saves('saves', 'ajax_saves')
 
-    if request.vars.saves_f_save_retention is None or request.vars.saves_f_save_retention == t.column_filter_reset:
-        request.vars.saves_f_save_retention = '>0d'
+    if request.vars.saves_f_save_date is None or request.vars.saves_f_save_date == t.column_filter_reset:
+        request.vars.saves_f_save_date = '>-1d'
 
     o = ~db.saves.save_date
     o |= db.saves.save_nodename

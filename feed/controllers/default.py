@@ -1382,7 +1382,14 @@ def insert_nsr(name=None, nodename=None):
         generic_insert('saves', vars, vals)
         db.commit()
 
+    purge_saves()
     update_save_checks()
+
+def purge_saves():
+    sql = """delete from saves where
+             save_retention < now()"""
+    db.executesql(sql)
+    db.commit()
 
 def update_save_checks():
     now = datetime.datetime.now()
