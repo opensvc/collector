@@ -7031,7 +7031,8 @@ def insert_run_rset(ruleset):
     import cPickle
     o = md5()
     s = cPickle.dumps(ruleset)
-    for key in ruleset:
+    keys = sorted(ruleset.keys())
+    for key in keys:
         o.update(str(ruleset[key]))
     rset_md5 = str(o.hexdigest())
     try:
