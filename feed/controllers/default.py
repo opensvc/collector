@@ -4413,6 +4413,8 @@ def feed_dequeue():
 
 
         try:
+            #log.info(".")
+            db.commit()
             queues_empty = True
             for q in queues.values():
                 if not q.empty():
@@ -4421,10 +4423,13 @@ def feed_dequeue():
             if last > 0 and queues_empty and n0 == 0 and db(db.feed_queue.id<last).count() > 0:
                 # once in a while, if queues are empty, retry errored entries
                 entries = db(db.feed_queue.id<last).select(limitby=(0,20), orderby=db.feed_queue.id)
+                if len(entries) > 0:
+                    log.info("got %d stalled entries to dequeue"% len(entries))
             else:
                 # don't fetch already scheduled entries
                 entries = db(db.feed_queue.id>last).select(limitby=(0,20), orderby=db.feed_queue.id)
-            log.debug("got %d entries to dequeue"% len(entries))
+                if len(entries) > 0:
+                    log.info("got %d entries to dequeue"% len(entries))
         except:
             # lost mysql ?
             traceback.print_exc()
