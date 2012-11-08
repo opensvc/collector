@@ -440,6 +440,8 @@ def __resmon_update(vars, vals):
         h[a] = b
     if 'nodename' in h and 'svcname' in h:
         _resmon_clean(h['nodename'], h['svcname'])
+        h['nodename'] = translate_encap_nodename( h['svcname'],  h['nodename'])
+        _resmon_clean(h['nodename'], h['svcname'])
     generic_insert('resmon', vars, vals)
 
 @auth_uuid
@@ -1932,10 +1934,8 @@ def svc_status_update(svcname):
                         db.svcmon.mon_frozen)
 
     tlim = datetime.datetime.now() - datetime.timedelta(minutes=15)
-    ostatus_l = [r.mon_overallstatus for r in rows if r.mon_updated is not None
-and r.mon_updated > tlim]
-    astatus_l = [r.mon_availstatus for r in rows if r.mon_updated is not None
-and r.mon_updated > tlim]
+    ostatus_l = [r.mon_overallstatus for r in rows if r.mon_updated is not None and r.mon_updated > tlim]
+    astatus_l = [r.mon_availstatus for r in rows if r.mon_updated is not None and r.mon_updated > tlim]
     n_trusted_nodes = len(ostatus_l)
     n_nodes = len(rows)
     ostatus_l = set(ostatus_l)
@@ -2015,6 +2015,16 @@ def svc_log_update(svcname, astatus):
                                svc_availstatus=astatus)
         db.commit()
 
+def translate_encap_nodename(svcname, nodename):
+    q = db.svcmon.mon_svcname == svcname
+    q &= db.svcmon.mon_vmname == nodename
+    q &= db.svcmon.mon_containerstatus == 'up'
+    rows = db(q).select(db.svcmon.mon_nodname)
+    if len(rows) != 1:
+        # not encap ot vm started on multiple hv (pb)
+        return nodename
+    return rows.first().mon_nodname
+
 def __svcmon_update(vars, vals):
     # don't trust the server's time
     h = {}
@@ -2029,6 +2039,7 @@ def __svcmon_update(vars, vals):
         h['mon_hbstatus'] = 'undef'
     if 'mon_availstatus' not in h:
         h['mon_availstatus'] = compute_availstatus(h)
+    h['mon_nodname'] = translate_encap_nodename(h['mon_svcname'], h['mon_nodname'])
     generic_insert('svcmon', h.keys(), h.values())
     svc_status_update(h['mon_svcname'])
     update_dash_service_frozen(h['mon_svcname'], h['mon_nodname'], h['mon_svctype'], h['mon_frozen'])
