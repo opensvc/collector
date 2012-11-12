@@ -101,3 +101,11 @@ def ajax_actions():
     t.object_list = db(q).select(orderby=o)
     return t.html()
 
+@auth.requires_login()
+def action_queue():
+    t = DIV(
+          ajax_actions(),
+          _id='action_queue',
+        )
+    return dict(table=t)
+

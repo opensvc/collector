@@ -17,7 +17,7 @@
       <div class='header_logo'>
         <h3>{{=A((response.title or request.application), _href="http://www.opensvc.com")}}</h3>
       </div>
-      {{=queued_action_widget()}}
+      {{=DIV(A(IMG(_src=URL(r=request, c='static', f='action16.png')), _href=URL(r=request,c='action_queue',f='action_queue')), _class='search')}}
       {{if response.menu_auth:}}
       {{=MENU(response.menu_auth, _class='web2py-menu')}}
       {{pass}}
@@ -26,7 +26,6 @@
       {{pass}}
       <div class=spacer>&nbsp;</div>
     </div>
-    <div class=action_queue id=action_queue></div>
     <div class=spacer>&nbsp;</div>
     <div class=layout>
       <div class=spacer>&nbsp;</div>
