@@ -1,5 +1,28 @@
 import re
 
+def select_filter(fset_id):
+    # refuse to change filter for locked-filter users
+    q = db.auth_user.id == auth.user_id
+    rows = db(q).select(db.auth_user.lock_filter)
+    if len(rows) != 1:
+        return
+    if rows.first().lock_filter:
+        return
+
+    # ok, let's do it
+    q = db.gen_filterset_user.user_id == auth.user_id
+    if fset_id == "0":
+        db(q).delete()
+    else:
+        n = db(q).count()
+        if n > 1:
+            db(q).delete()
+            n = 0
+        if n == 1:
+            db(q).update(fset_id=fset_id)
+        elif n == 0:
+            db.gen_filterset_user.insert(user_id=auth.user_id, fset_id=fset_id)
+
 class ToolError(Exception):
     def __init__(self, value):
         self.value = value
@@ -628,6 +651,8 @@ class HtmlTable(object):
         return '.'.join((cp.table, cp.field))
 
     def drop_filters(self):
+        if request.vars.dbfilter is not None:
+            select_filter(request.vars.dbfilter)
         if request.vars.clear_filters != 'true':
             return
         q = db.column_filters.col_tableid==self.id
@@ -1457,7 +1482,7 @@ function js_link_%(id)s(){
     url=url.substring(0, url.indexOf('?'))
   }
   url=url+"?"
-  args="clear_filters=true"
+  args="clear_filters=true&dbfilter="+$("#avs%(id)s").val()
   $("#%(id)s").find("[name=fi]").each(function(){
     if ($(this).val().length==0) {return}
     args=args+'&'+$(this).attr('id')+"="+encodeURIComponent($(this).val())

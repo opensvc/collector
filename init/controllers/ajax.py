@@ -25,18 +25,7 @@ def ajax_set_user_prefs_column():
 @auth.requires_login()
 def ajax_select_filter():
     fset_id = request.args[0]
-    q = db.gen_filterset_user.user_id == auth.user_id
-    if fset_id == "0":
-        db(q).delete()
-    else:
-        n = db(q).count()
-        if n > 1:
-            db(q).delete()
-            n = 0
-        if n == 1:
-            db(q).update(fset_id=fset_id)
-        elif n == 0:
-            db.gen_filterset_user.insert(user_id=auth.user_id, fset_id=fset_id)
+    select_filter(fset_id)
     return "saved fset id %s"%fset_id
 
 @auth.requires_login()
