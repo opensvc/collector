@@ -214,7 +214,7 @@ def ajax_compare():
            _id='stat_day_svc',
          ),
          _class='float',
-         _style='min-width:400px',
+         _style='min-width:500px',
        ),
        DIV(
          DIV(T("Production ratio")),
@@ -222,7 +222,7 @@ def ajax_compare():
            _id='stat_day_svc_prd_ratio',
          ),
          _class='float',
-         _style='min-width:400px',
+         _style='min-width:500px',
        ),
        DIV(
          DIV(T("DRP ratio")),
@@ -230,7 +230,7 @@ def ajax_compare():
            _id='stat_day_svc_drp_ratio',
          ),
          _class='float',
-         _style='min-width:400px',
+         _style='min-width:500px',
        ),
        DIV(
          DIV(T("Clustering ratio")),
@@ -238,7 +238,7 @@ def ajax_compare():
            _id='stat_day_svc_clu_ratio',
          ),
          _class='float',
-         _style='min-width:400px',
+         _style='min-width:500px',
        ),
        DIV(
          XML('&nbsp;'),
@@ -254,7 +254,7 @@ def ajax_compare():
            _id='stat_day_nodes',
          ),
          _class='float',
-         _style='min-width:400px',
+         _style='min-width:500px',
        ),
        DIV(
          DIV(T("Virtualization ratio")),
@@ -262,7 +262,7 @@ def ajax_compare():
            _id='stat_day_nodes_virt_ratio',
          ),
          _class='float',
-         _style='min-width:400px',
+         _style='min-width:500px',
        ),
        DIV(
          XML('&nbsp;'),
