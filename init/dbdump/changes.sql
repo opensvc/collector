@@ -3107,4 +3107,5 @@ alter table saves add key idx2 (save_nodename, save_svcname);
 
 delete from comp_run_ruleset where rset_md5 not in (select distinct rset_md5 from comp_log);
 
+alter table stor_array_tgtid add column updated timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
 

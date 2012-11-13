@@ -842,6 +842,19 @@ def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
     # stor_array_proxy
     insert_array_proxy(auth[1], arrayid)
 
+    # clean up stor_array_*
+    sql = "delete from stor_array_dg where array_id not in (select id from stor_array)"
+    db.executesql(sql)
+
+    sql = "delete from stor_array_tgtid where array_id not in (select id from stor_array)"
+    db.executesql(sql)
+
+    sql = "delete from stor_array_proxy where array_id not in (select id from stor_array)"
+    db.executesql(sql)
+
+    sql = "delete from stor_array_dg_quota where stor_array_dg_quota.dg_id not in (select id from stor_array_dg)"
+    db.executesql(sql)
+
 def insert_dcss():
     return insert_dcs()
 
@@ -919,6 +932,8 @@ def insert_dcs(name=None, nodename=None):
         for wwn in s.port_list:
             vals.append([array_id, wwn])
         generic_insert('stor_array_tgtid', vars, vals)
+        sql = """delete from stor_array_tgtid where array_id=%s and updated < "%s" """%(array_id, str(now))
+        db.executesql(sql)
 
         # diskinfo
         vars = ['disk_id',
