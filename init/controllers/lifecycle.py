@@ -192,6 +192,10 @@ def ajax_lifecycle_os():
                      DIV(_id='stat_os_%s'%o),
                      _class='float',
                    ),
+                   DIV(
+                     XML('&nbsp;'),
+                     _class='spacer',
+                   ),
                    SCRIPT(
                      "stat_os('%(url)s', 'stat_os_%(os)s');"%dict(
                        os=o,
