@@ -2047,6 +2047,10 @@ def __svcmon_update(vars, vals):
         if a == 'mon_updated':
             continue
         h[a] = b
+    if 'mon_containerpath' in h:
+        # update container info only
+        generic_insert('svcmon', vars, vals)
+        return
     now = datetime.datetime.now()
     tmo = now - datetime.timedelta(minutes=15)
     h['mon_updated'] = now
