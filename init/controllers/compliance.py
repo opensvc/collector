@@ -5387,7 +5387,8 @@ def do_action(ids, action=None):
 
     q = db.comp_status.id.belongs(ids)
     q &= db.comp_status.run_nodename == db.nodes.nodename
-    q &= db.nodes.team_responsible.belongs(user_groups())
+    q &= (db.nodes.team_responsible.belongs(user_groups())) | \
+         (db.nodes.team_integ.belongs(user_groups()))
     rows = db(q).select(db.comp_status.run_nodename,
                         db.comp_status.run_svcname,
                         db.comp_status.run_module)

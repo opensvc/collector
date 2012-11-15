@@ -241,7 +241,7 @@ def del_fset_threshold(id):
     q = db.gen_filterset_check_threshold.id == id
     db(q).delete()
 
-@auth.requires_membership('CheckManager')
+@auth.requires_membership('CheckExec')
 def set_low_threshold(ids):
     if len(ids) == 0:
         raise ToolError("No check selected")
@@ -249,8 +249,13 @@ def set_low_threshold(ids):
     if val is None or len(val) == 0:
         raise ToolError("New threshold value invalid")
     val = int(val)
+    ugroups = user_groups()
     for i in ids:
-        rows = db(db.checks_live.id==i).select()
+        q = db.checks_live.id==i
+        if 'Manager' not in ugroups:
+            q &= db.nodes.nodename == db.checks_live.chk_nodename
+            q &= (db.nodes.team_responsible.belongs(ugroups)) | (db.nodes.team_integ.belongs(ugroups))
+        rows = db(q).select(db.checks_live.ALL)
         if len(rows) != 1:
             continue
         chk = rows[0]
@@ -275,7 +280,7 @@ def set_low_threshold(ids):
                          chk_changed=now)
         update_thresholds(rows[0])
 
-@auth.requires_membership('CheckManager')
+@auth.requires_membership('CheckExec')
 def set_high_threshold(ids):
     if len(ids) == 0:
         raise ToolError("No check selected")
@@ -283,8 +288,13 @@ def set_high_threshold(ids):
     if val is None or len(val) == 0:
         raise ToolError("New threshold value invalid")
     val = int(val)
+    ugroups = user_groups()
     for i in ids:
-        rows = db(db.checks_live.id==i).select()
+        q = db.checks_live.id==i
+        if 'Manager' not in ugroups:
+            q &= db.nodes.nodename == db.checks_live.chk_nodename
+            q &= (db.nodes.team_responsible.belongs(ugroups)) | (db.nodes.team_integ.belongs(ugroups))
+        rows = db(q).select(db.checks_live.ALL)
         if len(rows) != 1:
             continue
         chk = rows[0]
@@ -309,12 +319,17 @@ def set_high_threshold(ids):
                          chk_changed=now)
         update_thresholds(rows[0])
 
-@auth.requires_membership('CheckManager')
+@auth.requires_membership('CheckExec')
 def reset_thresholds(ids):
     if len(ids) == 0:
         raise ToolError("No check selected")
+    ugroups = user_groups()
     for i in ids:
-        rows = db(db.checks_live.id==i).select()
+        q = db.checks_live.id==i
+        if 'Manager' not in ugroups:
+            q &= db.nodes.nodename == db.checks_live.chk_nodename
+            q &= (db.nodes.team_responsible.belongs(ugroups)) | (db.nodes.team_integ.belongs(ugroups))
+        rows = db(q).select(db.checks_live.ALL)
         if len(rows) != 1:
             continue
         chk = rows[0]
