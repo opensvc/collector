@@ -609,10 +609,11 @@ class table_checks(HtmlTable):
         if 'CheckManager' in user_groups():
             self.form_add_fset_threshold = self.add_fset_threshold_sqlform()
             self.form_del_fset_threshold = self.del_fset_threshold()
+            self += HtmlTableMenu('Contuextual threshold', 'filter16', ['add_fset_threshold', 'del_fset_threshold'])
+        if 'CheckManager' in user_groups() or 'CheckExec' in user_groups():
             self.additional_tools.append('set_high_threshold')
             self.additional_tools.append('set_low_threshold')
             self.additional_tools.append('reset_thresholds')
-            self += HtmlTableMenu('Contuextual threshold', 'filter16', ['add_fset_threshold', 'del_fset_threshold'])
             self.additional_tools.append('delete_checks')
 
     def set_low_threshold(self):
@@ -775,7 +776,7 @@ class table_checks(HtmlTable):
         return d
 
 
-@auth.requires_membership('NodeManager')
+@auth.requires_membership('CheckExec')
 def check_del(ids):
     if len(ids) == 0:
         raise ToolError("No check selected")
