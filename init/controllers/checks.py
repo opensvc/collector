@@ -279,6 +279,12 @@ def set_low_threshold(ids):
                          chk_changed_by=user_name(),
                          chk_changed=now)
         update_thresholds(rows[0])
+        where = ""
+        if len(chk.chk_svcname) > 0: where = chk.chk_svcname + "@"
+        where += chk.chk_nodename
+        _log('checks.thresholds.set',
+             'set high threshold to %(val)d for check %(inst)s on %(where)s',
+             dict(val=val, where=where, inst='.'.join((chk.chk_type, chk.chk_instance))))
 
 @auth.requires_membership('CheckExec')
 def set_high_threshold(ids):
@@ -318,6 +324,12 @@ def set_high_threshold(ids):
                          chk_changed_by=user_name(),
                          chk_changed=now)
         update_thresholds(rows[0])
+        where = ""
+        if len(chk.chk_svcname) > 0: where = chk.chk_svcname + "@"
+        where += chk.chk_nodename
+        _log('checks.thresholds.set',
+             'set high threshold to %(val)d for check %(inst)s on %(where)s',
+             dict(val=val, where=where, inst='.'.join((chk.chk_type, chk.chk_instance))))
 
 @auth.requires_membership('CheckExec')
 def reset_thresholds(ids):
@@ -338,6 +350,12 @@ def reset_thresholds(ids):
         q &= db.checks_settings.chk_instance==chk.chk_instance
         settings = db(q).delete()
         update_thresholds(chk)
+        where = ""
+        if len(chk.chk_svcname) > 0: where = chk.chk_svcname + "@"
+        where += chk.chk_nodename
+        _log('checks.thresholds.reset',
+             'reset thresholds for check %(inst)s on %(where)s',
+             dict(where=where, inst='.'.join((chk.chk_type, chk.chk_instance))))
 
 class col_chk_value(HtmlTableColumn):
     def html(self, o):
