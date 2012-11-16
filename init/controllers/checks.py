@@ -785,8 +785,11 @@ def check_del(ids):
     q &= db.checks_live.chk_nodename == db.nodes.nodename
     groups = user_groups()
     if 'Manager' not in groups:
-        q &= db.nodes.team_responsible.belongs(groups)
+        q &= (db.nodes.team_responsible.belongs(groups)) | \
+             (db.nodes.team_integ.belongs(groups))
     rows = db(q).select(db.checks_live.ALL)
+    if len(rows) == 0:
+        return
     u = ', '.join([":".join((r.chk_nodename,
                              r.chk_type,
                              r.chk_instance)) for r in rows])
