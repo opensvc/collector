@@ -3109,3 +3109,4 @@ delete from comp_run_ruleset where rset_md5 not in (select distinct rset_md5 fro
 
 alter table stor_array_tgtid add column updated timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
 
+alter table resmon modify column rid varchar(16);
