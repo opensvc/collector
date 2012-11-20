@@ -449,6 +449,7 @@ class HtmlTable(object):
                 ),
                 SCRIPT(
                  """$(this).keypress(function(event) {
+  if ($('input').is(":focus")) { return ; } ;
   if ( event.which == 108 ) {
      event.preventDefault();
      js_link_%s();
@@ -475,6 +476,7 @@ class HtmlTable(object):
               ),
               SCRIPT(
                  """$(this).keypress(function(event) {
+  if ($('input').is(":focus")) { return ; } ;
   if ( event.which == 114 ) {
      event.preventDefault();
      ajax_submit_%s();
