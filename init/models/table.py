@@ -447,6 +447,14 @@ class HtmlTable(object):
                   _class='link16',
                   _id='link_'+self.id,
                 ),
+                SCRIPT(
+                 """$(this).keypress(function(event) {
+  if ( event.which == 108 ) {
+     event.preventDefault();
+     js_link_%s();
+   }
+});"""%self.id,
+              ),
                 _class='floatw',
               ),
             )
@@ -464,6 +472,14 @@ class HtmlTable(object):
                   _id='refresh_'+self.id,
                 ),
                 _class='floatw',
+              ),
+              SCRIPT(
+                 """$(this).keypress(function(event) {
+  if ( event.which == 114 ) {
+     event.preventDefault();
+     ajax_submit_%s();
+   }
+});"""%self.id,
               ),
             )
         return d
