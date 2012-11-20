@@ -3110,3 +3110,13 @@ delete from comp_run_ruleset where rset_md5 not in (select distinct rset_md5 fro
 alter table stor_array_tgtid add column updated timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
 
 alter table resmon modify column rid varchar(16);
+
+alter table svcmon drop key mon_svcname_5;
+
+alter table svcmon add unique key mon_svcname_5 (`mon_svcname`,`mon_nodname`, mon_vmname);
+
+alter table svcmon modify column mon_vmname varchar(50) default "";
+
+alter table resmon add column vmname varchar(60) default "";
+
+

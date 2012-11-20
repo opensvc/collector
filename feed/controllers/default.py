@@ -1870,7 +1870,7 @@ def _svcmon_update(vars, vals):
         return
     if isinstance(vals[0], list):
         for v in vals:
-            __svcmon_update(vars, v)
+            _svcmon_update(vars, v)
     else:
         __svcmon_update(vars, vals)
 
@@ -1921,6 +1921,8 @@ def compute_availstatus(h):
               'mon_fsstatus',
               'mon_appstatus',
               'mon_diskstatus']:
+        if sn not in h:
+            h[sn] = 'n/a'
         if h[sn] in ['warn', 'todo']: return 'warn'
         elif h[sn] == 'undef': return 'undef'
         elif h[sn] == 'n/a':
@@ -2058,7 +2060,7 @@ def __svcmon_update(vars, vals):
         h['mon_hbstatus'] = 'undef'
     if 'mon_availstatus' not in h:
         h['mon_availstatus'] = compute_availstatus(h)
-    h['mon_nodname'] = translate_encap_nodename(h['mon_svcname'], h['mon_nodname'])
+    #h['mon_nodname'] = translate_encap_nodename(h['mon_svcname'], h['mon_nodname'])
     generic_insert('svcmon', h.keys(), h.values())
     svc_status_update(h['mon_svcname'])
     update_dash_service_frozen(h['mon_svcname'], h['mon_nodname'], h['mon_svctype'], h['mon_frozen'])
