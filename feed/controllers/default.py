@@ -2053,6 +2053,21 @@ def __svcmon_update(vars, vals):
         # update container info only
         generic_insert('svcmon', vars, vals)
         return
+
+    if 'mon_vmname' not in h:
+        # COMPAT: old mono-container agent. fetch vmname from svcmon.
+        q = db.svcmon.mon_svcname == h['mon_svcname']
+        q &= db.svcmon.mon_nodname == h['mon_nodname']
+        q &= db.svcmon.mon_vmname != None
+        q &= db.svcmon.mon_vmname != ""
+        row = db(q).select(db.svcmon.mon_vmname).first()
+        if row is not None:
+            h['mon_vmname'] = row.mon_vmname
+        q = db.services.svc_name == h['mon_svcname']
+        row = db(q).select(db.services.svc_containertype).first()
+        if row is not None:
+            h['mon_vmtype'] = row.svc_containertype
+
     now = datetime.datetime.now()
     tmo = now - datetime.timedelta(minutes=15)
     h['mon_updated'] = now
