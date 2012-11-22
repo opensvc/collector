@@ -86,6 +86,7 @@ db.define_table('svcmon',
     Field('mon_changed'),
     Field('mon_frozen'),
     Field('mon_vmname'),
+    Field('mon_vmtype'),
     migrate=False)
 
 db.define_table('SVCactions',

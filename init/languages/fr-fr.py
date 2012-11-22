@@ -778,6 +778,7 @@
 'Service configuration file for %(svc)s': 'Configuration de %(svc)s',
 'Service count': 'Nombre de services',
 'Service creation date': 'Date de création du service',
+'Service mode': 'Service mode',
 'Service name': 'Nom de service',
 'Service overall status': 'Etat global du service',
 'Service status': 'Etat de service',

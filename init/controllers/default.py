@@ -813,6 +813,7 @@ class table_svcmon(HtmlTable):
             'svc_updated',
             'svc_type',
             'svc_cluster_type',
+            'mon_vmtype',
             'mon_vmname',
             'mon_vcpus',
             'mon_vmem',

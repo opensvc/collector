@@ -1872,6 +1872,7 @@ class col_containertype(HtmlTableColumn):
         os = self.t.colprops['mon_guestos'].get(o)
         if (os is None or len(os) == 0):
             key = None
+            # TODO: add vmtype icons ?
             if 'os_name' in self.t.cols:
                 key = 'os_name'
             if key is not None:
@@ -2173,6 +2174,7 @@ v_services_cols = [
 
 svcmon_cols = [
     'mon_vmname',
+    'mon_vmtype',
     'mon_guestos',
     'mon_vcpus',
     'mon_vmem',
@@ -2240,8 +2242,8 @@ v_services_colprops = {
              img = 'svc',
              table = 'v_services',
             ),
-    'svc_containertype': col_containertype(
-             title = 'Container type',
+    'svc_containertype': HtmlTableColumn(
+             title = 'Service mode',
              field='svc_containertype',
              display = False,
              img = 'svc',
@@ -2509,6 +2511,13 @@ svcmon_colprops = {
              title = 'Container name',
              field='mon_vmname',
              display = False,
+             img = 'svc',
+             table = 'svcmon',
+            ),
+    'mon_vmtype': HtmlTableColumn(
+             title = 'Container type',
+             field='mon_vmtype',
+             display = True,
              img = 'svc',
              table = 'svcmon',
             ),
