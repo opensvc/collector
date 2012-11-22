@@ -825,11 +825,18 @@ def cron_alerts_daily():
     purge_stor_array()
     update_dg_quota()
     purge_alerts_on_nodes_without_asset()
+    cron_resmon_purge()
 
 def cron_alerts_hourly():
     rets = []
     rets.append(alerts_svcmon_not_updated())
     return rets
+
+def cron_resmon_purge():
+    sql = """delete from resmon where
+              updated < date_sub(now(), interval 1 day)"""
+    db.executesql(sql)
+    db.commit()
 
 def cron_feed_monitor():
     e = db(db.feed_queue.id>0).select(limitby=(0,1)).first()

@@ -399,51 +399,6 @@ def viz_cron_cleanup():
     return viz().viz_cron_cleanup()
 
 @auth.requires_login()
-def ajax_res_status():
-    svcname = request.vars.mon_svcname
-    node = request.vars.node
-    return res_status(svcname, node)
-
-def res_status(svcname, node):
-    rows = db((db.resmon.svcname==svcname)&(db.resmon.nodename==node)).select(orderby=db.resmon.rid)
-    if len(rows) == 0:
-        return SPAN()
-    updated = rows.first().updated
-
-    def print_row(row):
-        if row.updated < now - datetime.timedelta(minutes=15):
-            cssclass = 'status_undef'
-        else:
-            cssclass = 'status_'+row.res_status.replace(" ", "_")
-        return (TR(
-                 TD(row.rid),
-                 TD(row.res_status, _class='%s'%cssclass),
-                 TD(row.res_desc),
-               ),
-               TR(
-                 TD(),
-                 TD(),
-                 TD(PRE(row.res_log)),
-               ))
-    t = TABLE(
-          TR(
-            TH('id'),
-            TH('status'),
-            TH('description'),
-          ),
-          map(print_row, rows)
-    )
-    return DIV(
-             DIV(
-               H2("%(svc)s@%(node)s"%dict(svc=svcname, node=node)),
-               T("(updated on %(d)s)", dict(d=str(updated))),
-               _style="text-align:center;margin-bottom:20px",
-             ),
-             t,
-             _class="dashboard",
-           )
-
-@auth.requires_login()
 def ajax_service():
     rowid = request.vars.rowid
     tab = request.vars.tab
@@ -501,14 +456,6 @@ def ajax_service():
         TD(s['svc_updated'])
       ),
       TR(
-        TD(T('container type'), _style='font-style:italic'),
-        TD(s['svc_containertype'])
-      ),
-      TR(
-        TD(T('container name'), _style='font-style:italic'),
-        TD(s['mon_vmname'])
-      ),
-      TR(
         TD(T('responsibles'), _style='font-style:italic'),
         TD(s['responsibles'])
       ),
@@ -541,29 +488,6 @@ def ajax_service():
         TD(s['mon_vmem'])
       ),
     )
-
-    def print_status_row(row):
-        r = DIV(
-              H2(row.mon_nodname, _style='text-align:center'),
-              svc_status(row),
-              _style='float:left; padding:0 1em',
-            )
-        return r
-    status = map(print_status_row, rows)
-    t_status = SPAN(
-                 status,
-               )
-
-    def print_rstatus_row(row):
-        r = DIV(
-              res_status(row.mon_svcname, row.mon_nodname),
-              _style='float:left',
-            )
-        return r
-    rstatus = map(print_rstatus_row, rows)
-    t_rstatus = SPAN(
-                  rstatus,
-                )
 
     def js(tab, rowid):
         buff = ""
@@ -674,12 +598,12 @@ def ajax_service():
             _class='cloud_shown',
           ),
           DIV(
-            t_status,
+            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
             _id='tab2_'+str(rowid),
             _class='cloud',
           ),
           DIV(
-            t_rstatus,
+            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
             _id='tab3_'+str(rowid),
             _class='cloud',
           ),
@@ -760,7 +684,21 @@ def ajax_service():
                url=URL(r=request, c='ajax_node', f='ajax_svc_stor',
                        args=['tab6_'+str(rowid), request.vars.node])
             ),
-            """callbacks = {"tab6": %(id)s_load_stor,
+            "function s%(rid)s_load_svcmon(){ajax('%(url)s', [], '%(id)s')}"%dict(
+               id='tab2_'+str(rowid),
+               rid=str(rowid),
+               url=URL(r=request, c='default', f='svcmon_svc',
+                       args=['tab2_'+str(rowid), request.vars.node])
+            ),
+            "function s%(rid)s_load_resmon(){ajax('%(url)s', [], '%(id)s')}"%dict(
+               id='tab3_'+str(rowid),
+               rid=str(rowid),
+               url=URL(r=request, c='resmon', f='ajax_resmon_svc',
+                       args=['tab3_'+str(rowid), request.vars.node])
+            ),
+            """callbacks = {"tab2": %(id)s_load_svcmon,
+                            "tab3": %(id)s_load_resmon,
+                            "tab6": %(id)s_load_stor,
                             "tab7": %(id)s_load_grpprf,
                             "tab8": %(id)s_load_wiki,
                             "tab9": %(id)s_load_svcmon_log,
@@ -1479,5 +1417,37 @@ def svcmon_node():
     t.dbfilterable = False
     t.columnable = False
     t.refreshable = False
+    return t.html()
+
+@auth.requires_login()
+def svcmon_svc():
+    tid = request.args[0]
+    svcname = request.args[1]
+    t = table_svcmon(tid, 'ajax_svcmon')
+    t.cols = [
+     'svc_ha',
+     'svc_availstatus',
+     'svc_status',
+     'svc_cluster_type',
+     'mon_vmtype',
+     'mon_vmname',
+     'mon_nodname',
+     'mon_availstatus',
+     'mon_overallstatus',
+    ]
+
+    q = _where(None, 'v_svcmon', domain_perms(), 'mon_nodname')
+    q &= db.v_svcmon.mon_svcname == svcname
+    t.object_list = db(q).select()
+    t.hide_tools = True
+    t.pageable = False
+    t.linkable = False
+    t.filterable = False
+    t.exportable = False
+    t.dbfilterable = False
+    t.columnable = False
+    t.refreshable = False
+    t.checkboxes = False
+    t.extrarow = False
     return t.html()
 

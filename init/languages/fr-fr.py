@@ -724,6 +724,7 @@
 'Reset Password key': 'Remise à zéro de la clé du mot de passe',
 'Reset thresholds': 'Remise aux défauts des seuils',
 'Resetting thresholds will definitively lose the custom thresholds of the selected checks. Please confirm reset': 'La remise aux défauts des seuils efface définitivement les personnalisations des seuils de sonde. Merci de confirmer la remise aux défauts',
+'Resource id': 'Resource id',
 'Resource status of %(svc)s': 'Etat des resources de %(svc)s',
 'Resp': 'Resp',
 'Responsible groups': 'Groupes responsables',

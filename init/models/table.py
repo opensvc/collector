@@ -1945,7 +1945,13 @@ class col_svc(HtmlTableColumn):
 class col_status(HtmlTableColumn):
     def html(self, o):
         s = self.get(o)
-        if s is None or (type(self.t.colprops['mon_updated'].get(o)) == datetime.datetime and self.t.colprops['mon_updated'].get(o) < now - datetime.timedelta(minutes=15)):
+        if 'mon_updated' in self.t.colprops:
+            key = 'mon_updated'
+        elif 'updated' in self.t.colprops:
+            key = 'updated'
+        else:
+            raise Exception("no known updated key name")
+        if s is None or (type(self.t.colprops[key].get(o)) == datetime.datetime and self.t.colprops[key].get(o) < now - datetime.timedelta(minutes=15)):
             c = 'boxed_small boxed_status boxed_status_undef'
         else:
             c = 'boxed_small boxed_status boxed_status_'+s.replace(" ", "_")
@@ -2510,7 +2516,7 @@ svcmon_colprops = {
     'mon_vmname': col_node(
              title = 'Container name',
              field='mon_vmname',
-             display = False,
+             display = True,
              img = 'svc',
              table = 'svcmon',
             ),
