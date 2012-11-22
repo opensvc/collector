@@ -60,6 +60,8 @@ response.menu = [
          [
              [DIV(T('Services'), _class='svc'), False,
               URL(request.application,'default','svcmon')],
+             [DIV(T('Resources'), _class='svc'), False,
+              URL(request.application,'resmon','resmon')],
              [DIV(T('Nodes'), _class='node16'), False,
               URL(request.application,'nodes','nodes')],
              [DIV(T('Actions'), _class='action16'), False,
