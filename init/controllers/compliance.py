@@ -5363,6 +5363,21 @@ class table_comp_status(HtmlTable):
             )
         return d
 
+@auth.requires_login()
+def fix_module_on_node():
+    nodename = request.args[0]
+    module = request.args[1]
+    ug = user_groups()
+    q = db.comp_status.run_nodename == nodename
+    q &= db.comp_status.run_module == module
+    q &= db.comp_status.run_nodename == db.nodes.nodename
+    q &= (db.nodes.team_responsible.belongs(ug)) | (db.nodes.team_integ.belongs(ug))
+    row = db(q).select(db.comp_status.id).first()
+    if row is None:
+        return
+    ids = [row.id]
+    do_action(ids, 'fix')
+
 @auth.requires_membership('CompExec')
 def do_action(ids, action=None):
     if action is None or len(action) == 0:
@@ -7528,7 +7543,11 @@ def show_compdiff(svcname):
             h.append(TD(
               IMG(_src=URL(r=request,c='static',f=img_h[row[2]])),
               _style="text-align:center"+d,
-              _title=str(row[4]) + '\n' + row[3]
+              _title=str(row[4]) + '\n' + row[3],
+              _onclick="""if (confirm("%(text)s")){ajax('%(url)s',[], this)};"""%dict(
+                  url=URL(r=request, f='fix_module_on_node', args=[row[0], module]),
+                  text=T("Please confirm you want to fix the '%s' compliance module on the node '%s'"%(module, row[0])),
+              )
             ))
         return TR(h, _class=bg)
 
