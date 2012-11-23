@@ -642,6 +642,7 @@ class col_dash_links(HtmlTableColumn):
             dash_type == "service configuration not updated" or \
             dash_type == "service available but degraded" or \
             dash_type == "service frozen" or \
+            dash_type == "flex error" or \
             dash_type == "service unavailable":
            l.append(self.link_svcmon(o))
        elif dash_type == "node warranty expired" or \
