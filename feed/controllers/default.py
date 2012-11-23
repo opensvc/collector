@@ -440,7 +440,10 @@ def __resmon_update(vars, vals):
         h[a] = b
     if 'nodename' in h and 'svcname' in h:
         _resmon_clean(h['nodename'], h['svcname'])
-        h['nodename'] = translate_encap_nodename( h['svcname'],  h['nodename'])
+        nodename, vmname, vmtype = translate_encap_nodename(h['svcname'], h['nodename'])
+        if nodename is not None:
+            h['vmname'] = vmname
+            h['nodename'] = nodename
         _resmon_clean(h['nodename'], h['svcname'])
     generic_insert('resmon', vars, vals)
 
@@ -2033,14 +2036,14 @@ def svc_log_update(svcname, astatus):
         db.commit()
 
 def translate_encap_nodename(svcname, nodename):
-    q = db.svcmon.mon_svcname == svcname
-    q &= db.svcmon.mon_vmname == nodename
-    q &= db.svcmon.mon_containerstatus == 'up'
-    rows = db(q).select(db.svcmon.mon_nodname)
-    if len(rows) != 1:
+    q = db.svcmon.mon_vmname == nodename
+    q &= db.svcmon.mon_svcname == svcname
+    q &= db.svcmon.mon_containerstatus.belongs(['up', 'n/a'])
+    row = db(q).select(db.svcmon.mon_nodname, db.svcmon.mon_vmname, db.svcmon.mon_vmtype).first()
+    if row is None:
         # not encap ot vm started on multiple hv (pb)
-        return nodename
-    return rows.first().mon_nodname
+        return None, None, None
+    return row.mon_nodname, row.mon_vmname, row.mon_vmtype
 
 def __svcmon_update(vars, vals):
     # don't trust the server's time
@@ -2068,6 +2071,12 @@ def __svcmon_update(vars, vals):
         if row is not None:
             h['mon_vmtype'] = row.svc_containertype
 
+    nodename, vmname, vmtype = translate_encap_nodename(h['mon_svcname'], h['mon_nodname'])
+    if nodename is not None:
+        h['mon_vmname'] = vmname
+        h['mon_vmtype'] = vmtype
+        h['mon_nodname'] = nodename
+
     now = datetime.datetime.now()
     tmo = now - datetime.timedelta(minutes=15)
     h['mon_updated'] = now
@@ -2075,7 +2084,6 @@ def __svcmon_update(vars, vals):
         h['mon_hbstatus'] = 'undef'
     if 'mon_availstatus' not in h:
         h['mon_availstatus'] = compute_availstatus(h)
-    #h['mon_nodname'] = translate_encap_nodename(h['mon_svcname'], h['mon_nodname'])
     generic_insert('svcmon', h.keys(), h.values())
     svc_status_update(h['mon_svcname'])
     update_dash_service_frozen(h['mon_svcname'], h['mon_nodname'], h['mon_svctype'], h['mon_frozen'])
