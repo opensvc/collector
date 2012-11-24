@@ -410,7 +410,7 @@ def _update_asset(vars, vals, auth):
 def res_action_batch(vars, vals, auth):
     generic_insert('SVCactions', vars, vals)
 
-def _resmon_clean(node, svcname):
+def _resmon_clean(node, svcname, vmname):
     if node is None or node == '':
         return 0
     if svcname is None or svcname == '':
@@ -439,12 +439,13 @@ def __resmon_update(vars, vals):
     for a,b in zip(vars, vals[0]):
         h[a] = b
     if 'nodename' in h and 'svcname' in h:
-        _resmon_clean(h['nodename'], h['svcname'])
         nodename, vmname, vmtype = translate_encap_nodename(h['svcname'], h['nodename'])
         if nodename is not None:
             h['vmname'] = vmname
             h['nodename'] = nodename
-        _resmon_clean(h['nodename'], h['svcname'])
+        if 'vmname' not in h:
+            h['vmname'] = ""
+        _resmon_clean(h['nodename'], h['svcname'], h['vmname'])
     generic_insert('resmon', vars, vals)
 
 @auth_uuid
