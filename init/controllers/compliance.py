@@ -7546,7 +7546,7 @@ def show_compdiff(svcname):
               _title=str(row[4]) + '\n' + row[3],
               _onclick="""if (confirm("%(text)s")){ajax('%(url)s',[], this)};"""%dict(
                   url=URL(r=request, f='fix_module_on_node', args=[row[0], module]),
-                  text=T("Please confirm you want to fix the '%s' compliance module on the node '%s'"%(module, row[0])),
+                  text=T("Please confirm you want to fix the '%(mod)s' compliance module on the node '%(node)s'", dict(mod=module, node=row[0])),
               )
             ))
         return TR(h, _class=bg)
