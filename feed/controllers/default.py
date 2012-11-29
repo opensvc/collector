@@ -254,6 +254,9 @@ def _update_service(vars, vals, auth):
     generic_insert('services', vars, vals)
     db.commit()
     update_dash_service_not_updated(h['svc_name'].strip("'"))
+    nodename, vmname, vmtype = translate_encap_nodename(h['svc_name'], auth[1])
+    if nodename is not None:
+        return
     if 'svc_vmname' in h:
         vars = ['mon_svcname',
                 'mon_nodname',

@@ -657,6 +657,7 @@
 'Please confirm record deletion': "Merci de confirmer la suppression d'enregistrements",
 'Please confirm service instances deletion': 'Merci de confirmer la suppression des instances',
 'Please confirm the detachment of group %(r)s from segment %(name)s': 'Merci de confirmer le détachement du groupe %(r)s du segment %(name)s',
+"Please confirm you want to fix the '%(mod)s' compliance module on the node '%(node)s'": "Please confirm you want to fix the '%(mod)s' compliance module on the node '%(node)s'",
 "Please confirm you want to fix the 'xis-hp.adm.ddmi' compliance module on the node 's64lmwbicje'": "Please confirm you want to fix the 'xis-hp.adm.ddmi' compliance module on the node 's64lmwbicje'",
 "Please confirm you want to fix the 'xis-hp.adm.ddmi' compliance module on the node 's64lmwbictt'": "Please confirm you want to fix the 'xis-hp.adm.ddmi' compliance module on the node 's64lmwbictt'",
 "Please confirm you want to fix the 'xis-hp.linux.sys.netsnmp' compliance module on the node 's64lmwbicje'": "Please confirm you want to fix the 'xis-hp.linux.sys.netsnmp' compliance module on the node 's64lmwbicje'",
