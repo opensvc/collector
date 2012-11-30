@@ -1802,7 +1802,7 @@ $("#%(n)s_container").append("\
         if 'fmt' in f:
             l += [DIV(
                     DIV('fmt', _style='display:table-cell', _class="hd16"),
-                    DIV(f['fmt'], _style='display:table-cell'),
+                    DIV(PRE(f['fmt']), _style='display:table-cell'),
                     _style="display:table-row",
                   )]
         if 'ref' in f:
@@ -1999,7 +1999,10 @@ Date();$("#%(n)s_container").append("<div style='display:table-row'><span class=
         c = self.t.colprops['var_class'].get(o)
         if not hasattr(self, 'html_'+str(c)):
             return self.html_raw(o)
-        return getattr(self, 'html_'+str(c))(o)
+        try:
+            return getattr(self, 'html_'+str(c))(o)
+        except:
+            return self.html_raw(o)
 
     def _form(self, o):
         c = self.t.colprops['var_class'].get(o)
