@@ -1434,7 +1434,9 @@ def svcmon_svc():
      'mon_nodname',
      'mon_availstatus',
      'mon_overallstatus',
+     'mon_updated',
     ]
+    t.colprops['mon_updated'].display = True
 
     q = _where(None, 'v_svcmon', domain_perms(), 'mon_nodname')
     q &= db.v_svcmon.mon_svcname == svcname
