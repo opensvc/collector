@@ -808,11 +808,19 @@ def purge_alerts_on_nodes_without_asset():
     q = db.dashboard.dash_type == "node information not updated"
     q &= db.nodes.nodename == None
     ids = map(lambda x: x.id, db(q).select(db.dashboard.id, left=l))
-    if len(ids) == 0:
-        return
-    q = db.dashboard.id.belongs(ids)
-    db(q).delete()
-    db.commit()
+    if len(ids) > 0:
+        q = db.dashboard.id.belongs(ids)
+        db(q).delete()
+        db.commit()
+
+    l = db.svcmon.on(db.dashboard.dash_nodename==db.svcmon.mon_nodname)
+    q = db.dashboard.dash_type == "node without asset information"
+    q &= db.svcmon.mon_nodname == None
+    ids = map(lambda x: x.id, db(q).select(db.dashboard.id, left=l))
+    if len(ids) > 0:
+        q = db.dashboard.id.belongs(ids)
+        db(q).delete()
+        db.commit()
 
 def cron_alerts_daily():
     alerts_apps_without_responsible()

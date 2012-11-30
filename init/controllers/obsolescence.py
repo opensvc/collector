@@ -507,27 +507,36 @@ def update_dash_obs_os_warn(obs_name=None):
         where_obs_name = """o.obs_name = "%(obs_name)s" and"""%dict(obs_name=obs_name)
         where_dash_dict = """dash_dict like '%%"o": "%(obs_name)s"%%' and"""%dict(obs_name=obs_name)
 
-    sql = """select o.obs_name from obsolescence o
-                 join nodes n on
-                   o.obs_name = concat_ws(' ',n.os_name,n.os_vendor,n.os_release,n.os_update)
-               where
-                 %(where_obs_name)s
-                 o.obs_type = "os" and (
-                  o.obs_alert_date is NULL or
-                  o.obs_alert_date = "0000-00-00 00:00:00" or
-                  o.obs_warn_date >= now() or
-                  o.obs_alert_date <= now()
-                 )
-          """%dict(where_obs_name=where_obs_name)
-    rows = db.executesql(sql)
-    for row in rows:
+    if obs_name is not None:
+        sql = """select o.obs_name from obsolescence o
+                     join nodes n on
+                       o.obs_name = concat_ws(' ',n.os_name,n.os_vendor,n.os_release,n.os_update)
+                   where
+                     %(where_obs_name)s
+                     o.obs_type = "os" and (
+                      o.obs_alert_date is NULL or
+                      o.obs_alert_date = "0000-00-00 00:00:00" or
+                      o.obs_warn_date >= now() or
+                      o.obs_alert_date <= now()
+                     )
+              """%dict(where_obs_name=where_obs_name)
+        rows = db.executesql(sql)
+        for row in rows:
+            sql = """delete from dashboard
+                      where
+                        dash_dict like '%%"o": "%(obs_name)s"%%' and
+                        dash_type="os obsolescence warning"
+                  """%dict(obs_name=row[0])
+            db.executesql(sql)
+        db.commit()
+    else:
         sql = """delete from dashboard
-                  where
-                    dash_dict like '%%"o": "%(obs_name)s"%%' and
-                    dash_type="os obsolescence warning"
-              """%dict(obs_name=row[0])
+                      where
+                        dash_updated < date_sub(now(), interval 2 day) and
+                        dash_type="os obsolescence warning"
+                  """
         db.executesql(sql)
-    db.commit()
+        db.commit()
 
     sql = """insert into dashboard
                select
@@ -572,26 +581,35 @@ def update_dash_obs_os_alert(obs_name=None):
         where_obs_name = """o.obs_name = "%(obs_name)s" and"""%dict(obs_name=obs_name)
         where_dash_dict = """dash_dict like '%%"o": "%(obs_name)s"%%' and"""%dict(obs_name=obs_name)
 
-    sql = """select o.obs_name from obsolescence o
-                 join nodes n on
-                   o.obs_name = concat_ws(' ',n.os_name,n.os_vendor,n.os_release,n.os_update)
-               where
-                 %(where_obs_name)s
-                 o.obs_type = "os" and (
-                  o.obs_alert_date is NULL or
-                  o.obs_alert_date = "0000-00-00 00:00:00" or
-                  o.obs_alert_date >= now()
-                 )
-          """%dict(where_obs_name=where_obs_name)
-    rows = db.executesql(sql)
-    for row in rows:
+    if obs_name is not None:
+        sql = """select o.obs_name from obsolescence o
+                     join nodes n on
+                       o.obs_name = concat_ws(' ',n.os_name,n.os_vendor,n.os_release,n.os_update)
+                   where
+                     %(where_obs_name)s
+                     o.obs_type = "os" and (
+                      o.obs_alert_date is NULL or
+                      o.obs_alert_date = "0000-00-00 00:00:00" or
+                      o.obs_alert_date >= now()
+                     )
+              """%dict(where_obs_name=where_obs_name)
+        rows = db.executesql(sql)
+        for row in rows:
+            sql = """delete from dashboard
+                      where
+                        dash_dict like '%%"o": "%(obs_name)s"%%' and
+                        dash_type="os obsolescence alert"
+                  """%dict(obs_name=row[0])
+            db.executesql(sql)
+        db.commit()
+    else:
         sql = """delete from dashboard
-                  where
-                    dash_dict like '%%"o": "%(obs_name)s"%%' and
-                    dash_type="os obsolescence alert"
-              """%dict(obs_name=row[0])
+                      where
+                        dash_updated < date_sub(now(), interval 2 day) and
+                        dash_type="os obsolescence alert"
+                  """
         db.executesql(sql)
-    db.commit()
+        db.commit()
 
     sql = """insert into dashboard
                select
