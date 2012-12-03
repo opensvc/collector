@@ -879,6 +879,7 @@ db.define_table('checks_live',
     Field('chk_value', 'integer'),
     Field('chk_low', 'integer'),
     Field('chk_high', 'integer'),
+    Field('chk_err', 'integer'),
     Field('chk_threshold_provider', 'string', length=60),
     migrate=False)
 

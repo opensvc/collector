@@ -3129,3 +3129,4 @@ alter table resmon drop key resmon_1;
 
 alter table resmon add unique key resmon_1 (`svcname`,`nodename`,`vmname`, `rid`);
 
+alter table checks_live add column chk_err tinyint default 0;

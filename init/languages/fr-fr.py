@@ -373,6 +373,7 @@
 'Env': 'Env',
 'Env file': 'Fichier env',
 'Env file date': 'Dernière modification du fichier  env',
+'Error': 'Error',
 'Error count': "Nombre d'erreurs",
 'Evaluation priority': 'Priorité de prise en compte',
 'Event': 'Evènement',

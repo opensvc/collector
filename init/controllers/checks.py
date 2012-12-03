@@ -520,6 +520,7 @@ class table_checks(HtmlTable):
                      'chk_value',
                      'chk_low',
                      'chk_high',
+                     'chk_err',
                      'chk_threshold_provider',
                      'chk_created',
                      'chk_updated']
@@ -548,6 +549,13 @@ class table_checks(HtmlTable):
             'chk_instance': HtmlTableColumn(
                 title = 'Instance',
                 field = 'chk_instance',
+                display = True,
+                table = 'checks_live',
+                img = 'check16'
+            ),
+            'chk_err': HtmlTableColumn(
+                title = 'Error',
+                field = 'chk_err',
                 display = True,
                 table = 'checks_live',
                 img = 'check16'

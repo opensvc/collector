@@ -2339,6 +2339,12 @@ def update_thresholds_batch(rows=None):
         rows = db(q).select()
     for row in rows:
         update_thresholds(row)
+        update_check_err(row)
+
+def update_check_err(row):
+    sql = """update checks_live set chk_err=if(chk_value>chk_high, 1, if(chk_value<chk_low, 2, 0)) where id=%d"""%row.id
+    db.executesql(sql)
+    db.commit()
 
 def update_thresholds(row):
     # try to find most precise settings
