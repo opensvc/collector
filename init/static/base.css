@@ -1553,6 +1553,28 @@ a.jqplot-image-container-close {
   background-color: #f0f0ff;
 }
 
+.ui-combobox {
+  position: relative;
+  display: inline-block;
+  padding-right: 30px;
+}
+
+.ui-combobox-toggle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  margin-left: -1px;
+  padding: 0;
+  /* adjust styles for IE 6/7 */
+  *height: 1.7em;
+  *top: 0.1em;
+}
+
+.ui-combobox-input {
+  margin: 0;
+  padding: 0;
+}
+
 @media screen and (max-width:960px) and (orientation: landscape) {
   body {
    -webkit-text-size-adjust: 70%;
