@@ -273,7 +273,7 @@ def ajax_node():
                  P(
                    A(
                      T("insert"),
-                     _href=URL(r=request, f='node_insert'),
+                     _href=URL(r=request, c='nodes', f='node_insert'),
                    ),
                    _style='text-align:center',
                  ),
