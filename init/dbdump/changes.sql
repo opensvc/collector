@@ -3130,3 +3130,7 @@ alter table resmon drop key resmon_1;
 alter table resmon add unique key resmon_1 (`svcname`,`nodename`,`vmname`, `rid`);
 
 alter table checks_live add column chk_err tinyint default 0;
+
+alter table stats_svc add column cap_cpu float default 1;
+
+update stats_svc set cap_cpu=(select mon_vcpus from svcmon s where s.mon_svcname=svcname and s.mon_nodname=nodename) ;

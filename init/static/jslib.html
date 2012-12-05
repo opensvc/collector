@@ -1918,6 +1918,9 @@ function stats_svc_avgat(url, id) {
 function stats_svc_cap(url, id) {
     stats_svc(url, id, "mem cap")
 }
+function stats_svc_cap_cpu(url, id) {
+    stats_svc(url, id, "cpu cap", "")
+}
 function stats_svc(url, id, title, unit) {
     if(typeof(unit)==='undefined') {
         unit = "MB"

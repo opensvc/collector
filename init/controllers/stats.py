@@ -714,6 +714,55 @@ def stats():
     return dict(table=ajax_stats())
 
 @auth.requires_login()
+def ajax_containerperf_plot():
+    containers = []
+    for s in request.vars.node.split(','):
+        containers.append(s.split('@'))
+
+    b = None
+    e = None
+    bs = ''
+    es = ''
+    rowid = request.vars.rowid
+
+    for v in request.vars:
+       if 'begin' in v:
+           bs = v
+           l = v.split('_')
+           if l > 1: rowid = l[-1]
+       if 'end' in v:
+           es = v
+
+    if len(containers) == 0:
+         return DIV(T("No data"))
+
+
+    sc = ""
+    l = []
+    for container_name, nodename in containers:
+        did = '_'.join((rowid, nodename.replace('.','_'), container_name.replace('.','_')))
+        l.append(H3('@'.join((container_name, nodename))))
+        l.append(DIV(_id=did))
+        sc += """sync_ajax('%(url)s', ['%(bs)s', '%(es)s'], '%(did)s', function(){ eval_js_in_ajax_response('prf_cont_svc_%(did)s') });"""%dict(
+                             url=URL(r=request,c='ajax_perf',f='ajax_perf_svc_plot_short',
+                                     args=[nodename, did, container_name]),
+                             rowid=rowid,
+                             did=did,
+                             bs=bs,
+                             es=es,
+             )
+
+    d = DIV(
+          SPAN(l),
+          SCRIPT(
+            sc,
+            _name='plot_to_eval',
+          ),
+        )
+
+    return d
+
+@auth.requires_login()
 def ajax_perfcmp_plot():
     nodes = request.vars.node
     b = None

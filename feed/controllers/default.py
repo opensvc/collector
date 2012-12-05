@@ -716,6 +716,15 @@ def insert_stats_netdev(vars, vals, auth):
 def insert_stats_netdev_err(vars, vals, auth):
     generic_insert('stats_netdev_err', vars, vals)
 
+def get_vcpus(nodename, vmname):
+    sql = """select mon_vcpus from svcmon where
+               mon_nodname = "%s" and
+               mon_vmname = "%s" """%(nodename, vmname)
+    try:
+        return db.executesql(sql)[0][0]
+    except:
+        return 1
+
 @auth_uuid
 @service.xmlrpc
 def insert_stats(data, auth):
@@ -723,6 +732,20 @@ def insert_stats(data, auth):
     h = cPickle.loads(data)
     for stat in h:
         vars, vals = h[stat]
+        if stat == "svc" and "cap_cpu" not in vars and len(vals) > 0:
+            cache = {}
+            vars.append("cap_cpu")
+            for idx, k in enumerate(vars):
+                if k == "svcname":
+                    break
+            for i, _vals in enumerate(vals):
+                vmname = _vals[idx]
+                if vmname in cache:
+                    vcpus = cache[vmname]
+                else:
+                    vcpus = str(get_vcpus(auth[1], vmname))
+                    cache[vmname] = vcpus
+                vals[i].append(vcpus)
         generic_insert('stats_'+stat, vars, vals)
     feed_enqueue("update_dash_netdev_errors" , auth[1])
 

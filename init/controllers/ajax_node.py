@@ -96,7 +96,7 @@ def perf_stats(node, rowid):
               _src=URL(r=request, c='static', f='end16.png'),
               _style="vertical-align:middle",
             ),
-            SPAN(perf_group('Plot service resource usage', 'svc')),
+            SPAN(perf_group('Plot container resource usage', 'svc')),
             SPAN(perf_group('Plot resource usage trends', 'trend')),
             SPAN(perf_group('Plot cpu usage', 'cpu')),
             SPAN(perf_group('Plot mem/swap usage', 'memswap')),

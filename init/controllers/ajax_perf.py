@@ -64,11 +64,19 @@ def perf_stats_cpu_trend_data(node, s, e, p):
 
 @auth.requires_login()
 def perf_stats_svc_cpu(node, s, e):
-    return perf_stats_svc_data(node, s, e, 'cpu')
+    container = request.vars.container
+    if container == "None":
+        return perf_stats_svc_data(node, s, e, 'cpu')
+    else:
+        return perf_stats_svc_data_cpu_normalize(node, s, e)
 
 @auth.requires_login()
 def perf_stats_svc_mem(node, s, e):
-    return perf_stats_svc_data(node, s, e, 'mem')
+    container = request.vars.container
+    if container == "None":
+        return perf_stats_svc_data(node, s, e, 'mem')
+    else:
+        return perf_stats_svc_data_mem_normalize(node, s, e)
 
 @auth.requires_login()
 def perf_stats_svc_pg(node, s, e):
@@ -103,17 +111,141 @@ def perf_stats_svc_cap(node, s, e):
     return perf_stats_svc_data(node, s, e, 'cap')
 
 @auth.requires_login()
+def perf_stats_svc_cap_cpu(node, s, e):
+    return perf_stats_svc_data(node, s, e, 'cap_cpu')
+
+@auth.requires_login()
+def perf_stats_svc_data_mem_normalize(node, s, e):
+    container = request.vars.container
+    where = "svcname = '%s' and"%container
+    col = 'mem'
+
+    sql = """select mem_bytes from nodes
+             where
+               nodename="%(node)s"
+          """%dict(node=node)
+    mem = db.executesql(sql)[0][0]
+
+    sql = """select
+               "global",
+               %(d)s,
+               %(col)s
+             from stats_svc
+             where
+               %(where)s
+               nodename="%(node)s"
+               and date>"%(s)s"
+               and date<"%(e)s"
+             union
+             select
+               "normalized",
+               %(d)s,
+               (%(col)s / cap * %(mem)d) - %(col)s
+             from stats_svc
+             where
+               %(where)s
+               nodename="%(node)s"
+               and date>"%(s)s"
+               and date<"%(e)s"
+          """%dict(mem=mem, where=where,s=s,e=e,node=node,col=col, d=period_concat(s, e, field='date'))
+    rows = db.executesql(sql)
+    dates = set([r[1] for r in rows])
+    svcnames = set([r[0] for r in rows])
+
+    h = {}
+    import copy
+    d = {}
+
+    for date in dates:
+        d[date] = 0
+
+    for svcname in svcnames:
+        h[svcname] = copy.copy(d)
+
+    for row in rows:
+        svcname = row[0]
+        date = row[1]
+        data = row[2]
+
+        h[svcname][date] = data
+
+    return h.keys(), map(lambda x: x.items(), h.values())
+
+@auth.requires_login()
+def perf_stats_svc_data_cpu_normalize(node, s, e):
+    container = request.vars.container
+    where = "svcname = '%s' and"%container
+    col = 'cpu'
+
+    sql = """select cpu_cores from nodes
+             where
+               nodename="%(node)s"
+          """%dict(node=node)
+    cpus = db.executesql(sql)[0][0]
+
+    sql = """select
+               "global",
+               %(d)s,
+               %(col)s
+             from stats_svc
+             where
+               %(where)s
+               nodename="%(node)s"
+               and date>"%(s)s"
+               and date<"%(e)s"
+             union
+             select
+               "normalized",
+               %(d)s,
+               (%(col)s / cap_cpu * %(cpus)d) - %(col)s
+             from stats_svc
+             where
+               %(where)s
+               nodename="%(node)s"
+               and date>"%(s)s"
+               and date<"%(e)s"
+          """%dict(cpus=cpus, where=where,s=s,e=e,node=node,col=col, d=period_concat(s, e, field='date'))
+    rows = db.executesql(sql)
+    dates = set([r[1] for r in rows])
+    svcnames = set([r[0] for r in rows])
+
+    h = {}
+    import copy
+    d = {}
+
+    for date in dates:
+        d[date] = 0
+
+    for svcname in svcnames:
+        h[svcname] = copy.copy(d)
+
+    for row in rows:
+        svcname = row[0]
+        date = row[1]
+        data = row[2]
+
+        h[svcname][date] = data
+
+    return h.keys(), map(lambda x: x.items(), h.values())
+
+@auth.requires_login()
 def perf_stats_svc_data(node, s, e, col):
+    container = request.vars.container
+    if container == "None":
+        where = ''
+    else:
+        where = "svcname = '%s' and"%container
     sql = """select
                svcname,
                %(d)s,
                %(col)s
              from stats_svc
              where
+               %(where)s
                nodename="%(node)s"
                and date>"%(s)s"
                and date<"%(e)s"
-          """%dict(s=s,e=e,node=node,col=col, d=period_concat(s, e, field='date'))
+          """%dict(where=where,s=s,e=e,node=node,col=col, d=period_concat(s, e, field='date'))
     rows = db.executesql(sql)
     dates = set([r[1] for r in rows])
     svcnames = set([r[0] for r in rows])
@@ -182,18 +314,30 @@ def ajax_perf_trend_plot():
              _ajax_perf_plot('trend_mem', last=True, base='trend')
            )
 
+def ajax_perf_svc_plot_short():
+    return SPAN(
+             _ajax_perf_plot('svc_cpu', base='svc'),
+             _ajax_perf_plot('svc_cap_cpu', base='svc'),
+             _ajax_perf_plot('svc_mem', base='svc'),
+             _ajax_perf_plot('svc_cap', base='svc'),
+             _ajax_perf_plot('svc_swap', base='svc'),
+             _ajax_perf_plot('svc_rss', base='svc'),
+             _ajax_perf_plot('svc_nproc', base='svc', last=True),
+           )
+
 def ajax_perf_svc_plot():
     return SPAN(
              _ajax_perf_plot('svc_cpu', base='svc'),
+             _ajax_perf_plot('svc_cap_cpu', base='svc'),
+             _ajax_perf_plot('svc_mem', base='svc'),
              _ajax_perf_plot('svc_cap', base='svc'),
+             _ajax_perf_plot('svc_swap', base='svc'),
+             _ajax_perf_plot('svc_rss', base='svc'),
              _ajax_perf_plot('svc_nproc', base='svc'),
              _ajax_perf_plot('svc_pg', base='svc'),
              _ajax_perf_plot('svc_avgpg', base='svc'),
              _ajax_perf_plot('svc_at', base='svc'),
-             _ajax_perf_plot('svc_avgat', base='svc'),
-             _ajax_perf_plot('svc_swap', base='svc'),
-             _ajax_perf_plot('svc_rss', base='svc'),
-             _ajax_perf_plot('svc_mem', base='svc', last=True),
+             _ajax_perf_plot('svc_avgat', base='svc', last=True),
            )
 
 @auth.requires_login()
@@ -201,13 +345,18 @@ def ajax_perf_cpu_plot():
     return _ajax_perf_plot('cpu', last=True)
 
 @auth.requires_login()
-def _ajax_perf_plot(group, sub=[''], last=False, base=None):
+def _ajax_perf_plot(group, sub=[''], last=False, base=None, container=None):
     if base is None:
         base = group
     node = request.args[0]
     rowid = request.args[1]
     begin = None
     end = None
+    try:
+        container = request.args[2]
+    except:
+        container = None
+
     for k in request.vars:
         if 'begin_' in k:
             b = request.vars[k]
@@ -220,7 +369,7 @@ def _ajax_perf_plot(group, sub=[''], last=False, base=None):
     plots.append("stats_%(group)s('%(url)s', 'perf_%(group)s_%(rowid)s');"%dict(
       url=URL(r=request,
               f='call/json/json_%s'%group,
-              vars={'node':node, 'b':b, 'e':e}
+              vars={'node':node, 'b':b, 'e':e, 'container':container}
           ),
       rowid=rowid,
       group=group,
@@ -533,6 +682,13 @@ def json_svc_swap():
     b = request.vars.b
     e = request.vars.e
     return perf_stats_svc_swap(node, b, e)
+
+@service.json
+def json_svc_cap_cpu():
+    node = request.vars.node
+    b = request.vars.b
+    e = request.vars.e
+    return perf_stats_svc_cap_cpu(node, b, e)
 
 @service.json
 def json_svc_cap():
