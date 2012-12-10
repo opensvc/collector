@@ -123,6 +123,7 @@ class sandata(object):
           'link': {},
         }
         self.valid_switch = set([])
+        self.relcache = {}
 
     def get_endpoints(self, nodename):
         q = db.node_hba.nodename == nodename
@@ -139,9 +140,13 @@ class sandata(object):
         return l
 
     def get_relations(self, portname, endpoints):
+        idx = '-'.join((portname, str(endpoints[2])))
+        if idx in self.relcache:
+            return self.relcache[idx]
         q = db.switches.sw_rportname == portname
         q |= (db.switches.sw_portname==portname)&(db.switches.sw_rportname==endpoints[2])
-        return db(q).select()
+        self.relcache[idx] = db(q).select()
+        return self.relcache[idx]
 
     def recurse_relations(self, portname, portindex, endpoints, chain=[]):
         rels = self.get_relations(portname, endpoints)

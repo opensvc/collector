@@ -1,4 +1,5 @@
 import os
+import sys
 
 class Brocade(object):
     def __init__(self, dir=None):
@@ -117,8 +118,11 @@ class Brocade(object):
 
     def load_switchshow(self):
         lines = self.readfile("brocadeswitchshow").split('\n')
+        if len(lines) < 2:
+            raise Exception("brocadeswitchshow is empty")
         self.ports = {}
         self.rindex = {}
+        start = 0
         for i, line in enumerate(lines):
             if line.startswith("switchName:"):
                 self.name = line.split(':')[1].strip().lower()
@@ -165,6 +169,14 @@ class Brocade(object):
                 if "master is Port" in comment:
                     master = comment.split('Port')[-1].strip(')').strip()
                     port['TrunkMaster'] = port['Slot'], master
+                elif "master is Slot" in comment:
+                    # (Trunk port, master is Slot  1 Port  0 )
+                    words = comment.split()
+                    i = words.index('Slot')
+                    _slot = words[i+1].strip(')').strip()
+                    i = words.index('Port')
+                    _port = words[i+1].strip(')').strip()
+                    port['TrunkMaster'] = _slot, _port
             if port['Speed'] == "AN":
                 port['Speed'] = 0
                 port['Nego'] = False
