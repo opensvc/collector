@@ -1377,6 +1377,9 @@ div.summary {
     overflow: auto;
     background: white;
 }
+button:hover, input[type=button]:focus, input[type=submit]:focus {
+    background: #dedede;
+}
 button:hover, input[type=button]:hover, input[type=submit]:hover {
     background: #dedede;
 }
