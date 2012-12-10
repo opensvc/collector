@@ -421,7 +421,7 @@ def ajax_service():
 
     containers = set([])
     for row in rows:
-        if row.mon_vmtype in ('zone'):
+        if row.mon_vmtype in ('zone',):
             containers.add('@'.join((row.mon_vmname, row.mon_nodname)))
 
     viz = svcmon_viz_img(rows)
