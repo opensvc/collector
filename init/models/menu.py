@@ -52,8 +52,20 @@ sevendays = str(now-datetime.timedelta(days=7,
                                        seconds=now.second,
                                        microseconds=now.microsecond))
 response.menu = [
-    [XML('&diams;'), _f == '',
-     '',[]],
+    [XML('&diams;'), False, '',
+         [
+             [DIV(
+               SPAN('r', _class='keyboard-key'),
+               SPAN(T("Refresh table")),
+               _class='keyboard',
+              ), False, ''],
+             [DIV(
+               SPAN('l', _class='keyboard-key'),
+               SPAN(T("Show link")),
+               _class='keyboard',
+              ), False, ''],
+         ]
+    ],
     [T('Dashboard'), _f == 'index',
      URL(request.application,'dashboard','index'), []],
     [T('Views'), False, '',
