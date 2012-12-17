@@ -6362,16 +6362,18 @@ def comp_moduleset_exists(moduleset):
         return None
     return rows[0].id
 
-def comp_ruleset_svc_attached(svcname, rset_id):
+def comp_ruleset_svc_attached(svcname, rset_id, slave):
     q = db.comp_rulesets_services.svcname == svcname
     q &= db.comp_rulesets_services.ruleset_id == rset_id
+    q &= db.comp_rulesets_services.slave == slave
     if len(db(q).select(db.comp_rulesets_services.id)) == 0:
         return False
     return True
 
-def comp_moduleset_svc_attached(svcname, modset_id):
+def comp_moduleset_svc_attached(svcname, modset_id, slave):
     q = db.comp_modulesets_services.modset_svcname == svcname
     q &= db.comp_modulesets_services.modset_id == modset_id
+    q &= db.comp_modulesets_services.slave == slave
     if len(db(q).select(db.comp_modulesets_services.id)) == 0:
         return False
     return True
@@ -6397,21 +6399,31 @@ def comp_ruleset_attached(nodename, ruleset_id):
         return False
     return True
 
+def comp_slave(svcname, nodename):
+    q = db.svcmon.mon_vmname == nodename
+    q &= db.svcmon.mon_svcname == svcname
+    row = db(q).select().first()
+    if row is None:
+        return False
+    return True
+
 @auth_uuid
 @service.xmlrpc
 def comp_attach_svc_ruleset(svcname, ruleset, auth):
     if len(ruleset) == 0:
         return dict(status=False, msg="no ruleset specified"%ruleset)
     rset_id = comp_ruleset_id(ruleset)
+    slave = comp_slave(svcname, auth[1])
     if rset_id is None:
         return dict(status=False, msg="ruleset %s does not exist"%ruleset)
-    if comp_ruleset_svc_attached(svcname, rset_id):
+    if comp_ruleset_svc_attached(svcname, rset_id, slave):
         return dict(status=True, msg="ruleset %s is already attached to this service"%ruleset)
     if not comp_ruleset_svc_attachable(svcname, rset_id):
         return dict(status=False, msg="ruleset %s is not attachable"%ruleset)
 
     n = db.comp_rulesets_services.insert(svcname=svcname,
-                                           ruleset_id=rset_id)
+                                         ruleset_id=rset_id,
+                                         slave=slave)
     if n == 0:
         return dict(status=False, msg="failed to attach ruleset %s"%ruleset)
     _log('compliance.ruleset.service.attach',
@@ -6426,15 +6438,17 @@ def comp_attach_svc_moduleset(svcname, moduleset, auth):
     if len(moduleset) == 0:
         return dict(status=False, msg="no moduleset specified"%moduleset)
     modset_id = comp_moduleset_id(moduleset)
+    slave = comp_slave(svcname, auth[1])
     if modset_id is None:
         return dict(status=False, msg="moduleset %s does not exist"%moduleset)
-    if comp_moduleset_svc_attached(svcname, modset_id):
+    if comp_moduleset_svc_attached(svcname, modset_id, slave):
         return dict(status=True, msg="moduleset %s is already attached to this service"%moduleset)
     if not comp_moduleset_svc_attachable(svcname, modset_id):
         return dict(status=False, msg="moduleset %s is not attachable"%moduleset)
 
     n = db.comp_modulesets_services.insert(modset_svcname=svcname,
-                                           modset_id=modset_id)
+                                           modset_id=modset_id,
+                                           slave=slave)
     if n == 0:
         return dict(status=False, msg="failed to attach moduleset %s"%moduleset)
     _log('compliance.moduleset.service.attach',
@@ -6477,11 +6491,12 @@ def comp_detach_svc_ruleset(svcname, ruleset, auth):
         rset_id = comp_attached_svc_ruleset_id(svcname)
     else:
         rset_id = comp_ruleset_id(ruleset)
+    slave = comp_slave(svcname, auth[1])
     if rset_id is None:
         return dict(status=True, msg="ruleset %s does not exist"%ruleset)
     elif ruleset == 'all' and len(rset_id) == 0:
         return dict(status=True, msg="this service has no ruleset attached")
-    if ruleset != 'all' and not comp_ruleset_svc_attached(svcname, rset_id):
+    if ruleset != 'all' and not comp_ruleset_svc_attached(svcname, rset_id, slave):
         return dict(status=True,
                     msg="ruleset %s is not attached to this service"%ruleset)
     q = db.comp_rulesets_services.svcname == svcname
@@ -6507,11 +6522,12 @@ def comp_detach_svc_moduleset(svcname, moduleset, auth):
         modset_id = comp_attached_svc_moduleset_id(svcname)
     else:
         modset_id = comp_moduleset_id(moduleset)
+    slave = comp_slave(svcname, auth[1])
     if modset_id is None:
         return dict(status=True, msg="moduleset %s does not exist"%moduleset)
     elif moduleset == 'all' and len(modset_id) == 0:
         return dict(status=True, msg="this service has no moduleset attached")
-    if moduleset != 'all' and not comp_moduleset_svc_attached(svcname, modset_id):
+    if moduleset != 'all' and not comp_moduleset_svc_attached(svcname, modset_id, slave):
         return dict(status=True,
                     msg="moduleset %s is not attached to this service"%moduleset)
     q = db.comp_modulesets_services.modset_svcname == svcname
@@ -6715,15 +6731,17 @@ def comp_show_status(svcname="", pattern='%', auth=("", "")):
 @auth_uuid
 @service.xmlrpc
 def comp_get_svc_moduleset(svcname, auth):
-    return _comp_get_svc_moduleset(svcname)
+    slave = comp_slave(svcname, auth[1])
+    return _comp_get_svc_moduleset(svcname, slave)
 
 @auth_uuid
 @service.xmlrpc
 def comp_get_moduleset(nodename, auth):
     return _comp_get_moduleset(nodename)
 
-def _comp_get_svc_moduleset(svcname):
+def _comp_get_svc_moduleset(svcname, slave=False):
     q = db.comp_modulesets_services.modset_svcname == svcname
+    q &= db.comp_modulesets_services.slave == slave
     q &= db.comp_modulesets_services.modset_id == db.comp_moduleset.id
     q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
     q &= db.auth_group.id == db.comp_moduleset_team_responsible.group_id
@@ -6816,35 +6834,26 @@ def comp_format_filter(q):
     s = s.replace('nodes.id>0 AND ','')
     return s
 
-def comp_get_svcmon_ruleset(svcname, nodename, virt=False):
-    if virt:
-        q = db.svcmon.mon_vmname == svcname
-        q &= db.svcmon.mon_availstatus == "up"
-        row = db(q).select(db.svcmon.mon_svcname, db.svcmon.mon_nodname).first()
-        if row is None:
-            return {}
-        svcname = row.mon_svcname
-        nodename = row.mon_nodname
+def comp_get_svcmon_ruleset(svcname, nodename):
     q = db.svcmon.mon_svcname == svcname
     q &= db.svcmon.mon_nodname == nodename
-    rows = db(q).select()
-    if len(rows) != 1:
+    row = db(q).select().first()
+    if row is None:
+        q = db.svcmon.mon_svcname == svcname
+        q &= db.svcmon.mon_vmname == nodename
+        q &= db.svcmon.mon_containerstatus == "up"
+        row = db(q).select().first()
+    if row is None:
         return {}
     ruleset = {'name': 'osvc_svcmon',
                'filter': str(q),
                'vars': []}
     for f in db.svcmon.fields:
-        val = rows[0][f]
+        val = row[f]
         ruleset['vars'].append(('svcmon.'+f, val))
     return {'osvc_svcmon':ruleset}
 
-def comp_get_service_ruleset(svcname, virt=False):
-    if virt:
-        q = db.svcmon.mon_vmname == svcname
-        row = db(q).select(db.svcmon.mon_svcname).first()
-        if row is None:
-            return {}
-        svcname = row.mon_svcname
+def comp_get_service_ruleset(svcname):
     q = db.services.svc_name == svcname
     rows = db(q).select()
     if len(rows) != 1:
@@ -6939,15 +6948,16 @@ def comp_get_ruleset(nodename, auth):
 @auth_uuid
 @service.xmlrpc
 def comp_get_svc_ruleset(svcname, auth):
-    ruleset = _comp_get_svc_ruleset(svcname)
-    ruleset.update(_comp_get_svc_per_node_ruleset(svcname, auth[1]))
+    slave = comp_slave(svcname, auth[1])
+    ruleset = _comp_get_svc_ruleset(svcname, slave=slave)
+    ruleset.update(_comp_get_svc_per_node_ruleset(svcname, auth[1], slave))
     ruleset.update(comp_get_svcmon_ruleset(svcname, auth[1]))
     ruleset.update(comp_get_node_ruleset(auth[1]))
     ruleset = _comp_remove_dup_vars(ruleset)
     insert_run_rset(ruleset)
     return ruleset
 
-def _comp_get_svc_per_node_ruleset(svcname, nodename):
+def _comp_get_svc_per_node_ruleset(svcname, nodename, slave=False):
     ruleset = {}
 
     # add contextual rulesets variables
@@ -6963,7 +6973,10 @@ def _comp_get_svc_per_node_ruleset(svcname, nodename):
     rows = db(q).select(orderby=o)
 
     q = db.services.svc_name == svcname
-    q &= db.svcmon.mon_nodname == nodename
+    if slave:
+        q &= db.svcmon.mon_vmname == nodename
+    else:
+        q &= db.svcmon.mon_nodname == nodename
     j = db.nodes.nodename == db.svcmon.mon_nodname
     l1 = db.nodes.on(j)
     j = db.svcmon.mon_svcname == db.services.svc_name
@@ -6993,7 +7006,7 @@ def _comp_get_svc_per_node_ruleset(svcname, nodename):
 
     return ruleset
 
-def _comp_get_svc_ruleset(svcname):
+def _comp_get_svc_ruleset(svcname, slave=False):
     # initialize ruleset with asset variables
     ruleset = comp_get_service_ruleset(svcname)
 
@@ -7010,7 +7023,10 @@ def _comp_get_svc_ruleset(svcname):
     rows = db(q).select(orderby=o)
 
     q = db.services.svc_name == svcname
-    j = db.nodes.nodename == db.svcmon.mon_nodname
+    if slave:
+        j = db.nodes.nodename == db.svcmon.mon_vmname
+    else:
+        j = db.nodes.nodename == db.svcmon.mon_nodname
     l1 = db.nodes.on(j)
     j = db.svcmon.mon_svcname == db.services.svc_name
     l2 = db.svcmon.on(j)
@@ -7039,6 +7055,7 @@ def _comp_get_svc_ruleset(svcname):
 
     # add explicit rulesets variables
     q = db.comp_rulesets_services.svcname == svcname
+    q &= db.comp_rulesets_services.slave == slave
     rows = db(q).select(db.comp_rulesets_services.ruleset_id,
                         orderby=db.comp_rulesets_services.ruleset_id)
     for row in rows:
@@ -7081,10 +7098,6 @@ def _comp_remove_dup_vars(ruleset):
 def _comp_get_ruleset(nodename):
     # initialize ruleset with asset variables
     ruleset = comp_get_node_ruleset(nodename)
-
-    # if the node is driven by a opensvc service, add the service ruleset
-    ruleset.update(comp_get_service_ruleset(nodename, virt=True))
-    ruleset.update(comp_get_svcmon_ruleset(nodename, None, virt=True))
 
     # add contextual rulesets variables
     v = db.v_gen_filtersets
@@ -7263,14 +7276,22 @@ def ajax_compliance_svc():
     d = []
     q = db.svcmon.mon_svcname==svcname
     q &= db.svcmon.mon_updated > now - datetime.timedelta(days=1)
-    rows = db(q).select(db.svcmon.mon_nodname)
+    rows = db(q).select(db.svcmon.mon_nodname, db.svcmon.mon_vmname)
     nodes = [r.mon_nodname for r in rows]
+    vnodes = [r.mon_vmname for r in rows if r.mon_vmname is not None and r.mon_vmname != ""]
+    for r in rows:
+        if r.mon_vmname is not None and r.mon_vmname not in nodes:
+            nodes.append(r.mon_vmname)
 
     for node in nodes:
         did = 'nrs_'+node.replace('.','').replace('-','')
         n_rsets = comp_get_svcmon_ruleset(svcname, node)
         n_rsets.update(comp_get_node_ruleset(node))
-        n_rsets.update(_comp_get_svc_per_node_ruleset(svcname, node))
+        if node in vnodes:
+            slave = True
+        else:
+            slave = False
+        n_rsets.update(_comp_get_svc_per_node_ruleset(svcname, node, slave))
         d.append(DIV(
                    B(node),
                    _onclick="""$("#%s").toggle();$(this).toggleClass("down16").toggleClass("right16")"""%did,
@@ -7282,6 +7303,23 @@ def ajax_compliance_svc():
                    _style="display:none",
                    _id=did,
                  )
+        )
+
+    div_ersets = SPAN()
+    did = 'esrs_'+svcname.replace('.','').replace('-','')
+    if len(vnodes) > 0:
+        ersets = _comp_get_svc_ruleset(svcname, slave=True)
+        div_ersets = SPAN(
+          DIV(
+            B(svcname + ' (slave)'),
+            _onclick="""$("#%s").toggle();$(this).toggleClass("down16").toggleClass("right16")"""%did,
+            _class="clickable right16",
+          ),
+          DIV(
+            beautify_rulesets(ersets),
+            _style="display:none",
+            _id=did,
+          ),
         )
 
     did = 'srs_'+svcname.replace('.','').replace('-','')
@@ -7301,6 +7339,7 @@ def ajax_compliance_svc():
             _style="display:none",
             _id=did,
           ),
+          div_ersets,
           H3(T('Per node additional rulesets')),
           SPAN(d),
           SPAN(show_diff(svcname)),

@@ -1127,6 +1127,7 @@ db.define_table('comp_rulesets_nodes',
 db.define_table('comp_rulesets_services',
     Field('ruleset_id','integer', requires=IS_NOT_EMPTY()),
     Field('svcname','string', requires=IS_NOT_EMPTY()),
+    Field('slave','boolean'),
     migrate=False)
 
 db.define_table('v_comp_rulesets',
@@ -1169,6 +1170,7 @@ db.define_table('comp_modulesets_services',
     Field('modset_id','integer'),
     Field('modset_updated','datetime'),
     Field('modset_author','string'),
+    Field('slave','boolean'),
     migrate=False)
 
 db.define_table('v_comp_mod_status',

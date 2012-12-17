@@ -3134,3 +3134,17 @@ alter table checks_live add column chk_err tinyint default 0;
 alter table stats_svc add column cap_cpu float default 1;
 
 update stats_svc set cap_cpu=(select mon_vcpus from svcmon s where s.mon_svcname=svcname and s.mon_nodname=nodename) ;
+
+#
+
+alter table comp_rulesets_services add column comp_rulesets_services.
+
+alter table comp_modulesets_services add column slave varchar(1) DEFAULT 'F';
+
+alter table comp_rulesets_services drop key idx1;
+
+alter table comp_rulesets_services add unique key (ruleset_id,svcname,slave);
+
+alter table comp_modulesets_services drop key idx1;
+
+alter table comp_modulesets_services add unique key idx1 (modset_svcname,modset_id,slave);
