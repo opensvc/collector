@@ -3137,7 +3137,7 @@ update stats_svc set cap_cpu=(select mon_vcpus from svcmon s where s.mon_svcname
 
 #
 
-alter table comp_rulesets_services add column comp_rulesets_services.
+alter table comp_rulesets_services add column slave varchar(1) DEFAULT 'F';
 
 alter table comp_modulesets_services add column slave varchar(1) DEFAULT 'F';
 
