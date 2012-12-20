@@ -209,6 +209,10 @@ function register_pop_up(e, box){
     $(document).click(function(e) {
         e = e || event
         var target = e.target || e.srcElement
+        if (target.id.match(/^ui-id/)) {
+		// combox box click
+		return
+	}
         do {
             if (box.get(0) == target) {
                 // click inside
