@@ -471,7 +471,7 @@ function stats_avg_cpu_for_nodes(url, id) {
         if (data[0].length == 0) { return }
         plot_height(id, data[0])
         $('#'+id).width('450px')
-	$.jqplot(id, data[1], {
+	p = $.jqplot(id, data[1], {
 	    stackSeries: true,
 	    grid: {
                 borderWidth: 0.5
@@ -517,7 +517,7 @@ function stats_avg_cpu_for_nodes(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id))
+        _jqplot_extra($('#'+id), p)
     });
 }
 function stats_avg_swp_for_nodes(url, id) {
@@ -526,7 +526,7 @@ function stats_avg_swp_for_nodes(url, id) {
         if (data[0].length == 0) { return }
         plot_height(id, data[0])
         $('#'+id).width('450px')
-	$.jqplot(id, data[1], {
+	p = $.jqplot(id, data[1], {
 	    stackSeries: true,
 	    grid: {
                 borderWidth: 0.5
@@ -566,7 +566,7 @@ function stats_avg_swp_for_nodes(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id))
+        _jqplot_extra($('#'+id), p)
     });
 }
 function stats_avg_mem_for_nodes(url, id) {
@@ -575,7 +575,7 @@ function stats_avg_mem_for_nodes(url, id) {
         if (data[0].length == 0) { return }
         plot_height(id, data[0])
         $('#'+id).width('450px')
-	$.jqplot(id, data[1], {
+	p = $.jqplot(id, data[1], {
 	    stackSeries: true,
 	    grid: {
                 borderWidth: 0.5
@@ -615,7 +615,7 @@ function stats_avg_mem_for_nodes(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id))
+        _jqplot_extra($('#'+id), p)
     });
 }
 function stats_avg_block_for_nodes(url, id) {
@@ -624,7 +624,7 @@ function stats_avg_block_for_nodes(url, id) {
         if (data[0].length == 0) { return }
         plot_height('tps_'+id, data[0])
         $('#tps_'+id).width('450px')
-	$.jqplot('tps_'+id, [data[1][0], data[1][1]], {
+	p = $.jqplot('tps_'+id, [data[1][0], data[1][1]], {
 	    stackSeries: true,
 	    grid: {
                 borderWidth: 0.5
@@ -664,11 +664,11 @@ function stats_avg_block_for_nodes(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#tps_'+id))
+        _jqplot_extra($('#tps_'+id), p)
 
         plot_height('bps_'+id, data[0])
         $('#bps_'+id).width('450px')
-	$.jqplot('bps_'+id, [data[1][2], data[1][3]], {
+	p = $.jqplot('bps_'+id, [data[1][2], data[1][3]], {
 	    stackSeries: true,
 	    grid: {
                 borderWidth: 0.5
@@ -708,7 +708,7 @@ function stats_avg_block_for_nodes(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#bps_'+id))
+        _jqplot_extra($('#bps_'+id), p)
     });
 }
 function stats_disk_for_svc(url, id) {
@@ -727,7 +727,7 @@ function stats_disk_for_svc(url, id) {
 
         plot_height(id, data[0])
         $('#'+id).width('450px')
-	$.jqplot(id, [data[1][0]], {
+	p = $.jqplot(id, [data[1][0]], {
 	    stackSeries: true,
 	    grid: {
                 borderWidth: 0.5
@@ -766,7 +766,7 @@ function stats_disk_for_svc(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id))
+        _jqplot_extra($('#'+id), p)
     });
 }
 function stats_avg_proc_for_nodes(url, id) {
@@ -775,7 +775,7 @@ function stats_avg_proc_for_nodes(url, id) {
         if (data[0].length == 0) { return }
         plot_height(id+'_runq_sz', data[0])
         $('#'+id+'_runq_sz').width('450px')
-	$.jqplot(id+'_runq_sz', [data[1][0]], {
+	p = $.jqplot(id+'_runq_sz', [data[1][0]], {
 	    stackSeries: true,
 	    grid: {
                 borderWidth: 0.5
@@ -814,11 +814,11 @@ function stats_avg_proc_for_nodes(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_runq_sz'))
+        _jqplot_extra($('#'+id+'_runq_sz'), p)
 
         plot_height(id+'_plist_sz', data[0])
         $('#'+id+'_plist_sz').width('450px')
-	$.jqplot(id+'_plist_sz', [data[1][1]], {
+	p = $.jqplot(id+'_plist_sz', [data[1][1]], {
 	    stackSeries: true,
 	    grid: {
                 borderWidth: 0.5
@@ -857,7 +857,7 @@ function stats_avg_proc_for_nodes(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_plist_sz'))
+        _jqplot_extra($('#'+id+'_plist_sz'), p)
     });
 }
 function dash_history(url, id) {
@@ -865,7 +865,7 @@ function dash_history(url, id) {
     $.getJSON(url, function(data) {
         //$('#'+id).height('300px')
         $('#'+id).width('100%')
-        $.jqplot(id, [data], {
+        p = $.jqplot(id, [data], {
             cursor:{zoom:true, showTooltip:false},
             stackSeries: true,
             grid: {
@@ -897,7 +897,7 @@ function dash_history(url, id) {
                 }
             }
         });
-        _jqplot_img($('#'+id))
+        _jqplot_extra($('#'+id), p)
     });
 }
 function comp_history(url, id) {
@@ -905,7 +905,7 @@ function comp_history(url, id) {
     $.getJSON(url, function(data) {
         //$('#'+id).height('300px')
         $('#'+id).width('100%')
-        $.jqplot(id, data, {
+        p = $.jqplot(id, data, {
             cursor:{zoom:true, showTooltip:false},
             stackSeries: true,
             legend: {
@@ -942,7 +942,7 @@ function comp_history(url, id) {
                 }
             }
         });
-        _jqplot_img($('#'+id))
+        _jqplot_extra($('#'+id), p)
     });
 }
 function stat_day(url, id) {
@@ -950,7 +950,7 @@ function stat_day(url, id) {
     $.getJSON(url, function(data) {
         $('#'+id+'_err').height('300px')
         $('#'+id+'_err').width('300px')
-	$.jqplot(id+'_err', [data[2]], {
+	p = $.jqplot(id+'_err', [data[2]], {
             cursor:{zoom:true, showTooltip:false},
             legend: {
                 show: true,
@@ -976,11 +976,11 @@ function stat_day(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_err'))
+        _jqplot_extra($('#'+id+'_err'), p)
 
         $('#'+id+'_apps').height('300px')
         $('#'+id+'_apps').width('300px')
-	$.jqplot(id+'_apps', [data[11]], {
+	p = $.jqplot(id+'_apps', [data[11]], {
             cursor:{zoom:true, showTooltip:false},
 	    grid: {
                 borderWidth: 0.5,
@@ -1006,11 +1006,11 @@ function stat_day(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_apps'))
+        _jqplot_extra($('#'+id+'_apps'), p)
 
         $('#'+id+'_nb_vcpu').height('300px')
         $('#'+id+'_nb_vcpu').width('300px')
-	$.jqplot(id+'_nb_vcpu', [data[20]], {
+	p = $.jqplot(id+'_nb_vcpu', [data[20]], {
             cursor:{zoom:true, showTooltip:false},
 	    grid: {
                 borderWidth: 0.5,
@@ -1039,7 +1039,7 @@ function stat_day(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_nb_vcpu'))
+        _jqplot_extra($('#'+id+'_nb_vcpu'), p)
 
         $('#'+id+'_nb_vmem').height('300px')
         $('#'+id+'_nb_vmem').width('300px')
@@ -1053,7 +1053,7 @@ function stat_day(url, id) {
             data[21][i][1] /= d['div']
         }
 
-	$.jqplot(id+'_nb_vmem', [data[21]], {
+	p = $.jqplot(id+'_nb_vmem', [data[21]], {
             cursor:{zoom:true, showTooltip:false},
 	    grid: {
                 borderWidth: 0.5,
@@ -1082,7 +1082,7 @@ function stat_day(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_nb_vmem'))
+        _jqplot_extra($('#'+id+'_nb_vmem'), p)
 
         $('#'+id+'_disk').height('300px')
         $('#'+id+'_disk').width('300px')
@@ -1097,7 +1097,7 @@ function stat_day(url, id) {
             data[31][i][1] /= d['div']
         }
 
-	$.jqplot(id+'_disk', [data[5], data[31]], {
+	p = $.jqplot(id+'_disk', [data[5], data[31]], {
             cursor:{zoom:true, showTooltip:false},
 	    stackSeries: true,
 	    grid: {
@@ -1137,7 +1137,7 @@ function stat_day(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_disk'))
+        _jqplot_extra($('#'+id+'_disk'), p)
 
         $('#'+id+'_nodes_ram').height('300px')
         $('#'+id+'_nodes_ram').width('300px')
@@ -1152,7 +1152,7 @@ function stat_day(url, id) {
             data[6][i][1] /= d['div']
         }
 
-	$.jqplot(id+'_nodes_ram', [data[6]], {
+	p = $.jqplot(id+'_nodes_ram', [data[6]], {
             cursor:{zoom:true, showTooltip:false},
 	    grid: {
                 borderWidth: 0.5,
@@ -1181,11 +1181,11 @@ function stat_day(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_nodes_ram'))
+        _jqplot_extra($('#'+id+'_nodes_ram'), p)
 
         $('#'+id+'_nodes_core').height('300px')
         $('#'+id+'_nodes_core').width('300px')
-	$.jqplot(id+'_nodes_core', [data[7]], {
+	p = $.jqplot(id+'_nodes_core', [data[7]], {
             cursor:{zoom:true, showTooltip:false},
 	    grid: {
                 borderWidth: 0.5,
@@ -1214,11 +1214,11 @@ function stat_day(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_nodes_core'))
+        _jqplot_extra($('#'+id+'_nodes_core'), p)
 
         $('#'+id+'_accounts').height('300px')
         $('#'+id+'_accounts').width('300px')
-	$.jqplot(id+'_accounts', [data[12]], {
+	p = $.jqplot(id+'_accounts', [data[12]], {
             cursor:{zoom:true, showTooltip:false},
             legend: {
                 show: true,
@@ -1244,11 +1244,11 @@ function stat_day(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_accounts'))
+        _jqplot_extra($('#'+id+'_accounts'), p)
 
         $('#'+id+'_resp_accounts').height('300px')
         $('#'+id+'_resp_accounts').width('300px')
-	$.jqplot(id+'_resp_accounts', [data[22]], {
+	p = $.jqplot(id+'_resp_accounts', [data[22]], {
             cursor:{zoom:true, showTooltip:false},
             legend: {
                 show: true,
@@ -1273,11 +1273,11 @@ function stat_day(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_resp_accounts'))
+        _jqplot_extra($('#'+id+'_resp_accounts'), p)
 
         $('#'+id+'_actions').height('300px')
         $('#'+id+'_actions').width('300px')
-	$.jqplot(id+'_actions', [data[4],  data[3], data[2]], {
+	p = $.jqplot(id+'_actions', [data[4],  data[3], data[2]], {
             cursor:{zoom:true, showTooltip:false},
 	    stackSeries: true,
             legend: {
@@ -1323,11 +1323,11 @@ function stat_day(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_actions'))
+        _jqplot_extra($('#'+id+'_actions'), p)
 
         $('#'+id+'_nodes').height('300px')
         $('#'+id+'_nodes').width('300px')
-	$.jqplot(id+'_nodes', [data[17],  data[14]], {
+	p = $.jqplot(id+'_nodes', [data[17],  data[14]], {
             cursor:{zoom:true, showTooltip:false},
 	    stackSeries: true,
             legend: {
@@ -1367,11 +1367,11 @@ function stat_day(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_nodes'))
+        _jqplot_extra($('#'+id+'_nodes'), p)
 
         $('#'+id+'_virt_nodes').height('300px')
         $('#'+id+'_virt_nodes').width('300px')
-	$.jqplot(id+'_virt_nodes', [data[23],  data[24]], {
+	p = $.jqplot(id+'_virt_nodes', [data[23],  data[24]], {
             cursor:{zoom:true, showTooltip:false},
 	    stackSeries: true,
             legend: {
@@ -1411,11 +1411,11 @@ function stat_day(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_virt_nodes'))
+        _jqplot_extra($('#'+id+'_virt_nodes'), p)
 
         $('#'+id+'_svc_type').height('300px')
         $('#'+id+'_svc_type').width('300px')
-	$.jqplot(id+'_svc_type', [data[15],  data[0]], {
+	p = $.jqplot(id+'_svc_type', [data[15],  data[0]], {
             cursor:{zoom:true, showTooltip:false},
 	    stackSeries: true,
             legend: {
@@ -1451,11 +1451,11 @@ function stat_day(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_svc_type'))
+        _jqplot_extra($('#'+id+'_svc_type'), p)
 
         $('#'+id+'_svc_cluster').height('300px')
         $('#'+id+'_svc_cluster').width('300px')
-	$.jqplot(id+'_svc_cluster', [data[16],  data[18]], {
+	p = $.jqplot(id+'_svc_cluster', [data[16],  data[18]], {
             cursor:{zoom:true, showTooltip:false},
 	    stackSeries: true,
             legend: {
@@ -1484,11 +1484,11 @@ function stat_day(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_svc_cluster'))
+        _jqplot_extra($('#'+id+'_svc_cluster'), p)
 
         $('#'+id+'_svc_drp').height('300px')
         $('#'+id+'_svc_drp').width('300px')
-	$.jqplot(id+'_svc_drp', [data[13],  data[19]], {
+	p = $.jqplot(id+'_svc_drp', [data[13],  data[19]], {
             cursor:{zoom:true, showTooltip:false},
 	    stackSeries: true,
             legend: {
@@ -1528,7 +1528,7 @@ function stat_day(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_svc_drp'))
+        _jqplot_extra($('#'+id+'_svc_drp'), p)
     });
 }
 function stat_compare_day(url, id) {
@@ -1540,7 +1540,7 @@ function stat_compare_day(url, id) {
         }
         $('#'+id+'_svc').height('300px')
         $('#'+id+'_svc').width('300px')
-	$.jqplot(id+'_svc', data[1][25], {
+	p = $.jqplot(id+'_svc', data[1][25], {
             cursor:{zoom:true, showTooltip:false},
             legend: {
                 show: true,
@@ -1565,11 +1565,11 @@ function stat_compare_day(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_svc'))
+        _jqplot_extra($('#'+id+'_svc'), p)
 
         $('#'+id+'_nodes').height('300px')
         $('#'+id+'_nodes').width('300px')
-	$.jqplot(id+'_nodes', data[1][26], {
+	p = $.jqplot(id+'_nodes', data[1][26], {
             cursor:{zoom:true, showTooltip:false},
             legend: {
                 show: true,
@@ -1594,11 +1594,11 @@ function stat_compare_day(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_nodes'))
+        _jqplot_extra($('#'+id+'_nodes'), p)
 
         $('#'+id+'_nodes_virt_ratio').height('300px')
         $('#'+id+'_nodes_virt_ratio').width('300px')
-	$.jqplot(id+'_nodes_virt_ratio', data[1][27], {
+	p = $.jqplot(id+'_nodes_virt_ratio', data[1][27], {
             cursor:{zoom:true, showTooltip:false},
             legend: {
                 show: true,
@@ -1623,11 +1623,11 @@ function stat_compare_day(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_nodes_virt_ratio'))
+        _jqplot_extra($('#'+id+'_nodes_virt_ratio'), p)
 
         $('#'+id+'_svc_prd_ratio').height('300px')
         $('#'+id+'_svc_prd_ratio').width('300px')
-	$.jqplot(id+'_svc_prd_ratio', data[1][28], {
+	p = $.jqplot(id+'_svc_prd_ratio', data[1][28], {
             cursor:{zoom:true, showTooltip:false},
             legend: {
                 show: true,
@@ -1652,11 +1652,11 @@ function stat_compare_day(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_svc_prd_ratio'))
+        _jqplot_extra($('#'+id+'_svc_prd_ratio'), p)
 
         $('#'+id+'_svc_drp_ratio').height('300px')
         $('#'+id+'_svc_drp_ratio').width('300px')
-	$.jqplot(id+'_svc_drp_ratio', data[1][29], {
+	p = $.jqplot(id+'_svc_drp_ratio', data[1][29], {
             cursor:{zoom:true, showTooltip:false},
             legend: {
                 show: true,
@@ -1681,11 +1681,11 @@ function stat_compare_day(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_svc_drp_ratio'))
+        _jqplot_extra($('#'+id+'_svc_drp_ratio'), p)
 
         $('#'+id+'_svc_clu_ratio').height('300px')
         $('#'+id+'_svc_clu_ratio').width('300px')
-	$.jqplot(id+'_svc_clu_ratio', data[1][30], {
+	p = $.jqplot(id+'_svc_clu_ratio', data[1][30], {
             cursor:{zoom:true, showTooltip:false},
             legend: {
                 show: true,
@@ -1710,13 +1710,13 @@ function stat_compare_day(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_svc_clu_ratio'))
+        _jqplot_extra($('#'+id+'_svc_clu_ratio'), p)
     });
 }
 function stats_cpu(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
-	$.jqplot(id, data, {
+	p = $.jqplot(id, data, {
             cursor:{zoom:true, showTooltip:true},
 	    stackSeries: true,
             title: {
@@ -1763,6 +1763,7 @@ function stats_cpu(url, id) {
 		}
 	    }
 	});
+        _jqplot_extra($('#'+id), p)
     });
 }
 function stats_proc(url, id) {
@@ -1806,9 +1807,9 @@ function stats_proc(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_runq_sz'))
+        _jqplot_extra($('#'+id+'_runq_sz'), p)
 
-	$.jqplot(id+'_plist_sz', [data[1]], {
+	p = $.jqplot(id+'_plist_sz', [data[1]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
                 text: 'Process list size'
@@ -1846,9 +1847,9 @@ function stats_proc(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_plist_sz'))
+        _jqplot_extra($('#'+id+'_plist_sz'), p)
 
-	$.jqplot(id+'_loadavg', [data[2],data[3],data[4]], {
+	p = $.jqplot(id+'_loadavg', [data[2],data[3],data[4]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
                 text: 'Load average'
@@ -1889,7 +1890,7 @@ function stats_proc(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_loadavg'))
+        _jqplot_extra($('#'+id+'_loadavg'), p)
     });
 }
 function stats_svc_cpu(url, id) {
@@ -1954,7 +1955,7 @@ function stats_svc(url, id, title, unit) {
           }
         }
 
-	$.jqplot(id, data[1], {
+	p = $.jqplot(id, data[1], {
             cursor:{zoom:true, showTooltip:true},
 	    stackSeries: true,
             title: {
@@ -1993,7 +1994,7 @@ function stats_svc(url, id, title, unit) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id))
+        _jqplot_extra($('#'+id), p)
     });
 }
 function stats_mem(url, id) {
@@ -2013,7 +2014,7 @@ function stats_mem(url, id) {
             data[0][i][1] /= d['div']*1024
         }
 
-	$.jqplot(id+'_u', [data[1], data[3], data[4], data[7], data[0]], {
+	p = $.jqplot(id+'_u', [data[1], data[3], data[4], data[7], data[0]], {
             cursor:{zoom:true, showTooltip:true},
 	    stackSeries: true,
             title: {
@@ -2057,9 +2058,9 @@ function stats_mem(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_u'))
+        _jqplot_extra($('#'+id+'_u'), p)
 
-	$.jqplot(id+'_pct', [data[2],data[6]], {
+	p = $.jqplot(id+'_pct', [data[2],data[6]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
                 text: 'Memory usage percent'
@@ -2099,7 +2100,7 @@ function stats_mem(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_pct'))
+        _jqplot_extra($('#'+id+'_pct'), p)
 
     });
 }
@@ -2118,7 +2119,7 @@ function stats_swap(url, id) {
             data[0][i][1] /= d['div']*1024
         }
 
-	$.jqplot(id+'_u', [data[1], data[3], data[0]], {
+	p = $.jqplot(id+'_u', [data[1], data[3], data[0]], {
             cursor:{zoom:true, showTooltip:true},
 	    stackSeries: true,
             title: {
@@ -2160,9 +2161,9 @@ function stats_swap(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_u'))
+        _jqplot_extra($('#'+id+'_u'), p)
 
-	$.jqplot(id+'_pct', [data[2],data[4]], {
+	p = $.jqplot(id+'_pct', [data[2],data[4]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
                 text: 'Swap usage percent'
@@ -2202,13 +2203,13 @@ function stats_swap(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_pct'))
+        _jqplot_extra($('#'+id+'_pct'), p)
     });
 }
 function stats_block(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
-	$.jqplot(id+'_tps', [data[0],data[1]], {
+	p = $.jqplot(id+'_tps', [data[0],data[1]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
                 text: 'Block device transactions'
@@ -2247,9 +2248,9 @@ function stats_block(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_tps'))
+        _jqplot_extra($('#'+id+'_tps'), p)
 
-	$.jqplot(id+'_bps', [data[2],data[3]], {
+	p = $.jqplot(id+'_bps', [data[2],data[3]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
                 text: 'Block device bandwidth'
@@ -2288,13 +2289,13 @@ function stats_block(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_bps'))
+        _jqplot_extra($('#'+id+'_bps'), p)
     });
 }
 function stats_trend_mem(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
-	$.jqplot(id, [data], {
+	p = $.jqplot(id, [data], {
             cursor:{zoom:true, showTooltip:true},
             title: {
                 text: 'Memory usage trend<br>high/low/average'
@@ -2333,13 +2334,13 @@ function stats_trend_mem(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id))
+        _jqplot_extra($('#'+id), p)
     });
 }
 function stats_trend_cpu(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
-	$.jqplot(id, [data], {
+	p = $.jqplot(id, [data], {
             cursor:{zoom:true, showTooltip:true},
             title: {
                 text: 'Cpu usage trend<br>high/low/average'
@@ -2379,14 +2380,14 @@ function stats_trend_cpu(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id))
+        _jqplot_extra($('#'+id), p)
     });
 }
 function stats_blockdev(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         plot_width_x(id+'_tps', data[0])
-	$.jqplot(id+'_tps', [data[1]], {
+	p = $.jqplot(id+'_tps', [data[1]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
                 text: 'Block device transactions<br>high/low/average'
@@ -2421,10 +2422,10 @@ function stats_blockdev(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_tps'))
+        _jqplot_extra($('#'+id+'_tps'), p)
 
         plot_width_x(id+'_avgrq_sz', data[0])
-	$.jqplot(id+'_avgrq_sz', [data[2]], {
+	p = $.jqplot(id+'_avgrq_sz', [data[2]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
                 text: 'Block device request size<br>high/low/average'
@@ -2460,10 +2461,10 @@ function stats_blockdev(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_avgrq_sz'))
+        _jqplot_extra($('#'+id+'_avgrq_sz'), p)
 
         plot_width_x(id+'_await', data[0])
-	$.jqplot(id+'_await', [data[3]], {
+	p = $.jqplot(id+'_await', [data[3]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
                 text: 'Block device wait time<br>high/low/average'
@@ -2499,10 +2500,10 @@ function stats_blockdev(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_await'))
+        _jqplot_extra($('#'+id+'_await'), p)
 
         plot_width_x(id+'_svctm', data[0])
-	$.jqplot(id+'_svctm', [data[4]], {
+	p = $.jqplot(id+'_svctm', [data[4]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
                 text: 'Block device service time<br>high/low/average'
@@ -2538,10 +2539,10 @@ function stats_blockdev(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_svctm'))
+        _jqplot_extra($('#'+id+'_svctm'), p)
 
         plot_width_x(id+'_pct_util', data[0])
-	$.jqplot(id+'_pct_util', [data[5]], {
+	p = $.jqplot(id+'_pct_util', [data[5]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
                 text: 'Block device utilisation<br>high/low/average'
@@ -2577,10 +2578,10 @@ function stats_blockdev(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_pct_util'))
+        _jqplot_extra($('#'+id+'_pct_util'), p)
 
         plot_width_x(id+'_secps', data[0])
-	$.jqplot(id+'_secps', data[6], {
+	p = $.jqplot(id+'_secps', data[6], {
 	    stackSeries: true,
 	    grid: {
                 borderWidth: 0.5
@@ -2617,10 +2618,10 @@ function stats_blockdev(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_secps'))
+        _jqplot_extra($('#'+id+'_secps'), p)
 
         plot_width_x(id+'_tm', data[7])
-	$.jqplot(id+'_tm', data[8], {
+	p = $.jqplot(id+'_tm', data[8], {
 	    stackSeries: true,
 	    grid: {
                 borderWidth: 0.5
@@ -2657,14 +2658,14 @@ function stats_blockdev(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_tm'))
+        _jqplot_extra($('#'+id+'_tm'), p)
     });
 }
 function stats_netdev_err(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         plot_width_x(id, data[0])
-	$.jqplot(id, data[1], {
+	p = $.jqplot(id, data[1], {
 	    stackSeries: false,
 	    grid: {
                 borderWidth: 0.5
@@ -2704,14 +2705,14 @@ function stats_netdev_err(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id))
+        _jqplot_extra($('#'+id), p)
     });
 }
 function stats_netdev(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         plot_width_x(id+'_kBps', data[0])
-	$.jqplot(id+'_kBps', data[1], {
+	p = $.jqplot(id+'_kBps', data[1], {
 	    stackSeries: false,
 	    grid: {
                 borderWidth: 0.5
@@ -2748,10 +2749,10 @@ function stats_netdev(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_kBps'))
+        _jqplot_extra($('#'+id+'_kBps'), p)
 
         plot_width_x(id+'_pckps', data[0])
-	$.jqplot(id+'_pckps', data[2], {
+	p = $.jqplot(id+'_pckps', data[2], {
 	    stackSeries: false,
 	    grid: {
                 borderWidth: 0.5
@@ -2788,7 +2789,7 @@ function stats_netdev(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id+'_pckps'))
+        _jqplot_extra($('#'+id+'_pckps'), p)
     });
 }
 function fancy_size_mb(size) {
@@ -2882,7 +2883,7 @@ function stats_fs(url, id) {
         h = Math.max(38*h, 300)
         $('#'+id+'_u').height(h+'px')
         //plot_width_x(id+'_u', data[0])
-	$.jqplot(id+'_u', data[2], {
+	p = $.jqplot(id+'_u', data[2], {
             cursor:{zoom:true, showTooltip:true},
             title: {
                 text: 'Fs usage %'
@@ -2919,7 +2920,7 @@ function stats_fs(url, id) {
 		}
 	    }
   	});
-        _jqplot_img($('#'+id+'_u'))
+        _jqplot_extra($('#'+id+'_u'), p)
     });
 }
 function stat_os(url, id) {
@@ -2939,7 +2940,7 @@ function stat_os(url, id) {
         } else {
              title = id.replace('stat_os_','')
         }
-	$.jqplot(id, data[1], {
+	p = $.jqplot(id, data[1], {
             cursor:{zoom:true, showTooltip:true},
 	    stackSeries: true,
             title: {
@@ -2977,7 +2978,7 @@ function stat_os(url, id) {
 		}
 	    }
 	});
-        _jqplot_img($('#'+id))
+        _jqplot_extra($('#'+id), p)
     });
 }
 function ackpanel(e, show, s){
@@ -3039,7 +3040,7 @@ function stats_disk_array(url, id) {
                 data[i][j][1] /= d['div']
             }
         }
-        $.jqplot(id, data, {
+	p = $.jqplot(id, data, {
             cursor:{zoom:true, showTooltip:false},
             stackSeries: true,
             legend: {
@@ -3078,7 +3079,7 @@ function stats_disk_array(url, id) {
             }
 
 	});
-        _jqplot_img($('#'+id))
+        _jqplot_extra($('#'+id), p)
     });
 }
 function stats_disk_app(url, id) {
@@ -3095,7 +3096,7 @@ function stats_disk_app(url, id) {
                 data[i][j][1] /= d['div']
             }
         }
-        $.jqplot(id, data, {
+	p = $.jqplot(id, data, {
             cursor:{zoom:true, showTooltip:false},
             legend: {
                 renderer: $.jqplot.EnhancedLegendRenderer,
@@ -3130,7 +3131,7 @@ function stats_disk_app(url, id) {
             }
 
 	});
-        _jqplot_img($('#'+id))
+        _jqplot_extra($('#'+id), p)
     });
 }
 function jqplot_img(){
@@ -3139,6 +3140,20 @@ function jqplot_img(){
             _jqplot_img(this)
         })
     }
+}
+
+function _jqplot_extra(e, p){
+	_jqplot_resize(e, p);
+	_jqplot_img(e);
+}
+
+function _jqplot_resize(e, p){
+	e.parent().resizable({delay:20});
+	e.parent().bind('resize', function(event, ui) {
+          e.width('100%');
+          e.height('90%');
+	  p.replot( { resetAxes: false } );
+	});
 }
 
 function _jqplot_img(e){
