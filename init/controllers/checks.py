@@ -275,7 +275,12 @@ def set_low_threshold(ids):
                                       chk_changed=now)
         elif len(settings) == 1:
             # update
+            if settings[0].chk_high < val:
+                high = val
+            else:
+                high = settings[0].chk_high
             db(q).update(chk_low=val,
+                         chk_high=high,
                          chk_changed_by=user_name(),
                          chk_changed=now)
         update_thresholds(rows[0])
@@ -320,7 +325,12 @@ def set_high_threshold(ids):
                                       chk_changed=now)
         elif len(settings) == 1:
             # update
+            if settings[0].chk_low > val:
+                low = val
+            else:
+                low = settings[0].chk_low
             db(q).update(chk_high=val,
+                         chk_low=low,
                          chk_changed_by=user_name(),
                          chk_changed=now)
         update_thresholds(rows[0])
