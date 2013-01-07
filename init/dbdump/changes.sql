@@ -3148,3 +3148,52 @@ alter table comp_rulesets_services add unique key (ruleset_id,svcname,slave);
 alter table comp_modulesets_services drop key idx1;
 
 alter table comp_modulesets_services add unique key idx1 (modset_svcname,modset_id,slave);
+
+CREATE TABLE `stats_fs_u_diff` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `begin` datetime NOT NULL,
+  `end` datetime NOT NULL,
+  `nodename` varchar(60) NOT NULL,
+  `mntpt` varchar(200) NOT NULL,
+  `size` bigint(20) DEFAULT NULL,
+  `used` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=179025 DEFAULT CHARSET=utf8;
+
+CREATE TABLE `stats_fs_u_last` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `begin` datetime NOT NULL,
+  `end` datetime NOT NULL,
+  `nodename` varchar(60) NOT NULL,
+  `mntpt` varchar(200) NOT NULL,
+  `size` bigint(20) DEFAULT NULL,
+  `used` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `index_1` (`nodename`, `mntpt`)
+) ENGINE=InnoDB AUTO_INCREMENT=179025 DEFAULT CHARSET=utf8;
+
+#drop trigger if exists stats_fs_u_add;
+#delimiter #
+#create trigger stats_fs_u_add before insert on stats_fs_u for each row
+#begin
+# declare _size bigint ;
+# declare _used int ;
+# set _size = (select size from stats_fs_u_last where nodename=new.nodename and mntpt=new.mntpt) ;
+# set _used = (select used from stats_fs_u_last where nodename=new.nodename and mntpt=new.mntpt) ;
+# if (_size is null) then
+#  insert into stats_fs_u_last (begin, end, nodename, mntpt, size, used) values (new.date, new.date, new.nodename, new.mntpt, new.size, new.used) ;
+#  set _size = new.size ;
+#  set _used = new.used ;
+# end if ;
+#
+# if (new.size != _size or new.used != _used) then
+#  insert into stats_fs_u_diff (select null, begin, end, nodename, mntpt, size, used from stats_fs_u_last where nodename=new.nodename and mntpt=new.mntpt) ;
+#  update stats_fs_u_last set begin=new.date, end=new.date, size=new.size, used=new.used where nodename=new.nodename and mntpt=new.mntpt ;
+# else
+#  update stats_fs_u_last set end=new.date ;
+# end if ;
+#  
+# set new.date = "0000-00-00 00:00:00" ;
+#end#
+#delimiter ;
+

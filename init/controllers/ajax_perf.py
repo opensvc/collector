@@ -525,16 +525,25 @@ def rows_mem(node, s, e):
 
 @auth.requires_login()
 def rows_fs_u(node, s, e):
-    sql = """select date,
+    sql = """select begin,
+                    end,
                     mntpt,
-                    max(size),
-                    max(used),
-                    %(d)s as d
-             from stats_fs_u
-             where date>='%(s)s'
-               and date<='%(e)s'
+                    size,
+                    used
+             from stats_fs_u_diff
+             where end>='%(s)s'
+               and begin<='%(e)s'
                and nodename='%(n)s'
-             group by d, mntpt
+             union all
+             select begin,
+                    end,
+                    mntpt,
+                    size,
+                    used
+             from stats_fs_u_last
+             where end>='%(s)s'
+               and begin<='%(e)s'
+               and nodename='%(n)s'
           """%dict(
                 d = period_concat(s, e),
                 s = s,
@@ -542,7 +551,20 @@ def rows_fs_u(node, s, e):
                 n = node,
               )
     rows = db.executesql(sql)
-    return rows
+    _rows = []
+    _e = str_to_date(e)
+    _s = str_to_date(s)
+    for row in rows:
+        if row[0] > _s:
+            _rows.append([row[0], row[2], row[3], row[4]])
+        else:
+            _rows.append([_s, row[2], row[3], row[4]])
+
+        if row[1] < _e:
+            _rows.append([row[1], row[2], row[3], row[4]])
+        else:
+            _rows.append([_e, row[2], row[3], row[4]])
+    return _rows
 
 @auth.requires_login()
 def rows_blockdev(node, s, e):
