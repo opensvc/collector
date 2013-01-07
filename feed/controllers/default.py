@@ -2111,7 +2111,10 @@ def __svcmon_update(vars, vals):
         if a == 'mon_updated':
             continue
         h[a] = b
-    if 'mon_containerpath' in h:
+
+    nodename, vmname, vmtype = translate_encap_nodename(h['mon_svcname'], h['mon_nodname'])
+
+    if 'mon_containerpath' in h and nodename is None:
         # update container info only
         generic_insert('svcmon', vars, vals)
         return
@@ -2130,7 +2133,6 @@ def __svcmon_update(vars, vals):
         if row is not None:
             h['mon_vmtype'] = row.svc_containertype
 
-    nodename, vmname, vmtype = translate_encap_nodename(h['mon_svcname'], h['mon_nodname'])
     if nodename is not None:
         h['mon_vmname'] = vmname
         h['mon_vmtype'] = vmtype
