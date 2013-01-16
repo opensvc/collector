@@ -1404,6 +1404,17 @@ def insert_nsr(name=None, nodename=None):
         except:
             continue
 
+    # load svc mnt cache
+    sql = """select svcname, nodename, res_desc from resmon where rid like "%fs#%" """
+    rows = db.executesql(sql)
+    svc_mnt = {}
+    for row in rows:
+        try:
+            mnt = row[2].split('@')[1]
+            svc_mnt[(row[1], mnt)] = row[0]
+        except:
+            continue
+
     # load app cache
     sql = """select svc_name, svc_app from services"""
     rows = db.executesql(sql)
@@ -1444,6 +1455,8 @@ def insert_nsr(name=None, nodename=None):
                 nodename = l[0]
             if l[0] in svc_ip:
                 svcname = svc_ip[l[0]]
+            elif (nodename, l[1]) in svc_mnt:
+                svcname = svc_mnt[(nodename, l[1])]
             else:
                 svcname = ''
             if svcname != '' and svcname in svc_app:
@@ -4498,7 +4511,11 @@ def feed_dequeue():
                 continue
             try:
                 args = cPickle.loads(args)
-                globals()[fn](*args)
+                try:
+                    globals()[fn](*args)
+                except:
+                    # 1 retry
+                    globals()[fn](*args)
                 db(db.feed_queue.id==id).delete()
                 db.commit()
             except:
@@ -4541,14 +4558,14 @@ def feed_dequeue():
                 if not q.empty():
                     queues_empty = False
                     break
-            if last > 0 and queues_empty and n0 == 0 and db(db.feed_queue.id<last).count() > 0:
+            if last > 0 and queues_empty and n0 // 10 == 0 and db(db.feed_queue.id<last).count() > 0:
                 # once in a while, if queues are empty, retry errored entries
-                entries = db(db.feed_queue.id<last).select(limitby=(0,20), orderby=db.feed_queue.id)
+                entries = db(db.feed_queue.id<last).select(limitby=(0,50), orderby=db.feed_queue.id)
                 if len(entries) > 0:
                     log.info("got %d stalled entries to dequeue"% len(entries))
             else:
                 # don't fetch already scheduled entries
-                entries = db(db.feed_queue.id>last).select(limitby=(0,20), orderby=db.feed_queue.id)
+                entries = db(db.feed_queue.id>last).select(limitby=(0,50), orderby=db.feed_queue.id)
                 if len(entries) > 0:
                     log.info("got %d entries to dequeue"% len(entries))
         except:
