@@ -2930,7 +2930,7 @@ def ruleset_clone():
     orig = rows[0].ruleset_name
     newid = db.comp_rulesets.insert(ruleset_name=iid,
                                     ruleset_type=rows[0].ruleset_type)
-    if rows[0].ruleset_type == 'contextual':
+    if rows[0].ruleset_type == 'contextual' and rows[0].fset_id is not None:
         db.comp_rulesets_filtersets.insert(ruleset_id=newid,
                                            fset_id=rows[0].fset_id)
     for row in rows:
@@ -6879,6 +6879,28 @@ def comp_get_node_ruleset(nodename):
         ruleset['vars'].append(('nodes.'+f, val))
     return {'osvc_node':ruleset}
 
+def comp_get_rulesets_filters(rset_ids=None, nodename=None, svcname=None):
+    v = db.v_gen_filtersets
+    rset = db.comp_rulesets
+    rset_fset = db.comp_rulesets_filtersets
+    o = rset.ruleset_name|v.f_order
+
+    if rset_ids is None:
+        q = rset.id>0
+    else:
+        q = rset.id.belongs(rset_ids)
+
+    q &= rset.id == rset_fset.ruleset_id
+    q &= rset_fset.fset_id == v.fset_id
+    q &= rset.id == db.comp_ruleset_team_responsible.ruleset_id
+
+    if nodename is not None:
+        q &= db.comp_ruleset_team_responsible.group_id == node_team_responsible_id(nodename)
+    elif svcname is not None:
+        q &= db.comp_ruleset_team_responsible.group_id.belongs(svc_team_responsible_id(svcname))
+
+    return db(q).select(orderby=o)
+
 def comp_ruleset_vars(ruleset_id, qr=None):
     if qr is None:
         f = 'explicit attachment'
@@ -6886,6 +6908,7 @@ def comp_ruleset_vars(ruleset_id, qr=None):
         f = comp_format_filter(qr)
     q1 = db.comp_rulesets_rulesets.parent_rset_id==ruleset_id
     q = db.comp_rulesets.id == ruleset_id
+
     head_rset = db(q).select(db.comp_rulesets.ruleset_name).first()
     if head_rset is None:
         return dict()
@@ -6893,6 +6916,8 @@ def comp_ruleset_vars(ruleset_id, qr=None):
     children = map(lambda x: x.child_rset_id, children)
     if len(children) > 0:
         q |= db.comp_rulesets.id.belongs(children)
+
+    # get variables
     q &= db.comp_rulesets.id == db.comp_rulesets_variables.ruleset_id
     rows = db(q).select()
     ruleset_name = head_rset.ruleset_name
@@ -6961,23 +6986,17 @@ def _comp_get_svc_per_node_ruleset(svcname, nodename, slave=False):
     ruleset = {}
 
     # add contextual rulesets variables
-    v = db.v_gen_filtersets
-    rset = db.comp_rulesets
-    rset_fset = db.comp_rulesets_filtersets
-    o = rset.ruleset_name|v.f_order
-    q = rset.id>0
-    q &= rset.id == rset_fset.ruleset_id
-    q &= rset_fset.fset_id == v.fset_id
-    q &= rset.id == db.comp_ruleset_team_responsible.ruleset_id
-    q &= db.comp_ruleset_team_responsible.group_id.belongs(svc_team_responsible_id(svcname))
-    rows = db(q).select(orderby=o)
+    rows = comp_get_rulesets_filters(svcname=svcname)
 
     q = db.services.svc_name == svcname
     if slave:
-        q &= db.svcmon.mon_vmname == nodename
+        if nodename is not None:
+            q &= db.svcmon.mon_vmname == nodename
+        j = db.nodes.nodename == db.svcmon.mon_vmname
     else:
-        q &= db.svcmon.mon_nodname == nodename
-    j = db.nodes.nodename == db.svcmon.mon_nodname
+        if nodename is not None:
+            q &= db.svcmon.mon_nodname == nodename
+        j = db.nodes.nodename == db.svcmon.mon_nodname
     l1 = db.nodes.on(j)
     j = db.svcmon.mon_svcname == db.services.svc_name
     l2 = db.svcmon.on(j)
@@ -7011,16 +7030,7 @@ def _comp_get_svc_ruleset(svcname, slave=False):
     ruleset = comp_get_service_ruleset(svcname)
 
     # add contextual rulesets variables
-    v = db.v_gen_filtersets
-    rset = db.comp_rulesets
-    rset_fset = db.comp_rulesets_filtersets
-    o = rset.ruleset_name|v.f_order
-    q = rset.id>0
-    q &= rset.id == rset_fset.ruleset_id
-    q &= rset_fset.fset_id == v.fset_id
-    q &= rset.id == db.comp_ruleset_team_responsible.ruleset_id
-    q &= db.comp_ruleset_team_responsible.group_id.belongs(svc_team_responsible_id(svcname))
-    rows = db(q).select(orderby=o)
+    rows = comp_get_rulesets_filters(svcname=svcname)
 
     q = db.services.svc_name == svcname
     if slave:
@@ -7100,16 +7110,7 @@ def _comp_get_ruleset(nodename):
     ruleset = comp_get_node_ruleset(nodename)
 
     # add contextual rulesets variables
-    v = db.v_gen_filtersets
-    rset = db.comp_rulesets
-    rset_fset = db.comp_rulesets_filtersets
-    o = rset.ruleset_name|v.f_order
-    q = rset.id>0
-    q &= rset.id == rset_fset.ruleset_id
-    q &= rset_fset.fset_id == v.fset_id
-    q &= rset.id == db.comp_ruleset_team_responsible.ruleset_id
-    q &= db.comp_ruleset_team_responsible.group_id == node_team_responsible_id(nodename)
-    rows = db(q).select(orderby=o)
+    rows = comp_get_rulesets_filters(nodename=nodename)
 
     q = db.nodes.nodename == nodename
     j = db.nodes.nodename == db.svcmon.mon_nodname
