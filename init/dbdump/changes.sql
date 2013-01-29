@@ -3197,3 +3197,10 @@ CREATE TABLE `stats_fs_u_last` (
 #end#
 #delimiter ;
 
+alter table comp_ruleset add column ruleset_public varchar(1) default 'T';
+
+drop view v_comp_rulesets ;
+
+CREATE VIEW `v_comp_rulesets` AS (select `r`.`id` AS `ruleset_id`,`r`.`ruleset_name` AS `ruleset_name`,`r`.`ruleset_type` AS `ruleset_type`, r.ruleset_public as ruleset_public, group_concat(distinct `g`.`role` separator ', ') AS `teams_responsible`,(select `comp_rulesets`.`ruleset_name` from `comp_rulesets` where (`comp_rulesets`.`id` = `rr`.`child_rset_id`)) AS `encap_rset`,`rr`.`child_rset_id` AS `encap_rset_id`,`rv`.`id` AS `id`,`rv`.`var_name` AS `var_name`,`rv`.`var_class` AS `var_class`,`rv`.`var_value` AS `var_value`,`rv`.`var_author` AS `var_author`,`rv`.`var_updated` AS `var_updated`,`rf`.`fset_id` AS `fset_id`,`fs`.`fset_name` AS `fset_name` from ((((((`comp_rulesets` `r` left join `comp_rulesets_rulesets` `rr` on((`r`.`id` = `rr`.`parent_rset_id`))) left join `comp_rulesets_variables` `rv` on((((`rv`.`ruleset_id` = `r`.`id`) and isnull(`rr`.`child_rset_id`)) or (`rv`.`ruleset_id` = `rr`.`child_rset_id`)))) left join `comp_rulesets_filtersets` `rf` on((`r`.`id` = `rf`.`ruleset_id`))) left join `gen_filtersets` `fs` on((`fs`.`id` = `rf`.`fset_id`))) left join `comp_ruleset_team_responsible` `rt` on((`r`.`id` = `rt`.`ruleset_id`))) left join `auth_group` `g` on((`rt`.`group_id` = `g`.`id`))) group by `r`.`id`,`rv`.`id`,`rr`.`id`);
+
+

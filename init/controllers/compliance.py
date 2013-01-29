@@ -2230,6 +2230,7 @@ class table_comp_rulesets(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['ruleset_name',
                      'ruleset_type',
+                     'ruleset_public',
                      'teams_responsible',
                      'fset_name',
                      'encap_rset',
@@ -2310,6 +2311,13 @@ class table_comp_rulesets(HtmlTable):
                      display=True,
                      img='action16',
                     ),
+            'ruleset_public': HtmlTableColumn(
+                     title='Ruleset public',
+                     field='ruleset_public',
+                     table='v_comp_rulesets',
+                     display=True,
+                     img='action16',
+                    ),
             'fset_name': HtmlTableColumn(
                      title='Filterset',
                      field='fset_name',
@@ -2354,6 +2362,7 @@ class table_comp_rulesets(HtmlTable):
                                                         'ruleset_rename',
                                                         'ruleset_clone',
                                                         'ruleset_change_type',
+                                                        'ruleset_change_public',
                                                         'ruleset_attach',
                                                         'ruleset_detach',
                                                         'ruleset_node_attach'])
@@ -2365,6 +2374,51 @@ class table_comp_rulesets(HtmlTable):
                  _href=URL(r=request, f="comp_rulesets_nodes_attachment"),
                  _class="attach16",
                )
+
+    def ruleset_change_public(self):
+        label = 'Change ruleset publication'
+        action = 'ruleset_change_public'
+        divid = 'rset_public_change'
+        sid = 'rset_public_change_s'
+        options = ['T', 'F']
+        d = DIV(
+              A(
+                T(label),
+                _class='edit16',
+                _onclick="""
+                  click_toggle_vis(event,'%(div)s', 'block');
+                """%dict(div=divid),
+              ),
+              DIV(
+                TABLE(
+                  TR(
+                    TH(T('Ruleset publication')),
+                    TD(
+                      SELECT(
+                        *options,
+                        **dict(_id=sid)
+                      ),
+                    ),
+                  ),
+                  TR(
+                    TH(),
+                    TD(
+                      INPUT(
+                        _type='submit',
+                        _onclick="""if (confirm("%(text)s")){%(s)s};
+                                 """%dict(s=self.ajax_submit(additional_inputs=[sid], args=action),
+                                          text=T("Changing the ruleset publication resets all attachments to nodes and services. Please confirm ruleset publication change."),
+                                 ),
+                      ),
+                    ),
+                  ),
+                ),
+                _style='display:none',
+                _class='white_float',
+                _name=divid,
+              ),
+            )
+        return d
 
     def ruleset_change_type(self):
         label = 'Change ruleset type'
@@ -2888,6 +2942,34 @@ def team_responsible_detach(ids=[]):
          dict(g=group_role(group_id), u=u))
 
 @auth.requires_membership('CompManager')
+def ruleset_change_public(ids):
+    sid = request.vars.rset_public_change_s
+    if len(sid) == 0:
+        raise ToolError("change ruleset publication failed: target publication is empty")
+    if len(ids) == 0:
+        raise ToolError("change ruleset publication failed: no ruleset selected")
+    ids = map(lambda x: int(x.split('_')[0]), ids)
+
+    q = db.comp_rulesets.id.belongs(ids)
+    rows = db(q).select()
+    if len(rows) == 0:
+        raise ToolError("change ruleset publication failed: can't find ruleset")
+
+    x = ', '.join(['from %s on %s'%(r.ruleset_public,r.ruleset_name) for r in rows])
+    db(q).update(ruleset_public=sid)
+
+    # purge attachments
+    if sid == "F":
+        q = db.comp_rulesets_nodes.ruleset_id.belongs(ids)
+        db(q).delete()
+        q = db.comp_rulesets_services.ruleset_id.belongs(ids)
+        db(q).delete()
+
+    _log('compliance.ruleset.publication.change',
+         'changed ruleset publication to %(s)s %(x)s',
+         dict(s=sid, x=x))
+
+@auth.requires_membership('CompManager')
 def ruleset_change_type(ids):
     sid = request.vars.rset_type_change_s
     if len(sid) == 0:
@@ -3126,7 +3208,7 @@ def ajax_comp_rulesets_col_values():
 def ajax_comp_rulesets():
     v = table_comp_rulesets('cr0', 'ajax_comp_rulesets')
     v.span = 'ruleset_name'
-    v.sub_span = ['ruleset_type', 'fset_name', 'teams_responsible']
+    v.sub_span = ['ruleset_type', 'ruleset_public', 'fset_name', 'teams_responsible']
     v.checkboxes = True
 
     err = None
@@ -3141,6 +3223,8 @@ def ajax_comp_rulesets():
                 var_value_set()
             elif action == 'ruleset_var_del':
                 comp_delete_ruleset_var(v.get_checked())
+            elif action == 'ruleset_change_public':
+                ruleset_change_public(v.get_checked())
             elif action == 'ruleset_change_type':
                 ruleset_change_type(v.get_checked())
             elif action == 'ruleset_clone':
@@ -6692,6 +6776,7 @@ def comp_detach_ruleset(nodename, ruleset, auth):
 def comp_list_rulesets(pattern='%', nodename=None, auth=("", "")):
     q = db.comp_rulesets.ruleset_name.like(pattern)
     q &= db.comp_rulesets.ruleset_type == 'explicit'
+    q &= db.comp_rulesets.ruleset_public == True
     q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
     if nodename != None:
         q &= db.nodes.nodename == nodename
@@ -6879,7 +6964,7 @@ def comp_get_node_ruleset(nodename):
         ruleset['vars'].append(('nodes.'+f, val))
     return {'osvc_node':ruleset}
 
-def comp_get_rulesets_filters(rset_ids=None, nodename=None, svcname=None):
+def comp_get_rulesets_filters(rset_ids=None, nodename=None, svcname=None, head=True):
     v = db.v_gen_filtersets
     rset = db.comp_rulesets
     rset_fset = db.comp_rulesets_filtersets
@@ -6894,26 +6979,42 @@ def comp_get_rulesets_filters(rset_ids=None, nodename=None, svcname=None):
     q &= rset_fset.fset_id == v.fset_id
     q &= rset.id == db.comp_ruleset_team_responsible.ruleset_id
 
-    if nodename is not None:
-        q &= db.comp_ruleset_team_responsible.group_id == node_team_responsible_id(nodename)
-    elif svcname is not None:
-        q &= db.comp_ruleset_team_responsible.group_id.belongs(svc_team_responsible_id(svcname))
+    if head:
+        q &= rset.ruleset_public == True
+        if nodename is not None:
+            q &= db.comp_ruleset_team_responsible.group_id == node_team_responsible_id(nodename)
+        elif svcname is not None:
+            q &= db.comp_ruleset_team_responsible.group_id.belongs(svc_team_responsible_id(svcname))
 
     return db(q).select(orderby=o)
 
-def comp_ruleset_vars(ruleset_id, qr=None):
+def comp_ruleset_vars(ruleset_id, qr=None, nodename=None, svcname=None, slave=False):
     if qr is None:
         f = 'explicit attachment'
     else:
         f = comp_format_filter(qr)
     q1 = db.comp_rulesets_rulesets.parent_rset_id==ruleset_id
+    q1 &= db.comp_rulesets_rulesets.child_rset_id == db.comp_rulesets.id
     q = db.comp_rulesets.id == ruleset_id
 
     head_rset = db(q).select(db.comp_rulesets.ruleset_name).first()
     if head_rset is None:
         return dict()
-    children = db(q1).select(db.comp_rulesets_rulesets.child_rset_id)
-    children = map(lambda x: x.child_rset_id, children)
+
+    children = []
+    rows = db(q1).select(db.comp_rulesets_rulesets.child_rset_id,
+                         db.comp_rulesets.ruleset_type)
+    for row in rows:
+        id = row.comp_rulesets_rulesets.child_rset_id
+        if row.comp_rulesets.ruleset_type == "explicit":
+            children.append(id)
+        elif row.comp_rulesets.ruleset_type == "contextual":
+            # don't validate sub ruleset ownership.
+            # parent ownership is inherited
+            if comp_ruleset_match(id, nodename=nodename, svcname=svcname,
+                                  slave=slave, head=False):
+                children.append(id)
+
     if len(children) > 0:
         q |= db.comp_rulesets.id.belongs(children)
 
@@ -6982,6 +7083,68 @@ def comp_get_svc_ruleset(svcname, auth):
     insert_run_rset(ruleset)
     return ruleset
 
+def comp_ruleset_match(id, svcname=None, nodename=None, slave=False, head=True):
+    if svcname is not None:
+        return _comp_ruleset_svc_match(id, svcname=svcname, nodename=nodename,
+                                       slave=slave,
+                                       head=head)
+    else:
+        return _comp_ruleset_match(id, nodename=nodename,
+                                   head=head)
+
+def _comp_ruleset_svc_match(id, svcname=None, nodename=None, slave=False, head=True):
+    rows = comp_get_rulesets_filters([id], svcname=svcname,
+                                     head=head)
+    if len(rows) == 0:
+        return False
+
+    q = db.services.svc_name == svcname
+    if slave:
+        if nodename is not None:
+            q &= db.svcmon.mon_vmname == nodename
+        j = db.nodes.nodename == db.svcmon.mon_vmname
+    else:
+        if nodename is not None:
+            q &= db.svcmon.mon_nodname == nodename
+        j = db.nodes.nodename == db.svcmon.mon_nodname
+    l1 = db.nodes.on(j)
+    j = db.svcmon.mon_svcname == db.services.svc_name
+    l2 = db.svcmon.on(j)
+    qr = db.services.id > 0
+    need = False
+
+    for i, row in enumerate(rows):
+        qr = comp_query(qr, row)
+        if row.v_gen_filtersets.f_table in ('svcmon', 'services'):
+            need = True
+
+    if not need:
+        match = db(q&qr).select(db.nodes.id, db.svcmon.mon_svcname, left=(l2,l1))
+        if len(match) > 0:
+            return True
+    return False
+
+def _comp_ruleset_match(id, nodename=None, head=True):
+    rows = comp_get_rulesets_filters([id], nodename=nodename,
+                                     head=head)
+    if len(rows) == 0:
+        return False
+
+    q = db.nodes.nodename == nodename
+    j = db.nodes.nodename == db.svcmon.mon_nodname
+    l1 = db.svcmon.on(j)
+    j = db.svcmon.mon_svcname == db.services.svc_name
+    l2 = db.services.on(j)
+    qr = db.nodes.id > 0
+
+    for i, row in enumerate(rows):
+        qr = comp_query(qr, row)
+
+    match = db(q&qr).select(db.nodes.id, db.svcmon.mon_svcname, left=(l1,l2))
+    if len(match) > 0:
+        return True
+    return False
+
 def _comp_get_svc_per_node_ruleset(svcname, nodename, slave=False):
     ruleset = {}
 
@@ -7019,7 +7182,7 @@ def _comp_get_svc_per_node_ruleset(svcname, nodename, slave=False):
                 match = db(q&qr).select(db.nodes.id, db.svcmon.mon_svcname,
                                         left=(l2,l1))
                 if len(match) > 0:
-                    ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr))
+                    ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr, nodename=nodename, svcname=svcname, slave=slave))
                 need = False
             qr = db.services.id > 0
 
@@ -7059,7 +7222,7 @@ def _comp_get_svc_ruleset(svcname, slave=False):
                 match = db(q&qr).select(db.nodes.id, db.svcmon.mon_svcname,
                                         left=(l2,l1))
                 if len(match) > 0:
-                    ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr))
+                    ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr, svcname=svcname, slave=slave))
                 need = False
             qr = db.services.id > 0
 
@@ -7069,7 +7232,7 @@ def _comp_get_svc_ruleset(svcname, slave=False):
     rows = db(q).select(db.comp_rulesets_services.ruleset_id,
                         orderby=db.comp_rulesets_services.ruleset_id)
     for row in rows:
-        ruleset.update(comp_ruleset_vars(row.ruleset_id))
+        ruleset.update(comp_ruleset_vars(row.ruleset_id, svcname=svcname, slave=slave))
 
     return ruleset
 
@@ -7132,14 +7295,14 @@ def _comp_get_ruleset(nodename):
             match = db(q&qr).select(db.nodes.id, db.svcmon.mon_svcname,
                                     left=(l1,l2))
             if len(match) > 0:
-                ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr))
+                ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr, nodename=nodename))
             qr = db.nodes.id > 0
     # add explicit rulesets variables
     q = db.comp_rulesets_nodes.nodename == nodename
     rows = db(q).select(db.comp_rulesets_nodes.ruleset_id,
                         orderby=db.comp_rulesets_nodes.ruleset_id)
     for row in rows:
-        ruleset.update(comp_ruleset_vars(row.ruleset_id))
+        ruleset.update(comp_ruleset_vars(row.ruleset_id, nodename=nodename))
 
     ruleset = _comp_remove_dup_vars(ruleset)
 

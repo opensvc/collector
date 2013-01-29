@@ -1079,6 +1079,7 @@ db.define_table('v_gen_filtersets',
 db.define_table('comp_rulesets',
     Field('ruleset_name','string', requires=IS_NOT_EMPTY()),
     Field('ruleset_type','string', requires=IS_IN_SET(['contextual','explicit'])),
+    Field('ruleset_public','boolean', default=True),
     migrate=False)
 
 db.define_table('comp_rulesets_rulesets',
@@ -1137,6 +1138,7 @@ db.define_table('v_comp_rulesets',
     Field('encap_rset_id','integer'),
     Field('ruleset_name','string', requires=IS_NOT_EMPTY()),
     Field('ruleset_type','string', requires=IS_IN_SET(['contextual','explicit'])),
+    Field('ruleset_public','boolean', default=True),
     Field('teams_responsible','string'),
     Field('fset_name','string'),
     Field('var_class','string', requires=IS_IN_SET(("raw", "authkey", "file",
@@ -1150,12 +1152,6 @@ db.define_table('v_comp_rulesets',
 db.define_table('comp_ruleset_team_responsible',
     Field('ruleset_id','string'),
     Field('group_id','string'),
-    migrate=False)
-
-db.define_table('comp_node_ruleset',
-    Field('ruleset_node','string'),
-    Field('ruleset_name','string'),
-    Field('ruleset_updated','string'),
     migrate=False)
 
 db.define_table('comp_node_moduleset',
