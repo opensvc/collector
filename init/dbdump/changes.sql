@@ -3197,7 +3197,7 @@ CREATE TABLE `stats_fs_u_last` (
 #end#
 #delimiter ;
 
-alter table comp_ruleset add column ruleset_public varchar(1) default 'T';
+alter table comp_rulesets add column ruleset_public varchar(1) default 'T';
 
 drop view v_comp_rulesets ;
 
