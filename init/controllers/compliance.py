@@ -2367,6 +2367,7 @@ class table_comp_rulesets(HtmlTable):
                                                         'ruleset_detach',
                                                         'ruleset_node_attach'])
         self.ajax_col_values = 'ajax_comp_rulesets_col_values'
+        self.dbfilterable = False
 
     def ruleset_node_attach(self):
         return A(
@@ -2537,11 +2538,27 @@ class table_comp_rulesets(HtmlTable):
         return '_'.join([self.id, 'ckid']+map(str,ids))
 
     def team_responsible_select_tool(self, label, action, divid, sid, _class=''):
-        o = db.nodes.team_responsible
-        q = db.nodes.team_responsible == db.auth_group.role
         if 'Manager' not in user_groups():
-            q &= db.nodes.team_responsible.belongs(user_groups())
-        options = [OPTION(g.auth_group.role,_value=g.auth_group.id) for g in db(q).select(orderby=o, groupby=o)]
+            s = """and role in (
+                     select g.id from
+                       auth_group g
+                       join group_membership gm on g.id=gm.group_id
+                       join auth_user u on gm.user_id=u.id
+                     where
+                       u.id=%d
+                  )"""%auth.user_id
+        else:
+            s = ""
+        sql = """ select id, role
+                  from auth_group
+                  where
+                    role not like "user_%%" and
+                    privilege = 'F'
+                    %s
+                  group by role order by role
+        """%s
+        rows = db.executesql(sql)
+        options = [OPTION(g[1],_value=g[0]) for g in rows]
 
         q = db.auth_membership.user_id == auth.user_id
         q &= db.auth_group.id == db.auth_membership.group_id
@@ -4260,13 +4277,28 @@ class table_comp_moduleset(HtmlTable):
         id2 = o['comp_moduleset_modules']['id']
         return '_'.join((self.id, 'ckid', str(id1), str(id2)))
 
-    def team_responsible_select_tool(self, label, action, divid, sid,
-_class=''):
-        o = db.nodes.team_responsible
-        q = db.nodes.team_responsible == db.auth_group.role
+    def team_responsible_select_tool(self, label, action, divid, sid, _class=''):
         if 'Manager' not in user_groups():
-            q &= db.nodes.team_responsible.belongs(user_groups())
-        options = [OPTION(g.auth_group.role,_value=g.auth_group.id) for g in db(q).select(orderby=o, groupby=o)]
+            s = """and role in (
+                     select g.id from
+                       auth_group g
+                       join group_membership gm on g.id=gm.group_id
+                       join auth_user u on gm.user_id=u.id
+                     where
+                       u.id=%d
+                  )"""%auth.user_id
+        else:
+            s = ""
+        sql = """ select id, role
+                  from auth_group
+                  where
+                    role not like "user_%%" and
+                    privilege = 'F'
+                    %s
+                  group by role order by role
+        """%s
+        rows = db.executesql(sql)
+        options = [OPTION(g[1],_value=g[0]) for g in rows]
 
         q = db.auth_membership.user_id == auth.user_id
         q &= db.auth_group.id == db.auth_membership.group_id
