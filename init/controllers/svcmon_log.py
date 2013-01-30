@@ -1,3 +1,5 @@
+config = local_import('config', reload=True)
+
 def call():
     """
     exposes services. for example:
@@ -437,6 +439,21 @@ def service_availability_2(rows, begin=None, end=None):
     query = _where(query, 'svcmon_log_ack', '<%s'%end, 'mon_begin')
     acked = db(query).select(orderby=o)
 
+    if hasattr(config, 'account_appstatus_in_service_avail') and \
+       not config.account_appstatus_in_service_avail:
+        o = db.svcmon_log.mon_begin
+        query = (db.svcmon_log.id>0)
+        query = _where(query, 'svcmon_log', domain_perms(), 'mon_svcname')
+        query = _where(query, 'svcmon_log', request.vars.mon_svcname, 'mon_svcname')
+        query = _where(query, 'svcmon_log', '>%s'%begin, 'mon_end')
+        query = _where(query, 'svcmon_log', '<%s'%end, 'mon_begin')
+        query &= db.svcmon_log.mon_appstatus.belongs(["warn", "down"])
+        query &= ~db.svcmon_log.mon_ipstatus.belongs(["warn", "down"])
+        query &= ~db.svcmon_log.mon_fsstatus.belongs(["warn", "down"])
+        query &= ~db.svcmon_log.mon_containerstatus.belongs(["warn", "down"])
+        query &= ~db.svcmon_log.mon_diskstatus.belongs(["warn", "down"])
+        appdown = db(query).select(orderby=o)
+
     def get_holes(svc, _e, b):
         ack_overlap = 0
         holes = []
@@ -521,6 +538,26 @@ def service_availability_2(rows, begin=None, end=None):
 
         if ack_overlap == 0:
             holes += [_hole(_e, b, 0, None)]
+
+        if hasattr(config, 'account_appstatus_in_service_avail') and \
+           not config.account_appstatus_in_service_avail:
+            delta = datetime.timedelta(minutes=2)
+            for i, hole in enumerate(holes):
+                for ad in appdown:
+                     if ad.mon_begin + delta > hole['end']:
+                         break
+                     if ad.mon_svcname != svc:
+                         continue
+                     if ad.mon_end - delta < hole['begin']:
+                         continue
+                     if hole['end'] <= ad.mon_end + delta:
+                         holes[i]['acked'] = 1
+                         holes[i]['account'] = 0
+                         holes[i]['acked_by'] = "opensvc"
+                         holes[i]['acked_on'] = now
+                         holes[i]['acked_comment'] = "Application issue"
+                         holes[i]['acked_account'] = 0
+                     break
 
         return holes
 
