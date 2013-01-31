@@ -168,6 +168,8 @@ def json_dash_history():
 
     q = db.dashboard_events.id > 0
     for f in set(t.cols):
+        if f == 'dash_created':
+            continue
         if t.colprops[f].filter_redirect is not None:
             _f = t.colprops[f].filter_redirect
             _t = "dashboard_ref"
