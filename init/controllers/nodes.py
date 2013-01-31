@@ -568,7 +568,30 @@ def ajax_nodes():
     if len(request.args) == 1 and request.args[0] == 'csv':
         return t.csv()
 
-    return t.html()
+    mt = table_obs_agg('obs_agg', 'ajax_obs_agg')
+    return DIV(
+             DIV(
+               T("Obsolescence Statistics"),
+               _style="text-align:left;font-size:120%;background-color:#e0e1cd",
+               _class="right16 clickable",
+               _onclick="""
+               if (!$("#obs_agg").is(":visible")) {
+                 $(this).addClass("down16");
+                 $(this).removeClass("right16");
+                 $("#obs_agg").show(); %s ;
+               } else {
+                 $(this).addClass("right16");
+                 $(this).removeClass("down16");
+                 $("#obs_agg").hide();
+               }"""%mt.ajax_submit(additional_inputs=t.ajax_inputs()),
+             ),
+             DIV(
+               IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+                _style="display:none",
+               _id="obs_agg",
+             ),
+             t.html(),
+           )
 
 @auth.requires_login()
 def nodes():
@@ -597,6 +620,168 @@ def delete_svcmon(nodename):
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
     db.commit()
+
+class col_obs_chart(HtmlTableColumn):
+    def html(self, o):
+       h = self.get(o)
+       return DIV(
+                DIV(
+                  H3(T("Hardware obsolescence warning roadmap")),
+                  DIV(
+                    json.dumps(h['hw_warn_chart_data']),
+                    _id='hw_warn_chart',
+                  ),
+                  _style="float:left;width:350px",
+                ),
+              )
+
+class table_obs_agg(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['chart']
+        self.colprops = {
+            'chart': col_obs_chart(
+                     title='Chart',
+                     field='chart',
+                     display=True,
+                     img='spark16',
+                    ),
+        }
+        self.dbfilterable = False
+        self.filterable = False
+        self.pageable = False
+        self.exportable = False
+        self.refreshable = False
+        self.columnable = False
+        self.headers = False
+
+@auth.requires_login()
+def ajax_obs_agg():
+    t = table_nodes('nodes', 'ajax_nodes')
+    mt = table_obs_agg('obs_agg', 'ajax_obs_agg')
+
+    def get_rows(field_date):
+        q = db.v_nodes.id>0
+        q = _where(q, 'v_nodes', domain_perms(), 'nodename')
+        q = apply_filters(q, db.v_nodes.nodename, None)
+        for f in t.cols:
+            q = _where(q, 'v_nodes', t.filter_parse(f), f)
+        return db(q).select(db.v_nodes.id.count(),
+                            db.v_nodes[field_date],
+                            groupby=db.v_nodes[field_date],
+                            orderby=db.v_nodes[field_date])
+
+    def get_data(field_date):
+        data = []
+        cumul = []
+        prev = 0
+        rows = get_rows(field_date)
+        for row in rows:
+            if row.v_nodes[field_date] is None:
+                continue
+            data.append([row.v_nodes[field_date].strftime('%Y-%m-%d %H:%M:%S'),
+                         row(db.v_nodes.id.count())])
+            cumul.append([row.v_nodes[field_date].strftime('%Y-%m-%d %H:%M:%S'),
+                          prev+row(db.v_nodes.id.count())])
+            prev = cumul[-1][1]
+        return [data, cumul]
+
+    h = {}
+    h['hw_warn_chart_data'] = get_data('hw_obs_warn_date')
+    h['hw_alert_chart_data'] = get_data('hw_obs_alert_date')
+    h['os_warn_chart_data'] = get_data('os_obs_warn_date')
+    h['os_alert_chart_data'] = get_data('os_obs_alert_date')
+
+    return DIV(
+             #mt.html(),
+             DIV(
+               H3(T("Hardware obsolescence warnings roadmap")),
+               DIV(
+                 XML(json.dumps(h['hw_warn_chart_data'])),
+                 _id='hw_warn_chart',
+               ),
+               _style="float:left;width:350px;padding:10px;padding-left:30px;padding-right:30px",
+             ),
+             DIV(
+               H3(T("Hardware obsolescence alerts roadmap")),
+               DIV(
+                 XML(json.dumps(h['hw_alert_chart_data'])),
+                 _id='hw_alert_chart',
+               ),
+               _style="float:left;width:350px;padding:10px;padding-left:30px;padding-right:30px",
+             ),
+             DIV(XML('&nbsp;'), _class='spacer'),
+             DIV(
+               H3(T("Operating system obsolescence warnings roadmap")),
+               DIV(
+                 XML(json.dumps(h['os_warn_chart_data'])),
+                 _id='os_warn_chart',
+               ),
+               _style="float:left;width:350px;padding:10px;padding-left:30px;padding-right:30px",
+             ),
+             DIV(
+               H3(T("Operating system obsolescence alerts roadmap")),
+               DIV(
+                 XML(json.dumps(h['os_alert_chart_data'])),
+                 _id='os_alert_chart',
+               ),
+               _style="float:left;width:350px;padding:10px;padding-left:30px;padding-right:30px",
+             ),
+
+
+             SCRIPT("""
+function obsplot(o) {
+  var data = $.parseJSON(o.html())
+  o.html("")
+  o.height("250px")
+  options = {
+            legend: {
+                show: true,
+                location: 'e',
+                placement: "outside"
+            },
+            series: [
+                {label: 'delta', renderer: $.jqplot.BarRenderer,
+                 rendererOptions: {
+                  barWidth: 20
+                 }
+                },
+                {label: 'sigma'},
+            ],
+            axes: {
+                xaxis: {
+                    renderer: $.jqplot.DateAxisRenderer,
+                    numberTicks: 5,
+                    tickOptions:{formatString:'<center>%b<br>%Y<center>'}
+                },
+                yaxis: {
+                    min: 0,
+                    tickOptions:{formatString:'%d'}
+                }
+            }
+  }
+  $.jqplot(o.attr('id'), data, options)
+}
+$("#hw_warn_chart").each(function(){
+  obsplot($(this))
+})
+$("#hw_alert_chart").each(function(){
+  obsplot($(this))
+})
+$("#os_warn_chart").each(function(){
+  obsplot($(this))
+})
+$("#os_alert_chart").each(function(){
+  obsplot($(this))
+})
+""",
+               _name="obs_agg_to_eval",
+             ),
+           )
+
+
 
 #
 # Dashboard updates
