@@ -391,6 +391,24 @@ def update_asset(vars, vals, auth):
 def update_asset_sync(vars, vals, auth):
     _update_asset(vars, vals, auth)
 
+def get_os_obs_dates(obs_name):
+    q = db.obsolescence.obs_type == "os"
+    q &= db.obsolescence.obs_name == obs_name
+    o = db(q).select(db.obsolescence.obs_warn_date,
+                     db.obsolescence.obs_alert_date).first()
+    if o is None:
+        return None, None
+    return o.obs_warn_date, o.obs_alert_date
+
+def get_hw_obs_dates(obs_name):
+    q = db.obsolescence.obs_type == "hw"
+    q &= db.obsolescence.obs_name == obs_name
+    o = db(q).select(db.obsolescence.obs_warn_date,
+                     db.obsolescence.obs_alert_date).first()
+    if o is None:
+        return None, None
+    return o.obs_warn_date, o.obs_alert_date
+
 def _update_asset(vars, vals, auth):
     h = {}
     for a,b in zip(vars, vals):
@@ -403,6 +421,15 @@ def _update_asset(vars, vals, auth):
     if 'environment' in h:
         h['environnement'] = h['environment']
         del(h['environment'])
+
+    # add obsolescence info
+    os_obs_warn_date, os_obs_alert_date = get_os_obs_dates(' '.join((h['os_name'], h['os_vendor'], h['os_release'])))
+    hw_obs_warn_date, hw_obs_alert_date = get_hw_obs_dates(h['model'])
+    h['os_obs_warn_date'] = os_obs_warn_date
+    h['os_obs_alert_date'] = os_obs_alert_date
+    h['hw_obs_warn_date'] = hw_obs_warn_date
+    h['hw_obs_alert_date'] = hw_obs_alert_date
+
     generic_insert('nodes', h.keys(), h.values())
     update_dash_node_not_updated(auth[1])
     update_dash_node_without_maintenance_end(auth[1])

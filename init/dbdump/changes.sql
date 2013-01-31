@@ -3207,3 +3207,17 @@ alter table auth_group add column privilege varchar(1) default 'F';
 
 update auth_group set privilege='T' where role like "%Manager" or role like "%Exec";
 
+alter table nodes add column hw_obs_warn_date datetime ;
+alter table nodes add column hw_obs_alert_date datetime ;
+alter table nodes add column os_obs_warn_date datetime ;
+alter table nodes add column os_obs_alert_date datetime ;
+
+alter table nodes_import add column hw_obs_warn_date datetime ;
+alter table nodes_import add column hw_obs_alert_date datetime ;
+alter table nodes_import add column os_obs_warn_date datetime ;
+alter table nodes_import add column os_obs_alert_date datetime ;
+
+drop view v_nodes ;
+
+create view v_nodes as (select `n`.`nodename` AS `nodename`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`id` AS `id`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`team_responsible` AS `team_responsible`,`n`.`team_integ` AS `team_integ`,`n`.`team_support` AS `team_support`,`n`.`project` AS `project`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`maintenance_end` AS `maintenance_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,`n`.`host_mode` AS `host_mode`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,concat_ws(' ',`n`.`os_name`,`n`.`os_vendor`,`n`.`os_release`,`n`.`os_update`) AS `os_concat`,`n`.`updated` AS `updated`,`n`.`enclosure` AS `enclosure`, n.hw_obs_warn_date as hw_obs_warn_date, n.hw_obs_alert_date as hw_obs_alert_date, n.os_obs_warn_date as os_obs_warn_date, n.os_obs_alert_date as os_obs_alert_date from `nodes` `n`);
+

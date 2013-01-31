@@ -476,6 +476,10 @@ db.define_table('nodes',
     Field('power_breaker2'),
     Field('updated', 'datetime'),
     Field('enclosure'),
+    Field('hw_obs_warn_date'),
+    Field('hw_obs_alert_date'),
+    Field('os_obs_warn_date'),
+    Field('os_obs_alert_date'),
     migrate=False)
 
 db.define_table('v_nodes',
@@ -524,6 +528,10 @@ db.define_table('v_nodes',
     Field('power_breaker2'),
     Field('updated', 'datetime'),
     Field('enclosure'),
+    Field('hw_obs_warn_date'),
+    Field('hw_obs_alert_date'),
+    Field('os_obs_warn_date'),
+    Field('os_obs_alert_date'),
     migrate=False)
 
 db.define_table('v_users',
