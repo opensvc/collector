@@ -3137,6 +3137,9 @@ function stats_disk_app(url, id) {
 function obsplot(o) {
   var data = $.parseJSON(o.html())
   o.html("")
+  if (data[0].length < 1) {
+    return
+  }
   options = {
 	    cursor:{zoom:true},
             legend: {
