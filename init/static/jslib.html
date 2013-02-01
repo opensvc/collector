@@ -3134,6 +3134,41 @@ function stats_disk_app(url, id) {
         _jqplot_extra($('#'+id), p)
     });
 }
+function obsplot(o) {
+  var data = $.parseJSON(o.html())
+  o.html("")
+  options = {
+	    cursor:{zoom:true},
+            legend: {
+                show: true,
+                location: 'e',
+                placement: "outside"
+            },
+            series: [
+                {label: 'delta', renderer: $.jqplot.BarRenderer,
+                 rendererOptions: {
+                  barWidth: 10
+                 }
+                },
+                {label: 'sigma'},
+            ],
+            axes: {
+                xaxis: {
+                    renderer: $.jqplot.DateAxisRenderer,
+                    numberTicks: 5,
+                    tickOptions:{formatString:'%b\n%Y'}
+                    //tickOptions:{formatString:'<center>%b<br>%Y<center>'}
+                },
+                yaxis: {
+                    min: 0,
+                    tickOptions:{formatString:'%d'}
+                }
+            }
+  }
+  p = $.jqplot(o.attr('id'), data, options)
+  _jqplot_extra(o, p)
+}
+
 function jqplot_img(){
     if (!$.jqplot.use_excanvas) {
         $('div.jqplot-target').each(function(){

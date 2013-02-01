@@ -696,13 +696,24 @@ def ajax_obs_agg():
 
     return DIV(
              #mt.html(),
+             STYLE("""
+.chartcontainer {
+  float:left;
+  width:45%;
+  min-width:350px;
+  padding:10px;
+  padding-left:30px;
+  padding-right:30px
+}
+
+             """),
              DIV(
                H3(T("Hardware obsolescence warnings roadmap")),
                DIV(
                  XML(json.dumps(h['hw_warn_chart_data'])),
                  _id='hw_warn_chart',
                ),
-               _style="float:left;width:350px;padding:10px;padding-left:30px;padding-right:30px",
+               _class="chartcontainer",
              ),
              DIV(
                H3(T("Hardware obsolescence alerts roadmap")),
@@ -710,16 +721,15 @@ def ajax_obs_agg():
                  XML(json.dumps(h['hw_alert_chart_data'])),
                  _id='hw_alert_chart',
                ),
-               _style="float:left;width:350px;padding:10px;padding-left:30px;padding-right:30px",
+               _class="chartcontainer",
              ),
-             DIV(XML('&nbsp;'), _class='spacer'),
              DIV(
                H3(T("Operating system obsolescence warnings roadmap")),
                DIV(
                  XML(json.dumps(h['os_warn_chart_data'])),
                  _id='os_warn_chart',
                ),
-               _style="float:left;width:350px;padding:10px;padding-left:30px;padding-right:30px",
+               _class="chartcontainer",
              ),
              DIV(
                H3(T("Operating system obsolescence alerts roadmap")),
@@ -727,44 +737,12 @@ def ajax_obs_agg():
                  XML(json.dumps(h['os_alert_chart_data'])),
                  _id='os_alert_chart',
                ),
-               _style="float:left;width:350px;padding:10px;padding-left:30px;padding-right:30px",
+               _class="chartcontainer",
              ),
              DIV(XML('&nbsp;'), _class='spacer'),
 
 
              SCRIPT("""
-function obsplot(o) {
-  var data = $.parseJSON(o.html())
-  o.html("")
-  o.height("250px")
-  options = {
-            legend: {
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            series: [
-                {label: 'delta', renderer: $.jqplot.BarRenderer,
-                 rendererOptions: {
-                  barWidth: 20
-                 }
-                },
-                {label: 'sigma'},
-            ],
-            axes: {
-                xaxis: {
-                    renderer: $.jqplot.DateAxisRenderer,
-                    numberTicks: 5,
-                    tickOptions:{formatString:'<center>%b<br>%Y<center>'}
-                },
-                yaxis: {
-                    min: 0,
-                    tickOptions:{formatString:'%d'}
-                }
-            }
-  }
-  $.jqplot(o.attr('id'), data, options)
-}
 $("#hw_warn_chart").each(function(){
   obsplot($(this))
 })
