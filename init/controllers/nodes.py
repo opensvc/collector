@@ -729,6 +729,7 @@ def ajax_obs_agg():
                ),
                _style="float:left;width:350px;padding:10px;padding-left:30px;padding-right:30px",
              ),
+             DIV(XML('&nbsp;'), _class='spacer'),
 
 
              SCRIPT("""

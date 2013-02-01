@@ -20,6 +20,34 @@ def refresh_obsolescence():
     cron_obsolescence_os()
     cron_obsolescence_hw()
     purge_dash_obs_without()
+    update_nodes_fields()
+
+def update_nodes_fields():
+    q = db.obsolescence.id > 0
+    for row in db(q).select():
+        _update_nodes_fields(row.obs_type, row.obs_name,
+                             row.obs_warn_date, row.obs_alert_date)
+
+def _update_nodes_fields(obs_type, obs_name, obs_warn_date, obs_alert_date):
+        if obs_type == 'hw':
+            sql = """update nodes set
+                       hw_obs_warn_date="%(warn_date)s",
+                       hw_obs_alert_date="%(alert_date)s"
+                     where
+                       model="%(name)s"
+                  """%dict(warn_date=obs_warn_date,
+                           alert_date=obs_alert_date,
+                           name=obs_name)
+        elif obs_type == 'os':
+            sql = """update nodes set
+                       hw_obs_warn_date="%(warn_date)s",
+                       hw_obs_alert_date="%(alert_date)s"
+                     where
+                       concat_ws(os_name, os_vendor, os_release)="%(name)s"
+                  """%dict(warn_date=obs_warn_date,
+                           alert_date=obs_alert_date,
+                           name=obs_name)
+        db.executesql(sql)
 
 def cron_obsolescence_hw():
     sql = """insert ignore into obsolescence (obs_type, obs_name)
@@ -284,8 +312,12 @@ def date_set(t):
     iid = rows[0].obs_name
     if t == 'warn':
         db(q).update(obs_warn_date=new)
+        _update_nodes_fields(rows[0].obs_type, rows[0].obs_name,
+                             new, rows[0].obs_alert_date)
     elif t == 'alert':
         db(q).update(obs_alert_date=new)
+        _update_nodes_fields(rows[0].obs_type, rows[0].obs_name,
+                             rows[0].obs_warn_date, new)
     else:
         raise Exception()
     _log('obsolescence.item.change',
