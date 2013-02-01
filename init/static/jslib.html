@@ -3141,7 +3141,13 @@ function obsplot(o) {
     return
   }
   options = {
-	    cursor:{zoom:true},
+	    cursor: {
+                show: true,
+                zoom: true
+            },
+            highlighter: {
+                show: true
+            },
             legend: {
                 show: true,
                 location: 'e',
@@ -3163,7 +3169,7 @@ function obsplot(o) {
                 },
                 yaxis: {
                     min: 0,
-                    tickOptions:{formatString:'%d'}
+                    tickOptions:{formatString:'%i'}
                 }
             }
   }
