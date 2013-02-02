@@ -40,10 +40,10 @@ def _update_nodes_fields(obs_type, obs_name, obs_warn_date, obs_alert_date):
                            name=obs_name)
         elif obs_type == 'os':
             sql = """update nodes set
-                       hw_obs_warn_date="%(warn_date)s",
-                       hw_obs_alert_date="%(alert_date)s"
+                       os_obs_warn_date="%(warn_date)s",
+                       os_obs_alert_date="%(alert_date)s"
                      where
-                       concat_ws(os_name, os_vendor, os_release)="%(name)s"
+                       concat_ws(" ", os_name, os_vendor, os_release, os_update)="%(name)s"
                   """%dict(warn_date=obs_warn_date,
                            alert_date=obs_alert_date,
                            name=obs_name)
