@@ -3160,6 +3160,7 @@ function obsplot(o) {
                  }
                 },
                 {label: 'sigma'},
+                {label: 'today', color: 'red', showMarker: false},
             ],
             axes: {
                 xaxis: {
@@ -3169,6 +3170,7 @@ function obsplot(o) {
                 },
                 yaxis: {
                     min: 0,
+                    max: data[2][1][1],
                     tickOptions:{formatString:'%i'}
                 }
             }

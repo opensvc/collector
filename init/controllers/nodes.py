@@ -677,16 +677,21 @@ def ajax_obs_agg():
         data = []
         cumul = []
         prev = 0
+        max = 0
         rows = get_rows(field_date)
         for row in rows:
             if row.v_nodes[field_date] is None:
                 continue
+            val = row(db.v_nodes.id.count())
+            if prev+val > max: max = prev+val
             data.append([row.v_nodes[field_date].strftime('%Y-%m-%d %H:%M:%S'),
-                         row(db.v_nodes.id.count())])
+                         val])
             cumul.append([row.v_nodes[field_date].strftime('%Y-%m-%d %H:%M:%S'),
-                          prev+row(db.v_nodes.id.count())])
+                          prev+val])
             prev = cumul[-1][1]
-        return [data, cumul]
+        nowserie = [[datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 0],
+                    [datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), max]]
+        return [data, cumul, nowserie]
 
     h = {}
     h['hw_warn_chart_data'] = get_data('hw_obs_warn_date')
