@@ -43,66 +43,6 @@ def strip_unprintable(s):
     return regex.sub('', s)
 
 #
-# Sub-view menu
-#
-def comp_menu(current):
-    m = [{
-          'title': 'Status',
-          'url': URL(
-                   request.application,
-                   'compliance',
-                   'comp_status'
-                 ),
-         },
-         {
-          'title': 'Log',
-          'url': URL(
-                   request.application,
-                   'compliance',
-                   'comp_log'
-                 ),
-         },
-         {
-          'title': 'Rules',
-          'url': URL(
-                   request.application,
-                   'compliance',
-                   'comp_rules'
-                 ),
-         },
-         {
-          'title': 'Modules',
-          'url': URL(
-                   request.application,
-                   'compliance',
-                   'comp_modules'
-                 ),
-         },
-        ]
-
-    def item(i):
-        if i['title'] == current:
-            bg = 'orange'
-        else:
-            bg = '#f0f1dd'
-        d = DIV(
-              i['title'],
-              _class='menu_item clickable',
-              _style='background-color:%s'%bg,
-              _onclick="location.href='%s'"%i['url'],
-              _onmouseover="this.style.backgroundColor='orange'",
-              _onmouseout="this.style.backgroundColor='%s'"%bg,
-            )
-        return d
-
-    d = DIV(
-          SPAN(map(lambda x: item(x), m)),
-          DIV(XML('&nbsp;'), _class='spacer'),
-          _style='background-color:#e0e1cd;',
-        )
-    return d
-
-#
 # custom column formatting
 #
 class col_rset_md5(HtmlTableColumn):
@@ -3384,7 +3324,6 @@ def teams_responsible_filter():
 @auth.requires_login()
 def comp_rules():
     t = DIV(
-          comp_menu('Rules'),
           DIV(
             ajax_comp_rulesets(),
             _id='cr0',
@@ -3395,7 +3334,6 @@ def comp_rules():
 @auth.requires_login()
 def comp_rulesets_nodes_attachment():
     t = DIV(
-          comp_menu('Rules'),
           DIV(
             ajax_comp_rulesets_nodes(),
             _id='crn1',
@@ -4188,7 +4126,6 @@ def ajax_comp_filtersets():
 @auth.requires_login()
 def comp_filters():
     t = DIV(
-          comp_menu('Filters'),
           DIV(
             ajax_comp_filters(),
             _id='ajax_comp_filters',
@@ -4992,7 +4929,6 @@ def ajax_comp_modulesets_nodes():
 @auth.requires_login()
 def comp_modules():
     t = DIV(
-          comp_menu('Modules'),
           DIV(
             ajax_comp_moduleset(),
             _id='ajax_comp_moduleset',
@@ -5003,7 +4939,6 @@ def comp_modules():
 @auth.requires_login()
 def comp_modulesets_nodes():
     t = DIV(
-          comp_menu('Modules'),
           DIV(
             ajax_comp_modulesets_nodes(),
             _id='cmn1',
@@ -6339,7 +6274,6 @@ def ajax_comp_mod_status():
 @auth.requires_login()
 def comp_status():
     t = DIV(
-          comp_menu('Status'),
           DIV(
             ajax_comp_status(),
             _id='cs0',
@@ -6392,7 +6326,6 @@ def ajax_comp_log():
 @auth.requires_login()
 def comp_log():
     t = DIV(
-          comp_menu('Log'),
           DIV(
             ajax_comp_log(),
             _id='ajax_comp_log',

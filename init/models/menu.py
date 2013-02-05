@@ -100,6 +100,18 @@ response.menu = [
               URL(request.application,'sym','index')],
          ]
     ],
+    [T('Compliance'), False, '',
+         [
+             [DIV(T('Status'), _class='check16'), False,
+              URL(request.application,'compliance','comp_status')],
+             [DIV(T('Log'), _class='log16'), False,
+              URL(request.application,'compliance','comp_log')],
+             [DIV(T('Rulesets'), _class='comp16'), False,
+              URL(request.application,'compliance','comp_rules')],
+             [DIV(T('Modulesets'), _class='action16'), False,
+              URL(request.application,'compliance','comp_modules')],
+         ]
+    ],
     [T('Stats'), False, '',
          [
              [DIV(T('Site'), _class='wspark16'), False,
