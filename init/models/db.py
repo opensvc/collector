@@ -1291,6 +1291,14 @@ db.define_table('gen_filterset_check_threshold',
     Field('chk_high','integer'),
     migrate=False)
 
+db.define_table('comp_forms',
+    Field('form_name','string'),
+    Field('form_yaml','text'),
+    Field('form_comment','text'),
+    Field('form_author','string'),
+    Field('form_created','datetime'),
+    migrate=False)
+
 db.define_table('prov_templates',
     Field('tpl_name','string'),
     Field('tpl_command','text'),

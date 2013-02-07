@@ -1955,21 +1955,67 @@ Date();$("#%(n)s_container").append("<div style='display:table-row'><span class=
         fid = 'vd_f_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
         cid = 'vd_c_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
         eid = 'vd_e_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
-        return DIV(
-                 A(
-                   IMG(_src=URL(r=request, c='static', f='edit.png')),
-                   _id=eid,
-                   _onclick="""hide_eid('%(hid)s');hide_eid('%(eid)s');show_eid('%(fid)s');show_eid('%(cid)s');"""%dict(hid=hid, fid=fid, eid=eid, cid=cid),
-                   _label=T("edit"),
-                   _style='position: absolute; top: 2px; right: 2px; z-index: 400',
-                 ),
-                 A(
+        if 'Manager' in user_groups():
+            edit = A(
+                     IMG(_src=URL(r=request, c='static', f='edit.png')),
+                     _id=eid,
+                     _onclick="""hide_eid('%(eid)s');show_eid('%(cid)s');show_eid('%(formid)s');ajax('%(url)s', [], '%(formid)s')"""%dict(
+                       formid=hid,
+                       eid=eid,
+                       cid=cid,
+                       url=URL(
+                             r=request, c='comp_forms', f='ajax_comp_forms_inputs',
+                             vars={
+                               "rset_name": self.t.colprops['ruleset_name'].get(o),
+                               "var_id": self.t.colprops['id'].get(o),
+                               "form_xid": '_'.join((str(o.id), str(o.ruleset_id))),
+                               "hid": hid,
+                             }
+                           )
+                     ),
+                     _label=T("edit"),
+                     _style='position: absolute; top: 2px; right: 2px; z-index: 400',
+                   )
+            cancel = A(
+                     IMG(_src=URL(r=request, c='static', f='cancel.png')),
+                     _id=cid,
+                     _onclick="""hide_eid('%(cid)s');show_eid('%(eid)s');show_eid('%(formid)s');ajax('%(url)s', [], '%(formid)s')"""%dict(
+                       formid=hid,
+                       eid=eid,
+                       cid=cid,
+                       url=URL(
+                             r=request, c='comp_forms', f='ajax_comp_forms_inputs',
+                             vars={
+                               "rset_name": self.t.colprops['ruleset_name'].get(o),
+                               "var_id": self.t.colprops['id'].get(o),
+                               "form_xid": '_'.join((str(o.id), str(o.ruleset_id))),
+                               "hid": hid,
+                               "mode": "show",
+                             }
+                           )
+                     ),
+                     _label=T("edit"),
+                     _style='display:none;position: absolute; top: 2px; right: 2px; z-index: 400',
+                   )
+        else:
+            edit = A(
+                     IMG(_src=URL(r=request, c='static', f='edit.png')),
+                     _id=eid,
+                     _onclick="""hide_eid('%(hid)s');hide_eid('%(eid)s');show_eid('%(fid)s');show_eid('%(cid)s');"""%dict(hid=hid, fid=fid, eid=eid, cid=cid),
+                     _label=T("edit"),
+                     _style='position: absolute; top: 2px; right: 2px; z-index: 400',
+                   )
+            cancel = A(
                    IMG(_src=URL(r=request, c='static', f='cancel.png')),
                    _id=cid,
                    _onclick="""hide_eid('%(fid)s');hide_eid('%(cid)s');show_eid('%(hid)s');show_eid('%(eid)s');"""%dict(hid=hid, fid=fid, eid=eid, cid=cid),
                    _label=T("cancel"),
                    _style='display:none;position: absolute; top: 2px; right: 2px; z-index: 400',
-                 ),
+                 )
+
+        return DIV(
+                 edit,
+                 cancel,
                  DIV(
                    self._html(o),
                    _id=hid,
