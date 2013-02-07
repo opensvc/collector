@@ -55,7 +55,10 @@ class Eva(object):
                 if s is not None:
                     d['parentvdiskid'] = s.text
             d['objectname'] = e.find('objectname').text.lstrip("\\Virtual Disk\\").rstrip("\\ACTIVE")
-            d['allocatedcapacity'] = int(e.find('allocatedcapacityblocks').text)//2//1024
+            try:
+                d['allocatedcapacity'] = int(e.find('allocatedcapacityblocks').text)//2//1024
+            except:
+                continue
             d['redundancy'] = e.find('redundancy').text
             d['diskgroupname'] = e.find('diskgroupname').text.split('\\')[-1]
             d['alloc'] = d['allocatedcapacity']
