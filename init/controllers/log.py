@@ -39,6 +39,8 @@ class col_log_evt(HtmlTableColumn):
             s = 'error transcoding: %s'%o.log_dict
         except TypeError:
             s = 'type error: %s'%o.log_dict
+        except ValueError:
+            s = 'value error: %s %% %s'%(o.log_fmt, o.log_dict)
         return s
 
 class col_log_icons(HtmlTableColumn):

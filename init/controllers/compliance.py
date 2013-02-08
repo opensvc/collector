@@ -8368,14 +8368,14 @@ def ajax_add_rule():
         db.comp_rulesets.insert(ruleset_name=rset_name,
                                 ruleset_type="explicit",
                                 ruleset_public="T")
-        log.append("Added explicit published ruleset '%s'"%(rset_name))
+        log.append(("compliance.ruleset.add", "Added explicit published ruleset '%(rset_name)s'", dict(rset_name=rset_name)))
         rset = db(q).select().first()
         for gid in common_groups:
             db.comp_ruleset_team_responsible.insert(
               ruleset_id=rset.id,
               group_id=gid
             )
-            log.append("Added group %(gid)d ruleset '%(rset_name)s' owners"%dict(gid=gid, rset_name=rset_name))
+            log.append(("compliance.ruleset.group.attach", "Added group %(gid)d ruleset '%(rset_name)s' owners", dict(gid=gid, rset_name=rset_name)))
     if rset is None:
         return ajax_error(T("error fetching %(rset_name)s ruleset"), dict(rset_name=rset_name))
 
@@ -8489,7 +8489,7 @@ def ajax_add_rule():
         n = db(q).count()
 
         if n > 0:
-            log.append("'%s' variable '%s' already exists with the same value in the ruleset '%s'"%(var_class, var_name, rset_name))
+            log.append(("compliance.ruleset.variable.add", "'%(var_class)s' variable '%(var_name)s' already exists with the same value in the ruleset '%(rset_name)s': cancel", dict(var_class=var_class, var_name=var_name, rset_name=rset_name)))
         else:
             q = db.comp_rulesets_variables.ruleset_id == rset.id
             q &= db.comp_rulesets_variables.var_name == var_name
@@ -8503,8 +8503,7 @@ def ajax_add_rule():
                   var_author=user_name(),
                   var_updated=datetime.datetime.now(),
                 )
-                log.append("Added '%s' variable '%s' to ruleset '%s' with value:"%(var_class, var_name, rset_name))
-                log.append(var_value)
+                log.append(("compliance.ruleset.variable.add", "Added '%(var_class)s' variable '%(var_name)s' to ruleset '%(rset_name)s' with value:\n%(var_value)s", dict(var_class=var_class, var_name=var_name, rset_name=rset_name, var_value=var_value)))
             else:
                 db(q).update(
                   var_value=var_value,
@@ -8512,10 +8511,13 @@ def ajax_add_rule():
                   var_author=user_name(),
                   var_updated=datetime.datetime.now(),
                 )
-                log.append("Modified '%s' variable '%s' in ruleset '%s' with value:"%(var_class, var_name, rset_name))
-                log.append(var_value)
+                log.append(("compliance.ruleset.variable.change", "Modified '%(var_class)s' variable '%(var_name)s' in ruleset '%(rset_name)s' with value:\n%(var_value)s", dict(var_class=var_class, var_name=var_name, rset_name=rset_name, var_value=var_value)))
 
-    return ajax_error(PRE(XML('<br>'.join(log))))
+    
+    for action, fmt, d in log:
+        _log(action, fmt, d)
+
+    return ajax_error(PRE(XML('<br>'.join(map(lambda x: x[1]%x[2], log)))))
 
 def convert_val(val, t):
      if t == 'string':

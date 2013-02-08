@@ -103,6 +103,22 @@ def comp_forms_editor():
                          'form_comment': T('Form comment')},
                 )
     if form.accepts(request.vars):
+        if request.vars.form_id is None:
+            _log('compliance.form.add',
+                 "Created form '%(form_name)s' with definition:\n%(form_yaml)s",
+                     dict(form_name=request.vars.form_name,
+                          form_yaml=request.vars.form_yaml))
+        elif request.vars.delete_this_record == 'on':
+            _log('compliance.form.delete',
+                 "Deleted form '%(form_name)s' with definition:\n%(form_yaml)s",
+                     dict(form_name=request.vars.form_name,
+                          form_yaml=request.vars.form_yaml))
+        else:
+            _log('compliance.form.change',
+                 "Changed form '%(form_name)s' with definition:\n%(form_yaml)s",
+                     dict(form_name=request.vars.form_name,
+                          form_yaml=request.vars.form_yaml))
+
         session.flash = T("template recorded")
         redirect(URL(r=request, c='comp_forms', f='comp_forms_admin'))
     elif form.errors:
