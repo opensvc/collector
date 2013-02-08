@@ -305,19 +305,29 @@ def ajax_error(msg):
 
 def inputs_block(data, idx=0, defaults=None, display_mode=False):
     l = []
-    if display_mode and len(data['Inputs']) == 1 and \
-       len(data['Variables']) == 1 and 'Class' in data['Variables'][0] and \
-       data['Variables'][0]['Class'] == 'raw':
+    if display_mode and \
+       len(data['Variables']) == 1 and \
+       (('Class' in data['Variables'][0] and data['Variables'][0]['Class'] == 'raw') or \
+        ('DisplayClass' in data['Variables'][0] and data['Variables'][0]['DisplayClass'] == 'raw')):
         return DIV(PRE(defaults), _class="comp16")
 
     if display_mode and len(data['Variables']) == 1 and 'Class' in data['Variables'][0] and \
        data['Variables'][0]['Class'] != 'raw' and \
        (len(data['Inputs']) > 1 or idx==0):
         header = TR(TD(B(data['Variables'][0]['Class']), _class="comp16", _colspan=3))
+    elif display_mode and 'Format' in data['Variables'][0] and \
+         data['Variables'][0]['Format'] in ('list of dict', 'dict of dict') and idx==0:
+        h = []
+        for i, input in enumerate(data['Inputs']):
+            if i == 0:
+                h.append(TD(input['DisplayModeLabel'], _class='comp16', _style="font-weight:bold"))
+            else:
+                h.append(TD(input['DisplayModeLabel']))
+        header = TR(h)
     else:
         header = ""
 
-    for input in data['Inputs']:
+    for i, input in enumerate(data['Inputs']):
         if type(defaults) == dict:
             if input['Id'] in defaults:
                 default = defaults[input['Id']]
@@ -330,19 +340,29 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False):
         else:
             default = ""
 
+        if 'LabelCss' in input:
+            lcl = input['LabelCss']
+        else:
+            lcl = ""
         if 'Css' in input:
             cl = input['Css']
         else:
             cl = ""
 
-        _help = IMG(
-          _src=URL(r=request, c='static', f='help.png'),
-          _title=input['Help']
-        )
+        if 'Help' in input:
+            _help = IMG(
+              _src=URL(r=request, c='static', f='help.png'),
+              _title=input['Help']
+            )
+        else:
+            _help = ""
 
         if display_mode:
             if default is None or default == "":
-                continue
+                if type(defaults) == dict:
+                    default = '-'
+                else:
+                    continue
             _input = SPAN(default)
             _help = ""
         elif 'Candidates' in input:
@@ -360,6 +380,8 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False):
                      _name=comp_forms_xid(''),
                    )
                  )
+        elif 'Type' not in input:
+            return ajax_error(T("'Type' not set for variable '%(var_name)s'", dict(var_name=input['Id'])))
         elif input['Type'] == "text":
             _input = TEXTAREA(
                    default,
@@ -376,11 +398,23 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False):
         label = input['DisplayModeLabel'] if display_mode and 'DisplayModeLabel' in input else input['Label']
         if label == "":
             label = XML("&nbsp;")
-        l.append(TR(
-                   TD(DIV(label, _class=cl)),
-                   TD(_input),
-                   TD(_help),
-                 ))
+
+        if display_mode and 'Format' in data['Variables'][0] and data['Variables'][0]['Format'] in ('list of dict', 'dict of dict'):
+            if i == 0:
+                l.append(TD(_input, _class=lcl))
+            else:
+                l.append(TD(_input, _class= cl))
+        else:
+            l.append(TR(
+                       TD(DIV(label, _class=lcl)),
+                       TD(_input, _class=cl),
+                       TD(_help),
+                     ))
+
+    if display_mode and 'Format' in data['Variables'][0] and data['Variables'][0]['Format'] in ('list of dict', 'dict of dict'):
+        if idx == 0:
+            return [header, TR(l)]
+        return [TR(l)]
 
     if header != "":
         l = [header] + l
@@ -399,24 +433,36 @@ def comp_forms_xid(id=None):
     return xid
 
 def ajax_comp_forms_inputs():
-    if request.vars.mode == "show":
+    return _ajax_comp_forms_inputs(
+             request.vars.mode,
+             request.vars.var_id,
+             request.vars.form_name,
+             request.vars.form_id,
+             request.vars.form_xid,
+             request.vars.rset_name,
+             request.vars.rset_id,
+             request.vars.hid,
+           )
+
+def _ajax_comp_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None, _form_xid=None, _rset_name=None, _rset_id=None, _hid=None):
+    if _mode == "show":
         display_mode = True
     else:
         display_mode = False
 
-    if request.vars.var_id is not None:
-        q = db.v_comp_rulesets.id == request.vars.var_id
+    if _var_id is not None:
+        q = db.v_comp_rulesets.id == _var_id
         var = db(q).select().first()
         if var is None:
-            return ajax_error(T("variable '%(id)s' not found", dict(id=request.vars.var_id)))
+            return ajax_error(T("variable '%(id)s' not found", dict(id=_var_id)))
         form_name = var.var_class
     else:
-        form_name = request.vars.form_name
+        form_name = _form_name
 
     if form_name is not None:
         q = db.comp_forms.form_name == form_name
-    elif request.vars.form_id is not None:
-        form_id = request.vars.form_id
+    elif _form_id is not None:
+        form_id = _form_id
         q = db.comp_forms.id == form_id
     else:
         return ajax_error(T("No form specified"))
@@ -441,11 +487,11 @@ def ajax_comp_forms_inputs():
                  PRE(s),
                ))
 
-    # An existing variable is passed in request.vars
+    # An existing variable is specified
     # Get input default values from there
     cur = None
     count = None
-    if request.vars.var_id is not None:
+    if _var_id is not None:
         cur = var.var_value
         if len(cur) > 0 and len(data['Variables']) == 1 and 'Type' in data['Variables'][0] and data['Variables'][0]['Type'] == 'json':
             try:
@@ -465,20 +511,31 @@ def ajax_comp_forms_inputs():
 
     l = []
     if 'Format' in data['Variables'][0] and data['Variables'][0]['Format'] == 'dict':
-        l.append(inputs_block(data, defaults=cur, display_mode=display_mode))
-    elif 'Format' in data['Variables'][0] and data['Variables'][0]['Format'] == 'list':
+        l = inputs_block(data, defaults=cur, display_mode=display_mode)
+    elif 'Format' in data['Variables'][0] and data['Variables'][0]['Format'] in ('list', 'list of dict', 'dict of dict'):
         if cur is None:
-            l.append(inputs_block(data, display_mode=display_mode))
+            _l = inputs_block(data, display_mode=display_mode)
         else:
             count = len(cur)
             for i, default in enumerate(cur):
-                l.append(inputs_block(data, idx=i, defaults=default, display_mode=display_mode))
+                if data['Variables'][0]['Format'] == 'dict of dict':
+                    d = cur[default]
+                    if 'Key' in data['Variables'][0]:
+                        key = data['Variables'][0]['Key']
+                        if key not in d:
+                            d[key] = default
+                    default = d
+                _l = inputs_block(data, idx=i, defaults=default, display_mode=display_mode)
+        if display_mode:
+            l = TABLE(_l)
+        else:
+            l = _l
     else:
-        l.append(inputs_block(data, defaults=cur, display_mode=display_mode))
+        l = inputs_block(data, defaults=cur, display_mode=display_mode)
 
     if len(data['Variables']) == 1 and \
        'Type' in data['Variables'][0] and data['Variables'][0]['Type'] == 'json' and \
-       'Format' in data['Variables'][0] and data['Variables'][0]['Format'] == 'list':
+       'Format' in data['Variables'][0] and data['Variables'][0]['Format'] in ('list', 'list of dict', 'dict of dict'):
         add = DIV(
                 A(
                  T("Add more"),
@@ -490,6 +547,7 @@ clone.find(':input').attr('id', function(i, val) {
   i = val.lastIndexOf('_')
   return val.substring(0, i) + '_' + count;
 });
+$('#%(container)s').append("<hr />")
 clone.appendTo($('#%(container)s'))
 count=parseInt(count)+1
 $("#%(counter)s").val(count);
@@ -505,14 +563,14 @@ $("#%(counter)s").val(count);
         footer = ""
     else:
         submit_vars = {"form_id": form_id}
-        if request.vars.form_xid is not None:
-            submit_vars["form_xid"] = request.vars.form_xid
-        if request.vars.rset_name is not None:
-            submit_vars["rset_name"] = request.vars.rset_name
-        if request.vars.rset_id is not None:
-            submit_vars["rset_id"] = request.vars.rset_id
-        if request.vars.var_id is not None:
-            submit_vars["var_id"] = request.vars.var_id
+        if _form_xid is not None:
+            submit_vars["form_xid"] = _form_xid
+        if _rset_name is not None:
+            submit_vars["rset_name"] = _rset_name
+        if _rset_id is not None:
+            submit_vars["rset_id"] = _rset_id
+        if _var_id is not None:
+            submit_vars["var_id"] = _var_id
 
         header = SPAN(
              data['Desc'],
@@ -526,18 +584,19 @@ $("#%(counter)s").val(count);
              DIV(
                INPUT(
                  _type="submit",
-                 _onclick="""ids=[];$("[name^=%(xid)s]").each(function(){ids.push($(this).attr('id'))});$("#svcname").each(function(){ids.push("svcname")}); $("#nodename").each(function(){ids.push("nodename")}); ajax('%(url)s', ids, 'comp_forms_result')"""%dict(
+                 _onclick="""ids=[];$("[name^=%(xid)s]").each(function(){ids.push($(this).attr('id'))});$("#svcname").each(function(){ids.push("svcname")}); $("#nodename").each(function(){ids.push("nodename")}); ajax('%(url)s', ids, '%(rid)s')"""%dict(
                    xid=comp_forms_xid(''),
+                   rid=comp_forms_xid('comp_forms_result'),
                    url=URL(r=request, c='comp_forms', f='ajax_add_rule', vars=submit_vars),
                  ),
                  _style="margin:1em",
                ),
              ),
              DIV(
-               _id="comp_forms_result",
+               _id=comp_forms_xid('comp_forms_result'),
                _style="padding-top:2em",
              ),
-             SCRIPT("""var count=%(idx)d;$("select").combobox();"""%dict(idx=len(l)), _name=request.vars.hid+"_to_eval"),
+             SCRIPT("""var count=%(idx)d;$("select").combobox();"""%dict(idx=len(l)), _name=_hid+"_to_eval"),
         )
     return DIV(
              header,
@@ -587,6 +646,38 @@ def ajax_add_rule():
                ))
 
 
+    # logging buffer
+    log = []
+
+    # validate privs
+    groups = []
+    common_groups = []
+    if request.vars.nodename is not None:
+        q = db.nodes.nodename == request.vars.nodename
+        node = db(q).select().first()
+        if node is None:
+            return ajax_error(T("Unknown specified node %(nodename)s"), dict(nodename=nodename))
+        groups = [node.team_responsible]
+        if len(groups) == 0:
+            return ajax_error(T("Specified node %(nodename)s has no responsible group"), dict(nodename=nodename))
+        common_groups = set(user_groups()) & set(groups)
+        if len(common_groups) == 0:
+            return ajax_error(T("You are not allowed to create or modify a ruleset for the node %(node)s", dict(nodename=nodename)))
+    elif request.vars.svcname is not None:
+        q = db.services.svc_name == request.vars.svcname
+        svc = db(q).select().first()
+        if svc is None:
+            return ajax_error(T("Unknown specified service %(svcname)s"), dict(svcname=svcname))
+        q &= db.services.svc_app == db.apps.app
+        q &= db.apps.id == db.apps_responsibles.app_id
+        rows = db(q).select()
+        groups = map(lambda x: x.apps_responsibles.group_id, rows)
+        if len(groups) == 0:
+            return ajax_error(T("Specified service %(svcname)s has no responsible groups"), dict(svcname=svcname))
+        common_groups = set(user_group_ids()) & set(groups)
+        if len(common_groups) == 0:
+            return ajax_error(T("You are not allowed to create or modify a ruleset for the service %(svcname)s", dict(svcname=svcname)))
+
     # create ruleset
     q = db.comp_rulesets.ruleset_name == rset_name
     rset = db(q).select().first()
@@ -594,11 +685,17 @@ def ajax_add_rule():
         db.comp_rulesets.insert(ruleset_name=rset_name,
                                 ruleset_type="explicit",
                                 ruleset_public="T")
+        log.append("Added explicit published ruleset '%s'"%(rset_name))
         rset = db(q).select().first()
+        for gid in common_groups:
+            db.comp_ruleset_team_responsible.insert(
+              ruleset_id=rset.id,
+              group_id=gid
+            )
+            log.append("Added group %(gid)d ruleset '%(rset_name)s' owners"%dict(gid=gid, rset_name=rset_name))
     if rset is None:
         return ajax_error(T("error fetching %(rset_name)s ruleset"), dict(rset_name=rset_name))
 
-    log = []
     for var in data['Variables']:
         if request.vars.var_id is None:
             if request.vars.var_name is not None:
@@ -620,7 +717,10 @@ def ajax_add_rule():
         if 'Template' in var:
             var_value = var['Template']
             for input in data['Inputs']:
-                var_value.replace('%%'+input['Id']+'%%', str(request.vars.get(comp_forms_xid(input['Id']))))
+                val = request.vars.get(comp_forms_xid(input['Id'])+'_0')
+                if val is None:
+                    val = ""
+                var_value = var_value.replace('%%'+input['Id']+'%%', str(val))
         elif 'Type' in var and var['Type'] == "json":
             if 'Format' in var and var['Format'] == "list":
                 l = []
@@ -629,15 +729,12 @@ def ajax_add_rule():
                     if not v.startswith(comp_forms_xid(input['Id'])):
                         continue
                     val = request.vars.get(v)
-                    if input['Type'] in ('string', 'text'):
-                        val = str(val)
-                        if len(val) == 0:
-                            continue
-                    elif input['Type'] == 'integer':
-                        try:
-                            val = int(val)
-                        except:
-                            return ajax_error(T("Error convertion to integer"))
+                    if len(str(val)) == 0:
+                        continue
+                    try:
+                        val = convert_val(val, input['Type'])
+                    except Exception, e:
+                        return ajax_error(T(str(e)))
                     l.append(val)
                 var_value = json.dumps(l)
             elif 'Format' in var and var['Format'] == "dict":
@@ -646,27 +743,110 @@ def ajax_add_rule():
                     val = request.vars.get(comp_forms_xid(input['Id'])+'_0')
                     if val is None:
                         continue
-                    if input['Type'] == 'string':
-                        val = str(val)
-                    elif input['Type'] == 'text':
-                        val = str(val)
-                    elif input['Type'] == 'integer':
-                        try:
-                            val = int(val)
-                        except:
-                            return ajax_error(T("Error convertion to integer"))
+                    if len(str(val)) == 0:
+                        continue
+                    try:
+                        val = convert_val(val, input['Type'])
+                    except Exception, e:
+                        return ajax_error(T(str(e)))
                     h[input['Id']] = val
                 var_value = json.dumps(h)
+            elif 'Format' in var and var['Format'] == "list of dict":
+                h = {}
+                for v in request.vars.keys():
+                    for input in data['Inputs']:
+                        if not v.startswith(comp_forms_xid(input['Id'])):
+                            continue
+                        idx = v.replace(comp_forms_xid(input['Id'])+'_', '')
+                        if idx not in h:
+                            h[idx] = {}
+                        val = request.vars.get(v)
+                        if len(str(val)) == 0:
+                            continue
+                        try:
+                            val = convert_val(val, input['Type'])
+                        except Exception, e:
+                            return ajax_error(T(str(e)))
+                        h[idx][input['Id']] = val
+                var_value = json.dumps(h.values())
+            elif 'Format' in var and var['Format'] == "dict of dict":
+                h = {}
+                for v in request.vars.keys():
+                    for input in data['Inputs']:
+                        if not v.startswith(comp_forms_xid(input['Id'])):
+                            continue
+                        idx = v.replace(comp_forms_xid(input['Id'])+'_', '')
+                        if idx not in h:
+                            h[idx] = {}
+                        val = request.vars.get(v)
+                        if len(str(val)) == 0:
+                            continue
+                        try:
+                            val = convert_val(val, input['Type'])
+                        except Exception, e:
+                            return ajax_error(T(str(e)))
+                        h[idx][input['Id']] = val
+                if 'Key' not in data['Variables'][0]:
+                    return ajax_error(T("'Key' must be defined in form variable of 'dict of dict' format"))
+                k = data['Variables'][0]['Key']
+                _h = {}
+                for idx, d in h.items():
+                    if k not in d:
+                        continue
+                    _h[d[k]] = d
+                var_value = json.dumps(_h)
             else:
                 return ajax_error(T("Unknown variable format: %(fmt)s", dict(fmt=var['Format'] if 'Format' in var else "none")))
         else:
             return ajax_error(T("Variable must have a Template or Type must be json."))
 
+        q = db.comp_rulesets_variables.ruleset_id == rset.id
+        q &= db.comp_rulesets_variables.var_name == var_name
+        q &= db.comp_rulesets_variables.var_value == var_value
+        n = db(q).count()
 
-        log.append("Added '%s' variable '%s' to ruleset '%s' with value:"%(var_class, var_name, rset_name))
-        log.append(var_value)
+        if n > 0:
+            log.append("'%s' variable '%s' already exists with the same value in the ruleset '%s'"%(var_class, var_name, rset_name))
+        else:
+            q = db.comp_rulesets_variables.ruleset_id == rset.id
+            q &= db.comp_rulesets_variables.var_name == var_name
+            n = db(q).count()
+            if n == 0:
+                db.comp_rulesets_variables.insert(
+                  ruleset_id=rset.id,
+                  var_name=var_name,
+                  var_value=var_value,
+                  var_class=var_class,
+                  var_author=user_name(),
+                  var_updated=datetime.datetime.now(),
+                )
+                log.append("Added '%s' variable '%s' to ruleset '%s' with value:"%(var_class, var_name, rset_name))
+                log.append(var_value)
+            else:
+                db(q).update(
+                  var_value=var_value,
+                  var_class=var_class,
+                  var_author=user_name(),
+                  var_updated=datetime.datetime.now(),
+                )
+                log.append("Modified '%s' variable '%s' in ruleset '%s' with value:"%(var_class, var_name, rset_name))
+                log.append(var_value)
 
     return ajax_error(PRE(XML('<br>'.join(log))))
 
 def convert_val(val, t):
-    pass
+     if t == 'string':
+         val = str(val)
+     elif t == 'text':
+         val = str(val)
+     elif t == 'string or integer':
+         try:
+             val = int(val)
+         except:
+             val = str(val)
+     elif t == 'integer':
+         try:
+             val = int(val)
+         except:
+             raise Exception("Error converting to integer")
+     return val

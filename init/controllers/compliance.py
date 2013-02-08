@@ -1959,7 +1959,7 @@ Date();$("#%(n)s_container").append("<div style='display:table-row'><span class=
             edit = A(
                      IMG(_src=URL(r=request, c='static', f='edit.png')),
                      _id=eid,
-                     _onclick="""hide_eid('%(eid)s');show_eid('%(cid)s');show_eid('%(formid)s');ajax('%(url)s', [], '%(formid)s')"""%dict(
+                     _onclick="""hide_eid('%(eid)s');show_eid('%(cid)s');show_eid('%(formid)s');sync_ajax('%(url)s', [], '%(formid)s', function(){eval_js_in_ajax_response('%(formid)s')})"""%dict(
                        formid=hid,
                        eid=eid,
                        cid=cid,

@@ -283,6 +283,20 @@ pre {
     word-wrap: break-word; /* Internet Explorer 5.5+ */
 }
 
+.pre {
+    font-size: 0.8em;
+    font-family: monospace, courier;
+    padding-left: 0em;
+    padding-top: 0em;
+
+    /* for status_log wrapping */
+    white-space: pre-wrap; /* css-3 */
+    white-space: -moz-pre-wrap !important; /* Mozilla, since 1999 */
+    white-space: -pre-wrap; /* Opera 4-6 */
+    white-space: -o-pre-wrap; /* Opera 7 */
+    word-wrap: break-word; /* Internet Explorer 5.5+ */
+}
+
 .err {
     color: red;
 }
