@@ -3233,3 +3233,7 @@ CREATE TABLE `comp_forms` (
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8
 
 alter table log modify column log_fmt varchar(200);
+
+alter table comp_forms add column form_type enum("obj","custo") default "custo";
+
+

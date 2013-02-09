@@ -13,6 +13,7 @@ class table_templates(HtmlTable):
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['form_name',
+                     'form_type',
                      'form_yaml',
                      'form_comment',
                      'form_created',
@@ -25,8 +26,15 @@ class table_templates(HtmlTable):
                 table = 'comp_forms',
                 img = 'prov'
             ),
+            'form_type': col_forms_yaml(
+                title = 'Type',
+                field = 'form_type',
+                display = True,
+                table = 'comp_forms',
+                img = 'edit16'
+            ),
             'form_yaml': col_forms_yaml(
-                title = 'Command',
+                title = 'Definition',
                 field = 'form_yaml',
                 display = True,
                 table = 'comp_forms',
@@ -96,27 +104,32 @@ def comp_forms_editor():
                  record=record,
                  deletable=True,
                  fields=['form_name',
+                         'form_type',
                          'form_yaml',
                          'form_comment'],
                  labels={'form_name': T('Form name'),
+                         'form_type': T('Form type'),
                          'form_yaml': T('Form yaml definition'),
                          'form_comment': T('Form comment')},
                 )
     if form.accepts(request.vars):
         if request.vars.form_id is None:
             _log('compliance.form.add',
-                 "Created form '%(form_name)s' with definition:\n%(form_yaml)s",
+                 "Created '%(form_type)s' form '%(form_name)s' with definition:\n%(form_yaml)s",
                      dict(form_name=request.vars.form_name,
+                          form_type=request.vars.form_type,
                           form_yaml=request.vars.form_yaml))
         elif request.vars.delete_this_record == 'on':
             _log('compliance.form.delete',
-                 "Deleted form '%(form_name)s' with definition:\n%(form_yaml)s",
+                 "Deleted '%(form_type)s' form '%(form_name)s' with definition:\n%(form_yaml)s",
                      dict(form_name=request.vars.form_name,
+                          form_type=request.vars.form_type,
                           form_yaml=request.vars.form_yaml))
         else:
             _log('compliance.form.change',
-                 "Changed form '%(form_name)s' with definition:\n%(form_yaml)s",
+                 "Changed '%(form_type)s' form '%(form_name)s' with definition:\n%(form_yaml)s",
                      dict(form_name=request.vars.form_name,
+                          form_type=request.vars.form_type,
                           form_yaml=request.vars.form_yaml))
 
         session.flash = T("template recorded")
@@ -149,7 +162,9 @@ def comp_forms_admin():
 @auth.requires_login()
 def comp_forms_list():
     q = db.comp_forms.id > 0
-    rows = db(q).select()
+    if 'CompManager' not in user_groups():
+        q &= db.comp_forms.form_type == 'custo'
+    rows = db(q).select(orderby=db.comp_forms.form_type|db.comp_forms.form_name)
     l = []
     for row in rows:
         l.append(TR(

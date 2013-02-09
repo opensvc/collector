@@ -1114,15 +1114,6 @@ comp_var_types = (
  'vuln'
 )
 
-db.define_table('comp_rulesets_variables',
-    Field('ruleset_id','integer', requires=IS_NOT_EMPTY()),
-    Field('var_class','string', requires=IS_IN_SET(comp_var_types), default="raw"),
-    Field('var_name','string', requires=IS_NOT_EMPTY()),
-    Field('var_value','text'),
-    Field('var_author','string', readable=False, writable=False),
-    Field('var_updated','datetime', readable=False, writable=False),
-    migrate=False)
-
 db.define_table('comp_rulesets_filtersets',
     Field('ruleset_id','integer', requires=IS_NOT_EMPTY()),
     Field('fset_id','integer', requires=IS_NOT_EMPTY()),
@@ -1149,8 +1140,7 @@ db.define_table('v_comp_rulesets',
     Field('ruleset_public','boolean', default=True),
     Field('teams_responsible','string'),
     Field('fset_name','string'),
-    Field('var_class','string', requires=IS_IN_SET(("raw", "authkey", "file",
-"fs", "group", "package", "user", "cve")), default="raw"),
+    Field('var_class','string'),
     Field('var_name','string'),
     Field('var_value','text'),
     Field('var_author','string', readable=False, writable=False),
@@ -1293,10 +1283,20 @@ db.define_table('gen_filterset_check_threshold',
 
 db.define_table('comp_forms',
     Field('form_name','string'),
+    Field('form_type','string', requires=IS_IN_SET(("obj", "custo")), default="custo"),
     Field('form_yaml','text'),
     Field('form_comment','text'),
     Field('form_author','string'),
     Field('form_created','datetime'),
+    migrate=False)
+
+db.define_table('comp_rulesets_variables',
+    Field('ruleset_id','integer', requires=IS_NOT_EMPTY()),
+    Field('var_class','string', requires=IS_IN_DB(db, db.comp_forms.form_name), default="raw"),
+    Field('var_name','string', requires=IS_NOT_EMPTY()),
+    Field('var_value','text'),
+    Field('var_author','string', readable=False, writable=False),
+    Field('var_updated','datetime', readable=False, writable=False),
     migrate=False)
 
 db.define_table('prov_templates',
