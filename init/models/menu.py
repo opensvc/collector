@@ -84,8 +84,6 @@ response.menu = [
               URL(request.application,'packages','packages')],
              [DIV(T('Patches'), _class='pkg16'), False,
               URL(request.application,'patches','patches')],
-             [DIV(T('Compliance'), _class='comp16'), False,
-              URL(request.application,'compliance','comp_status')],
              [DIV(T('App Info'), _class='svc'), False,
               URL(request.application,'appinfo','appinfo')],
              [DIV(T('Networks'), _class='net16'), False,
@@ -110,6 +108,8 @@ response.menu = [
               URL(request.application,'compliance','comp_rules')],
              [DIV(T('Modulesets'), _class='action16'), False,
               URL(request.application,'compliance','comp_modules')],
+             [DIV(T('Forms'), _class='comp16'), False,
+              URL(request.application,'comp_forms','comp_forms')],
          ]
     ],
     [T('Stats'), False, '',
@@ -144,6 +144,8 @@ response.menu = [
               URL(request.application,'provisioning','prov_admin')],
              [DIV(T('Filters'), _class='filters'), False,
               URL(request.application,'compliance','comp_filters')],
+             [DIV(T('Compliance forms'), _class='comp16'), False,
+              URL(request.application,'comp_forms','comp_forms_admin')],
          ]
     ],
 ]

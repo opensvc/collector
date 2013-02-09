@@ -67,7 +67,7 @@ class table_templates(HtmlTable):
         self.checkboxes = False
         self.extrarow = True
 
-        if 'ProvisioningManager' in user_groups():
+        if 'CompFormsManager' in user_groups():
             self.additional_tools.append('add_template')
 
     def format_extrarow(self, o):
@@ -90,7 +90,7 @@ class table_templates(HtmlTable):
             )
         return d
 
-@auth.requires_login()
+@auth.requires_membership('CompFormsManager')
 def comp_forms_editor():
     q = db.comp_forms.id == request.vars.form_id
     rows = db(q).select()
