@@ -8015,6 +8015,20 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False):
     else:
         header = ""
 
+    match_default = {}
+    for var in data['Variables']:
+        if 'Template' not in var:
+            continue
+        s = var['Template']
+        for input in data['Inputs']:
+            s = s.replace('%%'+input['Id']+'%%', '(?P<'+input['Id']+'>.*)')
+        import re
+        m = re.match(s, defaults)
+        if m is None:
+            continue
+        for input in data['Inputs']:
+            match_default[input['Id']] = m.group(input['Id'])
+
     for i, input in enumerate(data['Inputs']):
         if type(defaults) == dict:
             if input['Id'] in defaults:
@@ -8027,6 +8041,8 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False):
             default = input['Default']
         else:
             default = ""
+        if input['Id'] in match_default:
+            default = match_default[input['Id']]
 
         if 'LabelCss' in input:
             lcl = input['LabelCss']
