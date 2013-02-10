@@ -142,7 +142,7 @@ def comp_forms_editor():
 def ajax_comp_forms_admin():
     t = table_templates('templates', 'ajax_comp_forms_admin')
 
-    o = db.comp_forms.form_name > 0
+    o = db.comp_forms.form_name
     q = db.comp_forms.id > 0
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
