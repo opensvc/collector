@@ -313,6 +313,8 @@ class col_var_name(HtmlTableColumn):
         s = self.get(o)
         if s == '':
             ss = '(no name)'
+        elif s is None:
+            ss = ''
         else:
             ss = s
         tid = 'nd_t_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
@@ -1951,6 +1953,8 @@ Date();$("#%(n)s_container").append("<div style='display:table-row'><span class=
         return getattr(self, 'form_'+str(c))(o)
 
     def html(self, o):
+        if self.t.colprops['id'].get(o) is None:
+            return ""
         hid = 'vd_h_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
         fid = 'vd_f_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
         cid = 'vd_c_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
@@ -8389,8 +8393,13 @@ def ajax_add_rule():
                 return ajax_error(T("No variable name specified."))
             q = db.comp_rulesets_variables.ruleset_id == rset.id
             q &= db.comp_rulesets_variables.var_name.like(var_name_prefix+'%')
-            n_rules = db(q).count()
-            var_name = var_name_prefix + str(n_rules)
+            var_name_suffixes = map(lambda x: x.var_name.replace(var_name_prefix, ''), db(q).select())
+            i = 0
+            while True:
+                _i = str(i)
+                if _i not in var_name_suffixes: break
+                i += 1
+            var_name = var_name_prefix + _i
 
         if 'Class' in var:
             var_class = var['Class']
