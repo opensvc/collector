@@ -1952,6 +1952,17 @@ Date();$("#%(n)s_container").append("<div style='display:table-row'><span class=
             return self.form_raw(o)
         return getattr(self, 'form_'+str(c))(o)
 
+    def load_form_cache(self):
+        if hasattr(self.t, "form_cache"):
+            return self.t.form_cache
+        q = db.comp_forms.id > 0
+        rows = db(q).select()
+        data = {}
+        for row in rows:
+            data[row.form_name] = row
+        self.t.form_cache = data
+        return self.t.form_cache
+
     def html(self, o):
         if self.t.colprops['id'].get(o) is None:
             return ""
@@ -1960,6 +1971,11 @@ Date();$("#%(n)s_container").append("<div style='display:table-row'><span class=
         cid = 'vd_c_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
         eid = 'vd_e_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
         if 'Manager' in user_groups():
+            form_cache = self.load_form_cache()
+            if o.var_class in form_cache:
+                form = form_cache[o.var_class]
+            else:
+                form = None
             edit = A(
                      IMG(_src=URL(r=request, c='static', f='edit.png')),
                      _id=eid,
@@ -2007,7 +2023,8 @@ Date();$("#%(n)s_container").append("<div style='display:table-row'><span class=
                      _rset_name=self.t.colprops['ruleset_name'].get(o),
                      _var_id=self.t.colprops['id'].get(o),
                      _form_xid='_'.join((str(o.id), str(o.ruleset_id))),
-                     _hid=hid
+                     _hid=hid,
+                     var=o, form=form,
                    ),
                    _id=hid,
                    _style="position: relative;",
@@ -8071,16 +8088,20 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False):
                     default = '-'
                 else:
                     continue
+            if 'DisplayModeTrim' in input:
+                n = input['DisplayModeTrim']
+                if len(default) >= n:
+                    default = default[0:n//3] + "..." + default[-n//3*2:]
             _input = SPAN(default)
             _help = ""
         elif 'Candidates' in input:
             options = []
             for o in input['Candidates']:
-                if o == defaults:
+                if o == default:
                     selected = True
                 else:
                     selected = False
-                options.append(OPTION(o, selected=selected))
+                options.append(OPTION(o, _selected=selected))
             _input = SELECT(
                    *options,
                    **dict(
@@ -8152,32 +8173,37 @@ def ajax_comp_forms_inputs():
              request.vars.hid,
            )
 
-def _ajax_comp_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None, _form_xid=None, _rset_name=None, _rset_id=None, _hid=None):
+def _ajax_comp_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None, _form_xid=None, _rset_name=None, _rset_id=None, _hid=None, var=None, form=None):
     if _mode == "show":
         display_mode = True
     else:
         display_mode = False
 
-    if _var_id is not None:
+    if var is None and _var_id is not None:
         q = db.v_comp_rulesets.id == _var_id
         var = db(q).select().first()
         if var is None:
             return ajax_error(T("variable '%(id)s' not found", dict(id=_var_id)))
+
+    if var is not None:
         form_name = var.var_class
     else:
         form_name = _form_name
 
-    if form_name is not None:
+    if form is not None:
+        pass
+    elif form_name is not None:
         q = db.comp_forms.form_name == form_name
+        form = db(q).select().first()
     elif _form_id is not None:
-        form_id = _form_id
-        q = db.comp_forms.id == form_id
+        q = db.comp_forms.id == _form_id
+        form = db(q).select().first()
     else:
         return ajax_error(T("No form specified"))
 
-    form = db(q).select().first()
     if form is None:
         return ajax_error(T("form not found"))
+
     form_id = form.id
 
     s = form.form_yaml
