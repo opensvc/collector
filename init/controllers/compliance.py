@@ -8000,7 +8000,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False):
         return DIV(PRE(defaults), _class="comp16")
 
     if display_mode and len(data['Variables']) == 1 and 'Class' in data['Variables'][0] and \
-       data['Variables'][0]['Class'] != 'raw' and \
+       data['Variables'][0]['Class'] == 'dict' and \
        (len(data['Inputs']) > 1 or idx==0):
         header = TR(TD(B(data['Variables'][0]['Class']), _class="comp16", _colspan=3))
     elif display_mode and 'Format' in data['Variables'][0] and \
@@ -8016,18 +8016,19 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False):
         header = ""
 
     match_default = {}
-    for var in data['Variables']:
-        if 'Template' not in var:
-            continue
-        s = var['Template']
-        for input in data['Inputs']:
-            s = s.replace('%%'+input['Id']+'%%', '(?P<'+input['Id']+'>.*)')
-        import re
-        m = re.match(s, defaults)
-        if m is None:
-            continue
-        for input in data['Inputs']:
-            match_default[input['Id']] = m.group(input['Id'])
+    if defaults is not None:
+        for var in data['Variables']:
+            if 'Template' not in var:
+                continue
+            s = var['Template']
+            for input in data['Inputs']:
+                s = s.replace('%%'+input['Id']+'%%', '(?P<'+input['Id']+'>.*)')
+            import re
+            m = re.match(s, defaults)
+            if m is None:
+                continue
+            for input in data['Inputs']:
+                match_default[input['Id']] = m.group(input['Id'])
 
     for i, input in enumerate(data['Inputs']):
         if type(defaults) == dict:
@@ -8037,12 +8038,15 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False):
                 default = ""
         elif defaults is not None:
             default = defaults
-        elif 'Default' in input:
+        elif 'Default' in input and not display_mode:
             default = input['Default']
         else:
             default = ""
         if input['Id'] in match_default:
             default = match_default[input['Id']]
+
+        if type(default) == list:
+            default = ','.join(default)
 
         if 'LabelCss' in input:
             lcl = input['LabelCss']
@@ -8217,10 +8221,11 @@ def _ajax_comp_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=
     if 'Format' in data['Variables'][0] and data['Variables'][0]['Format'] == 'dict':
         l = inputs_block(data, defaults=cur, display_mode=display_mode)
     elif 'Format' in data['Variables'][0] and data['Variables'][0]['Format'] in ('list', 'list of dict', 'dict of dict'):
-        if cur is None:
+        if cur is None or len(cur) == 0:
             _l = inputs_block(data, display_mode=display_mode)
         else:
             count = len(cur)
+            _l = []
             for i, default in enumerate(cur):
                 if data['Variables'][0]['Format'] == 'dict of dict':
                     d = cur[default]
@@ -8229,9 +8234,11 @@ def _ajax_comp_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=
                         if key not in d:
                             d[key] = default
                     default = d
-                _l = inputs_block(data, idx=i, defaults=default, display_mode=display_mode)
+                _l.append(inputs_block(data, idx=i, defaults=default, display_mode=display_mode))
+                if not display_mode and i != len(cur) - 1:
+                    _l.append(HR())
         if display_mode:
-            l = TABLE(_l)
+            l = TABLE(_l, _class="nowrap")
         else:
             l = _l
     else:
@@ -8248,8 +8255,11 @@ def _ajax_comp_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=
 count=$("#%(counter)s").val();
 var clone = $("#%(ref)s").clone();
 clone.find(':input').attr('id', function(i, val) {
-  i = val.lastIndexOf('_')
-  return val.substring(0, i) + '_' + count;
+  try {
+    i = val.lastIndexOf('_')
+    return val.substring(0, i) + '_' + count;
+  } catch(e) {}
+  return val
 });
 $('#%(container)s').append("<hr />")
 clone.appendTo($('#%(container)s'))
@@ -8461,6 +8471,7 @@ def ajax_add_rule():
                 var_value = json.dumps(h)
             elif 'Format' in var and var['Format'] == "list of dict":
                 h = {}
+                invalidate = set([])
                 for v in request.vars.keys():
                     for input in data['Inputs']:
                         if not v.startswith(comp_forms_xid(input['Id'])):
@@ -8470,15 +8481,20 @@ def ajax_add_rule():
                             h[idx] = {}
                         val = request.vars.get(v)
                         if len(str(val)) == 0:
+                            if 'Mandatory' in input and input['Mandatory']:
+                                invalidate.add(idx)
                             continue
                         try:
                             val = convert_val(val, input['Type'])
                         except Exception, e:
                             return ajax_error(T(str(e)))
                         h[idx][input['Id']] = val
+                for idx in invalidate:
+                    del(h[idx])
                 var_value = json.dumps(h.values())
             elif 'Format' in var and var['Format'] == "dict of dict":
                 h = {}
+                invalidate = set([])
                 for v in request.vars.keys():
                     for input in data['Inputs']:
                         if not v.startswith(comp_forms_xid(input['Id'])):
@@ -8488,6 +8504,8 @@ def ajax_add_rule():
                             h[idx] = {}
                         val = request.vars.get(v)
                         if len(str(val)) == 0:
+                            if 'Mandatory' in input and input['Mandatory']:
+                                invalidate.add(idx)
                             continue
                         try:
                             val = convert_val(val, input['Type'])
@@ -8497,6 +8515,8 @@ def ajax_add_rule():
                 if 'Key' not in data['Variables'][0]:
                     return ajax_error(T("'Key' must be defined in form variable of 'dict of dict' format"))
                 k = data['Variables'][0]['Key']
+                for idx in invalidate:
+                    del(h[idx])
                 _h = {}
                 for idx, d in h.items():
                     if k not in d:
@@ -8538,7 +8558,6 @@ def ajax_add_rule():
                 )
                 log.append(("compliance.ruleset.variable.change", "Modified '%(var_class)s' variable '%(var_name)s' in ruleset '%(rset_name)s' with value:\n%(var_value)s", dict(var_class=var_class, var_name=var_name, rset_name=rset_name, var_value=var_value)))
 
-    
     for action, fmt, d in log:
         _log(action, fmt, d)
 
@@ -8559,5 +8578,8 @@ def convert_val(val, t):
              val = int(val)
          except:
              raise Exception("Error converting to integer")
+     elif t == "list of string":
+         l = val.split(',')
+         val = map(lambda x: x.strip(), l)
      return val
 
