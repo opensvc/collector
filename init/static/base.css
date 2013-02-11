@@ -1447,6 +1447,7 @@ button, input[type=button], input[type=submit] {
 .postit {
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
+    min-height: 1em;
     border-radius: 5px;
     padding: 3px;
     background-color: #FFFB82;

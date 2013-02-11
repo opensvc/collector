@@ -8265,6 +8265,7 @@ $('#%(container)s').append("<hr />")
 clone.appendTo($('#%(container)s'))
 count=parseInt(count)+1
 $("#%(counter)s").val(count);
+$("select").combobox();
 """%dict(ref=comp_forms_xid('ref'), counter=comp_forms_xid('count'), container=comp_forms_xid('container'))
                ),
                INPUT(_type="hidden", _id=comp_forms_xid('count'), _value=count)
