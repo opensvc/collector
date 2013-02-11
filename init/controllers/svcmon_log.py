@@ -1105,6 +1105,11 @@ def ajax_svcmon_log():
     t.object_list = db(q).select(orderby=o, limitby=(t.pager_start,t.pager_end))
     v.object_list = service_availability_2(db(q).select(orderby=o), begin, end)
 
+    t.csv_q = q
+    t.csv_orderby = o
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        return t.csv()
+
     return DIV(
              DIV(
                _id='ackpanel',
