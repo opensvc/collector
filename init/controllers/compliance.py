@@ -8152,7 +8152,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False):
                 l.append(TD(_input, _class= cl))
         else:
             if 'Hidden' in input and input['Hidden']:
-                name = ""
+                name = comp_forms_xid('hidden')
                 style = "display:none"
             elif 'ExpertMode' in input and input['ExpertMode']:
                 name = comp_forms_xid('expert')
@@ -8374,7 +8374,7 @@ $("select").combobox();
              DIV(
                INPUT(
                  _type="submit",
-                 _onclick="""ids=[];$("[name^=%(xid)s]").each(function(){ids.push($(this).attr('id'))});$("#svcname").each(function(){ids.push("svcname")}); $("#nodename").each(function(){ids.push("nodename")}); ajax('%(url)s', ids, '%(rid)s')"""%dict(
+                 _onclick="""ids=[];$("input[name^=%(xid)s],select[name^=%(xid)s]").each(function(){ids.push($(this).attr('id'))});$("#svcname").each(function(){ids.push("svcname")}); $("#nodename").each(function(){ids.push("nodename")}); ajax('%(url)s', ids, '%(rid)s')"""%dict(
                    xid=comp_forms_xid(''),
                    rid=comp_forms_xid('comp_forms_result'),
                    url=URL(r=request, c='compliance', f='ajax_add_rule', vars=submit_vars),
