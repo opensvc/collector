@@ -2563,7 +2563,7 @@ class table_comp_rulesets(HtmlTable):
             s = """and role in (
                      select g.id from
                        auth_group g
-                       join group_membership gm on g.id=gm.group_id
+                       join auth_membership gm on g.id=gm.group_id
                        join auth_user u on gm.user_id=u.id
                      where
                        u.id=%d
@@ -4300,7 +4300,7 @@ class table_comp_moduleset(HtmlTable):
             s = """and role in (
                      select g.id from
                        auth_group g
-                       join group_membership gm on g.id=gm.group_id
+                       join auth_membership gm on g.id=gm.group_id
                        join auth_user u on gm.user_id=u.id
                      where
                        u.id=%d
