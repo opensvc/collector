@@ -8092,7 +8092,14 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False):
                 n = input['DisplayModeTrim']
                 if len(default) >= n:
                     default = default[0:n//3] + "..." + default[-n//3*2:]
-            _input = SPAN(default)
+            if display_mode and 'Format' in data['Variables'][0] and data['Variables'][0]['Format'] in ('list of dict', 'dict of dict'):
+                if type(default) in (unicode, str) and len(default) > 25:
+                    s = default[:10]+"..."+default[-12:]
+                else:
+                    s = default
+                _input = SPAN(s, _title=default)
+            else:
+                _input = SPAN(default)
             _help = ""
         elif 'Candidates' in input:
             options = []
@@ -8134,10 +8141,18 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False):
             else:
                 l.append(TD(_input, _class= cl))
         else:
+            if 'ExpertMode' in input and input['ExpertMode']:
+                name = comp_forms_xid('expert')
+                style = "display:none"
+            else:
+                name = ""
+                style = ""
             l.append(TR(
                        TD(DIV(label, _class=lcl)),
                        TD(_input, _class=cl),
                        TD(_help),
+                       _name=name,
+                       _style=style,
                      ))
 
     if display_mode and 'Format' in data['Variables'][0] and data['Variables'][0]['Format'] in ('list of dict', 'dict of dict'):
@@ -8292,12 +8307,32 @@ clone.appendTo($('#%(container)s'))
 count=parseInt(count)+1
 $("#%(counter)s").val(count);
 $("select").combobox();
-"""%dict(ref=comp_forms_xid('ref'), counter=comp_forms_xid('count'), container=comp_forms_xid('container'))
+"""%dict(ref=comp_forms_xid('ref'),
+         counter=comp_forms_xid('count'),
+         expert=comp_forms_xid('expert'),
+         container=comp_forms_xid('container'))
                ),
                INPUT(_type="hidden", _id=comp_forms_xid('count'), _value=count)
              )
     else:
-       add = ""
+        add = ""
+
+    def has_expert(data):
+        l = [i for i in data['Inputs'] if 'ExpertMode' in i and i['ExpertMode']]
+        if len(l) > 0:
+            return True
+        return False
+
+    if has_expert(data):
+        expert = DIV(
+                A(
+                 T("Expert mode"),
+                 _class="expert16",
+                 _onclick="""$("[name=%(expert)s]").each(function(){$(this).toggle(400)});"""%dict(expert=comp_forms_xid('expert')),
+               ),
+             )
+    else:
+        expert = ""
 
     if display_mode:
         header = ""
@@ -8320,7 +8355,8 @@ $("select").combobox();
         footer = SPAN(
              DIV(
                add,
-               _style="text-align:left;padding:0.3em",
+               expert,
+               _style="text-align:center;padding:0.3em",
              ),
              DIV(
                INPUT(

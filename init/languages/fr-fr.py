@@ -392,6 +392,7 @@
 'Error count': "Nombre d'erreurs",
 'Evaluation priority': 'Priorité de prise en compte',
 'Event': 'Evènement',
+'Expert mode': 'Expert mode',
 'Export': 'Export',
 'Export to csv': 'Export en csv',
 'Field': 'Champ',
