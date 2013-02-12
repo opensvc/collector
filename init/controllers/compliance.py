@@ -8108,7 +8108,11 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False):
                     selected = True
                 else:
                     selected = False
-                options.append(OPTION(o, _selected=selected))
+                if 'Translate' in input and input['Translate']:
+                    _o = T(o)
+                else:
+                    _o = o
+                options.append(OPTION(_o, _value=o, _selected=selected))
             _input = SELECT(
                    *options,
                    **dict(
@@ -8131,7 +8135,13 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False):
                    _value=default,
                  )
 
-        label = input['DisplayModeLabel'] if display_mode and 'DisplayModeLabel' in input else input['Label']
+        if display_mode and 'DisplayModeLabel' in input:
+            label = input['DisplayModeLabel']
+        elif 'Label' in input:
+            label = input['Label']
+        else:
+            label = ""
+
         if label == "":
             label = XML("&nbsp;")
 
@@ -8141,7 +8151,10 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False):
             else:
                 l.append(TD(_input, _class= cl))
         else:
-            if 'ExpertMode' in input and input['ExpertMode']:
+            if 'Hidden' in input and input['Hidden']:
+                name = ""
+                style = "display:none"
+            elif 'ExpertMode' in input and input['ExpertMode']:
                 name = comp_forms_xid('expert')
                 style = "display:none"
             else:
