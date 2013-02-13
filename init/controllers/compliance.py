@@ -3174,15 +3174,17 @@ def comp_detach_filterset(ids=[]):
          dict(x=x))
 
 @auth.requires_membership('CompManager')
-def comp_detach_rulesets(node_ids=[], ruleset_ids=[]):
-    if len(node_ids) == 0:
+def comp_detach_rulesets(node_ids=[], ruleset_ids=[], node_names=[]):
+    if len(node_ids) + len(node_names) == 0:
         raise ToolError("detach ruleset failed: no node selected")
     if len(ruleset_ids) == 0:
         raise ToolError("detach ruleset failed: no ruleset selected")
 
-    q = db.v_nodes.id.belongs(node_ids)
-    rows = db(q).select(db.v_nodes.nodename)
-    node_names = [r.nodename for r in rows]
+    if len(node_ids) > 0:
+        q = db.v_nodes.id.belongs(node_ids)
+        rows = db(q).select(db.v_nodes.nodename)
+        node_names += [r.nodename for r in rows]
+
     nodes = ', '.join(node_names)
 
     for rsid in ruleset_ids:
@@ -3202,15 +3204,17 @@ def comp_detach_rulesets(node_ids=[], ruleset_ids=[]):
          dict(rulesets=rulesets, nodes=nodes))
 
 @auth.requires_membership('CompManager')
-def comp_attach_rulesets(node_ids=[], ruleset_ids=[]):
-    if len(node_ids) == 0:
+def comp_attach_rulesets(node_ids=[], ruleset_ids=[], node_names=[]):
+    if len(node_ids) + len(node_names) == 0:
         raise ToolError("attach ruleset failed: no node selected")
     if len(ruleset_ids) == 0:
         raise ToolError("attach ruleset failed: no ruleset selected")
 
-    q = db.v_nodes.id.belongs(node_ids)
-    rows = db(q).select(db.v_nodes.nodename)
-    node_names = [r.nodename for r in rows]
+    if len(node_ids) > 0:
+        q = db.v_nodes.id.belongs(node_ids)
+        rows = db(q).select(db.v_nodes.nodename)
+        node_names += [r.nodename for r in rows]
+
     nodes = ', '.join(node_names)
 
     for rsid in ruleset_ids:
@@ -3230,6 +3234,114 @@ def comp_attach_rulesets(node_ids=[], ruleset_ids=[]):
     _log('compliance.ruleset.node.attach',
          'attached rulesets %(rulesets)s to nodes %(nodes)s',
          dict(rulesets=rulesets, nodes=nodes))
+
+@auth.requires_membership('CompManager')
+def comp_attach_svc_modulesets(svc_ids=[], modset_ids=[], svc_names=[], slave=True):
+    if len(svc_ids) + len(svc_names) == 0:
+        raise ToolError("attach moduleset failed: no service selected")
+    if len(modset_ids) == 0:
+        raise ToolError("attach moduleset failed: no moduleset selected")
+
+    log = []
+
+    if len(svc_ids) > 0:
+        q = db.services.id.belongs(svc_ids)
+        rows = db(q).select(db.services.svc_name)
+        svc_names += [r.svc_name for r in rows]
+
+    # init rset name cache
+    q = db.comp_moduleset.id.belongs(modset_ids)
+    rows = db(q).select()
+    modset_names = {}
+    for row in rows:
+        modset_names[row.id] = row.modset_name
+
+    for modset_id in modset_ids:
+        for svc in svc_names:
+            sl = slave
+            if slave and not has_slave(svc):
+                sl = False
+            q = db.comp_modulesets_services.modset_svcname == svc
+            q &= db.comp_modulesets_services.modset_id == modset_id
+            q &= db.comp_modulesets_services.slave == sl
+            row = db(q).select().first()
+            if row is not None:
+                log.append([
+                  'compliance.moduleset.service.attach',
+                  'moduleset %(moduleset)s already attached to service %(service)s',
+                  dict(moduleset=modset_names[modset_id], service=svc),
+                ])
+                continue
+            db.comp_modulesets_services.insert(modset_svcname=svc,
+                                               slave=sl,
+                                               modset_id=modset_id)
+            log.append([
+              'compliance.moduleset.service.attach',
+              'moduleset %(moduleset)s attached to service %(service)s',
+              dict(moduleset=modset_names[modset_id], service=svc),
+            ])
+
+    for action, fmt, d in log:
+        _log(action, fmt, d)
+
+    for svc in svc_names:
+        update_dash_moddiff(svc)
+
+    return log
+
+@auth.requires_membership('CompManager')
+def comp_attach_svc_rulesets(svc_ids=[], ruleset_ids=[], svc_names=[], slave=True):
+    if len(svc_ids) + len(svc_names) == 0:
+        raise ToolError("attach ruleset failed: no service selected")
+    if len(ruleset_ids) == 0:
+        raise ToolError("attach ruleset failed: no ruleset selected")
+
+    log = []
+
+    if len(svc_ids) > 0:
+        q = db.services.id.belongs(svc_ids)
+        rows = db(q).select(db.services.svc_name)
+        svc_names += [r.svc_name for r in rows]
+
+    # init rset name cache
+    q = db.comp_rulesets.id.belongs(ruleset_ids)
+    rows = db(q).select()
+    rset_names = {}
+    for row in rows:
+        rset_names[row.id] = row.ruleset_name
+
+    for rsid in ruleset_ids:
+        for svc in svc_names:
+            sl = slave
+            if slave and not has_slave(svc):
+                sl = False
+            q = db.comp_rulesets_services.svcname == svc
+            q &= db.comp_rulesets_services.ruleset_id == rsid
+            q &= db.comp_rulesets_services.slave == sl
+            row = db(q).select().first()
+            if row is not None:
+                log.append([
+                  'compliance.ruleset.service.attach',
+                  'ruleset %(ruleset)s already attached to service %(service)s',
+                  dict(ruleset=rset_names[rsid], service=svc),
+                ])
+                continue
+            db.comp_rulesets_services.insert(svcname=svc,
+                                             slave=sl,
+                                             ruleset_id=rsid)
+            log.append([
+              'compliance.ruleset.service.attach',
+              'ruleset %(ruleset)s attached to service %(service)s',
+              dict(ruleset=rset_names[rsid], service=svc),
+            ])
+
+    for action, fmt, d in log:
+        _log(action, fmt, d)
+
+    for svc in svc_names:
+        update_dash_rsetdiff(svc)
+
+    return log
 
 @auth.requires_login()
 def ajax_comp_rulesets_col_values():
@@ -6537,6 +6649,15 @@ def comp_slave(svcname, nodename):
         return False
     return True
 
+def has_slave(svcname):
+    q = db.svcmon.mon_svcname == svcname
+    q &= db.svcmon.mon_vmname != None
+    q &= db.svcmon.mon_vmname != ""
+    row = db(q).select().first()
+    if row is None:
+        return False
+    return True
+
 @auth_uuid
 @service.xmlrpc
 def comp_attach_svc_ruleset(svcname, ruleset, auth):
@@ -8637,7 +8758,50 @@ def ajax_add_rule():
     for action, fmt, d in log:
         _log(action, fmt, d)
 
-    return ajax_error(PRE(XML('<br>'.join(map(lambda x: x[1]%x[2], log)))))
+    if request.vars.nodename is not None or request.vars.svcname is not None:
+        modset_ids = []
+        if 'Modulesets' in data:
+            q = db.comp_moduleset.modset_name.belongs(data['Modulesets'])
+            rows = db(q).select(db.comp_moduleset.id)
+            modset_ids = map(lambda x: x.id, rows)
+
+        rset_ids = []
+        if 'Rulesets' in data:
+            q = db.comp_rulesets.ruleset_name.belongs(data['Rulesets'])
+            q &= db.comp_rulesets.ruleset_type == "explicit"
+            q &= db.comp_rulesets.ruleset_public == True
+            rows = db(q).select(db.comp_rulesets.id)
+            rset_ids = map(lambda x: x.id, rows) + [rset.id]
+
+        if request.vars.nodename is not None:
+            # check node_team_responsible_id ?
+            try:
+                comp_attach_modulesets(node_names=[request.vars.nodename],
+                                       modset_ids=modset_ids)
+            except ToolError:
+                pass
+            try:
+                comp_attach_rulesets(node_names=[request.vars.nodename],
+                                     ruleset_ids=rset_ids)
+            except ToolError:
+                pass
+
+        if request.vars.svcname is not None:
+            # check svc_team_responsible_id ?
+            try:
+                log += comp_attach_svc_modulesets(svc_names=[request.vars.svcname],
+                                                  modset_ids=modset_ids,
+                                                  slave=True)
+            except ToolError:
+                pass
+            try:
+                log += comp_attach_svc_rulesets(svc_names=[request.vars.svcname],
+                                                ruleset_ids=rset_ids,
+                                                slave=True)
+            except ToolError:
+                pass
+
+    return ajax_error(PRE(XML('<br><br>'.join(map(lambda x: x[1]%x[2], log)))))
 
 def convert_val(val, t):
      if t == 'string':
