@@ -162,11 +162,17 @@ def comp_forms_admin():
 @auth.requires_login()
 def comp_forms_list():
     q = db.comp_forms.id > 0
-    if 'CompManager' not in user_groups():
+    if request.vars.withobj is None or 'CompManager' not in user_groups():
         q &= db.comp_forms.form_type == 'custo'
     rows = db(q).select(orderby=db.comp_forms.form_type|db.comp_forms.form_name)
     l = []
+    import yaml
     for row in rows:
+        try:
+            data = yaml.load(row.form_yaml)
+            cl = data['Css']
+        except:
+            cl = 'nologo48'
         l.append(TR(
           TD(
             INPUT(
@@ -190,7 +196,8 @@ def comp_forms_list():
           TD(
             P(row.form_name),
             P(row.form_comment, _style="font-style:italic;padding-left:1em"),
-            _style="padding:1em",
+            _style="padding-top:1em;padding-bottom:1em;",
+            _class=cl,
           ),
         ),
       )
