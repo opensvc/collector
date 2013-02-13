@@ -4999,15 +4999,17 @@ def comp_detach_modulesets(node_ids=[], modset_ids=[]):
          dict(modulesets=modulesets, nodes=nodes))
 
 @auth.requires_membership('CompManager')
-def comp_attach_modulesets(node_ids=[], modset_ids=[]):
-    if len(node_ids) == 0:
+def comp_attach_modulesets(node_ids=[], modset_ids=[], node_names=[]):
+    if len(node_ids+node_names) == 0:
         raise ToolError("attach modulesets failed: no node selected")
     if len(modset_ids) == 0:
         raise ToolError("attach modulesets failed: no moduleset selected")
 
-    q = db.v_nodes.id.belongs(node_ids)
-    rows = db(q).select(db.v_nodes.nodename)
-    node_names = [r.nodename for r in rows]
+    if len(nodes_id) > 0:
+        q = db.v_nodes.id.belongs(node_ids)
+        rows = db(q).select(db.v_nodes.nodename)
+        node_names += [r.nodename for r in rows]
+
     nodes = ', '.join(node_names)
 
     for msid in modset_ids:
@@ -8562,13 +8564,14 @@ def ajax_add_rule():
     common_groups = []
     if request.vars.nodename is not None:
         q = db.nodes.nodename == request.vars.nodename
-        node = db(q).select().first()
+        q &= db.nodes.team_responsible == db.auth_group.role
+        node = db(q).select(db.auth_group.id).first()
         if node is None:
             return ajax_error(T("Unknown specified node %(nodename)s", dict(nodename=nodename)))
-        groups = [node.team_responsible]
+        groups = [node.id]
         if len(groups) == 0:
             return ajax_error(T("Specified node %(nodename)s has no responsible group", dict(nodename=nodename)))
-        common_groups = set(user_groups()) & set(groups)
+        common_groups = set(user_group_ids()) & set(groups)
         if len(common_groups) == 0:
             return ajax_error(T("You are not allowed to create or modify a ruleset for the node %(node)s", dict(nodename=nodename)))
     elif request.vars.svcname is not None:
