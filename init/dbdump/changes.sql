@@ -3236,4 +3236,6 @@ alter table log modify column log_fmt varchar(200);
 
 alter table comp_forms add column form_type enum("obj","custo") default "custo";
 
+alter table comp_forms drop column form_comment;
+
 

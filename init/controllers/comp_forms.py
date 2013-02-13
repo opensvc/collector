@@ -15,7 +15,6 @@ class table_templates(HtmlTable):
         self.cols = ['form_name',
                      'form_type',
                      'form_yaml',
-                     'form_comment',
                      'form_created',
                      'form_author']
         self.colprops = {
@@ -39,13 +38,6 @@ class table_templates(HtmlTable):
                 display = True,
                 table = 'comp_forms',
                 img = 'action16'
-            ),
-            'form_comment': HtmlTableColumn(
-                title = 'Comment',
-                field = 'form_comment',
-                display = True,
-                table = 'comp_forms',
-                img = 'edit16'
             ),
             'form_created': HtmlTableColumn(
                 title = 'Created on',
@@ -105,12 +97,10 @@ def comp_forms_editor():
                  deletable=True,
                  fields=['form_name',
                          'form_type',
-                         'form_yaml',
-                         'form_comment'],
+                         'form_yaml',],
                  labels={'form_name': T('Form name'),
                          'form_type': T('Form type'),
-                         'form_yaml': T('Form yaml definition'),
-                         'form_comment': T('Form comment')},
+                         'form_yaml': T('Form yaml definition')}
                 )
     if form.accepts(request.vars):
         if request.vars.form_id is None:
@@ -170,9 +160,19 @@ def comp_forms_list():
     for row in rows:
         try:
             data = yaml.load(row.form_yaml)
-            cl = data['Css']
         except:
+            data = {}
+
+        if 'Css' in data:
+            cl = data['Css']
+        else:
             cl = 'nologo48'
+
+        if 'Desc' in data:
+            desc = data['Desc']
+        else:
+            desc = ''
+
         l.append(TR(
           TD(
             INPUT(
@@ -195,7 +195,7 @@ def comp_forms_list():
           ),
           TD(
             P(row.form_name),
-            P(row.form_comment, _style="font-style:italic;padding-left:1em"),
+            P(desc, _style="font-style:italic;padding-left:1em"),
             _style="padding-top:1em;padding-bottom:1em;",
             _class=cl,
           ),
