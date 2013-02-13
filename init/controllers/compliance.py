@@ -8359,9 +8359,13 @@ def _ajax_comp_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=
     import yaml
     try:
         data = yaml.load(s)
+        if 'Inputs' not in data:
+            raise Exception("Inputs definition not found in form definition")
+        if 'Variables' not in data:
+            raise Exception("Variables definition not found in form definition")
     except Exception, e:
         return ajax_error(DIV(
-                 B(T("%(form)s form definition error"), dict(form=form.form_name)),
+                 B(T("%(form)s form definition error", dict(form=form.form_name))),
                  BR(),
                  T("Please report the malfunction to %(author)s", dict(author=form.form_author)),
                  HR(),
