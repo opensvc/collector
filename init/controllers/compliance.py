@@ -8473,7 +8473,6 @@ $("select").combobox();
         expert = ""
 
     if display_mode:
-        header = ""
         footer = ""
     else:
         submit_vars = {"form_id": form_id}
@@ -8486,10 +8485,6 @@ $("select").combobox();
         if _var_id is not None:
             submit_vars["var_id"] = _var_id
 
-        header = SPAN(
-             data['Desc'],
-             HR(),
-        )
         footer = SPAN(
              DIV(
                add,
@@ -8514,7 +8509,6 @@ $("select").combobox();
              SCRIPT("""var count=%(idx)d;$("select").combobox();"""%dict(idx=len(l)), _name=_hid+"_to_eval"),
         )
     return DIV(
-             header,
              DIV(
                l,
                _id=comp_forms_xid('container'),
@@ -8570,10 +8564,10 @@ def ajax_add_rule():
         q = db.nodes.nodename == request.vars.nodename
         node = db(q).select().first()
         if node is None:
-            return ajax_error(T("Unknown specified node %(nodename)s"), dict(nodename=nodename))
+            return ajax_error(T("Unknown specified node %(nodename)s", dict(nodename=nodename)))
         groups = [node.team_responsible]
         if len(groups) == 0:
-            return ajax_error(T("Specified node %(nodename)s has no responsible group"), dict(nodename=nodename))
+            return ajax_error(T("Specified node %(nodename)s has no responsible group", dict(nodename=nodename)))
         common_groups = set(user_groups()) & set(groups)
         if len(common_groups) == 0:
             return ajax_error(T("You are not allowed to create or modify a ruleset for the node %(node)s", dict(nodename=nodename)))
@@ -8581,13 +8575,13 @@ def ajax_add_rule():
         q = db.services.svc_name == request.vars.svcname
         svc = db(q).select().first()
         if svc is None:
-            return ajax_error(T("Unknown specified service %(svcname)s"), dict(svcname=svcname))
+            return ajax_error(T("Unknown specified service %(svcname)s", dict(svcname=svcname)))
         q &= db.services.svc_app == db.apps.app
         q &= db.apps.id == db.apps_responsibles.app_id
         rows = db(q).select()
         groups = map(lambda x: x.apps_responsibles.group_id, rows)
         if len(groups) == 0:
-            return ajax_error(T("Specified service %(svcname)s has no responsible groups"), dict(svcname=svcname))
+            return ajax_error(T("Specified service %(svcname)s has no responsible groups", dict(svcname=svcname)))
         common_groups = set(user_group_ids()) & set(groups)
         if len(common_groups) == 0:
             return ajax_error(T("You are not allowed to create or modify a ruleset for the service %(svcname)s", dict(svcname=svcname)))
@@ -8608,7 +8602,7 @@ def ajax_add_rule():
             )
             log.append(("compliance.ruleset.group.attach", "Added group %(gid)d ruleset '%(rset_name)s' owners", dict(gid=gid, rset_name=rset_name)))
     if rset is None:
-        return ajax_error(T("error fetching %(rset_name)s ruleset"), dict(rset_name=rset_name))
+        return ajax_error(T("error fetching %(rset_name)s ruleset", dict(rset_name=rset_name)))
 
     for var in data['Variables']:
         if request.vars.var_id is None:

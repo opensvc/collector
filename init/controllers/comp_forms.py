@@ -180,7 +180,23 @@ def comp_forms_list():
               _type='radio',
               _id=row.id,
               _name='radio_form',
-              _onclick="""$('[name=radio_form]').each(function(){if ($(this).attr("id")=='%(rid)s'){return};$(this).prop('checked', false)});sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')})"""%dict(
+              _onclick="""
+$(this).closest("table").children().children().each(function(){
+  $(this).toggle()
+})
+$(this).closest("tr").each(function(){
+  $(this).toggle()
+})
+$("#comp_forms_inputs").each(function(){
+  $(this).text('');
+  $(this).slideToggle(400);
+})
+$('[name=radio_form]').each(function(){
+  if ($(this).attr("id")=='%(rid)s'){return};
+  $(this).prop('checked', false)
+});
+sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')});
+"""%dict(
                 id="comp_forms_inputs",
                 rid=row.id,
                 url=URL(
@@ -206,7 +222,7 @@ def comp_forms_list():
           TABLE(l),
           DIV(
             _id="comp_forms_inputs",
-            _style="padding-top:3em",
+            _style="padding-top:3em;display:none",
           ),
           _style="padding:2em;max-width:40em;",
         )

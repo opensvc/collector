@@ -1171,6 +1171,10 @@ ul.login_menu ul {
 .nologo48 {
     padding: 0 0 0 52px;
 }
+.axway48 {
+    background: transparent url('axway48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
 .apache48 {
     background: transparent url('apache48.png') no-repeat left center;
     padding: 0 0 0 52px;
