@@ -8534,7 +8534,7 @@ function reload_ajax_custo(){
   $("select#svcname").change()
   $("select#nodename").change()
 }
-sync_ajax('%(url)s', ids, '%(rid)s', reload_ajax_custo())
+sync_ajax('%(url)s', ids, '%(rid)s', reload_ajax_custo)
 """%dict(
                    xid=comp_forms_xid(''),
                    rid=comp_forms_xid('comp_forms_result'),
