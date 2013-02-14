@@ -8188,7 +8188,10 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False):
             if m is None:
                 continue
             for input in data['Inputs']:
-                match_default[input['Id']] = m.group(input['Id'])
+                try:
+                    match_default[input['Id']] = m.group(input['Id'])
+                except:
+                    match_default[input['Id']] = "unable to retrieve default"
 
     for i, input in enumerate(data['Inputs']):
         if type(defaults) == dict:
@@ -8516,7 +8519,23 @@ $("select").combobox();
              DIV(
                INPUT(
                  _type="submit",
-                 _onclick="""ids=[];$("input[name^=%(xid)s],select[name^=%(xid)s]").each(function(){ids.push($(this).attr('id'))});$("#svcname").each(function(){ids.push("svcname")}); $("#nodename").each(function(){ids.push("nodename")}); ajax('%(url)s', ids, '%(rid)s')"""%dict(
+                 _onclick="""
+ids=[];
+$("input[name^=%(xid)s],select[name^=%(xid)s]").each(function(){
+  ids.push($(this).attr('id'))
+});
+$("#svcname").each(function(){
+  ids.push("svcname")
+});
+$("#nodename").each(function(){
+  ids.push("nodename")
+});
+function reload_ajax_custo(){
+  $("select#svcname").change()
+  $("select#nodename").change()
+}
+sync_ajax('%(url)s', ids, '%(rid)s', reload_ajax_custo())
+"""%dict(
                    xid=comp_forms_xid(''),
                    rid=comp_forms_xid('comp_forms_result'),
                    url=URL(r=request, c='compliance', f='ajax_add_rule', vars=submit_vars),
