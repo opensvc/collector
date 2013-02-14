@@ -8373,7 +8373,7 @@ def _ajax_comp_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=
         return ajax_error(T("No form specified"))
 
     if form is None:
-        return ajax_error(T("form not found"))
+        return ajax_error(T("form not found")+'\n'+var.var_value)
 
     form_id = form.id
 
