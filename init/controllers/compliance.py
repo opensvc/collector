@@ -6570,6 +6570,26 @@ def _comp_get_moduleset_modules(moduleset, node):
                         groupby=db.comp_moduleset_modules.modset_mod_name)
     return [r.modset_mod_name for r in rows]
 
+def _comp_get_moduleset_svc_modules(moduleset, svcname):
+    if isinstance(moduleset, list):
+        if len(moduleset) == 0:
+            return []
+        q = db.comp_moduleset.modset_name.belongs(moduleset)
+    elif isinstance(moduleset, str):
+        q = db.comp_moduleset.modset_name == moduleset
+    else:
+        return []
+    q &= db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
+    q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
+    q &= db.auth_group.id == db.comp_moduleset_team_responsible.group_id
+    q &= db.apps_responsibles.group_id == db.auth_group.id
+    q &= db.apps_responsibles.app_id == db.apps.id
+    q &= db.apps.app == db.services.svc_app
+    q &= db.services.svc_name == svcname
+    rows = db(q).select(db.comp_moduleset_modules.modset_mod_name,
+                        groupby=db.comp_moduleset_modules.modset_mod_name)
+    return [r.modset_mod_name for r in rows]
+
 def comp_attached_ruleset_id(nodename):
     q = db.comp_rulesets_nodes.nodename == nodename
     rows = db(q).select(db.comp_rulesets_nodes.ruleset_id)
@@ -8823,4 +8843,134 @@ def convert_val(val, t):
          l = val.split(',')
          val = map(lambda x: x.strip(), l)
      return val
+
+def ajax_custo():
+    """
+      List all customatizations of a node or a service
+       arg[0]: the type of object (svcname or nodename)
+       arg[1]: the target object name (svcname or nodename)
+    """
+    if len(request.args) < 2:
+        return ajax_error("Need two parameters")
+
+    target = request.args[0]
+    if target is None:
+        return ajax_error("No target specified")
+
+    if target == "nodename":
+        rset_name = "node." + request.args[1]
+    elif target == "svcname":
+        rset_name = "svc." + request.args[1]
+    else:
+        return ajax_error("Incorrect target specified. Must be either 'nodename' or 'svcname'")
+
+    q = db.comp_forms.form_type == "custo"
+    q &= db.comp_forms.form_name == db.comp_rulesets_variables.var_class
+    q &= db.comp_rulesets_variables.ruleset_id == db.comp_rulesets.id
+    q &= db.comp_rulesets.ruleset_name == rset_name
+    o = db.comp_rulesets_variables.var_class
+
+    rows = db(q).select(orderby=o)
+
+    l = []
+    for row in rows:
+        l.append(format_custo(row, target, request.args[1]))
+
+    if len(l) == 0:
+        return T("No customization yet")
+
+    return DIV(
+             l,
+           )
+
+def format_custo(row, objtype, objname):
+    s = row.comp_forms.form_yaml
+    import yaml
+    try:
+        data = yaml.load(s)
+    except:
+        data = {}
+    if 'Css' in data:
+        cl = data['Css']
+    else:
+        cl = 'nologo48'
+
+    custo = DIV(
+              _ajax_comp_forms_inputs(
+                 _mode="show",
+                 _rset_name=row.comp_rulesets.ruleset_name,
+                 _var_id=row.comp_rulesets_variables.id,
+                 _form_xid=row.comp_rulesets_variables.id,
+                 _hid='stage2',
+                 var=row.comp_rulesets_variables, form=row.comp_forms,
+               ),
+    )
+
+    if 'Modulesets' in data:
+        if objtype == "svcname":
+            l = _comp_get_moduleset_svc_modules(data['Modulesets'], objname)
+            q = db.comp_status.run_svcname == objname
+        elif objtype == "nodename":
+            l = _comp_get_moduleset_modules(data['Modulesets'], objname)
+            q = db.comp_status.run_nodename == objname
+        else:
+            l = []
+        q &= db.comp_status.run_module.belongs(l)
+        rows = db(q).select()
+        _modules = []
+        for r in rows:
+            val = r.run_status
+            if val in img_h:
+                status = IMG(
+                      _src=URL(r=request,c='static',f=img_h[val]),
+                    )
+            else:
+                status = val
+
+            _modules.append(TR(
+              TD(
+                status,
+                _title=r.run_log,
+              ),
+              TD(
+                r.run_module,
+                BR(),
+                SPAN(
+                  "(%s)" % r.run_date,
+                  _style="font-size:80%;font-style:italic",
+                ),
+              ),
+            ))
+
+        if len(_modules) == 0:
+            _modules = TR(TD(T("unknown")))
+
+        modules = DIV(
+                    BR(),
+                    I(T("Status")),
+                    TABLE(_modules),
+                  )
+    else:
+        modules = ""
+
+    since = DIV(
+              BR(),
+              T("Updated: %(date)s", dict(date=row.comp_rulesets_variables.var_updated)),
+              BR(),
+              T("Author: %(author)s", dict(author=row.comp_rulesets_variables.var_author)),
+              _style="font-size:80%;font-style:italic",
+            )
+
+    return DIV(
+      DIV(
+        row.comp_rulesets_variables.var_class,
+        HR(),
+        _class=cl,
+        _style="vertical-align:middle;font-weight:bold;height:48px",
+      ),
+      custo,
+      since,
+      modules,
+      _style="margin:1em;display:inline-block;vertical-align:top;text-align:left",
+    )
 

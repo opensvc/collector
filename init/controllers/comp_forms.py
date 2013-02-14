@@ -282,14 +282,8 @@ def ajax_target():
           ),
           DIV(
             _id="stage2",
+            _style="padding:2em",
           ),
-          DIV(
-            _id="stage3",
-          ),
-          DIV(
-            _id="stage4",
-          ),
-          _style="padding:2em",
         )
     return d
 
@@ -318,7 +312,22 @@ def ajax_node_list():
 
     return DIV(
              H3(T("Node")),
-             SELECT(l, _id="nodename"),
+             SELECT(
+               l,
+               _id="nodename",
+               _onchange="""
+$("#stage2").html('%(spinner)s');
+ajax('%(url)s/%(objtype)s/'+this.options[this.selectedIndex].value, [], '%(div)s');
+"""%dict(
+      url=URL(
+            r=request, c='compliance',
+            f='ajax_custo',
+          ),
+      objtype='nodename',
+      div="stage2",
+      spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')).xml(),
+    ),
+             ),
              SCRIPT("""$("select").combobox();""", _name="stage1_to_eval"),
            )
 
@@ -346,7 +355,23 @@ def ajax_service_list():
 
     return DIV(
              H3(T("Service")),
-             SELECT(l, _id="svcname"),
+             SELECT(
+               l,
+               _id="svcname",
+               _onchange="""
+$("#stage2").html('%(spinner)s');
+ajax('%(url)s/%(objtype)s/'+this.options[this.selectedIndex].value, [], '%(div)s');
+"""%dict(
+      url=URL(
+            r=request, c='compliance',
+            f='ajax_custo',
+          ),
+      objtype='svcname',
+      div="stage2",
+      spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')).xml(),
+    ),
+
+             ),
              SCRIPT("""$("select").combobox();""", _name="stage1_to_eval"),
            )
 
