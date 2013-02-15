@@ -251,7 +251,12 @@ def ajax_target():
               _value=False,
               _type='radio',
               _id="radio_service",
-              _onclick="""$("#radio_node").prop('checked',false);$("#stage2").html("");$("#stage3").html("");$("#stage4").html("");sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')})"""%dict(
+              _onclick="""
+$("#radio_node").prop('checked',false);
+$("#stage2").html("");
+$("#stage3").html("");
+$("#stage4").html("");
+sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')})"""%dict(
                 id="stage1",
                 url=URL(r=request, c='comp_forms', f='ajax_service_list'),
               ),
@@ -265,7 +270,12 @@ def ajax_target():
               _value=False,
               _type='radio',
               _id="radio_node",
-              _onclick="""$("#radio_service").prop('checked',false);$("#stage2").html("");$("#stage3").html("");$("#stage4").html("");sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')})"""%dict(
+              _onclick="""
+$("#radio_service").prop('checked',false);
+$("#stage2").html("");
+$("#stage3").html("");
+$("#stage4").html("");
+sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')})"""%dict(
                 id="stage1",
                 url=URL(r=request, c='comp_forms', f='ajax_node_list'),
               ),
@@ -328,7 +338,10 @@ ajax('%(url)s/%(objtype)s/'+this.options[this.selectedIndex].value, [], '%(div)s
       spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')).xml(),
     ),
              ),
-             SCRIPT("""$("select").combobox();""", _name="stage1_to_eval"),
+             SCRIPT("""
+$("select").combobox();
+$("#nodename").siblings("input").focus();
+""", _name="stage1_to_eval"),
            )
 
 @auth.requires_login()
@@ -372,6 +385,9 @@ ajax('%(url)s/%(objtype)s/'+this.options[this.selectedIndex].value, [], '%(div)s
     ),
 
              ),
-             SCRIPT("""$("select").combobox();""", _name="stage1_to_eval"),
+             SCRIPT("""
+$("select").combobox();
+$("#svcname").siblings("input").focus();
+""", _name="stage1_to_eval"),
            )
 

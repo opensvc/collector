@@ -8151,7 +8151,7 @@ def ajax_error(msg):
              _style="text-align:left;padding:3em",
            )
 
-def inputs_block(data, idx=0, defaults=None, display_mode=False):
+def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=False):
     l = []
     if display_mode and \
        len(data['Variables']) == 1 and \
@@ -8300,7 +8300,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False):
             if 'Hidden' in input and input['Hidden']:
                 name = comp_forms_xid('hidden')
                 style = "display:none"
-            elif 'ExpertMode' in input and input['ExpertMode']:
+            elif 'ExpertMode' in input and input['ExpertMode'] and not showexpert:
                 name = comp_forms_xid('expert')
                 style = "display:none"
             else:
@@ -8347,7 +8347,7 @@ def ajax_comp_forms_inputs():
              request.vars.hid,
            )
 
-def _ajax_comp_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None, _form_xid=None, _rset_name=None, _rset_id=None, _hid=None, var=None, form=None):
+def _ajax_comp_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None, _form_xid=None, _rset_name=None, _rset_id=None, _hid=None, var=None, form=None, showexpert=False):
     if _mode == "show":
         display_mode = True
     else:
@@ -8423,10 +8423,10 @@ def _ajax_comp_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=
 
     l = []
     if 'Format' in data['Variables'][0] and data['Variables'][0]['Format'] == 'dict':
-        l = inputs_block(data, defaults=cur, display_mode=display_mode)
+        l = inputs_block(data, defaults=cur, display_mode=display_mode, showexpert=showexpert)
     elif 'Format' in data['Variables'][0] and data['Variables'][0]['Format'] in ('list', 'list of dict', 'dict of dict'):
         if cur is None or len(cur) == 0:
-            _l = inputs_block(data, display_mode=display_mode)
+            _l = inputs_block(data, display_mode=display_mode, showexpert=showexpert)
         else:
             count = len(cur)
             _l = []
@@ -8438,7 +8438,7 @@ def _ajax_comp_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=
                         if key not in d:
                             d[key] = default
                     default = d
-                _l.append(inputs_block(data, idx=i, defaults=default, display_mode=display_mode))
+                _l.append(inputs_block(data, idx=i, defaults=default, display_mode=display_mode, showexpert=showexpert))
                 if not display_mode and i != len(cur) - 1:
                     _l.append(HR())
         if display_mode:
@@ -8446,7 +8446,7 @@ def _ajax_comp_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=
         else:
             l = _l
     else:
-        l = inputs_block(data, defaults=cur, display_mode=display_mode)
+        l = inputs_block(data, defaults=cur, display_mode=display_mode, showexpert=showexpert)
 
     if len(data['Variables']) == 1 and \
        'Type' in data['Variables'][0] and data['Variables'][0]['Type'] == 'json' and \
@@ -8921,7 +8921,9 @@ def format_custo(row, objtype, objname):
                  _var_id=row.comp_rulesets_variables.id,
                  _form_xid=row.comp_rulesets_variables.id,
                  _hid='stage2',
-                 var=row.comp_rulesets_variables, form=row.comp_forms,
+                 var=row.comp_rulesets_variables,
+                 form=row.comp_forms,
+                 showexpert=True,
                ),
     )
 
