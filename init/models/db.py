@@ -1283,8 +1283,9 @@ db.define_table('gen_filterset_check_threshold',
 
 db.define_table('comp_forms',
     Field('form_name','string'),
-    Field('form_type','string', requires=IS_IN_SET(("obj", "custo")), default="custo"),
+    Field('form_type','string', requires=IS_IN_SET(("custo", "folder", "obj")), default="custo"),
     Field('form_yaml','text'),
+    Field('form_folder','string'),
     Field('form_author','string'),
     Field('form_created','datetime'),
     migrate=False)

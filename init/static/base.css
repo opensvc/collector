@@ -1171,6 +1171,26 @@ ul.login_menu ul {
 .nologo48 {
     padding: 0 0 0 52px;
 }
+.parent48 {
+    background: transparent url('folder48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
+.folderoracle48 {
+    background-image: url('oracle48.png'),url('folder48.png');
+    background-repeat: no-repeat;
+    background-position: left center;
+    padding: 0 0 0 52px;
+}
+.folderapache48 {
+    background-image: url('apache48.png'),url('folder48.png');
+    background-repeat: no-repeat;
+    background-position: left center;
+    padding: 0 0 0 52px;
+}
+.folder48 {
+    background: transparent url('folder48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
 .axway48 {
     background: transparent url('axway48.png') no-repeat left center;
     padding: 0 0 0 52px;
@@ -1286,6 +1306,21 @@ ul.login_menu ul {
 
 .clickable:hover {
     cursor: pointer;
+}
+
+.formentry {
+    border-radius:6px;
+   -moz-border-radius:6px;
+   -webkit-border-radius:6px;
+    padding: 2px;
+    padding-left: 10px;
+    padding-right: 10px;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.formentry:hover {
+    border: 2px solid red;
 }
 
 .comp_pct {

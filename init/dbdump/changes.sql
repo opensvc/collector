@@ -3238,4 +3238,6 @@ alter table comp_forms add column form_type enum("obj","custo") default "custo";
 
 alter table comp_forms drop column form_comment;
 
+alter table comp_forms add column form_folder varchar(200) default "/";
 
+alter table comp_forms modify column `form_type` enum('obj','custo','folder') DEFAULT 'custo';

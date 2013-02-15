@@ -1,4 +1,5 @@
 import re
+import yaml
 
 class col_forms_yaml(HtmlTableColumn):
     def html(self, o):
@@ -14,6 +15,7 @@ class table_templates(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['form_name',
                      'form_type',
+                     'form_folder',
                      'form_yaml',
                      'form_created',
                      'form_author']
@@ -31,6 +33,13 @@ class table_templates(HtmlTable):
                 display = True,
                 table = 'comp_forms',
                 img = 'edit16'
+            ),
+            'form_folder': HtmlTableColumn(
+                title = 'Folder',
+                field = 'form_folder',
+                display = True,
+                table = 'comp_forms',
+                img = 'hd16'
             ),
             'form_yaml': col_forms_yaml(
                 title = 'Definition',
@@ -96,9 +105,11 @@ def comp_forms_editor():
                  record=record,
                  deletable=True,
                  fields=['form_name',
+                         'form_folder',
                          'form_type',
                          'form_yaml',],
                  labels={'form_name': T('Form name'),
+                         'form_folder': T('Form folder'),
                          'form_type': T('Form type'),
                          'form_yaml': T('Form yaml definition')}
                 )
@@ -149,38 +160,100 @@ def comp_forms_admin():
         )
     return dict(table=t)
 
-@auth.requires_login()
-def comp_forms_list():
-    q = db.comp_forms.id > 0
-    if request.vars.withobj is None or 'CompManager' not in user_groups():
-        q &= db.comp_forms.form_type == 'custo'
+def get_folders_info():
+    h = {}
+    for id, form_name, form_folder, data in get_forms("folder"):
+        if 'Folder' not in data:
+            continue
+        if 'FolderCss' not in data:
+            data['FolderCss'] = 'folder48'
+        if 'FolderDesc' not in data:
+            data['FolderCss'] = ''
+        h[data['Folder']] = data
+    return data
+
+def get_forms(form_type=None, folder="/"):
+    q = db.comp_forms.form_folder == folder
+
+    if form_type is None:
+        pass
+    elif type(form_type) == list:
+        q &= db.comp_forms.form_type.belongs(form_type)
+    else:
+        q &= db.comp_forms.form_type == form_type
+
     rows = db(q).select(orderby=db.comp_forms.form_type|db.comp_forms.form_name)
     l = []
-    import yaml
     for row in rows:
         try:
             data = yaml.load(row.form_yaml)
         except:
             data = {}
+        l.append((row.id, row.form_name, row.form_folder, data))
+    return l
 
-        if 'Css' in data:
-            cl = data['Css']
-        else:
-            cl = 'nologo48'
+@auth.requires_login()
+def ajax_comp_forms_list():
+    return comp_forms_list(request.vars.folder)
 
-        if 'Desc' in data:
-            desc = data['Desc']
-        else:
-            desc = ''
+@auth.requires_login()
+def comp_forms_list(folder="/"):
+    import os
+    l = []
 
-        l.append(TR(
-          TD(
-            INPUT(
-              _value=False,
-              _type='radio',
-              _id=row.id,
-              _name='radio_form',
-              _onclick="""
+    folder = os.path.realpath(folder)
+    folders = get_forms("folder", folder=folder)
+
+    if folder != "/":
+        parent_folder = '/'.join(folder.split('/')[:-1])
+        if not parent_folder.startswith('/'):
+            parent_folder = '/'+parent_folder
+        parent_data = {
+          'FolderName': '',
+          'FolderCss': 'parent48',
+          'FolderLabel': 'Parent folder',
+          'FolderDesc': parent_folder,
+        }
+        parent = ('parent', 'parent', parent_folder, parent_data)
+        folders = [parent] + folders
+
+    for id, form_name, form_folder, data in folders:
+        cl = data.get('FolderCss', 'folder48')
+        desc = data.get('FolderDesc', '')
+        folderlabel = data.get('FolderLabel', form_name)
+        l.append(DIV(
+          DIV(
+            P(folderlabel),
+            P(desc, _style="font-style:italic;padding-left:1em"),
+            _style="padding-top:1em;padding-bottom:1em;",
+            _class=cl,
+          ),
+          _onclick="""
+sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')});
+"""%dict(
+                id="comp_forms_list",
+                url=URL(
+                  r=request, c='comp_forms', f='ajax_comp_forms_list',
+                  vars={
+                    "folder": os.path.join(form_folder, data.get('FolderName')),
+                  }
+                ),
+),
+          _class="formentry",
+        ),
+      )
+
+    for id, form_name, form_folder, data in get_forms("custo", folder=folder):
+        cl = data.get('Css', 'nologo48')
+        desc = data.get('Desc', '')
+        l.append(DIV(
+          DIV(
+            P(form_name),
+            P(desc, _style="font-style:italic;padding-left:1em"),
+            _style="padding-top:1em;padding-bottom:1em;",
+            _class=cl,
+          ),
+          _onclick="""
 $(this).closest("table").children().children().each(function(){
   $(this).toggle()
 })
@@ -198,28 +271,21 @@ $('[name=radio_form]').each(function(){
 sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')});
 """%dict(
                 id="comp_forms_inputs",
-                rid=row.id,
+                rid=id,
                 url=URL(
                   r=request, c='compliance', f='ajax_comp_forms_inputs',
                   vars={
-                    "form_id": row.id,
+                    "form_id": id,
                     "hid": "comp_forms_inputs",
                   }
                 ),
               ),
-            ),
-          ),
-          TD(
-            P(row.form_name),
-            P(desc, _style="font-style:italic;padding-left:1em"),
-            _style="padding-top:1em;padding-bottom:1em;",
-            _class=cl,
-          ),
+          _class="formentry",
         ),
       )
     d = DIV(
           H1(T("Choose a customization form")),
-          TABLE(l),
+          DIV(l),
           DIV(
             _id="comp_forms_inputs",
             _style="padding-top:3em;display:none",
@@ -232,7 +298,7 @@ sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')
 def comp_forms():
     d = DIV(
       ajax_target(),
-      comp_forms_list(),
+      DIV(comp_forms_list(), _id="comp_forms_list"),
     )
     return dict(table=d)
 
