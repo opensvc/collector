@@ -254,12 +254,7 @@ sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')
             _class=cl,
           ),
           _onclick="""
-$(this).closest("table").children().children().each(function(){
-  $(this).toggle()
-})
-$(this).closest("tr").each(function(){
-  $(this).toggle()
-})
+$(this).siblings().toggle()
 $("#comp_forms_inputs").each(function(){
   $(this).text('');
   $(this).slideToggle(400);
