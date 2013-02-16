@@ -1286,6 +1286,16 @@ db.define_table('forms_team_responsible',
     Field('group_id','string'),
     migrate=False)
 
+db.define_table('v_forms',
+    Field('form_name','string'),
+    Field('form_team_responsible','string'),
+    Field('form_type','string', requires=IS_IN_SET(("custo", "folder", "obj")), default="custo"),
+    Field('form_yaml','text'),
+    Field('form_folder','string'),
+    Field('form_author','string'),
+    Field('form_created','datetime'),
+    migrate=False)
+
 db.define_table('forms',
     Field('form_name','string'),
     Field('form_type','string', requires=IS_IN_SET(("custo", "folder", "obj")), default="custo"),

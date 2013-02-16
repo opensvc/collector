@@ -16,6 +16,7 @@ class table_templates(HtmlTable):
         self.cols = ['form_name',
                      'form_type',
                      'form_folder',
+                     'form_team_responsible',
                      'form_yaml',
                      'form_created',
                      'form_author']
@@ -24,52 +25,61 @@ class table_templates(HtmlTable):
                 title = 'Name',
                 field = 'form_name',
                 display = True,
-                table = 'forms',
+                table = 'v_forms',
                 img = 'prov'
+            ),
+            'form_team_responsible': HtmlTableColumn(
+                title = 'Team responsible',
+                field = 'form_team_responsible',
+                display = True,
+                table = 'v_forms',
+                img = 'guys16'
             ),
             'form_type': col_forms_yaml(
                 title = 'Type',
                 field = 'form_type',
                 display = True,
-                table = 'forms',
+                table = 'v_forms',
                 img = 'edit16'
             ),
             'form_folder': HtmlTableColumn(
                 title = 'Folder',
                 field = 'form_folder',
                 display = True,
-                table = 'forms',
+                table = 'v_forms',
                 img = 'hd16'
             ),
             'form_yaml': col_forms_yaml(
                 title = 'Definition',
                 field = 'form_yaml',
                 display = True,
-                table = 'forms',
+                table = 'v_forms',
                 img = 'action16'
             ),
             'form_created': HtmlTableColumn(
                 title = 'Created on',
                 field = 'form_created',
                 display = False,
-                table = 'forms',
+                table = 'v_forms',
                 img = 'time16'
             ),
             'form_author': HtmlTableColumn(
                 title = 'Author',
                 field = 'form_author',
                 display = False,
-                table = 'forms',
+                table = 'v_forms',
                 img = 'guy16'
             ),
         }
         self.ajax_col_values = 'ajax_forms_admin_col_values'
         self.dbfilterable = False
-        self.checkboxes = False
+        self.checkboxes = True
         self.extrarow = True
 
         if 'FormsManager' in user_groups():
             self.additional_tools.append('add_template')
+            self += HtmlTableMenu('Team responsible', 'guys16', ['team_responsible_attach', 'team_responsible_detach'])
+
 
     def format_extrarow(self, o):
         d = DIV(
@@ -78,6 +88,22 @@ class table_templates(HtmlTable):
                 _class="edit16",
               ),
             )
+        return d
+
+    def team_responsible_attach(self):
+        d = self.team_responsible_select_tool(label="Attach",
+                                              action="team_responsible_attach",
+                                              divid="team_responsible_attach",
+                                              sid="team_responsible_attach_s",
+                                              _class="attach16")
+        return d
+
+    def team_responsible_detach(self):
+        d = self.team_responsible_select_tool(label="Detach",
+                                              action="team_responsible_detach",
+                                              divid="team_responsible_detach",
+                                              sid="team_responsible_detach_s",
+                                              _class="detach16")
         return d
 
     def add_template(self):
@@ -91,12 +117,136 @@ class table_templates(HtmlTable):
             )
         return d
 
+    def team_responsible_select_tool(self, label, action, divid, sid, _class=''):
+        if 'Manager' not in user_groups():
+            s = """and role in (
+                     select g.id from
+                       auth_group g
+                       join auth_membership gm on g.id=gm.group_id
+                       join auth_user u on gm.user_id=u.id
+                     where
+                       u.id=%d
+                  )"""%auth.user_id
+        else:
+            s = ""
+        sql = """ select id, role
+                  from auth_group
+                  where
+                    role not like "user_%%" and
+                    privilege = 'F'
+                    %s
+                  group by role order by role
+        """%s
+        rows = db.executesql(sql)
+        options = [OPTION(g[1],_value=g[0]) for g in rows]
+
+        q = db.auth_membership.user_id == auth.user_id
+        q &= db.auth_group.id == db.auth_membership.group_id
+        q &= db.auth_group.role.like('user_%')
+        options += [OPTION(g.auth_group.role,_value=g.auth_group.id) for g in db(q).select()]
+        d = DIV(
+              A(
+                T(label),
+                _class=_class,
+                _onclick="""
+                  click_toggle_vis(event,'%(div)s', 'block');
+                """%dict(div=divid),
+              ),
+              DIV(
+                TABLE(
+                  TR(
+                    TH(T('Team')),
+                    TD(
+                      SELECT(
+                        *options,
+                        **dict(_id=sid)
+                      ),
+                    ),
+                  ),
+                  TR(
+                    TH(),
+                    TD(
+                      INPUT(
+                        _type='submit',
+                        _onclick=self.ajax_submit(additional_inputs=[sid],
+                                                  args=action),
+                      ),
+                    ),
+                  ),
+                ),
+                _style='display:none',
+                _class='white_float',
+                _name=divid,
+                _id=divid,
+              ),
+            )
+        return d
+
+@auth.requires_membership('FormsManager')
+def team_responsible_attach(ids=[]):
+    if len(ids) == 0:
+        raise ToolError("no form selected")
+    group_id = request.vars.team_responsible_attach_s
+
+    done = []
+    for id in ids:
+        if 'Manager' not in user_groups():
+            q = db.forms_team_responsible.form_id == id
+            q &= db.form_team_responsible.group_id.belongs(user_group_ids())
+            if db(q).count() == 0:
+                continue
+        q = db.forms_team_responsible.form_id == id
+        q &= db.forms_team_responsible.group_id == group_id
+        if db(q).count() != 0:
+            continue
+        done.append(id)
+        db.forms_team_responsible.insert(form_id=id, group_id=group_id)
+    if len(done) == 0:
+        return
+    rows = db(db.forms.id.belongs(done)).select(db.forms.form_name)
+    u = ', '.join([r.form_name for r in rows])
+    _log('form.group.attach',
+         'attached group %(g)s to forms %(u)s',
+         dict(g=group_role(group_id), u=u))
+
+@auth.requires_membership('CompManager')
+def team_responsible_detach(ids=[]):
+    if len(ids) == 0:
+        raise ToolError("no form selected")
+    group_id = request.vars.team_responsible_detach_s
+
+    done = []
+    for id in ids:
+        q = db.forms_team_responsible.form_id == id
+        q &= db.forms_team_responsible.group_id == group_id
+        if 'Manager' not in user_groups():
+            q &= db.forms_team_responsible.group_id.belongs(user_group_ids())
+        if db(q).count() == 0:
+            continue
+        done.append(id)
+        db(q).delete()
+    if len(done) == 0:
+        return
+    rows = db(db.forms.id.belongs(done)).select(db.forms.form_name)
+    u = ', '.join([r.form_name for r in rows])
+    _log('form.group.detach',
+         'detached group %(g)s from forms %(u)s',
+         dict(g=group_role(group_id), u=u))
+
 @auth.requires_membership('FormsManager')
 def forms_editor():
     q = db.forms.id == request.vars.form_id
     rows = db(q).select()
+
     if len(rows) == 1:
         record = rows[0]
+        if 'Manager' not in user_groups():
+            q &= db.forms.id == db.forms_team_responsible.form_id
+            q &= db.forms_team_responsible.group_id.belongs(user_group_ids())
+            rows = db(q).select()
+            if len(rows) == 0:
+                session.flash = T("You are not allowed to edit this form")
+                redirect(URL(r=request, c='forms', f='forms_admin'))
     else:
         record = None
 
@@ -120,6 +270,7 @@ def forms_editor():
                      dict(form_name=request.vars.form_name,
                           form_type=request.vars.form_type,
                           form_yaml=request.vars.form_yaml))
+            add_default_team_responsible(request.vars.form_name)
         elif request.vars.delete_this_record == 'on':
             _log('compliance.form.delete',
                  "Deleted '%(form_type)s' form '%(form_name)s' with definition:\n%(form_yaml)s",
@@ -139,12 +290,47 @@ def forms_editor():
         response.flash = T("errors in form")
     return dict(form=form)
 
+def add_default_team_responsible(form_name):
+    q = db.forms.form_name == form_name
+    form_id = db(q).select()[0].id
+    q = db.auth_membership.user_id == auth.user_id
+    q &= db.auth_membership.group_id == db.auth_group.id
+    q &= db.auth_group.role.like('user_%')
+    try:
+        group_id = db(q).select()[0].auth_group.id
+    except:
+        q = db.auth_group.role == 'Manager'
+        group_id = db(q).select()[0].id
+    db.forms_team_responsible.insert(form_id=form_id, group_id=group_id)
+
+@auth.requires_login()
+def ajax_forms_admin_col_values():
+    t = table_templates('templates', 'ajax_forms_admin')
+
+    col = request.args[0]
+    o = db.v_forms[col]
+    q = db.v_forms.id > 0
+    for f in t.cols:
+        q = _where(q, 'v_forms', t.filter_parse(f), f)
+    t.object_list = db(q).select(o, orderby=o, groupby=o)
+    return t.col_values_cloud(col)
+
 @auth.requires_login()
 def ajax_forms_admin():
     t = table_templates('templates', 'ajax_forms_admin')
 
-    o = db.forms.form_name
-    q = db.forms.id > 0
+    if len(request.args) == 1:
+        action = request.args[0]
+        try:
+            if action == 'team_responsible_attach':
+                team_responsible_attach(t.get_checked())
+            elif action == 'team_responsible_detach':
+                team_responsible_detach(t.get_checked())
+        except ToolError, e:
+            v.flash = str(e)
+
+    o = db.v_forms.form_name
+    q = db.v_forms.id > 0
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     n = db(q).count()
@@ -174,6 +360,8 @@ def get_folders_info():
 
 def get_forms(form_type=None, folder="/"):
     q = db.forms.form_folder == folder
+    q &= db.forms.id == db.forms_team_responsible.form_id
+    q &= db.forms_team_responsible.group_id == user_group_ids()
 
     if form_type is None:
         pass

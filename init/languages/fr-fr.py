@@ -958,6 +958,7 @@
 'Watt': 'Watt',
 'Wave': 'Vague',
 'Welcome to web2py': 'Bienvenue sur web2py',
+'You are not allowed to edit this form': 'You are not allowed to edit this form',
 'You are not authorized to access this function': "Vous n'êtes pas autorisé à accéder à cette fonction",
 'Your browser is not supported.': "Votre navigateur n'est pas supporté",
 'Your password is: %(password)s': 'Votre mot de passe est %(password)s',
