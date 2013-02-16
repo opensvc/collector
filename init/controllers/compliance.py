@@ -8549,13 +8549,77 @@ sync_ajax('%(url)s', ids, '%(rid)s', reload_ajax_custo)
              ),
              SCRIPT("""var count=%(idx)d;$("select").combobox();"""%dict(idx=len(l)), _name=_hid+"_to_eval"),
         )
+
+    if not display_mode and form.form_type == 'custo':
+        header = ajax_target()
+    else:
+        header = ""
+
     return DIV(
+             header,
              DIV(
                l,
                _id=comp_forms_xid('container'),
              ),
              footer,
            )
+
+@auth.requires_login()
+def ajax_target():
+    l = []
+    l.append(TR(
+          TD(
+            H2(T("Choose target to customize")),
+            _colspan=4,
+          ),
+        ))
+    l.append(TR(
+          TD(
+            INPUT(
+              _value=False,
+              _type='radio',
+              _id="radio_service",
+              _onclick="""
+$("#radio_node").prop('checked',false);
+$("#stage2").html("");
+sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')})"""%dict(
+                id="stage1",
+                url=URL(r=request, c='comp_forms', f='ajax_service_list'),
+              ),
+            ),
+          ),
+          TD(
+            T("Customize service"),
+          ),
+          TD(
+            INPUT(
+              _value=False,
+              _type='radio',
+              _id="radio_node",
+              _onclick="""
+$("#radio_service").prop('checked',false);
+$("#stage2").html("");
+sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')})"""%dict(
+                id="stage1",
+                url=URL(r=request, c='comp_forms', f='ajax_node_list'),
+              ),
+            ),
+          ),
+          TD(
+            T("Customize node"),
+          ),
+        ))
+    d = DIV(
+          TABLE(l),
+          DIV(
+            _id="stage1",
+          ),
+          DIV(
+            _id="stage2",
+            _style="padding:2em",
+          ),
+        )
+    return d
 
 @auth.requires_login()
 def ajax_add_rule():
@@ -8992,6 +9056,6 @@ def format_custo(row, objtype, objname):
       custo,
       since,
       modules,
-      _style="margin:1em;display:inline-block;vertical-align:top;text-align:left",
+      _style="margin:1em;display:inline-block;vertical-align:top;text-align:left;max-width:40em",
     )
 

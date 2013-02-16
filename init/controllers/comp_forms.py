@@ -280,83 +280,23 @@ sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')
       )
     d = DIV(
           H1(T("Choose a customization form")),
-          DIV(l),
+          DIV(
+            l,
+            _style="margin:1em;display:inline-block;vertical-align:top;text-align:left",
+          ),
           DIV(
             _id="comp_forms_inputs",
             _style="padding-top:3em;display:none",
           ),
-          _style="padding:2em;max-width:40em;",
         )
     return d
 
 @auth.requires_login()
 def comp_forms():
     d = DIV(
-      ajax_target(),
       DIV(comp_forms_list(), _id="comp_forms_list"),
     )
     return dict(table=d)
-
-@auth.requires_login()
-def ajax_target():
-    l = []
-    l.append(TR(
-          TD(
-            H1(T("Choose target to customize")),
-            _colspan=4,
-          ),
-        ))
-    l.append(TR(
-          TD(
-            INPUT(
-              _value=False,
-              _type='radio',
-              _id="radio_service",
-              _onclick="""
-$("#radio_node").prop('checked',false);
-$("#stage2").html("");
-$("#stage3").html("");
-$("#stage4").html("");
-sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')})"""%dict(
-                id="stage1",
-                url=URL(r=request, c='comp_forms', f='ajax_service_list'),
-              ),
-            ),
-          ),
-          TD(
-            T("Customize service"),
-          ),
-          TD(
-            INPUT(
-              _value=False,
-              _type='radio',
-              _id="radio_node",
-              _onclick="""
-$("#radio_service").prop('checked',false);
-$("#stage2").html("");
-$("#stage3").html("");
-$("#stage4").html("");
-sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')})"""%dict(
-                id="stage1",
-                url=URL(r=request, c='comp_forms', f='ajax_node_list'),
-              ),
-            ),
-          ),
-          TD(
-            T("Customize node"),
-          ),
-        ))
-    d = DIV(
-          TABLE(l),
-          DIV(
-            _id="stage1",
-          ),
-          DIV(
-            _id="stage2",
-            _style="padding:2em",
-          ),
-        )
-    return d
 
 @auth.requires_login()
 def ajax_node_list():
