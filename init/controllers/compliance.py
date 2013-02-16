@@ -8521,7 +8521,7 @@ $("select").combobox();
                  _type="submit",
                  _onclick="""
 ids=[];
-$("input[name^=%(xid)s],select[name^=%(xid)s]").each(function(){
+$("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").each(function(){
   ids.push($(this).attr('id'))
 });
 $("#svcname").each(function(){
