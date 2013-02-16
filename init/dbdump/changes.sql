@@ -3241,3 +3241,21 @@ alter table comp_forms drop column form_comment;
 alter table comp_forms add column form_folder varchar(200) default "/";
 
 alter table comp_forms modify column `form_type` enum('obj','custo','folder') DEFAULT 'custo';
+
+CREATE TABLE `comp_forms_team_responsible` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `form_id` int(11) NOT NULL,
+  `group_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx1` (`form_id`),
+  KEY `idx2` (`group_id`),
+  CONSTRAINT `comp_forms_team_responsible_fk1` FOREIGN KEY (`form_id`) REFERENCES `comp_forms` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `comp_forms_team_responsible_fk2` FOREIGN KEY (`group_id`) REFERENCES `auth_group` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+rename table comp_forms to forms;
+
+rename table comp_forms_team_responsible to forms_team_responsible;
+
+update auth_group set role="FormsManager" where role="CompFormsManager";
+

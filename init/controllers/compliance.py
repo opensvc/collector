@@ -1955,7 +1955,7 @@ Date();$("#%(n)s_container").append("<div style='display:table-row'><span class=
     def load_form_cache(self):
         if hasattr(self.t, "form_cache"):
             return self.t.form_cache
-        q = db.comp_forms.id > 0
+        q = db.forms.id > 0
         rows = db(q).select()
         data = {}
         for row in rows:
@@ -1984,7 +1984,7 @@ Date();$("#%(n)s_container").append("<div style='display:table-row'><span class=
                        eid=eid,
                        cid=cid,
                        url=URL(
-                             r=request, c='compliance', f='ajax_comp_forms_inputs',
+                             r=request, c='compliance', f='ajax_forms_inputs',
                              vars={
                                "rset_name": self.t.colprops['ruleset_name'].get(o),
                                "var_id": self.t.colprops['id'].get(o),
@@ -2004,7 +2004,7 @@ Date();$("#%(n)s_container").append("<div style='display:table-row'><span class=
                        eid=eid,
                        cid=cid,
                        url=URL(
-                             r=request, c='compliance', f='ajax_comp_forms_inputs',
+                             r=request, c='compliance', f='ajax_forms_inputs',
                              vars={
                                "rset_name": self.t.colprops['ruleset_name'].get(o),
                                "var_id": self.t.colprops['id'].get(o),
@@ -2018,7 +2018,7 @@ Date();$("#%(n)s_container").append("<div style='display:table-row'><span class=
                      _style='display:none;position: absolute; top: 2px; right: 2px; z-index: 400',
                    )
             val = DIV(
-                   _ajax_comp_forms_inputs(
+                   _ajax_forms_inputs(
                      _mode="show",
                      _rset_name=self.t.colprops['ruleset_name'].get(o),
                      _var_id=self.t.colprops['id'].get(o),
@@ -8262,8 +8262,8 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
             _input = SELECT(
                    *options,
                    **dict(
-                     _id=comp_forms_xid(input['Id']+'_'+str(idx)),
-                     _name=comp_forms_xid(''),
+                     _id=forms_xid(input['Id']+'_'+str(idx)),
+                     _name=forms_xid(''),
                    )
                  )
         elif 'Type' not in input:
@@ -8271,13 +8271,13 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
         elif input['Type'] == "text":
             _input = TEXTAREA(
                    default,
-                   _id=comp_forms_xid(input['Id']+'_'+str(idx)),
-                   _name=comp_forms_xid(''),
+                   _id=forms_xid(input['Id']+'_'+str(idx)),
+                   _name=forms_xid(''),
                  )
         else:
             _input = INPUT(
-                   _id=comp_forms_xid(input['Id']+'_'+str(idx)),
-                   _name=comp_forms_xid(''),
+                   _id=forms_xid(input['Id']+'_'+str(idx)),
+                   _name=forms_xid(''),
                    _value=default,
                  )
 
@@ -8298,10 +8298,10 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
                 l.append(TD(_input, _class= cl))
         else:
             if 'Hidden' in input and input['Hidden']:
-                name = comp_forms_xid('hidden')
+                name = forms_xid('hidden')
                 style = "display:none"
             elif 'ExpertMode' in input and input['ExpertMode'] and not showexpert:
-                name = comp_forms_xid('expert')
+                name = forms_xid('expert')
                 style = "display:none"
             else:
                 name = ""
@@ -8324,19 +8324,19 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
 
     return TABLE(
              l,
-             _id=comp_forms_xid("ref"),
+             _id=forms_xid("ref"),
            )
 
-def comp_forms_xid(id=None):
-    xid = "comp_forms_"
+def forms_xid(id=None):
+    xid = "forms_"
     if request.vars.form_xid is not None:
         xid += request.vars.form_xid + '_'
     if id is not None:
         xid += str(id)
     return xid
 
-def ajax_comp_forms_inputs():
-    return _ajax_comp_forms_inputs(
+def ajax_forms_inputs():
+    return _ajax_forms_inputs(
              request.vars.mode,
              request.vars.var_id,
              request.vars.form_name,
@@ -8347,7 +8347,7 @@ def ajax_comp_forms_inputs():
              request.vars.hid,
            )
 
-def _ajax_comp_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None, _form_xid=None, _rset_name=None, _rset_id=None, _hid=None, var=None, form=None, showexpert=False):
+def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None, _form_xid=None, _rset_name=None, _rset_id=None, _hid=None, var=None, form=None, showexpert=False):
     if _mode == "show":
         display_mode = True
     else:
@@ -8367,10 +8367,10 @@ def _ajax_comp_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=
     if form is not None:
         pass
     elif form_name is not None:
-        q = db.comp_forms.form_name == form_name
+        q = db.forms.form_name == form_name
         form = db(q).select().first()
     elif _form_id is not None:
-        q = db.comp_forms.id == _form_id
+        q = db.forms.id == _form_id
         form = db(q).select().first()
     else:
         return ajax_error(T("No form specified"))
@@ -8470,12 +8470,12 @@ clone.appendTo($('#%(container)s'))
 count=parseInt(count)+1
 $("#%(counter)s").val(count);
 $("select").combobox();
-"""%dict(ref=comp_forms_xid('ref'),
-         counter=comp_forms_xid('count'),
-         expert=comp_forms_xid('expert'),
-         container=comp_forms_xid('container'))
+"""%dict(ref=forms_xid('ref'),
+         counter=forms_xid('count'),
+         expert=forms_xid('expert'),
+         container=forms_xid('container'))
                ),
-               INPUT(_type="hidden", _id=comp_forms_xid('count'), _value=count)
+               INPUT(_type="hidden", _id=forms_xid('count'), _value=count)
              )
     else:
         add = ""
@@ -8491,7 +8491,7 @@ $("select").combobox();
                 A(
                  T("Expert mode"),
                  _class="expert16",
-                 _onclick="""$("[name=%(expert)s]").each(function(){$(this).toggle(400)});"""%dict(expert=comp_forms_xid('expert')),
+                 _onclick="""$("[name=%(expert)s]").each(function(){$(this).toggle(400)});"""%dict(expert=forms_xid('expert')),
                ),
              )
     else:
@@ -8536,15 +8536,15 @@ function reload_ajax_custo(){
 }
 sync_ajax('%(url)s', ids, '%(rid)s', reload_ajax_custo)
 """%dict(
-                   xid=comp_forms_xid(''),
-                   rid=comp_forms_xid('comp_forms_result'),
+                   xid=forms_xid(''),
+                   rid=forms_xid('forms_result'),
                    url=URL(r=request, c='compliance', f='ajax_add_rule', vars=submit_vars),
                  ),
                  _style="margin:1em",
                ),
              ),
              DIV(
-               _id=comp_forms_xid('comp_forms_result'),
+               _id=forms_xid('forms_result'),
                _style="padding-top:2em",
              ),
              SCRIPT("""var count=%(idx)d;$("select").combobox();"""%dict(idx=len(l)), _name=_hid+"_to_eval"),
@@ -8559,7 +8559,7 @@ sync_ajax('%(url)s', ids, '%(rid)s', reload_ajax_custo)
              header,
              DIV(
                l,
-               _id=comp_forms_xid('container'),
+               _id=forms_xid('container'),
              ),
              footer,
            )
@@ -8584,7 +8584,7 @@ $("#radio_node").prop('checked',false);
 $("#stage2").html("");
 sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')})"""%dict(
                 id="stage1",
-                url=URL(r=request, c='comp_forms', f='ajax_service_list'),
+                url=URL(r=request, c='forms', f='ajax_service_list'),
               ),
             ),
           ),
@@ -8601,7 +8601,7 @@ $("#radio_service").prop('checked',false);
 $("#stage2").html("");
 sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')})"""%dict(
                 id="stage1",
-                url=URL(r=request, c='comp_forms', f='ajax_node_list'),
+                url=URL(r=request, c='forms', f='ajax_node_list'),
               ),
             ),
           ),
@@ -8639,7 +8639,7 @@ def ajax_add_rule():
             return ajax_error(T("Specified variable not found (id=%(id)s)", dict(id=request.vars.var_id)))
         var_name = var.var_name
 
-    q = db.comp_forms.id == request.vars.form_id
+    q = db.forms.id == request.vars.form_id
     form = db(q).select().first()
     s = form.form_yaml
     import yaml
@@ -8736,7 +8736,7 @@ def ajax_add_rule():
         if 'Template' in var:
             var_value = var['Template']
             for input in data['Inputs']:
-                val = request.vars.get(comp_forms_xid(input['Id'])+'_0')
+                val = request.vars.get(forms_xid(input['Id'])+'_0')
                 if val is None:
                     val = ""
                 var_value = var_value.replace('%%'+input['Id']+'%%', str(val))
@@ -8745,7 +8745,7 @@ def ajax_add_rule():
                 l = []
                 input = data['Inputs'][0]
                 for v in request.vars.keys():
-                    if not v.startswith(comp_forms_xid(input['Id'])):
+                    if not v.startswith(forms_xid(input['Id'])):
                         continue
                     val = request.vars.get(v)
                     if len(str(val)) == 0:
@@ -8759,7 +8759,7 @@ def ajax_add_rule():
             elif 'Format' in var and var['Format'] == "dict":
                 h = {}
                 for input in data['Inputs']:
-                    val = request.vars.get(comp_forms_xid(input['Id'])+'_0')
+                    val = request.vars.get(forms_xid(input['Id'])+'_0')
                     if val is None:
                         continue
                     if len(str(val)) == 0:
@@ -8775,9 +8775,9 @@ def ajax_add_rule():
                 invalidate = set([])
                 for v in request.vars.keys():
                     for input in data['Inputs']:
-                        if not v.startswith(comp_forms_xid(input['Id'])):
+                        if not v.startswith(forms_xid(input['Id'])):
                             continue
-                        idx = v.replace(comp_forms_xid(input['Id'])+'_', '')
+                        idx = v.replace(forms_xid(input['Id'])+'_', '')
                         if idx not in h:
                             h[idx] = {}
                         val = request.vars.get(v)
@@ -8798,9 +8798,9 @@ def ajax_add_rule():
                 invalidate = set([])
                 for v in request.vars.keys():
                     for input in data['Inputs']:
-                        if not v.startswith(comp_forms_xid(input['Id'])):
+                        if not v.startswith(forms_xid(input['Id'])):
                             continue
-                        idx = v.replace(comp_forms_xid(input['Id'])+'_', '')
+                        idx = v.replace(forms_xid(input['Id'])+'_', '')
                         if idx not in h:
                             h[idx] = {}
                         val = request.vars.get(v)
@@ -8947,8 +8947,8 @@ def ajax_custo():
     else:
         return ajax_error("Incorrect target specified. Must be either 'nodename' or 'svcname'")
 
-    q = db.comp_forms.form_type == "custo"
-    q &= db.comp_forms.form_name == db.comp_rulesets_variables.var_class
+    q = db.forms.form_type == "custo"
+    q &= db.forms.form_name == db.comp_rulesets_variables.var_class
     q &= db.comp_rulesets_variables.ruleset_id == db.comp_rulesets.id
     q &= db.comp_rulesets.ruleset_name == rset_name
     o = db.comp_rulesets_variables.var_class
@@ -8967,7 +8967,7 @@ def ajax_custo():
            )
 
 def format_custo(row, objtype, objname):
-    s = row.comp_forms.form_yaml
+    s = row.forms.form_yaml
     import yaml
     try:
         data = yaml.load(s)
@@ -8979,14 +8979,14 @@ def format_custo(row, objtype, objname):
         cl = 'nologo48'
 
     custo = DIV(
-              _ajax_comp_forms_inputs(
+              _ajax_forms_inputs(
                  _mode="show",
                  _rset_name=row.comp_rulesets.ruleset_name,
                  _var_id=row.comp_rulesets_variables.id,
                  _form_xid=row.comp_rulesets_variables.id,
                  _hid='stage2',
                  var=row.comp_rulesets_variables,
-                 form=row.comp_forms,
+                 form=row.forms,
                  showexpert=True,
                ),
     )

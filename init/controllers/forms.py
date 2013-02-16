@@ -24,57 +24,57 @@ class table_templates(HtmlTable):
                 title = 'Name',
                 field = 'form_name',
                 display = True,
-                table = 'comp_forms',
+                table = 'forms',
                 img = 'prov'
             ),
             'form_type': col_forms_yaml(
                 title = 'Type',
                 field = 'form_type',
                 display = True,
-                table = 'comp_forms',
+                table = 'forms',
                 img = 'edit16'
             ),
             'form_folder': HtmlTableColumn(
                 title = 'Folder',
                 field = 'form_folder',
                 display = True,
-                table = 'comp_forms',
+                table = 'forms',
                 img = 'hd16'
             ),
             'form_yaml': col_forms_yaml(
                 title = 'Definition',
                 field = 'form_yaml',
                 display = True,
-                table = 'comp_forms',
+                table = 'forms',
                 img = 'action16'
             ),
             'form_created': HtmlTableColumn(
                 title = 'Created on',
                 field = 'form_created',
                 display = False,
-                table = 'comp_forms',
+                table = 'forms',
                 img = 'time16'
             ),
             'form_author': HtmlTableColumn(
                 title = 'Author',
                 field = 'form_author',
                 display = False,
-                table = 'comp_forms',
+                table = 'forms',
                 img = 'guy16'
             ),
         }
-        self.ajax_col_values = 'ajax_comp_forms_admin_col_values'
+        self.ajax_col_values = 'ajax_forms_admin_col_values'
         self.dbfilterable = False
         self.checkboxes = False
         self.extrarow = True
 
-        if 'CompFormsManager' in user_groups():
+        if 'FormsManager' in user_groups():
             self.additional_tools.append('add_template')
 
     def format_extrarow(self, o):
         d = DIV(
               A(
-                _href=URL(r=request, c='comp_forms', f='comp_forms_editor', vars={'form_id': o.id}),
+                _href=URL(r=request, c='forms', f='forms_editor', vars={'form_id': o.id}),
                 _class="edit16",
               ),
             )
@@ -84,24 +84,24 @@ class table_templates(HtmlTable):
         d = DIV(
               A(
                 T("Add template"),
-                _href=URL(r=request, f='comp_forms_editor'),
+                _href=URL(r=request, f='forms_editor'),
                 _class='add16',
               ),
               _class='floatw',
             )
         return d
 
-@auth.requires_membership('CompFormsManager')
-def comp_forms_editor():
-    q = db.comp_forms.id == request.vars.form_id
+@auth.requires_membership('FormsManager')
+def forms_editor():
+    q = db.forms.id == request.vars.form_id
     rows = db(q).select()
     if len(rows) == 1:
         record = rows[0]
     else:
         record = None
 
-    db.comp_forms.form_author.default = user_name()
-    form = SQLFORM(db.comp_forms,
+    db.forms.form_author.default = user_name()
+    form = SQLFORM(db.forms,
                  record=record,
                  deletable=True,
                  fields=['form_name',
@@ -134,17 +134,17 @@ def comp_forms_editor():
                           form_yaml=request.vars.form_yaml))
 
         session.flash = T("template recorded")
-        redirect(URL(r=request, c='comp_forms', f='comp_forms_admin'))
+        redirect(URL(r=request, c='forms', f='forms_admin'))
     elif form.errors:
         response.flash = T("errors in form")
     return dict(form=form)
 
 @auth.requires_login()
-def ajax_comp_forms_admin():
-    t = table_templates('templates', 'ajax_comp_forms_admin')
+def ajax_forms_admin():
+    t = table_templates('templates', 'ajax_forms_admin')
 
-    o = db.comp_forms.form_name
-    q = db.comp_forms.id > 0
+    o = db.forms.form_name
+    q = db.forms.id > 0
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     n = db(q).count()
@@ -153,9 +153,9 @@ def ajax_comp_forms_admin():
     return t.html()
 
 @auth.requires_login()
-def comp_forms_admin():
+def forms_admin():
     t = DIV(
-          ajax_comp_forms_admin(),
+          ajax_forms_admin(),
           _id='templates',
         )
     return dict(table=t)
@@ -173,16 +173,16 @@ def get_folders_info():
     return data
 
 def get_forms(form_type=None, folder="/"):
-    q = db.comp_forms.form_folder == folder
+    q = db.forms.form_folder == folder
 
     if form_type is None:
         pass
     elif type(form_type) == list:
-        q &= db.comp_forms.form_type.belongs(form_type)
+        q &= db.forms.form_type.belongs(form_type)
     else:
-        q &= db.comp_forms.form_type == form_type
+        q &= db.forms.form_type == form_type
 
-    rows = db(q).select(orderby=db.comp_forms.form_type|db.comp_forms.form_name)
+    rows = db(q).select(orderby=db.forms.form_type|db.forms.form_name)
     l = []
     for row in rows:
         try:
@@ -193,11 +193,11 @@ def get_forms(form_type=None, folder="/"):
     return l
 
 @auth.requires_login()
-def ajax_comp_forms_list():
-    return comp_forms_list(request.vars.folder)
+def ajax_forms_list():
+    return forms_list(request.vars.folder)
 
 @auth.requires_login()
-def comp_forms_list(folder="/"):
+def forms_list(folder="/"):
     import os
     l = []
 
@@ -231,9 +231,9 @@ def comp_forms_list(folder="/"):
           _onclick="""
 sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')});
 """%dict(
-                id="comp_forms_list",
+                id="forms_list",
                 url=URL(
-                  r=request, c='comp_forms', f='ajax_comp_forms_list',
+                  r=request, c='forms', f='ajax_forms_list',
                   vars={
                     "folder": os.path.join(form_folder, data.get('FolderName')),
                   }
@@ -255,7 +255,7 @@ sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')
           ),
           _onclick="""
 $(this).siblings().toggle()
-$("#comp_forms_inputs").each(function(){
+$("#forms_inputs").each(function(){
   $(this).text('');
   $(this).slideToggle(400);
 })
@@ -265,13 +265,13 @@ $('[name=radio_form]').each(function(){
 });
 sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')});
 """%dict(
-                id="comp_forms_inputs",
+                id="forms_inputs",
                 rid=id,
                 url=URL(
-                  r=request, c='compliance', f='ajax_comp_forms_inputs',
+                  r=request, c='compliance', f='ajax_forms_inputs',
                   vars={
                     "form_id": id,
-                    "hid": "comp_forms_inputs",
+                    "hid": "forms_inputs",
                   }
                 ),
               ),
@@ -285,16 +285,16 @@ sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')
             _style="margin:1em;display:inline-block;vertical-align:top;text-align:left",
           ),
           DIV(
-            _id="comp_forms_inputs",
+            _id="forms_inputs",
             _style="padding-top:3em;display:none",
           ),
         )
     return d
 
 @auth.requires_login()
-def comp_forms():
+def forms():
     d = DIV(
-      DIV(comp_forms_list(), _id="comp_forms_list"),
+      DIV(forms_list(), _id="forms_list"),
     )
     return dict(table=d)
 

@@ -1281,7 +1281,12 @@ db.define_table('gen_filterset_check_threshold',
     Field('chk_high','integer'),
     migrate=False)
 
-db.define_table('comp_forms',
+db.define_table('forms_team_responsible',
+    Field('form_id','string'),
+    Field('group_id','string'),
+    migrate=False)
+
+db.define_table('forms',
     Field('form_name','string'),
     Field('form_type','string', requires=IS_IN_SET(("custo", "folder", "obj")), default="custo"),
     Field('form_yaml','text'),
@@ -1292,7 +1297,7 @@ db.define_table('comp_forms',
 
 db.define_table('comp_rulesets_variables',
     Field('ruleset_id','integer', requires=IS_NOT_EMPTY()),
-    Field('var_class','string', requires=IS_IN_DB(db, db.comp_forms.form_name), default="raw"),
+    Field('var_class','string', requires=IS_IN_DB(db, db.forms.form_name), default="raw"),
     Field('var_name','string', requires=IS_NOT_EMPTY()),
     Field('var_value','text'),
     Field('var_author','string', readable=False, writable=False),

@@ -109,7 +109,7 @@ response.menu = [
              [DIV(T('Modulesets'), _class='action16'), False,
               URL(request.application,'compliance','comp_modules')],
              [DIV(T('Forms'), _class='comp16'), False,
-              URL(request.application,'comp_forms','comp_forms')],
+              URL(request.application,'forms','forms')],
          ]
     ],
     [T('Stats'), False, '',
@@ -145,7 +145,7 @@ response.menu = [
              [DIV(T('Filters'), _class='filters'), False,
               URL(request.application,'compliance','comp_filters')],
              [DIV(T('Forms'), _class='comp16'), False,
-              URL(request.application,'comp_forms','comp_forms_admin')],
+              URL(request.application,'forms','forms_admin')],
          ]
     ],
 ]
