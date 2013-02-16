@@ -8,7 +8,7 @@ class col_forms_yaml(HtmlTableColumn):
         val = re.sub(r'(\w+:)', r'<span class=syntax_green>\1</span>', val)
         return PRE(XML(val))
 
-class table_templates(HtmlTable):
+class table_forms(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
@@ -77,7 +77,7 @@ class table_templates(HtmlTable):
         self.extrarow = True
 
         if 'FormsManager' in user_groups():
-            self.additional_tools.append('add_template')
+            self.additional_tools.append('add_forms')
             self += HtmlTableMenu('Team responsible', 'guys16', ['team_responsible_attach', 'team_responsible_detach'])
 
 
@@ -106,10 +106,10 @@ class table_templates(HtmlTable):
                                               _class="detach16")
         return d
 
-    def add_template(self):
+    def add_forms(self):
         d = DIV(
               A(
-                T("Add template"),
+                T("Add forms"),
                 _href=URL(r=request, f='forms_editor'),
                 _class='add16',
               ),
@@ -284,7 +284,7 @@ def forms_editor():
                           form_type=request.vars.form_type,
                           form_yaml=request.vars.form_yaml))
 
-        session.flash = T("template recorded")
+        session.flash = T("Form recorded")
         redirect(URL(r=request, c='forms', f='forms_admin'))
     elif form.errors:
         response.flash = T("errors in form")
@@ -305,7 +305,7 @@ def add_default_team_responsible(form_name):
 
 @auth.requires_login()
 def ajax_forms_admin_col_values():
-    t = table_templates('templates', 'ajax_forms_admin')
+    t = table_forms('forms', 'ajax_forms_admin')
 
     col = request.args[0]
     o = db.v_forms[col]
@@ -317,7 +317,7 @@ def ajax_forms_admin_col_values():
 
 @auth.requires_login()
 def ajax_forms_admin():
-    t = table_templates('templates', 'ajax_forms_admin')
+    t = table_forms('forms', 'ajax_forms_admin')
 
     if len(request.args) == 1:
         action = request.args[0]
@@ -342,7 +342,7 @@ def ajax_forms_admin():
 def forms_admin():
     t = DIV(
           ajax_forms_admin(),
-          _id='templates',
+          _id='forms',
         )
     return dict(table=t)
 
