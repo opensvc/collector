@@ -360,8 +360,9 @@ def get_folders_info():
 
 def get_forms(form_type=None, folder="/"):
     q = db.forms.form_folder == folder
-    q &= db.forms.id == db.forms_team_responsible.form_id
-    q &= db.forms_team_responsible.group_id == user_group_ids()
+    if form_type != "folder":
+        q &= db.forms.id == db.forms_team_responsible.form_id
+        q &= db.forms_team_responsible.group_id.belongs(user_group_ids())
 
     if form_type is None:
         pass
@@ -370,11 +371,17 @@ def get_forms(form_type=None, folder="/"):
     else:
         q &= db.forms.form_type == form_type
 
-    rows = db(q).select(orderby=db.forms.form_type|db.forms.form_name)
+    rows = db(q).select(db.forms.id,
+                        db.forms.form_name,
+                        db.forms.form_folder,
+                        db.forms.form_yaml,
+                        orderby=db.forms.form_type|db.forms.form_name)
     l = []
     for row in rows:
         try:
             data = yaml.load(row.form_yaml)
+            if data is None:
+                data = {}
         except:
             data = {}
         l.append((row.id, row.form_name, row.form_folder, data))
