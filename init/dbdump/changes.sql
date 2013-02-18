@@ -3261,4 +3261,4 @@ update auth_group set role="FormsManager" where role="CompFormsManager";
 
 create view v_forms as (select f.*, group_concat(distinct g.role order by role separator ', ') as form_team_responsible from forms f left join forms_team_responsible fr on f.id=fr.form_id left join auth_group g on fr.group_id=g.id group by f.id);
 
-
+alter table forms modify column `form_type` enum('obj','custo','folder', 'generic') DEFAULT 'custo';

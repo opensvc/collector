@@ -8154,17 +8154,18 @@ def ajax_error(msg):
 def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=False):
     l = []
     if display_mode and \
-       len(data['Variables']) == 1 and \
-       (('Class' in data['Variables'][0] and data['Variables'][0]['Class'] == 'raw') or \
-        ('DisplayClass' in data['Variables'][0] and data['Variables'][0]['DisplayClass'] == 'raw')):
+       len(data.get('Variables', [])) == 1 and \
+       (('Class' in data.get('Variables', [])[0] and data.get('Variables',[])[0]['Class'] == 'raw') or \
+        ('DisplayClass' in data.get('Variables', [])[0] and data.get('Variables', [])[0]['DisplayClass'] == 'raw')):
         return DIV(PRE(defaults), _class="comp16")
 
-    if display_mode and len(data['Variables']) == 1 and 'Class' in data['Variables'][0] and \
-       data['Variables'][0]['Class'] == 'dict' and \
+    if display_mode and len(data.get('Variables', [])) == 1 and \
+       'Class' in data.get('Variables', [])[0] and \
+       data.get('Variables', [])[0]['Class'] == 'dict' and \
        (len(data['Inputs']) > 1 or idx==0):
-        header = TR(TD(B(data['Variables'][0]['Class']), _class="comp16", _colspan=3))
-    elif display_mode and 'Format' in data['Variables'][0] and \
-         data['Variables'][0]['Format'] in ('list of dict', 'dict of dict') and idx==0:
+        header = TR(TD(B(data.get('Variables', [])[0]['Class']), _class="comp16", _colspan=3))
+    elif display_mode and 'Format' in data.get('Variables', [])[0] and \
+         data.get('Variables', [])[0]['Format'] in ('list of dict', 'dict of dict') and idx==0:
         h = []
         for i, input in enumerate(data['Inputs']):
             if i == 0:
@@ -8177,7 +8178,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
 
     match_default = {}
     if defaults is not None:
-        for var in data['Variables']:
+        for var in data.get('Variables', []):
             if 'Template' not in var:
                 continue
             s = var['Template']
@@ -8326,14 +8327,6 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
              l,
              _id=forms_xid("ref"),
            )
-
-def forms_xid(id=None):
-    xid = "forms_"
-    if request.vars.form_xid is not None:
-        xid += request.vars.form_xid + '_'
-    if id is not None:
-        xid += str(id)
-    return xid
 
 def ajax_forms_inputs():
     return _ajax_forms_inputs(
@@ -8538,7 +8531,7 @@ sync_ajax('%(url)s', ids, '%(rid)s', reload_ajax_custo)
 """%dict(
                    xid=forms_xid(''),
                    rid=forms_xid('forms_result'),
-                   url=URL(r=request, c='compliance', f='ajax_add_rule', vars=submit_vars),
+                   url=URL(r=request, c='compliance', f='ajax_form_submit', vars=submit_vars),
                  ),
                  _style="margin:1em",
                ),
@@ -8563,6 +8556,14 @@ sync_ajax('%(url)s', ids, '%(rid)s', reload_ajax_custo)
              ),
              footer,
            )
+
+def forms_xid(id=None):
+    xid = "forms_"
+    if request.vars.form_xid is not None:
+        xid += request.vars.form_xid + '_'
+    if id is not None:
+        xid += str(id)
+    return xid
 
 @auth.requires_login()
 def ajax_target():
@@ -8620,312 +8621,6 @@ sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')
           ),
         )
     return d
-
-@auth.requires_login()
-def ajax_add_rule():
-    rset_name = request.vars.rset_name
-    if request.vars.svcname is not None:
-        rset_name = "svc."+request.vars.svcname
-    elif request.vars.nodename is not None:
-        rset_name = "node."+request.vars.nodename
-
-    if rset_name is None:
-        return ajax_error(T("No ruleset name specified"))
-
-    if request.vars.var_id is not None:
-        q = db.comp_rulesets_variables.id == request.vars.var_id
-        var = db(q).select().first()
-        if var is None:
-            return ajax_error(T("Specified variable not found (id=%(id)s)", dict(id=request.vars.var_id)))
-        var_name = var.var_name
-
-    q = db.forms.id == request.vars.form_id
-    form = db(q).select().first()
-    s = form.form_yaml
-    import yaml
-    try:
-        data = yaml.load(s)
-    except Exception, e:
-        return ajax_error(DIV(
-                 B(T("%(form)s form definition error"),
-                     dict(form=form.form_name)),
-                 BR(),
-                 T("Please report the malfunction to %(author)s",
-                   dict(author=form.form_author)),
-                 HR(),
-                 PRE(str(e)),
-                 HR(),
-                 PRE(s),
-               ))
-
-
-    # logging buffer
-    log = []
-
-    # validate privs
-    groups = []
-    common_groups = []
-    if request.vars.nodename is not None:
-        q = db.nodes.nodename == request.vars.nodename
-        q &= db.nodes.team_responsible == db.auth_group.role
-        node = db(q).select(db.auth_group.id).first()
-        if node is None:
-            return ajax_error(T("Unknown specified node %(nodename)s", dict(nodename=nodename)))
-        groups = [node.id]
-        if len(groups) == 0:
-            return ajax_error(T("Specified node %(nodename)s has no responsible group", dict(nodename=nodename)))
-        common_groups = set(user_group_ids()) & set(groups)
-        if len(common_groups) == 0:
-            return ajax_error(T("You are not allowed to create or modify a ruleset for the node %(node)s", dict(nodename=nodename)))
-    elif request.vars.svcname is not None:
-        q = db.services.svc_name == request.vars.svcname
-        svc = db(q).select().first()
-        if svc is None:
-            return ajax_error(T("Unknown specified service %(svcname)s", dict(svcname=svcname)))
-        q &= db.services.svc_app == db.apps.app
-        q &= db.apps.id == db.apps_responsibles.app_id
-        rows = db(q).select()
-        groups = map(lambda x: x.apps_responsibles.group_id, rows)
-        if len(groups) == 0:
-            return ajax_error(T("Specified service %(svcname)s has no responsible groups", dict(svcname=svcname)))
-        common_groups = set(user_group_ids()) & set(groups)
-        if len(common_groups) == 0:
-            return ajax_error(T("You are not allowed to create or modify a ruleset for the service %(svcname)s", dict(svcname=svcname)))
-
-    # create ruleset
-    q = db.comp_rulesets.ruleset_name == rset_name
-    rset = db(q).select().first()
-    if rset is None:
-        db.comp_rulesets.insert(ruleset_name=rset_name,
-                                ruleset_type="explicit",
-                                ruleset_public="T")
-        log.append(("compliance.ruleset.add", "Added explicit published ruleset '%(rset_name)s'", dict(rset_name=rset_name)))
-        rset = db(q).select().first()
-        for gid in common_groups:
-            db.comp_ruleset_team_responsible.insert(
-              ruleset_id=rset.id,
-              group_id=gid
-            )
-            log.append(("compliance.ruleset.group.attach", "Added group %(gid)d ruleset '%(rset_name)s' owners", dict(gid=gid, rset_name=rset_name)))
-    if rset is None:
-        return ajax_error(T("error fetching %(rset_name)s ruleset", dict(rset_name=rset_name)))
-
-    for var in data['Variables']:
-        if request.vars.var_id is None:
-            if request.vars.var_name is not None:
-                var_name_prefix = request.vars.var_name
-            elif 'Prefix' in var:
-                var_name_prefix = var['Prefix']
-            else:
-                return ajax_error(T("No variable name specified."))
-            q = db.comp_rulesets_variables.ruleset_id == rset.id
-            q &= db.comp_rulesets_variables.var_name.like(var_name_prefix+'%')
-            var_name_suffixes = map(lambda x: x.var_name.replace(var_name_prefix, ''), db(q).select())
-            i = 0
-            while True:
-                _i = str(i)
-                if _i not in var_name_suffixes: break
-                i += 1
-            var_name = var_name_prefix + _i
-
-        if 'Class' in var:
-            var_class = var['Class']
-        else:
-            var_class = 'raw'
-
-        if 'Template' in var:
-            var_value = var['Template']
-            for input in data['Inputs']:
-                val = request.vars.get(forms_xid(input['Id'])+'_0')
-                if val is None:
-                    val = ""
-                var_value = var_value.replace('%%'+input['Id']+'%%', str(val))
-        elif 'Type' in var and var['Type'] == "json":
-            if 'Format' in var and var['Format'] == "list":
-                l = []
-                input = data['Inputs'][0]
-                for v in request.vars.keys():
-                    if not v.startswith(forms_xid(input['Id'])):
-                        continue
-                    val = request.vars.get(v)
-                    if len(str(val)) == 0:
-                        continue
-                    try:
-                        val = convert_val(val, input['Type'])
-                    except Exception, e:
-                        return ajax_error(T(str(e)))
-                    l.append(val)
-                var_value = json.dumps(l)
-            elif 'Format' in var and var['Format'] == "dict":
-                h = {}
-                for input in data['Inputs']:
-                    val = request.vars.get(forms_xid(input['Id'])+'_0')
-                    if val is None:
-                        continue
-                    if len(str(val)) == 0:
-                        continue
-                    try:
-                        val = convert_val(val, input['Type'])
-                    except Exception, e:
-                        return ajax_error(T(str(e)))
-                    h[input['Id']] = val
-                var_value = json.dumps(h)
-            elif 'Format' in var and var['Format'] == "list of dict":
-                h = {}
-                invalidate = set([])
-                for v in request.vars.keys():
-                    for input in data['Inputs']:
-                        if not v.startswith(forms_xid(input['Id'])):
-                            continue
-                        idx = v.replace(forms_xid(input['Id'])+'_', '')
-                        if idx not in h:
-                            h[idx] = {}
-                        val = request.vars.get(v)
-                        if len(str(val)) == 0:
-                            if 'Mandatory' in input and input['Mandatory']:
-                                invalidate.add(idx)
-                            continue
-                        try:
-                            val = convert_val(val, input['Type'])
-                        except Exception, e:
-                            return ajax_error(T(str(e)))
-                        h[idx][input['Id']] = val
-                for idx in invalidate:
-                    del(h[idx])
-                var_value = json.dumps(h.values())
-            elif 'Format' in var and var['Format'] == "dict of dict":
-                h = {}
-                invalidate = set([])
-                for v in request.vars.keys():
-                    for input in data['Inputs']:
-                        if not v.startswith(forms_xid(input['Id'])):
-                            continue
-                        idx = v.replace(forms_xid(input['Id'])+'_', '')
-                        if idx not in h:
-                            h[idx] = {}
-                        val = request.vars.get(v)
-                        if len(str(val)) == 0:
-                            if 'Mandatory' in input and input['Mandatory']:
-                                invalidate.add(idx)
-                            continue
-                        try:
-                            val = convert_val(val, input['Type'])
-                        except Exception, e:
-                            return ajax_error(T(str(e)))
-                        h[idx][input['Id']] = val
-                if 'Key' not in data['Variables'][0]:
-                    return ajax_error(T("'Key' must be defined in form variable of 'dict of dict' format"))
-                k = data['Variables'][0]['Key']
-                for idx in invalidate:
-                    del(h[idx])
-                _h = {}
-                for idx, d in h.items():
-                    if k not in d:
-                        continue
-                    _h[d[k]] = d
-                var_value = json.dumps(_h)
-            else:
-                return ajax_error(T("Unknown variable format: %(fmt)s", dict(fmt=var['Format'] if 'Format' in var else "none")))
-        else:
-            return ajax_error(T("Variable must have a Template or Type must be json."))
-
-        q = db.comp_rulesets_variables.ruleset_id == rset.id
-        q &= db.comp_rulesets_variables.var_name == var_name
-        q &= db.comp_rulesets_variables.var_value == var_value
-        n = db(q).count()
-
-        if n > 0:
-            log.append(("compliance.ruleset.variable.add", "'%(var_class)s' variable '%(var_name)s' already exists with the same value in the ruleset '%(rset_name)s': cancel", dict(var_class=var_class, var_name=var_name, rset_name=rset_name)))
-        else:
-            q = db.comp_rulesets_variables.ruleset_id == rset.id
-            q &= db.comp_rulesets_variables.var_name == var_name
-            n = db(q).count()
-            if n == 0:
-                db.comp_rulesets_variables.insert(
-                  ruleset_id=rset.id,
-                  var_name=var_name,
-                  var_value=var_value,
-                  var_class=var_class,
-                  var_author=user_name(),
-                  var_updated=datetime.datetime.now(),
-                )
-                log.append(("compliance.ruleset.variable.add", "Added '%(var_class)s' variable '%(var_name)s' to ruleset '%(rset_name)s' with value:\n%(var_value)s", dict(var_class=var_class, var_name=var_name, rset_name=rset_name, var_value=var_value)))
-            else:
-                db(q).update(
-                  var_value=var_value,
-                  var_class=var_class,
-                  var_author=user_name(),
-                  var_updated=datetime.datetime.now(),
-                )
-                log.append(("compliance.ruleset.variable.change", "Modified '%(var_class)s' variable '%(var_name)s' in ruleset '%(rset_name)s' with value:\n%(var_value)s", dict(var_class=var_class, var_name=var_name, rset_name=rset_name, var_value=var_value)))
-
-    for action, fmt, d in log:
-        _log(action, fmt, d)
-
-    if request.vars.nodename is not None or request.vars.svcname is not None:
-        modset_ids = []
-        if 'Modulesets' in data:
-            q = db.comp_moduleset.modset_name.belongs(data['Modulesets'])
-            rows = db(q).select(db.comp_moduleset.id)
-            modset_ids = map(lambda x: x.id, rows)
-
-        rset_ids = []
-        if 'Rulesets' in data:
-            q = db.comp_rulesets.ruleset_name.belongs(data['Rulesets'])
-            q &= db.comp_rulesets.ruleset_type == "explicit"
-            q &= db.comp_rulesets.ruleset_public == True
-            rows = db(q).select(db.comp_rulesets.id)
-            rset_ids = map(lambda x: x.id, rows) + [rset.id]
-
-        if request.vars.nodename is not None:
-            # check node_team_responsible_id ?
-            try:
-                comp_attach_modulesets(node_names=[request.vars.nodename],
-                                       modset_ids=modset_ids)
-            except ToolError:
-                pass
-            try:
-                comp_attach_rulesets(node_names=[request.vars.nodename],
-                                     ruleset_ids=rset_ids)
-            except ToolError:
-                pass
-
-        if request.vars.svcname is not None:
-            # check svc_team_responsible_id ?
-            try:
-                log += comp_attach_svc_modulesets(svc_names=[request.vars.svcname],
-                                                  modset_ids=modset_ids,
-                                                  slave=True)
-            except ToolError:
-                pass
-            try:
-                log += comp_attach_svc_rulesets(svc_names=[request.vars.svcname],
-                                                ruleset_ids=rset_ids,
-                                                slave=True)
-            except ToolError:
-                pass
-
-    return ajax_error(PRE(XML('<br><br>'.join(map(lambda x: x[1]%x[2], log)))))
-
-def convert_val(val, t):
-     if t == 'string':
-         val = str(val)
-     elif t == 'text':
-         val = str(val)
-     elif t == 'string or integer':
-         try:
-             val = int(val)
-         except:
-             val = str(val)
-     elif t == 'integer':
-         try:
-             val = int(val)
-         except:
-             raise Exception("Error converting to integer")
-     elif t == "list of string":
-         l = val.split(',')
-         val = map(lambda x: x.strip(), l)
-     return val
 
 def ajax_custo():
     """
@@ -9058,4 +8753,379 @@ def format_custo(row, objtype, objname):
       modules,
       _style="margin:1em;display:inline-block;vertical-align:top;text-align:left;max-width:40em",
     )
+
+def get_form_formatted_data(var, data):
+    if 'Template' in var:
+        var_value = var['Template']
+        for input in data['Inputs']:
+            val = request.vars.get(forms_xid(input['Id'])+'_0')
+            if val is None:
+                val = ""
+            var_value = var_value.replace('%%'+input['Id']+'%%', str(val))
+    elif 'Type' in var and var['Type'] in ("json", "object"):
+        if 'Format' in var and var['Format'] == "list":
+            l = []
+            input = data['Inputs'][0]
+            for v in request.vars.keys():
+                if not v.startswith(forms_xid(input['Id'])):
+                    continue
+                val = request.vars.get(v)
+                if len(str(val)) == 0:
+                    continue
+                try:
+                    val = convert_val(val, input['Type'])
+                except Exception, e:
+                    raise Exception(T(str(e)))
+                l.append(val)
+            var_value = l
+        elif 'Format' in var and var['Format'] == "dict":
+            h = {}
+            for input in data['Inputs']:
+                val = request.vars.get(forms_xid(input['Id'])+'_0')
+                if val is None:
+                    continue
+                if len(str(val)) == 0:
+                    continue
+                try:
+                    val = convert_val(val, input['Type'])
+                except Exception, e:
+                    raise Exception(T(str(e)))
+                h[input['Id']] = val
+            var_value = h
+        elif 'Format' in var and var['Format'] == "list of dict":
+            h = {}
+            invalidate = set([])
+            for v in request.vars.keys():
+                for input in data['Inputs']:
+                    if not v.startswith(forms_xid(input['Id'])):
+                        continue
+                    idx = v.replace(forms_xid(input['Id'])+'_', '')
+                    if idx not in h:
+                        h[idx] = {}
+                    val = request.vars.get(v)
+                    if len(str(val)) == 0:
+                        if 'Mandatory' in input and input['Mandatory']:
+                            invalidate.add(idx)
+                        continue
+                    try:
+                        val = convert_val(val, input['Type'])
+                    except Exception, e:
+                        raise Exception(T(str(e)))
+                    h[idx][input['Id']] = val
+            for idx in invalidate:
+                del(h[idx])
+            var_value = h.values()
+        elif 'Format' in var and var['Format'] == "dict of dict":
+            h = {}
+            invalidate = set([])
+            for v in request.vars.keys():
+                for input in data['Inputs']:
+                    if not v.startswith(forms_xid(input['Id'])):
+                        continue
+                    idx = v.replace(forms_xid(input['Id'])+'_', '')
+                    if idx not in h:
+                        h[idx] = {}
+                    val = request.vars.get(v)
+                    if len(str(val)) == 0:
+                        if 'Mandatory' in input and input['Mandatory']:
+                            invalidate.add(idx)
+                        continue
+                    try:
+                        val = convert_val(val, input['Type'])
+                    except Exception, e:
+                        raise Exception(T(str(e)))
+                    h[idx][input['Id']] = val
+            if 'Key' not in data['Variables'][0]:
+                raise Exception(T("'Key' must be defined in form variable of 'dict of dict' format"))
+            k = data['Variables'][0]['Key']
+            for idx in invalidate:
+                del(h[idx])
+            _h = {}
+            for idx, d in h.items():
+                if k not in d:
+                    continue
+                _h[d[k]] = d
+            var_value = _h
+        else:
+            raise Exception(T("Unknown variable format: %(fmt)s", dict(fmt=var['Format'] if 'Format' in var else "none")))
+    else:
+        raise Exception(T("Variable must have a Template or Type must be json."))
+
+    if 'Type' in var and var['Type'] == "json":
+            var_value = json.dumps(var_value)
+
+    return var_value
+
+@auth.requires_login()
+def ajax_form_submit():
+    q = db.forms.id == request.vars.form_id
+    form = db(q).select().first()
+    s = form.form_yaml
+    import yaml
+    try:
+        data = yaml.load(s)
+    except Exception, e:
+        return ajax_error(DIV(
+                 B(T("%(form)s form definition error"),
+                     dict(form=form.form_name)),
+                 BR(),
+                 T("Please report the malfunction to %(author)s",
+                   dict(author=form.form_author)),
+                 HR(),
+                 PRE(str(e)),
+                 HR(),
+                 PRE(s),
+               ))
+
+    if form.form_type == 'custo':
+        return ajax_custo_form_submit(form, data)
+    else:
+        return ajax_generic_form_submit(form, data)
+
+
+def ajax_generic_form_submit(form, data):
+    log = []
+    for var in data.get('Variables', []):
+        dest = var.get('Dest')
+        if dest == "db":
+            var['Type'] = 'object'
+            var['Format'] = 'dict'
+            d = get_form_formatted_data(var, data)
+            if 'Table' not in var:
+                log.append(("form.submit", "Table must be set in db type Variables", dict()))
+                continue
+            table = var['Table']
+            if table not in db:
+                log.append(("form.submit", "Table %(t)s not found", dict(t=table)))
+                continue
+            try:
+                db[table].insert(**d)
+                log.append(("form.submit", "Data inserted in database table", dict()))
+            except Exception, e:
+                log.append(("form.submit", "Data insertion in database table error: %(err)s", dict(err=str(e))))
+        elif dest == "script":
+            import os
+            from subprocess import *
+            d = get_form_formatted_data(var, data)
+            path = var.get('Path')
+            if path is None:
+                log.append(("form.submit", "Path must be set in script type Variables", dict()))
+                continue
+            if not os.path.exists(path):
+                log.append(("form.submit", "Script %(path)s does not exists", dict(path=path)))
+                continue
+            p = Popen([path, d], stdout=PIPE, stderr=PIPE)
+            out, err = p.communicate()
+            if p.returncode != 0:
+                log.append(("form.submit", "Script %(path)s returned with error:\n%(err)s", dict(path=path, err=err)))
+                continue
+            log.append(("form.submit", "script %(path)s returned on success:\n%(out)s", dict(path=path, out=out)))
+
+    for action, fmt, d in log:
+        _log(action, fmt, d)
+
+    return ajax_error(PRE(XML('<br><br>'.join(map(lambda x: x[1]%x[2], log)))))
+
+def ajax_custo_form_submit(form, data):
+    rset_name = request.vars.rset_name
+    if request.vars.svcname is not None:
+        rset_name = "svc."+request.vars.svcname
+    elif request.vars.nodename is not None:
+        rset_name = "node."+request.vars.nodename
+
+    if rset_name is None:
+        return ajax_error(T("No ruleset name specified"))
+
+    if request.vars.var_id is not None:
+        q = db.comp_rulesets_variables.id == request.vars.var_id
+        var = db(q).select().first()
+        if var is None:
+            return ajax_error(T("Specified variable not found (id=%(id)s)", dict(id=request.vars.var_id)))
+        var_name = var.var_name
+
+    # logging buffer
+    log = []
+
+    # validate privs
+    groups = []
+    common_groups = []
+    if request.vars.nodename is not None:
+        q = db.nodes.nodename == request.vars.nodename
+        q &= db.nodes.team_responsible == db.auth_group.role
+        node = db(q).select(db.auth_group.id).first()
+        if node is None:
+            return ajax_error(T("Unknown specified node %(nodename)s", dict(nodename=nodename)))
+        groups = [node.id]
+        if len(groups) == 0:
+            return ajax_error(T("Specified node %(nodename)s has no responsible group", dict(nodename=nodename)))
+        common_groups = set(user_group_ids()) & set(groups)
+        if len(common_groups) == 0:
+            return ajax_error(T("You are not allowed to create or modify a ruleset for the node %(node)s", dict(nodename=nodename)))
+    elif request.vars.svcname is not None:
+        q = db.services.svc_name == request.vars.svcname
+        svc = db(q).select().first()
+        if svc is None:
+            return ajax_error(T("Unknown specified service %(svcname)s", dict(svcname=svcname)))
+        q &= db.services.svc_app == db.apps.app
+        q &= db.apps.id == db.apps_responsibles.app_id
+        rows = db(q).select()
+        groups = map(lambda x: x.apps_responsibles.group_id, rows)
+        if len(groups) == 0:
+            return ajax_error(T("Specified service %(svcname)s has no responsible groups", dict(svcname=svcname)))
+        common_groups = set(user_group_ids()) & set(groups)
+        if len(common_groups) == 0:
+            return ajax_error(T("You are not allowed to create or modify a ruleset for the service %(svcname)s", dict(svcname=svcname)))
+
+    # create ruleset
+    q = db.comp_rulesets.ruleset_name == rset_name
+    rset = db(q).select().first()
+    if rset is None:
+        db.comp_rulesets.insert(ruleset_name=rset_name,
+                                ruleset_type="explicit",
+                                ruleset_public="T")
+        log.append(("compliance.ruleset.add", "Added explicit published ruleset '%(rset_name)s'", dict(rset_name=rset_name)))
+        rset = db(q).select().first()
+        for gid in common_groups:
+            db.comp_ruleset_team_responsible.insert(
+              ruleset_id=rset.id,
+              group_id=gid
+            )
+            log.append(("compliance.ruleset.group.attach", "Added group %(gid)d ruleset '%(rset_name)s' owners", dict(gid=gid, rset_name=rset_name)))
+    if rset is None:
+        return ajax_error(T("error fetching %(rset_name)s ruleset", dict(rset_name=rset_name)))
+
+    for var in data.get('Variables', []):
+        if request.vars.var_id is None:
+            if 'Class' in var:
+                var_class = var['Class']
+            else:
+                var_class = 'raw'
+
+            if request.vars.var_name is not None:
+                var_name_prefix = request.vars.var_name
+            elif 'Prefix' in var:
+                var_name_prefix = var['Prefix']
+            else:
+                return ajax_error(T("No variable name specified."))
+
+            q = db.comp_rulesets_variables.ruleset_id == rset.id
+            q &= db.comp_rulesets_variables.var_name.like(var_name_prefix+'%')
+            var_name_suffixes = map(lambda x: x.var_name.replace(var_name_prefix, ''), db(q).select())
+            i = 0
+            while True:
+                _i = str(i)
+                if _i not in var_name_suffixes: break
+                i += 1
+            var_name = var_name_prefix + _i
+
+            try:
+                var_value = get_form_formatted_data(var, data)
+            except Exception, e:
+                return ajax_error(str(e))
+
+        q = db.comp_rulesets_variables.ruleset_id == rset.id
+        q &= db.comp_rulesets_variables.var_name == var_name
+        q &= db.comp_rulesets_variables.var_value == var_value
+        n = db(q).count()
+
+        if n > 0:
+            log.append(("compliance.ruleset.variable.add", "'%(var_class)s' variable '%(var_name)s' already exists with the same value in the ruleset '%(rset_name)s': cancel", dict(var_class=var_class, var_name=var_name, rset_name=rset_name)))
+        else:
+            q = db.comp_rulesets_variables.ruleset_id == rset.id
+            q &= db.comp_rulesets_variables.var_name == var_name
+            n = db(q).count()
+            if n == 0:
+                db.comp_rulesets_variables.insert(
+                  ruleset_id=rset.id,
+                  var_name=var_name,
+                  var_value=var_value,
+                  var_class=var_class,
+                  var_author=user_name(),
+                  var_updated=datetime.datetime.now(),
+                )
+                log.append(("compliance.ruleset.variable.add", "Added '%(var_class)s' variable '%(var_name)s' to ruleset '%(rset_name)s' with value:\n%(var_value)s", dict(var_class=var_class, var_name=var_name, rset_name=rset_name, var_value=var_value)))
+            else:
+                db(q).update(
+                  var_value=var_value,
+                  var_class=var_class,
+                  var_author=user_name(),
+                  var_updated=datetime.datetime.now(),
+                )
+                log.append(("compliance.ruleset.variable.change", "Modified '%(var_class)s' variable '%(var_name)s' in ruleset '%(rset_name)s' with value:\n%(var_value)s", dict(var_class=var_class, var_name=var_name, rset_name=rset_name, var_value=var_value)))
+
+    for action, fmt, d in log:
+        _log(action, fmt, d)
+
+    if request.vars.nodename is not None or request.vars.svcname is not None:
+        modset_ids = []
+        if 'Modulesets' in data:
+            q = db.comp_moduleset.modset_name.belongs(data['Modulesets'])
+            rows = db(q).select(db.comp_moduleset.id)
+            modset_ids = map(lambda x: x.id, rows)
+
+        rset_ids = []
+        if 'Rulesets' in data:
+            q = db.comp_rulesets.ruleset_name.belongs(data['Rulesets'])
+            q &= db.comp_rulesets.ruleset_type == "explicit"
+            q &= db.comp_rulesets.ruleset_public == True
+            rows = db(q).select(db.comp_rulesets.id)
+            rset_ids = map(lambda x: x.id, rows) + [rset.id]
+
+        if request.vars.nodename is not None:
+            # check node_team_responsible_id ?
+            try:
+                comp_attach_modulesets(node_names=[request.vars.nodename],
+                                       modset_ids=modset_ids)
+            except ToolError:
+                pass
+            try:
+                comp_attach_rulesets(node_names=[request.vars.nodename],
+                                     ruleset_ids=rset_ids)
+            except ToolError:
+                pass
+
+        if request.vars.svcname is not None:
+            # check svc_team_responsible_id ?
+            try:
+                log += comp_attach_svc_modulesets(svc_names=[request.vars.svcname],
+                                                  modset_ids=modset_ids,
+                                                  slave=True)
+            except ToolError:
+                pass
+            try:
+                log += comp_attach_svc_rulesets(svc_names=[request.vars.svcname],
+                                                ruleset_ids=rset_ids,
+                                                slave=True)
+            except ToolError:
+                pass
+
+    return ajax_error(PRE(XML('<br><br>'.join(map(lambda x: x[1]%x[2], log)))))
+
+def convert_val(val, t):
+     if t == 'string':
+         val = str(val)
+     elif t == 'text':
+         val = str(val)
+     elif t == 'string or integer':
+         try:
+             val = int(val)
+         except:
+             val = str(val)
+     elif t == 'integer':
+         try:
+             val = int(val)
+         except:
+             raise Exception("Error converting to integer")
+     elif t == "list of string":
+         l = val.split(',')
+         val = map(lambda x: x.strip(), l)
+     return val
+
+def forms_xid(id=None):
+    xid = "forms_"
+    if request.vars.form_xid is not None:
+        xid += request.vars.form_xid + '_'
+    if id is not None:
+        xid += str(id)
+    return xid
 

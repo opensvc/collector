@@ -439,7 +439,7 @@ sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')
         ),
       )
 
-    for id, form_name, form_folder, data in get_forms("custo", folder=folder):
+    for id, form_name, form_folder, data in get_forms(["custo", "generic"], folder=folder):
         cl = data.get('Css', 'nologo48')
         desc = data.get('Desc', '')
         if 'Label' in data:
@@ -591,4 +591,5 @@ $("select").combobox();
 $("#svcname").siblings("input").focus();
 """, _name="stage1_to_eval"),
            )
+
 
