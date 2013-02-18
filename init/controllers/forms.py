@@ -442,9 +442,13 @@ sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')
     for id, form_name, form_folder, data in get_forms("custo", folder=folder):
         cl = data.get('Css', 'nologo48')
         desc = data.get('Desc', '')
+        if 'Label' in data:
+            label = data['Label']
+        else:
+            label = form_name
         l.append(DIV(
           DIV(
-            P(form_name),
+            P(label),
             P(desc, _style="font-style:italic;padding-left:1em"),
             _style="padding-top:1em;padding-bottom:1em;",
             _class=cl,
