@@ -856,6 +856,7 @@
 'Set wave': 'Assigner une vague',
 'Severity': 'Sévérité',
 'Severity %(s)s': 'Sévérité %(s)s',
+'Share status': 'Share status',
 'Share your view using this hyperlink': 'Partager votre vue par ce lien',
 'Show command': 'Afficher la commande',
 'Show link': 'Montrer le lien',

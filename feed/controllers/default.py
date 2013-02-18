@@ -2021,6 +2021,7 @@ def compute_availstatus(h):
     for sn in ['mon_containerstatus',
               'mon_ipstatus',
               'mon_fsstatus',
+              'mon_sharestatus',
               'mon_appstatus',
               'mon_diskstatus']:
         if sn not in h:
@@ -2183,6 +2184,8 @@ def __svcmon_update(vars, vals):
     h['mon_updated'] = now
     if 'mon_hbstatus' not in h:
         h['mon_hbstatus'] = 'undef'
+    if 'mon_sharestatus' not in h:
+        h['mon_sharestatus'] = 'undef'
     if 'mon_availstatus' not in h:
         h['mon_availstatus'] = compute_availstatus(h)
     generic_insert('svcmon', h.keys(), h.values())
@@ -2206,6 +2209,7 @@ def __svcmon_update(vars, vals):
                  'mon_ipstatus',
                  'mon_fsstatus',
                  'mon_diskstatus',
+                 'mon_sharestatus',
                  'mon_containerstatus',
                  'mon_appstatus',
                  'mon_syncstatus',
@@ -2219,6 +2223,7 @@ def __svcmon_update(vars, vals):
                  h['mon_ipstatus'],
                  h['mon_fsstatus'],
                  h['mon_diskstatus'],
+                 h['mon_sharestatus'],
                  h['mon_containerstatus'],
                  h['mon_appstatus'],
                  h['mon_syncstatus'],
@@ -2256,6 +2261,7 @@ def __svcmon_update(vars, vals):
                  'mon_ipstatus',
                  'mon_fsstatus',
                  'mon_diskstatus',
+                 'mon_sharestatus',
                  'mon_containerstatus',
                  'mon_appstatus',
                  'mon_syncstatus',
@@ -2264,6 +2270,7 @@ def __svcmon_update(vars, vals):
                  h['mon_updated'],
                  h['mon_svcname'],
                  h['mon_nodname'],
+                 "undef",
                  "undef",
                  "undef",
                  "undef",
@@ -2283,6 +2290,7 @@ def __svcmon_update(vars, vals):
                  'mon_ipstatus',
                  'mon_fsstatus',
                  'mon_diskstatus',
+                 'mon_sharestatus',
                  'mon_containerstatus',
                  'mon_appstatus',
                  'mon_syncstatus',
@@ -2296,6 +2304,7 @@ def __svcmon_update(vars, vals):
                  h['mon_ipstatus'],
                  h['mon_fsstatus'],
                  h['mon_diskstatus'],
+                 h['mon_sharestatus'],
                  h['mon_containerstatus'],
                  h['mon_appstatus'],
                  h['mon_hbstatus'],
@@ -2332,6 +2341,7 @@ def __svcmon_update(vars, vals):
                  'mon_ipstatus',
                  'mon_fsstatus',
                  'mon_diskstatus',
+                 'mon_sharestatus',
                  'mon_containerstatus',
                  'mon_appstatus',
                  'mon_syncstatus',
@@ -2345,6 +2355,7 @@ def __svcmon_update(vars, vals):
                  h['mon_ipstatus'],
                  h['mon_fsstatus'],
                  h['mon_diskstatus'],
+                 h['mon_sharestatus'],
                  h['mon_containerstatus'],
                  h['mon_appstatus'],
                  h['mon_syncstatus'],

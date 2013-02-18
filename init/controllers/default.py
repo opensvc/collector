@@ -834,6 +834,7 @@ class table_svcmon(HtmlTable):
             'mon_ipstatus',
             'mon_fsstatus',
             'mon_diskstatus',
+            'mon_sharestatus',
             'mon_syncstatus',
             'mon_appstatus',
             'mon_hbstatus',

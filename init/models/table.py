@@ -2001,6 +2001,7 @@ class col_availstatus(HtmlTableColumn):
                   'mon_ipstatus',
                   'mon_fsstatus',
                   'mon_appstatus',
+                  'mon_sharestatus',
                   'mon_diskstatus']:
             if self.t.colprops[sn].get(o) in ['warn', 'stdby down', 'todo']: return 'warn'
             elif self.t.colprops[sn].get(o) == 'undef': return 'undef'
@@ -2027,6 +2028,7 @@ class col_availstatus(HtmlTableColumn):
                   'mon_ipstatus',
                   'mon_fsstatus',
                   'mon_diskstatus',
+                  'mon_sharestatus',
                   'mon_appstatus']:
             if k == 'mon_availstatus':
                 s = self.get(o)
@@ -2041,7 +2043,7 @@ class col_availstatus(HtmlTableColumn):
         t = TABLE(
           TR(
             TD(a,
-               _colspan=5,
+               _colspan=6,
                _class='status '+cl['mon_availstatus'],
             ),
           ),
@@ -2050,6 +2052,7 @@ class col_availstatus(HtmlTableColumn):
             TD("ip", _class=cl['mon_ipstatus']),
             TD("fs", _class=cl['mon_fsstatus']),
             TD("dg", _class=cl['mon_diskstatus']),
+            TD("share", _class=cl['mon_sharestatus']),
             TD("app", _class=cl['mon_appstatus']),
           ),
         )
@@ -2203,6 +2206,7 @@ svcmon_cols = [
     'mon_ipstatus',
     'mon_fsstatus',
     'mon_diskstatus',
+    'mon_sharestatus',
     'mon_syncstatus',
     'mon_appstatus',
     'mon_hbstatus'
@@ -2491,6 +2495,13 @@ svcmon_colprops = {
     'mon_fsstatus': col_status(
              title = 'Fs status',
              field='mon_fsstatus',
+             display = False,
+             img = 'svc',
+             table = 'svcmon',
+            ),
+    'mon_sharestatus': col_status(
+             title = 'Share status',
+             field='mon_sharestatus',
              display = False,
              img = 'svc',
              table = 'svcmon',
