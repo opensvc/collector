@@ -2024,7 +2024,7 @@ Date();$("#%(n)s_container").append("<div style='display:table-row'><span class=
                      _var_id=self.t.colprops['id'].get(o),
                      _form_xid='_'.join((str(o.id), str(o.ruleset_id))),
                      _hid=hid,
-                     var=o, form=form,
+                     var=o, form=form, showexpert=True
                    ),
                    _id=hid,
                    _style="position: relative;",

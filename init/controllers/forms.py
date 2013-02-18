@@ -375,7 +375,8 @@ def get_forms(form_type=None, folder="/"):
                         db.forms.form_name,
                         db.forms.form_folder,
                         db.forms.form_yaml,
-                        orderby=db.forms.form_type|db.forms.form_name)
+                        orderby=db.forms.form_type|db.forms.form_name,
+                        groupby=db.forms.id)
     l = []
     for row in rows:
         try:
