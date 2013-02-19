@@ -9026,6 +9026,12 @@ def ajax_custo_form_submit(form, data):
 
         q = db.comp_rulesets_variables.ruleset_id == rset.id
         q &= db.comp_rulesets_variables.var_name == var_name
+        n = db(q).count()
+
+        if n == 0 and request.vars.var_id is not None:
+            log.append(("compliance.ruleset.variable.change", "%(var_class)s' variable '%(var_name)s' does not exist in ruleset %(rset_name)s or invalid attempt to edit a variable in a parent ruleset", dict(var_class=var_class, var_name=var_name, rset_name=rset_name)))
+            continue
+
         q &= db.comp_rulesets_variables.var_value == var_value
         n = db(q).count()
 
