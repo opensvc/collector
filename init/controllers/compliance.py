@@ -8877,7 +8877,7 @@ def ajax_form_submit():
                  PRE(s),
                ))
 
-    if form.form_type == 'custo':
+    if form.form_type in ('custo', 'obj'):
         return ajax_custo_form_submit(form, data)
     else:
         return ajax_generic_form_submit(form, data)
@@ -8942,6 +8942,7 @@ def ajax_custo_form_submit(form, data):
         if var is None:
             return ajax_error(T("Specified variable not found (id=%(id)s)", dict(id=request.vars.var_id)))
         var_name = var.var_name
+        var_class = var.var_class
 
     # logging buffer
     log = []
@@ -9018,10 +9019,10 @@ def ajax_custo_form_submit(form, data):
                 i += 1
             var_name = var_name_prefix + _i
 
-            try:
-                var_value = get_form_formatted_data(var, data)
-            except Exception, e:
-                return ajax_error(str(e))
+        try:
+            var_value = get_form_formatted_data(var, data)
+        except Exception, e:
+            return ajax_error(str(e))
 
         q = db.comp_rulesets_variables.ruleset_id == rset.id
         q &= db.comp_rulesets_variables.var_name == var_name
