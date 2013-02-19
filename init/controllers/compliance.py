@@ -1976,7 +1976,10 @@ Date();$("#%(n)s_container").append("<div style='display:table-row'><span class=
                 form = form_cache[o.var_class]
             else:
                 form = None
-            edit = A(
+            if self.t.colprops['encap_rset_id'].get(o) is not None:
+                edit = ""
+            else:
+                edit = A(
                      IMG(_src=URL(r=request, c='static', f='edit.png')),
                      _id=eid,
                      _onclick="""hide_eid('%(eid)s');show_eid('%(cid)s');show_eid('%(formid)s');sync_ajax('%(url)s', [], '%(formid)s', function(){eval_js_in_ajax_response('%(formid)s')})"""%dict(
