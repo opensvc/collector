@@ -9,6 +9,11 @@ def select_filter(fset_id):
     if rows.first().lock_filter:
         return
 
+    try:
+        cast_fset_id = int(fset_id)
+    except:
+        return
+
     # ok, let's do it
     q = db.gen_filterset_user.user_id == auth.user_id
     if fset_id == "0":
@@ -19,9 +24,15 @@ def select_filter(fset_id):
             db(q).delete()
             n = 0
         if n == 1:
-            db(q).update(fset_id=fset_id)
+            try:
+                db(q).update(fset_id=fset_id)
+            except:
+                pass
         elif n == 0:
-            db.gen_filterset_user.insert(user_id=auth.user_id, fset_id=fset_id)
+            try:
+                db.gen_filterset_user.insert(user_id=auth.user_id, fset_id=fset_id)
+            except:
+                pass
 
 class ToolError(Exception):
     def __init__(self, value):
