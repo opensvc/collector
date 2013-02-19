@@ -123,7 +123,7 @@ class im_job(object):
             dic = json.loads(row[2])
             l = (row[0], row[7], row[5], row[6], fmt%dic)
         except:
-            jlog.warning("skip on json error:", fmt, row[2])
+            jlog.warning("skip on json error: %s, %s" % (fmt, row[2]))
             return self
         self.lines.append(l)
         return self
@@ -155,9 +155,9 @@ class email_job(object):
         fmt = row[1]
         try:
             dic = json.loads(row[2])
-            l = (row[0], row[5], row[6], fmt%dic)
+            l = (row[0], row[7], row[5], row[6], fmt%dic)
         except:
-            jlog.warning("skip on json error:", fmt, row[2])
+            jlog.warning("skip on json error: %s, %s" % (fmt, row[2]))
             return self
         self.lines.append(l)
         return self
@@ -165,7 +165,7 @@ class email_job(object):
     def __str__(self):
         s = ""
         for l in self.lines:
-            s += "%s | %20s | %20s | %s\n"%(str(l[0]), l[1], l[2], l[3])
+            s += "%s | %8s | %20s | %20s | %s\n"%(str(l[0]), l[1], l[2], l[3], l[4])
         return s
 
     def __call__(self):
@@ -208,6 +208,7 @@ def get_im_queued_node(q):
                l.log_svcname is NULL and
                l.log_nodename is not NULL and
                l.log_gtalk_sent=0
+             group by l.id
              order by u.im_username, l.id
              limit 1000
     """
@@ -269,6 +270,7 @@ def get_im_queued_manager(q):
                l.log_svcname is NULL and
                l.log_nodename is NULL and
                l.log_gtalk_sent=0
+             group by l.id
              order by t.im_username, l.id
              limit 1000
     """
@@ -329,6 +331,7 @@ def get_im_queued_svc(q):
                u.im_username is not NULL and
                l.log_svcname is not NULL and
                l.log_gtalk_sent=0
+             group by l.id
              order by u.im_username, l.id
              limit 1000
     """
@@ -385,6 +388,7 @@ def email_done(ids):
     sql = """update log set log_email_sent=1 where id in (%s)"""%(','.join(map(str, ids)))
     cursor = conn.cursor()
     cursor.execute(sql)
+    conn.commit()
     cursor.close()
     conn.close()
 
@@ -413,6 +417,7 @@ def get_email_queued_node(q):
                l.log_svcname is NULL and
                l.log_nodename is not NULL and
                l.log_email_sent=0
+             group by l.id
              order by u.email, l.id
              limit 1000
     """
@@ -474,6 +479,7 @@ def get_email_queued_manager(q):
                l.log_svcname is NULL and
                l.log_nodename is NULL and
                l.log_email_sent=0
+             group by l.id
              order by t.email, l.id
              limit 1000
     """
@@ -534,6 +540,7 @@ def get_email_queued_svc(q):
                u.email is not NULL and
                l.log_svcname is not NULL and
                l.log_email_sent=0
+             group by l.id
              order by u.email, l.id
              limit 1000
     """
