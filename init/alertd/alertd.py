@@ -204,11 +204,12 @@ def get_im_queued_node(q):
              where
                u.im_notifications = 'T' and
                u.im_username is not NULL and
-               u.im_log_level <= l.log_level and
+               u.im_log_level+0 <= l.log_level+0 and
                l.log_svcname is NULL and
                l.log_nodename is not NULL and
+               l.log_date > date_sub(now(), interval 1 day) and
                l.log_gtalk_sent=0
-             group by l.id
+             group by l.id, u.id
              order by u.im_username, l.id
              limit 1000
     """
@@ -266,11 +267,12 @@ def get_im_queued_manager(q):
                   u.im_username is not NULL and
                   u.im_notifications = 'T') t
              where
-               t.im_log_level <= l.log_level and
+               t.im_log_level+0 <= l.log_level+0 and
                l.log_svcname is NULL and
                l.log_nodename is NULL and
+               l.log_date > date_sub(now(), interval 1 day) and
                l.log_gtalk_sent=0
-             group by l.id
+             group by l.id, t.im_username
              order by t.im_username, l.id
              limit 1000
     """
@@ -326,12 +328,13 @@ def get_im_queued_svc(q):
                join auth_membership am on ar.group_id=am.group_id
                join auth_user u on am.user_id=u.id
              where
-               u.im_log_level <= l.log_level and
+               u.im_log_level+0 <= l.log_level+0 and
                u.im_notifications = 'T' and
                u.im_username is not NULL and
                l.log_svcname is not NULL and
+               l.log_date > date_sub(now(), interval 1 day) and
                l.log_gtalk_sent=0
-             group by l.id
+             group by l.id, u.id
              order by u.im_username, l.id
              limit 1000
     """
@@ -411,13 +414,14 @@ def get_email_queued_node(q):
                join auth_membership am on am.group_id=g.id
                join auth_user u on am.user_id=u.id
              where
-               u.email_log_level <= l.log_level and
+               u.email_log_level+0 <= l.log_level+0 and
                u.email_notifications = 'T' and
                u.email is not NULL and
                l.log_svcname is NULL and
                l.log_nodename is not NULL and
+               l.log_date > date_sub(now(), interval 1 day) and
                l.log_email_sent=0
-             group by l.id
+             group by l.id, u.id
              order by u.email, l.id
              limit 1000
     """
@@ -475,11 +479,12 @@ def get_email_queued_manager(q):
                   u.email is not NULL and
                   u.email_notifications = 'T') t
              where
-               t.email_log_level <= l.log_level and
+               t.email_log_level+0 <= l.log_level+0 and
                l.log_svcname is NULL and
                l.log_nodename is NULL and
+               l.log_date > date_sub(now(), interval 1 day) and
                l.log_email_sent=0
-             group by l.id
+             group by l.id, t.email
              order by t.email, l.id
              limit 1000
     """
@@ -535,12 +540,13 @@ def get_email_queued_svc(q):
                join auth_membership am on ar.group_id=am.group_id
                join auth_user u on am.user_id=u.id
              where
-               u.email_log_level <= l.log_level and
+               u.email_log_level+0 <= l.log_level+0 and
                u.email_notifications = 'T' and
                u.email is not NULL and
                l.log_svcname is not NULL and
+               l.log_date > date_sub(now(), interval 1 day) and
                l.log_email_sent=0
-             group by l.id
+             group by l.id, u.id
              order by u.email, l.id
              limit 1000
     """
