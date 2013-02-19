@@ -1107,8 +1107,14 @@ def ajax_svcmon_log():
 
     t.csv_q = q
     t.csv_orderby = o
+    v.csv_extra_args = ['foo']
+
     if len(request.args) == 1 and request.args[0] == 'csv':
         return t.csv()
+    elif len(request.args) == 2 and request.args[0] == 'csv':
+        v.cols.remove('avail_holes')
+        v.cols.remove('avail_plot')
+        return v.csv()
 
     return DIV(
              DIV(

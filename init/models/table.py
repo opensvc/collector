@@ -1120,6 +1120,9 @@ class HtmlTable(object):
             additional_tools = SPAN()
 
         if self.exportable:
+            args = ['csv']
+            if hasattr(self, 'csv_extra_args') and type(self.csv_extra_args):
+                args += self.csv_extra_args
             export = DIV(
                   A(
                     SPAN(
@@ -1130,7 +1133,7 @@ class HtmlTable(object):
                             r=request,
                             f=self.func,
                             vars=request.vars,
-                            args=['csv']
+                            args=args
                           ),
                     _onclick="""$(this).hide();$("#csv%(id)s").show()"""%dict(id=self.id),
                   ),
