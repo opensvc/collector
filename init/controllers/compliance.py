@@ -8343,7 +8343,7 @@ def ajax_forms_inputs():
              request.vars.hid,
            )
 
-def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None, _form_xid=None, _rset_name=None, _rset_id=None, _hid=None, var=None, form=None, showexpert=False):
+def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None, _form_xid=None, _rset_name=None, _rset_id=None, _hid=None, var=None, form=None, form_var=None, showexpert=False, current_values=None):
     if _mode == "show":
         display_mode = True
     else:
@@ -8382,7 +8382,7 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
         data = yaml.load(s)
         if 'Inputs' not in data:
             raise Exception("Inputs definition not found in form definition")
-        if 'Variables' not in data:
+        if 'Variables' not in data or len(data['Variables']) == 0:
             raise Exception("Variables definition not found in form definition")
     except Exception, e:
         return ajax_error(DIV(
@@ -8395,44 +8395,48 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
                  PRE(s),
                ))
 
+    if form_var is None:
+        form_var = data['Variables'][0]
+
     # An existing variable is specified
     # Get input default values from there
     cur = None
     count = None
     if _var_id is not None:
         cur = var.var_value
-        if len(cur) > 0 and len(data['Variables']) == 1 and 'Type' in data['Variables'][0] and data['Variables'][0]['Type'] == 'json':
+        if len(cur) > 0 and form_var.get('Type') == 'json':
             try:
                 import json
                 cur = json.loads(cur)
             except:
                 return ajax_error("json error parsing current variable value '%s'"%cur)
-            if 'Format' in data['Variables'][0] and data['Variables'][0]['Format'] == 'dict':
+            if form_var.get('Format') == 'dict':
                 input_ids = {}
                 for i, input in enumerate(data['Inputs']):
                     input_ids[input['Id']] = i
                 for key in cur:
                     if key in input_ids:
                         data['Inputs'][input_ids[key]]['Default'] = cur[key]
-            elif 'Format' in data['Variables'][0] and data['Variables'][0]['Format'] == 'list':
+            elif form_var.get('Format') == 'list':
                 data['Inputs'][0]['Default'] = cur
+    elif current_values is not None:
+        cur = current_values
 
     l = []
-    if 'Format' in data['Variables'][0] and data['Variables'][0]['Format'] == 'dict':
+    if form_var.get('Format') == 'dict':
         l = inputs_block(data, defaults=cur, display_mode=display_mode, showexpert=showexpert)
-    elif 'Format' in data['Variables'][0] and data['Variables'][0]['Format'] in ('list', 'list of dict', 'dict of dict'):
+    elif form_var.get('Format') in ('list', 'list of dict', 'dict of dict'):
         if cur is None or len(cur) == 0:
             _l = inputs_block(data, display_mode=display_mode, showexpert=showexpert)
         else:
             count = len(cur)
             _l = []
             for i, default in enumerate(cur):
-                if data['Variables'][0]['Format'] == 'dict of dict':
+                if form_var.get('Format') == 'dict of dict':
                     d = cur[default]
-                    if 'Key' in data['Variables'][0]:
-                        key = data['Variables'][0]['Key']
-                        if key not in d:
-                            d[key] = default
+                    key = form_var.get('Key')
+                    if key is None or key not in d:
+                        d[key] = default
                     default = d
                 _l.append(inputs_block(data, idx=i, defaults=default, display_mode=display_mode, showexpert=showexpert))
                 if not display_mode and i != len(cur) - 1:
@@ -8444,9 +8448,7 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
     else:
         l = inputs_block(data, defaults=cur, display_mode=display_mode, showexpert=showexpert)
 
-    if len(data['Variables']) == 1 and \
-       'Type' in data['Variables'][0] and data['Variables'][0]['Type'] == 'json' and \
-       'Format' in data['Variables'][0] and data['Variables'][0]['Format'] in ('list', 'list of dict', 'dict of dict'):
+    if form_var.get('Type') == 'json' and form_var.get('Format') in ('list', 'list of dict', 'dict of dict'):
         add = DIV(
                 A(
                  T("Add more"),
@@ -8758,6 +8760,14 @@ def format_custo(row, objtype, objname):
     )
 
 def get_form_formatted_data(var, data):
+    var_value = get_form_formatted_data_o(var, data)
+
+    if 'Type' in var and var['Type'] == "json":
+            var_value = json.dumps(var_value)
+
+    return var_value
+
+def get_form_formatted_data_o(var, data):
     if 'Template' in var:
         var_value = var['Template']
         for input in data['Inputs']:
@@ -8854,9 +8864,6 @@ def get_form_formatted_data(var, data):
     else:
         raise Exception(T("Variable must have a Template or Type must be json."))
 
-    if 'Type' in var and var['Type'] == "json":
-            var_value = json.dumps(var_value)
-
     return var_value
 
 @auth.requires_login()
@@ -8923,6 +8930,27 @@ def ajax_generic_form_submit(form, data):
                 log.append(("form.submit", "Script %(path)s returned with error:\n%(err)s", dict(path=path, err=err)))
                 continue
             log.append(("form.submit", "script %(path)s returned on success:\n%(out)s", dict(path=path, out=out)))
+        elif dest == "mail":
+            to = var.get('To', set([]))
+            if len(to) == 0:
+                continue
+            label = data.get('Label', form.form_name)
+            title = T("form submission: %(n)s", dict(n=label))
+            d = get_form_formatted_data_o(var, data)
+            message = str(XML(BODY(
+              P(T("Form submitted on %(date)s by %(submitter)s", dict(date=str(datetime.datetime.now()), submitter=user_name()))),
+              _ajax_forms_inputs(
+                 _mode="show",
+                 form=form,
+                 form_var=var,
+                 showexpert=True,
+                 current_values=d,
+               ),
+            )))
+            mail.send(to=to,
+                      subject=title,
+                      message='<html>%s</html>'%message)
+            log.append(("form.submit", "Mail sent to %(to)s on form %(form_name)s submission." , dict(to=', '.join(to), form_name=form.form_name)))
 
     for action, fmt, d in log:
         _log(action, fmt, d)
