@@ -1993,6 +1993,7 @@ Date();$("#%(n)s_container").append("<div style='display:table-row'><span class=
                                "var_id": self.t.colprops['id'].get(o),
                                "form_xid": '_'.join((str(o.id), str(o.ruleset_id))),
                                "hid": hid,
+                               "showexpert": True,
                              }
                            )
                      ),
@@ -2014,6 +2015,7 @@ Date();$("#%(n)s_container").append("<div style='display:table-row'><span class=
                                "form_xid": '_'.join((str(o.id), str(o.ruleset_id))),
                                "hid": hid,
                                "mode": "show",
+                               "showexpert": True,
                              }
                            )
                      ),
@@ -8157,18 +8159,18 @@ def ajax_error(msg):
 def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=False):
     l = []
     if display_mode and \
-       len(data.get('Variables', [])) == 1 and \
-       (('Class' in data.get('Variables', [])[0] and data.get('Variables',[])[0]['Class'] == 'raw') or \
-        ('DisplayClass' in data.get('Variables', [])[0] and data.get('Variables', [])[0]['DisplayClass'] == 'raw')):
+       len(data.get('Outputs', [])) == 1 and \
+       (('Class' in data.get('Outputs', [])[0] and data.get('Outputs',[])[0]['Class'] == 'raw') or \
+        ('DisplayClass' in data.get('Outputs', [])[0] and data.get('Outputs', [])[0]['DisplayClass'] == 'raw')):
         return DIV(PRE(defaults), _class="comp16")
 
-    if display_mode and len(data.get('Variables', [])) == 1 and \
-       'Class' in data.get('Variables', [])[0] and \
-       data.get('Variables', [])[0]['Class'] == 'dict' and \
+    if display_mode and len(data.get('Outputs', [])) == 1 and \
+       'Class' in data.get('Outputs', [])[0] and \
+       data.get('Outputs', [])[0]['Class'] == 'dict' and \
        (len(data['Inputs']) > 1 or idx==0):
-        header = TR(TD(B(data.get('Variables', [])[0]['Class']), _class="comp16", _colspan=3))
-    elif display_mode and 'Format' in data.get('Variables', [])[0] and \
-         data.get('Variables', [])[0]['Format'] in ('list of dict', 'dict of dict') and idx==0:
+        header = TR(TD(B(data.get('Outputs', [])[0]['Class']), _class="comp16", _colspan=3))
+    elif display_mode and 'Format' in data.get('Outputs', [])[0] and \
+         data.get('Outputs', [])[0]['Format'] in ('list of dict', 'dict of dict') and idx==0:
         h = []
         for i, input in enumerate(data['Inputs']):
             if i == 0:
@@ -8181,10 +8183,10 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
 
     match_default = {}
     if defaults is not None:
-        for var in data.get('Variables', []):
-            if 'Template' not in var:
+        for output in data.get('Outputs', []):
+            if 'Template' not in output:
                 continue
-            s = var['Template']
+            s = output['Template']
             for input in data['Inputs']:
                 s = s.replace('%%'+input['Id']+'%%', '(?P<'+input['Id']+'>.*)')
             import re
@@ -8242,7 +8244,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
                 n = input['DisplayModeTrim']
                 if len(default) >= n:
                     default = default[0:n//3] + "..." + default[-n//3*2:]
-            if display_mode and 'Format' in data['Variables'][0] and data['Variables'][0]['Format'] in ('list of dict', 'dict of dict'):
+            if display_mode and 'Format' in data['Outputs'][0] and data['Outputs'][0]['Format'] in ('list of dict', 'dict of dict'):
                 if type(default) in (unicode, str) and len(default) > 25:
                     s = default[:10]+"..."+default[-12:]
                 else:
@@ -8271,7 +8273,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
                    )
                  )
         elif 'Type' not in input:
-            return ajax_error(T("'Type' not set for variable '%(var_name)s'", dict(var_name=input['Id'])))
+            return ajax_error(T("'Type' not set for Input '%(name)s'", dict(name=input['Id'])))
         elif input['Type'] == "text":
             _input = TEXTAREA(
                    default,
@@ -8295,7 +8297,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
         if label == "":
             label = XML("&nbsp;")
 
-        if display_mode and 'Format' in data['Variables'][0] and data['Variables'][0]['Format'] in ('list of dict', 'dict of dict'):
+        if display_mode and 'Format' in data['Outputs'][0] and data['Outputs'][0]['Format'] in ('list of dict', 'dict of dict'):
             if i == 0:
                 l.append(TD(_input, _class=lcl))
             else:
@@ -8318,7 +8320,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
                        _style=style,
                      ))
 
-    if display_mode and 'Format' in data['Variables'][0] and data['Variables'][0]['Format'] in ('list of dict', 'dict of dict'):
+    if display_mode and 'Format' in data['Outputs'][0] and data['Outputs'][0]['Format'] in ('list of dict', 'dict of dict'):
         if idx == 0:
             return [header, TR(l)]
         return [TR(l)]
@@ -8333,17 +8335,18 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
 
 def ajax_forms_inputs():
     return _ajax_forms_inputs(
-             request.vars.mode,
-             request.vars.var_id,
-             request.vars.form_name,
-             request.vars.form_id,
-             request.vars.form_xid,
-             request.vars.rset_name,
-             request.vars.rset_id,
-             request.vars.hid,
+             _mode=request.vars.mode,
+             _var_id=request.vars.var_id,
+             _form_name=request.vars.form_name,
+             _form_id=request.vars.form_id,
+             _form_xid=request.vars.form_xid,
+             _rset_name=request.vars.rset_name,
+             _rset_id=request.vars.rset_id,
+             _hid=request.vars.hid,
+             showexpert=request.vars.showexpert,
            )
 
-def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None, _form_xid=None, _rset_name=None, _rset_id=None, _hid=None, var=None, form=None, form_var=None, showexpert=False, current_values=None):
+def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None, _form_xid=None, _rset_name=None, _rset_id=None, _hid=None, var=None, form=None, form_output=None, showexpert=False, current_values=None):
     if _mode == "show":
         display_mode = True
     else:
@@ -8382,8 +8385,8 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
         data = yaml.load(s)
         if 'Inputs' not in data:
             raise Exception("Inputs definition not found in form definition")
-        if 'Variables' not in data or len(data['Variables']) == 0:
-            raise Exception("Variables definition not found in form definition")
+        if 'Outputs' not in data or len(data['Outputs']) == 0:
+            raise Exception("Outputs definition not found in form definition")
     except Exception, e:
         return ajax_error(DIV(
                  B(T("%(form)s form definition error", dict(form=form.form_name))),
@@ -8395,8 +8398,8 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
                  PRE(s),
                ))
 
-    if form_var is None:
-        form_var = data['Variables'][0]
+    if form_output is None:
+        form_output = data['Outputs'][0]
 
     # An existing variable is specified
     # Get input default values from there
@@ -8404,37 +8407,37 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
     count = None
     if _var_id is not None:
         cur = var.var_value
-        if len(cur) > 0 and form_var.get('Type') == 'json':
+        if len(cur) > 0 and form_output.get('Type') == 'json':
             try:
                 import json
                 cur = json.loads(cur)
             except:
                 return ajax_error("json error parsing current variable value '%s'"%cur)
-            if form_var.get('Format') == 'dict':
+            if form_output.get('Format') == 'dict':
                 input_ids = {}
                 for i, input in enumerate(data['Inputs']):
                     input_ids[input['Id']] = i
                 for key in cur:
                     if key in input_ids:
                         data['Inputs'][input_ids[key]]['Default'] = cur[key]
-            elif form_var.get('Format') == 'list':
+            elif form_output.get('Format') == 'list':
                 data['Inputs'][0]['Default'] = cur
     elif current_values is not None:
         cur = current_values
 
     l = []
-    if form_var.get('Format') == 'dict':
+    if form_output.get('Format') == 'dict':
         l = inputs_block(data, defaults=cur, display_mode=display_mode, showexpert=showexpert)
-    elif form_var.get('Format') in ('list', 'list of dict', 'dict of dict'):
+    elif form_output.get('Format') in ('list', 'list of dict', 'dict of dict'):
         if cur is None or len(cur) == 0:
             _l = inputs_block(data, display_mode=display_mode, showexpert=showexpert)
         else:
             count = len(cur)
             _l = []
             for i, default in enumerate(cur):
-                if form_var.get('Format') == 'dict of dict':
+                if form_output.get('Format') == 'dict of dict':
                     d = cur[default]
-                    key = form_var.get('Key')
+                    key = form_output.get('Key')
                     if key is None or key not in d:
                         d[key] = default
                     default = d
@@ -8448,7 +8451,7 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
     else:
         l = inputs_block(data, defaults=cur, display_mode=display_mode, showexpert=showexpert)
 
-    if form_var.get('Type') == 'json' and form_var.get('Format') in ('list', 'list of dict', 'dict of dict'):
+    if form_output.get('Type') == 'json' and form_output.get('Format') in ('list', 'list of dict', 'dict of dict'):
         add = DIV(
                 A(
                  T("Add more"),
@@ -8548,7 +8551,7 @@ sync_ajax('%(url)s', ids, '%(rid)s', reload_ajax_custo)
              SCRIPT("""var count=%(idx)d;$("select").combobox();"""%dict(idx=len(l)), _name=_hid+"_to_eval"),
         )
 
-    if not display_mode and form.form_type == 'custo':
+    if not display_mode and form.form_type == 'custo' and var is None:
         header = ajax_target()
     else:
         header = ""
@@ -8612,7 +8615,7 @@ sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')
             ),
           ),
           TD(
-            T("Customize node"),
+            T("Outputs node"),
           ),
         ))
     d = DIV(
@@ -8759,24 +8762,24 @@ def format_custo(row, objtype, objname):
       _style="margin:1em;display:inline-block;vertical-align:top;text-align:left;max-width:40em",
     )
 
-def get_form_formatted_data(var, data):
-    var_value = get_form_formatted_data_o(var, data)
+def get_form_formatted_data(output, data):
+    output_value = get_form_formatted_data_o(output, data)
 
-    if 'Type' in var and var['Type'] == "json":
-            var_value = json.dumps(var_value)
+    if output.get('Type') == "json":
+        output_value = json.dumps(output_value)
 
-    return var_value
+    return output_value
 
-def get_form_formatted_data_o(var, data):
-    if 'Template' in var:
-        var_value = var['Template']
+def get_form_formatted_data_o(output, data):
+    if 'Template' in output:
+        output_value = output['Template']
         for input in data['Inputs']:
             val = request.vars.get(forms_xid(input['Id'])+'_0')
             if val is None:
                 val = ""
-            var_value = var_value.replace('%%'+input['Id']+'%%', str(val))
-    elif 'Type' in var and var['Type'] in ("json", "object"):
-        if 'Format' in var and var['Format'] == "list":
+            output_value = output_value.replace('%%'+input['Id']+'%%', str(val))
+    elif output.get('Type') in ("json", "object"):
+        if output.get('Format') == "list":
             l = []
             input = data['Inputs'][0]
             for v in request.vars.keys():
@@ -8790,8 +8793,8 @@ def get_form_formatted_data_o(var, data):
                 except Exception, e:
                     raise Exception(T(str(e)))
                 l.append(val)
-            var_value = l
-        elif 'Format' in var and var['Format'] == "dict":
+            output_value = l
+        elif output.get('Format') == "dict":
             h = {}
             for input in data['Inputs']:
                 val = request.vars.get(forms_xid(input['Id'])+'_0')
@@ -8804,8 +8807,8 @@ def get_form_formatted_data_o(var, data):
                 except Exception, e:
                     raise Exception(T(str(e)))
                 h[input['Id']] = val
-            var_value = h
-        elif 'Format' in var and var['Format'] == "list of dict":
+            output_value = h
+        elif output.get('Format') == "list of dict":
             h = {}
             invalidate = set([])
             for v in request.vars.keys():
@@ -8827,8 +8830,8 @@ def get_form_formatted_data_o(var, data):
                     h[idx][input['Id']] = val
             for idx in invalidate:
                 del(h[idx])
-            var_value = h.values()
-        elif 'Format' in var and var['Format'] == "dict of dict":
+            output_value = h.values()
+        elif output('Format') == "dict of dict":
             h = {}
             invalidate = set([])
             for v in request.vars.keys():
@@ -8848,9 +8851,9 @@ def get_form_formatted_data_o(var, data):
                     except Exception, e:
                         raise Exception(T(str(e)))
                     h[idx][input['Id']] = val
-            if 'Key' not in data['Variables'][0]:
-                raise Exception(T("'Key' must be defined in form variable of 'dict of dict' format"))
-            k = data['Variables'][0]['Key']
+            if 'Key' not in output:
+                raise Exception(T("'Key' must be defined in form Output of 'dict of dict' format"))
+            k = output['Key']
             for idx in invalidate:
                 del(h[idx])
             _h = {}
@@ -8858,13 +8861,13 @@ def get_form_formatted_data_o(var, data):
                 if k not in d:
                     continue
                 _h[d[k]] = d
-            var_value = _h
+            output_value = _h
         else:
-            raise Exception(T("Unknown variable format: %(fmt)s", dict(fmt=var['Format'] if 'Format' in var else "none")))
+            raise Exception(T("Unknown output format: %(fmt)s", dict(fmt=output.get('Format', 'none'))))
     else:
-        raise Exception(T("Variable must have a Template or Type must be json."))
+        raise Exception(T("Output must have a Template or Type must be json."))
 
-    return var_value
+    return output_value
 
 @auth.requires_login()
 def ajax_form_submit():
@@ -8895,16 +8898,16 @@ def ajax_form_submit():
 
 def ajax_generic_form_submit(form, data):
     log = []
-    for var in data.get('Variables', []):
-        dest = var.get('Dest')
+    for output in data.get('Outputs', []):
+        dest = output.get('Dest')
         if dest == "db":
-            var['Type'] = 'object'
-            var['Format'] = 'dict'
-            d = get_form_formatted_data(var, data)
-            if 'Table' not in var:
-                log.append(("form.submit", "Table must be set in db type Variables", dict()))
+            output['Type'] = 'object'
+            output['Format'] = 'dict'
+            d = get_form_formatted_data(output, data)
+            if 'Table' not in output:
+                log.append(("form.submit", "Table must be set in db type Output", dict()))
                 continue
-            table = var['Table']
+            table = output['Table']
             if table not in db:
                 log.append(("form.submit", "Table %(t)s not found", dict(t=table)))
                 continue
@@ -8916,10 +8919,10 @@ def ajax_generic_form_submit(form, data):
         elif dest == "script":
             import os
             from subprocess import *
-            d = get_form_formatted_data(var, data)
-            path = var.get('Path')
+            d = get_form_formatted_data(output, data)
+            path = output.get('Path')
             if path is None:
-                log.append(("form.submit", "Path must be set in script type Variables", dict()))
+                log.append(("form.submit", "Path must be set in script type Output", dict()))
                 continue
             if not os.path.exists(path):
                 log.append(("form.submit", "Script %(path)s does not exists", dict(path=path)))
@@ -8931,18 +8934,18 @@ def ajax_generic_form_submit(form, data):
                 continue
             log.append(("form.submit", "script %(path)s returned on success:\n%(out)s", dict(path=path, out=out)))
         elif dest == "mail":
-            to = var.get('To', set([]))
+            to = output.get('To', set([]))
             if len(to) == 0:
                 continue
             label = data.get('Label', form.form_name)
             title = T("form submission: %(n)s", dict(n=label))
-            d = get_form_formatted_data_o(var, data)
+            d = get_form_formatted_data_o(output, data)
             message = str(XML(BODY(
               P(T("Form submitted on %(date)s by %(submitter)s", dict(date=str(datetime.datetime.now()), submitter=user_name()))),
               _ajax_forms_inputs(
                  _mode="show",
                  form=form,
-                 form_var=var,
+                 form_output=output,
                  showexpert=True,
                  current_values=d,
                ),
@@ -9026,7 +9029,7 @@ def ajax_custo_form_submit(form, data):
     if rset is None:
         return ajax_error(T("error fetching %(rset_name)s ruleset", dict(rset_name=rset_name)))
 
-    for var in data.get('Variables', []):
+    for var in data.get('Outputs', []):
         if request.vars.var_id is None:
             if 'Class' in var:
                 var_class = var['Class']
