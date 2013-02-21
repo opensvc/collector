@@ -8363,6 +8363,12 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
                          _id=forms_xid(str(idx)),
                          _style="display:none",
                        ),
+                       TD(
+                         input.get('Constraint', ''),
+                         _name="constraint",
+                         _id=forms_xid(str(idx)),
+                         _style="display:none",
+                       ),
                        _name=name,
                        _style=style,
                      ))
@@ -8597,6 +8603,25 @@ sync_ajax('%(url)s', ids, '%(rid)s', reload_ajax_custo)
              ),
              SCRIPT("""
 $("select").combobox();
+$("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").bind('change', function(){
+  $(this).parents('tr').children("[name=constraint]").each(function(){
+    constraint = $(this).text()
+    l = constraint.split(" ")
+    if (l.length!=2) {
+      return
+    }
+    op = l[0]
+    tgt = l[1]
+    val = $(this).siblings().children('input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]').val()
+    if (op == ">" && (1.0*val <= 1.0*tgt)) {
+      $(this).parents('tr').addClass("highlight_input")
+      $(this).show()
+      return
+    }
+    $(this).parents('tr').removeClass("highlight_input")
+    $(this).hide()
+  })
+})
 $("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").bind('change', function(){
   $("[name=cond]").each(function(){
     condition = $(this).text()

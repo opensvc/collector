@@ -1,5 +1,9 @@
 @charset "UTF-8";
 
+.highlight_input {
+    border: 2px solid red;
+}
+
 .theader_slim {
     background-color: #e0e1cd;
     min-height: 5px;
