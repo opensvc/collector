@@ -8607,6 +8607,7 @@ sync_ajax('%(url)s', ids, '%(rid)s', reload_ajax_custo)
                _style="padding-top:2em",
              ),
              SCRIPT("""
+var count=0;
 $("select").combobox();
 $("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").bind('change', function(){
   $(this).parents('tr').children("[name=constraint]").each(function(){
