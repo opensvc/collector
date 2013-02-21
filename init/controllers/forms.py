@@ -463,8 +463,10 @@ $('[name=radio_form]').each(function(){
   if ($(this).attr("id")=='%(rid)s'){return};
   $(this).prop('checked', false)
 });
+$("#%(id)s").html('%(spinner)s');
 sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')});
 """%dict(
+                spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')).xml(),
                 id="forms_inputs",
                 rid=id,
                 url=URL(

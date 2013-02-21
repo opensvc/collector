@@ -8254,17 +8254,56 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
                 _input = SPAN(default)
             _help = ""
         elif 'Candidates' in input:
+            if input['Candidates'] == "__node_selector__":
+                if 'Manager' not in user_groups():
+                    q = db.nodes.team_responsible.belongs(user_groups())
+                else:
+                    q = db.nodes.id > 0
+                o = db.nodes.project | db.nodes.nodename
+                rows = db(q).select(db.nodes.project, db.nodes.nodename, orderby=o)
+                candidates = [(' '.join((str(r.project if r.project is not None else ''), str(r.nodename))), r.nodename) for r in rows]
+            elif input['Candidates'] == "__service_selector__":
+                o = db.services.svc_app | db.services.svc_name
+                q = db.services.svc_app == db.apps.app
+                q &= db.services.svc_name == db.svcmon.mon_svcname
+                if 'Manager' not in user_groups():
+                    q &= db.apps_responsibles.app_id == db.apps.id
+                    q &= db.apps_responsibles.group_id == db.auth_membership.group_id
+                    q &= db.auth_membership.user_id == auth.user_id
+                services = db(q).select(db.services.svc_name,
+                                        db.services.svc_app,
+                                        groupby=o,
+                                        orderby=o)
+                candidates = [(' '.join((str(r.svc_app if r.svc_app is not None else ''), str(r.svc_name))), r.svc_name) for r in services]
+            else:
+                candidates = input['Candidates']
+
             options = []
-            for o in input['Candidates']:
-                if o == default:
+
+            # first option should be empty to unset value
+            if len(candidates) > 0:
+                o = candidates[0]
+                if type(o) in (list, tuple) and o[1] != "":
+                    candidates = [('','')] + candidates
+                elif o != "":
+                    candidates = [''] + candidates
+
+            for o in candidates:
+                if type(o) in (list, tuple):
+                    label, value = o
+                else:
+                    label = o
+                    value = o
+
+                if value == default:
                     selected = True
                 else:
                     selected = False
                 if 'Translate' in input and input['Translate']:
-                    _o = T(o)
+                    _label = T(label)
                 else:
-                    _o = o
-                options.append(OPTION(_o, _value=o, _selected=selected))
+                    _label = label
+                options.append(OPTION(_label, _value=value, _selected=selected))
             _input = SELECT(
                    *options,
                    **dict(
@@ -8303,10 +8342,12 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
             else:
                 l.append(TD(_input, _class= cl))
         else:
-            if 'Hidden' in input and input['Hidden']:
+            if input.get('Hidden'):
                 name = forms_xid('hidden')
                 style = "display:none"
-            elif 'ExpertMode' in input and input['ExpertMode'] and not showexpert:
+            elif input.get('Condition') and not display_mode:
+                style = "display:none"
+            elif input.get('ExpertMode') and not showexpert:
                 name = forms_xid('expert')
                 style = "display:none"
             else:
@@ -8316,6 +8357,12 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
                        TD(DIV(label, _class=lcl)),
                        TD(_input, _class=cl),
                        TD(_help),
+                       TD(
+                         input.get('Condition', ''),
+                         _name="cond",
+                         _id=forms_xid(str(idx)),
+                         _style="display:none",
+                       ),
                        _name=name,
                        _style=style,
                      ))
@@ -8548,7 +8595,47 @@ sync_ajax('%(url)s', ids, '%(rid)s', reload_ajax_custo)
                _id=forms_xid('forms_result'),
                _style="padding-top:2em",
              ),
-             SCRIPT("""var count=%(idx)d;$("select").combobox();"""%dict(idx=len(l)), _name=_hid+"_to_eval"),
+             SCRIPT("""
+$("select").combobox();
+$("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").bind('change', function(){
+  $("[name=cond]").each(function(){
+    condition = $(this).text()
+    l = $(this).attr('id').split("_")
+    index = l[l.length-1]
+    l.pop()
+    prefix = l.join("_")
+    if (condition.length==0) {
+      return
+    }
+    l = condition.split("==")
+    if (l.length!=2) {
+      return
+    }
+    left = l[0].trim()
+    right = l[1].trim()
+    if (left[0] == "#"){
+      left = left.substr(1);
+      v_left = $('#'+prefix+"_"+left+"_"+index).val()
+    } else {
+      v_left = left
+    }
+    if (right[0] == "#"){
+      right = right.substr(1);
+      v_right = $('#'+prefix+"_"+right+"_"+index).val()
+    } else {
+      v_right = right
+    }
+    if (v_left != v_right) {
+      $(this).siblings().children('input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]').val("")
+      $(this).parent('tr').hide()
+      return
+    }
+    $(this).parent('tr').show()
+  })
+});
+"""%dict(idx=len(l),xid=forms_xid('')),
+               _name=_hid+"_to_eval",
+             ),
         )
 
     if not display_mode and form.form_type == 'custo' and var is None:
@@ -8890,10 +8977,7 @@ def ajax_form_submit():
                  PRE(s),
                ))
 
-    if form.form_type in ('custo', 'obj'):
-        return ajax_custo_form_submit(form, data)
-    else:
-        return ajax_generic_form_submit(form, data)
+    return ajax_generic_form_submit(form, data)
 
 
 def ajax_generic_form_submit(form, data):
@@ -8930,9 +9014,9 @@ def ajax_generic_form_submit(form, data):
             p = Popen([path, d], stdout=PIPE, stderr=PIPE)
             out, err = p.communicate()
             if p.returncode != 0:
-                log.append(("form.submit", "Script %(path)s returned with error:\n%(err)s", dict(path=path, err=err)))
+                log.append(("form.submit", "Script %(path)s returned with error: %(err)s", dict(path=path, err=err)))
                 continue
-            log.append(("form.submit", "script %(path)s returned on success:\n%(out)s", dict(path=path, out=out)))
+            log.append(("form.submit", "script %(path)s returned on success: %(out)s", dict(path=path, out=out)))
         elif dest == "mail":
             to = output.get('To', set([]))
             if len(to) == 0:
@@ -8954,13 +9038,15 @@ def ajax_generic_form_submit(form, data):
                       subject=title,
                       message='<html>%s</html>'%message)
             log.append(("form.submit", "Mail sent to %(to)s on form %(form_name)s submission." , dict(to=', '.join(to), form_name=form.form_name)))
+        elif dest == "compliance variable":
+            log += ajax_custo_form_submit(output, data)
 
     for action, fmt, d in log:
         _log(action, fmt, d)
 
     return ajax_error(PRE(XML('<br><br>'.join(map(lambda x: x[1]%x[2], log)))))
 
-def ajax_custo_form_submit(form, data):
+def ajax_custo_form_submit(output, data):
     rset_name = request.vars.rset_name
     if request.vars.svcname is not None:
         rset_name = "svc."+request.vars.svcname
@@ -8968,13 +9054,13 @@ def ajax_custo_form_submit(form, data):
         rset_name = "node."+request.vars.nodename
 
     if rset_name is None:
-        return ajax_error(T("No ruleset name specified"))
+        raise Exception(T("No ruleset name specified"))
 
     if request.vars.var_id is not None:
         q = db.comp_rulesets_variables.id == request.vars.var_id
         var = db(q).select().first()
         if var is None:
-            return ajax_error(T("Specified variable not found (id=%(id)s)", dict(id=request.vars.var_id)))
+            raise Exception(T("Specified variable not found (id=%(id)s)", dict(id=request.vars.var_id)))
         var_name = var.var_name
         var_class = var.var_class
 
@@ -8989,27 +9075,27 @@ def ajax_custo_form_submit(form, data):
         q &= db.nodes.team_responsible == db.auth_group.role
         node = db(q).select(db.auth_group.id).first()
         if node is None:
-            return ajax_error(T("Unknown specified node %(nodename)s", dict(nodename=nodename)))
+            raise Exception(T("Unknown specified node %(nodename)s", dict(nodename=nodename)))
         groups = [node.id]
         if len(groups) == 0:
-            return ajax_error(T("Specified node %(nodename)s has no responsible group", dict(nodename=nodename)))
+            raise Exception(T("Specified node %(nodename)s has no responsible group", dict(nodename=nodename)))
         common_groups = set(user_group_ids()) & set(groups)
         if len(common_groups) == 0:
-            return ajax_error(T("You are not allowed to create or modify a ruleset for the node %(node)s", dict(nodename=nodename)))
+            raise Exception(T("You are not allowed to create or modify a ruleset for the node %(node)s", dict(nodename=nodename)))
     elif request.vars.svcname is not None:
         q = db.services.svc_name == request.vars.svcname
         svc = db(q).select().first()
         if svc is None:
-            return ajax_error(T("Unknown specified service %(svcname)s", dict(svcname=svcname)))
+            raise Exception(T("Unknown specified service %(svcname)s", dict(svcname=svcname)))
         q &= db.services.svc_app == db.apps.app
         q &= db.apps.id == db.apps_responsibles.app_id
         rows = db(q).select()
         groups = map(lambda x: x.apps_responsibles.group_id, rows)
         if len(groups) == 0:
-            return ajax_error(T("Specified service %(svcname)s has no responsible groups", dict(svcname=svcname)))
+            raise Exception(T("Specified service %(svcname)s has no responsible groups", dict(svcname=svcname)))
         common_groups = set(user_group_ids()) & set(groups)
         if len(common_groups) == 0:
-            return ajax_error(T("You are not allowed to create or modify a ruleset for the service %(svcname)s", dict(svcname=svcname)))
+            raise Exception(T("You are not allowed to create or modify a ruleset for the service %(svcname)s", dict(svcname=svcname)))
 
     # create ruleset
     q = db.comp_rulesets.ruleset_name == rset_name
@@ -9027,75 +9113,71 @@ def ajax_custo_form_submit(form, data):
             )
             log.append(("compliance.ruleset.group.attach", "Added group %(gid)d ruleset '%(rset_name)s' owners", dict(gid=gid, rset_name=rset_name)))
     if rset is None:
-        return ajax_error(T("error fetching %(rset_name)s ruleset", dict(rset_name=rset_name)))
+        raise Exception(T("error fetching %(rset_name)s ruleset", dict(rset_name=rset_name)))
 
-    for var in data.get('Outputs', []):
-        if request.vars.var_id is None:
-            if 'Class' in var:
-                var_class = var['Class']
-            else:
-                var_class = 'raw'
+    if request.vars.var_id is None:
+        if 'Class' in output:
+            var_class = output['Class']
+        else:
+            var_class = 'raw'
 
-            if request.vars.var_name is not None:
-                var_name_prefix = request.vars.var_name
-            elif 'Prefix' in var:
-                var_name_prefix = var['Prefix']
-            else:
-                return ajax_error(T("No variable name specified."))
+        if request.vars.var_name is not None:
+            var_name_prefix = request.vars.var_name
+        elif 'Prefix' in output:
+            var_name_prefix = output['Prefix']
+        else:
+            raise Exception(T("No variable name specified."))
 
-            q = db.comp_rulesets_variables.ruleset_id == rset.id
-            q &= db.comp_rulesets_variables.var_name.like(var_name_prefix+'%')
-            var_name_suffixes = map(lambda x: x.var_name.replace(var_name_prefix, ''), db(q).select())
-            i = 0
-            while True:
-                _i = str(i)
-                if _i not in var_name_suffixes: break
-                i += 1
-            var_name = var_name_prefix + _i
+        q = db.comp_rulesets_variables.ruleset_id == rset.id
+        q &= db.comp_rulesets_variables.var_name.like(var_name_prefix+'%')
+        var_name_suffixes = map(lambda x: x.var_name.replace(var_name_prefix, ''), db(q).select())
+        i = 0
+        while True:
+            _i = str(i)
+            if _i not in var_name_suffixes: break
+            i += 1
+        var_name = var_name_prefix + _i
 
-        try:
-            var_value = get_form_formatted_data(var, data)
-        except Exception, e:
-            return ajax_error(str(e))
+    try:
+        var_value = get_form_formatted_data(output, data)
+    except Exception, e:
+        raise Exception(str(e))
 
+    q = db.comp_rulesets_variables.ruleset_id == rset.id
+    q &= db.comp_rulesets_variables.var_name == var_name
+    n = db(q).count()
+
+    if n == 0 and request.vars.var_id is not None:
+        log.append(("compliance.ruleset.variable.change", "%(var_class)s' variable '%(var_name)s' does not exist in ruleset %(rset_name)s or invalid attempt to edit a variable in a parent ruleset", dict(var_class=var_class, var_name=var_name, rset_name=rset_name)))
+        return [['','','']]
+
+    q &= db.comp_rulesets_variables.var_value == var_value
+    n = db(q).count()
+
+    if n > 0:
+        log.append(("compliance.ruleset.variable.add", "'%(var_class)s' variable '%(var_name)s' already exists with the same value in the ruleset '%(rset_name)s': cancel", dict(var_class=var_class, var_name=var_name, rset_name=rset_name)))
+    else:
         q = db.comp_rulesets_variables.ruleset_id == rset.id
         q &= db.comp_rulesets_variables.var_name == var_name
         n = db(q).count()
-
-        if n == 0 and request.vars.var_id is not None:
-            log.append(("compliance.ruleset.variable.change", "%(var_class)s' variable '%(var_name)s' does not exist in ruleset %(rset_name)s or invalid attempt to edit a variable in a parent ruleset", dict(var_class=var_class, var_name=var_name, rset_name=rset_name)))
-            continue
-
-        q &= db.comp_rulesets_variables.var_value == var_value
-        n = db(q).count()
-
-        if n > 0:
-            log.append(("compliance.ruleset.variable.add", "'%(var_class)s' variable '%(var_name)s' already exists with the same value in the ruleset '%(rset_name)s': cancel", dict(var_class=var_class, var_name=var_name, rset_name=rset_name)))
+        if n == 0:
+            db.comp_rulesets_variables.insert(
+              ruleset_id=rset.id,
+              var_name=var_name,
+              var_value=var_value,
+              var_class=var_class,
+              var_author=user_name(),
+              var_updated=datetime.datetime.now(),
+            )
+            log.append(("compliance.ruleset.variable.add", "Added '%(var_class)s' variable '%(var_name)s' to ruleset '%(rset_name)s' with value:\n%(var_value)s", dict(var_class=var_class, var_name=var_name, rset_name=rset_name, var_value=var_value)))
         else:
-            q = db.comp_rulesets_variables.ruleset_id == rset.id
-            q &= db.comp_rulesets_variables.var_name == var_name
-            n = db(q).count()
-            if n == 0:
-                db.comp_rulesets_variables.insert(
-                  ruleset_id=rset.id,
-                  var_name=var_name,
-                  var_value=var_value,
-                  var_class=var_class,
-                  var_author=user_name(),
-                  var_updated=datetime.datetime.now(),
-                )
-                log.append(("compliance.ruleset.variable.add", "Added '%(var_class)s' variable '%(var_name)s' to ruleset '%(rset_name)s' with value:\n%(var_value)s", dict(var_class=var_class, var_name=var_name, rset_name=rset_name, var_value=var_value)))
-            else:
-                db(q).update(
-                  var_value=var_value,
-                  var_class=var_class,
-                  var_author=user_name(),
-                  var_updated=datetime.datetime.now(),
-                )
-                log.append(("compliance.ruleset.variable.change", "Modified '%(var_class)s' variable '%(var_name)s' in ruleset '%(rset_name)s' with value:\n%(var_value)s", dict(var_class=var_class, var_name=var_name, rset_name=rset_name, var_value=var_value)))
-
-    for action, fmt, d in log:
-        _log(action, fmt, d)
+            db(q).update(
+              var_value=var_value,
+              var_class=var_class,
+              var_author=user_name(),
+              var_updated=datetime.datetime.now(),
+            )
+            log.append(("compliance.ruleset.variable.change", "Modified '%(var_class)s' variable '%(var_name)s' in ruleset '%(rset_name)s' with value:\n%(var_value)s", dict(var_class=var_class, var_name=var_name, rset_name=rset_name, var_value=var_value)))
 
     if request.vars.nodename is not None or request.vars.svcname is not None:
         modset_ids = []
@@ -9140,7 +9222,7 @@ def ajax_custo_form_submit(form, data):
             except ToolError:
                 pass
 
-    return ajax_error(PRE(XML('<br><br>'.join(map(lambda x: x[1]%x[2], log)))))
+    return log
 
 def convert_val(val, t):
      if t == 'string':
