@@ -2885,6 +2885,11 @@ class table_comp_rulesets(HtmlTable):
         allowed = db(q)
         db.comp_rulesets_variables.ruleset_id.requires = IS_IN_DB(allowed,
                     db.comp_rulesets.id, "%(ruleset_name)s", zero=T('choose one'))
+
+        q = db.forms.form_type == "obj"
+        allowed = db(q)
+        db.comp_rulesets_variables.var_class.requires = IS_IN_DB(allowed,
+                    db.forms.form_name)
         f = SQLFORM(
                  db.comp_rulesets_variables,
                  labels={'ruleset_id': T('Ruleset name'),

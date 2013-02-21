@@ -1310,7 +1310,7 @@ db.define_table('forms',
 
 db.define_table('comp_rulesets_variables',
     Field('ruleset_id','integer', requires=IS_NOT_EMPTY()),
-    Field('var_class','string', requires=IS_IN_DB(db, db.forms.form_name), default="raw"),
+    Field('var_class','string', default="raw"),
     Field('var_name','string', requires=IS_NOT_EMPTY()),
     Field('var_value','text'),
     Field('var_author','string', readable=False, writable=False),
