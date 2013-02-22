@@ -8386,8 +8386,9 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
     if header != "":
         l = [header] + l
 
-    return TABLE(
-             l,
+    return DIV(
+             DIV(idx, _class="form_instance_count"),
+             TABLE(l),
              _id=forms_xid("ref"),
            )
 
@@ -8524,6 +8525,7 @@ clone.find(':input').attr('id', function(i, val) {
   } catch(e) {}
   return val
 });
+clone.find('.form_instance_count').text(count)
 $('#%(container)s').append("<hr />")
 clone.appendTo($('#%(container)s'))
 count=parseInt(count)+1

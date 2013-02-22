@@ -1,5 +1,17 @@
 @charset "UTF-8";
 
+.form_instance_count {
+    float: left;
+    height: 1.3em;
+    width: 1.3em;
+    vertical-align: middle;
+    text-align: center;
+    border-radius: 1em;
+    background: black;
+    color: white;
+    font-weight: bold;
+}
+
 .highlight_input {
     border: 2px solid red;
 }
