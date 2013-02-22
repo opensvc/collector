@@ -377,7 +377,7 @@ class table_nodes(HtmlTable):
                   INPUT(
                     _value='gen',
                     _type='button',
-                    _onClick="""sync_ajax("%(url)s?node="+checked_nodes(),['begin', 'end'],"%(div)s",function(){eval_js_in_ajax_response('plot')});"""%dict(url=URL(r=request,c='stats',f='ajax_perfcmp_plot'),
+                    _onClick="""sync_ajax("%(url)s?node="+checked_nodes(),['begin', 'end'],"%(div)s",function(){});"""%dict(url=URL(r=request,c='stats',f='ajax_perfcmp_plot'),
                              div="prf_cont"),
                   ),
                   DIV(

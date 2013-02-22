@@ -425,7 +425,7 @@ def forms_list(folder="/"):
             _class=cl,
           ),
           _onclick="""
-sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')});
+sync_ajax('%(url)s', [], '%(id)s', function(){});
 """%dict(
                 id="forms_list",
                 url=URL(
@@ -464,7 +464,7 @@ $('[name=radio_form]').each(function(){
   $(this).prop('checked', false)
 });
 $("#%(id)s").html('%(spinner)s');
-sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')});
+sync_ajax('%(url)s', [], '%(id)s', function(){});
 """%dict(
                 spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')).xml(),
                 id="forms_inputs",

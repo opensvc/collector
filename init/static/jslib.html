@@ -241,13 +241,6 @@ function getIdsByName(names){
     }
     return ids
 }
-function eval_js_in_ajax_response(id) {
-    l = document.getElementsByName(id+"_to_eval")
-    for (__i = 0; __i < l.length; __i++) {
-        window.eval(l[__i].innerHTML)
-    }
-    $("[name="+id+"_to_eval]").remove()
-}
 function sparkl(url, id) {
     if (!$("#"+id).is(":visible")) {
         return
@@ -393,8 +386,13 @@ function sync_ajax(url, inputs, id, f) {
          type: "POST",
          url: url,
          data: query,
+         context: document.body,
          success: function(msg){
-             document.getElementById(id).innerHTML=msg
+             $("#"+id).html(msg)
+             $("#"+id).find("script").each(function(i){
+               eval($(this).text());
+               $(this).remove();
+             });
              f()
          }
     })
@@ -413,19 +411,23 @@ function table_ajax_submit(url, id, inputs, additional_inputs, input_name, addit
          type: "POST",
          url: url,
          data: query,
+         context: document.body,
          beforeSend: function(req){
 	     $("#refresh_"+id).toggleClass("spinner")
          },
          success: function(msg){
-             document.getElementById(id).innerHTML=msg
-             eval_js_in_ajax_response(id)
+             $("#"+id).html(msg)
+             $("#"+id).find("script").each(function(i){
+               eval($(this).text());
+               $(this).remove();
+             });
          }
     })
 }
 function toggle_extra(url, id) {
     if ($('#'+id).css("display") == 'none') {
         $('#'+id).show()
-        sync_ajax(url, [], id, function(){eval_js_in_ajax_response(id)})
+        sync_ajax(url, [], id, function(){})
     } else {
         $('#'+id).hide()
     }
@@ -3010,9 +3012,7 @@ function click_action_queue(url) {
     }
 }
 function refresh_plot(url, rowid, id) {
-    sync_ajax(url,['begin_'+rowid, 'end_'+rowid], id, function(){
-        eval_js_in_ajax_response(id)
-    })
+    sync_ajax(url,['begin_'+rowid, 'end_'+rowid], id, function(){})
 }
 function toggle_plot(url, rowid, id) {
     if ($("#"+id).is(":visible")) {

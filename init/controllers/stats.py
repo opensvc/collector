@@ -743,7 +743,7 @@ def ajax_containerperf_plot():
         did = '_'.join((rowid, nodename.replace('.','_'), container_name.replace('.','_')))
         l.append(H3('@'.join((container_name, nodename))))
         l.append(DIV(_id=did))
-        sc += """sync_ajax('%(url)s', ['%(bs)s', '%(es)s'], '%(did)s', function(){ eval_js_in_ajax_response('prf_cont_svc_%(did)s') });"""%dict(
+        sc += """sync_ajax('%(url)s', ['%(bs)s', '%(es)s'], '%(did)s', function(){});"""%dict(
                              url=URL(r=request,c='ajax_perf',f='ajax_perf_svc_plot_short',
                                      args=[nodename, did, container_name]),
                              rowid=rowid,

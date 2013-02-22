@@ -548,7 +548,7 @@ def ajax_service():
                   _title=T('Refresh'),
                   _src=URL(r=request, c='static', f='refresh16.png'),
                   _style="vertical-align:middle",
-                  _onclick="sync_ajax('%(url)s', ['containerprf_begin_%(id)s', 'containerprf_end_%(id)s'], 'containerprf_%(id)s', function(){eval_js_in_ajax_response('plot')});"%dict(
+                  _onclick="sync_ajax('%(url)s', ['containerprf_begin_%(id)s', 'containerprf_end_%(id)s'], 'containerprf_%(id)s', function(){});"%dict(
                     id=str(rowid),
                     url=URL(r=request, c='stats', f='ajax_containerperf_plot?node=%s'%','.join(containers)),
                   ),
@@ -599,7 +599,7 @@ def ajax_service():
                   _title=T('Refresh'),
                   _src=URL(r=request, c='static', f='refresh16.png'),
                   _style="vertical-align:middle",
-                  _onclick="sync_ajax('%(url)s', ['grpprf_begin_%(id)s', 'grpprf_end_%(id)s'], 'grpprf_%(id)s', function(){eval_js_in_ajax_response('plot')});"%dict(
+                  _onclick="sync_ajax('%(url)s', ['grpprf_begin_%(id)s', 'grpprf_end_%(id)s'], 'grpprf_%(id)s', function(){});"%dict(
                     id=str(rowid),
                     url=URL(r=request, c='stats', f='ajax_perfcmp_plot?node=%s'%','.join(s['svc_nodes'].split()+s['svc_drpnodes'].split())),
                   ),
@@ -710,7 +710,7 @@ def ajax_service():
             _style='max-width:80em',
           ),
           SCRIPT(
-            """function s%(rid)s_load_svcmon_log(){sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(rowid)s')});}"""%dict(
+            """function s%(rid)s_load_svcmon_log(){sync_ajax('%(url)s', [], '%(id)s', function(){});}"""%dict(
                id='tab9_'+str(rowid),
                rid=str(rowid),
                rowid='avail_'+rowid,
@@ -723,12 +723,12 @@ def ajax_service():
                url=URL(r=request, c='wiki', f='ajax_wiki',
                        args=['tab8_'+str(rowid), request.vars.node])
             ),
-            "function s%(rid)s_load_containerprf() {sync_ajax('%(url)s', ['containerprf_begin_%(id)s', 'containerprf_end_%(id)s'], 'containerprf_%(id)s', function(){eval_js_in_ajax_response('plot')})};"%dict(
+            "function s%(rid)s_load_containerprf() {sync_ajax('%(url)s', ['containerprf_begin_%(id)s', 'containerprf_end_%(id)s'], 'containerprf_%(id)s', function(){})};"%dict(
                id=str(rowid),
                rid=str(rowid),
                url=URL(r=request, c='stats', f='ajax_containerperf_plot?node=%s'%','.join(containers)),
             ),
-            "function s%(rid)s_load_grpprf() {sync_ajax('%(url)s', ['grpprf_begin_%(id)s', 'grpprf_end_%(id)s'], 'grpprf_%(id)s', function(){eval_js_in_ajax_response('plot')})};"%dict(
+            "function s%(rid)s_load_grpprf() {sync_ajax('%(url)s', ['grpprf_begin_%(id)s', 'grpprf_end_%(id)s'], 'grpprf_%(id)s', function(){})};"%dict(
                id=str(rowid),
                rid=str(rowid),
                url=URL(r=request, c='stats', f='ajax_perfcmp_plot?node=%s'%','.join(str(s['svc_nodes']).split()+str(s['svc_drpnodes']).split())),

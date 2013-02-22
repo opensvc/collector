@@ -386,7 +386,7 @@ class col_var_value(HtmlTableColumn):
             edit = A(
                  IMG(_src=URL(r=request, c='static', f='edit.png')),
                  _id=eid,
-                 _onclick="""hide_eid('%(eid)s');show_eid('%(cid)s');show_eid('%(formid)s');sync_ajax('%(url)s', [], '%(formid)s', function(){eval_js_in_ajax_response('%(formid)s')})"""%dict(
+                 _onclick="""hide_eid('%(eid)s');show_eid('%(cid)s');show_eid('%(formid)s');sync_ajax('%(url)s', [], '%(formid)s', function(){})"""%dict(
                    formid=hid,
                    eid=eid,
                    cid=cid,
@@ -7095,7 +7095,7 @@ def ajax_target():
               _onclick="""
 $("#radio_node").prop('checked',false);
 $("#stage2").html("");
-sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')})"""%dict(
+sync_ajax('%(url)s', [], '%(id)s', function(){})"""%dict(
                 id="stage1",
                 url=URL(r=request, c='forms', f='ajax_service_list'),
               ),
@@ -7112,7 +7112,7 @@ sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')
               _onclick="""
 $("#radio_service").prop('checked',false);
 $("#stage2").html("");
-sync_ajax('%(url)s', [], '%(id)s', function(){eval_js_in_ajax_response('%(id)s')})"""%dict(
+sync_ajax('%(url)s', [], '%(id)s', function(){})"""%dict(
                 id="stage1",
                 url=URL(r=request, c='forms', f='ajax_node_list'),
               ),

@@ -1,3 +1,6 @@
+<!--[if IE]>
+{{response.files.insert(3,URL(r=request,c='static',f='jqplot/excanvas.js'))}}
+<![endif]-->
 {{
 response.files.insert(0,URL(r=request,c='static',f='jquery.js'))
 response.files.insert(1,URL(r=request,c='static',f='calendar.css'))

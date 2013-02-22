@@ -862,7 +862,7 @@ def ajax_dashboard():
                if (!$("#dh").is(":visible")) {
                  $(this).addClass("down16");
                  $(this).removeClass("right16");
-                 $("#dh").show(); sync_ajax("%(url)s", [], "dh", function(){eval_js_in_ajax_response("dh")});
+                 $("#dh").show(); sync_ajax("%(url)s", [], "dh", function(){});
                } else {
                  $(this).addClass("right16");
                  $(this).removeClass("down16");
