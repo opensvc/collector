@@ -945,7 +945,7 @@ class table_comp_rulesets(HtmlTable):
     def team_responsible_select_tool(self, label, action, divid, sid, _class=''):
         if 'Manager' not in user_groups():
             s = """and role in (
-                     select g.id from
+                     select g.role from
                        auth_group g
                        join auth_membership gm on g.id=gm.group_id
                        join auth_user u on gm.user_id=u.id
@@ -7030,6 +7030,7 @@ $("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").bind('ch
     }
     left = l[0].trim()
     right = l[1].trim()
+try {
     if (left[0] == "#"){
       left = left.substr(1);
       v_left = $('#'+prefix+"_"+left+"_"+index).val()
@@ -7048,6 +7049,7 @@ $("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").bind('ch
       return
     }
     $(this).parent('tr').show()
+} catch(e) {}
   })
 });
 """%dict(idx=len(l),xid=forms_xid('')),

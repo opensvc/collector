@@ -120,7 +120,7 @@ class table_forms(HtmlTable):
     def team_responsible_select_tool(self, label, action, divid, sid, _class=''):
         if 'Manager' not in user_groups():
             s = """and role in (
-                     select g.id from
+                     select g.role from
                        auth_group g
                        join auth_membership gm on g.id=gm.group_id
                        join auth_user u on gm.user_id=u.id
