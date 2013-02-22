@@ -7335,7 +7335,7 @@ def get_form_formatted_data_o(output, data):
             for idx in invalidate:
                 del(h[idx])
             output_value = h.values()
-        elif output('Format') == "dict of dict":
+        elif output.get('Format') == "dict of dict":
             h = {}
             invalidate = set([])
             for v in request.vars.keys():
@@ -7555,10 +7555,7 @@ def ajax_custo_form_submit(output, data):
             i += 1
         var_name = var_name_prefix + _i
 
-    try:
-        var_value = get_form_formatted_data(output, data)
-    except Exception, e:
-        raise Exception(str(e))
+    var_value = get_form_formatted_data(output, data)
 
     q = db.comp_rulesets_variables.ruleset_id == rset.id
     q &= db.comp_rulesets_variables.var_name == var_name
