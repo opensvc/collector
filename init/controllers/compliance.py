@@ -1419,6 +1419,9 @@ def ruleset_change_type(ids):
         db(q).delete()
         q = db.comp_rulesets_services.ruleset_id.belongs(ids)
         db(q).delete()
+    elif sid == "explicit":
+        q = db.comp_rulesets_filtersets.ruleset_id.belongs(ids)
+        db(q).delete()
 
     _log('compliance.ruleset.type.change',
          'changed ruleset type to %(s)s %(x)s',
