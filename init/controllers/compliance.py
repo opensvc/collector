@@ -7028,16 +7028,15 @@ $("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").bind('ch
     if (l.length!=2) {
       return
     }
-    left = l[0].trim()
-    right = l[1].trim()
-try {
-    if (left[0] == "#"){
+    left = $.trim(l[0])
+    right = $.trim(l[1])
+    if (left.charAt(0) == "#"){
       left = left.substr(1);
       v_left = $('#'+prefix+"_"+left+"_"+index).val()
     } else {
       v_left = left
     }
-    if (right[0] == "#"){
+    if (right.charAt(0) == "#"){
       right = right.substr(1);
       v_right = $('#'+prefix+"_"+right+"_"+index).val()
     } else {
@@ -7049,7 +7048,6 @@ try {
       return
     }
     $(this).parent('tr').show()
-} catch(e) {}
   })
 });
 """%dict(idx=len(l),xid=forms_xid('')),
