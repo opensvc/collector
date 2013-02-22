@@ -6773,10 +6773,15 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
     else:
         instance_counter = ""
 
+    if idx == 0:
+        _id = forms_xid("ref")
+    else:
+        _id = ""
+
     return DIV(
              instance_counter,
              TABLE(l),
-             _id=forms_xid("ref"),
+             _id=_id,
            )
 
 def ajax_forms_inputs():
@@ -6905,6 +6910,8 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
                  _onclick="""
 count=$("#%(counter)s").val();
 var clone = $("#%(ref)s").clone();
+$("#%(ref)s").attr('id', '')
+clone.attr('id', '%(ref)s')
 clone.find(':input').attr('id', function(i, val) {
   try {
     i = val.lastIndexOf('_')
