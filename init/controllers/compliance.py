@@ -7374,7 +7374,10 @@ def get_form_formatted_data_o(output, data):
             for idx, d in h.items():
                 if k not in d:
                     continue
-                _h[d[k]] = d
+                _k = d[k]
+                if not output.get('EmbedKey', True):
+                    del(d[k])
+                _h[_k] = d
             output_value = _h
         else:
             raise Exception(T("Unknown output format: %(fmt)s", dict(fmt=output.get('Format', 'none'))))
