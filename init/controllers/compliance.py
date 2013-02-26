@@ -7028,15 +7028,15 @@ function form_inputs_trigger (o) {
 
 function form_inputs_resize (o) {
   var max = 0
-  $(o).parents('table').find('input,textarea,select').each(function(){
+  $(o).parents('table').first().find('input,textarea,select').each(function(){
     w = $(this).width()
     if (w > max) { max = w }
   })
-  $(o).parents('table').find('input,textarea,select').width(max+'px')
+  $(o).parents('table').first().find('input,textarea,select').width(max+'px')
 }
 
 function form_inputs_constraints (o) {
-  $(o).parents('tr').children("[name=constraint]").each(function(){
+  $(o).parents('tr').first().children("[name=constraint]").each(function(){
     constraint = $(this).text()
     l = constraint.split(" ")
     if (l.length!=2) {
@@ -7046,17 +7046,17 @@ function form_inputs_constraints (o) {
     tgt = l[1]
     val = $(this).siblings().children('input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]').val()
     if (op == ">" && (1.0*val <= 1.0*tgt)) {
-      $(this).parents('tr').addClass("highlight_input")
+      $(this).parents('tr').first().addClass("highlight_input")
       $(this).show()
       return
     }
-    $(this).parents('tr').removeClass("highlight_input")
+    $(this).parents('tr').first().removeClass("highlight_input")
     $(this).hide()
   })
 };
 
 function form_inputs_conditions (o) {
-  $(o).parents('table').find("[name=cond]").each(function(){
+  $(o).parents('table').first().find("[name=cond]").each(function(){
     condition = $(this).text()
     l = $(this).attr('id').split("_")
     index = l[l.length-1]
@@ -7092,6 +7092,9 @@ function form_inputs_conditions (o) {
   })
 };
 
+$("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").each(function(){
+  form_inputs_resize(this)
+})
 $("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").bind('change', function(){
   form_inputs_trigger(this)
 })
