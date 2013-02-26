@@ -7023,6 +7023,16 @@ $("select").combobox();
 function form_inputs_trigger (o) {
   form_inputs_constraints(o)
   form_inputs_conditions(o)
+  form_inputs_resize(o)
+}
+
+function form_inputs_resize (o) {
+  var max = 0
+  $(o).parents('table').find('input,textarea,select').each(function(){
+    w = $(this).width()
+    if (w > max) { max = w }
+  })
+  $(o).parents('table').find('input,textarea,select').width(max+'px')
 }
 
 function form_inputs_constraints (o) {
