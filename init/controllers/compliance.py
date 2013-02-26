@@ -6648,7 +6648,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
                     q = db.nodes.id > 0
                 o = db.nodes.project | db.nodes.nodename
                 rows = db(q).select(db.nodes.project, db.nodes.nodename, orderby=o)
-                candidates = [(' '.join((str(r.project if r.project is not None else ''), str(r.nodename))), r.nodename) for r in rows]
+                candidates = [('[%s] %s' % (str(r.project if r.project is not None else ''), str(r.nodename)), r.nodename) for r in rows]
             elif input['Candidates'] == "__service_selector__":
                 o = db.services.svc_app | db.services.svc_name
                 q = db.services.svc_app == db.apps.app
@@ -6661,7 +6661,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
                                         db.services.svc_app,
                                         groupby=o,
                                         orderby=o)
-                candidates = [(' '.join((str(r.svc_app if r.svc_app is not None else ''), str(r.svc_name))), r.svc_name) for r in services]
+                candidates = [('[%s] %s' % (str(r.svc_app if r.svc_app is not None else ''), str(r.svc_name)), r.svc_name) for r in services]
             else:
                 candidates = input['Candidates']
 
@@ -6675,6 +6675,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
                 elif o != "":
                     candidates = [''] + candidates
 
+            max = 10
             for o in candidates:
                 if type(o) in (list, tuple):
                     label, value = o
@@ -6691,11 +6692,15 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
                 else:
                     _label = label
                 options.append(OPTION(_label, _value=value, _selected=selected))
+                w = len(_label)
+                if w > max:
+                    max = w
             _input = SELECT(
                    *options,
                    **dict(
                      _id=forms_xid(input['Id']+'_'+str(idx)),
                      _name=forms_xid(''),
+                     _style="width:%(max)dem"%dict(max=max),
                    )
                  )
         elif 'Type' not in input:
