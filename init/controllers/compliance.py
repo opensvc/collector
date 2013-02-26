@@ -6881,6 +6881,7 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
         l = inputs_block(data, defaults=cur, display_mode=display_mode, showexpert=showexpert)
     elif form_output.get('Format') in ('list', 'list of dict', 'dict of dict'):
         if cur is None or len(cur) == 0:
+            count = 1
             _l = inputs_block(data, display_mode=display_mode, showexpert=showexpert)
         else:
             count = len(cur)
@@ -6910,22 +6911,35 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
                  _onclick="""
 count=$("#%(counter)s").val();
 var clone = $("#%(ref)s").clone();
+$("#%(ref)s").find("select").each(function(i) {
+  var select = this;
+  $(clone).find("select").eq(i).val($(select).val());
+});
+clone.find(".inputOverlayCreated").each(function(){
+  $(this).siblings().remove()
+  $(this).removeClass("inputOverlayCreated")
+  $(this).combobox()
+})
 $("#%(ref)s").attr('id', '')
 clone.attr('id', '%(ref)s')
-clone.find(':input').attr('id', function(i, val) {
+clone.find('input,select,textarea,[name=cond]').attr('id', function(i, val) {
   try {
     i = val.lastIndexOf('_')
     return val.substring(0, i) + '_' + count;
   } catch(e) {}
   return val
 });
+clone.find('select').combobox()
+clone.find("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").bind('change', function(){
+  form_inputs_trigger(this)
+})
 clone.find('.form_instance_count').text(count)
 $('#%(container)s').append("<hr />")
 clone.appendTo($('#%(container)s'))
 count=parseInt(count)+1
 $("#%(counter)s").val(count);
-$("select").combobox();
 """%dict(ref=forms_xid('ref'),
+         xid=forms_xid(''),
          counter=forms_xid('count'),
          expert=forms_xid('expert'),
          container=forms_xid('container'))
@@ -7005,8 +7019,14 @@ sync_ajax('%(url)s', ids, '%(rid)s', reload_ajax_custo)
              SCRIPT("""
 var count=0;
 $("select").combobox();
-$("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").bind('change', function(){
-  $(this).parents('tr').children("[name=constraint]").each(function(){
+
+function form_inputs_trigger (o) {
+  form_inputs_constraints(o)
+  form_inputs_conditions(o)
+}
+
+function form_inputs_constraints (o) {
+  $(o).parents('tr').children("[name=constraint]").each(function(){
     constraint = $(this).text()
     l = constraint.split(" ")
     if (l.length!=2) {
@@ -7023,9 +7043,10 @@ $("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").bind('ch
     $(this).parents('tr').removeClass("highlight_input")
     $(this).hide()
   })
-})
-$("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").bind('change', function(){
-  $("[name=cond]").each(function(){
+};
+
+function form_inputs_conditions (o) {
+  $(o).parents('table').find("[name=cond]").each(function(){
     condition = $(this).text()
     l = $(this).attr('id').split("_")
     index = l[l.length-1]
@@ -7059,7 +7080,11 @@ $("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").bind('ch
     }
     $(this).parent('tr').show()
   })
-});
+};
+
+$("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").bind('change', function(){
+  form_inputs_trigger(this)
+})
 """%dict(idx=len(l),xid=forms_xid('')),
                _name=_hid+"_to_eval",
              ),
@@ -7669,6 +7694,37 @@ def convert_val(val, t):
      elif t == "list of string":
          l = val.split(',')
          val = map(lambda x: x.strip(), l)
+     elif t == "size":
+         val = val.strip()
+         if len(val) < 2:
+             raise Exception("Error converting size. Too short.")
+         i = 0
+         while val[i].isdigit():
+             i += 1
+             continue
+         unit = val[i:]
+         try:
+             val = int(val[0:i])
+         except:
+             raise Exception("Error converting size. Error converting to integer")
+         if unit in ("K", "k", "KB"):
+             val = val * 1024
+         elif unit == "Kib":
+             val = val * 1000
+         elif unit in ("M", "m", "MB"):
+             val = val * 1024 * 1024
+         elif unit == "Pib":
+             val = val * 1000 * 1000
+         elif unit in ("G", "g", "GB"):
+             val = val * 1024 * 1024 * 1024
+         elif unit == "Gib":
+             val = val * 1000 * 1000 * 1000
+         elif unit in ("P", "p", "PB"):
+             val = val * 1024 * 1024 * 1024 * 1024 
+         elif unit == "Pib":
+             val = val * 1000 * 1000 * 1000 * 1000
+         else:
+             raise Exception("Error converting size. Unknown unit.")
      return val
 
 def forms_xid(id=None):
