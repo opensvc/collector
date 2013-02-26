@@ -2138,11 +2138,17 @@ def svc_log_update(svcname, astatus):
 def translate_encap_nodename(svcname, nodename):
     q = db.svcmon.mon_vmname == nodename
     q &= db.svcmon.mon_svcname == svcname
-    q &= db.svcmon.mon_containerstatus.belongs(['up', 'n/a'])
-    row = db(q).select(db.svcmon.mon_nodname, db.svcmon.mon_vmname, db.svcmon.mon_vmtype).first()
-    if row is None:
-        # not encap ot vm started on multiple hv (pb)
+    rows = db(q).select(db.svcmon.mon_nodname, db.svcmon.mon_vmname, db.svcmon.mon_vmtype)
+
+    if len(rows) == 0:
+        # not encap
         return None, None, None
+
+    for row in rows:
+        if row.mon_containerstatus in ('up', 'stdby up', 'n/a'):
+            return row.mon_nodname, row.mon_vmname, row.mon_vmtype
+
+    row = rows.first()
     return row.mon_nodname, row.mon_vmname, row.mon_vmtype
 
 def __svcmon_update(vars, vals):
