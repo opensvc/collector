@@ -636,3 +636,26 @@ def get_service_nodes():
                         groupby=db.svcmon.mon_nodname)
     return PRE('\n'.join([r.mon_nodname for r in rows]))
 
+@auth.requires_login()
+def get_node_generic(col):
+    if len(request.args) != 1:
+        return ""
+    q = db.v_nodes.team_responsible.belongs(user_groups())
+    q &= db.v_nodes.nodename == request.args[0]
+    node = db(q).select().first()
+    if node is None:
+        return T("node not found")
+    return node[col]
+
+@auth.requires_login()
+def get_node_environnement():
+    return get_node_generic("environnement")
+
+@auth.requires_login()
+def get_node_os_concat():
+    return get_node_generic("os_concat")
+
+@auth.requires_login()
+def get_node_loc_city():
+    return get_node_generic("loc_city")
+
