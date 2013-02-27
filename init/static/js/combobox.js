@@ -28,11 +28,6 @@
             // highlighting of data changes
             input.addClass("ui-combobox-content ui-widget ui-corner-left");
 
-            //clear text when user clicks in text input
-            input.click(function() {
-                $(this).val("");
-            });
-
             input.attr("menustatus", "closed");
 
             // over-ride form submit, so it can't submit
