@@ -365,6 +365,7 @@ a:hover {
 input,
 textarea {
     border: 1px #dddddd solid;
+    padding: 0px 0.4em;
 }
 
 button {
