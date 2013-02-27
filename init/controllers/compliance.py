@@ -6588,10 +6588,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
 
     for i, input in enumerate(data['Inputs']):
         if type(defaults) == dict:
-            if input['Id'] in defaults:
-                default = defaults[input['Id']]
-            else:
-                default = ""
+            default = defaults.get(input['Id'], "")
         elif defaults is not None:
             default = defaults
         elif 'Default' in input and not display_mode:
@@ -6705,6 +6702,18 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
                  )
         elif 'Type' not in input:
             return ajax_error(T("'Type' not set for Input '%(name)s'", dict(name=input['Id'])))
+        elif input['Type'] == "info":
+            attr = {
+              '_id': forms_xid(input['Id']+'_'+str(idx)),
+              '_name': forms_xid(''),
+              '_style': 'padding: 0.3em',
+              '_trigger_args': ' '.join(input.get('Args', [])),
+              '_trigger_fn': input.get('Function', ""),
+            }
+            _input = DIV(
+                   default,
+                   **attr
+                 )
         elif input['Type'] == "text":
             _input = TEXTAREA(
                    default,
@@ -6927,7 +6936,7 @@ clone.find(".inputOverlayCreated").each(function(){
 })
 $("#%(ref)s").attr('id', '')
 clone.attr('id', '%(ref)s')
-clone.find('input,select,textarea,[name=cond]').attr('id', function(i, val) {
+clone.find('input,select,textarea,[name=cond],[id^=%(xid)s]').attr('id', function(i, val) {
   try {
     i = val.lastIndexOf('_')
     return val.substring(0, i) + '_' + count;
@@ -7029,6 +7038,24 @@ function form_inputs_trigger (o) {
   form_inputs_constraints(o)
   form_inputs_conditions(o)
   form_inputs_resize(o)
+  form_inputs_functions(o)
+}
+
+function form_inputs_functions (o) {
+  l = $(o).attr("id").split("_")
+  index = l[l.length-1]
+  l.pop()
+  id = l.join("_").replace("%(xid)s", "")
+  $(o).parents('table').first().find("[trigger_args~="+id+"]").each(function(){
+    l = $(this).attr("trigger_args").split(" ")
+    args = [""]
+    for (i=0; i<l.length; i++) {
+      id = "%(xid)s"+l[i]+"_"+index
+      args.push($("#"+id).val())
+    }
+    args = args.join("/")
+    sync_ajax("%(url)s/"+$(this).attr("trigger_fn")+args, {}, $(this).attr("id"), function(){})
+  })
 }
 
 function form_inputs_resize (o) {
@@ -7103,7 +7130,11 @@ $("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").each(fun
 $("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").bind('change', function(){
   form_inputs_trigger(this)
 })
-"""%dict(idx=len(l),xid=forms_xid('')),
+"""%dict(
+     idx=len(l),
+     xid=forms_xid(''),
+     url=str(URL(r=request, c='forms', f='/'))[:-2],
+    ),
                _name=_hid+"_to_eval",
              ),
         )

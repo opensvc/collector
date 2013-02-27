@@ -595,3 +595,29 @@ $("#svcname").siblings("input").focus();
            )
 
 
+@auth.requires_login()
+def get_node_portnames():
+    if len(request.args) != 1:
+        return ""
+    q = db.nodes.team_responsible.belongs(user_groups())
+    q &= db.node_hba.nodename == db.nodes.nodename
+    q &= db.node_hba.nodename == request.args[0]
+    rows = db(q).select(db.node_hba.hba_id,
+                        orderby=db.node_hba.hba_id,
+                        groupby=db.node_hba.hba_id)
+    return PRE('\n'.join([r.hba_id for r in rows]))
+
+@auth.requires_login()
+def get_service_portnames():
+    if len(request.args) != 1:
+        return ""
+    q = db.apps_responsibles.group_id.belongs(user_group_ids())
+    q &= db.apps_responsibles.app_id == db.apps.id
+    q &= db.apps.app == db.services.svc_app
+    q &= db.svcmon.mon_svcname == db.services.svc_name
+    q &= db.services.svc_name == request.args[0]
+    q &= db.node_hba.nodename == db.svcmon.mon_nodname
+    rows = db(q).select(db.node_hba.hba_id,
+                        orderby=db.node_hba.hba_id,
+                        groupby=db.node_hba.hba_id)
+    return PRE('\n'.join([r.hba_id for r in rows]))
