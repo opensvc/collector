@@ -94,7 +94,6 @@ def plot_log(s):
     for i in range(cols-1, -1, -1):
         d = now - datetime.timedelta(days=7*i)
         weeks.append(d.isocalendar()[1])
-    import json
     try:
         week, ok, nok, na = json.loads(s)
     except:
@@ -6543,7 +6542,7 @@ def ajax_error(msg):
              _style="text-align:left;padding:3em",
            )
 
-def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=False):
+def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detailed=False, showexpert=False):
     l = []
     if display_mode and \
        len(data.get('Outputs', [])) == 1 and \
@@ -6556,7 +6555,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
        data.get('Outputs', [])[0]['Class'] == 'dict' and \
        (len(data['Inputs']) > 1 or idx==0):
         header = TR(TD(B(data.get('Outputs', [])[0]['Class']), _class="comp16", _colspan=3))
-    elif display_mode and 'Format' in data.get('Outputs', [])[0] and \
+    elif display_mode and not display_detailed and 'Format' in data.get('Outputs', [])[0] and \
          data.get('Outputs', [])[0]['Format'] in ('list of dict', 'dict of dict') and idx==0:
         h = []
         for i, input in enumerate(data['Inputs']):
@@ -6624,11 +6623,12 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
                     default = '-'
                 else:
                     continue
-            if 'DisplayModeTrim' in input:
+            if 'DisplayModeTrim' in input and not display_detailed:
                 n = input['DisplayModeTrim']
                 if len(default) >= n:
                     default = default[0:n//3] + "..." + default[-n//3*2:]
-            if display_mode and 'Format' in data['Outputs'][0] and data['Outputs'][0]['Format'] in ('list of dict', 'dict of dict'):
+            if display_mode and not display_detailed and \
+               data['Outputs'][0].get('Format') in ('list of dict', 'dict of dict'):
                 if type(default) in (unicode, str) and len(default) > 25:
                     s = default[:10]+"..."+default[-12:]
                 else:
@@ -6737,17 +6737,21 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
         if label == "":
             label = XML("&nbsp;")
 
-        if display_mode and 'Format' in data['Outputs'][0] and data['Outputs'][0]['Format'] in ('list of dict', 'dict of dict'):
+        if display_mode and not display_detailed and \
+           data['Outputs'][0].get('Format') in ('list of dict', 'dict of dict'):
             if i == 0:
                 l.append(TD(_input, _class=lcl))
             else:
-                l.append(TD(_input, _class= cl))
+                l.append(TD(_input, _class=cl))
         else:
             if input.get('Hidden'):
                 name = forms_xid('hidden')
                 style = "display:none"
-            elif input.get('Condition') and not display_mode:
-                style = "display:none"
+            elif input.get('Condition'):
+                if default != "-" and default != "":
+                    style = ""
+                else:
+                    style = "display:none"
             elif input.get('ExpertMode') and not showexpert:
                 name = forms_xid('expert')
                 style = "display:none"
@@ -6774,7 +6778,8 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
                        _style=style,
                      ))
 
-    if display_mode and data.get('Outputs')[0].get('Format') in ('list of dict', 'dict of dict'):
+    if display_mode and not display_detailed and \
+       data.get('Outputs')[0].get('Format') in ('list of dict', 'dict of dict'):
         if idx == 0:
             return [header, TR(l)]
         return [TR(l)]
@@ -6782,7 +6787,8 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, showexpert=Fals
     if header != "":
         l = [header] + l
 
-    if not display_mode and data.get('Outputs')[0].get('Format') in ('list of dict', 'dict of dict', 'list'):
+    if (not display_mode or display_detailed) and \
+       data.get('Outputs')[0].get('Format') in ('list of dict', 'dict of dict', 'list'):
         instance_counter = DIV(idx, _class="form_instance_count")
     else:
         instance_counter = ""
@@ -6808,14 +6814,21 @@ def ajax_forms_inputs():
              _rset_name=request.vars.rset_name,
              _rset_id=request.vars.rset_id,
              _hid=request.vars.hid,
+             _wfid=request.vars.wfid,
+             _prev_wfid=request.vars.prev_wfid,
              showexpert=request.vars.showexpert,
            )
 
-def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None, _form_xid=None, _rset_name=None, _rset_id=None, _hid=None, var=None, form=None, form_output=None, showexpert=False, current_values=None):
+def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None, _form_xid=None, _rset_name=None, _rset_id=None, _hid=None, var=None, form=None, form_output=None, showexpert=False, current_values=None, _wfid=None, _prev_wfid=None):
     if _mode == "show":
         display_mode = True
+        display_detailed = False
+    elif _mode == "showdetailed":
+        display_mode = True
+        display_detailed = True
     else:
         display_mode = False
+        display_detailed = False
 
     if var is None and _var_id is not None:
         q = db.v_comp_rulesets.id == _var_id
@@ -6835,6 +6848,9 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
         form = db(q).select().first()
     elif _form_id is not None:
         q = db.forms.id == _form_id
+        form = db(q).select().first()
+    elif _wfid is not None:
+        q = db.forms_store.id == _wfid
         form = db(q).select().first()
     else:
         return ajax_error(T("No form specified"))
@@ -6874,7 +6890,6 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
         cur = var.var_value
         if len(cur) > 0 and form_output.get('Type') == 'json':
             try:
-                import json
                 cur = json.loads(cur)
             except:
                 return ajax_error("json error parsing current variable value '%s'"%cur)
@@ -6887,6 +6902,8 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
                         data['Inputs'][input_ids[key]]['Default'] = cur[key]
             elif form_output.get('Format') == 'list':
                 data['Inputs'][0]['Default'] = cur
+    elif 'form_data' in form:
+        cur = json.loads(form.form_data)
     elif current_values is not None:
         cur = current_values
 
@@ -6896,7 +6913,9 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
     elif form_output.get('Format') in ('list', 'list of dict', 'dict of dict'):
         if cur is None or len(cur) == 0:
             count = 1
-            _l = inputs_block(data, display_mode=display_mode, showexpert=showexpert)
+            _l = inputs_block(data, display_mode=display_mode,
+                              display_detailed=display_detailed,
+                              showexpert=showexpert)
         else:
             count = len(cur)
             _l = []
@@ -6907,7 +6926,10 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
                     if key is None or key not in d:
                         d[key] = default
                     default = d
-                _l.append(inputs_block(data, idx=i, defaults=default, display_mode=display_mode, showexpert=showexpert))
+                _l.append(inputs_block(data, idx=i, defaults=default,
+                                       display_mode=display_mode,
+                                       display_detailed=display_detailed,
+                                       showexpert=showexpert))
                 if not display_mode and i != len(cur) - 1:
                     _l.append(HR())
         if display_mode:
@@ -6992,6 +7014,8 @@ $("#%(counter)s").val(count);
             submit_vars["rset_id"] = _rset_id
         if _var_id is not None:
             submit_vars["var_id"] = _var_id
+        if _prev_wfid is not None and _prev_wfid != 'None':
+            submit_vars["prev_wfid"] = _prev_wfid
 
         footer = SPAN(
              DIV(
@@ -7139,7 +7163,7 @@ $("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").bind('ch
              ),
         )
 
-    if not display_mode and form.form_type == 'custo' and var is None:
+    if not display_mode and 'form_type' in form and form.form_type == 'custo' and var is None:
         header = ajax_target()
     else:
         header = ""
@@ -7531,7 +7555,7 @@ def ajax_generic_form_submit(form, data):
             message = str(XML(BODY(
               P(T("Form submitted on %(date)s by %(submitter)s", dict(date=str(datetime.datetime.now()), submitter=user_name()))),
               _ajax_forms_inputs(
-                 _mode="show",
+                 _mode="showdetailed",
                  form=form,
                  form_output=output,
                  showexpert=True,
@@ -7542,6 +7566,36 @@ def ajax_generic_form_submit(form, data):
                       subject=title,
                       message='<html>%s</html>'%message)
             log.append(("form.submit", "Mail sent to %(to)s on form %(form_name)s submission." , dict(to=', '.join(to), form_name=form.form_name)))
+        elif dest == "workflow":
+            d = get_form_formatted_data(output, data)
+            if request.vars.prev_wfid is not None and request.vars.prev_wfid != 'None':
+                form_assignee = output.get('NextAssignee')
+                if form_assignee is None:
+                    q = db.forms_store.id == request.vars.prev_wfid
+                    prev_wf = db(q).select().first()
+                    form_assignee = prev_wf.form_submitter
+                if form_assignee is None:
+                    form_assignee = ""
+                record_id = db.forms_store.insert(
+                  form_yaml=form.form_yaml,
+                  form_submitter=user_name(),
+                  form_assignee=form_assignee,
+                  form_submit_date=datetime.datetime.now(),
+                  form_prev_id=request.vars.prev_wfid,
+                  form_data=d,
+                )
+            else:
+                record_id = db.forms_store.insert(
+                  form_yaml=form.form_yaml,
+                  form_submitter=user_name(),
+                  form_assignee=output.get('NextAssignee', ''),
+                  form_submit_date=datetime.datetime.now(),
+                  form_data=d,
+                )
+            if record_id is not None and request.vars.prev_wfid is not None:
+                q = db.forms_store.id == request.vars.prev_wfid
+                db(q).update(form_next_id=record_id)
+            log.append(("form.store", "Saved %(form_name)s submitted data", dict(form_name=form.form_name)))
         elif dest == "compliance variable":
             log += ajax_custo_form_submit(output, data)
 

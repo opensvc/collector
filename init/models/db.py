@@ -1666,3 +1666,14 @@ db.define_table('saves',
     Field('save_id', 'string'),
     migrate=False)
 
+db.define_table('forms_store',
+    Field('id', 'integer'),
+    Field('form_submit_date', 'datetime'),
+    Field('form_next_id', 'integer'),
+    Field('form_prev_id', 'integer'),
+    Field('form_submitter', 'string'),
+    Field('form_assignee', 'string'),
+    Field('form_yaml', 'text'),
+    Field('form_data', 'text'),
+    migrate=False)
+

@@ -3275,3 +3275,16 @@ drop view v_comp_nodes;
 
 create view v_comp_nodes as (select n.*,group_concat(distinct r.ruleset_name separator ', ') as rulesets, group_concat(distinct m.modset_name separator ', ') as modulesets from v_nodes n left join comp_rulesets_nodes rn on n.nodename=rn.nodename left join comp_rulesets r on r.id=rn.ruleset_id left join comp_node_moduleset mn on mn.modset_node=n.nodename left join comp_moduleset m on m.id=mn.modset_id group by n.nodename);
 
+
+CREATE TABLE `forms_store` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `form_yaml` text NOT NULL,
+  `form_submitter` varchar(200) NOT NULL,
+  `form_assignee` varchar(200) NOT NULL,
+  `form_submit_date` datetime NOT NULL,
+  `form_data` text NOT NULL,
+  `form_next_id` int(11) DEFAULT NULL,
+  `form_prev_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB;
+

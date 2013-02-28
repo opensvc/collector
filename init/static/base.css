@@ -1329,6 +1329,37 @@ ul.login_menu ul {
     cursor: pointer;
 }
 
+.highlight_forms {
+    border: 2px solid lightgrey;
+}
+
+.forms {
+    border-radius:6px;
+   -moz-border-radius:6px;
+   -webkit-border-radius:6px;
+    padding: 2px;
+    padding-left: 10px;
+    padding-right: 10px;
+    display: inline-block;
+}
+
+.wfentry {
+    border-radius:6px;
+   -moz-border-radius:6px;
+   -webkit-border-radius:6px;
+    padding: 2px;
+    padding-left: 10px;
+    padding-right: 10px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    display: inline-block;
+}
+
+.wfentry:hover {
+    border: 2px solid red;
+}
+
+
 .formentry {
     border-radius:6px;
    -moz-border-radius:6px;

@@ -108,8 +108,6 @@ response.menu = [
               URL(request.application,'compliance','comp_rules')],
              [DIV(T('Modulesets'), _class='action16'), False,
               URL(request.application,'compliance','comp_modules')],
-             [DIV(T('Forms'), _class='comp16'), False,
-              URL(request.application,'forms','forms')],
          ]
     ],
     [T('Stats'), False, '',
@@ -122,6 +120,16 @@ response.menu = [
               URL(request.application,'lifecycle','lifecycle_os')],
              [DIV(T('Availability'), _class='avail16'), False,
               URL(request.application,'svcmon_log','svcmon_log')],
+         ]
+    ],
+    [T('Forms'), False, '',
+         [
+             [DIV(T('Forms'), _class='comp16'), False,
+              URL(request.application,'forms','forms')],
+             [DIV(T('Assigned to me'), _class='comp16'), False,
+              URL(request.application,'forms','workflows_assigned_to_me')],
+             [DIV(T('Pending tiers action'), _class='comp16'), False,
+              URL(request.application,'forms','workflows_pending_tiers_action')],
          ]
     ],
     [T('Admin'), False, '',

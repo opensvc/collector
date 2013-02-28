@@ -1,4 +1,5 @@
 import re
+import os
 import yaml
 
 class col_forms_yaml(HtmlTableColumn):
@@ -358,8 +359,12 @@ def get_folders_info():
         h[data['Folder']] = data
     return data
 
-def get_forms(form_type=None, folder="/"):
-    q = db.forms.form_folder == folder
+def get_forms(form_type=None, folder="/", form_names=[]):
+    if len(form_names) > 0:
+        q = db.forms.form_name.belongs(form_names)
+    else:
+        q = db.forms.form_folder == folder
+
     if form_type != "folder":
         q &= db.forms.id == db.forms_team_responsible.form_id
         q &= db.forms_team_responsible.group_id.belongs(user_group_ids())
@@ -390,16 +395,12 @@ def get_forms(form_type=None, folder="/"):
 
 @auth.requires_login()
 def ajax_forms_list():
-    return forms_list(request.vars.folder)
+    return forms_list(request.vars.folder, prev_wfid=request.vars.prev_wfid)
 
 @auth.requires_login()
-def forms_list(folder="/"):
-    import os
+def folder_list(folder="/"):
     l = []
-
-    folder = os.path.realpath(folder)
     folders = get_forms("folder", folder=folder)
-
     if folder != "/":
         parent_folder = '/'.join(folder.split('/')[:-1])
         if not parent_folder.startswith('/'):
@@ -438,10 +439,21 @@ sync_ajax('%(url)s', [], '%(id)s', function(){});
           _class="formentry",
         ),
       )
+    return l
 
-    for id, form_name, form_folder, data in get_forms(["custo", "generic"], folder=folder):
+@auth.requires_login()
+def forms_list(folder="/", form_names=[], prev_wfid=None):
+    l = []
+
+    folder = os.path.realpath(folder)
+
+    if len(form_names) == 0:
+        l += folder_list(folder)
+
+    for id, form_name, form_folder, data in get_forms(["custo", "generic"], folder=folder, form_names=form_names):
         cl = data.get('Css', 'nologo48')
         desc = data.get('Desc', '')
+        if desc is None: desc = ''
         if 'Label' in data:
             label = data['Label']
         else:
@@ -474,6 +486,7 @@ sync_ajax('%(url)s', [], '%(id)s', function(){});
                   vars={
                     "form_id": id,
                     "hid": "forms_inputs",
+                    "prev_wfid": prev_wfid,
                   }
                 ),
               ),
@@ -481,7 +494,6 @@ sync_ajax('%(url)s', [], '%(id)s', function(){});
         ),
       )
     d = DIV(
-          H1(T("Choose a customization form")),
           DIV(
             l,
             _style="margin:1em;display:inline-block;vertical-align:top;text-align:left",
@@ -496,9 +508,140 @@ sync_ajax('%(url)s', [], '%(id)s', function(){});
 @auth.requires_login()
 def forms():
     d = DIV(
+      H1(T("Choose a customization form")),
       DIV(forms_list(), _id="forms_list"),
     )
     return dict(table=d)
+
+def stored_form_show(wfid, _class=""):
+    hid = "wf_%s"%wfid
+    q = db.forms_store.id == wfid
+    wf = db(q).select().first()
+    form = yaml.load(wf.form_yaml)
+
+    if len(wf.form_assignee) > 0:
+        assignee = T("Assigned to %(assignee)s", dict(assignee=wf.form_assignee))
+    else:
+        assignee = ""
+
+    return DIV(
+      H2(form.get('Label')),
+      I(
+        T("Submitted by %(submitter)s on %(date)s", dict(submitter=wf.form_submitter, date=wf.form_submit_date)),
+        BR(),
+        assignee,
+      ),
+      DIV(
+        _id=hid,
+        _style="padding:0.5em",
+      ),
+      SCRIPT(
+        """sync_ajax("%(url)s", {}, "%(id)s", function(){})"""%dict(
+          url=URL(c="compliance", f="ajax_forms_inputs", vars={
+            "wfid": wfid,
+            "form_xid": hid,
+            "hid": hid,
+            "mode": "showdetailed",
+            "showexpert": True,
+          }),
+          id=hid,
+        ),
+      ),
+      _class=_class,
+    )
+
+@auth.requires_login()
+def forms_chain(wfid, folded=False):
+    l = []
+    id = wfid
+
+    data = stored_form_show(id, _class="forms highlight_forms")
+    l.append(data)
+
+    while id is not None:
+        q = db.forms_store.form_next_id == id
+        wf = db(q).select(db.forms_store.id).first()
+        if wf is None:
+            break
+        id = wf.id
+        data = stored_form_show(id, _class="forms")
+        l.append(data)
+
+    l.reverse()
+
+    id = wfid
+    while id is not None:
+        q = db.forms_store.form_prev_id == id
+        wf = db(q).select(db.forms_store.id).first()
+        if wf is None:
+            break
+        id = wf.id
+        data = stored_form_show(id, _class="forms")
+        l.append(data)
+
+    _l = []
+    down = DIV(
+      XML("&nbsp;"),
+      _class="down16",
+      _style="width:16px",
+    )
+
+    s = """$(this).find(".foldme").toggle(400)"""
+
+    if len(l) > 2:
+        fold = True
+    else:
+        fold = False
+
+    for i, e in enumerate(l):
+        cl = ""
+        if i > 1:
+            cl = "foldme"
+        if folded:
+            cl += " hidden"
+        _l.append(DIV(e, _class=cl))
+        _l.append(DIV(down, _class=cl))
+
+    if len(_l) > 0:
+        _l.pop()
+
+    return DIV(_l, _onclick=s)
+
+@auth.requires_login()
+def workflow():
+    wfid = request.vars.wfid
+
+    q = db.forms_store.id == wfid
+    wf = db(q).select().first()
+
+    if wf is None:
+        return T("Workflow form id %(wfid)s not found", dict(wfid=wfid))
+
+    form_names = None
+    form = yaml.load(wf.form_yaml)
+
+    if wf.form_next_id is not None:
+        _forms_list = T("This workflow step is already completed")
+    else:
+        for output in form.get("Outputs", []):
+            form_names = output.get("NextForms")
+            if form_names is not None:
+                break
+
+        if form_names is None:
+            _forms_list = T("This Workflow step has no successor")
+        else:
+            _forms_list = forms_list(form_names=form_names, prev_wfid=wfid)
+
+    d = DIV(
+      H1(T("Workflow")),
+      DIV(forms_chain(wfid)),
+      DIV(_class="spacer"),
+      H1(T("Next steps")),
+      DIV(_forms_list, _id="forms_list"),
+    )
+    return dict(table=d)
+
 
 @auth.requires_login()
 def ajax_node_list():
@@ -593,6 +736,53 @@ $("select").combobox();
 $("#svcname").siblings("input").focus();
 """, _name="stage1_to_eval"),
            )
+
+
+@auth.requires_login()
+def workflows_assigned_to_me():
+    q = db.forms_store.form_next_id == None
+    q1 = db.forms_store.form_assignee.belongs(user_groups())
+    q1 |= db.forms_store.form_assignee == user_name()
+    q &= q1
+    rows = db(q).select(orderby=db.forms_store.form_submit_date)
+
+    # discard closed workflows
+    l = []
+    for wf in rows:
+        keep = True
+        form_yaml = yaml.load(wf.form_yaml)
+        for output in form_yaml.get('Outputs', []):
+             if output.get('Dest') == 'workflow':
+                 if len(output.get('NextForms', [])) == 0:
+                     keep = False
+                 break
+        if keep:
+            l.append(wf)
+
+    _l = []
+    for wf in l:
+        data = forms_chain(wf.id, folded=True)
+        d = DIV(
+          A(
+            data,
+            _href=URL(c='forms', f='workflow', vars={'wfid': wf.id}),
+          ),
+          _class="wfentry",
+        )
+        _l.append(d)
+
+    if len(_l) == 0:
+        return dict(table=DIV(T("You currently have no assigned workflow"), _style="padding:2em"))
+
+    d = DIV(
+      H1(T("Workflows assigned to me")),
+      SPAN(_l),
+    )
+    return dict(table=d)
+
+@auth.requires_login()
+def workflows_pending_tiers_action():
+    return
 
 
 @auth.requires_login()
