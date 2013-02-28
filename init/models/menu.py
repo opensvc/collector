@@ -124,11 +124,11 @@ response.menu = [
     ],
     [T('Forms'), False, '',
          [
-             [DIV(T('Forms'), _class='comp16'), False,
+             [DIV(T('Forms'), _class='wf16'), False,
               URL(request.application,'forms','forms')],
-             [DIV(T('Assigned to me'), _class='comp16'), False,
+             [DIV(T('Assigned to me'), _class='wf16'), False,
               URL(request.application,'forms','workflows_assigned_to_me')],
-             [DIV(T('Pending tiers action'), _class='comp16'), False,
+             [DIV(T('Pending tiers action'), _class='wf16'), False,
               URL(request.application,'forms','workflows_pending_tiers_action')],
          ]
     ],
