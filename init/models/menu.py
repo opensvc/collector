@@ -152,7 +152,7 @@ response.menu = [
               URL(request.application,'provisioning','prov_admin')],
              [DIV(T('Filters'), _class='filters'), False,
               URL(request.application,'compliance','comp_filters')],
-             [DIV(T('Forms'), _class='comp16'), False,
+             [DIV(T('Forms'), _class='wf16'), False,
               URL(request.application,'forms','forms_admin')],
          ]
     ],
