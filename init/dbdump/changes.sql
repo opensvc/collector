@@ -3290,3 +3290,19 @@ CREATE TABLE `forms_store` (
 
 alter table forms_store add column form_head_id int(11) default null;
 
+CREATE TABLE `forms_team_publication` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `form_id` int(11) NOT NULL,
+  `group_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx1` (`form_id`),
+  KEY `idx2` (`group_id`),
+  CONSTRAINT `forms_team_publication_fk1` FOREIGN KEY (`form_id`) REFERENCES `forms` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `forms_team_publication_fk2` FOREIGN KEY (`group_id`) REFERENCES `auth_group` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+drop view v_forms ;
+
+create view v_forms as (select `f`.*, group_concat(distinct `gg`.`role` order by `gg`.`role` ASC separator ', ') AS `form_team_publication`, group_concat(distinct `g`.`role` order by `g`.`role` ASC separator ', ') AS `form_team_responsible` from `forms` `f` left join `forms_team_responsible` `fr` on `f`.`id` = `fr`.`form_id`  left join `auth_group` `g` on `fr`.`group_id` = `g`.`id` left join `forms_team_publication` `fp` on `f`.`id` = `fp`.`form_id` left join `auth_group` `gg` on `fp`.`group_id` = `gg`.`id` group by `f`.`id`);
+
+

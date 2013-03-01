@@ -915,6 +915,7 @@
 'Targets': 'Targets',
 'Team': 'Equipe',
 'Team Responsible': 'Equipe Responsable',
+'Team publication': 'Team publication',
 'Team responsible': 'Equipe responsable',
 'Teams responsible': 'Equipes responsables',
 'Template comment': 'Commentaire du modèle',

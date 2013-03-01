@@ -18,6 +18,7 @@ class table_forms(HtmlTable):
                      'form_type',
                      'form_folder',
                      'form_team_responsible',
+                     'form_team_publication',
                      'form_yaml',
                      'form_created',
                      'form_author']
@@ -28,6 +29,13 @@ class table_forms(HtmlTable):
                 display = True,
                 table = 'v_forms',
                 img = 'prov'
+            ),
+            'form_team_publication': HtmlTableColumn(
+                title = 'Team publication',
+                field = 'form_team_publication',
+                display = True,
+                table = 'v_forms',
+                img = 'guys16'
             ),
             'form_team_responsible': HtmlTableColumn(
                 title = 'Team responsible',
@@ -80,6 +88,7 @@ class table_forms(HtmlTable):
         if 'FormsManager' in user_groups():
             self.additional_tools.append('add_forms')
             self += HtmlTableMenu('Team responsible', 'guys16', ['team_responsible_attach', 'team_responsible_detach'])
+            self += HtmlTableMenu('Team publication', 'guys16', ['team_publication_attach', 'team_publication_detach'])
 
 
     def format_extrarow(self, o):
@@ -104,6 +113,22 @@ class table_forms(HtmlTable):
                                               action="team_responsible_detach",
                                               divid="team_responsible_detach",
                                               sid="team_responsible_detach_s",
+                                              _class="detach16")
+        return d
+
+    def team_publication_attach(self):
+        d = self.team_publication_select_tool(label="Attach",
+                                              action="team_publication_attach",
+                                              divid="team_publication_attach",
+                                              sid="team_publication_attach_s",
+                                              _class="attach16")
+        return d
+
+    def team_publication_detach(self):
+        d = self.team_publication_select_tool(label="Detach",
+                                              action="team_publication_detach",
+                                              divid="team_publication_detach",
+                                              sid="team_publication_detach_s",
                                               _class="detach16")
         return d
 
@@ -138,6 +163,59 @@ class table_forms(HtmlTable):
                     %s
                   group by role order by role
         """%s
+        rows = db.executesql(sql)
+        options = [OPTION(g[1],_value=g[0]) for g in rows]
+
+        q = db.auth_membership.user_id == auth.user_id
+        q &= db.auth_group.id == db.auth_membership.group_id
+        q &= db.auth_group.role.like('user_%')
+        options += [OPTION(g.auth_group.role,_value=g.auth_group.id) for g in db(q).select()]
+        d = DIV(
+              A(
+                T(label),
+                _class=_class,
+                _onclick="""
+                  click_toggle_vis(event,'%(div)s', 'block');
+                """%dict(div=divid),
+              ),
+              DIV(
+                TABLE(
+                  TR(
+                    TH(T('Team')),
+                    TD(
+                      SELECT(
+                        *options,
+                        **dict(_id=sid)
+                      ),
+                    ),
+                  ),
+                  TR(
+                    TH(),
+                    TD(
+                      INPUT(
+                        _type='submit',
+                        _onclick=self.ajax_submit(additional_inputs=[sid],
+                                                  args=action),
+                      ),
+                    ),
+                  ),
+                ),
+                _style='display:none',
+                _class='white_float',
+                _name=divid,
+                _id=divid,
+              ),
+            )
+        return d
+
+    def team_publication_select_tool(self, label, action, divid, sid, _class=''):
+        sql = """ select id, role
+                  from auth_group
+                  where
+                    role not like "user_%%" and
+                    privilege = 'F'
+                  group by role order by role
+        """
         rows = db.executesql(sql)
         options = [OPTION(g[1],_value=g[0]) for g in rows]
 
@@ -235,6 +313,57 @@ def team_responsible_detach(ids=[]):
          dict(g=group_role(group_id), u=u))
 
 @auth.requires_membership('FormsManager')
+def team_publication_attach(ids=[]):
+    if len(ids) == 0:
+        raise ToolError("no form selected")
+    group_id = request.vars.team_publication_attach_s
+
+    done = []
+    for id in ids:
+        if 'Manager' not in user_groups():
+            q = db.forms_team_publication.form_id == id
+            q &= db.form_team_publication.group_id.belongs(user_group_ids())
+            if db(q).count() == 0:
+                continue
+        q = db.forms_team_publication.form_id == id
+        q &= db.forms_team_publication.group_id == group_id
+        if db(q).count() != 0:
+            continue
+        done.append(id)
+        db.forms_team_publication.insert(form_id=id, group_id=group_id)
+    if len(done) == 0:
+        return
+    rows = db(db.forms.id.belongs(done)).select(db.forms.form_name)
+    u = ', '.join([r.form_name for r in rows])
+    _log('form.group.attach',
+         'attached group %(g)s to forms %(u)s',
+         dict(g=group_role(group_id), u=u))
+
+@auth.requires_membership('CompManager')
+def team_publication_detach(ids=[]):
+    if len(ids) == 0:
+        raise ToolError("no form selected")
+    group_id = request.vars.team_publication_detach_s
+
+    done = []
+    for id in ids:
+        q = db.forms_team_publication.form_id == id
+        q &= db.forms_team_publication.group_id == group_id
+        if 'Manager' not in user_groups():
+            q &= db.forms_team_publication.group_id.belongs(user_group_ids())
+        if db(q).count() == 0:
+            continue
+        done.append(id)
+        db(q).delete()
+    if len(done) == 0:
+        return
+    rows = db(db.forms.id.belongs(done)).select(db.forms.form_name)
+    u = ', '.join([r.form_name for r in rows])
+    _log('form.group.detach',
+         'detached group %(g)s from forms %(u)s',
+         dict(g=group_role(group_id), u=u))
+
+@auth.requires_membership('FormsManager')
 def forms_editor():
     q = db.forms.id == request.vars.form_id
     rows = db(q).select()
@@ -272,6 +401,7 @@ def forms_editor():
                           form_type=request.vars.form_type,
                           form_yaml=request.vars.form_yaml))
             add_default_team_responsible(request.vars.form_name)
+            add_default_team_publication(request.vars.form_name)
         elif request.vars.delete_this_record == 'on':
             _log('compliance.form.delete',
                  "Deleted '%(form_type)s' form '%(form_name)s' with definition:\n%(form_yaml)s",
@@ -304,6 +434,19 @@ def add_default_team_responsible(form_name):
         group_id = db(q).select()[0].id
     db.forms_team_responsible.insert(form_id=form_id, group_id=group_id)
 
+def add_default_team_publication(form_name):
+    q = db.forms.form_name == form_name
+    form_id = db(q).select()[0].id
+    q = db.auth_membership.user_id == auth.user_id
+    q &= db.auth_membership.group_id == db.auth_group.id
+    q &= db.auth_group.role.like('user_%')
+    try:
+        group_id = db(q).select()[0].auth_group.id
+    except:
+        q = db.auth_group.role == 'Manager'
+        group_id = db(q).select()[0].id
+    db.forms_team_publication.insert(form_id=form_id, group_id=group_id)
+
 @auth.requires_login()
 def ajax_forms_admin_col_values():
     t = table_forms('forms', 'ajax_forms_admin')
@@ -327,6 +470,10 @@ def ajax_forms_admin():
                 team_responsible_attach(t.get_checked())
             elif action == 'team_responsible_detach':
                 team_responsible_detach(t.get_checked())
+            elif action == 'team_publication_attach':
+                team_publication_attach(t.get_checked())
+            elif action == 'team_publication_detach':
+                team_publication_detach(t.get_checked())
         except ToolError, e:
             v.flash = str(e)
 
@@ -366,8 +513,8 @@ def get_forms(form_type=None, folder="/", form_names=[]):
         q = db.forms.form_folder == folder
 
     if form_type != "folder":
-        q &= db.forms.id == db.forms_team_responsible.form_id
-        q &= db.forms_team_responsible.group_id.belongs(user_group_ids())
+        q &= db.forms.id == db.forms_team_publication.form_id
+        q &= db.forms_team_publication.group_id.belongs(user_group_ids())
 
     if form_type is None:
         pass
