@@ -525,11 +525,14 @@ def stored_form_show(wfid, _class=""):
         assignee = ""
 
     return DIV(
-      H2(form.get('Label')),
-      I(
-        T("Submitted by %(submitter)s on %(date)s", dict(submitter=wf.form_submitter, date=wf.form_submit_date)),
-        BR(),
-        assignee,
+      DIV(
+        H2(form.get('Label')),
+        I(
+          T("Submitted by %(submitter)s on %(date)s", dict(submitter=wf.form_submitter, date=wf.form_submit_date)),
+          BR(),
+          assignee,
+        ),
+        _class=form.get('Css', ''),
       ),
       DIV(
         _id=hid,
@@ -551,11 +554,15 @@ def stored_form_show(wfid, _class=""):
     )
 
 @auth.requires_login()
-def forms_chain(wfid, folded=False):
+def forms_chain(wfid, folded=False, highlight_step=True):
     l = []
     id = wfid
 
-    data = stored_form_show(id, _class="forms highlight_forms")
+    if highlight_step:
+        cl = "forms highlight_forms"
+    else:
+        cl = "forms"
+    data = stored_form_show(id, _class=cl)
     l.append(data)
 
     while id is not None:
@@ -595,12 +602,12 @@ def forms_chain(wfid, folded=False):
 
     for i, e in enumerate(l):
         cl = ""
-        if i > 1:
+        if i > 0 and i < len(l) - 1:
             cl = "foldme"
-        if folded:
-            cl += " hidden"
+            if folded:
+                cl += " hidden"
         _l.append(DIV(e, _class=cl))
-        _l.append(DIV(down, _class=cl))
+        _l.append(DIV(down))
 
     if len(_l) > 0:
         _l.pop()
@@ -738,30 +745,10 @@ $("#svcname").siblings("input").focus();
            )
 
 
-@auth.requires_login()
-def workflows_assigned_to_me():
-    q = db.forms_store.form_next_id == None
-    q1 = db.forms_store.form_assignee.belongs(user_groups())
-    q1 |= db.forms_store.form_assignee == user_name()
-    q &= q1
-    rows = db(q).select(orderby=db.forms_store.form_submit_date)
-
-    # discard closed workflows
-    l = []
-    for wf in rows:
-        keep = True
-        form_yaml = yaml.load(wf.form_yaml)
-        for output in form_yaml.get('Outputs', []):
-             if output.get('Dest') == 'workflow':
-                 if len(output.get('NextForms', [])) == 0:
-                     keep = False
-                 break
-        if keep:
-            l.append(wf)
-
+def format_forms_chain(l):
     _l = []
     for wf in l:
-        data = forms_chain(wf.id, folded=True)
+        data = forms_chain(wf.id, folded=False, highlight_step=False)
         d = DIV(
           A(
             data,
@@ -770,6 +757,17 @@ def workflows_assigned_to_me():
           _class="wfentry",
         )
         _l.append(d)
+    return _l
+
+@auth.requires_login()
+def workflows_assigned_to_me():
+    q = db.forms_store.form_next_id == None
+    q1 = db.forms_store.form_assignee.belongs(user_groups())
+    q1 |= db.forms_store.form_assignee == user_name()
+    q &= q1
+    rows = db(q).select(orderby=db.forms_store.form_submit_date)
+
+    _l = format_forms_chain(rows)
 
     if len(_l) == 0:
         return dict(table=DIV(T("You currently have no assigned workflow"), _style="padding:2em"))
@@ -782,8 +780,29 @@ def workflows_assigned_to_me():
 
 @auth.requires_login()
 def workflows_pending_tiers_action():
-    return
+    # all my workflows
+    q = db.forms_store.form_submitter == user_name()
+    q &= db.forms_store.form_prev_id == None
+    rows = db(q).select(db.forms_store.id)
+    ids = map(lambda x: x.id, rows)
 
+    # only those pending tiers action
+    q = db.forms_store.form_head_id.belongs(ids)
+    q &= db.forms_store.form_next_id == None
+    q &= ~db.forms_store.form_assignee.belongs(user_groups())
+    q &= db.forms_store.form_assignee != user_name()
+    rows = db(q).select(orderby=db.forms_store.form_submit_date)
+
+    _l = format_forms_chain(rows)
+
+    if len(_l) == 0:
+        return dict(table=DIV(T("None of your workflow are pending tiers action"), _style="padding:2em"))
+
+    d = DIV(
+      H1(T("Workflows pending tiers action")),
+      SPAN(_l),
+    )
+    return dict(table=d)
 
 @auth.requires_login()
 def get_node_portnames():

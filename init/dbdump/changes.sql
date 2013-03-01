@@ -3288,3 +3288,5 @@ CREATE TABLE `forms_store` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
 
+alter table forms_store add column form_head_id int(11) default null;
+

@@ -7014,8 +7014,12 @@ $("#%(counter)s").val(count);
             submit_vars["rset_id"] = _rset_id
         if _var_id is not None:
             submit_vars["var_id"] = _var_id
+
         if _prev_wfid is not None and _prev_wfid != 'None':
             submit_vars["prev_wfid"] = _prev_wfid
+            callback = """function(){window.location="%s"}"""%request.env.http_referer
+        else:
+            callback = "reload_ajax_custo"
 
         footer = SPAN(
              DIV(
@@ -7041,8 +7045,9 @@ function reload_ajax_custo(){
   $("select#svcname").change()
   $("select#nodename").change()
 }
-sync_ajax('%(url)s', ids, '%(rid)s', reload_ajax_custo)
+sync_ajax('%(url)s', ids, '%(rid)s', %(callback)s)
 """%dict(
+                   callback=callback,
                    xid=forms_xid(''),
                    rid=forms_xid('forms_result'),
                    url=URL(r=request, c='compliance', f='ajax_form_submit', vars=submit_vars),
@@ -7569,22 +7574,46 @@ def ajax_generic_form_submit(form, data):
         elif dest == "workflow":
             d = get_form_formatted_data(output, data)
             if request.vars.prev_wfid is not None and request.vars.prev_wfid != 'None':
+                # workflow continuation
+                q = db.forms_store.id == request.vars.prev_wfid
+                prev_wf = db(q).select().first()
+                if prev_wf.form_next_id is not None:
+                    log.append(("form.store",  "This step is already completed (id=%(id)d)", dict(id=prev_wf.id)))
+                    continue
                 form_assignee = output.get('NextAssignee')
                 if form_assignee is None:
-                    q = db.forms_store.id == request.vars.prev_wfid
-                    prev_wf = db(q).select().first()
                     form_assignee = prev_wf.form_submitter
                 if form_assignee is None:
                     form_assignee = ""
+                head_id = int(request.vars.prev_wfid)
+                max_iter = 100
+                iter = 0
+                while iter < max_iter:
+                    iter += 1
+                    q = db.forms_store.id == head_id
+                    row = db(q).select().first()
+                    if row is None:
+                        break
+                    if row.form_prev_id is None:
+                        break
+                    head_id = row.form_prev_id
+
+                if len(output.get('NextForms', [])) == 0:
+                    next_id = 0
+                else:
+                    next_id = None
                 record_id = db.forms_store.insert(
                   form_yaml=form.form_yaml,
                   form_submitter=user_name(),
                   form_assignee=form_assignee,
                   form_submit_date=datetime.datetime.now(),
                   form_prev_id=request.vars.prev_wfid,
+                  form_next_id=next_id,
+                  form_head_id=head_id,
                   form_data=d,
                 )
             else:
+                # new workflow
                 record_id = db.forms_store.insert(
                   form_yaml=form.form_yaml,
                   form_submitter=user_name(),

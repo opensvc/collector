@@ -1347,20 +1347,32 @@ ul.login_menu ul {
     display: inline-block;
 }
 
+.wfentry a {
+    text-decoration: none;
+}
+
 .wfentry {
     border-radius:6px;
    -moz-border-radius:6px;
    -webkit-border-radius:6px;
-    padding: 2px;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding: 1em;
+    margin: 1em;
     cursor: pointer;
     border: 2px solid transparent;
     display: inline-block;
+    vertical-align: top;
+    height: 20em;
+    width: 32em;
+    overflow-y: hidden;
+    border: 2px solid lightgrey;
 }
 
 .wfentry:hover {
     border: 2px solid red;
+    height: auto;
+    width: auto;
+    min-height: 20em;
+    min-width: 32em;
 }
 
 
