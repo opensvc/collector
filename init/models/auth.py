@@ -19,7 +19,7 @@ def user_primary_group():
                auth_membership
              where
                auth_membership.user_id = %(user_id)s and
-               auth_membership = 'T' and
+               auth_membership.primary_group = 'T' and
                auth_membership.group_id = auth_group.id
              limit 1"""%dict(user_id=auth.user_id)
     rows = db.executesql(sql)
@@ -33,7 +33,7 @@ def user_primary_group_id():
                auth_membership
              where
                auth_membership.user_id = %(user_id)s and
-               auth_membership = 'T' and
+               auth_membership.primary_group = 'T' and
                auth_membership.group_id = auth_group.id
              limit 1"""%dict(user_id=auth.user_id)
     rows = db.executesql(sql)

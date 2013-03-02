@@ -7609,7 +7609,9 @@ def ajax_generic_form_submit(form, data):
                     continue
                 form_assignee = output.get('NextAssignee')
                 if form_assignee is None:
-                    form_assignee = prev_wf.form_submitter
+                    form_assignee = user_primary_group()
+                    if form_assignee is None:
+                        form_assignee = prev_wf.form_submitter
                 if form_assignee is None:
                     form_assignee = ""
                 head_id = int(request.vars.prev_wfid)

@@ -767,7 +767,7 @@ def workflow():
     wfid = request.vars.wfid
 
     q = db.forms_store.id == wfid
-    q = db.forms_revisions.form_md5 == db.forms_store.form_md5
+    q &= db.forms_revisions.form_md5 == db.forms_store.form_md5
     wf = db(q).select().first()
 
     if wf is None:
