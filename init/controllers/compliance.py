@@ -7612,6 +7612,10 @@ def ajax_generic_form_submit(form, data):
                   form_head_id=head_id,
                   form_data=d,
                 )
+                if record_id is not None:
+                    q = db.forms_store.id == request.vars.prev_wfid
+                    db(q).update(form_next_id=record_id)
+                log.append(("form.store", "Workflow %(head_id)d step %(form_name)s added with id %(id)d", dict(form_name=form.form_name, head_id=head_id, id=record_id)))
             else:
                 # new workflow
                 record_id = db.forms_store.insert(
@@ -7621,10 +7625,10 @@ def ajax_generic_form_submit(form, data):
                   form_submit_date=datetime.datetime.now(),
                   form_data=d,
                 )
-            if record_id is not None and request.vars.prev_wfid is not None:
-                q = db.forms_store.id == request.vars.prev_wfid
-                db(q).update(form_next_id=record_id)
-            log.append(("form.store", "Saved %(form_name)s submitted data", dict(form_name=form.form_name)))
+                if record_id is not None:
+                    q = db.forms_store.id == record_id
+                    db(q).update(form_head_id=record_id)
+                log.append(("form.store", "New workflow %(form_name)s created with id %(id)d", dict(form_name=form.form_name, id=record_id)))
         elif dest == "compliance variable":
             log += ajax_custo_form_submit(output, data)
 
