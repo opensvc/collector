@@ -53,6 +53,7 @@ class table_users(HtmlTable):
         self.cols = ['manager',
                      'fullname',
                      'email',
+                     'primary_group',
                      'groups',
                      'lock_filter',
                      'fset_name',
@@ -71,10 +72,16 @@ class table_users(HtmlTable):
                      img='guy16',
                      display=True,
                     ),
+            'primary_group': HtmlTableColumn(
+                     title='Primary group',
+                     field='primary_group',
+                     img='guys16',
+                     display=True,
+                    ),
             'groups': HtmlTableColumn(
                      title='Groups',
                      field='groups',
-                     img='guy16',
+                     img='guys16',
                      display=True,
                     ),
             'domains': col_users_domains(
@@ -113,7 +120,7 @@ class table_users(HtmlTable):
         self.dbfilterable = False
         self.checkboxes = True
         if 'Manager' in user_groups():
-            self += HtmlTableMenu('Group', 'guys16', ['group_add', 'group_del', 'group_attach', 'group_detach'])
+            self += HtmlTableMenu('Group', 'guys16', ['group_add', 'group_del', 'group_attach', 'group_detach', 'group_set_primary'])
             self += HtmlTableMenu('User', 'guy16', ['user_add', 'users_del', 'lock_filter', 'unlock_filter', 'set_filterset'])
             self.form_group_add = self.group_add_sqlform()
             self.form_user_add = self.user_add_sqlform()
@@ -258,6 +265,14 @@ class table_users(HtmlTable):
                                    _class="attach16")
         return d
 
+    def group_set_primary(self):
+        d = self.group_select_tool(label="Set primary group",
+                                   action="group_set_primary",
+                                   divid="group_set_primary",
+                                   sid="group_set_primary_s",
+                                   _class="wf16")
+        return d
+
     def group_del(self):
         d = self.group_select_tool(label="Delete",
                                    action="group_del",
@@ -399,6 +414,43 @@ def set_filterset(ids=[]):
          dict(f=fset_name, u=u))
 
 @auth.requires_membership('Manager')
+def group_set_primary(ids=[]):
+    if len(ids) == 0:
+        raise ToolError("no user selected")
+    gid = request.vars.group_set_primary_s
+
+    done = []
+    for id in ids:
+        sql = """update auth_membership
+                 set
+                   primary_group = 'F'
+                 where
+                   user_id=%(user_id)s
+              """ % dict(user_id=id)
+        db.executesql(sql)
+
+        sql = """insert into auth_membership
+                 set
+                   id=null,
+                   user_id=%(user_id)s,
+                   group_id=%(group_id)s,
+                   primary_group='T'
+                 on duplicate key update
+                   user_id=%(user_id)s,
+                   group_id=%(group_id)s,
+                   primary_group='T'
+              """ % dict(user_id=id, group_id=gid)
+        db.executesql(sql)
+        done.append(id)
+
+    rows = db(db.v_users.id.belongs(done)).select(db.v_users.fullname)
+    u = ', '.join([r.fullname for r in rows])
+    g = db(db.auth_group.id==gid).select(db.auth_group.role)[0].role
+    _log('users.group.attach',
+         'attached primary group %(g)s to users %(u)s',
+         dict(g=g, u=u))
+
+@auth.requires_membership('Manager')
 def group_attach(ids=[]):
     if len(ids) == 0:
         raise ToolError("no user selected")
@@ -505,6 +557,8 @@ def ajax_users():
                 unlock_filter(t.get_checked())
             elif action == 'set_filterset':
                 set_filterset(t.get_checked())
+            elif action == 'group_set_primary':
+                group_set_primary(t.get_checked())
             elif action == 'group_attach':
                 group_attach(t.get_checked())
             elif action == 'group_detach':
@@ -517,6 +571,7 @@ def ajax_users():
             response.flash = T("group added")
             # refresh forms comboboxes
             t.form_group_attach = t.group_attach_sqlform()
+            t.form_group_set_primary = t.group_set_primary_sqlform()
             _log('users.group.add',
                  'added group %(u)s',
                  dict(u=request.vars.role))
@@ -527,6 +582,7 @@ def ajax_users():
             response.flash = T("user added")
             # refresh forms comboboxes
             t.form_group_attach = t.group_attach_sqlform()
+            t.form_group_set_primary = t.group_set_primary_sqlform()
             _log('users.user.add',
                  'added user %(u)s',
                  dict(u=' '.join((request.vars.first_name,

@@ -13,6 +13,34 @@ def group_role(id):
         return None
     return rows[0].role
 
+def user_primary_group():
+    sql = """select auth_group.role from
+               auth_group,
+               auth_membership
+             where
+               auth_membership.user_id = %(user_id)s and
+               auth_membership = 'T' and
+               auth_membership.group_id = auth_group.id
+             limit 1"""%dict(user_id=auth.user_id)
+    rows = db.executesql(sql)
+    if len(rows) != 1:
+        return None
+    return rows[0][0]
+
+def user_primary_group_id():
+    sql = """select auth_group.id from
+               auth_group,
+               auth_membership
+             where
+               auth_membership.user_id = %(user_id)s and
+               auth_membership = 'T' and
+               auth_membership.group_id = auth_group.id
+             limit 1"""%dict(user_id=auth.user_id)
+    rows = db.executesql(sql)
+    if len(rows) != 1:
+        return None
+    return rows[0][0]
+
 def user_groups():
     q = db.auth_membership.user_id==auth.user_id
     q &= db.auth_membership.group_id==db.auth_group.id
