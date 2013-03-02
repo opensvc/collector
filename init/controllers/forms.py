@@ -663,11 +663,12 @@ def forms():
 def stored_form_show(wfid, _class=""):
     hid = "wf_%s"%wfid
     q = db.forms_store.id == wfid
+    q &= db.forms_store.form_md5 == db.forms_revisions.form_md5
     wf = db(q).select().first()
-    form = yaml.load(wf.form_yaml)
+    form = yaml.load(wf.forms_revisions.form_yaml)
 
-    if len(wf.form_assignee) > 0:
-        assignee = T("Assigned to %(assignee)s", dict(assignee=wf.form_assignee))
+    if len(wf.forms_store.form_assignee) > 0:
+        assignee = T("Assigned to %(assignee)s", dict(assignee=wf.forms_store.form_assignee))
     else:
         assignee = ""
 
@@ -675,7 +676,7 @@ def stored_form_show(wfid, _class=""):
       DIV(
         H2(form.get('Label')),
         I(
-          T("Submitted by %(submitter)s on %(date)s", dict(submitter=wf.form_submitter, date=wf.form_submit_date)),
+          T("Submitted by %(submitter)s on %(date)s", dict(submitter=wf.forms_store.form_submitter, date=wf.forms_store.form_submit_date)),
           BR(),
           assignee,
         ),
@@ -766,16 +767,20 @@ def workflow():
     wfid = request.vars.wfid
 
     q = db.forms_store.id == wfid
+    q = db.forms_revisions.form_md5 == db.forms_store.form_md5
     wf = db(q).select().first()
 
     if wf is None:
         return T("Workflow form id %(wfid)s not found", dict(wfid=wfid))
 
     form_names = None
-    form = yaml.load(wf.form_yaml)
+    form = yaml.load(wf.forms_revisions.form_yaml)
 
-    if wf.form_next_id is not None:
+    if wf.forms_store.form_next_id is not None:
         _forms_list = T("This workflow step is already completed")
+    elif wf.forms_store.form_assignee != user_name() and \
+         wf.forms_store.form_assignee not in user_groups():
+        _forms_list = T("This workflow is not assigned to you or your group")
     else:
         for output in form.get("Outputs", []):
             form_names = output.get("NextForms")

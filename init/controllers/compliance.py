@@ -6860,7 +6860,19 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
 
     form_id = form.id
 
-    s = form.form_yaml
+    s = None
+    if 'form_yaml' in form:
+        s = form.form_yaml
+    elif 'forms_revisions' in form:
+        s = form.forms_revisions.form_yaml
+    elif 'form_md5' in form:
+        q = db.forms_revisions.form_md5 == form.form_md5
+        row = db(q).select().first()
+        if row is not None:
+            s = row.form_yaml
+    if s is None:
+        return ajax_error(DIV(T("can't find form yaml definition"), BEAUTIFY(form)))
+
     import yaml
     try:
         data = yaml.load(s)
@@ -7512,6 +7524,20 @@ def ajax_form_submit():
 
     return ajax_generic_form_submit(form, data)
 
+def insert_form_md5(form_yaml):
+    o = md5()
+    o.update(form_yaml)
+    form_md5 = str(o.hexdigest())
+
+    q = db.forms_revisions.form_md5 == form_md5
+    if db(q).select().first() is not None:
+        return form_md5
+
+    db.forms_revisions.insert(
+      form_yaml=form_yaml,
+      form_md5=form_md5
+    )
+    return form_md5
 
 def ajax_generic_form_submit(form, data):
     log = []
@@ -7573,6 +7599,7 @@ def ajax_generic_form_submit(form, data):
             log.append(("form.submit", "Mail sent to %(to)s on form %(form_name)s submission." , dict(to=', '.join(to), form_name=form.form_name)))
         elif dest == "workflow":
             d = get_form_formatted_data(output, data)
+            form_md5 = insert_form_md5(form.form_yaml)
             if request.vars.prev_wfid is not None and request.vars.prev_wfid != 'None':
                 # workflow continuation
                 q = db.forms_store.id == request.vars.prev_wfid
@@ -7603,7 +7630,7 @@ def ajax_generic_form_submit(form, data):
                 else:
                     next_id = None
                 record_id = db.forms_store.insert(
-                  form_yaml=form.form_yaml,
+                  form_md5=form_md5,
                   form_submitter=user_name(),
                   form_assignee=form_assignee,
                   form_submit_date=datetime.datetime.now(),
@@ -7619,7 +7646,7 @@ def ajax_generic_form_submit(form, data):
             else:
                 # new workflow
                 record_id = db.forms_store.insert(
-                  form_yaml=form.form_yaml,
+                  form_md5=form_md5,
                   form_submitter=user_name(),
                   form_assignee=output.get('NextAssignee', ''),
                   form_submit_date=datetime.datetime.now(),

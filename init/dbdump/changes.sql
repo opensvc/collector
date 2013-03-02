@@ -3305,4 +3305,15 @@ drop view v_forms ;
 
 create view v_forms as (select `f`.*, group_concat(distinct `gg`.`role` order by `gg`.`role` ASC separator ', ') AS `form_team_publication`, group_concat(distinct `g`.`role` order by `g`.`role` ASC separator ', ') AS `form_team_responsible` from `forms` `f` left join `forms_team_responsible` `fr` on `f`.`id` = `fr`.`form_id`  left join `auth_group` `g` on `fr`.`group_id` = `g`.`id` left join `forms_team_publication` `fp` on `f`.`id` = `fp`.`form_id` left join `auth_group` `gg` on `fp`.`group_id` = `gg`.`id` group by `f`.`id`);
 
+CREATE TABLE `forms_revisions` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `form_yaml` text NOT NULL,
+  `form_md5` varchar(32) NOT NULL,
+  `form_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx1` (`form_md5`)
+) ENGINE=InnoDB;
 
+alter table forms_store add column form_md5 varchar(32);
+
+alter table forms_store drop column form_yaml;

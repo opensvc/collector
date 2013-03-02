@@ -1680,7 +1680,15 @@ db.define_table('forms_store',
     Field('form_head_id', 'integer'),
     Field('form_submitter', 'string'),
     Field('form_assignee', 'string'),
-    Field('form_yaml', 'text'),
+    Field('form_md5', 'string'),
     Field('form_data', 'text'),
     migrate=False)
+
+db.define_table('forms_revisions',
+    Field('id', 'integer'),
+    Field('form_md5', 'string'),
+    Field('form_yaml', 'text'),
+    migrate=False)
+
+
 
