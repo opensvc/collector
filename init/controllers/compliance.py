@@ -7524,7 +7524,7 @@ def ajax_form_submit():
 
     return ajax_generic_form_submit(form, data)
 
-def insert_form_md5(form_yaml):
+def insert_form_md5(form_id, form_yaml):
     o = md5()
     o.update(form_yaml)
     form_md5 = str(o.hexdigest())
@@ -7534,6 +7534,7 @@ def insert_form_md5(form_yaml):
         return form_md5
 
     db.forms_revisions.insert(
+      form_id=form_id,
       form_yaml=form_yaml,
       form_md5=form_md5
     )
@@ -7599,7 +7600,7 @@ def ajax_generic_form_submit(form, data):
             log.append(("form.submit", "Mail sent to %(to)s on form %(form_name)s submission." , dict(to=', '.join(to), form_name=form.form_name)))
         elif dest == "workflow":
             d = get_form_formatted_data(output, data)
-            form_md5 = insert_form_md5(form.form_yaml)
+            form_md5 = insert_form_md5(form.id, form.form_yaml)
             if request.vars.prev_wfid is not None and request.vars.prev_wfid != 'None':
                 # workflow continuation
                 q = db.forms_store.id == request.vars.prev_wfid

@@ -1687,6 +1687,7 @@ db.define_table('forms_store',
 
 db.define_table('forms_revisions',
     Field('id', 'integer'),
+    Field('form_id', 'integer'),
     Field('form_md5', 'string'),
     Field('form_yaml', 'text'),
     migrate=False)
