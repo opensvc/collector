@@ -986,208 +986,259 @@ ul.login_menu ul {
 .dia16 {
     background: transparent url('dia16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .detach16 {
     background: transparent url('detach16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .attach16 {
     background: transparent url('attach16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .prov {
     background: transparent url('prov.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .lock {
     background: transparent url('lock.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .add16 {
     background: transparent url('add16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .del16 {
     background: transparent url('del16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .edit16 {
     background: transparent url('edit.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .alert16 {
     background: transparent url('alert16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .avail16 {
     background: transparent url('avail16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .wspark16 {
     background: transparent url('wspark16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .spark16 {
     background: transparent url('spark16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .filters {
     background: transparent url('filter16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .columns {
     background: transparent url('columns.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .csv {
     background: transparent url('csv.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .csv_disabled {
     background: transparent url('csv.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
     color: rgba(0, 0, 0, 0.5);
 }
 .link16 {
     background: transparent url('link16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .refresh16 {
     background: transparent url('refresh16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .spinner {
     background: transparent url('spinner.gif') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 
 .dns16 {
     background: transparent url('dns16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .net16 {
     background: transparent url('net16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .down16 {
     background: transparent url('down16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .right16 {
     background: transparent url('right16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .save16 {
     background: transparent url('save16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .expert16 {
     background: transparent url('expert16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .db16 {
     background: transparent url('db16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .wf16 {
     background: transparent url('wf16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .hd16 {
     background: transparent url('hd16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .pkg16 {
     background: transparent url('pkg16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .log16 {
     background: transparent url('log16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .bill16 {
     background: transparent url('bill16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .hw16 {
     background: transparent url('hw16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .os16 {
     background: transparent url('os16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .obs16 {
     background: transparent url('obs16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .comp16 {
     background: transparent url('comp16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .check16 {
     background: transparent url('check16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .guys16 {
     background: transparent url('guys16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .guy16 {
     background: transparent url('guy16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .svc {
     background: transparent url('svc.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .nok {
     background: transparent url('nok.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .node16 {
     background: transparent url('node16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .drp16 {
     background: transparent url('drp16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .key16 {
     background: transparent url('key16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .action16 {
     background: transparent url('action16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .cpu16 {
     background: transparent url('cpu16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .edit {
     background: transparent url('edit.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .pwr {
     background: transparent url('pwr.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .mem16 {
     background: transparent url('mem16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .time16 {
     background: transparent url('time16.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .loc {
     background: transparent url('loc.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .search16 {
     background: transparent url('search.png') no-repeat;
     padding: 0 0 0 20px;
+    min-height: 16px;
 }
 .nologo48 {
     padding: 0 0 0 52px;
