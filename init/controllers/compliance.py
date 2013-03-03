@@ -6720,6 +6720,22 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
                    _id=forms_xid(input['Id']+'_'+str(idx)),
                    _name=forms_xid(''),
                  )
+        elif input['Type'] == "date":
+            _input = INPUT(
+                   _value=default,
+                   _class="date",
+                   _onfocus='datepicker(this)',
+                   _id=forms_xid(input['Id']+'_'+str(idx)),
+                   _name=forms_xid(''),
+                 )
+        elif input['Type'] == "datetime":
+            _input = INPUT(
+                   _value=default,
+                   _class="datetime",
+                   _onfocus='timepicker(this)',
+                   _id=forms_xid(input['Id']+'_'+str(idx)),
+                   _name=forms_xid(''),
+                 )
         else:
             _input = INPUT(
                    _id=forms_xid(input['Id']+'_'+str(idx)),
