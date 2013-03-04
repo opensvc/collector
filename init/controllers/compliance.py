@@ -6617,6 +6617,10 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
         else:
             _help = ""
 
+        trigger_args = input.get('Args', [])
+        trigger_args = map(lambda x: x.replace(' ', '').replace('=#', '--'), trigger_args)
+        trigger_args = ' '.join(trigger_args)
+
         if display_mode:
             if default is None or default == "":
                 if type(defaults) == dict:
@@ -6698,7 +6702,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
               '_id': forms_xid(input['Id']+'_'+str(idx)),
               '_name': forms_xid(''),
               '_style': 'width:%(max)dem'%dict(max=max),
-              '_trigger_args': ' '.join(input.get('Args', [])),
+              '_trigger_args': trigger_args,
               '_trigger_fn': input.get('Function', ""),
             }
             _input = SELECT(
@@ -6712,7 +6716,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
               '_id': forms_xid(input['Id']+'_'+str(idx)),
               '_name': forms_xid(''),
               '_style': 'padding: 0.3em',
-              '_trigger_args': ' '.join(input.get('Args', [])),
+              '_trigger_args': trigger_args,
               '_trigger_fn': input.get('Function', ""),
             }
             _input = DIV(
@@ -6745,7 +6749,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
             attr = {
               '_id': forms_xid(input['Id']+'_'+str(idx)),
               '_name': forms_xid(''),
-              '_trigger_args': ' '.join(input.get('Args', [])),
+              '_trigger_args': trigger_args,
               '_trigger_fn': input.get('Function', ""),
               '_value': default,
             }
@@ -7116,26 +7120,39 @@ function refresh_select(e) {
   };
 }
 
+function refresh_div(e) {
+  return function(data) {
+    e.html("<pre>"+data.join("\\n")+"</pre>")
+  };
+}
+
 function form_inputs_functions (o) {
   l = $(o).attr("id").split("_")
   index = l[l.length-1]
   l.pop()
   id = l.join("_").replace("%(xid)s", "")
-  $(o).parents('table').first().find("[trigger_args~="+id+"]").each(function(){
+  $(o).parents('table').first().find("[trigger_args*=--"+id+"]").each(function(){
     l = $(this).attr("trigger_args").split(" ")
-    args = [""]
+    args = []
     for (i=0; i<l.length; i++) {
-      id = "%(xid)s"+l[i]+"_"+index
-      args.push(encodeURIComponent($("#"+id).val()))
+      v = l[i].split("--")
+      if (v.length != 2) continue
+      param = v[0]
+      value = v[1]
+      id = "%(xid)s"+value+"_"+index
+      if ($(this).get(0).tagName == 'SELECT') {
+        val = $("#"+id+" option:selected").val()
+      } else {
+        val = $("#"+id).val()
+      }
+      args.push(encodeURIComponent(param)+"="+encodeURIComponent(val))
     }
-    args = args.join("/")
-    alert(args)
+    args = args.join("&")
+    url = "%(url)s/call/json/"+$(this).attr("trigger_fn")+"?"+args
     if ($(this).get(0).tagName == 'SELECT') {
-      url = "%(url)s/call/json/"+$(this).attr("trigger_fn")+args
       $.getJSON(url, refresh_select($(this)))
     } else {
-      url = "%(url)s/"+$(this).attr("trigger_fn")+args
-      sync_ajax(url, {}, $(this).attr("id"), function(){})
+      $.getJSON(url, refresh_div($(this)))
     }
   })
 }
@@ -7603,7 +7620,7 @@ def ajax_generic_form_submit(form, data):
                 log.append(("form.submit", "Data insertion in database table error: %(err)s", dict(err=str(e))))
         elif dest == "script":
             import os
-            from subprocess import *
+            import subprocess
             d = get_form_formatted_data(output, data)
             path = output.get('Path')
             if path is None:
@@ -7612,7 +7629,8 @@ def ajax_generic_form_submit(form, data):
             if not os.path.exists(path):
                 log.append(("form.submit", "Script %(path)s does not exists", dict(path=path)))
                 continue
-            p = Popen([path, d], stdout=PIPE, stderr=PIPE)
+            p = subprocess.Popen([path, d], stdout=subprocess.PIPE,
+                                            stderr=subprocess.PIPE)
             out, err = p.communicate()
             if p.returncode != 0:
                 log.append(("form.submit", "Script %(path)s returned with error: %(err)s", dict(path=path, err=err)))

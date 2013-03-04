@@ -1048,55 +1048,65 @@ def workflows_pending_tiers_action():
            )
 
 @auth.requires_login()
-def get_node_portnames():
-    if len(request.args) != 1:
-        return ""
+def _get_node_portnames(nodename):
     q = db.nodes.team_responsible.belongs(user_groups())
     q &= db.node_hba.nodename == db.nodes.nodename
-    q &= db.node_hba.nodename == request.args[0]
+    q &= db.node_hba.nodename == nodename
     rows = db(q).select(db.node_hba.hba_id,
                         orderby=db.node_hba.hba_id,
                         groupby=db.node_hba.hba_id)
-    return PRE('\n'.join([r.hba_id for r in rows]))
+    return [r.hba_id for r in rows]
+
+@service.json
+def json_node_portnames(nodename):
+    return _get_node_portnames(nodename)
 
 @auth.requires_login()
-def get_service_portnames():
-    if len(request.args) == 0:
-        return ""
+def _get_service_portnames(svcname, nodename=None, loc_city=None):
     q = db.apps_responsibles.group_id.belongs(user_group_ids())
     q &= db.apps_responsibles.app_id == db.apps.id
     q &= db.apps.app == db.services.svc_app
     q &= db.svcmon.mon_svcname == db.services.svc_name
-    q &= db.services.svc_name == request.args[0]
+    q &= db.services.svc_name == svcname
     q &= db.node_hba.nodename == db.svcmon.mon_nodname
 
-    if len(request.args) == 2:
+    if nodename is not None:
+        q &= db.node_hba.nodename == nodename
+
+    if loc_city is not None:
         q &= db.svcmon.mon_nodname == db.nodes.nodename
-        q &= db.nodes.loc_city == request.args[1]
+        q &= db.nodes.loc_city == loc_city
 
     rows = db(q).select(db.node_hba.hba_id,
                         orderby=db.node_hba.hba_id,
                         groupby=db.node_hba.hba_id)
-    return PRE('\n'.join([r.hba_id for r in rows]))
+
+    return [r.hba_id for r in rows]
+
+@service.json
+def json_service_portnames(svcname, nodename=None, loc_city=None):
+    return _get_service_portnames(svcname, nodename, loc_city)
 
 @auth.requires_login()
-def get_service_nodes():
-    if len(request.args) == 0:
-        return ""
+def _get_service_nodes(svcname, loc_city=None):
     q = db.apps_responsibles.group_id.belongs(user_group_ids())
     q &= db.apps_responsibles.app_id == db.apps.id
     q &= db.apps.app == db.services.svc_app
     q &= db.svcmon.mon_svcname == db.services.svc_name
-    q &= db.svcmon.mon_svcname == request.args[0]
+    q &= db.svcmon.mon_svcname == svcname
 
-    if len(request.args) == 2:
+    if loc_city is not None:
         q &= db.svcmon.mon_nodname == db.nodes.nodename
-        q &= db.nodes.loc_city == request.args[1]
-        raise Exception(str(q))
+        q &= db.nodes.loc_city == loc_city
+
     rows = db(q).select(db.svcmon.mon_nodname,
                         orderby=db.svcmon.mon_nodname,
                         groupby=db.svcmon.mon_nodname)
-    return PRE('\n'.join([r.mon_nodname for r in rows]))
+    return [r.mon_nodname for r in rows]
+
+@service.json
+def json_service_nodes(svcname, loc_city=None):
+    return _get_service_nodes(svcname, loc_city)
 
 @auth.requires_login()
 def _get_service_loc_city(svcname):
@@ -1114,12 +1124,6 @@ def _get_service_loc_city(svcname):
 @service.json
 def json_service_loc_city(svcname):
     return _get_service_loc_city(svcname)
-
-@auth.requires_login()
-def get_service_loc_city():
-    if len(request.args) != 1:
-        return ""
-    return PRE('\n'.join(_get_service_loc_city(request.args[0])))
 
 @auth.requires_login()
 def get_node_generic(col):
