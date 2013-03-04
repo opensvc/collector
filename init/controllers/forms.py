@@ -2,6 +2,16 @@ import re
 import os
 import yaml
 
+def call():
+    """
+    exposes services. for example:
+    http://..../[app]/default/call/jsonrpc
+    decorate with @services.jsonrpc the functions to expose
+    supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv
+    """
+    session.forget()
+    return service()
+
 class col_forms_yaml(HtmlTableColumn):
     def html(self, o):
         val = self.get(o)
@@ -1051,7 +1061,7 @@ def get_node_portnames():
 
 @auth.requires_login()
 def get_service_portnames():
-    if len(request.args) != 1:
+    if len(request.args) == 0:
         return ""
     q = db.apps_responsibles.group_id.belongs(user_group_ids())
     q &= db.apps_responsibles.app_id == db.apps.id
@@ -1059,6 +1069,11 @@ def get_service_portnames():
     q &= db.svcmon.mon_svcname == db.services.svc_name
     q &= db.services.svc_name == request.args[0]
     q &= db.node_hba.nodename == db.svcmon.mon_nodname
+
+    if len(request.args) == 2:
+        q &= db.svcmon.mon_nodname == db.nodes.nodename
+        q &= db.nodes.loc_city == request.args[1]
+
     rows = db(q).select(db.node_hba.hba_id,
                         orderby=db.node_hba.hba_id,
                         groupby=db.node_hba.hba_id)
@@ -1066,17 +1081,45 @@ def get_service_portnames():
 
 @auth.requires_login()
 def get_service_nodes():
-    if len(request.args) != 1:
+    if len(request.args) == 0:
         return ""
     q = db.apps_responsibles.group_id.belongs(user_group_ids())
     q &= db.apps_responsibles.app_id == db.apps.id
     q &= db.apps.app == db.services.svc_app
     q &= db.svcmon.mon_svcname == db.services.svc_name
     q &= db.svcmon.mon_svcname == request.args[0]
+
+    if len(request.args) == 2:
+        q &= db.svcmon.mon_nodname == db.nodes.nodename
+        q &= db.nodes.loc_city == request.args[1]
+        raise Exception(str(q))
     rows = db(q).select(db.svcmon.mon_nodname,
                         orderby=db.svcmon.mon_nodname,
                         groupby=db.svcmon.mon_nodname)
     return PRE('\n'.join([r.mon_nodname for r in rows]))
+
+@auth.requires_login()
+def _get_service_loc_city(svcname):
+    q = db.apps_responsibles.group_id.belongs(user_group_ids())
+    q &= db.apps_responsibles.app_id == db.apps.id
+    q &= db.apps.app == db.services.svc_app
+    q &= db.svcmon.mon_svcname == db.services.svc_name
+    q &= db.svcmon.mon_svcname == svcname
+    q &= db.svcmon.mon_nodname == db.nodes.nodename
+    rows = db(q).select(db.nodes.loc_city,
+                        orderby=db.nodes.loc_city,
+                        groupby=db.nodes.loc_city)
+    return [r.loc_city for r in rows]
+
+@service.json
+def json_service_loc_city(svcname):
+    return _get_service_loc_city(svcname)
+
+@auth.requires_login()
+def get_service_loc_city():
+    if len(request.args) != 1:
+        return ""
+    return PRE('\n'.join(_get_service_loc_city(request.args[0])))
 
 @auth.requires_login()
 def get_node_generic(col):

@@ -6661,6 +6661,8 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
                 candidates = [('[%s] %s' % (str(r.svc_app if r.svc_app is not None else ''), str(r.svc_name)), r.svc_name) for r in services]
             else:
                 candidates = input['Candidates']
+                if candidates is None:
+                    candidates = []
 
             options = []
 
@@ -6692,14 +6694,17 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
                 w = len(_label)
                 if w > max:
                     max = w
+            attr = {
+              '_id': forms_xid(input['Id']+'_'+str(idx)),
+              '_name': forms_xid(''),
+              '_style': 'width:%(max)dem'%dict(max=max),
+              '_trigger_args': ' '.join(input.get('Args', [])),
+              '_trigger_fn': input.get('Function', ""),
+            }
             _input = SELECT(
-                   *options,
-                   **dict(
-                     _id=forms_xid(input['Id']+'_'+str(idx)),
-                     _name=forms_xid(''),
-                     _style="width:%(max)dem"%dict(max=max),
-                   )
-                 )
+                       *options,
+                       **attr
+                     )
         elif 'Type' not in input:
             return ajax_error(T("'Type' not set for Input '%(name)s'", dict(name=input['Id'])))
         elif input['Type'] == "info":
@@ -6737,11 +6742,14 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
                    _name=forms_xid(''),
                  )
         else:
-            _input = INPUT(
-                   _id=forms_xid(input['Id']+'_'+str(idx)),
-                   _name=forms_xid(''),
-                   _value=default,
-                 )
+            attr = {
+              '_id': forms_xid(input['Id']+'_'+str(idx)),
+              '_name': forms_xid(''),
+              '_trigger_args': ' '.join(input.get('Args', [])),
+              '_trigger_fn': input.get('Function', ""),
+              '_value': default,
+            }
+            _input = INPUT(**attr)
 
         if display_mode and 'DisplayModeLabel' in input:
             label = input['DisplayModeLabel']
@@ -7098,6 +7106,16 @@ function form_inputs_trigger (o) {
   form_inputs_functions(o)
 }
 
+function refresh_select(e) {
+  return function(data) {
+    e.find('option').remove()
+    for (i=0;i<data.length;i++) {
+      e.find('option').end().append("<option value='"+data[i]+"'>"+data[i]+"</option>")
+    }
+    e.combobox()
+  };
+}
+
 function form_inputs_functions (o) {
   l = $(o).attr("id").split("_")
   index = l[l.length-1]
@@ -7108,16 +7126,23 @@ function form_inputs_functions (o) {
     args = [""]
     for (i=0; i<l.length; i++) {
       id = "%(xid)s"+l[i]+"_"+index
-      args.push($("#"+id).val())
+      args.push(encodeURIComponent($("#"+id).val()))
     }
     args = args.join("/")
-    sync_ajax("%(url)s/"+$(this).attr("trigger_fn")+args, {}, $(this).attr("id"), function(){})
+    alert(args)
+    if ($(this).get(0).tagName == 'SELECT') {
+      url = "%(url)s/call/json/"+$(this).attr("trigger_fn")+args
+      $.getJSON(url, refresh_select($(this)))
+    } else {
+      url = "%(url)s/"+$(this).attr("trigger_fn")+args
+      sync_ajax(url, {}, $(this).attr("id"), function(){})
+    }
   })
 }
 
 function form_inputs_resize (o) {
   var max = 0
-  $(o).parents('table').first().find('input,textarea,select').each(function(){
+  $(o).parents('table').first().find('input:visible,textarea:visible,select:visible').each(function(){
     w = $(this).width()
     if (w > max) { max = w }
   })

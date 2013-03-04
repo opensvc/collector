@@ -383,6 +383,7 @@
 'Edit This App': 'Editer cette application',
 'Edit compliance form': 'Edition du formulaire de conformité',
 'Edit current record': 'Editer cet enregistrement',
+'Edit form': 'Edit form',
 'Edit network': 'Editer le réseau',
 'Edit network segment': 'Editer le segment de réseau',
 'Edit node': 'Edition de noeud',
