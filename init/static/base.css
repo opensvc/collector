@@ -1284,6 +1284,15 @@ ul.login_menu ul {
     padding: 0 0 0 52px;
 }
 
+.wfsearch {
+    color: black;
+    padding-left: 18px;
+    background: white url('search.png') no-repeat;
+    width: 6em;
+}
+.wfsearch:focus {
+    background: #edccb1 url('search.png') no-repeat;
+}
 .search {
     float: right;
     padding:0.2em;

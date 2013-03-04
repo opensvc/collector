@@ -674,7 +674,7 @@ def stored_form_show(wfid, _class=""):
 
     return DIV(
       DIV(
-        H2(form.get('Label')),
+        H2("%d: %s"%(wf.forms_store.form_head_id, form.get('Label'))),
         I(
           T("Submitted by %(submitter)s on %(date)s", dict(submitter=wf.forms_store.form_submitter, date=wf.forms_store.form_submit_date)),
           BR(),
@@ -900,11 +900,11 @@ $("#svcname").siblings("input").focus();
 def format_forms_chain(l):
     _l = []
     for wf in l:
-        data = forms_chain(wf.id, folded=False, highlight_step=False)
+        data = forms_chain(wf.forms_store.id, folded=False, highlight_step=False)
         d = DIV(
           A(
             data,
-            _href=URL(c='forms', f='workflow', vars={'wfid': wf.id}),
+            _href=URL(c='forms', f='workflow', vars={'wfid': wf.forms_store.id}),
           ),
           _class="wfentry",
         )
@@ -912,26 +912,106 @@ def format_forms_chain(l):
     return _l
 
 @auth.requires_login()
-def workflows_assigned_to_me():
+def ajax_workflows_assigned_to_me():
+    offset = request.vars.offset
+    if offset is None:
+        offset = 0
+    else:
+        try:
+            offset = int(offset)
+        except:
+            offset = 0
+    n = 9
+
+    search = request.vars.wfsearch
+    qf = db.forms_store.id > 0
+    if search is not None:
+        s = "%"+search+"%"
+        qf = db.forms_store.form_assignee.like(s)
+        qf |= db.forms_store.form_submitter.like(s)
+        qf |= db.forms_store.form_submit_date.like(s)
+        qf |= db.forms_store.form_data.like(s)
+        qf |= db.forms_revisions.form_yaml.like(s)
+
     q = db.forms_store.form_next_id == None
+    q &= db.forms_store.form_md5 == db.forms_revisions.form_md5
     q1 = db.forms_store.form_assignee.belongs(user_groups())
     q1 |= db.forms_store.form_assignee == user_name()
     q &= q1
-    rows = db(q).select(orderby=db.forms_store.form_submit_date)
+    q &= qf
+    rows = db(q).select(orderby=db.forms_store.form_submit_date, limitby=(offset, offset+n))
 
     _l = format_forms_chain(rows)
+    return SPAN(_l)
 
+@auth.requires_login()
+def workflows_generic(loader="foo", title="", empty_msg=""):
+    _l = globals()[loader]()
     if len(_l) == 0:
-        return dict(table=DIV(T("You currently have no assigned workflow"), _style="padding:2em"))
+        return dict(table=DIV(T(empty_msg), _style="padding:2em"))
 
     d = DIV(
-      H1(T("Workflows assigned to me")),
-      SPAN(_l),
+      H1(T(title)),
+      INPUT(
+        _id="wfsearch",
+        _class="wfsearch",
+      ),
+      SCRIPT(
+"""
+$("#wfsearch").focus()
+$("#wfsearch").keypress(function(e) {
+  code = (e.keyCode ? e.keyCode : e.which);
+  if (code == 13) {
+    sync_ajax("%(url)s", ["wfsearch"], "wflist", function(){})
+  }
+})
+""" % dict(url=URL(c='forms', f=loader)),
+      ),
+      DIV(_l, _id="wflist"),
+      A(
+        T("More workflows"),
+        _onclick = """
+n = $("#wflist").find(".wfentry").length
+query = encodeURIComponent("offset")+"="+encodeURIComponent(n);
+query = query+"&"+encodeURIComponent("wfsearch")+"="+encodeURIComponent($("#wfsearch").val());
+$.ajax({
+     type: "POST",
+     url: "%(url)s",
+     data: query,
+     context: document.body,
+     success: function(msg){
+         $("#wflist").append(msg)
+         $("#wflist").find("script").each(function(i){
+           eval($(this).text());
+           $(this).remove();
+         });
+     }
+})
+""" % dict(url=URL(c='forms', f=loader)),
+      ),
     )
     return dict(table=d)
 
 @auth.requires_login()
-def workflows_pending_tiers_action():
+def workflows_assigned_to_me():
+    return workflows_generic(
+             loader="ajax_workflows_assigned_to_me",
+             title="Workflows assigned to me",
+             empty_msg="You currently have no assigned workflow",
+           )
+
+@auth.requires_login()
+def ajax_workflows_pending_tiers_action():
+    offset = request.vars.offset
+    if offset is None:
+        offset = 0
+    else:
+        try:
+            offset = int(offset)
+        except:
+            offset = 0
+    n = 9
+
     # all my workflows
     q = db.forms_store.form_submitter == user_name()
     q &= db.forms_store.form_prev_id == None
@@ -943,18 +1023,19 @@ def workflows_pending_tiers_action():
     q &= db.forms_store.form_next_id == None
     q &= ~db.forms_store.form_assignee.belongs(user_groups())
     q &= db.forms_store.form_assignee != user_name()
-    rows = db(q).select(orderby=db.forms_store.form_submit_date)
+    rows = db(q).select(orderby=db.forms_store.form_submit_date,
+                        limitby=(offset, offset+n))
 
     _l = format_forms_chain(rows)
+    return _l
 
-    if len(_l) == 0:
-        return dict(table=DIV(T("None of your workflow are pending tiers action"), _style="padding:2em"))
-
-    d = DIV(
-      H1(T("Workflows pending tiers action")),
-      SPAN(_l),
-    )
-    return dict(table=d)
+@auth.requires_login()
+def workflows_pending_tiers_action():
+    return workflows_generic(
+             loader="ajax_workflows_pending_tiers_action",
+             title="Workflows pending tiers action",
+             empty_msg="None of your workflow are pending tiers action",
+           )
 
 @auth.requires_login()
 def get_node_portnames():

@@ -586,6 +586,7 @@
 'Moduleset name': 'Nom de jeu de modules',
 'Modulesets': 'Jeux de modules',
 'Modulesets/Nodes attachment': 'Attache Jeux de modules/Noeuds',
+'More workflows': 'More workflows',
 'Mot de passe invalide': 'Mot de passe invalide',
 'N/A': 'N/A',
 'Name': 'Nom',
