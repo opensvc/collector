@@ -2138,7 +2138,10 @@ def svc_log_update(svcname, astatus):
 def translate_encap_nodename(svcname, nodename):
     q = db.svcmon.mon_vmname == nodename
     q &= db.svcmon.mon_svcname == svcname
-    rows = db(q).select(db.svcmon.mon_nodname, db.svcmon.mon_vmname, db.svcmon.mon_vmtype)
+    rows = db(q).select(db.svcmon.mon_nodname,
+                        db.svcmon.mon_vmname,
+                        db.svcmon.mon_vmtype,
+                        db.svcmon.mon_containerstatus)
 
     if len(rows) == 0:
         # not encap
