@@ -7196,12 +7196,19 @@ function form_inputs_conditions (o) {
     if (condition.length==0) {
       return
     }
-    l = condition.split("==")
-    if (l.length!=2) {
+    ops = ["==", "!="]
+    op = "not found"
+    for (i=0;i<ops.length;i++) {
+      l = condition.split(ops[i])
+      if (l.length==2) {
+        op = ops[i]
+        left = $.trim(l[0])
+        right = $.trim(l[1])
+      }
+    }
+    if (op == "not found") {
       return
     }
-    left = $.trim(l[0])
-    right = $.trim(l[1])
     if (left.charAt(0) == "#"){
       left = left.substr(1);
       v_left = $('#'+prefix+"_"+left+"_"+index).val()
@@ -7214,7 +7221,14 @@ function form_inputs_conditions (o) {
     } else {
       v_right = right
     }
-    if (v_left != v_right) {
+    if (v_right == "empty") {
+      v_right = ""
+    }
+    match = false
+    if (op == "==" && v_left == v_right) { match=true }
+    else if (op == "!=" && v_left != v_right) { match=true }
+
+    if (!match) {
       $(this).siblings().children('input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]').val("")
       $(this).parent('tr').hide()
       return
