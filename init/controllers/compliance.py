@@ -6704,6 +6704,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
               '_style': 'width:%(max)dem'%dict(max=max),
               '_trigger_args': trigger_args,
               '_trigger_fn': input.get('Function', ""),
+              '_mandatory': input.get('Mandatory', ""),
             }
             _input = SELECT(
                        *options,
@@ -6724,27 +6725,44 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
                    **attr
                  )
         elif input['Type'] == "text":
+            attr = {
+              '_id': forms_xid(input['Id']+'_'+str(idx)),
+              '_name': forms_xid(''),
+              '_style': 'width:%(max)dem'%dict(max=max),
+              '_trigger_args': trigger_args,
+              '_trigger_fn': input.get('Function', ""),
+              '_mandatory': input.get('Mandatory', ""),
+            }
             _input = TEXTAREA(
                    default,
-                   _id=forms_xid(input['Id']+'_'+str(idx)),
-                   _name=forms_xid(''),
+                   **attr
                  )
         elif input['Type'] == "date":
-            _input = INPUT(
-                   _value=default,
-                   _class="date",
-                   _onfocus='datepicker(this)',
-                   _id=forms_xid(input['Id']+'_'+str(idx)),
-                   _name=forms_xid(''),
-                 )
+            attr = {
+              '_id': forms_xid(input['Id']+'_'+str(idx)),
+              '_value': default,
+              '_onfocus': datepicker(this),
+              '_name': forms_xid(''),
+              '_class': 'date',
+              '_style': 'width:%(max)dem'%dict(max=max),
+              '_trigger_args': trigger_args,
+              '_trigger_fn': input.get('Function', ""),
+              '_mandatory': input.get('Mandatory', ""),
+            }
+            _input = INPUT(**attr)
         elif input['Type'] == "datetime":
-            _input = INPUT(
-                   _value=default,
-                   _class="datetime",
-                   _onfocus='timepicker(this)',
-                   _id=forms_xid(input['Id']+'_'+str(idx)),
-                   _name=forms_xid(''),
-                 )
+            attr = {
+              '_id': forms_xid(input['Id']+'_'+str(idx)),
+              '_value': default,
+              '_onfocus': timepicker(this),
+              '_name': forms_xid(''),
+              '_class': 'datetime',
+              '_style': 'width:%(max)dem'%dict(max=max),
+              '_trigger_args': trigger_args,
+              '_trigger_fn': input.get('Function', ""),
+              '_mandatory': input.get('Mandatory', ""),
+            }
+            _input = INPUT(**attr)
         else:
             attr = {
               '_id': forms_xid(input['Id']+'_'+str(idx)),
@@ -6752,6 +6770,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
               '_trigger_args': trigger_args,
               '_trigger_fn': input.get('Function', ""),
               '_value': default,
+              '_mandatory': input.get('Mandatory', ""),
             }
             _input = INPUT(**attr)
 
@@ -6776,7 +6795,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
                 name = forms_xid('hidden')
                 style = "display:none"
             elif input.get('Condition'):
-                if default != "-" and default != "":
+                if display_mode and default != "-" and default != "":
                     style = ""
                 else:
                     style = "display:none"
@@ -7104,6 +7123,7 @@ var count=0;
 $("select").combobox();
 
 function form_inputs_trigger (o) {
+  form_inputs_mandatory(o)
   form_inputs_constraints(o)
   form_inputs_conditions(o)
   form_inputs_resize(o)
@@ -7122,7 +7142,12 @@ function refresh_select(e) {
 
 function refresh_div(e) {
   return function(data) {
-    e.html("<pre>"+data.join("\\n")+"</pre>")
+    if (data instanceof Array) {
+      s = data.join("\\n")
+    } else {
+      s = data
+    }
+    e.html("<pre>"+s+"</pre>")
   };
 }
 
@@ -7157,9 +7182,25 @@ function form_inputs_functions (o) {
   })
 }
 
+function form_inputs_mandatory (o) {
+  $(o).parents('table').first().find("[mandatory=mandatory]").each(function(){
+    if ($(this).get(0).tagName == 'SELECT') {
+      val = $(this).val()
+    } else {
+      val = $(this).val()
+    }
+    if (val == undefined || val.length == 0) {
+      $(this).parents('tr').first().addClass("highlight_input")
+    } else {
+      $(this).parents('tr').first().removeClass("highlight_input")
+    }
+  })
+}
+
 function form_inputs_resize (o) {
   var max = 0
-  $(o).parents('table').first().find('input:visible,textarea:visible,select:visible').each(function(){
+  $(o).parents('table').first().find('input,textarea,select').each(function(){
+    $(this).width('auto')
     w = $(this).width()
     if (w > max) { max = w }
   })
@@ -7718,7 +7759,10 @@ def ajax_generic_form_submit(form, data):
                 if record_id is not None:
                     q = db.forms_store.id == request.vars.prev_wfid
                     db(q).update(form_next_id=record_id)
-                log.append(("form.store", "Workflow %(head_id)d step %(form_name)s added with id %(id)d", dict(form_name=form.form_name, head_id=head_id, id=record_id)))
+                if next_id != 0:
+                    log.append(("form.store", "Workflow %(head_id)d step %(form_name)s added with id %(id)d", dict(form_name=form.form_name, head_id=head_id, id=record_id)))
+                else:
+                    log.append(("form.store", "Workflow %(head_id)d closed on last step %(form_name)s with id %(id)d", dict(form_name=form.form_name, head_id=head_id, id=record_id)))
             else:
                 # new workflow
                 record_id = db.forms_store.insert(

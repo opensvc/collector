@@ -1291,6 +1291,7 @@
 'node information not updated': "noeud avec information d'asset obsolète",
 'node maintenance expired': 'maintenance du noeud expirée',
 'node name': 'nom de noeud',
+'node not found': 'node not found',
 'node type': 'type de noeud',
 'node warranty expired': 'garantie du noeud expirée',
 'node without asset information': "noeud sans information d'asset",

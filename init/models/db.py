@@ -1685,6 +1685,10 @@ db.define_table('forms_store',
     Field('form_data', 'text'),
     migrate=False)
 
+db.define_table('forms_store_archive',
+    db.forms_store,
+    migrate=False)
+
 db.define_table('forms_revisions',
     Field('id', 'integer'),
     Field('form_id', 'integer'),

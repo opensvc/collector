@@ -1126,25 +1126,23 @@ def json_service_loc_city(svcname):
     return _get_service_loc_city(svcname)
 
 @auth.requires_login()
-def get_node_generic(col):
-    if len(request.args) != 1:
-        return ""
+def _get_node_generic(nodename, col):
     q = db.v_nodes.team_responsible.belongs(user_groups())
-    q &= db.v_nodes.nodename == request.args[0]
+    q &= db.v_nodes.nodename == nodename
     node = db(q).select().first()
     if node is None:
         return T("node not found")
     return node[col]
 
-@auth.requires_login()
-def get_node_environnement():
-    return get_node_generic("environnement")
+@service.json
+def json_node_environnement(nodename):
+    return _get_node_generic(nodename, "environnement")
 
-@auth.requires_login()
-def get_node_os_concat():
-    return get_node_generic("os_concat")
+@service.json
+def json_node_os_concat(nodename):
+    return _get_node_generic(nodename, "os_concat")
 
-@auth.requires_login()
-def get_node_loc_city():
-    return get_node_generic("loc_city")
+@service.json
+def json_node_loc_city(nodename):
+    return _get_node_generic(nodename, "loc_city")
 

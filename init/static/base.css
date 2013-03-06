@@ -1263,6 +1263,22 @@ ul.login_menu ul {
     background: transparent url('folder48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
+.completed48 {
+    background: transparent url('completed48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
+.reject48 {
+    background: transparent url('reject48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
+.guy48 {
+    background: transparent url('guy48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
+.backup48 {
+    background: transparent url('backup48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
 .addnode48 {
     background: transparent url('addnode48.png') no-repeat left center;
     padding: 0 0 0 52px;
