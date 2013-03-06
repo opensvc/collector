@@ -6728,7 +6728,6 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
             attr = {
               '_id': forms_xid(input['Id']+'_'+str(idx)),
               '_name': forms_xid(''),
-              '_style': 'width:%(max)dem'%dict(max=max),
               '_trigger_args': trigger_args,
               '_trigger_fn': input.get('Function', ""),
               '_mandatory': input.get('Mandatory', ""),
@@ -6741,10 +6740,9 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
             attr = {
               '_id': forms_xid(input['Id']+'_'+str(idx)),
               '_value': default,
-              '_onfocus': datepicker(this),
+              '_onfocus': 'datepicker(this)',
               '_name': forms_xid(''),
               '_class': 'date',
-              '_style': 'width:%(max)dem'%dict(max=max),
               '_trigger_args': trigger_args,
               '_trigger_fn': input.get('Function', ""),
               '_mandatory': input.get('Mandatory', ""),
@@ -6754,10 +6752,9 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
             attr = {
               '_id': forms_xid(input['Id']+'_'+str(idx)),
               '_value': default,
-              '_onfocus': timepicker(this),
+              '_onfocus': 'timepicker(this)',
               '_name': forms_xid(''),
               '_class': 'datetime',
-              '_style': 'width:%(max)dem'%dict(max=max),
               '_trigger_args': trigger_args,
               '_trigger_fn': input.get('Function', ""),
               '_mandatory': input.get('Mandatory', ""),
@@ -6836,19 +6833,28 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
 
     if (not display_mode or display_detailed) and \
        data.get('Outputs')[0].get('Format') in ('list of dict', 'dict of dict', 'list'):
-        instance_counter = DIV(idx, _class="form_instance_count")
+        if not display_mode:
+            remove = A(
+              T("remove"),
+              _onclick="""
+$(this).parents("[name=instance]").first().siblings('hr').first().remove()
+$(this).parents("[name=instance]").first().remove()
+""",
+            )
+        else:
+            remove = ""
+        instance_counter = DIV(
+          DIV(idx),
+          remove,
+          _class="form_instance_count",
+        )
     else:
         instance_counter = ""
-
-    if idx == 0:
-        _id = forms_xid("ref")
-    else:
-        _id = ""
 
     return DIV(
              instance_counter,
              TABLE(l),
-             _id=_id,
+             _name="instance",
            )
 
 def ajax_forms_inputs():
@@ -7004,9 +7010,10 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
                  T("Add more"),
                  _class="add16",
                  _onclick="""
+ref=$(this).parents("[name=container_head]").find('[name=instance]').last()
 count=$("#%(counter)s").val();
-var clone = $("#%(ref)s").clone();
-$("#%(ref)s").find("select").each(function(i) {
+var clone = ref.clone();
+ref.find("select").each(function(i) {
   var select = this;
   $(clone).find("select").eq(i).val($(select).val());
 });
@@ -7015,8 +7022,6 @@ clone.find(".inputOverlayCreated").each(function(){
   $(this).removeClass("inputOverlayCreated")
   $(this).combobox()
 })
-$("#%(ref)s").attr('id', '')
-clone.attr('id', '%(ref)s')
 clone.find('input,select,textarea,[name=cond],[id^=%(xid)s]').attr('id', function(i, val) {
   try {
     i = val.lastIndexOf('_')
@@ -7028,13 +7033,12 @@ clone.find('select').combobox()
 clone.find("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").bind('change', function(){
   form_inputs_trigger(this)
 })
-clone.find('.form_instance_count').text(count)
+clone.find('.form_instance_count').children('div').text(count)
 $('#%(container)s').append("<hr />")
 clone.appendTo($('#%(container)s'))
 count=parseInt(count)+1
 $("#%(counter)s").val(count);
-"""%dict(ref=forms_xid('ref'),
-         xid=forms_xid(''),
+"""%dict(xid=forms_xid(''),
          counter=forms_xid('count'),
          expert=forms_xid('expert'),
          container=forms_xid('container'))
@@ -7184,11 +7188,7 @@ function form_inputs_functions (o) {
 
 function form_inputs_mandatory (o) {
   $(o).parents('table').first().find("[mandatory=mandatory]").each(function(){
-    if ($(this).get(0).tagName == 'SELECT') {
-      val = $(this).val()
-    } else {
-      val = $(this).val()
-    }
+    val = $(this).val()
     if (val == undefined || val.length == 0) {
       $(this).parents('tr').first().addClass("highlight_input")
     } else {
@@ -7305,6 +7305,7 @@ $("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").bind('ch
                _id=forms_xid('container'),
              ),
              footer,
+             _name="container_head",
            )
 
 def forms_xid(id=None):
@@ -7552,7 +7553,6 @@ def get_form_formatted_data_o(output, data):
             output_value = h
         elif output.get('Format') == "list of dict":
             h = {}
-            invalidate = set([])
             for v in request.vars.keys():
                 for input in data['Inputs']:
                     if not v.startswith(forms_xid(input['Id'])):
@@ -7563,19 +7563,15 @@ def get_form_formatted_data_o(output, data):
                     val = request.vars.get(v)
                     if len(str(val)) == 0:
                         if 'Mandatory' in input and input['Mandatory']:
-                            invalidate.add(idx)
-                        continue
+                            raise Exception(T("Input '%(input)s' is mandatory (instance %(inst)s)", dict(input=input.get('Id'), inst=idx)))
                     try:
                         val = convert_val(val, input['Type'])
                     except Exception, e:
                         raise Exception(T(str(e)))
                     h[idx][input['Id']] = val
-            for idx in invalidate:
-                del(h[idx])
             output_value = h.values()
         elif output.get('Format') == "dict of dict":
             h = {}
-            invalidate = set([])
             for v in request.vars.keys():
                 for input in data['Inputs']:
                     if not v.startswith(forms_xid(input['Id'])):
@@ -7586,7 +7582,7 @@ def get_form_formatted_data_o(output, data):
                     val = request.vars.get(v)
                     if len(str(val)) == 0:
                         if 'Mandatory' in input and input['Mandatory']:
-                            invalidate.add(idx)
+                            raise Exception(T("Input '%(input)s' is mandatory (instance %(inst)s)", dict(input=input.get('Id'), inst=idx)))
                         continue
                     try:
                         val = convert_val(val, input['Type'])
@@ -7596,8 +7592,6 @@ def get_form_formatted_data_o(output, data):
             if 'Key' not in output:
                 raise Exception(T("'Key' must be defined in form Output of 'dict of dict' format"))
             k = output['Key']
-            for idx in invalidate:
-                del(h[idx])
             _h = {}
             for idx, d in h.items():
                 if k not in d:
@@ -7660,7 +7654,11 @@ def ajax_generic_form_submit(form, data):
         if dest == "db":
             output['Type'] = 'object'
             output['Format'] = 'dict'
-            d = get_form_formatted_data(output, data)
+            try:
+                d = get_form_formatted_data(output, data)
+            except Exception, e:
+                log.append(("form.submit", str(e), dict()))
+                break
             if 'Table' not in output:
                 log.append(("form.submit", "Table must be set in db type Output", dict()))
                 continue
@@ -7676,7 +7674,11 @@ def ajax_generic_form_submit(form, data):
         elif dest == "script":
             import os
             import subprocess
-            d = get_form_formatted_data(output, data)
+            try:
+                d = get_form_formatted_data(output, data)
+            except Exception, e:
+                log.append(("form.submit", str(e), dict()))
+                break
             path = output.get('Path')
             if path is None:
                 log.append(("form.submit", "Path must be set in script type Output", dict()))
@@ -7697,7 +7699,11 @@ def ajax_generic_form_submit(form, data):
                 continue
             label = data.get('Label', form.form_name)
             title = T("form submission: %(n)s", dict(n=label))
-            d = get_form_formatted_data_o(output, data)
+            try:
+                d = get_form_formatted_data_o(output, data)
+            except Exception, e:
+                log.append(("form.submit", str(e), dict()))
+                break
             message = str(XML(BODY(
               P(T("Form submitted on %(date)s by %(submitter)s", dict(date=str(datetime.datetime.now()), submitter=user_name()))),
               _ajax_forms_inputs(
@@ -7713,7 +7719,11 @@ def ajax_generic_form_submit(form, data):
                       message='<html>%s</html>'%message)
             log.append(("form.submit", "Mail sent to %(to)s on form %(form_name)s submission." , dict(to=', '.join(to), form_name=form.form_name)))
         elif dest == "workflow":
-            d = get_form_formatted_data(output, data)
+            try:
+                d = get_form_formatted_data(output, data)
+            except Exception, e:
+                log.append(("form.submit", str(e), dict()))
+                break
             form_md5 = insert_form_md5(form.id, form.form_yaml)
             if request.vars.prev_wfid is not None and request.vars.prev_wfid != 'None':
                 # workflow continuation
@@ -7876,7 +7886,11 @@ def ajax_custo_form_submit(output, data):
             i += 1
         var_name = var_name_prefix + _i
 
-    var_value = get_form_formatted_data(output, data)
+    try:
+        var_value = get_form_formatted_data(output, data)
+    except Exception, e:
+        log.append(("compliance.ruleset.variable.change", str(e), dict()))
+        return log
 
     q = db.comp_rulesets_variables.ruleset_id == rset.id
     q &= db.comp_rulesets_variables.var_name == var_name
@@ -7884,7 +7898,7 @@ def ajax_custo_form_submit(output, data):
 
     if n == 0 and request.vars.var_id is not None:
         log.append(("compliance.ruleset.variable.change", "%(var_class)s' variable '%(var_name)s' does not exist in ruleset %(rset_name)s or invalid attempt to edit a variable in a parent ruleset", dict(var_class=var_class, var_name=var_name, rset_name=rset_name)))
-        return [['','','']]
+        return log
 
     q &= db.comp_rulesets_variables.var_value == var_value
     n = db(q).count()
