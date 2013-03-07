@@ -1430,15 +1430,23 @@ ul.login_menu ul {
     display: inline-block;
 }
 
+.wfentry a:hover {
+    text-decoration: underline;
+}
+
 .wfentry a {
     text-decoration: none;
+    color: rgb(13, 4, 228);
+    float: right;
+    padding-left: 0.2em;
+    padding-right: 0.2em;
 }
 
 .wfentry {
     border-radius:6px;
    -moz-border-radius:6px;
    -webkit-border-radius:6px;
-    padding: 1em;
+    padding: 0 0.5em 0 0.5em;
     margin: 1em;
     cursor: pointer;
     border: 2px solid transparent;
@@ -1451,13 +1459,15 @@ ul.login_menu ul {
 }
 
 .wfentry:hover {
-    border: 2px solid red;
+    border: 2px solid rgb(13, 4, 228);
+}
+
+.wfentryfocused:hover {
     height: auto;
     width: auto;
     min-height: 20em;
     min-width: 32em;
 }
-
 
 .formentry {
     border-radius:6px;

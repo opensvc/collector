@@ -712,7 +712,7 @@ def stored_form_show(wfid, _class=""):
     )
 
 @auth.requires_login()
-def forms_chain(wfid, folded=False, highlight_step=True):
+def forms_chain(wfid, foldable=False, folded=False, highlight_step=True):
     l = []
     id = wfid
 
@@ -760,7 +760,7 @@ def forms_chain(wfid, folded=False, highlight_step=True):
 
     for i, e in enumerate(l):
         cl = ""
-        if i > 0 and i < len(l) - 1:
+        if foldable and i > 0 and i < len(l) - 1:
             cl = "foldme"
             if folded:
                 cl += " hidden"
@@ -804,7 +804,7 @@ def workflow():
 
     d = DIV(
       H1(T("Workflow")),
-      DIV(forms_chain(wfid)),
+      DIV(forms_chain(wfid, foldable=True, folded=False)),
       DIV(_class="spacer"),
       H1(T("Next steps")),
       DIV(_forms_list, _id="forms_list"),
@@ -910,12 +910,14 @@ $("#svcname").siblings("input").focus();
 def format_forms_chain(l):
     _l = []
     for wf in l:
-        data = forms_chain(wf.forms_store.id, folded=False, highlight_step=False)
+        data = forms_chain(wf.forms_store.id, foldable=False, highlight_step=False)
         d = DIV(
           A(
-            data,
+            T("open"),
             _href=URL(c='forms', f='workflow', vars={'wfid': wf.forms_store.id}),
           ),
+          data,
+          _onclick="$(this).toggleClass('wfentryfocused')",
           _class="wfentry",
         )
         _l.append(d)
@@ -941,7 +943,6 @@ def ajax_workflows_assigned_to_me():
         qf |= db.forms_store.form_submitter.like(s)
         qf |= db.forms_store.form_submit_date.like(s)
         qf |= db.forms_store.form_data.like(s)
-        qf |= db.forms_revisions.form_yaml.like(s)
 
     q = db.forms_store.form_next_id == None
     q &= db.forms_store.form_md5 == db.forms_revisions.form_md5
