@@ -834,6 +834,8 @@ def cron_feed_monitor():
                    dash_env="PRD",
                    dash_updated="%(now)s"
                  on duplicate key update
+                   dash_fmt="%%(n)s entries stalled in feed queue",
+                   dash_dict='{"n": "%(n)d"}',
                    dash_updated="%(now)s"
               """%dict(n=n, now=str(now))
         db.executesql(sql)
