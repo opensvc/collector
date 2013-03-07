@@ -6740,7 +6740,6 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
             attr = {
               '_id': forms_xid(input['Id']+'_'+str(idx)),
               '_value': default,
-              '_onfocus': 'datepicker(this)',
               '_name': forms_xid(''),
               '_class': 'date',
               '_trigger_args': trigger_args,
@@ -6752,9 +6751,19 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
             attr = {
               '_id': forms_xid(input['Id']+'_'+str(idx)),
               '_value': default,
-              '_onfocus': 'timepicker(this)',
               '_name': forms_xid(''),
               '_class': 'datetime',
+              '_trigger_args': trigger_args,
+              '_trigger_fn': input.get('Function', ""),
+              '_mandatory': input.get('Mandatory', ""),
+            }
+            _input = INPUT(**attr)
+        elif input['Type'] == "time":
+            attr = {
+              '_id': forms_xid(input['Id']+'_'+str(idx)),
+              '_value': default,
+              '_name': forms_xid(''),
+              '_class': 'time',
               '_trigger_args': trigger_args,
               '_trigger_fn': input.get('Function', ""),
               '_mandatory': input.get('Mandatory', ""),
@@ -6854,6 +6863,12 @@ $(this).parents("[name=instance]").first().remove()
     return DIV(
              instance_counter,
              TABLE(l),
+             SCRIPT("""
+$(".date").datepicker({dateFormat: "yy-mm-dd"})
+$(".datetime").datetimepicker({dateFormat: "yy-mm-dd"})
+$(".time").timepicker({dateFormat: "yy-mm-dd"})
+"""
+             ),
              _name="instance",
            )
 
@@ -7725,6 +7740,16 @@ def ajax_generic_form_submit(form, data):
                 log.append(("form.submit", str(e), dict()))
                 break
             form_md5 = insert_form_md5(form.id, form.form_yaml)
+
+            if len(output.get('NextForms', [])) == 0:
+                next_id = 0
+                status = "closed"
+            else:
+                next_id = None
+                status = "pending"
+
+            now = datetime.datetime.now()
+
             if request.vars.prev_wfid is not None and request.vars.prev_wfid != 'None':
                 # workflow continuation
                 q = db.forms_store.id == request.vars.prev_wfid
@@ -7732,6 +7757,7 @@ def ajax_generic_form_submit(form, data):
                 if prev_wf.form_next_id is not None:
                     log.append(("form.store",  "This step is already completed (id=%(id)d)", dict(id=prev_wf.id)))
                     continue
+
                 form_assignee = output.get('NextAssignee')
                 if form_assignee is None:
                     form_assignee = user_primary_group()
@@ -7739,6 +7765,7 @@ def ajax_generic_form_submit(form, data):
                         form_assignee = prev_wf.form_submitter
                 if form_assignee is None:
                     form_assignee = ""
+
                 head_id = int(request.vars.prev_wfid)
                 max_iter = 100
                 iter = 0
@@ -7749,18 +7776,15 @@ def ajax_generic_form_submit(form, data):
                     if row is None:
                         break
                     if row.form_prev_id is None:
+                        head = row
                         break
                     head_id = row.form_prev_id
 
-                if len(output.get('NextForms', [])) == 0:
-                    next_id = 0
-                else:
-                    next_id = None
                 record_id = db.forms_store.insert(
                   form_md5=form_md5,
                   form_submitter=user_name(),
                   form_assignee=form_assignee,
-                  form_submit_date=datetime.datetime.now(),
+                  form_submit_date=now,
                   form_prev_id=request.vars.prev_wfid,
                   form_next_id=next_id,
                   form_head_id=head_id,
@@ -7773,6 +7797,26 @@ def ajax_generic_form_submit(form, data):
                     log.append(("form.store", "Workflow %(head_id)d step %(form_name)s added with id %(id)d", dict(form_name=form.form_name, head_id=head_id, id=record_id)))
                 else:
                     log.append(("form.store", "Workflow %(head_id)d closed on last step %(form_name)s with id %(id)d", dict(form_name=form.form_name, head_id=head_id, id=record_id)))
+                q = db.workflows.form_head_id == head_id
+                wfrow = db(q).select().first()
+                if wfrow is None:
+                    # should not happen ... recreate the workflow
+                    db.workflows.insert(
+                      status=status,
+                      steps=iter+1,
+                      last_assignee=form_assignee,
+                      last_update=now,
+                      form_head_id=head_id,
+                      creator=head.form_submitter,
+                      create_date=head.form_submit_date,
+                    )
+                else:
+                    db(q).update(
+                      status=status,
+                      steps=iter+1,
+                      last_assignee=form_assignee,
+                      last_update=now,
+                    )
             else:
                 # new workflow
                 record_id = db.forms_store.insert(
@@ -7786,6 +7830,17 @@ def ajax_generic_form_submit(form, data):
                     q = db.forms_store.id == record_id
                     db(q).update(form_head_id=record_id)
                 log.append(("form.store", "New workflow %(form_name)s created with id %(id)d", dict(form_name=form.form_name, id=record_id)))
+
+                db.workflows.insert(
+                  status=status,
+                  steps=1,
+                  last_assignee=output.get('NextAssignee', ''),
+                  last_update=now,
+                  form_head_id=record_id,
+                  creator=user_name(),
+                  create_date=now,
+                )
+
         elif dest == "compliance variable":
             log += ajax_custo_form_submit(output, data)
 

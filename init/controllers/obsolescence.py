@@ -90,22 +90,33 @@ class col_obs_warn_date(HtmlTableColumn):
               SPAN(
                 ss,
                 _id=tid,
-                _onclick="""hide_eid('%(tid)s');show_eid('%(sid)s');getElementById('%(iid)s').focus()"""%dict(tid=tid, sid=sid, iid=iid),
+                _onclick="""$('#%(tid)s').hide();$('#%(sid)s').show();$('#%(iid)s').focus()"""%dict(tid=tid, sid=sid, iid=iid),
                 _class="clickable",
               ),
               SPAN(
                 INPUT(
                   value=s,
                   _id=iid,
-                  _class="datetime",
-                  _onfocus='timepicker(this)',
-                  _onblur="""hide_eid('%(sid)s');show_eid('%(tid)s');"""%dict(sid=sid, tid=tid),
+                  _class="date",
                   _onkeypress="if (is_enter(event)) {%s};"%\
                      self.t.ajax_submit(additional_inputs=[iid],
                                         args="warn_date_set"),
                 ),
+                A(
+                  T("save"),
+                  _onclick=self.t.ajax_submit(additional_inputs=[iid], args="warn_date_set"),
+                  _class="toola",
+                ),
+                A(
+                  T("cancel"),
+                  _onclick="""$('#%(sid)s').hide();$('#%(tid)s').show()"""%dict(tid=tid, sid=sid, iid=iid),
+                  _class="toola",
+                ),
                 _id=sid,
                 _style="display:none",
+              ),
+              SCRIPT(
+                """$(".date").datepicker({dateFormat: "yy-mm-dd"})""",
               ),
             )
         return d
@@ -131,15 +142,26 @@ class col_obs_alert_date(HtmlTableColumn):
                 INPUT(
                   value=s,
                   _id=iid,
-                  _class="datetime",
-                  _onfocus='timepicker(this)',
-                  _onblur="""hide_eid('%(sid)s');show_eid('%(tid)s');"""%dict(sid=sid, tid=tid),
+                  _class="date",
                   _onkeypress="if (is_enter(event)) {%s};"%\
                      self.t.ajax_submit(additional_inputs=[iid],
                                             args="alert_date_set"),
                 ),
+                A(
+                  T("save"),
+                  _onclick=self.t.ajax_submit(additional_inputs=[iid], args="alert_date_set"),
+                  _class="toola",
+                ),
+                A(
+                  T("cancel"),
+                  _onclick="""$('#%(sid)s').hide();$('#%(tid)s').show()"""%dict(tid=tid, sid=sid, iid=iid),
+                  _class="toola",
+                ),
                 _id=sid,
                 _style="display:none",
+              ),
+              SCRIPT(
+                """$(".date").datepicker({dateFormat: "yy-mm-dd"})""",
               ),
             )
         return d

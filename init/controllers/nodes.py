@@ -350,7 +350,6 @@ class table_nodes(HtmlTable):
                                      minutes=now.minute,
                                      microseconds=now.microsecond)
         e = s + datetime.timedelta(days=1)
-        timepicker = """Calendar.setup({inputField:this.id, ifFormat:"%Y-%m-%d %H:%M:%S", showsTime: true,timeFormat: "24"});"""
 
         d = DIV(
               A(
@@ -366,13 +365,11 @@ class table_nodes(HtmlTable):
                     _value=s.strftime("%Y-%m-%d %H:%M"),
                     _id='begin',
                     _class='datetime',
-                    _onfocus=timepicker,
                   ),
                   INPUT(
                     _value=e.strftime("%Y-%m-%d %H:%M"),
                     _id='end',
                     _class='datetime',
-                    _onfocus=timepicker,
                   ),
                   INPUT(
                     _value='gen',
@@ -382,6 +379,9 @@ class table_nodes(HtmlTable):
                   ),
                   DIV(
                     _id="prf_cont"
+                  ),
+                  SCRIPT(
+                    """$(".datetime").datetimepicker({dateFormat: "yy-mm-dd"})""",
                   ),
                 ),
                 _style='display:none',

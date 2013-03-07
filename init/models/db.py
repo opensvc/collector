@@ -1694,6 +1694,19 @@ db.define_table('forms_revisions',
     Field('form_id', 'integer'),
     Field('form_md5', 'string'),
     Field('form_yaml', 'text'),
+    Field('form_name', 'string'),
+    Field('form_folder', 'string'),
+    migrate=False)
+
+db.define_table('workflows',
+    Field('id', 'integer'),
+    Field('form_head_id', 'integer'),
+    Field('status', 'string'),
+    Field('steps', 'integer'),
+    Field('creator', 'string'),
+    Field('create_date', 'datetime'),
+    Field('last_assignee', 'string'),
+    Field('last_update', 'datetime'),
     migrate=False)
 
 

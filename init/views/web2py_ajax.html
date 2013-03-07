@@ -3,8 +3,6 @@
 <![endif]-->
 {{
 response.files.insert(0,URL(r=request,c='static',f='jquery.js'))
-response.files.insert(1,URL(r=request,c='static',f='calendar.css'))
-response.files.insert(2,URL(r=request,c='static',f='calendar.js'))
 response.files.insert(3,URL(r=request,c='static',f='jquery.sparkline.min.js'))
 response.files.insert(4,URL(r=request,c='static',f='jqplot/jquery.jqplot.min.css'))
 response.files.insert(4,URL(r=request,c='static',f='jqplot/jquery.jqplot.min.js'))
@@ -23,6 +21,7 @@ response.files.insert(16,URL(r=request,c='static',f='jqplot/plugins/jqplot.donut
 response.files.insert(17,URL(r=request,c='static',f='js/jquery-ui-1.9.2.custom/css/smoothness/jquery-ui-1.9.2.custom.min.css'))
 response.files.insert(18,URL(r=request,c='static',f='js/jquery-ui-1.9.2.custom/js/jquery-ui-1.9.2.custom.min.js'))
 response.files.insert(19,URL(r=request,c='static',f='js/combobox.js'))
+response.files.insert(20,URL(r=request,c='static',f='js/timepicker.js'))
 for _item in response.meta or []:}}
      <meta name="{{=_item}}" content="{{=response.meta[_item]}}" />{{
 pass
@@ -62,15 +61,6 @@ function web2py_ajax_init() {
   jQuery('input.integer').keyup(function(){this.value=this.value.reverse().replace(/[^0-9\-]|\-(?=.)/g,'').reverse();});
   jQuery('input.double').keyup(function(){this.value=this.value.reverse().replace(/[^0-9\-\.]|[\-](?=.)|[\.](?=[0-9]*[\.])/g,'').reverse();});
   jQuery('input.delete').attr('onclick','if(this.checked) if(!confirm("{{=T('Sure you want to delete this object?')}}")) this.checked=false;');
-  try {jQuery("input.date").focus( function() {Calendar.setup({
-     inputField:this.id, ifFormat:"{{=T('%Y-%m-%d')}}", showsTime:false
-  }); }); } catch(e) {};
-  try { jQuery("input.datetime").focus( function() {Calendar.setup({
-     inputField:this.id, ifFormat:"{{=T('%Y-%m-%d %H:%M:%S')}}", showsTime: true,timeFormat: "24"
-  }); }); } catch(e) {};
-  try { jQuery("input.time").clockpick({
-      starthour:0, endhour:23, showminutes:true, military:true
-  }); } catch(e) {};
 };
 jQuery(document).ready(function(){
    jQuery('.flash').hide();

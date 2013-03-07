@@ -3327,3 +3327,22 @@ drop view v_users;
 CREATE VIEW `v_users` AS (select (select `e`.`time_stamp` AS `time_stamp` from `auth_event` `e` where (`e`.`user_id` = `u`.`id`) order by `e`.`time_stamp` desc limit 1) AS `last`,`u`.`id` AS `id`,concat_ws(' ',`u`.`first_name`,`u`.`last_name`) AS `fullname`,`u`.`email` AS `email`,group_concat(`d`.`domains` separator ', ') AS `domains`,sum((select count(0) AS `count(*)` from `auth_group` `gg` where ((`gg`.`role` = 'Manager') and (`gg`.`id` = `g`.`id`)))) AS `manager`,group_concat(`g`.`role` separator ', ') AS `groups`, `gg`.`role` AS `primary_group`, u.lock_filter as lock_filter, fs.fset_name as fset_name from `auth_user` `u` left join `auth_membership` `mm` on `u`.`id` = `mm`.`user_id` and mm.primary_group='T' left join `auth_group` `gg` on `mm`.`group_id` = `gg`.`id` left join `auth_membership` `m` on `u`.`id` = `m`.`user_id` left join `auth_group` `g` on `m`.`group_id` = `g`.`id` and not `g`.`role` like 'user_%' left join `domain_permissions` `d` on `m`.`group_id` = `d`.`group_id` left join gen_filterset_user fsu on fsu.user_id = u.id left join gen_filtersets fs on fs.id = fsu.fset_id group by id);
 
 alter table forms_revisions add column form_id int(11);
+
+CREATE TABLE `workflows` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `form_head_id` int(11) NOT NULL,
+  `status` varchar(10) NOT NULL,
+  `steps` int(11) NOT NULL,
+  `creator` varchar(200) NOT NULL,
+  `create_date` datetime NOT NULL,
+  `last_assignee` varchar(200) NOT NULL,
+  `last_update` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx1` (`form_head_id`)
+) ENGINE=InnoDB;
+
+
+alter table forms_revisions add column form_folder varchar(200);
+
+alter table forms_revisions add column form_name varchar(100);
+

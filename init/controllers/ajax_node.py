@@ -71,7 +71,6 @@ def perf_stats(node, rowid):
                                  microseconds=now.microsecond)
     e = s + datetime.timedelta(days=1)
 
-    timepicker = """Calendar.setup({inputField:this.id, ifFormat:"%Y-%m-%d %H:%M:%S", showsTime: true,timeFormat: "24" });"""
     t = DIV(
           SPAN(
             IMG(
@@ -83,13 +82,11 @@ def perf_stats(node, rowid):
               _value=s.strftime("%Y-%m-%d %H:%M"),
               _id='begin_'+rowid,
               _class='datetime',
-              _onfocus=timepicker,
             ),
             INPUT(
               _value=e.strftime("%Y-%m-%d %H:%M"),
               _id='end_'+rowid,
               _class='datetime',
-              _onfocus=timepicker,
             ),
             IMG(
               _title=T('End'),
@@ -106,6 +103,9 @@ def perf_stats(node, rowid):
             SPAN(perf_group('Plot per block device usage', 'blockdev')),
             SPAN(perf_group('Plot per net device usage', 'netdev')),
             SPAN(perf_group('Plot per net device errors', 'netdev_err')),
+            SCRIPT(
+              """$(".datetime").datetimepicker({dateFormat: "yy-mm-dd"})"""
+            )
           ),
         )
     return t

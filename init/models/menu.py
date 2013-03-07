@@ -130,6 +130,8 @@ response.menu = [
               URL(request.application,'forms','workflows_assigned_to_me')],
              [DIV(T('Pending tiers action'), _class='wf16'), False,
               URL(request.application,'forms','workflows_pending_tiers_action')],
+             [DIV(T('All'), _class='wf16'), False,
+              URL(request.application,'forms','workflows')],
          ]
     ],
     [T('Admin'), False, '',

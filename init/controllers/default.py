@@ -519,7 +519,6 @@ def ajax_service():
                                      microseconds=now.microsecond)
         e = b + datetime.timedelta(days=1)
 
-        timepicker = """Calendar.setup({inputField:this.id, ifFormat:"%Y-%m-%d %H:%M:%S", showsTime: true,timeFormat: "24" });"""
         d = DIV(
               SPAN(
                 IMG(
@@ -531,13 +530,11 @@ def ajax_service():
                   _value=b.strftime("%Y-%m-%d %H:%M"),
                   _id='containerprf_begin_'+str(rowid),
                   _class='datetime',
-                  _onfocus=timepicker,
                 ),
                 INPUT(
                   _value=e.strftime("%Y-%m-%d %H:%M"),
                   _id='containerprf_end_'+str(rowid),
                   _class='datetime',
-                  _onfocus=timepicker,
                 ),
                 IMG(
                   _title=T('End'),
@@ -556,6 +553,9 @@ def ajax_service():
                 SPAN(
                   _id='containerprf_'+str(rowid),
                 ),
+                SCRIPT(
+                  """$(".datetime").datetimepicker({dateFormat: "yy-mm-dd"})""",
+                ),
               ),
             )
         return d
@@ -570,7 +570,6 @@ def ajax_service():
                                      microseconds=now.microsecond)
         e = b + datetime.timedelta(days=1)
 
-        timepicker = """Calendar.setup({inputField:this.id, ifFormat:"%Y-%m-%d %H:%M:%S", showsTime: true,timeFormat: "24" });"""
         d = DIV(
               SPAN(
                 IMG(
@@ -582,13 +581,11 @@ def ajax_service():
                   _value=b.strftime("%Y-%m-%d %H:%M"),
                   _id='grpprf_begin_'+str(rowid),
                   _class='datetime',
-                  _onfocus=timepicker,
                 ),
                 INPUT(
                   _value=e.strftime("%Y-%m-%d %H:%M"),
                   _id='grpprf_end_'+str(rowid),
                   _class='datetime',
-                  _onfocus=timepicker,
                 ),
                 IMG(
                   _title=T('End'),
@@ -606,6 +603,9 @@ def ajax_service():
                 ),
                 SPAN(
                   _id='grpprf_'+str(rowid),
+                ),
+                SCRIPT(
+                  """$(".datetime").datetimepicker({dateFormat: "yy-mm-dd"})""",
                 ),
               ),
             )

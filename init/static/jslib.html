@@ -432,20 +432,6 @@ function toggle_extra(url, id) {
         $('#'+id).hide()
     }
 }
-function datepicker(e) {
-    Calendar.setup({
-        inputField:e.id,
-        ifFormat:"%Y-%m-%d",
-        showsTime: false
-    })
-}
-function timepicker(e) {
-    Calendar.setup({
-        inputField:e.id,
-        ifFormat:"%Y-%m-%d %H:%M:%S",
-        showsTime: true,timeFormat: "24"
-    })
-}
 function checked_nodes() {
     l = document.getElementsByName('nodes_ck');
     d = new Array()

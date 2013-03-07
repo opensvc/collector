@@ -12,6 +12,122 @@ def call():
     session.forget()
     return service()
 
+class col_form_head_id(HtmlTableColumn):
+    def html(self, o):
+        id = self.t.extra_line_key(o)
+        d = A(
+          o.form_head_id,
+          _href=URL(
+            c='forms',
+            f='workflow',
+            vars={'wfid': o.form_head_id},
+          ),
+        )
+        return d
+
+class table_workflows(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['form_head_id',
+                     'status',
+                     'steps',
+                     'creator',
+                     'last_assignee',
+                     'create_date',
+                     'last_update']
+        self.colprops = {
+            'form_head_id': col_form_head_id(
+                title = 'Head form id',
+                field = 'form_head_id',
+                display = True,
+                table = 'workflows',
+                img = 'wf16'
+            ),
+            'status': HtmlTableColumn(
+                title = 'Status',
+                field = 'status',
+                display = True,
+                table = 'workflows',
+                img = 'wf16'
+            ),
+            'steps': HtmlTableColumn(
+                title = 'Steps',
+                field = 'steps',
+                display = True,
+                table = 'workflows',
+                img = 'wf16'
+            ),
+            'creator': HtmlTableColumn(
+                title = 'Creator',
+                field = 'creator',
+                display = True,
+                table = 'workflows',
+                img = 'guy16'
+            ),
+            'last_assignee': HtmlTableColumn(
+                title = 'Last assignee',
+                field = 'last_assignee',
+                display = True,
+                table = 'workflows',
+                img = 'guy16'
+            ),
+            'create_date': HtmlTableColumn(
+                title = 'Created on',
+                field = 'create_date',
+                display = True,
+                table = 'workflows',
+                img = 'time16'
+            ),
+            'last_update': HtmlTableColumn(
+                title = 'Last updated',
+                field = 'last_update',
+                display = True,
+                table = 'workflows',
+                img = 'time16'
+            ),
+        }
+        for col in self.cols:
+            self.colprops[col].t = self
+        self.ajax_col_values = 'ajax_workflows_col_values'
+        self.dbfilterable = False
+        self.checkboxes = False
+
+@auth.requires_login()
+def ajax_workflows_col_values():
+    t = table_workflows('workflows', 'ajax_workflows')
+
+    col = request.args[0]
+    o = db.workflows[col]
+    q = db.workflows.id > 0
+    for f in t.cols:
+        q = _where(q, 'workflows', t.filter_parse(f), f)
+    t.object_list = db(q).select(o, orderby=o, groupby=o)
+    return t.col_values_cloud(col)
+
+@auth.requires_login()
+def ajax_workflows():
+    t = table_workflows('workflows', 'ajax_workflows')
+
+    o = db.workflows.id
+    q = db.workflows.id > 0
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    n = db(q).count()
+    t.setup_pager(n)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    return t.html()
+
+@auth.requires_login()
+def workflows():
+    t = DIV(
+          ajax_workflows(),
+          _id='workflows',
+        )
+    return dict(table=t)
+
+
 class col_forms_yaml(HtmlTableColumn):
     def html(self, o):
         val = self.get(o)
@@ -684,7 +800,7 @@ def stored_form_show(wfid, _class=""):
 
     return DIV(
       DIV(
-        H2("%d: %s"%(wf.forms_store.form_head_id, form.get('Label'))),
+        H2("%d: %s"%(wf.forms_store.id, form.get('Label'))),
         I(
           T("Submitted by %(submitter)s on %(date)s", dict(submitter=wf.forms_store.form_submitter, date=wf.forms_store.form_submit_date)),
           BR(),
@@ -943,6 +1059,11 @@ def ajax_workflows_assigned_to_me():
         qf |= db.forms_store.form_submitter.like(s)
         qf |= db.forms_store.form_submit_date.like(s)
         qf |= db.forms_store.form_data.like(s)
+        try:
+            s = int(search)
+            qf |= db.forms_store.form_head_id == s
+        except:
+            pass
 
     q = db.forms_store.form_next_id == None
     q &= db.forms_store.form_md5 == db.forms_revisions.form_md5
