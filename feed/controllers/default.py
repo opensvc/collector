@@ -815,9 +815,10 @@ def insert_pkg(vars, vals, auth):
 
 def _insert_pkg(vars, vals, auth):
     now = datetime.datetime.now()
-    vars.append("pkg_updated")
-    for i, val in enumerate(vals):
-        vals[i].append(str(now))
+    if "pkg_updated" not in vars:
+        vars.append("pkg_updated")
+        for i, val in enumerate(vals):
+            vals[i].append(str(now))
     threshold = now - datetime.timedelta(minutes=1)
     generic_insert('packages', vars, vals)
     nodename = auth[1].strip("'")
@@ -4020,10 +4021,15 @@ def update_dash_checks(nodename):
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
 
-    if len(rows) == 1 and rows[0][0] == 'PRD':
+    if len(rows) == 0:
+        sev = 2
+        host_mode = 'TST'
+    elif len(rows) == 1 and rows[0][0] == 'PRD':
         sev = 3
+        host_mode = rows[0][0]
     else:
         sev = 2
+        host_mode = rows[0][0]
 
     now = datetime.datetime.now()
     now = now - datetime.timedelta(microseconds=now.microsecond)
@@ -4077,7 +4083,7 @@ def update_dash_checks(nodename):
                  dash_updated="%(now)s"
           """%dict(nodename=nodename,
                    sev=sev,
-                   env=rows[0][0],
+                   env=host_mode,
                    now=str(now),
                   )
     db.executesql(sql)
