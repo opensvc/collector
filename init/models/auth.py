@@ -65,6 +65,13 @@ def member_of(g):
         raise Exception("member_of_group param must be a role or a list of roles")
     return False
 
+def email_of(u):
+    sql = """select email from auth_user where concat(first_name, " ", last_name) = "%s" """ % u
+    rows = db.executesql(sql)
+    if len(rows) != 1:
+        return
+    return rows[0][0]
+
 class MyAuth(Auth):
     def __init__(self, environment, db = None):
         Auth.__init__(self,environment,db)

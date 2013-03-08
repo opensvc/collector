@@ -3347,3 +3347,8 @@ alter table forms_revisions add column form_folder varchar(200);
 alter table forms_revisions add column form_name varchar(100);
 
 alter table workflows add column form_md5 varchar(32);
+
+alter table workflows add column last_form_id int(11);
+
+alter table workflows add column last_form_name varchar(100);
+

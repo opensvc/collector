@@ -32,6 +32,8 @@ class table_workflows(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['form_head_id',
                      'form_name',
+                     'last_form_id',
+                     'last_form_name',
                      'form_folder',
                      'status',
                      'steps',
@@ -45,6 +47,13 @@ class table_workflows(HtmlTable):
             'form_head_id': col_form_head_id(
                 title = 'Head form id',
                 field = 'form_head_id',
+                display = True,
+                table = 'workflows',
+                img = 'wf16'
+            ),
+            'last_form_id': col_form_head_id(
+                title = 'Last form id',
+                field = 'last_form_id',
                 display = True,
                 table = 'workflows',
                 img = 'wf16'
@@ -96,7 +105,14 @@ class table_workflows(HtmlTable):
                 field = 'form_name',
                 display = True,
                 table = 'forms_revisions',
-                img = 'prov'
+                img = 'wf16'
+            ),
+            'last_form_name': HtmlTableColumn(
+                title = 'Last form name',
+                field = 'last_form_name',
+                display = True,
+                table = 'workflows',
+                img = 'wf16'
             ),
             'form_folder': HtmlTableColumn(
                 title = 'Folder',

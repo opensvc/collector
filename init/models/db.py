@@ -1708,6 +1708,8 @@ db.define_table('workflows',
     Field('create_date', 'datetime'),
     Field('last_assignee', 'string'),
     Field('last_update', 'datetime'),
+    Field('last_form_id', 'integer'),
+    Field('last_form_name', 'string'),
     migrate=False)
 
 

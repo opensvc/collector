@@ -7664,6 +7664,71 @@ def insert_form_md5(form):
     )
     return form_md5
 
+def mail_form(output, data, form, to=None, record_id=None):
+    if to is None:
+        to = output.get('To', set([]))
+
+    if len(to) == 0:
+        return []
+
+    if '@' not in to:
+        to = email_of(to)
+
+    if to is None:
+        return []
+
+    if type(to) in (str, unicode):
+        to = [to]
+
+    label = data.get('Label', form.form_name)
+    title = "%(n)s" % dict(n=label)
+    try:
+        d = get_form_formatted_data_o(output, data)
+    except Exception, e:
+        return [("form.submit", str(e), dict())]
+    try:
+        with open("applications/init/static/mail.css", "r") as f:
+            style = f.read()
+    except:
+        style = ""
+
+    now_s = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+
+    if record_id is not None:
+        next = A(
+          T("Open the workflow"),
+          _href=URL(c="forms", f="workflow", vars={'wfid': record_id}, scheme=True),
+        )
+    else:
+        next = ""
+
+    body = BODY(
+      P(T("Form submitted on %(date)s by %(submitter)s", dict(date=now_s, submitter=user_name()))),
+      _ajax_forms_inputs(
+         _mode="showdetailed",
+         form=form,
+         form_output=output,
+         showexpert=True,
+         current_values=d,
+       ),
+       next,
+    )
+
+    message = """
+<html>
+ <head>
+  <style _type="text/css">
+   %(style)s
+  </style>
+ </head>
+ %(body)s
+</html>
+""" % dict(style=style, body=XML(body))
+    mail.send(to=to,
+              subject=title,
+              message=message)
+    return [("form.submit", "Mail sent to %(to)s on form %(form_name)s submission." , dict(to=', '.join(to), form_name=form.form_name))]
+
 def ajax_generic_form_submit(form, data):
     log = []
     for output in data.get('Outputs', []):
@@ -7711,48 +7776,7 @@ def ajax_generic_form_submit(form, data):
                 continue
             log.append(("form.submit", "script %(path)s returned on success: %(out)s", dict(path=path, out=out)))
         elif dest == "mail":
-            to = output.get('To', set([]))
-            if len(to) == 0:
-                continue
-            label = data.get('Label', form.form_name)
-            title = "%(n)s" % dict(n=label)
-            try:
-                d = get_form_formatted_data_o(output, data)
-            except Exception, e:
-                log.append(("form.submit", str(e), dict()))
-                break
-            try:
-                with open("applications/init/static/mail.css", "r") as f:
-                    style = f.read()
-            except:
-                style = ""
-
-            now_s = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-            body = BODY(
-              P(T("Form submitted on %(date)s by %(submitter)s", dict(date=now_s, submitter=user_name()))),
-              _ajax_forms_inputs(
-                 _mode="showdetailed",
-                 form=form,
-                 form_output=output,
-                 showexpert=True,
-                 current_values=d,
-               ),
-            )
-
-            message = """
-<html>
- <head>
-  <style _type="text/css">
-   %(style)s
-  </style>
- </head>
- %(body)s
-</html>
-""" % dict(style=style, body=XML(body))
-            mail.send(to=to,
-                      subject=title,
-                      message=message)
-            log.append(("form.submit", "Mail sent to %(to)s on form %(form_name)s submission." , dict(to=', '.join(to), form_name=form.form_name)))
+            log += mail_form(output, data, form)
         elif dest == "workflow":
             try:
                 d = get_form_formatted_data(output, data)
@@ -7827,6 +7851,8 @@ def ajax_generic_form_submit(form, data):
                       steps=iter+1,
                       last_assignee=form_assignee,
                       last_update=now,
+                      last_form_id=record_id,
+                      last_form_name=form.form_name,
                       form_head_id=head_id,
                       creator=head.form_submitter,
                       create_date=head.form_submit_date,
@@ -7836,14 +7862,17 @@ def ajax_generic_form_submit(form, data):
                       status=status,
                       steps=iter+1,
                       last_assignee=form_assignee,
+                      last_form_id=record_id,
+                      last_form_name=form.form_name,
                       last_update=now,
                     )
             else:
                 # new workflow
+                form_assignee = output.get('NextAssignee', '')
                 record_id = db.forms_store.insert(
                   form_md5=form_md5,
                   form_submitter=user_name(),
-                  form_assignee=output.get('NextAssignee', ''),
+                  form_assignee=form_assignee,
                   form_submit_date=datetime.datetime.now(),
                   form_data=d,
                 )
@@ -7856,12 +7885,17 @@ def ajax_generic_form_submit(form, data):
                   status=status,
                   form_md5=form_md5,
                   steps=1,
-                  last_assignee=output.get('NextAssignee', ''),
+                  last_assignee=form_assignee,
                   last_update=now,
+                  last_form_id=record_id,
+                  last_form_name=form.form_name,
                   form_head_id=record_id,
                   creator=user_name(),
                   create_date=now,
                 )
+
+            if next_id != 0 and output.get('Mail', False):
+                log += mail_form(output, data, form, to=form_assignee, record_id=record_id)
 
         elif dest == "compliance variable":
             log += ajax_custo_form_submit(output, data)
