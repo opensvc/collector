@@ -1250,6 +1250,10 @@ ul.login_menu ul {
     background: transparent url('folder48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
+.dns48 {
+    background: transparent url('dns48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
 .folderoracle48 {
     background-image: url('oracle48.png'),url('folder48.png');
     background-repeat: no-repeat;
