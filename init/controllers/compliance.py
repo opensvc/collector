@@ -7646,9 +7646,9 @@ def ajax_form_submit():
 
     return ajax_generic_form_submit(form, data)
 
-def insert_form_md5(form_id, form_yaml):
+def insert_form_md5(form):
     o = md5()
-    o.update(form_yaml)
+    o.update(form.form_yaml)
     form_md5 = str(o.hexdigest())
 
     q = db.forms_revisions.form_md5 == form_md5
@@ -7656,8 +7656,10 @@ def insert_form_md5(form_id, form_yaml):
         return form_md5
 
     db.forms_revisions.insert(
-      form_id=form_id,
-      form_yaml=form_yaml,
+      form_id=form.id,
+      form_yaml=form.form_yaml,
+      form_folder=form.form_folder,
+      form_name=form.form_name,
       form_md5=form_md5
     )
     return form_md5
@@ -7739,7 +7741,7 @@ def ajax_generic_form_submit(form, data):
             except Exception, e:
                 log.append(("form.submit", str(e), dict()))
                 break
-            form_md5 = insert_form_md5(form.id, form.form_yaml)
+            form_md5 = insert_form_md5(form)
 
             if len(output.get('NextForms', [])) == 0:
                 next_id = 0
@@ -7803,6 +7805,7 @@ def ajax_generic_form_submit(form, data):
                     # should not happen ... recreate the workflow
                     db.workflows.insert(
                       status=status,
+                      form_md5=form_md5,
                       steps=iter+1,
                       last_assignee=form_assignee,
                       last_update=now,
@@ -7833,6 +7836,7 @@ def ajax_generic_form_submit(form, data):
 
                 db.workflows.insert(
                   status=status,
+                  form_md5=form_md5,
                   steps=1,
                   last_assignee=output.get('NextAssignee', ''),
                   last_update=now,

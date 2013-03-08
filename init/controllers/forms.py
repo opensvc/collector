@@ -16,11 +16,11 @@ class col_form_head_id(HtmlTableColumn):
     def html(self, o):
         id = self.t.extra_line_key(o)
         d = A(
-          o.form_head_id,
+          self.get(o),
           _href=URL(
             c='forms',
             f='workflow',
-            vars={'wfid': o.form_head_id},
+            vars={'wfid': self.get(o)},
           ),
         )
         return d
@@ -31,12 +31,16 @@ class table_workflows(HtmlTable):
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['form_head_id',
+                     'form_name',
+                     'form_folder',
                      'status',
                      'steps',
                      'creator',
                      'last_assignee',
                      'create_date',
-                     'last_update']
+                     'last_update',
+                     'form_yaml',
+                    ]
         self.colprops = {
             'form_head_id': col_form_head_id(
                 title = 'Head form id',
@@ -87,12 +91,36 @@ class table_workflows(HtmlTable):
                 table = 'workflows',
                 img = 'time16'
             ),
+            'form_name': HtmlTableColumn(
+                title = 'Name',
+                field = 'form_name',
+                display = True,
+                table = 'forms_revisions',
+                img = 'prov'
+            ),
+            'form_folder': HtmlTableColumn(
+                title = 'Folder',
+                field = 'form_folder',
+                display = True,
+                table = 'forms_revisions',
+                img = 'hd16'
+            ),
+            'form_yaml': col_forms_yaml(
+                title = 'Definition',
+                field = 'form_yaml',
+                display = False,
+                table = 'forms_revisions',
+                img = 'action16'
+            ),
         }
         for col in self.cols:
             self.colprops[col].t = self
         self.ajax_col_values = 'ajax_workflows_col_values'
         self.dbfilterable = False
         self.checkboxes = False
+
+    def extra_line_key(self, o):
+        return o.workflows.id
 
 @auth.requires_login()
 def ajax_workflows_col_values():
@@ -101,6 +129,7 @@ def ajax_workflows_col_values():
     col = request.args[0]
     o = db.workflows[col]
     q = db.workflows.id > 0
+    q &= db.workflows.form_md5 == db.forms_revisions.form_md5
     for f in t.cols:
         q = _where(q, 'workflows', t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o, groupby=o)
@@ -112,6 +141,7 @@ def ajax_workflows():
 
     o = db.workflows.id
     q = db.workflows.id > 0
+    q &= db.workflows.form_md5 == db.forms_revisions.form_md5
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     n = db(q).count()
