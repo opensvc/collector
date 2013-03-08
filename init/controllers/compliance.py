@@ -7681,7 +7681,7 @@ def mail_form(output, data, form, to=None, record_id=None):
         to = [to]
 
     label = data.get('Label', form.form_name)
-    title = "%(n)s" % dict(n=label)
+    title = label
     try:
         d = get_form_formatted_data_o(output, data)
     except Exception, e:
@@ -7725,7 +7725,7 @@ def mail_form(output, data, form, to=None, record_id=None):
 </html>
 """ % dict(style=style, body=XML(body))
     mail.send(to=to,
-              subject=title,
+              subject=title.encode("utf-8"),
               message=message)
     return [("form.submit", "Mail sent to %(to)s on form %(form_name)s submission." , dict(to=', '.join(to), form_name=form.form_name))]
 
