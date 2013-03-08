@@ -7715,14 +7715,21 @@ def ajax_generic_form_submit(form, data):
             if len(to) == 0:
                 continue
             label = data.get('Label', form.form_name)
-            title = T("form submission: %(n)s", dict(n=label))
+            title = "%(n)s" % dict(n=label)
             try:
                 d = get_form_formatted_data_o(output, data)
             except Exception, e:
                 log.append(("form.submit", str(e), dict()))
                 break
-            message = str(XML(BODY(
-              P(T("Form submitted on %(date)s by %(submitter)s", dict(date=str(datetime.datetime.now()), submitter=user_name()))),
+            try:
+                with open("applications/init/static/mail.css", "r") as f:
+                    style = f.read()
+            except:
+                style = ""
+
+            now_s = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+            body = BODY(
+              P(T("Form submitted on %(date)s by %(submitter)s", dict(date=now_s, submitter=user_name()))),
               _ajax_forms_inputs(
                  _mode="showdetailed",
                  form=form,
@@ -7730,10 +7737,21 @@ def ajax_generic_form_submit(form, data):
                  showexpert=True,
                  current_values=d,
                ),
-            )))
+            )
+
+            message = """
+<html>
+ <head>
+  <style _type="text/css">
+   %(style)s
+  </style>
+ </head>
+ %(body)s
+</html>
+""" % dict(style=style, body=XML(body))
             mail.send(to=to,
                       subject=title,
-                      message='<html>%s</html>'%message)
+                      message=message)
             log.append(("form.submit", "Mail sent to %(to)s on form %(form_name)s submission." , dict(to=', '.join(to), form_name=form.form_name)))
         elif dest == "workflow":
             try:

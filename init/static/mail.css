@@ -1,0 +1,201 @@
+.form_instance_count {
+    float: left;
+}
+
+.form_instance_count {
+    height: 1.3em;
+    width: 1.3em;
+    vertical-align: middle;
+    text-align: center;
+    border-radius: 1em;
+    background: black;
+    color: white;
+    font-weight: bold;
+}
+
+.highlight_input {
+    border: 2px solid red;
+}
+
+img {
+    border: 0;
+}
+
+.hidden {
+    display: none;
+}
+
+body, table, tr, td, th, thead, tfoot, label, h1, h2, h3, h4, h5, h6, p, ul, li, ol, pre, input, button, textarea, select {
+    border: 0;
+    margin: 0;
+    outline: 0;
+    padding: 0;
+    color: inherit;
+    font-weight: inherit;
+    font-style: inherit;
+    font-family: inherit;
+    vertical-align: baseline;
+    font-size: 100%;
+}
+
+select {
+    border: 1px solid #dddddd;
+    background: white;
+    overflow: hidden;
+    color: black;
+}
+
+body {
+    background: transparent;
+    width:100%;
+    overflow-x: hidden;
+}
+
+table {
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+label {
+    text-align: left;
+    vertical-align: middle;
+    padding: 0em;
+}
+
+th,
+td {
+    text-align: left;
+    vertical-align: middle;
+    padding-left: 0.3em;
+    padding-right: 0.3em;
+    padding-top: 0.15em;
+    padding-bottom: 0.15em;
+}
+
+th,
+thead td,
+tfoot td {
+    font-weight: bold;
+}
+
+b {
+  font-weight: bold;
+}
+
+i {
+  font-style: italic;
+}
+
+pre {
+    font-size: 0.8em;
+    font-family: monospace, courier;
+    padding-left: 0em;
+    padding-top: 0em;
+
+    /* for status_log wrapping */
+    white-space: pre-wrap; /* css-3 */
+    white-space: -moz-pre-wrap !important; /* Mozilla, since 1999 */
+    white-space: -pre-wrap; /* Opera 4-6 */
+    white-space: -o-pre-wrap; /* Opera 7 */
+    word-wrap: break-word; /* Internet Explorer 5.5+ */
+}
+
+.pre {
+    font-size: 0.8em;
+    font-family: monospace, courier;
+    padding-left: 0em;
+    padding-top: 0em;
+
+    /* for status_log wrapping */
+    white-space: pre-wrap; /* css-3 */
+    white-space: -moz-pre-wrap !important; /* Mozilla, since 1999 */
+    white-space: -pre-wrap; /* Opera 4-6 */
+    white-space: -o-pre-wrap; /* Opera 7 */
+    word-wrap: break-word; /* Internet Explorer 5.5+ */
+}
+
+tt {
+    font-size: 0.8em;
+    font-family: monospace,
+courier;
+}
+
+h1 {
+    padding-top: 0.5em;
+    font-size: 2em;
+}
+
+h2 {
+    padding-top: 0.4em;
+    font-size: 1.5em;
+}
+
+h3 {
+    padding-top: 0.3em;
+    font-size: 1.25em;
+    font-style: italic;
+}
+
+p {
+    padding: 0.2em;
+    text-align: justify;
+}
+
+ol,
+ul {
+    padding-top: 0.3em;
+    padding-left: 1.5em;
+}
+
+label {
+    font-weight: bold;
+}
+
+a {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+input,
+textarea {
+    border: 1px #dddddd solid;
+    padding: 0px 0.4em;
+}
+
+button {
+    background: url('menu.jpg');
+}
+
+input:focus,
+textarea:focus {
+    background: #FFFF92;
+}
+
+html {
+    font-size: 10pt;
+    font-family: Arial, Sans, Georgia, Times new Roman;
+    color: #333333;
+}
+
+a {
+    color: #000000;
+}
+
+.highlight {
+    color: darkred;
+    font-weight: bold;
+}
+
+.forms {
+    border-radius:6px;
+   -moz-border-radius:6px;
+   -webkit-border-radius:6px;
+    padding: 2px;
+    padding-left: 10px;
+    padding-right: 10px;
+    display: inline-block;
+}
+
