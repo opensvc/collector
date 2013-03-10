@@ -4920,14 +4920,11 @@ def comp_log():
     return dict(table=t)
 
 def call():
-    """
-    exposes services. for example:
-    http://..../[app]/default/call/jsonrpc
-    decorate with @services.jsonrpc the functions to expose
-    supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv
-    """
     session.forget()
     return service()
+
+def user():
+    return auth()
 
 def auth_uuid(fn):
     def new(*args):
@@ -7520,15 +7517,18 @@ def format_custo(row, objtype, objname):
       _style="margin:1em;display:inline-block;vertical-align:top;text-align:left;max-width:40em",
     )
 
-def get_form_formatted_data(output, data):
-    output_value = get_form_formatted_data_o(output, data)
+def get_form_formatted_data(output, data, _d=None):
+    output_value = get_form_formatted_data_o(output, data, _d)
 
     if output.get('Type') == "json":
         output_value = json.dumps(output_value)
 
     return output_value
 
-def get_form_formatted_data_o(output, data):
+def get_form_formatted_data_o(output, data, _d=None):
+    if _d is not None:
+        return _d
+
     if 'Template' in output:
         output_value = output['Template']
         for input in data['Inputs']:
@@ -7664,7 +7664,7 @@ def insert_form_md5(form):
     )
     return form_md5
 
-def mail_form(output, data, form, to=None, record_id=None):
+def mail_form(output, data, form, to=None, record_id=None, _d=None):
     if to is None:
         to = output.get('To', set([]))
 
@@ -7683,7 +7683,7 @@ def mail_form(output, data, form, to=None, record_id=None):
     label = data.get('Label', form.form_name)
     title = label
     try:
-        d = get_form_formatted_data_o(output, data)
+        d = get_form_formatted_data_o(output, data, _d)
     except Exception, e:
         return [("form.submit", str(e), dict())]
     try:
@@ -7729,7 +7729,7 @@ def mail_form(output, data, form, to=None, record_id=None):
               message=message)
     return [("form.submit", "Mail sent to %(to)s on form %(form_name)s submission." , dict(to=', '.join(to), form_name=form.form_name))]
 
-def ajax_generic_form_submit(form, data):
+def ajax_generic_form_submit(form, data, _d=None):
     log = []
     for output in data.get('Outputs', []):
         dest = output.get('Dest')
@@ -7737,7 +7737,7 @@ def ajax_generic_form_submit(form, data):
             output['Type'] = 'object'
             output['Format'] = 'dict'
             try:
-                d = get_form_formatted_data(output, data)
+                d = get_form_formatted_data(output, data, _d)
             except Exception, e:
                 log.append(("form.submit", str(e), dict()))
                 break
@@ -7757,7 +7757,7 @@ def ajax_generic_form_submit(form, data):
             import os
             import subprocess
             try:
-                d = get_form_formatted_data(output, data)
+                d = get_form_formatted_data(output, data, _d)
             except Exception, e:
                 log.append(("form.submit", str(e), dict()))
                 break
@@ -7776,10 +7776,10 @@ def ajax_generic_form_submit(form, data):
                 continue
             log.append(("form.submit", "script %(path)s returned on success: %(out)s", dict(path=path, out=out)))
         elif dest == "mail":
-            log += mail_form(output, data, form)
+            log += mail_form(output, data, form, _d=_d)
         elif dest == "workflow":
             try:
-                d = get_form_formatted_data(output, data)
+                d = get_form_formatted_data(output, data, _d)
             except Exception, e:
                 log.append(("form.submit", str(e), dict()))
                 break
@@ -7895,7 +7895,7 @@ def ajax_generic_form_submit(form, data):
                 )
 
             if next_id != 0 and output.get('Mail', False):
-                log += mail_form(output, data, form, to=form_assignee, record_id=record_id)
+                log += mail_form(output, data, form, to=form_assignee, record_id=record_id, _d=_d)
 
         elif dest == "compliance variable":
             log += ajax_custo_form_submit(output, data)
@@ -8142,4 +8142,30 @@ def forms_xid(id=None):
     if id is not None:
         xid += str(id)
     return xid
+
+@service.json
+def json_form_submit(form_name, form_data):
+    auth.basic()
+    if not auth.user:
+        return "Not authorized"
+
+    try:
+        form_data = json.loads(form_data)
+    except Exception, e:
+        return str(e)
+
+    q = db.forms.form_name == form_name
+    q &= db.forms.id == db.forms_team_responsible.form_id
+    q &= db.forms_team_responsible.group_id.belongs(user_group_ids())
+    form = db(q).select(db.forms.ALL).first()
+
+    if form is None:
+        return "form not found"
+
+    import yaml
+    data = yaml.load(form.form_yaml)
+
+    log = ajax_generic_form_submit(form, data, form_data)
+
+    return str(log)
 
