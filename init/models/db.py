@@ -29,6 +29,7 @@ from gluon.tools import *
 auth=MyAuth(globals(),db)                      # authentication/authorization
 auth.settings.hmac_key='sha512:7755f108-1b83-45dc-8302-54be8f3616a1'
 auth.settings.expiration=36000000
+auth.settings.allow_basic_login = True
 
 #
 # custom auth_user table. new field: email_notifications
@@ -1030,7 +1031,7 @@ db.define_table('comp_svc_status',
     Field('na','integer'),
     Field('obs','integer'),
     Field('pct','integer'),
-    migrate=True)
+    migrate=False)
 
 db.define_table('comp_node_status',
     Field('node_name','string'),
@@ -1040,7 +1041,7 @@ db.define_table('comp_node_status',
     Field('na','integer'),
     Field('obs','integer'),
     Field('pct','integer'),
-    migrate=True)
+    migrate=False)
 
 db.define_table('comp_mod_status',
     Field('mod_name','string'),
@@ -1050,7 +1051,7 @@ db.define_table('comp_mod_status',
     Field('na','integer'),
     Field('obs','integer'),
     Field('pct','integer'),
-    migrate=True)
+    migrate=False)
 
 db.define_table('gen_filtersets',
     Field('fset_name','string', requires=IS_NOT_EMPTY()),
