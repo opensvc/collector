@@ -46,6 +46,11 @@ def user_phone_work():
     row = db(q).select(db.auth_user.phone_work).first()
     return row.phone_work
 
+def user_email():
+    q = db.auth_user.id == auth.user_id
+    row = db(q).select(db.auth_user.email).first()
+    return row.email
+
 def user_groups():
     q = db.auth_membership.user_id==auth.user_id
     q &= db.auth_membership.group_id==db.auth_group.id

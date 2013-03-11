@@ -6598,6 +6598,10 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
             default = user_name()
         elif default == '__user_phone_work__':
             default = user_phone_work()
+        elif default == '__user_primary_group__':
+            default = user_primary_group()
+        elif default == '__user_email__':
+            default = user_email()
 
         if type(default) == list:
             default = ','.join(default)
