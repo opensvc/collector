@@ -1474,6 +1474,7 @@ ul.login_menu ul {
     vertical-align: top;
     height: 20em;
     width: 32em;
+    overflow-x: hidden;
     overflow-y: hidden;
     border: 2px solid lightgrey;
 }
@@ -1482,7 +1483,7 @@ ul.login_menu ul {
     border: 2px solid rgb(13, 4, 228);
 }
 
-.wfentryfocused:hover {
+.wfentryfocused {
     height: auto;
     width: auto;
     min-height: 20em;
