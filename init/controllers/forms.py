@@ -1103,6 +1103,7 @@ def ajax_workflows_assigned_to_me():
         qf |= db.forms_store.form_submitter.like(s)
         qf |= db.forms_store.form_submit_date.like(s)
         qf |= db.forms_store.form_data.like(s)
+        qf |= db.forms_revisions.form_name.like(s)
         try:
             s = int(search)
             qf |= db.forms_store.form_head_id == s
