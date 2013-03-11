@@ -6729,6 +6729,9 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
               '_trigger_fn': input.get('Function', ""),
               '_mandatory': input.get('Mandatory', ""),
             }
+            if input.get('ReadOnly', False):
+                attr['_readonly'] = 'on'
+                attr['_style'] = 'height:1.3em'
             _input = TEXTAREA(
                    default,
                    **attr
@@ -6743,6 +6746,8 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
               '_trigger_fn': input.get('Function', ""),
               '_mandatory': input.get('Mandatory', ""),
             }
+            if input.get('ReadOnly', False):
+                attr['_readonly'] = 'on'
             _input = INPUT(**attr)
         elif input['Type'] == "datetime":
             attr = {
@@ -6754,6 +6759,8 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
               '_trigger_fn': input.get('Function', ""),
               '_mandatory': input.get('Mandatory', ""),
             }
+            if input.get('ReadOnly', False):
+                attr['_readonly'] = 'on'
             _input = INPUT(**attr)
         elif input['Type'] == "time":
             attr = {
@@ -6765,6 +6772,8 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
               '_trigger_fn': input.get('Function', ""),
               '_mandatory': input.get('Mandatory', ""),
             }
+            if input.get('ReadOnly', False):
+                attr['_readonly'] = 'on'
             _input = INPUT(**attr)
         else:
             attr = {
@@ -6775,6 +6784,8 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
               '_value': default,
               '_mandatory': input.get('Mandatory', ""),
             }
+            if input.get('ReadOnly', False):
+                attr['_readonly'] = 'on'
             _input = INPUT(**attr)
 
         if display_mode and 'DisplayModeLabel' in input:
@@ -7153,6 +7164,7 @@ function refresh_select(e) {
       e.find('option').end().append("<option value='"+data[i]+"'>"+data[i]+"</option>")
     }
     e.combobox()
+    e.trigger('change')
   };
 }
 
@@ -7164,6 +7176,36 @@ function refresh_div(e) {
       s = data
     }
     e.html("<pre>"+s+"</pre>")
+    e.trigger('change')
+  };
+}
+
+function refresh_input(e) {
+  return function(data) {
+    if (data instanceof Array) {
+      s = data.join("\\n")
+    } else {
+      s = data
+    }
+    e.val(s)
+    e.trigger('change')
+  };
+}
+
+function refresh_textarea(e) {
+  return function(data) {
+    h = 1.3
+    if (data instanceof Array) {
+      s = data.join("\\n")
+      if (data.length > 2) {
+        h = 1.3 * data.length
+      }
+    } else {
+      s = data
+    }
+    e.val(s)
+    e.height(h+'em')
+    e.trigger('change')
   };
 }
 
@@ -7192,6 +7234,10 @@ function form_inputs_functions (o) {
     url = "%(url)s/call/json/"+$(this).attr("trigger_fn")+"?"+args
     if ($(this).get(0).tagName == 'SELECT') {
       $.getJSON(url, refresh_select($(this)))
+    } else if ($(this).get(0).tagName == 'INPUT') {
+      $.getJSON(url, refresh_input($(this)))
+    } else if ($(this).get(0).tagName == 'TEXTAREA') {
+      $.getJSON(url, refresh_textarea($(this)))
     } else {
       $.getJSON(url, refresh_div($(this)))
     }

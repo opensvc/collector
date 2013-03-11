@@ -380,6 +380,11 @@ textarea:focus {
     background: #FFFF92;
 }
 
+input[readonly],
+textarea[readonly] {
+    background: #EEEEEE;
+}
+
 html {
     font-size: 10pt;
     font-family: Arial, Sans, Georgia, Times new Roman;
