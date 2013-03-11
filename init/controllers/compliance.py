@@ -7628,6 +7628,11 @@ def get_form_formatted_data_o(output, data, _d=None):
                     if not v.startswith(forms_xid(input['Id'])):
                         continue
                     idx = v.replace(forms_xid(input['Id'])+'_', '')
+                    try:
+                        int(idx)
+                    except:
+                        # wrong input, with same prefix.
+                        continue
                     if idx not in h:
                         h[idx] = {}
                     val = request.vars.get(v)
