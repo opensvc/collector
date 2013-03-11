@@ -53,6 +53,7 @@ class table_users(HtmlTable):
         self.cols = ['manager',
                      'fullname',
                      'email',
+                     'phone_work',
                      'primary_group',
                      'groups',
                      'lock_filter',
@@ -69,6 +70,12 @@ class table_users(HtmlTable):
             'email': HtmlTableColumn(
                      title='Email',
                      field='email',
+                     img='guy16',
+                     display=True,
+                    ),
+            'phone_work': HtmlTableColumn(
+                     title='Work desk phone',
+                     field='phone_work',
                      img='guy16',
                      display=True,
                     ),

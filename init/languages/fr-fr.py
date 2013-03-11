@@ -1001,6 +1001,8 @@
 'Watt': 'Watt',
 'Wave': 'Vague',
 'Welcome to web2py': 'Bienvenue sur web2py',
+'Work desk phone': 'Work desk phone',
+'Work desk phone number': 'Work desk phone number',
 'Workflow': 'Workflow',
 'Workflow form id %(wfid)d has no successor': "Le workflow d'id %(wfid)d n'a pas de successeur",
 'Workflow form id %(wfid)s has no successor': "Le workflow d'id %(wfid)s n'a pas de successeur",

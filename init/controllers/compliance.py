@@ -6593,8 +6593,11 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
             default = ""
         if input['Id'] in match_default:
             default = match_default[input['Id']]
+
         if default == '__user_name__':
             default = user_name()
+        elif default == '__user_phone_work__':
+            default = user_phone_work()
 
         if type(default) == list:
             default = ','.join(default)
