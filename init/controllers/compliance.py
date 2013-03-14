@@ -7808,6 +7808,13 @@ def ajax_generic_form_submit(form, data, _d=None):
             if table not in db:
                 log.append(("form.submit", "Table %(t)s not found", dict(t=table)))
                 continue
+
+            # purge keys not present in table as columns
+            keys = d.keys()
+            for key in keys:
+                if key not in db[table]:
+                    del(d[key])
+
             try:
                 db[table].insert(**d)
                 log.append(("form.submit", "Data inserted in database table", dict()))
