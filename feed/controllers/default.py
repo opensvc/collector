@@ -2889,7 +2889,7 @@ def collector_checks(cmd, auth):
     else:
         q = db.checks_live.chk_nodename == nodename
 
-    rows = db(q).select(db.checks_live.chk_svcname,
+    sql = db(q)._select(db.checks_live.chk_svcname,
                         db.checks_live.chk_instance,
                         db.checks_live.chk_type,
                         db.checks_live.chk_value,
@@ -2900,7 +2900,23 @@ def collector_checks(cmd, auth):
                         db.checks_live.chk_updated,
                         limitby=(0,1000)
                        )
-    return {"ret": 0, "msg": "", "data":str(rows)}
+    rows = db.executesql(sql)
+    header = ['service name',
+              'check instance',
+              'check type', 
+              'check value', 
+              'check low threshold', 
+              'check high threshold', 
+              'check threshold provider', 
+              'check creation date', 
+              'check last update date'] 
+    data = [header]
+    for row in rows:
+        _row = list(row)
+        _row[7] = row[7].strftime("%Y-%m-%d %H:%M:%S")
+        _row[8] = row[8].strftime("%Y-%m-%d %H:%M:%S")
+        data.append(_row)
+    return {"ret": 0, "msg": "", "data":data}
 
 @auth_uuid
 @service.xmlrpc
