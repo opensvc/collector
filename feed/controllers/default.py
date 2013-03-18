@@ -2776,7 +2776,14 @@ def collector_show_actions(cmd, auth):
                         db.SVCactions.status_log,
                         orderby=db.SVCactions.id
                        )
-    data = [["id", "hostname", "svcname", "begin", "action", "status", "ack", "log"]]
+    data = [["action id",
+             "node name",
+             "service name",
+             "begin",
+             "action",
+             "status",
+             "acknowledged",
+             "log"]]
     for row in rows:
         data.append([str(row.id),
                      str(row.hostname),
@@ -2824,7 +2831,7 @@ def collector_list_actions(cmd, auth):
     q &= db.SVCactions.begin <= e
 
     q &= (db.SVCactions.status_log == "") | (db.SVCactions.status_log == None)
-    rows = db(q).select(db.SVCactions.id,
+    sql = db(q)._select(db.SVCactions.id,
                         db.SVCactions.hostname,
                         db.SVCactions.svcname,
                         db.SVCactions.begin,
@@ -2834,6 +2841,23 @@ def collector_list_actions(cmd, auth):
                         db.SVCactions.ack,
                         db.SVCactions.cron
                        )
+    rows = db.executesql(sql)
+    header = ['action id',
+              'node name',
+              'service name',
+              'begin',
+              'end',
+              'action',
+              'status',
+              'acknowledged',
+              'scheduled']
+    data = [header]
+    for row in rows:
+        _row = list(row)
+        _row[3] = row[3].strftime("%Y-%m-%d %H:%M:%S")
+        _row[4] = row[4].strftime("%Y-%m-%d %H:%M:%S")
+        data.append(_row)
+
     return {"ret": 0, "msg": "", "data":str(rows)}
 
 @auth_uuid
@@ -2860,7 +2884,7 @@ def collector_status(cmd, auth):
             q &= db.svcmon.mon_svcname.belongs(svcs)
         else:
             q &= db.svcmon.id < 0
-    rows = db(q).select(db.svcmon.mon_nodname,
+    sql = db(q)._select(db.svcmon.mon_nodname,
                         db.svcmon.mon_svcname,
                         db.nodes.host_mode,
                         db.svcmon.mon_availstatus,
@@ -2869,6 +2893,19 @@ def collector_status(cmd, auth):
                         orderby=o,
                         limitby=(0,100)
                        )
+    rows = db.executesql(sql)
+    header = ['node name',
+              'service instance',
+              'host mode',
+              'availability status',
+              'overall status',
+              'status last update']
+    data = [header]
+    for row in rows:
+        _row = list(row)
+        _row[5] = row[5].strftime("%Y-%m-%d %H:%M:%S")
+        data.append(_row)
+
     return {"ret": 0, "msg": "", "data":str(rows)}
 
 @auth_uuid
@@ -2903,13 +2940,13 @@ def collector_checks(cmd, auth):
     rows = db.executesql(sql)
     header = ['service name',
               'check instance',
-              'check type', 
-              'check value', 
-              'check low threshold', 
-              'check high threshold', 
-              'check threshold provider', 
-              'check creation date', 
-              'check last update date'] 
+              'check type',
+              'check value',
+              'check low threshold',
+              'check high threshold',
+              'check threshold provider',
+              'check creation date',
+              'check last update date']
     data = [header]
     for row in rows:
         _row = list(row)
@@ -2939,7 +2976,7 @@ def collector_alerts(cmd, auth):
     labels = ["dash_severity", "dash_type", "dash_created", "dash_fmt", "dash_dict", "dash_nodename", "dash_svcname"]
     sql = """select %s from dashboard %s order by dash_severity desc limit 0,1000"""%(','.join(labels), where)
     rows = db.executesql(sql)
-    data = [["dash_severity", "dash_type", "dash_nodename", "dash_svcname", "dash_alert", "dash_created"]]
+    data = [["severity", "type", "nodename", "service name", "alert", "created"]]
     for row in rows:
         fmt = row[3]
         try:
@@ -2987,7 +3024,7 @@ def collector_events(cmd, auth):
     labels = ["log_date", "log_nodename", "log_svcname", "log_level", "log_action", "log_fmt", "log_dict"]
     sql = """select %s from log %s order by log_date limit 0,1000"""%(','.join(labels), where)
     rows = db.executesql(sql)
-    data = [["date", "nodename", "svcname", "level", "action", "event"]]
+    data = [["date", "node name", "service name", "level", "action", "event"]]
     for row in rows:
         fmt = row[5]
         try:
@@ -3029,7 +3066,9 @@ def collector_disks(cmd, auth):
                         db.b_disk_app.disk_group
                        )
 
-    labels = ["nodename", "svcname", "id", "size", "alloc", "devid", "name", "raid", "arrayid", "group"]
+    labels = ["node name", "service name", "wwid", "size", "allocated",
+              "array device id", "array device name", "raid",
+              "array id", "array disk group"]
     data = [labels]
     for row in rows:
         data += [[str(row.disk_nodename),
