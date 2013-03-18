@@ -89,8 +89,18 @@ class table_actions(HtmlTable):
                     ),
         }
         self.dbfilterable = False
-        self.filterable = False
-        self.pageable = False
+        self.ajax_col_values = 'ajax_actions_col_values'
+
+@auth.requires_login()
+def ajax_actions_col_values():
+    t = table_nodes('action_queue', 'ajax_actions')
+    col = request.args[0]
+    o = db['action_queue'][col]
+    q = db.action_queue.id > 0
+    for f in t.cols:
+        q = _where(q, 'action_queue', t.filter_parse(f), f)
+    t.object_list = db(q).select(o, orderby=o, groupby=o)
+    return t.col_values_cloud(col)
 
 @auth.requires_login()
 def ajax_actions():
@@ -98,6 +108,8 @@ def ajax_actions():
     o = ~db.action_queue.id
 
     q = db.action_queue.id>0
+    for f in t.cols:
+        q = _where(q, 'action_queue', t.filter_parse(f), f)
     t.object_list = db(q).select(orderby=o)
     return t.html()
 
