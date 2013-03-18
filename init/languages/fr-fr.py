@@ -15,6 +15,7 @@
 '%(moduleset)s attached to service %(svcname)s': '%(moduleset)s attaché au service %(svcname)s',
 '%(moduleset)s detached from node %(node)s': '%(moduleset)s detaché du noeud %(node)s',
 '%(moduleset)s detached from service %(svcname)s': '%(moduleset)s détaché du service %(svcname)s',
+'%(n)d / %(quota)s tokens': '%(n)d / %(quota)s tokens',
 '%(n)d differences in cluster %(nodes)s': '%(n)d différences dans le cluster %(nodes)s',
 '%(n)d instances started. thresholds: %(smin)d - %(smax)d': '%(n)d instances démarrées. seuils: %(smin)d - %(smax)d',
 '%(n)d tokens': '%(n)d jetons',

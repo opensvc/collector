@@ -148,9 +148,14 @@ def billing_fmt(table):
               _id=name_fmt(k,os),
             ))
 
+    import config
+    if hasattr(config, "token_quota"):
+        quota = str(config.token_quota)
+    else:
+        quota = "unlimited"
     summary = DIV(
       H2(T("Accounting")),
-      SPAN(T("%(n)d tokens", dict(n=token['total']['svc']+token['total']['agents_without_svc']))),
+      SPAN(T("%(n)d / %(quota)s tokens", dict(n=token['total']['svc']+token['total']['agents_without_svc'], quota=quota))),
       _style="text-align:left", _class="billing"
     )
 
