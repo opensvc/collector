@@ -879,4 +879,35 @@ def _cron_stat_day_billing(end, fset_id=0):
             )
     db.commit()
 
+def cron_update_virtual_asset():
+    fields = ['loc_addr', 'loc_city', 'loc_zip', 'loc_room', 'loc_building',
+              'loc_floor', 'loc_rack', 'power_cabinet1', 'power_cabinet2',
+              'power_supply_nb', 'power_protect', 'power_protect_breaker',
+              'power_breaker1', 'power_breaker2', 'loc_country', 'enclosure']
+    sql = """
+      update svcmon m, nodes n, nodes n2
+      set
+       n2.loc_addr=n.loc_addr,
+       n2.loc_city=n.loc_city,
+       n2.loc_zip=n.loc_zip,
+       n2.loc_room=n.loc_room,
+       n2.loc_building=n.loc_building,
+       n2.loc_floor=n.loc_floor,
+       n2.loc_rack=n.loc_rack,
+       n2.loc_country=n.loc_country,
+       n2.power_cabinet1=n.power_cabinet1,
+       n2.power_cabinet2=n.power_cabinet2,
+       n2.power_supply_nb=n.power_supply_nb,
+       n2.power_protect=n.power_protect,
+       n2.power_protect_breaker=n.power_protect_breaker,
+       n2.power_breaker1=n.power_breaker1,
+       n2.power_breaker2=n.power_breaker2,
+       n2.enclosure=n.enclosure
+      where
+       m.mon_nodname=n.nodename and
+       m.mon_vmname=n2.nodename and
+       m.mon_vmtype in ('ldom', 'hpvm', 'kvm', 'xen', 'vbox', 'ovm', 'esx', 'zone', 'lxc', 'jail', 'vz', 'srp') and
+       m.mon_containerstatus in ("up", "stdby up", "warn")
+    """
+    db.executesql(sql)
 

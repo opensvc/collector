@@ -211,7 +211,7 @@ def update_virtual_asset(nodename, svcname):
     fields = ['loc_addr', 'loc_city', 'loc_zip', 'loc_room', 'loc_building',
               'loc_floor', 'loc_rack', 'power_cabinet1', 'power_cabinet2',
               'power_supply_nb', 'power_protect', 'power_protect_breaker',
-              'power_breaker1', 'power_breaker2', 'loc_country']
+              'power_breaker1', 'power_breaker2', 'loc_country', 'enclosure']
     sql = "update nodes set "
     for f in fields:
         sql += "%s='%s',"%(f, node[f])

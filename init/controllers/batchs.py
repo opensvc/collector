@@ -1,4 +1,13 @@
 data = {
+ 'nodes': {
+   'title': 'Nodes',
+   'batchs': [
+     {
+       'url': URL(r=request, c='cron', f='cron_update_virtual_asset'),
+       'comment': "Copy the location and power feed information from hypervisors to virtual machine nodes table entries",
+     },
+   ],
+ },
  'parsers': {
    'title': 'Parsers',
    'batchs': [
