@@ -2831,7 +2831,7 @@ def collector_list_actions(cmd, auth):
     q &= db.SVCactions.begin <= e
 
     q &= (db.SVCactions.status_log == "") | (db.SVCactions.status_log == None)
-    sql = db(q)._select(db.SVCactions.id,
+    rows = db(q).select(db.SVCactions.id,
                         db.SVCactions.hostname,
                         db.SVCactions.svcname,
                         db.SVCactions.begin,
@@ -2841,7 +2841,6 @@ def collector_list_actions(cmd, auth):
                         db.SVCactions.ack,
                         db.SVCactions.cron
                        )
-    rows = db.executesql(sql)
     header = ['action id',
               'node name',
               'service name',
@@ -2853,12 +2852,19 @@ def collector_list_actions(cmd, auth):
               'scheduled']
     data = [header]
     for row in rows:
-        _row = list(row)
-        _row[3] = row[3].strftime("%Y-%m-%d %H:%M:%S")
-        _row[4] = row[4].strftime("%Y-%m-%d %H:%M:%S")
-        data.append(_row)
+        data.append([
+          str(row.id),
+          str(row.hostname),
+          str(row.svcname),
+          str(row.begin),
+          str(row.end),
+          str(row.action),
+          str(row.status),
+          str(row.ack),
+          str(row.cron)
+        ])
 
-    return {"ret": 0, "msg": "", "data":str(rows)}
+    return {"ret": 0, "msg": "", "data":data}
 
 @auth_uuid
 @service.xmlrpc
@@ -2884,7 +2890,7 @@ def collector_status(cmd, auth):
             q &= db.svcmon.mon_svcname.belongs(svcs)
         else:
             q &= db.svcmon.id < 0
-    sql = db(q)._select(db.svcmon.mon_nodname,
+    rows = db(q).select(db.svcmon.mon_nodname,
                         db.svcmon.mon_svcname,
                         db.nodes.host_mode,
                         db.svcmon.mon_availstatus,
@@ -2893,7 +2899,6 @@ def collector_status(cmd, auth):
                         orderby=o,
                         limitby=(0,100)
                        )
-    rows = db.executesql(sql)
     header = ['node name',
               'service instance',
               'host mode',
@@ -2902,11 +2907,16 @@ def collector_status(cmd, auth):
               'status last update']
     data = [header]
     for row in rows:
-        _row = list(row)
-        _row[5] = row[5].strftime("%Y-%m-%d %H:%M:%S")
-        data.append(_row)
+        data.append([
+          str(row.svcmon.mon_nodname),
+          str(row.svcmon.mon_svcname),
+          str(row.nodes.host_mode),
+          str(row.svcmon.mon_availstatus),
+          str(row.svcmon.mon_overallstatus),
+          str(row.svcmon.mon_updated)
+        ])
 
-    return {"ret": 0, "msg": "", "data":str(rows)}
+    return {"ret": 0, "msg": "", "data":data}
 
 @auth_uuid
 @service.xmlrpc
@@ -2926,7 +2936,7 @@ def collector_checks(cmd, auth):
     else:
         q = db.checks_live.chk_nodename == nodename
 
-    sql = db(q)._select(db.checks_live.chk_svcname,
+    rows = db(q).select(db.checks_live.chk_svcname,
                         db.checks_live.chk_instance,
                         db.checks_live.chk_type,
                         db.checks_live.chk_value,
@@ -2937,7 +2947,6 @@ def collector_checks(cmd, auth):
                         db.checks_live.chk_updated,
                         limitby=(0,1000)
                        )
-    rows = db.executesql(sql)
     header = ['service name',
               'check instance',
               'check type',
@@ -2949,10 +2958,17 @@ def collector_checks(cmd, auth):
               'check last update date']
     data = [header]
     for row in rows:
-        _row = list(row)
-        _row[7] = row[7].strftime("%Y-%m-%d %H:%M:%S")
-        _row[8] = row[8].strftime("%Y-%m-%d %H:%M:%S")
-        data.append(_row)
+        data.append([
+          str(row.chk_svcname),
+          str(row.chk_instance),
+          str(row.chk_type),
+          str(row.chk_value),
+          str(row.chk_low),
+          str(row.chk_high),
+          str(row.chk_threshold_provider),
+          str(row.chk_created),
+          str(row.chk_updated)
+        ])
     return {"ret": 0, "msg": "", "data":data}
 
 @auth_uuid
@@ -2976,7 +2992,7 @@ def collector_alerts(cmd, auth):
     labels = ["dash_severity", "dash_type", "dash_created", "dash_fmt", "dash_dict", "dash_nodename", "dash_svcname"]
     sql = """select %s from dashboard %s order by dash_severity desc limit 0,1000"""%(','.join(labels), where)
     rows = db.executesql(sql)
-    data = [["severity", "type", "nodename", "service name", "alert", "created"]]
+    data = [["severity", "type", "node name", "service name", "alert", "created"]]
     for row in rows:
         fmt = row[3]
         try:
