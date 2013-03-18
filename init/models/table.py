@@ -2133,6 +2133,7 @@ class col_vmem(HtmlTableColumn):
 # colprops definitions
 #
 v_nodes_cols = [
+    'fqdn',
     'loc_country',
     'loc_zip',
     'loc_city',
@@ -2764,6 +2765,13 @@ v_nodes_colprops = {
     'nodename': col_node(
              title = 'Node name',
              field='nodename',
+             display = False,
+             img = 'node16',
+             table = 'v_nodes',
+            ),
+    'fqdn': HtmlTableColumn(
+             title = 'Fqdn',
+             field='fqdn',
              display = False,
              img = 'node16',
              table = 'v_nodes',

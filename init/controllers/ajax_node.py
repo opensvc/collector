@@ -321,6 +321,7 @@ def ajax_node():
       TR(TD(T('power breaker #2'), _style='font-style:italic'), TD(node['power_breaker1'])),
     )
     server = TABLE(
+      TR(TD(T('fqdn'), _style='font-style:italic'), TD(node['fqdn'] if node['fqdn'] is not None else '')),
       TR(TD(T('model'), _style='font-style:italic'), TD(node['model'])),
       TR(TD(T('type'), _style='font-style:italic'), TD(node['type'])),
       TR(TD(T('serial'), _style='font-style:italic'), TD(node['serial'])),

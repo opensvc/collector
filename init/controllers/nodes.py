@@ -34,6 +34,7 @@ def _node_form(record=None):
                                 'serial',
                                 'model'],
                  fields=['nodename',
+                         'fqdn',
                          'team_responsible',
                          'team_integ',
                          'team_support',
@@ -62,6 +63,7 @@ def _node_form(record=None):
                         ],
                  labels={
                          'nodename': _label('nodename'),
+                         'fqdn': _label('fqdn'),
                          'team_responsible': _label('team_responsible'),
                          'team_integ': _label('team_integ'),
                          'team_support': _label('team_support'),
@@ -477,12 +479,16 @@ def do_action(ids, action=None, mode=None):
 
     q = db.nodes.nodename.belongs(ids)
     q &= db.nodes.team_responsible.belongs(user_groups())
-    rows = db(q).select(db.nodes.nodename)
+    rows = db(q).select(db.nodes.nodename, db.nodes.fqdn)
 
     vals = []
     vars = ['command']
     for row in rows:
-        vals.append([fmt_action(row.nodename, action, mode)])
+        if row.fqdn is not None and len(row.fqdn) > 0:
+            node = row.fqdn
+        else:
+            node = row.nodename
+        vals.append([fmt_action(node, action, mode)])
 
     purge_action_queue()
     generic_insert('action_queue', vars, vals)
