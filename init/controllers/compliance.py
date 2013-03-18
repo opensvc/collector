@@ -7640,7 +7640,7 @@ def get_form_formatted_data_o(output, data, _d=None):
                         if 'Mandatory' in input and input['Mandatory']:
                             raise Exception(T("Input '%(input)s' is mandatory (instance %(inst)s)", dict(input=input.get('Id'), inst=idx)))
                     try:
-                        val = convert_val(val, input['Type'])
+                        val = convert_val(val, input.get('Type', 'string'))
                     except Exception, e:
                         raise Exception(T(str(e)))
                     h[idx][input['Id']] = val
