@@ -965,6 +965,7 @@
 'Unknown variable format.': 'Format de variable inconnu.',
 'Unknown variable format: %(fmt)s': 'Format de variable inconnu : %(fmt)s',
 'Unknown variable format: %(fmt)s.': 'Format de variable inconnu : %(fmt)s.',
+'Unlabelled form': 'Unlabelled form',
 'Unlock filter': 'Déverrouiller le filtre',
 'Unlock filterset': 'Jeu de filtres déverrouillé',
 'Update:': 'Mettre à jour:',

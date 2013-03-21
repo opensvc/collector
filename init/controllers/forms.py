@@ -839,9 +839,10 @@ def format_form_script(path, script_data):
         cl = "nok"
     return TABLE(
       TR(
-        TD(T('path'), _class=cl + " clickable"),
+        TD(T('path'), _class=cl),
         TD(path),
-        _onclick="""$(this).siblings().toggle(400)"""
+        _onclick="""$(this).siblings().toggle(400)""",
+        _class="clickable",
       ),
       TR(
         TD(T("return code"), _class=cl),
@@ -891,7 +892,7 @@ def stored_form_show(wfid, _class=""):
 
     return DIV(
       DIV(
-        H2("%d: %s"%(wf.forms_store.id, form.get('Label'))),
+        H2("%d: %s"%(wf.forms_store.id, form.get('Label', T("Unlabelled form")))),
         I(
           T("Submitted by %(submitter)s on %(date)s", dict(submitter=wf.forms_store.form_submitter, date=wf.forms_store.form_submit_date)),
           BR(),
