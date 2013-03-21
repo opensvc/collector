@@ -1688,6 +1688,7 @@ db.define_table('forms_store',
     Field('form_assignee', 'string'),
     Field('form_md5', 'string'),
     Field('form_data', 'text'),
+    Field('form_scripts', 'text'),
     migrate=False)
 
 db.define_table('forms_store_archive',

@@ -7791,6 +7791,7 @@ def mail_form(output, data, form, to=None, record_id=None, _d=None):
 
 def ajax_generic_form_submit(form, data, _d=None):
     log = []
+    _scripts = {'returncode': 0}
     for output in data.get('Outputs', []):
         dest = output.get('Dest')
         if dest == "db":
@@ -7831,13 +7832,46 @@ def ajax_generic_form_submit(form, data, _d=None):
             path = output.get('Path')
             if path is None:
                 log.append(("form.submit", "Path must be set in script type Output", dict()))
+                _scripts['returncode'] += 1
+                _scripts[path] = {
+                  'path': path,
+                  'returncode': 1,
+                  'stdout': "",
+                  'stderr': "Path must be set in script type Output",
+                }
                 continue
             if not os.path.exists(path):
                 log.append(("form.submit", "Script %(path)s does not exists", dict(path=path)))
+                _scripts['returncode'] += 1
+                _scripts[path] = {
+                  'path': path,
+                  'returncode': 1,
+                  'stdout': "",
+                  'stderr': "Script %(path)s does not exists"%dict(path=path),
+                }
                 continue
-            p = subprocess.Popen([path, d], stdout=subprocess.PIPE,
-                                            stderr=subprocess.PIPE)
-            out, err = p.communicate()
+            try:
+                p = subprocess.Popen([path, d], stdout=subprocess.PIPE,
+                                                stderr=subprocess.PIPE)
+                out, err = p.communicate()
+            except Exception as e:
+                log.append(("form.submit", "Script %(path)s execution error: %(err)s", dict(path=path, err=str(e))))
+                _scripts['returncode'] += 1
+                _scripts[path] = {
+                  'path': path,
+                  'returncode': 1,
+                  'stdout': "",
+                  'stderr': "Script %(path)s execution error: %(err)s "%dict(path=path, err=str(e))
+                }
+                continue
+ 
+            _scripts['returncode'] += p.returncode
+            _scripts[path] = {
+              'path': path,
+              'returncode': p.returncode,
+              'stdout': out,
+              'stderr': err,
+            }
             if p.returncode != 0:
                 log.append(("form.submit", "Script %(path)s returned with error: %(err)s", dict(path=path, err=err)))
                 continue
@@ -7850,9 +7884,25 @@ def ajax_generic_form_submit(form, data, _d=None):
             except Exception, e:
                 log.append(("form.submit", str(e), dict()))
                 break
+
             form_md5 = insert_form_md5(form)
 
-            if len(output.get('NextForms', [])) == 0:
+            if output.get('Scripts') is not None:
+                if _scripts['returncode'] == 0:
+                    script_defs = output['Scripts'].get('Success')
+                else:
+                    script_defs = output['Scripts'].get('Error')
+                if script_defs is None:
+                    next_forms = None
+                    form_assignee = None
+                else:
+                    next_forms = script_defs.get('NextForms')
+                    form_assignee = script_defs.get('NextAssignee')
+            else:
+                next_forms = output.get('NextForms')
+                form_assignee = output.get('NextAssignee')
+
+            if next_forms is None or len(next_forms) == 0:
                 next_id = 0
                 status = "closed"
             else:
@@ -7869,13 +7919,12 @@ def ajax_generic_form_submit(form, data, _d=None):
                     log.append(("form.store",  "This step is already completed (id=%(id)d)", dict(id=prev_wf.id)))
                     continue
 
-                form_assignee = output.get('NextAssignee')
                 if form_assignee is None:
                     form_assignee = user_primary_group()
-                    if form_assignee is None:
-                        form_assignee = prev_wf.form_submitter
                 if form_assignee is None:
-                    form_assignee = ""
+                    form_assignee = prev_wf.form_submitter
+                if form_assignee is None:
+                    form_assignee = user_name()
 
                 head_id = int(request.vars.prev_wfid)
                 max_iter = 100
@@ -7900,6 +7949,7 @@ def ajax_generic_form_submit(form, data, _d=None):
                   form_next_id=next_id,
                   form_head_id=head_id,
                   form_data=d,
+                  form_scripts=json.dumps(_scripts),
                 )
                 if record_id is not None:
                     q = db.forms_store.id == request.vars.prev_wfid
@@ -7935,13 +7985,17 @@ def ajax_generic_form_submit(form, data, _d=None):
                     )
             else:
                 # new workflow
-                form_assignee = output.get('NextAssignee', '')
+                if form_assignee is None:
+                    form_assignee = user_primary_group()
+                    if form_assignee is None:
+                        form_assignee = user_name()
                 record_id = db.forms_store.insert(
                   form_md5=form_md5,
                   form_submitter=user_name(),
                   form_assignee=form_assignee,
                   form_submit_date=datetime.datetime.now(),
                   form_data=d,
+                  form_scripts=json.dumps(_scripts),
                 )
                 if record_id is not None:
                     q = db.forms_store.id == record_id
