@@ -1851,7 +1851,10 @@ class col_date(HtmlTableColumn):
        d = self.get(o)
        if d is None:
            return ''
-       return d.strftime('%Y-%m-%d')
+       elif isinstance(d, datetime.datetime):
+           return d.strftime('%Y-%m-%d')
+       else:
+           return d
 
 class col_err(HtmlTableColumn):
     def html(self, o):
