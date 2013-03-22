@@ -832,6 +832,52 @@ def forms():
     )
     return dict(table=d)
 
+def format_form_script(path, script_data):
+    if script_data['returncode'] == 0:
+        cl = "check16"
+    else:
+        cl = "nok"
+    return TABLE(
+      TR(
+        TD(T('path'), _class=cl),
+        TD(path),
+        _onclick="""$(this).siblings().toggle(400)""",
+        _class="clickable",
+      ),
+      TR(
+        TD(T("return code"), _class=cl),
+        TD(script_data['returncode']),
+        _style="display:none",
+      ),
+      TR(
+        TD(T("output messages"), _class="log16"),
+        TD(script_data['stdout'], _class="pre", _style="max-width:80em"),
+        _style="display:none",
+      ),
+      TR(
+        TD(T("error messages"), _class="log16"),
+        TD(script_data['stderr'], _class="pre", _style="max-width:80em"),
+        _style="display:none",
+      ),
+    )
+
+def format_form_scripts(form_scripts):
+    try:
+        data = json.loads(form_scripts)
+    except:
+        data = {}
+    if len(data) < 2:
+        return ""
+    l = []
+    for id, script_data in data.items():
+        if id == 'returncode':
+            continue
+        l.append(format_form_script(id, script_data))
+    return DIV(
+      H3(T("Scripts executed for this workflow step")),
+      DIV(l),
+    )
+
 def stored_form_show(wfid, _class=""):
     hid = "wf_%s"%wfid
     q = db.forms_store.id == wfid
@@ -846,7 +892,7 @@ def stored_form_show(wfid, _class=""):
 
     return DIV(
       DIV(
-        H2("%d: %s"%(wf.forms_store.id, form.get('Label'))),
+        H2("%d: %s"%(wf.forms_store.id, form.get('Label', T("Unlabelled form")))),
         I(
           T("Submitted by %(submitter)s on %(date)s", dict(submitter=wf.forms_store.form_submitter, date=wf.forms_store.form_submit_date)),
           BR(),
@@ -858,6 +904,7 @@ def stored_form_show(wfid, _class=""):
         _id=hid,
         _style="padding:0.5em",
       ),
+      format_form_scripts(wf.forms_store.form_scripts),
       SCRIPT(
         """sync_ajax("%(url)s", {}, "%(id)s", function(){})"""%dict(
           url=URL(c="compliance", f="ajax_forms_inputs", vars={
@@ -954,10 +1001,25 @@ def workflow():
          wf.forms_store.form_assignee not in user_groups():
         _forms_list = T("This workflow is not assigned to you or your group")
     else:
-        for output in form.get("Outputs", []):
-            form_names = output.get("NextForms")
-            if form_names is not None:
-                break
+        try:
+            form_scripts = json.loads(wf.forms_store.form_scripts)
+        except:
+            form_scripts = {}
+        if '_scripts' in form_scripts and 'Scripts' in form:
+            if form_scripts['returncode'] == 0:
+                scripts_def = form['Scripts'].get('Success')
+                if scripts_def is None:
+                    _forms_list = T("This workflow definition should describe the next steps on scripts success")
+            else:
+                scripts_def = form['Scripts'].get('Error')
+                if scripts_def is None:
+                    _forms_list = T("This workflow definition should describe the next steps on scripts error")
+            form_names = scripts_def.get('NextForms', [])
+        else:
+            for output in form.get("Outputs", []):
+                form_names = output.get("NextForms")
+                if form_names is not None:
+                    break
 
         if form_names is None:
             _forms_list = T("This Workflow step has no successor")

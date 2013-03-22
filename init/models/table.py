@@ -766,7 +766,6 @@ class HtmlTable(object):
         for c in self.cols:
             cells.append(TH(T(self.colprops[c].title),
                             _style=self.col_hide(c),
-                            _class=self.colprops[c]._class,
                             _name=self.col_key(c)))
         return TR(cells, _class='theader')
 
@@ -1847,6 +1846,16 @@ def node_icon(os_name):
 
 now = datetime.datetime.now()
 
+class col_date(HtmlTableColumn):
+    def html(self, o):
+       d = self.get(o)
+       if d is None:
+           return ''
+       elif isinstance(d, datetime.datetime):
+           return d.strftime('%Y-%m-%d')
+       else:
+           return d
+
 class col_err(HtmlTableColumn):
     def html(self, o):
        d = self.get(o)
@@ -2478,6 +2487,7 @@ svcmon_colprops = {
              display = False,
              img = 'time16',
              table = 'svcmon',
+             _class = 'datetime',
             ),
     'mon_frozen': HtmlTableColumn(
              title = 'Frozen',
@@ -2600,6 +2610,7 @@ v_nodes_colprops = {
              display = False,
              img = 'time16',
              table = 'v_nodes',
+             _class = 'datetime',
             ),
     'updated': col_updated(
              title = 'Last node update',
@@ -2607,6 +2618,7 @@ v_nodes_colprops = {
              display = False,
              img = 'time16',
              table = 'v_nodes',
+             _class = 'datetime',
             ),
     'loc_country': HtmlTableColumn(
              title = 'Country',
@@ -2846,47 +2858,53 @@ v_nodes_colprops = {
              img = 'node16',
              table = 'v_nodes',
             ),
-    'warranty_end': HtmlTableColumn(
+    'warranty_end': col_date(
              title = 'Warranty end',
              field='warranty_end',
              display = False,
              img = 'time16',
              table = 'v_nodes',
+             _class = 'datetime',
             ),
-    'os_obs_warn_date': HtmlTableColumn(
+    'os_obs_warn_date': col_date(
              title = 'OS obsolescence warning date',
              field='os_obs_warn_date',
              display = False,
              img = 'time16',
              table = 'v_nodes',
+             _class = 'datetime',
             ),
-    'os_obs_alert_date': HtmlTableColumn(
+    'os_obs_alert_date': col_date(
              title = 'OS obsolescence alert date',
              field='os_obs_alert_date',
              display = False,
              img = 'time16',
              table = 'v_nodes',
+             _class = 'datetime',
             ),
-    'hw_obs_warn_date': HtmlTableColumn(
+    'hw_obs_warn_date': col_date(
              title = 'Hardware obsolescence warning date',
              field='hw_obs_warn_date',
              display = False,
              img = 'time16',
              table = 'v_nodes',
+             _class = 'datetime',
             ),
-    'hw_obs_alert_date': HtmlTableColumn(
+    'hw_obs_alert_date': col_date(
              title = 'Hardware obsolescence alert date',
              field='hw_obs_alert_date',
              display = False,
              img = 'time16',
              table = 'v_nodes',
+             _class = 'datetime',
             ),
-    'maintenance_end': HtmlTableColumn(
+    'maintenance_end': col_date(
              title = 'Maintenance end',
              field='maintenance_end',
              display = False,
              img = 'time16',
              table = 'v_nodes',
+             _class = 'datetime',
             ),
     'status': HtmlTableColumn(
              title = 'Status',

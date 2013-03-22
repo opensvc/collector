@@ -1,5 +1,9 @@
 @charset "UTF-8";
 
+.datetime {
+  white-space: nowrap;
+}
+
 .form_instance_count {
     float: left;
 }
@@ -58,7 +62,7 @@ img {
 
 .boxed_small {
     font-weight: bold;
-    font-size: 75%;
+    font-size: 85%;
     text-align: center;
     color: white;
     border-radius:4px;
@@ -236,7 +240,6 @@ body, table, tr, td, th, thead, tfoot, label, h1, h2, h3, h4, h5, h6, p, ul, li,
     font-weight: inherit;
     font-style: inherit;
     font-family: inherit;
-    vertical-align: baseline;
     font-size: 100%;
 }
 
