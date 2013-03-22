@@ -2874,10 +2874,10 @@ def collector_status(cmd, auth):
 
     if "svcname" in cmd:
         q = db.svcmon.mon_svcname == cmd["svcname"]
-        q &= db.svcmon.mon_nodname == nodename
+        q &= (db.svcmon.mon_nodname == nodename) | (db.svcmon.mon_vmname == nodename)
         n = db(q).count()
         if n == 0:
-            return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
+            return {"ret": 1, "msg": "this node is not owner of %s"%cmd["svcname"]}
 
     o = db.svcmon.mon_svcname
     q = db.svcmon.mon_nodname == db.nodes.nodename
