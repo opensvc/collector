@@ -5570,17 +5570,18 @@ def comp_ruleset_vars(ruleset_id, qr=None, nodename=None, svcname=None, slave=Fa
         f = 'explicit attachment'
     else:
         f = comp_format_filter(qr)
-    q1 = db.comp_rulesets_rulesets.parent_rset_id==ruleset_id
-    q1 &= db.comp_rulesets_rulesets.child_rset_id == db.comp_rulesets.id
-    q = db.comp_rulesets.id == ruleset_id
 
+    q = db.comp_rulesets.id == ruleset_id
     head_rset = db(q).select(db.comp_rulesets.ruleset_name).first()
     if head_rset is None:
         return dict()
 
     children = []
+    q1 = db.comp_rulesets_rulesets.parent_rset_id == ruleset_id
+    q1 &= db.comp_rulesets_rulesets.child_rset_id == db.comp_rulesets.id
     rows = db(q1).select(db.comp_rulesets_rulesets.child_rset_id,
                          db.comp_rulesets.ruleset_type)
+
     for row in rows:
         id = row.comp_rulesets_rulesets.child_rset_id
         if row.comp_rulesets.ruleset_type == "explicit":
