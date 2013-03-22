@@ -6616,7 +6616,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
         else:
             cl = ""
 
-        if 'Help' in input:
+        if 'Help' in input and input['Help'] is not None and len(input['Help']) > 0:
             _help = IMG(
               _src=URL(r=request, c='static', f='help.png'),
               _title=input['Help']
@@ -6682,6 +6682,8 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
                 o = candidates[0]
                 if type(o) in (list, tuple) and o[1] != "":
                     candidates = [('','')] + candidates
+                elif type(o) == dict and 'Value' in o and o['Value'] != "":
+                    candidates = [{'Value':'','Label':''}] + candidates
                 elif o != "":
                     candidates = [''] + candidates
 
@@ -6689,6 +6691,9 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
             for o in candidates:
                 if type(o) in (list, tuple):
                     label, value = o
+                elif type(o) == dict and 'Value' in o and 'Label' in o:
+                    value = o['Value']
+                    label = o['Label']
                 else:
                     label = o
                     value = o
