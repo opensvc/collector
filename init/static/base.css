@@ -380,7 +380,7 @@ button {
 
 input:focus,
 textarea:focus {
-    background: #FFFF92;
+    background: rgb(255, 248, 239);
 }
 
 input[readonly],

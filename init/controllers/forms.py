@@ -565,6 +565,8 @@ def forms_editor():
                          'form_type': T('Form type'),
                          'form_yaml': T('Form yaml definition')}
                 )
+    form.custom.widget.form_yaml['_class'] = 'pre'
+    form.custom.widget.form_yaml['_style'] = 'min-width:60em;min-height:60em'
     if form.accepts(request.vars):
         if request.vars.form_id is None:
             _log('compliance.form.add',

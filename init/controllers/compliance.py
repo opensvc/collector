@@ -7426,7 +7426,7 @@ sync_ajax('%(url)s', [], '%(id)s', function(){})"""%dict(
             ),
           ),
           TD(
-            T("Outputs node"),
+            T("Customize node"),
           ),
         ))
     d = DIV(
