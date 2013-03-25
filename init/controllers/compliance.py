@@ -7101,7 +7101,7 @@ $("#%(counter)s").val(count);
             return True
         return False
 
-    if has_expert(data):
+    if not showexpert and has_expert(data):
         expert = DIV(
                 A(
                  T("Expert mode"),
