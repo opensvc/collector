@@ -6613,6 +6613,9 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
         if type(default) == list:
             default = ','.join(default)
 
+        if type(default) in (str, unicode):
+            default = default.encode('utf-8')
+
         if 'LabelCss' in input:
             lcl = input['LabelCss']
         else:
@@ -6654,7 +6657,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
             else:
                 _input = SPAN(default)
             _help = ""
-        elif 'Candidates' in input:
+        elif 'Candidates' in input and not input.get('ReadOnly', False):
             if input['Candidates'] == "__node_selector__":
                 if 'Manager' not in user_groups():
                     q = db.nodes.team_responsible.belongs(user_groups())
@@ -7504,16 +7507,16 @@ def format_custo(row, objtype, objname):
         cl = 'nologo48'
 
     custo = DIV(
-              _ajax_forms_inputs(
-                 _mode="show",
-                 _rset_name=row.comp_rulesets.ruleset_name,
-                 _var_id=row.comp_rulesets_variables.id,
-                 _form_xid=row.comp_rulesets_variables.id,
-                 _hid='stage2',
-                 var=row.comp_rulesets_variables,
-                 form=row.forms,
-                 showexpert=True,
-               ),
+      _ajax_forms_inputs(
+        _mode="show",
+        _rset_name=row.comp_rulesets.ruleset_name,
+        _var_id=row.comp_rulesets_variables.id,
+        _form_xid=row.comp_rulesets_variables.id,
+        _hid='stage2',
+        var=row.comp_rulesets_variables,
+        form=row.forms,
+        showexpert=True,
+      ),
     )
 
     if 'Modulesets' in data:
