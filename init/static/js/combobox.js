@@ -16,6 +16,7 @@
             }
 
             select.hide();
+            select.parent().addClass("nowrap")
 
             // set up input text element
             var input = $("<input type='text'>");
