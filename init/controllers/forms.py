@@ -670,7 +670,7 @@ def forms_admin():
 
 def get_folders_info():
     h = {}
-    for id, form_name, form_folder, data in get_forms("folder"):
+    for id, form_name, form_folder, form_type, data in get_forms("folder"):
         if 'Folder' not in data:
             continue
         if 'FolderCss' not in data:
@@ -700,6 +700,7 @@ def get_forms(form_type=None, folder="/", form_names=[]):
     rows = db(q).select(db.forms.id,
                         db.forms.form_name,
                         db.forms.form_folder,
+                        db.forms.form_type,
                         db.forms.form_yaml,
                         orderby=db.forms.form_type|db.forms.form_name,
                         groupby=db.forms.id)
@@ -711,7 +712,7 @@ def get_forms(form_type=None, folder="/", form_names=[]):
                 data = {}
         except:
             data = {}
-        l.append((row.id, row.form_name, row.form_folder, data))
+        l.append((row.id, row.form_name, row.form_folder, row.form_type, data))
     return l
 
 @auth.requires_login()
@@ -732,10 +733,10 @@ def folder_list(folder="/"):
           'FolderLabel': 'Parent folder',
           'FolderDesc': parent_folder,
         }
-        parent = ('parent', 'parent', parent_folder, parent_data)
+        parent = ('parent', 'parent', parent_folder, 'folder', parent_data)
         folders = [parent] + folders
 
-    for id, form_name, form_folder, data in folders:
+    for id, form_name, form_folder, form_type, data in folders:
         cl = data.get('FolderCss', 'folder48')
         desc = data.get('FolderDesc', '')
         folderlabel = data.get('FolderLabel', form_name)
@@ -771,7 +772,7 @@ def forms_list(folder="/", form_names=[], prev_wfid=None):
     if len(form_names) == 0:
         l += folder_list(folder)
 
-    for id, form_name, form_folder, data in get_forms(["custo", "generic"], folder=folder, form_names=form_names):
+    for id, form_name, form_folder, form_type, data in get_forms(["custo", "generic"], folder=folder, form_names=form_names):
         cl = data.get('Css', 'nologo48')
         desc = data.get('Desc', '')
         if desc is None: desc = ''
@@ -779,6 +780,12 @@ def forms_list(folder="/", form_names=[], prev_wfid=None):
             label = data['Label']
         else:
             label = form_name
+
+        if form_type == "custo":
+            id_target = "forms_target"
+        else:
+            id_target = None
+
         l.append(DIV(
           DIV(
             P(label),
@@ -788,6 +795,7 @@ def forms_list(folder="/", form_names=[], prev_wfid=None):
           ),
           _onclick="""
 $(this).siblings().toggle()
+$("#%(id2)s").toggle()
 $("#forms_inputs").each(function(){
   $(this).text('');
   $(this).slideToggle(400);
@@ -797,10 +805,17 @@ $('[name=radio_form]').each(function(){
   $(this).prop('checked', false)
 });
 $("#%(id)s").html('%(spinner)s');
-sync_ajax('%(url)s', [], '%(id)s', function(){});
+$("#%(id2)s").html('%(spinner)s');
+if ("%(id2)s" != "None" && $("#%(id2)s").is(":visible")) {
+  sync_ajax('%(url2)s', [], '%(id2)s', function(){});
+}
+if ($("#%(id)s").is(":visible")) {
+  sync_ajax('%(url)s', [], '%(id)s', function(){});
+}
 """%dict(
                 spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')).xml(),
                 id="forms_inputs",
+                id2=id_target,
                 rid=id,
                 url=URL(
                   r=request, c='compliance', f='ajax_forms_inputs',
@@ -808,6 +823,12 @@ sync_ajax('%(url)s', [], '%(id)s', function(){});
                     "form_id": id,
                     "hid": "forms_inputs",
                     "prev_wfid": prev_wfid,
+                  }
+                ),
+                url2=URL(
+                  r=request, c='compliance', f='ajax_target',
+                  vars={
+                    "form_id": id,
                   }
                 ),
               ),
@@ -818,6 +839,10 @@ sync_ajax('%(url)s', [], '%(id)s', function(){});
           DIV(
             l,
             _style="margin:1em;display:inline-block;vertical-align:top;text-align:left",
+          ),
+          DIV(
+            _id="forms_target",
+            _style="padding-top:3em;display:none",
           ),
           DIV(
             _id="forms_inputs",
@@ -1067,7 +1092,7 @@ def ajax_node_list():
                _id="nodename",
                _onchange="""
 $("#stage2").html('%(spinner)s');
-ajax('%(url)s/%(objtype)s/'+this.options[this.selectedIndex].value, [], '%(div)s');
+ajax('%(url)s/%(objtype)s/'+this.options[this.selectedIndex].value+'%(form_id)s', [], '%(div)s');
 """%dict(
       url=URL(
             r=request, c='compliance',
@@ -1075,6 +1100,7 @@ ajax('%(url)s/%(objtype)s/'+this.options[this.selectedIndex].value, [], '%(div)s
           ),
       objtype='nodename',
       div="stage2",
+      form_id='?form_id='+str(request.vars.form_id) if request.vars.form_id is not None else '',
       spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')).xml(),
     ),
              ),
@@ -1112,7 +1138,7 @@ def ajax_service_list():
                _id="svcname",
                _onchange="""
 $("#stage2").html('%(spinner)s');
-ajax('%(url)s/%(objtype)s/'+this.options[this.selectedIndex].value, [], '%(div)s');
+ajax('%(url)s/%(objtype)s/'+this.options[this.selectedIndex].value+'%(form_id)s', [], '%(div)s');
 """%dict(
       url=URL(
             r=request, c='compliance',
@@ -1120,6 +1146,7 @@ ajax('%(url)s/%(objtype)s/'+this.options[this.selectedIndex].value, [], '%(div)s
           ),
       objtype='svcname',
       div="stage2",
+      form_id='?form_id='+str(request.vars.form_id) if request.vars.form_id is not None else '',
       spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')).xml(),
     ),
 

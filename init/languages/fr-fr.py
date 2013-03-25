@@ -499,6 +499,7 @@
 'Index': 'Clé',
 'Initiator': 'Initiateur',
 'Initiators': 'Initiateurs',
+"Input '%(input)s' is mandatory": "Input '%(input)s' is mandatory",
 "Input '%(input)s' is mandatory (instance %(inst)s)": "L'entrée '%(input)s' est obligatoire (instance %(inst)s)",
 'Insert new node': 'Ajouter un noeud',
 'Insert node': 'Ajout de noeud',

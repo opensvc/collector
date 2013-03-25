@@ -6614,7 +6614,10 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
             default = ','.join(default)
 
         if type(default) in (str, unicode):
-            default = default.encode('utf-8')
+            try:
+                default = default.encode('utf-8')
+            except:
+                pass
 
         if 'LabelCss' in input:
             lcl = input['LabelCss']
@@ -6936,7 +6939,7 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
         if var is None:
             return ajax_error(T("variable '%(id)s' not found", dict(id=_var_id)))
 
-    if var is not None:
+    if var is not None and _form_id is None:
         form_name = var.var_class
     else:
         form_name = _form_name
@@ -7006,14 +7009,13 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
             except:
                 return ajax_error("json error parsing current variable value '%s'"%cur)
             if form_output.get('Format') == 'dict':
-                input_ids = {}
                 for i, input in enumerate(data['Inputs']):
-                    input_ids[input['Id']] = i
-                for key in cur:
-                    if key in input_ids:
-                        data['Inputs'][input_ids[key]]['Default'] = cur[key]
-            elif form_output.get('Format') == 'list':
-                data['Inputs'][0]['Default'] = cur
+                    id = input.get('Id')
+                    _def = input.get('Default')
+                    if id is None or _def is None:
+                        continue
+                    if id not in cur or input.get('Override', False):
+                        cur[id] = _def
     elif 'form_data' in form:
         cur = json.loads(form.form_data)
     elif current_values is not None:
@@ -7375,13 +7377,7 @@ $("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").bind('ch
              ),
         )
 
-    if not display_mode and 'form_type' in form and form.form_type == 'custo' and var is None:
-        header = ajax_target()
-    else:
-        header = ""
-
     return DIV(
-             header,
              DIV(
                l,
                _id=forms_xid('container'),
@@ -7400,6 +7396,7 @@ def forms_xid(id=None):
 
 @auth.requires_login()
 def ajax_target():
+    form_id = request.vars.form_id
     l = []
     l.append(TR(
           TD(
@@ -7418,7 +7415,7 @@ $("#radio_node").prop('checked',false);
 $("#stage2").html("");
 sync_ajax('%(url)s', [], '%(id)s', function(){})"""%dict(
                 id="stage1",
-                url=URL(r=request, c='forms', f='ajax_service_list'),
+                url=URL(r=request, c='forms', f='ajax_service_list', vars={'form_id': request.vars.form_id}),
               ),
             ),
           ),
@@ -7435,7 +7432,7 @@ $("#radio_service").prop('checked',false);
 $("#stage2").html("");
 sync_ajax('%(url)s', [], '%(id)s', function(){})"""%dict(
                 id="stage1",
-                url=URL(r=request, c='forms', f='ajax_node_list'),
+                url=URL(r=request, c='forms', f='ajax_node_list', vars={'form_id': request.vars.form_id}),
               ),
             ),
           ),
@@ -7461,6 +7458,8 @@ def ajax_custo():
        arg[0]: the type of object (svcname or nodename)
        arg[1]: the target object name (svcname or nodename)
     """
+    form_id = request.vars.form_id
+
     if len(request.args) < 2:
         return ajax_error("Need two parameters")
 
@@ -7475,8 +7474,8 @@ def ajax_custo():
     else:
         return ajax_error("Incorrect target specified. Must be either 'nodename' or 'svcname'")
 
-    q = db.forms.form_type == "custo"
-    q &= db.forms.form_name == db.comp_rulesets_variables.var_class
+    #q = db.forms.form_type == "custo"
+    q = db.forms.form_name == db.comp_rulesets_variables.var_class
     q &= db.comp_rulesets_variables.ruleset_id == db.comp_rulesets.id
     q &= db.comp_rulesets.ruleset_name == rset_name
     o = db.comp_rulesets_variables.var_class
@@ -7485,7 +7484,7 @@ def ajax_custo():
 
     l = []
     for row in rows:
-        l.append(format_custo(row, target, request.args[1]))
+        l.append(format_custo(row, target, request.args[1], form_id))
 
     if len(l) == 0:
         return T("No customization yet")
@@ -7494,7 +7493,7 @@ def ajax_custo():
              l,
            )
 
-def format_custo(row, objtype, objname):
+def format_custo(row, objtype, objname, form_id=None):
     s = row.forms.form_yaml
     import yaml
     try:
@@ -7517,6 +7516,20 @@ def format_custo(row, objtype, objname):
         form=row.forms,
         showexpert=True,
       ),
+      _onclick="""
+sync_ajax("%(url)s", [], "forms_inputs", function(){})
+""" % dict(
+  url=URL(
+    r=request, c='compliance', f='ajax_forms_inputs',
+    vars={
+      "mode": "edit",
+      "form_id": form_id,
+      "hid": "forms_inputs",
+      "rset_name": row.comp_rulesets.ruleset_name,
+      "var_id": row.comp_rulesets_variables.id,
+    }
+  ),
+),
     )
 
     if 'Modulesets' in data:
@@ -7615,6 +7628,8 @@ def get_form_formatted_data_o(output, data, _d=None):
                     continue
                 val = request.vars.get(v)
                 if len(str(val)) == 0:
+                    if input.get('Mandatory', False):
+                        raise Exception(T("Input '%(input)s' is mandatory", dict(input=input.get('Id'))))
                     continue
                 try:
                     val = convert_val(val, input['Type'])
@@ -7627,8 +7642,12 @@ def get_form_formatted_data_o(output, data, _d=None):
             for input in data['Inputs']:
                 val = request.vars.get(forms_xid(input['Id'])+'_0')
                 if val is None:
+                    if input.get('Mandatory', False):
+                        raise Exception(T("Input '%(input)s' is mandatory", dict(input=input.get('Id'))))
                     continue
                 if len(str(val)) == 0:
+                    if input.get('Mandatory', False):
+                        raise Exception(T("Input '%(input)s' is mandatory", dict(input=input.get('Id'))))
                     continue
                 try:
                     val = convert_val(val, input['Type'])
@@ -8042,6 +8061,9 @@ def ajax_generic_form_submit(form, data, _d=None):
     return ajax_error(PRE(XML('<br><br>'.join(map(lambda x: x[1]%x[2], log)))))
 
 def ajax_custo_form_submit(output, data):
+    # logging buffer
+    log = []
+
     rset_name = request.vars.rset_name
     if request.vars.svcname is not None:
         rset_name = "svc."+request.vars.svcname
@@ -8049,18 +8071,17 @@ def ajax_custo_form_submit(output, data):
         rset_name = "node."+request.vars.nodename
 
     if rset_name is None:
-        raise Exception(T("No ruleset name specified"))
+        log.append(("", "No ruleset name specified", dict()))
+        return log
 
     if request.vars.var_id is not None:
         q = db.comp_rulesets_variables.id == request.vars.var_id
         var = db(q).select().first()
         if var is None:
-            raise Exception(T("Specified variable not found (id=%(id)s)", dict(id=request.vars.var_id)))
+            log.append(("", "Specified variable not found (id=%(id)s)", dict(id=request.vars.var_id)))
+            return log
         var_name = var.var_name
         var_class = var.var_class
-
-    # logging buffer
-    log = []
 
     # validate privs
     groups = []
@@ -8070,27 +8091,33 @@ def ajax_custo_form_submit(output, data):
         q &= db.nodes.team_responsible == db.auth_group.role
         node = db(q).select(db.auth_group.id).first()
         if node is None:
-            raise Exception(T("Unknown specified node %(nodename)s", dict(nodename=nodename)))
+            log.append(("", "Unknown specified node %(nodename)s", dict(nodename=nodename)))
+            return log
         groups = [node.id]
         if len(groups) == 0:
-            raise Exception(T("Specified node %(nodename)s has no responsible group", dict(nodename=nodename)))
+            log.append(("", "Specified node %(nodename)s has no responsible group", dict(nodename=nodename)))
+            return log
         common_groups = set(user_group_ids()) & set(groups)
         if len(common_groups) == 0:
-            raise Exception(T("You are not allowed to create or modify a ruleset for the node %(node)s", dict(nodename=nodename)))
+            log.append(("", "You are not allowed to create or modify a ruleset for the node %(node)s", dict(nodename=nodename)))
+            return log
     elif request.vars.svcname is not None:
         q = db.services.svc_name == request.vars.svcname
         svc = db(q).select().first()
         if svc is None:
-            raise Exception(T("Unknown specified service %(svcname)s", dict(svcname=svcname)))
+            log.append(("", "Unknown specified service %(svcname)s", dict(svcname=svcname)))
+            return log
         q &= db.services.svc_app == db.apps.app
         q &= db.apps.id == db.apps_responsibles.app_id
         rows = db(q).select()
         groups = map(lambda x: x.apps_responsibles.group_id, rows)
         if len(groups) == 0:
-            raise Exception(T("Specified service %(svcname)s has no responsible groups", dict(svcname=svcname)))
+            log.append(("", "Specified service %(svcname)s has no responsible groups", dict(svcname=svcname)))
+            return log
         common_groups = set(user_group_ids()) & set(groups)
         if len(common_groups) == 0:
-            raise Exception(T("You are not allowed to create or modify a ruleset for the service %(svcname)s", dict(svcname=svcname)))
+            log.append(("", "You are not allowed to create or modify a ruleset for the service %(svcname)s", dict(svcname=svcname)))
+            return log
 
     # create ruleset
     q = db.comp_rulesets.ruleset_name == rset_name
@@ -8108,7 +8135,8 @@ def ajax_custo_form_submit(output, data):
             )
             log.append(("compliance.ruleset.group.attach", "Added group %(gid)d ruleset '%(rset_name)s' owners", dict(gid=gid, rset_name=rset_name)))
     if rset is None:
-        raise Exception(T("error fetching %(rset_name)s ruleset", dict(rset_name=rset_name)))
+        log.append(("", "error fetching %(rset_name)s ruleset", dict(rset_name=rset_name)))
+        return log
 
     if request.vars.var_id is None:
         if 'Class' in output:
@@ -8121,7 +8149,8 @@ def ajax_custo_form_submit(output, data):
         elif 'Prefix' in output:
             var_name_prefix = output['Prefix']
         else:
-            raise Exception(T("No variable name specified."))
+            log.append(("", "No variable name specified.", dict()))
+            return log
 
         q = db.comp_rulesets_variables.ruleset_id == rset.id
         q &= db.comp_rulesets_variables.var_name.like(var_name_prefix+'%')
@@ -8270,14 +8299,6 @@ def convert_val(val, t):
          else:
              raise Exception("Error converting size. Unknown unit.")
      return val
-
-def forms_xid(id=None):
-    xid = "forms_"
-    if request.vars.form_xid is not None:
-        xid += request.vars.form_xid + '_'
-    if id is not None:
-        xid += str(id)
-    return xid
 
 @service.json
 def json_form_submit(form_name, form_data):
