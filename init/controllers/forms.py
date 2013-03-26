@@ -680,11 +680,16 @@ def get_folders_info():
         h[data['Folder']] = data
     return data
 
-def get_forms(form_type=None, folder="/", form_names=[]):
+def get_forms(form_type=None, folder="/", form_names=[], search=None):
+    q = db.forms.id > 0
+
     if len(form_names) > 0:
-        q = db.forms.form_name.belongs(form_names)
+        q &= db.forms.form_name.belongs(form_names)
+    elif search is None:
+        q &= db.forms.form_folder == folder
     else:
-        q = db.forms.form_folder == folder
+        q &= db.forms.form_folder != None
+        q &= db.forms.form_folder != ""
 
     if form_type != "folder":
         q &= db.forms.id == db.forms_team_publication.form_id
@@ -696,6 +701,9 @@ def get_forms(form_type=None, folder="/", form_names=[]):
         q &= db.forms.form_type.belongs(form_type)
     else:
         q &= db.forms.form_type == form_type
+
+    if search is not None:
+        q &= db.forms.form_name.like('%'+search+'%')
 
     rows = db(q).select(db.forms.id,
                         db.forms.form_name,
@@ -717,7 +725,9 @@ def get_forms(form_type=None, folder="/", form_names=[]):
 
 @auth.requires_login()
 def ajax_forms_list():
-    return forms_list(request.vars.folder, prev_wfid=request.vars.prev_wfid)
+    return forms_list(request.vars.folder,
+                      prev_wfid=request.vars.prev_wfid,
+                      search=request.vars.forms_search)
 
 @auth.requires_login()
 def folder_list(folder="/"):
@@ -764,19 +774,26 @@ sync_ajax('%(url)s', [], '%(id)s', function(){});
     return l
 
 @auth.requires_login()
-def forms_list(folder="/", form_names=[], prev_wfid=None):
+def forms_list(folder="/", form_names=[], prev_wfid=None, search=None):
     l = []
 
-    folder = os.path.realpath(folder)
+    # no use to list all forms in a flat list
+    if search == "":
+        folder = "/"
+        search = None
 
-    if len(form_names) == 0:
-        l += folder_list(folder)
+    # folder == None means search forms whatever their folder
+    if folder is not None:
+        folder = os.path.realpath(folder)
+
+        if len(form_names) == 0:
+            l += folder_list(folder)
 
     form_types = ["custo", "generic"]
     if 'CompManager' in user_groups():
         form_types.append("obj")
 
-    for id, form_name, form_folder, form_type, data in get_forms(form_types, folder=folder, form_names=form_names):
+    for id, form_name, form_folder, form_type, data in get_forms(form_types, folder=folder, form_names=form_names, search=search):
         cl = data.get('Css', 'nologo48')
         desc = data.get('Desc', '')
         if desc is None: desc = ''
@@ -859,6 +876,7 @@ if ($("#%(id)s").is(":visible")) {
 def forms():
     d = DIV(
       H1(T("Choose a customization form")),
+      tool_forms_search(),
       DIV(forms_list(), _id="forms_list"),
     )
     return dict(table=d)
@@ -1066,6 +1084,21 @@ def workflow():
     )
     return dict(table=d)
 
+def tool_forms_search():
+    d = DIV(
+          SPAN(
+            _style='padding-right: 0.5em',
+          ),
+          INPUT(
+            _id='forms_search',
+            _onKeyUp="""sync_ajax('%(url)s', ['forms_search'], 'forms_list')"""%dict(
+                url=URL(r=request, c='forms', f='ajax_forms_list'),
+              ),
+          ),
+          _class='search',
+          _style='float:none',
+        )
+    return d
 
 @auth.requires_login()
 def ajax_rset_list():

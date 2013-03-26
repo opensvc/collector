@@ -1330,7 +1330,7 @@ ul.login_menu ul {
     width: 6em;
 }
 .wfsearch:focus {
-    background: #edccb1 url('search.png') no-repeat;
+    background: rgb(255, 248, 239) url('search.png') no-repeat;
 }
 .search {
     float: right;
@@ -1346,7 +1346,7 @@ ul.login_menu ul {
     width: 6em;
 }
 .search input:focus {
-    background: #edccb1 url('search.png') no-repeat;
+    background: rgb(255, 248, 239) url('search.png') no-repeat;
 }
 .search p {
     font-weight: bold;
