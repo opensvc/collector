@@ -7560,6 +7560,7 @@ sync_ajax("%(url)s", [], "forms_inputs", function(){})
     )
 
     if 'Modulesets' in data:
+        q = db.comp_status.id > 0
         if objtype == "svcname":
             l = _comp_get_moduleset_svc_modules(data['Modulesets'], objname)
             q = db.comp_status.run_svcname == objname
