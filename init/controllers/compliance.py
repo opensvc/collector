@@ -6881,7 +6881,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
             remove = A(
               T("remove"),
               _onclick="""
-$(this).parents("[name=instance]").first().siblings('hr').first().remove()
+$(this).parents("[name=instance]").first().prev('hr').remove()
 $(this).parents("[name=instance]").first().remove()
 """,
             )
@@ -7083,8 +7083,9 @@ clone.find("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]")
   form_inputs_trigger(this)
 })
 clone.find('.form_instance_count').children('div').text(count)
-$('#%(container)s').append("<hr />")
-clone.appendTo($('#%(container)s'))
+container = ref.parents('#%(container)s').first()
+container.append("<hr />")
+clone.appendTo(container)
 count=parseInt(count)+1
 $("#%(counter)s").val(count);
 """%dict(xid=forms_xid(''),
@@ -7153,9 +7154,13 @@ $("#svcname").each(function(){
 $("#nodename").each(function(){
   ids.push("nodename")
 });
+$("#rset").each(function(){
+  ids.push("rset")
+});
 function reload_ajax_custo(){
   $("select#svcname").change()
   $("select#nodename").change()
+  $("select#rset").change()
 }
 sync_ajax('%(url)s', ids, '%(rid)s', %(callback)s)
 """%dict(
@@ -7412,6 +7417,7 @@ def ajax_target():
               _id="radio_service",
               _onclick="""
 $("#radio_node").prop('checked',false);
+$("#radio_rset").prop('checked',false);
 $("#stage2").html("");
 sync_ajax('%(url)s', [], '%(id)s', function(){})"""%dict(
                 id="stage1",
@@ -7429,6 +7435,7 @@ sync_ajax('%(url)s', [], '%(id)s', function(){})"""%dict(
               _id="radio_node",
               _onclick="""
 $("#radio_service").prop('checked',false);
+$("#radio_rset").prop('checked',false);
 $("#stage2").html("");
 sync_ajax('%(url)s', [], '%(id)s', function(){})"""%dict(
                 id="stage1",
@@ -7438,6 +7445,24 @@ sync_ajax('%(url)s', [], '%(id)s', function(){})"""%dict(
           ),
           TD(
             T("Customize node"),
+          ),
+          TD(
+            INPUT(
+              _value=False,
+              _type='radio',
+              _id="radio_rset",
+              _onclick="""
+$("#radio_service").prop('checked',false);
+$("#radio_node").prop('checked',false);
+$("#stage2").html("");
+sync_ajax('%(url)s', [], '%(id)s', function(){})"""%dict(
+                id="stage1",
+                url=URL(r=request, c='forms', f='ajax_rset_list', vars={'form_id': request.vars.form_id}),
+              ),
+            ),
+          ),
+          TD(
+            T("Customize ruleset"),
           ),
         ))
     d = DIV(
@@ -7471,6 +7496,8 @@ def ajax_custo():
         rset_name = "node." + request.args[1]
     elif target == "svcname":
         rset_name = "svc." + request.args[1]
+    elif target == "rset":
+        rset_name = request.args[1]
     else:
         return ajax_error("Incorrect target specified. Must be either 'nodename' or 'svcname'")
 
@@ -8065,10 +8092,14 @@ def ajax_custo_form_submit(output, data):
     log = []
 
     rset_name = request.vars.rset_name
+
+    # target selectors
     if request.vars.svcname is not None:
         rset_name = "svc."+request.vars.svcname
     elif request.vars.nodename is not None:
         rset_name = "node."+request.vars.nodename
+    elif request.vars.rset is not None:
+        rset_name = request.vars.rset
 
     if rset_name is None:
         log.append(("", "No ruleset name specified", dict()))
@@ -8118,6 +8149,20 @@ def ajax_custo_form_submit(output, data):
         if len(common_groups) == 0:
             log.append(("", "You are not allowed to create or modify a ruleset for the service %(svcname)s", dict(svcname=svcname)))
             return log
+    elif request.vars.rset is not None:
+        q = db.comp_rulesets.ruleset_name == request.vars.rset
+        rset = db(q).select().first()
+        if rset is None:
+            log.append(("", "Unknown specified ruleset %(rset)s", dict(rset=request.vars.rset)))
+            return log
+        q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+        q &= db.comp_ruleset_team_responsible.group_id == db.auth_group.id
+        rows = db(q).select()
+        groups = map(lambda x: x.auth_group.id, rows)
+        common_groups = set(user_group_ids()) & set(groups)
+        if len(common_groups) == 0:
+            log.append(("", "You are not allowed to create or modify the ruleset %(rset)s", dict(rset=rset_name)))
+            return log
 
     # create ruleset
     q = db.comp_rulesets.ruleset_name == rset_name
@@ -8149,8 +8194,9 @@ def ajax_custo_form_submit(output, data):
         elif 'Prefix' in output:
             var_name_prefix = output['Prefix']
         else:
-            log.append(("", "No variable name specified.", dict()))
-            return log
+            var_name_prefix = '_'.join((output.get('Class', 'noclass'), str(rset.id), ''))
+            #log.append(("", "No variable name specified.", dict()))
+            #return log
 
         q = db.comp_rulesets_variables.ruleset_id == rset.id
         q &= db.comp_rulesets_variables.var_name.like(var_name_prefix+'%')

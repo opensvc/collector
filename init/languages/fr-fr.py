@@ -286,6 +286,7 @@
 'Current response': 'Réponse courrante',
 'Current session': 'Session courrante',
 'Customize node': 'Personnaliser un noeud',
+'Customize ruleset': 'Customize ruleset',
 'Customize service': 'Personnaliser un service',
 'DB Model': 'Représentation de base de données',
 'DR node': 'Noeud de PRA',

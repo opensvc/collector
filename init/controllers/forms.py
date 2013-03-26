@@ -772,7 +772,11 @@ def forms_list(folder="/", form_names=[], prev_wfid=None):
     if len(form_names) == 0:
         l += folder_list(folder)
 
-    for id, form_name, form_folder, form_type, data in get_forms(["custo", "generic"], folder=folder, form_names=form_names):
+    form_types = ["custo", "generic"]
+    if 'CompManager' in user_groups():
+        form_types.append("obj")
+
+    for id, form_name, form_folder, form_type, data in get_forms(form_types, folder=folder, form_names=form_names):
         cl = data.get('Css', 'nologo48')
         desc = data.get('Desc', '')
         if desc is None: desc = ''
@@ -781,7 +785,7 @@ def forms_list(folder="/", form_names=[], prev_wfid=None):
         else:
             label = form_name
 
-        if form_type == "custo":
+        if form_type in ("custo", "obj"):
             id_target = "forms_target"
         else:
             id_target = None
@@ -1062,6 +1066,49 @@ def workflow():
     )
     return dict(table=d)
 
+
+@auth.requires_login()
+def ajax_rset_list():
+    o = db.comp_rulesets.ruleset_name
+    q = db.comp_rulesets.id > 0
+    q &= db.comp_ruleset_team_responsible.ruleset_id == db.comp_rulesets.id
+    q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rsets = db(q).select(db.comp_rulesets.ruleset_name,
+                         groupby=o,
+                         orderby=o)
+
+    l = [OPTION(T("Choose one"))]
+    for rset in rsets:
+        o = OPTION(
+                rset.ruleset_name,
+                _value=rset.ruleset_name,
+            )
+        l.append(o)
+
+    return DIV(
+             H3(T("Rulesets")),
+             SELECT(
+               l,
+               _id="rset",
+               _onchange="""
+$("#stage2").html('%(spinner)s');
+ajax('%(url)s/%(objtype)s/'+this.options[this.selectedIndex].value+'%(form_id)s', [], '%(div)s');
+"""%dict(
+      url=URL(
+            r=request, c='compliance',
+            f='ajax_custo',
+          ),
+      objtype='rset',
+      div="stage2",
+      form_id='?form_id='+str(request.vars.form_id) if request.vars.form_id is not None else '',
+      spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')).xml(),
+    ),
+             ),
+             SCRIPT("""
+$("select").combobox();
+$("#rset").siblings("input").focus();
+""", _name="stage1_to_eval"),
+           )
 
 @auth.requires_login()
 def ajax_node_list():
