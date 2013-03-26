@@ -1,3 +1,13 @@
+config = local_import('config', reload=True)
+if hasattr(config, "token_quota"):
+    quota = str(config.token_quota)
+else:
+    quota = "unlimited"
+if hasattr(config, "billing_method") and config.billing_method == "agents":
+    agents_billing_method = True
+else:
+    agents_billing_method = False
+
 class table_billing(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -52,6 +62,23 @@ def num_fmt(n, k, os, token, _class=""):
            )
 
 def billing_fmt(table):
+    local_headings = {
+      'services': 'Services',
+      'agents_without_svc': 'Agents without services',
+    }
+    headings = {
+      'svc_prd': 'PRD Services',
+      'svc_nonprd': 'Non PRD Services',
+      'agents_without_svc_prd': 'PRD Agents without services',
+      'agents_without_svc_nonprd': 'Non PRD Agents without services',
+    }
+    details = []
+
+    if agents_billing_method:
+        local_headings['agents_without_svc'] = 'Agents'
+        headings['agents_without_svc_prd'] = 'PRD Agents'
+        headings['agents_without_svc_nonprd'] = 'Non PRD Agents'
+
     data, billing, token = billing_data()
 
     lines = []
@@ -97,12 +124,12 @@ def billing_fmt(table):
             TH("Total", _colspan=4, _class="head1"),
           ),
           TR(
-            TH("Services", _colspan=3, _class="head2"),
-            TH("Agents without services", _colspan=3, _class="head2"),
-            TH("Services", _colspan=3, _class="head2"),
-            TH("Agents without services", _colspan=3, _class="head2"),
-            TH("Services", _colspan=2, _class="head2"),
-            TH("Agents without services", _colspan=2, _class="head2"),
+            TH(local_headings["services"], _colspan=3, _class="head2"),
+            TH(local_headings["agents_without_svc"], _colspan=3, _class="head2"),
+            TH(local_headings["services"], _colspan=3, _class="head2"),
+            TH(local_headings["agents_without_svc"], _colspan=3, _class="head2"),
+            TH(local_headings["services"], _colspan=2, _class="head2"),
+            TH(local_headings["agents_without_svc"], _colspan=2, _class="head2"),
           ),
           TR(
             TH("Count", _class="head3"),
@@ -126,14 +153,6 @@ def billing_fmt(table):
           _class="billing",
         )
 
-    headings = {
-      'svc_prd': 'PRD Services',
-      'svc_nonprd': 'Non PRD Services',
-      'agents_without_svc_prd': 'PRD Agents without services',
-      'agents_without_svc_nonprd': 'Non PRD Agents without services',
-    }
-    details = []
-
     for k in ('svc_prd', 'agents_without_svc_prd', 'svc_nonprd', 'agents_without_svc_nonprd'):
         for os in data[k]:
             if len(data[k][os]) == 0:
@@ -148,11 +167,6 @@ def billing_fmt(table):
               _id=name_fmt(k,os),
             ))
 
-    import config
-    if hasattr(config, "token_quota"):
-        quota = str(config.token_quota)
-    else:
-        quota = "unlimited"
     summary = DIV(
       H2(T("Accounting")),
       SPAN(T("%(n)d / %(quota)s tokens", dict(n=token['total']['svc']+token['total']['agents_without_svc'], quota=quota))),
@@ -181,10 +195,13 @@ def billing_data():
     rows = db(q).select(db.nodes.os_name, groupby=db.nodes.os_name, orderby=db.nodes.os_name)
     data['os'] = [r.os_name for r in rows]
 
-    # nodes with services
-    q = db.svcmon.id > 0
-    rows = db(q).select(db.svcmon.mon_nodname, groupby=db.svcmon.mon_nodname)
-    data['agents_with_svc'] = [r.mon_nodname for r in rows]
+    if not agents_billing_method:
+        # nodes with services
+        q = db.svcmon.id > 0
+        rows = db(q).select(db.svcmon.mon_nodname, groupby=db.svcmon.mon_nodname)
+        data['agents_with_svc'] = [r.mon_nodname for r in rows]
+    else:
+        data['agents_with_svc'] = []
 
 
     # nodes with opensvc and no services
