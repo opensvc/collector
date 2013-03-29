@@ -3370,9 +3370,13 @@ create view v_comp_nodes as (select n.*,group_concat(distinct r.ruleset_name sep
 
 alter table forms_store add column form_scripts text;
 
-alter table packages add column pkg_type varchar(6);
+alter table packages add column pkg_type varchar(7);
 
 alter table packages add column pkg_install_date datetime;
 
 alter table patches add column patch_install_date datetime;
+
+alter table packages drop key idx3;
+
+alter table packages add unique key idx3 (`pkg_nodename`,`pkg_name`,`pkg_arch`,`pkg_version`, `pkg_type`);
 
