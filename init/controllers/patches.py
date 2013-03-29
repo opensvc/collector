@@ -41,6 +41,7 @@ class table_patches(HtmlTable):
         self.cols = ['nodename']+v_nodes_cols
         self.cols += ['patch_num',
                       'patch_rev',
+                      'patch_install_date',
                       'patch_updated']
         self.colprops = v_nodes_colprops
         self.colprops.update({
@@ -69,7 +70,14 @@ class table_patches(HtmlTable):
                      title='Updated',
                      table='patches',
                      field='patch_updated',
-                     img='pkg16',
+                     img='time16',
+                     display=True,
+                    ),
+            'patch_install_date': HtmlTableColumn(
+                     title='Install date',
+                     table='patches',
+                     field='patch_install_date',
+                     img='time16',
                      display=True,
                     ),
         })

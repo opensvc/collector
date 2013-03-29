@@ -3369,3 +3369,10 @@ drop view v_comp_nodes;
 create view v_comp_nodes as (select n.*,group_concat(distinct r.ruleset_name separator ', ') as rulesets, group_concat(distinct m.modset_name separator ', ') as modulesets from v_nodes n left join comp_rulesets_nodes rn on n.nodename=rn.nodename left join comp_rulesets r on r.id=rn.ruleset_id left join comp_node_moduleset mn on mn.modset_node=n.nodename left join comp_moduleset m on m.id=mn.modset_id group by n.nodename);
 
 alter table forms_store add column form_scripts text;
+
+alter table packages add column pkg_type varchar(6);
+
+alter table packages add column pkg_install_date datetime;
+
+alter table patches add column patch_install_date datetime;
+

@@ -874,7 +874,9 @@ db.define_table('packages',
     Field('pkg_name', 'string', length=100),
     Field('pkg_version', 'string', length=16),
     Field('pkg_arch', 'string', length=8),
+    Field('pkg_type', 'string', length=6),
     Field('pkg_updated', 'timestamp'),
+    Field('pkg_install_date', 'datetime'),
     migrate=False)
 
 db.define_table('patches',
@@ -883,6 +885,7 @@ db.define_table('patches',
     Field('patch_num', 'string', length=100),
     Field('patch_rev', 'string', length=16),
     Field('patch_updated', 'timestamp'),
+    Field('patch_install_date', 'datetime'),
     migrate=False)
 
 db.define_table('checks_live',

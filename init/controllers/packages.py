@@ -7,6 +7,8 @@ class table_packages(HtmlTable):
         self.cols += ['pkg_name',
                       'pkg_version',
                       'pkg_arch',
+                      'pkg_type',
+                      'pkg_install_date',
                       'pkg_updated']
         self.colprops = v_nodes_colprops
         self.colprops.update({
@@ -29,6 +31,20 @@ class table_packages(HtmlTable):
                      table='packages',
                      field='pkg_arch',
                      img='pkg16',
+                     display=True,
+                    ),
+            'pkg_type': HtmlTableColumn(
+                     title='Type',
+                     table='packages',
+                     field='pkg_type',
+                     img='pkg16',
+                     display=True,
+                    ),
+            'pkg_install_date': HtmlTableColumn(
+                     title='Install date',
+                     table='packages',
+                     field='pkg_install_date',
+                     img='time16',
                      display=True,
                     ),
             'pkg_updated': col_updated(
