@@ -2797,6 +2797,28 @@ def collector_show_actions(cmd, auth):
 
 @auth_uuid
 @service.xmlrpc
+def collector_update_action_queue(data, auth):
+    nodename = auth[1]
+    for id, ret, out, err in data:
+        q = db.action_queue.id == id
+        q &= db.action_queue.nodename == nodename
+        db(q).update(stdout=out, stderr=err, ret=ret, status="T", date_dequeued=datetime.datetime.now())
+
+@auth_uuid
+@service.xmlrpc
+def collector_get_action_queue(nodename, auth):
+    q = db.action_queue.nodename == nodename
+    q &= db.action_queue.action_type == "pull"
+    q &= db.action_queue.status == "W"
+    sql = db(q)._select()
+    data = db.executesql(sql, as_dict=True)
+    if len(data) > 0:
+        db(q).update(status="Q")
+        db.commit()
+    return data
+
+@auth_uuid
+@service.xmlrpc
 def collector_list_actions(cmd, auth):
     d = {}
     nodename = auth[1]

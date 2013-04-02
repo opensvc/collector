@@ -73,7 +73,7 @@ def get_queued():
     if conn is None:
         return []
     cursor = conn.cursor()
-    cursor.execute("SELECT id, command FROM action_queue where status='W'")
+    cursor.execute("SELECT id, command FROM action_queue where status='W' and action_type='push'")
     cmds = []
     while (1):
         row = cursor.fetchone()

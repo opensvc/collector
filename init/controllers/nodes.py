@@ -479,23 +479,34 @@ def do_action(ids, action=None, mode=None):
 
     q = db.nodes.nodename.belongs(ids)
     q &= db.nodes.team_responsible.belongs(user_groups())
-    rows = db(q).select(db.nodes.nodename, db.nodes.fqdn)
+    rows = db(q).select(db.nodes.nodename, db.nodes.fqdn, db.nodes.os_name)
 
     vals = []
-    vars = ['command']
+    vars = ['nodename', 'action_type', 'command']
+
     for row in rows:
         if row.fqdn is not None and len(row.fqdn) > 0:
             node = row.fqdn
         else:
             node = row.nodename
-        vals.append([fmt_action(node, action, mode)])
+
+        if row.os_name == "Windows":
+            action_type = "pull"
+            command = action
+        else:
+            action_type = "push"
+            command = fmt_action(node, action, mode)
+
+        vals.append([row.nodename, action_type, command])
 
     purge_action_queue()
     generic_insert('action_queue', vars, vals)
+
     from subprocess import Popen
     actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
     process = Popen(actiond)
     process.communicate()
+
     if mode in ("module", "moduleset"):
         _log('node.action', 'run %(a)s of %(mode)s %(m)s on nodes %(s)s', dict(
               a=action,

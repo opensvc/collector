@@ -690,3 +690,16 @@ db.define_table('obsolescence',
     Field('obs_alert_date_updated', 'datetime'),
     migrate=False)
 
+db.define_table('action_queue',
+    Field('status', 'string'),
+    Field('ret', 'integer'),
+    Field('command', 'text'),
+    Field('stdout', 'text'),
+    Field('stderr', 'text'),
+    Field('date_queued', 'timestamp'),
+    Field('date_dequeued', 'timestamp'),
+    Field('nodename', 'string'),
+    Field('svcname', 'string'),
+    Field('action_type', 'string'),
+    migrate=False)
+

@@ -1321,12 +1321,19 @@ def do_node_action(ids, action=None, mode=None):
 
     q = db.v_svcmon.id.belongs(ids)
     q &= db.v_svcmon.team_responsible.belongs(user_groups())
-    rows = db(q).select(db.v_svcmon.mon_nodname)
+    rows = db(q).select(db.v_svcmon.mon_nodname, db.v_svcmon.os_name)
 
     vals = []
-    vars = ['command']
+    vars = ['nodename', 'action_type', 'command']
     for row in rows:
-        vals.append([fmt_action(row.mon_nodname, action, mode)])
+        if row.os_name == "Windows":
+            action_type = "pull"
+            command = action
+        else:
+            action_type = "push"
+            command = fmt_action(row.mon_nodname, action, mode)
+
+        vals.append([row.mon_nodname, action_type, command])
 
     purge_action_queue()
     generic_insert('action_queue', vars, vals)
@@ -1357,7 +1364,7 @@ def do_action(ids, action=None):
         force = ''
 
     # filter out services we are not responsible for
-    sql = """select m.mon_nodname, m.mon_svcname
+    sql = """select m.mon_nodname, m.mon_svcname, m.os_name
              from v_svcmon m
              join v_apps_flat a on m.svc_app=a.app
              where m.id in (%(ids)s)
@@ -1379,9 +1386,16 @@ def do_action(ids, action=None):
         return ' '.join(cmd)
 
     vals = []
-    vars = ['command']
+    vars = ['nodename', 'svcname', 'action_type', 'command']
     for row in rows:
-        vals.append([fmt_action(row[0], row[1], action)])
+        if row[2] == "Windows":
+            action_type = "pull"
+            command = action
+        else:
+            action_type = "push"
+            command = fmt_action(row[0], row[1], action)
+
+        vals.append([row[0], row[1], action_type, command])
 
     purge_action_queue()
     generic_insert('action_queue', vars, vals)

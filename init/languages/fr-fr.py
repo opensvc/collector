@@ -83,6 +83,7 @@
 'Action': 'Action',
 'Action errors': "Erreurs d'action",
 'Action is not queued': "L'action n'est pas mise en queue",
+'Action type': 'Action type',
 'Actions': 'Actions',
 'Active columns': 'Colonnes actives',
 'Active filters': 'Filtres actifs',

@@ -4031,51 +4031,77 @@ def do_action(ids, action=None):
     if len(ids) == 0:
         raise ToolError("no target to execute %s on"%action)
 
-    def fmt_action(nodename, svcname, action, mod):
+    def fmt_action(nodename, svcname, action, mod, action_type="push"):
+        base_cmd = ['compliance', action, '--module', mod]
+        if action_type == "pull":
+            return ' '.join(cmd)
+
         if svcname is None or svcname == "":
             _cmd = ["/opt/opensvc/bin/nodemgr"]
         else:
             _cmd = ["/opt/opensvc/bin/svcmgr", "-s", svcname]
+
         cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
                       '-o', 'ForwardX11=no',
                       '-o', 'PasswordAuthentication=no',
                       '-tt',
                'opensvc@'+nodename,
                '--',
-               'sudo'] + _cmd + ['compliance', action,
-               '--module', mod]
+               'sudo'] + _cmd + base_cmd
         return ' '.join(cmd)
 
     q = db.comp_status.id.belongs(ids)
     q &= db.comp_status.run_nodename == db.nodes.nodename
     q &= (db.nodes.team_responsible.belongs(user_groups())) | \
          (db.nodes.team_integ.belongs(user_groups()))
-    rows = db(q).select(db.comp_status.run_nodename,
+    rows = db(q).select(db.nodes.os_name,
+                        db.comp_status.run_nodename,
                         db.comp_status.run_svcname,
                         db.comp_status.run_module)
 
     vals = []
-    vars = ['command']
+    vars = ['nodename', 'svcname', 'action_type', 'command']
     tolog_node = []
     tolog_svc = []
+    need_push = False
+    notify = set([])
+
     for row in rows:
-        if row.run_svcname is None or row.run_svcname == "":
-            tolog_node.append([row.run_nodename,
-                               row.run_module])
+        notify.add(row.comp_status.run_nodename)
+
+        if row.nodes.os_name == "Windows":
+            action_type = "pull"
         else:
-            tolog_svc.append([row.run_svcname,
-                              row.run_module])
-        vals.append([fmt_action(row.run_nodename,
-                                row.run_svcname,
+            action_type = "push"
+            need_push = True
+
+        if row.comp_status.run_svcname is None or row.comp_status.run_svcname == "":
+            tolog_node.append([row.comp_status.run_nodename,
+                               row.comp_status.run_module])
+        else:
+            tolog_svc.append([row.comp_status.run_svcname,
+                              row.comp_status.run_module])
+
+        vals.append([row.comp_status.run_nodename,
+                     row.comp_status.run_svcname,
+                     action_type,
+                     fmt_action(row.comp_status.run_nodename,
+                                row.comp_status.run_svcname,
                                 action,
-                                row.run_module)])
+                                row.comp_status.run_module,
+                                action_type)])
 
     purge_action_queue()
     generic_insert('action_queue', vars, vals)
-    from subprocess import Popen
-    actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
-    process = Popen(actiond)
-    process.communicate()
+
+    if need_push:
+        from subprocess import Popen
+        actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
+        process = Popen(actiond)
+        process.communicate()
+
+    for nodename in notify:
+        notify_action_queue(nodename)
 
     if len(tolog_node) > 0:
         tolog_node_s = ', '.join(map(lambda x: "%s:%s"%(x[0], x[1]), tolog_node))

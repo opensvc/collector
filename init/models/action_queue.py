@@ -1,3 +1,6 @@
+def notify_action_queue(nodename):
+    pass
+
 def purge_action_queue():
     now = datetime.datetime.now()
     limit = now - datetime.timedelta(minutes=120)

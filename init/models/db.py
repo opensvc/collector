@@ -1236,6 +1236,9 @@ db.define_table('action_queue',
     Field('stderr', 'text'),
     Field('date_queued', 'timestamp'),
     Field('date_dequeued', 'timestamp'),
+    Field('nodename', 'string'),
+    Field('svcname', 'string'),
+    Field('action_type', 'string'),
     migrate=False)
 
 db.define_table('v_flex_status',

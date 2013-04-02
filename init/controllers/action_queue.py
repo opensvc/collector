@@ -32,6 +32,9 @@ class table_actions(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['id',
                      'status',
+                     'nodename',
+                     'svcname',
+                     'action_type',
                      'date_queued',
                      'date_dequeued',
                      'ret',
@@ -69,6 +72,24 @@ class table_actions(HtmlTable):
                      img='time16',
                      display=True,
                     ),
+            'nodename': col_node(
+                     title='Nodename',
+                     field='nodename',
+                     img='hw16',
+                     display=True,
+                    ),
+            'svcname': col_svc(
+                     title='Service',
+                     field='svcname',
+                     img='svc',
+                     display=True,
+                    ),
+            'action_type': HtmlTableColumn(
+                     title='Action type',
+                     field='action_type',
+                     img='action16',
+                     display=True,
+                    ),
             'command': HtmlTableColumn(
                      title='Commande',
                      field='command',
@@ -88,6 +109,8 @@ class table_actions(HtmlTable):
                      display=True,
                     ),
         }
+        for col in self.cols:
+            self.colprops[col].t = self
         self.dbfilterable = False
         self.ajax_col_values = 'ajax_actions_col_values'
 
