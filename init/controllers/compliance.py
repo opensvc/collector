@@ -4063,17 +4063,12 @@ def do_action(ids, action=None):
     vars = ['nodename', 'svcname', 'action_type', 'command']
     tolog_node = []
     tolog_svc = []
-    need_push = False
-    notify = set([])
 
     for row in rows:
-        notify.add(row.comp_status.run_nodename)
-
         if row.nodes.os_name == "Windows":
             action_type = "pull"
         else:
             action_type = "push"
-            need_push = True
 
         if row.comp_status.run_svcname is None or row.comp_status.run_svcname == "":
             tolog_node.append([row.comp_status.run_nodename,
@@ -4094,14 +4089,10 @@ def do_action(ids, action=None):
     purge_action_queue()
     generic_insert('action_queue', vars, vals)
 
-    if need_push:
-        from subprocess import Popen
-        actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
-        process = Popen(actiond)
-        process.communicate()
-
-    for nodename in notify:
-        notify_action_queue(nodename)
+    from subprocess import Popen
+    actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
+    process = Popen(actiond)
+    process.communicate()
 
     if len(tolog_node) > 0:
         tolog_node_s = ', '.join(map(lambda x: "%s:%s"%(x[0], x[1]), tolog_node))

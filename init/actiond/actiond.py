@@ -7,6 +7,7 @@ import datetime
 import MySQLdb
 from multiprocessing import Process, JoinableQueue, Queue
 from subprocess import *
+from socket import *
 
 basedir = os.path.realpath(os.path.dirname(__file__))
 sys.path.append(basedir)
@@ -68,19 +69,36 @@ def fork(fn, kwargs={}):
     fn(**kwargs)
     os._exit(0)
 
+def notify_node(nodename):
+    try:
+        sock = socket(AF_INET, SOCK_STREAM)
+        sock.connect((nodename, 1214))
+        sock.send("dequeue_actions")
+        sock.close()
+    except:
+        pass
+
 def get_queued():
     conn = get_conn()
     if conn is None:
         return []
     cursor = conn.cursor()
-    cursor.execute("SELECT id, command FROM action_queue where status='W' and action_type='push'")
+    cursor.execute("SELECT a.id, a.command, a.action_type, a.nodename, n.fqdn FROM action_queue a join nodes n on a.nodename=n.nodename where a.status='W'")
     cmds = []
+    ids = []
     while (1):
         row = cursor.fetchone()
         if row is None:
             break
+        if row[2] == "pull":
+            if row[4] is not None:
+                nodename = row[4]
+            else:
+                nodename = row[3]
+            notify_node(nodename)
+            continue
         cmds.append((row[0], row[1]))
-    ids = map(lambda x: str(x[0]), cmds)
+        ids.append(str(row[0]))
     if len(ids) > 0:
         cursor.execute("update action_queue set status='Q' where id in (%s)"%(','.join(ids)))
         conn.commit()
