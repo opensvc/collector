@@ -429,10 +429,6 @@ def ajax_service():
 
     t_misc = TABLE(
       TR(
-        TD(T('opensvc version'), _style='font-style:italic'),
-        TD(s['svc_version'])
-      ),
-      TR(
         TD(T('unacknowledged errors'), _style='font-style:italic'),
         TD(s['err'])
       ),
@@ -839,6 +835,8 @@ class table_svcmon(HtmlTable):
             'mon_appstatus',
             'mon_hbstatus',
             'mon_updated',
+            'version',
+            'listener_port',
             'team_responsible',
             'team_integ',
             'team_support',

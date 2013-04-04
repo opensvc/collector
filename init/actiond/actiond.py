@@ -69,10 +69,10 @@ def fork(fn, kwargs={}):
     fn(**kwargs)
     os._exit(0)
 
-def notify_node(nodename):
+def notify_node(nodename, port):
     try:
         sock = socket(AF_INET, SOCK_STREAM)
-        sock.connect((nodename, 1214))
+        sock.connect((nodename, port))
         sock.send("dequeue_actions")
         sock.close()
     except:
@@ -83,7 +83,7 @@ def get_queued():
     if conn is None:
         return []
     cursor = conn.cursor()
-    cursor.execute("SELECT a.id, a.command, a.action_type, a.nodename, n.fqdn FROM action_queue a join nodes n on a.nodename=n.nodename where a.status='W'")
+    cursor.execute("SELECT a.id, a.command, a.action_type, a.nodename, n.fqdn, n.listener_port FROM action_queue a join nodes n on a.nodename=n.nodename where a.status='W'")
     cmds = []
     ids = []
     while (1):
@@ -91,11 +91,12 @@ def get_queued():
         if row is None:
             break
         if row[2] == "pull":
+            port = row[5]
             if row[4] is not None:
                 nodename = row[4]
             else:
                 nodename = row[3]
-            notify_node(nodename)
+            notify_node(nodename, port)
             continue
         cmds.append((row[0], row[1]))
         ids.append(str(row[0]))

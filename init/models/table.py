@@ -2163,6 +2163,8 @@ v_nodes_cols = [
     'mem_banks',
     'mem_slots',
     'mem_bytes',
+    'listener_port',
+    'version',
     'team_responsible',
     'team_integ',
     'team_support',
@@ -2411,13 +2413,6 @@ v_services_colprops = {
              display = False,
              img = 'svc',
              table = 'v_services',
-            ),
-    'svc_version': col_svc(
-             title = 'OpenSVC version',
-             field='svc_version',
-             display = False,
-             img = 'pkg16',
-             table = 'v_svcmon',
             ),
     'svc_envdate': col_svc(
              title = 'Env file date',
@@ -2777,6 +2772,20 @@ v_nodes_colprops = {
     'nodename': col_node(
              title = 'Node name',
              field='nodename',
+             display = False,
+             img = 'node16',
+             table = 'v_nodes',
+            ),
+    'version': HtmlTableColumn(
+             title = 'Agent version',
+             field='version',
+             display = False,
+             img = 'svc',
+             table = 'v_nodes',
+            ),
+    'listener_port': HtmlTableColumn(
+             title = 'Listener port',
+             field='listener_port',
              display = False,
              img = 'node16',
              table = 'v_nodes',

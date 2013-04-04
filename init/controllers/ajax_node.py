@@ -322,6 +322,8 @@ def ajax_node():
     )
     server = TABLE(
       TR(TD(T('fqdn'), _style='font-style:italic'), TD(node['fqdn'] if node['fqdn'] is not None else '')),
+      TR(TD(T('agent version'), _style='font-style:italic'), TD(node['version'] if node['version'] is not None else '')),
+      TR(TD(T('agent listener port'), _style='font-style:italic'), TD(node['listener_port'])),
       TR(TD(T('model'), _style='font-style:italic'), TD(node['model'])),
       TR(TD(T('type'), _style='font-style:italic'), TD(node['type'])),
       TR(TD(T('serial'), _style='font-style:italic'), TD(node['serial'])),
