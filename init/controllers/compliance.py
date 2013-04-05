@@ -1435,17 +1435,19 @@ def ruleset_clone():
     if len(db(db.comp_rulesets.ruleset_name==iid).select()) > 0:
         raise ToolError("clone ruleset failed: target name already exists")
     q = db.comp_rulesets.id == sid
+    q &= db.comp_rulesets.id == db.comp_rulesets_filtersets.ruleset_id
     rows = db(q).select()
     if len(rows) == 0:
         raise ToolError("clone ruleset failed: can't find source ruleset")
-    orig = rows[0].ruleset_name
+    orig = rows[0].comp_rulesets.ruleset_name
     newid = db.comp_rulesets.insert(ruleset_name=iid,
-                                    ruleset_type=rows[0].ruleset_type)
+                                    ruleset_type=rows[0].comp_rulesets.ruleset_type)
 
     # clone filterset for contextual rulesets
-    if rows[0].ruleset_type == 'contextual' and rows[0].fset_id is not None:
+    if rows[0].comp_rulesets.ruleset_type == 'contextual' and \
+       rows[0].comp_rulesets_filtersets.fset_id is not None:
         db.comp_rulesets_filtersets.insert(ruleset_id=newid,
-                                           fset_id=rows[0].fset_id)
+                                           fset_id=rows[0].comp_rulesets_filtersets.fset_id)
 
     # clone ruleset variables
     q = db.comp_rulesets_variables.ruleset_id == sid
