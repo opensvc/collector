@@ -1643,10 +1643,14 @@ div.summary {
     overflow: auto;
     background: white;
 }
-button:hover, input[type=button]:focus, input[type=submit]:focus {
-    background: #dedede;
+input[type=button]:disabled, input[type=submit]:disabled {
+    color: rgb(175, 167, 167);
 }
-button:hover, input[type=button]:hover, input[type=submit]:hover {
+
+button:hover,
+input[type=button]:disabled, input[type=submit]:disabled, 
+input[type=button]:focus, input[type=submit]:focus, 
+input[type=button]:hover, input[type=submit]:hover {
     background: #dedede;
 }
 button, input[type=button], input[type=submit] {

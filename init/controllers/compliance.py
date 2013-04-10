@@ -7205,6 +7205,7 @@ function form_inputs_trigger (o) {
   form_inputs_conditions(o)
   form_inputs_resize(o)
   form_inputs_functions(o)
+  form_submit_toggle(o)
 }
 
 function refresh_select(e) {
@@ -7257,6 +7258,20 @@ function refresh_textarea(e) {
     e.height(h+'em')
     e.trigger('change')
   };
+}
+
+function form_submit_toggle (o) {
+  n = 0
+  $(o).parents('table').first().find("tr").each(function(){
+    if ($(this).hasClass("highlight_input") || $(this).hasClass("highlight_input1")) {
+      $(o).parents('[name=container_head]').first().find("input[type=submit]").attr("disabled", "disabled")
+      n++
+      return
+    }
+  })
+  if (n==0) {
+    $(o).parents('[name=container_head]').first().find("input[type=submit]").removeAttr("disabled")
+  }
 }
 
 function form_inputs_functions (o) {
