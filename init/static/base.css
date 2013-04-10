@@ -19,6 +19,7 @@
     font-weight: bold;
 }
 
+.highlight_input1,
 .highlight_input {
     border: 2px solid red;
 }

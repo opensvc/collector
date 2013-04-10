@@ -7298,9 +7298,9 @@ function form_inputs_mandatory (o) {
   $(o).parents('table').first().find("[mandatory=mandatory]").each(function(){
     val = $(this).val()
     if (val == undefined || val.length == 0) {
-      $(this).parents('tr').first().addClass("highlight_input")
+      $(this).parents('tr').first().addClass("highlight_input1")
     } else {
-      $(this).parents('tr').first().removeClass("highlight_input")
+      $(this).parents('tr').first().removeClass("highlight_input1")
     }
   })
 }
@@ -7323,12 +7323,22 @@ function form_inputs_constraints (o) {
       return
     }
     op = l[0]
-    tgt = l[1]
     val = $(this).siblings().children('input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]').val()
-    if (op == ">" && (1.0*val <= 1.0*tgt)) {
-      $(this).parents('tr').first().addClass("highlight_input")
-      $(this).show()
-      return
+    if (op == ">") {
+      tgt = l[1]
+      if (1.0*val <= 1.0*tgt) {
+        $(this).parents('tr').first().addClass("highlight_input")
+        $(this).show()
+        return
+      }
+    } else if (op == "match") {
+      pattern = constraint.replace(/match */, "")
+      re = new RegExp(pattern)
+      if (!re.test(val)) {
+        $(this).parents('tr').first().addClass("highlight_input")
+        $(this).show()
+        return
+      }
     }
     $(this).parents('tr').first().removeClass("highlight_input")
     $(this).hide()
@@ -7421,6 +7431,35 @@ def forms_xid(id=None):
 @auth.requires_login()
 def ajax_target():
     form_id = request.vars.form_id
+    q = db.forms.id == form_id
+    row = db(q).select().first()
+    form_type = row.form_type
+
+    if form_type == "obj":
+        q_rset = SPAN(
+          TD(
+            INPUT(
+              _value=False,
+              _type='radio',
+              _id="radio_rset",
+              _onclick="""
+$("#radio_service").prop('checked',false);
+$("#radio_node").prop('checked',false);
+$("#stage2").html("");
+sync_ajax('%(url)s', [], '%(id)s', function(){})"""%dict(
+                id="stage1",
+                url=URL(r=request, c='forms', f='ajax_rset_list', vars={'form_id': request.vars.form_id}),
+              ),
+            ),
+          ),
+          TD(
+            T("Customize ruleset"),
+          ),
+        )
+
+    else:
+        q_rset = SPAN()
+
     l = []
     l.append(TR(
           TD(
@@ -7465,24 +7504,7 @@ sync_ajax('%(url)s', [], '%(id)s', function(){})"""%dict(
           TD(
             T("Customize node"),
           ),
-          TD(
-            INPUT(
-              _value=False,
-              _type='radio',
-              _id="radio_rset",
-              _onclick="""
-$("#radio_service").prop('checked',false);
-$("#radio_node").prop('checked',false);
-$("#stage2").html("");
-sync_ajax('%(url)s', [], '%(id)s', function(){})"""%dict(
-                id="stage1",
-                url=URL(r=request, c='forms', f='ajax_rset_list', vars={'form_id': request.vars.form_id}),
-              ),
-            ),
-          ),
-          TD(
-            T("Customize ruleset"),
-          ),
+          q_rset,
         ))
     d = DIV(
           TABLE(l),
@@ -7560,7 +7582,7 @@ def format_custo(row, objtype, objname, form_id=None):
         _hid='stage2',
         var=row.comp_rulesets_variables,
         form=row.forms,
-        showexpert=True,
+        showexpert=False,
       ),
       _onclick="""
 sync_ajax("%(url)s", [], "forms_inputs", function(){})
