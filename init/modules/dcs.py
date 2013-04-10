@@ -259,7 +259,8 @@ Internal         : False
         for line in lines:
             if line.startswith('DestageTime'):
                 i += 1
-            elif line.startswith('BytesAllocated'):
+            elif line.startswith('BytesAllocated') and \
+                 self.ld[self.ld_list[i]]['vdiskid'] != '':
                 self.vdisk[self.ld[self.ld_list[i]]['vdiskid']]['alloc'] += self.to_mb(line.split(': ')[-1].strip())
                 self.vdisk[self.ld[self.ld_list[i]]['vdiskid']]['n_alloc'] += 1
         for key in self.vdisk:
