@@ -7020,6 +7020,14 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
     # Get input default values from there
     cur = None
     count = None
+
+    if _var_id is None and 'form_var_id' in form:
+        # next step of a workflow use previous form values as defaults
+        q = db.forms_store.form_next_id == form.id
+        prev_form = db(q).select().first()
+        if prev_form is not None and prev_form.form_var_id is not None:
+            _var_id = prev_form.form_var_id
+
     if _var_id is not None:
         cur = var.var_value
         if len(cur) > 0 and form_output.get('Type') == 'json':
@@ -7907,10 +7915,57 @@ def mail_form(output, data, form, to=None, record_id=None, _d=None):
               message=message)
     return [("form.submit", "Mail sent to %(to)s on form %(form_name)s submission." , dict(to=', '.join(to), form_name=form.form_name))]
 
+def check_output_condition(output, form, data, _d=None):
+    cond = output.get('Condition', 'none')
+    if cond == 'none':
+        return True
+    if cond is None:
+        raise Exception("malformed output condition: %s"%cond)
+    if output.get('Format') != "dict":
+        raise Exception("Output condition can only be set on dict-format output")
+
+    def get_var_val(op):
+        l = cond.split(op)
+        if len(l) != 2:
+            raise Exception("malformed output condition: %s"%cond)
+        var = l[0].strip()
+        val = l[1].strip()
+        if not var.startswith("#") or len(var) < 2:
+            raise Exception("malformed output condition: %s"%cond)
+        var = var[1:]
+        if var not in o:
+            raise Exception("input id %s is not present in submitted data : %s"%(var, str(o)))
+        return var, val
+
+    o = get_form_formatted_data_o(output, data, _d)
+
+    if "==" in cond:
+        var, val = get_var_val("==")
+        if o[var] == val:
+            return True
+        else:
+            return False
+    elif "!=" in cond:
+        var, val = get_var_val("!=")
+        if o[var] != val:
+            return True
+        else:
+            return False
+
+    raise Exception("operator is not supported in output condition %s"%cond)
+
 def ajax_generic_form_submit(form, data, _d=None):
     log = []
+    __var_id = None
     _scripts = {'returncode': 0}
     for output in data.get('Outputs', []):
+        try:
+            chkcond = check_output_condition(output, form, data, _d)
+        except Exception as e:
+            log.append(("form.submit", str(e), dict()))
+            continue
+        if not chkcond:
+            continue
         dest = output.get('Dest')
         if dest == "db":
             output['Type'] = 'object'
@@ -8068,6 +8123,7 @@ def ajax_generic_form_submit(form, data, _d=None):
                   form_head_id=head_id,
                   form_data=d,
                   form_scripts=json.dumps(_scripts),
+                  form_var_id=__var_id,
                 )
                 if record_id is not None:
                     q = db.forms_store.id == request.vars.prev_wfid
@@ -8114,6 +8170,7 @@ def ajax_generic_form_submit(form, data, _d=None):
                   form_submit_date=datetime.datetime.now(),
                   form_data=d,
                   form_scripts=json.dumps(_scripts),
+                  form_var_id=__var_id,
                 )
                 if record_id is not None:
                     q = db.forms_store.id == record_id
@@ -8137,7 +8194,18 @@ def ajax_generic_form_submit(form, data, _d=None):
                 log += mail_form(output, data, form, to=form_assignee, record_id=record_id, _d=_d)
 
         elif dest == "compliance variable":
-            log += ajax_custo_form_submit(output, data)
+            r = ajax_custo_form_submit(output, data)
+            if type(r) == dict:
+                __log = r.get("log")
+                __err = r.get("err")
+                __var_id = r.get("var_id")
+            else:
+                __log = r
+                __err = None
+                __var_id = None
+            log += __log
+            if __err == "break":
+                break
 
     for action, fmt, d in log:
         _log(action, fmt, d)
@@ -8159,8 +8227,8 @@ def ajax_custo_form_submit(output, data):
         rset_name = request.vars.rset
 
     if rset_name is None:
-        log.append(("", "No ruleset name specified", dict()))
-        return log
+        log.append(("", "No ruleset name specified. Skip compliance variable creation", dict()))
+        return dict(log=log, err="break")
 
     if request.vars.var_id is not None:
         q = db.comp_rulesets_variables.id == request.vars.var_id
@@ -8281,15 +8349,17 @@ def ajax_custo_form_submit(output, data):
 
     q &= db.comp_rulesets_variables.var_value == var_value
     n = db(q).count()
+    __var_id = None
 
     if n > 0:
         log.append(("compliance.ruleset.variable.add", "'%(var_class)s' variable '%(var_name)s' already exists with the same value in the ruleset '%(rset_name)s': cancel", dict(var_class=var_class, var_name=var_name, rset_name=rset_name)))
     else:
         q = db.comp_rulesets_variables.ruleset_id == rset.id
         q &= db.comp_rulesets_variables.var_name == var_name
-        n = db(q).count()
+        var_rows = db(q).select()
+        n = len(var_rows)
         if n == 0:
-            db.comp_rulesets_variables.insert(
+            __var_id = db.comp_rulesets_variables.insert(
               ruleset_id=rset.id,
               var_name=var_name,
               var_value=var_value,
@@ -8298,7 +8368,8 @@ def ajax_custo_form_submit(output, data):
               var_updated=datetime.datetime.now(),
             )
             log.append(("compliance.ruleset.variable.add", "Added '%(var_class)s' variable '%(var_name)s' to ruleset '%(rset_name)s' with value:\n%(var_value)s", dict(var_class=var_class, var_name=var_name, rset_name=rset_name, var_value=var_value)))
-        else:
+        elif n == 1:
+            __var_id = var_rows.first().id
             db(q).update(
               var_value=var_value,
               var_class=var_class,
@@ -8306,6 +8377,8 @@ def ajax_custo_form_submit(output, data):
               var_updated=datetime.datetime.now(),
             )
             log.append(("compliance.ruleset.variable.change", "Modified '%(var_class)s' variable '%(var_name)s' in ruleset '%(rset_name)s' with value:\n%(var_value)s", dict(var_class=var_class, var_name=var_name, rset_name=rset_name, var_value=var_value)))
+        else:
+            log.append(("compliance.ruleset.variable.change", "More than one variable found matching '%(var_name)s' in ruleset '%(rset_name)s'. Skip edition.", dict(var_name=var_name, rset_name=rset_name)))
 
     if request.vars.nodename is not None or request.vars.svcname is not None:
         modset_ids = []
@@ -8350,7 +8423,7 @@ def ajax_custo_form_submit(output, data):
             except ToolError:
                 pass
 
-    return log
+    return dict(log=log, var_id=__var_id)
 
 def convert_val(val, t):
      if t == 'string':
