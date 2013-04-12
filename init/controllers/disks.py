@@ -1696,13 +1696,21 @@ def ajax_disk_charts():
     levels = range(0, max_level+1)
 
     def pie_data_svc(q, level=0):
-        sql = """select
-                   t.obj,
-                   sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
-                   sum(if(t.disk_alloc is not NULL and t.disk_alloc>0, t.disk_alloc, t.disk_size)) alloc
+        sql = """
+               select
+                 t.obj,
+                 sum(t.size) size,
+                 sum(t.alloc) alloc
+               from
+                 (
+                 select
+                   v.obj obj,
+                   sum(if(v.disk_used is not NULL and v.disk_used>0, v.disk_used, v.disk_size)) size,
+                   max(if(v.disk_alloc is not NULL and v.disk_alloc>0, v.disk_alloc, v.disk_size)) alloc
                  from
                    (
                    select
+                     u.disk_id,
                      u.obj,
                      max(u.disk_used) as disk_used,
                      u.disk_size,
@@ -1740,9 +1748,11 @@ def ajax_disk_charts():
                      and (b_disk_app.disk_svcname = "" or b_disk_app.disk_svcname is NULL)
                    ) u
                    group by u.disk_id, u.disk_region
-                 ) t
-                 group by t.obj
-                 order by t.obj, size desc
+                 ) v
+                 group by v.disk_id
+               ) t
+               group by t.obj
+               order by t.obj, size desc
                  """%dict(q=q, level=level)
         rows = db.executesql(sql)
         return rows
@@ -1788,12 +1798,21 @@ def ajax_disk_charts():
         }
 
     def pie_data_app(q, level=0):
-        sql = """select
-                   t.app,
-                   sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
-                   sum(if(t.disk_alloc is not NULL and t.disk_alloc>0, t.disk_alloc, t.disk_size)) alloc
-                 from (
+        sql = """
+               select
+                 t.app,
+                 sum(t.size) size,
+                 sum(t.alloc) alloc
+               from
+                 (
+                 select
+                   v.app app,
+                   sum(if(v.disk_used is not NULL and v.disk_used>0, v.disk_used, v.disk_size)) size,
+                   max(if(v.disk_alloc is not NULL and v.disk_alloc>0, v.disk_alloc, v.disk_size)) alloc
+                 from
+                   (
                    select
+                     u.disk_id,
                      u.app,
                      max(u.disk_used) as disk_used,
                      u.disk_size,
@@ -1804,7 +1823,7 @@ def ajax_disk_charts():
                        b_disk_app.disk_id,
                        b_disk_app.disk_region,
                        b_disk_app.app as app,
-                       b_disk_app.disk_used,
+                       b_disk_app.disk_used as disk_used,
                        b_disk_app.disk_size,
                        b_disk_app.disk_alloc
                      from
@@ -1819,7 +1838,7 @@ def ajax_disk_charts():
                        b_disk_app.disk_id,
                        b_disk_app.disk_region,
                        b_disk_app.app as app,
-                       b_disk_app.disk_used,
+                       b_disk_app.disk_used as disk_used,
                        b_disk_app.disk_size,
                        b_disk_app.disk_alloc
                      from
@@ -1831,9 +1850,11 @@ def ajax_disk_charts():
                      and (b_disk_app.disk_svcname = "" or b_disk_app.disk_svcname is NULL)
                    ) u
                    group by u.disk_id, u.disk_region
-                 ) t
-                 group by t.app
-                 order by t.app, size desc
+                 ) v
+                 group by v.disk_id
+               ) t
+               group by t.app
+               order by t.app, size desc
                  """%dict(q=q, level=level)
         rows = db.executesql(sql)
         return rows
