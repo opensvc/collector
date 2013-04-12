@@ -1044,6 +1044,16 @@ def workflow():
     form_names = None
     form = yaml.load(wf.forms_revisions.form_yaml)
 
+    def get_output_scripts(form):
+        outputs = form.get('Outputs')
+        if outputs is None:
+            return
+        outputs = [ o for o in outputs if o.get('Dest') == "workflow" ]
+        if len(outputs) != 1:
+            return
+        output = outputs[0]
+        return output.get('Scripts')
+
     if wf.forms_store.form_next_id is not None:
         _forms_list = T("This workflow step is already completed")
     elif wf.forms_store.form_assignee != user_name() and \
@@ -1054,13 +1064,14 @@ def workflow():
             form_scripts = json.loads(wf.forms_store.form_scripts)
         except:
             form_scripts = {}
-        if '_scripts' in form_scripts and 'Scripts' in form:
+        output_scripts = get_output_scripts(form)
+        if 'returncode' in form_scripts and output_scripts is not None:
             if form_scripts['returncode'] == 0:
-                scripts_def = form['Scripts'].get('Success')
+                scripts_def = output_scripts.get('Success')
                 if scripts_def is None:
                     _forms_list = T("This workflow definition should describe the next steps on scripts success")
             else:
-                scripts_def = form['Scripts'].get('Error')
+                scripts_def = output_scripts.get('Error')
                 if scripts_def is None:
                     _forms_list = T("This workflow definition should describe the next steps on scripts error")
             form_names = scripts_def.get('NextForms', [])

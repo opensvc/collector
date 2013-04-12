@@ -1255,6 +1255,14 @@ ul.login_menu ul {
 .nologo48 {
     padding: 0 0 0 52px;
 }
+.edit48 {
+    background: transparent url('edit48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
+.action48 {
+    background: transparent url('action48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
 .comp48 {
     background: transparent url('comp48.png') no-repeat left center;
     padding: 0 0 0 52px;

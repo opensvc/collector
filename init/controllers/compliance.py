@@ -6559,11 +6559,16 @@ def show_rsetdiff(svcname):
     return DIV(fmt_table(_rows))
 
 def ajax_error(msg):
-    return DIV(
-             msg,
+    if type(msg) == list:
+        out = PRE('\n\n'.join(msg))
+
+    d = DIV(
+             out,
              _class="box",
              _style="text-align:left;padding:3em",
            )
+    session.flash = d
+    return d
 
 def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detailed=False, showexpert=False):
     l = []
@@ -6952,6 +6957,13 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
         display_mode = False
         display_detailed = False
 
+    if _var_id is None and _prev_wfid is not None and _prev_wfid != 'None':
+        # next step of a workflow use previous form values as defaults
+        q = db.forms_store.id == request.vars.prev_wfid
+        prev_form = db(q).select().first()
+        if prev_form is not None and prev_form.form_var_id is not None:
+            _var_id = prev_form.form_var_id
+
     if var is None and _var_id is not None:
         q = db.v_comp_rulesets.id == _var_id
         var = db(q).select().first()
@@ -7020,13 +7032,6 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
     # Get input default values from there
     cur = None
     count = None
-
-    if _var_id is None and 'form_var_id' in form:
-        # next step of a workflow use previous form values as defaults
-        q = db.forms_store.form_next_id == form.id
-        prev_form = db(q).select().first()
-        if prev_form is not None and prev_form.form_var_id is not None:
-            _var_id = prev_form.form_var_id
 
     if _var_id is not None:
         cur = var.var_value
@@ -7956,7 +7961,7 @@ def check_output_condition(output, form, data, _d=None):
 
 def ajax_generic_form_submit(form, data, _d=None):
     log = []
-    __var_id = None
+    __var_id = request.vars.var_id
     _scripts = {'returncode': 0}
     for output in data.get('Outputs', []):
         try:
@@ -8202,15 +8207,21 @@ def ajax_generic_form_submit(form, data, _d=None):
             else:
                 __log = r
                 __err = None
-                __var_id = None
+                __var_id = request.vars.var_id
             log += __log
             if __err == "break":
                 break
 
+        elif dest == "compliance variable delete":
+            if __var_id is not None:
+                q = db.comp_rulesets_variables.id == __var_id
+                db(q).delete()
+                log.append(("", "Compliance variable %(id)s deleted)", dict(id=__var_id)))
+
     for action, fmt, d in log:
         _log(action, fmt, d)
 
-    return ajax_error(PRE(XML('<br><br>'.join(map(lambda x: x[1]%x[2], log)))))
+    return ajax_error(map(lambda x: x[1]%x[2], log))
 
 def ajax_custo_form_submit(output, data):
     # logging buffer
@@ -8226,18 +8237,20 @@ def ajax_custo_form_submit(output, data):
     elif request.vars.rset is not None:
         rset_name = request.vars.rset
 
-    if rset_name is None:
-        log.append(("", "No ruleset name specified. Skip compliance variable creation", dict()))
-        return dict(log=log, err="break")
-
     if request.vars.var_id is not None:
         q = db.comp_rulesets_variables.id == request.vars.var_id
+        q &= db.comp_rulesets_variables.ruleset_id == db.comp_rulesets.id
         var = db(q).select().first()
         if var is None:
             log.append(("", "Specified variable not found (id=%(id)s)", dict(id=request.vars.var_id)))
             return log
-        var_name = var.var_name
-        var_class = var.var_class
+        var_name = var.comp_rulesets_variables.var_name
+        var_class = var.comp_rulesets_variables.var_class
+        rset_name = var.comp_rulesets.ruleset_name
+
+    if rset_name is None:
+        log.append(("", "No ruleset name specified. Skip compliance variable creation", dict()))
+        return dict(log=log, err="break")
 
     # validate privs
     groups = []
@@ -8349,7 +8362,7 @@ def ajax_custo_form_submit(output, data):
 
     q &= db.comp_rulesets_variables.var_value == var_value
     n = db(q).count()
-    __var_id = None
+    __var_id = request.vars.var_id
 
     if n > 0:
         log.append(("compliance.ruleset.variable.add", "'%(var_class)s' variable '%(var_name)s' already exists with the same value in the ruleset '%(rset_name)s': cancel", dict(var_class=var_class, var_name=var_name, rset_name=rset_name)))
