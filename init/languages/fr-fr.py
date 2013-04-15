@@ -798,7 +798,7 @@
 'Record Created': 'Enregistrement créé',
 'Record ID': "Id d'enregistrement",
 'Refresh': 'Rafraichir',
-'Refresh check values': 'Refresh check values',
+'Refresh check values': 'Rafraichir les valeurs des sondes',
 'Refresh items': 'Rafraîchir les éléments',
 'Refresh table': 'Rafraîchir la table',
 'Register': 'Enregistrement',
