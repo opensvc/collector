@@ -6561,6 +6561,8 @@ def show_rsetdiff(svcname):
 def ajax_error(msg):
     if type(msg) == list:
         out = PRE('\n\n'.join(msg))
+    else:
+        out = msg
 
     d = DIV(
              out,

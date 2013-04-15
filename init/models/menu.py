@@ -122,15 +122,15 @@ response.menu = [
               URL(request.application,'svcmon_log','svcmon_log')],
          ]
     ],
-    [T('Forms'), False, '',
+    [T('Requests'), False, '',
          [
-             [DIV(T('Forms'), _class='wf16'), False,
+             [DIV(T('New request'), _class='wf16'), False,
               URL(request.application,'forms','forms')],
-             [DIV(T('Assigned to me'), _class='wf16'), False,
+             [DIV(T('Assigned to my team'), _class='wf16'), False,
               URL(request.application,'forms','workflows_assigned_to_me')],
              [DIV(T('Pending tiers action'), _class='wf16'), False,
               URL(request.application,'forms','workflows_pending_tiers_action')],
-             [DIV(T('All'), _class='wf16'), False,
+             [DIV(T('All requests'), _class='wf16'), False,
               URL(request.application,'forms','workflows')],
          ]
     ],

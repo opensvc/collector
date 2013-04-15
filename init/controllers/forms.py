@@ -1087,7 +1087,7 @@ def workflow():
             _forms_list = forms_list(form_names=form_names, prev_wfid=wfid)
 
     d = DIV(
-      H1(T("Workflow")),
+      H1(T("Request workflow")),
       DIV(forms_chain(wfid, foldable=True, folded=False)),
       DIV(_class="spacer"),
       H1(T("Next steps")),
@@ -1311,6 +1311,7 @@ def workflows_generic(loader="foo", title="", empty_msg=""):
 
     d = DIV(
       H1(T(title)),
+      SPAN(T("Search requests"), _style="padding-right:1em"),
       INPUT(
         _id="wfsearch",
         _class="wfsearch",
@@ -1355,8 +1356,8 @@ $.ajax({
 def workflows_assigned_to_me():
     return workflows_generic(
              loader="ajax_workflows_assigned_to_me",
-             title="Workflows assigned to me",
-             empty_msg="You currently have no assigned workflow",
+             title="Requests assigned to my team",
+             empty_msg="You currently have no assigned request",
            )
 
 @auth.requires_login()
@@ -1392,7 +1393,7 @@ def ajax_workflows_pending_tiers_action():
 def workflows_pending_tiers_action():
     return workflows_generic(
              loader="ajax_workflows_pending_tiers_action",
-             title="Workflows pending tiers action",
+             title="Requests pending tiers action",
              empty_msg="None of your workflow are pending tiers action",
            )
 
