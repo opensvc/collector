@@ -1030,9 +1030,19 @@ def forms_chain(wfid, foldable=False, folded=False, highlight_step=True):
 
     return DIV(_l, _onclick=s)
 
+def get_tail_form_id(wfid):
+    q = db.forms_store.id == wfid
+    q &= db.forms_store.form_head_id == db.workflows.form_head_id
+    row = db(q).select().first()
+    if row is None:
+        return wfid
+    return row.workflows.last_form_id
+
 @auth.requires_login()
 def workflow():
     wfid = request.vars.wfid
+    if request.vars.tail == "1":
+        wfid = get_tail_form_id(wfid)
 
     q = db.forms_store.id == wfid
     q &= db.forms_revisions.form_md5 == db.forms_store.form_md5
@@ -1256,7 +1266,7 @@ def format_forms_chain(l):
         d = DIV(
           A(
             T("open"),
-            _href=URL(c='forms', f='workflow', vars={'wfid': wf.forms_store.id}),
+            _href=URL(c='forms', f='workflow', vars={'wfid': wf.forms_store.id, 'tail': 1}),
           ),
           data,
           _onclick="$(this).toggleClass('wfentryfocused')",
