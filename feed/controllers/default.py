@@ -222,6 +222,8 @@ def update_virtual_asset(nodename, svcname):
 @auth_uuid
 @service.xmlrpc
 def update_appinfo(vars, vals, auth):
+    if len(vals) == 0:
+        return
     h = {}
     for a,b in zip(vars, vals[0]):
         h[a] = b
@@ -230,6 +232,18 @@ def update_appinfo(vars, vals, auth):
     else:
         db.executesql("delete from appinfo where app_svcname='%s'"%h['app_svcname'])
     generic_insert('appinfo', vars, vals)
+
+    i = vars.index('app_value')
+    vals_log = []
+    for _vals in vals:
+        try:
+            n = float(_vals[i])
+            vals_log.append(_vals)
+        except:
+            pass
+
+    if len(vals_log) > 0:
+        generic_insert('appinfo_log', vars, vals_log)
 
 @auth_uuid
 @service.xmlrpc

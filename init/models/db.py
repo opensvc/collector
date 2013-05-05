@@ -1424,6 +1424,10 @@ db.define_table('appinfo',
     Field('app_updated','datetime'),
     migrate=False)
 
+db.define_table('appinfo_log',
+    db.appinfo,
+    migrate=False)
+
 db.define_table('dashboard',
     Field('dash_type','string'),
     Field('dash_svcname','string'),

@@ -3410,4 +3410,15 @@ CREATE VIEW `v_services` AS select s.svc_ha, s.svc_status, s.svc_availstatus, s.
 
 alter table forms_store add column form_var_id integer;
 
-
+CREATE TABLE `appinfo_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `app_svcname` varchar(60) DEFAULT NULL,
+  `app_launcher` varchar(255) DEFAULT NULL,
+  `app_key` varchar(40) DEFAULT NULL,
+  `app_value` varchar(255) DEFAULT NULL,
+  `app_updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `app_nodename` varchar(60) DEFAULT '',
+  `cluster_type` varchar(10) DEFAULT '',
+  PRIMARY KEY (`id`),
+  KEY `appinfo_fk1` (`app_svcname`)
+) ENGINE=InnoDB AUTO_INCREMENT=52892 DEFAULT CHARSET=utf8;

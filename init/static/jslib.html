@@ -3019,6 +3019,55 @@ function toggle_plot(url, rowid, id) {
         refresh_plot(url, rowid, id)
     }
 }
+function stats_appinfo(url, id) {
+    $.jqplot.config.enablePlugins = true;
+    $.getJSON(url, function(data) {
+        max = 0
+        for (i=0; i<data.length; i++) {
+            for (j=0; j<data[i].length; j++) {
+                max = Math.max(max, data[i][j][1])
+            }
+        }
+        d = best_unit_mb(max, "")
+        for (i=0; i<data.length; i++) {
+            for (j=0; j<data[i].length; j++) {
+                data[i][j][1] /= d['div']
+            }
+        }
+	p = $.jqplot(id, data, {
+            cursor:{zoom:true},
+            stackSeries: true,
+            legend: {
+                show: false,
+            },
+            grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+            seriesDefaults: {
+                shadowAngle: 135,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+            series: [
+            ],
+            axes: {
+                xaxis: {
+                    renderer: $.jqplot.DateAxisRenderer,
+                    numberTicks: 5,
+                    tickOptions:{formatString:'%b,%d\n%H:%M'}
+                },
+                yaxis: {
+                    min: 0,
+                    tickOptions:{formatString: d['fmt']+' '+d['unit']}
+                }
+            }
+
+	});
+        _jqplot_extra($('#'+id), p)
+    });
+}
 function stats_disk_array(url, id) {
     $.getJSON(url, function(data) {
         max = 0
