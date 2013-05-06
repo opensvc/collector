@@ -1601,8 +1601,9 @@ $("#%(id)s").everyTime(1000, function(i){
             for c in self.cols:
                 v = self.colprops[c].get(o)
                 if isinstance(v, str) or isinstance(v, unicode):
-                    v = repr(v).replace('\\n', '&#10;')
+                    v = repr(v).replace('\\n', ' | ')
                     if v.startswith("u'"): v = v[1:]
+                    v = v.replace("'", "").replace(';','')
                 elif isinstance(v, datetime.datetime):
                     v = v.strftime("%Y-%m-%d %H:%M:%S")
                 elif v is None:

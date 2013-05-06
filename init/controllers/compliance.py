@@ -4423,7 +4423,7 @@ def ajax_comp_status():
     st = table_comp_svc_status('css', 'ajax_comp_svc_status')
 
     if len(request.args) == 1 and request.args[0] == 'csv':
-        t.cols.remove("run_log")
+        #t.cols.remove("run_log")
         return t.csv()
 
     spark_cmds = ""
