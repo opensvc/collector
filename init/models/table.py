@@ -222,6 +222,52 @@ class HtmlTable(object):
             self.pager_end = n
         self.page_len = self.pager_end - self.pager_start
 
+    def col_values_cloud_ungrouped(self, c):
+        h = {}
+        l = []
+        for o in self.object_list:
+            s = self.colprops[c].get(o)
+            if s is None:
+                s = 'empty'
+            if s not in h:
+                h[s] = 1
+            else:
+                h[s] += 1
+
+        max = 0
+        for n in h.values():
+            if n > max: max = n
+        min = max
+        for n in h.values():
+            if n < min: min = n
+        delta = max - min
+
+        for s, n in h.items():
+            if delta > 0:
+                size = 100 + 100. * (n - min) / delta
+            else:
+                size = 100
+            if n == 1:
+                title = "%d occurence"%n
+            else:
+                title = "%d occurences"%n
+            l.append(A(
+                       s,
+                       ' ',
+                       _class="cloud_tag",
+                       _style="font-size:%d%%"%size,
+                       _title="%d occurences"%n,
+                       _onclick="filter_submit_%(id)s('%(iid)s','%(val)s')"%dict(
+                                id=self.id,
+                                iid=self.filter_key(c),
+                                val=s,
+                               ),
+                    ))
+        return DIV(
+                 H3(T("%(n)d unique matching values", dict(n=len(h)))),
+                 DIV(l),
+               )
+
     def col_values_cloud(self, c):
         l = []
         for o in self.object_list:
