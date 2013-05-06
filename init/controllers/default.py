@@ -1418,8 +1418,8 @@ def ajax_svcmon_col_values():
     q = apply_filters(q, db.v_svcmon.mon_nodname, db.v_svcmon.mon_svcname)
     for f in t.cols:
         q = _where(q, 'v_svcmon', t.filter_parse(f), f)
-    t.object_list = db(q).select(db.v_svcmon[col], orderby=o, groupby=o, limitby=default_limitby)
-    return t.col_values_cloud(col)
+    t.object_list = db(q).select(db.v_svcmon[col], orderby=o, limitby=default_limitby)
+    return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
 def ajax_svcmon():

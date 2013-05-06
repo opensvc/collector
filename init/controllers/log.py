@@ -186,8 +186,8 @@ def ajax_log_col_values():
     q = db.log.id > 0
     for f in set(t.cols):
         q = _where(q, 'log', t.filter_parse(f),  f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
-    t.object_list = db(q).select(o, orderby=o, groupby=o)
-    return t.col_values_cloud(col)
+    t.object_list = db(q).select(o, orderby=o)
+    return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
 def ajax_log():

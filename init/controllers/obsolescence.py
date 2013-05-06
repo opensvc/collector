@@ -293,8 +293,8 @@ def ajax_obs_col_values():
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_gen_filters(q, ['v_nodes', 'obsolescence'])
 
-    t.object_list = db(q).select(o, orderby=o, groupby=o)
-    return t.col_values_cloud(col)
+    t.object_list = db(q).select(o, orderby=o)
+    return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_membership('ObsManager')
 def item_del(ids=[]):

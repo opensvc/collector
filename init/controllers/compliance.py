@@ -538,8 +538,8 @@ def ajax_comp_explicit_rules_col_values():
     q = db.v_comp_explicit_rulesets.id > 0
     for f in t.cols:
         q = _where(q, 'v_comp_explicit_rulesets', t.filter_parse_glob(f), f)
-    t.object_list = db(q).select(o, orderby=o, groupby=o)
-    return t.col_values_cloud(col)
+    t.object_list = db(q).select(o, orderby=o)
+    return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
 def ajax_comp_rulesets_nodes_col_values():
@@ -553,8 +553,8 @@ def ajax_comp_rulesets_nodes_col_values():
         q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
         for f in t.cols:
             q = _where(q, 'v_comp_nodes', t.filter_parse_glob(f), f)
-        t.object_list = db(q).select(o, orderby=o, groupby=o)
-        return t.col_values_cloud(col)
+        t.object_list = db(q).select(o, orderby=o)
+        return t.col_values_cloud_ungrouped(col)
     else:
         o = db.v_comp_explicit_rulesets[col]
         q = db.v_comp_explicit_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
@@ -562,8 +562,8 @@ def ajax_comp_rulesets_nodes_col_values():
             q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
         for f in r.cols:
             q = _where(q, 'v_comp_explicit_rulesets', r.filter_parse_glob(f), f)
-        r.object_list = db(q).select(o, orderby=o, groupby=o)
-        return r.col_values_cloud(col)
+        r.object_list = db(q).select(o, orderby=o)
+        return r.col_values_cloud_ungrouped(col)
 
 
 @auth.requires_login()
@@ -1752,8 +1752,8 @@ def ajax_comp_rulesets_col_values():
     q = db.v_comp_rulesets.id > 0
     for f in t.cols:
         q = _where(q, 'v_comp_rulesets', t.filter_parse_glob(f), f)
-    t.object_list = db(q).select(o, orderby=o, groupby=o)
-    return t.col_values_cloud(col)
+    t.object_list = db(q).select(o, orderby=o)
+    return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
 def ajax_comp_rulesets():
@@ -2595,8 +2595,8 @@ def ajax_comp_filters_col_values():
     q = db.gen_filters.id > 0
     for f in t.cols:
         q = _where(q, 'gen_filters', t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o, groupby=o)
-    return t.col_values_cloud(col)
+    t.object_list = db(q).select(o, orderby=o)
+    return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
 def ajax_comp_filters():
@@ -2641,8 +2641,8 @@ def ajax_comp_filtersets_col_values():
     q = db.v_gen_filtersets.fset_id > 0
     for f in t.cols:
         q = _where(q, 'v_gen_filtersets', t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o, groupby=o)
-    return t.col_values_cloud(col)
+    t.object_list = db(q).select(o, orderby=o)
+    return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
 def ajax_comp_filtersets():
@@ -3197,7 +3197,7 @@ def modset_team_responsible_detach(ids=[]):
 def ajax_comp_moduleset_col_values():
     t = table_comp_moduleset('ajax_comp_moduleset', 'ajax_comp_moduleset')
     col = request.args[0]
-    o = db.comp_moduleset[col]
+    o = db[t.colprops[col].table][col]
 
     q = db.comp_moduleset.id > 0
     j = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
@@ -3215,10 +3215,9 @@ def ajax_comp_moduleset_col_values():
                                  db.comp_moduleset.id,
                                  db.v_comp_moduleset_teams_responsible.teams_responsible,
                                  orderby=o,
-                                 groupby=o,
                                  left=(l1,l2,l3)
                                  )
-    return t.col_values_cloud(col)
+    return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
 def ajax_comp_moduleset():
@@ -3447,8 +3446,8 @@ def ajax_comp_modulesets_nodes_col_values():
         for f in t.cols:
             q = _where(q, 'v_comp_nodes', t.filter_parse_glob(f), f)
         q = apply_gen_filters(q, r.tables())
-        t.object_list = db(q).select(o, orderby=o, groupby=o)
-        return t.col_values_cloud(col)
+        t.object_list = db(q).select(o, orderby=o)
+        return t.col_values_cloud_ungrouped(col)
     else:
         o = db.comp_moduleset[col]
         q = db.comp_moduleset.id > 0
@@ -3456,8 +3455,8 @@ def ajax_comp_modulesets_nodes_col_values():
             q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
         for f in r.cols:
             q = _where(q, 'comp_moduleset', r.filter_parse_glob(f), f)
-        r.object_list = db(q).select(o, orderby=o, groupby=o)
-        return r.col_values_cloud(col)
+        r.object_list = db(q).select(o, orderby=o)
+        return r.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
 def ajax_comp_modulesets_nodes():
@@ -4298,8 +4297,8 @@ def ajax_comp_log_col_values():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.comp_log.run_nodename)
-    t.object_list = db(q).select(o, orderby=o, groupby=o)
-    return t.col_values_cloud(col)
+    t.object_list = db(q).select(o, orderby=o)
+    return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
 def ajax_comp_status_col_values():
@@ -4311,8 +4310,8 @@ def ajax_comp_status_col_values():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.comp_status.run_nodename)
-    t.object_list = db(q).select(o, orderby=o, groupby=o)
-    return t.col_values_cloud(col)
+    t.object_list = db(q).select(o, orderby=o)
+    return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
 def ajax_comp_status():

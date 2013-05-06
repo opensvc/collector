@@ -122,8 +122,8 @@ def ajax_actions_col_values():
     q = db.action_queue.id > 0
     for f in t.cols:
         q = _where(q, 'action_queue', t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o, groupby=o)
-    return t.col_values_cloud(col)
+    t.object_list = db(q).select(o, orderby=o)
+    return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
 def ajax_actions():

@@ -1060,8 +1060,8 @@ def ajax_svcmon_log_col_values():
     q = _where(q, 'services_log', t.filter_parse('svc_end'), 'svc_begin')
 
     q = apply_filters(q, None, db.services_log.svc_name)
-    t.object_list = db(q).select(o, orderby=o, groupby=g)
-    return t.col_values_cloud(col)
+    t.object_list = db(q).select(o, orderby=o)
+    return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
 def ajax_svcmon_log():
