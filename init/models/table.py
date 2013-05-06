@@ -238,7 +238,10 @@ class HtmlTable(object):
                                 val=self.colprops[c].get(o),
                                ),
                     ))
-        return SPAN(l)
+        return DIV(
+                 H3(T("%(n)d unique matching values", dict(n=len(self.object_list)))),
+                 DIV(l),
+               )
 
     def get_column_visibility(self, c):
         return self.colprops[c].display
