@@ -3410,6 +3410,7 @@ CREATE VIEW `v_services` AS select s.svc_ha, s.svc_status, s.svc_availstatus, s.
 
 alter table forms_store add column form_var_id integer;
 
+<<<<<<< HEAD:init/dbdump/changes.sql
 alter table nodes add column hvpool varchar(64);
 
 alter table nodes add column hv varchar(128);
@@ -3425,3 +3426,15 @@ drop view v_comp_nodes;
 create view v_comp_nodes as (select n.*,group_concat(distinct r.ruleset_name separator ', ') as rulesets, group_concat(distinct m.modset_name separator ', ') as modulesets from v_nodes n left join comp_rulesets_nodes rn on n.nodename=rn.nodename left join comp_rulesets r on r.id=rn.ruleset_id left join comp_node_moduleset mn on mn.modset_node=n.nodename left join comp_moduleset m on m.id=mn.modset_id group by n.nodename);
 
 
+CREATE TABLE `appinfo_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `app_svcname` varchar(60) DEFAULT NULL,
+  `app_launcher` varchar(255) DEFAULT NULL,
+  `app_key` varchar(40) DEFAULT NULL,
+  `app_value` varchar(255) DEFAULT NULL,
+  `app_updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `app_nodename` varchar(60) DEFAULT '',
+  `cluster_type` varchar(10) DEFAULT '',
+  PRIMARY KEY (`id`),
+  KEY `appinfo_fk1` (`app_svcname`)
+) ENGINE=InnoDB AUTO_INCREMENT=52892 DEFAULT CHARSET=utf8;
