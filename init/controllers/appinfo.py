@@ -56,13 +56,14 @@ def json_appinfo_log():
     q &= db.appinfo_log.app_key == request.vars.key
 
     # permission validation
-    q1 = db.appinfo_log.app_svcname == db.services.svc_name
-    q1 &= db.services.svc_app == db.apps.app
-    q1 &= db.apps.id == db.apps_responsibles.app_id
-    q1 &= db.apps_responsibles.group_id.belongs(user_group_ids())
-    n = db(q&q1).count()
-    if n == 0:
-        return "Permission denied"
+    if 'Manager' not in user_groups():
+        q1 = db.appinfo_log.app_svcname == db.services.svc_name
+        q1 &= db.services.svc_app == db.apps.app
+        q1 &= db.apps.id == db.apps_responsibles.app_id
+        q1 &= db.apps_responsibles.group_id.belongs(user_group_ids())
+        n = db(q&q1).count()
+        if n == 0:
+            return "Permission denied"
 
     rows = db(q).select(db.appinfo_log.app_updated,
                         db.appinfo_log.app_value)
