@@ -227,7 +227,7 @@ class HtmlTable(object):
         l = []
         for o in self.object_list:
             s = self.colprops[c].get(o)
-            if s is None:
+            if s is None or s == "":
                 s = 'empty'
             if s not in h:
                 h[s] = 1
