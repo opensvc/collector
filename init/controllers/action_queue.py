@@ -112,11 +112,12 @@ class table_actions(HtmlTable):
         for col in self.cols:
             self.colprops[col].t = self
         self.dbfilterable = False
+        self.extraline = True
         self.ajax_col_values = 'ajax_actions_col_values'
 
 @auth.requires_login()
 def ajax_actions_col_values():
-    t = table_nodes('action_queue', 'ajax_actions')
+    t = table_actions('action_queue', 'ajax_actions')
     col = request.args[0]
     o = db['action_queue'][col]
     q = db.action_queue.id > 0
