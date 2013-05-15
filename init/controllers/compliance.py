@@ -6573,7 +6573,7 @@ def ajax_error(msg):
     session.flash = d
     return d
 
-def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detailed=False, showexpert=False):
+def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detailed=False, showexpert=False, display_digest=False):
     l = []
     if display_mode and \
        len(data.get('Outputs', [])) == 1 and \
@@ -6677,7 +6677,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
                 n = input['DisplayModeTrim']
                 if len(default) >= n:
                     default = default[0:n//3] + "..." + default[-n//3*2:]
-            if display_mode and not display_detailed and \
+            if not display_detailed and \
                data['Outputs'][0].get('Format') in ('list of dict', 'dict of dict'):
                 if type(default) in (unicode, str) and len(default) > 25:
                     s = default[:10]+"..."+default[-12:]
@@ -6870,6 +6870,8 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
             elif input.get('ExpertMode') and not showexpert:
                 name = forms_xid('expert')
                 style = "display:none"
+            elif not input.get('DisplayInDigest', False) and display_digest:
+                style = "display:none"
             else:
                 name = ""
                 style = ""
@@ -6953,12 +6955,19 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
     if _mode == "show":
         display_mode = True
         display_detailed = False
+        display_digest = False
+    elif _mode == "digest":
+        display_mode = True
+        display_detailed = False
+        display_digest = True
     elif _mode == "showdetailed":
         display_mode = True
         display_detailed = True
+        display_digest = False
     else:
         display_mode = False
         display_detailed = False
+        display_digest = False
 
     if _var_id is None and _prev_wfid is not None and _prev_wfid != 'None':
         # next step of a workflow use previous form values as defaults
@@ -7058,12 +7067,17 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
 
     l = []
     if form_output.get('Format') == 'dict':
-        l = inputs_block(data, defaults=cur, display_mode=display_mode, showexpert=showexpert)
+        l = inputs_block(data,
+                         defaults=cur,
+                         display_mode=display_mode,
+                         display_digest=display_digest,
+                         showexpert=showexpert)
     elif form_output.get('Format') in ('list', 'list of dict', 'dict of dict'):
         if cur is None or len(cur) == 0:
             count = 1
             _l = inputs_block(data, display_mode=display_mode,
                               display_detailed=display_detailed,
+                              display_digest=display_digest,
                               showexpert=showexpert)
         else:
             count = len(cur)
@@ -7078,6 +7092,7 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
                 _l.append(inputs_block(data, idx=i, defaults=default,
                                        display_mode=display_mode,
                                        display_detailed=display_detailed,
+                                       display_digest=display_digest,
                                        showexpert=showexpert))
                 if not display_mode and i != len(cur) - 1:
                     _l.append(HR())
@@ -7086,7 +7101,11 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
         else:
             l = _l
     else:
-        l = inputs_block(data, defaults=cur, display_mode=display_mode, showexpert=showexpert)
+        l = inputs_block(data,
+                         defaults=cur,
+                         display_mode=display_mode,
+                         display_digest=display_digest,
+                         showexpert=showexpert)
 
     if form_output.get('Type') == 'json' and form_output.get('Format') in ('list', 'list of dict', 'dict of dict'):
         add = DIV(
@@ -7589,7 +7608,8 @@ def ajax_custo():
         return T("No customization yet")
 
     return DIV(
-             l,
+             H2(T("Current customizations")),
+             SPAN(l),
            )
 
 def format_custo(row, objtype, objname, form_id=None):
@@ -7606,7 +7626,7 @@ def format_custo(row, objtype, objname, form_id=None):
 
     custo = DIV(
       _ajax_forms_inputs(
-        _mode="show",
+        _mode="digest",
         _rset_name=row.comp_rulesets.ruleset_name,
         _var_id=row.comp_rulesets_variables.id,
         _form_xid=row.comp_rulesets_variables.id,
