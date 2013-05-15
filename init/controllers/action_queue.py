@@ -34,6 +34,7 @@ class table_actions(HtmlTable):
                      'status',
                      'nodename',
                      'svcname',
+                     'username',
                      'action_type',
                      'date_queued',
                      'date_dequeued',
@@ -84,6 +85,12 @@ class table_actions(HtmlTable):
                      img='svc',
                      display=True,
                     ),
+            'username': HtmlTableColumn(
+                     title='User name',
+                     field='username',
+                     img='guy16',
+                     display=True,
+                    ),
             'action_type': HtmlTableColumn(
                      title='Action type',
                      field='action_type',
@@ -118,21 +125,21 @@ class table_actions(HtmlTable):
 def ajax_actions_col_values():
     t = table_nodes('action_queue', 'ajax_actions')
     col = request.args[0]
-    o = db['action_queue'][col]
-    q = db.action_queue.id > 0
+    o = db['v_action_queue'][col]
+    q = db.v_action_queue.id > 0
     for f in t.cols:
-        q = _where(q, 'action_queue', t.filter_parse(f), f)
+        q = _where(q, 'v_action_queue', t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o)
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
 def ajax_actions():
     t = table_actions('action_queue', 'ajax_actions')
-    o = ~db.action_queue.id
+    o = ~db.v_action_queue.id
 
-    q = db.action_queue.id>0
+    q = db.v_action_queue.id>0
     for f in t.cols:
-        q = _where(q, 'action_queue', t.filter_parse(f), f)
+        q = _where(q, 'v_action_queue', t.filter_parse(f), f)
     t.object_list = db(q).select(orderby=o)
     return t.html()
 

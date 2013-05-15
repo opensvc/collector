@@ -482,7 +482,7 @@ def do_action(ids, action=None, mode=None):
     rows = db(q).select(db.nodes.nodename, db.nodes.fqdn, db.nodes.os_name)
 
     vals = []
-    vars = ['nodename', 'action_type', 'command']
+    vars = ['nodename', 'action_type', 'command', 'user_id']
 
     for row in rows:
         if row.fqdn is not None and len(row.fqdn) > 0:
@@ -497,7 +497,7 @@ def do_action(ids, action=None, mode=None):
             action_type = "push"
             command = fmt_action(node, action, mode)
 
-        vals.append([row.nodename, action_type, command])
+        vals.append([row.nodename, action_type, command, str(auth.user_id)])
 
     purge_action_queue()
     generic_insert('action_queue', vars, vals)

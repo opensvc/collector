@@ -810,7 +810,7 @@ class table_checks(HtmlTable):
 
 def queue_check_refresh(rows):
     vals = []
-    vars = ['nodename', 'action_type', 'command']
+    vars = ['nodename', 'action_type', 'command', 'user_id']
     action = "checks"
 
     def fmt_action(node, action):
@@ -837,7 +837,7 @@ def queue_check_refresh(rows):
             action_type = "push"
             command = fmt_action(node, action)
 
-        vals.append([row.nodename, action_type, command])
+        vals.append([row.nodename, action_type, command, auth.user_id])
 
     generic_insert('action_queue', vars, vals)
 
