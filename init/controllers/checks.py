@@ -837,7 +837,7 @@ def queue_check_refresh(rows):
             action_type = "push"
             command = fmt_action(node, action)
 
-        vals.append([row.nodename, action_type, command, auth.user_id])
+        vals.append([row.nodename, action_type, command, str(auth.user_id)])
 
     generic_insert('action_queue', vars, vals)
 
