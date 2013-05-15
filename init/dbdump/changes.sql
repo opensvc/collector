@@ -3438,3 +3438,7 @@ CREATE TABLE `appinfo_log` (
   PRIMARY KEY (`id`),
   KEY `appinfo_fk1` (`app_svcname`)
 ) ENGINE=InnoDB AUTO_INCREMENT=52892 DEFAULT CHARSET=utf8;
+
+alter table action_queue add column user_id integer;
+
+create view v_action_queue as select a.*, concat(u.first_name, " ", u.last_name) as username from action_queue a left join auth_user u on a.user_id=u.id;

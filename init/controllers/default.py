@@ -1322,7 +1322,7 @@ def do_node_action(ids, action=None, mode=None):
     rows = db(q).select(db.v_svcmon.mon_nodname, db.v_svcmon.os_name)
 
     vals = []
-    vars = ['nodename', 'action_type', 'command']
+    vars = ['nodename', 'action_type', 'command', 'user_id']
     for row in rows:
         if row.os_name == "Windows":
             action_type = "pull"
@@ -1331,7 +1331,7 @@ def do_node_action(ids, action=None, mode=None):
             action_type = "push"
             command = fmt_action(row.mon_nodname, action, mode)
 
-        vals.append([row.mon_nodname, action_type, command])
+        vals.append([row.mon_nodname, action_type, command, str(auth.user_id)])
 
     purge_action_queue()
     generic_insert('action_queue', vars, vals)
@@ -1384,7 +1384,7 @@ def do_action(ids, action=None):
         return ' '.join(cmd)
 
     vals = []
-    vars = ['nodename', 'svcname', 'action_type', 'command']
+    vars = ['nodename', 'svcname', 'action_type', 'command', 'user_id']
     for row in rows:
         if row[2] == "Windows":
             action_type = "pull"
@@ -1393,7 +1393,7 @@ def do_action(ids, action=None):
             action_type = "push"
             command = fmt_action(row[0], row[1], action)
 
-        vals.append([row[0], row[1], action_type, command])
+        vals.append([row[0], row[1], action_type, command, str(auth.user_id)])
 
     purge_action_queue()
     generic_insert('action_queue', vars, vals)

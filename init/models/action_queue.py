@@ -5,7 +5,7 @@ def purge_action_queue():
     now = datetime.datetime.now()
     limit = now - datetime.timedelta(minutes=120)
     q = db.action_queue.date_dequeued < limit
-    q &= db.action_queue.status == 'T'
+    q &= db.action_queue.status.belongs(['T', 'C'])
     return db(q).delete()
 
 def queued_actions():

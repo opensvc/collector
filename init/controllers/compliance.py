@@ -4063,7 +4063,7 @@ def do_action(ids, action=None):
                         db.comp_status.run_module)
 
     vals = []
-    vars = ['nodename', 'svcname', 'action_type', 'command']
+    vars = ['nodename', 'svcname', 'action_type', 'command', 'user_id']
     tolog_node = []
     tolog_svc = []
 
@@ -4087,7 +4087,9 @@ def do_action(ids, action=None):
                                 row.comp_status.run_svcname,
                                 action,
                                 row.comp_status.run_module,
-                                action_type)])
+                                action_type),
+                     str(auth.user_id)
+                    ])
 
     purge_action_queue()
     generic_insert('action_queue', vars, vals)

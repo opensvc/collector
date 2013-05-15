@@ -1495,7 +1495,10 @@ def ajax_disk_provision():
          '%(s)s',
          dict(s=s))
     purge_action_queue()
-    action_id = db.action_queue.insert(command=' '.join(cmd))
+    action_id = db.action_queue.insert(
+                  command=' '.join(cmd),
+                  user_id=auth.user_id
+                )
     from subprocess import Popen
     actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
     process = Popen(actiond)
