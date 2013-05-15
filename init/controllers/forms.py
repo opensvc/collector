@@ -1189,14 +1189,19 @@ def ajax_node_list():
     q &= db.auth_membership.group_id == db.auth_group.id
     q &= db.nodes.team_responsible == db.auth_group.role
     nodes = db(q).select(db.nodes.nodename,
+                         db.nodes.host_mode,
+                         db.nodes.environnement,
                          db.nodes.project,
                          groupby=o,
                          orderby=o)
 
     l = [OPTION(T("Choose one"))]
     for n in nodes:
+        env = n.host_mode
+        if n.environnement is not None and len(n.environnement) > 0:
+            env += " (%s)" % n.environnement
         o = OPTION(
-                "%s - %s"%(str(n.project).upper(), str(n.nodename).lower()),
+                "%s - %s - %s"%(str(n.project).upper(), env, str(n.nodename).lower()),
                 _value=n.nodename
             )
         l.append(o)
@@ -1236,13 +1241,14 @@ def ajax_service_list():
     q &= db.auth_membership.user_id == auth.user_id
     services = db(q).select(db.services.svc_name,
                             db.services.svc_app,
+                            db.services.svc_type,
                             groupby=o,
                             orderby=o)
 
     l = [OPTION(T("Choose one"))]
     for s in services:
         o = OPTION(
-                "%s - %s"%(str(s.svc_app).upper(), str(s.svc_name).lower()),
+                "%s - %s - %s"%(str(s.svc_app).upper(), str(s.svc_type).upper(), str(s.svc_name).lower()),
                 _value=s.svc_name
             )
         l.append(o)
