@@ -15,7 +15,7 @@ sys.path.append(basedir)
 import lock
 
 lockfile = __file__+'.lock'
-N_THREAD = 10
+N_THREAD = 50
 
 def actiond_lock(lockfile):
     try:

@@ -22,6 +22,8 @@ class col_action_status(HtmlTableColumn):
             return DIV(T('waiting'), _class="boxed_small")
         elif s == 'Q':
             return DIV(T('queued'), _class="boxed_small")
+        elif s == 'C':
+            return DIV(T('cancelled'), _class="boxed_small bgdarkred")
         else:
             return DIV(s, _class="boxed_small")
 
@@ -119,7 +121,42 @@ class table_actions(HtmlTable):
         for col in self.cols:
             self.colprops[col].t = self
         self.dbfilterable = False
+        self.checkboxes = True
         self.ajax_col_values = 'ajax_actions_col_values'
+        self.additional_tools.append('cancel_actions')
+
+    def cancel_actions(self):
+        d = DIV(
+              A(
+                T("Cancel actions"),
+                _class='del16',
+                _onclick=self.ajax_submit(args=['cancel_actions']),
+              ),
+              _class='floatw',
+            )
+        return d
+
+
+@auth.requires_login()
+def cancel_actions(ids):
+    if len(ids) == 0:
+        raise ToolError("No actions selected")
+
+    q = db.action_queue.id.belongs(ids)
+    if 'Manager' not in user_groups():
+        q &= db.action_queue.user_id == auth.user_id
+    rows = db(q).select(db.action_queue.id, db.action_queue.command)
+    if len(rows) == 0:
+        return
+    u = ', '.join([r.command for r in rows])
+
+    ids = [r.id for r in rows]
+    q = db.action_queue.id.belongs(ids)
+    db(q).update(status='C')
+
+    _log('action.delete',
+         'deleted actions %(u)s',
+         dict(u=u))
 
 @auth.requires_login()
 def ajax_actions_col_values():
@@ -135,6 +172,15 @@ def ajax_actions_col_values():
 @auth.requires_login()
 def ajax_actions():
     t = table_actions('action_queue', 'ajax_actions')
+
+    if len(request.args) == 1:
+        action = request.args[0]
+        try:
+            if action == 'cancel_actions':
+                cancel_actions(t.get_checked())
+        except ToolError, e:
+            t.flash = str(e)
+
     o = ~db.v_action_queue.id
 
     q = db.v_action_queue.id>0
