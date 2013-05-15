@@ -720,6 +720,21 @@ def get_forms(form_type=None, folder="/", form_names=[], search=None):
                 data = {}
         except:
             data = {}
+        if form_type == "folder":
+            # discard empty folders
+            f = row.form_folder+'/'+str(data.get('FolderName'))
+            f = f.replace('//', '/')
+            form_types = ["custo", "generic"]
+            if 'CompManager' in user_groups():
+                form_types.append("obj")
+            q = db.forms.form_type.belongs(form_types)
+            q &= db.forms.id == db.forms_team_publication.form_id
+            q &= db.forms_team_publication.group_id.belongs(user_group_ids())
+            q1 = db.forms.form_folder == f
+            q1 |= db.forms.form_folder.like(f+"/%")
+            q &= q1
+            if db(q).count() == 0:
+                continue
         l.append((row.id, row.form_name, row.form_folder, row.form_type, data))
     return l
 

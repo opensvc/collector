@@ -144,6 +144,7 @@ def cancel_actions(ids):
         raise ToolError("No actions selected")
 
     q = db.action_queue.id.belongs(ids)
+    q &= db.action_queue.status != 'T'
     if 'Manager' not in user_groups():
         q &= db.action_queue.user_id == auth.user_id
     rows = db(q).select(db.action_queue.id, db.action_queue.command)
