@@ -942,7 +942,7 @@ def format_form_scripts(form_scripts):
       DIV(l),
     )
 
-def stored_form_show(wfid, _class=""):
+def stored_form_show(wfid, _class="", foldable=False, folded=False):
     hid = "wf_%s"%wfid
     q = db.forms_store.id == wfid
     q &= db.forms_store.form_md5 == db.forms_revisions.form_md5
@@ -954,6 +954,14 @@ def stored_form_show(wfid, _class=""):
     else:
         assignee = ""
 
+    cl = ""
+    s =  ""
+    if foldable:
+        s = """$(this).parent().find(".foldme").toggle(400)"""
+        cl = "foldme"
+        if folded:
+            cl += " hidden"
+
     return DIV(
       DIV(
         H2("%d: %s"%(wf.forms_store.id, form.get('Label', T("Unlabelled form")))),
@@ -963,12 +971,16 @@ def stored_form_show(wfid, _class=""):
           assignee,
         ),
         _class=form.get('Css', ''),
+        _onclick=s,
       ),
       DIV(
-        _id=hid,
-        _style="padding:0.5em",
+        DIV(
+          _id=hid,
+          _style="padding:0.5em",
+        ),
+        format_form_scripts(wf.forms_store.form_scripts),
+        _class=cl,
       ),
-      format_form_scripts(wf.forms_store.form_scripts),
       SCRIPT(
         """sync_ajax("%(url)s", {}, "%(id)s", function(){})"""%dict(
           url=URL(c="compliance", f="ajax_forms_inputs", vars={
@@ -1002,7 +1014,7 @@ def forms_chain(wfid, foldable=False, folded=False, highlight_step=True):
         if wf is None:
             break
         id = wf.id
-        data = stored_form_show(id, _class="forms")
+        data = stored_form_show(id, _class="forms", foldable=foldable, folded=folded)
         l.append(data)
 
     l.reverse()
@@ -1014,7 +1026,7 @@ def forms_chain(wfid, foldable=False, folded=False, highlight_step=True):
         if wf is None:
             break
         id = wf.id
-        data = stored_form_show(id, _class="forms")
+        data = stored_form_show(id, _class="forms", foldable=foldable, folded=folded)
         l.append(data)
 
     _l = []
@@ -1024,26 +1036,14 @@ def forms_chain(wfid, foldable=False, folded=False, highlight_step=True):
       _style="width:16px",
     )
 
-    s = """$(this).find(".foldme").toggle(400)"""
-
-    if len(l) > 2:
-        fold = True
-    else:
-        fold = False
-
     for i, e in enumerate(l):
-        cl = ""
-        if foldable and i > 0 and i < len(l) - 1:
-            cl = "foldme"
-            if folded:
-                cl += " hidden"
-        _l.append(DIV(e, _class=cl))
+        _l.append(DIV(e))
         _l.append(DIV(down))
 
     if len(_l) > 0:
         _l.pop()
 
-    return DIV(_l, _onclick=s)
+    return DIV(_l)
 
 def get_tail_form_id(wfid):
     q = db.forms_store.id == wfid
@@ -1113,7 +1113,7 @@ def workflow():
 
     d = DIV(
       H1(T("Request workflow")),
-      DIV(forms_chain(wfid, foldable=True, folded=False)),
+      DIV(forms_chain(wfid, foldable=True, folded=True)),
       DIV(_class="spacer"),
       H1(T("Next steps")),
       DIV(_forms_list, _id="forms_list"),
