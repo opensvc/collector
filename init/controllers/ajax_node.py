@@ -512,7 +512,7 @@ def ajax_node():
             _style='max-width:80em',
           ),
           SCRIPT(
-            "function n%(rid)s_load_node_stor(){ajax('%(url)s', [], '%(id)s')}"%dict(
+            "function n%(rid)s_load_node_stor(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
                id='tab6_'+str(rowid),
                rid=str(rowid),
                url=URL(r=request, c='ajax_node', f='ajax_node_stor',
@@ -753,7 +753,37 @@ def ajax_node_stor():
           TD('-'),
         ))
 
-    # san graphviz
+    stor = DIV(
+      H3("SAN"),
+      DIV(
+        IMG(
+          _src=URL(r=request,c='static',f='spinner.gif'),
+          _style="vertical-align:top;padding-right:0.5em",
+        ),
+        SPAN(T("Generating SAN topology diagram")),
+        _id="sanviz"+id,
+      ),
+      SCRIPT(
+        """sync_ajax("%(url)s", [], "%(id)s", function(){})""" % dict(
+          url = URL(c='ajax_node', f='ajax_node_stor_sanviz', args=[nodename]),
+          id = "sanviz"+id,
+        ),
+      ),
+      BR(),
+      H3(T("Host Bus Adapters")),
+      TABLE(_hbas),
+      BR(),
+      H3(T("Targets")),
+      TABLE(_tgts),
+      BR(),
+      H3(T("Disks")),
+      TABLE(_disks),
+    )
+    return stor
+
+@auth.requires_login()
+def ajax_node_stor_sanviz():
+    nodename = request.args[0]
     from applications.init.modules import san
     import tempfile
     import os
@@ -767,21 +797,11 @@ def ajax_node_stor():
     sanviz = URL(r=request,c='static',f=os.path.basename(sanviz))
     sanviz_legend = o.html_legend()
 
-    stor = DIV(
-      H3("SAN"),
+    return DIV(
       XML(sanviz_legend),
       IMG(_src=sanviz),
-      BR(),
-      H3(T("Host Bus Adapters")),
-      TABLE(_hbas),
-      BR(),
-      H3(T("Targets")),
-      TABLE(_tgts),
-      BR(),
-      H3(T("Disks")),
-      TABLE(_disks),
     )
-    return stor
+
 
 @auth.requires_login()
 def ajax_nodes_stor():
