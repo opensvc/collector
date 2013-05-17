@@ -392,6 +392,26 @@ class col_chk_low(HtmlTableColumn):
             return SPAN(low, _style='font-weight:bold')
         return low
 
+class col_chk_instance(HtmlTableColumn):
+    def html(self, o):
+        s = self.get(o)
+        chk_type = self.t.colprops["chk_type"].get(o)
+        if chk_type == 'mpath':
+            ln = A(
+              IMG(
+                _src=URL(c='static', f='hd16.png'),
+                _style="vertical-align:top;padding-right:0.4em",
+              ),
+              _href=URL(c="disks", f="disks", vars={'disks_f_disk_id': s, 'clear_filters': 'true'}),
+            )
+            return SPAN(
+                     ln,
+                     s,
+                     _style="white-space:nowrap",
+                   )
+        else:
+            return s
+
 class col_chk_type(HtmlTableColumn):
     def html(self, o):
         s = self.get(o)
@@ -556,7 +576,7 @@ class table_checks(HtmlTable):
                 table = 'checks_live',
                 img = 'check16'
             ),
-            'chk_instance': HtmlTableColumn(
+            'chk_instance': col_chk_instance(
                 title = 'Instance',
                 field = 'chk_instance',
                 display = True,
@@ -857,7 +877,8 @@ def check_refresh():
     groups = user_groups()
     if 'Manager' not in groups:
         q &= (db.v_nodes.team_responsible.belongs(groups)) | \
-             (db.v_nodes.team_integ.belongs(groups))
+             (db.v_nodes.team_integ.belongs(groups)) | \
+             (db.v_nodes.team_support.belongs(groups))
     q = _where(q, 'checks_live', domain_perms(), 'chk_nodename')
     q = apply_filters(q, db.checks_live.chk_nodename, None)
     t = table_checks('checks', 'ajax_checks')
