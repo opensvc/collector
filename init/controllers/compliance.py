@@ -1668,6 +1668,7 @@ def comp_attach_svc_modulesets(svc_ids=[], modset_ids=[], svc_names=[], slave=Tr
             row = db(q).select().first()
             if row is not None:
                 log.append([
+                  0,
                   'compliance.moduleset.service.attach',
                   'moduleset %(moduleset)s already attached to service %(service)s',
                   dict(moduleset=modset_names[modset_id], service=svc),
@@ -1677,12 +1678,13 @@ def comp_attach_svc_modulesets(svc_ids=[], modset_ids=[], svc_names=[], slave=Tr
                                                slave=sl,
                                                modset_id=modset_id)
             log.append([
+              0,
               'compliance.moduleset.service.attach',
               'moduleset %(moduleset)s attached to service %(service)s',
               dict(moduleset=modset_names[modset_id], service=svc),
             ])
 
-    for action, fmt, d in log:
+    for ret, action, fmt, d in log:
         _log(action, fmt, d)
 
     for svc in svc_names:
@@ -1722,6 +1724,7 @@ def comp_attach_svc_rulesets(svc_ids=[], ruleset_ids=[], svc_names=[], slave=Tru
             row = db(q).select().first()
             if row is not None:
                 log.append([
+                  0,
                   'compliance.ruleset.service.attach',
                   'ruleset %(ruleset)s already attached to service %(service)s',
                   dict(ruleset=rset_names[rsid], service=svc),
@@ -1731,12 +1734,13 @@ def comp_attach_svc_rulesets(svc_ids=[], ruleset_ids=[], svc_names=[], slave=Tru
                                              slave=sl,
                                              ruleset_id=rsid)
             log.append([
+              0,
               'compliance.ruleset.service.attach',
               'ruleset %(ruleset)s attached to service %(service)s',
               dict(ruleset=rset_names[rsid], service=svc),
             ])
 
-    for action, fmt, d in log:
+    for ret, action, fmt, d in log:
         _log(action, fmt, d)
 
     for svc in svc_names:
@@ -6561,6 +6565,63 @@ def show_rsetdiff(svcname):
 
     return DIV(fmt_table(_rows))
 
+def ajax_info(msg):
+    if type(msg) == list:
+        l = []
+        rets = [0, 0]
+        for e in msg:
+            rets[e[0]] += 1
+            if e[0] == 0:
+                img = 'check16.png'
+            else:
+                img = 'nok.png'
+            status = IMG(
+                       _src=URL(c='static', f=img),
+                       _style="padding-right:0.5em;vertical-align:bottom",
+                     )
+            d = DIV(
+                  status,
+                  SPAN(TT(T(e[2], e[3]))),
+                )
+            l.append(d)
+        if rets[1] == 0:
+            img = 'check16.png'
+            s = 'Success'
+            cl = 'foldme hidden'
+        else:
+            img = 'nok.png'
+            s = 'Errors'
+            cl = 'foldme'
+        status = DIV(
+                   IMG(
+                     _src=URL(c='static', f=img),
+                     _style="padding-right:0.5em;vertical-align:bottom",
+                   ),
+                   SPAN(
+                     T(s),
+                   ),
+                   _onclick="$(this).parent().find('.foldme').toggle(400)",
+                   _class="clickable",
+                 )
+        out = DIV(
+                status,
+                DIV(
+                  HR(),
+                  SPAN(l),
+                  _class=cl,
+                ),
+              )
+    else:
+        out = msg
+
+    d = DIV(
+          out,
+          _class="box",
+          _style="text-align:left;padding:3em",
+        )
+    session.flash = d
+    return d
+
 def ajax_error(msg):
     if type(msg) == list:
         out = PRE('\n\n'.join(msg))
@@ -7885,13 +7946,13 @@ def mail_form(output, data, form, to=None, record_id=None, _d=None):
         to = output.get('To', set([]))
 
     if len(to) == 0:
-        return []
+        return [(1, "form.submit", "No mail destination", dict())]
 
     if '@' not in to:
         to = email_of(to)
 
     if to is None:
-        return []
+        return [(1, "form.submit", "No mail destination", dict())]
 
     if type(to) in (str, unicode):
         to = [to]
@@ -7901,7 +7962,7 @@ def mail_form(output, data, form, to=None, record_id=None, _d=None):
     try:
         d = get_form_formatted_data_o(output, data, _d)
     except Exception, e:
-        return [("form.submit", str(e), dict())]
+        return [(1, "form.submit", str(e), dict())]
     try:
         with open("applications/init/static/mail.css", "r") as f:
             style = f.read()
@@ -7943,7 +8004,7 @@ def mail_form(output, data, form, to=None, record_id=None, _d=None):
     mail.send(to=to,
               subject=title.encode("utf-8"),
               message=message)
-    return [("form.submit", "Mail sent to %(to)s on form %(form_name)s submission." , dict(to=', '.join(to), form_name=form.form_name))]
+    return [(0, "form.submit", "Mail sent to %(to)s on form %(form_name)s submission." , dict(to=', '.join(to), form_name=form.form_name))]
 
 def check_output_condition(output, form, data, _d=None):
     cond = output.get('Condition', 'none')
@@ -7992,7 +8053,7 @@ def ajax_generic_form_submit(form, data, _d=None):
         try:
             chkcond = check_output_condition(output, form, data, _d)
         except Exception as e:
-            log.append(("form.submit", str(e), dict()))
+            log.append((1, "form.submit", str(e), dict()))
             continue
         if not chkcond:
             continue
@@ -8003,14 +8064,14 @@ def ajax_generic_form_submit(form, data, _d=None):
             try:
                 d = get_form_formatted_data(output, data, _d)
             except Exception, e:
-                log.append(("form.submit", str(e), dict()))
+                log.append((1, "form.submit", str(e), dict()))
                 break
             if 'Table' not in output:
-                log.append(("form.submit", "Table must be set in db type Output", dict()))
+                log.append((1, "form.submit", "Table must be set in db type Output", dict()))
                 continue
             table = output['Table']
             if table not in db:
-                log.append(("form.submit", "Table %(t)s not found", dict(t=table)))
+                log.append((1, "form.submit", "Table %(t)s not found", dict(t=table)))
                 continue
 
             # purge keys not present in table as columns
@@ -8021,20 +8082,20 @@ def ajax_generic_form_submit(form, data, _d=None):
 
             try:
                 db[table].insert(**d)
-                log.append(("form.submit", "Data inserted in database table", dict()))
+                log.append((0, "form.submit", "Data inserted in database table", dict()))
             except Exception, e:
-                log.append(("form.submit", "Data insertion in database table error: %(err)s", dict(err=str(e))))
+                log.append((1, "form.submit", "Data insertion in database table error: %(err)s", dict(err=str(e))))
         elif dest == "script":
             import os
             import subprocess
             try:
                 d = get_form_formatted_data(output, data, _d)
             except Exception, e:
-                log.append(("form.submit", str(e), dict()))
+                log.append((1, "form.submit", str(e), dict()))
                 break
             path = output.get('Path')
             if path is None:
-                log.append(("form.submit", "Path must be set in script type Output", dict()))
+                log.append((1, "form.submit", "Path must be set in script type Output", dict()))
                 _scripts['returncode'] += 1
                 _scripts[path] = {
                   'path': path,
@@ -8044,7 +8105,7 @@ def ajax_generic_form_submit(form, data, _d=None):
                 }
                 continue
             if not os.path.exists(path):
-                log.append(("form.submit", "Script %(path)s does not exists", dict(path=path)))
+                log.append((1, "form.submit", "Script %(path)s does not exists", dict(path=path)))
                 _scripts['returncode'] += 1
                 _scripts[path] = {
                   'path': path,
@@ -8058,7 +8119,7 @@ def ajax_generic_form_submit(form, data, _d=None):
                                                 stderr=subprocess.PIPE)
                 out, err = p.communicate()
             except Exception as e:
-                log.append(("form.submit", "Script %(path)s execution error: %(err)s", dict(path=path, err=str(e))))
+                log.append((1, "form.submit", "Script %(path)s execution error: %(err)s", dict(path=path, err=str(e))))
                 _scripts['returncode'] += 1
                 _scripts[path] = {
                   'path': path,
@@ -8076,16 +8137,16 @@ def ajax_generic_form_submit(form, data, _d=None):
               'stderr': err,
             }
             if p.returncode != 0:
-                log.append(("form.submit", "Script %(path)s returned with error: %(err)s", dict(path=path, err=err)))
+                log.append((1, "form.submit", "Script %(path)s returned with error: %(err)s", dict(path=path, err=err)))
                 continue
-            log.append(("form.submit", "script %(path)s returned on success: %(out)s", dict(path=path, out=out)))
+            log.append((0, "form.submit", "script %(path)s returned on success: %(out)s", dict(path=path, out=out)))
         elif dest == "mail":
             log += mail_form(output, data, form, _d=_d)
         elif dest == "workflow":
             try:
                 d = get_form_formatted_data(output, data, _d)
             except Exception, e:
-                log.append(("form.submit", str(e), dict()))
+                log.append((1, "form.submit", str(e), dict()))
                 break
 
             form_md5 = insert_form_md5(form)
@@ -8119,7 +8180,7 @@ def ajax_generic_form_submit(form, data, _d=None):
                 q = db.forms_store.id == request.vars.prev_wfid
                 prev_wf = db(q).select().first()
                 if prev_wf.form_next_id is not None:
-                    log.append(("form.store",  "This step is already completed (id=%(id)d)", dict(id=prev_wf.id)))
+                    log.append((0, "form.store",  "This step is already completed (id=%(id)d)", dict(id=prev_wf.id)))
                     continue
 
                 if form_assignee is None:
@@ -8159,9 +8220,9 @@ def ajax_generic_form_submit(form, data, _d=None):
                     q = db.forms_store.id == request.vars.prev_wfid
                     db(q).update(form_next_id=record_id)
                 if next_id != 0:
-                    log.append(("form.store", "Workflow %(head_id)d step %(form_name)s added with id %(id)d", dict(form_name=form.form_name, head_id=head_id, id=record_id)))
+                    log.append((0, "form.store", "Workflow %(head_id)d step %(form_name)s added with id %(id)d", dict(form_name=form.form_name, head_id=head_id, id=record_id)))
                 else:
-                    log.append(("form.store", "Workflow %(head_id)d closed on last step %(form_name)s with id %(id)d", dict(form_name=form.form_name, head_id=head_id, id=record_id)))
+                    log.append((0, "form.store", "Workflow %(head_id)d closed on last step %(form_name)s with id %(id)d", dict(form_name=form.form_name, head_id=head_id, id=record_id)))
                 q = db.workflows.form_head_id == head_id
                 wfrow = db(q).select().first()
                 if wfrow is None:
@@ -8205,7 +8266,7 @@ def ajax_generic_form_submit(form, data, _d=None):
                 if record_id is not None:
                     q = db.forms_store.id == record_id
                     db(q).update(form_head_id=record_id)
-                log.append(("form.store", "New workflow %(form_name)s created with id %(id)d", dict(form_name=form.form_name, id=record_id)))
+                log.append((0, "form.store", "New workflow %(form_name)s created with id %(id)d", dict(form_name=form.form_name, id=record_id)))
 
                 db.workflows.insert(
                   status=status,
@@ -8241,12 +8302,12 @@ def ajax_generic_form_submit(form, data, _d=None):
             if __var_id is not None:
                 q = db.comp_rulesets_variables.id == __var_id
                 db(q).delete()
-                log.append(("", "Compliance variable %(id)s deleted)", dict(id=__var_id)))
+                log.append((0, "", "Compliance variable %(id)s deleted)", dict(id=__var_id)))
 
-    for action, fmt, d in log:
+    for ret, action, fmt, d in log:
         _log(action, fmt, d)
 
-    return ajax_error(map(lambda x: x[1]%x[2], log))
+    return ajax_info(log)
 
 def ajax_custo_form_submit(output, data):
     # logging buffer
@@ -8267,14 +8328,14 @@ def ajax_custo_form_submit(output, data):
         q &= db.comp_rulesets_variables.ruleset_id == db.comp_rulesets.id
         var = db(q).select().first()
         if var is None:
-            log.append(("", "Specified variable not found (id=%(id)s)", dict(id=request.vars.var_id)))
+            log.append((1, "", "Specified variable not found (id=%(id)s)", dict(id=request.vars.var_id)))
             return log
         var_name = var.comp_rulesets_variables.var_name
         var_class = var.comp_rulesets_variables.var_class
         rset_name = var.comp_rulesets.ruleset_name
 
     if rset_name is None:
-        log.append(("", "No ruleset name specified. Skip compliance variable creation", dict()))
+        log.append((1, "", "No ruleset name specified. Skip compliance variable creation", dict()))
         return dict(log=log, err="break")
 
     # validate privs
@@ -8285,38 +8346,38 @@ def ajax_custo_form_submit(output, data):
         q &= db.nodes.team_responsible == db.auth_group.role
         node = db(q).select(db.auth_group.id).first()
         if node is None:
-            log.append(("", "Unknown specified node %(nodename)s", dict(nodename=nodename)))
+            log.append((1, "", "Unknown specified node %(nodename)s", dict(nodename=nodename)))
             return log
         groups = [node.id]
         if len(groups) == 0:
-            log.append(("", "Specified node %(nodename)s has no responsible group", dict(nodename=nodename)))
+            log.append((1, "", "Specified node %(nodename)s has no responsible group", dict(nodename=nodename)))
             return log
         common_groups = set(user_group_ids()) & set(groups)
         if len(common_groups) == 0:
-            log.append(("", "You are not allowed to create or modify a ruleset for the node %(node)s", dict(nodename=nodename)))
+            log.append((1, "", "You are not allowed to create or modify a ruleset for the node %(node)s", dict(nodename=nodename)))
             return log
     elif request.vars.svcname is not None:
         q = db.services.svc_name == request.vars.svcname
         svc = db(q).select().first()
         if svc is None:
-            log.append(("", "Unknown specified service %(svcname)s", dict(svcname=svcname)))
+            log.append((1, "", "Unknown specified service %(svcname)s", dict(svcname=svcname)))
             return log
         q &= db.services.svc_app == db.apps.app
         q &= db.apps.id == db.apps_responsibles.app_id
         rows = db(q).select()
         groups = map(lambda x: x.apps_responsibles.group_id, rows)
         if len(groups) == 0:
-            log.append(("", "Specified service %(svcname)s has no responsible groups", dict(svcname=svcname)))
+            log.append((1, "", "Specified service %(svcname)s has no responsible groups", dict(svcname=svcname)))
             return log
         common_groups = set(user_group_ids()) & set(groups)
         if len(common_groups) == 0:
-            log.append(("", "You are not allowed to create or modify a ruleset for the service %(svcname)s", dict(svcname=svcname)))
+            log.append((1, "", "You are not allowed to create or modify a ruleset for the service %(svcname)s", dict(svcname=svcname)))
             return log
     elif request.vars.rset is not None:
         q = db.comp_rulesets.ruleset_name == request.vars.rset
         rset = db(q).select().first()
         if rset is None:
-            log.append(("", "Unknown specified ruleset %(rset)s", dict(rset=request.vars.rset)))
+            log.append((1, "", "Unknown specified ruleset %(rset)s", dict(rset=request.vars.rset)))
             return log
         q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
         q &= db.comp_ruleset_team_responsible.group_id == db.auth_group.id
@@ -8324,7 +8385,7 @@ def ajax_custo_form_submit(output, data):
         groups = map(lambda x: x.auth_group.id, rows)
         common_groups = set(user_group_ids()) & set(groups)
         if len(common_groups) == 0:
-            log.append(("", "You are not allowed to create or modify the ruleset %(rset)s", dict(rset=rset_name)))
+            log.append((1, "", "You are not allowed to create or modify the ruleset %(rset)s", dict(rset=rset_name)))
             return log
 
     # create ruleset
@@ -8334,16 +8395,16 @@ def ajax_custo_form_submit(output, data):
         db.comp_rulesets.insert(ruleset_name=rset_name,
                                 ruleset_type="explicit",
                                 ruleset_public="T")
-        log.append(("compliance.ruleset.add", "Added explicit published ruleset '%(rset_name)s'", dict(rset_name=rset_name)))
+        log.append((0, "compliance.ruleset.add", "Added explicit published ruleset '%(rset_name)s'", dict(rset_name=rset_name)))
         rset = db(q).select().first()
         for gid in common_groups:
             db.comp_ruleset_team_responsible.insert(
               ruleset_id=rset.id,
               group_id=gid
             )
-            log.append(("compliance.ruleset.group.attach", "Added group %(gid)d ruleset '%(rset_name)s' owners", dict(gid=gid, rset_name=rset_name)))
+            log.append((0, "compliance.ruleset.group.attach", "Added group %(gid)d ruleset '%(rset_name)s' owners", dict(gid=gid, rset_name=rset_name)))
     if rset is None:
-        log.append(("", "error fetching %(rset_name)s ruleset", dict(rset_name=rset_name)))
+        log.append((1, "", "error fetching %(rset_name)s ruleset", dict(rset_name=rset_name)))
         return log
 
     if request.vars.var_id is None:
@@ -8358,7 +8419,7 @@ def ajax_custo_form_submit(output, data):
             var_name_prefix = output['Prefix']
         else:
             var_name_prefix = '_'.join((output.get('Class', 'noclass'), str(rset.id), ''))
-            #log.append(("", "No variable name specified.", dict()))
+            #log.append((1, "", "No variable name specified.", dict()))
             #return log
 
         q = db.comp_rulesets_variables.ruleset_id == rset.id
@@ -8374,7 +8435,7 @@ def ajax_custo_form_submit(output, data):
     try:
         var_value = get_form_formatted_data(output, data)
     except Exception, e:
-        log.append(("compliance.ruleset.variable.change", str(e), dict()))
+        log.append((1, "compliance.ruleset.variable.change", str(e), dict()))
         return log
 
     q = db.comp_rulesets_variables.ruleset_id == rset.id
@@ -8382,7 +8443,7 @@ def ajax_custo_form_submit(output, data):
     n = db(q).count()
 
     if n == 0 and request.vars.var_id is not None:
-        log.append(("compliance.ruleset.variable.change", "%(var_class)s' variable '%(var_name)s' does not exist in ruleset %(rset_name)s or invalid attempt to edit a variable in a parent ruleset", dict(var_class=var_class, var_name=var_name, rset_name=rset_name)))
+        log.append((1, "compliance.ruleset.variable.change", "%(var_class)s' variable '%(var_name)s' does not exist in ruleset %(rset_name)s or invalid attempt to edit a variable in a parent ruleset", dict(var_class=var_class, var_name=var_name, rset_name=rset_name)))
         return log
 
     q &= db.comp_rulesets_variables.var_value == var_value
@@ -8390,7 +8451,7 @@ def ajax_custo_form_submit(output, data):
     __var_id = request.vars.var_id
 
     if n > 0:
-        log.append(("compliance.ruleset.variable.add", "'%(var_class)s' variable '%(var_name)s' already exists with the same value in the ruleset '%(rset_name)s': cancel", dict(var_class=var_class, var_name=var_name, rset_name=rset_name)))
+        log.append((1, "compliance.ruleset.variable.add", "'%(var_class)s' variable '%(var_name)s' already exists with the same value in the ruleset '%(rset_name)s': cancel", dict(var_class=var_class, var_name=var_name, rset_name=rset_name)))
     else:
         q = db.comp_rulesets_variables.ruleset_id == rset.id
         q &= db.comp_rulesets_variables.var_name == var_name
@@ -8405,7 +8466,7 @@ def ajax_custo_form_submit(output, data):
               var_author=user_name(),
               var_updated=datetime.datetime.now(),
             )
-            log.append(("compliance.ruleset.variable.add", "Added '%(var_class)s' variable '%(var_name)s' to ruleset '%(rset_name)s' with value:\n%(var_value)s", dict(var_class=var_class, var_name=var_name, rset_name=rset_name, var_value=var_value)))
+            log.append((0, "compliance.ruleset.variable.add", "Added '%(var_class)s' variable '%(var_name)s' to ruleset '%(rset_name)s' with value:\n%(var_value)s", dict(var_class=var_class, var_name=var_name, rset_name=rset_name, var_value=var_value)))
         elif n == 1:
             __var_id = var_rows.first().id
             db(q).update(
@@ -8414,9 +8475,9 @@ def ajax_custo_form_submit(output, data):
               var_author=user_name(),
               var_updated=datetime.datetime.now(),
             )
-            log.append(("compliance.ruleset.variable.change", "Modified '%(var_class)s' variable '%(var_name)s' in ruleset '%(rset_name)s' with value:\n%(var_value)s", dict(var_class=var_class, var_name=var_name, rset_name=rset_name, var_value=var_value)))
+            log.append((0, "compliance.ruleset.variable.change", "Modified '%(var_class)s' variable '%(var_name)s' in ruleset '%(rset_name)s' with value:\n%(var_value)s", dict(var_class=var_class, var_name=var_name, rset_name=rset_name, var_value=var_value)))
         else:
-            log.append(("compliance.ruleset.variable.change", "More than one variable found matching '%(var_name)s' in ruleset '%(rset_name)s'. Skip edition.", dict(var_name=var_name, rset_name=rset_name)))
+            log.append((1, "compliance.ruleset.variable.change", "More than one variable found matching '%(var_name)s' in ruleset '%(rset_name)s'. Skip edition.", dict(var_name=var_name, rset_name=rset_name)))
 
     if request.vars.nodename is not None or request.vars.svcname is not None:
         modset_ids = []
@@ -8458,6 +8519,7 @@ def ajax_custo_form_submit(output, data):
                 log += comp_attach_svc_rulesets(svc_names=[request.vars.svcname],
                                                 ruleset_ids=rset_ids,
                                                 slave=True)
+
             except ToolError:
                 pass
 
