@@ -1041,7 +1041,38 @@ def ajax_svc_stor():
           TD('-'),
         ))
 
-    # san graphviz
+    stor = DIV(
+      H3("SAN"),
+      DIV(
+        IMG(
+          _src=URL(r=request,c='static',f='spinner.gif'),
+          _style="vertical-align:top;padding-right:0.5em",
+        ),
+        SPAN(T("Generating SAN topology diagram")),
+        _id="sanviz"+id,
+      ),
+      SCRIPT(
+        """sync_ajax("%(url)s", [], "%(id)s", function(){})""" % dict(
+          url = URL(c='ajax_node', f='ajax_svc_stor_sanviz', args=[svcname]),
+          id = "sanviz"+id,
+        ),
+      ),
+      BR(),
+      H3(T("Host Bus Adapters")),
+      TABLE(_hbas),
+      BR(),
+      H3(T("Targets")),
+      TABLE(_tgts),
+      BR(),
+      H3(T("Disks")),
+      TABLE(_disks),
+    )
+    return stor
+
+@auth.requires_login()
+def ajax_svc_stor_sanviz():
+    svcname = request.args[0]
+
     q = db.svcmon.mon_svcname == svcname
     rows = db(q).select(db.svcmon.mon_nodname)
 
@@ -1059,19 +1090,8 @@ def ajax_svc_stor():
     sanviz_legend = o.html_legend()
 
     stor = DIV(
-      H3("SAN"),
       XML(sanviz_legend),
       IMG(_src=sanviz),
-      BR(),
-      H3(T("Host Bus Adapters")),
-      TABLE(_hbas),
-      BR(),
-      H3(T("Targets")),
-      TABLE(_tgts),
-      BR(),
-      H3(T("Disks")),
-      TABLE(_disks),
     )
     return stor
-
 

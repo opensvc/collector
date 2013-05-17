@@ -741,7 +741,7 @@ def ajax_service():
                url=URL(r=request, c='compliance', f='ajax_compliance_svc',
                        args=[request.vars.node])
             ),
-            "function s%(rid)s_load_stor(){ajax('%(url)s', [], '%(id)s')}"%dict(
+            "function s%(rid)s_load_stor(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
                id='tab6_'+str(rowid),
                rid=str(rowid),
                url=URL(r=request, c='ajax_node', f='ajax_svc_stor',
