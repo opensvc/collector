@@ -84,6 +84,27 @@ def migrate_to_services_log():
                                    svc_end=end,
                                    svc_availstatus="down")
 
+def get_svc_created(svc):
+    q = db.services.svc_name == svc
+    row = db(q).select(db.services.svc_created).first()
+    if row is not None:
+        return row.svc_created
+    return datetime.datetime(year=1900, month=1, day=1)
+
+class precreation_acked_range(object):
+    def __init__(self, svc):
+        self.mon_svcname = svc
+        self.mon_begin = datetime.datetime(year=1900, month=1, day=1)
+        self.mon_end = get_svc_created(svc)
+        self.mon_acked_by = 'opensvc'
+        self.mon_acked_on = now
+        self.mon_account = 0
+        self.mon_comment = 'Service did not exist'
+        self.id = 0
+
+    def __getitem__(self, i):
+        return getattr(self, i)
+
 @auth.requires_login()
 def service_availability(rows, begin=None, end=None):
     h = {}
@@ -252,7 +273,7 @@ def service_availability(rows, begin=None, end=None):
                     )
             return h
 
-        for a in [ack for ack in acked if ack.mon_svcname == svc]:
+        for a in [precreation_acked_range(svc)] + [ack for ack in acked if ack.mon_svcname == svc]:
             (ab, ae) = (a.mon_begin, a.mon_end)
 
             if _e >= ab and b <= ae:
@@ -477,7 +498,7 @@ def service_availability_2(rows, begin=None, end=None):
                     )
             return h
 
-        for a in [ack for ack in acked if ack.mon_svcname == svc]:
+        for a in [precreation_acked_range(svc)] + [ack for ack in acked if ack.mon_svcname == svc]:
             (ab, ae) = (a.mon_begin, a.mon_end)
 
             if _e >= ab and b <= ae:
