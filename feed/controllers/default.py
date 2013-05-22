@@ -819,6 +819,10 @@ def insert_stats(data, auth):
                     vcpus = str(get_vcpus(auth[1], vmname))
                     cache[vmname] = vcpus
                 vals[i].append(vcpus)
+        max = 10000
+        while len(vals) > max:
+            generic_insert('stats_'+stat, vars, vals[:max])
+            vals = vals[max:]
         generic_insert('stats_'+stat, vars, vals)
     feed_enqueue("update_dash_netdev_errors" , auth[1])
 
