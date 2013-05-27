@@ -4636,10 +4636,14 @@ def feed_dequeue():
     from gluon.shell import exec_environment
 
     log = logging.getLogger('sched')
-    #logfile = "/tmp/feed_dequeue.log"
-    #logfilehandler = logging.FileHandler(logfile)
-    #logfilehandler.setFormatter(logformatter)
-    #log.addHandler(logfilehandler)
+    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    logfile = "/tmp/feed_dequeue.log"
+    handler = logging.handlers.RotatingFileHandler(logfile,
+                                                   maxBytes=5242880,
+                                                   backupCount=5)
+    handler.setFormatter(formatter)
+    log.addHandler(handler)
+    log.propagate = False
     log.setLevel(logging.INFO)
     log.info("logger initialized")
 
@@ -4673,8 +4677,9 @@ def feed_dequeue():
                 args = cPickle.loads(args)
                 try:
                     globals()[fn](*args)
-                except:
+                except Exception as e:
                     # 1 retry
+                    log.info("retry function %s on exception %s: %s"%(fn, type(e), str(e)))
                     globals()[fn](*args)
                 db(db.feed_queue.id==id).delete()
                 db.commit()
@@ -4718,14 +4723,14 @@ def feed_dequeue():
                 if not q.empty():
                     queues_empty = False
                     break
-            if last > 0 and queues_empty and n0 // 10 == 0 and db(db.feed_queue.id<last).count() > 0:
+            if last > 0 and queues_empty and n0 // 60 == 0 and db(db.feed_queue.id<last).count() > 0:
                 # once in a while, if queues are empty, retry errored entries
-                entries = db(db.feed_queue.id<last).select(limitby=(0,50), orderby=db.feed_queue.id)
+                entries = db(db.feed_queue.id<last).select(orderby=db.feed_queue.id)
                 if len(entries) > 0:
                     log.info("got %d stalled entries to dequeue"% len(entries))
             else:
                 # don't fetch already scheduled entries
-                entries = db(db.feed_queue.id>last).select(limitby=(0,50), orderby=db.feed_queue.id)
+                entries = db(db.feed_queue.id>last).select(limitby=(0,1000), orderby=db.feed_queue.id)
                 if len(entries) > 0:
                     log.info("got %d entries to dequeue"% len(entries))
         except:
