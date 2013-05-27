@@ -86,8 +86,48 @@ def cron_scrub_svcstatus():
     for svcname in svcs:
         svc_log_update(svcname, "undef")
 
+def _cron_stats_purge(table, day):
+    sql = """select date from stats_%(table)s order by date limit 1""" % dict(table=table)
+    oldest = db.executesql(sql)[0][0]
+    if oldest > day:
+        print "oldest entry is dated %s, threshold is set to %s ... skip table %s purge"%(str(oldest), str(day), table)
+        return
+    delta = day - oldest
+    print "%d days to purge in table %s" % (delta.days, table)
+    for i in range(delta.days):
+        _day = oldest + datetime.timedelta(days=i)
+        print " purge table %s till %s" % (table, str(_day))
+        sql = """delete from stats_%s where date < "%s" """%(table, str(_day))
+        db.executesql(sql)
+
+def cron_stats_purge():
+    try:
+        config = local_import('config', reload=True)
+        days = config.stats_retention_days
+    except:
+        days = 365
+    day = now - datetime.timedelta(days=days)
+
+    tables = ['cpu',
+              'swap',
+              'netdev',
+              'blockdev',
+              'block',
+              'mem_u',
+              'netdev_err',
+              'proc']
+    for table in tables:
+        try:
+            _cron_stats_purge(table, day)
+        except Exception as e:
+            print e
+
 def cron_stats():
     # refresh db tables
+    try:
+        cron_stats_purge()
+    except:
+        pass
     try:
         cron_stat_day()
     except:
