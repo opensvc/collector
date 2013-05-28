@@ -32,8 +32,8 @@ def _ajax_pkgdiff(nodes):
                       count(pkg_nodename) as c
                from packages
                where pkg_nodename in (%(nodes)s)
-               group by pkg_name,pkg_version,pkg_arch
-               order by pkg_name,pkg_version,pkg_arch
+               group by pkg_name,pkg_version,pkg_arch,pkg_type
+               order by pkg_name,pkg_version,pkg_arch,pkg_type
              ) as t
              where t.c!=%(n)s;
           """%dict(n=n, nodes=','.join(map(repr, nodes)))

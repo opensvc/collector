@@ -3858,7 +3858,8 @@ def update_dash_pkgdiff(nodename):
                    group by
                      pkg_name,
                      pkg_version,
-                     pkg_arch
+                     pkg_arch,
+                     pkg_type
                   ) as t
                   where
                     t.c!=%(n)s
