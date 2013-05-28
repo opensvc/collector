@@ -369,11 +369,6 @@ db.define_table('v_svcmon',
     Field('enclosure'),
     migrate=False)
 
-db.define_table('v_svcmon_clusters',
-    db.v_svcmon,
-    Field('nodes'),
-    migrate=False)
-
 db.define_table('drpservices',
     Field('drp_svcname'),
     Field('drp_wave'),
@@ -864,17 +859,6 @@ db.define_table('stats_netdev',
     Field('txkBps', 'float'),
     Field('rxpckps', 'float'),
     Field('txpckps', 'float'),
-    migrate=False)
-
-db.define_table('v_stats_netdev_err_avg_last_day',
-    Field('id'),
-    Field('nodename', 'string', length=60),
-    Field('dev', 'string', length=8),
-    Field('avgrxerrps', 'float'),
-    Field('avgtxerrps', 'float'),
-    Field('avgcollps', 'float'),
-    Field('avgrxdropps', 'float'),
-    Field('avgtxdropps', 'float'),
     migrate=False)
 
 db.define_table('packages',

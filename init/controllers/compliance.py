@@ -6054,7 +6054,7 @@ def ajax_compliance_svc():
     nodes = [r.mon_nodname for r in rows]
     vnodes = [r.mon_vmname for r in rows if r.mon_vmname is not None and r.mon_vmname != ""]
     for r in rows:
-        if r.mon_vmname is not None and r.mon_vmname not in nodes:
+        if r.mon_vmname is not None and r.mon_vmname != "" and r.mon_vmname not in nodes:
             nodes.append(r.mon_vmname)
 
     for node in nodes:
