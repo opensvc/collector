@@ -115,7 +115,8 @@ def cron_stats_purge():
               'block',
               'mem_u',
               'netdev_err',
-              'proc']
+              'proc',
+              'svc']
     for table in tables:
         try:
             _cron_stats_purge(table, day)
