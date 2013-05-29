@@ -99,6 +99,7 @@ def _cron_stats_purge(table, day):
         print " purge table %s till %s" % (table, str(_day))
         sql = """delete from stats_%s where date < "%s" """%(table, str(_day))
         db.executesql(sql)
+    db.commit()
 
 def cron_stats_purge():
     try:
