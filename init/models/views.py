@@ -57,6 +57,9 @@ def delta_to_date(s):
 
 
 def _where(query, table, var, field):
+    if table not in db:
+        return query
+
     if query is None:
         query = (db[table].id > 0)
     if var is None: return query
