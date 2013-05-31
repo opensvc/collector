@@ -8,6 +8,7 @@ import MySQLdb
 from multiprocessing import Process, JoinableQueue, Queue
 from subprocess import *
 from socket import *
+import json
 
 basedir = os.path.realpath(os.path.dirname(__file__))
 sys.path.append(basedir)
@@ -83,7 +84,7 @@ def get_queued():
     if conn is None:
         return []
     cursor = conn.cursor()
-    cursor.execute("SELECT a.id, a.command, a.action_type, a.nodename, n.fqdn, n.listener_port FROM action_queue a join nodes n on a.nodename=n.nodename where a.status='W'")
+    cursor.execute("SELECT a.id, a.command, a.action_type, a.nodename, n.fqdn, n.listener_port, a.form_id FROM action_queue a join nodes n on a.nodename=n.nodename where a.status='W'")
     cmds = []
     ids = []
     while (1):
@@ -98,7 +99,7 @@ def get_queued():
                 nodename = row[3]
             notify_node(nodename, port)
             continue
-        cmds.append((row[0], row[1]))
+        cmds.append((row[0], row[1], row[6]))
         ids.append(str(row[0]))
     if len(ids) > 0:
         cursor.execute("update action_queue set status='Q' where id in (%s)"%(','.join(ids)))
@@ -107,11 +108,11 @@ def get_queued():
     conn.close()
     return cmds
 
-def dequeue_worker(i, q):
+def dequeue_worker(i, recv, send):
     idle = False
     while True:
         try:
-            (id, cmd) = q.get()
+            (id, cmd, form_id) = recv.get()
         except Queue.Empty:
             if not idle:
                 print '[%d] idle'%(i)
@@ -141,10 +142,106 @@ def dequeue_worker(i, q):
               """%(now, process.returncode, repr(out), repr(err), id)
         cursor.execute(sql)
         conn.commit()
+
+        if form_id is not None:
+            send.put(dict(
+                       id=id,
+                       form_id=form_id,
+                       cmd=cmd,
+                       ret=process.returncode,
+                       out=out,
+                       err=err
+            ))
         cursor.close()
         conn.close()
-        q.task_done()
+        recv.task_done()
     sys.exit(0)
+
+def get_form_scripts(conn, cursor, form_id):
+    script_data = None
+    sql = """select form_scripts from forms_store where id=%s"""%form_id
+    cursor.execute(sql)
+    while (1):
+        row = cursor.fetchone()
+        if row is None:
+            break
+        scripts_data = row[0]
+    return scripts_data
+
+def update_form_id(data):
+    id = data['id']
+    form_id = data['form_id']
+    out = data['out']
+    err = data['err']
+    ret = data['ret']
+    cmd = data['cmd']
+
+    conn = get_conn()
+    if conn is None:
+        return
+    cursor = conn.cursor()
+
+    for i in range(5):
+        script_data = get_form_scripts(conn, cursor, form_id)
+        if script_data is None:
+            print "form %s not found. wait."%str(form_id)
+            time.sleep(1)
+        break
+
+    if script_data is None:
+        print "form %s not found. abort."%str(form_id)
+        return
+
+    script_data = script_data.replace("\r", "\\r").replace("\n", "\\n").replace("\t", "\\t")
+    try:
+        script_data = json.loads(script_data)
+    except Exception as e:
+        print e
+        script_data = {'returncode': 0}
+
+    script_data[str(id)] = {
+      'path': " ".join(cmd),
+      'stdout': out,
+      'stderr': err,
+      'returncode': ret,
+    }
+    if ret != 0:
+        script_data['returncode'] = 1
+
+    print "updating form_id", form_id, "with script data", script_data
+    sql = """update forms_store set form_scripts='%s' where id=%s""" % (json.dumps(script_data), str(form_id))
+    cursor.execute(sql)
+    conn.commit()
+
+    sql = """select id from action_queue where form_id=%s"""%str(form_id)
+    cursor.execute(sql)
+    conn.commit()
+    todo = []
+    done = []
+    while (1):
+        row = cursor.fetchone()
+        if row is None:
+            break
+        todo.append(row[0])
+    for key in script_data.keys():
+        try:
+            done.append(int(key))
+        except:
+            pass
+    print "todo", todo, "done", done
+    if set(todo) == set(done):
+        close_workflow(form_id, conn, cursor)
+
+    cursor.close()
+    conn.close()
+
+def close_workflow(form_id, conn, cursor):
+    print "close workflow %s is the tail form of"%str(form_id)
+    sql = """update workflows set status="closed" where last_form_id=%s"""%str(form_id)
+    cursor.execute(sql)
+    sql = """update forms_store set form_next_id=0 where id=%s"""%str(form_id)
+    cursor.execute(sql)
+    conn.commit()
 
 def get_conn():
     try:
@@ -159,9 +256,9 @@ def get_conn():
 
 ps = []
 
-def start_workers(q):
+def start_workers(send, recv):
     for i in range(0, N_THREAD):
-        p = Process(target=dequeue_worker, args=(i, q), name='[worker%d]'%i)
+        p = Process(target=dequeue_worker, args=(i, send, recv), name='[worker%d]'%i)
         p.start()
         ps.append(p)
 
@@ -174,10 +271,19 @@ def stop_workers():
 
 def dequeue():
     idle = False
-    q = JoinableQueue()
-    start_workers(q)
+    send = JoinableQueue()
+    recv = JoinableQueue()
+    start_workers(send, recv)
     while True:
         bunch = get_queued()
+        while not recv.empty():
+            data = recv.get()
+            print "scheduler recv data:", data
+            try:
+                update_form_id(data)
+            except Exception as e:
+                print e
+            recv.task_done()
         if len(bunch) == 0:
             if not idle:
                 print "[Queue manager] idle"
@@ -185,8 +291,8 @@ def dequeue():
             time.sleep(1)
             continue
         idle = False
-        for id, cmd in bunch:
-            q.put((id, cmd), block=True)
+        for id, cmd, form_id in bunch:
+            send.put((id, cmd, form_id), block=True)
     #stop_workers()
 
 try:

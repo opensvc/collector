@@ -903,14 +903,19 @@ def format_form_script(path, script_data):
         cl = "nok"
     return TABLE(
       TR(
-        TD(T('path'), _class=cl),
+        TD(T('command id'), _class=cl),
         TD(path),
         _onclick="""$(this).siblings().toggle(400)""",
         _class="clickable",
       ),
       TR(
+        TD(T("command"), _class=cl),
+        TD(script_data['path'], _class="pre", _style="max-width:80em"),
+        _style="display:none",
+      ),
+      TR(
         TD(T("return code"), _class=cl),
-        TD(script_data['returncode']),
+        TD(script_data['returncode'], _class="pre", _style="max-width:80em"),
         _style="display:none",
       ),
       TR(
@@ -926,19 +931,33 @@ def format_form_script(path, script_data):
     )
 
 def format_form_scripts(form_scripts):
+    if form_scripts is not None:
+        form_scripts = form_scripts.replace("\r", "\\r").replace("\n", "\\n").replace("\t", "\\t")
     try:
         data = json.loads(form_scripts)
-    except:
+    except Exception as e:
+        #return str(e)
         data = {}
     if len(data) < 2:
         return ""
     l = []
-    for id, script_data in data.items():
-        if id == 'returncode':
-            continue
+
+    keys = data.keys()
+    keys.remove('async')
+    keys.remove('returncode')
+
+    if 'async' in data and data['async'] > len(keys):
+        async = SPAN(T('Async commands scheduled. Waiting results.'), _class='time16')
+    else:
+        async = SPAN()
+
+    for id in keys:
+        script_data = data[id]
         l.append(format_form_script(id, script_data))
+
     return DIV(
       H3(T("Scripts executed for this workflow step")),
+      async,
       DIV(l),
     )
 
@@ -1079,7 +1098,9 @@ def workflow():
         output = outputs[0]
         return output.get('Scripts')
 
-    if wf.forms_store.form_next_id is not None:
+    if wf.forms_store.form_next_id == 0:
+        _forms_list = T("This workflow is closed")
+    elif wf.forms_store.form_next_id is not None:
         _forms_list = T("This workflow step is already completed")
     elif wf.forms_store.form_assignee != user_name() and \
          wf.forms_store.form_assignee not in user_groups():

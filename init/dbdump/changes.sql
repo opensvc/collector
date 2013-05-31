@@ -3442,3 +3442,11 @@ CREATE TABLE `appinfo_log` (
 alter table action_queue add column user_id integer;
 
 create view v_action_queue as select a.*, concat(u.first_name, " ", u.last_name) as username from action_queue a left join auth_user u on a.user_id=u.id;
+
+alter table action_queue add column form_id integer;
+
+drop view v_action_queue;
+
+create view v_action_queue as select a.*, concat(u.first_name, " ", u.last_name) as username from action_queue a left join auth_user u on a.user_id=u.id;
+
+# alter table packages modify column pkg_type varchar(7) DEFAULT '';

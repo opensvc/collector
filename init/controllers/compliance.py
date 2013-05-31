@@ -4031,31 +4031,35 @@ def fix_module_on_node():
     ids = [row.id]
     do_action(ids, 'fix')
 
+def fmt_action(nodename, svcname, action, action_type="push", mod=[], modset=[]):
+    base_cmd = ['compliance', action]
+    if len(mod) > 0:
+        base_cmd += ['--module', ','.join(mod)]
+    if len(modset) > 0:
+        base_cmd += ['--moduleset', ','.join(modset)]
+    if action_type == "pull":
+        return ' '.join(cmd)
+
+    if svcname is None or svcname == "":
+        _cmd = ["/opt/opensvc/bin/nodemgr"]
+    else:
+        _cmd = ["/opt/opensvc/bin/svcmgr", "-s", svcname]
+
+    cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
+                  '-o', 'ForwardX11=no',
+                  '-o', 'PasswordAuthentication=no',
+                  '-tt',
+           'opensvc@'+nodename,
+           '--',
+           'sudo'] + _cmd + base_cmd
+    return ' '.join(cmd)
+
 @auth.requires_membership('CompExec')
 def do_action(ids, action=None):
     if action is None or len(action) == 0:
         raise ToolError("no action specified")
     if len(ids) == 0:
         raise ToolError("no target to execute %s on"%action)
-
-    def fmt_action(nodename, svcname, action, mod, action_type="push"):
-        base_cmd = ['compliance', action, '--module', mod]
-        if action_type == "pull":
-            return ' '.join(cmd)
-
-        if svcname is None or svcname == "":
-            _cmd = ["/opt/opensvc/bin/nodemgr"]
-        else:
-            _cmd = ["/opt/opensvc/bin/svcmgr", "-s", svcname]
-
-        cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
-                      '-o', 'ForwardX11=no',
-                      '-o', 'PasswordAuthentication=no',
-                      '-tt',
-               'opensvc@'+nodename,
-               '--',
-               'sudo'] + _cmd + base_cmd
-        return ' '.join(cmd)
 
     q = db.comp_status.id.belongs(ids)
     q &= db.comp_status.run_nodename == db.nodes.nodename
@@ -4090,8 +4094,8 @@ def do_action(ids, action=None):
                      fmt_action(row.comp_status.run_nodename,
                                 row.comp_status.run_svcname,
                                 action,
-                                row.comp_status.run_module,
-                                action_type),
+                                action_type,
+                                mod=[row.comp_status.run_module]),
                      str(auth.user_id)
                     ])
 
@@ -6565,7 +6569,7 @@ def show_rsetdiff(svcname):
 
     return DIV(fmt_table(_rows))
 
-def ajax_info(msg):
+def ajax_info(msg, to_session=False):
     if type(msg) == list:
         l = []
         rets = [0, 0]
@@ -6579,9 +6583,13 @@ def ajax_info(msg):
                        _src=URL(c='static', f=img),
                        _style="padding-right:0.5em;vertical-align:bottom",
                      )
+            try:
+                _msg = TT(T(e[2], e[3]))
+            except Exception as e:
+                _msg = str(e)
             d = DIV(
                   status,
-                  SPAN(TT(T(e[2], e[3]))),
+                  SPAN(_msg),
                 )
             l.append(d)
         if rets[1] == 0:
@@ -6619,7 +6627,10 @@ def ajax_info(msg):
           _class="box",
           _style="text-align:left;padding:3em",
         )
-    session.flash = d
+
+    if to_session:
+        session.flash = d
+
     return d
 
 def ajax_error(msg):
@@ -7247,7 +7258,8 @@ $("#%(counter)s").val(count);
 
         if _prev_wfid is not None and _prev_wfid != 'None':
             submit_vars["prev_wfid"] = _prev_wfid
-            callback = """function(){window.location="%s"}"""%request.env.http_referer
+            callback = """function(){window.location="%s"}"""%URL(c='forms', f='workflow', vars={'wfid': _prev_wfid, 'tail':1})
+            #callback = "function(){}"
         else:
             callback = "reload_ajax_custo"
 
@@ -7279,6 +7291,7 @@ function reload_ajax_custo(){
   $("select#nodename").change()
   $("select#rset").change()
 }
+$(%(rid)s).html("")
 sync_ajax('%(url)s', ids, '%(rid)s', %(callback)s)
 """%dict(
                    callback=callback,
@@ -8004,7 +8017,8 @@ def mail_form(output, data, form, to=None, record_id=None, _d=None):
     mail.send(to=to,
               subject=title.encode("utf-8"),
               message=message)
-    return [(0, "form.submit", "Mail sent to %(to)s on form %(form_name)s submission." , dict(to=', '.join(to), form_name=form.form_name))]
+    _to = str(', '.join(to))
+    return [(0, "form.submit", "Mail sent to %(to)s on form %(form_name)s submission." , dict(to=_to, form_name=form.form_name))]
 
 def check_output_condition(output, form, data, _d=None):
     cond = output.get('Condition', 'none')
@@ -8045,11 +8059,50 @@ def check_output_condition(output, form, data, _d=None):
 
     raise Exception("operator is not supported in output condition %s"%cond)
 
+def ordered_outputs(data):
+    l = []
+    h = {}
+
+    dest_order = [
+     'db',
+     'compliance variable',
+     'script',
+     'workflow',
+     'compliance fix',
+     'mail',
+    ]
+
+    for output in data.get('Outputs', []):
+        dest = output.get('Dest')
+        if dest not in h:
+            h[dest] = [output]
+        else:
+            h[dest].append(output)
+
+    unclassified = set(h.keys()) - set(dest_order)
+
+    for dest in dest_order + list(unclassified):
+        if dest in h:
+            l += h[dest]
+
+    return l
+
 def ajax_generic_form_submit(form, data, _d=None):
     log = []
     __var_id = request.vars.var_id
     _scripts = {'returncode': 0}
     for output in data.get('Outputs', []):
+        if output.get('Dest') == 'workflow':
+            if request.vars.prev_wfid is not None and request.vars.prev_wfid != 'None':
+                # workflow continuation
+                q = db.forms_store.id == request.vars.prev_wfid
+                prev_wf = db(q).select().first()
+                if prev_wf.form_next_id is not None:
+                    log.append((1, "form.store",  "This step is already completed (id=%(id)d)", dict(id=prev_wf.id)))
+                    return ajax_info(log)
+
+    record_id = None
+    for output in ordered_outputs(data):
         try:
             chkcond = check_output_condition(output, form, data, _d)
         except Exception as e:
@@ -8085,6 +8138,81 @@ def ajax_generic_form_submit(form, data, _d=None):
                 log.append((0, "form.submit", "Data inserted in database table", dict()))
             except Exception, e:
                 log.append((1, "form.submit", "Data insertion in database table error: %(err)s", dict(err=str(e))))
+        elif dest == "compliance fix":
+            if record_id is None:
+                log.append((1, "form.submit", "Can not execute the 'compliance fix' without a valid workflow", dict()))
+                continue
+            modsets = data.get("Modulesets", [])
+            if len(modsets) == 0:
+                log.append((1, "form.submit", "'Modulesets' must be specified in the form definition for the 'compliance fix' output", dict()))
+                continue
+            vals = []
+            vars = ['nodename', 'svcname', 'action_type', 'command', 'user_id', 'form_id']
+            svcname = request.vars.svcname
+            nodename = request.vars.nodename
+            if __var_id is not None:
+                q = db.comp_rulesets_variables.id == __var_id
+                q &= db.comp_rulesets_variables.ruleset_id == db.comp_rulesets.id
+                row = db(q).select(db.comp_rulesets.ruleset_name).first()
+                if row is None:
+                    log.append((1, "form.submit", "Unable to retrieve compliance variable %(var_id)s ruleset name", dict(var_id=__var_id)))
+                    continue
+                rset_name = row.ruleset_name
+                if rset_name.startswith('svc.'):
+                    svcname = rset_name.replace('svc.', '')
+                elif rset_name.startswith('node.'):
+                    nodename = rset_name.replace('node.', '')
+                else:
+                    log.append((1, "form.submit", "Unable to detecode service or nodename from ruleset name %(rset_name)s", dict(rset_name=rset_name)))
+                    continue
+            if nodename is None and svcname is None:
+                log.append((1, "form.submit", "No nodename nor svcname specified to 'compliance fix' output handler", dict()))
+                continue
+            nodes = [nodename]
+            if nodename is None and svcname is not None:
+                q = db.svcmon.mon_svcname == svcname
+                rows = db(q).select(db.svcmon.mon_nodname)
+                if len(rows) == 0:
+                    log.append((1, "form.submit", "No nodes found running service %(svcname)s", dict(svcname=svcname)))
+                    continue
+                nodes = [r.mon_nodname for r in rows]
+
+            _scripts['async'] = len(nodes)
+            q = db.forms_store.id == record_id
+            db(q).update(form_scripts=json.dumps(_scripts))
+
+            for nodename in nodes:
+                q = db.nodes.nodename == nodename
+                row = db(q).select(db.nodes.os_name).first()
+                if row is None:
+                    log.append((1, "form.submit", "No asset information found for node %(nodename)s", dict(nodename=nodename)))
+                    continue
+
+                if row.os_name == "Windows":
+                    action_type = "pull"
+                else:
+                    action_type = "push"
+
+                vals.append([nodename,
+                             svcname,
+                             action_type,
+                             fmt_action(nodename,
+                                        svcname,
+                                        "check",
+                                        action_type,
+                                        modset=modsets),
+                             str(auth.user_id),
+                             str(record_id)
+                            ])
+
+            purge_action_queue()
+            generic_insert('action_queue', vars, vals)
+            log.append((0, "form.submit", "Compliance fix commands queued for asynchronous execution on %(nodes)s", dict(nodes=', '.join(nodes))))
+
+            from subprocess import Popen
+            actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
+            process = Popen(actiond)
+            process.communicate()
         elif dest == "script":
             import os
             import subprocess
@@ -8128,7 +8256,7 @@ def ajax_generic_form_submit(form, data, _d=None):
                   'stderr': "Script %(path)s execution error: %(err)s "%dict(path=path, err=str(e))
                 }
                 continue
- 
+
             _scripts['returncode'] += p.returncode
             _scripts[path] = {
               'path': path,
@@ -8156,7 +8284,11 @@ def ajax_generic_form_submit(form, data, _d=None):
                     script_defs = output['Scripts'].get('Success')
                 else:
                     script_defs = output['Scripts'].get('Error')
-                if script_defs is None:
+
+                if 'async' in _scripts:
+                    next_forms = ['to be determined']
+                    form_assignee = None
+                elif script_defs is None:
                     next_forms = None
                     form_assignee = None
                 else:
@@ -8284,6 +8416,8 @@ def ajax_generic_form_submit(form, data, _d=None):
             if next_id != 0 and output.get('Mail', False):
                 log += mail_form(output, data, form, to=form_assignee, record_id=record_id, _d=_d)
 
+            db.commit()
+
         elif dest == "compliance variable":
             r = ajax_custo_form_submit(output, data)
             if type(r) == dict:
@@ -8306,6 +8440,9 @@ def ajax_generic_form_submit(form, data, _d=None):
 
     for ret, action, fmt, d in log:
         _log(action, fmt, d)
+
+    if request.vars.prev_wfid is not None and request.vars.prev_wfid != 'None':
+        ajax_info(log, to_session=True)
 
     return ajax_info(log)
 

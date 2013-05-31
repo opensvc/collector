@@ -1,8 +1,12 @@
+class col_form_id(HtmlTableColumn):
+    def html(self, o):
+        s = self.get(o)
+        return A(s, _href=URL(c='forms', f='workflow', vars={'wfid': s}))
+
 class col_std(HtmlTableColumn):
     def html(self, o):
         s = self.get(o)
         return PRE(s)
-
 
 class col_ret(HtmlTableColumn):
     def html(self, o):
@@ -37,6 +41,7 @@ class table_actions(HtmlTable):
                      'nodename',
                      'svcname',
                      'username',
+                     'form_id',
                      'action_type',
                      'date_queued',
                      'date_dequeued',
@@ -50,6 +55,12 @@ class table_actions(HtmlTable):
                      field='id',
                      img='action16',
                      display=False,
+                    ),
+            'form_id': col_form_id(
+                     title='Request form id',
+                     field='form_id',
+                     img='wf16',
+                     display=True,
                     ),
             'status': col_action_status(
                      title='Status',
