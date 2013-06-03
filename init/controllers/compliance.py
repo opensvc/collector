@@ -17,6 +17,8 @@ tables = {
     'nodes':dict(name='nodes', title='nodes', cl='node16', hide=False),
     'services':dict(name='services', title='services', cl='svc', hide=False),
     'svcmon':dict(name='svcmon', title='service status', cl='svc', hide=False),
+    'node_hba':dict(name='node_hba', title='node host bus adapaters', cl='node16', hide=False),
+    'b_disk_app':dict(name='b_disk_app', title='disks', cl='hd16', hide=False),
 }
 operators = [dict(id='op0', title='='),
              dict(id='op1', title='LIKE'),
@@ -29,10 +31,14 @@ props = v_services_colprops
 props.update(svcmon_colprops)
 props.update(v_svcmon_colprops)
 props.update(v_nodes_colprops)
+props.update(node_hba_colprops)
+props.update(disk_app_colprops)
 fields = {
     'nodes': db.nodes.fields,
     'services': db.services.fields,
     'svcmon': db.svcmon.fields,
+    'b_disk_app': db.b_disk_app.fields,
+    'node_hba': db.node_hba.fields,
 }
 
 import re
@@ -6644,7 +6650,7 @@ def ajax_error(msg):
              _class="box",
              _style="text-align:left;padding:3em",
            )
-    session.flash = d
+    #session.flash = d
     return d
 
 def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detailed=False, showexpert=False, display_digest=False):
@@ -6751,15 +6757,16 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
                 n = input['DisplayModeTrim']
                 if len(default) >= n:
                     default = default[0:n//3] + "..." + default[-n//3*2:]
-            if not display_detailed and \
-               data['Outputs'][0].get('Format') in ('list of dict', 'dict of dict'):
-                if type(default) in (unicode, str) and len(default) > 25:
-                    s = default[:10]+"..."+default[-12:]
-                else:
-                    s = default
-                _input = SPAN(s, _title=default)
-            else:
-                _input = SPAN(default)
+            #if not display_detailed and \
+            #   data['Outputs'][0].get('Format') in ('list of dict', 'dict of dict'):
+            #    if type(default) in (unicode, str) and len(default) > 25:
+            #        s = default[:10]+"..."+default[-12:]
+            #    else:
+            #        s = default
+            #    _input = SPAN(s, _title=default)
+            #else:
+            #    _input = SPAN(default)
+            _input = SPAN(default)
             _help = ""
         elif 'Candidates' in input and not input.get('ReadOnly', False):
             if input['Candidates'] == "__node_selector__":

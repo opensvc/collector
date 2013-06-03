@@ -349,6 +349,15 @@ def filterset_query(row, nodes, services):
             rows = db(qry).select(db.svcmon.mon_nodname, db.svcmon.mon_svcname)
             n_nodes = set(map(lambda x: x.mon_nodname, rows)) - set([None])
             n_services = set(map(lambda x: x.mon_svcname, rows)) - set([None])
+        elif v.f_table == 'b_disk_app':
+            rows = db(qry).select(db.b_disk_app.disk_nodename, db.b_disk_app.disk_svcname)
+            n_nodes = set(map(lambda x: x.disk_nodename, rows)) - set([None])
+            n_services = set(map(lambda x: x.disk_svcname, rows)) - set([None])
+        elif v.f_table == 'node_hba':
+            rows = db(qry).select(db.svcmon.mon_svcname, db.svcmon.mon_nodname,
+                                  left=db.svcmon.on(db.node_hba.nodename==db.svcmon.mon_nodname))
+            n_nodes = set(map(lambda x: x.mon_nodname, rows)) - set([None])
+            n_services = set(map(lambda x: x.mon_svcname, rows)) - set([None])
         else:
             raise Exception(str(v))
 
