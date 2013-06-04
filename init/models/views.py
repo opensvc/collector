@@ -230,13 +230,11 @@ def or_apply_filters(q, node_field=None, service_field=None, fset_id=None):
 
     return q
 
-def apply_filters(q, node_field=None, service_field=None, fset_id=None):
+def apply_filters(q, node_field=None, service_field=None, fset_id=None, nodename=None, svcname=None):
     if fset_id is None or fset_id == 0:
         if auth.user_id is None:
             return q
-        v = db.v_gen_filtersets
-        o = v.f_order
-        qry = db.gen_filterset_user.fset_id == v.fset_id
+        qry = db.gen_filterset_user.fset_id == db.v_gen_filtersets.fset_id
         qry &= db.gen_filterset_user.user_id == auth.user_id
     else:
         qry = db.v_gen_filtersets.fset_id == fset_id
@@ -247,26 +245,32 @@ def apply_filters(q, node_field=None, service_field=None, fset_id=None):
 
     nodes = set([])
     services = set([])
+    i = 0
     for row in rows:
-        nodes, services = filterset_query(row, nodes, services)
+        nodes, services = filterset_query(row, nodes, services, i=i, nodename=nodename, svcname=svcname)
+        i += 1
 
     n_nodes = len(nodes)
     n_services = len(services)
 
     if n_nodes > 0 and n_services > 0 and node_field is not None and service_field is not None:
         q &= ((node_field=="")|(node_field.belongs(nodes))) & ((service_field=="")|(service_field.belongs(services)))
-    elif len(nodes) > 0 and node_field is not None:
+    elif n_nodes == 1 and node_field is not None:
+        q &= node_field == list(nodes)[0]
+    elif n_nodes > 0 and node_field is not None:
         q &= node_field.belongs(nodes)
-    elif len(services) > 0 and service_field is not None:
+    elif n_services == 1 and service_field is not None:
+        q &= service_field == list(services)[0]
+    elif n_services > 0 and service_field is not None:
         q &= service_field.belongs(services)
-    elif len(nodes) == 0 and node_field is not None:
+    elif n_nodes == 0 and node_field is not None:
         q &= node_field == '.'
-    elif len(services) == 0 and service_field is not None:
+    elif n_services == 0 and service_field is not None:
         q &= service_field == '.'
 
     return q
 
-def filterset_query(row, nodes, services):
+def filterset_query(row, nodes, services, i=0, nodename=None, svcname=None):
     if 'v_gen_filtersets' in row:
         v = row.v_gen_filtersets
     else:
@@ -278,28 +282,30 @@ def filterset_query(row, nodes, services):
         rows = db(qr).select(orderby=o)
         n_nodes = set([])
         n_services = set([])
+        j = 0
         for r in rows:
-            n_nodes, n_services = filterset_query(r, n_nodes, n_services)
+            n_nodes, n_services = filterset_query(r, n_nodes, n_services, i=j, nodename=nodename, svcname=svcname)
+            j += 1
         if 'NOT' in v.f_log_op:
             all_nodes = set([r.nodename for r in db(db.nodes.id>0).select(db.nodes.nodename)])
             all_services = set([r.svc_name for r in db(db.services.id>0).select(db.services.svc_name)])
             n_nodes = all_nodes - n_nodes
             n_services = all_services - n_services
         if v.f_log_op == 'AND':
-            if nodes == set([]):
+            if i == 0:
                 nodes = n_nodes
             else:
                 nodes &= n_nodes
-            if services == set([]):
+            if i == 0:
                 services = n_services
             else:
                 services &= n_services
         elif v.f_log_op == 'OR':
-            if nodes == set([]):
+            if i == 0:
                 nodes = n_nodes
             else:
                 nodes |= n_nodes
-            if services == set([]):
+            if i == 0:
                 services = n_services
             else:
                 services |= n_services
@@ -336,46 +342,66 @@ def filterset_query(row, nodes, services):
             qry = ~qry
 
         if v.f_table == 'services':
-            rows = db(qry).select(db.svcmon.mon_svcname, db.svcmon.mon_nodname,
+            if svcname is not None:
+                qry &= db.services.svc_name == svcname
+            if nodename is not None:
+                qry &= db.svcmon.mon_nodname == nodename
+            rows = db(qry).select(db.services.svc_name, db.svcmon.mon_nodname,
                                   left=db.svcmon.on(db.services.svc_name==db.svcmon.mon_svcname))
-            n_nodes = set(map(lambda x: x.mon_nodname, rows)) - set([None])
-            n_services = set(map(lambda x: x.mon_svcname, rows)) - set([None])
+            n_nodes = set(map(lambda x: x.svcmon.mon_nodname, rows)) - set([None])
+            n_services = set(map(lambda x: x.services.svc_name, rows)) - set([None])
         elif v.f_table == 'nodes':
+            if svcname is not None:
+                qry &= db.svcmon.mon_svcname == svcname
+            if nodename is not None:
+                qry &= db.nodes.nodename == nodename
             rows = db(qry).select(db.svcmon.mon_svcname, db.nodes.nodename,
                                   left=db.svcmon.on(db.nodes.nodename==db.svcmon.mon_nodname))
             n_nodes = set(map(lambda x: x.nodes.nodename, rows)) - set([None])
             n_services = set(map(lambda x: x.svcmon.mon_svcname, rows)) - set([None])
         elif v.f_table == 'svcmon':
+            if svcname is not None:
+                qry &= db.svcmon.mon_svcname == svcname
+            if nodename is not None:
+                qry &= db.svcmon.mon_nodname == nodename
             rows = db(qry).select(db.svcmon.mon_nodname, db.svcmon.mon_svcname)
             n_nodes = set(map(lambda x: x.mon_nodname, rows)) - set([None])
             n_services = set(map(lambda x: x.mon_svcname, rows)) - set([None])
         elif v.f_table == 'b_disk_app':
+            if svcname is not None:
+                qry &= db.b_disk_app.disk_svcname == svcname
+            if nodename is not None:
+                qry &= db.b_disk_app.disk_nodename == nodename
             rows = db(qry).select(db.b_disk_app.disk_nodename, db.b_disk_app.disk_svcname)
             n_nodes = set(map(lambda x: x.disk_nodename, rows)) - set([None])
             n_services = set(map(lambda x: x.disk_svcname, rows)) - set([None])
         elif v.f_table == 'node_hba':
-            rows = db(qry).select(db.svcmon.mon_svcname, db.svcmon.mon_nodname,
+            if svcname is not None:
+                qry &= db.svcmon.mon_svcname == svcname
+            if nodename is not None:
+                qry &= db.node_hba.nodename == nodename
+            rows = db(qry).select(db.svcmon.mon_svcname, db.node_hba.nodename,
                                   left=db.svcmon.on(db.node_hba.nodename==db.svcmon.mon_nodname))
-            n_nodes = set(map(lambda x: x.mon_nodname, rows)) - set([None])
-            n_services = set(map(lambda x: x.mon_svcname, rows)) - set([None])
+            n_nodes = set(map(lambda x: x.node_hba.nodename, rows)) - set([None])
+            n_services = set(map(lambda x: x.svcmon.mon_svcname, rows)) - set([None])
         else:
             raise Exception(str(v))
 
         if 'AND' in v.f_log_op:
-            if nodes == set([]):
+            if i == 0:
                 nodes = n_nodes
             else:
                 nodes &= n_nodes
-            if services == set([]):
+            if i == 0:
                 services = n_services
             else:
                 services &= n_services
         elif 'OR' in v.f_log_op:
-            if nodes == set([]):
+            if i == 0:
                 nodes = n_nodes
             else:
                 nodes |= n_nodes
-            if services == set([]):
+            if i == 0:
                 services = n_services
             else:
                 services |= n_services

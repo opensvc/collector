@@ -262,6 +262,7 @@
 'Clusters with package differences amongst nodes': 'Clusters dont les noeuds ont des paquetages différents',
 'Collector user accounts': 'Comptes utilisateur du collecteur',
 'Command': 'Commande',
+'Commande': 'Commande',
 'Comment': 'Commentaire',
 'Compare': 'Comparer',
 'Compliance': 'Conformité',

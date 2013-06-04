@@ -5554,23 +5554,30 @@ def comp_get_rulesets_fset_ids(rset_ids=None, nodename=None, svcname=None, head=
             q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
             q &= db.comp_ruleset_team_responsible.group_id.belongs(svc_team_responsible_id(svcname))
 
-    l = []
+    l = {}
     rows = db(q).select()
+
+    fset_ids = [r.comp_rulesets_filtersets.fset_id for r in rows]
+    q = db.v_gen_filtersets.fset_id.belongs(fset_ids)
+    q &= db.v_gen_filtersets.f_table.belongs(['services', 'svcmon'])
+    f_rows = db(q).select(db.v_gen_filtersets.fset_id,
+                          groupby=db.v_gen_filtersets.fset_id)
+    fsets_with_svc_tables = [r.fset_id for r in f_rows]
+
     for row in rows:
-        q = db.v_gen_filtersets.fset_id == row.comp_rulesets_filtersets.fset_id
-        q &= db.v_gen_filtersets.f_table.belongs(['services', 'svcmon'])
-        f_rows = db(q).select(db.v_gen_filtersets.f_table,
-                              groupby=db.v_gen_filtersets.f_table)
-        if svcname is None and len(f_rows) > 0:
+        if svcname is None and row.comp_rulesets_filtersets.fset_id in fsets_with_svc_tables:
             # for node compliance, discard fsets services related
             continue
-        if svcname is not None and len(f_rows) == 0:
+        if svcname is not None and not row.comp_rulesets_filtersets.fset_id in fsets_with_svc_tables:
             # for service compliance, discard fsets not services related
             continue
 
-        l.append((row.comp_rulesets.id,
-                  row.comp_rulesets_filtersets.fset_id,
-                  row.gen_filtersets.fset_name))
+        t = (row.comp_rulesets_filtersets.fset_id,
+             row.gen_filtersets.fset_name)
+        if t not in l:
+            l[t] = [row.comp_rulesets.id]
+        else:
+            l[t] += [row.comp_rulesets.id]
     return l
 
 def comp_ruleset_vars(ruleset_id, qr=None, nodename=None, svcname=None, slave=False):
@@ -5680,14 +5687,14 @@ def comp_ruleset_match(id, svcname=None, nodename=None, slave=False, head=True):
 
 def _comp_ruleset_svc_match(id, svcname=None, nodename=None, slave=False, head=True):
     l = comp_get_rulesets_fset_ids([id], svcname=svcname, head=head)
-    for rset_id, fset_id, fst_name in l:
+    for fset_id, fset_name in l:
         q = db.services.svc_name == svcname
         q &= db.svcmon.mon_svcname == db.services.svc_name
         if slave:
             f = db.svcmon.mon_vmname
         else:
             f = db.svcmon.mon_nodname
-        q = apply_filters(q, f, db.svcmon.mon_svcname, fset_id=fset_id)
+        q = apply_filters(q, f, db.svcmon.mon_svcname, fset_id=fset_id, nodename=nodename, svcname=svcname)
         match = db(q).count()
         if match > 0:
             return True
@@ -5695,9 +5702,9 @@ def _comp_ruleset_svc_match(id, svcname=None, nodename=None, slave=False, head=T
 
 def _comp_ruleset_match(id, nodename=None, head=True):
     l = comp_get_rulesets_fset_ids([id], nodename=nodename, head=head)
-    for rset_id, fset_id, fst_name in l:
+    for fset_id, fset_name in l:
         q = db.nodes.nodename == nodename
-        q = apply_filters(q, db.nodes.nodename, None, fset_id=fset_id)
+        q = apply_filters(q, db.nodes.nodename, None, fset_id=fset_id, nodename=nodename)
         match = db(q).count()
         if match > 0:
             return True
@@ -5709,12 +5716,13 @@ def _comp_get_svc_per_node_ruleset(svcname, nodename, slave=False):
     # add contextual rulesets variables
     l = comp_get_rulesets_fset_ids(nodename=nodename)
 
-    for rset_id, fset_id, fset_name in l:
+    for fset_id, fset_name in l:
         q = db.nodes.nodename == nodename
-        q = apply_filters(q, db.nodes.nodename, None, fset_id=fset_id)
+        q = apply_filters(q, db.nodes.nodename, None, fset_id=fset_id, nodename=nodename)
         match = db(q).count()
         if match > 0:
-            ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, nodename=nodename, svcname=svcname, slave=slave))
+            for rset_id in l[(fset_id, fset_name)]:
+                ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, nodename=nodename, svcname=svcname, slave=slave))
 
     return ruleset
 
@@ -5725,12 +5733,13 @@ def _comp_get_svc_ruleset(svcname, slave=False):
     # add contextual rulesets variables
     l = comp_get_rulesets_fset_ids(svcname=svcname)
 
-    for rset_id, fset_id, fset_name in l:
+    for fset_id, fset_name in l:
         q = db.services.svc_name == svcname
-        q = apply_filters(q, None, db.services.svc_name, fset_id=fset_id)
+        q = apply_filters(q, None, db.services.svc_name, fset_id=fset_id, svcname=svcname)
         match = db(q).count()
         if match > 0:
-            ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, svcname=svcname, slave=slave))
+            for rset_id in l[(fset_id, fset_name)]:
+                ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, svcname=svcname, slave=slave))
 
     # add explicit rulesets variables
     q = db.comp_rulesets_services.svcname == svcname
@@ -5774,6 +5783,26 @@ def _comp_remove_dup_vars(ruleset):
                 l[var] = [(rset, i, ruleset[rset]['vars'][i][1])]
     return ruleset
 
+def test_comp_get_ruleset():
+    nodename = "x64lmwbiir9"
+    #nodename = "s64lmwbiczz"
+    nodename = "s64p17bicv8"
+
+    # initialize ruleset with asset variables
+    ruleset = comp_get_node_ruleset(nodename)
+
+    # add contextual rulesets variables
+    l = comp_get_rulesets_fset_ids(nodename=nodename)
+
+    for fset_id, fset_name in l:
+        q = db.nodes.nodename == nodename
+        q = apply_filters(q, db.nodes.nodename, None, fset_id=fset_id, nodename=nodename)
+        match = db(q).count()
+        print fset_name, match
+        if match > 0:
+            for rset_id in l[(fset_id, fset_name)]:
+                ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, nodename=nodename))
+
 def _comp_get_ruleset(nodename):
     # initialize ruleset with asset variables
     ruleset = comp_get_node_ruleset(nodename)
@@ -5781,12 +5810,13 @@ def _comp_get_ruleset(nodename):
     # add contextual rulesets variables
     l = comp_get_rulesets_fset_ids(nodename=nodename)
 
-    for rset_id, fset_id, fset_name in l:
+    for fset_id, fset_name in l:
         q = db.nodes.nodename == nodename
-        q = apply_filters(q, db.nodes.nodename, None, fset_id=fset_id)
+        q = apply_filters(q, db.nodes.nodename, None, fset_id=fset_id, nodename=nodename)
         match = db(q).count()
         if match > 0:
-            ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, nodename=nodename))
+            for rset_id in l[(fset_id, fset_name)]:
+                ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, nodename=nodename))
 
     # add explicit rulesets variables
     q = db.comp_rulesets_nodes.nodename == nodename
