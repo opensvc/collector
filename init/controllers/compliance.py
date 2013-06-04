@@ -5482,53 +5482,6 @@ def comp_log_action(vars, vals, auth):
         generic_insert('comp_status', vars, vals)
         update_dash_compdiff(auth[1])
 
-def comp_query(q, row):
-    if 'v_gen_filtersets' in row:
-        v = row.v_gen_filtersets
-    else:
-        v = row
-    if v.encap_fset_id > 0:
-        o = db.v_gen_filtersets.f_order
-        qr = db.v_gen_filtersets.fset_id == v.encap_fset_id
-        rows = db(qr).select(orderby=o)
-        qry = None
-        for r in rows:
-            qry = comp_query(qry, r)
-    else:
-        if v.f_op == '=':
-            qry = db[v.f_table][v.f_field] == v.f_value
-        elif v.f_op == '!=':
-            qry = db[v.f_table][v.f_field] != v.f_value
-        elif v.f_op == 'LIKE':
-            qry = db[v.f_table][v.f_field].like(v.f_value)
-        elif v.f_op == 'NOT LIKE':
-            qry = ~db[v.f_table][v.f_field].like(v.f_value)
-        elif v.f_op == 'IN':
-            qry = db[v.f_table][v.f_field].belongs(v.f_value.split(','))
-        elif v.f_op == 'NOT IN':
-            qry = ~db[v.f_table][v.f_field].belongs(v.f_value.split(','))
-        elif v.f_op == '>=':
-            qry = db[v.f_table][v.f_field] >= v.f_value
-        elif v.f_op == '>':
-            qry = db[v.f_table][v.f_field] > v.f_value
-        elif v.f_op == '<=':
-            qry = db[v.f_table][v.f_field] <= v.f_value
-        elif v.f_op == '<':
-            qry = db[v.f_table][v.f_field] < v.f_value
-        else:
-            return q
-    if q is None:
-        q = qry
-    elif v.f_log_op == 'AND':
-        q &= qry
-    elif v.f_log_op == 'AND NOT':
-        q &= ~qry
-    elif v.f_log_op == 'OR':
-        q |= qry
-    elif v.f_log_op == 'OR NOT':
-        q |= ~qry
-    return q
-
 def comp_format_filter(q):
     s = str(q)
     if 'comp_node_ruleset' in s:
@@ -5583,29 +5536,42 @@ def comp_get_node_ruleset(nodename):
         ruleset['vars'].append(('nodes.'+f, val))
     return {'osvc_node':ruleset}
 
-def comp_get_rulesets_filters(rset_ids=None, nodename=None, svcname=None, head=True):
-    v = db.v_gen_filtersets
-    rset = db.comp_rulesets
-    rset_fset = db.comp_rulesets_filtersets
-    o = rset.ruleset_name|v.f_order
-
+def comp_get_rulesets_fset_ids(rset_ids=None, nodename=None, svcname=None, head=True):
     if rset_ids is None:
-        q = rset.id>0
+        q = db.comp_rulesets_filtersets.ruleset_id>0
     else:
-        q = rset.id.belongs(rset_ids)
+        q = db.comp_rulesets_filtersets.ruleset_id.belongs(rset_ids)
 
-    q &= rset.id == rset_fset.ruleset_id
-    q &= rset_fset.fset_id == v.fset_id
-    q &= rset.id == db.comp_ruleset_team_responsible.ruleset_id
+    q &= db.comp_rulesets.id == db.comp_rulesets_filtersets.ruleset_id
+    q &= db.comp_rulesets_filtersets.fset_id == db.gen_filtersets.id
 
     if head:
-        q &= rset.ruleset_public == True
+        q &= db.comp_rulesets.ruleset_public == True
         if nodename is not None:
+            q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
             q &= db.comp_ruleset_team_responsible.group_id == node_team_responsible_id(nodename)
         elif svcname is not None:
+            q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
             q &= db.comp_ruleset_team_responsible.group_id.belongs(svc_team_responsible_id(svcname))
 
-    return db(q).select(orderby=o)
+    l = []
+    rows = db(q).select()
+    for row in rows:
+        q = db.v_gen_filtersets.fset_id == row.comp_rulesets_filtersets.fset_id
+        q &= db.v_gen_filtersets.f_table.belongs(['services', 'svcmon'])
+        f_rows = db(q).select(db.v_gen_filtersets.f_table,
+                              groupby=db.v_gen_filtersets.f_table)
+        if svcname is None and len(f_rows) > 0:
+            # for node compliance, discard fsets services related
+            continue
+        if svcname is not None and len(f_rows) == 0:
+            # for service compliance, discard fsets not services related
+            continue
+
+        l.append((row.comp_rulesets.id,
+                  row.comp_rulesets_filtersets.fset_id,
+                  row.gen_filtersets.fset_name))
+    return l
 
 def comp_ruleset_vars(ruleset_id, qr=None, nodename=None, svcname=None, slave=False):
     if qr is None:
@@ -5713,98 +5679,42 @@ def comp_ruleset_match(id, svcname=None, nodename=None, slave=False, head=True):
                                    head=head)
 
 def _comp_ruleset_svc_match(id, svcname=None, nodename=None, slave=False, head=True):
-    rows = comp_get_rulesets_filters([id], svcname=svcname,
-                                     head=head)
-    if len(rows) == 0:
-        return False
-
-    q = db.services.svc_name == svcname
-    if slave:
-        if nodename is not None:
-            q &= db.svcmon.mon_vmname == nodename
-        j = db.nodes.nodename == db.svcmon.mon_vmname
-    else:
-        if nodename is not None:
-            q &= db.svcmon.mon_nodname == nodename
-        j = db.nodes.nodename == db.svcmon.mon_nodname
-    l1 = db.nodes.on(j)
-    j = db.svcmon.mon_svcname == db.services.svc_name
-    l2 = db.svcmon.on(j)
-    qr = db.services.id > 0
-    need = False
-
-    for i, row in enumerate(rows):
-        qr = comp_query(qr, row)
-        if row.v_gen_filtersets.f_table in ('svcmon', 'services'):
-            need = True
-
-    if not need:
-        match = db(q&qr).select(db.nodes.id, db.svcmon.mon_svcname, left=(l2,l1))
-        if len(match) > 0:
+    l = comp_get_rulesets_fset_ids([id], svcname=svcname, head=head)
+    for rset_id, fset_id, fst_name in l:
+        q = db.services.svc_name == svcname
+        q &= db.svcmon.mon_svcname == db.services.svc_name
+        if slave:
+            f = db.svcmon.mon_vmname
+        else:
+            f = db.svcmon.mon_nodname
+        q = apply_filters(q, f, db.svcmon.mon_svcname, fset_id=fset_id)
+        match = db(q).count()
+        if match > 0:
             return True
     return False
 
 def _comp_ruleset_match(id, nodename=None, head=True):
-    rows = comp_get_rulesets_filters([id], nodename=nodename,
-                                     head=head)
-    if len(rows) == 0:
-        return False
-
-    q = db.nodes.nodename == nodename
-    j = db.nodes.nodename == db.svcmon.mon_nodname
-    l1 = db.svcmon.on(j)
-    j = db.svcmon.mon_svcname == db.services.svc_name
-    l2 = db.services.on(j)
-    qr = db.nodes.id > 0
-
-    for i, row in enumerate(rows):
-        qr = comp_query(qr, row)
-
-    match = db(q&qr).select(db.nodes.id, db.svcmon.mon_svcname, left=(l1,l2))
-    if len(match) > 0:
-        return True
+    l = comp_get_rulesets_fset_ids([id], nodename=nodename, head=head)
+    for rset_id, fset_id, fst_name in l:
+        q = db.nodes.nodename == nodename
+        q = apply_filters(q, db.nodes.nodename, None, fset_id=fset_id)
+        match = db(q).count()
+        if match > 0:
+            return True
     return False
 
 def _comp_get_svc_per_node_ruleset(svcname, nodename, slave=False):
     ruleset = {}
 
     # add contextual rulesets variables
-    rows = comp_get_rulesets_filters(svcname=svcname)
+    l = comp_get_rulesets_fset_ids(nodename=nodename)
 
-    q = db.services.svc_name == svcname
-    if slave:
-        if nodename is not None:
-            q &= db.svcmon.mon_vmname == nodename
-        j = db.nodes.nodename == db.svcmon.mon_vmname
-    else:
-        if nodename is not None:
-            q &= db.svcmon.mon_nodname == nodename
-        j = db.nodes.nodename == db.svcmon.mon_nodname
-    l1 = db.nodes.on(j)
-    j = db.svcmon.mon_svcname == db.services.svc_name
-    l2 = db.svcmon.on(j)
-    last_index = len(rows)-1
-    qr = db.services.id > 0
-    need = False
-
-    for i, row in enumerate(rows):
-        if i == last_index:
-            end_seq = True
-        elif rows[i].comp_rulesets.ruleset_name != rows[i+1].comp_rulesets.ruleset_name:
-            end_seq = True
-        else:
-            end_seq = False
-        qr = comp_query(qr, row)
-        if row.v_gen_filtersets.f_table in ('svcmon', 'services'):
-            need = True
-        if end_seq:
-            if not need:
-                match = db(q&qr).select(db.nodes.id, db.svcmon.mon_svcname,
-                                        left=(l2,l1))
-                if len(match) > 0:
-                    ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr, nodename=nodename, svcname=svcname, slave=slave))
-                need = False
-            qr = db.services.id > 0
+    for rset_id, fset_id, fset_name in l:
+        q = db.nodes.nodename == nodename
+        q = apply_filters(q, db.nodes.nodename, None, fset_id=fset_id)
+        match = db(q).count()
+        if match > 0:
+            ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, nodename=nodename, svcname=svcname, slave=slave))
 
     return ruleset
 
@@ -5813,38 +5723,14 @@ def _comp_get_svc_ruleset(svcname, slave=False):
     ruleset = comp_get_service_ruleset(svcname)
 
     # add contextual rulesets variables
-    rows = comp_get_rulesets_filters(svcname=svcname)
+    l = comp_get_rulesets_fset_ids(svcname=svcname)
 
-    q = db.services.svc_name == svcname
-    if slave:
-        j = db.nodes.nodename == db.svcmon.mon_vmname
-    else:
-        j = db.nodes.nodename == db.svcmon.mon_nodname
-    l1 = db.nodes.on(j)
-    j = db.svcmon.mon_svcname == db.services.svc_name
-    l2 = db.svcmon.on(j)
-    last_index = len(rows)-1
-    qr = db.services.id > 0
-    need = False
-
-    for i, row in enumerate(rows):
-        if i == last_index:
-            end_seq = True
-        elif rows[i].comp_rulesets.ruleset_name != rows[i+1].comp_rulesets.ruleset_name:
-            end_seq = True
-        else:
-            end_seq = False
-        qr = comp_query(qr, row)
-        if row.v_gen_filtersets.f_table in ('svcmon', 'services'):
-            need = True
-        if end_seq:
-            if need:
-                match = db(q&qr).select(db.nodes.id, db.svcmon.mon_svcname,
-                                        left=(l2,l1))
-                if len(match) > 0:
-                    ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr, svcname=svcname, slave=slave))
-                need = False
-            qr = db.services.id > 0
+    for rset_id, fset_id, fset_name in l:
+        q = db.services.svc_name == svcname
+        q = apply_filters(q, None, db.services.svc_name, fset_id=fset_id)
+        match = db(q).count()
+        if match > 0:
+            ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, svcname=svcname, slave=slave))
 
     # add explicit rulesets variables
     q = db.comp_rulesets_services.svcname == svcname
@@ -5893,30 +5779,15 @@ def _comp_get_ruleset(nodename):
     ruleset = comp_get_node_ruleset(nodename)
 
     # add contextual rulesets variables
-    rows = comp_get_rulesets_filters(nodename=nodename)
+    l = comp_get_rulesets_fset_ids(nodename=nodename)
 
-    q = db.nodes.nodename == nodename
-    j = db.nodes.nodename == db.svcmon.mon_nodname
-    l1 = db.svcmon.on(j)
-    j = db.svcmon.mon_svcname == db.services.svc_name
-    l2 = db.services.on(j)
-    last_index = len(rows)-1
-    qr = db.nodes.id > 0
+    for rset_id, fset_id, fset_name in l:
+        q = db.nodes.nodename == nodename
+        q = apply_filters(q, db.nodes.nodename, None, fset_id=fset_id)
+        match = db(q).count()
+        if match > 0:
+            ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, nodename=nodename))
 
-    for i, row in enumerate(rows):
-        if i == last_index:
-            end_seq = True
-        elif rows[i].comp_rulesets.ruleset_name != rows[i+1].comp_rulesets.ruleset_name:
-            end_seq = True
-        else:
-            end_seq = False
-        qr = comp_query(qr, row)
-        if end_seq:
-            match = db(q&qr).select(db.nodes.id, db.svcmon.mon_svcname,
-                                    left=(l1,l2))
-            if len(match) > 0:
-                ruleset.update(comp_ruleset_vars(row.comp_rulesets.id, qr=qr, nodename=nodename))
-            qr = db.nodes.id > 0
     # add explicit rulesets variables
     q = db.comp_rulesets_nodes.nodename == nodename
     rows = db(q).select(db.comp_rulesets_nodes.ruleset_id,
