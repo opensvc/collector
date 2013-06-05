@@ -4072,6 +4072,7 @@ def do_action(ids, action=None):
     q &= (db.nodes.team_responsible.belongs(user_groups())) | \
          (db.nodes.team_integ.belongs(user_groups()))
     rows = db(q).select(db.nodes.os_name,
+                        db.nodes.fqdn,
                         db.comp_status.run_nodename,
                         db.comp_status.run_svcname,
                         db.comp_status.run_module)
@@ -4087,6 +4088,12 @@ def do_action(ids, action=None):
         else:
             action_type = "push"
 
+        if row.nodes.fqdn is not None and len(row.nodes.fqdn) > 0:
+            node = row.nodes.fqdn
+        else:
+            node = row.comp_status.run_nodename
+
+
         if row.comp_status.run_svcname is None or row.comp_status.run_svcname == "":
             tolog_node.append([row.comp_status.run_nodename,
                                row.comp_status.run_module])
@@ -4097,7 +4104,7 @@ def do_action(ids, action=None):
         vals.append([row.comp_status.run_nodename,
                      row.comp_status.run_svcname,
                      action_type,
-                     fmt_action(row.comp_status.run_nodename,
+                     fmt_action(node,
                                 row.comp_status.run_svcname,
                                 action,
                                 action_type,
@@ -5782,26 +5789,6 @@ def _comp_remove_dup_vars(ruleset):
             else:
                 l[var] = [(rset, i, ruleset[rset]['vars'][i][1])]
     return ruleset
-
-def test_comp_get_ruleset():
-    nodename = "x64lmwbiir9"
-    #nodename = "s64lmwbiczz"
-    nodename = "s64p17bicv8"
-
-    # initialize ruleset with asset variables
-    ruleset = comp_get_node_ruleset(nodename)
-
-    # add contextual rulesets variables
-    l = comp_get_rulesets_fset_ids(nodename=nodename)
-
-    for fset_id, fset_name in l:
-        q = db.nodes.nodename == nodename
-        q = apply_filters(q, db.nodes.nodename, None, fset_id=fset_id, nodename=nodename)
-        match = db(q).count()
-        print fset_name, match
-        if match > 0:
-            for rset_id in l[(fset_id, fset_name)]:
-                ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, nodename=nodename))
 
 def _comp_get_ruleset(nodename):
     # initialize ruleset with asset variables
@@ -8091,10 +8078,15 @@ def ajax_generic_form_submit(form, data, _d=None):
 
             for nodename in nodes:
                 q = db.nodes.nodename == nodename
-                row = db(q).select(db.nodes.os_name).first()
+                row = db(q).select(db.nodes.os_name, db.nodes.fqdn).first()
                 if row is None:
                     log.append((1, "form.submit", "No asset information found for node %(nodename)s", dict(nodename=nodename)))
                     continue
+                if row.fqdn is not None and len(row.fqdn) > 0:
+                    node = row.fqdn
+                else:
+                    node = nodename
+
 
                 if row.os_name == "Windows":
                     action_type = "pull"
@@ -8104,7 +8096,7 @@ def ajax_generic_form_submit(form, data, _d=None):
                 vals.append([nodename,
                              svcname,
                              action_type,
-                             fmt_action(nodename,
+                             fmt_action(node,
                                         svcname,
                                         "check",
                                         action_type,
