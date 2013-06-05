@@ -4371,10 +4371,21 @@ def ajax_comp_status():
             pa = 0
             pb = 0
             pc = 0
+            pd = 0
         else:
-            pa = "%d%%"%int(a*100/total)
-            pb = "%d%%"%int(b*100/total)
-            pc = "%d%%"%int(c*100/total)
+            fpa = 100.*a/total
+            fpb = 100.*b/total
+            fpc = 100.*c/total
+            fpd = 100.*d/total
+            pa = "%d%%"%int(fpa)
+            pb = "%d%%"%int(fpb)
+            pc = "%d%%"%int(fpc)
+            pd = "%d%%"%int(fpd)
+            fpa = "%.1f%%"%fpa
+            fpb = "%.1f%%"%fpb
+            fpc = "%.1f%%"%fpc
+            fpd = "%.1f%%"%fpd
+
 
         d = DIV(
               DIV(
@@ -4418,10 +4429,10 @@ def ajax_comp_status():
                        """,
               ),
               DIV(
-                SPAN(a, " ", T("obsolete"), _style="color:#15367A;padding:3px"),
-                SPAN(b, " ", T("ok"), _style="color:#3aaa50;padding:3px"),
-                SPAN(c, " ", T("n/a"), _style="color:#acacac;padding:3px"),
-                SPAN(d, " ", T("not ok"), _style="color:#FF7863;padding:3px"),
+                SPAN("%d (%s)"%(a, fpa), " ", T("obsolete"), _style="color:#15367A;padding:3px"),
+                SPAN("%d (%s)"%(b, fpb), " ", T("ok"), _style="color:#3aaa50;padding:3px"),
+                SPAN("%d (%s)"%(c, fpc), " ", T("n/a"), _style="color:#acacac;padding:3px"),
+                SPAN("%d (%s)"%(d, fpd), " ", T("not ok"), _style="color:#FF7863;padding:3px"),
               ),
               _style="""margin: auto;
                         text-align: center;
