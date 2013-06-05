@@ -3415,7 +3415,7 @@ def comp_attach_modulesets(node_ids=[], modset_ids=[], node_names=[]):
     if len(modset_ids) == 0:
         raise ToolError("attach modulesets failed: no moduleset selected")
 
-    if len(nodes_id) > 0:
+    if len(node_ids) > 0:
         q = db.v_nodes.id.belongs(node_ids)
         rows = db(q).select(db.v_nodes.nodename)
         node_names += [r.nodename for r in rows]
