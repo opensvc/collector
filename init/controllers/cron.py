@@ -86,8 +86,10 @@ def cron_scrub_svcstatus():
     for svcname in svcs:
         svc_log_update(svcname, "undef")
 
-def _cron_stats_purge(table, day):
-    sql = """select date from stats_%(table)s order by date limit 1""" % dict(table=table)
+def _cron_table_purge(table, day, date_col, orderby=None):
+    if orderby is None:
+        orderby = date_col
+    sql = """select %(date_col)s from %(table)s order by %(orderby)s limit 1""" % dict(table=table,date_col=date_col,orderby=orderby)
     oldest = db.executesql(sql)[0][0]
     if oldest > day:
         print "oldest entry is dated %s, threshold is set to %s ... skip table %s purge"%(str(oldest), str(day), table)
@@ -97,11 +99,11 @@ def _cron_stats_purge(table, day):
     for i in range(delta.days):
         _day = oldest + datetime.timedelta(days=i)
         print " purge table %s till %s" % (table, str(_day))
-        sql = """delete from stats_%s where date < "%s" """%(table, str(_day))
+        sql = """delete from %s where %s < "%s" """%(table, date_col, str(_day))
         db.executesql(sql)
     db.commit()
 
-def cron_stats_purge():
+def cron_purge_expiry():
     try:
         config = local_import('config', reload=True)
         days = config.stats_retention_days
@@ -109,25 +111,27 @@ def cron_stats_purge():
         days = 365
     day = now - datetime.timedelta(days=days)
 
-    tables = ['cpu',
-              'swap',
-              'netdev',
-              'blockdev',
-              'block',
-              'mem_u',
-              'netdev_err',
-              'proc',
-              'svc']
-    for table in tables:
+    tables = [('stats_cpu', 'date', None),
+              ('stats_swap', 'date', None),
+              ('stats_netdev', 'date', None),
+              ('stats_blockdev', 'date', None),
+              ('stats_block', 'date', None),
+              ('stats_mem_u', 'date', None),
+              ('stats_netdev_err', 'date', None),
+              ('stats_proc', 'date', None),
+              ('stats_svc', 'date', None),
+              ('comp_log', 'run_date', 'id'),
+              ('SVCactions', 'begin', 'id')]
+    for table, date_col, orderby in tables:
         try:
-            _cron_stats_purge(table, day)
+            _cron_table_purge(table, day, date_col, orderby=orderby)
         except Exception as e:
             print e
 
 def cron_stats():
     # refresh db tables
     try:
-        cron_stats_purge()
+        cron_purge_expiry()
     except:
         pass
     try:
