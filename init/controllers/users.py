@@ -51,6 +51,7 @@ class table_users(HtmlTable):
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['manager',
+                     'id',
                      'fullname',
                      'email',
                      'phone_work',
@@ -61,6 +62,12 @@ class table_users(HtmlTable):
                      'domains',
                      'last']
         self.colprops = {
+            'id': HtmlTableColumn(
+                     title='User Id',
+                     field='id',
+                     img='guy16',
+                     display=True,
+                    ),
             'fullname': HtmlTableColumn(
                      title='Full name',
                      field='fullname',

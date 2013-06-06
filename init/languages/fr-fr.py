@@ -1023,6 +1023,7 @@
 'User %(id)s Verification email sent': "Mèl de vérification émis pour l'utilisateur %(id)s",
 'User %(id)s is impersonating %(other_id)s': "L'utilisateur %(id)s se fait passer pour %(other_id)s",
 'User ID': "id d'utilisateur",
+'User Id': 'User Id',
 'User name': "Nom d'utilisateur",
 'Users': 'Utilisateurs',
 'Value': 'Valeur',
