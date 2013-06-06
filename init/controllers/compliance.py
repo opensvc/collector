@@ -4372,6 +4372,10 @@ def ajax_comp_status():
             pb = 0
             pc = 0
             pd = 0
+            fpa = "0%"
+            fpb = "0%"
+            fpc = "0%"
+            fpd = "0%"
         else:
             fpa = 100.*a/total
             fpb = 100.*b/total
