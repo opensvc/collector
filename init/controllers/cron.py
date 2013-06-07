@@ -86,6 +86,11 @@ def cron_scrub_svcstatus():
     for svcname in svcs:
         svc_log_update(svcname, "undef")
 
+def cron_purge_node_hba():
+    sql = """delete from node_hba where updated < date_sub(now(), interval 1 week)"""
+    db.executesql(sql)
+    db.commit()
+
 def _cron_table_purge(table, day, date_col, orderby=None):
     if orderby is None:
         orderby = date_col
@@ -841,6 +846,7 @@ def cron_alerts_daily():
     update_dg_quota()
     purge_alerts_on_nodes_without_asset()
     cron_resmon_purge()
+    cron_purge_node_hba()
 
 def cron_alerts_hourly():
     rets = []
