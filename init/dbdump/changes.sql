@@ -3472,3 +3472,5 @@ CREATE TABLE `metrics_log` (
   UNIQUE KEY `idx1` (`date`,`metric_id`,`instance`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+alter table metrics_log add column fset_id integer default 0;
+

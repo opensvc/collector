@@ -1753,6 +1753,7 @@ db.define_table('metrics',
 
 db.define_table('metrics_log',
     Field('metric_id', 'integer'),
+    Field('fset_id', 'integer'),
     Field('value', 'float'),
     Field('date', 'datetime'),
     Field('instance', 'string'),

@@ -234,33 +234,11 @@ def apply_filters(q, node_field=None, service_field=None, fset_id=None, nodename
     if fset_id is None or fset_id == 0:
         if auth.user_id is None:
             return q
-        qry = db.gen_filterset_user.fset_id == db.v_gen_filtersets.fset_id
-        qry &= db.gen_filterset_user.user_id == auth.user_id
-    else:
-        qry = db.v_gen_filtersets.fset_id == fset_id
+        fset_id = user_fset_id()
+        if fset_id is None or fset_id == 0:
+            return q
 
-    rows = db(qry).select(orderby=db.v_gen_filtersets.f_order)
-    if len(rows) == 0:
-        return q
-
-    nodes = set([])
-    services = set([])
-    i = 0
-    encap_done = []
-
-    for row in rows:
-        if 'v_gen_filtersets' in row:
-            v = row.v_gen_filtersets
-        else:
-            v = row
-
-        if v.encap_fset_id > 0 and v.encap_fset_id not in encap_done:
-            nodes, services = filterset_encap_query(row, nodes, services, i=i, nodename=nodename, svcname=svcname)
-            encap_done.append(v.encap_fset_id)
-        else:
-            nodes, services = filterset_query(row, nodes, services, i=i, nodename=nodename, svcname=svcname)
-
-        i += 1
+    nodes, services = filterset_encap_query(fset_id, nodename=nodename, svcname=svcname)
 
     n_nodes = len(nodes)
     n_services = len(services)
@@ -282,14 +260,9 @@ def apply_filters(q, node_field=None, service_field=None, fset_id=None, nodename
 
     return q
 
-def filterset_encap_query(row, nodes, services, i=0, nodename=None, svcname=None):
-    if 'v_gen_filtersets' in row:
-        v = row.v_gen_filtersets
-    else:
-        v = row
-
+def filterset_encap_query(fset_id, f_log_op='AND', nodes=set([]), services=set([]), i=0, nodename=None, svcname=None):
     o = db.v_gen_filtersets.f_order
-    qr = db.v_gen_filtersets.fset_id == v.encap_fset_id
+    qr = db.v_gen_filtersets.fset_id == fset_id
     rows = db(qr).select(orderby=o)
     n_nodes = set([])
     n_services = set([])
@@ -298,19 +271,19 @@ def filterset_encap_query(row, nodes, services, i=0, nodename=None, svcname=None
 
     for r in rows:
         if r.encap_fset_id > 0 and r.encap_fset_id not in encap_done:
-            n_nodes, n_services = filterset_encap_query(r, n_nodes, n_services, i=j, nodename=nodename, svcname=svcname)
+            n_nodes, n_services = filterset_encap_query(r.encap_fset_id, r.f_log_op, n_nodes, n_services, i=j, nodename=nodename, svcname=svcname)
             encap_done.append(r.encap_fset_id)
         else:
             n_nodes, n_services = filterset_query(r, n_nodes, n_services, i=j, nodename=nodename, svcname=svcname)
         j += 1
 
-    if 'NOT' in v.f_log_op:
+    if 'NOT' in f_log_op:
         all_nodes = set([r.nodename for r in db(db.nodes.id>0).select(db.nodes.nodename)])
         all_services = set([r.svc_name for r in db(db.services.id>0).select(db.services.svc_name)])
         n_nodes = all_nodes - n_nodes
         n_services = all_services - n_services
 
-    if v.f_log_op in ('AND', 'AND NOT'):
+    if f_log_op in ('AND', 'AND NOT'):
         if i == 0:
             nodes = n_nodes
         else:
@@ -319,7 +292,7 @@ def filterset_encap_query(row, nodes, services, i=0, nodename=None, svcname=None
             services = n_services
         else:
             services &= n_services
-    elif v.f_log_op == ('OR', 'OR NOT'):
+    elif f_log_op == ('OR', 'OR NOT'):
         if i == 0:
             nodes = n_nodes
         else:

@@ -25,6 +25,8 @@ class col_metrics_sql(HtmlTableColumn):
         val = re.sub(regex, r'=<span class=syntax_blue>\1</span>', val)
         regex = re.compile(r'=(\"\w*\")', re.I)
         val = re.sub(regex, r'=<span class=syntax_blue>\1</span>', val)
+        regex = re.compile(r'(%%\w+%%)', re.I)
+        val = re.sub(regex, r'<span class=syntax_blue>\1</span>', val)
         return PRE(XML(val))
 
 class table_metrics(HtmlTable):
@@ -242,7 +244,47 @@ def metrics_admin():
 
 
 
+def _metrics_cron_fset(m, fset_id):
+    nodenames, services = filterset_encap_query(fset_id)
+
+    if len(services) == 0:
+        services = ['magic1234567890']
+    if len(nodenames) == 0:
+        nodenames = ['magic1234567890']
+
+    sql = m.metric_sql.replace('%%fset_services%%', ','.join(map(lambda x: repr(x), services)))
+    sql = sql.replace('%%fset_nodenames%%', ','.join(map(lambda x: repr(x), nodenames)))
+
+    try:
+         rows = dbro.executesql(sql)
+    except Exception as e:
+         print e, sql
+         return
+    now = datetime.datetime.now()
+
+    for row in rows:
+        print "  insert", row[m.metric_col_value_index], "fset_id:", fset_id
+
+        mid = db.metrics_log.insert(
+               date=now,
+               metric_id=m.id,
+               fset_id=fset_id,
+               value=row[m.metric_col_value_index],
+              )
+
+def _metrics_cron_fsets(m):
+    q = db.gen_filtersets.id > 0
+    rows = db(q).select(db.gen_filtersets.id)
+    fset_ids = [r.id for r in rows]
+
+    for fset_id in fset_ids:
+        _metrics_cron_fset(m, fset_id)
+
 def _metrics_cron(m):
+    if "%%fset_services%%" in m.metric_sql or "%%fset_nodenames%%" in m.metric_sql:
+        _metrics_cron_fsets(m)
+        return
+
     rows = dbro.executesql(m.metric_sql)
 
     now = datetime.datetime.now()
