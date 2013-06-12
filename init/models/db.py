@@ -1740,5 +1740,23 @@ db.define_table('workflows',
     Field('last_form_name', 'string'),
     migrate=False)
 
+db.define_table('metrics',
+    Field('id', 'integer'),
+    Field('metric_name', 'string'),
+    Field('metric_sql', 'text'),
+    Field('metric_created', 'datetime'),
+    Field('metric_author', 'string'),
+    Field('metric_col_value_index', 'integer'),
+    Field('metric_col_instance_index', 'integer'),
+    Field('metric_col_instance_label', 'string'),
+    migrate=False)
+
+db.define_table('metrics_log',
+    Field('metric_id', 'integer'),
+    Field('value', 'float'),
+    Field('date', 'datetime'),
+    Field('instance', 'string'),
+    migrate=False)
+
 
 

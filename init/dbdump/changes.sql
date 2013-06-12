@@ -3450,3 +3450,25 @@ drop view v_action_queue;
 create view v_action_queue as select a.*, concat(u.first_name, " ", u.last_name) as username from action_queue a left join auth_user u on a.user_id=u.id;
 
 # alter table packages modify column pkg_type varchar(7) DEFAULT '';
+
+CREATE TABLE `metrics` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `metric_name` varchar(100) NOT NULL,
+  `metric_sql` text,
+  `metric_author` varchar(100) DEFAULT NULL,
+  `metric_created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `metric_col_value_index` int(11) DEFAULT '0',
+  `metric_col_instance_index` int(11) DEFAULT NULL,
+  `metric_col_instance_label` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx1` (`metric_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8;
+
+CREATE TABLE `metrics_log` (
+  `metric_id` int(11) NOT NULL,
+  `instance` varchar(20) DEFAULT NULL,
+  `value` float DEFAULT NULL,
+  `date` datetime DEFAULT NULL,
+  UNIQUE KEY `idx1` (`date`,`metric_id`,`instance`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
