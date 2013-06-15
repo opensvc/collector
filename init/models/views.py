@@ -261,6 +261,11 @@ def apply_filters(q, node_field=None, service_field=None, fset_id=None, nodename
     return q
 
 def filterset_encap_query(fset_id, f_log_op='AND', nodes=set([]), services=set([]), i=0, nodename=None, svcname=None):
+    if fset_id == 0:
+        all_nodes = set([r.nodename for r in db(db.nodes.id>0).select(db.nodes.nodename)])
+        all_services = set([r.svc_name for r in db(db.services.id>0).select(db.services.svc_name)])
+        return all_nodes, all_services
+
     o = db.v_gen_filtersets.f_order
     qr = db.v_gen_filtersets.fset_id == fset_id
     rows = db(qr).select(orderby=o)

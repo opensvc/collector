@@ -1,6 +1,7 @@
 import re
 import os
 import yaml
+import uuid
 
 dbro = DAL('mysql://readonly:readonly@dbopensvc/opensvc')
 
@@ -13,6 +14,12 @@ def call():
     """
     session.forget()
     return service()
+
+###############################################################################
+#
+# Metrics
+#
+###############################################################################
 
 class col_metrics_sql(HtmlTableColumn):
     def html(self, o):
@@ -34,7 +41,8 @@ class table_metrics(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['metric_name',
+        self.cols = ['id',
+                     'metric_name',
                      'metric_sql',
                      'metric_col_value_index',
                      'metric_col_instance_index',
@@ -42,6 +50,13 @@ class table_metrics(HtmlTable):
                      'metric_created',
                      'metric_author']
         self.colprops = {
+            'id': HtmlTableColumn(
+                title = 'Id',
+                field = 'id',
+                display = True,
+                table = 'metrics',
+                img = 'prov'
+            ),
             'metric_name': HtmlTableColumn(
                 title = 'Name',
                 field = 'metric_name',
@@ -94,7 +109,7 @@ class table_metrics(HtmlTable):
         }
         self.ajax_col_values = 'ajax_metrics_admin_col_values'
         self.dbfilterable = False
-        self.checkboxes = True
+        self.checkboxes = False
         self.extrarow = True
         self.extraline = True
 
@@ -277,7 +292,7 @@ def _metrics_cron_fsets(m):
     rows = db(q).select(db.gen_filtersets.id)
     fset_ids = [r.id for r in rows]
 
-    for fset_id in fset_ids:
+    for fset_id in [0] + fset_ids:
         _metrics_cron_fset(m, fset_id)
 
 def _metrics_cron(m):
@@ -314,3 +329,462 @@ def metrics_cron():
             print e
             continue
     db.commit()
+
+###############################################################################
+#
+# Charts
+#
+###############################################################################
+
+class col_yaml(HtmlTableColumn):
+    def html(self, o):
+        val = self.get(o)
+        val = re.sub(r'(%\(\w+\)s)', r'<span class=syntax_red>\1</span>', val)
+        val = re.sub(r'(\w+:)', r'<span class=syntax_green>\1</span>', val)
+        return PRE(XML(val))
+
+class table_charts(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['id',
+                     'chart_name',
+                     'chart_yaml']
+        self.colprops = {
+            'chart_name': HtmlTableColumn(
+                title = 'Name',
+                field = 'chart_name',
+                display = True,
+                table = 'charts',
+                img = 'spark16'
+            ),
+            'chart_yaml': col_yaml(
+                title = 'Definition',
+                field = 'chart_yaml',
+                display = True,
+                table = 'charts',
+                img = 'log16'
+            ),
+            'id': HtmlTableColumn(
+                title = 'Id',
+                field = 'id',
+                display = True,
+                table = 'charts',
+                img = 'spark16'
+            ),
+        }
+        self.ajax_col_values = 'ajax_charts_admin_col_values'
+        self.dbfilterable = True
+        self.checkboxes = False
+        self.extrarow = True
+        self.extraline = True
+
+        if 'Manager' in user_groups():
+            self.additional_tools.append('add_chart')
+
+    def format_extrarow(self, o):
+        d = DIV(
+              A(
+                _href=URL(r=request, c='charts', f='charts_editor', vars={'chart_id': o.id}),
+                _title=T("Edit chart"),
+                _class="edit16",
+              ),
+              A(
+                _onclick="""toggle_extra("%(url)s", "%(id)s")
+                """%dict(
+                     url=URL(r=request, c='charts', f='ajax_chart_test', vars={'chart_id': o.id}),
+                     id=self.extra_line_key(o),
+                    ),
+                _title=T("Test chart"),
+                _class="action16",
+              ),
+            )
+        return d
+
+    def add_chart(self):
+        d = DIV(
+              A(
+                T("Add chart"),
+                _href=URL(r=request, f='charts_editor'),
+                _class='add16',
+              ),
+              _class='floatw',
+            )
+        return d
+
+@auth.requires_membership('Manager')
+def charts_editor():
+    q = db.charts.id == request.vars.chart_id
+    rows = db(q).select()
+
+    if len(rows) == 1:
+        record = rows[0]
+    else:
+        record = None
+
+    form = SQLFORM(db.charts,
+                 record=record,
+                 deletable=True,
+                 fields=['chart_name',
+                         'chart_yaml',],
+                 labels={'chart_name': T('Chart name'),
+                         'chart_yaml': T('Chart definition'),
+                        }
+                )
+    form.custom.widget.chart_yaml['_class'] = 'pre'
+    form.custom.widget.chart_yaml['_style'] = 'min-width:60em;min-height:60em'
+    if form.accepts(request.vars):
+        if request.vars.chart_id is None:
+            _log('chart.add',
+                 "Created chart '%(chart_name)s' with definition:\n%(chart_yaml)s",
+                     dict(chart_name=request.vars.chart_name,
+                          chart_yaml=request.vars.chart_yaml))
+        elif request.vars.delete_this_record == 'on':
+            _log('chart.delete',
+                 "Deleted chart '%(chart_name)s' with definition:\n%(chart_yaml)s",
+                     dict(chart_name=request.vars.chart_name,
+                          chart_yaml=request.vars.chart_yaml))
+        else:
+            _log('chart.change',
+                 "Changed chart '%(chart_name)s' with definition:\n%(chart_yaml)s",
+                     dict(chart_name=request.vars.chart_name,
+                          chart_yaml=request.vars.chart_yaml))
+
+        session.flash = T("Chart recorded")
+        redirect(URL(r=request, c='charts', f='charts_admin'))
+    elif form.errors:
+        response.flash = T("errors in form")
+    return dict(form=form)
+
+@auth.requires_login()
+def ajax_chart_test():
+    return ajax_chart_plot(request.vars.chart_id)
+
+@auth.requires_login()
+def ajax_charts_admin_col_values():
+    t = table_charts('charts', 'ajax_charts_admin')
+
+    col = request.args[0]
+    o = db.charts[col]
+    q = db.charts.id > 0
+    for f in t.cols:
+        q = _where(q, 'charts', t.filter_parse(f), f)
+    t.object_list = db(q).select(o, orderby=o)
+    return t.col_values_cloud_ungrouped(col)
+
+@auth.requires_login()
+def ajax_charts_admin():
+    t = table_charts('charts', 'ajax_charts_admin')
+
+    o = db.charts.chart_name
+    q = db.charts.id > 0
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    n = db(q).count()
+    t.setup_pager(n)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    return t.html()
+
+@auth.requires_login()
+def charts_admin():
+    t = DIV(
+          ajax_charts_admin(),
+          _id='charts',
+        )
+    return dict(table=t)
+
+def get_chart(chart_id):
+    q = db.charts.id == chart_id
+    chart = db(q).select().first()
+    if chart is None:
+        return
+    try:
+        chart_yaml = yaml.load(chart.chart_yaml)
+    except Exception as e:
+        return
+    chart.chart_yaml = chart_yaml
+    return chart
+
+@auth.requires_login()
+def ajax_chart_plot(chart_id):
+    fset_id = user_fset_id()
+    uid = uuid.uuid1().hex
+    s = """charts_plot('%(url)s', '%(id)s');"""%dict(
+      id="c%s"%str(uid),
+      url=URL(r=request, c='charts', f='call/json/json_chart_data', args=[chart_id, fset_id]),
+    )
+
+    chart = get_chart(chart_id)
+    if chart is None:
+        return T("chart not found")
+
+    title = chart.chart_yaml.get('Title')
+    if title is None:
+        title = SPAN()
+    else:
+        title = DIV(H2(T(title)))
+
+    d = DIV(
+      title,
+      DIV(
+        _id="c%s"%str(uid),
+      ),
+      SCRIPT(s),
+      _class="chart",
+    )
+    return d
+
+@service.json
+def json_chart_data(chart_id, fset_id):
+    q = db.charts.id == int(chart_id)
+    chart = db(q).select().first()
+
+    if chart is None:
+        return
+
+    try:
+        chart_data = yaml.load(chart.chart_yaml)
+    except:
+        return
+
+    l = []
+    instances = []
+    options = {
+      'stack': False,
+    }
+    _options = chart_data.get('Options', {})
+    if _options is None:
+        _options = {}
+    options.update(_options)
+
+    for m in chart_data['Metrics']:
+        h = get_metric_series(m['metric_id'], fset_id)
+        for instance, series in h.items():
+            l.append(series)
+            i = {
+              'label': instance,
+              'fill': m.get('fill'),
+              'shadow': m.get('shadow'),
+              'unit': m.get('unit', ''),
+            }
+            instances.append(i)
+
+    return {'data': l, 'instances': instances, 'options': options}
+
+def get_metric_series(metric_id, fset_id):
+    q = db.metrics_log.metric_id == int(metric_id)
+    q &= db.metrics_log.fset_id == int(fset_id)
+    rows = db(q).select(db.metrics_log.date,
+                        db.metrics_log.value,
+                        db.metrics_log.instance)
+    h = {}
+    for row in rows:
+        if row.instance is None or len(row.instance) == 0:
+            instance = "empty"
+        else:
+            instance = row.instance
+        if instance not in h:
+            h[instance] = [[row.date, row.value]]
+        else:
+            h[instance].append([row.date, row.value])
+    return h
+
+
+###############################################################################
+#
+# Reports
+#
+###############################################################################
+
+class table_reports(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['id',
+                     'report_name',
+                     'report_yaml']
+        self.colprops = {
+            'report_name': HtmlTableColumn(
+                title = 'Name',
+                field = 'report_name',
+                display = True,
+                table = 'reports',
+                img = 'spark16'
+            ),
+            'report_yaml': col_yaml(
+                title = 'Definition',
+                field = 'report_yaml',
+                display = True,
+                table = 'reports',
+                img = 'log16'
+            ),
+            'id': HtmlTableColumn(
+                title = 'Id',
+                field = 'id',
+                display = True,
+                table = 'reports',
+                img = 'spark16'
+            ),
+        }
+        self.ajax_col_values = 'ajax_reports_admin_col_values'
+        self.dbfilterable = True
+        self.checkboxes = False
+        self.extrarow = True
+        self.extraline = True
+
+        if 'Manager' in user_groups():
+            self.additional_tools.append('add_report')
+
+    def format_extrarow(self, o):
+        d = DIV(
+              A(
+                _href=URL(r=request, c='charts', f='reports_editor', vars={'report_id': o.id}),
+                _title=T("Edit report"),
+                _class="edit16",
+              ),
+              A(
+                _onclick="""toggle_extra("%(url)s", "%(id)s")
+                """%dict(
+                     url=URL(r=request, c='charts', f='ajax_report_test', vars={'report_id': o.id}),
+                     id=self.extra_line_key(o),
+                    ),
+                _title=T("Test report"),
+                _class="action16",
+              ),
+            )
+        return d
+
+    def add_report(self):
+        d = DIV(
+              A(
+                T("Add report"),
+                _href=URL(r=request, f='reports_editor'),
+                _class='add16',
+              ),
+              _class='floatw',
+            )
+        return d
+
+@auth.requires_membership('Manager')
+def reports_editor():
+    q = db.reports.id == request.vars.report_id
+    rows = db(q).select()
+
+    if len(rows) == 1:
+        record = rows[0]
+    else:
+        record = None
+
+    form = SQLFORM(db.reports,
+                 record=record,
+                 deletable=True,
+                 fields=['report_name',
+                         'report_yaml',],
+                 labels={'report_name': T('Chart name'),
+                         'report_yaml': T('Chart definition'),
+                        }
+                )
+    form.custom.widget.report_yaml['_class'] = 'pre'
+    form.custom.widget.report_yaml['_style'] = 'min-width:60em;min-height:60em'
+    if form.accepts(request.vars):
+        if request.vars.report_id is None:
+            _log('report.add',
+                 "Created report '%(report_name)s' with definition:\n%(report_yaml)s",
+                     dict(report_name=request.vars.report_name,
+                          report_yaml=request.vars.report_yaml))
+        elif request.vars.delete_this_record == 'on':
+            _log('report.delete',
+                 "Deleted report '%(report_name)s' with definition:\n%(report_yaml)s",
+                     dict(report_name=request.vars.report_name,
+                          report_yaml=request.vars.report_yaml))
+        else:
+            _log('report.change',
+                 "Changed report '%(report_name)s' with definition:\n%(report_yaml)s",
+                     dict(report_name=request.vars.report_name,
+                          report_yaml=request.vars.report_yaml))
+
+        session.flash = T("Chart recorded")
+        redirect(URL(r=request, c='charts', f='reports_admin'))
+    elif form.errors:
+        response.flash = T("errors in form")
+    return dict(form=form)
+
+@auth.requires_login()
+def ajax_report_test():
+    return ajax_report(request.vars.report_id)
+
+@auth.requires_login()
+def ajax_reports_admin_col_values():
+    t = table_reports('reports', 'ajax_reports_admin')
+
+    col = request.args[0]
+    o = db.reports[col]
+    q = db.reports.id > 0
+    for f in t.cols:
+        q = _where(q, 'reports', t.filter_parse(f), f)
+    t.object_list = db(q).select(o, orderby=o)
+    return t.col_values_cloud_ungrouped(col)
+
+@auth.requires_login()
+def ajax_reports_admin():
+    t = table_reports('reports', 'ajax_reports_admin')
+
+    o = db.reports.report_name
+    q = db.reports.id > 0
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    n = db(q).count()
+    t.setup_pager(n)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    return t.html()
+
+@auth.requires_login()
+def reports_admin():
+    t = DIV(
+          ajax_reports_admin(),
+          _id='reports',
+        )
+    return dict(table=t)
+
+@auth.requires_login()
+def ajax_report(report_id):
+    q = db.reports.id == report_id
+    report = db(q).select().first()
+    if report is None:
+        return T("Report not found")
+
+    try:
+        report.report_yaml = yaml.load(report.report_yaml)
+    except:
+        return T('Report definition error')
+
+    return do_report(report.report_yaml)
+
+def do_report(report_yaml):
+    d = [H1(report_yaml.get('Title', ''))]
+    for section in report_yaml.get('Sections', []):
+        s = do_section(section)
+        _d = DIV(
+          s,
+          _class="container",
+        )
+        d.append(_d)
+    return DIV(d)
+
+def do_section(section_yaml):
+    d = [H2(section_yaml.get('Title', ''))]
+    for chart in section_yaml.get('Charts', []):
+        chart_id = chart.get('chart_id')
+        if chart_id is None:
+            continue
+        c = ajax_chart_plot(chart_id)
+        _d = DIV(
+           c,
+           _class="float",
+           _style="width:400px;height:300px",
+        )
+        d.append(_d)
+    d.append(DIV(_class="spacer", _style="height:100px"))
+    return SPAN(d)

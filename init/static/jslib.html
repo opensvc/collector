@@ -2813,8 +2813,10 @@ function best_unit_mb(max, iunit) {
     }
     if (iunit.length == 0) {
         unit = ""
-    } else {
+    } else if (iunit.length <= 2) {
         unit = iunit[iunit.length-1]
+    } else {
+        unit = iunit
     }
     if (unit == 'B') {
         mul = 1024
@@ -2834,6 +2836,8 @@ function best_unit_mb(max, iunit) {
         idiv = mul*mul*mul*mul
     } else if (iunit[0] == 'P') {
         idiv = mul*mul*mul*mul*mul
+    } else {
+        idiv = 1
     }
     max *= idiv
 
@@ -3160,6 +3164,72 @@ function stats_disk_app(url, id) {
                 {label: 'used'},
                 {label: 'quota'}
             ],
+            axes: {
+                xaxis: {
+                    renderer: $.jqplot.DateAxisRenderer,
+                    numberTicks: 5,
+                    tickOptions:{formatString:'%b,%d\n%H:%M'}
+                },
+                yaxis: {
+                    min: 0,
+                    tickOptions:{formatString: d['fmt']+' '+d['unit']}
+                }
+            }
+
+	});
+        _jqplot_extra($('#'+id), p)
+    });
+}
+function charts_plot(url, id) {
+    $.jqplot.config.enablePlugins = true
+    $.getJSON(url, function(dd) {
+        data = dd['data']
+        instances = dd['instances']
+        options = dd['options']
+        stackSeries = options['stack']
+        series = []
+        unit = ""
+        for (i=0; i<instances.length; i++) {
+            serie = {
+              'label': instances[i]['label'],
+              'shadow': instances[i]['shadow'],
+              'fill': instances[i]['fill'],
+            }
+	    series.push(serie)
+            unit = instances[i]['unit']
+	}
+        max = 0
+        for (i=0; i<data.length; i++) {
+            for (j=0; j<data[i].length; j++) {
+                max = Math.max(max, data[i][j][1])
+            }
+        }
+        d = best_unit_mb(max, unit)
+        for (i=0; i<data.length; i++) {
+            for (j=0; j<data[i].length; j++) {
+                data[i][j][1] /= d['div']
+            }
+        }
+	p = $.jqplot(id, data, {
+	    stackSeries: stackSeries,
+            cursor:{zoom:true, showTooltip:false},
+            legend: {
+                renderer: $.jqplot.EnhancedLegendRenderer,
+                rendererOptions:{numberRows: 1},
+                show: true,
+                location: 'n'
+            },
+            grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+            seriesDefaults: {
+                shadowAngle: 135,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+            series: series,
             axes: {
                 xaxis: {
                     renderer: $.jqplot.DateAxisRenderer,

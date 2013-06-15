@@ -1,5 +1,9 @@
 @charset "UTF-8";
 
+.chart {
+    text-align: center;
+}
+
 .datetime {
   white-space: nowrap;
 }

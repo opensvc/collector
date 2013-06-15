@@ -1759,5 +1759,17 @@ db.define_table('metrics_log',
     Field('instance', 'string'),
     migrate=False)
 
+db.define_table('charts',
+    Field('id', 'integer'),
+    Field('chart_name', 'string'),
+    Field('chart_yaml', 'text'),
+    migrate=False)
+
+db.define_table('reports',
+    Field('id', 'integer'),
+    Field('report_name', 'string'),
+    Field('report_yaml', 'text'),
+    migrate=False)
+
 
 

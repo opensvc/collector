@@ -3474,3 +3474,18 @@ CREATE TABLE `metrics_log` (
 
 alter table metrics_log add column fset_id integer default 0;
 
+CREATE TABLE `charts` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `chart_name` varchar(100) NOT NULL,
+  `chart_yaml` text,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8;
+
+CREATE TABLE `reports` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `report_name` varchar(100) NOT NULL,
+  `report_yaml` text,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8;
+
+
