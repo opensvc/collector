@@ -3488,4 +3488,11 @@ CREATE TABLE `reports` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8;
 
+CREATE TABLE `reports_user` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `report_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `report_user_uk1` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

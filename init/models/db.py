@@ -1771,5 +1771,10 @@ db.define_table('reports',
     Field('report_yaml', 'text'),
     migrate=False)
 
+db.define_table('reports_user',
+    Field('report_id','integer'),
+    Field('user_id','integer'),
+    migrate=False)
+
 
 

@@ -112,6 +112,8 @@ response.menu = [
     ],
     [T('Stats'), False, '',
          [
+             [DIV(T('Reports'), _class='wspark16'), False,
+              URL(request.application,'charts','reports')],
              [DIV(T('Site'), _class='wspark16'), False,
               URL(request.application,'stats','stats')],
              [DIV(T('Compare'), _class='wspark16'), False,
@@ -156,6 +158,12 @@ response.menu = [
               URL(request.application,'compliance','comp_filters')],
              [DIV(T('Forms'), _class='wf16'), False,
               URL(request.application,'forms','forms_admin')],
+             [DIV(T('Metrics'), _class='wspark16'), False,
+              URL(request.application,'charts','metrics_admin')],
+             [DIV(T('Charts'), _class='wspark16'), False,
+              URL(request.application,'charts','charts_admin')],
+             [DIV(T('Reports'), _class='wspark16'), False,
+              URL(request.application,'charts','reports_admin')],
          ]
     ],
 ]

@@ -523,7 +523,7 @@ def ajax_chart_plot(chart_id):
     if title is None:
         title = SPAN()
     else:
-        title = DIV(H2(T(title)))
+        title = DIV(H3(T(title)))
 
     d = DIV(
       title,
@@ -593,7 +593,7 @@ def get_metric_series(metric_id, fset_id):
 
 ###############################################################################
 #
-# Reports
+# Reports admin
 #
 ###############################################################################
 
@@ -788,3 +788,97 @@ def do_section(section_yaml):
         d.append(_d)
     d.append(DIV(_class="spacer", _style="height:100px"))
     return SPAN(d)
+
+
+###############################################################################
+#
+# Reports
+#
+###############################################################################
+
+class table_reports(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.dbfilterable = True
+        self.refreshable = False
+        self.pageable = False
+        self.exportable = False
+        self.columnable = False
+        self.object_list = []
+        self.nodatabanner = False
+        self.additional_tools.append('report')
+
+    def format_report_option(self, row):
+        if row is None:
+            name = T("None")
+            report_id = 0
+        else:
+            name = row.report_name
+            report_id = row.id
+        return OPTION(
+                 name,
+                 _value=report_id,
+               )
+
+    def get_current_report(self):
+        q = db.report_user.user_id == auth.user_id
+        row = db(q).select().first()
+        if row is None:
+            active_report_id = 0
+        else:
+            active_report_id = row.report_id
+        return active_report_id
+
+    def report_selector(self):
+        #active_report_id = get_current_report()
+        active_report_id = None
+
+        # create the report select()
+        q = db.reports.id > 0
+        rows = db(q).select(db.reports.id,
+                            db.reports.report_name)
+        av = [self.format_report_option(None)]
+        for row in rows:
+            av.append(self.format_report_option(row))
+        content = SELECT(
+                    av,
+                    value=active_report_id,
+                    _onchange="""
+                       sync_ajax('%(url)s?report_id='+this.options[this.selectedIndex].value, [], '%(div)s', function(){});
+                    """%dict(url=URL(
+                                   r=request, c='charts',
+                                   f='ajax_report_test',
+                                ),
+                              div="reports_div",
+                             ),
+                  )
+
+        return SPAN(
+                 T('Report'),
+                 content,
+                 _class='floatw',
+               )
+
+    def report(self):
+        return self.report_selector()
+
+@auth.requires_login()
+def ajax_reports():
+    t = table_reports('reports', 'ajax_reports')
+    d = DIV(
+     DIV(
+       t.html(),
+       _id="reports",
+     ),
+     DIV(
+       _id="reports_div",
+     )
+    )
+    return d
+
+@auth.requires_login()
+def reports():
+    return dict(table=ajax_reports())
+
