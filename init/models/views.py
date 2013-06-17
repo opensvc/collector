@@ -283,8 +283,8 @@ def filterset_encap_query(fset_id, f_log_op='AND', nodes=set([]), services=set([
         j += 1
 
     if 'NOT' in f_log_op:
-        all_nodes = set([r.nodename for r in db(db.nodes.id>0).select(db.nodes.nodename)])
-        all_services = set([r.svc_name for r in db(db.services.id>0).select(db.services.svc_name)])
+        all_nodes = set([_r.nodename for _r in db(db.nodes.id>0).select(db.nodes.nodename)])
+        all_services = set([_r.svc_name for _r in db(db.services.id>0).select(db.services.svc_name)])
         n_nodes = all_nodes - n_nodes
         n_services = all_services - n_services
 
@@ -297,7 +297,7 @@ def filterset_encap_query(fset_id, f_log_op='AND', nodes=set([]), services=set([
             services = n_services
         else:
             services &= n_services
-    elif f_log_op == ('OR', 'OR NOT'):
+    elif f_log_op in ('OR', 'OR NOT'):
         if i == 0:
             nodes = n_nodes
         else:
