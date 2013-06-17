@@ -3496,3 +3496,9 @@ CREATE TABLE `reports_user` (
   UNIQUE KEY `report_user_uk1` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+create user 'readonly'@'%' identified by 'readonly';
+
+grant select on opensvc.* to 'readonly'@'%';
+
+flush privileges;
+
