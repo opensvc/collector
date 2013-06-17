@@ -904,6 +904,8 @@
 'Scheduled': 'Planifié',
 'Scheduled at': 'Planifié pour',
 'Script %(path)s does not exists': "Le script %(path)s n'existe pas",
+'Script %(path)s returned with error:\n%(err)s': 'Script %(path)s returned with error:\n%(err)s',
+'Script %(path)s returned with error: %(err)s': 'Script %(path)s returned with error: %(err)s',
 'Scripts executed for this workflow step': 'Scripts exécutés dans cette étape de workflow',
 'Search': 'Recherche',
 'Search requests': 'Chercher dans les demandes',

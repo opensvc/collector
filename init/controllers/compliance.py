@@ -1612,10 +1612,15 @@ def comp_detach_rulesets(node_ids=[], ruleset_ids=[], node_names=[]):
 
 @auth.requires_membership('CompManager')
 def comp_attach_rulesets(node_ids=[], ruleset_ids=[], node_names=[]):
+    return internal_comp_attach_rulesets(node_ids, ruleset_ids, node_names)
+
+def internal_comp_attach_rulesets(node_ids=[], ruleset_ids=[], node_names=[]):
     if len(node_ids) + len(node_names) == 0:
         raise ToolError("attach ruleset failed: no node selected")
     if len(ruleset_ids) == 0:
         raise ToolError("attach ruleset failed: no ruleset selected")
+
+    log = []
 
     if len(node_ids) > 0:
         q = db.v_nodes.id.belongs(node_ids)
@@ -1638,12 +1643,24 @@ def comp_attach_rulesets(node_ids=[], ruleset_ids=[], node_names=[]):
     q = db.comp_rulesets.id.belongs(ruleset_ids)
     rows = db(q).select(db.comp_rulesets.ruleset_name)
     rulesets = ', '.join([r.ruleset_name for r in rows])
-    _log('compliance.ruleset.node.attach',
-         'attached rulesets %(rulesets)s to nodes %(nodes)s',
-         dict(rulesets=rulesets, nodes=nodes))
+
+    log.append([
+      0,
+      'compliance.ruleset.node.attach',
+      'attached rulesets %(rulesets)s to nodes %(nodes)s',
+      dict(rulesets=rulesets, nodes=nodes)
+    ])
+
+    for ret, action, fmt, d in log:
+        _log(action, fmt, d)
+
+    return log
 
 @auth.requires_membership('CompManager')
 def comp_attach_svc_modulesets(svc_ids=[], modset_ids=[], svc_names=[], slave=True):
+    return internal_comp_attach_svc_modulesets(svc_ids, modset_ids, svc_names, slave)
+
+def internal_comp_attach_svc_modulesets(svc_ids=[], modset_ids=[], svc_names=[], slave=True):
     if len(svc_ids) + len(svc_names) == 0:
         raise ToolError("attach moduleset failed: no service selected")
     if len(modset_ids) == 0:
@@ -1700,6 +1717,9 @@ def comp_attach_svc_modulesets(svc_ids=[], modset_ids=[], svc_names=[], slave=Tr
 
 @auth.requires_membership('CompManager')
 def comp_attach_svc_rulesets(svc_ids=[], ruleset_ids=[], svc_names=[], slave=True):
+    return internal_comp_attach_svc_rulesets(svc_ids, ruleset_ids, svc_names, slave)
+
+def internal_comp_attach_svc_rulesets(svc_ids=[], ruleset_ids=[], svc_names=[], slave=True):
     if len(svc_ids) + len(svc_names) == 0:
         raise ToolError("attach ruleset failed: no service selected")
     if len(ruleset_ids) == 0:
@@ -3410,10 +3430,15 @@ def comp_detach_modulesets(node_ids=[], modset_ids=[]):
 
 @auth.requires_membership('CompManager')
 def comp_attach_modulesets(node_ids=[], modset_ids=[], node_names=[]):
+    return internal_comp_attach_modulesets(node_ids, modset_ids, node_names)
+
+def internal_comp_attach_modulesets(node_ids=[], modset_ids=[], node_names=[]):
     if len(node_ids+node_names) == 0:
         raise ToolError("attach modulesets failed: no node selected")
     if len(modset_ids) == 0:
         raise ToolError("attach modulesets failed: no moduleset selected")
+
+    log = []
 
     if len(node_ids) > 0:
         q = db.v_nodes.id.belongs(node_ids)
@@ -3435,10 +3460,18 @@ def comp_attach_modulesets(node_ids=[], modset_ids=[], node_names=[]):
     q = db.comp_moduleset.id.belongs(modset_ids)
     rows = db(q).select(db.comp_moduleset.modset_name)
     modulesets = ', '.join([r.modset_name for r in rows])
-    _log('compliance.moduleset.node.attach',
-         'attached modulesets %(modulesets)s to nodes %(nodes)s',
-         dict(modulesets=modulesets, nodes=nodes))
 
+    log.append([
+      0,
+      'compliance.moduleset.node.attach',
+      'attached modulesets %(modulesets)s to nodes %(nodes)s',
+      dict(modulesets=modulesets, nodes=nodes)
+    ])
+
+    for ret, action, fmt, d in log:
+        _log(action, fmt, d)
+
+    return log
 
 @auth.requires_login()
 def ajax_comp_modulesets_nodes_col_values():
@@ -6493,7 +6526,10 @@ def ajax_info(msg, to_session=False):
                        _style="padding-right:0.5em;vertical-align:bottom",
                      )
             try:
-                _msg = TT(T(e[2], e[3]))
+                _msg = TT(
+                  T(e[2], e[3]),
+                  _style="white-space:pre-wrap",
+                )
             except Exception as e:
                 _msg = str(e)
             d = DIV(
@@ -8179,10 +8215,13 @@ def ajax_generic_form_submit(form, data, _d=None):
               'stdout': out,
               'stderr': err,
             }
+            msg = out
+            if len(err) > 0:
+                msg += err
             if p.returncode != 0:
-                log.append((1, "form.submit", "Script %(path)s returned with error: %(err)s", dict(path=path, err=err)))
+                log.append((1, "form.submit", "Script %(path)s returned with error:\n%(err)s", dict(path=path, err=msg)))
                 continue
-            log.append((0, "form.submit", "script %(path)s returned on success: %(out)s", dict(path=path, out=out)))
+            log.append((0, "form.submit", "script %(path)s returned on success:\n%(out)s", dict(path=path, out=msg)))
         elif dest == "mail":
             log += mail_form(output, data, form, _d=_d)
         elif dest == "workflow":
@@ -8549,26 +8588,26 @@ def ajax_custo_form_submit(output, data):
         if request.vars.nodename is not None:
             # check node_team_responsible_id ?
             try:
-                comp_attach_modulesets(node_names=[request.vars.nodename],
+                log += internal_comp_attach_modulesets(node_names=[request.vars.nodename],
                                        modset_ids=modset_ids)
             except ToolError:
                 pass
             try:
-                comp_attach_rulesets(node_names=[request.vars.nodename],
-                                     ruleset_ids=rset_ids)
+                log += internal_comp_attach_rulesets(node_names=[request.vars.nodename],
+                                              ruleset_ids=rset_ids)
             except ToolError:
                 pass
 
         if request.vars.svcname is not None:
             # check svc_team_responsible_id ?
             try:
-                log += comp_attach_svc_modulesets(svc_names=[request.vars.svcname],
+                log += internal_comp_attach_svc_modulesets(svc_names=[request.vars.svcname],
                                                   modset_ids=modset_ids,
                                                   slave=True)
             except ToolError:
                 pass
             try:
-                log += comp_attach_svc_rulesets(svc_names=[request.vars.svcname],
+                log += internal_comp_attach_svc_rulesets(svc_names=[request.vars.svcname],
                                                 ruleset_ids=rset_ids,
                                                 slave=True)
 
