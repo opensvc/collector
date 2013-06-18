@@ -3189,6 +3189,18 @@ function charts_plot(url, id) {
         stackSeries = options['stack']
         series = []
         unit = ""
+        if (instances.length>1) {
+	    legend = {
+                renderer: $.jqplot.EnhancedLegendRenderer,
+                rendererOptions:{numberRows: 1},
+                show: true,
+                location: 'n'
+            }
+	} else {
+	    legend = {
+		show: false
+	    }
+	}
         for (i=0; i<instances.length; i++) {
             serie = {
               'label': instances[i]['label'],
@@ -3213,12 +3225,7 @@ function charts_plot(url, id) {
 	p = $.jqplot(id, data, {
 	    stackSeries: stackSeries,
             cursor:{zoom:true, showTooltip:false},
-            legend: {
-                renderer: $.jqplot.EnhancedLegendRenderer,
-                rendererOptions:{numberRows: 1},
-                show: true,
-                location: 'n'
-            },
+            legend: legend,
             grid: {
                 borderWidth: 0.5,
                 shadowOffset: 1.0,
