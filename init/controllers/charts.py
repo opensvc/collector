@@ -204,8 +204,9 @@ def ajax_metric_test():
     row = db(q).select().first()
     if row is None:
         return T("No metric request definition")
+    sql = replace_fset_sql(row.metric_sql)
     try:
-        rows = dbro.executesql(row.metric_sql)
+        rows = dbro.executesql(sql)
     except Exception as e:
         return str(e)
 
@@ -258,18 +259,29 @@ def metrics_admin():
     return dict(table=t)
 
 
+def replace_fset_sql(sql, fset_id=None):
+    if fset_id is None:
+        fset_id = user_fset_id()
+
+    nodenames, svcnames = filterset_encap_query_cached(fset_id)
+
+    if len(svcnames) == 0:
+        svcnames = "'magic1234567890'"
+    else:
+        svcnames = ",".join(map(lambda x: repr(str(x)), svcnames))
+
+    if len(nodenames) == 0:
+        nodenames = "'magic1234567890'"
+    else:
+        nodenames = ",".join(map(lambda x: repr(str(x)), nodenames))
+
+    sql = sql.replace('%%fset_services%%', svcnames)
+    sql = sql.replace('%%fset_nodenames%%', nodenames)
+
+    return sql
 
 def _metrics_cron_fset(m, fset_id):
-    nodenames, services = filterset_encap_query(fset_id)
-
-    if len(services) == 0:
-        services = ['magic1234567890']
-    if len(nodenames) == 0:
-        nodenames = ['magic1234567890']
-
-    sql = m.metric_sql.replace('%%fset_services%%', ','.join(map(lambda x: repr(x), services)))
-    sql = sql.replace('%%fset_nodenames%%', ','.join(map(lambda x: repr(x), nodenames)))
-
+    sql = replace_fset_sql(m.metric_sql, fset_id)
     try:
          rows = dbro.executesql(sql)
     except Exception as e:
@@ -278,12 +290,18 @@ def _metrics_cron_fset(m, fset_id):
     now = datetime.datetime.now()
 
     for row in rows:
-        print "  insert", row[m.metric_col_value_index], "fset_id:", fset_id
+        if m.metric_col_instance_index is not None:
+            instance = row[m.metric_col_instance_index]
+            print "  insert", instance, row[m.metric_col_value_index], "fset_id:", fset_id
+        else:
+            instance = None
+            print "  insert", row[m.metric_col_value_index], "fset_id:", fset_id
 
         mid = db.metrics_log.insert(
                date=now,
                metric_id=m.id,
                fset_id=fset_id,
+               instance=instance,
                value=row[m.metric_col_value_index],
               )
 
@@ -321,6 +339,7 @@ def _metrics_cron(m):
 def metrics_cron():
     q = db.metrics.id > 0
     rows = db(q).select()
+    refresh_fset_cache()
     for row in rows:
         print "* metric:", row.metric_name
         try:

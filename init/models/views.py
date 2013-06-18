@@ -551,3 +551,55 @@ def gen_filterset_query(q, row, tables=[]):
         q |= ~qry
     return q
 
+def refresh_fset_cache():
+    q = db.gen_filtersets.id > 0
+    fset_ids = [r.id for r in db(q).select(db.gen_filtersets.id)]
+
+    sql = "truncate fset_cache"
+    db.executesql(sql)
+
+    for fset_id in fset_ids:
+        _refresh_fset_cache(fset_id)
+
+    db.commit()
+
+def _refresh_fset_cache(fset_id):
+    print "refresh fset_id", fset_id
+    nodenames, svcnames = filterset_encap_query(fset_id)
+
+    sql = "delete from fset_cache where fset_id=%d"%fset_id
+    db.executesql(sql)
+
+    if len(nodenames)+len(svcnames) == 0:
+        return
+
+    sql = "insert into fset_cache values "
+    for nodename in nodenames:
+        sql += """(%(fset_id)d, "nodename", "%(nodename)s"),"""%dict(
+          fset_id=fset_id,
+          nodename=nodename,
+        )
+    for svcname in svcnames:
+        sql += """(%(fset_id)d, "svcname", "%(svcname)s"),"""%dict(
+          fset_id=fset_id,
+          svcname=svcname,
+        )
+    sql = sql.rstrip(",")
+    try:
+        db.executesql(sql)
+    except Exception as e:
+        print sql
+        print e
+        raise
+
+def filterset_encap_query_cached(fset_id):
+    sql = """select name from fset_cache where fset_id=%d and objtype="nodename" """%fset_id
+    rows = db.executesql(sql)
+    nodenames = [r[0] for r in rows]
+    sql = """select name from fset_cache where fset_id=%d and objtype="svcname" """%fset_id
+    rows = db.executesql(sql)
+    svcnames = [r[0] for r in rows]
+    return nodenames, svcnames
+
+
+

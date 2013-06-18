@@ -3672,3 +3672,13 @@ grant select on opensvc.workflows to 'readonly'@'%';
 
 flush privileges;
 
+CREATE TABLE `fset_cache` (
+  `fset_id` int(11) NOT NULL,
+  `objtype` enum("svcname", "nodename") NOT NULL,
+  `name` varchar(128) NOT NULL,
+  KEY (`fset_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+alter table metrics_log drop key idx1;
+
+alter table metrics_log add key idx1 (`date`,`metric_id`,`fset_id`);
