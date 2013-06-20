@@ -1532,9 +1532,14 @@ def _get_node_generic(nodename, col):
     q = db.v_nodes.team_responsible.belongs(user_groups())
     q &= db.v_nodes.nodename == nodename
     node = db(q).select().first()
-    if node is None:
-        return T("node not found")
-    return node[col]
+    if node is not None:
+        return node[col]
+    q = db.v_nodes.team_responsible.belongs(user_groups())
+    q &= db.v_nodes.nodename == nodename.split('.')[0]
+    node = db(q).select().first()
+    if node is not None:
+        return node[col]
+    return T("node not found")
 
 @service.json
 def json_node_environnement(nodename):
@@ -1547,4 +1552,30 @@ def json_node_os_concat(nodename):
 @service.json
 def json_node_loc_city(nodename):
     return _get_node_generic(nodename, "loc_city")
+
+@service.json
+def json_node_team_responsible(nodename):
+    return _get_node_generic(nodename, "team_responsible")
+
+@service.json
+def json_node_macs(nodename):
+    q = db.nodes.nodename.belongs((nodename, nodename.split('.')[0]))
+    q &= db.node_ip.nodename == db.nodes.nodename
+    q &= (db.node_ip.intf.like('eth%')) | (db.node_ip.intf.like('bond%'))
+    rows = db(q).select(db.node_ip.mac, db.node_ip.intf,
+                        groupby=db.node_ip.mac,
+                        orderby=db.node_ip.mac)
+    return ["%s (%s)"%(r.mac, r.intf) for r in rows]
+
+@service.json
+def json_mac_ipv4(mac):
+    q = db.node_ip.nodename == db.nodes.nodename
+    q &= db.node_ip.mac == mac
+    q &= db.node_ip.type == "ipv4"
+    row = db(q).select(db.node_ip.addr,
+                       groupby=db.node_ip.addr,
+                       orderby=db.node_ip.addr).first()
+    if row is None:
+        return T("mac not found")
+    return row.addr
 
