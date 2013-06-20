@@ -7267,9 +7267,19 @@ function form_inputs_trigger (o) {
 
 function refresh_select(e) {
   return function(data) {
-    e.find('option').remove()
-    for (i=0;i<data.length;i++) {
-      e.find('option').end().append("<option value='"+data[i]+"'>"+data[i]+"</option>")
+    if (typeof(data) == "string") {
+      e.find('option:selected').removeAttr('selected')
+      e.val(data).attr('selected', true)
+      e.find("option:contains('" + data + "')").each(function(){
+        if ($(this).text() == data) {
+          $(this).attr('selected', true);
+        }
+      });
+    } else {
+      e.find('option').remove()
+      for (i=0;i<data.length;i++) {
+        e.find('option').end().append("<option value='"+data[i]+"'>"+data[i]+"</option>")
+      }
     }
     e.combobox()
     e.trigger('change')
@@ -7345,7 +7355,7 @@ function form_inputs_functions (o) {
       param = v[0]
       value = v[1]
       id = "%(xid)s"+value+"_"+index
-      if ($(this).get(0).tagName == 'SELECT') {
+      if ($('#'+id).get(0).tagName == 'SELECT') {
         val = $("#"+id+" option:selected").val()
       } else {
         val = $("#"+id).val()
