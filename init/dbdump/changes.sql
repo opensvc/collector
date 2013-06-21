@@ -3682,3 +3682,17 @@ CREATE TABLE `fset_cache` (
 alter table metrics_log drop key idx1;
 
 alter table metrics_log add key idx1 (`date`,`metric_id`,`fset_id`);
+
+alter table networks add column begin integer;
+
+alter table networks add column end integer;
+
+alter table networks add column comment text;
+
+alter table networks add column pvid integer;
+
+alter table networks add column gateway integer;
+
+alter table networks drop key idx2;
+
+alter table networks add unique key idx2 (network, netmask);

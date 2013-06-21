@@ -1579,3 +1579,55 @@ def json_mac_ipv4(mac):
         return T("mac not found")
     return row.addr
 
+def ip_to_int(ip):
+    v = ip.split(".")
+    if len(v) != 4:
+        return 0
+    n = 0
+    n += int(v[0]) << 24
+    n += int(v[1]) << 16
+    n += int(v[2]) << 8
+    n += int(v[3])
+    return n
+
+def cidr_to_netmask(cidr):
+    s = ""
+    for i in range(cidr):
+        s += "1"
+    for i in range(32-cidr):
+        s += "0"
+    return int_to_ip(int(s, 2))
+
+def int_to_ip(ip):
+    l = []
+    l.append(str(ip >> 24))
+    ip = ip & 0x00ffffff
+    l.append(str(ip >> 16))
+    ip = ip & 0x0000ffff
+    l.append(str(ip >> 8))
+    ip = ip & 0x000000ff
+    l.append(str(ip))
+    return ".".join(l)
+
+@service.json
+def json_ip_netmask(ip):
+    ip = ip_to_int(ip)
+    sql = """select netmask from networks where
+              %(ip)d >= inet_aton(begin) and
+              %(ip)d <= inet_aton(end)""" % dict(ip=ip)
+    rows = db.executesql(sql)
+    if len(rows) == 0:
+        return "not found"
+    return cidr_to_netmask(rows[0][0])
+
+@service.json
+def json_ip_gateway(ip):
+    ip = ip_to_int(ip)
+    sql = """select gateway from networks where
+              %(ip)d >= inet_aton(begin) and
+              %(ip)d <= inet_aton(end)""" % dict(ip=ip)
+    rows = db.executesql(sql)
+    if len(rows) == 0:
+        return "not found"
+    return rows[0][0]
+

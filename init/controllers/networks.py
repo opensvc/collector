@@ -40,16 +40,26 @@ def _network_form(record=None):
                  hidden_fields=['id'],
                  fields=[
                      'name',
+                     'pvid',
                      'network',
                      'broadcast',
                      'netmask',
-                     'team_responsible'],
+                     'gateway',
+                     'begin',
+                     'end',
+                     'team_responsible',
+                     'comment'],
                  labels={
                      'name': 'Name',
+                     'pvid': 'VLAN id',
                      'network': 'Network',
                      'broadcast': 'Broadcast',
                      'netmask': 'Netmask',
+                     'gateway': 'Gateway',
+                     'begin': 'Ip range begin',
+                     'end': 'Ip range end',
                      'team_responsible': 'Team Responsible',
+                     'comment': 'Comment',
                  })
 
 class col_name(HtmlTableColumn):
@@ -81,14 +91,49 @@ class table_networks(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['id',
                      'name',
+                     'pvid',
                      'network',
                      'broadcast',
                      'netmask',
-                     'team_responsible']
+                     'gateway',
+                     'begin',
+                     'end',
+                     'team_responsible',
+                     'comment']
         self.colprops = {
             'id': HtmlTableColumn(
                      title='Network Id',
                      field='id',
+                     img='net16',
+                     display=True,
+                    ),
+            'pvid': col_name(
+                     title='VLAN id',
+                     field='pvid',
+                     img='net16',
+                     display=True,
+                    ),
+            'begin': col_name(
+                     title='Ip range begin',
+                     field='begin',
+                     img='net16',
+                     display=True,
+                    ),
+            'end': col_name(
+                     title='Ip range end',
+                     field='end',
+                     img='net16',
+                     display=True,
+                    ),
+            'gateway': col_name(
+                     title='Gateway',
+                     field='gateway',
+                     img='net16',
+                     display=True,
+                    ),
+            'comment': col_name(
+                     title='Comment',
+                     field='comment',
                      img='net16',
                      display=True,
                     ),
@@ -123,7 +168,8 @@ class table_networks(HtmlTable):
                      display=True,
                     ),
         }
-        self.colprops["name"].t = self
+        for c in self.cols:
+            self.colprops[c].t = self
         self.extrarow = True
         self.extraline = True
         self.checkboxes = True
