@@ -2802,7 +2802,7 @@ function stats_netdev(url, id) {
             max = Math.max(max, Math.abs(data[i][j][1]))
           }
         }
-        d = best_unit_mb(max, 'K')
+        d = best_unit_mb(max, 'KB')
         for (i=0; i<data.length; i++) {
           for (j=0; j<data[i].length; j++) {
             data[i][j][1] /= d['div']
@@ -2847,7 +2847,7 @@ function stats_netdev(url, id) {
                     tickOptions:{formatString:'%b,%d\n%H:%M'}
 		}, 
 		yaxis: {
-                    tickOptions:{formatString: d['fmt']+' '+d['unit']}
+                    tickOptions:{formatString: d['fmt']+' '+d['unit']+'/s'}
 		}
 	    }
 	});
