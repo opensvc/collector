@@ -941,22 +941,22 @@ def json_netdev():
     bw = {}
     pk = {}
     for row in rows:
-        label = "%s rx B/s"%row[1]
+        label = "%s rx"%row[1]
         if label in bw:
             bw[label].append([row[0], -row[2]])
         else:
             bw[label] = [[row[0], -row[2]]]
-        label = "%s tx B/s"%row[1]
+        label = "%s tx"%row[1]
         if label in bw:
             bw[label].append([row[0], row[3]])
         else:
             bw[label] = [[row[0], row[3]]]
-        label = "%s rx pck/s"%row[1]
+        label = "%s rx"%row[1]
         if label in pk:
             pk[label].append([row[0], -row[4]])
         else:
             pk[label] = [[row[0], -row[4]]]
-        label = "%s tx pck/s"%row[1]
+        label = "%s tx"%row[1]
         if label in pk:
             pk[label].append([row[0], row[5]])
         else:
