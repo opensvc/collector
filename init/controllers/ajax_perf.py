@@ -596,7 +596,7 @@ def rows_blockdev(node, s, e):
     return rows
 
 @auth.requires_login()
-def rows_netdev(node, s, e):
+def rows_netdev_avg(node, s, e):
     rows = db.executesql("""
       select dev,
              avg(rxkBps) as rxkBps,
@@ -609,6 +609,29 @@ def rows_netdev(node, s, e):
             nodename = "%(node)s"
       group by dev;
     """%dict(node=node, s=s, e=e))
+    return rows
+
+@auth.requires_login()
+def rows_netdev(node, s, e):
+    sql = """select date,
+                    dev,
+                    avg(rxkBps),
+                    avg(txkBps),
+                    avg(rxpckps),
+                    avg(txpckps),
+                    %(d)s as d
+             from stats_netdev
+             where date>='%(s)s'
+               and date<='%(e)s'
+               and nodename='%(n)s'
+             group by d,dev
+          """%dict(
+                d = period_concat(s, e),
+                s = s,
+                e = e,
+                n = node,
+              )
+    rows = db.executesql(sql)
     return rows
 
 @auth.requires_login()
@@ -628,21 +651,6 @@ def rows_netdev_err(node, s, e):
     """%dict(node=node, s=s, e=e))
     return rows
 
-@auth.requires_login()
-def perf_stats_netdev(node, s, e):
-    q = db.stats_netdev.nodename == node
-    q &= db.stats_netdev.date > s
-    q &= db.stats_netdev.date < e
-    rows = db(q).select(db.stats_netdev.dev,
-                        groupby=db.stats_netdev.dev,
-                        orderby=db.stats_netdev.dev,
-                       )
-    devs = [r.dev for r in rows]
-
-    t = []
-    for dev in devs:
-        t += perf_stats_netdev_one(node, s, e, dev)
-    return t
 
 #
 # json servers
@@ -897,7 +905,7 @@ def json_netdev_err():
     return [dev, [max_rxerrps, max_txerrps, max_collps, max_rxdropps, max_txdropps]]
 
 @service.json
-def json_netdev():
+def json_netdev_avg():
     node = request.vars.node
     begin = request.vars.b
     end = request.vars.e
@@ -911,7 +919,7 @@ def json_netdev():
     if node is None:
         return [dev, [rxkBps, txkBps], [rxpckps, txpckps]]
 
-    rows = rows_netdev(node, begin, end)
+    rows = rows_netdev_avg(node, begin, end)
     for r in rows:
         dev.append(r[0])
         rxkBps.append(r[1])
@@ -919,6 +927,49 @@ def json_netdev():
         rxpckps.append(r[3])
         txpckps.append(r[4])
     return [dev, [rxkBps, txkBps], [rxpckps, txpckps]]
+
+@service.json
+def json_netdev():
+    node = request.vars.node
+    begin = request.vars.b
+    end = request.vars.e
+
+    if node is None:
+        return []
+
+    rows = rows_netdev(node, begin, end)
+    bw = {}
+    pk = {}
+    for row in rows:
+        label = "%s rx B/s"%row[1]
+        if label in bw:
+            bw[label].append([row[0], -row[2]])
+        else:
+            bw[label] = [[row[0], -row[2]]]
+        label = "%s tx B/s"%row[1]
+        if label in bw:
+            bw[label].append([row[0], row[3]])
+        else:
+            bw[label] = [[row[0], row[3]]]
+        label = "%s rx pck/s"%row[1]
+        if label in pk:
+            pk[label].append([row[0], -row[4]])
+        else:
+            pk[label] = [[row[0], -row[4]]]
+        label = "%s tx pck/s"%row[1]
+        if label in pk:
+            pk[label].append([row[0], row[5]])
+        else:
+            pk[label] = [[row[0], row[5]]]
+    bw_labels = sorted(bw.keys())
+    bw_data = []
+    for k in bw_labels:
+        bw_data.append(bw[k])
+    pk_labels = sorted(pk.keys())
+    pk_data = []
+    for k in pk_labels:
+        pk_data.append(pk[k])
+    return [[bw_labels, bw_data], [pk_labels, pk_data]]
 
 @service.json
 def json_blockdev():

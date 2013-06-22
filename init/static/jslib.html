@@ -2703,7 +2703,7 @@ function stats_netdev_err(url, id) {
         _jqplot_extra($('#'+id), p)
     });
 }
-function stats_netdev(url, id) {
+function stats_netdev_avg(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         plot_width_x(id+'_kBps', data[0])
@@ -2781,6 +2781,132 @@ function stats_netdev(url, id) {
 		yaxis: {
 		    min: 0,
 		    tickOptions:{formatString:'%.2f'}
+		}
+	    }
+	});
+        _jqplot_extra($('#'+id+'_pckps'), p)
+    });
+}
+function stats_netdev(url, id) {
+    $.jqplot.config.enablePlugins = true;
+    $.getJSON(url, function(_data) {
+        bw = _data[0]
+        pk = _data[1]
+        colors = [ "#4bb2c5", "#4bb2c5", "#EAA228", "#EAA228", "#c5b47f", "#c5b47f", "#579575", "#579575", "#839557", "#839557", "#958c12", "#958c12", "#953579", "#953579", "#4b5de4", "#4b5de4", "#d8b83f", "#d8b83f", "#ff5800", "#ff5800", "#0085cc", "#0085cc", "#c747a3", "#c747a3", "#cddf54", "#cddf54", "#FBD178", "#FBD178", "#26B4E3", "#26B4E3", "#bd70c7", "#bd70c7"]
+
+        labels = bw[0]
+        data = bw[1]
+        max = 0
+        for (i=0; i<data.length; i++) {
+          for (j=0; j<data[i].length; j++) {
+            max = Math.max(max, Math.abs(data[i][j][1]))
+          }
+        }
+        d = best_unit_mb(max, 'K')
+        for (i=0; i<data.length; i++) {
+          for (j=0; j<data[i].length; j++) {
+            data[i][j][1] /= d['div']
+          }
+        }
+        series = []
+        for (i=0; i<labels.length; i++) {
+          series.push({label: labels[i]})
+        }
+	p = $.jqplot(id+'_kBps', data, {
+            cursor:{zoom:true, showTooltip:true},
+	    stackSeries: false,
+            seriesColors: colors,
+            title: {
+                text: 'Net device bandwidth'
+            },
+            legend: {
+                renderer: $.jqplot.EnhancedLegendRenderer,
+                show: true,
+                location: 'e',
+                placement: "outside"
+            },
+            gridPadding: {
+                right:90
+            },
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    seriesDefaults: {
+                fill: false,
+                shadowAngle: 135,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: series,
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+                    numberTicks: 5,
+                    tickOptions:{formatString:'%b,%d\n%H:%M'}
+		}, 
+		yaxis: {
+                    tickOptions:{formatString: d['fmt']+' '+d['unit']}
+		}
+	    }
+	});
+        _jqplot_extra($('#'+id+'_kBps'), p)
+
+        labels = pk[0]
+        data = pk[1]
+        max = 0
+        for (i=0; i<data.length; i++) {
+          for (j=0; j<data[i].length; j++) {
+            max = Math.max(max, Math.abs(data[i][j][1]))
+          }
+        }
+        d = best_unit_mb(max, '')
+        for (i=0; i<data.length; i++) {
+          for (j=0; j<data[i].length; j++) {
+            data[i][j][1] /= d['div']
+          }
+        }
+        series = []
+        for (i=0; i<labels.length; i++) {
+          series.push({label: labels[i]})
+        }
+	p = $.jqplot(id+'_pckps', data, {
+            cursor:{zoom:true, showTooltip:true},
+	    stackSeries: false,
+            seriesColors: colors,
+            title: {
+                text: 'Net device packets/s'
+            },
+            legend: {
+                renderer: $.jqplot.EnhancedLegendRenderer,
+                show: true,
+                location: 'e',
+                placement: "outside"
+            },
+            gridPadding: {
+                right:90
+            },
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    seriesDefaults: {
+                fill: false,
+                shadowAngle: 135,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: series,
+	    axes: {
+		xaxis: {
+		    renderer: $.jqplot.DateAxisRenderer, 
+                    numberTicks: 5,
+                    tickOptions:{formatString:'%b,%d\n%H:%M'}
+		}, 
+		yaxis: {
+                    tickOptions:{formatString: d['fmt']+' '+d['unit']}
 		}
 	    }
 	});
