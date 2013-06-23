@@ -290,7 +290,7 @@ def ajax_perf_netdev_plot():
 
 @auth.requires_login()
 def ajax_perf_blockdev_plot():
-    sub = ['_pct_util', '_tps', '_secps', '_tm', '_await', '_svctm', '_avgrq_sz']
+    sub = ['_pct_util', '_pct_util_time', '_tps', '_tps_time', '_secps', '_tm', '_await', '_await_time', '_svctm', '_svctm_time', '_avgrq_sz', '_avgrq_sz_time']
     return _ajax_perf_plot('blockdev', sub=sub, last=True)
 
 def ajax_perf_block_plot():
@@ -593,7 +593,29 @@ def rows_blockdev(node, s, e):
             nodename = "%(node)s"
       group by dev;
     """%dict(node=node, s=s, e=e))
-    return rows
+
+    rows_time = db.executesql("""
+      select date,
+             dev,
+             tps,
+             rsecps,
+             wsecps,
+             avgrq_sz,
+             await,
+             svctm,
+             pct_util,
+             %(d)s as d
+      from stats_blockdev
+      where date >= "%(s)s" and
+            date <= "%(e)s" and
+            nodename = "%(node)s"
+      group by d, dev;
+    """%dict(
+      d = period_concat(s, e),
+      node=node,
+      s=s,
+      e=e))
+    return rows, rows_time
 
 @auth.requires_login()
 def rows_netdev_avg(node, s, e):
@@ -977,6 +999,8 @@ def json_blockdev():
     begin = request.vars.b
     end = request.vars.e
 
+    max_await = 300000
+
     dev = []
     tm_dev = []
 
@@ -994,7 +1018,7 @@ def json_blockdev():
         return [dev, tps, avgrq_sz, await, svctm, pct_util, [rsecps, wsecps],
                 tm_dev, [tm_svc, tm_await]]
 
-    rows = rows_blockdev(node, begin, end)
+    rows, rows_time = rows_blockdev(node, begin, end)
 
     l = sorted(rows, key=lambda r: (r[4]+r[5]))
     l.reverse()
@@ -1009,18 +1033,56 @@ def json_blockdev():
     for i, r in enumerate(l):
         tps.append((r[0],r[3],r[2],r[1]))
         if i >= 10: break
+    tps_devs = [r[0] for r in tps]
+    tps_time = []
+    h = {}
+    for r in rows_time:
+        if r[1] not in tps_devs:
+            continue
+        if r[1] not in h:
+            h[r[1]] = [[r[0], r[2]]]
+        else:
+            h[r[1]].append([r[0], r[2]])
+    for _dev in tps_devs:
+        tps_time.append(h[_dev])
 
     l = sorted(rows, key=lambda r: r[6])
     l.reverse()
     for i, r in enumerate(l):
         avgrq_sz.append((r[0], r[8],r[7],r[6]))
         if i >= 10: break
+    avgrq_sz_devs = [r[0] for r in avgrq_sz]
+    avgrq_sz_time = []
+    h = {}
+    for r in rows_time:
+        if r[1] not in avgrq_sz_devs:
+            continue
+        if r[1] not in h:
+            h[r[1]] = [[r[0], r[5]]]
+        else:
+            h[r[1]].append([r[0], r[5]])
+    for _dev in avgrq_sz_devs:
+        avgrq_sz_time.append(h[_dev])
 
     l = sorted(rows, key=lambda r: r[9])
     l.reverse()
     for i, r in enumerate(l):
         await.append((r[0], r[11],r[10],r[9]))
         if i >= 10: break
+    await_devs = [r[0] for r in tps]
+    await_time = []
+    h = {}
+    for r in rows_time:
+        if r[1] not in await_devs:
+            continue
+        if r[6] > max_await:
+            continue
+        if r[1] not in h:
+            h[r[1]] = [[r[0], r[6]]]
+        else:
+            h[r[1]].append([r[0], r[6]])
+    for _dev in await_devs:
+        await_time.append(h[_dev])
 
     for i, r in enumerate(l):
         tm_dev.append(r[0])
@@ -1033,15 +1095,63 @@ def json_blockdev():
     for i, r in enumerate(l):
         svctm.append((r[0], r[14],r[13],r[12]))
         if i >= 10: break
+    svctm_devs = [r[0] for r in svctm]
+    svctm_time = []
+    h = {}
+    for r in rows_time:
+        if r[1] not in svctm_devs:
+            continue
+        if r[1] not in h:
+            h[r[1]] = [[r[0], r[7]]]
+        else:
+            h[r[1]].append([r[0], r[7]])
+    for _dev in svctm_devs:
+        svctm_time.append(h[_dev])
 
     l = sorted(rows, key=lambda r: r[15])
     l.reverse()
     for i, r in enumerate(l):
         pct_util.append((r[0], r[17],r[16],r[15]))
         if i >= 10: break
+    pct_util_devs = [r[0] for r in pct_util]
+    pct_util_time = []
+    h = {}
+    for r in rows_time:
+        if r[1] not in pct_util_devs:
+            continue
+        if r[1] not in h:
+            h[r[1]] = [[r[0], r[8]]]
+        else:
+            h[r[1]].append([r[0], r[8]])
+    for _dev in pct_util_devs:
+        pct_util_time.append(h[_dev])
 
-    return [dev, tps, avgrq_sz, await, svctm, pct_util, [rsecps, wsecps],
-            tm_dev,[tm_svc, tm_await]]
+
+    return {
+             'avg': [dev, tps, avgrq_sz, await, svctm, pct_util, [rsecps, wsecps], tm_dev,[tm_svc, tm_await]],
+             'time': {
+               'tps': {
+                 'labels': tps_devs,
+                 'data': tps_time,
+               },
+               'pct_util': {
+                 'labels': pct_util_devs,
+                 'data': pct_util_time,
+               },
+               'await': {
+                 'labels': await_devs,
+                 'data': await_time,
+               },
+               'svctm': {
+                 'labels': svctm_devs,
+                 'data': svctm_time,
+               },
+               'avgrq_sz': {
+                 'labels': avgrq_sz_devs,
+                 'data': avgrq_sz_time,
+               },
+             }
+           }
 
 @service.json
 def json_fs():
