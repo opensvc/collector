@@ -1731,6 +1731,7 @@ function stats_cpu(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                markerOptions: {size: 2},
                 fill: true,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -1783,6 +1784,7 @@ function stats_proc(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                markerOptions: {size: 2},
                 shadowAngle: 135,
                 shadowOffset: 1.0,
                 shadowWidth: 2
@@ -1823,6 +1825,7 @@ function stats_proc(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                markerOptions: {size: 2},
                 shadowAngle: 135,
                 shadowOffset: 1.0,
                 shadowWidth: 2
@@ -1863,6 +1866,7 @@ function stats_proc(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -2074,6 +2078,7 @@ function stats_mem(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -2177,6 +2182,7 @@ function stats_swap(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -2223,6 +2229,7 @@ function stats_block(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -2264,6 +2271,7 @@ function stats_block(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -2404,7 +2412,7 @@ function stats_blockdev(url, id) {
             cursor:{zoom:true, showTooltip:true},
 	    stackSeries: false,
             title: {
-                text: 'Block device %utilization'
+                text: 'Block device utilization'
             },
             legend: {
                 renderer: $.jqplot.EnhancedLegendRenderer,
@@ -2421,6 +2429,7 @@ function stats_blockdev(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -2463,7 +2472,7 @@ function stats_blockdev(url, id) {
             cursor:{zoom:true, showTooltip:true},
 	    stackSeries: false,
             title: {
-                text: 'Block device transactions/s'
+                text: 'Block device transactions'
             },
             legend: {
                 renderer: $.jqplot.EnhancedLegendRenderer,
@@ -2480,6 +2489,7 @@ function stats_blockdev(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -2539,6 +2549,7 @@ function stats_blockdev(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -2598,6 +2609,7 @@ function stats_blockdev(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -2657,6 +2669,7 @@ function stats_blockdev(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -2722,6 +2735,11 @@ function stats_blockdev(url, id) {
 	});
         _jqplot_extra($('#'+id+'_tps'), p)
 
+        for (i=0; i<data[2].length; i++) {
+          data[2][i][1] /= d_avgrq_sz['div']
+          data[2][i][2] /= d_avgrq_sz['div']
+          data[2][i][3] /= d_avgrq_sz['div']
+        }
         plot_width_x(id+'_avgrq_sz', data[0])
 	p = $.jqplot(id+'_avgrq_sz', [data[2]], {
             cursor:{zoom:true, showTooltip:true},
@@ -2729,7 +2747,7 @@ function stats_blockdev(url, id) {
                 text: 'Block device request size<br>high/low/average'
             },
             legend: {
-                show: true,
+                show: false,
                 location: 'e',
                 placement: "outside"
             },
@@ -2755,12 +2773,18 @@ function stats_blockdev(url, id) {
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%.2f'}
+		    max: max_avgrq_sz,
+                    tickOptions:{formatString: d_avgrq_sz['fmt']+' '+d_avgrq_sz['unit']+'sectors'}
 		}
 	    }
 	});
         _jqplot_extra($('#'+id+'_avgrq_sz'), p)
 
+        for (i=0; i<data[3].length; i++) {
+          data[3][i][1] /= d_await['div']
+          data[3][i][2] /= d_await['div']
+          data[3][i][3] /= d_await['div']
+        }
         plot_width_x(id+'_await', data[0])
 	p = $.jqplot(id+'_await', [data[3]], {
             cursor:{zoom:true, showTooltip:true},
@@ -2768,7 +2792,7 @@ function stats_blockdev(url, id) {
                 text: 'Block device wait time<br>high/low/average'
             },
             legend: {
-                show: true,
+                show: false,
                 location: 'e',
                 placement: "outside"
             },
@@ -2794,12 +2818,18 @@ function stats_blockdev(url, id) {
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%.2f'}
+		    max: max_await,
+                    tickOptions:{formatString: d_await['fmt']+' '+d_await['unit']+'msec'}
 		}
 	    }
 	});
         _jqplot_extra($('#'+id+'_await'), p)
 
+        for (i=0; i<data[4].length; i++) {
+          data[4][i][1] /= d_svctm['div']
+          data[4][i][2] /= d_svctm['div']
+          data[4][i][3] /= d_svctm['div']
+        }
         plot_width_x(id+'_svctm', data[0])
 	p = $.jqplot(id+'_svctm', [data[4]], {
             cursor:{zoom:true, showTooltip:true},
@@ -2807,7 +2837,7 @@ function stats_blockdev(url, id) {
                 text: 'Block device service time<br>high/low/average'
             },
             legend: {
-                show: true,
+                show: false,
                 location: 'e',
                 placement: "outside"
             },
@@ -2833,7 +2863,8 @@ function stats_blockdev(url, id) {
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%.2f'}
+		    max: max_svctm,
+                    tickOptions:{formatString: d_svctm['fmt']+' '+d_svctm['unit']+'msec'}
 		}
 	    }
 	});
@@ -3143,6 +3174,7 @@ function stats_netdev(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -3202,6 +3234,7 @@ function stats_netdev(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -3337,6 +3370,7 @@ function stats_fs(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                markerOptions: {size: 2},
                 shadowAngle: 135,
                 shadowOffset: 1.0,
                 shadowWidth: 2

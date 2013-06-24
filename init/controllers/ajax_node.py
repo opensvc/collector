@@ -30,9 +30,11 @@ def perf_stats(node, rowid):
               IMG(_src=URL(r=request,c='static',f=group_img_h[group])),
               A(
                 T(title),
-                _onClick="""toggle_plot('%(url)s', '%(rowid)s','%(div)s')"""%dict(
+                _onClick="""$('#%(div)s').html('%(spinner)s');
+                            toggle_plot('%(url)s', '%(rowid)s','%(div)s')"""%dict(
                              url=URL(r=request,c='ajax_perf',f='ajax_perf_%s_plot'%group,
                                      args=[node, rowid]),
+                             spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')),
                              rowid=rowid,
                              div=divid),
               ),
@@ -48,9 +50,11 @@ def perf_stats(node, rowid):
               ),
               A(
                 IMG(_src=URL(r=request,c='static',f='refresh16.png')),
-                _onClick="""refresh_plot('%(url)s', '%(rowid)s','%(div)s')"""%dict(
+                _onClick="""$('#%(div)s').html('%(spinner)s');
+                            refresh_plot('%(url)s', '%(rowid)s','%(div)s')"""%dict(
                              url=URL(r=request,c='ajax_perf',f='ajax_perf_%s_plot'%group,
                                      args=[node, rowid]),
+                             spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')),
                              rowid=rowid,
                              div=divid),
                 _id='refresh_'+divid,
@@ -65,11 +69,11 @@ def perf_stats(node, rowid):
         return d
 
     now = datetime.datetime.now()
-    s = now - datetime.timedelta(days=0,
+    s = now - datetime.timedelta(days=1,
                                  hours=now.hour,
                                  minutes=now.minute,
                                  microseconds=now.microsecond)
-    e = s + datetime.timedelta(days=1)
+    e = now
 
     t = DIV(
           SPAN(

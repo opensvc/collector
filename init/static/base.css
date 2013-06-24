@@ -1540,8 +1540,8 @@ ul.login_menu ul {
 }
 
 .perf_plot {
-   width: 300px;
-   height: 300px;
+   width: 600px;
+   //height: 300px;
 }
 
 .nowrap {
