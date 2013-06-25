@@ -18,51 +18,6 @@ def perf_stats_netdev_one(node, s, e, dev):
     return rows
 
 @auth.requires_login()
-def perf_stats_mem_trend_data(node, s, e, p):
-    sql = """select cast(max(kbmemfree+kbcached) as unsigned),
-                    cast(min(kbmemfree+kbcached) as unsigned),
-                    cast(avg(kbmemfree+kbcached) as unsigned)
-             from stats_mem_u
-             where nodename="%(node)s"
-               and date>date_sub("%(s)s", interval %(p)s)
-               and date<date_sub("%(e)s", interval %(p)s)
-          """%dict(s=s,e=e,node=node,p=p)
-    rows = db.executesql(sql)
-    if len(rows) != 1:
-        return [(p, 0, 0, 0)]
-    r = rows[0]
-    if r[0] is None or r[1] is None or r[2] is None:
-        return [(p, 0, 0, 0)]
-    return [(p, r[0], r[1], r[2])]
-
-@auth.requires_login()
-def perf_stats_mem_trend(node, s, e):
-    data = []
-    start = str_to_date(s)
-    end = str_to_date(e)
-    period = end - start
-    for p in period_to_range(period):
-        data += perf_stats_mem_trend_data(node, s, e, p)
-    return data
-
-@auth.requires_login()
-def perf_stats_cpu_trend_data(node, s, e, p):
-    sql = """select 100-max(idle),100-min(idle),100-avg(idle)
-             from stats_cpu
-             where cpu="all"
-               and nodename="%(node)s"
-               and date>date_sub("%(s)s", interval %(p)s)
-               and date<date_sub("%(e)s", interval %(p)s)
-          """%dict(s=s,e=e,node=node,p=p)
-    rows = db.executesql(sql)
-    if len(rows) != 1:
-        return [(p, 0, 0, 0)]
-    r = rows[0]
-    if r[0] is None or r[1] is None or r[2] is None:
-        return [(p, 0, 0, 0)]
-    return [(p, r[0], r[1], r[2])]
-
-@auth.requires_login()
 def perf_stats_svc_cpu(node, s, e):
     container = request.vars.container
     if container == "None":
@@ -270,17 +225,6 @@ def perf_stats_svc_data(node, s, e, col):
     return h.keys(), map(lambda x: x.items(), h.values())
 
 @auth.requires_login()
-def perf_stats_cpu_trend(node, s, e):
-    data = []
-    start = str_to_date(s)
-    end = str_to_date(e)
-    period = end - start
-
-    for p in period_to_range(period):
-        data += perf_stats_cpu_trend_data(node, s, e, p)
-    return data
-
-@auth.requires_login()
 def ajax_perf_netdev_err_plot():
     return _ajax_perf_plot('netdev_err', last=True)
 
@@ -306,12 +250,6 @@ def ajax_perf_memswap_plot():
     return SPAN(
              _ajax_perf_plot('mem', sub=['_u', '_pct'], base='memswap'),
              _ajax_perf_plot('swap', sub=['_u', '_pct'], last=True, base='memswap')
-           )
-
-def ajax_perf_trend_plot():
-    return SPAN(
-             _ajax_perf_plot('trend_cpu', base='trend'),
-             _ajax_perf_plot('trend_mem', last=True, base='trend')
            )
 
 def ajax_perf_svc_plot_short():
@@ -582,7 +520,7 @@ def rows_blockdev(node, s, e):
             date <= "%(e)s" and
             nodename = "%(node)s"
       group by dev;
-    """%dict(node=node, s=s, e=e))
+    """%dict(node=node, s=s, e=e, period=get_period(s, e)))
 
     rows_time = db.executesql("""
       select date,
@@ -1154,26 +1092,5 @@ def json_fs():
         data.append(used[m])
     return [mntpt, size, data]
 
-@service.json
-def json_trend_cpu():
-    node = request.vars.node
-    begin = request.vars.b
-    end = request.vars.e
-
-    if node is None:
-        return []
-
-    return perf_stats_cpu_trend(node, begin, end)
-
-@service.json
-def json_trend_mem():
-    node = request.vars.node
-    begin = request.vars.b
-    end = request.vars.e
-
-    if node is None:
-        return []
-
-    return perf_stats_mem_trend(node, begin, end)
 
 

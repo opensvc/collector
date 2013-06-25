@@ -3710,11 +3710,11 @@ create table stats_block_day like stats_block;
 
 create table stats_block_month like stats_block;
 
-create table stats_blockdev_hour like stats_block;
+create table stats_blockdev_hour like stats_blockdev;
 
-create table stats_blockdev_day like stats_block;
+create table stats_blockdev_day like stats_blockdev;
 
-create table stats_blockdev_month like stats_block;
+create table stats_blockdev_month like stats_blockdev;
 
 create table stats_mem_u_month like stats_mem_u;
 

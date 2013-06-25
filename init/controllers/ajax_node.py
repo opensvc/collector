@@ -14,7 +14,6 @@ def perf_stats(node, rowid):
                        )
     def perf_group(title='', group=''):
         group_img_h = {
-                        'trend': 'spark16.png',
                         'memswap': 'mem16.png',
                         'cpu': 'cpu16.png',
                         'proc': 'action16.png',
@@ -98,7 +97,6 @@ def perf_stats(node, rowid):
               _style="vertical-align:middle",
             ),
             SPAN(perf_group('Plot container resource usage', 'svc')),
-            SPAN(perf_group('Plot resource usage trends', 'trend')),
             SPAN(perf_group('Plot cpu usage', 'cpu')),
             SPAN(perf_group('Plot mem/swap usage', 'memswap')),
             SPAN(perf_group('Plot process activity', 'proc')),

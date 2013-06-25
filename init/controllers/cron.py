@@ -987,6 +987,7 @@ def replay_perf_hour():
         begin = begin - datetime.timedelta(days=1)
         end = end - datetime.timedelta(days=1)
         _perf_ageing(begin, end, "hour")
+        _perf_ageing(begin, end, "day")
 
 def cron_perf_hour():
     now = datetime.datetime.now()
@@ -1007,9 +1008,7 @@ def cron_perf_day():
     _perf_ageing(begin, end, "day")
 
 
-def _perf_ageing(begin, end, period, stats=['cpu', 'proc', 'block', 'blockdev',
-'netdev', 'netdev_err', 'mem_u']):
-    stats = ['swap']
+def _perf_ageing(begin, end, period, stats=['cpu', 'proc', 'block', 'blockdev', 'netdev', 'netdev_err', 'mem_u', 'swap', 'svc']):
     for stat in stats:
         print "insert %s %s stats (%s)"%(period, stat, str(begin))
         globals()["_perf_"+stat](begin, end, period)
@@ -1179,7 +1178,7 @@ def _perf_netdev(begin, end, period):
     )
     db.executesql(sql)
 
-def _perf_netdev(begin, end, period):
+def _perf_netdev_err(begin, end, period):
     sql = """insert ignore into stats_netdev_err_%(period)s
              select
                nodename,
@@ -1244,13 +1243,13 @@ def _perf_svc(begin, end, period):
                avg(mem),
                avg(cpu),
                nodename,
-               avg(cap_cpu),
+               avg(cap_cpu)
              from stats_svc%(prev_period)s
              where
                date>='%(begin)s' and
                date<='%(end)s'
              group by
-               nodename, d"""%dict(
+               nodename, svcname, d"""%dict(
       prev_period=prev_period(period),
       period_sql=period_sql(period),
       period=period,
