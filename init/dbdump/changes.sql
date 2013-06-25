@@ -3696,3 +3696,62 @@ alter table networks add column gateway integer;
 alter table networks drop key idx2;
 
 alter table networks add unique key idx2 (network, netmask);
+
+#
+create table stats_cpu_hour like stats_cpu;
+
+create table stats_cpu_day like stats_cpu;
+
+create table stats_cpu_month like stats_cpu;
+
+create table stats_block_hour like stats_block;
+
+create table stats_block_day like stats_block;
+
+create table stats_block_month like stats_block;
+
+create table stats_blockdev_hour like stats_block;
+
+create table stats_blockdev_day like stats_block;
+
+create table stats_blockdev_month like stats_block;
+
+create table stats_mem_u_month like stats_mem_u;
+
+create table stats_mem_u_day like stats_mem_u;
+
+create table stats_mem_u_hour like stats_mem_u;
+
+create table stats_netdev_month like stats_netdev;
+
+create table stats_netdev_day like stats_netdev;
+
+create table stats_netdev_hour like stats_netdev;
+
+create table stats_netdev_err_hour like stats_netdev_err;
+
+create table stats_netdev_err_day like stats_netdev_err;
+
+create table stats_netdev_err_month like stats_netdev_err;
+
+create table stats_proc_month like stats_proc;
+
+create table stats_proc_day like stats_proc;
+
+create table stats_proc_hour like stats_proc;
+
+create table stats_swap_hour like stats_swap;
+
+create table stats_swap_day like stats_swap;
+
+create table stats_swap_month like stats_swap;
+
+create table stats_svc_month like stats_svc;
+
+create table stats_svc_day like stats_svc;
+
+create table stats_svc_hour like stats_svc;
+
+alter table stats_svc drop column id;
+
+

@@ -128,9 +128,9 @@ def perf_stats_svc_data_mem_normalize(node, s, e):
 
     sql = """select
                "global",
-               %(d)s,
+               date,
                %(col)s
-             from stats_svc
+             from stats_svc%(period)s
              where
                %(where)s
                nodename="%(node)s"
@@ -141,13 +141,13 @@ def perf_stats_svc_data_mem_normalize(node, s, e):
                "normalized",
                %(d)s,
                (%(col)s / cap * %(mem)d) - %(col)s
-             from stats_svc
+             from stats_svc%(period)s
              where
                %(where)s
                nodename="%(node)s"
                and date>"%(s)s"
                and date<"%(e)s"
-          """%dict(mem=mem, where=where,s=s,e=e,node=node,col=col, d=period_concat(s, e, field='date'))
+          """%dict(mem=mem, where=where,s=s,e=e,node=node,col=col, period=get_period(s, e))
     rows = db.executesql(sql)
     dates = set([r[1] for r in rows])
     svcnames = set([r[0] for r in rows])
@@ -185,9 +185,9 @@ def perf_stats_svc_data_cpu_normalize(node, s, e):
 
     sql = """select
                "global",
-               %(d)s,
+               date,
                %(col)s
-             from stats_svc
+             from stats_svc%(period)s
              where
                %(where)s
                nodename="%(node)s"
@@ -198,13 +198,13 @@ def perf_stats_svc_data_cpu_normalize(node, s, e):
                "normalized",
                %(d)s,
                (%(col)s / cap_cpu * %(cpus)d) - %(col)s
-             from stats_svc
+             from stats_svc%(period)s
              where
                %(where)s
                nodename="%(node)s"
                and date>"%(s)s"
                and date<"%(e)s"
-          """%dict(cpus=cpus, where=where,s=s,e=e,node=node,col=col, d=period_concat(s, e, field='date'))
+          """%dict(cpus=cpus, where=where,s=s,e=e,node=node,col=col, period=get_period(s, e))
     rows = db.executesql(sql)
     dates = set([r[1] for r in rows])
     svcnames = set([r[0] for r in rows])
@@ -237,15 +237,15 @@ def perf_stats_svc_data(node, s, e, col):
         where = "svcname = '%s' and"%container
     sql = """select
                svcname,
-               %(d)s,
+               date,
                %(col)s
-             from stats_svc
+             from stats_svc%(period)s
              where
                %(where)s
                nodename="%(node)s"
                and date>"%(s)s"
                and date<"%(e)s"
-          """%dict(where=where,s=s,e=e,node=node,col=col, d=period_concat(s, e, field='date'))
+          """%dict(where=where,s=s,e=e,node=node,col=col, period=get_period(s, e))
     rows = db.executesql(sql)
     dates = set([r[1] for r in rows])
     svcnames = set([r[0] for r in rows])
@@ -404,24 +404,22 @@ def _ajax_perf_plot(group, sub=[''], last=False, base=None, container=None):
 @auth.requires_login()
 def rows_cpu(node, s, e):
     sql = """select date,
-                    avg(usr),
-                    avg(nice),
-                    avg(sys),
-                    avg(iowait),
-                    avg(steal),
-                    avg(irq),
-                    avg(soft),
-                    avg(guest),
-                    avg(idle),
-                    %(d)s as d
-             from stats_cpu
+                    usr,
+                    nice,
+                    sys,
+                    iowait,
+                    steal,
+                    irq,
+                    soft,
+                    guest,
+                    idle
+             from stats_cpu%(period)s
              where date>='%(s)s'
                and date<='%(e)s'
                and cpu='ALL'
                and nodename='%(n)s'
-             group by d
           """%dict(
-                d = period_concat(s, e),
+                period = get_period(s, e),
                 s = s,
                 e = e,
                 n = node,
@@ -432,19 +430,17 @@ def rows_cpu(node, s, e):
 @auth.requires_login()
 def rows_proc(node, s, e):
     sql = """select date,
-                    avg(runq_sz),
-                    avg(plist_sz),
-                    avg(ldavg_1),
-                    avg(ldavg_5),
-                    avg(ldavg_15),
-                    %(d)s as d
-             from stats_proc
+                    runq_sz,
+                    plist_sz,
+                    ldavg_1,
+                    ldavg_5,
+                    ldavg_15
+             from stats_proc%(period)s
              where date>='%(s)s'
                and date<='%(e)s'
                and nodename='%(n)s'
-             group by d
           """%dict(
-                d = period_concat(s, e),
+                period = get_period(s, e),
                 s = s,
                 e = e,
                 n = node,
@@ -455,19 +451,17 @@ def rows_proc(node, s, e):
 @auth.requires_login()
 def rows_swap(node, s, e):
     sql = """select date,
-                    avg(kbswpfree),
-                    avg(kbswpused),
-                    avg(pct_swpused),
-                    avg(kbswpcad),
-                    avg(pct_swpcad),
-                    %(d)s as d
-             from stats_swap
+                    kbswpfree,
+                    kbswpused,
+                    pct_swpused,
+                    kbswpcad,
+                    pct_swpcad
+             from stats_swap%(period)s
              where date>='%(s)s'
                and date<='%(e)s'
                and nodename='%(n)s'
-             group by d
           """%dict(
-                d = period_concat(s, e),
+                period = get_period(s, e),
                 s = s,
                 e = e,
                 n = node,
@@ -478,18 +472,16 @@ def rows_swap(node, s, e):
 @auth.requires_login()
 def rows_block(node, s, e):
     sql = """select date,
-                    avg(rtps),
-                    avg(wtps),
-                    avg(rbps),
-                    avg(wbps),
-                    %(d)s as d
-             from stats_block
+                    rtps,
+                    wtps,
+                    rbps,
+                    wbps
+             from stats_block%(period)s
              where date>='%(s)s'
                and date<='%(e)s'
                and nodename='%(n)s'
-             group by d
           """%dict(
-                d = period_concat(s, e),
+                period = get_period(s, e),
                 s = s,
                 e = e,
                 n = node,
@@ -500,22 +492,20 @@ def rows_block(node, s, e):
 @auth.requires_login()
 def rows_mem(node, s, e):
     sql = """select date,
-                    avg(kbmemfree),
-                    avg(kbmemused),
-                    avg(pct_memused),
-                    avg(kbbuffers),
-                    avg(kbcached),
-                    avg(kbcommit),
-                    avg(pct_commit),
-                    avg(kbmemsys),
-                    %(d)s as d
-             from stats_mem_u
+                    kbmemfree,
+                    kbmemused,
+                    pct_memused,
+                    kbbuffers,
+                    kbcached,
+                    kbcommit,
+                    pct_commit,
+                    kbmemsys
+             from stats_mem_u%(period)s
              where date>='%(s)s'
                and date<='%(e)s'
                and nodename='%(n)s'
-             group by d
           """%dict(
-                d = period_concat(s, e),
+                period = get_period(s, e),
                 s = s,
                 e = e,
                 n = node,
@@ -587,7 +577,7 @@ def rows_blockdev(node, s, e):
              avg(pct_util) as avg_pct_util,
              min(pct_util) as min_pct_util,
              max(pct_util) as max_pct_util
-      from stats_blockdev
+      from stats_blockdev%(period)s
       where date >= "%(s)s" and
             date <= "%(e)s" and
             nodename = "%(node)s"
@@ -603,52 +593,32 @@ def rows_blockdev(node, s, e):
              avgrq_sz,
              await,
              svctm,
-             pct_util,
-             %(d)s as d
-      from stats_blockdev
+             pct_util
+      from stats_blockdev%(period)s
       where date >= "%(s)s" and
             date <= "%(e)s" and
             nodename = "%(node)s"
-      group by d, dev;
     """%dict(
-      d = period_concat(s, e),
+      period = get_period(s, e),
       node=node,
       s=s,
       e=e))
     return rows, rows_time
 
 @auth.requires_login()
-def rows_netdev_avg(node, s, e):
-    rows = db.executesql("""
-      select dev,
-             avg(rxkBps) as rxkBps,
-             avg(txkBps) as txkBps,
-             avg(rxpckps) as rxpckps,
-             avg(txpckps) as txpckps
-      from stats_netdev
-      where date >= "%(s)s" and
-            date <= "%(e)s" and
-            nodename = "%(node)s"
-      group by dev;
-    """%dict(node=node, s=s, e=e))
-    return rows
-
-@auth.requires_login()
 def rows_netdev(node, s, e):
     sql = """select date,
                     dev,
-                    avg(rxkBps),
-                    avg(txkBps),
-                    avg(rxpckps),
-                    avg(txpckps),
-                    %(d)s as d
-             from stats_netdev
+                    rxkBps,
+                    txkBps,
+                    rxpckps,
+                    txpckps
+             from stats_netdev%(period)s
              where date>='%(s)s'
                and date<='%(e)s'
                and nodename='%(n)s'
-             group by d,dev
           """%dict(
-                d = period_concat(s, e),
+                period = get_period(s, e),
                 s = s,
                 e = e,
                 n = node,
@@ -665,12 +635,18 @@ def rows_netdev_err(node, s, e):
              max(collps) as max_collps,
              max(rxdropps) as max_rxdropps,
              max(txdropps) as max_txdropps
-      from stats_netdev_err
+      from stats_netdev_err%(period)s
       where date >= "%(s)s" and
             date <= "%(e)s" and
             nodename = "%(node)s"
       group by dev;
-    """%dict(node=node, s=s, e=e))
+    """%dict(
+         period = get_period(s, e),
+         node=node,
+         s=s,
+         e=e
+        )
+    )
     return rows
 
 

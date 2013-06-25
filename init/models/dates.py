@@ -20,6 +20,44 @@ def period_to_range(period):
     else:
         return []
 
+def get_period(s, e):
+    year = datetime.timedelta(days=365)
+    month = datetime.timedelta(days=30)
+    day = datetime.timedelta(days=1)
+    hour = datetime.timedelta(hours=1)
+    if isinstance(s, str):
+        s = str_to_date(s)
+    if isinstance(e, str):
+        e = str_to_date(e)
+    period = e - s
+
+    #if period >= 20 * year:
+    #    d = "_year"
+    #if period >= 3 * year:
+    #    d = "_month"
+    if period >= 3 * month:
+        d = "_day"
+    elif period >= 2 * day:
+        d = "_hour"
+    else:
+        d = ""
+    return d
+
+def period_sql(period, field='date'):
+    if period == "year":
+        d = "YEAR(%(f)s)"%dict(f=field)
+    elif period == "month":
+        d = "concat(YEAR(%(f)s), '-', MONTH(%(f)s))"%dict(f=field)
+    elif period == "week":
+        d = "concat(YEAR(%(f)s), '-', WEEK(%(f)s))"%dict(f=field)
+    elif period == "day":
+        d = "concat(YEAR(%(f)s), '-', MONTH(%(f)s), '-', DAY(%(f)s))"%dict(f=field)
+    elif period == "hour":
+        d = "concat(YEAR(%(f)s), '-', MONTH(%(f)s), '-', DAY(%(f)s), ' ', HOUR(%(f)s), ':00:00')"%dict(f=field)
+    else:
+        d = field
+    return d
+
 def period_concat(s, e, field='date'):
     year = datetime.timedelta(days=365)
     month = datetime.timedelta(days=30)

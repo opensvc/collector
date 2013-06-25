@@ -963,3 +963,300 @@ def cron_update_virtual_asset():
     """
     db.executesql(sql)
 
+
+def replay_perf_day():
+    begin = now - datetime.timedelta(days=1,
+                                     hours=now.hour,
+                                     minutes=now.minute,
+                                     microseconds=now.microsecond)
+    end = begin + datetime.timedelta(days=1)
+
+    for i in range(360):
+        begin = begin - datetime.timedelta(days=1)
+        end = end - datetime.timedelta(days=1)
+        _perf_ageing(begin, end, "hour")
+
+def replay_perf_hour():
+    begin = now - datetime.timedelta(days=1,
+                                     hours=now.hour,
+                                     minutes=now.minute,
+                                     microseconds=now.microsecond)
+    end = begin + datetime.timedelta(days=1)
+
+    for i in range(360):
+        begin = begin - datetime.timedelta(days=1)
+        end = end - datetime.timedelta(days=1)
+        _perf_ageing(begin, end, "hour")
+
+def cron_perf_hour():
+    now = datetime.datetime.now()
+    begin = now - datetime.timedelta(days=1,
+                                     hours=now.hour,
+                                     minutes=now.minute,
+                                     microseconds=now.microsecond)
+    end = begin + datetime.timedelta(days=1)
+    _perf_ageing(begin, end, "hour")
+
+def cron_perf_day():
+    now = datetime.datetime.now()
+    begin = now - datetime.timedelta(days=now.day+30,
+                                     hours=now.hour,
+                                     minutes=now.minute,
+                                     microseconds=now.microsecond)
+    end = begin + datetime.timedelta(days=30)
+    _perf_ageing(begin, end, "day")
+
+
+def _perf_ageing(begin, end, period, stats=['cpu', 'proc', 'block', 'blockdev',
+'netdev', 'netdev_err', 'mem_u']):
+    stats = ['swap']
+    for stat in stats:
+        print "insert %s %s stats (%s)"%(period, stat, str(begin))
+        globals()["_perf_"+stat](begin, end, period)
+        db.commit()
+
+def prev_period(period):
+    periods = ['', 'hour', 'day']
+    i = periods.index(period)
+    p = periods[i-1]
+    if len(p) > 0:
+        return '_'+p
+    return p
+
+def _perf_proc(begin, end, period):
+    sql = """insert ignore into stats_proc_%(period)s
+             select
+               %(period_sql)s as d,
+               nodename,
+               runq_sz,
+               plist_sz,
+               ldavg_1,
+               ldavg_5,
+               ldavg_15
+             from stats_proc%(prev_period)s
+             where
+               date>='%(begin)s' and
+               date<='%(end)s'
+             group by
+               nodename, d"""%dict(
+      prev_period=prev_period(period),
+      period_sql=period_sql(period),
+      period=period,
+      begin=begin,
+      end=end,
+    )
+    rows = db.executesql(sql)
+
+def _perf_cpu(begin, end, period):
+    sql = """insert ignore into stats_cpu_%(period)s
+             select
+               %(period_sql)s as d,
+               cpu,
+               avg(usr),
+               avg(nice),
+               avg(sys),
+               avg(iowait),
+               avg(steal),
+               avg(irq),
+               avg(soft),
+               avg(guest),
+               avg(idle),
+               nodename
+             from stats_cpu%(prev_period)s
+             where
+               date>='%(begin)s' and
+               date<='%(end)s' and
+               cpu='ALL'
+             group by
+               nodename, d""" % dict(
+      prev_period=prev_period(period),
+      period_sql=period_sql(period),
+      period=period,
+      begin=begin,
+      end=end,
+    )
+    db.executesql(sql)
+
+def _perf_block(begin, end, period):
+    sql = """insert ignore into stats_block_%(period)s
+             select nodename,
+                    %(period_sql)s as d,
+                    avg(tps),
+                    avg(rtps),
+                    avg(wtps),
+                    avg(rbps),
+                    avg(wbps)
+             from stats_block%(prev_period)s
+             where
+               date>='%(begin)s' and
+               date<='%(end)s'
+             group by
+               nodename, d"""%dict(
+      prev_period=prev_period(period),
+      period_sql=period_sql(period),
+      period=period,
+      begin=begin,
+      end=end,
+    )
+    db.executesql(sql)
+
+def _perf_mem_u(begin, end, period):
+    sql = """insert ignore into stats_mem_u_%(period)s
+             select
+               nodename,
+               avg(kbmemfree),
+               avg(kbmemused),
+               avg(pct_memused),
+               avg(kbbuffers),
+               avg(kbcached),
+               avg(kbcommit),
+               avg(pct_commit),
+               %(period_sql)s as d,
+               avg(kbmemsys)
+             from stats_mem_u%(prev_period)s
+             where
+               date>='%(begin)s' and
+               date<='%(end)s'
+             group by
+               nodename, d"""%dict(
+      prev_period=prev_period(period),
+      period_sql=period_sql(period),
+      period=period,
+      begin=begin,
+      end=end,
+    )
+    db.executesql(sql)
+
+def _perf_blockdev(begin, end, period):
+    sql = """insert ignore into stats_blockdev_%(period)s
+             select
+               %(period_sql)s as d,
+               nodename,
+               dev,
+               avg(tps),
+               avg(rsecps),
+               avg(wsecps),
+               avg(avgrq_sz),
+               avg(avgqu_sz),
+               avg(await),
+               avg(svctm),
+               avg(pct_util)
+             from stats_blockdev%(prev_period)s
+             where
+               date>='%(begin)s' and
+               date<='%(end)s'
+             group by
+               nodename, dev, d"""%dict(
+      prev_period=prev_period(period),
+      period_sql=period_sql(period),
+      period=period,
+      begin=begin,
+      end=end,
+    )
+    db.executesql(sql)
+
+def _perf_netdev(begin, end, period):
+    sql = """insert ignore into stats_netdev_%(period)s
+             select
+               nodename,
+               %(period_sql)s as d,
+               dev,
+               avg(rxkBps),
+               avg(txkBps),
+               avg(rxpckps),
+               avg(txpckps)
+             from stats_netdev%(prev_period)s
+             where
+               date>='%(begin)s' and
+               date<='%(end)s'
+             group by
+               nodename, dev, d"""%dict(
+      prev_period=prev_period(period),
+      period_sql=period_sql(period),
+      period=period,
+      begin=begin,
+      end=end,
+    )
+    db.executesql(sql)
+
+def _perf_netdev(begin, end, period):
+    sql = """insert ignore into stats_netdev_err_%(period)s
+             select
+               nodename,
+               %(period_sql)s as d,
+               avg(rxerrps),
+               avg(txerrps),
+               avg(collps),
+               avg(rxdropps),
+               avg(txdropps),
+               dev
+             from stats_netdev_err%(prev_period)s
+             where
+               date>='%(begin)s' and
+               date<='%(end)s'
+             group by
+               nodename, dev, d"""%dict(
+      prev_period=prev_period(period),
+      period_sql=period_sql(period),
+      period=period,
+      begin=begin,
+      end=end,
+    )
+    db.executesql(sql)
+
+def _perf_swap(begin, end, period):
+    sql = """insert ignore into stats_swap_%(period)s
+             select
+               nodename,
+               %(period_sql)s as d,
+               avg(kbswpfree),
+               avg(kbswpused),
+               avg(pct_swpused),
+               avg(kbswpcad),
+               avg(pct_swpcad)
+             from stats_swap%(prev_period)s
+             where
+               date>='%(begin)s' and
+               date<='%(end)s'
+             group by
+               nodename, d"""%dict(
+      prev_period=prev_period(period),
+      period_sql=period_sql(period),
+      period=period,
+      begin=begin,
+      end=end,
+    )
+    db.executesql(sql)
+
+def _perf_svc(begin, end, period):
+    sql = """insert ignore into stats_svc_%(period)s
+             select
+               %(period_sql)s as d,
+               svcname,
+               avg(swap),
+               avg(rss),
+               avg(cap),
+               avg(at),
+               avg(avgat),
+               avg(pg),
+               avg(avgpg),
+               avg(nproc),
+               avg(mem),
+               avg(cpu),
+               nodename,
+               avg(cap_cpu),
+             from stats_svc%(prev_period)s
+             where
+               date>='%(begin)s' and
+               date<='%(end)s'
+             group by
+               nodename, d"""%dict(
+      prev_period=prev_period(period),
+      period_sql=period_sql(period),
+      period=period,
+      begin=begin,
+      end=end,
+    )
+    db.executesql(sql)
+
+
