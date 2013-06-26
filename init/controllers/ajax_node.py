@@ -84,17 +84,96 @@ def perf_stats(node, rowid):
             INPUT(
               _value=s.strftime("%Y-%m-%d %H:%M"),
               _id='begin_'+rowid,
+              _name="begin",
               _class='datetime',
             ),
             INPUT(
               _value=e.strftime("%Y-%m-%d %H:%M"),
               _id='end_'+rowid,
+              _name="end",
               _class='datetime',
             ),
             IMG(
               _title=T('End'),
               _src=URL(r=request, c='static', f='end16.png'),
               _style="vertical-align:middle",
+            ),
+            STYLE(XML('input {margin-left:2px}')),
+            INPUT(
+              _value=T("Last day"),
+              _type="button",
+              _onclick="""
+                var d = new Date()
+                $(this).siblings("input[name='end']").each(function(){
+                  $(this).val(print_date(d))
+                  $(this).effect("highlight")
+                })
+                d.setDate(d.getDate() - 1);
+                d.setHours(0);
+                d.setMinutes(0);
+                $(this).siblings("input[name='begin']").each(function(){
+                  $(this).val(print_date(d))
+                  $(this).effect("highlight")
+                })
+                $(this).siblings().find("a:visible[id^='refresh']").trigger('click')
+              """,
+            ),
+            INPUT(
+              _value=T("Last week"),
+              _type="button",
+              _onclick="""
+                var d = new Date()
+                $(this).siblings("input[name='end']").each(function(){
+                  $(this).val(print_date(d))
+                  $(this).effect("highlight")
+                })
+                d.setDate(d.getDate() - 7);
+                d.setHours(0);
+                d.setMinutes(0);
+                $(this).siblings("input[name='begin']").each(function(){
+                  $(this).val(print_date(d))
+                  $(this).effect("highlight")
+                })
+                $(this).siblings().find("a:visible[id^='refresh']").trigger('click')
+              """,
+            ),
+            INPUT(
+              _value=T("Last month"),
+              _type="button",
+              _onclick="""
+                var d = new Date()
+                $(this).siblings("input[name='end']").each(function(){
+                  $(this).val(print_date(d))
+                  $(this).effect("highlight")
+                })
+                d.setDate(d.getDate() - 31);
+                d.setHours(0);
+                d.setMinutes(0);
+                $(this).siblings("input[name='begin']").each(function(){
+                  $(this).val(print_date(d))
+                  $(this).effect("highlight")
+                })
+                $(this).siblings().find("a:visible[id^='refresh']").trigger('click')
+              """,
+            ),
+            INPUT(
+              _value=T("Last year"),
+              _type="button",
+              _onclick="""
+                var d = new Date()
+                $(this).siblings("input[name='end']").each(function(){
+                  $(this).val(print_date(d))
+                  $(this).effect("highlight")
+                })
+                d.setDate(d.getDate() - 365);
+                d.setHours(0);
+                d.setMinutes(0);
+                $(this).siblings("input[name='begin']").each(function(){
+                  $(this).val(print_date(d))
+                  $(this).effect("highlight")
+                })
+                $(this).siblings().find("a:visible[id^='refresh']").trigger('click')
+              """,
             ),
             SPAN(perf_group('Plot container resource usage', 'svc')),
             SPAN(perf_group('Plot cpu usage', 'cpu')),
