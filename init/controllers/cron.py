@@ -989,7 +989,7 @@ def replay_perf_hour():
         _perf_ageing(begin, end, "hour")
         _perf_ageing(begin, end, "day")
 
-def cron_perf_hour():
+def cron_perf():
     now = datetime.datetime.now()
     begin = now - datetime.timedelta(days=1,
                                      hours=now.hour,
@@ -997,16 +997,7 @@ def cron_perf_hour():
                                      microseconds=now.microsecond)
     end = begin + datetime.timedelta(days=1)
     _perf_ageing(begin, end, "hour")
-
-def cron_perf_day():
-    now = datetime.datetime.now()
-    begin = now - datetime.timedelta(days=now.day+30,
-                                     hours=now.hour,
-                                     minutes=now.minute,
-                                     microseconds=now.microsecond)
-    end = begin + datetime.timedelta(days=30)
     _perf_ageing(begin, end, "day")
-
 
 def _perf_ageing(begin, end, period, stats=['cpu', 'proc', 'block', 'blockdev', 'netdev', 'netdev_err', 'mem_u', 'swap', 'svc']):
     for stat in stats:
