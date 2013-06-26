@@ -943,8 +943,8 @@ def format_form_scripts(form_scripts):
     l = []
 
     keys = data.keys()
-    keys.remove('async')
-    keys.remove('returncode')
+    if 'async' in keys: keys.remove('async')
+    if 'returncode' in keys: keys.remove('returncode')
 
     if 'async' in data and data['async'] > len(keys):
         async = SPAN(T('Async commands scheduled. Waiting results.'), _class='time16')
