@@ -964,19 +964,7 @@ def cron_update_virtual_asset():
     db.executesql(sql)
 
 
-def replay_perf_day():
-    begin = now - datetime.timedelta(days=1,
-                                     hours=now.hour,
-                                     minutes=now.minute,
-                                     microseconds=now.microsecond)
-    end = begin + datetime.timedelta(days=1)
-
-    for i in range(360):
-        begin = begin - datetime.timedelta(days=1)
-        end = end - datetime.timedelta(days=1)
-        _perf_ageing(begin, end, "hour")
-
-def replay_perf_hour():
+def replay_perf():
     begin = now - datetime.timedelta(days=1,
                                      hours=now.hour,
                                      minutes=now.minute,
