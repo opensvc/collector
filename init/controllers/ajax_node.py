@@ -100,7 +100,7 @@ def perf_stats(node, rowid):
             ),
             STYLE(XML('input {margin-left:2px}')),
             INPUT(
-              _value=T("Last day"),
+              _value=T("Now"),
               _type="button",
               _onclick="""
                 var d = new Date()
@@ -119,17 +119,36 @@ def perf_stats(node, rowid):
               """,
             ),
             INPUT(
+              _value=T("Last day"),
+              _type="button",
+              _onclick="""
+                var d = new Date()
+                d.setHours(0);
+                d.setMinutes(0);
+                $(this).siblings("input[name='end']").each(function(){
+                  $(this).val(print_date(d))
+                  $(this).effect("highlight")
+                })
+                d.setDate(d.getDate() - 1);
+                $(this).siblings("input[name='begin']").each(function(){
+                  $(this).val(print_date(d))
+                  $(this).effect("highlight")
+                })
+                $(this).siblings().find("a:visible[id^='refresh']").trigger('click')
+              """,
+            ),
+            INPUT(
               _value=T("Last week"),
               _type="button",
               _onclick="""
                 var d = new Date()
+                d.setHours(0);
+                d.setMinutes(0);
                 $(this).siblings("input[name='end']").each(function(){
                   $(this).val(print_date(d))
                   $(this).effect("highlight")
                 })
                 d.setDate(d.getDate() - 7);
-                d.setHours(0);
-                d.setMinutes(0);
                 $(this).siblings("input[name='begin']").each(function(){
                   $(this).val(print_date(d))
                   $(this).effect("highlight")
@@ -142,13 +161,13 @@ def perf_stats(node, rowid):
               _type="button",
               _onclick="""
                 var d = new Date()
+                d.setHours(0);
+                d.setMinutes(0);
                 $(this).siblings("input[name='end']").each(function(){
                   $(this).val(print_date(d))
                   $(this).effect("highlight")
                 })
                 d.setDate(d.getDate() - 31);
-                d.setHours(0);
-                d.setMinutes(0);
                 $(this).siblings("input[name='begin']").each(function(){
                   $(this).val(print_date(d))
                   $(this).effect("highlight")
@@ -161,13 +180,13 @@ def perf_stats(node, rowid):
               _type="button",
               _onclick="""
                 var d = new Date()
+                d.setHours(0);
+                d.setMinutes(0);
                 $(this).siblings("input[name='end']").each(function(){
                   $(this).val(print_date(d))
                   $(this).effect("highlight")
                 })
                 d.setDate(d.getDate() - 365);
-                d.setHours(0);
-                d.setMinutes(0);
                 $(this).siblings("input[name='begin']").each(function(){
                   $(this).val(print_date(d))
                   $(this).effect("highlight")

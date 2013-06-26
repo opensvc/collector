@@ -705,6 +705,7 @@
 'None of your workflow are pending tiers action': "Aucun de vos workflows n'est en attente d'action de tiers",
 'Not Ok': 'Non Ok',
 'Notified Serial': 'Numéro de série notifié',
+'Now': 'Now',
 'Number of accounts': 'Nombre de comptes',
 'Number of actions': "Nombre d'actions",
 'Number of alerts': "Nombre d'alertes",

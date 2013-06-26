@@ -987,14 +987,14 @@ def rows_avg_cpu_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=No
                     avg(irq) as avg_irq,
                     avg(soft) as avg_soft,
                     avg(guest) as avg_guest
-             from stats_cpu
+             from stats_cpu%(period)s
              where cpu='all'
                and date>'%(begin)s'
                and date<'%(end)s'
                and nodename like '%(dom)s'
                %(nodes)s
              group by nodename
-             order by 100-avg(usr+sys)"""%dict(begin=str(begin),end=str(end),dom=dom,nodes=nodes)
+             order by 100-avg(usr+sys)"""%dict(begin=str(begin),end=str(end),dom=dom,nodes=nodes, period=get_period(begin, end))
 
     if lower is not None:
         sql += ' desc limit %d;'%int(lower)
@@ -1027,7 +1027,7 @@ def rows_avg_mem_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=No
                       avg(kbmemfree+kbcached) as avail,
                       avg(kbmemfree),
                       avg(kbcached)
-               from stats_mem_u
+               from stats_mem_u%(period)s
                where nodename like '%(dom)s'
                %(nodes)s
                and date>'%(begin)s'
@@ -1036,7 +1036,7 @@ def rows_avg_mem_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=No
                order by nodename, date
              ) tmp
              order by avail
-          """%dict(dom=dom, nodes=nodes, begin=str(begin), end=str(end))
+          """%dict(dom=dom, nodes=nodes, begin=str(begin), end=str(end), period=get_period(begin, end))
 
     if lower is not None:
         sql += ' desc limit %d;'%int(lower)
@@ -1067,7 +1067,7 @@ def rows_avg_swp_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=No
                select nodename,
                       avg(kbswpfree) as avail,
                       avg(kbswpused)
-               from stats_swap
+               from stats_swap%(period)s
                where nodename like '%(dom)s'
                %(nodes)s
                and date>'%(begin)s'
@@ -1076,7 +1076,7 @@ def rows_avg_swp_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=No
                order by nodename, date
              ) tmp
              order by avail
-          """%dict(dom=dom, nodes=nodes, begin=str(begin), end=str(end))
+          """%dict(dom=dom, nodes=nodes, begin=str(begin), end=str(end), period=get_period(begin, end))
 
     if lower is not None:
         sql += ' desc limit %d;'%int(lower)
@@ -1110,7 +1110,7 @@ def rows_avg_proc_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=N
                       avg(ldavg_1),
                       avg(ldavg_5),
                       avg(ldavg_15) as o
-               from stats_proc
+               from stats_proc%(period)s
                where nodename like '%(dom)s'
                %(nodes)s
                and date>'%(begin)s'
@@ -1119,7 +1119,7 @@ def rows_avg_proc_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=N
                order by nodename, date
              ) tmp
              order by o
-          """%dict(dom=dom, nodes=nodes, begin=str(begin), end=str(end))
+          """%dict(dom=dom, nodes=nodes, begin=str(begin), end=str(end), period=get_period(begin, end))
 
     if lower is not None:
         sql += ' desc limit %d;'%int(lower)
@@ -1151,13 +1151,13 @@ def rows_avg_block_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=
                     avg(wtps),
                     avg(rbps),
                     avg(wbps)
-             from stats_block
+             from stats_block%(period)s
              where date>'%(begin)s'
                and date<'%(end)s'
                and nodename like '%(dom)s'
                %(nodes)s
              group by nodename
-             order by avg(rbps)+avg(wbps)"""%dict(begin=str(begin),end=str(end),dom=dom,nodes=nodes)
+             order by avg(rbps)+avg(wbps)"""%dict(begin=str(begin),end=str(end),dom=dom,nodes=nodes, period=get_period(begin, end))
 
     if lower is not None:
         sql += ' desc limit %d;'%int(lower)
