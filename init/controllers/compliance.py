@@ -7219,6 +7219,7 @@ $("#%(counter)s").val(count);
                INPUT(
                  _type="submit",
                  _onclick="""
+$(this).attr('disabled', true)
 ids=[];
 $("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").each(function(){
   ids.push($(this).attr('id'))
@@ -7236,6 +7237,7 @@ function reload_ajax_custo(){
   $("select#svcname").change()
   $("select#nodename").change()
   $("select#rset").change()
+  $("#%(xid)scontainer").siblings().find("input:submit").attr('disabled', false)
 }
 $(%(rid)s).html("")
 sync_ajax('%(url)s', ids, '%(rid)s', %(callback)s)
