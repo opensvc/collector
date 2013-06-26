@@ -55,13 +55,18 @@ response.menu = [
     [XML('&diams;'), False, '',
          [
              [DIV(
-               SPAN('r', _class='keyboard-key'),
-               SPAN(T("Refresh table")),
+               DIV('r', _class='keyboard-key'),
+               DIV(T("Refresh table"), _class='keyboard-label'),
                _class='keyboard',
               ), False, ''],
              [DIV(
-               SPAN('l', _class='keyboard-key'),
-               SPAN(T("Show link")),
+               DIV('l', _class='keyboard-key'),
+               DIV(T("Show link"), _class='keyboard-label'),
+               _class='keyboard',
+              ), False, ''],
+             [DIV(
+               DIV('s', _class='keyboard-key'),
+               DIV(T("Focus search"), _class='keyboard-label'),
                _class='keyboard',
               ), False, ''],
          ]

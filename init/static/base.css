@@ -1887,6 +1887,12 @@ a.jqplot-image-container-close {
    padding-top: 0.2em;
    padding-bottom: 0.2em;
    margin-right: 0.5em;
+   width: 0.4em;
+   display: table-cell;
+}
+.keyboard-label {
+   display: table-cell;
+   padding-left: 0.4em;
 }
 
 /* css for timepicker */

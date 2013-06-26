@@ -227,8 +227,13 @@ function register_pop_up(e, box){
 		// combox box click
 		return
 	}
+        try {
+            boxtop = box.get(0)
+        } catch(e) {
+            return
+        }
         do {
-            if (box.get(0) == target) {
+            if (boxtop == target) {
                 // click inside
                 return
             }

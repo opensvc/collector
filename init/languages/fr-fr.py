@@ -459,6 +459,7 @@
 'Flex max nodes': 'Flex noeuds max',
 'Flex min nodes': 'Flex noeuds min',
 'Floor': 'Etage',
+'Focus search': 'Focus search',
 'Folder': 'Répertoire',
 'Form comment': 'Commentaire du formulaire',
 'Form definition error': 'Erreur de définition du formulaire',
