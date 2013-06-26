@@ -69,6 +69,11 @@ response.menu = [
                DIV(T("Focus search"), _class='keyboard-label'),
                _class='keyboard',
               ), False, ''],
+             [DIV(
+               DIV('Esc', _class='keyboard-key'),
+               DIV(T("Unfocus"), _class='keyboard-label'),
+               _class='keyboard',
+              ), False, ''],
          ]
     ],
     [T('Dashboard'), _f == 'index',

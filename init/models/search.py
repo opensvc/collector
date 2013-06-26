@@ -20,6 +20,11 @@ def tool_search():
           ),
           SCRIPT(
             """$(document).keydown(function(event) {
+                 if ( event.which == 27 ) {
+                   $('input').is(":focus").blur()
+                   $('textarea').is(":focus").blur()
+                   return
+                 }
                  if ($('input').is(":focus")) { return ; } ;
                  if ($('textarea').is(":focus")) { return ; } ;
                  searchbox = $(".search").find("input")
