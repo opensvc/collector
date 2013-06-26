@@ -7378,7 +7378,11 @@ function form_inputs_functions (o) {
 
 function form_inputs_mandatory (o) {
   $(o).parents('table').first().find("[mandatory=mandatory]").each(function(){
-    val = $(this).val()
+    if ($(this).get(0).tagName == 'SELECT') {
+      val = $(this).find("option:selected").val()
+    } else {
+      val = $(this).val()
+    }
     if (val == undefined || val.length == 0) {
       $(this).parents('tr').first().addClass("highlight_input1")
     } else {
