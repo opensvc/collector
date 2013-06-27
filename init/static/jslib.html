@@ -399,7 +399,13 @@ function sync_ajax(url, inputs, id, f) {
     var query=""
     for (i=0; i<s.length; i++) {
         if (i > 0) {query=query+"&"}
-        query=query+encodeURIComponent(s[i])+"="+encodeURIComponent(document.getElementById(s[i]).value);
+        e = $("#"+s[i])
+        if (e.is('select')) {
+           val = e.find(":selected").val()
+        } else {
+           val = e.val()
+        }
+        query=query+encodeURIComponent(s[i])+"="+encodeURIComponent(val);
     }
     $.ajax({
          type: "POST",
