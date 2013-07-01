@@ -91,7 +91,16 @@ def cron_purge_node_hba():
     db.executesql(sql)
     db.commit()
 
-def _cron_table_purge(table, day, date_col, orderby=None):
+def _cron_table_purge(table, date_col, orderby=None):
+    try:
+        config = local_import('config', reload=True)
+        days = config.stats_retention_days
+        if table in config.retentions:
+            days = config.retentions[table]
+    except:
+        days = 365
+    day = now - datetime.timedelta(days=days)
+
     if orderby is None:
         orderby = date_col
     sql = """select %(date_col)s from %(table)s order by %(orderby)s limit 1""" % dict(table=table,date_col=date_col,orderby=orderby)
@@ -109,13 +118,6 @@ def _cron_table_purge(table, day, date_col, orderby=None):
     db.commit()
 
 def cron_purge_expiry():
-    try:
-        config = local_import('config', reload=True)
-        days = config.stats_retention_days
-    except:
-        days = 365
-    day = now - datetime.timedelta(days=days)
-
     tables = [('stats_cpu', 'date', None),
               ('stats_swap', 'date', None),
               ('stats_netdev', 'date', None),
@@ -126,10 +128,11 @@ def cron_purge_expiry():
               ('stats_proc', 'date', None),
               ('stats_svc', 'date', None),
               ('comp_log', 'run_date', 'id'),
+              ('appinfo_log', 'app_updated', 'id'),
               ('SVCactions', 'begin', 'id')]
     for table, date_col, orderby in tables:
         try:
-            _cron_table_purge(table, day, date_col, orderby=orderby)
+            _cron_table_purge(table, date_col, orderby=orderby)
         except Exception as e:
             print e
 
