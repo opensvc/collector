@@ -226,7 +226,7 @@ def perf_stats_svc_data(node, s, e, col):
 
 @auth.requires_login()
 def ajax_perf_netdev_err_plot():
-    return _ajax_perf_plot('netdev_err', last=True)
+    return _ajax_perf_plot('netdev_err', sub=['_errps', '_collps', '_dropps'], last=True)
 
 @auth.requires_login()
 def ajax_perf_netdev_plot():
@@ -567,17 +567,17 @@ def rows_netdev(node, s, e):
 @auth.requires_login()
 def rows_netdev_err(node, s, e):
     rows = db.executesql("""
-      select dev,
-             max(rxerrps) as max_rxerrps,
-             max(txerrps) as max_txerrps,
-             max(collps) as max_collps,
-             max(rxdropps) as max_rxdropps,
-             max(txdropps) as max_txdropps
+      select date,
+             dev,
+             rxerrps,
+             txerrps,
+             collps,
+             rxdropps,
+             txdropps
       from stats_netdev_err%(period)s
       where date >= "%(s)s" and
             date <= "%(e)s" and
             nodename = "%(node)s"
-      group by dev;
     """%dict(
          period = get_period(s, e),
          node=node,
@@ -820,25 +820,55 @@ def json_netdev_err():
     begin = request.vars.b
     end = request.vars.e
 
-    dev = []
-    max_rxerrps = []
-    max_txerrps = []
-    max_collps = []
-    max_rxdropps = []
-    max_txdropps = []
+    errps = {}
+    collps = {}
+    dropps = {}
 
     if node is None:
-        return [dev, [max_rxerrps, max_txerrps, max_collps, max_rxdropps, max_txdropps]]
+        return [rxerrps, txerrps, collps, rxdropps, txdropps]
 
     rows = rows_netdev_err(node, begin, end)
-    for r in rows:
-        dev.append(r[0])
-        max_rxerrps.append(r[1])
-        max_txerrps.append(r[2])
-        max_collps.append(r[3])
-        max_rxdropps.append(r[4])
-        max_txdropps.append(r[5])
-    return [dev, [max_rxerrps, max_txerrps, max_collps, max_rxdropps, max_txdropps]]
+    for row in rows:
+        label = "%s rx"%row[1]
+        if label in errps:
+            errps[label].append([row[0], -row[2]])
+        else:
+            errps[label] = [[row[0], -row[2]]]
+        label = "%s tx"%row[1]
+        if label in errps:
+            errps[label].append([row[0], row[3]])
+        else:
+            errps[label] = [[row[0], row[3]]]
+        label = "%s"%row[1]
+        if label in collps:
+            collps[label].append([row[0], row[4]])
+        else:
+            collps[label] = [[row[0], row[4]]]
+        label = "%s rx"%row[1]
+        if label in dropps:
+            dropps[label].append([row[0], -row[5]])
+        else:
+            dropps[label] = [[row[0], -row[5]]]
+        label = "%s tx"%row[1]
+        if label in dropps:
+            dropps[label].append([row[0], row[6]])
+        else:
+            dropps[label] = [[row[0], row[6]]]
+    errps_labels = sorted(errps.keys())
+    errps_data = []
+    for k in errps_labels:
+        errps_data.append(errps[k])
+    collps_labels = sorted(collps.keys())
+    collps_data = []
+    for k in collps_labels:
+        collps_data.append(collps[k])
+    dropps_labels = sorted(dropps.keys())
+    dropps_data = []
+    for k in dropps_labels:
+        dropps_data.append(dropps[k])
+    return [[errps_labels, errps_data],
+            [collps_labels, collps_data],
+            [dropps_labels, dropps_data]]
 
 @service.json
 def json_netdev_avg():

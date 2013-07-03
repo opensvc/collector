@@ -3063,17 +3063,39 @@ function stats_blockdev(url, id) {
 }
 function stats_netdev_err(url, id) {
     $.jqplot.config.enablePlugins = true;
-    $.getJSON(url, function(data) {
-        plot_width_x(id, data[0])
-	p = $.jqplot(id, data[1], {
+    $.getJSON(url, function(_data) {
+        errps = _data[0]
+        collps = _data[1]
+        dropps = _data[2]
+        colors = [ "#4bb2c5", "#4bb2c5", "#EAA228", "#EAA228", "#c5b47f", "#c5b47f", "#579575", "#579575", "#839557", "#839557", "#958c12", "#958c12", "#953579", "#953579", "#4b5de4", "#4b5de4", "#d8b83f", "#d8b83f", "#ff5800", "#ff5800", "#0085cc", "#0085cc", "#c747a3", "#c747a3", "#cddf54", "#cddf54", "#FBD178", "#FBD178", "#26B4E3", "#26B4E3", "#bd70c7", "#bd70c7"]
+
+        labels = errps[0]
+        data = errps[1]
+        max = 0
+        for (i=0; i<data.length; i++) {
+          for (j=0; j<data[i].length; j++) {
+            max = Math.max(max, Math.abs(data[i][j][1]))
+          }
+        }
+        d = best_unit_mb(max, '')
+        for (i=0; i<data.length; i++) {
+          for (j=0; j<data[i].length; j++) {
+            data[i][j][1] /= d['div']
+          }
+        }
+        series = []
+        for (i=0; i<labels.length; i++) {
+          series.push({label: labels[i]})
+        }
+	p = $.jqplot(id+'_errps', data, {
+            cursor:{zoom:true, showTooltip:true},
 	    stackSeries: false,
-	    grid: {
-                borderWidth: 0.5
-            },
+            seriesColors: colors,
             title: {
-                text: 'Net device errors'
+                text: 'Net device errors/s'
             },
             legend: {
+                renderer: $.jqplot.EnhancedLegendRenderer,
                 show: true,
                 location: 'e',
                 placement: "outside"
@@ -3081,31 +3103,154 @@ function stats_netdev_err(url, id) {
             gridPadding: {
                 right:90
             },
-	    seriesDefaults: {
-                renderer: $.jqplot.BarRenderer, 
-                shadowAngle: 135
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
             },
-	    series: [
-                {label: 'rx err/s'},
-                {label: 'tx err/s'},
-                {label: 'collision/s'},
-                {label: 'rx drop/s'},
-                {label: 'tx drop/s'}
-            ],
+	    seriesDefaults: {
+                markerOptions: {size: 2},
+                fill: false,
+                shadowAngle: 135,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: series,
 	    axes: {
 		xaxis: {
-		    renderer: $.jqplot.CategoryAxisRenderer, 
-                    tickRenderer: $.jqplot.CanvasAxisTickRenderer,
-                    tickOptions: {formatString:'%s', angle: -70},
-                    ticks: data[0]
+                    min: data[0][0][0],
+                    max: data[0][data[0].length-1][0],
+		    renderer: $.jqplot.DateAxisRenderer, 
+                    tickOptions:{formatString:'%b,%d\n%H:%M'}
 		}, 
 		yaxis: {
-		    min: 0,
-		    tickOptions:{formatString:'%.2f'}
+                    tickOptions:{formatString: d['fmt']+' '+d['unit']+'/s'}
 		}
 	    }
 	});
-        _jqplot_extra($('#'+id), p)
+        _jqplot_extra($('#'+id+'_errps'), p)
+
+        labels = collps[0]
+        data = collps[1]
+        max = 0
+        for (i=0; i<data.length; i++) {
+          for (j=0; j<data[i].length; j++) {
+            max = Math.max(max, Math.abs(data[i][j][1]))
+          }
+        }
+        d = best_unit_mb(max, '')
+        for (i=0; i<data.length; i++) {
+          for (j=0; j<data[i].length; j++) {
+            data[i][j][1] /= d['div']
+          }
+        }
+        series = []
+        for (i=0; i<labels.length; i++) {
+          series.push({label: labels[i]})
+        }
+	p = $.jqplot(id+'_collps', data, {
+            cursor:{zoom:true, showTooltip:true},
+	    stackSeries: false,
+            seriesColors: colors,
+            title: {
+                text: 'Net device collisions/s'
+            },
+            legend: {
+                renderer: $.jqplot.EnhancedLegendRenderer,
+                show: true,
+                location: 'e',
+                placement: "outside"
+            },
+            gridPadding: {
+                right:90
+            },
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    seriesDefaults: {
+                markerOptions: {size: 2},
+                fill: false,
+                shadowAngle: 135,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: series,
+	    axes: {
+		xaxis: {
+                    min: data[0][0][0],
+                    max: data[0][data[0].length-1][0],
+		    renderer: $.jqplot.DateAxisRenderer, 
+                    tickOptions:{formatString:'%b,%d\n%H:%M'}
+		}, 
+		yaxis: {
+                    tickOptions:{formatString: d['fmt']+' '+d['unit']+'/s'}
+		}
+	    }
+	});
+        _jqplot_extra($('#'+id+'_collps'), p)
+
+        labels = dropps[0]
+        data = dropps[1]
+        max = 0
+        for (i=0; i<data.length; i++) {
+          for (j=0; j<data[i].length; j++) {
+            max = Math.max(max, Math.abs(data[i][j][1]))
+          }
+        }
+        d = best_unit_mb(max, '')
+        for (i=0; i<data.length; i++) {
+          for (j=0; j<data[i].length; j++) {
+            data[i][j][1] /= d['div']
+          }
+        }
+        series = []
+        for (i=0; i<labels.length; i++) {
+          series.push({label: labels[i]})
+        }
+	p = $.jqplot(id+'_dropps', data, {
+            cursor:{zoom:true, showTooltip:true},
+	    stackSeries: false,
+            seriesColors: colors,
+            title: {
+                text: 'Net device drops/s'
+            },
+            legend: {
+                renderer: $.jqplot.EnhancedLegendRenderer,
+                show: true,
+                location: 'e',
+                placement: "outside"
+            },
+            gridPadding: {
+                right:90
+            },
+	    grid: {
+                borderWidth: 0.5,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    seriesDefaults: {
+                markerOptions: {size: 2},
+                fill: false,
+                shadowAngle: 135,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: series,
+	    axes: {
+		xaxis: {
+                    min: data[0][0][0],
+                    max: data[0][data[0].length-1][0],
+		    renderer: $.jqplot.DateAxisRenderer, 
+                    tickOptions:{formatString:'%b,%d\n%H:%M'}
+		}, 
+		yaxis: {
+                    tickOptions:{formatString: d['fmt']+' '+d['unit']+'/s'}
+		}
+	    }
+	});
+        _jqplot_extra($('#'+id+'_dropps'), p)
     });
 }
 function stats_netdev_avg(url, id) {
