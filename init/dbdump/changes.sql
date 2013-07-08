@@ -3754,4 +3754,16 @@ create table stats_svc_hour like stats_svc;
 
 alter table stats_svc drop column id;
 
+CREATE TABLE `stats_fs_u` (
+  `date` datetime NOT NULL,
+  `nodename` varchar(60) NOT NULL,
+  `mntpt` varchar(200) NOT NULL,
+  `size` bigint NOT NULL,
+  `used` int(11) NOT NULL,
+  UNIQUE KEY `index_1` (`date`,`nodename`,`mntpt`)
+);
+
+create table stats_fs_u_hour like stats_fs_u;
+
+create table stats_fs_u_day like stats_fs_u;
 

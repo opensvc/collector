@@ -119,6 +119,7 @@ def _cron_table_purge(table, date_col, orderby=None):
 
 def cron_purge_expiry():
     tables = [('stats_cpu', 'date', None),
+              ('stats_fs_u', 'date', None),
               ('stats_swap', 'date', None),
               ('stats_netdev', 'date', None),
               ('stats_blockdev', 'date', None),
@@ -974,11 +975,11 @@ def replay_perf():
                                      microseconds=now.microsecond)
     end = begin + datetime.timedelta(days=1)
 
-    for i in range(360):
+    for i in range(2):
         begin = begin - datetime.timedelta(days=1)
         end = end - datetime.timedelta(days=1)
-        _perf_ageing(begin, end, "hour")
-        _perf_ageing(begin, end, "day")
+        _perf_ageing(begin, end, "hour", stats=['fs_u'])
+        _perf_ageing(begin, end, "day", stats=['fs_u'])
 
 def cron_perf():
     now = datetime.datetime.now()
@@ -990,7 +991,7 @@ def cron_perf():
     _perf_ageing(begin, end, "hour")
     _perf_ageing(begin, end, "day")
 
-def _perf_ageing(begin, end, period, stats=['cpu', 'proc', 'block', 'blockdev', 'netdev', 'netdev_err', 'mem_u', 'swap', 'svc']):
+def _perf_ageing(begin, end, period, stats=['cpu', 'fs_u', 'proc', 'block', 'blockdev', 'netdev', 'netdev_err', 'mem_u', 'swap', 'svc']):
     for stat in stats:
         print "insert %s %s stats (%s)"%(period, stat, str(begin))
         globals()["_perf_"+stat](begin, end, period)
@@ -1027,6 +1028,28 @@ def _perf_proc(begin, end, period):
       end=end,
     )
     rows = db.executesql(sql)
+
+def _perf_fs_u(begin, end, period):
+    sql = """insert ignore into stats_fs_u_%(period)s
+             select
+               %(period_sql)s as d,
+               nodename,
+               mntpt,
+               avg(size),
+               avg(used)
+             from stats_fs_u%(prev_period)s
+             where
+               date>='%(begin)s' and
+               date<='%(end)s'
+             group by
+               nodename, mntpt, d""" % dict(
+      prev_period=prev_period(period),
+      period_sql=period_sql(period),
+      period=period,
+      begin=begin,
+      end=end,
+    )
+    db.executesql(sql)
 
 def _perf_cpu(begin, end, period):
     sql = """insert ignore into stats_cpu_%(period)s

@@ -453,46 +453,22 @@ def rows_mem(node, s, e):
 
 @auth.requires_login()
 def rows_fs_u(node, s, e):
-    sql = """select begin,
-                    end,
+    sql = """select date,
                     mntpt,
                     size,
                     used
-             from stats_fs_u_diff
-             where end>='%(s)s'
-               and begin<='%(e)s'
-               and nodename='%(n)s'
-             union all
-             select begin,
-                    end,
-                    mntpt,
-                    size,
-                    used
-             from stats_fs_u_last
-             where end>='%(s)s'
-               and begin<='%(e)s'
+             from stats_fs_u%(period)s
+             where date>='%(s)s'
+               and date<='%(e)s'
                and nodename='%(n)s'
           """%dict(
-                d = period_concat(s, e),
+                period = get_period(s, e),
                 s = s,
                 e = e,
                 n = node,
               )
     rows = db.executesql(sql)
-    _rows = []
-    _e = str_to_date(e)
-    _s = str_to_date(s)
-    for row in rows:
-        if row[0] > _s:
-            _rows.append([row[0], row[2], row[3], row[4]])
-        else:
-            _rows.append([_s, row[2], row[3], row[4]])
-
-        if row[1] < _e:
-            _rows.append([row[1], row[2], row[3], row[4]])
-        else:
-            _rows.append([_e, row[2], row[3], row[4]])
-    return _rows
+    return rows
 
 @auth.requires_login()
 def rows_blockdev(node, s, e):
@@ -1103,24 +1079,24 @@ def json_fs():
     begin = request.vars.b
     end = request.vars.e
 
-    mntpt = []
-    size = []
+    labels = []
     used = {}
 
     if node is None:
-        return [mntpt, size, used]
+        return [labels, data]
 
     rows = rows_fs_u(node, begin, end)
     for r in rows:
-        if r[1] not in used:
-            used[r[1]] = []
-            mntpt.append(r[1])
-            size.append(int(r[2]))
-        used[r[1]].append((r[0],int(r[3])))
+        label = "%s<br>%d MB" % (r[1], r[2]/1024)
+        if label not in labels:
+            labels.append(label)
+            used[label] = [(r[0], int(r[3]))]
+        else:
+            used[label].append((r[0],int(r[3])))
     data = []
-    for m in mntpt:
-        data.append(used[m])
-    return [mntpt, size, data]
+    for label in labels:
+        data.append(used[label])
+    return [labels, data]
 
 
 

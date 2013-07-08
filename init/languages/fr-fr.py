@@ -1037,6 +1037,7 @@
 'Unavailability segment for %(svc)s': "Période d'indisponibilité pour %(svc)s",
 'Unavailability segments for %(svc)s': "Périodes d'indisponibilité pour %(svc)s",
 'Unavailabity ranges': "Périodes d'indisponibilité",
+'Unfocus': 'Unfocus',
 'Unit cost': 'Coût unitaire',
 'Unknown variable format.': 'Format de variable inconnu.',
 'Unknown variable format: %(fmt)s': 'Format de variable inconnu : %(fmt)s',

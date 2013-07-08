@@ -3556,13 +3556,13 @@ function stats_fs(url, id) {
     $.getJSON(url, function(data) {
         labels = new Array()
         for (i=0;i<data[0].length;i++){
-            labels.push({'label': data[0][i]+'<br>'+parseInt(data[1][i]/1024)+' MB'})
+            labels.push({'label': data[0][i]})
         }
         h = labels.length
         h = Math.max(38*h, 300)
         $('#'+id+'_u').height(h+'px')
         //plot_width_x(id+'_u', data[0])
-	p = $.jqplot(id+'_u', data[2], {
+	p = $.jqplot(id+'_u', data[1], {
             cursor:{zoom:true, showTooltip:true},
             title: {
                 text: 'Fs usage %'
@@ -3590,12 +3590,14 @@ function stats_fs(url, id) {
 	    series: labels,
 	    axes: {
 		xaxis: {
+                    min: data[1][0][0][0],
+                    max: data[1][0][data[1][0].length-1][0],
 		    renderer: $.jqplot.DateAxisRenderer, 
-                    numberTicks: 5,
                     tickOptions:{formatString:'%b,%d\n%H:%M'}
 		}, 
 		yaxis: {
 		    min: 0,
+		    max: 100,
 		    tickOptions:{formatString:'%.2f'}
 		}
 	    }

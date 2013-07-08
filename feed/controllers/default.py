@@ -717,39 +717,7 @@ def register_fs(vars, vals, auth):
 @auth_uuid
 @service.xmlrpc
 def insert_stats_fs_u(vars, vals, auth):
-    feed_enqueue("_insert_stats_fs_u", vars, vals, auth)
-    #_insert_stats_fs_u(vars, vals, auth)
-
-def _insert_stats_fs_u(vars, vals, auth):
-    # initialize last metrics cache
-    sql = """select begin,end,nodename,mntpt,size,used from stats_fs_u_last where nodename="%s" """%auth[1]
-    rows = db.executesql(sql)
-    last = {}
-    for row in rows:
-        last[row[3]] = row
-
-    h = {}
-    __vars = ['begin', 'end', 'nodename', 'mntpt', 'size', 'used']
-    for _vals in vals:
-        for a,b in zip(vars, _vals):
-            h[a] = b
-        if h['mntpt'] not in last:
-            __vals = [h['date'], h['date'], h['nodename'], h['mntpt'], h['size'], h['used']]
-            generic_insert('stats_fs_u_last', __vars, __vals)
-        else:
-            _last = list(last[h['mntpt']])
-            _last[4] = str(_last[4])
-            _last[5] = str(_last[5])
-            if h['size'] != _last[4] or h['used'] != _last[5]:
-                # insert last as new segment in stats_fs_u_diff
-                generic_insert('stats_fs_u_diff', __vars, _last)
-
-                # update last
-                __vals = [h['date'], h['date'], h['nodename'], h['mntpt'], h['size'], h['used']]
-                generic_insert('stats_fs_u_last', __vars, __vals)
-            else:
-                _last[1] = h['date']
-                generic_insert('stats_fs_u_last', __vars, _last)
+    generic_insert('stats_fs_u', vars, vals)
 
 @auth_uuid
 @service.xmlrpc
