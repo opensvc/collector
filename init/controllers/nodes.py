@@ -582,6 +582,7 @@ def ajax_nodes():
 
     t.csv_q = q
     t.csv_orderby = o
+    t.csv_limit = 10000
     if len(request.args) == 1 and request.args[0] == 'csv':
         return t.csv()
 
