@@ -28,6 +28,10 @@ data = {
        'comment': "Insert IBM SVC arrays data from uploads",
      },
      {
+       'url': URL(r=request, a='feed',  c='default', f='insert_hp3pars'),
+       'comment': "Insert HP 3par arrays data from uploads",
+     },
+     {
        'url': URL(r=request, a='feed',  c='default', f='insert_necisms'),
        'comment': "Insert NEC ISM arrays data from uploads",
      },

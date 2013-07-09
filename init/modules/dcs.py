@@ -85,6 +85,11 @@ class Dcs(object):
         self.ports = list()
 
     def to_mb(self, size):
+        newsize = ""
+        for i, c in enumerate(size):
+            if ord(c) < 128:
+                newsize += c
+        size = newsize
         size = size.replace(",", ".")
         if "PB" in size:
             size = float(size.replace(" PB", "")) * 1024 * 1024 * 1024

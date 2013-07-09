@@ -869,6 +869,11 @@ def update_netapp(name, vars, vals, auth):
 
 @auth_uuid
 @service.xmlrpc
+def update_hp3par(name, vars, vals, auth):
+    update_array_xml(name, vars, vals, auth, "hp3par", insert_hp3par)
+
+@auth_uuid
+@service.xmlrpc
 def update_ibmsvc(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "ibmsvc", insert_ibmsvc)
 
@@ -1643,6 +1648,97 @@ def insert_netapp(name=None, nodename=None):
                              now])
             generic_insert('diskinfo', vars, vals)
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.array_name, str(now))
+            db.executesql(sql)
+
+
+def insert_hp3pars():
+    return insert_hp3par()
+
+def insert_hp3par(name=None, nodename=None):
+    import glob
+    import os
+    from applications.init.modules import hp3par
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+
+    raid_type = ["raid0", "raid1", "raid1", "raid5", "raid6"]
+    dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='hp3par'))
+    if name is None:
+        pattern = "*"
+    else:
+        pattern = name
+    dirs = glob.glob(os.path.join(dir, pattern))
+
+    for d in dirs:
+        s = hp3par.get_hp3par(d)
+        if s is not None:
+            # stor_array
+            vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
+            vals = []
+            vals.append([s.name,
+                         "",
+                         "",
+                         "",
+                         now])
+            generic_insert('stor_array', vars, vals)
+
+            sql = """select id from stor_array where array_name="%s" """%s.name
+            array_id = str(db.executesql(sql)[0][0])
+
+            # stor_array_dg
+            vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
+            vals = []
+            for dg in s.cpgs["members"]:
+                sdu = dg["SDUsage"]
+                vals.append([array_id,
+                             dg['name'],
+                             str(sdu["totalMiB"]-sdu["usedMiB"]),
+                             str(sdu["usedMiB"]),
+                             str(sdu["totalMiB"]),
+                             now])
+            generic_insert('stor_array_dg', vars, vals)
+            sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
+            db.executesql(sql)
+
+            # stor_array_tgtid
+            vars = ['array_id', 'array_tgtid']
+            vals = []
+            for wwn in s.ports:
+                vals.append([array_id, wwn])
+            generic_insert('stor_array_tgtid', vars, vals)
+
+            # diskinfo
+            vars = ['disk_id',
+                    'disk_arrayid',
+                    'disk_name',
+                    'disk_devid',
+                    'disk_size',
+                    'disk_alloc',
+                    'disk_raid',
+                    'disk_group',
+                    'disk_updated']
+            vals = []
+            for d in s.volumes["members"]:
+                t = ""
+                for cpg in s.cpgs["members"]:
+                    if cpg["name"] != d['userCPG']:
+                        continue
+                    try:
+                        t = cpg["SDGrowth"]["LDLayout"]["RAIDType"]
+                    except KeyError:
+                        t = 0
+                    t = raid_type[t]
+                vals.append([d['wwn'].lower(),
+                             s.name,
+                             d['name'],
+                             d['uuid'],
+                             str(d['sizeMiB']),
+                             str(d['userSpace']['usedMiB']),
+                             t,
+                             d['userCPG'],
+                             now])
+            generic_insert('diskinfo', vars, vals)
+            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
             db.executesql(sql)
 
 
