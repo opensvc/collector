@@ -497,7 +497,7 @@ function stats_avg_cpu_for_nodes(url, id) {
                 borderWidth: 0.5
             },
             title: {
-                text: 'Average cpu utilisation'
+                text: 'Average cpu utilization'
             },
             legend: {
                 show: true,
@@ -563,7 +563,7 @@ function stats_avg_swp_for_nodes(url, id) {
                 borderWidth: 0.5
             },
             title: {
-                text: 'Average swap utilisation'
+                text: 'Average swap utilization'
             },
             legend: {
                 show: true,
@@ -623,7 +623,7 @@ function stats_avg_mem_for_nodes(url, id) {
                 borderWidth: 0.5
             },
             title: {
-                text: 'Average memory utilisation'
+                text: 'Average memory utilization'
             },
             legend: {
                 show: true,
@@ -2544,8 +2544,8 @@ function stats_blockdev(url, id) {
 	    series: series,
 	    axes: {
 		xaxis: {
-                    min: data[0][0][0],
-                    max: data[0][data[0].length-1][0],
+                    min: _data['begin'],
+                    max: _data['end'],
 		    renderer: $.jqplot.DateAxisRenderer, 
                     tickOptions:{formatString:'%b,%d\n%H:%M'}
 		}, 
@@ -2606,8 +2606,8 @@ function stats_blockdev(url, id) {
 	    series: series,
 	    axes: {
 		xaxis: {
-                    min: data[0][0][0],
-                    max: data[0][data[0].length-1][0],
+                    min: _data['begin'],
+                    max: _data['end'],
 		    renderer: $.jqplot.DateAxisRenderer, 
                     tickOptions:{formatString:'%b,%d\n%H:%M'}
 		}, 
@@ -2627,7 +2627,7 @@ function stats_blockdev(url, id) {
             max_await = Math.max(max_await, Math.abs(data[i][j][1]))
           }
         }
-        d_await = best_unit_mb(max_await, '')
+        d_await = best_unit_mb(max_await, 'ms')
         max_await /= d_await['div']
         for (i=0; i<data.length; i++) {
           for (j=0; j<data[i].length; j++) {
@@ -2668,14 +2668,14 @@ function stats_blockdev(url, id) {
 	    series: series,
 	    axes: {
 		xaxis: {
-                    min: data[0][0][0],
-                    max: data[0][data[0].length-1][0],
+                    min: _data['begin'],
+                    max: _data['end'],
 		    renderer: $.jqplot.DateAxisRenderer, 
                     tickOptions:{formatString:'%b,%d\n%H:%M'}
 		}, 
 		yaxis: {
                     min: 0,
-                    tickOptions:{formatString: d_await['fmt']+' '+d_await['unit']+'msec'}
+                    tickOptions:{formatString: d_await['fmt']+' '+d_await['unit']}
 		}
 	    }
 	});
@@ -2689,7 +2689,7 @@ function stats_blockdev(url, id) {
             max_svctm = Math.max(max_svctm, Math.abs(data[i][j][1]))
           }
         }
-        d_svctm = best_unit_mb(max_svctm, '')
+        d_svctm = best_unit_mb(max_svctm, 'ms')
         max_svctm /= d_svctm['div']
         for (i=0; i<data.length; i++) {
           for (j=0; j<data[i].length; j++) {
@@ -2730,14 +2730,14 @@ function stats_blockdev(url, id) {
 	    series: series,
 	    axes: {
 		xaxis: {
-                    min: data[0][0][0],
-                    max: data[0][data[0].length-1][0],
+                    min: _data['begin'],
+                    max: _data['end'],
 		    renderer: $.jqplot.DateAxisRenderer, 
                     tickOptions:{formatString:'%b,%d\n%H:%M'}
 		}, 
 		yaxis: {
                     min: 0,
-                    tickOptions:{formatString: d_svctm['fmt']+' '+d_svctm['unit']+'msec'}
+                    tickOptions:{formatString: d_svctm['fmt']+' '+d_svctm['unit']}
 		}
 	    }
 	});
@@ -2792,8 +2792,8 @@ function stats_blockdev(url, id) {
 	    series: series,
 	    axes: {
 		xaxis: {
-                    min: data[0][0][0],
-                    max: data[0][data[0].length-1][0],
+                    min: _data['begin'],
+                    max: _data['end'],
 		    renderer: $.jqplot.DateAxisRenderer, 
                     tickOptions:{formatString:'%b,%d\n%H:%M'}
 		}, 
@@ -2924,7 +2924,7 @@ function stats_blockdev(url, id) {
                 renderer: $.jqplot.OHLCRenderer
             },
 	    series: [
-                { label: 'wait (msec)' }
+                { label: 'wait' }
             ],
 	    axes: {
 		xaxis: {
@@ -2935,7 +2935,7 @@ function stats_blockdev(url, id) {
 		yaxis: {
 		    min: 0,
 		    max: max_await,
-                    tickOptions:{formatString: d_await['fmt']+' '+d_await['unit']+'msec'}
+                    tickOptions:{formatString: d_await['fmt']+' '+d_await['unit']}
 		}
 	    }
 	});
@@ -2969,7 +2969,7 @@ function stats_blockdev(url, id) {
                 renderer: $.jqplot.OHLCRenderer
             },
 	    series: [
-                { label: 'svc time (msec)' }
+                { label: 'svc time' }
             ],
 	    axes: {
 		xaxis: {
@@ -2980,7 +2980,7 @@ function stats_blockdev(url, id) {
 		yaxis: {
 		    min: 0,
 		    max: max_svctm,
-                    tickOptions:{formatString: d_svctm['fmt']+' '+d_svctm['unit']+'msec'}
+                    tickOptions:{formatString: d_svctm['fmt']+' '+d_svctm['unit']}
 		}
 	    }
 	});
@@ -2995,7 +2995,7 @@ function stats_blockdev(url, id) {
 	p = $.jqplot(id+'_pct_util', [data[5]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
-                text: 'Block device utilisation<br>high/low/average'
+                text: 'Block device utilization<br>high/low/average'
             },
             legend: {
                 show: false,
@@ -3542,12 +3542,10 @@ function best_unit_mb(max, iunit) {
     if (typeof(iunit)==='undefined') {
         iunit = "MB"
     }
-    if (iunit.length == 0) {
-        unit = ""
-    } else if (iunit.length <= 2) {
+    if (iunit.length == 2) {
         unit = iunit[iunit.length-1]
     } else {
-        unit = iunit
+        unit = ""
     }
     if (unit == 'B') {
         mul = 1024
@@ -3555,14 +3553,20 @@ function best_unit_mb(max, iunit) {
         mul = 1000
     }
 
-    if (iunit.length <= 1) {
+    if (iunit.length < 1) {
         idiv = 1
     } else if (iunit[0] == 'K') {
         idiv = mul
+    } else if (iunit[0] == 'm') {
+        idiv =  1/mul
     } else if (iunit[0] == 'M') {
         idiv = mul*mul
+    } else if (iunit[0] == 'u') {
+        idiv =  1/mul/mul
     } else if (iunit[0] == 'G') {
         idiv = mul*mul*mul
+    } else if (iunit[0] == 'p') {
+        idiv =  1/mul/mul/mul
     } else if (iunit[0] == 'T') {
         idiv = mul*mul*mul*mul
     } else if (iunit[0] == 'P') {
@@ -3572,7 +3576,16 @@ function best_unit_mb(max, iunit) {
     }
     max *= idiv
 
-    if (max<mul) {
+    if (unit == 's' && max<1/mul/mul) {
+        unit = 'p'+unit
+        div = 1/mul/mul/mul
+    } else if (unit == 's' && max<1/mul) {
+        unit = 'u'+unit
+        div = 1/mul/mul
+    } else if (unit == 's' && max<1) {
+        unit = 'm'+unit
+        div = 1/mul
+    } else if (max<mul) {
         unit = ''+unit
         div = 1
     } else if (max<mul*mul) {

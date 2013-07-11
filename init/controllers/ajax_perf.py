@@ -935,8 +935,10 @@ def json_blockdev():
     tm_svc = []
 
     if node is None:
-        return [dev, tps, avgrq_sz, await, svctm, pct_util, [rsecps, wsecps],
-                tm_dev, [tm_svc, tm_await]]
+        return {
+          'avg':[dev, tps, avgrq_sz, await, svctm, pct_util, [rsecps, wsecps],
+                 tm_dev, [tm_svc, tm_await]]
+        }
 
     rows, rows_time = rows_blockdev(node, begin, end)
 
@@ -989,7 +991,7 @@ def json_blockdev():
     for i, r in enumerate(l):
         await.append((r[0], r[11],r[10],r[9]))
         if i >= 10: break
-    await_devs = [r[0] for r in tps]
+    await_devs = [r[0] for r in await]
     await_time = []
     h = {}
     for r in rows_time:
@@ -1049,6 +1051,8 @@ def json_blockdev():
 
     return {
              'avg': [dev, tps, avgrq_sz, await, svctm, pct_util, [rsecps, wsecps], tm_dev,[tm_svc, tm_await]],
+             'begin': begin,
+             'end': end,
              'time': {
                'tps': {
                  'labels': tps_devs,
