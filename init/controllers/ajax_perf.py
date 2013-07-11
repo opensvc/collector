@@ -234,7 +234,7 @@ def ajax_perf_netdev_plot():
 
 @auth.requires_login()
 def ajax_perf_blockdev_plot():
-    sub = ['_pct_util', '_pct_util_time', '_tps', '_tps_time', '_secps', '_tm', '_await', '_await_time', '_svctm', '_svctm_time', '_avgrq_sz', '_avgrq_sz_time']
+    sub = ['_pct_util', '_pct_util_time', '_tps', '_tps_time', '_secps', '_secps_time', '_await', '_await_time', '_svctm', '_svctm_time', '_avgrq_sz', '_avgrq_sz_time', '_tm']
     return _ajax_perf_plot('blockdev', sub=sub, last=True)
 
 def ajax_perf_block_plot():
@@ -949,6 +949,27 @@ def json_blockdev():
         rsecps.append(r[4])
         wsecps.append(r[5])
         if i >= 10: break
+    secps_devs = []
+    secps_time = []
+    h = {}
+    for r in rows_time:
+        if r[1] not in dev:
+            continue
+        label = r[1] + " rd"
+        if label not in h:
+            h[label] = [[r[0], r[3]]]
+        else:
+            h[label].append([r[0], r[3]])
+        label = r[1] + " wr"
+        if label not in h:
+            h[label] = [[r[0], -r[4]]]
+        else:
+            h[label].append([r[0], -r[4]])
+    for _dev in dev:
+        for dir in (" rd", " wr"):
+            secps_devs.append(_dev+dir)
+            secps_time.append(h[_dev+dir])
+
 
     l = sorted(rows, key=lambda r: r[1])
     l.reverse()
@@ -1073,6 +1094,10 @@ def json_blockdev():
                'avgrq_sz': {
                  'labels': avgrq_sz_devs,
                  'data': avgrq_sz_time,
+               },
+               'secps': {
+                 'labels': secps_devs,
+                 'data': secps_time,
                },
              }
            }
