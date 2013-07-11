@@ -517,19 +517,20 @@ function stats_avg_cpu_for_nodes(url, id) {
                 shadowAngle: 135
             },
 	    series: [
-                {label: 'usr (%)'},
-                {label: 'nice (%)'},
-                {label: 'sys (%)'},
-                {label: 'iowait (%)'},
-                {label: 'steal (%)'},
-                {label: 'irq (%)'},
-                {label: 'soft (%)'},
-                {label: 'guest (%)'}
+                {label: 'usr'},
+                {label: 'nice'},
+                {label: 'sys'},
+                {label: 'iowait'},
+                {label: 'steal'},
+                {label: 'irq'},
+                {label: 'soft'},
+                {label: 'guest'}
             ],
 	    axes: {
 		xaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%.2f'}
+                    tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+		    tickOptions:{formatString:'%.2f %%', angle: -70, fontSize: "1em"}
 		},
 		yaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
@@ -544,6 +545,16 @@ function stats_avg_swp_for_nodes(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         if (data[0].length == 0) { return }
+        max = 0
+        for (i=0; i<data[1][0].length; i++) {
+            max = Math.max(max, data[1][0][i][0]+data[1][1][i][0])
+        }
+        d = best_unit_mb(max, "MB")
+        for (i=0; i<data[1][0].length; i++) {
+            data[1][0][i][0] /= d['div']
+            data[1][1][i][0] /= d['div']
+        }
+
         plot_height(id, data[0])
         $('#'+id).width('450px')
 	p = $.jqplot(id, data[1], {
@@ -572,13 +583,14 @@ function stats_avg_swp_for_nodes(url, id) {
                 shadowAngle: 135
             },
 	    series: [
-                {label: 'free (MB)'},
-                {label: 'used (MB)'}
+                {label: 'free'},
+                {label: 'used'}
             ],
 	    axes: {
 		xaxis: {
 		    min: 0, 
-		    tickOptions:{formatString:'%i'}
+                    tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+		    tickOptions:{formatString: d['fmt']+' '+d['unit'], angle: -70, fontSize: "1em"}
 		},
 		yaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
@@ -593,6 +605,16 @@ function stats_avg_mem_for_nodes(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         if (data[0].length == 0) { return }
+        max = 0
+        for (i=0; i<data[1][0].length; i++) {
+            max = Math.max(max, data[1][0][i][0]+data[1][1][i][0])
+        }
+        d = best_unit_mb(max, "MB")
+        for (i=0; i<data[1][0].length; i++) {
+            data[1][0][i][0] /= d['div']
+            data[1][1][i][0] /= d['div']
+        }
+
         plot_height(id, data[0])
         $('#'+id).width('450px')
 	p = $.jqplot(id, data[1], {
@@ -621,13 +643,14 @@ function stats_avg_mem_for_nodes(url, id) {
                 shadowAngle: 135
             },
 	    series: [
-                {label: 'free (MB)'},
-                {label: 'cache (MB)'}
+                {label: 'free'},
+                {label: 'cache'}
             ],
 	    axes: {
 		xaxis: {
 		    min: 0, 
-		    tickOptions:{formatString:'%i'}
+                    tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+		    tickOptions:{formatString: d['fmt']+' '+d['unit'], angle: -70, fontSize: "1em"}
 		},
 		yaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
@@ -642,6 +665,17 @@ function stats_avg_block_for_nodes(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         if (data[0].length == 0) { return }
+
+        max = 0
+        for (i=0; i<data[1][0].length; i++) {
+            max = Math.max(max, data[1][0][i][0]+data[1][1][i][0])
+        }
+        d = best_unit_mb(max, "")
+        for (i=0; i<data[1][0].length; i++) {
+            data[1][0][i][0] /= d['div']
+            data[1][1][i][0] /= d['div']
+        }
+
         plot_height('tps_'+id, data[0])
         $('#tps_'+id).width('450px')
 	p = $.jqplot('tps_'+id, [data[1][0], data[1][1]], {
@@ -676,7 +710,8 @@ function stats_avg_block_for_nodes(url, id) {
 	    axes: {
 		xaxis: {
 		    min: 0, 
-		    tickOptions:{formatString:'%.2f'}
+                    tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+		    tickOptions:{formatString: d['fmt']+' '+d['unit']+'io/s', angle: -70, fontSize: "1em"}
 		},
 		yaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
@@ -685,6 +720,16 @@ function stats_avg_block_for_nodes(url, id) {
 	    }
 	});
         _jqplot_extra($('#tps_'+id), p)
+
+        max = 0
+        for (i=0; i<data[1][2].length; i++) {
+            max = Math.max(max, data[1][2][i][0]+data[1][3][i][0])
+        }
+        d = best_unit_mb(max, "KB")
+        for (i=0; i<data[1][2].length; i++) {
+            data[1][2][i][0] /= d['div']
+            data[1][3][i][0] /= d['div']
+        }
 
         plot_height('bps_'+id, data[0])
         $('#bps_'+id).width('450px')
@@ -714,13 +759,14 @@ function stats_avg_block_for_nodes(url, id) {
                 shadowAngle: 135
             },
 	    series: [
-                {label: 'read (KB/s)'},
-                {label: 'write (KB/s)'}
+                {label: 'read'},
+                {label: 'write'}
             ],
 	    axes: {
 		xaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%.2f'}
+                    tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+		    tickOptions:{formatString: d['fmt']+' '+d['unit']+'/s', angle: -70, fontSize: "1em"}
 		},
 		yaxis: {
 		    renderer: $.jqplot.CategoryAxisRenderer, 
@@ -2504,6 +2550,7 @@ function stats_blockdev(url, id) {
                     tickOptions:{formatString:'%b,%d\n%H:%M'}
 		}, 
 		yaxis: {
+                    min: 0,
                     tickOptions:{formatString: d_pct_util['fmt']+' '+d_pct_util['unit']+'%'}
 		}
 	    }
@@ -2565,6 +2612,7 @@ function stats_blockdev(url, id) {
                     tickOptions:{formatString:'%b,%d\n%H:%M'}
 		}, 
 		yaxis: {
+                    min: 0,
                     tickOptions:{formatString: d_tps['fmt']+' '+d_tps['unit']+'io/s'}
 		}
 	    }
@@ -2626,6 +2674,7 @@ function stats_blockdev(url, id) {
                     tickOptions:{formatString:'%b,%d\n%H:%M'}
 		}, 
 		yaxis: {
+                    min: 0,
                     tickOptions:{formatString: d_await['fmt']+' '+d_await['unit']+'msec'}
 		}
 	    }
@@ -2687,6 +2736,7 @@ function stats_blockdev(url, id) {
                     tickOptions:{formatString:'%b,%d\n%H:%M'}
 		}, 
 		yaxis: {
+                    min: 0,
                     tickOptions:{formatString: d_svctm['fmt']+' '+d_svctm['unit']+'msec'}
 		}
 	    }
@@ -2748,6 +2798,7 @@ function stats_blockdev(url, id) {
                     tickOptions:{formatString:'%b,%d\n%H:%M'}
 		}, 
 		yaxis: {
+                    min: 0,
                     tickOptions:{formatString: d_avgrq_sz['fmt']+' '+d_avgrq_sz['unit']+'sectors'}
 		}
 	    }
