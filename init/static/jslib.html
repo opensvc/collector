@@ -3094,6 +3094,10 @@ function stats_blockdev(url, id) {
 	});
         _jqplot_extra($('#'+id+'_pct_util'), p)
 
+        for (i=0; i<data[6][0].length; i++) {
+          data[6][0][i] /= d_secps['div']
+          data[6][1][i] /= d_secps['div']
+        }
         plot_width_x(id+'_secps', data[0])
 	p = $.jqplot(id+'_secps', data[6], {
 	    stackSeries: true,
@@ -3116,8 +3120,8 @@ function stats_blockdev(url, id) {
                 shadowAngle: 135
             },
 	    series: [
-                {label: 'read (sec/s)'},
-                {label: 'write (sec/s)'}
+                {label: 'read'},
+                {label: 'write'}
             ],
 	    axes: {
 		xaxis: {
@@ -3128,7 +3132,7 @@ function stats_blockdev(url, id) {
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%.2f'}
+                    tickOptions:{formatString: d_secps['fmt']+' '+d_secps['unit']+'sect/s'}
 		}
 	    }
 	});
