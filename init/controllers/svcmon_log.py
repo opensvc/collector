@@ -7,7 +7,7 @@ def call():
     decorate with @services.jsonrpc the functions to expose
     supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv
     """
-    session.forget()
+    session.forget(response)
     return service()
 
 @auth.requires_login()
@@ -1148,6 +1148,7 @@ def ajax_svcmon_log():
 
 @auth.requires_login()
 def ajax_svcmon_log_1():
+    session.forget(response)
     v = table_avail(request.vars.rowid, request.vars.rowid)
     v.colprops['avail_svcname'].display = False
     v.columnable = False

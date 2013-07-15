@@ -9,7 +9,7 @@ def call():
     decorate with @services.jsonrpc the functions to expose
     supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv
     """
-    session.forget()
+    session.forget(response)
     return service()
 
 class col_form_head_id(HtmlTableColumn):
@@ -740,6 +740,7 @@ def get_forms(form_type=None, folder="/", form_names=[], search=None):
 
 @auth.requires_login()
 def ajax_forms_list():
+    session.forget(response)
     return forms_list(request.vars.folder,
                       prev_wfid=request.vars.prev_wfid,
                       search=request.vars.forms_search)
@@ -1159,6 +1160,7 @@ def tool_forms_search():
 
 @auth.requires_login()
 def ajax_rset_list():
+    session.forget(response)
     o = db.comp_rulesets.ruleset_name
     q = db.comp_rulesets.id > 0
     q &= db.comp_ruleset_team_responsible.ruleset_id == db.comp_rulesets.id
@@ -1202,6 +1204,7 @@ $("#rset").siblings("input").focus();
 
 @auth.requires_login()
 def ajax_node_list():
+    session.forget(response)
     o = db.nodes.project | db.nodes.nodename
     q = db.nodes.id > 0
     q &= db.apps_responsibles.app_id == db.apps.id
@@ -1254,6 +1257,7 @@ $("#nodename").siblings("input").focus();
 
 @auth.requires_login()
 def ajax_service_list():
+    session.forget(response)
     o = db.services.svc_app | db.services.svc_name
     q = db.services.svc_app == db.apps.app
     q &= db.services.svc_name == db.svcmon.mon_svcname
@@ -1319,6 +1323,7 @@ def format_forms_chain(l):
 
 @auth.requires_login()
 def ajax_workflows_assigned_to_me():
+    session.forget(response)
     offset = request.vars.offset
     if offset is None:
         offset = 0
@@ -1414,6 +1419,7 @@ def workflows_assigned_to_me():
 
 @auth.requires_login()
 def ajax_workflows_pending_tiers_action():
+    session.forget(response)
     offset = request.vars.offset
     if offset is None:
         offset = 0

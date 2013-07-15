@@ -5,7 +5,7 @@ def call():
     decorate with @services.jsonrpc the functions to expose
     supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv
     """
-    session.forget()
+    session.forget(response)
     return service()
 
 @auth.requires_login()
@@ -284,6 +284,7 @@ def ajax_perf_cpu_plot():
 
 @auth.requires_login()
 def _ajax_perf_plot(group, sub=[''], last=False, base=None, container=None):
+    session.forget(response)
     if base is None:
         base = group
     node = request.args[0]

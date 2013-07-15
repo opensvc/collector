@@ -5,7 +5,7 @@ def call():
     decorate with @services.jsonrpc the functions to expose
     supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv
     """
-    session.forget()
+    session.forget(response)
     return service()
 
 class table_compare(HtmlTable):
@@ -191,6 +191,7 @@ def compare_add():
 
 @auth.requires_login()
 def ajax_compare():
+    session.forget(response)
     t = table_compare('stats', 'ajax_compare')
 
     if len(request.args) == 1:
@@ -505,6 +506,7 @@ class table_stats(HtmlTable):
 
 @auth.requires_login()
 def ajax_stats():
+    session.forget(response)
     t = table_stats('stats', 'ajax_stats')
 
     q = db.stat_day.id > 0
@@ -715,6 +717,7 @@ def stats():
 
 @auth.requires_login()
 def ajax_containerperf_plot():
+    session.forget(response)
     containers = []
     for s in request.vars.node.split(','):
         containers.append(s.split('@'))
@@ -764,6 +767,7 @@ def ajax_containerperf_plot():
 
 @auth.requires_login()
 def ajax_perfcmp_plot():
+    session.forget(response)
     nodes = request.vars.node
     b = None
     e = None

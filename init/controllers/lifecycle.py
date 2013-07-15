@@ -5,7 +5,7 @@ def call():
     decorate with @services.jsonrpc the functions to expose
     supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv
     """
-    session.forget()
+    session.forget(response)
     return service()
 
 def get_current_top_ten(fset_id, os_name):
@@ -183,6 +183,7 @@ def lifecycle_os():
 
 @auth.requires_login()
 def ajax_lifecycle_os():
+    session.forget(response)
     t = table_lifecycle_os('lifecycle_os', 'ajax_lifecycle_os')
     os = __get_lifecycle_os()
     l = []
