@@ -400,6 +400,7 @@ def viz_cron_cleanup():
 
 @auth.requires_login()
 def ajax_service():
+    session.forget(response)
     rowid = request.vars.rowid
     tab = request.vars.tab
     if tab is None:

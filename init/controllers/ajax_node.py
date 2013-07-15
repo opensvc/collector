@@ -364,6 +364,7 @@ class sandata(object):
 
 @auth.requires_login()
 def ajax_node():
+    session.forget(response)
     rowid = request.vars.rowid
     tab = request.vars.tab
     if tab is None:

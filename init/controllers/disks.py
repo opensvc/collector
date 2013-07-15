@@ -5,7 +5,7 @@ def call():
     decorate with @services.jsonrpc the functions to expose
     supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv
     """
-    session.forget()
+    session.forget(response)
     return service()
 
 array_img_h = {
@@ -805,6 +805,7 @@ def ajax_provision():
 
 @auth.requires_login()
 def ajax_node_list():
+    session.forget(response)
     o = db.nodes.project | db.nodes.nodename
     q = db.node_hba.nodename == db.nodes.nodename
     if 'StorageManager' not in user_groups():
@@ -843,6 +844,7 @@ def ajax_node_list():
 
 @auth.requires_login()
 def ajax_service_list():
+    session.forget(response)
     o = db.services.svc_app | db.services.svc_name
     q = db.services.svc_app == db.apps.app
     q &= db.services.svc_name == db.svcmon.mon_svcname
@@ -881,6 +883,7 @@ def ajax_service_list():
 
 @auth.requires_login()
 def ajax_dg_list_by_node():
+    session.forget(response)
     o = db.stor_array.array_name | db.stor_array_dg.dg_name
     q = db.nodes.nodename == request.args[0]
     q &= db.nodes.project == db.apps.app
@@ -965,6 +968,7 @@ def dg_list(rows, fn):
 
 @auth.requires_login()
 def ajax_dg_list_by_svc():
+    session.forget(response)
     o = db.stor_array.array_name | db.stor_array_dg.dg_name
     q = db.services.svc_name == request.args[0]
     q &= db.services.svc_app == db.apps.app
@@ -982,6 +986,7 @@ def ajax_dg_list_by_svc():
 
 @auth.requires_login()
 def ajax_path_list_by_node():
+    session.forget(response)
     nodename = request.args[0]
     dg_id = request.args[1]
 
@@ -1003,6 +1008,7 @@ def ajax_path_list_by_node():
     return path_list(paths, dg_id, nodename)
 
 def ajax_path_list_by_svc():
+    session.forget(response)
     svcname = request.args[0]
     dg_id = request.args[1]
 
@@ -1158,6 +1164,7 @@ def sansymphony_v():
 
 @auth.requires_login()
 def ajax_disk_provision():
+    session.forget(response)
     dg_id = request.args[0]
     paths = request.vars.paths
     target = request.vars.target
@@ -1302,6 +1309,7 @@ def ajax_disk_provision():
            )
 
 def ajax_disk_provision_wait():
+    session.forget(response)
     refresh_b_disk_app()
     id = request.args[0]
     import time
@@ -1403,6 +1411,7 @@ def disks():
 
 @auth.requires_login()
 def ajax_disk_charts():
+    session.forget(response)
     t = table_disks('disks', 'ajax_disks')
     nt = table_disk_charts('charts', 'ajax_disk_charts')
 
@@ -1882,6 +1891,7 @@ class table_disk_charts(HtmlTable):
 
 @auth.requires_login()
 def ajax_array_dg():
+    session.forget(response)
     array_name = request.vars.array
     dg_name = request.vars.dg
     row_id = request.vars.rowid
@@ -1908,6 +1918,7 @@ def ajax_array_dg():
 
 @auth.requires_login()
 def ajax_array():
+    session.forget(response)
     array_name = request.vars.array
     row_id = request.vars.rowid
     id = 'chart_'+array_name.replace(" ", "").replace("-", "")
@@ -1932,6 +1943,7 @@ def ajax_array():
 
 @auth.requires_login()
 def ajax_app():
+    session.forget(response)
     app_id = request.vars.app_id
     dg_id = request.vars.dg_id
     row_id = request.vars.rowid

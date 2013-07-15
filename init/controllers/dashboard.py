@@ -5,7 +5,7 @@ def call():
     decorate with @services.jsonrpc the functions to expose
     supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv
     """
-    session.forget()
+    session.forget(response)
     return service()
 
 class col_dash_chart(HtmlTableColumn):
@@ -144,6 +144,7 @@ class table_dash_agg(HtmlTable):
 
 
 def ajax_dash_history():
+    session.forget(response)
     id = request.vars.divid
     id_chart = 'dh_chart'
     d = DIV(
@@ -227,6 +228,7 @@ def json_dash_history():
 
 @auth.requires_login()
 def ajax_dash_agg():
+    session.forget(response)
     t = table_dashboard('dashboard', 'ajax_dashboard')
     mt = table_dash_agg('dash_agg', 'ajax_dash_agg')
 
@@ -897,6 +899,7 @@ def dash_changed():
 
 @auth.requires_login()
 def ajax_alert_events():
+    session.forget(response)
     limit = datetime.datetime.now() - datetime.timedelta(days=30)
     q = db.dashboard_events.dash_md5 == request.vars.dash_md5
     q &= db.dashboard_events.dash_nodename == request.vars.dash_nodename

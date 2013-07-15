@@ -269,6 +269,7 @@ class HtmlTable(object):
                )
 
     def col_values_cloud(self, c):
+        session.forget(response)
         l = []
         for o in self.object_list:
             s = self.colprops[c].get(o)

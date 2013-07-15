@@ -5,7 +5,7 @@ def call():
     decorate with @services.jsonrpc the functions to expose
     supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv
     """
-    session.forget()
+    session.forget(response)
     return service()
 
 class col_app_key(HtmlTableColumn):
@@ -74,6 +74,7 @@ def json_appinfo_log():
 
 @auth.requires_login()
 def ajax_appinfo_log():
+    session.forget(response)
     row_id = request.vars.rowid
     id = 'chart_'+request.vars.nodename.replace(" ", "").replace("-", "").replace('.', '_')
     id += '_'+request.vars.svcname.replace(" ", "").replace("-", "").replace('.', '_')

@@ -4712,6 +4712,7 @@ def ajax_comp_node_status():
 
 @auth.requires_login()
 def ajax_svc_history():
+    session.forget(response)
     id = request.vars.rowid
     id_chart = id+'_chart'
     d = DIV(
@@ -4763,6 +4764,7 @@ def json_svc_history():
 
 @auth.requires_login()
 def ajax_mod_history():
+    session.forget(response)
     id = request.vars.rowid
     id_chart = id+'_chart'
     d = DIV(
@@ -4813,6 +4815,7 @@ def json_mod_history():
 
 @auth.requires_login()
 def ajax_node_history():
+    session.forget(response)
     id = request.vars.rowid
     id_chart = id+'_chart'
     d = DIV(
@@ -5017,7 +5020,7 @@ def comp_log():
     return dict(table=t)
 
 def call():
-    session.forget()
+    session.forget(response)
     return service()
 
 def user():
@@ -5975,6 +5978,7 @@ def node_comp_status(node):
 
 @auth.requires_login()
 def ajax_rset_md5():
+    session.forget(response)
     rset_md5 = request.vars.rset_md5
     row = db(db.comp_run_ruleset.rset_md5==rset_md5).select().first()
     if row is None:
@@ -5989,6 +5993,7 @@ def ajax_rset_md5():
 
 @auth.requires_login()
 def ajax_compliance_svc():
+    session.forget(response)
     svcname = request.args[0]
     rsets = _comp_get_svc_ruleset(svcname)
     msets = _comp_get_svc_moduleset(svcname)
@@ -6094,6 +6099,7 @@ def show_diff(svcname):
 
 @auth.requires_login()
 def ajax_compliance_node():
+    session.forget(response)
     node = request.args[0]
     rsets = _comp_get_ruleset(node)
     msets = _comp_get_moduleset(node)
