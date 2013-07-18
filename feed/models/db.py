@@ -12,7 +12,11 @@ if request.env.web2py_runtime_gae:            # if running on Google App Engine
     # from google.appengine.api.memcache import Client
     # session.connect(request, response, db=MEMDB(Client())
 else:                                         # else use a normal relational database
-    db = DAL('mysql://opensvc:opensvc@dbopensvc/opensvc')       # if not, use SQLite or other DB
+    #db = DAL('mysql://opensvc:opensvc@dbopensvc/opensvc')       # if not, use SQLite or other DB
+    db = DAL('mysql://opensvc:opensvc@dbopensvc/opensvc',
+             driver_args={'connect_timeout': 20},
+             pool_size=50)
+
 ## if no need for session
 session.forget()
 

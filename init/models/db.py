@@ -12,7 +12,9 @@ if request.env.web2py_runtime_gae:            # if running on Google App Engine
     # from google.appengine.api.memcache import Client
     # session.connect(request, response, db=MEMDB(Client())
 else:                                         # else use a normal relational database
-    db = DAL('mysql://opensvc:opensvc@dbopensvc/opensvc')       # if not, use SQLite or other DB
+    db = DAL('mysql://opensvc:opensvc@dbopensvc/opensvc',
+             driver_args={'connect_timeout': 20},
+             pool_size=50)
 ## if no need for session
 # session.forget()
 
@@ -30,6 +32,8 @@ auth=MyAuth(globals(),db)                      # authentication/authorization
 auth.settings.hmac_key='sha512:7755f108-1b83-45dc-8302-54be8f3616a1'
 auth.settings.expiration=36000000
 auth.settings.allow_basic_login = True
+
+#request.requires_https()
 
 #
 # custom auth_user table. new field: email_notifications
