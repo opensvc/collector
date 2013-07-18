@@ -838,6 +838,12 @@ def purge_alerts_on_nodes_without_asset():
         db(q).delete()
         db.commit()
 
+def cron_purge_packages():
+    threshold = now - datetime.timedelta(days=100)
+    q = db.packages.pkg_updated < threshold
+    db(q).delete()
+    db.commit()
+
 def cron_alerts_daily():
     alerts_apps_without_responsible()
     alerts_services_not_updated()
@@ -851,6 +857,7 @@ def cron_alerts_daily():
     purge_alerts_on_nodes_without_asset()
     cron_resmon_purge()
     cron_purge_node_hba()
+    cron_purge_packages()
 
 def cron_alerts_hourly():
     rets = []
