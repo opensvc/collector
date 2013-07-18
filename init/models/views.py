@@ -262,13 +262,13 @@ def apply_filters(q, node_field=None, service_field=None, fset_id=None, nodename
 
 def filterset_encap_query(fset_id, f_log_op='AND', nodes=set([]), services=set([]), i=0, nodename=None, svcname=None):
     if fset_id == 0:
-        all_nodes = set([r.nodename for r in db(db.nodes.id>0).select(db.nodes.nodename)])
-        all_services = set([r.svc_name for r in db(db.services.id>0).select(db.services.svc_name)])
+        all_nodes = set([r.nodename for r in db(db.nodes.id>0).select(db.nodes.nodename, cacheable=True, cache=(cache.ram, 30))])
+        all_services = set([r.svc_name for r in db(db.services.id>0).select(db.services.svc_name, cacheable=True, cache=(cache.ram, 30))])
         return all_nodes, all_services
 
     o = db.v_gen_filtersets.f_order
     qr = db.v_gen_filtersets.fset_id == fset_id
-    rows = db(qr).select(orderby=o)
+    rows = db(qr).select(orderby=o, cacheable=True, cache=(cache.ram, 30))
     n_nodes = set([])
     n_services = set([])
     j = 0
@@ -283,8 +283,8 @@ def filterset_encap_query(fset_id, f_log_op='AND', nodes=set([]), services=set([
         j += 1
 
     if 'NOT' in f_log_op:
-        all_nodes = set([_r.nodename for _r in db(db.nodes.id>0).select(db.nodes.nodename)])
-        all_services = set([_r.svc_name for _r in db(db.services.id>0).select(db.services.svc_name)])
+        all_nodes = set([_r.nodename for _r in db(db.nodes.id>0).select(db.nodes.nodename, cacheable=True, cache=(cache.ram, 30))])
+        all_services = set([_r.svc_name for _r in db(db.services.id>0).select(db.services.svc_name, cacheable=True, cache=(cache.ram, 30))])
         n_nodes = all_nodes - n_nodes
         n_services = all_services - n_services
 
@@ -351,7 +351,8 @@ def filterset_query(row, nodes, services, i=0, nodename=None, svcname=None):
         if nodename is not None:
             qry &= db.svcmon.mon_nodname == nodename
         rows = db(qry).select(db.services.svc_name, db.svcmon.mon_nodname,
-                              left=db.svcmon.on(db.services.svc_name==db.svcmon.mon_svcname))
+                              left=db.svcmon.on(db.services.svc_name==db.svcmon.mon_svcname),
+                              cacheable=True, cache=(cache.ram, 30))
         n_nodes = set(map(lambda x: x.svcmon.mon_nodname, rows)) - set([None])
         n_services = set(map(lambda x: x.services.svc_name, rows)) - set([None])
     elif v.f_table == 'nodes':
@@ -360,7 +361,8 @@ def filterset_query(row, nodes, services, i=0, nodename=None, svcname=None):
         if nodename is not None:
             qry &= db.nodes.nodename == nodename
         rows = db(qry).select(db.svcmon.mon_svcname, db.nodes.nodename,
-                              left=db.svcmon.on(db.nodes.nodename==db.svcmon.mon_nodname))
+                              left=db.svcmon.on(db.nodes.nodename==db.svcmon.mon_nodname),
+                              cacheable=True, cache=(cache.ram, 30))
         n_nodes = set(map(lambda x: x.nodes.nodename, rows)) - set([None])
         n_services = set(map(lambda x: x.svcmon.mon_svcname, rows)) - set([None])
     elif v.f_table == 'svcmon':
@@ -368,7 +370,8 @@ def filterset_query(row, nodes, services, i=0, nodename=None, svcname=None):
             qry &= db.svcmon.mon_svcname == svcname
         if nodename is not None:
             qry &= db.svcmon.mon_nodname == nodename
-        rows = db(qry).select(db.svcmon.mon_nodname, db.svcmon.mon_svcname)
+        rows = db(qry).select(db.svcmon.mon_nodname, db.svcmon.mon_svcname,
+                              cacheable=True)
         n_nodes = set(map(lambda x: x.mon_nodname, rows)) - set([None])
         n_services = set(map(lambda x: x.mon_svcname, rows)) - set([None])
     elif v.f_table == 'b_disk_app':
@@ -376,7 +379,9 @@ def filterset_query(row, nodes, services, i=0, nodename=None, svcname=None):
             qry &= db.b_disk_app.disk_svcname == svcname
         if nodename is not None:
             qry &= db.b_disk_app.disk_nodename == nodename
-        rows = db(qry).select(db.b_disk_app.disk_nodename, db.b_disk_app.disk_svcname)
+        rows = db(qry).select(db.b_disk_app.disk_nodename,
+                              db.b_disk_app.disk_svcname,
+                              cacheable=True)
         n_nodes = set(map(lambda x: x.disk_nodename, rows)) - set([None])
         n_services = set(map(lambda x: x.disk_svcname, rows)) - set([None])
     elif v.f_table == 'node_hba':
@@ -385,7 +390,8 @@ def filterset_query(row, nodes, services, i=0, nodename=None, svcname=None):
         if nodename is not None:
             qry &= db.node_hba.nodename == nodename
         rows = db(qry).select(db.svcmon.mon_svcname, db.node_hba.nodename,
-                              left=db.svcmon.on(db.node_hba.nodename==db.svcmon.mon_nodname))
+                              left=db.svcmon.on(db.node_hba.nodename==db.svcmon.mon_nodname),
+                              cacheable=True)
         n_nodes = set(map(lambda x: x.node_hba.nodename, rows)) - set([None])
         n_services = set(map(lambda x: x.svcmon.mon_svcname, rows)) - set([None])
     else:

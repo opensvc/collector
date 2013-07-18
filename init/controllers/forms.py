@@ -266,6 +266,7 @@ class table_forms(HtmlTable):
     def format_extrarow(self, o):
         d = DIV(
               A(
+                '',
                 _href=URL(r=request, c='forms', f='forms_editor', vars={'form_id': o.id}),
                 _class="edit16",
               ),

@@ -93,7 +93,7 @@ class HtmlTableColumn(Column):
                 return o[self.field]
             else:
                 return o[self.table][self.field]
-        except KeyError:
+        except (KeyError, AttributeError):
             return ''
             #raise Exception('KeyError:', self.table, self.field, o)
 

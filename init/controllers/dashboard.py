@@ -538,6 +538,7 @@ class col_dash_links(HtmlTableColumn):
     def link_action_errors(self, o):
        dash_svcname = self.t.colprops['dash_svcname'].get(o)
        i = A(
+            '',
              _href=URL(r=request,c='svcactions',f='svcactions',
                     vars={'actions_f_svcname': dash_svcname,
                           'actions_f_status': 'err',
@@ -551,6 +552,7 @@ class col_dash_links(HtmlTableColumn):
     def link_actions(self, o):
        dash_svcname = self.t.colprops['dash_svcname'].get(o)
        i = A(
+            '',
              _href=URL(r=request,c='svcactions',f='svcactions',
                     vars={'actions_f_svcname': dash_svcname,
                           'actions_f_begin': '>%s'%str(now-datetime.timedelta(days=7)),
@@ -563,6 +565,7 @@ class col_dash_links(HtmlTableColumn):
     def link_svcmon(self, o):
        dash_svcname = self.t.colprops['dash_svcname'].get(o)
        i = A(
+            '',
              _href=URL(r=request,c='default',f='svcmon',
                     vars={'svcmon_f_mon_svcname': dash_svcname,
                           'clear_filters': 'true'}),
@@ -574,6 +577,7 @@ class col_dash_links(HtmlTableColumn):
     def link_checks(self, o):
        dash_nodename = self.t.colprops['dash_nodename'].get(o)
        i = A(
+            '',
              _href=URL(r=request,c='checks',f='checks',
                     vars={'checks_f_chk_nodename': dash_nodename,
                           'clear_filters': 'true'}),
@@ -585,6 +589,7 @@ class col_dash_links(HtmlTableColumn):
     def link_nodes(self, o):
        dash_nodename = self.t.colprops['dash_nodename'].get(o)
        i = A(
+            '',
              _href=URL(r=request,c='nodes',f='nodes',
                     vars={'nodes_f_nodename': dash_nodename,
                           'clear_filters': 'true'}),
@@ -595,6 +600,7 @@ class col_dash_links(HtmlTableColumn):
 
     def link_obsolescence(self, o, t):
        i = A(
+            '',
              _href=URL(r=request,c='obsolescence',f='obsolescence_config',
                     vars={'obs_f_obs_type': t,
                           'clear_filters': 'true'}),
@@ -606,6 +612,7 @@ class col_dash_links(HtmlTableColumn):
     def link_compliance_tab(self, o):
        id = self.t.extra_line_key(o)
        i = A(
+            '',
              _title=T("Compliance tab"),
              _class='comp16 clickable',
              _onclick="""toggle_extra('%(url)s', '%(id)s')"""%dict(
@@ -621,6 +628,7 @@ class col_dash_links(HtmlTableColumn):
     def link_pkgdiff_tab(self, o):
        id = self.t.extra_line_key(o)
        i = A(
+            '',
              _title=T("Pkgdiff tab"),
              _class='pkg16 clickable',
              _onclick="""toggle_extra('%(url)s', '%(id)s')"""%dict(

@@ -66,6 +66,7 @@ class table_templates(HtmlTable):
     def format_extrarow(self, o):
         d = DIV(
               A(
+                '',
                 _href=URL(r=request, c='provisioning', f='prov_editor', vars={'tpl_id': o.id}),
                 _class="edit16",
               ),

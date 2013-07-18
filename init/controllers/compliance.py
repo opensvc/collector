@@ -5965,6 +5965,7 @@ def node_comp_status(node):
 
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
     q &= db.comp_status.run_nodename == node
+    q &= db.comp_status.run_nodename == db.v_nodes.nodename
     t.object_list = db(q).select()
     t.hide_tools = True
     t.pageable = False

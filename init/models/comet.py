@@ -1,10 +1,10 @@
-from gluon.contrib.comet_messaging import comet_send
+from gluon.contrib.websocket_messaging import websocket_send
 
-comet_url = "https://dbopensvc:8889"
-comet_key = "magix123"
+websocket_url = "https://dbopensvc:8889"
+websocket_key = "magix123"
 
-def _comet_send(msg, group="generic"):
+def _websocket_send(msg, group="generic"):
     try:
-        comet_send(comet_url, msg, comet_key, group)
+        websocket_send(websocket_url, msg, websocket_key, group)
     except:
         pass

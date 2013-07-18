@@ -81,7 +81,7 @@ def _begin_action(vars, vals, auth):
     h['action'] = h['action'].strip("'")
     h['begin'] = h['begin'].strip("'").split('.')[0]
     h['id'] = i
-    _comet_send(json.dumps({
+    _websocket_send(json.dumps({
                  'event': 'begin_action',
                  'data': h
                 }))
@@ -144,7 +144,7 @@ def _end_action(vars, vals):
     h['id'] = h['ID']
 
     try:
-        _comet_send(json.dumps({
+        _websocket_send(json.dumps({
                  'event': 'end_action',
                  'data': h
                 }))
@@ -2327,7 +2327,7 @@ def __svcmon_update(vars, vals):
             level = "warning"
         else:
             level = "info"
-        _comet_send(json.dumps({
+        _websocket_send(json.dumps({
                      'nodename': h['mon_nodname'],
                      'svcname': h['mon_svcname'],
                      'table': 'svcmon',
@@ -2408,7 +2408,7 @@ def __svcmon_update(vars, vals):
             level = "warning"
         else:
             level = "info"
-        _comet_send({'nodename': h['mon_nodname'],
+        _websocket_send({'nodename': h['mon_nodname'],
                      'svcname': h['mon_svcname'],
                      'table': 'svcmon',
                      'event': 'change'})
@@ -2461,7 +2461,7 @@ def __svcmon_update(vars, vals):
             level = "warning"
         else:
             level = "info"
-        _comet_send({'nodename': h['mon_nodname'],
+        _websocket_send({'nodename': h['mon_nodname'],
                      'svcname': h['mon_svcname'],
                      'table': 'svcmon',
                      'event': 'change'})

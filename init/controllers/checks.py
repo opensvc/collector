@@ -1131,6 +1131,7 @@ def checks_node():
 
     q = _where(None, 'checks_live', domain_perms(), 'chk_nodename')
     q &= db.checks_live.chk_nodename == node
+    q &= db.checks_live.chk_nodename == db.v_nodes.nodename
     t.object_list = db(q).select()
     t.hide_tools = True
     t.pageable = False
