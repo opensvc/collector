@@ -637,9 +637,9 @@ def ajax_quota():
     q = _where(q, 'v_disk_quota', domain_perms(), 'array_name')
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    n = len(db(q).select())
+    n = len(db(q).select(cacheable=True))
     t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    t.object_list = db(q).select(cacheable=True, limitby=(t.pager_start,t.pager_end), orderby=o)
 
     t.csv_q = q
     t.csv_orderby = o
@@ -1342,7 +1342,7 @@ def ajax_disks_col_values():
     q = apply_filters(q, db.b_disk_app.disk_nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o, left=(l1,l2))
+    t.object_list = db(q).select(o, cacheable=True, orderby=o, left=(l1,l2))
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
@@ -1357,9 +1357,9 @@ def ajax_disks():
     q = apply_filters(q, db.b_disk_app.disk_nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), t.colprops[f].field)
-    n = db(q).select(db.b_disk_app.id.count(), left=(l1,l2)).first()._extra[db.b_disk_app.id.count()]
+    n = db(q).select(db.b_disk_app.id.count(), cacheable=True, left=(l1,l2)).first()._extra[db.b_disk_app.id.count()]
     t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o, left=(l1,l2))
+    t.object_list = db(q).select(cacheable=True, limitby=(t.pager_start,t.pager_end), orderby=o, left=(l1,l2))
 
     t.csv_q = q
     t.csv_orderby = o
@@ -1991,7 +1991,7 @@ def json_disk_array_dg():
     q &= db.stat_day_disk_array_dg.array_dg == dg_name
     q &= db.stat_day_disk_array_dg.disk_size != None
     q &= db.stat_day_disk_array_dg.disk_size != 0
-    rows = db(q).select()
+    rows = db(q).select(cacheable=True)
     disk_used = []
     disk_free = []
     disk_reserved = []
@@ -2011,7 +2011,7 @@ def json_disk_array():
     q = db.stat_day_disk_array.array_name == array_name
     q &= db.stat_day_disk_array.disk_size != None
     q &= db.stat_day_disk_array.disk_size != 0
-    rows = db(q).select()
+    rows = db(q).select(cacheable=True)
     disk_used = []
     disk_free = []
     disk_reserved = []
@@ -2029,7 +2029,7 @@ def json_disk_array():
 def json_disk_app(app_id):
     q = db.apps.id == int(app_id)
     q &= db.stat_day_disk_app.app == db.apps.app
-    rows = db(q).select()
+    rows = db(q).select(cacheable=True)
     disk_used = []
     disk_quota = []
     if len(rows) < 2:
@@ -2044,7 +2044,7 @@ def json_disk_app_dg(app_id, dg_id):
     q = db.apps.id == int(app_id)
     q &= db.stat_day_disk_app_dg.app == db.apps.app
     q &= db.stat_day_disk_app_dg.dg_id == int(dg_id)
-    rows = db(q).select()
+    rows = db(q).select(cacheable=True)
     disk_used = []
     disk_quota = []
     if len(rows) < 2:

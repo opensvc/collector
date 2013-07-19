@@ -231,7 +231,9 @@ class sandata(object):
         l2 = db.stor_array_tgtid.on(db.stor_zone.tgt_id==db.stor_array_tgtid.array_tgtid)
         l3 = db.stor_array.on(db.stor_array_tgtid.array_id==db.stor_array.id)
         l = []
-        for r in db(q).select(db.node_hba.hba_id, db.stor_zone.tgt_id, db.stor_array.array_name, left=(l1,l2,l3)):
+        for r in db(q).select(db.node_hba.hba_id, db.stor_zone.tgt_id,
+                              db.stor_array.array_name, left=(l1,l2,l3),
+                              cacheable=True):
             l.append((
               r.node_hba.hba_id,
               r.stor_zone.tgt_id,
@@ -245,7 +247,7 @@ class sandata(object):
             return self.relcache[idx]
         q = db.switches.sw_rportname == portname
         q |= (db.switches.sw_portname==portname)&(db.switches.sw_rportname==endpoints[2])
-        self.relcache[idx] = db(q).select()
+        self.relcache[idx] = db(q).select(cacheable=True)
         return self.relcache[idx]
 
     def recurse_relations(self, portname, portindex, endpoints, chain=[]):
@@ -318,12 +320,12 @@ class sandata(object):
     def get_remote_port_speed(self, portname, rportname):
         q = db.switches.sw_portname == rportname
         q &= db.switches.sw_rportname == portname
-        return [r.sw_portspeed for r in db(q).select(db.switches.sw_portspeed, orderby=db.switches.sw_index)]
+        return [r.sw_portspeed for r in db(q).select(db.switches.sw_portspeed, orderby=db.switches.sw_index, cacheable=True)]
 
     def get_remote_port_index(self, portname, rportname):
         q = db.switches.sw_portname == rportname
         q &= db.switches.sw_rportname == portname
-        return [r.sw_index for r in db(q).select(db.switches.sw_index, orderby=db.switches.sw_index)]
+        return [r.sw_index for r in db(q).select(db.switches.sw_index, orderby=db.switches.sw_index, cacheable=True)]
 
     def main(self):
         for nodename in self.nodenames:
@@ -370,7 +372,7 @@ def ajax_node():
     if tab is None:
         tab = "tab1"
 
-    nodes = db(db.v_nodes.nodename==request.vars.node).select()
+    nodes = db(db.v_nodes.nodename==request.vars.node).select(cacheable=True)
     if len(nodes) == 0:
         return DIV(
                  T("No asset information for %(node)s",
@@ -386,7 +388,7 @@ def ajax_node():
                )
 
     q = db.auth_node.nodename == request.vars.node
-    rows = db(q).select(db.auth_node.uuid)
+    rows = db(q).select(db.auth_node.uuid, cacheable=True)
 
     if len(rows) == 0:
         node_uuid = T("not registered")
@@ -395,7 +397,7 @@ def ajax_node():
         ug = user_groups()
         if "Manager" not in ug:
             q &= db.nodes.team_responsible.belongs(ug)
-        rows = db(q).select(db.auth_node.uuid)
+        rows = db(q).select(db.auth_node.uuid, cacheable=True)
         if len(rows) == 0:
             node_uuid = T("hidden (you are not responsible of this node)")
         else:
@@ -464,7 +466,7 @@ def ajax_node():
 
     # net
     q = db.node_ip.nodename == request.vars.node
-    rows = db(q).select(orderby=db.node_ip.mac|db.node_ip.intf)
+    rows = db(q).select(orderby=db.node_ip.mac|db.node_ip.intf, cacheable=True)
     _nets = [TR(
                TH("mac"),
                TH("interface"),
@@ -826,7 +828,7 @@ def ajax_node_stor():
     q &= db.diskinfo.id > 0
     q &= db.svcdisks.disk_id==db.diskinfo.disk_id
     q &= db.diskinfo.disk_arrayid==db.stor_array.array_name
-    disks = db(q).select()
+    disks = db(q).select(cacheable=True)
     _disks = [TR(
           TH("wwid"),
           TH("size"),
@@ -1114,7 +1116,7 @@ def ajax_svc_stor():
     q &= db.diskinfo.id > 0
     q &= db.svcdisks.disk_id==db.diskinfo.disk_id
     q &= db.diskinfo.disk_arrayid==db.stor_array.array_name
-    disks = db(q).select(groupby=db.svcdisks.disk_id)
+    disks = db(q).select(groupby=db.svcdisks.disk_id, cacheable=True)
     _disks = [TR(
           TH("wwid"),
           TH("size"),
@@ -1175,7 +1177,7 @@ def ajax_svc_stor_sanviz():
     svcname = request.args[0]
 
     q = db.svcmon.mon_svcname == svcname
-    rows = db(q).select(db.svcmon.mon_nodname)
+    rows = db(q).select(db.svcmon.mon_nodname, cacheable=True)
 
     from applications.init.modules import san
     import tempfile

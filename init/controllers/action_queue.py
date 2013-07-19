@@ -179,7 +179,7 @@ def ajax_actions_col_values():
     q = db.v_action_queue.id > 0
     for f in t.cols:
         q = _where(q, 'v_action_queue', t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o)
+    t.object_list = db(q).select(o, orderby=o, cacheable=True)
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
@@ -199,7 +199,9 @@ def ajax_actions():
     q = db.v_action_queue.id>0
     for f in t.cols:
         q = _where(q, 'v_action_queue', t.filter_parse(f), f)
-    t.object_list = db(q).select(orderby=o)
+    n = db(q).count()
+    t.setup_pager(n)
+    t.object_list = db(q).select(orderby=o, cacheable=True)
     return t.html()
 
 @auth.requires_login()

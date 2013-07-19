@@ -3,7 +3,7 @@ import re
 def select_filter(fset_id):
     # refuse to change filter for locked-filter users
     q = db.auth_user.id == auth.user_id
-    rows = db(q).select(db.auth_user.lock_filter)
+    rows = db(q).select(db.auth_user.lock_filter, cacheable=True)
     if len(rows) != 1:
         return
     if rows.first().lock_filter:
@@ -197,7 +197,7 @@ class HtmlTable(object):
             else:
                 q = db.auth_user.id==auth.user.id
                 try:
-                    self.perpage = db(q).select().first().perpage
+                    self.perpage = db(q).select(cacheable=True).first().perpage
                 except:
                     self.perpage = 20
 
@@ -296,7 +296,7 @@ class HtmlTable(object):
     def set_column_visibility(self):
         q = db.user_prefs_columns.upc_user_id==session.auth.user.id
         q &= db.user_prefs_columns.upc_table==self.upc_table
-        rows = db(q).select()
+        rows = db(q).select(cacheable=True)
         for row in rows:
             if row.upc_field not in self.colprops:
                 continue
@@ -308,7 +308,7 @@ class HtmlTable(object):
         #
         q = db.column_filters.user_id==session.auth.user.id
         q &= db.column_filters.col_tableid==self.id
-        rows = db(q).select()
+        rows = db(q).select(cacheable=True)
         for row in rows:
             field = row.col_name.split('.')[-1]
             if field not in self.colprops:
@@ -340,7 +340,7 @@ class HtmlTable(object):
             return SPAN()
 
         q = db.auth_user.id == auth.user_id
-        rows = db(q).select(db.auth_user.lock_filter)
+        rows = db(q).select(db.auth_user.lock_filter, cacheable=True)
         if len(rows) != 1:
             return SPAN()
 
@@ -351,7 +351,7 @@ class HtmlTable(object):
 
         q = db.gen_filterset_user.user_id == auth.user_id
         q &= db.gen_filterset_user.fset_id == db.gen_filtersets.id
-        rows = db(q).select()
+        rows = db(q).select(cacheable=True)
         active_fset_id = 0
         for row in rows:
             active_fset_id = row.gen_filtersets.id
@@ -362,7 +362,7 @@ class HtmlTable(object):
         else:
             o = db.gen_filtersets.fset_name
             q = db.gen_filtersets.id > 0
-            rows = db(q).select(orderby=o)
+            rows = db(q).select(orderby=o, cacheable=True)
             av = [self.format_av_filter(None)]
             for row in rows:
                 av.append(self.format_av_filter(row))
@@ -771,7 +771,7 @@ class HtmlTable(object):
         q = db.column_filters.col_tableid==self.id
         q &= db.column_filters.col_name==field
         q &= db.column_filters.user_id==session.auth.user.id
-        rows = db(q).select()
+        rows = db(q).select(cacheable=True)
         if len(rows) == 0:
             return ""
         return rows[0].col_filter
@@ -1630,14 +1630,14 @@ $("#%(id)s").everyTime(1000, function(i){
             return self.object_list
         if self.csv_left is None:
             if self.csv_orderby is None:
-                return db(self.csv_q).select(limitby=(0,self.csv_limit))
+                return db(self.csv_q).select(cacheable=True, limitby=(0,self.csv_limit))
             else:
-                return db(self.csv_q).select(orderby=self.csv_orderby, limitby=(0,self.csv_limit))
+                return db(self.csv_q).select(cacheable=True, orderby=self.csv_orderby, limitby=(0,self.csv_limit))
         else:
             if self.csv_orderby is None:
-                return db(self.csv_q).select(limitby=(0,self.csv_limit), left=self.csv_left)
+                return db(self.csv_q).select(cacheable=True, limitby=(0,self.csv_limit), left=self.csv_left)
             else:
-                return db(self.csv_q).select(orderby=self.csv_orderby, limitby=(0,self.csv_limit), left=self.csv_left)
+                return db(self.csv_q).select(cacheable=True, orderby=self.csv_orderby, limitby=(0,self.csv_limit), left=self.csv_left)
 
     def _csv(self):
         lines = [';'.join(self.cols)]

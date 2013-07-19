@@ -42,7 +42,7 @@ def index():
 def envfile(svcname):
     query = _where(None, 'services', svcname, 'svc_name')
     query &= _where(None, 'services', domain_perms(), 'svc_name')
-    rows = db(query).select()
+    rows = db(query).select(cacheable=True)
     if len(rows) == 0:
         return "None"
     #return dict(svc=rows[0])
@@ -359,7 +359,7 @@ class viz(object):
         q = (db.v_svcdisks.disk_svcname==svc.svc_name)
         q &= (db.v_svcdisks.disk_nodename==svc.mon_nodname)
         q &= (db.v_svcdisks.disk_id!="")
-        dl = db(q).select()
+        dl = db(q).select(cacheable=True)
         if len(dl) == 0:
             disk_id = svc.mon_nodname + "_unknown"
             self.add_disk(svc.mon_nodname, disk_id, size="?")
@@ -392,7 +392,7 @@ def svcmon_viz(ids):
     if len(ids) == 0:
         return SPAN()
     q = db.v_svcmon.id.belongs(ids)
-    services = db(q).select()
+    services = db(q).select(cacheable=True)
     return IMG(_src=svcmon_viz_img(services))
 
 def viz_cron_cleanup():
@@ -406,14 +406,14 @@ def ajax_service():
     if tab is None:
         tab = "tab1"
 
-    rows = db(db.services.svc_name==request.vars.node).select()
+    rows = db(db.services.svc_name==request.vars.node).select(cacheable=True)
     if len(rows) == 0:
         return DIV(
                  T("No service information for %(node)s",
                    dict(node=request.vars.node)),
                )
 
-    rows = db(db.v_svcmon.mon_svcname==request.vars.node).select()
+    rows = db(db.v_svcmon.mon_svcname==request.vars.node).select(cacheable=True)
     if len(rows) == 0:
         return DIV(
                  T("No service information for %(node)s",
@@ -1109,13 +1109,13 @@ class table_svcmon(HtmlTable):
         if mode == "module":
             q = db.comp_moduleset_modules.id > 0
             o = db.comp_moduleset_modules.modset_mod_name
-            rows = db(q).select(orderby=o, groupby=o)
+            rows = db(q).select(orderby=o, groupby=o, cacheable=True)
             options = [OPTION(g.modset_mod_name,_value=g.modset_mod_name) for g in rows]
             id_col = 'comp_modules.id'
         elif mode == "moduleset":
             q = db.comp_moduleset.id > 0
             o = db.comp_moduleset.modset_name
-            rows = db(q).select(orderby=o)
+            rows = db(q).select(orderby=o, cacheable=True)
             options = [OPTION(g.modset_name,_value=g.modset_name) for g in rows]
             id_col = 'comp_moduleset.id'
 
@@ -1356,9 +1356,9 @@ def svc_del(ids):
         l3 = db.apps_responsibles.on(db.apps.id == db.apps_responsibles.app_id)
         l4 = db.auth_group.on(db.apps_responsibles.group_id == db.auth_group.id)
         q &= (db.auth_group.role.belongs(groups)) | (db.auth_group.role==None)
-        ids = map(lambda x: x.id, db(q).select(db.svcmon.id, left=(l1,l2,l3,l4)))
+        ids = map(lambda x: x.id, db(q).select(db.svcmon.id, left=(l1,l2,l3,l4), cacheable=True))
         q = db.svcmon.id.belongs(ids)
-    rows = db(q).select()
+    rows = db(q).select(cacheable=True)
     for r in rows:
         q = db.svcmon.id == r.id
         db(q).delete()
@@ -1423,7 +1423,8 @@ def do_node_action(ids, action=None, mode=None):
 
     q = db.v_svcmon.id.belongs(ids)
     q &= db.v_svcmon.team_responsible.belongs(user_groups())
-    rows = db(q).select(db.v_svcmon.mon_nodname, db.v_svcmon.os_name)
+    rows = db(q).select(db.v_svcmon.mon_nodname, db.v_svcmon.os_name,
+                        cacheable=True)
 
     vals = []
     vars = ['nodename', 'action_type', 'command', 'user_id']
@@ -1522,7 +1523,9 @@ def ajax_svcmon_col_values():
     q = apply_filters(q, db.v_svcmon.mon_nodname, db.v_svcmon.mon_svcname)
     for f in t.cols:
         q = _where(q, 'v_svcmon', t.filter_parse(f), f)
-    t.object_list = db(q).select(db.v_svcmon[col], orderby=o, limitby=default_limitby)
+    t.object_list = db(q).select(db.v_svcmon[col], orderby=o,
+                                 limitby=default_limitby,
+                                 cacheable=True)
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
@@ -1569,7 +1572,9 @@ def ajax_svcmon():
 
     n = db(q).count()
     t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
+                                          orderby=o,
+                                          cacheable=True)
 
     if len(request.args) == 1:
         action = request.args[0]
@@ -1598,7 +1603,7 @@ def svcmon_node():
 
     q = _where(None, 'v_svcmon', domain_perms(), 'mon_nodname')
     q &= db.v_svcmon.mon_nodname == node
-    t.object_list = db(q).select()
+    t.object_list = db(q).select(cacheable=True)
     t.hide_tools = True
     t.pageable = False
     t.linkable = False
@@ -1630,7 +1635,7 @@ def svcmon_svc():
 
     q = _where(None, 'v_svcmon', domain_perms(), 'mon_nodname')
     q &= db.v_svcmon.mon_svcname == svcname
-    t.object_list = db(q).select()
+    t.object_list = db(q).select(cacheable=True)
     t.hide_tools = True
     t.pageable = False
     t.linkable = False

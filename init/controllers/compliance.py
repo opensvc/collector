@@ -354,7 +354,7 @@ class col_var_value(HtmlTableColumn):
         if hasattr(self.t, "form_cache"):
             return self.t.form_cache
         q = db.forms.id > 0
-        rows = db(q).select()
+        rows = db(q).select(cacheable=True)
         data = {}
         for row in rows:
             data[row.form_name] = row
@@ -544,7 +544,7 @@ def ajax_comp_explicit_rules_col_values():
     q = db.v_comp_explicit_rulesets.id > 0
     for f in t.cols:
         q = _where(q, 'v_comp_explicit_rulesets', t.filter_parse_glob(f), f)
-    t.object_list = db(q).select(o, orderby=o)
+    t.object_list = db(q).select(o, orderby=o, cacheable=True)
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
@@ -559,7 +559,7 @@ def ajax_comp_rulesets_nodes_col_values():
         q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
         for f in t.cols:
             q = _where(q, 'v_comp_nodes', t.filter_parse_glob(f), f)
-        t.object_list = db(q).select(o, orderby=o)
+        t.object_list = db(q).select(o, orderby=o, cacheable=True)
         return t.col_values_cloud_ungrouped(col)
     else:
         o = db.v_comp_explicit_rulesets[col]
@@ -568,7 +568,7 @@ def ajax_comp_rulesets_nodes_col_values():
             q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
         for f in r.cols:
             q = _where(q, 'v_comp_explicit_rulesets', r.filter_parse_glob(f), f)
-        r.object_list = db(q).select(o, orderby=o)
+        r.object_list = db(q).select(o, orderby=o, cacheable=True)
         return r.col_values_cloud_ungrouped(col)
 
 
@@ -595,7 +595,8 @@ def ajax_comp_rulesets_nodes():
 
     n = db(q).count()
     r.setup_pager(n)
-    r.object_list = db(q).select(limitby=(r.pager_start,r.pager_end), orderby=o, groupby=o)
+    r.object_list = db(q).select(limitby=(r.pager_start,r.pager_end),
+                                 orderby=o, groupby=o, cacheable=True)
 
     r_html = r.html()
 
@@ -609,7 +610,8 @@ def ajax_comp_rulesets_nodes():
 
     n = db(q).count()
     t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
+                                 orderby=o, cacheable=True)
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         return t.csv()
@@ -885,11 +887,11 @@ class table_comp_rulesets(HtmlTable):
         o = db.comp_rulesets.ruleset_name
         if 'Manager' in user_groups():
             q = db.comp_rulesets.id > 0
-            options = [OPTION(g.ruleset_name,_value=g.id) for g in db(q).select(orderby=o)]
+            options = [OPTION(g.ruleset_name,_value=g.id) for g in db(q).select(orderby=o, cacheable=True)]
         else:
             q = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
             q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
-            options = [OPTION(g.comp_rulesets.ruleset_name,_value=g.comp_rulesets.id) for g in db(q).select(orderby=o)]
+            options = [OPTION(g.comp_rulesets.ruleset_name,_value=g.comp_rulesets.id) for g in db(q).select(orderby=o, cacheable=True)]
         d = DIV(
               A(
                 T(label),
@@ -973,7 +975,7 @@ class table_comp_rulesets(HtmlTable):
         q = db.auth_membership.user_id == auth.user_id
         q &= db.auth_group.id == db.auth_membership.group_id
         q &= db.auth_group.role.like('user_%')
-        options += [OPTION(g.auth_group.role,_value=g.auth_group.id) for g in db(q).select()]
+        options += [OPTION(g.auth_group.role,_value=g.auth_group.id) for g in db(q).select(cacheable=True)]
         d = DIV(
               A(
                 T(label),
@@ -1157,10 +1159,11 @@ class table_comp_rulesets(HtmlTable):
         )
         q = db.comp_rulesets_rulesets.id > 0
         rows = db(q).select(db.comp_rulesets_rulesets.parent_rset_id,
-                            groupby=db.comp_rulesets_rulesets.parent_rset_id)
+                            groupby=db.comp_rulesets_rulesets.parent_rset_id,
+                            cacheable=True)
         parent_rset_ids = [r.parent_rset_id for r in rows]
         q = ~db.comp_rulesets.id.belongs(parent_rset_ids)
-        q &= db.comp_rulesets.id.belongs(allowed.select(db.comp_rulesets.id))
+        q &= db.comp_rulesets.id.belongs(allowed.select(db.comp_rulesets.id, cacheable=True))
         db.comp_rulesets_rulesets.child_rset_id.requires = IS_IN_DB(
           db(q),
           db.comp_rulesets.id,
@@ -1308,7 +1311,7 @@ def team_responsible_attach(ids=[]):
         db.comp_ruleset_team_responsible.insert(ruleset_id=id, group_id=group_id)
     if len(done) == 0:
         return
-    rows = db(db.comp_rulesets.id.belongs(done)).select(db.comp_rulesets.ruleset_name)
+    rows = db(db.comp_rulesets.id.belongs(done)).select(db.comp_rulesets.ruleset_name, cacheable=True)
     u = ', '.join([r.ruleset_name for r in rows])
     _log('ruleset.group.attach',
          'attached group %(g)s to rulesets %(u)s',
@@ -1330,10 +1333,10 @@ def comp_ruleset_detach(ids=[]):
                 continue
 
         q = db.comp_rulesets.id == parent_rset_id
-        parent_rset_name = db(q).select().first().ruleset_name
+        parent_rset_name = db(q).select(cacheable=True).first().ruleset_name
 
         q = db.comp_rulesets.id == child_rset_id
-        child_rset_name = db(q).select().first().ruleset_name
+        child_rset_name = db(q).select(cacheable=True).first().ruleset_name
 
         q = db.comp_rulesets_rulesets.parent_rset_id == parent_rset_id
         q &= db.comp_rulesets_rulesets.child_rset_id == child_rset_id
@@ -1367,7 +1370,7 @@ def team_responsible_detach(ids=[]):
         db(q).delete()
     if len(done) == 0:
         return
-    rows = db(db.comp_rulesets.id.belongs(done)).select(db.comp_rulesets.ruleset_name)
+    rows = db(db.comp_rulesets.id.belongs(done)).select(db.comp_rulesets.ruleset_name, cacheable=True)
     u = ', '.join([r.ruleset_name for r in rows])
     _log('ruleset.group.detach',
          'detached group %(g)s from rulesets %(u)s',
@@ -1383,7 +1386,7 @@ def ruleset_change_public(ids):
     ids = map(lambda x: int(x.split('_')[0]), ids)
 
     q = db.comp_rulesets.id.belongs(ids)
-    rows = db(q).select()
+    rows = db(q).select(cacheable=True)
     if len(rows) == 0:
         raise ToolError("change ruleset publication failed: can't find ruleset")
 
@@ -1411,7 +1414,7 @@ def ruleset_change_type(ids):
     ids = map(lambda x: int(x.split('_')[0]), ids)
 
     q = db.comp_rulesets.id.belongs(ids)
-    rows = db(q).select()
+    rows = db(q).select(cacheable=True)
     if len(rows) == 0:
         raise ToolError("change ruleset type failed: can't find ruleset")
 
@@ -1438,10 +1441,10 @@ def ruleset_clone():
     iid = request.vars.rset_clone_i
     if len(iid) == 0:
         raise ToolError("clone ruleset failed: invalid target name")
-    if len(db(db.comp_rulesets.ruleset_name==iid).select()) > 0:
+    if len(db(db.comp_rulesets.ruleset_name==iid).select(cacheable=True)) > 0:
         raise ToolError("clone ruleset failed: target name already exists")
     q = db.comp_rulesets.id == sid
-    rows = db(q).select()
+    rows = db(q).select(cacheable=True)
     if len(rows) == 0:
         raise ToolError("clone ruleset failed: can't find source ruleset (id %s)"%sid)
     orig = rows[0].ruleset_name
@@ -1452,14 +1455,14 @@ def ruleset_clone():
     if rows[0].ruleset_type == 'contextual':
         q = db.comp_rulesets.id == sid
         q &= db.comp_rulesets.id == db.comp_rulesets_filtersets.ruleset_id
-        rows = db(q).select()
+        rows = db(q).select(cacheable=True)
         if len(rows) > 0 and  rows[0].comp_rulesets_filtersets.fset_id is not None:
             db.comp_rulesets_filtersets.insert(ruleset_id=newid,
                                                fset_id=rows[0].comp_rulesets_filtersets.fset_id)
 
     # clone ruleset variables
     q = db.comp_rulesets_variables.ruleset_id == sid
-    rows = db(q).select()
+    rows = db(q).select(cacheable=True)
     for row in rows:
         db.comp_rulesets_variables.insert(ruleset_id=newid,
                                           var_name=row.var_name,
@@ -1470,7 +1473,7 @@ def ruleset_clone():
 
     # clone parent to children relations
     q = db.comp_rulesets_rulesets.parent_rset_id==sid
-    rows = db(q).select()
+    rows = db(q).select(cacheable=True)
     for child_rset_id in [r.child_rset_id for r in rows]:
         db.comp_rulesets_rulesets.insert(parent_rset_id=newid,
                                          child_rset_id=child_rset_id)
@@ -1487,11 +1490,11 @@ def comp_rename_ruleset(ids):
        len(request.vars['comp_ruleset_rename_input']) == 0:
         raise ToolError("rename ruleset failed: new ruleset name is empty")
     new = request.vars['comp_ruleset_rename_input']
-    if len(db(db.comp_rulesets.ruleset_name==new).select()) > 0:
+    if len(db(db.comp_rulesets.ruleset_name==new).select(cacheable=True)) > 0:
         raise ToolError("rename ruleset failed: new ruleset name already exists")
     ids = map(lambda x: int(x.split('_')[0]), ids)
     id = ids[0]
-    rows = db(db.comp_rulesets.id == id).select(db.comp_rulesets.ruleset_name)
+    rows = db(db.comp_rulesets.id == id).select(db.comp_rulesets.ruleset_name, cacheable=True)
     if len(rows) != 1:
         raise ToolError("rename ruleset failed: can't find source ruleset")
     old = rows[0].ruleset_name
@@ -1509,11 +1512,11 @@ def comp_delete_ruleset(ids=[]):
         # filter ids to not allow a user to delete a ruleset he does not own
         q = db.comp_ruleset_team_responsible.ruleset_id.belongs(ids)
         q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
-        rows = db(q).select(groupby=db.comp_ruleset_team_responsible.ruleset_id)
+        rows = db(q).select(groupby=db.comp_ruleset_team_responsible.ruleset_id, cacheable=True)
         ids = [r.ruleset_id for r in rows]
         if len(ids) == 0:
             raise ToolError("delete ruleset failed: no ruleset deletion allowed")
-    rows = db(db.comp_rulesets.id.belongs(ids)).select(db.comp_rulesets.ruleset_name)
+    rows = db(db.comp_rulesets.id.belongs(ids)).select(db.comp_rulesets.ruleset_name, cacheable=True)
     x = ', '.join([str(r.ruleset_name) for r in rows])
     n = db(db.comp_ruleset_team_responsible.ruleset_id.belongs(ids)).delete()
     n = db(db.comp_rulesets_filtersets.ruleset_id.belongs(ids)).delete()
@@ -1544,7 +1547,7 @@ def comp_delete_ruleset_var(ids=[]):
         raise ToolError("delete variables failed: no variable selected")
     q = db.v_comp_rulesets.id.belongs(ids)
     q &= db.v_comp_rulesets.encap_rset_id == None
-    rows = db(q).select()
+    rows = db(q).select(cacheable=True)
     x = map(lambda r: ' '.join((
                        r.var_name+'.'+r.var_value,
                        'from ruleset',
@@ -1565,7 +1568,7 @@ def comp_detach_filterset(ids=[]):
     for ruleset_id, fset_id in zip(ruleset_ids, fset_ids):
         q |= ((db.v_comp_rulesets.ruleset_id == ruleset_id) & \
               (db.v_comp_rulesets.fset_id == fset_id))
-    rows = db(q).select()
+    rows = db(q).select(cacheable=True)
     x = map(lambda r: ' '.join((
                        r.fset_name,
                        'from ruleset',
@@ -1589,7 +1592,7 @@ def comp_detach_rulesets(node_ids=[], ruleset_ids=[], node_names=[]):
 
     if len(node_ids) > 0:
         q = db.v_nodes.id.belongs(node_ids)
-        rows = db(q).select(db.v_nodes.nodename)
+        rows = db(q).select(db.v_nodes.nodename, cacheable=True)
         node_names += [r.nodename for r in rows]
 
     nodes = ', '.join(node_names)
@@ -1604,7 +1607,7 @@ def comp_detach_rulesets(node_ids=[], ruleset_ids=[], node_names=[]):
         update_dash_rsetdiff_node(node)
 
     q = db.comp_rulesets.id.belongs(ruleset_ids)
-    rows = db(q).select(db.comp_rulesets.ruleset_name)
+    rows = db(q).select(db.comp_rulesets.ruleset_name, cacheable=True)
     rulesets = ', '.join([r.ruleset_name for r in rows])
     _log('compliance.ruleset.node.detach',
          'detached rulesets %(rulesets)s from nodes %(nodes)s',
@@ -1624,7 +1627,7 @@ def internal_comp_attach_rulesets(node_ids=[], ruleset_ids=[], node_names=[]):
 
     if len(node_ids) > 0:
         q = db.v_nodes.id.belongs(node_ids)
-        rows = db(q).select(db.v_nodes.nodename)
+        rows = db(q).select(db.v_nodes.nodename, cacheable=True)
         node_names += [r.nodename for r in rows]
 
     nodes = ', '.join(node_names)
@@ -1641,7 +1644,7 @@ def internal_comp_attach_rulesets(node_ids=[], ruleset_ids=[], node_names=[]):
         update_dash_rsetdiff_node(node)
 
     q = db.comp_rulesets.id.belongs(ruleset_ids)
-    rows = db(q).select(db.comp_rulesets.ruleset_name)
+    rows = db(q).select(db.comp_rulesets.ruleset_name, cacheable=True)
     rulesets = ', '.join([r.ruleset_name for r in rows])
 
     log.append([
@@ -1670,12 +1673,12 @@ def internal_comp_attach_svc_modulesets(svc_ids=[], modset_ids=[], svc_names=[],
 
     if len(svc_ids) > 0:
         q = db.services.id.belongs(svc_ids)
-        rows = db(q).select(db.services.svc_name)
+        rows = db(q).select(db.services.svc_name, cacheable=True)
         svc_names += [r.svc_name for r in rows]
 
     # init rset name cache
     q = db.comp_moduleset.id.belongs(modset_ids)
-    rows = db(q).select()
+    rows = db(q).select(cacheable=True)
     modset_names = {}
     for row in rows:
         modset_names[row.id] = row.modset_name
@@ -1688,7 +1691,7 @@ def internal_comp_attach_svc_modulesets(svc_ids=[], modset_ids=[], svc_names=[],
             q = db.comp_modulesets_services.modset_svcname == svc
             q &= db.comp_modulesets_services.modset_id == modset_id
             q &= db.comp_modulesets_services.slave == sl
-            row = db(q).select().first()
+            row = db(q).select(cacheable=True).first()
             if row is not None:
                 log.append([
                   0,
@@ -1729,12 +1732,12 @@ def internal_comp_attach_svc_rulesets(svc_ids=[], ruleset_ids=[], svc_names=[], 
 
     if len(svc_ids) > 0:
         q = db.services.id.belongs(svc_ids)
-        rows = db(q).select(db.services.svc_name)
+        rows = db(q).select(db.services.svc_name, cacheable=True)
         svc_names += [r.svc_name for r in rows]
 
     # init rset name cache
     q = db.comp_rulesets.id.belongs(ruleset_ids)
-    rows = db(q).select()
+    rows = db(q).select(cacheable=True)
     rset_names = {}
     for row in rows:
         rset_names[row.id] = row.ruleset_name
@@ -1747,7 +1750,7 @@ def internal_comp_attach_svc_rulesets(svc_ids=[], ruleset_ids=[], svc_names=[], 
             q = db.comp_rulesets_services.svcname == svc
             q &= db.comp_rulesets_services.ruleset_id == rsid
             q &= db.comp_rulesets_services.slave == sl
-            row = db(q).select().first()
+            row = db(q).select(cacheable=True).first()
             if row is not None:
                 log.append([
                   0,
@@ -1782,7 +1785,7 @@ def ajax_comp_rulesets_col_values():
     q = db.v_comp_rulesets.id > 0
     for f in t.cols:
         q = _where(q, 'v_comp_rulesets', t.filter_parse_glob(f), f)
-    t.object_list = db(q).select(o, orderby=o)
+    t.object_list = db(q).select(o, orderby=o, cacheable=True)
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
@@ -1867,8 +1870,8 @@ def ajax_comp_rulesets():
         if v.form_ruleset_attach.accepts(request.vars, formname='attach_ruleset'):
             _log('compliance.ruleset.ruleset.attach',
                  'attach ruleset %(child)s to %(parent)s',
-                 dict(parent=db(db.comp_rulesets.id==request.vars.parent_rset_id).select().first().ruleset_name,
-                      child=db(db.comp_rulesets.id==request.vars.child_rset_id).select().first().ruleset_name))
+                 dict(parent=db(db.comp_rulesets.id==request.vars.parent_rset_id).select(cacheable=True).first().ruleset_name,
+                      child=db(db.comp_rulesets.id==request.vars.child_rset_id).select(cacheable=True).first().ruleset_name))
         elif v.form_ruleset_attach.errors:
             response.flash = T("errors in form")
 
@@ -1887,7 +1890,7 @@ def ajax_comp_rulesets():
             g = db.v_comp_rulesets.fset_id|db.v_comp_rulesets.ruleset_id
             q = db.v_comp_rulesets.fset_id == request.vars.fset_id
             q &= db.v_comp_rulesets.ruleset_id == request.vars.ruleset_id
-            rows = db(q).select(groupby=g)
+            rows = db(q).select(groupby=g, cacheable=True)
             if len(rows) != 1:
                 raise ToolError("filterset attach failed: can't find filterset")
             fset = rows[0].fset_name
@@ -1901,7 +1904,7 @@ def ajax_comp_rulesets():
         if v.form_ruleset_var_add.accepts(request.vars):
             var = '='.join((request.vars.var_name,
                             request.vars.var_value))
-            ruleset = db(db.comp_rulesets.id==request.vars.ruleset_id).select(db.comp_rulesets.ruleset_name)[0].ruleset_name
+            ruleset = db(db.comp_rulesets.id==request.vars.ruleset_id).select(db.comp_rulesets.ruleset_name, cacheable=True)[0].ruleset_name
             _log('compliance.ruleset.variable.add',
                  'added ruleset variable %(var)s to ruleset %(ruleset)s',
                  dict(var=var, ruleset=ruleset))
@@ -1920,21 +1923,21 @@ def ajax_comp_rulesets():
 
     n = db(q).count()
     v.setup_pager(n)
-    v.object_list = db(q).select(limitby=(v.pager_start,v.pager_end), orderby=o, groupby=g)
+    v.object_list = db(q).select(limitby=(v.pager_start,v.pager_end), orderby=o, groupby=g, cacheable=True)
 
     return v.html()
 
 def add_default_team_responsible(ruleset_name):
     q = db.comp_rulesets.ruleset_name == ruleset_name
-    ruleset_id = db(q).select()[0].id
+    ruleset_id = db(q).select(cacheable=True)[0].id
     q = db.auth_membership.user_id == auth.user_id
     q &= db.auth_membership.group_id == db.auth_group.id
     q &= db.auth_group.role.like('user_%')
     try:
-        group_id = db(q).select()[0].auth_group.id
+        group_id = db(q).select(cacheable=True)[0].auth_group.id
     except:
         q = db.auth_group.role == 'Manager'
-        group_id = db(q).select()[0].id
+        group_id = db(q).select(cacheable=True)[0].id
     db.comp_ruleset_team_responsible.insert(ruleset_id=ruleset_id, group_id=group_id)
 
 def teams_responsible_filter():
@@ -2320,7 +2323,7 @@ def comp_detach_filters(ids=[]):
             q |= ((db.v_gen_filtersets.encap_fset_id == encap_fset_id) & (db.v_gen_filtersets.fset_id == fset_id))
         else:
             q |= ((db.v_gen_filtersets.f_id == f_id) & (db.v_gen_filtersets.fset_id == fset_id))
-    rows = db(q).select()
+    rows = db(q).select(cacheable=True)
     if len(rows) == 0:
         raise ToolError("detach filter failed: can't find selected filters")
 
@@ -2366,7 +2369,7 @@ def comp_delete_filterset(ids=[]):
 
     # delete filtersets
     q = db.gen_filtersets.id.belongs(ids)
-    rows = db(q).select()
+    rows = db(q).select(cacheable=True)
     if len(rows) == 0:
         raise ToolError("delete filterset failed: can't find selected filtersets")
     fset_names = ', '.join([r.fset_name for r in rows])
@@ -2383,11 +2386,11 @@ def comp_rename_filterset(ids):
        len(request.vars['comp_filterset_rename_input']) == 0:
         raise ToolError("rename filterset failed: new filterset name is empty")
     new = request.vars['comp_filterset_rename_input']
-    if len(db(db.gen_filtersets.fset_name==new).select()) > 0:
+    if len(db(db.gen_filtersets.fset_name==new).select(cacheable=True)) > 0:
         raise ToolError("rename filterset failed: new filterset name already exists")
     ids = map(lambda x: int(x.split('_')[0]), ids)
     id = ids[0]
-    rows = db(db.gen_filtersets.id == id).select(db.gen_filtersets.fset_name)
+    rows = db(db.gen_filtersets.id == id).select(db.gen_filtersets.fset_name, cacheable=True)
     if len(rows) != 1:
         raise ToolError("rename filterset failed: can't find selected filterset")
     old = rows[0].fset_name
@@ -2582,12 +2585,12 @@ def comp_add_filter():
 @auth.requires_membership('CompManager')
 def comp_delete_filtersets_filters(ids, f_names):
     q = db.gen_filtersets_filters.f_id.belongs(ids)
-    rows = db(q).select()
+    rows = db(q).select(cacheable=True)
     if len(rows) == 0:
         return
     fset_ids = [r.fset_id for r in rows]
     q2 = db.gen_filtersets.id.belongs(fset_ids)
-    fset_names = ', '.join([r.fset_name for r in db(q2).select()])
+    fset_names = ', '.join([r.fset_name for r in db(q2).select(cacheable=True)])
     n = db(q).delete()
     _log('compliance.filter.delete',
          'deleted filter %(f_names)s membership in filtersets %(fset_names)s',
@@ -2600,7 +2603,7 @@ def comp_delete_filter(ids=[]):
         raise ToolError("delete filter failed: no filter selected")
 
     q = db.gen_filters.id.belongs(ids)
-    rows = db(q).select()
+    rows = db(q).select(cacheable=True)
     if len(rows) == 0:
         raise ToolError("delete filter failed: can't find selected filters")
     f_names = ', '.join(map(lambda f: ' '.join([
@@ -2625,7 +2628,7 @@ def ajax_comp_filters_col_values():
     q = db.gen_filters.id > 0
     for f in t.cols:
         q = _where(q, 'gen_filters', t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o)
+    t.object_list = db(q).select(o, orderby=o, cacheable=True)
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
@@ -2659,7 +2662,7 @@ def ajax_comp_filters():
 
     n = db(q).count()
     v.setup_pager(n)
-    v.object_list = db(q).select(limitby=(v.pager_start,v.pager_end), orderby=o)
+    v.object_list = db(q).select(limitby=(v.pager_start,v.pager_end), orderby=o, cacheable=True)
 
     return SPAN(v.html(),extra)
 
@@ -2671,7 +2674,7 @@ def ajax_comp_filtersets_col_values():
     q = db.v_gen_filtersets.fset_id > 0
     for f in t.cols:
         q = _where(q, 'v_gen_filtersets', t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o)
+    t.object_list = db(q).select(o, orderby=o, cacheable=True)
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
@@ -2710,7 +2713,7 @@ def ajax_comp_filtersets():
         if t.form_encap_filterset_attach.accepts(request.vars, formname='form_encap_filterset_attach'):
             q = db.v_gen_filtersets.encap_fset_id==request.vars.encap_fset_id
             q &= db.v_gen_filtersets.fset_id==request.vars.fset_id
-            f = db(q).select()[0]
+            f = db(q).select(cacheable=True)[0]
             f_name = ' '.join([request.vars.f_log_op,
                                f.encap_fset_name])
             _log('compliance.filterset.filterset.attach',
@@ -2722,7 +2725,7 @@ def ajax_comp_filtersets():
         if t.form_filter_attach.accepts(request.vars, formname='form_filter_attach'):
             q = db.v_gen_filtersets.f_id==request.vars.f_id
             q &= db.v_gen_filtersets.fset_id==request.vars.fset_id
-            f = db(q).select()[0]
+            f = db(q).select(cacheable=True)[0]
             f_name = ' '.join([request.vars.f_log_op,
                                f.f_table+'.'+f.f_field,
                                f.f_op,
@@ -2743,7 +2746,7 @@ def ajax_comp_filtersets():
 
     n = db(q).count()
     t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o, cacheable=True)
 
     return t.html()
 
@@ -4366,7 +4369,7 @@ def ajax_comp_status_col_values():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.comp_status.run_nodename)
-    t.object_list = db(q).select(o, orderby=o)
+    t.object_list = db(q).select(o, orderby=o, cacheable=True)
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
@@ -4391,10 +4394,12 @@ def ajax_comp_status():
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.comp_status.run_nodename)
 
-    n = len(db(q).select(db.comp_status.id, limitby=default_limitby))
+    n = len(db(q).select(db.comp_status.id, limitby=default_limitby,
+                         cacheable=True))
     t.setup_pager(n)
     #all = db(q).select(db.comp_status.ALL, db.v_nodes.id)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
+                                 orderby=o, cacheable=True)
     t.csv_q = q
     t.csv_orderby = o
 
@@ -5005,7 +5010,8 @@ def ajax_comp_log():
     q = apply_filters(q, db.comp_log.run_nodename)
 
     t.setup_pager(-1)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
+                                 orderby=o, cacheable=True)
     return t.html()
 
 
@@ -5029,7 +5035,7 @@ def user():
 def auth_uuid(fn):
     def new(*args):
         uuid, node = args['auth']
-        rows = db(db.auth_node.nodename==node&db.auth_node.uuid==uuid).select()
+        rows = db(db.auth_node.nodename==node&db.auth_node.uuid==uuid).select(cacheable=True)
         if len(rows) != 1:
             return
         return fn(*args)
@@ -5055,7 +5061,8 @@ def _comp_get_moduleset_modules(moduleset, node):
     q &= db.nodes.team_responsible == db.auth_group.role
     q &= db.nodes.nodename == node
     rows = db(q).select(db.comp_moduleset_modules.modset_mod_name,
-                        groupby=db.comp_moduleset_modules.modset_mod_name)
+                        groupby=db.comp_moduleset_modules.modset_mod_name,
+                        cacheable=True)
     return [r.modset_mod_name for r in rows]
 
 def _comp_get_moduleset_svc_modules(moduleset, svcname):
@@ -5075,41 +5082,42 @@ def _comp_get_moduleset_svc_modules(moduleset, svcname):
     q &= db.apps.app == db.services.svc_app
     q &= db.services.svc_name == svcname
     rows = db(q).select(db.comp_moduleset_modules.modset_mod_name,
-                        groupby=db.comp_moduleset_modules.modset_mod_name)
+                        groupby=db.comp_moduleset_modules.modset_mod_name,
+                        cacheable=True)
     return [r.modset_mod_name for r in rows]
 
 def comp_attached_ruleset_id(nodename):
     q = db.comp_rulesets_nodes.nodename == nodename
-    rows = db(q).select(db.comp_rulesets_nodes.ruleset_id)
+    rows = db(q).select(db.comp_rulesets_nodes.ruleset_id, cacheable=True)
     return [r.ruleset_id for r in rows]
 
 def comp_attached_svc_moduleset_id(svcname):
     q = db.comp_modulesets_services.modset_svcname == svcname
-    rows = db(q).select(db.comp_modulesets_services.modset_id)
+    rows = db(q).select(db.comp_modulesets_services.modset_id, cacheable=True)
     return [r.modset_id for r in rows]
 
 def comp_attached_moduleset_id(nodename):
     q = db.comp_node_moduleset.modset_node == nodename
-    rows = db(q).select(db.comp_node_moduleset.modset_id)
+    rows = db(q).select(db.comp_node_moduleset.modset_id, cacheable=True)
     return [r.modset_id for r in rows]
 
 def comp_ruleset_id(ruleset):
     q = db.comp_rulesets.ruleset_name == ruleset
-    rows = db(q).select(db.comp_rulesets.id)
+    rows = db(q).select(db.comp_rulesets.id, cacheable=True)
     if len(rows) == 0:
         return None
     return rows[0].id
 
 def comp_moduleset_id(moduleset):
     q = db.comp_moduleset.modset_name == moduleset
-    rows = db(q).select(db.comp_moduleset.id)
+    rows = db(q).select(db.comp_moduleset.id, cacheable=True)
     if len(rows) == 0:
         return None
     return rows[0].id
 
 def comp_moduleset_exists(moduleset):
     q = db.comp_moduleset.modset_name == moduleset
-    rows = db(q).select(db.comp_moduleset.id)
+    rows = db(q).select(db.comp_moduleset.id, cacheable=True)
     if len(rows) != 1:
         return None
     return rows[0].id
@@ -5118,7 +5126,7 @@ def comp_ruleset_svc_attached(svcname, rset_id, slave):
     q = db.comp_rulesets_services.svcname == svcname
     q &= db.comp_rulesets_services.ruleset_id == rset_id
     q &= db.comp_rulesets_services.slave == slave
-    if len(db(q).select(db.comp_rulesets_services.id)) == 0:
+    if len(db(q).select(db.comp_rulesets_services.id, cacheable=True)) == 0:
         return False
     return True
 
@@ -5126,20 +5134,20 @@ def comp_moduleset_svc_attached(svcname, modset_id, slave):
     q = db.comp_modulesets_services.modset_svcname == svcname
     q &= db.comp_modulesets_services.modset_id == modset_id
     q &= db.comp_modulesets_services.slave == slave
-    if len(db(q).select(db.comp_modulesets_services.id)) == 0:
+    if len(db(q).select(db.comp_modulesets_services.id, cacheable=True)) == 0:
         return False
     return True
 
 def comp_moduleset_attached(nodename, modset_id):
     q = db.comp_node_moduleset.modset_node == nodename
     q &= db.comp_node_moduleset.modset_id == modset_id
-    if len(db(q).select(db.comp_node_moduleset.id)) == 0:
+    if len(db(q).select(db.comp_node_moduleset.id, cacheable=True)) == 0:
         return False
     return True
 
 def comp_ruleset_exists(ruleset):
     q = db.v_comp_explicit_rulesets.ruleset_name == ruleset
-    rows = db(q).select(db.v_comp_explicit_rulesets.id)
+    rows = db(q).select(db.v_comp_explicit_rulesets.id, cacheable=True)
     if len(rows) != 1:
         return None
     return rows[0].id
@@ -5147,14 +5155,14 @@ def comp_ruleset_exists(ruleset):
 def comp_ruleset_attached(nodename, ruleset_id):
     q = db.comp_rulesets_nodes.nodename == nodename
     q &= db.comp_rulesets_nodes.ruleset_id == ruleset_id
-    if len(db(q).select(db.comp_rulesets_nodes.id)) == 0:
+    if len(db(q).select(db.comp_rulesets_nodes.id, cacheable=True)) == 0:
         return False
     return True
 
 def comp_slave(svcname, nodename):
     q = db.svcmon.mon_vmname == nodename
     q &= db.svcmon.mon_svcname == svcname
-    row = db(q).select().first()
+    row = db(q).select(cacheable=True).first()
     if row is None:
         return False
     return True
@@ -5163,7 +5171,7 @@ def has_slave(svcname):
     q = db.svcmon.mon_svcname == svcname
     q &= db.svcmon.mon_vmname != None
     q &= db.svcmon.mon_vmname != ""
-    row = db(q).select().first()
+    row = db(q).select(cacheable=True).first()
     if row is None:
         return False
     return True
@@ -5345,7 +5353,7 @@ def comp_moduleset_svc_attachable(svcname, modset_id):
     q &= db.auth_group.id == db.comp_moduleset_team_responsible.group_id
     q &= db.comp_moduleset_team_responsible.modset_id == db.comp_moduleset.id
     q &= db.comp_moduleset.id == modset_id
-    rows = db(q).select(db.nodes.team_responsible)
+    rows = db(q).select(db.nodes.team_responsible, cacheable=True)
     if len(rows) == 0:
         return False
     return True
@@ -5358,7 +5366,7 @@ def comp_ruleset_svc_attachable(svcname, rset_id):
     q &= db.auth_group.id == db.comp_ruleset_team_responsible.group_id
     q &= db.comp_ruleset_team_responsible.ruleset_id == db.comp_rulesets.id
     q &= db.comp_rulesets.id == rset_id
-    rows = db(q).select(db.nodes.team_responsible)
+    rows = db(q).select(db.nodes.team_responsible, cacheable=True)
     if len(rows) == 0:
         return False
     return True
@@ -5369,7 +5377,7 @@ def comp_moduleset_attachable(nodename, modset_id):
     q &= db.comp_moduleset_team_responsible.modset_id == db.comp_moduleset.id
     q &= db.comp_moduleset.id == modset_id
     q &= db.nodes.nodename == nodename
-    rows = db(q).select(db.nodes.team_responsible)
+    rows = db(q).select(db.nodes.team_responsible, cacheable=True)
     if len(rows) != 1:
         return False
     return True
@@ -5380,7 +5388,7 @@ def comp_ruleset_attachable(nodename, ruleset_id):
     q &= db.comp_ruleset_team_responsible.ruleset_id == db.comp_rulesets.id
     q &= db.comp_rulesets.id == ruleset_id
     q &= db.nodes.nodename == nodename
-    rows = db(q).select()
+    rows = db(q).select(cacheable=True)
     if len(rows) != 1:
         return False
     return True
@@ -5459,7 +5467,7 @@ def comp_list_rulesets(pattern='%', nodename=None, auth=("", "")):
         q &= db.nodes.nodename == nodename
         q &= db.nodes.team_responsible == db.auth_group.role
         q &= db.auth_group.id == db.comp_ruleset_team_responsible.group_id
-    rows = db(q).select(groupby=db.comp_rulesets.id)
+    rows = db(q).select(groupby=db.comp_rulesets.id, cacheable=True)
     return sorted([r.comp_rulesets.ruleset_name for r in rows])
 
 @auth_uuid
@@ -5471,7 +5479,8 @@ def comp_list_modulesets(pattern='%', auth=("", "")):
     q &= db.auth_group.id == db.comp_moduleset_team_responsible.group_id
     q &= db.nodes.team_responsible == db.auth_group.role
     q &= db.nodes.nodename == node
-    rows = db(q).select(db.comp_moduleset.modset_name, groupby=db.comp_moduleset.modset_name)
+    rows = db(q).select(db.comp_moduleset.modset_name,
+                        groupby=db.comp_moduleset.modset_name, cacheable=True)
     return sorted([r.modset_name for r in rows])
 
 @auth_uuid
@@ -5481,7 +5490,7 @@ def comp_show_status(svcname="", pattern='%', auth=("", "")):
     q = db.comp_status.run_module.like(pattern)
     q &= db.comp_status.run_nodename == node
     q &= db.comp_status.run_svcname == svcname
-    rows = db(q).select(orderby=db.comp_status.run_module)
+    rows = db(q).select(orderby=db.comp_status.run_module, cacheable=True)
     l = [('module', 'status', 'date', 'log')]
     for row in rows:
         l.append((row.run_module,
@@ -5511,7 +5520,9 @@ def _comp_get_svc_moduleset(svcname, slave=False):
     q &= db.services.svc_app == db.apps.app
     q &= db.apps.id == db.apps_responsibles.app_id
     q &= db.apps_responsibles.group_id == db.auth_group.id
-    rows = db(q).select(db.comp_moduleset.modset_name, groupby=db.comp_modulesets_services.modset_id)
+    rows = db(q).select(db.comp_moduleset.modset_name,
+                        groupby=db.comp_modulesets_services.modset_id,
+                        cacheable=True)
     return [r.modset_name for r in rows]
 
 def _comp_get_moduleset(nodename):
@@ -5521,7 +5532,9 @@ def _comp_get_moduleset(nodename):
     q &= db.auth_group.id == db.comp_moduleset_team_responsible.group_id
     q &= db.nodes.team_responsible == db.auth_group.role
     q &= db.nodes.nodename == nodename
-    rows = db(q).select(db.comp_moduleset.modset_name, groupby=db.comp_node_moduleset.modset_id)
+    rows = db(q).select(db.comp_moduleset.modset_name,
+                        groupby=db.comp_node_moduleset.modset_id,
+                        cacheable=True)
     return [r.modset_name for r in rows]
 
 @auth_uuid
@@ -5552,12 +5565,12 @@ def comp_format_filter(q):
 def comp_get_svcmon_ruleset(svcname, nodename):
     q = db.svcmon.mon_svcname == svcname
     q &= db.svcmon.mon_nodname == nodename
-    row = db(q).select().first()
+    row = db(q).select(cacheable=True).first()
     if row is None:
         q = db.svcmon.mon_svcname == svcname
         q &= db.svcmon.mon_vmname == nodename
         q &= db.svcmon.mon_containerstatus == "up"
-        row = db(q).select().first()
+        row = db(q).select(cacheable=True).first()
     if row is None:
         return {}
     ruleset = {'name': 'osvc_svcmon',
@@ -5570,7 +5583,7 @@ def comp_get_svcmon_ruleset(svcname, nodename):
 
 def comp_get_service_ruleset(svcname):
     q = db.services.svc_name == svcname
-    rows = db(q).select()
+    rows = db(q).select(cacheable=True)
     if len(rows) != 1:
         return {}
     ruleset = {'name': 'osvc_service',
@@ -5583,7 +5596,7 @@ def comp_get_service_ruleset(svcname):
 
 def comp_get_node_ruleset(nodename):
     q = db.v_nodes.nodename == nodename
-    rows = db(q).select()
+    rows = db(q).select(cacheable=True)
     if len(rows) != 1:
         return {}
     ruleset = {'name': 'osvc_node',
@@ -5613,13 +5626,13 @@ def comp_get_rulesets_fset_ids(rset_ids=None, nodename=None, svcname=None, head=
             q &= db.comp_ruleset_team_responsible.group_id.belongs(svc_team_responsible_id(svcname))
 
     l = {}
-    rows = db(q).select()
+    rows = db(q).select(cacheable=True)
 
     fset_ids = [r.comp_rulesets_filtersets.fset_id for r in rows]
     q = db.v_gen_filtersets.fset_id.belongs(fset_ids)
     q &= db.v_gen_filtersets.f_table.belongs(['services', 'svcmon'])
     f_rows = db(q).select(db.v_gen_filtersets.fset_id,
-                          groupby=db.v_gen_filtersets.fset_id)
+                          groupby=db.v_gen_filtersets.fset_id, cacheable=True)
     fsets_with_svc_tables = [r.fset_id for r in f_rows]
 
     for row in rows:
@@ -5645,7 +5658,7 @@ def comp_ruleset_vars(ruleset_id, qr=None, nodename=None, svcname=None, slave=Fa
         f = comp_format_filter(qr)
 
     q = db.comp_rulesets.id == ruleset_id
-    head_rset = db(q).select(db.comp_rulesets.ruleset_name).first()
+    head_rset = db(q).select(db.comp_rulesets.ruleset_name, cacheable=True).first()
     if head_rset is None:
         return dict()
 
@@ -5653,7 +5666,8 @@ def comp_ruleset_vars(ruleset_id, qr=None, nodename=None, svcname=None, slave=Fa
     q1 = db.comp_rulesets_rulesets.parent_rset_id == ruleset_id
     q1 &= db.comp_rulesets_rulesets.child_rset_id == db.comp_rulesets.id
     rows = db(q1).select(db.comp_rulesets_rulesets.child_rset_id,
-                         db.comp_rulesets.ruleset_type)
+                         db.comp_rulesets.ruleset_type,
+                         cacheable=True)
 
     for row in rows:
         id = row.comp_rulesets_rulesets.child_rset_id
@@ -5671,7 +5685,7 @@ def comp_ruleset_vars(ruleset_id, qr=None, nodename=None, svcname=None, slave=Fa
 
     # get variables
     q &= db.comp_rulesets.id == db.comp_rulesets_variables.ruleset_id
-    rows = db(q).select()
+    rows = db(q).select(cacheable=True)
     ruleset_name = head_rset.ruleset_name
     d = dict(
           name=ruleset_name,
@@ -5691,7 +5705,7 @@ def ruleset_add_var(d, rset_name, var, val):
 @service.xmlrpc
 def comp_get_ruleset_md5(rset_md5, auth):
     q = db.comp_run_ruleset.rset_md5 == rset_md5
-    row = db(q).select(db.comp_run_ruleset.rset).first()
+    row = db(q).select(db.comp_run_ruleset.rset, cacheable=True).first()
     if row is None:
         return
     import cPickle
@@ -5706,13 +5720,14 @@ def svc_team_responsible_id(svcname):
     q &= db.services.svc_app == db.apps.app
     q &= db.apps.id == db.apps_responsibles.app_id
     q &= db.apps_responsibles.group_id == db.auth_group.id
-    rows = db(q).select(db.auth_group.id, groupby=db.auth_group.id)
+    rows = db(q).select(db.auth_group.id, groupby=db.auth_group.id,
+                        cacheable=True)
     return map(lambda x: x['id'], rows)
 
 def node_team_responsible_id(nodename):
     q = db.nodes.nodename == nodename
     q &= db.nodes.team_responsible == db.auth_group.role
-    rows = db(q).select(db.auth_group.id)
+    rows = db(q).select(db.auth_group.id, cacheable=True)
     if len(rows) != 1:
         return None
     return rows[0].id
@@ -5803,7 +5818,8 @@ def _comp_get_svc_ruleset(svcname, slave=False):
     q = db.comp_rulesets_services.svcname == svcname
     q &= db.comp_rulesets_services.slave == slave
     rows = db(q).select(db.comp_rulesets_services.ruleset_id,
-                        orderby=db.comp_rulesets_services.ruleset_id)
+                        orderby=db.comp_rulesets_services.ruleset_id,
+                        cacheable=True)
     for row in rows:
         ruleset.update(comp_ruleset_vars(row.ruleset_id, svcname=svcname, slave=slave))
 
@@ -5859,7 +5875,8 @@ def _comp_get_ruleset(nodename):
     # add explicit rulesets variables
     q = db.comp_rulesets_nodes.nodename == nodename
     rows = db(q).select(db.comp_rulesets_nodes.ruleset_id,
-                        orderby=db.comp_rulesets_nodes.ruleset_id)
+                        orderby=db.comp_rulesets_nodes.ruleset_id,
+                        cacheable=True)
     for row in rows:
         ruleset.update(comp_ruleset_vars(row.ruleset_id, nodename=nodename))
 
@@ -5928,7 +5945,7 @@ def beautify_moduleset(mset, mods):
 
 def beautify_svc_modulesets(msets, svcname):
     q = db.svcmon.mon_svcname == svcname
-    node = db(q).select()
+    node = db(q).select(cacheable=True)
     if node is None:
         return ""
     node = node.first().mon_nodname
@@ -5947,7 +5964,7 @@ def svc_comp_status(svcname):
 
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
     q &= db.comp_status.run_svcname == svcname
-    t.object_list = db(q).select()
+    t.object_list = db(q).select(cacheable=True)
     t.hide_tools = True
     t.pageable = False
     t.linkable = False
@@ -5966,7 +5983,7 @@ def node_comp_status(node):
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
     q &= db.comp_status.run_nodename == node
     q &= db.comp_status.run_nodename == db.v_nodes.nodename
-    t.object_list = db(q).select()
+    t.object_list = db(q).select(cacheable=True)
     t.hide_tools = True
     t.pageable = False
     t.linkable = False
@@ -5981,7 +5998,7 @@ def node_comp_status(node):
 def ajax_rset_md5():
     session.forget(response)
     rset_md5 = request.vars.rset_md5
-    row = db(db.comp_run_ruleset.rset_md5==rset_md5).select().first()
+    row = db(db.comp_run_ruleset.rset_md5==rset_md5).select(cacheable=True).first()
     if row is None:
         return ''
     import cPickle
@@ -6002,7 +6019,8 @@ def ajax_compliance_svc():
     d = []
     q = db.svcmon.mon_svcname==svcname
     q &= db.svcmon.mon_updated > now - datetime.timedelta(days=1)
-    rows = db(q).select(db.svcmon.mon_nodname, db.svcmon.mon_vmname)
+    rows = db(q).select(db.svcmon.mon_nodname, db.svcmon.mon_vmname,
+                        cacheable=True)
     nodes = [r.mon_nodname for r in rows]
     vnodes = [r.mon_vmname for r in rows if r.mon_vmname is not None and r.mon_vmname != ""]
     for r in rows:
@@ -6127,7 +6145,8 @@ def register_node(node):
 def run_cve():
     q = db.comp_rulesets_variables.var_class == 'cve'
     rows = db(q).select(db.comp_rulesets_variables.var_name,
-                        db.comp_rulesets_variables.var_value)
+                        db.comp_rulesets_variables.var_value,
+                        cacheable=True)
     for row in rows:
         run_cve_one(row)
 
@@ -6206,7 +6225,7 @@ def cron_dash_comp():
     cron_dash_rsetdiff()
 
 def show_compdiff(svcname):
-    rows = db(db.svcmon.mon_svcname==svcname).select()
+    rows = db(db.svcmon.mon_svcname==svcname).select(cacheable=True)
     nodes = [r.mon_nodname for r in rows]
     nodes.sort()
     n = len(nodes)
@@ -6341,7 +6360,7 @@ def show_compdiff(svcname):
 
 def cron_dash_moddiff():
     q = db.services.updated > now - datetime.timedelta(days=2)
-    svcnames = [r.svc_name for r in db(q).select(db.services.svc_name)]
+    svcnames = [r.svc_name for r in db(q).select(db.services.svc_name, cacheable=True)]
 
     r = []
     for svcname in svcnames:
@@ -6350,7 +6369,7 @@ def cron_dash_moddiff():
     return str(r)
 
 def show_moddiff(svcname):
-    rows = db(db.svcmon.mon_svcname==svcname).select()
+    rows = db(db.svcmon.mon_svcname==svcname).select(cacheable=True)
     nodes = [r.mon_nodname for r in rows]
     n = len(nodes)
     nodes.sort()
@@ -6431,7 +6450,7 @@ def show_moddiff(svcname):
 #
 def cron_dash_rsetdiff():
     q = db.services.updated > now - datetime.timedelta(days=2)
-    svcnames = [r.svc_name for r in db(q).select(db.services.svc_name)]
+    svcnames = [r.svc_name for r in db(q).select(db.services.svc_name, cacheable=True)]
 
     r = []
     for svcname in svcnames:
@@ -6440,7 +6459,7 @@ def cron_dash_rsetdiff():
     return str(r)
 
 def show_rsetdiff(svcname):
-    rows = db(db.svcmon.mon_svcname==svcname).select()
+    rows = db(db.svcmon.mon_svcname==svcname).select(cacheable=True)
     nodes = [r.mon_nodname for r in rows]
     n = len(nodes)
     nodes.sort()
@@ -6721,7 +6740,8 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
                 else:
                     q = db.nodes.id > 0
                 o = db.nodes.project | db.nodes.nodename
-                rows = db(q).select(db.nodes.project, db.nodes.nodename, orderby=o)
+                rows = db(q).select(db.nodes.project, db.nodes.nodename,
+                                    orderby=o, cacheable=True)
                 candidates = [('[%s] %s' % (str(r.project if r.project is not None else ''), str(r.nodename)), r.nodename) for r in rows]
             elif input['Candidates'] == "__service_selector__":
                 o = db.services.svc_app | db.services.svc_name
@@ -6734,7 +6754,8 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
                 services = db(q).select(db.services.svc_name,
                                         db.services.svc_app,
                                         groupby=o,
-                                        orderby=o)
+                                        orderby=o,
+                                        cacheable=True)
                 candidates = [('[%s] %s' % (str(r.svc_app if r.svc_app is not None else ''), str(r.svc_name)), r.svc_name) for r in services]
             else:
                 candidates = input['Candidates']
@@ -6999,13 +7020,13 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
     if _var_id is None and _prev_wfid is not None and _prev_wfid != 'None':
         # next step of a workflow use previous form values as defaults
         q = db.forms_store.id == request.vars.prev_wfid
-        prev_form = db(q).select().first()
+        prev_form = db(q).select(cacheable=True).first()
         if prev_form is not None and prev_form.form_var_id is not None:
             _var_id = prev_form.form_var_id
 
     if var is None and _var_id is not None:
         q = db.v_comp_rulesets.id == _var_id
-        var = db(q).select().first()
+        var = db(q).select(cacheable=True).first()
         if var is None:
             return ajax_error(T("variable '%(id)s' not found", dict(id=_var_id)))
 
@@ -7018,13 +7039,13 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
         pass
     elif form_name is not None:
         q = db.forms.form_name == form_name
-        form = db(q).select().first()
+        form = db(q).select(cacheable=True).first()
     elif _form_id is not None:
         q = db.forms.id == _form_id
-        form = db(q).select().first()
+        form = db(q).select(cacheable=True).first()
     elif _wfid is not None:
         q = db.forms_store.id == _wfid
-        form = db(q).select().first()
+        form = db(q).select(cacheable=True).first()
     else:
         return ajax_error(T("No form specified"))
 
@@ -7040,7 +7061,7 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
         s = form.forms_revisions.form_yaml
     elif 'form_md5' in form:
         q = db.forms_revisions.form_md5 == form.form_md5
-        row = db(q).select().first()
+        row = db(q).select(cacheable=True).first()
         if row is not None:
             s = row.form_yaml
     if s is None:
@@ -7527,7 +7548,7 @@ def forms_xid(id=None):
 def ajax_target():
     form_id = request.vars.form_id
     q = db.forms.id == form_id
-    row = db(q).select().first()
+    row = db(q).select(cacheable=True).first()
     form_type = row.form_type
 
     if form_type == "obj":
@@ -7643,7 +7664,7 @@ def ajax_custo():
     q &= db.comp_rulesets.ruleset_name == rset_name
     o = db.comp_rulesets_variables.var_class
 
-    rows = db(q).select(orderby=o)
+    rows = db(q).select(orderby=o, cacheable=True)
 
     l = []
     for row in rows:
@@ -7707,7 +7728,7 @@ sync_ajax("%(url)s", [], "forms_inputs", function(){})
         else:
             l = []
         q &= db.comp_status.run_module.belongs(l)
-        rows = db(q).select()
+        rows = db(q).select(cacheable=True)
         _modules = []
         for r in rows:
             val = r.run_status
@@ -7885,7 +7906,7 @@ def get_form_formatted_data_o(output, data, _d=None):
 @auth.requires_login()
 def ajax_form_submit():
     q = db.forms.id == request.vars.form_id
-    form = db(q).select().first()
+    form = db(q).select(cacheable=True).first()
     s = form.form_yaml
     import yaml
     try:
@@ -7911,7 +7932,7 @@ def insert_form_md5(form):
     form_md5 = str(o.hexdigest())
 
     q = db.forms_revisions.form_md5 == form_md5
-    if db(q).select().first() is not None:
+    if db(q).select(cacheable=True).first() is not None:
         return form_md5
 
     db.forms_revisions.insert(
@@ -8065,7 +8086,7 @@ def ajax_generic_form_submit(form, data, _d=None):
             if request.vars.prev_wfid is not None and request.vars.prev_wfid != 'None':
                 # workflow continuation
                 q = db.forms_store.id == request.vars.prev_wfid
-                prev_wf = db(q).select().first()
+                prev_wf = db(q).select(cacheable=True).first()
                 if prev_wf.form_next_id is not None:
                     log.append((1, "form.store",  "This step is already completed (id=%(id)d)", dict(id=prev_wf.id)))
                     return ajax_info(log)
@@ -8122,7 +8143,7 @@ def ajax_generic_form_submit(form, data, _d=None):
             if __var_id is not None:
                 q = db.comp_rulesets_variables.id == __var_id
                 q &= db.comp_rulesets_variables.ruleset_id == db.comp_rulesets.id
-                row = db(q).select(db.comp_rulesets.ruleset_name).first()
+                row = db(q).select(db.comp_rulesets.ruleset_name, cacheable=True).first()
                 if row is None:
                     log.append((1, "form.submit", "Unable to retrieve compliance variable %(var_id)s ruleset name", dict(var_id=__var_id)))
                     continue
@@ -8140,7 +8161,7 @@ def ajax_generic_form_submit(form, data, _d=None):
             nodes = [nodename]
             if nodename is None and svcname is not None:
                 q = db.svcmon.mon_svcname == svcname
-                rows = db(q).select(db.svcmon.mon_nodname)
+                rows = db(q).select(db.svcmon.mon_nodname, cacheable=True)
                 if len(rows) == 0:
                     log.append((1, "form.submit", "No nodes found running service %(svcname)s", dict(svcname=svcname)))
                     continue
@@ -8152,7 +8173,7 @@ def ajax_generic_form_submit(form, data, _d=None):
 
             for nodename in nodes:
                 q = db.nodes.nodename == nodename
-                row = db(q).select(db.nodes.os_name, db.nodes.fqdn).first()
+                row = db(q).select(db.nodes.os_name, db.nodes.fqdn, cacheable=True).first()
                 if row is None:
                     log.append((1, "form.submit", "No asset information found for node %(nodename)s", dict(nodename=nodename)))
                     continue
@@ -8287,7 +8308,7 @@ def ajax_generic_form_submit(form, data, _d=None):
             if request.vars.prev_wfid is not None and request.vars.prev_wfid != 'None':
                 # workflow continuation
                 q = db.forms_store.id == request.vars.prev_wfid
-                prev_wf = db(q).select().first()
+                prev_wf = db(q).select(cacheable=True).first()
                 if prev_wf.form_next_id is not None:
                     log.append((0, "form.store",  "This step is already completed (id=%(id)d)", dict(id=prev_wf.id)))
                     continue
@@ -8305,7 +8326,7 @@ def ajax_generic_form_submit(form, data, _d=None):
                 while iter < max_iter:
                     iter += 1
                     q = db.forms_store.id == head_id
-                    row = db(q).select().first()
+                    row = db(q).select(cacheable=True).first()
                     if row is None:
                         break
                     if row.form_prev_id is None:
@@ -8333,7 +8354,7 @@ def ajax_generic_form_submit(form, data, _d=None):
                 else:
                     log.append((0, "form.store", "Workflow %(head_id)d closed on last step %(form_name)s with id %(id)d", dict(form_name=form.form_name, head_id=head_id, id=record_id)))
                 q = db.workflows.form_head_id == head_id
-                wfrow = db(q).select().first()
+                wfrow = db(q).select(cacheable=True).first()
                 if wfrow is None:
                     # should not happen ... recreate the workflow
                     db.workflows.insert(
@@ -8440,7 +8461,7 @@ def ajax_custo_form_submit(output, data):
     if request.vars.var_id is not None:
         q = db.comp_rulesets_variables.id == request.vars.var_id
         q &= db.comp_rulesets_variables.ruleset_id == db.comp_rulesets.id
-        var = db(q).select().first()
+        var = db(q).select(cacheable=True).first()
         if var is None:
             log.append((1, "", "Specified variable not found (id=%(id)s)", dict(id=request.vars.var_id)))
             return log
@@ -8458,7 +8479,7 @@ def ajax_custo_form_submit(output, data):
     if request.vars.nodename is not None:
         q = db.nodes.nodename == request.vars.nodename
         q &= db.nodes.team_responsible == db.auth_group.role
-        node = db(q).select(db.auth_group.id).first()
+        node = db(q).select(db.auth_group.id, cacheable=True).first()
         if node is None:
             log.append((1, "", "Unknown specified node %(nodename)s", dict(nodename=nodename)))
             return log
@@ -8472,13 +8493,13 @@ def ajax_custo_form_submit(output, data):
             return log
     elif request.vars.svcname is not None:
         q = db.services.svc_name == request.vars.svcname
-        svc = db(q).select().first()
+        svc = db(q).select(cacheable=True).first()
         if svc is None:
             log.append((1, "", "Unknown specified service %(svcname)s", dict(svcname=svcname)))
             return log
         q &= db.services.svc_app == db.apps.app
         q &= db.apps.id == db.apps_responsibles.app_id
-        rows = db(q).select()
+        rows = db(q).select(cacheable=True)
         groups = map(lambda x: x.apps_responsibles.group_id, rows)
         if len(groups) == 0:
             log.append((1, "", "Specified service %(svcname)s has no responsible groups", dict(svcname=svcname)))
@@ -8489,13 +8510,13 @@ def ajax_custo_form_submit(output, data):
             return log
     elif request.vars.rset is not None:
         q = db.comp_rulesets.ruleset_name == request.vars.rset
-        rset = db(q).select().first()
+        rset = db(q).select(cacheable=True).first()
         if rset is None:
             log.append((1, "", "Unknown specified ruleset %(rset)s", dict(rset=request.vars.rset)))
             return log
         q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
         q &= db.comp_ruleset_team_responsible.group_id == db.auth_group.id
-        rows = db(q).select()
+        rows = db(q).select(cacheable=True)
         groups = map(lambda x: x.auth_group.id, rows)
         common_groups = set(user_group_ids()) & set(groups)
         if len(common_groups) == 0:
@@ -8504,13 +8525,13 @@ def ajax_custo_form_submit(output, data):
 
     # create ruleset
     q = db.comp_rulesets.ruleset_name == rset_name
-    rset = db(q).select().first()
+    rset = db(q).select(cacheable=True).first()
     if rset is None:
         db.comp_rulesets.insert(ruleset_name=rset_name,
                                 ruleset_type="explicit",
                                 ruleset_public="T")
         log.append((0, "compliance.ruleset.add", "Added explicit published ruleset '%(rset_name)s'", dict(rset_name=rset_name)))
-        rset = db(q).select().first()
+        rset = db(q).select(cacheable=True).first()
         for gid in common_groups:
             db.comp_ruleset_team_responsible.insert(
               ruleset_id=rset.id,
@@ -8538,7 +8559,7 @@ def ajax_custo_form_submit(output, data):
 
         q = db.comp_rulesets_variables.ruleset_id == rset.id
         q &= db.comp_rulesets_variables.var_name.like(var_name_prefix+'%')
-        var_name_suffixes = map(lambda x: x.var_name.replace(var_name_prefix, ''), db(q).select())
+        var_name_suffixes = map(lambda x: x.var_name.replace(var_name_prefix, ''), db(q).select(cacheable=True))
         i = 0
         while True:
             _i = str(i)
@@ -8569,7 +8590,7 @@ def ajax_custo_form_submit(output, data):
     else:
         q = db.comp_rulesets_variables.ruleset_id == rset.id
         q &= db.comp_rulesets_variables.var_name == var_name
-        var_rows = db(q).select()
+        var_rows = db(q).select(cacheable=True)
         n = len(var_rows)
         if n == 0:
             __var_id = db.comp_rulesets_variables.insert(
@@ -8597,7 +8618,7 @@ def ajax_custo_form_submit(output, data):
         modset_ids = []
         if 'Modulesets' in data:
             q = db.comp_moduleset.modset_name.belongs(data['Modulesets'])
-            rows = db(q).select(db.comp_moduleset.id)
+            rows = db(q).select(db.comp_moduleset.id, cacheable=True)
             modset_ids = map(lambda x: x.id, rows)
 
         rset_ids = []
@@ -8605,7 +8626,7 @@ def ajax_custo_form_submit(output, data):
             q = db.comp_rulesets.ruleset_name.belongs(data['Rulesets'])
             q &= db.comp_rulesets.ruleset_type == "explicit"
             q &= db.comp_rulesets.ruleset_public == True
-            rows = db(q).select(db.comp_rulesets.id)
+            rows = db(q).select(db.comp_rulesets.id, cacheable=True)
             rset_ids = map(lambda x: x.id, rows) + [rset.id]
 
         if request.vars.nodename is not None:
@@ -8704,7 +8725,7 @@ def json_form_submit(form_name, form_data):
     q = db.forms.form_name == form_name
     q &= db.forms.id == db.forms_team_responsible.form_id
     q &= db.forms_team_responsible.group_id.belongs(user_group_ids())
-    form = db(q).select(db.forms.ALL).first()
+    form = db(q).select(db.forms.ALL, cacheable=True).first()
 
     if form is None:
         return "form not found"

@@ -174,7 +174,7 @@ def ajax_saves_col_values():
     q = apply_filters(q, db.saves.save_nodename, db.saves.save_svcname)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o, left=l)
+    t.object_list = db(q).select(o, orderby=o, left=l, cacheable=True)
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
@@ -195,7 +195,8 @@ def ajax_saves():
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     n = db(q).count()
     t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o, left=l)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
+                                          orderby=o, left=l, cacheable=True)
 
     t.csv_q = q
     t.csv_orderby = o
