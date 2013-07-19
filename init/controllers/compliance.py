@@ -7521,7 +7521,7 @@ $("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").bind('ch
 """%dict(
      idx=len(l),
      xid=forms_xid(''),
-     url=str(URL(r=request, c='forms', f='/'))[:-2],
+     url=str(URL(r=request, c='forms', f='a'))[:-3],
     ),
                _name=_hid+"_to_eval",
              ),
