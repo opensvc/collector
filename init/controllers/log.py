@@ -9,7 +9,7 @@ img_h = {
   'group': 'guys16.png',
   'user': 'guy16.png',
   'ack': 'check16.png',
-  'compliance': 'check16.png',
+  'compliance': 'comp16.png',
   'moduleset': 'action16.png',
   'module': 'action16.png',
   'action': 'action16.png',
