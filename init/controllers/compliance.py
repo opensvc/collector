@@ -5651,6 +5651,215 @@ def comp_get_rulesets_fset_ids(rset_ids=None, nodename=None, svcname=None, head=
             l[t] += [row.comp_rulesets.id]
     return l
 
+def test_comp_get_matching_fset_ids():
+    return comp_get_matching_fset_ids(nodename="lapoo", svcname=None)
+
+def comp_get_matching_fset_ids(fset_ids=None, nodename=None, svcname=None):
+    if fset_ids is None:
+        fset_ids = comp_get_rulesets_fset_ids(rset_ids, nodename, svcname, head)
+    fset_data = comp_get_fset_data()
+    matching_filters = comp_get_matching_filters(fset_ids, fset_data, nodename=nodename, svcname=svcname)
+    matching_fsets = []
+
+    def recurse_match(data, match=None):
+        for _data in data:
+            if _data['type'] == 'filter':
+                fid = _data['data'].gen_filters.id
+                if match is None:
+                    # first filter is always an AND
+                    match = fid in matching_filters
+                elif _data['op'] == 'AND':
+                    match &= fid in matching_filters
+                elif _data['op'] == 'AND NOT':
+                    match &= fid not in matching_filters
+                elif _data['op'] == 'OR':
+                    match |= fid in matching_filters
+                elif _data['op'] == 'OR NOT':
+                    match |= fid not in matching_filters
+            elif _data['type'] == 'filterset':
+                if match is None:
+                    match = recurse_match(_data['data'])
+                elif _data['op'] == 'AND':
+                    match &= recurse_match(_data['data'], match)
+                elif _data['op'] == 'AND NOT':
+                    match &= not recurse_match(_data['data'], match)
+                elif _data['op'] == 'OR':
+                    match |= recurse_match(_data['data'], match)
+                elif _data['op'] == 'OR NOT':
+                    match |= not recurse_match(_data['data'], match)
+
+        if match is None:
+            # empty filterset
+            match = False
+
+        return match
+
+    for fset_id, fset_name in fset_ids:
+        match = recurse_match(fset_data[fset_id])
+        if match:
+            matching_fsets.append(fset_id)
+
+    return matching_fsets
+
+def comp_get_matching_filters(fset_ids, fset_data, nodename=None, svcname=None):
+    sql_l = []
+
+    def filter_sql(d, sql_l):
+        fid = d.gen_filters.id
+        table = d.gen_filters.f_table
+        field = d.gen_filters.f_field
+        value = d.gen_filters.f_value
+        op = d.gen_filters.f_op
+
+        if op == 'IN':
+            value = value.replace(', ',',')
+            l = value.split(',')
+            l = map(lambda x: repr(x), l)
+            value = "(%s)" % ','.join(l)
+        try:
+            value = int(value)
+            value = str(value)
+        except:
+            value = repr(value)
+
+        where = "select 1 from %(table)s where %(field)s %(op)s %(value)s" % dict(
+          op=op,
+          table = table,
+          field = field,
+          value = value,
+        )
+
+        if nodename is not None:
+            if table in ("nodes", "packages", "patches", 'node_hba'):
+                _field = "nodename"
+            elif table in ("b_disk_app", "svcdisks"):
+                _field = "disk_nodename"
+            elif table in ("svcmon", "svcmon_log"):
+                _field = "run_nodename"
+            else:
+                print "unknown table", table
+                return sql_l
+            where += " and %s = '%s'" % (_field, nodename)
+
+        if svcname is not None:
+            if table in ("services"):
+                _field = "svc_name"
+            elif table in ("b_disk_app", "svcdisks"):
+                _field = "disk_svcname"
+            elif table in ("svcmon", "svcmon_log"):
+                _field = "mon_svcname"
+            else:
+                print "unknown table", table
+                return sql_l
+            where += " and %s = '%s'" % (_field, svcname)
+
+        sql_l += ["select if (exists(%(where)s), %(fid)d, 0)" % dict(
+          where = where,
+          fid = fid,
+        )]
+
+        return sql_l
+
+    def recurse_sql(_data, sql_l):
+        for data in _data:
+            if data['type'] == 'filter':
+                sql_l = filter_sql(data['data'], sql_l)
+            elif data['type'] == 'filterset':
+                sql_l = recurse_sql(data['data'], sql_l)
+        return sql_l
+
+    for fset_id, fset_name in fset_ids:
+        if fset_id not in fset_data:
+            continue
+        sql_l = recurse_sql(fset_data[fset_id], sql_l)
+
+    sql = ' union '.join(sql_l)
+    rows = db.executesql(sql)
+    matching_filters = map(lambda r: r[0], rows)
+    matching_filters = set(matching_filters) - set([0])
+    return matching_filters
+
+def comp_get_fset_data():
+    #
+    # load filtersets in a hierarchical structure:
+    #
+    # {
+    #  fset_id: [
+    #    {
+    #     'type': 'filter',
+    #     'op': <operator>,
+    #     'data': <row>,
+    #    },
+    #    {
+    #     'type': 'filterset',
+    #     'op': <operator>,
+    #     'data': [
+    #      {
+    #       'type': 'filter',
+    #       'data': <row>,
+    #      },
+    #     ],
+    #    },
+    #  ],
+    # }
+    #
+    data = {}
+    q = db.gen_filtersets_filters.id > 0
+    j = db.gen_filtersets_filters.f_id == db.gen_filters.id
+    l = db.gen_filters.on(j)
+    o = db.gen_filtersets_filters.fset_id | db.gen_filtersets_filters.f_order
+    rows = db(q).select(cacheable=True, orderby=o, left=l)
+    for row in rows:
+        r = row.gen_filtersets_filters
+        if r.fset_id not in data:
+            data[r.fset_id] = []
+        if r.f_id is not None and r.f_id != 0:
+            _data = {'type': 'filter', 'op': r.f_log_op, 'data': row}
+            data[r.fset_id].append(_data)
+        elif r.encap_fset_id is not None:
+            if r.encap_fset_id in data:
+                _data = {'type': 'filterset', 'op': r.f_log_op, 'fset_id': r.encap_fset_id, 'data': data[r.encap_fset_id]}
+            else:
+                _data = {'type': 'filterset', 'op': r.f_log_op, 'fset_id': r.encap_fset_id, 'data': None}
+            data[r.fset_id].append(_data)
+
+    def recurse_fset(_data, depth=0):
+        if depth > 10:
+            raise Exception("filterset recursion limit")
+        for i, __data in enumerate(_data):
+            if __data['type'] != 'filterset':
+                continue
+            if __data['data'] is not None:
+                recurse_fset(__data['data'], depth=depth+1)
+                continue
+            encap_fset_id = __data['fset_id']
+            if encap_fset_id in data:
+                __data['data'] = data[encap_fset_id]
+                recurse_fset(__data['data'], depth=depth+1)
+
+    for fset_id in data:
+        recurse_fset(data[fset_id])
+
+    #print_fset_data(data)
+    return data
+
+def print_fset_data(data):
+    def recurse_print_fset(_data, depth=0):
+        for i, __data in enumerate(_data):
+            d = __data['data']
+            padding = ''
+            for i in range(depth):
+                padding += " "
+            if __data['type'] == 'filter':
+                print padding, __data['op'], d.gen_filters.f_field, d.gen_filters.f_op, d.gen_filters.f_value
+            elif __data['type'] == 'filterset':
+                print padding, __data['fset_id']
+                recurse_print_fset(__data['data'], depth=depth+1)
+
+    for fset_id in data:
+        print fset_id
+        recurse_print_fset(data[fset_id])
+
 def comp_ruleset_vars(ruleset_id, qr=None, nodename=None, svcname=None, slave=False):
     if qr is None:
         f = 'explicit attachment'
@@ -5760,26 +5969,17 @@ def comp_ruleset_match(id, svcname=None, nodename=None, slave=False, head=True):
 
 def _comp_ruleset_svc_match(id, svcname=None, nodename=None, slave=False, head=True):
     l = comp_get_rulesets_fset_ids([id], svcname=svcname, head=head)
+    matching_fsets = comp_get_matching_fset_ids(fset_ids=l, nodename=nodename, svcname=svcname)
     for fset_id, fset_name in l:
-        q = db.services.svc_name == svcname
-        q &= db.svcmon.mon_svcname == db.services.svc_name
-        if slave:
-            f = db.svcmon.mon_vmname
-        else:
-            f = db.svcmon.mon_nodname
-        q = apply_filters(q, f, db.svcmon.mon_svcname, fset_id=fset_id, nodename=nodename, svcname=svcname)
-        match = db(q).count()
-        if match > 0:
+        if fset_id in matching_fsets:
             return True
     return False
 
 def _comp_ruleset_match(id, nodename=None, head=True):
     l = comp_get_rulesets_fset_ids([id], nodename=nodename, head=head)
+    matching_fsets = comp_get_matching_fset_ids(fset_ids=l, nodename=nodename)
     for fset_id, fset_name in l:
-        q = db.nodes.nodename == nodename
-        q = apply_filters(q, db.nodes.nodename, None, fset_id=fset_id, nodename=nodename)
-        match = db(q).count()
-        if match > 0:
+        if fset_id in matching_fsets:
             return True
     return False
 
@@ -5788,12 +5988,10 @@ def _comp_get_svc_per_node_ruleset(svcname, nodename, slave=False):
 
     # add contextual rulesets variables
     l = comp_get_rulesets_fset_ids(nodename=nodename)
+    matching_fsets = comp_get_matching_fset_ids(fset_ids=l, nodename=nodename)
 
     for fset_id, fset_name in l:
-        q = db.nodes.nodename == nodename
-        q = apply_filters(q, db.nodes.nodename, None, fset_id=fset_id, nodename=nodename)
-        match = db(q).count()
-        if match > 0:
+        if fset_id in matching_fsets:
             for rset_id in l[(fset_id, fset_name)]:
                 ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, nodename=nodename, svcname=svcname, slave=slave))
 
@@ -5805,12 +6003,10 @@ def _comp_get_svc_ruleset(svcname, slave=False):
 
     # add contextual rulesets variables
     l = comp_get_rulesets_fset_ids(svcname=svcname)
+    matching_fsets = comp_get_matching_fset_ids(fset_ids=l, svcname=svcname)
 
     for fset_id, fset_name in l:
-        q = db.services.svc_name == svcname
-        q = apply_filters(q, None, db.services.svc_name, fset_id=fset_id, svcname=svcname)
-        match = db(q).count()
-        if match > 0:
+        if fset_id in matching_fsets:
             for rset_id in l[(fset_id, fset_name)]:
                 ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, svcname=svcname, slave=slave))
 
@@ -5863,12 +6059,10 @@ def _comp_get_ruleset(nodename):
 
     # add contextual rulesets variables
     l = comp_get_rulesets_fset_ids(nodename=nodename)
+    matching_fsets = comp_get_matching_fset_ids(fset_ids=l, nodename=nodename)
 
     for fset_id, fset_name in l:
-        q = db.nodes.nodename == nodename
-        q = apply_filters(q, db.nodes.nodename, None, fset_id=fset_id, nodename=nodename)
-        match = db(q).count()
-        if match > 0:
+        if fset_id in matching_fsets:
             for rset_id in l[(fset_id, fset_name)]:
                 ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, nodename=nodename))
 
