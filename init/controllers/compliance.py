@@ -1,6 +1,7 @@
 from hashlib import md5
 import datetime
 import json
+import copy
 now=datetime.datetime.today()
 sevendays = str(now-datetime.timedelta(days=7,
                                        hours=now.hour,
@@ -385,7 +386,8 @@ class col_var_value(HtmlTableColumn):
         else:
             form = None
 
-        if self.t.colprops['encap_rset_id'].get(o) is not None:
+        encap_rset_id = self.t.colprops['encap_rset_id'].get(o)
+        if encap_rset_id is not None and encap_rset_id != "":
             edit = ""
         else:
             edit = A(
@@ -5651,12 +5653,16 @@ def comp_get_rulesets_fset_ids(rset_ids=None, nodename=None, svcname=None, head=
             l[t] += [row.comp_rulesets.id]
     return l
 
-def test_comp_get_matching_fset_ids():
-    return comp_get_matching_fset_ids(nodename="lapoo", svcname=None)
+def comp_get_matching_fset_ids(fset_ids=None, nodename=None, svcname=None, slave=False):
+    if slave and nodename is None:
+        q = db.svcmon.mon_svcname == svcname
+        q &= db.svcmon.mon_containerstatus == "up"
+        nodename = db(q).select(db.svcmon.mon_vmname).first()
+        if nodename is not None:
+            nodename = nodename.mon_nodname
 
-def comp_get_matching_fset_ids(fset_ids=None, nodename=None, svcname=None):
     if fset_ids is None:
-        fset_ids = comp_get_rulesets_fset_ids(rset_ids, nodename, svcname, head)
+        fset_ids = comp_get_rulesets_fset_ids(nodename=nodename, svcname=svcname)
     fset_data = comp_get_fset_data()
     matching_filters = comp_get_matching_filters(fset_ids, fset_data, nodename=nodename, svcname=svcname)
     matching_fsets = []
@@ -5773,6 +5779,9 @@ def comp_get_matching_filters(fset_ids, fset_data, nodename=None, svcname=None):
             continue
         sql_l = recurse_sql(fset_data[fset_id], sql_l)
 
+    if len(sql_l) == 0:
+        return set([])
+
     sql = ' union '.join(sql_l)
     rows = db.executesql(sql)
     matching_filters = map(lambda r: r[0], rows)
@@ -5793,6 +5802,7 @@ def comp_get_fset_data():
     #    {
     #     'type': 'filterset',
     #     'op': <operator>,
+    #     'fset_id': <fset_id>,
     #     'data': [
     #      {
     #       'type': 'filter',
@@ -5860,7 +5870,7 @@ def print_fset_data(data):
         print fset_id
         recurse_print_fset(data[fset_id])
 
-def comp_ruleset_vars(ruleset_id, qr=None, nodename=None, svcname=None, slave=False):
+def comp_ruleset_vars(ruleset_id, qr=None, matching_fsets=[]):
     if qr is None:
         f = 'explicit attachment'
     else:
@@ -5871,23 +5881,34 @@ def comp_ruleset_vars(ruleset_id, qr=None, nodename=None, svcname=None, slave=Fa
     if head_rset is None:
         return dict()
 
-    children = []
-    q1 = db.comp_rulesets_rulesets.parent_rset_id == ruleset_id
+    q1 = db.comp_rulesets_rulesets.id > 0
     q1 &= db.comp_rulesets_rulesets.child_rset_id == db.comp_rulesets.id
-    rows = db(q1).select(db.comp_rulesets_rulesets.child_rset_id,
-                         db.comp_rulesets.ruleset_type,
-                         cacheable=True)
-
+    j = db.comp_rulesets.id == db.comp_rulesets_filtersets.ruleset_id
+    l = db.comp_rulesets_filtersets.on(j)
+    rows = db(q1).select(left=l, cacheable=True)
+    rset_relations = {}
     for row in rows:
-        id = row.comp_rulesets_rulesets.child_rset_id
-        if row.comp_rulesets.ruleset_type == "explicit":
-            children.append(id)
-        elif row.comp_rulesets.ruleset_type == "contextual":
+        if row.comp_rulesets_rulesets.parent_rset_id not in rset_relations:
+            rset_relations[row.comp_rulesets_rulesets.parent_rset_id] = []
+        rset_relations[row.comp_rulesets_rulesets.parent_rset_id].append(row)
+
+    def recurse_rel(rset_id, children=[]):
+        if rset_id not in rset_relations:
+            return children
+        for row in rset_relations[rset_id]:
             # don't validate sub ruleset ownership.
             # parent ownership is inherited
-            if comp_ruleset_match(id, nodename=nodename, svcname=svcname,
-                                  slave=slave, head=False):
-                children.append(id)
+            if row.comp_rulesets.ruleset_type == "explicit":
+                children.append(row.comp_rulesets_rulesets.child_rset_id)
+                children = recurse_rel(row.comp_rulesets_rulesets.child_rset_id, children)
+            elif row.comp_rulesets.ruleset_type == "contextual" and \
+                 row.comp_rulesets_filtersets.fset_id is not None and \
+                 row.comp_rulesets_filtersets.fset_id in matching_fsets:
+                children.append(row.comp_rulesets_rulesets.child_rset_id)
+                children = recurse_rel(row.comp_rulesets_rulesets.child_rset_id, children)
+        return children
+
+    children = recurse_rel(ruleset_id)
 
     if len(children) > 0:
         q |= db.comp_rulesets.id.belongs(children)
@@ -5993,7 +6014,7 @@ def _comp_get_svc_per_node_ruleset(svcname, nodename, slave=False):
     for fset_id, fset_name in l:
         if fset_id in matching_fsets:
             for rset_id in l[(fset_id, fset_name)]:
-                ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, nodename=nodename, svcname=svcname, slave=slave))
+                ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, matching_fsets=matching_fsets))
 
     return ruleset
 
@@ -6008,7 +6029,7 @@ def _comp_get_svc_ruleset(svcname, slave=False):
     for fset_id, fset_name in l:
         if fset_id in matching_fsets:
             for rset_id in l[(fset_id, fset_name)]:
-                ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, svcname=svcname, slave=slave))
+                ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, matching_fsets=matching_fsets))
 
     # add explicit rulesets variables
     q = db.comp_rulesets_services.svcname == svcname
@@ -6017,7 +6038,7 @@ def _comp_get_svc_ruleset(svcname, slave=False):
                         orderby=db.comp_rulesets_services.ruleset_id,
                         cacheable=True)
     for row in rows:
-        ruleset.update(comp_ruleset_vars(row.ruleset_id, svcname=svcname, slave=slave))
+        ruleset.update(comp_ruleset_vars(row.ruleset_id, svcname=svcname, matching_fsets=matching_fsets))
 
     return ruleset
 
@@ -6064,7 +6085,7 @@ def _comp_get_ruleset(nodename):
     for fset_id, fset_name in l:
         if fset_id in matching_fsets:
             for rset_id in l[(fset_id, fset_name)]:
-                ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, nodename=nodename))
+                ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, matching_fsets=matching_fsets))
 
     # add explicit rulesets variables
     q = db.comp_rulesets_nodes.nodename == nodename
@@ -6072,7 +6093,7 @@ def _comp_get_ruleset(nodename):
                         orderby=db.comp_rulesets_nodes.ruleset_id,
                         cacheable=True)
     for row in rows:
-        ruleset.update(comp_ruleset_vars(row.ruleset_id, nodename=nodename))
+        ruleset.update(comp_ruleset_vars(row.ruleset_id, matching_fsets=matching_fsets))
 
     ruleset = _comp_remove_dup_vars(ruleset)
 
@@ -8930,4 +8951,1322 @@ def json_form_submit(form_name, form_data):
     log = ajax_generic_form_submit(form, data, form_data)
 
     return str(log)
+
+def json_tree_groups():
+    groups = {
+     'data': 'groups',
+     'children': [],
+    }
+    sql = """ select id,role from auth_group where role not like "user_%" and privilege = "F" order by role"""
+    rows = db.executesql(sql, as_dict=True)
+    h = {}
+    for row in rows:
+        _data = {
+          "attr": {"id": "grp%d"%row['id'], "rel": "group", "obj_id": row['id']},
+          "data": row['role'],
+        }
+        groups['children'].append(_data)
+    return groups
+
+def json_tree_filters():
+    filters = {
+     'data': 'filters',
+     'children': [],
+    }
+    q = db.gen_filters.id > 0
+    o = db.gen_filters.f_table | db.gen_filters.f_field
+    rows = db(q).select()
+    h = {}
+    for row in rows:
+        _data = {
+          "attr": {"id": "f%d"%row.id, "rel": "filter", "obj_id": row.id},
+          "data": "%s %s %s" % (row.f_field, row.f_op, row.f_value),
+        }
+        if row.f_table not in h:
+            h[row.f_table] = []
+        h[row.f_table].append(_data)
+    for table in ('nodes', 'services', 'svcmon', 'node_hba', 'b_disk_app'):
+        if table in h:
+            l = h[table]
+        else:
+            l = []
+        _data = {
+         'data': table,
+         'attr': {"rel": "table"},
+         'children': l,
+        }
+        filters['children'].append(_data)
+    return filters
+
+def json_tree_filtersets():
+    def recurse_json_tree_filtersets(data, parent_ids=[]):
+        l = []
+        for o in data:
+            if o['type'] == 'filter':
+                row = o['data'].gen_filters
+                tmp_parent_ids = parent_ids + ["f%d"%row.id]
+                _data = {
+                  "attr": {"id": "_".join(tmp_parent_ids), "rel": "filter", "obj_id": row.id},
+                  "data": "%s %s.%s %s %s" % (o['op'], row.f_table, row.f_field, row.f_op, row.f_value),
+                }
+            elif o['type'] == 'filterset':
+                parent_ids.append("fset%d"%o['fset_id'])
+                _data = {
+                  "attr": {"id": "_".join(parent_ids), "rel": "filterset", "obj_id": o['fset_id']},
+                  "data": "%s %s" % (o['op'], fset_names[o['fset_id']]),
+                  "children": recurse_json_tree_filtersets(o['data'], parent_ids),
+                }
+            l.append(_data)
+        return l
+
+    fset_names = {}
+    q = db.gen_filtersets.id > 0
+    rows = db(q).select()
+    for row in rows:
+        fset_names[row.id] = row.fset_name
+
+    filtersets = {
+     'data': 'filtersets',
+     'children': [],
+    }
+    fset_data = comp_get_fset_data()
+    for fset_id in fset_data:
+        l = recurse_json_tree_filtersets(fset_data[fset_id], parent_ids=["fset%d"%fset_id])
+        _data = {
+          "attr": {"id": "fset%d"%fset_id, "rel": "filterset", "obj_id": fset_id},
+          "data": fset_names[fset_id],
+          "children": l,
+        }
+        filtersets['children'].append(_data)
+
+    return filtersets
+
+def json_tree_rulesets():
+    rulesets = {
+      'data': 'rulesets',
+      'children': [],
+    }
+
+    q = db.comp_rulesets_rulesets.id > 0
+    rows = db(q).select(orderby=db.comp_rulesets_rulesets.parent_rset_id, cacheable=True)
+    rsets_relations = {}
+    for row in rows:
+        if row.parent_rset_id not in rsets_relations:
+            rsets_relations[row.parent_rset_id] = []
+        rsets_relations[row.parent_rset_id].append(row.child_rset_id)
+
+    q = db.comp_rulesets_filtersets.id > 0
+    q &= db.comp_rulesets_filtersets.fset_id == db.gen_filtersets.id
+    rows = db(q).select(cacheable=True)
+    rsets_fsets = {}
+    for row in rows:
+        if row.comp_rulesets_filtersets.ruleset_id not in rsets_fsets:
+            rsets_fsets[row.comp_rulesets_filtersets.ruleset_id] = []
+        rsets_fsets[row.comp_rulesets_filtersets.ruleset_id].append(row)
+
+    q = db.comp_rulesets_variables.id > 0
+    o = db.comp_rulesets_variables.ruleset_id | db.comp_rulesets_variables.var_name
+    rows = db(q).select(orderby=o, cacheable=True)
+    rsets_variables = {}
+    for row in rows:
+        if row.ruleset_id not in rsets_variables:
+            rsets_variables[row.ruleset_id] = []
+        rsets_variables[row.ruleset_id].append(row)
+
+    q = db.comp_ruleset_team_responsible.id > 0
+    q &= db.comp_ruleset_team_responsible.group_id == db.auth_group.id
+    rows = db(q).select(cacheable=True)
+    rsets_groups = {}
+    for row in rows:
+        if row.comp_ruleset_team_responsible.ruleset_id not in rsets_groups:
+            rsets_groups[row.comp_ruleset_team_responsible.ruleset_id] = []
+        rsets_groups[row.comp_ruleset_team_responsible.ruleset_id].append(row)
+
+    q = db.comp_rulesets.id > 0
+    q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+
+    rows = db(q).select(groupby=db.comp_rulesets.id, cacheable=True)
+    rsets = {}
+    for row in rows:
+        rsets[row.comp_rulesets.id] = row.comp_rulesets
+
+    def recurse_rset(rset, _data={}, parent_ids=[]):
+        child_rsets = []
+        parent_ids.append("rset%d"%rset.id)
+        for rset_id in rsets_relations.get(rset.id, []):
+             if rset_id not in rsets:
+                 continue
+             child_rsets.append(recurse_rset(rsets[rset_id], parent_ids=copy.copy(parent_ids)))
+        fsets = []
+        for v in rsets_fsets.get(rset.id, []):
+            _parent_ids = parent_ids + ["fset%d"%v.comp_rulesets_filtersets.fset_id]
+            vdata = {
+             "attr": {"id": "_".join(_parent_ids), "rel": "filterset", "obj_id": v.comp_rulesets_filtersets.fset_id, "class": "jstree-draggable"},
+             "data": v.gen_filtersets.fset_name,
+            }
+            fsets.append(vdata)
+        variables = []
+        for v in rsets_variables.get(rset.id, []):
+            _parent_ids = parent_ids + ["var%d"%v.id]
+            vdata = {
+             "attr": {"id": "_".join(_parent_ids), "rel": "variable", "obj_id": v.id, "class": "jstree-draggable"},
+             "data": v.var_name,
+            }
+            variables.append(vdata)
+        groups = []
+        for v in rsets_groups.get(rset.id, []):
+            _parent_ids = parent_ids + ["grp%d"%v.comp_ruleset_team_responsible.group_id]
+            vdata = {
+             "attr": {"id": "_".join(_parent_ids), "rel": "group", "obj_id": v.comp_ruleset_team_responsible.group_id, "class": "jstree-draggable"},
+             "data": v.auth_group.role,
+            }
+            groups.append(vdata)
+        _data = {
+          "attr": {"id": "_".join(parent_ids), "rel": "ruleset", "obj_id": rset.id, "rset_type": rset.ruleset_type, "class": "jstree-draggable,jstree-drop"},
+          "data": rset.ruleset_name,
+          "children": groups+fsets+variables+child_rsets,
+        }
+        return _data
+
+    for row in rows:
+        rset = row.comp_rulesets
+        _data = recurse_rset(rset, parent_ids=[])
+        rulesets['children'].append(_data)
+
+    return rulesets
+
+@service.json
+def json_tree():
+    data = [
+      json_tree_groups(),
+      json_tree_filters(),
+      json_tree_filtersets(),
+      json_tree_rulesets(),
+    ]
+    return data
+
+def comp_admin():
+    q = db.forms.form_type == "obj"
+    rows = db(q).select(db.forms.form_name,
+                        cacheable=True,
+                        orderby=db.forms.form_name)
+    var_class_names = [row.form_name for row in rows]
+    var_class_names = map(lambda x: '"'+x+'"', var_class_names)
+
+    js = """jstree_data = {
+     "types": {
+      "types": {
+       "group": {
+        "icon": {
+         "image": "%(static)s/guys16.png",
+        },
+       },
+       "filter": {
+        "icon": {
+         "image": "%(static)s/filter16.png",
+        },
+       },
+       "filterset": {
+        "icon": {
+         "image": "%(static)s/filter16.png",
+        },
+       },
+       "ruleset": {
+        "icon": {
+         "image": "%(static)s/pkg16.png",
+        },
+       },
+       "variable": {
+        "icon": {
+         "image": "%(static)s/comp16.png",
+        },
+       },
+       "table": {
+        "icon": {
+         "image": "%(static)s/db16.png",
+        },
+       },
+      },
+     },
+     "json_data" : {
+      "ajax" : {
+       "url" : "%(url)s",
+      },
+     },
+     "contextmenu": {
+       "items": function(node){
+         var_class_names = [%(var_class_names)s]
+         var_classes = {}
+         function var_class_entry(var_class) {
+           return {
+             "label": var_class,
+             "action": function(obj){
+               $.ajax({
+                 async: false,
+                 type: "POST",
+                 url: "%(url_action)s",
+                 data: {
+                  "operation": "set_var_class",
+                  "var_class": var_class,
+                  "obj_id": obj.attr("obj_id"),
+                 },
+                 success: function(msg){
+                   $("[rel="+obj.attr('rel')+"][obj_id="+obj.attr('obj_id')+"]").children("a").click()
+                 }
+               });
+             }
+           }
+         }
+         for (i=0;i<var_class_names.length;i++) {
+           var var_class = var_class_names[i]
+           var_classes['set_var_class_'+var_class] = var_class_entry(var_class)
+         }
+         h = {
+         "remove" : {
+           "label": "Delete",
+           "_disabled": false,
+           "separator_before": false,
+           "separator_after": false,
+           "icon": false,
+           "action": function(obj){this.remove(obj)}
+         },
+         "rename" : {
+           "label": "Rename",
+           "_disabled": false,
+           //"_class": "class",
+           "separator_before": false,
+           "separator_after": false,
+           "icon": false,
+           //"submenu": {},
+           "action": function(obj){this.rename(obj)}
+         }
+       }
+       if (node.attr("rel")=="ruleset") {
+         h["create"] = {
+           "label": "Add variable",
+           "separator_before": false,
+           "separator_after": false,
+           "icon": false,
+           "action": function(obj){this.create(obj, "first", {"attr": {"rel": "variable"}})}
+         }
+         h["clone"] = {
+           "label": "Clone",
+           "action": function(obj){
+             $.ajax({
+               async: false,
+               type: "POST",
+               url: "%(url_action)s",
+               data: {
+                "operation": "clone",
+                "obj_id": obj.attr("obj_id"),
+                "obj_type": obj.attr("rel"),
+               },
+               success: function(msg){
+                 $("[name=catree]:visible").jstree("refresh");
+               }
+             });
+           }
+         }
+         h["set_publication"] = {
+           "label": "Set publication",
+           "separator_before": false,
+           "separator_after": false,
+           "icon": false,
+           "submenu": {
+             "published": {
+               "label": "Published",
+               "action": function(obj){
+                 $.ajax({
+                   async: false,
+                   type: "POST",
+                   url: "%(url_action)s",
+                   data: {
+                    "operation": "set_public",
+                    "publication": true,
+                    "obj_id": obj.attr("obj_id"),
+                   },
+                   success: function(msg){
+                     $("[rel="+obj.attr('rel')+"][obj_id="+obj.attr('obj_id')+"]").children("a").click()
+                   }
+                 });
+               }
+             },
+             "not_published": {
+               "label": "Not published",
+               "action": function(obj){
+                 $.ajax({
+                   async: false,
+                   type: "POST",
+                   url: "%(url_action)s",
+                   data: {
+                    "operation": "set_public",
+                    "publication": false,
+                    "obj_id": obj.attr("obj_id"),
+                   },
+                   success: function(msg){
+                     $("[rel="+obj.attr('rel')+"][obj_id="+obj.attr('obj_id')+"]").children("a").click()
+                   }
+                 });
+               }
+             },
+           }
+         }
+         if (node.attr("rset_type") == "contextual") {
+           h["detach_filterset"] = {
+             "label": "Detach filterset",
+             "action": function(obj){
+               $.ajax({
+                 async: false,
+                 type: "POST",
+                 url: "%(url_action)s",
+                 data: {
+                  "operation": "detach_filterset",
+                  "obj_id": obj.attr("obj_id"),
+                 },
+                 success: function(msg){
+                   $("[name=catree]:visible").jstree("refresh");
+                 }
+               });
+             }
+           }
+         }
+         if (node.parents("li").attr("rel") == "ruleset") {
+           h["remove"]["_disabled"] = true
+           h["detach_ruleset"] = {
+             "label": "Detach ruleset",
+             "action": function(obj){
+               $.ajax({
+                 async: false,
+                 type: "POST",
+                 url: "%(url_action)s",
+                 data: {
+                  "operation": "detach_ruleset",
+                  "publication": false,
+                  "obj_id": obj.attr("obj_id"),
+                  "parent_obj_id": obj.parents("li").attr("obj_id"),
+                 },
+                 success: function(msg){
+                   $("[name=catree]:visible").jstree("refresh");
+                 }
+               });
+             }
+           }
+         }
+       } else if (node.attr("rel")=="group") {
+         if (node.parents("li").attr("rel") == "ruleset") {
+           h["remove"]["_disabled"] = true
+           h["rename"]["_disabled"] = true
+           h["detach_group"] = {
+             "label": "Detach group",
+             "action": function(obj){
+               $.ajax({
+                 async: false,
+                 type: "POST",
+                 url: "%(url_action)s",
+                 data: {
+                  "operation": "detach_group",
+                  "obj_id": obj.attr("obj_id"),
+                  "parent_obj_id": obj.parents("li").attr("obj_id")
+                 },
+                 success: function(msg){
+                   $("[name=catree]:visible").jstree("refresh");
+                 }
+               });
+             }
+           }
+         }
+       } else if (node.attr("rel")=="variable") {
+         h["set_var_class"] = {
+           "label": "Set variable class",
+           "separator_before": false,
+           "separator_after": false,
+           "icon": false,
+           "submenu": var_classes,
+         }
+       } else if (node.attr("rel")=="filterset") {
+         if (node.parents("li").attr("rel") == "ruleset") {
+           h["remove"]["_disabled"] = true
+           h["rename"]["_disabled"] = true
+           h["detach_filterset"] = {
+             "label": "Detach filterset",
+             "action": function(obj){
+               $.ajax({
+                 async: false,
+                 type: "POST",
+                 url: "%(url_action)s",
+                 data: {
+                  "operation": "detach_filterset",
+                  "obj_id": node.parents("li").attr("obj_id"),
+                 },
+                 success: function(msg){
+                   $("[name=catree]:visible").jstree("refresh");
+                 }
+               });
+             }
+           }
+         }
+       }
+       return h
+       }
+     },
+     "search": {
+       "show_only_matches": false
+     },
+     "crrm": {
+       "move": {
+         "always_copy": false,
+         "check_move": function (m) {
+            if (m.o.attr('rel')=="filterset" && m.np.attr('rel')=="ruleset") { return true }
+            if (m.o.attr('rel')=="ruleset" && m.np.attr('rel')=="ruleset") { return true }
+            if (m.o.attr('rel')=="variable" && m.np.attr('rel')=="ruleset") { return true }
+            if (m.o.attr('rel')=="filter" && m.np.attr('rel')=="filterset") { return true }
+            if (m.o.attr('rel')=="group" && m.np.attr('rel')=="ruleset") { return true }
+            return false
+         }
+       }
+     },
+     "plugins" : [
+       "themes",
+       "json_data",
+       "ui",
+       "types",
+       "crrm",
+       "contextmenu",
+       "dnd",
+       //"hotkeys",
+       "cookies",
+       "search",
+       "adv_search"
+     ]
+    }
+    function __rename(e, data) {
+      data.rslt.obj.each(function() {
+        $.ajax({
+        async: false,
+        type: "POST",
+        url: "%(url_action)s",
+        data: {
+          "operation": "rename",
+          "obj_type": $(this).attr('rel'),
+          "obj_id": $(this).attr('obj_id'),
+          "new_name": data.rslt.new_name,
+        },
+        success: function(msg){
+          if (msg != "0") {
+            $.jstree.rollback(data.rlbk)
+          } else {
+            $("[name=catree]:visible").jstree("refresh");
+          }
+        }
+      });
+     })
+    }
+    function __move(e, data) {
+        if (data.rslt.cy) {
+            operation = "copy"
+        } else {
+            operation = "move"
+        }
+        $.ajax({
+          async: false,
+          type: "POST",
+          url: "%(url_action)s",
+          data: {
+            "operation": operation,
+            "obj_type": data.rslt.o.attr("rel"),
+            "obj_id": data.rslt.o.attr("obj_id"),
+            "dst_type": data.rslt.np.attr("rel"),
+            "dst_id": data.rslt.np.attr("obj_id"),
+            "parent_obj_id": data.rslt.op.attr("obj_id"),
+          },
+          success: function(msg){
+            $("[name=catree]:visible").jstree("refresh");
+          }
+        });
+    }
+    function __remove(e, data) {
+      data.rslt.obj.each(function() {
+        $.ajax({
+          async: false,
+          type: "POST",
+          url: "%(url_action)s",
+          data: {
+            "operation": "delete",
+            "obj_type": $(this).attr("rel"),
+            "obj_id": $(this).attr("obj_id"),
+          },
+          success: function(msg){
+            if (msg != "0") {
+              $.jstree.rollback(data.rlbk)
+            } else {
+              $("[name=catree]:visible").jstree("refresh");
+            }
+          }
+        });
+      });
+    }
+    function __create(e, data) {
+      data.rslt.obj.each(function() {
+        new_rel = ""
+        if (data.rslt.parent.attr("rel") == "ruleset") {
+          new_rel = "variable"
+        }
+        $.ajax({
+          async: false,
+          type: "POST",
+          url: "%(url_action)s",
+          data: {
+            "operation": "create",
+            "obj_name": $(this).text(),
+            "obj_type": new_rel,
+            "parent_obj_id": data.rslt.parent.attr("obj_id"),
+          },
+          success: function(msg){
+            if (msg != "0") {
+              $.jstree.rollback(data.rlbk)
+            } else {
+              $("[name=catree]:visible").jstree("refresh");
+            }
+          }
+        });
+      });
+    }
+    function __select(e, data) {
+      data.rslt.obj.each(function() {
+        $.ajax({
+        async: false,
+        type: "POST",
+        url: "%(url_action)s",
+        data: {
+          "operation": "show",
+          "obj_type": $(this).attr('rel'),
+          "obj_id": $(this).attr('obj_id'),
+        },
+        success: function(msg){
+          $("#cainfo").html(msg)
+          $("#cainfo").find("script").each(function(i){
+            eval($(this).text());
+            $(this).remove();
+          });
+        }
+      });
+     });
+    }
+    $("#catree").jstree(jstree_data).bind("rename.jstree", __rename)
+                                    .bind("move_node.jstree", __move)
+                                    .bind("remove.jstree", __remove)
+                                    .bind("create.jstree", __create)
+                                    .bind("select_node.jstree", __select)
+
+    jstree_data["cookies"] = {
+      "save_opened": "jstree_open2",
+      "save_selected": "jstree_select2",
+    }
+    $("#catree2").jstree(jstree_data).bind("rename.jstree", __rename)
+                                     .bind("move_node.jstree", __move)
+                                     .bind("remove.jstree", __remove)
+                                     .bind("create.jstree", __create)
+                                     .bind("select_node.jstree", __select)
+
+   var catimer;
+   $("#casearch").keyup(function(){
+     clearTimeout(catimer);
+     catimer=setTimeout(function(){
+       val = $("#casearch").val()
+       if (val.length > 0) {
+         $("#catree").jstree("search", val);
+       } else {
+         $("#catree").jstree("clear_search");
+       }
+     }, 800)
+   })
+   $("#sep").click(function(){
+     $("#catree2").toggle()
+     $("#catree2:visible").jstree("refresh");
+   })
+     """ % dict(
+      url = URL(r=request, f="call/json/json_tree"),
+      url_action = URL(r=request, f="call/json/json_tree_action"),
+      static = URL(r=request, c="static", f="/a")[0:-2],
+      var_class_names = ', '.join(var_class_names),
+    )
+    d = DIV(
+      DIV(
+        INPUT(
+          _id="casearch",
+        ),
+        _class="wfsearch",
+        _style="margin-bottom:0.5em;margin-top:0.5em;",
+      ),
+      DIV(
+        DIV(
+          _id="catree",
+          _name="catree",
+          _style="display:table-cell;width:20%;text-align:left",
+        ),
+        DIV(
+          _id="catree2",
+          _name="catree",
+          _style="display:table-cell;width:20%;text-align:left;display:none",
+        ),
+        DIV(
+          XML("&nbsp;"),
+          _id="sep",
+          _style="cursor:pointer;display:table-cell;width:5px;text-align:left;background-color:lightgrey",
+        ),
+        DIV(
+          _id="cainfo",
+          _style="display:table-cell;min-width:59%;text-align:left;padding-left:1em",
+        ),
+        _style="display:table-row",
+      ),
+      SCRIPT(js),
+      _style="text-align:left",
+    )
+    return dict(table=d)
+
+@service.json
+def json_tree_action():
+    action = request.vars.operation
+    if action == "rename":
+        return json_tree_action_rename()
+    elif action == "show":
+        return json_tree_action_show()
+    elif action == "create":
+        return json_tree_action_create()
+    elif action == "delete":
+        return json_tree_action_delete()
+    elif action == "clone":
+        return json_tree_action_clone()
+    elif action == "move":
+        if request.vars.obj_type == "variable" and \
+           request.vars.dst_type == "ruleset":
+            return json_tree_action_move_var_to_rset(request.vars.obj_id,
+                                                     request.vars.dst_id)
+        if request.vars.obj_type == "ruleset" and \
+           request.vars.dst_type == "ruleset":
+            return json_tree_action_move_rset_to_rset(request.vars.obj_id,
+                                                      request.vars.parent_obj_id,
+                                                      request.vars.dst_id)
+        if request.vars.obj_type == "filterset" and \
+           request.vars.dst_type == "ruleset":
+            return json_tree_action_move_fset_to_rset(request.vars.obj_id,
+                                                      request.vars.dst_id)
+        if request.vars.obj_type == "group" and \
+           request.vars.dst_type == "ruleset":
+            return json_tree_action_move_group_to_rset(request.vars.obj_id,
+                                                       request.vars.dst_id)
+    elif action == "copy":
+        if request.vars.obj_type == "variable" and \
+           request.vars.dst_type == "ruleset":
+            return json_tree_action_copy_var_to_rset(request.vars.obj_id,
+                                                     request.vars.dst_id)
+        if request.vars.obj_type == "ruleset" and \
+           request.vars.dst_type == "ruleset":
+            return json_tree_action_copy_rset_to_rset(request.vars.obj_id,
+                                                      request.vars.parent_obj_id,
+                                                      request.vars.dst_id)
+        if request.vars.obj_type == "filterset" and \
+           request.vars.dst_type == "ruleset":
+            return json_tree_action_move_fset_to_rset(request.vars.obj_id,
+                                                      request.vars.dst_id)
+        if request.vars.obj_type == "group" and \
+           request.vars.dst_type == "ruleset":
+            return json_tree_action_move_group_to_rset(request.vars.obj_id,
+                                                       request.vars.dst_id)
+    elif action == "set_var_class":
+        return json_tree_action_set_var_class(request.vars.obj_id,
+                                              request.vars.var_class)
+    elif action == "set_public":
+        return json_tree_action_set_public(request.vars.obj_id,
+                                           request.vars.publication)
+    elif action == "detach_ruleset":
+        return json_tree_action_detach_ruleset(request.vars.obj_id,
+                                               request.vars.parent_obj_id)
+    elif action == "detach_group":
+        return json_tree_action_detach_group(request.vars.obj_id,
+                                             request.vars.parent_obj_id)
+    elif action == "detach_filterset":
+        return json_tree_action_detach_filterset(request.vars.obj_id)
+    else:
+        return "-1"
+
+def json_tree_action_clone():
+    if request.vars.obj_type == "ruleset":
+        return json_tree_action_clone_ruleset(request.vars.obj_id)
+    return ""
+
+def json_tree_action_delete():
+    if request.vars.obj_type == "variable":
+        return json_tree_action_delete_variable(request.vars.obj_id)
+    elif request.vars.obj_type == "ruleset":
+        return json_tree_action_delete_ruleset(request.vars.obj_id)
+    return ""
+
+def json_tree_action_create():
+    if request.vars.obj_type == "variable":
+        return json_tree_action_create_variable(request.vars.parent_obj_id, request.vars.obj_name)
+    return ""
+
+def json_tree_action_show():
+    if request.vars.obj_type == "ruleset":
+        return json_tree_action_show_ruleset(request.vars.obj_id)
+    elif request.vars.obj_type == "variable":
+        return json_tree_action_show_variable(request.vars.obj_id)
+    return ""
+
+def json_tree_action_rename():
+    if request.vars.obj_type == "ruleset":
+        return json_tree_action_rename_ruleset(request.vars.obj_id, request.vars.new_name)
+    if request.vars.obj_type == "variable":
+        return json_tree_action_rename_variable(request.vars.obj_id, request.vars.new_name)
+    return "-1"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_rename_ruleset(rset_id, new):
+    if len(db(db.comp_rulesets.ruleset_name==new).select(cacheable=True)) > 0:
+        return {"err": "rename ruleset failed: new ruleset name already exists"}
+    q = db.comp_rulesets.id == rset_id
+    q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q).select(db.comp_rulesets.ruleset_name, groupby=db.comp_rulesets.id, cacheable=True)
+    if len(rows) == 0:
+        return {"err": "rename ruleset failed: can't find source ruleset"}
+    old = rows[0].ruleset_name
+    n = db(db.comp_rulesets.id == rset_id).update(ruleset_name=new)
+    _log('compliance.ruleset.rename',
+         'renamed ruleset %(old)s as %(new)s',
+         dict(old=old, new=new))
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_rename_variable(var_id, new):
+    q = db.comp_rulesets_variables.id == var_id
+    q &= db.comp_rulesets_variables.ruleset_id == db.comp_rulesets.id
+    q &= db.comp_rulesets_variables.ruleset_id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q).select(db.comp_rulesets.ruleset_name,
+                        db.comp_rulesets_variables.var_name,
+                        groupby=db.comp_rulesets_variables.id,
+                        cacheable=True)
+    if len(rows) == 0:
+        return {"err": "rename variable failed: can't find variable"}
+    rset_name = rows[0].comp_rulesets.ruleset_name
+    old = rows[0].comp_rulesets_variables.var_name
+    n = db(db.comp_rulesets_variables.id == var_id).update(var_name=new)
+    _log('compliance.variable.rename',
+         'renamed variable %(old)s as %(new)s in ruleset %(rset_name)s',
+         dict(old=old, new=new, rset_name=rset_name))
+    return "0"
+
+def json_tree_action_show_ruleset(rset_id):
+    q = db.comp_rulesets.id == rset_id
+    j = db.comp_rulesets.id == db.comp_rulesets_filtersets.ruleset_id
+    l1 = db.comp_rulesets_filtersets.on(j)
+    j = db.comp_rulesets_filtersets.fset_id == db.gen_filtersets.id
+    l2 = db.gen_filtersets.on(j)
+    row = db(q).select(db.comp_rulesets.ALL,
+                       db.comp_rulesets_filtersets.ALL,
+                       db.gen_filtersets.ALL,
+                       left=(l1,l2), cacheable=True).first()
+    if row is None:
+        return "-1"
+    if 'comp_rulesets' in row:
+        rset = row.comp_rulesets
+    else:
+        rset = row
+    if 'comp_rulesets_filtersets' in row:
+        fset_name = row.gen_filtersets.fset_name
+    else:
+        fset_name = T("not set")
+    l = []
+    l.append(H2(rset.ruleset_name))
+    l.append(P(T('Type')+': ' + str(rset.ruleset_type)))
+    if rset.ruleset_type == "contextual":
+        l.append(P(T('Filterset')+': ' + str(fset_name)))
+    l.append(P(T('Public')+': ' + str(rset.ruleset_public)))
+    l.append(HR())
+
+    rset_id = int(rset_id)
+    q = db.comp_rulesets_rulesets.id > 0
+    rows = db(q).select(cacheable=True)
+    rel = {}
+    for row in rows:
+        if row.parent_rset_id not in rel:
+            rel[row.parent_rset_id] = []
+        rel[row.parent_rset_id].append(row.child_rset_id)
+
+    def recurse_rel(rset_id, l=[]):
+        l.append(rset_id)
+        for child_rset_id in rel.get(rset_id, []):
+            l = recurse_rel(child_rset_id, l)
+        return l
+
+    rset_ids = recurse_rel(rset_id)
+
+    q = db.comp_rulesets_variables.ruleset_id.belongs(rset_ids)
+    rows = db(q).select()
+    renderer = col_var_value(title='Value',
+                             field='var_value',
+                             table='comp_rulesets')
+    t = table_comp_rulesets("treetable")
+    renderer.t = t
+    for row in rows:
+        l.append(H3(row.var_name))
+        l.append(P(T("Variable class: %(var_class)s", dict(var_class=str(row.var_class)))))
+        l.append(P(T("Last modified by %(user)s on %(date)s", dict(user=row.var_author, date=str(row.var_updated)))))
+        l.append(renderer.html(row))
+    return DIV(l)
+
+def json_tree_action_show_variable(var_id):
+    q = db.comp_rulesets_variables.id == var_id
+    rows = db(q).select()
+    renderer = col_var_value(title='Value',
+                             field='var_value',
+                             table='comp_rulesets')
+    t = table_comp_rulesets("treetable")
+    renderer.t = t
+    l = []
+    for row in rows:
+        l.append(H3(row.var_name))
+        l.append(P(T("Variable class: %(var_class)s", dict(var_class=str(row.var_class)))))
+        l.append(P(T("Last modified by %(user)s on %(date)s", dict(user=row.var_author, date=str(row.var_updated)))))
+        l.append(renderer.html(row))
+    return DIV(l)
+
+@auth.requires_membership('CompManager')
+def json_tree_action_create_variable(rset_id, var_name):
+    var_name = var_name.strip()
+    try:
+        var_name = var_name[4:]
+    except:
+        pass
+    db.comp_rulesets_variables.insert(
+      ruleset_id=rset_id,
+      var_name=var_name,
+      var_author=user_name(),
+      var_updated=datetime.datetime.now(),
+      var_class="raw",
+      var_value="",
+    )
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_delete_variable(var_id):
+    q = db.comp_rulesets_variables.id == var_id
+    q1 = db.comp_rulesets.id == db.comp_rulesets_variables.ruleset_id
+    v = db(q & q1).select(cacheable=True).first()
+    if v is None:
+        return "0"
+    db(q).delete()
+    _log('compliance.variable.delete',
+         'deleted variable %(var_name)s from ruleset %(rset_name)s',
+         dict(var_name=v.comp_rulesets_variables.var_name,
+              rset_name=v.comp_rulesets.ruleset_name))
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_set_var_class(var_id, var_class):
+    q = db.comp_rulesets_variables.id == var_id
+    q1 = db.comp_rulesets.id == db.comp_rulesets_variables.ruleset_id
+    q1 &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return "-1"
+    db(q).update(var_class=var_class)
+    _log('compliance.variable.change',
+         'set variable %(var_name)s class from %(old)s to %(new)s in ruleset %(rset_name)s',
+         dict(var_name=v.comp_rulesets_variables.var_name,
+              old=v.comp_rulesets_variables.var_class,
+              new=var_class,
+              rset_name=v.comp_rulesets.ruleset_name))
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_set_public(rset_id, public):
+    q = db.comp_rulesets.id == rset_id
+    q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return "-1"
+    db(q).update(ruleset_public=public)
+    _log('compliance.ruleset.change',
+         'set ruleset %(rset_name)s publication from %(old)s to %(new)s',
+         dict(rset_name=v.comp_rulesets.ruleset_name,
+              old=v.comp_rulesets.ruleset_public,
+              new=public))
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_move_var_to_rset(var_id, rset_id):
+    q = db.comp_rulesets_variables.id == var_id
+    q1 = db.comp_rulesets_variables.ruleset_id == db.comp_ruleset_team_responsible.ruleset_id
+    q1 &= db.comp_rulesets_variables.ruleset_id == db.comp_rulesets.id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "variable not found or originating ruleset not owned by you"}
+
+    q2 = db.comp_rulesets.id == rset_id
+    q3 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q3 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q2&q3).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        return {"err": "destination ruleset not found or not owned by you"}
+
+    db(q).update(ruleset_id=rset_id)
+    _log('compliance.variable.change',
+         'move variable %(var_name)s from ruleset %(rset_name)s to %(dst_rset_name)s',
+         dict(rset_name=v.comp_rulesets.ruleset_name,
+              dst_rset_name=w.comp_rulesets.ruleset_name,
+              var_name=v.comp_rulesets_variables.var_name))
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_copy_var_to_rset(var_id, rset_id):
+    q = db.comp_rulesets_variables.id == var_id
+    q1 = db.comp_rulesets_variables.ruleset_id == db.comp_ruleset_team_responsible.ruleset_id
+    q1 &= db.comp_rulesets_variables.ruleset_id == db.comp_rulesets.id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "variable not found or originating ruleset not owned by you"}
+
+    q2 = db.comp_rulesets.id == rset_id
+    q3 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q3 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q2&q3).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        return {"err": "destination ruleset not found or not owned by you"}
+
+    _v = v.comp_rulesets_variables
+    db.comp_rulesets_variables.insert(
+      ruleset_id=rset_id,
+      var_name=_v.var_name,
+      var_class=_v.var_class,
+      var_value=_v.var_value,
+      var_author=user_name(),
+      var_updated=datetime.datetime.now(),
+    )
+    _log('compliance.variable.copy',
+         'copy variable %(var_name)s from ruleset %(rset_name)s to %(dst_rset_name)s',
+         dict(rset_name=v.comp_rulesets.ruleset_name,
+              dst_rset_name=w.comp_rulesets.ruleset_name,
+              var_name=v.comp_rulesets_variables.var_name))
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_copy_rset_to_rset(rset_id, parent_rset_id, dst_rset_id):
+    json_tree_action_copy_or_move_rset_to_rset(rset_id, parent_rset_id, dst_rset_id, move=False)
+
+@auth.requires_membership('CompManager')
+def json_tree_action_move_rset_to_rset(rset_id, parent_rset_id, dst_rset_id):
+    json_tree_action_copy_or_move_rset_to_rset(rset_id, parent_rset_id, dst_rset_id, move=True)
+
+@auth.requires_membership('CompManager')
+def json_tree_action_copy_or_move_rset_to_rset(rset_id, parent_rset_id, dst_rset_id, move=False):
+    q = db.comp_rulesets_rulesets.parent_rset_id == dst_rset_id
+    q &= db.comp_rulesets_rulesets.child_rset_id == rset_id
+    if db(q).count() > 0:
+        return {"err": "ruleset already attached"}
+
+    q = db.comp_rulesets.id == rset_id
+    q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "attached ruleset not found or not owned by you"}
+
+    q2 = db.comp_rulesets.id == dst_rset_id
+    q3 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q3 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q2&q3).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        return {"err": "destination ruleset not found or not owned by you"}
+
+    db.comp_rulesets_rulesets.insert(
+      parent_rset_id=dst_rset_id,
+      child_rset_id=rset_id,
+    )
+    _log('compliance.ruleset.attach',
+         'attach ruleset %(rset_name)s to %(dst_rset_name)s',
+         dict(rset_name=v.comp_rulesets.ruleset_name,
+              dst_rset_name=w.comp_rulesets.ruleset_name))
+    if not move or parent_rset_id is None or parent_rset_id == dst_rset_id:
+        return "0"
+
+    q = db.comp_rulesets_rulesets.parent_rset_id == parent_rset_id
+    q &= db.comp_rulesets_rulesets.child_rset_id == rset_id
+    q1 = db.comp_rulesets_rulesets.parent_rset_id == db.comp_rulesets.id
+    q1 &= db.comp_rulesets_rulesets.parent_rset_id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    x = rows.first()
+    if x is None:
+        return {"err": "parent ruleset not found or not owned by you"}
+
+    db(q).delete()
+    _log('compliance.ruleset.detach',
+         'detach ruleset %(rset_name)s from %(parent_rset_name)s',
+         dict(rset_name=v.comp_rulesets.ruleset_name,
+              parent_rset_name=x.comp_rulesets.ruleset_name))
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_detach_group(group_id, rset_id):
+    q = db.comp_rulesets.id == rset_id
+    q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "ruleset not found or not owned by you"}
+
+    q = db.auth_group.id == group_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        return {"err": "group not found"}
+
+    q = db.comp_ruleset_team_responsible.ruleset_id == rset_id
+    q &= db.comp_ruleset_team_responsible.group_id == group_id
+    db(q).delete()
+    _log('compliance.ruleset.detach',
+         'detach group %(role)s from ruleset %(rset_name)s',
+         dict(rset_name=v.comp_rulesets.ruleset_name,
+              role=w.role))
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_detach_ruleset(rset_id, parent_rset_id):
+    q = db.comp_rulesets.id == parent_rset_id
+    q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "parent ruleset not found or not owned by you"}
+
+    q = db.comp_rulesets.id == rset_id
+    q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        return {"err": "child ruleset not found or not owned by you"}
+
+    q = db.comp_rulesets_rulesets.parent_rset_id == parent_rset_id
+    q &= db.comp_rulesets_rulesets.child_rset_id == rset_id
+    db(q).delete()
+    _log('compliance.ruleset.detach',
+         'detach ruleset %(rset_name)s from %(parent_rset_name)s',
+         dict(rset_name=w.comp_rulesets.ruleset_name,
+              parent_rset_name=v.comp_rulesets.ruleset_name))
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_move_fset_to_rset(fset_id, rset_id):
+    q = db.comp_rulesets.id == rset_id
+    q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "ruleset not found or not owned by you"}
+
+    q = db.gen_filtersets.id == fset_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        return {"err": "filterset not found"}
+
+    q = db.comp_rulesets_filtersets.ruleset_id == rset_id
+    q &= db.comp_rulesets_filtersets.fset_id == fset_id
+    if db(q).count() > 0:
+        return "0"
+
+    db.comp_rulesets_filtersets.update_or_insert(db.comp_rulesets_filtersets.ruleset_id==rset_id,
+                                                 ruleset_id=rset_id,
+                                                 fset_id=fset_id)
+    _log('compliance.ruleset.change',
+         'attach filterset %(fset_name)s to ruleset %(rset_name)s',
+         dict(rset_name=v.comp_rulesets.ruleset_name,
+              fset_name=w.fset_name))
+    return 0
+
+@auth.requires_membership('CompManager')
+def json_tree_action_detach_filterset(rset_id):
+    q = db.comp_rulesets.id == rset_id
+    q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "ruleset not found or not owned by you"}
+
+    q = db.comp_rulesets_filtersets.ruleset_id == rset_id
+    q &= db.gen_filtersets.id == db.comp_rulesets_filtersets.fset_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        return {"err": "filterset not found"}
+
+    q = db.comp_rulesets_filtersets.ruleset_id == rset_id
+    db(q).delete()
+    _log('compliance.filterset.detach',
+         'detach filterset %(fset_name)s from ruleset %(rset_name)s',
+         dict(rset_name=v.comp_rulesets.ruleset_name,
+              fset_name=w.gen_filtersets.fset_name))
+    return 0
+
+@auth.requires_membership('CompManager')
+def json_tree_action_move_group_to_rset(group_id, rset_id):
+    q = db.comp_rulesets.id == rset_id
+    q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "ruleset not found or not owned by you"}
+
+    q = db.auth_group.id == group_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        return {"err": "group not found"}
+
+    q = db.comp_ruleset_team_responsible.ruleset_id == rset_id
+    q &= db.comp_ruleset_team_responsible.group_id == group_id
+    if db(q).count() > 0:
+        return "0"
+
+    db.comp_ruleset_team_responsible.update_or_insert(ruleset_id=rset_id,
+                                                      group_id=group_id)
+    _log('compliance.ruleset.change',
+         'attach group %(role)s to ruleset %(rset_name)s',
+         dict(rset_name=v.comp_rulesets.ruleset_name,
+              role=w.role))
+    return 0
+
+@auth.requires_membership('CompManager')
+def json_tree_action_clone_ruleset(rset_id):
+    q = db.comp_rulesets.id == rset_id
+    rows = db(q).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "source ruleset not found"}
+
+    rset_name = v.ruleset_name
+    clone_rset_name = rset_name+"_clone"
+    q = db.comp_rulesets.ruleset_name == clone_rset_name
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is not None:
+        return {"err": "a ruleset named %s already exists" % clone_rset_name}
+
+    newid = db.comp_rulesets.insert(ruleset_name=clone_rset_name,
+                                    ruleset_type=v.ruleset_type,
+                                    ruleset_public=v.ruleset_public)
+
+    # clone filterset for contextual rulesets
+    if v.ruleset_type == 'contextual':
+        q = db.comp_rulesets.id == rset_id
+        q &= db.comp_rulesets.id == db.comp_rulesets_filtersets.ruleset_id
+        rows = db(q).select(cacheable=True)
+        if len(rows) > 0 and  rows[0].comp_rulesets_filtersets.fset_id is not None:
+            db.comp_rulesets_filtersets.insert(ruleset_id=newid,
+                                               fset_id=rows[0].comp_rulesets_filtersets.fset_id)
+
+    # clone ruleset variables
+    q = db.comp_rulesets_variables.ruleset_id == rset_id
+    rows = db(q).select(cacheable=True)
+    for row in rows:
+        db.comp_rulesets_variables.insert(ruleset_id=newid,
+                                          var_name=row.var_name,
+                                          var_class=row.var_class,
+                                          var_value=row.var_value,
+                                          var_author=user_name())
+    add_default_team_responsible(clone_rset_name)
+
+    # clone parent to children relations
+    q = db.comp_rulesets_rulesets.parent_rset_id==rset_id
+    rows = db(q).select(cacheable=True)
+    for child_rset_id in [r.child_rset_id for r in rows]:
+        db.comp_rulesets_rulesets.insert(parent_rset_id=newid,
+                                         child_rset_id=child_rset_id)
+
+    _log('compliance.ruleset.clone',
+         'cloned ruleset %(o)s from %(n)s',
+         dict(n=rset_name, o=clone_rset_name))
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_delete_ruleset(rset_id):
+    q = db.comp_rulesets.id == rset_id
+    q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "ruleset not found or not owned by you"}
+
+    q = db.comp_rulesets_filtersets.ruleset_id == rset_id
+    db(q).delete()
+
+    q = db.comp_rulesets_nodes.ruleset_id == rset_id
+    db(q).delete()
+
+    q = db.comp_rulesets_services.ruleset_id == rset_id
+    db(q).delete()
+
+    q = db.comp_ruleset_team_responsible.ruleset_id == rset_id
+    db(q).delete()
+
+    q = db.comp_rulesets_rulesets.parent_rset_id == rset_id
+    db(q).delete()
+
+    q = db.comp_rulesets_rulesets.child_rset_id == rset_id
+    db(q).delete()
+
+    q = db.comp_rulesets_variables.ruleset_id == rset_id
+    db(q).delete()
+
+    q = db.comp_rulesets.id == rset_id
+    db(q).delete()
+
+    _log('compliance.ruleset.delete',
+         'deleted ruleset %(rset_name)s',
+         dict(rset_name=v.comp_rulesets.ruleset_name))
+    return "0"
+
 
