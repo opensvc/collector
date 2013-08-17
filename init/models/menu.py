@@ -118,6 +118,8 @@ response.menu = [
               URL(request.application,'compliance','comp_rules')],
              [DIV(T('Modulesets'), _class='action16'), False,
               URL(request.application,'compliance','comp_modules')],
+             [DIV(T('Designer'), _class='wf16'), False,
+              URL(request.application,'compliance','comp_admin')],
          ]
     ],
     [T('Stats'), False, '',

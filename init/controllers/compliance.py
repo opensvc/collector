@@ -9155,7 +9155,13 @@ def comp_admin():
     var_class_names = [row.form_name for row in rows]
     var_class_names = map(lambda x: '"'+x+'"', var_class_names)
 
-    js = """jstree_data = {
+    js = """
+    function json_status(msg){
+      try {
+        $(".flash").html(msg["err"]).slideDown()
+      } catch(e) {}
+    }
+    jstree_data = {
      "types": {
       "types": {
        "group": {
@@ -9214,6 +9220,7 @@ def comp_admin():
                  },
                  success: function(msg){
                    $("[rel="+obj.attr('rel')+"][obj_id="+obj.attr('obj_id')+"]").children("a").click()
+                   json_status(msg)
                  }
                });
              }
@@ -9265,6 +9272,7 @@ def comp_admin():
                },
                success: function(msg){
                  $("[name=catree]:visible").jstree("refresh");
+                   json_status(msg)
                }
              });
            }
@@ -9289,6 +9297,7 @@ def comp_admin():
                    },
                    success: function(msg){
                      $("[rel="+obj.attr('rel')+"][obj_id="+obj.attr('obj_id')+"]").children("a").click()
+                     json_status(msg)
                    }
                  });
                }
@@ -9307,6 +9316,7 @@ def comp_admin():
                    },
                    success: function(msg){
                      $("[rel="+obj.attr('rel')+"][obj_id="+obj.attr('obj_id')+"]").children("a").click()
+                     json_status(msg)
                    }
                  });
                }
@@ -9327,6 +9337,7 @@ def comp_admin():
                  },
                  success: function(msg){
                    $("[name=catree]:visible").jstree("refresh");
+                   json_status(msg)
                  }
                });
              }
@@ -9349,15 +9360,16 @@ def comp_admin():
                  },
                  success: function(msg){
                    $("[name=catree]:visible").jstree("refresh");
+                   json_status(msg)
                  }
                });
              }
            }
          }
        } else if (node.attr("rel")=="group") {
+         h["remove"]["_disabled"] = true
+         h["rename"]["_disabled"] = true
          if (node.parents("li").attr("rel") == "ruleset") {
-           h["remove"]["_disabled"] = true
-           h["rename"]["_disabled"] = true
            h["detach_group"] = {
              "label": "Detach group",
              "action": function(obj){
@@ -9372,11 +9384,21 @@ def comp_admin():
                  },
                  success: function(msg){
                    $("[name=catree]:visible").jstree("refresh");
+                   json_status(msg)
                  }
                });
              }
            }
          }
+       } else if (node.attr("rel") == null) {
+           h["remove"]["_disabled"] = true
+           h["rename"]["_disabled"] = true
+       } else if (node.attr("rel")=="table") {
+           h["remove"]["_disabled"] = true
+           h["rename"]["_disabled"] = true
+       } else if (node.attr("rel")=="filter") {
+           h["remove"]["_disabled"] = true
+           h["rename"]["_disabled"] = true
        } else if (node.attr("rel")=="variable") {
          h["set_var_class"] = {
            "label": "Set variable class",
@@ -9402,6 +9424,7 @@ def comp_admin():
                  },
                  success: function(msg){
                    $("[name=catree]:visible").jstree("refresh");
+                   json_status(msg)
                  }
                });
              }
@@ -9459,6 +9482,7 @@ def comp_admin():
           } else {
             $("[name=catree]:visible").jstree("refresh");
           }
+          json_status(msg)
         }
       });
      })
@@ -9483,6 +9507,7 @@ def comp_admin():
           },
           success: function(msg){
             $("[name=catree]:visible").jstree("refresh");
+            json_status(msg)
           }
         });
     }
@@ -9503,6 +9528,7 @@ def comp_admin():
             } else {
               $("[name=catree]:visible").jstree("refresh");
             }
+            json_status(msg)
           }
         });
       });
@@ -9529,6 +9555,7 @@ def comp_admin():
             } else {
               $("[name=catree]:visible").jstree("refresh");
             }
+            json_status(msg)
           }
         });
       });
@@ -9734,7 +9761,7 @@ def json_tree_action_rename_ruleset(rset_id, new):
         q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
     rows = db(q).select(db.comp_rulesets.ruleset_name, groupby=db.comp_rulesets.id, cacheable=True)
     if len(rows) == 0:
-        return {"err": "rename ruleset failed: can't find source ruleset"}
+        return json.dumps({"err": "rename ruleset failed: can't find source ruleset"})
     old = rows[0].ruleset_name
     n = db(db.comp_rulesets.id == rset_id).update(ruleset_name=new)
     _log('compliance.ruleset.rename',
@@ -9975,11 +10002,36 @@ def json_tree_action_copy_var_to_rset(var_id, rset_id):
 
 @auth.requires_membership('CompManager')
 def json_tree_action_copy_rset_to_rset(rset_id, parent_rset_id, dst_rset_id):
-    json_tree_action_copy_or_move_rset_to_rset(rset_id, parent_rset_id, dst_rset_id, move=False)
+    return json_tree_action_copy_or_move_rset_to_rset(rset_id, parent_rset_id, dst_rset_id, move=False)
 
 @auth.requires_membership('CompManager')
 def json_tree_action_move_rset_to_rset(rset_id, parent_rset_id, dst_rset_id):
-    json_tree_action_copy_or_move_rset_to_rset(rset_id, parent_rset_id, dst_rset_id, move=True)
+    return json_tree_action_copy_or_move_rset_to_rset(rset_id, parent_rset_id, dst_rset_id, move=True)
+
+def rset_loop(rset_id, parent_rset_id):
+    rset_id = int(rset_id)
+    parent_rset_id = int(parent_rset_id)
+    q = db.comp_rulesets_rulesets.id > 0
+    rows = db(q).select()
+    ancestors = {}
+    for row in rows:
+        if row.child_rset_id not in ancestors:
+            ancestors[row.child_rset_id] = []
+        ancestors[row.child_rset_id].append(row.parent_rset_id)
+
+    tested = []
+    def recurse_rel(rset_id, parent_rset_id):
+        if parent_rset_id not in ancestors:
+            return False
+        for _parent_rset_id in ancestors[parent_rset_id]:
+            tested.append("%d-%d"%(rset_id,_parent_rset_id))
+            if rset_id == _parent_rset_id:
+                return True
+            if recurse_rel(rset_id, _parent_rset_id):
+                return True
+        return False
+
+    return recurse_rel(rset_id, parent_rset_id)
 
 @auth.requires_membership('CompManager')
 def json_tree_action_copy_or_move_rset_to_rset(rset_id, parent_rset_id, dst_rset_id, move=False):
@@ -10005,6 +10057,9 @@ def json_tree_action_copy_or_move_rset_to_rset(rset_id, parent_rset_id, dst_rset
     w = rows.first()
     if w is None:
         return {"err": "destination ruleset not found or not owned by you"}
+
+    if rset_loop(rset_id, dst_rset_id):
+        return {"err": "the parent ruleset is already a child of the encapsulated ruleset. abort encapsulation not to cause infinite recursion"}
 
     db.comp_rulesets_rulesets.insert(
       parent_rset_id=dst_rset_id,
