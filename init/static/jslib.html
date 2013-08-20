@@ -64,14 +64,14 @@ function toggle_vis_block(name){
 }
 
 function _toggle_vis(name, mode){
-        cells = document.getElementsByName(name);
-        for(j = 0; j < cells.length; j++) {
-                if (cells[j].style.display == 'none' || cells[j].style.display == "") {
-                        cells[j].style.display = mode;
-                } else {
-                        cells[j].style.display = 'none';
-                }
-        }
+	$("[name="+name+"]").each(function(){
+		if ($(this).is(":visible")) {
+			$(this).hide()
+		} else {
+			$(this).show()
+			$(this).children("select").combobox()
+		}
+	})
 }
 
 function checkEnter(e) {
@@ -208,6 +208,7 @@ function click_toggle_vis(e, name, mode){
             $(this).show()
             keep_inside($(this))
             register_pop_up(e, $(this))
+            $(this).find("select:visible").combobox()
         } else {
             $(this).hide()
         }

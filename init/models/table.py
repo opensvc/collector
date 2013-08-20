@@ -1260,7 +1260,7 @@ class HtmlTable(object):
               SCRIPT(
                 """
 $("select").parent().css("white-space", "nowrap");
-$("select").combobox();
+$("select:visible").combobox();
 function ajax_submit_%(id)s(){%(ajax_submit)s};
 function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
 function filter_submit_%(id)s(k,v){$("#"+k).val(v);ajax_submit_%(id)s()};
