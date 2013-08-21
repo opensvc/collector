@@ -9044,6 +9044,7 @@ def json_tree_filtersets():
 def json_tree_rulesets():
     rulesets = {
       'data': 'rulesets',
+      'attr': {"id": "rset_head", "rel": "ruleset_head"},
       'children': [],
     }
 
@@ -9277,6 +9278,53 @@ def comp_admin():
              });
            }
          }
+         h["set_type"] = {
+           "label": "Set type",
+           "separator_before": false,
+           "separator_after": false,
+           "icon": false,
+           "submenu": {
+             "contextual": {
+               "label": "Contextual",
+               "action": function(obj){
+                 $.ajax({
+                   async: false,
+                   type: "POST",
+                   url: "%(url_action)s",
+                   data: {
+                    "operation": "set_type",
+                    "type": "contextual",
+                    "obj_id": obj.attr("obj_id"),
+                   },
+                   success: function(msg){
+                     $("[rel="+obj.attr('rel')+"][obj_id="+obj.attr('obj_id')+"]").children("a").click()
+                     json_status(msg)
+                   }
+                 });
+               }
+             },
+             "explicit": {
+               "label": "Explicit",
+               "action": function(obj){
+                 $.ajax({
+                   async: false,
+                   type: "POST",
+                   url: "%(url_action)s",
+                   data: {
+                    "operation": "set_type",
+                    "type": "explicit",
+                    "obj_id": obj.attr("obj_id"),
+                   },
+                   success: function(msg){
+                     $("[name=catree]:visible").jstree("refresh");
+                     $("[rel="+obj.attr('rel')+"][obj_id="+obj.attr('obj_id')+"]").children("a").click()
+                     json_status(msg)
+                   }
+                 });
+               }
+             },
+           }
+         }
          h["set_publication"] = {
            "label": "Set publication",
            "separator_before": false,
@@ -9430,6 +9478,14 @@ def comp_admin():
              }
            }
          }
+       } else if (node.attr("rel")=="ruleset_head") {
+         h["create"] = {
+           "label": "Add ruleset",
+           "separator_before": false,
+           "separator_after": false,
+           "icon": false,
+           "action": function(obj){this.create(obj, "first", {"attr": {"rel": "ruleset"}})}
+         }
        }
        return h
        }
@@ -9538,6 +9594,8 @@ def comp_admin():
         new_rel = ""
         if (data.rslt.parent.attr("rel") == "ruleset") {
           new_rel = "variable"
+        } else if (data.rslt.parent.attr("rel") == "ruleset_head") {
+          new_rel = "ruleset"
         }
         $.ajax({
           async: false,
@@ -9709,6 +9767,9 @@ def json_tree_action():
     elif action == "set_public":
         return json_tree_action_set_public(request.vars.obj_id,
                                            request.vars.publication)
+    elif action == "set_type":
+        return json_tree_action_set_type(request.vars.obj_id,
+                                         request.vars.type)
     elif action == "detach_ruleset":
         return json_tree_action_detach_ruleset(request.vars.obj_id,
                                                request.vars.parent_obj_id)
@@ -9735,6 +9796,8 @@ def json_tree_action_delete():
 def json_tree_action_create():
     if request.vars.obj_type == "variable":
         return json_tree_action_create_variable(request.vars.parent_obj_id, request.vars.obj_name)
+    elif request.vars.obj_type == "ruleset":
+        return json_tree_action_create_ruleset(request.vars.obj_name)
     return ""
 
 def json_tree_action_show():
@@ -9866,7 +9929,39 @@ def json_tree_action_show_variable(var_id):
     return DIV(l)
 
 @auth.requires_membership('CompManager')
+def json_tree_action_create_ruleset(rset_name):
+    q = db.comp_rulesets.ruleset_name == rset_name
+    rows = db(q).select(cacheable=True)
+    v = rows.first()
+    if v is not None:
+        return {"err": "a ruleset named '%(rset_name)s' already exists"%dict(rset_name=rset_name)}
+
+    rset_name = rset_name.strip()
+    try:
+        rset_name = rset_name[4:]
+    except:
+        pass
+    db.comp_rulesets.insert(
+      ruleset_name=rset_name,
+      ruleset_type="explicit",
+    )
+    add_default_team_responsible(rset_name)
+    _log('compliance.ruleset.add',
+         'added ruleset %(rset_name)s',
+         dict(rset_name=rset_name))
+    return "0"
+
+@auth.requires_membership('CompManager')
 def json_tree_action_create_variable(rset_id, var_name):
+    q = db.comp_rulesets.id == rset_id
+    q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "ruleset does not exist or not owned by you"}
+
     var_name = var_name.strip()
     try:
         var_name = var_name[4:]
@@ -9880,6 +9975,10 @@ def json_tree_action_create_variable(rset_id, var_name):
       var_class="raw",
       var_value="",
     )
+    _log('compliance.variable.add',
+         'added variable %(var_name)s in ruleset %(rset_name)s',
+         dict(var_name=var_name,
+              rset_name=v.comp_rulesets.ruleset_name))
     return "0"
 
 @auth.requires_membership('CompManager')
@@ -9914,6 +10013,33 @@ def json_tree_action_set_var_class(var_id, var_class):
               old=v.comp_rulesets_variables.var_class,
               new=var_class,
               rset_name=v.comp_rulesets.ruleset_name))
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_set_type(rset_id, rset_type):
+    q = db.comp_rulesets.id == rset_id
+    q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "ruleset does not exist or not owned by you"}
+    if v.comp_rulesets.ruleset_type == rset_type:
+        return {"err": "ruleset type is already '%(rset_type)s'"%dict(rset_type=rset_type)}
+    db(q).update(ruleset_type=rset_type)
+
+    if rset_type == "explicit":
+        q = db.comp_rulesets_filtersets.ruleset_id == rset_id
+        db(q).delete()
+
+    db.commit()
+
+    _log('compliance.ruleset.change',
+         'set ruleset %(rset_name)s type from %(old)s to %(new)s',
+         dict(rset_name=v.comp_rulesets.ruleset_name,
+              old=v.comp_rulesets.ruleset_type,
+              new=rset_type))
     return "0"
 
 @auth.requires_membership('CompManager')
