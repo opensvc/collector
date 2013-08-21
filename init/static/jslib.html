@@ -416,7 +416,7 @@ function sync_ajax(url, inputs, id, f) {
          success: function(msg){
              $("#"+id).html(msg)
              $("#"+id).find("script").each(function(i){
-               eval($(this).text());
+               //eval($(this).text());
                $(this).remove();
              });
              f()
@@ -444,7 +444,7 @@ function table_ajax_submit(url, id, inputs, additional_inputs, input_name, addit
          success: function(msg){
              $("#"+id).html(msg)
              $("#"+id).find("script").each(function(i){
-               eval($(this).text());
+               //eval($(this).text());
                $(this).remove();
              });
          }
