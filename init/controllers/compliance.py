@@ -6038,7 +6038,7 @@ def _comp_get_svc_ruleset(svcname, slave=False):
                         orderby=db.comp_rulesets_services.ruleset_id,
                         cacheable=True)
     for row in rows:
-        ruleset.update(comp_ruleset_vars(row.ruleset_id, svcname=svcname, matching_fsets=matching_fsets))
+        ruleset.update(comp_ruleset_vars(row.ruleset_id, matching_fsets=matching_fsets))
 
     return ruleset
 
