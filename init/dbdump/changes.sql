@@ -3767,3 +3767,17 @@ create table stats_fs_u_hour like stats_fs_u;
 
 create table stats_fs_u_day like stats_fs_u;
 
+
+alter table nodes modify column team_responsible varchar(32);
+
+alter table nodes modify column team_integ varchar(32);
+
+alter table nodes modify column team_support varchar(32);
+
+#alter table nodes_import modify column team_responsible varchar(32);
+
+#alter table nodes_import modify column team_integ varchar(32);
+
+#alter table nodes_import modify column team_support varchar(32);
+
+
