@@ -7736,7 +7736,7 @@ $("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").bind('ch
 """%dict(
      idx=len(l),
      xid=forms_xid(''),
-     url=str(URL(r=request, c='forms', f='a'))[:-3],
+     url=str(URL(r=request, c='forms', f='a'))[:-2],
     ),
                _name=_hid+"_to_eval",
              ),
@@ -8054,7 +8054,8 @@ def get_form_formatted_data_o(output, data, _d=None):
                     val = convert_val(val, input['Type'])
                 except Exception, e:
                     raise Exception(T(str(e)))
-                h[input['Id']] = val
+                if input.get('Type', 'string') != 'integer' or val != "":
+                    h[input['Id']] = val
             output_value = h
         elif output.get('Format') == "list of dict":
             h = {}
@@ -8078,7 +8079,8 @@ def get_form_formatted_data_o(output, data, _d=None):
                         val = convert_val(val, input.get('Type', 'string'))
                     except Exception, e:
                         raise Exception(T(str(e)))
-                    h[idx][input['Id']] = val
+                    if input.get('Type', 'string') != 'integer' or val != "":
+                        h[idx][input['Id']] = val
             output_value = h.values()
         elif output.get('Format') == "dict of dict":
             h = {}
@@ -8098,7 +8100,8 @@ def get_form_formatted_data_o(output, data, _d=None):
                         val = convert_val(val, input['Type'])
                     except Exception, e:
                         raise Exception(T(str(e)))
-                    h[idx][input['Id']] = val
+                    if input.get('Type', 'string') != 'integer' or val != "":
+                        h[idx][input['Id']] = val
             if 'Key' not in output:
                 raise Exception(T("'Key' must be defined in form Output of 'dict of dict' format"))
             k = output['Key']
@@ -8889,7 +8892,8 @@ def convert_val(val, t):
          try:
              val = int(val)
          except:
-             raise Exception("Error converting to integer")
+             if val != "":
+                 raise Exception("Error converting to integer")
      elif t == "list of string":
          l = val.split(',')
          val = map(lambda x: x.strip(), l)
