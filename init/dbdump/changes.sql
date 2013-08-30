@@ -3780,4 +3780,9 @@ alter table nodes modify column team_support varchar(32);
 
 #alter table nodes_import modify column team_support varchar(32);
 
+alter table nodes add column cpu_threads integer;
+
+alter table nodes add column assetname varchar(32);
+
+alter table nodes add column enclosureslot varchar(8);
 
