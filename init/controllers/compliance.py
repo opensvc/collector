@@ -1273,7 +1273,7 @@ class table_comp_rulesets(HtmlTable):
             q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
         allowed = db(q)
         db.comp_rulesets_variables.ruleset_id.requires = IS_IN_DB(allowed,
-                    db.comp_rulesets.id, "%(ruleset_name)s", zero=T('choose one'))
+                    db.comp_rulesets.id, "%(ruleset_name)s", zero=T('choose one'), groupby=db.comp_rulesets.id)
 
         q = db.forms.form_type == "obj"
         allowed = db(q)
@@ -8024,7 +8024,7 @@ def get_form_formatted_data_o(output, data, _d=None):
         if output.get('Format') == "list":
             l = []
             input = data['Inputs'][0]
-            for v in request.vars.keys():
+            for v in sorted(request.vars.keys()):
                 if not v.startswith(forms_xid(input['Id'])):
                     continue
                 val = request.vars.get(v)
@@ -8059,7 +8059,8 @@ def get_form_formatted_data_o(output, data, _d=None):
             output_value = h
         elif output.get('Format') == "list of dict":
             h = {}
-            for v in request.vars.keys():
+            idxs = []
+            for v in sorted(request.vars.keys()):
                 for input in data['Inputs']:
                     if not v.startswith(forms_xid(input['Id'])):
                         continue
@@ -8071,6 +8072,7 @@ def get_form_formatted_data_o(output, data, _d=None):
                         continue
                     if idx not in h:
                         h[idx] = {}
+                        idxs.append(idx)
                     val = request.vars.get(v)
                     if len(str(val)) == 0:
                         if 'Mandatory' in input and input['Mandatory']:
@@ -8081,7 +8083,7 @@ def get_form_formatted_data_o(output, data, _d=None):
                         raise Exception(T(str(e)))
                     if input.get('Type', 'string') != 'integer' or val != "":
                         h[idx][input['Id']] = val
-            output_value = h.values()
+            output_value = [h[i] for i in idxs]
         elif output.get('Format') == "dict of dict":
             h = {}
             for v in request.vars.keys():
