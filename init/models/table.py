@@ -816,6 +816,7 @@ class HtmlTable(object):
         for c in self.cols:
             cells.append(TH(T(self.colprops[c].title),
                             _style=self.col_hide(c),
+                            _class=self.colprops[c]._class,
                             _name=self.col_key(c)))
         return TR(cells, _class='theader')
 
