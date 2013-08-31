@@ -999,6 +999,52 @@ ul.login_menu ul {
     color: black;
 }
 
+.os_windows {
+    background: transparent url('win24.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
+.os_aix {
+    background: transparent url('aix24.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
+.os_opensolaris {
+    background: transparent url('opensolaris.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
+.os_tru64 {
+    background: transparent url('tru64.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
+.os_hpux {
+    background: transparent url('hpux.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
+.os_darwin {
+    background: transparent url('darwin.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
+.os_solaris {
+    background: transparent url('solaris.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
+.os_freebsd {
+    background: transparent url('freebsd.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
+.os_linux {
+    background: transparent url('linux.png') no-repeat;
+    background-size: 16px 16px;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
 .dia16 {
     background: transparent url('dia16.png') no-repeat;
     padding: 0 0 0 20px;

@@ -862,20 +862,19 @@ class HtmlTable(object):
             v = self.colprops[c].get(o)
             if v is None:
                 v = 'empty'
-            cells.append(TD(content,
-                            _name=self.col_key(c),
-                            _style=self.col_hide(c),
-                            _class=' '.join([self.colprops[c]._class, self.colprops[c]._dataclass]),
-                            _onclick="""$("#fsr%(id)s").hide()"""%dict(
-                              id=self.id,
-                            ),
-                            _ONMOUSEUP="filter_selector_%(id)s(event, '%(k)s','%(v)s')"%dict(
-                              id=self.id,
-                              k=self.filter_key(c),
-                              v=v,
-                             ),
-                            _oncontextmenu="return false;",
-                         ))
+            attrs = dict(
+               _name=self.col_key(c),
+               _v=v,
+               _cell=1,
+            )
+            _style=self.col_hide(c)
+            classes = [self.colprops[c]._class, self.colprops[c]._dataclass]
+            if _style != '':
+                classes.append("hidden")
+            _class = ' '.join(classes)
+            if _class != ' ':
+                attrs['_class'] = _class
+            cells.append(TD(content, **attrs))
         return TR(cells, _class=self.cellclass)
 
     def spaning_line(self, o):
@@ -1328,8 +1327,8 @@ function filter_selector_%(id)s(e,k,v){
       $("#"+k).val(sel)
       $(this).removeClass("highlight")
       $(this).addClass("b")
-      colname = $("#"+k).parents("td").attr("name")
-      $(".theader_slim").find("[name="+colname+"]").each(function(){
+      $(".sym_headers").find("[name="+k+"]").find("input").val(sel)
+      $(".theader_slim").find("[name="+k+"]").each(function(){
         $(this).removeClass("bgred")
         $(this).addClass("bgorange")
       })
@@ -1575,7 +1574,19 @@ function js_link_%(id)s(){
   })
   alert(url+args)
 }
-var inputs_%(id)s = %(a)s;"""%dict(
+var inputs_%(id)s = %(a)s;
+$("#%(id)s").find("[cell=1]").each(function(){
+  $(this).bind("mouseup", function() {
+    filter_selector_%(id)s(event, $(this).attr('name'), $(this).attr('v'))
+  })
+  $(this).bind("contextmenu", function() {
+    return false
+  })
+  $(this).bind("click", function() {
+    $("#fsr%(id)s").hide()
+  })
+})
+"""%dict(
                    id=self.id,
                    a=self.ajax_inputs(),
                    ajax_submit=self.ajax_submit(),
@@ -1870,31 +1881,26 @@ action_img_h = {
     'switch': 'action_switch_16.png',
 }
 
-os_img_h = {
-  'darwin': 'darwin',
-  'linux': 'linux',
-  'hp-ux': 'hpux',
-  'osf1': 'tru64',
-  'opensolaris': 'opensolaris',
-  'solaris': 'solaris',
-  'sunos': 'solaris',
-  'freebsd': 'freebsd',
-  'aix': 'aix24',
-  'windows': 'win24',
+os_class_h = {
+  'darwin': 'os_darwin',
+  'linux': 'os_linux',
+  'hp-ux': 'os_hpux',
+  'osf1': 'os_tru64',
+  'opensolaris': 'os_opensolaris',
+  'solaris': 'os_solaris',
+  'sunos': 'os_solaris',
+  'freebsd': 'os_freebsd',
+  'aix': 'os_aix',
+  'windows': 'os_win',
 }
 
-def node_icon(os_name):
+def node_class(os_name):
     if os_name is None:
         return ''
     os_name = os_name.lower()
-    if os_name in os_img_h:
-        img = IMG(
-                _src=URL(r=request,c='static',f=os_img_h[os_name]+'.png'),
-                _class='logo'
-              )
-    else:
-        img = ''
-    return img
+    if os_name in os_class_h:
+        return os_class_h[os_name]
+    return ''
 
 now = datetime.datetime.now()
 
@@ -1959,7 +1965,6 @@ class col_containertype(HtmlTableColumn):
             if key is not None:
                 os = self.t.colprops[key].get(o)
         d = DIV(
-              node_icon(os),
               A(
                 s,
                 _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
@@ -1969,7 +1974,7 @@ class col_containertype(HtmlTableColumn):
                   id=id,
                 ),
               ),
-              _class='nowrap',
+              _class=' '.join((node_class(os), 'nowrap')),
             )
         return d
 
@@ -1985,11 +1990,10 @@ class col_node(HtmlTableColumn):
         else:
             c = ''
         if 'os_name' in self.t.colprops:
-            img = node_icon(self.t.colprops['os_name'].get(o))
+            _class = node_class(self.t.colprops['os_name'].get(o))
         else:
-            img = ''
+            _class = ''
         d = DIV(
-              img,
               A(
                 s,
                 _onclick="getElementById('%(id)s').innerHTML='%(spinner)s';toggle_extra('%(url)s', '%(id)s');"%dict(
@@ -2000,7 +2004,7 @@ class col_node(HtmlTableColumn):
                 ),
                 _style=c,
               ),
-              _class='nowrap',
+              _class=' '.join((_class, 'nowrap')),
             )
         return d
 

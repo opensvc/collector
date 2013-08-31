@@ -11,8 +11,8 @@ class col_node(HtmlTableColumn):
     def html(self, o):
         id = self.t.extra_line_key(o)
         s = self.get(o)
+        _class = node_class(o.v_nodes.os_name)
         d = DIV(
-              node_icon(o.v_nodes.os_name),
               A(
                 s,
                 _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
@@ -21,6 +21,7 @@ class col_node(HtmlTableColumn):
                   id=id,
                 ),
               ),
+              _class=_class,
             )
         return d
 
