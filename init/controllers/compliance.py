@@ -5744,11 +5744,12 @@ def comp_get_matching_filters(fset_ids, fset_data, nodename=None, svcname=None):
             l = value.split(',')
             l = map(lambda x: repr(x), l)
             value = "(%s)" % ','.join(l)
-        try:
-            value = int(value)
-            value = str(value)
-        except:
-            value = repr(value)
+        else:
+            try:
+                value = int(value)
+                value = str(value)
+            except:
+                value = repr(value)
 
         where = "select 1 from %(table)s where %(field)s %(op)s %(value)s" % dict(
           op=op,
