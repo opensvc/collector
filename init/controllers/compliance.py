@@ -5696,6 +5696,8 @@ def comp_get_matching_fset_ids(fset_ids=None, nodename=None, svcname=None, slave
                 if match is None:
                     # first filter is always an AND
                     match = fid in matching_filters
+                    if 'NOT' in _data['op']:
+                        match = not match
                 elif _data['op'] == 'AND':
                     match &= fid in matching_filters
                 elif _data['op'] == 'AND NOT':
@@ -5707,6 +5709,8 @@ def comp_get_matching_fset_ids(fset_ids=None, nodename=None, svcname=None, slave
             elif _data['type'] == 'filterset':
                 if match is None:
                     match = recurse_match(_data['data'])
+                    if 'NOT' in _data['op']:
+                        match = not match
                 elif _data['op'] == 'AND':
                     match &= recurse_match(_data['data'], match)
                 elif _data['op'] == 'AND NOT':
@@ -9059,7 +9063,7 @@ def json_tree_filters():
     }
     q = db.gen_filters.id > 0
     o = db.gen_filters.f_table | db.gen_filters.f_field
-    rows = db(q).select()
+    rows = db(q).select(orderby=o, cacheable=True)
     h = {}
     for row in rows:
         _data = {
@@ -9105,7 +9109,7 @@ def json_tree_filtersets():
 
     fset_names = {}
     q = db.gen_filtersets.id > 0
-    rows = db(q).select()
+    rows = db(q).select(cacheable=True)
     for row in rows:
         fset_names[row.id] = row.fset_name
 
@@ -9168,11 +9172,13 @@ def json_tree_rulesets():
         rsets_groups[row.comp_ruleset_team_responsible.ruleset_id].append(row)
 
     q = db.comp_rulesets.id > 0
+    o = db.comp_rulesets.ruleset_name
     q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
     if 'Manager' not in user_groups():
         q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
 
-    rows = db(q).select(groupby=db.comp_rulesets.id, cacheable=True)
+    rows = db(q).select(groupby=db.comp_rulesets.id,
+                        orderby=o, cacheable=True)
     rsets = {}
     for row in rows:
         rsets[row.comp_rulesets.id] = row.comp_rulesets
