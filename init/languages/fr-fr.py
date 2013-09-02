@@ -318,6 +318,8 @@
 'cancelled': 'annulé',
 'Candidates': 'Candidats',
 'Cannot be empty': 'Ne peut pas être vide',
+'Chain': 'Chain',
+'Chain length': 'Chain length',
 'Change author': "Changer l'auteur",
 'Change check default thresholds': 'Changer les seuils par défaut de la sonde',
 'Change check instance thresholds': "Changer les seuils de l'instance de sonde",

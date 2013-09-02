@@ -1144,6 +1144,8 @@ db.define_table('v_comp_rulesets',
     Field('fset_id','integer'),
     Field('encap_rset','string'),
     Field('encap_rset_id','integer'),
+    Field('chain_len','integer'),
+    Field('chain','text'),
     Field('ruleset_name','string', requires=IS_NOT_EMPTY()),
     Field('ruleset_type','string', requires=IS_IN_SET(['contextual','explicit'])),
     Field('ruleset_public','boolean', default=True),
@@ -1785,5 +1787,11 @@ db.define_table('reports_user',
     Field('user_id','integer'),
     migrate=False)
 
+db.define_table('comp_rulesets_chains',
+    Field('head_rset_id','integer'),
+    Field('tail_rset_id','integer'),
+    Field('chain_len','integer'),
+    Field('chain','text'),
+    migrate=False)
 
 

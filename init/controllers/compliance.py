@@ -647,6 +647,8 @@ class table_comp_rulesets(HtmlTable):
                      'ruleset_public',
                      'teams_responsible',
                      'fset_name',
+                     'chain',
+                     'chain_len',
                      'encap_rset',
                      'var_class',
                      'var_name',
@@ -693,6 +695,20 @@ class table_comp_rulesets(HtmlTable):
             'ruleset_id': HtmlTableColumn(
                      title='Ruleset id',
                      field='ruleset_id',
+                     table='v_comp_rulesets',
+                     display=False,
+                     img='action16',
+                    ),
+            'chain_len': HtmlTableColumn(
+                     title='Chain length',
+                     field='chain_len',
+                     table='v_comp_rulesets',
+                     display=False,
+                     img='action16',
+                    ),
+            'chain': HtmlTableColumn(
+                     title='Chain',
+                     field='chain',
                      table='v_comp_rulesets',
                      display=False,
                      img='action16',
@@ -1480,6 +1496,8 @@ def ruleset_clone():
         db.comp_rulesets_rulesets.insert(parent_rset_id=newid,
                                          child_rset_id=child_rset_id)
 
+    comp_rulesets_chains()
+
     _log('compliance.ruleset.clone',
          'cloned ruleset %(o)s from %(n)s',
          dict(o=orig, n=iid))
@@ -1526,6 +1544,7 @@ def comp_delete_ruleset(ids=[]):
     n = db(db.comp_rulesets.id.belongs(ids)).delete()
     n = db(db.comp_rulesets_nodes.ruleset_id.belongs(ids)).delete()
     n = db(db.comp_rulesets_services.ruleset_id.belongs(ids)).delete()
+    comp_rulesets_chains()
     _log('compliance.ruleset.delete',
          'deleted rulesets %(x)s',
          dict(x=x))
@@ -1870,6 +1889,7 @@ def ajax_comp_rulesets():
 
     try:
         if v.form_ruleset_attach.accepts(request.vars, formname='attach_ruleset'):
+            comp_rulesets_chains()
             _log('compliance.ruleset.ruleset.attach',
                  'attach ruleset %(child)s to %(parent)s',
                  dict(parent=db(db.comp_rulesets.id==request.vars.parent_rset_id).select(cacheable=True).first().ruleset_name,
@@ -1878,7 +1898,9 @@ def ajax_comp_rulesets():
             response.flash = T("errors in form")
 
         if v.form_ruleset_add.accepts(request.vars, formname='add_ruleset'):
+            comp_rulesets_chains()
             # refresh forms ruleset comboboxes
+            v.form_ruleset_attach = v.comp_ruleset_attach_sqlform()
             v.form_filterset_attach = v.comp_filterset_attach_sqlform()
             v.form_ruleset_var_add = v.comp_ruleset_var_add_sqlform()
             add_default_team_responsible(request.vars.ruleset_name)
@@ -1917,7 +1939,7 @@ def ajax_comp_rulesets():
     except ToolError, e:
         v.flash = str(e)
 
-    o = db.v_comp_rulesets.ruleset_name|db.v_comp_rulesets.var_name
+    o = db.v_comp_rulesets.ruleset_name|db.v_comp_rulesets.chain_len|db.v_comp_rulesets.encap_rset|db.v_comp_rulesets.var_name
     g = db.v_comp_rulesets.ruleset_id|db.v_comp_rulesets.id
     q = teams_responsible_filter()
     for f in v.cols:
@@ -5869,6 +5891,61 @@ def print_fset_data(data):
     for fset_id in data:
         print fset_id
         recurse_print_fset(data[fset_id])
+
+def comp_rulesets_chains():
+    # populate rset names cache
+    q = db.comp_rulesets.id > 0
+    rows = db(q).select(cacheable=True)
+    rset_names = {}
+    for row in rows:
+         rset_names[row.id] = row.ruleset_name
+
+    # populate rset relations cache
+    q = db.comp_rulesets_rulesets.id > 0
+    q &= db.comp_rulesets_rulesets.child_rset_id == db.comp_rulesets.id
+    rows = db(q).select(cacheable=True)
+    rset_relations = {}
+    for row in rows:
+        if row.comp_rulesets_rulesets.parent_rset_id not in rset_relations:
+            rset_relations[row.comp_rulesets_rulesets.parent_rset_id] = []
+        rset_relations[row.comp_rulesets_rulesets.parent_rset_id].append(row.comp_rulesets_rulesets.child_rset_id)
+
+    def recurse_rel(rset_id, chains, rset_id_chain):
+        rset_id_chain += [rset_id]
+        if rset_id_chain in chains:
+            return chains
+        if len(rset_id_chain) > 1:
+            chains.append(rset_id_chain)
+        if rset_id not in rset_relations:
+            return chains
+        for child_rset_id in rset_relations[rset_id]:
+            chains = recurse_rel(child_rset_id, chains, copy.copy(rset_id_chain))
+        return chains
+
+    chains = []
+    for ruleset_id in rset_names:
+        chains += [[ruleset_id, ruleset_id]]
+        chains += recurse_rel(ruleset_id, chains=[], rset_id_chain=[])
+
+    vars = ['head_rset_id', 'tail_rset_id', 'chain_len', 'chain']
+    vals = []
+    for chain in chains:
+        val = [str(chain[0]), str(chain[-1])]
+        if chain[0] != chain[-1] or len(chain) != 2:
+            _chain_len = str(len(chain))
+            _chain = map(lambda x: rset_names[x], chain)
+            _chain = ' > '.join(_chain)
+        else:
+            _chain_len = '1'
+            _chain = ''
+        val.append(_chain_len)
+        val.append(_chain)
+        vals.append(val)
+        print val
+
+    db.executesql("truncate comp_rulesets_chains")
+    generic_insert('comp_rulesets_chains', vars, vals)
+    db.commit()
 
 def comp_ruleset_vars(ruleset_id, qr=None, matching_fsets=[]):
     if qr is None:
@@ -9955,6 +10032,7 @@ def json_tree_action_create_ruleset(rset_name):
     _log('compliance.ruleset.add',
          'added ruleset %(rset_name)s',
          dict(rset_name=rset_name))
+    comp_rulesets_chains()
     return "0"
 
 @auth.requires_membership('CompManager')
@@ -10201,6 +10279,7 @@ def json_tree_action_copy_or_move_rset_to_rset(rset_id, parent_rset_id, dst_rset
          'attach ruleset %(rset_name)s to %(dst_rset_name)s',
          dict(rset_name=v.comp_rulesets.ruleset_name,
               dst_rset_name=w.comp_rulesets.ruleset_name))
+    comp_rulesets_chains()
     if not move or parent_rset_id is None or parent_rset_id == dst_rset_id:
         return "0"
 
@@ -10220,6 +10299,7 @@ def json_tree_action_copy_or_move_rset_to_rset(rset_id, parent_rset_id, dst_rset
          'detach ruleset %(rset_name)s from %(parent_rset_name)s',
          dict(rset_name=v.comp_rulesets.ruleset_name,
               parent_rset_name=x.comp_rulesets.ruleset_name))
+    comp_rulesets_chains()
     return "0"
 
 @auth.requires_membership('CompManager')
@@ -10275,6 +10355,7 @@ def json_tree_action_detach_ruleset(rset_id, parent_rset_id):
          'detach ruleset %(rset_name)s from %(parent_rset_name)s',
          dict(rset_name=w.comp_rulesets.ruleset_name,
               parent_rset_name=v.comp_rulesets.ruleset_name))
+    comp_rulesets_chains()
     return "0"
 
 @auth.requires_membership('CompManager')
@@ -10411,6 +10492,8 @@ def json_tree_action_clone_ruleset(rset_id):
         db.comp_rulesets_rulesets.insert(parent_rset_id=newid,
                                          child_rset_id=child_rset_id)
 
+    comp_rulesets_chains()
+
     _log('compliance.ruleset.clone',
          'cloned ruleset %(o)s from %(n)s',
          dict(n=rset_name, o=clone_rset_name))
@@ -10450,6 +10533,8 @@ def json_tree_action_delete_ruleset(rset_id):
 
     q = db.comp_rulesets.id == rset_id
     db(q).delete()
+
+    comp_rulesets_chains()
 
     _log('compliance.ruleset.delete',
          'deleted ruleset %(rset_name)s',

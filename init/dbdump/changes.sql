@@ -3786,3 +3786,42 @@ alter table nodes add column assetname varchar(32);
 
 alter table nodes add column enclosureslot varchar(8);
 
+CREATE TABLE `comp_rulesets_chains` (
+  `head_rset_id` integer NOT NULL,
+  `tail_rset_id` integer NOT NULL,
+  `chain_len` integer NOT NULL,
+  `chain` text NOT NULL,
+  UNIQUE KEY `index_1` (`head_rset_id`,`tail_rset_id`)
+);
+
+drop view v_comp_rulesets;
+
+create view v_comp_rulesets as
+select
+ `r`.`id` AS `ruleset_id`,
+ `r`.`ruleset_name` AS `ruleset_name`,
+ `r`.`ruleset_type` AS `ruleset_type`,
+  r.ruleset_public as ruleset_public,
+  group_concat(distinct `g`.`role` separator ', ') AS `teams_responsible`,
+ `rr`.`ruleset_name` as encap_rset, `rr`.`id` AS `encap_rset_id`,
+ `rc`.`chain` AS `chain`,
+ `rc`.`chain_len` AS `chain_len`,
+ `rv`.`id` AS `id`,
+ `rv`.`var_name` AS `var_name`,
+ `rv`.`var_class` AS `var_class`,
+ `rv`.`var_value` AS `var_value`,
+ `rv`.`var_author` AS `var_author`,
+ `rv`.`var_updated` AS `var_updated`,
+ `rf`.`fset_id` AS `fset_id`,
+ `fs`.`fset_name` AS `fset_name`
+from
+ `comp_rulesets` r
+  left join `comp_rulesets_filtersets` `rf` on `r`.`id` = `rf`.`ruleset_id`
+  left join `gen_filtersets` `fs` on `fs`.`id` = `rf`.`fset_id`
+  left join `comp_ruleset_team_responsible` `rt` on `r`.`id` = `rt`.`ruleset_id`
+  left join `auth_group` `g` on `rt`.`group_id` = `g`.`id`
+  left join comp_rulesets_chains rc on r.`id` = `rc`.`head_rset_id`
+  left join comp_rulesets rr on rc.tail_rset_id=rr.id
+  left join comp_rulesets_variables rv on rr.id=rv.ruleset_id
+group by
+  r.id, rv.id, rr.id;
