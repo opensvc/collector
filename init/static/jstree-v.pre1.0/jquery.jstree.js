@@ -1470,7 +1470,7 @@
 		}
 	});
 	// autodetect themes path
-	$(function () {
+	//$(function () {
 		if($.jstree._themes === false) {
 			$("script").each(function () { 
 				if(this.src.toString().match(/jquery\.jstree[^\/]*?\.js(\?.*)?$/)) { 
@@ -1480,7 +1480,7 @@
 			});
 		}
 		if($.jstree._themes === false) { $.jstree._themes = "themes/"; }
-	});
+	//});
 	// include the themes plugin by default
 	$.jstree.defaults.plugins.push("themes");
 })(jQuery);

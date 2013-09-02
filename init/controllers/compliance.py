@@ -9779,12 +9779,12 @@ def comp_admin():
         DIV(
           _id="catree",
           _name="catree",
-          _style="display:table-cell;width:20%;text-align:left",
+          _style="display:table-cell;text-align:left",
         ),
         DIV(
           _id="catree2",
           _name="catree",
-          _style="display:table-cell;width:20%;text-align:left;display:none",
+          _style="display:table-cell;text-align:left;display:none",
         ),
         DIV(
           XML("&nbsp;"),
