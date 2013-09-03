@@ -413,6 +413,8 @@ def ajax_node():
       TR(TD(T('floor'), _style='font-style:italic'), TD(node['loc_floor'])),
       TR(TD(T('room'), _style='font-style:italic'), TD(node['loc_room'])),
       TR(TD(T('rack'), _style='font-style:italic'), TD(node['loc_rack'])),
+      TR(TD(T('enclosure'), _style='font-style:italic'), TD(node['enclosure'] if node['enclosure'] is not None else '')),
+      TR(TD(T('enclosure slot'), _style='font-style:italic'), TD(node['enclosureslot'] if node['enclosureslot'] is not None else '')),
     )
     power = TABLE(
       TR(TD(T('nb power supply'), _style='font-style:italic'), TD(node['power_supply_nb'])),
@@ -425,6 +427,7 @@ def ajax_node():
     )
     server = TABLE(
       TR(TD(T('fqdn'), _style='font-style:italic'), TD(node['fqdn'] if node['fqdn'] is not None else '')),
+      TR(TD(T('asset name'), _style='font-style:italic'), TD(node['assetname'] if node['assetname'] is not None else '')),
       TR(TD(T('agent version'), _style='font-style:italic'), TD(node['version'] if node['version'] is not None else '')),
       TR(TD(T('agent listener port'), _style='font-style:italic'), TD(node['listener_port'])),
       TR(TD(T('model'), _style='font-style:italic'), TD(node['model'])),
@@ -445,10 +448,10 @@ def ajax_node():
     )
     cpu = TABLE(
       TR(TD(T('cpu frequency'), _style='font-style:italic'), TD(node['cpu_freq'])),
-      TR(TD(T('cpu threads'), _style='font-style:italic'), TD(node['cpu_threads'])),
+      TR(TD(T('cpu threads'), _style='font-style:italic'), TD(node['cpu_threads'] if node['cpu_threads'] is not None else '')),
       TR(TD(T('cpu cores'), _style='font-style:italic'), TD(node['cpu_cores'])),
       TR(TD(T('cpu dies'), _style='font-style:italic'), TD(node['cpu_dies'])),
-      TR(TD(T('cpu vendor'), _style='font-style:italic'), TD(node['cpu_vendor'])),
+      #TR(TD(T('cpu vendor'), _style='font-style:italic'), TD(node['cpu_vendor'])),
       TR(TD(T('cpu model'), _style='font-style:italic'), TD(node['cpu_model'])),
     )
     mem = TABLE(
