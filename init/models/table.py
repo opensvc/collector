@@ -1576,7 +1576,7 @@ function js_link_%(id)s(){
 }
 var inputs_%(id)s = %(a)s;
 $("#%(id)s").find("[cell=1]").each(function(){
-  $(this).bind("mouseup", function() {
+  $(this).bind("mouseup", function(event) {
     filter_selector_%(id)s(event, $(this).attr('name'), $(this).attr('v'))
   })
   $(this).bind("contextmenu", function() {
