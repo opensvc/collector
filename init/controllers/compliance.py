@@ -4605,6 +4605,7 @@ def ajax_comp_svc_status():
     o = ~db.comp_status.run_svcname
     q = _where(None, 'comp_status', domain_perms(), 'run_svcname')
     #q &= db.comp_status.run_svcname == db.v_svcmon.mon_svcname
+    q &= db.comp_status.run_nodename == db.v_nodes.nodename
     q &= (db.comp_status.run_svcname != None) & (db.comp_status.run_svcname != "")
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
@@ -4638,7 +4639,7 @@ def ajax_comp_svc_status():
                            sum(if(run_date>="%(d)s" and run_status=1, 1, 0)) as nok,
                            sum(if(run_date>="%(d)s" and run_status=2, 1, 0)) as na,
                            sum(if(run_date<"%(d)s", 1, 0)) as obs
-                    from %(sql)s group by run_svcname) t) u
+                    from %(sql)s and comp_status.run_nodename=v_nodes.nodename group by run_svcname) t) u
               where %(where)s
               order by pct, total desc, svc_name
               limit %(limit)d
