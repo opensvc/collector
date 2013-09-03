@@ -4606,8 +4606,8 @@ def ajax_comp_svc_status():
     q = _where(None, 'comp_status', domain_perms(), 'run_svcname')
     #q &= db.comp_status.run_svcname == db.v_svcmon.mon_svcname
     q &= (db.comp_status.run_svcname != None) & (db.comp_status.run_svcname != "")
-    #for f in t.cols:
-    #    q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.comp_status.run_nodename)
     sql1 = db(q)._select().rstrip(';').replace('v_svcmon.id, ','').replace('comp_status.id>0 AND', '')
     regex = re.compile("SELECT .* FROM")
