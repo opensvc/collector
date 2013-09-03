@@ -49,6 +49,8 @@ def json_node(nodename):
     q = db.nodes.nodename == nodename
     q &= _where(None, 'nodes', domain_perms(), 'nodename')
     row = db(q).select(
+            db.nodes.assetname,
+            db.nodes.fqdn,
             db.nodes.warranty_end,
             db.nodes.status,
             db.nodes.role,
@@ -65,6 +67,7 @@ def json_node(nodename):
             db.nodes.cpu_freq,
             db.nodes.cpu_dies,
             db.nodes.cpu_cores,
+            db.nodes.cpu_threads,
             db.nodes.cpu_model,
             db.nodes.cpu_vendor,
             db.nodes.type,
@@ -83,6 +86,8 @@ def json_node(nodename):
             db.nodes.loc_country,
             db.nodes.loc_building,
             db.nodes.loc_room,
+            db.nodes.enclosure,
+            db.nodes.enclosureslot,
             db.nodes.power_supply_nb,
             db.nodes.power_cabinet1,
             db.nodes.power_cabinet2,

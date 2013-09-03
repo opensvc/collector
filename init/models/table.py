@@ -2198,6 +2198,7 @@ class col_vmem(HtmlTableColumn):
 # colprops definitions
 #
 v_nodes_cols = [
+    'assetname',
     'fqdn',
     'loc_country',
     'loc_zip',
@@ -2214,6 +2215,7 @@ v_nodes_cols = [
     'os_kernel',
     'cpu_dies',
     'cpu_cores',
+    'cpu_threads',
     'cpu_model',
     'cpu_freq',
     'mem_banks',
@@ -2228,6 +2230,7 @@ v_nodes_cols = [
     'serial',
     'model',
     'enclosure',
+    'enclosureslot',
     'hvvdc',
     'hvpool',
     'hv',
@@ -2793,6 +2796,13 @@ v_nodes_colprops = {
              img = 'cpu16',
              table = 'v_nodes',
             ),
+    'cpu_threads': HtmlTableColumn(
+             title = 'CPU threads',
+             field='cpu_threads',
+             display = False,
+             img = 'cpu16',
+             table = 'v_nodes',
+            ),
     'cpu_model': HtmlTableColumn(
              title = 'CPU model',
              field='cpu_model',
@@ -2849,6 +2859,13 @@ v_nodes_colprops = {
              img = 'node16',
              table = 'v_nodes',
             ),
+    'assetname': HtmlTableColumn(
+             title = 'Asset name',
+             field='assetname',
+             display = False,
+             img = 'node16',
+             table = 'v_nodes',
+            ),
     'fqdn': HtmlTableColumn(
              title = 'Fqdn',
              field='fqdn',
@@ -2880,6 +2897,13 @@ v_nodes_colprops = {
     'enclosure': HtmlTableColumn(
              title = 'Enclosure',
              field='enclosure',
+             display = False,
+             img = 'node16',
+             table = 'v_nodes',
+            ),
+    'enclosureslot': HtmlTableColumn(
+             title = 'Enclosure Slot',
+             field='enclosureslot',
              display = False,
              img = 'node16',
              table = 'v_nodes',

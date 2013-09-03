@@ -445,6 +445,7 @@ def ajax_node():
     )
     cpu = TABLE(
       TR(TD(T('cpu frequency'), _style='font-style:italic'), TD(node['cpu_freq'])),
+      TR(TD(T('cpu threads'), _style='font-style:italic'), TD(node['cpu_threads'])),
       TR(TD(T('cpu cores'), _style='font-style:italic'), TD(node['cpu_cores'])),
       TR(TD(T('cpu dies'), _style='font-style:italic'), TD(node['cpu_dies'])),
       TR(TD(T('cpu vendor'), _style='font-style:italic'), TD(node['cpu_vendor'])),
