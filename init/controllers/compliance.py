@@ -9248,6 +9248,13 @@ def comp_admin():
     var_class_names = map(lambda x: '"'+x+'"', var_class_names)
 
     js = """
+    function resizer(){
+     $("#treerow").height($(window).height()-$(".header").height()-$(".footer").height()-$("#casearch").parent().outerHeight(true))
+     $("#cainfo").width($(window).width()-$("#catree").outerWidth(true)-$("#catree2:visible").outerWidth(true)-$("#sep").outerWidth(true)-14)
+    }
+    $(window).bind('resize', resizer)
+    $(window).load(resizer)
+
     function json_status(msg){
       try {
         $(".flash").html(msg["err"]).slideDown()
@@ -9761,6 +9768,7 @@ def comp_admin():
    $("#sep").click(function(){
      $("#catree2").toggle()
      $("#catree2:visible").jstree("refresh");
+     resizer()
    })
      """ % dict(
       url = URL(r=request, f="call/json/json_tree"),
@@ -9780,23 +9788,23 @@ def comp_admin():
         DIV(
           _id="catree",
           _name="catree",
-          _style="display:table-cell;text-align:left",
+          _style="height:100%;overflow-y:scroll;width:20%;float:left",
         ),
         DIV(
           _id="catree2",
           _name="catree",
-          _style="display:table-cell;text-align:left;display:none",
+          _style="height:100%;overflow-y:scroll;width:20%;float:left;display:none",
         ),
         DIV(
           XML("&nbsp;"),
           _id="sep",
-          _style="cursor:pointer;display:table-cell;width:5px;text-align:left;background-color:lightgrey",
+          _style="height:100%;float:left;cursor:pointer;width:5px;text-align:left;background-color:lightgrey",
         ),
         DIV(
           _id="cainfo",
-          _style="display:table-cell;min-width:59%;text-align:left;padding-left:1em",
+          _style="height:100%;float:left;overflow-y:auto;float:left;text-align:left;padding-left:1em",
         ),
-        _style="display:table-row",
+        _id="treerow",
       ),
       SCRIPT(js),
       _style="text-align:left",
