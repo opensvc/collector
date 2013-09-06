@@ -8,6 +8,7 @@ class table_packages(HtmlTable):
                       'pkg_version',
                       'pkg_arch',
                       'pkg_type',
+                      'pkg_sig',
                       'pkg_install_date',
                       'pkg_updated']
         self.colprops = v_nodes_colprops
@@ -18,6 +19,13 @@ class table_packages(HtmlTable):
                      field='pkg_name',
                      img='pkg16',
                      display=True,
+                    ),
+            'pkg_sig': HtmlTableColumn(
+                     title='Signature',
+                     table='packages',
+                     field='pkg_sig',
+                     img='pkg16',
+                     display=False,
                     ),
             'pkg_version': HtmlTableColumn(
                      title='Version',

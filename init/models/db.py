@@ -883,6 +883,7 @@ db.define_table('packages',
     Field('pkg_type', 'string', length=6),
     Field('pkg_updated', 'datetime'),
     Field('pkg_install_date', 'datetime'),
+    Field('pkg_sig', 'string', length=16),
     migrate=False)
 
 db.define_table('patches',
