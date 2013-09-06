@@ -9249,7 +9249,7 @@ def comp_admin():
 
     js = """
     function resizer(){
-     $("#treerow").height($(window).height()-$(".header").height()-$(".footer").height()-$("#casearch").parent().outerHeight(true))
+     $("#treerow").height($(window).height()-$(".header").outerHeight()-$(".footer").outerHeight()-$("#casearch").parent().outerHeight(true))
      $("#cainfo").width($(window).width()-$("#catree").outerWidth(true)-$("#catree2:visible").outerWidth(true)-$("#sep").outerWidth(true)-14)
     }
     $(window).bind('resize', resizer)
