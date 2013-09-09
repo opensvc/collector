@@ -8,6 +8,7 @@ class table_packages(HtmlTable):
                       'pkg_version',
                       'pkg_arch',
                       'pkg_type',
+                      'sig_provider',
                       'pkg_sig',
                       'pkg_install_date',
                       'pkg_updated']
@@ -19,6 +20,13 @@ class table_packages(HtmlTable):
                      field='pkg_name',
                      img='pkg16',
                      display=True,
+                    ),
+            'sig_provider': HtmlTableColumn(
+                     title='Signature provider',
+                     table='pkg_sig_provider',
+                     field='sig_provider',
+                     img='pkg16',
+                     display=False,
                     ),
             'pkg_sig': HtmlTableColumn(
                      title='Signature',
@@ -79,9 +87,11 @@ def ajax_packages_col_values():
     q = db.packages.pkg_nodename==db.v_nodes.nodename
     q = _where(q, 'packages', domain_perms(), 'pkg_nodename')
     q = apply_filters(q, db.packages.pkg_nodename, None)
+    j = db.packages.pkg_sig == db.pkg_sig_provider.sig_id
+    l = db.pkg_sig_provider.on(j)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o)
+    t.object_list = db(q).select(o, orderby=o, left=l)
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
@@ -95,11 +105,14 @@ def ajax_packages():
     q &= db.packages.pkg_nodename==db.v_nodes.nodename
     q = _where(q, 'packages', domain_perms(), 'pkg_nodename')
     q = apply_filters(q, db.packages.pkg_nodename, None)
+    j = db.packages.pkg_sig == db.pkg_sig_provider.sig_id
+    l = db.pkg_sig_provider.on(j)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    n = db(q).count()
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
+                                 orderby=o, left=l)
+    n = len(db(q).select(db.packages.id, left=l))
     t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
 
     t.csv_q = q
     t.csv_orderby = o

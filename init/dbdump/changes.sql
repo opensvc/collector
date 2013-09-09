@@ -3840,3 +3840,68 @@ drop view v_svcmon;
 CREATE VIEW `v_svcmon` AS select `e`.`err` AS `err`,`s`.`svc_ha` AS `svc_ha`,`s`.`svc_cluster_type` AS `svc_cluster_type`,`s`.`svc_status` AS `svc_status`,`s`.`svc_availstatus` AS `svc_availstatus`,`s`.`svc_flex_min_nodes` AS `svc_flex_min_nodes`,`s`.`svc_flex_max_nodes` AS `svc_flex_max_nodes`,`s`.`svc_flex_cpu_low_threshold` AS `svc_flex_cpu_low_threshold`,`s`.`svc_flex_cpu_high_threshold` AS `svc_flex_cpu_high_threshold`,`m`.`mon_vmname` AS `mon_vmname`,`m`.`mon_vmtype` AS `mon_vmtype`,`m`.`mon_guestos` AS `mon_guestos`,`s`.`svc_name` AS `svc_name`,`s`.`svc_nodes` AS `svc_nodes`,`s`.`svc_drpnode` AS `svc_drpnode`,`s`.`svc_drpnodes` AS `svc_drpnodes`,`s`.`svc_drptype` AS `svc_drptype`,`s`.`svc_autostart` AS `svc_autostart`,`s`.`svc_type` AS `svc_type`,`s`.`svc_comment` AS `svc_comment`,`s`.`svc_app` AS `svc_app`,`s`.`svc_drnoaction` AS `svc_drnoaction`,`s`.`svc_created` AS `svc_created`,`s`.`updated` AS `svc_updated`,`s`.`svc_envdate` AS `svc_envdate`,`s`.`svc_containertype` AS `svc_containertype`,`s`.`svc_metrocluster` AS `svc_metrocluster`,`m`.`mon_vcpus` AS `mon_vcpus`,`m`.`mon_vmem` AS `mon_vmem`,`m`.`mon_svcname` AS `mon_svcname`,`m`.`mon_svctype` AS `mon_svctype`,`m`.`mon_drptype` AS `mon_drptype`,`m`.`mon_nodname` AS `mon_nodname`,`m`.`mon_nodtype` AS `mon_nodtype`,`m`.`mon_nodmode` AS `mon_nodmode`,`m`.`mon_ipstatus` AS `mon_ipstatus`,`m`.`mon_fsstatus` AS `mon_fsstatus`,`m`.`mon_prinodes` AS `mon_prinodes`,`m`.`mon_hostid` AS `mon_hostid`,`m`.`ID` AS `ID`,`m`.`mon_frozen` AS `mon_frozen`,`m`.`mon_frozentxt` AS `mon_frozentxt`,`m`.`mon_changed` AS `mon_changed`,`m`.`mon_updated` AS `mon_updated`,`m`.`mon_sharestatus` AS `mon_sharestatus`,`m`.`mon_diskstatus` AS `mon_diskstatus`,`m`.`mon_containerstatus` AS `mon_containerstatus`,`m`.`mon_overallstatus` AS `mon_overallstatus`,`n`.`nodename` AS `nodename`,`n`.`listener_port` AS `listener_port`,`n`.`version` AS `version`,`n`.`updated` AS `node_updated`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`team_responsible` AS `team_responsible`,`n`.`team_integ` AS `team_integ`,`n`.`team_support` AS `team_support`,`n`.`project` AS `project`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`maintenance_end` AS `maintenance_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,`n`.`host_mode` AS `host_mode`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,`m`.`mon_syncstatus` AS `mon_syncstatus`,`m`.`mon_hbstatus` AS `mon_hbstatus`,`m`.`mon_availstatus` AS `mon_availstatus`,`m`.`mon_appstatus` AS `mon_appstatus`,`ap`.`responsibles` AS `responsibles`,`ap`.`mailto` AS `mailto`,`n`.`enclosure` AS `enclosure`, n.enclosureslot, n.assetname, n.cpu_threads from ((((`svcmon` `m` left join `services` `s` on((`s`.`svc_name` = `m`.`mon_svcname`))) left join `nodes` `n` on((`m`.`mon_nodname` = `n`.`nodename`))) left join `b_apps` `ap` on((`ap`.`app` = `s`.`svc_app`))) left join `b_action_errors` `e` on(((`e`.`svcname` = `s`.`svc_name`) and (`e`.`nodename` = `m`.`mon_nodname`))));
 
 alter table packages add column pkg_sig varchar(16);
+
+CREATE TABLE `pkg_sig_provider` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `sig_id` varchar(16) NOT NULL,
+  `sig_provider` varchar(32) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `index_1` (`sig_id`)
+);
+
+insert into pkg_sig_provider set sig_id='5326810137017186', sig_provider='Red Hat Inc.';
+insert into pkg_sig_provider set sig_id='219180cddb42a60e', sig_provider='Red Hat Inc.';
+insert into pkg_sig_provider set sig_id='199e2f91fd431d51', sig_provider='Red Hat Inc.';
+insert into pkg_sig_provider set sig_id='b44269d04f2a6fd2', sig_provider='Fedora';
+insert into pkg_sig_provider set sig_id='1dc5c758d22e77f2', sig_provider='Fedora';
+insert into pkg_sig_provider set sig_id='9d1cc34857bbccba', sig_provider='Fedora';
+insert into pkg_sig_provider set sig_id='7edc6ad6e8e40fde', sig_provider='Fedora';
+insert into pkg_sig_provider set sig_id='421caddb97a1071f', sig_provider='Fedora';
+insert into pkg_sig_provider set sig_id='b4ebf579069c8460', sig_provider='Fedora';
+insert into pkg_sig_provider set sig_id='067f00b6a82ba4b7', sig_provider='Fedora';
+insert into pkg_sig_provider set sig_id='50e94c991aca3465', sig_provider='Fedora';
+insert into pkg_sig_provider set sig_id='0983129322b3b81a', sig_provider='Fedora';
+insert into pkg_sig_provider set sig_id='a8a447dce8562897', sig_provider='CentOS';
+insert into pkg_sig_provider set sig_id='2802e89216ff0e46', sig_provider='CentOS';
+insert into pkg_sig_provider set sig_id='a53d0bab443e1821', sig_provider='CentOS';
+insert into pkg_sig_provider set sig_id='7049e44d025e513b', sig_provider='CentOS';
+insert into pkg_sig_provider set sig_id='0946fca2c105b9de', sig_provider='CentOS';
+insert into pkg_sig_provider set sig_id='25dbef78a7048f8d', sig_provider='Scientific Linux';
+insert into pkg_sig_provider set sig_id='915d75e09b1fd350', sig_provider='Scientific Linux';
+insert into pkg_sig_provider set sig_id='b0b4183f192a7d7d', sig_provider='Scientific Linux';
+insert into pkg_sig_provider set sig_id='66ced3de1e5e0159', sig_provider='Oracle Inc.';
+insert into pkg_sig_provider set sig_id='2e2bcdbcb38a8516', sig_provider='Oracle Inc.';
+insert into pkg_sig_provider set sig_id='2afe16421d061a62', sig_provider='Novell Inc.';
+insert into pkg_sig_provider set sig_id='14c28bc97e2e3b05', sig_provider='Novell Inc.';
+insert into pkg_sig_provider set sig_id='478a32e8a1912208', sig_provider='Novell Inc.';
+insert into pkg_sig_provider set sig_id='73d25d630dfb3188', sig_provider='Novell Inc.';
+insert into pkg_sig_provider set sig_id='a84edae89c800aca', sig_provider='SUSE';
+insert into pkg_sig_provider set sig_id='e3a5c360307e3d54', sig_provider='SUSE';
+insert into pkg_sig_provider set sig_id='6c74ce73b37b98a9', sig_provider='SUSE';
+insert into pkg_sig_provider set sig_id='8055f0400182b964', sig_provider='SUSE';
+insert into pkg_sig_provider set sig_id='95423d4e430a1c35', sig_provider='Spacewalk';
+insert into pkg_sig_provider set sig_id='ed635379b3892132', sig_provider='Spacewalk';
+insert into pkg_sig_provider set sig_id='0e646f68863a853d', sig_provider='Spacewalk';
+insert into pkg_sig_provider set sig_id='119cc036217521f6', sig_provider='EPEL';
+insert into pkg_sig_provider set sig_id='3b49df2a0608b895', sig_provider='EPEL';
+
+insert into pkg_sig_provider set sig_id='508ce5e666534c2b', sig_provider='atrpms';
+insert into pkg_sig_provider set sig_id='c12beffc68d9802a', sig_provider='ccrma';
+insert into pkg_sig_provider set sig_id='a20e52146b8d79e6', sig_provider='dag';
+insert into pkg_sig_provider set sig_id='9c14a19c1aa78495', sig_provider='dries';
+insert into pkg_sig_provider set sig_id='82ed95041ac70ce6', sig_provider='extras';
+insert into pkg_sig_provider set sig_id='da84cbd430c9ecf8', sig_provider='fedora testing';
+insert into pkg_sig_provider set sig_id='692ac459e42d547b', sig_provider='freshrpms';
+insert into pkg_sig_provider set sig_id='5c6cfff7c431416d', sig_provider='jpackage';
+insert into pkg_sig_provider set sig_id='71295441a109b1ec', sig_provider='livna';
+insert into pkg_sig_provider set sig_id='924c9edfb8693f2c', sig_provider='newrpms';
+insert into pkg_sig_provider set sig_id='012334cbf322929d', sig_provider='wstearns';
+insert into pkg_sig_provider set sig_id='35d8da21fd4fe9e9', sig_provider='ximian';
+
+insert into pkg_sig_provider set sig_id='d62946f59def3191', sig_provider='rpmforge';
+insert into pkg_sig_provider set sig_id='da221cdf9cd4953f', sig_provider='IUS Community';
+insert into pkg_sig_provider set sig_id='d4dd55f9c4e34013', sig_provider='EMC Inc.';
+insert into pkg_sig_provider set sig_id='7ebfdd5d17ed316d', sig_provider='Inktank Inc.';
+insert into pkg_sig_provider set sig_id='c0b5e0ab66fd4949', sig_provider='VMware, Inc.';
+insert into pkg_sig_provider set sig_id='527bc53a2689b887', sig_provider='Hewlett-Packard Company';
+

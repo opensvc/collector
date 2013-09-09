@@ -1478,6 +1478,7 @@
 'show storage group devices': 'montrer les devices de la vue',
 'Showing %(first)d to %(last)d out of %(total)d records': 'Affichage des enregistrements %(first)d à %(last)d sur un total de %(total)d',
 'Signature': 'Signature',
+'Signature provider': 'Signature provider',
 'Since': 'Depuis',
 'since %(a)s': 'depuis %(a)s',
 'Since %(date)s': 'Depuis %(date)s',

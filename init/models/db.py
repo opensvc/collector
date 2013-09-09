@@ -874,6 +874,12 @@ db.define_table('stats_netdev',
     Field('txpckps', 'float'),
     migrate=False)
 
+db.define_table('pkg_sig_provider',
+    Field('id'),
+    Field('sig_id', 'string', length=16),
+    Field('sig_provider', 'string', length=32),
+    migrate=False)
+
 db.define_table('packages',
     Field('id'),
     Field('pkg_nodename', 'string', length=60),
