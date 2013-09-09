@@ -1278,10 +1278,6 @@ function filter_selector_%(id)s(e,k,v){
     sel = v
   }
   _sel = sel
-  cur = $("#fsr%(id)s").find("#fsrview").text()
-  if (cur.length==0) {
-    cur = $("#"+k).val()
-  }
   $("#fsr%(id)s").show()
   if (e.pageX || e.pageY) {
       posx = e.pageX;
@@ -1314,17 +1310,16 @@ function filter_selector_%(id)s(e,k,v){
   }
   $("#fsr%(id)s").css({"left": posx + "px", "top": posy + "px"})
   $("#fsr%(id)s").find("#fsrview").each(function(){
-    $(this).text($("#"+k).val())
+    $(this).text($("[name="+k+"]").find("input").val())
     $(this).unbind()
     $(this).bind("dblclick", function(){
       sel = $(this).text()
-      $("#"+k).val(sel)
+      $(".sym_headers").find("[name="+k+"]").find("input").val(sel)
       filter_submit_%(id)s(k,sel)
     })
     $(this).bind("click", function(){
       sel = $(this).text()
       cur = sel
-      $("#"+k).val(sel)
       $(this).removeClass("highlight")
       $(this).addClass("b")
       $(".sym_headers").find("[name="+k+"]").find("input").val(sel)
@@ -1417,6 +1412,7 @@ function filter_selector_%(id)s(e,k,v){
   $("#fsr%(id)s").find("#fsrandeq").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
+      cur =  $(".sym_headers").find("[name="+k+"]").find("input").val()
       val = cur + '&' + sel
       $("#fsr%(id)s").find("#fsrview").each(function(){
         $(this).text(val)
@@ -1427,6 +1423,7 @@ function filter_selector_%(id)s(e,k,v){
   $("#fsr%(id)s").find("#fsroreq").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
+      cur =  $(".sym_headers").find("[name="+k+"]").find("input").val()
       val = cur + '|' + sel
       $("#fsr%(id)s").find("#fsrview").each(function(){
         $(this).text(val)
