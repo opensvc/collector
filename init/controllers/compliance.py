@@ -5756,36 +5756,61 @@ def comp_get_matching_filters(fset_ids, fset_data, nodename=None, svcname=None):
             except:
                 value = repr(value)
 
-        where = "select 1 from %(table)s where %(field)s %(op)s %(value)s" % dict(
+        where_ext = ""
+        join_table = ""
+
+        if nodename is not None:
+            if table in ("nodes", "packages", "patches", 'node_hba', "b_disk_app", "svcdisks", "svcmon", "svcmon_log"):
+                if table in ("nodes", "packages", "patches", 'node_hba'):
+                    _field = "nodename"
+                elif table in ("b_disk_app", "svcdisks"):
+                    _field = "disk_nodename"
+                elif table in ("svcmon", "svcmon_log"):
+                    _field = "run_nodename"
+                else:
+                    print "unknown table", table
+                    return sql_l
+                where_ext += " and %s.%s = '%s'" % (table, _field, nodename)
+            elif table in ("services"):
+                if field == 'svc_envfile':
+                    raise Exception(field)
+                where_ext += " and services.svc_name=svcmon.mon_svcname and svcmon.mon_nodname = '%s'" % (nodename)
+                join_table += ", svcmon"
+
+        if svcname is not None:
+            if table in ("services", "b_disk_app", "svcdisks", "svcmon", "svcmon_log"):
+                if table in ("services"):
+                    _field = "svc_name"
+                elif table in ("b_disk_app", "svcdisks"):
+                    _field = "disk_svcname"
+                elif table in ("svcmon", "svcmon_log"):
+                    _field = "mon_svcname"
+                else:
+                    print "unknown table", table
+                    return sql_l
+                where_ext += " and %s = '%s'" % (_field, svcname)
+            elif table in ("nodes", "packages", "patches", "node_hba"):
+                if table == "nodes":
+                    where_ext += " and nodes.nodename=svcmon.mon_nodname and svcmon.mon_svcname = '%s'" % (svcname)
+                    join_table += ", svcmon"
+                elif table == "packages":
+                    where_ext += " and packages.pkg_nodename=svcmon.mon_nodname and svcmon.mon_svcname = '%s'" % (svcname)
+                    join_table += ", svcmon"
+                elif table == "patches":
+                    where_ext += " and patches.patch_nodename=svcmon.mon_nodname and svcmon.mon_svcname = '%s'" % (svcname)
+                    join_table += ", svcmon"
+                elif table == "node_hba":
+                    where_ext += " and node_hba.nodename=svcmon.mon_nodname and svcmon.mon_svcname = '%s'" % (svcname)
+                    join_table += ", svcmon"
+
+        where = "select 1 from %(table)s %(join_table)s where %(table)s.%(field)s %(op)s %(value)s %(where_ext)s" % dict(
           op=op,
           table = table,
           field = field,
           value = value,
+          where_ext = where_ext,
+          join_table = join_table,
         )
-
-        if nodename is not None:
-            if table in ("nodes", "packages", "patches", 'node_hba'):
-                _field = "nodename"
-            elif table in ("b_disk_app", "svcdisks"):
-                _field = "disk_nodename"
-            elif table in ("svcmon", "svcmon_log"):
-                _field = "run_nodename"
-            else:
-                print "unknown table", table
-                return sql_l
-            where += " and %s = '%s'" % (_field, nodename)
-
-        if svcname is not None:
-            if table in ("services"):
-                _field = "svc_name"
-            elif table in ("b_disk_app", "svcdisks"):
-                _field = "disk_svcname"
-            elif table in ("svcmon", "svcmon_log"):
-                _field = "mon_svcname"
-            else:
-                print "unknown table", table
-                return sql_l
-            where += " and %s = '%s'" % (_field, svcname)
 
         sql_l += ["select if (exists(%(where)s), %(fid)d, 0)" % dict(
           where = where,
