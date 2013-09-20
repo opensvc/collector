@@ -5058,12 +5058,12 @@ def user():
     return auth()
 
 def auth_uuid(fn):
-    def new(*args):
-        uuid, node = args['auth']
-        rows = db(db.auth_node.nodename==node&db.auth_node.uuid==uuid).select(cacheable=True)
+    def new(*args, **kwargs):
+        uuid, node = kwargs['auth']
+        rows = db((db.auth_node.nodename==node)&(db.auth_node.uuid==uuid)).select(cacheable=True)
         if len(rows) != 1:
-            return
-        return fn(*args)
+            return "agent authentication error"
+        return fn(*args, **kwargs)
     return new
 
 @auth_uuid
@@ -5632,7 +5632,7 @@ def comp_get_node_ruleset(nodename):
         ruleset['vars'].append(('nodes.'+f, val))
     return {'osvc_node':ruleset}
 
-def comp_get_rulesets_fset_ids(rset_ids=None, nodename=None, svcname=None, head=True):
+def comp_get_rulesets_fset_ids(rset_ids=None, nodename=None, svcname=None):
     if rset_ids is None:
         q = db.comp_rulesets_filtersets.ruleset_id>0
     else:
@@ -5641,17 +5641,15 @@ def comp_get_rulesets_fset_ids(rset_ids=None, nodename=None, svcname=None, head=
     q &= db.comp_rulesets.id == db.comp_rulesets_filtersets.ruleset_id
     q &= db.comp_rulesets_filtersets.fset_id == db.gen_filtersets.id
 
-    if head:
-        q &= db.comp_rulesets.ruleset_public == True
-        if nodename is not None:
-            q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
-            q &= db.comp_ruleset_team_responsible.group_id == node_team_responsible_id(nodename)
-        elif svcname is not None:
-            q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
-            q &= db.comp_ruleset_team_responsible.group_id.belongs(svc_team_responsible_id(svcname))
+    if nodename is not None:
+        q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+        q &= db.comp_ruleset_team_responsible.group_id == node_team_responsible_id(nodename)
+    elif svcname is not None:
+        q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+        q &= db.comp_ruleset_team_responsible.group_id.belongs(svc_team_responsible_id(svcname))
 
     l = {}
-    rows = db(q).select(cacheable=True)
+    rows = db(q).select(groupby=db.comp_rulesets_filtersets.fset_id, cacheable=True)
 
     fset_ids = [r.comp_rulesets_filtersets.fset_id for r in rows]
     q = db.v_gen_filtersets.fset_id.belongs(fset_ids)
@@ -5663,9 +5661,6 @@ def comp_get_rulesets_fset_ids(rset_ids=None, nodename=None, svcname=None, head=
     for row in rows:
         if svcname is None and row.comp_rulesets_filtersets.fset_id in fsets_with_svc_tables:
             # for node compliance, discard fsets services related
-            continue
-        if svcname is not None and not row.comp_rulesets_filtersets.fset_id in fsets_with_svc_tables:
-            # for service compliance, discard fsets not services related
             continue
 
         t = (row.comp_rulesets_filtersets.fset_id,
@@ -6086,31 +6081,6 @@ def comp_get_svc_ruleset(svcname, auth):
     ruleset = _comp_remove_dup_vars(ruleset)
     insert_run_rset(ruleset)
     return ruleset
-
-def comp_ruleset_match(id, svcname=None, nodename=None, slave=False, head=True):
-    if svcname is not None:
-        return _comp_ruleset_svc_match(id, svcname=svcname, nodename=nodename,
-                                       slave=slave,
-                                       head=head)
-    else:
-        return _comp_ruleset_match(id, nodename=nodename,
-                                   head=head)
-
-def _comp_ruleset_svc_match(id, svcname=None, nodename=None, slave=False, head=True):
-    l = comp_get_rulesets_fset_ids([id], svcname=svcname, head=head)
-    matching_fsets = comp_get_matching_fset_ids(fset_ids=l, nodename=nodename, svcname=svcname)
-    for fset_id, fset_name in l:
-        if fset_id in matching_fsets:
-            return True
-    return False
-
-def _comp_ruleset_match(id, nodename=None, head=True):
-    l = comp_get_rulesets_fset_ids([id], nodename=nodename, head=head)
-    matching_fsets = comp_get_matching_fset_ids(fset_ids=l, nodename=nodename)
-    for fset_id, fset_name in l:
-        if fset_id in matching_fsets:
-            return True
-    return False
 
 def _comp_get_svc_per_node_ruleset(svcname, nodename, slave=False):
     ruleset = {}

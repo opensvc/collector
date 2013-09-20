@@ -41,12 +41,12 @@ def call():
 #
 #########
 def auth_uuid(fn):
-    def new(*args):
-        uuid, node = args['auth']
-        rows = db(db.auth_node.nodename==node&db.auth_node.uuid==uuid).select()
+    def new(*args, **kwargs):
+        uuid, node = kwargs['auth']
+        rows = db((db.auth_node.nodename==node)&(db.auth_node.uuid==uuid)).select(cacheable=True)
         if len(rows) != 1:
-            return
-        return fn(*args)
+            return "agent authentication error"
+        return fn(*args, **kwargs)
     return new
 
 @auth_uuid
