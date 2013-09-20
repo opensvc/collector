@@ -2010,6 +2010,7 @@ function stats_svc(url, id, title, unit) {
     $.getJSON(url, function(data) {
         if (data.length < 2) { return }
         if (data[1].length == 0) { return }
+        if (data[1][0].length < 2) { return }
         svcnames = data[0]
         series = []
         for (i=0; i<svcnames.length; i++) {
@@ -2059,8 +2060,8 @@ function stats_svc(url, id, title, unit) {
 	    series: series,
 	    axes: {
 		xaxis: {
-                    min: data[1][0][0],
-                    max: data[1][data[1].length-1][0],
+                    min: data[1][0][0][0],
+                    max: data[1][0][data[1][0].length-1][0],
 		    renderer: $.jqplot.DateAxisRenderer,
                     tickOptions:{formatString:'%b,%d\n%H:%M'}
 		}, 
