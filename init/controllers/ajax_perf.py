@@ -94,7 +94,7 @@ def perf_stats_svc_data_mem_normalize(node, s, e):
              union
              select
                "normalized",
-               %(d)s,
+               date,
                (%(col)s / cap * %(mem)d) - %(col)s
              from stats_svc%(period)s
              where
@@ -151,7 +151,7 @@ def perf_stats_svc_data_cpu_normalize(node, s, e):
              union
              select
                "normalized",
-               %(d)s,
+               date,
                (%(col)s / cap_cpu * %(cpus)d) - %(col)s
              from stats_svc%(period)s
              where
