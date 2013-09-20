@@ -132,9 +132,9 @@ def perf_stats_svc_data_cpu_normalize(node, s, e):
     where = "svcname = '%s' and"%container
     col = 'cpu'
 
-    sql = """select cpu_cores from nodes
-             where
-               nodename="%(node)s"
+    sql = """select if(cpu_threads is null, cpu_cores, cpu_threads)
+             from nodes
+             where nodename="%(node)s"
           """%dict(node=node)
     cpus = db.executesql(sql)[0][0]
 
