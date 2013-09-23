@@ -5642,21 +5642,31 @@ def comp_get_rulesets_fset_ids(rset_ids=None, nodename=None, svcname=None):
     q &= db.comp_rulesets_filtersets.fset_id == db.gen_filtersets.id
 
     if nodename is not None:
-        q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
-        q &= db.comp_ruleset_team_responsible.group_id == node_team_responsible_id(nodename)
-    elif svcname is not None:
-        q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
-        q &= db.comp_ruleset_team_responsible.group_id.belongs(svc_team_responsible_id(svcname))
+        q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+        q1 &= db.comp_ruleset_team_responsible.group_id == node_team_responsible_id(nodename)
+    else:
+        q1 = db.comp_rulesets.id < 0
+
+    if svcname is not None:
+        q2 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+        q2 &= db.comp_ruleset_team_responsible.group_id.belongs(svc_team_responsible_id(svcname))
+    else:
+        q2 = db.comp_rulesets.id < 0
+
+    q &= q1 | q2
 
     l = {}
-    rows = db(q).select(groupby=db.comp_rulesets_filtersets.fset_id, cacheable=True)
+    g = db.comp_rulesets_filtersets.fset_id|db.comp_rulesets.id
+    rows = db(q).select(groupby=g, cacheable=True)
 
     fset_ids = [r.comp_rulesets_filtersets.fset_id for r in rows]
-    q = db.v_gen_filtersets.fset_id.belongs(fset_ids)
-    q &= db.v_gen_filtersets.f_table.belongs(['services', 'svcmon'])
-    f_rows = db(q).select(db.v_gen_filtersets.fset_id,
-                          groupby=db.v_gen_filtersets.fset_id, cacheable=True)
-    fsets_with_svc_tables = [r.fset_id for r in f_rows]
+
+    if svcname is None:
+        q = db.v_gen_filtersets.fset_id.belongs(fset_ids)
+        q &= db.v_gen_filtersets.f_table.belongs(['services', 'svcmon'])
+        f_rows = db(q).select(db.v_gen_filtersets.fset_id,
+                              groupby=db.v_gen_filtersets.fset_id, cacheable=True)
+        fsets_with_svc_tables = [r.fset_id for r in f_rows]
 
     for row in rows:
         if svcname is None and row.comp_rulesets_filtersets.fset_id in fsets_with_svc_tables:
@@ -5672,17 +5682,10 @@ def comp_get_rulesets_fset_ids(rset_ids=None, nodename=None, svcname=None):
     return l
 
 def comp_get_matching_fset_ids(fset_ids=None, nodename=None, svcname=None, slave=False):
-    if slave and nodename is None:
-        q = db.svcmon.mon_svcname == svcname
-        q &= db.svcmon.mon_containerstatus == "up"
-        nodename = db(q).select(db.svcmon.mon_vmname).first()
-        if nodename is not None:
-            nodename = nodename.mon_nodname
-
     if fset_ids is None:
         fset_ids = comp_get_rulesets_fset_ids(nodename=nodename, svcname=svcname)
     fset_data = comp_get_fset_data()
-    matching_filters = comp_get_matching_filters(fset_ids, fset_data, nodename=nodename, svcname=svcname)
+    matching_filters = comp_get_matching_filters(fset_ids, fset_data, nodename=nodename, svcname=svcname, slave=slave)
     matching_fsets = []
 
     def recurse_match(data, match=None):
@@ -5729,7 +5732,7 @@ def comp_get_matching_fset_ids(fset_ids=None, nodename=None, svcname=None, slave
 
     return matching_fsets
 
-def comp_get_matching_filters(fset_ids, fset_data, nodename=None, svcname=None):
+def comp_get_matching_filters(fset_ids, fset_data, nodename=None, svcname=None, slave=False):
     sql_l = []
 
     def filter_sql(d, sql_l):
@@ -5754,6 +5757,11 @@ def comp_get_matching_filters(fset_ids, fset_data, nodename=None, svcname=None):
         where_ext = ""
         join_table = ""
 
+        if slave:
+            svcmon_nodname_field = "svcmon.mon_vmname"
+        else:
+            svcmon_nodname_field = "svcmon.mon_nodname"
+
         if nodename is not None:
             if table in ("nodes", "packages", "patches", 'node_hba', "b_disk_app", "svcdisks", "svcmon", "svcmon_log"):
                 if table in ("nodes", "packages", "patches", 'node_hba'):
@@ -5769,7 +5777,7 @@ def comp_get_matching_filters(fset_ids, fset_data, nodename=None, svcname=None):
             elif table in ("services"):
                 if field == 'svc_envfile':
                     raise Exception(field)
-                where_ext += " and services.svc_name=svcmon.mon_svcname and svcmon.mon_nodname = '%s'" % (nodename)
+                where_ext += " and services.svc_name=svcmon.mon_svcname and %s = '%s'" % (svcmon_nodname_field, nodename)
                 join_table += ", svcmon"
 
         if svcname is not None:
@@ -5786,16 +5794,16 @@ def comp_get_matching_filters(fset_ids, fset_data, nodename=None, svcname=None):
                 where_ext += " and %s = '%s'" % (_field, svcname)
             elif table in ("nodes", "packages", "patches", "node_hba"):
                 if table == "nodes":
-                    where_ext += " and nodes.nodename=svcmon.mon_nodname and svcmon.mon_svcname = '%s'" % (svcname)
+                    where_ext += " and nodes.nodename=%s and svcmon.mon_svcname = '%s'" % (svcmon_nodname_field, svcname)
                     join_table += ", svcmon"
                 elif table == "packages":
-                    where_ext += " and packages.pkg_nodename=svcmon.mon_nodname and svcmon.mon_svcname = '%s'" % (svcname)
+                    where_ext += " and packages.pkg_nodename=%s and svcmon.mon_svcname = '%s'" % (svcmon_nodname_field, svcname)
                     join_table += ", svcmon"
                 elif table == "patches":
-                    where_ext += " and patches.patch_nodename=svcmon.mon_nodname and svcmon.mon_svcname = '%s'" % (svcname)
+                    where_ext += " and patches.patch_nodename=%s and svcmon.mon_svcname = '%s'" % (svcmon_nodname_field, svcname)
                     join_table += ", svcmon"
                 elif table == "node_hba":
-                    where_ext += " and node_hba.nodename=svcmon.mon_nodname and svcmon.mon_svcname = '%s'" % (svcname)
+                    where_ext += " and node_hba.nodename=%s and svcmon.mon_svcname = '%s'" % (svcmon_nodname_field, svcname)
                     join_table += ", svcmon"
 
         where = "select 1 from %(table)s %(join_table)s where %(table)s.%(field)s %(op)s %(value)s %(where_ext)s" % dict(
@@ -6073,36 +6081,22 @@ def comp_get_ruleset(nodename, auth):
 @auth_uuid
 @service.xmlrpc
 def comp_get_svc_ruleset(svcname, auth):
-    slave = comp_slave(svcname, auth[1])
-    ruleset = _comp_get_svc_ruleset(svcname, slave=slave)
-    ruleset.update(_comp_get_svc_per_node_ruleset(svcname, auth[1], slave))
+    ruleset = _comp_get_svc_ruleset(svcname, auth[1])
     ruleset.update(comp_get_svcmon_ruleset(svcname, auth[1]))
     ruleset.update(comp_get_node_ruleset(auth[1]))
     ruleset = _comp_remove_dup_vars(ruleset)
     insert_run_rset(ruleset)
     return ruleset
 
-def _comp_get_svc_per_node_ruleset(svcname, nodename, slave=False):
-    ruleset = {}
+def _comp_get_svc_ruleset(svcname, nodename):
+    slave = comp_slave(svcname, nodename)
 
-    # add contextual rulesets variables
-    l = comp_get_rulesets_fset_ids(nodename=nodename)
-    matching_fsets = comp_get_matching_fset_ids(fset_ids=l, nodename=nodename)
-
-    for fset_id, fset_name in l:
-        if fset_id in matching_fsets:
-            for rset_id in l[(fset_id, fset_name)]:
-                ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, matching_fsets=matching_fsets))
-
-    return ruleset
-
-def _comp_get_svc_ruleset(svcname, slave=False):
     # initialize ruleset with asset variables
     ruleset = comp_get_service_ruleset(svcname)
 
     # add contextual rulesets variables
-    l = comp_get_rulesets_fset_ids(svcname=svcname)
-    matching_fsets = comp_get_matching_fset_ids(fset_ids=l, svcname=svcname)
+    l = comp_get_rulesets_fset_ids(svcname=svcname, nodename=nodename)
+    matching_fsets = comp_get_matching_fset_ids(fset_ids=l, nodename=nodename, svcname=svcname, slave=slave)
 
     for fset_id, fset_name in l:
         if fset_id in matching_fsets:
@@ -6306,7 +6300,6 @@ def ajax_rset_md5():
 def ajax_compliance_svc():
     session.forget(response)
     svcname = request.args[0]
-    rsets = _comp_get_svc_ruleset(svcname)
     msets = _comp_get_svc_moduleset(svcname)
 
     d = []
@@ -6314,23 +6307,23 @@ def ajax_compliance_svc():
     q &= db.svcmon.mon_updated > now - datetime.timedelta(days=1)
     rows = db(q).select(db.svcmon.mon_nodname, db.svcmon.mon_vmname,
                         cacheable=True)
-    nodes = [r.mon_nodname for r in rows]
-    vnodes = [r.mon_vmname for r in rows if r.mon_vmname is not None and r.mon_vmname != ""]
-    for r in rows:
-        if r.mon_vmname is not None and r.mon_vmname != "" and r.mon_vmname not in nodes:
-            nodes.append(r.mon_vmname)
+    vnodes = set([r.mon_vmname for r in rows if r.mon_vmname is not None and r.mon_vmname != ""])
+    nodes = set([r.mon_nodname for r in rows]) - vnodes
 
-    for node in nodes:
-        did = 'nrs_'+node.replace('.','').replace('-','')
-        n_rsets = comp_get_svcmon_ruleset(svcname, node)
+    vnodes = sorted(list(vnodes))
+    nodes = sorted(list(nodes))
+
+    def _one(node, slave=False):
+        did = 'nrs_'+svcname.replace('.','').replace('-','')+'_'+node.replace('.','').replace('-','')
+        n_rsets = _comp_get_svc_ruleset(svcname, node)
+        n_rsets.update(comp_get_svcmon_ruleset(svcname, node))
         n_rsets.update(comp_get_node_ruleset(node))
-        if node in vnodes:
-            slave = True
+        if slave:
+            title = svcname + ' on slave node ', node
         else:
-            slave = False
-        n_rsets.update(_comp_get_svc_per_node_ruleset(svcname, node, slave))
+            title = svcname + ' on node ', node
         d.append(DIV(
-                   B(node),
+                   B(title),
                    _onclick="""$("#%s").toggle();$(this).toggleClass("down16").toggleClass("right16")"""%did,
                    _class="clickable right16",
                 )
@@ -6342,22 +6335,10 @@ def ajax_compliance_svc():
                  )
         )
 
-    div_ersets = SPAN()
-    did = 'esrs_'+svcname.replace('.','').replace('-','')
-    if len(vnodes) > 0:
-        ersets = _comp_get_svc_ruleset(svcname, slave=True)
-        div_ersets = SPAN(
-          DIV(
-            B(svcname + ' (slave)'),
-            _onclick="""$("#%s").toggle();$(this).toggleClass("down16").toggleClass("right16")"""%did,
-            _class="clickable right16",
-          ),
-          DIV(
-            beautify_rulesets(ersets),
-            _style="display:none",
-            _id=did,
-          ),
-        )
+    for node in nodes:
+        _one(node)
+    for vnode in vnodes:
+        _one(vnode, slave=True)
 
     did = 'srs_'+svcname.replace('.','').replace('-','')
     d = SPAN(
@@ -6366,18 +6347,6 @@ def ajax_compliance_svc():
           H3(T('Modulesets')),
           beautify_svc_modulesets(msets, svcname),
           H3(T('Rulesets')),
-          DIV(
-            B(svcname),
-            _onclick="""$("#%s").toggle();$(this).toggleClass("down16").toggleClass("right16")"""%did,
-            _class="clickable right16",
-          ),
-          DIV(
-            beautify_rulesets(rsets),
-            _style="display:none",
-            _id=did,
-          ),
-          div_ersets,
-          H3(T('Per node additional rulesets')),
           SPAN(d),
           SPAN(show_diff(svcname)),
         )
