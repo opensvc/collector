@@ -166,6 +166,26 @@ class table_nodes(HtmlTable):
         })
         for c in self.cols:
             self.colprops[c].table = 'v_nodes'
+
+        self.colprops.update({
+            'app_domain': HtmlTableColumn(
+                     title='App domain',
+                     field='app_domain',
+                     img='svc',
+                     table='apps',
+                     display=False,
+                    ),
+            'app_team_ops': HtmlTableColumn(
+                     title='Ops team',
+                     field='app_team_ops',
+                     img='guys16',
+                     table='apps',
+                     display=False,
+                    ),
+        })
+        self.cols.insert(self.cols.index('team_integ')+1, 'app_team_ops')
+        self.cols.insert(self.cols.index('project')+1, 'app_domain')
+
         for c in ['loc_building', 'loc_floor', 'loc_rack',
                   'cpu_dies', 'cpu_cores', 'cpu_model', 'mem_bytes',
                   'serial', 'team_responsible', 'host_mode', 'status']:
@@ -175,6 +195,7 @@ class table_nodes(HtmlTable):
         self.extrarow = True
         self.checkboxes = True
         self.checkbox_id_col = 'nodename'
+        self.checkbox_id_table = 'v_nodes'
         self.dbfilterable = True
         self.ajax_col_values = 'ajax_nodes_col_values'
         if 'NodeManager' in user_groups():
@@ -550,13 +571,15 @@ def node_del(ids):
 def ajax_nodes_col_values():
     t = table_nodes('nodes', 'ajax_nodes')
     col = request.args[0]
-    o = db['v_nodes'][col]
+    o = db[t.colprops[col].table][col]
     q = db.v_nodes.id > 0
+    j = db.apps.app == db.v_nodes.project
+    l = db.apps.on(j)
     q = _where(q, 'v_nodes', domain_perms(), 'nodename')
     q = apply_filters(q, db.v_nodes.nodename, None)
     for f in t.cols:
-        q = _where(q, 'v_nodes', t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o)
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    t.object_list = db(q).select(o, orderby=o, left=l)
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
@@ -577,17 +600,20 @@ def ajax_nodes():
 
     o = db.v_nodes.nodename
     q = db.v_nodes.id>0
+    j = db.apps.app == db.v_nodes.project
+    l = db.apps.on(j)
     q = _where(q, 'v_nodes', domain_perms(), 'nodename')
     q = apply_filters(q, db.v_nodes.nodename, None)
     for f in t.cols:
-        q = _where(q, 'v_nodes', t.filter_parse(f), f)
-    n = db(q).count()
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    n = db(q).select(db.v_nodes.id.count(), left=l).first()(db.v_nodes.id.count())
     t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o, left=l)
 
     t.csv_q = q
     t.csv_orderby = o
     t.csv_limit = 10000
+    t.csv_left = l
     if len(request.args) == 1 and request.args[0] == 'csv':
         return t.csv()
 

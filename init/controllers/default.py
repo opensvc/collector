@@ -904,6 +904,8 @@ class table_svcmon(HtmlTable):
             'svc_availstatus',
             'svc_status',
             'svc_app',
+            'app_domain',
+            'app_team_ops',
             'svc_drptype',
             'svc_containertype',
             'svc_flex_min_nodes',
@@ -988,6 +990,18 @@ class table_svcmon(HtmlTable):
                      field='err',
                      display = True,
                      img = 'action16',
+                    ),
+            'app_domain': HtmlTableColumn(
+                     title='App domain',
+                     field='app_domain',
+                     img='svc',
+                     display=False,
+                    ),
+            'app_team_ops': HtmlTableColumn(
+                     title='Ops team',
+                     field='app_team_ops',
+                     img='guys16',
+                     display=False,
                     ),
         }
         self.colprops.update(svcmon_colprops)

@@ -635,6 +635,26 @@ class table_checks(HtmlTable):
         }
         self.colprops.update(v_nodes_colprops)
         self.cols += v_nodes_cols
+
+        self.colprops.update({
+            'app_domain': HtmlTableColumn(
+                     title='App domain',
+                     field='app_domain',
+                     img='svc',
+                     table='apps',
+                     display=False,
+                    ),
+            'app_team_ops': HtmlTableColumn(
+                     title='Ops team',
+                     field='app_team_ops',
+                     img='guys16',
+                     table='apps',
+                     display=False,
+                    ),
+        })
+        self.cols.insert(self.cols.index('team_integ')+1, 'app_team_ops')
+        self.cols.insert(self.cols.index('project')+1, 'app_domain')
+
         for c in self.cols:
             self.colprops[c].t = self
         self.ajax_col_values = 'ajax_checks_col_values'
@@ -939,10 +959,13 @@ def ajax_checks_col_values():
     q = _where(q, 'checks_live', domain_perms(), 'chk_nodename')
     q = apply_filters(q, db.checks_live.chk_nodename, None)
     q &= db.checks_live.chk_nodename==db.v_nodes.nodename
+    j = db.apps.app == db.v_nodes.project
+    l = db.apps.on(j)
+
     o = db[t.colprops[col].table][col]
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o)
+    t.object_list = db(q).select(o, orderby=o, left=l)
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
@@ -1019,18 +1042,24 @@ def ajax_checks():
     q = _where(q, 'checks_live', domain_perms(), 'chk_nodename')
     q = apply_filters(q, db.checks_live.chk_nodename, None)
     q &= db.checks_live.chk_nodename==db.v_nodes.nodename
+    j = db.apps.app == db.v_nodes.project
+    l = db.apps.on(j)
+
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
     t.csv_q = q
     t.csv_orderby = o
     t.csv_limit = 15000
+    t.csv_left = l
+
     if len(request.args) == 1 and request.args[0] == 'csv':
         return t.csv()
 
-    n = db(q).count()
+    n = db(q).select(db.checks_live.id.count(), left=l).first()(db.checks_live.id.count())
     t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
+                                 orderby=o, left=l)
     return t.html()
 
 @auth.requires_login()

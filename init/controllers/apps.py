@@ -34,6 +34,8 @@ class table_apps(HtmlTable):
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['app',
+                     'app_domain',
+                     'app_team_ops',
                      'roles',
                      'responsibles',
                      'mailto']
@@ -45,15 +47,29 @@ class table_apps(HtmlTable):
                      img='svc',
                      display=True,
                     ),
+            'app_domain': HtmlTableColumn(
+                     title='App domain',
+                     table='v_apps',
+                     field='app_domain',
+                     img='svc',
+                     display=True,
+                    ),
+            'app_team_ops': HtmlTableColumn(
+                     title='Ops team',
+                     table='v_apps',
+                     field='app_team_ops',
+                     img='guys16',
+                     display=True,
+                    ),
             'roles': HtmlTableColumn(
-                     title='Responsible groups',
+                     title='Sysresp teams',
                      table='v_apps',
                      field='roles',
                      img='guys16',
                      display=True,
                     ),
             'responsibles': HtmlTableColumn(
-                     title='Responsibles',
+                     title='System Responsibles',
                      table='v_apps',
                      field='responsibles',
                      img='guys16',
@@ -64,7 +80,7 @@ class table_apps(HtmlTable):
                      table='v_apps',
                      field='mailto',
                      img='guys16',
-                     display=True,
+                     display=False,
                     ),
         }
         self.ajax_col_values = 'ajax_apps_col_values'
