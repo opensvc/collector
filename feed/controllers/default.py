@@ -3049,19 +3049,17 @@ def collector_checks(cmd, auth):
                         db.checks_live.chk_low,
                         db.checks_live.chk_high,
                         db.checks_live.chk_threshold_provider,
-                        db.checks_live.chk_created,
                         db.checks_live.chk_updated,
                         limitby=(0,1000)
                        )
-    header = ['service name',
-              'check instance',
-              'check type',
-              'check value',
-              'check low threshold',
-              'check high threshold',
-              'check threshold provider',
-              'check creation date',
-              'check last update date']
+    header = ['service',
+              'instance',
+              'type',
+              'value',
+              'low threshold',
+              'high threshold',
+              'threshold provider',
+              'last update date']
     data = [header]
     for row in rows:
         data.append([
@@ -3072,7 +3070,6 @@ def collector_checks(cmd, auth):
           str(row.chk_low),
           str(row.chk_high),
           str(row.chk_threshold_provider),
-          str(row.chk_created),
           str(row.chk_updated)
         ])
     return {"ret": 0, "msg": "", "data":data}
@@ -3098,7 +3095,7 @@ def collector_alerts(cmd, auth):
     labels = ["dash_severity", "dash_type", "dash_created", "dash_fmt", "dash_dict", "dash_nodename", "dash_svcname"]
     sql = """select %s from dashboard %s order by dash_severity desc limit 0,1000"""%(','.join(labels), where)
     rows = db.executesql(sql)
-    data = [["severity", "type", "node name", "service name", "alert", "created"]]
+    data = [["severity", "type", "node", "service", "alert", "created"]]
     for row in rows:
         fmt = row[3]
         try:
@@ -3146,7 +3143,7 @@ def collector_events(cmd, auth):
     labels = ["log_date", "log_nodename", "log_svcname", "log_level", "log_action", "log_fmt", "log_dict"]
     sql = """select %s from log %s order by log_date limit 0,1000"""%(','.join(labels), where)
     rows = db.executesql(sql)
-    data = [["date", "node name", "service name", "level", "action", "event"]]
+    data = [["date", "node", "service", "level", "action", "event"]]
     for row in rows:
         fmt = row[5]
         try:
