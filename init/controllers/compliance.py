@@ -6071,6 +6071,9 @@ def node_team_responsible_id(nodename):
         return None
     return rows[0].id
 
+def test_comp_get_ruleset():
+    return _comp_get_ruleset("frcp03pdv0024")
+
 @auth_uuid
 @service.xmlrpc
 def comp_get_ruleset(nodename, auth):
@@ -6086,6 +6089,21 @@ def comp_get_svc_ruleset(svcname, auth):
     insert_run_rset(ruleset)
     return ruleset
 
+def comp_contextual_rulesets(nodename, svcname=None, slave=False, matching_fsets=None, fset_ids=None):
+    ruleset = {}
+
+    q = db.comp_rulesets.ruleset_public == True
+    rows = db(q).select(db.comp_rulesets.id, cacheable=True)
+    public_rsets = [r.id for r in rows]
+
+    for fset_id, fset_name in fset_ids:
+        if fset_id in matching_fsets:
+            for rset_id in fset_ids[(fset_id, fset_name)]:
+                if rset_id not in public_rsets:
+                    continue
+                ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, matching_fsets=matching_fsets))
+    return ruleset
+
 def _comp_get_svc_ruleset(svcname, nodename):
     slave = comp_slave(svcname, nodename)
 
@@ -6095,11 +6113,11 @@ def _comp_get_svc_ruleset(svcname, nodename):
     # add contextual rulesets variables
     l = comp_get_rulesets_fset_ids(svcname=svcname, nodename=nodename)
     matching_fsets = comp_get_matching_fset_ids(fset_ids=l, nodename=nodename, svcname=svcname, slave=slave)
-
-    for fset_id, fset_name in l:
-        if fset_id in matching_fsets:
-            for rset_id in l[(fset_id, fset_name)]:
-                ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, matching_fsets=matching_fsets))
+    ruleset.update(comp_contextual_rulesets(nodename=nodename,
+                                            svcname=svcname,
+                                            slave=slave,
+                                            matching_fsets=matching_fsets,
+                                            fset_ids=l))
 
     # add explicit rulesets variables
     q = db.comp_rulesets_services.svcname == svcname
@@ -6151,11 +6169,7 @@ def _comp_get_ruleset(nodename):
     # add contextual rulesets variables
     l = comp_get_rulesets_fset_ids(nodename=nodename)
     matching_fsets = comp_get_matching_fset_ids(fset_ids=l, nodename=nodename)
-
-    for fset_id, fset_name in l:
-        if fset_id in matching_fsets:
-            for rset_id in l[(fset_id, fset_name)]:
-                ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, matching_fsets=matching_fsets))
+    ruleset.update(comp_contextual_rulesets(nodename=nodename, matching_fsets=matching_fsets, fset_ids=l))
 
     # add explicit rulesets variables
     q = db.comp_rulesets_nodes.nodename == nodename
