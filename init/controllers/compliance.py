@@ -5769,14 +5769,12 @@ def comp_get_matching_filters(fset_ids, fset_data, nodename=None, svcname=None, 
                 elif table in ("b_disk_app", "svcdisks"):
                     _field = "disk_nodename"
                 elif table in ("svcmon", "svcmon_log"):
-                    _field = "run_nodename"
+                    _field = "mon_nodname"
                 else:
                     print "unknown table", table
                     return sql_l
                 where_ext += " and %s.%s = '%s'" % (table, _field, nodename)
             elif table in ("services"):
-                if field == 'svc_envfile':
-                    raise Exception(field)
                 where_ext += " and services.svc_name=svcmon.mon_svcname and %s = '%s'" % (svcmon_nodname_field, nodename)
                 join_table += ", svcmon"
 
