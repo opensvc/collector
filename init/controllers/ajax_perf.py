@@ -104,6 +104,10 @@ def perf_stats_svc_data_mem_normalize(node, s, e):
                and date<"%(e)s"
           """%dict(mem=mem, where=where,s=s,e=e,node=node,col=col, period=get_period(s, e))
     rows = db.executesql(sql)
+    if len(rows) == 0:
+        return [], [], 0, 0
+    min = rows[0][1]
+    max = rows[-1][1]
     dates = set([r[1] for r in rows])
     svcnames = set([r[0] for r in rows])
 
@@ -124,7 +128,7 @@ def perf_stats_svc_data_mem_normalize(node, s, e):
 
         h[svcname][date] = data
 
-    return h.keys(), map(lambda x: x.items(), h.values())
+    return h.keys(), map(lambda x: x.items(), h.values()), min, max
 
 @auth.requires_login()
 def perf_stats_svc_data_cpu_normalize(node, s, e):
@@ -161,6 +165,10 @@ def perf_stats_svc_data_cpu_normalize(node, s, e):
                and date<"%(e)s"
           """%dict(cpus=cpus, where=where,s=s,e=e,node=node,col=col, period=get_period(s, e))
     rows = db.executesql(sql)
+    if len(rows) == 0:
+        return [], [], 0, 0
+    min = rows[0][1]
+    max = rows[-1][1]
     dates = set([r[1] for r in rows])
     svcnames = set([r[0] for r in rows])
 
@@ -181,7 +189,7 @@ def perf_stats_svc_data_cpu_normalize(node, s, e):
 
         h[svcname][date] = data
 
-    return h.keys(), map(lambda x: x.items(), h.values())
+    return h.keys(), map(lambda x: x.items(), h.values()), min, max
 
 @auth.requires_login()
 def perf_stats_svc_data(node, s, e, col):
@@ -200,8 +208,13 @@ def perf_stats_svc_data(node, s, e, col):
                nodename="%(node)s"
                and date>"%(s)s"
                and date<"%(e)s"
+             order by date
           """%dict(where=where,s=s,e=e,node=node,col=col, period=get_period(s, e))
     rows = db.executesql(sql)
+    if len(rows) == 0:
+        return [], [], 0, 0
+    min = rows[0][1]
+    max = rows[-1][1]
     dates = set([r[1] for r in rows])
     svcnames = set([r[0] for r in rows])
 
@@ -222,7 +235,7 @@ def perf_stats_svc_data(node, s, e, col):
 
         h[svcname][date] = data
 
-    return h.keys(), map(lambda x: x.items(), h.values())
+    return h.keys(), map(lambda x: x.items(), h.values()), min, max
 
 @auth.requires_login()
 def ajax_perf_netdev_err_plot():
