@@ -526,11 +526,13 @@ def ajax_service():
                 INPUT(
                   _value=b.strftime("%Y-%m-%d %H:%M"),
                   _id='containerprf_begin_'+str(rowid),
+                  _name='begin',
                   _class='datetime',
                 ),
                 INPUT(
                   _value=e.strftime("%Y-%m-%d %H:%M"),
                   _id='containerprf_end_'+str(rowid),
+                  _name='end',
                   _class='datetime',
                 ),
                 IMG(
@@ -538,14 +540,115 @@ def ajax_service():
                   _src=URL(r=request, c='static', f='end16.png'),
                   _style="vertical-align:middle",
                 ),
-                IMG(
-                  _title=T('Refresh'),
-                  _src=URL(r=request, c='static', f='refresh16.png'),
-                  _style="vertical-align:middle",
-                  _onclick="sync_ajax('%(url)s', ['containerprf_begin_%(id)s', 'containerprf_end_%(id)s'], 'containerprf_%(id)s', function(){});"%dict(
-                    id=str(rowid),
-                    url=URL(r=request, c='stats', f='ajax_containerperf_plot?node=%s'%','.join(containers)),
+                SPAN(
+                  A(
+                    IMG(
+                      _src=URL(r=request, c='static', f='refresh16.png'),
+                      _style="vertical-align:middle",
+                    ),
+                    _title=T('Refresh'),
+                    _id='refresh_'+str(rowid),
+                    _onclick="sync_ajax('%(url)s', ['containerprf_begin_%(id)s', 'containerprf_end_%(id)s'], 'containerprf_%(id)s', function(){});"%dict(
+                      id=str(rowid),
+                      url=URL(r=request, c='stats', f='ajax_containerperf_plot?node=%s'%','.join(containers)),
+                    ),
                   ),
+                ),
+                STYLE(XML('input {margin-left:2px}')),
+                INPUT(
+                  _value=T("Now"),
+                  _type="button",
+                  _onclick="""
+                    var d = new Date()
+                    $(this).siblings("input[name='end']").each(function(){
+                      $(this).val(print_date(d))
+                      $(this).effect("highlight")
+                    })
+                    d.setDate(d.getDate() - 1);
+                    d.setHours(0);
+                    d.setMinutes(0);
+                    $(this).siblings("input[name='begin']").each(function(){
+                      $(this).val(print_date(d))
+                      $(this).effect("highlight")
+                    })
+                    $(this).siblings().find("a:visible[id^='refresh']").trigger('click')
+                  """,
+                ),
+                INPUT(
+                  _value=T("Last day"),
+                  _type="button",
+                  _onclick="""
+                    var d = new Date()
+                    d.setHours(0);
+                    d.setMinutes(0);
+                    $(this).siblings("input[name='end']").each(function(){
+                      $(this).val(print_date(d))
+                      $(this).effect("highlight")
+                    })
+                    d.setDate(d.getDate() - 1);
+                    $(this).siblings("input[name='begin']").each(function(){
+                      $(this).val(print_date(d))
+                      $(this).effect("highlight")
+                    })
+                    $(this).siblings().find("a:visible[id^='refresh']").trigger('click')
+                  """,
+                ),
+                INPUT(
+                  _value=T("Last week"),
+                  _type="button",
+                  _onclick="""
+                    var d = new Date()
+                    d.setHours(0);
+                    d.setMinutes(0);
+                    $(this).siblings("input[name='end']").each(function(){
+                      $(this).val(print_date(d))
+                      $(this).effect("highlight")
+                    })
+                    d.setDate(d.getDate() - 7);
+                    $(this).siblings("input[name='begin']").each(function(){
+                      $(this).val(print_date(d))
+                      $(this).effect("highlight")
+                    })
+                    $(this).siblings().find("a:visible[id^='refresh']").trigger('click')
+                  """,
+                ),
+                INPUT(
+                  _value=T("Last month"),
+                  _type="button",
+                  _onclick="""
+                    var d = new Date()
+                    d.setHours(0);
+                    d.setMinutes(0);
+                    $(this).siblings("input[name='end']").each(function(){
+                      $(this).val(print_date(d))
+                      $(this).effect("highlight")
+                    })
+                    d.setDate(d.getDate() - 31);
+                    $(this).siblings("input[name='begin']").each(function(){
+                      $(this).val(print_date(d))
+                      $(this).effect("highlight")
+                    })
+                    $(this).siblings().find("a:visible[id^='refresh']").trigger('click')
+                  """,
+                ),
+                INPUT(
+                  _value=T("Last year"),
+                  _type="button",
+                  _onclick="""
+                    var d = new Date()
+                    d.setHours(0);
+                    d.setMinutes(0);
+                    $(this).siblings("input[name='end']").each(function(){
+                      $(this).val(print_date(d))
+                      $(this).effect("highlight")
+                    })
+                    d.setDate(d.getDate() - 365);
+                    $(this).siblings("input[name='begin']").each(function(){
+                      $(this).val(print_date(d))
+                      $(this).effect("highlight")
+                    })
+                    $(this).siblings().find("a:visible[id^='refresh']").trigger('click')
+                  """,
                 ),
                 SPAN(
                   _id='containerprf_'+str(rowid),
