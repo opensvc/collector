@@ -3026,6 +3026,155 @@ def collector_status(cmd, auth):
 
 @auth_uuid
 @service.xmlrpc
+def collector_asset(cmd, auth):
+    d = {}
+    nodename = auth[1]
+
+    if "svcname" in cmd:
+        q = db.svcmon.mon_svcname == cmd["svcname"]
+        q &= db.svcmon.mon_nodname == nodename
+        n = db(q).count()
+        if n == 0:
+            return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
+
+    if "svcname" in cmd:
+        pass
+    else:
+        q = db.nodes.nodename == nodename
+        j = db.nodes.project == db.apps.app
+        l = db.apps.on(j)
+        rows = db(q).select(
+          db.nodes.ALL,
+          db.apps.ALL,
+          cacheable=True, left=l
+        )
+
+        header = [
+          'node',
+          'fqdn',
+          'asset name',
+          'os, name',
+          'os, release',
+          'os, arch',
+          'os, vendor',
+          'os, kernel',
+          'location, country',
+          'location, city',
+          'location, zip',
+          'location, addr',
+          'location, building',
+          'location, floor',
+          'location, room',
+          'location, rack',
+          'location, enclosure',
+          'location, enclosure slot',
+          'power, cabinet1',
+          'power, cabinet2',
+          'power, supplies',
+          'power, protect',
+          'power, protect breaker',
+          'power, breaker1',
+          'power, breaker2',
+          'cpu, threads',
+          'cpu, cores',
+          'cpu, dies',
+          'cpu, frequency',
+          'cpu, model',
+          'mem, banks',
+          'mem, slots',
+          'mem, size in MB',
+          'server, serial',
+          'server, model',
+          'server, team responsible',
+          'server, team support',
+          'server, team integration',
+          'server, host mode',
+          'server, environment',
+          'server, type',
+          'server, role',
+          'server, status',
+          'hypervisor',
+          'hypervisor pool',
+          'hypervisor virtual datacenter',
+          'opensvc, version',
+          'opensvc, listener port',
+          'warranty end',
+          'maintenance end',
+          'obsolescence, os warning date',
+          'obsolescence, os alert date',
+          'obsolescence, hw warning date',
+          'obsolescence, hw alert date',
+          'app, domain',
+          'app, operations team',
+          'updated',
+        ]
+        data = [header]
+        for row in rows:
+            data.append([
+              str(row.nodes.nodename),
+              str(row.nodes.fqdn),
+              str(row.nodes.assetname),
+              str(row.nodes.os_name),
+              str(row.nodes.os_release),
+              str(row.nodes.os_arch),
+              str(row.nodes.os_vendor),
+              str(row.nodes.os_kernel),
+              str(row.nodes.loc_country),
+              str(row.nodes.loc_city),
+              str(row.nodes.loc_zip),
+              str(row.nodes.loc_addr),
+              str(row.nodes.loc_building),
+              str(row.nodes.loc_floor),
+              str(row.nodes.loc_room),
+              str(row.nodes.loc_rack),
+              str(row.nodes.enclosure),
+              str(row.nodes.enclosureslot) if row.nodes.enclosureslot is not None else "",
+              str(row.nodes.power_cabinet1),
+              str(row.nodes.power_cabinet2),
+              str(row.nodes.power_supply_nb),
+              str(row.nodes.power_protect),
+              str(row.nodes.power_protect_breaker),
+              str(row.nodes.power_breaker1),
+              str(row.nodes.power_breaker2),
+              str(row.nodes.cpu_threads),
+              str(row.nodes.cpu_cores),
+              str(row.nodes.cpu_dies),
+              str(row.nodes.cpu_freq),
+              str(row.nodes.cpu_model),
+              str(row.nodes.mem_banks),
+              str(row.nodes.mem_slots),
+              str(row.nodes.mem_bytes),
+              str(row.nodes.serial),
+              str(row.nodes.model),
+              str(row.nodes.team_responsible),
+              str(row.nodes.team_support),
+              str(row.nodes.team_integ),
+              str(row.nodes.host_mode),
+              str(row.nodes.environnement),
+              str(row.nodes.type),
+              str(row.nodes.role),
+              str(row.nodes.status),
+              str(row.nodes.hv) if row.nodes.hv is not None else "",
+              str(row.nodes.hvpool) if row.nodes.hvpool is not None else "",
+              str(row.nodes.hvvdc) if row.nodes.hvvdc is not None else "",
+              str(row.nodes.version),
+              str(row.nodes.listener_port),
+              str(row.nodes.warranty_end) if row.nodes.warranty_end is not None else "",
+              str(row.nodes.maintenance_end) if row.nodes.maintenance_end is not None else "",
+              str(row.nodes.os_obs_warn_date) if row.nodes.os_obs_warn_date is not None else "",
+              str(row.nodes.os_obs_alert_date) if row.nodes.os_obs_alert_date is not None else "",
+              str(row.nodes.hw_obs_warn_date) if row.nodes.hw_obs_warn_date is not None else "",
+              str(row.nodes.hw_obs_alert_date) if row.nodes.hw_obs_alert_date is not None else "",
+              str(row.apps.app_domain) if row.apps.app_domain is not None else "",
+              str(row.apps.app_team_ops) if row.apps.app_team_ops is not None else "",
+              str(row.nodes.updated)
+            ])
+
+
+    return {"ret": 0, "msg": "", "data": data}
+
+@auth_uuid
+@service.xmlrpc
 def collector_checks(cmd, auth):
     d = {}
     nodename = auth[1]
