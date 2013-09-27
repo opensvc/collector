@@ -786,10 +786,23 @@ def json_mem():
                 kbmemsys]
 
     rows = rows_mem(node, begin, end)
+    memtotal = None
+    if len(rows) > 0 and (rows[0][3] is None or int(rows[0][3]) == 0):
+        q = db.nodes.nodename == node
+        asset = db(q).select(db.nodes.mem_bytes, cacheable=True).first()
+        if asset is not None:
+            memtotal = asset.mem_bytes * 1024
     for r in rows:
-        kbmemfree.append((r[0], int(r[1])))
-        kbmemused.append((r[0], int(r[2]-r[4]-r[5]-r[8])))
-        pct_memused.append((r[0], int(r[3])))
+        _kbmemfree = int(r[1])
+        if memtotal is not None:
+            _kbmemused = memtotal - _kbmemfree
+            _pct_memused = int(100 * _kbmemused / memtotal)
+        else:
+            _kbmemused = int(r[2]-r[4]-r[5]-r[8])
+            _pct_memused = int(r[3])
+        kbmemfree.append((r[0], _kbmemfree))
+        kbmemused.append((r[0], _kbmemused))
+        pct_memused.append((r[0], _pct_memused))
         kbbuffers.append((r[0], int(r[4])))
         kbcached.append((r[0], int(r[5])))
         kbcommit.append((r[0], int(r[6])))
