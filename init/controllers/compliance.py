@@ -5688,9 +5688,10 @@ def comp_get_matching_fset_ids(fset_ids=None, nodename=None, svcname=None, slave
     matching_filters = comp_get_matching_filters(fset_ids, fset_data, nodename=nodename, svcname=svcname, slave=slave)
     matching_fsets = []
 
-    def recurse_match(data, match=None):
+    def recurse_match(data, depth=0, match=None):
         for _data in data:
             if _data['type'] == 'filter':
+                #print " "*depth, _data['op'], _data['type'], _data['data'].gen_filters.id
                 fid = _data['data'].gen_filters.id
                 if match is None:
                     # first filter is always an AND
@@ -5706,18 +5707,20 @@ def comp_get_matching_fset_ids(fset_ids=None, nodename=None, svcname=None, slave
                 elif _data['op'] == 'OR NOT':
                     match |= fid not in matching_filters
             elif _data['type'] == 'filterset':
+                #print " "*depth, _data['op'], _data['type'], _data['fset_id']
                 if match is None:
-                    match = recurse_match(_data['data'])
+                    match = recurse_match(_data['data'], depth=depth+1)
                     if 'NOT' in _data['op']:
                         match = not match
                 elif _data['op'] == 'AND':
-                    match &= recurse_match(_data['data'], match)
+                    match &= recurse_match(_data['data'], depth=depth+1)
                 elif _data['op'] == 'AND NOT':
-                    match &= not recurse_match(_data['data'], match)
+                    match &= not recurse_match(_data['data'], depth=depth+1)
                 elif _data['op'] == 'OR':
-                    match |= recurse_match(_data['data'], match)
+                    match |= recurse_match(_data['data'], depth=depth+1)
                 elif _data['op'] == 'OR NOT':
-                    match |= not recurse_match(_data['data'], match)
+                    match |= not recurse_match(_data['data'], depth=depth+1)
+            #print " "*depth, match
 
         if match is None:
             # empty filterset
@@ -5726,7 +5729,9 @@ def comp_get_matching_fset_ids(fset_ids=None, nodename=None, svcname=None, slave
         return match
 
     for fset_id, fset_name in fset_ids:
+        #print fset_id, fset_name
         match = recurse_match(fset_data[fset_id])
+        #print "=>", match
         if match:
             matching_fsets.append(fset_id)
 
@@ -6072,7 +6077,7 @@ def node_team_responsible_id(nodename):
     return rows[0].id
 
 def test_comp_get_ruleset():
-    return _comp_get_ruleset("frcp03pdv0024")
+    return _comp_get_ruleset("lapoo")
 
 @auth_uuid
 @service.xmlrpc
