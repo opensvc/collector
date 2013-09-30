@@ -3965,3 +3965,5 @@ alter table nodes modify column loc_city varchar(50);
 
 alter table nodes modify column loc_country varchar(20);
 
+alter table resmon modify column res_desc text;
+

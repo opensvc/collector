@@ -259,6 +259,9 @@ def _update_service(vars, vals, auth):
     h = {}
     for a,b in zip(vars, vals):
         h[a] = b
+    if 'svc_drnoaction' in h:
+        if h['svc_drnoaction'] == 'False': h['svc_drnoaction'] = 'F'
+        elif h['svc_drnoaction'] == 'True': h['svc_drnoaction'] = 'T'
     vars = []
     vals = []
     for var, val in h.items():
@@ -492,6 +495,15 @@ def __resmon_update(vars, vals):
         if 'vmname' not in h:
             h['vmname'] = ""
         _resmon_clean(h['nodename'], h['svcname'], h['vmname'])
+    if len(vals) == 0:
+        return
+    idx = vars.index("res_status")
+    if type(vals[0]) == list:
+        for i, v in enumerate(vals):
+            if v[idx] == "'None'":
+                vals[i][idx] = "n/a"
+    elif type(vals) == list:
+        vals[idx] = "n/a"
     generic_insert('resmon', vars, vals)
 
 @auth_uuid
