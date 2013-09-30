@@ -4777,6 +4777,18 @@ def dash_crons0():
     # ~1/min
     cron_dash_svcmon_not_updated()
 
+def test_display_feed_queue_entry():
+    display_feed_queue_entry(33331472)
+
+def display_feed_queue_entry(id):
+    import cPickle
+    q = db.feed_queue.id == id
+    row = db(q).select(cacheable=True).first()
+    if row is None:
+        return "not found"
+    data = cPickle.loads(row.q_args)
+    print data
+
 def feed_dequeue():
     """ launched as a background process
     """
