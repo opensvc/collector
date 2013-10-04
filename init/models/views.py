@@ -394,6 +394,22 @@ def filterset_query(row, nodes, services, i=0, nodename=None, svcname=None):
                               cacheable=True)
         n_nodes = set(map(lambda x: x.node_hba.nodename, rows)) - set([None])
         n_services = set(map(lambda x: x.svcmon.mon_svcname, rows)) - set([None])
+    elif v.f_table == 'apps':
+        _qry = qry
+        _qry &= db.apps.app == db.services.svc_app
+        if svcname is not None:
+            _qry &= db.services.svc_name == svcname
+        rows = db(_qry).select(db.services.svc_name,
+                               cacheable=True)
+        n_services = set(map(lambda x: x.svc_name, rows)) - set([None])
+
+        _qry = qry
+        _qry &= db.apps.app == db.nodes.project
+        if nodename is not None:
+            _qry &= db.nodes.nodename == nodename
+        rows = db(_qry).select(db.nodes.nodename,
+                               cacheable=True)
+        n_nodes = set(map(lambda x: x.nodename, rows)) - set([None])
     else:
         raise Exception(str(v))
 

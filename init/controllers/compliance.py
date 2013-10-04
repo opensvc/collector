@@ -18,6 +18,7 @@ tables = {
     'nodes':dict(name='nodes', title='nodes', cl='node16', hide=False),
     'services':dict(name='services', title='services', cl='svc', hide=False),
     'svcmon':dict(name='svcmon', title='service status', cl='svc', hide=False),
+    'apps':dict(name='apps', title='apps', cl='svc', hide=False),
     'node_hba':dict(name='node_hba', title='node host bus adapaters', cl='node16', hide=False),
     'b_disk_app':dict(name='b_disk_app', title='disks', cl='hd16', hide=False),
 }
@@ -34,12 +35,14 @@ props.update(v_svcmon_colprops)
 props.update(v_nodes_colprops)
 props.update(node_hba_colprops)
 props.update(disk_app_colprops)
+props.update(apps_colprops)
 fields = {
     'nodes': db.nodes.fields,
     'services': db.services.fields,
     'svcmon': db.svcmon.fields,
     'b_disk_app': db.b_disk_app.fields,
     'node_hba': db.node_hba.fields,
+    'apps': set(db.apps.fields) - set(['updated', 'id']),
 }
 
 import re
@@ -5782,6 +5785,9 @@ def comp_get_matching_filters(fset_ids, fset_data, nodename=None, svcname=None, 
             elif table in ("services"):
                 where_ext += " and services.svc_name=svcmon.mon_svcname and %s = '%s'" % (svcmon_nodname_field, nodename)
                 join_table += ", svcmon"
+            elif table in ("apps"):
+                where_ext += " and apps.app=nodes.project and nodes.nodename = '%s'" % nodename
+                join_table += ", nodes"
 
         if svcname is not None:
             if table in ("services", "b_disk_app", "svcdisks", "svcmon", "svcmon_log"):
@@ -5808,6 +5814,10 @@ def comp_get_matching_filters(fset_ids, fset_data, nodename=None, svcname=None, 
                 elif table == "node_hba":
                     where_ext += " and node_hba.nodename=%s and svcmon.mon_svcname = '%s'" % (svcmon_nodname_field, svcname)
                     join_table += ", svcmon"
+            elif table == "apps":
+                where_ext += " and apps.app=services.svc_app and services.svc_name='%s'" % svcname
+                join_table += ", services"
+
 
         where = "select 1 from %(table)s %(join_table)s where %(table)s.%(field)s %(op)s %(value)s %(where_ext)s" % dict(
           op=op,
