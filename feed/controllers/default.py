@@ -3122,6 +3122,58 @@ def collector_status(cmd, auth):
 
 @auth_uuid
 @service.xmlrpc
+def collector_networks(cmd, auth):
+    nodename = auth[1]
+
+    if "svcname" in cmd:
+        q = db.svcmon.mon_svcname == cmd["svcname"]
+        q &= db.svcmon.mon_nodname == nodename
+        n = db(q).count()
+        if n == 0:
+            return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
+
+    if "svcname" in cmd:
+        data = []
+    else:
+        sql = """select
+                   node_ip.addr,
+                   node_ip.mac,
+                   node_ip.intf,
+                   networks.name,
+                   networks.comment,
+                   networks.pvid,
+                   networks.network,
+                   networks.broadcast,
+                   networks.netmask,
+                   networks.gateway,
+                   networks.begin,
+                   networks.end
+                 from node_ip, networks
+                 where
+                   node_ip.nodename = "%(nodename)s" and
+                   inet_aton(node_ip.addr) > inet_aton(begin) and
+                   inet_aton(node_ip.addr)  < inet_aton(end);""" % dict(nodename=nodename)
+        rows = db.executesql(sql)
+        header = [
+          'ip',
+          'mac',
+          'interface',
+          'net name',
+          'net comment',
+          'net pvid',
+          'net base',
+          'net broadcast',
+          'net mask',
+          'net gateway',
+          'net begin',
+          'net end'
+        ]
+        data = [header] + list(rows)
+    return {"ret": 0, "msg": "", "data": data}
+
+
+@auth_uuid
+@service.xmlrpc
 def collector_asset(cmd, auth):
     d = {}
     nodename = auth[1]
