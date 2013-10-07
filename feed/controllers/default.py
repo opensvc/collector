@@ -3168,7 +3168,9 @@ def collector_networks(cmd, auth):
           'net begin',
           'net end'
         ]
-        data = [header] + list(rows)
+        data = [header]
+        for row in rows:
+            data.append(map(lambda x: unicode(x), row))
     return {"ret": 0, "msg": "", "data": data}
 
 
