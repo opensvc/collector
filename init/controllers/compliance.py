@@ -7306,6 +7306,7 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
         display_detailed = False
         display_digest = False
 
+    prev_form = None
     if _var_id is None and _prev_wfid is not None and _prev_wfid != 'None':
         # next step of a workflow use previous form values as defaults
         q = db.forms_store.id == request.vars.prev_wfid
@@ -7317,6 +7318,12 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
         q = db.v_comp_rulesets.id == _var_id
         var = db(q).select(cacheable=True).first()
         if var is None:
+            if _prev_wfid is not None and _prev_wfid != 'None':
+                q = db.forms_store.id == _prev_wfid
+                db(q).update(form_next_id=0)
+                q = db.workflows.last_form_id == _prev_wfid
+                db(q).update(status="closed")
+                db.commit()
             return ajax_error(T("variable '%(id)s' not found", dict(id=_var_id)))
 
     if var is not None and _form_id is None:
@@ -7399,6 +7406,8 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
                         cur[id] = _def
     elif 'form_data' in form:
         cur = json.loads(form.form_data)
+    elif prev_form is not None and 'form_data' in prev_form:
+        cur = json.loads(prev_form.form_data)
     elif current_values is not None:
         cur = current_values
 
