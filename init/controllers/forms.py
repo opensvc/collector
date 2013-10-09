@@ -681,7 +681,7 @@ def get_folders_info():
         h[data['Folder']] = data
     return data
 
-def get_forms(form_type=None, folder="/", form_names=[], search=None):
+def get_forms(form_type=None, folder="/", form_names=[], search=None, form_id=None):
     q = db.forms.id > 0
 
     if len(form_names) > 0:
@@ -705,6 +705,9 @@ def get_forms(form_type=None, folder="/", form_names=[], search=None):
 
     if search is not None:
         q &= db.forms.form_name.like('%'+search+'%')
+
+    if form_id is not None:
+        q = db.forms.id == form_id
 
     rows = db(q).select(db.forms.id,
                         db.forms.form_name,
@@ -790,6 +793,35 @@ sync_ajax('%(url)s', [], '%(id)s', function(){});
       )
     return l
 
+def form_title(form_name, data, form_id):
+    cl = data.get('Css', 'nologo48')
+    desc = data.get('Desc', '')
+    if desc is None: desc = ''
+    if 'Label' in data:
+        label = data['Label']
+    else:
+        label = form_name
+
+    return DIV(
+            P(label),
+            P(
+              A(
+                "",
+                _onclick="""alert("%(url)s")"""%dict(
+                  url=URL(
+                    r=request, c='forms', f='form', vars={'form_id': form_id},
+                    scheme=True,
+                  ),
+                ),
+                _class="link16 clickable",
+              ),
+              desc,
+              _style="font-style:italic;padding-left:1em",
+            ),
+            _style="padding-top:1em;padding-bottom:1em;",
+            _class=cl,
+          )
+
 @auth.requires_login()
 def forms_list(folder="/", form_names=[], prev_wfid=None, search=None):
     l = []
@@ -811,26 +843,13 @@ def forms_list(folder="/", form_names=[], prev_wfid=None, search=None):
         form_types.append("obj")
 
     for id, form_name, form_folder, form_type, data in get_forms(form_types, folder=folder, form_names=form_names, search=search):
-        cl = data.get('Css', 'nologo48')
-        desc = data.get('Desc', '')
-        if desc is None: desc = ''
-        if 'Label' in data:
-            label = data['Label']
-        else:
-            label = form_name
-
         if form_type in ("custo", "obj"):
             id_target = "forms_target"
         else:
             id_target = None
 
         l.append(DIV(
-          DIV(
-            P(label),
-            P(desc, _style="font-style:italic;padding-left:1em"),
-            _style="padding-top:1em;padding-bottom:1em;",
-            _class=cl,
-          ),
+          form_title(form_name, data, id),
           _onclick="""
 $(this).siblings().toggle()
 $("#%(id2)s").toggle()
@@ -888,6 +907,26 @@ if ($("#%(id)s").is(":visible")) {
           ),
         )
     return d
+
+def form():
+    form_id = request.vars.form_id
+    id, form_name, form_folder, form_type, data = get_forms(form_id=form_id)[0]
+    d = DIV(
+         form_title(form_name, data, id),
+         DIV(
+           _id="form_inputs",
+         ),
+         SCRIPT(
+           """sync_ajax('%(url)s', [], 'form_inputs', function(){});"""%dict(
+             url=URL(
+               r=request, c='compliance', f='ajax_forms_inputs',
+               vars={'form_id': form_id},
+             ),
+           ),
+         ),
+         _style="margin:1em;display:inline-block;vertical-align:top;",
+       )
+    return dict(table=d)
 
 @auth.requires_login()
 def forms():
