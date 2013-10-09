@@ -807,7 +807,7 @@ def form_title(form_name, data, form_id):
             P(
               A(
                 "",
-                _onclick="""alert("%(url)s")"""%dict(
+                _onclick="""if (event.stopPropagation){event.stopPropagation()};alert("%(url)s")"""%dict(
                   url=URL(
                     r=request, c='forms', f='form', vars={'form_id': form_id},
                     scheme=True,

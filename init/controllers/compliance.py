@@ -6868,7 +6868,7 @@ def ajax_info(msg, to_session=False):
                    SPAN(
                      T(s),
                    ),
-                   _onclick="$(this).parent().find('.foldme').toggle(400)",
+                   _onclick="if (event.stopPropagation) {event.stopPropagation()};$(this).parent().find('.foldme').toggle(400)",
                    _class="clickable",
                  )
         out = DIV(
