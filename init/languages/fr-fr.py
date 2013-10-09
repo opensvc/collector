@@ -412,6 +412,7 @@
 'compliance ruleset attachment differences in cluster': "différences d'attachement de jeux de règles dans le cluster",
 'compliance status': 'état de conformité',
 'Compliance tab': 'Tabulation conformité',
+'Compliance variable %(id)s deleted)': 'Compliance variable %(id)s deleted)',
 'Computing ressource usage': 'Utilisation des ressources informatiques',
 'Configure columns': 'Colonnage',
 'Connexion': 'Connexion',
