@@ -1351,6 +1351,8 @@ def ajax_workflows_assigned_to_me():
             pass
 
     q = db.forms_store.form_next_id == None
+    q &= db.forms_store.id == db.workflows.form_head_id
+    q &= db.workflows.status != "closed"
     q &= db.forms_store.form_md5 == db.forms_revisions.form_md5
     q1 = db.forms_store.form_assignee.belongs(user_groups())
     q1 |= db.forms_store.form_assignee == user_name()
