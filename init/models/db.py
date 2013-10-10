@@ -1238,6 +1238,7 @@ db.define_table('column_filters',
     Field('col_tableid','string'),
     Field('col_name','string'),
     Field('col_filter','string'),
+    Field('bookmark','string'),
     migrate=False)
 
 db.define_table('wiki_pages',

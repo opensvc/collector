@@ -308,6 +308,7 @@ class HtmlTable(object):
         #
         q = db.column_filters.user_id==session.auth.user.id
         q &= db.column_filters.col_tableid==self.id
+        q &= db.column_filters.bookmark=="current"
         rows = db(q).select(cacheable=True)
         for row in rows:
             field = row.col_name.split('.')[-1]
@@ -549,6 +550,74 @@ class HtmlTable(object):
             )
         return d
 
+    def bookmark(self):
+        q = db.column_filters.user_id == auth.user_id
+        q &= db.column_filters.col_tableid == self.id
+        q &= db.column_filters.bookmark != "current"
+        rows = db(q).select(cacheable=True,
+                            groupby=db.column_filters.bookmark,
+                            orderby=db.column_filters.bookmark)
+        d = DIV(
+              A(
+                T("Save current filters as bookmark"),
+                _class="bookmark_add16",
+                _onclick="""click_toggle_vis(event, '%(div)s','block');"""%dict(
+                  div="bookmark_name"+self.id,
+                ),
+              ),
+              DIV(
+                DIV(
+                  T("Enter new bookmark name"),
+                  _style='white-space: nowrap;',
+                ),
+                INPUT(
+                  _value=str(datetime.datetime.now()),
+                  _id='bookmark_name_input'+self.id,
+                  _onKeyUp="""if(is_enter(event)){%s}"""%self.ajax_submit(additional_inputs=['bookmark_name_input'+self.id]),
+                ),
+                _name='bookmark_name'+self.id,
+                _class='white_float',
+                _style='display:none;',
+              ),
+            )
+        l = [d, HR()]
+        if len(rows) == 0:
+            l.append(T("No saved bookmarks"))
+        else:
+            for row in rows:
+                d = P(
+                      A(
+                        row.bookmark,
+                        _class="bookmark16",
+                        _onclick=self.ajax_submit(vars={'bookmark': row.bookmark}),
+                      ),
+                      A(
+                        _class="del16",
+                        _style="float:right;",
+                        _onclick=self.ajax_submit(vars={'bookmark_del': row.bookmark}),
+                      ),
+                    )
+                l.append(d)
+
+
+        d = DIV(
+              A(
+                "Bookmarks",
+                _class="bookmark16",
+                _onclick="""click_toggle_vis(event, '%(div)s','block');"""%dict(
+                  div="bookmarks"+self.id,
+                ),
+              ),
+              DIV(
+                SPAN(l),
+                _name='bookmarks'+self.id,
+                _class='white_float',
+                _style='max-width:50%;display:none;',
+              ),
+              _class='floatw',
+            )
+        return d
+
     def pager(self):
         if not self.pageable:
             return SPAN()
@@ -731,52 +800,67 @@ class HtmlTable(object):
             return cp.field
         return '.'.join((cp.table, cp.field))
 
-    def drop_filters(self):
+    def drop_filters(self, bookmark="current"):
         if request.vars.dbfilter is not None:
             select_filter(request.vars.dbfilter)
         if request.vars.clear_filters != 'true':
             return
         q = db.column_filters.col_tableid==self.id
         q &= db.column_filters.user_id==session.auth.user.id
+        q &= db.column_filters.bookmark==bookmark
         db(q).delete()
 
-    def drop_filter_value(self, f):
+    def drop_filter_value(self, f, bookmark="current"):
         field = self.stored_filter_field(f)
         if field is None:
             return
         q = db.column_filters.col_tableid==self.id
         q &= db.column_filters.col_name==field
         q &= db.column_filters.user_id==session.auth.user.id
+        q &= db.column_filters.bookmark==bookmark
         db(q).delete()
 
-    def store_filter_value(self, f, v):
+    def store_filter_value(self, f, v, bookmark="current"):
         field = self.stored_filter_field(f)
         if field is None:
             return
         q = db.column_filters.col_tableid==self.id
         q &= db.column_filters.col_name==field
         q &= db.column_filters.user_id==session.auth.user.id
+        q &= db.column_filters.bookmark==bookmark
         if len(db(q).select()) > 0:
             db(q).update(col_filter=v)
         else:
             db.column_filters.insert(col_tableid=self.id,
                                      col_name=field,
                                      col_filter=v,
+                                     bookmark=bookmark,
                                      user_id=session.auth.user.id)
 
-    def stored_filter_value(self, f):
+    def stored_filter_value(self, f, bookmark="current"):
         field = self.stored_filter_field(f)
         if field is None:
             return ""
         q = db.column_filters.col_tableid==self.id
         q &= db.column_filters.col_name==field
         q &= db.column_filters.user_id==session.auth.user.id
+        q &= db.column_filters.bookmark==bookmark
         rows = db(q).select(cacheable=True)
         if len(rows) == 0:
             return ""
         return rows[0].col_filter
 
     def filter_parse(self, f):
+        bookmark_add = request.vars.get("bookmark_name_input"+self.id, "current")
+
+        bookmark_del = request.vars.get("bookmark_del")
+        if bookmark_del is not None:
+            self.drop_filter_value(f, bookmark_del)
+
+        bookmark = request.vars.get("bookmark", "current")
+        if bookmark != "current":
+            return self.stored_filter_value(f, bookmark)
+
         v = self._filter_parse(f)
         if v == self.column_filter_reset:
             self.drop_filter_value(f)
@@ -784,8 +868,8 @@ class HtmlTable(object):
             del(request.vars[key])
             return ""
         if v == "":
-            return self.stored_filter_value(f)
-        self.store_filter_value(f, v)
+            return self.stored_filter_value(f, bookmark)
+        self.store_filter_value(f, v, bookmark_add)
         return v
 
     def _filter_parse(self, f):
@@ -794,8 +878,8 @@ class HtmlTable(object):
             return request.vars[key]
         return ""
 
-    def filter_parse_glob(self, f):
-        val = self.filter_parse(f)
+    def filter_parse_glob(self, f, bookmark="current"):
+        val = self.filter_parse(f, bookmark)
         return val
 
     def ajax_inputs(self):
@@ -1230,6 +1314,7 @@ class HtmlTable(object):
                 self.pager(),
                 self.refresh(),
                 self.link(),
+                self.bookmark(),
                 self.countdown(),
                 export,
                 self.columns_selector(),

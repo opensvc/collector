@@ -1078,6 +1078,16 @@ ul.login_menu ul {
     padding: 0 0 0 20px;
     min-height: 16px;
 }
+.bookmark_add16 {
+    background: transparent url('bookmark_add16.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
+.bookmark16 {
+    background: transparent url('bookmark16.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
 .add16 {
     background: transparent url('add16.png') no-repeat;
     padding: 0 0 0 20px;

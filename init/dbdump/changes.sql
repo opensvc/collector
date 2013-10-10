@@ -3967,3 +3967,13 @@ alter table nodes modify column loc_country varchar(20);
 
 alter table resmon modify column res_desc text;
 
+alter table column_filters add column bookmark varchar(100) default "current";
+
+alter table column_filters drop foreign key column_filters_fk1;
+
+alter table column_filters drop key idx1;
+
+alter table column_filters add unique key idx1 (`user_id`,`col_tableid`,`col_name`, `bookmark`);
+
+alter table column_filters add CONSTRAINT `column_filters_fk1` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`) ON DELETE CASCADE;
+
