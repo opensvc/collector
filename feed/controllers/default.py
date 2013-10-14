@@ -205,7 +205,7 @@ def update_virtual_asset(nodename, svcname):
     if svc is None:
         return
     q = db.nodes.nodename == nodename
-    node = db(q).select().first()
+    node = db(q).select(cacheable=True).first()
     if node is None:
         return
     fields = ['loc_addr', 'loc_city', 'loc_zip', 'loc_room', 'loc_building',
@@ -2368,6 +2368,10 @@ def __svcmon_update(vars, vals):
         h['mon_vmname'] = vmname
         h['mon_vmtype'] = vmtype
         h['mon_nodname'] = nodename
+
+    if 'mon_vmname' in h and h['mon_vmname'] is not None and len(h['mon_vmname']) > 0:
+        q = db.nodes.nodename == h['mon_vmname']
+        db(q).update(hv=h['mon_nodname'])
 
     now = datetime.datetime.now()
     tmo = now - datetime.timedelta(minutes=15)
