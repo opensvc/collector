@@ -469,25 +469,67 @@ def ajax_node():
 
 
     # net
-    q = db.node_ip.nodename == request.vars.node
-    rows = db(q).select(orderby=db.node_ip.mac|db.node_ip.intf, cacheable=True)
+    sql = """select
+               node_ip.addr,
+               node_ip.mask,
+               node_ip.mac,
+               node_ip.intf,
+               node_ip.type,
+               networks.name,
+               networks.comment,
+               networks.pvid,
+               networks.network,
+               networks.broadcast,
+               networks.netmask,
+               networks.gateway,
+               networks.begin,
+               networks.end
+             from node_ip, networks
+             where
+               node_ip.nodename = "%(nodename)s" and
+               inet_aton(node_ip.addr) > inet_aton(begin) and
+               inet_aton(node_ip.addr)  < inet_aton(end)
+             order by node_ip.mac, node_ip.intf;
+          """ % dict(nodename=request.vars.node)
+    rows = db.executesql(sql, as_dict=True)
     _nets = [TR(
                TH("mac"),
                TH("interface"),
                TH("type"),
                TH("addr"),
                TH("mask"),
+               TH("net name"),
+               TH("net comment"),
+               TH("net pvid"),
+               TH("net base"),
+               TH("net gateway"),
+               TH("net begin"),
+               TH("net end"),
              )]
     for row in rows:
         _nets.append(TR(
-                       TD(row.mac),
-                       TD(row.intf),
-                       TD(row.type),
-                       TD(row.addr),
-                       TD(row.mask),
+                       TD(row['mac']),
+                       TD(row['intf']),
+                       TD(row['type']),
+                       TD(row['addr']),
+                       TD(row['mask']),
+                       TD(row['name'], _class="bluer"),
+                       TD(row['comment'], _class="bluer"),
+                       TD(row['pvid'], _class="bluer"),
+                       TD(row['network'], _class="bluer"),
+                       TD(row['gateway'], _class="bluer"),
+                       TD(row['begin'], _class="bluer"),
+                       TD(row['end'], _class="bluer"),
                      ))
     if len(_nets) == 1:
         _nets.append(TR(
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
+                       TD('-'),
                        TD('-'),
                        TD('-'),
                        TD('-'),
