@@ -679,17 +679,17 @@ class col_dash_links(HtmlTableColumn):
 class col_dash_severity(HtmlTableColumn):
     def html(self, o):
        d = self.get(o)
-       c = "boxed_small "
+       c = ""
        if d == 0:
-           c += "bggreen"
+           c += "alertgreen"
        elif d == 1:
-           c += "bgorange"
+           c += "alertorange"
        elif d == 2:
-           c += "bgred"
+           c += "alertred"
        elif d == 3:
-           c += "bgdarkred"
+           c += "alertdarkred"
        else:
-           c += "bgblack"
+           c += "alertblack"
        return DIV(d, _class=c)
 
 class table_dashboard(HtmlTable):

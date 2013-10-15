@@ -1818,6 +1818,37 @@ button, input[type=button], input[type=submit] {
     background-color: #2d2d2d;
 }
 
+.alertorange {
+    border-left-style: solid;
+    border-left-color: orange;
+    border-left-width: 0.5em;
+    padding-left: 0.4em;
+}
+.alertred {
+    border-left-style: solid;
+    border-left-color: #990000;
+    border-left-width: 0.5em;
+    padding-left: 0.4em;
+}
+.alertdarkred {
+    border-left-style: solid;
+    border-left-color: #660000;
+    border-left-width: 0.5em;
+    padding-left: 0.4em;
+}
+.alertgreen {
+    border-left-style: solid;
+    border-left-color: #009900;
+    border-left-width: 0.5em;
+    padding-left: 0.4em;
+}
+.alertblack {
+    border-left-style: solid;
+    border-left-color: #2d2d2d;
+    border-left-width: 0.5em;
+    padding-left: 0.4em;
+}
+
 
 .table0 {
     display:table;
