@@ -829,17 +829,11 @@ def ajax_dashboard():
     q &= _where(None, 'dashboard', domain_perms(), 'dash_svcname')|_where(None, 'dashboard', domain_perms(), 'dash_nodename')
     q = apply_filters(q, db.dashboard.dash_nodename, db.dashboard.dash_svcname)
 
-    sql = "select count(id) from dashboard ignore index (idx1) where "+str(q)
-    n = db.executesql(sql)[0][0]
-    #n = db(q).count()
+    n = db(q).select(db.dashboard.id.count()).first()(db.dashboard.id.count())
     t.setup_pager(n)
-    sql = """select *
-             from dashboard ignore index (idx1)
-             where %s
-             order by dash_severity desc, dash_type, dash_nodename
-             limit %d offset %d"""%(str(q), t.pager_end-t.pager_start, t.pager_start)
-    # t.object_list = db(q).select(db.dashboard.ALL, limitby=(t.pager_start,t.pager_end), orderby=o)
-    t.object_list = db.executesql(sql, as_dict=True)
+    t.object_list = db(q).select(db.dashboard.ALL,
+                                 limitby=(t.pager_start,t.pager_end),
+                                 orderby=o, cacheable=True)
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         return t.csv()
