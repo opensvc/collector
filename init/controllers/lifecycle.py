@@ -173,6 +173,8 @@ class table_lifecycle_os(HtmlTable):
         self.refreshable = False
         self.pageable = False
         self.exportable = False
+        self.linkable = False
+        self.bookmarkable = False
         self.columnable = False
         self.object_list = []
         self.nodatabanner = False
