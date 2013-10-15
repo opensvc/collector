@@ -120,6 +120,7 @@ class table_metrics(HtmlTable):
     def format_extrarow(self, o):
         d = DIV(
               A(
+                "",
                 _href=URL(r=request, c='charts', f='metrics_editor', vars={'metric_id': o.id}),
                 _title=T("Edit metric"),
                 _class="edit16",
@@ -405,6 +406,7 @@ class table_charts(HtmlTable):
     def format_extrarow(self, o):
         d = DIV(
               A(
+                "",
                 _href=URL(r=request, c='charts', f='charts_editor', vars={'chart_id': o.id}),
                 _title=T("Edit chart"),
                 _class="edit16",
@@ -659,6 +661,7 @@ class table_reports(HtmlTable):
     def format_extrarow(self, o):
         d = DIV(
               A(
+                "",
                 _href=URL(r=request, c='charts', f='reports_editor', vars={'report_id': o.id}),
                 _title=T("Edit report"),
                 _class="edit16",

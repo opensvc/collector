@@ -605,7 +605,7 @@ class HtmlTable(object):
 
         d = DIV(
               A(
-                "Bookmarks",
+                T("Bookmarks"),
                 _class="bookmark16",
                 _onclick="""click_toggle_vis(event, '%(div)s','block');"""%dict(
                   div="bookmarks"+self.id,
