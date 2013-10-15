@@ -4421,8 +4421,7 @@ def ajax_comp_status():
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.comp_status.run_nodename)
 
-    n = len(db(q).select(db.comp_status.id, limitby=default_limitby,
-                         cacheable=True))
+    n = db(q).select(db.comp_status.id.count(), cacheable=True).first()._extra[db.comp_status.id.count()]
     t.setup_pager(n)
     #all = db(q).select(db.comp_status.ALL, db.v_nodes.id)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
