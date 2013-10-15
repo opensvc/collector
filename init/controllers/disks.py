@@ -1885,6 +1885,8 @@ class table_disk_charts(HtmlTable):
         self.filterable = False
         self.pageable = False
         self.exportable = False
+        self.linkable = False
+        self.bookmarkable = False
         self.refreshable = False
         self.columnable = False
         self.headers = False

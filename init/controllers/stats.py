@@ -15,6 +15,8 @@ class table_compare(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.dbfilterable = False
         self.refreshable = False
+        self.linkable = False
+        self.bookmarkable = False
         self.pageable = False
         self.exportable = False
         self.columnable = False
@@ -498,6 +500,8 @@ class table_stats(HtmlTable):
         self.headers = False
         self.filterable = False
         self.refreshable = False
+        self.linkable = False
+        self.bookmarkable = False
         self.pageable = False
         self.exportable = True
         self.columnable = False

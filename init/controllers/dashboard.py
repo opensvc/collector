@@ -138,6 +138,8 @@ class table_dash_agg(HtmlTable):
         self.filterable = False
         self.pageable = False
         self.exportable = False
+        self.bookmarkable = False
+        self.linkable = False
         self.refreshable = False
         self.columnable = False
         self.headers = False

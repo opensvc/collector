@@ -140,6 +140,7 @@ class HtmlTable(object):
         self.pageable = True
         self.exportable = True
         self.linkable = True
+        self.bookmarkable = True
         self.refreshable = True
         self.columnable = True
         self.headers = True
@@ -551,6 +552,8 @@ class HtmlTable(object):
         return d
 
     def bookmark(self):
+        if not self.bookmarkable:
+            return SPAN()
         q = db.column_filters.user_id == auth.user_id
         q &= db.column_filters.col_tableid == self.id
         q &= db.column_filters.bookmark != "current"
@@ -1298,7 +1301,7 @@ class HtmlTable(object):
         if self.headers:
             table_lines.append(self.table_header())
 
-        if inputs is not None:
+        if self.headers and inputs is not None:
             table_lines.append(inputs)
             table_lines.append(self.header_slim())
 
