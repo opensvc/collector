@@ -52,26 +52,19 @@ def update_dash_action_errors(svc_name, nodename):
     db.executesql(sql)
     db.commit()
 
-def update_action_errors(actionid):
-    sql = """insert into b_action_errors set
-               svcname=(select svcname from SVCactions where id=%(id)d),
-               nodename=(select hostname from SVCactions where id=%(id)d),
-               err=(
-                 select count(a.id) from SVCactions a
-                   where a.svcname = (select svcname from SVCactions where id=%(id)d) and
-                         a.hostname = (select hostname from SVCactions where id=%(id)d) and
-                         a.status = 'err' and
-                         ((a.ack <> 1) or isnull(a.ack)))
-             on duplicate key update err=(
-               select count(a.id) from SVCactions a
-                 where a.svcname = (select svcname from SVCactions where id=%(id)d) and
-                       a.hostname = (select hostname from SVCactions where id=%(id)d) and
-                       a.status = 'err' and
-                       ((a.ack <> 1) or isnull(a.ack)))
-          """%dict(id=actionid)
+def update_action_errors():
+    sql = """truncate b_action_errors
+          """
     db.executesql(sql)
-    db.commit()
-    sql = """delete from b_action_errors where err=0"""
+    sql = """insert into b_action_errors
+               select null, svcname, hostname, count(id)
+               from SVCactions
+               where
+                 status = 'err' and
+                 (ack <> 1 or isnull(ack)) and
+                 end is not null
+               group by svcname, hostname
+          """
     db.executesql(sql)
     db.commit()
 
@@ -484,12 +477,14 @@ class table_actions(HtmlTable):
                       T('Comment'),
                     ),
                     TD(
+                      TEXTAREA(
+                        _id='ackcomment',
+                        _style="width:20em;height:10em;margin-bottom:0.3em",
+                      ),
+                      BR(),
                       INPUT(
-                       _id='ackcomment',
-                       _onkeypress="if (is_enter(event)) {%s};"%\
-                          self.ajax_submit(additional_inputs=['ackcomment'],
-                                           args="ack"),
-
+                        _type="submit",
+                        _onclick=self.ajax_submit(additional_inputs=['ackcomment'], args="ack"),
                       ),
                     ),
                   ),
@@ -524,7 +519,14 @@ def ack(ids=[]):
     ackcomment = request.vars.ackcomment
     q = db.SVCactions.id.belongs(ids)
     q &= db.SVCactions.status != "ok"
-    rows = db(q).select()
+    rows = db(q).select(db.SVCactions.hostname,
+                        db.SVCactions.svcname,
+                        db.SVCactions.id,
+                        db.SVCactions.action,
+                        cacheable=True)
+    if len(rows) == 0:
+        return
+
     user = user_name()
 
     db(q).update(ack=1,
@@ -536,8 +538,9 @@ def ack(ids=[]):
     if 'ackcomment' in request.vars:
         del request.vars.ackcomment
 
+    update_action_errors()
+
     for r in rows:
-        update_action_errors(r.id)
         update_dash_action_errors(r.svcname, r.hostname)
         _log('action.ack',
              'acknowledged action error with id %(g)s: %(action)s on %(svc)s@%(node)s',
