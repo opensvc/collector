@@ -4763,6 +4763,15 @@ def ajax_svc_history():
 
 @service.json
 def json_svc_history():
+    t = table_comp_status('cs0', 'ajax_comp_status')
+    q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
+    q &= db.comp_status.run_nodename == db.v_nodes.nodename
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    q = apply_filters(q, db.comp_status.run_nodename)
+    _sql = db(q)._select(db.comp_status.run_module)
+    _sql = _sql.rstrip(';')
+
     sql = """select
                t.run_date,
                t.week,
@@ -4778,12 +4787,13 @@ def json_svc_history():
                     run_date
                 from comp_log
                 where run_svcname="%(svcname)s" and
-                    run_date>date_sub(now(), interval 1 year)
+                    run_date>date_sub(now(), interval 1 year) and
+                    run_module in (%(_sql)s)
                 group by week(run_date), run_module, run_nodename
               ) t
               group by t.week
               order by t.week
-             """%dict(svcname=request.vars.svcname)
+             """%dict(svcname=request.vars.svcname, _sql=_sql)
     ok = []
     nok = []
     na = []
@@ -4815,6 +4825,17 @@ def ajax_mod_history():
 
 @service.json
 def json_mod_history():
+    t = table_comp_status('cs0', 'ajax_comp_status')
+    q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
+    q &= db.comp_status.run_module == request.vars.modname
+    q &= db.comp_status.run_nodename == db.v_nodes.nodename
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    q = apply_filters(q, db.comp_status.run_nodename)
+    _sql = db(q)._select(db.comp_status.run_nodename)
+    _sql = _sql.rstrip(';')
+    #nodes = ','.join(map(lambda x: repr(str(x)), [r[0] for r in db.executesql(_sql)]))
+
     sql = """select
                t.run_date,
                t.week,
@@ -4830,12 +4851,14 @@ def json_mod_history():
                     run_date
                 from comp_log
                 where run_module="%(mod)s" and
-                    run_date>date_sub(now(), interval 1 year)
+                    run_date>date_sub(now(), interval 1 year) and
+                    run_nodename in (%(_sql)s)
                 group by week(run_date), run_nodename, run_svcname
               ) t
               group by t.week
               order by t.week
-             """%dict(mod=request.vars.modname)
+             """%dict(mod=request.vars.modname, _sql=_sql)
+    #raise Exception(sql)
     ok = []
     nok = []
     na = []
@@ -4866,6 +4889,15 @@ def ajax_node_history():
 
 @service.json
 def json_node_history():
+    t = table_comp_status('cs0', 'ajax_comp_status')
+    q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
+    q &= db.comp_status.run_nodename == db.v_nodes.nodename
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    q = apply_filters(q, db.comp_status.run_nodename)
+    _sql = db(q)._select(db.comp_status.run_module)
+    _sql = _sql.rstrip(';')
+
     sql = """select
                t.run_date,
                t.week,
@@ -4881,12 +4913,13 @@ def json_node_history():
                     run_date
                 from comp_log
                 where run_nodename="%(node)s" and
-                    run_date>date_sub(now(), interval 1 year)
+                    run_date>date_sub(now(), interval 1 year) and
+                    run_module in (%(_sql)s)
                 group by week(run_date), run_module
               ) t
               group by t.week
               order by t.week
-             """%dict(node=request.vars.nodename)
+             """%dict(node=request.vars.nodename, _sql=_sql)
     ok = []
     nok = []
     na = []
