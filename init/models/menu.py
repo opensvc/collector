@@ -98,6 +98,8 @@ response.menu = [
               URL(request.application,'appinfo','appinfo')],
              [DIV(T('Networks'), _class='net16'), False,
               URL(request.application,'networks','networks')],
+             [DIV(T('Node Networks'), _class='net16'), False,
+              URL(request.application,'nodenetworks','nodenetworks')],
              [DIV(T('Domain Name Service'), _class='dns16'), False,
               URL(request.application,'dns','dns')],
              [DIV(T('Disks'), _class='hd16'), False,
