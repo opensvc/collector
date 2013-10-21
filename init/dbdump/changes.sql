@@ -4009,3 +4009,9 @@ alter table services drop column svc_hastonith;
 
 alter table services drop column svc_hastartup;
 
+alter table SVCactions drop key hostid;
+
+drop view v_services;
+
+CREATE VIEW `v_services` AS select s.svc_ha, s.svc_status, s.svc_availstatus, s.svc_cluster_type, s.svc_flex_min_nodes, s.svc_flex_max_nodes, s.svc_flex_cpu_low_threshold, s.svc_flex_cpu_high_threshold, `s`.`svc_name` AS `svc_name`,`s`.`svc_nodes` AS `svc_nodes`,`s`.`svc_drpnode` AS `svc_drpnode`,`s`.`svc_drptype` AS `svc_drptype`,`s`.`svc_autostart` AS `svc_autostart`,`s`.`svc_type` AS `svc_type`,`s`.`svc_drpnodes` AS `svc_drpnodes`,`s`.`svc_comment` AS `svc_comment`,`s`.`svc_app` AS `svc_app`,`s`.`svc_drnoaction` AS `svc_drnoaction`,svc_created,`s`.`updated` AS `updated`,`s`.`svc_envdate` AS `svc_envdate`,`s`.`svc_containertype` AS `svc_containertype`,`s`.`svc_metrocluster` AS `svc_metrocluster`,`s`.`id` AS `id`,`s`.`svc_wave` AS `svc_wave`,`a`.`app` AS `app`,`a`.`responsibles` AS `responsibles`,`a`.`mailto` AS `mailto` from (`services` `s` left join `v_apps` `a` on((`a`.`app` = `s`.`svc_app`))) ;
+
