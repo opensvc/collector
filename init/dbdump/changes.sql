@@ -3981,3 +3981,31 @@ create view v_nodenetworks as select `n`.`fqdn` AS `fqdn`,`n`.`loc_country` AS `
 
 insert into pkg_sig_provider set sig_id='72f97b74ec551f03', sig_provider='Oracle Inc.';
 
+alter table services drop column svc_ipname;
+
+alter table services drop column svc_ipdev;
+
+alter table services drop column svc_drpipdev;
+
+alter table services drop column svc_drpipname;
+
+alter table services drop column svc_fs;
+
+alter table services drop column svc_dev;
+
+alter table services drop column svc_mntopt;
+
+alter table services drop column svc_scsi;
+
+alter table services drop column svc_version;
+
+alter table services drop column svc_hasec;
+
+alter table services drop column svc_hapri;
+
+alter table services drop column cksum;
+
+alter table services drop column svc_hastonith;
+
+alter table services drop column svc_hastartup;
+
