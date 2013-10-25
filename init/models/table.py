@@ -881,8 +881,8 @@ class HtmlTable(object):
             return request.vars[key]
         return ""
 
-    def filter_parse_glob(self, f, bookmark="current"):
-        val = self.filter_parse(f, bookmark)
+    def filter_parse_glob(self, f):
+        val = self.filter_parse(f)
         return val
 
     def ajax_inputs(self):
