@@ -115,3 +115,6 @@ class MyAuth(Auth):
             _log('.'.join(action), m, d)
             return
 
+    def update_groups(self):
+        return
+
