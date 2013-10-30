@@ -259,6 +259,8 @@ def _update_service(vars, vals, auth):
     h = {}
     for a,b in zip(vars, vals):
         h[a] = b
+    if 'svc_version' in h:
+        del(h['svc_version'])
     if 'svc_drnoaction' in h:
         if h['svc_drnoaction'] == 'False': h['svc_drnoaction'] = 'F'
         elif h['svc_drnoaction'] == 'True': h['svc_drnoaction'] = 'T'
