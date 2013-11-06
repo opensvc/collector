@@ -592,6 +592,17 @@ class col_dash_links(HtmlTableColumn):
            )
        return i
 
+    def link_feed_queue(self, o):
+       i = A(
+            '',
+             _href=URL(r=request,c='feed_queue',f='feed_queue',
+                    vars={'feed_queue_f_created': '<-15m',
+                          'clear_filters': 'true'}),
+             _title=T("Feed queue"),
+             _class='action16 clickable',
+           )
+       return i
+
     def html(self, o):
        l = []
        dash_type = self.t.colprops['dash_type'].get(o)
@@ -622,6 +633,8 @@ class col_dash_links(HtmlTableColumn):
            l.append(self.link_compliance_tab(o))
        elif dash_type.startswith('package'):
            l.append(self.link_pkgdiff_tab(o))
+       elif dash_type == 'feed queue':
+           l.append(self.link_feed_queue(o))
 
        return DIV(l)
 
