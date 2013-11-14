@@ -243,7 +243,8 @@ class HtmlTable(object):
             if n < min: min = n
         delta = max - min
 
-        for s, n in h.items():
+        for s in sorted(h.keys()):
+            n = h[s]
             if delta > 0:
                 size = 100 + 100. * (n - min) / delta
             else:
