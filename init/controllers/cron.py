@@ -130,7 +130,9 @@ def cron_purge_expiry():
               ('stats_svc', 'date', None),
               ('comp_log', 'run_date', 'id'),
               ('appinfo_log', 'app_updated', 'id'),
-              ('SVCactions', 'begin', 'id')]
+              ('SVCactions', 'begin', 'id'),
+              ('node_users', 'updated', None),
+              ('node_groups', 'updated', None)]
     for table, date_col, orderby in tables:
         try:
             _cron_table_purge(table, date_col, orderby=orderby)
