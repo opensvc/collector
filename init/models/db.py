@@ -1895,3 +1895,29 @@ db.define_table('v_nodenetworks',
     Field('net_team_responsible','string'),
     migrate=False)
 
+db.define_table('node_users',
+    Field('user_id','integer'),
+    Field('user_name','string'),
+    Field('nodename','string'),
+    Field('updated', 'datetime'),
+    migrate=False)
+
+db.define_table('node_groups',
+    Field('group_id','integer'),
+    Field('group_name','string'),
+    Field('nodename','string'),
+    Field('updated', 'datetime'),
+    migrate=False)
+
+db.define_table('v_uids',
+    Field('user_id','integer'),
+    Field('user_id_count','integer'),
+    Field('user_name','string'),
+    migrate=False)
+
+db.define_table('v_gids',
+    Field('group_id','integer'),
+    Field('group_id_count','integer'),
+    Field('group_name','string'),
+    migrate=False)
+

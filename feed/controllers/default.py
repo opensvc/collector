@@ -398,6 +398,33 @@ def _insert_generic(data, auth):
         sql = """delete from node_ip where nodename="%s" """%auth[1]
         db.executesql(sql)
         generic_insert('node_ip', vars, vals)
+    if 'uids' in data:
+        vars, vals = data['uids']
+        if 'updated' not in vars:
+            vars.append('updated')
+            for i, val in enumerate(vals):
+                vals[i].append(now)
+        if 'nodename' not in vars:
+            vars.append('nodename')
+            for i, val in enumerate(vals):
+                vals[i].append(auth[1])
+        sql = """delete from node_users where nodename="%s" """%auth[1]
+        db.executesql(sql)
+        generic_insert('node_users', vars, vals)
+    if 'gids' in data:
+        vars, vals = data['gids']
+        if 'updated' not in vars:
+            vars.append('updated')
+            for i, val in enumerate(vals):
+                vals[i].append(now)
+        if 'nodename' not in vars:
+            vars.append('nodename')
+            for i, val in enumerate(vals):
+                vals[i].append(auth[1])
+        sql = """delete from node_groups where nodename="%s" """%auth[1]
+        db.executesql(sql)
+        generic_insert('node_groups', vars, vals)
+
     db.commit()
 
 @auth_uuid

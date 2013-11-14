@@ -4017,3 +4017,32 @@ CREATE VIEW `v_services` AS select s.svc_ha, s.svc_status, s.svc_availstatus, s.
 
 alter table stats_cpu add column gnice float default 0 after guest;
 
+CREATE TABLE `node_users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nodename` varchar(64) NOT NULL,
+  `user_name` varchar(16) NOT NULL,
+  `user_id` integer NOT NULL,
+  `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `index_1` (`nodename`, `user_name`, `user_id`)
+);
+
+CREATE TABLE `node_groups` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nodename` varchar(64) NOT NULL,
+  `group_name` varchar(16) NOT NULL,
+  `group_id` integer NOT NULL,
+  `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `index_1` (`nodename`, `group_name`, `group_id`)
+);
+
+create view  v_uids as select id, user_id, count(id) as user_id_count, group_concat(user_name) as user_name from node_users group by user_id;
+
+create view  v_gids as select id, group_id, count(id) as group_id_count, group_concat(group_name) as group_name from node_groups group by group_id;
+
+alter table node_users modify column user_id bigint;
+
+alter table node_groups modify column group_id bigint;
+
+
