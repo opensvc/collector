@@ -1,5 +1,22 @@
 @charset "UTF-8";
 
+.scroll_left {
+  background: -webkit-gradient(left, rgba(100, 100, 100, 0.5), rgba(100, 100, 100, 0));
+  background: -webkit-linear-gradient(left, rgba(100, 100, 100, 0.5), rgba(100, 100, 100, 0));
+  background: -moz-linear-gradient(left, rgba(100, 100, 100, 0.5), rgba(100, 100, 100, 0));
+  background: -ms-linear-gradient(left, rgba(100, 100, 100, 0.5), rgba(100, 100, 100, 0));
+  background: -o-linear-gradient(left, rgba(100, 100, 100, 0.5), rgba(100, 100, 100, 0));
+  cursor: pointer;
+}
+.scroll_right {
+  background: -webkit-gradient(left, rgba(100, 100, 100, 0), rgba(100, 100, 100, 0.5));
+  background: -webkit-linear-gradient(left, rgba(100, 100, 100, 0), rgba(100, 100, 100, 0.5));
+  background: -moz-linear-gradient(left, rgba(100, 100, 100, 0), rgba(100, 100, 100, 0.5));
+  background: -ms-linear-gradient(left, rgba(100, 100, 100, 0), rgba(100, 100, 100, 0.5));
+  background: -o-linear-gradient(left, rgba(100, 100, 100, 0), rgba(100, 100, 100, 0.5));
+  cursor: pointer;
+}
+
 .chart {
     text-align: center;
 }
