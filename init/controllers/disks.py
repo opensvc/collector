@@ -1809,6 +1809,7 @@ function diskdonut(o) {
   o.html("")
   $.jqplot(o.attr('id'), d['data'],
     {
+      grid:{borderColor:'transparent',shadow:false,drawBorder:false,shadowColor:'transparent'},
       seriesDefaults: {
         renderer: $.jqplot.DonutRenderer,
         rendererOptions: {
