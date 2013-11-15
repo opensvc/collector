@@ -495,6 +495,7 @@ class col_dash_links(HtmlTableColumn):
                     vars={'actions_f_svcname': dash_svcname,
                           'actions_f_status': 'err',
                           'actions_f_ack': '!1|empty',
+                          'actions_f_begin': '>-10d',
                           'clear_filters': 'true'}),
              _title=T("Service action errors"),
              _class='alert16 clickable',

@@ -1120,6 +1120,8 @@ class table_svcmon(HtmlTable):
             self.colprops[i].display = True
         self.span = 'mon_svcname'
         self.sub_span = v_services_cols
+        self.sub_span.append('app_domain')
+        self.sub_span.append('app_team_ops')
         self.dbfilterable = True
         self.extraline = True
         self.extrarow = True
