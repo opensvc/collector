@@ -1721,6 +1721,12 @@ $("#table_%(id)s").parent().scroll(function(){
 $(window).resize(function(){
   scroll_%(id)s()
 })
+$(window).bind("DOMSubtreeModified", function() {
+  scroll_%(id)s()
+})
+$(".down16,.right16").click(function() {
+  scroll_%(id)s()
+})
 scroll_%(id)s()
 """%dict(
                    id=self.id,
