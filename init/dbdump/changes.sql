@@ -4045,4 +4045,9 @@ alter table node_users modify column user_id bigint;
 
 alter table node_groups modify column group_id bigint;
 
+alter table networks modify column begin varchar(40);
+
+alter table networks modify column end varchar(40);
+
+alter table networks modify column gateway varchar(40);
 
