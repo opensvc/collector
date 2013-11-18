@@ -198,8 +198,8 @@ class table_nodenetworks(HtmlTable):
 def ajax_nodenetworks_col_values():
     t = table_nodenetworks('nodenetworks', 'ajax_nodenetworks')
     col = request.args[0]
-    o = db.networks[col]
-    q = db.networks.id > 0
+    o = db.v_nodenetworks[col]
+    q = db.v_nodenetworks.id > 0
     for f in t.cols:
         q = _where(q, 'v_nodenetworks', t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o)
