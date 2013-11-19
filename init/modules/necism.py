@@ -56,8 +56,15 @@ class NecIsm(object):
                 vdisk["name"] = line.split(':')[-1].strip()
             if line.startswith("LD Capacity"):
                 s = line.split(':')[-1].strip()
-                s = s[:s.index('G')]
-                vdisk["size"] = int(float(s))*1024
+                if 'M' in s:
+                    s = s[:s.index('M')]
+                    vdisk["size"] = int(float(s))
+                elif 'G' in s:
+                    s = s[:s.index('G')]
+                    vdisk["size"] = int(float(s))*1024
+                elif 'T' in s:
+                    s = s[:s.index('T')]
+                    vdisk["size"] = int(float(s))*1024*1024
             if line.startswith("Pool Name"):
                 vdisk["disk_group"] = line.split(':')[-1].strip()
             if line.startswith("RaidType"):
