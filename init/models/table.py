@@ -554,7 +554,7 @@ class HtmlTable(object):
         return d
 
     def commonality(self):
-        if not self.commonalityable or self.csv_q is None:
+        if not self.commonalityable:
             return SPAN()
         d = DIV(
               A(
@@ -1897,7 +1897,7 @@ $("#%(id)s").everyTime(1000, function(i){
         top = []
         for col in self.cols:
             l = data[col].items()
-            l.sort(lambda x, y: cmp(x[1], y[1]))
+            l.sort(lambda x, y: cmp(x[1], y[1]), reverse=True)
             v, n = l[0]
             pct = 100*n//total
             if pct == 0 or n == 1:
@@ -1913,7 +1913,7 @@ $("#%(id)s").everyTime(1000, function(i){
         for col, v, pct in top:
             line = TR(
                TD(fancypct(pct)),
-               TD(self.colprops[col].title),
+               TD(DIV(T(self.colprops[col].title), _class=self.colprops[col].img)),
                TD(v),
             )
             l.append(line)

@@ -791,14 +791,19 @@ def ajax_dashboard():
     q &= _where(None, 'dashboard', domain_perms(), 'dash_svcname')|_where(None, 'dashboard', domain_perms(), 'dash_nodename')
     q = apply_filters(q, db.dashboard.dash_nodename, db.dashboard.dash_svcname)
 
+    t.csv_q = q
+    t.csv_orderby = o
+
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        return t.do_commonality()
+
     n = db(q).select(db.dashboard.id.count()).first()(db.dashboard.id.count())
     t.setup_pager(n)
     t.object_list = db(q).select(db.dashboard.ALL,
                                  limitby=(t.pager_start,t.pager_end),
                                  orderby=o, cacheable=True)
-
-    if len(request.args) == 1 and request.args[0] == 'csv':
-        return t.csv()
 
     mt = table_dash_agg('dash_agg', 'ajax_dash_agg')
     return DIV(

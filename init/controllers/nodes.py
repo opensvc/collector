@@ -1222,6 +1222,8 @@ def ajax_uids():
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         return mt.csv()
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        return mt.do_commonality()
 
     return DIV(
              mt.html(),
@@ -1318,6 +1320,8 @@ def ajax_gids():
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         return mt.csv()
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        return mt.do_commonality()
 
     return DIV(
              mt.html(),

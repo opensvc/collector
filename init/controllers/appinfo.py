@@ -190,6 +190,15 @@ def ajax_appinfo():
 
     for f in set(t.cols):
         q = _where(q, 'appinfo', t.filter_parse(f), f)
+
+    t.csv_q = q
+    t.csv_orderby = o
+
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        return t.do_commonality()
+
     n = db(q).count()
     t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
