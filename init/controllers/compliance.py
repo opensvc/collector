@@ -4421,13 +4421,19 @@ def ajax_comp_status():
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.comp_status.run_nodename)
 
+    t.csv_q = q
+    t.csv_orderby = o
+
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        return t.do_commonality()
+
     n = db(q).select(db.comp_status.id.count(), cacheable=True).first()._extra[db.comp_status.id.count()]
     t.setup_pager(n)
     #all = db(q).select(db.comp_status.ALL, db.v_nodes.id)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
                                  orderby=o, cacheable=True)
-    t.csv_q = q
-    t.csv_orderby = o
 
     def chart(a, b, c, d):
         total = a + b + c + d
@@ -6313,6 +6319,8 @@ def svc_comp_status(svcname):
     t.object_list = db(q).select(cacheable=True)
     t.hide_tools = True
     t.pageable = False
+    t.bookmarkable = False
+    t.commonalityable = False
     t.linkable = False
     t.filterable = False
     t.exportable = False
@@ -6332,6 +6340,8 @@ def node_comp_status(node):
     t.object_list = db(q).select(cacheable=True)
     t.hide_tools = True
     t.pageable = False
+    t.bookmarkable = False
+    t.commonalityable = False
     t.linkable = False
     t.filterable = False
     t.exportable = False

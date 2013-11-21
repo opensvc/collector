@@ -569,6 +569,15 @@ def ajax_actions():
     q = apply_filters(q, db.v_svcactions.hostname, db.v_svcactions.svcname)
     for f in t.cols:
         q = _where(q, 'v_svcactions', t.filter_parse(f), f)
+
+    t.csv_q = q
+    t.csv_orderby = o
+
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        return t.do_commonality()
+
     n = db(q).count()
     t.setup_pager(n)
     if n < t.pager_end - t.pager_start:
@@ -576,10 +585,6 @@ def ajax_actions():
     else:
         end = t.pager_end
     t.object_list = db(q).select(limitby=(t.pager_start,end), orderby=o)
-
-    if len(request.args) == 1:
-        if request.args[0] == 'csv':
-            return t.csv()
 
     return SPAN(
               DIV(

@@ -162,6 +162,8 @@ def ajax_resmon_svc():
     t.refreshable = False
     t.pageable = False
     t.linkable = False
+    t.bookmarkable = False
+    t.commonalityable = False
 
     o = db.resmon.svcname
     o |= db.resmon.nodename

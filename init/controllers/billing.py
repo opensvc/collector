@@ -20,6 +20,8 @@ class table_billing(HtmlTable):
         self.filterable = False
         self.refreshable = False
         self.pageable = False
+        self.bookmarkable = False
+        self.commonalityable = False
         self.exportable = True
         self.columnable = False
         self.object_list = []

@@ -18,6 +18,7 @@ class table_compare(HtmlTable):
         self.linkable = False
         self.bookmarkable = False
         self.pageable = False
+        self.commonalityable = False
         self.exportable = False
         self.columnable = False
         self.object_list = []
@@ -503,6 +504,7 @@ class table_stats(HtmlTable):
         self.linkable = False
         self.bookmarkable = False
         self.pageable = False
+        self.commonalityable = False
         self.exportable = True
         self.columnable = False
         self.object_list = []

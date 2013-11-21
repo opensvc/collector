@@ -1016,6 +1016,12 @@ ul.login_menu ul {
     color: black;
 }
 
+.common16 {
+    background: transparent url('common16.png') no-repeat;
+    background-size: 16px 16px;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
 .os_win {
     background: transparent url('win24.png') no-repeat;
     background-size: 16px 16px;

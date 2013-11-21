@@ -193,14 +193,20 @@ def ajax_saves():
     q = apply_filters(q, db.saves.save_nodename, db.saves.save_svcname)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    n = db(q).count()
-    t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
-                                          orderby=o, left=l, cacheable=True)
 
     t.csv_q = q
     t.csv_orderby = o
     t.csv_left = l
+
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        return t.do_commonality()
+
+    n = db(q).count()
+    t.setup_pager(n)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
+                                          orderby=o, left=l, cacheable=True)
 
     nt = table_saves_charts('charts', 'ajax_saves_charts')
 
@@ -594,6 +600,7 @@ class table_saves_charts(HtmlTable):
         self.exportable = False
         self.linkable = False
         self.bookmarkable = False
+        self.commonalityable = False
         self.refreshable = False
         self.columnable = False
         self.headers = False

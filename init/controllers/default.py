@@ -1122,7 +1122,6 @@ class table_svcmon(HtmlTable):
         self.sub_span = v_services_cols
         self.sub_span.append('app_domain')
         self.sub_span.append('app_team_ops')
-        self.dbfilterable = True
         self.extraline = True
         self.extrarow = True
         self.checkboxes = True
@@ -1725,6 +1724,8 @@ def svcmon_node():
     t.object_list = db(q).select(cacheable=True)
     t.hide_tools = True
     t.pageable = False
+    t.bookmarkable = False
+    t.commonalityable = False
     t.linkable = False
     t.filterable = False
     t.exportable = False
@@ -1757,6 +1758,8 @@ def svcmon_svc():
     t.object_list = db(q).select(cacheable=True)
     t.hide_tools = True
     t.pageable = False
+    t.bookmarkable = False
+    t.commonalityable = False
     t.linkable = False
     t.filterable = False
     t.exportable = False

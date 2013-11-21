@@ -826,6 +826,8 @@ class table_reports(HtmlTable):
         self.dbfilterable = True
         self.refreshable = False
         self.pageable = False
+        self.bookmarkable = False
+        self.commonalityable = False
         self.exportable = False
         self.linkable = False
         self.bookmarkable = False

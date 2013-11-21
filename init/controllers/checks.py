@@ -1164,6 +1164,8 @@ def checks_node():
     t.object_list = db(q).select()
     t.hide_tools = True
     t.pageable = False
+    t.bookmarkable = False
+    t.commonalityable = False
     t.linkable = False
     t.filterable = False
     t.exportable = False

@@ -616,6 +616,8 @@ def ajax_nodes():
     t.csv_left = l
     if len(request.args) == 1 and request.args[0] == 'csv':
         return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        return t.do_commonality()
 
     mt = table_obs_agg('obs_agg', 'ajax_obs_agg')
     ut = table_uids('uids', 'ajax_uids')
@@ -1014,6 +1016,8 @@ class table_obs_agg(HtmlTable):
         self.dbfilterable = False
         self.filterable = False
         self.pageable = False
+        self.bookmarkable = False
+        self.commonalityable = False
         self.exportable = False
         self.refreshable = False
         self.columnable = False

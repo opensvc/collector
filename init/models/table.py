@@ -141,6 +141,7 @@ class HtmlTable(object):
         self.exportable = True
         self.linkable = True
         self.bookmarkable = True
+        self.commonalityable = True
         self.refreshable = True
         self.columnable = True
         self.headers = True
@@ -550,6 +551,31 @@ class HtmlTable(object):
 });"""%self.id,
               ),
             )
+        return d
+
+    def commonality(self):
+        if not self.commonalityable or self.csv_q is None:
+            return SPAN()
+        d = DIV(
+              A(
+                T("Commonality"),
+                _class="common16",
+                _onclick="""click_toggle_vis(event, '%(div)s','block');ajax('%(url)s', [], '%(div_d)s')"""%dict(
+                  url=URL(r=request,f=self.func, args=["commonality"]),
+                  div="commonality"+self.id,
+                  div_d="commonality_d"+self.id,
+                ),
+              ),
+              DIV(
+                DIV(
+                  _id='commonality_d'+self.id,
+                ),
+                _name='commonality'+self.id,
+                _class='white_float',
+                _style='max-width:50%;display:none;',
+              ),
+              _class='floatw',
+           )
         return d
 
     def bookmark(self):
@@ -1232,6 +1258,8 @@ class HtmlTable(object):
         return d
 
     def html(self):
+        if len(request.args) == 1 and request.args[0] == 'commonality':
+            return self.do_commonality()
         if len(request.args) == 1 and request.args[0] == 'csv':
             return self.csv()
 
@@ -1322,6 +1350,7 @@ class HtmlTable(object):
                 self.countdown(),
                 export,
                 self.columns_selector(),
+                self.commonality(),
                 self.persistent_filters(),
                 additional_tools,
                 DIV('', _class='spacer'),
@@ -1823,6 +1852,72 @@ $("#%(id)s").everyTime(1000, function(i){
         response.headers['Content-Type']=gluon.contenttype.contenttype('.csv')
         response.headers['Content-disposition'] = 'attachment; filename=%s.csv' % self.id
         return self._csv()
+
+    def do_commonality(self):
+        def fancypct(p):
+            p = "%d%%"%int(p)
+            d = DIV(
+                  DIV(
+                    DIV(
+                      _style="""font-size: 0px;
+                                line-height: 0px;
+                                height: 4px;
+                                min-width: 0%%;
+                                max-width: %(p)s;
+                                width: %(p)s;
+                                background: #A6FF80;
+                             """%dict(p=p),
+                    ),
+                    _style="""text-align: left;
+                              margin: 2px auto;
+                              background: #FF7863;
+                              overflow: hidden;
+                           """,
+                  ),
+                  DIV(p),
+                  _style="""margin: auto;
+                            text-align: center;
+                            width: 100%;
+                         """,
+                ),
+            return d
+
+        object_list = self.csv_object_list()
+        total = len(object_list)
+        data = {}
+        for col in self.cols:
+             data[col] = {}
+        for o in object_list:
+            for col in self.cols:
+                v = self.colprops[col].get(o)
+                if v in data[col]:
+                    data[col][v] += 1
+                else:
+                    data[col][v] = 1
+        top = []
+        for col in self.cols:
+            l = data[col].items()
+            l.sort(lambda x, y: cmp(x[1], y[1]))
+            v, n = l[0]
+            pct = 100*n//total
+            if pct == 0 or n == 1:
+                continue
+            top.append((col, v, pct))
+        top.sort(lambda x, y: cmp(x[2], y[2]), reverse=True)
+
+        l = [TR(
+               TH(T("Percent")),
+               TH(T("Column")),
+               TH(T("Value")),
+            )]
+        for col, v, pct in top:
+            line = TR(
+               TD(fancypct(pct)),
+               TD(self.colprops[col].title),
+               TD(v),
+            )
+            l.append(line)
+        return TABLE(SPAN(l))
 
     def int_match(self, value, num):
         if len(value) == 0:

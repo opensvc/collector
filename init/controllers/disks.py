@@ -1368,6 +1368,8 @@ def ajax_disks():
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        return t.do_commonality()
 
     nt = table_disk_charts('charts', 'ajax_disk_charts')
 
@@ -1888,6 +1890,7 @@ class table_disk_charts(HtmlTable):
         self.exportable = False
         self.linkable = False
         self.bookmarkable = False
+        self.commonalityable = False
         self.refreshable = False
         self.columnable = False
         self.headers = False

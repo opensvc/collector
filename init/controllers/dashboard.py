@@ -138,6 +138,8 @@ class table_dash_agg(HtmlTable):
         self.dbfilterable = False
         self.filterable = False
         self.pageable = False
+        self.bookmarkable = False
+        self.commonalityable = False
         self.exportable = False
         self.bookmarkable = False
         self.linkable = False
@@ -250,9 +252,6 @@ def ajax_dash_agg():
         q = _where(q, mt.colprops[f].table, mt.filter_parse(f), f)
     where = str(q).replace("dash_agg.", "dashboard.")
 
-    mt.dbfilterable = False
-    mt.pageable = False
-    mt.filterable = True
     mt.additional_inputs = t.ajax_inputs()
 
     h = {'nb': [], 'sev': []}
@@ -760,7 +759,6 @@ class table_dashboard(HtmlTable):
         self.colprops['dash_nodename'].t = self
         self.colprops['dash_links'].t = self
         self.colprops['dash_entry'].t = self
-        self.dbfilterable = True
         self.extraline = True
         self.checkbox_id_table = 'dashboard'
         self.checkbox_id_col = 'id'
