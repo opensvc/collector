@@ -364,7 +364,7 @@ function dashpie_sev(o) {
       c.push(colors[data[i][0][data[i][0].length-1]])
   }
   options = {
-      grid:{borderColor:'transparent',shadow:false,drawBorder:false,shadowColor:'transparent'},
+      grid:{background:'#ffffff',borderColor:'transparent',shadow:false,drawBorder:false,shadowColor:'transparent'},
       seriesDefaults: {
         renderer: $.jqplot.PieRenderer,
         seriesColors: c,
