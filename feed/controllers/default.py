@@ -2416,8 +2416,12 @@ def __svcmon_update(vars, vals):
     update_dash_service_frozen(h['mon_svcname'], h['mon_nodname'], h['mon_svctype'], h['mon_frozen'])
     update_dash_service_not_on_primary(h['mon_svcname'], h['mon_nodname'], h['mon_svctype'], h['mon_availstatus'])
     update_dash_svcmon_not_updated(h['mon_svcname'], h['mon_nodname'])
-    update_dash_flex_instances_started(h['mon_svcname'])
-    update_dash_flex_cpu(h['mon_svcname'])
+
+    sql = """select svc_cluster_type from services where svc_name="%s" """
+    rows = db.executesql(sql, as_dict=True)
+    if len(rows) > 0 and row[0]['svc_cluster_type'] == 'flex':
+        update_dash_flex_instances_started(h['mon_svcname'])
+        update_dash_flex_cpu(h['mon_svcname'])
 
     query = db.svcmon_log.mon_svcname==h['mon_svcname']
     query &= db.svcmon_log.mon_nodname==h['mon_nodname']
@@ -5081,14 +5085,19 @@ def feed_dequeue():
                 log.info("got poison pill")
                 break
             id, fn, args = data
-            log.info('process %s %s'%(id, fn))
             if not fn in globals():
                 log.error("%s not found in globals"%fn)
                 continue
             try:
                 args = cPickle.loads(args)
                 try:
+                    _b = datetime.datetime.now()
                     globals()[fn](*args)
+                    _e = datetime.datetime.now()
+                    _d = _e - _b
+                    log.info('processed %s %s in %d.%03d secs'%(id, fn, _d.seconds, _d.microseconds//1000))
+                    if _d.seconds > 5:
+                        log.info('slow process %s(%s)'%(fn, str(args)))
                 except Exception as e:
                     # 1 retry
                     log.info("retry function %s on exception %s: %s"%(fn, type(e), str(e)))
