@@ -20,9 +20,7 @@ def refresh_b_apps():
     try:
         sql = "drop table if exists b_apps_new"
         db.executesql(sql)
-        sql = "create table b_apps_new like b_apps"
-        db.executesql(sql)
-        sql = "insert into b_apps_new select * from v_apps"
+        sql = "create table b_apps_new as select * from v_apps"
         db.executesql(sql)
         sql = "drop table if exists b_apps_old"
         db.executesql(sql)
@@ -31,17 +29,7 @@ def refresh_b_apps():
     except:
         sql = "drop table if exists b_apps"
         db.executesql(sql)
-        sql = """CREATE TABLE `b_apps` (
-  `id` int(11) NOT NULL DEFAULT '0',
-  `app` varchar(64),
-  `roles` varchar(342) DEFAULT NULL,
-  `responsibles` varchar(342) DEFAULT NULL,
-  `mailto` varchar(342) DEFAULT NULL,
-  KEY `i_app` (`app`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8
-"""
-        db.executesql(sql)
-        sql = "insert into b_apps select * from v_apps"
+        sql = "create table b_apps as select * from v_apps"
         db.executesql(sql)
     db.commit()
 
@@ -130,7 +118,7 @@ def cron_purge_expiry():
               ('stats_svc', 'date', None),
               ('metrics_log', 'date', None),
               ('comp_log', 'run_date', 'id'),
-              ('svcmon_log', 'end', 'id'),
+              ('svcmon_log', 'mon_end', 'id'),
               ('appinfo_log', 'app_updated', 'id'),
               ('SVCactions', 'begin', 'id'),
               ('node_users', 'updated', None),
