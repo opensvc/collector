@@ -78,6 +78,7 @@ class IbmDs(object):
             d = {}
             l = line.split(',')
             for i, key in enumerate(headers):
+                key = key.strip()
                 if headers_multipliers[i] is not None:
                     try:
                         d[key] = int(float(l[i]) * headers_multipliers[i])
