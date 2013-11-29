@@ -218,6 +218,13 @@ class col_run_log(HtmlTableColumn):
                            )
         return SPAN(lines)
 
+class col_run_ruleset(HtmlTableColumn):
+    def html(self, o):
+        val = self.get(o)
+        if val is None:
+            return SPAN()
+        return val.replace(',',', ')
+
 class col_concat_list(HtmlTableColumn):
     def html(self, o):
         return ', '.join(self.get(o))
@@ -462,6 +469,12 @@ class table_comp_rulesets_nodes(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['nodename', 'rulesets'] + v_nodes_cols
         self.colprops = v_nodes_colprops
+        self.colprops['rulesets'] = col_run_ruleset(
+                     title='Rule set',
+                     field='rulesets',
+                     img='action16',
+                     display=True,
+                    )
         for c in self.cols:
             self.colprops['nodename'].t = self
         self.colprops['nodename'].display = True
