@@ -4052,3 +4052,8 @@ alter table networks modify column end varchar(40);
 alter table networks modify column gateway varchar(40);
 
 drop view v_users ; CREATE VIEW `v_users` AS (select (select `e`.`time_stamp` AS `time_stamp` from `auth_event` `e` where (`e`.`user_id` = `u`.`id`) order by `e`.`time_stamp` desc limit 1) AS `last`,`u`.`id` AS `id`,concat_ws(' ',`u`.`first_name`,`u`.`last_name`) AS `fullname`,`u`.`email` AS `email`,group_concat(`d`.`domains` order by `d`.`domains` separator ', ') AS `domains`,sum((select count(0) AS `count(*)` from `auth_group` `gg` where ((`gg`.`role` = 'Manager') and (`gg`.`id` = `g`.`id`)))) AS `manager`,group_concat(`g`.`role` order by `g`.`role` separator ', ') AS `groups`,`gg`.`role` AS `primary_group`,`u`.`lock_filter` AS `lock_filter`,`fs`.`fset_name` AS `fset_name`,`u`.`phone_work` AS `phone_work` from (((((((`auth_user` `u` left join `auth_membership` `mm` on(((`u`.`id` = `mm`.`user_id`) and (`mm`.`primary_group` = 'T')))) left join `auth_group` `gg` on((`mm`.`group_id` = `gg`.`id`))) left join `auth_membership` `m` on((`u`.`id` = `m`.`user_id`))) left join `auth_group` `g` on(((`m`.`group_id` = `g`.`id`) and (not((`g`.`role` like 'user_%')))))) left join `domain_permissions` `d` on((`m`.`group_id` = `d`.`group_id`))) left join `gen_filterset_user` `fsu` on((`fsu`.`user_id` = `u`.`id`))) left join `gen_filtersets` `fs` on((`fs`.`id` = `fsu`.`fset_id`))) group by `u`.`id`);
+
+alter table comp_status drop column run_ruleset;
+
+alter table comp_log drop column run_ruleset;
+

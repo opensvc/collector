@@ -218,13 +218,6 @@ class col_run_log(HtmlTableColumn):
                            )
         return SPAN(lines)
 
-class col_run_ruleset(HtmlTableColumn):
-    def html(self, o):
-        val = self.get(o)
-        if val is None:
-            return SPAN()
-        return val.replace(',',', ')
-
 class col_concat_list(HtmlTableColumn):
     def html(self, o):
         return ', '.join(self.get(o))
@@ -469,12 +462,6 @@ class table_comp_rulesets_nodes(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['nodename', 'rulesets'] + v_nodes_cols
         self.colprops = v_nodes_colprops
-        self.colprops['rulesets'] = col_run_ruleset(
-                     title='Rule set',
-                     field='rulesets',
-                     img='action16',
-                     display=True,
-                    )
         for c in self.cols:
             self.colprops['nodename'].t = self
         self.colprops['nodename'].display = True
@@ -3923,7 +3910,6 @@ class table_comp_status(HtmlTable):
                      'run_module',
                      'run_status',
                      'run_status_log',
-                     'run_ruleset',
                      'rset_md5',
                      'run_log']
         self.cols += v_nodes_cols
@@ -3987,13 +3973,6 @@ class table_comp_status(HtmlTable):
             'run_log': col_run_log(
                      title='Log',
                      field='run_log',
-                     table='comp_status',
-                     img='check16',
-                     display=False,
-                    ),
-            'run_ruleset': col_run_ruleset(
-                     title='Rule set',
-                     field='run_ruleset',
                      table='comp_status',
                      img='check16',
                      display=False,
@@ -5050,8 +5029,7 @@ class table_comp_log(table_comp_status):
                      'run_action',
                      'run_status',
                      'run_log',
-                     'rset_md5',
-                     'run_ruleset']
+                     'rset_md5']
         self.cols += v_nodes_cols
         for c in self.colprops:
             self.colprops[c].t = self
@@ -5612,6 +5590,10 @@ def comp_log_action(vars, vals, auth):
             action = b
         elif a == 'run_log':
             vals[i] = strip_unprintable(b)
+        elif a == 'run_ruleset':
+            # we have rset_md5 ... no need to store ruleset names
+            del(vals[i])
+            del(vars[i])
     vars.append('run_date')
     vals.append(now)
     generic_insert('comp_log', vars, vals)
