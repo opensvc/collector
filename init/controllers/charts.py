@@ -108,7 +108,7 @@ class table_metrics(HtmlTable):
             ),
         }
         self.ajax_col_values = 'ajax_metrics_admin_col_values'
-        self.dbfilterable = False
+        self.dbfilterable = True
         self.checkboxes = False
         self.extrarow = True
         self.extraline = True
@@ -550,6 +550,7 @@ def ajax_chart_plot(chart_id):
       title,
       DIV(
         _id="c%s"%str(uid),
+        _style="width:600px",
       ),
       SCRIPT(s),
       _class="chart",
