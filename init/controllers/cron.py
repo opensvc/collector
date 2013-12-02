@@ -1,5 +1,5 @@
 def refresh_b_action_errors():
-    sql = """truncate b_action_errors;"""
+    sql = """truncate b_action_errors"""
     db.executesql(sql)
     db.commit()
     sql = """insert into b_action_errors
@@ -11,7 +11,7 @@ def refresh_b_action_errors():
                  a.status='err'
                  and (a.ack=0 or isnull(a.ack))
                  and a.end is not NULL
-               group by m.mon_svcname, m.mon_nodname;
+               group by m.mon_svcname, m.mon_nodname
           """
     db.executesql(sql)
     db.commit()
@@ -163,7 +163,7 @@ def cron_stat_day_disk_app():
                sum(quota_used) as quota_used,
                sum(quota) as quota
              from v_disk_quota
-             group by app;
+             group by app
           """
     rows = db.executesql(sql)
     print "cron_stat_day_disk_app", str(rows)
@@ -644,7 +644,7 @@ def alerts_services_not_updated():
                       md5(concat("service.config.notupdated",svc_name,updated)),
                       "warning"
                from services
-               where updated<date_sub(now(), interval %(age)d day);"""%dict(age=age)
+               where updated<date_sub(now(), interval %(age)d day)"""%dict(age=age)
     return db.executesql(sql)
     db.commit()
 
@@ -667,7 +667,7 @@ def alerts_svcmon_not_updated():
                       md5(concat("service.status.notupdated",mon_nodname,mon_svcname,mon_updated)),
                       "warning"
                from svcmon
-               where mon_updated<date_sub(now(), interval %(age)d hour);"""%dict(age=age)
+               where mon_updated<date_sub(now(), interval %(age)d hour)"""%dict(age=age)
     n = db.executesql(sql)
     db.commit()
     return n
@@ -737,7 +737,7 @@ def alerts_failed_actions_not_acked():
                  status="err" and
                  (ack=0 or ack is NULL) and
                  begin>date_sub(now(), interval 7 day) and
-                 begin<date_sub(now(), interval %(age)d day);"""%dict(age=age)
+                 begin<date_sub(now(), interval %(age)d day)"""%dict(age=age)
     rows = db.executesql(sql)
     ids = map(lambda x: str(x[0]), rows)
 
@@ -760,7 +760,7 @@ def alerts_failed_actions_not_acked():
                       "warning"
                from SVCactions
                where
-                 id in (%(ids)s);"""%dict(ids=','.join(ids))
+                 id in (%(ids)s)"""%dict(ids=','.join(ids))
     db.executesql(sql)
     db.commit()
 
@@ -774,7 +774,7 @@ def alerts_failed_actions_not_acked():
                acked_date="%(date)s",
                acked_comment="Automatically acknowledged",
                acked_by="admin@opensvc.com"
-             where id in (%(ids)s);"""%dict(ids=','.join(ids), date=now)
+             where id in (%(ids)s)"""%dict(ids=','.join(ids), date=now)
     db.executesql(sql)
     db.commit()
 

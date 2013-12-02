@@ -4046,9 +4046,13 @@ function charts_plot(url, id) {
         if (instances.length>1) {
 	    legend = {
                 renderer: $.jqplot.EnhancedLegendRenderer,
-                rendererOptions:{numberRows: 1},
+                rendererOptions:{
+                  numberRows: 7,
+                  numberColumns: instances.length/7
+                },
                 show: true,
-                location: 'n'
+                placement: "outside",
+                location: 'e'
             }
 	} else {
 	    legend = {

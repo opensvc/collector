@@ -54,7 +54,7 @@ def cron_obsolescence_hw():
              select "hw", model
              from nodes
              where model!=''
-             group by model;
+             group by model
           """
     db.executesql(sql)
     db.commit()
@@ -67,7 +67,7 @@ def cron_obsolescence_os():
              select "os", concat_ws(" ", os_name, os_vendor, os_release, os_update)
              from nodes
              where os_name!='' or os_vendor!='' or os_release!='' or os_update!=''
-             group by os_name, os_vendor, os_release, os_update;
+             group by os_name, os_vendor, os_release, os_update
           """
     db.executesql(sql)
     db.commit()

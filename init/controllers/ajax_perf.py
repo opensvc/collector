@@ -509,7 +509,7 @@ def rows_blockdev(node, s, e):
       where date >= "%(s)s" and
             date <= "%(e)s" and
             nodename = "%(node)s"
-      group by dev;
+      group by dev
     """%dict(node=node, s=s, e=e, period=get_period(s, e)))
 
     rows_time = db.executesql("""
