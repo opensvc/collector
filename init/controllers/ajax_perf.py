@@ -660,6 +660,30 @@ def json_svc_nproc():
     e = request.vars.e
     return perf_stats_svc_nproc(node, b, e)
 
+def get_max_interval(b, e):
+    period = get_period(b, e)
+    if period == '':
+        return 11
+    elif period == 'day':
+        return 61
+    elif period == 'week':
+        return 1441
+    else:
+        return 10081
+
+def add_hole(this_date, prev_date, max_interval, data):
+    if prev_date is None:
+        return data
+    td = this_date - prev_date
+    interval = td.days*1440 + td.seconds//60
+    if interval > max_interval:
+        t0 = prev_date + datetime.timedelta(seconds=1)
+        t1 = this_date - datetime.timedelta(seconds=1)
+        for i, l in enumerate(data):
+            for t in (t0, t1):
+                data[i].append((t, None))
+    return data
+
 @service.json
 def json_cpu():
     node = request.vars.node
@@ -679,7 +703,13 @@ def json_cpu():
         return [usr, nice, sys, iowait, steal, irq, soft, guest]
 
     rows = rows_cpu(node, b, e)
+    prev_date = None
+    max_interval = get_max_interval(b, e)
+
     for r in rows:
+        this_date = r[0]
+        usr, nice, sys, iowait, steal, irq, soft, guest = add_hole(this_date, prev_date, max_interval, [usr, nice, sys, iowait, steal, irq, soft, guest])
+        prev_date = this_date
         usr.append((r[0], r[1]))
         nice.append((r[0], r[2]))
         sys.append((r[0], r[3]))
@@ -702,11 +732,17 @@ def json_proc():
     loadavg_5 = []
     loadavg_15 = []
 
+    prev_date = None
+    max_interval = get_max_interval(begin, end)
+
     if node is None:
         return [runq_sz, plist_sz, loadavg_1, loadavg_5, loadavg_15]
 
     rows = rows_proc(node, begin, end)
     for r in rows:
+        this_date = r[0]
+        runq_sz, plist_sz, loadavg_1, loadavg_5, loadavg_15 = add_hole(this_date, prev_date, max_interval, [runq_sz, plist_sz, loadavg_1, loadavg_5, loadavg_15])
+        prev_date = this_date
         runq_sz.append((r[0], float(r[1])))
         plist_sz.append((r[0], int(r[2])))
         loadavg_1.append((r[0], float(r[3])))
@@ -726,11 +762,17 @@ def json_swap():
     kbswpcad = []
     pct_swpcad = []
 
+    prev_date = None
+    max_interval = get_max_interval(begin, end)
+
     if node is None:
         return [kbswpfree, kbswpused, pct_swpused, kbswpcad, pct_swpcad]
 
     rows = rows_swap(node, begin, end)
     for r in rows:
+        this_date = r[0]
+        kbswpfree, kbswpused, pct_swpused, kbswpcad, pct_swpcad = add_hole(this_date, prev_date, max_interval, [kbswpfree, kbswpused, pct_swpused, kbswpcad, pct_swpcad])
+        prev_date = this_date
         kbswpfree.append((r[0], int(r[1])))
         kbswpused.append((r[0], int(r[2]-r[4])))
         pct_swpused.append((r[0], int(r[3])))
@@ -749,11 +791,17 @@ def json_block():
     rbps = []
     wbps = []
 
+    prev_date = None
+    max_interval = get_max_interval(begin, end)
+
     if node is None:
         return [rtps, wtps, rbps, wbps]
 
     rows = rows_block(node, begin, end)
     for r in rows:
+        this_date = r[0]
+        rtps, wtps, rbps, wbps = add_hole(this_date, prev_date, max_interval, [rtps, wtps, rbps, wbps])
+        prev_date = this_date
         rtps.append((r[0], float(r[1])))
         wtps.append((r[0], float(r[2])))
         rbps.append((r[0], float(r[3]/2)))
@@ -775,6 +823,9 @@ def json_mem():
     pct_commit = []
     kbmemsys = []
 
+    prev_date = None
+    max_interval = get_max_interval(begin, end)
+
     if node is None:
         return [kbmemfree,
                 kbmemused,
@@ -793,6 +844,9 @@ def json_mem():
         if asset is not None:
             memtotal = asset.mem_bytes * 1024
     for r in rows:
+        this_date = r[0]
+        kbmemfree, kbmemused, pct_memused, kbbuffers, kbcached, kbcommit, pct_commit, kbmemsys = add_hole(this_date, prev_date, max_interval, [kbmemfree, kbmemused, pct_memused, kbbuffers, kbcached, kbcommit, pct_commit, kbmemsys])
+        prev_date = this_date
         _kbmemfree = int(r[1])
         if memtotal is not None:
             _kbmemused = memtotal - _kbmemfree
@@ -808,14 +862,7 @@ def json_mem():
         kbcommit.append((r[0], int(r[6])))
         pct_commit.append((r[0], int(r[7])))
         kbmemsys.append((r[0], int(r[8])))
-    return [kbmemfree,
-            kbmemused,
-            pct_memused,
-            kbbuffers,
-            kbcached,
-            kbcommit,
-            pct_commit,
-            kbmemsys]
+    return [kbmemfree, kbmemused, pct_memused, kbbuffers, kbcached, kbcommit, pct_commit, kbmemsys]
 
 @service.json
 def json_netdev_err():
@@ -909,27 +956,39 @@ def json_netdev():
     rows = rows_netdev(node, begin, end)
     bw = {}
     pk = {}
+
+    prev_date = None
+    max_interval = get_max_interval(begin, end)
+
     for row in rows:
+        this_date = row[0]
+
         label = "%s rx"%row[1]
-        if label in bw:
-            bw[label].append([row[0], -row[2]])
-        else:
-            bw[label] = [[row[0], -row[2]]]
+        if label not in bw:
+            bw[label] = []
+        bw[label] = add_hole(this_date, prev_date, max_interval, [bw[label]])[0]
+        bw[label].append([row[0], -row[2]])
+
         label = "%s tx"%row[1]
-        if label in bw:
-            bw[label].append([row[0], row[3]])
-        else:
-            bw[label] = [[row[0], row[3]]]
+        if label not in bw:
+            bw[label] = []
+        bw[label] = add_hole(this_date, prev_date, max_interval, [bw[label]])[0]
+        bw[label].append([row[0], row[3]])
+
         label = "%s rx"%row[1]
-        if label in pk:
-            pk[label].append([row[0], -row[4]])
-        else:
-            pk[label] = [[row[0], -row[4]]]
+        if label not in pk:
+            pk[label] = []
+        pk[label] = add_hole(this_date, prev_date, max_interval, [pk[label]])[0]
+        pk[label].append([row[0], -row[4]])
+
         label = "%s tx"%row[1]
-        if label in pk:
-            pk[label].append([row[0], row[5]])
-        else:
-            pk[label] = [[row[0], row[5]]]
+        if label not in pk:
+            pk[label] = []
+        pk[label] = add_hole(this_date, prev_date, max_interval, [pk[label]])[0]
+        pk[label].append([row[0], row[5]])
+
+        prev_date = this_date
+
     bw_labels = sorted(bw.keys())
     bw_data = []
     for k in bw_labels:

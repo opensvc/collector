@@ -285,6 +285,7 @@ function comp_status_plot(url, id) {
                 background: 'rgba(0,0,0,0)'
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 fill: true,
                 shadow: false
             },
@@ -346,6 +347,7 @@ function avail_plot(id, data) {
                 background: 'rgba(0,0,0,0)'
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 breakOnNull: true,
                 fill: false
             },
@@ -987,6 +989,7 @@ function comp_history(url, id) {
                 shadowWidth: 2
             },
             seriesDefaults: {
+                breakOnNull : true,
                 fill: true,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -1177,6 +1180,7 @@ function stat_day(url, id) {
                 location: 'n'
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 fill: true,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -1359,6 +1363,7 @@ function stat_day(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 fill: true,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -1409,6 +1414,7 @@ function stat_day(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 fill: true,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -1453,6 +1459,7 @@ function stat_day(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 fill: true,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -1497,6 +1504,7 @@ function stat_day(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 fill: true,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -1570,6 +1578,7 @@ function stat_day(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 fill: true,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -1807,6 +1816,7 @@ function stats_cpu(url, id) {
                 fill: true,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
+                breakOnNull : true,
                 shadowWidth: 2
             },
 	    series: [
@@ -1857,6 +1867,7 @@ function stats_proc(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 markerOptions: {size: 2},
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -1899,6 +1910,7 @@ function stats_proc(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 markerOptions: {size: 2},
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -1941,6 +1953,7 @@ function stats_proc(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
@@ -2052,6 +2065,7 @@ function stats_svc(url, id, title, unit) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 fill: true,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -2111,6 +2125,7 @@ function stats_mem(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 fill: true,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -2157,6 +2172,7 @@ function stats_mem(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
@@ -2219,6 +2235,7 @@ function stats_swap(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 fill: true,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -2263,6 +2280,7 @@ function stats_swap(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
@@ -2322,6 +2340,7 @@ function stats_block(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
@@ -2377,6 +2396,7 @@ function stats_block(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
@@ -2539,6 +2559,7 @@ function stats_blockdev(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
@@ -2600,6 +2621,7 @@ function stats_blockdev(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
@@ -2662,6 +2684,7 @@ function stats_blockdev(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
@@ -2724,6 +2747,7 @@ function stats_blockdev(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
@@ -2786,6 +2810,7 @@ function stats_blockdev(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
@@ -2848,6 +2873,7 @@ function stats_blockdev(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
@@ -3229,6 +3255,7 @@ function stats_netdev_err(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
@@ -3290,6 +3317,7 @@ function stats_netdev_err(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
@@ -3351,6 +3379,7 @@ function stats_netdev_err(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
@@ -3475,6 +3504,7 @@ function stats_netdev(url, id) {
         d = best_unit_mb(max, 'KB')
         for (i=0; i<data.length; i++) {
           for (j=0; j<data[i].length; j++) {
+            if (data[i][j][1] == null) {continue}
             data[i][j][1] /= d['div']
           }
         }
@@ -3504,6 +3534,7 @@ function stats_netdev(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
@@ -3536,6 +3567,7 @@ function stats_netdev(url, id) {
         d = best_unit_mb(max, '')
         for (i=0; i<data.length; i++) {
           for (j=0; j<data[i].length; j++) {
+            if (data[i][j][1] == null) {continue}
             data[i][j][1] /= d['div']
           }
         }
@@ -3565,6 +3597,7 @@ function stats_netdev(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 markerOptions: {size: 2},
                 fill: false,
                 shadowAngle: 135,
@@ -3715,6 +3748,7 @@ function stats_fs(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 markerOptions: {size: 2},
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -3776,6 +3810,7 @@ function stat_os(url, id) {
                 shadowWidth: 2
             },
 	    seriesDefaults: {
+                breakOnNull : true,
                 fill: true,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -3866,6 +3901,7 @@ function stats_appinfo(url, id) {
                 shadowWidth: 2
             },
             seriesDefaults: {
+                breakOnNull : true,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
                 shadowWidth: 2
@@ -3917,6 +3953,7 @@ function stats_disk_array(url, id) {
                 shadowWidth: 2
             },
             seriesDefaults: {
+                breakOnNull : true,
                 fill: true,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
@@ -3972,6 +4009,7 @@ function stats_disk_app(url, id) {
                 shadowWidth: 2
             },
             seriesDefaults: {
+                breakOnNull : true,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
                 shadowWidth: 2
@@ -4048,6 +4086,7 @@ function charts_plot(url, id) {
                 shadowWidth: 2
             },
             seriesDefaults: {
+                breakOnNull : true,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
                 shadowWidth: 2
