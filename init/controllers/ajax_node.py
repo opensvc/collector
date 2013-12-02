@@ -489,7 +489,7 @@ def ajax_node():
                node_ip.nodename = "%(nodename)s" and
                inet_aton(node_ip.addr) > inet_aton(begin) and
                inet_aton(node_ip.addr)  < inet_aton(end)
-             order by node_ip.mac, node_ip.intf;
+             order by node_ip.mac, node_ip.intf
           """ % dict(nodename=request.vars.node)
     rows = db.executesql(sql, as_dict=True)
     _nets = [TR(

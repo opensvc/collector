@@ -960,11 +960,11 @@ def rows_stats_disks_per_svc(nodes=[], begin=None, end=None, lower=None, higher=
           """%dict(dom=dom, begin=begin, end=end, nodes=nodes, svcnames=svcnames)
 
     if lower is not None:
-        sql += ' desc limit %d;'%int(lower)
+        sql += ' desc limit %d'%int(lower)
     elif higher is not None:
-        sql += ' limit %d;'%int(higher)
+        sql += ' limit %d'%int(higher)
     else:
-        sql += ' desc;'
+        sql += ' desc'
 
     rows = db.executesql(sql)
     return rows
@@ -1007,11 +1007,11 @@ def rows_avg_cpu_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=No
              order by 100-avg(usr+sys)"""%dict(begin=str(begin),end=str(end),dom=dom,nodes=nodes, period=get_period(begin, end))
 
     if lower is not None:
-        sql += ' desc limit %d;'%int(lower)
+        sql += ' desc limit %d'%int(lower)
     elif higher is not None:
-        sql += ' limit %d;'%int(higher)
+        sql += ' limit %d'%int(higher)
     else:
-        sql += ' desc;'
+        sql += ' desc'
 
     return db.executesql(sql)
 
@@ -1049,11 +1049,11 @@ def rows_avg_mem_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=No
           """%dict(dom=dom, nodes=nodes, begin=str(begin), end=str(end), period=get_period(begin, end))
 
     if lower is not None:
-        sql += ' desc limit %d;'%int(lower)
+        sql += ' desc limit %d'%int(lower)
     elif higher is not None:
-        sql += ' limit %d;'%int(higher)
+        sql += ' limit %d'%int(higher)
     else:
-        sql += ' desc;'
+        sql += ' desc'
 
     rows = db.executesql(sql)
     return rows
@@ -1089,11 +1089,11 @@ def rows_avg_swp_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=No
           """%dict(dom=dom, nodes=nodes, begin=str(begin), end=str(end), period=get_period(begin, end))
 
     if lower is not None:
-        sql += ' desc limit %d;'%int(lower)
+        sql += ' desc limit %d'%int(lower)
     elif higher is not None:
-        sql += ' limit %d;'%int(higher)
+        sql += ' limit %d'%int(higher)
     else:
-        sql += ' desc;'
+        sql += ' desc'
 
     rows = db.executesql(sql)
     return rows
@@ -1132,11 +1132,11 @@ def rows_avg_proc_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=N
           """%dict(dom=dom, nodes=nodes, begin=str(begin), end=str(end), period=get_period(begin, end))
 
     if lower is not None:
-        sql += ' desc limit %d;'%int(lower)
+        sql += ' desc limit %d'%int(lower)
     elif higher is not None:
-        sql += ' limit %d;'%int(higher)
+        sql += ' limit %d'%int(higher)
     else:
-        sql += ' desc;'
+        sql += ' desc'
 
     rows = db.executesql(sql)
     return rows
@@ -1170,11 +1170,11 @@ def rows_avg_block_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=
              order by avg(rbps)+avg(wbps)"""%dict(begin=str(begin),end=str(end),dom=dom,nodes=nodes, period=get_period(begin, end))
 
     if lower is not None:
-        sql += ' desc limit %d;'%int(lower)
+        sql += ' desc limit %d'%int(lower)
     elif higher is not None:
-        sql += ' limit %d;'%int(higher)
+        sql += ' limit %d'%int(higher)
     else:
-        sql += ' desc;'
+        sql += ' desc'
 
     return db.executesql(sql)
 

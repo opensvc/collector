@@ -3189,7 +3189,7 @@ def collector_networks(cmd, auth):
                  where
                    node_ip.nodename = "%(nodename)s" and
                    inet_aton(node_ip.addr) > inet_aton(begin) and
-                   inet_aton(node_ip.addr)  < inet_aton(end);""" % dict(nodename=nodename)
+                   inet_aton(node_ip.addr)  < inet_aton(end)""" % dict(nodename=nodename)
         rows = db.executesql(sql)
         header = [
           'ip',

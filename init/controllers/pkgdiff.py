@@ -35,7 +35,7 @@ def _ajax_pkgdiff(nodes):
                group by pkg_name,pkg_version,pkg_arch,pkg_type
                order by pkg_name,pkg_version,pkg_arch,pkg_type
              ) as t
-             where t.c!=%(n)s;
+             where t.c!=%(n)s
           """%dict(n=n, nodes=','.join(map(repr, nodes)))
     rows = db.executesql(sql)
 

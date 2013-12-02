@@ -223,7 +223,7 @@ def json_dash_history():
                  dashboard_events.dash_nodename,
                  dashboard_events.dash_svcname
              ) v
-             group by v.begin, v.end;
+             group by v.begin, v.end
     """%dict(where=str(q))
     rows = db.executesql(sql)
     data = []
