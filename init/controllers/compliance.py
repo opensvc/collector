@@ -5612,7 +5612,34 @@ def comp_log_action(vars, vals, auth):
     generic_insert('comp_log', vars, vals)
     if action == 'check':
         generic_insert('comp_status', vars, vals)
-        update_dash_compdiff(auth[1])
+
+@auth_uuid
+@service.xmlrpc
+def comp_log_actions(vars, vals, auth):
+    if len(vals) == 0:
+        return
+    now = datetime.datetime.now()
+    vars.append('run_date')
+    check_vals = []
+    try:
+        i_run_ruleset = vars.index('run_ruleset')
+        del(vars[i_run_ruleset])
+    except:
+        i_run_ruleset = None
+    i_run_log = vars.index('run_log')
+    i_run_action = vars.index('run_action')
+    for i, _vals in enumerate(vals):
+        vals[i][i_run_log] = strip_unprintable(_vals[i_run_log])
+        if i_run_ruleset is not None:
+            # we have rset_md5 ... no need to store ruleset names
+            del(vals[i][i_run_ruleset])
+        vals[i].append(now)
+        if _vals[i_run_action] == 'check':
+            check_vals.append(vals[i])
+    generic_insert('comp_log', vars, vals)
+    if len(check_vals) > 0:
+        generic_insert('comp_status', vars, check_vals)
+    update_dash_compdiff(auth[1])
 
 def comp_format_filter(q):
     s = str(q)
