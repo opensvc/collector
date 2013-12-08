@@ -20,7 +20,7 @@ if request.env.web2py_runtime_gae:            # if running on Google App Engine
     # session.connect(request, response, db=MEMDB(Client())
 else:                                         # else use a normal relational database
     #db = DAL('mysql://opensvc:opensvc@dbopensvc/opensvc')       # if not, use SQLite or other DB
-    db = DAL('mysql://opensvc:opensvc@iisrecosvc/opensvc',
+    db = DAL('mysql://opensvc:opensvc@%s/opensvc'%dbopensvc,
              driver_args={'connect_timeout': 20},
              pool_size=30)
 

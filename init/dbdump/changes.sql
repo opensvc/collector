@@ -4057,3 +4057,7 @@ alter table comp_status drop column run_ruleset;
 
 alter table comp_log drop column run_ruleset;
 
+alter table checks_live drop column chk_err;
+
+alter table checks_live add column chk_err tinyint as (if(chk_value<chk_low, 1, if(chk_value>chk_high, 2, 0))) persistent;
+
