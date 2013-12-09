@@ -4061,3 +4061,4 @@ alter table checks_live drop column chk_err;
 
 alter table checks_live add column chk_err tinyint as (if(chk_value<chk_low, 1, if(chk_value>chk_high, 2, 0))) persistent;
 
+alter table svcmon add key mon_vmname (mon_vmname);
