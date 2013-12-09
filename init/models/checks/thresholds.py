@@ -58,7 +58,8 @@ def update_thresholds_from_defaults(rows):
                     cl.chk_type=cd.chk_type and
                     (cl.chk_instance rlike concat("^",cd.chk_inst,"$") or
                      cl.chk_instance=cd.chk_inst or
-                     cd.chk_inst="")
+                     cd.chk_inst="" or
+                     cd.chk_inst is null)
                    order by cd.chk_prio, length(cd.chk_inst) desc
                    limit 1
                   ) as cdid
