@@ -315,6 +315,11 @@ def _push_checks(vars, vals):
         q = db.checks_live.chk_nodename==nodename
         q &= db.checks_live.chk_type != "netdev_err"
         q &= db.checks_live.chk_type != "save"
+        for v in vals:
+            qr = db.checks_live.chk_nodename == v[0]
+            qr &= db.checks_live.chk_type == v[2]
+            qr &= db.checks_live.chk_instance == v[3]
+            q &= ~qr
         db(q).delete()
         db.commit()
 
@@ -322,37 +327,30 @@ def _push_checks(vars, vals):
         svcname = vals[0][1]
         if svcname == "":
             q = db.svcmon.mon_vmname == nodename
-            rows = db(q).select(db.svcmon.mon_svcname)
-            if len(rows) > 0:
-                svcname = rows[0].mon_svcname
+            row = db(q).select(db.svcmon.mon_svcname, limitby=(0,1)).first()
+            if row is not None:
+                svcname = row.mon_svcname
                 for i, val in enumerate(vals):
                     vals[i][1] = svcname
+    else:
+        return
 
-    # insert new checks
+     # insert new checks
     while len(vals) > 100:
         generic_insert('checks_live', vars, vals[:100])
-        q = db.checks_live.id < 0
-        for v in vals[:100]:
-            qr = db.checks_live.chk_nodename == v[0]
-            qr &= db.checks_live.chk_type == v[2]
-            qr &= db.checks_live.chk_instance == v[3]
-            q |= qr
-        rows = db(q).select()
-        update_thresholds_batch(rows)
-        vals = vals[100:]
     generic_insert('checks_live', vars, vals)
-    q = db.checks_live.id < 0
-    for v in vals:
-        qr = db.checks_live.chk_nodename == v[0]
-        qr &= db.checks_live.chk_type == v[2]
-        qr &= db.checks_live.chk_instance == v[3]
-        q |= qr
+    db.commit()
+
+    q = db.checks_live.chk_nodename==nodename
+    q &= db.checks_live.chk_type != "netdev_err"
+    q &= db.checks_live.chk_type != "save"
     rows = db(q).select()
-    update_thresholds_batch(rows)
+
+    update_thresholds_batch(rows, one_source=True)
 
     # update dashboard alerts
     if len(vals) > 0:
-        update_dash_checks(vals[0][0])
+        update_dash_checks(nodename)
 
 @auth_uuid
 @service.xmlrpc
@@ -2614,144 +2612,6 @@ def __svcmon_update(vars, vals):
         db(db.svcmon_log.id==last[0].id).update(mon_end=h['mon_updated'])
         db.commit()
 
-def get_defaults(row):
-    if row['chk_instance'] is not None:
-        q = db.checks_defaults.chk_type == row['chk_type']
-        q &= db.checks_defaults.chk_inst != None
-        o = ~db.checks_defaults.chk_prio
-        rows = db(q).select(orderby=o)
-        for r in rows:
-            pattern = str(r.chk_inst)
-            if not pattern.endswith('$'):
-                pattern += '$'
-            if re.match(pattern, row['chk_instance']) is not None:
-                return (r.chk_low, r.chk_high, 'defaults')
-
-    q = db.checks_defaults.chk_type == row.chk_type
-    q &= (db.checks_defaults.chk_inst == None) | (db.checks_defaults.chk_inst == "")
-    rows = db(q).select()
-    if len(rows) == 0:
-        return
-    return (rows[0].chk_low, rows[0].chk_high, 'defaults')
-
-def get_settings(row):
-    q = db.checks_settings.chk_nodename == row.chk_nodename
-    q &= db.checks_settings.chk_type == row.chk_type
-    q &= db.checks_settings.chk_instance == row.chk_instance
-    rows = db(q).select()
-    if len(rows) == 0:
-        return
-    return (rows[0].chk_low, rows[0].chk_high, 'settings')
-
-def get_filters(row):
-    qr = db.gen_filterset_check_threshold.chk_type == row.chk_type
-    q1 = db.gen_filterset_check_threshold.chk_instance == row.chk_instance
-    q2 = db.gen_filterset_check_threshold.chk_instance == None
-    q3 = db.gen_filterset_check_threshold.chk_instance == ""
-    qr &= (q1|q2|q3)
-    qr &= db.gen_filterset_check_threshold.fset_id == db.gen_filtersets.id
-    fsets = db(qr).select()
-    if len(fsets) == 0:
-        return
-    for fset in fsets:
-        qr = db.checks_live.id == row.id
-        qr = apply_filters(qr, fset.gen_filtersets.id, db.checks_live.chk_nodename, db.checks_live.chk_svcname)
-        n = db(qr).count()
-        if n == 0:
-            continue
-        return (fset.gen_filterset_check_threshold.chk_low,
-                fset.gen_filterset_check_threshold.chk_high,
-                'fset: '+fset.gen_filtersets.fset_name)
-    return
-
-def b_update_thresholds_batch():
-    update_thresholds_batch()
-
-def update_thresholds_batch(rows=None):
-    # maintenance batch
-    if rows is None:
-        q = db.checks_live.id > 0
-        rows = db(q).select()
-    for row in rows:
-        update_thresholds(row)
-        update_check_err(row)
-
-def update_check_err(row):
-    sql = """update checks_live set chk_err=if(chk_value>chk_high, 1, if(chk_value<chk_low, 2, 0)) where id=%d"""%row.id
-    db.executesql(sql)
-    db.commit()
-
-def update_thresholds(row):
-    # try to find most precise settings
-    t = get_settings(row)
-    if t is not None:
-        db(db.checks_live.id==row.id).update(chk_low=t[0], chk_high=t[1], chk_threshold_provider=t[2])
-        db.commit()
-        return
-
-    # try to find filter-match thresholds
-    t = get_filters(row)
-    if t is not None:
-        db(db.checks_live.id==row.id).update(chk_low=t[0], chk_high=t[1], chk_threshold_provider=t[2])
-        db.commit()
-        return
-
-    # try to find least precise settings (ie defaults)
-    t = get_defaults(row)
-    if t is not None:
-        db(db.checks_live.id==row.id).update(chk_low=t[0], chk_high=t[1], chk_threshold_provider=t[2])
-        db.commit()
-        return
-
-    # no threshold found, leave as-is
-    return
-
-def comp_query(q, row):
-    if 'v_gen_filtersets' in row:
-        v = row.v_gen_filtersets
-    else:
-        v = row
-    if v.encap_fset_id > 0:
-        o = db.v_gen_filtersets.f_order
-        qr = db.v_gen_filtersets.fset_id == v.encap_fset_id
-        rows = db(qr).select(orderby=o)
-        qry = None
-        for r in rows:
-            qry = comp_query(qry, r)
-    else:
-        if v.f_op == '=':
-            qry = db[v.f_table][v.f_field] == v.f_value
-        elif v.f_op == '!=':
-            qry = db[v.f_table][v.f_field] != v.f_value
-        elif v.f_op == 'LIKE':
-            qry = db[v.f_table][v.f_field].like(v.f_value)
-        elif v.f_op == 'NOT LIKE':
-            qry = ~db[v.f_table][v.f_field].like(v.f_value)
-        elif v.f_op == 'IN':
-            qry = db[v.f_table][v.f_field].belongs(v.f_value.split(','))
-        elif v.f_op == 'NOT IN':
-            qry = ~db[v.f_table][v.f_field].belongs(v.f_value.split(','))
-        elif v.f_op == '>=':
-            qry = db[v.f_table][v.f_field] >= v.f_value
-        elif v.f_op == '>':
-            qry = db[v.f_table][v.f_field] > v.f_value
-        elif v.f_op == '<=':
-            qry = db[v.f_table][v.f_field] <= v.f_value
-        elif v.f_op == '<':
-            qry = db[v.f_table][v.f_field] < v.f_value
-        else:
-            return q
-    if q is None:
-        q = qry
-    elif v.f_log_op == 'AND':
-        q &= qry
-    elif v.f_log_op == 'AND NOT':
-        q &= ~qry
-    elif v.f_log_op == 'OR':
-        q |= qry
-    elif v.f_log_op == 'OR NOT':
-        q |= ~qry
-    return q
 
 #
 # collector actions
@@ -4673,7 +4533,7 @@ def update_dash_netdev_errors(nodename):
     q = db.checks_live.chk_nodename == nodename
     q &= db.checks_live.chk_type == "netdev_err"
     checks = db(q).select()
-    update_thresholds_batch(checks)
+    update_thresholds_batch(checks, one_source=True)
 
     update_dash_checks(nodename)
 
@@ -5100,6 +4960,7 @@ def feed_dequeue():
                         log.info('slow process %s(%s)'%(fn, str(args)))
                 except Exception as e:
                     # 1 retry
+                    traceback.print_exc()
                     log.info("retry function %s on exception %s: %s"%(fn, type(e), str(e)))
                     globals()[fn](*args)
                 db(db.feed_queue.id==id).delete()

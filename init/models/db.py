@@ -4,6 +4,13 @@
 ## This scaffolding model makes your app work on Google App Engine too
 #########################################################################
 
+from applications.init.modules import config
+
+if hasattr(config, 'dbopensvc'):
+    dbopensvc = config.dbopensvc
+else:
+    dbopensvc = 'dbopensvc'
+
 if request.env.web2py_runtime_gae:            # if running on Google App Engine
     db = DAL('gae')                           # connect to Google BigTable
     session.connect(request, response, db=db) # and store sessions and tickets there
@@ -12,7 +19,7 @@ if request.env.web2py_runtime_gae:            # if running on Google App Engine
     # from google.appengine.api.memcache import Client
     # session.connect(request, response, db=MEMDB(Client())
 else:                                         # else use a normal relational database
-    db = DAL('mysql://opensvc:opensvc@dbopensvc/opensvc',
+    db = DAL('mysql://opensvc:opensvc@%s/opensvc' % dbopensvc,
              driver_args={'connect_timeout': 20},
              pool_size=0)
 ## if no need for session

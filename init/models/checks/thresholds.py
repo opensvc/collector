@@ -1,0 +1,253 @@
+def update_thresholds_batch(rows=None, one_source=False):
+    if rows is None:
+        q = db.checks_live.id > 0
+        rows = db(q).select(cacheable=True)
+    if one_source:
+        update_thresholds_rows_one_source(rows)
+    else:
+        update_thresholds_rows(rows)
+
+def update_thresholds_batch_type(chk_type):
+    q = db.checks_live.chk_type == chk_type
+    rows = db(q).select(cacheable=True)
+    update_thresholds_rows(rows)
+
+def update_thresholds_rows(rows):
+    rest = update_thresholds_from_settings(rows)
+    rest = update_thresholds_from_filters(rest)
+    rest = update_thresholds_from_defaults(rest)
+
+def update_thresholds_rows_one_source(rows):
+    rest = update_thresholds_from_settings(rows)
+    rest = update_thresholds_from_filters_one_source(rest)
+    rest = update_thresholds_from_defaults(rest)
+
+def update_thresholds_from_defaults(rows):
+    if len(rows) == 0:
+        return
+    ids = map(lambda x: str(x['id']), rows)
+    ids = ','.join(ids)
+
+    sql = """insert into checks_live
+             select * from
+             (select
+               NULL as id,
+               t.chk_nodename as chk_nodename,
+               t.chk_svcname as chk_svcname,
+               t.chk_type as chk_type,
+               t.chk_updated as chk_updated,
+               t.chk_value as chk_value,
+               t.chk_created as chk_created,
+               t.chk_instance as chk_instance,
+               cd2.chk_low as chk_low,
+               cd2.chk_high as chk_high,
+               "defaults" as chk_threshold_provider,
+               NULL as chk_err
+              from (
+                select
+                  cl.chk_nodename,
+                  cl.chk_svcname,
+                  cl.chk_type,
+                  cl.chk_updated,
+                  cl.chk_value,
+                  cl.chk_created,
+                  cl.chk_instance,
+                  (select id
+                   from checks_defaults cd
+                   where
+                    cl.chk_type=cd.chk_type and
+                    (cl.chk_instance rlike concat("^",cd.chk_inst,"$") or
+                     cl.chk_instance=cd.chk_inst or
+                     cd.chk_inst="")
+                   order by cd.chk_prio, length(cd.chk_inst) desc
+                   limit 1
+                  ) as cdid
+                from checks_live cl
+                where cl.id in (%(ids)s)
+             ) t left join checks_defaults cd2 on t.cdid=cd2.id
+             ) u
+             on duplicate key update
+                chk_low=u.chk_low,
+                chk_high=u.chk_high,
+                chk_threshold_provider=u.chk_threshold_provider
+           """%dict(ids=ids)
+    db.executesql(sql)
+    db.commit()
+    return []
+
+def update_thresholds_from_filters(rows):
+    if len(rows) == 0:
+        return rows
+
+    # get all relevent filterset ids
+    sql = """select
+              f.id as fset_id,
+              f.fset_name as fset_name,
+              cf.chk_type as chk_type,
+              cf.chk_instance as chk_instance,
+              cf.chk_low as chk_low,
+              cf.chk_high as chk_high
+             from
+              checks_live cl,
+              gen_filterset_check_threshold cf,
+              gen_filtersets f
+             where
+              cl.chk_type=cf.chk_type and
+              (cl.chk_instance=cf.chk_instance or
+               cl.chk_instance='' or
+               cl.chk_instance is null) and
+              cf.fset_id=f.id
+             group by cf.id"""
+    _rows = db.executesql(sql, as_dict=True)
+    fset_ids = set(map(lambda x: (x['fset_id'], x['fset_name']), _rows))
+
+    data = {}
+    for row in rows:
+        source = (row['chk_nodename'], row['chk_svcname'])
+        if source in data:
+            data[source].append(row)
+        else:
+            data[source] = [row]
+
+    rest = []
+    for source in data:
+        rest += update_thresholds_from_filters_source(data[source], source, fset_ids, _rows)
+    return rest
+
+def update_thresholds_from_filters_one_source(rows):
+    if len(rows) == 0:
+        return rows
+    nodename = rows[0]['chk_nodename']
+    svcname = rows[0]['chk_svcname']
+
+    ids = map(lambda x: str(x['id']), rows)
+    ids = ','.join(ids)
+
+    # get all relevent filterset ids
+    sql = """select
+              f.id as fset_id,
+              f.fset_name as fset_name,
+              cf.chk_type as chk_type,
+              cf.chk_instance as chk_instance,
+              cf.chk_low as chk_low,
+              cf.chk_high as chk_high
+             from
+              checks_live cl,
+              gen_filterset_check_threshold cf,
+              gen_filtersets f
+             where
+              cl.id in (%(ids)s) and
+              cl.chk_type=cf.chk_type and
+              (cl.chk_instance=cf.chk_instance or
+               cl.chk_instance='' or
+               cl.chk_instance is null) and
+              cf.fset_id=f.id
+             group by cf.id"""%dict(ids=ids)
+    _rows = db.executesql(sql, as_dict=True)
+    fset_ids = set(map(lambda x: (x['fset_id'], x['fset_name']), _rows))
+    rest = update_thresholds_from_filters_source(rows, (nodename, svcname), fset_ids, _rows)
+    return rest
+
+def update_thresholds_from_filters_source(rows, source, fset_ids, _rows):
+    nodename, svcname = source
+
+    # filter out those not matching the nodename/svcname
+    matching_fset_ids = comp_get_matching_fset_ids(fset_ids, nodename=nodename, svcname=svcname)
+
+    if len(matching_fset_ids) == 0:
+        return rows
+
+    # index fset info by row.chk_type, row.chk_instance
+    fsets = {}
+    for row in _rows:
+         if row['fset_id'] not in matching_fset_ids:
+             continue
+         fsets[row['chk_type'], row['chk_instance']] = row
+
+    # load filterset names cache
+    fset_names = {}
+    q = db.gen_filtersets.id.belongs(matching_fset_ids)
+    _rows = db(q).select(db.gen_filtersets.id, db.gen_filtersets.fset_name)
+    for row in _rows:
+        fset_names[row.id] = row.fset_name
+
+    # prepare thresholds insert/update request
+    rest = []
+    vars = ['chk_nodename', 'chk_svcname', 'chk_type', 'chk_instance', 'chk_high', 'chk_low', 'chk_threshold_provider']
+    vals = []
+    for row in rows:
+        i = row['chk_type'], row['chk_instance']
+        if i not in fsets:
+            rest.append(row)
+            continue
+        vals.append([row['chk_nodename'],
+                     row['chk_svcname'],
+                     row['chk_type'],
+                     row['chk_instance'],
+                     str(fsets[i]['chk_high']),
+                     str(fsets[i]['chk_low']),
+                     'fset:%s'%fset_names[fsets[i]['fset_id']]])
+    generic_insert('checks_live', vars, vals)
+    db.commit()
+    return rest
+
+
+def update_thresholds_from_settings(rows):
+    ids = map(lambda x: str(x.id), rows)
+    ids = ','.join(ids)
+    sql = """
+             select * from (
+               select
+                id,
+                chk_nodename,
+                chk_svcname,
+                chk_type,
+                chk_updated,
+                chk_value,
+                chk_created,
+                chk_instance,
+                (select chk_low from checks_settings cs where cs.chk_nodename=cl.chk_nodename and cs.chk_type=cl.chk_type and cs.chk_instance=cl.chk_instance limit 1) as chk_low,
+                (select chk_high from checks_settings cs where cs.chk_nodename=cl.chk_nodename and cs.chk_type=cl.chk_type and cs.chk_instance=cl.chk_instance limit 1) as chk_high,
+                "settings" as chk_threshold_provider,
+                NULL
+               from checks_live cl
+               where
+                id in (%(ids)s)
+             ) t
+             where
+              t.chk_low is null"""%dict(ids=ids)
+    rest = db.executesql(sql, as_dict=True)
+
+    sql = """insert into checks_live
+             select * from (
+               select
+                NULL as id,
+                chk_nodename,
+                chk_svcname,
+                chk_type,
+                chk_updated,
+                chk_value,
+                chk_created,
+                chk_instance,
+                (select chk_low from checks_settings cs where cs.chk_nodename=cl.chk_nodename and cs.chk_type=cl.chk_type and cs.chk_instance=cl.chk_instance limit 1) as chk_low,
+                (select chk_high from checks_settings cs where cs.chk_nodename=cl.chk_nodename and cs.chk_type=cl.chk_type and cs.chk_instance=cl.chk_instance limit 1) as chk_high,
+                "settings" as chk_threshold_provider,
+                NULL
+               from checks_live cl
+               where
+                id in (%(ids)s)
+             ) t
+             where
+              t.chk_low is not null
+             on duplicate key update
+              chk_low=t.chk_low,
+              chk_high=t.chk_high,
+              chk_threshold_provider=t.chk_threshold_provider"""%dict(ids=ids)
+    db.executesql(sql)
+    db.commit()
+    return rest
+
+def b_update_thresholds_batch():
+    update_thresholds_batch()
+
+

@@ -30,211 +30,28 @@ def checks_defaults_insert():
 
     if form.accepts(request.vars):
         response.flash = T("edition recorded")
+        enqueue_update_thresholds_batch(request.vars.chk_type)
         redirect(URL(r=request, c='checks', f='checks'))
     elif form.errors:
         response.flash = T("errors in form")
     return dict(form=form)
 
-@auth.requires_membership('CheckManager')
-def checks_settings_insert():
-    q = (db.checks_settings.chk_nodename==request.vars.chk_nodename)
-    q &= (db.checks_settings.chk_svcname==request.vars.chk_svcname)
-    q &= (db.checks_settings.chk_type==request.vars.chk_type)
-    q &= (db.checks_settings.chk_instance==request.vars.chk_instance)
-    rows = db(q).select()
-    if len(rows) == 0:
-        chk = {
-         'chk_type': request.vars.chk_type,
-         'chk_instance': request.vars.chk_instance,
-        }
-        defaults = get_defaults(chk)
-        db.checks_settings.insert(chk_nodename=request.vars.chk_nodename,
-                                  chk_svcname=request.vars.chk_svcname,
-                                  chk_type=request.vars.chk_type,
-                                  chk_instance=request.vars.chk_instance,
-                                  chk_low=defaults[0],
-                                  chk_high=defaults[1],
-                                 )
-        rows = db(q).select()
-    record = rows[0]
-
-    now = datetime.datetime.now()
-    now -= datetime.timedelta(microseconds=now.microsecond)
-    form = SQLFORM(db.checks_settings,
-                 record=record,
-                 deletable=True,
-                 hidden_fields=['chk_changed',
-                                'chk_changed_by'],
-                 fields=['chk_nodename',
-                         'chk_svcname',
-                         'chk_type',
-                         'chk_instance',
-                         'chk_changed',
-                         'chk_changed_by',
-                         'chk_low',
-                         'chk_high'],
-                 labels={'chk_nodename': T('Node'),
-                         'chk_svcname': T('Service'),
-                         'chk_type': T('Check type'),
-                         'chk_instance': T('Check instance'),
-                         'chk_changed': T('Change date'),
-                         'chk_changed_by': T('Change author'),
-                         'chk_low': T('Low threshold'),
-                         'chk_high': T('High threshold')},
-                )
-    request.vars['chk_changed_by'] = user_name()
-    request.vars['chk_changed'] = str(now)
-    if form.accepts(request.vars):
-        response.flash = T("edition recorded")
-        update_thresholds_batch()
-        db(q).update(chk_changed=now,
-                     chk_changed_by=user_name())
-        redirect(URL(r=request, c='checks', f='checks'))
-    elif form.errors:
-        response.flash = T("errors in form")
-    return dict(form=form, record=record)
-
-def update_thresholds_batch2():
-    # maintenance batch
-    q = db.checks_live.chk_threshold_provider.like("fset%")
-    q |= db.checks_live.chk_threshold_provider == "defaults"
-    if len(request.args) == 1:
-        node = request.args[0]
-        q &= db.checks_live.chk_nodename == node
-    rows = db(q).select()
-    for row in rows:
-        update_thresholds(row)
-
-def update_thresholds_batch(rows=None):
-    # maintenance batch
-    if rows is None:
-        q = db.checks_live.chk_threshold_provider.like("fset%")
-        q |= db.checks_live.chk_threshold_provider == "defaults"
-        rows = db(q).select()
-    for row in rows:
-        update_thresholds(row)
-
-def update_thresholds(row):
-    # try to find most precise settings
-    t = get_settings(row)
-    if t is not None:
-        db(db.checks_live.id==row.id).update(chk_low=t[0], chk_high=t[1], chk_threshold_provider=t[2])
-        update_dash_checks(row.chk_nodename)
-        return
-
-    # try to find filter-match thresholds
-    t = get_filters(row)
-    if t is not None:
-        db(db.checks_live.id==row.id).update(chk_low=t[0], chk_high=t[1], chk_threshold_provider=t[2])
-        update_dash_checks(row.chk_nodename)
-        return
-
-    # try to find least precise settings (ie defaults)
-    t = get_defaults(row)
-    if t is not None:
-        db(db.checks_live.id==row.id).update(chk_low=t[0], chk_high=t[1], chk_threshold_provider=t[2])
-        update_dash_checks(row.chk_nodename)
-        return
-
-    # no threshold found, leave as-is
-    return
-
-def get_defaults(row):
-    if row['chk_instance'] is not None:
-        q = db.checks_defaults.chk_type == row['chk_type']
-        q &= db.checks_defaults.chk_inst != None
-        o = ~db.checks_defaults.chk_prio
-        rows = db(q).select(orderby=o)
-        for r in rows:
-            pattern = str(r.chk_inst)
-            if not pattern.endswith('$'):
-                pattern += '$'
-            if re.match(pattern, row['chk_instance']) is not None:
-                return (r.chk_low, r.chk_high, 'defaults')
-
-    q = db.checks_defaults.chk_type == row.chk_type
-    q &= (db.checks_defaults.chk_inst == None) | (db.checks_defaults.chk_inst == "")
-    rows = db(q).select()
-    if len(rows) == 0:
-        return
-    return (rows[0].chk_low, rows[0].chk_high, 'defaults')
-
-def get_settings(row):
-    q = db.checks_settings.chk_nodename == row.chk_nodename
-    q &= db.checks_settings.chk_type == row.chk_type
-    q &= db.checks_settings.chk_instance == row.chk_instance
-    rows = db(q).select()
-    if len(rows) == 0:
-        return
-    return (rows[0].chk_low, rows[0].chk_high, 'settings')
-
-def get_filters(row):
-    qr = db.gen_filterset_check_threshold.chk_type == row.chk_type
-    q1 = db.gen_filterset_check_threshold.chk_instance == row.chk_instance
-    q2 = db.gen_filterset_check_threshold.chk_instance == None
-    q3 = db.gen_filterset_check_threshold.chk_instance == ""
-    qr &= (q1|q2|q3)
-    qr &= db.gen_filterset_check_threshold.fset_id == db.gen_filtersets.id
-    fsets = db(qr).select()
-    if len(fsets) == 0:
-        return
-    for fset in fsets:
-        qr = db.checks_live.id == row.id
-        qr = apply_filters(qr, db.checks_live.chk_nodename, None, fset.gen_filtersets.id)
-        n = db(qr).count()
-        if n == 0:
-            continue
-        return (fset.gen_filterset_check_threshold.chk_low,
-                fset.gen_filterset_check_threshold.chk_high,
-                'fset: '+fset.gen_filtersets.fset_name)
-    return
-
-def comp_query(q, row):
-    if 'v_gen_filtersets' in row:
-        v = row.v_gen_filtersets
+def enqueue_update_thresholds_batch(chk_type=None):
+    import cPickle
+    if chk_type is None:
+        q_fn = 'update_thresholds_batch'
+        q_args = cPickle.dumps("[]")
+        q = db.feed_queue.q_fn == q_fn
     else:
-        v = row
-    if v.encap_fset_id > 0:
-        o = db.v_gen_filtersets.f_order
-        qr = db.v_gen_filtersets.fset_id == v.encap_fset_id
-        rows = db(qr).select(orderby=o)
-        qry = None
-        for r in rows:
-            qry = comp_query(qry, r)
-    else:
-        if v.f_op == '=':
-            qry = db[v.f_table][v.f_field] == v.f_value
-        elif v.f_op == '!=':
-            qry = db[v.f_table][v.f_field] != v.f_value
-        elif v.f_op == 'LIKE':
-            qry = db[v.f_table][v.f_field].like(v.f_value)
-        elif v.f_op == 'NOT LIKE':
-            qry = ~db[v.f_table][v.f_field].like(v.f_value)
-        elif v.f_op == 'IN':
-            qry = db[v.f_table][v.f_field].belongs(v.f_value.split(','))
-        elif v.f_op == 'NOT IN':
-            qry = ~db[v.f_table][v.f_field].belongs(v.f_value.split(','))
-        elif v.f_op == '>=':
-            qry = db[v.f_table][v.f_field] >= v.f_value
-        elif v.f_op == '>':
-            qry = db[v.f_table][v.f_field] > v.f_value
-        elif v.f_op == '<=':
-            qry = db[v.f_table][v.f_field] <= v.f_value
-        elif v.f_op == '<':
-            qry = db[v.f_table][v.f_field] < v.f_value
-        else:
-            return q
-    if q is None:
-        q = qry
-    elif v.f_log_op == 'AND':
-        q &= qry
-    elif v.f_log_op == 'AND NOT':
-        q &= ~qry
-    elif v.f_log_op == 'OR':
-        q |= qry
-    elif v.f_log_op == 'OR NOT':
-        q |= ~qry
-    return q
+        q_fn = 'update_thresholds_batch_type'
+        q_args = cPickle.dumps([chk_type])
+        q = db.feed_queue.q_fn == q_fn
+        q &= db.feed_queue.q_args == q_args
+
+    if db(q).count() > 1:
+        return
+    db.feed_queue.insert(q_fn=q_fn, q_args=q_args)
+    db.commit()
 
 @auth.requires_membership('CheckManager')
 def del_fset_threshold(id):
@@ -283,13 +100,15 @@ def set_low_threshold(ids):
                          chk_high=high,
                          chk_changed_by=user_name(),
                          chk_changed=now)
-        update_thresholds(rows[0])
         where = ""
         if len(chk.chk_svcname) > 0: where = chk.chk_svcname + "@"
         where += chk.chk_nodename
         _log('checks.thresholds.set',
              'set high threshold to %(val)d for check %(inst)s on %(where)s',
              dict(val=val, where=where, inst='.'.join((chk.chk_type, chk.chk_instance))))
+    q = db.checks_live.id.belongs(ids)
+    rows = db(q).select()
+    update_thresholds_batch(rows)
 
 @auth.requires_membership('CheckExec')
 def set_high_threshold(ids):
@@ -333,13 +152,15 @@ def set_high_threshold(ids):
                          chk_low=low,
                          chk_changed_by=user_name(),
                          chk_changed=now)
-        update_thresholds(rows[0])
         where = ""
         if len(chk.chk_svcname) > 0: where = chk.chk_svcname + "@"
         where += chk.chk_nodename
         _log('checks.thresholds.set',
              'set high threshold to %(val)d for check %(inst)s on %(where)s',
              dict(val=val, where=where, inst='.'.join((chk.chk_type, chk.chk_instance))))
+    q = db.checks_live.id.belongs(ids)
+    rows = db(q).select()
+    update_thresholds_batch(rows)
 
 @auth.requires_membership('CheckExec')
 def reset_thresholds(ids):
@@ -359,13 +180,15 @@ def reset_thresholds(ids):
         q &= db.checks_settings.chk_type==chk.chk_type
         q &= db.checks_settings.chk_instance==chk.chk_instance
         settings = db(q).delete()
-        update_thresholds(chk)
         where = ""
         if len(chk.chk_svcname) > 0: where = chk.chk_svcname + "@"
         where += chk.chk_nodename
         _log('checks.thresholds.reset',
              'reset thresholds for check %(inst)s on %(where)s',
              dict(where=where, inst='.'.join((chk.chk_type, chk.chk_instance))))
+    q = db.checks_live.id.belongs(ids)
+    rows = db(q).select()
+    update_thresholds_batch(rows)
 
 class col_chk_value(HtmlTableColumn):
     def html(self, o):
@@ -987,7 +810,7 @@ def ajax_checks():
                 reset_thresholds(t.get_checked())
             elif action == 'del_fset_threshold':
                 del_fset_threshold(request.vars.del_fset_threshold_s)
-                update_thresholds_batch()
+                enqueue_update_thresholds_batch()
         except ToolError, e:
             t.flash = str(e)
 
@@ -1020,7 +843,7 @@ def ajax_checks():
                 db.commit()
                 r = True
         if r:
-            update_thresholds_batch()
+            enqueue_update_thresholds_batch()
             _log('checks.threshold.add',
                  'added threshold %(low)s,%(high)s to check %(chk_type)s.%(chk_instance)s matching fset %(fset_id)s',
                  dict(low=request.vars.chk_low,
