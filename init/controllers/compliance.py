@@ -8928,7 +8928,7 @@ def json_tree_filtersets():
      'children': [],
     }
     fset_data = comp_get_fset_data()
-    for fset_id in fset_data:
+    for fset_id in sorted(fset_data.keys(), key=lambda x: fset_names[x]):
         l = recurse_json_tree_filtersets(fset_data[fset_id], parent_ids=["fset%d"%fset_id])
         _data = {
           "attr": {"id": "fset%d"%fset_id, "rel": "filterset", "obj_id": fset_id},
