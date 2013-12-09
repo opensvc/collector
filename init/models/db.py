@@ -14,7 +14,7 @@ if request.env.web2py_runtime_gae:            # if running on Google App Engine
 else:                                         # else use a normal relational database
     db = DAL('mysql://opensvc:opensvc@dbopensvc/opensvc',
              driver_args={'connect_timeout': 20},
-             pool_size=30)
+             pool_size=0)
 ## if no need for session
 # session.forget()
 

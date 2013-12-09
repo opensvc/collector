@@ -15,7 +15,7 @@ else:                                         # else use a normal relational dat
     #db = DAL('mysql://opensvc:opensvc@dbopensvc/opensvc')       # if not, use SQLite or other DB
     db = DAL('mysql://opensvc:opensvc@dbopensvc/opensvc',
              driver_args={'connect_timeout': 20},
-             pool_size=30)
+             pool_size=0)
 
 ## if no need for session
 session.forget()
