@@ -309,8 +309,10 @@ def _push_checks(vars, vals):
         chk_updated
     """
 
+    n = len(vals)
+
     # purge old checks
-    if len(vals) > 0:
+    if n > 0:
         nodename = vals[0][0]
         q = db.checks_live.chk_nodename==nodename
         q &= db.checks_live.chk_type != "netdev_err"
@@ -338,6 +340,7 @@ def _push_checks(vars, vals):
      # insert new checks
     while len(vals) > 100:
         generic_insert('checks_live', vars, vals[:100])
+        vals = vals[100:]
     generic_insert('checks_live', vars, vals)
     db.commit()
 
@@ -349,7 +352,7 @@ def _push_checks(vars, vals):
     update_thresholds_batch(rows, one_source=True)
 
     # update dashboard alerts
-    if len(vals) > 0:
+    if n > 0:
         update_dash_checks(nodename)
 
 @auth_uuid
