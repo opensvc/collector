@@ -1032,7 +1032,11 @@ function stat_day(url, id) {
                 shadowWidth: 2
             },
 	    series: [
-                {label: 'err', color: 'red'}
+                {
+		    label: 'err',
+                    markerOptions: {size: 2},
+		    color: 'red'
+		}
             ],
 	    axes: {
 		xaxis: {
@@ -1062,7 +1066,10 @@ function stat_day(url, id) {
                 location: 'n'
             },
 	    series: [
-                {label: 'apps'}
+                {
+		    label: 'apps',
+                    markerOptions: {size: 2}
+		}
             ],
 	    axes: {
 		xaxis: {
@@ -1094,6 +1101,7 @@ function stat_day(url, id) {
 	    series: [
                 {
                     label: 'vcpu',
+                    markerOptions: {size: 2},
                     breakOnNull: true
                 }
             ],
@@ -1137,6 +1145,7 @@ function stat_day(url, id) {
 	    series: [
                 {
                     label: 'vmem',
+                    markerOptions: {size: 2},
                     breakOnNull: true
                 }
             ],
@@ -1237,6 +1246,7 @@ function stat_day(url, id) {
 	    series: [
                 {
                     label: 'ram size',
+                    markerOptions: {size: 2},
                     breakOnNull: true
                 }
             ],
@@ -1270,6 +1280,7 @@ function stat_day(url, id) {
 	    series: [
                 {
                     label: 'cores',
+                    markerOptions: {size: 2},
                     breakOnNull: true
                 }
             ],
@@ -1301,7 +1312,10 @@ function stat_day(url, id) {
                 shadowWidth: 2
             },
 	    series: [
-                {label: 'accounts'}
+                {
+                    markerOptions: {size: 2},
+		    label: 'accounts'
+		}
             ],
 	    axes: {
 		xaxis: {
@@ -1331,7 +1345,10 @@ function stat_day(url, id) {
                 shadowWidth: 2
             },
 	    series: [
-                {label: 'sys responsible accounts'}
+                {
+                    markerOptions: {size: 2},
+		    label: 'sys responsible accounts'
+		}
             ],
 	    axes: {
 		xaxis: {
