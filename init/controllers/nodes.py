@@ -1211,10 +1211,15 @@ def ajax_uids():
               ) u
               where %(where)s
               order by user_id
-              limit %(limit)d
-              offset %(offset)d"""%dict(
+             """%dict(
                 sql=sql1,
                 where=where,
+           )
+
+    if len(request.args) != 1 or (request.args[0] not in ('csv', 'commonality')):
+        sql2 += """
+              limit %(limit)d
+              offset %(offset)d"""%dict(
                 limit=mt.perpage,
                 offset=mt.pager_start,
            )
@@ -1309,13 +1314,19 @@ def ajax_gids():
               ) u
               where %(where)s
               order by group_id
-              limit %(limit)d
-              offset %(offset)d"""%dict(
+              """%dict(
                 sql=sql1,
                 where=where,
+           )
+
+    if len(request.args) != 1 or (request.args[0] not in ('csv', 'commonality')):
+        sql2 += """
+              limit %(limit)d
+              offset %(offset)d"""%dict(
                 limit=mt.perpage,
                 offset=mt.pager_start,
            )
+
     mt.object_list = db.executesql(sql2, as_dict=True)
 
     if len(request.args) == 1 and request.args[0] == 'csv':
