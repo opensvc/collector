@@ -1087,6 +1087,7 @@ db.define_table('gen_filtersets',
     Field('fset_name','string', requires=IS_NOT_EMPTY()),
     Field('fset_author','string'),
     Field('fset_updated','datetime'),
+    Field('fset_stats','boolean', default=False),
     migrate=False)
 
 db.define_table('gen_filtersets_filters',
@@ -1117,6 +1118,7 @@ db.define_table('v_gen_filtersets',
     Field('encap_fset_name','string'),
     Field('join_id','integer'),
     Field('fset_id','integer'),
+    Field('fset_stats','boolean', default=False),
     migrate=False)
 
 db.define_table('comp_rulesets',

@@ -355,6 +355,8 @@ class HtmlTable(object):
 
         q = db.gen_filterset_user.user_id == auth.user_id
         q &= db.gen_filterset_user.fset_id == db.gen_filtersets.id
+        if hasattr(self, 'fset_stats') and self.fset_stats:
+            q &= db.gen_filtersets.fset_stats == True
         rows = db(q).select(cacheable=True)
         active_fset_id = 0
         for row in rows:

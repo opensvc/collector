@@ -4062,3 +4062,11 @@ alter table checks_live drop column chk_err;
 alter table checks_live add column chk_err tinyint as (if(chk_value<chk_low, 1, if(chk_value>chk_high, 2, 0))) persistent;
 
 alter table svcmon add key mon_vmname (mon_vmname);
+
+alter table gen_filtersets add column fset_stats varchar(1) default 'F';
+
+drop view v_gen_filtersets;
+
+CREATE VIEW `v_gen_filtersets` AS (select `fs`.`fset_name` AS `fset_name`,`fs`.`fset_stats` AS `fset_stats`,`fs`.`fset_updated` AS `fset_updated`,`fs`.`fset_author` AS `fset_author`,`fs`.`id` AS `fset_id`,`g`.`id` AS `join_id`,`g`.`f_order` AS `f_order`,`f`.`id` AS `f_id`,`g`.`encap_fset_id` AS `encap_fset_id`,(select `gen_filtersets`.`fset_name` from `gen_filtersets` where (`gen_filtersets`.`id` = `g`.`encap_fset_id`)) AS `encap_fset_name`,`g`.`f_log_op` AS `f_log_op`,`f`.`id` AS `id`,`f`.`f_table` AS `f_table`,`f`.`f_field` AS `f_field`,`f`.`f_value` AS `f_value`,`f`.`f_updated` AS `f_updated`,`f`.`f_author` AS `f_author`,`f`.`f_op` AS `f_op` from ((`gen_filtersets` `fs` left join `gen_filtersets_filters` `g` on((`g`.`fset_id` = `fs`.`id`))) left join `gen_filters` `f` on((`g`.`f_id` = `f`.`id`))) order by `fs`.`id`,`g`.`f_order`);
+
+

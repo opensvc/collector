@@ -2044,12 +2044,20 @@ filters_cols = ['f_table',
                 'f_updated',
                 'f_author']
 
+class col_fset_stats(HtmlTableColumn):
+    def html(self, o):
+        val = self.get(o)
+        if val is None:
+            return SPAN()
+        return T(str(val))
+
 class table_comp_filtersets(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['fset_name',
+                     'fset_stats',
                      'fset_updated',
                      'fset_author',
                      'f_log_op',
@@ -2063,6 +2071,12 @@ class table_comp_filtersets(HtmlTable):
                      field='fset_name',
                      display=True,
                      img='filter16',
+                    ),
+            'fset_stats': col_fset_stats(
+                     title='Compute stats',
+                     field='fset_stats',
+                     display=True,
+                     img='spark16',
                     ),
             'fset_updated': HtmlTableColumn(
                      title='Fset updated',
@@ -2096,12 +2110,18 @@ class table_comp_filtersets(HtmlTable):
                     ),
         }
         self.colprops.update(filters_colprops)
+        self.sub_span = ['fset_stats']
         if 'CompManager' in user_groups():
             self.form_encap_filterset_attach = self.comp_encap_filterset_attach_sqlform()
             self.form_filterset_add = self.comp_filterset_add_sqlform()
             self.form_filter_attach = self.comp_filter_attach_sqlform()
             self += HtmlTableMenu('Filter', 'filters', ['filter_attach', 'filter_detach'])
-            self += HtmlTableMenu('Filterset', 'filters', ['filterset_add', 'filterset_del', 'filterset_rename', 'encap_filterset_attach', 'filter_detach'])
+            self += HtmlTableMenu('Filterset', 'filters', ['filterset_add',
+                                                           'filterset_del',
+                                                           'filterset_rename',
+                                                           'encap_filterset_attach',
+                                                           'filter_detach',
+                                                           'filterset_change_stats'])
         self.ajax_col_values = ajax_comp_filtersets_col_values
         self.dbfilterable = False
 
@@ -2120,6 +2140,48 @@ class table_comp_filtersets(HtmlTable):
                 T("Detach"),
                 _class='detach16',
                 _onclick=self.ajax_submit(args=['detach_filters'])
+              ),
+            )
+        return d
+
+    def filterset_change_stats(self):
+        label = 'Change filterset stats flag'
+        action = 'filterset_change_stats'
+        divid = 'fset_stats_change'
+        sid = 'fset_stats_change_s'
+        options = ['T', 'F']
+        d = DIV(
+              A(
+                T(label),
+                _class='edit16',
+                _onclick="""
+                  click_toggle_vis(event,'%(div)s', 'block');
+                """%dict(div=divid),
+              ),
+              DIV(
+                TABLE(
+                  TR(
+                    TH(T('Compute filterset stats')),
+                    TD(
+                      SELECT(
+                        *options,
+                        **dict(_id=sid)
+                      ),
+                    ),
+                  ),
+                  TR(
+                    TH(),
+                    TD(
+                      INPUT(
+                        _type='submit',
+                        _onclick=self.ajax_submit(additional_inputs=[sid], args=action),
+                      ),
+                    ),
+                  ),
+                ),
+                _style='display:none',
+                _class='white_float',
+                _name=divid,
               ),
             )
         return d
@@ -2338,6 +2400,27 @@ class table_comp_filtersets(HtmlTable):
         f.vars.fset_author = user_name()
 
         return f
+
+@auth.requires_membership('CompManager')
+def filterset_change_stats(ids):
+    sid = request.vars.fset_stats_change_s
+    if len(sid) == 0:
+        raise ToolError("change filterset stats flag failed: target flag is empty")
+    if len(ids) == 0:
+        raise ToolError("change filterset stats flag failed: no filterset selected")
+    ids = map(lambda x: int(x.split('_')[0]), ids)
+
+    q = db.gen_filtersets.id.belongs(ids)
+    rows = db(q).select(cacheable=True)
+    if len(rows) == 0:
+        raise ToolError("change filterset stats flag failed: can't find filterset")
+
+    x = ', '.join(['from %s on %s'%(r.fset_stats,r.fset_name) for r in rows])
+    db(q).update(fset_stats=sid)
+
+    _log('filterset.stats.change',
+         'changed filterset stats flag to %(s)s %(x)s',
+         dict(s=sid, x=x))
 
 @auth.requires_membership('CompManager')
 def comp_detach_filters(ids=[]):
@@ -2724,6 +2807,8 @@ def ajax_comp_filtersets():
                 comp_rename_filterset(t.get_checked())
                 t.form_filter_attach = t.comp_filter_attach_sqlform()
                 t.form_encap_filterset_attach = t.comp_encap_filterset_attach_sqlform()
+            elif action == 'filterset_change_stats':
+                filterset_change_stats(t.get_checked())
         except ToolError, e:
             t.flash = str(e)
 

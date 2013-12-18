@@ -509,6 +509,7 @@ class table_stats(HtmlTable):
         self.columnable = False
         self.object_list = []
         self.nodatabanner = False
+        self.fset_stats = True
 
 @auth.requires_login()
 def ajax_stats():

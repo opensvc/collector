@@ -247,7 +247,9 @@ def cron_stat_day():
     _cron_stat_day_billing(end)
 
     # per filterset stats
-    rows = db(db.gen_filtersets.id>0).select(db.gen_filtersets.id)
+    q = db.gen_filtersets.id > 0
+    q &= db.gen_filtersets.fset_stats == True
+    rows = db(q).select(db.gen_filtersets.id)
     for row in rows:
         _cron_stat_day(end, row.id)
         _cron_stat_day_billing(end, row.id)
