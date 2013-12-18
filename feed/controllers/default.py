@@ -418,6 +418,7 @@ def _insert_generic(data, auth):
         sql = """delete from node_users where nodename="%s" """%auth[1]
         db.executesql(sql)
         generic_insert('node_users', vars, vals)
+        node_users_alerts(auth[1])
     if 'gids' in data:
         vars, vals = data['gids']
         if 'updated' not in vars:
@@ -431,8 +432,102 @@ def _insert_generic(data, auth):
         sql = """delete from node_groups where nodename="%s" """%auth[1]
         db.executesql(sql)
         generic_insert('node_groups', vars, vals)
+        node_groups_alerts(auth[1])
 
     db.commit()
+
+def node_users_alerts(nodename):
+    sql = """insert into dashboard
+             select
+                 NULL,
+                 "duplicate uid",
+                 NULL,
+                 "%(nodename)s",
+                 if(t.host_mode="PRD", 1, 0),
+                 "uid %%(uid)s is used by users %%(usernames)s",
+                 concat('{"uid": ', t.user_id, ', "usernames": "', t.usernames, '"}'),
+                 now(),
+                 NULL,
+                 t.host_mode,
+                 NULL,
+                 now()
+               from (
+                 select
+                   *,
+                   (select host_mode from nodes where nodename="%(nodename)s") as host_mode
+                 from (
+                   select
+                     nodename,
+                     user_id,
+                     group_concat(user_name) as usernames,
+                     count(id) as n
+                   from node_users
+                   where nodename="%(nodename)s"
+                   group by nodename, user_id
+                 ) u
+                 where u.n > 1
+               ) t
+               on duplicate key update
+               dash_updated=now()
+               """ % dict(nodename=nodename)
+    n = db.executesql(sql)
+    db.commit()
+
+    # purge old alerts
+    sql = """delete from dashboard where
+               dash_nodename="%(nodename)s" and
+               dash_type="duplicate uid" and
+               dash_updated < date_sub(now(), interval 20 second)
+          """ % dict(nodename=nodename)
+    n = db.executesql(sql)
+    db.commit()
+
+def node_groups_alerts(nodename):
+    sql = """insert into dashboard
+             select
+                 NULL,
+                 "duplicate gid",
+                 NULL,
+                 "%(nodename)s",
+                 if(t.host_mode="PRD", 1, 0),
+                 "gid %%(gid)s is used by users %%(groupnames)s",
+                 concat('{"gid": ', t.group_id, ', "groupnames": "', t.groupnames, '"}'),
+                 now(),
+                 NULL,
+                 t.host_mode,
+                 NULL,
+                 now()
+               from (
+                 select
+                   *,
+                   (select host_mode from nodes where nodename="%(nodename)s") as host_mode
+                 from (
+                   select
+                     nodename,
+                     group_id,
+                     group_concat(group_name) as groupnames,
+                     count(id) as n
+                   from node_groups
+                   where nodename="%(nodename)s"
+                   group by nodename, group_id
+                 ) u
+                 where u.n > 1
+               ) t
+               on duplicate key update
+               dash_updated=now()
+               """ % dict(nodename=nodename)
+    n = db.executesql(sql)
+    db.commit()
+
+    # purge old alerts
+    sql = """delete from dashboard where
+               dash_nodename="%(nodename)s" and
+               dash_type="duplicate gid" and
+               dash_updated < date_sub(now(), interval 20 second)
+          """ % dict(nodename=nodename)
+    n = db.executesql(sql)
+    db.commit()
+
 
 @auth_uuid
 @service.xmlrpc
