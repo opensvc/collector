@@ -5653,6 +5653,7 @@ def comp_format_filter(q):
 def comp_get_svcmon_ruleset(svcname, nodename):
     q = db.svcmon.mon_svcname == svcname
     q &= db.svcmon.mon_nodname == nodename
+    q &= db.svcmon.mon_updated > now - datetime.timedelta(minutes=15)
     row = db(q).select(cacheable=True).first()
     if row is None:
         q = db.svcmon.mon_svcname == svcname
@@ -9127,7 +9128,7 @@ def comp_admin():
                   "obj_id": obj.attr("obj_id"),
                  },
                  success: function(msg){
-                   $("[rel="+obj.attr('rel')+"][obj_id="+obj.attr('obj_id')+"]").children("a").click()
+                   //$("[rel="+obj.attr('rel')+"][obj_id="+obj.attr('obj_id')+"]").children("a").click()
                    json_status(msg)
                  }
                });
