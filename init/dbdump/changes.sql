@@ -4062,3 +4062,7 @@ alter table checks_live drop column chk_err;
 alter table checks_live add column chk_err tinyint as (if(chk_value<chk_low, 1, if(chk_value>chk_high, 2, 0))) persistent;
 
 alter table svcmon add key mon_vmname (mon_vmname);
+
+create view v_nodesan as select z.*, n.fqdn, n.loc_country, n.loc_city, n.loc_addr, n.loc_building, n.loc_floor, n.loc_room, n.loc_rack, n.cpu_freq, n.cpu_cores, n.cpu_dies, n.cpu_vendor, n.cpu_model, n.mem_banks, n.mem_slots, n.mem_bytes, n.os_name, n.os_release, n.os_update, n.os_segment, n.os_arch, n.os_vendor, n.os_kernel, n.loc_zip, n.version, n.listener_port, n.team_responsible, n.team_integ, n.team_support, n.project, n.serial, n.model, n.type, n.warranty_end, n.maintenance_end, n.status, n.role, n.environnement, n.host_mode, n.power_cabinet1, n.power_cabinet2, n.power_supply_nb, n.power_protect, n.power_protect_breaker, n.power_breaker1, n.power_breaker2, n.os_concat, n.updated as node_updated, n.enclosure, n.hw_obs_warn_date, n.hw_obs_alert_date, n.os_obs_warn_date, n.os_obs_alert_date, n.hvpool, n.hv, n.hvvdc, n.enclosureslot, n.assetname, n.cpu_threads, a.array_name, a.array_model, a.array_cache, a.array_firmware, a.array_updated, a.array_level from stor_zone z join v_nodes n on z.nodename=n.nodename left join stor_array_tgtid at on z.tgt_id=at.array_tgtid left join stor_array a on at.array_id=a.id;
+
+
