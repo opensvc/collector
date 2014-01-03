@@ -1154,7 +1154,7 @@ def insert_dcs(name=None, nodename=None):
                          str(dg['total']),
                          now])
         generic_insert('stor_array_dg', vars, vals)
-        sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
+        sql = """delete from stor_array_dg where array_id=%s and dg_updated < date_sub(now(), interval 24 hour) """%array_id
         db.executesql(sql)
 
         # stor_array_tgtid
@@ -1163,7 +1163,7 @@ def insert_dcs(name=None, nodename=None):
         for wwn in s.port_list:
             vals.append([array_id, wwn])
         generic_insert('stor_array_tgtid', vars, vals)
-        sql = """delete from stor_array_tgtid where array_id=%s and updated < "%s" """%(array_id, str(now))
+        sql = """delete from stor_array_tgtid where array_id=%s and updated < date_sub(now(), interval 24 hour) """%array_id
         db.executesql(sql)
 
         # diskinfo
