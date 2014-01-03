@@ -60,7 +60,7 @@ def update_thresholds_from_defaults(rows):
                      cl.chk_instance=cd.chk_inst or
                      cd.chk_inst="" or
                      cd.chk_inst is null)
-                   order by cd.chk_prio, length(cd.chk_inst) desc
+                   order by cd.chk_prio desc, length(cd.chk_inst) desc
                    limit 1
                   ) as cdid
                 from checks_live cl
