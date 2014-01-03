@@ -58,6 +58,26 @@ def del_fset_threshold(id):
     q = db.gen_filterset_check_threshold.id == id
     db(q).delete()
 
+def get_defaults(row):
+    if row['chk_instance'] is not None:
+        q = db.checks_defaults.chk_type == row['chk_type']
+        q &= db.checks_defaults.chk_inst != None
+        o = ~db.checks_defaults.chk_prio
+        rows = db(q).select(orderby=o)
+        for r in rows:
+            pattern = str(r.chk_inst)
+            if not pattern.endswith('$'):
+                pattern += '$'
+            if re.match(pattern, row['chk_instance']) is not None:
+                return (r.chk_low, r.chk_high, 'defaults')
+
+    q = db.checks_defaults.chk_type == row.chk_type
+    q &= (db.checks_defaults.chk_inst == None) | (db.checks_defaults.chk_inst == "")
+    rows = db(q).select()
+    if len(rows) == 0:
+        return
+    return (rows[0].chk_low, rows[0].chk_high, 'defaults')
+
 @auth.requires_membership('CheckExec')
 def set_low_threshold(ids):
     if len(ids) == 0:
