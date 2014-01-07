@@ -146,6 +146,7 @@ class table_dash_agg(HtmlTable):
         self.refreshable = False
         self.columnable = False
         self.headers = False
+        self.highlight = False
 
 
 def ajax_dash_history():

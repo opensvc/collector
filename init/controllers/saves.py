@@ -604,4 +604,5 @@ class table_saves_charts(HtmlTable):
         self.refreshable = False
         self.columnable = False
         self.headers = False
+        self.highlight = False
 

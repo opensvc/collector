@@ -1894,6 +1894,7 @@ class table_disk_charts(HtmlTable):
         self.refreshable = False
         self.columnable = False
         self.headers = False
+        self.highlight = False
 
 @auth.requires_login()
 def ajax_array_dg():

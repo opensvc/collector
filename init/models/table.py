@@ -151,6 +151,7 @@ class HtmlTable(object):
         self.flash = None
         self.sub_span = []
         self.nodatabanner = True
+        self.highlight = True
 
         # initialize the pager, to be re-executed by instanciers
         self.setup_pager()
@@ -991,7 +992,11 @@ class HtmlTable(object):
             if _class != ' ':
                 attrs['_class'] = _class
             cells.append(TD(content, **attrs))
-        return TR(cells, _class=self.cellclass)
+            if self.highlight:
+                cl = "tl " + self.cellclass
+            else:
+                cl = self.cellclass
+        return TR(cells, _class=cl)
 
     def spaning_line(self, o):
         if self.span is not None and \
@@ -2131,6 +2136,7 @@ os_class_h = {
   'freebsd': 'os_freebsd',
   'aix': 'os_aix',
   'windows': 'os_win',
+  'vmware': 'os_vmware',
 }
 
 def node_class(os_name):
