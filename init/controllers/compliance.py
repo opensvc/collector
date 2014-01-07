@@ -9444,7 +9444,7 @@ def comp_admin():
           if (msg != "0") {
             $.jstree.rollback(data.rlbk)
           } else {
-            $("[name=catree]:visible").jstree("refresh");
+            //$("[name=catree]:visible").jstree("refresh");
           }
           json_status(msg)
         }
