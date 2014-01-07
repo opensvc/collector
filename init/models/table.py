@@ -2134,6 +2134,7 @@ os_class_h = {
   'freebsd': 'os_freebsd',
   'aix': 'os_aix',
   'windows': 'os_win',
+  'vmware': 'os_vmware',
 }
 
 def node_class(os_name):
