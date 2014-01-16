@@ -3412,7 +3412,7 @@ def ajax_comp_moduleset():
     except AttributeError:
         pass
 
-    o = db.comp_moduleset.modset_name
+    o = db.comp_moduleset.modset_name|db.comp_moduleset_modules.modset_mod_name
     g = db.comp_moduleset.modset_name|db.comp_moduleset_modules.id
     q = db.comp_moduleset.id > 0
     j = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
