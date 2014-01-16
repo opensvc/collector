@@ -1701,7 +1701,8 @@ function js_link_%(id)s(){
   if (url.indexOf('?')>0) {
     url=url.substring(0, url.indexOf('?'))
   }
-  url=url+"?"
+  var re = /#$/;
+  url=url.replace(re, "")+"?";
   args="clear_filters=true&dbfilter="+$("#avs%(id)s").val()
   $("#%(id)s").find("[name=fi]").each(function(){
     if ($(this).val().length==0) {return}
