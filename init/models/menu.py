@@ -102,6 +102,8 @@ response.menu = [
               URL(request.application,'nodenetworks','nodenetworks')],
              [DIV(T('Node SAN'), _class='net16'), False,
               URL(request.application,'nodesan','nodesan')],
+             [DIV(T('SAN switches'), _class='net16'), False,
+              URL(request.application,'sanswitches','sanswitches')],
              [DIV(T('Domain Name Service'), _class='dns16'), False,
               URL(request.application,'dns','dns')],
              [DIV(T('Disks'), _class='hd16'), False,
