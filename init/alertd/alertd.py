@@ -88,6 +88,43 @@ def fork(fn, kwargs={}):
     fn(**kwargs)
     os._exit(0)
 
+def prettydate(dt, T=lambda x: x):
+    if dt.days < 0:
+        suffix = ' later'
+        dt = -dt
+    else:
+        suffix = ' before'
+    if dt.days >= 2 * 365:
+        return T('%d years' + suffix) % int(dt.days / 365)
+    elif dt.days >= 365:
+        return T('1 year' + suffix)
+    elif dt.days >= 60:
+        return T('%d months' + suffix) % int(dt.days / 30)
+    elif dt.days > 21:
+        return T('1 month' + suffix)
+    elif dt.days >= 14:
+        return T('%d weeks' + suffix) % int(dt.days / 7)
+    elif dt.days >= 7:
+        return T('1 week' + suffix)
+    elif dt.days > 1:
+        return T('%d days' + suffix) % dt.days
+    elif dt.days == 1:
+        return T('1 day' + suffix)
+    elif dt.seconds >= 2 * 60 * 60:
+        return T('%d hours' + suffix) % int(dt.seconds / 3600)
+    elif dt.seconds >= 60 * 60:
+        return T('1 hour' + suffix)
+    elif dt.seconds >= 2 * 60:
+        return T('%d minutes' + suffix) % int(dt.seconds / 60)
+    elif dt.seconds >= 60:
+        return T('1 minute' + suffix)
+    elif dt.seconds > 1:
+        return T('%d seconds' + suffix) % dt.seconds
+    elif dt.seconds == 1:
+        return T('1 second' + suffix)
+    else:
+        return T('meanwhile')
+
 class SendError(Exception):
     pass
 
@@ -144,6 +181,12 @@ class im_job(object):
         except:
             raise SendError()
 
+try:
+    with open(basedir+"/../static/mail.css", "r") as f:
+        style = f.read()
+except:
+    style = ""
+
 class email_job(object):
     def __init__(self, row):
         self.addr = row[3]
@@ -163,19 +206,37 @@ class email_job(object):
         return self
 
     def __str__(self):
+        return self.html()
+
+    def text(self):
         s = ""
         for l in self.lines:
             s += "%s | %8s | %20s | %20s | %s\n"%(str(l[0]), l[1], l[2], l[3], l[4])
         return s
 
+    def html(self):
+        header = """<html><head><style _type="text/css">"""+style+"""</style></head><table>"""
+        header += """<tr><th>Date</th><th>Severity</th><th>Node</th><th>Service</th><th>Message</th></tr>"""
+        footer = """</table></html>"""
+        body = ""
+        for i, l in enumerate(self.lines):
+            if i == 0:
+                refdate = l[0]
+                _date = str(refdate)
+            else:
+                _date = prettydate(refdate-l[0])
+            body += """<tr><td>%s</td><td class="%s">%s</td><td>%s</td><td>%s</td><td>%s</td></tr>""" % (_date, l[1], l[1], l[2], l[3], l[4])
+        return header+body+footer
+
     def __call__(self):
         receivers = [self.addr]
         message = """From: OpenSVC Collector <%(sender)s>
 To: %(rcpt)s
-Subject: OpenSVC events
+Subject: %(n)d OpenSVC events
+Content-Type: text/html; charset=UTF-8
 
 %(body)s
-"""%dict(sender=config.email_from, rcpt=self.addr, body=str(self))
+"""%dict(n=len(self.lines), sender=config.email_from, rcpt=self.addr, body=str(self))
 
         try:
             smtpObj = smtplib.SMTP(config.email_host)
