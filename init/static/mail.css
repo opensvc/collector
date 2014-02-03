@@ -184,6 +184,16 @@ a {
     color: #000000;
 }
 
+.warning {
+    color: orange;
+}
+.error {
+    color: red;
+}
+.critical {
+    color: darkred;
+}
+
 .highlight {
     color: darkred;
     font-weight: bold;
