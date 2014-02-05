@@ -4456,7 +4456,6 @@ def ajax_comp_log_col_values():
     col = request.args[0]
     o = db.comp_log[col]
     q = _where(None, 'comp_log', domain_perms(), 'run_nodename')
-    q &= db.comp_log.run_nodename == db.v_nodes.nodename
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.comp_log.run_nodename)
@@ -5128,7 +5127,6 @@ class table_comp_log(table_comp_status):
                      'run_status',
                      'run_log',
                      'rset_md5']
-        self.cols += v_nodes_cols
         for c in self.colprops:
             self.colprops[c].t = self
             if 'run_' in c or c == 'rset_md5':
@@ -5148,7 +5146,6 @@ def ajax_comp_log():
     q = _where(None, 'comp_log', domain_perms(), 'run_nodename')
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q &= db.comp_log.run_nodename == db.v_nodes.nodename
     q = apply_filters(q, db.comp_log.run_nodename)
 
     t.setup_pager(-1)
