@@ -4073,7 +4073,7 @@ create view v_nodesan as select z.*, n.fqdn, n.loc_country, n.loc_city, n.loc_ad
 
 alter table networks drop column end; alter table networks add column end varchar(16) as (inet_ntoa(inet_aton(network)+pow(2,32-netmask)-2)) persistent;
 
-alter table networks drop column begin; alter table networks add column end varchar(16) as (inet_ntoa(inet_aton(network)+1) persistent;
+alter table networks drop column begin; alter table networks add column begin varchar(16) as (inet_ntoa(inet_aton(network)+1) persistent;
 
 alter table networks drop column broadcast; alter table networks add column broadcast varchar(16) as (inet_ntoa(inet_aton(network)+pow(2,32-netmask)-1)) persistent;
 
