@@ -363,6 +363,47 @@ class sandata(object):
         #raise Exception(self.d)
         return self.d
 
+@auth.requires_login()
+def fetch_node_pw():
+    nodename = request.vars.nodename
+    q = db.auth_node.nodename == nodename
+    rows = db(q).select(db.auth_node.uuid, cacheable=True)
+
+    if len(rows) == 0:
+        return T("not registered")
+
+    q &= db.auth_node.nodename == db.nodes.nodename
+    ug = user_groups()
+    if "Manager" not in ug:
+        q &= db.nodes.team_responsible.belongs(ug)
+    rows = db(q).select(db.auth_node.uuid, cacheable=True)
+
+    if len(rows) == 0:
+        return T("hidden (you are not responsible of this node)")
+
+    node_uuid = rows[0].uuid
+    sql = """select aes_decrypt(pw, "%(sec)s") from node_pw where
+             nodename="%(nodename)s"
+          """ % dict(nodename=nodename, sec=node_uuid)
+    pwl = db.executesql(sql)
+    if len(pwl) == 0:
+        return T("This node has not reported its root password (opensvc agent feature not activated or agent too old)")
+
+    _log('password.retrieve',
+         'retrieved root password of node %(nodename)s',
+         dict(nodename=nodename))
+
+    return pwl[0][0]
+
+def node_pw_tool(nodename, id):
+    return A(
+      SPAN(T("Retrieve root password"), _class='lock'),
+      _id='pw_'+str(id),
+      _onclick="""sync_ajax('%(url)s', [], '%(id)s', function(){})""" % dict(
+        url=URL(r=request, f='fetch_node_pw', vars={'nodename': nodename}),
+        id='pw_'+str(id),
+      ),
+    )
 
 @auth.requires_login()
 def ajax_node():
@@ -397,11 +438,13 @@ def ajax_node():
         ug = user_groups()
         if "Manager" not in ug:
             q &= db.nodes.team_responsible.belongs(ug)
-        rows = db(q).select(db.auth_node.uuid, cacheable=True)
+        rows = db(q).select(db.auth_node.id, db.auth_node.uuid, cacheable=True)
         if len(rows) == 0:
             node_uuid = T("hidden (you are not responsible of this node)")
+            node_pw = ""
         else:
             node_uuid = rows[0].uuid
+            node_pw = node_pw_tool(request.vars.node, rows.first().id)
 
     node = nodes[0]
     loc = TABLE(
@@ -445,6 +488,7 @@ def ajax_node():
       TR(TD(T('host mode'), _style='font-style:italic'), TD(node['host_mode'])),
       TR(TD(T('env'), _style='font-style:italic'), TD(node['environnement'])),
       TR(TD(T('uuid'), _style='font-style:italic'), TD(node_uuid)),
+      TR(TD(T('root pwd'), _style='font-style:italic'), TD(node_pw)),
     )
     cpu = TABLE(
       TR(TD(T('cpu frequency'), _style='font-style:italic'), TD(node['cpu_freq'])),

@@ -1422,23 +1422,11 @@ def insert_brocade(name=None, nodename=None):
         # ports-portname
         vals = []
         for p in s.ports.values():
-            vals.append([
-                s.name,
-                s.wwn,
-                str(p['Index']),
-                str(p['Slot']),
-                str(p['Port']),
-                str(p['Speed']),
-                str(p['Nego']),
-                str(p['State']),
-                str(p['Type']),
-                str(p['RemotePortName']),
-                now
-            ])
+            _vals = []
             for nse in p['nse']:
                 if nse == p['RemotePortName']:
                     continue
-                vals.append([
+                _vals.append([
                     s.name,
                     s.wwn,
                     str(p['Index']),
@@ -1451,6 +1439,21 @@ def insert_brocade(name=None, nodename=None):
                     nse,
                     now
                 ])
+            if len(_vals) == 0:
+                _vals.append([
+                    s.name,
+                    s.wwn,
+                    str(p['Index']),
+                    str(p['Slot']),
+                    str(p['Port']),
+                    str(p['Speed']),
+                    str(p['Nego']),
+                    str(p['State']),
+                    str(p['Type']),
+                    str(p['RemotePortName']),
+                    now
+                ])
+            vals += _vals
         generic_insert('switches', vars, vals)
         sql = """delete from switches where sw_name="%s" and sw_updated < "%s" """%(s.name, str(now))
         db.executesql(sql)
@@ -2730,6 +2733,30 @@ def str_to_datetime(s):
        except:
            continue
     return d
+
+@auth_uuid
+@service.xmlrpc
+def collector_update_root_pw(data, auth):
+    nodename = auth[1]
+    pw = data.get('pw')
+    if pw is None:
+        return {"ret": 1, "msg": "misformatted data"}
+    sql = """select uuid from auth_node where nodename="%(nodename)s"
+          """ % dict(nodename=nodename)
+    rows = db.executesql(sql)
+    if len(rows) == 0:
+        return {"ret": 1, "msg": "node is not registered"}
+    uuid = rows[0][0]
+
+    sql = """insert into node_pw set
+              nodename="%(nodename)s",
+              pw=aes_encrypt("%(pw)s", "%(uuid)s")
+             on duplicate key update
+              pw=aes_encrypt("%(pw)s", "%(uuid)s"),
+              updated=now()
+          """ % dict(nodename=nodename, pw=pw, uuid=uuid)
+    db.executesql(sql)
+    return {"ret": 0, "msg": "password updated succesfully"}
 
 @auth_uuid
 @service.xmlrpc
