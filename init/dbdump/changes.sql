@@ -4079,3 +4079,12 @@ alter table networks drop column broadcast; alter table networks add column broa
 
 create view v_switches as select s.*, if(nh.nodename is not null, nh.nodename, if (a.array_name is not null, a.array_name, (select sw_name from switches where sw_portname=s.sw_rportname limit 1))) as sw_rname from switches s left join node_hba nh on s.sw_rportname=nh.hba_id left join stor_array_tgtid at on s.sw_rportname=at.array_tgtid left join stor_array a on at.array_id=a.id;
 
+CREATE TABLE `node_pw` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nodename` varchar(64) DEFAULT '',
+  `pw` blob NOT NULL,
+  `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx1` (`nodename`)
+);
+

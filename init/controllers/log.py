@@ -21,6 +21,7 @@ img_h = {
   'rename': 'rename16.png',
   'attach': 'attach16.png',
   'detach': 'detach16.png',
+  'password': 'lock.png',
 }
 
 class col_log_evt(HtmlTableColumn):
