@@ -402,6 +402,10 @@ def fetch_node_pw():
     return pwl[0][0]
 
 def node_pw_tool(nodename, id):
+    ug = user_groups()
+    if "Manager" not in ug and "RootPasswordExec" not in ug:
+        return "-"
+
     return A(
       SPAN(T("Retrieve root password"), _class='lock'),
       _id='pw_'+str(id),
