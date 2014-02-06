@@ -2748,13 +2748,20 @@ def collector_update_root_pw(data, auth):
         return {"ret": 1, "msg": "node is not registered"}
     uuid = rows[0][0]
 
+    #config = local_import('config', reload=True)
+    from applications.init.modules import config
+    try:
+        salt = config.aes_salt
+    except Exception as e:
+        salt = "tlas"
+
     sql = """insert into node_pw set
               nodename="%(nodename)s",
               pw=aes_encrypt("%(pw)s", "%(uuid)s")
              on duplicate key update
               pw=aes_encrypt("%(pw)s", "%(uuid)s"),
               updated=now()
-          """ % dict(nodename=nodename, pw=pw, uuid=uuid)
+          """ % dict(nodename=nodename, pw=pw, uuid=uuid+salt)
     db.executesql(sql)
     return {"ret": 0, "msg": "password updated succesfully"}
 

@@ -382,9 +382,15 @@ def fetch_node_pw():
         return T("hidden (you are not responsible of this node)")
 
     node_uuid = rows[0].uuid
+    config = local_import('config', reload=True)
+    try:
+        salt = config.aes_salt
+    except Exception as e:
+        salt = "tlas"
+
     sql = """select aes_decrypt(pw, "%(sec)s") from node_pw where
              nodename="%(nodename)s"
-          """ % dict(nodename=nodename, sec=node_uuid)
+          """ % dict(nodename=nodename, sec=node_uuid+salt)
     pwl = db.executesql(sql)
     if len(pwl) == 0:
         return T("This node has not reported its root password (opensvc agent feature not activated or agent too old)")
