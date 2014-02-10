@@ -2451,7 +2451,7 @@ def svc_log_update(svcname, astatus):
         db.commit()
 
 def translate_encap_nodename(svcname, nodename):
-    q = db.svcmon.mon_vmname == nodename
+    q = (db.svcmon.mon_vmname == nodename) | (db.svcmon.mon_vmname == nodename.split('.')[0])
     q &= db.svcmon.mon_svcname == svcname
     rows = db(q).select(db.svcmon.mon_nodname,
                         db.svcmon.mon_vmname,
