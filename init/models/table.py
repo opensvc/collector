@@ -1397,6 +1397,23 @@ class HtmlTable(object):
               DIV(XML('&nbsp;'), _class='spacer'),
               SCRIPT(
                 """
+$("input").each(function(){
+ attr = $(this).attr('id')
+ if ( typeof(attr) == 'undefined' || attr == false ) {return}
+ if ( ! $(this).attr('id').match(/nodename/gi) && ! $(this).attr('id').match(/svcname/gi) ) {return}
+ $(this).bind("change keyup input", function(){
+  if (this.value.match(/ /g)) {
+    if (this.value.match(/^\(/)) {return}
+    this.value = this.value.replace(/ /g, ',')
+    if (!this.value.match(/^\(/)) {
+      this.value = '(' + this.value
+    }
+    if (!this.value.match(/\)$/)) {
+      this.value = this.value + ')'
+    }
+  }
+ })
+})
 $("select").parent().css("white-space", "nowrap");
 $("select:visible").combobox();
 function ajax_submit_%(id)s(){%(ajax_submit)s};
