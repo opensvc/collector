@@ -8938,7 +8938,14 @@ def json_tree_groups():
      'data': 'groups',
      'children': [],
     }
-    sql = """ select id,role from auth_group where role not like "user_%" and privilege = "F" order by role"""
+
+    if request.vars.obj_filter is not None:
+        q = _where(None, 'auth_group', request.vars.obj_filter, 'role')
+        q = 'AND ' + str(q)
+    else:
+        q = ""
+
+    sql = """ select id,role from auth_group where role not like "user_%" and privilege = "F" """ + q + """ order by role """
     rows = db.executesql(sql, as_dict=True)
     h = {}
     for row in rows:
@@ -9011,7 +9018,13 @@ def json_tree_filtersets():
      'children': [],
     }
     fset_data = comp_get_fset_data()
-    for fset_id in sorted(fset_data.keys(), key=lambda x: fset_names[x]):
+
+    if request.vars.obj_filter is not None:
+        q &= _where(None, 'gen_filtersets', request.vars.obj_filter, 'fset_name')
+        o = db.gen_filtersets.fset_name
+        rows = db(q).select(db.gen_filtersets.id, orderby=o, cacheable=True)
+
+    for fset_id in [r.id for r in rows]:
         l = recurse_json_tree_filtersets(fset_data[fset_id], parent_ids=["fset%d"%fset_id])
         _data = {
           "attr": {"id": "fset%d"%fset_id, "rel": "filterset", "obj_id": fset_id},
@@ -9114,6 +9127,11 @@ def json_tree_rulesets():
         }
         return _data
 
+    if request.vars.obj_filter is not None:
+        q &= _where(None, 'comp_rulesets', request.vars.obj_filter, 'ruleset_name')
+        rows = db(q).select(groupby=db.comp_rulesets.id,
+                            orderby=o, cacheable=True)
+
     for row in rows:
         rset = row.comp_rulesets
         _data = recurse_rset(rset, parent_ids=[])
@@ -9189,7 +9207,7 @@ def comp_admin():
      },
      "json_data" : {
       "ajax" : {
-       "url" : "%(url)s",
+       "url" : function(){ return "%(url)s?obj_filter="+encodeURIComponent($("#casearch").val()) },
       },
      },
      "contextmenu": {
@@ -9647,15 +9665,9 @@ def comp_admin():
 
    var catimer;
    $("#casearch").keyup(function(){
-     clearTimeout(catimer);
-     catimer=setTimeout(function(){
-       val = $("#casearch").val()
-       if (val.length > 0) {
-         $("#catree").jstree("search", val);
-       } else {
-         $("#catree").jstree("clear_search");
-       }
-     }, 800)
+     if (is_enter(event)) {
+       $("#catree:visible").jstree("refresh");
+     }
    })
    $("#sep").click(function(){
      $("#catree2").toggle()
