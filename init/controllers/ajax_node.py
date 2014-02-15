@@ -443,6 +443,7 @@ def ajax_node():
 
     if len(rows) == 0:
         node_uuid = T("not registered")
+        node_pw = ""
     else:
         q &= db.auth_node.nodename == db.nodes.nodename
         ug = user_groups()
