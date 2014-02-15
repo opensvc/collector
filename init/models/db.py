@@ -727,14 +727,6 @@ db.define_table('svcmon_log',
     Field('mon_appstatus'),
     migrate=False)
 
-db.define_table('v_svc_group_status',
-    Field('id'),
-    Field('svcname'),
-    Field('svctype'),
-    Field('groupstatus'),
-    Field('nodes'),
-    migrate=False)
-
 db.define_table('obsolescence',
     Field('id'),
     Field('obs_type', 'string', length=30),
