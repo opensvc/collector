@@ -9667,6 +9667,7 @@ def comp_admin():
    $("#casearch").keyup(function(){
      if (is_enter(event)) {
        $("#catree:visible").jstree("refresh");
+       $("#catree2:visible").jstree("refresh");
      }
    })
    $("#sep").click(function(){
