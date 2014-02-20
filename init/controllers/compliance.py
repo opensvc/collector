@@ -10338,9 +10338,10 @@ def json_tree_action_detach_filterset(rset_id):
 
 @auth.requires_membership('CompManager')
 def json_tree_action_move_group_to_rset(group_id, rset_id):
+    ug = user_groups()
     q = db.comp_rulesets.id == rset_id
     q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
-    if 'Manager' not in user_groups():
+    if 'Manager' not in ug:
         q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
     rows = db(q&q1).select(cacheable=True)
     v = rows.first()
@@ -10353,6 +10354,9 @@ def json_tree_action_move_group_to_rset(group_id, rset_id):
     if w is None:
         return {"err": "group not found"}
 
+    if 'Manager' not in ug and int(group_id) not in user_group_ids():
+        return {"err": "you can't attach a group you are not a member of"}
+
     q = db.comp_ruleset_team_responsible.ruleset_id == rset_id
     q &= db.comp_ruleset_team_responsible.group_id == group_id
     if db(q).count() > 0:
@@ -10364,7 +10368,7 @@ def json_tree_action_move_group_to_rset(group_id, rset_id):
          'attach group %(role)s to ruleset %(rset_name)s',
          dict(rset_name=v.comp_rulesets.ruleset_name,
               role=w.role))
-    return 0
+    return "0"
 
 @auth.requires_membership('CompManager')
 def json_tree_action_clone_ruleset(rset_id):
