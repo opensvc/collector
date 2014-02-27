@@ -6,12 +6,14 @@ class Hp3par(object):
     def __init__(self, dir=None):
         if dir is None:
             return
-        self.ports = []
         self.dir = dir
         self.name = os.path.basename(dir)
-        self.keys = ["volumes", "vluns", "cpgs"]
+        self.keys = ["showvv", "showcpg", "showsys", "shownode", "showport"]
         for key in self.keys:
             setattr(self, key, self.readfile(key))
+        self.ports = []
+        for d in self.showport:
+            self.ports.append(d["Port_WWN"])
 
     def readfile(self, fname):
         fpath = os.path.join(self.dir, fname)
@@ -19,42 +21,16 @@ class Hp3par(object):
             data = json.loads(f.read())
         return data
 
-    def to_mb(self, size):
-        if "TB" in size:
-            size = float(size.replace("TB", "")) * 1024 * 1024
-        elif "GB" in size:
-            size = float(size.replace("GB", "")) * 1024
-        elif "MB" in size:
-            size = float(size.replace("MB", ""))
-        else:
-            size = 0
-        return size
-
-    def to_gb(self, size):
-        if "TB" in size:
-            size = float(size.replace("TB", "")) * 1024
-        elif "GB" in size:
-            size = float(size.replace("GB", ""))
-        elif "MB" in size:
-            size = float(size.replace("MB", "")) // 1024
-        else:
-            size = 0
-        return size
-
-    def volumes():
-        self.volumes = self.readfile("volumes")
-
     def __str__(self):
         s = "name: %s\n" % self.name
-        s += "modelnumber: %s\n" % ""
-        s += "controllermainmemory: %d\n" % ""
+        s += "modelnumber: %s\n" % self.showsys[0]['Serial']
+        s += "controllermainmemory: %d\n" % 0
         s += "firmwareversion: %s\n" % ""
         s += "ports: %s\n"%','.join(self.ports)
-        #for dg in self.dg:
-        #    s += "dg %s: free %s MB\n"%(dg['name'], str(dg['free_capacity']))
-        #    s += "dg %s: total %s MB\n"%(dg['name'], str(dg['capacity']))
-        #for d in self.vdisk:
-        #    s += "vdisk %s: size %s MB\n"%(d['vdisk_UID'], str(d['capacity']))
+        for cpg in self.showcpg:
+            s += "dg %s\n"%(cpg['Name'])
+        for d in self.showvv:
+            s += "vdisk %s: vsize %s MB\n"%(d['Name'], str(d['VSize_MB']))
         return s
 
 
