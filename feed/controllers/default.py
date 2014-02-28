@@ -1833,7 +1833,7 @@ def insert_hp3par(name=None, nodename=None):
             vals.append([s.name,
                          s.showsys[0]['Model'],
                          str(mem),
-                         "",
+                         s.showversion['Version'],
                          now])
             generic_insert('stor_array', vars, vals)
 
