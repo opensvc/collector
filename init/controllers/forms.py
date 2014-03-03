@@ -908,6 +908,7 @@ if ($("#%(id)s").is(":visible")) {
         )
     return d
 
+@auth.requires_login()
 def form():
     form_id = request.vars.form_id
     id, form_name, form_folder, form_type, data = get_forms(form_id=form_id)[0]
