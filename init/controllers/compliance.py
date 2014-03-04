@@ -1948,6 +1948,13 @@ def ajax_comp_rulesets():
     for f in v.cols:
         q = _where(q, 'v_comp_rulesets', v.filter_parse(f), f)
 
+    v.csv_q = q
+    v.csv_orderby = o
+    v.csv_groupby = o
+
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        return v.csv()
+
     n = db(q).count()
     v.setup_pager(n)
     v.object_list = db(q).select(limitby=(v.pager_start,v.pager_end), orderby=o, groupby=g, cacheable=True)
