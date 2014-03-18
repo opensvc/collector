@@ -3166,6 +3166,7 @@ class table_comp_moduleset(HtmlTable):
         db.comp_moduleset_modules.modset_id.requires = IS_IN_DB(db(q),
                                                 db.comp_moduleset.id,
                                                 "%(modset_name)s",
+                                                distinct=True,
                                                 zero=T('choose one'))
         if 'modset_id' in request.vars:
             q = db.comp_moduleset_modules.modset_id == request.vars.modset_id
