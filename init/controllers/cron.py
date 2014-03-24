@@ -874,10 +874,12 @@ def cron_mac_dup():
                group_concat(nodename order by nodename),
                mac
               from (
-               select nodename,mac from node_ip
+               select node_ip.nodename,mac from node_ip
+               join nodes on nodes.nodename=node_ip.nodename
                where
+                intf not like "%:%" and
                 mac!="00:00:00:00:00:00" and
-                updated > date_sub(now(), interval 1 day)
+                node_ip.updated > date_sub(now(), interval 1 day)
                group by mac, nodename
               ) t
               group by mac) v
@@ -938,6 +940,7 @@ def cron_mac_dup():
                dash_type = "mac duplicate" and
                dash_updated < "%(now)s" """%dict(now=str(now))
     db.executesql(sql)
+    db.commit()
 
 def cron_feed_monitor():
     e = db(db.feed_queue.id>0).select(limitby=(0,1)).first()
