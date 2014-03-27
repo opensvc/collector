@@ -1974,6 +1974,19 @@ def add_default_team_responsible(ruleset_name):
         group_id = db(q).select(cacheable=True)[0].id
     db.comp_ruleset_team_responsible.insert(ruleset_id=ruleset_id, group_id=group_id)
 
+def add_default_team_responsible_to_modset(modset_name):
+    q = db.comp_moduleset.modset_name == modset_name
+    modset_id = db(q).select(cacheable=True)[0].id
+    q = db.auth_membership.user_id == auth.user_id
+    q &= db.auth_membership.group_id == db.auth_group.id
+    q &= db.auth_group.role.like('user_%')
+    try:
+        group_id = db(q).select(cacheable=True)[0].auth_group.id
+    except:
+        q = db.auth_group.role == 'Manager'
+        group_id = db(q).select(cacheable=True)[0].id
+    db.comp_moduleset_team_responsible.insert(modset_id=modset_id, group_id=group_id)
+
 def teams_responsible_filter():
     if 'Manager' in user_groups():
         q = db.v_comp_rulesets.ruleset_id > 0
@@ -8941,6 +8954,76 @@ def json_form_submit(form_name, form_data):
 
     return str(log)
 
+def json_tree_modulesets():
+    modsets = {
+     'data': 'modulesets',
+     'attr': {"id": "moduleset_head", "rel": "moduleset_head"},
+     'children': [],
+    }
+
+    q = db.comp_moduleset.id > 0
+    q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
+    q &= db.comp_moduleset_team_responsible.group_id == db.auth_group.id
+    j = db.comp_moduleset.id == db.comp_moduleset_modules.modset_id
+    l = db.comp_moduleset_modules.on(j)
+    if 'Manager' not in user_groups():
+        q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+    if request.vars.obj_filter is not None and len(request.vars.obj_filter) > 0:
+        q &= db.comp_moduleset.modset_name.like(request.vars.obj_filter)
+    rows = db(q).select(db.comp_moduleset.id,
+                        db.comp_moduleset.modset_name,
+                        db.comp_moduleset_modules.id,
+                        db.comp_moduleset_modules.modset_mod_name,
+                        db.auth_group.id,
+                        db.auth_group.role,
+                        left=l,
+                        orderby=(db.comp_moduleset.modset_name|db.comp_moduleset_modules.modset_mod_name),
+                        groupby=(db.comp_moduleset.id|db.comp_moduleset_modules.id|db.auth_group.id)
+           )
+
+    h = {}
+    modset_done = []
+    _data = None
+    for row in rows:
+        if row.comp_moduleset.id not in modset_done:
+            if _data is not None:
+                _data['children'] += groups
+                _data['children'] += mods
+                modsets['children'].append(_data)
+            _data = {
+              "attr": {"id": "modset%d"%row.comp_moduleset.id, "rel": "modset", "obj_id": row.comp_moduleset.id},
+              "data": row.comp_moduleset.modset_name,
+              "children": []
+            }
+            groups_done = []
+            groups = []
+            mods_done = []
+            mods = []
+            modset_done.append(row.comp_moduleset.id)
+
+        if row.comp_moduleset_modules.id is not None and row.comp_moduleset_modules.id not in mods_done:
+            __data = {
+              "attr": {"id": "mod%d"%row.comp_moduleset_modules.id, "rel": "module", "obj_id": row.comp_moduleset_modules.id},
+              "data": row.comp_moduleset_modules.modset_mod_name,
+            }
+            mods.append(__data)
+            mods_done.append(row.comp_moduleset_modules.id)
+
+        if row.auth_group.id is not None and row.auth_group.id not in groups_done:
+            __data = {
+              "attr": {"id": "grp%d"%row.auth_group.id, "rel": "group", "obj_id": row.auth_group.id},
+              "data": row.auth_group.role,
+            }
+            groups.append(__data)
+            groups_done.append(row.auth_group.id)
+
+    if _data is not None:
+        _data['children'] += groups
+        _data['children'] += mods
+        modsets['children'].append(_data)
+
+    return modsets
+
 def json_tree_groups():
     groups = {
      'data': 'groups',
@@ -9153,6 +9236,7 @@ def json_tree():
       json_tree_groups(),
       json_tree_filters(),
       json_tree_filtersets(),
+      json_tree_modulesets(),
       json_tree_rulesets(),
     ]
     return data
@@ -9181,6 +9265,16 @@ def comp_admin():
     jstree_data = {
      "types": {
       "types": {
+       "module": {
+        "icon": {
+         "image": "%(static)s/action16.png",
+        },
+       },
+       "modset": {
+        "icon": {
+         "image": "%(static)s/action16.png",
+        },
+       },
        "group": {
         "icon": {
          "image": "%(static)s/guys16.png",
@@ -9265,6 +9359,34 @@ def comp_admin():
            "icon": false,
            //"submenu": {},
            "action": function(obj){this.rename(obj)}
+         }
+       }
+       if (node.attr("rel")=="modset") {
+         h["create"] = {
+           "label": "Add module",
+           "separator_before": false,
+           "separator_after": false,
+           "icon": false,
+           "action": function(obj){this.create(obj, "first", {"attr": {"rel": "module"}})}
+         }
+         h["clone"] = {
+           "label": "Clone",
+           "action": function(obj){
+             $.ajax({
+               async: false,
+               type: "POST",
+               url: "%(url_action)s",
+               data: {
+                "operation": "clone",
+                "obj_id": obj.attr("obj_id"),
+                "obj_type": obj.attr("rel"),
+               },
+               success: function(msg){
+                 $("[name=catree]:visible").jstree("refresh");
+                   json_status(msg)
+               }
+             });
+           }
          }
        }
        if (node.attr("rel")=="ruleset") {
@@ -9433,7 +9555,7 @@ def comp_admin():
        } else if (node.attr("rel")=="group") {
          h["remove"]["_disabled"] = true
          h["rename"]["_disabled"] = true
-         if (node.parents("li").attr("rel") == "ruleset") {
+         if (node.parents("li").attr("rel") == "ruleset" || node.parents("li").attr("rel") == "modset") {
            h["detach_group"] = {
              "label": "Detach group",
              "action": function(obj){
@@ -9443,6 +9565,7 @@ def comp_admin():
                  url: "%(url_action)s",
                  data: {
                   "operation": "detach_group",
+                  "parent_obj_type": obj.parents("li").attr("rel"),
                   "obj_id": obj.attr("obj_id"),
                   "parent_obj_id": obj.parents("li").attr("obj_id")
                  },
@@ -9494,6 +9617,14 @@ def comp_admin():
              }
            }
          }
+       } else if (node.attr("rel")=="moduleset_head") {
+         h["create"] = {
+           "label": "Add moduleset",
+           "separator_before": false,
+           "separator_after": false,
+           "icon": false,
+           "action": function(obj){this.create(obj, "first", {"attr": {"rel": "modset"}})}
+         }
        } else if (node.attr("rel")=="ruleset_head") {
          h["create"] = {
            "label": "Add ruleset",
@@ -9518,6 +9649,7 @@ def comp_admin():
             if (m.o.attr('rel')=="variable" && m.np.attr('rel')=="ruleset") { return true }
             if (m.o.attr('rel')=="filter" && m.np.attr('rel')=="filterset") { return true }
             if (m.o.attr('rel')=="group" && m.np.attr('rel')=="ruleset") { return true }
+            if (m.o.attr('rel')=="group" && m.np.attr('rel')=="modset") { return true }
             return false
          }
        }
@@ -9610,6 +9742,10 @@ def comp_admin():
         new_rel = ""
         if (data.rslt.parent.attr("rel") == "ruleset") {
           new_rel = "variable"
+        } else if (data.rslt.parent.attr("rel") == "modset") {
+          new_rel = "module"
+        } else if (data.rslt.parent.attr("rel") == "moduleset_head") {
+          new_rel = "modset"
         } else if (data.rslt.parent.attr("rel") == "ruleset_head") {
           new_rel = "ruleset"
         }
@@ -9755,6 +9891,10 @@ def json_tree_action():
            request.vars.dst_type == "ruleset":
             return json_tree_action_move_group_to_rset(request.vars.obj_id,
                                                        request.vars.dst_id)
+        if request.vars.obj_type == "group" and \
+           request.vars.dst_type == "modset":
+            return json_tree_action_move_group_to_modset(request.vars.obj_id,
+                                                         request.vars.dst_id)
     elif action == "copy":
         if request.vars.obj_type == "variable" and \
            request.vars.dst_type == "ruleset":
@@ -9773,6 +9913,10 @@ def json_tree_action():
            request.vars.dst_type == "ruleset":
             return json_tree_action_move_group_to_rset(request.vars.obj_id,
                                                        request.vars.dst_id)
+        if request.vars.obj_type == "group" and \
+           request.vars.dst_type == "moduleset":
+            return json_tree_action_move_group_to_modset(request.vars.obj_id,
+                                                         request.vars.dst_id)
     elif action == "set_var_class":
         return json_tree_action_set_var_class(request.vars.obj_id,
                                               request.vars.var_class)
@@ -9787,7 +9931,8 @@ def json_tree_action():
                                                request.vars.parent_obj_id)
     elif action == "detach_group":
         return json_tree_action_detach_group(request.vars.obj_id,
-                                             request.vars.parent_obj_id)
+                                             request.vars.parent_obj_id,
+                                             request.vars.parent_obj_type)
     elif action == "detach_filterset":
         return json_tree_action_detach_filterset(request.vars.obj_id)
     else:
@@ -9796,6 +9941,8 @@ def json_tree_action():
 def json_tree_action_clone():
     if request.vars.obj_type == "ruleset":
         return json_tree_action_clone_ruleset(request.vars.obj_id)
+    elif request.vars.obj_type == "modset":
+        return json_tree_action_clone_moduleset(request.vars.obj_id)
     return ""
 
 def json_tree_action_delete():
@@ -9803,6 +9950,10 @@ def json_tree_action_delete():
         return json_tree_action_delete_variable(request.vars.obj_id)
     elif request.vars.obj_type == "ruleset":
         return json_tree_action_delete_ruleset(request.vars.obj_id)
+    elif request.vars.obj_type == "module":
+        return json_tree_action_delete_module(request.vars.obj_id)
+    elif request.vars.obj_type == "modset":
+        return json_tree_action_delete_moduleset(request.vars.obj_id)
     return ""
 
 def json_tree_action_create():
@@ -9810,6 +9961,10 @@ def json_tree_action_create():
         return json_tree_action_create_variable(request.vars.parent_obj_id, request.vars.obj_name)
     elif request.vars.obj_type == "ruleset":
         return json_tree_action_create_ruleset(request.vars.obj_name)
+    elif request.vars.obj_type == "module":
+        return json_tree_action_create_module(request.vars.parent_obj_id, request.vars.obj_name)
+    elif request.vars.obj_type == "modset":
+        return json_tree_action_create_moduleset(request.vars.obj_name)
     return ""
 
 def json_tree_action_show():
@@ -9822,9 +9977,32 @@ def json_tree_action_show():
 def json_tree_action_rename():
     if request.vars.obj_type == "ruleset":
         return json_tree_action_rename_ruleset(request.vars.obj_id, request.vars.new_name)
-    if request.vars.obj_type == "variable":
+    elif request.vars.obj_type == "variable":
         return json_tree_action_rename_variable(request.vars.obj_id, request.vars.new_name)
+    elif request.vars.obj_type == "module":
+        return json_tree_action_rename_module(request.vars.obj_id, request.vars.new_name)
+    elif request.vars.obj_type == "modset":
+        return json_tree_action_rename_modset(request.vars.obj_id, request.vars.new_name)
     return "-1"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_rename_modset(modset_id, new):
+    if len(db(db.comp_moduleset.modset_name==new).select(cacheable=True)) > 0:
+        return {"err": "rename moduleset failed: new moduleset name already exists"}
+    q = db.comp_moduleset.id == modset_id
+    q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
+    if 'Manager' not in user_groups():
+        q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q).select(db.comp_moduleset.modset_name,
+                        groupby=db.comp_moduleset.id, cacheable=True)
+    if len(rows) == 0:
+        return json.dumps({"err": "rename moduleset failed: can't find source moduleset"})
+    old = rows[0].modset_name
+    n = db(db.comp_moduleset.id == modset_id).update(modset_name=new)
+    _log('compliance.moduleset.rename',
+         'renamed moduleset %(old)s as %(new)s',
+         dict(old=old, new=new))
+    return "0"
 
 @auth.requires_membership('CompManager')
 def json_tree_action_rename_ruleset(rset_id, new):
@@ -9842,6 +10020,27 @@ def json_tree_action_rename_ruleset(rset_id, new):
     _log('compliance.ruleset.rename',
          'renamed ruleset %(old)s as %(new)s',
          dict(old=old, new=new))
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_rename_module(mod_id, new):
+    q = db.comp_moduleset_modules.id == mod_id
+    q &= db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
+    q &= db.comp_moduleset_modules.modset_id == db.comp_moduleset_team_responsible.modset_id
+    if 'Manager' not in user_groups():
+        q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q).select(db.comp_moduleset.modset_name,
+                        db.comp_moduleset_modules.modset_mod_name,
+                        groupby=db.comp_moduleset_modules.id,
+                        cacheable=True)
+    if len(rows) == 0:
+        return {"err": "rename module failed: can't find variable"}
+    modset_name = rows[0].comp_moduleset.modset_name
+    old = rows[0].comp_moduleset_modules.modset_mod_name
+    n = db(db.comp_moduleset_modules.id == mod_id).update(modset_mod_name=new)
+    _log('compliance.moduleset.module.rename',
+         'renamed module %(old)s as %(new)s in moduleset %(modset_name)s',
+         dict(old=old, new=new, modset_name=modset_name))
     return "0"
 
 @auth.requires_membership('CompManager')
@@ -9941,6 +10140,30 @@ def json_tree_action_show_variable(var_id):
     return DIV(l)
 
 @auth.requires_membership('CompManager')
+def json_tree_action_create_moduleset(modset_name):
+    q = db.comp_moduleset.modset_name == modset_name
+    rows = db(q).select(cacheable=True)
+    v = rows.first()
+    if v is not None:
+        return {"err": "a moduleset named '%(modset_name)s' already exists"%dict(modset_name=modset_name)}
+
+    modset_name = modset_name.strip()
+    try:
+        modset_name = modset_name[4:]
+    except:
+        pass
+    db.comp_moduleset.insert(
+      modset_name=modset_name,
+      modset_author=user_name(),
+      modset_updated=datetime.datetime.now(),
+    )
+    add_default_team_responsible_to_modset(modset_name)
+    _log('compliance.moduleset.add',
+         'added moduleset %(modset_name)s',
+         dict(modset_name=modset_name))
+    return "0"
+
+@auth.requires_membership('CompManager')
 def json_tree_action_create_ruleset(rset_name):
     q = db.comp_rulesets.ruleset_name == rset_name
     rows = db(q).select(cacheable=True)
@@ -9962,6 +10185,34 @@ def json_tree_action_create_ruleset(rset_name):
          'added ruleset %(rset_name)s',
          dict(rset_name=rset_name))
     comp_rulesets_chains()
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_create_module(modset_id, modset_mod_name):
+    q = db.comp_moduleset.id == modset_id
+    q1 = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "moduleset does not exist or not owned by you"}
+
+    modset_mod_name = modset_mod_name.strip()
+    try:
+        modset_mod_name = modset_mod_name[4:]
+    except:
+        pass
+    db.comp_moduleset_modules.insert(
+      modset_id=modset_id,
+      modset_mod_name=modset_mod_name,
+      modset_mod_author=user_name(),
+      modset_mod_updated=datetime.datetime.now(),
+    )
+    _log('compliance.moduleset.module.add',
+         'added module %(modset_mod_name)s in moduleset %(modset_name)s',
+         dict(modset_mod_name=modset_mod_name,
+              modset_name=v.comp_moduleset.modset_name))
     return "0"
 
 @auth.requires_membership('CompManager')
@@ -9992,6 +10243,20 @@ def json_tree_action_create_variable(rset_id, var_name):
          'added variable %(var_name)s in ruleset %(rset_name)s',
          dict(var_name=var_name,
               rset_name=v.comp_rulesets.ruleset_name))
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_delete_module(mod_id):
+    q = db.comp_moduleset_modules.id == mod_id
+    q1 = db.comp_moduleset.id == db.comp_moduleset_modules.modset_id
+    v = db(q & q1).select(cacheable=True).first()
+    if v is None:
+        return "0"
+    db(q).delete()
+    _log('compliance.moduleset.module.delete',
+         'deleted module %(modset_mod_name)s from moduleset %(modset_name)s',
+         dict(modset_mod_name=v.comp_moduleset_modules.modset_mod_name,
+              modset_name=v.comp_moduleset.modset_name))
     return "0"
 
 @auth.requires_membership('CompManager')
@@ -10232,7 +10497,42 @@ def json_tree_action_copy_or_move_rset_to_rset(rset_id, parent_rset_id, dst_rset
     return "0"
 
 @auth.requires_membership('CompManager')
-def json_tree_action_detach_group(group_id, rset_id):
+def json_tree_action_detach_group(group_id, obj_id, parent_obj_type):
+    if parent_obj_type == "ruleset":
+        return json_tree_action_detach_group_from_rset(group_id, obj_id)
+    elif parent_obj_type == "modset":
+        return json_tree_action_detach_group_from_modset(group_id, obj_id)
+    else:
+        return {"err": "detach group not supported for this parent object type"}
+
+@auth.requires_membership('CompManager')
+def json_tree_action_detach_group_from_modset(group_id, modset_id):
+    q = db.comp_moduleset.id == modset_id
+    q1 = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "moduleset not found or not owned by you"}
+
+    q = db.auth_group.id == group_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        return {"err": "group not found"}
+
+    q = db.comp_moduleset_team_responsible.modset_id == modset_id
+    q &= db.comp_moduleset_team_responsible.group_id == group_id
+    db(q).delete()
+    _log('compliance.moduleset.detach',
+         'detach group %(role)s from moduleset %(modset_name)s',
+         dict(modset_name=v.comp_moduleset.modset_name,
+              role=w.role))
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_detach_group_from_rset(group_id, rset_id):
     q = db.comp_rulesets.id == rset_id
     q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
     if 'Manager' not in user_groups():
@@ -10345,6 +10645,40 @@ def json_tree_action_detach_filterset(rset_id):
     return 0
 
 @auth.requires_membership('CompManager')
+def json_tree_action_move_group_to_modset(group_id, modset_id):
+    ug = user_groups()
+    q = db.comp_moduleset.id == modset_id
+    q1 = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
+    if 'Manager' not in ug:
+        q1 &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "moduleset not found or not owned by you"}
+
+    q = db.auth_group.id == group_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        return {"err": "group not found"}
+
+    if 'Manager' not in ug and int(group_id) not in user_group_ids():
+        return {"err": "you can't attach a group you are not a member of"}
+
+    q = db.comp_moduleset_team_responsible.modset_id == modset_id
+    q &= db.comp_moduleset_team_responsible.group_id == group_id
+    if db(q).count() > 0:
+        return "0"
+
+    db.comp_moduleset_team_responsible.update_or_insert(modset_id=modset_id,
+                                                        group_id=group_id)
+    _log('compliance.moduleset.change',
+         'attach group %(role)s to moduleset %(modset_name)s',
+         dict(modset_name=v.comp_moduleset.modset_name,
+              role=w.role))
+    return "0"
+
+@auth.requires_membership('CompManager')
 def json_tree_action_move_group_to_rset(group_id, rset_id):
     ug = user_groups()
     q = db.comp_rulesets.id == rset_id
@@ -10376,6 +10710,41 @@ def json_tree_action_move_group_to_rset(group_id, rset_id):
          'attach group %(role)s to ruleset %(rset_name)s',
          dict(rset_name=v.comp_rulesets.ruleset_name,
               role=w.role))
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_clone_moduleset(modset_id):
+    q = db.comp_moduleset.id == modset_id
+    rows = db(q).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "source moduleset not found"}
+
+    modset_name = v.modset_name
+    clone_modset_name = modset_name+"_clone"
+    q = db.comp_moduleset.modset_name == clone_modset_name
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is not None:
+        return {"err": "a moduleset named %s already exists" % clone_modset_name}
+
+    newid = db.comp_moduleset.insert(modset_name=clone_modset_name,
+                                     modset_author=user_name(),
+                                     modset_updated=datetime.datetime.now())
+
+    # clone moduleset modules
+    q = db.comp_moduleset_modules.modset_id == modset_id
+    rows = db(q).select(cacheable=True)
+    for row in rows:
+        db.comp_moduleset_modules.insert(modset_id=newid,
+                                         modset_mod_name=row.modset_mod_name,
+                                         modset_mod_author=row.modset_mod_author,
+                                         modset_mod_updated=datetime.datetime.now())
+    add_default_team_responsible_to_modset(clone_modset_name)
+
+    _log('compliance.moduleset.clone',
+         'cloned moduleset %(o)s from %(n)s',
+         dict(n=modset_name, o=clone_modset_name))
     return "0"
 
 @auth.requires_membership('CompManager')
@@ -10472,6 +10841,37 @@ def json_tree_action_delete_ruleset(rset_id):
     _log('compliance.ruleset.delete',
          'deleted ruleset %(rset_name)s',
          dict(rset_name=v.comp_rulesets.ruleset_name))
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_delete_moduleset(modset_id):
+    q = db.comp_moduleset.id == modset_id
+    q1 = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "moduleset not found or not owned by you"}
+
+    q = db.comp_node_moduleset.modset_id == modset_id
+    db(q).delete()
+
+    q = db.comp_modulesets_services.modset_id == modset_id
+    db(q).delete()
+
+    q = db.comp_moduleset_team_responsible.modset_id == modset_id
+    db(q).delete()
+
+    q = db.comp_moduleset_modules.modset_id == modset_id
+    db(q).delete()
+
+    q = db.comp_moduleset.id == modset_id
+    db(q).delete()
+
+    _log('compliance.moduleset.delete',
+         'deleted moduleset %(modset_name)s',
+         dict(modset_name=v.comp_moduleset.modset_name))
     return "0"
 
 
