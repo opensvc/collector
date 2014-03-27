@@ -8,7 +8,7 @@ class Hp3par(object):
             return
         self.dir = dir
         self.name = os.path.basename(dir)
-        self.keys = ["showvv", "showcpg", "showsys", "shownode", "showport"]
+        self.keys = ["showvv", "showcpg", "showsys", "shownode", "showport", "showversion"]
         for key in self.keys:
             setattr(self, key, self.readfile(key))
         self.ports = []
@@ -25,7 +25,7 @@ class Hp3par(object):
         s = "name: %s\n" % self.name
         s += "modelnumber: %s\n" % self.showsys[0]['Serial']
         s += "controllermainmemory: %d\n" % 0
-        s += "firmwareversion: %s\n" % ""
+        s += "firmwareversion: %s\n" % self.showversion['Version']
         s += "ports: %s\n"%','.join(self.ports)
         for cpg in self.showcpg:
             s += "dg %s\n"%(cpg['Name'])
