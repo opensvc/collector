@@ -605,6 +605,23 @@ class col_dash_links(HtmlTableColumn):
            )
        return i
 
+    def link_mac_duplicate(self, o):
+       s = self.t.colprops['dash_dict'].get(o)
+       try:
+           data = json.loads(s)
+       except:
+           return SPAN()
+       mac = data['mac']
+       i = A(
+            '',
+             _href=URL(r=request,c='nodenetworks',f='nodenetworks',
+                    vars={'nodenetworks_f_mac': mac,
+                          'clear_filters': 'true'}),
+             _title=T("Node networks"),
+             _class='net16 clickable',
+           )
+       return i
+
     def html(self, o):
        l = []
        dash_type = self.t.colprops['dash_type'].get(o)
@@ -637,6 +654,8 @@ class col_dash_links(HtmlTableColumn):
            l.append(self.link_pkgdiff_tab(o))
        elif dash_type == 'feed queue':
            l.append(self.link_feed_queue(o))
+       elif dash_type == 'mac duplicate':
+           l.append(self.link_mac_duplicate(o))
 
        return DIV(l)
 

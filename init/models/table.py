@@ -1400,7 +1400,15 @@ class HtmlTable(object):
 $("input").each(function(){
  attr = $(this).attr('id')
  if ( typeof(attr) == 'undefined' || attr == false ) {return}
- if ( ! $(this).attr('id').match(/nodename/gi) && ! $(this).attr('id').match(/svcname/gi) ) {return}
+ if ( ! $(this).attr('id').match(/nodename/gi) && \
+      ! $(this).attr('id').match(/svcname/gi) && \
+      ! $(this).attr('id').match(/assetname/gi) && \
+      ! $(this).attr('id').match(/mon_nodname/gi) && \
+      ! $(this).attr('id').match(/disk_nodename/gi) && \
+      ! $(this).attr('id').match(/disk_svcname/gi) && \
+      ! $(this).attr('id').match(/save_nodename/gi) && \
+      ! $(this).attr('id').match(/save_svcname/gi)
+    ) {return}
  $(this).bind("change keyup input", function(){
   if (this.value.match(/ /g)) {
     if (this.value.match(/^\(/)) {return}

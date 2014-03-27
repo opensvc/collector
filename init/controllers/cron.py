@@ -854,6 +854,7 @@ def cron_alerts_daily():
     cron_resmon_purge()
     cron_purge_node_hba()
     cron_purge_packages()
+    cron_mac_dup()
 
 def cron_alerts_hourly():
     rets = []
@@ -863,6 +864,81 @@ def cron_alerts_hourly():
 def cron_resmon_purge():
     sql = """delete from resmon where
               updated < date_sub(now(), interval 1 day)"""
+    db.executesql(sql)
+    db.commit()
+
+def cron_mac_dup():
+    sql = """select * from (
+              select
+               count(mac) as n,
+               group_concat(nodename order by nodename),
+               mac
+              from (
+               select node_ip.nodename,mac from node_ip
+               join nodes on nodes.nodename=node_ip.nodename
+               where
+                intf not like "%:%" and
+                mac!="00:00:00:00:00:00" and
+                node_ip.updated > date_sub(now(), interval 1 day)
+               group by mac, nodename
+              ) t
+              group by mac) v
+              where n>1"""
+
+    rows = db.executesql(sql)
+
+    if len(rows) == 0:
+        # clean all
+        sql = """delete from dashboard
+                 where
+                   dash_type = "mac duplicate"
+              """
+        db.executesql(sql)
+        db.commit()
+        return
+
+    now = datetime.datetime.now()
+    now = now - datetime.timedelta(microseconds=now.microsecond)
+    for row in rows:
+        for node in row[1].split(','):
+            q = db.nodes.nodename == node
+            node_entry = db(q).select(db.nodes.host_mode).first()
+            if node_entry is None:
+                return
+            environment = node_entry.host_mode
+            severity = 3
+            if environment == "PRD":
+                severity += 1
+            sql = """insert into dashboard
+                     set
+                       dash_type="mac duplicate",
+                       dash_severity=%(severity)d,
+                       dash_nodename="%(node)s",
+                       dash_svcname="",
+                       dash_fmt="mac %%(mac)s reported by nodes %%(nodes)s",
+                       dash_dict='{"mac": "%(mac)s", "nodes": "%(nodes)s"}',
+                       dash_created="%(now)s",
+                       dash_env="%(environment)s",
+                       dash_updated="%(now)s"
+                     on duplicate key update
+                       dash_fmt="mac %%(mac)s reported by nodes %%(nodes)s",
+                       dash_dict='{"mac": "%(mac)s", "nodes": "%(nodes)s"}',
+                       dash_env="%(environment)s",
+                       dash_updated="%(now)s"
+                  """%dict(severity=severity,
+                           environment=environment,
+                           node=node,
+                           nodes=row[1],
+                           mac=row[2],
+                           now=str(now))
+            db.executesql(sql)
+    db.commit()
+
+    # clean old
+    sql = """delete from dashboard
+             where
+               dash_type = "mac duplicate" and
+               dash_updated < "%(now)s" """%dict(now=str(now))
     db.executesql(sql)
     db.commit()
 
