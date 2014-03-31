@@ -4108,3 +4108,19 @@ alter table comp_log reorganize partition pNew into (
  partition pNew VALUES LESS THAN MAXVALUE
 );
 
+alter table SVCactions reorganize partition pNew into (
+ partition p201401 VALUES LESS THAN (TO_DAYS('2014-01-01')),
+ partition p201402 VALUES LESS THAN (TO_DAYS('2014-02-01')),
+ partition p201403 VALUES LESS THAN (TO_DAYS('2014-03-01')),
+ partition p201404 VALUES LESS THAN (TO_DAYS('2014-04-01')),
+ partition p201405 VALUES LESS THAN (TO_DAYS('2014-05-01')),
+ partition p201406 VALUES LESS THAN (TO_DAYS('2014-06-01')),
+ partition p201407 VALUES LESS THAN (TO_DAYS('2014-07-01')),
+ partition p201408 VALUES LESS THAN (TO_DAYS('2014-08-01')),
+ partition p201409 VALUES LESS THAN (TO_DAYS('2014-09-01')),
+ partition p201410 VALUES LESS THAN (TO_DAYS('2014-10-01')),
+ partition p201411 VALUES LESS THAN (TO_DAYS('2014-11-01')),
+ partition p201412 VALUES LESS THAN (TO_DAYS('2014-12-01')),
+ partition pNew VALUES LESS THAN MAXVALUE
+);
+
