@@ -1826,10 +1826,14 @@ def insert_hp3par(name=None, nodename=None):
             # stor_array
             vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
             vals = []
+            mem = 0
+            for d in s.shownode:
+                mem += int(d['Data_Mem'])
+                mem += int(d['Control_Mem'])
             vals.append([s.name,
-                         "",
-                         "",
-                         "",
+                         s.showsys[0]['Model'],
+                         str(mem),
+                         s.showversion['Version'],
                          now])
             generic_insert('stor_array', vars, vals)
 
@@ -1839,13 +1843,12 @@ def insert_hp3par(name=None, nodename=None):
             # stor_array_dg
             vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
             vals = []
-            for dg in s.cpgs["members"]:
-                sdu = dg["SDUsage"]
+            for d in s.showcpg:
                 vals.append([array_id,
-                             dg['name'],
-                             str(sdu["totalMiB"]-sdu["usedMiB"]),
-                             str(sdu["usedMiB"]),
-                             str(sdu["totalMiB"]),
+                             d['Name'],
+                             "",
+                             "",
+                             "",
                              now])
             generic_insert('stor_array_dg', vars, vals)
             sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
@@ -1855,7 +1858,7 @@ def insert_hp3par(name=None, nodename=None):
             vars = ['array_id', 'array_tgtid']
             vals = []
             for wwn in s.ports:
-                vals.append([array_id, wwn])
+                vals.append([array_id, wwn.lower()])
             generic_insert('stor_array_tgtid', vars, vals)
 
             # diskinfo
@@ -1869,24 +1872,16 @@ def insert_hp3par(name=None, nodename=None):
                     'disk_group',
                     'disk_updated']
             vals = []
-            for d in s.volumes["members"]:
+            for d in s.showvv:
                 t = ""
-                for cpg in s.cpgs["members"]:
-                    if cpg["name"] != d['userCPG']:
-                        continue
-                    try:
-                        t = cpg["SDGrowth"]["LDLayout"]["RAIDType"]
-                    except KeyError:
-                        t = 0
-                    t = raid_type[t]
-                vals.append([d['wwn'].lower(),
+                vals.append([d['VV_WWN'].lower(),
                              s.name,
-                             d['name'],
-                             d['uuid'],
-                             str(d['sizeMiB']),
-                             str(d['userSpace']['usedMiB']),
+                             d['Name'],
+                             "",
+                             d['VSize_MB'],
+                             d['Tot_Rsvd_MB'],
                              t,
-                             d['userCPG'],
+                             d['UsrCPG'],
                              now])
             generic_insert('diskinfo', vars, vals)
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))

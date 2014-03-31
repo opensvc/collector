@@ -1,4 +1,4 @@
-#!/usr/bin/python2.6
+#!/opt/opensvc/bin/python
 
 import os
 import sys
@@ -241,7 +241,7 @@ Content-Type: text/html; charset=UTF-8
         try:
             smtpObj = smtplib.SMTP(config.email_host)
             smtpObj.sendmail(config.email_from, receivers, message)
-        except smtplib.SMTPException:
+        except:
             raise SendError()
 
 def get_im_queued_node(q):

@@ -52,7 +52,7 @@ def envfile(svcname):
 
     envfile = envfile.replace('\\n', '\n')
     envfile = re.sub(r'([@\w]+)\s*\=\s*', r'<span class=syntax_green>\1</span> = ', envfile)
-    envfile = re.sub(r'(\[[#\w]+\])', r'<br><span class=syntax_red>\1</span>', envfile)
+    envfile = re.sub(r'(\[[#:\w]+\])', r'<br><span class=syntax_red>\1</span>', envfile)
     envfile = re.sub(r'(@\w+)', r'<span class=syntax_blue>\1</span>', envfile)
     envfile = re.sub(r'\n', r'<br>', envfile)
 
