@@ -1592,7 +1592,10 @@ def _get_node_generic(nodename, col):
 
 @service.json
 def json_node_sec_zone(nodename):
-    return _get_node_generic(nodename, "sec_zone")
+    val = _get_node_generic(nodename, "sec_zone")
+    if val is None:
+        val = ""
+    return val
 
 @service.json
 def json_node_environnement(nodename):
