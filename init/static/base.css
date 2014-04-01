@@ -1126,6 +1126,11 @@ ul.login_menu ul {
     padding: 0 0 0 20px;
     min-height: 16px;
 }
+.fw16 {
+    background: transparent url('fw16.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
 .del16 {
     background: transparent url('del16.png') no-repeat;
     padding: 0 0 0 20px;

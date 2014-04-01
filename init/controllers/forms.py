@@ -1591,6 +1591,10 @@ def _get_node_generic(nodename, col):
     return T("node not found")
 
 @service.json
+def json_node_sec_zone(nodename):
+    return _get_node_generic(nodename, "sec_zone")
+
+@service.json
 def json_node_environnement(nodename):
     return _get_node_generic(nodename, "environnement")
 

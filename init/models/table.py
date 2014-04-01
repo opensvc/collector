@@ -2479,6 +2479,7 @@ v_nodes_cols = [
     'loc_floor',
     'loc_room',
     'loc_rack',
+    'sec_zone',
     'os_name',
     'os_release',
     'os_vendor',
@@ -3065,6 +3066,13 @@ v_nodes_colprops = {
              field='cpu_cores',
              display = False,
              img = 'cpu16',
+             table = 'v_nodes',
+            ),
+    'sec_zone': HtmlTableColumn(
+             title = 'Security zone',
+             field='sec_zone',
+             display = False,
+             img = 'fw16',
              table = 'v_nodes',
             ),
     'cpu_threads': HtmlTableColumn(
