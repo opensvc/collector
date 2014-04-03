@@ -9211,8 +9211,12 @@ def json_tree_rulesets():
              "data": v.auth_group.role,
             }
             groups.append(vdata)
+        if rset.ruleset_public == True:
+            rel = "ruleset"
+        else:
+            rel = "ruleset_hidden"
         _data = {
-          "attr": {"id": "_".join(parent_ids), "rel": "ruleset", "obj_id": rset.id, "rset_type": rset.ruleset_type, "class": "jstree-draggable,jstree-drop"},
+          "attr": {"id": "_".join(parent_ids), "rel": rel, "obj_id": rset.id, "rset_type": rset.ruleset_type, "class": "jstree-draggable,jstree-drop"},
           "data": rset.ruleset_name,
           "children": groups+fsets+variables+child_rsets,
         }
@@ -9293,6 +9297,11 @@ def comp_admin():
        "ruleset": {
         "icon": {
          "image": "%(static)s/pkg16.png",
+        },
+       },
+       "ruleset_hidden": {
+        "icon": {
+         "image": "%(static)s/pkglight16.png",
         },
        },
        "variable": {
@@ -9389,7 +9398,7 @@ def comp_admin():
            }
          }
        }
-       if (node.attr("rel")=="ruleset") {
+       if (node.attr("rel").indexOf("ruleset") == 0) {
          h["create"] = {
            "label": "Add variable",
            "separator_before": false,
@@ -9529,7 +9538,7 @@ def comp_admin():
              }
            }
          }
-         if (node.parents("li").attr("rel") == "ruleset") {
+         if (node.parents("li").attr("rel").indexOf("ruleset") == 0) {
            h["remove"]["_disabled"] = true
            h["detach_ruleset"] = {
              "label": "Detach ruleset",
@@ -9555,7 +9564,7 @@ def comp_admin():
        } else if (node.attr("rel")=="group") {
          h["remove"]["_disabled"] = true
          h["rename"]["_disabled"] = true
-         if (node.parents("li").attr("rel") == "ruleset" || node.parents("li").attr("rel") == "modset") {
+         if (node.parents("li").attr("rel").indexOf("ruleset") == 0 || node.parents("li").attr("rel") == "modset") {
            h["detach_group"] = {
              "label": "Detach group",
              "action": function(obj){
@@ -9595,7 +9604,7 @@ def comp_admin():
            "submenu": var_classes,
          }
        } else if (node.attr("rel")=="filterset") {
-         if (node.parents("li").attr("rel") == "ruleset") {
+         if (node.parents("li").attr("rel").indexOf("ruleset") == 0) {
            h["remove"]["_disabled"] = true
            h["rename"]["_disabled"] = true
            h["detach_filterset"] = {
@@ -9642,13 +9651,13 @@ def comp_admin():
      },
      "crrm": {
        "move": {
-         "always_copy": false,
+         "always_copy": true,
          "check_move": function (m) {
-            if (m.o.attr('rel')=="filterset" && m.np.attr('rel')=="ruleset") { return true }
-            if (m.o.attr('rel')=="ruleset" && m.np.attr('rel')=="ruleset") { return true }
-            if (m.o.attr('rel')=="variable" && m.np.attr('rel')=="ruleset") { return true }
+            if (m.o.attr('rel')=="filterset" && m.np.attr('rel').indexOf("ruleset")==0) { return true }
+            if (m.o.attr('rel').indexOf("ruleset")==0 && m.np.attr('rel').indexOf("ruleset")==0) { return true }
+            if (m.o.attr('rel')=="variable" && m.np.attr('rel').indexOf("ruleset")==0) { return true }
             if (m.o.attr('rel')=="filter" && m.np.attr('rel')=="filterset") { return true }
-            if (m.o.attr('rel')=="group" && m.np.attr('rel')=="ruleset") { return true }
+            if (m.o.attr('rel')=="group" && m.np.attr('rel').indexOf("ruleset")==0) { return true }
             if (m.o.attr('rel')=="group" && m.np.attr('rel')=="modset") { return true }
             return false
          }
@@ -9740,7 +9749,7 @@ def comp_admin():
     function __create(e, data) {
       data.rslt.obj.each(function() {
         new_rel = ""
-        if (data.rslt.parent.attr("rel") == "ruleset") {
+        if (data.rslt.parent.attr("rel").indexOf("ruleset") == 0) {
           new_rel = "variable"
         } else if (data.rslt.parent.attr("rel") == "modset") {
           new_rel = "module"
@@ -9875,20 +9884,20 @@ def json_tree_action():
         return json_tree_action_clone()
     elif action == "move":
         if request.vars.obj_type == "variable" and \
-           request.vars.dst_type == "ruleset":
+           request.vars.dst_type.startswith("ruleset"):
             return json_tree_action_move_var_to_rset(request.vars.obj_id,
                                                      request.vars.dst_id)
-        if request.vars.obj_type == "ruleset" and \
-           request.vars.dst_type == "ruleset":
+        if request.vars.obj_type.startswith("ruleset") and \
+           request.vars.dst_type.startswith("ruleset"):
             return json_tree_action_move_rset_to_rset(request.vars.obj_id,
                                                       request.vars.parent_obj_id,
                                                       request.vars.dst_id)
         if request.vars.obj_type == "filterset" and \
-           request.vars.dst_type == "ruleset":
+           request.vars.dst_type.startswith("ruleset"):
             return json_tree_action_move_fset_to_rset(request.vars.obj_id,
                                                       request.vars.dst_id)
         if request.vars.obj_type == "group" and \
-           request.vars.dst_type == "ruleset":
+           request.vars.dst_type.startswith("ruleset"):
             return json_tree_action_move_group_to_rset(request.vars.obj_id,
                                                        request.vars.dst_id)
         if request.vars.obj_type == "group" and \
@@ -9897,20 +9906,20 @@ def json_tree_action():
                                                          request.vars.dst_id)
     elif action == "copy":
         if request.vars.obj_type == "variable" and \
-           request.vars.dst_type == "ruleset":
+           request.vars.dst_type.startswith("ruleset"):
             return json_tree_action_copy_var_to_rset(request.vars.obj_id,
                                                      request.vars.dst_id)
-        if request.vars.obj_type == "ruleset" and \
-           request.vars.dst_type == "ruleset":
+        if request.vars.obj_type.startswith("ruleset") and \
+           request.vars.dst_type.startswith("ruleset"):
             return json_tree_action_copy_rset_to_rset(request.vars.obj_id,
                                                       request.vars.parent_obj_id,
                                                       request.vars.dst_id)
         if request.vars.obj_type == "filterset" and \
-           request.vars.dst_type == "ruleset":
+           request.vars.dst_type.startswith("ruleset"):
             return json_tree_action_move_fset_to_rset(request.vars.obj_id,
                                                       request.vars.dst_id)
         if request.vars.obj_type == "group" and \
-           request.vars.dst_type == "ruleset":
+           request.vars.dst_type.startswith("ruleset"):
             return json_tree_action_move_group_to_rset(request.vars.obj_id,
                                                        request.vars.dst_id)
         if request.vars.obj_type == "group" and \
@@ -9939,7 +9948,7 @@ def json_tree_action():
         return "-1"
 
 def json_tree_action_clone():
-    if request.vars.obj_type == "ruleset":
+    if request.vars.obj_type.startswith("ruleset"):
         return json_tree_action_clone_ruleset(request.vars.obj_id)
     elif request.vars.obj_type == "modset":
         return json_tree_action_clone_moduleset(request.vars.obj_id)
@@ -9948,7 +9957,7 @@ def json_tree_action_clone():
 def json_tree_action_delete():
     if request.vars.obj_type == "variable":
         return json_tree_action_delete_variable(request.vars.obj_id)
-    elif request.vars.obj_type == "ruleset":
+    elif request.vars.obj_type.startswith("ruleset"):
         return json_tree_action_delete_ruleset(request.vars.obj_id)
     elif request.vars.obj_type == "module":
         return json_tree_action_delete_module(request.vars.obj_id)
@@ -9959,7 +9968,7 @@ def json_tree_action_delete():
 def json_tree_action_create():
     if request.vars.obj_type == "variable":
         return json_tree_action_create_variable(request.vars.parent_obj_id, request.vars.obj_name)
-    elif request.vars.obj_type == "ruleset":
+    elif request.vars.obj_type.startswith("ruleset"):
         return json_tree_action_create_ruleset(request.vars.obj_name)
     elif request.vars.obj_type == "module":
         return json_tree_action_create_module(request.vars.parent_obj_id, request.vars.obj_name)
@@ -9968,14 +9977,14 @@ def json_tree_action_create():
     return ""
 
 def json_tree_action_show():
-    if request.vars.obj_type == "ruleset":
+    if request.vars.obj_type.startswith("ruleset"):
         return json_tree_action_show_ruleset(request.vars.obj_id)
     elif request.vars.obj_type == "variable":
         return json_tree_action_show_variable(request.vars.obj_id)
     return ""
 
 def json_tree_action_rename():
-    if request.vars.obj_type == "ruleset":
+    if request.vars.obj_type.startswith("ruleset"):
         return json_tree_action_rename_ruleset(request.vars.obj_id, request.vars.new_name)
     elif request.vars.obj_type == "variable":
         return json_tree_action_rename_variable(request.vars.obj_id, request.vars.new_name)
@@ -10498,7 +10507,7 @@ def json_tree_action_copy_or_move_rset_to_rset(rset_id, parent_rset_id, dst_rset
 
 @auth.requires_membership('CompManager')
 def json_tree_action_detach_group(group_id, obj_id, parent_obj_type):
-    if parent_obj_type == "ruleset":
+    if parent_obj_type.startswith("ruleset"):
         return json_tree_action_detach_group_from_rset(group_id, obj_id)
     elif parent_obj_type == "modset":
         return json_tree_action_detach_group_from_modset(group_id, obj_id)
