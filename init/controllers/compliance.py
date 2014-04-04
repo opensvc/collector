@@ -9211,10 +9211,16 @@ def json_tree_rulesets():
              "data": v.auth_group.role,
             }
             groups.append(vdata)
-        if rset.ruleset_public == True:
-            rel = "ruleset"
+        if rset.ruleset_type == "contextual":
+            if rset.ruleset_public == True:
+                rel = "ruleset_cxt"
+            else:
+                rel = "ruleset_cxt_hidden"
         else:
-            rel = "ruleset_hidden"
+            if rset.ruleset_public == True:
+                rel = "ruleset"
+            else:
+                rel = "ruleset_hidden"
         _data = {
           "attr": {"id": "_".join(parent_ids), "rel": rel, "obj_id": rset.id, "rset_type": rset.ruleset_type, "class": "jstree-draggable,jstree-drop"},
           "data": rset.ruleset_name,
@@ -9302,6 +9308,16 @@ def comp_admin():
        "ruleset_hidden": {
         "icon": {
          "image": "%(static)s/pkglight16.png",
+        },
+       },
+       "ruleset_cxt": {
+        "icon": {
+         "image": "%(static)s/rsetcxt16.png",
+        },
+       },
+       "ruleset_cxt_hidden": {
+        "icon": {
+         "image": "%(static)s/rsetcxtlight16.png",
         },
        },
        "variable": {
