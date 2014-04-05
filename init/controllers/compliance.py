@@ -9663,6 +9663,7 @@ def comp_admin():
            "action": function(obj){this.create(obj, "first", {"attr": {"rel": "ruleset"}})}
          }
        }
+       resizer()
        return h
        }
      },
