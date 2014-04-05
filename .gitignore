@@ -19,3 +19,5 @@ viz*.dot
 /examples/
 /www_opensvc_com
 __init__.py
+*.log
+*.log.*
