@@ -9136,10 +9136,12 @@ def json_tree_rulesets():
     q = db.comp_rulesets_rulesets.id > 0
     rows = db(q).select(orderby=db.comp_rulesets_rulesets.parent_rset_id, cacheable=True)
     rsets_relations = {}
+    encap_rset_ids = set([])
     for row in rows:
         if row.parent_rset_id not in rsets_relations:
             rsets_relations[row.parent_rset_id] = []
         rsets_relations[row.parent_rset_id].append(row.child_rset_id)
+        encap_rset_ids.add(row.child_rset_id)
 
     q = db.comp_rulesets_filtersets.id > 0
     q &= db.comp_rulesets_filtersets.fset_id == db.gen_filtersets.id
@@ -9235,6 +9237,8 @@ def json_tree_rulesets():
 
     for row in rows:
         rset = row.comp_rulesets
+        if rset.id in encap_rset_ids:
+            continue
         _data = recurse_rset(rset, parent_ids=[])
         rulesets['children'].append(_data)
 
