@@ -9837,7 +9837,7 @@ def comp_admin():
                                      .bind("select_node.jstree", __select)
 
    var catimer;
-   $("#casearch").keyup(function(){
+   $("#casearch").keyup(function(event){
      if (is_enter(event)) {
        $("#catree:visible").jstree("refresh");
        $("#catree2:visible").jstree("refresh");
