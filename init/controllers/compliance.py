@@ -1974,6 +1974,19 @@ def add_default_team_responsible(ruleset_name):
         group_id = db(q).select(cacheable=True)[0].id
     db.comp_ruleset_team_responsible.insert(ruleset_id=ruleset_id, group_id=group_id)
 
+def add_default_team_responsible_to_filterset(name):
+    q = db.gen_filtersets.fset_name == name
+    fset_id = db(q).select(cacheable=True)[0].id
+    q = db.auth_membership.user_id == auth.user_id
+    q &= db.auth_membership.group_id == db.auth_group.id
+    q &= db.auth_group.role.like('user_%')
+    try:
+        group_id = db(q).select(cacheable=True)[0].auth_group.id
+    except:
+        q = db.auth_group.role == 'Manager'
+        group_id = db(q).select(cacheable=True)[0].id
+    db.gen_filterset_team_responsible.insert(fset_id=fset_id, group_id=group_id)
+
 def add_default_team_responsible_to_modset(modset_name):
     q = db.comp_moduleset.modset_name == modset_name
     modset_id = db(q).select(cacheable=True)[0].id
@@ -9080,6 +9093,8 @@ def json_tree_filters():
 def json_tree_filtersets():
     def recurse_json_tree_filtersets(data, parent_ids=[]):
         l = []
+        if data is None:
+            return l
         for o in data:
             if o['type'] == 'filter':
                 row = o['data'].gen_filters
@@ -9106,6 +9121,7 @@ def json_tree_filtersets():
 
     filtersets = {
      'data': 'filtersets',
+     'attr': {"id": "fset_head", "rel": "filterset_head"},
      'children': [],
     }
     fset_data = comp_get_fset_data()
@@ -9116,7 +9132,10 @@ def json_tree_filtersets():
         rows = db(q).select(db.gen_filtersets.id, orderby=o, cacheable=True)
 
     for fset_id in [r.id for r in rows]:
-        l = recurse_json_tree_filtersets(fset_data[fset_id], parent_ids=["fset%d"%fset_id])
+        try:
+            l = recurse_json_tree_filtersets(fset_data[fset_id], parent_ids=["fset%d"%fset_id])
+        except KeyError:
+            l = []
         _data = {
           "attr": {"id": "fset%d"%fset_id, "rel": "filterset", "obj_id": fset_id},
           "data": fset_names[fset_id],
@@ -9264,590 +9283,764 @@ def comp_admin():
     var_class_names = map(lambda x: '"'+x+'"', var_class_names)
 
     js = """
-    function resizer(){
-     $("#treerow").height($(window).height()-$(".header").outerHeight()-$(".footer").outerHeight()-$("#casearch").parent().outerHeight(true))
-     $("#cainfo").width($(window).width()-$("#catree").outerWidth(true)-$("#catree2:visible").outerWidth(true)-$("#sep").outerWidth(true)-14)
-    }
-    $(window).bind('resize', resizer)
-    $(window).load(resizer)
+function resizer(){
+  $("#treerow").height($(window).height()-$(".header").outerHeight()-$(".footer").outerHeight()-$("#casearch").parent().outerHeight(true))
+  $("#cainfo").width($(window).width()-$("#catree").outerWidth(true)-$("#catree2:visible").outerWidth(true)-$("#sep").outerWidth(true)-14)
+}
+$(window).bind('resize', resizer)
+$(window).load(resizer)
 
-    function json_status(msg){
-      try {
-        $(".flash").html(msg["err"]).slideDown()
-      } catch(e) {}
-    }
-    jstree_data = {
-     "types": {
-      "types": {
-       "module": {
-        "icon": {
-         "image": "%(static)s/action16.png",
-        },
-       },
-       "modset": {
-        "icon": {
-         "image": "%(static)s/action16.png",
-        },
-       },
-       "group": {
-        "icon": {
-         "image": "%(static)s/guys16.png",
-        },
-       },
-       "filter": {
-        "icon": {
-         "image": "%(static)s/filter16.png",
-        },
-       },
-       "filterset": {
-        "icon": {
-         "image": "%(static)s/filter16.png",
-        },
-       },
-       "ruleset": {
-        "icon": {
-         "image": "%(static)s/pkg16.png",
-        },
-       },
-       "ruleset_hidden": {
-        "icon": {
-         "image": "%(static)s/pkglight16.png",
-        },
-       },
-       "ruleset_cxt": {
-        "icon": {
-         "image": "%(static)s/rsetcxt16.png",
-        },
-       },
-       "ruleset_cxt_hidden": {
-        "icon": {
-         "image": "%(static)s/rsetcxtlight16.png",
-        },
-       },
-       "variable": {
-        "icon": {
-         "image": "%(static)s/comp16.png",
-        },
-       },
-       "table": {
-        "icon": {
-         "image": "%(static)s/db16.png",
-        },
-       },
-      },
-     },
-     "json_data" : {
-      "ajax" : {
-       "url" : function(){ return "%(url)s?obj_filter="+encodeURIComponent($("#casearch").val()) },
-      },
-     },
-     "contextmenu": {
-       "items": function(node){
-         var_class_names = [%(var_class_names)s]
-         var_classes = {}
-         function var_class_entry(var_class) {
-           return {
-             "label": var_class,
-             "action": function(obj){
-               $.ajax({
-                 async: false,
-                 type: "POST",
-                 url: "%(url_action)s",
-                 data: {
-                  "operation": "set_var_class",
-                  "var_class": var_class,
-                  "obj_id": obj.attr("obj_id"),
-                 },
-                 success: function(msg){
-                   //$("[rel="+obj.attr('rel')+"][obj_id="+obj.attr('obj_id')+"]").children("a").click()
-                   json_status(msg)
-                 }
-               });
-             }
-           }
-         }
-         for (i=0;i<var_class_names.length;i++) {
-           var var_class = var_class_names[i]
-           var_classes['set_var_class_'+var_class] = var_class_entry(var_class)
-         }
-         h = {
-         "remove" : {
-           "label": "Delete",
-           "_disabled": false,
-           "separator_before": false,
-           "separator_after": false,
-           "icon": false,
-           "action": function(obj){this.remove(obj)}
-         },
-         "rename" : {
-           "label": "Rename",
-           "_disabled": false,
-           //"_class": "class",
-           "separator_before": false,
-           "separator_after": false,
-           "icon": false,
-           //"submenu": {},
-           "action": function(obj){this.rename(obj)}
-         }
-       }
-       if (node.attr("rel")=="modset") {
-         h["create"] = {
-           "label": "Add module",
-           "separator_before": false,
-           "separator_after": false,
-           "icon": false,
-           "action": function(obj){this.create(obj, "first", {"attr": {"rel": "module"}})}
-         }
-         h["clone"] = {
-           "label": "Clone",
-           "action": function(obj){
-             $.ajax({
-               async: false,
-               type: "POST",
-               url: "%(url_action)s",
-               data: {
-                "operation": "clone",
-                "obj_id": obj.attr("obj_id"),
-                "obj_type": obj.attr("rel"),
-               },
-               success: function(msg){
-                 $("[name=catree]:visible").jstree("refresh");
-                   json_status(msg)
-               }
-             });
-           }
-         }
-       }
-       if (node.attr("rel").indexOf("ruleset") == 0) {
-         h["create"] = {
-           "label": "Add variable",
-           "separator_before": false,
-           "separator_after": false,
-           "icon": false,
-           "action": function(obj){this.create(obj, "first", {"attr": {"rel": "variable"}})}
-         }
-         h["clone"] = {
-           "label": "Clone",
-           "action": function(obj){
-             $.ajax({
-               async: false,
-               type: "POST",
-               url: "%(url_action)s",
-               data: {
-                "operation": "clone",
-                "obj_id": obj.attr("obj_id"),
-                "obj_type": obj.attr("rel"),
-               },
-               success: function(msg){
-                 $("[name=catree]:visible").jstree("refresh");
-                   json_status(msg)
-               }
-             });
-           }
-         }
-         h["set_type"] = {
-           "label": "Set type",
-           "separator_before": false,
-           "separator_after": false,
-           "icon": false,
-           "submenu": {
-             "contextual": {
-               "label": "Contextual",
-               "action": function(obj){
-                 $.ajax({
-                   async: false,
-                   type: "POST",
-                   url: "%(url_action)s",
-                   data: {
-                    "operation": "set_type",
-                    "type": "contextual",
-                    "obj_id": obj.attr("obj_id"),
-                   },
-                   success: function(msg){
-                     $("[rel="+obj.attr('rel')+"][obj_id="+obj.attr('obj_id')+"]").children("a").click()
-                     json_status(msg)
-                   }
-                 });
-               }
-             },
-             "explicit": {
-               "label": "Explicit",
-               "action": function(obj){
-                 $.ajax({
-                   async: false,
-                   type: "POST",
-                   url: "%(url_action)s",
-                   data: {
-                    "operation": "set_type",
-                    "type": "explicit",
-                    "obj_id": obj.attr("obj_id"),
-                   },
-                   success: function(msg){
-                     $("[name=catree]:visible").jstree("refresh");
-                     $("[rel="+obj.attr('rel')+"][obj_id="+obj.attr('obj_id')+"]").children("a").click()
-                     json_status(msg)
-                   }
-                 });
-               }
-             },
-           }
-         }
-         h["set_publication"] = {
-           "label": "Set publication",
-           "separator_before": false,
-           "separator_after": false,
-           "icon": false,
-           "submenu": {
-             "published": {
-               "label": "Published",
-               "action": function(obj){
-                 $.ajax({
-                   async: false,
-                   type: "POST",
-                   url: "%(url_action)s",
-                   data: {
-                    "operation": "set_public",
-                    "publication": true,
-                    "obj_id": obj.attr("obj_id"),
-                   },
-                   success: function(msg){
-                     $("[rel="+obj.attr('rel')+"][obj_id="+obj.attr('obj_id')+"]").children("a").click()
-                     json_status(msg)
-                   }
-                 });
-               }
-             },
-             "not_published": {
-               "label": "Not published",
-               "action": function(obj){
-                 $.ajax({
-                   async: false,
-                   type: "POST",
-                   url: "%(url_action)s",
-                   data: {
-                    "operation": "set_public",
-                    "publication": false,
-                    "obj_id": obj.attr("obj_id"),
-                   },
-                   success: function(msg){
-                     $("[rel="+obj.attr('rel')+"][obj_id="+obj.attr('obj_id')+"]").children("a").click()
-                     json_status(msg)
-                   }
-                 });
-               }
-             },
-           }
-         }
-         if (node.attr("rset_type") == "contextual") {
-           h["detach_filterset"] = {
-             "label": "Detach filterset",
-             "action": function(obj){
-               $.ajax({
-                 async: false,
-                 type: "POST",
-                 url: "%(url_action)s",
-                 data: {
-                  "operation": "detach_filterset",
-                  "obj_id": obj.attr("obj_id"),
-                 },
-                 success: function(msg){
-                   $("[name=catree]:visible").jstree("refresh");
-                   json_status(msg)
-                 }
-               });
-             }
-           }
-         }
-         if (node.parents("li").attr("rel").indexOf("ruleset") == 0) {
-           h["remove"]["_disabled"] = true
-           h["detach_ruleset"] = {
-             "label": "Detach ruleset",
-             "action": function(obj){
-               $.ajax({
-                 async: false,
-                 type: "POST",
-                 url: "%(url_action)s",
-                 data: {
-                  "operation": "detach_ruleset",
-                  "publication": false,
-                  "obj_id": obj.attr("obj_id"),
-                  "parent_obj_id": obj.parents("li").attr("obj_id"),
-                 },
-                 success: function(msg){
-                   $("[name=catree]:visible").jstree("refresh");
-                   json_status(msg)
-                 }
-               });
-             }
-           }
-         }
-       } else if (node.attr("rel")=="group") {
-         h["remove"]["_disabled"] = true
-         h["rename"]["_disabled"] = true
-         if (node.parents("li").attr("rel").indexOf("ruleset") == 0 || node.parents("li").attr("rel") == "modset") {
-           h["detach_group"] = {
-             "label": "Detach group",
-             "action": function(obj){
-               $.ajax({
-                 async: false,
-                 type: "POST",
-                 url: "%(url_action)s",
-                 data: {
-                  "operation": "detach_group",
-                  "parent_obj_type": obj.parents("li").attr("rel"),
-                  "obj_id": obj.attr("obj_id"),
-                  "parent_obj_id": obj.parents("li").attr("obj_id")
-                 },
-                 success: function(msg){
-                   $("[name=catree]:visible").jstree("refresh");
-                   json_status(msg)
-                 }
-               });
-             }
-           }
-         }
-       } else if (node.attr("rel") == null) {
-           h["remove"]["_disabled"] = true
-           h["rename"]["_disabled"] = true
-       } else if (node.attr("rel")=="table") {
-           h["remove"]["_disabled"] = true
-           h["rename"]["_disabled"] = true
-       } else if (node.attr("rel")=="filter") {
-           h["remove"]["_disabled"] = true
-           h["rename"]["_disabled"] = true
-       } else if (node.attr("rel")=="variable") {
-         h["set_var_class"] = {
-           "label": "Set variable class",
-           "separator_before": false,
-           "separator_after": false,
-           "icon": false,
-           "submenu": var_classes,
-         }
-       } else if (node.attr("rel")=="filterset") {
-         if (node.parents("li").attr("rel").indexOf("ruleset") == 0) {
-           h["remove"]["_disabled"] = true
-           h["rename"]["_disabled"] = true
-           h["detach_filterset"] = {
-             "label": "Detach filterset",
-             "action": function(obj){
-               $.ajax({
-                 async: false,
-                 type: "POST",
-                 url: "%(url_action)s",
-                 data: {
-                  "operation": "detach_filterset",
-                  "obj_id": node.parents("li").attr("obj_id"),
-                 },
-                 success: function(msg){
-                   $("[name=catree]:visible").jstree("refresh");
-                   json_status(msg)
-                 }
-               });
-             }
-           }
-         }
-       } else if (node.attr("rel")=="moduleset_head") {
-         h["create"] = {
-           "label": "Add moduleset",
-           "separator_before": false,
-           "separator_after": false,
-           "icon": false,
-           "action": function(obj){this.create(obj, "first", {"attr": {"rel": "modset"}})}
-         }
-       } else if (node.attr("rel")=="ruleset_head") {
-         h["create"] = {
-           "label": "Add ruleset",
-           "separator_before": false,
-           "separator_after": false,
-           "icon": false,
-           "action": function(obj){this.create(obj, "first", {"attr": {"rel": "ruleset"}})}
-         }
-       }
-       resizer()
-       return h
-       }
-     },
-     "search": {
-       "show_only_matches": false
-     },
-     "crrm": {
-       "move": {
-         "always_copy": true,
-         "check_move": function (m) {
-            if (m.o.attr('rel')=="filterset" && m.np.attr('rel').indexOf("ruleset")==0) { return true }
-            if (m.o.attr('rel').indexOf("ruleset")==0 && m.np.attr('rel').indexOf("ruleset")==0) { return true }
-            if (m.o.attr('rel')=="variable" && m.np.attr('rel').indexOf("ruleset")==0) { return true }
-            if (m.o.attr('rel')=="filter" && m.np.attr('rel')=="filterset") { return true }
-            if (m.o.attr('rel')=="group" && m.np.attr('rel').indexOf("ruleset")==0) { return true }
-            if (m.o.attr('rel')=="group" && m.np.attr('rel')=="modset") { return true }
-            return false
-         }
-       }
-     },
-     "plugins" : [
-       "themes",
-       "json_data",
-       "ui",
-       "types",
-       "crrm",
-       "contextmenu",
-       "dnd",
-       //"hotkeys",
-       "cookies",
-       "search",
-       "adv_search"
-     ]
-    }
-    function __rename(e, data) {
-      data.rslt.obj.each(function() {
-        $.ajax({
+function set_log_op_entry(label, obj_type, node) {
+  return {
+    "label": label,
+    "action": function(obj){
+      $.ajax({
         async: false,
         type: "POST",
         url: "%(url_action)s",
         data: {
-          "operation": "rename",
-          "obj_type": $(this).attr('rel'),
-          "obj_id": $(this).attr('obj_id'),
-          "new_name": data.rslt.new_name,
+         "operation": "set_log_op",
+         "type": label,
+         "obj_type": obj_type,
+         "obj_id": obj.attr("obj_id"),
+         "parent_obj_id": node.parents("li").attr("obj_id")
         },
         success: function(msg){
-          if (msg != "0") {
-            $.jstree.rollback(data.rlbk)
-          } else {
-            //$("[name=catree]:visible").jstree("refresh");
-          }
+          $("[name=catree]:visible").jstree("refresh");
           json_status(msg)
         }
       });
-     })
     }
-    function __move(e, data) {
-        if (data.rslt.cy) {
-            operation = "copy"
-        } else {
-            operation = "move"
-        }
-        $.ajax({
-          async: false,
-          type: "POST",
-          url: "%(url_action)s",
-          data: {
-            "operation": operation,
-            "obj_type": data.rslt.o.attr("rel"),
-            "obj_id": data.rslt.o.attr("obj_id"),
-            "dst_type": data.rslt.np.attr("rel"),
-            "dst_id": data.rslt.np.attr("obj_id"),
-            "parent_obj_id": data.rslt.op.attr("obj_id"),
-          },
-          success: function(msg){
-            $("[name=catree]:visible").jstree("refresh");
-            json_status(msg)
-          }
-        });
-    }
-    function __remove(e, data) {
-      data.rslt.obj.each(function() {
-        $.ajax({
-          async: false,
-          type: "POST",
-          url: "%(url_action)s",
-          data: {
-            "operation": "delete",
-            "obj_type": $(this).attr("rel"),
-            "obj_id": $(this).attr("obj_id"),
-          },
-          success: function(msg){
-            if (msg != "0") {
-              $.jstree.rollback(data.rlbk)
-            } else {
-              $("[name=catree]:visible").jstree("refresh");
-            }
-            json_status(msg)
-          }
-        });
-      });
-    }
-    function __create(e, data) {
-      data.rslt.obj.each(function() {
-        new_rel = ""
-        if (data.rslt.parent.attr("rel").indexOf("ruleset") == 0) {
-          new_rel = "variable"
-        } else if (data.rslt.parent.attr("rel") == "modset") {
-          new_rel = "module"
-        } else if (data.rslt.parent.attr("rel") == "moduleset_head") {
-          new_rel = "modset"
-        } else if (data.rslt.parent.attr("rel") == "ruleset_head") {
-          new_rel = "ruleset"
-        }
-        $.ajax({
-          async: false,
-          type: "POST",
-          url: "%(url_action)s",
-          data: {
-            "operation": "create",
-            "obj_name": $(this).text(),
-            "obj_type": new_rel,
-            "parent_obj_id": data.rslt.parent.attr("obj_id"),
-          },
-          success: function(msg){
-            if (msg != "0") {
-              $.jstree.rollback(data.rlbk)
-            } else {
-              $("[name=catree]:visible").jstree("refresh");
-            }
-            json_status(msg)
-          }
-        });
-      });
-    }
-    function __select(e, data) {
-      data.rslt.obj.each(function() {
-        $.ajax({
-        async: false,
-        type: "POST",
-        url: "%(url_action)s",
-        data: {
-          "operation": "show",
-          "obj_type": $(this).attr('rel'),
-          "obj_id": $(this).attr('obj_id'),
-        },
-        success: function(msg){
-          $("#cainfo").html(msg)
-          $("#cainfo").find("script").each(function(i){
-            eval($(this).text());
-            $(this).remove();
-          });
-        }
-      });
-     });
-    }
-    $("#catree").jstree(jstree_data).bind("rename.jstree", __rename)
-                                    .bind("move_node.jstree", __move)
-                                    .bind("remove.jstree", __remove)
-                                    .bind("create.jstree", __create)
-                                    .bind("select_node.jstree", __select)
+  }
+}
 
-    jstree_data["cookies"] = {
-      "save_opened": "jstree_open2",
-      "save_selected": "jstree_select2",
+function json_status(msg){
+  if (msg == 0 || msg == "0") {
+    $(".flash").html("")
+    return
+  }
+  try {
+    s = msg["err"]
+  } catch(e) {
+    s = ""
+  }
+  $(".flash").html(s).slideDown()
+}
+
+jstree_data = {
+ "types": {
+  "types": {
+   "module": {
+    "icon": {
+     "image": "%(static)s/action16.png",
+    },
+   },
+   "modset": {
+    "icon": {
+     "image": "%(static)s/action16.png",
+    },
+   },
+   "group": {
+    "icon": {
+     "image": "%(static)s/guys16.png",
+    },
+   },
+   "filter": {
+    "icon": {
+     "image": "%(static)s/filter16.png",
+    },
+   },
+   "filterset": {
+    "icon": {
+     "image": "%(static)s/filter16.png",
+    },
+   },
+   "ruleset": {
+    "icon": {
+     "image": "%(static)s/pkg16.png",
+    },
+   },
+   "ruleset_hidden": {
+    "icon": {
+     "image": "%(static)s/pkglight16.png",
+    },
+   },
+   "ruleset_cxt": {
+    "icon": {
+     "image": "%(static)s/rsetcxt16.png",
+    },
+   },
+   "ruleset_cxt_hidden": {
+    "icon": {
+     "image": "%(static)s/rsetcxtlight16.png",
+    },
+   },
+   "variable": {
+    "icon": {
+     "image": "%(static)s/comp16.png",
+    },
+   },
+   "table": {
+    "icon": {
+     "image": "%(static)s/db16.png",
+    },
+   },
+  },
+ },
+ "json_data" : {
+  "ajax" : {
+   "url" : function(){ return "%(url)s?obj_filter="+encodeURIComponent($("#casearch").val()) },
+  },
+ },
+ "contextmenu": {
+   "items": function(node){
+     var_class_names = [%(var_class_names)s]
+     var_classes = {}
+     function var_class_entry(var_class) {
+       return {
+         "label": var_class,
+         "action": function(obj){
+           $.ajax({
+             async: false,
+             type: "POST",
+             url: "%(url_action)s",
+             data: {
+              "operation": "set_var_class",
+              "var_class": var_class,
+              "obj_id": obj.attr("obj_id"),
+             },
+             success: function(msg){
+               //$("[rel="+obj.attr('rel')+"][obj_id="+obj.attr('obj_id')+"]").children("a").click()
+               json_status(msg)
+             }
+           });
+         }
+       }
+     }
+     for (i=0;i<var_class_names.length;i++) {
+       var var_class = var_class_names[i]
+       var_classes['set_var_class_'+var_class] = var_class_entry(var_class)
+     }
+     h = {
+       "remove" : {
+         "label": "Delete",
+         "_disabled": false,
+         "separator_before": false,
+         "separator_after": false,
+         "icon": false,
+         "action": function(obj){this.remove(obj)}
+       },
+       "rename" : {
+         "label": "Rename",
+         "_disabled": false,
+         //"_class": "class",
+         "separator_before": false,
+         "separator_after": false,
+         "icon": false,
+         //"submenu": {},
+         "action": function(obj){this.rename(obj)}
+       }
+     }
+
+     //
+     // moduleset_head
+     //
+     if (node.attr("rel")=="moduleset_head") {
+       h["remove"]["_disabled"] = true
+       h["rename"]["_disabled"] = true
+       h["create"] = {
+         "label": "Add moduleset",
+         "separator_before": false,
+         "separator_after": false,
+         "icon": false,
+         "action": function(obj){this.create(obj, "first", {"attr": {"rel": "modset"}})}
+       }
+     }
+
+     //
+     // filterset_head
+     //
+     else if (node.attr("rel")=="filterset_head") {
+       h["remove"]["_disabled"] = true
+       h["rename"]["_disabled"] = true
+       h["create"] = {
+         "label": "Add filterset",
+         "separator_before": false,
+         "separator_after": false,
+         "icon": false,
+         "action": function(obj){this.create(obj, "first", {"attr": {"rel": "filterset"}})}
+       }
+     }
+
+     //
+     // ruleset_head
+     //
+     else if (node.attr("rel")=="ruleset_head") {
+       h["remove"]["_disabled"] = true
+       h["rename"]["_disabled"] = true
+       h["create"] = {
+         "label": "Add ruleset",
+         "separator_before": false,
+         "separator_after": false,
+         "icon": false,
+         "action": function(obj){this.create(obj, "first", {"attr": {"rel": "ruleset"}})}
+       }
+     }
+
+     //
+     // moduleset
+     //
+     else if (node.attr("rel")=="modset") {
+       h["create"] = {
+         "label": "Add module",
+         "separator_before": false,
+         "separator_after": false,
+         "icon": false,
+         "action": function(obj){this.create(obj, "first", {"attr": {"rel": "module"}})}
+       }
+       h["clone"] = {
+         "label": "Clone",
+         "action": function(obj){
+           $.ajax({
+             async: false,
+             type: "POST",
+             url: "%(url_action)s",
+             data: {
+              "operation": "clone",
+              "obj_id": obj.attr("obj_id"),
+              "obj_type": obj.attr("rel"),
+             },
+             success: function(msg){
+               $("[name=catree]:visible").jstree("refresh");
+               json_status(msg)
+             }
+           });
+         }
+       }
+     }
+
+     //
+     // ruleset
+     //
+     else if (node.attr("rel").indexOf("ruleset") == 0) {
+       h["create"] = {
+         "label": "Add variable",
+         "separator_before": false,
+         "separator_after": false,
+         "icon": false,
+         "action": function(obj){this.create(obj, "first", {"attr": {"rel": "variable"}})}
+       }
+       h["clone"] = {
+         "label": "Clone",
+         "action": function(obj){
+           $.ajax({
+             async: false,
+             type: "POST",
+             url: "%(url_action)s",
+             data: {
+              "operation": "clone",
+              "obj_id": obj.attr("obj_id"),
+              "obj_type": obj.attr("rel"),
+             },
+             success: function(msg){
+               $("[name=catree]:visible").jstree("refresh");
+               json_status(msg)
+             }
+           });
+         }
+       }
+       h["set_type"] = {
+         "label": "Set type",
+         "separator_before": false,
+         "separator_after": false,
+         "icon": false,
+         "submenu": {
+           "contextual": {
+             "label": "Contextual",
+             "action": function(obj){
+               $.ajax({
+                 async: false,
+                 type: "POST",
+                 url: "%(url_action)s",
+                 data: {
+                  "operation": "set_type",
+                  "type": "contextual",
+                  "obj_type": "ruleset",
+                  "obj_id": obj.attr("obj_id"),
+                 },
+                 success: function(msg){
+                   $("[rel="+obj.attr('rel')+"][obj_id="+obj.attr('obj_id')+"]").children("a").click()
+                   json_status(msg)
+                 }
+               });
+             }
+           },
+           "explicit": {
+             "label": "Explicit",
+             "action": function(obj){
+               $.ajax({
+                 async: false,
+                 type: "POST",
+                 url: "%(url_action)s",
+                 data: {
+                  "operation": "set_type",
+                  "type": "explicit",
+                  "obj_type": "ruleset",
+                  "obj_id": obj.attr("obj_id"),
+                 },
+                 success: function(msg){
+                   $("[name=catree]:visible").jstree("refresh");
+                   $("[rel="+obj.attr('rel')+"][obj_id="+obj.attr('obj_id')+"]").children("a").click()
+                   json_status(msg)
+                 }
+               });
+             }
+           },
+         }
+       }
+       h["set_publication"] = {
+         "label": "Set publication",
+         "separator_before": false,
+         "separator_after": false,
+         "icon": false,
+         "submenu": {
+           "published": {
+             "label": "Published",
+             "action": function(obj){
+               $.ajax({
+                 async: false,
+                 type: "POST",
+                 url: "%(url_action)s",
+                 data: {
+                  "operation": "set_public",
+                  "publication": true,
+                  "obj_id": obj.attr("obj_id"),
+                 },
+                 success: function(msg){
+                   $("[rel="+obj.attr('rel')+"][obj_id="+obj.attr('obj_id')+"]").children("a").click()
+                   json_status(msg)
+                 }
+               });
+             }
+           },
+           "not_published": {
+             "label": "Not published",
+             "action": function(obj){
+               $.ajax({
+                 async: false,
+                 type: "POST",
+                 url: "%(url_action)s",
+                 data: {
+                  "operation": "set_public",
+                  "publication": false,
+                  "obj_id": obj.attr("obj_id"),
+                 },
+                 success: function(msg){
+                   $("[rel="+obj.attr('rel')+"][obj_id="+obj.attr('obj_id')+"]").children("a").click()
+                   json_status(msg)
+                 }
+               });
+             }
+           },
+         }
+       }
+       if (node.attr("rset_type") == "contextual") {
+         h["detach_filterset"] = {
+           "label": "Detach filterset",
+           "action": function(obj){
+             $.ajax({
+               async: false,
+               type: "POST",
+               url: "%(url_action)s",
+               data: {
+                "operation": "detach_filterset",
+                "obj_id": obj.attr("obj_id"),
+               },
+               success: function(msg){
+                 $("[name=catree]:visible").jstree("refresh");
+                 json_status(msg)
+               }
+             });
+           }
+         }
+       }
+       if (node.parents("li").attr("rel").indexOf("ruleset") == 0 &&
+           node.parents("li").attr("rel") != "ruleset_head") {
+         h["remove"]["_disabled"] = true
+         h["detach_ruleset"] = {
+           "label": "Detach ruleset",
+           "action": function(obj){
+             $.ajax({
+               async: false,
+               type: "POST",
+               url: "%(url_action)s",
+               data: {
+                "operation": "detach_ruleset",
+                "publication": false,
+                "obj_id": obj.attr("obj_id"),
+                "parent_obj_id": obj.parents("li").attr("obj_id"),
+               },
+               success: function(msg){
+                 $("[name=catree]:visible").jstree("refresh");
+                 json_status(msg)
+               }
+             });
+           }
+         }
+       }
+     }
+
+     //
+     // group
+     //
+     else if (node.attr("rel")=="group") {
+       h["remove"]["_disabled"] = true
+       h["rename"]["_disabled"] = true
+       if (node.parents("li").attr("rel").indexOf("ruleset") == 0 || node.parents("li").attr("rel") == "modset") {
+         h["detach_group"] = {
+           "label": "Detach group",
+           "action": function(obj){
+             $.ajax({
+               async: false,
+               type: "POST",
+               url: "%(url_action)s",
+               data: {
+                "operation": "detach_group",
+                "parent_obj_type": obj.parents("li").attr("rel"),
+                "obj_id": obj.attr("obj_id"),
+                "parent_obj_id": obj.parents("li").attr("obj_id")
+               },
+               success: function(msg){
+                 $("[name=catree]:visible").jstree("refresh");
+                 json_status(msg)
+               }
+             });
+           }
+         }
+       }
+     }
+
+     //
+     // null
+     //
+     else if (node.attr("rel") == null) {
+       h["remove"]["_disabled"] = true
+       h["rename"]["_disabled"] = true
+     }
+
+     //
+     // table
+     //
+     else if (node.attr("rel")=="table") {
+       h["remove"]["_disabled"] = true
+       h["rename"]["_disabled"] = true
+     }
+
+     //
+     // filter
+     //
+     else if (node.attr("rel")=="filter") {
+       h["remove"]["_disabled"] = true
+       h["rename"]["_disabled"] = true
+       if (node.parents("li").attr("rel") == "filterset") {
+         h["set_log_op"] = {
+           "label": "Set logical operator",
+           "separator_before": false,
+           "separator_after": false,
+           "icon": false,
+           "submenu": {
+             "and": set_log_op_entry("AND", "filter", node),
+             "and_not": set_log_op_entry("AND NOT", "filter", node),
+             "or": set_log_op_entry("OR", "filter", node),
+             "or not": set_log_op_entry("AND NOT", "filter", node)
+           }
+         }
+         h["detach_filter"] = {
+           "label": "Detach filter",
+           "action": function(obj){
+             $.ajax({
+               async: false,
+               type: "POST",
+               url: "%(url_action)s",
+               data: {
+                "operation": "detach_filter",
+                "obj_id": obj.attr("obj_id"),
+                "parent_obj_id": node.parents("li").attr("obj_id"),
+               },
+               success: function(msg){
+                 $("[name=catree]:visible").jstree("refresh");
+                 json_status(msg)
+               }
+             });
+           }
+         }
+       }
+     }
+
+     //
+     // variable
+     //
+     else if (node.attr("rel")=="variable") {
+       h["set_var_class"] = {
+         "label": "Set variable class",
+         "separator_before": false,
+         "separator_after": false,
+         "icon": false,
+         "submenu": var_classes,
+       }
+     }
+
+     //
+     // filterset
+     //
+     else if (node.attr("rel")=="filterset") {
+       if (node.parents("li").attr("rel") == "filterset") {
+         h["remove"]["_disabled"] = true
+         h["rename"]["_disabled"] = true
+         h["set_log_op"] = {
+           "label": "Set logical operator",
+           "separator_before": false,
+           "separator_after": false,
+           "icon": false,
+           "submenu": {
+             "and": set_log_op_entry("AND", "filterset", node),
+             "and_not": set_log_op_entry("AND NOT", "filterset", node),
+             "or": set_log_op_entry("OR", "filterset", node),
+             "or not": set_log_op_entry("AND NOT", "filterset", node)
+           }
+         }
+         h["detach_filterset"] = {
+           "label": "Detach filterset",
+           "action": function(obj){
+             $.ajax({
+               async: false,
+               type: "POST",
+               url: "%(url_action)s",
+               data: {
+                "operation": "detach_filterset",
+                "parent_obj_type": "filterset",
+                "obj_id": obj.attr("obj_id"),
+                "parent_obj_id": node.parents("li").attr("obj_id"),
+               },
+               success: function(msg){
+                 $("[name=catree]:visible").jstree("refresh");
+                 json_status(msg)
+               }
+             });
+           }
+         }
+       } else if (node.parents("li").attr("rel").indexOf("ruleset") == 0) {
+         h["remove"]["_disabled"] = true
+         h["rename"]["_disabled"] = true
+         h["detach_filterset"] = {
+           "label": "Detach filterset",
+           "action": function(obj){
+             $.ajax({
+               async: false,
+               type: "POST",
+               url: "%(url_action)s",
+               data: {
+                "operation": "detach_filterset",
+                "parent_obj_type": "ruleset",
+                "parent_obj_id": node.parents("li").attr("obj_id"),
+               },
+               success: function(msg){
+                 $("[name=catree]:visible").jstree("refresh");
+                 json_status(msg)
+               }
+             });
+           }
+         }
+       }
+     }
+     resizer()
+     return h
+   }
+ },
+ "search": {
+   "show_only_matches": false
+ },
+ "crrm": {
+   "move": {
+     "always_copy": true,
+     "check_move": function (m) {
+        if (m.o.attr('rel')=="filterset" && m.np.attr('rel').indexOf("ruleset")==0) { return true }
+        if (m.o.attr('rel').indexOf("ruleset")==0 && m.np.attr('rel').indexOf("ruleset")==0) { return true }
+        if (m.o.attr('rel')=="variable" && m.np.attr('rel').indexOf("ruleset")==0) { return true }
+        if (m.o.attr('rel')=="filter" && m.np.attr('rel')=="filterset") { return true }
+        if (m.o.attr('rel')=="filterset" && m.np.attr('rel')=="filterset") { return true }
+        if (m.o.attr('rel')=="group" && m.np.attr('rel').indexOf("ruleset")==0) { return true }
+        if (m.o.attr('rel')=="group" && m.np.attr('rel')=="modset") { return true }
+        return false
+     }
+   }
+ },
+ "plugins" : [
+   "themes",
+   "json_data",
+   "ui",
+   "types",
+   "crrm",
+   "contextmenu",
+   "dnd",
+   //"hotkeys",
+   "cookies",
+   "search",
+   "adv_search"
+ ]
+}
+function __rename(e, data) {
+  data.rslt.obj.each(function() {
+    $.ajax({
+    async: false,
+    type: "POST",
+    url: "%(url_action)s",
+    data: {
+      "operation": "rename",
+      "obj_type": $(this).attr('rel'),
+      "obj_id": $(this).attr('obj_id'),
+      "new_name": data.rslt.new_name,
+    },
+    success: function(msg){
+      if (msg != "0") {
+        $.jstree.rollback(data.rlbk)
+      } else {
+        //$("[name=catree]:visible").jstree("refresh");
+      }
+      json_status(msg)
     }
-    $("#catree2").jstree(jstree_data).bind("rename.jstree", __rename)
-                                     .bind("move_node.jstree", __move)
-                                     .bind("remove.jstree", __remove)
-                                     .bind("create.jstree", __create)
-                                     .bind("select_node.jstree", __select)
+  });
+ })
+}
+function __move(e, data) {
+    if (data.rslt.cy) {
+        operation = "copy"
+    } else {
+        operation = "move"
+    }
+    $.ajax({
+      async: false,
+      type: "POST",
+      url: "%(url_action)s",
+      data: {
+        "operation": operation,
+        "obj_type": data.rslt.o.attr("rel"),
+        "obj_id": data.rslt.o.attr("obj_id"),
+        "dst_type": data.rslt.np.attr("rel"),
+        "dst_id": data.rslt.np.attr("obj_id"),
+        "parent_obj_id": data.rslt.op.attr("obj_id"),
+      },
+      success: function(msg){
+        $("[name=catree]:visible").jstree("refresh");
+        json_status(msg)
+      }
+    });
+}
+function __remove(e, data) {
+  data.rslt.obj.each(function() {
+    $.ajax({
+      async: false,
+      type: "POST",
+      url: "%(url_action)s",
+      data: {
+        "operation": "delete",
+        "obj_type": $(this).attr("rel"),
+        "obj_id": $(this).attr("obj_id"),
+      },
+      success: function(msg){
+        if (msg != "0") {
+          $.jstree.rollback(data.rlbk)
+        } else {
+          $("[name=catree]:visible").jstree("refresh");
+        }
+        json_status(msg)
+      }
+    });
+  });
+}
+function __create(e, data) {
+  data.rslt.obj.each(function() {
+    new_rel = ""
+    if (data.rslt.parent.attr("rel") == "modset") {
+      new_rel = "module"
+    } else if (data.rslt.parent.attr("rel") == "moduleset_head") {
+      new_rel = "modset"
+    } else if (data.rslt.parent.attr("rel") == "ruleset_head") {
+      new_rel = "ruleset"
+    } else if (data.rslt.parent.attr("rel") == "filterset_head") {
+      new_rel = "filterset"
+    } else if (data.rslt.parent.attr("rel").indexOf("ruleset") == 0) {
+      new_rel = "variable"
+    }
+    $.ajax({
+      async: false,
+      type: "POST",
+      url: "%(url_action)s",
+      data: {
+        "operation": "create",
+        "obj_name": $(this).text(),
+        "obj_type": new_rel,
+        "parent_obj_id": data.rslt.parent.attr("obj_id"),
+      },
+      success: function(msg){
+        if (msg != "0") {
+          $.jstree.rollback(data.rlbk)
+        } else {
+          $("[name=catree]:visible").jstree("refresh");
+        }
+        json_status(msg)
+      }
+    });
+  });
+}
+function __select(e, data) {
+  data.rslt.obj.each(function() {
+    $.ajax({
+    async: false,
+    type: "POST",
+    url: "%(url_action)s",
+    data: {
+      "operation": "show",
+      "obj_type": $(this).attr('rel'),
+      "obj_id": $(this).attr('obj_id'),
+    },
+    success: function(msg){
+      $("#cainfo").html(msg)
+      $("#cainfo").find("script").each(function(i){
+        eval($(this).text());
+        $(this).remove();
+      });
+    }
+  });
+ });
+}
+$("#catree").jstree(jstree_data).bind("rename.jstree", __rename)
+                                .bind("move_node.jstree", __move)
+                                .bind("remove.jstree", __remove)
+                                .bind("create.jstree", __create)
+                                .bind("select_node.jstree", __select)
+
+jstree_data["cookies"] = {
+  "save_opened": "jstree_open2",
+  "save_selected": "jstree_select2",
+}
+$("#catree2").jstree(jstree_data).bind("rename.jstree", __rename)
+                                 .bind("move_node.jstree", __move)
+                                 .bind("remove.jstree", __remove)
+                                 .bind("create.jstree", __create)
+                                 .bind("select_node.jstree", __select)
 
    var catimer;
    $("#casearch").keyup(function(event){
-     if (is_enter(event)) {
-       $("#catree:visible").jstree("refresh");
-       $("#catree2:visible").jstree("refresh");
-     }
+ if (is_enter(event)) {
+   $("#catree:visible").jstree("refresh");
+   $("#catree2:visible").jstree("refresh");
+ }
    })
    $("#sep").click(function(){
-     $("#catree2").toggle()
-     $("#catree2:visible").jstree("refresh");
-     resizer()
+ $("#catree2").toggle()
+ $("#catree2:visible").jstree("refresh");
+ resizer()
    })
      """ % dict(
       url = URL(r=request, f="call/json/json_tree"),
@@ -9930,41 +10123,63 @@ def json_tree_action():
            request.vars.dst_type.startswith("ruleset"):
             return json_tree_action_copy_var_to_rset(request.vars.obj_id,
                                                      request.vars.dst_id)
-        if request.vars.obj_type.startswith("ruleset") and \
+        elif request.vars.obj_type.startswith("ruleset") and \
            request.vars.dst_type.startswith("ruleset"):
             return json_tree_action_copy_rset_to_rset(request.vars.obj_id,
                                                       request.vars.parent_obj_id,
                                                       request.vars.dst_id)
-        if request.vars.obj_type == "filterset" and \
+        elif request.vars.obj_type == "filterset" and \
            request.vars.dst_type.startswith("ruleset"):
             return json_tree_action_move_fset_to_rset(request.vars.obj_id,
                                                       request.vars.dst_id)
-        if request.vars.obj_type == "group" and \
+        elif request.vars.obj_type == "group" and \
            request.vars.dst_type.startswith("ruleset"):
             return json_tree_action_move_group_to_rset(request.vars.obj_id,
                                                        request.vars.dst_id)
-        if request.vars.obj_type == "group" and \
+        elif request.vars.obj_type == "group" and \
            request.vars.dst_type == "moduleset":
             return json_tree_action_move_group_to_modset(request.vars.obj_id,
                                                          request.vars.dst_id)
+        elif request.vars.obj_type == "filter" and \
+           request.vars.dst_type == "filterset":
+            return json_tree_action_copy_filter_to_fset(request.vars.obj_id,
+                                                        request.vars.dst_id)
+        elif request.vars.obj_type == "filterset" and \
+           request.vars.dst_type.startswith("filterset"):
+            return json_tree_action_copy_fset_to_fset(request.vars.obj_id,
+                                                      request.vars.dst_id)
+        elif request.vars.obj_type == "filter" and \
+           request.vars.dst_type.startswith("filterset"):
+            return json_tree_action_copy_filter_to_fset(request.vars.obj_id,
+                                                        request.vars.dst_id)
     elif action == "set_var_class":
         return json_tree_action_set_var_class(request.vars.obj_id,
                                               request.vars.var_class)
     elif action == "set_public":
         return json_tree_action_set_public(request.vars.obj_id,
                                            request.vars.publication)
+    elif action == "set_log_op":
+        return json_tree_action_set_log_op(request.vars.obj_id,
+                                           request.vars.obj_type,
+                                           request.vars.parent_obj_id,
+                                           request.vars.type)
     elif action == "set_type":
         return json_tree_action_set_type(request.vars.obj_id,
                                          request.vars.type)
     elif action == "detach_ruleset":
         return json_tree_action_detach_ruleset(request.vars.obj_id,
                                                request.vars.parent_obj_id)
+    elif action == "detach_filter":
+        return json_tree_action_detach_filter(request.vars.obj_id,
+                                              request.vars.parent_obj_id)
     elif action == "detach_group":
         return json_tree_action_detach_group(request.vars.obj_id,
                                              request.vars.parent_obj_id,
                                              request.vars.parent_obj_type)
     elif action == "detach_filterset":
-        return json_tree_action_detach_filterset(request.vars.obj_id)
+        return json_tree_action_detach_filterset(request.vars.obj_id,
+                                                 request.vars.parent_obj_id,
+                                                 request.vars.parent_obj_type)
     else:
         return "-1"
 
@@ -9980,6 +10195,8 @@ def json_tree_action_delete():
         return json_tree_action_delete_variable(request.vars.obj_id)
     elif request.vars.obj_type.startswith("ruleset"):
         return json_tree_action_delete_ruleset(request.vars.obj_id)
+    elif request.vars.obj_type.startswith("filterset"):
+        return json_tree_action_delete_filterset(request.vars.obj_id)
     elif request.vars.obj_type == "module":
         return json_tree_action_delete_module(request.vars.obj_id)
     elif request.vars.obj_type == "modset":
@@ -9995,6 +10212,8 @@ def json_tree_action_create():
         return json_tree_action_create_module(request.vars.parent_obj_id, request.vars.obj_name)
     elif request.vars.obj_type == "modset":
         return json_tree_action_create_moduleset(request.vars.obj_name)
+    elif request.vars.obj_type == "filterset":
+        return json_tree_action_create_filterset(request.vars.obj_name)
     return ""
 
 def json_tree_action_show():
@@ -10007,6 +10226,8 @@ def json_tree_action_show():
 def json_tree_action_rename():
     if request.vars.obj_type.startswith("ruleset"):
         return json_tree_action_rename_ruleset(request.vars.obj_id, request.vars.new_name)
+    elif request.vars.obj_type == "filterset":
+        return json_tree_action_rename_filterset(request.vars.obj_id, request.vars.new_name)
     elif request.vars.obj_type == "variable":
         return json_tree_action_rename_variable(request.vars.obj_id, request.vars.new_name)
     elif request.vars.obj_type == "module":
@@ -10031,6 +10252,21 @@ def json_tree_action_rename_modset(modset_id, new):
     n = db(db.comp_moduleset.id == modset_id).update(modset_name=new)
     _log('compliance.moduleset.rename',
          'renamed moduleset %(old)s as %(new)s',
+         dict(old=old, new=new))
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_rename_filterset(fset_id, new):
+    if len(db(db.gen_filtersets.fset_name==new).select(cacheable=True)) > 0:
+        return {"err": "rename filterset failed: new filterset name already exists"}
+    q = db.gen_filtersets.id == fset_id
+    rows = db(q).select(db.gen_filtersets.fset_name, cacheable=True)
+    if len(rows) == 0:
+        return json.dumps({"err": "rename filterset failed: can't find source filterset"})
+    old = rows[0].fset_name
+    n = db(db.gen_filtersets.id == fset_id).update(fset_name=new)
+    _log('compliance.filterset.rename',
+         'renamed filterset %(old)s as %(new)s',
          dict(old=old, new=new))
     return "0"
 
@@ -10170,18 +10406,45 @@ def json_tree_action_show_variable(var_id):
     return DIV(l)
 
 @auth.requires_membership('CompManager')
+def json_tree_action_create_filterset(name):
+    name = name.strip()
+    try:
+        name = name[4:]
+    except:
+        pass
+
+    q = db.gen_filtersets.fset_name == name
+    rows = db(q).select(cacheable=True)
+    v = rows.first()
+    if v is not None:
+        return {"err": "a filterset named '%(name)s' already exists"%dict(name=name)}
+
+    db.gen_filtersets.insert(
+      fset_name=name,
+      fset_stats='F',
+      fset_author=user_name(),
+      fset_updated=datetime.datetime.now(),
+    )
+    #add_default_team_responsible_to_filterset(name)
+    _log('compliance.filterset.add',
+         'added filterset %(name)s',
+         dict(name=name))
+    return "0"
+
+@auth.requires_membership('CompManager')
 def json_tree_action_create_moduleset(modset_name):
+    modset_name = modset_name.strip()
+    try:
+        modset_name = modset_name[4:]
+    except:
+        pass
+
     q = db.comp_moduleset.modset_name == modset_name
     rows = db(q).select(cacheable=True)
     v = rows.first()
     if v is not None:
         return {"err": "a moduleset named '%(modset_name)s' already exists"%dict(modset_name=modset_name)}
 
-    modset_name = modset_name.strip()
-    try:
-        modset_name = modset_name[4:]
-    except:
-        pass
     db.comp_moduleset.insert(
       modset_name=modset_name,
       modset_author=user_name(),
@@ -10195,17 +10458,18 @@ def json_tree_action_create_moduleset(modset_name):
 
 @auth.requires_membership('CompManager')
 def json_tree_action_create_ruleset(rset_name):
+    rset_name = rset_name.strip()
+    try:
+        rset_name = rset_name[4:]
+    except:
+        pass
+
     q = db.comp_rulesets.ruleset_name == rset_name
     rows = db(q).select(cacheable=True)
     v = rows.first()
     if v is not None:
         return {"err": "a ruleset named '%(rset_name)s' already exists"%dict(rset_name=rset_name)}
 
-    rset_name = rset_name.strip()
-    try:
-        rset_name = rset_name[4:]
-    except:
-        pass
     db.comp_rulesets.insert(
       ruleset_name=rset_name,
       ruleset_type="explicit",
@@ -10321,6 +10585,79 @@ def json_tree_action_set_var_class(var_id, var_class):
               old=v.comp_rulesets_variables.var_class,
               new=var_class,
               rset_name=v.comp_rulesets.ruleset_name))
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_set_log_op(obj_id, obj_type, parent_obj_id, log_op):
+    if obj_type == "filter":
+        return json_tree_action_set_filter_log_op(obj_id, parent_obj_id, log_op)
+    elif obj_type == "filterset":
+        return json_tree_action_set_filterset_log_op(obj_id, parent_obj_id, log_op)
+    else:
+        return {'err': 'unsupported action on this object type'}
+
+@auth.requires_membership('CompManager')
+def json_tree_action_set_filterset_log_op(obj_id, parent_obj_id, log_op):
+    q = db.gen_filtersets.id == obj_id
+    rows = db(q).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "filterset does not exist"}
+
+    q = db.gen_filtersets.id == parent_obj_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        return {"err": "filterset does not exist"}
+
+    q = db.gen_filtersets_filters.fset_id == parent_obj_id
+    q &= db.gen_filtersets_filters.encap_fset_id == obj_id
+    rows = db(q).select(cacheable=True)
+    x = rows.first()
+    if x.f_log_op == log_op:
+        return {"err": "filterset logical operator is already '%(log_op)s'"%dict(log_op=log_op)}
+    db(q).update(f_log_op=log_op)
+
+    db.commit()
+
+    _log('compliance.filterset.change',
+         'set filterset %(encap_fset_name)s logical operator from %(old)s to %(new)s in filterset %(fset_name)s',
+         dict(old=x.f_log_op,
+              encap_fset_name=v.fset_name,
+              new=log_op,
+              fset_name=w.fset_name))
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_set_filter_log_op(obj_id, parent_obj_id, log_op):
+    q = db.gen_filters.id == obj_id
+    rows = db(q).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "filter does not exist"}
+
+    q = db.gen_filtersets.id == parent_obj_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        return {"err": "filterset does not exist"}
+
+    q = db.gen_filtersets_filters.fset_id == parent_obj_id
+    q &= db.gen_filtersets_filters.f_id == obj_id
+    rows = db(q).select(cacheable=True)
+    x = rows.first()
+    if x.f_log_op == log_op:
+        return {"err": "filter logical operator is already '%(log_op)s'"%dict(log_op=log_op)}
+    db(q).update(f_log_op=log_op)
+
+    db.commit()
+
+    _log('compliance.filter.change',
+         'set filter %(f_name)s logical operator from %(old)s to %(new)s in filterset %(fset_name)s',
+         dict(old=x.f_log_op,
+              f_name=v.f_table+'.'+v.f_field+' '+v.f_op+' '+v.f_value,
+              new=log_op,
+              fset_name=w.fset_name))
     return "0"
 
 @auth.requires_membership('CompManager')
@@ -10442,6 +10779,33 @@ def json_tree_action_copy_rset_to_rset(rset_id, parent_rset_id, dst_rset_id):
 def json_tree_action_move_rset_to_rset(rset_id, parent_rset_id, dst_rset_id):
     return json_tree_action_copy_or_move_rset_to_rset(rset_id, parent_rset_id, dst_rset_id, move=True)
 
+def fset_loop(fset_id, parent_fset_id):
+    if fset_id == parent_fset_id:
+        return True
+    fset_id = int(fset_id)
+    parent_fset_id = int(parent_fset_id)
+    q = db.gen_filtersets_filters.f_id == 0
+    rows = db(q).select()
+    ancestors = {}
+    for row in rows:
+        if row.encap_fset_id not in ancestors:
+            ancestors[row.encap_fset_id] = []
+        ancestors[row.encap_fset_id].append(row.fset_id)
+
+    tested = []
+    def recurse_rel(fset_id, parent_fset_id):
+        if parent_fset_id not in ancestors:
+            return False
+        for _parent_fset_id in ancestors[parent_fset_id]:
+            tested.append("%d-%d"%(fset_id,_parent_fset_id))
+            if fset_id == _parent_fset_id:
+                return True
+            if recurse_rel(fset_id, _parent_fset_id):
+                return True
+        return False
+
+    return recurse_rel(fset_id, parent_fset_id)
+
 def rset_loop(rset_id, parent_rset_id):
     rset_id = int(rset_id)
     parent_rset_id = int(parent_rset_id)
@@ -10525,6 +10889,15 @@ def json_tree_action_copy_or_move_rset_to_rset(rset_id, parent_rset_id, dst_rset
               parent_rset_name=x.comp_rulesets.ruleset_name))
     comp_rulesets_chains()
     return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_detach_filterset(obj_id, parent_obj_id, parent_obj_type):
+    if parent_obj_type.startswith("ruleset"):
+        return json_tree_action_detach_filterset_from_rset(parent_obj_id)
+    elif parent_obj_type == "filterset":
+        return json_tree_action_detach_filterset_from_filterset(obj_id, parent_obj_id)
+    else:
+        return {"err": "detach filterset not supported for this parent object type"}
 
 @auth.requires_membership('CompManager')
 def json_tree_action_detach_group(group_id, obj_id, parent_obj_type):
@@ -10618,6 +10991,69 @@ def json_tree_action_detach_ruleset(rset_id, parent_rset_id):
     return "0"
 
 @auth.requires_membership('CompManager')
+def json_tree_action_copy_filter_to_fset(f_id, fset_id):
+    q = db.gen_filters.id == f_id
+    rows = db(q).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "filter not found"}
+
+    q = db.gen_filtersets.id == fset_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        return {"err": "filterset not found"}
+
+    q = db.gen_filtersets_filters.f_id == f_id
+    q &= db.gen_filtersets_filters.fset_id == fset_id
+    if db(q).count() > 0:
+        return "0"
+
+    db.gen_filtersets_filters.insert(f_id=f_id,
+                                     fset_id=fset_id,
+                                     f_order=0,
+                                     f_log_op="AND")
+
+    _log('compliance.filter.attach',
+         'attach filter %(f_name)s to filterset %(fset_name)s',
+         dict(fset_name=w.fset_name,
+              f_name=v.f_table+'.'+v.f_field+' '+v.f_op+' '+v.f_value))
+    return 0
+
+@auth.requires_membership('CompManager')
+def json_tree_action_copy_fset_to_fset(fset_id, dst_fset_id):
+    q = db.gen_filtersets.id == dst_fset_id
+    rows = db(q).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "filterset not found"}
+
+    q = db.gen_filtersets.id == fset_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        return {"err": "filterset not found"}
+
+    q = db.gen_filtersets_filters.encap_fset_id == fset_id
+    q &= db.gen_filtersets_filters.fset_id == dst_fset_id
+    if db(q).count() > 0:
+        return "0"
+
+    if fset_loop(fset_id, dst_fset_id):
+        return {"err": "the parent filterset is already a child of the encapsulated filterset. abort encapsulation not to cause infinite recursion"}
+
+    db.gen_filtersets_filters.insert(encap_fset_id=fset_id,
+                                     fset_id=dst_fset_id,
+                                     f_order=0,
+                                     f_log_op="AND")
+
+    _log('compliance.filterset.attach',
+         'attach filterset %(fset_name)s to filterset %(dst_fset_name)s',
+         dict(dst_fset_name=v.fset_name,
+              fset_name=w.fset_name))
+    return 0
+
+@auth.requires_membership('CompManager')
 def json_tree_action_move_fset_to_rset(fset_id, rset_id):
     q = db.comp_rulesets.id == rset_id
     q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
@@ -10649,7 +11085,59 @@ def json_tree_action_move_fset_to_rset(fset_id, rset_id):
     return 0
 
 @auth.requires_membership('CompManager')
-def json_tree_action_detach_filterset(rset_id):
+def json_tree_action_detach_filter(f_id, fset_id):
+    q = db.gen_filtersets.id == fset_id
+    rows = db(q).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "filterset not found"}
+
+    q = db.gen_filters.id == f_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        return {"err": "filter not found"}
+
+    q = db.gen_filtersets_filters.f_id == f_id
+    q &= db.gen_filtersets_filters.fset_id == fset_id
+    if len(db(q).select()) == 0:
+        return 0
+
+    db(q).delete()
+    _log('compliance.filter.detach',
+         'detach filter %(f_name)s from filterset %(fset_name)s',
+         dict(fset_name=v.fset_name,
+              f_name=w.f_table+'.'+w.f_field+' '+w.f_op+' '+w.f_value))
+    return 0
+
+@auth.requires_membership('CompManager')
+def json_tree_action_detach_filterset_from_filterset(fset_id, parent_fset_id):
+    q = db.gen_filtersets.id == parent_fset_id
+    rows = db(q).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "filterset not found"}
+
+    q = db.gen_filtersets.id == fset_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        return {"err": "filterset not found"}
+
+    q = db.gen_filtersets_filters.encap_fset_id == fset_id
+    q &= db.gen_filtersets_filters.fset_id == parent_fset_id
+    if len(db(q).select()) == 0:
+        return 0
+
+    db(q).delete()
+    _log('compliance.filterset.detach',
+         'detach filterset %(fset_name)s from filterset %(parent_fset_name)s',
+         dict(fset_name=w.fset_name,
+              parent_fset_name=v.fset_name))
+    return 0
+
+@auth.requires_membership('CompManager')
+def json_tree_action_detach_filterset_from_rset(rset_id):
     q = db.comp_rulesets.id == rset_id
     q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
     if 'Manager' not in user_groups():
@@ -10829,6 +11317,55 @@ def json_tree_action_clone_ruleset(rset_id):
     _log('compliance.ruleset.clone',
          'cloned ruleset %(o)s from %(n)s',
          dict(n=rset_name, o=clone_rset_name))
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_delete_filterset(fset_id):
+    q = db.gen_filtersets.id == fset_id
+    rows = db(q).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "filterset not found"}
+
+    q = db.gen_filtersets_filters.fset_id == fset_id
+    db(q).delete()
+
+    q = db.gen_filtersets_filters.encap_fset_id == fset_id
+    db(q).delete()
+
+    q = db.comp_rulesets_filtersets.fset_id == fset_id
+    db(q).delete()
+
+    q = db.gen_filterset_team_responsible.fset_id == fset_id
+    db(q).delete()
+
+    q = db.gen_filterset_check_threshold.fset_id == fset_id
+    db(q).delete()
+
+    q = db.gen_filterset_user.fset_id == fset_id
+    db(q).delete()
+
+    q = db.stats_compare_fset.fset_id == fset_id
+    db(q).delete()
+
+    q = db.stat_day_billing.fset_id == fset_id
+    db(q).delete()
+
+    q = db.stat_day.fset_id == fset_id
+    db(q).delete()
+
+    q = db.metrics_log.fset_id == fset_id
+    db(q).delete()
+
+    q = db.lifecycle_os.fset_id == fset_id
+    db(q).delete()
+
+    q = db.gen_filtersets.id == fset_id
+    db(q).delete()
+
+    _log('compliance.filterset.delete',
+         'deleted filterset %(fset_name)s',
+         dict(fset_name=v.fset_name))
     return "0"
 
 @auth.requires_membership('CompManager')
