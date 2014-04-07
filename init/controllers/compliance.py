@@ -8981,8 +8981,8 @@ def json_tree_modulesets():
     l = db.comp_moduleset_modules.on(j)
     if 'Manager' not in user_groups():
         q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
-    if request.vars.obj_filter is not None and len(request.vars.obj_filter) > 0:
-        q &= db.comp_moduleset.modset_name.like(request.vars.obj_filter)
+    if request.vars.obj_filter is not None:
+        q = _where(q, 'comp_moduleset', request.vars.obj_filter, 'modset_name')
     rows = db(q).select(db.comp_moduleset.id,
                         db.comp_moduleset.modset_name,
                         db.comp_moduleset_modules.id,
