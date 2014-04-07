@@ -10255,6 +10255,8 @@ def json_tree_action_show():
         return json_tree_action_show_ruleset(request.vars.obj_id)
     elif request.vars.obj_type == "variable":
         return json_tree_action_show_variable(request.vars.obj_id)
+    elif request.vars.obj_type == "filterset":
+        return json_tree_action_show_filterset(request.vars.obj_id)
     return ""
 
 def json_tree_action_rename():
@@ -10363,6 +10365,97 @@ def json_tree_action_rename_variable(var_id, new):
          'renamed variable %(old)s as %(new)s in ruleset %(rset_name)s',
          dict(old=old, new=new, rset_name=rset_name))
     return "0"
+
+def json_tree_action_show_filterset(fset_id):
+    fset_id = int(fset_id)
+
+    #
+    q = db.gen_filtersets.id == fset_id
+    rows = db(q).select(cacheable=False)
+    v = rows.first()
+    if v is None:
+        return {"err": "filterset does not exist"}
+    fset_name = v.fset_name
+
+    #
+    q = db.nodes.id > 0
+    q = apply_filters(q, node_field=db.nodes.nodename, fset_id=fset_id)
+    rows = db(q).select(db.nodes.nodename, orderby=db.nodes.nodename)
+    nodes = [r.nodename.lower() for r in rows]
+
+    matching_nodes = DIV(
+      H3(T("Matching nodes"), " (%d) "%len(nodes)),
+      P(', '.join(nodes)),
+    )
+
+    #
+    q = db.services.id > 0
+    q = apply_filters(q, service_field=db.services.svc_name, fset_id=fset_id)
+    rows = db(q).select(db.services.svc_name, orderby=db.services.svc_name)
+    services = [r.svc_name.lower() for r in rows]
+
+    matching_services = DIV(
+      H3(T("Matching services"), " (%d) "%len(services)),
+      P(', '.join(services)),
+    )
+
+    #
+    a = fset_get_ancestors()
+    if fset_id not in a:
+        ancestors = SPAN()
+    else:
+        q = db.gen_filtersets.id.belongs(a[fset_id])
+        rows = db(q).select(cacheable=False)
+        l = [ r.fset_name for r in rows ]
+        ancestors = DIV(
+          H3(T("Encapsulated in other filtersets"), " (%d) "%len(a[fset_id])),
+          SPAN(', '.join(l)),
+        )
+
+    #
+    q = db.comp_rulesets_filtersets.fset_id == fset_id
+    q &= db.comp_rulesets_filtersets.ruleset_id == db.comp_rulesets.id
+    rows = db(q).select(db.comp_rulesets.ruleset_name, cacheable=False)
+    if len(rows) == 0:
+        rulesets = SPAN()
+    else:
+        l = [ r.ruleset_name for r in rows ]
+        rulesets = DIV(
+          H3(T("Used by rulesets"), " (%d) "%len(rows)),
+          SPAN(', '.join(l)),
+        )
+
+    #
+    q = db.gen_filterset_check_threshold.fset_id == fset_id
+    rows = db(q).select(cacheable=False)
+    if len(rows) == 0:
+        check_thres = SPAN()
+    else:
+        l = [ '.'.join((r.chk_type, r.chk_inst)) for r in rows ]
+        check_thres = DIV(
+          H3(T("Used by checker thresholds"), " (%d) "%len(rows)),
+          SPAN(', '.join(l)),
+        )
+
+    #
+    compare = SPAN()
+
+    #
+    metrics = SPAN()
+
+
+    d = DIV(
+      H2(fset_name),
+      P(T('Compute statistics')+': ' + T(str(v.fset_stats))),
+      matching_nodes,
+      matching_services,
+      ancestors,
+      rulesets,
+      check_thres,
+      compare,
+      metrics,
+    )
+    return d
 
 def json_tree_action_show_ruleset(rset_id):
     q = db.comp_rulesets.id == rset_id
@@ -10828,11 +10921,7 @@ def json_tree_action_copy_rset_to_rset(rset_id, parent_rset_id, dst_rset_id):
 def json_tree_action_move_rset_to_rset(rset_id, parent_rset_id, dst_rset_id):
     return json_tree_action_copy_or_move_rset_to_rset(rset_id, parent_rset_id, dst_rset_id, move=True)
 
-def fset_loop(fset_id, parent_fset_id):
-    if fset_id == parent_fset_id:
-        return True
-    fset_id = int(fset_id)
-    parent_fset_id = int(parent_fset_id)
+def fset_get_ancestors():
     q = db.gen_filtersets_filters.f_id == 0
     rows = db(q).select()
     ancestors = {}
@@ -10840,7 +10929,14 @@ def fset_loop(fset_id, parent_fset_id):
         if row.encap_fset_id not in ancestors:
             ancestors[row.encap_fset_id] = []
         ancestors[row.encap_fset_id].append(row.fset_id)
+    return ancestors
 
+def fset_loop(fset_id, parent_fset_id):
+    if fset_id == parent_fset_id:
+        return True
+    fset_id = int(fset_id)
+    parent_fset_id = int(parent_fset_id)
+    ancestors = fset_get_ancestors()
     tested = []
     def recurse_rel(fset_id, parent_fset_id):
         if parent_fset_id not in ancestors:
