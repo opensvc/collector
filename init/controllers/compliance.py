@@ -9256,7 +9256,7 @@ def json_tree_rulesets():
 
     for row in rows:
         rset = row.comp_rulesets
-        if rset.id in encap_rset_ids:
+        if rset.id in encap_rset_ids and not rset.ruleset_public:
             continue
         _data = recurse_rset(rset, parent_ids=[])
         rulesets['children'].append(_data)
