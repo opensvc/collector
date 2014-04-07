@@ -9290,6 +9290,27 @@ function resizer(){
 $(window).bind('resize', resizer)
 $(window).load(resizer)
 
+function set_stats(value, label, node) {
+  return {
+    "label": label,
+    "action": function(obj){
+      $.ajax({
+        async: false,
+        type: "POST",
+        url: "%(url_action)s",
+        data: {
+         "operation": "set_stats",
+         "value": value,
+         "obj_id": obj.attr("obj_id")
+        },
+        success: function(msg){
+          json_status(msg)
+        }
+      });
+    }
+  }
+}
+
 function set_log_op_entry(label, obj_type, node) {
   return {
     "label": label,
@@ -9794,6 +9815,16 @@ jstree_data = {
      // filterset
      //
      else if (node.attr("rel")=="filterset") {
+       h["set_stats"] = {
+         "label": "Set statistics",
+         "separator_before": false,
+         "separator_after": false,
+         "icon": false,
+         "submenu": {
+           "yes": set_stats(true, "Compute daily statitiscs", node),
+           "no": set_stats(false, "Do not compute daily statistics", node)
+         }
+       }
        if (node.parents("li").attr("rel") == "filterset") {
          h["remove"]["_disabled"] = true
          h["rename"]["_disabled"] = true
@@ -10158,6 +10189,9 @@ def json_tree_action():
     elif action == "set_public":
         return json_tree_action_set_public(request.vars.obj_id,
                                            request.vars.publication)
+    elif action == "set_stats":
+        return json_tree_action_set_stats(request.vars.obj_id,
+                                          request.vars.value)
     elif action == "set_log_op":
         return json_tree_action_set_log_op(request.vars.obj_id,
                                            request.vars.obj_type,
@@ -10685,6 +10719,21 @@ def json_tree_action_set_type(rset_id, rset_type):
          dict(rset_name=v.comp_rulesets.ruleset_name,
               old=v.comp_rulesets.ruleset_type,
               new=rset_type))
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_set_stats(fset_id, value):
+    q = db.gen_filtersets.id == fset_id
+    rows = db(q).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "filterset does not exist"}
+    db(q).update(fset_stats=value)
+    _log('compliance.filterset.change',
+         'set filterset %(fset_name)s stats from %(old)s to %(new)s',
+         dict(fset_name=v.fset_name,
+              old=v.fset_stats,
+              new=value))
     return "0"
 
 @auth.requires_membership('CompManager')
