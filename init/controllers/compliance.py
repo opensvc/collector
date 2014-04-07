@@ -10168,7 +10168,7 @@ def json_tree_action():
             return json_tree_action_move_group_to_rset(request.vars.obj_id,
                                                        request.vars.dst_id)
         elif request.vars.obj_type == "group" and \
-           request.vars.dst_type == "moduleset":
+           request.vars.dst_type == "modset":
             return json_tree_action_move_group_to_modset(request.vars.obj_id,
                                                          request.vars.dst_id)
         elif request.vars.obj_type == "filter" and \
