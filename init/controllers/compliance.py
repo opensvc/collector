@@ -10486,6 +10486,21 @@ def json_tree_action_show_ruleset(rset_id):
     l.append(HR())
 
     rset_id = int(rset_id)
+
+    q = db.comp_rulesets_nodes.ruleset_id == rset_id
+    rows = db(q).select(cacheable=False)
+    if len(rows) > 0:
+        l.append(H3(T("Attached to servers")))
+        l.append(P(' '.join(map(lambda x: x.nodename, rows))))
+        l.append(HR())
+
+    q = db.comp_rulesets_services.ruleset_id == rset_id
+    rows = db(q).select(cacheable=False)
+    if len(rows) > 0:
+        l.append(H3(T("Attached to services")))
+        l.append(P(' '.join(map(lambda x: x.svcname, rows))))
+        l.append(HR())
+
     q = db.comp_rulesets_rulesets.id > 0
     rows = db(q).select(cacheable=True)
     rel = {}
