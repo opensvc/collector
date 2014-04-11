@@ -2091,6 +2091,8 @@ $("#%(id)s").everyTime(1000, function(i){
 #
 action_img_h = {
     'checks': 'check16.png',
+    'enable': 'check16.png',
+    'disable': 'nok.png',
     'pushservices': 'svc.png',
     'pushpkg': 'pkg16.png',
     'pushpatch': 'pkg16.png',
