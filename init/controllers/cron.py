@@ -813,6 +813,25 @@ def update_dg_quota():
     db.executesql(sql)
     db.commit()
 
+def purge_comp_status():
+    sql = """delete from comp_status
+             where
+               run_svcname != "" and
+               concat(run_nodename, run_svcname) not in (
+                 select concat(mon_nodname, mon_svcname) from svcmon
+               )
+           """
+    db.executesql(sql)
+    db.commit()
+    sql = """delete from comp_status
+             where
+               run_nodename not in (
+                 select distinct nodename from nodes
+               )
+    """
+    db.executesql(sql)
+    db.commit()
+
 def purge_alerts_on_nodes_without_asset():
     l = db.nodes.on(db.dashboard.dash_nodename==db.nodes.nodename)
     q = db.dashboard.dash_nodename is not None
@@ -855,6 +874,7 @@ def cron_alerts_daily():
     cron_purge_node_hba()
     cron_purge_packages()
     cron_mac_dup()
+    purge_comp_status()
 
 def cron_alerts_hourly():
     rets = []
