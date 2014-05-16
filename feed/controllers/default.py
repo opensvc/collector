@@ -3487,6 +3487,18 @@ def collector_events(cmd, auth):
 
 @auth_uuid
 @service.xmlrpc
+def collector_service_status(cmd, auth):
+    d = {}
+    svcname = cmd["svcname"]
+    q = db.services.svc_name == svcname
+    row = db(q).select(db.services.svc_availstatus).first()
+    if row is None:
+        return {"ret": 1, "msg": "service not found %s"%svcname}
+    d[svcname] = {"availstatus": row. svc_availstatus}
+    return {"ret": 0, "msg": "", "data": d}
+
+@auth_uuid
+@service.xmlrpc
 def collector_disks(cmd, auth):
     d = {}
     nodename = auth[1]
