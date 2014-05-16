@@ -214,7 +214,7 @@ def format_node(pattern):
                   A(
                     T('compliance status'),
                     _href=URL(r=request, c='compliance', f='comp_status',
-                              vars={'0_f_run_nodename': row.nodename,
+                              vars={'cs0_f_run_nodename': row.nodename,
                                     'clear_filters': 'true'})
                   ),
                   A(

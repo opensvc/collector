@@ -903,6 +903,9 @@ def insert_stats_netdev_err(vars, vals, auth):
     generic_insert('stats_netdev_err', vars, vals)
 
 def get_vcpus(nodename, vmname):
+    if nodename == vmname:
+        return None
+
     sql = """select mon_vcpus from svcmon where
                mon_nodname = "%s" and
                mon_vmname = "%s" """%(nodename, vmname)
