@@ -879,6 +879,7 @@ def cron_mac_dup():
                where
                 intf not like "%:%" and
                 mac!="00:00:00:00:00:00" and
+                mac!="0:0:0:0:0:0" and
                 node_ip.updated > date_sub(now(), interval 1 day)
                group by mac, nodename
               ) t
