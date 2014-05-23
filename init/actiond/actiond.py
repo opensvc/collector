@@ -87,23 +87,48 @@ def get_queued():
     cursor.execute("SELECT a.id, a.command, a.action_type, a.nodename, n.fqdn, n.listener_port, a.form_id FROM action_queue a join nodes n on a.nodename=n.nodename where a.status='W'")
     cmds = []
     ids = []
+    invalid_ids = []
+
     while (1):
         row = cursor.fetchone()
         if row is None:
             break
+
+        if row[4] is not None:
+            # prefer fqdn
+            nodename = row[4]
+        else:
+            nodename = row[3]
+
+        if 'opensvc@localhost' in row[1] or \
+           'opensvc@localhost.localdomain' in row[1]:
+            invalid_ids.append(str(row[0]))
+            continue
+
         if row[2] == "pull":
             port = row[5]
-            if row[4] is not None:
-                nodename = row[4]
-            else:
-                nodename = row[3]
             notify_node(nodename, port)
-            continue
-        cmds.append((row[0], row[1], row[6]))
-        ids.append(str(row[0]))
+        else:
+            cmds.append((row[0], row[1], row[6]))
+            ids.append(str(row[0]))
+
+    if len(invalid_ids) > 0:
+        now = str(datetime.datetime.now())
+        sql = """update action_queue set
+                   status='T',
+                   date_dequeued='%s',
+                   ret=1,
+                   stdout="",
+                   stderr="invalid"
+                 where id in (%s)
+              """%(now, ','.join(invalid_ids))
+        cursor.execute(sql)
+        conn.commit()
+
     if len(ids) > 0:
         cursor.execute("update action_queue set status='Q' where id in (%s)"%(','.join(ids)))
         conn.commit()
+
     cursor.close()
     conn.close()
     return cmds
