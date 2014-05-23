@@ -5822,13 +5822,15 @@ def comp_get_rulesets_fset_ids(rset_ids=None, nodename=None, svcname=None):
     q &= db.comp_rulesets_filtersets.fset_id == db.gen_filtersets.id
 
     if nodename is not None:
-        q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+        q1 = db.comp_rulesets.id == db.comp_rulesets_chains.tail_rset_id
+        q1 &= db.comp_rulesets_chains.head_rset_id == db.comp_ruleset_team_responsible.ruleset_id
         q1 &= db.comp_ruleset_team_responsible.group_id == node_team_responsible_id(nodename)
     else:
         q1 = db.comp_rulesets.id < 0
 
     if svcname is not None:
-        q2 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+        q2 = db.comp_rulesets.id == db.comp_rulesets_chains.tail_rset_id
+        q2 &= db.comp_rulesets_chains.head_rset_id == db.comp_ruleset_team_responsible.ruleset_id
         q2 &= db.comp_ruleset_team_responsible.group_id.belongs(svc_team_responsible_id(svcname))
     else:
         q2 = db.comp_rulesets.id < 0

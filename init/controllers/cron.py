@@ -814,6 +814,19 @@ def update_dg_quota():
     db.commit()
 
 def purge_comp_status():
+    #
+    # purge entries older than 30 days
+    #
+    sql = """delete from comp_status
+             where
+               run_date<date_sub(now(), interval 31 day)
+    """
+    db.executesql(sql)
+    db.commit()
+
+    #
+    # purge svc compliance status for deleted services
+    #
     sql = """delete from comp_status
              where
                run_svcname != "" and
@@ -823,6 +836,10 @@ def purge_comp_status():
            """
     db.executesql(sql)
     db.commit()
+
+    #
+    # purge node compliance status for deleted nodes
+    #
     sql = """delete from comp_status
              where
                run_nodename not in (
@@ -831,6 +848,63 @@ def purge_comp_status():
     """
     db.executesql(sql)
     db.commit()
+
+    #
+    # purge compliance status older than 7 days
+    # for modules in no moduleset, ie not schedulable
+    #
+    sql = """delete from comp_status
+             where
+               run_date<date_sub(now(), interval 7 day) and
+               run_module not in (
+                 select modset_mod_name from comp_moduleset_modules
+               )
+    """
+    db.executesql(sql)
+    db.commit()
+
+    #
+    # purge node compliance status older than 7 days
+    # for unattached modules
+    #
+    sql = """delete from comp_status
+             where
+               run_date<date_sub(now(), interval 7 day) and
+               run_svcname="" and
+               run_module not in (
+                 select modset_mod_name
+                 from comp_moduleset_modules
+                 where modset_id in (
+                   select modset_id
+                   from comp_node_moduleset
+                   where modset_node=run_nodename
+                 )
+               )
+    """
+    db.executesql(sql)
+    db.commit()
+
+    #
+    # purge svc compliance status older than 7 days
+    # for unattached modules
+    #
+    sql = """delete from comp_status
+             where
+               run_date<date_sub(now(), interval 7 day) and
+               run_svcname!="" and
+               run_module not in (
+                 select modset_mod_name
+                 from comp_moduleset_modules
+                 where modset_id in (
+                   select modset_id
+                   from comp_modulesets_services
+                   where modset_svcname=run_svcname
+                 )
+               )
+    """
+    db.executesql(sql)
+    db.commit()
+
 
 def purge_alerts_on_nodes_without_asset():
     l = db.nodes.on(db.dashboard.dash_nodename==db.nodes.nodename)

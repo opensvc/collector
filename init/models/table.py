@@ -1405,6 +1405,7 @@ $("input").each(function(){
       ! $(this).attr('id').match(/assetname/gi) && \
       ! $(this).attr('id').match(/mon_nodname/gi) && \
       ! $(this).attr('id').match(/disk_nodename/gi) && \
+      ! $(this).attr('id').match(/disk_id/gi) && \
       ! $(this).attr('id').match(/disk_svcname/gi) && \
       ! $(this).attr('id').match(/save_nodename/gi) && \
       ! $(this).attr('id').match(/save_svcname/gi)
