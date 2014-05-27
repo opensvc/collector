@@ -5259,6 +5259,12 @@ def _comp_get_moduleset_svc_modules(moduleset, svcname):
                         cacheable=True)
     return [r.modset_mod_name for r in rows]
 
+def comp_attached_svc_ruleset_id(svcname, slave):
+    q = db.comp_rulesets_services.svcname == svcname
+    q &= db.comp_rulesets_services.slave == slave
+    rows = db(q).select(db.comp_rulesets_services.ruleset_id, cacheable=True)
+    return [r.ruleset_id for r in rows]
+
 def comp_attached_ruleset_id(nodename):
     q = db.comp_rulesets_nodes.nodename == nodename
     rows = db(q).select(db.comp_rulesets_nodes.ruleset_id, cacheable=True)
@@ -5429,11 +5435,11 @@ def comp_attach_moduleset(nodename, moduleset, auth):
 def comp_detach_svc_ruleset(svcname, ruleset, auth):
     if len(ruleset) == 0:
         return dict(status=False, msg="no ruleset specified"%ruleset)
+    slave = comp_slave(svcname, auth[1])
     if ruleset == 'all':
-        rset_id = comp_attached_svc_ruleset_id(svcname)
+        rset_id = comp_attached_svc_ruleset_id(svcname, slave)
     else:
         rset_id = comp_ruleset_id(ruleset)
-    slave = comp_slave(svcname, auth[1])
     if rset_id is None:
         return dict(status=True, msg="ruleset %s does not exist"%ruleset)
     elif ruleset == 'all' and len(rset_id) == 0:
