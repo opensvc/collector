@@ -832,6 +832,8 @@ def purge_comp_status():
                run_svcname != "" and
                concat(run_nodename, run_svcname) not in (
                  select concat(mon_nodname, mon_svcname) from svcmon
+                 union all
+                 select concat(mon_vmname, mon_svcname) from svcmon
                )
            """
     db.executesql(sql)
