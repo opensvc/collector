@@ -3,7 +3,32 @@ def svc_pkgdiff():
     svcname = request.args[0]
     rows = db(db.svcmon.mon_svcname==svcname).select(db.svcmon.mon_nodname)
     nodes = [row.mon_nodname for row in rows]
-    return _ajax_pkgdiff(nodes)
+    d1 = _ajax_pkgdiff(nodes)
+    rows = db(db.svcmon.mon_svcname==svcname).select(db.svcmon.mon_vmname,
+                                                     groupby=db.svcmon.mon_vmname)
+    nodes = [row.mon_vmname for row in rows if row.mon_vmname != "" and row.mon_vmname is not None]
+    if len(nodes) > 0:
+        d2 = _ajax_pkgdiff(nodes)
+    else:
+        d2 = None
+
+    if d1 is None:
+        s1 = ""
+    else:
+        s1 = SPAN(
+             H3(T("Installed package differences in cluster")),
+             d1
+        )
+
+    if d2 is None:
+        s2 = ""
+    else:
+        s2 = SPAN(
+             H3(T("Installed package differences in encapsulated cluster")),
+             d2
+        )
+
+    return DIV(s1, s2)
 
 @auth.requires_login()
 def ajax_pkgdiff():
@@ -38,6 +63,8 @@ def _ajax_pkgdiff(nodes):
              where t.c!=%(n)s
           """%dict(n=n, nodes=','.join(map(repr, nodes)))
     rows = db.executesql(sql)
+    if len(rows) == 0:
+        return
 
     def fmt_header1():
         return TR(
