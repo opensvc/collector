@@ -6319,10 +6319,14 @@ def ajax_compliance_svc():
 def show_diff(svcname):
     l = []
     compdiff = show_compdiff(svcname)
+    compdiff_encap = show_compdiff(svcname, encap=True)
     moddiff = show_moddiff(svcname)
+    moddiff_encap = show_moddiff(svcname, encap=True)
     rsetdiff = show_rsetdiff(svcname)
+    rsetdiff_encap = show_rsetdiff(svcname, encap=True)
 
-    if compdiff is not None or moddiff is not None or rsetdiff is not None:
+    if compdiff is not None or moddiff is not None or rsetdiff is not None or \
+       compdiff_encap is not None or moddiff_encap is not None or rsetdiff_encap is not None:
         l.append(HR())
 
     if compdiff is not None:
@@ -6330,15 +6334,30 @@ def show_diff(svcname):
           H3(T('Module status differences in cluster')),
           compdiff))
 
+    if compdiff_encap is not None:
+        l.append(SPAN(
+          H3(T('Module status differences in encapsulated cluster')),
+          compdiff_encap))
+
     if moddiff is not None:
         l.append(SPAN(
           H3(T('Moduleset attachment differences in cluster')),
           moddiff))
 
+    if moddiff_encap is not None:
+        l.append(SPAN(
+          H3(T('Moduleset attachment differences in encapsulated cluster')),
+          moddiff_encap))
+
     if rsetdiff is not None:
         l.append(SPAN(
           H3(T('Ruleset attachment differences in cluster')),
           rsetdiff))
+
+    if rsetdiff_encap is not None:
+        l.append(SPAN(
+          H3(T('Ruleset attachment differences in encapsulated cluster')),
+          rsetdiff_encap))
 
     return l
 
@@ -6450,9 +6469,15 @@ def cron_dash_comp():
     cron_dash_moddiff()
     cron_dash_rsetdiff()
 
-def show_compdiff(svcname):
+def show_compdiff(svcname, encap=False):
     rows = db(db.svcmon.mon_svcname==svcname).select(cacheable=True)
-    nodes = [r.mon_nodname for r in rows]
+    if encap:
+        nodes = [r.mon_vmname for r in rows if r.mon_vmname != "" and r.mon_vmname is not None]
+        f = "mon_vmname"
+    else:
+        nodes = [r.mon_nodname for r in rows]
+        f = "mon_nodname"
+    nodes = list(set(nodes))
     nodes.sort()
     n = len(nodes)
 
@@ -6461,7 +6486,7 @@ def show_compdiff(svcname):
 
     sql = """select t.* from (
                select
-                 count(cs.run_nodename) as c,
+                 count(distinct cs.run_nodename) as c,
                  cs.run_module,
                  cs.run_nodename,
                  cs.run_status
@@ -6471,7 +6496,7 @@ def show_compdiff(svcname):
                where
                  (cs.run_svcname is NULL or cs.run_svcname="") and
                  m.mon_svcname="%(svcname)s" and
-                 m.mon_nodname=cs.run_nodename
+                 m.%(f)s=cs.run_nodename
                group by
                  cs.run_module,
                  cs.run_status
@@ -6482,7 +6507,7 @@ def show_compdiff(svcname):
                 t.run_module,
                 t.run_nodename,
                 t.run_status
-              """%dict(svcname=svcname, n=n)
+              """%dict(svcname=svcname, n=n, f=f)
 
     _rows = db.executesql(sql)
 
@@ -6504,11 +6529,11 @@ def show_compdiff(svcname):
                (cs.run_svcname is NULL or cs.run_svcname="") and
                cs.run_module in (%(mods)s) and
                m.mon_svcname="%(svcname)s" and
-               m.mon_nodname=cs.run_nodename
+               m.%(f)s=cs.run_nodename
              order by
                cs.run_module,
                cs.run_nodename
-         """%dict(svcname=svcname, mods=','.join(map(lambda x: repr(str(x)), mods)))
+         """%dict(svcname=svcname, mods=','.join(map(lambda x: repr(str(x)), mods)), f=f)
     _rows = db.executesql(sql)
 
     if len(_rows) == 0:
@@ -6594,11 +6619,17 @@ def cron_dash_moddiff():
 
     return str(r)
 
-def show_moddiff(svcname):
+def show_moddiff(svcname, encap=False):
     rows = db(db.svcmon.mon_svcname==svcname).select(cacheable=True)
-    nodes = [r.mon_nodname for r in rows]
-    n = len(nodes)
+    if encap:
+        nodes = [r.mon_vmname for r in rows if r.mon_vmname != "" and r.mon_vmname is not None]
+        f = "mon_vmname"
+    else:
+        nodes = [r.mon_nodname for r in rows]
+        f = "mon_nodname"
+    nodes = list(set(nodes))
     nodes.sort()
+    n = len(nodes)
 
     if n < 2:
         return
@@ -6607,8 +6638,8 @@ def show_moddiff(svcname):
             select t.* from
             (
              select
-               count(nm.modset_node) as n,
-               group_concat(nm.modset_node) as nodes,
+               count(distinct nm.modset_node) as n,
+               group_concat(distinct nm.modset_node) as nodes,
                ms.modset_name as modset
              from
                comp_node_moduleset nm,
@@ -6616,7 +6647,7 @@ def show_moddiff(svcname):
                comp_moduleset ms
              where
                m.mon_svcname="%(svcname)s" and
-               m.mon_nodname=nm.modset_node and
+               m.%(f)s=nm.modset_node and
                nm.modset_id=ms.id
              group by
                modset_name
@@ -6624,7 +6655,7 @@ def show_moddiff(svcname):
                modset_name
             ) t
             where t.n != %(n)d
-    """%dict(svcname=svcname, n=n)
+    """%dict(svcname=svcname, n=n, f=f)
     _rows = db.executesql(sql)
 
     if len(_rows) == 0:
@@ -6684,11 +6715,17 @@ def cron_dash_rsetdiff():
 
     return str(r)
 
-def show_rsetdiff(svcname):
+def show_rsetdiff(svcname, encap=False):
     rows = db(db.svcmon.mon_svcname==svcname).select(cacheable=True)
-    nodes = [r.mon_nodname for r in rows]
-    n = len(nodes)
+    if encap:
+        nodes = [r.mon_vmname for r in rows if r.mon_vmname != "" and r.mon_vmname is not None]
+        f = "mon_vmname"
+    else:
+        nodes = [r.mon_nodname for r in rows]
+        f = "mon_nodname"
+    nodes = list(set(nodes))
     nodes.sort()
+    n = len(nodes)
 
     if n < 2:
         return
@@ -6697,8 +6734,8 @@ def show_rsetdiff(svcname):
             select t.* from
             (
              select
-               count(rn.nodename) as n,
-               group_concat(rn.nodename) as nodes,
+               count(distinct rn.nodename) as n,
+               group_concat(distinct rn.nodename) as nodes,
                rs.ruleset_name as ruleset
              from
                comp_rulesets_nodes rn,
@@ -6706,7 +6743,7 @@ def show_rsetdiff(svcname):
                comp_rulesets rs
              where
                m.mon_svcname="%(svcname)s" and
-               m.mon_nodname=rn.nodename and
+               m.%(f)s=rn.nodename and
                rn.ruleset_id=rs.id
              group by
                ruleset_name
@@ -6714,7 +6751,7 @@ def show_rsetdiff(svcname):
                ruleset_name
             ) t
             where t.n != %(n)d
-    """%dict(svcname=svcname, n=n)
+    """%dict(svcname=svcname, n=n, f=f)
     _rows = db.executesql(sql)
 
     if len(_rows) == 0:
