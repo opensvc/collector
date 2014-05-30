@@ -4500,7 +4500,10 @@ def ajax_comp_log_col_values():
 def ajax_comp_status_col_values():
     t = table_comp_status('cs0', 'ajax_comp_status')
     col = request.args[0]
-    o = db[t.colprops[col].table][col]
+    try:
+        o = db[t.colprops[col].table][col]
+    except:
+        return T("this column is not filterable")
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
     q &= db.comp_status.run_nodename == db.v_nodes.nodename
     for f in t.cols:
