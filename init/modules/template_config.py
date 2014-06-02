@@ -8,6 +8,8 @@ from gluon.sqlhtml import *
 # must be passed and cannot be imported!
 http_host = "opensvc.mydomain.com"
 
+allow_register = False
+
 token_quota = 150000
 billing_method = "agents"
 

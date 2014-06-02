@@ -40,6 +40,9 @@ auth.settings.hmac_key='sha512:7755f108-1b83-45dc-8302-54be8f3616a1'
 auth.settings.expiration=36000000
 auth.settings.allow_basic_login = True
 
+if hasattr(config, "allow_register") and not config.allow_register:
+    auth.settings.actions_disabled.append('register')
+
 #request.requires_https()
 
 #
