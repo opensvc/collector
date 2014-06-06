@@ -203,7 +203,7 @@ class table_nodes(HtmlTable):
         if 'NodeManager' in user_groups():
             self.additional_tools.append('node_add')
             self.additional_tools.append('node_del')
-        self.additional_tools.append('pkgdiff')
+        self.additional_tools.append('nodediff')
         self.additional_tools.append('grpperf')
         self.additional_tools.append('santopo')
         if member_of(('Manager', 'CompExec')):
@@ -446,15 +446,15 @@ class table_nodes(HtmlTable):
             )
         return d
 
-    def pkgdiff(self):
-        divid = 'pkgdiff'
+    def nodediff(self):
+        divid = 'nodediff'
         d = DIV(
               A(
-                T("Package differences"),
-                _class='pkg16',
+                T("Node differences"),
+                _class='common16',
                 _onclick="""click_toggle_vis(event,'%(div)s', 'block');
-                            ajax('%(url)s?node='+checked_nodes(), [], '%(div)s');"""%dict(
-                              url=URL(r=request,c='pkgdiff',f='ajax_pkgdiff'),
+                            sync_ajax('%(url)s?node='+checked_nodes(), [], '%(div)s', function(){});"""%dict(
+                              url=URL(r=request,c='nodediff',f='ajax_nodediff'),
                               div=divid,
                             ),
               ),

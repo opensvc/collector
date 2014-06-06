@@ -6316,6 +6316,30 @@ def ajax_compliance_svc():
         )
     return d
 
+def ajax_compliance_nodediff():
+    nodes = request.vars.node.split(',')
+    l = []
+    compdiff = show_nodes_compdiff(nodes)
+    moddiff = show_nodes_moddiff(nodes)
+    rsetdiff = show_nodes_rsetdiff(nodes)
+
+    if compdiff is not None:
+        l.append(SPAN(
+          H3(T('Module status differences in cluster')),
+          compdiff))
+
+    if moddiff is not None:
+        l.append(SPAN(
+          H3(T('Moduleset attachment differences in cluster')),
+          moddiff))
+
+    if rsetdiff is not None:
+        l.append(SPAN(
+          H3(T('Ruleset attachment differences in cluster')),
+          rsetdiff))
+
+    return SPAN(l)
+
 def show_diff(svcname):
     l = []
     compdiff = show_compdiff(svcname)
@@ -6469,6 +6493,64 @@ def cron_dash_comp():
     cron_dash_moddiff()
     cron_dash_rsetdiff()
 
+def show_nodes_compdiff(nodes):
+    nodes = list(set(nodes))
+    nodes.sort()
+    n = len(nodes)
+
+    if n < 2:
+        return
+
+    sql = """select t.* from (
+               select
+                 count(distinct cs.run_nodename) as c,
+                 cs.run_module,
+                 cs.run_nodename,
+                 cs.run_status
+               from
+                 comp_status cs
+               where
+                 cs.run_nodename in (%(nodes)s)
+               group by
+                 cs.run_module,
+                 cs.run_status
+              ) as t
+              where
+                t.c!=%(n)s
+              order by
+                t.run_module,
+                t.run_nodename,
+                t.run_status
+              """%dict(nodes=','.join(map(lambda x: repr(str(x)), nodes)), n=n)
+
+    _rows = db.executesql(sql)
+    if len(_rows) == 0:
+        return
+
+    mods = [r[1] for r in _rows]
+
+    sql = """select
+               cs.run_nodename,
+               cs.run_module,
+               cs.run_status,
+               cs.run_log,
+               cs.run_date
+             from
+               comp_status cs
+             where
+               cs.run_module in (%(mods)s) and
+               cs.run_nodename in (%(nodes)s)
+             order by
+               cs.run_module,
+               cs.run_nodename
+         """%dict(nodes=','.join(map(lambda x: repr(x), nodes)), mods=','.join(map(lambda x: repr(str(x)), mods)))
+    _rows = db.executesql(sql)
+
+    if len(_rows) == 0:
+        return
+
+    return _show_compdiff(nodes, n, _rows)
+
 def show_compdiff(svcname, encap=False):
     rows = db(db.svcmon.mon_svcname==svcname).select(cacheable=True)
     if encap:
@@ -6510,7 +6592,6 @@ def show_compdiff(svcname, encap=False):
               """%dict(svcname=svcname, n=n, f=f)
 
     _rows = db.executesql(sql)
-
     if len(_rows) == 0:
         return
 
@@ -6539,6 +6620,9 @@ def show_compdiff(svcname, encap=False):
     if len(_rows) == 0:
         return
 
+    return _show_compdiff(nodes, n, _rows)
+
+def _show_compdiff(nodes, n, _rows):
     data = {}
     for row in _rows:
         module = row[1]
@@ -6619,6 +6703,37 @@ def cron_dash_moddiff():
 
     return str(r)
 
+def show_nodes_moddiff(nodes):
+    nodes = list(set(nodes))
+    nodes.sort()
+    n = len(nodes)
+
+    if n < 2:
+        return
+
+    sql = """
+            select t.* from
+            (
+             select
+               count(distinct nm.modset_node) as n,
+               group_concat(distinct nm.modset_node) as nodes,
+               ms.modset_name as modset
+             from
+               comp_node_moduleset nm,
+               comp_moduleset ms
+             where
+               nm.modset_node in (%(nodes)s) and
+               nm.modset_id=ms.id
+             group by
+               modset_name
+             order by
+               modset_name
+            ) t
+            where t.n != %(n)d
+    """%dict(nodes=','.join(map(lambda x: repr(x), nodes)), n=n)
+    _rows = db.executesql(sql)
+    return _show_moddiff(nodes, n, _rows)
+
 def show_moddiff(svcname, encap=False):
     rows = db(db.svcmon.mon_svcname==svcname).select(cacheable=True)
     if encap:
@@ -6657,6 +6772,9 @@ def show_moddiff(svcname, encap=False):
             where t.n != %(n)d
     """%dict(svcname=svcname, n=n, f=f)
     _rows = db.executesql(sql)
+    return _show_moddiff(nodes, n, _rows)
+
+def _show_moddiff(nodes, n, _rows):
 
     if len(_rows) == 0:
         return
@@ -6715,6 +6833,38 @@ def cron_dash_rsetdiff():
 
     return str(r)
 
+def show_nodes_rsetdiff(nodes):
+    nodes = list(set(nodes))
+    nodes.sort()
+    n = len(nodes)
+
+    if n < 2:
+        return
+
+    sql = """
+            select t.* from
+            (
+             select
+               count(distinct rn.nodename) as n,
+               group_concat(distinct rn.nodename) as nodes,
+               rs.ruleset_name as ruleset
+             from
+               comp_rulesets_nodes rn,
+               comp_rulesets rs
+             where
+               rn.nodename in (%(nodes)s) and
+               rn.ruleset_id=rs.id
+             group by
+               ruleset_name
+             order by
+               ruleset_name
+            ) t
+            where t.n != %(n)d
+    """%dict(nodes=','.join(map(lambda x: repr(str(x)), nodes)), n=n)
+    _rows = db.executesql(sql)
+
+    return _show_rsetdiff(nodes, n, _rows)
+
 def show_rsetdiff(svcname, encap=False):
     rows = db(db.svcmon.mon_svcname==svcname).select(cacheable=True)
     if encap:
@@ -6754,6 +6904,9 @@ def show_rsetdiff(svcname, encap=False):
     """%dict(svcname=svcname, n=n, f=f)
     _rows = db.executesql(sql)
 
+    return _show_rsetdiff(nodes, n, _rows)
+
+def _show_rsetdiff(nodes, n, _rows):
     if len(_rows) == 0:
         return
 

@@ -813,6 +813,46 @@ def update_dg_quota():
     db.executesql(sql)
     db.commit()
 
+def purge_comp_rulesets_services():
+    sql = """delete from comp_rulesets_services
+             where
+               svcname not in (
+                 select distinct mon_svcname from svcmon
+               )
+          """
+    db.executesql(sql)
+    db.commit()
+
+def purge_comp_rulesets_nodes():
+    sql = """delete from comp_rulesets_nodes
+             where
+               nodename not in (
+                select nodename from nodes
+               )
+          """
+    db.executesql(sql)
+    db.commit()
+
+def purge_comp_modulesets_services():
+    sql = """delete from comp_modulesets_services
+             where
+               modset_svcname not in (
+                 select distinct mon_svcname from svcmon
+               )
+          """
+    db.executesql(sql)
+    db.commit()
+
+def purge_comp_modulesets_nodes():
+    sql = """delete from comp_node_moduleset
+             where
+               modset_node not in (
+                select nodename from nodes
+               )
+          """
+    db.executesql(sql)
+    db.commit()
+
 def purge_comp_status():
     #
     # purge entries older than 30 days
@@ -951,6 +991,10 @@ def cron_alerts_daily():
     cron_purge_packages()
     cron_mac_dup()
     purge_comp_status()
+    purge_comp_modulesets_nodes()
+    purge_comp_rulesets_nodes()
+    purge_comp_modulesets_services()
+    purge_comp_rulesets_services()
 
 def cron_alerts_hourly():
     rets = []
