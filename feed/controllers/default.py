@@ -2520,9 +2520,9 @@ def __svcmon_update(vars, vals):
     update_dash_service_not_on_primary(h['mon_svcname'], h['mon_nodname'], h['mon_svctype'], h['mon_availstatus'])
     update_dash_svcmon_not_updated(h['mon_svcname'], h['mon_nodname'])
 
-    sql = """select svc_cluster_type from services where svc_name="%s" """
+    sql = """select svc_cluster_type from services where svc_name="%s" """ % h['mon_svcname']
     rows = db.executesql(sql, as_dict=True)
-    if len(rows) > 0 and row[0]['svc_cluster_type'] == 'flex':
+    if len(rows) > 0 and rows[0]['svc_cluster_type'] == 'flex':
         update_dash_flex_instances_started(h['mon_svcname'])
         update_dash_flex_cpu(h['mon_svcname'])
 
