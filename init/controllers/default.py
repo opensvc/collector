@@ -942,7 +942,7 @@ def ajax_service():
                url=URL(r=request, c='pkgdiff', f='svc_pkgdiff',
                        args=[request.vars.node])
             ),
-            "function s%(rid)s_load_comp(){ajax('%(url)s', [], '%(id)s')}"%dict(
+            "function s%(rid)s_load_comp(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
                id='tab11_'+str(rowid),
                rid=str(rowid),
                url=URL(r=request, c='compliance', f='ajax_compliance_svc',

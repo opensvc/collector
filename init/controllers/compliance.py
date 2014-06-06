@@ -265,7 +265,7 @@ class col_run_status(HtmlTableColumn):
         if val in img_h:
             r = IMG(
                   _src=URL(r=request,c='static',f=img_h[val]),
-                  _title=val,
+                  _title="",
                 )
         else:
             r = val
@@ -6222,7 +6222,19 @@ def svc_comp_status(svcname):
     t.dbfilterable = False
     t.columnable = False
     t.refreshable = False
-    return t.html()
+    return DIV(
+      t.html(),
+      SCRIPT(
+        """$("[name=%(tid)s_c_run_status]").bind("mouseover", function(){
+            $(this).parents("tr").children("[name=%(tid)s_c_run_log]").css('position', 'absolute').css('background', 'white').show()
+           })
+           $("[name=%(tid)s_c_run_status]").bind("mouseout", function(){
+            $(this).parents("tr").children("[name=%(tid)s_c_run_log]").hide()
+           })
+        """ % dict(tid=t.id)
+        ),
+      )
+
 
 def node_comp_status(node):
     tid = 'ncs_'+node
@@ -6243,7 +6255,18 @@ def node_comp_status(node):
     t.dbfilterable = False
     t.columnable = False
     t.refreshable = False
-    return t.html()
+    return DIV(
+      t.html(),
+      SCRIPT(
+        """$("[name=%(tid)s_c_run_status]").bind("mouseover", function(){
+            $(this).parents("tr").children("[name=%(tid)s_c_run_log]").css('position', 'absolute').css('background', 'white').show()
+           })
+           $("[name=%(tid)s_c_run_status]").bind("mouseout", function(){
+            $(this).parents("tr").children("[name=%(tid)s_c_run_log]").hide()
+           })
+        """ % dict(tid=t.id)
+        ),
+      )
 
 @auth.requires_login()
 def ajax_rset_md5():

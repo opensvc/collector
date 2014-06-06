@@ -736,7 +736,7 @@ def ajax_node():
                url=URL(r=request, c='checks', f='checks_node',
                        args=[request.vars.node])
             ),
-            "function n%(rid)s_load_comp(){ajax('%(url)s', [], '%(id)s')}"%dict(
+            "function n%(rid)s_load_comp(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
                id='tab13_'+str(rowid),
                rid=str(rowid),
                url=URL(r=request, c='compliance', f='ajax_compliance_node',
