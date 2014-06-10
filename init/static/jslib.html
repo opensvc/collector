@@ -422,6 +422,7 @@ function sync_ajax(url, inputs, id, f) {
                $(this).remove();
              });
              f()
+             $("#"+id).parents(".white_float").each(function(){keep_inside(this)})
          }
     })
 }
