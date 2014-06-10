@@ -1128,6 +1128,7 @@ class table_svcmon(HtmlTable):
         self.checkbox_id_col = 'id'
         self.ajax_col_values = 'ajax_svcmon_col_values'
         self.user_name = user_name()
+        self.additional_tools.append('svcdiff')
         self.additional_tools.append('tool_topology')
         self.additional_tools.append('tool_action')
         self += HtmlTableMenu('Node actions', 'action16', [
@@ -1167,6 +1168,27 @@ class table_svcmon(HtmlTable):
                  act,
                  frozen,
                )
+
+    def svcdiff(self):
+        divid = 'svcdiff'
+        d = DIV(
+              A(
+                T("Service differences"),
+                _class='common16',
+                _onclick="""click_toggle_vis(event,'%(div)s', 'block'); sync_ajax('%(url)s?node='+checked_services(), [], '%(div)s', function(){});"""%dict(
+                              url=URL(r=request,c='nodediff',f='ajax_svcdiff'),
+                              div=divid,
+                            ),
+              ),
+              DIV(
+                _style='display:none',
+                _class='white_float',
+                _name=divid,
+                _id=divid,
+              ),
+              _class='floatw',
+            )
+        return d
 
     def tool_action_node(self):
         return self._tool_action("node")

@@ -6339,6 +6339,7 @@ def ajax_compliance_svc():
         )
     return d
 
+@auth.requires_login()
 def ajax_compliance_nodediff():
     nodes = request.vars.node.split(',')
     l = []
@@ -6360,6 +6361,101 @@ def ajax_compliance_nodediff():
         l.append(SPAN(
           H3(T('Ruleset attachment differences in cluster')),
           rsetdiff))
+
+    return SPAN(l)
+
+@auth.requires_login()
+def ajax_compliance_svcdiff():
+    svcnames = request.vars.node.split(',')
+    l = []
+    compdiff_svc = show_services_compdiff_svc(svcnames)
+    compdiff_svc_encap = show_services_compdiff_svc(svcnames,encap=True)
+    compdiff = show_services_compdiff(svcnames)
+    compdiff_encap = show_services_compdiff(svcnames, encap=True)
+
+    moddiff_svc = show_services_moddiff_svc(svcnames)
+    moddiff_svc_encap = show_services_moddiff_svc(svcnames, encap=True)
+    moddiff = show_services_moddiff(svcnames)
+    moddiff_encap = show_services_moddiff(svcnames, encap=True)
+
+    rsetdiff_svc = show_services_rsetdiff_svc(svcnames)
+    rsetdiff_svc_encap = show_services_rsetdiff_svc(svcnames, encap=True)
+    rsetdiff = show_services_rsetdiff(svcnames)
+    rsetdiff_encap = show_services_rsetdiff(svcnames, encap=True)
+
+    if compdiff_svc is not None or \
+       compdiff_svc_encap is not None or \
+       compdiff is not None or \
+       compdiff_encap is not None or \
+       moddiff_svc is not None or \
+       moddiff_svc_encap is not None or \
+       moddiff is not None or \
+       moddiff_encap is not None or \
+       rsetdiff_svc is not None or \
+       rsetdiff_svc_encap is not None or \
+       rsetdiff is not None or \
+       rsetdiff_encap is not None:
+        l.append(HR())
+
+    if compdiff_svc is not None:
+        l.append(SPAN(
+          H3(T('Module status differences amongst services')),
+          compdiff_svc))
+
+    if compdiff_svc_encap is not None:
+        l.append(SPAN(
+          H3(T('Module status differences amongst encapsulated services')),
+          compdiff_svc_encap))
+
+    if compdiff is not None:
+        l.append(SPAN(
+          H3(T('Module status differences in cluster')),
+          compdiff))
+
+    if compdiff_encap is not None:
+        l.append(SPAN(
+          H3(T('Module status differences in encapsulated cluster')),
+          compdiff_encap))
+
+    if moddiff_svc is not None:
+        l.append(SPAN(
+          H3(T('Moduleset attachment differences amongst services')),
+          moddiff_svc))
+
+    if moddiff_svc_encap is not None:
+        l.append(SPAN(
+          H3(T('Moduleset attachment differences amongst encapsulated services')),
+          moddiff_svc_encap))
+
+    if moddiff is not None:
+        l.append(SPAN(
+          H3(T('Moduleset attachment differences in cluster')),
+          moddiff))
+
+    if moddiff_encap is not None:
+        l.append(SPAN(
+          H3(T('Moduleset attachment differences in encapsulated cluster')),
+          moddiff_encap))
+
+    if rsetdiff_svc is not None:
+        l.append(SPAN(
+          H3(T('Ruleset attachment differences amongst services')),
+          rsetdiff_svc))
+
+    if rsetdiff_svc_encap is not None:
+        l.append(SPAN(
+          H3(T('Ruleset attachment differences amongst encapsulated services')),
+          rsetdiff_svc_encap))
+
+    if rsetdiff is not None:
+        l.append(SPAN(
+          H3(T('Ruleset attachment differences in cluster')),
+          rsetdiff))
+
+    if rsetdiff_encap is not None:
+        l.append(SPAN(
+          H3(T('Ruleset attachment differences in encapsulated cluster')),
+          rsetdiff_encap))
 
     return SPAN(l)
 
@@ -6574,6 +6670,168 @@ def show_nodes_compdiff(nodes):
 
     return _show_compdiff(nodes, n, _rows)
 
+def show_services_compdiff_svc(svcnames, encap=False):
+    svcnames = list(set(svcnames))
+    svcnames.sort()
+    n = len(svcnames)
+
+    if n < 2:
+        return
+
+    if encap:
+        sql = """select
+                   concat(mon_svcname, '@', mon_vmname)
+                 from svcmon
+                 where
+                   mon_vmname is not null and
+                   mon_vmname != "" and
+                   mon_svcname in (%(svcnames)s)
+                 group by
+                   mon_svcname, mon_vmname
+              """ % dict(svcnames=','.join(map(lambda x: repr(x), svcnames)))
+    else:
+        sql = """select
+                   concat(mon_svcname, '@', mon_nodname)
+                 from svcmon
+                 where
+                   mon_svcname in (%(svcnames)s)
+                 group by
+                   mon_svcname, mon_nodname
+              """ % dict(svcnames=','.join(map(lambda x: repr(x), svcnames)))
+
+    _rows = db.executesql(sql)
+    objs = list(set([r[0] for r in _rows]))
+    n = len(objs)
+
+    if n < 2:
+        return
+
+    sql = """select t.* from (
+               select
+                 count(distinct u.obj) as c,
+                 u.run_module,
+                 u.run_svcname,
+                 u.run_status
+               from (
+                 select
+                   concat(cs.run_svcname, '@', cs.run_nodename) as obj,
+                   cs.run_module,
+                   cs.run_svcname,
+                   cs.run_status
+                 from comp_status cs
+                 where
+                   concat(cs.run_svcname, '@', cs.run_nodename) in (%(objs)s)
+               ) u
+               group by
+                 u.run_module,
+                 u.run_status
+              ) as t
+              where
+                t.c!=%(n)s
+              order by
+                t.run_module,
+                t.run_svcname,
+                t.run_status
+              """%dict(objs=','.join(map(lambda x: repr(str(x)), objs)), n=n)
+
+    _rows = db.executesql(sql)
+    if len(_rows) == 0:
+        return
+
+    mods = [r[1] for r in _rows]
+
+    sql = """select
+               concat(cs.run_svcname, '@', cs.run_nodename),
+               cs.run_module,
+               cs.run_status,
+               cs.run_log,
+               cs.run_date
+             from
+               comp_status cs
+             where
+               cs.run_module in (%(mods)s) and
+               concat(cs.run_svcname, '@', cs.run_nodename) in (%(objs)s)
+             order by
+               cs.run_module,
+               cs.run_svcname,
+               cs.run_nodename
+         """%dict(objs=','.join(map(lambda x: repr(str(x)), objs)), mods=','.join(map(lambda x: repr(str(x)), mods)))
+    _rows = db.executesql(sql)
+
+    if len(_rows) == 0:
+        return
+
+    return _show_compdiff(objs, n, _rows, "Service@Node")
+
+def show_services_compdiff(svcnames, encap=False):
+    rows = db(db.svcmon.mon_svcname.belongs(svcnames)).select(cacheable=True)
+    if encap:
+        nodes = [r.mon_vmname for r in rows if r.mon_vmname != "" and r.mon_vmname is not None]
+        f = "mon_vmname"
+    else:
+        nodes = [r.mon_nodname for r in rows]
+        f = "mon_nodname"
+    nodes = list(set(nodes))
+    nodes.sort()
+    n = len(nodes)
+
+    if n < 2:
+        return
+
+    sql = """select t.* from (
+               select
+                 count(distinct cs.run_nodename) as c,
+                 cs.run_module,
+                 cs.run_nodename,
+                 cs.run_status
+               from
+                 comp_status cs,
+                 svcmon m
+               where
+                 m.mon_svcname in (%(svcnames)s) and
+                 m.%(f)s=cs.run_nodename
+               group by
+                 cs.run_module,
+                 cs.run_status
+              ) as t
+              where
+                t.c!=%(n)s
+              order by
+                t.run_module,
+                t.run_nodename,
+                t.run_status
+              """%dict(svcnames=','.join(map(lambda x: repr(x), svcnames)), n=n, f=f)
+
+    _rows = db.executesql(sql)
+    if len(_rows) == 0:
+        return
+
+    mods = [r[1] for r in _rows]
+
+    sql = """select
+               cs.run_nodename,
+               cs.run_module,
+               cs.run_status,
+               cs.run_log,
+               cs.run_date
+             from
+               comp_status cs,
+               svcmon m
+             where
+               cs.run_module in (%(mods)s) and
+               m.mon_svcname in (%(svcnames)s) and
+               m.%(f)s=cs.run_nodename
+             order by
+               cs.run_module,
+               cs.run_nodename
+         """%dict(svcnames=','.join(map(lambda x: repr(x), svcnames)), mods=','.join(map(lambda x: repr(str(x)), mods)), f=f)
+    _rows = db.executesql(sql)
+
+    if len(_rows) == 0:
+        return
+
+    return _show_compdiff(nodes, n, _rows)
+
 def show_compdiff(svcname, encap=False):
     rows = db(db.svcmon.mon_svcname==svcname).select(cacheable=True)
     if encap:
@@ -6645,7 +6903,7 @@ def show_compdiff(svcname, encap=False):
 
     return _show_compdiff(nodes, n, _rows)
 
-def _show_compdiff(nodes, n, _rows):
+def _show_compdiff(nodes, n, _rows, objtype="Nodes"):
     data = {}
     for row in _rows:
         module = row[1]
@@ -6656,7 +6914,7 @@ def _show_compdiff(nodes, n, _rows):
     def fmt_header1():
         return TR(
                  TH("", _colspan=1),
-                 TH(T("Nodes"), _colspan=n, _style="text-align:center"),
+                 TH(T(objtype), _colspan=n, _style="text-align:center"),
                )
 
     def fmt_header2():
@@ -6757,6 +7015,82 @@ def show_nodes_moddiff(nodes):
     _rows = db.executesql(sql)
     return _show_moddiff(nodes, n, _rows)
 
+def show_services_moddiff_svc(svcnames, encap=False):
+    if encap:
+        slave = 'T'
+    else:
+        slave = 'F'
+    svcnames = list(set(svcnames))
+    svcnames.sort()
+    n = len(svcnames)
+
+    if n < 2:
+        return
+
+    sql = """
+            select t.* from
+            (
+             select
+               count(distinct ms.modset_svcname) as n,
+               group_concat(distinct ms.modset_svcname) as services,
+               m.modset_name as modset
+             from
+               comp_modulesets_services ms,
+               comp_moduleset m
+             where
+               ms.modset_svcname in (%(svcnames)s) and
+               ms.slave="%(slave)s" and 
+               ms.modset_id=m.id
+             group by
+               modset_name
+             order by
+               modset_name
+            ) t
+            where t.n != %(n)d
+    """%dict(svcnames=','.join(map(lambda x: repr(x), svcnames)), n=n, slave=slave)
+    _rows = db.executesql(sql)
+    return _show_moddiff(svcnames, n, _rows, "Services")
+
+def show_services_moddiff(svcnames, encap=False):
+    rows = db(db.svcmon.mon_svcname.belongs(svcnames)).select(cacheable=True)
+    if encap:
+        nodes = [r.mon_vmname for r in rows if r.mon_vmname != "" and r.mon_vmname is not None]
+        f = "mon_vmname"
+    else:
+        nodes = [r.mon_nodname for r in rows]
+        f = "mon_nodname"
+    nodes = list(set(nodes))
+    nodes.sort()
+    n = len(nodes)
+
+    if n < 2:
+        return
+
+    sql = """
+            select t.* from
+            (
+             select
+               count(distinct nm.modset_node) as n,
+               group_concat(distinct nm.modset_node) as nodes,
+               ms.modset_name as modset
+             from
+               comp_node_moduleset nm,
+               svcmon m,
+               comp_moduleset ms
+             where
+               m.mon_svcname in (%(svcnames)s) and
+               m.%(f)s=nm.modset_node and
+               nm.modset_id=ms.id
+             group by
+               modset_name
+             order by
+               modset_name
+            ) t
+            where t.n != %(n)d
+    """%dict(svcnames=','.join(map(lambda x: repr(x), svcnames)), n=n, f=f)
+    _rows = db.executesql(sql)
+    return _show_moddiff(nodes, n, _rows)
+
 def show_moddiff(svcname, encap=False):
     rows = db(db.svcmon.mon_svcname==svcname).select(cacheable=True)
     if encap:
@@ -6797,7 +7131,7 @@ def show_moddiff(svcname, encap=False):
     _rows = db.executesql(sql)
     return _show_moddiff(nodes, n, _rows)
 
-def _show_moddiff(nodes, n, _rows):
+def _show_moddiff(nodes, n, _rows, objtype="Nodes"):
 
     if len(_rows) == 0:
         return
@@ -6805,7 +7139,7 @@ def _show_moddiff(nodes, n, _rows):
     def fmt_header1():
         return TR(
                  TH("", _colspan=1),
-                 TH(T("Nodes"), _colspan=n, _style="text-align:center"),
+                 TH(T(objtype), _colspan=n, _style="text-align:center"),
                )
 
     def fmt_header2():
@@ -6888,6 +7222,85 @@ def show_nodes_rsetdiff(nodes):
 
     return _show_rsetdiff(nodes, n, _rows)
 
+def show_services_rsetdiff_svc(svcnames, encap=False):
+    svcnames = list(set(svcnames))
+    svcnames.sort()
+    n = len(svcnames)
+    if encap:
+        slave = 'T'
+    else:
+        slave = 'F'
+
+    if n < 2:
+        return
+
+    sql = """
+            select t.* from
+            (
+             select
+               count(distinct rss.svcname) as n,
+               group_concat(distinct rss.svcname) as services,
+               rs.ruleset_name as ruleset
+             from
+               comp_rulesets_services rss,
+               comp_rulesets rs
+             where
+               rss.svcname in (%(svcnames)s) and
+               rss.slave="%(slave)s" and
+               rss.ruleset_id=rs.id
+             group by
+               ruleset_name
+             order by
+               ruleset_name
+            ) t
+            where t.n != %(n)d
+    """%dict(svcnames=','.join(map(lambda x: repr(x), svcnames)), n=n, slave=slave)
+    _rows = db.executesql(sql)
+
+    return _show_rsetdiff(svcnames, n, _rows, "Services")
+
+def show_services_rsetdiff(svcnames, encap=False):
+    rows = db(db.svcmon.mon_svcname.belongs(svcnames)).select(cacheable=True)
+    if encap:
+        nodes = [r.mon_vmname for r in rows if r.mon_vmname != "" and r.mon_vmname is not None]
+        f = "mon_vmname"
+    else:
+        nodes = [r.mon_nodname for r in rows]
+        f = "mon_nodname"
+    nodes = list(set(nodes))
+    nodes.sort()
+    n = len(nodes)
+
+    if n < 2:
+        return
+
+    sql = """
+            select t.* from
+            (
+             select
+               count(distinct rn.nodename) as n,
+               group_concat(distinct rn.nodename) as nodes,
+               rs.ruleset_name as ruleset
+             from
+               comp_rulesets_nodes rn,
+               svcmon m,
+               comp_rulesets rs
+             where
+               m.mon_svcname in (%(svcnames)s) and
+               m.%(f)s=rn.nodename and
+               rn.ruleset_id=rs.id
+             group by
+               ruleset_name
+             order by
+               ruleset_name
+            ) t
+            where t.n != %(n)d
+    """%dict(svcnames=','.join(map(lambda x: repr(x), svcnames)), n=n, f=f)
+    _rows = db.executesql(sql)
+
+    return _show_rsetdiff(nodes, n, _rows)
+
+
 def show_rsetdiff(svcname, encap=False):
     rows = db(db.svcmon.mon_svcname==svcname).select(cacheable=True)
     if encap:
@@ -6929,14 +7342,14 @@ def show_rsetdiff(svcname, encap=False):
 
     return _show_rsetdiff(nodes, n, _rows)
 
-def _show_rsetdiff(nodes, n, _rows):
+def _show_rsetdiff(nodes, n, _rows, objtype="Nodes"):
     if len(_rows) == 0:
         return
 
     def fmt_header1():
         return TR(
                  TH("", _colspan=1),
-                 TH(T("Nodes"), _colspan=n, _style="text-align:center"),
+                 TH(T(objtype), _colspan=n, _style="text-align:center"),
                )
 
     def fmt_header2():

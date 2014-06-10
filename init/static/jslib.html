@@ -460,6 +460,15 @@ function toggle_extra(url, id) {
         $('#'+id).hide()
     }
 }
+function checked_services() {
+    d = new Array()
+    $("[name=svcmon_ck]").each(function(){
+        if (this.type == 'checkbox' && this.disabled == false && this.checked) {
+            d.push($(this).parents('tr').children("[name=svcmon_c_mon_svcname]").attr('v'))
+        }
+    })
+    return d.join(",");
+}
 function checked_nodes() {
     l = document.getElementsByName('nodes_ck');
     d = new Array()
