@@ -6938,7 +6938,7 @@ def _show_compdiff(nodes, n, _rows, objtype="Nodes"):
         h = [TD(module)]
         for row in rows:
             if outdated(row[4]):
-                d = 'background-color:lightgrey'
+                d = ';background-color:lightgrey'
             else:
                 d = ''
             if row[2] == "":
