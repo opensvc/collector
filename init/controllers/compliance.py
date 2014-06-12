@@ -11630,6 +11630,9 @@ def rset_loop(rset_id, parent_rset_id):
 
 @auth.requires_membership('CompManager')
 def json_tree_action_copy_or_move_rset_to_rset(rset_id, parent_rset_id, dst_rset_id, move=False):
+    if dst_rset_id == rset_id:
+        return {"err": "abort action to avoid introducing a recursion loop"}
+
     q = db.comp_rulesets_rulesets.parent_rset_id == dst_rset_id
     q &= db.comp_rulesets_rulesets.child_rset_id == rset_id
     if db(q).count() > 0:
