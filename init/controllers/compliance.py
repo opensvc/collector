@@ -6930,7 +6930,7 @@ def _show_compdiff(nodes, n, _rows, objtype="Nodes"):
 
 
     def outdated(t):
-         if t is None or t == '': return True
+         if t is None or t == '': return False
          if t < deadline: return True
          return False
 
