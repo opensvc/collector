@@ -10720,6 +10720,7 @@ $("#catree2").jstree(jstree_data).bind("rename.jstree", __rename)
       DIV(
         INPUT(
           _id="casearch",
+          _value=request.vars.obj_filter,
         ),
         _class="wfsearch",
         _style="margin-bottom:0.5em;margin-top:0.5em;",
