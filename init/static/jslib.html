@@ -198,6 +198,11 @@ function keep_inside(box){
             $(box).css("left", over+'px')
         } else {
             new_l = doc_w - box_w - 20
+            if (new_l < 0) {
+		$(box).css("width", box_w + new_l)
+		$(box).css("overflow-x", "auto")
+		new_l = 0
+	    }
             $(box).css("left", new_l+'px')
         }
     }
