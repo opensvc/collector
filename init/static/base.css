@@ -952,7 +952,6 @@ div.sym_detail_visible {
     text-align: left;
     z-index: 499;
     background-color: white;
-    max-width: 100%;
 }
 
 .floatw {
