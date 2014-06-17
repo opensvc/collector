@@ -3639,6 +3639,14 @@ disk_app_colprops = {
              img='time16',
              display=True,
             ),
+    'disk_created': HtmlTableColumn(
+             title='Storage Created',
+             table='b_disk_app',
+             field='disk_created',
+             img='time16',
+             display=True,
+             _dataclass="bluer",
+            ),
     'disk_updated': HtmlTableColumn(
              title='Storage Updated',
              table='b_disk_app',

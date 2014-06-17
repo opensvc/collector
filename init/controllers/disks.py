@@ -684,6 +684,7 @@ class table_disks(HtmlTable):
                      'disk_arrayid',
                      'disk_level',
                      'array_model',
+                     'disk_created',
                      'disk_updated',
                      'loc_country',
                      'loc_zip',
