@@ -129,6 +129,7 @@ def set_low_threshold(ids):
     q = db.checks_live.id.belongs(ids)
     rows = db(q).select()
     update_thresholds_batch(rows)
+    update_dash_checks_nodes(map(lambda x: x.chk_nodename, rows))
 
 @auth.requires_membership('CheckExec')
 def set_high_threshold(ids):
@@ -181,6 +182,7 @@ def set_high_threshold(ids):
     q = db.checks_live.id.belongs(ids)
     rows = db(q).select()
     update_thresholds_batch(rows)
+    update_dash_checks_nodes(map(lambda x: x.chk_nodename, rows))
 
 @auth.requires_membership('CheckExec')
 def reset_thresholds(ids):
@@ -912,6 +914,10 @@ def checks():
           _id='checks',
         )
     return dict(table=t)
+
+def update_dash_checks_nodes(nodenames):
+    for nodename in nodenames:
+        update_dash_checks(nodename)
 
 def update_dash_checks(nodename):
     nodename = nodename.strip("'")
