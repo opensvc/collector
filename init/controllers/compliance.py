@@ -5737,6 +5737,7 @@ def comp_log_action(vars, vals, auth):
     generic_insert('comp_log', vars, vals)
     if action == 'check':
         generic_insert('comp_status', vars, vals)
+    update_dash_compdiff(auth[1])
 
 @auth_uuid
 @service.xmlrpc
