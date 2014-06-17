@@ -4140,3 +4140,73 @@ drop view v_nodesan; CREATE VIEW `v_nodesan` AS select `z`.`id` AS `id`,`z`.`tgt
 
 alter table comp_rulesets_chains add column `id` int(11) NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (`id`);
 
+
+alter table diskinfo change column disk_updated datetime;
+
+alter table diskinfo add column disk_created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+drop view v_disk_app;
+
+create view v_disk_app as 
+                     select
+                       diskinfo.id,
+                       diskinfo.disk_id,
+                       svcdisks.disk_region,
+                       svcdisks.disk_svcname,
+                       svcdisks.disk_nodename,
+                       svcdisks.disk_vendor,
+                       svcdisks.disk_model,
+                       svcdisks.disk_dg,
+                       svcdisks.disk_updated as svcdisk_updated,
+                       svcdisks.id as svcdisk_id,
+                       svcdisks.disk_local,
+                       services.svc_app as app,
+                       svcdisks.disk_used as disk_used,
+                       diskinfo.disk_size,
+                       diskinfo.disk_arrayid,
+                       diskinfo.disk_group,
+                       diskinfo.disk_devid,
+                       diskinfo.disk_name,
+                       diskinfo.disk_alloc,
+                       diskinfo.disk_created,
+                       diskinfo.disk_updated,
+                       diskinfo.disk_raid,
+                       diskinfo.disk_level
+                     from
+                       diskinfo
+                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+                     left join services on svcdisks.disk_svcname=services.svc_name
+                     where svcdisks.disk_svcname != ""
+                     union all
+                     select
+                       diskinfo.id,
+                       diskinfo.disk_id,
+                       svcdisks.disk_region,
+                       svcdisks.disk_svcname,
+                       svcdisks.disk_nodename,
+                       svcdisks.disk_vendor,
+                       svcdisks.disk_model,
+                       svcdisks.disk_dg,
+                       svcdisks.disk_updated as svcdisk_updated,
+                       svcdisks.id as svcdisk_id,
+                       svcdisks.disk_local,
+                       nodes.project as app,
+                       svcdisks.disk_used as disk_used,
+                       diskinfo.disk_size,
+                       diskinfo.disk_arrayid,
+                       diskinfo.disk_group,
+                       diskinfo.disk_devid,
+                       diskinfo.disk_name,
+                       diskinfo.disk_alloc,
+                       diskinfo.disk_created,
+                       diskinfo.disk_updated,
+                       diskinfo.disk_raid,
+                       diskinfo.disk_level
+                     from
+                       diskinfo
+                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+                     left join nodes on svcdisks.disk_nodename=nodes.nodename
+                     where (svcdisks.disk_svcname = "" or svcdisks.disk_svcname is NULL)
+;
+
+
