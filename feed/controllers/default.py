@@ -805,16 +805,18 @@ def _register_disk(vars, vals, auth):
 
     if disk_id.startswith(disk_nodename+'.') and n == 0:
         h['disk_local'] = 'T'
-        vars = ['disk_id', 'disk_arrayid', 'disk_devid', 'disk_size']
+        vars = ['disk_id', 'disk_arrayid', 'disk_devid', 'disk_size',
+                'disk_updated']
         vals = [h["disk_id"],
                 h['disk_nodename'],
                 repr(disk_id.split('.')[-1]),
-                h['disk_size']]
+                h['disk_size'],
+                h['disk_updated']]
         generic_insert('diskinfo', vars, vals)
     elif n == 0:
         h['disk_local'] = 'F'
-        vars = ['disk_id', 'disk_size']
-        vals = [h["disk_id"], h['disk_size']]
+        vars = ['disk_id', 'disk_size', 'disk_updated']
+        vals = [h["disk_id"], h['disk_size'], h['disk_updated']]
         generic_insert('diskinfo', vars, vals)
 
         # if no array claimed that disk, give it to the node
