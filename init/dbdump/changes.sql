@@ -4141,7 +4141,7 @@ drop view v_nodesan; CREATE VIEW `v_nodesan` AS select `z`.`id` AS `id`,`z`.`tgt
 alter table comp_rulesets_chains add column `id` int(11) NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (`id`);
 
 
-alter table diskinfo change column disk_updated datetime;
+alter table diskinfo modify column disk_updated datetime;
 
 alter table diskinfo add column disk_created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP;
 
