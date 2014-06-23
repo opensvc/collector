@@ -7959,7 +7959,8 @@ def _ajax_forms_inputs(_mode=None, _var_id=None, _form_name=None, _form_id=None,
             try:
                 cur = json.loads(cur)
             except:
-                return ajax_error("json error parsing current variable value '%s'"%cur)
+                cur = {}
+                #return ajax_error("json error parsing current variable value '%s'"%cur)
             if form_output.get('Format') == 'dict':
                 for i, input in enumerate(data['Inputs']):
                     id = input.get('Id')
