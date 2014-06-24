@@ -1,12 +1,16 @@
 import datetime
+import xmlrpclib
 
 def value_wrap(a):
     return "%(a)s=values(%(a)s)"%dict(a=a)
 
+def var_wrap(a):
+    return "`%(a)s`"%dict(a=a)
+
 def quote_wrap(x):
     if isinstance(x, (int, long, float, complex)):
-        return x
-    elif isinstance(x, datetime.datetime):
+        return str(x)
+    elif isinstance(x, (datetime.datetime, xmlrpclib.DateTime)):
         return "'%s'"%str(x)
     elif isinstance(x, (str, unicode)):
         if len(x) == 0:
@@ -24,6 +28,7 @@ def quote_wrap(x):
 def insert_multiline(table, vars, valsl):
     value_wrap = lambda a: "%(a)s=values(%(a)s)"%dict(a=a)
     line_wrap = lambda x: "(%(x)s)"%dict(x=','.join(map(quote_wrap, x)))
+    vars = map(var_wrap, vars)
     upd = map(value_wrap, vars)
     lines = map(line_wrap, valsl)
     sql="""insert delayed into %s (%s) values %s on duplicate key update %s""" % (table, ','.join(vars), ','.join(lines), ','.join(upd))
@@ -37,5 +42,4 @@ def generic_insert(table, vars, vals):
         insert_multiline(table, vars, vals)
     else:
         insert_multiline(table, vars, [vals])
-
 
