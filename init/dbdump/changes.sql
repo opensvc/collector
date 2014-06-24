@@ -4209,4 +4209,25 @@ create view v_disk_app as
                      where (svcdisks.disk_svcname = "" or svcdisks.disk_svcname is NULL)
 ;
 
+CREATE TABLE `replication_status` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `remote` varchar(192) NOT NULL,
+  `mode` enum("push", "pull") default "push",
+  `table_schema` varchar(192) NOT NULL,
+  `table_name` varchar(192) NOT NULL,
+  `table_cksum` varchar(32) NOT NULL,
+  `table_updated` datetime,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `index_1` (`remote`, `table_name`)
+);
+
+
+alter table gen_filters drop KEY `idx1`;
+
+alter table gen_filters engine=InnoDB;
+
+alter table gen_filters add column f_cksum varchar(64) as (md5(concat(`f_table`,`f_field`,`f_value`,`f_op`))) persistent;
+
+alter table gen_filters add UNIQUE KEY `idx1` (`f_cksum`);
+
 
