@@ -19,6 +19,13 @@ def replication_push(data):
             vals = vals[max:]
         generic_insert(table, vars, vals)
 
+@service.xmlrpc
+def serve_common(fullname, common):
+    sql = "select distinct %s from %s" % (common, fullname)
+    rows = db.executesql(sql)
+    return [r[0] for r in rows]
+
+
 def get_push_remote_tables():
     tables = set([])
     push_data = cf.repl_config.get("push", [])
@@ -231,13 +238,21 @@ def get_creds(remote):
         return d.get('user'), d.get('password')
     return None, None
 
-def rpc_push(remote, data):
+def get_proxy(remote):
     user, password = get_creds(remote)
     import xmlrpclib
     xmlrpclib.Marshaller.dispatch[type(0L)] = lambda _, v, w: w("<value><i8>%d</i8></value>" % v)
     p = xmlrpclib.ServerProxy("https://%s:%s@%s/init/replication/call/xmlrpc" %
                                (user, password, remote), allow_none=True)
+    return p
+
+def rpc_push(remote, data):
+    p = get_proxy(remote)
     return p.replication_push(data)
+
+def get_common(remote, fullname, common):
+    p = get_proxy(remote)
+    return p.serve_common(fullname, common)
 
 def get_table_columns(schema, name):
     sql = """
@@ -255,41 +270,59 @@ def get_table_columns(schema, name):
 
 def rpc_push_all_table_to_all_remote():
     ts = push_table_status()
-    remotes = list(set([ e['remote'] for e in ts.values() ]))
 
-    for remote in remotes:
-        for d in ts.values():
+    push_data = cf.repl_config.get("push", [])
+    if push_data is None or type(push_data) != list:
+        return
+
+    for host in push_data:
+        remote = host.get("remote")
+        if remote is None:
+            continue
+        push_tables = host.get("tables")
+        if push_tables is None:
+            continue
+        for t in push_tables:
             data = {}
 
-            if d.get('remote') != remote:
-               continue
+            fullname = ".".join((t['schema'], t['name']))
+            rfullname = ".".join((remote, fullname))
 
-            fullname = ".".join((d['table_schema'], d['table_name']))
-            rfullname = ".".join((d['remote'], fullname))
+            d = ts.get(rfullname)
+            if d is None:
+                continue
 
             need_resync = d.get('need_resync')
             if need_resync is not None and need_resync != 'T':
                print "skip resync %s" % rfullname
                continue
 
-            columns = d.get('columns')
+            common = t.get('common')
+            common_filter = ""
+            if common is not None:
+                print " - common:", common
+                common_vals = get_common(remote, fullname, common)
+                print " - common vals:", common_vals
+                if len(common_vals) > 0:
+                    common_filter = " where %s in (%s)" % (common, ",".join(map(lambda x: repr(x), common_vals)))
+                else:
+                    common_filter = " where 1=2"
+                print " - common filter:", common_filter
+
+            columns = t.get('columns')
             if columns is None:
                 columns = get_table_columns(d['table_schema'], d['table_name'])
-            sql = """select * from %s""" % fullname
+                print " - columns:", columns
+
+            sql = """select %s from %s %s""" % (
+             ','.join(map(lambda x: "`"+x+"`", columns)),
+             fullname,
+             common_filter
+            )
             rows = list(db.executesql(sql))
             print "resync %s (%d lines)" % (rfullname, len(rows))
             for i, row in enumerate(rows):
                 rows[i] = list(row)
-
-            """
-            try:
-                idx = columns.index('id')
-                del columns[idx]
-                for i, row in enumerate(rows):
-                    del rows[i][idx]
-            except Exception as e:
-                return str(e)
-            """
 
             data[fullname] = (columns, rows)
             print "data prepared. send."
