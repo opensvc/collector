@@ -284,6 +284,7 @@ def rpc_push_all_table_to_all_remote():
             continue
         for t in push_tables:
             data = {}
+            filters = []
 
             fullname = ".".join((t['schema'], t['name']))
             rfullname = ".".join((remote, fullname))
@@ -297,16 +298,21 @@ def rpc_push_all_table_to_all_remote():
                print "skip resync %s" % rfullname
                continue
 
+            updated = t.get('updated')
+            last_updated = d.get('table_updated')
+            if updated is not None and last_updated is not None:
+                updated_filter = "%s > '%s'" % (updated, last_updated)
+                filters.append(updated_filter)
+                print " - updated filter:", updated_filter
+
             common = t.get('common')
-            common_filter = ""
             if common is not None:
-                print " - common:", common
                 common_vals = get_common(remote, fullname, common)
-                print " - common vals:", common_vals
                 if len(common_vals) > 0:
-                    common_filter = " where %s in (%s)" % (common, ",".join(map(lambda x: repr(x), common_vals)))
+                    common_filter = "%s in (%s)" % (common, ",".join(map(lambda x: repr(x), common_vals)))
                 else:
-                    common_filter = " where 1=2"
+                    common_filter = "1=2"
+                filters.append(common_filter)
                 print " - common filter:", common_filter
 
             columns = t.get('columns')
@@ -314,12 +320,20 @@ def rpc_push_all_table_to_all_remote():
                 columns = get_table_columns(d['table_schema'], d['table_name'])
                 print " - columns:", columns
 
+            where = ""
+            if len(filters) > 0:
+               where = "where " + ' and '.join(filters)
+
             sql = """select %s from %s %s""" % (
              ','.join(map(lambda x: "`"+x+"`", columns)),
              fullname,
-             common_filter
+             where
             )
-            rows = list(db.executesql(sql))
+            try:
+                rows = list(db.executesql(sql))
+            except:
+                print sql
+                raise
             print "resync %s (%d lines)" % (rfullname, len(rows))
             for i, row in enumerate(rows):
                 rows[i] = list(row)
