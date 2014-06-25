@@ -10,8 +10,10 @@ def var_wrap(a):
 def quote_wrap(x):
     if isinstance(x, (int, long, float, complex)):
         return str(x)
-    elif isinstance(x, (datetime.datetime, xmlrpclib.DateTime)):
+    elif isinstance(x, datetime.datetime):
         return "'%s'"%str(x)
+    elif isinstance(x, xmlrpclib.DateTime):
+        return "'%s'" % str(datetime.datetime.strptime(x.value, "%Y%m%dT%H:%M:%S"))
     elif isinstance(x, (str, unicode)):
         if len(x) == 0:
             return "''"
