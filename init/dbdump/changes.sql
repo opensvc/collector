@@ -4230,4 +4230,8 @@ alter table gen_filters add column f_cksum varchar(64) as (md5(concat(`f_table`,
 
 alter table gen_filters add UNIQUE KEY `idx1` (`f_cksum`);
 
+alter table replication_status drop key index_1;
+
+alter table replication_status add unique key index_1 (remote, mode, table_schema, table_name);
+
 
