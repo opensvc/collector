@@ -12,12 +12,8 @@ def call():
     return service()
 
 @service.xmlrpc
-def replication_test():
-    return 1
-
-@service.xmlrpc
-def replication_push(data):
-    merge_data(data)
+def replication_push(data, mirror):
+    merge_data(data, mirror)
 
 @service.xmlrpc
 def serve_table_current_status(tables):
@@ -33,16 +29,56 @@ def serve_common(fullname, common):
 def replication_pull(sql):
     return list(db.executesql(sql))
 
+@service.xmlrpc
+def serve_purge_binlog(before):
+    return purge_binlog(before)
 #
 # Core routines
 #
-def merge_data(data):
+def purge_binlog(before):
+    sql = 'purge binary logs before "%s"' % str(before)
+    db.executesql(sql)
+
+def binlog_events(from_pos=None):
+    sql = "show binlog events"
+    if from_pos is not None:
+        sql += " from %s" % str(from_pos)
+    rows = db.executesql(sql)
+    return rows
+
+def digest_binlog():
+    """
+      Return position of the last modification of each table
+    """
+    rows = binlog_events()
+    _pos = 1
+    _info = 5
+    data = {}
+    import re
+    regex = re.compile("(?<=delete from\s)\s*[`]*\w+[`]*|(?<=into\s)\s*[`]*\w+[`]*|(?<=update\s)\s*[`]*\w+[`]*", re.IGNORECASE)
+    regex2 = re.compile("(?<=use\s)[`]*\w+[`]*", re.IGNORECASE)
+    for row in rows:
+        m = regex.search(row[_info])
+        if m is None:
+            continue
+        m2 = regex2.search(row[_info])
+        if m2 is None:
+            continue
+        data[(m2.group(0).strip('`'), m.group(0).strip('`'))] = row[_pos]
+    return data
+
+def merge_data(data, mirror=False):
     max = 500
     for table, (vars, vals) in data.items():
+        if mirror:
+            db.executesql("truncate %s"%table)
         while len(vals) > max:
             generic_insert(table, vars, vals[:max])
             vals = vals[max:]
-        generic_insert(table, vars, vals)
+        try:
+            generic_insert(table, vars, vals)
+        except Exception as e:
+            raise Exception(str((str(e), table, vars, vals)))
 
 def get_push_remotes():
     return get_remotes("push")
@@ -61,7 +97,7 @@ def get_remotes(mode):
         _remote = host.get("remote")
         if _remote is None:
             continue
-    remotes.add(_remote)
+        remotes.add(_remote)
     return list(remotes)
 
 def get_pull_remote_tables(remote=None):
@@ -133,19 +169,30 @@ def push_table_current_status(tables):
     return table_current_status(tables)
 
 def table_current_status(tables):
-    tables = ','.join(map(lambda x: repr(x), tables))
-    sql = """
-     select
-       table_schema,
-       table_name,
-       md5(concat(rows, '_', modified)) as current_cksum
-     from
-       information_schema.innodb_table_stats
-     where
-       concat(table_schema, ".", table_name) in (%(tables)s)
-    """ % dict(tables=tables)
+    data = digest_binlog()
+    rows = []
+    added_tables = []
+    for (schema, name), pos in data.items():
+        fullname = '.'.join((schema, name))
+        if fullname not in tables:
+            continue
+        rows.append({
+          "table_schema": schema,
+          "table_name": name,
+          "current_cksum": str(pos),
+        })
+        added_tables.append(fullname)
 
-    rows = db.executesql(sql, as_dict=True)
+    for table in tables:
+        if table in added_tables:
+            continue
+        schema, name = table.split('.')
+        rows.append({
+          "table_schema": schema,
+          "table_name": name,
+          "current_cksum": "0",
+        })
+
     return rows
 
 def pull_table_last_status(tables):
@@ -243,7 +290,10 @@ def get_table_status(e, d_current, d_last, mode):
          'table_updated': None,
         })
 
-    if _data.get("current_cksum", "1") == _data.get("last_cksum", "2"):
+    current_cksum = _data.get("current_cksum", "1")
+    last_cksum = _data.get("last_cksum", "2")
+
+    if current_cksum == "0" or current_cksum == last_cksum:
         _data['need_resync'] = "F"
     else:
         _data['need_resync'] = "T"
@@ -322,7 +372,11 @@ class table_replication_status(HtmlTable):
         self.ajax_col_values = 'ajax_replication_status_col_values'
 
     def line_id(self, o):
-        return '.'.join((o['remote'], o['table_schema'], o['table_name']))
+        if o is None:
+            return ""
+        return '+'.join((o.get('remote', ''),
+                         o.get('table_schema', ''),
+                         o.get('table_name', '')))
 
 @auth.requires_login()
 def ajax_replication_status():
@@ -352,13 +406,17 @@ def get_proxy(remote):
                                (user, password, remote), allow_none=True)
     return p
 
+def rpc_purge_binlog(remote, before):
+    p = get_proxy(remote)
+    return p.serve_purge_binlog(before)
+
 def rpc_pull(remote, sql):
     p = get_proxy(remote)
     return p.replication_pull(sql)
 
-def rpc_push(remote, data):
+def rpc_push(remote, data, mirror):
     p = get_proxy(remote)
-    return p.replication_push(data)
+    return p.replication_push(data, mirror)
 
 def get_common(remote, fullname, common):
     p = get_proxy(remote)
@@ -378,9 +436,10 @@ def get_table_columns(schema, name):
     columns = [ r[0] for r in rows ]
     return columns
 
-def pull_all_table_from_all_remote():
+def pull_all_table_from_all_remote(force=False):
     if cf is None:
         return
+    start = datetime.datetime.now()
     ts = pull_table_status()
 
     pull_data = cf.repl_config.get("pull", [])
@@ -389,11 +448,14 @@ def pull_all_table_from_all_remote():
 
     for host in pull_data:
         try:
-            pull_all_table_from_remote(host, ts)
+            pull_all_table_from_remote(host, ts, force=force)
         except Exception as e:
             print e
+        remote = host.get("remote")
+        if remote is not None:
+            rpc_purge_binlog(remote, start)
 
-def pull_all_table_from_remote(host, ts):
+def pull_all_table_from_remote(host, ts, force=False):
     remote = host.get("remote")
     if remote is None:
         return
@@ -411,10 +473,11 @@ def pull_all_table_from_remote(host, ts):
 
         d = ts.get(rfullname)
         if d is None:
+            print " ERROR: no rfullname in table_status entry. %s" % str(ts.keys())
             continue
 
         need_resync = d.get('need_resync')
-        if need_resync is not None and need_resync != 'T':
+        if not force and need_resync is not None and need_resync != 'T':
            print " + already synced"
            continue
 
@@ -462,9 +525,10 @@ def pull_all_table_from_remote(host, ts):
         except:
             raise
 
-def push_all_table_to_all_remote():
+def push_all_table_to_all_remote(force=False):
     if cf is None:
         return
+    start = datetime.datetime.now()
     ts = push_table_status()
 
     push_data = cf.repl_config.get("push", [])
@@ -473,11 +537,13 @@ def push_all_table_to_all_remote():
 
     for host in push_data:
         try:
-            push_all_table_to_remote(host, ts)
+            push_all_table_to_remote(host, ts, force=force)
         except Exception as e:
             print e
 
-def push_all_table_to_remote(host, ts):
+    purge_binlog(start)
+
+def push_all_table_to_remote(host, ts, force=False):
     remote = host.get("remote")
     if remote is None:
         return
@@ -498,9 +564,11 @@ def push_all_table_to_remote(host, ts):
             continue
 
         need_resync = d.get('need_resync')
-        if need_resync is not None and need_resync != 'T':
+        if not force and need_resync is not None and need_resync != 'T':
            print " + already synced"
            continue
+
+        mirror = t.get('mirror', False)
 
         updated = t.get('updated')
         last_updated = d.get('table_updated')
@@ -522,7 +590,7 @@ def push_all_table_to_remote(host, ts):
         columns = t.get('columns')
         if columns is None:
             columns = get_table_columns(d['table_schema'], d['table_name'])
-            print " - columns:", columns
+            print " - columns:", ", ".join(columns)
 
         where = ""
         if len(filters) > 0:
@@ -538,22 +606,35 @@ def push_all_table_to_remote(host, ts):
         except:
             print sql
             raise
-        print " + resync %s (%d lines)" % (rfullname, len(rows))
+
+        n = len(rows)
+        if n == 0:
+            print " + abort resync %s (%d lines)" % (rfullname, n)
+            continue
+        else:
+            print " + resync %s (%d lines)" % (rfullname, n)
         for i, row in enumerate(rows):
             rows[i] = list(row)
 
         data[fullname] = (columns, rows)
         print " + data prepared. send."
         try:
-            rpc_push(remote, data)
+            rpc_push(remote, data, mirror)
             print " + sent. update replication status"
             update_last_push(d)
-        except:
+        except Exception as e:
+            #print " ERROR:", e
             raise
 
+def force_resync_all():
+    _resync_all(force=True)
+
 def resync_all():
-    push_all_table_to_all_remote()
-    pull_all_table_from_all_remote()
+    _resync_all()
+
+def _resync_all(force=False):
+    push_all_table_to_all_remote(force=force)
+    pull_all_table_from_all_remote(force=force)
 
 def update_last_push(d):
     update_last(d, "push")
