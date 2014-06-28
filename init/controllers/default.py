@@ -140,29 +140,6 @@ class viz(object):
         process.communicate()
         return dst
 
-    def viz_cron_cleanup(self):
-        """ unlink static/tempviz*.png
-        """
-        import os
-        import glob
-        files = []
-        for name in glob.glob(os.path.join(self.vizdir, self.vizprefix+'*.png')):
-            files.append(name)
-            os.unlink(name)
-        for name in glob.glob(os.path.join(self.vizdir, self.vizprefix+'*.dot')):
-            files.append(name)
-            os.unlink(name)
-        for name in glob.glob(os.path.join(self.vizdir, 'stats_*_[0-9]*.png')):
-            files.append(name)
-            os.unlink(name)
-        for name in glob.glob(os.path.join(self.vizdir, 'stat_*_[0-9]*.png')):
-            files.append(name)
-            os.unlink(name)
-        for name in glob.glob(os.path.join(self.vizdir, 'stats_*_[0-9]*.svg')):
-            files.append(name)
-            os.unlink(name)
-        return files
-
     def __init__(self):
         pass
 
@@ -394,9 +371,6 @@ def svcmon_viz(ids):
     q = db.v_svcmon.id.belongs(ids)
     services = db(q).select(cacheable=True)
     return IMG(_src=svcmon_viz_img(services))
-
-def viz_cron_cleanup():
-    return viz().viz_cron_cleanup()
 
 @auth.requires_login()
 def ajax_service():

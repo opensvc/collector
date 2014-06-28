@@ -17,21 +17,7 @@ def refresh_b_action_errors():
     db.commit()
 
 def refresh_b_apps():
-    try:
-        sql = "drop table if exists b_apps_new"
-        db.executesql(sql)
-        sql = "create table b_apps_new as select * from v_apps"
-        db.executesql(sql)
-        sql = "drop table if exists b_apps_old"
-        db.executesql(sql)
-        sql = "rename table b_apps to b_apps_old, b_apps_new to b_apps"
-        db.executesql(sql)
-    except:
-        sql = "drop table if exists b_apps"
-        db.executesql(sql)
-        sql = "create table b_apps as select * from v_apps"
-        db.executesql(sql)
-    db.commit()
+    task_refresh_b_apps()
 
 def svc_log_update(svcname, astatus):
     q = db.services_log.svc_name == svcname
@@ -590,20 +576,7 @@ def cron_stat_day_svc():
 #
 #######
 def cron_unfinished_actions():
-    now = datetime.datetime.now()
-    tmo = now - datetime.timedelta(minutes=120)
-    q = (db.SVCactions.begin < tmo)
-    q &= (db.SVCactions.end==None)
-    rows = db(q).select(orderby=db.SVCactions.id)
-    db(q).update(status="err", end='1000-01-01 00:00:00')
-    for r in rows:
-        _log('action.timeout', "action ids %(ids)s closed on timeout",
-              dict(ids=r.id),
-              user='collector',
-              svcname=r.svcname,
-              nodename=r.hostname,
-              level="warning")
-    return "%d actions marked timed out"%len(rows)
+    return task_unfinished_actions()
 
 def cron_scrub_checks():
     thres = now - datetime.timedelta(days=2)
@@ -1085,46 +1058,7 @@ def cron_mac_dup():
     db.commit()
 
 def cron_feed_monitor():
-    e = db(db.feed_queue.id>0).select(limitby=(0,1)).first()
-    if e is None:
-        # clean all
-        sql = """delete from dashboard
-                 where
-                   dash_type = "feed queue"
-              """
-        db.executesql(sql)
-        db.commit()
-        return
-
-    now = datetime.datetime.now()
-    now = now - datetime.timedelta(microseconds=now.microsecond)
-    limit = now - datetime.timedelta(minutes=5)
-    if e.created < limit:
-        n = db(db.feed_queue.created<limit).count()
-        sql = """insert into dashboard
-                 set
-                   dash_type="feed queue",
-                   dash_severity=4,
-                   dash_fmt="%%(n)s entries stalled in feed queue",
-                   dash_dict='{"n": "%(n)d"}',
-                   dash_created="%(now)s",
-                   dash_env="PRD",
-                   dash_updated="%(now)s"
-                 on duplicate key update
-                   dash_fmt="%%(n)s entries stalled in feed queue",
-                   dash_dict='{"n": "%(n)d"}',
-                   dash_updated="%(now)s"
-              """%dict(n=n, now=str(now))
-        db.executesql(sql)
-    db.commit()
-
-    # clean old
-    sql = """delete from dashboard
-             where
-               dash_type = "feed queue" and
-               dash_updated < "%(now)s" """%dict(now=str(now))
-    db.executesql(sql)
-
+    task_feed_monitor()
 
 def _cron_stat_day_billing(end, fset_id=0):
     q = db.stat_day_billing.day == end
