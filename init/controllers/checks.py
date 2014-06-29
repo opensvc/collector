@@ -37,20 +37,25 @@ def checks_defaults_insert():
     return dict(form=form)
 
 def enqueue_update_thresholds_batch(chk_type=None):
-    import cPickle
     if chk_type is None:
         q_fn = 'update_thresholds_batch'
-        q_args = cPickle.dumps("[]")
-        q = db.feed_queue.q_fn == q_fn
+        q_args = []
+        task = scheduler.task_status(
+          (db.scheduler_task.function_name == q_fn) & \
+          (db.scheduler_task.status == "QUEUED")
+        )
     else:
         q_fn = 'update_thresholds_batch_type'
-        q_args = cPickle.dumps([chk_type])
-        q = db.feed_queue.q_fn == q_fn
-        q &= db.feed_queue.q_args == q_args
+        q_args = [chk_type]
+        task = scheduler.task_status(
+          (db.scheduler_task.function_name == q_fn) & \
+          (db.scheduler_task.args.like('%'+chk_type+'%')) & \
+          (db.scheduler_task.status == "QUEUED")
+        )
 
-    if db(q).count() > 1:
+    if task is not None:
         return
-    db.feed_queue.insert(q_fn=q_fn, q_args=q_args)
+    scheduler.queue_task(q_fn, q_args, group_name="slow")
     db.commit()
 
 @auth.requires_membership('CheckManager')

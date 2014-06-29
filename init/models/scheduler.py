@@ -41,9 +41,42 @@ def task_purge_static():
         os.unlink(name)
     return files
 
+def task_purge_feed():
+    sql = """
+      delete from scheduler_task
+      where
+        repeats=1 and
+        status in ("COMPLETED", "FAILED", "TIMEOUT") and
+        last_run_time < date_sub(now(), interval 10 minute)
+    """
+    db.executesql(sql)
+    sql = """
+      delete from scheduler_run
+      where
+        status = "COMPLETED" and
+        stop_time < date_sub(now(), interval 10 minute)
+    """
+    db.executesql(sql)
+    sql = """
+      delete from scheduler_run
+      where
+        status in ("FAILED", "TIMEOUT") and
+        stop_time < date_sub(now(), interval 1 day)
+    """
+    db.executesql(sql)
+    db.commit()
+
 def task_feed_monitor():
-    e = db(db.feed_queue.id>0).select(limitby=(0,1)).first()
-    if e is None:
+    now = datetime.datetime.now()
+    now = now - datetime.timedelta(microseconds=now.microsecond)
+    limit = now - datetime.timedelta(minutes=5)
+
+    q = db.scheduler_task.status == "QUEUED"
+    q &= db.scheduler_task.repeats == 1
+    q &= db.scheduler_task.start_time < limit
+    n = db(q).count()
+
+    if n == 0:
         # clean all
         sql = """delete from dashboard
                  where
@@ -53,26 +86,21 @@ def task_feed_monitor():
         db.commit()
         return
 
-    now = datetime.datetime.now()
-    now = now - datetime.timedelta(microseconds=now.microsecond)
-    limit = now - datetime.timedelta(minutes=5)
-    if e.created < limit:
-        n = db(db.feed_queue.created<limit).count()
-        sql = """insert into dashboard
-                 set
-                   dash_type="feed queue",
-                   dash_severity=4,
-                   dash_fmt="%%(n)s entries stalled in feed queue",
-                   dash_dict='{"n": "%(n)d"}',
-                   dash_created="%(now)s",
-                   dash_env="PRD",
-                   dash_updated="%(now)s"
-                 on duplicate key update
-                   dash_fmt="%%(n)s entries stalled in feed queue",
-                   dash_dict='{"n": "%(n)d"}',
-                   dash_updated="%(now)s"
-              """%dict(n=n, now=str(now))
-        db.executesql(sql)
+    sql = """insert into dashboard
+             set
+               dash_type="feed queue",
+               dash_severity=4,
+               dash_fmt="%%(n)s entries stalled in feed queue",
+               dash_dict='{"n": "%(n)d"}',
+               dash_created="%(now)s",
+               dash_env="PRD",
+               dash_updated="%(now)s"
+             on duplicate key update
+               dash_fmt="%%(n)s entries stalled in feed queue",
+               dash_dict='{"n": "%(n)d"}',
+               dash_updated="%(now)s"
+          """%dict(n=n, now=str(now))
+    db.executesql(sql)
     db.commit()
 
     # clean old
