@@ -67,6 +67,10 @@ def digest_binlog():
         data[(m2.group(0).strip('`'), m.group(0).strip('`'))] = row[_pos]
     return data
 
+def rotate_binlog():
+    sql = """ flush logs """
+    db.executesql(sql)
+
 def merge_data(data, mirror=False):
     max = 500
     for table, (vars, vals) in data.items():
@@ -75,10 +79,7 @@ def merge_data(data, mirror=False):
         while len(vals) > max:
             generic_insert(table, vars, vals[:max])
             vals = vals[max:]
-        try:
-            generic_insert(table, vars, vals)
-        except Exception as e:
-            raise Exception(str((str(e), table, vars, vals)))
+        generic_insert(table, vars, vals)
 
 def get_push_remotes():
     return get_remotes("push")
@@ -633,6 +634,7 @@ def resync_all():
     _resync_all()
 
 def _resync_all(force=False):
+    rotate_binlog()
     push_all_table_to_all_remote(force=force)
     pull_all_table_from_all_remote(force=force)
 
