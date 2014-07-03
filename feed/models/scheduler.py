@@ -450,13 +450,14 @@ def _update_asset(vars, vals, auth):
     update_dash_node_without_maintenance_end(auth[1])
     update_dash_node_without_asset(auth[1])
 
-def _resmon_clean(node, svcname, vmname):
+def _resmon_clean(node, svcname):
     if node is None or node == '':
-        return 0
+        return
     if svcname is None or svcname == '':
-        return 0
+        return
     q = db.resmon.nodename==node.strip("'")
     q &= db.resmon.svcname==svcname.strip("'")
+    q &= db.resmon.updated < datetime.datetime.now() - datetime.timedelta(minutes=10)
     db(q).delete()
     db.commit()
 
@@ -480,7 +481,6 @@ def __resmon_update(vars, vals):
             h['nodename'] = nodename
         if 'vmname' not in h:
             h['vmname'] = ""
-        _resmon_clean(h['nodename'], h['svcname'], h['vmname'])
     if len(vals) == 0:
         return
     idx = vars.index("res_status")
@@ -491,6 +491,7 @@ def __resmon_update(vars, vals):
     elif type(vals) == list:
         vals[idx] = "n/a"
     generic_insert('resmon', vars, vals)
+    _resmon_clean(h['nodename'], h['svcname'])
 
 def _register_disk(vars, vals, auth):
     h = {}
