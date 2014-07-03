@@ -1197,7 +1197,7 @@ db.define_table('comp_node_moduleset',
     Field('modset_node','string'),
     Field('modset_id','integer'),
     Field('modset_updated','datetime'),
-    Field('modset_author','string'),
+    Field('modset_mod_author','string'),
     migrate=False)
 
 db.define_table('comp_modulesets_services',

@@ -10897,6 +10897,8 @@ def json_tree_action_show():
         return json_tree_action_show_variable(request.vars.obj_id)
     elif request.vars.obj_type == "filterset":
         return json_tree_action_show_filterset(request.vars.obj_id)
+    elif request.vars.obj_type == "modset":
+        return json_tree_action_show_moduleset(request.vars.obj_id)
     return ""
 
 def json_tree_action_rename():
@@ -11096,6 +11098,48 @@ def json_tree_action_show_filterset(fset_id):
       metrics,
     )
     return d
+
+def json_tree_action_show_moduleset(modset_id):
+    modset_id = int(modset_id)
+
+    q = db.comp_moduleset.id == modset_id
+    modset = db(q).select(cacheable=True).first()
+    if modset is None:
+        return ""
+    l = []
+    l.append(H2(modset.modset_name))
+    l.append(HR())
+
+    q = db.comp_node_moduleset.modset_id == modset_id
+    rows = db(q).select(cacheable=False)
+    if len(rows) > 0:
+        l.append(H3(T("Attached to servers")))
+        l.append(P(' '.join(map(lambda x: x.modset_node, rows))))
+        l.append(HR())
+
+    q = db.comp_modulesets_services.modset_id == modset_id
+    rows = db(q).select(cacheable=False)
+    if len(rows) > 0:
+        l.append(H3(T("Attached to services")))
+        l.append(P(' '.join(map(lambda x: x.modset_svcname, rows))))
+        l.append(HR())
+
+    def mod_html(x):
+        l = []
+        l.append(B(x.modset_mod_name))
+        l.append(P(T("Author"), ": ", I(x.modset_mod_author),
+                      ", ",
+                      T("Updated"), ": ", I(x.modset_mod_updated)))
+        return P(l)
+
+    q = db.comp_moduleset_modules.modset_id == modset_id
+    rows = db(q).select(cacheable=False)
+    if len(rows) > 0:
+        l.append(H3(T("Modules")))
+        l.append(SPAN(map(lambda x: mod_html(x), rows)))
+        l.append(HR())
+
+    return DIV(l)
 
 def json_tree_action_show_ruleset(rset_id):
     q = db.comp_rulesets.id == rset_id
