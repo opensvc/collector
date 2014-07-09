@@ -727,7 +727,9 @@ def ajax_containerperf_plot():
     session.forget(response)
     containers = []
     for s in request.vars.node.split(','):
-        containers.append(s.split('@'))
+        l = s.split('@')
+        if len(l) == 2:
+            containers.append(l)
 
     b = None
     e = None
