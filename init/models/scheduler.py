@@ -112,6 +112,8 @@ def task_feed_monitor():
     db.commit()
 
 def task_refresh_b_apps():
+    from warnings import filterwarnings
+    filterwarnings('ignore', category = MySQLdb.Warning)
     try:
         sql = "drop table if exists b_apps_new"
         db.executesql(sql)
@@ -146,6 +148,8 @@ def task_unfinished_actions():
     return "%d actions marked timed out"%len(rows)
 
 def task_refresh_b_disk_app():
+    from warnings import filterwarnings
+    filterwarnings('ignore', category = MySQLdb.Warning)
     sql = """
       select
         max(update_time)>(select update_time from information_schema.tables where table_schema="opensvc" and table_name='b_disk_app') as need_update ,
