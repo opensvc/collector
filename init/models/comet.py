@@ -1,6 +1,6 @@
 from gluon.contrib.websocket_messaging import websocket_send
 
-websocket_url = "https://dbopensvc:8889"
+websocket_url = "http://127.0.0.1:8889"
 websocket_key = "magix123"
 
 def _websocket_send(msg, group="generic"):
