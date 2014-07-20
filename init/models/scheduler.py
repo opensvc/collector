@@ -113,6 +113,7 @@ def task_feed_monitor():
 
 def task_refresh_b_apps():
     from warnings import filterwarnings
+    import MySQLdb
     filterwarnings('ignore', category = MySQLdb.Warning)
     try:
         sql = "drop table if exists b_apps_new"
@@ -149,6 +150,7 @@ def task_unfinished_actions():
 
 def task_refresh_b_disk_app():
     from warnings import filterwarnings
+    import MySQLdb
     filterwarnings('ignore', category = MySQLdb.Warning)
     sql = """
       select
