@@ -174,7 +174,7 @@ function web2py_component(action, target, timeout, times){
 
 function web2py_websocket(url,onmessage,onopen,onclose) {
   if ("WebSocket" in window) {
-    var ws = new WebSocket(url);
+    var ws = new ReconnectingWebSocket(url);
     ws.onopen = onopen?onopen:(function(){});
     ws.onmessage = onmessage;
     ws.onclose = onclose?onclose:(function(){});
