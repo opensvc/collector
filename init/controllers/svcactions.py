@@ -41,7 +41,45 @@ def update_dash_action_errors(svc_name, nodename):
                        env=rows[0][1],
                        now=str(datetime.datetime.now()),
                        err=rows[0][0])
+        db.executesql(sql)
+        db.commit()
+        sqlws = """select
+                     dash_md5
+                   from
+                     dashboard
+                   where
+                     dash_type="action errors" and
+                     dash_svcname="%(svcname)s" and
+                     dash_nodename="%(nodename)s" and
+                     dash_fmt="%%(err)s action errors"
+              """%dict(svcname=svc_name,
+                       nodename=nodename,
+                  )
+        rows = db.executesql(sqlws)
+        if len(rows) > 0:
+            _websocket_send(json.dumps({
+              'event': 'dash_change',
+              'data': {
+                'dash_md5': rows[0][0],
+              }
+            }))
+
     else:
+        sqlws = """select dash_md5 from dashboard
+                 where
+                   dash_type="action errors" and
+                   dash_svcname="%(svcname)s" and
+                   dash_nodename="%(nodename)s"
+              """%dict(svcname=svc_name,
+                       nodename=nodename)
+        rows = db.executesql(sqlws)
+        if len(rows) > 0:
+            _websocket_send(json.dumps({
+              'event': 'dash_delete',
+              'data': {
+                'dash_md5': rows[0][0],
+              }
+            }))
         sql = """delete from dashboard
                  where
                    dash_type="action errors" and
@@ -49,8 +87,8 @@ def update_dash_action_errors(svc_name, nodename):
                    dash_nodename="%(nodename)s"
               """%dict(svcname=svc_name,
                        nodename=nodename)
-    db.executesql(sql)
-    db.commit()
+        db.executesql(sql)
+        db.commit()
 
 def update_action_errors():
     sql = """truncate b_action_errors
@@ -453,6 +491,7 @@ class table_actions(HtmlTable):
         self.checkboxes = True
         self.checkbox_id_table = 'v_svcactions'
         self.additional_tools.append('ack')
+        self.keys = ["id"]
 
     def checkbox_disabled(self, o):
         status = self.colprops['status'].get(o)
@@ -577,6 +616,10 @@ def ajax_actions():
         return t.csv()
     if len(request.args) == 1 and request.args[0] == 'commonality':
         return t.do_commonality()
+    if len(request.args) == 1 and request.args[0] == 'line':
+        t.object_list = db(q).select(orderby=o, cacheable=False)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
 
     n = db(q).count()
     t.setup_pager(n)
@@ -592,6 +635,34 @@ def ajax_actions():
                _class='ackpanel',
               ),
               t.html(),
+              SCRIPT("""
+function ws_action_switch(data) {
+        if (data["event"] == "begin_action") {
+          _data = []
+          _data.push({"key": "id", "val": data["data"]["id"], "op": "="})
+          ajax_table_insert_line('%(url)s', '%(divid)s', _data);
+        } else if (data["event"] == "end_action") {
+          _data = []
+          _data.push({"key": "id", "val": data["data"]["id"], "op": ">="})
+          _data.push({"key": "pid", "val": data["data"]["pid"], "op": "="})
+          ajax_table_insert_line('%(url)s', '%(divid)s', _data);
+        }
+}
+function ws_switch(e) {
+    try {
+        data = eval('('+e.data+')')
+    } catch(ex) {
+        return
+    }
+    ws_action_switch(data)
+}
+web2py_websocket("wss://%(http_host)s/realtime/generic", ws_switch)
+              """ % dict(
+                     url=URL(r=request,f=t.func),
+                     divid=t.innerhtml,
+                     http_host=request.env.http_host.split(':')[0],
+                    )
+              ),
             )
 
 @auth.requires_login()

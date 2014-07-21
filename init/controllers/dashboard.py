@@ -688,7 +688,8 @@ class table_dashboard(HtmlTable):
                      'dash_env',
                      'dash_entry',
                      'dash_created',
-                     'dash_updated']
+                     'dash_updated',
+                     'dash_md5']
         self.colprops = {
             'dash_links': col_dash_links(
                      title='Links',
@@ -774,7 +775,15 @@ class table_dashboard(HtmlTable):
                      img='log16',
                      display=True,
                     ),
+            'dash_md5': HtmlTableColumn(
+                     title='Signature',
+                     table='dashboard',
+                     field='dash_md5',
+                     img='log16',
+                     display=False,
+                    ),
         }
+        self.keys = ["dash_md5"]
         self.colprops['dash_svcname'].t = self
         self.colprops['dash_nodename'].t = self
         self.colprops['dash_links'].t = self
@@ -818,6 +827,10 @@ def ajax_dashboard():
         return t.csv()
     if len(request.args) == 1 and request.args[0] == 'commonality':
         return t.do_commonality()
+    if len(request.args) == 1 and request.args[0] == 'line':
+        t.object_list = db(q).select(orderby=o, cacheable=False)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
 
     n = db(q).select(db.dashboard.id.count()).first()(db.dashboard.id.count())
     t.setup_pager(n)
@@ -864,6 +877,39 @@ def ajax_dashboard():
              ),
              DIV(_id="dh", _style="display:none"),
              t.html(),
+             SCRIPT("""
+function ws_action_switch(data) {
+        if (! "event" in data) {
+          return
+        }
+        if (data["event"] == "dash_change") {
+          _data = []
+          _data.push({"key": "dash_md5", "val": data["data"]["dash_md5"], "op": "="})
+          ajax_table_insert_line('%(url)s', '%(divid)s', _data);
+        }
+        else if (data["event"] == "dash_delete") {
+          alert(data["event"])
+          cell = $("#%(divid)s").find("[v="+data["data"]["dash_md5"]+"]")
+          line = cell.parents(".tl")
+          line.effect("highlight", 1000)
+          line.remove()
+        }
+}
+function ws_switch(e) {
+    try {
+        data = eval('('+e.data+')')
+    } catch(ex) {
+        return
+    }
+    ws_action_switch(data)
+}
+web2py_websocket("wss://%(http_host)s/realtime/generic", ws_switch)
+              """ % dict(
+                     url=URL(r=request,f=t.func),
+                     divid=t.innerhtml,
+                     http_host=request.env.http_host.split(':')[0],
+                    )
+             ),
            )
 
 @auth.requires_login()

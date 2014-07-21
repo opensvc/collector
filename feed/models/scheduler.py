@@ -1,6 +1,7 @@
 # coding: utf8
 
 import datetime
+import hashlib
 
 def _begin_action(vars, vals, auth):
     sql="""insert into SVCactions (%s) values (%s)""" % (','.join(vars), ','.join(vals))
@@ -64,13 +65,10 @@ def _end_action(vars, vals):
     h['end'] = h['end'].strftime("%Y-%m-%d %H:%M:%S")
     h['id'] = h['ID']
 
-    try:
-        _websocket_send(json.dumps({
-                 'event': 'end_action',
-                 'data': h
-                }))
-    except:
-        pass
+    _websocket_send(json.dumps({
+             'event': 'end_action',
+             'data': h
+            }))
 
     if h['action'] in ('start', 'startcontainer') and \
        h['status'] == 'ok':
@@ -1967,6 +1965,9 @@ def __svcmon_update(vars, vals):
     query = db.svcmon_log.mon_svcname==h['mon_svcname']
     query &= db.svcmon_log.mon_nodname==h['mon_nodname']
     last = db(query).select(orderby=~db.svcmon_log.id, limitby=(0,1))
+    cksum = hashlib.md5()
+    cksum.update(h['mon_nodname'])
+    cksum.update(h['mon_svcname'])
     if len(last) == 0:
         _vars = ['mon_begin',
                  'mon_end',
@@ -2002,10 +2003,13 @@ def __svcmon_update(vars, vals):
         else:
             level = "info"
         _websocket_send(json.dumps({
-                     'nodename': h['mon_nodname'],
-                     'svcname': h['mon_svcname'],
-                     'table': 'svcmon',
-                     'event': 'change'
+                     'event': 'svcmon_change',
+                     'data': {
+                       'mon_nodname': h['mon_nodname'],
+                       'mon_svcname': h['mon_svcname'],
+                       'mon_vmname': h['mon_vmname'],
+                       'cksum': cksum.hexdigest(),
+                     }
                     }))
         _log("service.status",
              "service '%(svc)s' state initialized on '%(node)s': avail(%(a1)s=>%(a2)s) overall(%(o1)s=>%(o2)s)",
@@ -2082,10 +2086,15 @@ def __svcmon_update(vars, vals):
             level = "warning"
         else:
             level = "info"
-        _websocket_send({'nodename': h['mon_nodname'],
-                     'svcname': h['mon_svcname'],
-                     'table': 'svcmon',
-                     'event': 'change'})
+        _websocket_send(json.dumps({
+                     'event': 'svcmon_change',
+                     'data': {
+                       'mon_nodname': h['mon_nodname'],
+                       'mon_svcname': h['mon_svcname'],
+                       'mon_vmname': h['mon_vmname'],
+                       'cksum': cksum.hexdigest(),
+                     },
+                   }))
         _log("service.status",
              "service '%(svc)s' state changed on '%(node)s': avail(%(a1)s=>%(a2)s) overall(%(o1)s=>%(o2)s)",
              dict(
@@ -2135,10 +2144,15 @@ def __svcmon_update(vars, vals):
             level = "warning"
         else:
             level = "info"
-        _websocket_send({'nodename': h['mon_nodname'],
-                     'svcname': h['mon_svcname'],
-                     'table': 'svcmon',
-                     'event': 'change'})
+        _websocket_send(json.dumps({
+                     'event': 'svcmon_change',
+                     'data': {
+                       'mon_nodname': h['mon_nodname'],
+                       'mon_svcname': h['mon_svcname'],
+                       'mon_vmname': h['mon_vmname'],
+                       'cksum': cksum.hexdigest(),
+                     },
+                    }))
         _log("service.status",
              "service '%(svc)s' state changed on '%(node)s': avail(%(a1)s=>%(a2)s) overall(%(o1)s=>%(o2)s)",
              dict(
@@ -3279,7 +3293,45 @@ def update_dash_action_errors(svc_name, nodename):
                        sev=sev,
                        env=rows[0][1],
                        err=rows[0][0])
+        db.executesql(sql)
+        db.commit()
+        sqlws = """select
+                     dash_md5
+                   from
+                     dashboard
+                   where
+                     dash_type="action errors" and
+                     dash_svcname="%(svcname)s" and
+                     dash_nodename="%(nodename)s" and
+                     dash_fmt="%%(err)s action errors"
+              """%dict(svcname=svc_name,
+                       nodename=nodename,
+                  )
+        rows = db.executesql(sqlws)
+        if len(rows) > 0:
+            _websocket_send(json.dumps({
+              'event': 'dash_change',
+              'data': {
+                'dash_md5': rows[0][0],
+              }
+            }))
+
     else:
+        sqlws = """select dash_md5 from dashboard
+                 where
+                   dash_type="action errors" and
+                   dash_svcname="%(svcname)s" and
+                   dash_nodename="%(nodename)s"
+              """%dict(svcname=svc_name,
+                       nodename=nodename)
+        rows = db.executesql(sqlws)
+        if len(rows) > 0:
+            _websocket_send(json.dumps({
+              'event': 'dash_delete',
+              'data': {
+                'dash_md5': rows[0][0],
+              }
+            }))
         sql = """delete from dashboard
                  where
                    dash_type="action errors" and
@@ -3287,8 +3339,8 @@ def update_dash_action_errors(svc_name, nodename):
                    dash_nodename="%(nodename)s"
               """%dict(svcname=svc_name,
                        nodename=nodename)
-    db.executesql(sql)
-    db.commit()
+        db.executesql(sql)
+        db.commit()
 
 def update_dash_service_available_but_degraded(svc_name, svc_type, svc_availstatus, svc_status):
     if svc_type == 'PRD':
