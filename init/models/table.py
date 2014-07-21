@@ -1,4 +1,5 @@
 import re
+import hashlib
 
 def select_filter(fset_id):
     # refuse to change filter for locked-filter users
@@ -125,6 +126,10 @@ class HtmlTable(object):
         self.additional_filters = []
         self.cols = []
         self.colprops = {}
+
+        # column ids to use as keys to detect duplicate lines on
+        # websocket triggered updates.
+        self.keys = []
 
         # to be set be instanciers
         self.autorefresh = 0
@@ -854,6 +859,8 @@ class HtmlTable(object):
         db(q).delete()
 
     def store_filter_value(self, f, v, bookmark="current"):
+        if request.vars.volatile_filters is not None:
+            return
         field = self.stored_filter_field(f)
         if field is None:
             return
@@ -971,21 +978,28 @@ class HtmlTable(object):
         if self.extrarow:
             cells.append(TD(self.format_extrarow(o)))
 
+        if len(self.keys) > 0:
+            cksum = hashlib.md5()
+        else:
+            cksum = None
         for c in self.cols:
+            colprops = self.colprops[c]
             if self.spaning_cell(c, o):
                 content = ''
             else:
-                content = self.colprops[c].html(o)
-            v = self.colprops[c].get(o)
+                content = colprops.html(o)
+            v = colprops.get(o)
             if v is None:
                 v = 'empty'
+            if c in self.keys:
+                cksum.update(str(v))
             attrs = dict(
                _name=self.col_key(c),
                _v=v,
                _cell=1,
             )
             _style=self.col_hide(c)
-            classes = [self.colprops[c]._class, self.colprops[c]._dataclass]
+            classes = [colprops._class, colprops._dataclass]
             if _style != '':
                 classes.append("hidden")
             _class = ' '.join(classes)
@@ -996,7 +1010,12 @@ class HtmlTable(object):
                 cl = "tl " + self.cellclass
             else:
                 cl = self.cellclass
-        return TR(cells, _class=cl)
+        line_attrs = dict(
+          _class = cl,
+        )
+        if cksum:
+            line_attrs["_cksum"] = cksum.hexdigest()
+        return TR(cells, **line_attrs)
 
     def spaning_line(self, o):
         if self.span is not None and \
@@ -1043,31 +1062,10 @@ class HtmlTable(object):
             line_count += 1
             if not self.pageable or self.perpage == 0 or line_count <= self.perpage:
                 if not self.spaning_line(o):
-                    if self.extraline and self.span is not None:
-                        lines.append(self.format_extraline(self.last))
                     self.rotate_colors()
                 lines.append(self.table_line(o))
-                if self.extraline and self.span is None:
-                    lines.append(self.format_extraline(o))
                 self.last = o
-        if self.extraline and self.span is not None:
-            lines.append(self.format_extraline(self.last))
         return lines, line_count
-
-    def format_extraline(self, o):
-        n = len(self.cols)
-        if self.checkboxes:
-            n += 1
-        if self.extrarow:
-            n += 1
-        return TR(
-                 TD(
-                   _colspan=n,
-                   _id=self.extra_line_key(o),
-                   _style='display:none',
-                 ),
-                 _class=self.cellclass,
-               )
 
     def header_slim(self):
         inputs = []
@@ -1346,6 +1344,9 @@ class HtmlTable(object):
         elif self.nodatabanner:
             table_lines.append(T("no data"))
 
+        table_attrs = dict(
+          _id="table_"+self.id,
+        )
         d = DIV(
               self.show_flash(),
               self.right_click_menu(),
@@ -1373,7 +1374,7 @@ class HtmlTable(object):
                 ),
                 TABLE(
                    table_lines,
-                   _id="table_"+self.id,
+                   **table_attrs
                 ),
                 DIV(
                   XML("&nbsp;"),
@@ -1729,7 +1730,7 @@ function js_link_%(id)s(){
   }
   var re = /#$/;
   url=url.replace(re, "")+"?";
-  args="clear_filters=true&dbfilter="+$("#avs%(id)s").val()
+  args="clear_filters=true&discard_filters=true&dbfilter="+$("#avs%(id)s").val()
   $("#%(id)s").find("[name=fi]").each(function(){
     if ($(this).val().length==0) {return}
     args=args+'&'+$(this).attr('id')+"="+encodeURIComponent($(this).val())
@@ -2241,11 +2242,12 @@ class col_containertype(HtmlTableColumn):
         d = DIV(
               A(
                 s,
-                _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                _onclick="toggle_extra('%(url)s', '%(id)s', this, %(ncols)s);"%dict(
                   url=URL(r=request, c='ajax_node',f='ajax_node',
                           vars={'node': self.t.colprops['mon_vmname'].get(o),
                                 'rowid': id}),
                   id=id,
+                  ncols=len(self.t.cols),
                 ),
               ),
               _class=' '.join((node_class(os), 'nowrap')),
@@ -2270,11 +2272,11 @@ class col_node(HtmlTableColumn):
         d = DIV(
               A(
                 s,
-                _onclick="getElementById('%(id)s').innerHTML='%(spinner)s';toggle_extra('%(url)s', '%(id)s');"%dict(
+                _onclick="toggle_extra('%(url)s', '%(id)s', this, %(ncols)s);"%dict(
                   url=URL(r=request, c='ajax_node',f='ajax_node',
                           vars={'node': s, 'rowid': id}),
                   id=id,
-                  spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+                  ncols=len(self.t.cols),
                 ),
                 _style=c,
               ),
@@ -2291,11 +2293,11 @@ class col_svc(HtmlTableColumn):
         d = DIV(
               A(
                 s,
-                _onclick="getElementById('%(id)s').innerHTML='%(spinner)s';toggle_extra('%(url)s', '%(id)s');"%dict(
+                _onclick="""toggle_extra('%(url)s', '%(id)s', this, %(ncols)s);"""%dict(
                   url=URL(r=request, c='default',f='ajax_service',
                           vars={'node': s, 'rowid': id}),
                   id=id,
-                  spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+                  ncols=len(self.t.cols),
                 ),
               ),
             )
@@ -3459,9 +3461,10 @@ class col_array_dg(HtmlTableColumn):
         d = DIV(
               A(
                 dg,
-                _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                _onclick="toggle_extra('%(url)s', '%(id)s', this, %(ncols)s);"%dict(
                   url=URL(r=request, c='disks',f='ajax_array_dg',
                           vars={'array': s, 'dg': dg, 'rowid': id}),
+                  ncols=len(self.t.cols),
                   id=id,
                 ),
                 _class="bluer",
@@ -3484,10 +3487,11 @@ class col_array(HtmlTableColumn):
               img,
               A(
                 s,
-                _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                _onclick="toggle_extra('%(url)s', '%(id)s', this, %(ncols)s);"%dict(
                   url=URL(r=request, c='disks',f='ajax_array',
                           vars={'array': s, 'rowid': id}),
                   id=id,
+                  ncols=len(self.t.cols),
                 ),
                 _class="bluer",
               ),
