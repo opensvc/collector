@@ -101,8 +101,7 @@ class table_resmon(HtmlTable):
         self.checkbox_id_table = 'resmon'
         self.dbfilterable = True
         self.ajax_col_values = 'ajax_resmon_col_values'
-        self.span = 'nodename'
-        self.sub_span = ['svcname']
+        self.span = ['nodename', 'svcname']
 
 @auth.requires_login()
 def ajax_resmon_col_values():

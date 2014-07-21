@@ -152,9 +152,8 @@ class HtmlTable(object):
         self.headers = True
         self.colored_lines = True
         self.additional_tools = []
-        self.span = None
+        self.span = []
         self.flash = None
-        self.sub_span = []
         self.nodatabanner = True
         self.highlight = True
 
@@ -794,14 +793,17 @@ class HtmlTable(object):
     def span_line_id(self, o):
         if o is None:
             return ''
-        if self.colprops[self.span].table is None or \
-           self.colprops[self.span].table not in o:
-            return o[self.span]
-        else:
-            return o[self.colprops[self.span].table][self.span]
+        spansum = hashlib.md5()
+        for c in self.span:
+            if self.colprops[c].table is None or \
+               self.colprops[c].table not in o:
+                spansum.update(str(o[c]))
+            else:
+                spansum.update(str(o[self.colprops[c].table][c]))
+        return spansum.hexdigest()
 
     def extra_line_key(self, o):
-        if self.span:
+        if len(self.span) > 0:
             id = str(self.span_line_id(o))
         else:
             id = str(self.line_id(o))
@@ -1012,23 +1014,23 @@ class HtmlTable(object):
                 cl = self.cellclass
         line_attrs = dict(
           _class = cl,
+          _spansum = self.span_line_id(o),
         )
         if cksum:
             line_attrs["_cksum"] = cksum.hexdigest()
         return TR(cells, **line_attrs)
 
     def spaning_line(self, o):
-        if self.span is not None and \
+        if len(self.span) > 0 and \
            self.last is not None and \
-           self.colprops[self.span].get(o) == self.colprops[self.span].get(self.last):
+           self.span_line_id(o) == self.span_line_id(self.last):
             return True
         return False
 
     def spaning_cell(self, c, o):
         if not self.spaning_line(o):
            return False
-        if (c == self.span or (c in self.sub_span and \
-           self.colprops[c].get(o) == self.colprops[c].get(self.last))):
+        if c in self.span:
             return True
         return False
 

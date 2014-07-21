@@ -312,8 +312,7 @@ class table_quota(HtmlTable):
         self.checkboxes = True
         self.dbfilterable = False
         self.ajax_col_values = 'ajax_quota_col_values'
-        #self.span = 'array_name'
-        #self.sub_span = ['dg_free', 'array_model', 'array_name']
+        #self.span = ['array_name', 'dg_free', 'array_model', 'array_name']
 
         if 'StorageManager' in user_groups():
             self.additional_tools.append('app_attach')
@@ -694,9 +693,8 @@ class table_disks(HtmlTable):
         self.checkbox_id_table = 'b_disk_app'
         self.dbfilterable = True
         self.ajax_col_values = 'ajax_disks_col_values'
-        self.span = 'disk_id'
-        self.sub_span = ['disk_size', 'disk_alloc', 'disk_arrayid', 'disk_array_updated',
-                         'disk_devid', 'disk_name', 'disk_raid', 'disk_group', 'array_model']
+        self.span = ['disk_id', 'disk_size', 'disk_alloc', 'disk_arrayid', 'disk_array_updated',
+                     'disk_devid', 'disk_name', 'disk_raid', 'disk_group', 'array_model']
 
         if 'StorageManager' in user_groups() or \
            'StorageExec' in user_groups():

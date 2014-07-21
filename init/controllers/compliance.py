@@ -782,6 +782,8 @@ class table_comp_rulesets(HtmlTable):
         }
         self.colprops['var_name'].t = self
         self.colprops['var_value'].t = self
+        self.span = ['ruleset_name', 'ruleset_type', 'ruleset_public',
+                     'fset_name', 'teams_responsible']
         if 'CompManager' in user_groups():
             self.form_filterset_attach = self.comp_filterset_attach_sqlform()
             self.form_ruleset_var_add = self.comp_ruleset_var_add_sqlform()
@@ -1815,8 +1817,6 @@ def ajax_comp_rulesets_col_values():
 @auth.requires_login()
 def ajax_comp_rulesets():
     v = table_comp_rulesets('cr0', 'ajax_comp_rulesets')
-    v.span = 'ruleset_name'
-    v.sub_span = ['ruleset_type', 'ruleset_public', 'fset_name', 'teams_responsible']
     v.checkboxes = True
 
     err = None
@@ -2143,7 +2143,7 @@ class table_comp_filtersets(HtmlTable):
                     ),
         }
         self.colprops.update(filters_colprops)
-        self.sub_span = ['fset_stats']
+        self.span = ['fset_name', 'fset_stats']
         if 'CompManager' in user_groups():
             self.form_encap_filterset_attach = self.comp_encap_filterset_attach_sqlform()
             self.form_filterset_add = self.comp_filterset_add_sqlform()
@@ -2779,7 +2779,7 @@ def ajax_comp_filters():
     extra = SPAN()
     v = table_comp_filters('ajax_comp_filters',
                            'ajax_comp_filters')
-    v.span = 'f_table'
+    v.span = ['f_table']
     v.checkboxes = True
     reload_fsets = SCRIPT(
                      "table_ajax_submit('/init/compliance/ajax_comp_filtersets', 'ajax_comp_filtersets', inputs_ajax_comp_filtersets, [], ['ajax_comp_filtersets_ck'])",
@@ -2824,7 +2824,6 @@ def ajax_comp_filtersets_col_values():
 def ajax_comp_filtersets():
     t = table_comp_filtersets('ajax_comp_filtersets',
                               'ajax_comp_filtersets')
-    t.span = 'fset_name'
     t.checkboxes = True
 
     if len(request.args) == 1:
@@ -2970,7 +2969,7 @@ class table_comp_moduleset(HtmlTable):
                                                             'moduleset_rename',
                                                             'moduleset_node_attach'])
             self += HtmlTableMenu('Team responsible', 'guys16', ['team_responsible_attach', 'team_responsible_detach'])
-        self.sub_span = ['teams_responsible']
+        self.span = ['modset_name', 'teams_responsible']
 
     def moduleset_node_attach(self):
         return A(
@@ -3401,7 +3400,6 @@ def ajax_comp_moduleset_col_values():
 @auth.requires_login()
 def ajax_comp_moduleset():
     t = table_comp_moduleset('ajax_comp_moduleset', 'ajax_comp_moduleset')
-    t.span = 'modset_name'
     t.checkboxes = True
     t.checkbox_id_table = 'comp_moduleset_modules'
 

@@ -512,7 +512,7 @@ class table_checks(HtmlTable):
         self.checkbox_id_table = 'checks_live'
         self.checkboxes = True
         self.extraline = True
-        self.span = 'chk_nodename'
+        self.span = ['chk_nodename']
 
         ug = user_groups()
         if 'CheckManager' in ug:

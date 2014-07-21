@@ -162,8 +162,7 @@ class table_appinfo(HtmlTable):
         self.extraline = True
         self.dbfilterable = True
         self.ajax_col_values = 'ajax_appinfo_col_values'
-        self.span = 'app_svcname'
-        self.sub_span = ['app_launcher']
+        self.span = ['app_svcname', 'app_launcher']
 
 @auth.requires_login()
 def ajax_appinfo_col_values():
