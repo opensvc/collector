@@ -4241,4 +4241,5 @@ alter table SVCactions modify column acked_date datetime NULL;
 
 alter table dashboard modify column dash_env enum('PRD', 'PPRD', 'REC', 'INT', 'DEV', 'TST', 'TMP', 'DRP', 'FOR', 'PRA', '') default '';
 
+alter table SVCactions modify column status enum('err','ok','warn', '') default '';
 
