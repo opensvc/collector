@@ -61,6 +61,8 @@ class table_users(HtmlTable):
                      'fset_name',
                      'domains',
                      'last']
+        self.keys = ['id']
+        self.span = ['id']
         self.colprops = {
             'id': HtmlTableColumn(
                      title='User Id',
