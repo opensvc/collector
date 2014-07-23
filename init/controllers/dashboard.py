@@ -784,6 +784,7 @@ class table_dashboard(HtmlTable):
                     ),
         }
         self.keys = ["dash_md5"]
+        self.span = ["dash_md5"]
         self.colprops['dash_svcname'].t = self
         self.colprops['dash_nodename'].t = self
         self.colprops['dash_links'].t = self
@@ -888,11 +889,9 @@ function ws_action_switch(data) {
           ajax_table_insert_line('%(url)s', '%(divid)s', _data);
         }
         else if (data["event"] == "dash_delete") {
-          alert(data["event"])
           cell = $("#%(divid)s").find("[v="+data["data"]["dash_md5"]+"]")
           line = cell.parents(".tl")
-          line.effect("highlight", 1000)
-          line.remove()
+          line.fadeOut(1000, function(line){line.remove()})
         }
 }
 function ws_switch(e) {
