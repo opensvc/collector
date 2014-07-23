@@ -431,6 +431,24 @@ function sync_ajax(url, inputs, id, f) {
          }
     })
 }
+function restripe_table_lines(id) {
+    prev_spansum = ""
+    cls = ["cell1", "cell2"]
+    i = 1
+    $("#table_"+id).children().children(".tl").each(function(){
+       spansum = $(this).attr("spansum")
+       if (spansum != prev_spansum) {
+           prev_spansum = spansum
+           cl = cls[i]
+           i = 1 - i
+       }
+       if ($(this).hasClass(cl)) {
+           return
+       }
+       $(this).removeClass(cls[i]).addClass(cl)
+    })
+}
+
 function ajax_table_insert_line(url, id, data) {
     var query="volatile_filters=true"
     for (i=0; i<data.length; i++) {
@@ -458,7 +476,6 @@ function ajax_table_insert_line(url, id, data) {
                new_line = $(this)
                cksum = $(this).attr("cksum")
                $("#table_"+id).find("[cksum="+cksum+"]").each(function(){
-                 new_line.attr("class", $(this).attr("class"))
                  $(this).replaceWith(new_line)
                  modified.push(cksum)
                  new_line.effect("highlight", 1000)
@@ -470,25 +487,22 @@ function ajax_table_insert_line(url, id, data) {
              if (first_line.length > 0) {
                  first_line.before(msg)
              } else {
-                 first_line = $("#table_"+id).find("tr").last().remove()
-                 first_line = $("#table_"+id).find("tbody").first()
-                 first_line.append(msg)
+                 // remove "no data" line
+                 $("#table_"+id).find("tr").last().remove()
+                 b = $("#table_"+id).find("tbody").first()
+                 b.append(msg)
              }
+             restripe_table_lines(id)
+
              new_line = first_line.prev(".tl")
-             switch_color = false
-             if (((first_line.hasClass("cell1")) && (new_line.hasClass("cell1")))||((first_line.hasClass("cell2")) && (new_line.hasClass("cell2")))) {
-                 switch_color = true
-             }
-             while (new_line.hasClass("cell1")||new_line.hasClass("cell2")) {
+             while (new_line.length > 0) {
                  if (modified.indexOf(new_line.attr("cksum"))>=0) {
+                     // remove lines already changed in-place
                      new_line = new_line.prev()
                      new_line.next().remove()
                      continue
                  }
-                 if (switch_color) {
-                     if (new_line.hasClass("cell1")) {new_line.removeClass("cell1").addClass("cell2")}
-                     if (new_line.hasClass("cell2")) {new_line.removeClass("cell2").addClass("cell1")}
-                 }
+                 // highlight new lines
                  new_line.effect("highlight", 1000)
                  new_line = new_line.prev(".tl")
              }
