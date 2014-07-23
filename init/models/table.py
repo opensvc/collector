@@ -115,8 +115,6 @@ class HtmlTable(object):
         self.line_count = 0
         self.id_perpage = '_'.join((self.id, 'perpage'))
         self.id_page = '_'.join((self.id, 'page'))
-        self.cellclasses = {'cell1': 'cell2', 'cell2': 'cell1'}
-        self.cellclass = 'cell1'
         self.upc_table = self.id
         self.last = None
         self.column_filter_reset = '**clear**'
@@ -756,11 +754,6 @@ class HtmlTable(object):
 
         return nav
 
-    def rotate_colors(self):
-        if not self.colored_lines:
-            return
-        self.cellclass = self.cellclasses[self.cellclass]
-
     def col_checkbox_key(self, f):
         return '_'.join((self.id, 'cc', f))
 
@@ -1009,9 +1002,7 @@ class HtmlTable(object):
                 attrs['_class'] = _class
             cells.append(TD(content, **attrs))
             if self.highlight:
-                cl = "tl " + self.cellclass
-            else:
-                cl = self.cellclass
+                cl = "tl "
         line_attrs = dict(
           _class = cl,
           _spansum = self.span_line_id(o),
@@ -1063,8 +1054,6 @@ class HtmlTable(object):
                     continue
             line_count += 1
             if not self.pageable or self.perpage == 0 or line_count <= self.perpage:
-                if not self.spaning_line(o):
-                    self.rotate_colors()
                 lines.append(self.table_line(o))
                 self.last = o
         return lines, line_count
@@ -1794,6 +1783,7 @@ $(".down16,.right16").click(function() {
   scroll_%(id)s()
 })
 scroll_%(id)s()
+restripe_table_lines("%(id)s")
 """%dict(
                    id=self.id,
                    a=self.ajax_inputs(),
