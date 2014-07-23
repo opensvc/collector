@@ -404,6 +404,10 @@ class table_checks(HtmlTable):
                      'chk_threshold_provider',
                      'chk_created',
                      'chk_updated']
+        self.keys = ['chk_nodename',
+                     'chk_svcname',
+                     'chk_type',
+                     'chk_instance']
         self.colprops = {
             'chk_nodename': col_node(
                 title = 'Nodename',
@@ -905,12 +909,42 @@ def ajax_checks():
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'line':
+        t.object_list = db(q).select(orderby=o, cacheable=False)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
+
 
     n = db(q).select(db.checks_live.id.count(), left=l).first()(db.checks_live.id.count())
     t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
                                  orderby=o, left=l)
-    return t.html()
+    return DIV(
+      t.html(),
+      SCRIPT("""
+function ws_action_switch(data) {
+        if (data["event"] == "checks_change") {
+          _data = []
+          _data.push({"key": "chk_nodename", "val": data["data"]["chk_nodename"], "op": "="})
+          ajax_table_insert_line('%(url)s', '%(divid)s', _data);
+        }
+}
+function ws_switch(e) {
+    try {
+        data = eval('('+e.data+')')
+    } catch(ex) {
+        return
+    }
+    ws_action_switch(data)
+}
+web2py_websocket("wss://%(http_host)s/realtime/generic", ws_switch)
+              """ % dict(
+                     url=URL(r=request,f=t.func),
+                     divid=t.innerhtml,
+                     http_host=request.env.http_host.split(':')[0],
+                    )
+      ),
+    )
 
 @auth.requires_login()
 def checks():

@@ -239,6 +239,13 @@ def _push_checks(vars, vals):
     if n > 0:
         update_dash_checks(nodename)
 
+        _websocket_send(json.dumps({
+                     'event': 'checks_change',
+                     'data': {
+                       'chk_nodename': nodename,
+                     }
+                    }))
+ 
 def _insert_generic(data, auth):
     now = datetime.datetime.now()
     if type(data) != dict:
@@ -3434,13 +3441,14 @@ def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
                    dash_nodename="",
                    dash_severity=%(sev)d,
                    dash_fmt="current availability status: %%(s)s",
-                   dash_dict='{"s": "%(status)s"}',
+                   dash_dict='{"s": "%(status)s", "svcname": "%(svcname)s"}',
                    dash_created=now(),
                    dash_updated=now(),
                    dash_env="%(env)s"
                  on duplicate key update
                    dash_severity=%(sev)d,
                    dash_fmt="current availability status: %%(s)s",
+                   dash_dict='{"s": "%(status)s", "svcname": "%(svcname)s"}',
                    dash_updated=now(),
                    dash_env="%(env)s"
               """%dict(svcname=svc_name,
