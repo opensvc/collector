@@ -793,6 +793,7 @@ class table_dashboard(HtmlTable):
         self.checkbox_id_table = 'dashboard'
         self.checkbox_id_col = 'id'
         self.special_filtered_cols = ['dash_entry']
+        self.wsable = True
         #self.autorefresh = 60000
 
 @auth.requires_login()
@@ -895,6 +896,10 @@ function ws_action_switch(data) {
         }
 }
 function ws_switch(e) {
+    if (!$("#wsswitch_%(divid)s").prop('checked')) {
+        // websocket disable for this table
+        return
+    }
     try {
         data = eval('('+e.data+')')
     } catch(ex) {

@@ -512,6 +512,7 @@ class table_checks(HtmlTable):
         for c in self.cols:
             self.colprops[c].t = self
         self.ajax_col_values = 'ajax_checks_col_values'
+        self.wsable = True
         self.dbfilterable = True
         self.checkbox_id_table = 'checks_live'
         self.checkboxes = True
@@ -930,6 +931,10 @@ function ws_action_switch(data) {
         }
 }
 function ws_switch(e) {
+    if (!$("#wsswitch_%(divid)s").prop('checked')) {
+        // websocket disable for this table
+        return
+    }
     try {
         data = eval('('+e.data+')')
     } catch(ex) {

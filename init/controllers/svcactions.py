@@ -487,6 +487,7 @@ class table_actions(HtmlTable):
         self.extraline = True
         self.span = ['pid']
         #self.span = ['pid', 'hostname', 'svcname', 'action'] + ncols
+        self.wsable = True
         self.dbfilterable = True
         self.checkboxes = True
         self.checkbox_id_table = 'v_svcactions'
@@ -649,6 +650,10 @@ function ws_action_switch(data) {
         }
 }
 function ws_switch(e) {
+    if (!$("#wsswitch_%(divid)s").prop('checked')) {
+        // websocket disable for this table
+        return
+    }
     try {
         data = eval('('+e.data+')')
     } catch(ex) {

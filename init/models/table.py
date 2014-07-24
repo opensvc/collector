@@ -154,6 +154,7 @@ class HtmlTable(object):
         self.flash = None
         self.nodatabanner = True
         self.highlight = True
+        self.wsable = False
 
         # initialize the pager, to be re-executed by instanciers
         self.setup_pager()
@@ -1253,6 +1254,33 @@ class HtmlTable(object):
             )
         return d
 
+    def wsswitch(self):
+        if not self.wsable:
+            return SPAN()
+        q = db.user_prefs_columns.upc_table == self.upc_table
+        q &= db.user_prefs_columns.upc_field == "wsenabled"
+        q &= db.user_prefs_columns.upc_user_id == auth.user_id
+        row = db(q).select(db.user_prefs_columns.upc_visible, cacheable=False).first()
+        if row is None or row.upc_visible == 1:
+            wsenabled = 'on'
+        else:
+            wsenabled = ''
+        js ="""ajax("%(url)s/%(table)s/wsenabled/"+this.checked, [], "set_col_dummy");
+            """%dict(url=URL(r=request,c='ajax',f='ajax_set_user_prefs_column2'),
+                     table= self.upc_table,
+                    )
+        d = DIV(
+          INPUT(
+            _type="checkbox",
+            _id="wsswitch_"+self.id,
+            _onclick=js,
+            value=wsenabled,
+          ),
+          T("Live"),
+          _class='floatw'
+        )
+        return d
+
     def html(self):
         if len(request.args) == 1 and request.args[0] == 'commonality':
             return self.do_commonality()
@@ -1343,6 +1371,7 @@ class HtmlTable(object):
               self.right_click_menu(),
               DIV(
                 self.pager(),
+                self.wsswitch(),
                 self.refresh(),
                 self.link(),
                 self.bookmark(),

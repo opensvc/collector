@@ -1096,6 +1096,7 @@ class table_svcmon(HtmlTable):
         self.span = ['mon_svcname'] + v_services_cols
         self.span.append('app_domain')
         self.span.append('app_team_ops')
+        self.wsable = True
         self.extraline = True
         self.extrarow = True
         self.checkboxes = True
@@ -1715,8 +1716,12 @@ function ws_action_switch(data) {
         }
 }
 function ws_switch(e) {
-        data = eval('('+e.data+')')
-        ws_action_switch(data)
+    if (!$("#wsswitch_%(divid)s").prop('checked')) {
+        // websocket disable for this table
+        return
+    }
+    data = eval('('+e.data+')')
+    ws_action_switch(data)
 }
 web2py_websocket("wss://%(http_host)s/realtime/generic", ws_switch)
               """ % dict(
