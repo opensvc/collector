@@ -903,6 +903,13 @@ class HtmlTable(object):
             key = self.filter_key(f)
             del(request.vars[key])
             return ""
+        if request.vars.volatile_filters:
+            _v = self.stored_filter_value(f, bookmark)
+            if _v != "" and v != "":
+                return v+"&"+_v
+            if v == "":
+                return _v
+            return v
         if v == "":
             return self.stored_filter_value(f, bookmark)
         self.store_filter_value(f, v, bookmark_add)
