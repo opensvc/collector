@@ -880,7 +880,7 @@ def ajax_dashboard():
              DIV(_id="dh", _style="display:none"),
              t.html(),
              SCRIPT("""
-function ws_action_switch(data) {
+function ws_action_switch_%(divid)s(data) {
         if (! "event" in data) {
           return
         }
@@ -895,23 +895,10 @@ function ws_action_switch(data) {
           line.fadeOut(1000, function(line){line.remove()})
         }
 }
-function ws_switch(e) {
-    if (!$("#wsswitch_%(divid)s").prop('checked')) {
-        // websocket disable for this table
-        return
-    }
-    try {
-        data = eval('('+e.data+')')
-    } catch(ex) {
-        return
-    }
-    ws_action_switch(data)
-}
-web2py_websocket("wss://%(http_host)s/realtime/generic", ws_switch)
+wsh["%(divid)s"] = ws_action_switch_%(divid)s
               """ % dict(
                      url=URL(r=request,f=t.func),
                      divid=t.innerhtml,
-                     http_host=request.env.http_host.split(':')[0],
                     )
              ),
            )

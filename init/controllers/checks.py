@@ -923,30 +923,17 @@ def ajax_checks():
     return DIV(
       t.html(),
       SCRIPT("""
-function ws_action_switch(data) {
+function ws_action_switch_%(divid)s(data) {
         if (data["event"] == "checks_change") {
           _data = []
           _data.push({"key": "chk_nodename", "val": data["data"]["chk_nodename"], "op": "="})
           ajax_table_insert_line('%(url)s', '%(divid)s', _data);
         }
 }
-function ws_switch(e) {
-    if (!$("#wsswitch_%(divid)s").prop('checked')) {
-        // websocket disable for this table
-        return
-    }
-    try {
-        data = eval('('+e.data+')')
-    } catch(ex) {
-        return
-    }
-    ws_action_switch(data)
-}
-web2py_websocket("wss://%(http_host)s/realtime/generic", ws_switch)
+wsh["%(divid)s"] = ws_action_switch_%(divid)s
               """ % dict(
                      url=URL(r=request,f=t.func),
                      divid=t.innerhtml,
-                     http_host=request.env.http_host.split(':')[0],
                     )
       ),
     )

@@ -1706,7 +1706,7 @@ def ajax_svcmon():
     return SPAN(
              t.html(),
              SCRIPT("""
-function ws_action_switch(data) {
+function ws_action_switch_%(divid)s(data) {
         if (data["event"] == "svcmon_change") {
           _data = []
           _data.push({"key": "mon_nodname", "val": data["data"]["mon_nodname"], "op": "="})
@@ -1715,19 +1715,10 @@ function ws_action_switch(data) {
           ajax_table_insert_line('%(url)s', '%(divid)s', _data);
         }
 }
-function ws_switch(e) {
-    if (!$("#wsswitch_%(divid)s").prop('checked')) {
-        // websocket disable for this table
-        return
-    }
-    data = eval('('+e.data+')')
-    ws_action_switch(data)
-}
-web2py_websocket("wss://%(http_host)s/realtime/generic", ws_switch)
+wsh["%(divid)s"] = ws_action_switch_%(divid)s
               """ % dict(
                      url=URL(r=request,f=t.func),
                      divid=t.innerhtml,
-                     http_host=request.env.http_host.split(':')[0],
                     )
              ),
            )
