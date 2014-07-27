@@ -783,8 +783,8 @@ class table_dashboard(HtmlTable):
                      display=False,
                     ),
         }
-        self.keys = ["dash_md5"]
-        self.span = ["dash_md5"]
+        self.keys = ["dash_nodename", "dash_svcname", "dash_md5"]
+        self.span = ["dash_nodename", "dash_svcname", "dash_md5"]
         self.colprops['dash_svcname'].t = self
         self.colprops['dash_nodename'].t = self
         self.colprops['dash_links'].t = self
@@ -881,9 +881,6 @@ def ajax_dashboard():
              t.html(),
              SCRIPT("""
 function ws_action_switch_%(divid)s(data) {
-        if (! "event" in data) {
-          return
-        }
         if (data["event"] == "dash_change") {
           _data = []
           _data.push({"key": "dash_md5", "val": data["data"]["dash_md5"], "op": "="})
