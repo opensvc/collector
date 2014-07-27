@@ -8,6 +8,19 @@ function ws_switch(e) {
     } catch(ex) {
         return
     }
+    if (Object.prototype.toString.call(data) == Object.prototype.toString.call([])) {
+        for (i=0; i<data.length; i++) {
+            ws_switch_one(data[i])
+        }
+    } else {
+        ws_switch_one(data)
+    }
+}
+
+function ws_switch_one(data) {
+    if (!("event" in data)) {
+        return
+    }
     for (key in wsh) {
         if (!$("#wsswitch_"+key).prop('checked')) {
             // websocket disable for this table
