@@ -363,6 +363,7 @@ def node_users_alerts(nodename):
     db.commit()
 
 def node_groups_alerts(nodename):
+    d = dashboard_events_last()
     sql = """insert into dashboard
              select
                  NULL,
@@ -407,6 +408,7 @@ def node_groups_alerts(nodename):
           """ % dict(nodename=nodename)
     n = db.executesql(sql)
     db.commit()
+    dashboard_events(d["last_id"], d["date"])
 
 
 def get_os_obs_dates(obs_name):
@@ -2335,7 +2337,6 @@ def cron_dash_node_beyond_maintenance_date():
           """%dict(now=str(now))
     db.executesql(sql)
 
-
 def cron_dash_node_near_maintenance_date():
     sql = """insert into dashboard
                select
@@ -2717,6 +2718,7 @@ def cron_dash_action_errors_cleanup():
 #   Used by xmlrpc processors for event based dashboard alerts
 #
 def update_dash_node_beyond_maintenance_end(nodename):
+    d = dashboard_events_last()
     sql = """delete from dashboard
                where
                  dash_nodename in (
@@ -2732,8 +2734,10 @@ def update_dash_node_beyond_maintenance_end(nodename):
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
     db.commit()
+    dashboard_events(d["last_id"], d["date"])
 
 def update_dash_node_near_maintenance_end(nodename):
+    d = dashboard_events_last()
     sql = """delete from dashboard
                where
                  dash_nodename in (
@@ -2750,8 +2754,10 @@ def update_dash_node_near_maintenance_end(nodename):
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
     db.commit()
+    dashboard_events(d["last_id"], d["date"])
 
 def update_dash_node_without_asset(nodename):
+    d = dashboard_events_last()
     sql = """delete from dashboard
                where
                  dash_nodename in (
@@ -2764,8 +2770,10 @@ def update_dash_node_without_asset(nodename):
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
     db.commit()
+    dashboard_events(d["last_id"], d["date"])
 
 def update_dash_node_without_maintenance_end(nodename):
+    d = dashboard_events_last()
     sql = """delete from dashboard
                where
                  dash_nodename in (
@@ -2783,8 +2791,10 @@ def update_dash_node_without_maintenance_end(nodename):
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
     db.commit()
+    dashboard_events(d["last_id"], d["date"])
 
 def update_dash_service_not_updated(svcname):
+    d = dashboard_events_last()
     sql = """delete from dashboard
                where
                  dash_svcname = "%(svcname)s" and
@@ -2792,8 +2802,10 @@ def update_dash_service_not_updated(svcname):
           """%dict(svcname=svcname)
     rows = db.executesql(sql)
     db.commit()
+    dashboard_events(d["last_id"], d["date"])
 
 def update_dash_svcmon_not_updated(svcname, nodename):
+    d = dashboard_events_last()
     sql = """delete from dashboard
                where
                  dash_svcname = "%(svcname)s" and
@@ -2802,8 +2814,10 @@ def update_dash_svcmon_not_updated(svcname, nodename):
           """%dict(svcname=svcname, nodename=nodename)
     rows = db.executesql(sql)
     db.commit()
+    dashboard_events(d["last_id"], d["date"])
 
 def update_dash_node_not_updated(nodename):
+    d = dashboard_events_last()
     sql = """delete from dashboard
                where
                  dash_nodename = "%(nodename)s" and
@@ -2811,8 +2825,10 @@ def update_dash_node_not_updated(nodename):
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
     db.commit()
+    dashboard_events(d["last_id"], d["date"])
 
 def update_dash_pkgdiff(nodename):
+    d = dashboard_events_last()
     nodename = nodename.strip("'")
     now = datetime.datetime.now()
     now = now - datetime.timedelta(microseconds=now.microsecond)
@@ -2902,9 +2918,10 @@ def update_dash_pkgdiff(nodename):
     q &= db.dashboard.dash_updated < now
     db(q).delete()
     db.commit()
-
+    dashboard_events(d["last_id"], d["date"])
 
 def update_dash_flex_cpu(svcname):
+    d = dashboard_events_last()
     sql = """delete from dashboard
                where
                  dash_svcname = "%(svcname)s" and
@@ -2972,8 +2989,10 @@ def update_dash_flex_cpu(svcname):
                   )
     db.executesql(sql)
     db.commit()
+    dashboard_events(d["last_id"], d["date"])
 
 def update_dash_flex_instances_started(svcname):
+    d = dashboard_events_last()
     sql = """delete from dashboard
                where
                  dash_svcname = "%(svcname)s" and
@@ -3038,8 +3057,10 @@ def update_dash_flex_instances_started(svcname):
                   )
     db.executesql(sql)
     db.commit()
+    dashboard_events(d["last_id"], d["date"])
 
 def update_dash_checks_all():
+    d = dashboard_events_last()
     now = datetime.datetime.now()
     now = now - datetime.timedelta(microseconds=now.microsecond)
 
@@ -3107,8 +3128,10 @@ def update_dash_checks_all():
 
     rows = db.executesql(sql)
     db.commit()
+    dashboard_events(d["last_id"], d["date"])
 
 def update_dash_checks(nodename):
+    d = dashboard_events_last()
     nodename = nodename.strip("'")
     sql = """select host_mode from nodes
              where
@@ -3198,6 +3221,7 @@ def update_dash_checks(nodename):
 
     rows = db.executesql(sql)
     db.commit()
+    dashboard_events(d["last_id"], d["date"])
 
 def update_dash_netdev_errors(nodename):
     nodename = nodename.strip("'")
@@ -3350,6 +3374,7 @@ def update_dash_action_errors(svc_name, nodename):
         db.commit()
 
 def update_dash_service_available_but_degraded(svc_name, svc_type, svc_availstatus, svc_status):
+    d = dashboard_events_last()
     if svc_type == 'PRD':
         sev = 3
     else:
@@ -3393,8 +3418,10 @@ def update_dash_service_available_but_degraded(svc_name, svc_type, svc_availstat
               """%svc_name
         db.executesql(sql)
         db.commit()
+    dashboard_events(d["last_id"], d["date"])
 
 def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
+    d = dashboard_events_last()
     if svc_type == 'PRD':
         sev = 4
     else:
@@ -3457,8 +3484,10 @@ def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
                        status=svc_availstatus)
         db.executesql(sql)
         db.commit()
+    dashboard_events(d["last_id"], d["date"])
 
 def update_dash_service_frozen(svc_name, nodename, svc_type, frozen):
+    d = dashboard_events_last()
     if svc_type == 'PRD':
         sev = 2
     else:
@@ -3494,8 +3523,10 @@ def update_dash_service_frozen(svc_name, nodename, svc_type, frozen):
                       )
     db.executesql(sql)
     db.commit()
+    dashboard_events(d["last_id"], d["date"])
 
 def update_dash_service_not_on_primary(svc_name, nodename, svc_type, availstatus):
+    d = dashboard_events_last()
     if svc_type == 'PRD':
         sev = 1
     else:
@@ -3545,8 +3576,10 @@ def update_dash_service_not_on_primary(svc_name, nodename, svc_type, availstatus
                   )
     db.executesql(sql)
     db.commit()
+    dashboard_events(d["last_id"], d["date"])
 
 def task_dash_daily():
+    d = dashboard_events_last()
     cron_dash_purge()
     cron_dash_obs_purge()
     cron_dash_obs_os_alert()
@@ -3560,18 +3593,23 @@ def task_dash_daily():
     cron_dash_node_without_maintenance_date()
     cron_dash_node_near_maintenance_date()
     cron_dash_node_beyond_maintenance_date()
+    dashboard_events(d["last_id"], d["date"])
 
 def task_dash_hourly():
+    d = dashboard_events_last()
     cron_dash_checks_not_updated()
     cron_dash_service_not_updated()
     cron_dash_app_without_responsible()
     cron_dash_node_not_updated()
     cron_dash_node_without_asset()
     cron_dash_action_errors_cleanup()
+    dashboard_events(d["last_id"], d["date"])
 
 def task_dash_min():
     # ~1/min
+    d = dashboard_events_last()
     cron_dash_svcmon_not_updated()
+    dashboard_events(d["last_id"], d["date"])
 
 
 
