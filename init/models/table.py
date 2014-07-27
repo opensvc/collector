@@ -124,6 +124,7 @@ class HtmlTable(object):
         self.additional_filters = []
         self.cols = []
         self.colprops = {}
+        self.order = []
 
         # column ids to use as keys to detect duplicate lines on
         # websocket triggered updates.
@@ -1372,6 +1373,7 @@ class HtmlTable(object):
 
         table_attrs = dict(
           _id="table_"+self.id,
+          _order=",".join(self.order),
         )
         d = DIV(
               self.show_flash(),

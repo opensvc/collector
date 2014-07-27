@@ -16,7 +16,7 @@ def _begin_action(vars, vals, auth):
     h['action'] = h['action'].strip("'")
     h['begin'] = h['begin'].strip("'").split('.')[0]
     h['id'] = i
-    _websocket_send(json.dumps({
+    _websocket_send(event_msg({
                  'event': 'begin_action',
                  'data': h
                 }))
@@ -65,7 +65,7 @@ def _end_action(vars, vals):
     h['end'] = h['end'].strftime("%Y-%m-%d %H:%M:%S")
     h['id'] = h['ID']
 
-    _websocket_send(json.dumps({
+    _websocket_send(event_msg({
              'event': 'end_action',
              'data': h
             }))
@@ -239,7 +239,7 @@ def _push_checks(vars, vals):
     if n > 0:
         update_dash_checks(nodename)
 
-        _websocket_send(json.dumps({
+        _websocket_send(event_msg({
                      'event': 'checks_change',
                      'data': {
                        'chk_nodename': nodename,
@@ -2011,7 +2011,7 @@ def __svcmon_update(vars, vals):
             level = "warning"
         else:
             level = "info"
-        _websocket_send(json.dumps({
+        _websocket_send(event_msg({
                      'event': 'svcmon_change',
                      'data': {
                        'mon_nodname': h['mon_nodname'],
@@ -2095,7 +2095,7 @@ def __svcmon_update(vars, vals):
             level = "warning"
         else:
             level = "info"
-        _websocket_send(json.dumps({
+        _websocket_send(event_msg({
                      'event': 'svcmon_change',
                      'data': {
                        'mon_nodname': h['mon_nodname'],
@@ -2153,7 +2153,7 @@ def __svcmon_update(vars, vals):
             level = "warning"
         else:
             level = "info"
-        _websocket_send(json.dumps({
+        _websocket_send(event_msg({
                      'event': 'svcmon_change',
                      'data': {
                        'mon_nodname': h['mon_nodname'],
@@ -3340,7 +3340,7 @@ def update_dash_action_errors(svc_name, nodename):
                   )
         rows = db.executesql(sqlws)
         if len(rows) > 0:
-            _websocket_send(json.dumps({
+            _websocket_send(event_msg({
               'event': 'dash_change',
               'data': {
                 'dash_md5': rows[0][0],
@@ -3357,7 +3357,7 @@ def update_dash_action_errors(svc_name, nodename):
                        nodename=nodename)
         rows = db.executesql(sqlws)
         if len(rows) > 0:
-            _websocket_send(json.dumps({
+            _websocket_send(event_msg({
               'event': 'dash_delete',
               'data': {
                 'dash_md5': rows[0][0],

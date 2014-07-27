@@ -57,7 +57,7 @@ def update_dash_action_errors(svc_name, nodename):
                   )
         rows = db.executesql(sqlws)
         if len(rows) > 0:
-            _websocket_send(json.dumps({
+            _websocket_send(event_msg({
               'event': 'dash_change',
               'data': {
                 'dash_md5': rows[0][0],
@@ -74,7 +74,7 @@ def update_dash_action_errors(svc_name, nodename):
                        nodename=nodename)
         rows = db.executesql(sqlws)
         if len(rows) > 0:
-            _websocket_send(json.dumps({
+            _websocket_send(event_msg({
               'event': 'dash_delete',
               'data': {
                 'dash_md5': rows[0][0],

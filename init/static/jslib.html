@@ -1,8 +1,17 @@
 <script language="JavaScript" type="text/javascript">
 
 wsh = {}
+last_events = []
 
 function ws_switch(e) {
+    if (last_events.indexOf(e.data) > 0) {
+        //alert("duplicate event: " + e.data)
+        return
+    }
+    last_events.push(e.data)
+    if (last_events.length > 10) {
+        last_events.slice(0, 10)
+    }
     try {
         data = eval('('+e.data+')')
     } catch(ex) {
@@ -510,9 +519,20 @@ function ajax_table_insert_line(url, id, data) {
                new_line = $(this)
                cksum = $(this).attr("cksum")
                $("#table_"+id).find("[cksum="+cksum+"]").each(function(){
-                 $(this).replaceWith(new_line)
+                 j = 0
+                 for (i=1; i<$(this).children().length+1; i++) {
+                   cell = $(":nth-child("+i+")", this)
+                   new_cell = $(":nth-child("+(i-j)+")", new_line)
+                   if (cell.attr("v") == new_cell.attr("v")) {
+                     continue
+                   }
+                   j++
+                   cell.replaceWith(new_cell)
+                   new_cell.effect("highlight", 1000)
+                 }
+                 //$(this).replaceWith(new_line)
+                 //new_line.effect("highlight", 1000)
                  modified.push(cksum)
-                 new_line.effect("highlight", 1000)
                })
              })
 
