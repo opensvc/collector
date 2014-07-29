@@ -580,14 +580,19 @@ def ack(ids=[]):
 
     update_action_errors()
 
+    l = []
     for r in rows:
-        update_dash_action_errors(r.svcname, r.hostname)
+        if (r.svcname, r.hostname) not in l:
+            l.append((r.svcname, r.hostname))
         _log('action.ack',
              'acknowledged action error with id %(g)s: %(action)s on %(svc)s@%(node)s',
              dict(g=r.id, action=r.action, svc=r.svcname, node=r.hostname),
              user=user,
              svcname=r.svcname,
              nodename=r.hostname)
+
+    for svcname, hostname in l:
+        update_dash_action_errors(svcname, hostname)
 
 @auth.requires_login()
 def ajax_actions():
