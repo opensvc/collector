@@ -1374,6 +1374,7 @@ class HtmlTable(object):
         table_attrs = dict(
           _id="table_"+self.id,
           _order=",".join(self.order),
+          _perpage=self.perpage,
         )
         d = DIV(
               self.show_flash(),
