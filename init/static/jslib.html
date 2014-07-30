@@ -3,26 +3,29 @@
 wsh = {}
 last_events = []
 
-function ws_switch(e) {
-    if (last_events.indexOf(e.data) > 0) {
-        //alert("duplicate event: " + e.data)
-        return
+function ws_duplicate_event(uid) {
+    if (last_events.indexOf(uid) >= 0) {
+        return true
     }
-    last_events.push(e.data)
+    last_events.push(uid)
     if (last_events.length > 10) {
-        last_events.slice(0, 10)
+        last_events = last_events.slice(0, 10)
     }
+    return false
+}
+
+function ws_switch(e) {
     try {
         data = eval('('+e.data+')')
     } catch(ex) {
         return
     }
-    if (Object.prototype.toString.call(data) == Object.prototype.toString.call([])) {
-        for (i=0; i<data.length; i++) {
-            ws_switch_one(data[i])
-        }
-    } else {
-        ws_switch_one(data)
+    if (ws_duplicate_event(data['uuid'])) {
+        return
+    }
+    data = data['data']
+    for (i=0; i<data.length; i++) {
+        ws_switch_one(data[i])
     }
 }
 
@@ -601,6 +604,7 @@ function ajax_table_insert_line(url, id, data) {
 
              // replace already displayed lines
              modified = []
+
              $(msg).each(function(){
                new_line = $(this)
                cksum = $(this).attr("cksum")
@@ -619,6 +623,7 @@ function ajax_table_insert_line(url, id, data) {
                  modified.push(cksum)
                })
              })
+
 
              // insert new lines
              first_line = $("#table_"+id).find(".tl").first()

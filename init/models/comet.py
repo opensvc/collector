@@ -6,13 +6,14 @@ websocket_url = "http://127.0.0.1:8889"
 websocket_key = "magix123"
 
 def event_msg(data):
-    uid = uuid.uuid1().hex
+    _data = {
+      'uuid': uuid.uuid1().hex,
+    }
     if type(data) == dict:
-        data['uuid'] = uid
+        _data['data'] = [data]
     elif type(data) == list:
-        for e in data:
-            e["uuid"] = uid
-    return json.dumps(data)
+        _data["data"] = data
+    return json.dumps(_data)
 
 def _websocket_send(msg, group="generic"):
     try:
