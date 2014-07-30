@@ -785,7 +785,7 @@ class table_dashboard(HtmlTable):
         }
         self.keys = ["dash_nodename", "dash_svcname", "dash_md5"]
         self.span = ["dash_nodename", "dash_svcname", "dash_md5"]
-        self.order = ["dash_severity", "dash_type", "dash_nodename"]
+        self.order = ["~dash_severity", "dash_type", "dash_nodename", "dash_svcname"]
         self.colprops['dash_svcname'].t = self
         self.colprops['dash_nodename'].t = self
         self.colprops['dash_links'].t = self
@@ -816,7 +816,7 @@ def ajax_dashboard_col_values():
 @auth.requires_login()
 def ajax_dashboard():
     t = table_dashboard('dashboard', 'ajax_dashboard')
-    o = ~db.dashboard.dash_severity|db.dashboard.dash_type|db.dashboard.dash_nodename
+    o = ~db.dashboard.dash_severity|db.dashboard.dash_type|db.dashboard.dash_nodename|db.dashboard.dash_svcname
     q = db.dashboard.id > 0
     for f in set(t.cols):
         q = _where(q, 'dashboard', t.filter_parse(f), f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
@@ -890,7 +890,10 @@ function ws_action_switch_%(divid)s(data) {
         else if (data["event"] == "dash_delete") {
           cell = $("#%(divid)s").find("[v="+data["data"]["dash_md5"]+"]")
           line = cell.parents(".tl")
-          line.fadeOut(1000, function(line){line.remove()})
+          if (line.length > 0) {
+              line.fadeOut(1000, function(){$(this).remove()})
+          }
+          // todo: append new lines
         }
 }
 wsh["%(divid)s"] = ws_action_switch_%(divid)s
