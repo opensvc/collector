@@ -77,8 +77,17 @@ def _cron_table_purge(table, date_col, orderby=None):
 
     if orderby is None:
         orderby = date_col
-    sql = """select %(date_col)s from %(table)s order by %(orderby)s limit 1""" % dict(table=table,date_col=date_col,orderby=orderby)
-    oldest = db.executesql(sql)[0][0]
+    sql = """select %(date_col)s from %(table)s where
+               %(date_col)s is not null and
+               %(date_col)s > 0
+             order by %(orderby)s limit 1
+          """ % dict(table=table,date_col=date_col,orderby=orderby)
+    try:
+        oldest = db.executesql(sql)[0][0]
+    except:
+        print "no data in table %s" % table
+        return
+
     if oldest > day:
         print "oldest entry is dated %s, threshold is set to %s ... skip table %s purge"%(str(oldest), str(day), table)
         return
@@ -87,7 +96,15 @@ def _cron_table_purge(table, date_col, orderby=None):
     for i in range(delta.days):
         _day = oldest + datetime.timedelta(days=i)
         print " purge table %s till %s" % (table, str(_day))
-        sql = """delete from %s where %s < "%s" """%(table, date_col, str(_day))
+        sql = """delete from %(table)s where
+                   %(date_col)s is not null and
+                   %(date_col)s > 0 and
+                   %(date_col)s < "%(threshold)s"
+              """ % dict(
+                table=table,
+                date_col=date_col,
+                threshold=str(_day)
+              )
         db.executesql(sql)
     db.commit()
 
@@ -107,6 +124,7 @@ def cron_purge_expiry():
               ('svcmon_log', 'mon_end', 'id'),
               ('appinfo_log', 'app_updated', 'id'),
               ('SVCactions', 'begin', 'id'),
+              ('dashboard_events', 'dash_end', None),
               ('node_users', 'updated', None),
               ('node_groups', 'updated', None)]
     for table, date_col, orderby in tables:
