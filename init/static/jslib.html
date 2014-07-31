@@ -496,7 +496,7 @@ function restripe_table_lines(id) {
 }
 
 function trim_table(id) {
-    perpage = $("#table_"+id).attr("perpage")
+    perpage = parseInt($("#table_"+id).attr("perpage")) + 2
     lines = $("#table_"+id).children("tbody").children()
     if (lines.length <= perpage) {
         return
