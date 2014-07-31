@@ -519,11 +519,15 @@ class HtmlTable(object):
     def refresh(self):
         if not self.refreshable:
             return SPAN()
+        url = URL(r=request,f=self.func)
         d = DIV(
               A(
                 SPAN(
                   T('Refresh'),
-                  _onclick="ajax_submit_%s()"%self.id,
+                  _onclick="ajax_table_refresh('%(url)s', '%(id)s')"%dict(
+                    url=url,
+                    id=self.id,
+                  ),
                   _class='refresh16',
                   _id='refresh_'+self.id,
                 ),
@@ -534,10 +538,13 @@ class HtmlTable(object):
   if ($('input').is(":focus")) { return ; } ;
   if ($('textarea').is(":focus")) { return ; } ;
   if ( event.which == 114 ) {
-     event.preventDefault();
-     ajax_submit_%s();
+     //event.preventDefault();
+     ajax_table_refresh("%(url)s", "%(id)s")
    }
-});"""%self.id,
+});"""% dict(
+                    url=url,
+                    id=self.id,
+                  ),
               ),
             )
         return d

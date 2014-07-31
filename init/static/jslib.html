@@ -587,6 +587,9 @@ function ajax_table_refresh(url, id) {
          url: url+"/line",
          data: "",
          context: document.body,
+         beforeSend: function(req){
+	     $("#refresh_"+id).addClass("spinner")
+         },
          success: function(msg){
              // strip the topmost table marks
              msg = msg.replace(/^.table.|.\/table.$/g, '')
@@ -625,6 +628,7 @@ function ajax_table_refresh(url, id) {
              $("#table_"+id).find(".deleteme").remove()
 
              restripe_table_lines(id)
+	     $("#refresh_"+id).removeClass("spinner")
 
              // clear mem refs
              cksum = null
@@ -654,6 +658,9 @@ function ajax_table_insert_line(url, id, data) {
          url: url+"/line",
          data: query,
          context: document.body,
+         beforeSend: function(req){
+	     $("#refresh_"+id).addClass("spinner")
+         },
          success: function(msg){
              // strip the topmost table marks
              msg = msg.replace(/^.table.|.\/table.$/g, '')
@@ -712,6 +719,7 @@ function ajax_table_insert_line(url, id, data) {
                 $(this).removeClass("highlight")
                 $(this).effect("highlight", 1000)
              })
+	     $("#refresh_"+id).removeClass("spinner")
 
              // clear mem refs
              cksum = null
