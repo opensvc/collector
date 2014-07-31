@@ -883,17 +883,7 @@ def ajax_dashboard():
              SCRIPT("""
 function ws_action_switch_%(divid)s(data) {
         if (data["event"] == "dash_change") {
-          _data = []
-          _data.push({"key": "dash_md5", "val": data["data"]["dash_md5"], "op": "="})
-          ajax_table_insert_line('%(url)s', '%(divid)s', _data);
-        }
-        else if (data["event"] == "dash_delete") {
-          cell = $("#%(divid)s").find("[v="+data["data"]["dash_md5"]+"]")
-          line = cell.parents(".tl")
-          if (line.length > 0) {
-              line.fadeOut(1000, function(){$(this).remove()})
-          }
-          // todo: append new lines
+          ajax_table_refresh('%(url)s', '%(divid)s')
         }
 }
 wsh["%(divid)s"] = ws_action_switch_%(divid)s
@@ -989,3 +979,5 @@ def ajax_alert_events():
              SCRIPT(s, _name='%s_to_eval'%request.vars.rowid),
            )
 
+def test_dashboard_events():
+    dashboard_events()
