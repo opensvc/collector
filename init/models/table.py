@@ -131,7 +131,6 @@ class HtmlTable(object):
         self.keys = []
 
         # to be set be instanciers
-        self.autorefresh = 0
         self.checkboxes = False
         self.checkbox_names = [self.id+'_ck']
         self.checkbox_id_col = 'id'
@@ -487,23 +486,6 @@ class HtmlTable(object):
                 _name=self.col_selector_key(),
               ),
               _class='floatw',
-            )
-        return d
-
-    def countdown(self):
-        if not self.autorefresh:
-            return SPAN()
-        d = SPAN(
-              DIV(
-                self.autorefresh/1000,
-                _id='countdown_'+self.id,
-                _class='floatw',
-              ),
-              DIV(
-                0,
-                _id='countup_'+self.id,
-                _class='floatw',
-              ),
             )
         return d
 
@@ -1385,7 +1367,6 @@ class HtmlTable(object):
                 self.refresh(),
                 self.link(),
                 self.bookmark(),
-                self.countdown(),
                 export,
                 self.columns_selector(),
                 self.commonality(),
