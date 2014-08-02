@@ -17,6 +17,26 @@ def event_msg(data):
 
 def _websocket_send(msg, group="generic"):
     try:
-        websocket_send(websocket_url, msg, websocket_key, group)
-    except:
-        pass
+        __websocket_send(msg, group)
+    except Exception as e:
+        print e
+
+def __websocket_send(msg, group="generic"):
+    q_fn = "___websocket_send"
+    q_args = [msg, group]
+    task = scheduler.task_status(
+      (db.scheduler_task.function_name == q_fn) & \
+      (db.scheduler_task.args == json.dumps(q_args)) & \
+      (db.scheduler_task.status == "QUEUED")
+    )
+    if task is not None:
+        # already queued
+        return
+    start = datetime.datetime.now() + datetime.timedelta(seconds=1)
+    scheduler.queue_task(q_fn, q_args,
+                         group_name="fast",
+                         start_time=start)
+
+
+def ___websocket_send(msg, group="generic"):
+    websocket_send(websocket_url, msg, websocket_key, group)
