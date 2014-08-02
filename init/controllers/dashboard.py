@@ -795,7 +795,6 @@ class table_dashboard(HtmlTable):
         self.checkbox_id_col = 'id'
         self.special_filtered_cols = ['dash_entry']
         self.wsable = True
-        #self.autorefresh = 60000
 
 @auth.requires_login()
 def ajax_dashboard_col_values():

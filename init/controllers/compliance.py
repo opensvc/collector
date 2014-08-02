@@ -4113,6 +4113,9 @@ class table_comp_status(HtmlTable):
             self.colprops[i].t = self
         self.ajax_col_values = 'ajax_comp_status_col_values'
         self.extraline = True
+        self.wsable = True
+        self.keys = ["run_nodename", "run_svcname", "run_module"]
+        self.span = ["run_nodename", "run_svcname", "run_module"]
         self.checkboxes = True
         self.checkbox_id_table = 'comp_status'
         if 'CompManager' in user_groups():
@@ -4539,6 +4542,10 @@ def ajax_comp_status():
         return t.csv()
     if len(request.args) == 1 and request.args[0] == 'commonality':
         return t.do_commonality()
+    if len(request.args) == 1 and request.args[0] == 'line':
+        t.object_list = db(q).select(orderby=o, cacheable=False)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
 
     n = db(q).select(db.comp_status.id.count(), cacheable=True).first()._extra[db.comp_status.id.count()]
     t.setup_pager(n)
@@ -4662,6 +4669,17 @@ def ajax_comp_status():
                'if ($("#css").is(":visible")) {',
                st.ajax_submit(additional_inputs=t.ajax_inputs()),
                "}",
+               """
+function ws_action_switch_%(divid)s(data) {
+        if (data["event"] == "comp_status_change") {
+          ajax_table_refresh('%(url)s', '%(divid)s');
+        }
+}
+wsh["%(divid)s"] = ws_action_switch_%(divid)s
+              """ % dict(
+                     url=URL(r=request,f=t.func),
+                     divid=t.innerhtml,
+                    ),
                _name=t.id+"_to_eval"
              ),
              DIV(chart(obs, ok, na, nok), _style="padding:4px"),
@@ -5169,6 +5187,9 @@ class table_comp_log(table_comp_status):
         self.ajax_col_values = 'ajax_comp_log_col_values'
         self.checkboxes = False
         self.checkbox_id_table = 'comp_log'
+        self.wsable = True
+        self.keys = ["run_date", "run_nodename", "run_svcname", "run_module"]
+        self.span = ["run_date", "run_nodename", "run_svcname", "run_module"]
 
 @auth.requires_login()
 def ajax_comp_log():
@@ -5183,10 +5204,33 @@ def ajax_comp_log():
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.comp_log.run_nodename)
 
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        return t.do_commonality()
+    if len(request.args) == 1 and request.args[0] == 'line':
+        t.object_list = db(q).select(orderby=o, cacheable=False)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
+
     t.setup_pager(-1)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
                                  orderby=o, cacheable=True)
-    return t.html()
+    return DIV(
+             t.html(),
+             SCRIPT("""
+function ws_action_switch_%(divid)s(data) {
+        if (data["event"] == "comp_status_change") {
+          ajax_table_refresh('%(url)s', '%(divid)s');
+        }
+}
+wsh["%(divid)s"] = ws_action_switch_%(divid)s
+              """ % dict(
+                     url=URL(r=request,f=t.func),
+                     divid=t.innerhtml,
+                    ),
+             ),
+           )
 
 
 @auth.requires_login()
@@ -5736,6 +5780,12 @@ def comp_log_action(vars, vals, auth):
     if action == 'check':
         generic_insert('comp_status', vars, vals)
     update_dash_compdiff(auth[1])
+    l = {
+      'event': 'comp_status_change',
+      'data': {'foo': 'bar'},
+    }
+    _websocket_send(event_msg(l))
+
 
 @auth_uuid
 @service.xmlrpc
@@ -5763,6 +5813,11 @@ def comp_log_actions(vars, vals, auth):
     generic_insert('comp_log', vars, vals)
     if len(check_vals) > 0:
         generic_insert('comp_status', vars, check_vals)
+    l = {
+      'event': 'comp_status_change',
+      'data': {'foo': 'bar'},
+    }
+    _websocket_send(event_msg(l))
     update_dash_compdiff(auth[1])
 
 def comp_format_filter(q):
