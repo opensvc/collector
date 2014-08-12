@@ -35,6 +35,7 @@ def __websocket_send(msg, group="generic"):
     start = datetime.datetime.now() + datetime.timedelta(seconds=1)
     scheduler.queue_task(q_fn, q_args,
                          group_name="fast",
+                         immediate=True,
                          start_time=start)
 
 
