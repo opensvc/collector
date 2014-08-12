@@ -992,12 +992,15 @@ class HtmlTable(object):
                _cell=1,
             )
             _style=self.col_hide(c)
-            classes = [colprops._class, colprops._dataclass]
+            classes = []
+            if colprops._class != "":
+                classes.append(colprops._class)
+            if colprops._dataclass != "":
+                classes.append(colprops._dataclass)
             if _style != '':
                 classes.append("hidden")
-            _class = ' '.join(classes)
-            if _class != ' ':
-                attrs['_class'] = _class
+            if len(classes) > 0:
+                attrs['_class'] = ' '.join(classes)
             cells.append(TD(content, **attrs))
             if self.highlight:
                 cl = "tl "
