@@ -214,7 +214,7 @@ class col_svcactions_status(HtmlTableColumn):
         else:
             over = ''
             out = ''
-        if s is None:
+        if s is None or s == "":
             action_status = SPAN(
               SPAN(
                 IMG(
@@ -652,6 +652,8 @@ function ws_action_switch_%(divid)s(data) {
           _data.push({"key": "id", "val": data["data"]["id"], "op": ">="})
           _data.push({"key": "pid", "val": data["data"]["pid"], "op": "="})
           ajax_table_insert_line('%(url)s', '%(divid)s', _data);
+        } else if (data["event"] == "svcactions_change") {
+          ajax_table_refresh('%(url)s', '%(divid)s')
         }
 }
 wsh["%(divid)s"] = ws_action_switch_%(divid)s
