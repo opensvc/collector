@@ -5,7 +5,7 @@ def log_events(i):
       'event': 'log_change',
       'data': {'id': i},
     }
-    _websocket_send(event_msg(l))
+    _websocket_send(event_msg(l), schedule=False)
 
 def _log(action, fmt, d, user=None, svcname=None, nodename=None, level="info"):
     if user is None:

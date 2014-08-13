@@ -19,7 +19,7 @@ def _begin_action(vars, vals, auth):
     _websocket_send(event_msg({
                  'event': 'begin_action',
                  'data': h
-                }))
+                }), schedule=False)
     if 'cron' not in h or h['cron'] == '0':
         _log("service.action",
              "action '%(a)s' on %(svc)s@%(node)s",
@@ -68,7 +68,7 @@ def _end_action(vars, vals):
     _websocket_send(event_msg({
              'event': 'end_action',
              'data': h
-            }))
+            }), schedule=False)
 
     if h['action'] in ('start', 'startcontainer') and \
        h['status'] == 'ok':

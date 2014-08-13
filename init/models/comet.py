@@ -15,9 +15,12 @@ def event_msg(data):
         _data["data"] = data
     return json.dumps(_data)
 
-def _websocket_send(msg, group="generic"):
+def _websocket_send(msg, group="generic", schedule=True):
     try:
-        __websocket_send(msg, group)
+        if schedule:
+            __websocket_send(msg, group)
+        else:
+            ___websocket_send(msg, group)
     except Exception as e:
         print e
 
@@ -37,6 +40,8 @@ def __websocket_send(msg, group="generic"):
                          group_name="fast",
                          immediate=True,
                          start_time=start)
+    # tasks submitted from tasks need a manual commit
+    db.commit()
 
 
 def ___websocket_send(msg, group="generic"):
