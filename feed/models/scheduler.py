@@ -1973,9 +1973,6 @@ def __svcmon_update(vars, vals):
     query = db.svcmon_log.mon_svcname==h['mon_svcname']
     query &= db.svcmon_log.mon_nodname==h['mon_nodname']
     last = db(query).select(orderby=~db.svcmon_log.id, limitby=(0,1))
-    cksum = hashlib.md5()
-    cksum.update(h['mon_nodname'])
-    cksum.update(h['mon_svcname'])
     if len(last) == 0:
         _vars = ['mon_begin',
                  'mon_end',
@@ -2010,15 +2007,6 @@ def __svcmon_update(vars, vals):
             level = "warning"
         else:
             level = "info"
-        _websocket_send(event_msg({
-                     'event': 'svcmon_change',
-                     'data': {
-                       'mon_nodname': h['mon_nodname'],
-                       'mon_svcname': h['mon_svcname'],
-                       'mon_vmname': h['mon_vmname'],
-                       'cksum': cksum.hexdigest(),
-                     }
-                    }))
         _log("service.status",
              "service '%(svc)s' state initialized on '%(node)s': avail(%(a1)s=>%(a2)s) overall(%(o1)s=>%(o2)s)",
              dict(
@@ -2094,15 +2082,6 @@ def __svcmon_update(vars, vals):
             level = "warning"
         else:
             level = "info"
-        _websocket_send(event_msg({
-                     'event': 'svcmon_change',
-                     'data': {
-                       'mon_nodname': h['mon_nodname'],
-                       'mon_svcname': h['mon_svcname'],
-                       'mon_vmname': h['mon_vmname'],
-                       'cksum': cksum.hexdigest(),
-                     },
-                   }))
         _log("service.status",
              "service '%(svc)s' state changed on '%(node)s': avail(%(a1)s=>%(a2)s) overall(%(o1)s=>%(o2)s)",
              dict(
@@ -2152,15 +2131,6 @@ def __svcmon_update(vars, vals):
             level = "warning"
         else:
             level = "info"
-        _websocket_send(event_msg({
-                     'event': 'svcmon_change',
-                     'data': {
-                       'mon_nodname': h['mon_nodname'],
-                       'mon_svcname': h['mon_svcname'],
-                       'mon_vmname': h['mon_vmname'],
-                       'cksum': cksum.hexdigest(),
-                     },
-                    }))
         _log("service.status",
              "service '%(svc)s' state changed on '%(node)s': avail(%(a1)s=>%(a2)s) overall(%(o1)s=>%(o2)s)",
              dict(
@@ -2176,6 +2146,16 @@ def __svcmon_update(vars, vals):
     else:
         db(db.svcmon_log.id==last[0].id).update(mon_end=h['mon_updated'])
         db.commit()
+
+    _websocket_send(event_msg({
+                 'event': 'svcmon_change',
+                 'data': {
+                   'mon_nodname': h['mon_nodname'],
+                   'mon_svcname': h['mon_svcname'],
+                   'mon_vmname': h['mon_vmname'],
+                 },
+                }))
+    dashboard_events()
 
 
 #
@@ -2807,7 +2787,7 @@ def update_dash_svcmon_not_updated(svcname, nodename):
           """%dict(svcname=svcname, nodename=nodename)
     rows = db.executesql(sql)
     db.commit()
-    dashboard_events()
+    # dashboard_events() called from __svcmon_update
 
 def update_dash_node_not_updated(nodename):
     sql = """delete from dashboard
@@ -3404,7 +3384,7 @@ def update_dash_service_available_but_degraded(svc_name, svc_type, svc_availstat
               """%svc_name
         db.executesql(sql)
         db.commit()
-    dashboard_events()
+    # dashboard_events() called from __svcmon_update
 
 def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
     if svc_type == 'PRD':
@@ -3469,7 +3449,7 @@ def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
                        status=svc_availstatus)
         db.executesql(sql)
         db.commit()
-    dashboard_events()
+    # dashboard_events() called from __svcmon_update
 
 def update_dash_service_frozen(svc_name, nodename, svc_type, frozen):
     if svc_type == 'PRD':
@@ -3507,7 +3487,7 @@ def update_dash_service_frozen(svc_name, nodename, svc_type, frozen):
                       )
     db.executesql(sql)
     db.commit()
-    dashboard_events()
+    # dashboard_events() called from __svcmon_update
 
 def update_dash_service_not_on_primary(svc_name, nodename, svc_type, availstatus):
     if svc_type == 'PRD':
@@ -3559,7 +3539,7 @@ def update_dash_service_not_on_primary(svc_name, nodename, svc_type, availstatus
                   )
     db.executesql(sql)
     db.commit()
-    dashboard_events()
+    # dashboard_events() called from __svcmon_update
 
 def task_dash_daily():
     cron_dash_purge()
