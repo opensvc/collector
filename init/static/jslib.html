@@ -582,6 +582,9 @@ function sort_table(id) {
 }
 
 function ajax_table_refresh(url, id) {
+    if ($("#refresh_"+id).hasClass("spinner")) {
+        return
+    }
     $.ajax({
          type: "POST",
          url: url+"/line",
@@ -612,13 +615,15 @@ function ajax_table_refresh(url, id) {
                }
                old_line.each(function(){
                  j = 0
-                 for (i=1; i<$(this).children().length+1; i++) {
+                 for (i=0; i<$(this).children().length; i++) {
+                   new_cell = $(":nth-child("+i+")", new_line)
+                   if (!new_cell.is(":visible")) {
+                     continue
+                   }
                    cell = $(":nth-child("+i+")", this)
-                   new_cell = $(":nth-child("+(i-j)+")", new_line)
                    if (cell.attr("v") == new_cell.attr("v")) {
                      continue
                    }
-                   j++
                    new_cell.effect("highlight", 1000)
                  }
                })
