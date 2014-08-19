@@ -911,10 +911,15 @@ def ajax_checks():
     if len(request.args) == 1 and request.args[0] == 'csv':
         return t.csv()
     if len(request.args) == 1 and request.args[0] == 'line':
-        t.object_list = db(q).select(orderby=o, cacheable=False)
+        if request.vars.volatile_filters is None:
+            n = db(q).select(db.checks_live.id.count(), left=l).first()(db.checks_live.id.count())
+            t.setup_pager(n)
+            limitby = (t.pager_start,t.pager_end)
+        else:
+            limitby = (0, 500)
+        t.object_list = db(q).select(limitby=limitby, orderby=o, cacheable=False, left=l)
         t.set_column_visibility()
         return TABLE(t.table_lines()[0])
-
 
     n = db(q).select(db.checks_live.id.count(), left=l).first()(db.checks_live.id.count())
     t.setup_pager(n)
@@ -925,9 +930,7 @@ def ajax_checks():
       SCRIPT("""
 function ws_action_switch_%(divid)s(data) {
         if (data["event"] == "checks_change") {
-          _data = []
-          _data.push({"key": "chk_nodename", "val": data["data"]["chk_nodename"], "op": "="})
-          ajax_table_insert_line('%(url)s', '%(divid)s', _data);
+          ajax_table_refresh('%(url)s', '%(divid)s');
         }
 }
 wsh["%(divid)s"] = ws_action_switch_%(divid)s
