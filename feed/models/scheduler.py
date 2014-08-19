@@ -467,7 +467,7 @@ def _resmon_clean(node, svcname):
     db(q).delete()
     db.commit()
 
-def _resmon_update(vars, vals):
+def _resmon_update(vars, vals, auth):
     if len(vals) == 0:
         return
     if isinstance(vals[0], list):
@@ -1724,14 +1724,22 @@ def insert_sym(symid=None, nodename=None):
             del(s)
 
 
-def _svcmon_update(vars, vals):
+def _svcmon_update(vars, vals, auth):
     if len(vals) == 0:
         return
     if isinstance(vals[0], list):
         for v in vals:
-            _svcmon_update(vars, v)
+            _svcmon_update(vars, v, auth)
     else:
         __svcmon_update(vars, vals)
+
+    _websocket_send(event_msg({
+                 'event': 'svcmon_change',
+                 'data': {
+                   'mon_nodname': auth[1],
+                 },
+                }))
+    dashboard_events()
 
 def compute_availstatus(h):
     def status_merge_down(s):
@@ -2147,15 +2155,6 @@ def __svcmon_update(vars, vals):
         db(db.svcmon_log.id==last[0].id).update(mon_end=h['mon_updated'])
         db.commit()
 
-    _websocket_send(event_msg({
-                 'event': 'svcmon_change',
-                 'data': {
-                   'mon_nodname': h['mon_nodname'],
-                   'mon_svcname': h['mon_svcname'],
-                   'mon_vmname': h['mon_vmname'],
-                 },
-                }))
-    dashboard_events()
 
 
 #

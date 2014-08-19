@@ -149,14 +149,14 @@ def res_action_batch(vars, vals, auth):
 @auth_uuid
 @service.xmlrpc
 def resmon_update(vars, vals, auth):
-    _resmon_update(vars, vals)
+    _resmon_update(vars, vals, auth)
 
 @auth_uuid
 @service.xmlrpc
 def svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
-    scheduler.queue_task("_svcmon_update", [g_vars, g_vals],
+    scheduler.queue_task("_svcmon_update", [g_vars, g_vals, auth],
                          immediate=True, group_name="fast")
-    scheduler.queue_task("_resmon_update", [r_vars, r_vals],
+    scheduler.queue_task("_resmon_update", [r_vars, r_vals, auth],
                          immediate=True, group_name="fast")
 
 @auth_uuid
@@ -572,7 +572,7 @@ def register_node(node):
 @auth_uuid
 @service.xmlrpc
 def svcmon_update(vars, vals, auth):
-    scheduler.queue_task("_svcmon_update", [vars, vals],
+    scheduler.queue_task("_svcmon_update", [vars, vals, auth],
                          immediate=True, group_name="fast")
 
 
