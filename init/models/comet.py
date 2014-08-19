@@ -15,7 +15,7 @@ def event_msg(data):
         _data["data"] = data
     return json.dumps(_data)
 
-def _websocket_send(msg, group="generic", schedule=True):
+def _websocket_send(msg, group="generic", schedule=False):
     try:
         if schedule:
             __websocket_send(msg, group)
