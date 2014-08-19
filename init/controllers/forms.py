@@ -155,7 +155,7 @@ def ajax_workflows_col_values():
 def ajax_workflows():
     t = table_workflows('workflows', 'ajax_workflows')
 
-    o = db.workflows.id
+    o = ~db.workflows.id
     q = db.workflows.id > 0
     q &= db.workflows.form_md5 == db.forms_revisions.form_md5
     for f in t.cols:
