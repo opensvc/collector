@@ -193,6 +193,8 @@ class table_nodenetworks(HtmlTable):
         self.extraline = True
         #self.checkboxes = True
         self.ajax_col_values = 'ajax_nodenetworks_col_values'
+        self.keys = ["nodename", "addr"]
+        self.span = ["nodename"]
 
 @auth.requires_login()
 def ajax_nodenetworks_col_values():
@@ -214,6 +216,17 @@ def ajax_nodenetworks():
     for f in t.cols:
         q = _where(q, 'v_nodenetworks', t.filter_parse(f), f)
     q = apply_filters(q, db.v_nodenetworks.nodename, None)
+
+    if len(request.args) == 1 and request.args[0] == 'line':
+        if request.vars.volatile_filters is None:
+            t.setup_pager(-1)
+            limitby = (t.pager_start,t.pager_end)
+        else:
+            limitby = (0, 500)
+        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
+
     n = db(q).select(db.v_nodenetworks.id.count(), cacheable=True).first()._extra[db.v_nodenetworks.id.count()]
     t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)

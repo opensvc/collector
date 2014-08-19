@@ -65,6 +65,13 @@ class table_saves(HtmlTable):
                       'save_volume',
                       'save_date',
                       'save_retention']
+        self.keys =  ['save_id']
+        self.span = v_nodes_cols + [
+                      'save_server',
+                      'save_app',
+                      'save_nodename',
+                      'save_svcname']
+
         self.cols += v_nodes_cols
         self.colprops = v_nodes_colprops
         self.colprops.update({
@@ -193,6 +200,16 @@ def ajax_saves():
     q = apply_filters(q, db.saves.save_nodename, db.saves.save_svcname)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+
+    if len(request.args) == 1 and request.args[0] == 'line':
+        if request.vars.volatile_filters is None:
+            t.setup_pager(-1)
+            limitby = (t.pager_start,t.pager_end)
+        else:
+            limitby = (0, 500)
+        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False, left=left)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
 
     t.csv_q = q
     t.csv_orderby = o

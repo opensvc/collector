@@ -623,7 +623,12 @@ def ajax_actions():
     if len(request.args) == 1 and request.args[0] == 'commonality':
         return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'line':
-        t.object_list = db(q).select(orderby=o, cacheable=False)
+        if request.vars.volatile_filters is None:
+            t.setup_pager(-1)
+            limitby = (t.pager_start,t.pager_end)
+        else:
+            limitby = (0, 500)
+        t.object_list = db(q).select(limitby=limitby, orderby=o, cacheable=False)
         t.set_column_visibility()
         return TABLE(t.table_lines()[0])
 

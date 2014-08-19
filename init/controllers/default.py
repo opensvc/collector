@@ -1685,7 +1685,13 @@ def ajax_svcmon():
     if len(request.args) == 1 and request.args[0] == 'csv':
         return t.csv()
     if len(request.args) == 1 and request.args[0] == 'line':
-        t.object_list = db(q).select(orderby=o, cacheable=False)
+        if request.vars.volatile_filters is None:
+            n = db(q).count()
+            t.setup_pager(n)
+            limitby = (t.pager_start,t.pager_end)
+        else:
+            limitby = (0, 500)
+        t.object_list = db(q).select(limitby=limitby, orderby=o, cacheable=False)
         t.set_column_visibility()
         return TABLE(t.table_lines()[0])
 
@@ -1708,11 +1714,7 @@ def ajax_svcmon():
              SCRIPT("""
 function ws_action_switch_%(divid)s(data) {
         if (data["event"] == "svcmon_change") {
-          _data = []
-          _data.push({"key": "mon_nodname", "val": data["data"]["mon_nodname"], "op": "="})
-          _data.push({"key": "mon_svcname", "val": data["data"]["mon_svcname"], "op": "="})
-          _data.push({"key": "mon_vmname", "val": data["data"]["mon_vmname"], "op": "="})
-          ajax_table_insert_line('%(url)s', '%(divid)s', _data);
+          ajax_table_refresh('%(url)s', '%(divid)s');
         }
 }
 wsh["%(divid)s"] = ws_action_switch_%(divid)s

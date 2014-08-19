@@ -40,7 +40,8 @@ class table_patches(HtmlTable):
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['nodename']+v_nodes_cols
-        self.cols += ['patch_num',
+        self.cols += ['id',
+                      'patch_num',
                       'patch_rev',
                       'patch_install_date',
                       'patch_updated']
@@ -81,6 +82,13 @@ class table_patches(HtmlTable):
                      img='time16',
                      display=True,
                     ),
+            'id': HtmlTableColumn(
+                     title='Id',
+                     table='patches',
+                     field='id',
+                     img='pkg16',
+                     display=False,
+                    ),
         })
         self.colprops['nodename'].display = True
         self.colprops['nodename'].t = self
@@ -89,6 +97,8 @@ class table_patches(HtmlTable):
         self.checkbox_id_col = 'id'
         self.checkbox_id_table = 'patches'
         self.ajax_col_values = 'ajax_patches_col_values'
+        self.span = ["id"]
+        self.keys = ["id"]
 
 @auth.requires_login()
 def ajax_patches_col_values():
@@ -118,7 +128,18 @@ def ajax_patches():
 
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    n = db(q).count()
+
+    if len(request.args) == 1 and request.args[0] == 'line':
+        if request.vars.volatile_filters is None:
+            t.setup_pager(-1)
+            limitby = (t.pager_start,t.pager_end)
+        else:
+            limitby = (0, 500)
+        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
+
+    n = db(q).select(db.patches.id.count()).first()(db.patches.id.count())
     t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
     return t.html()

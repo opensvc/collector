@@ -71,6 +71,8 @@ class table_nodesan(HtmlTable):
                       'array_level',
                      ]
         self.colprops = v_nodes_colprops
+        self.span = ["nodename"]
+        self.keys = ['hba_id', 'tgt_id']
         for col in self.colprops:
             self.colprops[col].display = False
         self.colprops['node_updated'] = self.colprops['updated']
@@ -154,6 +156,17 @@ def ajax_nodesan():
     for f in t.cols:
         q = _where(q, 'v_nodesan', t.filter_parse(f), f)
     q = apply_filters(q, db.v_nodesan.nodename, None)
+
+    if len(request.args) == 1 and request.args[0] == 'line':
+        if request.vars.volatile_filters is None:
+            t.setup_pager(-1)
+            limitby = (t.pager_start,t.pager_end)
+        else:
+            limitby = (0, 500)
+        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
+
     n = db(q).select(db.v_nodesan.id.count(), cacheable=True).first()._extra[db.v_nodesan.id.count()]
     t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)

@@ -197,6 +197,15 @@ def ajax_appinfo():
         return t.csv()
     if len(request.args) == 1 and request.args[0] == 'commonality':
         return t.do_commonality()
+    if len(request.args) == 1 and request.args[0] == 'line':
+        if request.vars.volatile_filters is None:
+            t.setup_pager(-1)
+            limitby = (t.pager_start,t.pager_end)
+        else:
+            limitby = (0, 500)
+        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
 
     n = db(q).count()
     t.setup_pager(n)

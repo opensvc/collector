@@ -19,6 +19,8 @@ class table_sanswitches(HtmlTable):
                       'sw_updated',
                      ]
         #self.colprops = v_nodes_colprops
+        self.keys = ['sw_fabric', 'sw_name', 'sw_index', 'sw_rportname']
+        self.span = ['sw_fabric', 'sw_name', 'sw_index']
         self.colprops.update({
             'sw_name': HtmlTableColumn(
                      title='Switch Name',
@@ -125,6 +127,17 @@ def ajax_sanswitches():
     for f in t.cols:
         q = _where(q, 'v_switches', t.filter_parse(f), f)
     q = apply_filters(q, db.v_switches.sw_rname, None)
+
+    if len(request.args) == 1 and request.args[0] == 'line':
+        if request.vars.volatile_filters is None:
+            t.setup_pager(-1)
+            limitby = (t.pager_start,t.pager_end)
+        else:
+            limitby = (0, 500)
+        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
+
     n = db(q).select(db.v_switches.id.count(), cacheable=True).first()._extra[db.v_switches.id.count()]
     t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)

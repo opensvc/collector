@@ -75,6 +75,8 @@ class table_dns_domains(HtmlTable):
                      display=False,
                     ),
         }
+        self.keys = ["id"]
+        self.span = ["id"]
         self.dbfilterable = False
         self.ajax_col_values = 'ajax_dns_domains_col_values'
         self.extrarow = True
@@ -242,6 +244,17 @@ def ajax_dns_domains():
     q = db.pdns_domains.id > 0
     for f in set(t.cols):
         q = _where(q, 'pdns_domains', t.filter_parse(f), f)
+
+    if len(request.args) == 1 and request.args[0] == 'line':
+        if request.vars.volatile_filters is None:
+            t.setup_pager(-1)
+            limitby = (t.pager_start,t.pager_end)
+        else:
+            limitby = (0, 500)
+        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
+
     n = db(q).count()
     t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
@@ -322,14 +335,23 @@ class table_dns_records(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['domain_id',
+        self.cols = ['id',
+                     'domain_id',
                      'name',
                      'type',
                      'content',
                      'ttl',
                      'prio',
                      'change_date']
+        self.keys = ["id"]
+        self.span = ["id"]
         self.colprops = {
+            'id': HtmlTableColumn(
+                     title='Record Id',
+                     field='id',
+                     img='dns16',
+                     display=False,
+                    ),
             'domain_id': HtmlTableColumn(
                      title='Domain Id',
                      field='domain_id',
@@ -524,6 +546,17 @@ def ajax_dns_records():
     q = db.pdns_records.id > 0
     for f in set(t.cols):
         q = _where(q, 'pdns_records', t.filter_parse(f), f)
+
+    if len(request.args) == 1 and request.args[0] == 'line':
+        if request.vars.volatile_filters is None:
+            t.setup_pager(-1)
+            limitby = (t.pager_start,t.pager_end)
+        else:
+            limitby = (0, 500)
+        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
+
     n = db(q).count()
     t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)

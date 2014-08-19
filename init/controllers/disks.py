@@ -191,6 +191,12 @@ class table_quota(HtmlTable):
                      'app',
                      'quota',
                      'quota_used']
+        self.keys = ['array_name',
+                     'dg_name',
+                     'app']
+        self.span = ['array_name',
+                     'dg_name',
+                     'app']
         self.colprops.update({
             'array_name': col_array(
                      title='Array',
@@ -616,6 +622,17 @@ def ajax_quota():
     q = _where(q, 'v_disk_quota', domain_perms(), 'array_name')
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+
+    if len(request.args) == 1 and request.args[0] == 'line':
+        if request.vars.volatile_filters is None:
+            t.setup_pager(-1)
+            limitby = (t.pager_start,t.pager_end)
+        else:
+            limitby = (0, 500)
+        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
+
     n = len(db(q).select(cacheable=True))
     t.setup_pager(n)
     t.object_list = db(q).select(cacheable=True, limitby=(t.pager_start,t.pager_end), orderby=o)
@@ -693,7 +710,8 @@ class table_disks(HtmlTable):
         self.checkbox_id_table = 'b_disk_app'
         self.dbfilterable = True
         self.ajax_col_values = 'ajax_disks_col_values'
-        self.span = ['disk_id', 'disk_size', 'disk_alloc', 'disk_arrayid', 'disk_array_updated',
+        self.keys = ['disk_id', 'disk_region', 'disk_nodename']
+        self.span = ['disk_id', 'disk_size', 'disk_alloc', 'disk_arrayid',
                      'disk_devid', 'disk_name', 'disk_raid', 'disk_group', 'array_model']
 
         if 'StorageManager' in user_groups() or \
@@ -1336,6 +1354,17 @@ def ajax_disks():
     q = apply_filters(q, db.b_disk_app.disk_nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), t.colprops[f].field)
+
+    if len(request.args) == 1 and request.args[0] == 'line':
+        if request.vars.volatile_filters is None:
+            t.setup_pager(-1)
+            limitby = (t.pager_start,t.pager_end)
+        else:
+            limitby = (0, 500)
+        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False, left=(l1,l2))
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
+
     n = db(q).select(db.b_disk_app.id.count(), cacheable=True, left=(l1,l2)).first()._extra[db.b_disk_app.id.count()]
     t.setup_pager(n)
     t.object_list = db(q).select(cacheable=True, limitby=(t.pager_start,t.pager_end), orderby=o, left=(l1,l2))

@@ -4,7 +4,8 @@ class table_packages(HtmlTable):
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['nodename']+v_nodes_cols
-        self.cols += ['pkg_name',
+        self.cols += ['id',
+                      'pkg_name',
                       'pkg_version',
                       'pkg_arch',
                       'pkg_type',
@@ -70,6 +71,13 @@ class table_packages(HtmlTable):
                      img='pkg16',
                      display=True,
                     ),
+            'id': HtmlTableColumn(
+                     title='Id',
+                     table='packages',
+                     field='id',
+                     img='pkg16',
+                     display=False,
+                    ),
         })
         self.colprops['nodename'].display = True
         self.colprops['nodename'].t = self
@@ -78,6 +86,8 @@ class table_packages(HtmlTable):
         self.checkbox_id_table = 'packages'
         self.dbfilterable = True
         self.ajax_col_values = 'ajax_packages_col_values'
+        self.span = ["id"]
+        self.keys = ["id"]
 
 @auth.requires_login()
 def ajax_packages_col_values():
@@ -109,10 +119,21 @@ def ajax_packages():
     l = db.pkg_sig_provider.on(j)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+
+    if len(request.args) == 1 and request.args[0] == 'line':
+        if request.vars.volatile_filters is None:
+            t.setup_pager(-1)
+            limitby = (t.pager_start,t.pager_end)
+        else:
+            limitby = (0, 500)
+        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False, left=l)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
+
+    n = db(q).select(db.packages.id.count(), left=l).first()(db.packages.id.count())
+    t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
                                  orderby=o, left=l)
-    n = len(db(q).select(db.packages.id, left=l))
-    t.setup_pager(n)
 
     t.csv_q = q
     t.csv_orderby = o
