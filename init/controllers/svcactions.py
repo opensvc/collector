@@ -41,7 +41,45 @@ def update_dash_action_errors(svc_name, nodename):
                        env=rows[0][1],
                        now=str(datetime.datetime.now()),
                        err=rows[0][0])
+        db.executesql(sql)
+        db.commit()
+        sqlws = """select
+                     dash_md5
+                   from
+                     dashboard
+                   where
+                     dash_type="action errors" and
+                     dash_svcname="%(svcname)s" and
+                     dash_nodename="%(nodename)s" and
+                     dash_fmt="%%(err)s action errors"
+              """%dict(svcname=svc_name,
+                       nodename=nodename,
+                  )
+        rows = db.executesql(sqlws)
+        if len(rows) > 0:
+            _websocket_send(event_msg({
+              'event': 'dash_change',
+              'data': {
+                'dash_md5': rows[0][0],
+              }
+            }))
+
     else:
+        sqlws = """select dash_md5 from dashboard
+                 where
+                   dash_type="action errors" and
+                   dash_svcname="%(svcname)s" and
+                   dash_nodename="%(nodename)s"
+              """%dict(svcname=svc_name,
+                       nodename=nodename)
+        rows = db.executesql(sqlws)
+        if len(rows) > 0:
+            _websocket_send(event_msg({
+              'event': 'dash_delete',
+              'data': {
+                'dash_md5': rows[0][0],
+              }
+            }))
         sql = """delete from dashboard
                  where
                    dash_type="action errors" and
@@ -49,8 +87,8 @@ def update_dash_action_errors(svc_name, nodename):
                    dash_nodename="%(nodename)s"
               """%dict(svcname=svc_name,
                        nodename=nodename)
-    db.executesql(sql)
-    db.commit()
+        db.executesql(sql)
+        db.commit()
 
 def update_action_errors():
     sql = """truncate b_action_errors
@@ -176,7 +214,7 @@ class col_svcactions_status(HtmlTableColumn):
         else:
             over = ''
             out = ''
-        if s is None:
+        if s is None or s == "":
             action_status = SPAN(
               SPAN(
                 IMG(
@@ -447,12 +485,14 @@ class table_actions(HtmlTable):
             self.colprops[c].t = self
         self.ajax_col_values = 'ajax_actions_col_values'
         self.extraline = True
-        self.span = 'pid'
-        #self.sub_span = ['hostname', 'svcname', 'action'] + ncols
+        self.span = ['pid']
+        #self.span = ['pid', 'hostname', 'svcname', 'action'] + ncols
+        self.wsable = True
         self.dbfilterable = True
         self.checkboxes = True
         self.checkbox_id_table = 'v_svcactions'
         self.additional_tools.append('ack')
+        self.keys = ["id"]
 
     def checkbox_disabled(self, o):
         status = self.colprops['status'].get(o)
@@ -540,14 +580,19 @@ def ack(ids=[]):
 
     update_action_errors()
 
+    l = []
     for r in rows:
-        update_dash_action_errors(r.svcname, r.hostname)
+        if (r.svcname, r.hostname) not in l:
+            l.append((r.svcname, r.hostname))
         _log('action.ack',
              'acknowledged action error with id %(g)s: %(action)s on %(svc)s@%(node)s',
              dict(g=r.id, action=r.action, svc=r.svcname, node=r.hostname),
              user=user,
              svcname=r.svcname,
              nodename=r.hostname)
+
+    for svcname, hostname in l:
+        update_dash_action_errors(svcname, hostname)
 
 @auth.requires_login()
 def ajax_actions():
@@ -577,6 +622,10 @@ def ajax_actions():
         return t.csv()
     if len(request.args) == 1 and request.args[0] == 'commonality':
         return t.do_commonality()
+    if len(request.args) == 1 and request.args[0] == 'line':
+        t.object_list = db(q).select(orderby=o, cacheable=False)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
 
     n = db(q).count()
     t.setup_pager(n)
@@ -592,6 +641,27 @@ def ajax_actions():
                _class='ackpanel',
               ),
               t.html(),
+              SCRIPT("""
+function ws_action_switch_%(divid)s(data) {
+        if (data["event"] == "begin_action") {
+          _data = []
+          _data.push({"key": "id", "val": data["data"]["id"], "op": "="})
+          ajax_table_insert_line('%(url)s', '%(divid)s', _data);
+        } else if (data["event"] == "end_action") {
+          _data = []
+          _data.push({"key": "id", "val": data["data"]["id"], "op": ">="})
+          _data.push({"key": "pid", "val": data["data"]["pid"], "op": "="})
+          ajax_table_insert_line('%(url)s', '%(divid)s', _data);
+        } else if (data["event"] == "svcactions_change") {
+          ajax_table_refresh('%(url)s', '%(divid)s')
+        }
+}
+wsh["%(divid)s"] = ws_action_switch_%(divid)s
+              """ % dict(
+                     url=URL(r=request,f=t.func),
+                     divid=t.innerhtml,
+                    )
+              ),
             )
 
 @auth.requires_login()

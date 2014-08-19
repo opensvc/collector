@@ -37,20 +37,25 @@ def checks_defaults_insert():
     return dict(form=form)
 
 def enqueue_update_thresholds_batch(chk_type=None):
-    import cPickle
     if chk_type is None:
         q_fn = 'update_thresholds_batch'
-        q_args = cPickle.dumps("[]")
-        q = db.feed_queue.q_fn == q_fn
+        q_args = []
+        task = scheduler.task_status(
+          (db.scheduler_task.function_name == q_fn) & \
+          (db.scheduler_task.status == "QUEUED")
+        )
     else:
         q_fn = 'update_thresholds_batch_type'
-        q_args = cPickle.dumps([chk_type])
-        q = db.feed_queue.q_fn == q_fn
-        q &= db.feed_queue.q_args == q_args
+        q_args = [chk_type]
+        task = scheduler.task_status(
+          (db.scheduler_task.function_name == q_fn) & \
+          (db.scheduler_task.args.like('%'+chk_type+'%')) & \
+          (db.scheduler_task.status == "QUEUED")
+        )
 
-    if db(q).count() > 1:
+    if task is not None:
         return
-    db.feed_queue.insert(q_fn=q_fn, q_args=q_args)
+    scheduler.queue_task(q_fn, q_args, group_name="slow")
     db.commit()
 
 @auth.requires_membership('CheckManager')
@@ -399,6 +404,10 @@ class table_checks(HtmlTable):
                      'chk_threshold_provider',
                      'chk_created',
                      'chk_updated']
+        self.keys = ['chk_nodename',
+                     'chk_svcname',
+                     'chk_type',
+                     'chk_instance']
         self.colprops = {
             'chk_nodename': col_node(
                 title = 'Nodename',
@@ -503,11 +512,12 @@ class table_checks(HtmlTable):
         for c in self.cols:
             self.colprops[c].t = self
         self.ajax_col_values = 'ajax_checks_col_values'
+        self.wsable = True
         self.dbfilterable = True
         self.checkbox_id_table = 'checks_live'
         self.checkboxes = True
         self.extraline = True
-        self.span = 'chk_nodename'
+        self.span = ['chk_nodename']
 
         ug = user_groups()
         if 'CheckManager' in ug:
@@ -900,12 +910,33 @@ def ajax_checks():
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'line':
+        t.object_list = db(q).select(orderby=o, cacheable=False)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
+
 
     n = db(q).select(db.checks_live.id.count(), left=l).first()(db.checks_live.id.count())
     t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
                                  orderby=o, left=l)
-    return t.html()
+    return DIV(
+      t.html(),
+      SCRIPT("""
+function ws_action_switch_%(divid)s(data) {
+        if (data["event"] == "checks_change") {
+          _data = []
+          _data.push({"key": "chk_nodename", "val": data["data"]["chk_nodename"], "op": "="})
+          ajax_table_insert_line('%(url)s', '%(divid)s', _data);
+        }
+}
+wsh["%(divid)s"] = ws_action_switch_%(divid)s
+              """ % dict(
+                     url=URL(r=request,f=t.func),
+                     divid=t.innerhtml,
+                    )
+      ),
+    )
 
 @auth.requires_login()
 def checks():

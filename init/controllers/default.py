@@ -140,29 +140,6 @@ class viz(object):
         process.communicate()
         return dst
 
-    def viz_cron_cleanup(self):
-        """ unlink static/tempviz*.png
-        """
-        import os
-        import glob
-        files = []
-        for name in glob.glob(os.path.join(self.vizdir, self.vizprefix+'*.png')):
-            files.append(name)
-            os.unlink(name)
-        for name in glob.glob(os.path.join(self.vizdir, self.vizprefix+'*.dot')):
-            files.append(name)
-            os.unlink(name)
-        for name in glob.glob(os.path.join(self.vizdir, 'stats_*_[0-9]*.png')):
-            files.append(name)
-            os.unlink(name)
-        for name in glob.glob(os.path.join(self.vizdir, 'stat_*_[0-9]*.png')):
-            files.append(name)
-            os.unlink(name)
-        for name in glob.glob(os.path.join(self.vizdir, 'stats_*_[0-9]*.svg')):
-            files.append(name)
-            os.unlink(name)
-        return files
-
     def __init__(self):
         pass
 
@@ -394,9 +371,6 @@ def svcmon_viz(ids):
     q = db.v_svcmon.id.belongs(ids)
     services = db(q).select(cacheable=True)
     return IMG(_src=svcmon_viz_img(services))
-
-def viz_cron_cleanup():
-    return viz().viz_cron_cleanup()
 
 @auth.requires_login()
 def ajax_service():
@@ -1118,10 +1092,11 @@ class table_svcmon(HtmlTable):
                   'svc_type', 'host_mode', 'mon_overallstatus',
                   'mon_availstatus', 'mon_syncstatus']:
             self.colprops[i].display = True
-        self.span = 'mon_svcname'
-        self.sub_span = v_services_cols
-        self.sub_span.append('app_domain')
-        self.sub_span.append('app_team_ops')
+        self.keys = ["mon_nodname", "mon_svcname", "mon_vmname"]
+        self.span = ['mon_svcname'] + v_services_cols
+        self.span.append('app_domain')
+        self.span.append('app_team_ops')
+        self.wsable = True
         self.extraline = True
         self.extrarow = True
         self.checkboxes = True
@@ -1709,6 +1684,10 @@ def ajax_svcmon():
     t.csv_orderby = o
     if len(request.args) == 1 and request.args[0] == 'csv':
         return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'line':
+        t.object_list = db(q).select(orderby=o, cacheable=False)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
 
     n = db(q).count()
     t.setup_pager(n)
@@ -1724,7 +1703,25 @@ def ajax_svcmon():
         except ToolError, e:
             t.flash = str(e)
 
-    return t.html()
+    return SPAN(
+             t.html(),
+             SCRIPT("""
+function ws_action_switch_%(divid)s(data) {
+        if (data["event"] == "svcmon_change") {
+          _data = []
+          _data.push({"key": "mon_nodname", "val": data["data"]["mon_nodname"], "op": "="})
+          _data.push({"key": "mon_svcname", "val": data["data"]["mon_svcname"], "op": "="})
+          _data.push({"key": "mon_vmname", "val": data["data"]["mon_vmname"], "op": "="})
+          ajax_table_insert_line('%(url)s', '%(divid)s', _data);
+        }
+}
+wsh["%(divid)s"] = ws_action_switch_%(divid)s
+              """ % dict(
+                     url=URL(r=request,f=t.func),
+                     divid=t.innerhtml,
+                    )
+             ),
+           )
 
 @auth.requires_login()
 def svcmon():

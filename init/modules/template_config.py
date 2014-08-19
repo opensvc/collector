@@ -13,6 +13,10 @@ allow_register = False
 token_quota = 150000
 billing_method = "agents"
 
+
+#
+# DataCore SAN symphony config
+#
 sansymphony_v_pool = {
   'local': {
     'sds1_pool1': 'sds1:sds1_pool1',
@@ -43,3 +47,17 @@ sansymphony_v_mirrored_pool = {
 }
 
 stats_retention_days = 367
+
+
+#
+# Alerts config
+#
+email = True
+email_from = "admin@localhost"
+email_host = "localhost"
+email_port = 35
+
+gtalk = True
+gtalk_username = "opensvc"
+gtalk_password = "opensvc"
+

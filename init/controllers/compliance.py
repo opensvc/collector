@@ -782,6 +782,8 @@ class table_comp_rulesets(HtmlTable):
         }
         self.colprops['var_name'].t = self
         self.colprops['var_value'].t = self
+        self.span = ['ruleset_name', 'ruleset_type', 'ruleset_public',
+                     'fset_name', 'teams_responsible']
         if 'CompManager' in user_groups():
             self.form_filterset_attach = self.comp_filterset_attach_sqlform()
             self.form_ruleset_var_add = self.comp_ruleset_var_add_sqlform()
@@ -1815,8 +1817,6 @@ def ajax_comp_rulesets_col_values():
 @auth.requires_login()
 def ajax_comp_rulesets():
     v = table_comp_rulesets('cr0', 'ajax_comp_rulesets')
-    v.span = 'ruleset_name'
-    v.sub_span = ['ruleset_type', 'ruleset_public', 'fset_name', 'teams_responsible']
     v.checkboxes = True
 
     err = None
@@ -2143,7 +2143,7 @@ class table_comp_filtersets(HtmlTable):
                     ),
         }
         self.colprops.update(filters_colprops)
-        self.sub_span = ['fset_stats']
+        self.span = ['fset_name', 'fset_stats']
         if 'CompManager' in user_groups():
             self.form_encap_filterset_attach = self.comp_encap_filterset_attach_sqlform()
             self.form_filterset_add = self.comp_filterset_add_sqlform()
@@ -2779,7 +2779,7 @@ def ajax_comp_filters():
     extra = SPAN()
     v = table_comp_filters('ajax_comp_filters',
                            'ajax_comp_filters')
-    v.span = 'f_table'
+    v.span = ['f_table']
     v.checkboxes = True
     reload_fsets = SCRIPT(
                      "table_ajax_submit('/init/compliance/ajax_comp_filtersets', 'ajax_comp_filtersets', inputs_ajax_comp_filtersets, [], ['ajax_comp_filtersets_ck'])",
@@ -2824,7 +2824,6 @@ def ajax_comp_filtersets_col_values():
 def ajax_comp_filtersets():
     t = table_comp_filtersets('ajax_comp_filtersets',
                               'ajax_comp_filtersets')
-    t.span = 'fset_name'
     t.checkboxes = True
 
     if len(request.args) == 1:
@@ -2970,7 +2969,7 @@ class table_comp_moduleset(HtmlTable):
                                                             'moduleset_rename',
                                                             'moduleset_node_attach'])
             self += HtmlTableMenu('Team responsible', 'guys16', ['team_responsible_attach', 'team_responsible_detach'])
-        self.sub_span = ['teams_responsible']
+        self.span = ['modset_name', 'teams_responsible']
 
     def moduleset_node_attach(self):
         return A(
@@ -3401,7 +3400,6 @@ def ajax_comp_moduleset_col_values():
 @auth.requires_login()
 def ajax_comp_moduleset():
     t = table_comp_moduleset('ajax_comp_moduleset', 'ajax_comp_moduleset')
-    t.span = 'modset_name'
     t.checkboxes = True
     t.checkbox_id_table = 'comp_moduleset_modules'
 
@@ -4115,6 +4113,9 @@ class table_comp_status(HtmlTable):
             self.colprops[i].t = self
         self.ajax_col_values = 'ajax_comp_status_col_values'
         self.extraline = True
+        self.wsable = True
+        self.keys = ["run_nodename", "run_svcname", "run_module"]
+        self.span = ["run_nodename", "run_svcname", "run_module"]
         self.checkboxes = True
         self.checkbox_id_table = 'comp_status'
         if 'CompManager' in user_groups():
@@ -4541,6 +4542,10 @@ def ajax_comp_status():
         return t.csv()
     if len(request.args) == 1 and request.args[0] == 'commonality':
         return t.do_commonality()
+    if len(request.args) == 1 and request.args[0] == 'line':
+        t.object_list = db(q).select(orderby=o, cacheable=False)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
 
     n = db(q).select(db.comp_status.id.count(), cacheable=True).first()._extra[db.comp_status.id.count()]
     t.setup_pager(n)
@@ -4664,6 +4669,17 @@ def ajax_comp_status():
                'if ($("#css").is(":visible")) {',
                st.ajax_submit(additional_inputs=t.ajax_inputs()),
                "}",
+               """
+function ws_action_switch_%(divid)s(data) {
+        if (data["event"] == "comp_status_change") {
+          ajax_table_refresh('%(url)s', '%(divid)s');
+        }
+}
+wsh["%(divid)s"] = ws_action_switch_%(divid)s
+              """ % dict(
+                     url=URL(r=request,f=t.func),
+                     divid=t.innerhtml,
+                    ),
                _name=t.id+"_to_eval"
              ),
              DIV(chart(obs, ok, na, nok), _style="padding:4px"),
@@ -5171,6 +5187,9 @@ class table_comp_log(table_comp_status):
         self.ajax_col_values = 'ajax_comp_log_col_values'
         self.checkboxes = False
         self.checkbox_id_table = 'comp_log'
+        self.wsable = True
+        self.keys = ["run_date", "run_nodename", "run_svcname", "run_module"]
+        self.span = ["run_date", "run_nodename", "run_svcname", "run_module"]
 
 @auth.requires_login()
 def ajax_comp_log():
@@ -5185,10 +5204,33 @@ def ajax_comp_log():
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.comp_log.run_nodename)
 
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        return t.do_commonality()
+    if len(request.args) == 1 and request.args[0] == 'line':
+        t.object_list = db(q).select(orderby=o, cacheable=False)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
+
     t.setup_pager(-1)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
                                  orderby=o, cacheable=True)
-    return t.html()
+    return DIV(
+             t.html(),
+             SCRIPT("""
+function ws_action_switch_%(divid)s(data) {
+        if (data["event"] == "comp_status_change") {
+          ajax_table_refresh('%(url)s', '%(divid)s');
+        }
+}
+wsh["%(divid)s"] = ws_action_switch_%(divid)s
+              """ % dict(
+                     url=URL(r=request,f=t.func),
+                     divid=t.innerhtml,
+                    ),
+             ),
+           )
 
 
 @auth.requires_login()
@@ -5738,6 +5780,12 @@ def comp_log_action(vars, vals, auth):
     if action == 'check':
         generic_insert('comp_status', vars, vals)
     update_dash_compdiff(auth[1])
+    l = {
+      'event': 'comp_status_change',
+      'data': {'foo': 'bar'},
+    }
+    _websocket_send(event_msg(l))
+
 
 @auth_uuid
 @service.xmlrpc
@@ -5765,6 +5813,11 @@ def comp_log_actions(vars, vals, auth):
     generic_insert('comp_log', vars, vals)
     if len(check_vals) > 0:
         generic_insert('comp_status', vars, check_vals)
+    l = {
+      'event': 'comp_status_change',
+      'data': {'foo': 'bar'},
+    }
+    _websocket_send(event_msg(l))
     update_dash_compdiff(auth[1])
 
 def comp_format_filter(q):
@@ -10897,6 +10950,8 @@ def json_tree_action_show():
         return json_tree_action_show_variable(request.vars.obj_id)
     elif request.vars.obj_type == "filterset":
         return json_tree_action_show_filterset(request.vars.obj_id)
+    elif request.vars.obj_type == "modset":
+        return json_tree_action_show_moduleset(request.vars.obj_id)
     return ""
 
 def json_tree_action_rename():
@@ -11096,6 +11151,48 @@ def json_tree_action_show_filterset(fset_id):
       metrics,
     )
     return d
+
+def json_tree_action_show_moduleset(modset_id):
+    modset_id = int(modset_id)
+
+    q = db.comp_moduleset.id == modset_id
+    modset = db(q).select(cacheable=True).first()
+    if modset is None:
+        return ""
+    l = []
+    l.append(H2(modset.modset_name))
+    l.append(HR())
+
+    q = db.comp_node_moduleset.modset_id == modset_id
+    rows = db(q).select(cacheable=False)
+    if len(rows) > 0:
+        l.append(H3(T("Attached to servers")))
+        l.append(P(' '.join(map(lambda x: x.modset_node, rows))))
+        l.append(HR())
+
+    q = db.comp_modulesets_services.modset_id == modset_id
+    rows = db(q).select(cacheable=False)
+    if len(rows) > 0:
+        l.append(H3(T("Attached to services")))
+        l.append(P(' '.join(map(lambda x: x.modset_svcname, rows))))
+        l.append(HR())
+
+    def mod_html(x):
+        l = []
+        l.append(B(x.modset_mod_name))
+        l.append(P(T("Author"), ": ", I(x.modset_mod_author),
+                      ", ",
+                      T("Updated"), ": ", I(x.modset_mod_updated)))
+        return P(l)
+
+    q = db.comp_moduleset_modules.modset_id == modset_id
+    rows = db(q).select(cacheable=False)
+    if len(rows) > 0:
+        l.append(H3(T("Modules")))
+        l.append(SPAN(map(lambda x: mod_html(x), rows)))
+        l.append(HR())
+
+    return DIV(l)
 
 def json_tree_action_show_ruleset(rset_id):
     q = db.comp_rulesets.id == rset_id

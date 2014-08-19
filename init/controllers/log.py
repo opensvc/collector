@@ -77,7 +77,8 @@ class table_log(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['log_date',
+        self.cols = ['id',
+                     'log_date',
                      'log_icons',
                      'log_level',
                      'log_svcname',
@@ -85,10 +86,15 @@ class table_log(HtmlTable):
                      'log_user',
                      'log_action',
                      'log_evt',
-                     'log_entry_id',
                      'log_gtalk_sent',
                      'log_email_sent']
         self.colprops = {
+            'id': HtmlTableColumn(
+                     title='Id',
+                     field='id',
+                     img='action16',
+                     display=False,
+                    ),
             'log_date': HtmlTableColumn(
                      title='Date',
                      field='log_date',
@@ -173,6 +179,9 @@ class table_log(HtmlTable):
         self.colprops['log_svcname'].t = self
         self.dbfilterable = False
         self.extraline = True
+        self.wsable = True
+        self.keys = ["id"]
+        self.span = ["id"]
         self.ajax_col_values = 'ajax_log_col_values'
         self.special_filtered_cols = ['log_icons', 'log_evt']
 
@@ -201,11 +210,38 @@ def ajax_log():
     q = db.log.id > 0
     for f in set(t.cols):
         q = _where(q, 'log', t.filter_parse(f),  f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
+
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        return t.do_commonality()
+    if len(request.args) == 1 and request.args[0] == 'line':
+        t.object_list = db(q).select(orderby=o, cacheable=False)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
+
     n = db(q).count()
     t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
 
-    return t.html()
+    return DIV(
+             t.html(),
+             SCRIPT("""
+function ws_action_switch_%(divid)s(data) {
+        if (data["event"] == "log_change") {
+          _data = []
+          _data.push({"key": "id", "val": data["data"]["id"], "op": "="})
+          ajax_table_insert_line('%(url)s', '%(divid)s', _data);
+        }
+}
+wsh["%(divid)s"] = ws_action_switch_%(divid)s
+              """ % dict(
+                     url=URL(r=request,f=t.func),
+                     divid=t.innerhtml,
+                    )
+              ),
+            )
+
 
 @auth.requires_login()
 def log():

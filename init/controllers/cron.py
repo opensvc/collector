@@ -17,21 +17,7 @@ def refresh_b_action_errors():
     db.commit()
 
 def refresh_b_apps():
-    try:
-        sql = "drop table if exists b_apps_new"
-        db.executesql(sql)
-        sql = "create table b_apps_new as select * from v_apps"
-        db.executesql(sql)
-        sql = "drop table if exists b_apps_old"
-        db.executesql(sql)
-        sql = "rename table b_apps to b_apps_old, b_apps_new to b_apps"
-        db.executesql(sql)
-    except:
-        sql = "drop table if exists b_apps"
-        db.executesql(sql)
-        sql = "create table b_apps as select * from v_apps"
-        db.executesql(sql)
-    db.commit()
+    task_refresh_b_apps()
 
 def svc_log_update(svcname, astatus):
     q = db.services_log.svc_name == svcname
@@ -91,8 +77,17 @@ def _cron_table_purge(table, date_col, orderby=None):
 
     if orderby is None:
         orderby = date_col
-    sql = """select %(date_col)s from %(table)s order by %(orderby)s limit 1""" % dict(table=table,date_col=date_col,orderby=orderby)
-    oldest = db.executesql(sql)[0][0]
+    sql = """select %(date_col)s from %(table)s where
+               %(date_col)s is not null and
+               %(date_col)s > 0
+             order by %(orderby)s limit 1
+          """ % dict(table=table,date_col=date_col,orderby=orderby)
+    try:
+        oldest = db.executesql(sql)[0][0]
+    except:
+        print "no data in table %s" % table
+        return
+
     if oldest > day:
         print "oldest entry is dated %s, threshold is set to %s ... skip table %s purge"%(str(oldest), str(day), table)
         return
@@ -101,7 +96,15 @@ def _cron_table_purge(table, date_col, orderby=None):
     for i in range(delta.days):
         _day = oldest + datetime.timedelta(days=i)
         print " purge table %s till %s" % (table, str(_day))
-        sql = """delete from %s where %s < "%s" """%(table, date_col, str(_day))
+        sql = """delete from %(table)s where
+                   %(date_col)s is not null and
+                   %(date_col)s > 0 and
+                   %(date_col)s < "%(threshold)s"
+              """ % dict(
+                table=table,
+                date_col=date_col,
+                threshold=str(_day)
+              )
         db.executesql(sql)
     db.commit()
 
@@ -121,6 +124,7 @@ def cron_purge_expiry():
               ('svcmon_log', 'mon_end', 'id'),
               ('appinfo_log', 'app_updated', 'id'),
               ('SVCactions', 'begin', 'id'),
+              ('dashboard_events', 'dash_end', None),
               ('node_users', 'updated', None),
               ('node_groups', 'updated', None)]
     for table, date_col, orderby in tables:
@@ -590,20 +594,7 @@ def cron_stat_day_svc():
 #
 #######
 def cron_unfinished_actions():
-    now = datetime.datetime.now()
-    tmo = now - datetime.timedelta(minutes=120)
-    q = (db.SVCactions.begin < tmo)
-    q &= (db.SVCactions.end==None)
-    rows = db(q).select(orderby=db.SVCactions.id)
-    db(q).update(status="err", end='1000-01-01 00:00:00')
-    for r in rows:
-        _log('action.timeout', "action ids %(ids)s closed on timeout",
-              dict(ids=r.id),
-              user='collector',
-              svcname=r.svcname,
-              nodename=r.hostname,
-              level="warning")
-    return "%d actions marked timed out"%len(rows)
+    return task_unfinished_actions()
 
 def cron_scrub_checks():
     thres = now - datetime.timedelta(days=2)
@@ -1085,46 +1076,7 @@ def cron_mac_dup():
     db.commit()
 
 def cron_feed_monitor():
-    e = db(db.feed_queue.id>0).select(limitby=(0,1)).first()
-    if e is None:
-        # clean all
-        sql = """delete from dashboard
-                 where
-                   dash_type = "feed queue"
-              """
-        db.executesql(sql)
-        db.commit()
-        return
-
-    now = datetime.datetime.now()
-    now = now - datetime.timedelta(microseconds=now.microsecond)
-    limit = now - datetime.timedelta(minutes=5)
-    if e.created < limit:
-        n = db(db.feed_queue.created<limit).count()
-        sql = """insert into dashboard
-                 set
-                   dash_type="feed queue",
-                   dash_severity=4,
-                   dash_fmt="%%(n)s entries stalled in feed queue",
-                   dash_dict='{"n": "%(n)d"}',
-                   dash_created="%(now)s",
-                   dash_env="PRD",
-                   dash_updated="%(now)s"
-                 on duplicate key update
-                   dash_fmt="%%(n)s entries stalled in feed queue",
-                   dash_dict='{"n": "%(n)d"}',
-                   dash_updated="%(now)s"
-              """%dict(n=n, now=str(now))
-        db.executesql(sql)
-    db.commit()
-
-    # clean old
-    sql = """delete from dashboard
-             where
-               dash_type = "feed queue" and
-               dash_updated < "%(now)s" """%dict(now=str(now))
-    db.executesql(sql)
-
+    task_feed_monitor()
 
 def _cron_stat_day_billing(end, fset_id=0):
     q = db.stat_day_billing.day == end

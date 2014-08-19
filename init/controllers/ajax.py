@@ -1,4 +1,28 @@
 @auth.requires_login()
+def ajax_set_user_prefs_column2():
+    table = request.args[0]
+    field = request.args[1]
+    visible = request.args[2]
+    if visible == "true":
+        visible = 1
+    else:
+        visible = 0
+    if field is None or table is None or visible is None:
+        raise Exception("missing args: (field, table, visible) = ",
+                        (field, table, visible))
+    sql = """replace into user_prefs_columns
+             (upc_user_id, upc_table, upc_field, upc_visible)
+             values
+             (%(uid)s, '%(table)s', '%(field)s', %(visible)s)
+          """%dict(uid=session.auth.user.id,
+                   table=table, field=field, visible=visible)
+    try:
+        db.executesql(sql)
+    except:
+        raise Exception(sql)
+    db.commit()
+
+@auth.requires_login()
 def ajax_set_user_prefs_column():
     for v in request.vars:
         if 'set_col_field' in v:

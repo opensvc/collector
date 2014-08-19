@@ -1,0 +1,73 @@
+-- MySQL dump 10.14  Distrib 5.5.33a-MariaDB, for Linux (x86_64)
+--
+-- Host: dbopensvc    Database: opensvc
+-- ------------------------------------------------------
+-- Server version	5.5.36-MariaDB-log
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `scheduler_task`
+--
+
+DROP TABLE IF EXISTS `scheduler_task`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `scheduler_task` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `application_name` varchar(255) DEFAULT NULL,
+  `task_name` varchar(255) DEFAULT NULL,
+  `group_name` varchar(255) DEFAULT NULL,
+  `status` varchar(255) DEFAULT NULL,
+  `function_name` varchar(255) DEFAULT NULL,
+  `uuid` varchar(255) DEFAULT NULL,
+  `args` longtext,
+  `vars` longtext,
+  `enabled` char(1) DEFAULT NULL,
+  `start_time` datetime DEFAULT NULL,
+  `next_run_time` datetime DEFAULT NULL,
+  `stop_time` datetime DEFAULT NULL,
+  `repeats` int(11) DEFAULT NULL,
+  `retry_failed` int(11) DEFAULT NULL,
+  `period` int(11) DEFAULT NULL,
+  `timeout` int(11) DEFAULT NULL,
+  `sync_output` int(11) DEFAULT NULL,
+  `times_run` int(11) DEFAULT NULL,
+  `times_failed` int(11) DEFAULT NULL,
+  `last_run_time` datetime DEFAULT NULL,
+  `assigned_worker_name` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uuid` (`uuid`)
+) ENGINE=InnoDB AUTO_INCREMENT=2327 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `scheduler_task`
+--
+-- WHERE:  repeats=0
+
+LOCK TABLES `scheduler_task` WRITE;
+/*!40000 ALTER TABLE `scheduler_task` DISABLE KEYS */;
+INSERT INTO `scheduler_task` VALUES (1,'init/appadmin','task_purge_checks','main','QUEUED','task_purge_checks','1ec59d9c-4b3b-48ff-90f9-3f746e2cc614','[]','{}','T','2014-06-28 06:14:00','2014-07-14 09:23:54',NULL,0,-1,86400,900,0,7,7,'2014-07-13 09:23:54','9006da20abc0#209'),(2,'init/appadmin','task_refresh_b_disk_app','main','QUEUED','task_refresh_b_disk_app','fbdf850a-ebd8-403b-85e1-22987335e4cf','[]','{}','T','2014-06-28 12:47:48','2014-07-13 19:04:36',NULL,0,-1,180,150,0,2036,0,'2014-07-13 19:01:36','62b68885b602#210'),(3,'init/appadmin','task_unfinished_actions','main','QUEUED','task_unfinished_actions','062630d0-04fc-43da-96cf-48458794bd9a','[]','{}','T','2014-06-28 14:41:10','2014-07-13 19:07:13',NULL,0,-1,600,300,0,642,0,'2014-07-13 18:57:13','62b68885b602#217'),(4,'init/appadmin','task_feed_monitor','main','QUEUED','task_feed_monitor','6feec2d3-88ff-4763-9a68-7d9f7a8fb4ab','[]','{}','T','2014-06-28 14:41:57','2014-07-13 19:02:28',NULL,0,-1,300,60,0,1248,0,'2014-07-13 18:57:28','62b68885b602#217'),(5,'init/appadmin','task_refresh_b_apps','main','QUEUED','task_refresh_b_apps','0aa0585e-1c1b-4e05-a7ad-621657feba5d','[]','{}','T','2014-06-28 14:45:23','2014-07-13 19:02:08',NULL,0,-1,60,60,0,5148,4,'2014-07-13 19:01:08','62b68885b602#210'),(6,'init/appadmin','task_purge_static','main','QUEUED','task_purge_static','61d42c21-91b0-45c6-a43e-9590743a8d33','[]','{}','T','2014-06-28 14:58:16','2014-07-14 09:23:30',NULL,0,-1,86400,60,0,6,7,'2014-07-13 09:23:30','9006da20abc0#209'),(7,'init/appadmin','task_alerts_hourly','main','QUEUED','task_alerts_hourly','d0b68200-612b-40eb-b7f2-1b064445dbc8','[]','{}','T','2014-06-28 17:17:36','2014-07-13 19:26:26',NULL,0,-1,3600,900,0,111,0,'2014-07-13 18:26:26','62b68885b602#217'),(9,'init/appadmin','task_alerts_daily','main','QUEUED','task_alerts_daily','caa8932b-3b6d-400d-8bcd-05a79e4279e7','[]','{}','T','2014-06-28 17:29:10','2014-07-14 09:23:30',NULL,0,-1,86400,900,0,6,7,'2014-07-13 09:23:30','9006da20abc0#209'),(10,'init/appadmin','task_metrics','main','QUEUED','task_metrics','9da16e02-9a6e-4f4d-9a1f-3172e8c4993e','[]','{}','T','2014-06-28 17:56:15','2014-07-14 09:23:30',NULL,0,-1,86400,1800,0,6,7,'2014-07-13 09:23:30','9006da20abc0#209'),(11,'init/appadmin','task_stats','main','QUEUED','task_stats','2968ee45-fa9c-419c-ac72-1a40e9e1d1b0','[]','{}','T','2014-06-28 22:09:32','2014-07-14 09:23:31',NULL,0,-1,86400,1800,0,6,7,'2014-07-13 09:23:31','9006da20abc0#209'),(12,'init/appadmin','task_perf','main','QUEUED','task_perf','1c1213ca-5e20-4bfb-897c-d8502e585555','[]','{}','T','2014-06-28 22:09:56','2014-07-14 09:23:31',NULL,0,-1,86400,1800,0,6,7,'2014-07-13 09:23:31','9006da20abc0#209'),(13,'init/appadmin','task_refresh_obsolescence','main','QUEUED','task_refresh_obsolescence','db4076fa-f3e8-4b5e-9eac-f66e1c1dbf31','[]','{}','T','2014-06-28 22:10:48','2014-07-14 09:23:31',NULL,0,-1,86400,300,0,6,7,'2014-07-13 09:23:31','9006da20abc0#209'),(14,'init/appadmin','task_dash_comp','main','QUEUED','task_dash_comp','e17d55ec-5768-42e9-8b6e-ef2c597b4b91','[]','{}','T','2014-06-28 22:12:09','2014-07-14 09:23:46',NULL,0,-1,86400,300,0,6,7,'2014-07-13 09:23:46','9006da20abc0#209'),(18,'feed/default','task_dash_min','main','QUEUED','task_dash_min','9f03c375-54e0-4a5c-abba-a542515f2168','[]','{}','T','2014-06-29 10:29:09','2014-07-13 19:02:20',NULL,0,-1,60,50,0,9079,0,'2014-07-13 19:01:20','62b68885b602#210'),(19,'feed/default','task_dash_hourly','main','QUEUED','task_dash_hourly','bdd17f2b-f22f-469c-8376-88a626545987','[]','{}','T','2014-06-29 10:29:45','2014-07-13 19:26:26',NULL,0,-1,3600,300,0,202,0,'2014-07-13 18:26:26','62b68885b602#217'),(20,'feed/default','task_dash_daily','main','QUEUED','task_dash_daily','67fa2e07-5965-4cc4-b40a-1d474a2fbb6c','[]','{}','T','2014-06-29 10:31:14','2014-07-14 09:23:47',NULL,0,-1,86400,900,0,13,0,'2014-07-13 09:23:47','9006da20abc0#209'),(88,'init/appadmin','task_purge_feed','main','QUEUED','task_purge_feed','80fa3e6a-cbd4-449f-ad8e-dc89277be3c9','[]','{}','T','2014-06-29 16:55:26','2014-07-13 19:02:21',NULL,0,-1,60,60,0,3933,0,'2014-07-13 19:01:21','62b68885b602#210');
+/*!40000 ALTER TABLE `scheduler_task` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2014-07-13 19:02:09

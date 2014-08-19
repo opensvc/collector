@@ -1060,9 +1060,8 @@ class table_svcmon_log(HtmlTable):
         self.checkbox_id_col = 'id'
         self.checkbox_id_table = 'services_log'
         self.ajax_col_values = 'ajax_svcmon_log_col_values'
-        self.span = 'svc_name'
-        self.sub_span = v_services_cols
-        self.sub_span.remove('svc_availstatus')
+        self.span = v_services_cols
+        self.span.remove('svc_availstatus')
 
 @auth.requires_login()
 def ajax_svcmon_log_col_values():

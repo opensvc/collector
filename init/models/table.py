@@ -1,4 +1,5 @@
 import re
+import hashlib
 
 def select_filter(fset_id):
     # refuse to change filter for locked-filter users
@@ -114,8 +115,6 @@ class HtmlTable(object):
         self.line_count = 0
         self.id_perpage = '_'.join((self.id, 'perpage'))
         self.id_page = '_'.join((self.id, 'page'))
-        self.cellclasses = {'cell1': 'cell2', 'cell2': 'cell1'}
-        self.cellclass = 'cell1'
         self.upc_table = self.id
         self.last = None
         self.column_filter_reset = '**clear**'
@@ -125,9 +124,13 @@ class HtmlTable(object):
         self.additional_filters = []
         self.cols = []
         self.colprops = {}
+        self.order = []
+
+        # column ids to use as keys to detect duplicate lines on
+        # websocket triggered updates.
+        self.keys = []
 
         # to be set be instanciers
-        self.autorefresh = 0
         self.checkboxes = False
         self.checkbox_names = [self.id+'_ck']
         self.checkbox_id_col = 'id'
@@ -147,11 +150,11 @@ class HtmlTable(object):
         self.headers = True
         self.colored_lines = True
         self.additional_tools = []
-        self.span = None
+        self.span = []
         self.flash = None
-        self.sub_span = []
         self.nodatabanner = True
         self.highlight = True
+        self.wsable = False
 
         # initialize the pager, to be re-executed by instanciers
         self.setup_pager()
@@ -486,23 +489,6 @@ class HtmlTable(object):
             )
         return d
 
-    def countdown(self):
-        if not self.autorefresh:
-            return SPAN()
-        d = SPAN(
-              DIV(
-                self.autorefresh/1000,
-                _id='countdown_'+self.id,
-                _class='floatw',
-              ),
-              DIV(
-                0,
-                _id='countup_'+self.id,
-                _class='floatw',
-              ),
-            )
-        return d
-
     def link(self):
         if not self.linkable:
             return SPAN()
@@ -533,11 +519,15 @@ class HtmlTable(object):
     def refresh(self):
         if not self.refreshable:
             return SPAN()
+        url = URL(r=request,f=self.func)
         d = DIV(
               A(
                 SPAN(
                   T('Refresh'),
-                  _onclick="ajax_submit_%s()"%self.id,
+                  _onclick="ajax_table_refresh('%(url)s', '%(id)s')"%dict(
+                    url=url,
+                    id=self.id,
+                  ),
                   _class='refresh16',
                   _id='refresh_'+self.id,
                 ),
@@ -548,10 +538,13 @@ class HtmlTable(object):
   if ($('input').is(":focus")) { return ; } ;
   if ($('textarea').is(":focus")) { return ; } ;
   if ( event.which == 114 ) {
-     event.preventDefault();
-     ajax_submit_%s();
+     //event.preventDefault();
+     ajax_table_refresh("%(url)s", "%(id)s")
    }
-});"""%self.id,
+});"""% dict(
+                    url=url,
+                    id=self.id,
+                  ),
               ),
             )
         return d
@@ -752,11 +745,6 @@ class HtmlTable(object):
 
         return nav
 
-    def rotate_colors(self):
-        if not self.colored_lines:
-            return
-        self.cellclass = self.cellclasses[self.cellclass]
-
     def col_checkbox_key(self, f):
         return '_'.join((self.id, 'cc', f))
 
@@ -789,14 +777,17 @@ class HtmlTable(object):
     def span_line_id(self, o):
         if o is None:
             return ''
-        if self.colprops[self.span].table is None or \
-           self.colprops[self.span].table not in o:
-            return o[self.span]
-        else:
-            return o[self.colprops[self.span].table][self.span]
+        spansum = hashlib.md5()
+        for c in self.span:
+            if self.colprops[c].table is None or \
+               self.colprops[c].table not in o:
+                spansum.update(str(o[c]))
+            else:
+                spansum.update(str(o[self.colprops[c].table][c]))
+        return spansum.hexdigest()
 
     def extra_line_key(self, o):
-        if self.span:
+        if len(self.span) > 0:
             id = str(self.span_line_id(o))
         else:
             id = str(self.line_id(o))
@@ -854,6 +845,8 @@ class HtmlTable(object):
         db(q).delete()
 
     def store_filter_value(self, f, v, bookmark="current"):
+        if request.vars.volatile_filters is not None:
+            return
         field = self.stored_filter_field(f)
         if field is None:
             return
@@ -900,6 +893,13 @@ class HtmlTable(object):
             key = self.filter_key(f)
             del(request.vars[key])
             return ""
+        if request.vars.volatile_filters:
+            _v = self.stored_filter_value(f, bookmark)
+            if _v != "" and v != "":
+                return v+"&"+_v
+            if v == "":
+                return _v
+            return v
         if v == "":
             return self.stored_filter_value(f, bookmark)
         self.store_filter_value(f, v, bookmark_add)
@@ -971,45 +971,58 @@ class HtmlTable(object):
         if self.extrarow:
             cells.append(TD(self.format_extrarow(o)))
 
+        if len(self.keys) > 0:
+            cksum = hashlib.md5()
+        else:
+            cksum = None
         for c in self.cols:
+            colprops = self.colprops[c]
             if self.spaning_cell(c, o):
                 content = ''
             else:
-                content = self.colprops[c].html(o)
-            v = self.colprops[c].get(o)
+                content = colprops.html(o)
+            v = colprops.get(o)
             if v is None:
                 v = 'empty'
+            if c in self.keys:
+                cksum.update(str(v))
             attrs = dict(
                _name=self.col_key(c),
                _v=v,
                _cell=1,
             )
             _style=self.col_hide(c)
-            classes = [self.colprops[c]._class, self.colprops[c]._dataclass]
+            classes = []
+            if colprops._class != "":
+                classes.append(colprops._class)
+            if colprops._dataclass != "":
+                classes.append(colprops._dataclass)
             if _style != '':
                 classes.append("hidden")
-            _class = ' '.join(classes)
-            if _class != ' ':
-                attrs['_class'] = _class
+            if len(classes) > 0:
+                attrs['_class'] = ' '.join(classes)
             cells.append(TD(content, **attrs))
             if self.highlight:
-                cl = "tl " + self.cellclass
-            else:
-                cl = self.cellclass
-        return TR(cells, _class=cl)
+                cl = "tl "
+        line_attrs = dict(
+          _class = cl,
+          _spansum = self.span_line_id(o),
+        )
+        if cksum:
+            line_attrs["_cksum"] = cksum.hexdigest()
+        return TR(cells, **line_attrs)
 
     def spaning_line(self, o):
-        if self.span is not None and \
+        if len(self.span) > 0 and \
            self.last is not None and \
-           self.colprops[self.span].get(o) == self.colprops[self.span].get(self.last):
+           self.span_line_id(o) == self.span_line_id(self.last):
             return True
         return False
 
     def spaning_cell(self, c, o):
         if not self.spaning_line(o):
            return False
-        if (c == self.span or (c in self.sub_span and \
-           self.colprops[c].get(o) == self.colprops[c].get(self.last))):
+        if c in self.span:
             return True
         return False
 
@@ -1042,32 +1055,9 @@ class HtmlTable(object):
                     continue
             line_count += 1
             if not self.pageable or self.perpage == 0 or line_count <= self.perpage:
-                if not self.spaning_line(o):
-                    if self.extraline and self.span is not None:
-                        lines.append(self.format_extraline(self.last))
-                    self.rotate_colors()
                 lines.append(self.table_line(o))
-                if self.extraline and self.span is None:
-                    lines.append(self.format_extraline(o))
                 self.last = o
-        if self.extraline and self.span is not None:
-            lines.append(self.format_extraline(self.last))
         return lines, line_count
-
-    def format_extraline(self, o):
-        n = len(self.cols)
-        if self.checkboxes:
-            n += 1
-        if self.extrarow:
-            n += 1
-        return TR(
-                 TD(
-                   _colspan=n,
-                   _id=self.extra_line_key(o),
-                   _style='display:none',
-                 ),
-                 _class=self.cellclass,
-               )
 
     def header_slim(self):
         inputs = []
@@ -1264,6 +1254,33 @@ class HtmlTable(object):
             )
         return d
 
+    def wsswitch(self):
+        if not self.wsable:
+            return SPAN()
+        q = db.user_prefs_columns.upc_table == self.upc_table
+        q &= db.user_prefs_columns.upc_field == "wsenabled"
+        q &= db.user_prefs_columns.upc_user_id == auth.user_id
+        row = db(q).select(db.user_prefs_columns.upc_visible, cacheable=False).first()
+        if row is None or row.upc_visible == 1:
+            wsenabled = 'on'
+        else:
+            wsenabled = ''
+        js ="""ajax("%(url)s/%(table)s/wsenabled/"+this.checked, [], "set_col_dummy");
+            """%dict(url=URL(r=request,c='ajax',f='ajax_set_user_prefs_column2'),
+                     table= self.upc_table,
+                    )
+        d = DIV(
+          INPUT(
+            _type="checkbox",
+            _id="wsswitch_"+self.id,
+            _onclick=js,
+            value=wsenabled,
+          ),
+          T("Live"),
+          _class='floatw'
+        )
+        return d
+
     def html(self):
         if len(request.args) == 1 and request.args[0] == 'commonality':
             return self.do_commonality()
@@ -1346,15 +1363,20 @@ class HtmlTable(object):
         elif self.nodatabanner:
             table_lines.append(T("no data"))
 
+        table_attrs = dict(
+          _id="table_"+self.id,
+          _order=",".join(self.order),
+          _perpage=self.perpage,
+        )
         d = DIV(
               self.show_flash(),
               self.right_click_menu(),
               DIV(
                 self.pager(),
+                self.wsswitch(),
                 self.refresh(),
                 self.link(),
                 self.bookmark(),
-                self.countdown(),
                 export,
                 self.columns_selector(),
                 self.commonality(),
@@ -1373,7 +1395,7 @@ class HtmlTable(object):
                 ),
                 TABLE(
                    table_lines,
-                   _id="table_"+self.id,
+                   **table_attrs
                 ),
                 DIV(
                   XML("&nbsp;"),
@@ -1729,7 +1751,7 @@ function js_link_%(id)s(){
   }
   var re = /#$/;
   url=url.replace(re, "")+"?";
-  args="clear_filters=true&dbfilter="+$("#avs%(id)s").val()
+  args="clear_filters=true&discard_filters=true&dbfilter="+$("#avs%(id)s").val()
   $("#%(id)s").find("[name=fi]").each(function(){
     if ($(this).val().length==0) {return}
     args=args+'&'+$(this).attr('id')+"="+encodeURIComponent($(this).val())
@@ -1791,53 +1813,17 @@ $(".down16,.right16").click(function() {
   scroll_%(id)s()
 })
 scroll_%(id)s()
+restripe_table_lines("%(id)s")
 """%dict(
                    id=self.id,
                    a=self.ajax_inputs(),
                    ajax_submit=self.ajax_submit(),
                    ajax_enter_submit=self.ajax_enter_submit(),
                 ),
-                self.js_autorefresh(),
-                _name=self.id+"_to_eval",
               ),
               _class='tableo',
             )
         return d
-
-    def js_autorefresh(self):
-        if self.autorefresh == 0:
-            return ""
-        else:
-            return """
-total=0
-function autorefresh_%(id)s(){
-  $("#%(id)s").stopTime();
-  ajax_submit_%(id)s();
-};
-function countdown(){
-  i=$("#countdown_%(id)s").html();
-  if (i==0){
-    ajax_changed("%(url)s", total, autorefresh_%(id)s)
-    i=%(ar)d/1000;
-    $("#countdown_%(id)s").html(i);
-  };
-  i--;
-  total++
-  $("#countdown_%(id)s").html(i)
-  if (total < 60) {j=total + " seconds"}
-  else if (total < 120) {j="1 minute"}
-  else if (total < 3600) {j=parseInt(total/60) + " minutes"}
-  else if (total < 7200) {j="1 hour"}
-  else if (total < 86400) {j=parseInt(total/3600) + " hours"}
-  else if (total < 172800) {j="1 day"}
-  else {j=parseInt(total/86400) + " days"}
-  $("#countup_%(id)s").html("refreshed "+j+" ago")
-};
-$("#%(id)s").stopTime();
-$("#%(id)s").everyTime(1000, function(i){
-  countdown()
-});
-"""%dict(id=self.id, ar=self.autorefresh, url=URL(r=request, c="dashboard", f="dash_changed"))
 
     def change_line_data(self, o):
         pass
@@ -2241,11 +2227,12 @@ class col_containertype(HtmlTableColumn):
         d = DIV(
               A(
                 s,
-                _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                _onclick="toggle_extra('%(url)s', '%(id)s', this, %(ncols)s);"%dict(
                   url=URL(r=request, c='ajax_node',f='ajax_node',
                           vars={'node': self.t.colprops['mon_vmname'].get(o),
                                 'rowid': id}),
                   id=id,
+                  ncols=len(self.t.cols),
                 ),
               ),
               _class=' '.join((node_class(os), 'nowrap')),
@@ -2270,11 +2257,11 @@ class col_node(HtmlTableColumn):
         d = DIV(
               A(
                 s,
-                _onclick="getElementById('%(id)s').innerHTML='%(spinner)s';toggle_extra('%(url)s', '%(id)s');"%dict(
+                _onclick="toggle_extra('%(url)s', '%(id)s', this, %(ncols)s);"%dict(
                   url=URL(r=request, c='ajax_node',f='ajax_node',
                           vars={'node': s, 'rowid': id}),
                   id=id,
-                  spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+                  ncols=len(self.t.cols),
                 ),
                 _style=c,
               ),
@@ -2291,11 +2278,11 @@ class col_svc(HtmlTableColumn):
         d = DIV(
               A(
                 s,
-                _onclick="getElementById('%(id)s').innerHTML='%(spinner)s';toggle_extra('%(url)s', '%(id)s');"%dict(
+                _onclick="""toggle_extra('%(url)s', '%(id)s', this, %(ncols)s);"""%dict(
                   url=URL(r=request, c='default',f='ajax_service',
                           vars={'node': s, 'rowid': id}),
                   id=id,
-                  spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+                  ncols=len(self.t.cols),
                 ),
               ),
             )
@@ -3459,9 +3446,10 @@ class col_array_dg(HtmlTableColumn):
         d = DIV(
               A(
                 dg,
-                _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                _onclick="toggle_extra('%(url)s', '%(id)s', this, %(ncols)s);"%dict(
                   url=URL(r=request, c='disks',f='ajax_array_dg',
                           vars={'array': s, 'dg': dg, 'rowid': id}),
+                  ncols=len(self.t.cols),
                   id=id,
                 ),
                 _class="bluer",
@@ -3484,10 +3472,11 @@ class col_array(HtmlTableColumn):
               img,
               A(
                 s,
-                _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                _onclick="toggle_extra('%(url)s', '%(id)s', this, %(ncols)s);"%dict(
                   url=URL(r=request, c='disks',f='ajax_array',
                           vars={'array': s, 'rowid': id}),
                   id=id,
+                  ncols=len(self.t.cols),
                 ),
                 _class="bluer",
               ),

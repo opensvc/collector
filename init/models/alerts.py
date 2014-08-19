@@ -5,6 +5,7 @@ def update_dash_compdiff(nodename):
     rows = db(q).select(db.svcmon.mon_svcname, db.svcmon.mon_svctype)
     svcnames = map(lambda x: x.mon_svcname, rows)
     update_dash_compdiff_svc(svcnames)
+    dashboard_events()
 
 def update_dash_compdiff_svc(svcnames):
     if type(svcnames) != list:
@@ -108,6 +109,7 @@ def update_dash_moddiff_node(nodename):
     for svcname in svcnames:
         r.append(update_dash_moddiff(svcname))
 
+    dashboard_events()
     return str(r)
 
 def update_dash_moddiff(svcname):
@@ -206,6 +208,7 @@ def update_dash_rsetdiff_node(nodename):
     for svcname in svcnames:
         r.append(update_dash_rsetdiff(svcname))
 
+    dashboard_events()
     return str(r)
 
 def update_dash_rsetdiff(svcname):

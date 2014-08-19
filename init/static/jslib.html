@@ -1,4 +1,50 @@
 <script language="JavaScript" type="text/javascript">
+
+wsh = {}
+last_events = []
+
+function ws_duplicate_event(uid) {
+    if (last_events.indexOf(uid) >= 0) {
+        return true
+    }
+    last_events.push(uid)
+    if (last_events.length > 10) {
+        last_events = last_events.slice(0, 10)
+    }
+    return false
+}
+
+function ws_switch(e) {
+    try {
+        data = eval('('+e.data+')')
+    } catch(ex) {
+        return
+    }
+    if (ws_duplicate_event(data['uuid'])) {
+        return
+    }
+    data = data['data']
+    for (i=0; i<data.length; i++) {
+        ws_switch_one(data[i])
+    }
+}
+
+function ws_switch_one(data) {
+    if (!("event" in data)) {
+        return
+    }
+    for (key in wsh) {
+        if (!$("#wsswitch_"+key).prop('checked')) {
+            // websocket disable for this table
+            return
+        }
+        ws_action_switch = wsh[key]
+        ws_action_switch(data)
+    }
+}
+
+web2py_websocket("wss://"+window.location.hostname+"/realtime/generic", ws_switch)
+
 function print_date(d) {
   var day = d.getDate()
   var month = d.getMonth()+1
@@ -431,6 +477,263 @@ function sync_ajax(url, inputs, id, f) {
          }
     })
 }
+function restripe_table_lines(id) {
+    prev_spansum = ""
+    cls = ["cell1", "cell2"]
+    i = 1
+    $("#table_"+id).children().children(".tl").each(function(){
+       spansum = $(this).attr("spansum")
+       if (spansum != prev_spansum) {
+           prev_spansum = spansum
+           cl = cls[i]
+           i = 1 - i
+       }
+       if ($(this).hasClass(cl)) {
+           return
+       }
+       $(this).removeClass(cls[i]).addClass(cl)
+    })
+}
+
+function trim_table(id) {
+    perpage = parseInt($("#table_"+id).attr("perpage")) + 2
+    lines = $("#table_"+id).children("tbody").children()
+    if (lines.length <= perpage) {
+        return
+    }
+    for (i=perpage; i<lines.length; i++) {
+        $(lines[i]).remove()
+    }
+    lines = null
+}
+
+function sort_table(id) {
+    keys = $("#table_"+id).attr("order").split(",")
+    table_lines = $("#table_"+id).children("tbody").children(".tl")
+    for (i=0; i<table_lines.length-1; i++) {
+        line1 = $(table_lines[i])
+        line_moved = false
+        for (j=i+1; j<table_lines.length; j++) {
+            if (line_moved) {
+                break
+            }
+            line2 = $(table_lines[j])
+            eq = 0
+            for (k=0; k<keys.length; k++) {
+                key = keys[k]
+                if (key.charAt(0) == "~") {
+                    asc = false
+                    key = key.slice(1, key.length)
+                } else {
+                    asc = true
+                }
+                cname = id+"_c_"+key
+                v1 = line1.find("[name="+cname+"]").attr("v")
+                v2 = line2.find("[name="+cname+"]").attr("v")
+                //if (i==0) {alert(v1+" "+ v2 + " " + asc )}
+                if (v1 == v2) {
+                    eq += 1
+                    if (eq == keys.length) {
+                        // all values equal, don't move the line
+                        line_moved = true
+                    }
+                    continue
+                }
+                try {
+                    v1 = parseFloat(v1)
+                    v2 = parseFloat(v2)
+                    cmp = (v1 < v2)
+                } catch(e) {
+                    cmp = (v1.localeCompare(v2) < 0)
+                }
+                if (asc && cmp) {
+                    if (j > i+1) {
+                        line1.insertAfter(line2)
+                    }
+                    line_moved = true
+                    break
+                } else if ((!asc) && (!cmp)) {
+                    if (j > i+1) {
+                        //line1.insertAfter(line2)
+                    }
+                    line_moved = true
+                    break
+                } else if (asc && (!cmp)) {
+                    // no need to compare more keys, the line should be lower than j
+                    break
+                } else if ((!asc) && cmp) {
+                    // no need to compare more keys, the line should be lower than j
+                    break
+                }
+            }
+        }
+        if (!line_moved && (i<table_lines.length-1)) {
+            line1.insertAfter(line2)
+        }
+    }
+    keys = null
+    table_lines = null
+    line1 = null
+    line2 = null
+    v1 = null
+    v2 = null
+    asc = null
+    cmp = null
+}
+
+function ajax_table_refresh(url, id) {
+    $.ajax({
+         type: "POST",
+         url: url+"/line",
+         data: "",
+         context: document.body,
+         beforeSend: function(req){
+	     $("#refresh_"+id).addClass("spinner")
+         },
+         success: function(msg){
+             // strip the topmost table marks
+             msg = msg.replace(/^.table.|.\/table.$/g, '')
+
+             // mark old lines for deletion
+             $("#table_"+id).find(".tl").addClass("deleteme")
+
+             // insert new lines
+             $("#table_"+id).find("tbody").first().append(msg)
+
+             $("#table_"+id).find(".tl").each(function(){
+               if ($(this).hasClass("deleteme")) {
+                   return
+               }
+               new_line = $(this)
+               cksum = $(this).attr("cksum")
+               old_line = $("#table_"+id).find(".deleteme[cksum="+cksum+"]")
+               if (old_line.length == 0) {
+                   new_line.effect("highlight", 1000)
+               }
+               old_line.each(function(){
+                 j = 0
+                 for (i=1; i<$(this).children().length+1; i++) {
+                   cell = $(":nth-child("+i+")", this)
+                   new_cell = $(":nth-child("+(i-j)+")", new_line)
+                   if (cell.attr("v") == new_cell.attr("v")) {
+                     continue
+                   }
+                   j++
+                   new_cell.effect("highlight", 1000)
+                 }
+               })
+             })
+
+             // delete old lines
+             $("#table_"+id).find(".deleteme").remove()
+
+             restripe_table_lines(id)
+	     $("#refresh_"+id).removeClass("spinner")
+
+             // clear mem refs
+             cksum = null
+             msg = null
+             cell = null
+             new_cell = null
+             new_line = null
+             old_line = null
+         }
+    })
+}
+
+function ajax_table_insert_line(url, id, data) {
+    var query="volatile_filters=true"
+    for (i=0; i<data.length; i++) {
+        try {
+            key=data[i]["key"]
+            val=data[i]["val"]
+            op=data[i]["op"]
+            query=query+"&"+encodeURIComponent(id+"_f_"+key)+op+encodeURIComponent(val)
+        } catch(e) {
+            return
+        }
+    }
+    $.ajax({
+         type: "POST",
+         url: url+"/line",
+         data: query,
+         context: document.body,
+         beforeSend: function(req){
+	     $("#refresh_"+id).addClass("spinner")
+         },
+         success: function(msg){
+             // strip the topmost table marks
+             msg = msg.replace(/^.table.|.\/table.$/g, '')
+
+             // replace already displayed lines
+             modified = []
+
+             $(msg).each(function(){
+               new_line = $(this)
+               cksum = $(this).attr("cksum")
+               $("#table_"+id).find("[cksum="+cksum+"]").each(function(){
+                 $(this).before(new_line)
+                 for (i=1; i<$(this).children().length+1; i++) {
+                   cell = $(":nth-child("+i+")", this)
+                   if (!cell.is(":visible")) {
+                     continue
+                   }
+                   new_cell = $(":nth-child("+i+")", new_line)
+                   if (cell.attr("v") == new_cell.attr("v")) {
+                     continue
+                   }
+                   new_cell.addClass("highlight")
+                 }
+                 $(this).remove()
+                 modified.push(cksum)
+               })
+             })
+
+
+             // insert new lines
+             first_line = $("#table_"+id).find(".tl").first()
+             if (first_line.length > 0) {
+                 first_line.before(msg)
+             } else {
+                 // remove "no data" line
+                 $("#table_"+id).find("tr").last().remove()
+                 b = $("#table_"+id).find("tbody").first()
+                 b.append(msg)
+             }
+
+             new_line = first_line.prev(".tl")
+             while (new_line.length > 0) {
+                 if (modified.indexOf(new_line.attr("cksum"))>=0) {
+                     // remove lines already changed in-place
+                     new_line = new_line.prev()
+                     new_line.next().remove()
+                     continue
+                 }
+                 // highlight new lines
+                 new_line.addClass("highlight")
+                 new_line = new_line.prev(".tl")
+             }
+             //sort_table(id)
+             trim_table(id)
+             restripe_table_lines(id)
+
+             $(".highlight").each(function(){
+                $(this).removeClass("highlight")
+                $(this).effect("highlight", 1000)
+             })
+	     $("#refresh_"+id).removeClass("spinner")
+
+             // clear mem refs
+             cksum = null
+             msg = null
+             cell = null
+             new_cell = null
+             new_line = null
+             b = null
+             modified = null
+         }
+    })
+}
 function table_ajax_submit(url, id, inputs, additional_inputs, input_name, additional_input_name) {
     var s = inputs.concat(additional_inputs).concat(getIdsByName(input_name))
     $("[name="+additional_input_name+"]").each(function(){s.push(this.id)});
@@ -458,10 +761,15 @@ function table_ajax_submit(url, id, inputs, additional_inputs, input_name, addit
          }
     })
 }
-function toggle_extra(url, id) {
+function toggle_extra(url, id, e, ncols) {
+    line=$(e).parents(".tl")
+    if (line.next().children("#"+id).attr("id")!=id) {
+        line.after("<tr><td id="+id+" colspan="+ncols+" style='display:none'></td></tr>")
+        $("#"+id).toggleClass("spinner")
+    }
     if ($('#'+id).css("display") == 'none') {
         $('#'+id).show()
-        sync_ajax(url, [], id, function(){})
+        sync_ajax(url, [], id, function(){$("#"+id).removeClass("spinner")})
     } else {
         $('#'+id).hide()
     }

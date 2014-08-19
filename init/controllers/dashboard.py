@@ -688,7 +688,8 @@ class table_dashboard(HtmlTable):
                      'dash_env',
                      'dash_entry',
                      'dash_created',
-                     'dash_updated']
+                     'dash_updated',
+                     'dash_md5']
         self.colprops = {
             'dash_links': col_dash_links(
                      title='Links',
@@ -774,7 +775,17 @@ class table_dashboard(HtmlTable):
                      img='log16',
                      display=True,
                     ),
+            'dash_md5': HtmlTableColumn(
+                     title='Signature',
+                     table='dashboard',
+                     field='dash_md5',
+                     img='log16',
+                     display=False,
+                    ),
         }
+        self.keys = ["dash_nodename", "dash_svcname", "dash_md5"]
+        self.span = ["dash_nodename", "dash_svcname", "dash_md5"]
+        self.order = ["~dash_severity", "dash_type", "dash_nodename", "dash_svcname"]
         self.colprops['dash_svcname'].t = self
         self.colprops['dash_nodename'].t = self
         self.colprops['dash_links'].t = self
@@ -783,7 +794,7 @@ class table_dashboard(HtmlTable):
         self.checkbox_id_table = 'dashboard'
         self.checkbox_id_col = 'id'
         self.special_filtered_cols = ['dash_entry']
-        #self.autorefresh = 60000
+        self.wsable = True
 
 @auth.requires_login()
 def ajax_dashboard_col_values():
@@ -804,7 +815,7 @@ def ajax_dashboard_col_values():
 @auth.requires_login()
 def ajax_dashboard():
     t = table_dashboard('dashboard', 'ajax_dashboard')
-    o = ~db.dashboard.dash_severity|db.dashboard.dash_type|db.dashboard.dash_nodename
+    o = ~db.dashboard.dash_severity|db.dashboard.dash_type|db.dashboard.dash_nodename|db.dashboard.dash_svcname
     q = db.dashboard.id > 0
     for f in set(t.cols):
         q = _where(q, 'dashboard', t.filter_parse(f), f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
@@ -818,6 +829,10 @@ def ajax_dashboard():
         return t.csv()
     if len(request.args) == 1 and request.args[0] == 'commonality':
         return t.do_commonality()
+    if len(request.args) == 1 and request.args[0] == 'line':
+        t.object_list = db(q).select(orderby=o, cacheable=False)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
 
     n = db(q).select(db.dashboard.id.count()).first()(db.dashboard.id.count())
     t.setup_pager(n)
@@ -864,6 +879,18 @@ def ajax_dashboard():
              ),
              DIV(_id="dh", _style="display:none"),
              t.html(),
+             SCRIPT("""
+function ws_action_switch_%(divid)s(data) {
+        if (data["event"] == "dash_change") {
+          ajax_table_refresh('%(url)s', '%(divid)s')
+        }
+}
+wsh["%(divid)s"] = ws_action_switch_%(divid)s
+              """ % dict(
+                     url=URL(r=request,f=t.func),
+                     divid=t.innerhtml,
+                    )
+             ),
            )
 
 @auth.requires_login()
@@ -951,3 +978,5 @@ def ajax_alert_events():
              SCRIPT(s, _name='%s_to_eval'%request.vars.rowid),
            )
 
+def test_dashboard_events():
+    dashboard_events()

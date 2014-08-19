@@ -627,6 +627,8 @@ db.define_table('log',
     Field('log_dict','string'),
     Field('log_date','datetime'),
     Field('log_gtalk_sent','integer'),
+    Field('log_email_sent','integer'),
+    Field('log_entry_id','string'),
     Field('log_level','string'),
     migrate=False)
 
