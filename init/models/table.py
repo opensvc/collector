@@ -939,6 +939,7 @@ class HtmlTable(object):
 
     def table_line(self, o):
         cells = []
+        cl = ""
         if self.checkboxes:
             if hasattr(self, 'checkbox_disabled') and \
                self.checkbox_disabled(o):
