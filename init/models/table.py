@@ -1,6 +1,12 @@
 import re
 import hashlib
 
+def print_duration(begin, s):
+    end = datetime.datetime.now()
+    duration = datetime.datetime.now() - begin
+    print s, duration
+    return end
+
 def select_filter(fset_id):
     # refuse to change filter for locked-filter users
     q = db.auth_user.id == auth.user_id
