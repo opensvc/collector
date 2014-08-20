@@ -217,8 +217,7 @@ def ajax_log():
         return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'line':
         if request.vars.volatile_filters is None:
-            n = db(q).count()
-            t.setup_pager(n)
+            t.setup_pager(-1)
             limitby = (t.pager_start,t.pager_end)
         else:
             limitby = (0, 500)
