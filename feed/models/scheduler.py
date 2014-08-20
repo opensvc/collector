@@ -1724,6 +1724,10 @@ def insert_sym(symid=None, nodename=None):
             del(s)
 
 
+def _svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
+    _svcmon_update(g_vars, g_vals, auth)
+    _resmon_update(r_vars, r_vals, auth)
+
 def _svcmon_update(vars, vals, auth):
     if len(vals) == 0:
         return
@@ -1867,13 +1871,14 @@ def svc_status_update(svcname):
         svctype = rows[0].mon_svctype
     except:
         svctype = 'TST'
-    update_dash_service_unavailable(svcname, svctype, astatus)
-    update_dash_service_available_but_degraded(svcname, svctype, astatus, ostatus)
 
     db(db.services.svc_name==svcname).update(
       svc_status=ostatus,
       svc_availstatus=astatus)
     db.commit()
+
+    update_dash_service_unavailable(svcname, svctype, astatus)
+    update_dash_service_available_but_degraded(svcname, svctype, astatus, ostatus)
 
 def svc_log_update(svcname, astatus):
     q = db.services_log.svc_name == svcname
@@ -3345,14 +3350,6 @@ def update_dash_service_available_but_degraded(svc_name, svc_type, svc_availstat
     else:
         sev = 2
     if svc_availstatus == "up" and svc_status != "up":
-        sql = """delete from dashboard
-                 where
-                   dash_type="service available but degraded" and
-                   dash_dict!='{"s": "%s"}' and
-                   dash_svcname="%s"
-              """%(svc_name,svc_status)
-        db.executesql(sql)
-        db.commit()
         sql = """insert into dashboard
                  set
                    dash_type="service available but degraded",
@@ -3367,6 +3364,7 @@ def update_dash_service_available_but_degraded(svc_name, svc_type, svc_availstat
                  on duplicate key update
                    dash_severity=%(sev)d,
                    dash_fmt="current overall status: %%(s)s",
+                   dash_dict='{"s": "%(status)s"}',
                    dash_updated=now(),
                    dash_env="%(env)s"
               """%dict(svcname=svc_name,
@@ -3415,15 +3413,6 @@ def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
             db.executesql(sql)
             db.commit()
             return
-
-        sql = """delete from dashboard
-                 where
-                   dash_type="service unavailable" and
-                   dash_svcname="%s" and
-                   dash_dict!='{"s": "%s"}'
-              """%(svc_name,svc_availstatus)
-        db.executesql(sql)
-        db.commit()
 
         sql = """insert into dashboard
                  set

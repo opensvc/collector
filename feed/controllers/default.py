@@ -154,9 +154,8 @@ def resmon_update(vars, vals, auth):
 @auth_uuid
 @service.xmlrpc
 def svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
-    scheduler.queue_task("_svcmon_update", [g_vars, g_vals, auth],
-                         immediate=True, group_name="fast")
-    scheduler.queue_task("_resmon_update", [r_vars, r_vals, auth],
+    scheduler.queue_task("_svcmon_update_combo",
+                         [g_vars, g_vals, r_vars, r_vals, auth],
                          immediate=True, group_name="fast")
 
 @auth_uuid
@@ -459,7 +458,7 @@ def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
             pass
 
     #fn(arrayid)
-    scheduler.queue_task(fn.__name__, [arrayid, auth[1]], immediate=True, group_name="slow")
+    scheduler.queue_task(fn.__name__, [arrayid, auth[1]], immediate=True, group_name="slow", timeout=600)
 
     # stor_array_proxy
     insert_array_proxy(auth[1], arrayid)
