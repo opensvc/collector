@@ -6041,7 +6041,6 @@ def comp_rulesets_chains():
         val.append(_chain_len)
         val.append(_chain)
         vals.append(val)
-        print val
 
     db.executesql("truncate comp_rulesets_chains")
     generic_insert('comp_rulesets_chains', vars, vals)
