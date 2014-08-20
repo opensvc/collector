@@ -585,10 +585,11 @@ function ajax_table_refresh(url, id) {
     if ($("#refresh_"+id).hasClass("spinner")) {
         return
     }
+    query = id+"_page="+$("#"+id+"_page").val()
     $.ajax({
          type: "POST",
          url: url+"/line",
-         data: "",
+         data: query,
          context: document.body,
          beforeSend: function(req){
 	     $("#refresh_"+id).addClass("spinner")
