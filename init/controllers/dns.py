@@ -624,9 +624,9 @@ def ips():
 @auth.requires_login()
 def ping():
     ip = request.args[0]
-    from subprocess import *
+    import subprocess
     cmd = ['fping', ip]
-    p = Popen(cmd)
+    p = subprocess.Popen(cmd)
     out, err = p.communicate()
     if p.returncode == 0:
         return DIV(
