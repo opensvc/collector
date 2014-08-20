@@ -921,6 +921,8 @@ class table_avail(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
+        self.keys = ['avail_svcname']
+        self.span = ['avail_svcname']
         self.cols = ['avail_svcname',
                      'avail_holes',
                      'avail_pct',
@@ -1024,6 +1026,8 @@ class table_svcmon_log(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
+        self.keys = ['svc_name', 'svc_begin']
+        self.span = ['svc_name']
         self.cols = ['svc_name',
                      'svc_begin',
                      'svc_end']
@@ -1086,7 +1090,7 @@ def ajax_svcmon_log_col_values():
 @auth.requires_login()
 def ajax_svcmon_log():
     t = table_svcmon_log('svcmon_log', 'ajax_svcmon_log')
-    v = table_avail('svcmon_log', 'ajax_svcmon_log')
+    v = table_avail('svcmon_log_avail', 'ajax_svcmon_log')
 
     if len(request.args) == 1:
         action = request.args[0]
@@ -1120,6 +1124,16 @@ def ajax_svcmon_log():
     q = _where(q, 'services_log', t.filter_parse('svc_end'), 'svc_begin')
 
     q = apply_filters(q, None, db.services_log.svc_name)
+
+    if len(request.args) == 1 and request.args[0] == 'line':
+        if request.vars.volatile_filters is None:
+            t.setup_pager(-1)
+            limitby = (t.pager_start,t.pager_end)
+        else:
+            limitby = (0, 500)
+        t.object_list = db(q).select(orderby=o, limitby=limitby)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
 
     t.setup_pager(-1)
     t.object_list = db(q).select(orderby=o, limitby=(t.pager_start,t.pager_end))

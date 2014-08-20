@@ -38,6 +38,8 @@ class table_metrics(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
+        self.span = ['id']
+        self.keys = ['id']
         self.cols = ['id',
                      'metric_name',
                      'metric_sql',
@@ -243,6 +245,17 @@ def ajax_metrics_admin():
     q = db.metrics.id > 0
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+
+    if len(request.args) == 1 and request.args[0] == 'line':
+        if request.vars.volatile_filters is None:
+            t.setup_pager(-1)
+            limitby = (t.pager_start,t.pager_end)
+        else:
+            limitby = (0, 500)
+        t.object_list = db(q).select(orderby=o, limitby=limitby)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
+
     n = db(q).count()
     t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
@@ -275,6 +288,8 @@ class table_charts(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
+        self.span = ['id']
+        self.keys = ['id']
         self.cols = ['id',
                      'chart_name',
                      'chart_yaml']
@@ -409,6 +424,17 @@ def ajax_charts_admin():
     q = db.charts.id > 0
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+
+    if len(request.args) == 1 and request.args[0] == 'line':
+        if request.vars.volatile_filters is None:
+            t.setup_pager(-1)
+            limitby = (t.pager_start,t.pager_end)
+        else:
+            limitby = (0, 500)
+        t.object_list = db(q).select(orderby=o, limitby=limitby)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
+
     n = db(q).count()
     t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
@@ -526,11 +552,13 @@ def get_metric_series(metric_id, fset_id):
 #
 ###############################################################################
 
-class table_reports(HtmlTable):
+class table_reports_admin(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
+        self.span = ['id']
+        self.keys = ['id']
         self.cols = ['id',
                      'report_name',
                      'report_yaml']
@@ -647,7 +675,7 @@ def ajax_report_test():
 
 @auth.requires_login()
 def ajax_reports_admin_col_values():
-    t = table_reports('reports', 'ajax_reports_admin')
+    t = table_reports_admin('reports', 'ajax_reports_admin')
 
     col = request.args[0]
     o = db.reports[col]
@@ -659,12 +687,23 @@ def ajax_reports_admin_col_values():
 
 @auth.requires_login()
 def ajax_reports_admin():
-    t = table_reports('reports', 'ajax_reports_admin')
+    t = table_reports_admin('reports', 'ajax_reports_admin')
 
     o = db.reports.report_name
     q = db.reports.id > 0
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+
+    if len(request.args) == 1 and request.args[0] == 'line':
+        if request.vars.volatile_filters is None:
+            t.setup_pager(-1)
+            limitby = (t.pager_start,t.pager_end)
+        else:
+            limitby = (0, 500)
+        t.object_list = db(q).select(orderby=o, limitby=limitby)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
+
     n = db(q).count()
     t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)

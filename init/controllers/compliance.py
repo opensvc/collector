@@ -2152,7 +2152,8 @@ class table_comp_filtersets(HtmlTable):
                     ),
         }
         self.colprops.update(filters_colprops)
-        self.span = ['fset_name', 'fset_stats']
+        self.span = ['fset_name']
+        self.keys = ['fset_name', 'encap_fset_name'] + filters_cols
         if 'CompManager' in user_groups():
             self.form_encap_filterset_attach = self.comp_encap_filterset_attach_sqlform()
             self.form_filterset_add = self.comp_filterset_add_sqlform()
@@ -2556,6 +2557,8 @@ class table_comp_filters(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
+        self.keys = ["f_table", "f_field", "f_op", "f_value"]
+        self.span = ["f_table", "f_field"]
         self.cols = filters_cols
         self.colprops = filters_colprops
         if 'CompManager' in user_groups():
@@ -2788,7 +2791,6 @@ def ajax_comp_filters():
     extra = SPAN()
     v = table_comp_filters('ajax_comp_filters',
                            'ajax_comp_filters')
-    v.span = ['f_table']
     v.checkboxes = True
     reload_fsets = SCRIPT(
                      "table_ajax_submit('/init/compliance/ajax_comp_filtersets', 'ajax_comp_filtersets', inputs_ajax_comp_filtersets, [], ['ajax_comp_filtersets_ck'])",

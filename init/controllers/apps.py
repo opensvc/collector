@@ -39,6 +39,8 @@ class table_apps(HtmlTable):
                      'roles',
                      'responsibles',
                      'mailto']
+        self.keys = ['app']
+        self.span = ['app']
         self.colprops = {
             'app': HtmlTableColumn(
                      title='Application code',
@@ -320,6 +322,17 @@ def ajax_apps():
     q = db.v_apps.id > 0
     for f in t.cols:
         q = _where(q, 'v_apps', t.filter_parse(f), f)
+
+    if len(request.args) == 1 and request.args[0] == 'line':
+        if request.vars.volatile_filters is None:
+            t.setup_pager(-1)
+            limitby = (t.pager_start,t.pager_end)
+        else:
+            limitby = (0, 500)
+        t.object_list = db(q).select(orderby=o, groupby=o, limitby=limitby)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
+
     n = db(q).count()
     t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),

@@ -207,6 +207,8 @@ class table_obs(HtmlTable):
                      'obs_name',
                      'obs_warn_date',
                      'obs_alert_date']
+        self.keys = ['obs_type', 'obs_name']
+        self.span = ['obs_type', 'obs_name']
         self.colprops = {
             'obs_type': col_obs_type(
                      title='Type',
@@ -387,7 +389,22 @@ def ajax_obs():
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_gen_filters(q, ['v_nodes', 'obsolescence'])
 
-    n = len(db(q).select(g, groupby=g))
+    if len(request.args) == 1 and request.args[0] == 'line':
+        if request.vars.volatile_filters is None:
+            t.setup_pager(-1)
+            limitby = (t.pager_start,t.pager_end)
+        else:
+            limitby = (0, 500)
+        t.object_list = db(q).select(db.obsolescence.ALL,
+                                     db.v_nodes.id.count(),
+                                     orderby=o,
+                                     groupby=g,
+                                     limitby=limitby,
+                                    )
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
+
+    n = len(db(q).select(db.obsolescence.id, groupby=g))
     t.setup_pager(n)
     t.object_list = db(q).select(db.obsolescence.ALL,
                                  db.v_nodes.id.count(),

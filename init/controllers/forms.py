@@ -30,6 +30,8 @@ class table_workflows(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
+        self.keys = ['form_head_id']
+        self.span = ['form_head_id']
         self.cols = ['form_head_id',
                      'form_name',
                      'last_form_id',
@@ -160,6 +162,17 @@ def ajax_workflows():
     q &= db.workflows.form_md5 == db.forms_revisions.form_md5
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+
+    if len(request.args) == 1 and request.args[0] == 'line':
+        if request.vars.volatile_filters is None:
+            t.setup_pager(-1)
+            limitby = (t.pager_start,t.pager_end)
+        else:
+            limitby = (0, 500)
+        t.object_list = db(q).select(orderby=o, limitby=limitby)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
+
     n = db(q).count()
     t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
@@ -186,6 +199,8 @@ class table_forms(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
+        self.keys = ['form_name']
+        self.span = ['form_name']
         self.cols = ['form_name',
                      'form_type',
                      'form_folder',
@@ -656,6 +671,17 @@ def ajax_forms_admin():
     q = db.v_forms.id > 0
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+
+    if len(request.args) == 1 and request.args[0] == 'line':
+        if request.vars.volatile_filters is None:
+            t.setup_pager(-1)
+            limitby = (t.pager_start,t.pager_end)
+        else:
+            limitby = (0, 500)
+        t.object_list = db(q).select(orderby=o, limitby=limitby)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
+
     n = db(q).count()
     t.setup_pager(n)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)

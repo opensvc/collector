@@ -238,6 +238,8 @@ class table_drplan(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
+        self.keys = ['mon_svcname']
+        self.span = ['mon_svcname']
         self.cols = ['mon_svcname',
                      'drp_wave']
         self.cols += svcmon_cols
@@ -479,6 +481,21 @@ def ajax_drplan():
     q = apply_gen_filters(q, t.tables())
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+
+    if len(request.args) == 1 and request.args[0] == 'line':
+        if request.vars.volatile_filters is None:
+            t.setup_pager(-1)
+            limitby = (t.pager_start,t.pager_end)
+        else:
+            limitby = (0, 500)
+        t.object_list = db(q).select(db.v_svcmon.ALL,
+                                 db.drpservices.drp_wave,
+                                 db.drpservices.drp_project_id,
+                                 left=db.drpservices.on(j),groupby=o,
+                                 orderby=o, limitby=limitby)
+        t.set_column_visibility()
+        return TABLE(t.table_lines()[0])
+
     n = db(q).count()
     t.setup_pager(n)
     t.object_list = db(q).select(db.v_svcmon.ALL,
