@@ -634,6 +634,7 @@ function ajax_table_refresh(url, id) {
              $("#table_"+id).find(".deleteme").remove()
 
              restripe_table_lines(id)
+             bind_filter_selector(id);
 	     $("#refresh_"+id).removeClass("spinner")
 
              // clear mem refs
@@ -722,6 +723,7 @@ function ajax_table_insert_line(url, id, data) {
              //sort_table(id)
              trim_table(id)
              restripe_table_lines(id)
+             bind_filter_selector(id);
 
              $(".highlight").each(function(){
                 $(this).removeClass("highlight")
@@ -4570,4 +4572,318 @@ function _jqplot_img(e){
                 btn = null;
             }
 }
+
+function filter_submit(id,k,v){
+  $("#"+k).val(v)
+  window["ajax_submit_"+id]()
+};
+
+function bind_filter_selector(id) {
+  $("#"+id).find("[cell=1]").each(function(){
+    $(this).bind("mouseup", function(event) {
+      filter_selector(id, event, $(this).attr('name'), $(this).attr('v'))
+    })
+    $(this).bind("contextmenu", function() {
+      return false
+    })
+    $(this).bind("click", function() {
+      $("#fsr"+id).hide()
+    })
+  })
+}
+
+function filter_selector(id,e,k,v){
+  if(e.button != 2) {
+    return
+  }
+  $("#fsr"+id).each(function() {
+    $(this)[0].oncontextmenu = function() {
+      return false;
+    }
+  });
+  var sel = window.getSelection().toString()
+  if (sel.length == 0) {
+    sel = v
+  }
+  _sel = sel
+  $("#fsr"+id).show()
+  if (e.pageX || e.pageY) {
+      posx = e.pageX;
+      posy = e.pageY;
+  }
+  else if (e.clientX || e.clientY) {
+      posx = e.clientX + document.body.scrollLeft
+           + document.documentElement.scrollLeft;
+      posy = e.clientY + document.body.scrollTop
+           + document.documentElement.scrollTop;
+  }
+  $("#fsr"+id).find(".bgred").each(function(){
+    $(this).removeClass("bgred")
+  })
+  function getsel(){
+    __sel = _sel
+    if ($("#fsr"+id).find("#fsrwildboth").hasClass("bgred")) {
+      __sel = '%%' + __sel + '%%'
+    } else
+    if ($("#fsr"+id).find("#fsrwildleft").hasClass("bgred")) {
+      __sel = '%%' + __sel
+    } else
+    if ($("#fsr"+id).find("#fsrwildright").hasClass("bgred")) {
+      __sel = __sel + '%%'
+    }
+    if ($("#fsr"+id).find("#fsrneg").hasClass("bgred")) {
+      __sel = '!' + __sel
+    }
+    return __sel
+  }
+  $("#fsr"+id).css({"left": posx + "px", "top": posy + "px"})
+  $("#fsr"+id).find("#fsrview").each(function(){
+    $(this).text($("[name="+k+"]").find("input").val())
+    $(this).unbind()
+    $(this).bind("dblclick", function(){
+      sel = $(this).text()
+      $(".sym_headers").find("[name="+k+"]").find("input").val(sel)
+      filter_submit(id,k,sel)
+    })
+    $(this).bind("click", function(){
+      sel = $(this).text()
+      cur = sel
+      $(this).removeClass("highlight")
+      $(this).addClass("b")
+      $(".sym_headers").find("[name="+k+"]").find("input").val(sel)
+      $(".theader_slim").find("[name="+k+"]").each(function(){
+        $(this).removeClass("bgred")
+        $(this).addClass("bgorange")
+      })
+    })
+  })
+  $("#fsr"+id).find("#fsrreset").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      $("#fsr"+id).find("#fsrview").each(function(){
+        $(this).text("")
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr"+id).find("#fsrclear").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      $("#fsr"+id).find("#fsrview").each(function(){
+        $(this).text("**clear**")
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr"+id).find("#fsrneg").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      if ($(this).hasClass("bgred")) {
+        $(this).removeClass("bgred")
+      } else {
+        $(this).addClass("bgred")
+      }
+      sel = getsel()
+    })
+  })
+  $("#fsr"+id).find("#fsrwildboth").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      if ($(this).hasClass("bgred")) {
+        $(this).removeClass("bgred")
+      } else {
+        $("#fsr"+id).find("[id^=fsrwild]").each(function(){
+          $(this).removeClass("bgred")
+        })
+        $(this).addClass("bgred")
+      }
+      sel = getsel()
+    })
+  })
+  $("#fsr"+id).find("#fsrwildleft").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      if ($(this).hasClass("bgred")) {
+        $(this).removeClass("bgred")
+      } else {
+        $("#fsr"+id).find("[id^=fsrwild]").each(function(){
+          $(this).removeClass("bgred")
+        })
+        $(this).addClass("bgred")
+      }
+      sel = getsel()
+    })
+  })
+  $("#fsr"+id).find("#fsrwildright").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      if ($(this).hasClass("bgred")) {
+        $(this).removeClass("bgred")
+      } else {
+        $("#fsr"+id).find("[id^=fsrwild]").each(function(){
+          $(this).removeClass("bgred")
+        })
+        $(this).addClass("bgred")
+      }
+      sel = getsel()
+    })
+  })
+  $("#fsr"+id).find("#fsreq").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      $("#fsr"+id).find("#fsrview").each(function(){
+        $(this).text(sel)
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr"+id).find("#fsrandeq").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      cur =  $(".sym_headers").find("[name="+k+"]").find("input").val()
+      val = cur + '&' + sel
+      $("#fsr"+id).find("#fsrview").each(function(){
+        $(this).text(val)
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr"+id).find("#fsroreq").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      cur =  $(".sym_headers").find("[name="+k+"]").find("input").val()
+      val = cur + '|' + sel
+      $("#fsr"+id).find("#fsrview").each(function(){
+        $(this).text(val)
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr"+id).find("#fsrsup").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = '>' + sel
+      $("#fsr"+id).find("#fsrview").each(function(){
+        $(this).text(val)
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr"+id).find("#fsrandsup").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = $("#fsr"+id).find("#fsrview").text()
+      if (val.length==0) {
+        val = $("#"+k).val()
+      }
+      val = val + '&>' + sel
+      $("#fsr"+id).find("#fsrview").each(function(){
+        $(this).text(val)
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr"+id).find("#fsrorsup").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = $("#fsr"+id).find("#fsrview").text()
+      if (val.length==0) {
+        val = $("#"+k).val()
+      }
+      val = val + '|>' + sel
+      $("#fsr"+id).find("#fsrview").each(function(){
+        $(this).text(val)
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr"+id).find("#fsrinf").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = '<' + sel
+      $("#fsr"+id).find("#fsrview").each(function(){
+        $(this).text(val)
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr"+id).find("#fsrandinf").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = $("#fsr"+id).find("#fsrview").text()
+      if (val.length==0) {
+        val = $("#"+k).val()
+      }
+      val = val + '&<' + sel
+      $("#fsr"+id).find("#fsrview").each(function(){
+        $(this).text(val)
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr"+id).find("#fsrorinf").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = $("#fsr"+id).find("#fsrview").text()
+      if (val.length==0) {
+        val = $("#"+k).val()
+      }
+      val = val + '|<' + sel
+      $("#fsr"+id).find("#fsrview").each(function(){
+        $(this).text(val)
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr"+id).find("#fsrempty").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      if ($("#fsr"+id).find("#fsrneg").hasClass("bgred")) {
+        val = '!empty'
+      } else {
+        val = 'empty'
+      }
+      $("#fsr"+id).find("#fsrview").each(function(){
+        $(this).text(val)
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr"+id).find("#fsrandempty").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = $("#fsr"+id).find("#fsrview").text()
+      if (val.length==0) {
+        val = $("#"+k).val()
+      }
+      if ($("#fsr"+id).find("#fsrneg").hasClass("bgred")) {
+        val = val + '&!empty'
+      } else {
+        val = val + '&empty'
+      }
+      $("#fsr"+id).find("#fsrview").each(function(){
+        $(this).text(val)
+        $(this).addClass("highlight")
+      })
+    })
+  })
+  $("#fsr"+id).find("#fsrorempty").each(function(){
+    $(this).unbind()
+    $(this).bind("click", function(){
+      val = $("#fsr"+id).find("#fsrview").text()
+      if (val.length==0) {
+        val = $("#"+k).val()
+      }
+      if ($("#fsr"+id).find("#fsrneg").hasClass("bgred")) {
+        val = val + '|!empty'
+      } else {
+        val = val + '|empty'
+      }
+      $("#fsr"+id).find("#fsrview").each(function(){
+        $(this).text(val)
+        $(this).addClass("highlight")
+      })
+    })
+  })
+};
 </script>
