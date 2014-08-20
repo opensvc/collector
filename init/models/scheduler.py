@@ -120,6 +120,8 @@ def task_refresh_b_apps():
         db.executesql(sql)
         sql = "create table b_apps_new as select * from v_apps"
         db.executesql(sql)
+        sql = "alter table b_apps_new add key idx1 (app)"
+        db.executesql(sql)
         sql = "drop table if exists b_apps_old"
         db.executesql(sql)
         sql = "rename table b_apps to b_apps_old, b_apps_new to b_apps"
@@ -128,6 +130,8 @@ def task_refresh_b_apps():
         sql = "drop table if exists b_apps"
         db.executesql(sql)
         sql = "create table b_apps as select * from v_apps"
+        db.executesql(sql)
+        sql = "alter table b_apps add key idx1 (app)"
         db.executesql(sql)
     db.commit()
 
