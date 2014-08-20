@@ -264,7 +264,7 @@ class HtmlTable(object):
                        _class="cloud_tag",
                        _style="font-size:%d%%"%size,
                        _title="%d occurences"%n,
-                       _onclick="filter_submit_%(id)s('%(iid)s','%(val)s')"%dict(
+                       _onclick="filter_submit('%(id)s','%(iid)s','%(val)s')"%dict(
                                 id=self.id,
                                 iid=self.filter_key(c),
                                 val=s,
@@ -286,7 +286,7 @@ class HtmlTable(object):
                        s,
                        ' ',
                        _class="cloud_tag",
-                       _onclick="filter_submit_%(id)s('%(iid)s','%(val)s')"%dict(
+                       _onclick="filter_submit('%(id)s','%(iid)s','%(val)s')"%dict(
                                 id=self.id,
                                 iid=self.filter_key(c),
                                 val=self.colprops[c].get(o),
@@ -497,7 +497,7 @@ class HtmlTable(object):
                 SPAN(
                   T('Link'),
                   _title=T("Share your view using this hyperlink"),
-                  _onclick="js_link_%s()"%self.id,
+                  _onclick="""js_link("%s")"""%self.id,
                   _class='link16',
                   _id='link_'+self.id,
                 ),
@@ -507,7 +507,7 @@ class HtmlTable(object):
   if ($('textarea').is(":focus")) { return ; } ;
   if ( event.which == 108 ) {
      event.preventDefault();
-     js_link_%s();
+     js_link("%s");
    }
 });"""%self.id,
               ),
@@ -649,14 +649,14 @@ class HtmlTable(object):
             return SPAN()
 
         def set_perpage_js(n):
-            js = 'filter_submit_%(id)s("%(iid)s",%(n)s)'%dict(
+            js = 'filter_submit("%(id)s","%(iid)s",%(n)s)'%dict(
                    id=self.id,
                    iid=self.id_perpage,
                    n=n)
             return js
 
         def set_page_js(page):
-            js = 'filter_submit_%(id)s("%(iid)s",%(page)s)'%dict(
+            js = 'filter_submit("%(id)s","%(iid)s",%(page)s)'%dict(
                    id=self.id,
                    iid=self.id_page,
                    page=page)
@@ -1107,7 +1107,7 @@ class HtmlTable(object):
                           ),
                           IMG(
                             _src=URL(r=request,c='static',f='clear16.png'),
-                            _onclick="filter_submit_%(id)s('%(k)s','%(v)s')"%dict(
+                            _onclick="filter_submit('%(id)s','%(k)s','%(v)s')"%dict(
                                id=self.id,
                                k=self.filter_key(c),
                                v=self.column_filter_reset),
@@ -1448,20 +1448,6 @@ $("select:visible").combobox();
 function ajax_submit_%(id)s(){%(ajax_submit)s};
 function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
 
-function js_link_%(id)s(){
-  url=$(location).attr('href')
-  if (url.indexOf('?')>0) {
-    url=url.substring(0, url.indexOf('?'))
-  }
-  var re = /#$/;
-  url=url.replace(re, "")+"?";
-  args="clear_filters=true&discard_filters=true&dbfilter="+$("#avs%(id)s").val()
-  $("#%(id)s").find("[name=fi]").each(function(){
-    if ($(this).val().length==0) {return}
-    args=args+'&'+$(this).attr('id')+"="+encodeURIComponent($(this).val())
-  })
-  alert(url+args)
-}
 var inputs_%(id)s = %(a)s;
 bind_filter_selector("%(id)s");
 function scroll_%(id)s(){

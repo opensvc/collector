@@ -4886,4 +4886,23 @@ function filter_selector(id,e,k,v){
     })
   })
 };
+
+//
+// Table link url popup
+//
+function js_link(id){
+  url=$(location).attr('href')
+  if (url.indexOf('?')>0) {
+    url=url.substring(0, url.indexOf('?'))
+  }
+  var re = /#$/;
+  url=url.replace(re, "")+"?";
+  args="clear_filters=true&discard_filters=true&dbfilter="+$("#avs"+id).val()
+  $("#"+id).find("[name=fi]").each(function(){
+    if ($(this).val().length==0) {return}
+    args=args+'&'+$(this).attr('id')+"="+encodeURIComponent($(this).val())
+  })
+  alert(url+args)
+}
+
 </script>
