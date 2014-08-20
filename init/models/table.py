@@ -779,11 +779,8 @@ class HtmlTable(object):
             return ''
         spansum = hashlib.md5()
         for c in self.span:
-            if self.colprops[c].table is None or \
-               self.colprops[c].table not in o:
-                spansum.update(str(o[c]))
-            else:
-                spansum.update(str(o[self.colprops[c].table][c]))
+            v = self.colprops[c].get(o)
+            spansum.update(str(v))
         return spansum.hexdigest()
 
     def extra_line_key(self, o):
