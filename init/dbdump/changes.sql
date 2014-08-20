@@ -4243,3 +4243,6 @@ alter table dashboard modify column dash_env enum('PRD', 'PPRD', 'REC', 'INT', '
 
 alter table SVCactions modify column status enum('err','ok','warn', '') default '';
 
+alter table diskinfo modify column disk_devid varchar(60) default "";
+
+
