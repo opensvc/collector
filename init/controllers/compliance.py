@@ -3873,12 +3873,13 @@ class table_comp_svc_status(HtmlTable):
         self.cols = ['svc_name', 'total', 'ok', 'nok', 'na', 'obs', 'pct',
                      "svc_log"]
         self.colprops = {
-            'svc_name': col_svc(
+            'svc_name': HtmlTableColumn(
                      title='Service',
                      field='svc_name',
                      table='comp_svc_status',
                      display=True,
                      img='node16',
+                     _class='svcname',
                     ),
             'total': HtmlTableColumn(
                      title='Total',
@@ -4111,12 +4112,13 @@ class table_comp_status(HtmlTable):
                      display=True,
                      _class='nodename',
                     ),
-            'run_svcname': col_svc(
+            'run_svcname': HtmlTableColumn(
                      title='Service',
                      field='run_svcname',
                      table='comp_status',
                      img='node16',
                      display=True,
+                     _class='svcname',
                     ),
             'run_action': HtmlTableColumn(
                      title='Action',

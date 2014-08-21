@@ -93,11 +93,12 @@ class table_actions(HtmlTable):
                      display=True,
                      _class='nodename',
                     ),
-            'svcname': col_svc(
+            'svcname': HtmlTableColumn(
                      title='Service',
                      field='svcname',
                      img='svc',
                      display=True,
+                     _class='svcname',
                     ),
             'username': HtmlTableColumn(
                      title='User name',

@@ -4968,9 +4968,126 @@ function _cell_decorator_nodename(e, os_icon) {
   })
 }
 
+function cell_decorator_svcname(e) {
+  var v = $(e).attr("v")
+  if (v=="") {
+    return
+  }
+  $(e).empty()
+  $(e).append("<div>"+v+"</div>")
+  div = $(":first-child", e)
+  div.addClass("a")
+  div.addClass("nowrap")
+  $(e).click(function(){
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    url = $(location).attr("origin") + "/init/default/ajax_service?node="+v+"&rowid="+id
+    toggle_extra(url, id, e, 0)
+  })
+}
+
+function status_outdated(line) {
+  var s = line.children("[name$=mon_updated]").attr("v")
+  var d = new Date(s)
+  var now = new Date()
+  delta = now - d
+  if (delta > 15*60000) {
+    return true
+  }
+  return false
+}
+
+function cell_decorator_availstatus(e) {
+  var line = $(e).parent(".tl")
+  var mon_availstatus = $(e).attr("v")
+  if (mon_availstatus=="") {
+    return
+  }
+  $(e).empty()
+  var mon_containerstatus = line.children("[name$=mon_containerstatus]").attr("v")
+  var mon_ipstatus = line.children("[name$=mon_ipstatus]").attr("v")
+  var mon_fsstatus = line.children("[name$=mon_fsstatus]").attr("v")
+  var mon_diskstatus = line.children("[name$=mon_diskstatus]").attr("v")
+  var mon_sharestatus = line.children("[name$=mon_sharestatus]").attr("v")
+  var mon_appstatus = line.children("[name$=mon_appstatus]").attr("v")
+
+  if (status_outdated(line)) {
+    var cl_availstatus = "status_undef"
+    var cl_containerstatus = "status_undef"
+    var cl_ipstatus = "status_undef"
+    var cl_fsstatus = "status_undef"
+    var cl_diskstatus = "status_undef"
+    var cl_sharestatus = "status_undef"
+    var cl_appstatus = "status_undef"
+  } else {
+    var cl_availstatus = mon_availstatus.replace(/ /g, '_')
+    var cl_containerstatus = mon_containerstatus.replace(/ /g, '_')
+    var cl_ipstatus = mon_ipstatus.replace(/ /g, '_')
+    var cl_fsstatus = mon_fsstatus.replace(/ /g, '_')
+    var cl_diskstatus = mon_diskstatus.replace(/ /g, '_')
+    var cl_sharestatus = mon_sharestatus.replace(/ /g, '_')
+    var cl_appstatus = mon_appstatus.replace(/ /g, '_')
+  }
+  var s = "<table>"
+  s += "<tr>"
+  s += "<td colspan=6 class=\"status status_" + cl_availstatus + "\">" + mon_availstatus + "</td>"
+  s += "</tr>"
+  s += "<tr>"
+  s += "<td class=status_" + cl_containerstatus + ">vm</td>"
+  s += "<td class=status_" + cl_ipstatus + ">ip</td>"
+  s += "<td class=status_" + cl_fsstatus + ">fs</td>"
+  s += "<td class=status_" + cl_diskstatus + ">dg</td>"
+  s += "<td class=status_" + cl_sharestatus + ">share</td>"
+  s += "<td class=status_" + cl_appstatus + ">app</td>"
+  s += "</tr>"
+  s += "</table>"
+  $(e).append(s)
+}
+
+function cell_decorator_overallstatus(e) {
+  var line = $(e).parent(".tl")
+  var mon_overallstatus = $(e).attr("v")
+  if (mon_overallstatus=="") {
+    return
+  }
+  $(e).empty()
+  var mon_containerstatus = line.children("[name$=mon_containerstatus]").attr("v")
+  var mon_availstatus = line.children("[name$=mon_availstatus]").attr("v")
+  var mon_hbstatus = line.children("[name$=mon_hbstatus]").attr("v")
+  var mon_syncstatus = line.children("[name$=mon_syncstatus]").attr("v")
+
+  if (status_outdated(line)) {
+    var cl_overallstatus = "status_undef"
+    var cl_availstatus = "status_undef"
+    var cl_syncstatus = "status_undef"
+    var cl_hbstatus = "status_undef"
+  } else {
+    var cl_overallstatus = mon_overallstatus.replace(/ /g, '_')
+    var cl_availstatus = mon_availstatus.replace(/ /g, '_')
+    var cl_syncstatus = mon_sharestatus.replace(/ /g, '_')
+    var cl_hbstatus = mon_appstatus.replace(/ /g, '_')
+  }
+
+  var s = "<table>"
+  s += "<tr>"
+  s += "<td colspan=3 class=\"status status_" + cl_overallstatus + "\">" + mon_overallstatus + "</td>"
+  s += "</tr>"
+  s += "<tr>"
+  s += "<td class=status_" + cl_availstatus + ">avail</td>"
+  s += "<td class=status_" + cl_hbstatus + ">hb</td>"
+  s += "<td class=status_" + cl_syncstatus + ">sync</td>"
+  s += "</tr>"
+  s += "</table>"
+  $(e).append(s)
+}
+
 cell_decorators = {
+ "svcname": cell_decorator_svcname,
  "nodename": cell_decorator_nodename,
  "nodename_no_os": cell_decorator_nodename_no_os,
+ "availstatus": cell_decorator_availstatus,
+ "overallstatus": cell_decorator_overallstatus,
 }
 
 function cell_decorator(e) {

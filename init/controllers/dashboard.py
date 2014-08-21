@@ -718,12 +718,13 @@ class table_dashboard(HtmlTable):
                      img='action16',
                      display=True,
                     ),
-            'dash_svcname': col_svc(
+            'dash_svcname': HtmlTableColumn(
                      title='Service',
                      table='dashboard',
                      field='dash_svcname',
                      img='svc',
                      display=True,
+                     _class='svcname',
                     ),
             'dash_nodename': HtmlTableColumn(
                      title='Node',

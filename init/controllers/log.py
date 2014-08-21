@@ -119,11 +119,12 @@ class table_log(HtmlTable):
                      img='action16',
                      display=True,
                     ),
-            'log_svcname': col_svc(
+            'log_svcname': HtmlTableColumn(
                      title='Service',
                      field='log_svcname',
                      img='svc',
                      display=True,
+                     _class='svcname',
                     ),
             'log_nodename': HtmlTableColumn(
                      title='Node',

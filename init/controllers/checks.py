@@ -417,12 +417,13 @@ class table_checks(HtmlTable):
                 img = 'node16',
                 _class = 'nodename',
             ),
-            'chk_svcname': col_svc(
+            'chk_svcname': HtmlTableColumn(
                 title = 'Service',
                 field = 'chk_svcname',
                 display = True,
                 table = 'checks_live',
-                img = 'check16'
+                img = 'check16',
+                _class = 'svcname',
             ),
             'chk_type': col_chk_type(
                 title = 'Type',

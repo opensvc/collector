@@ -120,11 +120,12 @@ class table_appinfo(HtmlTable):
                      img='svc',
                      display=True,
                     ),
-            'app_svcname': col_svc(
+            'app_svcname': HtmlTableColumn(
                      title='Service',
                      field='app_svcname',
                      img='svc',
                      display=True,
+                     _class="svcname",
                     ),
             'app_nodename': HtmlTableColumn(
                      title='Node',

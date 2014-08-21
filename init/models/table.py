@@ -1926,25 +1926,6 @@ class col_containertype(HtmlTableColumn):
             )
         return d
 
-class col_svc(HtmlTableColumn):
-    def html(self, o):
-        id = self.t.extra_line_key(o)
-        s = self.get(o)
-        if s is None:
-            return ""
-        d = DIV(
-              A(
-                s,
-                _onclick="""toggle_extra('%(url)s', '%(id)s', this, %(ncols)s);"""%dict(
-                  url=URL(r=request, c='default',f='ajax_service',
-                          vars={'node': s, 'rowid': id}),
-                  id=id,
-                  ncols=len(self.t.cols),
-                ),
-              ),
-            )
-        return d
-
 class col_status(HtmlTableColumn):
     def html(self, o):
         s = self.get(o)
@@ -1959,134 +1940,6 @@ class col_status(HtmlTableColumn):
         else:
             c = 'boxed_small boxed_status boxed_status_'+s.replace(" ", "_")
         return DIV(s, _class=c)
-
-class col_availstatus(HtmlTableColumn):
-    def status_merge_down(self, s):
-        if s == 'up': return 'warn'
-        elif s == 'down': return 'down'
-        elif s == 'stdby up': return 'stdby up with down'
-        elif s == 'stdby up with up': return 'warn'
-        elif s == 'stdby up with down': return 'stdby up with down'
-        elif s == 'undef': return 'down'
-        else: return 'undef'
-
-    def status_merge_up(self, s):
-        if s == 'up': return 'up'
-        elif s == 'down': return 'warn'
-        elif s == 'stdby up': return 'stdby up with up'
-        elif s == 'stdby up with up': return 'stdby up with up'
-        elif s == 'stdby up with down': return 'warn'
-        elif s == 'undef': return 'up'
-        else: return 'undef'
-
-    def status_merge_stdby_up(self, s):
-        if s == 'up': return 'stdby up with up'
-        elif s == 'down': return 'stdby up with down'
-        elif s == 'stdby up': return 'stdby up'
-        elif s == 'stdby up with up': return 'stdby up with up'
-        elif s == 'stdby up with down': return 'stdby up with down'
-        elif s == 'undef': return 'stdby up'
-        else: return 'undef'
-
-    def get(self, o):
-        # backward compat: mon_availstatus was not always available
-        v = HtmlTableColumn.get(self, o)
-        if v != 'undef':
-            return v
-        s = 'undef'
-        for sn in ['mon_containerstatus',
-                  'mon_ipstatus',
-                  'mon_fsstatus',
-                  'mon_appstatus',
-                  'mon_sharestatus',
-                  'mon_diskstatus']:
-            if self.t.colprops[sn].get(o) in ['warn', 'stdby down', 'todo']: return 'warn'
-            elif self.t.colprops[sn].get(o) == 'undef': return 'undef'
-            elif self.t.colprops[sn].get(o) == 'n/a': continue
-            elif self.t.colprops[sn].get(o) == 'up': s = self.status_merge_up(s)
-            elif self.t.colprops[sn].get(o) == 'down': s = self.status_merge_down(s)
-            elif self.t.colprops[sn].get(o) == 'stdby up': s = self.status_merge_stdby_up(s)
-            else: return 'undef'
-        if s == 'stdby up with down':
-            s = 'stdby up'
-        elif s == 'stdby up with up':
-            s = 'up'
-        return s
-
-    def html(self, o):
-        cl = {}
-        mon_updated = self.t.colprops['mon_updated'].get(o)
-        if mon_updated is None or mon_updated < now - datetime.timedelta(minutes=15):
-            outdated = True
-        else:
-            outdated = False
-        for k in ['mon_availstatus',
-                  'mon_containerstatus',
-                  'mon_ipstatus',
-                  'mon_fsstatus',
-                  'mon_diskstatus',
-                  'mon_sharestatus',
-                  'mon_appstatus']:
-            if k == 'mon_availstatus':
-                s = self.get(o)
-                a = s
-            else:
-                s = self.t.colprops[k].get(o)
-            if s is None or outdated:
-                cl[k] = 'status_undef'
-            else:
-                cl[k] = 'status_'+s.replace(" ", "_")
-
-        t = TABLE(
-          TR(
-            TD(a,
-               _colspan=6,
-               _class='status '+cl['mon_availstatus'],
-            ),
-          ),
-          TR(
-            TD("vm", _class=cl['mon_containerstatus']),
-            TD("ip", _class=cl['mon_ipstatus']),
-            TD("fs", _class=cl['mon_fsstatus']),
-            TD("dg", _class=cl['mon_diskstatus']),
-            TD("share", _class=cl['mon_sharestatus']),
-            TD("app", _class=cl['mon_appstatus']),
-          ),
-        )
-        return t
-
-class col_overallstatus(HtmlTableColumn):
-    def html(self, o):
-        cl = {}
-        mon_updated = self.t.colprops['mon_updated'].get(o)
-        if mon_updated is None or mon_updated < now - datetime.timedelta(minutes=15):
-            outdated = True
-        else:
-            outdated = False
-        for k in ['mon_overallstatus',
-                  'mon_availstatus',
-                  'mon_hbstatus',
-                  'mon_syncstatus']:
-            s = self.t.colprops[k].get(o)
-            if s is None or outdated:
-                cl[k] = 'status_undef'
-            else:
-                cl[k] = 'status_'+s.replace(" ", "_")
-
-        t = TABLE(
-          TR(
-            TD(self.t.colprops['mon_overallstatus'].get(o),
-               _colspan=3,
-               _class='status '+cl['mon_overallstatus'],
-            ),
-          ),
-          TR(
-            TD("avail", _class=cl['mon_availstatus']),
-            TD("hb", _class=cl['mon_hbstatus']),
-            TD("sync", _class=cl['mon_syncstatus']),
-          ),
-        )
-        return t
 
 class col_env(HtmlTableColumn):
     def html(self, o):
@@ -2220,12 +2073,13 @@ svcmon_cols = [
 ]
 
 v_services_colprops = {
-    'svc_name': col_svc(
+    'svc_name': HtmlTableColumn(
              title = 'Service',
              field='svc_name',
              display = False,
              img = 'svc',
              table = 'v_services',
+             _class='svcname',
             ),
     'svc_hostid': HtmlTableColumn(
              title = 'Host id',
@@ -2397,7 +2251,7 @@ v_services_colprops = {
              img = 'svc',
              table = 'v_services',
             ),
-    'svc_envdate': col_svc(
+    'svc_envdate': HtmlTableColumn(
              title = 'Env file date',
              field='svc_envdate',
              display = False,
@@ -2424,12 +2278,13 @@ svcmon_colprops = {
              img = 'svc',
              table = 'svcmon',
             ),
-    'mon_svcname': col_svc(
+    'mon_svcname': HtmlTableColumn(
              title = 'Service',
              field='mon_svcname',
              display = False,
              img = 'svc',
              table = 'svcmon',
+             _class = 'svcname',
             ),
     'mon_nodname': HtmlTableColumn(
              title = 'Node',
@@ -2446,12 +2301,13 @@ svcmon_colprops = {
              img = 'svc',
              table = 'svcmon',
             ),
-    'mon_overallstatus': col_overallstatus(
+    'mon_overallstatus': HtmlTableColumn(
              title = 'Status',
              field='mon_overallstatus',
              display = False,
              img = 'svc',
              table = 'svcmon',
+             _class='overallstatus',
             ),
     'mon_changed': HtmlTableColumn(
              title = 'Last status change',
@@ -2482,12 +2338,13 @@ svcmon_colprops = {
              img = 'svc',
              table = 'svcmon',
             ),
-    'mon_availstatus': col_availstatus(
+    'mon_availstatus': HtmlTableColumn(
              title = 'Availability status',
              field='mon_availstatus',
              display = True,
              img = 'svc',
              table = 'svcmon',
+             _class = 'availstatus',
             ),
     'mon_ipstatus': col_status(
              title = 'Ip status',
@@ -3196,12 +3053,13 @@ disk_app_colprops = {
              display=True,
              _dataclass="bluer",
             ),
-    'disk_svcname': col_svc(
+    'disk_svcname': HtmlTableColumn(
              title='Service',
              table='b_disk_app',
              field='disk_svcname',
              img='svc',
              display=True,
+             _class = 'svcname',
             ),
     'disk_nodename': HtmlTableColumn(
              title='Nodename',

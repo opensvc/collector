@@ -98,12 +98,13 @@ class table_saves(HtmlTable):
                      display=True,
                      _class='nodename',
                     ),
-            'save_svcname': col_svc(
+            'save_svcname': HtmlTableColumn(
                      title='Service',
                      table='saves',
                      field='save_svcname',
                      img='save16',
                      display=True,
+                     _class='svcname',
                     ),
             'save_app': HtmlTableColumn(
                      title='App',

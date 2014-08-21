@@ -28,12 +28,13 @@ class table_resmon(HtmlTable):
                 self.cols.append(col)
         self.colprops = v_nodes_colprops
         self.colprops.update({
-            'svcname': col_svc(
+            'svcname': HtmlTableColumn(
                      title='Service',
                      table='resmon',
                      field='svcname',
                      img='svc16',
                      display=True,
+                     _class='svcname',
                     ),
             'nodename': HtmlTableColumn(
                      title='Nodename',

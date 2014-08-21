@@ -351,12 +351,13 @@ class table_actions(HtmlTable):
                      'acked_comment',
                     ]
         self.colprops = {
-            'svcname': col_svc(
+            'svcname': HtmlTableColumn(
                 title = 'Service',
                 table = 'v_svcactions',
                 field='svcname',
                 display = True,
                 img = 'svc',
+                _class = 'svcname',
             ),
             'hostname': HtmlTableColumn(
                 title = 'Node name',
