@@ -481,8 +481,6 @@ class table_actions(HtmlTable):
         ncols.remove('power_breaker2')
         ncols.remove('status')
         self.cols += ncols
-        self.cols.append('responsibles')
-        self.cols.append('mailto')
         for c in self.cols:
             self.colprops[c].t = self
         self.ajax_col_values = 'ajax_actions_col_values'
@@ -630,7 +628,7 @@ def ajax_actions():
             limitby = (t.pager_start,t.pager_end)
         else:
             limitby = (0, 500)
-        t.object_list = db(q).select(limitby=limitby, orderby=o, cacheable=False)
+        t.object_list = db(q).select(limitby=limitby, orderby=o, cacheable=True)
         t.set_column_visibility()
         return TABLE(t.table_lines()[0])
 

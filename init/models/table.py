@@ -2047,8 +2047,6 @@ v_services_cols = [
     'svc_comment',
     'svc_created',
     'svc_updated',
-    'responsibles',
-    'mailto'
 ]
 
 svcmon_cols = [
