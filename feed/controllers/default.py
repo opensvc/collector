@@ -67,7 +67,7 @@ def delete_service_list(hostid=None, svcnames=[], auth=("", "")):
 @service.xmlrpc
 def begin_action(vars, vals, auth):
     scheduler.queue_task("_action_wrapper", ["_begin_action", vars, vals, auth],
-                         immediate=True, group_name="actions")
+                         group_name="actions")
 
 @auth_uuid
 @service.xmlrpc
@@ -84,7 +84,7 @@ def res_action(vars, vals, auth):
 @service.xmlrpc
 def end_action(vars, vals, auth):
     scheduler.queue_task("_action_wrapper", ["_end_action", vars, vals, auth],
-                         immediate=True, group_name="actions")
+                         group_name="actions")
 
 @auth_uuid
 @service.xmlrpc
@@ -116,25 +116,25 @@ def update_appinfo(vars, vals, auth):
 @service.xmlrpc
 def update_service(vars, vals, auth):
     scheduler.queue_task("_update_service", [vars, vals, auth],
-                         immediate=True, group_name="fast")
+                         group_name="fast")
 
 @auth_uuid
 @service.xmlrpc
 def push_checks(vars, vals, auth):
     scheduler.queue_task("_push_checks", [vars, vals],
-                         immediate=True, group_name="fast")
+                         group_name="fast")
 
 @auth_uuid
 @service.xmlrpc
 def insert_generic(data, auth):
     scheduler.queue_task("_insert_generic", [data, auth],
-                         immediate=True, group_name="fast")
+                         group_name="fast")
 
 @auth_uuid
 @service.xmlrpc
 def update_asset(vars, vals, auth):
     scheduler.queue_task("_update_asset", [vars, vals, auth],
-                         immediate=True, group_name="fast")
+                         group_name="fast")
 
 @auth_uuid
 @service.xmlrpc
@@ -156,7 +156,7 @@ def resmon_update(vars, vals, auth):
 def svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
     scheduler.queue_task("_svcmon_update_combo",
                          [g_vars, g_vals, r_vars, r_vals, auth],
-                         immediate=True, group_name="fast")
+                         group_name="fast")
 
 @auth_uuid
 @service.xmlrpc
@@ -361,19 +361,19 @@ def insert_stats(data, auth):
             vals = vals[max:]
         generic_insert('stats_'+stat, vars, vals)
     scheduler.queue_task("update_dash_netdev_errors" , [auth[1]],
-                         immediate=True, group_name="slow")
+                         group_name="slow")
 
 @auth_uuid
 @service.xmlrpc
 def insert_pkg(vars, vals, auth):
     scheduler.queue_task("_insert_pkg", [vars, vals, auth],
-                         immediate=True, group_name="slow")
+                         group_name="slow")
 
 @auth_uuid
 @service.xmlrpc
 def insert_patch(vars, vals, auth):
     scheduler.queue_task("_insert_patch", [vars, vals, auth],
-                         immediate=True, group_name="slow")
+                         group_name="slow")
 
 @auth_uuid
 @service.xmlrpc
@@ -458,7 +458,7 @@ def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
             pass
 
     #fn(arrayid)
-    scheduler.queue_task(fn.__name__, [arrayid, auth[1]], immediate=True, group_name="slow", timeout=600)
+    scheduler.queue_task(fn.__name__, [arrayid, auth[1]], group_name="slow", timeout=600)
 
     # stor_array_proxy
     insert_array_proxy(auth[1], arrayid)
@@ -572,7 +572,7 @@ def register_node(node):
 @service.xmlrpc
 def svcmon_update(vars, vals, auth):
     scheduler.queue_task("_svcmon_update", [vars, vals, auth],
-                         immediate=True, group_name="fast")
+                         group_name="fast")
 
 
 #
