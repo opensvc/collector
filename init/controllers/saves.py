@@ -75,12 +75,13 @@ class table_saves(HtmlTable):
         self.cols += v_nodes_cols
         self.colprops = v_nodes_colprops
         self.colprops.update({
-            'save_server': col_node(
+            'save_server': HtmlTableColumn(
                      title='Server',
                      table='saves',
                      field='save_server',
                      img='save16',
                      display=True,
+                     _class='nodename_no_os',
                     ),
             'save_id': HtmlTableColumn(
                      title='Id',
@@ -89,12 +90,13 @@ class table_saves(HtmlTable):
                      img='save16',
                      display=False,
                     ),
-            'save_nodename': col_node(
+            'save_nodename': HtmlTableColumn(
                      title='Nodename',
                      table='saves',
                      field='save_nodename',
                      img='node16',
                      display=True,
+                     _class='nodename',
                     ),
             'save_svcname': col_svc(
                      title='Service',

@@ -358,12 +358,13 @@ class table_actions(HtmlTable):
                 display = True,
                 img = 'svc',
             ),
-            'hostname': col_node(
+            'hostname': HtmlTableColumn(
                 title = 'Node name',
                 table = 'v_svcactions',
                 field='hostname',
                 display = True,
                 img = 'node16',
+                _class = 'nodename',
             ),
             'pid': col_pid(
                 title = 'Pid',

@@ -35,19 +35,21 @@ class table_resmon(HtmlTable):
                      img='svc16',
                      display=True,
                     ),
-            'nodename': col_node(
+            'nodename': HtmlTableColumn(
                      title='Nodename',
                      table='resmon',
                      field='nodename',
                      img='hw16',
                      display=True,
+                     _class='nodename',
                     ),
-            'vmname': col_node(
+            'vmname': HtmlTableColumn(
                      title='Container name',
                      table='resmon',
                      field='vmname',
                      img='svc16',
                      display=True,
+                     _class='nodename_no_os',
                     ),
             'rid': HtmlTableColumn(
                      title='Resource id',

@@ -634,7 +634,8 @@ function ajax_table_refresh(url, id) {
              $("#table_"+id).find(".deleteme").remove()
 
              restripe_table_lines(id)
-             bind_filter_selector(id);
+             bind_filter_selector(id)
+             table_cell_decorator(id)
 	     $("#refresh_"+id).removeClass("spinner")
 
              // clear mem refs
@@ -723,7 +724,8 @@ function ajax_table_insert_line(url, id, data) {
              //sort_table(id)
              trim_table(id)
              restripe_table_lines(id)
-             bind_filter_selector(id);
+             bind_filter_selector(id)
+             table_cell_decorator(id)
 
              $(".highlight").each(function(){
                 $(this).removeClass("highlight")
@@ -771,6 +773,9 @@ function table_ajax_submit(url, id, inputs, additional_inputs, input_name, addit
 }
 function toggle_extra(url, id, e, ncols) {
     line=$(e).parents(".tl")
+    if (ncols==0) {
+        ncols = line.children("[cell=1]").length
+    }
     if (line.next().children("#"+id).attr("id")!=id) {
         line.after("<tr><td id="+id+" colspan="+ncols+" style='display:none'></td></tr>")
         $("#"+id).toggleClass("spinner")
@@ -4903,6 +4908,90 @@ function js_link(id){
     args=args+'&'+$(this).attr('id')+"="+encodeURIComponent($(this).val())
   })
   alert(url+args)
+}
+
+//
+// cell decorators
+//
+
+os_class_h = {
+  'darwin': 'os_darwin',
+  'linux': 'os_linux',
+  'hp-ux': 'os_hpux',
+  'osf1': 'os_tru64',
+  'opensolaris': 'os_opensolaris',
+  'solaris': 'os_solaris',
+  'sunos': 'os_solaris',
+  'freebsd': 'os_freebsd',
+  'aix': 'os_aix',
+  'windows': 'os_win',
+  'vmware': 'os_vmware',
+}
+
+function cell_decorator_nodename(e) {
+  _cell_decorator_nodename(e, true)
+}
+
+function cell_decorator_nodename_no_os(e) {
+  _cell_decorator_nodename(e, false)
+}
+
+function _cell_decorator_nodename(e, os_icon) {
+  var v = $(e).attr("v")
+  if (v=="") {
+    return
+  }
+  $(e).empty()
+  $(e).append("<div>"+v+"</div>")
+  div = $(":first-child", e)
+  div.addClass("a")
+  div.addClass("nowrap")
+  if (os_icon) {
+    try {
+      os_cell = $(e).parent().children(".os_name")
+      os_c = os_class_h[os_cell.attr("v").toLowerCase()]
+      div.addClass(os_c)
+    } catch(e) {}
+  }
+  try {
+    svc_autostart_cell = $(e).parent().children(".svc_autostart")
+    if (svc_autostart_cell.attr("v") == v) {
+      div.addClass("b")
+    }
+  } catch(e) {}
+  $(e).click(function(){
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    url = $(location).attr("origin") + "/init/ajax_node/ajax_node?node="+v+"&rowid="+id
+    toggle_extra(url, id, e, 0)
+  })
+}
+
+cell_decorators = {
+ "nodename": cell_decorator_nodename,
+ "nodename_no_os": cell_decorator_nodename_no_os,
+}
+
+function cell_decorator(e) {
+  var cl = $(e).attr('class')
+  if (!cl) {
+    return
+  }
+  cl = cl.split(/\s+/)
+  for (i=0; i<cl.length; i++) {
+    c = cl[i]
+    if (!(c in cell_decorators)) {
+      continue
+    }
+    cell_decorators[c](e)
+  }
+}
+
+function table_cell_decorator(id) {
+  $("#"+id).find("[cell=1]").each(function(){
+    cell_decorator(this)
+  })
 }
 
 </script>

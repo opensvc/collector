@@ -125,11 +125,12 @@ class table_log(HtmlTable):
                      img='svc',
                      display=True,
                     ),
-            'log_nodename': col_node(
+            'log_nodename': HtmlTableColumn(
                      title='Node',
                      field='log_nodename',
                      img='node16',
                      display=True,
+                     _class='nodename',
                     ),
             'log_user': HtmlTableColumn(
                      title='User',

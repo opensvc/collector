@@ -158,12 +158,15 @@ class table_nodes(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['nodename']+v_nodes_cols
         self.colprops = v_nodes_colprops
+        self.span = ["nodename"]
+        self.keys = ["nodename"]
         self.colprops.update({
-            'nodename': col_node(
+            'nodename': HtmlTableColumn(
                      title='Nodename',
                      field='nodename',
                      img='node16',
                      display=True,
+                     _class='nodename',
                     ),
         })
         for c in self.cols:

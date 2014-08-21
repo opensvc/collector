@@ -725,12 +725,13 @@ class table_dashboard(HtmlTable):
                      img='svc',
                      display=True,
                     ),
-            'dash_nodename': col_node(
+            'dash_nodename': HtmlTableColumn(
                      title='Node',
                      table='dashboard',
                      field='dash_nodename',
                      img='node16',
                      display=True,
+                     _class='nodename',
                     ),
             'dash_entry': col_dash_entry(
                      title='Alert',

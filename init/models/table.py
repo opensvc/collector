@@ -1423,6 +1423,7 @@ class HtmlTable(object):
               DIV(XML('&nbsp;'), _class='spacer'),
               SCRIPT(
                 """
+table_cell_decorator("%(id)s")
 $("input").each(function(){
  attr = $(this).attr('id')
  if ( typeof(attr) == 'undefined' || attr == false ) {return}
@@ -1925,36 +1926,6 @@ class col_containertype(HtmlTableColumn):
             )
         return d
 
-class col_node(HtmlTableColumn):
-    def html(self, o):
-        id = self.t.extra_line_key(o)
-        s = self.get(o)
-        if s is None or len(s) == 0:
-            return ''
-        if 'svc_autostart' in self.t.cols and \
-           self.t.colprops['svc_autostart'].get(o) == s:
-            c = 'font-weight: bold'
-        else:
-            c = ''
-        if 'os_name' in self.t.colprops:
-            _class = node_class(self.t.colprops['os_name'].get(o))
-        else:
-            _class = ''
-        d = DIV(
-              A(
-                s,
-                _onclick="toggle_extra('%(url)s', '%(id)s', this, %(ncols)s);"%dict(
-                  url=URL(r=request, c='ajax_node',f='ajax_node',
-                          vars={'node': s, 'rowid': id}),
-                  id=id,
-                  ncols=len(self.t.cols),
-                ),
-                _style=c,
-              ),
-              _class=' '.join((_class, 'nowrap')),
-            )
-        return d
-
 class col_svc(HtmlTableColumn):
     def html(self, o):
         id = self.t.extra_line_key(o)
@@ -2312,12 +2283,13 @@ v_services_colprops = {
              img = 'svc',
              table = 'v_services',
             ),
-    'svc_autostart': col_node(
+    'svc_autostart': HtmlTableColumn(
              title = 'Primary node',
              field='svc_autostart',
              display = False,
              img = 'svc',
              table = 'v_services',
+             _class = 'svc_autostart',
             ),
     'svc_nodes': HtmlTableColumn(
              title = 'Nodes',
@@ -2326,12 +2298,13 @@ v_services_colprops = {
              img = 'svc',
              table = 'v_services',
             ),
-    'svc_drpnode': col_node(
+    'svc_drpnode': HtmlTableColumn(
              title = 'DRP node',
              field='svc_drpnode',
              display = False,
              img = 'svc',
              table = 'v_services',
+             _class = 'nodename_no_os',
             ),
     'svc_drpnodes': HtmlTableColumn(
              title = 'DRP nodes',
@@ -2458,12 +2431,13 @@ svcmon_colprops = {
              img = 'svc',
              table = 'svcmon',
             ),
-    'mon_nodname': col_node(
+    'mon_nodname': HtmlTableColumn(
              title = 'Node',
              field='mon_nodname',
              display = False,
              img = 'node16',
              table = 'svcmon',
+             _class = 'nodename',
             ),
     'mon_svctype': col_env(
              title = 'Service type',
@@ -2564,12 +2538,13 @@ svcmon_colprops = {
              img = 'svc',
              table = 'svcmon',
             ),
-    'mon_vmname': col_node(
+    'mon_vmname': HtmlTableColumn(
              title = 'Container name',
              field='mon_vmname',
              display = True,
              img = 'svc',
              table = 'svcmon',
+             _class = 'nodename_no_os',
             ),
     'mon_vmtype': HtmlTableColumn(
              title = 'Container type',
@@ -2694,6 +2669,7 @@ v_nodes_colprops = {
              display = False,
              img = 'os16',
              table = 'v_nodes',
+             _class = 'os_name',
             ),
     'os_release': HtmlTableColumn(
              title = 'OS release',
@@ -2793,12 +2769,13 @@ v_nodes_colprops = {
              img = 'mem16',
              table = 'v_nodes',
             ),
-    'nodename': col_node(
+    'nodename': HtmlTableColumn(
              title = 'Node name',
              field='nodename',
              display = False,
              img = 'node16',
              table = 'v_nodes',
+             _class="nodename",
             ),
     'version': HtmlTableColumn(
              title = 'Agent version',
@@ -3046,6 +3023,7 @@ node_hba_colprops = {
              field='nodename',
              img='hw16',
              display=True,
+             _class="nodename",
             ),
     'hba_id': HtmlTableColumn(
              title='Hba id',
@@ -3225,12 +3203,13 @@ disk_app_colprops = {
              img='svc',
              display=True,
             ),
-    'disk_nodename': col_node(
+    'disk_nodename': HtmlTableColumn(
              title='Nodename',
              table='b_disk_app',
              field='disk_nodename',
              img='hw16',
              display=True,
+             _class="nodename",
             ),
     'disk_used': col_size_mb(
              title='Disk Used',

@@ -409,12 +409,13 @@ class table_checks(HtmlTable):
                      'chk_type',
                      'chk_instance']
         self.colprops = {
-            'chk_nodename': col_node(
+            'chk_nodename': HtmlTableColumn(
                 title = 'Nodename',
                 field = 'chk_nodename',
                 display = True,
                 table = 'checks_live',
-                img = 'node16'
+                img = 'node16',
+                _class = 'nodename',
             ),
             'chk_svcname': col_svc(
                 title = 'Service',

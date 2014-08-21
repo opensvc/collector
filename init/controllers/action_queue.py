@@ -86,11 +86,12 @@ class table_actions(HtmlTable):
                      img='time16',
                      display=True,
                     ),
-            'nodename': col_node(
+            'nodename': HtmlTableColumn(
                      title='Nodename',
                      field='nodename',
                      img='hw16',
                      display=True,
+                     _class='nodename',
                     ),
             'svcname': col_svc(
                      title='Service',

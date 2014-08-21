@@ -7,24 +7,6 @@ def outdated(t):
      if t < deadline: return True
      return False
 
-class col_node(HtmlTableColumn):
-    def html(self, o):
-        id = self.t.extra_line_key(o)
-        s = self.get(o)
-        _class = node_class(o.v_nodes.os_name)
-        d = DIV(
-              A(
-                s,
-                _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
-                  url=URL(r=request, c='ajax_node',f='ajax_node',
-                          vars={'node': s, 'rowid': id}),
-                  id=id,
-                ),
-              ),
-              _class=_class,
-            )
-        return d
-
 class col_updated(HtmlTableColumn):
     def html(self, o):
        d = self.get(o)
@@ -47,12 +29,13 @@ class table_patches(HtmlTable):
                       'patch_updated']
         self.colprops = v_nodes_colprops
         self.colprops.update({
-            'nodename': col_node(
+            'nodename': HtmlTableColumn(
                      title='Nodename',
                      table='v_nodes',
                      field='nodename',
                      img='node16',
                      display=True,
+                     _class='nodename',
                     ),
             'patch_num': HtmlTableColumn(
                      title='Patchnum',
