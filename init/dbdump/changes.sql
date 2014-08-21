@@ -4245,4 +4245,5 @@ alter table SVCactions modify column status enum('err','ok','warn', '') default 
 
 alter table diskinfo modify column disk_devid varchar(60) default "";
 
+alter table services add key services_svc_app (svc_app);
 
