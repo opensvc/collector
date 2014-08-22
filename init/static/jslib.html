@@ -5090,25 +5090,17 @@ cell_decorators = {
  "overallstatus": cell_decorator_overallstatus,
 }
 
-function cell_decorator(e) {
-  var cl = $(e).attr('class')
-  if (!cl) {
-    return
-  }
-  cl = cl.split(/\s+/)
-  for (i=0; i<cl.length; i++) {
-    c = cl[i]
-    if (!(c in cell_decorators)) {
+function table_cell_decorator(id) {
+  for (var c in cell_decorators) {
+    if (!cell_decorators.hasOwnProperty(c)) {
       continue
     }
-    cell_decorators[c](e)
+    $("#"+id).find("[cell=1]."+c).each(function(){
+      try {
+        cell_decorators[c](this)
+      } catch(e) {}
+    })
   }
-}
-
-function table_cell_decorator(id) {
-  $("#"+id).find("[cell=1]").each(function(){
-    cell_decorator(this)
-  })
 }
 
 </script>
