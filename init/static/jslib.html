@@ -5011,7 +5011,7 @@ function cell_decorator_svcname(e) {
 }
 
 function status_outdated(line) {
-  var s = line.children("[name$=mon_updated]").attr("v")
+  var s = line.children("[name$=mon_updated]").attr("v").replace(/ /, "T")
   var d = new Date(s)
   var now = new Date()
   delta = now - d
