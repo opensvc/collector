@@ -206,13 +206,13 @@ def ajax_saves():
 
     if len(request.args) == 1 and request.args[0] == 'line':
         if request.vars.volatile_filters is None:
-            t.setup_pager(-1)
+            n = db(q).count()
             limitby = (t.pager_start,t.pager_end)
         else:
+            n = 0
             limitby = (0, 500)
         t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False, left=left)
-        t.set_column_visibility()
-        return TABLE(t.table_lines()[0])
+        return t.table_lines_data(n)
 
     t.csv_q = q
     t.csv_orderby = o

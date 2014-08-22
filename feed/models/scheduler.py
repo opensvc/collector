@@ -3199,7 +3199,7 @@ def update_dash_netdev_errors(nodename):
     now = datetime.datetime.now()
     now -= datetime.timedelta(microseconds=now.microsecond)
     sql = """select dev, sum(rxerrps+txerrps+collps+rxdropps+rxdropps) as errs
-               from stats_netdev_err
+               from stats_netdev_err_hour
                where
                  nodename = "%(nodename)s" and
                  date > date_sub(now(), interval 1 day)

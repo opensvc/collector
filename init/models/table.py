@@ -119,6 +119,7 @@ class HtmlTable(object):
         self.func = func
         self.ajax_col_values = func
         self.line_count = 0
+        self.max_live_perpage = 50
         self.id_perpage = '_'.join((self.id, 'perpage'))
         self.id_page = '_'.join((self.id, 'page'))
         self.upc_table = self.id
@@ -189,7 +190,7 @@ class HtmlTable(object):
                 t.add(self.colprops[c].table)
         return t
 
-    def setup_pager(self, n=0):
+    def setup_pager(self, n=0, max_perpage=500):
         """ pass n=-1 to display a simple pager
             to use when computing the total records number is too costly
         """
@@ -212,6 +213,8 @@ class HtmlTable(object):
                     self.perpage = db(q).select(cacheable=True).first().perpage
                 except:
                     self.perpage = 20
+            if self.perpage > max_perpage:
+                self.perpage = max_perpage
 
             if self.id_page in request.vars:
                 self.page = int(request.vars[self.id_page])
@@ -226,7 +229,7 @@ class HtmlTable(object):
                 self.pager_start = (self.page-1) * self.perpage
                 if self.totalrecs > 0 and self.pager_start > self.totalrecs:
                     self.pager_start = 0
-                self.pager_end = self.pager_start + self.perpage - 1
+                self.pager_end = self.pager_start + self.perpage
         else:
             self.perpage = 0
             self.page = 0
@@ -650,104 +653,36 @@ class HtmlTable(object):
             )
         return d
 
+    def pager_info(self):
+        d = {
+          'perpage': self.perpage,
+          'total': self.totalrecs,
+          'start': self.pager_start,
+          'end': self.pager_end,
+          'page': self.page,
+        }
+        return d
+
+    def table_lines_data(self, n=0):
+        wsenabled = self.get_wsenabled()
+        if wsenabled == 'on' and self.perpage > self.max_live_perpage:
+            max_perpage = self.max_live_perpage
+        else:
+            max_perpage = 500
+        self.setup_pager(n, max_perpage=max_perpage)
+        self.set_column_visibility()
+        d = {
+          'wsenabled': wsenabled,
+          'pager': self.pager_info(),
+          'table_lines': TABLE(self.table_lines()[0]).xml(),
+        }
+        return json.dumps(d)
+
     def pager(self):
         if not self.pageable:
             return SPAN()
 
-        def set_perpage_js(n):
-            js = 'filter_submit("%(id)s","%(iid)s",%(n)s)'%dict(
-                   id=self.id,
-                   iid=self.id_perpage,
-                   n=n)
-            return js
-
-        def set_page_js(page):
-            js = 'filter_submit("%(id)s","%(iid)s",%(page)s)'%dict(
-                   id=self.id,
-                   iid=self.id_page,
-                   page=page)
-            return js
-
-        start = 0
-        end = 0
-
-        if self.totalrecs == 0:
-            return DIV("No records found matching filters", _class='floatw')
-        if self.perpage <= 0:
-            return DIV(
-                     A(
-                       T('Enable paging'),
-                       _onclick=set_perpage_js(20)+set_page_js(1),
-                     ),
-                     _class='floatw',
-                   )
-        if self.totalrecs == default_max_lines or self.totalrecs < 0:
-            # unknown total pages. arbitrary high value.
-            totalpages = 999999
-        else:
-            totalpages = self.totalrecs / self.perpage
-            if self.totalrecs % self.perpage > 0:
-                totalpages = totalpages + 1
-
-        # out of range conditions
-        page = self.page
-        if page <= 0:
-            page = 1
-        if page > totalpages:
-            page = 1
-        start = (page-1) * self.perpage
-        end = start + self.perpage
-        if end > self.totalrecs and self.totalrecs != default_max_lines and self.totalrecs > 0:
-            end = self.totalrecs
-
-        if self.totalrecs >= 0:
-            total = "/%d%s"%(self.totalrecs, self.overlimit)
-        else:
-            total = ""
-
-        pager = []
-        if page != 1:
-            pager.append(A(
-                           '<< ',
-                           _class="current_page",
-                           _onclick=set_page_js(page-1),
-                         ))
-        pager.append(A(
-                      '%d-%d%s '%(start+1, end, total),
-                       _class="current_page",
-                       _onclick="""click_toggle_vis(event, '%(div)s','block');"""%dict(
-                          div='perpage',
-                       ),
-                     ))
-        opts_v = [20, 50, 100, 500]
-        opts = []
-        for o in opts_v:
-            if self.perpage == o:
-                c = 'current_page'
-            else:
-                c = ''
-            opts.append(SPAN(
-                          A(
-                            o,
-                            _class=c,
-                            _onclick=set_perpage_js(o)
-                          ),
-                          BR(),
-                        ))
-        pager.append(DIV(
-                       SPAN(opts),
-                       _name='perpage',
-                       _class='white_float',
-                       _style='max-width:50%;display:none;text-align:right;',
-                     ))
-        if page != totalpages:
-            pager.append(A(
-                           '>> ',
-                           _class="current_page",
-                           _onclick=set_page_js(page+1),
-                         ))
-
-        nav = DIV(pager, _class='floatw')
+        nav = DIV(_class='pager floatw')
 
         return nav
 
@@ -1043,6 +978,10 @@ class HtmlTable(object):
         else:
             object_list = self.object_list
 
+        if self.nodatabanner and len(object_list) == 0:
+            lines.append(TR(TD(T("no data"), _colspan=len(self.cols)), _class="tl nodataline"))
+            return lines, 0
+
         for i in object_list:
             if isinstance(i, str) or isinstance(i, unicode) or isinstance(i, int):
                 o = self.object_list[i]
@@ -1258,17 +1197,23 @@ class HtmlTable(object):
             )
         return d
 
-    def wsswitch(self):
-        if not self.wsable:
-            return SPAN()
+    def get_wsenabled(self):
+        if hasattr(self, "wsenabled"):
+            return self.wsenabled
         q = db.user_prefs_columns.upc_table == self.upc_table
         q &= db.user_prefs_columns.upc_field == "wsenabled"
         q &= db.user_prefs_columns.upc_user_id == auth.user_id
         row = db(q).select(db.user_prefs_columns.upc_visible, cacheable=False).first()
         if row is None or row.upc_visible == 1:
-            wsenabled = 'on'
+            self.wsenabled = 'on'
         else:
-            wsenabled = ''
+            self.wsenabled = ''
+        return self.wsenabled
+
+    def wsswitch(self):
+        if not self.wsable:
+            return SPAN()
+        wsenabled = self.get_wsenabled()
         js ="""ajax("%(url)s/%(table)s/wsenabled/"+this.checked, [], "set_col_dummy");
             """%dict(url=URL(r=request,c='ajax',f='ajax_set_user_prefs_column2'),
                      table= self.upc_table,
@@ -1364,13 +1309,15 @@ class HtmlTable(object):
 
         if len(lines) > 0:
             table_lines += lines
-        elif self.nodatabanner:
-            table_lines.append(T("no data"))
 
         table_attrs = dict(
           _id="table_"+self.id,
           _order=",".join(self.order),
-          _perpage=self.perpage,
+          _pager_perpage=self.perpage,
+          _pager_page=self.page,
+          _pager_start=self.pager_start,
+          _pager_end=self.pager_end,
+          _pager_total=self.totalrecs,
         )
         d = DIV(
               self.show_flash(),
@@ -1500,6 +1447,7 @@ $(".down16,.right16").click(function() {
   scroll_%(id)s()
 })
 scroll_%(id)s()
+table_pager("%(id)s")
 restripe_table_lines("%(id)s")
 """%dict(
                    id=self.id,

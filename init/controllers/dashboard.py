@@ -834,13 +834,12 @@ def ajax_dashboard():
     if len(request.args) == 1 and request.args[0] == 'line':
         if request.vars.volatile_filters is None:
             n = db(q).select(db.dashboard.id.count()).first()(db.dashboard.id.count())
-            t.setup_pager(n)
             limitby = (t.pager_start,t.pager_end)
         else:
+            n = 0
             limitby = (0, 500)
         t.object_list = db(q).select(orderby=o, cacheable=False, limitby=limitby)
-        t.set_column_visibility()
-        return TABLE(t.table_lines()[0])
+        return t.table_lines_data(n)
 
     n = db(q).select(db.dashboard.id.count()).first()(db.dashboard.id.count())
     t.setup_pager(n)

@@ -391,9 +391,10 @@ def ajax_obs():
 
     if len(request.args) == 1 and request.args[0] == 'line':
         if request.vars.volatile_filters is None:
-            t.setup_pager(-1)
+            n = len(db(q).select(db.obsolescence.id, groupby=g))
             limitby = (t.pager_start,t.pager_end)
         else:
+            n = 0
             limitby = (0, 500)
         t.object_list = db(q).select(db.obsolescence.ALL,
                                      db.v_nodes.id.count(),
@@ -401,8 +402,7 @@ def ajax_obs():
                                      groupby=g,
                                      limitby=limitby,
                                     )
-        t.set_column_visibility()
-        return TABLE(t.table_lines()[0])
+        return t.table_lines_data(n)
 
     n = len(db(q).select(db.obsolescence.id, groupby=g))
     t.setup_pager(n)

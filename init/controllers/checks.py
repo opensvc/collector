@@ -915,13 +915,12 @@ def ajax_checks():
     if len(request.args) == 1 and request.args[0] == 'line':
         if request.vars.volatile_filters is None:
             n = db(q).select(db.checks_live.id.count(), left=l).first()(db.checks_live.id.count())
-            t.setup_pager(n)
             limitby = (t.pager_start,t.pager_end)
         else:
+            n = 0
             limitby = (0, 500)
         t.object_list = db(q).select(limitby=limitby, orderby=o, cacheable=False, left=l)
-        t.set_column_visibility()
-        return TABLE(t.table_lines()[0])
+        return t.table_lines_data(n)
 
     n = db(q).select(db.checks_live.id.count(), left=l).first()(db.checks_live.id.count())
     t.setup_pager(n)

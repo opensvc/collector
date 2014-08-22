@@ -625,13 +625,13 @@ def ajax_quota():
 
     if len(request.args) == 1 and request.args[0] == 'line':
         if request.vars.volatile_filters is None:
-            t.setup_pager(-1)
+            n = len(db(q).select(cacheable=True))
             limitby = (t.pager_start,t.pager_end)
         else:
+            n = 0
             limitby = (0, 500)
         t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False)
-        t.set_column_visibility()
-        return TABLE(t.table_lines()[0])
+        return t.table_lines_data(n)
 
     n = len(db(q).select(cacheable=True))
     t.setup_pager(n)
@@ -1357,13 +1357,13 @@ def ajax_disks():
 
     if len(request.args) == 1 and request.args[0] == 'line':
         if request.vars.volatile_filters is None:
-            t.setup_pager(-1)
+            n = db(q).select(db.b_disk_app.id.count(), cacheable=True, left=(l1,l2)).first()._extra[db.b_disk_app.id.count()]
             limitby = (t.pager_start,t.pager_end)
         else:
+            n = 0
             limitby = (0, 500)
         t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False, left=(l1,l2))
-        t.set_column_visibility()
-        return TABLE(t.table_lines()[0])
+        return t.table_lines_data(n)
 
     n = db(q).select(db.b_disk_app.id.count(), cacheable=True, left=(l1,l2)).first()._extra[db.b_disk_app.id.count()]
     t.setup_pager(n)

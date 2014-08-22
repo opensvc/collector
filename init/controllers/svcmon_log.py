@@ -1127,13 +1127,11 @@ def ajax_svcmon_log():
 
     if len(request.args) == 1 and request.args[0] == 'line':
         if request.vars.volatile_filters is None:
-            t.setup_pager(-1)
             limitby = (t.pager_start,t.pager_end)
         else:
             limitby = (0, 500)
         t.object_list = db(q).select(orderby=o, limitby=limitby)
-        t.set_column_visibility()
-        return TABLE(t.table_lines()[0])
+        return t.table_lines_data(-1)
 
     t.setup_pager(-1)
     t.object_list = db(q).select(orderby=o, limitby=(t.pager_start,t.pager_end))

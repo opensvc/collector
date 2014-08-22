@@ -1956,13 +1956,13 @@ def ajax_comp_rulesets():
         return v.csv()
     if len(request.args) == 1 and request.args[0] == 'line':
         if request.vars.volatile_filters is None:
-            v.setup_pager(-1)
+            n = db(q).count()
             limitby = (v.pager_start,v.pager_end)
         else:
+            n = 0
             limitby = (0, 500)
         v.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False)
-        v.set_column_visibility()
-        return TABLE(v.table_lines()[0])
+        return v.table_lines_data(n)
 
     n = db(q).count()
     v.setup_pager(n)
@@ -2816,13 +2816,13 @@ def ajax_comp_filters():
 
     if len(request.args) == 1 and request.args[0] == 'line':
         if request.vars.volatile_filters is None:
-            v.setup_pager(-1)
+            n = db(q).count()
             limitby = (v.pager_start,v.pager_end)
         else:
+            n = 0
             limitby = (0, 500)
         v.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False)
-        v.set_column_visibility()
-        return TABLE(v.table_lines()[0])
+        return v.table_lines_data(n)
 
     n = db(q).count()
     v.setup_pager(n)
@@ -2911,13 +2911,13 @@ def ajax_comp_filtersets():
 
     if len(request.args) == 1 and request.args[0] == 'line':
         if request.vars.volatile_filters is None:
-            t.setup_pager(-1)
+            n = db(q).count()
             limitby = (t.pager_start,t.pager_end)
         else:
+            n = 0
             limitby = (0, 500)
         t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False)
-        t.set_column_visibility()
-        return TABLE(t.table_lines()[0])
+        return t.table_lines_data(n)
 
     n = db(q).count()
     t.setup_pager(n)
@@ -3491,9 +3491,11 @@ def ajax_comp_moduleset():
 
     if len(request.args) == 1 and request.args[0] == 'line':
         if request.vars.volatile_filters is None:
-            t.setup_pager(-1)
+
+            n = len(db(q).select(db.comp_moduleset_modules.id, left=(l1,l2,l3), groupby=g))
             limitby = (t.pager_start,t.pager_end)
         else:
+            n = 0
             limitby = (0, 500)
         t.object_list = db(q).select(
           db.comp_moduleset_modules.ALL,
@@ -3506,8 +3508,7 @@ def ajax_comp_moduleset():
           left=(l1,l2,l3),
           groupby=g
         )
-        t.set_column_visibility()
-        return TABLE(t.table_lines()[0])
+        return t.table_lines_data(n)
 
     rows = db(q).select(db.comp_moduleset_modules.id, left=(l1,l2,l3), groupby=g)
     t.setup_pager(len(rows))
@@ -4600,13 +4601,12 @@ def ajax_comp_status():
     if len(request.args) == 1 and request.args[0] == 'line':
         if request.vars.volatile_filters is None:
             n = db(q).select(db.comp_status.id.count(), cacheable=True).first()._extra[db.comp_status.id.count()]
-            t.setup_pager(n)
             limitby = (t.pager_start,t.pager_end)
         else:
+            n = 0
             limitby = (0, 500)
         t.object_list = db(q).select(limitby=limitby, orderby=o, cacheable=False)
-        t.set_column_visibility()
-        return TABLE(t.table_lines()[0])
+        return t.table_lines_data(n)
 
     n = db(q).select(db.comp_status.id.count(), cacheable=True).first()._extra[db.comp_status.id.count()]
     t.setup_pager(n)
@@ -4863,7 +4863,7 @@ def ajax_comp_svc_status():
     if len(request.args) == 1 and request.args[0] == 'csv':
         return mt.csv()
     if len(request.args) == 1 and request.args[0] == 'line':
-        return TABLE(mt.table_lines()[0])
+        return mt.table_lines_data(-1)
 
     return DIV(
              mt.html(),
@@ -4936,7 +4936,7 @@ def ajax_comp_node_status():
     if len(request.args) == 1 and request.args[0] == 'csv':
         return mt.csv()
     if len(request.args) == 1 and request.args[0] == 'line':
-        return TABLE(mt.table_lines()[0])
+        return mt.table_lines_data(-1)
 
     return DIV(
              mt.html(),
@@ -5218,7 +5218,7 @@ def ajax_comp_mod_status():
     if len(request.args) == 1 and request.args[0] == 'csv':
         return mt.csv()
     if len(request.args) == 1 and request.args[0] == 'line':
-        return TABLE(mt.table_lines()[0])
+        return mt.table_lines_data(-1)
 
     return DIV(
              mt.html(),
@@ -5277,13 +5277,11 @@ def ajax_comp_log():
         return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'line':
         if request.vars.volatile_filters is None:
-            t.setup_pager(-1)
             limitby = (t.pager_start,t.pager_end)
         else:
             limitby = (0, 500)
         t.object_list = db(q).select(limitby=limitby, orderby=o, cacheable=False)
-        t.set_column_visibility()
-        return TABLE(t.table_lines()[0])
+        return t.table_lines_data(-1)
 
     t.setup_pager(-1)
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),

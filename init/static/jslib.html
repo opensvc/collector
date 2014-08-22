@@ -595,6 +595,12 @@ function ajax_table_refresh(url, id) {
 	     $("#refresh_"+id).addClass("spinner")
          },
          success: function(msg){
+             try {
+                 var data = $.parseJSON(msg)
+                 var pager = data['pager']
+                 var msg = data['table_lines']
+             } catch(e) {}
+
              // strip the topmost table marks
              msg = msg.replace(/^.table.|.\/table.$/g, '')
 
@@ -633,6 +639,9 @@ function ajax_table_refresh(url, id) {
              // delete old lines
              $("#table_"+id).find(".deleteme").remove()
 
+             try {
+               _table_pager(id, pager["page"], pager["perpage"], pager["start"], pager["end"], pager["total"])
+             } catch(e) {}
              restripe_table_lines(id)
              bind_filter_selector(id)
              table_cell_decorator(id)
@@ -670,13 +679,22 @@ function ajax_table_insert_line(url, id, data) {
 	     $("#refresh_"+id).addClass("spinner")
          },
          success: function(msg){
+             try {
+                 var data = $.parseJSON(msg)
+                 var pager = data['pager']
+                 var msg = data['table_lines']
+             } catch(e) {}
+
              // strip the topmost table marks
              msg = msg.replace(/^.table.|.\/table.$/g, '')
 
              // replace already displayed lines
              modified = []
 
+             n_new_lines = 0
+
              $(msg).each(function(){
+               n_new_lines += 1
                new_line = $(this)
                cksum = $(this).attr("cksum")
                $("#table_"+id).find("[cksum="+cksum+"]").each(function(){
@@ -696,7 +714,6 @@ function ajax_table_insert_line(url, id, data) {
                  modified.push(cksum)
                })
              })
-
 
              // insert new lines
              first_line = $("#table_"+id).find(".tl").first()
@@ -721,6 +738,12 @@ function ajax_table_insert_line(url, id, data) {
                  new_line.addClass("highlight")
                  new_line = new_line.prev(".tl")
              }
+             n_new_lines -= modified.length
+             pager_total = $("#table_"+id).attr("pager_total")
+             pager_total = parseInt(pager_total) + n_new_lines
+             $("#table_"+id).attr("pager_total", pager_total)
+             table_pager(id)
+
              //sort_table(id)
              trim_table(id)
              restripe_table_lines(id)
@@ -5101,6 +5124,83 @@ function table_cell_decorator(id) {
       } catch(e) {}
     })
   }
+}
+
+
+//
+// table pager
+//
+function _table_pager(id, p_page, p_perpage, p_start, p_end, p_total) {
+  pager = $("#"+id).find(".pager")
+  p_page = parseInt(p_page)
+  p_start = parseInt(p_start)
+  p_end = parseInt(p_end)
+  p_total = parseInt(p_total)
+
+  if ((p_total > 0) && (p_end > p_total)) {
+    p_end = p_total
+  }
+  var s_total = ""
+  if (p_total > 0) {
+    s_total = "/" + p_total
+  }
+
+  // perpage selector
+  var l = [20, 50, 100, 500]
+  var selector = "<div name='pager_perpage' class='white_float' style='max-width:50%;display:none;text-align:right;'>"
+  for (i=0; i<l.length; i++) {
+     v = l[i]
+     if (v == p_perpage) {
+       c = " current_page"
+     } else {
+       c = ""
+     }
+     selector += "<span name='perpage_val' class='clickable"+c+"'>"+v+"</span><br>"
+  }
+  selector += "</div>"
+
+  // main pager
+  var d = ""
+  if (p_total == 0) {
+    d += "No records found matching filters"
+  } else {
+    if (p_page > 1) {
+      d += "<span name='pager_left'><< </span>"
+    }
+    d += "<span name='pager_center'>"+(p_start+1)+"-"+p_end+s_total+"</span>"
+    if ((p_total < 0) || ((p_page * p_perpage) < p_total)) {
+      d += "<span name='pager_right'> >></span>"
+    }
+  }
+  d += selector
+
+  pager.empty()
+  pager.append(d)
+  pager.children("span").each(function () {
+    $(this).addClass('current_page clickable')
+  })
+  pager.children("[name=pager_right]").click(function(){
+    filter_submit(id, id+"_page", p_page+1)   
+  })
+  pager.children("[name=pager_left]").click(function(){
+    filter_submit(id, id+"_page", p_page-1)   
+  })
+  pager.children("[name=pager_center]").click(function(){
+    $(this).parent().children("[name=pager_perpage]").toggle()
+  })
+  pager.find("[name=perpage_val]").click(function(){
+    filter_submit(id, id+"_perpage", parseInt($(this).text()))   
+  })
+}
+
+function table_pager(id) {
+  t = $("#table_"+id)
+  p_page = t.attr("pager_page")
+  p_perpage = t.attr("pager_perpage")
+  p_start = t.attr("pager_start")
+  p_end = t.attr("pager_end")
+  p_total = t.attr("pager_total")
+  _table_pager(id, p_page, p_perpage, p_start, p_end, p_total)
 }
 
 </script>
