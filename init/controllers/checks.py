@@ -425,12 +425,13 @@ class table_checks(HtmlTable):
                 img = 'check16',
                 _class = 'svcname',
             ),
-            'chk_type': col_chk_type(
+            'chk_type': HtmlTableColumn(
                 title = 'Type',
                 field = 'chk_type',
                 display = True,
                 table = 'checks_live',
-                img = 'check16'
+                img = 'check16',
+                _class = "chk_type",
             ),
             'chk_instance': col_chk_instance(
                 title = 'Instance',
