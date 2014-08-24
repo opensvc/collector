@@ -3422,7 +3422,6 @@ def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
                    dash_severity=%(sev)d,
                    dash_fmt="current availability status: %%(s)s",
                    dash_dict='{"s": "%(status)s", "svcname": "%(svcname)s"}',
-                   dash_dict_md5=md5('{"s": "%(status)s", "svcname": "%(svcname)s"}'),
                    dash_created=now(),
                    dash_updated=now(),
                    dash_env="%(env)s"
@@ -3430,7 +3429,6 @@ def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
                    dash_severity=%(sev)d,
                    dash_fmt="current availability status: %%(s)s",
                    dash_dict='{"s": "%(status)s", "svcname": "%(svcname)s"}',
-                   dash_dict_md5=md5('{"s": "%(status)s", "svcname": "%(svcname)s"}'),
                    dash_updated=now(),
                    dash_env="%(env)s"
               """%dict(svcname=svc_name,
