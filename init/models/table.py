@@ -978,7 +978,7 @@ class HtmlTable(object):
         else:
             object_list = self.object_list
 
-        if self.nodatabanner and len(object_list) == 0:
+        if request.vars.volatile_filters is None and self.nodatabanner and len(object_list) == 0:
             lines.append(TR(TD(T("no data"), _colspan=len(self.cols)), _class="tl nodataline"))
             return lines, 0
 

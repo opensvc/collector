@@ -717,13 +717,10 @@ function ajax_table_insert_line(url, id, data) {
 
              // insert new lines
              first_line = $("#table_"+id).find(".tl").first()
-             if (first_line.length > 0) {
-                 first_line.before(msg)
-             } else {
-                 // remove "no data" line
-                 $("#table_"+id).find("tr").last().remove()
-                 b = $("#table_"+id).find("tbody").first()
-                 b.append(msg)
+             first_line.before(msg)
+             if (msg.length > 0) {
+                 // remove "no data" lines
+                 $("#table_"+id).find(".nodataline").remove()
              }
 
              new_line = first_line.prev(".tl")
@@ -4961,7 +4958,7 @@ function cell_decorator_nodename_no_os(e) {
 
 function _cell_decorator_nodename(e, os_icon) {
   var v = $(e).attr("v")
-  if (v=="") {
+  if ((v=="") || (v=="empty")) {
     return
   }
   $(e).empty()
@@ -4993,7 +4990,7 @@ function _cell_decorator_nodename(e, os_icon) {
 
 function cell_decorator_svcname(e) {
   var v = $(e).attr("v")
-  if (v=="") {
+  if ((v=="") || (v=="empty")) {
     return
   }
   $(e).empty()
