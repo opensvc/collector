@@ -184,7 +184,7 @@ class col_comp_mod_status(HtmlTableColumn):
                  IMG(
                    _src=URL(r=request, c="static", f="spark16.png"),
                  ),
-                 _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                 _onclick="toggle_extra('%(url)s', '%(id)s', this, 0);"%dict(
                           url=URL(
                                 r=request,
                                 c='compliance',
@@ -3791,6 +3791,8 @@ class table_comp_mod_status(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
+        self.keys = ['mod_name']
+        self.span = ['mod_name']
         self.cols = ['mod_name', 'total', 'ok', 'nok', 'na', 'obs', 'pct',
                      'mod_log']
         self.colprops = {
@@ -3871,6 +3873,8 @@ class table_comp_svc_status(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
+        self.keys = ['svc_name']
+        self.span = ['svc_name']
         self.cols = ['svc_name', 'total', 'ok', 'nok', 'na', 'obs', 'pct',
                      "svc_log"]
         self.colprops = {
@@ -3952,6 +3956,8 @@ class table_comp_node_status(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
+        self.keys = ['node_name']
+        self.span = ['node_name']
         self.cols = ['node_name', 'total', 'ok', 'nok', 'na', 'obs', 'pct',
                      "node_log"]
         self.colprops = {
