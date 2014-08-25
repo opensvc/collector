@@ -212,6 +212,9 @@ var timer;
 function check_toggle_vis(checked, col){
     $('[name='+col+']').each(function(){
          if (checked) {
+             if ($(this).attr("cell") == '1') {
+               _table_cell_decorator(this)
+             }
              $(this).fadeIn('slow')
          } else {
              $(this).fadeOut('slow')
@@ -5030,7 +5033,11 @@ function cell_decorator_chk_type(e) {
 }
 
 function status_outdated(line) {
-  var s = line.children("[name$=mon_updated]").attr("v").replace(/ /, "T")
+  var s = line.children("[cell=1][name$=mon_updated]").attr("v")
+  if (typeof s === 'undefined') {
+    return true
+  }
+  s = s.replace(/ /, "T")
   var d = new Date(s)
   var now = new Date()
   delta = now - d
@@ -5133,12 +5140,27 @@ cell_decorators = {
  "chk_type": cell_decorator_chk_type,
 }
 
+function _table_cell_decorator(cell) {
+  var cl = $(cell).attr('class')
+  if (!cl) {
+    return
+  }
+  cl = cl.split(/\s+/)
+  for (i=0; i<cl.length; i++) {
+    c = cl[i]
+    if (!(c in cell_decorators)) {
+      continue
+    }
+    cell_decorators[c](cell)
+  }
+}
+
 function table_cell_decorator(id) {
   for (var c in cell_decorators) {
     if (!cell_decorators.hasOwnProperty(c)) {
       continue
     }
-    $("#"+id).find("[cell=1]."+c).each(function(){
+    $("#table_"+id).find("[cell=1]."+c+":visible").each(function(){
       try {
         cell_decorators[c](this)
       } catch(e) {}
