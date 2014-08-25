@@ -720,11 +720,11 @@ function ajax_table_insert_line(url, id, data) {
              if (first_line.length > 0) {
                  first_line.before(msg)
              } else {
-                 // remove "no data" line
-                 $("#table_"+id).find("tr").last().remove()
                  b = $("#table_"+id).find("tbody").first()
                  b.append(msg)
              }
+             // remove "no data" lines
+             $("#table_"+id).find(".nodataline").remove()
 
              new_line = first_line.prev(".tl")
              while (new_line.length > 0) {
