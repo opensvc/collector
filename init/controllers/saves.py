@@ -211,7 +211,7 @@ def ajax_saves():
         else:
             n = 0
             limitby = (0, 500)
-        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False, left=left)
+        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=True, left=l)
         return t.table_lines_data(n)
 
     t.csv_q = q
