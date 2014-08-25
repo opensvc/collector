@@ -59,7 +59,7 @@ class Viz(object):
     def __str__(self):
         s = """
 digraph G {
-        graph [center rankdir=LR splines=true ranksep=2.5 bgcolor=transparent]
+        graph [rankdir=LR splines=true ranksep=2.5 bgcolor=transparent]
         edge [dir=none]
         node [shape=box fontsize=10]
 %(servers)s
