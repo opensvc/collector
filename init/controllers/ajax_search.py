@@ -12,7 +12,7 @@ def ajax_search():
     vm = format_vm(pattern)
     user = format_user(pattern)
     app = format_app(pattern)
-    app = format_disk(pattern)
+    disk = format_disk(pattern)
 
     if len(svc)+len(node)+len(user)+len(app)+len(vm) == 0:
         return ''
@@ -23,6 +23,7 @@ def ajax_search():
              vm,
              user,
              app,
+             disk,
            )
 
 def format_disk(pattern):
