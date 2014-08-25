@@ -427,6 +427,7 @@ class HtmlTable(object):
                     _name=id_col,
                     _onclick="""if (!$("#%(fid)s") || $("#%(fid)s").val().length==0) {
                                  check_toggle_vis(this.checked, "%(col_name)s");
+                                 table_scroll("%(id)s");
                                  $("#%(id_set_col_table)s").val("%(table)s");
                                  $("#%(id_set_col_field)s").val("%(field)s");
                                  $("#%(id_set_col_value)s").val(this.checked);
@@ -441,6 +442,7 @@ class HtmlTable(object):
                              """%dict(url=URL(r=request,c='ajax',f='ajax_set_user_prefs_column'),
                                       col_name=self.col_key(a),
                                       fid=self.filter_key(a),
+                                      id=self.id,
                                       id_set_col_table=id_set_col_table,
                                       id_set_col_field=id_set_col_field,
                                       id_set_col_value=id_set_col_value,
@@ -1404,51 +1406,9 @@ function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
 
 var inputs_%(id)s = %(a)s;
 bind_filter_selector("%(id)s");
-function scroll_%(id)s(){
-  to=$("#table_%(id)s")
-  to_p=to.parent()
-  ww=$(window).width()
-  tw=to.width()
-  if (ww>=tw) {
-    $("#table_%(id)s_left").hide()
-    $("#table_%(id)s_right").hide()
-    return
-  }
-  if (to_p.scrollLeft()>0) {
-    $("#table_%(id)s_left").show()
-    $("#table_%(id)s_left").height(to.height())
-  } else {
-    $("#table_%(id)s_left").hide()
-  }
-  if (to_p.scrollLeft()+ww<tw) {
-    $("#table_%(id)s_right").show()
-    $("#table_%(id)s_right").height(to.height())
-    $("#table_%(id)s_right").css({'top': to.position().top})
-  } else {
-    $("#table_%(id)s_right").hide()
-  }
-}
-$("#table_%(id)s_left").click(function(){
-  $("#table_%(id)s").parent().animate({'scrollLeft': '-='+$(window).width()}, 500)
-})
-$("#table_%(id)s_right").click(function(){
-  $("#table_%(id)s").parent().animate({'scrollLeft': '+='+$(window).width()}, 500)
-})
-$("#table_%(id)s").parent().scroll(function(){
-  scroll_%(id)s()
-})
-$(window).resize(function(){
-  scroll_%(id)s()
-})
-$(window).bind("DOMNodeInserted", function() {
-  scroll_%(id)s()
-})
-$(".down16,.right16").click(function() {
-  scroll_%(id)s()
-})
-scroll_%(id)s()
 table_pager("%(id)s")
 restripe_table_lines("%(id)s")
+table_scroll_enable("%(id)s")
 """%dict(
                    id=self.id,
                    a=self.ajax_inputs(),
