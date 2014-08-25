@@ -125,7 +125,7 @@ class table_metrics(HtmlTable):
                 _class="edit16",
               ),
               A(
-                _onclick="""toggle_extra("%(url)s", "%(id)s")
+                _onclick="""toggle_extra("%(url)s", "%(id)s", this, 0)
                 """%dict(
                      url=URL(r=request, c='charts', f='ajax_metric_test', vars={'metric_id': o.id}),
                      id=self.extra_line_key(o),
@@ -334,7 +334,7 @@ class table_charts(HtmlTable):
                 _class="edit16",
               ),
               A(
-                _onclick="""toggle_extra("%(url)s", "%(id)s")
+                _onclick="""toggle_extra("%(url)s", "%(id)s", this, 0)
                 """%dict(
                      url=URL(r=request, c='charts', f='ajax_chart_test', vars={'chart_id': o.id}),
                      id=self.extra_line_key(o),
@@ -603,7 +603,7 @@ class table_reports_admin(HtmlTable):
                 _class="edit16",
               ),
               A(
-                _onclick="""toggle_extra("%(url)s", "%(id)s")
+                _onclick="""toggle_extra("%(url)s", "%(id)s", this, 0)
                 """%dict(
                      url=URL(r=request, c='charts', f='ajax_report_test', vars={'report_id': o.id}),
                      id=self.extra_line_key(o),

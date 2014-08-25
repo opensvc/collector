@@ -21,7 +21,7 @@ class col_app_value(HtmlTableColumn):
         return SPAN(
           IMG(_src=URL(c='static', f='spark16.png')),
           _class="clickable",
-          _onclick="""toggle_extra('%(url)s', '%(id)s');
+          _onclick="""toggle_extra('%(url)s', '%(id)s', this, 0);
           """%dict(
                   url=URL(r=request, c='appinfo',f='ajax_appinfo_log',
                           vars={'svcname': o.app_svcname,

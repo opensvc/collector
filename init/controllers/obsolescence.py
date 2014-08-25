@@ -176,7 +176,7 @@ class col_obs_count(HtmlTableColumn):
         d = DIV(
               A(
                 s,
-                _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                _onclick="toggle_extra('%(url)s', '%(id)s', this, 0);"%dict(
                   url=URL(r=request, c='obsolescence',f='ajax_obsolete_os_nodes',
                           vars={'obs_name': o.obsolescence.obs_name,
                                 'obs_type': o.obsolescence.obs_type}),

@@ -473,7 +473,7 @@ class col_dash_entry(HtmlTableColumn):
         s = self.get(o)
         d = A(
           s,
-          _onclick="""toggle_extra('%(url)s', '%(id)s')"""%dict(
+          _onclick="""toggle_extra('%(url)s', '%(id)s', this, 0)"""%dict(
                   url=URL(r=request, c='dashboard',f='ajax_alert_events',
                           vars={'dash_nodename': self.t.colprops['dash_nodename'].get(o),
                                 'dash_svcname': self.t.colprops['dash_svcname'].get(o),
@@ -568,7 +568,7 @@ class col_dash_links(HtmlTableColumn):
             '',
              _title=T("Compliance tab"),
              _class='comp16 clickable',
-             _onclick="""toggle_extra('%(url)s', '%(id)s')"""%dict(
+             _onclick="""toggle_extra('%(url)s', '%(id)s', this, 0)"""%dict(
                   url=URL(r=request, c='default',f='ajax_service',
                           vars={'node': self.t.colprops['dash_svcname'].get(o),
                                 'rowid': id,
@@ -584,7 +584,7 @@ class col_dash_links(HtmlTableColumn):
             '',
              _title=T("Pkgdiff tab"),
              _class='pkg16 clickable',
-             _onclick="""toggle_extra('%(url)s', '%(id)s')"""%dict(
+             _onclick="""toggle_extra('%(url)s', '%(id)s', this, 0)"""%dict(
                   url=URL(r=request, c='default',f='ajax_service',
                           vars={'node': self.t.colprops['dash_svcname'].get(o),
                                 'rowid': id,

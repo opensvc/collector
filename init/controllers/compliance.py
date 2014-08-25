@@ -64,7 +64,7 @@ class col_rset_md5(HtmlTableColumn):
         d = DIV(
               A(
                 s,
-                _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                _onclick="toggle_extra('%(url)s', '%(id)s', this, 0);"%dict(
                   url=URL(r=request, c='compliance',f='ajax_rset_md5',
                           vars={'rset_md5': s}),
                   id=id,
@@ -148,7 +148,7 @@ class col_comp_svc_status(HtmlTableColumn):
                  IMG(
                    _src=URL(r=request, c="static", f="spark16.png"),
                  ),
-                 _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                 _onclick="toggle_extra('%(url)s', '%(id)s', this, 0);"%dict(
                           url=URL(
                                 r=request,
                                 c='compliance',
@@ -166,7 +166,7 @@ class col_comp_node_status(HtmlTableColumn):
                  IMG(
                    _src=URL(r=request, c="static", f="spark16.png"),
                  ),
-                 _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                 _onclick="toggle_extra('%(url)s', '%(id)s', this, 0);"%dict(
                           url=URL(
                                 r=request,
                                 c='compliance',
@@ -4154,7 +4154,7 @@ class table_comp_status(HtmlTable):
                      field='run_status_log',
                      table='comp_status',
                      img='check16',
-                     display=True,
+                     display=False,
                     ),
             'run_log': col_run_log(
                      title='Log',

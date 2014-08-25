@@ -45,7 +45,7 @@ class col_app(HtmlTableColumn):
         d = DIV(
               A(
                 app,
-                _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                _onclick="toggle_extra('%(url)s', '%(id)s', this, 0);"%dict(
                   url=URL(r=request, c='disks',f='ajax_app',
                           vars={'app_id': app_id, 'dg_id': dg_id, 'rowid': id}),
                   id=id,

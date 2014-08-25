@@ -751,7 +751,7 @@ class col_user_id(HtmlTableColumn):
         d = DIV(
               A(
                 o['user_id'],
-                _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                _onclick="toggle_extra('%(url)s', '%(id)s', this, 0);"%dict(
                   url=URL(r=request, c='nodes',f='ajax_uid_dispatch',
                           vars={'user_id': o['user_id']}),
                   id=id,
@@ -830,87 +830,6 @@ class table_uids(HtmlTable):
             )
         return d
 
-@auth.requires_login()
-def ajax_uid_dispatch():
-    uid = request.vars.user_id
-    sql = """select
-               user_name,
-               count(id) as n,
-               group_concat(nodename order by nodename separator ", ") as nodes
-             from node_users
-             where
-               user_id = %(uid)s
-             group by user_name"""%dict(
-            uid=uid,
-          )
-    rows = db.executesql(sql, as_dict=True)
-    header = TR(
-               TH(T('User name')),
-               TH(T('Number of nodes')),
-               TH(T('Nodes')),
-             )
-    l = [header]
-    for row in rows:
-        line = TR(
-                 TD(row['user_name']),
-                 TD(row['n']),
-                 TD(row['nodes']),
-               )
-        l.append(line)
-    return TABLE(SPAN(l))
-
-@auth.requires_login()
-def ajax_gid_dispatch():
-    gid = request.vars.group_id
-    sql = """select
-               group_name,
-               count(id) as n,
-               group_concat(nodename order by nodename separator ", ") as nodes
-             from node_groups
-             where
-               group_id = %(gid)s
-             group by group_name"""%dict(
-            gid=gid,
-          )
-    rows = db.executesql(sql, as_dict=True)
-    header = TR(
-               TH(T('Group name')),
-               TH(T('Number of nodes')),
-               TH(T('Nodes')),
-             )
-    l = [header]
-    for row in rows:
-        line = TR(
-                 TD(row['group_name']),
-                 TD(row['n']),
-                 TD(row['nodes']),
-               )
-        l.append(line)
-    return TABLE(SPAN(l))
-
-
-@auth.requires_login()
-def ajax_free_uids():
-    start = request.vars.uid_start
-    if start is None:
-        start = 500
-    else:
-        start = int(start)
-    sql = "select distinct user_id from node_users order by user_id"
-    rows = db.executesql(sql)
-    return free_ids(rows, start)
-
-@auth.requires_login()
-def ajax_free_gids():
-    start = request.vars.gid_start
-    if start is None:
-        start = 500
-    else:
-        start = int(start)
-    sql = "select distinct group_id from node_groups order by group_id"
-    rows = db.executesql(sql)
-    return free_ids(rows, start)
-
 def free_ids(rows, start=500):
     if len(rows) == 0:
         l = range(start, 20)
@@ -936,7 +855,7 @@ class col_group_id(HtmlTableColumn):
         d = DIV(
               A(
                 o['group_id'],
-                _onclick="toggle_extra('%(url)s', '%(id)s');"%dict(
+                _onclick="toggle_extra('%(url)s', '%(id)s', this, 0);"%dict(
                   url=URL(r=request, c='nodes',f='ajax_gid_dispatch',
                           vars={'group_id': o['group_id']}),
                   id=id,
@@ -1435,4 +1354,86 @@ def delete_dash_node_not_updated(nodename):
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
     db.commit()
+
+@auth.requires_login()
+def ajax_uid_dispatch():
+    uid = request.vars.user_id
+    sql = """select
+               user_name,
+               count(id) as n,
+               group_concat(nodename order by nodename separator ", ") as nodes
+             from node_users
+             where
+               user_id = %(uid)s
+             group by user_name"""%dict(
+            uid=uid,
+          )
+    rows = db.executesql(sql, as_dict=True)
+    header = TR(
+               TH(T('User name')),
+               TH(T('Number of nodes')),
+               TH(T('Nodes')),
+             )
+    l = [header]
+    for row in rows:
+        line = TR(
+                 TD(row['user_name']),
+                 TD(row['n']),
+                 TD(row['nodes']),
+               )
+        l.append(line)
+    return TABLE(SPAN(l))
+
+@auth.requires_login()
+def ajax_gid_dispatch():
+    gid = request.vars.group_id
+    sql = """select
+               group_name,
+               count(id) as n,
+               group_concat(nodename order by nodename separator ", ") as nodes
+             from node_groups
+             where
+               group_id = %(gid)s
+             group by group_name"""%dict(
+            gid=gid,
+          )
+    rows = db.executesql(sql, as_dict=True)
+    header = TR(
+               TH(T('Group name')),
+               TH(T('Number of nodes')),
+               TH(T('Nodes')),
+             )
+    l = [header]
+    for row in rows:
+        line = TR(
+                 TD(row['group_name']),
+                 TD(row['n']),
+                 TD(row['nodes']),
+               )
+        l.append(line)
+    return TABLE(SPAN(l))
+
+
+@auth.requires_login()
+def ajax_free_uids():
+    start = request.vars.uid_start
+    if start is None:
+        start = 500
+    else:
+        start = int(start)
+    sql = "select distinct user_id from node_users order by user_id"
+    rows = db.executesql(sql)
+    return free_ids(rows, start)
+
+@auth.requires_login()
+def ajax_free_gids():
+    start = request.vars.gid_start
+    if start is None:
+        start = 500
+    else:
+        start = int(start)
+    sql = "select distinct group_id from node_groups order by group_id"
+    rows = db.executesql(sql)
+    return free_ids(rows, start)
+
 
