@@ -320,12 +320,12 @@ class sandata(object):
     def get_remote_port_speed(self, portname, rportname):
         q = db.switches.sw_portname == rportname
         q &= db.switches.sw_rportname == portname
-        return [r.sw_portspeed for r in db(q).select(db.switches.sw_portspeed, orderby=db.switches.sw_index, cacheable=True)]
+        return [r.sw_portspeed for r in db(q).select(db.switches.sw_portspeed, groupby=db.switches.sw_index, orderby=db.switches.sw_index, cacheable=True)]
 
     def get_remote_port_index(self, portname, rportname):
         q = db.switches.sw_portname == rportname
         q &= db.switches.sw_rportname == portname
-        return [r.sw_index for r in db(q).select(db.switches.sw_index, orderby=db.switches.sw_index, cacheable=True)]
+        return [r.sw_index for r in db(q).select(db.switches.sw_index, groupby=db.switches.sw_index, orderby=db.switches.sw_index, cacheable=True)]
 
     def main(self):
         for nodename in self.nodenames:
