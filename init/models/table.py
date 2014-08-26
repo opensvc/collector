@@ -1382,15 +1382,15 @@ table_cell_decorator("%(id)s")
 $("input").each(function(){
  attr = $(this).attr('id')
  if ( typeof(attr) == 'undefined' || attr == false ) {return}
- if ( ! $(this).attr('id').match(/nodename/gi) && \
-      ! $(this).attr('id').match(/svcname/gi) && \
-      ! $(this).attr('id').match(/assetname/gi) && \
-      ! $(this).attr('id').match(/mon_nodname/gi) && \
-      ! $(this).attr('id').match(/disk_nodename/gi) && \
-      ! $(this).attr('id').match(/disk_id/gi) && \
-      ! $(this).attr('id').match(/disk_svcname/gi) && \
-      ! $(this).attr('id').match(/save_nodename/gi) && \
-      ! $(this).attr('id').match(/save_svcname/gi)
+ if ( ! attr.match(/nodename/gi) && \
+      ! attr.match(/svcname/gi) && \
+      ! attr.match(/assetname/gi) && \
+      ! attr.match(/mon_nodname/gi) && \
+      ! attr.match(/disk_nodename/gi) && \
+      ! attr.match(/disk_id/gi) && \
+      ! attr.match(/disk_svcname/gi) && \
+      ! attr.match(/save_nodename/gi) && \
+      ! attr.match(/save_svcname/gi)
     ) {return}
  $(this).bind("change keyup input", function(){
   if (this.value.match(/ /g)) {

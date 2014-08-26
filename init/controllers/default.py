@@ -894,7 +894,7 @@ def ajax_service():
                url=URL(r=request, c='svcmon_log', f='ajax_svcmon_log_1',
                        vars={'svcname':request.vars.node, 'rowid':'avail_'+rowid})
             ),
-            "function s%(rid)s_load_wiki(){ajax('%(url)s', [], '%(id)s')}"%dict(
+            "function s%(rid)s_load_wiki(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
                id='tab8_'+str(rowid),
                rid=str(rowid),
                url=URL(r=request, c='wiki', f='ajax_wiki',
@@ -910,7 +910,7 @@ def ajax_service():
                rid=str(rowid),
                url=URL(r=request, c='stats', f='ajax_perfcmp_plot?node=%s'%','.join(str(s['svc_nodes']).split()+str(s['svc_drpnodes']).split())),
             ),
-            "function s%(rid)s_load_pkgdiff(){ajax('%(url)s', [], '%(id)s')}"%dict(
+            "function s%(rid)s_load_pkgdiff(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
                id='tab10_'+str(rowid),
                rid=str(rowid),
                url=URL(r=request, c='pkgdiff', f='svc_pkgdiff',
@@ -928,13 +928,13 @@ def ajax_service():
                url=URL(r=request, c='ajax_node', f='ajax_svc_stor',
                        args=['tab6_'+str(rowid), request.vars.node])
             ),
-            "function s%(rid)s_load_svcmon(){ajax('%(url)s', [], '%(id)s')}"%dict(
+            "function s%(rid)s_load_svcmon(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
                id='tab2_'+str(rowid),
                rid=str(rowid),
                url=URL(r=request, c='default', f='svcmon_svc',
                        args=['tab2_'+str(rowid), request.vars.node])
             ),
-            "function s%(rid)s_load_resmon(){ajax('%(url)s', [], '%(id)s')}"%dict(
+            "function s%(rid)s_load_resmon(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
                id='tab3_'+str(rowid),
                rid=str(rowid),
                url=URL(r=request, c='resmon', f='ajax_resmon_svc',
@@ -1738,6 +1738,14 @@ def svcmon_svc():
      'mon_nodname',
      'mon_availstatus',
      'mon_overallstatus',
+     'mon_ipstatus',
+     'mon_fsstatus',
+     'mon_diskstatus',
+     'mon_appstatus',
+     'mon_sharestatus',
+     'mon_containerstatus',
+     'mon_hbstatus',
+     'mon_syncstatus',
      'mon_updated',
     ]
     t.colprops['mon_updated'].display = True
@@ -1757,5 +1765,6 @@ def svcmon_svc():
     t.refreshable = False
     t.checkboxes = False
     t.extrarow = False
+    t.wsable = False
     return t.html()
 
