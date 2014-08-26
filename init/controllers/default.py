@@ -1097,6 +1097,7 @@ class table_svcmon(HtmlTable):
         self.wsable = True
         self.extraline = True
         self.extrarow = True
+        self.extrarow_class = "svcmon_links"
         self.checkboxes = True
         self.checkbox_id_col = 'id'
         self.ajax_col_values = 'ajax_svcmon_col_values'
@@ -1111,36 +1112,6 @@ class table_svcmon(HtmlTable):
                               id='menu_comp_action')
         self.additional_tools.append('tool_provisioning')
         self.additional_tools.append('svc_del')
-
-    def format_extrarow(self, o):
-        if not self.spaning_line(o):
-            act = A(
-                    IMG(
-                      _src=URL(r=request,c='static',f='action16.png'),
-                      _border=0,
-                    ),
-                    _href=URL(
-                            r=request, c='svcactions',
-                            f='svcactions',
-                            vars={'actions_f_svcname': o.mon_svcname,
-                                  'actions_f_status_log': 'empty',
-                                  'actions_f_begin': '>'+yesterday,
-                                  'clear_filters': 'true'})
-                  )
-        else:
-            act = ''
-
-        if o.mon_frozen == 1:
-            frozen = IMG(
-                       _src=URL(r=request,c='static',f='frozen16.png'),
-                     )
-        else:
-            frozen = ''
-
-        return SPAN(
-                 act,
-                 frozen,
-               )
 
     def svcdiff(self):
         divid = 'svcdiff'

@@ -877,6 +877,9 @@ class HtmlTable(object):
                             _name=self.col_key(c)))
         return TR(cells, _class='theader')
 
+    def format_extrarow(self, o):
+        return ""
+
     def table_line(self, o):
         cells = []
         cl = ""
@@ -910,7 +913,10 @@ class HtmlTable(object):
                              ))
 
         if self.extrarow:
-            cells.append(TD(self.format_extrarow(o)))
+            xrow_attrs = dict(_cell=1)
+            if hasattr(self, "extrarow_class"):
+                xrow_attrs['_class'] = self.extrarow_class
+            cells.append(TD(self.format_extrarow(o), **xrow_attrs))
 
         if len(self.keys) > 0:
             cksum = hashlib.md5()
@@ -1834,21 +1840,6 @@ class col_containertype(HtmlTableColumn):
             )
         return d
 
-class col_status(HtmlTableColumn):
-    def html(self, o):
-        s = self.get(o)
-        if 'mon_updated' in self.t.colprops:
-            key = 'mon_updated'
-        elif 'updated' in self.t.colprops:
-            key = 'updated'
-        else:
-            raise Exception("no known updated key name")
-        if s is None or (type(self.t.colprops[key].get(o)) == datetime.datetime and self.t.colprops[key].get(o) < now - datetime.timedelta(minutes=15)):
-            c = 'boxed_small boxed_status boxed_status_undef'
-        else:
-            c = 'boxed_small boxed_status boxed_status_'+s.replace(" ", "_")
-        return DIV(s, _class=c)
-
 class col_env(HtmlTableColumn):
     def html(self, o):
         s = self.get(o)
@@ -2001,19 +1992,21 @@ v_services_colprops = {
              img = 'svc',
              table = 'v_services',
             ),
-    'svc_availstatus': col_status(
+    'svc_availstatus': HtmlTableColumn(
              title = 'Service availability status',
              field='svc_availstatus',
              display = True,
              img = 'svc',
              table = 'v_services',
+             _class = 'status',
             ),
-    'svc_status': col_status(
+    'svc_status': HtmlTableColumn(
              title = 'Service overall status',
              field='svc_status',
              display = True,
              img = 'svc',
              table = 'v_services',
+             _class = 'status',
             ),
     'svc_app': HtmlTableColumn(
              title = 'App',
@@ -2237,12 +2230,13 @@ svcmon_colprops = {
              img = 'svc',
              table = 'svcmon',
             ),
-    'mon_containerstatus': col_status(
+    'mon_containerstatus': HtmlTableColumn(
              title = 'Container status',
              field='mon_containerstatus',
              display = False,
              img = 'svc',
              table = 'svcmon',
+             _class="status",
             ),
     'mon_availstatus': HtmlTableColumn(
              title = 'Availability status',
@@ -2252,54 +2246,61 @@ svcmon_colprops = {
              table = 'svcmon',
              _class = 'availstatus',
             ),
-    'mon_ipstatus': col_status(
+    'mon_ipstatus': HtmlTableColumn(
              title = 'Ip status',
              field='mon_ipstatus',
              display = False,
              img = 'svc',
              table = 'svcmon',
+             _class="status",
             ),
-    'mon_fsstatus': col_status(
+    'mon_fsstatus': HtmlTableColumn(
              title = 'Fs status',
              field='mon_fsstatus',
              display = False,
              img = 'svc',
              table = 'svcmon',
+             _class="status",
             ),
-    'mon_sharestatus': col_status(
+    'mon_sharestatus': HtmlTableColumn(
              title = 'Share status',
              field='mon_sharestatus',
              display = False,
              img = 'svc',
              table = 'svcmon',
+             _class="status",
             ),
-    'mon_diskstatus': col_status(
+    'mon_diskstatus': HtmlTableColumn(
              title = 'Disk status',
              field='mon_diskstatus',
              display = False,
              img = 'svc',
              table = 'svcmon',
+             _class="status",
             ),
-    'mon_syncstatus': col_status(
+    'mon_syncstatus': HtmlTableColumn(
              title = 'Sync status',
              field='mon_syncstatus',
              display = False,
              img = 'svc',
              table = 'svcmon',
+             _class="status",
             ),
-    'mon_appstatus': col_status(
+    'mon_appstatus': HtmlTableColumn(
              title = 'App status',
              field='mon_appstatus',
              display = False,
              img = 'svc',
              table = 'svcmon',
+             _class="status",
             ),
-    'mon_hbstatus': col_status(
+    'mon_hbstatus': HtmlTableColumn(
              title = 'Hb status',
              field='mon_hbstatus',
              display = False,
              img = 'svc',
              table = 'svcmon',
+             _class="status",
             ),
     'mon_vmname': HtmlTableColumn(
              title = 'Container name',

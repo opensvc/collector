@@ -5022,6 +5022,43 @@ function cell_decorator_svcname(e) {
   })
 }
 
+function cell_decorator_status(e) {
+  var v = $(e).attr("v")
+  if ((v=="") || (v=="empty")) {
+    v = "undef"
+  }
+  var c = v
+  var line = $(e).parent(".tl")
+  if (status_outdated(line)) {
+    c = "undef"
+  }
+  c = c.replace(' ', '_')
+  $(e).empty()
+  $(e).append("<div class='boxed_small boxed_status boxed_status_"+c+"'>"+v+"</div>")
+}
+
+function cell_decorator_svcmon_links(e) {
+  $(e).empty()
+  var line = $(e).parent(".tl")
+  var span_id = line.attr("spansum")
+  var prev_span_id = line.prev().attr("spansum")
+  if (span_id == prev_span_id) {
+    return
+  }
+  var mon_svcname = line.children("[name$=mon_svcname]").attr("v")
+  var query = "clear_filters=true&actions_f_svcname="+mon_svcname
+  query += "&actions_f_status_log=empty"
+  query += "&actions_f_begin="+encodeURIComponent(">-1d")
+  url = $(location).attr("origin") + "/init/svcactions/svcactions?"+query
+  var d = "<a class='clickable action16' href="+url+">&nbsp</a>"
+
+  var mon_frozen = line.children("[name$=mon_frozen]").attr("v")
+  if (mon_frozen == "1") {
+    d += "<span class='frozen16'>&nbsp</span>"
+  }
+  $(e).append(d)
+}
+
 function cell_decorator_chk_type(e) {
   var v = $(e).attr("v")
   if (v=="") {
@@ -5043,6 +5080,9 @@ function cell_decorator_chk_type(e) {
 
 function status_outdated(line) {
   var s = line.children("[cell=1][name$=mon_updated]").attr("v")
+  if (typeof s === 'undefined') {
+    var s = line.children("[cell=1][name$=_updated]").attr("v")
+  }
   if (typeof s === 'undefined') {
     return true
   }
@@ -5089,7 +5129,7 @@ function cell_decorator_availstatus(e) {
   }
   var s = "<table>"
   s += "<tr>"
-  s += "<td colspan=6 class=\"status status_" + cl_availstatus + "\">" + mon_availstatus + "</td>"
+  s += "<td colspan=6 class=\"aggstatus status_" + cl_availstatus + "\">" + mon_availstatus + "</td>"
   s += "</tr>"
   s += "<tr>"
   s += "<td class=status_" + cl_containerstatus + ">vm</td>"
@@ -5129,7 +5169,7 @@ function cell_decorator_overallstatus(e) {
 
   var s = "<table>"
   s += "<tr>"
-  s += "<td colspan=3 class=\"status status_" + cl_overallstatus + "\">" + mon_overallstatus + "</td>"
+  s += "<td colspan=3 class=\"aggstatus status_" + cl_overallstatus + "\">" + mon_overallstatus + "</td>"
   s += "</tr>"
   s += "<tr>"
   s += "<td class=status_" + cl_availstatus + ">avail</td>"
@@ -5147,6 +5187,8 @@ cell_decorators = {
  "availstatus": cell_decorator_availstatus,
  "overallstatus": cell_decorator_overallstatus,
  "chk_type": cell_decorator_chk_type,
+ "svcmon_links": cell_decorator_svcmon_links,
+ "status": cell_decorator_status,
 }
 
 function _table_cell_decorator(cell) {

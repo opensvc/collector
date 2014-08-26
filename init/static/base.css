@@ -251,7 +251,7 @@ img {
     text-align: center;
 }
 
-.status {
+.aggstatus {
     border-bottom: solid 1px #dddddd;
     text-align: center;
     font-weight: bold;
@@ -1333,6 +1333,11 @@ ul.login_menu ul {
 }
 .key16 {
     background: transparent url('key16.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
+.frozen16 {
+    background: transparent url('frozen16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }

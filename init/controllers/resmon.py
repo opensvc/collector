@@ -66,12 +66,13 @@ class table_resmon(HtmlTable):
                      img='svc16',
                      display=True,
                     ),
-            'res_status': col_status(
+            'res_status': HtmlTableColumn(
                      title='Status',
                      table='resmon',
                      field='res_status',
                      img='svc16',
                      display=True,
+                     _class="status",
                     ),
             'res_log': col_res_log(
                      title='Log',
