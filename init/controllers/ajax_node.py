@@ -724,13 +724,13 @@ def ajax_node():
                url=URL(r=request, c='ajax_node', f='ajax_node_stor',
                        args=['tab5_'+str(rowid), request.vars.node])
             ),
-            "function n%(rid)s_load_wiki(){ajax('%(url)s', [], '%(id)s')}"%dict(
+            "function n%(rid)s_load_wiki(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
                id='tab11_'+str(rowid),
                rid=str(rowid),
                url=URL(r=request, c='wiki', f='ajax_wiki',
                        args=['tab10_'+str(rowid), request.vars.node])
             ),
-            "function n%(rid)s_load_checks(){ajax('%(url)s', [], '%(id)s')}"%dict(
+            "function n%(rid)s_load_checks(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
                id='tab12_'+str(rowid),
                rid=str(rowid),
                url=URL(r=request, c='checks', f='checks_node',
@@ -742,7 +742,7 @@ def ajax_node():
                url=URL(r=request, c='compliance', f='ajax_compliance_node',
                        args=[request.vars.node])
             ),
-            "function n%(rid)s_load_svcmon_node(){ajax('%(url)s', [], '%(id)s')}"%dict(
+            "function n%(rid)s_load_svcmon_node(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
                id='tab5_'+str(rowid),
                rid=str(rowid),
                url=URL(r=request, c='default', f='svcmon_node',

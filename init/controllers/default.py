@@ -1721,6 +1721,9 @@ def svcmon_node():
     t.dbfilterable = False
     t.columnable = False
     t.refreshable = False
+    t.checkboxes = False
+    t.extrarow = False
+    t.wsable = False
     return t.html()
 
 @auth.requires_login()
