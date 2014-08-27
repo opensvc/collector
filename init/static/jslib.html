@@ -511,9 +511,9 @@ function table_restripe_lines(id) {
     })
 }
 
-function table_trim_lines(id) {
-    perpage = parseInt($("#table_"+id).attr("perpage")) + 2
-    lines = $("#table_"+id).children("tbody").children()
+function table_trim_lines(t) {
+    perpage = parseInt($("#table_"+t.id).attr("perpage")) + 2
+    lines = $("#table_"+t.id).children("tbody").children()
     if (lines.length <= perpage) {
         return
     }
@@ -612,7 +612,8 @@ function ajax_table_refresh(url, id) {
          },
          success: function(msg){
              // disable DOM insert event trigger for perf
-             table_scroll_disable_dom(id)
+             var t = osvc.tables[id]
+             t.scroll_disable_dom()
 
              try {
                  var data = $.parseJSON(msg)
@@ -662,13 +663,13 @@ function ajax_table_refresh(url, id) {
              try {
                _table_pager(id, pager["page"], pager["perpage"], pager["start"], pager["end"], pager["total"])
              } catch(e) {}
-             table_bind_filter_selector(id)
+             t.bind_filter_selector()
              table_restripe_lines(id)
-             table_hide_cells(id)
+             t.hide_cells()
              table_cell_decorator(id)
 	     $("#refresh_"+id).removeClass("spinner")
 
-             table_scroll_enable_dom(id)
+             t.scroll_enable_dom()
 
              // clear mem refs
              cksum = null
@@ -702,8 +703,10 @@ function ajax_table_insert_line(url, id, data) {
 	     $("#refresh_"+id).addClass("spinner")
          },
          success: function(msg){
+             var t = osvc.tables[id]
+
              // disable DOM insert event trigger for perf
-             table_scroll_disable_dom(id)
+             t.scroll_disable_dom()
 
              try {
                  var data = $.parseJSON(msg)
@@ -765,13 +768,12 @@ function ajax_table_insert_line(url, id, data) {
              pager_total = $("#table_"+id).attr("pager_total")
              pager_total = parseInt(pager_total) + n_new_lines
              $("#table_"+id).attr("pager_total", pager_total)
-             table_pager(id)
 
-             //sort_table(id)
-             table_trim_lines(id)
+             t.table_pager()
+             t.trim_lines()
              table_restripe_lines(id)
-             table_bind_filter_selector(id)
-             table_hide_cells(id)
+             t.bind_filter_selector()
+             t.hide_cells()
              table_cell_decorator(id)
 
              $(".highlight").each(function(){
@@ -780,7 +782,7 @@ function ajax_table_insert_line(url, id, data) {
              })
 	     $("#refresh_"+id).removeClass("spinner")
 
-             table_scroll_enable_dom(id)
+             t.scroll_enable_dom()
 
              // clear mem refs
              cksum = null
@@ -4632,20 +4634,20 @@ function filter_submit(id,k,v){
   window["ajax_submit_"+id]()
 };
 
-function table_bind_filter_selector(id) {
-  $("#table_"+id).each(function(){
+function table_bind_filter_selector(t) {
+  $("#table_"+t.id).each(function(){
     $(this).bind("mouseup", function(event) {
       cell = $(event.target)
       if (typeof cell.attr("v") === 'undefined') {
         cell = cell.parents("[cell=1]").first()
       }
-      filter_selector(id, event, cell.attr('name'), cell.attr('v'))
+      filter_selector(t.id, event, cell.attr('name'), cell.attr('v'))
     })
     $(this).bind("contextmenu", function() {
       return false
     })
     $(this).bind("click", function() {
-      $("#fsr"+id).hide()
+      $("#fsr"+t.id).hide()
     })
   })
 }
@@ -5328,73 +5330,73 @@ function _table_pager(id, p_page, p_perpage, p_start, p_end, p_total) {
   })
 }
 
-function table_pager(id) {
-  var t = $("#table_"+id)
-  p_page = t.attr("pager_page")
-  p_perpage = t.attr("pager_perpage")
-  p_start = t.attr("pager_start")
-  p_end = t.attr("pager_end")
-  p_total = t.attr("pager_total")
-  _table_pager(id, p_page, p_perpage, p_start, p_end, p_total)
+function table_pager(t) {
+  var te = $("#table_"+t.id)
+  p_page = te.attr("pager_page")
+  p_perpage = te.attr("pager_perpage")
+  p_start = te.attr("pager_start")
+  p_end = te.attr("pager_end")
+  p_total = te.attr("pager_total")
+  _table_pager(t.id, p_page, p_perpage, p_start, p_end, p_total)
 }
 
 //
 // table horizontal scroll
 //
-function table_scroll(id){
-  to=$("#table_"+id)
+function table_scroll(t){
+  to=$("#table_"+t.id)
   to_p=to.parent()
   ww=$(window).width()
   tw=to.width()
   if (ww>=tw) {
-    $("#table_"+id+"_left").hide()
-    $("#table_"+id+"_right").hide()
+    $("#table_"+t.id+"_left").hide()
+    $("#table_"+t.id+"_right").hide()
     return
   }
   if (to_p.scrollLeft()>0) {
-    $("#table_"+id+"_left").show()
-    $("#table_"+id+"_left").height(to.height())
+    $("#table_"+t.id+"_left").show()
+    $("#table_"+t.id+"_left").height(to.height())
   } else {
-    $("#table_"+id+"_left").hide()
+    $("#table_"+t.id+"_left").hide()
   }
   if (to_p.scrollLeft()+ww<tw) {
-    $("#table_"+id+"_right").show()
-    $("#table_"+id+"_right").height(to.height())
-    $("#table_"+id+"_right").css({'top': to.position().top})
+    $("#table_"+t.id+"_right").show()
+    $("#table_"+t.id+"_right").height(to.height())
+    $("#table_"+t.id+"_right").css({'top': to.position().top})
   } else {
-    $("#table_"+id+"_right").hide()
+    $("#table_"+t.id+"_right").hide()
   }
 }
 
-function table_scroll_enable(id) {
-  $("#table_"+id+"_left").click(function(){
-    $("#table_"+id).parent().animate({'scrollLeft': '-='+$(window).width()}, 500)
+function table_scroll_enable(t) {
+  $("#table_"+t.id+"_left").click(function(){
+    $("#table_"+t.id).parent().animate({'scrollLeft': '-='+$(window).width()}, 500)
   })
-  $("#table_"+id+"_right").click(function(){
-    $("#table_"+id).parent().animate({'scrollLeft': '+='+$(window).width()}, 500)
+  $("#table_"+t.id+"_right").click(function(){
+    $("#table_"+t.id).parent().animate({'scrollLeft': '+='+$(window).width()}, 500)
   })
-  $("#table_"+id).parent().scroll(function(){
-    table_scroll(id)
+  $("#table_"+t.id).parent().scroll(function(){
+    table_scroll(t)
   })
   $(window).resize(function(){
-    table_scroll(id)
+    table_scroll(t)
   })
   $(".down16,.right16").click(function() {
-    table_scroll(id)
+    table_scroll(t)
   })
-  table_scroll_enable_dom(id)
+  t.scroll_enable_dom()
 }
 
-function table_scroll_enable_dom(id) {
-  $(window).bind("DOMNodeInserted", table_scroll(id))
-  table_scroll(id)
+function table_scroll_enable_dom(t) {
+  $(window).bind("DOMNodeInserted", table_scroll(t))
+  table_scroll(t)
 }
-function table_scroll_disable_dom(id) {
-  $(window).unbind("DOMNodeInserted", table_scroll(id))
+function table_scroll_disable_dom(t) {
+  $(window).unbind("DOMNodeInserted", table_scroll(t))
 }
 
-function table_bind_filter_reformat(id) {
-  $("#table_"+id).find("input").each(function(){
+function table_bind_filter_reformat(t) {
+  $("#table_"+t.id).find("input").each(function(){
    attr = $(this).attr('id')
    if ( typeof(attr) == 'undefined' || attr == false ) {
      return
@@ -5424,8 +5426,7 @@ function table_bind_filter_reformat(id) {
   })
 }
 
-function table_hide_cells(id) {
-  var t = osvc.tables[id]
+function table_hide_cells(t) {
   for (i=0; i<t.columns.length; i++) {
     var c = t.columns[i]
     if (t.visible_columns.indexOf(c) >= 0) {
@@ -5470,25 +5471,34 @@ function table_init(id, columns, visible_columns) {
       table_cell_decorator(id)
     },
     'hide_cells': function(){
-      table_hide_cells(id)
+      table_hide_cells(this)
     },
     'scroll': function(){
       table_scroll(id)
     },
     'bind_filter_reformat': function(){
-      table_bind_filter_reformat(id)
+      table_bind_filter_reformat(this)
     },
     'bind_filter_selector': function(){
-      table_bind_filter_selector(id)
+      table_bind_filter_selector(this)
     },
     'pager': function(){
-      table_pager(id)
+      table_pager(this)
+    },
+    'trim_lines': function(){
+      table_trim_lines(this)
     },
     'restripe_lines': function(){
       table_restripe_lines(id)
     },
     'scroll_enable': function(){
-      table_scroll_enable(id)
+      table_scroll_enable(this)
+    },
+    'scroll_enable_dom': function(){
+      table_scroll_enable_dom(this)
+    },
+    'scroll_disable_dom': function(){
+      table_scroll_disable_dom(this)
     }
   }
   osvc.tables[id] = t
