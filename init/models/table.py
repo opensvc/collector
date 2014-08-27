@@ -306,6 +306,9 @@ class HtmlTable(object):
                  DIV(l),
                )
 
+    def visible_columns(self):
+        return [k for k, v in self.colprops.items() if v.display]
+
     def get_column_visibility(self, c):
         return self.colprops[c].display
 
@@ -331,14 +334,6 @@ class HtmlTable(object):
             if field not in self.colprops:
                 continue
             self.colprops[field].display = True
-
-    def col_hide(self, c):
-        id_col = self.col_checkbox_key(c)
-        if self.get_column_visibility(c) or \
-           (id_col in request.vars and request.vars[id_col] == 'on'):
-            return ""
-        else:
-            return "display:none"
 
     def format_av_filter(self, f):
         if f is None:
@@ -872,7 +867,6 @@ class HtmlTable(object):
             cells.append(TD(''))
         for c in self.cols:
             cells.append(TH(T(self.colprops[c].title),
-                            _style=self.col_hide(c),
                             _class=self.colprops[c]._class,
                             _name=self.col_key(c)))
         return TR(cells, _class='theader')
@@ -938,14 +932,11 @@ class HtmlTable(object):
                _v=v,
                _cell=1,
             )
-            _style=self.col_hide(c)
             classes = []
             if colprops._class != "":
                 classes.append(colprops._class)
             if colprops._dataclass != "":
                 classes.append(colprops._dataclass)
-            if _style != '':
-                classes.append("hidden")
             if len(classes) > 0:
                 attrs['_class'] = ' '.join(classes)
             cells.append(TD(content, **attrs))
@@ -1025,7 +1016,6 @@ class HtmlTable(object):
               TD(
                 '',
                  _class=cl,
-                 _style=self.col_hide(c),
                  _name=self.col_key(c),
               ),
             )
@@ -1122,7 +1112,6 @@ class HtmlTable(object):
                               _style='max-width:50%;display:none',
                             ),
                             _name=self.col_key(c),
-                            _style=self.col_hide(c),
                             _class=self.colprops[c]._class,
                           ))
         return TR(inputs, _class='sym_headers')
@@ -1379,47 +1368,15 @@ class HtmlTable(object):
               DIV(XML('&nbsp;'), _class='spacer'),
               SCRIPT(
                 """
-table_init("%(id)s")
-table_cell_decorator("%(id)s")
-$("input").each(function(){
- attr = $(this).attr('id')
- if ( typeof(attr) == 'undefined' || attr == false ) {return}
- if ( ! attr.match(/nodename/gi) && \
-      ! attr.match(/svcname/gi) && \
-      ! attr.match(/assetname/gi) && \
-      ! attr.match(/mon_nodname/gi) && \
-      ! attr.match(/disk_nodename/gi) && \
-      ! attr.match(/disk_id/gi) && \
-      ! attr.match(/disk_svcname/gi) && \
-      ! attr.match(/save_nodename/gi) && \
-      ! attr.match(/save_svcname/gi)
-    ) {return}
- $(this).bind("change keyup input", function(){
-  if (this.value.match(/ /g)) {
-    if (this.value.match(/^\(/)) {return}
-    this.value = this.value.replace(/ /g, ',')
-    if (!this.value.match(/^\(/)) {
-      this.value = '(' + this.value
-    }
-    if (!this.value.match(/\)$/)) {
-      this.value = this.value + ')'
-    }
-  }
- })
-})
-$("select").parent().css("white-space", "nowrap");
-$("select:visible").combobox();
+table_init("%(id)s", columns=%(columns)s, visible_columns=%(visible_columns)s)
 function ajax_submit_%(id)s(){%(ajax_submit)s};
 function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
-
 var inputs_%(id)s = %(a)s;
-bind_filter_selector("%(id)s");
-table_pager("%(id)s")
-restripe_table_lines("%(id)s")
-table_scroll_enable("%(id)s")
 """%dict(
                    id=self.id,
                    a=self.ajax_inputs(),
+                   columns=str(self.cols),
+                   visible_columns=str(self.visible_columns()),
                    ajax_submit=self.ajax_submit(),
                    ajax_enter_submit=self.ajax_enter_submit(),
                 ),

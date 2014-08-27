@@ -1,7 +1,7 @@
 <script language="JavaScript" type="text/javascript">
 
-wsh = {}
-last_events = []
+var wsh = {}
+var last_events = []
 
 function ws_duplicate_event(uid) {
     if (last_events.indexOf(uid) >= 0) {
@@ -210,7 +210,7 @@ function toggle_filter_value_input() {
 //
 var timer;
 function check_toggle_vis(id, checked, col){
-    $("table_id").find('[name='+col+']').each(function(){
+    $("#table_"+id).find('[name='+col+']').each(function(){
          if (checked) {
              if ($(this).attr("cell") == '1') {
                _table_cell_decorator(id, this)
@@ -480,7 +480,7 @@ function sync_ajax(url, inputs, id, f) {
          }
     })
 }
-function restripe_table_lines(id) {
+function table_restripe_lines(id) {
     prev_spansum = ""
     cls = ["cell1", "cell2"]
     i = 1
@@ -498,7 +498,7 @@ function restripe_table_lines(id) {
     })
 }
 
-function trim_table(id) {
+function table_trim_lines(id) {
     perpage = parseInt($("#table_"+id).attr("perpage")) + 2
     lines = $("#table_"+id).children("tbody").children()
     if (lines.length <= perpage) {
@@ -649,8 +649,9 @@ function ajax_table_refresh(url, id) {
              try {
                _table_pager(id, pager["page"], pager["perpage"], pager["start"], pager["end"], pager["total"])
              } catch(e) {}
-             bind_filter_selector(id)
-             restripe_table_lines(id)
+             table_bind_filter_selector(id)
+             table_restripe_lines(id)
+             table_hide_cells(id)
              table_cell_decorator(id)
 	     $("#refresh_"+id).removeClass("spinner")
 
@@ -754,9 +755,10 @@ function ajax_table_insert_line(url, id, data) {
              table_pager(id)
 
              //sort_table(id)
-             trim_table(id)
-             restripe_table_lines(id)
-             bind_filter_selector(id)
+             table_trim_lines(id)
+             table_restripe_lines(id)
+             table_bind_filter_selector(id)
+             table_hide_cells(id)
              table_cell_decorator(id)
 
              $(".highlight").each(function(){
@@ -4617,7 +4619,7 @@ function filter_submit(id,k,v){
   window["ajax_submit_"+id]()
 };
 
-function bind_filter_selector(id) {
+function table_bind_filter_selector(id) {
   $("#table_"+id).each(function(){
     $(this).bind("mouseup", function(event) {
       cell = $(event.target)
@@ -4952,7 +4954,7 @@ function js_link(id){
 // cell decorators
 //
 
-os_class_h = {
+var os_class_h = {
   'darwin': 'os_darwin',
   'linux': 'os_linux',
   'hp-ux': 'os_hpux',
@@ -4963,7 +4965,7 @@ os_class_h = {
   'freebsd': 'os_freebsd',
   'aix': 'os_aix',
   'windows': 'os_win',
-  'vmware': 'os_vmware',
+  'vmware': 'os_vmware'
 }
 
 function cell_decorator_nodename(e) {
@@ -5314,7 +5316,7 @@ function _table_pager(id, p_page, p_perpage, p_start, p_end, p_total) {
 }
 
 function table_pager(id) {
-  t = $("#table_"+id)
+  var t = $("#table_"+id)
   p_page = t.attr("pager_page")
   p_perpage = t.attr("pager_perpage")
   p_start = t.attr("pager_start")
@@ -5378,17 +5380,95 @@ function table_scroll_disable_dom(id) {
   $(window).unbind("DOMNodeInserted", table_scroll(id))
 }
 
+function table_bind_filter_reformat(id) {
+  $("#table_"+id).find("input").each(function(){
+   attr = $(this).attr('id')
+   if ( typeof(attr) == 'undefined' || attr == false ) {
+     return
+   }
+   if ( ! attr.match(/nodename/gi) && 
+        ! attr.match(/svcname/gi) && 
+        ! attr.match(/assetname/gi) && 
+        ! attr.match(/mon_nodname/gi) && 
+        ! attr.match(/disk_nodename/gi) && 
+        ! attr.match(/disk_id/gi) && 
+        ! attr.match(/disk_svcname/gi) && 
+        ! attr.match(/save_nodename/gi) && 
+        ! attr.match(/save_svcname/gi)
+      ) {return}
+   $(this).bind("change keyup input", function(){
+    if (this.value.match(/ /g)) {
+      if (this.value.match(/^\(/)) {return}
+      this.value = this.value.replace(/ /g, ',')
+      if (!this.value.match(/^\(/)) {
+        this.value = '(' + this.value
+      }
+      if (!this.value.match(/\)$/)) {
+        this.value = this.value + ')'
+      }
+    }
+   })
+  })
+}
+
+function table_hide_cells(id) {
+  var t = osvc.tables[id]
+  for (i=0; i<t.columns.length; i++) {
+    c = t.columns[i]
+    if (t.visible_columns.indexOf(c) >= 0) {
+      continue
+    }
+    n = t.id + "_c_" + c
+    $("#table_"+t.id).find("[name="+n+"]").hide()
+  }
+}
+
 var osvc = {
  'tables': {},
 }
 
-function table_init(id) {
-  osvc.tables[id] = {
+function table_init(id, columns, visible_columns) {
+  var t = {
+    'id': id,
     'span': $("#table_"+id).attr("span").split(","),
+    'columns': columns,
+    'visible_columns': visible_columns,
+    'decorate_cells': function(){
+      table_cell_decorator(id)
+    },
+    'hide_cells': function(){
+      table_hide_cells(id)
+    },
     'scroll': function(){
       table_scroll(id)
     },
+    'bind_filter_reformat': function(){
+      table_bind_filter_reformat(id)
+    },
+    'bind_filter_selector': function(){
+      table_bind_filter_selector(id)
+    },
+    'pager': function(){
+      table_pager(id)
+    },
+    'restripe_lines': function(){
+      table_restripe_lines(id)
+    },
+    'scroll_enable': function(){
+      table_scroll_enable(id)
+    }
   }
+  osvc.tables[id] = t
+  $("#table_"+id).find("select").parent().css("white-space", "nowrap");
+  $("#table_"+id).find("select:visible").combobox();
+
+  t.bind_filter_reformat()
+  t.hide_cells()
+  t.decorate_cells()
+  t.bind_filter_selector()
+  t.pager()
+  t.restripe_lines()
+  t.scroll_enable()
 }
 
 </script>
