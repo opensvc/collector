@@ -5502,8 +5502,8 @@ function table_init(id, columns, visible_columns) {
     }
   }
   osvc.tables[id] = t
-  $("#table_"+id).find("select").parent().css("white-space", "nowrap")
-  $("#table_"+id).find("select:visible").combobox()
+  $("#"+id).find("select").parent().css("white-space", "nowrap")
+  $("#"+id).find("select:visible").combobox()
 
   t.bind_filter_reformat()
   t.hide_cells()
