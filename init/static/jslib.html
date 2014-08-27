@@ -209,11 +209,11 @@ function toggle_filter_value_input() {
 // table class js functions
 //
 var timer;
-function check_toggle_vis(checked, col){
-    $('[name='+col+']').each(function(){
+function check_toggle_vis(id, checked, col){
+    $("table_id").find('[name='+col+']').each(function(){
          if (checked) {
              if ($(this).attr("cell") == '1') {
-               _table_cell_decorator(this)
+               _table_cell_decorator(id, this)
              }
              $(this).fadeIn('slow')
          } else {
@@ -4621,6 +4621,9 @@ function bind_filter_selector(id) {
   $("#table_"+id).each(function(){
     $(this).bind("mouseup", function(event) {
       cell = $(event.target)
+      if (typeof cell.attr("v") === 'undefined') {
+        cell = cell.parents("[cell=1]").first()
+      }
       filter_selector(id, event, cell.attr('name'), cell.attr('v'))
     })
     $(this).bind("contextmenu", function() {
@@ -4663,13 +4666,13 @@ function filter_selector(id,e,k,v){
   function getsel(){
     __sel = _sel
     if ($("#fsr"+id).find("#fsrwildboth").hasClass("bgred")) {
-      __sel = '%%' + __sel + '%%'
+      __sel = '%' + __sel + '%'
     } else
     if ($("#fsr"+id).find("#fsrwildleft").hasClass("bgred")) {
-      __sel = '%%' + __sel
+      __sel = '%' + __sel
     } else
     if ($("#fsr"+id).find("#fsrwildright").hasClass("bgred")) {
-      __sel = __sel + '%%'
+      __sel = __sel + '%'
     }
     if ($("#fsr"+id).find("#fsrneg").hasClass("bgred")) {
       __sel = '!' + __sel
@@ -5037,14 +5040,13 @@ function cell_decorator_status(e) {
   $(e).append("<div class='boxed_small boxed_status boxed_status_"+c+"'>"+v+"</div>")
 }
 
-function cell_span(e) {
+function cell_span(id, e) {
   try {
     var s = $(e).attr("name").split("_c_")[1]
   } catch(e) {
     return false
   }
-  var l = $(e).parents("table").attr("span").split(",")
-  if (l.indexOf(s) < 0) {
+  if (osvc.tables[id].span.indexOf(s) < 0) {
     return false
   }
   var line = $(e).parent(".tl")
@@ -5204,8 +5206,8 @@ cell_decorators = {
  "status": cell_decorator_status,
 }
 
-function _table_cell_decorator(cell) {
-  if (cell_span(cell)) {
+function _table_cell_decorator(id, cell) {
+  if (cell_span(id, cell)) {
     $(cell).empty()
     return
   }
@@ -5230,7 +5232,7 @@ function table_cell_decorator(id) {
     }
     //var start = new Date().getTime()
     $("#table_"+id).find("[cell=1]."+c+":visible").each(function(){
-      if (cell_span(this)) {
+      if (cell_span(id, this)) {
         $(this).empty()
         return
       }
@@ -5374,6 +5376,19 @@ function table_scroll_enable_dom(id) {
 }
 function table_scroll_disable_dom(id) {
   $(window).unbind("DOMNodeInserted", table_scroll(id))
+}
+
+var osvc = {
+ 'tables': {},
+}
+
+function table_init(id) {
+  osvc.tables[id] = {
+    'span': $("#table_"+id).attr("span").split(","),
+    'scroll': function(){
+      table_scroll(id)
+    },
+  }
 }
 
 </script>

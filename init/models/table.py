@@ -426,7 +426,7 @@ class HtmlTable(object):
                     _type='checkbox',
                     _name=id_col,
                     _onclick="""if (!$("#%(fid)s") || $("#%(fid)s").val().length==0) {
-                                 check_toggle_vis(this.checked, "%(col_name)s");
+                                 check_toggle_vis("%(id)s", this.checked, "%(col_name)s");
                                  table_scroll("%(id)s");
                                  $("#%(id_set_col_table)s").val("%(table)s");
                                  $("#%(id_set_col_field)s").val("%(field)s");
@@ -1379,6 +1379,7 @@ class HtmlTable(object):
               DIV(XML('&nbsp;'), _class='spacer'),
               SCRIPT(
                 """
+table_init("%(id)s")
 table_cell_decorator("%(id)s")
 $("input").each(function(){
  attr = $(this).attr('id')
