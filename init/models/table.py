@@ -1320,6 +1320,7 @@ class HtmlTable(object):
 
         table_attrs = dict(
           _id="table_"+self.id,
+          _span=",".join(self.span),
           _order=",".join(self.order),
           _pager_perpage=self.perpage,
           _pager_page=self.page,

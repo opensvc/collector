@@ -5037,14 +5037,27 @@ function cell_decorator_status(e) {
   $(e).append("<div class='boxed_small boxed_status boxed_status_"+c+"'>"+v+"</div>")
 }
 
-function cell_decorator_svcmon_links(e) {
-  $(e).empty()
+function cell_span(e) {
+  try {
+    var s = $(e).attr("name").split("_c_")[1]
+  } catch(e) {
+    return false
+  }
+  var l = $(e).parents("table").attr("span").split(",")
+  if (l.indexOf(s) < 0) {
+    return false
+  }
   var line = $(e).parent(".tl")
   var span_id = line.attr("spansum")
   var prev_span_id = line.prev().attr("spansum")
   if (span_id == prev_span_id) {
-    return
+    return true
   }
+  return false
+}
+
+function cell_decorator_svcmon_links(e) {
+  $(e).empty()
   var mon_svcname = line.children("[name$=mon_svcname]").attr("v")
   var query = "clear_filters=true&actions_f_svcname="+mon_svcname
   query += "&actions_f_status_log=empty"
@@ -5192,6 +5205,10 @@ cell_decorators = {
 }
 
 function _table_cell_decorator(cell) {
+  if (cell_span(cell)) {
+    $(cell).empty()
+    return
+  }
   var cl = $(cell).attr('class')
   if (!cl) {
     return
@@ -5213,6 +5230,10 @@ function table_cell_decorator(id) {
     }
     //var start = new Date().getTime()
     $("#table_"+id).find("[cell=1]."+c+":visible").each(function(){
+      if (cell_span(this)) {
+        $(this).empty()
+        return
+      }
       try {
         cell_decorators[c](this)
       } catch(e) {}
