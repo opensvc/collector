@@ -1,5 +1,18 @@
 <script language="JavaScript" type="text/javascript">
 
+// IE indexOf workaround
+if (!Array.prototype.indexOf) {
+  Array.prototype.indexOf = function(obj, start) {
+    for (var i = (start || 0), j = this.length; i < j; i++) {
+      if (this[i] === obj) { return i; }
+    }
+    return -1;
+  }
+}
+
+//
+// websockets
+//
 var wsh = {}
 var last_events = []
 
@@ -5205,7 +5218,7 @@ cell_decorators = {
  "overallstatus": cell_decorator_overallstatus,
  "chk_type": cell_decorator_chk_type,
  "svcmon_links": cell_decorator_svcmon_links,
- "status": cell_decorator_status,
+ "status": cell_decorator_status
 }
 
 function _table_cell_decorator(id, cell) {
@@ -5414,7 +5427,7 @@ function table_bind_filter_reformat(id) {
 function table_hide_cells(id) {
   var t = osvc.tables[id]
   for (i=0; i<t.columns.length; i++) {
-    c = t.columns[i]
+    var c = t.columns[i]
     if (t.visible_columns.indexOf(c) >= 0) {
       continue
     }
@@ -5423,8 +5436,28 @@ function table_hide_cells(id) {
   }
 }
 
+function table_toggle_column(id, column, table) {
+  var fid = id + '_f_' + column
+  var cname = id + '_c_' + column
+  var ccname = id + '_cc_' + column
+  var value = $("[name="+ccname+"]").is(":checked")
+
+  if ($("#"+fid) && $("#"+fid).val().length>0) {
+    $("[name="+ccname+"]").checked = true
+    return
+  }
+
+  check_toggle_vis(id, value, cname);
+  table_scroll(id);
+  var query = "set_col_table="+table
+  query += "&set_col_field="+column
+  query += "&set_col_value="+value
+  var url = $(location).attr("origin") + "/init/ajax/ajax_set_user_prefs_column?"+query
+  ajax(url, [], "set_col_dummy")
+}
+
 var osvc = {
- 'tables': {},
+ 'tables': {}
 }
 
 function table_init(id, columns, visible_columns) {
@@ -5459,8 +5492,8 @@ function table_init(id, columns, visible_columns) {
     }
   }
   osvc.tables[id] = t
-  $("#table_"+id).find("select").parent().css("white-space", "nowrap");
-  $("#table_"+id).find("select:visible").combobox();
+  $("#table_"+id).find("select").parent().css("white-space", "nowrap")
+  $("#table_"+id).find("select:visible").combobox()
 
   t.bind_filter_reformat()
   t.hide_cells()

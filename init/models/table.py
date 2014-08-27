@@ -404,9 +404,6 @@ class HtmlTable(object):
     def columns_selector(self):
         if not self.columnable:
             return SPAN()
-        id_set_col_table = '_'.join((self.id, 'set_col_table'))
-        id_set_col_field = '_'.join((self.id, 'set_col_field'))
-        id_set_col_value = '_'.join((self.id, 'set_col_value'))
         def checkbox(a):
             id_col = self.col_checkbox_key(a)
 
@@ -420,29 +417,12 @@ class HtmlTable(object):
                   INPUT(
                     _type='checkbox',
                     _name=id_col,
-                    _onclick="""if (!$("#%(fid)s") || $("#%(fid)s").val().length==0) {
-                                 check_toggle_vis("%(id)s", this.checked, "%(col_name)s");
-                                 table_scroll("%(id)s");
-                                 $("#%(id_set_col_table)s").val("%(table)s");
-                                 $("#%(id_set_col_field)s").val("%(field)s");
-                                 $("#%(id_set_col_value)s").val(this.checked);
-                                 ajax("%(url)s",
-                                      ["%(id_set_col_table)s",
-                                       "%(id_set_col_field)s",
-                                       "%(id_set_col_value)s"],
-                                      "set_col_dummy");
-                                 } else {
-                                  this.checked = true
-                                 }
+                    _onclick="""table_toggle_column("%(id)s","%(column)s", "%(table)s")
                              """%dict(url=URL(r=request,c='ajax',f='ajax_set_user_prefs_column'),
-                                      col_name=self.col_key(a),
-                                      fid=self.filter_key(a),
+                                      column=a,
                                       id=self.id,
-                                      id_set_col_table=id_set_col_table,
-                                      id_set_col_field=id_set_col_field,
-                                      id_set_col_value=id_set_col_value,
                                       table=self.upc_table,
-                                      field=a),
+                                 ),
                     value=val,
                     _style='vertical-align:text-bottom',
                   ),
@@ -460,18 +440,6 @@ class HtmlTable(object):
             return s
 
         a = DIV(
-              INPUT(
-                _id=id_set_col_table,
-                _type='hidden',
-              ),
-              INPUT(
-                _id=id_set_col_field,
-                _type='hidden',
-              ),
-              INPUT(
-                _id=id_set_col_value,
-                _type='hidden',
-              ),
               SPAN(
                 _id='set_col_dummy',
                 _style='display:none',
