@@ -1,5 +1,3 @@
-<script language="JavaScript" type="text/javascript">
-
 // IE indexOf workaround
 if (!Array.prototype.indexOf) {
   Array.prototype.indexOf = function(obj, start) {
@@ -5582,4 +5580,3 @@ function table_init(id, ajax_url, columns, visible_columns) {
   t.scroll_enable()
 }
 
-</script>
