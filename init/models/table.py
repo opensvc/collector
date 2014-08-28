@@ -471,20 +471,9 @@ class HtmlTable(object):
                 SPAN(
                   T('Link'),
                   _title=T("Share your view using this hyperlink"),
-                  _onclick="""js_link("%s")"""%self.id,
                   _class='link16',
                   _id='link_'+self.id,
                 ),
-                SCRIPT(
-                 """$(this).keypress(function(event) {
-  if ($('input').is(":focus")) { return ; } ;
-  if ($('textarea').is(":focus")) { return ; } ;
-  if ( event.which == 108 ) {
-     event.preventDefault();
-     js_link("%s");
-   }
-});"""%self.id,
-              ),
                 _class='floatw',
               ),
             )

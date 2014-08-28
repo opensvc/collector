@@ -4957,13 +4957,15 @@ function get_view_url() {
   return url
 }
 
-function js_link(id){
-  url = get_view_url()
+function table_link(t){
+  var url = get_view_url()
   var re = /#$/;
-  url=url.replace(re, "")+"?";
-  args="clear_filters=true&discard_filters=true&dbfilter="+$("#avs"+id).val()
-  $("#"+id).find("[name=fi]").each(function(){
-    if ($(this).val().length==0) {return}
+  url = url.replace(re, "")+"?";
+  args = "clear_filters=true&discard_filters=true&dbfilter="+$("#avs"+t.id).val()
+  $("#"+t.id).find("[name=fi]").each(function(){
+    if ($(this).val().length==0) {
+      return
+    }
     args=args+'&'+$(this).attr('id')+"="+encodeURIComponent($(this).val())
   })
   alert(url+args)
@@ -5399,6 +5401,20 @@ function table_scroll_disable_dom(t) {
   $(window).unbind("DOMNodeInserted", table_scroll(t))
 }
 
+function table_bind_link(t) {
+  $("#link_"+t.id).bind("click", function(){
+    t.link()
+  })
+  $(this).bind("keypress", function(event) {
+    if ($('input').is(":focus")) { return }
+    if ($('textarea').is(":focus")) { return }
+    if ( event.which == 108 ) {
+      //event.preventDefault()
+      t.link()
+    }
+  })
+}
+
 function table_bind_refresh(t) {
   $("#refresh_"+t.id).bind("click", function(){
     t.refresh()
@@ -5513,6 +5529,9 @@ function table_init(id, ajax_url, columns, visible_columns) {
     'bind_refresh': function(){
       table_bind_refresh(this)
     },
+    'bind_link': function(){
+      table_bind_link(this)
+    },
     'pager': function(){
       table_pager(this)
     },
@@ -5540,6 +5559,9 @@ function table_init(id, ajax_url, columns, visible_columns) {
     'insert': function(data){
       table_insert(this, data)
     },
+    'link': function(){
+      table_link(this)
+    },
     'refresh': function(){
       table_refresh(this)
     }
@@ -5550,6 +5572,8 @@ function table_init(id, ajax_url, columns, visible_columns) {
 
   t.bind_filter_reformat()
   t.bind_refresh()
+  t.bind_link()
+
   t.hide_cells()
   t.decorate_cells()
   t.bind_filter_selector()
