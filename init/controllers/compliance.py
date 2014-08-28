@@ -4739,12 +4739,11 @@ def ajax_comp_status():
                """
 function ws_action_switch_%(divid)s(data) {
         if (data["event"] == "comp_status_change") {
-          ajax_table_refresh('%(url)s', '%(divid)s');
+          osvc.tables["%(divid)s"].refresh();
         }
 }
 wsh["%(divid)s"] = ws_action_switch_%(divid)s
               """ % dict(
-                     url=URL(r=request,f=t.func),
                      divid=t.innerhtml,
                     ),
                _name=t.id+"_to_eval"
@@ -5297,12 +5296,11 @@ def ajax_comp_log():
              SCRIPT("""
 function ws_action_switch_%(divid)s(data) {
         if (data["event"] == "comp_status_change") {
-          ajax_table_refresh('%(url)s', '%(divid)s');
+          osvc.tables["%(divid)s"].refresh();
         }
 }
 wsh["%(divid)s"] = ws_action_switch_%(divid)s
               """ % dict(
-                     url=URL(r=request,f=t.func),
                      divid=t.innerhtml,
                     ),
              ),

@@ -1682,12 +1682,11 @@ def ajax_svcmon():
              SCRIPT("""
 function ws_action_switch_%(divid)s(data) {
         if (data["event"] == "svcmon_change") {
-          ajax_table_refresh('%(url)s', '%(divid)s');
+          osvc.tables["%(divid)s"].refresh()
         }
 }
 wsh["%(divid)s"] = ws_action_switch_%(divid)s
               """ % dict(
-                     url=URL(r=request,f=t.func),
                      divid=t.innerhtml,
                     )
              ),

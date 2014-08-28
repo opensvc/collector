@@ -930,15 +930,14 @@ def ajax_checks():
     return DIV(
       t.html(),
       SCRIPT("""
-function ws_action_switch_%(divid)s(data) {
+function ws_action_switch_%(id)s(data) {
         if (data["event"] == "checks_change") {
-          ajax_table_refresh('%(url)s', '%(divid)s');
+          osvc.tables["%(id)s"].refresh();
         }
 }
-wsh["%(divid)s"] = ws_action_switch_%(divid)s
+wsh["%(id)s"] = ws_action_switch_%(id)s
               """ % dict(
-                     url=URL(r=request,f=t.func),
-                     divid=t.innerhtml,
+                     id=t.innerhtml,
                     )
       ),
     )

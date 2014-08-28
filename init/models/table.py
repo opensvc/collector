@@ -498,27 +498,10 @@ class HtmlTable(object):
               A(
                 SPAN(
                   T('Refresh'),
-                  _onclick="ajax_table_refresh('%(url)s', '%(id)s')"%dict(
-                    url=url,
-                    id=self.id,
-                  ),
                   _class='refresh16',
                   _id='refresh_'+self.id,
                 ),
                 _class='floatw',
-              ),
-              SCRIPT(
-                 """$(this).keypress(function(event) {
-  if ($('input').is(":focus")) { return ; } ;
-  if ($('textarea').is(":focus")) { return ; } ;
-  if ( event.which == 114 ) {
-     //event.preventDefault();
-     ajax_table_refresh("%(url)s", "%(id)s")
-   }
-});"""% dict(
-                    url=url,
-                    id=self.id,
-                  ),
               ),
             )
         return d
@@ -1336,12 +1319,13 @@ class HtmlTable(object):
               DIV(XML('&nbsp;'), _class='spacer'),
               SCRIPT(
                 """
-table_init("%(id)s", columns=%(columns)s, visible_columns=%(visible_columns)s)
+table_init("%(id)s", ajax_url="%(ajax_url)s", columns=%(columns)s, visible_columns=%(visible_columns)s)
 function ajax_submit_%(id)s(){%(ajax_submit)s};
 function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
 var inputs_%(id)s = %(a)s;
 """%dict(
                    id=self.id,
+                   ajax_url=URL(r=request,f=self.func),
                    a=self.ajax_inputs(),
                    columns=str(self.cols),
                    visible_columns=str(self.visible_columns()),

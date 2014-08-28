@@ -238,12 +238,11 @@ function ws_action_switch_%(divid)s(data) {
         if (data["event"] == "log_change") {
           _data = []
           _data.push({"key": "id", "val": data["data"]["id"], "op": "="})
-          ajax_table_insert_line('%(url)s', '%(divid)s', _data);
+          osvc.tables["%(divid)s"].insert(_data)
         }
 }
 wsh["%(divid)s"] = ws_action_switch_%(divid)s
               """ % dict(
-                     url=URL(r=request,f=t.func),
                      divid=t.innerhtml,
                     )
               ),

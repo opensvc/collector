@@ -597,22 +597,21 @@ function sort_table(id) {
     cmp = null
 }
 
-function ajax_table_refresh(url, id) {
-    if ($("#refresh_"+id).hasClass("spinner")) {
+function table_refresh(t) {
+    if ($("#refresh_"+t.id).hasClass("spinner")) {
         return
     }
-    query = id+"_page="+$("#"+id+"_page").val()
+    var query = t.id+"_page="+$("#"+t.id+"_page").val()
     $.ajax({
          type: "POST",
-         url: url+"/line",
+         url: t.ajax_url+"/line",
          data: query,
          context: document.body,
          beforeSend: function(req){
-	     $("#refresh_"+id).addClass("spinner")
+             t.set_refresh_spin()
          },
          success: function(msg){
              // disable DOM insert event trigger for perf
-             var t = osvc.tables[id]
              t.scroll_disable_dom()
 
              try {
@@ -625,12 +624,12 @@ function ajax_table_refresh(url, id) {
              msg = msg.replace(/^.table.|.\/table.$/g, '')
 
              // mark old lines for deletion
-             $("#table_"+id).find(".tl").addClass("deleteme")
+             $("#table_"+t.id).find(".tl").addClass("deleteme")
 
              // insert new lines
-             $("#table_"+id).children("tbody").first().append(msg)
+             $("#table_"+t.id).children("tbody").first().append(msg)
 
-             tbody = $("#table_"+id).children("tbody")
+             tbody = $("#table_"+t.id).children("tbody")
              tbody.children(".tl").each(function(){
                if ($(this).hasClass("deleteme")) {
                    return
@@ -661,13 +660,13 @@ function ajax_table_refresh(url, id) {
              tbody.children(".deleteme").remove()
 
              try {
-               _table_pager(id, pager["page"], pager["perpage"], pager["start"], pager["end"], pager["total"])
+               _table_pager(t.id, pager["page"], pager["perpage"], pager["start"], pager["end"], pager["total"])
              } catch(e) {}
              t.bind_filter_selector()
-             table_restripe_lines(id)
+             t.restripe_lines()
              t.hide_cells()
-             table_cell_decorator(id)
-	     $("#refresh_"+id).removeClass("spinner")
+             t.decorate_cells()
+             t.unset_refresh_spin()
 
              t.scroll_enable_dom()
 
@@ -682,28 +681,27 @@ function ajax_table_refresh(url, id) {
     })
 }
 
-function ajax_table_insert_line(url, id, data) {
+function table_insert(t, data) {
     var query="volatile_filters=true"
     for (i=0; i<data.length; i++) {
         try {
             key=data[i]["key"]
             val=data[i]["val"]
             op=data[i]["op"]
-            query=query+"&"+encodeURIComponent(id+"_f_"+key)+op+encodeURIComponent(val)
+            query=query+"&"+encodeURIComponent(t.id+"_f_"+key)+op+encodeURIComponent(val)
         } catch(e) {
             return
         }
     }
     $.ajax({
          type: "POST",
-         url: url+"/line",
+         url: t.ajax_url+"/line",
          data: query,
          context: document.body,
          beforeSend: function(req){
-	     $("#refresh_"+id).addClass("spinner")
+             t.set_refresh_spin()
          },
          success: function(msg){
-             var t = osvc.tables[id]
 
              // disable DOM insert event trigger for perf
              t.scroll_disable_dom()
@@ -726,7 +724,7 @@ function ajax_table_insert_line(url, id, data) {
                n_new_lines += 1
                new_line = $(this)
                cksum = $(this).attr("cksum")
-               $("#table_"+id).find("[cksum="+cksum+"]").each(function(){
+               $("#table_"+t.id).find("[cksum="+cksum+"]").each(function(){
                  $(this).before(new_line)
                  for (i=1; i<$(this).children().length+1; i++) {
                    cell = $(":nth-child("+i+")", this)
@@ -745,11 +743,11 @@ function ajax_table_insert_line(url, id, data) {
              })
 
              // insert new lines
-             first_line = $("#table_"+id).find(".tl").first()
+             first_line = $("#table_"+t.id).find(".tl").first()
              first_line.before(msg)
              if (msg.length > 0) {
                  // remove "no data" lines
-                 $("#table_"+id).find(".nodataline").remove()
+                 $("#table_"+t.id).find(".nodataline").remove()
              }
 
              new_line = first_line.prev(".tl")
@@ -765,23 +763,23 @@ function ajax_table_insert_line(url, id, data) {
                  new_line = new_line.prev(".tl")
              }
              n_new_lines -= modified.length
-             pager_total = $("#table_"+id).attr("pager_total")
+             pager_total = $("#table_"+t.id).attr("pager_total")
              pager_total = parseInt(pager_total) + n_new_lines
-             $("#table_"+id).attr("pager_total", pager_total)
+             $("#table_"+t.id).attr("pager_total", pager_total)
 
-             t.table_pager()
+             t.pager()
              t.trim_lines()
-             table_restripe_lines(id)
+             t.restripe_lines()
              t.bind_filter_selector()
              t.hide_cells()
-             table_cell_decorator(id)
+             t.decorate_cells()
 
              $(".highlight").each(function(){
                 $(this).removeClass("highlight")
                 $(this).effect("highlight", 1000)
              })
-	     $("#refresh_"+id).removeClass("spinner")
 
+             t.unset_refresh_spin()
              t.scroll_enable_dom()
 
              // clear mem refs
@@ -795,6 +793,7 @@ function ajax_table_insert_line(url, id, data) {
          }
     })
 }
+
 function table_ajax_submit(url, id, inputs, additional_inputs, input_name, additional_input_name) {
     var s = inputs.concat(additional_inputs).concat(getIdsByName(input_name))
     $("[name="+additional_input_name+"]").each(function(){s.push(this.id)});
@@ -4950,11 +4949,16 @@ function filter_selector(id,e,k,v){
 //
 // Table link url popup
 //
-function js_link(id){
-  url=$(location).attr('href')
+function get_view_url() {
+  var url = $(location).attr('href')
   if (url.indexOf('?')>0) {
     url=url.substring(0, url.indexOf('?'))
   }
+  return url
+}
+
+function js_link(id){
+  url = get_view_url()
   var re = /#$/;
   url=url.replace(re, "")+"?";
   args="clear_filters=true&discard_filters=true&dbfilter="+$("#avs"+id).val()
@@ -5395,6 +5399,20 @@ function table_scroll_disable_dom(t) {
   $(window).unbind("DOMNodeInserted", table_scroll(t))
 }
 
+function table_bind_refresh(t) {
+  $("#refresh_"+t.id).bind("click", function(){
+    t.refresh()
+  })
+  $(this).bind("keypress", function(event) {
+    if ($('input').is(":focus")) { return }
+    if ($('textarea').is(":focus")) { return }
+    if ( event.which == 114 ) {
+      //event.preventDefault()
+      t.refresh()
+    }
+  })
+}
+
 function table_bind_filter_reformat(t) {
   $("#table_"+t.id).find("input").each(function(){
    attr = $(this).attr('id')
@@ -5457,13 +5475,23 @@ function table_toggle_column(id, column, table) {
   ajax(url, [], "set_col_dummy")
 }
 
+function table_unset_refresh_spin(t) {
+  $("#refresh_"+t.id).removeClass("spinner")
+}
+
+function table_set_refresh_spin(t) {
+  $("#refresh_"+t.id).addClass("spinner")
+}
+
+
 var osvc = {
  'tables': {}
 }
 
-function table_init(id, columns, visible_columns) {
+function table_init(id, ajax_url, columns, visible_columns) {
   var t = {
     'id': id,
+    'ajax_url': ajax_url,
     'span': $("#table_"+id).attr("span").split(","),
     'columns': columns,
     'visible_columns': visible_columns,
@@ -5482,6 +5510,9 @@ function table_init(id, columns, visible_columns) {
     'bind_filter_selector': function(){
       table_bind_filter_selector(this)
     },
+    'bind_refresh': function(){
+      table_bind_refresh(this)
+    },
     'pager': function(){
       table_pager(this)
     },
@@ -5499,6 +5530,18 @@ function table_init(id, columns, visible_columns) {
     },
     'scroll_disable_dom': function(){
       table_scroll_disable_dom(this)
+    },
+    'set_refresh_spin': function(){
+      table_set_refresh_spin(this)
+    },
+    'unset_refresh_spin': function(){
+      table_unset_refresh_spin(this)
+    },
+    'insert': function(data){
+      table_insert(this, data)
+    },
+    'refresh': function(){
+      table_refresh(this)
     }
   }
   osvc.tables[id] = t
@@ -5506,6 +5549,7 @@ function table_init(id, columns, visible_columns) {
   $("#"+id).find("select:visible").combobox()
 
   t.bind_filter_reformat()
+  t.bind_refresh()
   t.hide_cells()
   t.decorate_cells()
   t.bind_filter_selector()
