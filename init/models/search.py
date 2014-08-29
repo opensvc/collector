@@ -19,20 +19,7 @@ def tool_search():
             _style='max-width:50%;display:none',
           ),
           SCRIPT(
-            """$(document).keydown(function(event) {
-                 if ( event.which == 27 ) {
-                   $('input').is(":focus").blur()
-                   $('textarea').is(":focus").blur()
-                   return
-                 }
-                 if ($('input').is(":focus")) { return ; } ;
-                 if ($('textarea').is(":focus")) { return ; } ;
-                 searchbox = $(".search").find("input")
-                 if ( event.which == 83 ) {
-                   event.preventDefault();
-                   searchbox.focus()
-                 }
-               });""",
+            "bind_search_tool()",
           ),
           _class='search',
         )

@@ -9,6 +9,30 @@ if (!Array.prototype.indexOf) {
 }
 
 //
+// search tool
+//
+function bind_search_tool() {
+  $(document).keydown(function(event) {
+    if ( event.which == 27 ) {
+      $("input:focus").blur()
+      $("textarea:focus").blur()
+      return
+    }
+    if ($('input').is(":focus")) {
+      return
+    }
+    if ($('textarea').is(":focus")) {
+      return
+    }
+    searchbox = $(".search").find("input")
+    if ( event.which == 83 ) {
+      event.preventDefault();
+      searchbox.focus()
+    }
+  })
+}
+
+//
 // websockets
 //
 var wsh = {}
