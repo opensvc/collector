@@ -785,8 +785,8 @@ class table_dashboard(HtmlTable):
                      display=False,
                     ),
         }
-        self.keys = ["dash_nodename", "dash_svcname", "dash_md5"]
-        self.span = ["dash_nodename", "dash_svcname", "dash_md5"]
+        self.keys = ["dash_nodename", "dash_type", "dash_svcname", "dash_md5"]
+        self.span = ["dash_nodename", "dash_type", "dash_svcname", "dash_md5"]
         self.order = ["~dash_severity", "dash_type", "dash_nodename", "dash_svcname"]
         self.colprops['dash_svcname'].t = self
         self.colprops['dash_nodename'].t = self

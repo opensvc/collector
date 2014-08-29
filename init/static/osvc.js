@@ -661,7 +661,8 @@ function table_refresh(t) {
                cksum = $(this).attr("cksum")
                old_line = tbody.children(".deleteme[cksum="+cksum+"]")
                if (old_line.length == 0) {
-                   new_line.effect("highlight", 1000)
+                   new_line.addClass("tohighlight")
+                   return
                }
                old_line.each(function(){
                  j = 0
@@ -674,7 +675,7 @@ function table_refresh(t) {
                    if (cell.attr("v") == new_cell.attr("v")) {
                      continue
                    }
-                   new_cell.effect("highlight", 1000)
+                   new_cell.addClass("tohighlight")
                  }
                })
              })
@@ -692,6 +693,8 @@ function table_refresh(t) {
              t.unset_refresh_spin()
 
              t.scroll_enable_dom()
+
+             tbody.find(".tohighlight").removeClass("tohighlight").effect("highlight", 1000)
 
              // clear mem refs
              cksum = null
