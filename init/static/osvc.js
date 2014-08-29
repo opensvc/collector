@@ -4667,7 +4667,7 @@ function table_bind_filter_input_events(t) {
         var dest_id = input.siblings("[id^="+t.id+"_fc_]").attr("id")
         var col = input.attr('id').split('_f_')[1]
         _url = url + col + "?" + input.attr('id') + "=" + encodeURIComponent(input.val())
-        sync_ajax(_url, [], dest_id)
+        sync_ajax(_url, [], dest_id, function(){})
       }, 1000)
     }
   })
