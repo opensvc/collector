@@ -4656,6 +4656,27 @@ function filter_submit(id,k,v){
   window["ajax_submit_"+id]()
 };
 
+function table_bind_filter_input_events(t) {
+  var inputs = $("#"+t.id).find("input[name=fi]")
+  var url = t.ajax_url + "_col_values/"
+  inputs.bind("keyup", function() {
+    var input = $(this)
+    if (!is_enter(event)) {
+      clearTimeout(timer)
+      timer = setTimeout(function validate(){
+        var dest_id = input.siblings("[id^="+t.id+"_fc_]").attr("id")
+        var col = input.attr('id').split('_f_')[1]
+        _url = url + col + "?" + input.attr('id') + "=" + encodeURIComponent(input.val())
+        sync_ajax(_url, [], dest_id)
+      }, 1000)
+    }
+  })
+  inputs.bind("keypress", function() {
+    var fn = "ajax_enter_submit_"+t.id
+    window[fn](event)
+  })
+}
+
 function table_bind_filter_selector(t) {
   $("#table_"+t.id).each(function(){
     $(this).bind("mouseup", function(event) {
@@ -5549,6 +5570,9 @@ function table_init(id, ajax_url, columns, visible_columns) {
     'bind_filter_selector': function(){
       table_bind_filter_selector(this)
     },
+    'bind_filter_input_events': function(){
+      table_bind_filter_input_events(this)
+    },
     'bind_refresh': function(){
       table_bind_refresh(this)
     },
@@ -5596,6 +5620,7 @@ function table_init(id, ajax_url, columns, visible_columns) {
   t.bind_filter_reformat()
   t.bind_refresh()
   t.bind_link()
+  t.bind_filter_input_events()
 
   t.hide_cells()
   t.decorate_cells()

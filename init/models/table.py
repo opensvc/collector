@@ -1026,12 +1026,6 @@ class HtmlTable(object):
                                 _id=self.filter_key(c),
                                 _name="fi",
                                 _value=self.filter_parse(c),
-                                _onKeyPress="ajax_enter_submit_%s(event)"%self.id,
-                                _onKeyUp="""if(!is_enter(event)){clearTimeout(timer);timer=setTimeout(function validate(){ajax('%(url)s', inputs_%(id)s, '%(cloud)s')}, 1000)}"""%dict(
-                                    id=self.id,
-                                    url=URL(r=request,f=self.func+'_col_values', args=[c]),
-                                    cloud=self.filter_cloud_key(c)
-                                  ),
                               ),
                               IMG(
                                 _src=URL(r=request,c='static',f='values_to_filter.png'),
