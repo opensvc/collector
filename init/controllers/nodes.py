@@ -813,7 +813,7 @@ class table_uids(HtmlTable):
                 T("User id range start"),
                 INPUT(
                   _id="uid_start",
-                  _onkeypress="if (is_enter(event)) {ajax('%(url)s', ['uid_start'], '%(div)s')};"""%dict(
+                  _onkeypress="if (is_enter(event)) {sync_ajax('%(url)s', ['uid_start'], '%(div)s', function(){})};"""%dict(
                                 url=URL(r=request,c='nodes',f='ajax_free_uids'),
                                 div='r'+divid,
                               ),
@@ -917,7 +917,7 @@ class table_gids(HtmlTable):
                 T("Group id range start"),
                 INPUT(
                   _id="gid_start",
-                  _onkeypress="if (is_enter(event)) {ajax('%(url)s', ['gid_start'], '%(div)s')};"""%dict(
+                  _onkeypress="if (is_enter(event)) {sync_ajax('%(url)s', ['gid_start'], '%(div)s', function(){})};"""%dict(
                                 url=URL(r=request,c='nodes',f='ajax_free_gids'),
                                 div='r'+divid,
                               ),
