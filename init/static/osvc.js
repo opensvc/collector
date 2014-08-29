@@ -16,6 +16,7 @@ function bind_search_tool() {
     if ( event.which == 27 ) {
       $("input:focus").blur()
       $("textarea:focus").blur()
+      $(".white_float").hide()
       return
     }
     if ($('input').is(":focus")) {
