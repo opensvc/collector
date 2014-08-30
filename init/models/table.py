@@ -125,6 +125,8 @@ class HtmlTable(object):
         self.upc_table = self.id
         self.last = None
         self.column_filter_reset = '**clear**'
+        self.object_list = []
+        self.child_tables = []
 
         # to be set by children
         self.additional_inputs = []
@@ -783,7 +785,10 @@ class HtmlTable(object):
     def _filter_parse(self, f):
         key = self.filter_key(f)
         if key in request.vars:
-            return request.vars[key]
+            v = request.vars[key]
+            if v == "":
+                return "**clear**"
+            return v
         return ""
 
     def filter_parse_glob(self, f):
@@ -880,8 +885,9 @@ class HtmlTable(object):
             if len(classes) > 0:
                 attrs['_class'] = ' '.join(classes)
             cells.append(TD(content, **attrs))
+            cl = "tl"
             if self.highlight:
-                cl = "tl "
+                cl += " h"
         line_attrs = dict(
           _class = cl,
           _spansum = self.span_line_id(o),
@@ -1302,7 +1308,7 @@ class HtmlTable(object):
               DIV(XML('&nbsp;'), _class='spacer'),
               SCRIPT(
                 """
-table_init("%(id)s", ajax_url="%(ajax_url)s", columns=%(columns)s, visible_columns=%(visible_columns)s)
+table_init("%(id)s", ajax_url="%(ajax_url)s", columns=%(columns)s, visible_columns=%(visible_columns)s, child_tables=%(child_tables)s)
 function ajax_submit_%(id)s(){%(ajax_submit)s};
 function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
 var inputs_%(id)s = %(a)s;
@@ -1312,6 +1318,7 @@ var inputs_%(id)s = %(a)s;
                    a=self.ajax_inputs(),
                    columns=str(self.cols),
                    visible_columns=str(self.visible_columns()),
+                   child_tables=str(self.child_tables),
                    ajax_submit=self.ajax_submit(),
                    ajax_enter_submit=self.ajax_enter_submit(),
                 ),

@@ -513,6 +513,10 @@ function sync_ajax(url, inputs, id, f) {
              });
              f()
              $("#"+id).parents(".white_float").each(function(){keep_inside(this)})
+             var t = osvc.tables[id]
+             if (typeof t === 'undefined') { return }
+             t.refresh_child_tables()
+             t.on_change()
          }
     })
 }
@@ -696,6 +700,9 @@ function table_refresh(t) {
 
              tbody.find(".tohighlight").removeClass("tohighlight").effect("highlight", 1000)
 
+             t.refresh_child_tables()
+             t.on_change()
+
              // clear mem refs
              cksum = null
              msg = null
@@ -808,6 +815,9 @@ function table_insert(t, data) {
              t.unset_refresh_spin()
              t.scroll_enable_dom()
 
+             t.refresh_child_tables()
+             t.on_change()
+
              // clear mem refs
              cksum = null
              msg = null
@@ -843,7 +853,10 @@ function table_ajax_submit(url, id, inputs, additional_inputs, input_name, addit
              $("#"+id).find("script").each(function(i){
                //eval($(this).text());
                $(this).remove();
-             });
+             })
+             var t = osvc.tables[id]
+             t.refresh_child_tables()
+             t.on_change()
          }
     })
 }
@@ -4654,6 +4667,66 @@ function _jqplot_img(e){
             }
 }
 
+function diskdonut(o) {
+  try{
+  var d = $.parseJSON(o.html())
+  var total = fancy_size_mb(d['total'])
+  var backend_total = fancy_size_mb(d['backend_total'])
+  var title = total + ' (' + backend_total + ')'
+  o.html("")
+  $.jqplot(o.attr('id'), d['data'],
+    {
+      grid:{background:'#ffffff',borderColor:'transparent',shadow:false,drawBorder:false,shadowColor:'transparent'},
+      seriesDefaults: {
+        renderer: $.jqplot.DonutRenderer,
+        rendererOptions: {
+          sliceMargin: 0,
+          showDataLabels: true
+        }
+      },
+      title: { text: title }
+    }
+  );
+  $('#'+o.attr('id')).bind('jqplotDataHighlight', 
+        function (ev, seriesIndex, pointIndex, data) {
+            $('#chart_info').html('level: '+seriesIndex+', data: '+data[0]);
+        }
+  );
+  $('#'+o.attr('id')).bind('jqplotDataUnhighlight', 
+        function (ev) {
+            $('#chart_info').html('-');
+        }
+  );
+  } catch(e) {}
+}
+
+function plot_diskdonuts() {
+  $("[id^=chart_svc]").each(function(){
+    diskdonut($(this))
+  })
+  $("[id^=chart_ap]").each(function(){
+    diskdonut($(this))
+    $(this).bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
+      d = data[seriesIndex]
+      i = d.lastIndexOf(" (")
+      d = d.substring(0, i)
+      filter_submit("disks", "disks_f_app", d)
+    })
+  })
+  $("[id^=chart_dg]").each(function(){
+    diskdonut($(this))
+  })
+  $("[id^=chart_ar]").each(function(){
+    diskdonut($(this))
+    $(this).bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
+      d = data[seriesIndex]
+      var reg = new RegExp(" \(.*\)", "g");
+      d = d.replace(reg, "")
+      filter_submit("disks", "disks_f_disk_arrayid", d)
+    })
+  })
+}
+
 function filter_submit(id,k,v){
   $("#"+k).val(v)
   window["ajax_submit_"+id]()
@@ -5551,13 +5624,14 @@ var osvc = {
  'tables': {}
 }
 
-function table_init(id, ajax_url, columns, visible_columns) {
+function table_init(id, ajax_url, columns, visible_columns, child_tables) {
   var t = {
     'id': id,
     'ajax_url': ajax_url,
     'span': $("#table_"+id).attr("span").split(","),
     'columns': columns,
     'visible_columns': visible_columns,
+    'child_tables': child_tables,
     'decorate_cells': function(){
       table_cell_decorator(id)
     },
@@ -5606,11 +5680,20 @@ function table_init(id, ajax_url, columns, visible_columns) {
     'unset_refresh_spin': function(){
       table_unset_refresh_spin(this)
     },
-    'insert': function(data){
-      table_insert(this, data)
-    },
     'link': function(){
       table_link(this)
+    },
+    'on_change': function(){
+      // placeholder to override after table_init()
+    },
+    'refresh_child_tables': function(){
+      for (var i=0; i<this.child_tables.length; i++) {
+        var id = this.child_tables[i]
+        osvc.tables[id].refresh()
+      }
+    },
+    'insert': function(data){
+      table_insert(this, data)
     },
     'refresh': function(){
       table_refresh(this)

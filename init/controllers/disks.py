@@ -99,6 +99,7 @@ class col_chart(HtmlTableColumn):
                _class='spacer',
              )]
        l += [DIV(
+               '-',
                _id='chart_info',
              )]
        return DIV(l)
@@ -713,6 +714,7 @@ class table_disks(HtmlTable):
         self.keys = ['disk_id', 'disk_region', 'disk_nodename']
         self.span = ['disk_id', 'disk_size', 'disk_alloc', 'disk_arrayid',
                      'disk_devid', 'disk_name', 'disk_raid', 'disk_group', 'array_model']
+        self.child_tables = ["charts"]
 
         if 'StorageManager' in user_groups() or \
            'StorageExec' in user_groups():
@@ -1345,6 +1347,7 @@ def ajax_disks_col_values():
 @auth.requires_login()
 def ajax_disks():
     t = table_disks('disks', 'ajax_disks')
+
     o = db.b_disk_app.disk_id | db.b_disk_app.disk_svcname | db.b_disk_app.disk_nodename
     q = db.b_disk_app.id>0
     q |= db.stor_array.id<0
@@ -1365,65 +1368,59 @@ def ajax_disks():
         t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False, left=(l1,l2))
         return t.table_lines_data(n)
 
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        t.csv_q = q
+        t.csv_orderby = o
+        t.csv_left = (l1,l2)
+        t.csv_limit = 60000
+        n = db(q).select(db.b_disk_app.id.count(), cacheable=True, left=(l1,l2)).first()._extra[db.b_disk_app.id.count()]
+        return t.csv()
+
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        n = db(q).select(db.b_disk_app.id.count(), cacheable=True, left=(l1,l2)).first()._extra[db.b_disk_app.id.count()]
+        t.setup_pager(n)
+        t.object_list = db(q).select(cacheable=True, limitby=(t.pager_start,t.pager_end), orderby=o, left=(l1,l2))
+        return t.do_commonality()
+
     n = db(q).select(db.b_disk_app.id.count(), cacheable=True, left=(l1,l2)).first()._extra[db.b_disk_app.id.count()]
     t.setup_pager(n)
     t.object_list = db(q).select(cacheable=True, limitby=(t.pager_start,t.pager_end), orderby=o, left=(l1,l2))
-
-    t.csv_q = q
-    t.csv_orderby = o
-    t.csv_left = (l1,l2)
-    t.csv_limit = 60000
-
-    if len(request.args) == 1 and request.args[0] == 'csv':
-        return t.csv()
-    if len(request.args) == 1 and request.args[0] == 'commonality':
-        return t.do_commonality()
-
-    nt = table_disk_charts('charts', 'ajax_disk_charts')
-
-    return DIV(
-             SCRIPT(
-               #'if ($("#charts").is(":visible")) {',
-               nt.ajax_submit(additional_inputs=t.ajax_inputs()),
-               #"}",
-               _name="disks_to_eval",
-             ),
-             DIV(
-               T("Statistics"),
-               _style="text-align:left;font-size:120%;background-color:#e0e1cd",
-               _class="right16 clickable",
-               _onclick="""
-               if (!$("#charts").is(":visible")) {
-                 $(this).addClass("down16");
-                 $(this).removeClass("right16");
-                 $("#charts").show(); %s;
-               } else {
-                 $(this).addClass("right16");
-                 $(this).removeClass("down16");
-                 $("#charts").hide();
-               }"""%nt.ajax_submit(additional_inputs=t.ajax_inputs())
-             ),
-             DIV(
-               IMG(_src=URL(r=request,c='static',f='spinner.gif')),
-               _id="charts",
-             ),
-             t.html(),
-           )
+    return t.html()
 
 @auth.requires_login()
 def disks():
     t = DIV(
-          ajax_disks(),
-          _id='disks',
+          DIV(
+            T("Statistics"),
+             _style="text-align:left;font-size:120%;background-color:#e0e1cd",
+             _class="right16 clickable",
+             _onclick="""
+               if (!$("#charts").is(":visible")) {
+                 $(this).addClass("down16");
+                 $(this).removeClass("right16");
+                 $("#charts").show();
+               } else {
+                 $(this).addClass("right16");
+                 $(this).removeClass("down16");
+                 $("#charts").hide();
+               }"""
+          ),
+          DIV(
+            ajax_disk_charts(),
+            _id="charts",
+          ),
+          DIV(
+            ajax_disks(),
+            _id='disks',
+          ),
         )
     return dict(table=t)
-
 
 @auth.requires_login()
 def ajax_disk_charts():
     session.forget(response)
-    t = table_disks('disks', 'ajax_disks')
     nt = table_disk_charts('charts', 'ajax_disk_charts')
+    t = table_disks('disks', 'ajax_disks')
 
     o = db.b_disk_app.disk_id
     q = db.b_disk_app.id>0
@@ -1806,75 +1803,13 @@ def ajax_disk_charts():
                        'chart_dg': json.dumps(h_data_dg),
                        'chart_ar': json.dumps(h_data_array)}]
 
+    if len(request.args) == 1 and request.args[0] == 'line':
+        return nt.table_lines_data(-1)
+
     return DIV(
-             nt.html(),
-             SCRIPT(
-"""
-function diskdonut(o) {
-  try{
-  var d = $.parseJSON(o.html())
-  var total = fancy_size_mb(d['total'])
-  var backend_total = fancy_size_mb(d['backend_total'])
-  var title = total + ' (' + backend_total + ')'
-  o.html("")
-  $.jqplot(o.attr('id'), d['data'],
-    {
-      grid:{background:'#ffffff',borderColor:'transparent',shadow:false,drawBorder:false,shadowColor:'transparent'},
-      seriesDefaults: {
-        renderer: $.jqplot.DonutRenderer,
-        rendererOptions: {
-          sliceMargin: 0,
-          showDataLabels: true
-        }
-      },
-      title: { text: title }
-    }
-  );
-  $('#'+o.attr('id')).bind('jqplotDataHighlight', 
-        function (ev, seriesIndex, pointIndex, data) {
-            $('#chart_info').html('level: '+seriesIndex+', data: '+data[0]);
-        }
-  );
-  $('#'+o.attr('id')).bind('jqplotDataUnhighlight', 
-        function (ev) {
-            $('#chart_info').html('%(msg)s');
-        }
-  );
-  } catch(e) {}
-}
-$("[id^=chart_svc]").each(function(){
-  diskdonut($(this))
-})
-$("[id^=chart_ap]").each(function(){
-  diskdonut($(this))
-  $(this).bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
-    d = data[seriesIndex]
-    i = d.lastIndexOf(" (")
-    d = d.substring(0, i)
-    $("#disks_f_app").val(d)
-    %(submit)s
-  })
-})
-$("[id^=chart_dg]").each(function(){
-  diskdonut($(this))
-})
-$("[id^=chart_ar]").each(function(){
-  diskdonut($(this))
-  $(this).bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
-    d = data[seriesIndex]
-    var reg = new RegExp(" \(.*\)", "g");
-    d = d.replace(reg, "")
-    $("#disks_f_disk_arrayid").val(d)
-    %(submit)s
-  })
-})
-"""%dict(
-      submit=t.ajax_submit(),
-      msg=T("Hover over a slice to show data"),
-    ),
-               _name="charts_to_eval",
-             ),
-           )
+      nt.html(),
+      SCRIPT("""osvc.tables["charts"]["on_change"] = plot_diskdonuts; plot_diskdonuts() """),
+    )
 
 class table_disk_charts(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
@@ -1882,6 +1817,8 @@ class table_disk_charts(HtmlTable):
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['chart']
+        self.keys = ['chart']
+        self.span = ['chart']
         self.colprops.update({
             'chart': col_chart(
                      title='Chart',
