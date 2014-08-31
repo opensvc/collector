@@ -4667,6 +4667,72 @@ function _jqplot_img(e){
             }
 }
 
+function savedonut(o) {
+  try{
+  var d = $.parseJSON(o.html())
+  var total = fancy_size_mb(d['total'])
+  var title = total
+  o.html("")
+  $.jqplot(o.attr('id'), d['data'],
+    {
+      grid:{background:'#ffffff',borderColor:'transparent',shadow:false,drawBorder:false,shadowColor:'transparent'},
+      seriesDefaults: {
+        renderer: $.jqplot.DonutRenderer,
+        rendererOptions: {
+          sliceMargin: 0,
+          showDataLabels: true
+        }
+      },
+      title: { text: title }
+    }
+  )
+  $('#'+o.attr('id')).bind('jqplotDataHighlight',
+        function (ev, seriesIndex, pointIndex, data) {
+            $('#chart_info').html('level: '+seriesIndex+', data: '+data[0]);
+        }
+  )
+  $('#'+o.attr('id')).bind('jqplotDataUnhighlight',
+        function (ev) {
+            $('#chart_info').html('-');
+        }
+  )
+  } catch(e) {}
+}
+
+function plot_savedonuts() {
+  $("[id^=chart_svc]").each(function(){
+    savedonut($(this))
+  })
+  $("[id^=chart_ap]").each(function(){
+    savedonut($(this))
+    $(this).bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
+      d = data[seriesIndex]
+      i = d.lastIndexOf(" (")
+      d = d.substring(0, i)
+      filter_submit("saves", "saves_f_save_app", d)
+    })
+  })
+  $("[id^=chart_group]").each(function(){
+    savedonut($(this))
+    $(this).bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
+      d = data[seriesIndex]
+      i = d.lastIndexOf(" (")
+      d = d.substring(0, i)
+      filter_submit("saves", "saves_f_save_group", d)
+    })
+  })
+  $("[id^=chart_server]").each(function(){
+    savedonut($(this))
+    $(this).bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
+      d = data[seriesIndex]
+      var reg = new RegExp(" \(.*\)", "g");
+      d = d.replace(reg, "")
+      $("#saves_f_save_server").val(d)
+      filter_submit("saves", "saves_f_save_server", d)
+    })
+  })
+}
+
 function diskdonut(o) {
   try{
   var d = $.parseJSON(o.html())

@@ -345,6 +345,10 @@ $("#dashboard_f_dash_type").val('%(s)s')
     if len(request.args) == 1 and request.args[0] == 'csv':
         return mt.csv()
 
+    if len(request.args) == 1 and request.args[0] == 'line':
+        return t.table_lines_data(-1)
+
+
     return DIV(
              mt.html(),
              SCRIPT(

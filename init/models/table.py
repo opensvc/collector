@@ -88,11 +88,12 @@ class Column(object):
 
 class HtmlTableColumn(Column):
     def __init__(self, title, field, table=None, display=False,
-                 img='generic', _class='', _dataclass='', filter_redirect=None):
+                 img='generic', _class='', _dataclass='', filter_redirect=None, default_filter=None):
         Column.__init__(self, title, display, img, _class, _dataclass)
         self.table = table
         self.field = field
         self.filter_redirect = filter_redirect
+        self.default_filter = default_filter
 
     def get(self, o):
         try:
@@ -780,6 +781,8 @@ class HtmlTable(object):
         if v == "":
             return self.stored_filter_value(f, bookmark)
         self.store_filter_value(f, v, bookmark_add)
+        if v == "" and self.colprops[f].default_filter is not None:
+            v = self.colprops[f].default_filter
         return v
 
     def _filter_parse(self, f):
@@ -787,6 +790,8 @@ class HtmlTable(object):
         if key in request.vars:
             v = request.vars[key]
             if v == "":
+                if self.colprops[f].default_filter is not None:
+                    return self.colprops[f].default_filter
                 return "**clear**"
             return v
         return ""
