@@ -394,6 +394,7 @@ class table_actions(HtmlTable):
                 field='begin',
                 display = True,
                 img = 'time16',
+                default_filter = '>-1d',
             ),
             'end': col_end(
                 title = 'End',
@@ -605,9 +606,6 @@ def ajax_actions():
                 ack(t.get_checked())
         except ToolError, e:
             t.flash = str(e)
-
-    if request.vars.actions_f_begin is None or request.vars.actions_f_begin == t.column_filter_reset:
-        request.vars.actions_f_begin = '>-1d'
 
     o = ~db.v_svcactions.id
     q = _where(None, 'v_svcactions', domain_perms(), 'hostname')

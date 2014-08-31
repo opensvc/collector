@@ -5256,6 +5256,8 @@ class table_comp_log(table_comp_status):
             self.colprops[c].t = self
             if 'run_' in c or c == 'rset_md5':
                 self.colprops[c].table = 'comp_log'
+        self.colprops['run_date'].default_filter = '>-1d'
+
         self.ajax_col_values = 'ajax_comp_log_col_values'
         self.checkboxes = False
         self.checkbox_id_table = 'comp_log'
@@ -5268,8 +5270,6 @@ def ajax_comp_log():
     t = table_comp_log('ajax_comp_log', 'ajax_comp_log')
 
     db.commit()
-    if request.vars.ajax_comp_log_f_run_date is None or request.vars.ajax_comp_log_f_run_date == t.column_filter_reset:
-        request.vars.ajax_comp_log_f_run_date = '>-1d'
     o = ~db.comp_log.id
     q = _where(None, 'comp_log', domain_perms(), 'run_nodename')
     for f in t.cols:

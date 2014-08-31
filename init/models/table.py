@@ -789,6 +789,8 @@ class HtmlTable(object):
         key = self.filter_key(f)
         if key in request.vars:
             v = request.vars[key]
+            if v == "**clear**" and self.colprops[f].default_filter:
+                return self.colprops[f].default_filter
             if v == "":
                 if self.colprops[f].default_filter is not None:
                     return self.colprops[f].default_filter
