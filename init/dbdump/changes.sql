@@ -4257,3 +4257,25 @@ CREATE TABLE `table_modified` (
   UNIQUE KEY `index_1` (`table_name`)
 );
 
+
+alter table scheduler_run drop foreign key scheduler_run_ibfk_1;
+
+alter table scheduler_task modify column varchar(16) default "QUEUED";
+
+alter table scheduler_task modify column task_name varchar(64) DEFAULT NULL;
+
+alter table scheduler_task modify column application_name varchar(16) DEFAULT NULL;
+
+alter table scheduler_task modify column function_name varchar(64) DEFAULT NULL;
+
+alter table scheduler_task modify column group_name varchar(64) DEFAULT NULL;
+
+alter table scheduler_task modify column uuid varchar(40) DEFAULT NULL;
+
+alter table scheduler_run modify column varchar(16) default null;
+
+alter table scheduler_run modify column worker_name varchar(64) default null;
+
+alter table scheduler_worker modify column status varchar(16) default null;
+
+alter table scheduler_worker modify column worker_name varchar(64) default null;

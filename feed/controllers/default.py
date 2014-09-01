@@ -116,25 +116,25 @@ def update_appinfo(vars, vals, auth):
 @service.xmlrpc
 def update_service(vars, vals, auth):
     scheduler.queue_task("_update_service", [vars, vals, auth],
-                         group_name="fast")
+                         group_name="_update_service")
 
 @auth_uuid
 @service.xmlrpc
 def push_checks(vars, vals, auth):
     scheduler.queue_task("_push_checks", [vars, vals],
-                         group_name="fast")
+                         group_name="_push_checks")
 
 @auth_uuid
 @service.xmlrpc
 def insert_generic(data, auth):
     scheduler.queue_task("_insert_generic", [data, auth],
-                         group_name="fast")
+                         group_name="_insert_generic")
 
 @auth_uuid
 @service.xmlrpc
 def update_asset(vars, vals, auth):
     scheduler.queue_task("_update_asset", [vars, vals, auth],
-                         group_name="fast")
+                         group_name="_update_asset")
 
 @auth_uuid
 @service.xmlrpc
@@ -156,7 +156,7 @@ def resmon_update(vars, vals, auth):
 def svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
     scheduler.queue_task("_svcmon_update_combo",
                          [g_vars, g_vals, r_vars, r_vals, auth],
-                         group_name="fast")
+                         group_name="_svcmon_update_combo")
 
 @auth_uuid
 @service.xmlrpc
@@ -361,19 +361,19 @@ def insert_stats(data, auth):
             vals = vals[max:]
         generic_insert('stats_'+stat, vars, vals)
     scheduler.queue_task("update_dash_netdev_errors" , [auth[1]],
-                         group_name="slow", timeout=120)
+                         group_name="update_dash_netdev_errors", timeout=120)
 
 @auth_uuid
 @service.xmlrpc
 def insert_pkg(vars, vals, auth):
     scheduler.queue_task("_insert_pkg", [vars, vals, auth],
-                         group_name="slow", timeout=120)
+                         group_name="_insert_pkg", timeout=120)
 
 @auth_uuid
 @service.xmlrpc
 def insert_patch(vars, vals, auth):
     scheduler.queue_task("_insert_patch", [vars, vals, auth],
-                         group_name="slow", timeout=120)
+                         group_name="_insert_patch", timeout=120)
 
 @auth_uuid
 @service.xmlrpc
@@ -572,7 +572,7 @@ def register_node(node):
 @service.xmlrpc
 def svcmon_update(vars, vals, auth):
     scheduler.queue_task("_svcmon_update", [vars, vals, auth],
-                         group_name="fast")
+                         group_name="_svcmon_update_combo")
 
 
 #
