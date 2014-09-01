@@ -4846,12 +4846,18 @@ function filter_selector(id,e,k,v){
       return false;
     }
   });
-  var sel = window.getSelection().toString()
+  try {
+    var sel = window.getSelection().toString()
+  } catch(e) {
+    var sel = document.selection.createRange().text
+  }
   if (sel.length == 0) {
     sel = v
   }
   _sel = sel
   $("#fsr"+id).show()
+  var posx = 0
+  var posy = 0
   if (e.pageX || e.pageY) {
       posx = e.pageX;
       posy = e.pageY;
