@@ -345,6 +345,10 @@ $("#dashboard_f_dash_type").val('%(s)s')
     if len(request.args) == 1 and request.args[0] == 'csv':
         return mt.csv()
 
+    if len(request.args) == 1 and request.args[0] == 'line':
+        return t.table_lines_data(-1)
+
+
     return DIV(
              mt.html(),
              SCRIPT(
@@ -785,8 +789,8 @@ class table_dashboard(HtmlTable):
                      display=False,
                     ),
         }
-        self.keys = ["dash_nodename", "dash_svcname", "dash_md5"]
-        self.span = ["dash_nodename", "dash_svcname", "dash_md5"]
+        self.keys = ["dash_nodename", "dash_type", "dash_svcname", "dash_md5"]
+        self.span = ["dash_nodename", "dash_type", "dash_svcname", "dash_md5"]
         self.order = ["~dash_severity", "dash_type", "dash_nodename", "dash_svcname"]
         self.colprops['dash_svcname'].t = self
         self.colprops['dash_nodename'].t = self
@@ -889,12 +893,11 @@ def ajax_dashboard():
              SCRIPT("""
 function ws_action_switch_%(divid)s(data) {
         if (data["event"] == "dash_change") {
-          ajax_table_refresh('%(url)s', '%(divid)s')
+          osvc.tables["%(divid)s"].refresh()
         }
 }
 wsh["%(divid)s"] = ws_action_switch_%(divid)s
               """ % dict(
-                     url=URL(r=request,f=t.func),
                      divid=t.innerhtml,
                     )
              ),

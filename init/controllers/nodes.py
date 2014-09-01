@@ -769,6 +769,8 @@ class table_uids(HtmlTable):
         self.cols = ['user_id',
                      'user_id_count',
                      'user_name']
+        self.keys = ["user_id"]
+        self.span = ["user_id"]
         self.colprops = {
             'user_id': col_user_id(
                      title='User id',
@@ -813,7 +815,7 @@ class table_uids(HtmlTable):
                 T("User id range start"),
                 INPUT(
                   _id="uid_start",
-                  _onkeypress="if (is_enter(event)) {ajax('%(url)s', ['uid_start'], '%(div)s')};"""%dict(
+                  _onkeypress="if (is_enter(event)) {sync_ajax('%(url)s', ['uid_start'], '%(div)s', function(){})};"""%dict(
                                 url=URL(r=request,c='nodes',f='ajax_free_uids'),
                                 div='r'+divid,
                               ),
@@ -873,6 +875,8 @@ class table_gids(HtmlTable):
         self.cols = ['group_id',
                      'group_id_count',
                      'group_name']
+        self.keys = ["group_id"]
+        self.span = ["group_id"]
         self.colprops = {
             'group_id': col_group_id(
                      title='User id',
@@ -917,7 +921,7 @@ class table_gids(HtmlTable):
                 T("Group id range start"),
                 INPUT(
                   _id="gid_start",
-                  _onkeypress="if (is_enter(event)) {ajax('%(url)s', ['gid_start'], '%(div)s')};"""%dict(
+                  _onkeypress="if (is_enter(event)) {sync_ajax('%(url)s', ['gid_start'], '%(div)s', function(){})};"""%dict(
                                 url=URL(r=request,c='nodes',f='ajax_free_gids'),
                                 div='r'+divid,
                               ),
@@ -1164,6 +1168,9 @@ def ajax_uids():
         return mt.csv()
     if len(request.args) == 1 and request.args[0] == 'commonality':
         return mt.do_commonality()
+    if len(request.args) == 1 and request.args[0] == 'line':
+        return mt.table_lines_data(-1)
+
 
     return DIV(
              mt.html(),
@@ -1268,6 +1275,8 @@ def ajax_gids():
         return mt.csv()
     if len(request.args) == 1 and request.args[0] == 'commonality':
         return mt.do_commonality()
+    if len(request.args) == 1 and request.args[0] == 'line':
+        return mt.table_lines_data(-1)
 
     return DIV(
              mt.html(),

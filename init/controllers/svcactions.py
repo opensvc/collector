@@ -394,6 +394,7 @@ class table_actions(HtmlTable):
                 field='begin',
                 display = True,
                 img = 'time16',
+                default_filter = '>-1d',
             ),
             'end': col_end(
                 title = 'End',
@@ -606,9 +607,6 @@ def ajax_actions():
         except ToolError, e:
             t.flash = str(e)
 
-    if request.vars.actions_f_begin is None or request.vars.actions_f_begin == t.column_filter_reset:
-        request.vars.actions_f_begin = '>-1d'
-
     o = ~db.v_svcactions.id
     q = _where(None, 'v_svcactions', domain_perms(), 'hostname')
     q = apply_filters(q, db.v_svcactions.hostname, db.v_svcactions.svcname)
@@ -651,19 +649,18 @@ function ws_action_switch_%(divid)s(data) {
         if (data["event"] == "begin_action") {
           _data = []
           _data.push({"key": "id", "val": data["data"]["id"], "op": "="})
-          ajax_table_insert_line('%(url)s', '%(divid)s', _data);
+          osvc.tables["%(divid)s"].insert(_data)
         } else if (data["event"] == "end_action") {
           _data = []
           _data.push({"key": "id", "val": data["data"]["id"], "op": ">="})
           _data.push({"key": "pid", "val": data["data"]["pid"], "op": "="})
-          ajax_table_insert_line('%(url)s', '%(divid)s', _data);
+          osvc.tables["%(divid)s"].insert(_data)
         } else if (data["event"] == "svcactions_change") {
-          ajax_table_refresh('%(url)s', '%(divid)s')
+          osvc.tables["%(divid)s"].refresh()
         }
 }
 wsh["%(divid)s"] = ws_action_switch_%(divid)s
               """ % dict(
-                     url=URL(r=request,f=t.func),
                      divid=t.innerhtml,
                     )
               ),

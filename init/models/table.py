@@ -88,11 +88,12 @@ class Column(object):
 
 class HtmlTableColumn(Column):
     def __init__(self, title, field, table=None, display=False,
-                 img='generic', _class='', _dataclass='', filter_redirect=None):
+                 img='generic', _class='', _dataclass='', filter_redirect=None, default_filter=None):
         Column.__init__(self, title, display, img, _class, _dataclass)
         self.table = table
         self.field = field
         self.filter_redirect = filter_redirect
+        self.default_filter = default_filter
 
     def get(self, o):
         try:
@@ -125,6 +126,8 @@ class HtmlTable(object):
         self.upc_table = self.id
         self.last = None
         self.column_filter_reset = '**clear**'
+        self.object_list = []
+        self.child_tables = []
 
         # to be set by children
         self.additional_inputs = []
@@ -306,6 +309,9 @@ class HtmlTable(object):
                  DIV(l),
                )
 
+    def visible_columns(self):
+        return [k for k, v in self.colprops.items() if v.display]
+
     def get_column_visibility(self, c):
         return self.colprops[c].display
 
@@ -331,14 +337,6 @@ class HtmlTable(object):
             if field not in self.colprops:
                 continue
             self.colprops[field].display = True
-
-    def col_hide(self, c):
-        id_col = self.col_checkbox_key(c)
-        if self.get_column_visibility(c) or \
-           (id_col in request.vars and request.vars[id_col] == 'on'):
-            return ""
-        else:
-            return "display:none"
 
     def format_av_filter(self, f):
         if f is None:
@@ -409,9 +407,6 @@ class HtmlTable(object):
     def columns_selector(self):
         if not self.columnable:
             return SPAN()
-        id_set_col_table = '_'.join((self.id, 'set_col_table'))
-        id_set_col_field = '_'.join((self.id, 'set_col_field'))
-        id_set_col_value = '_'.join((self.id, 'set_col_value'))
         def checkbox(a):
             id_col = self.col_checkbox_key(a)
 
@@ -425,29 +420,12 @@ class HtmlTable(object):
                   INPUT(
                     _type='checkbox',
                     _name=id_col,
-                    _onclick="""if (!$("#%(fid)s") || $("#%(fid)s").val().length==0) {
-                                 check_toggle_vis("%(id)s", this.checked, "%(col_name)s");
-                                 table_scroll("%(id)s");
-                                 $("#%(id_set_col_table)s").val("%(table)s");
-                                 $("#%(id_set_col_field)s").val("%(field)s");
-                                 $("#%(id_set_col_value)s").val(this.checked);
-                                 ajax("%(url)s",
-                                      ["%(id_set_col_table)s",
-                                       "%(id_set_col_field)s",
-                                       "%(id_set_col_value)s"],
-                                      "set_col_dummy");
-                                 } else {
-                                  this.checked = true
-                                 }
+                    _onclick="""table_toggle_column("%(id)s","%(column)s", "%(table)s")
                              """%dict(url=URL(r=request,c='ajax',f='ajax_set_user_prefs_column'),
-                                      col_name=self.col_key(a),
-                                      fid=self.filter_key(a),
+                                      column=a,
                                       id=self.id,
-                                      id_set_col_table=id_set_col_table,
-                                      id_set_col_field=id_set_col_field,
-                                      id_set_col_value=id_set_col_value,
                                       table=self.upc_table,
-                                      field=a),
+                                 ),
                     value=val,
                     _style='vertical-align:text-bottom',
                   ),
@@ -465,18 +443,6 @@ class HtmlTable(object):
             return s
 
         a = DIV(
-              INPUT(
-                _id=id_set_col_table,
-                _type='hidden',
-              ),
-              INPUT(
-                _id=id_set_col_field,
-                _type='hidden',
-              ),
-              INPUT(
-                _id=id_set_col_value,
-                _type='hidden',
-              ),
               SPAN(
                 _id='set_col_dummy',
                 _style='display:none',
@@ -508,20 +474,9 @@ class HtmlTable(object):
                 SPAN(
                   T('Link'),
                   _title=T("Share your view using this hyperlink"),
-                  _onclick="""js_link("%s")"""%self.id,
                   _class='link16',
                   _id='link_'+self.id,
                 ),
-                SCRIPT(
-                 """$(this).keypress(function(event) {
-  if ($('input').is(":focus")) { return ; } ;
-  if ($('textarea').is(":focus")) { return ; } ;
-  if ( event.which == 108 ) {
-     event.preventDefault();
-     js_link("%s");
-   }
-});"""%self.id,
-              ),
                 _class='floatw',
               ),
             )
@@ -535,27 +490,10 @@ class HtmlTable(object):
               A(
                 SPAN(
                   T('Refresh'),
-                  _onclick="ajax_table_refresh('%(url)s', '%(id)s')"%dict(
-                    url=url,
-                    id=self.id,
-                  ),
                   _class='refresh16',
                   _id='refresh_'+self.id,
                 ),
                 _class='floatw',
-              ),
-              SCRIPT(
-                 """$(this).keypress(function(event) {
-  if ($('input').is(":focus")) { return ; } ;
-  if ($('textarea').is(":focus")) { return ; } ;
-  if ( event.which == 114 ) {
-     //event.preventDefault();
-     ajax_table_refresh("%(url)s", "%(id)s")
-   }
-});"""% dict(
-                    url=url,
-                    id=self.id,
-                  ),
               ),
             )
         return d
@@ -843,12 +781,21 @@ class HtmlTable(object):
         if v == "":
             return self.stored_filter_value(f, bookmark)
         self.store_filter_value(f, v, bookmark_add)
+        if v == "" and self.colprops[f].default_filter is not None:
+            v = self.colprops[f].default_filter
         return v
 
     def _filter_parse(self, f):
         key = self.filter_key(f)
         if key in request.vars:
-            return request.vars[key]
+            v = request.vars[key]
+            if v == "**clear**" and self.colprops[f].default_filter:
+                return self.colprops[f].default_filter
+            if v == "":
+                if self.colprops[f].default_filter is not None:
+                    return self.colprops[f].default_filter
+                return "**clear**"
+            return v
         return ""
 
     def filter_parse_glob(self, f):
@@ -872,7 +819,6 @@ class HtmlTable(object):
             cells.append(TD(''))
         for c in self.cols:
             cells.append(TH(T(self.colprops[c].title),
-                            _style=self.col_hide(c),
                             _class=self.colprops[c]._class,
                             _name=self.col_key(c)))
         return TR(cells, _class='theader')
@@ -938,19 +884,17 @@ class HtmlTable(object):
                _v=v,
                _cell=1,
             )
-            _style=self.col_hide(c)
             classes = []
             if colprops._class != "":
                 classes.append(colprops._class)
             if colprops._dataclass != "":
                 classes.append(colprops._dataclass)
-            if _style != '':
-                classes.append("hidden")
             if len(classes) > 0:
                 attrs['_class'] = ' '.join(classes)
             cells.append(TD(content, **attrs))
+            cl = "tl"
             if self.highlight:
-                cl = "tl "
+                cl += " h"
         line_attrs = dict(
           _class = cl,
           _spansum = self.span_line_id(o),
@@ -1025,7 +969,6 @@ class HtmlTable(object):
               TD(
                 '',
                  _class=cl,
-                 _style=self.col_hide(c),
                  _name=self.col_key(c),
               ),
             )
@@ -1096,12 +1039,6 @@ class HtmlTable(object):
                                 _id=self.filter_key(c),
                                 _name="fi",
                                 _value=self.filter_parse(c),
-                                _onKeyPress="ajax_enter_submit_%s(event)"%self.id,
-                                _onKeyUp="""if(!is_enter(event)){clearTimeout(timer);timer=setTimeout(function validate(){ajax('%(url)s', inputs_%(id)s, '%(cloud)s')}, 1000)}"""%dict(
-                                    id=self.id,
-                                    url=URL(r=request,f=self.func+'_col_values', args=[c]),
-                                    cloud=self.filter_cloud_key(c)
-                                  ),
                               ),
                               IMG(
                                 _src=URL(r=request,c='static',f='values_to_filter.png'),
@@ -1122,7 +1059,6 @@ class HtmlTable(object):
                               _style='max-width:50%;display:none',
                             ),
                             _name=self.col_key(c),
-                            _style=self.col_hide(c),
                             _class=self.colprops[c]._class,
                           ))
         return TR(inputs, _class='sym_headers')
@@ -1379,47 +1315,17 @@ class HtmlTable(object):
               DIV(XML('&nbsp;'), _class='spacer'),
               SCRIPT(
                 """
-table_init("%(id)s")
-table_cell_decorator("%(id)s")
-$("input").each(function(){
- attr = $(this).attr('id')
- if ( typeof(attr) == 'undefined' || attr == false ) {return}
- if ( ! attr.match(/nodename/gi) && \
-      ! attr.match(/svcname/gi) && \
-      ! attr.match(/assetname/gi) && \
-      ! attr.match(/mon_nodname/gi) && \
-      ! attr.match(/disk_nodename/gi) && \
-      ! attr.match(/disk_id/gi) && \
-      ! attr.match(/disk_svcname/gi) && \
-      ! attr.match(/save_nodename/gi) && \
-      ! attr.match(/save_svcname/gi)
-    ) {return}
- $(this).bind("change keyup input", function(){
-  if (this.value.match(/ /g)) {
-    if (this.value.match(/^\(/)) {return}
-    this.value = this.value.replace(/ /g, ',')
-    if (!this.value.match(/^\(/)) {
-      this.value = '(' + this.value
-    }
-    if (!this.value.match(/\)$/)) {
-      this.value = this.value + ')'
-    }
-  }
- })
-})
-$("select").parent().css("white-space", "nowrap");
-$("select:visible").combobox();
+table_init("%(id)s", ajax_url="%(ajax_url)s", columns=%(columns)s, visible_columns=%(visible_columns)s, child_tables=%(child_tables)s)
 function ajax_submit_%(id)s(){%(ajax_submit)s};
 function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
-
 var inputs_%(id)s = %(a)s;
-bind_filter_selector("%(id)s");
-table_pager("%(id)s")
-restripe_table_lines("%(id)s")
-table_scroll_enable("%(id)s")
 """%dict(
                    id=self.id,
+                   ajax_url=URL(r=request,f=self.func),
                    a=self.ajax_inputs(),
+                   columns=str(self.cols),
+                   visible_columns=str(self.visible_columns()),
+                   child_tables=str(self.child_tables),
                    ajax_submit=self.ajax_submit(),
                    ajax_enter_submit=self.ajax_enter_submit(),
                 ),

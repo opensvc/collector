@@ -71,6 +71,7 @@ class table_saves(HtmlTable):
                       'save_app',
                       'save_nodename',
                       'save_svcname']
+        self.child_tables = ["charts"]
 
         self.cols += v_nodes_cols
         self.colprops = v_nodes_colprops
@@ -154,6 +155,7 @@ class table_saves(HtmlTable):
                      field='save_date',
                      img='time16',
                      display=True,
+                     default_filter=">-1d",
                     ),
             'save_retention': HtmlTableColumn(
                      title='Retention',
@@ -191,9 +193,6 @@ def ajax_saves_col_values():
 def ajax_saves():
     t = table_saves('saves', 'ajax_saves')
 
-    if request.vars.saves_f_save_date is None or request.vars.saves_f_save_date == t.column_filter_reset:
-        request.vars.saves_f_save_date = '>-1d'
-
     o = ~db.saves.save_date
     o |= db.saves.save_nodename
 
@@ -228,16 +227,13 @@ def ajax_saves():
     t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
                                           orderby=o, left=l, cacheable=True)
 
+    return t.html()
+@auth.requires_login()
+def saves():
+    t = table_saves('saves', 'ajax_saves')
     nt = table_saves_charts('charts', 'ajax_saves_charts')
-
-    return DIV(
-             SCRIPT(
-               #'if ($("#charts").is(":visible")) {',
-               nt.ajax_submit(additional_inputs=t.ajax_inputs()),
-               #"}",
-               _name="saves_to_eval",
-             ),
-             DIV(
+    t = DIV(
+            DIV(
                T("Statistics"),
                _style="text-align:left;font-size:120%;background-color:#e0e1cd",
                _class="right16 clickable",
@@ -253,17 +249,13 @@ def ajax_saves():
                }"""%nt.ajax_submit(additional_inputs=t.ajax_inputs())
              ),
              DIV(
-               IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+               ajax_saves_charts(),
                _id="charts",
              ),
-             t.html(),
-           )
-
-@auth.requires_login()
-def saves():
-    t = DIV(
-          ajax_saves(),
-          _id='saves',
+             DIV(
+               ajax_saves(),
+               _id='saves',
+             ),
         )
     return dict(table=t)
 
@@ -522,80 +514,12 @@ def ajax_saves_charts():
                        'chart_group': json.dumps(h_data_group),
                        'chart_server': json.dumps(h_data_server)}]
 
+    if len(request.args) == 1 and request.args[0] == 'line':
+        return nt.table_lines_data(-1)
+
     return DIV(
              nt.html(),
-             SCRIPT(
-"""
-function savedonut(o) {
-  try{
-  var d = $.parseJSON(o.html())
-  var total = fancy_size_mb(d['total'])
-  var title = total
-  o.html("")
-  $.jqplot(o.attr('id'), d['data'],
-    {
-      grid:{background:'#ffffff',borderColor:'transparent',shadow:false,drawBorder:false,shadowColor:'transparent'},
-      seriesDefaults: {
-        renderer: $.jqplot.DonutRenderer,
-        rendererOptions: {
-          sliceMargin: 0,
-          showDataLabels: true
-        }
-      },
-      title: { text: title }
-    }
-  );
-  $('#'+o.attr('id')).bind('jqplotDataHighlight',
-        function (ev, seriesIndex, pointIndex, data) {
-            $('#chart_info').html('level: '+seriesIndex+', data: '+data[0]);
-        }
-  );
-  $('#'+o.attr('id')).bind('jqplotDataUnhighlight',
-        function (ev) {
-            $('#chart_info').html('%(msg)s');
-        }
-  );
-  } catch(e) {}
-}
-$("[id^=chart_svc]").each(function(){
-  savedonut($(this))
-})
-$("[id^=chart_ap]").each(function(){
-  savedonut($(this))
-  $(this).bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
-    d = data[seriesIndex]
-    i = d.lastIndexOf(" (")
-    d = d.substring(0, i)
-    $("#saves_f_save_app").val(d)
-    %(submit)s
-  })
-})
-$("[id^=chart_group]").each(function(){
-  savedonut($(this))
-  $(this).bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
-    d = data[seriesIndex]
-    i = d.lastIndexOf(" (")
-    d = d.substring(0, i)
-    $("#saves_f_save_group").val(d)
-    %(submit)s
-  })
-})
-$("[id^=chart_server]").each(function(){
-  savedonut($(this))
-  $(this).bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
-    d = data[seriesIndex]
-    var reg = new RegExp(" \(.*\)", "g");
-    d = d.replace(reg, "")
-    $("#saves_f_save_server").val(d)
-    %(submit)s
-  })
-})
-"""%dict(
-      submit=t.ajax_submit(),
-      msg=T("Hover over a slice to show data"),
-    ),
-               _name="charts_to_eval",
-             ),
+             SCRIPT("""osvc.tables["charts"]["on_change"] = plot_savedonuts; plot_savedonuts() """),
            )
 
 class table_saves_charts(HtmlTable):
@@ -604,6 +528,8 @@ class table_saves_charts(HtmlTable):
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['chart']
+        self.keys = ['chart']
+        self.span = ['chart']
         self.colprops.update({
             'chart': col_chart(
                      title='Chart',

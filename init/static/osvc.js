@@ -1,7 +1,43 @@
-<script language="JavaScript" type="text/javascript">
+// IE indexOf workaround
+if (!Array.prototype.indexOf) {
+  Array.prototype.indexOf = function(obj, start) {
+    for (var i = (start || 0), j = this.length; i < j; i++) {
+      if (this[i] === obj) { return i; }
+    }
+    return -1;
+  }
+}
 
-wsh = {}
-last_events = []
+//
+// search tool
+//
+function bind_search_tool() {
+  $(document).keydown(function(event) {
+    if ( event.which == 27 ) {
+      $("input:focus").blur()
+      $("textarea:focus").blur()
+      $(".white_float").hide()
+      return
+    }
+    if ($('input').is(":focus")) {
+      return
+    }
+    if ($('textarea').is(":focus")) {
+      return
+    }
+    searchbox = $(".search").find("input")
+    if ( event.which == 83 ) {
+      event.preventDefault();
+      searchbox.focus()
+    }
+  })
+}
+
+//
+// websockets
+//
+var wsh = {}
+var last_events = []
 
 function ws_duplicate_event(uid) {
     if (last_events.indexOf(uid) >= 0) {
@@ -210,7 +246,7 @@ function toggle_filter_value_input() {
 //
 var timer;
 function check_toggle_vis(id, checked, col){
-    $("table_id").find('[name='+col+']').each(function(){
+    $("#table_"+id).find('[name='+col+']').each(function(){
          if (checked) {
              if ($(this).attr("cell") == '1') {
                _table_cell_decorator(id, this)
@@ -477,10 +513,14 @@ function sync_ajax(url, inputs, id, f) {
              });
              f()
              $("#"+id).parents(".white_float").each(function(){keep_inside(this)})
+             var t = osvc.tables[id]
+             if (typeof t === 'undefined') { return }
+             t.refresh_child_tables()
+             t.on_change()
          }
     })
 }
-function restripe_table_lines(id) {
+function table_restripe_lines(id) {
     prev_spansum = ""
     cls = ["cell1", "cell2"]
     i = 1
@@ -498,9 +538,9 @@ function restripe_table_lines(id) {
     })
 }
 
-function trim_table(id) {
-    perpage = parseInt($("#table_"+id).attr("perpage")) + 2
-    lines = $("#table_"+id).children("tbody").children()
+function table_trim_lines(t) {
+    perpage = parseInt($("#table_"+t.id).attr("perpage")) + 2
+    lines = $("#table_"+t.id).children("tbody").children()
     if (lines.length <= perpage) {
         return
     }
@@ -584,22 +624,22 @@ function sort_table(id) {
     cmp = null
 }
 
-function ajax_table_refresh(url, id) {
-    if ($("#refresh_"+id).hasClass("spinner")) {
+function table_refresh(t) {
+    if ($("#refresh_"+t.id).hasClass("spinner")) {
         return
     }
-    query = id+"_page="+$("#"+id+"_page").val()
+    var query = t.id+"_page="+$("#"+t.id+"_page").val()
     $.ajax({
          type: "POST",
-         url: url+"/line",
+         url: t.ajax_url+"/line",
          data: query,
          context: document.body,
          beforeSend: function(req){
-	     $("#refresh_"+id).addClass("spinner")
+             t.set_refresh_spin()
          },
          success: function(msg){
              // disable DOM insert event trigger for perf
-             table_scroll_disable_dom(id)
+             t.scroll_disable_dom()
 
              try {
                  var data = $.parseJSON(msg)
@@ -611,12 +651,12 @@ function ajax_table_refresh(url, id) {
              msg = msg.replace(/^.table.|.\/table.$/g, '')
 
              // mark old lines for deletion
-             $("#table_"+id).find(".tl").addClass("deleteme")
+             $("#table_"+t.id).find(".tl").addClass("deleteme")
 
              // insert new lines
-             $("#table_"+id).children("tbody").first().append(msg)
+             $("#table_"+t.id).children("tbody").first().append(msg)
 
-             tbody = $("#table_"+id).children("tbody")
+             tbody = $("#table_"+t.id).children("tbody")
              tbody.children(".tl").each(function(){
                if ($(this).hasClass("deleteme")) {
                    return
@@ -625,7 +665,8 @@ function ajax_table_refresh(url, id) {
                cksum = $(this).attr("cksum")
                old_line = tbody.children(".deleteme[cksum="+cksum+"]")
                if (old_line.length == 0) {
-                   new_line.effect("highlight", 1000)
+                   new_line.addClass("tohighlight")
+                   return
                }
                old_line.each(function(){
                  j = 0
@@ -638,7 +679,7 @@ function ajax_table_refresh(url, id) {
                    if (cell.attr("v") == new_cell.attr("v")) {
                      continue
                    }
-                   new_cell.effect("highlight", 1000)
+                   new_cell.addClass("tohighlight")
                  }
                })
              })
@@ -647,14 +688,20 @@ function ajax_table_refresh(url, id) {
              tbody.children(".deleteme").remove()
 
              try {
-               _table_pager(id, pager["page"], pager["perpage"], pager["start"], pager["end"], pager["total"])
+               _table_pager(t.id, pager["page"], pager["perpage"], pager["start"], pager["end"], pager["total"])
              } catch(e) {}
-             bind_filter_selector(id)
-             restripe_table_lines(id)
-             table_cell_decorator(id)
-	     $("#refresh_"+id).removeClass("spinner")
+             t.bind_filter_selector()
+             t.restripe_lines()
+             t.hide_cells()
+             t.decorate_cells()
+             t.unset_refresh_spin()
 
-             table_scroll_enable_dom(id)
+             t.scroll_enable_dom()
+
+             tbody.find(".tohighlight").removeClass("tohighlight").effect("highlight", 1000)
+
+             t.refresh_child_tables()
+             t.on_change()
 
              // clear mem refs
              cksum = null
@@ -667,29 +714,30 @@ function ajax_table_refresh(url, id) {
     })
 }
 
-function ajax_table_insert_line(url, id, data) {
+function table_insert(t, data) {
     var query="volatile_filters=true"
     for (i=0; i<data.length; i++) {
         try {
             key=data[i]["key"]
             val=data[i]["val"]
             op=data[i]["op"]
-            query=query+"&"+encodeURIComponent(id+"_f_"+key)+op+encodeURIComponent(val)
+            query=query+"&"+encodeURIComponent(t.id+"_f_"+key)+op+encodeURIComponent(val)
         } catch(e) {
             return
         }
     }
     $.ajax({
          type: "POST",
-         url: url+"/line",
+         url: t.ajax_url+"/line",
          data: query,
          context: document.body,
          beforeSend: function(req){
-	     $("#refresh_"+id).addClass("spinner")
+             t.set_refresh_spin()
          },
          success: function(msg){
+
              // disable DOM insert event trigger for perf
-             table_scroll_disable_dom(id)
+             t.scroll_disable_dom()
 
              try {
                  var data = $.parseJSON(msg)
@@ -709,7 +757,7 @@ function ajax_table_insert_line(url, id, data) {
                n_new_lines += 1
                new_line = $(this)
                cksum = $(this).attr("cksum")
-               $("#table_"+id).find("[cksum="+cksum+"]").each(function(){
+               $("#table_"+t.id).find("[cksum="+cksum+"]").each(function(){
                  $(this).before(new_line)
                  for (i=1; i<$(this).children().length+1; i++) {
                    cell = $(":nth-child("+i+")", this)
@@ -728,11 +776,11 @@ function ajax_table_insert_line(url, id, data) {
              })
 
              // insert new lines
-             first_line = $("#table_"+id).find(".tl").first()
+             first_line = $("#table_"+t.id).find(".tl").first()
              first_line.before(msg)
              if (msg.length > 0) {
                  // remove "no data" lines
-                 $("#table_"+id).find(".nodataline").remove()
+                 $("#table_"+t.id).find(".nodataline").remove()
              }
 
              new_line = first_line.prev(".tl")
@@ -748,24 +796,27 @@ function ajax_table_insert_line(url, id, data) {
                  new_line = new_line.prev(".tl")
              }
              n_new_lines -= modified.length
-             pager_total = $("#table_"+id).attr("pager_total")
+             pager_total = $("#table_"+t.id).attr("pager_total")
              pager_total = parseInt(pager_total) + n_new_lines
-             $("#table_"+id).attr("pager_total", pager_total)
-             table_pager(id)
+             $("#table_"+t.id).attr("pager_total", pager_total)
 
-             //sort_table(id)
-             trim_table(id)
-             restripe_table_lines(id)
-             bind_filter_selector(id)
-             table_cell_decorator(id)
+             t.pager()
+             t.trim_lines()
+             t.restripe_lines()
+             t.bind_filter_selector()
+             t.hide_cells()
+             t.decorate_cells()
 
              $(".highlight").each(function(){
                 $(this).removeClass("highlight")
                 $(this).effect("highlight", 1000)
              })
-	     $("#refresh_"+id).removeClass("spinner")
 
-             table_scroll_enable_dom(id)
+             t.unset_refresh_spin()
+             t.scroll_enable_dom()
+
+             t.refresh_child_tables()
+             t.on_change()
 
              // clear mem refs
              cksum = null
@@ -778,6 +829,7 @@ function ajax_table_insert_line(url, id, data) {
          }
     })
 }
+
 function table_ajax_submit(url, id, inputs, additional_inputs, input_name, additional_input_name) {
     var s = inputs.concat(additional_inputs).concat(getIdsByName(input_name))
     $("[name="+additional_input_name+"]").each(function(){s.push(this.id)});
@@ -801,7 +853,10 @@ function table_ajax_submit(url, id, inputs, additional_inputs, input_name, addit
              $("#"+id).find("script").each(function(i){
                //eval($(this).text());
                $(this).remove();
-             });
+             })
+             var t = osvc.tables[id]
+             t.refresh_child_tables()
+             t.on_change()
          }
     })
 }
@@ -4612,25 +4667,172 @@ function _jqplot_img(e){
             }
 }
 
+function savedonut(o) {
+  try{
+  var d = $.parseJSON(o.html())
+  var total = fancy_size_mb(d['total'])
+  var title = total
+  o.html("")
+  $.jqplot(o.attr('id'), d['data'],
+    {
+      grid:{background:'#ffffff',borderColor:'transparent',shadow:false,drawBorder:false,shadowColor:'transparent'},
+      seriesDefaults: {
+        renderer: $.jqplot.DonutRenderer,
+        rendererOptions: {
+          sliceMargin: 0,
+          showDataLabels: true
+        }
+      },
+      title: { text: title }
+    }
+  )
+  $('#'+o.attr('id')).bind('jqplotDataHighlight',
+        function (ev, seriesIndex, pointIndex, data) {
+            $('#chart_info').html('level: '+seriesIndex+', data: '+data[0]);
+        }
+  )
+  $('#'+o.attr('id')).bind('jqplotDataUnhighlight',
+        function (ev) {
+            $('#chart_info').html('-');
+        }
+  )
+  } catch(e) {}
+}
+
+function plot_savedonuts() {
+  $("[id^=chart_svc]").each(function(){
+    savedonut($(this))
+  })
+  $("[id^=chart_ap]").each(function(){
+    savedonut($(this))
+    $(this).bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
+      d = data[seriesIndex]
+      i = d.lastIndexOf(" (")
+      d = d.substring(0, i)
+      filter_submit("saves", "saves_f_save_app", d)
+    })
+  })
+  $("[id^=chart_group]").each(function(){
+    savedonut($(this))
+    $(this).bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
+      d = data[seriesIndex]
+      i = d.lastIndexOf(" (")
+      d = d.substring(0, i)
+      filter_submit("saves", "saves_f_save_group", d)
+    })
+  })
+  $("[id^=chart_server]").each(function(){
+    savedonut($(this))
+    $(this).bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
+      d = data[seriesIndex]
+      var reg = new RegExp(" \(.*\)", "g");
+      d = d.replace(reg, "")
+      $("#saves_f_save_server").val(d)
+      filter_submit("saves", "saves_f_save_server", d)
+    })
+  })
+}
+
+function diskdonut(o) {
+  try{
+  var d = $.parseJSON(o.html())
+  var total = fancy_size_mb(d['total'])
+  var backend_total = fancy_size_mb(d['backend_total'])
+  var title = total + ' (' + backend_total + ')'
+  o.html("")
+  $.jqplot(o.attr('id'), d['data'],
+    {
+      grid:{background:'#ffffff',borderColor:'transparent',shadow:false,drawBorder:false,shadowColor:'transparent'},
+      seriesDefaults: {
+        renderer: $.jqplot.DonutRenderer,
+        rendererOptions: {
+          sliceMargin: 0,
+          showDataLabels: true
+        }
+      },
+      title: { text: title }
+    }
+  );
+  $('#'+o.attr('id')).bind('jqplotDataHighlight', 
+        function (ev, seriesIndex, pointIndex, data) {
+            $('#chart_info').html('level: '+seriesIndex+', data: '+data[0]);
+        }
+  );
+  $('#'+o.attr('id')).bind('jqplotDataUnhighlight', 
+        function (ev) {
+            $('#chart_info').html('-');
+        }
+  );
+  } catch(e) {}
+}
+
+function plot_diskdonuts() {
+  $("[id^=chart_svc]").each(function(){
+    diskdonut($(this))
+  })
+  $("[id^=chart_ap]").each(function(){
+    diskdonut($(this))
+    $(this).bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
+      d = data[seriesIndex]
+      i = d.lastIndexOf(" (")
+      d = d.substring(0, i)
+      filter_submit("disks", "disks_f_app", d)
+    })
+  })
+  $("[id^=chart_dg]").each(function(){
+    diskdonut($(this))
+  })
+  $("[id^=chart_ar]").each(function(){
+    diskdonut($(this))
+    $(this).bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
+      d = data[seriesIndex]
+      var reg = new RegExp(" \(.*\)", "g");
+      d = d.replace(reg, "")
+      filter_submit("disks", "disks_f_disk_arrayid", d)
+    })
+  })
+}
+
 function filter_submit(id,k,v){
   $("#"+k).val(v)
   window["ajax_submit_"+id]()
 };
 
-function bind_filter_selector(id) {
-  $("#table_"+id).each(function(){
+function table_bind_filter_input_events(t) {
+  var inputs = $("#"+t.id).find("input[name=fi]")
+  var url = t.ajax_url + "_col_values/"
+  inputs.bind("keyup", function() {
+    var input = $(this)
+    if (!is_enter(event)) {
+      clearTimeout(timer)
+      timer = setTimeout(function validate(){
+        var dest_id = input.siblings("[id^="+t.id+"_fc_]").attr("id")
+        var col = input.attr('id').split('_f_')[1]
+        _url = url + col + "?" + input.attr('id') + "=" + encodeURIComponent(input.val())
+        sync_ajax(_url, [], dest_id, function(){})
+      }, 1000)
+    }
+  })
+  inputs.bind("keypress", function() {
+    var fn = "ajax_enter_submit_"+t.id
+    window[fn](event)
+  })
+}
+
+function table_bind_filter_selector(t) {
+  $("#table_"+t.id).each(function(){
     $(this).bind("mouseup", function(event) {
       cell = $(event.target)
       if (typeof cell.attr("v") === 'undefined') {
         cell = cell.parents("[cell=1]").first()
       }
-      filter_selector(id, event, cell.attr('name'), cell.attr('v'))
+      filter_selector(t.id, event, cell.attr('name'), cell.attr('v'))
     })
     $(this).bind("contextmenu", function() {
       return false
     })
     $(this).bind("click", function() {
-      $("#fsr"+id).hide()
+      $("#fsr"+t.id).hide()
     })
   })
 }
@@ -4933,16 +5135,23 @@ function filter_selector(id,e,k,v){
 //
 // Table link url popup
 //
-function js_link(id){
-  url=$(location).attr('href')
+function get_view_url() {
+  var url = $(location).attr('href')
   if (url.indexOf('?')>0) {
     url=url.substring(0, url.indexOf('?'))
   }
+  return url
+}
+
+function table_link(t){
+  var url = get_view_url()
   var re = /#$/;
-  url=url.replace(re, "")+"?";
-  args="clear_filters=true&discard_filters=true&dbfilter="+$("#avs"+id).val()
-  $("#"+id).find("[name=fi]").each(function(){
-    if ($(this).val().length==0) {return}
+  url = url.replace(re, "")+"?";
+  args = "clear_filters=true&discard_filters=true&dbfilter="+$("#avs"+t.id).val()
+  $("#"+t.id).find("[name=fi]").each(function(){
+    if ($(this).val().length==0) {
+      return
+    }
     args=args+'&'+$(this).attr('id')+"="+encodeURIComponent($(this).val())
   })
   alert(url+args)
@@ -4952,7 +5161,7 @@ function js_link(id){
 // cell decorators
 //
 
-os_class_h = {
+var os_class_h = {
   'darwin': 'os_darwin',
   'linux': 'os_linux',
   'hp-ux': 'os_hpux',
@@ -4963,7 +5172,7 @@ os_class_h = {
   'freebsd': 'os_freebsd',
   'aix': 'os_aix',
   'windows': 'os_win',
-  'vmware': 'os_vmware',
+  'vmware': 'os_vmware'
 }
 
 function cell_decorator_nodename(e) {
@@ -5203,7 +5412,7 @@ cell_decorators = {
  "overallstatus": cell_decorator_overallstatus,
  "chk_type": cell_decorator_chk_type,
  "svcmon_links": cell_decorator_svcmon_links,
- "status": cell_decorator_status,
+ "status": cell_decorator_status
 }
 
 function _table_cell_decorator(id, cell) {
@@ -5313,82 +5522,263 @@ function _table_pager(id, p_page, p_perpage, p_start, p_end, p_total) {
   })
 }
 
-function table_pager(id) {
-  t = $("#table_"+id)
-  p_page = t.attr("pager_page")
-  p_perpage = t.attr("pager_perpage")
-  p_start = t.attr("pager_start")
-  p_end = t.attr("pager_end")
-  p_total = t.attr("pager_total")
-  _table_pager(id, p_page, p_perpage, p_start, p_end, p_total)
+function table_pager(t) {
+  var te = $("#table_"+t.id)
+  p_page = te.attr("pager_page")
+  p_perpage = te.attr("pager_perpage")
+  p_start = te.attr("pager_start")
+  p_end = te.attr("pager_end")
+  p_total = te.attr("pager_total")
+  _table_pager(t.id, p_page, p_perpage, p_start, p_end, p_total)
 }
 
 //
 // table horizontal scroll
 //
-function table_scroll(id){
-  to=$("#table_"+id)
+function table_scroll(t){
+  to=$("#table_"+t.id)
   to_p=to.parent()
   ww=$(window).width()
   tw=to.width()
   if (ww>=tw) {
-    $("#table_"+id+"_left").hide()
-    $("#table_"+id+"_right").hide()
+    $("#table_"+t.id+"_left").hide()
+    $("#table_"+t.id+"_right").hide()
     return
   }
   if (to_p.scrollLeft()>0) {
-    $("#table_"+id+"_left").show()
-    $("#table_"+id+"_left").height(to.height())
+    $("#table_"+t.id+"_left").show()
+    $("#table_"+t.id+"_left").height(to.height())
   } else {
-    $("#table_"+id+"_left").hide()
+    $("#table_"+t.id+"_left").hide()
   }
   if (to_p.scrollLeft()+ww<tw) {
-    $("#table_"+id+"_right").show()
-    $("#table_"+id+"_right").height(to.height())
-    $("#table_"+id+"_right").css({'top': to.position().top})
+    $("#table_"+t.id+"_right").show()
+    $("#table_"+t.id+"_right").height(to.height())
+    $("#table_"+t.id+"_right").css({'top': to.position().top})
   } else {
-    $("#table_"+id+"_right").hide()
+    $("#table_"+t.id+"_right").hide()
   }
 }
 
-function table_scroll_enable(id) {
-  $("#table_"+id+"_left").click(function(){
-    $("#table_"+id).parent().animate({'scrollLeft': '-='+$(window).width()}, 500)
+function table_scroll_enable(t) {
+  $("#table_"+t.id+"_left").click(function(){
+    $("#table_"+t.id).parent().animate({'scrollLeft': '-='+$(window).width()}, 500)
   })
-  $("#table_"+id+"_right").click(function(){
-    $("#table_"+id).parent().animate({'scrollLeft': '+='+$(window).width()}, 500)
+  $("#table_"+t.id+"_right").click(function(){
+    $("#table_"+t.id).parent().animate({'scrollLeft': '+='+$(window).width()}, 500)
   })
-  $("#table_"+id).parent().scroll(function(){
-    table_scroll(id)
+  $("#table_"+t.id).parent().scroll(function(){
+    table_scroll(t)
   })
   $(window).resize(function(){
-    table_scroll(id)
+    table_scroll(t)
   })
   $(".down16,.right16").click(function() {
-    table_scroll(id)
+    table_scroll(t)
   })
-  table_scroll_enable_dom(id)
+  t.scroll_enable_dom()
 }
 
-function table_scroll_enable_dom(id) {
-  $(window).bind("DOMNodeInserted", table_scroll(id))
-  table_scroll(id)
+function table_scroll_enable_dom(t) {
+  $(window).bind("DOMNodeInserted", table_scroll(t))
+  table_scroll(t)
 }
-function table_scroll_disable_dom(id) {
-  $(window).unbind("DOMNodeInserted", table_scroll(id))
+function table_scroll_disable_dom(t) {
+  $(window).unbind("DOMNodeInserted", table_scroll(t))
 }
+
+function table_bind_link(t) {
+  $("#link_"+t.id).bind("click", function(){
+    t.link()
+  })
+  $(this).bind("keypress", function(event) {
+    if ($('input').is(":focus")) { return }
+    if ($('textarea').is(":focus")) { return }
+    if ( event.which == 108 ) {
+      //event.preventDefault()
+      t.link()
+    }
+  })
+}
+
+function table_bind_refresh(t) {
+  $("#refresh_"+t.id).bind("click", function(){
+    t.refresh()
+  })
+  $(this).bind("keypress", function(event) {
+    if ($('input').is(":focus")) { return }
+    if ($('textarea').is(":focus")) { return }
+    if ( event.which == 114 ) {
+      //event.preventDefault()
+      t.refresh()
+    }
+  })
+}
+
+function table_bind_filter_reformat(t) {
+  $("#table_"+t.id).find("input").each(function(){
+   attr = $(this).attr('id')
+   if ( typeof(attr) == 'undefined' || attr == false ) {
+     return
+   }
+   if ( ! attr.match(/nodename/gi) && 
+        ! attr.match(/svcname/gi) && 
+        ! attr.match(/assetname/gi) && 
+        ! attr.match(/mon_nodname/gi) && 
+        ! attr.match(/disk_nodename/gi) && 
+        ! attr.match(/disk_id/gi) && 
+        ! attr.match(/disk_svcname/gi) && 
+        ! attr.match(/save_nodename/gi) && 
+        ! attr.match(/save_svcname/gi)
+      ) {return}
+   $(this).bind("change keyup input", function(){
+    if (this.value.match(/ /g)) {
+      if (this.value.match(/^\(/)) {return}
+      this.value = this.value.replace(/ /g, ',')
+      if (!this.value.match(/^\(/)) {
+        this.value = '(' + this.value
+      }
+      if (!this.value.match(/\)$/)) {
+        this.value = this.value + ')'
+      }
+    }
+   })
+  })
+}
+
+function table_hide_cells(t) {
+  for (i=0; i<t.columns.length; i++) {
+    var c = t.columns[i]
+    if (t.visible_columns.indexOf(c) >= 0) {
+      continue
+    }
+    n = t.id + "_c_" + c
+    $("#table_"+t.id).find("[name="+n+"]").hide()
+  }
+}
+
+function table_toggle_column(id, column, table) {
+  var fid = id + '_f_' + column
+  var cname = id + '_c_' + column
+  var ccname = id + '_cc_' + column
+  var value = $("[name="+ccname+"]").is(":checked")
+
+  if ($("#"+fid) && $("#"+fid).val().length>0) {
+    $("[name="+ccname+"]").checked = true
+    return
+  }
+
+  check_toggle_vis(id, value, cname);
+  table_scroll(id);
+  var query = "set_col_table="+table
+  query += "&set_col_field="+column
+  query += "&set_col_value="+value
+  var url = $(location).attr("origin") + "/init/ajax/ajax_set_user_prefs_column?"+query
+  ajax(url, [], "set_col_dummy")
+}
+
+function table_unset_refresh_spin(t) {
+  $("#refresh_"+t.id).removeClass("spinner")
+}
+
+function table_set_refresh_spin(t) {
+  $("#refresh_"+t.id).addClass("spinner")
+}
+
 
 var osvc = {
- 'tables': {},
+ 'tables': {}
 }
 
-function table_init(id) {
-  osvc.tables[id] = {
+function table_init(id, ajax_url, columns, visible_columns, child_tables) {
+  var t = {
+    'id': id,
+    'ajax_url': ajax_url,
     'span': $("#table_"+id).attr("span").split(","),
+    'columns': columns,
+    'visible_columns': visible_columns,
+    'child_tables': child_tables,
+    'decorate_cells': function(){
+      table_cell_decorator(id)
+    },
+    'hide_cells': function(){
+      table_hide_cells(this)
+    },
     'scroll': function(){
       table_scroll(id)
     },
+    'bind_filter_reformat': function(){
+      table_bind_filter_reformat(this)
+    },
+    'bind_filter_selector': function(){
+      table_bind_filter_selector(this)
+    },
+    'bind_filter_input_events': function(){
+      table_bind_filter_input_events(this)
+    },
+    'bind_refresh': function(){
+      table_bind_refresh(this)
+    },
+    'bind_link': function(){
+      table_bind_link(this)
+    },
+    'pager': function(){
+      table_pager(this)
+    },
+    'trim_lines': function(){
+      table_trim_lines(this)
+    },
+    'restripe_lines': function(){
+      table_restripe_lines(id)
+    },
+    'scroll_enable': function(){
+      table_scroll_enable(this)
+    },
+    'scroll_enable_dom': function(){
+      table_scroll_enable_dom(this)
+    },
+    'scroll_disable_dom': function(){
+      table_scroll_disable_dom(this)
+    },
+    'set_refresh_spin': function(){
+      table_set_refresh_spin(this)
+    },
+    'unset_refresh_spin': function(){
+      table_unset_refresh_spin(this)
+    },
+    'link': function(){
+      table_link(this)
+    },
+    'on_change': function(){
+      // placeholder to override after table_init()
+    },
+    'refresh_child_tables': function(){
+      for (var i=0; i<this.child_tables.length; i++) {
+        var id = this.child_tables[i]
+        osvc.tables[id].refresh()
+      }
+    },
+    'insert': function(data){
+      table_insert(this, data)
+    },
+    'refresh': function(){
+      table_refresh(this)
+    }
   }
+  osvc.tables[id] = t
+  $("#"+id).find("select").parent().css("white-space", "nowrap")
+  $("#"+id).find("select:visible").combobox()
+
+  t.bind_filter_reformat()
+  t.bind_refresh()
+  t.bind_link()
+  t.bind_filter_input_events()
+
+  t.hide_cells()
+  t.decorate_cells()
+  t.bind_filter_selector()
+  t.pager()
+  t.restripe_lines()
+  t.scroll_enable()
 }
 
-</script>
