@@ -21,3 +21,4 @@ viz*.dot
 __init__.py
 *.log
 *.log.*
+init/modules/replication_config.py
