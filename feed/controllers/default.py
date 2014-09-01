@@ -361,19 +361,19 @@ def insert_stats(data, auth):
             vals = vals[max:]
         generic_insert('stats_'+stat, vars, vals)
     scheduler.queue_task("update_dash_netdev_errors" , [auth[1]],
-                         group_name="slow")
+                         group_name="slow", timeout=120)
 
 @auth_uuid
 @service.xmlrpc
 def insert_pkg(vars, vals, auth):
     scheduler.queue_task("_insert_pkg", [vars, vals, auth],
-                         group_name="slow")
+                         group_name="slow", timeout=120)
 
 @auth_uuid
 @service.xmlrpc
 def insert_patch(vars, vals, auth):
     scheduler.queue_task("_insert_patch", [vars, vals, auth],
-                         group_name="slow")
+                         group_name="slow", timeout=120)
 
 @auth_uuid
 @service.xmlrpc
