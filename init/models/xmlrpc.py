@@ -44,4 +44,5 @@ def generic_insert(table, vars, vals):
         insert_multiline(table, vars, vals)
     else:
         insert_multiline(table, vars, [vals])
+    table_modified(table)
 

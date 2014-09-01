@@ -45,6 +45,11 @@ if hasattr(config, "allow_register") and not config.allow_register:
 
 #request.requires_https()
 
+def table_modified(name):
+    sql = """insert into table_modified values (null, "%s", now()) on duplicate key update table_modified=now()"""%name
+    db.executesql(sql)
+    db.commit()
+
 #
 # custom auth_user table. new field: email_notifications
 #

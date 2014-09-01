@@ -27,6 +27,11 @@ else:                                         # else use a normal relational dat
 ## if no need for session
 session.forget()
 
+def table_modified(name):
+    sql = """insert into table_modified values (null, "%s", now()) on duplicate key update table_modified=now()"""%name
+    db.executesql(sql)
+    db.commit()
+
 #########################################################################
 ## Here is sample code if you need for 
 ## - email capabilities

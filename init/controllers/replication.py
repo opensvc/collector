@@ -29,47 +29,16 @@ def serve_common(fullname, common):
 def replication_pull(sql):
     return list(db.executesql(sql))
 
-@service.xmlrpc
-def serve_purge_binlog(before):
-    return purge_binlog(before)
 #
 # Core routines
 #
-def purge_binlog(before):
-    sql = 'purge binary logs before "%s"' % str(before)
-    db.executesql(sql)
-
-def binlog_events(from_pos=None):
-    sql = "show binlog events"
-    if from_pos is not None:
-        sql += " from %s" % str(from_pos)
-    rows = db.executesql(sql)
-    return rows
-
-def digest_binlog():
-    """
-      Return position of the last modification of each table
-    """
-    rows = binlog_events()
-    _pos = 1
-    _info = 5
+def digest_internal():
     data = {}
-    import re
-    regex = re.compile("(?<=delete from\s)\s*[`]*\w+[`]*|(?<=into\s)\s*[`]*\w+[`]*|(?<=update\s)\s*[`]*\w+[`]*", re.IGNORECASE)
-    regex2 = re.compile("(?<=use\s)[`]*\w+[`]*", re.IGNORECASE)
+    sql = "select 'opensvc', table_name, unix_timestamp(table_modified) from table_modified"
+    rows = db.executesql(sql)
     for row in rows:
-        m = regex.search(row[_info])
-        if m is None:
-            continue
-        m2 = regex2.search(row[_info])
-        if m2 is None:
-            continue
-        data[(m2.group(0).strip('`'), m.group(0).strip('`'))] = row[_pos]
+        data[(row[0],row[1])] = row[2]
     return data
-
-def rotate_binlog():
-    sql = """ flush logs """
-    db.executesql(sql)
 
 def merge_data(data, mirror=False):
     max = 500
@@ -170,7 +139,7 @@ def push_table_current_status(tables):
     return table_current_status(tables)
 
 def table_current_status(tables):
-    data = digest_binlog()
+    data = digest_internal()
     rows = []
     added_tables = []
     for (schema, name), pos in data.items():
@@ -407,10 +376,6 @@ def get_proxy(remote):
                                (user, password, remote), allow_none=True)
     return p
 
-def rpc_purge_binlog(remote, before):
-    p = get_proxy(remote)
-    return p.serve_purge_binlog(before)
-
 def rpc_pull(remote, sql):
     p = get_proxy(remote)
     return p.replication_pull(sql)
@@ -453,8 +418,6 @@ def pull_all_table_from_all_remote(force=False):
         except Exception as e:
             print e
         remote = host.get("remote")
-        if remote is not None:
-            rpc_purge_binlog(remote, start)
 
 def pull_all_table_from_remote(host, ts, force=False):
     remote = host.get("remote")
@@ -541,8 +504,6 @@ def push_all_table_to_all_remote(force=False):
             push_all_table_to_remote(host, ts, force=force)
         except Exception as e:
             print e
-
-    purge_binlog(start)
 
 def push_all_table_to_remote(host, ts, force=False):
     remote = host.get("remote")
@@ -634,7 +595,6 @@ def resync_all():
     _resync_all()
 
 def _resync_all(force=False):
-    rotate_binlog()
     push_all_table_to_all_remote(force=force)
     pull_all_table_from_all_remote(force=force)
 

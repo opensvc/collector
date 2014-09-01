@@ -1332,6 +1332,7 @@ def team_responsible_attach(ids=[]):
             continue
         done.append(id)
         db.comp_ruleset_team_responsible.insert(ruleset_id=id, group_id=group_id)
+        table_modified("comp_ruleset_team_responsible")
     if len(done) == 0:
         return
     rows = db(db.comp_rulesets.id.belongs(done)).select(db.comp_rulesets.ruleset_name, cacheable=True)
@@ -1364,6 +1365,7 @@ def comp_ruleset_detach(ids=[]):
         q = db.comp_rulesets_rulesets.parent_rset_id == parent_rset_id
         q &= db.comp_rulesets_rulesets.child_rset_id == child_rset_id
         db(q).delete()
+        table_modified("comp_rulesets_rulesets")
 
         done.append((parent_rset_name, child_rset_name))
     if len(done) == 0:
@@ -1391,6 +1393,7 @@ def team_responsible_detach(ids=[]):
             continue
         done.append(id)
         db(q).delete()
+        table_modified("comp_ruleset_team_responsible")
     if len(done) == 0:
         return
     rows = db(db.comp_rulesets.id.belongs(done)).select(db.comp_rulesets.ruleset_name, cacheable=True)
@@ -1420,8 +1423,10 @@ def ruleset_change_public(ids):
     if sid == "F":
         q = db.comp_rulesets_nodes.ruleset_id.belongs(ids)
         db(q).delete()
+        table_modified("comp_rulesets_nodes")
         q = db.comp_rulesets_services.ruleset_id.belongs(ids)
         db(q).delete()
+        table_modified("comp_rulesets_services")
 
     _log('compliance.ruleset.publication.change',
          'changed ruleset publication to %(s)s %(x)s',
@@ -1448,11 +1453,14 @@ def ruleset_change_type(ids):
     if sid == "contextual":
         q = db.comp_rulesets_nodes.ruleset_id.belongs(ids)
         db(q).delete()
+        table_modified("comp_rulesets_nodes")
         q = db.comp_rulesets_services.ruleset_id.belongs(ids)
         db(q).delete()
+        table_modified("comp_rulesets_services")
     elif sid == "explicit":
         q = db.comp_rulesets_filtersets.ruleset_id.belongs(ids)
         db(q).delete()
+        table_modified("comp_rulesets_filtersets")
 
     _log('compliance.ruleset.type.change',
          'changed ruleset type to %(s)s %(x)s',
@@ -1482,6 +1490,7 @@ def ruleset_clone():
         if len(rows) > 0 and  rows[0].comp_rulesets_filtersets.fset_id is not None:
             db.comp_rulesets_filtersets.insert(ruleset_id=newid,
                                                fset_id=rows[0].comp_rulesets_filtersets.fset_id)
+            table_modified("comp_rulesets_filtersets")
 
     # clone ruleset variables
     q = db.comp_rulesets_variables.ruleset_id == sid
@@ -1492,6 +1501,7 @@ def ruleset_clone():
                                           var_class=row.var_class,
                                           var_value=row.var_value,
                                           var_author=user_name())
+    table_modified("comp_rulesets_variables")
     add_default_team_responsible(iid)
 
     # clone parent to children relations
@@ -1501,6 +1511,7 @@ def ruleset_clone():
         db.comp_rulesets_rulesets.insert(parent_rset_id=newid,
                                          child_rset_id=child_rset_id)
 
+    table_modified("comp_rulesets_rulesets")
     comp_rulesets_chains()
 
     _log('compliance.ruleset.clone',
@@ -1544,11 +1555,17 @@ def comp_delete_ruleset(ids=[]):
     rows = db(db.comp_rulesets.id.belongs(ids)).select(db.comp_rulesets.ruleset_name, cacheable=True)
     x = ', '.join([str(r.ruleset_name) for r in rows])
     n = db(db.comp_ruleset_team_responsible.ruleset_id.belongs(ids)).delete()
+    table_modified("comp_ruleset_team_responsible")
     n = db(db.comp_rulesets_filtersets.ruleset_id.belongs(ids)).delete()
+    table_modified("comp_rulesets_filtersets")
     n = db(db.comp_rulesets_variables.ruleset_id.belongs(ids)).delete()
+    table_modified("comp_rulesets_variables")
     n = db(db.comp_rulesets.id.belongs(ids)).delete()
+    table_modified("comp_rulesets")
     n = db(db.comp_rulesets_nodes.ruleset_id.belongs(ids)).delete()
+    table_modified("comp_rulesets_nodes")
     n = db(db.comp_rulesets_services.ruleset_id.belongs(ids)).delete()
+    table_modified("comp_rulesets_services")
     comp_rulesets_chains()
     _log('compliance.ruleset.delete',
          'deleted rulesets %(x)s',
@@ -1580,6 +1597,7 @@ def comp_delete_ruleset_var(ids=[]):
                        r.ruleset_name)), rows)
     x = ', '.join(set(x))
     n = db(db.comp_rulesets_variables.id.belongs(ids)).delete()
+    table_modified("comp_rulesets_variables")
     _log('compliance.ruleset.variable.delete',
          'deleted ruleset variables %(x)s',
          dict(x=x))
@@ -1605,6 +1623,7 @@ def comp_detach_filterset(ids=[]):
         q = db.comp_rulesets_filtersets.fset_id == fset_id
         q &= db.comp_rulesets_filtersets.ruleset_id == ruleset_id
         n += db(q).delete()
+    table_modified("comp_rulesets_filtersets")
     _log('compliance.ruleset.filterset.detach',
          'detached filterset %(x)s',
          dict(x=x))
@@ -1628,6 +1647,7 @@ def comp_detach_rulesets(node_ids=[], ruleset_ids=[], node_names=[]):
             q = db.comp_rulesets_nodes.nodename == node
             q &= db.comp_rulesets_nodes.ruleset_id == rsid
             db(q).delete()
+    table_modified("comp_rulesets_nodes")
 
     for node in node_names:
         update_dash_rsetdiff_node(node)
@@ -1665,6 +1685,7 @@ def internal_comp_attach_rulesets(node_ids=[], ruleset_ids=[], node_names=[]):
             if db(q).count() == 0:
                 db.comp_rulesets_nodes.insert(nodename=node,
                                             ruleset_id=rsid)
+    table_modified("comp_rulesets_nodes")
 
     for node in node_names:
         update_dash_rsetdiff_node(node)
@@ -1736,6 +1757,8 @@ def internal_comp_attach_svc_modulesets(svc_ids=[], modset_ids=[], svc_names=[],
               dict(moduleset=modset_names[modset_id], service=svc),
             ])
 
+    table_modified("comp_modulesets_services")
+
     for ret, action, fmt, d in log:
         _log(action, fmt, d)
 
@@ -1794,6 +1817,8 @@ def internal_comp_attach_svc_rulesets(svc_ids=[], ruleset_ids=[], svc_names=[], 
               'ruleset %(ruleset)s attached to service %(service)s',
               dict(ruleset=rset_names[rsid], service=svc),
             ])
+
+    table_modified("comp_rulesets_services")
 
     for ret, action, fmt, d in log:
         _log(action, fmt, d)
@@ -1982,6 +2007,7 @@ def add_default_team_responsible(ruleset_name):
         q = db.auth_group.role == 'Manager'
         group_id = db(q).select(cacheable=True)[0].id
     db.comp_ruleset_team_responsible.insert(ruleset_id=ruleset_id, group_id=group_id)
+    table_modified("comp_ruleset_team_responsible")
 
 def add_default_team_responsible_to_filterset(name):
     q = db.gen_filtersets.fset_name == name
@@ -1995,6 +2021,7 @@ def add_default_team_responsible_to_filterset(name):
         q = db.auth_group.role == 'Manager'
         group_id = db(q).select(cacheable=True)[0].id
     db.gen_filterset_team_responsible.insert(fset_id=fset_id, group_id=group_id)
+    table_modified("gen_filterset_team_responsible")
 
 def add_default_team_responsible_to_modset(modset_name):
     q = db.comp_moduleset.modset_name == modset_name
@@ -2008,6 +2035,7 @@ def add_default_team_responsible_to_modset(modset_name):
         q = db.auth_group.role == 'Manager'
         group_id = db(q).select(cacheable=True)[0].id
     db.comp_moduleset_team_responsible.insert(modset_id=modset_id, group_id=group_id)
+    table_modified("comp_moduleset_team_responsible")
 
 def teams_responsible_filter():
     if 'Manager' in user_groups():
@@ -2502,6 +2530,7 @@ def comp_detach_filters(ids=[]):
         else:
             q |= ((db.gen_filtersets_filters.f_id == f_id) & (db.gen_filtersets_filters.fset_id == fset_id))
     db(q).delete()
+    table_modified("gen_filtersets_filters")
     _log('compliance.filterset.filter.detach',
         'detached filters %(f_names)s',
         dict(f_names=f_names))
@@ -2515,10 +2544,12 @@ def comp_delete_filterset(ids=[]):
     # purge filters joins
     q = db.gen_filtersets_filters.fset_id.belongs(ids)
     n = db(q).delete()
+    table_modified("gen_filtersets_filters")
 
     # purge ruleset joins
     q = db.comp_rulesets_filtersets.fset_id.belongs(ids)
     n = db(q).delete()
+    table_modified("comp_rulesets_filtersets")
 
     # delete filtersets
     q = db.gen_filtersets.id.belongs(ids)
@@ -2527,6 +2558,7 @@ def comp_delete_filterset(ids=[]):
         raise ToolError("delete filterset failed: can't find selected filtersets")
     fset_names = ', '.join([r.fset_name for r in rows])
     n = db(q).delete()
+    table_modified("gen_filtersets")
     _log('compliance.filterset.delete',
         'deleted filtersets %(fset_names)s',
         dict(fset_names=fset_names))
@@ -2730,6 +2762,7 @@ def comp_add_filter():
                               f_op=f_op,
                               f_value=f_value,
                               f_author=user_name())
+        table_modified("gen_filters")
     except:
         raise ToolError("add filter failed: already exist ?")
 
@@ -2747,6 +2780,7 @@ def comp_delete_filtersets_filters(ids, f_names):
     q2 = db.gen_filtersets.id.belongs(fset_ids)
     fset_names = ', '.join([r.fset_name for r in db(q2).select(cacheable=True)])
     n = db(q).delete()
+    table_modified("gen_filtersets")
     _log('compliance.filter.delete',
          'deleted filter %(f_names)s membership in filtersets %(fset_names)s',
          dict(f_names=f_names, fset_names=fset_names))
@@ -2771,6 +2805,7 @@ def comp_delete_filter(ids=[]):
 
     # delete filters
     n = db(q).delete()
+    table_modified("gen_filters")
     _log('compliance.filter.delete',
         'deleted filters %(f_names)s',
         dict(f_names=f_names))
@@ -3268,6 +3303,7 @@ def comp_delete_module(ids=[]):
 
     mod_names = ', '.join([r.modset_mod_name for r in rows])
     n = db(db.comp_moduleset_modules.id.belongs(ids)).delete()
+    table_modified("comp_moduleset_modules")
     _log('compliance.moduleset.module.delete',
         'deleted modules %(mod_names)s',
         dict(mod_names=mod_names))
@@ -3282,8 +3318,11 @@ def comp_delete_moduleset(ids=[]):
         raise ToolError("delete moduleset failed: can't find selected modulesets")
     modset_names = ', '.join([r.modset_name for r in rows])
     n = db(db.comp_moduleset_modules.modset_id.belongs(ids)).delete()
+    table_modified("comp_moduleset_modules")
     n = db(db.comp_node_moduleset.id.belongs(ids)).delete()
+    table_modified("comp_node_moduleset")
     n = db(db.comp_moduleset.id.belongs(ids)).delete()
+    table_modified("comp_moduleset")
     _log('compliance.moduleset.delete',
         'deleted modulesets %(modset_names)s',
         dict(modset_names=modset_names))
@@ -3324,6 +3363,7 @@ def mod_name_set():
         db.comp_moduleset_modules.insert(modset_mod_name=new,
                                          modset_id=modset_id,
                                          modset_mod_author=user_name())
+        table_modified("comp_moduleset_modules")
         _log('compliance.moduleset.module.add',
              'add module %(d)s in moduleset %(x)s',
              dict(x=modset_name, d=new))
@@ -3369,6 +3409,7 @@ def modset_team_responsible_attach(ids=[]):
             continue
         done.append(id)
         db.comp_moduleset_team_responsible.insert(modset_id=id, group_id=group_id)
+    table_modified("comp_moduleset_team_responsible")
     if len(done) == 0:
         return
     rows = db(db.comp_moduleset.id.belongs(done)).select(db.comp_moduleset.modset_name)
@@ -3394,6 +3435,7 @@ def modset_team_responsible_detach(ids=[]):
             continue
         done.append(id)
         db(q).delete()
+    table_modified("comp_moduleset_team_responsible")
     if len(done) == 0:
         return
     rows = db(db.comp_moduleset.id.belongs(done)).select(db.comp_moduleset.modset_name)
@@ -3535,6 +3577,7 @@ def add_modset_default_team_responsible(modset_name):
         q = db.auth_group.role == 'Manager'
         group_id = db(q).select()[0].id
     db.comp_moduleset_team_responsible.insert(modset_id=modset_id, group_id=group_id)
+    table_modified("comp_moduleset_team_responsible")
 
 class table_comp_moduleset_short(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
@@ -3617,6 +3660,7 @@ def comp_detach_modulesets(node_ids=[], modset_ids=[]):
             q = db.comp_node_moduleset.modset_node == node
             q &= db.comp_node_moduleset.modset_id == msid
             db(q).delete()
+    table_modified("comp_node_moduleset")
     for node in node_names:
         update_dash_moddiff_node(node)
 
@@ -3653,6 +3697,7 @@ def internal_comp_attach_modulesets(node_ids=[], modset_ids=[], node_names=[]):
             if db(q).count() == 0:
                 db.comp_node_moduleset.insert(modset_node=node,
                                             modset_id=msid)
+    table_modified("comp_node_moduleset")
     for node in node_names:
         update_dash_moddiff_node(node)
 
@@ -4400,6 +4445,7 @@ def var_set(t):
             db.comp_rulesets_variables.insert(var_value=new,
                                               ruleset_id=id,
                                               var_author=user_name())
+            table_modified("comp_rulesets_variables")
         else:
             raise Exception()
         _log('compliance.ruleset.variable.add',
@@ -4541,6 +4587,7 @@ def check_del(ids):
     u = ', '.join([r.run_module+'@'+r.run_nodename for r in rows])
 
     db(q).delete()
+    table_modified("comp_status")
     for node in [r.run_nodename for r in rows]:
         update_dash_compdiff(node)
     _log('compliance.status.delete',
@@ -5491,6 +5538,7 @@ def comp_attach_svc_ruleset(svcname, ruleset, auth):
     n = db.comp_rulesets_services.insert(svcname=svcname,
                                          ruleset_id=rset_id,
                                          slave=slave)
+    table_modified("comp_rulesets_services")
     if n == 0:
         return dict(status=False, msg="failed to attach ruleset %s"%ruleset)
     _log('compliance.ruleset.service.attach',
@@ -5516,6 +5564,7 @@ def comp_attach_svc_moduleset(svcname, moduleset, auth):
     n = db.comp_modulesets_services.insert(modset_svcname=svcname,
                                            modset_id=modset_id,
                                            slave=slave)
+    table_modified("comp_modulesets_services")
     if n == 0:
         return dict(status=False, msg="failed to attach moduleset %s"%moduleset)
     _log('compliance.moduleset.service.attach',
@@ -5539,6 +5588,7 @@ def comp_attach_moduleset(nodename, moduleset, auth):
 
     n = db.comp_node_moduleset.insert(modset_node=nodename,
                                       modset_id=modset_id)
+    table_modified("comp_node_moduleset")
     update_dash_moddiff_node(nodename)
 
     if n == 0:
@@ -5572,6 +5622,7 @@ def comp_detach_svc_ruleset(svcname, ruleset, auth):
     else:
         q &= db.comp_rulesets_services.ruleset_id == rset_id
     n = db(q).delete()
+    table_modified("comp_rulesets_services")
     if n == 0:
         return dict(status=False, msg="failed to detach the ruleset")
     _log('compliance.ruleset.service.detach',
@@ -5603,6 +5654,7 @@ def comp_detach_svc_moduleset(svcname, moduleset, auth):
     else:
         q &= db.comp_modulesets_services.modset_id == modset_id
     n = db(q).delete()
+    table_modified("comp_modulesets_services")
     if n == 0:
         return dict(status=False, msg="failed to detach the moduleset")
     _log('compliance.moduleset.service.detach',
@@ -5633,6 +5685,7 @@ def comp_detach_moduleset(nodename, moduleset, auth):
     else:
         q &= db.comp_node_moduleset.modset_id == modset_id
     n = db(q).delete()
+    table_modified("comp_node_moduleset")
     if n == 0:
         return dict(status=False, msg="failed to detach the moduleset")
     update_dash_moddiff_node(nodename)
@@ -5713,6 +5766,7 @@ def comp_attach_ruleset(nodename, ruleset, auth):
 
     n = db.comp_rulesets_nodes.insert(nodename=nodename,
                                       ruleset_id=ruleset_id)
+    table_modified("comp_rulesets_nodes")
     update_dash_rsetdiff_node(nodename)
 
     if n == 0:
@@ -5745,6 +5799,7 @@ def comp_detach_ruleset(nodename, ruleset, auth):
     else:
         q &= db.comp_rulesets_nodes.ruleset_id == ruleset_id
     n = db(q).delete()
+    table_modified("comp_rulesets_nodes")
     if n == 0:
         return dict(status=False, msg="failed to detach the ruleset")
     update_dash_rsetdiff_node(nodename)
@@ -6215,6 +6270,7 @@ def insert_run_rset(ruleset):
     rset_md5 = str(o.hexdigest())
     try:
         db.comp_run_ruleset.insert(rset_md5=rset_md5, rset=s)
+        table_modified("comp_run_ruleset")
     except:
         pass
     rset = {'name': 'osvc_collector',
@@ -6707,6 +6763,7 @@ def run_cve_one(row):
               """%dict(where=where, cve_name=cve['name'], now=now)
         db.executesql(sql)
         db.commit()
+        table_modified("comp_status")
 
     if len(nodes) > 0:
         where = "where nodename not in (%s)"%','.join(map(lambda x: '"'+x+'"', nodes))
@@ -6730,6 +6787,7 @@ def run_cve_one(row):
           """%dict(where=where, cve_name=cve['name'], now=now)
     db.executesql(sql)
     db.commit()
+    table_modified("comp_status")
 
 
 #
@@ -8936,6 +8994,7 @@ def insert_form_md5(form):
       form_name=form.form_name,
       form_md5=form_md5
     )
+    table_modified("forms_revisions")
     return form_md5
 
 def mail_form(output, data, form, to=None, record_id=None, _d=None):
@@ -9119,6 +9178,7 @@ def ajax_generic_form_submit(form, data, _d=None):
 
             try:
                 db[table].insert(**d)
+                table_modified(table)
                 log.append((0, "form.submit", "Data inserted in database table", dict()))
             except Exception, e:
                 log.append((1, "form.submit", "Data insertion in database table error: %(err)s", dict(err=str(e))))
@@ -9340,6 +9400,7 @@ def ajax_generic_form_submit(form, data, _d=None):
                   form_scripts=json.dumps(_scripts),
                   form_var_id=__var_id,
                 )
+                table_modified("forms_store")
                 if record_id is not None:
                     q = db.forms_store.id == request.vars.prev_wfid
                     db(q).update(form_next_id=record_id)
@@ -9372,6 +9433,7 @@ def ajax_generic_form_submit(form, data, _d=None):
                       last_form_name=form.form_name,
                       last_update=now,
                     )
+                table_modified("workflows")
             else:
                 # new workflow
                 if form_assignee is None:
@@ -9387,6 +9449,7 @@ def ajax_generic_form_submit(form, data, _d=None):
                   form_scripts=json.dumps(_scripts),
                   form_var_id=__var_id,
                 )
+                table_modified("forms_store")
                 if record_id is not None:
                     q = db.forms_store.id == record_id
                     db(q).update(form_head_id=record_id)
@@ -9404,6 +9467,7 @@ def ajax_generic_form_submit(form, data, _d=None):
                   creator=user_name(),
                   create_date=now,
                 )
+                table_modified("workflows")
 
             if next_id != 0 and output.get('Mail', False):
                 log += mail_form(output, data, form, to=form_assignee, record_id=record_id, _d=_d)
@@ -9428,6 +9492,7 @@ def ajax_generic_form_submit(form, data, _d=None):
             if __var_id is not None:
                 q = db.comp_rulesets_variables.id == __var_id
                 db(q).delete()
+                table_modified("comp_rulesets_variables")
                 log.append((0, "", "Compliance variable %(id)s deleted)", dict(id=__var_id)))
 
     for ret, action, fmt, d in log:
@@ -9524,6 +9589,7 @@ def ajax_custo_form_submit(output, data):
         db.comp_rulesets.insert(ruleset_name=rset_name,
                                 ruleset_type="explicit",
                                 ruleset_public="T")
+        table_modified("comp_rulesets")
         log.append((0, "compliance.ruleset.add", "Added explicit published ruleset '%(rset_name)s'", dict(rset_name=rset_name)))
         rset = db(q).select(cacheable=True).first()
         for gid in common_groups:
@@ -9531,6 +9597,7 @@ def ajax_custo_form_submit(output, data):
               ruleset_id=rset.id,
               group_id=gid
             )
+            table_modified("comp_ruleset_team_responsible")
             log.append((0, "compliance.ruleset.group.attach", "Added group %(gid)d ruleset '%(rset_name)s' owners", dict(gid=gid, rset_name=rset_name)))
     if rset is None:
         log.append((1, "", "error fetching %(rset_name)s ruleset", dict(rset_name=rset_name)))
@@ -9595,6 +9662,7 @@ def ajax_custo_form_submit(output, data):
               var_author=user_name(),
               var_updated=datetime.datetime.now(),
             )
+            table_modified("comp_rulesets_variables")
             log.append((0, "compliance.ruleset.variable.add", "Added '%(var_class)s' variable '%(var_name)s' to ruleset '%(rset_name)s' with value:\n%(var_value)s", dict(var_class=var_class, var_name=var_name, rset_name=rset_name, var_value=var_value)))
         elif n == 1:
             __var_id = var_rows.first().id
@@ -11377,6 +11445,7 @@ def json_tree_action_create_filterset(name):
       fset_author=user_name(),
       fset_updated=datetime.datetime.now(),
     )
+    table_modified("gen_filtersets")
     #add_default_team_responsible_to_filterset(name)
     _log('compliance.filterset.add',
          'added filterset %(name)s',
@@ -11402,6 +11471,7 @@ def json_tree_action_create_moduleset(modset_name):
       modset_author=user_name(),
       modset_updated=datetime.datetime.now(),
     )
+    table_modified("comp_moduleset")
     add_default_team_responsible_to_modset(modset_name)
     _log('compliance.moduleset.add',
          'added moduleset %(modset_name)s',
@@ -11426,6 +11496,7 @@ def json_tree_action_create_ruleset(rset_name):
       ruleset_name=rset_name,
       ruleset_type="explicit",
     )
+    table_modified("comp_rulesets")
     add_default_team_responsible(rset_name)
     _log('compliance.ruleset.add',
          'added ruleset %(rset_name)s',
@@ -11455,6 +11526,7 @@ def json_tree_action_create_module(modset_id, modset_mod_name):
       modset_mod_author=user_name(),
       modset_mod_updated=datetime.datetime.now(),
     )
+    table_modified("comp_moduleset_modules")
     _log('compliance.moduleset.module.add',
          'added module %(modset_mod_name)s in moduleset %(modset_name)s',
          dict(modset_mod_name=modset_mod_name,
@@ -11485,6 +11557,7 @@ def json_tree_action_create_variable(rset_id, var_name):
       var_class="raw",
       var_value="",
     )
+    table_modified("comp_rulesets_variables")
     _log('compliance.variable.add',
          'added variable %(var_name)s in ruleset %(rset_name)s',
          dict(var_name=var_name,
@@ -11499,6 +11572,7 @@ def json_tree_action_delete_module(mod_id):
     if v is None:
         return "0"
     db(q).delete()
+    table_modified("comp_moduleset_modules")
     _log('compliance.moduleset.module.delete',
          'deleted module %(modset_mod_name)s from moduleset %(modset_name)s',
          dict(modset_mod_name=v.comp_moduleset_modules.modset_mod_name,
@@ -11513,6 +11587,7 @@ def json_tree_action_delete_variable(var_id):
     if v is None:
         return "0"
     db(q).delete()
+    table_modified("comp_rulesets_variables")
     _log('compliance.variable.delete',
          'deleted variable %(var_name)s from ruleset %(rset_name)s',
          dict(var_name=v.comp_rulesets_variables.var_name,
@@ -11629,6 +11704,7 @@ def json_tree_action_set_type(rset_id, rset_type):
     if rset_type == "explicit":
         q = db.comp_rulesets_filtersets.ruleset_id == rset_id
         db(q).delete()
+        table_modified("comp_rulesets_filtersets")
 
     db.commit()
 
@@ -11731,6 +11807,7 @@ def json_tree_action_copy_var_to_rset(var_id, rset_id):
       var_author=user_name(),
       var_updated=datetime.datetime.now(),
     )
+    table_modified("comp_rulesets_variables")
     _log('compliance.variable.copy',
          'copy variable %(var_name)s from ruleset %(rset_name)s to %(dst_rset_name)s',
          dict(rset_name=v.comp_rulesets.ruleset_name,
@@ -11836,6 +11913,7 @@ def json_tree_action_copy_or_move_rset_to_rset(rset_id, parent_rset_id, dst_rset
       parent_rset_id=dst_rset_id,
       child_rset_id=rset_id,
     )
+    table_modified("comp_rulesets_rulesets")
     _log('compliance.ruleset.attach',
          'attach ruleset %(rset_name)s to %(dst_rset_name)s',
          dict(rset_name=v.comp_rulesets.ruleset_name,
@@ -11856,6 +11934,7 @@ def json_tree_action_copy_or_move_rset_to_rset(rset_id, parent_rset_id, dst_rset
         return {"err": "parent ruleset not found or not owned by you"}
 
     db(q).delete()
+    table_modified("comp_rulesets_rulesets")
     _log('compliance.ruleset.detach',
          'detach ruleset %(rset_name)s from %(parent_rset_name)s',
          dict(rset_name=v.comp_rulesets.ruleset_name,
@@ -11901,6 +11980,7 @@ def json_tree_action_detach_group_from_modset(group_id, modset_id):
     q = db.comp_moduleset_team_responsible.modset_id == modset_id
     q &= db.comp_moduleset_team_responsible.group_id == group_id
     db(q).delete()
+    table_modified("comp_moduleset_team_responsible")
     _log('compliance.moduleset.detach',
          'detach group %(role)s from moduleset %(modset_name)s',
          dict(modset_name=v.comp_moduleset.modset_name,
@@ -11927,6 +12007,7 @@ def json_tree_action_detach_group_from_rset(group_id, rset_id):
     q = db.comp_ruleset_team_responsible.ruleset_id == rset_id
     q &= db.comp_ruleset_team_responsible.group_id == group_id
     db(q).delete()
+    table_modified("comp_ruleset_team_responsible")
     _log('compliance.ruleset.detach',
          'detach group %(role)s from ruleset %(rset_name)s',
          dict(rset_name=v.comp_rulesets.ruleset_name,
@@ -11956,6 +12037,7 @@ def json_tree_action_detach_ruleset(rset_id, parent_rset_id):
     q = db.comp_rulesets_rulesets.parent_rset_id == parent_rset_id
     q &= db.comp_rulesets_rulesets.child_rset_id == rset_id
     db(q).delete()
+    table_modified("comp_rulesets_rulesets")
     _log('compliance.ruleset.detach',
          'detach ruleset %(rset_name)s from %(parent_rset_name)s',
          dict(rset_name=w.comp_rulesets.ruleset_name,
@@ -11986,6 +12068,7 @@ def json_tree_action_copy_filter_to_fset(f_id, fset_id):
                                      fset_id=fset_id,
                                      f_order=0,
                                      f_log_op="AND")
+    table_modified("gen_filtersets_filters")
 
     _log('compliance.filter.attach',
          'attach filter %(f_name)s to filterset %(fset_name)s',
@@ -12019,6 +12102,7 @@ def json_tree_action_copy_fset_to_fset(fset_id, dst_fset_id):
                                      fset_id=dst_fset_id,
                                      f_order=0,
                                      f_log_op="AND")
+    table_modified("gen_filtersets_filters")
 
     _log('compliance.filterset.attach',
          'attach filterset %(fset_name)s to filterset %(dst_fset_name)s',
@@ -12051,6 +12135,7 @@ def json_tree_action_move_fset_to_rset(fset_id, rset_id):
     db.comp_rulesets_filtersets.update_or_insert(db.comp_rulesets_filtersets.ruleset_id==rset_id,
                                                  ruleset_id=rset_id,
                                                  fset_id=fset_id)
+    table_modified("comp_rulesets_filtersets")
     _log('compliance.ruleset.change',
          'attach filterset %(fset_name)s to ruleset %(rset_name)s',
          dict(rset_name=v.comp_rulesets.ruleset_name,
@@ -12077,6 +12162,7 @@ def json_tree_action_detach_filter(f_id, fset_id):
         return 0
 
     db(q).delete()
+    table_modified("gen_filtersets_filters")
     _log('compliance.filter.detach',
          'detach filter %(f_name)s from filterset %(fset_name)s',
          dict(fset_name=v.fset_name,
@@ -12103,6 +12189,7 @@ def json_tree_action_detach_filterset_from_filterset(fset_id, parent_fset_id):
         return 0
 
     db(q).delete()
+    table_modified("gen_filtersets_filters")
     _log('compliance.filterset.detach',
          'detach filterset %(fset_name)s from filterset %(parent_fset_name)s',
          dict(fset_name=w.fset_name,
@@ -12129,6 +12216,7 @@ def json_tree_action_detach_filterset_from_rset(rset_id):
 
     q = db.comp_rulesets_filtersets.ruleset_id == rset_id
     db(q).delete()
+    table_modified("comp_rulesets_filtersets")
     _log('compliance.filterset.detach',
          'detach filterset %(fset_name)s from ruleset %(rset_name)s',
          dict(rset_name=v.comp_rulesets.ruleset_name,
@@ -12163,6 +12251,7 @@ def json_tree_action_move_group_to_modset(group_id, modset_id):
 
     db.comp_moduleset_team_responsible.update_or_insert(modset_id=modset_id,
                                                         group_id=group_id)
+    table_modified("comp_moduleset_team_responsible")
     _log('compliance.moduleset.change',
          'attach group %(role)s to moduleset %(modset_name)s',
          dict(modset_name=v.comp_moduleset.modset_name,
@@ -12197,6 +12286,7 @@ def json_tree_action_move_group_to_rset(group_id, rset_id):
 
     db.comp_ruleset_team_responsible.update_or_insert(ruleset_id=rset_id,
                                                       group_id=group_id)
+    table_modified("comp_ruleset_team_responsible")
     _log('compliance.ruleset.change',
          'attach group %(role)s to ruleset %(rset_name)s',
          dict(rset_name=v.comp_rulesets.ruleset_name,
@@ -12222,6 +12312,7 @@ def json_tree_action_clone_moduleset(modset_id):
     newid = db.comp_moduleset.insert(modset_name=clone_modset_name,
                                      modset_author=user_name(),
                                      modset_updated=datetime.datetime.now())
+    table_modified("comp_moduleset")
 
     # clone moduleset modules
     q = db.comp_moduleset_modules.modset_id == modset_id
@@ -12231,6 +12322,7 @@ def json_tree_action_clone_moduleset(modset_id):
                                          modset_mod_name=row.modset_mod_name,
                                          modset_mod_author=row.modset_mod_author,
                                          modset_mod_updated=datetime.datetime.now())
+    table_modified("comp_moduleset_modules")
     add_default_team_responsible_to_modset(clone_modset_name)
 
     _log('compliance.moduleset.clone',
@@ -12257,6 +12349,7 @@ def json_tree_action_clone_ruleset(rset_id):
     newid = db.comp_rulesets.insert(ruleset_name=clone_rset_name,
                                     ruleset_type=v.ruleset_type,
                                     ruleset_public=v.ruleset_public)
+    table_modified("comp_rulesets")
 
     # clone filterset for contextual rulesets
     if v.ruleset_type == 'contextual':
@@ -12266,6 +12359,7 @@ def json_tree_action_clone_ruleset(rset_id):
         if len(rows) > 0 and  rows[0].comp_rulesets_filtersets.fset_id is not None:
             db.comp_rulesets_filtersets.insert(ruleset_id=newid,
                                                fset_id=rows[0].comp_rulesets_filtersets.fset_id)
+            table_modified("comp_rulesets_filtersets")
 
     # clone ruleset variables
     q = db.comp_rulesets_variables.ruleset_id == rset_id
@@ -12276,6 +12370,7 @@ def json_tree_action_clone_ruleset(rset_id):
                                           var_class=row.var_class,
                                           var_value=row.var_value,
                                           var_author=user_name())
+    table_modified("comp_rulesets_variables")
     add_default_team_responsible(clone_rset_name)
 
     # clone parent to children relations
@@ -12284,6 +12379,7 @@ def json_tree_action_clone_ruleset(rset_id):
     for child_rset_id in [r.child_rset_id for r in rows]:
         db.comp_rulesets_rulesets.insert(parent_rset_id=newid,
                                          child_rset_id=child_rset_id)
+    table_modified("comp_rulesets_rulesets")
 
     comp_rulesets_chains()
 
@@ -12302,39 +12398,51 @@ def json_tree_action_delete_filterset(fset_id):
 
     q = db.gen_filtersets_filters.fset_id == fset_id
     db(q).delete()
+    table_modified("gen_filtersets_filters")
 
     q = db.gen_filtersets_filters.encap_fset_id == fset_id
     db(q).delete()
+    table_modified("gen_filtersets_filters")
 
     q = db.comp_rulesets_filtersets.fset_id == fset_id
     db(q).delete()
+    table_modified("comp_rulesets_filtersets")
 
     q = db.gen_filterset_team_responsible.fset_id == fset_id
     db(q).delete()
+    table_modified("gen_filterset_team_responsible")
 
     q = db.gen_filterset_check_threshold.fset_id == fset_id
     db(q).delete()
+    table_modified("gen_filterset_check_threshold")
 
     q = db.gen_filterset_user.fset_id == fset_id
     db(q).delete()
+    table_modified("gen_filterset_user")
 
     q = db.stats_compare_fset.fset_id == fset_id
     db(q).delete()
+    table_modified("stats_compare_fset")
 
     q = db.stat_day_billing.fset_id == fset_id
     db(q).delete()
+    table_modified("stat_day_billing")
 
     q = db.stat_day.fset_id == fset_id
     db(q).delete()
+    table_modified("stat_day")
 
     q = db.metrics_log.fset_id == fset_id
     db(q).delete()
+    table_modified("metrics_log")
 
     q = db.lifecycle_os.fset_id == fset_id
     db(q).delete()
+    table_modified("lifecycle_os")
 
     q = db.gen_filtersets.id == fset_id
     db(q).delete()
+    table_modified("gen_filtersets")
 
     _log('compliance.filterset.delete',
          'deleted filterset %(fset_name)s',
@@ -12354,27 +12462,35 @@ def json_tree_action_delete_ruleset(rset_id):
 
     q = db.comp_rulesets_filtersets.ruleset_id == rset_id
     db(q).delete()
+    table_modified("comp_rulesets_filtersets")
 
     q = db.comp_rulesets_nodes.ruleset_id == rset_id
     db(q).delete()
+    table_modified("comp_rulesets_nodes")
 
     q = db.comp_rulesets_services.ruleset_id == rset_id
     db(q).delete()
+    table_modified("comp_rulesets_services")
 
     q = db.comp_ruleset_team_responsible.ruleset_id == rset_id
     db(q).delete()
+    table_modified("comp_ruleset_team_responsible")
 
     q = db.comp_rulesets_rulesets.parent_rset_id == rset_id
     db(q).delete()
+    table_modified("comp_rulesets_rulesets")
 
     q = db.comp_rulesets_rulesets.child_rset_id == rset_id
     db(q).delete()
+    table_modified("comp_rulesets_rulesets")
 
     q = db.comp_rulesets_variables.ruleset_id == rset_id
     db(q).delete()
+    table_modified("comp_rulesets_variables")
 
     q = db.comp_rulesets.id == rset_id
     db(q).delete()
+    table_modified("comp_rulesets")
 
     comp_rulesets_chains()
 
@@ -12396,18 +12512,23 @@ def json_tree_action_delete_moduleset(modset_id):
 
     q = db.comp_node_moduleset.modset_id == modset_id
     db(q).delete()
+    table_modified("comp_node_moduleset")
 
     q = db.comp_modulesets_services.modset_id == modset_id
     db(q).delete()
+    table_modified("comp_modulesets_services")
 
     q = db.comp_moduleset_team_responsible.modset_id == modset_id
     db(q).delete()
+    table_modified("comp_moduleset_team_responsible")
 
     q = db.comp_moduleset_modules.modset_id == modset_id
     db(q).delete()
+    table_modified("comp_moduleset_modules")
 
     q = db.comp_moduleset.id == modset_id
     db(q).delete()
+    table_modified("comp_moduleset")
 
     _log('compliance.moduleset.delete',
          'deleted moduleset %(modset_name)s',

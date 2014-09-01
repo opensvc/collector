@@ -21,4 +21,5 @@ def _log(action, fmt, d, user=None, svcname=None, nodename=None, level="info"):
     )
     i = db.executesql("SELECT LAST_INSERT_ID()")[0][0]
     db.commit()
+    table_modified("log")
     log_events(i)
