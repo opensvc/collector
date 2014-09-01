@@ -241,6 +241,7 @@ def group_attach(ids=[]):
             continue
         done.append(id)
         db.apps_responsibles.insert(app_id=id, group_id=gid)
+    table_modified("apps_responsibles")
 
 
     rows = db(db.apps.id.belongs(done)).select()
@@ -255,6 +256,7 @@ def group_attach(ids=[]):
         q = db.dashboard.dash_type == "application code without responsible"
         q &= db.dashboard.dash_dict.like('%%:"%s"%%'%r.app)
         db(q).delete()
+    table_modified("dashboard")
 
 @auth.requires_membership('Manager')
 def group_detach(ids=[]):
@@ -268,6 +270,7 @@ def group_detach(ids=[]):
     q = db.apps_responsibles.app_id.belongs(ids)
     q &= db.apps_responsibles.group_id==gid
     db(q).delete()
+    table_modified("apps_responsibles")
     _log('apps.group.detach',
          'detached group %(g)s from app %(u)s',
          dict(g=g, u=u))
@@ -281,6 +284,7 @@ def app_add():
     if db(q).count() > 0:
         raise ToolError("add application failed: application already exists")
     db.apps.insert(app=app)
+    table_modified("apps")
     db.commit()
     refresh_b_apps()
     _log('apps.app.add',
@@ -293,7 +297,9 @@ def app_del(ids):
     u = ', '.join([r.app for r in db(q).select(db.apps.app) if r.app is not None])
     g = db(q).select(db.apps.app)[0].app
     db(db.apps_responsibles.app_id.belongs(ids)).delete()
+    table_modified("apps_responsibles")
     db(q).delete()
+    table_modified("apps")
     db.commit()
     refresh_b_apps()
     _log('apps.app.delete',

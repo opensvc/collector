@@ -83,6 +83,7 @@ def migrate_to_services_log():
                                    svc_begin=last_range_end,
                                    svc_end=end,
                                    svc_availstatus="down")
+    table_modified("svcmon_log")
 
 def get_svc_created(svc):
     q = db.services.svc_name == svc

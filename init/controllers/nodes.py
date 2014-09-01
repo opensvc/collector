@@ -105,11 +105,13 @@ def node_insert():
     import gluon.contrib.pymysql.err
     try:
         if form.accepts(request.vars):
+            table_modified("nodes")
             update_dash_node_without_maintenance_end(request.vars.nodename)
             update_dash_node_beyond_maintenance_end(request.vars.nodename)
             update_dash_node_near_maintenance_end(request.vars.nodename)
             delete_dash_node_not_updated(request.vars.nodename)
             delete_dash_node_without_asset(request.vars.nodename)
+            table_modified("dashboard")
             response.flash = T("edition recorded")
             redirect(URL(r=request, f='nodes'))
         elif form.errors:
@@ -138,11 +140,13 @@ def node_edit():
     form = _node_form(record)
     if form.accepts(request.vars):
         # update dashboard
+        table_modified("nodes")
         update_dash_node_without_maintenance_end(request.vars.node)
         update_dash_node_beyond_maintenance_end(request.vars.node)
         update_dash_node_near_maintenance_end(request.vars.node)
         delete_dash_node_not_updated(request.vars.node)
         delete_dash_node_without_asset(request.vars.node)
+        table_modified("dashboard")
 
         response.flash = T("edition recorded")
         redirect(URL(r=request, f='nodes'))
@@ -568,6 +572,7 @@ def node_del(ids):
         delete_checks(nodename)
 
     db(q).delete()
+    table_modified("nodes")
     _log('nodes.delete',
          'deleted nodes %(u)s',
          dict(u=u))
@@ -713,14 +718,17 @@ def nodes():
 def delete_pkg(nodename):
     q = db.packages.pkg_nodename == nodename
     db(q).delete()
+    table_modified("packages")
 
 def delete_patches(nodename):
     q = db.patches.patch_nodename == nodename
     db(q).delete()
+    table_modified("patches")
 
 def delete_checks(nodename):
     q = db.checks_live.chk_nodename == nodename
     db(q).delete()
+    table_modified("checks_live")
 
 def delete_svcmon(nodename):
     sql = """delete from svcmon
@@ -729,6 +737,7 @@ def delete_svcmon(nodename):
           """%dict(nodename=nodename)
     rows = db.executesql(sql)
     db.commit()
+    table_modified("svcmon")
 
 class col_obs_chart(HtmlTableColumn):
     def html(self, o):

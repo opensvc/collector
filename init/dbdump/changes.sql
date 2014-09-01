@@ -4279,3 +4279,6 @@ alter table scheduler_run modify column worker_name varchar(64) default null;
 alter table scheduler_worker modify column status varchar(16) default null;
 
 alter table scheduler_worker modify column worker_name varchar(64) default null;
+
+
+alter table metrics_log modify column instance varchar(100) default null;

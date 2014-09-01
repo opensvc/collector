@@ -62,6 +62,7 @@ def enqueue_update_thresholds_batch(chk_type=None):
 def del_fset_threshold(id):
     q = db.gen_filterset_check_threshold.id == id
     db(q).delete()
+    table_modified("gen_filterset_check_threshold")
 
 def get_defaults(row):
     if row['chk_instance'] is not None:
@@ -131,6 +132,7 @@ def set_low_threshold(ids):
         _log('checks.thresholds.set',
              'set high threshold to %(val)d for check %(inst)s on %(where)s',
              dict(val=val, where=where, inst='.'.join((chk.chk_type, chk.chk_instance))))
+    table_modified("checks_settings")
     q = db.checks_live.id.belongs(ids)
     rows = db(q).select()
     update_thresholds_batch(rows)
@@ -184,6 +186,7 @@ def set_high_threshold(ids):
         _log('checks.thresholds.set',
              'set high threshold to %(val)d for check %(inst)s on %(where)s',
              dict(val=val, where=where, inst='.'.join((chk.chk_type, chk.chk_instance))))
+    table_modified("checks_settings")
     q = db.checks_live.id.belongs(ids)
     rows = db(q).select()
     update_thresholds_batch(rows)
@@ -215,6 +218,7 @@ def reset_thresholds(ids):
              dict(where=where, inst='.'.join((chk.chk_type, chk.chk_instance))))
     q = db.checks_live.id.belongs(ids)
     rows = db(q).select()
+    table_modified("checks_settings")
     update_thresholds_batch(rows)
 
 class col_chk_value(HtmlTableColumn):
@@ -801,6 +805,7 @@ def check_del(ids):
     ids = [r.id for r in rows]
     q = db.checks_live.id.belongs(ids)
     db(q).delete()
+    table_modified("checks_live")
 
     for nodename in set([r.chk_nodename for r in rows]):
         update_dash_checks(nodename)
@@ -875,6 +880,7 @@ def ajax_checks():
                          chk_low=request.vars.chk_low,
                          chk_high=request.vars.chk_high)
                 db.executesql(sql)
+                table_modified("gen_filterset_check_threshold")
                 db.commit()
                 r = True
         if r:
@@ -1031,7 +1037,9 @@ def update_dash_checks(nodename):
                  dash_type = "check out of bounds" and
                  dash_updated < "%(now)s"
           """%dict(nodename=nodename, now=str(now))
-    rows = db.executesql(sql)
+    n = db.executesql(sql)
+    if n > 0:
+        table_modified("dashboard")
     db.commit()
 
 
