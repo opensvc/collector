@@ -4801,7 +4801,7 @@ function filter_submit(id,k,v){
 function table_bind_filter_input_events(t) {
   var inputs = $("#"+t.id).find("input[name=fi]")
   var url = t.ajax_url + "_col_values/"
-  inputs.bind("keyup", function() {
+  inputs.bind("keyup", function(event) {
     var input = $(this)
     if (!is_enter(event)) {
       clearTimeout(timer)
@@ -4813,7 +4813,7 @@ function table_bind_filter_input_events(t) {
       }, 1000)
     }
   })
-  inputs.bind("keypress", function() {
+  inputs.bind("keypress", function(event) {
     var fn = "ajax_enter_submit_"+t.id
     window[fn](event)
   })
