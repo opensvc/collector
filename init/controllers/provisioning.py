@@ -156,7 +156,7 @@ def prov_list():
               _value=False,
               _type='radio',
               _id=row.id,
-              _onclick="""ajax('%(url)s', [], '%(id)s')"""%dict(
+              _onclick="""$(this).parents("table").find("[type=radio]:checked").each(function(){$(this).prop("checked", false)});$(this).prop("checked", true);ajax('%(url)s', [], '%(id)s')"""%dict(
                 id="prov_inputs",
                 url=URL(r=request, c='provisioning', f='ajax_prov_inputs', args=[row.id]),
               ),
@@ -202,7 +202,7 @@ def ajax_prov_inputs():
                TD(
                  INPUT(
                    _type="submit",
-                   _onclick="ajax('%(url)s', [%(ids)s], 'prov_container')"%dict(
+                   _onclick="sync_ajax('%(url)s', [%(ids)s], 'prov_container', function(){})"%dict(
                      ids=ids,
                      url=URL(r=request, c='provisioning', f='ajax_provision', args=[tpl_id]),
                    ),
@@ -212,7 +212,7 @@ def ajax_prov_inputs():
                  INPUT(
                    _type="submit",
                    _value=T("Show command"),
-                   _onclick="ajax('%(url)s', [%(ids)s], 'prov_container')"%dict(
+                   _onclick="sync_ajax('%(url)s', [%(ids)s], 'prov_container', function(){})"%dict(
                      ids=ids,
                      url=URL(r=request, c='provisioning', f='ajax_provision', args=[tpl_id, "showcommand"]),
                    ),
