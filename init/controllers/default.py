@@ -1703,7 +1703,7 @@ def svcmon():
 @auth.requires_login()
 def svcmon_node():
     node = request.args[0]
-    tid = 'svcmon_'+node
+    tid = 'svcmon_'+node.replace('-', '_')
     t = table_svcmon(tid, 'ajax_svcmon')
     t.cols.remove('mon_nodname')
 
