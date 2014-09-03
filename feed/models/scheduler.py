@@ -452,6 +452,10 @@ def _update_asset(vars, vals, auth):
     h['hw_obs_alert_date'] = hw_obs_alert_date
 
     generic_insert('nodes', h.keys(), h.values())
+    _websocket_send(event_msg({
+                 'event': 'nodes_change',
+                 'data': {'f': 'b'}
+                }))
     update_dash_node_not_updated(auth[1])
     update_dash_node_without_maintenance_end(auth[1])
     update_dash_node_without_asset(auth[1])

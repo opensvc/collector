@@ -200,6 +200,7 @@ class table_nodes(HtmlTable):
                   'serial', 'team_responsible', 'host_mode', 'status']:
             self.colprops[c].display = True
         self.colprops['nodename'].t = self
+        self.wsable = True
         self.extraline = True
         self.extrarow = True
         self.checkboxes = True
@@ -705,6 +706,17 @@ def ajax_nodes():
                _id="gids",
              ),
              t.html(),
+             SCRIPT("""
+function ws_action_switch_%(divid)s(data) {
+        if (data["event"] == "nodes_change") {
+          osvc.tables["%(divid)s"].refresh()
+        }
+}
+wsh["%(divid)s"] = ws_action_switch_%(divid)s
+              """ % dict(
+                     divid=t.innerhtml,
+                    )
+             ),
            )
 
 @auth.requires_login()
