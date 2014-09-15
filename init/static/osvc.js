@@ -5642,7 +5642,7 @@ function cell_decorator_chk_high(e) {
   if (v > high) {
     cl.push("highlight")
   }
-  $(e).html("<span class='"+cl.join(" ")+"'>"+v+"</span>")
+  $(e).html("<span class='"+cl.join(" ")+"'>"+high+"</span>")
 }
 
 function cell_decorator_chk_low(e) {
@@ -5655,7 +5655,7 @@ function cell_decorator_chk_low(e) {
   if (v < low) {
     cl.push("highlight")
   }
-  $(e).html("<span class='"+cl.join(" ")+"'>"+v+"</span>")
+  $(e).html("<span class='"+cl.join(" ")+"'>"+low+"</span>")
 }
 
 function cell_decorator_chk_value(e) {
