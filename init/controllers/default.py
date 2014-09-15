@@ -1059,12 +1059,28 @@ class table_svcmon(HtmlTable):
             'mem_slots',
             'mem_bytes',
         ]
+        self.force_cols = [
+            'mon_svcname',
+            'svc_autostart',
+            'mon_guestos',
+            'mon_nodname',
+            'mon_containerstatus',
+            'mon_ipstatus',
+            'mon_fsstatus',
+            'mon_diskstatus',
+            'mon_sharestatus',
+            'mon_syncstatus',
+            'mon_appstatus',
+            'mon_hbstatus',
+            'os_name',
+        ]
         self.colprops = {
-            'err': col_err(
+            'err': HtmlTableColumn(
                      title = 'Action errors',
                      field='err',
                      display = True,
                      img = 'action16',
+                     _class= 'svc_action_err',
                     ),
             'app_domain': HtmlTableColumn(
                      title='App domain',
@@ -1094,12 +1110,14 @@ class table_svcmon(HtmlTable):
         self.span = ['mon_svcname'] + v_services_cols
         self.span.append('app_domain')
         self.span.append('app_team_ops')
+        self.dataable = True
         self.wsable = True
         self.extraline = True
         self.extrarow = True
         self.extrarow_class = "svcmon_links"
         self.checkboxes = True
         self.checkbox_id_col = 'id'
+        self.checkbox_id_table = 'v_svcmon'
         self.ajax_col_values = 'ajax_svcmon_col_values'
         self.user_name = user_name()
         self.additional_tools.append('svcdiff')
@@ -1455,6 +1473,12 @@ def svc_del(ids):
         update_dash_compdiff_svc(r.mon_svcname)
         update_dash_moddiff(r.mon_svcname)
         update_dash_rsetdiff(r.mon_svcname)
+    if len(rows) > 0:
+        _websocket_send(event_msg({
+             'event': 'svcmon_change',
+             'data': {'f': 'b'},
+            }))
+
 
 @auth.requires_login()
 def service_action():
@@ -1525,8 +1549,9 @@ def do_node_action(ids, action=None, mode=None):
     purge_action_queue()
     generic_insert('action_queue', vars, vals)
     from subprocess import Popen
+    import sys
     actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
-    process = Popen(actiond)
+    process = Popen([sys.executable, actiond])
     process.communicate()
     if mode in ("module", "moduleset"):
         _log('node.action', 'run %(a)s of %(mode)s %(m)s on nodes %(s)s', dict(
@@ -1539,6 +1564,13 @@ def do_node_action(ids, action=None, mode=None):
               a=action,
               s=','.join(map(lambda x: x.mon_nodname, rows)),
               ))
+    if len(vals) > 0:
+        l = {
+          'event': 'action_q_change',
+          'data': {'f': 'b'},
+        }
+        _websocket_send(event_msg(l))
+
 
 def do_action(ids, action=None):
     if action is None or len(action) == 0:
@@ -1587,8 +1619,9 @@ def do_action(ids, action=None):
     purge_action_queue()
     generic_insert('action_queue', vars, vals)
     from subprocess import Popen
+    import sys
     actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
-    process = Popen(actiond)
+    process = Popen([sys.executable, actiond])
     process.communicate()
     for row in rows:
         _log('service.action',
@@ -1653,21 +1686,16 @@ def ajax_svcmon():
     t.csv_orderby = o
     if len(request.args) == 1 and request.args[0] == 'csv':
         return t.csv()
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         if request.vars.volatile_filters is None:
             n = db(q).count()
             limitby = (t.pager_start,t.pager_end)
         else:
             n = 0
             limitby = (0, 500)
-        t.object_list = db(q).select(limitby=limitby, orderby=o, cacheable=False)
-        return t.table_lines_data(n)
-
-    n = db(q).count()
-    t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
-                                          orderby=o,
-                                          cacheable=True)
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, limitby=limitby, orderby=o, cacheable=True)
+        return t.table_lines_data(n, html=False)
 
     if len(request.args) == 1:
         action = request.args[0]
@@ -1677,96 +1705,120 @@ def ajax_svcmon():
         except ToolError, e:
             t.flash = str(e)
 
-    return SPAN(
-             t.html(),
-             SCRIPT("""
+@auth.requires_login()
+def svcmon():
+    t = table_svcmon('svcmon', 'ajax_svcmon')
+    ajax_svcmon()
+    t = DIV(
+          t.html(),
+          SCRIPT("""
 function ws_action_switch_%(divid)s(data) {
         if (data["event"] == "svcmon_change") {
           osvc.tables["%(divid)s"].refresh()
         }
 }
 wsh["%(divid)s"] = ws_action_switch_%(divid)s
-              """ % dict(
-                     divid=t.innerhtml,
-                    )
-             ),
-           )
-
-@auth.requires_login()
-def svcmon():
-    t = DIV(
-          ajax_svcmon(),
+           """ % dict(
+                  divid=t.innerhtml,
+                 )
+          ),
           _id='svcmon',
         )
     return dict(table=t)
+
+class table_svcmon_node(table_svcmon):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        table_svcmon.__init__(self, id, func, innerhtml)
+        self.hide_tools = True
+        self.pageable = False
+        self.bookmarkable = False
+        self.commonalityable = False
+        self.linkable = False
+        self.filterable = False
+        self.exportable = False
+        self.dbfilterable = False
+        self.columnable = False
+        self.refreshable = False
+        self.checkboxes = False
+        self.extrarow = False
+        self.wsable = False
+        self.cols.remove('mon_nodname')
+        self.colprops['mon_updated'].display = True
 
 @auth.requires_login()
 def svcmon_node():
     node = request.args[0]
     tid = 'svcmon_'+node.replace('-', '_')
-    t = table_svcmon(tid, 'ajax_svcmon')
-    t.cols.remove('mon_nodname')
-
-    q = _where(None, 'v_svcmon', domain_perms(), 'mon_nodname')
-    q &= db.v_svcmon.mon_nodname == node
-    t.object_list = db(q).select(cacheable=True)
-    t.hide_tools = True
-    t.pageable = False
-    t.bookmarkable = False
-    t.commonalityable = False
-    t.linkable = False
-    t.filterable = False
-    t.exportable = False
-    t.dbfilterable = False
-    t.columnable = False
-    t.refreshable = False
-    t.checkboxes = False
-    t.extrarow = False
-    t.wsable = False
+    t = table_svcmon_node(tid, 'ajax_svcmon_node')
+    t.colprops['mon_nodname'].force_filter = node
     return t.html()
+
+@auth.requires_login()
+def ajax_svcmon_node():
+    tid = request.vars.table_id
+    t = table_svcmon_node(tid, 'ajax_svcmon_node')
+    q = _where(None, 'v_svcmon', domain_perms(), 'mon_nodname')
+    for f in ['mon_nodname']:
+        q = _where(q, 'v_svcmon', t.filter_parse(f), f)
+    if request.args[0] == "data":
+        t.object_list = db(q).select(cacheable=True)
+        return t.table_lines_data(-1, html=False)
+
+class table_svcmon_svc(table_svcmon):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        table_svcmon.__init__(self, id, func, innerhtml)
+        self.cols = [
+         'svc_ha',
+         'svc_availstatus',
+         'svc_status',
+         'svc_cluster_type',
+         'mon_vmtype',
+         'mon_vmname',
+         'mon_nodname',
+         'mon_availstatus',
+         'mon_overallstatus',
+         'mon_ipstatus',
+         'mon_fsstatus',
+         'mon_diskstatus',
+         'mon_appstatus',
+         'mon_sharestatus',
+         'mon_containerstatus',
+         'mon_hbstatus',
+         'mon_syncstatus',
+         'mon_updated',
+        ]
+        self.colprops['mon_updated'].display = True
+
+        self.hide_tools = True
+        self.pageable = False
+        self.bookmarkable = False
+        self.commonalityable = False
+        self.linkable = False
+        self.filterable = False
+        self.exportable = False
+        self.dbfilterable = False
+        self.columnable = False
+        self.refreshable = False
+        self.checkboxes = False
+        self.extrarow = False
+        self.wsable = False
+
 
 @auth.requires_login()
 def svcmon_svc():
     tid = request.args[0]
     svcname = request.args[1]
-    t = table_svcmon(tid, 'ajax_svcmon')
-    t.cols = [
-     'svc_ha',
-     'svc_availstatus',
-     'svc_status',
-     'svc_cluster_type',
-     'mon_vmtype',
-     'mon_vmname',
-     'mon_nodname',
-     'mon_availstatus',
-     'mon_overallstatus',
-     'mon_ipstatus',
-     'mon_fsstatus',
-     'mon_diskstatus',
-     'mon_appstatus',
-     'mon_sharestatus',
-     'mon_containerstatus',
-     'mon_hbstatus',
-     'mon_syncstatus',
-     'mon_updated',
-    ]
-    t.colprops['mon_updated'].display = True
-
-    q = _where(None, 'v_svcmon', domain_perms(), 'mon_nodname')
-    q &= db.v_svcmon.mon_svcname == svcname
-    t.object_list = db(q).select(cacheable=True)
-    t.hide_tools = True
-    t.pageable = False
-    t.bookmarkable = False
-    t.commonalityable = False
-    t.linkable = False
-    t.filterable = False
-    t.exportable = False
-    t.dbfilterable = False
-    t.columnable = False
-    t.refreshable = False
-    t.checkboxes = False
-    t.extrarow = False
-    t.wsable = False
+    t = table_svcmon_svc(tid, 'ajax_svcmon_svc')
+    t.colprops['mon_svcname'].force_filter = svcname
     return t.html()
 
+@auth.requires_login()
+def ajax_svcmon_svc():
+    tid = request.vars.table_id
+    t = table_svcmon_svc(tid, 'ajax_svcmon_svc')
+    q = _where(None, 'v_svcmon', domain_perms(), 'mon_nodname')
+    for f in ['mon_svcname']:
+        q = _where(q, 'v_svcmon', t.filter_parse(f), f)
+    if request.args[0] == "data":
+        t.object_list = db(q).select(cacheable=True)
+        return t.table_lines_data(-1, html=False)

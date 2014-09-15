@@ -1,36 +1,3 @@
-class col_form_id(HtmlTableColumn):
-    def html(self, o):
-        s = self.get(o)
-        return A(s, _href=URL(c='forms', f='workflow', vars={'wfid': s}))
-
-class col_std(HtmlTableColumn):
-    def html(self, o):
-        s = self.get(o)
-        return PRE(s)
-
-class col_ret(HtmlTableColumn):
-    def html(self, o):
-        s = self.get(o)
-        if s == 0:
-            return DIV(s, _class="boxed_small bggreen")
-        return DIV(s, _class="boxed_small bgred")
-
-class col_action_status(HtmlTableColumn):
-    def html(self, o):
-        s = self.get(o)
-        if s == 'T':
-            return DIV(T('done'), _class="boxed_small bggreen")
-        elif s == 'R':
-            return DIV(T('running'), _class="boxed_small bgred")
-        elif s == 'W':
-            return DIV(T('waiting'), _class="boxed_small")
-        elif s == 'Q':
-            return DIV(T('queued'), _class="boxed_small")
-        elif s == 'C':
-            return DIV(T('cancelled'), _class="boxed_small bgdarkred")
-        else:
-            return DIV(s, _class="boxed_small")
-
 class table_actions(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -56,23 +23,26 @@ class table_actions(HtmlTable):
                      img='action16',
                      display=False,
                     ),
-            'form_id': col_form_id(
+            'form_id': HtmlTableColumn(
                      title='Request form id',
                      field='form_id',
                      img='wf16',
                      display=True,
+                     _class='form_id',
                     ),
-            'status': col_action_status(
+            'status': HtmlTableColumn(
                      title='Status',
                      field='status',
                      img='action16',
                      display=True,
+                     _class='action_q_status',
                     ),
-            'ret': col_ret(
+            'ret': HtmlTableColumn(
                      title='Return code',
                      field='ret',
                      img='action16',
                      display=True,
+                     _class='action_q_ret',
                     ),
             'date_queued': HtmlTableColumn(
                      title='Queued',
@@ -118,17 +88,19 @@ class table_actions(HtmlTable):
                      img='action16',
                      display=True,
                     ),
-            'stdout': col_std(
+            'stdout': HtmlTableColumn(
                      title='Stdout',
                      field='stdout',
                      img='action16',
                      display=True,
+                     _class='pre',
                     ),
-            'stderr': col_std(
+            'stderr': HtmlTableColumn(
                      title='Stderr',
                      field='stderr',
                      img='action16',
                      display=True,
+                     _class='pre',
                     ),
         }
         for col in self.cols:
@@ -138,6 +110,8 @@ class table_actions(HtmlTable):
         self.checkboxes = True
         self.ajax_col_values = 'ajax_actions_col_values'
         self.additional_tools.append('cancel_actions')
+        self.dataable = True
+        self.wsable = True
 
     def cancel_actions(self):
         d = DIV(
@@ -202,7 +176,7 @@ def ajax_actions():
     for f in t.cols:
         q = _where(q, 'v_action_queue', t.filter_parse(f), f)
 
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         if request.vars.volatile_filters is None:
             n = db(q).count()
             limitby = (t.pager_start,t.pager_end)
@@ -210,17 +184,22 @@ def ajax_actions():
             n = 0
             limitby = (0, 500)
         t.object_list = db(q).select(limitby=limitby, orderby=o, cacheable=False)
-        return t.table_lines_data(n)
-
-    n = db(q).count()
-    t.setup_pager(n)
-    t.object_list = db(q).select(orderby=o, cacheable=True)
-    return t.html()
+        return t.table_lines_data(n, html=False)
 
 @auth.requires_login()
 def action_queue():
+    t = table_actions('action_queue', 'ajax_actions')
     t = DIV(
-          ajax_actions(),
+          t.html(),
+          SCRIPT("""
+function ws_action_switch_%(divid)s(data) {
+        if (data["event"] == "action_q_change") {
+          osvc.tables["%(divid)s"].refresh()
+        }
+}
+wsh["%(divid)s"] = ws_action_switch_%(divid)s
+         """ % dict(divid=t.innerhtml),
+          ),
           _id='action_queue',
         )
     return dict(table=t)

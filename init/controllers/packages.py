@@ -64,12 +64,13 @@ class table_packages(HtmlTable):
                      img='time16',
                      display=True,
                     ),
-            'pkg_updated': col_updated(
+            'pkg_updated': HtmlTableColumn(
                      title='Updated',
                      table='packages',
                      field='pkg_updated',
                      img='pkg16',
                      display=True,
+                     _class='datetime_daily',
                     ),
             'id': HtmlTableColumn(
                      title='Id',

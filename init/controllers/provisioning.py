@@ -258,10 +258,17 @@ def prov_enqueue(node, command):
       user_id=auth.user_id
     )
     from subprocess import Popen
+    import sys
     actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
-    process = Popen(actiond)
+    process = Popen([sys.executable, actiond])
     process.communicate()
     _log('service.provision', 'provision service on node %(node)s with command %(command)s', dict(
           node=node,
           command=command))
+    l = {
+      'event': 'action_q_change',
+      'data': {'f': 'b'},
+    }
+    _websocket_send(event_msg(l))
+
 

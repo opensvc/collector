@@ -1,4 +1,4 @@
-#!/usr/bin/python2.6
+#!/usr/bin/python
 
 import os
 import sys
@@ -12,8 +12,23 @@ import json
 
 basedir = os.path.realpath(os.path.dirname(__file__))
 sys.path.append(basedir)
+sys.path.append(basedir+"/../../..")
+sys.path.append(basedir+"/../modules")
+sys.path.append(basedir+"/../models")
 
 import lock
+import config
+from comet import event_msg, _websocket_send
+
+msg = {
+  'event': 'action_q_change',
+  'data': {'f': 'b'},
+}
+
+try:
+    dbopensvc = config.dbopensvc
+except:
+    dbopensvc = "dbopensvc"
 
 lockfile = __file__+'.lock'
 N_THREAD = 50
@@ -129,6 +144,9 @@ def get_queued():
         cursor.execute("update action_queue set status='Q' where id in (%s)"%(','.join(ids)))
         conn.commit()
 
+    if len(cmds) > 0:
+        _websocket_send(event_msg(msg))
+
     cursor.close()
     conn.close()
     return cmds
@@ -138,6 +156,8 @@ def dequeue_worker(i, recv, send):
     while True:
         try:
             (id, cmd, form_id) = recv.get()
+        except KeyboardInterrupt:
+            return
         except Queue.Empty:
             if not idle:
                 print '[%d] idle'%(i)
@@ -151,6 +171,7 @@ def dequeue_worker(i, recv, send):
         cursor = conn.cursor()
         cursor.execute("update action_queue set status='R' where id=%d"%id)
         conn.commit()
+        _websocket_send(event_msg(msg))
         print '[%d] %d: %s'%(i, id, cmd)
         cmd = cmd.split()
         process = Popen(cmd, stdout=PIPE, stderr=PIPE, stdin=None)
@@ -167,6 +188,7 @@ def dequeue_worker(i, recv, send):
               """%(now, process.returncode, repr(out), repr(err), id)
         cursor.execute(sql)
         conn.commit()
+        _websocket_send(event_msg(msg))
 
         if form_id is not None:
             send.put(dict(
@@ -270,7 +292,7 @@ def close_workflow(form_id, conn, cursor):
 
 def get_conn():
     try:
-        conn = MySQLdb.connect(host="dbopensvc",
+        conn = MySQLdb.connect(host=dbopensvc,
                                user="opensvc",
                                passwd="opensvc",
                                db="opensvc")
@@ -295,6 +317,12 @@ def stop_workers():
         p.join()
 
 def dequeue():
+    try:
+        _dequeue()
+    except KeyboardInterrupt:
+        pass
+
+def _dequeue():
     idle = False
     send = JoinableQueue()
     recv = JoinableQueue()
@@ -319,6 +347,9 @@ def dequeue():
         for id, cmd, form_id in bunch:
             send.put((id, cmd, form_id), block=True)
     #stop_workers()
+
+#dequeue()
+#sys.exit()
 
 try:
     lockfd = actiond_lock(lockfile)

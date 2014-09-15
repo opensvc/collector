@@ -200,13 +200,16 @@ class table_nodes(HtmlTable):
                   'serial', 'team_responsible', 'host_mode', 'status']:
             self.colprops[c].display = True
         self.colprops['nodename'].t = self
+        self.force_cols = ['os_name']
         self.wsable = True
+        self.dataable = True
         self.extraline = True
         self.extrarow = True
         self.checkboxes = True
         self.checkbox_id_col = 'nodename'
         self.checkbox_id_table = 'v_nodes'
         self.dbfilterable = True
+        self.child_tables = ["obs_agg", "uids", "gids"]
         self.ajax_col_values = 'ajax_nodes_col_values'
         if 'NodeManager' in user_groups():
             self.additional_tools.append('node_add')
@@ -353,7 +356,7 @@ class table_nodes(HtmlTable):
                       ),
               ),
             )
-        return d
+        return d.xml()
 
     def node_del(self):
         d = DIV(
@@ -539,8 +542,9 @@ def do_action(ids, action=None, mode=None):
     generic_insert('action_queue', vars, vals)
 
     from subprocess import Popen
+    import sys
     actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
-    process = Popen(actiond)
+    process = Popen([sys.executable, actiond])
     process.communicate()
 
     if mode in ("module", "moduleset"):
@@ -550,10 +554,17 @@ def do_action(ids, action=None, mode=None):
               s=','.join(map(lambda x: x.nodename, rows)),
               m=mod))
     elif mode == "node":
-        _log('node.action', 'run %(a)s on nodes %(s)s', dict(
+        _log('node.action', 'run %(a)s on nodes %(s)s'+str(ids), dict(
               a=action,
               s=','.join(map(lambda x: x.nodename, rows)),
               ))
+    if len(vals) > 0:
+        l = {
+          'event': 'action_q_change',
+          'data': {'f': 'b'},
+        }
+        _websocket_send(event_msg(l))
+
 
 @auth.requires_membership('NodeManager')
 def node_del(ids):
@@ -618,33 +629,32 @@ def ajax_nodes():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        t.csv_q = q
+        t.csv_orderby = o
+        t.csv_limit = 10000
+        t.csv_left = l
+        return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        return t.do_commonality()
+    if len(request.args) == 1 and request.args[0] == 'data':
         if request.vars.volatile_filters is None:
             n = db(q).select(db.v_nodes.id.count(), left=l).first()(db.v_nodes.id.count())
             limitby = (t.pager_start,t.pager_end)
         else:
             n = 0
             limitby = (0, 500)
-        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False, left=l)
-        return t.table_lines_data(n)
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=True, left=l)
+        return t.table_lines_data(n, html=False)
 
-    n = db(q).select(db.v_nodes.id.count(), left=l).first()(db.v_nodes.id.count())
-    t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o, left=l)
-
-    t.csv_q = q
-    t.csv_orderby = o
-    t.csv_limit = 10000
-    t.csv_left = l
-    if len(request.args) == 1 and request.args[0] == 'csv':
-        return t.csv()
-    if len(request.args) == 1 and request.args[0] == 'commonality':
-        return t.do_commonality()
-
+@auth.requires_login()
+def nodes():
+    t = table_nodes('nodes', 'ajax_nodes')
     mt = table_obs_agg('obs_agg', 'ajax_obs_agg')
     ut = table_uids('uids', 'ajax_uids')
     gt = table_gids('gids', 'ajax_gids')
-    return DIV(
+    d = DIV(
              DIV(
                T("Obsolescence Statistics"),
                _style="text-align:left;font-size:120%;background-color:#e0e1cd",
@@ -661,7 +671,7 @@ def ajax_nodes():
                }"""%mt.ajax_submit(additional_inputs=t.ajax_inputs()),
              ),
              DIV(
-               IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+               mt.html(),
                 _style="display:none",
                _id="obs_agg",
              ),
@@ -681,7 +691,7 @@ def ajax_nodes():
                }"""%ut.ajax_submit(additional_inputs=t.ajax_inputs()),
              ),
              DIV(
-               IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+               ut.html(),
                 _style="display:none",
                _id="uids",
              ),
@@ -701,12 +711,14 @@ def ajax_nodes():
                }"""%gt.ajax_submit(additional_inputs=t.ajax_inputs()),
              ),
              DIV(
+               gt.html(),
                IMG(_src=URL(r=request,c='static',f='spinner.gif')),
                 _style="display:none",
                _id="gids",
              ),
-             t.html(),
-             SCRIPT("""
+             DIV(
+               t.html(),
+               SCRIPT("""
 function ws_action_switch_%(divid)s(data) {
         if (data["event"] == "nodes_change") {
           osvc.tables["%(divid)s"].refresh()
@@ -716,16 +728,11 @@ wsh["%(divid)s"] = ws_action_switch_%(divid)s
               """ % dict(
                      divid=t.innerhtml,
                     )
+               ),
+              _id='nodes',
              ),
-           )
-
-@auth.requires_login()
-def nodes():
-    t = DIV(
-          ajax_nodes(),
-          _id='nodes',
         )
-    return dict(table=t)
+    return dict(table=d)
 
 def delete_pkg(nodename):
     q = db.packages.pkg_nodename == nodename

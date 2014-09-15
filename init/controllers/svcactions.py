@@ -192,143 +192,6 @@ def svcactions_rss():
     response.headers['Content-Type']='application/rss+xml'
     return rss2.dumps(rss)
 
-class col_svcactions_status(HtmlTableColumn):
-    def html(self, o):
-        s = self.get(o)
-        c = 'status_undef'
-        id = self.t.colprops['id'].get(o)
-        if s is not None:
-            c = 'status_'+s.replace(" ", "_")
-        if self.t.colprops['ack'].get(o) == 1:
-            c += ' ack_1'
-            msg = SPAN(
-                    B("acked by "),
-                    self.t.colprops['acked_by'].get(o),
-                    B(" on "),
-                    self.t.colprops['acked_date'].get(o),
-                    B(" with comment: "),
-                    self.t.colprops['acked_comment'].get(o),
-                  )
-            over = """ackpanel(event, true, '%s')"""%msg
-            out = """ackpanel(event, false, '%s')"""%msg
-        else:
-            over = ''
-            out = ''
-        if s is None or s == "":
-            action_status = SPAN(
-              SPAN(
-                IMG(
-                  _src=URL(r=request,c='static',f='spinner.gif'),
-                  _border=0,
-                  _title=T("unfinished"),
-                  _onload="""refresh_action('%(url)s', '%(id)s')"""%dict(
-                        url=URL(r=request,f='ajax_action_status', args=[id]),
-                        id=id,
-                      )
-                ),
-                _id="spin_span_"+str(id),
-              ),
-            )
-        else:
-            action_status = s
-
-        d = SPAN(
-              action_status,
-              _onmouseover=over,
-              _onmouseout=out,
-              _class=c,
-            )
-        return d
-
-class col_cron(HtmlTableColumn):
-    def html(self, o):
-        s = self.get(o)
-        if s == 1:
-            img = IMG(_src=URL(r=request,c='static',f='time16.png'))
-        else:
-            img = ''
-        d = SPAN(
-              img,
-            )
-        return d
-
-class col_action(HtmlTableColumn):
-    def html(self, o):
-        s = self.get(o)
-        action = s.split()[-1]
-        c ='action'
-        if self.t.colprops['status_log'].get(o) is None:
-            c = 'metaaction'
-        if action in action_img_h:
-            img = IMG(_src=URL(r=request,c='static',f=action_img_h[action]))
-        else:
-            img = ''
-        d = SPAN(
-              img,
-              s,
-              _class=c,
-              _id='spin_span_%s'%str(id)
-            )
-        return d
-
-class col_begin(HtmlTableColumn):
-    def html(self, o):
-        s = self.get(o)
-        return SPAN(
-                 s,
-                 _class='nowrap',
-               )
-
-class col_end(HtmlTableColumn):
-    def html(self, o):
-        s = self.get(o)
-        id = self.t.colprops['id'].get(o)
-        if s is None:
-            s = ''
-        elif str(s) == '1000-01-01 00:00:00':
-            return SPAN('timed out', _class='highlight')
-        return SPAN(
-                 s,
-                 _id='spin_span_end_%s'%id,
-                 _class='nowrap',
-               )
-
-class col_pid(HtmlTableColumn):
-    def html(self, o):
-        s = self.get(o)
-        id = self.t.colprops['id'].get(o)
-        if s is None:
-            pid = ''
-        else:
-            if o.end is None:
-                f_end = ''
-            else:
-                f_end = '<'+str(o.end+datetime.timedelta(days=1))
-            pid = A(
-                 o.pid,
-                 _href=URL(
-                         r=request,
-                         f='svcactions',
-                         vars={
-                           'actions_f_pid':pid_to_filter(o.pid),
-                           'actions_f_hostname':o.hostname,
-                           'actions_f_svcname':o.svcname,
-                           'actions_f_begin':'>'+str(o.begin-datetime.timedelta(days=1)),
-                           'actions_f_end':f_end,
-                           'actions_f_perpage':0,
-                           'clear_filters': 'true',
-                         }
-              ),
-            )
-        return SPAN(pid, _id='spin_span_pid_%s'%id)
-
-class col_status_log(HtmlTableColumn):
-    def html(self, o):
-        s = self.get(o)
-        if s is None:
-            s = ''
-        return PRE(s)
-
 class table_actions(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -367,55 +230,62 @@ class table_actions(HtmlTable):
                 img = 'node16',
                 _class = 'nodename',
             ),
-            'pid': col_pid(
+            'pid': HtmlTableColumn(
                 title = 'Pid',
                 table = 'v_svcactions',
                 field='pid',
                 display = True,
                 img = 'action16',
+                _class = 'action_pid',
             ),
-            'action': col_action(
+            'action': HtmlTableColumn(
                 title = 'Action',
                 table = 'v_svcactions',
                 field='action',
                 display = True,
                 img = 'action16',
+                _class = 'action',
             ),
-            'status': col_svcactions_status(
+            'status': HtmlTableColumn(
                 title = 'Status',
                 table = 'v_svcactions',
                 field='status',
                 display = True,
                 img = 'action16',
+                _class = 'action_status',
             ),
-            'begin': col_begin(
+            'begin': HtmlTableColumn(
                 title = 'Begin',
                 table = 'v_svcactions',
                 field='begin',
                 display = True,
                 img = 'time16',
                 default_filter = '>-1d',
+                _class = 'datetime_no_age',
             ),
-            'end': col_end(
+            'end': HtmlTableColumn(
                 title = 'End',
                 table = 'v_svcactions',
                 field='end',
                 display = False,
                 img = 'time16',
+                _class = 'action_end',
             ),
-            'status_log': col_status_log(
+            'status_log': HtmlTableColumn(
                 title = 'Log',
                 table = 'v_svcactions',
                 field='status_log',
                 display = True,
                 img = 'action16',
+                _class = 'action_log',
             ),
-            'cron': col_cron(
+            'cron': HtmlTableColumn(
                 title = 'Scheduled',
                 table = 'v_svcactions',
                 field='cron',
                 display = True,
                 img = 'action16',
+                _class = 'action_cron',
             ),
             'time': HtmlTableColumn(
                 title = 'Duration',
@@ -468,6 +338,8 @@ class table_actions(HtmlTable):
             ),
         }
         cp = v_nodes_colprops
+        for k in cp.keys():
+            cp[k].table = "v_svcactions"
         del(cp['status'])
         self.colprops.update(cp)
         self.colprops.update(v_services_colprops)
@@ -486,9 +358,11 @@ class table_actions(HtmlTable):
             self.colprops[c].t = self
         self.ajax_col_values = 'ajax_actions_col_values'
         self.extraline = True
+        self.force_cols = ['os_name', 'acked_by', 'acked_date', 'acked_comment']
         self.span = ['pid']
         #self.span = ['pid', 'hostname', 'svcname', 'action'] + ncols
         self.wsable = True
+        self.dataable = True
         self.dbfilterable = True
         self.checkboxes = True
         self.checkbox_id_table = 'v_svcactions'
@@ -620,41 +494,42 @@ def ajax_actions():
         return t.csv()
     if len(request.args) == 1 and request.args[0] == 'commonality':
         return t.do_commonality()
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         if request.vars.volatile_filters is None:
             n = db(q).count()
             limitby = (t.pager_start,t.pager_end)
         else:
             n = 0
             limitby = (0, 500)
-        t.object_list = db(q).select(limitby=limitby, orderby=o, cacheable=True)
-        return t.table_lines_data(n)
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, limitby=limitby, orderby=o, cacheable=True)
+        return t.table_lines_data(n, html=False)
 
-    n = db(q).count()
-    t.setup_pager(n)
-    if n < t.pager_end - t.pager_start:
-        end = t.pager_start + n
-    else:
-        end = t.pager_end
-    t.object_list = db(q).select(limitby=(t.pager_start,end), orderby=o)
-
-    return SPAN(
-              DIV(
-               _id='ackpanel',
-               _class='ackpanel',
-              ),
-              t.html(),
-              SCRIPT("""
+@auth.requires_login()
+def svcactions():
+    t = table_actions('actions', 'ajax_actions')
+    t = DIV(
+          DIV(
+            _id='ackpanel',
+            _class='ackpanel',
+          ),
+          DIV(
+            t.html(),
+            _id='actions',
+          ),
+          SCRIPT("""
 function ws_action_switch_%(divid)s(data) {
         if (data["event"] == "begin_action") {
-          _data = []
-          _data.push({"key": "id", "val": data["data"]["id"], "op": "="})
-          osvc.tables["%(divid)s"].insert(_data)
+          osvc.tables["%(divid)s"].refresh()
+          //_data = []
+          //_data.push({"key": "id", "val": data["data"]["id"], "op": "="})
+          //osvc.tables["%(divid)s"].insert(_data)
         } else if (data["event"] == "end_action") {
-          _data = []
-          _data.push({"key": "id", "val": data["data"]["id"], "op": ">="})
-          _data.push({"key": "pid", "val": data["data"]["pid"], "op": "="})
-          osvc.tables["%(divid)s"].insert(_data)
+          osvc.tables["%(divid)s"].refresh()
+          //_data = []
+          //_data.push({"key": "id", "val": data["data"]["id"], "op": ">="})
+          //_data.push({"key": "pid", "val": data["data"]["pid"], "op": "="})
+          //osvc.tables["%(divid)s"].insert(_data)
         } else if (data["event"] == "svcactions_change") {
           osvc.tables["%(divid)s"].refresh()
         }
@@ -663,15 +538,7 @@ wsh["%(divid)s"] = ws_action_switch_%(divid)s
               """ % dict(
                      divid=t.innerhtml,
                     )
-              ),
-            )
-
-@auth.requires_login()
-def svcactions():
-    t = DIV(
-          ajax_actions(),
-          _id='actions',
+          ),
         )
     return dict(table=t)
-
 

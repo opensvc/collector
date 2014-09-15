@@ -346,58 +346,12 @@ $("#dashboard_f_dash_type").val('%(s)s')
         return mt.csv()
 
     if len(request.args) == 1 and request.args[0] == 'line':
-        return t.table_lines_data(-1)
+        return mt.table_lines_data(-1)
 
 
     return DIV(
              mt.html(),
-             SCRIPT(
-               """
-function dashpie_sev(o) {
-  var data = $.parseJSON(o.html())
-  o.html("")
-  o.height("300px")
-  colors = {
-    "4": "#2d2d2d",
-    "3": "#660000",
-    "2": "#990000",
-    "1": "#ffa500",
-    "0": "#009900"
-  }
-  c = []
-  for (i=0;i<data.length;i++) {
-      c.push(colors[data[i][0][data[i][0].length-1]])
-  }
-  options = {
-      grid:{background:'#ffffff',borderColor:'transparent',shadow:false,drawBorder:false,shadowColor:'transparent'},
-      seriesDefaults: {
-        renderer: $.jqplot.PieRenderer,
-        seriesColors: c,
-        rendererOptions: {
-          sliceMargin: 4,
-          dataLabelPositionFactor: 0.7,
-          startAngle: -90,
-          dataLabels: 'value',
-          showDataLabels: true
-        }
-      },
-      legend: { show:false, location: 'e' }
-    }
-  $.jqplot(o.attr('id'), [data], options)
-  o.bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
-    dash_severity = data[seriesIndex][data[seriesIndex].length-1]
-    $("#dashboard_f_dash_severity").val(dash_severity)
-    %(submit)s
-  })
-}
-$("#sev_chart").each(function(){
-  dashpie_sev($(this))
-})
-"""%dict(submit=t.ajax_submit(),
-         msg=T("Hover over a slice to show data"),
-        ),
-               _name="dash_agg_to_eval",
-             ),
+             SCRIPT("""osvc.tables["dash_agg"]["on_change"] = plot_dashpie_sev; plot_dashpie_sev() """),
            )
 
 @service.json
@@ -490,195 +444,6 @@ class col_dash_entry(HtmlTableColumn):
         )
         return d
 
-class col_dash_links(HtmlTableColumn):
-    def link_action_errors(self, o):
-       dash_svcname = self.t.colprops['dash_svcname'].get(o)
-       i = A(
-            '',
-             _href=URL(r=request,c='svcactions',f='svcactions',
-                    vars={'actions_f_svcname': dash_svcname,
-                          'actions_f_status': 'err',
-                          'actions_f_ack': '!1|empty',
-                          'actions_f_begin': '>-10d',
-                          'clear_filters': 'true'}),
-             _title=T("Service action errors"),
-             _class='alert16 clickable',
-           )
-       return i
-
-    def link_actions(self, o):
-       dash_svcname = self.t.colprops['dash_svcname'].get(o)
-       i = A(
-            '',
-             _href=URL(r=request,c='svcactions',f='svcactions',
-                    vars={'actions_f_svcname': dash_svcname,
-                          'actions_f_begin': '>%s'%str(now-datetime.timedelta(days=7)),
-                          'clear_filters': 'true'}),
-             _title=T("Service actions"),
-             _class='action16 clickable',
-           )
-       return i
-
-    def link_svcmon(self, o):
-       dash_svcname = self.t.colprops['dash_svcname'].get(o)
-       i = A(
-            '',
-             _href=URL(r=request,c='default',f='svcmon',
-                    vars={'svcmon_f_mon_svcname': dash_svcname,
-                          'clear_filters': 'true'}),
-             _title=T("Service status"),
-             _class='svc clickable',
-           )
-       return i
-
-    def link_checks(self, o):
-       dash_nodename = self.t.colprops['dash_nodename'].get(o)
-       i = A(
-            '',
-             _href=URL(r=request,c='checks',f='checks',
-                    vars={'checks_f_chk_nodename': dash_nodename,
-                          'clear_filters': 'true'}),
-             _title=T("Checks"),
-             _class='check16 clickable',
-           )
-       return i
-
-    def link_nodes(self, o):
-       dash_nodename = self.t.colprops['dash_nodename'].get(o)
-       i = A(
-            '',
-             _href=URL(r=request,c='nodes',f='nodes',
-                    vars={'nodes_f_nodename': dash_nodename,
-                          'clear_filters': 'true'}),
-             _title=T("Node"),
-             _class='node16 clickable',
-           )
-       return i
-
-    def link_obsolescence(self, o, t):
-       i = A(
-            '',
-             _href=URL(r=request,c='obsolescence',f='obsolescence_config',
-                    vars={'obs_f_obs_type': t,
-                          'clear_filters': 'true'}),
-             _title=T("Obsolescence configuration"),
-             _class='%s16 clickable'%t,
-           )
-       return i
-
-    def link_compliance_tab(self, o):
-       id = self.t.extra_line_key(o)
-       i = A(
-            '',
-             _title=T("Compliance tab"),
-             _class='comp16 clickable',
-             _onclick="""toggle_extra('%(url)s', '%(id)s', this, 0)"""%dict(
-                  url=URL(r=request, c='default',f='ajax_service',
-                          vars={'node': self.t.colprops['dash_svcname'].get(o),
-                                'rowid': id,
-                                'tab': 'tab11'}),
-                  id=id,
-                      ),
-           )
-       return i
-
-    def link_pkgdiff_tab(self, o):
-       id = self.t.extra_line_key(o)
-       i = A(
-            '',
-             _title=T("Pkgdiff tab"),
-             _class='pkg16 clickable',
-             _onclick="""toggle_extra('%(url)s', '%(id)s', this, 0)"""%dict(
-                  url=URL(r=request, c='default',f='ajax_service',
-                          vars={'node': self.t.colprops['dash_svcname'].get(o),
-                                'rowid': id,
-                                'tab': 'tab10'}),
-                  id=id,
-                      ),
-           )
-       return i
-
-    def link_feed_queue(self, o):
-       i = A(
-            '',
-             _href=URL(r=request,c='feed_queue',f='feed_queue',
-                    vars={'feed_queue_f_created': '<-15m',
-                          'clear_filters': 'true'}),
-             _title=T("Feed queue"),
-             _class='action16 clickable',
-           )
-       return i
-
-    def link_mac_duplicate(self, o):
-       s = self.t.colprops['dash_dict'].get(o)
-       try:
-           data = json.loads(s)
-       except:
-           return SPAN()
-       mac = data['mac']
-       i = A(
-            '',
-             _href=URL(r=request,c='nodenetworks',f='nodenetworks',
-                    vars={'nodenetworks_f_mac': mac,
-                          'clear_filters': 'true'}),
-             _title=T("Node networks"),
-             _class='net16 clickable',
-           )
-       return i
-
-    def html(self, o):
-       l = []
-       dash_type = self.t.colprops['dash_type'].get(o)
-       if dash_type == "action errors":
-           l.append(self.link_action_errors(o))
-           l.append(self.link_actions(o))
-       elif dash_type == "check out of bounds" or \
-            dash_type == "check value not updated":
-           l.append(self.link_checks(o))
-       elif dash_type == "service status not updated" or \
-            dash_type == "service configuration not updated" or \
-            dash_type == "service available but degraded" or \
-            dash_type == "service frozen" or \
-            dash_type == "flex error" or \
-            dash_type == "service unavailable":
-           l.append(self.link_svcmon(o))
-       elif dash_type == "node warranty expired" or \
-            dash_type == "node information not updated" or \
-            dash_type == "node without warranty end date" or \
-            dash_type == "node without asset information" or \
-            dash_type == "node close to warranty end":
-           l.append(self.link_nodes(o))
-       elif "os obsolescence" in dash_type:
-           l.append(self.link_obsolescence(o, 'os'))
-       elif "obsolescence" in dash_type:
-           l.append(self.link_obsolescence(o, 'hw'))
-       elif dash_type.startswith('comp'):
-           l.append(self.link_compliance_tab(o))
-       elif dash_type.startswith('package'):
-           l.append(self.link_pkgdiff_tab(o))
-       elif dash_type == 'feed queue':
-           l.append(self.link_feed_queue(o))
-       elif dash_type == 'mac duplicate':
-           l.append(self.link_mac_duplicate(o))
-
-       return DIV(l)
-
-class col_dash_severity(HtmlTableColumn):
-    def html(self, o):
-       d = self.get(o)
-       c = ""
-       if d == 0:
-           c += "alertgreen"
-       elif d == 1:
-           c += "alertorange"
-       elif d == 2:
-           c += "alertred"
-       elif d == 3:
-           c += "alertdarkred"
-       else:
-           c += "alertblack"
-       return DIV(d, _class=c)
-
 class table_dashboard(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -695,11 +460,12 @@ class table_dashboard(HtmlTable):
                      'dash_updated',
                      'dash_md5']
         self.colprops = {
-            'dash_links': col_dash_links(
+            'dash_links': HtmlTableColumn(
                      title='Links',
                      field='dummy',
                      img='link16',
                      display=True,
+                     _class="dash_links",
                     ),
             'dash_created': HtmlTableColumn(
                      title='Begin date',
@@ -715,12 +481,13 @@ class table_dashboard(HtmlTable):
                      img='time16',
                      display=True,
                     ),
-            'dash_severity': col_dash_severity(
+            'dash_severity': HtmlTableColumn(
                      title='Severity',
                      table='dashboard',
                      field='dash_severity',
                      img='action16',
                      display=True,
+                     _class='dash_severity',
                     ),
             'dash_svcname': HtmlTableColumn(
                      title='Service',
@@ -752,6 +519,7 @@ class table_dashboard(HtmlTable):
                      field='dash_env',
                      img='svc',
                      display=True,
+                     _class='env',
                     ),
             'dash_fmt': HtmlTableColumn(
                      title='Format',
@@ -801,6 +569,8 @@ class table_dashboard(HtmlTable):
         self.checkbox_id_col = 'id'
         self.special_filtered_cols = ['dash_entry']
         self.wsable = True
+        self.dataable = True
+        self.child_tables = ['dash_agg']
 
 @auth.requires_login()
 def ajax_dashboard_col_values():
@@ -835,24 +605,21 @@ def ajax_dashboard():
         return t.csv()
     if len(request.args) == 1 and request.args[0] == 'commonality':
         return t.do_commonality()
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         if request.vars.volatile_filters is None:
             n = db(q).select(db.dashboard.id.count()).first()(db.dashboard.id.count())
             limitby = (t.pager_start,t.pager_end)
         else:
             n = 0
             limitby = (0, 500)
-        t.object_list = db(q).select(orderby=o, cacheable=False, limitby=limitby)
-        return t.table_lines_data(n)
+        t.object_list = db(q).select(orderby=o, cacheable=True, limitby=limitby)
+        return t.table_lines_data(n, html=False)
 
-    n = db(q).select(db.dashboard.id.count()).first()(db.dashboard.id.count())
-    t.setup_pager(n)
-    t.object_list = db(q).select(db.dashboard.ALL,
-                                 limitby=(t.pager_start,t.pager_end),
-                                 orderby=o, cacheable=True)
-
+@auth.requires_login()
+def index():
+    t = table_dashboard('dashboard', 'ajax_dashboard')
     mt = table_dash_agg('dash_agg', 'ajax_dash_agg')
-    return DIV(
+    t = DIV(
              DIV(
                T("Alerts Statistics"),
                _style="text-align:left;font-size:120%;background-color:#e0e1cd",
@@ -869,7 +636,7 @@ def ajax_dashboard():
                }"""%mt.ajax_submit(additional_inputs=t.ajax_inputs()),
              ),
              DIV(
-               IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+                mt.html(),
                 _style="display:none",
                _id="dash_agg",
              ),
@@ -889,7 +656,10 @@ def ajax_dashboard():
                }"""%dict(url=URL(r=request,f='ajax_dash_history', vars={"divid": "dh"})),
              ),
              DIV(_id="dh", _style="display:none"),
-             t.html(),
+             DIV(
+               t.html(),
+               _id='dashboard',
+             ),
              SCRIPT("""
 function ws_action_switch_%(divid)s(data) {
         if (data["event"] == "dash_change") {
@@ -901,14 +671,8 @@ wsh["%(divid)s"] = ws_action_switch_%(divid)s
                      divid=t.innerhtml,
                     )
              ),
-           )
-
-@auth.requires_login()
-def index():
-    t = DIV(
-          ajax_dashboard(),
-          _id='dashboard',
         )
+
     return dict(table=t)
 
 #
