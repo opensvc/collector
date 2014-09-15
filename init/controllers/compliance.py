@@ -4756,7 +4756,7 @@ def ajax_comp_status_agg():
     na = db(q_na).count()
     ok = db(q_ok).count()
 
-    ag.object_list = [{'agg': (obs, nok, na, ok)}]
+    ag.object_list = [{'agg': (obs, ok, na, nok)}]
 
     if len(request.args) == 1 and request.args[0] == 'line':
         return ag.table_lines_data(-1)
