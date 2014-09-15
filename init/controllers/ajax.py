@@ -1,4 +1,121 @@
 @auth.requires_login()
+def del_bookmark():
+    table_id = request.vars.table_id
+    bookmark = request.vars.bookmark
+    sql = """delete from column_filters
+             where
+               col_tableid="%(table_id)s" and
+               user_id=%(user_id)d and
+               bookmark="%(bookmark)s"
+          """ % dict(
+                  user_id=session.auth.user.id,
+                  table_id=table_id,
+                  bookmark=bookmark,
+                )
+    db.executesql(sql)
+    db.commit()
+
+@auth.requires_login()
+def load_bookmark():
+    table_id = request.vars.table_id
+    bookmark = request.vars.bookmark
+    sql = """delete from column_filters
+             where
+               col_tableid="%(table_id)s" and
+               user_id=%(user_id)d and
+               bookmark="current"
+          """ % dict(
+                  user_id=session.auth.user.id,
+                  table_id=table_id,
+                )
+    db.executesql(sql)
+    db.commit()
+
+    sql = """insert into column_filters
+             (
+               col_tableid,
+               col_name,
+               col_filter,
+               user_id,
+               bookmark
+             )
+             select
+               col_tableid,
+               col_name,
+               col_filter,
+               user_id,
+               "current"
+             from column_filters
+             where
+               col_tableid="%(table_id)s" and
+               user_id=%(user_id)d and
+               bookmark="%(bookmark)s"
+          """ % dict(
+                  user_id=session.auth.user.id,
+                  table_id=table_id,
+                  bookmark=bookmark
+                )
+    db.executesql(sql)
+    db.commit()
+
+    sql = """select col_name, col_filter from column_filters
+             where
+               col_tableid="%(table_id)s" and
+               user_id=%(user_id)d and
+               bookmark="current"
+          """ % dict(
+                  user_id=session.auth.user.id,
+                  table_id=table_id,
+                )
+    rows = db.executesql(sql, as_dict=True)
+    return json.dumps(rows)
+
+
+@auth.requires_login()
+def save_bookmark():
+    table_id = request.vars.table_id
+    bookmark = request.vars.bookmark
+    sql = """delete from column_filters
+             where
+               col_tableid="%(table_id)s" and
+               user_id=%(user_id)d and
+               bookmark="%(bookmark)s"
+          """ % dict(
+                  user_id=session.auth.user.id,
+                  table_id=table_id,
+                  bookmark=bookmark
+                )
+    db.executesql(sql)
+    db.commit()
+
+    sql = """insert into column_filters
+             (
+               col_tableid,
+               col_name,
+               col_filter,
+               user_id,
+               bookmark
+             )
+             select
+               col_tableid,
+               col_name,
+               col_filter,
+               user_id,
+               "%(bookmark)s"
+             from column_filters
+             where
+               col_tableid="%(table_id)s" and
+               user_id=%(user_id)d and
+               bookmark="current"
+          """ % dict(
+                  user_id=session.auth.user.id,
+                  table_id=table_id,
+                  bookmark=bookmark
+                )
+    db.executesql(sql)
+    db.commit()
+
+@auth.requires_login()
 def ajax_set_user_prefs_column2():
     table = request.args[0]
     field = request.args[1]

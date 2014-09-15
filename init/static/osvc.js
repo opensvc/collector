@@ -5059,6 +5059,76 @@ function filter_submit(id,k,v){
   osvc.tables[id].refresh_column_filters()
 };
 
+function table_insert_bookmark(t, bookmark) {
+  s = "<p><a name='bookmark' class='bookmark16'>"+bookmark+"</a><a style='float:right' class='del16'></a></p>"
+  $('#'+t.id).find("[name^=bookmark].white_float").children("span").append(s)
+  t.bind_bookmark()
+}
+
+function table_bind_bookmark(t) {
+  $('[name=bookmarks'+t.id+']').find(".del16").bind("click", function() {
+    var bookmark = $(this).siblings("[name=bookmark]").text()
+    var url = $(location).attr("origin") + "/init/ajax/del_bookmark"
+    var query = "table_id="+t.id+"&bookmark="+encodeURIComponent(bookmark)
+    var line = $(this).parents("p").first()
+    $.ajax({
+         type: "POST",
+         url: url,
+         data: query,
+         success: function(msg){
+           line.remove()
+           $(".white_float").hide()
+           $(".white_float_input").hide()
+         }
+    })
+  })
+  $('[name=bookmarks'+t.id+']').find("[name=bookmark]").bind("click", function() {
+    var bookmark = $(this).text()
+    var url = $(location).attr("origin") + "/init/ajax/load_bookmark"
+    var query = "table_id="+t.id+"&bookmark="+encodeURIComponent(bookmark)
+    $.ajax({
+         type: "POST",
+         url: url,
+         data: query,
+         success: function(msg){
+           var l = $.parseJSON(msg)
+           for (var i=0; i<t.columns.length; i++) {
+             var k = t.id + "_f_" + t.columns[i]
+             $("#"+k).val("")
+           }
+           for (var i=0; i<l.length; i++) {
+             var data = l[i]
+             var k = t.id + "_f_" + data['col_name'].split('.')[1] 
+             var v = data['col_filter']
+             $("#"+k).val(v)
+           }
+           $(".white_float").hide()
+           $(".white_float_input").hide()
+           t.format_header()
+           t.refresh()
+         }
+    })
+  })
+  $('[name=bookmarks'+t.id+']').find("[id^=bookmark_name_input]").bind("keyup", function(event) {
+    if (!is_enter(event)) {
+      return
+    }
+    var url = $(location).attr("origin") + "/init/ajax/save_bookmark"
+    var bookmark = $(this).val()
+    var query = "table_id="+t.id+"&bookmark="+encodeURIComponent(bookmark)
+    $.ajax({
+         type: "POST",
+         url: url,
+         data: query,
+         success: function(msg){
+           t.insert_bookmark(bookmark)
+           $(".white_float").hide()
+           $(".white_float_input").hide()
+         }
+    })
+  })
+}
+
 function table_bind_filter_input_events(t) {
   var inputs = $("#"+t.id).find("input[name=fi]")
   var url = t.ajax_url + "_col_values/"
@@ -6661,6 +6731,12 @@ function table_init(opts) {
     'bind_filter_input_events': function(){
       table_bind_filter_input_events(this)
     },
+    'bind_bookmark': function(){
+      table_bind_bookmark(this)
+    },
+    'insert_bookmark': function(bookmark){
+      table_insert_bookmark(this, bookmark)
+    },
     'bind_refresh': function(){
       table_bind_refresh(this)
     },
@@ -6739,6 +6815,7 @@ function table_init(opts) {
   t.bind_filter_reformat()
   t.bind_refresh()
   t.bind_link()
+  t.bind_bookmark()
   t.scroll_enable()
 
   if (t.dataable) {

@@ -577,7 +577,6 @@ class HtmlTable(object):
                 INPUT(
                   _value=str(datetime.datetime.now()),
                   _id='bookmark_name_input'+self.id,
-                  _onKeyUp="""if(is_enter(event)){%s}"""%self.ajax_submit(additional_inputs=['bookmark_name_input'+self.id]),
                 ),
                 _name='bookmark_name'+self.id,
                 _class='white_float',
@@ -593,12 +592,11 @@ class HtmlTable(object):
                       A(
                         row.bookmark,
                         _class="bookmark16",
-                        _onclick=self.ajax_submit(vars={'bookmark': row.bookmark}),
+                        _name="bookmark",
                       ),
                       A(
                         _class="del16",
                         _style="float:right;",
-                        _onclick=self.ajax_submit(vars={'bookmark_del': row.bookmark}),
                       ),
                     )
                 l.append(d)
@@ -834,16 +832,6 @@ class HtmlTable(object):
         return rows[0].col_filter
 
     def filter_parse(self, f):
-        bookmark_add = request.vars.get("bookmark_name_input"+self.id, "current")
-
-        bookmark_del = request.vars.get("bookmark_del")
-        if bookmark_del is not None:
-            self.drop_filter_value(f, bookmark_del)
-
-        bookmark = request.vars.get("bookmark", "current")
-        if bookmark != "current":
-            return self.stored_filter_value(f, bookmark)
-
         v = self._filter_parse(f)
         if v == self.column_filter_reset:
             self.drop_filter_value(f)
@@ -851,15 +839,14 @@ class HtmlTable(object):
             del(request.vars[key])
             return ""
         if request.vars.volatile_filters:
-            _v = self.stored_filter_value(f, bookmark)
+            _v = self.stored_filter_value(f)
             if _v != "" and v != "":
                 return v+"&"+_v
             if v == "":
                 return _v
             return v
         if v == "":
-            return self.stored_filter_value(f, bookmark)
-        self.store_filter_value(f, v, bookmark_add)
+            return self.stored_filter_value(f)
         if v == "" and self.colprops[f].default_filter is not None:
             v = self.colprops[f].default_filter
         return v
