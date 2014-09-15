@@ -3862,6 +3862,7 @@ class table_comp_mod_status(HtmlTable):
             self.colprops[i].t = self
 
         self.extraline = True
+        self.dbfilterable = False
 
     def extra_line_key(self, o):
         return self.id+'_'+self.colprops['mod_name'].get(o).replace('.','_')
@@ -3945,6 +3946,7 @@ class table_comp_svc_status(HtmlTable):
             self.colprops[i].t = self
 
         self.extraline = True
+        self.dbfilterable = False
 
     def extra_line_key(self, o):
         return self.id+'_'+self.colprops['svc_name'].get(o).replace('.','_')
@@ -4028,6 +4030,7 @@ class table_comp_node_status(HtmlTable):
             self.colprops[i].t = self
 
         self.extraline = True
+        self.dbfilterable = False
 
     def extra_line_key(self, o):
         return self.id+'_'+self.colprops['node_name'].get(o).replace('.','_')
