@@ -7,15 +7,6 @@ def outdated(t):
      if t < deadline: return True
      return False
 
-class col_updated(HtmlTableColumn):
-    def html(self, o):
-       d = self.get(o)
-       if outdated(d):
-           alert = 'color:darkred;font-weight:bold'
-       else:
-           alert = ''
-       return SPAN(d, _style=alert)
-
 class table_patches(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -51,12 +42,13 @@ class table_patches(HtmlTable):
                      img='pkg16',
                      display=True,
                     ),
-            'patch_updated': col_updated(
+            'patch_updated': HtmlTableColumn(
                      title='Updated',
                      table='patches',
                      field='patch_updated',
                      img='time16',
                      display=True,
+                     _class='datetime_daily',
                     ),
             'patch_install_date': HtmlTableColumn(
                      title='Install date',

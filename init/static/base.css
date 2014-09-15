@@ -1,6 +1,11 @@
 @charset "UTF-8";
 
 .scroll_left {
+  width:1em;
+  position:absolute;
+  left:0;
+  z-index:1000;
+  display:none;
   background: -webkit-gradient(left, rgba(100, 100, 100, 0.5), rgba(100, 100, 100, 0));
   background: -webkit-linear-gradient(left, rgba(100, 100, 100, 0.5), rgba(100, 100, 100, 0));
   background: -moz-linear-gradient(left, rgba(100, 100, 100, 0.5), rgba(100, 100, 100, 0));
@@ -9,12 +14,21 @@
   cursor: pointer;
 }
 .scroll_right {
+  width:1em;
+  position:absolute;
+  right:0;
+  z-index:1000;
+  display:none;
   background: -webkit-gradient(left, rgba(100, 100, 100, 0), rgba(100, 100, 100, 0.5));
   background: -webkit-linear-gradient(left, rgba(100, 100, 100, 0), rgba(100, 100, 100, 0.5));
   background: -moz-linear-gradient(left, rgba(100, 100, 100, 0), rgba(100, 100, 100, 0.5));
   background: -ms-linear-gradient(left, rgba(100, 100, 100, 0), rgba(100, 100, 100, 0.5));
   background: -o-linear-gradient(left, rgba(100, 100, 100, 0), rgba(100, 100, 100, 0.5));
   cursor: pointer;
+}
+
+.tl {
+  height: 2em;
 }
 
 .chart {
@@ -149,13 +163,11 @@ img {
 
 .action {
     white-space: nowrap;
-    vertical-align: top;
 }
 
 .metaaction {
     font-weight: bold;
     white-space: nowrap;
-    vertical-align: top;
 }
 
 .menucell {
@@ -944,6 +956,35 @@ div.sym_detail_visible {
     text-align:right;
 }
 
+.white_float_input {
+    max-width: 50%;
+    border-radius:8px;
+   -moz-border-radius:8px;
+   -webkit-border-radius:8px;
+    border-bottom-color: black;
+    border-bottom-style: solid;
+    border-bottom-width: 2px;
+    border-left-color: #AAA;
+    border-left-style: solid;
+    border-left-width: 2px;
+    border-right-color: black;
+    border-right-style: solid;
+    border-right-width: 2px;
+    border-top-color: #AAA;
+    border-top-style: solid;
+    border-top-width: 2px;
+    color: black;
+    cursor: default;
+    display: none;
+    margin: 0px;
+    padding: 8px;
+    position: absolute;
+    vertical-align: baseline;
+    text-align: left;
+    z-index: 499;
+    background-color: white;
+}
+
 .white_float {
     border-radius:8px;
    -moz-border-radius:8px;
@@ -1179,6 +1220,26 @@ ul.login_menu ul {
     padding: 0 0 0 20px;
     min-height: 16px;
 }
+.values_to_filter {
+    background: transparent url('values_to_filter.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
+.clear16 {
+    background: transparent url('clear16.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
+.invert16 {
+    background: transparent url('invert16.png') no-repeat;
+    padding: 0 0 0 16px;
+    min-height: 16px;
+}
+.filter16 {
+    background: transparent url('filter16.png') no-repeat;
+    padding: 0 0 0 16px;
+    min-height: 16px;
+}
 .filters {
     background: transparent url('filter16.png') no-repeat;
     padding: 0 0 0 20px;
@@ -1291,6 +1352,11 @@ ul.login_menu ul {
     padding: 0 0 0 20px;
     min-height: 16px;
 }
+.fixable16 {
+    background: transparent url('fixable16.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
 .comp16 {
     background: transparent url('comp16.png') no-repeat;
     padding: 0 0 0 20px;
@@ -1338,6 +1404,41 @@ ul.login_menu ul {
 }
 .frozen16 {
     background: transparent url('frozen16.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
+.action_toc_16 {
+    background: transparent url('action_toc_16.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
+.action_sync_16 {
+    background: transparent url('action_sync_16.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
+.action_switch_16 {
+    background: transparent url('action_switch_16.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
+.action_stop_16 {
+    background: transparent url('action_stop_16.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
+.action_stonith_16 {
+    background: transparent url('action_stonith_16.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
+.action_start_16 {
+    background: transparent url('action_start_16.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
+.action_restart_16 {
+    background: transparent url('action_restart_16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }

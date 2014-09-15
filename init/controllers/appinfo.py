@@ -152,11 +152,12 @@ class table_appinfo(HtmlTable):
                      img='svc',
                      display=True,
                     ),
-            'app_updated': col_updated(
+            'app_updated': HtmlTableColumn(
                      title='Last update',
                      field='app_updated',
                      img='svc',
                      display=True,
+                     _class='datetime_daily',
                     ),
         }
         for c in self.cols:

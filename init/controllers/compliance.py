@@ -55,25 +55,6 @@ def strip_unprintable(s):
 #
 # custom column formatting
 #
-class col_rset_md5(HtmlTableColumn):
-    def html(self, o):
-        id = self.t.extra_line_key(o)
-        s = self.get(o)
-        if s is None or len(s) == 0:
-            return ''
-        d = DIV(
-              A(
-                s,
-                _onclick="toggle_extra('%(url)s', '%(id)s', this, 0);"%dict(
-                  url=URL(r=request, c='compliance',f='ajax_rset_md5',
-                          vars={'rset_md5': s}),
-                  id=id,
-                ),
-              ),
-              _class='nowrap',
-            )
-        return d
-
 class col_comp_filters_table(HtmlTableColumn):
     def html(self, o):
         if o.f_table is None:
@@ -203,21 +184,6 @@ class col_variables(HtmlTableColumn):
             return SPAN()
         return PRE(val.replace('|','\n'))
 
-class col_run_log(HtmlTableColumn):
-    def html(self, o):
-        lines = self.get(o).split('\n')
-        for i, line in enumerate(lines):
-            if line.startswith('ERR: '):
-                lines[i] = PRE(
-                             SPAN('ERR: ', _class='err'),
-                             line[5:]+'\n',
-                           )
-            else:
-                lines[i] = PRE(
-                             line,
-                           )
-        return SPAN(lines)
-
 class col_run_ruleset(HtmlTableColumn):
     def html(self, o):
         val = self.get(o)
@@ -258,18 +224,6 @@ class col_mod_percent(HtmlTableColumn):
                      """,
             ),
         return d
-
-class col_run_status(HtmlTableColumn):
-    def html(self, o):
-        val = self.get(o)
-        if val in img_h:
-            r = IMG(
-                  _src=URL(r=request,c='static',f=img_h[val]),
-                  _title="",
-                )
-        else:
-            r = val
-        return r
 
 class col_modset_mod_name(HtmlTableColumn):
     def html(self, o):
@@ -4106,34 +4060,6 @@ def spark_url(nodename, module):
                  module=module)
            )
 
-class col_run_status_log(HtmlTableColumn):
-    def html(self, o):
-        if hasattr(o, 'comp_status'):
-            nodename = o.comp_status.run_nodename
-            module = o.comp_status.run_module
-        else:
-            nodename = ""
-            module = ""
-        return DIV(
-                 _id=spark_id(nodename, module)
-               )
-
-class col_run_date(HtmlTableColumn):
-    deadline = now - datetime.timedelta(days=7)
-
-    def outdated(self, t):
-         if t is None or t == '': return True
-         if t < self.deadline: return True
-         return False
-
-    def html(self, o):
-       d = self.get(o)
-       if self.outdated(d):
-           alert = 'color:darkred;font-weight:bold'
-       else:
-           alert = ''
-       return SPAN(d, _style=alert)
-
 class table_comp_status(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -4149,12 +4075,13 @@ class table_comp_status(HtmlTable):
                      'run_log']
         self.cols += v_nodes_cols
         self.colprops = {
-            'run_date': col_run_date(
+            'run_date': HtmlTableColumn(
                      title='Run date',
                      field='run_date',
                      table='comp_status',
                      img='check16',
                      display=True,
+                     _class='datetime_weekly',
                     ),
             'run_nodename': HtmlTableColumn(
                      title='Node',
@@ -4186,33 +4113,37 @@ class table_comp_status(HtmlTable):
                      img='check16',
                      display=True,
                     ),
-            'rset_md5': col_rset_md5(
+            'rset_md5': HtmlTableColumn(
                      title='Ruleset md5',
                      field='rset_md5',
                      table='comp_status',
                      img='check16',
                      display=False,
+                     _class='nowrap pre rset_md5',
                     ),
-            'run_status': col_run_status(
+            'run_status': HtmlTableColumn(
                      title='Status',
                      field='run_status',
                      table='comp_status',
                      img='check16',
                      display=True,
+                     _class='run_status',
                     ),
-            'run_status_log': col_run_status_log(
+            'run_status_log': HtmlTableColumn(
                      title='History',
-                     field='run_status_log',
+                     field='un_status_log',
                      table='comp_status',
                      img='check16',
                      display=False,
+                     _class='run_status_log',
                     ),
-            'run_log': col_run_log(
+            'run_log': HtmlTableColumn(
                      title='Log',
                      field='run_log',
                      table='comp_status',
                      img='check16',
                      display=False,
+                     _class='run_log',
                     ),
         }
         self.colprops.update(v_nodes_colprops)
@@ -4221,6 +4152,9 @@ class table_comp_status(HtmlTable):
         self.ajax_col_values = 'ajax_comp_status_col_values'
         self.extraline = True
         self.wsable = True
+        self.dataable = True
+        self.child_tables = ["agg", "cms", "cns", "css"]
+        self.force_cols = ['os_name']
         self.keys = ["run_nodename", "run_svcname", "run_module"]
         self.span = ["run_nodename", "run_svcname", "run_module"]
         self.checkboxes = True
@@ -4398,8 +4332,9 @@ def do_action(ids, action=None):
     generic_insert('action_queue', vars, vals)
 
     from subprocess import Popen
+    import sys
     actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
-    process = Popen(actiond)
+    process = Popen([sys.executable, actiond])
     process.communicate()
 
     if len(tolog_node) > 0:
@@ -4412,6 +4347,13 @@ def do_action(ids, action=None):
         _log('service.action', 'run compliance %(a)s of %(s)s', dict(
               a=action,
               s=tolog_svc_s))
+    if len(vals) > 0:
+        l = {
+          'event': 'action_q_change',
+          'data': {'f': 'b'},
+        }
+        _websocket_send(event_msg(l))
+
 
 @auth.requires_membership('CompManager')
 def var_name_set():
@@ -4644,30 +4586,35 @@ def ajax_comp_status():
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.comp_status.run_nodename)
 
-    t.csv_q = q
-    t.csv_orderby = o
 
     if len(request.args) == 1 and request.args[0] == 'csv':
+        t.csv_q = q
+        t.csv_orderby = o
         return t.csv()
     if len(request.args) == 1 and request.args[0] == 'commonality':
         return t.do_commonality()
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         if request.vars.volatile_filters is None:
             n = db(q).select(db.comp_status.id.count(), cacheable=True).first()._extra[db.comp_status.id.count()]
             limitby = (t.pager_start,t.pager_end)
         else:
             n = 0
             limitby = (0, 500)
-        t.object_list = db(q).select(limitby=limitby, orderby=o, cacheable=False)
-        return t.table_lines_data(n)
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, limitby=limitby, orderby=o, cacheable=False)
+        return t.table_lines_data(n, html=False)
 
-    n = db(q).select(db.comp_status.id.count(), cacheable=True).first()._extra[db.comp_status.id.count()]
-    t.setup_pager(n)
-    #all = db(q).select(db.comp_status.ALL, db.v_nodes.id)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
-                                 orderby=o, cacheable=True)
+    """
+    spark_cmds = ""
+    for r in t.object_list:
+        spark_cmds += "sparkl('%(url)s', '%(id)s');"%dict(
+          url=spark_url(r.comp_status.run_nodename, r.comp_status.run_module),
+          id=spark_id(r.comp_status.run_nodename, r.comp_status.run_module),
+        )
+    """
 
-    def chart(a, b, c, d):
+class col_comp_status_agg(HtmlTableColumn):
+    def chart(self, a, b, c, d):
         total = a + b + c + d
         if total == 0:
             pa = 0
@@ -4747,6 +4694,58 @@ def ajax_comp_status():
             ),
         return d
 
+    def html(self, o):
+        obs, ok, na, nok = o['agg']
+        return DIV(
+                 self.chart(obs, ok, na, nok),
+                 _style="padding:4px"
+               )
+
+
+class table_comp_status_agg(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['agg']
+        self.colprops = {
+            'agg': col_comp_status_agg(
+                     title='Aggregation',
+                     field='add',
+                     display=True,
+                     img='spark16',
+                    ),
+        }
+        self.dbfilterable = False
+        self.filterable = False
+        self.pageable = False
+        self.bookmarkable = False
+        self.commonalityable = False
+        self.exportable = False
+        self.bookmarkable = False
+        self.linkable = False
+        self.refreshable = False
+        self.columnable = False
+        self.headers = False
+        self.highlight = False
+
+@auth.requires_login()
+def ajax_comp_status_agg():
+    ag = table_comp_status_agg('agg', 'ajax_comp_status_agg')
+    t = table_comp_status('cs0', 'ajax_comp_status')
+    o = ~db.comp_status.run_nodename
+    q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
+    q &= db.comp_status.run_nodename == db.v_nodes.nodename
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    q = apply_filters(q, db.comp_status.run_nodename)
+
+    n = db(q).select(db.comp_status.id.count(), cacheable=True).first()._extra[db.comp_status.id.count()]
+    t.setup_pager(n)
+    #all = db(q).select(db.comp_status.ALL, db.v_nodes.id)
+    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
+                                 orderby=o, cacheable=True)
+
     q_obs = q & (db.comp_status.run_date < now - datetime.timedelta(days=7))
     q_nok = q & (db.comp_status.run_date > now - datetime.timedelta(days=7)) & (db.comp_status.run_status == 1)
     q_na = q & (db.comp_status.run_date > now - datetime.timedelta(days=7)) & (db.comp_status.run_status == 2)
@@ -4757,32 +4756,92 @@ def ajax_comp_status():
     na = db(q_na).count()
     ok = db(q_ok).count()
 
+    ag.object_list = [{'agg': (obs, nok, na, ok)}]
+
+    if len(request.args) == 1 and request.args[0] == 'line':
+        return ag.table_lines_data(-1)
+
+@auth.requires_login()
+def comp_status():
+    t = table_comp_status('cs0', 'ajax_comp_status')
+    ag = table_comp_status_agg('agg', 'ajax_comp_status_agg')
     mt = table_comp_mod_status('cms', 'ajax_comp_mod_status')
     nt = table_comp_node_status('cns', 'ajax_comp_node_status')
     st = table_comp_svc_status('css', 'ajax_comp_svc_status')
 
-    if len(request.args) == 1 and request.args[0] == 'csv':
-        #t.cols.remove("run_log")
-        return t.csv()
-
-    spark_cmds = ""
-    for r in t.object_list:
-        spark_cmds += "sparkl('%(url)s', '%(id)s');"%dict(
-          url=spark_url(r.comp_status.run_nodename, r.comp_status.run_module),
-          id=spark_id(r.comp_status.run_nodename, r.comp_status.run_module),
-        )
-    return DIV(
-             SCRIPT(
-               "$(document).ready(function(){%s});"%spark_cmds,
-               'if ($("#cms").is(":visible")) {',
-               mt.ajax_submit(additional_inputs=t.ajax_inputs()),
-               "}",
-               'if ($("#cns").is(":visible")) {',
-               nt.ajax_submit(additional_inputs=t.ajax_inputs()),
-               "}",
-               'if ($("#css").is(":visible")) {',
-               st.ajax_submit(additional_inputs=t.ajax_inputs()),
-               "}",
+    d = DIV(
+          DIV(
+            ag.html(),
+            _id="agg",
+          ),
+          DIV(
+            T("Modules aggregation"),
+            _style="text-align:left;font-size:120%;background-color:#e0e1cd",
+            _class="right16 clickable",
+            _onclick="""
+            if (!$("#cms").is(":visible")) {
+              $(this).addClass("down16");
+              $(this).removeClass("right16");
+              $("#cms").show();
+              osvc.tables["cms"].refresh()
+            } else {
+              $(this).addClass("right16");
+              $(this).removeClass("down16");
+              $("#cms").hide();
+            }"""
+          ),
+          DIV(
+            mt.html(),
+            _id="cms",
+            _style="display:none"
+          ),
+          DIV(
+            T("Nodes aggregation"),
+            _style="text-align:left;font-size:120%;background-color:#e0e1cd",
+            _class="right16 clickable",
+            _onclick="""
+            if (!$("#cns").is(":visible")) {
+              $(this).addClass("down16");
+              $(this).removeClass("right16");
+              $("#cns").show();
+              osvc.tables["cns"].refresh()
+            } else {
+              $(this).addClass("right16");
+              $(this).removeClass("down16");
+              $("#cns").hide();
+            }"""
+          ),
+          DIV(
+            nt.html(),
+            _id="cns",
+            _style="display:none"
+          ),
+          DIV(
+            T("Services aggregation"),
+            _style="text-align:left;font-size:120%;background-color:#e0e1cd",
+            _class="right16 clickable",
+            _onclick="""
+            if (!$("#css").is(":visible")) {
+              $(this).addClass("down16");
+              $(this).removeClass("right16");
+              $("#css").show();
+              osvc.tables["css"].refresh()
+            } else {
+              $(this).addClass("right16");
+              $(this).removeClass("down16");
+              $("#css").hide();
+            }"""
+          ),
+          DIV(
+            st.html(),
+            _id="css",
+            _style="display:none"
+          ),
+          DIV(
+            t.html(),
+            _id='cs0',
+          ),
+          SCRIPT(
                """
 function ws_action_switch_%(divid)s(data) {
         if (data["event"] == "comp_status_change") {
@@ -4793,59 +4852,10 @@ wsh["%(divid)s"] = ws_action_switch_%(divid)s
               """ % dict(
                      divid=t.innerhtml,
                     ),
-               _name=t.id+"_to_eval"
-             ),
-             DIV(chart(obs, ok, na, nok), _style="padding:4px"),
-             DIV(
-               T("Modules aggregation"),
-               _style="text-align:left;font-size:120%;background-color:#e0e1cd",
-               _class="right16 clickable",
-               _onclick="""
-               if (!$("#cms").is(":visible")) {
-                 $(this).addClass("down16");
-                 $(this).removeClass("right16");
-                 $("#cms").show(); %s;
-               } else {
-                 $(this).addClass("right16");
-                 $(this).removeClass("down16");
-                 $("#cms").hide();
-               }"""%mt.ajax_submit(additional_inputs=t.ajax_inputs())
-             ),
-             DIV(IMG(_src=URL(r=request,c='static',f='spinner.gif')), _id="cms", _style="display:none"),
-             DIV(
-               T("Nodes aggregation"),
-               _style="text-align:left;font-size:120%;background-color:#e0e1cd",
-               _class="right16 clickable",
-               _onclick="""
-               if (!$("#cns").is(":visible")) {
-                 $(this).addClass("down16");
-                 $(this).removeClass("right16");
-                 $("#cns").show(); %s;
-               } else {
-                 $(this).addClass("right16");
-                 $(this).removeClass("down16");
-                 $("#cns").hide();
-               }"""%nt.ajax_submit(additional_inputs=t.ajax_inputs())
-             ),
-             DIV(IMG(_src=URL(r=request,c='static',f='spinner.gif')), _id="cns", _style="display:none"),
-             DIV(
-               T("Services aggregation"),
-               _style="text-align:left;font-size:120%;background-color:#e0e1cd",
-               _class="right16 clickable",
-               _onclick="""
-               if (!$("#css").is(":visible")) {
-                 $(this).addClass("down16");
-                 $(this).removeClass("right16");
-                 $("#css").show(); %s;
-               } else {
-                 $(this).addClass("right16");
-                 $(this).removeClass("down16");
-                 $("#css").hide();
-               }"""%st.ajax_submit(additional_inputs=t.ajax_inputs())
-             ),
-             DIV(IMG(_src=URL(r=request,c='static',f='spinner.gif')), _id="css", _style="display:none"),
-             t.html(),
-           )
+          ),
+        )
+    return dict(table=d)
+
 
 @auth.requires_login()
 def ajax_comp_svc_status():
@@ -5276,16 +5286,6 @@ def ajax_comp_mod_status():
              mt.html(),
            )
 
-@auth.requires_login()
-def comp_status():
-    t = DIV(
-          DIV(
-            ajax_comp_status(),
-            _id='cs0',
-          ),
-        )
-    return dict(table=t)
-
 class table_comp_log(table_comp_status):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -5305,16 +5305,19 @@ class table_comp_log(table_comp_status):
                 self.colprops[c].table = 'comp_log'
         self.colprops['run_date'].default_filter = '>-1d'
 
+        self.additional_tools = []
         self.ajax_col_values = 'ajax_comp_log_col_values'
         self.checkboxes = False
         self.checkbox_id_table = 'comp_log'
         self.wsable = True
+        self.dataable = True
+        self.child_tables = []
         self.keys = ["run_date", "run_nodename", "run_svcname", "run_module", "run_action"]
         self.span = ["run_date", "run_nodename", "run_svcname", "run_module", "run_action"]
 
 @auth.requires_login()
 def ajax_comp_log():
-    t = table_comp_log('ajax_comp_log', 'ajax_comp_log')
+    t = table_comp_log('comp_log', 'ajax_comp_log')
 
     db.commit()
     o = ~db.comp_log.id
@@ -5327,20 +5330,24 @@ def ajax_comp_log():
         return t.csv()
     if len(request.args) == 1 and request.args[0] == 'commonality':
         return t.do_commonality()
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         if request.vars.volatile_filters is None:
             limitby = (t.pager_start,t.pager_end)
         else:
             limitby = (0, 500)
-        t.object_list = db(q).select(limitby=limitby, orderby=o, cacheable=False)
-        return t.table_lines_data(-1)
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, limitby=limitby, orderby=o, cacheable=False)
+        return t.table_lines_data(-1, html=False)
 
-    t.setup_pager(-1)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
-                                 orderby=o, cacheable=True)
-    return DIV(
-             t.html(),
-             SCRIPT("""
+@auth.requires_login()
+def comp_log():
+    t = table_comp_log('comp_log', 'ajax_comp_log')
+    t = DIV(
+          DIV(
+            t.html(),
+            _id='comp_log',
+          ),
+          SCRIPT("""
 function ws_action_switch_%(divid)s(data) {
         if (data["event"] == "comp_status_change") {
           osvc.tables["%(divid)s"].refresh();
@@ -5350,16 +5357,6 @@ wsh["%(divid)s"] = ws_action_switch_%(divid)s
               """ % dict(
                      divid=t.innerhtml,
                     ),
-             ),
-           )
-
-
-@auth.requires_login()
-def comp_log():
-    t = DIV(
-          DIV(
-            ajax_comp_log(),
-            _id='ajax_comp_log',
           ),
         )
     return dict(table=t)
@@ -9259,8 +9256,9 @@ def ajax_generic_form_submit(form, data, _d=None):
             log.append((0, "form.submit", "Compliance fix commands queued for asynchronous execution on %(nodes)s", dict(nodes=', '.join(nodes))))
 
             from subprocess import Popen
+            import sys
             actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
-            process = Popen(actiond)
+            process = Popen([sys.executable, actiond])
             process.communicate()
         elif dest == "script":
             import os

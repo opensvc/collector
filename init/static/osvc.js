@@ -1,4 +1,6 @@
+//
 // IE indexOf workaround
+//
 if (!Array.prototype.indexOf) {
   Array.prototype.indexOf = function(obj, start) {
     for (var i = (start || 0), j = this.length; i < j; i++) {
@@ -17,6 +19,8 @@ function bind_search_tool() {
       $("input:focus").blur()
       $("textarea:focus").blur()
       $(".white_float").hide()
+      $(".white_float_input").hide()
+      $(".right_click_menu").hide()
       return
     }
     if ($('input').is(":focus")) {
@@ -70,8 +74,11 @@ function ws_switch_one(data) {
         return
     }
     for (key in wsh) {
+        $("#refresh_"+key).parent().effect("highlight")
         if (!$("#wsswitch_"+key).prop('checked')) {
-            // websocket disable for this table
+            // websocket disabled for this table.
+            // just remember we have queued change.
+            osvc.tables[key].need_refresh = true
             return
         }
         ws_action_switch = wsh[key]
@@ -107,8 +114,19 @@ function values_to_filter(iid, did){
         v = '(' + l.join(",") + ')'
 	$("#"+iid).val(v)
 }
+
 function invert_filter(did){
-	var v = $('#'+did).val()
+  e = $('#'+did)
+  _invert_filter(e)
+}
+
+function table_invert_filter(id, did){
+  e = $("#"+id).find('#'+did)
+  _invert_filter(e)
+}
+
+function _invert_filter(e){
+	var v = e.val()
 	var reg = new RegExp("[|]+", "g");
 	var l = v.split(reg);
         if (l.length > 1) {
@@ -120,7 +138,7 @@ function invert_filter(did){
 			}
 		}
 		v = l.join("&")
-		$('#'+did).val(v)
+		e.val(v)
 		return
 	} else {
 		var reg = new RegExp("[&]+", "g");
@@ -133,10 +151,11 @@ function invert_filter(did){
 			}
 		}
 		v = l.join("|")
-		$('#'+did).val(v)
+		e.val(v)
 		return
 	}
 }
+
 function toggle_vis(name){
 	_toggle_vis(name,'table-row')
 }
@@ -246,10 +265,18 @@ function toggle_filter_value_input() {
 //
 var timer;
 function check_toggle_vis(id, checked, col){
+    var t = osvc.tables[id]
+    var c = col.split("_c_")[1]
+    if (checked) {
+      t.visible_columns.push(c)
+    } else {
+      t.visible_columns = t.visible_columns.filter(function(x){if (x!=c){return true}})
+    }
     $("#table_"+id).find('[name='+col+']').each(function(){
          if (checked) {
              if ($(this).attr("cell") == '1') {
                _table_cell_decorator(id, this)
+               table_refresh_column_filter(t, c)
              }
              $(this).fadeIn('slow')
          } else {
@@ -521,9 +548,10 @@ function sync_ajax(url, inputs, id, f) {
     })
 }
 function table_restripe_lines(id) {
-    prev_spansum = ""
-    cls = ["cell1", "cell2"]
-    i = 1
+    var prev_spansum = ""
+    var cls = ["cell1", "cell2"]
+    var cl = "cell1"
+    var i = 1
     $("#table_"+id).children().children(".tl").each(function(){
        spansum = $(this).attr("spansum")
        if (spansum != prev_spansum) {
@@ -624,28 +652,192 @@ function sort_table(id) {
     cmp = null
 }
 
+function table_format_input(t, c, val) {
+  var s = "<td name='"+t.id+"_c_"+c+"'>"
+  s += "<span class='clickable filter16'></span>"
+  if (typeof(val) === "undefined") {
+    val = ""
+  }
+  if (val == "**clear**") {
+    val = ""
+  }
+  var n = val.length
+  if ((n == 0) && (t.colprops[c].default_filter != "")) {
+    val = t.colprops[c].default_filter
+    n = val.length
+  }
+  if (n > 0) {
+    if (n > 20) {
+      _val = val.substring(0, 17)
+    } else {
+      _val = val
+    }
+    s += "<span class='clickable invert16'></span>"
+    s += "<span class='clickable clear16'></span>"
+    s += "<span title='"+val+"'>"+_val+"</span>"
+  }
+  s +=  "<div class='white_float_input'>"
+  s +=   "<input name='fi' value='"+val+"' id='"+t.id+"_f_"+c+"'>"
+  s +=   "<span class='clickable values_to_filter'></span>"
+  s +=   "<br>"
+  s +=   "<span id='"+t.id+"_fc_"+c+"'></span>"
+  s +=  "</div>"
+  s += "</td>"
+  return s
+}
+
+function table_format_theader_slim(t, c, val) {
+  if (typeof(val) === "undefined") {
+    val = ""
+  }
+  if (val == "**clear**") {
+    val = ""
+  }
+  var n = val.length
+  if ((n == 0) && (t.colprops[c].default_filter != "")) {
+    val = t.colprops[c].default_filter
+    n = val.length
+  }
+  var cl = ""
+  if ((val.length > 0) && (val != "**clear**")) {
+    cl = " class='bgred'"
+  }
+  var s = "<td name='"+t.id+"_c_"+c+"'"+cl+">"
+  return s
+}
+
+function table_refresh_column_filter(t, c, val) {
+  if (typeof(val) === "undefined") {
+    var e = $("#table_"+t.id).find("#"+t.id+"_f_"+c)
+    val = e.val()
+  }
+  cell = $("#table_"+t.id).find("tr.sym_headers").find("td[name="+t.id+"_c_"+c+"]")
+  cell.replaceWith(table_format_input(t, c, val))
+  cell = $("#table_"+t.id).find("tr.theader_slim").find("td[name="+t.id+"_c_"+c+"]")
+  cell.replaceWith(table_format_theader_slim(t, c, val))
+}
+
+function table_refresh_column_filters(t) {
+  for (i=0; i<t.visible_columns.length; i++) {
+    var c = t.visible_columns[i]
+    t.refresh_column_filter(c)
+  }
+  t.bind_filter_input_events()
+}
+
+function table_format_header(t) {
+  table_refresh_column_filters(t)
+}
+
+function table_cell_fmt(t, k, v) {
+  var s = ""
+  var cl = ""
+  var n = t.id+"_c_"+k
+  var classes = []
+  if ((k == "extra") && (typeof(t.extrarow_class) !== 'undefined')) {
+    classes.push(t.extrarow_class)
+  }
+  if ((k != "extra") && (t.visible_columns.indexOf(k) < 0)) {
+    classes.push("hidden")
+  }
+  if (k in t.colprops) {
+    classes = classes.concat(t.colprops[k]._class.split(" "))
+    classes = classes.concat(t.colprops[k]._dataclass.split(" "))
+  }
+  if (classes.length > 0) {
+    var cs = classes.join(' ').replace(/\s+$/, '')
+    cl = " class='"+cs+"'"
+  } 
+  if (v == 'empty') {
+    var text = ""
+  } else {
+    var text = v
+  }
+  s += "<td cell='1' name='"+n+"' v='"+v+"'"+cl+">"+text+"</td>"
+  return s
+}
+
+function table_bind_checkboxes(t) {
+  $("#table_"+t.id).find("[name="+t.id+"_ck]").each(function(){
+    this.value = this.checked
+    $(this).click(function(){this.value = this.checked})
+  })
+}
+
+function table_data_to_lines(t, data) {
+  var lines = ""
+  for (var i=0; i<data.length; i++) {
+    var line = ""
+    if (t.checkboxes) {
+      line += "<td><input value='"+data[i]['checked']+"' type='checkbox' id='"+t.id+"_ckid_"+data[i]['id']+"' name='"+t.id+"_ck'></td>"
+    }
+    if (t.extrarow) {
+      var cols = ["extra"].concat(t.columns)
+    } else {
+      var cols = t.columns
+    }
+    for (var j=0; j<cols.length; j++) {
+      var k = cols[j]
+      var v = data[i]['cells'][j]
+      line += table_cell_fmt(t, k, v)
+    }
+    lines += "<tr class='tl' spansum='"+data[i]['spansum']+"' cksum='"+data[i]['cksum']+"'>"+line+"</tr>"
+  }
+  return lines
+}
+
 function table_refresh(t) {
-    if ($("#refresh_"+t.id).hasClass("spinner")) {
+    if (!$("#"+t.id).is(":visible")) {
         return
     }
-    var query = t.id+"_page="+$("#"+t.id+"_page").val()
+    if ($("#refresh_"+t.id).hasClass("spinner")) {
+        t.need_refresh = true
+        return
+    } else {
+        t.set_refresh_spin()
+    }
+    var query="table_id="+t.id
+    query += '&'+t.id+"_page="+$("#"+t.id+"_page").val()
+    for (c in t.colprops) {
+      if (t.colprops[c].force_filter == "") {
+        continue
+      }
+      query += "&"+encodeURIComponent(t.id+"_f_"+c)+"="+encodeURIComponent(t.colprops[c].force_filter)
+    }
+    query += "&visible_columns="+t.visible_columns.join(',')
+    if (t.dataable) {
+      var ajax_interface = "data"
+    } else {
+      var ajax_interface = "line"
+    }
     $.ajax({
          type: "POST",
-         url: t.ajax_url+"/line",
+         url: t.ajax_url+"/"+ajax_interface,
          data: query,
          context: document.body,
          beforeSend: function(req){
-             t.set_refresh_spin()
          },
          success: function(msg){
              // disable DOM insert event trigger for perf
+             t.need_refresh = false
              t.scroll_disable_dom()
 
              try {
                  var data = $.parseJSON(msg)
+                 var format = data['format']
                  var pager = data['pager']
-                 var msg = data['table_lines']
-             } catch(e) {}
+                 var lines = data['table_lines']
+             } catch(e) {
+                 $("#"+t.id).html(msg)
+                 return
+             }
+
+             var msg = ""
+             if (format == "json") {
+               msg = table_data_to_lines(t, lines)
+             } else {
+               msg = lines
+             }
 
              // strip the topmost table marks
              msg = msg.replace(/^.table.|.\/table.$/g, '')
@@ -690,6 +882,7 @@ function table_refresh(t) {
              try {
                _table_pager(t.id, pager["page"], pager["perpage"], pager["start"], pager["end"], pager["total"])
              } catch(e) {}
+             t.bind_checkboxes()
              t.bind_filter_selector()
              t.restripe_lines()
              t.hide_cells()
@@ -710,6 +903,9 @@ function table_refresh(t) {
              new_cell = null
              new_line = null
              old_line = null
+             if (t.need_refresh) {
+               $("#refresh_"+t.id).trigger("click")
+             }
          }
     })
 }
@@ -735,15 +931,24 @@ function table_insert(t, data) {
              t.set_refresh_spin()
          },
          success: function(msg){
+             t.need_refresh = false
 
              // disable DOM insert event trigger for perf
              t.scroll_disable_dom()
 
              try {
                  var data = $.parseJSON(msg)
+                 var format = data['format']
                  var pager = data['pager']
-                 var msg = data['table_lines']
+                 var lines = data['table_lines']
              } catch(e) {}
+
+             var msg = ""
+             if (format == "json") {
+               msg = table_data_to_lines(t, lines)
+             } else {
+               msg = lines
+             }
 
              // strip the topmost table marks
              msg = msg.replace(/^.table.|.\/table.$/g, '')
@@ -803,6 +1008,7 @@ function table_insert(t, data) {
              t.pager()
              t.trim_lines()
              t.restripe_lines()
+             t.bind_checkboxes()
              t.bind_filter_selector()
              t.hide_cells()
              t.decorate_cells()
@@ -831,9 +1037,15 @@ function table_insert(t, data) {
 }
 
 function table_ajax_submit(url, id, inputs, additional_inputs, input_name, additional_input_name) {
+    var t = osvc.tables[id]
+
+    // close dialogs
+    $("#"+t.id).find(".white_float").hide()
+    $("#"+t.id).find(".white_float_input").hide()
+
     var s = inputs.concat(additional_inputs).concat(getIdsByName(input_name))
     $("[name="+additional_input_name+"]").each(function(){s.push(this.id)});
-    var query=""
+    var query="table_id="+t.id
     for (i=0; i<s.length; i++) {
         if (i > 0) {query=query+"&"}
         try {
@@ -846,17 +1058,22 @@ function table_ajax_submit(url, id, inputs, additional_inputs, input_name, addit
          data: query,
          context: document.body,
          beforeSend: function(req){
-	     $("#refresh_"+id).toggleClass("spinner")
+	   t.set_refresh_spin()
          },
          success: function(msg){
+           if (!t.dataable) {
              $("#"+id).html(msg)
              $("#"+id).find("script").each(function(i){
                //eval($(this).text());
                $(this).remove();
              })
-             var t = osvc.tables[id]
-             t.refresh_child_tables()
              t.on_change()
+	     t.unset_refresh_spin()
+           } else {
+	     t.unset_refresh_spin()
+             t.refresh()
+           }
+           t.refresh_child_tables()
          }
     })
 }
@@ -4667,6 +4884,50 @@ function _jqplot_img(e){
             }
 }
 
+function dashpie_sev(o) {
+  var data = $.parseJSON(o.html())
+  o.html("")
+  o.height("300px")
+  colors = {
+    "4": "#2d2d2d",
+    "3": "#660000",
+    "2": "#990000",
+    "1": "#ffa500",
+    "0": "#009900"
+  }
+  c = []
+  for (i=0;i<data.length;i++) {
+      c.push(colors[data[i][0][data[i][0].length-1]])
+  }
+  options = {
+      grid:{background:'transparent',borderColor:'transparent',shadow:false,drawBorder:false,shadowColor:'transparent'},
+      seriesDefaults: {
+        renderer: $.jqplot.PieRenderer,
+        seriesColors: c,
+        rendererOptions: {
+          sliceMargin: 4,
+          dataLabelPositionFactor: 0.7,
+          startAngle: -90,
+          dataLabels: 'value',
+          showDataLabels: true
+        }
+      },
+      legend: { show:false, location: 'e' }
+    }
+  $.jqplot(o.attr('id'), [data], options)
+  o.bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
+    dash_severity = data[seriesIndex][data[seriesIndex].length-1]
+    $("#dashboard_f_dash_severity").val(dash_severity)
+    filter_submit("dashboard", "dashboard_f_dash_severity", d)
+  })
+}
+
+function plot_dashpie_sev(o) {
+  $("#sev_chart").each(function(){
+    dashpie_sev($(this))
+  })
+}
+
 function savedonut(o) {
   try{
   var d = $.parseJSON(o.html())
@@ -4675,7 +4936,7 @@ function savedonut(o) {
   o.html("")
   $.jqplot(o.attr('id'), d['data'],
     {
-      grid:{background:'#ffffff',borderColor:'transparent',shadow:false,drawBorder:false,shadowColor:'transparent'},
+      grid:{background:'transparent',borderColor:'transparent',shadow:false,drawBorder:false,shadowColor:'transparent'},
       seriesDefaults: {
         renderer: $.jqplot.DonutRenderer,
         rendererOptions: {
@@ -4742,7 +5003,7 @@ function diskdonut(o) {
   o.html("")
   $.jqplot(o.attr('id'), d['data'],
     {
-      grid:{background:'#ffffff',borderColor:'transparent',shadow:false,drawBorder:false,shadowColor:'transparent'},
+      grid:{background:'transparent',borderColor:'transparent',shadow:false,drawBorder:false,shadowColor:'transparent'},
       seriesDefaults: {
         renderer: $.jqplot.DonutRenderer,
         rendererOptions: {
@@ -4796,26 +5057,74 @@ function plot_diskdonuts() {
 function filter_submit(id,k,v){
   $("#"+k).val(v)
   window["ajax_submit_"+id]()
+  osvc.tables[id].refresh_column_filters()
 };
 
 function table_bind_filter_input_events(t) {
   var inputs = $("#"+t.id).find("input[name=fi]")
   var url = t.ajax_url + "_col_values/"
+
+  // refresh column filter cloud on keyup
   inputs.bind("keyup", function(event) {
     var input = $(this)
     if (!is_enter(event)) {
+      var col = input.attr('id').split('_f_')[1]
+      input.parents('tr.sym_headers').siblings("tr.theader_slim").find("[name='"+t.id+"_c_"+col+"']").removeClass("bgred").addClass("bgorange")
       clearTimeout(timer)
       timer = setTimeout(function validate(){
         var dest_id = input.siblings("[id^="+t.id+"_fc_]").attr("id")
-        var col = input.attr('id').split('_f_')[1]
         _url = url + col + "?" + input.attr('id') + "=" + encodeURIComponent(input.val())
         sync_ajax(_url, [], dest_id, function(){})
       }, 1000)
     }
   })
+
+  // validate column filter on <enter> keypress
   inputs.bind("keypress", function(event) {
+    if (is_enter(event)) {
+      t.refresh_column_filters()
+    }
     var fn = "ajax_enter_submit_"+t.id
     window[fn](event)
+  })
+
+  // open filter input on filter icon click
+  inputs.parent().siblings(".filter16").bind("click", function(event) {
+    var e = $(this).siblings(".white_float_input")
+    e.toggle()
+    if (e.is(":visible")) {
+      keep_inside(e)
+      register_pop_up(event, $(e))
+      e.find("input").focus()
+    }
+  })
+
+  // clear column filter click
+  inputs.parent().siblings(".clear16").bind("click", function(event) {
+    var k = $(this).parent().attr('name').replace("_c_", "_f_")
+    filter_submit(t.id, k, "**clear**")
+  })
+
+  // invert column filter click
+  inputs.parent().siblings(".invert16").bind("click", function(event) {
+    var k = $(this).parent().attr('name').replace("_c_", "_f_")
+    table_invert_filter(t.id, k)
+    window["ajax_submit_"+t.id]()
+    t.refresh_column_filters()
+  })
+
+  // values to column filter click
+  inputs.siblings(".values_to_filter").bind("click", function(event) {
+    var k = $(this).parent().find("input").attr('id')
+    var ck = k.replace("_f_", "_fc_")
+    var col = k.split("_f_")[1]
+    function f() {
+      values_to_filter(k, ck)
+      window["ajax_submit_"+t.id]()
+      t.refresh_column_filters()
+    }
+    _url = url + col + "?" + k + "=" + encodeURIComponent($("#"+k).val())
+    sync_ajax(_url, [], ck, f)
   })
 }
 
@@ -4895,6 +5204,7 @@ function filter_selector(id,e,k,v){
       sel = $(this).text()
       $(".sym_headers").find("[name="+k+"]").find("input").val(sel)
       filter_submit(id,k,sel)
+      $("#fsr"+id).hide()
     })
     $(this).bind("click", function(){
       sel = $(this).text()
@@ -5163,9 +5473,140 @@ function table_link(t){
   alert(url+args)
 }
 
+function table_add_scrollers(t) {
+  var s = ""
+  s = "<div id='table_"+t.id+"_left' class='scroll_left'>&nbsp</div>"
+  $("#table_"+t.id).before(s)
+  s = "<div id='table_"+t.id+"_right' class='scroll_right'>&nbsp</div>"
+  $("#table_"+t.id).after(s)
+}
+
+function table_add_filterbox(t) {
+  var s = "<span id='fsr"+t.id+"' class='right_click_menu'>"
+  s += "<table>"
+  s +=  "<tr>"
+  s +=   "<td id='fsrview' colspan=3></td>"
+  s +=  "</tr>"
+  s +=  "<tr>"
+  s +=   "<td id='fsrclear'>clear</td>"
+  s +=   "<td id='fsrreset'>reset</td>"
+  s +=   "<td id='fsrneg'>!</td>"
+  s +=  "</tr>"
+  s +=  "<tr>"
+  s +=   "<td id='fsrwildleft'>%..</td>"
+  s +=   "<td id='fsrwildright'>..%</td>"
+  s +=   "<td id='fsrwildboth'>%..%</td>"
+  s +=  "</tr>"
+  s +=  "<tr>"
+  s +=   "<td id='fsreq'>=</td>"
+  s +=   "<td id='fsrandeq'>&=</td>"
+  s +=   "<td id='fsroreq'>|=</td>"
+  s +=  "</tr>"
+  s +=  "<tr>"
+  s +=   "<td id='fsrsup'>></td>"
+  s +=   "<td id='fsrandsup'>&></td>"
+  s +=   "<td id='fsrorsup'>|></td>"
+  s +=  "</tr>"
+  s +=  "<tr>"
+  s +=   "<td id='fsrsinf'><</td>"
+  s +=   "<td id='fsrandinf'>&<</td>"
+  s +=   "<td id='fsrorinf'>|<</td>"
+  s +=  "</tr>"
+  s +=  "<tr>"
+  s +=   "<td id='fsrempty'>empty</td>"
+  s +=   "<td id='fsrandempty'>&empty</td>"
+  s +=   "<td id='fsrorempty'>|empty</td>"
+  s +=  "</tr>"
+  s += "</table>"
+  s += "</span>"
+  $("#"+t.id).append(s)
+}
+
+function cell_span(id, e) {
+  try {
+    var s = $(e).attr("name").split("_c_")[1]
+  } catch(e) {
+    return false
+  }
+  if (osvc.tables[id].span.indexOf(s) < 0) {
+    return false
+  }
+  var line = $(e).parent(".tl")
+  var span_id = line.attr("spansum")
+  var prev_span_id = line.prev().attr("spansum")
+  if (span_id == prev_span_id) {
+    return true
+  }
+  return false
+}
+
 //
 // cell decorators
 //
+var action_img_h = {
+  'checks': 'check16',
+  'enable': 'check16',
+  'disable': 'nok',
+  'pushservices': 'svc',
+  'pushpkg': 'pkg16',
+  'pushpatch': 'pkg16',
+  'reboot': 'action_restart_16',
+  'shutdown': 'action_stop_16',
+  'syncservices': 'action_sync_16',
+  'updateservices': 'action16',
+  'updatepkg': 'pkg16',
+  'updatecomp': 'pkg16',
+  'stop': 'action_stop_16',
+  'stopapp': 'action_stop_16',
+  'stopdisk': 'action_stop_16',
+  'stopvg': 'action_stop_16',
+  'stoploop': 'action_stop_16',
+  'stopip': 'action_stop_16',
+  'stopfs': 'action_stop_16',
+  'umount': 'action_stop_16',
+  'shutdown': 'action_stop_16',
+  'boot': 'action_start_16',
+  'start': 'action_start_16',
+  'startstandby': 'action_start_16',
+  'startapp': 'action_start_16',
+  'startdisk': 'action_start_16',
+  'startvg': 'action_start_16',
+  'startloop': 'action_start_16',
+  'startip': 'action_start_16',
+  'startfs': 'action_start_16',
+  'mount': 'action_start_16',
+  'restart': 'action_restart_16',
+  'provision': 'prov',
+  'switch': 'action_restart_16',
+  'freeze': 'frozen16',
+  'thaw': 'frozen16',
+  'syncall': 'action_sync_16',
+  'syncnodes': 'action_sync_16',
+  'syncdrp': 'action_sync_16',
+  'syncfullsync': 'action_sync_16',
+  'postsync': 'action_sync_16',
+  'push': 'log16',
+  'check': 'check16',
+  'fixable': 'fixable16',
+  'fix': 'comp16',
+  'pushstats': 'spark16',
+  'pushasset': 'node16',
+  'stopcontainer': 'action_stop_16',
+  'startcontainer': 'action_start_16',
+  'stopapp': 'action_stop_16',
+  'startapp': 'action_start_16',
+  'prstop': 'action_stop_16',
+  'prstart': 'action_start_16',
+  'push': 'svc',
+  'syncquiesce': 'action_sync_16',
+  'syncresync': 'action_sync_16',
+  'syncupdate': 'action_sync_16',
+  'syncverify': 'action_sync_16',
+  'toc': 'action_toc_16',
+  'stonith': 'action_stonith_16',
+  'switch': 'action_switch_16'
+}
+
 
 var os_class_h = {
   'darwin': 'os_darwin',
@@ -5179,6 +5620,174 @@ var os_class_h = {
   'aix': 'os_aix',
   'windows': 'os_win',
   'vmware': 'os_vmware'
+}
+
+function cell_decorator_chk_instance(e) {
+  var v = $(e).attr("v")
+  var line = $(e).parent(".tl")
+  var chk_type = line.children("[name$=_chk_type]").attr("v")
+  if (chk_type == "mpath") {
+    url = $(location).attr("origin") + "/init/disks/disks?disks_f_disk_id="+v+"&clear_filters=true"
+    s = "<a class='hd16' href='"+url+"'>"+v+"</a>"
+    $(e).html(s)
+  }
+}
+
+function cell_decorator_chk_high(e) {
+  var high = $(e).attr("v")
+  var line = $(e).parent(".tl")
+  var v = line.children("[name$=_chk_value]").attr("v")
+  var cl = []
+  v = parseInt(v)
+  high = parseInt(high)
+  if (v > high) {
+    cl.push("highlight")
+  }
+  $(e).html("<span class='"+cl.join(" ")+"'>"+v+"</span>")
+}
+
+function cell_decorator_chk_low(e) {
+  var low = $(e).attr("v")
+  var line = $(e).parent(".tl")
+  var v = line.children("[name$=_chk_value]").attr("v")
+  var cl = []
+  v = parseInt(v)
+  low = parseInt(low)
+  if (v < low) {
+    cl.push("highlight")
+  }
+  $(e).html("<span class='"+cl.join(" ")+"'>"+v+"</span>")
+}
+
+function cell_decorator_chk_value(e) {
+  var v = $(e).attr("v")
+  var line = $(e).parent(".tl")
+  var low = line.children("[name$=_chk_low]").attr("v")
+  var high = line.children("[name$=_chk_high]").attr("v")
+  var cl = []
+  v = parseInt(v)
+  low = parseInt(low)
+  high = parseInt(high)
+  if ((v > high) || (v < low)) {
+    cl.push("highlight")
+  }
+  $(e).html("<span class='"+cl.join(" ")+"'>"+v+"</span>")
+}
+
+function cell_decorator_action_pid(e) {
+  var v = $(e).attr("v")
+  if (v == "empty") {
+    $(e).empty()
+    return
+  }
+  var s = "<a>"+v+"</a>"
+  $(e).html(s)
+  $(e).bind('click', function(){
+    var line = $(e).parent(".tl")
+    var hostname = line.children("[name$=_hostname]").attr("v")
+    var svcname = line.children("[name$=_svcname]").attr("v")
+    var begin = line.children("[name$=_begin]").attr("v")
+    var end = line.children("[name$=_end]").attr("v")
+
+    var _begin = begin.replace(/ /, "T")
+    var d = new Date(+new Date(_begin) - 1000*60*60*24)
+    begin = print_date(d)
+
+    var _end = end.replace(/ /, "T")
+    var d = new Date(+new Date(_end) + 1000*60*60*24)
+    end = print_date(d)
+
+    url = $(location).attr("origin") + "/init/svcactions/svcactions?actions_f_svcname="+svcname+"&actions_f_hostname="+hostname+"&actions_f_pid="+v+"&actions_f_begin=>"+begin+"&actions_f_end=<"+end+"&clear_filters=true"
+
+    $(this).children("a").attr("href", url)
+    $(this).children("a").click()
+  })
+}
+
+function cell_decorator_action_status(e) {
+  var v = $(e).attr("v")
+  if (v == "empty") {
+    $(e).html("<div class='spinner'></div>")
+    return
+  }
+  cl = ["status_"+v.replace(' ', '_')]
+  var line = $(e).parent(".tl")
+  var ack = line.children("[name$=_ack]").attr("v")
+  if (ack == 1) {
+    cl.push("ack_1")
+  }
+  s = "<div class='"+cl.join(" ")+"'>"+v+"</diV>"
+  $(e).html(s)
+  if (ack != 1) {
+    return
+  }
+  $(e).bind("mouseout", function(){
+    ackpanel(event, false, "")
+  })
+  $(e).bind("mouseover", function(){
+    var acked_date = line.children("[name$=_acked_date]").attr("v")
+    var acked_by = line.children("[name$=_acked_by]").attr("v")
+    var acked_comment = line.children("[name$=_acked_comment]").attr("v")
+    s = "<div>"
+    s += "<b>acked by </b>"+acked_by+"<br>"
+    s += "<b> on </b>"+acked_date+"<br>"
+    s += "<b>with comment:</b><br>"+acked_comment
+    s += "</div>"
+    ackpanel(event, true, s)
+  })
+}
+
+function cell_decorator_action_end(e) {
+  var v = $(e).attr("v")
+  if (v == "empty") {
+    $(e).empty()
+    return
+  } else if (v == "1000-01-01 00:00:00") {
+    $(e).html("<span class='highlight'>timed out</span>")
+    return
+  }
+  var line = $(e).parent(".tl")
+  var id = line.children("[name$=_id]").attr("v")
+  s = "<span class='highlight nowrap' id='spin_span_end_"+id+"'>"+v+"</span>"
+}
+
+function cell_decorator_action_log(e) {
+  var v = $(e).attr("v")
+  if (v == "empty") {
+    $(e).empty()
+    return
+  }
+  s = "<pre>"+v+"</pre>"
+  $(e).html(s)
+}
+
+function cell_decorator_action(e) {
+  var v = $(e).attr("v")
+  var line = $(e).parent(".tl")
+  var status_log = line.children("[name$=status_log]").attr("v")
+  cl = []
+  if (status_log == "empty") {
+    cl.push("metaaction")
+  }
+  action = v.split(/\s+/).pop()
+  if (action in action_img_h) {
+    cl.push(action_img_h[action])
+  }
+  s = "<div class='"+cl.join(" ")+"'>"+v+"</div>"
+  $(e).html(s)
+}
+
+function cell_decorator_svc_action_err(e) {
+  var v = $(e).attr("v")
+  if (v == "empty") {
+    $(e).empty()
+    return
+  }
+  var line = $(e).parent(".tl")
+  var svcname = line.children("[name$=mon_svcname]").attr("v")
+  url = $(location).attr("origin") + "/init/svcactions/svcactions?actions_f_svcname="+svcname+"&actions_f_status=err&actions_f_ack=!1|empty&actions_f_begin=>-30d&clear_filters=true"
+  s = "<a class='boxed_small bgred clickable' href='"+url+"'>"+v+"</a>"
+  $(e).html(s)
 }
 
 function cell_decorator_nodename(e) {
@@ -5195,10 +5804,8 @@ function _cell_decorator_nodename(e, os_icon) {
     return
   }
   $(e).empty()
-  $(e).append("<div>"+v+"</div>")
+  $(e).append("<div class='a nowrap'>"+v+"</div>")
   div = $(":first-child", e)
-  div.addClass("a")
-  div.addClass("nowrap")
   if (os_icon) {
     try {
       os_cell = $(e).parent().children(".os_name")
@@ -5227,10 +5834,7 @@ function cell_decorator_svcname(e) {
     return
   }
   $(e).empty()
-  $(e).append("<div>"+v+"</div>")
-  div = $(":first-child", e)
-  div.addClass("a")
-  div.addClass("nowrap")
+  $(e).append("<div class='a nowrap'>"+v+"</div>")
   $(e).click(function(){
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
     span_id = $(e).parent(".tl").attr("spansum")
@@ -5251,30 +5855,11 @@ function cell_decorator_status(e) {
     c = "undef"
   }
   c = c.replace(' ', '_')
-  $(e).empty()
-  $(e).append("<div class='boxed_small boxed_status boxed_status_"+c+"'>"+v+"</div>")
-}
-
-function cell_span(id, e) {
-  try {
-    var s = $(e).attr("name").split("_c_")[1]
-  } catch(e) {
-    return false
-  }
-  if (osvc.tables[id].span.indexOf(s) < 0) {
-    return false
-  }
-  var line = $(e).parent(".tl")
-  var span_id = line.attr("spansum")
-  var prev_span_id = line.prev().attr("spansum")
-  if (span_id == prev_span_id) {
-    return true
-  }
-  return false
+  $(e).html("<div class='boxed_small boxed_status boxed_status_"+c+"'>"+v+"</div>")
 }
 
 function cell_decorator_svcmon_links(e) {
-  $(e).empty()
+  var line = $(e).parent(".tl")
   var mon_svcname = line.children("[name$=mon_svcname]").attr("v")
   var query = "clear_filters=true&actions_f_svcname="+mon_svcname
   query += "&actions_f_status_log=empty"
@@ -5286,7 +5871,7 @@ function cell_decorator_svcmon_links(e) {
   if (mon_frozen == "1") {
     d += "<span class='frozen16'>&nbsp</span>"
   }
-  $(e).append(d)
+  $(e).html(d)
 }
 
 function cell_decorator_chk_type(e) {
@@ -5308,11 +5893,289 @@ function cell_decorator_chk_type(e) {
   })
 }
 
-function status_outdated(line) {
-  var s = line.children("[cell=1][name$=mon_updated]").attr("v")
-  if (typeof s === 'undefined') {
-    var s = line.children("[cell=1][name$=_updated]").attr("v")
+function cell_decorator_dash_link_comp_tab(e) {
+  var line = $(e).parent(".tl")
+  var svcname = line.find("[name$=dash_svcname]").attr("v")
+  var nodename = line.find("[name$=dash_nodename]").attr("v")
+  s = "<div class='comp16 clickable'></div>"
+  $(e).html(s)
+  if (svcname != "") {
+    $(e).click(function(){
+      table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+      span_id = $(e).parent(".tl").attr("spansum")
+      id = table_id + "_x_" + span_id
+      url = $(location).attr("origin") + "/init/default/ajax_service?node="+svcname+"&tab=tab11&rowid="+id
+      toggle_extra(url, id, e, 0)
+    })
+  } else if (nodename != "") {
+    $(e).click(function(){
+      table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+      span_id = $(e).parent(".tl").attr("spansum")
+      id = table_id + "_x_" + span_id
+      url = $(location).attr("origin") + "/init/ajax_node/ajax_node?node="+nodename+"&tab=tab13&rowid="+id
+      toggle_extra(url, id, e, 0)
+    })
   }
+}
+
+function cell_decorator_dash_link_pkg_tab(e) {
+  var line = $(e).parent(".tl")
+  var svcname = line.find("[name$=dash_svcname]").attr("v")
+  s = "<div class='pkg16 clickable'></div>"
+  $(e).html(s)
+  if (svcname != "") {
+    $(e).click(function(){
+      table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+      span_id = $(e).parent(".tl").attr("spansum")
+      id = table_id + "_x_" + span_id
+      url = $(location).attr("origin") + "/init/default/ajax_service?node="+svcname+"&tab=tab10&rowid="+id
+      toggle_extra(url, id, e, 0)
+    })
+  }
+}
+
+function cell_decorator_dash_link_feed_queue(e) {
+  url = $(location).attr("origin") + "/init/feed_queue/feed_queue?feed_queue_f_created=<-15m&clear_filters=true"
+  s = "<a class='action16 clickable' href='"+url+"'></a>"
+  $(e).html(s)
+}
+
+function _cell_decorator_dash_link_actions(svcname) {
+  url = $(location).attr("origin") + "/init/svcactions/svcactions?actions_f_svcname="+svcname+"&actions_f_begin=>-7d&clear_filters=true"
+  s = "<a class='action16 clickable' href='"+url+"'></a>"
+  return s
+}
+
+function _cell_decorator_dash_link_action_error(svcname) {
+  url = $(location).attr("origin") + "/init/svcactions/svcactions?actions_f_svcname="+svcname+"&actions_f_status=err&actions_f_ack=!1|empty&actions_f_begin=>-30d&clear_filters=true"
+  s = "<a class='alert16 clickable' href='"+url+"'></a>"
+  return s
+}
+
+function cell_decorator_dash_link_action_error(e) {
+  var line = $(e).parent(".tl")
+  var svcname = line.find("[name$=dash_svcname]").attr("v")
+  var s = ""
+  s += _cell_decorator_dash_link_action_error(svcname)
+  s += _cell_decorator_dash_link_actions(svcname)
+  $(e).html(s)
+}
+
+function _cell_decorator_dash_link_svcmon(svcname) {
+  url = $(location).attr("origin") + "/init/default/svcmon?svcmon_f_mon_svcname="+svcname+"&clear_filters=true"
+  s = "<a class='svc clickable' href='"+url+"'></a>"
+  return s
+}
+
+function cell_decorator_dash_link_svcmon(e) {
+  var line = $(e).parent(".tl")
+  var svcname = line.find("[name$=dash_svcname]").attr("v")
+  var s = ""
+  s += _cell_decorator_dash_link_svcmon(svcname)
+  $(e).html(s)
+}
+
+function _cell_decorator_dash_link_node(nodename) {
+  url = $(location).attr("origin") + "/init/nodes/nodes?nodes_f_nodename="+nodename+"&clear_filters=true"
+  s = "<a class='node16 clickable' href='"+url+"'></a>"
+  return s
+}
+
+function cell_decorator_dash_link_node(e) {
+  var line = $(e).parent(".tl")
+  var nodename = line.find("[name$=dash_nodename]").attr("v")
+  var s = ""
+  s += _cell_decorator_dash_link_node(nodename)
+  $(e).html(s)
+}
+
+function _cell_decorator_dash_link_checks(nodename) {
+  url = $(location).attr("origin") + "/init/checks/checks?checks_f_chk_nodename="+nodename+"&clear_filters=true"
+  s = "<a class='check16 clickable' href='"+url+"'></a>"
+  return s
+}
+
+function cell_decorator_dash_link_checks(e) {
+  var line = $(e).parent(".tl")
+  var nodename = line.find("[name$=dash_nodename]").attr("v")
+  var s = ""
+  s += _cell_decorator_dash_link_checks(nodename)
+  $(e).html(s)
+}
+
+function _cell_decorator_dash_link_mac_networks(mac) {
+  url = $(location).attr("origin") + "/init/nodenetworks/nodenetworks?nodenetworks_f_mac="+mac+"&clear_filters=true"
+  s = "<a class='net16 clickable' href='"+url+"'></a>"
+  return s
+}
+
+function cell_decorator_dash_link_mac_duplicate(e) {
+  var line = $(e).parent(".tl")
+  var mac = line.find("[name$=dash_entry]").attr("v").split(" ")[1]
+  var s = ""
+  s += _cell_decorator_dash_link_mac_networks(mac)
+  $(e).html(s)
+}
+
+function cell_decorator_dash_link_obsolescence(e, t) {
+  var line = $(e).parent(".tl")
+  var nodename = line.find("[name$=dash_nodename]").attr("v")
+  var s = ""
+  url = $(location).attr("origin") + "/init/obsolescence/obsolescence_config?obs_f_obs_type="+t+"&clear_filters=true"
+  s = "<a class='"+t+"16 clickable' href='"+url+"'></a>"
+  $(e).html(s)
+}
+
+function cell_decorator_dash_links(e) {
+  var line = $(e).parent(".tl")
+  var dash_type = line.find("[name$=dash_type]").attr("v")
+  if (dash_type == "action errors") {
+    cell_decorator_dash_link_action_error(e)
+  } else if ((dash_type == "node warranty expired") ||
+             (dash_type == "node without warranty end date") ||
+             (dash_type == "node without asset information") ||
+             (dash_type == "node close to warranty end") ||
+             (dash_type == "node information not updated")) {
+    cell_decorator_dash_link_node(e)
+  } else if ((dash_type == "check out of bounds") ||
+             (dash_type == "check value not updated")) {
+    cell_decorator_dash_link_checks(e)
+  } else if (dash_type == "mac duplicate") {
+    cell_decorator_dash_link_mac_duplicate(e)
+  } else if ((dash_type == "service available but degraded") ||
+             (dash_type == "service status not updated") ||
+             (dash_type == "service configuration not updated") ||
+             (dash_type == "service frozen") ||
+             (dash_type == "flex error") ||
+             (dash_type == "service unavailable")) {
+    cell_decorator_dash_link_svcmon(e)
+  } else if (dash_type == "feed queue") {
+    cell_decorator_dash_link_feed_queue(e)
+  } else if (dash_type.indexOf("os obsolescence") >= 0) {
+    cell_decorator_dash_link_obsolescence(e, "os")
+  } else if (dash_type.indexOf("obsolescence") >= 0) {
+    cell_decorator_dash_link_obsolescence(e, "hw")
+  } else if (dash_type.indexOf("comp") == 0) {
+    cell_decorator_dash_link_comp_tab(e)
+  } else if (dash_type.indexOf("package") == 0) {
+    cell_decorator_dash_link_pkg_tab(e)
+  }
+}
+
+function cell_decorator_action_cron(e) {
+  var v = $(e).attr("v")
+  var l = []
+  if (v == 1) {
+      l.push("time16")
+  }
+  $(e).html("<div class='"+l.join(" ")+"'></div>")
+}
+
+function cell_decorator_dash_severity(e) {
+  var v = $(e).attr("v")
+  var l = []
+  if (v == 0) {
+      l.push("alertgreen")
+  } else if (v == 1) {
+      l.push("alertorange")
+  } else if (v == 2) {
+      l.push("alertred")
+  } else if (v == 3) {
+      l.push("alertdarkred")
+  } else {
+      l.push("alertblack")
+  }
+  $(e).html("<div class='"+l.join(" ")+"'>"+v+"</div>")
+}
+
+function cell_decorator_form_id(e) {
+  var v = $(e).attr("v")
+  var s = ""
+  url = $(location).attr("origin") + "/init/forms/workflow?wfid="+v+"&clear_filters=true"
+  s = "<a class='clickable' href='"+url+"'></a>"
+  $(e).html(s)
+}
+
+function cell_decorator_run_log(e) {
+  var v = $(e).attr("v")
+  var s = "<pre>"+v.replace(/ERR:/g, "<span class='err'>ERR:</span>")+"</pre>"
+  $(e).html(s)
+}
+
+function cell_decorator_run_status(e) {
+  var v = $(e).attr("v")
+  var s = ""
+  var cl = ""
+  var _v = ""
+  if (v == 0) {
+    cl = "check16"
+  } else if (v == 1) {
+    cl = "nok"
+  } else if (v == 2) {
+    cl = "na"
+  } else if (v == -15) {
+    cl = "kill16"
+  } else {
+    _v = v
+  }
+  $(e).html("<div class='"+cl+"'>"+_v+"</div>")
+}
+
+function cell_decorator_rset_md5(e) {
+  var v = $(e).attr("v")
+  var s = ""
+  s = "<div class='clickable'>"+v+"</div>"
+  $(e).html(s)
+  $(e).click(function(){
+    url = $(location).attr("origin") + "/init/compliance/ajax_rset_md5?rset_md5="+v
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    toggle_extra(url, id, this, 0)
+  })
+}
+
+function T(s) {
+  return s
+}
+
+function cell_decorator_action_q_ret(e) {
+  var v = $(e).attr("v")
+  var cl = ["boxed_small"]
+  if (v == 0) {
+    cl.push("bggreen")
+  } else {
+    cl.push("bgred")
+  }
+  var s = ""
+  s = "<div class='"+cl.join(" ")+"'>"+v+"</div>"
+  $(e).html(s)
+}
+
+function cell_decorator_action_q_status(e) {
+  var v = $(e).attr("v")
+  var st = ""
+  var cl = ["boxed_small"]
+  if (v == "T") {
+    cl.push("bggreen")
+    st = T("done")
+  } else if (v == "R") {
+    cl.push("bgred")
+    st = T("running")
+  } else if (v == "W") {
+    st = T("waiting")
+  } else if (v == "Q") {
+    st = T("queued")
+  } else if (v == "C") {
+    cl.push("bgdarkred")
+    st = T("cancelled")
+  }
+  var s = ""
+  s = "<div class='"+cl.join(" ")+"'>"+st+"</div>"
+  $(e).html(s)
+}
+
+function _outdated(s, max_age) {
   if (typeof s === 'undefined') {
     return true
   }
@@ -5320,10 +6183,70 @@ function status_outdated(line) {
   var d = new Date(s)
   var now = new Date()
   delta = now - d
-  if (delta > 15*60000) {
+  if (delta > max_age*60000) {
     return true
   }
   return false
+}
+
+function status_outdated(line) {
+  var s = line.children("[cell=1][name$=mon_updated]").attr("v")
+  if (typeof s === 'undefined') {
+    var s = line.children("[cell=1][name$=_updated]").attr("v")
+  }
+  return _outdated(s, 15)
+}
+
+function cell_decorator_date_no_age(e) {
+  v = $(e).attr("v")
+  if (typeof v === 'undefined') {
+    return
+  }
+  s = v.split(" ")[0]
+  $(e).html(s)
+}
+
+function cell_decorator_datetime_no_age(e) {
+  $(e).addClass("nowrap")
+}
+
+function cell_decorator_datetime_status(e) {
+  _cell_decorator_datetime(e, 15)
+}
+
+function cell_decorator_datetime_daily(e) {
+  _cell_decorator_datetime(e, 60*24)
+}
+
+function cell_decorator_datetime_weekly(e) {
+  _cell_decorator_datetime(e, 60*24*7)
+}
+
+function _cell_decorator_datetime(e, max_age) {
+  s = $(e).attr("v")
+  if (_outdated(s, max_age)) {
+    var cl = " class='nowrap highlight'"
+  } else {
+    var cl = " class='nowrap'"
+  }
+  $(e).html("<div"+cl+">"+s+"</div>")
+}
+
+function cell_decorator_env(e) {
+  if ($(e).attr("v") != "PRD") {
+    return
+  }
+  s = "<div class='b'>PRD</div>"
+  $(e).html(s)
+}
+
+function cell_decorator_svc_ha(e) {
+  if ($(e).attr("v") != 1) {
+    $(e).empty()
+    return
+  }
+  s = "<div class='boxed_small'>HA</div>"
+  $(e).html(s)
 }
 
 function cell_decorator_availstatus(e) {
@@ -5332,7 +6255,6 @@ function cell_decorator_availstatus(e) {
   if (mon_availstatus=="") {
     return
   }
-  $(e).empty()
   var mon_containerstatus = line.children("[name$=mon_containerstatus]").attr("v")
   var mon_ipstatus = line.children("[name$=mon_ipstatus]").attr("v")
   var mon_fsstatus = line.children("[name$=mon_fsstatus]").attr("v")
@@ -5370,7 +6292,7 @@ function cell_decorator_availstatus(e) {
   s += "<td class=status_" + cl_appstatus + ">app</td>"
   s += "</tr>"
   s += "</table>"
-  $(e).append(s)
+  $(e).html(s)
 }
 
 function cell_decorator_overallstatus(e) {
@@ -5379,7 +6301,6 @@ function cell_decorator_overallstatus(e) {
   if (mon_overallstatus=="") {
     return
   }
-  $(e).empty()
   var mon_containerstatus = line.children("[name$=mon_containerstatus]").attr("v")
   var mon_availstatus = line.children("[name$=mon_availstatus]").attr("v")
   var mon_hbstatus = line.children("[name$=mon_hbstatus]").attr("v")
@@ -5407,17 +6328,43 @@ function cell_decorator_overallstatus(e) {
   s += "<td class=status_" + cl_syncstatus + ">sync</td>"
   s += "</tr>"
   s += "</table>"
-  $(e).append(s)
+  $(e).html(s)
 }
 
 cell_decorators = {
+ "chk_instance": cell_decorator_chk_instance,
+ "chk_value": cell_decorator_chk_value,
+ "chk_low": cell_decorator_chk_low,
+ "chk_high": cell_decorator_chk_high,
+ "action": cell_decorator_action,
+ "action_pid": cell_decorator_action_pid,
+ "action_status": cell_decorator_action_status,
+ "action_end": cell_decorator_action_end,
+ "action_log": cell_decorator_action_log,
+ "action_cron": cell_decorator_action_cron,
+ "rset_md5": cell_decorator_rset_md5,
+ "run_status": cell_decorator_run_status,
+ "run_log": cell_decorator_run_log,
+ "form_id": cell_decorator_form_id,
+ "action_q_status": cell_decorator_action_q_status,
+ "action_q_ret": cell_decorator_action_q_ret,
  "svcname": cell_decorator_svcname,
  "nodename": cell_decorator_nodename,
  "nodename_no_os": cell_decorator_nodename_no_os,
+ "svc_action_err": cell_decorator_svc_action_err,
  "availstatus": cell_decorator_availstatus,
  "overallstatus": cell_decorator_overallstatus,
  "chk_type": cell_decorator_chk_type,
  "svcmon_links": cell_decorator_svcmon_links,
+ "svc_ha": cell_decorator_svc_ha,
+ "env": cell_decorator_env,
+ "datetime_weekly": cell_decorator_datetime_weekly,
+ "datetime_daily": cell_decorator_datetime_daily,
+ "datetime_status": cell_decorator_datetime_status,
+ "datetime_no_age": cell_decorator_datetime_no_age,
+ "date_no_age": cell_decorator_date_no_age,
+ "dash_severity": cell_decorator_dash_severity,
+ "dash_links": cell_decorator_dash_links,
  "status": cell_decorator_status
 }
 
@@ -5441,24 +6388,9 @@ function _table_cell_decorator(id, cell) {
 }
 
 function table_cell_decorator(id) {
-  for (var c in cell_decorators) {
-    if (!cell_decorators.hasOwnProperty(c)) {
-      continue
-    }
-    //var start = new Date().getTime()
-    $("#table_"+id).find("[cell=1]."+c+":visible").each(function(){
-      if (cell_span(id, this)) {
-        $(this).empty()
-        return
-      }
-      try {
-        cell_decorators[c](this)
-      } catch(e) {}
-    })
-    //var end = new Date().getTime()
-    //var time = end - start
-    //alert(c+": "+time)
-  }
+  $("#table_"+id).find("[cell=1]:visible").each(function(){
+    _table_cell_decorator(id, this)
+  })
 }
 
 
@@ -5557,7 +6489,7 @@ function table_scroll(t){
   } else {
     $("#table_"+t.id+"_left").hide()
   }
-  if (to_p.scrollLeft()+ww<tw) {
+  if (to_p.scrollLeft()+ww+1<tw) {
     $("#table_"+t.id+"_right").show()
     $("#table_"+t.id+"_right").height(to.height())
     $("#table_"+t.id+"_right").css({'top': to.position().top})
@@ -5638,9 +6570,9 @@ function table_bind_filter_reformat(t) {
         ! attr.match(/save_svcname/gi)
       ) {return}
    $(this).bind("change keyup input", function(){
-    if (this.value.match(/ /g)) {
+    if (this.value.match(/\s+/g)) {
       if (this.value.match(/^\(/)) {return}
-      this.value = this.value.replace(/ /g, ',')
+      this.value = this.value.replace(/\s+/g, ',')
       if (!this.value.match(/^\(/)) {
         this.value = '(' + this.value
       }
@@ -5675,12 +6607,14 @@ function table_toggle_column(id, column, table) {
   }
 
   check_toggle_vis(id, value, cname);
-  table_scroll(id);
   var query = "set_col_table="+table
   query += "&set_col_field="+column
   query += "&set_col_value="+value
   var url = $(location).attr("origin") + "/init/ajax/ajax_set_user_prefs_column?"+query
   ajax(url, [], "set_col_dummy")
+  var t = osvc.tables[id]
+  t.format_header()
+  t.refresh()
 }
 
 function table_unset_refresh_spin(t) {
@@ -5696,22 +6630,28 @@ var osvc = {
  'tables': {}
 }
 
-function table_init(id, ajax_url, columns, visible_columns, child_tables) {
+function table_init(opts) {
   var t = {
-    'id': id,
-    'ajax_url': ajax_url,
-    'span': $("#table_"+id).attr("span").split(","),
-    'columns': columns,
-    'visible_columns': visible_columns,
-    'child_tables': child_tables,
+    'need_refresh': false,
+    'id': opts['id'],
+    'extrarow': opts['extrarow'],
+    'extrarow_class': opts['extrarow_class'],
+    'checkboxes': opts['checkboxes'],
+    'ajax_url': opts['ajax_url'],
+    'span': opts['span'],
+    'columns': opts['columns'],
+    'colprops': opts['colprops'],
+    'visible_columns': opts['visible_columns'],
+    'child_tables': opts['child_tables'],
+    'dataable': opts['dataable'],
     'decorate_cells': function(){
-      table_cell_decorator(id)
+      table_cell_decorator(opts['id'])
     },
     'hide_cells': function(){
       table_hide_cells(this)
     },
     'scroll': function(){
-      table_scroll(id)
+      table_scroll(opts['id'])
     },
     'bind_filter_reformat': function(){
       table_bind_filter_reformat(this)
@@ -5725,6 +6665,9 @@ function table_init(id, ajax_url, columns, visible_columns, child_tables) {
     'bind_refresh': function(){
       table_bind_refresh(this)
     },
+    'bind_checkboxes': function(){
+      table_bind_checkboxes(this)
+    },
     'bind_link': function(){
       table_bind_link(this)
     },
@@ -5735,7 +6678,7 @@ function table_init(id, ajax_url, columns, visible_columns, child_tables) {
       table_trim_lines(this)
     },
     'restripe_lines': function(){
-      table_restripe_lines(id)
+      table_restripe_lines(opts['id'])
     },
     'scroll_enable': function(){
       table_scroll_enable(this)
@@ -5755,6 +6698,21 @@ function table_init(id, ajax_url, columns, visible_columns, child_tables) {
     'link': function(){
       table_link(this)
     },
+    'add_scrollers': function(){
+      table_add_scrollers(this)
+    },
+    'add_filterbox': function(){
+      table_add_filterbox(this)
+    },
+    'refresh_column_filter': function(c, val){
+      table_refresh_column_filter(this, c, val)
+    },
+    'refresh_column_filters': function(){
+      table_refresh_column_filters(this)
+    },
+    'format_header': function(){
+      table_format_header(this)
+    },
     'on_change': function(){
       // placeholder to override after table_init()
     },
@@ -5771,20 +6729,28 @@ function table_init(id, ajax_url, columns, visible_columns, child_tables) {
       table_refresh(this)
     }
   }
-  osvc.tables[id] = t
-  $("#"+id).find("select").parent().css("white-space", "nowrap")
-  $("#"+id).find("select:visible").combobox()
+  osvc.tables[t.id] = t
+  $("#"+t.id).find("select").parent().css("white-space", "nowrap")
+  $("#"+t.id).find("select:visible").combobox()
 
+  t.hide_cells()
+  t.format_header()
+  t.add_filterbox()
+  t.add_scrollers()
   t.bind_filter_reformat()
   t.bind_refresh()
   t.bind_link()
-  t.bind_filter_input_events()
-
-  t.hide_cells()
-  t.decorate_cells()
-  t.bind_filter_selector()
-  t.pager()
-  t.restripe_lines()
   t.scroll_enable()
+
+  if (t.dataable) {
+    t.refresh()
+  } else {
+    t.bind_checkboxes()
+    t.hide_cells()
+    t.decorate_cells()
+    t.bind_filter_selector()
+    t.pager()
+    t.restripe_lines()
+  }
 }
 

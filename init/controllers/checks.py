@@ -221,73 +221,6 @@ def reset_thresholds(ids):
     table_modified("checks_settings")
     update_thresholds_batch(rows)
 
-class col_chk_value(HtmlTableColumn):
-    def html(self, o):
-        val = self.get(o)
-        high = self.t.colprops['chk_high'].get(o)
-        low = self.t.colprops['chk_low'].get(o)
-        if val > high or val < low:
-            return SPAN(val, _style='font-weight:bold;color:darkred')
-        return val
-
-class col_chk_high(HtmlTableColumn):
-    def html(self, o):
-        high = self.get(o)
-        val = self.t.colprops['chk_value'].get(o)
-        if val > high:
-            return SPAN(high, _style='font-weight:bold')
-        return high
-
-class col_chk_low(HtmlTableColumn):
-    def html(self, o):
-        low = self.get(o)
-        val = self.t.colprops['chk_value'].get(o)
-        if val < low:
-            return SPAN(low, _style='font-weight:bold')
-        return low
-
-class col_chk_instance(HtmlTableColumn):
-    def html(self, o):
-        s = self.get(o)
-        chk_type = self.t.colprops["chk_type"].get(o)
-        if chk_type == 'mpath':
-            ln = A(
-              IMG(
-                _src=URL(c='static', f='hd16.png'),
-                _style="vertical-align:top;padding-right:0.4em",
-              ),
-              _href=URL(c="disks", f="disks", vars={'disks_f_disk_id': s, 'clear_filters': 'true'}),
-            )
-            return SPAN(
-                     ln,
-                     s,
-                     _style="white-space:nowrap",
-                   )
-        else:
-            return s
-
-class col_chk_type(HtmlTableColumn):
-    def html(self, o):
-        s = self.get(o)
-        nodename = self.t.colprops["chk_nodename"].get(o)
-
-        d = DIV(
-              A(
-                s,
-                _onclick="""
-if ($("#checks_x_%(nodename)s").is(":visible")) {
-  $("#checks_x_%(nodename)s").hide()
-} else {
-  $("#checks_x_%(nodename)s").show()
-  ajax("%(url)s", [], "checks_x_%(nodename)s")
-}
-"""%dict(nodename=nodename.replace('.','_'),
-         url=URL(r=request, f="ajax_chk_type_defaults", args=[s]),
-        ),
-              ),
-            )
-        return d
-
 @auth.requires_login()
 def ajax_chk_type_defaults():
     chk_type = request.args[0]
@@ -408,6 +341,12 @@ class table_checks(HtmlTable):
                      'chk_threshold_provider',
                      'chk_created',
                      'chk_updated']
+        self.force_cols = ['os_name',
+                     'chk_type',
+                     'chk_instance',
+                     'chk_value',
+                     'chk_high',
+                     'chk_low']
         self.keys = ['chk_nodename',
                      'chk_svcname',
                      'chk_type',
@@ -437,12 +376,13 @@ class table_checks(HtmlTable):
                 img = 'check16',
                 _class = "chk_type",
             ),
-            'chk_instance': col_chk_instance(
+            'chk_instance': HtmlTableColumn(
                 title = 'Instance',
                 field = 'chk_instance',
                 display = True,
                 table = 'checks_live',
-                img = 'check16'
+                img = 'check16',
+                _class = "chk_instance",
             ),
             'chk_err': HtmlTableColumn(
                 title = 'Error',
@@ -451,26 +391,29 @@ class table_checks(HtmlTable):
                 table = 'checks_live',
                 img = 'check16'
             ),
-            'chk_value': col_chk_value(
+            'chk_value': HtmlTableColumn(
                 title = 'Value',
                 field = 'chk_value',
                 display = True,
                 table = 'checks_live',
-                img = 'check16'
+                img = 'check16',
+                _class = 'chk_value',
             ),
-            'chk_low': col_chk_low(
+            'chk_low': HtmlTableColumn(
                 title = 'Low threshold',
                 field = 'chk_low',
                 display = True,
                 table = 'checks_live',
-                img = 'check16'
+                img = 'check16',
+                _class = 'chk_low',
             ),
-            'chk_high': col_chk_high(
+            'chk_high': HtmlTableColumn(
                 title = 'High threshold',
                 field = 'chk_high',
                 display = True,
                 table = 'checks_live',
-                img = 'check16'
+                img = 'check16',
+                _class = 'chk_high',
             ),
             'chk_created': HtmlTableColumn(
                 title = 'Created',
@@ -479,12 +422,13 @@ class table_checks(HtmlTable):
                 table = 'checks_live',
                 img = 'check16'
             ),
-            'chk_updated': col_updated(
+            'chk_updated': HtmlTableColumn(
                 title = 'Last check update',
                 field = 'chk_updated',
                 display = True,
                 table = 'checks_live',
-                img = 'check16'
+                img = 'check16',
+                _class = 'datetime_daily',
             ),
             'chk_threshold_provider': HtmlTableColumn(
                 title = 'Threshold provider',
@@ -520,6 +464,7 @@ class table_checks(HtmlTable):
             self.colprops[c].t = self
         self.ajax_col_values = 'ajax_checks_col_values'
         self.wsable = True
+        self.dataable = True
         self.dbfilterable = True
         self.checkbox_id_table = 'checks_live'
         self.checkboxes = True
@@ -744,14 +689,22 @@ def queue_check_refresh(rows):
     generic_insert('action_queue', vars, vals)
 
     from subprocess import Popen
+    import sys
     actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
-    process = Popen(actiond)
+    process = Popen([sys.executable, actiond])
     process.communicate()
 
     _log('node.action', 'run %(a)s on nodes %(s)s', dict(
           a=action,
           s=','.join(map(lambda x: x.nodename, rows)),
           ))
+    if len(vals) > 0:
+        l = {
+          'event': 'action_q_change',
+          'data': {'f': 'b'},
+        }
+        _websocket_send(event_msg(l))
+
 
 @auth.requires(auth.has_membership('Manager') or auth.has_membership('CheckRefresh') or auth.has_membership('NodeManager') or auth.has_membership('NodeExec'))
 def check_refresh():
@@ -912,30 +865,32 @@ def ajax_checks():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
-    t.csv_q = q
-    t.csv_orderby = o
-    t.csv_limit = 15000
-    t.csv_left = l
-
     if len(request.args) == 1 and request.args[0] == 'csv':
+        t.csv_q = q
+        t.csv_orderby = o
+        t.csv_limit = 15000
+        t.csv_left = l
         return t.csv()
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         if request.vars.volatile_filters is None:
             n = db(q).select(db.checks_live.id.count(), left=l).first()(db.checks_live.id.count())
             limitby = (t.pager_start,t.pager_end)
         else:
             n = 0
             limitby = (0, 500)
-        t.object_list = db(q).select(limitby=limitby, orderby=o, cacheable=False, left=l)
-        return t.table_lines_data(n)
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, limitby=limitby, orderby=o, cacheable=False, left=l)
+        return t.table_lines_data(n, html=False)
 
-    n = db(q).select(db.checks_live.id.count(), left=l).first()(db.checks_live.id.count())
-    t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
-                                 orderby=o, left=l)
-    return DIV(
-      t.html(),
-      SCRIPT("""
+@auth.requires_login()
+def checks():
+    t = table_checks('checks', 'ajax_checks')
+    t = DIV(
+          DIV(
+            t.html(),
+            _id='checks',
+          ),
+          SCRIPT("""
 function ws_action_switch_%(id)s(data) {
         if (data["event"] == "checks_change") {
           osvc.tables["%(id)s"].refresh();
@@ -945,14 +900,7 @@ wsh["%(id)s"] = ws_action_switch_%(id)s
               """ % dict(
                      id=t.innerhtml,
                     )
-      ),
-    )
-
-@auth.requires_login()
-def checks():
-    t = DIV(
-          ajax_checks(),
-          _id='checks',
+          ),
         )
     return dict(table=t)
 

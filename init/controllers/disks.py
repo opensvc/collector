@@ -1248,9 +1248,17 @@ def ajax_disk_provision():
                   user_id=auth.user_id
                 )
     from subprocess import Popen
+    import sys
     actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
-    process = Popen(actiond)
+    process = Popen([sys.executable, actiond])
     process.communicate()
+
+    l = {
+      'event': 'action_q_change',
+      'data': {'f': 'b'},
+    }
+    _websocket_send(event_msg(l))
+
 
     # update tables in interim of the array refresh
     import uuid

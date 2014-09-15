@@ -81,19 +81,21 @@ class table_resmon(HtmlTable):
                      img='svc16',
                      display=True,
                     ),
-            'changed': col_updated(
+            'changed': HtmlTableColumn(
                      title='Last change',
                      table='resmon',
                      field='changed',
                      img='time16',
                      display=True,
+                     _class='datetime_no_age',
                     ),
-            'updated': col_updated(
+            'updated': HtmlTableColumn(
                      title='Updated',
                      table='resmon',
                      field='updated',
                      img='time16',
                      display=True,
+                     _class='datetime_status',
                     ),
         })
         self.colprops['svcname'].t = self
@@ -107,6 +109,8 @@ class table_resmon(HtmlTable):
         self.ajax_col_values = 'ajax_resmon_col_values'
         self.span = ['nodename', 'svcname']
         self.keys = ['nodename', 'svcname', 'rid']
+        self.dataable = True
+        self.wsable = True
 
 @auth.requires_login()
 def ajax_resmon_col_values():
@@ -136,7 +140,11 @@ def ajax_resmon():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        t.csv_q = q
+        t.csv_orderby = o
+        return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'data':
         if request.vars.volatile_filters is None:
             n = db(q).count()
             limitby = (t.pager_start,t.pager_end)
@@ -144,21 +152,24 @@ def ajax_resmon():
             n = 0
             limitby = (0, 500)
         t.object_list = db(q).select(limitby=limitby, orderby=o, cacheable=False)
-        return t.table_lines_data(n)
-
-    n = db(q).count()
-    t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
-
-    t.csv_q = q
-    t.csv_orderby = o
-
-    return t.html()
+        return t.table_lines_data(n, html=False)
 
 @auth.requires_login()
 def resmon():
+    t = table_resmon('resmon', 'ajax_resmon')
     t = DIV(
-          ajax_resmon(),
+          t.html(),
+          SCRIPT("""
+function ws_action_switch_%(divid)s(data) {
+        if (data["event"] == "svcmon_change") {
+          osvc.tables["%(divid)s"].refresh()
+        }
+}
+wsh["%(divid)s"] = ws_action_switch_%(divid)s
+           """ % dict(
+                  divid=t.innerhtml,
+                 )
+          ),
           _id='resmon',
         )
     return dict(table=t)

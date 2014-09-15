@@ -88,12 +88,31 @@ class Column(object):
 
 class HtmlTableColumn(Column):
     def __init__(self, title, field, table=None, display=False,
-                 img='generic', _class='', _dataclass='', filter_redirect=None, default_filter=None):
+                 img='generic', _class='', _dataclass='', filter_redirect=None,
+                 default_filter=None, force_filter=None):
         Column.__init__(self, title, display, img, _class, _dataclass)
         self.table = table
         self.field = field
         self.filter_redirect = filter_redirect
         self.default_filter = default_filter
+        self.force_filter = force_filter
+
+    def __str__(self):
+        return str(self.as_dict())
+
+    def as_dict(self):
+        data = {
+         '_class': self._class,
+         '_dataclass': self._dataclass,
+         'title': self.title,
+         'field': self.field,
+         'table': self.table or "",
+         'filter_redirect': self.filter_redirect or "",
+         'default_filter': self.default_filter or "",
+         'force_filter': self.force_filter or "",
+         'img': self.img,
+        }
+        return data
 
     def get(self, o):
         try:
@@ -147,6 +166,7 @@ class HtmlTable(object):
         self.checkbox_id_table = None
         self.extraline = False
         self.extrarow = False
+        self.extrarow_class = None
         self.filterable = True
         self.hide_tools = False
         self.dbfilterable = True
@@ -165,6 +185,7 @@ class HtmlTable(object):
         self.nodatabanner = True
         self.highlight = True
         self.wsable = False
+        self.dataable = False
 
         # initialize the pager, to be re-executed by instanciers
         self.setup_pager()
@@ -219,7 +240,7 @@ class HtmlTable(object):
             if self.perpage > max_perpage:
                 self.perpage = max_perpage
 
-            if self.id_page in request.vars:
+            if self.id_page in request.vars and request.vars[self.id_page] != "undefined":
                 self.page = int(request.vars[self.id_page])
             else:
                 self.page = 1
@@ -260,7 +281,15 @@ class HtmlTable(object):
             if n < min: min = n
         delta = max - min
 
-        for s in sorted(h.keys()):
+        # 'empty' might not be comparable with other keys type
+        if 'empty' in h.keys():
+            skeys = h.keys()
+            skeys.remove('empty')
+            skeys = ['empty'] + sorted(skeys)
+        else:
+            skeys = sorted(h.keys())
+
+        for s in skeys:
             n = h[s]
             if delta > 0:
                 size = 100 + 100. * (n - min) / delta
@@ -603,7 +632,50 @@ class HtmlTable(object):
         }
         return d
 
-    def table_lines_data(self, n=0):
+    def _table_lines_data_html(self):
+        return TABLE(self.table_lines()[0]).xml()
+
+    def _table_lines_data(self):
+        l = []
+        for line in self.object_list:
+            if len(self.keys) > 0:
+                cksum = hashlib.md5()
+            else:
+                cksum = None
+            if len(self.span) > 0:
+                spansum = hashlib.md5()
+            else:
+                spansum = None
+            checked = getattr(request.vars, self.checkbox_key(line))
+            if checked is None or checked == 'false':
+                checked = False
+            else:
+                checked = True
+
+            _l = []
+            if self.extrarow:
+                _l.append(self.format_extrarow(line))
+            for c in self.cols:
+                v = self.colprops[c].get(line)
+                if type(v) == datetime.datetime:
+                    v = v.strftime("%Y-%m-%d %H:%M:%S")
+                elif v is None:
+                    v = 'empty'
+                _l.append(v)
+                if c in self.keys:
+                    cksum.update(str(v))
+                if c in self.span:
+                    spansum.update(str(v))
+            l.append({
+              'id': self.line_id(line),
+              'checked': str(checked).lower(),
+              'cksum': cksum.hexdigest() if cksum else '',
+              'spansum': spansum.hexdigest() if spansum else '',
+              'cells': _l,
+            })
+        return l
+
+    def table_lines_data(self, n=0, html=True):
         wsenabled = self.get_wsenabled()
         if wsenabled == 'on' and self.perpage > self.max_live_perpage:
             max_perpage = self.max_live_perpage
@@ -611,10 +683,17 @@ class HtmlTable(object):
             max_perpage = 500
         self.setup_pager(n, max_perpage=max_perpage)
         self.set_column_visibility()
+        if html:
+            fmt = "html"
+            formatter = self._table_lines_data_html
+        else:
+            fmt = "json"
+            formatter = self._table_lines_data
         d = {
+          'format': fmt,
           'wsenabled': wsenabled,
           'pager': self.pager_info(),
-          'table_lines': TABLE(self.table_lines()[0]).xml(),
+          'table_lines': formatter(),
         }
         return json.dumps(d)
 
@@ -732,7 +811,7 @@ class HtmlTable(object):
         q &= db.column_filters.col_name==field
         q &= db.column_filters.user_id==session.auth.user.id
         q &= db.column_filters.bookmark==bookmark
-        if len(db(q).select()) > 0:
+        if db(q).count() > 0:
             db(q).update(col_filter=v)
         else:
             db.column_filters.insert(col_tableid=self.id,
@@ -853,14 +932,13 @@ class HtmlTable(object):
                                  _id=checkbox_id,
                                  _name=self.checkbox_name_key(),
                                  _value=value,
-                                 _onclick='this.value=this.checked',
                                  value=checked,
                                ),
                              ))
 
         if self.extrarow:
             xrow_attrs = dict(_cell=1)
-            if hasattr(self, "extrarow_class"):
+            if self.extrarow_class:
                 xrow_attrs['_class'] = self.extrarow_class
             cells.append(TD(self.format_extrarow(o), **xrow_attrs))
 
@@ -961,14 +1039,9 @@ class HtmlTable(object):
         if self.extrarow:
             inputs.append(TD(''))
         for c in self.cols:
-            if len(self.filter_parse(c)) > 0:
-                cl = 'bgred'
-            else:
-                cl = ''
             inputs.append(
               TD(
                 '',
-                 _class=cl,
                  _name=self.col_key(c),
               ),
             )
@@ -991,72 +1064,14 @@ class HtmlTable(object):
         if self.extrarow:
             inputs.append(TD(''))
         for c in self.cols:
-            if len(self.filter_parse(c)) > 0:
-                clear = SPAN(
-                          IMG(
-                            _src=URL(r=request,c='static',f='invert16.png'),
-                            _title=T("Invert filter"),
-                            _class='clickable',
-                            _onclick="""invert_filter("%(did)s");ajax_submit_%(id)s()"""%dict(
-                                    id=self.id,
-                                    did=self.filter_key(c)),
-                          ),
-                          IMG(
-                            _src=URL(r=request,c='static',f='clear16.png'),
-                            _onclick="filter_submit('%(id)s','%(k)s','%(v)s')"%dict(
-                               id=self.id,
-                               k=self.filter_key(c),
-                               v=self.column_filter_reset),
-                            _style="margin-right:4px",
-                          ),
-                        )
-            else:
-                clear = SPAN()
             filter_text = self.filter_parse(c)
-            if len(filter_text) > 20:
-                filter_span = SPAN(
-                                filter_text[0:17] + "...",
-                                _title=filter_text,
-                              )
-            else:
-                filter_span = SPAN(filter_text)
             inputs.append(TD(
-                            SPAN(
-                              IMG(
-                                _src=URL(r=request,c='static',f='filter16.png'),
-                                _onClick="""click_toggle_vis(event, '%(div)s','block');$("#%(input)s").focus()"""%dict(
-                                    div=self.filter_div_key(c),
-                                    input=self.filter_key(c),
-                                  ),
-                                _class='clickable',
-                              ),
-                              clear,
-                              filter_span,
-                              _style="vertical-align:top",
-                            ),
                             DIV(
                               INPUT(
                                 _id=self.filter_key(c),
                                 _name="fi",
                                 _value=self.filter_parse(c),
                               ),
-                              IMG(
-                                _src=URL(r=request,c='static',f='values_to_filter.png'),
-                                _title=T("Use column values as filter"),
-                                _class='clickable',
-                                _onclick="""function f() {values_to_filter("%(iid)s","%(did)s");ajax_submit_%(id)s()};sync_ajax('%(url)s', inputs_%(id)s, '%(did)s', f)"""%dict(
-                                        id=self.id,
-                                        iid=self.filter_key(c),
-                                        url=URL(r=request,f=self.func+'_col_values', args=[c]),
-                                        did=self.filter_cloud_key(c)),
-                              ),
-                              BR(),
-                              SPAN(
-                                _id=self.filter_cloud_key(c),
-                              ),
-                              _name=self.filter_div_key(c),
-                              _class='white_float',
-                              _style='max-width:50%;display:none',
                             ),
                             _name=self.col_key(c),
                             _class=self.colprops[c]._class,
@@ -1089,48 +1104,6 @@ class HtmlTable(object):
                                        additional_inputs=additional_inputs),
                  id=self.id)
 
-    def right_click_menu(self):
-        d = SPAN(
-              TABLE(
-                TR(
-                  TD("", _id="fsrview", _colspan=3),
-                ),
-                TR(
-                  TD("clear", _id="fsrclear"),
-                  TD("reset", _id="fsrreset"),
-                  TD("!", _id="fsrneg"),
-                ),
-                TR(
-                  TD("%..", _id="fsrwildleft"),
-                  TD("..%", _id="fsrwildright"),
-                  TD("%..%", _id="fsrwildboth"),
-                ),
-                TR(
-                  TD("=", _id="fsreq"),
-                  TD("&=", _id="fsrandeq"),
-                  TD("|=", _id="fsroreq"),
-                ),
-                TR(
-                  TD(">", _id="fsrsup"),
-                  TD("&>", _id="fsrandsup"),
-                  TD("|>", _id="fsrorsup"),
-                ),
-                TR(
-                  TD("<", _id="fsrinf"),
-                  TD("&<", _id="fsrandinf"),
-                  TD("|<", _id="fsrorinf"),
-                ),
-                TR(
-                  TD("empty", _id="fsrempty"),
-                  TD("&empty", _id="fsrandempty"),
-                  TD("|empty", _id="fsrorempty"),
-                ),
-              ),
-              _class='right_click_menu',
-              _id='fsr'+self.id,
-            )
-        return d
-
     def show_flash(self):
         if self.flash is None:
             return SPAN()
@@ -1158,9 +1131,10 @@ class HtmlTable(object):
         if not self.wsable:
             return SPAN()
         wsenabled = self.get_wsenabled()
-        js ="""ajax("%(url)s/%(table)s/wsenabled/"+this.checked, [], "set_col_dummy");
+        js ="""ajax("%(url)s/%(table)s/wsenabled/"+this.checked, [], "set_col_dummy"); if (osvc.tables["%(id)s"].need_refresh) {osvc.tables["%(id)s"].refresh()};
             """%dict(url=URL(r=request,c='ajax',f='ajax_set_user_prefs_column2'),
-                     table= self.upc_table,
+                     table=self.upc_table,
+                     id=self.id,
                     )
         d = DIV(
           INPUT(
@@ -1256,7 +1230,6 @@ class HtmlTable(object):
 
         table_attrs = dict(
           _id="table_"+self.id,
-          _span=",".join(self.span),
           _order=",".join(self.order),
           _pager_perpage=self.perpage,
           _pager_page=self.page,
@@ -1266,7 +1239,6 @@ class HtmlTable(object):
         )
         d = DIV(
               self.show_flash(),
-              self.right_click_menu(),
               DIV(
                 self.pager(),
                 self.wsswitch(),
@@ -1283,21 +1255,9 @@ class HtmlTable(object):
               ),
               additional_filters,
               DIV(
-                DIV(
-                  XML("&nbsp;"),
-                  _id="table_"+self.id+"_left",
-                  _style="width:1em;position:absolute;left:0;z-index:1000;display:none",
-                  _class="scroll_left",
-                ),
                 TABLE(
                    table_lines,
                    **table_attrs
-                ),
-                DIV(
-                  XML("&nbsp;"),
-                  _id="table_"+self.id+"_right",
-                  _style="width:1em;position:absolute;right:0;z-index:1000;display:none",
-                  _class="scroll_right",
                 ),
               ),
               DIV(
@@ -1315,24 +1275,48 @@ class HtmlTable(object):
               DIV(XML('&nbsp;'), _class='spacer'),
               SCRIPT(
                 """
-table_init("%(id)s", ajax_url="%(ajax_url)s", columns=%(columns)s, visible_columns=%(visible_columns)s, child_tables=%(child_tables)s)
+table_init({
+ 'id': '%(id)s',
+ 'extrarow': %(extrarow)s,
+ 'extrarow_class': "%(extrarow_class)s",
+ 'checkboxes': %(checkboxes)s,
+ 'ajax_url': '%(ajax_url)s',
+ 'span': %(span)s,
+ 'columns': %(columns)s,
+ 'colprops': %(colprops)s,
+ 'visible_columns': %(visible_columns)s,
+ 'child_tables': %(child_tables)s,
+ 'dataable': %(dataable)s
+})
 function ajax_submit_%(id)s(){%(ajax_submit)s};
 function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
 var inputs_%(id)s = %(a)s;
 """%dict(
                    id=self.id,
+                   extrarow=str(self.extrarow).lower(),
+                   extrarow_class=self.extrarow_class if self.extrarow_class else "",
+                   checkboxes=str(self.checkboxes).lower(),
                    ajax_url=URL(r=request,f=self.func),
                    a=self.ajax_inputs(),
+                   span=str(self.span),
                    columns=str(self.cols),
+                   colprops=self.serialize_colprops(),
                    visible_columns=str(self.visible_columns()),
                    child_tables=str(self.child_tables),
                    ajax_submit=self.ajax_submit(),
                    ajax_enter_submit=self.ajax_enter_submit(),
+                   dataable=str(self.dataable).lower(),
                 ),
               ),
               _class='tableo',
             )
         return d
+
+    def serialize_colprops(self):
+        data = {}
+        for k, cp in self.colprops.items():
+            data[k] = cp.as_dict()
+        return str(data)
 
     def change_line_data(self, o):
         pass
@@ -1582,6 +1566,34 @@ var inputs_%(id)s = %(a)s;
     def match_col(self, value, o, f):
         return self.match(value, self.colprops[f].get(o))
 
+    def get_visible_columns(self, fmt="dal", force=[]):
+        visible_columns = request.vars.visible_columns.split(',')
+        visible_columns = list(set(visible_columns)|set(force)|set(self.force_cols))
+        sorted_visible_columns = []
+        for c in self.cols:
+            if c in visible_columns:
+                cp = self.colprops[c]
+                if cp.field not in db[cp.table]:
+                    continue
+                sorted_visible_columns.append(c)
+        if fmt == "dal":
+            for i, c in enumerate(sorted_visible_columns):
+                cp = self.colprops[c]
+                sorted_visible_columns[i] = db[cp.table][cp.field]
+        elif fmt == "sql":
+            for i, c in enumerate(sorted_visible_columns):
+                cp = self.colprops[c]
+                sorted_visible_columns[i] = cp.table+"."+cp.field
+            sorted_visible_columns = ','.join(sorted_visible_columns)
+        if self.checkbox_id_col and self.checkbox_id_table:
+            if fmt == "dal":
+                id_col = db[self.checkbox_id_table][self.checkbox_id_col]
+            elif fmt == "sql":
+                id_col = self.checkbox_id_table+'.'+self.checkbox_id_col
+            sorted_visible_columns = [id_col] + sorted_visible_columns
+
+        return sorted_visible_columns
+
 #
 # common column formatting
 #
@@ -1673,54 +1685,6 @@ def node_class(os_name):
 
 now = datetime.datetime.now()
 
-class col_date(HtmlTableColumn):
-    def html(self, o):
-       d = self.get(o)
-       if d is None:
-           return ''
-       elif isinstance(d, datetime.datetime):
-           return d.strftime('%Y-%m-%d')
-       else:
-           return d
-
-class col_err(HtmlTableColumn):
-    def html(self, o):
-       d = self.get(o)
-       if d is not None and d != "" and d != 0:
-           return A(
-                    DIV(d, _class="boxed_small bgred"),
-                    _href=URL(r=request,c='svcactions',f='svcactions',
-                              vars={'actions_f_svcname': o.svc_name,
-                                    'actions_f_status': 'err',
-                                    'actions_f_ack': '!1|empty',
-                                    'clear_filters': 'true'}),
-                  )
-
-       return ""
-
-class col_svc_ha(HtmlTableColumn):
-    def html(self, o):
-       d = self.get(o)
-       if d == 1:
-           return DIV("HA", _class="boxed_small")
-       return ""
-
-class col_updated(HtmlTableColumn):
-    deadline = now - datetime.timedelta(days=1)
-
-    def outdated(self, t):
-         if t is None or t == '': return True
-         if t < self.deadline: return True
-         return False
-
-    def html(self, o):
-       d = self.get(o)
-       if self.outdated(d):
-           alert = 'color:darkred;font-weight:bold'
-       else:
-           alert = ''
-       return SPAN(d, _style=alert)
-
 class col_containertype(HtmlTableColumn):
     def html(self, o):
         id = self.t.extra_line_key(o)
@@ -1747,14 +1711,6 @@ class col_containertype(HtmlTableColumn):
               _class=' '.join((node_class(os), 'nowrap')),
             )
         return d
-
-class col_env(HtmlTableColumn):
-    def html(self, o):
-        s = self.get(o)
-        c = ''
-        if s == 'PRD':
-            c = 'b'
-        return SPAN(s, _class=c)
 
 class col_vcpus(HtmlTableColumn):
     def html(self, o):
@@ -1923,12 +1879,13 @@ v_services_colprops = {
              img = 'svc',
              table = 'v_services',
             ),
-    'svc_ha': col_svc_ha(
+    'svc_ha': HtmlTableColumn(
              title = 'HA',
              field='svc_ha',
              display = True,
              img = 'svc',
              table = 'v_services',
+             _class = 'svc_ha',
             ),
     'svc_containertype': HtmlTableColumn(
              title = 'Service mode',
@@ -1937,12 +1894,13 @@ v_services_colprops = {
              img = 'svc',
              table = 'v_services',
             ),
-    'svc_type': col_env(
+    'svc_type': HtmlTableColumn(
              title = 'Service type',
              field='svc_type',
              display = False,
              img = 'svc',
              table = 'v_services',
+             _class = 'env',
             ),
     'svc_autostart': HtmlTableColumn(
              title = 'Primary node',
@@ -1995,12 +1953,13 @@ v_services_colprops = {
              img = 'time16',
              table = 'v_services',
             ),
-    'svc_updated': col_updated(
+    'svc_updated': HtmlTableColumn(
              title = 'Last service update',
              field='updated',
              display = False,
              img = 'time16',
              table = 'v_services',
+             _class = 'datetime_daily',
             ),
     'responsibles': HtmlTableColumn(
              title = 'Responsibles',
@@ -2068,12 +2027,13 @@ v_services_colprops = {
 }
 
 v_svcmon_colprops = {
-    'err': col_err(
+    'err': HtmlTableColumn(
              title = 'Action errors',
              field='err',
              display = False,
              img = 'action16',
              table = 'v_svcmon',
+             _class = 'svc_action_err',
             ),
 }
 
@@ -2101,12 +2061,13 @@ svcmon_colprops = {
              table = 'svcmon',
              _class = 'nodename',
             ),
-    'mon_svctype': col_env(
+    'mon_svctype': HtmlTableColumn(
              title = 'Service type',
              field='mon_svctype',
              display = False,
              img = 'svc',
              table = 'svcmon',
+             _class = 'env',
             ),
     'mon_overallstatus': HtmlTableColumn(
              title = 'Status',
@@ -2123,13 +2084,13 @@ svcmon_colprops = {
              img = 'time16',
              table = 'svcmon',
             ),
-    'mon_updated': col_updated(
+    'mon_updated': HtmlTableColumn(
              title = 'Last status update',
              field='mon_updated',
              display = False,
              img = 'time16',
              table = 'svcmon',
-             _class = 'datetime',
+             _class = 'datetime_daily',
             ),
     'mon_frozen': HtmlTableColumn(
              title = 'Frozen',
@@ -2256,21 +2217,21 @@ v_nodes_colprops = {
              img = 'columns',
              table = 'v_nodes',
             ),
-    'node_updated': col_updated(
+    'node_updated': HtmlTableColumn(
              title = 'Last node update',
              field='node_updated',
              display = False,
              img = 'time16',
              table = 'v_nodes',
-             _class = 'datetime',
+             _class = 'datetime_daily',
             ),
-    'updated': col_updated(
+    'updated': HtmlTableColumn(
              title = 'Last node update',
              field='updated',
              display = False,
              img = 'time16',
              table = 'v_nodes',
-             _class = 'datetime',
+             _class = 'datetime_daily',
             ),
     'loc_country': HtmlTableColumn(
              title = 'Country',
@@ -2561,67 +2522,69 @@ v_nodes_colprops = {
              img = 'node16',
              table = 'v_nodes',
             ),
-    'host_mode': col_env(
+    'host_mode': HtmlTableColumn(
              title = 'Host Mode',
              field='host_mode',
              display = False,
              img = 'node16',
              table = 'v_nodes',
+             _class = 'env',
             ),
-    'environnement': col_env(
+    'environnement': HtmlTableColumn(
              title = 'Env',
              field='environnement',
              display = False,
              img = 'node16',
              table = 'v_nodes',
+             _class = 'env',
             ),
-    'warranty_end': col_date(
+    'warranty_end': HtmlTableColumn(
              title = 'Warranty end',
              field='warranty_end',
              display = False,
              img = 'time16',
              table = 'v_nodes',
-             _class = 'datetime',
+             _class = 'date_no_age',
             ),
-    'os_obs_warn_date': col_date(
+    'os_obs_warn_date': HtmlTableColumn(
              title = 'OS obsolescence warning date',
              field='os_obs_warn_date',
              display = False,
              img = 'time16',
              table = 'v_nodes',
-             _class = 'datetime',
+             _class = 'date_no_age',
             ),
-    'os_obs_alert_date': col_date(
+    'os_obs_alert_date': HtmlTableColumn(
              title = 'OS obsolescence alert date',
              field='os_obs_alert_date',
              display = False,
              img = 'time16',
              table = 'v_nodes',
-             _class = 'datetime',
+             _class = 'date_no_age',
             ),
-    'hw_obs_warn_date': col_date(
+    'hw_obs_warn_date': HtmlTableColumn(
              title = 'Hardware obsolescence warning date',
              field='hw_obs_warn_date',
              display = False,
              img = 'time16',
              table = 'v_nodes',
-             _class = 'datetime',
+             _class = 'date_no_age',
             ),
-    'hw_obs_alert_date': col_date(
+    'hw_obs_alert_date': HtmlTableColumn(
              title = 'Hardware obsolescence alert date',
              field='hw_obs_alert_date',
              display = False,
              img = 'time16',
              table = 'v_nodes',
-             _class = 'datetime',
+             _class = 'date_no_age',
             ),
-    'maintenance_end': col_date(
+    'maintenance_end': HtmlTableColumn(
              title = 'Maintenance end',
              field='maintenance_end',
              display = False,
              img = 'time16',
              table = 'v_nodes',
-             _class = 'datetime',
+             _class = 'date_no_age',
             ),
     'status': HtmlTableColumn(
              title = 'Status',
