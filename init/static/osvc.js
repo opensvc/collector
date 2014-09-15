@@ -763,6 +763,23 @@ function table_bind_checkboxes(t) {
   })
 }
 
+function table_bind_persistent_filter(t) {
+  $("#avs"+t.id).bind("change", function() {
+    var v = $(this).find("option:selected").val()
+    var url = $(location).attr("origin") + "/init/ajax/ajax_select_filter/"+v
+    $.ajax({
+         type: "POST",
+         url: url,
+         data: "",
+         success: function(msg){
+           for (tid in osvc.tables) {
+             osvc.tables[tid].refresh()
+           }
+         }
+    })
+  })
+}
+
 function table_data_to_lines(t, data) {
   var lines = ""
   for (var i=0; i<data.length; i++) {
@@ -6731,6 +6748,9 @@ function table_init(opts) {
     'bind_filter_input_events': function(){
       table_bind_filter_input_events(this)
     },
+    'bind_persistent_filter': function(){
+      table_bind_persistent_filter(this)
+    },
     'bind_bookmark': function(){
       table_bind_bookmark(this)
     },
@@ -6816,6 +6836,7 @@ function table_init(opts) {
   t.bind_refresh()
   t.bind_link()
   t.bind_bookmark()
+  t.bind_persistent_filter()
   t.scroll_enable()
 
   if (t.dataable) {

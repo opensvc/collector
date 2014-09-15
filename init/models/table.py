@@ -415,13 +415,6 @@ class HtmlTable(object):
             content = SELECT(
                         av,
                         value=active_fset_id,
-                        _onchange="""ajax('%(url)s/'+this.options[this.selectedIndex].value, [], '%(div)s');"""%dict(
-                              url=URL(
-                                   r=request, c='ajax',
-                                   f='ajax_select_filter',
-                                  ),
-                              div="avs"+self.id,
-                             )+self.ajax_submit(),
                         _id="avs"+self.id,
                       )
 
