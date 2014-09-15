@@ -74,7 +74,6 @@ function ws_switch_one(data) {
         return
     }
     for (key in wsh) {
-        $("#refresh_"+key).parent().effect("highlight")
         if (!$("#wsswitch_"+key).prop('checked')) {
             // websocket disabled for this table.
             // just remember we have queued change.
