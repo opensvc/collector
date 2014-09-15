@@ -937,7 +937,7 @@ def ajax_service():
             "function s%(rid)s_load_resmon(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
                id='tab3_'+str(rowid),
                rid=str(rowid),
-               url=URL(r=request, c='resmon', f='ajax_resmon_svc',
+               url=URL(r=request, c='resmon', f='resmon_svc',
                        args=['tab3_'+str(rowid), request.vars.node])
             ),
             """callbacks = {"tab2": %(id)s_load_svcmon,

@@ -174,22 +174,33 @@ wsh["%(divid)s"] = ws_action_switch_%(divid)s
         )
     return dict(table=t)
 
+class table_resmon_svc(table_resmon):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        table_resmon.__init__(self, id, func, innerhtml)
+        self.cols.remove('svcname')
+        self.dbfilterable = False
+        self.filterable = False
+        self.exportable = False
+        self.columnable = False
+        self.refreshable = False
+        self.pageable = False
+        self.linkable = False
+        self.bookmarkable = False
+        self.commonalityable = False
+        self.wsable = False
+
+@auth.requires_login()
+def resmon_svc():
+    tid = request.args[0]
+    t = table_resmon_svc(tid, 'ajax_resmon_svc')
+    svcname = request.args[1]
+    t.colprops['svcname'].force_filter = svcname
+    return t.html()
+ 
 @auth.requires_login()
 def ajax_resmon_svc():
-    tid = request.args[0]
-    svcname = request.args[1]
-
-    t = table_resmon(tid, 'resmon')
-    t.cols.remove('svcname')
-    t.dbfilterable = False
-    t.filterable = False
-    t.exportable = False
-    t.columnable = False
-    t.refreshable = False
-    t.pageable = False
-    t.linkable = False
-    t.bookmarkable = False
-    t.commonalityable = False
+    tid = request.vars.table_id
+    t = table_resmon_svc(tid, 'ajax_resmon_svc')
 
     o = db.resmon.svcname
     o |= db.resmon.nodename
@@ -198,17 +209,10 @@ def ajax_resmon_svc():
 
     q = db.resmon.id>0
     q &= db.resmon.nodename==db.v_nodes.nodename
-    q &= db.resmon.svcname==svcname
     q = _where(q, 'resmon', domain_perms(), 'nodename')
-    for f in t.cols:
+    for f in ['svcname']:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    n = db(q).count()
-    t.setup_pager(n)
-    t.object_list = db(q).select(orderby=o)
 
-    t.csv_q = q
-    t.csv_orderby = o
-
-    return t.html()
-
+    t.object_list = db(q).select(orderby=o, cacheable=True)
+    return t.table_lines_data(-1, html=False)
 
