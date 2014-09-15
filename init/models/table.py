@@ -811,14 +811,14 @@ class HtmlTable(object):
         q &= db.column_filters.col_name==field
         q &= db.column_filters.user_id==session.auth.user.id
         q &= db.column_filters.bookmark==bookmark
-        if db(q).count() > 0:
-            db(q).update(col_filter=v)
-        else:
+        try:
             db.column_filters.insert(col_tableid=self.id,
                                      col_name=field,
                                      col_filter=v,
                                      bookmark=bookmark,
                                      user_id=session.auth.user.id)
+        except:
+            db(q).update(col_filter=v)
 
     def stored_filter_value(self, f, bookmark="current"):
         field = self.stored_filter_field(f)
