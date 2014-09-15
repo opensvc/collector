@@ -4282,3 +4282,7 @@ alter table scheduler_worker modify column worker_name varchar(64) default null;
 
 
 alter table metrics_log modify column instance varchar(100) default null;
+
+alter table nodes modify column serial varchar(48) default null;
+
+alter table log add key idx6 (log_date);
