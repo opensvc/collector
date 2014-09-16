@@ -4,6 +4,7 @@ class table_nodesan(HtmlTable):
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = [
+                      'id',
                       'nodename',
                       'assetname',
                       'fqdn',
@@ -78,6 +79,12 @@ class table_nodesan(HtmlTable):
         self.colprops['node_updated'] = self.colprops['updated']
         self.colprops['nodename'].display = True
         self.colprops.update({
+            'id': HtmlTableColumn(
+                     title='Id',
+                     field='id',
+                     img='net16',
+                     display=False,
+                    ),
             'hba_id': HtmlTableColumn(
                      title='Hba Id',
                      field='hba_id',
@@ -133,6 +140,8 @@ class table_nodesan(HtmlTable):
             if self.colprops[c].field.startswith('array_') or self.colprops[c].field in ['tgt_id', 'hba_id']:
                 self.colprops[c]._dataclass = "bluer"
         self.extraline = True
+        self.dataable = True
+        self.force_cols = ['id', 'os_name']
         #self.checkboxes = True
         self.ajax_col_values = 'ajax_nodesan_col_values'
 
@@ -157,26 +166,22 @@ def ajax_nodesan():
         q = _where(q, 'v_nodesan', t.filter_parse(f), f)
     q = apply_filters(q, db.v_nodesan.nodename, None)
 
-    if len(request.args) == 1 and request.args[0] == 'line':
-        if request.vars.volatile_filters is None:
-            n = db(q).select(db.v_nodesan.id.count(), cacheable=True).first()._extra[db.v_nodesan.id.count()]
-            limitby = (t.pager_start,t.pager_end)
-        else:
-            n = 0
-            limitby = (0, 500)
-        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False)
-        return t.table_lines_data(n)
-
-    n = db(q).select(db.v_nodesan.id.count(), cacheable=True).first()._extra[db.v_nodesan.id.count()]
-    t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
-
-    return t.html()
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        t.csv_q = q
+        t.csv_orderby = o
+        t.csv()
+    if len(request.args) == 1 and request.args[0] == 'data':
+        n = db(q).select(db.v_nodesan.id.count(), cacheable=True).first()._extra[db.v_nodesan.id.count()]
+        limitby = (t.pager_start,t.pager_end)
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=False)
+        return t.table_lines_data(n, html=False)
 
 @auth.requires_login()
 def nodesan():
+    t = table_nodesan('nodesan', 'ajax_nodesan')
     t = DIV(
-          ajax_nodesan(),
+          t.html(),
           _id='nodesan',
         )
     return dict(table=t)
