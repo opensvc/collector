@@ -1052,15 +1052,17 @@ function table_insert(t, data) {
     })
 }
 
-function table_ajax_submit(url, id, inputs, additional_inputs, input_name, additional_input_name) {
+function table_ajax_submit(url, id, additional_inputs, input_name, additional_input_name) {
     var t = osvc.tables[id]
 
     // close dialogs
     $("#"+t.id).find(".white_float").hide()
     $("#"+t.id).find(".white_float_input").hide()
 
+    var inputs = ['tableid']
     var s = inputs.concat(additional_inputs).concat(getIdsByName(input_name))
-    $("[name="+additional_input_name+"]").each(function(){s.push(this.id)});
+    $("#"+t.id).find("[name="+additional_input_name+"]").each(function(){s.push(this.id)})
+    $("#"+t.id).find("input[id^="+t.id+"_f_]").each(function(){s.push(this.id)})
     var query="table_id="+t.id
     for (i=0; i<s.length; i++) {
         if (i > 0) {query=query+"&"}

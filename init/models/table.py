@@ -710,8 +710,6 @@ class HtmlTable(object):
         return '_'.join((self.id, 'c', f))
 
     def filter_key(self, f):
-        if hasattr(self.colprops[f], 'filter_redirect') and self.colprops[f].filter_redirect is not None:
-            f = self.colprops[f].filter_redirect
         return '_'.join((self.id, 'f', f))
 
     def filter_div_key(self, f):
@@ -1074,7 +1072,7 @@ class HtmlTable(object):
         return inputs
 
     def ajax_submit(self, args=[], vars={}, additional_inputs=[], additional_input_name=None):
-        return """if(typeof(inputs_%(id)s)!='undefined'){i=inputs_%(id)s}else{i=[]};table_ajax_submit('%(url)s', '%(divid)s', i, %(additional_inputs)s, %(input_name)s, "%(additional_input_name)s");"""%dict(
+        return """table_ajax_submit('%(url)s', '%(divid)s', [], %(additional_inputs)s, %(input_name)s, "%(additional_input_name)s");"""%dict(
                          url=URL(r=request,f=self.func, args=args, vars=vars),
                          divid=self.innerhtml,
                          id=self.id,
@@ -1275,7 +1273,6 @@ table_init({
 })
 function ajax_submit_%(id)s(){%(ajax_submit)s};
 function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
-var inputs_%(id)s = %(a)s;
 """%dict(
                    id=self.id,
                    extrarow=str(self.extrarow).lower(),
