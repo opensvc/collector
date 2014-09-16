@@ -147,6 +147,7 @@ class HtmlTable(object):
         self.column_filter_reset = '**clear**'
         self.object_list = []
         self.child_tables = []
+        self.force_cols = []
 
         # to be set by children
         self.additional_inputs = []

@@ -35,6 +35,7 @@ class table_packages(HtmlTable):
                      field='pkg_sig',
                      img='pkg16',
                      display=False,
+                     _class='pre',
                     ),
             'pkg_version': HtmlTableColumn(
                      title='Version',
@@ -63,6 +64,7 @@ class table_packages(HtmlTable):
                      field='pkg_install_date',
                      img='time16',
                      display=True,
+                     _class='datetime_no_age',
                     ),
             'pkg_updated': HtmlTableColumn(
                      title='Updated',
@@ -80,12 +82,14 @@ class table_packages(HtmlTable):
                      display=False,
                     ),
         })
+        self.force_cols = ['os_name']
         self.colprops['nodename'].display = True
         self.colprops['nodename'].t = self
         self.extraline = True
         self.checkbox_id_col = 'id'
         self.checkbox_id_table = 'packages'
         self.dbfilterable = True
+        self.dataable = True
         self.ajax_col_values = 'ajax_packages_col_values'
         self.span = ["id"]
         self.keys = ["id"]
@@ -121,30 +125,25 @@ def ajax_packages():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
-    if len(request.args) == 1 and request.args[0] == 'line':
-        if request.vars.volatile_filters is None:
-            n = db(q).select(db.packages.id.count(), left=l).first()(db.packages.id.count())
-            limitby = (t.pager_start,t.pager_end)
-        else:
-            n = 0
-            limitby = (0, 500)
-        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False, left=l)
-        return t.table_lines_data(n)
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        t.csv_q = q
+        t.csv_left = l
+        t.csv_orderby = o
+        return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'data':
+        n = db(q).select(db.packages.id.count(), left=l).first()(db.packages.id.count())
+        limitby = (t.pager_start,t.pager_end)
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=False, left=l)
+        return t.table_lines_data(n, html=False)
 
-    n = db(q).select(db.packages.id.count(), left=l).first()(db.packages.id.count())
-    t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
-                                 orderby=o, left=l)
 
-    t.csv_q = q
-    t.csv_orderby = o
-
-    return t.html()
 
 @auth.requires_login()
 def packages():
+    t = table_packages('packages', 'ajax_packages')
     t = DIV(
-          ajax_packages(),
+          t.html(),
           _id='packages',
         )
     return dict(table=t)

@@ -1,12 +1,3 @@
-import datetime
-
-now = datetime.datetime.now()
-deadline = now - datetime.timedelta(days=1)
-def outdated(t):
-     if t is None: return True
-     if t < deadline: return True
-     return False
-
 class table_patches(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -67,7 +58,9 @@ class table_patches(HtmlTable):
         })
         self.colprops['nodename'].display = True
         self.colprops['nodename'].t = self
+        self.force_cols = ['os_name']
         self.dbfilterable = True
+        self.dataable = True
         self.extraline = True
         self.checkbox_id_col = 'id'
         self.checkbox_id_table = 'patches'
@@ -104,25 +97,22 @@ def ajax_patches():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
-    if len(request.args) == 1 and request.args[0] == 'line':
-        if request.vars.volatile_filters is None:
-            n = db(q).select(db.patches.id.count()).first()(db.patches.id.count())
-            limitby = (t.pager_start,t.pager_end)
-        else:
-            n = 0
-            limitby = (0, 500)
-        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False)
-        return t.table_lines_data(n)
-
-    n = db(q).select(db.patches.id.count()).first()(db.patches.id.count())
-    t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
-    return t.html()
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        t.csv_q = q
+        t.csv_orderby = o
+        return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'data':
+        n = db(q).select(db.patches.id.count()).first()(db.patches.id.count())
+        limitby = (t.pager_start,t.pager_end)
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=False)
+        return t.table_lines_data(n, html=False)
 
 @auth.requires_login()
 def patches():
+    t = table_patches('patches', 'ajax_patches')
     t = DIV(
-          ajax_patches(),
+          t.html(),
           _id='patches',
         )
     return dict(table=t)
