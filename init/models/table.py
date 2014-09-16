@@ -638,11 +638,14 @@ class HtmlTable(object):
                 spansum = hashlib.md5()
             else:
                 spansum = None
-            checked = getattr(request.vars, self.checkbox_key(line))
-            if checked is None or checked == 'false':
+            if not self.checkboxes:
                 checked = False
             else:
-                checked = True
+                checked = getattr(request.vars, self.checkbox_key(line))
+                if checked is None or checked == 'false':
+                    checked = False
+                else:
+                    checked = True
 
             _l = []
             if self.extrarow:
@@ -841,6 +844,7 @@ class HtmlTable(object):
             return v
         if v == "":
             return self.stored_filter_value(f)
+        self.store_filter_value(f, v)
         if v == "" and self.colprops[f].default_filter is not None:
             v = self.colprops[f].default_filter
         return v

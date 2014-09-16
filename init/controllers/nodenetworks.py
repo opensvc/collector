@@ -4,6 +4,7 @@ class table_nodenetworks(HtmlTable):
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = [
+                      'id',
                       'nodename',
                       'assetname',
                       'fqdn',
@@ -78,10 +79,17 @@ class table_nodenetworks(HtmlTable):
                       'net_netmask',
                       'net_team_responsible']
         self.colprops = v_nodes_colprops
+        self.force_cols = ['id', 'os_name']
         for col in self.colprops:
             self.colprops[col].display = False
         self.colprops['nodename'].display = True
         self.colprops.update({
+            'id': HtmlTableColumn(
+                     title='Id',
+                     field='id',
+                     img='net16',
+                     display=False,
+                    ),
             'net_id': HtmlTableColumn(
                      title='Net Id',
                      field='net_id',
@@ -191,7 +199,8 @@ class table_nodenetworks(HtmlTable):
             if self.colprops[c].field.startswith('net_'):
                 self.colprops[c]._dataclass = "bluer"
         self.extraline = True
-        #self.checkboxes = True
+        self.dataable = True
+        self.checkboxes = False
         self.ajax_col_values = 'ajax_nodenetworks_col_values'
         self.keys = ["nodename", "addr"]
         self.span = ["nodename"]
@@ -217,26 +226,18 @@ def ajax_nodenetworks():
         q = _where(q, 'v_nodenetworks', t.filter_parse(f), f)
     q = apply_filters(q, db.v_nodenetworks.nodename, None)
 
-    if len(request.args) == 1 and request.args[0] == 'line':
-        if request.vars.volatile_filters is None:
-            n = db(q).select(db.v_nodenetworks.id.count(), cacheable=True).first()._extra[db.v_nodenetworks.id.count()]
-            limitby = (t.pager_start,t.pager_end)
-        else:
-            n = 0
-            limitby = (0, 500)
-        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False)
-        return t.table_lines_data(n)
-
-    n = db(q).select(db.v_nodenetworks.id.count(), cacheable=True).first()._extra[db.v_nodenetworks.id.count()]
-    t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
-
-    return t.html()
+    if len(request.args) == 1 and request.args[0] == 'data':
+        n = db(q).select(db.v_nodenetworks.id.count(), cacheable=True).first()._extra[db.v_nodenetworks.id.count()]
+        limitby = (t.pager_start,t.pager_end)
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=False)
+        return t.table_lines_data(n, html=False)
 
 @auth.requires_login()
 def nodenetworks():
+    t = table_nodenetworks('nodenetworks', 'ajax_nodenetworks')
     t = DIV(
-          ajax_nodenetworks(),
+          t.html(),
           _id='nodenetworks',
         )
     return dict(table=t)
