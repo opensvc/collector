@@ -653,7 +653,10 @@ class HtmlTable(object):
             for c in self.cols:
                 v = self.colprops[c].get(line)
                 if type(v) == datetime.datetime:
-                    v = v.strftime("%Y-%m-%d %H:%M:%S")
+                    try:
+                        v = v.strftime("%Y-%m-%d %H:%M:%S")
+                    except ValueError:
+                        v = str(v)
                 elif v is None:
                     v = 'empty'
                 _l.append(v)
@@ -1336,7 +1339,10 @@ var inputs_%(id)s = %(a)s;
                     if v.startswith("u'"): v = v[1:]
                     v = v.replace("'", "").replace(';','')
                 elif isinstance(v, datetime.datetime):
-                    v = v.strftime("%Y-%m-%d %H:%M:%S")
+                    try:
+                        v = v.strftime("%Y-%m-%d %H:%M:%S")
+                    except ValueError:
+                        v = str(v)
                 elif v is None:
                     v = ""
                 else:
