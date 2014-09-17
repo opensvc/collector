@@ -111,7 +111,6 @@ def _cron_table_purge(table, date_col, orderby=None):
 def cron_purge_expiry():
     tables = [('stats_cpu', 'date', None),
               ('stats_fs_u', 'date', None),
-              ('stats_fs_u_diff', 'date', None),
               ('stats_swap', 'date', None),
               ('stats_netdev', 'date', None),
               ('stats_blockdev', 'date', None),
