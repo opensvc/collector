@@ -578,14 +578,16 @@ def ajax_dashboard_col_values():
     col = request.args[0]
     if t.colprops[col].filter_redirect is None:
         o = db.dashboard[col]
+        s = [o]
     else:
         o = db.dashboard[t.colprops[col].filter_redirect]
+        s = [db.dashboard.dash_fmt, db.dashboard.dash_dict]
     q = db.dashboard.id > 0
     for f in set(t.cols):
         q = _where(q, 'dashboard', t.filter_parse(f),  f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
     q &= _where(None, 'dashboard', domain_perms(), 'dash_svcname')|_where(None, 'dashboard', domain_perms(), 'dash_nodename')
     q = apply_filters(q, db.dashboard.dash_nodename, db.dashboard.dash_svcname)
-    t.object_list = db(q).select(o, orderby=o)
+    t.object_list = db(q).select(*s, orderby=o)
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()

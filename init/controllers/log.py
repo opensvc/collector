@@ -42,6 +42,10 @@ class col_log_evt(HtmlTableColumn):
             s = 'type error: %s'%o.log_dict
         except ValueError:
             s = 'value error: %s %% %s'%(o.log_fmt, o.log_dict)
+        except AttributeError as e:
+            s = 'attribute error: '+str(e)
+        except Exception as e:
+            s = str(e)
         return s
 
 class col_log_icons(HtmlTableColumn):
@@ -194,12 +198,15 @@ def ajax_log_col_values():
     col = request.args[0]
     if t.colprops[col].filter_redirect is None:
         o = db.log[col]
+        s = [db.log[col]]
     else:
         o = db.log[t.colprops[col].filter_redirect]
+        s = [db.log.log_fmt, db.log.log_dict]
     q = db.log.id > 0
-    for f in set(t.cols):
-        q = _where(q, 'log', t.filter_parse(f),  f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
-    t.object_list = db(q).select(o, orderby=o)
+    for f in set(t.cols)-set(['log_evt']):
+        q = _where(q, 'log', t.filter_parse(f),  f)
+    q = _where(q, 'log', t.filter_parse('log_evt'),  'log_dict')
+    t.object_list = db(q).select(*s, orderby=o)
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
