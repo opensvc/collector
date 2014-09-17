@@ -458,7 +458,7 @@ def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
             pass
 
     #fn(arrayid)
-    scheduler.queue_task(fn.__name__, [arrayid, auth[1]], group_name="slow", timeout=600)
+    scheduler.queue_task(fn.__name__, [arrayid, auth[1]], group_name=fn.__name__, timeout=600)
 
     # stor_array_proxy
     insert_array_proxy(auth[1], arrayid)
