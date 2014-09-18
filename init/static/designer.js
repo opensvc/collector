@@ -268,7 +268,9 @@ jstree_data = {
          "separator_before": false,
          "separator_after": false,
          "icon": false,
-         "action": function(obj){this.create(obj, "first", {"attr": {"rel": "variable"}})}
+         "action": function(obj){
+            this.create(obj, "first", {"attr": {"rel": "variable"}})
+         }
        }
        h["clone"] = {
          "label": "Clone",
@@ -309,6 +311,13 @@ jstree_data = {
                   "obj_id": obj.attr("obj_id"),
                  },
                  success: function(msg){
+                   var e = $("[name=catree]:visible").find("[obj_id="+obj.attr("obj_id")+"]")
+                   var r = obj.attr('rel')
+                   if (r == 'ruleset') {
+                     e.attr('rel', 'ruleset_cxt')
+                   } else if (r == 'ruleset_hidden') {
+                     e.attr('rel', 'ruleset_cxt_hidden')
+                   }
                    $("[rel="+obj.attr('rel')+"][obj_id="+obj.attr('obj_id')+"]").children("a").click()
                    json_status(msg)
                  }
@@ -329,7 +338,13 @@ jstree_data = {
                   "obj_id": obj.attr("obj_id"),
                  },
                  success: function(msg){
-                   $("[name=catree]:visible").jstree("refresh");
+                   var e = $("[name=catree]:visible").find("[obj_id="+obj.attr("obj_id")+"]")
+                   var r = obj.attr('rel')
+                   if (r == 'ruleset_cxt') {
+                     e.attr('rel', 'ruleset')
+                   } else if (r == 'ruleset_cxt_hidden') {
+                     e.attr('rel', 'ruleset_hidden')
+                   }
                    $("[rel="+obj.attr('rel')+"][obj_id="+obj.attr('obj_id')+"]").children("a").click()
                    json_status(msg)
                  }
@@ -347,6 +362,7 @@ jstree_data = {
            "published": {
              "label": "Published",
              "action": function(obj){
+               var t = this
                $.ajax({
                  async: false,
                  type: "POST",
@@ -357,7 +373,13 @@ jstree_data = {
                   "obj_id": obj.attr("obj_id"),
                  },
                  success: function(msg){
-                   $("[rel="+obj.attr('rel')+"][obj_id="+obj.attr('obj_id')+"]").children("a").click()
+                   var e = $("[name=catree]:visible").find("[obj_id="+obj.attr("obj_id")+"]")
+                   var r = obj.attr("rel")
+                   if (r == "ruleset_cxt_hidden") {
+                     e.attr("rel", "ruleset_cxt")
+                   } else if (r == "ruleset_hidden") {
+                     e.attr("rel", "ruleset")
+                   }
                    json_status(msg)
                  }
                });
@@ -376,7 +398,17 @@ jstree_data = {
                   "obj_id": obj.attr("obj_id"),
                  },
                  success: function(msg){
-                   $("[rel="+obj.attr('rel')+"][obj_id="+obj.attr('obj_id')+"]").children("a").click()
+                   var e = $("[name=catree]:visible").find("[obj_id="+obj.attr("obj_id")+"]")
+                   var r = obj.attr("rel")
+                   if (r == "ruleset_cxt") {
+                     e.attr("rel", "ruleset_cxt_hidden")
+                   } else if (r == "ruleset") {
+                     e.attr("rel", "ruleset_hidden")
+                   }
+                   // remove unpublished contextual ruleset from head
+                   $("[rel=ruleset_head]>ul>li[rel=ruleset_cxt_hidden").each(function(){
+                     $(this).parents("[name=catree]").jstree("delete_node", "#"+$(this).attr("id"))
+                   })
                    json_status(msg)
                  }
                });
@@ -397,7 +429,15 @@ jstree_data = {
                 "obj_id": obj.attr("obj_id"),
                },
                success: function(msg){
-                 $("[name=catree]:visible").jstree("refresh");
+                 var id = obj.attr("id")
+                 var l = id.split("_")
+                 var fset_id = l.pop()
+                 var rset_id = l.pop()
+                 l = [rset_id, fset_id]
+                 id = l.join("_")
+                 $("[name=catree]:visible").each(function(){
+                   $(this).jstree("delete_node", "[id$="+id+"]")
+                 })
                  json_status(msg)
                }
              });
@@ -410,6 +450,7 @@ jstree_data = {
          h["detach_ruleset"] = {
            "label": "Detach ruleset",
            "action": function(obj){
+             var t = this
              $.ajax({
                async: false,
                type: "POST",
@@ -421,7 +462,19 @@ jstree_data = {
                 "parent_obj_id": obj.parents("li").attr("obj_id"),
                },
                success: function(msg){
-                 $("[name=catree]:visible").jstree("refresh");
+                   if ((obj.attr("rel") != "ruleset_hidden") && (obj.attr("rel") != "ruleset_cxt_hidden")) {
+                   var id = obj.attr("id")
+                   var l = id.split("_")
+                   var child_rset_id = l.pop()
+                   var parent_rset_id = l.pop()
+                   l = [parent_rset_id, child_rset_id]
+                   id = l.join("_")
+                   $("[name=catree]:visible").each(function(){
+                     $(this).jstree("delete_node", "[id$="+id+"]")
+                   })
+                 } else {
+                   t.move_node(obj, "#rset_head")
+                 }
                  json_status(msg)
                }
              });
@@ -440,6 +493,7 @@ jstree_data = {
          h["detach_group"] = {
            "label": "Detach group",
            "action": function(obj){
+             var t = this
              $.ajax({
                async: false,
                type: "POST",
@@ -451,7 +505,17 @@ jstree_data = {
                 "parent_obj_id": obj.parents("li").attr("obj_id")
                },
                success: function(msg){
-                 $("[name=catree]:visible").jstree("refresh");
+                   var id = obj.attr("id")
+                   var l = id.split("_")
+                   var child_id = l.pop()
+                   var parent_id = l.pop()
+                   l = [parent_id, child_id]
+                   id = l.join("_")
+                   $("[name=catree]:visible").each(function(){
+                     $(this).jstree("delete_node", "[id$="+id+"]")
+                   })
+
+                 t.delete_node(obj)
                  json_status(msg)
                }
              });
@@ -498,6 +562,7 @@ jstree_data = {
          h["detach_filter"] = {
            "label": "Detach filter",
            "action": function(obj){
+             var t = this
              $.ajax({
                async: false,
                type: "POST",
@@ -508,7 +573,7 @@ jstree_data = {
                 "parent_obj_id": node.parents("li").attr("obj_id"),
                },
                success: function(msg){
-                 $("[name=catree]:visible").jstree("refresh");
+                 t.delete_node(obj)
                  json_status(msg)
                }
              });
@@ -562,6 +627,7 @@ jstree_data = {
          h["detach_filterset"] = {
            "label": "Detach filterset",
            "action": function(obj){
+             var t = this
              $.ajax({
                async: false,
                type: "POST",
@@ -573,7 +639,15 @@ jstree_data = {
                 "parent_obj_id": node.parents("li").attr("obj_id"),
                },
                success: function(msg){
-                 $("[name=catree]:visible").jstree("refresh");
+                 var id = obj.attr("id")
+                 var l = id.split("_")
+                 var fset_id = l.pop()
+                 var rset_id = l.pop()
+                 l = [rset_id, fset_id]
+                 id = l.join("_")
+                 $("[name=catree]:visible").each(function(){
+                   $(this).jstree("delete_node", "[id$="+id+"]")
+                 })
                  json_status(msg)
                }
              });
@@ -585,6 +659,7 @@ jstree_data = {
          h["detach_filterset"] = {
            "label": "Detach filterset",
            "action": function(obj){
+             var t = this
              $.ajax({
                async: false,
                type: "POST",
@@ -595,7 +670,15 @@ jstree_data = {
                 "parent_obj_id": node.parents("li").attr("obj_id"),
                },
                success: function(msg){
-                 $("[name=catree]:visible").jstree("refresh");
+                 var id = obj.attr("id")
+                 var l = id.split("_")
+                 var fset_id = l.pop()
+                 var rset_id = l.pop()
+                 l = [rset_id, fset_id]
+                 id = l.join("_")
+                 $("[name=catree]:visible").each(function(){
+                   $(this).jstree("delete_node", "[id$="+id+"]")
+                 })
                  json_status(msg)
                }
              });
@@ -642,55 +725,93 @@ jstree_data = {
 
 function __rename(e, data) {
   data.rslt.obj.each(function() {
+    var rel = $(this).attr('rel')
+    var obj_id = $(this).attr('obj_id')
+    var new_name = data.rslt.new_name
     $.ajax({
-    async: false,
-    type: "POST",
-    url: designer.url_action,
-    data: {
-      "operation": "rename",
-      "obj_type": $(this).attr('rel'),
-      "obj_id": $(this).attr('obj_id'),
-      "new_name": data.rslt.new_name,
-    },
-    success: function(msg){
-      if (msg != "0") {
-        $.jstree.rollback(data.rlbk)
-      } else {
-        //$("[name=catree]:visible").jstree("refresh");
+      async: false,
+      type: "POST",
+      url: designer.url_action,
+      data: {
+       "operation": "rename",
+       "obj_type": rel,
+       "obj_id": obj_id,
+       "new_name": new_name
+      },
+      success: function(msg){
+        if (msg != "0") {
+          $.jstree.rollback(data.rlbk)
+          json_status(msg)
+        }
+        $("[rel="+rel+"][obj_id="+obj_id+"]").each(function(){
+          $(this).parents("[name=catree]").jstree("rename_node", this, new_name)
+        })
       }
-      json_status(msg)
-    }
-  });
- })
+    })
+  })
 }
 
 function __move(e, data) {
     if (data.rslt.cy) {
-        operation = "copy"
+        var operation = "copy"
     } else {
-        operation = "move"
+        var operation = "move"
     }
+    var dst_id = data.rslt.np.attr("id")
+    var dst_rel = data.rslt.np.attr("rel")
+    var dst_obj_id = data.rslt.np.attr("obj_id")
+    var dst_tree_id = data.rslt.np.parents("[name=catree]").attr("id")
+    var text = data.rslt.o.text().replace(/^\s*/, "")
+    var rel = data.rslt.o.attr("rel")
+    var id = data.rslt.o.attr("id")
+    var tree_id = data.rslt.o.parents("[name=catree]").attr("id")
+    var obj_id = data.rslt.o.attr("obj_id")
+    var parent_obj_id = data.rslt.op.attr("obj_id")
+
+    if (id.indexOf("copy_") == 0) {
+      // avoid recursing when copying the same node elsewhere
+      return
+    }
+
     $.ajax({
       async: false,
       type: "POST",
       url: designer.url_action,
       data: {
         "operation": operation,
-        "obj_type": data.rslt.o.attr("rel"),
-        "obj_id": data.rslt.o.attr("obj_id"),
-        "dst_type": data.rslt.np.attr("rel"),
-        "dst_id": data.rslt.np.attr("obj_id"),
-        "parent_obj_id": data.rslt.op.attr("obj_id"),
+        "obj_type": rel,
+        "obj_id": obj_id,
+        "dst_type": dst_rel,
+        "dst_id": dst_obj_id,
+        "parent_obj_id": parent_obj_id,
       },
       success: function(msg){
-        $("[name=catree]:visible").jstree("refresh");
-        json_status(msg)
+        if (msg != "0") {
+          $.jstree.rollback(data.rlbk)
+          json_status(msg)
+          return
+        }
+        $("[rel="+dst_rel+"][obj_id="+dst_obj_id+"]").each(function(){
+          var this_dst_id = $(this).attr("id")
+          var this_dst_tree_id = $(this).parents("[name=catree]").attr("id")
+          if ((this_dst_tree_id == dst_tree_id) && (this_dst_id == dst_id)) {
+            return
+          }
+          $(this).parents("[name=catree]").jstree("move_node", "#copy_"+id, "#"+this_dst_id, "last")
+        })
+        $("[id^=copy_]").each(function(){
+          var parent_id = $(this).parents("li").first().attr("id")
+          var id = $(this).attr("id").replace(/^(copy_)*/, "")
+          $(this).attr("id", parent_id+"_"+id)
+        })
       }
     });
 }
 
 function __remove(e, data) {
   data.rslt.obj.each(function() {
+    var obj_id = $(this).attr("obj_id")
+    var obj_rel = $(this).attr("rel")
     $.ajax({
       async: false,
       type: "POST",
@@ -703,10 +824,11 @@ function __remove(e, data) {
       success: function(msg){
         if (msg != "0") {
           $.jstree.rollback(data.rlbk)
-        } else {
-          $("[name=catree]:visible").jstree("refresh");
+          json_status(msg)
         }
-        json_status(msg)
+        $("[name=catree]:visible").each(function(){
+          $(this).jstree("delete_node", "[rel="+obj_rel+"][obj_id="+obj_id+"]")
+        })
       }
     });
   });
@@ -714,17 +836,31 @@ function __remove(e, data) {
 
 function __create(e, data) {
   data.rslt.obj.each(function() {
-    new_rel = ""
-    if (data.rslt.parent.attr("rel") == "modset") {
+    var tmp_obj = $(this)
+    var parent_id = data.rslt.parent.attr("id")
+    var parent_obj_id = data.rslt.parent.attr("obj_id")
+    var parent_rel = data.rslt.parent.attr("rel")
+    var tree_id = data.rslt.parent.parents("[name=catree]").attr("id")
+    var new_data = tmp_obj.text()
+    var new_rel = ""
+    var new_rel_short = ""
+    if (parent_rel == "modset") {
       new_rel = "module"
-    } else if (data.rslt.parent.attr("rel") == "moduleset_head") {
+      new_rel_short = "mod"
+    } else if (parent_rel == "moduleset_head") {
       new_rel = "modset"
-    } else if (data.rslt.parent.attr("rel") == "ruleset_head") {
+      new_rel_short = "mset"
+    } else if (parent_rel == "ruleset_head") {
       new_rel = "ruleset"
-    } else if (data.rslt.parent.attr("rel") == "filterset_head") {
+      new_rel_short = "rset"
+    } else if (parent_rel == "filterset_head") {
       new_rel = "filterset"
-    } else if (data.rslt.parent.attr("rel").indexOf("ruleset") == 0) {
+      new_rel_short = "fset"
+    } else if (parent_rel.indexOf("ruleset") == 0) {
       new_rel = "variable"
+      new_rel_short = "var"
+    } else {
+      return
     }
     $.ajax({
       async: false,
@@ -732,17 +868,49 @@ function __create(e, data) {
       url: designer.url_action,
       data: {
         "operation": "create",
-        "obj_name": $(this).text(),
+        "obj_name": new_data,
         "obj_type": new_rel,
-        "parent_obj_id": data.rslt.parent.attr("obj_id"),
+        "parent_obj_id": parent_obj_id
       },
       success: function(msg){
-        if (msg != "0") {
-          $.jstree.rollback(data.rlbk)
-        } else {
+        if (msg == "0") {
           $("[name=catree]:visible").jstree("refresh");
+          return
         }
-        json_status(msg)
+        if ((msg != "0") && !("obj_id" in msg)) {
+          $.jstree.rollback(data.rlbk)
+          json_status(msg)
+          return
+        }
+        var new_obj_id = msg['obj_id']
+        tmp_obj.attr("obj_id", new_obj_id)
+
+        if ((parent_id == "rset_head") || (parent_id == "fset_head") || (parent_id == "moduleset_head")) {
+          var new_id = new_rel_short+new_obj_id
+          tmp_obj.attr("id", new_id)
+          $("[rel="+parent_rel+"]:visible").each(function(){
+              var this_tree_id = $(this).parents("[name=catree]").attr("id")
+              if (this_tree_id == tree_id) {
+                return
+              }
+              var new_id = new_rel_short+new_obj_id
+              $(this).parents("[name=catree]").jstree("create_node", "#"+parent_id, "first", {"data": new_data.replace(/^\s*/, ""), "attr": {"rel": new_rel, "id": new_id, "obj_id": new_obj_id}})
+          })
+        } else {
+          var new_id = parent_id+'_'+new_rel_short+new_obj_id
+          tmp_obj.attr("id", new_id)
+          $("[rel="+parent_rel+"][obj_id="+parent_obj_id+"]:visible").each(function(){
+              var this_tree_id = $(this).parents("[name=catree]").attr("id")
+              if (($(this).attr("id") == parent_id) && (this_tree_id == tree_id)) {
+                return
+              }
+              var par_id = $(this).attr("id")
+              var new_id = par_id+'_'+new_rel_short+new_obj_id
+              $(this).parents("[name=catree]").jstree("create_node", "#"+par_id, "first", {"data": new_data.replace(/^\s*/, ""), "attr": {"rel": new_rel, "id": new_id, "obj_id": new_obj_id}})
+          })
+        }
+        
+        //$("{name=jstree]:visible").find()
       }
     });
   });
