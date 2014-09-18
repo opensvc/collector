@@ -6387,69 +6387,107 @@ def beautify_modulesets(msets, node):
         l.append(beautify_moduleset(mset, _comp_get_moduleset_modules(mset, node)))
     return SPAN(l, _class='xset')
 
+class table_comp_status_svc(table_comp_status):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        table_comp_status.__init__(self, id, func, innerhtml)
+        self.hide_tools = True
+        self.pageable = False
+        self.bookmarkable = False
+        self.commonalityable = False
+        self.linkable = False
+        self.checkboxes = False
+        self.filterable = False
+        self.exportable = False
+        self.dbfilterable = False
+        self.columnable = False
+        self.refreshable = False
+        self.wsable = False
+        self.dataable = True
+        self.cols.remove('run_status_log')
+        self.child_tables = []
+        self.force_cols = ["os_name"]
+
+def ajax_svc_comp_status():
+    tid = request.vars.table_id
+    t = table_comp_status_svc(tid, 'ajax_svc_comp_status')
+    q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
+    for f in ['run_svcname']:
+        q = _where(q, 'comp_status', t.filter_parse(f), f)
+    if request.args[0] == "data":
+        t.object_list = db(q).select(cacheable=True)
+        return t.table_lines_data(-1, html=False)
+
 def svc_comp_status(svcname):
     tid = 'scs_'+svcname
-    t = table_comp_status(tid, 'svc_comp_status')
-    t.cols.remove('run_status_log')
+    t = table_comp_status_svc(tid, 'ajax_svc_comp_status')
+    t.colprops['run_svcname'].force_filter = svcname
 
-    q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
-    q &= db.comp_status.run_svcname == svcname
-    t.object_list = db(q).select(cacheable=True)
-    t.hide_tools = True
-    t.pageable = False
-    t.bookmarkable = False
-    t.commonalityable = False
-    t.linkable = False
-    t.filterable = False
-    t.exportable = False
-    t.dbfilterable = False
-    t.columnable = False
-    t.refreshable = False
     return DIV(
       t.html(),
       SCRIPT(
-        """$("[name=%(tid)s_c_run_status]").bind("mouseover", function(){
-            $(this).parents("tr").children("[name=%(tid)s_c_run_log]").css('position', 'absolute').css('background', 'white').show()
-           })
-           $("[name=%(tid)s_c_run_status]").bind("mouseout", function(){
-            $(this).parents("tr").children("[name=%(tid)s_c_run_log]").hide()
-           })
+        """osvc.tables["%(tid)s"]["on_change"] = function() {
+            $("[name=%(tid)s_c_run_status]").bind("mouseover", function(){
+             $(this).parents("tr").children("[name=%(tid)s_c_run_log]").css('position', 'absolute').css('background', 'white').show()
+            })
+            $("[name=%(tid)s_c_run_status]").bind("mouseout", function(){
+             $(this).parents("tr").children("[name=%(tid)s_c_run_log]").hide()
+            })
+           }
         """ % dict(tid=t.id)
-        ),
-      )
+      ),
+      _id=tid,
+    )
 
+
+class table_comp_status_node(table_comp_status):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        table_comp_status.__init__(self, id, func, innerhtml)
+        self.hide_tools = True
+        self.pageable = False
+        self.bookmarkable = False
+        self.commonalityable = False
+        self.linkable = False
+        self.checkboxes = False
+        self.filterable = False
+        self.exportable = False
+        self.dbfilterable = False
+        self.columnable = False
+        self.refreshable = False
+        self.wsable = False
+        self.dataable = True
+        self.cols.remove('run_status_log')
+        self.child_tables = []
+        self.force_cols = ["os_name"]
+
+def ajax_node_comp_status():
+    tid = request.vars.table_id
+    t = table_comp_status_node(tid, 'ajax_node_comp_status')
+    q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
+    for f in ['run_nodename']:
+        q = _where(q, 'comp_status', t.filter_parse(f), f)
+    if request.args[0] == "data":
+        t.object_list = db(q).select(cacheable=True)
+        return t.table_lines_data(-1, html=False)
 
 def node_comp_status(node):
     tid = 'ncs_'+node
-    t = table_comp_status(tid, 'node_comp_status')
-    t.cols.remove('run_status_log')
-
-    q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
-    q &= db.comp_status.run_nodename == node
-    q &= db.comp_status.run_nodename == db.v_nodes.nodename
-    t.object_list = db(q).select(cacheable=True)
-    t.hide_tools = True
-    t.pageable = False
-    t.bookmarkable = False
-    t.commonalityable = False
-    t.linkable = False
-    t.filterable = False
-    t.exportable = False
-    t.dbfilterable = False
-    t.columnable = False
-    t.refreshable = False
+    t = table_comp_status_node(tid, 'ajax_node_comp_status')
+    t.colprops['run_nodename'].force_filter = node
     return DIV(
       t.html(),
       SCRIPT(
-        """$("[name=%(tid)s_c_run_status]").bind("mouseover", function(){
-            $(this).parents("tr").children("[name=%(tid)s_c_run_log]").css('position', 'absolute').css('background', 'white').show()
-           })
-           $("[name=%(tid)s_c_run_status]").bind("mouseout", function(){
-            $(this).parents("tr").children("[name=%(tid)s_c_run_log]").hide()
-           })
+        """osvc.tables["%(tid)s"]["on_change"] = function() {
+            $("[name=%(tid)s_c_run_status]").bind("mouseover", function(){
+             $(this).parents("tr").children("[name=%(tid)s_c_run_log]").css('position', 'absolute').css('background', 'white').show()
+            })
+            $("[name=%(tid)s_c_run_status]").bind("mouseout", function(){
+             $(this).parents("tr").children("[name=%(tid)s_c_run_log]").hide()
+            })
+           }
         """ % dict(tid=t.id)
-        ),
-      )
+      ),
+      _id=tid,
+    )
 
 @auth.requires_login()
 def ajax_rset_md5():
@@ -10648,7 +10686,7 @@ def json_tree_action_create_filterset(name):
     if v is not None:
         return {"err": "a filterset named '%(name)s' already exists"%dict(name=name)}
 
-    db.gen_filtersets.insert(
+    obj_id = db.gen_filtersets.insert(
       fset_name=name,
       fset_stats='F',
       fset_author=user_name(),
@@ -10659,7 +10697,7 @@ def json_tree_action_create_filterset(name):
     _log('compliance.filterset.add',
          'added filterset %(name)s',
          dict(name=name))
-    return "0"
+    return {"obj_id": obj_id}
 
 @auth.requires_membership('CompManager')
 def json_tree_action_create_moduleset(modset_name):
@@ -10675,7 +10713,7 @@ def json_tree_action_create_moduleset(modset_name):
     if v is not None:
         return {"err": "a moduleset named '%(modset_name)s' already exists"%dict(modset_name=modset_name)}
 
-    db.comp_moduleset.insert(
+    obj_id = db.comp_moduleset.insert(
       modset_name=modset_name,
       modset_author=user_name(),
       modset_updated=datetime.datetime.now(),
@@ -10685,7 +10723,7 @@ def json_tree_action_create_moduleset(modset_name):
     _log('compliance.moduleset.add',
          'added moduleset %(modset_name)s',
          dict(modset_name=modset_name))
-    return "0"
+    return {"obj_id": obj_id}
 
 @auth.requires_membership('CompManager')
 def json_tree_action_create_ruleset(rset_name):
@@ -10701,7 +10739,7 @@ def json_tree_action_create_ruleset(rset_name):
     if v is not None:
         return {"err": "a ruleset named '%(rset_name)s' already exists"%dict(rset_name=rset_name)}
 
-    db.comp_rulesets.insert(
+    obj_id = db.comp_rulesets.insert(
       ruleset_name=rset_name,
       ruleset_type="explicit",
     )
@@ -10711,7 +10749,7 @@ def json_tree_action_create_ruleset(rset_name):
          'added ruleset %(rset_name)s',
          dict(rset_name=rset_name))
     comp_rulesets_chains()
-    return "0"
+    return {"obj_id": obj_id}
 
 @auth.requires_membership('CompManager')
 def json_tree_action_create_module(modset_id, modset_mod_name):
@@ -10729,7 +10767,7 @@ def json_tree_action_create_module(modset_id, modset_mod_name):
         modset_mod_name = modset_mod_name[4:]
     except:
         pass
-    db.comp_moduleset_modules.insert(
+    obj_id = db.comp_moduleset_modules.insert(
       modset_id=modset_id,
       modset_mod_name=modset_mod_name,
       modset_mod_author=user_name(),
@@ -10740,9 +10778,10 @@ def json_tree_action_create_module(modset_id, modset_mod_name):
          'added module %(modset_mod_name)s in moduleset %(modset_name)s',
          dict(modset_mod_name=modset_mod_name,
               modset_name=v.comp_moduleset.modset_name))
-    return "0"
+    return {"obj_id": obj_id}
 
 @auth.requires_membership('CompManager')
+@service.json
 def json_tree_action_create_variable(rset_id, var_name):
     q = db.comp_rulesets.id == rset_id
     q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
@@ -10758,7 +10797,7 @@ def json_tree_action_create_variable(rset_id, var_name):
         var_name = var_name[4:]
     except:
         pass
-    db.comp_rulesets_variables.insert(
+    obj_id = db.comp_rulesets_variables.insert(
       ruleset_id=rset_id,
       var_name=var_name,
       var_author=user_name(),
@@ -10771,7 +10810,7 @@ def json_tree_action_create_variable(rset_id, var_name):
          'added variable %(var_name)s in ruleset %(rset_name)s',
          dict(var_name=var_name,
               rset_name=v.comp_rulesets.ruleset_name))
-    return "0"
+    return {"obj_id": obj_id}
 
 @auth.requires_membership('CompManager')
 def json_tree_action_delete_module(mod_id):
