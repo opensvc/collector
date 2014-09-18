@@ -991,27 +991,44 @@ def update_dash_checks(nodename):
     db.commit()
 
 
+class table_checks_node(table_checks):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        table_checks.__init__(self, id, func, innerhtml)
+        self.hide_tools = True
+        self.pageable = False
+        self.bookmarkable = False
+        self.commonalityable = False
+        self.linkable = False
+        self.checkboxes = False
+        self.filterable = False
+        self.exportable = False
+        self.dbfilterable = False
+        self.columnable = False
+        self.refreshable = False
+        self.wsable = False
+        self.dataable = True
+        self.child_tables = []
+        #self.cols.remove("chk_nodename")
+
+def ajax_checks_node():
+    tid = request.vars.table_id
+    t = table_checks_node(tid, 'ajax_checks_node')
+    q = _where(None, 'checks_live', domain_perms(), 'chk_nodename')
+    for f in ['chk_nodename']:
+        q = _where(q, 'checks_live', t.filter_parse(f), f)
+    if request.args[0] == "data":
+        t.object_list = db(q).select(cacheable=True)
+        return t.table_lines_data(-1, html=False)
+
 @auth.requires_login()
 def checks_node():
     node = request.args[0]
     tid = 'checks_'+node
-    t = table_checks(tid, 'ajax_checks')
-    #t.cols.remove('mon_nodname')
+    t = table_checks_node(tid, 'ajax_checks_node')
+    t.colprops['chk_nodename'].force_filter = node
 
-    q = _where(None, 'checks_live', domain_perms(), 'chk_nodename')
-    q &= db.checks_live.chk_nodename == node
-    q &= db.checks_live.chk_nodename == db.v_nodes.nodename
-    t.object_list = db(q).select()
-    t.hide_tools = True
-    t.pageable = False
-    t.bookmarkable = False
-    t.commonalityable = False
-    t.linkable = False
-    t.filterable = False
-    t.exportable = False
-    t.dbfilterable = False
-    t.columnable = False
-    t.refreshable = False
-    t.checkboxes = False
-    return t.html()
+    return DIV(
+             t.html(),
+             _id=tid,
+           )
 
