@@ -1075,7 +1075,7 @@ class HtmlTable(object):
         return inputs
 
     def ajax_submit(self, args=[], vars={}, additional_inputs=[], additional_input_name=None):
-        return """table_ajax_submit('%(url)s', '%(divid)s', [], %(additional_inputs)s, %(input_name)s, "%(additional_input_name)s");"""%dict(
+        return """table_ajax_submit('%(url)s', '%(divid)s', %(additional_inputs)s, %(input_name)s, "%(additional_input_name)s");"""%dict(
                          url=URL(r=request,f=self.func, args=args, vars=vars),
                          divid=self.innerhtml,
                          id=self.id,
