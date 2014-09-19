@@ -664,9 +664,9 @@ def get_max_interval(b, e):
     period = get_period(b, e)
     if period == '':
         return 11
-    elif period == 'day':
+    elif period == '_hour':
         return 61
-    elif period == 'week':
+    elif period == '_day':
         return 1441
     else:
         return 10081
