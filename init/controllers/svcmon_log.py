@@ -712,7 +712,7 @@ def db_delete_ack_overlap(svc, begin, end):
 
 #####
 
-class col_avail_svcname(Column):
+class col_avail_svcname(HtmlTableColumn):
     def get(self, o):
         return o['svcname']
 
@@ -761,7 +761,7 @@ def json_availability(svcname):
         acked = [[o['begin'], None]]
     return [down, acked]
 
-class col_avail_holes(Column):
+class col_avail_holes(HtmlTableColumn):
     def get(self, o):
         return o['holes']
 
@@ -854,7 +854,7 @@ class col_avail_holes(Column):
             l.append(self.format_hole(o['svcname'], hole))
         return SPAN(*l)
 
-class col_avail_pct(Column):
+class col_avail_pct(HtmlTableColumn):
     def get(self, o):
         return "%0.2f%%"%o['availability']
 
@@ -864,7 +864,7 @@ class col_avail_pct(Column):
             return ''
         return val
 
-class col_avail_downtime(Column):
+class col_avail_downtime(HtmlTableColumn):
     def get(self, o):
         return o['downtime']
 
@@ -875,7 +875,7 @@ class col_avail_downtime(Column):
         d = datetime.timedelta(minutes=val)
         return d
 
-class col_avail_plot(Column):
+class col_avail_plot(HtmlTableColumn):
     def get(self, o):
         return None
 
@@ -932,26 +932,31 @@ class table_avail(HtmlTable):
         self.colprops = {
             'avail_svcname': col_avail_svcname(
                      title='Service',
+                     field='avail_svcname',
                      img='svc',
                      display=True,
                     ),
             'avail_holes': col_avail_holes(
                      title='Unavailabity ranges',
+                     field='avail_holes',
                      img='time16',
                      display=True,
                     ),
             'avail_pct': col_avail_pct(
                      title='Availabity',
+                     field='avail_pct',
                      img='spark16',
                      display=True,
                     ),
             'avail_downtime': col_avail_downtime(
                      title='Downtime',
+                     field='avail_downtime',
                      img='spark16',
                      display=True,
                     ),
             'avail_plot': col_avail_plot(
                      title='History',
+                     field='avail_plot',
                      img='spark16',
                      display=True,
                     ),
