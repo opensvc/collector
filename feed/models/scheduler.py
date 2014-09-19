@@ -3503,8 +3503,9 @@ def update_dash_service_not_on_primary(svc_name, nodename, svc_type, availstatus
         sql = """delete from dashboard
                  where
                    dash_type="service not started on primary node" and
-                   dash_svcname="%s"
-              """%svc_name
+                   dash_nodename="%(nodename)s" and
+                   dash_svcname="%(svcname)s"
+              """%dict(svcname=svc_name, nodename=nodename)
         db.executesql(sql)
         return
 
