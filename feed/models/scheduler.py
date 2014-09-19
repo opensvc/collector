@@ -3452,8 +3452,9 @@ def update_dash_service_frozen(svc_name, nodename, svc_type, frozen):
         sql = """delete from dashboard
                  where
                    dash_type="service frozen" and
-                   dash_svcname="%s"
-              """%svc_name
+                   dash_nodename="%(nodename)s" and
+                   dash_svcname="%(svcname)s"
+              """%dict(svcname=svc_name, nodename=nodename)
         db.commit()
     else:
         sql = """insert into dashboard
