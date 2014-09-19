@@ -462,15 +462,33 @@ jstree_data = {
                 "parent_obj_id": obj.parents("li").attr("obj_id"),
                },
                success: function(msg){
-                   if ((obj.attr("rel") != "ruleset_hidden") && (obj.attr("rel") != "ruleset_cxt_hidden")) {
+                 var rel = obj.attr("rel")
+                 if ((rel == "ruleset_hidden") || (rel == "ruleset_cxt_hidden")) {
+                   var obj_id = obj.attr("obj_id")
                    var id = obj.attr("id")
+                   var v = $("#catree").find("[obj_id="+obj_id+"][rel="+rel+"]")
+                   if (v.length == 1) {
+                     // re-attach the rule at head level
+                     $("[name=catree]").jstree("move_node", "#"+id, "#rset_head")
+                   }
                    var l = id.split("_")
                    var child_rset_id = l.pop()
                    var parent_rset_id = l.pop()
                    l = [parent_rset_id, child_rset_id]
                    id = l.join("_")
-                   $("[name=catree]:visible").each(function(){
-                     $(this).jstree("delete_node", "[id$="+id+"]")
+                   $("[name=catree]").each(function(){
+                     t = $(this)
+                     t.find("[id$="+id+"]").each(function(){
+                       if ($(this).parents("li").first().attr("id") == "rset_head") {
+                         return
+                       }
+                       t.jstree("delete_node", "#"+$(this).attr("id"))
+                     })
+                   })
+                   // set id of restored non-published contextual ruleset at rset_head level
+                   $("[id^=copy_]").each(function(){
+                     var n_id = "rset"+$(this).attr("obj_id")
+                     $(this).attr("id", n_id)
                    })
                  } else {
                    t.move_node(obj, "#rset_head")
@@ -768,6 +786,10 @@ function __move(e, data) {
     var obj_id = data.rslt.o.attr("obj_id")
     var parent_obj_id = data.rslt.op.attr("obj_id")
 
+    if (dst_id == "rset_head") {
+      // actually a detach
+      return
+    }
     if (id.indexOf("copy_") == 0) {
       // avoid recursing when copying the same node elsewhere
       return
@@ -799,6 +821,9 @@ function __move(e, data) {
           }
           $(this).parents("[name=catree]").jstree("move_node", "#copy_"+id, "#"+this_dst_id, "last")
         })
+        if (rel.indexOf("hidden") > 0) {
+          $("[rel=ruleset_head]").children("ul").children("li[rel="+rel+"][obj_id="+obj_id+"]").remove()
+        }
         $("[id^=copy_]").each(function(){
           var parent_id = $(this).parents("li").first().attr("id")
           var id = $(this).attr("id").replace(/^(copy_)*/, "")
