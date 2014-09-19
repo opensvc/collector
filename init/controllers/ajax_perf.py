@@ -451,7 +451,10 @@ def rows_mem(node, s, e):
                     kbcached,
                     kbcommit,
                     pct_commit,
-                    kbmemsys
+                    kbmemsys,
+                    kbactive,
+                    kbinact,
+                    kbdirty
              from stats_mem_u%(period)s
              where date>='%(s)s'
                and date<='%(e)s'
@@ -822,6 +825,9 @@ def json_mem():
     kbcommit = []
     pct_commit = []
     kbmemsys = []
+    kbactive = []
+    kbinact = []
+    kbdirty = []
 
     prev_date = None
     max_interval = get_max_interval(begin, end)
@@ -834,7 +840,10 @@ def json_mem():
                 kbcached,
                 kbcommit,
                 pct_commit,
-                kbmemsys]
+                kbmemsys,
+                kbactive,
+                kbinact,
+                kbdirty]
 
     rows = rows_mem(node, begin, end)
     memtotal = None
@@ -845,7 +854,7 @@ def json_mem():
             memtotal = asset.mem_bytes * 1024
     for r in rows:
         this_date = r[0]
-        kbmemfree, kbmemused, pct_memused, kbbuffers, kbcached, kbcommit, pct_commit, kbmemsys = add_hole(this_date, prev_date, max_interval, [kbmemfree, kbmemused, pct_memused, kbbuffers, kbcached, kbcommit, pct_commit, kbmemsys])
+        kbmemfree, kbmemused, pct_memused, kbbuffers, kbcached, kbcommit, pct_commit, kbmemsys, kbactive, kbinact, kbdirty = add_hole(this_date, prev_date, max_interval, [kbmemfree, kbmemused, pct_memused, kbbuffers, kbcached, kbcommit, pct_commit, kbmemsys, kbactive, kbinact, kbdirty])
         prev_date = this_date
         _kbmemfree = int(r[1])
         if memtotal is not None:
@@ -862,7 +871,10 @@ def json_mem():
         kbcommit.append((r[0], int(r[6])))
         pct_commit.append((r[0], int(r[7])))
         kbmemsys.append((r[0], int(r[8])))
-    return [kbmemfree, kbmemused, pct_memused, kbbuffers, kbcached, kbcommit, pct_commit, kbmemsys]
+        kbactive.append((r[0], int(r[9])))
+        kbinact.append((r[0], int(r[10])))
+        kbdirty.append((r[0], int(r[11])))
+    return [kbmemfree, kbmemused, pct_memused, kbbuffers, kbcached, kbcommit, pct_commit, kbmemsys, kbactive, kbinact, kbdirty]
 
 @service.json
 def json_netdev_err():

@@ -4286,3 +4286,22 @@ alter table metrics_log modify column instance varchar(100) default null;
 alter table nodes modify column serial varchar(48) default null;
 
 alter table log add key idx6 (log_date);
+
+alter table stats_mem_u add column kbactive int(11);
+
+alter table stats_mem_u add column kbinact int(11);
+
+alter table stats_mem_u add column kbdirty int(11);
+
+alter table stats_mem_u_hour add column kbactive int(11);
+
+alter table stats_mem_u_hour add column kbinact int(11);
+
+alter table stats_mem_u_hour add column kbdirty int(11);
+
+alter table stats_mem_u_day add column kbactive int(11);
+
+alter table stats_mem_u_day add column kbinact int(11);
+
+alter table stats_mem_u_day add column kbdirty int(11);
+
