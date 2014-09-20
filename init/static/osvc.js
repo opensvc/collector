@@ -944,7 +944,7 @@ function table_ajax_submit(url, id, additional_inputs, input_name, additional_in
     $("#"+t.id).find(".white_float").hide()
     $("#"+t.id).find(".white_float_input").hide()
 
-    var inputs = ['tableid']
+    var inputs = ['tableid', id+"_page"]
     var s = inputs.concat(additional_inputs).concat(getIdsByName(input_name))
     $("#"+t.id).find("[name="+additional_input_name+"]").each(function(){s.push(this.id)})
     $("#"+t.id).find("input[id^="+t.id+"_f_]").each(function(){s.push(this.id)})
