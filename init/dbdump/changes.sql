@@ -4305,3 +4305,27 @@ alter table stats_mem_u_day add column kbinact int(11);
 
 alter table stats_mem_u_day add column kbdirty int(11);
 
+alter table nodes modify column cpu_freq varchar(10) default null;
+
+alter table nodes modify column cpu_cores int(11) default null;
+
+alter table nodes modify column cpu_dies int(11) default null;
+
+alter table nodes modify column cpu_model varchar(50) default null;
+
+alter table nodes modify column mem_banks int(11) default null;
+
+alter table nodes modify column mem_slots int(11) default null;
+
+alter table nodes modify column mem_bytes int(11) default null;
+
+alter table nodes modify column os_name varchar(50) default null;
+
+alter table nodes modify column os_arch varchar(10) default null;
+
+alter table nodes modify column assetname varchar(64) default null;
+
+alter table nodes modify column role varchar(64) default null;
+
+alter table networks add column updated timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP;
+

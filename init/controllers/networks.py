@@ -93,7 +93,8 @@ class table_networks(HtmlTable):
                      'begin',
                      'end',
                      'team_responsible',
-                     'comment']
+                     'comment',
+                     'updated']
         self.colprops = {
             'id': HtmlTableColumn(
                      title='Network Id',
@@ -160,6 +161,13 @@ class table_networks(HtmlTable):
                      field='team_responsible',
                      img='guys16',
                      display=True,
+                    ),
+            'updated': HtmlTableColumn(
+                     title='Updated',
+                     field='updated',
+                     img='time16',
+                     display=True,
+                     _class='datetime_daily',
                     ),
         }
         for c in self.cols:
