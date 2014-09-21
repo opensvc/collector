@@ -23,6 +23,14 @@ class Clouds(object):
                 db.nodes.update_or_insert(k, **o)
         db.commit()
 
+    def import_subnets(self):
+        for cloud in self.clouds:
+            for o in cloud.get_osvc_subnets():
+                print o
+                k = dict(network = o['network'])
+                db.networks.update_or_insert(k, **o)
+        db.commit()
+
     def import_networks(self):
         for cloud in self.clouds:
             for o in cloud.get_osvc_networks():
@@ -43,4 +51,5 @@ def import_clouds():
     o = Clouds()
     o.import_nodes()
     o.import_networks()
+    o.import_subnets()
     o.import_volumes()

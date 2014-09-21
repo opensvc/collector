@@ -57,6 +57,25 @@ class Cloud(object):
             l.append(osvc_disk)
         return l
 
+    def list_subnets(self):
+        l = self.driver.ex_list_subnets()
+        return l
+
+    def get_osvc_subnets(self):
+        subnets = self.list_subnets()
+        l = []
+        for subnet in subnets:
+            v = subnet.extra['cidr_block']
+            base, mask = v.split("/")
+            osvc_subnet = {
+              "name": subnet.name,
+              "network": base,
+              "netmask": mask,
+              "updated": datetime.datetime.now(),
+            }
+            l.append(osvc_subnet)
+        return l
+
     def list_networks(self):
         l = self.driver.ex_list_networks()
         return l
@@ -100,9 +119,12 @@ class Cloud(object):
 if __name__ == "__main__":
     import config as config
     o = Cloud(config.clouds[0])
-    for n in  o.driver.list_volumes():
+    for n in  o.list_subnets():
         print n
         print n.extra
+    #for n in  o.driver.list_volumes():
+    #    print n
+    #    print n.extra
     #for node in o.list_nodes():
         #print node
         #print node.extra
