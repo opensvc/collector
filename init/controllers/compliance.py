@@ -8393,7 +8393,14 @@ function refresh_select(e) {
     } else {
       e.find('option').remove()
       for (i=0;i<data.length;i++) {
-        e.find('option').end().append("<option value='"+data[i]+"'>"+data[i]+"</option>")
+        if (typeof(data[i]) == "string") {
+          var _label = data[i]
+          var _value = data[i]
+        } else {
+          var _value = data[i][0]
+          var _label = data[i][1]
+        }
+        e.find('option').end().append("<option value='"+_value+"'>"+_label+"</option>")
       }
     }
     e.combobox()
