@@ -8610,6 +8610,7 @@ $("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").each(fun
 $("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").bind('change', function(){
   form_inputs_trigger(this)
 })
+$("input[name^=%(xid)s][readonly=on],select[name^=%(xid)s][readonly=on],textarea[name^=%(xid)s][readonly=on]").trigger('change')
 """%dict(
      idx=len(l),
      xid=forms_xid(''),
