@@ -1713,3 +1713,23 @@ def json_ip_gateway(ip):
         return "not found"
     return rows[0][0]
 
+@service.json
+def json_amazon_subnets_in_vpc(vpc):
+    if not vpc.startswith("vpc"):
+        return "malformated vpc name"
+    elif not vpc.startswith("vpc-"):
+        vpc = "vpc-"+vpc.replace("vpc", "")
+    sql = """select name, concat(name, ", ", network, "/", netmask) from networks where
+              comment = "%(vpc)s"
+              order by name
+          """ % dict(vpc=vpc)
+    rows = db.executesql(sql)
+    if len(rows) == 0:
+        return "not found"
+    return [(r[0], r[1]) for r in rows]
+
+@service.json
+def json_amazon_sizes(provider, access_key_id):
+    from applications.init.modules import amazon
+    cloud = amazon.get_cloud(provider, access_key_id)
+    return cloud.list_sizes_value_label()

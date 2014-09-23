@@ -9,6 +9,14 @@ from libcloud.compute.providers import get_driver
 
 sys.path.append(os.path.dirname(__file__))
 
+def get_cloud(provider, access_key_id):
+    import config as config
+    for cloud in config.clouds:
+        if cloud['driver'] != 'amazon':
+            continue
+        if cloud['provider'] == provider and cloud['access_key_id'] == access_key_id:
+            return Cloud(cloud)
+
 class Cloud(object):
     def __init__(self, data):
         self.data = data
@@ -32,6 +40,17 @@ class Cloud(object):
         if 'proxy' in self.data:
             self.driver.connection.set_http_proxy(proxy_url=self.data['proxy'])
         return self.driver
+
+    def list_sizes(self):
+        l = self.driver.list_sizes()
+        return l
+
+    def list_sizes_value_label(self):
+        l = []
+        for s in self.driver.list_sizes():
+            label = "%s, %s, ram:%d disk:%s price:%s" % (s.id, s.name, s.ram, str(s.disk), str(s.price))
+            l.append((s.id, label))
+        return l
 
     def list_volumes(self):
         l = self.driver.list_volumes()
@@ -71,6 +90,7 @@ class Cloud(object):
               "name": subnet.name,
               "network": base,
               "netmask": mask,
+              "comment": subnet.extra["vpc_id"],
               "updated": datetime.datetime.now(),
             }
             l.append(osvc_subnet)
@@ -116,17 +136,56 @@ class Cloud(object):
             l.append(osvc_node)
         return l
 
+    def create_node(self, *args, **kwargs):
+        data = {}
+        for i in ["name", "keyname", "image", "size", "subnet"]:
+            if i not in kwargs:
+                raise Exception("missing '%s' parameter"%i)
+
+        # name
+        data["name"] = kwargs["name"]
+
+        # keyname
+        keyname = kwargs['keyname']
+        keynames = [s for s in self.driver.list_key_pairs() if s.name==keyname]
+        if len(keynames) != 1:
+            raise Exception("keyname '%s' object not found" % keyname)
+        data["ex_keyname"] = keyname
+        print "validated keyname:", keyname
+
+        # image
+        image = kwargs['image']
+        images = self.driver.list_images(ex_image_ids=[image])
+        if len(images) != 1:
+            raise Exception("image '%s' object not found" % image)
+        data["image"] = images[0]
+        print "validated image:", images[0].id
+
+        # size
+        size = kwargs['size']
+        sizes = [s for s in self.driver.list_sizes() if s.id==size]
+        if len(sizes) != 1:
+            raise Exception("size '%s' object not found" % size)
+        data["size"] = sizes[0]
+        print "validated size:", sizes[0].id
+
+        # subnet
+        subnet = kwargs['subnet']
+        subnets = [s for s in self.driver.ex_list_subnets() if s.name==subnet]
+        if len(subnets) != 1:
+            raise Exception("subnet '%s' object not found" % subnet)
+        data["ex_subnet"] = subnets[0]
+        print "validated subnet:", subnets[0].id
+
+        print self.driver.create_node(**data)
+
 if __name__ == "__main__":
     import config as config
     o = Cloud(config.clouds[0])
-    for n in  o.list_subnets():
-        print n
-        print n.extra
-    #for n in  o.driver.list_volumes():
-    #    print n
-    #    print n.extra
-    #for node in o.list_nodes():
-        #print node
-        #print node.extra
+    for s in o.list_sizes_value_label():
+        print s
+#    for node in o.list_nodes():
+#        print node
+#        print node.extra
 
 

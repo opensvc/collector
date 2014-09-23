@@ -1282,6 +1282,11 @@ ul.login_menu ul {
     padding: 0 0 0 20px;
     min-height: 16px;
 }
+.cd16 {
+    background: transparent url('cd16.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
 .net16 {
     background: transparent url('net16.png') no-repeat;
     padding: 0 0 0 20px;
