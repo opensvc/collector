@@ -2028,3 +2028,4 @@ def json_disk_app_dg(app_id, dg_id):
             quota = r.stat_day_disk_app_dg.quota
         disk_quota.append([r.stat_day_disk_app_dg.day, quota])
     return [disk_used, disk_quota]
+

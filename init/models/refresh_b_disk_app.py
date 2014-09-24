@@ -1,3 +1,14 @@
+def queue_refresh_b_disk_app():
+    q = db.scheduler_task.status.belongs(("QUEUED", "ASSIGNED"))
+    q &= db.scheduler_task.function_name == "task_refresh_b_disk_app"
+    n = db(q).count()
+    if n > 2:
+        print "skip: %d task(s) already queued" % n
+        return
+    scheduler.queue_task("task_refresh_b_disk_app", [], group_name="janitor")
+    db.commit()
+    print "queued at position %d" % (n+1)
+
 def task_refresh_b_disk_app():
     from warnings import filterwarnings
     import MySQLdb
