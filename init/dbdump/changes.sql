@@ -4329,3 +4329,15 @@ alter table nodes modify column role varchar(64) default null;
 
 alter table networks add column updated timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP;
 
+alter table scheduler_task add key idx_dispatch (assigned_worker_name, status);
+
+alter table scheduler_task add key idx_expire (status, stop_time);
+
+update scheduler_task set group_name="metrics" where function_name="task_stats";
+
+update scheduler_task set group_name="janitor" where group_name="main";
+
+update scheduler_task set group_name="metrics" where function_name="task_perf";
+
+alter table checks_live add index idx_purge (chk_type, chk_updated);
+
