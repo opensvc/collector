@@ -735,6 +735,7 @@ def insert_dcs(name=None, nodename=None):
         generic_insert('diskinfo', vars, vals)
         sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(name, str(now))
         db.executesql(sql)
+    task_refresh_b_disk_app()
 
 def insert_hds(name=None, nodename=None):
     import glob
@@ -807,6 +808,7 @@ def insert_hds(name=None, nodename=None):
             generic_insert('diskinfo', vars, vals)
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
             db.executesql(sql)
+    task_refresh_b_disk_app()
 
 
 def insert_necism(name=None, nodename=None):
@@ -880,6 +882,7 @@ def insert_necism(name=None, nodename=None):
             generic_insert('diskinfo', vars, vals)
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
             db.executesql(sql)
+    task_refresh_b_disk_app()
 
 
 def insert_brocade(name=None, nodename=None):
@@ -1068,6 +1071,7 @@ def insert_vioserver(name=None, nodename=None):
         generic_insert('svcdisks', vars, vals)
         sql = """delete from svcdisks where disk_nodename="%s" and disk_updated < "%s" """%(s.array_name, str(now))
         db.executesql(sql)
+    task_refresh_b_disk_app()
 
 
 def insert_nsr(name=None, nodename=None):
@@ -1175,8 +1179,11 @@ def insert_nsr(name=None, nodename=None):
         generic_insert('saves', vars, vals)
         db.commit()
 
-    purge_saves()
-    update_save_checks()
+    q = db.scheduler_task.status.belongs(("QUEUED", "ASSIGNED"))
+    q &= db.scheduler_task.function_name == "insert_nsr"
+    if db(q).count() < 3:
+        purge_saves()
+        update_save_checks()
 
 def purge_saves():
     sql = """delete from saves where
@@ -1326,6 +1333,7 @@ def insert_netapp(name=None, nodename=None):
             generic_insert('diskinfo', vars, vals)
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.array_name, str(now))
             db.executesql(sql)
+    task_refresh_b_disk_app()
 
 
 def insert_hp3par(name=None, nodename=None):
@@ -1409,6 +1417,7 @@ def insert_hp3par(name=None, nodename=None):
             generic_insert('diskinfo', vars, vals)
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
             db.executesql(sql)
+    task_refresh_b_disk_app()
 
 
 def insert_ibmds(name=None, nodename=None):
@@ -1486,6 +1495,7 @@ def insert_ibmds(name=None, nodename=None):
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.si['ID'], str(now))
             db.executesql(sql)
             db.commit()
+    task_refresh_b_disk_app()
 
 def insert_ibmsvc(name=None, nodename=None):
     import glob
@@ -1558,6 +1568,7 @@ def insert_ibmsvc(name=None, nodename=None):
             generic_insert('diskinfo', vars, vals)
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.array_name, str(now))
             db.executesql(sql)
+    task_refresh_b_disk_app()
 
 
 def insert_eva(name=None, nodename=None):
@@ -1636,6 +1647,7 @@ def insert_eva(name=None, nodename=None):
             generic_insert('diskinfo', vars, vals)
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
             db.executesql(sql)
+    task_refresh_b_disk_app()
 
 
 def insert_sym(symid=None, nodename=None):
@@ -1726,6 +1738,7 @@ def insert_sym(symid=None, nodename=None):
             db.executesql(sql)
 
             del(s)
+    task_refresh_b_disk_app()
 
 
 def _svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
