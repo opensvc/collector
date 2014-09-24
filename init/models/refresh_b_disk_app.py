@@ -27,4 +27,9 @@ def task_refresh_b_disk_app():
     sql = """alter table b_disk_app add index idx_disk_vendor (disk_vendor)"""
     db.executesql(sql)
     db.commit()
+    _websocket_send(event_msg({
+                 'event': 'disks_change',
+                 'data': {'f': 'b'}
+                }), schedule=False)
+
 

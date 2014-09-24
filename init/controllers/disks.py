@@ -1419,7 +1419,15 @@ def disks():
             t.html(),
             _id='disks',
           ),
-          SCRIPT("""osvc.tables["charts"]["on_change"] = plot_diskdonuts"""),
+          SCRIPT("""
+osvc.tables["charts"]["on_change"] = plot_diskdonuts
+function ws_action_switch_%(divid)s(data) {
+        if (data["event"] == "disks_change") {
+          osvc.tables["%(divid)s"].refresh()
+        }
+}
+wsh["%(divid)s"] = ws_action_switch_%(divid)s
+""" % dict(divid=t.id)),
         )
     return dict(table=d)
 
