@@ -2671,11 +2671,6 @@ node_hba_colprops = {
             ),
 }
 
-class col_disk_id(HtmlTableColumn):
-    def html(self, o):
-       d = self.get(o)
-       return PRE(d)
-
 class col_size_mb(HtmlTableColumn):
     def html(self, o):
        d = self.get(o)
@@ -2720,57 +2715,6 @@ def beautify_size_mb(d):
            v = -v
        return fmt%(v, unit)
 
-class col_array_dg(HtmlTableColumn):
-    def html(self, o):
-        id = self.t.extra_line_key(o)
-        dg = self.get(o)
-        try:
-            s = self.t.colprops['disk_arrayid'].get(o)
-        except:
-            s = self.t.colprops['array_name'].get(o)
-        if dg is None or len(dg) == 0:
-            return ''
-        d = DIV(
-              A(
-                dg,
-                _onclick="toggle_extra('%(url)s', '%(id)s', this, %(ncols)s);"%dict(
-                  url=URL(r=request, c='disks',f='ajax_array_dg',
-                          vars={'array': s, 'dg': dg, 'rowid': id}),
-                  ncols=len(self.t.cols),
-                  id=id,
-                ),
-                _class="bluer",
-              ),
-              _class='nowrap',
-            )
-        return d
-
-class col_array(HtmlTableColumn):
-    def html(self, o):
-        id = self.t.extra_line_key(o)
-        s = self.get(o)
-        if s is None or len(s) == 0:
-            return ''
-        if 'array_model' in self.t.colprops:
-            img = array_icon(self.t.colprops['array_model'].get(o))
-        else:
-            img = ''
-        d = DIV(
-              img,
-              A(
-                s,
-                _onclick="toggle_extra('%(url)s', '%(id)s', this, %(ncols)s);"%dict(
-                  url=URL(r=request, c='disks',f='ajax_array',
-                          vars={'array': s, 'rowid': id}),
-                  id=id,
-                  ncols=len(self.t.cols),
-                ),
-                _class="bluer",
-              ),
-              _class='nowrap',
-            )
-        return d
-
 apps_colprops = {
     'app': HtmlTableColumn(
              title='Application code',
@@ -2796,27 +2740,30 @@ apps_colprops = {
 }
 
 disk_app_colprops = {
-    'disk_region': col_disk_id(
+    'disk_region': HtmlTableColumn(
              title='Disk Region',
              table='b_disk_app',
              field='disk_region',
              img='hd16',
              display=False,
+             _class="pre",
             ),
-    'disk_id': col_disk_id(
+    'disk_id': HtmlTableColumn(
              title='Disk Id',
              table='b_disk_app',
              field='disk_id',
              img='hd16',
              display=True,
+             _class="pre",
              _dataclass="bluer",
             ),
-    'disk_name': col_disk_id(
+    'disk_name': HtmlTableColumn(
              title='Disk Name',
              table='b_disk_app',
              field='disk_name',
              img='hd16',
              display=True,
+             _class="pre",
              _dataclass="bluer",
             ),
     'disk_svcname': HtmlTableColumn(
@@ -2835,12 +2782,13 @@ disk_app_colprops = {
              display=True,
              _class="nodename",
             ),
-    'disk_used': col_size_mb(
+    'disk_used': HtmlTableColumn(
              title='Disk Used',
              table='b_disk_app',
              field='disk_used',
              img='hd16',
              display=True,
+             _class="numeric size_mb",
             ),
     'disk_local': HtmlTableColumn(
              title='Disk Local',
@@ -2849,20 +2797,22 @@ disk_app_colprops = {
              img='hd16',
              display=True,
             ),
-    'disk_size': col_size_mb(
+    'disk_size': HtmlTableColumn(
              title='Disk Size',
              table='b_disk_app',
              field='disk_size',
              img='hd16',
              display=True,
+             _class="numeric size_mb",
              _dataclass="bluer",
             ),
-    'disk_alloc': col_size_mb(
+    'disk_alloc': HtmlTableColumn(
              title='Disk Allocation',
              table='b_disk_app',
              field='disk_alloc',
              img='hd16',
              display=True,
+             _class="numeric size_mb",
              _dataclass="bluer",
             ),
     'disk_vendor': HtmlTableColumn(
@@ -2886,12 +2836,13 @@ disk_app_colprops = {
              img='hd16',
              display=True,
             ),
-    'disk_group': col_array_dg(
+    'disk_group': HtmlTableColumn(
              title='Array disk group',
              table='b_disk_app',
              field='disk_group',
              img='hd16',
              display=True,
+             _class="disk_array_dg",
              _dataclass="bluer",
             ),
     'disk_level': HtmlTableColumn(
@@ -2933,28 +2884,31 @@ disk_app_colprops = {
              display=True,
              _dataclass="bluer",
             ),
-    'svcdisk_id': col_array(
+    'svcdisk_id': HtmlTableColumn(
              title='System Disk Id',
              table='b_disk_app',
              field='svcdisk_id',
              img='hd16',
              display=True,
+             _class="disk_array",
              _dataclass="bluer",
             ),
-    'disk_arrayid': col_array(
+    'disk_arrayid': HtmlTableColumn(
              title='Array Id',
              table='b_disk_app',
              field='disk_arrayid',
              img='hd16',
              display=True,
+             _class="disk_array",
              _dataclass="bluer",
             ),
-    'disk_devid': col_disk_id(
+    'disk_devid': HtmlTableColumn(
              title='Array device Id',
              table='b_disk_app',
              field='disk_devid',
              img='hd16',
              display=True,
+             _class="pre",
              _dataclass="bluer",
             ),
     'array_model': HtmlTableColumn(

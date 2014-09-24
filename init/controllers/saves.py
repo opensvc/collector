@@ -65,6 +65,7 @@ class table_saves(HtmlTable):
                       'save_volume',
                       'save_date',
                       'save_retention']
+        self.force_cols = ["os_name"]
         self.keys =  ['save_id']
         self.span = v_nodes_cols + [
                       'save_server',
@@ -172,6 +173,7 @@ class table_saves(HtmlTable):
         self.extraline = True
         self.checkbox_id_col = 'id'
         self.checkbox_id_table = 'saves'
+        self.dataable = True
         self.dbfilterable = True
         self.ajax_col_values = 'ajax_saves_col_values'
 
@@ -203,31 +205,23 @@ def ajax_saves():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         if request.vars.volatile_filters is None:
             n = db(q).count()
             limitby = (t.pager_start,t.pager_end)
-        else:
-            n = 0
-            limitby = (0, 500)
-        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=True, left=l)
-        return t.table_lines_data(n)
-
-    t.csv_q = q
-    t.csv_orderby = o
-    t.csv_left = l
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=True, left=l)
+        return t.table_lines_data(n, html=False)
 
     if len(request.args) == 1 and request.args[0] == 'csv':
+        t.csv_q = q
+        t.csv_orderby = o
+        t.csv_left = l
         return t.csv()
+
     if len(request.args) == 1 and request.args[0] == 'commonality':
         return t.do_commonality()
 
-    n = db(q).count()
-    t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
-                                          orderby=o, left=l, cacheable=True)
-
-    return t.html()
 @auth.requires_login()
 def saves():
     t = table_saves('saves', 'ajax_saves')
@@ -236,26 +230,27 @@ def saves():
             DIV(
                T("Statistics"),
                _style="text-align:left;font-size:120%;background-color:#e0e1cd",
-               _class="right16 clickable",
+               _class="down16 clickable",
                _onclick="""
                if (!$("#charts").is(":visible")) {
                  $(this).addClass("down16");
                  $(this).removeClass("right16");
-                 $("#charts").show(); %s;
+                 $("#charts").show(); osvc.tables["charts"].refresh();
                } else {
                  $(this).addClass("right16");
                  $(this).removeClass("down16");
                  $("#charts").hide();
-               }"""%nt.ajax_submit(additional_inputs=t.ajax_inputs())
+               }""",
              ),
              DIV(
-               ajax_saves_charts(),
+               nt.html(),
                _id="charts",
              ),
              DIV(
-               ajax_saves(),
+               t.html(),
                _id='saves',
              ),
+             SCRIPT("""osvc.tables["charts"]["on_change"] = plot_savedonuts"""),
         )
     return dict(table=t)
 
@@ -516,11 +511,6 @@ def ajax_saves_charts():
 
     if len(request.args) == 1 and request.args[0] == 'line':
         return nt.table_lines_data(-1)
-
-    return DIV(
-             nt.html(),
-             SCRIPT("""osvc.tables["charts"]["on_change"] = plot_savedonuts; plot_savedonuts() """),
-           )
 
 class table_saves_charts(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):

@@ -698,6 +698,7 @@ class table_disks(HtmlTable):
                      'power_protect_breaker',
                      'power_breaker1',
                      'power_breaker2']
+        self.force_cols = ["os_name"]
         self.colprops.update(disk_app_colprops)
         import copy
         nodes_colprops = copy.copy(v_nodes_colprops)
@@ -707,9 +708,11 @@ class table_disks(HtmlTable):
         for i in self.cols:
             self.colprops[i].t = self
         self.extraline = True
-        self.checkbox_id_col = 'svcdisks_id'
+        self.checkbox_id_col = 'svcdisk_id'
         self.checkbox_id_table = 'b_disk_app'
         self.dbfilterable = True
+        self.wsable = True
+        self.dataable = True
         self.ajax_col_values = 'ajax_disks_col_values'
         self.keys = ['disk_id', 'disk_region', 'disk_nodename']
         self.span = ['disk_id', 'disk_size', 'disk_alloc', 'disk_arrayid',
@@ -1366,15 +1369,13 @@ def ajax_disks():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), t.colprops[f].field)
 
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         if request.vars.volatile_filters is None:
             n = db(q).select(db.b_disk_app.id.count(), cacheable=True, left=(l1,l2)).first()._extra[db.b_disk_app.id.count()]
             limitby = (t.pager_start,t.pager_end)
-        else:
-            n = 0
-            limitby = (0, 500)
-        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False, left=(l1,l2))
-        return t.table_lines_data(n)
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=False, left=(l1,l2))
+        return t.table_lines_data(n, html=False)
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         t.csv_q = q
@@ -1390,18 +1391,15 @@ def ajax_disks():
         t.object_list = db(q).select(cacheable=True, limitby=(t.pager_start,t.pager_end), orderby=o, left=(l1,l2))
         return t.do_commonality()
 
-    n = db(q).select(db.b_disk_app.id.count(), cacheable=True, left=(l1,l2)).first()._extra[db.b_disk_app.id.count()]
-    t.setup_pager(n)
-    t.object_list = db(q).select(cacheable=True, limitby=(t.pager_start,t.pager_end), orderby=o, left=(l1,l2))
-    return t.html()
-
 @auth.requires_login()
 def disks():
-    t = DIV(
+    t = table_disks('disks', 'ajax_disks')
+    u = table_disk_charts('charts', 'ajax_disk_charts')
+    d = DIV(
           DIV(
             T("Statistics"),
              _style="text-align:left;font-size:120%;background-color:#e0e1cd",
-             _class="right16 clickable",
+             _class="down16 clickable",
              _onclick="""
                if (!$("#charts").is(":visible")) {
                  $(this).addClass("down16");
@@ -1414,15 +1412,16 @@ def disks():
                }"""
           ),
           DIV(
-            ajax_disk_charts(),
+            u.html(),
             _id="charts",
           ),
           DIV(
-            ajax_disks(),
+            t.html(),
             _id='disks',
           ),
+          SCRIPT("""osvc.tables["charts"]["on_change"] = plot_diskdonuts"""),
         )
-    return dict(table=t)
+    return dict(table=d)
 
 @auth.requires_login()
 def ajax_disk_charts():
@@ -1461,7 +1460,16 @@ def ajax_disk_charts():
     max_level = db.executesql(sql)[0][1]
 
     if max_level is None:
+        if len(request.args) == 1 and request.args[0] == 'line':
+            nt.object_list = [{'chart_svc': json.dumps([]),
+                               'chart_ap': json.dumps([]),
+                               'chart_dg': json.dumps([]),
+                               'chart_ar': json.dumps([])}]
+            return nt.table_lines_data(-1)
+        return
+
         return ''
+
     levels = range(0, max_level+1)
 
     def pie_data_svc(q, level=0):
@@ -1813,11 +1821,6 @@ def ajax_disk_charts():
 
     if len(request.args) == 1 and request.args[0] == 'line':
         return nt.table_lines_data(-1)
-
-    return DIV(
-      nt.html(),
-      SCRIPT("""osvc.tables["charts"]["on_change"] = plot_diskdonuts; plot_diskdonuts() """),
-    )
 
 class table_disk_charts(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):

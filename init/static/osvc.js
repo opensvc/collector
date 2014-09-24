@@ -2198,6 +2198,44 @@ function cell_decorator_run_status(e) {
   $(e).html("<div class='"+cl+"'>"+_v+"</div>")
 }
 
+function cell_decorator_disk_array(e) {
+  var v = $(e).attr("v")
+  if (v == "empty") {
+    return
+  }
+  var line = $(e).parent(".tl")
+  var model = line.find("[name$=_array_model]").attr("v")
+  var s = ""
+  s = "<div class='clickable'>"+v+"</div>"
+  $(e).html(s)
+  $(e).click(function(){
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = line.attr("spansum")
+    id = table_id + "_x_" + span_id
+    url = $(location).attr("origin") + "/init/disks/ajax_array?array="+v+"&rowid="+id
+    toggle_extra(url, id, this, 0)
+  })
+}
+
+function cell_decorator_disk_array_dg(e) {
+  var v = $(e).attr("v")
+  if (v == "empty") {
+    return
+  }
+  var s = ""
+  s = "<div class='clickable'>"+v+"</div>"
+  $(e).html(s)
+  $(e).click(function(){
+    var line = $(e).parent(".tl")
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    array = line.find("[name$=_disk_arrayid][name$=_array_name]").attr("v")
+    span_id = line.attr("spansum")
+    id = table_id + "_x_" + span_id
+    url = $(location).attr("origin") + "/init/disks/ajax_array_dg?array="+array+"&dg="+v+"&rowid="+id
+    toggle_extra(url, id, this, 0)
+  })
+}
+
 function cell_decorator_rset_md5(e) {
   var v = $(e).attr("v")
   var s = ""
@@ -2326,6 +2364,15 @@ function cell_decorator_svc_ha(e) {
   $(e).html(s)
 }
 
+function cell_decorator_size_mb(e) {
+  v = $(e).attr("v")
+  if (v == "empty") {
+    return
+  }
+  s = "<div class='nowrap'>"+fancy_size_mb(v)+"</div>"
+  $(e).html(s)
+}
+
 function cell_decorator_availstatus(e) {
   var line = $(e).parent(".tl")
   var mon_availstatus = $(e).attr("v")
@@ -2409,6 +2456,9 @@ function cell_decorator_overallstatus(e) {
 }
 
 cell_decorators = {
+ "disk_array_dg": cell_decorator_disk_array_dg,
+ "disk_array": cell_decorator_disk_array,
+ "size_mb": cell_decorator_size_mb,
  "chk_instance": cell_decorator_chk_instance,
  "chk_value": cell_decorator_chk_value,
  "chk_low": cell_decorator_chk_low,
