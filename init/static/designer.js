@@ -846,11 +846,17 @@ function __move(e, data) {
         $(".flash").html(msg).slideDown()
       },
       success: function(msg){
-        if (msg != "0") {
+        try {
+          new_obj_id = msg["obj_id"]
+        } catch(e) {
+          new_obj_id = -1
+        }
+        if ((msg != "0") && (new_obj_id < 0)) {
           $.jstree.rollback(data.rlbk)
           json_status(msg)
           return
         }
+
         $("[rel="+dst_rel+"][obj_id="+dst_obj_id+"]").each(function(){
           var this_dst_id = $(this).attr("id")
           var this_dst_tree_id = $(this).parents("[name=catree]").attr("id")
@@ -864,7 +870,16 @@ function __move(e, data) {
         }
         $("[id^=copy_]").each(function(){
           var parent_id = $(this).parents("li").first().attr("id")
-          var id = $(this).attr("id").replace(/^(copy_)*/, "")
+          alert(parent_id)
+          var id = $(this).attr("id").replace(/^(\w*_)*/, "")
+          alert("1: " + id)
+          if (new_obj_id > 0) {
+            // the server provided a new obj_id. replace the original's.
+            $(this).attr("obj_id", new_obj_id)
+            var regex = new RegExp(obj_id + "$")
+            id = id.replace(regex, new_obj_id)
+          }
+          alert("2: " + id)
           $(this).attr("id", parent_id+"_"+id)
         })
       }

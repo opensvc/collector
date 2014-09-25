@@ -11087,7 +11087,7 @@ def json_tree_action_copy_var_to_rset(var_id, rset_id):
         return {"err": "destination ruleset not found or not owned by you"}
 
     _v = v.comp_rulesets_variables
-    db.comp_rulesets_variables.insert(
+    obj_id = db.comp_rulesets_variables.insert(
       ruleset_id=rset_id,
       var_name=_v.var_name,
       var_class=_v.var_class,
@@ -11101,7 +11101,7 @@ def json_tree_action_copy_var_to_rset(var_id, rset_id):
          dict(rset_name=v.comp_rulesets.ruleset_name,
               dst_rset_name=w.comp_rulesets.ruleset_name,
               var_name=v.comp_rulesets_variables.var_name))
-    return "0"
+    return {"obj_id": obj_id}
 
 @auth.requires_membership('CompManager')
 def json_tree_action_copy_rset_to_rset(rset_id, parent_rset_id, dst_rset_id):
