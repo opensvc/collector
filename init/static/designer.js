@@ -756,6 +756,25 @@ function __rename(e, data) {
        "obj_id": obj_id,
        "new_name": new_name
       },
+      error: function(jqXHR, exception) {
+        if (jqXHR.status === 0) {
+          msg = 'Connection error.'
+        } else if (jqXHR.status == 404) {
+          msg = 'Requested page not found. [404]'
+        } else if (jqXHR.status == 500) {
+          msg = 'Internal Server Error [500].'
+        } else if (exception === 'parsererror') {
+          msg = 'Requested JSON parse failed.'
+        } else if (exception === 'timeout') {
+          msg = 'Time out error.'
+        } else if (exception === 'abort') {
+          msg = 'Ajax request aborted.'
+        } else {
+          msg = 'Error: ' + jqXHR.responseText
+        }
+        $.jstree.rollback(data.rlbk)
+        $(".flash").html(msg).slideDown()
+      },
       success: function(msg){
         if (msg != "0") {
           $.jstree.rollback(data.rlbk)
@@ -864,6 +883,25 @@ function __remove(e, data) {
         "operation": "delete",
         "obj_type": $(this).attr("rel"),
         "obj_id": $(this).attr("obj_id"),
+      },
+      error: function(jqXHR, exception) {
+        if (jqXHR.status === 0) {
+          msg = 'Connection error.'
+        } else if (jqXHR.status == 404) {
+          msg = 'Requested page not found. [404]'
+        } else if (jqXHR.status == 500) {
+          msg = 'Internal Server Error [500].'
+        } else if (exception === 'parsererror') {
+          msg = 'Requested JSON parse failed.'
+        } else if (exception === 'timeout') {
+          msg = 'Time out error.'
+        } else if (exception === 'abort') {
+          msg = 'Ajax request aborted.'
+        } else {
+          msg = 'Error: ' + jqXHR.responseText
+        }
+        $.jstree.rollback(data.rlbk)
+        $(".flash").html(msg).slideDown()
       },
       success: function(msg){
         if (msg != "0") {
@@ -989,6 +1027,25 @@ function __select(e, data) {
       "operation": "show",
       "obj_type": $(this).attr('rel'),
       "obj_id": $(this).attr('obj_id'),
+    },
+    error: function(jqXHR, exception) {
+      if (jqXHR.status === 0) {
+        msg = 'Connection error.'
+      } else if (jqXHR.status == 404) {
+        msg = 'Requested page not found. [404]'
+      } else if (jqXHR.status == 500) {
+        msg = 'Internal Server Error [500].'
+      } else if (exception === 'parsererror') {
+        msg = 'Requested JSON parse failed.'
+      } else if (exception === 'timeout') {
+        msg = 'Time out error.'
+      } else if (exception === 'abort') {
+        msg = 'Ajax request aborted.'
+      } else {
+        msg = 'Error: ' + jqXHR.responseText
+      }
+      $.jstree.rollback(data.rlbk)
+      $(".flash").html(msg).slideDown()
     },
     success: function(msg){
       $("#cainfo").html(msg)
