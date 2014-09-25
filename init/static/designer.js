@@ -807,6 +807,25 @@ function __move(e, data) {
         "dst_id": dst_obj_id,
         "parent_obj_id": parent_obj_id,
       },
+      error: function(jqXHR, exception) {
+        if (jqXHR.status === 0) {
+          msg = 'Connection error.'
+        } else if (jqXHR.status == 404) {
+          msg = 'Requested page not found. [404]'
+        } else if (jqXHR.status == 500) {
+          msg = 'Internal Server Error [500].'
+        } else if (exception === 'parsererror') {
+          msg = 'Requested JSON parse failed.'
+        } else if (exception === 'timeout') {
+          msg = 'Time out error.'
+        } else if (exception === 'abort') {
+          msg = 'Ajax request aborted.'
+        } else {
+          msg = 'Error: ' + jqXHR.responseText
+        }
+        $.jstree.rollback(data.rlbk)
+        $(".flash").html(msg).slideDown()
+      },
       success: function(msg){
         if (msg != "0") {
           $.jstree.rollback(data.rlbk)
