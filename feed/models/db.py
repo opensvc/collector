@@ -734,3 +734,17 @@ db.define_table('action_queue',
     Field('action_type', 'string'),
     migrate=False)
 
+db.define_table('stor_array_tgtid',
+    Field('array_id','integer'),
+    Field('array_tgtid','string'),
+    migrate=False)
+
+db.define_table('stor_array',
+    Field('array_name','string'),
+    Field('array_model','string'),
+    Field('array_firmware','string'),
+    Field('array_cache','integer'),
+    Field('array_updated','datetime'),
+    Field('array_level','integer'),
+    migrate=False)
+

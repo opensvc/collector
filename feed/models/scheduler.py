@@ -530,6 +530,23 @@ def _register_disk(vars, vals, auth):
 
     h['disk_updated'] = now
 
+    # HDS specifics
+    if h['disk_model'].strip("'") == "OPEN-V":
+        wwid = h['disk_id'].strip("'")
+        ldev = wwid[26:28]+":"+wwid[28:30]+":"+wwid[30:]
+        ldev = ldev.upper()
+        portname_prefix = "50"+wwid[2:12]+"%"
+        q = db.diskinfo.disk_devid == ldev
+        q &= db.diskinfo.disk_id != wwid
+        q &= db.stor_array_tgtid.array_tgtid.like(portname_prefix)
+        l1 = db.stor_array.on(db.diskinfo.disk_arrayid == db.stor_array.array_name)
+        l2 = db.stor_array_tgtid.on(db.stor_array.id == db.stor_array_tgtid.array_id)
+        r = db(q).select(db.diskinfo.disk_id, left=(l1,l2),
+                         groupby=db.diskinfo.disk_id).first()
+        if r is not None:
+            q = db.diskinfo.disk_id == r.disk_id
+            db(q).update(disk_id=wwid)
+
     q = db.diskinfo.disk_id==disk_id
     disks = db(q).select()
     n = len(disks)
@@ -589,7 +606,6 @@ def _register_disk(vars, vals, auth):
         # populated
         pass
     purge_old_disks(h, now)
-    queue_refresh_b_disk_app()
 
 def purge_old_disks(h, now):
     if 'disk_nodename' in h and h['disk_nodename'] is not None and h['disk_nodename'] != '':
@@ -789,6 +805,15 @@ def insert_hds(name=None, nodename=None):
                 vals.append([array_id, wwn])
             generic_insert('stor_array_tgtid', vars, vals)
 
+            # load all of this array devs seens by the nodes
+            # index by ldev
+            r = s.ports[0]
+            r = "60" + r[2:12] + "%"
+            q = db.svcdisks.disk_id.like(r)
+            ldev_wwid = {}
+            for row in db(q).select(db.svcdisks.disk_id, cacheable=False):
+                ldev_wwid[row.disk_id[26:]] = row.disk_id
+
             # diskinfo
             vars = ['disk_id',
                     'disk_arrayid',
@@ -799,7 +824,12 @@ def insert_hds(name=None, nodename=None):
                     'disk_updated']
             vals = []
             for d in s.vdisk:
-                vals.append([d['wwid'],
+                ldev = d['name'].replace(":", "").lower()
+                if ldev in ldev_wwid:
+                    wwid = ldev_wwid[ldev]
+                else:
+                    wwid = d['wwid']
+                vals.append([wwid,
                              s.name,
                              d['name'],
                              str(d['size']),

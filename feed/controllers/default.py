@@ -189,6 +189,7 @@ def register_disks(vars, vals, auth):
     db.executesql(sql)
 
     db.commit()
+    queue_refresh_b_disk_app()
 
 @auth_uuid
 @service.xmlrpc
