@@ -34,9 +34,6 @@ class Hds(object):
     def load_lu(self, i):
         vdisk = {}
         for line in self.lines[i:]:
-            if "List " in line:
-                self.vdisk.append(vdisk)
-                return
             if line.startswith("      objectID"):
                 wwid = line.split('=')[1].strip().split('.')[2:]
                 vdisk["wwid"] = '.'.join(wwid)
@@ -45,10 +42,21 @@ class Hds(object):
             if line.startswith("      capacityInKB"):
                 s = line.split('=')[-1].strip().replace(',','')
                 vdisk["size"] = int(s)//1024
+            if line.strip().startswith("consumedSizeInKB"):
+                s = line.split('=')[-1].strip().replace(',','')
+                vdisk["alloc"] = int(s)//1024
+            if line.strip().startswith("label="):
+                s = line.split('=')[-1].strip()
+                vdisk["label"] = s
             if line.startswith("      arrayGroupName"):
                 vdisk["disk_group"] = line.split('=')[-1].strip()
                 if vdisk["disk_group"] in self.pool:
                     vdisk["raid"] = self.pool[vdisk["disk_group"]]['raid']
+            if line.endswith("An instance of LogicalUnit"):
+                self.vdisk.append(vdisk)
+                return
+        if vdisk != {}:
+            self.vdisk.append(vdisk)
 
     def load_pool(self):
         lines = self.readfile("arraygroup").split('\n')
@@ -84,7 +92,7 @@ class Hds(object):
         for i, d in self.pool.items():
             s += "pool %s: size %d MB, used %d MB, free %d MB\n"%(d['name'], d['size'], d['used'], d['free'])
         for d in self.vdisk:
-            s += "vdisk %s (%s): size %s MB raid %s\n"%(d['name'], d['wwid'], str(d['size']), d['raid'])
+            s += "vdisk %s (%s): size %s MB alloc %s MB raid %s label %s\n"%(d['name'], d['wwid'], str(d['size']), str(d.get('alloc', '')), d['raid'], d.get('label', 'n/a'))
         return s
 
 

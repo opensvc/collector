@@ -818,7 +818,9 @@ def insert_hds(name=None, nodename=None):
             vars = ['disk_id',
                     'disk_arrayid',
                     'disk_devid',
+                    'disk_name',
                     'disk_size',
+                    'disk_alloc',
                     'disk_raid',
                     'disk_group',
                     'disk_updated']
@@ -832,7 +834,9 @@ def insert_hds(name=None, nodename=None):
                 vals.append([wwid,
                              s.name,
                              d['name'],
+                             d.get('label', ''),
                              str(d['size']),
+                             str(d.get('alloc', '')),
                              d['raid'],
                              d['disk_group'],
                              now])
