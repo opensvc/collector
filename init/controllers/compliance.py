@@ -9243,6 +9243,9 @@ def ajax_generic_form_submit(form, data, _d=None):
             if __var_id is not None:
                 q = db.comp_rulesets_variables.id == __var_id
                 q &= db.comp_rulesets_variables.ruleset_id == db.comp_rulesets.id
+                if "Manager" not in user_groups():
+                    q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+                    q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
                 row = db(q).select(db.comp_rulesets.ruleset_name, cacheable=True).first()
                 if row is None:
                     log.append((1, "form.submit", "Unable to retrieve compliance variable %(var_id)s ruleset name", dict(var_id=__var_id)))
@@ -9253,7 +9256,7 @@ def ajax_generic_form_submit(form, data, _d=None):
                 elif rset_name.startswith('node.'):
                     nodename = rset_name.replace('node.', '')
                 else:
-                    log.append((1, "form.submit", "Unable to detecode service or nodename from ruleset name %(rset_name)s", dict(rset_name=rset_name)))
+                    log.append((1, "form.submit", "Unable to deduce service or nodename from ruleset name %(rset_name)s", dict(rset_name=rset_name)))
                     continue
             if nodename is None and svcname is None:
                 log.append((1, "form.submit", "No nodename nor svcname specified to 'compliance fix' output handler", dict()))
@@ -9538,9 +9541,18 @@ def ajax_generic_form_submit(form, data, _d=None):
         elif dest == "compliance variable delete":
             if __var_id is not None:
                 q = db.comp_rulesets_variables.id == __var_id
-                db(q).delete()
-                table_modified("comp_rulesets_variables")
-                log.append((0, "", "Compliance variable %(id)s deleted)", dict(id=__var_id)))
+                skip = False
+                if "Manager" not in user_groups():
+                    q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+                    q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+                    if db(q&q1).count() == 0:
+                        skip = True
+                if not skip:
+                    db(q).delete()
+                    table_modified("comp_rulesets_variables")
+                    log.append((0, "", "Compliance variable %(id)s deleted", dict(id=__var_id)))
+                else:
+                    log.append((0, "", "Compliance variable %(id)s not deleted: not owner", dict(id=__var_id)))
 
     for ret, action, fmt, d in log:
         _log(action, fmt, d)
@@ -9698,8 +9710,15 @@ def ajax_custo_form_submit(output, data):
     else:
         q = db.comp_rulesets_variables.ruleset_id == rset.id
         q &= db.comp_rulesets_variables.var_name == var_name
+        # ownership check
         var_rows = db(q).select(cacheable=True)
         n = len(var_rows)
+        owned = True
+        if "Manager" not in user_groups():
+            q1 = db.comp_ruleset_team_responsible.ruleset_id == rset.id
+            q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+            if db(q&q1).count() == 0:
+                owned = False
         if n == 0:
             __var_id = db.comp_rulesets_variables.insert(
               ruleset_id=rset.id,
@@ -9711,6 +9730,11 @@ def ajax_custo_form_submit(output, data):
             )
             table_modified("comp_rulesets_variables")
             log.append((0, "compliance.ruleset.variable.add", "Added '%(var_class)s' variable '%(var_name)s' to ruleset '%(rset_name)s' with value:\n%(var_value)s", dict(var_class=var_class, var_name=var_name, rset_name=rset_name, var_value=var_value)))
+        elif not owned:
+            if n == 1:
+                log.append((1, "compliance.ruleset.variable.change", "Change '%(var_class)s' variable '%(var_name)s' in ruleset '%(rset_name)s' aborted: not owner", dict(var_class=var_class, var_name=var_name, rset_name=rset_name)))
+            else:
+                log.append((1, "compliance.ruleset.variable.add", "Add '%(var_class)s' variable '%(var_name)s' in ruleset '%(rset_name)s' aborted: not owner", dict(var_class=var_class, var_name=var_name, rset_name=rset_name)))
         elif n == 1:
             __var_id = var_rows.first().id
             db(q).update(
@@ -10070,6 +10094,14 @@ def json_tree_rulesets():
         rsets_groups[row.comp_ruleset_team_responsible.ruleset_id].append(row)
 
     q = db.comp_rulesets.id > 0
+    q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    rows = db(q).select(groupby=db.comp_rulesets.id,
+                        cacheable=True)
+    rsets = {}
+    for row in rows:
+        rsets[row.comp_rulesets.id] = row.comp_rulesets
+
+    q = db.comp_rulesets.id > 0
     o = db.comp_rulesets.ruleset_name
     q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
     if 'Manager' not in user_groups():
@@ -10077,9 +10109,9 @@ def json_tree_rulesets():
 
     rows = db(q).select(groupby=db.comp_rulesets.id,
                         orderby=o, cacheable=True)
-    rsets = {}
+    owned_rsets = {}
     for row in rows:
-        rsets[row.comp_rulesets.id] = row.comp_rulesets
+        owned_rsets[row.comp_rulesets.id] = row.comp_rulesets
 
     def recurse_rset(rset, _data={}, parent_ids=[]):
         child_rsets = []
