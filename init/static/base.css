@@ -1387,6 +1387,11 @@ ul.login_menu ul {
     padding: 0 0 0 20px;
     min-height: 16px;
 }
+.na {
+    background: transparent url('na.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
 .nok {
     background: transparent url('nok.png') no-repeat;
     padding: 0 0 0 20px;
