@@ -1725,6 +1725,21 @@ def internal_comp_attach_svc_modulesets(svc_ids=[], modset_ids=[], svc_names=[],
 def comp_attach_svc_rulesets(svc_ids=[], ruleset_ids=[], svc_names=[], slave=True):
     return internal_comp_attach_svc_rulesets(svc_ids, ruleset_ids, svc_names, slave)
 
+def get_rset_names(ruleset_ids=None):
+    if ruleset_ids is None:
+        q = db.comp_rulesets.id > 0
+    elif type(ruleset_ids) == int:
+        q = db.comp_rulesets.id = ruleset_ids
+    elif type(ruleset_ids) == list:
+        q = db.comp_rulesets.id.belongs(ruleset_ids)
+    else:
+        return {}
+    rows = db(q).select(cacheable=True)
+    rset_names = {}
+    for row in rows:
+        rset_names[row.id] = row.ruleset_name
+    return rset_names
+
 def internal_comp_attach_svc_rulesets(svc_ids=[], ruleset_ids=[], svc_names=[], slave=True):
     if len(svc_ids) + len(svc_names) == 0:
         raise ToolError("attach ruleset failed: no service selected")
@@ -1739,11 +1754,7 @@ def internal_comp_attach_svc_rulesets(svc_ids=[], ruleset_ids=[], svc_names=[], 
         svc_names += [r.svc_name for r in rows]
 
     # init rset name cache
-    q = db.comp_rulesets.id.belongs(ruleset_ids)
-    rows = db(q).select(cacheable=True)
-    rset_names = {}
-    for row in rows:
-        rset_names[row.id] = row.ruleset_name
+    rset_names = get_rset_names(ruleset_ids)
 
     for rsid in ruleset_ids:
         for svc in svc_names:
@@ -6031,7 +6042,10 @@ def comp_get_rulesets_fset_ids(rset_ids=None, nodename=None, svcname=None):
 
     l = {}
     g = db.comp_rulesets_filtersets.fset_id|db.comp_rulesets.id
-    rows = db(q).select(groupby=g, cacheable=True)
+    rows = db(q).select(db.comp_rulesets_filtersets.fset_id,
+                        db.gen_filtersets.fset_name,
+                        db.comp_rulesets.id,
+                        groupby=g, cacheable=True)
 
     fset_ids = [r.comp_rulesets_filtersets.fset_id for r in rows]
 
@@ -6057,11 +6071,7 @@ def comp_get_rulesets_fset_ids(rset_ids=None, nodename=None, svcname=None):
 
 def comp_rulesets_chains():
     # populate rset names cache
-    q = db.comp_rulesets.id > 0
-    rows = db(q).select(cacheable=True)
-    rset_names = {}
-    for row in rows:
-         rset_names[row.id] = row.ruleset_name
+    rset_names = get_rset_names()
 
     # populate rset relations cache
     q = db.comp_rulesets_rulesets.id > 0
@@ -6109,27 +6119,38 @@ def comp_rulesets_chains():
     generic_insert('comp_rulesets_chains', vars, vals)
     db.commit()
 
-def comp_ruleset_vars(ruleset_id, qr=None, matching_fsets=[]):
-    if qr is None:
-        f = 'explicit attachment'
-    else:
-        f = comp_format_filter(qr)
-
-    q = db.comp_rulesets.id == ruleset_id
-    head_rset = db(q).select(db.comp_rulesets.ruleset_name, cacheable=True).first()
-    if head_rset is None:
-        return dict()
-
-    q1 = db.comp_rulesets_rulesets.id > 0
-    q1 &= db.comp_rulesets_rulesets.child_rset_id == db.comp_rulesets.id
+def get_rset_relations():
+    q1 = db.comp_rulesets_rulesets.child_rset_id == db.comp_rulesets.id
     j = db.comp_rulesets.id == db.comp_rulesets_filtersets.ruleset_id
     l = db.comp_rulesets_filtersets.on(j)
-    rows = db(q1).select(left=l, cacheable=True)
+    rows = db(q1).select(
+      db.comp_rulesets_rulesets.parent_rset_id,
+      db.comp_rulesets_rulesets.child_rset_id,
+      db.comp_rulesets_filtersets.fset_id,
+      db.comp_rulesets.ruleset_type,
+      left=l, cacheable=True
+    )
     rset_relations = {}
     for row in rows:
         if row.comp_rulesets_rulesets.parent_rset_id not in rset_relations:
             rset_relations[row.comp_rulesets_rulesets.parent_rset_id] = []
         rset_relations[row.comp_rulesets_rulesets.parent_rset_id].append(row)
+    return rset_relations
+
+def comp_ruleset_vars(ruleset_id, qr=None, matching_fsets=[], rset_relations=None, rset_names=None):
+    if qr is None:
+        f = 'explicit attachment'
+    else:
+        f = comp_format_filter(qr)
+
+    if rset_names is None:
+        rset_names = get_rset_names()
+    if ruleset_id not in rset_names:
+        return dict()
+    ruleset_name = rset_names[ruleset_id]
+
+    if rset_relations is None:
+        rset_relations = get_rset_relations()
 
     def recurse_rel(rset_id, children=[]):
         if rset_id not in rset_relations:
@@ -6149,21 +6170,21 @@ def comp_ruleset_vars(ruleset_id, qr=None, matching_fsets=[]):
 
     children = recurse_rel(ruleset_id)
 
-    if len(children) > 0:
-        q |= db.comp_rulesets.id.belongs(children)
-
-    # get variables
-    q &= db.comp_rulesets.id == db.comp_rulesets_variables.ruleset_id
-    rows = db(q).select(cacheable=True)
-    ruleset_name = head_rset.ruleset_name
+    # get variables (pass as arg too ?)
+    q = db.comp_rulesets_variables.ruleset_id.belongs([ruleset_id]+children)
+    rows = db(q).select(
+      db.comp_rulesets_variables.var_name,
+      db.comp_rulesets_variables.var_value,
+      cacheable=True
+    )
     d = dict(
           name=ruleset_name,
           filter=f,
           vars=[]
         )
     for row in rows:
-        d['vars'].append((row.comp_rulesets_variables.var_name,
-                          row.comp_rulesets_variables.var_value))
+        d['vars'].append((row.var_name,
+                          row.var_value))
     return {ruleset_name: d}
 
 def ruleset_add_var(d, rset_name, var, val):
@@ -6202,7 +6223,7 @@ def node_team_responsible_id(nodename):
     return rows[0].id
 
 def test_comp_get_ruleset():
-    return _comp_get_ruleset("lapoo")
+    return _comp_get_ruleset("clementine")
 
 @auth_uuid
 @service.xmlrpc
@@ -6219,23 +6240,27 @@ def comp_get_svc_ruleset(svcname, auth):
     insert_run_rset(ruleset)
     return ruleset
 
-def comp_contextual_rulesets(nodename, svcname=None, slave=False, matching_fsets=None, fset_ids=None):
+def comp_contextual_rulesets(nodename, svcname=None, slave=False, matching_fsets=None, fset_ids=None, rset_relations=None, rset_names=None):
     ruleset = {}
 
     q = db.comp_rulesets.ruleset_public == True
     rows = db(q).select(db.comp_rulesets.id, cacheable=True)
     public_rsets = [r.id for r in rows]
 
-    for fset_id, fset_name in fset_ids:
-        if fset_id in matching_fsets:
-            for rset_id in fset_ids[(fset_id, fset_name)]:
-                if rset_id not in public_rsets:
-                    continue
-                ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, matching_fsets=matching_fsets))
+    for (fset_id, fset_name), rset_ids in fset_ids.items():
+        if fset_id not in matching_fsets:
+            continue
+        for rset_id in rset_ids:
+            if rset_id not in public_rsets:
+                continue
+            ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, matching_fsets=matching_fsets, rset_relations=rset_relations, rset_names=rset_names))
     return ruleset
 
 def _comp_get_svc_ruleset(svcname, nodename):
     slave = comp_slave(svcname, nodename)
+
+    rset_relations = get_rset_relations()
+    rset_names = get_rset_names()
 
     # initialize ruleset with asset variables
     ruleset = comp_get_service_ruleset(svcname)
@@ -6247,7 +6272,9 @@ def _comp_get_svc_ruleset(svcname, nodename):
                                             svcname=svcname,
                                             slave=slave,
                                             matching_fsets=matching_fsets,
-                                            fset_ids=l))
+                                            fset_ids=l,
+                                            rset_relations=rset_relations,
+                                            rset_names=rset_names))
 
     # add explicit rulesets variables
     q = db.comp_rulesets_services.svcname == svcname
@@ -6256,7 +6283,10 @@ def _comp_get_svc_ruleset(svcname, nodename):
                         orderby=db.comp_rulesets_services.ruleset_id,
                         cacheable=True)
     for row in rows:
-        ruleset.update(comp_ruleset_vars(row.ruleset_id, matching_fsets=matching_fsets))
+        ruleset.update(comp_ruleset_vars(row.ruleset_id,
+                                         matching_fsets=matching_fsets,
+                                         rset_relations=rset_relations,
+                                         rset_names=rset_names))
 
     return ruleset
 
@@ -6297,10 +6327,17 @@ def _comp_get_ruleset(nodename):
     # initialize ruleset with asset variables
     ruleset = comp_get_node_ruleset(nodename)
 
+    rset_relations = get_rset_relations()
+    rset_names = get_rset_names()
+
     # add contextual rulesets variables
     l = comp_get_rulesets_fset_ids(nodename=nodename)
     matching_fsets = comp_get_matching_fset_ids(fset_ids=l, nodename=nodename)
-    ruleset.update(comp_contextual_rulesets(nodename=nodename, matching_fsets=matching_fsets, fset_ids=l))
+    ruleset.update(comp_contextual_rulesets(nodename=nodename,
+                                            matching_fsets=matching_fsets,
+                                            fset_ids=l,
+                                            rset_relations=rset_relations,
+                                            rset_names=rset_names))
 
     # add explicit rulesets variables
     q = db.comp_rulesets_nodes.nodename == nodename
@@ -6308,7 +6345,10 @@ def _comp_get_ruleset(nodename):
                         orderby=db.comp_rulesets_nodes.ruleset_id,
                         cacheable=True)
     for row in rows:
-        ruleset.update(comp_ruleset_vars(row.ruleset_id, matching_fsets=matching_fsets))
+        ruleset.update(comp_ruleset_vars(row.ruleset_id,
+                                         matching_fsets=matching_fsets,
+                                         rset_relations=rset_relations,
+                                         rset_names=rset_names))
 
     ruleset = _comp_remove_dup_vars(ruleset)
 
