@@ -39,7 +39,8 @@ class table_saves(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols =  ['save_server',
+        self.cols =  ['id',
+                      'save_server',
                       'save_id',
                       'save_app',
                       'save_nodename',
@@ -52,7 +53,7 @@ class table_saves(HtmlTable):
                       'save_date',
                       'save_retention']
         self.force_cols = ["os_name"]
-        self.keys =  ['save_id']
+        self.keys =  ['id']
         self.span = v_nodes_cols + [
                       'save_server',
                       'save_app',
@@ -63,6 +64,13 @@ class table_saves(HtmlTable):
         self.cols += v_nodes_cols
         self.colprops = v_nodes_colprops
         self.colprops.update({
+            'id': HtmlTableColumn(
+                     title='Id',
+                     table='saves',
+                     field='id',
+                     img='save16',
+                     display=False,
+                    ),
             'save_server': HtmlTableColumn(
                      title='Server',
                      table='saves',

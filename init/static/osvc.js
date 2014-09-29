@@ -743,42 +743,46 @@ function table_refresh(t) {
              // strip the topmost table marks
              msg = msg.replace(/^.table.|.\/table.$/g, '')
 
-             // mark old lines for deletion
-             $("#table_"+t.id).find(".tl").addClass("deleteme")
+             // detach old lines
+             var old_lines = $("<tbody></tbody>").append($("#table_"+t.id).children("tbody").children(".tl").detach())
 
              // insert new lines
-             $("#table_"+t.id).children("tbody").first().append(msg)
-
              tbody = $("#table_"+t.id).children("tbody")
+             tbody.append(msg)
+
              tbody.children(".tl").each(function(){
-               if ($(this).hasClass("deleteme")) {
-                   return
-               }
                new_line = $(this)
-               cksum = $(this).attr("cksum")
-               old_line = tbody.children(".deleteme[cksum="+cksum+"]")
+               cksum = new_line.attr("cksum")
+               old_line = $("[cksum="+cksum+"]", old_lines)
                if (old_line.length == 0) {
+                   // this is a new line : highlight
                    new_line.addClass("tohighlight")
                    return
+               } else if (old_line.length > 1) {
+                   //alert("The table key is not unique. Please contact the editor.")
+                   return
                }
-               old_line.each(function(){
-                 j = 0
-                 for (i=0; i<$(this).children().length; i++) {
-                   new_cell = $(":nth-child("+i+")", new_line)
-                   if (!new_cell.is(":visible")) {
-                     continue
-                   }
-                   cell = $(":nth-child("+i+")", this)
-                   if (cell.attr("v") == new_cell.attr("v")) {
-                     continue
-                   }
-                   new_cell.addClass("tohighlight")
+               for (i=0; i<old_line.children().length; i++) {
+                 new_cell = $(":nth-child("+i+")", new_line)
+                 if (!new_cell.is(":visible")) {
+                   continue
                  }
-               })
+                 old_cell = $(":nth-child("+i+")", old_line)
+                 if (old_cell.attr("v") == new_cell.attr("v")) {
+                   continue
+                 }
+                 new_cell.addClass("tohighlight")
+               }
              })
 
-             // delete old lines
-             tbody.children(".deleteme").remove()
+             // clear mem refs
+             cksum = null
+             msg = null
+             new_cell = null
+             old_cell = null
+             new_line = null
+             old_line = null
+             old_lines = null
 
              try {
                _table_pager(t.id, pager["page"], pager["perpage"], pager["start"], pager["end"], pager["total"])
@@ -797,13 +801,6 @@ function table_refresh(t) {
              t.refresh_child_tables()
              t.on_change()
 
-             // clear mem refs
-             cksum = null
-             msg = null
-             cell = null
-             new_cell = null
-             new_line = null
-             old_line = null
              if (t.need_refresh) {
                $("#refresh_"+t.id).trigger("click")
              }
