@@ -1203,6 +1203,7 @@ function table_bind_filter_input_events(t) {
     _url = url + col + "?" + k + "=" + encodeURIComponent($("#"+k).val())
     sync_ajax(_url, [], ck, f)
   })
+  t.bind_filter_reformat()
 }
 
 function table_bind_filter_selector(t) {
@@ -2373,6 +2374,15 @@ function cell_decorator_size_mb(e) {
   $(e).html(s)
 }
 
+function cell_decorator_size_b(e) {
+  v = $(e).attr("v")
+  if (v == "empty") {
+    return
+  }
+  s = "<div class='nowrap'>"+fancy_size_b(v)+"</div>"
+  $(e).html(s)
+}
+
 function cell_decorator_availstatus(e) {
   var line = $(e).parent(".tl")
   var mon_availstatus = $(e).attr("v")
@@ -2459,6 +2469,7 @@ cell_decorators = {
  "disk_array_dg": cell_decorator_disk_array_dg,
  "disk_array": cell_decorator_disk_array,
  "size_mb": cell_decorator_size_mb,
+ "size_b": cell_decorator_size_b,
  "chk_instance": cell_decorator_chk_instance,
  "chk_value": cell_decorator_chk_value,
  "chk_low": cell_decorator_chk_low,
@@ -2873,7 +2884,6 @@ function table_init(opts) {
   t.format_header()
   t.add_filterbox()
   t.add_scrollers()
-  t.bind_filter_reformat()
   t.bind_refresh()
   t.bind_link()
   t.bind_bookmark()

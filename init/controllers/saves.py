@@ -1,17 +1,3 @@
-class col_size_b(HtmlTableColumn):
-    def html(self, o):
-       d = self.get(o)
-       try:
-           d = int(d)
-       except:
-           return ''
-       c = "nowrap"
-       if d < 0:
-           c += " highlight"
-       if d is None:
-           return ''
-       return DIV(beautify_size_b(d), _class=c)
-
 def beautify_size_b(d):
        try:
           d = int(d)
@@ -143,12 +129,13 @@ class table_saves(HtmlTable):
                      img='save16',
                      display=True,
                     ),
-            'save_size': col_size_b(
+            'save_size': HtmlTableColumn(
                      title='Size',
                      table='saves',
                      field='save_size',
                      img='save16',
                      display=True,
+                     _class='size_b',
                     ),
             'save_date': HtmlTableColumn(
                      title='Date',
@@ -206,9 +193,8 @@ def ajax_saves():
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
     if len(request.args) == 1 and request.args[0] == 'data':
-        if request.vars.volatile_filters is None:
-            n = db(q).count()
-            limitby = (t.pager_start,t.pager_end)
+        n = db(q).select(db.saves.id.count(), left=l).first()(db.saves.id.count())
+        limitby = (t.pager_start,t.pager_end)
         cols = t.get_visible_columns()
         t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=True, left=l)
         return t.table_lines_data(n, html=False)
@@ -328,8 +314,8 @@ def ajax_saves_charts():
                count(distinct(saves.save_app))
              from
                saves
-               left join nodes on
-               saves.save_nodename = nodes.nodename
+               left join v_nodes on
+               saves.save_nodename = v_nodes.nodename
              where
                %(q)s
           """%dict(q=q)
@@ -345,8 +331,8 @@ def ajax_saves_charts():
                      saves.save_size as size
                    from
                      saves
-                     left join nodes on
-                     saves.save_nodename = nodes.nodename
+                     left join v_nodes on
+                     saves.save_nodename = v_nodes.nodename
                    where
                      %(q)s
                  ) t
@@ -391,8 +377,8 @@ def ajax_saves_charts():
                    sum(saves.save_size)
                  from
                    saves
-                   left join nodes on
-                   saves.save_nodename = nodes.nodename
+                   left join v_nodes on
+                   saves.save_nodename = v_nodes.nodename
                  where
                    %(q)s
                  group by saves.save_app
@@ -426,8 +412,8 @@ def ajax_saves_charts():
 
 
     sql = """select distinct(saves.save_server) from
-               saves left join nodes on
-               save_nodename = nodes.nodename
+               saves left join v_nodes on
+               save_nodename = v_nodes.nodename
              where
                %(q)s"""%dict(q=q)
     n_servers = len(db.executesql(sql))
@@ -438,8 +424,8 @@ def ajax_saves_charts():
                    sum(saves.save_size)
                  from
                    saves
-                   left join nodes on
-                   saves.save_nodename = nodes.nodename
+                   left join v_nodes on
+                   saves.save_nodename = v_nodes.nodename
                  where
                    %(q)s
                  group by saves.save_group
@@ -474,8 +460,8 @@ def ajax_saves_charts():
                    sum(saves.save_size)
                  from
                    saves
-                   left join nodes on
-                   saves.save_nodename = nodes.nodename
+                   left join v_nodes on
+                   saves.save_nodename = v_nodes.nodename
                  where
                    %(q)s
                  group by saves.save_server

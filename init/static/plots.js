@@ -3283,6 +3283,32 @@ function stats_netdev(url, id) {
         _jqplot_extra($('#'+id+'_pckps'), p)
     });
 }
+function fancy_size_b(size) {
+    if (size<1024) {
+        unit = 'B'
+        _size = size
+    } else if (size<1048576) {
+        unit = 'KB'
+        _size = size / 1024
+    } else if (size<1073741824) {
+        unit = 'MB'
+        _size = size / 1048576
+    } else if (size<1099511627776) {
+        unit = 'GB'
+        _size = size / 1073741824
+    } else {
+        unit = 'TB'
+        _size = size / 1099511627776
+    }
+    if (_size>=100) {
+        _size = Math.round(_size)
+    } else if (_size>=10) {
+        _size = Math.round(_size*10)/10
+    } else {
+        _size = Math.round(_size*100)/100
+    }
+    return _size + ' ' + unit
+}
 function fancy_size_mb(size) {
     if (size<1024) {
         unit = 'MB'

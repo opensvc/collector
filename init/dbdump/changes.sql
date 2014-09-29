@@ -4343,3 +4343,8 @@ alter table checks_live add index idx_purge (chk_type, chk_updated);
 
 alter table saves add key idx_save_date (save_date);
 
+grant select on opensvc.stats_fs_u to 'readonly'@'%';
+
+flush privileges;
+
+
