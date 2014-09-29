@@ -1121,6 +1121,7 @@ def insert_nsr(name=None, nodename=None):
         pattern = name
     dirs = glob.glob(os.path.join(dir, pattern))
 
+
     # load node ip cache
     sql = "select nodename, addr from node_ip"
     rows = db.executesql(sql)
@@ -1211,11 +1212,17 @@ def insert_nsr(name=None, nodename=None):
         generic_insert('saves', vars, vals)
         db.commit()
 
-    q = db.scheduler_task.status.belongs(("QUEUED", "ASSIGNED"))
-    q &= db.scheduler_task.function_name == "insert_nsr"
-    if db(q).count() < 3:
-        purge_saves()
-        update_save_checks()
+    q = db.scheduler_task.status.belongs(("QUEUED", "ASSIGNED", "RUNNING"))
+    q &= db.scheduler_task.function_name == "async_post_insert_nsr"
+    if db(q).count() < 2:
+        scheduler.queue_task("async_post_insert_nsr", [], group_name="slow", timeout=1200)
+        db.commit()
+
+def async_post_insert_nsr():
+    purge_saves()
+    update_save_checks()
+    update_save_thresholds_batch()
+    update_dash_checks_all()
 
 def purge_saves():
     sql = """delete from saves where
@@ -1287,12 +1294,10 @@ def update_save_checks():
     db.executesql(sql)
     db.commit()
 
+def update_save_thresholds_batch():
     q = db.checks_live.chk_type == "save"
     checks = db(q).select()
     update_thresholds_batch(checks)
-
-    update_dash_checks_all()
-
 
 def insert_netapp(name=None, nodename=None):
     import glob

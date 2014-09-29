@@ -4341,3 +4341,5 @@ update scheduler_task set group_name="metrics" where function_name="task_perf";
 
 alter table checks_live add index idx_purge (chk_type, chk_updated);
 
+alter table saves add key idx_save_date (save_date);
+
