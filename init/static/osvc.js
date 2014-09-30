@@ -552,7 +552,7 @@ function table_format_input(t, c, val) {
   }
   if (n > 0) {
     if (n > 20) {
-      _val = val.substring(0, 17)
+      _val = val.substring(0, 17)+"..."
     } else {
       _val = val
     }
