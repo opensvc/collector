@@ -1535,6 +1535,10 @@ function get_view_url() {
 }
 
 function table_link(t){
+  if ($("#link_val_"+t.id).is(":visible")) {
+    $("#link_val_"+t.id).hide()
+    return
+  }
   var url = get_view_url()
   var re = /#$/;
   url = url.replace(re, "")+"?";
@@ -1545,7 +1549,10 @@ function table_link(t){
     }
     args=args+'&'+$(this).attr('id')+"="+encodeURIComponent($(this).val())
   })
-  alert(url+args)
+  $("#link_val_"+t.id).children("textarea").val(url+args).attr("readonly", "on").select()
+  $("#link_val_"+t.id).show()
+  $("#link_val_"+t.id).children("textarea").select()
+  keep_inside($("#link_val_"+t.id))
 }
 
 function table_add_scrollers(t) {
@@ -2661,6 +2668,11 @@ function table_scroll_disable_dom(t) {
 }
 
 function table_bind_link(t) {
+  l = $("#link_"+t.id)
+  if (l.length != 1) {
+    // linkable = false
+    return
+  }
   $("#link_"+t.id).bind("click", function(){
     t.link()
   })

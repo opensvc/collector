@@ -500,6 +500,12 @@ class HtmlTable(object):
                   _class='link16',
                   _id='link_'+self.id,
                 ),
+              DIV(
+                TEXTAREA(
+                ),
+                _class='white_float hidden',
+                _id='link_val_'+self.id,
+              ),
                 _class='floatw',
               ),
             )
