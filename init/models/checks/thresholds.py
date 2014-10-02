@@ -174,7 +174,7 @@ def update_thresholds_from_filters_source(rows, source, fset_ids, _rows):
 
     # prepare thresholds insert/update request
     rest = []
-    vars = ['chk_nodename', 'chk_svcname', 'chk_type', 'chk_instance', 'chk_high', 'chk_low', 'chk_threshold_provider']
+    vars = ['chk_nodename', 'chk_svcname', 'chk_type', 'chk_instance', 'chk_value', 'chk_high', 'chk_low', 'chk_threshold_provider']
     vals = []
     for row in rows:
         i = row['chk_type'], row['chk_instance']
@@ -185,6 +185,7 @@ def update_thresholds_from_filters_source(rows, source, fset_ids, _rows):
                      row['chk_svcname'],
                      row['chk_type'],
                      row['chk_instance'],
+                     str(row['chk_value']),
                      str(fsets[i]['chk_high']),
                      str(fsets[i]['chk_low']),
                      'fset:%s'%fset_names[fsets[i]['fset_id']]])
@@ -203,14 +204,9 @@ def update_thresholds_from_settings(rows):
                 chk_nodename,
                 chk_svcname,
                 chk_type,
-                chk_updated,
                 chk_value,
-                chk_created,
                 chk_instance,
-                (select chk_low from checks_settings cs where cs.chk_nodename=cl.chk_nodename and cs.chk_type=cl.chk_type and cs.chk_instance=cl.chk_instance limit 1) as chk_low,
-                (select chk_high from checks_settings cs where cs.chk_nodename=cl.chk_nodename and cs.chk_type=cl.chk_type and cs.chk_instance=cl.chk_instance limit 1) as chk_high,
-                "settings" as chk_threshold_provider,
-                NULL
+                (select chk_low from checks_settings cs where cs.chk_nodename=cl.chk_nodename and cs.chk_type=cl.chk_type and cs.chk_instance=cl.chk_instance limit 1) as chk_low
                from checks_live cl
                where
                 id in (%(ids)s)
@@ -219,10 +215,20 @@ def update_thresholds_from_settings(rows):
               t.chk_low is null"""%dict(ids=ids)
     rest = db.executesql(sql, as_dict=True)
 
-    sql = """insert into checks_live
+    sql = """insert into checks_live  (
+               chk_nodename,
+               chk_svcname,
+               chk_type,
+               chk_updated,
+               chk_value,
+               chk_created,
+               chk_instance,
+               chk_low,
+               chk_high,
+               chk_threshold_provider
+             )
              select * from (
                select
-                NULL as id,
                 chk_nodename,
                 chk_svcname,
                 chk_type,
@@ -232,8 +238,7 @@ def update_thresholds_from_settings(rows):
                 chk_instance,
                 (select chk_low from checks_settings cs where cs.chk_nodename=cl.chk_nodename and cs.chk_type=cl.chk_type and cs.chk_instance=cl.chk_instance limit 1) as chk_low,
                 (select chk_high from checks_settings cs where cs.chk_nodename=cl.chk_nodename and cs.chk_type=cl.chk_type and cs.chk_instance=cl.chk_instance limit 1) as chk_high,
-                "settings" as chk_threshold_provider,
-                NULL
+                "settings" as chk_threshold_provider
                from checks_live cl
                where
                 id in (%(ids)s)
