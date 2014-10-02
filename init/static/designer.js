@@ -870,16 +870,13 @@ function __move(e, data) {
         }
         $("[id^=copy_]").each(function(){
           var parent_id = $(this).parents("li").first().attr("id")
-          alert(parent_id)
           var id = $(this).attr("id").replace(/^(\w*_)*/, "")
-          alert("1: " + id)
           if (new_obj_id > 0) {
             // the server provided a new obj_id. replace the original's.
             $(this).attr("obj_id", new_obj_id)
             var regex = new RegExp(obj_id + "$")
             id = id.replace(regex, new_obj_id)
           }
-          alert("2: " + id)
           $(this).attr("id", parent_id+"_"+id)
         })
       }
