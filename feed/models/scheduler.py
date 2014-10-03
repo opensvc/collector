@@ -513,12 +513,13 @@ def _register_disk(vars, vals, auth):
     disk_id = h["disk_id"].strip("'")
     disk_svcname = h["disk_svcname"].strip("'")
     disk_nodename = h["disk_nodename"].strip("'")
+    disk_model = h['disk_model'].strip("'")
 
     if len(disk_svcname) == 0:
         # if no service name is provided and the node is actually
         # a service encpasulated vm, add the encapsulating svcname
         q = db.svcmon.mon_vmname == disk_nodename
-        row = db(q).select().first()
+        row = db(q).select(cacheable=True).first()
         if row is not None:
             h["disk_svcname"] = repr(row.mon_svcname)
 
@@ -530,8 +531,13 @@ def _register_disk(vars, vals, auth):
 
     h['disk_updated'] = now
 
+    # fix truncated naa-16
+    if len(disk_id) == 16 and disk_id[0] == '0':
+        disk_id = '2' + disk_id
+        h['disk_id'] = repr(disk_id)
+
     # HDS specifics
-    if h['disk_model'].strip("'") == "OPEN-V":
+    if disk_model == "OPEN-V":
         wwid = h['disk_id'].strip("'")
         ldev = wwid[26:28]+":"+wwid[28:30]+":"+wwid[30:]
         ldev = ldev.upper()
@@ -567,7 +573,7 @@ def _register_disk(vars, vals, auth):
                 else:
                     array_id = disk.disk_arrayid
                 vars = ['disk_id', 'disk_arrayid', 'disk_updated']
-                vals = [h["disk_id"], array_id, h['disk_updated']]
+                vals = [repr(disk_id), array_id, h['disk_updated']]
                 generic_insert('diskinfo', vars, vals)
         else:
             # diskinfo registered by a array parser or an hv pushdisks
@@ -577,7 +583,7 @@ def _register_disk(vars, vals, auth):
         h['disk_local'] = 'T'
         vars = ['disk_id', 'disk_arrayid', 'disk_devid', 'disk_size',
                 'disk_updated']
-        vals = [h["disk_id"],
+        vals = [repr(disk_id),
                 h['disk_nodename'],
                 repr(disk_id.split('.')[-1]),
                 h['disk_size'],
@@ -586,7 +592,7 @@ def _register_disk(vars, vals, auth):
     elif n == 0:
         h['disk_local'] = 'F'
         vars = ['disk_id', 'disk_size', 'disk_updated']
-        vals = [h["disk_id"], h['disk_size'], h['disk_updated']]
+        vals = [repr(disk_id), h['disk_size'], h['disk_updated']]
         generic_insert('diskinfo', vars, vals)
 
         # if no array claimed that disk, give it to the node
