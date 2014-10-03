@@ -65,6 +65,23 @@ def task_purge_feed():
     """
     db.executesql(sql)
     db.commit()
+    sql = """
+      select
+        scheduler_run.id
+      from scheduler_run, scheduler_task
+      where
+        scheduler_task.id=scheduler_run.task_id and
+        scheduler_run.status="RUNNING" and
+        scheduler_task.status!="RUNNING"
+    """
+    rows = db.executesql(sql)
+    if len(rows) > 0:
+        ids = [ r[0] for r in rows ]
+        ids = ",".join(map(lambda x: str(x), ids))
+        sql = """delete from scheduler_run where id in (%s)""" % ids
+        db.executesql(sql)
+        db.commit()
+
 
 def task_feed_monitor():
     now = datetime.datetime.now()
