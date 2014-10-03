@@ -152,6 +152,7 @@ class table_saves(HtmlTable):
                      img='time16',
                      display=True,
                      default_filter=">-1d",
+                     _class="datetime_no_age",
                     ),
             'save_retention': HtmlTableColumn(
                      title='Retention',
@@ -159,6 +160,7 @@ class table_saves(HtmlTable):
                      field='save_retention',
                      img='time16',
                      display=True,
+                     _class="datetime_no_age",
                     ),
         })
         self.colprops['save_nodename'].display = True

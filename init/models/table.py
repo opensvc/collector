@@ -2674,6 +2674,7 @@ node_hba_colprops = {
              field='updated',
              img='time16',
              display=True,
+             _class="datetime_daily",
             ),
 }
 
@@ -2873,6 +2874,7 @@ disk_app_colprops = {
              field='svcdisk_updated',
              img='time16',
              display=True,
+             _class="datetime_daily",
             ),
     'disk_created': HtmlTableColumn(
              title='Storage Created',
@@ -2888,7 +2890,7 @@ disk_app_colprops = {
              field='disk_updated',
              img='time16',
              display=True,
-             _dataclass="bluer",
+             _dataclass="datetime_daily bluer",
             ),
     'svcdisk_id': HtmlTableColumn(
              title='System Disk Id',
