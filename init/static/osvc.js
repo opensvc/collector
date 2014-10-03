@@ -2768,7 +2768,7 @@ function table_toggle_column(id, column, table) {
 function table_relocate_extra_rows(t) {
   $("td[id^="+t.id+"_x_]").each(function(){
     var cksum = $(this).attr("id").split("_x_")[1]
-    var d = $(".tl[cksum="+cksum+"]")
+    var d = $(".tl[spansum="+cksum+"]")
     if (d.length == 0) {
       $(this).parent().remove()
     } else {
