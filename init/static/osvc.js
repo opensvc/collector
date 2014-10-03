@@ -793,6 +793,7 @@ function table_refresh(t) {
              t.hide_cells()
              t.decorate_cells()
              t.unset_refresh_spin()
+             t.relocate_extra_rows()
 
              t.scroll_enable_dom()
 
@@ -2764,6 +2765,18 @@ function table_toggle_column(id, column, table) {
   t.refresh()
 }
 
+function table_relocate_extra_rows(t) {
+  $("td[id^="+t.id+"_x_]").each(function(){
+    var cksum = $(this).attr("id").split("_x_")[1]
+    var d = $(".tl[cksum="+cksum+"]")
+    if (d.length == 0) {
+      $(this).parent().remove()
+    } else {
+      $(this).parent().insertAfter(d)
+    }
+  })
+}
+
 function table_unset_refresh_spin(t) {
   $("#refresh_"+t.id).removeClass("spinner")
 }
@@ -2865,6 +2878,9 @@ function table_init(opts) {
     },
     'refresh_column_filters': function(){
       table_refresh_column_filters(this)
+    },
+    'relocate_extra_rows': function(){
+      table_relocate_extra_rows(this)
     },
     'format_header': function(){
       table_format_header(this)
