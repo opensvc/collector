@@ -1460,4 +1460,12 @@ def collector_list_filtersets(cmd, auth):
     fsets = [r.fset_name.lower() for r in rows]
     return {"ret": 0, "msg": "", "data": fsets}
 
+def batch_update_dash_checks_all():
+    update_dash_checks_all()
+
+def batch_update_save_checks():
+    update_save_checks()
+
+def batch_async_post_insert_nsr():
+    async_post_insert_nsr()
 

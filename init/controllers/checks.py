@@ -1032,3 +1032,6 @@ def checks_node():
              _id=tid,
            )
 
+def batch_update_thresholds():
+    update_thresholds_batch()
+
