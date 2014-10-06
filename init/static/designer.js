@@ -879,6 +879,16 @@ function __move(e, data) {
           }
           $(this).attr("id", parent_id+"_"+id)
         })
+        if ((rel == "filterset")&&(dst_rel.indexOf("ruleset")==0)) {
+          // purge old ruleset's filterset
+          $("[obj_id="+dst_obj_id+"][rel^=ruleset]").children("ul").children("li[rel=filterset]").each(function(){
+            if ($(this).attr("obj_id") == obj_id) {
+              $(this).prependTo($(this).parent())
+              return
+            }
+            $(this).remove()
+          })
+        }
       }
     });
 }
