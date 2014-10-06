@@ -10160,6 +10160,7 @@ def json_tree_rulesets():
              if rset_id not in rsets:
                  continue
              child_rsets.append(recurse_rset(rsets[rset_id], parent_ids=copy.copy(parent_ids)))
+        child_rsets = sorted(child_rsets, lambda x, y: cmp(x['data'], y['data']))
         fsets = []
         for v in rsets_fsets.get(rset.id, []):
             _parent_ids = parent_ids + ["fset%d"%v.comp_rulesets_filtersets.fset_id]
