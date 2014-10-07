@@ -70,10 +70,15 @@ class Cloud(object):
               "disk_size": volume.size*1024,
               "disk_raid": raid,
               "disk_group": volume.extra['zone'],
+              "disk_arrayid": volume.extra['zone'],
               "disk_created": volume.extra['create_time'],
               "disk_updated": datetime.datetime.now(),
             }
             l.append(osvc_disk)
+        return l
+
+    def list_secgroups(self):
+        l = self.driver.ex_get_security_groups()
         return l
 
     def list_subnets(self):
