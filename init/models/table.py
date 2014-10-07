@@ -2538,7 +2538,7 @@ v_nodes_colprops = {
              display = False,
              img = 'time16',
              table = 'v_nodes',
-             _class = 'date_no_age',
+             _class = 'date_future',
             ),
     'os_obs_warn_date': HtmlTableColumn(
              title = 'OS obsolescence warning date',
@@ -2546,7 +2546,7 @@ v_nodes_colprops = {
              display = False,
              img = 'time16',
              table = 'v_nodes',
-             _class = 'date_no_age',
+             _class = 'date_future',
             ),
     'os_obs_alert_date': HtmlTableColumn(
              title = 'OS obsolescence alert date',
@@ -2554,7 +2554,7 @@ v_nodes_colprops = {
              display = False,
              img = 'time16',
              table = 'v_nodes',
-             _class = 'date_no_age',
+             _class = 'date_future',
             ),
     'hw_obs_warn_date': HtmlTableColumn(
              title = 'Hardware obsolescence warning date',
@@ -2562,7 +2562,7 @@ v_nodes_colprops = {
              display = False,
              img = 'time16',
              table = 'v_nodes',
-             _class = 'date_no_age',
+             _class = 'date_future',
             ),
     'hw_obs_alert_date': HtmlTableColumn(
              title = 'Hardware obsolescence alert date',
@@ -2570,7 +2570,7 @@ v_nodes_colprops = {
              display = False,
              img = 'time16',
              table = 'v_nodes',
-             _class = 'date_no_age',
+             _class = 'date_future',
             ),
     'maintenance_end': HtmlTableColumn(
              title = 'Maintenance end',
@@ -2578,7 +2578,7 @@ v_nodes_colprops = {
              display = False,
              img = 'time16',
              table = 'v_nodes',
-             _class = 'date_no_age',
+             _class = 'date_future',
             ),
     'status': HtmlTableColumn(
              title = 'Status',

@@ -2331,8 +2331,16 @@ function cell_decorator_datetime_no_age(e) {
   $(e).addClass("nowrap")
 }
 
+function cell_decorator_date_future(e) {
+  _cell_decorator_date(e, 0)
+}
+
 function cell_decorator_datetime_status(e) {
   _cell_decorator_datetime(e, 15)
+}
+
+function cell_decorator_datetime_future(e) {
+  _cell_decorator_datetime(e, 0)
 }
 
 function cell_decorator_datetime_daily(e) {
@@ -2351,6 +2359,16 @@ function _cell_decorator_datetime(e, max_age) {
     var cl = " class='nowrap'"
   }
   $(e).html("<div"+cl+">"+s+"</div>")
+}
+
+function _cell_decorator_date(e, max_age) {
+  s = $(e).attr("v")
+  if (_outdated(s, max_age)) {
+    var cl = " class='nowrap highlight'"
+  } else {
+    var cl = " class='nowrap'"
+  }
+  $(e).html("<div"+cl+">"+s.split(" ")[0]+"</div>")
 }
 
 function cell_decorator_env(e) {
@@ -2501,6 +2519,8 @@ cell_decorators = {
  "svcmon_links": cell_decorator_svcmon_links,
  "svc_ha": cell_decorator_svc_ha,
  "env": cell_decorator_env,
+ "date_future": cell_decorator_date_future,
+ "datetime_future": cell_decorator_datetime_future,
  "datetime_weekly": cell_decorator_datetime_weekly,
  "datetime_daily": cell_decorator_datetime_daily,
  "datetime_status": cell_decorator_datetime_status,
