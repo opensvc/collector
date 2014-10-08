@@ -429,12 +429,18 @@ class table_comp_rulesets_nodes(HtmlTable):
                      img='action16',
                      display=True,
                     )
-        for c in self.cols:
-            self.colprops['nodename'].t = self
+        self.colprops['nodename'].t = self
         self.colprops['nodename'].display = True
+        for c in self.cols:
+            self.colprops[c].table = 'v_comp_nodes'
+        self.force_cols = ['os_name']
+        self.span = ['nodename']
+        self.key = ['nodename']
         self.checkboxes = True
+        self.checkbox_id_table = 'v_comp_nodes'
         self += HtmlTableMenu('Ruleset', 'comp16', ['ruleset_attach', 'ruleset_detach'], id='menu_ruleset2')
         self.ajax_col_values = 'ajax_comp_rulesets_nodes_col_values'
+        self.dataable = True
 
     def ruleset_detach(self):
         d = DIV(
@@ -464,7 +470,7 @@ class table_comp_explicit_rules(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['ruleset_name', 'variables']
+        self.cols = ['id', 'ruleset_name', 'variables']
         self.colprops = {
             'id': HtmlTableColumn(
                      title='Ruleset id',
@@ -488,11 +494,14 @@ class table_comp_explicit_rules(HtmlTable):
                      img='action16',
                     ),
         }
+        self.span = ['id']
+        self.key = ['id']
         self.checkboxes = True
         self.dbfilterable = False
         self.exportable = False
         self.ajax_col_values = 'ajax_comp_explicit_rules_col_values'
         self.checkbox_id_table = 'v_comp_explicit_rulesets'
+        self.dataable = True
 
 @auth.requires_login()
 def ajax_comp_explicit_rules_col_values():
@@ -508,10 +517,9 @@ def ajax_comp_explicit_rules_col_values():
 
 @auth.requires_login()
 def ajax_comp_rulesets_nodes_col_values():
-    r = table_comp_explicit_rules('crn1', 'ajax_comp_rulesets_nodes',
-                                  innerhtml='crn1')
-    t = table_comp_rulesets_nodes('crn2', 'ajax_comp_rulesets_nodes',
-                                  innerhtml='crn1')
+    r = table_comp_explicit_rules('crn1', 'ajax_comp_rulesets_nodes')
+    t = table_comp_rulesets_nodes('crn2', 'ajax_comp_rulesets_nodes')
+    t.rulesets = r
     col = request.args[0]
     if col in t.cols:
         o = db.v_comp_nodes[col]
@@ -532,18 +540,8 @@ def ajax_comp_rulesets_nodes_col_values():
 
 
 @auth.requires_login()
-def ajax_comp_rulesets_nodes():
-    r = table_comp_explicit_rules('crn1', 'ajax_comp_rulesets_nodes',
-                                  innerhtml='crn1')
-    t = table_comp_rulesets_nodes('crn2', 'ajax_comp_rulesets_nodes',
-                                  innerhtml='crn1')
-    t.rulesets = r
-    t.checkbox_names.append(r.id+'_ck')
-
-    if len(request.args) == 1 and request.args[0] == 'attach_ruleset':
-        comp_attach_rulesets(t.get_checked(), r.get_checked())
-    elif len(request.args) == 1 and request.args[0] == 'detach_ruleset':
-        comp_detach_rulesets(t.get_checked(), r.get_checked())
+def ajax_comp_explicit_rules():
+    r = table_comp_explicit_rules('crn1', 'ajax_comp_explicit_rules')
 
     o = db.v_comp_explicit_rulesets.ruleset_name
     q = db.v_comp_explicit_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
@@ -552,12 +550,29 @@ def ajax_comp_rulesets_nodes():
     for f in r.cols:
         q = _where(q, 'v_comp_explicit_rulesets', r.filter_parse_glob(f), f)
 
-    n = db(q).count()
-    r.setup_pager(n)
-    r.object_list = db(q).select(limitby=(r.pager_start,r.pager_end),
-                                 orderby=o, groupby=o, cacheable=True)
+    if len(request.args) == 1 and request.args[0] == 'data':
+        n = db(q).count()
+        r.setup_pager(n)
+        cols = r.get_visible_columns()
+        r.object_list = db(q).select(*cols, limitby=(r.pager_start,r.pager_end),
+                                     orderby=o, groupby=o, cacheable=True)
+        return r.table_lines_data(n, html=False)
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        r.csv_q = q
+        r.csv_orderby = o
+        r.csv_groupby = o
+        return r.csv()
 
-    r_html = r.html()
+@auth.requires_login()
+def ajax_comp_rulesets_nodes():
+    r = table_comp_explicit_rules('crn1', 'ajax_comp_explicit_rules')
+    t = table_comp_rulesets_nodes('crn2', 'ajax_comp_rulesets_nodes')
+    t.rulesets = r
+
+    if len(request.args) == 1 and request.args[0] == 'attach_ruleset':
+        comp_attach_rulesets(t.get_checked(), r.get_checked())
+    elif len(request.args) == 1 and request.args[0] == 'detach_ruleset':
+        comp_detach_rulesets(t.get_checked(), r.get_checked())
 
     o = db.v_comp_nodes.nodename
     q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
@@ -565,34 +580,18 @@ def ajax_comp_rulesets_nodes():
         q &= db.v_comp_nodes.team_responsible.belongs(user_groups())
     for f in t.cols:
         q = _where(q, 'v_comp_nodes', t.filter_parse_glob(f), f)
-    q = apply_gen_filters(q, r.tables())
+    q = apply_gen_filters(q, t.tables())
 
-    n = db(q).count()
-    t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
-                                 orderby=o, cacheable=True)
+    if len(request.args) == 1 and request.args[0] == 'data':
+        n = db(q).count()
+        t.setup_pager(n)
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, limitby=(t.pager_start,t.pager_end),
+                                     orderby=o, cacheable=True)
+        return t.table_lines_data(n, html=False)
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         return t.csv()
-
-    return DIV(
-             DIV(
-               t.html(),
-               _style="""min-width:60%;
-                         max-width:60%;
-                         float:left;
-                         border-right:0px solid;
-                      """,
-             ),
-             DIV(
-               r_html,
-               _style="""min-width:40%;
-                         max-width:40%;
-                         float:left;
-                      """,
-             ),
-             DIV(XML('&nbsp;'), _class='spacer'),
-           )
 
 class table_comp_rulesets(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
@@ -2022,12 +2021,30 @@ def comp_rules():
 
 @auth.requires_login()
 def comp_rulesets_nodes_attachment():
+    r = table_comp_explicit_rules('crn1', 'ajax_comp_explicit_rules')
+    t = table_comp_rulesets_nodes('crn2', 'ajax_comp_rulesets_nodes')
+    t.rulesets = r
+    t.checkbox_names.append(r.id+'_ck')
     t = DIV(
-          DIV(
-            ajax_comp_rulesets_nodes(),
-            _id='crn1',
-          ),
-        )
+             DIV(
+               t.html(),
+               _style="""min-width:60%;
+                         max-width:60%;
+                         float:left;
+                         border-right:0px solid;
+                      """,
+               _id='crn2',
+             ),
+             DIV(
+               r.html(),
+               _style="""min-width:40%;
+                         max-width:40%;
+                         float:left;
+                      """,
+               _id='crn1',
+             ),
+             DIV(XML('&nbsp;'), _class='spacer'),
+           )
     return dict(table=t)
 
 #
