@@ -9783,6 +9783,7 @@ def ajax_custo_form_submit(output, data):
               var_author=user_name(),
               var_updated=datetime.datetime.now(),
             )
+            table_modified("comp_rulesets_variables")
             log.append((0, "compliance.ruleset.variable.change", "Modified '%(var_class)s' variable '%(var_name)s' in ruleset '%(rset_name)s' with value:\n%(var_value)s", dict(var_class=var_class, var_name=var_name, rset_name=rset_name, var_value=var_value)))
         else:
             log.append((1, "compliance.ruleset.variable.change", "More than one variable found matching '%(var_name)s' in ruleset '%(rset_name)s'. Skip edition.", dict(var_name=var_name, rset_name=rset_name)))
