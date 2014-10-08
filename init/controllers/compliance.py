@@ -10288,9 +10288,25 @@ def comp_admin():
         INPUT(
           _id="casearch",
           _value=request.vars.obj_filter,
-        ),
+          _style="float:left",
         _class="wfsearch",
+        ),
+        DIV(
+          _id="calink",
+          _class="link16 clickable",
+          _style="float:left",
+          _onclick="designer_link()",
+        ),
+        DIV(
+          TEXTAREA(),
+          _id="calink_val",
+          _class="white_float hidden",
+          _style="margin-top:1.1em",
+        ),
         _style="margin-bottom:0.5em;margin-top:0.5em;",
+      ),
+      DIV(
+        _class="spacer",
       ),
       DIV(
         DIV(

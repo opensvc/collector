@@ -10,6 +10,21 @@ function resizer(){
   $("#cainfo").width($(window).width()-$("#catree").outerWidth(true)-$("#catree2:visible").outerWidth(true)-$("#sep").outerWidth(true)-14)
 }
 
+function designer_link(){
+  if ($("#calink_val").is(":visible")) {
+    $("#calink_val").hide()
+    return
+  }
+  var url = get_view_url()
+  var re = /#$/;
+  url = url.replace(re, "")+"?";
+  args = "obj_filter="+encodeURIComponent($("#casearch").val())
+  $("#calink_val").children("textarea").val(url+args).attr("readonly", "on").select()
+  $("#calink_val").show()
+  $("#calink_val").children("textarea").select()
+  keep_inside($("#calink_val"))
+}
+
 function set_stats(value, label, node) {
   return {
     "label": label,
