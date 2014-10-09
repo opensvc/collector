@@ -1227,7 +1227,7 @@ def insert_nsr(name=None, nodename=None):
 def async_post_insert_nsr():
     purge_saves()
     update_save_checks()
-    update_save_thresholds_batch()
+    update_thresholds_batch_type("save")
     update_dash_checks_all()
 
 def purge_saves():
@@ -1299,11 +1299,6 @@ def update_save_checks():
           """%dict(now=now)
     db.executesql(sql)
     db.commit()
-
-def update_save_thresholds_batch():
-    q = db.checks_live.chk_type == "save"
-    checks = db(q).select()
-    update_thresholds_batch(checks)
 
 def insert_netapp(name=None, nodename=None):
     import glob

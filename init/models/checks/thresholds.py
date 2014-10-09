@@ -9,7 +9,15 @@ def update_thresholds_batch(rows=None, one_source=False):
 
 def update_thresholds_batch_type(chk_type):
     q = db.checks_live.chk_type == chk_type
-    rows = db(q).select(cacheable=True)
+    rows = db(q).select(
+      db.checks_live.id,
+      db.checks_live.chk_nodename,
+      db.checks_live.chk_svcname,
+      db.checks_live.chk_type,
+      db.checks_live.chk_instance,
+      db.checks_live.chk_value,
+      cacheable=True
+    )
     update_thresholds_rows(rows)
 
 def update_thresholds_rows(rows):
@@ -110,9 +118,21 @@ def update_thresholds_from_filters(rows):
         else:
             data[source] = [row]
 
+    fset_names = {}
+    q = db.gen_filtersets.id > 0
+    __rows = db(q).select(db.gen_filtersets.id, db.gen_filtersets.fset_name)
+    for row in __rows:
+        fset_names[row.id] = row.fset_name
+
     rest = []
+    vals = []
+    vars = ['chk_nodename', 'chk_svcname', 'chk_type', 'chk_instance', 'chk_value', 'chk_high', 'chk_low', 'chk_threshold_provider']
     for source in data:
-        rest += update_thresholds_from_filters_source(data[source], source, fset_ids, _rows)
+        _rest, _vals = update_thresholds_from_filters_source(data[source], source, fset_ids, _rows, fset_names=fset_names, get_vals=True)
+        rest += _rest
+        vals += _vals
+    generic_insert('checks_live', vars, vals)
+    db.commit()
     return rest
 
 def update_thresholds_from_filters_one_source(rows):
@@ -149,13 +169,15 @@ def update_thresholds_from_filters_one_source(rows):
     rest = update_thresholds_from_filters_source(rows, (nodename, svcname), fset_ids, _rows)
     return rest
 
-def update_thresholds_from_filters_source(rows, source, fset_ids, _rows):
+def update_thresholds_from_filters_source(rows, source, fset_ids, _rows, fset_names=None, get_vals=False):
     nodename, svcname = source
 
     # filter out those not matching the nodename/svcname
     matching_fset_ids = comp_get_matching_fset_ids(fset_ids, nodename=nodename, svcname=svcname)
 
     if len(matching_fset_ids) == 0:
+        if get_vals:
+            return rows, []
         return rows
 
     # index fset info by row.chk_type, row.chk_instance
@@ -166,11 +188,12 @@ def update_thresholds_from_filters_source(rows, source, fset_ids, _rows):
          fsets[row['chk_type'], row['chk_instance']] = row
 
     # load filterset names cache
-    fset_names = {}
-    q = db.gen_filtersets.id.belongs(matching_fset_ids)
-    _rows = db(q).select(db.gen_filtersets.id, db.gen_filtersets.fset_name)
-    for row in _rows:
-        fset_names[row.id] = row.fset_name
+    if fset_names is None:
+        fset_names = {}
+        q = db.gen_filtersets.id.belongs(matching_fset_ids)
+        _rows = db(q).select(db.gen_filtersets.id, db.gen_filtersets.fset_name)
+        for row in _rows:
+            fset_names[row.id] = row.fset_name
 
     # prepare thresholds insert/update request
     rest = []
@@ -189,6 +212,8 @@ def update_thresholds_from_filters_source(rows, source, fset_ids, _rows):
                      str(fsets[i]['chk_high']),
                      str(fsets[i]['chk_low']),
                      'fset:%s'%fset_names[fsets[i]['fset_id']]])
+    if get_vals:
+        return rest, vals
     generic_insert('checks_live', vars, vals)
     db.commit()
     return rest
