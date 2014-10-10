@@ -21,6 +21,8 @@ function bind_search_tool() {
       $(".white_float").hide()
       $(".white_float_input").hide()
       $(".right_click_menu").hide()
+      $(".menu").hide()
+      $(".menu_top").hover(function(){$(".menu").css("display", "")})
       return
     }
     if ($('input').is(":focus")) {

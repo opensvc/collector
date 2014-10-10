@@ -19,10 +19,10 @@
       </div>
       {{=DIV(A(IMG(_src=URL(r=request, c='static', f='action16.png')), _href=URL(r=request,c='action_queue',f='action_queue')), _class='search')}}
       {{if response.menu_auth:}}
-      {{=MENU(response.menu_auth, _class='web2py-menu')}}
+      {{=OSVCMENU(response.menu_auth, _class='menu')}}
       {{pass}}
       {{if response.menu:}}
-      {{=MENU(response.menu, _class='web2py-menu')}}
+      {{=OSVCMENU(response.menu, _class='menu')}}
       {{pass}}
       <div class=spacer>&nbsp;</div>
     </div>

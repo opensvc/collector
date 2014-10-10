@@ -742,17 +742,9 @@ class table_comp_rulesets(HtmlTable):
                                                         'ruleset_change_type',
                                                         'ruleset_change_public',
                                                         'ruleset_attach',
-                                                        'ruleset_detach',
-                                                        'ruleset_node_attach'])
+                                                        'ruleset_detach'])
         self.ajax_col_values = 'ajax_comp_rulesets_col_values'
         self.dbfilterable = False
-
-    def ruleset_node_attach(self):
-        return A(
-                 T("Rulesets/Nodes attachment"),
-                 _href=URL(r=request, f="comp_rulesets_nodes_attachment"),
-                 _class="attach16",
-               )
 
     def ruleset_change_public(self):
         label = 'Change ruleset publication'
@@ -3004,17 +2996,9 @@ class table_comp_moduleset(HtmlTable):
             self += HtmlTableMenu('Module', 'action16', ['module_add', 'module_del'])
             self += HtmlTableMenu('Moduleset', 'action16', ['moduleset_add',
                                                             'moduleset_del',
-                                                            'moduleset_rename',
-                                                            'moduleset_node_attach'])
+                                                            'moduleset_rename'])
             self += HtmlTableMenu('Team responsible', 'guys16', ['team_responsible_attach', 'team_responsible_detach'])
         self.span = ['modset_name', 'teams_responsible']
-
-    def moduleset_node_attach(self):
-        return A(
-                 T("Modulesets/Nodes attachment"),
-                 _href=URL(r=request, f="comp_modulesets_nodes"),
-                 _class="attach16",
-               )
 
     def checkbox_key(self, o):
         if o is None:

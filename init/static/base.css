@@ -1144,6 +1144,11 @@ ul.login_menu ul {
     padding: 0 0 0 20px;
     min-height: 16px;
 }
+.menu16 {
+    background: transparent url('menu16.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
 .dia16 {
     background: transparent url('dia16.png') no-repeat;
     padding: 0 0 0 20px;
@@ -1491,7 +1496,121 @@ ul.login_menu ul {
     padding: 0 0 0 20px;
     min-height: 16px;
 }
+.menu_section * {
+  color: white;
+}
+.menu_entry:hover {
+  background: #3f3f3f;
+}
+.menu_entry > a {
+  text-decoration: none;
+}
+.menu_entry > a > div {
+  padding-top: 10px;
+  padding-bottom: 3px;
+  height: 48px;
+  vertical-align: middle;
+}
+.menu_entry > a > div > div {
+  font-size: 0.75em;
+}
+.menu_section > a {
+  text-decoration: none;
+  height: 70px;
+}
+.menu_top:hover div.menu {
+  display: block;
+}
+.menu {
+  display: none;
+  margin-top: 1.8em;
+  position: absolute;
+  z-index: 999;
+  width: 100%;
+  background: #2d2d2d;
+}
+.menu_section {
+  padding: 1em;
+  font-size: 1.5em;
+  clear: both;
+  border-top:1px solid #2f2f2f;
+}
+.menu_entry {
+  padding: 1em;
+  min-height: 60px;
+  float: left;
+  width: 20%;
+  min-width: 10em;
+  color: #ccc;
+}
+.menu_entry * {
+  color: #ccc;
+}
 .nologo48 {
+    padding: 0 0 0 52px;
+}
+.alert48 {
+    background: transparent url('alert48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
+.obs48 {
+    background: transparent url('obs48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
+.filter48 {
+    background: transparent url('filter48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
+.drp48 {
+    background: transparent url('drp48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
+.prov48 {
+    background: transparent url('prov48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
+.avail48 {
+    background: transparent url('avail48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
+.guys48 {
+    background: transparent url('guys48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
+.stats48 {
+    background: transparent url('stats48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
+.billing48 {
+    background: transparent url('billing48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
+.rsetattach48 {
+    background: transparent url('rsetattach48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
+.modsetattach48 {
+    background: transparent url('modsetattach48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
+.log48 {
+    background: transparent url('log48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
+.wf48 {
+    background: transparent url('wf48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
+.key48 {
+    background: transparent url('key48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
+.logout48 {
+    background: transparent url('logout48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
+.svc48 {
+    background: transparent url('svc48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .cd48 {
@@ -1532,6 +1651,18 @@ ul.login_menu ul {
 }
 .folder48 {
     background: transparent url('folder48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
+.net48 {
+    background: transparent url('net48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
+.pkg48 {
+    background: transparent url('pkg48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
+.node48 {
+    background: transparent url('node48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .completed48 {
@@ -2137,6 +2268,7 @@ a.jqplot-image-container-close {
 }
 
 .keyboard-key {
+   float: left;
    border-radius: 5px;
    -moz-border-radius: 5px;
    -webkit-border-radius: 5px;
@@ -2146,14 +2278,14 @@ a.jqplot-image-container-close {
    border-right: solid 2px lightgrey;
    background-color: black;
    color: lightgrey;
-   font-size: 14pt;
+   //font-size: 14pt;
    font-family: courrier;
    padding-right: 0.5em;
    padding-left: 0.5em;
    padding-top: 0.2em;
    padding-bottom: 0.2em;
    margin-right: 0.5em;
-   width: 0.4em;
+   //width: 0.4em;
    display: table-cell;
 }
 .keyboard-label {
