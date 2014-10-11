@@ -66,27 +66,23 @@ response.menu = [
          [
              [DIV(
                SPAN('r', _class='keyboard-key'),
-               SPAN(T("Refresh")),
+               T("Refresh"),
                DIV(T("Reload table data")),
-               _class='keyboard',
               ), False, ''],
              [DIV(
                SPAN('l', _class='keyboard-key'),
-               SPAN(T("Link")),
+               T("Link"),
                DIV(T("Show url to share your filters")),
-               _class='keyboard',
               ), False, ''],
              [DIV(
                SPAN('s', _class='keyboard-key'),
-               SPAN(T("Search")),
+               T("Search"),
                DIV(T("Focus the global search tool")),
-               _class='keyboard',
               ), False, ''],
              [DIV(
                SPAN('Esc', _class='keyboard-key'),
-               SPAN(T("Unfocus")),
-               DIV(T("Close all pop-up windows and menus")),
-               _class='keyboard',
+               T("Unfocus"),
+               DIV(T("Close pop-ups and menus")),
               ), False, ''],
          ]
     ],

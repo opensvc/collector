@@ -1539,8 +1539,8 @@ ul.login_menu ul {
   padding: 1em;
   min-height: 60px;
   float: left;
-  width: 20%;
-  min-width: 10em;
+  //width: 22%;
+  width: 15em;
   color: #ccc;
 }
 .menu_entry * {
@@ -2285,11 +2285,11 @@ a.jqplot-image-container-close {
    padding-top: 0.2em;
    padding-bottom: 0.2em;
    margin-right: 0.5em;
-   //width: 0.4em;
    display: table-cell;
 }
 .keyboard-label {
-   display: table-cell;
+   float: left;
+   //display: table-cell;
    padding-left: 0.4em;
 }
 
