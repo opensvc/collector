@@ -85,7 +85,7 @@ response.menu = [
              [DIV(
                SPAN('Esc', _class='keyboard-key'),
                SPAN(T("Unfocus")),
-               DIV(T("Close all pop-up windows")),
+               DIV(T("Close all pop-up windows and menus")),
                _class='keyboard',
               ), False, ''],
          ]
@@ -146,7 +146,7 @@ response.menu = [
               URL(request.application,'compliance','comp_modulesets_nodes')],
          ]
     ],
-    [T('Stats'), False, '',
+    [T('Statistics'), False, '',
          [
              [DIV(T('Reports'), DIV(T("User-defined reports")), _class='stats48'), False,
               URL(request.application,'charts','reports')],
@@ -172,13 +172,13 @@ response.menu = [
               URL(request.application,'forms','workflows')],
          ]
     ],
-    [T('Admin'), False, '',
+    [T('Administration'), False, '',
          [
              [DIV(T('Users'), DIV(T("Users and group administration")), _class='guys48'), False,
               URL(request.application,'users','users')],
              [DIV(T('Log'), DIV(T("Collector events log")), _class='log48'), False,
               URL(request.application,'log','log')],
-             [DIV(T('Obsolescence setup'), DIV(T("Fix obsolescence dates to server models and os releases")), _class='obs48'), False,
+             [DIV(T('Obsolescence setup'), DIV(T("Set server models and os releases obsolescence dates")), _class='obs48'), False,
               URL(request.application,'obsolescence','obsolescence_config')],
              [DIV(T('Applications'), DIV(T("Application codes assigned to nodes and services")), _class='svc48'), False,
               URL(request.application,'apps','apps')],
