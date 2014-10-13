@@ -36,32 +36,6 @@ class col_dash_chart(HtmlTableColumn):
                 ),
               )
 
-class col_dash_icons(HtmlTableColumn):
-    def html(self, o):
-        d = SPAN(
-              _onclick='$("#dashboard_f_dash_type").val("%s");'%o['dash_type']+self.t.ajax_submit(),
-              _class="search16 clickable",
-            )
-        return d
-
-class col_dash_history(HtmlTableColumn):
-    def html(self, o):
-        id = self.get(o)
-        d = DIV(
-              T("loading"),
-              _class="dynamicsparkline",
-              _id=id
-            )
-        return d
-
-class col_dash_alerts(HtmlTableColumn):
-    def html(self, o):
-        return html_bar(o['dash_alerts'], self.t.total_alerts)
-
-class col_dash_cumulated_severity(HtmlTableColumn):
-    def html(self, o):
-        return html_bar(o['dash_severity'], self.t.total_severity)
-
 def spark_data(data):
     if len(data) == 0:
         l = [None]
@@ -426,24 +400,6 @@ class col_dash_entry(HtmlTableColumn):
             s = 'type error: %s'%dash_dict
         return s
 
-    def html(self, o):
-        id = self.t.extra_line_key(o)
-        s = self.get(o)
-        d = A(
-          s,
-          _onclick="""toggle_extra('%(url)s', '%(id)s', this, 0)"""%dict(
-                  url=URL(r=request, c='dashboard',f='ajax_alert_events',
-                          vars={'dash_nodename': self.t.colprops['dash_nodename'].get(o),
-                                'dash_svcname': self.t.colprops['dash_svcname'].get(o),
-                                'dash_md5': self.t.colprops['dash_md5'].get(o),
-                                'dash_created': self.t.colprops['dash_created'].get(o),
-                                'rowid': id,
-                               }),
-                  id=id,
-                      ),
-        )
-        return d
-
 class table_dashboard(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -512,6 +468,7 @@ class table_dashboard(HtmlTable):
                      filter_redirect='dash_dict',
                      img='log16',
                      display=True,
+                     _class='dash_entry',
                     ),
             'dash_env': HtmlTableColumn(
                      title='Env',

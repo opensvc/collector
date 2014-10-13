@@ -2244,6 +2244,26 @@ function cell_decorator_disk_array_dg(e) {
   })
 }
 
+function cell_decorator_dash_entry(e) {
+  var v = $(e).attr("v")
+  var s = ""
+  s = "<div class='clickable'>"+v+"</div>"
+  $(e).html(s)
+  $(e).click(function(){
+    var line = $(e).parent(".tl")
+    var nodename = line.children("[name$=dash_nodename]").attr("v")
+    var svcname = line.children("[name$=dash_svcname]").attr("v")
+    var dash_md5 = line.children("[name$=dash_md5]").attr("v")
+    var dash_created = line.children("[name$=dash_created]").attr("v")
+    var rowid = line.attr("cksum")
+    url = $(location).attr("origin") + "/init/dashboard/ajax_alert_events?dash_nodename="+nodename+"&dash_svcname="+svcname+"&dash_md5="+dash_md5+"&dash_created="+dash_created+"&rowid="+rowid
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = line.attr("spansum")
+    id = table_id + "_x_" + span_id
+    toggle_extra(url, id, this, 0)
+  })
+}
+
 function cell_decorator_rset_md5(e) {
   var v = $(e).attr("v")
   var s = ""
@@ -2491,6 +2511,7 @@ function cell_decorator_overallstatus(e) {
 }
 
 cell_decorators = {
+ "dash_entry": cell_decorator_dash_entry,
  "disk_array_dg": cell_decorator_disk_array_dg,
  "disk_array": cell_decorator_disk_array,
  "size_mb": cell_decorator_size_mb,
