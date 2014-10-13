@@ -1203,6 +1203,7 @@
 'Ok': 'Ok',
 'Old password': 'Ancien mot de passe',
 'open': 'ouvrir',
+'Open the navigation menu': 'Ouvre le menu de navigation',
 'Open the workflow': 'Ouvrir le workflow',
 'OpenSVC': 'OpenSVC',
 'OpenSVC version': "Version d'OpenSVC",

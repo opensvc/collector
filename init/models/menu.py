@@ -65,14 +65,19 @@ response.menu = [
     [T('Shortcuts'), False, '',
          [
              [DIV(
-               SPAN('r', _class='keyboard-key'),
-               T("Refresh"),
-               DIV(T("Reload table data")),
-              ), False, ''],
-             [DIV(
                SPAN('l', _class='keyboard-key'),
                T("Link"),
                DIV(T("Show url to share your filters")),
+              ), False, ''],
+             [DIV(
+               SPAN('n', _class='keyboard-key'),
+               T("Navigation"),
+               DIV(T("Open the navigation menu")),
+              ), False, ''],
+             [DIV(
+               SPAN('r', _class='keyboard-key'),
+               T("Refresh"),
+               DIV(T("Reload table data")),
               ), False, ''],
              [DIV(
                SPAN('s', _class='keyboard-key'),

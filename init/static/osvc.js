@@ -36,8 +36,57 @@ function bind_search_tool() {
       event.preventDefault();
       searchbox.focus()
     }
+    if ( event.which == 78 ) {
+      event.preventDefault();
+      $(".header").find(".menu16").parents("ul").first().siblings(".menu").show()
+      $(".menu_top").hover(function(){$(".menu").css("display", "")})
+      searchbox.focus()
+    }
   })
 }
+function show_result(e, url, id){
+  var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu")
+  if (menu.is(":visible")) {
+    filter_menu()
+  } else {
+    _show_result(e, url, id)
+  }
+}
+function _show_result(e, url, id){
+    clearTimeout(timer)
+    timer=setTimeout(function validate(){
+        sync_ajax(url, ['search'], id, function(){
+            if ($('#'+id).html().length == 0){
+                $('#'+id).hide()
+            } else {
+                $('#'+id).show()
+                $('#'+id).css("left", $('body').width())
+                keep_inside($('#'+id))
+                register_pop_up(e, document.getElementById(id))
+            }
+        })
+    }, 800)
+}
+function filter_menu() {
+  var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu")
+  var text = searchbox = $(".search").find("input").val()
+  var reg = new RegExp(text, "i");
+  menu.find(".menu_entry").each(function(){
+    if ($(this).text().match(reg)) {
+      $(this).show()
+      $(this).parents(".menu_section").first().show()
+    } else {
+      $(this).hide()
+    }
+  })
+  menu.find(".menu_section").each(function(){
+    n = $(this).find(".menu_entry:visible").length
+    if (n == 0) {
+      $(this).hide()
+    }
+  })
+}
+
 
 //
 // websockets
@@ -284,21 +333,6 @@ function check_toggle_vis(id, checked, col){
              $(this).fadeOut('slow')
          }
     })
-}
-function show_result(e, url, id){
-    clearTimeout(timer)
-    timer=setTimeout(function validate(){
-        sync_ajax(url, ['search'], id, function(){
-            if ($('#'+id).html().length == 0){
-                $('#'+id).hide()
-            } else {
-                $('#'+id).show()
-                $('#'+id).css("left", $('body').width())
-                keep_inside($('#'+id))
-                register_pop_up(e, document.getElementById(id))
-            }
-        })
-    }, 800)
 }
 function keep_inside(box){
     box_off_l = $(box).offset().left
