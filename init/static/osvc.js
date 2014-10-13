@@ -60,9 +60,9 @@ function _show_result(e, url, id){
                 $('#'+id).hide()
             } else {
                 $('#'+id).show()
-                $('#'+id).css("left", $('body').width())
-                keep_inside($('#'+id))
-                register_pop_up(e, document.getElementById(id))
+                //$('#'+id).css("left", $('body').width())
+                //keep_inside($('#'+id))
+                //register_pop_up(e, document.getElementById(id))
             }
         })
     }, 800)

@@ -1513,6 +1513,7 @@ ul.login_menu ul {
 }
 .menu_entry > a > div > div {
   font-size: 0.75em;
+  white-space: normal;
 }
 .menu_section > a {
   text-decoration: none;
@@ -1522,6 +1523,8 @@ ul.login_menu ul {
   display: block;
 }
 .menu {
+  left: 0;
+  top: 0;
   display: none;
   margin-top: 1.8em;
   position: absolute;
@@ -1731,9 +1734,13 @@ ul.login_menu ul {
 .search input:focus {
     background: rgb(255, 248, 239) url('search.png') no-repeat;
 }
+.search td {
+    padding-bottom: 0.4em;
+}
 .search p {
     font-weight: bold;
     white-space: nowrap;
+    padding-bottom: 0.2em;
 }
 .search img {
     vertical-align: top;
@@ -1741,7 +1748,8 @@ ul.login_menu ul {
     padding-top: 0.2em;
 }
 .search a {
-    padding-right: 0.5em;
+    margin-top: 0.5em;
+    padding-right: 1.5em;
     white-space: nowrap;
 }
  
@@ -1749,6 +1757,10 @@ ul.login_menu ul {
     color: black;
 }
 
+.highlight_light {
+    color: salmon;
+    font-weight: bold;
+}
 .highlight {
     color: darkred;
     font-weight: bold;

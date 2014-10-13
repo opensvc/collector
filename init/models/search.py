@@ -15,8 +15,7 @@ def tool_search():
             'foo',
             _name=result_id,
             _id=result_id,
-            _class='white_float',
-            _style='max-width:50%;display:none',
+            _class='menu',
           ),
           SCRIPT(
             "bind_search_tool()",
