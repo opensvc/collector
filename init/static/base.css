@@ -1499,6 +1499,9 @@ ul.login_menu ul {
 .menu_section * {
   color: white;
 }
+.menu_selected {
+  background: #3f3f3f;
+}
 .menu_entry:hover {
   background: #3f3f3f;
 }

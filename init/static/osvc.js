@@ -14,6 +14,16 @@ if (!Array.prototype.indexOf) {
 // search tool
 //
 function bind_search_tool() {
+  $(".search").find("input").bind("focus", function(){
+    var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu")
+    menu.find(".menu_entry").removeClass("menu_selected")
+  })
+  $(".search").find("input").bind("blur", function(){
+    var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu")
+    menu.find(".menu_entry").removeClass("menu_selected")
+    menu.find(".menu_entry:visible").first().addClass("menu_selected")
+  })
+
   $(document).keydown(function(event) {
     if ( event.which == 27 ) {
       $("input:focus").blur()
@@ -41,6 +51,52 @@ function bind_search_tool() {
       $(".header").find(".menu16").parents("ul").first().siblings(".menu").show()
       $(".menu_top").hover(function(){$(".menu").css("display", "")})
       searchbox.focus()
+    }
+    else if ((event.which == 37)||(event.which == 38)) {
+      event.preventDefault()
+      var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu")
+      var entries = menu.find(".menu_entry:visible")
+      var i = 0
+      var prev
+      entries.each(function(){
+        i += 1
+        if ($(this).hasClass("menu_selected")) {
+          if (i==1) { return }
+          menu.find(".menu_entry").removeClass("menu_selected")
+          $(prev).addClass("menu_selected")
+          return
+        }
+        prev = this
+      })
+    }
+    else if ((event.which == 39)||(event.which == 40)) {
+      event.preventDefault()
+      var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu")
+      var entries = menu.find(".menu_entry:visible")
+      var i = 0
+      var found = false
+      entries.each(function(){
+        i += 1
+        if ($(this).hasClass("menu_selected")) {
+          if (i==entries.length) { return }
+          found = true
+          return
+        }
+        if (found) {
+          menu.find(".menu_entry").removeClass("menu_selected")
+          $(this).addClass("menu_selected")
+          found = false
+          return
+        } 
+      })
+    }
+    else if (is_enter(event)) {
+      var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu")
+      menu.find(".menu_selected:visible").each(function(){
+        event.preventDefault()
+        $(this).effect("highlight")
+        window.location = $(this).children("a").attr("href")
+      })
     }
   })
 }
