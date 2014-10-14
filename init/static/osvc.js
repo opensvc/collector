@@ -36,7 +36,7 @@ function bind_search_tool() {
       event.preventDefault();
       searchbox.focus()
     }
-    if ( event.which == 78 ) {
+    else if ( event.which == 78 ) {
       event.preventDefault();
       $(".header").find(".menu16").parents("ul").first().siblings(".menu").show()
       $(".menu_top").hover(function(){$(".menu").css("display", "")})
@@ -85,6 +85,13 @@ function filter_menu() {
       $(this).hide()
     }
   })
+  if (is_enter(event)) {
+    var entries = menu.find(".menu_entry:visible")
+    if (menu.is(":visible") && (entries.length == 1)) {
+      entries.effect("highlight")
+      window.location = entries.children("a").attr("href")
+    }
+  }
 }
 
 
