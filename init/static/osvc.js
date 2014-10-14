@@ -31,8 +31,7 @@ function bind_search_tool() {
       $(".white_float").hide()
       $(".white_float_input").hide()
       $(".right_click_menu").hide()
-      $(".menu").hide()
-      $(".menu_top").hover(function(){$(".menu").css("display", "")})
+      $(".menu").hide("fade", 200)
       return
     }
     if ($('input').is(":focus")) {
@@ -48,8 +47,7 @@ function bind_search_tool() {
     }
     else if ( event.which == 78 ) {
       event.preventDefault();
-      $(".header").find(".menu16").parents("ul").first().siblings(".menu").show()
-      $(".menu_top").hover(function(){$(".menu").css("display", "")})
+      $(".header").find(".menu16").parents("ul").first().siblings(".menu").show("fade", 200)
       searchbox.focus()
     }
     else if ((event.which == 37)||(event.which == 38)) {
