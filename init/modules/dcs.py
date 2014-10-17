@@ -34,6 +34,7 @@ class Dcs(object):
 
     def servergroup(self):
         buff = self.readfile('dcsservergroup')
+        self.sg = {}
         sg = {}
         for line in buff.split('\n'):
             if line.startswith('OurGroup'):
@@ -481,6 +482,9 @@ Internal                 : False
                 self.vdisk[k]['n_alloc'] = 0
 
     def __str__(self):
+        if len(self.sg) == 0:
+            s = "corrupted data"
+            return s
         s = "servergroup: %s (%s) used %d MB\n" % (self.sg['caption'], self.sg['id'], self.sg['used'])
         s += "ports:\n"
         for port in self.port_list:

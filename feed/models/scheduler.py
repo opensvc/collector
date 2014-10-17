@@ -684,7 +684,7 @@ def insert_dcs(name=None, nodename=None):
     for d in dirs:
         print d
         s = dcs.get_dcs(d)
-        if s is None:
+        if s is None or len(s.sg) == 0:
             print "error parsing data"
             continue
 
