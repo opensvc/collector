@@ -820,6 +820,12 @@ function __move(e, data) {
     var obj_id = data.rslt.o.attr("obj_id")
     var parent_obj_id = data.rslt.op.attr("obj_id")
 
+    if ((dst_rel==rel) && (dst_obj_id==obj_id)) {
+      // copy on self is not allowed
+      $.jstree.rollback(data.rlbk)
+      return
+    }
+
     if (dst_id == "rset_head") {
       // actually a detach
       return
