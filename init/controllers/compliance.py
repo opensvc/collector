@@ -177,13 +177,6 @@ class col_comp_mod_status(HtmlTableColumn):
                )
 
 
-class col_variables(HtmlTableColumn):
-    def html(self, o):
-        val = self.get(o)
-        if val is None:
-            return SPAN()
-        return PRE(val.replace('|','\n'))
-
 class col_run_ruleset(HtmlTableColumn):
     def html(self, o):
         val = self.get(o)
@@ -486,12 +479,13 @@ class table_comp_explicit_rules(HtmlTable):
                      display=True,
                      img='action16',
                     ),
-            'variables': col_variables(
+            'variables': HtmlTableColumn(
                      title='Variables',
                      field='variables',
                      table='v_comp_explicit_rulesets',
                      display=True,
                      img='action16',
+                     _class='rsetvars',
                     ),
         }
         self.span = ['id']

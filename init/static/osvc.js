@@ -2569,6 +2569,11 @@ function cell_decorator_availstatus(e) {
   $(e).html(s)
 }
 
+function cell_decorator_rsetvars(e) {
+  var s = $(e).attr("v")
+  $(e).html("<pre>"+s.replace(/\|/g, "\n")+"</pre>")
+}
+
 function cell_decorator_overallstatus(e) {
   var line = $(e).parent(".tl")
   var mon_overallstatus = $(e).attr("v")
@@ -2606,6 +2611,7 @@ function cell_decorator_overallstatus(e) {
 }
 
 cell_decorators = {
+ "rsetvars": cell_decorator_rsetvars,
  "dash_entry": cell_decorator_dash_entry,
  "disk_array_dg": cell_decorator_disk_array_dg,
  "disk_array": cell_decorator_disk_array,
