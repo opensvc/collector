@@ -131,12 +131,19 @@ def _where(query, table, var, field):
                q = db[table][field]==c
             except:
                pass
-        elif db[table][field].type in ('float'):
+        elif db[table][field].type == 'float':
             try:
                c = float(chunk)
                q = db[table][field]==c
             except:
                pass
+        elif db[table][field].type == 'boolean':
+            if chunk in ('T', 't', "true", "True", True, "yes", "Yes", "YES", "Y", "y"):
+               q = db[table][field]==True
+            elif chunk == "%":
+               q = db[table].id > 0
+            else:
+               q = db[table][field]==False
     else:
         _op = chunk[0]
 
