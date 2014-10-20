@@ -145,6 +145,10 @@ response.menu = [
               URL(request.application,'compliance','comp_rulesets_nodes_attachment')],
              [DIV(T('Node modulesets'), DIV(T("Mass attach and detach tool")), _class='modsetattach48'), False,
               URL(request.application,'compliance','comp_modulesets_nodes')],
+             [DIV(T('Service rulesets'), DIV(T("Mass attach and detach tool")), _class='rsetattach48'), False,
+              URL(request.application,'compliance','comp_rulesets_services_attachment')],
+             [DIV(T('Service modulesets'), DIV(T("Mass attach and detach tool")), _class='modsetattach48'), False,
+              URL(request.application,'compliance','comp_modulesets_services')],
          ]
     ],
     [T('Statistics'), False, '',

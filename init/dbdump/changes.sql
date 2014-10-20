@@ -4347,4 +4347,4 @@ grant select on opensvc.stats_fs_u to 'readonly'@'%';
 
 flush privileges;
 
-
+create view v_comp_services as select s.*, 'F' as encap, group_concat(r.ruleset_name) as rulesets, group_concat(m.modset_name) as modulesets from v_services s left join comp_rulesets_services rs1 on s.svc_name=rs1.svcname and rs1.slave='F' left join comp_rulesets r on rs1.ruleset_id=r.id left join comp_modulesets_services ms on s.svc_name=ms.modset_svcname and ms.slave='F' left join comp_moduleset m on ms.modset_id=m.id group by s.svc_name union all select s.*, 'T' as encap, group_concat(r.ruleset_name) as rulesets, group_concat(m.modset_name) as modulesets from v_services s join svcmon sm on s.svc_name=sm.mon_svcname and (sm.mon_vmname != "" and not sm.mon_vmname is null) left join comp_rulesets_services rs1 on s.svc_name=rs1.svcname and rs1.slave='T' left join comp_rulesets r on rs1.ruleset_id=r.id left join comp_modulesets_services ms on s.svc_name=ms.modset_svcname and ms.slave='T' left join comp_moduleset m on ms.modset_id=m.id group by s.svc_name;

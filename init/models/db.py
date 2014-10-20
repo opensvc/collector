@@ -1227,6 +1227,13 @@ db.define_table('v_comp_nodes',
     Field('modulesets','string'),
     migrate=False)
 
+db.define_table('v_comp_services',
+    db.v_services,
+    Field('encap','boolean'),
+    Field('rulesets','string'),
+    Field('modulesets','string'),
+    migrate=False)
+
 db.define_table('v_comp_explicit_rulesets',
     Field('ruleset_name','string'),
     Field('variables','string'),
