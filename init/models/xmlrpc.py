@@ -22,7 +22,7 @@ def quote_wrap(x):
         elif x[0] == '"' and x[-1] == '"':
             return x
         else:
-            return "'%s'"%x.replace("'", '"')
+            return "'%s'"%x.replace("'", "''")
     elif x is None:
         return "NULL"
     raise Exception("quote_wrap: unhandled type %s"%str(x.__class__))
