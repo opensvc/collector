@@ -15,12 +15,13 @@ def task_refresh_b_disk_app():
     filterwarnings('ignore', category = MySQLdb.Warning)
     sql = """
       select
-        max(update_time)>(select update_time from information_schema.tables where table_schema="opensvc" and table_name='b_disk_app') as need_update ,
-        max(update_time) as src_tables_last_update,
-        (select update_time from information_schema.tables where table_schema="opensvc" and table_name='b_disk_app') as b_disk_app_last_update
-      from information_schema.tables
+        max(table_modified)>(select create_time from information_schema.tables where table_schema="opensvc" and table_name='b_disk_app') as need_update,
+        max(table_modified) as last_parents_update,
+        (select create_time from information_schema.tables where table_schema="opensvc" and table_name='b_disk_app') as last_update
+      from
+       table_modified
       where
-        table_schema="opensvc" and table_name in ('nodes', 'services', 'apps', 'svcdisks', 'diskinfo')
+       table_name in ('nodes', 'services', 'apps', 'svcdisks', 'diskinfo')
     """
     rows = db.executesql(sql)
     if rows[0][0] is not None and rows[0][0] != 1:
