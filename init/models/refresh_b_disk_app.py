@@ -13,6 +13,9 @@ def task_refresh_b_disk_app():
     from warnings import filterwarnings
     import MySQLdb
     filterwarnings('ignore', category = MySQLdb.Warning)
+
+    # has a parent table been modified since last b_disk_app refresh ?
+    # if not, skip the refresh
     sql = """
       select
         max(table_modified)>(select create_time from information_schema.tables where table_schema="opensvc" and table_name='b_disk_app') as need_update,
@@ -26,6 +29,23 @@ def task_refresh_b_disk_app():
     rows = db.executesql(sql)
     if rows[0][0] is not None and rows[0][0] != 1:
         return "skip " + str(rows)
+
+    # purge diskinfo agent-provided lines superceded by
+    # lines from array parsers. This is ncessary to purge
+    # agent-provided lines fetched from collector proxies
+    sql = """delete from diskinfo
+             where
+              disk_id in (
+               select disk_id from (
+                select disk_id, count(*) as c from diskinfo group by disk_id
+               ) t where t.c > 1
+              ) and
+              disk_arrayid not in (
+               select distinct array_name from stor_array
+              )"""
+    db.executesql(sql)
+    db.commit()
+
     sql = """drop table if exists b_disk_app_old"""
     db.executesql(sql)
     sql = """drop table if exists b_disk_app_tmp"""
