@@ -14,8 +14,15 @@ def digest_internal():
         data[(row[0],row[1])] = row[2]
     return data
 
-def merge_data(data, mirror=False):
+def merge_data(data, mirror=False, purge_old_col=None):
     max = 500
+    if purge_old_col is not None and len(data.items()) > 0:
+        table, (vars, vals) = data.items()[0]
+        i = vars.index(purge_old_col)
+        purge_old_values = set(map(lambda x: x[i], vals))
+        q = db[table.split(".")[-1]][purge_old_col].belongs(purge_old_values)
+        db(q).delete()
+        print q
     for table, (vars, vals) in data.items():
         if mirror:
             db.executesql("truncate %s"%table)
@@ -369,8 +376,10 @@ def pull_all_table_from_remote(host, ts, force=False):
             rows[i] = list(row)
 
         data[fullname] = (columns, rows)
+
+        purge_old_col = t.get('purge_old_col')
         try:
-            merge_data(data)
+            merge_data(data, purge_old_col=purge_old_col)
             print " + merged. update replication status"
             update_last_pull(d)
         except:
