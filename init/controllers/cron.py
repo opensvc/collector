@@ -147,6 +147,8 @@ def cron_purge_expiry():
               ('appinfo_log', 'app_updated', 'id'),
               ('SVCactions', 'begin', 'id'),
               ('dashboard_events', 'dash_end', None),
+              ('packages', 'pkg_updated', None),
+              ('patches', 'patch_updated', None),
               ('node_users', 'updated', None),
               ('node_groups', 'updated', None)]
     for table, date_col, orderby in tables:
