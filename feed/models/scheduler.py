@@ -630,6 +630,7 @@ def _insert_pkg(vars, vals, auth):
     generic_insert('packages', vars, vals)
     nodename = auth[1].strip("'")
     delete_old_pkg(threshold, nodename)
+    table_modified("packages")
     update_dash_pkgdiff(nodename)
 
 def delete_old_pkg(threshold, nodename):
@@ -654,6 +655,7 @@ def _insert_patch(vars, vals, auth):
     threshold = now - datetime.timedelta(minutes=1)
     generic_insert('patches', vars, vals)
     nodename = auth[1].strip("'")
+    table_modified("patches")
     delete_old_patches(threshold, nodename)
 
 def insert_array_proxy(nodename, array_name):
