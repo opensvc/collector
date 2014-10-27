@@ -531,9 +531,9 @@ def _register_disk(vars, vals, auth):
 
     h['disk_updated'] = now
 
-    # fix truncated naa-16
-    if len(disk_id) == 16 and disk_id[0] == '0':
-        disk_id = '2' + disk_id
+    # fix naa-16
+    if len(disk_id) == 17 and disk_id[0] == '2':
+        disk_id = disk_id[1:]
         h['disk_id'] = repr(disk_id)
 
     # HDS specifics
