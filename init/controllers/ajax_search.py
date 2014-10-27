@@ -305,7 +305,7 @@ def format_node(pattern):
                   A(
                     T('compliance log'),
                     _href=URL(r=request, c='compliance', f='comp_log',
-                              vars={'ajax_comp_log_f_run_nodename': row['nodename'],
+                              vars={'comp_log_f_run_nodename': row['nodename'],
                                     'clear_filters': 'true'}),
                     _class="log16",
                   ),
