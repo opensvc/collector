@@ -30,7 +30,7 @@ class NecIsm(object):
                 self.firmware = line.split(':')[1].strip()
             elif line.startswith("World Wide Name"):
                 self.wwn = line.split(':')[1].strip().lower()
-                self.wwn_prefix = self.wwn[0:1] + self.wwn[4:]
+                self.wwn_prefix = self.wwn[4:]
             elif line.startswith("WWPN"):
                 self.ports.append(line.split(':')[1].strip().lower())
             elif line.startswith("Cache Module"):
