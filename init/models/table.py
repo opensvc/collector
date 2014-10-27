@@ -665,6 +665,8 @@ class HtmlTable(object):
                         v = str(v)
                 elif v is None:
                     v = 'empty'
+                elif type(v) in (str, unicode):
+                    v = v.replace('"','').replace("'","")
                 _l.append(v)
                 if c in self.keys:
                     cksum.update(str(v))
