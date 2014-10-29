@@ -134,7 +134,8 @@ def format_svc(pattern):
     o = db.services.svc_name
     q = o.like(pattern)
     q = _where(q, 'services', domain_perms(), 'svc_name')
-    q = apply_gen_filters(q, ["v_svcmon"])
+    services = filterset_encap_query(user_fset_id())[1]
+    q &= db.services.svc_name.belongs(services)
     rows = db(q).select(o, orderby=o, groupby=o, limitby=(0,max_search_result))
     n = len(db(q).select(o, groupby=o))
 
