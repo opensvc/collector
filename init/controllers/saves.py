@@ -216,6 +216,8 @@ def ajax_saves():
         return t.csv()
 
     if len(request.args) == 1 and request.args[0] == 'commonality':
+        t.csv_q = q
+        t.csv_left = l
         return t.do_commonality()
 
 @auth.requires_login()

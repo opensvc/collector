@@ -1406,6 +1406,8 @@ function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
         top = []
         for col in self.cols:
             l = data[col].items()
+            if len(l) == 0:
+                continue
             l.sort(lambda x, y: cmp(x[1], y[1]), reverse=True)
             v, n = l[0]
             pct = 100*n//total
