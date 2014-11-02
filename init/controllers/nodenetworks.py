@@ -200,7 +200,7 @@ class table_nodenetworks(HtmlTable):
                 self.colprops[c]._dataclass = "bluer"
         self.extraline = True
         self.dataable = True
-        self.checkboxes = False
+        self.checkboxes = True
         self.ajax_col_values = 'ajax_nodenetworks_col_values'
         self.keys = ["nodename", "addr"]
         self.span = ["nodename"]

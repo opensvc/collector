@@ -142,7 +142,7 @@ class table_nodesan(HtmlTable):
         self.extraline = True
         self.dataable = True
         self.force_cols = ['id', 'os_name']
-        #self.checkboxes = True
+        self.checkboxes = True
         self.ajax_col_values = 'ajax_nodesan_col_values'
 
 @auth.requires_login()

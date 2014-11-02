@@ -522,6 +522,7 @@ class table_dashboard(HtmlTable):
         self.colprops['dash_links'].t = self
         self.colprops['dash_entry'].t = self
         self.extraline = True
+        self.checkboxes = True
         self.checkbox_id_table = 'dashboard'
         self.checkbox_id_col = 'id'
         self.special_filtered_cols = ['dash_entry']

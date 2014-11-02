@@ -1,3 +1,24 @@
+def call():
+    """
+    exposes services. for example:
+    http://..../[app]/default/call/jsonrpc
+    decorate with @services.jsonrpc the functions to expose
+    supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv
+    """
+    session.forget()
+    return service()
+
+@service.json
+def json_action_queue_stats():
+    data = {}
+    sql = """select
+              (select count(id) from action_queue where status in ('Q', 'W', 'R')) as queued,
+              (select count(id) from action_queue where ret!=0) as ko,
+              (select count(id) from action_queue where ret=0 and status='T') as ok
+          """
+    data = db.executesql(sql, as_dict=True)[0]
+    return data
+
 class table_actions(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:

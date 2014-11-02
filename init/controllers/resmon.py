@@ -110,6 +110,7 @@ class table_resmon(HtmlTable):
         self.span = ['nodename', 'svcname']
         self.keys = ['nodename', 'svcname', 'rid']
         self.dataable = True
+        self.checkboxes = True
         self.wsable = True
 
 @auth.requires_login()
@@ -177,7 +178,6 @@ wsh["%(divid)s"] = ws_action_switch_%(divid)s
 class table_resmon_svc(table_resmon):
     def __init__(self, id=None, func=None, innerhtml=None):
         table_resmon.__init__(self, id, func, innerhtml)
-        self.cols.remove('svcname')
         self.dbfilterable = False
         self.filterable = False
         self.exportable = False
@@ -188,6 +188,7 @@ class table_resmon_svc(table_resmon):
         self.bookmarkable = False
         self.commonalityable = False
         self.wsable = False
+        self.colprops['svcname'].display=False
 
 @auth.requires_login()
 def resmon_svc():

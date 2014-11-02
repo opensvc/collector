@@ -62,6 +62,7 @@ class table_patches(HtmlTable):
         self.dbfilterable = True
         self.dataable = True
         self.extraline = True
+        self.checkboxes = True
         self.checkbox_id_col = 'id'
         self.checkbox_id_table = 'patches'
         self.ajax_col_values = 'ajax_patches_col_values'

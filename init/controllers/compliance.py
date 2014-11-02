@@ -2252,6 +2252,14 @@ def comp_rulesets_services_attachment():
                _id='crs1',
              ),
              DIV(XML('&nbsp;'), _class='spacer'),
+             SCRIPT("""
+             function calign() {
+              $("#crs1").find("div.theader").css({height: $("#crs2").find("div.theader").height()})
+              $("#crs1").find("tr.theader").css({height: $("#crs2").find("tr.theader").height()})
+             }
+             osvc.tables["crs2"].on_change = calign
+             osvc.tables["crs1"].on_change = calign
+             """),
            )
     return dict(table=t)
 
@@ -2280,6 +2288,14 @@ def comp_rulesets_nodes_attachment():
                _id='crn1',
              ),
              DIV(XML('&nbsp;'), _class='spacer'),
+             SCRIPT("""
+             function calign() {
+              $("#crn1").find("div.theader").css({height: $("#crn2").find("div.theader").height()})
+              $("#crn1").find("tr.theader").css({height: $("#crn2").find("tr.theader").height()})
+             }
+             osvc.tables["crn2"].on_change = calign
+             osvc.tables["crn1"].on_change = calign
+             """),
            )
     return dict(table=t)
 
@@ -4192,6 +4208,14 @@ def comp_modulesets_services():
                _id='cms1',
              ),
              DIV(XML('&nbsp;'), _class='spacer'),
+             SCRIPT("""
+             function calign() {
+              $("#cms1").find("div.theader").css({height: $("#cms2").find("div.theader").height()})
+              $("#cms1").find("tr.theader").css({height: $("#cms2").find("tr.theader").height()})
+             }
+             osvc.tables["cms2"].on_change = calign
+             osvc.tables["cms1"].on_change = calign
+             """),
            )
     return dict(table=t)
 
@@ -4220,6 +4244,14 @@ def comp_modulesets_nodes():
                _id='cmn1',
              ),
              DIV(XML('&nbsp;'), _class='spacer'),
+             SCRIPT("""
+             function calign() {
+              $("#cmn1").find("div.theader").css({height: $("#cmn2").find("div.theader").height()})
+              $("#cmn1").find("tr.theader").css({height: $("#cmn2").find("tr.theader").height()})
+             }
+             osvc.tables["cmn2"].on_change = calign
+             osvc.tables["cmn1"].on_change = calign
+             """),
            )
     return dict(table=t)
 
@@ -5751,7 +5783,7 @@ class table_comp_log(table_comp_status):
 
         self.additional_tools = []
         self.ajax_col_values = 'ajax_comp_log_col_values'
-        self.checkboxes = False
+        self.checkboxes = True
         self.checkbox_id_table = 'comp_log'
         self.wsable = True
         self.dataable = True

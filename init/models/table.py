@@ -187,6 +187,7 @@ class HtmlTable(object):
         self.highlight = True
         self.wsable = False
         self.dataable = False
+        self.action_menu = []
 
         # initialize the pager, to be re-executed by instanciers
         self.setup_pager()
@@ -199,6 +200,13 @@ class HtmlTable(object):
         self.csv_orderby = None
         self.csv_left = None
         self.csv_limit = 2000
+
+        self.action_menu = {
+          'nodes': node_actions,
+          'services': svc_actions,
+          'resources': resource_actions,
+        }
+
 
     def __iadd__(self, o):
         if isinstance(o, HtmlTableMenu):
@@ -928,6 +936,8 @@ class HtmlTable(object):
                                  _value=value,
                                  value=checked,
                                ),
+                               _name=self.id+"_tools",
+                               _class="tools",
                              ))
 
         if self.extrarow:
@@ -1280,6 +1290,7 @@ table_init({
  'colprops': %(colprops)s,
  'visible_columns': %(visible_columns)s,
  'child_tables': %(child_tables)s,
+ 'action_menu': %(action_menu)s,
  'dataable': %(dataable)s
 })
 function ajax_submit_%(id)s(){%(ajax_submit)s};
@@ -1299,6 +1310,7 @@ function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
                    ajax_submit=self.ajax_submit(),
                    ajax_enter_submit=self.ajax_enter_submit(),
                    dataable=str(self.dataable).lower(),
+                   action_menu=str(self.action_menu),
                 ),
               ),
               _class='tableo',
@@ -2938,3 +2950,40 @@ disk_app_colprops = {
             ),
 }
 
+resource_actions = [
+  {'title': 'Start', 'class': 'action_start_16', 'action': 'start'},
+  {'title': 'Stop', 'class': 'action_stop_16', 'action': 'stop'},
+  {'title': 'Restart', 'class': 'action_restart_16', 'action': 'restart'},
+  {'title': 'Enable', 'class': 'check16', 'action': 'enable'},
+  {'title': 'Disable', 'class': 'na', 'action': 'disable'},
+]
+
+svc_actions = [
+  {'title': 'Start', 'class': 'action_start_16', 'action': 'start'},
+  {'title': 'Stop', 'class': 'action_stop_16', 'action': 'stop'},
+  {'title': 'Restart', 'class': 'action_restart_16', 'action': 'restart'},
+  {'title': 'Sync all remotes', 'class': 'action_sync_16', 'action': 'syncall'},
+  {'title': 'Sync peer remotes', 'class': 'action_sync_16', 'action': 'syncnodes'},
+  {'title': 'Sync disaster recovery remotes', 'class': 'action_sync_16', 'action': 'syncdrp'},
+  {'title': 'Enable', 'class': 'check16', 'action': 'enable'},
+  {'title': 'Disable', 'class': 'na', 'action': 'disable'},
+  {'title': 'Freeze', 'class': 'frozen16', 'action': 'enable'},
+  {'title': 'Thaw', 'class': 'frozen16', 'action': 'disable'},
+]
+
+node_actions = [
+  {'title': 'Update node information', 'class': 'hw16', 'action': 'pushasset'},
+  {'title': 'Update disks information', 'class': 'hd16', 'action': 'pushdisks'},
+  {'title': 'Update app information', 'class': 'svc', 'action': 'push appinfo'},
+  {'title': 'Update services information', 'class': 'svc', 'action': 'pushservices'},
+  {'title': 'Update installed packages information', 'class': 'pkg16', 'action': 'pushpkg'},
+  {'title': 'Update installed patches information', 'class': 'pkg16', 'action': 'pushpatch'},
+  {'title': 'Update stats', 'class': 'spark16', 'action': 'pushstats'},
+  {'title': 'Update check values', 'class': 'check16', 'action': 'checks'},
+  {'title': 'Update compliance modules', 'class': 'comp16', 'action': 'updatecomp'},
+  {'title': 'Update opensvc agent', 'class': 'pkg16', 'action': 'updatepkg'},
+  {'title': 'Rotate root password', 'class': 'key16', 'action': 'rotate root pw'},
+  {'title': 'Rescan scsi hosts', 'class': 'hd16', 'action': 'scanscsi'},
+  {'title': 'Reboot', 'class': 'action_restart_16', 'action': 'reboot'},
+  {'title': 'Shutdown', 'class': 'action_stop_16', 'action': 'shutdown'},
+]

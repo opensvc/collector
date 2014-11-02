@@ -86,6 +86,7 @@ class table_packages(HtmlTable):
         self.colprops['nodename'].display = True
         self.colprops['nodename'].t = self
         self.extraline = True
+        self.checkboxes = True
         self.checkbox_id_col = 'id'
         self.checkbox_id_table = 'packages'
         self.dbfilterable = True

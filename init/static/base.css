@@ -31,6 +31,12 @@
   height: 2em;
 }
 
+.tools {
+  background: rgb(95, 158, 160);
+  cursor: context-menu;
+  width: 16px;
+}
+
 .chart {
     text-align: center;
 }
@@ -199,7 +205,7 @@ img {
 }
 
 .cell1 {
-    background: #eeeeee;
+    background: #fafaf4;
 }
 
 .cell2 {
@@ -464,10 +470,10 @@ html {
     width: 100%;
     text-align: center;
     clear: both;
-    color: black;
+    color: white;
     font-size: 11pt;
     cursor: pointer;
-    background: yellow;
+    background: cadetblue;
 }
 
 html>body .flash {
@@ -795,6 +801,16 @@ a.xinfo_shown span {
 .tab .closetab {
     background-color:black;
     color:white;
+}
+
+.action_menu ul {
+  padding: 0.5em;
+}
+.action_menu li {
+  list-style: none;
+}
+.action_menu ul>li>ul>li:hover {
+  font-weight: bold;
 }
 
 .details_row {
@@ -1395,6 +1411,11 @@ ul.login_menu ul {
 }
 .key16 {
     background: transparent url('key16.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
+.frozen16 {
+    background: transparent url('frozen16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }

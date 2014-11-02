@@ -17,7 +17,7 @@
       <div class='header_logo'>
         <h3>{{=A((response.title or request.application), _href="http://www.opensvc.com")}}</h3>
       </div>
-      {{=DIV(A(IMG(_src=URL(r=request, c='static', f='action16.png')), _href=URL(r=request,c='action_queue',f='action_queue')), _class='search')}}
+      {{=DIV(A("", _href=URL(r=request,c='action_queue',f='action_queue'), _class="action16"), _class='search')}}
       {{if response.menu_auth:}}
       {{=OSVCMENU(response.menu_auth, _class='menu')}}
       {{pass}}
