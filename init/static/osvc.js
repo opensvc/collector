@@ -1368,6 +1368,18 @@ function table_action_menu_click_animation(t) {
   }, 1500, function(){dest.parent().effect("highlight")})
 }
 
+function table_action_menu_post_data(data) {
+    $.ajax({
+      async: false,
+      type: "POST",
+      url: $(location).attr("origin") + "/init/action_menu/call/json/json_action",
+      data: {"data": JSON.stringify(data)},
+      success: function(msg){
+        menu_action_status(msg)
+      }
+    })
+}
+
 function table_action_menu(t, e){
   // drop the previous action menu
   $("#am_"+t.id).remove()
@@ -1407,160 +1419,58 @@ function table_action_menu(t, e){
 
   // bind action click triggers
   $("#am_"+t.id).find("[scope=resource]").bind("click", function(){
-    var cell = $(e.target)
-    var line = cell.parents(".tl").first()
-    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").first().attr("v")
-    if ((typeof nodename === "undefined")||(nodename=="")) {
+    var action = $(this).attr("action")
+    var data = table_action_menu_get_resource_data(t, e, action)
+    if (data.length==0) {
       return
     }
-    var svcname = line.find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").first().attr("v")
-    if ((typeof svcname === "undefined")||(svcname=="")) {
-      return
-    }
-    var rid = line.find("td[cell=1][name$=_rid]").first().attr("v")
-    if ((typeof rid === "undefined")||(rid=="")) {
-      return
-    }
-    var data = [{'nodename': nodename, 'svcname': svcname, 'rid': rid, 'action': $(this).attr("action")}]
     table_action_menu_click_animation(t)
-    $.ajax({
-      async: false,
-      type: "POST",
-      url: $(location).attr("origin") + "/init/action_menu/call/json/json_action",
-      data: {"data": JSON.stringify(data)},
-      success: function(msg){
-        menu_action_status(msg)
-      }
-    });
+    table_action_menu_post_data(data)
   })
   $("#am_"+t.id).find("[scope=resources]").bind("click", function(){
-    var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
-    var data = []
-    var index = []
     var action = $(this).attr("action")
-    lines.each(function(){
-      var nodename = $(this).find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").attr("v")
-      if ((typeof nodename === "undefined")||(nodename=="")) {
-        return
-      }
-      var svcname = $(this).find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").attr("v")
-      if ((typeof svcname === "undefined")||(svcname=="")) {
-        return
-      }
-      var rid = $(this).find("td[cell=1][name$=_rid]").attr("v")
-      if ((typeof rid === "undefined")||(rid=="")) {
-        return
-      }
-      var i = nodename+"--"+svcname+"--"+rid
-      if (index.indexOf(i)<0) {
-        index.push(i)
-        data.push({"nodename": nodename, "svcname": svcname, "rid": rid, "action": action})
-      }
-    })
+    var data = table_action_menu_get_resources_data(t, action)
+    if (data.length==0) {
+      return
+    }
     table_action_menu_click_animation(t)
-    $.ajax({
-      async: false,
-      type: "POST",
-      url: $(location).attr("origin") + "/init/action_menu/call/json/json_action",
-      data: {"data": JSON.stringify(data)},
-      success: function(msg){
-        menu_action_status(msg)
-      }
-    });
+    table_action_menu_post_data(data)
   })
   $("#am_"+t.id).find("[scope=svc]").bind("click", function(){
-    var cell = $(e.target)
-    var line = cell.parents(".tl").first()
-    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").first().attr("v")
-    if ((typeof nodename === "undefined")||(nodename=="")) {
+    var action = $(this).attr("action")
+    var data = table_action_menu_get_svc_data(t, e, action)
+    if (data.length==0) {
       return
     }
-    var svcname = line.find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").first().attr("v")
-    if ((typeof svcname === "undefined")||(svcname=="")) {
-      return
-    }
-    var data = [{'nodename': nodename, 'svcname': svcname, 'action': $(this).attr("action")}]
     table_action_menu_click_animation(t)
-    $.ajax({
-      async: false,
-      type: "POST",
-      url: $(location).attr("origin") + "/init/action_menu/call/json/json_action",
-      data: {"data": JSON.stringify(data)},
-      success: function(msg){
-        menu_action_status(msg)
-      }
-    });
+    table_action_menu_post_data(data)
   })
   $("#am_"+t.id).find("[scope=svcs]").bind("click", function(){
-    var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
-    var data = []
-    var index = []
     var action = $(this).attr("action")
-    lines.each(function(){
-      var nodename = $(this).find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").attr("v")
-      if ((typeof nodename === "undefined")||(nodename=="")) {
-        return
-      }
-      var svcname = $(this).find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").attr("v")
-      if ((typeof svcname === "undefined")||(svcname=="")) {
-        return
-      }
-      var i = nodename+"--"+svcname
-      if (index.indexOf(i)<0) {
-        index.push(i)
-        data.push({"nodename": nodename, "svcname": svcname, "action": action})
-      }
-    })
+    var data = table_action_menu_get_svcs_data(t, action)
+    if (data.length==0) {
+      return
+    }
     table_action_menu_click_animation(t)
-    $.ajax({
-      async: false,
-      type: "POST",
-      url: $(location).attr("origin") + "/init/action_menu/call/json/json_action",
-      data: {"data": JSON.stringify(data)},
-      success: function(msg){
-        menu_action_status(msg)
-      }
-    });
+    table_action_menu_post_data(data)
   })
   $("#am_"+t.id).find("[scope=node]").bind("click", function(){
-    var cell = $(e.target)
-    var line = cell.parents(".tl").first()
-    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").first().attr("v")
-    var data = [{'nodename': nodename, 'action': $(this).attr("action")}]
+    var action = $(this).attr("action")
+    var data = table_action_menu_get_node_data(t, e, action)
+    if (data.length==0) {
+      return
+    }
     table_action_menu_click_animation(t)
-    $.ajax({
-      async: false,
-      type: "POST",
-      url: $(location).attr("origin") + "/init/action_menu/call/json/json_action",
-      data: {"data": JSON.stringify(data)},
-      success: function(msg){
-        menu_action_status(msg)
-      }
-    });
+    table_action_menu_post_data(data)
   })
   $("#am_"+t.id).find("[scope=nodes]").bind("click", function(){
-    var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
-    var data = []
-    var nodenames = []
     var action = $(this).attr("action")
-    lines.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").each(function(){
-      nodename = $(this).attr("v")
-      var d = {'nodename': nodename, 'action': action}
-      if (nodenames.indexOf(nodename) < 0) {
-        nodenames.push(nodename)
-        data.push({'nodename': nodename, 'action': action})
-      }
-    })
+    var data = table_action_menu_get_nodes_data(t, action)
+    if (data.length==0) {
+      return
+    }
     table_action_menu_click_animation(t)
-    $.ajax({
-      async: false,
-      type: "POST",
-      url: $(location).attr("origin") + "/init/action_menu/call/json/json_action",
-      data: {"data": JSON.stringify(data)},
-      success: function(msg){
-        menu_action_status(msg)
-      }
-    });
+    table_action_menu_post_data(data)
   })
 
   // display actions only for the clicked section 
@@ -1580,6 +1490,112 @@ function table_action_menu(t, e){
   })
 }
 
+function table_action_menu_get_nodes_data(t, action) {
+    var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
+    var data = []
+    var nodenames = []
+    lines.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").each(function(){
+      nodename = $(this).attr("v")
+      var d = {'nodename': nodename, 'action': action}
+      if (nodenames.indexOf(nodename) < 0) {
+        nodenames.push(nodename)
+        data.push({'nodename': nodename, 'action': action})
+      }
+    })
+    return data
+}
+
+function table_action_menu_get_node_data(t, e, action) {
+    var cell = $(e.target)
+    var line = cell.parents(".tl").first()
+    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").first().attr("v")
+    var data = [{'nodename': nodename, 'action': action}]
+    return data
+}
+
+function table_action_menu_get_svcs_data(t, action) {
+    var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
+    var data = []
+    var index = []
+    lines.each(function(){
+      var nodename = $(this).find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").attr("v")
+      if ((typeof nodename === "undefined")||(nodename=="")) {
+        return []
+      }
+      var svcname = $(this).find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").attr("v")
+      if ((typeof svcname === "undefined")||(svcname=="")) {
+        return []
+      }
+      var i = nodename+"--"+svcname
+      if (index.indexOf(i)<0) {
+        index.push(i)
+        data.push({"nodename": nodename, "svcname": svcname, "action": action})
+      }
+    })
+    return data
+}
+
+function table_action_menu_get_svc_data(t, e, action) {
+    var cell = $(e.target)
+    var line = cell.parents(".tl").first()
+    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").first().attr("v")
+    if ((typeof nodename === "undefined")||(nodename=="")) {
+      return []
+    }
+    var svcname = line.find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").first().attr("v")
+    if ((typeof svcname === "undefined")||(svcname=="")) {
+      return []
+    }
+    var data = [{'nodename': nodename, 'svcname': svcname, 'action': action}]
+    return data
+}
+
+function table_action_menu_get_resources_data(t, action) {
+    var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
+    var data = []
+    var index = []
+    lines.each(function(){
+      var nodename = $(this).find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").attr("v")
+      if ((typeof nodename === "undefined")||(nodename=="")) {
+        return []
+      }
+      var svcname = $(this).find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").attr("v")
+      if ((typeof svcname === "undefined")||(svcname=="")) {
+        return []
+      }
+      var rid = $(this).find("td[cell=1][name$=_rid]").attr("v")
+      if ((typeof rid === "undefined")||(rid=="")) {
+        return []
+      }
+      var i = nodename+"--"+svcname+"--"+rid
+      if (index.indexOf(i)<0) {
+        index.push(i)
+        data.push({"nodename": nodename, "svcname": svcname, "rid": rid, "action": action})
+      }
+    })
+    return data
+}
+
+function table_action_menu_get_resource_data(t, e, action) {
+    var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
+    var cell = $(e.target)
+    var line = cell.parents(".tl").first()
+    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").first().attr("v")
+    if ((typeof nodename === "undefined")||(nodename=="")) {
+      return []
+    }
+    var svcname = line.find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").first().attr("v")
+    if ((typeof svcname === "undefined")||(svcname=="")) {
+      return []
+    }
+    var rid = line.find("td[cell=1][name$=_rid]").first().attr("v")
+    if ((typeof rid === "undefined")||(rid=="")) {
+      return []
+    }
+    var data = [{'nodename': nodename, 'svcname': svcname, 'rid': rid, 'action': action}]
+    return data
+}
+
 function menu_action_status(msg){
   var s = "accepted: "+msg.accepted+", rejected: "+msg.rejected
   if (msg.factorized>0) {
@@ -1589,115 +1605,56 @@ function menu_action_status(msg){
 }
 
 function table_action_menu_resource(t, e){
-  var cell = $(e.target)
-  var line = cell.parents(".tl").first()
-  var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").first().attr("v")
-  var svcname = line.find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").first().attr("v")
-  var rid = line.find("td[cell=1][name$=_rid]").first().attr("v")
-  if ((typeof nodename === "undefined")||(nodename=="")) {
+  var data = table_action_menu_get_resource_data(t, e)
+  if (data.length==0) {
     return ""
   }
-  if ((typeof svcname === "undefined")||(svcname=="")) {
-    return ""
-  }
-  if ((typeof rid === "undefined")||(rid=="")) {
-    return ""
-  }
-  var s = "<li class='clickable'>"+T("Actions on resource <b>{{rid}}</b> of <b>{{svcname}}</b> service instance on node <b>{{nodename}}</b>", {'rid': rid, 'svcname': svcname, 'nodename':nodename})+table_action_menu_resource_entries(t, "resource")+"</li>"
+  var s = "<li class='clickable'>"+T("Actions on resource <b>{{rid}}</b> of <b>{{svcname}}</b> service instance on node <b>{{nodename}}</b>", data[0])+table_action_menu_resource_entries(t, "resource")+"</li>"
   return s
 }
 
 function table_action_menu_resources(t){
-  var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
-  var index = []
-  lines.each(function(){
-    var nodename = $(this).find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").attr("v")
-    if ((typeof nodename === "undefined")||(nodename=="")) {
-      return
-    }
-    var svcname = $(this).find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").attr("v")
-    if ((typeof svcname === "undefined")||(svcname=="")) {
-      return
-    }
-    var rid = $(this).find("td[cell=1][name$=_rid]").attr("v")
-    if ((typeof rid === "undefined")||(rid=="")) {
-      return
-    }
-    var i = nodename+"--"+svcname+"--"+rid
-    if (index.indexOf(i)<0) {
-      index.push(i)
-    }
-  })
-  if (index.length == 0) {
+  var data = table_action_menu_get_resources_data(t)
+  if (data.length==0) {
     return ""
   }
-  var s = "<li class='clickable'>"+T("Actions on selected resources")+" (<b>"+index.length+"</b>)"+table_action_menu_resource_entries(t, "resources")+"</li>"
+  var s = "<li class='clickable'>"+T("Actions on selected resources")+" (<b>"+data.length+"</b>)"+table_action_menu_resource_entries(t, "resources")+"</li>"
   return s
 }
 
 function table_action_menu_svc(t, e){
-  var cell = $(e.target)
-  var line = cell.parents(".tl").first()
-  var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").first().attr("v")
-  var svcname = line.find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").first().attr("v")
-  if ((typeof nodename === "undefined")||(nodename=="")) {
+  var data = table_action_menu_get_svc_data(t, e)
+  if (data.length==0) {
     return ""
   }
-  if ((typeof svcname === "undefined")||(svcname=="")) {
-    return ""
-  }
-  var s = "<li class='clickable'>"+T("Actions on <b>{{svcname}}</b> service instance on node <b>{{nodename}}</b>", {'svcname': svcname, 'nodename': nodename})+table_action_menu_svc_entries(t, "svc")+"</li>"
+  var s = "<li class='clickable'>"+T("Actions on <b>{{svcname}}</b> service instance on node <b>{{nodename}}</b>", data[0])+table_action_menu_svc_entries(t, "svc")+"</li>"
   return s
 }
 
 function table_action_menu_svcs(t){
-  var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
-  var index = []
-  lines.each(function(){
-    var nodename = $(this).find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").attr("v")
-    if ((typeof nodename === "undefined")||(nodename=="")) {
-      return
-    }
-    var svcname = $(this).find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").attr("v")
-    if ((typeof svcname === "undefined")||(svcname=="")) {
-      return
-    }
-    var i = nodename+"--"+svcname
-    if (index.indexOf(i)<0) {
-      index.push(i)
-    }
-  })
-  if (index.length == 0) {
+  var data = table_action_menu_get_svcs_data(t)
+  if (data.length==0) {
     return ""
   }
-  var s = "<li class='clickable'>"+T("Actions on selected service instances")+" (<b>"+index.length+"</b>)"+table_action_menu_svc_entries(t, "svcs")+"</li>"
+  var s = "<li class='clickable'>"+T("Actions on selected service instances")+" (<b>"+data.length+"</b>)"+table_action_menu_svc_entries(t, "svcs")+"</li>"
   return s
 }
 
 function table_action_menu_node(t, e){
-  var cell = $(e.target)
-  var line = cell.parents(".tl").first()
-  var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").first().attr("v")
-  if (typeof nodename === "undefined") {
+  var data = table_action_menu_get_node_data(t, e)
+  if (data.length==0) {
     return ""
   }
-  var s = "<li class='clickable'>"+T("Actions on node")+" <b>"+nodename+"</b>"+table_action_menu_node_entries(t, "node")+"</li>"
+  var s = "<li class='clickable'>"+T("Actions on node")+" <b>"+data[0]['nodename']+"</b>"+table_action_menu_node_entries(t, "node")+"</li>"
   return s
 }
 
 function table_action_menu_nodes(t){
-  var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
-  var nodenames = []
-  lines.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").each(function(){
-    nodename = $(this).attr("v")
-    if (nodenames.indexOf(nodename) < 0) {
-      nodenames.push(nodename)
-    }
-  })
-  if (nodenames.length == 0) {
+  var data = table_action_menu_get_nodes_data(t)
+  if (data.length==0) {
     return ""
   }
-  var s = "<li class='clickable'>"+T("Actions on selected nodes")+" (<b>"+nodenames.length+"</b>)"+table_action_menu_node_entries(t, "nodes")+"</li>"
+  var s = "<li class='clickable'>"+T("Actions on selected nodes")+" (<b>"+data.length+"</b>)"+table_action_menu_node_entries(t, "nodes")+"</li>"
   return s
 }
 
@@ -2801,7 +2758,6 @@ function T_sub(s, d) {
     var m = l[i]
     var v = m.substring(2, m.length-2)
     if (!(v in d)) {
-      alert("miss")
       continue
     }
     s = s.replace(m, d[v])
