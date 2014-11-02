@@ -16,7 +16,7 @@
       {{=tool_search()}}
       {{=DIV(A("", _href=URL(r=request,c='action_queue',f='action_queue'), _class="gear16"), _class='action_q_widget')}}
       <div class='header_logo'>
-        {{=A((response.title or request.application), _href="http://www.opensvc.com")}}
+        {{=A((response.title or request.application), _href="http://www.opensvc.com", _class="www16")}}
       </div>
       {{if response.menu_auth:}}
       {{=OSVCMENU(response.menu_auth, _class='menu')}}
