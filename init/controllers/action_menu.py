@@ -79,7 +79,7 @@ def fmt_svc_action(node, svc, action, action_type, rid=None):
         cmd += ["--rid", rid]
     return ' '.join(cmd)
 
-def fmt_node_comp_action(node, action, mode, mod):
+def fmt_node_comp_action(node, action, mode, mod, action_type):
     if action_type == "pull":
         cmd = []
     else:
@@ -106,29 +106,22 @@ def fmt_svc_comp_action(node, service, action, mode, mod, action_type):
     return ' '.join(cmd)
 
 @auth.requires_membership('CompExec')
-def do_node_comp_action(ids, action=None, mode=None):
+def do_node_comp_action(nodename, action, mode, obj):
     if mode not in ("module", "moduleset"):
         raise ToolError("unsupported mode")
-    if action is None or len(action) == 0:
-        raise ToolError("no action specified")
-    if len(ids) == 0:
-        raise ToolError("no target to execute %s on"%action)
+    if action not in ("check", "fix"):
+        raise ToolError("unsupported action")
 
-    if not hasattr(request.vars, 'action_s_'+mode):
-        raise ToolError("no module or moduleset selected")
-    mod = request.vars['action_s_'+mode]
-
-    q = db.v_svcmon.id.belongs(ids)
-    q &= db.v_svcmon.team_responsible.belongs(user_groups())
-    node = db(q).select(db.v_svcmon.mon_nodname, db.v_svcmon.os_name,
-                        cacheable=True).first()
+    q = db.nodes.nodename == nodename
+    q &= db.nodes.team_responsible.belongs(user_groups())
+    node = db(q).select(db.nodes.nodename, db.nodes.os_name, cacheable=True).first()
 
     if node is None:
         return 0
 
-    enqueue_node_comp_action(node.mon_nodname, action, mode, mod, node.os_name)
+    enqueue_node_comp_action(node.nodename, action, mode, obj, node.os_name)
     _log('node.action', 'run %(a)s of %(mode)s %(m)s',
-         dict(a=action, mode=mode, m=mod),
+         dict(a=action, mode=mode, m=obj),
          nodename=node.nodename
     )
     return 1
@@ -152,38 +145,33 @@ def do_node_action(nodename, action=None):
     return 1
 
 @auth.requires_membership('CompExec')
-def do_svc_comp_action(ids, action=None, mode=None):
+def do_svc_comp_action(nodename, svcname, action, mode, obj):
     if mode not in ("module", "moduleset"):
         raise ToolError("unsupported mode")
-    if action is None or len(action) == 0:
-        raise ToolError("no action specified")
-    if len(ids) == 0:
-        raise ToolError("no target to execute %s on"%action)
-
-    if not hasattr(request.vars, 'action_s_'+mode):
-        raise ToolError("no module or moduleset selected")
-    mod = request.vars['action_s_'+mode]
+    if action not in ("check", "fix"):
+        raise ToolError("unsupported action")
 
     # filter out services we are not responsible for
-    sql = """select m.mon_nodname, m.mon_svcname, m.os_name
+    sql = """select m.os_name
              from v_svcmon m
              join v_apps_flat a on m.svc_app=a.app
-             where m.id in (%(ids)s)
-             and responsible='%(user)s'
+             where m.mon_svcname="%(svcname)s" and mon_nodname="%(nodename)s"
+             and responsible="%(user)s"
              group by m.mon_nodname, m.mon_svcname
-          """%dict(ids=','.join(map(str,ids)),
+          """%dict(nodename=nodename,
+                   svcname=svcname,
                    user=user_name())
-    rows = db.executesql(sql)
+    rows = db.executesql(sql, as_dict=True)
     if len(rows) == 0:
         return 0
 
     row = rows[0]
-    enqueue_svc_comp_action(row[0], row[1], action, mode, mod, row[2])
+    enqueue_svc_comp_action(nodename, svcname, action, mode, obj, row['os_name'])
     _log('service.action',
          'run %(a)s of %(mode)s %(m)s',
-         dict(a=action, mode=mode, m=mod),
-         svcname=row[1],
-         nodename=row[0]
+         dict(a=action, mode=mode, m=obj),
+         svcname=svcname,
+         nodename=nodename
     )
     return 1
 
@@ -227,7 +215,7 @@ def json_action_one(d):
     if "rid" in d and "svcname" in d and "nodename" in d:
         if "action" in d:
             return do_svc_action(d["nodename"], d["svcname"], d["action"], rid=d["rid"])
-    if "svcname" in d and "nodename" in d:
+    if "svcname" in d and d["svcname"] != "" and "nodename" in d:
         if "ruleset" in d:
             return do_svc_comp_action(d["nodename"], d["svcname"], d["action"], "ruleset", d["ruleset"])
         elif "moduleset" in d:

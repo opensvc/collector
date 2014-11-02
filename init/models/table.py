@@ -205,6 +205,7 @@ class HtmlTable(object):
           'nodes': node_actions,
           'services': svc_actions,
           'resources': resource_actions,
+          'modules': module_actions,
         }
 
 
@@ -2949,6 +2950,11 @@ disk_app_colprops = {
              display=True,
             ),
 }
+
+module_actions = [
+  {'title': 'Check', 'class': 'check16', 'action': 'check'},
+  {'title': 'Fix', 'class': 'comp16', 'action': 'fix'},
+]
 
 resource_actions = [
   {'title': 'Start', 'class': 'action_start_16', 'action': 'start'},

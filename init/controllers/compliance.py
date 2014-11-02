@@ -4637,68 +4637,6 @@ class table_comp_status(HtmlTable):
         self.checkbox_id_table = 'comp_status'
         if 'CompManager' in user_groups():
             self.additional_tools.append('check_del')
-        if member_of(('Manager', 'CompExec')):
-            self += HtmlTableMenu('Action', 'action16', ['tool_action_module'], id='menu_comp_action')
-
-    def tool_action_module(self):
-        cmd = [
-          'check',
-          'fixable',
-          'fix',
-        ]
-        cl = "comp16"
-
-        sid = 'action_s_module'
-        s = []
-        for c in cmd:
-            confirm=T("""Are you sure you want to execute a %(a)s action on all selected objects. Please confirm action""",dict(a=c))
-            s.append(TR(
-                       TD(
-                         IMG(
-                           _src=URL(r=request,c='static',f=action_img_h[c]),
-                         ),
-                       ),
-                       TD(
-                         A(
-                           c,
-                           _onclick="""if (confirm("%(text)s")){%(s)s};"""%dict(
-                             s=self.ajax_submit(additional_inputs=[sid], args=['do_action', c]),
-                             text=confirm,
-                           ),
-                         ),
-                       ),
-                     ))
-
-        actions = TABLE(
-                      TR(
-                        TH(
-                          T("Action"),
-                        ),
-                        TD(
-                          TABLE(*s),
-                        ),
-                      ),
-                    )
-
-        d = DIV(
-              A(
-                T("Run selected modules"),
-                _class=cl,
-                _onclick="""
-                  click_toggle_vis(event,'%(div)s', 'block');
-                """%dict(div='tool_action_module'),
-              ),
-              DIV(
-                actions,
-                _style='display:none',
-                _class='white_float',
-                _name='tool_action_module',
-                _id='tool_action_module',
-              ),
-            )
-
-        return d
-
 
     def check_del(self):
         d = DIV(
@@ -5049,9 +4987,6 @@ def ajax_comp_status():
         try:
             if action == 'check_del':
                 check_del(t.get_checked())
-            elif action == 'do_action' and len(request.args) == 2:
-                saction = request.args[1]
-                do_action(t.get_checked(), saction)
         except ToolError, e:
             t.flash = str(e)
 

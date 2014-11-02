@@ -1407,6 +1407,10 @@ function table_action_menu(t, e){
     s += table_action_menu_resource(t, e)
     s += table_action_menu_resources(t)
   }
+  if ("modules" in t.action_menu) {
+    s += table_action_menu_module(t, e)
+    s += table_action_menu_modules(t)
+  }
   if (s == "") {
     return
   }
@@ -1418,6 +1422,24 @@ function table_action_menu(t, e){
   $("#am_"+t.id).css({"left": pos[0] + "px", "top": pos[1] + "px"})
 
   // bind action click triggers
+  $("#am_"+t.id).find("[scope=module]").bind("click", function(){
+    var action = $(this).attr("action")
+    var data = table_action_menu_get_module_data(t, e, action)
+    if (data.length==0) {
+      return
+    }
+    table_action_menu_click_animation(t)
+    table_action_menu_post_data(data)
+  })
+  $("#am_"+t.id).find("[scope=modules]").bind("click", function(){
+    var action = $(this).attr("action")
+    var data = table_action_menu_get_modules_data(t, action)
+    if (data.length==0) {
+      return
+    }
+    table_action_menu_click_animation(t)
+    table_action_menu_post_data(data)
+  })
   $("#am_"+t.id).find("[scope=resource]").bind("click", function(){
     var action = $(this).attr("action")
     var data = table_action_menu_get_resource_data(t, e, action)
@@ -1550,6 +1572,56 @@ function table_action_menu_get_svc_data(t, e, action) {
     return data
 }
 
+function table_action_menu_get_modules_data(t, action) {
+    var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
+    var data = []
+    var index = []
+    lines.each(function(){
+      var nodename = $(this).find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").attr("v")
+      if ((typeof nodename === "undefined")||(nodename=="")) {
+        return
+      }
+      var module = $(this).find("td[cell=1][name$=_run_module]").attr("v")
+      if ((typeof module === "undefined")||(module=="")) {
+        return
+      }
+      var svcname = $(this).find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").attr("v")
+      if ((typeof svcname === "undefined")||(svcname=="")) {
+        var i = nodename+"--"+module
+        d = {"nodename": nodename, "svcname": svcname, "module": module, "action": action}
+      } else {
+        var i = nodename+"--"+svcname+"--"+module
+        d = {"nodename": nodename, "module": module, "action": action}
+      }
+      if (index.indexOf(i)<0) {
+        index.push(i)
+        data.push(d)
+      }
+    })
+    return data
+}
+
+function table_action_menu_get_module_data(t, e, action) {
+    var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
+    var cell = $(e.target)
+    var line = cell.parents(".tl").first()
+    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").first().attr("v")
+    if ((typeof nodename === "undefined")||(nodename=="")) {
+      return []
+    }
+    var module = line.find("td[cell=1][name$=_run_module]").first().attr("v")
+    if ((typeof module === "undefined")||(module=="")) {
+      return []
+    }
+    var data = [{'nodename': nodename, 'module': module, 'action': action}]
+    var svcname = line.find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").first().attr("v")
+    if ((typeof svcname === "undefined")||(svcname=="")) {
+      return data
+    }
+    data['svcname'] = svcname
+    return data
+}
+
 function table_action_menu_get_resources_data(t, action) {
     var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
     var data = []
@@ -1557,15 +1629,15 @@ function table_action_menu_get_resources_data(t, action) {
     lines.each(function(){
       var nodename = $(this).find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").attr("v")
       if ((typeof nodename === "undefined")||(nodename=="")) {
-        return []
+        return
       }
       var svcname = $(this).find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").attr("v")
       if ((typeof svcname === "undefined")||(svcname=="")) {
-        return []
+        return
       }
       var rid = $(this).find("td[cell=1][name$=_rid]").attr("v")
       if ((typeof rid === "undefined")||(rid=="")) {
-        return []
+        return
       }
       var i = nodename+"--"+svcname+"--"+rid
       if (index.indexOf(i)<0) {
@@ -1602,6 +1674,28 @@ function menu_action_status(msg){
     s = "factorized: "+msg.factorized+", "+s
   }
   $(".flash").html(s).slideDown().effect("fade", 5000)
+}
+
+function table_action_menu_module(t, e){
+  var data = table_action_menu_get_module_data(t, e)
+  if (data.length==0) {
+    return ""
+  }
+  if ('svcname' in data[0]) {
+    var s = "<li class='clickable'>"+T("Actions on module <b>{{module}}</b> on <b>{{svcname}}</b> service instance on node <b>{{nodename}}</b>", data[0])+table_action_menu_module_entries(t, "module")+"</li>"
+  } else {
+    var s = "<li class='clickable'>"+T("Actions on module <b>{{module}}</b> on node <b>{{nodename}}</b>", data[0])+table_action_menu_module_entries(t, "module")+"</li>"
+  }
+  return s
+}
+
+function table_action_menu_modules(t){
+  var data = table_action_menu_get_modules_data(t)
+  if (data.length==0) {
+    return ""
+  }
+  var s = "<li class='clickable'>"+T("Actions on selected modules")+" (<b>"+data.length+"</b>)"+table_action_menu_module_entries(t, "modules")+"</li>"
+  return s
 }
 
 function table_action_menu_resource(t, e){
@@ -1655,6 +1749,16 @@ function table_action_menu_nodes(t){
     return ""
   }
   var s = "<li class='clickable'>"+T("Actions on selected nodes")+" (<b>"+data.length+"</b>)"+table_action_menu_node_entries(t, "nodes")+"</li>"
+  return s
+}
+
+function table_action_menu_module_entries(t, scope){
+  s = "<ul>"
+  for (i=0; i<t.action_menu["modules"].length; i++) {
+    var e = t.action_menu["modules"][i]
+    s += "<li class='clickable "+e.class+"' action='"+e.action+"' scope='"+scope+"'>"+e.title+"</li>"
+  }
+  s += "</ul>"
   return s
 }
 
