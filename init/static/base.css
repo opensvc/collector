@@ -71,11 +71,17 @@
 }
 
 .header_logo {
-    float: right;
+  float: right;
+  top: 5px;
+  position: relative;
+  padding-right: 1em;
 }
-
 .header_logo a {
-    color: white;
+  color: #aaaaaa;
+}
+.header_logo a:hover {
+  text-decoration: none;
+  color: white;
 }
 
 img {
@@ -1459,6 +1465,11 @@ ul.login_menu ul {
     padding: 0 0 0 20px;
     min-height: 16px;
 }
+.gear16 {
+    background: transparent url('gear16.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
 .action16 {
     background: transparent url('action16.png') no-repeat;
     padding: 0 0 0 20px;
@@ -1721,6 +1732,10 @@ ul.login_menu ul {
 .wfsearch:focus {
     background: rgb(255, 248, 239) url('search.png') no-repeat;
 }
+.action_q_widget {
+    float: right;
+    padding:0.3em;
+}
 .search {
     float: right;
     padding:0.2em;
@@ -1750,7 +1765,7 @@ ul.login_menu ul {
     padding-right: 0.2em;
     padding-top: 0.2em;
 }
-.search a {
+.action_q_widget a {
     margin-top: 0.5em;
     padding-right: 1.5em;
     white-space: nowrap;
