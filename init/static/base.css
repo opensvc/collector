@@ -745,11 +745,13 @@ a.xinfo_shown span {
 
 .cloud {
    display: none;
+  padding: 0.5em;
 }
 
 .cloud_shown {
    display: block;
    text-align: left;
+  padding: 0.5em;
 }
 
 .menubar {
@@ -774,20 +776,27 @@ a.xinfo_shown span {
     width:100%;
 }
 
+.extraline {
+  padding: 0;
+}
+.extraline > td {
+  padding: 0;
+}
+.extraline > td > table {
+  width: 96%;
+  box-shadow: 0px 0px 20px 2px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  margin: 20px
+}
 .tab {
-    border-bottom:solid 1px orange;
+    background: whitesmoke;
     padding:0px;
 }
 .tab ul {
     padding:0px;
 }
 .tab li {
-    border-top-left-radius:8px;
-    border-top-right-radius:8px;
-   -moz-border-radius-topleft:8px;
-   -moz-border-radius-topright:8px;
-   -webkit-border-top-left-radius:8px;
-   -webkit-border-top-right-radius:8px;
     text-align: center;
     vertical-align: middle;
     padding-left: 0.5em;
@@ -795,18 +804,18 @@ a.xinfo_shown span {
     padding-top: 0.3em;
     padding-bottom: 0.2em;
     cursor: pointer;
-    background-color: #dddddd;
     color: black;
     list-style: none;
     float:left;
-    border-left: 1px solid #ccc;
+    border-right: 1px solid #ddd;
 }
 .tab .tab_active {
-    background-color: orange;
+    box-shadow: 0px -2px darkred inset;
 }
 .tab .closetab {
     background-color:black;
     color:white;
+    border: none;
 }
 
 .action_menu ul {
@@ -1080,6 +1089,13 @@ ul.login_menu ul {
 }
 .login input {
     color: black;
+}
+
+.extraline_marker {
+  background-image: url('/init/static/markerup16.png');
+  background-repeat: no-repeat;
+  background-position-x: 10%;
+  background-position-y: 100%;
 }
 
 .common16 {

@@ -54,6 +54,7 @@ function bind_search_tool() {
       $(".white_float").hide()
       $(".white_float_input").hide()
       $(".right_click_menu").hide()
+      $(".extraline").remove()
       $(".menu").hide("fade", 200)
       return
     }
@@ -846,6 +847,7 @@ function table_refresh(t) {
              // disable DOM insert event trigger for perf
              t.need_refresh = false
              t.scroll_disable_dom()
+             $("#table_"+t.id).children().children("tr.extraline").remove()
 
              try {
                  var data = $.parseJSON(msg)
@@ -1109,16 +1111,16 @@ function toggle_extra(url, id, e, ncols) {
     if (ncols==0) {
         ncols = line.children("[cell=1]").length
     }
-    if (line.next().children("#"+id).attr("id")!=id) {
-        line.after("<tr><td id="+id+" colspan="+ncols+" style='display:none'></td></tr>")
-        $("#"+id).toggleClass("spinner")
+    var toolbar = ""
+    line.children("td.tools").each(function(){
+      toolbar = "<td class='tools'></td>"
+    })
+    if (line.next().children("#"+id).attr("id")==id) {
+        line.next().remove()
     }
-    if ($('#'+id).css("display") == 'none') {
-        $('#'+id).show()
-        sync_ajax(url, [], id, function(){$("#"+id).removeClass("spinner")})
-    } else {
-        $('#'+id).hide()
-    }
+    line.after("<tr class='extraline'>"+toolbar+"<td id="+id+" colspan="+ncols+"></td></tr>")
+    $("#"+id).toggleClass("spinner")
+    sync_ajax(url, [], id, function(){$("#"+id).removeClass("spinner")})
 }
 function checked_services() {
     d = new Array()
