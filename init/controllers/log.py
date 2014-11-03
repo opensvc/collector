@@ -219,8 +219,11 @@ def ajax_log():
         q = _where(q, 'log', t.filter_parse(f),  f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
 
     if len(request.args) == 1 and request.args[0] == 'csv':
+        t.csv_q = q
+        t.csv_orderby = o
         return t.csv()
     if len(request.args) == 1 and request.args[0] == 'commonality':
+        t.csv_q = q
         return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'line':
         if request.vars.volatile_filters is None:

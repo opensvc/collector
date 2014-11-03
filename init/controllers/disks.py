@@ -1382,13 +1382,12 @@ def ajax_disks():
         t.csv_orderby = o
         t.csv_left = (l1,l2)
         t.csv_limit = 60000
-        n = db(q).select(db.b_disk_app.id.count(), cacheable=True, left=(l1,l2)).first()._extra[db.b_disk_app.id.count()]
         return t.csv()
 
     if len(request.args) == 1 and request.args[0] == 'commonality':
-        n = db(q).select(db.b_disk_app.id.count(), cacheable=True, left=(l1,l2)).first()._extra[db.b_disk_app.id.count()]
-        t.setup_pager(n)
-        t.object_list = db(q).select(cacheable=True, limitby=(t.pager_start,t.pager_end), orderby=o, left=(l1,l2))
+        t.csv_q = q
+        t.csv_orderby = o
+        t.csv_left = (l1,l2)
         return t.do_commonality()
 
 @auth.requires_login()
