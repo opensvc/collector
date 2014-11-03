@@ -674,7 +674,6 @@ def ajax_node():
             IMG(_src=URL(r=request,c='static',f='spinner.gif')),
             _id='tab5_'+str(rowid),
             _class='cloud',
-            _style='max-width:80em',
           ),
           DIV(
             IMG(_src=URL(r=request,c='static',f='spinner.gif')),
@@ -709,13 +708,11 @@ def ajax_node():
             IMG(_src=URL(r=request,c='static',f='spinner.gif')),
             _id='tab12_'+str(rowid),
             _class='cloud',
-            _style='max-width:80em',
           ),
           DIV(
             IMG(_src=URL(r=request,c='static',f='spinner.gif')),
             _id='tab13_'+str(rowid),
             _class='cloud',
-            _style='max-width:80em',
           ),
           SCRIPT(
             "function n%(rid)s_load_node_stor(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
