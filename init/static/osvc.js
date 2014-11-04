@@ -1841,6 +1841,21 @@ function get_pos(e) {
   return [posx, posy]
 }
 
+function get_selected() {
+    if (window.getSelection) {
+        return window.getSelection().toString();
+    } else if (document.getSelection) {
+        return document.getSelection().toString();
+    } else {
+        var selection = document.selection && document.selection.createRange();
+        if (selection.text) {
+            return selection.text.toString();
+        }
+        return "";
+    }
+    return "";
+}
+
 function filter_selector(id,e,k,v){
   if(e.button != 2) {
     return
@@ -2513,6 +2528,7 @@ function _cell_decorator_nodename(e, os_icon) {
     }
   } catch(e) {}
   $(e).click(function(){
+    if (get_selected() != "") {return}
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
     span_id = $(e).parent(".tl").attr("spansum")
     id = table_id + "_x_" + span_id
@@ -2528,6 +2544,7 @@ function cell_decorator_username(e) {
   }
   $(e).addClass("corner")
   $(e).click(function(){
+    if (get_selected() != "") {return}
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
     span_id = $(e).parent(".tl").attr("spansum")
     id = table_id + "_x_" + span_id
@@ -2545,6 +2562,7 @@ function cell_decorator_svcname(e) {
   $(e).append("<div class='a nowrap'>"+v+"</div>")
   $(e).addClass("corner")
   $(e).click(function(){
+    if (get_selected() != "") {return}
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
     span_id = $(e).parent(".tl").attr("spansum")
     id = table_id + "_x_" + span_id
@@ -2595,6 +2613,7 @@ function cell_decorator_chk_type(e) {
   div.addClass("nowrap")
   $(e).addClass("corner")
   $(e).click(function(){
+    if (get_selected() != "") {return}
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
     span_id = $(e).parent(".tl").attr("spansum")
     id = table_id + "_x_" + span_id
@@ -2845,6 +2864,7 @@ function cell_decorator_disk_array(e) {
   $(e).html(s)
   $(e).addClass("corner")
   $(e).click(function(){
+    if (get_selected() != "") {return}
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
     span_id = line.attr("spansum")
     id = table_id + "_x_" + span_id
@@ -2863,6 +2883,7 @@ function cell_decorator_disk_array_dg(e) {
   $(e).html(s)
   $(e).addClass("corner")
   $(e).click(function(){
+    if (get_selected() != "") {return}
     var line = $(e).parent(".tl")
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
     array = line.find("[name$=_disk_arrayid][name$=_array_name]").attr("v")
@@ -2880,6 +2901,7 @@ function cell_decorator_dash_entry(e) {
   $(e).html(s)
   $(e).addClass("corner")
   $(e).click(function(){
+    if (get_selected() != "") {return}
     var line = $(e).parent(".tl")
     var nodename = line.children("[name$=dash_nodename]").attr("v")
     var svcname = line.children("[name$=dash_svcname]").attr("v")
@@ -2901,6 +2923,7 @@ function cell_decorator_rset_md5(e) {
   $(e).html(s)
   $(e).addClass("corner")
   $(e).click(function(){
+    if (get_selected() != "") {return}
     url = $(location).attr("origin") + "/init/compliance/ajax_rset_md5?rset_md5="+v
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
     span_id = $(e).parent(".tl").attr("spansum")
