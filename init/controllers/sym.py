@@ -534,9 +534,9 @@ class table(object):
         return inputs
 
     def __ajax(self):
-        return """ajax("%(url)s",
+        return """sync_ajax("%(url)s",
                        ["arrayid", %(inputs)s],
-                       "%(innerhtml)s");
+                       "%(innerhtml)s", function(){});
                   getElementById("%(innerhtml)s").innerHTML='%(spinner)s';
                 """%dict(url=URL(r=request,f=self.func),
                          innerhtml=self.innerhtml,
@@ -1363,7 +1363,7 @@ def sym_overview_item(symid, func, count, title):
            if (getElementById("%(func)s_%(symid)s").innerHTML=="") {
              getElementById("%(func)s_%(symid)s").innerHTML='%(spinner)s';
              getElementById("arrayid").value="%(symid)s";
-             ajax("%(url)s",["arrayid"],"%(func)s_%(symid)s");
+             sync_ajax("%(url)s",["arrayid"],"%(func)s_%(symid)s", function(){});
            };
            toggle_vis_block("%(func)s_%(symid)s");
          """%dict(url=URL(r=request,f=func), func=func,

@@ -889,7 +889,7 @@ $('[name=radio_form]').each(function(){
 });
 $("#%(id)s").html('%(spinner)s');
 $("#%(id2)s").html('%(spinner)s');
-if ("%(id2)s" != "None" && $("#%(id2)s").is(":visible")) {
+if (("%(id2)s" != "None") && ($("#%(id2)s").is(":visible"))) {
   sync_ajax('%(url2)s', [], '%(id2)s', function(){});
 }
 if ($("#%(id)s").is(":visible")) {

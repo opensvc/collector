@@ -97,7 +97,7 @@ def format_sym(sym):
                if (getElementById("sym_detail_%(symid)s").innerHTML=="") {
                  getElementById("sym_detail_%(symid)s").innerHTML='%(spinner)s';
                  getElementById("arrayid").value="%(symid)s";
-                 ajax("%(url)s",['arrayid'],"sym_detail_%(symid)s");
+                 sync_ajax("%(url)s",['arrayid'],"sym_detail_%(symid)s", function(){});
                };
             """%dict(url=URL(r=request,f='sym_overview'),
                      spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')),
