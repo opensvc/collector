@@ -1,4 +1,7 @@
 var fr_t_dictionary = {
+ 'Yes': 'Oui',
+ 'No': 'Non',
+ 'Are you sure ?': 'Etes-vous certain ?',
  'done': 'fait',
  'running': 'en cours',
  'waiting': 'en attente',

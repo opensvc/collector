@@ -1391,7 +1391,25 @@ function table_action_menu_click_animation(t) {
   }, 1500, function(){dest.parent().effect("highlight")})
 }
 
-function table_action_menu_post_data(data) {
+function table_action_menu_post_data(t, data, confirmation) {
+    if (!(confirmation==true)) {
+      action = data[0]['action']
+      $("#am_"+t.id).find("li.right16").remove()
+      $("#am_"+t.id).find("li[action="+action+"]").each(function(){
+        $(this).addClass("b")
+        $(this).siblings().fadeOut(500, function(){$(this).remove()})
+        $(this).parent("ul").parent().unbind("click")
+      })
+      s = "<hr>"
+      s += "<div>"+T("Are you sure ?")+"</div><br>"
+      s += "<div class='check16 float clickable' name='yes'>"+T("Yes")+"</div>"
+      s += "<div class='nok float clickable' name='no'>"+T("No")+"</div>"
+      $("#am_"+t.id).append(s)
+      $("#am_"+t.id).find("[name=yes]").bind("click", function(){table_action_menu_post_data(t, data, true)})
+      $("#am_"+t.id).find("[name=no]").bind("click", function(){$("#am_"+t.id).fadeOut(500, function(){$(this).remove()})})
+      return
+    }
+    table_action_menu_click_animation(t)
     $.ajax({
       async: false,
       type: "POST",
@@ -1451,8 +1469,7 @@ function table_action_menu(t, e){
     if (data.length==0) {
       return
     }
-    table_action_menu_click_animation(t)
-    table_action_menu_post_data(data)
+    table_action_menu_post_data(t, data)
   })
   $("#am_"+t.id).find("[scope=modules]").bind("click", function(){
     var action = $(this).attr("action")
@@ -1460,8 +1477,7 @@ function table_action_menu(t, e){
     if (data.length==0) {
       return
     }
-    table_action_menu_click_animation(t)
-    table_action_menu_post_data(data)
+    table_action_menu_post_data(t, data)
   })
   $("#am_"+t.id).find("[scope=resource]").bind("click", function(){
     var action = $(this).attr("action")
@@ -1469,8 +1485,7 @@ function table_action_menu(t, e){
     if (data.length==0) {
       return
     }
-    table_action_menu_click_animation(t)
-    table_action_menu_post_data(data)
+    table_action_menu_post_data(t, data)
   })
   $("#am_"+t.id).find("[scope=resources]").bind("click", function(){
     var action = $(this).attr("action")
@@ -1478,8 +1493,7 @@ function table_action_menu(t, e){
     if (data.length==0) {
       return
     }
-    table_action_menu_click_animation(t)
-    table_action_menu_post_data(data)
+    table_action_menu_post_data(t, data)
   })
   $("#am_"+t.id).find("[scope=svc]").bind("click", function(){
     var action = $(this).attr("action")
@@ -1487,8 +1501,7 @@ function table_action_menu(t, e){
     if (data.length==0) {
       return
     }
-    table_action_menu_click_animation(t)
-    table_action_menu_post_data(data)
+    table_action_menu_post_data(t, data)
   })
   $("#am_"+t.id).find("[scope=svcs]").bind("click", function(){
     var action = $(this).attr("action")
@@ -1496,8 +1509,7 @@ function table_action_menu(t, e){
     if (data.length==0) {
       return
     }
-    table_action_menu_click_animation(t)
-    table_action_menu_post_data(data)
+    table_action_menu_post_data(t, data)
   })
   $("#am_"+t.id).find("[scope=node]").bind("click", function(){
     var action = $(this).attr("action")
@@ -1505,8 +1517,7 @@ function table_action_menu(t, e){
     if (data.length==0) {
       return
     }
-    table_action_menu_click_animation(t)
-    table_action_menu_post_data(data)
+    table_action_menu_post_data(t, data)
   })
   $("#am_"+t.id).find("[scope=nodes]").bind("click", function(){
     var action = $(this).attr("action")
@@ -1514,8 +1525,7 @@ function table_action_menu(t, e){
     if (data.length==0) {
       return
     }
-    table_action_menu_click_animation(t)
-    table_action_menu_post_data(data)
+    table_action_menu_post_data(t, data)
   })
 
   // display actions only for the clicked section 
