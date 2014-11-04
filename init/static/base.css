@@ -979,9 +979,6 @@ div.sym_detail_visible {
 
 .white_float_input {
     max-width: 50%;
-    border-radius:8px;
-   -moz-border-radius:8px;
-   -webkit-border-radius:8px;
     border-bottom-color: black;
     border-bottom-style: solid;
     border-bottom-width: 2px;
@@ -1004,12 +1001,13 @@ div.sym_detail_visible {
     text-align: left;
     z-index: 499;
     background-color: white;
+    box-shadow: 0px 0px 20px 2px;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
 }
 
 .white_float {
-    border-radius:8px;
-   -moz-border-radius:8px;
-   -webkit-border-radius:8px;
     border-bottom-color: black;
     border-bottom-style: solid;
     border-bottom-width: 2px;
@@ -1031,6 +1029,10 @@ div.sym_detail_visible {
     text-align: left;
     z-index: 499;
     background-color: white;
+    box-shadow: 0px 0px 20px 2px;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
 }
 
 .floatw {

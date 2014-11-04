@@ -797,7 +797,7 @@ def ajax_service():
                 T("%(n)s", dict(n=request.vars.node)),
                 _class='nok',
               ),
-              _onclick="""$('#%(id)s').hide()"""%dict(id=rowid),
+              _onclick="""$('#%(id)s').remove()"""%dict(id=rowid),
               _class="closetab",
             ),
             LI(
