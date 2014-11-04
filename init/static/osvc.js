@@ -1346,11 +1346,11 @@ function table_bind_filter_input_events(t) {
 
 function table_bind_action_menu(t) {
   $("#table_"+t.id).find("[name="+t.id+"_tools]").each(function(){
-    $(this).bind("mouseup", function(event) {
-      table_action_menu(t, event)
-    })
     $(this).bind("contextmenu", function() {
       return false
+    })
+    $(this).bind("mouseup", function(event) {
+      table_action_menu(t, event)
     })
     $(this).bind("click", function() {
       $("#fsr"+t.id).hide()
@@ -1433,6 +1433,7 @@ function table_action_menu(t, e){
   if (t.action_menu.length == 0) {
     return
   }
+  $(".right_click_menu").hide()
 
   // format the action menu
   var s = ""
@@ -1843,9 +1844,9 @@ function get_pos(e) {
 
 function filter_selector(id,e,k,v){
   if(e.button != 2) {
-    $("#am_"+id).remove()
     return
   }
+  $("#am_"+id).remove()
   $("#fsr"+id).each(function() {
     $(this)[0].oncontextmenu = function() {
       return false;
