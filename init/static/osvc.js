@@ -1756,7 +1756,7 @@ function table_action_menu_module_entries(t, scope){
   s = "<ul>"
   for (i=0; i<t.action_menu["modules"].length; i++) {
     var e = t.action_menu["modules"][i]
-    s += "<li class='clickable "+e.class+"' action='"+e.action+"' scope='"+scope+"'>"+e.title+"</li>"
+    s += "<li class='clickable "+e['class']+"' action='"+e.action+"' scope='"+scope+"'>"+e.title+"</li>"
   }
   s += "</ul>"
   return s
@@ -1766,7 +1766,7 @@ function table_action_menu_resource_entries(t, scope){
   s = "<ul>"
   for (i=0; i<t.action_menu["resources"].length; i++) {
     var e = t.action_menu["resources"][i]
-    s += "<li class='clickable "+e.class+"' action='"+e.action+"' scope='"+scope+"'>"+e.title+"</li>"
+    s += "<li class='clickable "+e['class']+"' action='"+e.action+"' scope='"+scope+"'>"+e.title+"</li>"
   }
   s += "</ul>"
   return s
@@ -1776,7 +1776,7 @@ function table_action_menu_svc_entries(t, scope){
   s = "<ul>"
   for (i=0; i<t.action_menu["services"].length; i++) {
     var e = t.action_menu["services"][i]
-    s += "<li class='clickable "+e.class+"' action='"+e.action+"' scope='"+scope+"'>"+e.title+"</li>"
+    s += "<li class='clickable "+e['class']+"' action='"+e.action+"' scope='"+scope+"'>"+e.title+"</li>"
   }
   s += "</ul>"
   return s
@@ -1786,7 +1786,7 @@ function table_action_menu_node_entries(t, scope){
   s = "<ul>"
   for (i=0; i<t.action_menu["nodes"].length; i++) {
     var e = t.action_menu["nodes"][i]
-    s += "<li class='clickable "+e.class+"' action='"+e.action+"' scope='"+scope+"'>"+e.title+"</li>"
+    s += "<li class='clickable "+e['class']+"' action='"+e.action+"' scope='"+scope+"'>"+e.title+"</li>"
   }
   s += "</ul>"
   return s

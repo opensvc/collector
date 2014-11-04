@@ -212,7 +212,7 @@
 'allocated': 'alloué',
 'Allocation type': "Type d'allocation",
 'allocation type: ': "type d'allocation:",
-'An error occured, please %s the page': 'Une erreur est survenue, merci d\'appliquer à la page l\'action "%s"',
+'An error occured, please %(l)s the page': 'Une erreur est survenue, merci de %(l)s la page',
 'Anonymous links:': 'Liens anonymes:',
 'App': 'App',
 'app': 'app',
