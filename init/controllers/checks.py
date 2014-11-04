@@ -316,7 +316,7 @@ def ajax_chk_type_defaults():
            ))
 
 
-    return DIV(
+    return TABLE(
              DIV(
                H3(T("Threshold defaults")),
              ),

@@ -1,5 +1,12 @@
 @charset "UTF-8";
 
+.corner:hover {
+  background-image: url("corner8.png");
+  background-position-x: 0px;
+  background-position-y: 100%;
+  background-repeat: no-repeat;
+}
+
 .user_group {
   display: table;
   height: 3em;
@@ -449,7 +456,7 @@ a {
 }
 
 .a:hover {
-    text-decoration: underline;
+    //text-decoration: underline;
 }
 
 a:hover {
@@ -997,16 +1004,13 @@ div.sym_detail_visible {
     max-width: 50%;
     border-bottom-color: black;
     border-bottom-style: solid;
-    border-bottom-width: 2px;
     border-left-color: #AAA;
     border-left-style: solid;
-    border-left-width: 2px;
     border-right-color: black;
     border-right-style: solid;
-    border-right-width: 2px;
     border-top-color: #AAA;
     border-top-style: solid;
-    border-top-width: 2px;
+    border-width: 0px;
     color: black;
     cursor: default;
     display: none;
@@ -1026,16 +1030,13 @@ div.sym_detail_visible {
 .white_float {
     border-bottom-color: black;
     border-bottom-style: solid;
-    border-bottom-width: 2px;
     border-left-color: #AAA;
     border-left-style: solid;
-    border-left-width: 2px;
     border-right-color: black;
     border-right-style: solid;
-    border-right-width: 2px;
     border-top-color: #AAA;
     border-top-style: solid;
-    border-top-width: 2px;
+    border-width: 0px;
     color: black;
     cursor: default;
     margin: 0px;

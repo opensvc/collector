@@ -1354,7 +1354,6 @@ function table_bind_action_menu(t) {
     })
     $(this).bind("click", function() {
       $("#fsr"+t.id).hide()
-      $("#action_menu"+t.id).remove()
     })
   })
 }
@@ -1373,7 +1372,7 @@ function table_bind_filter_selector(t) {
     })
     $(this).bind("click", function() {
       $("#fsr"+t.id).hide()
-      $("#action_menu"+t.id).remove()
+      $("#am_"+t.id).remove()
     })
   })
 }
@@ -2498,6 +2497,7 @@ function _cell_decorator_nodename(e, os_icon) {
   }
   $(e).empty()
   $(e).append("<div class='a nowrap'>"+v+"</div>")
+  $(e).addClass("corner")
   div = $(":first-child", e)
   if (os_icon) {
     try {
@@ -2526,6 +2526,7 @@ function cell_decorator_username(e) {
   if ((v=="") || (v=="empty")) {
     return
   }
+  $(e).addClass("corner")
   $(e).click(function(){
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
     span_id = $(e).parent(".tl").attr("spansum")
@@ -2542,6 +2543,7 @@ function cell_decorator_svcname(e) {
   }
   $(e).empty()
   $(e).append("<div class='a nowrap'>"+v+"</div>")
+  $(e).addClass("corner")
   $(e).click(function(){
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
     span_id = $(e).parent(".tl").attr("spansum")
@@ -2591,6 +2593,7 @@ function cell_decorator_chk_type(e) {
   div = $(":first-child", e)
   div.addClass("a")
   div.addClass("nowrap")
+  $(e).addClass("corner")
   $(e).click(function(){
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
     span_id = $(e).parent(".tl").attr("spansum")
@@ -2606,6 +2609,7 @@ function cell_decorator_dash_link_comp_tab(e) {
   var nodename = line.find("[name$=dash_nodename]").attr("v")
   s = "<div class='comp16 clickable'></div>"
   $(e).html(s)
+  $(e).addClass("corner")
   if (svcname != "") {
     $(e).click(function(){
       table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
@@ -2630,6 +2634,7 @@ function cell_decorator_dash_link_pkg_tab(e) {
   var svcname = line.find("[name$=dash_svcname]").attr("v")
   s = "<div class='pkg16 clickable'></div>"
   $(e).html(s)
+  $(e).addClass("corner")
   if (svcname != "") {
     $(e).click(function(){
       table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
@@ -2838,6 +2843,7 @@ function cell_decorator_disk_array(e) {
   var s = ""
   s = "<div class='clickable'>"+v+"</div>"
   $(e).html(s)
+  $(e).addClass("corner")
   $(e).click(function(){
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
     span_id = line.attr("spansum")
@@ -2855,6 +2861,7 @@ function cell_decorator_disk_array_dg(e) {
   var s = ""
   s = "<div class='clickable'>"+v+"</div>"
   $(e).html(s)
+  $(e).addClass("corner")
   $(e).click(function(){
     var line = $(e).parent(".tl")
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
@@ -2871,6 +2878,7 @@ function cell_decorator_dash_entry(e) {
   var s = ""
   s = "<div class='clickable'>"+v+"</div>"
   $(e).html(s)
+  $(e).addClass("corner")
   $(e).click(function(){
     var line = $(e).parent(".tl")
     var nodename = line.children("[name$=dash_nodename]").attr("v")
@@ -2891,6 +2899,7 @@ function cell_decorator_rset_md5(e) {
   var s = ""
   s = "<div class='clickable'>"+v+"</div>"
   $(e).html(s)
+  $(e).addClass("corner")
   $(e).click(function(){
     url = $(location).attr("origin") + "/init/compliance/ajax_rset_md5?rset_md5="+v
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')

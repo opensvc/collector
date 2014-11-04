@@ -81,7 +81,7 @@ def ajax_appinfo_log():
     id += '_'+request.vars.launcher.replace(" ", "").replace("-", "").replace('.', '_')
     id += '_'+request.vars.key.replace(" ", "").replace("-", "").replace('.', '_')
 
-    return DIV(
+    return TABLE(
       H3(T("History of key '%(key)s' from launcher '%(launcher)s'", dict(launcher=request.vars.launcher, key=request.vars.key))),
       DIV(
         _id=id,
@@ -99,7 +99,6 @@ def ajax_appinfo_log():
             ),
         _name='%s_to_eval'%row_id,
       ),
-      _style="float:left;width:500px",
     )
 
 class table_appinfo(HtmlTable):
@@ -162,6 +161,7 @@ class table_appinfo(HtmlTable):
         }
         for c in self.cols:
             self.colprops[c].t = self
+        self.checkboxes = True
         self.extraline = True
         self.dbfilterable = True
         self.ajax_col_values = 'ajax_appinfo_col_values'

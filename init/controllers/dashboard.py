@@ -698,7 +698,7 @@ def ajax_alert_events():
                        args=['wiki_%s'%request.vars.rowid, wikipage_name]),
          )
 
-    return DIV(
+    return TABLE(DIV(
              H2(T("Alert timeline")),
              DIV(
                data,
@@ -710,7 +710,8 @@ def ajax_alert_events():
                _id='wiki_%s'%request.vars.rowid,
              ),
              SCRIPT(s, _name='%s_to_eval'%request.vars.rowid),
-           )
+             _style="padding:1em",
+           ))
 
 def test_dashboard_events():
     dashboard_events()

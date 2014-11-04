@@ -12,7 +12,7 @@ def call():
 def ajax_user():
     def js(tab, rowid):
         buff = ""
-        for i in range(1, 2):
+        for i in range(1, 3):
             buff += """$('#%(tab)s_%(id)s').hide();$('#li%(tab)s_%(id)s').removeClass('tab_active');"""%dict(tab='tab'+str(i), id=rowid)
         buff += """$('#%(tab)s_%(id)s').show();$('#li%(tab)s_%(id)s').addClass('tab_active');
                    if ("%(tab)s" in callbacks) {
@@ -181,6 +181,7 @@ def ajax_user_groups():
     d = DIV(
           H2(T("Organizational groups")),
           html_user_groups(_org_groups),
+          DIV(_class="spacer"),
           H2(T("Privilege groups")),
           html_user_groups(_priv_groups),
         )
