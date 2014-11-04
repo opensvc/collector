@@ -155,7 +155,7 @@ def do_svc_comp_action(nodename, svcname, action, mode, obj):
     sql = """select m.os_name
              from v_svcmon m
              join v_apps_flat a on m.svc_app=a.app
-             where m.mon_svcname="%(svcname)s" and mon_nodname="%(nodename)s"
+             where m.mon_svcname="%(svcname)s" and (mon_nodname="%(nodename)s" or mon_vmname="%(nodename)s")
              and responsible="%(user)s"
              group by m.mon_nodname, m.mon_svcname
           """%dict(nodename=nodename,
@@ -183,7 +183,7 @@ def do_svc_action(nodename, svcname, action, rid=None):
     sql = """select m.mon_nodname, m.mon_svcname, m.os_name
              from v_svcmon m
              join v_apps_flat a on m.svc_app=a.app
-             where m.mon_svcname="%(svcname)s" and mon_nodname="%(nodename)s"
+             where m.mon_svcname="%(svcname)s" and (mon_nodname="%(nodename)s" or mon_vmname="%(nodename)s")
              and responsible='%(user)s'
              group by m.mon_nodname, m.mon_svcname
           """%dict(nodename=nodename,
@@ -215,7 +215,7 @@ def json_action_one(d):
     if "rid" in d and "svcname" in d and "nodename" in d:
         if "action" in d:
             return do_svc_action(d["nodename"], d["svcname"], d["action"], rid=d["rid"])
-    if "svcname" in d and d["svcname"] != "" and "nodename" in d:
+    elif "svcname" in d and d["svcname"] != "" and "nodename" in d:
         if "ruleset" in d:
             return do_svc_comp_action(d["nodename"], d["svcname"], d["action"], "ruleset", d["ruleset"])
         elif "moduleset" in d:
