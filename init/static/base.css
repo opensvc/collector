@@ -1,5 +1,21 @@
 @charset "UTF-8";
 
+.user_group {
+  display: table;
+  height: 3em;
+  width: 12em;
+  margin: 0.2em;
+  float: left;
+}
+.user_group > input {
+  margin-top: 0.2em;
+}
+.user_group > div {
+  vertical-align: top;
+  display: table-cell;
+  width: 10em;
+}
+
 .scroll_left {
   width:1em;
   position:absolute;

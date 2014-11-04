@@ -57,8 +57,10 @@ def user_groups():
     rows = db(q).select(db.auth_group.role)
     return map(lambda x: x.role, rows)
 
-def user_group_ids():
-    q = db.auth_membership.user_id==auth.user_id
+def user_group_ids(id=None):
+    if id is None:
+        id = auth.user_id
+    q = db.auth_membership.user_id==id
     q &= db.auth_membership.group_id==db.auth_group.id
     rows = db(q).select(db.auth_group.id)
     return map(lambda x: x.id, rows)

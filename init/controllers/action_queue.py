@@ -96,6 +96,7 @@ class table_actions(HtmlTable):
                      field='username',
                      img='guy16',
                      display=True,
+                     _class='username',
                     ),
             'action_type': HtmlTableColumn(
                      title='Action type',
@@ -126,6 +127,8 @@ class table_actions(HtmlTable):
         }
         for col in self.cols:
             self.colprops[col].t = self
+        self.keys = ["id"]
+        self.span = ["id"]
         self.dbfilterable = False
         self.extraline = True
         self.checkboxes = True

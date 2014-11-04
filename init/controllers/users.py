@@ -75,6 +75,7 @@ class table_users(HtmlTable):
                      field='fullname',
                      img='guy16',
                      display=True,
+                     _class="username",
                     ),
             'email': HtmlTableColumn(
                      title='Email',

@@ -143,6 +143,7 @@ class table_log(HtmlTable):
                      field='log_user',
                      img='guy16',
                      display=True,
+                     _class='username',
                     ),
             'log_evt': col_log_evt(
                      title='Event',

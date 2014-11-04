@@ -34,6 +34,27 @@ function action_queue_stats() {
 action_queue_stats()
 
 //
+// user group tool
+//
+function bind_user_groups() {
+  $("[name=user_group_check]").bind("click", function(){
+    var data = {
+     'user_id': $(this).attr("user_id"),
+     'group_id': $(this).attr("group_id"),
+     'membership': $(this).is(":checked")
+    }
+    var url = $(location).attr("origin") + "/init/ajax_user/call/json/set_user_group"
+    $.ajax({
+         type: "POST",
+         url: url,
+         data: data,
+         success: function(msg){
+         }
+    })
+  })
+}
+
+//
 // search tool
 //
 function bind_search_tool() {
@@ -2489,6 +2510,20 @@ function _cell_decorator_nodename(e, os_icon) {
   })
 }
 
+function cell_decorator_username(e) {
+  var v = $(e).attr("v")
+  if ((v=="") || (v=="empty")) {
+    return
+  }
+  $(e).click(function(){
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    url = $(location).attr("origin") + "/init/ajax_user/ajax_user?username="+encodeURIComponent(v)+"&rowid="+id
+    toggle_extra(url, id, e, 0)
+  })
+}
+
 function cell_decorator_svcname(e) {
   var v = $(e).attr("v")
   if ((v=="") || (v=="empty")) {
@@ -3140,6 +3175,7 @@ cell_decorators = {
  "action_q_status": cell_decorator_action_q_status,
  "action_q_ret": cell_decorator_action_q_ret,
  "svcname": cell_decorator_svcname,
+ "username": cell_decorator_username,
  "nodename": cell_decorator_nodename,
  "nodename_no_os": cell_decorator_nodename_no_os,
  "svc_action_err": cell_decorator_svc_action_err,
