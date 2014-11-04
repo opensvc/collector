@@ -458,7 +458,7 @@ a:hover {
 
 input,
 textarea {
-    border: 1px #dddddd solid;
+    border: 1px solid #dddddd;
     padding: 0px 0.4em;
 }
 
@@ -1805,7 +1805,6 @@ ul.login_menu ul {
   top: 1px;
 }
 .search input:focus {
-  border-color: #339933;
   background: rgb(255, 248, 239) url('search.png') no-repeat;
 }
 .search td {
