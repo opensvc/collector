@@ -2994,4 +2994,5 @@ node_actions = [
   {'title': 'Rescan scsi hosts', 'class': 'hd16', 'action': 'scanscsi'},
   {'title': 'Reboot', 'class': 'action_restart_16', 'action': 'reboot'},
   {'title': 'Shutdown', 'class': 'action_stop_16', 'action': 'shutdown'},
+  {'title': 'Wake On LAN', 'class': 'action_start_16', 'action': 'wol'},
 ]

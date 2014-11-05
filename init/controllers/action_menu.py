@@ -20,6 +20,19 @@ def action_q_event():
     }
     _websocket_send(event_msg(l))
 
+def get_reachable_name(nodename):
+    fqdn = db(q).select(db.nodes.fqdn).first().fqdn
+    if not fqdn.endswith('.'):
+        fqdn += '.'
+    import socket
+    try:
+        socket.gethostbyname(fqdn)
+        return fqdn
+    except:
+        pass
+
+    return nodename
+
 def start_actiond():
     from subprocess import Popen
     import sys
@@ -70,6 +83,7 @@ def enqueue_svc_comp_action(node, svc, action, mode, mod, os):
 
 def fmt_svc_action(node, svc, action, action_type, rid=None):
     action = action.replace('"', '\"').replace("'", "\'")
+    node = get_reachable_name(node)
     if action_type == "pull":
         cmd = []
     else:
@@ -137,12 +151,23 @@ def do_node_action(nodename, action=None):
     if node is None:
         return 0
 
-    enqueue_node_action(node.nodename, action, node.os_name)
+    if action == "wol":
+        return do_node_wol_action(nodename)
+
+    enqueue_node_action(nodename, action, node.os_name)
     _log('node.action', 'run %(a)s',
          dict(a=action),
          nodename=node.nodename
     )
     return 1
+
+def do_node_wol_action(nodename):
+    candidates = wol_candidates(nodename)
+    n = 0
+    for candidate in candidates:
+        action = "wol --mac %s --broadcast %s"%(candidate["mac"], candidate["broadcast"])
+        n += do_node_action(candidate['proxy_nodename'], action)
+    return n
 
 @auth.requires_membership('CompExec')
 def do_svc_comp_action(nodename, svcname, action, mode, obj):
@@ -273,4 +298,38 @@ def json_action():
       "rejected": n_factorized-n,
       "factorized": n_raw-n_factorized,
     }
+
+
+def wol_candidates(nodename):
+    sql = """
+     select
+       n1.nodename as nodename,
+       n1.mac as mac,
+       n1.net_broadcast as broadcast,
+       n2.nodename as proxy_nodename,
+       n2.version as proxy_version,
+       n2.intf as proxy_intf
+     from v_nodenetworks n1
+     join v_nodenetworks n2 on
+       n1.nodename="%(nodename)s" and
+       n1.net_broadcast is not NULL and
+       n1.intf not like "%%:%%" and
+       n1.addr not like "224%%" and
+       n1.net_broadcast=n2.net_broadcast and
+       n2.intf not like "%%:%%" and
+       n2.version is not null and
+       n2.team_responsible in (%(ug)s) and
+       substring_index(n2.version,".",1) >= %(v1)d and
+       substring_index(substring_index(n2.version,".",-1), "-", 1) >= %(v2)d and
+       substring_index(n2.version,"-",-1) >= %(v3)d and
+       n2.nodename!="%(nodename)s"
+     group by
+       n1.net_broadcast
+    """ % dict(
+      nodename=nodename,
+      v1=1, v2=6, v3=110,
+      ug=",".join(map(lambda x: repr(x), user_groups())),
+    )
+    rows = db.executesql(sql, as_dict=True)
+    return rows
 
