@@ -1635,7 +1635,6 @@ function table_action_menu_get_modules_data(t, action) {
 }
 
 function table_action_menu_get_module_data(t, e, action) {
-    var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
     var cell = $(e.target)
     var line = cell.parents(".tl").first()
     var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").first().attr("v")
@@ -1651,7 +1650,7 @@ function table_action_menu_get_module_data(t, e, action) {
     if ((typeof svcname === "undefined")||(svcname=="")) {
       return data
     }
-    data['svcname'] = svcname
+    data[0]['svcname'] = svcname
     return data
 }
 
@@ -2950,7 +2949,11 @@ function T_sub(s, d) {
 }
 
 function T(s, d) {
-  l = navigator.languages[0] || navigator.userLanguage
+  try {
+    l = navigator.languages[0]
+  } catch(e) {
+    l = navigator.userLanguage
+  }
   if (!(l in t_dictionary)) {
       return T_sub(s, d)
   }
