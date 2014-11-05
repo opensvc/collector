@@ -1398,16 +1398,16 @@ function table_action_menu_post_data(t, data, confirmation) {
       $("#am_"+t.id).find("li.right16").remove()
       $("#am_"+t.id).find("li[action="+action+"]").each(function(){
         $(this).addClass("b")
-        $(this).siblings().fadeOut(500, function(){$(this).remove()})
+        $(this).siblings().remove()
         $(this).parent("ul").parent().unbind("click")
       })
       s = "<hr>"
       s += "<div>"+T("Are you sure ?")+"</div><br>"
       s += "<div class='check16 float clickable' name='yes'>"+T("Yes")+"</div>"
       s += "<div class='nok float clickable' name='no'>"+T("No")+"</div>"
-      $("#am_"+t.id).append(s)
+      $("#am_"+t.id).find("ul").last().append(s)
       $("#am_"+t.id).find("[name=yes]").bind("click", function(){table_action_menu_post_data(t, data, true)})
-      $("#am_"+t.id).find("[name=no]").bind("click", function(){$("#am_"+t.id).fadeOut(500, function(){$(this).remove()})})
+      $("#am_"+t.id).find("[name=no]").bind("click", function(){$("#am_"+t.id).remove()})
       return
     }
     table_action_menu_click_animation(t)
