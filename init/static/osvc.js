@@ -76,7 +76,7 @@ function bind_search_tool() {
       $(".white_float_input").hide()
       $(".right_click_menu").hide()
       $(".extraline").remove()
-      $(".menu").hide("fade", 200)
+      $(".menu").hide("fold")
       return
     }
     if ($('input').is(":focus")) {
@@ -92,7 +92,7 @@ function bind_search_tool() {
     }
     else if ( event.which == 78 ) {
       event.preventDefault();
-      $(".header").find(".menu16").parents("ul").first().siblings(".menu").show("fade", 200)
+      $(".header").find(".menu16").parents("ul").first().siblings(".menu").show("fold")
       searchbox.focus()
     }
     else if ((event.which == 37)||(event.which == 38)) {
