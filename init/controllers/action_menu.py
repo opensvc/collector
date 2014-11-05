@@ -183,13 +183,16 @@ def do_svc_comp_action(nodename, svcname, action, mode, obj):
     # filter out services we are not responsible for
     sql = """select m.os_name
              from v_svcmon m
-             join v_apps_flat a on m.svc_app=a.app
-             where m.mon_svcname="%(svcname)s" and (mon_nodname="%(nodename)s" or mon_vmname="%(nodename)s")
-             and responsible="%(user)s"
+             join apps a on m.svc_app=a.app
+             join apps_responsibles ar on a.id=ar.app_id
+             join auth_group g on ar.group_id=g.id and g.id in (%(gids)s)
+             where
+               m.mon_svcname="%(svcname)s" and
+               (mon_nodname="%(nodename)s" or mon_vmname="%(nodename)s")
              group by m.mon_nodname, m.mon_svcname
           """%dict(nodename=nodename,
                    svcname=svcname,
-                   user=user_name())
+                   gids=",".join(map(lambda x: str(x), user_group_ids())))
     rows = db.executesql(sql, as_dict=True)
     if len(rows) == 0:
         return 0
@@ -211,13 +214,16 @@ def do_svc_action(nodename, svcname, action, rid=None):
     # filter out services we are not responsible for
     sql = """select m.mon_nodname, m.mon_svcname, m.os_name
              from v_svcmon m
-             join v_apps_flat a on m.svc_app=a.app
-             where m.mon_svcname="%(svcname)s" and (mon_nodname="%(nodename)s" or mon_vmname="%(nodename)s")
-             and responsible='%(user)s'
+             join apps a on m.svc_app=a.app
+             join apps_responsibles ar on a.id=ar.app_id
+             join auth_group g on ar.group_id=g.id and g.id in (%(gids)s)
+             where
+               m.mon_svcname="%(svcname)s" and
+               (mon_nodname="%(nodename)s" or mon_vmname="%(nodename)s")
              group by m.mon_nodname, m.mon_svcname
           """%dict(nodename=nodename,
                    svcname=svcname,
-                   user=user_name())
+                   gids=",".join(map(lambda x: str(x), user_group_ids())))
     rows = db.executesql(sql)
     if len(rows) == 0:
         return 0
