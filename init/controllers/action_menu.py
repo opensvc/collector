@@ -332,6 +332,7 @@ def wol_candidates(nodename):
        substring_index(n2.version,".",1) >= %(v1)d and
        substring_index(substring_index(n2.version,".",-1), "-", 1) >= %(v2)d and
        substring_index(n2.version,"-",-1) >= %(v3)d and
+       substring_index(n2.version,"-",-1) < 10000 and
        n2.nodename!="%(nodename)s"
      group by
        n1.net_broadcast
