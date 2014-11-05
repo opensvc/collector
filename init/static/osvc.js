@@ -1347,6 +1347,8 @@ function table_bind_filter_input_events(t) {
 function table_bind_action_menu(t) {
   $("#table_"+t.id).find("[name="+t.id+"_tools]").each(function(){
     $(this).bind("contextmenu", function() {
+      event.preventDefault()
+      event.stopPropagation()
       return false
     })
     $(this).bind("mouseup", function(event) {
