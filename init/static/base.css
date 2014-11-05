@@ -1558,6 +1558,9 @@ ul.login_menu ul {
     padding: 0 0 0 20px;
     min-height: 16px;
 }
+.menu_section a {
+  margin-right: 1em;
+}
 .menu_section * {
   color: white;
 }
