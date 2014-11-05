@@ -1620,11 +1620,11 @@ function table_action_menu_get_modules_data(t, action) {
       }
       var svcname = $(this).find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").attr("v")
       if ((typeof svcname === "undefined")||(svcname=="")) {
-        var i = nodename+"--"+module
-        d = {"nodename": nodename, "svcname": svcname, "module": module, "action": action}
-      } else {
         var i = nodename+"--"+svcname+"--"+module
         d = {"nodename": nodename, "module": module, "action": action}
+      } else {
+        var i = nodename+"--"+module
+        d = {"nodename": nodename, "svcname": svcname, "module": module, "action": action}
       }
       if (index.indexOf(i)<0) {
         index.push(i)
