@@ -282,9 +282,16 @@ def _insert_generic(data, auth):
             vars.append('nodename')
             for i, val in enumerate(vals):
                 vals[i].append(auth[1])
+        ip_blist = ["224.0.0.1", "ff02::1"]
+        _vals = []
+        i = vars.index("addr")
+        for val in vals:
+            if val[i] in ip_blist:
+                continue
+            _vals.append(val)
         sql = """delete from node_ip where nodename="%s" """%auth[1]
         db.executesql(sql)
-        generic_insert('node_ip', vars, vals)
+        generic_insert('node_ip', vars, _vals)
     if 'uids' in data:
         vars, vals = data['uids']
         if 'updated' not in vars:
