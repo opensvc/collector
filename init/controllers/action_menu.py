@@ -21,6 +21,7 @@ def action_q_event():
     _websocket_send(event_msg(l))
 
 def get_reachable_name(nodename):
+    q = db.nodes.nodename == nodename
     fqdn = db(q).select(db.nodes.fqdn).first().fqdn
     if not fqdn.endswith('.'):
         fqdn += '.'
@@ -94,6 +95,7 @@ def fmt_svc_action(node, svc, action, action_type, rid=None):
     return ' '.join(cmd)
 
 def fmt_node_comp_action(node, action, mode, mod, action_type):
+    node = get_reachable_name(node)
     if action_type == "pull":
         cmd = []
     else:
@@ -103,6 +105,7 @@ def fmt_node_comp_action(node, action, mode, mod, action_type):
     return ' '.join(cmd)
 
 def fmt_node_action(node, action, action_type):
+    node = get_reachable_name(node)
     if action_type == "pull":
         cmd = []
     else:
@@ -111,6 +114,7 @@ def fmt_node_action(node, action, action_type):
     return ' '.join(cmd)
 
 def fmt_svc_comp_action(node, service, action, mode, mod, action_type):
+    node = get_reachable_name(node)
     if action_type == "pull":
         cmd = []
     else:
