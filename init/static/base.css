@@ -1580,7 +1580,7 @@ ul.login_menu ul {
   vertical-align: middle;
 }
 .menu_entry > a > div > div {
-  font-size: 0.75em;
+  font-size: 0.8em;
   white-space: normal;
 }
 .menu_section > a {
@@ -1599,7 +1599,7 @@ ul.login_menu ul {
 }
 .menu_section {
   padding: 1em;
-  font-size: 1.3em;
+  font-size: 1.1em;
   clear: both;
   border-top:1px solid #2f2f2f;
 }
