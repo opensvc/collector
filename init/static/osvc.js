@@ -1,3 +1,7 @@
+$("html").bind("click", function(){
+  $(".menu").hide("fold")
+})
+
 //
 // IE indexOf workaround
 //
@@ -1356,6 +1360,7 @@ function table_bind_action_menu(t) {
     })
     $(this).bind("click", function() {
       $("#fsr"+t.id).hide()
+      $(".menu").hide("fold")
     })
   })
 }
@@ -1375,6 +1380,7 @@ function table_bind_filter_selector(t) {
     $(this).bind("click", function() {
       $("#fsr"+t.id).hide()
       $("#am_"+t.id).remove()
+      $(".menu").hide("fold")
     })
   })
 }
