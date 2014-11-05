@@ -1,7 +1,3 @@
-$("html").bind("click", function(){
-  $(".menu").hide("fold")
-})
-
 //
 // IE indexOf workaround
 //
