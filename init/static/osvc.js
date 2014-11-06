@@ -1397,7 +1397,7 @@ function table_action_menu_click_animation(t) {
 function table_action_menu_post_data(t, data, confirmation) {
     if (!(confirmation==true)) {
       action = data[0]['action']
-      $("#am_"+t.id).find("li.right16").remove()
+      $("#am_"+t.id).find("li.right").remove()
       $("#am_"+t.id).find("li[action="+action+"]").each(function(){
         $(this).addClass("b")
         $(this).siblings().remove()
@@ -1534,17 +1534,17 @@ function table_action_menu(t, e){
 
   // display actions only for the clicked section 
   var sections = $("#am_"+t.id).children("ul").children("li")
-  sections.addClass("right16")
+  sections.addClass("right")
   sections.children("ul").hide()
   sections.bind("click", function(){
     var v = $(this).children("ul").is(":visible")
-    sections.removeClass("down16")
-    sections.addClass("right16")
+    sections.removeClass("down")
+    sections.addClass("right")
     sections.children("ul").hide()
     if (!v) {
       $(this).children("ul").show()
-      $(this).removeClass("right16")
-      $(this).addClass("down16")
+      $(this).removeClass("right")
+      $(this).addClass("down")
     }
   })
 }

@@ -856,7 +856,7 @@ a.xinfo_shown span {
   list-style: none;
 }
 .action_menu ul>li>ul>li:hover {
-  font-weight: bold;
+  color: cadetblue;
 }
 
 .details_row {
@@ -1342,6 +1342,20 @@ ul.login_menu ul {
     background: transparent url('net16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
+}
+.down {
+  background: transparent url('down16.png') no-repeat;
+  padding: 0 0 0 15px;
+  background-size: 12px 12px;
+  background-position-y: 2px;
+  min-height: 16px;
+}
+.right {
+  background: transparent url('right16.png') no-repeat;
+  padding: 0 0 0 15px;
+  background-size: 12px 12px;
+  background-position-y: 2px;
+  min-height: 16px;
 }
 .down16 {
     background: transparent url('down16.png') no-repeat;
