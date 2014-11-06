@@ -425,17 +425,24 @@ def ajax_node():
 
     nodes = db(db.v_nodes.nodename==request.vars.node).select(cacheable=True)
     if len(nodes) == 0:
-        return DIV(
-                 T("No asset information for %(node)s",
-                   dict(node=request.vars.node)
+        return TABLE(
+                DIV(
+                 P(
+                  T("No asset information for %(node)s",
+                    dict(node=request.vars.node)
+                  ),
+                  _class="nok",
                  ),
+                 BR(),
                  P(
                    A(
                      T("insert"),
                      _href=URL(r=request, c='nodes', f='node_insert'),
                    ),
-                   _style='text-align:center',
+                   _class="edit16", 
                  ),
+                 _style="padding:1em",
+                ),
                )
 
     q = db.auth_node.nodename == request.vars.node

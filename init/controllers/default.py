@@ -382,9 +382,15 @@ def ajax_service():
 
     rows = db(db.services.svc_name==request.vars.node).select(cacheable=True)
     if len(rows) == 0:
-        return DIV(
-                 T("No service information for %(node)s",
-                   dict(node=request.vars.node)),
+        return TABLE(
+                 DIV(
+                  P(
+                    T("No service information for %(node)s",
+                    dict(node=request.vars.node)),
+                   _class="nok",
+                  ),
+                  _style="padding:1em",
+                 ),
                )
 
     rows = db(db.v_svcmon.mon_svcname==request.vars.node).select(cacheable=True)
