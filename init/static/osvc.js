@@ -50,7 +50,28 @@ function bind_user_groups() {
      'group_id': $(this).attr("group_id"),
      'membership': $(this).is(":checked")
     }
-    var url = $(location).attr("origin") + "/init/ajax_user/call/json/set_user_group"
+    var url = $(location).attr("origin") + "/init/ajax_group/call/json/set_user_group"
+    $.ajax({
+         type: "POST",
+         url: url,
+         data: data,
+         success: function(msg){
+         }
+    })
+  })
+}
+
+//
+// group hiddenn menu entries tool
+//
+function bind_group_hidden_menu_entries() {
+  $("[name=group_hidden_menu_entry_check]").bind("click", function(){
+    var data = {
+     'group_id': $(this).attr("group_id"),
+     'menu_entry': $(this).attr("menu_entry"),
+     'hidden': $(this).is(":checked")
+    }
+    var url = $(location).attr("origin") + "/init/ajax_group/call/json/set_group_hidden_menu_entry"
     $.ajax({
          type: "POST",
          url: url,
@@ -2534,6 +2555,32 @@ function _cell_decorator_nodename(e, os_icon) {
   })
 }
 
+function cell_decorator_groups(e) {
+  var v = $(e).attr("v")
+  if ((v=="") || (v=="empty")) {
+    return
+  }
+  $(e).addClass("corner")
+  l = v.split(', ')
+  s = ""
+  for (i=0; i<l.length; i++) {
+    g = l[i]
+    s += "<span>"+g+"</span>"
+  }
+  $(e).html(s)
+  table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+  span_id = $(e).parent(".tl").attr("spansum")
+  id = table_id + "_x_" + span_id
+  $(e).children().each(function(){
+    $(this).click(function(){
+      if (get_selected() != "") {return}
+      g = $(this).text()
+      url = $(location).attr("origin") + "/init/ajax_group/ajax_group?groupname="+encodeURIComponent(g)+"&rowid="+id
+      toggle_extra(url, id, e, 0)
+    })
+  })
+}
+
 function cell_decorator_username(e) {
   var v = $(e).attr("v")
   if ((v=="") || (v=="empty")) {
@@ -3220,6 +3267,7 @@ cell_decorators = {
  "action_q_ret": cell_decorator_action_q_ret,
  "svcname": cell_decorator_svcname,
  "username": cell_decorator_username,
+ "groups": cell_decorator_groups,
  "nodename": cell_decorator_nodename,
  "nodename_no_os": cell_decorator_nodename_no_os,
  "svc_action_err": cell_decorator_svc_action_err,

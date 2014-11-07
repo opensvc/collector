@@ -2504,6 +2504,7 @@ v_nodes_colprops = {
              display = False,
              img = 'guy16',
              table = 'v_nodes',
+             _class = 'groups',
             ),
     'team_integ': HtmlTableColumn(
              title = 'Integrator',
@@ -2511,6 +2512,7 @@ v_nodes_colprops = {
              display = False,
              img = 'guy16',
              table = 'v_nodes',
+             _class = 'groups',
             ),
     'team_support': HtmlTableColumn(
              title = 'Support',
@@ -2518,6 +2520,7 @@ v_nodes_colprops = {
              display = False,
              img = 'guy16',
              table = 'v_nodes',
+             _class = 'groups',
             ),
     'project': HtmlTableColumn(
              title = 'Project',

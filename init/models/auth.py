@@ -65,6 +65,20 @@ def user_group_ids(id=None):
     rows = db(q).select(db.auth_group.id)
     return map(lambda x: x.id, rows)
 
+def user_org_group_ids(id=None):
+    if id is None:
+        id = auth.user_id
+    sql = """select g.id from auth_group g, auth_membership am
+             where
+              am.group_id=g.id and
+              am.user_id=%s and
+              g.privilege='F' and
+              g.role != 'UnaffectedProjects' and
+              not g.role like 'user_%%'
+           """%str(id)
+    rows = db.executesql(sql)
+    return map(lambda r: r[0], rows)
+
 def member_of(g):
     groups = user_groups()
     if isinstance(g, str) and g in groups:

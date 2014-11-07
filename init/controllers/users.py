@@ -100,6 +100,7 @@ class table_users(HtmlTable):
                      field='groups',
                      img='guys16',
                      display=True,
+                     _class="groups",
                     ),
             'domains': col_users_domains(
                      title='Domains',

@@ -2025,3 +2025,8 @@ db.define_table('v_gids',
     Field('group_name','string'),
     migrate=False)
 
+db.define_table('group_hidden_menu_entries',
+    Field('group_id','integer'),
+    Field('menu_entry','string'),
+    migrate=False)
+

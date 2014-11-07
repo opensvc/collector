@@ -69,6 +69,7 @@ class table_apps(HtmlTable):
                      field='roles',
                      img='guys16',
                      display=True,
+                     _class="groups",
                     ),
             'responsibles': HtmlTableColumn(
                      title='System Responsibles',

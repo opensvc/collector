@@ -1,16 +1,41 @@
 @charset "UTF-8";
 
+.groups > span {
+  padding: 0.2em 0.5em 0.2em 0px;
+  cursor: pointer;
+}
+.groups > span:hover {
+  color: cadetblue;
+}
+
 .ui-menu {
   max-height: 80%;
   overflow-y: scroll;
 }
 .corner:hover {
   background-image: url("corner8.png");
-  background-position-x: 0px;
-  background-position-y: 100%;
+  background-position: 0 100%;
   background-repeat: no-repeat;
 }
 
+.group_hidden_menu_entry {
+  display: table;
+  height: 4em;
+  width: 20em;
+  margin: 0.2em;
+  float: left;
+}
+.group_hidden_menu_entry > input {
+  margin-top: 0.2em;
+}
+.group_hidden_menu_entry > div {
+  vertical-align: top;
+  display: table-cell;
+  width: 18em;
+}
+.group_hidden_menu_entry > div > div {
+  height: 48px;
+}
 .user_group {
   display: table;
   height: 3em;
@@ -812,6 +837,7 @@ a.xinfo_shown span {
 .extraline > td > table {
   width: 96%;
   box-shadow: 0px 0px 20px 2px;
+  border-radius: 4px;
   -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
   margin: 20px
