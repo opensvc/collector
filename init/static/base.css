@@ -1,5 +1,9 @@
 @charset "UTF-8";
 
+.ui-menu {
+  max-height: 80%;
+  overflow-y: scroll;
+}
 .corner:hover {
   background-image: url("corner8.png");
   background-position-x: 0px;

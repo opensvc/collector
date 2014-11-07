@@ -1,3 +1,10 @@
+$(document).on('click', function(event){ 
+  if(event.which == 2){
+    event.preventDefault()
+  }
+}).on('contextmenu', function(event){
+  event.preventDefault()
+})
 //
 // IE indexOf workaround
 //
@@ -1346,11 +1353,6 @@ function table_bind_filter_input_events(t) {
 
 function table_bind_action_menu(t) {
   $("#table_"+t.id).find("[name="+t.id+"_tools]").each(function(){
-    $(this).bind("contextmenu", function() {
-      event.preventDefault()
-      event.stopPropagation()
-      return false
-    })
     $(this).bind("mouseup", function(event) {
       table_action_menu(t, event)
     })
@@ -1369,9 +1371,6 @@ function table_bind_filter_selector(t) {
         cell = cell.parents("[cell=1]").first()
       }
       filter_selector(t.id, event, cell.attr('name'), cell.attr('v'))
-    })
-    $(this).bind("contextmenu", function() {
-      return false
     })
     $(this).bind("click", function() {
       $("#fsr"+t.id).hide()
@@ -1864,11 +1863,6 @@ function filter_selector(id,e,k,v){
     return
   }
   $("#am_"+id).remove()
-  $("#fsr"+id).each(function() {
-    $(this)[0].oncontextmenu = function() {
-      return false;
-    }
-  });
   try {
     var sel = window.getSelection().toString()
   } catch(e) {
