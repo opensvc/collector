@@ -424,7 +424,7 @@ def ajax_actions_col_values():
         q = _where(q, 'v_svcactions', t.filter_parse(f), f)
     t.object_list = db(q).select(db.v_svcactions[col],
                                  orderby=o,
-                                 limitby=default_limitby)
+                                 limitby=(0,10000))
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
