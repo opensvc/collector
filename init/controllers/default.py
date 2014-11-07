@@ -1356,7 +1356,10 @@ def svcmon_node():
     tid = 'svcmon_'+node.replace('-', '_')
     t = table_svcmon_node(tid, 'ajax_svcmon_node')
     t.colprops['mon_nodname'].force_filter = node
-    return t.html()
+    return DIV(
+             t.html(),
+             _id=tid
+           )
 
 @auth.requires_login()
 def ajax_svcmon_node():

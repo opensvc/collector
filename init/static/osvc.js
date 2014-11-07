@@ -834,10 +834,10 @@ function table_data_to_lines(t, data) {
 }
 
 function table_refresh(t) {
-    if (!$("#"+t.id).is(":visible")) {
+    if ($("#"+t.id).length > 0 && !$("#"+t.id).is(":visible")) {
         return
     }
-    if ($("#refresh_"+t.id).hasClass("spinner")) {
+    if ($("#refresh_"+t.id).length > 0 && $("#refresh_"+t.id).hasClass("spinner")) {
         t.need_refresh = true
         return
     } else {
