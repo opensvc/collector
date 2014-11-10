@@ -50,7 +50,7 @@ function bind_user_groups() {
      'group_id': $(this).attr("group_id"),
      'membership': $(this).is(":checked")
     }
-    var url = $(location).attr("origin") + "/init/ajax_group/call/json/set_user_group"
+    var url = $(location).attr("origin") + "/init/ajax_user/call/json/set_user_group"
     $.ajax({
          type: "POST",
          url: url,
