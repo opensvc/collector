@@ -2973,6 +2973,7 @@ svc_actions = [
   {'title': 'Start', 'class': 'action_start_16', 'action': 'start'},
   {'title': 'Stop', 'class': 'action_stop_16', 'action': 'stop'},
   {'title': 'Restart', 'class': 'action_restart_16', 'action': 'restart'},
+  {'title': 'Switch', 'class': 'action_restart_16', 'action': 'switch'},
   {'title': 'Sync all remotes', 'class': 'action_sync_16', 'action': 'syncall'},
   {'title': 'Sync peer remotes', 'class': 'action_sync_16', 'action': 'syncnodes'},
   {'title': 'Sync disaster recovery remotes', 'class': 'action_sync_16', 'action': 'syncdrp'},
