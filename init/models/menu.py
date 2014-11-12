@@ -65,6 +65,8 @@ ug = set(user_groups())
 gids = user_org_group_ids()
 
 def groups_common_hidden_menu_entries():
+    if len(gids) == 0:
+        return []
     sql = """select t.menu_entry from (
               select menu_entry,count(hme.id) as n
               from group_hidden_menu_entries hme

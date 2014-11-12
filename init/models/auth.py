@@ -68,6 +68,8 @@ def user_group_ids(id=None):
 def user_org_group_ids(id=None):
     if id is None:
         id = auth.user_id
+    if id is None:
+        return []
     sql = """select g.id from auth_group g, auth_membership am
              where
               am.group_id=g.id and
