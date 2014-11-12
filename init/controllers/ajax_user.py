@@ -135,7 +135,7 @@ def ajax_user_groups():
     username = request.vars.username
 
     q = db.v_users.fullname == username
-    user = db(q).select(db.auth_user.id).first()
+    user = db(q).select(db.v_users.id).first()
     if user is None:
         return ""
 
