@@ -648,8 +648,6 @@ def ajax_comp_rulesets_services():
 
     o = db.v_comp_services.svc_name|db.v_comp_services.encap
     q = _where(None, 'v_comp_services', domain_perms(), 'svc_name')
-    if 'Manager' not in user_groups():
-        q &= db.v_comp_services.team_responsible.belongs(user_groups())
     for f in t.cols:
         q = _where(q, 'v_comp_services', t.filter_parse_glob(f), f)
     q = apply_gen_filters(q, t.tables())
