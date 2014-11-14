@@ -775,6 +775,24 @@ function table_refresh_column_filter(t, c, val) {
   cell.replaceWith(table_format_theader_slim(t, c, val))
 }
 
+function table_add_filtered_to_visible_columns(t) {
+  $("#table_"+t.id).find("[id^="+t.id+"_f_]").each(function(){
+    var s = $(this).attr("id")
+    var col = s.split("_f_")[1]
+    var ckcc = t.id+"_cc_"+col
+    var val = $(this).val()
+    if (val === "") {
+      $("#"+t.id).find("[name="+ckcc+"]").removeAttr("disabled")
+      return
+    }
+    $("#"+t.id).find("[name="+ckcc+"]").attr("disabled", "true")
+    if (t.visible_columns.indexOf(col) >= 0) {
+      return
+    }
+    t.visible_columns.push(col)
+  })
+}
+
 function table_refresh_column_filters(t) {
   for (i=0; i<t.visible_columns.length; i++) {
     var c = t.visible_columns[i]
@@ -962,6 +980,7 @@ function table_refresh(t) {
              try {
                _table_pager(t.id, pager["page"], pager["perpage"], pager["start"], pager["end"], pager["total"])
              } catch(e) {}
+             t.add_filtered_to_visible_columns()
              t.bind_checkboxes()
              t.bind_filter_selector()
              t.bind_action_menu()
@@ -3661,6 +3680,9 @@ function table_init(opts) {
     'refresh_column_filters': function(){
       table_refresh_column_filters(this)
     },
+    'add_filtered_to_visible_columns': function(){
+      table_add_filtered_to_visible_columns(this)
+    },
     'relocate_extra_rows': function(){
       table_relocate_extra_rows(this)
     },
@@ -3688,6 +3710,7 @@ function table_init(opts) {
   $("#"+t.id).find("select:visible").combobox()
 
   t.hide_cells()
+  t.add_filtered_to_visible_columns()
   t.format_header()
   t.add_filterbox()
   t.add_scrollers()
