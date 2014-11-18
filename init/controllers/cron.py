@@ -1261,6 +1261,7 @@ def _perf_cpu(begin, end, period):
                avg(irq),
                avg(soft),
                avg(guest),
+               avg(gnice),
                avg(idle),
                nodename
              from stats_cpu%(prev_period)s
@@ -1313,7 +1314,10 @@ def _perf_mem_u(begin, end, period):
                avg(kbcommit),
                avg(pct_commit),
                %(period_sql)s as d,
-               avg(kbmemsys)
+               avg(kbmemsys),
+               avg(kbactive),
+               avg(kbinact),
+               avg(kbdirty)
              from stats_mem_u%(prev_period)s
              where
                date>='%(begin)s' and
