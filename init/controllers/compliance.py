@@ -6866,7 +6866,14 @@ def svc_comp_status(svcname):
       SCRIPT(
         """osvc.tables["%(tid)s"]["on_change"] = function() {
             $("[name=%(tid)s_c_run_status]").bind("mouseover", function(){
-             $(this).parents("tr").children("[name=%(tid)s_c_run_log]").css('position', 'absolute').css('background', 'white').show()
+             line = $(this).parents("tr")
+             var s = line.children("[name=%(tid)s_c_run_status]")
+             var e = line.children("[name=%(tid)s_c_run_log]")
+             var pos = s.position()
+             e.css({"left": pos.left - e.width() - 10 + "px", "top": pos.top+s.height() + "px"})
+             e.addClass("white_float")
+             cell_decorator_run_log(e)
+             e.show()
             })
             $("[name=%(tid)s_c_run_status]").bind("mouseout", function(){
              $(this).parents("tr").children("[name=%(tid)s_c_run_log]").hide()
@@ -6917,7 +6924,14 @@ def node_comp_status(node):
       SCRIPT(
         """osvc.tables["%(tid)s"]["on_change"] = function() {
             $("[name=%(tid)s_c_run_status]").bind("mouseover", function(){
-             $(this).parents("tr").children("[name=%(tid)s_c_run_log]").css('position', 'absolute').css('background', 'white').show()
+             line = $(this).parents("tr")
+             var s = line.children("[name=%(tid)s_c_run_status]")
+             var e = line.children("[name=%(tid)s_c_run_log]")
+             var pos = s.position()
+             e.css({"left": pos.left - e.width() - 10 + "px", "top": pos.top+s.height() + "px"})
+             e.addClass("white_float")
+             cell_decorator_run_log(e)
+             e.show()
             })
             $("[name=%(tid)s_c_run_status]").bind("mouseout", function(){
              $(this).parents("tr").children("[name=%(tid)s_c_run_log]").hide()
