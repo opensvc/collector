@@ -1165,18 +1165,27 @@ def cron_update_virtual_asset():
     db.executesql(sql)
 
 
-def replay_perf():
+def replay_perf_week():
+    replay_perf(7)
+
+def replay_perf_month():
+    replay_perf(30)
+
+all_stats = ['cpu', 'fs_u', 'proc', 'block', 'blockdev', 'netdev',
+'netdev_err', 'mem_u', 'swap', 'svc']
+
+def replay_perf(days):
     begin = now - datetime.timedelta(days=1,
                                      hours=now.hour,
                                      minutes=now.minute,
                                      microseconds=now.microsecond)
     end = begin + datetime.timedelta(days=1)
 
-    for i in range(2):
+    for i in range(days):
         begin = begin - datetime.timedelta(days=1)
         end = end - datetime.timedelta(days=1)
-        _perf_ageing(begin, end, "hour", stats=['fs_u'])
-        _perf_ageing(begin, end, "day", stats=['fs_u'])
+        _perf_ageing(begin, end, "hour")
+        _perf_ageing(begin, end, "day")
 
 def cron_perf():
     now = datetime.datetime.now()
@@ -1188,7 +1197,9 @@ def cron_perf():
     _perf_ageing(begin, end, "hour")
     _perf_ageing(begin, end, "day")
 
-def _perf_ageing(begin, end, period, stats=['cpu', 'fs_u', 'proc', 'block', 'blockdev', 'netdev', 'netdev_err', 'mem_u', 'swap', 'svc']):
+def _perf_ageing(begin, end, period, stats=None):
+    if stats is None:
+        stats = all_stats
     for stat in stats:
         print "insert %s %s stats (%s)"%(period, stat, str(begin))
         globals()["_perf_"+stat](begin, end, period)
