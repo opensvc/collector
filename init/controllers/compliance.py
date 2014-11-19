@@ -1416,6 +1416,8 @@ def comp_ruleset_detach(ids=[]):
     if len(done) == 0:
         return
 
+    comp_rulesets_chains()
+
     u = ', '.join([r[1]+" from "+r[0] for r in done])
     _log('ruleset.ruleset.detach',
          'detached ruleset %(u)s',
