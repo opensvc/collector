@@ -1188,7 +1188,10 @@ function toggle_extra(url, id, e, ncols) {
     }
     line.after("<tr class='extraline'>"+toolbar+"<td id="+id+" colspan="+ncols+"></td></tr>")
     $("#"+id).toggleClass("spinner")
-    sync_ajax(url, [], id, function(){$("#"+id).removeClass("spinner")})
+    sync_ajax(url, [], id, function(){
+      $("#"+id).removeClass("spinner")
+      $("#"+id).children().each(function(){$(this).width($(window).width()-$(this).children().position().left-20)})
+    })
 }
 function checked_services() {
     d = new Array()
