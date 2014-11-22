@@ -1540,6 +1540,7 @@
 'Search-optimized modules grouping view': 'Vue des groupements de modules, optimisée pour la recherche',
 'Search-optimized target configurations view': 'Vue des configurations cibles, optimisée pour la recherche',
 'Search:': 'Recherche:',
+'security zone': 'security zone',
 'Security zone': 'Zone de sécurité',
 'Segments': 'Segments',
 'Select a report type': 'Sélectionner un type de rapport',
