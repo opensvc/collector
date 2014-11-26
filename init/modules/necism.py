@@ -61,10 +61,10 @@ class NecIsm(object):
                     vdisk["size"] = int(float(s))
                 elif 'G' in s:
                     s = s[:s.index('G')]
-                    vdisk["size"] = int(float(s))*1024
+                    vdisk["size"] = int(float(s)*1024)
                 elif 'T' in s:
                     s = s[:s.index('T')]
-                    vdisk["size"] = int(float(s))*1024*1024
+                    vdisk["size"] = int(float(s)*1024*1024)
             if line.startswith("Pool Name"):
                 vdisk["disk_group"] = line.split(':')[-1].strip()
             if line.startswith("RaidType"):
@@ -81,15 +81,15 @@ class NecIsm(object):
             if line.startswith("Pool Capacity"):
                 s = line.split(':')[-1].strip()
                 s = s[:s.index('G')]
-                pool["size"] = int(float(s))*1024
+                pool["size"] = int(float(s)*1024)
             if line.startswith("Used Pool Capacity"):
                 s = line.split(':')[-1].strip()
                 s = s[:s.index('G')]
-                pool["used"] = int(float(s))*1024
+                pool["used"] = int(float(s)*1024)
             if line.startswith("Free Pool Capacity"):
                 s = line.split(':')[-1].strip()
                 s = s[:s.index('G')]
-                pool["free"] = int(float(s))*1024
+                pool["free"] = int(float(s)*1024)
 
     def __str__(self):
         s = "name: %s\n" % self.name
