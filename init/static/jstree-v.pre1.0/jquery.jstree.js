@@ -3547,7 +3547,7 @@
 			}
 			if(y + h > $(document).height()) { 
 				y = y - (h + t[0].offsetHeight); 
-				$.vakata.context.cnt.find("li > ul").addClass("bottom"); 
+				//$.vakata.context.cnt.find("li > ul").addClass("bottom"); 
 			}
 
 			$.vakata.context.cnt
@@ -3558,7 +3558,7 @@
 							h = $(document).height(),
 							ul = $(this).children("ul").show(); 
 						if(w !== $(document).width()) { ul.toggleClass("right"); }
-						if(h !== $(document).height()) { ul.toggleClass("bottom"); }
+						//if(h !== $(document).height()) { ul.toggleClass("bottom"); }
 					})
 					.bind("mouseleave", function (e) { 
 						$(this).children("ul").hide(); 
