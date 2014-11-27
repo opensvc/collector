@@ -2955,14 +2955,8 @@ def update_dash_pkgdiff(nodename):
     dashboard_events()
 
 def update_dash_flex_cpu(svcname):
-    sql = """delete from dashboard
-               where
-                 dash_svcname = "%(svcname)s" and
-                 dash_type = "flex error" and
-                 dash_fmt like "%%average cpu usage%%"
-          """%dict(svcname=svcname)
-    rows = db.executesql(sql)
-    db.commit()
+    now = datetime.datetime.now()
+    now = now - datetime.timedelta(microseconds=now.microsecond)
 
     sql = """select svc_type from services
              where
@@ -2985,12 +2979,12 @@ def update_dash_flex_cpu(svcname):
                  "",
                  %(sev)d,
                  "%%(n)d average cpu usage. thresholds: %%(cmin)d - %%(cmax)d",
-                 concat('{"n": "', t.up,
+                 concat('{"n": ', round(t.cpu),
                         ', "cmin": ', t.svc_flex_cpu_low_threshold,
                         ', "cmax": ', t.svc_flex_cpu_high_threshold,
                         '}'),
                  now(),
-                 md5(concat('{"n": "', t.cpu,
+                 md5(concat('{"n": ', round(t.cpu),
                         ', "cmin": ', t.svc_flex_cpu_low_threshold,
                         ', "cmax": ', t.svc_flex_cpu_high_threshold,
                         '}')),
@@ -2999,18 +2993,44 @@ def update_dash_flex_cpu(svcname):
                  now()
                from (
                  select *
-                 from v_flex_status
+                 from (
+                  select
+                   p.svc_flex_cpu_low_threshold AS svc_flex_cpu_low_threshold,
+                   p.svc_flex_cpu_high_threshold AS svc_flex_cpu_high_threshold,
+                   (
+                    select
+                     count(1)
+                    from svcmon c
+                    where
+                     c.mon_svcname = "%(svcname)s" and
+                     c.mon_availstatus = 'up'
+                   ) AS up,
+                   (
+                    select
+                     (100 - c.idle)
+                    from stats_cpu c join svcmon m
+                    where
+                     c.nodename = m.mon_nodname and
+                     m.mon_svcname = "%(svcname)s" and
+                     c.date > (now() + interval -(15) minute) and
+                     c.cpu = 'all' and
+                     m.mon_overallstatus = 'up'
+                    group by m.mon_svcname
+                   ) AS cpu
+                  from v_svcmon p
+                  where
+                   p.mon_svcname="%(svcname)s"
+                 ) w
                  where
-                   svc_name="%(svcname)s" and
-                   up > 0 and
+                   w.up > 0 and
                    (
                      (
-                       svc_flex_cpu_high_threshold > 0 and
-                       cpu > svc_flex_cpu_high_threshold
+                       w.svc_flex_cpu_high_threshold > 0 and
+                       w.cpu > w.svc_flex_cpu_high_threshold
                      ) or
                      (
-                       svc_flex_cpu_low_threshold > 0 and
-                       cpu < svc_flex_cpu_low_threshold
+                       w.svc_flex_cpu_low_threshold > 0 and
+                       w.cpu < w.svc_flex_cpu_low_threshold
                      )
                    )
                ) t
@@ -3022,18 +3042,22 @@ def update_dash_flex_cpu(svcname):
                   )
     db.executesql(sql)
     db.commit()
-    dashboard_events()
 
-def update_dash_flex_instances_started(svcname):
     sql = """delete from dashboard
                where
                  dash_svcname = "%(svcname)s" and
                  dash_type = "flex error" and
-                 dash_fmt like "%%instances started%%"
-          """%dict(svcname=svcname)
+                 dash_updated < "%(now)s" and
+                 dash_fmt like "%%average cpu usage%%"
+          """%dict(svcname=svcname, now=str(now))
     rows = db.executesql(sql)
     db.commit()
 
+    dashboard_events()
+
+def update_dash_flex_instances_started(svcname):
+    now = datetime.datetime.now()
+    now = now - datetime.timedelta(microseconds=now.microsecond)
     sql = """select svc_type from services
              where
                svc_name="%(svcname)s"
@@ -3069,16 +3093,30 @@ def update_dash_flex_instances_started(svcname):
                  now()
                from (
                  select *
-                 from v_flex_status
+                 from (
+                  select
+                   p.svc_flex_min_nodes AS svc_flex_min_nodes,
+                   p.svc_flex_max_nodes AS svc_flex_max_nodes,
+                   (
+                    select
+                     count(1)
+                    from svcmon c
+                    where
+                     c.mon_svcname = "%(svcname)s" and
+                     c.mon_availstatus = 'up'
+                   ) AS up
+                  from v_svcmon p
+                  where
+                   p.mon_svcname="%(svcname)s"
+                 ) w
                  where
-                   svc_name="%(svcname)s" and
                    ((
-                     svc_flex_min_nodes > 0 and
-                     up < svc_flex_min_nodes
+                     w.svc_flex_min_nodes > 0 and
+                     w.up < w.svc_flex_min_nodes
                    ) or
                    (
-                     svc_flex_max_nodes > 0 and
-                     up > svc_flex_max_nodes
+                     w.svc_flex_max_nodes > 0 and
+                     w.up > w.svc_flex_max_nodes
                    ))
                ) t
                on duplicate key update
@@ -3089,6 +3127,17 @@ def update_dash_flex_instances_started(svcname):
                   )
     db.executesql(sql)
     db.commit()
+
+    sql = """delete from dashboard
+               where
+                 dash_svcname = "%(svcname)s" and
+                 dash_type = "flex error" and
+                 dash_updated < "%(now)s" and
+                 dash_fmt like "%%instances started%%"
+          """%dict(svcname=svcname, now=str(now))
+    rows = db.executesql(sql)
+    db.commit()
+
     dashboard_events()
 
 def update_dash_checks_all():
