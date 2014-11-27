@@ -30,6 +30,7 @@ def checks_defaults_insert():
 
     if form.accepts(request.vars):
         response.flash = T("edition recorded")
+        table_modified("checks_defaults")
         enqueue_update_thresholds_batch(request.vars.chk_type)
         redirect(URL(r=request, c='checks', f='checks'))
     elif form.errors:
