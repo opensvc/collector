@@ -4363,3 +4363,19 @@ drop view v_comp_services ; create view v_comp_services as select `s`.`svc_ha` A
 alter table stats_cpu_hour add column gnice float default 0 after guest;
 alter table stats_cpu_day add column gnice float default 0 after guest;
 alter table stats_cpu_month add column gnice float default 0 after guest;
+
+drop view v_gen_filtersets;
+
+CREATE VIEW `v_gen_filtersets` AS (select `fs`.`fset_name` AS `fset_name`,`fs`.`fset_stats` AS `fset_stats`,`fs`.`fset_updated` AS `fset_updated`,`fs`.`fset_author` AS `fset_author`,`fs`.`id` AS `fset_id`,`g`.`id` AS `join_id`,`g`.`f_order` AS `f_order`,`f`.`id` AS `f_id`,`g`.`encap_fset_id` AS `encap_fset_id`, cfs.fset_name as `encap_fset_name`,`g`.`f_log_op` AS `f_log_op`,`f`.`id` AS `id`,`f`.`f_table` AS `f_table`,`f`.`f_field` AS `f_field`,`f`.`f_value` AS `f_value`,`f`.`f_updated` AS `f_updated`,`f`.`f_author` AS `f_author`,`f`.`f_op` AS `f_op` from `gen_filtersets` `fs` left join `gen_filtersets_filters` `g` on `g`.`fset_id` = `fs`.`id` left join gen_filtersets cfs on g.encap_fset_id=cfs.id left join `gen_filters` `f` on `g`.`f_id` = `f`.`id`);
+
+alter table gen_filtersets_filters add key idx_fset_id (fset_id);
+
+drop view v_apps_flat;
+
+CREATE VIEW `v_apps_flat` AS (select `a`.`id` AS `id`,`a`.`app` AS `app`,`a`.`app_domain` AS `app_domain`,`a`.`app_team_ops` AS `app_team_ops`,`g`.`role` AS `role`,concat_ws(' ',`u`.`first_name`,`u`.`last_name`) AS `responsible`,`u`.`email` AS `email` from ((((`apps` `a` left join `apps_responsibles` `ar` on((`ar`.`app_id` = `a`.`id`))) left join `auth_group` `g` on((`g`.`id` = `ar`.`group_id`))) left join `auth_membership` `am` on((`am`.`group_id` = `g`.`id`))) left join `auth_user` `u` on((`u`.`id` = `am`.`user_id`))));
+
+drop view v_comp_explicit_rulesets;
+
+CREATE VIEW `v_comp_explicit_rulesets` AS (select `r`.`id` AS `id`,`r`.`ruleset_name` AS `ruleset_name`,group_concat(distinct concat(`v`.`var_name`,'=',`v`.`var_value`) separator '|') AS `variables` from (`comp_rulesets` `r` left join `comp_rulesets_variables` `v` on((`r`.`id` = `v`.`ruleset_id`))) where (`r`.`ruleset_type` = 'explicit') group by `r`.`id`);
+
+
