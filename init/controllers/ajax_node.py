@@ -609,7 +609,7 @@ def ajax_node():
 
     def js(tab, rowid):
         buff = ""
-        for i in range(1, 14):
+        for i in range(1, 15):
             buff += """$('#%(tab)s_%(id)s').hide();$('#li%(tab)s_%(id)s').removeClass('tab_active');"""%dict(tab='tab'+str(i), id=rowid)
         buff += """$('#%(tab)s_%(id)s').show();$('#li%(tab)s_%(id)s').addClass('tab_active');
                    if ("%(tab)s" in callbacks) {
@@ -643,6 +643,7 @@ def ajax_node():
             LI(P(T("os"), _class='os16', _onclick=js('tab2', rowid)), _id="litab2_"+str(rowid)),
             LI(P(T("mem"), _class='mem16', _onclick=js('tab3', rowid)), _id="litab3_"+str(rowid)),
             LI(P(T("cpu"), _class='cpu16', _onclick=js('tab4', rowid)), _id="litab4_"+str(rowid)),
+            LI(P(T("alerts"), _class='alert16', _onclick=js('tab14', rowid)), _id="litab14_"+str(rowid)),
             LI(P(T("services"), _class='svc', _onclick=js('tab5', rowid)), _id="litab5_"+str(rowid)),
             LI(P(T("storage"), _class='hd16', _onclick=js('tab6', rowid)), _id="litab6_"+str(rowid)),
             LI(P(T("network"), _class='net16', _onclick=js('tab7', rowid)), _id="litab7_"+str(rowid)),
@@ -676,6 +677,11 @@ def ajax_node():
           DIV(
             cpu,
             _id='tab4_'+str(rowid),
+            _class='cloud',
+          ),
+          DIV(
+            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            _id='tab14_'+str(rowid),
             _class='cloud',
           ),
           DIV(
@@ -723,11 +729,17 @@ def ajax_node():
             _class='cloud',
           ),
           SCRIPT(
+            "function n%(rid)s_load_node_alerts(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
+               id='tab14_'+str(rowid),
+               rid=str(rowid),
+               url=URL(r=request, c='dashboard', f='dashboard_node',
+                       args=[request.vars.node])
+            ),
             "function n%(rid)s_load_node_stor(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
                id='tab6_'+str(rowid),
                rid=str(rowid),
                url=URL(r=request, c='ajax_node', f='ajax_node_stor',
-                       args=['tab5_'+str(rowid), request.vars.node])
+                       args=['tab6_'+str(rowid), request.vars.node])
             ),
             "function n%(rid)s_load_wiki(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
                id='tab11_'+str(rowid),
@@ -757,6 +769,7 @@ def ajax_node():
                             "tab11": %(id)s_load_wiki,
                             "tab12": %(id)s_load_checks,
                             "tab13": %(id)s_load_comp,
+                            "tab14": %(id)s_load_node_alerts,
                             "tab5": %(id)s_load_svcmon_node}"""%dict(id='n'+str(rowid)),
             js(tab, rowid),
             _name='%s_to_eval'%rowid,

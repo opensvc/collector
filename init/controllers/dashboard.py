@@ -715,3 +715,70 @@ def ajax_alert_events():
 
 def test_dashboard_events():
     dashboard_events()
+
+#
+# alert tab
+#
+class table_dashboard_node(table_dashboard):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        table_dashboard.__init__(self, id, func, innerhtml)
+        self.hide_tools = True
+        self.pageable = False
+        self.bookmarkable = False
+        self.commonalityable = False
+        self.linkable = False
+        self.checkboxes = True
+        self.filterable = False
+        self.exportable = False
+        self.dbfilterable = False
+        self.columnable = False
+        self.refreshable = False
+        self.wsable = False
+        self.dataable = True
+        self.child_tables = []
+
+def ajax_dashboard_node():
+    tid = request.vars.table_id
+    t = table_dashboard_node(tid, 'ajax_dashboard_node')
+    q = _where(None, 'dashboard', domain_perms(), 'dash_nodename')
+    for f in ['dash_nodename']:
+        q = _where(q, 'dashboard', t.filter_parse(f), f)
+    if request.args[0] == "data":
+        t.object_list = db(q).select(cacheable=True)
+        return t.table_lines_data(-1, html=False)
+
+def ajax_dashboard_svc():
+    tid = request.vars.table_id
+    t = table_dashboard_node(tid, 'ajax_dashboard_svc')
+    q = _where(None, 'dashboard', domain_perms(), 'dash_svcname')
+    for f in ['dash_svcname']:
+        q = _where(q, 'dashboard', t.filter_parse(f), f)
+    if request.args[0] == "data":
+        t.object_list = db(q).select(cacheable=True)
+        return t.table_lines_data(-1, html=False)
+
+@auth.requires_login()
+def dashboard_node():
+    node = request.args[0]
+    tid = 'dashboard_'+node
+    t = table_dashboard_node(tid, 'ajax_dashboard_node')
+    t.colprops['dash_nodename'].force_filter = node
+
+    return DIV(
+             t.html(),
+             _id=tid,
+           )
+
+@auth.requires_login()
+def dashboard_svc():
+    svcname = request.args[0]
+    tid = 'dashboard_'+svcname
+    t = table_dashboard_node(tid, 'ajax_dashboard_svc')
+    t.colprops['dash_svcname'].force_filter = svcname
+
+    return DIV(
+             t.html(),
+             _id=tid,
+           )
+
+
