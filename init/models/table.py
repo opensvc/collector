@@ -2981,6 +2981,8 @@ svc_actions = [
   {'title': 'Disable', 'class': 'na', 'action': 'disable'},
   {'title': 'Freeze', 'class': 'frozen16', 'action': 'enable'},
   {'title': 'Thaw', 'class': 'frozen16', 'action': 'disable'},
+  {'title': 'Compliance check', 'class': 'comp16', 'action': 'compliance_check', 'params': ["module", "moduleset"]},
+  {'title': 'Compliance fix', 'class': 'comp16', 'action': 'compliance_fix', 'params': ["module", "moduleset"]},
 ]
 
 node_actions = [
@@ -2999,4 +3001,6 @@ node_actions = [
   {'title': 'Reboot', 'class': 'action_restart_16', 'action': 'reboot'},
   {'title': 'Shutdown', 'class': 'action_stop_16', 'action': 'shutdown'},
   {'title': 'Wake On LAN', 'class': 'action_start_16', 'action': 'wol'},
+  {'title': 'Compliance check', 'class': 'comp16', 'action': 'compliance_check', 'params': ["module", "moduleset"]},
+  {'title': 'Compliance fix', 'class': 'comp16', 'action': 'compliance_fix', 'params': ["module", "moduleset"]},
 ]

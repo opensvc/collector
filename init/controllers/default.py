@@ -1344,10 +1344,9 @@ class table_svcmon_node(table_svcmon):
         self.dbfilterable = False
         self.columnable = False
         self.refreshable = False
-        self.checkboxes = False
-        self.extrarow = False
+        self.checkboxes = True
+        self.extrarow = True
         self.wsable = False
-        self.cols.remove('mon_nodname')
         self.colprops['mon_updated'].display = True
 
 @auth.requires_login()

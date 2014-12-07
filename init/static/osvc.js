@@ -1436,23 +1436,92 @@ function table_action_menu_click_animation(t) {
   }, 1500, function(){dest.parent().effect("highlight")})
 }
 
+function table_action_menu_param_moduleset(t) {
+  var s = ""
+  $.ajax({
+    async: false,
+    type: "POST",
+    url: $(location).attr("origin") + "/init/compliance/call/json/comp_get_all_moduleset",
+    data: "",
+    success: function(data){
+      for (var i=0; i<data.length; i++) {
+        var e = data[i]
+        s += "<div><input type=checkbox otype='moduleset' oid="+e[0]+" oname='"+e[1]+"'>"+e[1]+"</div>"
+      }
+    }
+  })
+  return "<p class='clickable b' onclick='$(this).next().toggle()'>--moduleset</p><div class='panselector10 hidden'>"+s+"</div>"
+}
+
+function table_action_menu_param_module(t) {
+  var s = ""
+  $.ajax({
+    async: false,
+    type: "POST",
+    url: $(location).attr("origin") + "/init/compliance/call/json/comp_get_all_module",
+    data: "",
+    success: function(data){
+      for (var i=0; i<data.length; i++) {
+        var e = data[i]
+        s += "<div><input type=checkbox otype='module' oid="+e[0]+" oname='"+e[1]+"'>"+e[1]+"</div>"
+      }
+    }
+  })
+  return "<p class='clickable b' onclick='$(this).next().toggle()'>--module</p><div class='panselector10 hidden'>"+s+"</div>"
+}
+
 function table_action_menu_post_data(t, data, confirmation) {
+    action = data[0]['action']
     if (!(confirmation==true)) {
-      action = data[0]['action']
+      s = ""
       $("#am_"+t.id).find("li.right").remove()
       $("#am_"+t.id).find("li[action="+action+"]").each(function(){
         $(this).addClass("b")
+        $(this).unbind("click")
         $(this).siblings().remove()
         $(this).parent("ul").parent().unbind("click")
+
+        // action parameters
+        var params = $(this).attr("params")
+        if (typeof params !== "undefined") {
+          params = params.split(",")
+          for (var i=0; i<params.length; i++) {
+            var param = params[i]
+            try {
+              s += t["action_menu_param_"+param]()
+            } catch(err) {}
+          }
+        }
       })
-      s = "<hr>"
+      s += "<hr>"
       s += "<div>"+T("Are you sure ?")+"</div><br>"
       s += "<div class='check16 float clickable' name='yes'>"+T("Yes")+"</div>"
       s += "<div class='nok float clickable' name='no'>"+T("No")+"</div>"
       $("#am_"+t.id).find("ul").last().append(s)
-      $("#am_"+t.id).find("[name=yes]").bind("click", function(){table_action_menu_post_data(t, data, true)})
+      $("#am_"+t.id).find("[name=yes]").bind("click", function(){
+        $(this).unbind("click")
+        $(this).removeClass("check16")
+        $(this).addClass("spinner")
+        table_action_menu_post_data(t, data, true)
+      })
       $("#am_"+t.id).find("[name=no]").bind("click", function(){$("#am_"+t.id).remove()})
       return
+    }
+    var params = {}
+    $("#am_"+t.id).find("input[otype]:checked").each(function(){
+      otype = $(this).attr("otype")
+      oname = $(this).attr("oname")
+      if (!(otype in params)) {
+        params[otype] = []
+      }
+      params[otype].push(oname)
+    })
+    for (otype in params) {
+      if (params[otype].length > 0) {
+        for (var i=0; i<data.length; i++) {
+          data[i][otype] = params[otype].join(",")
+        }
+      }
     }
     table_action_menu_click_animation(t)
     $.ajax({
@@ -1473,9 +1542,6 @@ function table_action_menu(t, e){
     return
   }
   if (typeof t.action_menu === "undefined") {
-    return
-  }
-  if (t.action_menu.length == 0) {
     return
   }
   $(".right_click_menu").hide()
@@ -1610,6 +1676,9 @@ function table_action_menu_get_node_data(t, e, action) {
     var cell = $(e.target)
     var line = cell.parents(".tl").first()
     var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").first().attr("v")
+    if ((typeof nodename === "undefined")||(nodename=="")) {
+      return []
+    }
     var data = [{'nodename': nodename, 'action': action}]
     return data
 }
@@ -1831,40 +1900,31 @@ function table_action_menu_nodes(t){
 }
 
 function table_action_menu_module_entries(t, scope){
-  s = "<ul>"
-  for (i=0; i<t.action_menu["modules"].length; i++) {
-    var e = t.action_menu["modules"][i]
-    s += "<li class='clickable "+e['class']+"' action='"+e.action+"' scope='"+scope+"'>"+e.title+"</li>"
-  }
-  s += "</ul>"
-  return s
+  return table_action_menu_single_entries(t, "modules", scope)
 }
 
 function table_action_menu_resource_entries(t, scope){
-  s = "<ul>"
-  for (i=0; i<t.action_menu["resources"].length; i++) {
-    var e = t.action_menu["resources"][i]
-    s += "<li class='clickable "+e['class']+"' action='"+e.action+"' scope='"+scope+"'>"+e.title+"</li>"
-  }
-  s += "</ul>"
-  return s
+  return table_action_menu_single_entries(t, "resources", scope)
 }
 
 function table_action_menu_svc_entries(t, scope){
-  s = "<ul>"
-  for (i=0; i<t.action_menu["services"].length; i++) {
-    var e = t.action_menu["services"][i]
-    s += "<li class='clickable "+e['class']+"' action='"+e.action+"' scope='"+scope+"'>"+e.title+"</li>"
-  }
-  s += "</ul>"
-  return s
+  return table_action_menu_single_entries(t, "services", scope)
 }
 
 function table_action_menu_node_entries(t, scope){
+  return table_action_menu_single_entries(t, "nodes", scope)
+}
+
+function table_action_menu_single_entries(t, action_menu_key, scope){
   s = "<ul>"
-  for (i=0; i<t.action_menu["nodes"].length; i++) {
-    var e = t.action_menu["nodes"][i]
-    s += "<li class='clickable "+e['class']+"' action='"+e.action+"' scope='"+scope+"'>"+e.title+"</li>"
+  for (i=0; i<t.action_menu[action_menu_key].length; i++) {
+    var e = t.action_menu[action_menu_key][i]
+    try {
+      var params = " params='"+e.params.join(",")+"'"
+    } catch(err) {
+      var params = ""
+    }
+    s += "<li class='clickable "+e['class']+"' action='"+e.action+"' scope='"+scope+"'"+params+">"+e.title+"</li>"
   }
   s += "</ul>"
   return s
@@ -2895,7 +2955,11 @@ function cell_decorator_form_id(e) {
 
 function cell_decorator_run_log(e) {
   var v = $(e).attr("v")
-  var s = "<pre>"+v.replace(/ERR:/g, "<span class='err'>ERR:</span>")+"</pre>"
+  if (typeof v === "undefined") {
+    var s = ""
+  } else {
+    var s = "<pre>"+v.replace(/ERR:/g, "<span class='err'>ERR:</span>")+"</pre>"
+  }
   $(e).html(s)
 }
 
@@ -3691,6 +3755,12 @@ function table_init(opts) {
     },
     'format_header': function(){
       table_format_header(this)
+    },
+    'action_menu_param_moduleset': function(){
+      return table_action_menu_param_moduleset(this)
+    },
+    'action_menu_param_module': function(){
+      return table_action_menu_param_module(this)
     },
     'on_change': function(){
       // placeholder to override after table_init()

@@ -3219,6 +3219,7 @@ class table_comp_moduleset(HtmlTable):
         self.cols = ['modset_name',
                      'teams_responsible',
                      'modset_mod_name',
+                     'autofix',
                      'modset_mod_updated',
                      'modset_mod_author']
         self.colprops = {
@@ -3228,6 +3229,13 @@ class table_comp_moduleset(HtmlTable):
                      field='modset_name',
                      display=True,
                      img='action16',
+                    ),
+            'autofix': HtmlTableColumn(
+                     title='Autofix',
+                     table='comp_moduleset_modules',
+                     field='autofix',
+                     display=True,
+                     img='actionred16',
                     ),
             'modset_mod_name': col_modset_mod_name(
                      title='Module',
@@ -6268,14 +6276,75 @@ def comp_show_status(svcname="", pattern='%', auth=("", "")):
 @service.xmlrpc
 def comp_get_svc_moduleset(svcname, auth):
     slave = comp_slave(svcname, auth[1])
-    return _comp_get_svc_moduleset(svcname, slave)
+    return _comp_get_svc_moduleset(svcname, slave=slave)
+
+@auth_uuid
+@service.xmlrpc
+def comp_get_svc_data(nodename, svcname, modulesets, auth):
+    return _comp_get_svc_data(nodename, svcname, modulesets)
+
+@auth_uuid
+@service.xmlrpc
+def comp_get_data(nodename, modulesets, auth):
+    return _comp_get_data(nodename, modulesets=modulesets)
+
+def _comp_get_data(nodename, modulesets=[]):
+    return {
+      'modulesets': _comp_get_moduleset_data(nodename, modulesets=modulesets),
+      'rulesets': _comp_get_ruleset(nodename),
+    }
+
+def _comp_get_svc_data(nodename, svcname, modulesets=[]):
+    return {
+      'modulesets': _comp_get_svc_moduleset_data(nodename, svcname, modulesets=modulesets),
+      'rulesets': _comp_get_svc_ruleset(nodename, svcname),
+    }
+
+def test_comp_get_data():
+    return _comp_get_data("clementine")
+
+@auth_uuid
+@service.xmlrpc
+def comp_get_moduleset_data(nodename, auth):
+    return _comp_get_moduleset_data(nodename)
+
+@auth_uuid
+@service.xmlrpc
+def comp_get_svc_moduleset_data(svcname, auth):
+    return _comp_get_svc_moduleset_data(svcname)
+
+@auth.requires_membership('NodeExec')
+@service.json
+def comp_get_all_moduleset():
+    return _comp_get_all_moduleset()
+
+@auth.requires_membership('NodeExec')
+@service.json
+def comp_get_all_module():
+    return _comp_get_all_module()
+
+def _comp_get_all_moduleset():
+    q = db.comp_moduleset.id > 0
+    rows = db(q).select(db.comp_moduleset.id, db.comp_moduleset.modset_name,
+                        orderby=db.comp_moduleset.modset_name)
+    return [(r.id, r.modset_name) for r in rows]
+
+def _comp_get_all_module():
+    q = db.comp_moduleset_modules.id > 0
+    q &= db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
+    rows = db(q).select(db.comp_moduleset_modules.id,
+                        db.comp_moduleset_modules.modset_mod_name,
+                        orderby=db.comp_moduleset_modules.modset_mod_name,
+                        groupby=db.comp_moduleset_modules.modset_mod_name,
+                       )
+    return [(r.id, r.modset_mod_name) for r in rows]
 
 @auth_uuid
 @service.xmlrpc
 def comp_get_moduleset(nodename, auth):
     return _comp_get_moduleset(nodename)
 
-def _comp_get_svc_moduleset(svcname, slave=False):
+def _comp_get_svc_moduleset(svcname, modulesets=None, slave=False):
     q = db.comp_modulesets_services.modset_svcname == svcname
     q &= db.comp_modulesets_services.slave == slave
     q &= db.comp_modulesets_services.modset_id == db.comp_moduleset.id
@@ -6289,6 +6358,63 @@ def _comp_get_svc_moduleset(svcname, slave=False):
                         groupby=db.comp_modulesets_services.modset_id,
                         cacheable=True)
     return [r.modset_name for r in rows]
+
+def _comp_get_svc_moduleset_data(svcname, modulesets=[], slave=False):
+    q = db.comp_modulesets_services.modset_svcname == svcname
+    q &= db.comp_modulesets_services.slave == slave
+    q &= db.comp_modulesets_services.modset_id == db.comp_moduleset.id
+    q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
+    q &= db.auth_group.id == db.comp_moduleset_team_responsible.group_id
+    q &= db.services.svc_name == svcname
+    q &= db.services.svc_app == db.apps.app
+    q &= db.apps.id == db.apps_responsibles.app_id
+    q &= db.apps_responsibles.group_id == db.auth_group.id
+    q &= db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
+    if len(modulesets) > 0:
+        q &= db.comp_moduleset.modset_name.belongs(modulesets)
+    g = db.comp_modulesets_services.modset_id|db.comp_moduleset_modules.id
+    rows = db(q).select(db.comp_moduleset.modset_name,
+                        db.comp_moduleset_modules.autofix,
+                        db.comp_moduleset_modules.modset_mod_name,
+                        groupby=g,
+                        cacheable=True)
+    d = {}
+    for row in rows:
+        if row.comp_moduleset.modset_name not in d:
+            d[row.comp_moduleset.modset_name] = []
+        if row.comp_moduleset_modules.modset_mod_name is not None:
+            d[row.comp_moduleset.modset_name].append((
+              row.comp_moduleset_modules.modset_mod_name,
+              row.comp_moduleset_modules.autofix,
+            ))
+    return d
+
+def _comp_get_moduleset_data(nodename, modulesets=[]):
+    q = db.comp_node_moduleset.modset_node == nodename
+    q &= db.comp_node_moduleset.modset_id == db.comp_moduleset.id
+    q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
+    q &= db.auth_group.id == db.comp_moduleset_team_responsible.group_id
+    q &= db.nodes.team_responsible == db.auth_group.role
+    q &= db.nodes.nodename == nodename
+    q &= db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
+    if len(modulesets) > 0:
+        q &= db.comp_moduleset.modset_name.belongs(modulesets)
+    g = db.comp_node_moduleset.modset_id|db.comp_moduleset_modules.id
+    rows = db(q).select(db.comp_moduleset.modset_name,
+                        db.comp_moduleset_modules.autofix,
+                        db.comp_moduleset_modules.modset_mod_name,
+                        groupby=g,
+                        cacheable=True)
+    d = {}
+    for row in rows:
+        if row.comp_moduleset.modset_name not in d:
+            d[row.comp_moduleset.modset_name] = []
+        if row.comp_moduleset_modules.modset_mod_name is not None:
+            d[row.comp_moduleset.modset_name].append((
+              row.comp_moduleset_modules.modset_mod_name,
+              row.comp_moduleset_modules.autofix,
+            ))
+    return d
 
 def _comp_get_moduleset(nodename):
     q = db.comp_node_moduleset.modset_node == nodename
@@ -10347,6 +10473,7 @@ def json_tree_modulesets():
                         db.comp_moduleset.modset_name,
                         db.comp_moduleset_modules.id,
                         db.comp_moduleset_modules.modset_mod_name,
+                        db.comp_moduleset_modules.autofix,
                         db.auth_group.id,
                         db.auth_group.role,
                         left=l,
@@ -10375,8 +10502,12 @@ def json_tree_modulesets():
             modset_done.append(row.comp_moduleset.id)
 
         if row.comp_moduleset_modules.id is not None and row.comp_moduleset_modules.id not in mods_done:
+            if row.comp_moduleset_modules.autofix:
+                rel = "module_autofix"
+            else:
+                rel = "module"
             __data = {
-              "attr": {"id": "mod%d"%row.comp_moduleset_modules.id, "rel": "module", "obj_id": row.comp_moduleset_modules.id},
+              "attr": {"id": "mod%d"%row.comp_moduleset_modules.id, "rel": rel, "obj_id": row.comp_moduleset_modules.id},
               "data": row.comp_moduleset_modules.modset_mod_name,
             }
             mods.append(__data)
@@ -10777,6 +10908,9 @@ def json_tree_action():
            request.vars.dst_type.startswith("filterset"):
             return json_tree_action_copy_filter_to_fset(request.vars.obj_id,
                                                         request.vars.dst_id)
+    elif action == "set_autofix":
+        return json_tree_action_set_autofix(request.vars.obj_id,
+                                            request.vars.autofix)
     elif action == "set_var_class":
         return json_tree_action_set_var_class(request.vars.obj_id,
                                               request.vars.var_class)
@@ -11489,6 +11623,26 @@ def json_tree_action_set_stats(fset_id, value):
          dict(fset_name=v.fset_name,
               old=v.fset_stats,
               new=value))
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_set_autofix(modset_mod_id, autofix):
+    q = db.comp_moduleset_modules.id == modset_mod_id
+    q1 = db.comp_moduleset_modules.modset_id == db.comp_moduleset_team_responsible.modset_id
+    q1 &= db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return "-1"
+    db(q).update(autofix=autofix)
+    _log('compliance.module.change',
+         'set module %(modset_mod_name)s autofix from %(old)s to %(new)s in moduleset %(modset_name)s',
+         dict(modset_mod_name=v.comp_moduleset_modules.modset_mod_name,
+              old=str(v.comp_moduleset_modules.autofix),
+              new=str(autofix),
+              modset_name=v.comp_moduleset.modset_name))
     return "0"
 
 @auth.requires_membership('CompManager')

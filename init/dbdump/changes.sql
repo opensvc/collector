@@ -4378,4 +4378,6 @@ drop view v_comp_explicit_rulesets;
 
 CREATE VIEW `v_comp_explicit_rulesets` AS (select `r`.`id` AS `id`,`r`.`ruleset_name` AS `ruleset_name`,group_concat(distinct concat(`v`.`var_name`,'=',`v`.`var_value`) separator '|') AS `variables` from (`comp_rulesets` `r` left join `comp_rulesets_variables` `v` on((`r`.`id` = `v`.`ruleset_id`))) where (`r`.`ruleset_type` = 'explicit') group by `r`.`id`);
 
+alter table comp_moduleset_modules add column autofix varchar(1) default 'F';
+
 

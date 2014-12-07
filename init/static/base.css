@@ -8,6 +8,11 @@
   color: cadetblue;
 }
 
+.panselector10 {
+  max-height: 10em;
+  overflow-y: scroll;
+}
+
 .ui-menu {
   max-height: 80%;
   overflow-y: scroll;

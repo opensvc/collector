@@ -91,6 +91,11 @@ jstree_data = {
      "image": designer.url_static+"/action16.png",
     },
    },
+   "module_autofix": {
+    "icon": {
+     "image": designer.url_static+"/actionred16.png",
+    },
+   },
    "modset": {
     "icon": {
      "image": designer.url_static+"/action16.png",
@@ -239,6 +244,67 @@ jstree_data = {
          "separator_after": false,
          "icon": false,
          "action": function(obj){this.create(obj, "first", {"attr": {"rel": "ruleset"}})}
+       }
+     }
+
+
+     //
+     // module
+     //
+     else if (node.attr("rel").indexOf("module") == 0) {
+       h["autofix"] = {
+         "label": "Autofix",
+         "separator_before": false,
+         "separator_after": false,
+         "icon": false,
+         "submenu": {
+           "on": {
+             "label": "On",
+             "action": function(obj){
+               $.ajax({
+                 async: false,
+                 type: "POST",
+                 url: designer.url_action,
+                 data: {
+                  "operation": "set_autofix",
+                  "autofix": true,
+                  "obj_id": obj.attr("obj_id"),
+                 },
+                 success: function(msg){
+                   var r = obj.attr('rel')
+                   if (r == 'module') {
+                     obj.attr('rel', 'module_autofix')
+                   }
+                   $("[rel="+obj.attr('rel')+"][obj_id="+obj.attr('obj_id')+"]").children("a").click()
+                   json_status(msg)
+                 }
+               });
+             }
+           },
+           "off": {
+             "label": "Off",
+             "action": function(obj){
+               $.ajax({
+                 async: false,
+                 type: "POST",
+                 url: designer.url_action,
+                 data: {
+                  "operation": "set_autofix",
+                  "autofix": false,
+                  "obj_id": obj.attr("obj_id"),
+                 },
+                 success: function(msg){
+                   var r = obj.attr('rel')
+                   if (r == 'module_autofix') {
+                     obj.attr('rel', 'module')
+                   }
+                   $("[rel="+obj.attr('rel')+"][obj_id="+obj.attr('obj_id')+"]").children("a").click()
+                   json_status(msg)
+                 }
+               });
+             }
+           },
+         }
        }
      }
 

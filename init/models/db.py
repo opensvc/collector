@@ -3,6 +3,7 @@
 #########################################################################
 ## This scaffolding model makes your app work on Google App Engine too
 #########################################################################
+#from gluon.contrib.redis_cache import RedisCache
 
 from applications.init.modules import config
 
@@ -10,6 +11,13 @@ if hasattr(config, 'dbopensvc'):
     dbopensvc = config.dbopensvc
 else:
     dbopensvc = 'dbopensvc'
+
+#if hasattr(config, 'redis_host'):
+#    redis_host = config.redis_host
+#else:
+#    redis_host = 'dbopensvc_host'
+
+#cache.redis = RedisCache(redis_host+":6379", db=None, debug=True)
 
 if request.env.web2py_runtime_gae:            # if running on Google App Engine
     db = DAL('gae')                           # connect to Google BigTable
@@ -1036,6 +1044,7 @@ db.define_table('comp_moduleset_modules',
     Field('modset_mod_name','string'),
     Field('modset_mod_author','string'),
     Field('modset_mod_updated','datetime'),
+    Field('autofix','boolean', default=False),
     migrate=False)
 
 db.define_table('comp_log',
