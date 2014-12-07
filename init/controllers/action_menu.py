@@ -23,6 +23,8 @@ def action_q_event():
 def get_reachable_name(nodename):
     q = db.nodes.nodename == nodename
     fqdn = db(q).select(db.nodes.fqdn).first().fqdn
+    if fqdn is None:
+        return nodename
     if not fqdn.endswith('.'):
         fqdn += '.'
     import socket
@@ -125,6 +127,8 @@ def fmt_svc_comp_action(node, service, action, mode, mod, action_type):
 
 @auth.requires_membership('CompExec')
 def do_node_comp_action(nodename, action, mode, obj):
+    if action.startswith("compliance_"):
+        action = action.replace("compliance_", "")
     if mode not in ("module", "moduleset"):
         raise ToolError("unsupported mode")
     if action not in ("check", "fix"):
@@ -175,6 +179,8 @@ def do_node_wol_action(nodename):
 
 @auth.requires_membership('CompExec')
 def do_svc_comp_action(nodename, svcname, action, mode, obj):
+    if action.startswith("compliance_"):
+        action = action.replace("compliance_", "")
     if mode not in ("module", "moduleset"):
         raise ToolError("unsupported mode")
     if action not in ("check", "fix"):
