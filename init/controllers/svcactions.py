@@ -542,3 +542,70 @@ wsh["%(divid)s"] = ws_action_switch_%(divid)s
         )
     return dict(table=t)
 
+#
+# actions tab
+#
+class table_actions_node(table_actions):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        table_actions.__init__(self, id, func, innerhtml)
+        self.hide_tools = True
+        self.pageable = False
+        self.bookmarkable = False
+        self.commonalityable = False
+        self.linkable = False
+        self.checkboxes = True
+        self.filterable = False
+        self.exportable = False
+        self.dbfilterable = False
+        self.columnable = False
+        self.refreshable = False
+        self.wsable = False
+        self.dataable = True
+        self.child_tables = []
+
+def ajax_actions_node():
+    tid = request.vars.table_id
+    t = table_actions_node(tid, 'ajax_actions_node')
+    o = ~db.v_svcactions.id
+    q = _where(None, 'v_svcactions', domain_perms(), 'hostname')
+    for f in ['hostname']:
+        q = _where(q, 'v_svcactions', t.filter_parse(f), f)
+    if request.args[0] == "data":
+        t.object_list = db(q).select(cacheable=True, orderby=o, limitby=(0,20))
+        return t.table_lines_data(-1, html=False)
+
+def ajax_actions_svc():
+    tid = request.vars.table_id
+    t = table_actions_node(tid, 'ajax_actions_svc')
+    o = ~db.v_svcactions.id
+    q = _where(None, 'v_svcactions', domain_perms(), 'svcname')
+    for f in ['svcname']:
+        q = _where(q, 'v_svcactions', t.filter_parse(f), f)
+    if request.args[0] == "data":
+        t.object_list = db(q).select(cacheable=True, orderby=o, limitby=(0,20))
+        return t.table_lines_data(-1, html=False)
+
+@auth.requires_login()
+def actions_node():
+    node = request.args[0]
+    tid = 'actions_'+node
+    t = table_actions_node(tid, 'ajax_actions_node')
+    t.colprops['hostname'].force_filter = node
+
+    return DIV(
+             t.html(),
+             _id=tid,
+           )
+
+@auth.requires_login()
+def actions_svc():
+    svcname = request.args[0]
+    tid = 'actions_'+svcname
+    t = table_actions_node(tid, 'ajax_actions_svc')
+    t.colprops['svcname'].force_filter = svcname
+
+    return DIV(
+             t.html(),
+             _id=tid,
+           )
+

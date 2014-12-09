@@ -473,7 +473,7 @@ def ajax_service():
 
     def js(tab, rowid):
         buff = ""
-        for i in range(1, 14):
+        for i in range(1, 16):
             buff += """$('#%(tab)s_%(id)s').hide();
                        $('#li%(tab)s_%(id)s').removeClass('tab_active');
                     """%dict(tab='tab'+str(i), id=rowid)
@@ -818,6 +818,8 @@ def ajax_service():
             LI(P(T("alerts"), _class='alert16', _onclick=js('tab13', rowid)), _id="litab13_"+str(rowid)),
             LI(P(T("status"), _class='svc', _onclick=js('tab2', rowid)), _id="litab2_"+str(rowid)),
             LI(P(T("resources"), _class='svc', _onclick=js('tab3', rowid)), _id="litab3_"+str(rowid)),
+            LI(P(T("actions"), _class='action16', _onclick=js('tab14', rowid)), _id="litab14_"+str(rowid)),
+            LI(P(T("log"), _class='log16', _onclick=js('tab15', rowid)), _id="litab15_"+str(rowid)),
             LI(P(T("env"), _class='log16', _onclick=js('tab4', rowid)), _id="litab4_"+str(rowid)),
             LI(P(T("topology"), _class='dia16', _onclick=js('tab5', rowid)), _id="litab5_"+str(rowid)),
             LI(P(T("storage"), _class='net16', _onclick=js('tab6', rowid)), _id="litab6_"+str(rowid)),
@@ -841,6 +843,16 @@ def ajax_service():
           DIV(
             IMG(_src=URL(r=request,c='static',f='spinner.gif')),
             _id='tab13_'+str(rowid),
+            _class='cloud',
+          ),
+          DIV(
+            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            _id='tab14_'+str(rowid),
+            _class='cloud',
+          ),
+          DIV(
+            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            _id='tab15_'+str(rowid),
             _class='cloud',
           ),
           DIV(
@@ -946,6 +958,18 @@ def ajax_service():
                url=URL(r=request, c='dashboard', f='dashboard_svc',
                        args=[request.vars.node])
             ),
+            "function s%(rid)s_load_log(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
+               id='tab15_'+str(rowid),
+               rid=str(rowid),
+               url=URL(r=request, c='log', f='log_svc',
+                       args=[request.vars.node])
+            ),
+            "function s%(rid)s_load_actions(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
+               id='tab14_'+str(rowid),
+               rid=str(rowid),
+               url=URL(r=request, c='svcactions', f='actions_svc',
+                       args=[request.vars.node])
+            ),
             "function s%(rid)s_load_svcmon(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
                id='tab2_'+str(rowid),
                rid=str(rowid),
@@ -964,6 +988,8 @@ def ajax_service():
                             "tab7": %(id)s_load_grpprf,
                             "tab12": %(id)s_load_containerprf,
                             "tab13": %(id)s_load_alerts,
+                            "tab14": %(id)s_load_actions,
+                            "tab15": %(id)s_load_log,
                             "tab8": %(id)s_load_wiki,
                             "tab9": %(id)s_load_svcmon_log,
                             "tab10": %(id)s_load_pkgdiff,

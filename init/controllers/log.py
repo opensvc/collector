@@ -267,3 +267,68 @@ def log():
     return dict(table=t)
 
 
+class table_log_node(table_log):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        table_log.__init__(self, id, func, innerhtml)
+        self.hide_tools = True
+        self.pageable = False
+        self.bookmarkable = False
+        self.commonalityable = False
+        self.linkable = False
+        self.checkboxes = True
+        self.filterable = False
+        self.exportable = False
+        self.dbfilterable = False
+        self.columnable = False
+        self.refreshable = False
+        self.wsable = False
+        self.dataable = True
+        self.child_tables = []
+
+def ajax_log_node():
+    tid = request.vars.table_id
+    t = table_log_node(tid, 'ajax_log_node')
+    o = ~db.log.log_date
+    q = _where(None, 'log', domain_perms(), 'log_nodename')
+    for f in ['log_nodename']:
+        q = _where(q, 'log', t.filter_parse(f), f)
+    if request.args[0] == "data":
+        t.object_list = db(q).select(cacheable=True, orderby=o, limitby=(0,20))
+        return t.table_lines_data(-1, html=False)
+
+def ajax_log_svc():
+    tid = request.vars.table_id
+    t = table_log_node(tid, 'ajax_log_svc')
+    o = ~db.log.log_date
+    q = _where(None, 'log', domain_perms(), 'log_svcname')
+    for f in ['svcname']:
+        q = _where(q, 'v_svclog', t.filter_parse(f), f)
+    if request.args[0] == "data":
+        t.object_list = db(q).select(cacheable=True, orderby=o, limitby=(0,20))
+        return t.table_lines_data(-1, html=False)
+
+@auth.requires_login()
+def log_node():
+    node = request.args[0]
+    tid = 'log_'+node
+    t = table_log_node(tid, 'ajax_log_node')
+    t.colprops['log_nodename'].force_filter = node
+
+    return DIV(
+             t.html(),
+             _id=tid,
+           )
+
+@auth.requires_login()
+def log_svc():
+    svcname = request.args[0]
+    tid = 'log_'+svcname
+    t = table_log_node(tid, 'ajax_log_svc')
+    t.colprops['log_svcname'].force_filter = svcname
+
+    return DIV(
+             t.html(),
+             _id=tid,
+           )
+
+
