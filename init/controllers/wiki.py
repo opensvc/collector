@@ -76,7 +76,7 @@ def wiki_edit(id, page_name):
              BR(),
              A(
                T('Save'),
-               _onclick="ajax('%(url)s',['wiki_e_body_%(id)s'], '%(id)s')"%dict(
+               _onclick="sync_ajax('%(url)s',['wiki_e_body_%(id)s'], '%(id)s', function(){})"%dict(
                  id=id,
                  url=URL(r=request, c='wiki', f='ajax_wiki_save',
                          args=[id, page_name]),
@@ -85,7 +85,7 @@ def wiki_edit(id, page_name):
              ' ',
              A(
                T('Help'),
-               _onclick="ajax('%(url)s',[], 'wiki_e_syntax_%(id)s')"%dict(
+               _onclick="sync_ajax('%(url)s',[], 'wiki_e_syntax_%(id)s', function(){})"%dict(
                  id=id,
                  url=URL(r=request, c='wiki', f='ajax_wiki_syntax'),
                ),
