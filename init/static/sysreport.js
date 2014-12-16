@@ -38,7 +38,10 @@ function sysreport_timeline(id, nodename, data){
 function sysreport_show_file(e) {
   var url = $(location).attr("origin") + "/init/ajax_sysreport/ajax_sysreport_show_file"
   data = {
-   'id': e.attr("uuid"),
+   'nodename': e.attr("nodename"),
+   'fpath': e.attr("fpath"),
+   'oid': e.attr("oid"),
+   'cid': e.attr("cid")
   }
   $.ajax({
        type: "POST",

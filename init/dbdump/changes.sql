@@ -4380,4 +4380,16 @@ CREATE VIEW `v_comp_explicit_rulesets` AS (select `r`.`id` AS `id`,`r`.`ruleset_
 
 alter table comp_moduleset_modules add column autofix varchar(1) default 'F';
 
+CREATE TABLE `sysrep_secure` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `pattern` text NOT NULL,
+  PRIMARY KEY (`id`)
+);
+
+CREATE TABLE `sysrep_changing` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `pattern` text NOT NULL,
+  PRIMARY KEY (`id`)
+);
+
 

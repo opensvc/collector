@@ -39,7 +39,6 @@ class sysreport(object):
             data.append(d)
 
         for i, d in enumerate(data):
-            base_done = []
             changed = set([])
             for line in d['stat'].split('\n'):
                 if "files changed" in line:
@@ -48,18 +47,8 @@ class sysreport(object):
                 if " | " not in line:
                     continue
                 fpath = line.split(" | ")[0].strip()
-                if "/cmd/" in fpath:
-                    base = fpath[:fpath.rindex("/")]
-                    if base in base_done:
-                        continue
-                    base_done.append(base)
-                    fpath = os.path.join(self.collect_d, base, "cmd")
-                    with open(fpath, 'r') as f:
-                        fpath = f.read()
-                elif nodename is not None and "/file/" in fpath:
-                    fpath = fpath.replace(nodename+"/file", "")
                 changed.add(fpath)
-            data[i]['stat'] = '\n'.join(changed)
+            data[i]['stat'] = sorted(changed)
         return data
 
     def log(self, nodename=None):
@@ -91,7 +80,6 @@ class sysreport(object):
         else:
             date = ''
         d = {}
-        base_done = {}
         block = []
         fpath = ''
         for line in lines:
@@ -107,19 +95,6 @@ class sysreport(object):
                     block = []
                     fpath = ""
                 fpath = line.replace("+++ ", "")
-                if "/cmd/" in fpath:
-                    base = fpath[2:fpath.rindex("/")]
-                    suffix = fpath[fpath.rindex("/")+1:]
-                    if base in base_done:
-                        fpath = base_done[base]
-                    else:
-                        fpath = os.path.join(self.collect_d, base, "cmd")
-                        with open(fpath, 'r') as f:
-                            fpath = f.read()
-                        base_done[base] = fpath
-                    fpath = fpath + " (" + suffix + ")"
-                elif "/file/" in fpath:
-                    fpath = fpath[fpath.index("/file/", 6):]
             else:
                 block.append(line)
         if fpath != "" and len(block) > 0:
@@ -132,16 +107,17 @@ class sysreport(object):
         out, err = p.communicate()
         return out
 
-    def parse_lstree(self, s):
+    def parse_lstree(self, cid, s):
         data = []
         for line in s.split('\n'):
             l = line.split()
             if len(l) < 4:
                 continue
             d = {
+              "cid": cid,
               "mode": l[0],
               "type": l[1],
-              "uuid": l[2],
+              "oid": l[2],
               "fpath": line.split("	")[-1],
             }
             data.append(d)
@@ -149,13 +125,18 @@ class sysreport(object):
 
     def lstree_data(self, cid, nodename):
         s = self.lstree(cid, nodename)
-        return self.parse_lstree(s)
+        return self.parse_lstree(cid, s)
 
-    def show_file(self, uuid):
+    def show_file(self, fpath, cid, uuid):
+        cmd = ["git", "--git-dir="+self.git_d, "ls-tree", cid, fpath]
+        p = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        out, err = p.communicate()
+        validated_fpath = out[out.index(" ")+1:]
+
         cmd = ["git", "--git-dir="+self.git_d, "show", uuid]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
-        return out
+        return {'fpath': validated_fpath, 'content': out}
 
 
 if __name__ == "__main__":
