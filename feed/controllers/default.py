@@ -9,6 +9,7 @@
 #########################################################################
 import datetime, time
 import re
+import os
 
 def user():
     """
@@ -35,6 +36,31 @@ def call():
     """
     session.forget()
     return service()
+
+def is_exe(fpath):
+    """Returns True if file path is executable, False otherwize
+    does not follow symlink
+    """
+    return os.path.exists(fpath) and os.access(fpath, os.X_OK)
+
+def which(program):
+    def ext_candidates(fpath):
+        yield fpath
+        for ext in os.environ.get("PATHEXT", "").split(os.pathsep):
+            yield fpath + ext
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if os.path.isfile(program) and is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            exe_file = os.path.join(path, program)
+            for candidate in ext_candidates(exe_file):
+                if is_exe(candidate):
+                    return candidate
+
+    return None
 
 #
 # XMLRPC
@@ -437,7 +463,6 @@ def update_dcs(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "dcs", insert_dcs)
 
 def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
-    import os
     import codecs
 
     dir = 'applications'+str(URL(r=request,a='init', c='uploads',f=subdir))
@@ -480,10 +505,11 @@ def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
 @auth_uuid
 @service.xmlrpc
 def send_sysreport(fname, binary, auth):
-    import os
     import codecs
 
-    dir = 'applications'+str(URL(r=request,a='init', c='uploads',f='sysreport'))
+    dir = os.path.join(os.path.dirname(__file__), "..", "..", "init", 'uploads', 'sysreport')
+    git_d = os.path.join(dir, ".git")
+    cwd = os.getcwd()
     if not os.path.exists(dir):
         os.makedirs(dir)
 
@@ -504,32 +530,30 @@ def send_sysreport(fname, binary, auth):
     if fpath.endswith('.tar'):
         import tarfile
         tar = tarfile.open(fpath, 'r')
-        cwd = os.getcwd()
         os.chdir(dir)
         tar.extractall()
         tar.close()
         os.chdir(cwd)
         os.unlink(fpath)
 
-    from applications.feed.modules import util
-    if util.which('git') is None:
+    if which('git') is None:
         return
 
     nodename = auth[1]
-    os.chdir(dir)
-    if not os.path.exists(".git"):
+    if not os.path.exists(git_d):
+        from applications.init.modules import config
         print "init sysreport git project"
-        os.system("git init .")
-        os.system("git config user.email "+config.email_from)
-        os.system("git config user.name collector")
+        os.system("git --git-dir=%s init" % git_d)
+        os.system("git --git-dir=%s config user.email %s" % (git_d, config.email_from))
+        os.system("git --git-dir=%s config user.name collector" % git_d)
 
-    if not os.path.exists(nodename):
-        os.chdir(cwd)
+    if not os.path.exists(os.path.join(dir, nodename)):
         print nodename, "dir does not exist in", dir
         return
 
-    os.system("git add "+nodename)
-    os.system("git commit --allow-empty-message -F- "+nodename+" </dev/null")
+    os.chdir(dir)
+    os.system("git add %s" % nodename)
+    os.system('git commit -m"" %s' % nodename)
     os.chdir(cwd)
 
 def insert_dcss():

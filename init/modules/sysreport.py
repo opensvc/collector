@@ -57,7 +57,6 @@ class sysreport(object):
         if nodename is not None:
             cmd.append("--")
             cmd.append(nodename)
-        print " ".join(cmd)
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
         return out
@@ -67,7 +66,7 @@ class sysreport(object):
         return self.parse_show(s)
 
     def show(self, cid):
-        cmd = ["git", "--git-dir="+self.git_d, "show", "--pretty=%ci%n%b", cid]
+        cmd = ["git", "--git-dir="+self.git_d, "show", '--pretty=format:%ci%n%b', cid]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
         return out
@@ -141,5 +140,5 @@ class sysreport(object):
 
 if __name__ == "__main__":
     o = sysreport()
-    #print(o.timeline("clementine"))
-    print(o.show_data("d3b2304544592c153a381847245fb13616110cc9"))
+    #print(o.timeline("foo"))
+    print(o.show_data("949d91c9d126f3c916731e790441f9d916f84f33"))
