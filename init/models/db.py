@@ -2039,3 +2039,11 @@ db.define_table('group_hidden_menu_entries',
     Field('menu_entry','string'),
     migrate=False)
 
+db.define_table('sysrep_changing',
+    Field('pattern','string'),
+    migrate=False)
+
+db.define_table('sysrep_secure',
+    Field('pattern','string'),
+    migrate=False)
+

@@ -609,7 +609,7 @@ def ajax_node():
 
     def js(tab, rowid):
         buff = ""
-        for i in range(1, 17):
+        for i in range(1, 18):
             buff += """$('#%(tab)s_%(id)s').hide();$('#li%(tab)s_%(id)s').removeClass('tab_active');"""%dict(tab='tab'+str(i), id=rowid)
         buff += """$('#%(tab)s_%(id)s').show();$('#li%(tab)s_%(id)s').addClass('tab_active');
                    if ("%(tab)s" in callbacks) {
@@ -655,6 +655,7 @@ def ajax_node():
             LI(P(T("wiki"), _class='edit', _onclick=js('tab11', rowid)), _id="litab11_"+str(rowid)),
             LI(P(T("checks"), _class='check16', _onclick=js('tab12', rowid)), _id="litab12_"+str(rowid)),
             LI(P(T("compliance"), _class='comp16', _onclick=js('tab13', rowid)), _id="litab13_"+str(rowid)),
+            LI(P(T("sysreport"), _class='log16', _onclick=js('tab17', rowid)), _id="litab17_"+str(rowid)),
           ),
           _class="tab",
         ),
@@ -684,6 +685,11 @@ def ajax_node():
           DIV(
             IMG(_src=URL(r=request,c='static',f='spinner.gif')),
             _id='tab16_'+str(rowid),
+            _class='cloud',
+          ),
+          DIV(
+            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            _id='tab17_'+str(rowid),
             _class='cloud',
           ),
           DIV(
@@ -741,6 +747,12 @@ def ajax_node():
             _class='cloud',
           ),
           SCRIPT(
+            "function n%(rid)s_load_sysreport(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
+               id='tab17_'+str(rowid),
+               rid=str(rowid),
+               url=URL(r=request, c='ajax_sysreport', f='ajax_sysreport',
+                       args=[request.vars.node])
+            ),
             "function n%(rid)s_load_node_log(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
                id='tab16_'+str(rowid),
                rid=str(rowid),
@@ -796,6 +808,7 @@ def ajax_node():
                             "tab14": %(id)s_load_node_alerts,
                             "tab15": %(id)s_load_node_actions,
                             "tab16": %(id)s_load_node_log,
+                            "tab17": %(id)s_load_sysreport,
                             "tab5": %(id)s_load_svcmon_node}"""%dict(id='n'+str(rowid)),
             js(tab, rowid),
             _name='%s_to_eval'%rowid,

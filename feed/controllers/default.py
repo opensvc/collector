@@ -477,6 +477,61 @@ def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
     sql = "delete from stor_array_dg_quota where stor_array_dg_quota.dg_id not in (select id from stor_array_dg)"
     db.executesql(sql)
 
+@auth_uuid
+@service.xmlrpc
+def send_sysreport(fname, binary, auth):
+    import os
+    import codecs
+
+    dir = 'applications'+str(URL(r=request,a='init', c='uploads',f='sysreport'))
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+
+    fpath = os.path.join(dir, fname)
+
+    if not fpath.endswith('.tar'):
+        # don't know how to treat that sysreport format: don't care to save it
+        return
+
+    try:
+        f = codecs.open(fpath, "wb")
+        f.write(binary.data)
+        f.sync()
+        f.close()
+    except:
+        pass
+
+    if fpath.endswith('.tar'):
+        import tarfile
+        tar = tarfile.open(fpath, 'r')
+        cwd = os.getcwd()
+        os.chdir(dir)
+        tar.extractall()
+        tar.close()
+        os.chdir(cwd)
+        os.unlink(fpath)
+
+    from applications.feed.modules import util
+    if util.which('git') is None:
+        return
+
+    nodename = auth[1]
+    os.chdir(dir)
+    if not os.path.exists(".git"):
+        print "init sysreport git project"
+        os.system("git init .")
+        os.system("git config user.email "+config.email_from)
+        os.system("git config user.name collector")
+
+    if not os.path.exists(nodename):
+        os.chdir(cwd)
+        print nodename, "dir does not exist in", dir
+        return
+
+    os.system("git add "+nodename)
+    os.system("git commit --allow-empty-message -F- "+nodename+" </dev/null")
+    os.chdir(cwd)
+
 def insert_dcss():
     return insert_dcs()
 
