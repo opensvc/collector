@@ -504,20 +504,64 @@ def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
 
 @auth_uuid
 @service.xmlrpc
-def send_sysreport(fname, binary, auth):
+def send_sysreport(fname, binary, deleted, auth):
+    need_commit = False
+    sysreport_d = os.path.join(os.path.dirname(__file__), "..", "..", "init", 'uploads', 'sysreport')
+    git_d = os.path.join(sysreport_d, ".git")
+    nodename = auth[1]
+    cwd = os.getcwd()
+
+    if not os.path.exists(sysreport_d):
+        os.makedirs(sysreport_d)
+
+    need_commit |= send_sysreport_delete(deleted, git_d, sysreport_d, cwd, nodename)
+    need_commit |= send_sysreport_archive(fname, binary, sysreport_d, cwd, nodename)
+
+    if not need_commit:
+        return
+
+    if which('git') is None:
+        return
+
+    if not os.path.exists(git_d):
+        from applications.init.modules import config
+        print "init sysreport git project"
+        os.system("git --git-dir=%s init" % git_d)
+        os.system("git --git-dir=%s config user.email %s" % (git_d, config.email_from))
+        os.system("git --git-dir=%s config user.name collector" % git_d)
+
+    if not os.path.exists(os.path.join(sysreport_d, nodename)):
+        print nodename, "dir does not exist in", sysreport_d
+        return
+
+    os.chdir(sysreport_d)
+    os.system("git add %s" % nodename)
+    os.system('git commit -m"" %s' % nodename)
+    os.chdir(cwd)
+
+def send_sysreport_delete(deleted, git_d, sysreport_d, cwd, nodename):
+    if len(deleted) == 0:
+        return False
+    if which('git') is None:
+        return False
+    deleted = map(lambda x: nodename+"/file"+x, deleted)
+    os.chdir(sysreport_d)
+    for fpath in deleted:
+        os.system("git --git-dir=%s rm %s" % (git_d, fpath))
+    os.chdir(cwd)
+    return True
+
+def send_sysreport_archive(fname, binary, sysreport_d, cwd, nodename):
+    if fname == "":
+        return False
+
     import codecs
 
-    dir = os.path.join(os.path.dirname(__file__), "..", "..", "init", 'uploads', 'sysreport')
-    git_d = os.path.join(dir, ".git")
-    cwd = os.getcwd()
-    if not os.path.exists(dir):
-        os.makedirs(dir)
-
-    fpath = os.path.join(dir, fname)
+    fpath = os.path.join(sysreport_d, fname)
 
     if not fpath.endswith('.tar'):
         # don't know how to treat that sysreport format: don't care to save it
-        return
+        return False
 
     try:
         f = codecs.open(fpath, "wb")
@@ -529,32 +573,21 @@ def send_sysreport(fname, binary, auth):
 
     if fpath.endswith('.tar'):
         import tarfile
-        tar = tarfile.open(fpath, 'r')
-        os.chdir(dir)
+        try:
+            tar = tarfile.open(fpath, 'r')
+        except Exception as e:
+            print e
+            os.unlink(fpath)
+            return False
+        os.chdir(sysreport_d)
         tar.extractall()
         tar.close()
         os.chdir(cwd)
         os.unlink(fpath)
+    else:
+        return False
 
-    if which('git') is None:
-        return
-
-    nodename = auth[1]
-    if not os.path.exists(git_d):
-        from applications.init.modules import config
-        print "init sysreport git project"
-        os.system("git --git-dir=%s init" % git_d)
-        os.system("git --git-dir=%s config user.email %s" % (git_d, config.email_from))
-        os.system("git --git-dir=%s config user.name collector" % git_d)
-
-    if not os.path.exists(os.path.join(dir, nodename)):
-        print nodename, "dir does not exist in", dir
-        return
-
-    os.chdir(dir)
-    os.system("git add %s" % nodename)
-    os.system('git commit -m"" %s' % nodename)
-    os.chdir(cwd)
+    return True
 
 def insert_dcss():
     return insert_dcs()

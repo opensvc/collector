@@ -87,13 +87,16 @@ class sysreport(object):
             if line.startswith("index "):
                 continue
             if line.startswith("--- "):
+                if "/dev/null" not in line:
+                    fpath = line.replace("--- ", "").lstrip("a/")
                 continue
             if line.startswith("+++ "):
                 if fpath != "" and len(block) > 0:
                     d[fpath] = '\n'.join(block)
                     block = []
                     fpath = ""
-                fpath = line.replace("+++ ", "")
+                if "/dev/null" not in line:
+                    fpath = line.replace("+++ ", "").lstrip("b/")
             else:
                 block.append(line)
         if fpath != "" and len(block) > 0:
