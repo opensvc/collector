@@ -6295,13 +6295,14 @@ def _comp_get_data(nodename, modulesets=[]):
     }
 
 def _comp_get_svc_data(nodename, svcname, modulesets=[]):
+    slave = comp_slave(svcname, nodename)
     return {
-      'modulesets': _comp_get_svc_moduleset_data(nodename, svcname, modulesets=modulesets),
-      'rulesets': _comp_get_svc_ruleset(nodename, svcname),
+      'modulesets': _comp_get_svc_moduleset_data(nodename, svcname, modulesets=modulesets, slave=slave),
+      'rulesets': _comp_get_svc_ruleset(nodename, svcname, slave=slave),
     }
 
-def test_comp_get_data():
-    return _comp_get_data("clementine")
+def test_comp_get_svc_data():
+    return _comp_get_svc_data("clementine", "collector")
 
 @auth_uuid
 @service.xmlrpc
@@ -6310,8 +6311,9 @@ def comp_get_moduleset_data(nodename, auth):
 
 @auth_uuid
 @service.xmlrpc
-def comp_get_svc_moduleset_data(svcname, auth):
-    return _comp_get_svc_moduleset_data(svcname)
+def comp_get_svc_moduleset_data(nodename, svcname, auth):
+    slave = comp_slave(svcname, nodename)
+    return _comp_get_svc_moduleset_data(nodename, svcname, slave=slave)
 
 @auth.requires_membership('NodeExec')
 @service.json
@@ -6359,7 +6361,7 @@ def _comp_get_svc_moduleset(svcname, modulesets=None, slave=False):
                         cacheable=True)
     return [r.modset_name for r in rows]
 
-def _comp_get_svc_moduleset_data(svcname, modulesets=[], slave=False):
+def _comp_get_svc_moduleset_data(nodename, svcname, modulesets=[], slave=False):
     q = db.comp_modulesets_services.modset_svcname == svcname
     q &= db.comp_modulesets_services.slave == slave
     q &= db.comp_modulesets_services.modset_id == db.comp_moduleset.id
@@ -6782,8 +6784,9 @@ def comp_contextual_rulesets(nodename, svcname=None, slave=False, matching_fsets
             ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, matching_fsets=matching_fsets, rset_relations=rset_relations, rset_names=rset_names))
     return ruleset
 
-def _comp_get_svc_ruleset(svcname, nodename):
-    slave = comp_slave(svcname, nodename)
+def _comp_get_svc_ruleset(svcname, nodename, slave=None):
+    if slave is None:
+        slave = comp_slave(svcname, nodename)
 
     rset_relations = get_rset_relations()
     rset_names = get_rset_names()
