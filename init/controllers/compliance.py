@@ -6298,7 +6298,7 @@ def _comp_get_svc_data(nodename, svcname, modulesets=[]):
     slave = comp_slave(svcname, nodename)
     return {
       'modulesets': _comp_get_svc_moduleset_data(nodename, svcname, modulesets=modulesets, slave=slave),
-      'rulesets': _comp_get_svc_ruleset(nodename, svcname, slave=slave),
+      'rulesets': _comp_get_svc_ruleset(svcname, nodename, slave=slave),
     }
 
 def test_comp_get_svc_data():
