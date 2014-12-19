@@ -83,6 +83,10 @@ class sysreport(object):
         fpath = ''
         for line in lines:
             if line.startswith("diff "):
+                if fpath != "" and len(block) > 0:
+                    d[fpath] = '\n'.join(block)
+                    block = []
+                    fpath = ""
                 continue
             if line.startswith("index "):
                 continue
@@ -91,14 +95,10 @@ class sysreport(object):
                     fpath = line.replace("--- ", "").lstrip("a/")
                 continue
             if line.startswith("+++ "):
-                if fpath != "" and len(block) > 0:
-                    d[fpath] = '\n'.join(block)
-                    block = []
-                    fpath = ""
                 if "/dev/null" not in line:
                     fpath = line.replace("+++ ", "").lstrip("b/")
-            else:
-                block.append(line)
+                continue
+            block.append(line)
         if fpath != "" and len(block) > 0:
             d[fpath] = '\n'.join(block)
         return {'date': date, 'blocks': d}
@@ -144,4 +144,4 @@ class sysreport(object):
 if __name__ == "__main__":
     o = sysreport()
     #print(o.timeline("foo"))
-    print(o.show_data("949d91c9d126f3c916731e790441f9d916f84f33"))
+    print(o.show_data("f8788ec7c6db19e515c2fa9893e2b7035ea68f50"))

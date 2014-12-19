@@ -71,6 +71,7 @@ def ajax_sysreport_commit():
     diff_data = sysreport.sysreport().show_data(cid)
     l = []
     for k in sorted(diff_data['blocks'].keys()):
+        diff_data['blocks'][k] = diff_data['blocks'][k].replace(" @@ ", " @@\n ")
         if sec_pattern.match(k):
             cl = "highlight "
             if sysresponsible:
