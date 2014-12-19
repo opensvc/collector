@@ -6311,9 +6311,9 @@ def comp_get_moduleset_data(nodename, auth):
 
 @auth_uuid
 @service.xmlrpc
-def comp_get_svc_moduleset_data(nodename, svcname, auth):
-    slave = comp_slave(svcname, nodename)
-    return _comp_get_svc_moduleset_data(nodename, svcname, slave=slave)
+def comp_get_svc_moduleset_data(svcname, auth):
+    slave = comp_slave(svcname, auth[1])
+    return _comp_get_svc_moduleset_data(auth[1], svcname, slave=slave)
 
 @auth.requires_membership('NodeExec')
 @service.json
