@@ -4392,4 +4392,7 @@ CREATE TABLE `sysrep_changing` (
   PRIMARY KEY (`id`)
 );
 
+alter table action_queue add key idx_ret (ret);
+
+alter table action_queue add key idx2 (status,ret);
 
