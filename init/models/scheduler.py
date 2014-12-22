@@ -176,4 +176,4 @@ def task_purge_checks():
     db.commit()
 
 from gluon.scheduler import Scheduler
-scheduler = Scheduler(db)
+scheduler = Scheduler(db, migrate=False)
