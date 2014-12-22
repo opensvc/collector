@@ -20,10 +20,25 @@ import lock
 import config
 from comet import event_msg, _websocket_send
 
-msg = {
-  'event': 'action_q_change',
-  'data': {'f': 'b'},
-}
+def msg(conn):
+    sql = """select
+              (select count(id) from action_queue where status in ('Q', 'W', 'R')) as queued,
+              (select count(id) from action_queue where ret!=0) as ko,
+              (select count(id) from action_queue where ret=0 and status='T') as ok
+          """
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    row = cursor.fetchone()
+    s = {
+      'event': 'action_q_change',
+      'data': {
+        'queued': row[0],
+        'ko': row[1],
+        'ok': row[2],
+      },
+    }
+    cursor.close()
+    return s
 
 try:
     dbopensvc = config.dbopensvc
@@ -145,7 +160,7 @@ def get_queued():
         conn.commit()
 
     if len(cmds) > 0:
-        _websocket_send(event_msg(msg))
+        _websocket_send(event_msg(msg(conn)))
 
     cursor.close()
     conn.close()
@@ -171,7 +186,7 @@ def dequeue_worker(i, recv, send):
         cursor = conn.cursor()
         cursor.execute("update action_queue set status='R' where id=%d"%id)
         conn.commit()
-        _websocket_send(event_msg(msg))
+        _websocket_send(event_msg(msg(conn)))
         print '[%d] %d: %s'%(i, id, cmd)
         cmd = cmd.split()
         process = Popen(cmd, stdout=PIPE, stderr=PIPE, stdin=None)
@@ -188,7 +203,7 @@ def dequeue_worker(i, recv, send):
               """%(now, process.returncode, repr(out), repr(err), id)
         cursor.execute(sql)
         conn.commit()
-        _websocket_send(event_msg(msg))
+        _websocket_send(event_msg(msg(conn)))
 
         if form_id is not None:
             send.put(dict(
