@@ -702,7 +702,7 @@ def queue_check_refresh(rows):
     if len(vals) > 0:
         l = {
           'event': 'action_q_change',
-          'data': {'f': 'b'},
+          'data': action_queue_ws_data(),
         }
         _websocket_send(event_msg(l))
 

@@ -267,7 +267,7 @@ def prov_enqueue(node, command):
           command=command))
     l = {
       'event': 'action_q_change',
-      'data': {'f': 'b'},
+      'data': action_queue_ws_data(),
     }
     _websocket_send(event_msg(l))
 

@@ -20,21 +20,27 @@ if (!Array.prototype.indexOf) {
 //
 // Action queue stats
 //
-function action_queue_stats() {
+function action_queue_stats(data) {
+    if (typeof data !== 'undefined') {
+      _action_queue_stats(data)
+      return
+    }
     url = $(location).attr("origin") + "/init/action_queue/call/json/json_action_queue_stats"
-    $.getJSON(url, function(data) {
-      var s = ''
-      if (data["queued"] > 0) {
-        s += "<span class='boxed_small bgorange'>"+data["queued"]+'</span>'
-      }
-      if (data["ok"] > 0) {
-        s += "<span class='boxed_small bggreen'>"+data['ok']+'</span>'
-      }
-      if (data["ko"] > 0) {
-        s += "<span class='boxed_small bgred'>"+data['ko']+'</span>'
-      }
-      $(".header").find("[href$=action_queue]").html(s)
-    })
+    $.getJSON(url, function(data){_action_queue_stats(data)})
+}
+
+function _action_queue_stats(data) {
+    var s = ''
+    if (data["queued"] > 0) {
+      s += "<span class='boxed_small bgorange'>"+data["queued"]+'</span>'
+    }
+    if (data["ok"] > 0) {
+      s += "<span class='boxed_small bggreen'>"+data['ok']+'</span>'
+    }
+    if (data["ko"] > 0) {
+      s += "<span class='boxed_small bgred'>"+data['ko']+'</span>'
+    }
+    $(".header").find("[href$=action_queue]").html(s)
 }
 
 // init on page load
@@ -259,7 +265,7 @@ function ws_switch_one(data) {
         return
     }
     if (data["event"] == "action_q_change") {
-        action_queue_stats()
+        action_queue_stats(data['data'])
     }
     for (key in wsh) {
         if (!$("#wsswitch_"+key).prop('checked')) {
