@@ -6346,7 +6346,7 @@ def _comp_get_all_module():
 def comp_get_moduleset(nodename, auth):
     return _comp_get_moduleset(nodename)
 
-def _comp_get_svc_moduleset(svcname, modulesets=None, slave=False):
+def _comp_get_svc_moduleset_ids(svcname, modulesets=None, slave=False):
     q = db.comp_modulesets_services.modset_svcname == svcname
     q &= db.comp_modulesets_services.slave == slave
     q &= db.comp_modulesets_services.modset_id == db.comp_moduleset.id
@@ -6356,9 +6356,19 @@ def _comp_get_svc_moduleset(svcname, modulesets=None, slave=False):
     q &= db.services.svc_app == db.apps.app
     q &= db.apps.id == db.apps_responsibles.app_id
     q &= db.apps_responsibles.group_id == db.auth_group.id
-    rows = db(q).select(db.comp_moduleset.modset_name,
-                        groupby=db.comp_modulesets_services.modset_id,
-                        cacheable=True)
+    rows = db(q).select(db.comp_moduleset.id, groupby=db.comp_moduleset.id, cacheable=True)
+    modset_ids = [r.id for r in rows]
+
+    modset_tree_nodes = get_modset_tree_nodes(modset_ids)
+    modset_ids = set(modset_tree_nodes.keys())
+    for l in modset_tree_nodes.values():
+        modset_ids |= set(l)
+    return modset_ids
+
+def _comp_get_svc_moduleset(svcname, modulesets=None, slave=False):
+    modset_ids = _comp_get_svc_moduleset_ids(svcname, modulesets=modulesets, slave=slave)
+    q = db.comp_moduleset.id.belongs(modset_ids)
+    rows = db(q).select(db.comp_moduleset.modset_name, cacheable=True)
     return [r.modset_name for r in rows]
 
 def _comp_get_svc_moduleset_data(nodename, svcname, modulesets=[], slave=False):
@@ -6371,10 +6381,19 @@ def _comp_get_svc_moduleset_data(nodename, svcname, modulesets=[], slave=False):
     q &= db.services.svc_app == db.apps.app
     q &= db.apps.id == db.apps_responsibles.app_id
     q &= db.apps_responsibles.group_id == db.auth_group.id
-    q &= db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
     if len(modulesets) > 0:
         q &= db.comp_moduleset.modset_name.belongs(modulesets)
-    g = db.comp_modulesets_services.modset_id|db.comp_moduleset_modules.id
+    rows = db(q).select(db.comp_moduleset.id, groupby=db.comp_moduleset.id, cacheable=True)
+    modset_ids = [r.id for r in rows]
+
+    modset_tree_nodes = get_modset_tree_nodes(modset_ids)
+    modset_ids = set(modset_tree_nodes.keys())
+    for l in modset_tree_nodes.values():
+        modset_ids |= set(l)
+
+    q = db.comp_moduleset.id.belongs(modset_ids)
+    q &= db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
+    g = db.comp_moduleset_modules.modset_id|db.comp_moduleset_modules.id
     rows = db(q).select(db.comp_moduleset.modset_name,
                         db.comp_moduleset_modules.autofix,
                         db.comp_moduleset_modules.modset_mod_name,
@@ -6391,22 +6410,35 @@ def _comp_get_svc_moduleset_data(nodename, svcname, modulesets=[], slave=False):
             ))
     return d
 
-def _comp_get_moduleset_data(nodename, modulesets=[]):
+def _comp_get_moduleset_ids(nodename, modulesets=[]):
     q = db.comp_node_moduleset.modset_node == nodename
     q &= db.comp_node_moduleset.modset_id == db.comp_moduleset.id
     q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
     q &= db.auth_group.id == db.comp_moduleset_team_responsible.group_id
     q &= db.nodes.team_responsible == db.auth_group.role
     q &= db.nodes.nodename == nodename
-    q &= db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
     if len(modulesets) > 0:
         q &= db.comp_moduleset.modset_name.belongs(modulesets)
-    g = db.comp_node_moduleset.modset_id|db.comp_moduleset_modules.id
+    rows = db(q).select(db.comp_moduleset.id, groupby=db.comp_moduleset.id, cacheable=True)
+    modset_ids = [r.id for r in rows]
+
+    modset_tree_nodes = get_modset_tree_nodes(modset_ids)
+    modset_ids = set(modset_tree_nodes.keys())
+    for l in modset_tree_nodes.values():
+        modset_ids |= set(l)
+    return modset_ids
+
+def _comp_get_moduleset_data(nodename, modulesets=[]):
+    modset_ids = _comp_get_moduleset_ids(nodename, modulesets=modulesets)
+    q = db.comp_moduleset.id.belongs(modset_ids)
+    q &= db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
+    g = db.comp_moduleset_modules.modset_id|db.comp_moduleset_modules.id
     rows = db(q).select(db.comp_moduleset.modset_name,
                         db.comp_moduleset_modules.autofix,
                         db.comp_moduleset_modules.modset_mod_name,
                         groupby=g,
                         cacheable=True)
+
     d = {}
     for row in rows:
         if row.comp_moduleset.modset_name not in d:
@@ -6416,18 +6448,13 @@ def _comp_get_moduleset_data(nodename, modulesets=[]):
               row.comp_moduleset_modules.modset_mod_name,
               row.comp_moduleset_modules.autofix,
             ))
+
     return d
 
 def _comp_get_moduleset(nodename):
-    q = db.comp_node_moduleset.modset_node == nodename
-    q &= db.comp_node_moduleset.modset_id == db.comp_moduleset.id
-    q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
-    q &= db.auth_group.id == db.comp_moduleset_team_responsible.group_id
-    q &= db.nodes.team_responsible == db.auth_group.role
-    q &= db.nodes.nodename == nodename
-    rows = db(q).select(db.comp_moduleset.modset_name,
-                        groupby=db.comp_node_moduleset.modset_id,
-                        cacheable=True)
+    modset_ids = _comp_get_moduleset_ids(nodename)
+    q = db.comp_moduleset.id.belongs(modset_ids)
+    rows = db(q).select(db.comp_moduleset.modset_name, cacheable=True)
     return [r.modset_name for r in rows]
 
 @auth_uuid
@@ -6750,8 +6777,8 @@ def node_team_responsible_id(nodename):
         return None
     return rows[0].id
 
-def test_comp_get_ruleset():
-    return _comp_get_ruleset("clementine")
+def test_comp_get_svc_moduleset():
+    return _comp_get_svc_moduleset("unxdevweb01")
 
 @auth_uuid
 @service.xmlrpc
@@ -6806,13 +6833,9 @@ def _comp_get_svc_ruleset(svcname, nodename, slave=None):
                                             rset_names=rset_names))
 
     # add explicit rulesets variables
-    q = db.comp_rulesets_services.svcname == svcname
-    q &= db.comp_rulesets_services.slave == slave
-    rows = db(q).select(db.comp_rulesets_services.ruleset_id,
-                        orderby=db.comp_rulesets_services.ruleset_id,
-                        cacheable=True)
-    for row in rows:
-        ruleset.update(comp_ruleset_vars(row.ruleset_id,
+    rset_ids = _comp_get_explicit_svc_ruleset_ids(svcname, slave=slave)
+    for rset_id in rset_ids:
+        ruleset.update(comp_ruleset_vars(rset_id,
                                          matching_fsets=matching_fsets,
                                          rset_relations=rset_relations,
                                          rset_names=rset_names))
@@ -6852,6 +6875,37 @@ def _comp_remove_dup_vars(ruleset):
                 l[var] = [(rset, i, ruleset[rset]['vars'][i][1])]
     return ruleset
 
+def _comp_get_explicit_svc_ruleset_ids(svcname, slave=False):
+    # attached to the node directly
+    q = db.comp_rulesets_services.svcname == svcname
+    q &= db.comp_rulesets_services.slave == slave
+    rows = db(q).select(db.comp_rulesets_services.ruleset_id, cacheable=True)
+    rset_ids = [r.ruleset_id for r in rows]
+
+    # attached to the node through modulesets
+    modset_ids = _comp_get_svc_moduleset_ids(svcname, slave=slave)
+    q = db.comp_moduleset_ruleset.modset_id.belongs(modset_ids)
+    rows = db(q).select(db.comp_moduleset_ruleset.ruleset_id)
+    rset_ids = list(set(rset_ids) | set([r.ruleset_id for r in rows]))
+
+    return rset_ids
+
+def _comp_get_explicit_ruleset_ids(nodename):
+    # attached to the node directly
+    q = db.comp_rulesets_nodes.nodename == nodename
+    rows = db(q).select(db.comp_rulesets_nodes.ruleset_id,
+                        orderby=db.comp_rulesets_nodes.ruleset_id,
+                        cacheable=True)
+    rset_ids = [r.ruleset_id for r in rows]
+
+    # attached to the node through modulesets
+    modset_ids = _comp_get_moduleset_ids(nodename)
+    q = db.comp_moduleset_ruleset.modset_id.belongs(modset_ids)
+    rows = db(q).select(db.comp_moduleset_ruleset.ruleset_id)
+    rset_ids = list(set(rset_ids) | set([r.ruleset_id for r in rows]))
+
+    return rset_ids
+
 def _comp_get_ruleset(nodename):
     # initialize ruleset with asset variables
     ruleset = comp_get_node_ruleset(nodename)
@@ -6869,12 +6923,9 @@ def _comp_get_ruleset(nodename):
                                             rset_names=rset_names))
 
     # add explicit rulesets variables
-    q = db.comp_rulesets_nodes.nodename == nodename
-    rows = db(q).select(db.comp_rulesets_nodes.ruleset_id,
-                        orderby=db.comp_rulesets_nodes.ruleset_id,
-                        cacheable=True)
-    for row in rows:
-        ruleset.update(comp_ruleset_vars(row.ruleset_id,
+    rset_ids = _comp_get_explicit_ruleset_ids(nodename)
+    for rset_id in rset_ids:
+        ruleset.update(comp_ruleset_vars(rset_id,
                                          matching_fsets=matching_fsets,
                                          rset_relations=rset_relations,
                                          rset_names=rset_names))
@@ -10456,22 +10507,80 @@ def json_form_submit(form_name, form_data):
 
     return str(log)
 
+def get_modset_relations():
+    # modset relation cache
+    q = db.comp_moduleset_moduleset.id > 0
+    rows = db(q).select(cacheable=True)
+    modset_relations = {}
+    for row in rows:
+        if row.parent_modset_id in modset_relations:
+            modset_relations[row.parent_modset_id] += [row.child_modset_id]
+        else:
+            modset_relations[row.parent_modset_id] = [row.child_modset_id]
+    return modset_relations
+
+def get_modset_tree_nodes(modset_ids=None):
+    modset_tree_nodes = {}
+    modset_relations = get_modset_relations()
+
+    if modset_ids is None:
+        modset_ids = modset_relations.keys()
+
+    def recurse_relations(head):
+        l = []
+        if head not in modset_relations:
+            return l
+        for child_id in modset_relations[head]:
+            l.append(child_id)
+            l += recurse_relations(child_id)
+        return l
+
+    for parent_id in modset_ids:
+        modset_tree_nodes[parent_id] = recurse_relations(parent_id)
+
+    return modset_tree_nodes
+
 def json_tree_modulesets():
     modsets = {
      'data': 'modulesets',
      'attr': {"id": "moduleset_head", "rel": "moduleset_head"},
      'children': [],
     }
+    modset_by_objid = {}
+
+    modset_rset_relations = {}
+    q = db.comp_moduleset_ruleset.id > 0
+    rows = db(q).select()
+    for row in rows:
+        if row.modset_id not in modset_rset_relations:
+            modset_rset_relations[row.modset_id] = [row.ruleset_id]
+        else:
+            modset_rset_relations[row.modset_id] += [row.ruleset_id]
+
+    modset_relations = get_modset_relations()
 
     q = db.comp_moduleset.id > 0
     q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
-    q &= db.comp_moduleset_team_responsible.group_id == db.auth_group.id
-    j = db.comp_moduleset.id == db.comp_moduleset_modules.modset_id
-    l = db.comp_moduleset_modules.on(j)
     if 'Manager' not in user_groups():
         q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
     if request.vars.obj_filter is not None:
         q = _where(q, 'comp_moduleset', request.vars.obj_filter, 'modset_name')
+    rows = db(q).select(db.comp_moduleset.id,
+                        groupby=db.comp_moduleset.id,
+                        cacheable=True)
+    visible_head_modset_ids = [r.id for r in rows]
+    modset_tree_nodes = get_modset_tree_nodes(visible_head_modset_ids)
+
+    visible_modset_ids = set(visible_head_modset_ids)
+    for modset_id in visible_head_modset_ids:
+        if modset_id in modset_tree_nodes:
+            visible_modset_ids |= set(modset_tree_nodes[modset_id])
+
+    q = db.comp_moduleset.id.belongs(visible_modset_ids)
+    q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
+    q &= db.comp_moduleset_team_responsible.group_id == db.auth_group.id
+    j = db.comp_moduleset.id == db.comp_moduleset_modules.modset_id
+    l = db.comp_moduleset_modules.on(j)
     rows = db(q).select(db.comp_moduleset.id,
                         db.comp_moduleset.modset_name,
                         db.comp_moduleset_modules.id,
@@ -10484,15 +10593,19 @@ def json_tree_modulesets():
                         groupby=(db.comp_moduleset.id|db.comp_moduleset_modules.id|db.auth_group.id)
            )
 
-    h = {}
-    modset_done = []
+    modset_done = set([])
     _data = None
     for row in rows:
         if row.comp_moduleset.id not in modset_done:
             if _data is not None:
                 _data['children'] += groups
                 _data['children'] += mods
-                modsets['children'].append(_data)
+                _data['children'] += rulesets
+                obj_id = _data["attr"]["obj_id"]
+                modset_by_objid[obj_id] = _data
+                if obj_id in visible_head_modset_ids:
+                    modsets['children'].append(_data)
+
             _data = {
               "attr": {"id": "modset%d"%row.comp_moduleset.id, "rel": "modset", "obj_id": row.comp_moduleset.id},
               "data": row.comp_moduleset.modset_name,
@@ -10502,7 +10615,10 @@ def json_tree_modulesets():
             groups = []
             mods_done = []
             mods = []
-            modset_done.append(row.comp_moduleset.id)
+            rulesets = []
+            if row.comp_moduleset.id in modset_rset_relations:
+                rulesets += _tree_rulesets_children(modset_rset_relations[row.comp_moduleset.id], id_prefix="modset%d_"%row.comp_moduleset.id)
+            modset_done.add(row.comp_moduleset.id)
 
         if row.comp_moduleset_modules.id is not None and row.comp_moduleset_modules.id not in mods_done:
             if row.comp_moduleset_modules.autofix:
@@ -10527,7 +10643,35 @@ def json_tree_modulesets():
     if _data is not None:
         _data['children'] += groups
         _data['children'] += mods
-        modsets['children'].append(_data)
+        _data['children'] += rulesets
+        obj_id = _data["attr"]["obj_id"]
+        modset_by_objid[obj_id] = _data
+        if obj_id in visible_head_modset_ids:
+            modsets['children'].append(_data)
+
+    def recurse_modsets(head, id_prefix=""):
+        if "obj_id" in head["attr"]:
+            obj_id = head["attr"]["obj_id"]
+            if obj_id in modset_relations:
+                for child_modset_id in modset_relations[obj_id]:
+                    if child_modset_id in modset_by_objid:
+                        _data = copy.deepcopy(modset_by_objid[child_modset_id])
+                        _data["attr"]["id"] = id_prefix + "modset" + str(_data["attr"]["obj_id"])
+                        head['children'].append(_data)
+        for i, child in enumerate(head['children']):
+            if child["attr"]["rel"] != "modset":
+                srel = child["attr"]["rel"]
+                if srel.startswith("ruleset"):
+                    srel = "rset"
+                elif srel == "module":
+                    srel = "mod"
+                elif srel == "group":
+                    srel = "grp"
+                child["attr"]["id"] = id_prefix+srel+str(child["attr"]["obj_id"])
+                continue
+            recurse_modsets(child, id_prefix=id_prefix+"modset"+str(child["attr"]["obj_id"])+'_')
+
+    recurse_modsets(modsets)
 
     return modsets
 
@@ -10645,7 +10789,11 @@ def json_tree_rulesets():
       'attr': {"id": "rset_head", "rel": "ruleset_head"},
       'children': [],
     }
+    rulesets['children'] = _tree_rulesets_children(obj_filter=request.vars.obj_filter)
+    return rulesets
 
+def _tree_rulesets_children(ruleset_ids=None, id_prefix="", obj_filter=None):
+    children = []
     q = db.comp_rulesets_rulesets.id > 0
     rows = db(q).select(orderby=db.comp_rulesets_rulesets.parent_rset_id, cacheable=True)
     rsets_relations = {}
@@ -10691,17 +10839,19 @@ def json_tree_rulesets():
     for row in rows:
         rsets[row.comp_rulesets.id] = row.comp_rulesets
 
-    q = db.comp_rulesets.id > 0
+    # main ruleset selection
     o = db.comp_rulesets.ruleset_name
+    q = db.comp_rulesets.id > 0
     q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if ruleset_ids is not None:
+        q &= db.comp_rulesets.id.belongs(ruleset_ids)
     if 'Manager' not in user_groups():
         q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    if obj_filter is not None:
+        q &= _where(None, 'comp_rulesets', obj_filter, 'ruleset_name')
 
     rows = db(q).select(groupby=db.comp_rulesets.id,
                         orderby=o, cacheable=True)
-    owned_rsets = {}
-    for row in rows:
-        owned_rsets[row.comp_rulesets.id] = row.comp_rulesets
 
     def recurse_rset(rset, _data={}, parent_ids=[]):
         child_rsets = []
@@ -10715,7 +10865,7 @@ def json_tree_rulesets():
         for v in rsets_fsets.get(rset.id, []):
             _parent_ids = parent_ids + ["fset%d"%v.comp_rulesets_filtersets.fset_id]
             vdata = {
-             "attr": {"id": "_".join(_parent_ids), "rel": "filterset", "obj_id": v.comp_rulesets_filtersets.fset_id, "class": "jstree-draggable"},
+             "attr": {"id": id_prefix+"_".join(_parent_ids), "rel": "filterset", "obj_id": v.comp_rulesets_filtersets.fset_id, "class": "jstree-draggable"},
              "data": v.gen_filtersets.fset_name,
             }
             fsets.append(vdata)
@@ -10723,7 +10873,7 @@ def json_tree_rulesets():
         for v in rsets_variables.get(rset.id, []):
             _parent_ids = parent_ids + ["var%d"%v.id]
             vdata = {
-             "attr": {"id": "_".join(_parent_ids), "rel": "variable", "obj_id": v.id, "class": "jstree-draggable"},
+             "attr": {"id": id_prefix+"_".join(_parent_ids), "rel": "variable", "obj_id": v.id, "class": "jstree-draggable"},
              "data": v.var_name,
             }
             variables.append(vdata)
@@ -10731,7 +10881,7 @@ def json_tree_rulesets():
         for v in rsets_groups.get(rset.id, []):
             _parent_ids = parent_ids + ["grp%d"%v.comp_ruleset_team_responsible.group_id]
             vdata = {
-             "attr": {"id": "_".join(_parent_ids), "rel": "group", "obj_id": v.comp_ruleset_team_responsible.group_id, "class": "jstree-draggable"},
+             "attr": {"id": id_prefix+"_".join(_parent_ids), "rel": "group", "obj_id": v.comp_ruleset_team_responsible.group_id, "class": "jstree-draggable"},
              "data": v.auth_group.role,
             }
             groups.append(vdata)
@@ -10746,25 +10896,20 @@ def json_tree_rulesets():
             else:
                 rel = "ruleset_hidden"
         _data = {
-          "attr": {"id": "_".join(parent_ids), "rel": rel, "obj_id": rset.id, "rset_type": rset.ruleset_type, "class": "jstree-draggable,jstree-drop"},
+          "attr": {"id": id_prefix+"_".join(parent_ids), "rel": rel, "obj_id": rset.id, "rset_type": rset.ruleset_type, "class": "jstree-draggable,jstree-drop"},
           "data": rset.ruleset_name,
           "children": groups+fsets+variables+child_rsets,
         }
         return _data
-
-    if request.vars.obj_filter is not None:
-        q &= _where(None, 'comp_rulesets', request.vars.obj_filter, 'ruleset_name')
-        rows = db(q).select(groupby=db.comp_rulesets.id,
-                            orderby=o, cacheable=True)
 
     for row in rows:
         rset = row.comp_rulesets
         if rset.id in encap_rset_ids and not rset.ruleset_public:
             continue
         _data = recurse_rset(rset, parent_ids=[])
-        rulesets['children'].append(_data)
+        children.append(_data)
 
-    return rulesets
+    return children
 
 @service.json
 def json_tree():
@@ -10911,6 +11056,14 @@ def json_tree_action():
            request.vars.dst_type.startswith("filterset"):
             return json_tree_action_copy_filter_to_fset(request.vars.obj_id,
                                                         request.vars.dst_id)
+        if request.vars.obj_type.startswith("ruleset") and \
+           request.vars.dst_type == "modset":
+            return json_tree_action_copy_rset_to_modset(request.vars.obj_id,
+                                                        request.vars.dst_id)
+        if request.vars.obj_type == "modset" and \
+           request.vars.dst_type == "modset":
+            return json_tree_action_copy_modset_to_modset(request.vars.obj_id,
+                                                          request.vars.dst_id)
     elif action == "set_autofix":
         return json_tree_action_set_autofix(request.vars.obj_id,
                                             request.vars.autofix)
@@ -10931,6 +11084,12 @@ def json_tree_action():
     elif action == "set_type":
         return json_tree_action_set_type(request.vars.obj_id,
                                          request.vars.type)
+    elif action == "detach_moduleset_from_moduleset":
+        return json_tree_action_detach_moduleset_from_moduleset(request.vars.obj_id,
+                                                                request.vars.parent_obj_id)
+    elif action == "detach_ruleset_from_moduleset":
+        return json_tree_action_detach_ruleset_from_moduleset(request.vars.obj_id,
+                                                              request.vars.parent_obj_id)
     elif action == "detach_ruleset":
         return json_tree_action_detach_ruleset(request.vars.obj_id,
                                                request.vars.parent_obj_id)
@@ -11933,6 +12092,65 @@ def json_tree_action_detach_group_from_rset(group_id, rset_id):
     return "0"
 
 @auth.requires_membership('CompManager')
+def json_tree_action_detach_moduleset_from_moduleset(child_modset_id, parent_modset_id):
+    q = db.comp_moduleset.id == parent_modset_id
+    q1 = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "parent moduleset not found or not owned by you"}
+
+    q = db.comp_moduleset.id == child_modset_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        return {"err": "child ruleset not found"}
+
+    q = db.comp_moduleset_moduleset.parent_modset_id == parent_modset_id
+    q &= db.comp_moduleset_moduleset.child_modset_id == child_modset_id
+    db(q).delete()
+    table_modified("comp_moduleset_moduleset")
+    _log('compliance.moduleset.detach',
+         'detach moduleset %(child_modset_name)s from moduleset %(parent_modset_name)s',
+         dict(parent_modset_name=v.comp_moduleset.modset_name,
+              child_modset_name=w.modset_name))
+    #comp_rulesets_chains()
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_detach_ruleset_from_moduleset(rset_id, modset_id):
+    q = db.comp_moduleset.id == modset_id
+    q1 = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "parent moduleset not found or not owned by you"}
+
+    q = db.comp_rulesets.id == rset_id
+    q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        return {"err": "child ruleset not found or not owned by you"}
+
+    q = db.comp_moduleset_ruleset.modset_id == modset_id
+    q &= db.comp_moduleset_ruleset.ruleset_id == rset_id
+    db(q).delete()
+    table_modified("comp_moduleset_ruleset")
+    _log('compliance.ruleset.detach',
+         'detach ruleset %(rset_name)s from moduleset %(modset_name)s',
+         dict(rset_name=w.comp_rulesets.ruleset_name,
+              modset_name=v.comp_moduleset.modset_name))
+    #comp_rulesets_chains()
+    return "0"
+
+@auth.requires_membership('CompManager')
 def json_tree_action_detach_ruleset(rset_id, parent_rset_id):
     q = db.comp_rulesets.id == parent_rset_id
     q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
@@ -12174,6 +12392,70 @@ def json_tree_action_move_group_to_modset(group_id, modset_id):
          'attach group %(role)s to moduleset %(modset_name)s',
          dict(modset_name=v.comp_moduleset.modset_name,
               role=w.role))
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_copy_modset_to_modset(child_modset_id, parent_modset_id):
+    ug = user_groups()
+    q = db.comp_moduleset.id == parent_modset_id
+    q1 = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
+    if 'Manager' not in ug:
+        q1 &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "parent moduleset not found or not owned by you"}
+
+    q = db.comp_moduleset.id == child_modset_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        return {"err": "child moduleset not found"}
+
+    q = db.comp_moduleset_moduleset.parent_modset_id == parent_modset_id
+    q &= db.comp_moduleset_moduleset.child_modset_id == child_modset_id
+    if db(q).count() > 0:
+        return "0"
+
+    db.comp_moduleset_moduleset.update_or_insert(parent_modset_id=parent_modset_id,
+                                                 child_modset_id=child_modset_id)
+    table_modified("comp_moduleset_moduleset")
+    _log('compliance.moduleset.moduleset.attach',
+         'attach moduleset %(child_modset_name)s to moduleset %(parent_modset_name)s',
+         dict(child_modset_name=w.modset_name,
+              parent_modset_name=v.comp_moduleset.modset_name))
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_copy_rset_to_modset(rset_id, modset_id):
+    ug = user_groups()
+    q = db.comp_moduleset.id == modset_id
+    q1 = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
+    if 'Manager' not in ug:
+        q1 &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "moduleset not found or not owned by you"}
+
+    q = db.comp_rulesets.id == rset_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        return {"err": "ruleset not found"}
+
+    q = db.comp_moduleset_ruleset.ruleset_id == rset_id
+    q &= db.comp_moduleset_ruleset.modset_id == modset_id
+    if db(q).count() > 0:
+        return "0"
+
+    db.comp_moduleset_ruleset.update_or_insert(ruleset_id=rset_id,
+                                               modset_id=modset_id)
+    table_modified("comp_moduleset_ruleset")
+    _log('compliance.moduleset.ruleset.attach',
+         'attach ruleset %(rset_name)s to moduleset %(modset_name)s',
+         dict(modset_name=v.comp_moduleset.modset_name,
+              rset_name=w.ruleset_name))
     return "0"
 
 @auth.requires_membership('CompManager')

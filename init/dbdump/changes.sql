@@ -4396,3 +4396,20 @@ alter table action_queue add key idx_ret (ret);
 
 alter table action_queue add key idx2 (status,ret);
 
+CREATE TABLE `comp_moduleset_ruleset` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `modset_id` int(11) NOT NULL,
+  `ruleset_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `index_1` (`modset_id`, `ruleset_id`)
+) ENGINE=InnoDB;
+
+CREATE TABLE comp_moduleset_moduleset (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `parent_modset_id` integer NOT NULL,
+  `child_modset_id` integer NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `index_1` (parent_modset_id, child_modset_id)
+) ENGINE=InnoDB;
+
+

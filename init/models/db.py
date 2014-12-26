@@ -1148,6 +1148,16 @@ db.define_table('comp_rulesets_rulesets',
     Field('child_rset_id','integer'),
     migrate=False)
 
+db.define_table('comp_moduleset_moduleset',
+    Field('parent_modset_id','integer'),
+    Field('child_modset_id','integer'),
+    migrate=False)
+
+db.define_table('comp_moduleset_ruleset',
+    Field('modset_id','integer'),
+    Field('ruleset_id','integer'),
+    migrate=False)
+
 comp_var_types = (
  'authkey',
  'crontabentry',

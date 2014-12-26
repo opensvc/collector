@@ -98,7 +98,7 @@ jstree_data = {
    },
    "modset": {
     "icon": {
-     "image": designer.url_static+"/action16.png",
+     "image": designer.url_static+"/modset16.png",
     },
    },
    "group": {
@@ -338,6 +338,42 @@ jstree_data = {
            });
          }
        }
+       if (node.parents("li").attr("rel") == "modset") {
+         h["remove"]["_disabled"] = true
+         h["detach_moduleset"] = {
+           "label": "Detach moduleset",
+           "action": function(obj){
+             var t = this
+             $.ajax({
+               async: false,
+               type: "POST",
+               url: designer.url_action,
+               data: {
+                "operation": "detach_moduleset_from_moduleset",
+                "obj_id": obj.attr("obj_id"),
+                "parent_obj_id": obj.parents("li").attr("obj_id"),
+               },
+               success: function(msg){
+                 var rel = obj.attr("rel")
+                 var obj_id = obj.attr("obj_id")
+                 var id = obj.attr("id")
+                 var l = id.split("_")
+                 var child_modset_id = l.pop()
+                 var parent_modset_id = l.pop()
+                 l = [parent_modset_id, child_modset_id]
+                 id = l.join("_")
+                 $("[name=catree]").each(function(){
+                   t = $(this)
+                   t.children("ul").children("[rel=moduleset_head]").find("[id$="+id+"]").each(function(){
+                     t.jstree("delete_node", "#"+$(this).attr("id"))
+                   })
+                 })
+                 json_status(msg)
+               }
+             });
+           }
+         }
+       }
      }
 
      //
@@ -518,6 +554,42 @@ jstree_data = {
                  id = l.join("_")
                  $("[name=catree]:visible").each(function(){
                    $(this).jstree("delete_node", "[id$="+id+"]")
+                 })
+                 json_status(msg)
+               }
+             });
+           }
+         }
+       }
+       if (node.parents("li").attr("rel") == "modset") {
+         h["remove"]["_disabled"] = true
+         h["detach_ruleset"] = {
+           "label": "Detach ruleset",
+           "action": function(obj){
+             var t = this
+             $.ajax({
+               async: false,
+               type: "POST",
+               url: designer.url_action,
+               data: {
+                "operation": "detach_ruleset_from_moduleset",
+                "obj_id": obj.attr("obj_id"),
+                "parent_obj_id": obj.parents("li").attr("obj_id"),
+               },
+               success: function(msg){
+                 var rel = obj.attr("rel")
+                 var obj_id = obj.attr("obj_id")
+                 var id = obj.attr("id")
+                 var l = id.split("_")
+                 var child_rset_id = l.pop()
+                 var parent_modset_id = l.pop()
+                 l = [parent_modset_id, child_rset_id]
+                 id = l.join("_")
+                 $("[name=catree]").each(function(){
+                   t = $(this)
+                   t.children("ul").children("[rel=moduleset_head]").find("[id$="+id+"]").each(function(){
+                     t.jstree("delete_node", "#"+$(this).attr("id"))
+                   })
                  })
                  json_status(msg)
                }
@@ -796,6 +868,7 @@ jstree_data = {
    "move": {
      "always_copy": true,
      "check_move": function (m) {
+        if (m.o.attr('rel').indexOf("ruleset")==0 && m.np.attr('rel')=="modset") { return true }
         if (m.o.attr('rel')=="filterset" && m.np.attr('rel').indexOf("ruleset")==0) { return true }
         if (m.o.attr('rel').indexOf("ruleset")==0 && m.np.attr('rel').indexOf("ruleset")==0) { return true }
         if (m.o.attr('rel')=="variable" && m.np.attr('rel').indexOf("ruleset")==0) { return true }
@@ -803,6 +876,7 @@ jstree_data = {
         if (m.o.attr('rel')=="filterset" && m.np.attr('rel')=="filterset") { return true }
         if (m.o.attr('rel')=="group" && m.np.attr('rel').indexOf("ruleset")==0) { return true }
         if (m.o.attr('rel')=="group" && m.np.attr('rel')=="modset") { return true }
+        if (m.o.attr('rel')=="modset" && m.np.attr('rel')=="modset") { return true }
         return false
      }
    }
