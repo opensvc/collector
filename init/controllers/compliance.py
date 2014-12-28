@@ -1774,12 +1774,8 @@ def internal_comp_detach_svc_modulesets(svc_ids=[], modset_ids=[], svc_names=[],
         rows = db(q).select(db.services.svc_name, cacheable=True)
         svc_names += [r.svc_name for r in rows]
 
-    # init rset name cache
-    q = db.comp_moduleset.id.belongs(modset_ids)
-    rows = db(q).select(cacheable=True)
-    modset_names = {}
-    for row in rows:
-        modset_names[row.id] = row.modset_name
+    # init modset name cache
+    modset_names = get_modset_names(modset_ids)
 
     for modset_id in modset_ids:
         for svc in svc_names:
@@ -1829,12 +1825,8 @@ def internal_comp_attach_svc_modulesets(svc_ids=[], modset_ids=[], svc_names=[],
         rows = db(q).select(db.services.svc_name, cacheable=True)
         svc_names += [r.svc_name for r in rows]
 
-    # init rset name cache
-    q = db.comp_moduleset.id.belongs(modset_ids)
-    rows = db(q).select(cacheable=True)
-    modset_names = {}
-    for row in rows:
-        modset_names[row.id] = row.modset_name
+    # init modset name cache
+    modset_names = get_modset_names(modset_ids)
 
     for modset_id in modset_ids:
         for svc in svc_names:
@@ -6292,17 +6284,21 @@ def _comp_get_data(nodename, modulesets=[]):
     return {
       'modulesets': _comp_get_moduleset_data(nodename, modulesets=modulesets),
       'rulesets': _comp_get_ruleset(nodename),
+      'modset_rset_relations': get_modset_rset_relations_s(),
+      'modset_relations': get_modset_relations_s(),
     }
 
 def _comp_get_svc_data(nodename, svcname, modulesets=[]):
     slave = comp_slave(svcname, nodename)
     return {
-      'modulesets': _comp_get_svc_moduleset_data(nodename, svcname, modulesets=modulesets, slave=slave),
+      'modulesets': _comp_get_svc_moduleset_data(svcname, modulesets=modulesets, slave=slave),
       'rulesets': _comp_get_svc_ruleset(svcname, nodename, slave=slave),
+      'modset_rset_relations': get_modset_rset_relations_s(),
+      'modset_relations': get_modset_relations_s(),
     }
 
-def test_comp_get_svc_data():
-    return _comp_get_svc_data("clementine", "collector")
+def test_comp_get_svc_ruleset():
+    return _comp_get_svc_ruleset("unxdevweb01", "clementine")
 
 @auth_uuid
 @service.xmlrpc
@@ -6311,9 +6307,28 @@ def comp_get_moduleset_data(nodename, auth):
 
 @auth_uuid
 @service.xmlrpc
+def comp_get_data_moduleset(nodename, auth):
+    return {
+      'root_modulesets': _comp_get_moduleset_names(nodename),
+      'modulesets': _comp_get_moduleset_data(nodename),
+      'modset_relations': get_modset_relations_s(),
+    }
+
+@auth_uuid
+@service.xmlrpc
+def comp_get_svc_data_moduleset(svcname, auth):
+    slave = comp_slave(svcname, auth[1])
+    return {
+      'root_modulesets': _comp_get_svc_moduleset_names(svcname, slave=slave),
+      'modulesets': _comp_get_svc_moduleset_data(svcname, slave=slave),
+      'modset_relations': get_modset_relations_s(),
+    }
+
+@auth_uuid
+@service.xmlrpc
 def comp_get_svc_moduleset_data(svcname, auth):
     slave = comp_slave(svcname, auth[1])
-    return _comp_get_svc_moduleset_data(auth[1], svcname, slave=slave)
+    return _comp_get_svc_moduleset_data(svcname, slave=slave)
 
 @auth.requires_membership('NodeExec')
 @service.json
@@ -6346,32 +6361,21 @@ def _comp_get_all_module():
 def comp_get_moduleset(nodename, auth):
     return _comp_get_moduleset(nodename)
 
-def _comp_get_svc_moduleset_ids(svcname, modulesets=None, slave=False):
-    q = db.comp_modulesets_services.modset_svcname == svcname
-    q &= db.comp_modulesets_services.slave == slave
-    q &= db.comp_modulesets_services.modset_id == db.comp_moduleset.id
-    q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
-    q &= db.auth_group.id == db.comp_moduleset_team_responsible.group_id
-    q &= db.services.svc_name == svcname
-    q &= db.services.svc_app == db.apps.app
-    q &= db.apps.id == db.apps_responsibles.app_id
-    q &= db.apps_responsibles.group_id == db.auth_group.id
-    rows = db(q).select(db.comp_moduleset.id, groupby=db.comp_moduleset.id, cacheable=True)
-    modset_ids = [r.id for r in rows]
-
+def _comp_get_svc_moduleset_ids_with_children(svcname, modulesets=[], slave=False):
+    modset_ids = _comp_get_svc_moduleset_ids(svcname, modulesets=modulesets, slave=slave)
     modset_tree_nodes = get_modset_tree_nodes(modset_ids)
     modset_ids = set(modset_tree_nodes.keys())
     for l in modset_tree_nodes.values():
         modset_ids |= set(l)
     return modset_ids
 
-def _comp_get_svc_moduleset(svcname, modulesets=None, slave=False):
+def _comp_get_svc_moduleset(svcname, modulesets=[], slave=False):
     modset_ids = _comp_get_svc_moduleset_ids(svcname, modulesets=modulesets, slave=slave)
     q = db.comp_moduleset.id.belongs(modset_ids)
     rows = db(q).select(db.comp_moduleset.modset_name, cacheable=True)
     return [r.modset_name for r in rows]
 
-def _comp_get_svc_moduleset_data(nodename, svcname, modulesets=[], slave=False):
+def _comp_get_svc_moduleset_ids(svcname, modulesets=[], slave=False):
     q = db.comp_modulesets_services.modset_svcname == svcname
     q &= db.comp_modulesets_services.slave == slave
     q &= db.comp_modulesets_services.modset_id == db.comp_moduleset.id
@@ -6385,18 +6389,27 @@ def _comp_get_svc_moduleset_data(nodename, svcname, modulesets=[], slave=False):
         q &= db.comp_moduleset.modset_name.belongs(modulesets)
     rows = db(q).select(db.comp_moduleset.id, groupby=db.comp_moduleset.id, cacheable=True)
     modset_ids = [r.id for r in rows]
+    return modset_ids
 
+def _comp_get_svc_moduleset_names(svcname, modulesets=[], slave=False):
+    modset_ids = _comp_get_svc_moduleset_ids(svcname, modulesets=modulesets, slave=slave)
+    modset_names = get_modset_names(modset_ids)
+    return modset_names.values()
+
+def _comp_get_svc_moduleset_data(svcname, modulesets=[], slave=False):
+    modset_ids = _comp_get_svc_moduleset_ids_with_children(svcname, modulesets=modulesets, slave=slave)
     modset_tree_nodes = get_modset_tree_nodes(modset_ids)
     modset_ids = set(modset_tree_nodes.keys())
     for l in modset_tree_nodes.values():
         modset_ids |= set(l)
 
     q = db.comp_moduleset.id.belongs(modset_ids)
-    q &= db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
+    l = db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
     g = db.comp_moduleset_modules.modset_id|db.comp_moduleset_modules.id
     rows = db(q).select(db.comp_moduleset.modset_name,
                         db.comp_moduleset_modules.autofix,
                         db.comp_moduleset_modules.modset_mod_name,
+                        left=db.comp_moduleset_modules.on(l),
                         groupby=g,
                         cacheable=True)
     d = {}
@@ -6421,7 +6434,15 @@ def _comp_get_moduleset_ids(nodename, modulesets=[]):
         q &= db.comp_moduleset.modset_name.belongs(modulesets)
     rows = db(q).select(db.comp_moduleset.id, groupby=db.comp_moduleset.id, cacheable=True)
     modset_ids = [r.id for r in rows]
+    return modset_ids
 
+def _comp_get_moduleset_names(nodename, modulesets=[]):
+    modset_ids = _comp_get_moduleset_ids(nodename, modulesets=modulesets)
+    modset_names = get_modset_names(modset_ids)
+    return modset_names.values()
+
+def _comp_get_moduleset_ids_with_children(nodename, modulesets=[]):
+    modset_ids = _comp_get_moduleset_ids(nodename, modulesets=modulesets)
     modset_tree_nodes = get_modset_tree_nodes(modset_ids)
     modset_ids = set(modset_tree_nodes.keys())
     for l in modset_tree_nodes.values():
@@ -6429,13 +6450,14 @@ def _comp_get_moduleset_ids(nodename, modulesets=[]):
     return modset_ids
 
 def _comp_get_moduleset_data(nodename, modulesets=[]):
-    modset_ids = _comp_get_moduleset_ids(nodename, modulesets=modulesets)
+    modset_ids = _comp_get_moduleset_ids_with_children(nodename, modulesets=modulesets)
     q = db.comp_moduleset.id.belongs(modset_ids)
-    q &= db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
+    l = db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
     g = db.comp_moduleset_modules.modset_id|db.comp_moduleset_modules.id
     rows = db(q).select(db.comp_moduleset.modset_name,
                         db.comp_moduleset_modules.autofix,
                         db.comp_moduleset_modules.modset_mod_name,
+                        left=db.comp_moduleset_modules.on(l),
                         groupby=g,
                         cacheable=True)
 
@@ -6452,7 +6474,7 @@ def _comp_get_moduleset_data(nodename, modulesets=[]):
     return d
 
 def _comp_get_moduleset(nodename):
-    modset_ids = _comp_get_moduleset_ids(nodename)
+    modset_ids = _comp_get_moduleset_ids_with_children(nodename)
     q = db.comp_moduleset.id.belongs(modset_ids)
     rows = db(q).select(db.comp_moduleset.modset_name, cacheable=True)
     return [r.modset_name for r in rows]
@@ -6777,9 +6799,6 @@ def node_team_responsible_id(nodename):
         return None
     return rows[0].id
 
-def test_comp_get_svc_moduleset():
-    return _comp_get_svc_moduleset("unxdevweb01")
-
 @auth_uuid
 @service.xmlrpc
 def comp_get_ruleset(nodename, auth):
@@ -6883,7 +6902,7 @@ def _comp_get_explicit_svc_ruleset_ids(svcname, slave=False):
     rset_ids = [r.ruleset_id for r in rows]
 
     # attached to the node through modulesets
-    modset_ids = _comp_get_svc_moduleset_ids(svcname, slave=slave)
+    modset_ids = _comp_get_svc_moduleset_ids_with_children(svcname, slave=slave)
     q = db.comp_moduleset_ruleset.modset_id.belongs(modset_ids)
     rows = db(q).select(db.comp_moduleset_ruleset.ruleset_id)
     rset_ids = list(set(rset_ids) | set([r.ruleset_id for r in rows]))
@@ -6899,7 +6918,7 @@ def _comp_get_explicit_ruleset_ids(nodename):
     rset_ids = [r.ruleset_id for r in rows]
 
     # attached to the node through modulesets
-    modset_ids = _comp_get_moduleset_ids(nodename)
+    modset_ids = _comp_get_moduleset_ids_with_children(nodename)
     q = db.comp_moduleset_ruleset.modset_id.belongs(modset_ids)
     rows = db(q).select(db.comp_moduleset_ruleset.ruleset_id)
     rset_ids = list(set(rset_ids) | set([r.ruleset_id for r in rows]))
@@ -10507,8 +10526,29 @@ def json_form_submit(form_name, form_data):
 
     return str(log)
 
+def get_modset_names(modset_ids=None):
+    # init modset name cache
+    if modset_ids is not None:
+        q = db.comp_moduleset.id.belongs(modset_ids)
+    else:
+        q = db.comp_moduleset.id > 0
+    rows = db(q).select(cacheable=True)
+    modset_names = {}
+    for row in rows:
+        modset_names[row.id] = row.modset_name
+    return modset_names
+
+def get_modset_relations_s():
+    # modset relation cache (strings)
+    modset_names = get_modset_names()
+    modset_relations = get_modset_relations()
+    modset_relations_s = {}
+    for modset_id, l in modset_relations.items():
+        modset_relations_s[modset_names[modset_id]] = map(lambda x: modset_names[x], l)
+    return modset_relations_s
+
 def get_modset_relations():
-    # modset relation cache
+    # modset relation cache (modset ids)
     q = db.comp_moduleset_moduleset.id > 0
     rows = db(q).select(cacheable=True)
     modset_relations = {}
@@ -10540,14 +10580,7 @@ def get_modset_tree_nodes(modset_ids=None):
 
     return modset_tree_nodes
 
-def json_tree_modulesets():
-    modsets = {
-     'data': 'modulesets',
-     'attr': {"id": "moduleset_head", "rel": "moduleset_head"},
-     'children': [],
-    }
-    modset_by_objid = {}
-
+def get_modset_rset_relations():
     modset_rset_relations = {}
     q = db.comp_moduleset_ruleset.id > 0
     rows = db(q).select()
@@ -10556,7 +10589,30 @@ def json_tree_modulesets():
             modset_rset_relations[row.modset_id] = [row.ruleset_id]
         else:
             modset_rset_relations[row.modset_id] += [row.ruleset_id]
+    return modset_rset_relations
 
+def get_modset_rset_relations_s():
+    modset_rset_relations = {}
+    q = db.comp_moduleset_ruleset.id > 0
+    q &= db.comp_moduleset_ruleset.ruleset_id == db.comp_rulesets.id
+    q &= db.comp_moduleset_ruleset.modset_id == db.comp_moduleset.id
+    rows = db(q).select()
+    for row in rows:
+        if row.comp_moduleset.modset_name not in modset_rset_relations:
+            modset_rset_relations[row.comp_moduleset.modset_name] = [row.comp_rulesets.ruleset_name]
+        else:
+            modset_rset_relations[row.comp_moduleset.modset_name] += [row.comp_rulesets.ruleset_name]
+    return modset_rset_relations
+
+def json_tree_modulesets():
+    modsets = {
+     'data': 'modulesets',
+     'attr': {"id": "moduleset_head", "rel": "moduleset_head"},
+     'children': [],
+    }
+    modset_by_objid = {}
+
+    modset_rset_relations = get_modset_rset_relations()
     modset_relations = get_modset_relations()
 
     q = db.comp_moduleset.id > 0
@@ -10617,7 +10673,9 @@ def json_tree_modulesets():
             mods = []
             rulesets = []
             if row.comp_moduleset.id in modset_rset_relations:
-                rulesets += _tree_rulesets_children(modset_rset_relations[row.comp_moduleset.id], id_prefix="modset%d_"%row.comp_moduleset.id)
+                rulesets += _tree_rulesets_children(modset_rset_relations[row.comp_moduleset.id],
+                                                    id_prefix="modset%d_"%row.comp_moduleset.id,
+                                                    hide_unpublished_and_encap_at_root_level=False)
             modset_done.add(row.comp_moduleset.id)
 
         if row.comp_moduleset_modules.id is not None and row.comp_moduleset_modules.id not in mods_done:
@@ -10792,7 +10850,7 @@ def json_tree_rulesets():
     rulesets['children'] = _tree_rulesets_children(obj_filter=request.vars.obj_filter)
     return rulesets
 
-def _tree_rulesets_children(ruleset_ids=None, id_prefix="", obj_filter=None):
+def _tree_rulesets_children(ruleset_ids=None, id_prefix="", obj_filter=None, hide_unpublished_and_encap_at_root_level=True):
     children = []
     q = db.comp_rulesets_rulesets.id > 0
     rows = db(q).select(orderby=db.comp_rulesets_rulesets.parent_rset_id, cacheable=True)
@@ -10904,7 +10962,7 @@ def _tree_rulesets_children(ruleset_ids=None, id_prefix="", obj_filter=None):
 
     for row in rows:
         rset = row.comp_rulesets
-        if rset.id in encap_rset_ids and not rset.ruleset_public:
+        if hide_unpublished_and_encap_at_root_level and rset.id in encap_rset_ids and not rset.ruleset_public:
             continue
         _data = recurse_rset(rset, parent_ids=[])
         children.append(_data)
