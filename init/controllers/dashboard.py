@@ -760,7 +760,7 @@ def ajax_dashboard_svc():
 @auth.requires_login()
 def dashboard_node():
     node = request.args[0]
-    tid = 'dashboard_'+node
+    tid = 'dashboard_'+node.replace('-', '_').replace('.', '_')
     t = table_dashboard_node(tid, 'ajax_dashboard_node')
     t.colprops['dash_nodename'].force_filter = node
 
@@ -772,7 +772,7 @@ def dashboard_node():
 @auth.requires_login()
 def dashboard_svc():
     svcname = request.args[0]
-    tid = 'dashboard_'+svcname
+    tid = 'dashboard_'+svcname.replace('-','_').replace('.','_')
     t = table_dashboard_node(tid, 'ajax_dashboard_svc')
     t.colprops['dash_svcname'].force_filter = svcname
 

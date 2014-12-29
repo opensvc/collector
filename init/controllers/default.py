@@ -1391,7 +1391,7 @@ class table_svcmon_node(table_svcmon):
 @auth.requires_login()
 def svcmon_node():
     node = request.args[0]
-    tid = 'svcmon_'+node.replace('-', '_')
+    tid = 'svcmon_'+node.replace('-', '_').replace('.', '_')
     t = table_svcmon_node(tid, 'ajax_svcmon_node')
     t.colprops['mon_nodname'].force_filter = node
     return DIV(

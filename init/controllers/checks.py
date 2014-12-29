@@ -1024,7 +1024,7 @@ def ajax_checks_node():
 @auth.requires_login()
 def checks_node():
     node = request.args[0]
-    tid = 'checks_'+node
+    tid = 'checks_'+node.replace('-', '_').replace('.', '_')
     t = table_checks_node(tid, 'ajax_checks_node')
     t.colprops['chk_nodename'].force_filter = node
 

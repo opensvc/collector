@@ -310,7 +310,7 @@ def ajax_log_svc():
 @auth.requires_login()
 def log_node():
     node = request.args[0]
-    tid = 'log_'+node
+    tid = 'log_'+node.replace('-', '_').replace('.', '_')
     t = table_log_node(tid, 'ajax_log_node')
     t.colprops['log_nodename'].force_filter = node
 
@@ -322,7 +322,7 @@ def log_node():
 @auth.requires_login()
 def log_svc():
     svcname = request.args[0]
-    tid = 'log_'+svcname
+    tid = 'log_'+svcname.replace('-','_').replace('.','_')
     t = table_log_node(tid, 'ajax_log_svc')
     t.colprops['log_svcname'].force_filter = svcname
 

@@ -588,7 +588,7 @@ def ajax_actions_svc():
 @auth.requires_login()
 def actions_node():
     node = request.args[0]
-    tid = 'actions_'+node
+    tid = 'actions_'+node.replace('-', '_').replace('.', '_')
     t = table_actions_node(tid, 'ajax_actions_node')
     t.colprops['hostname'].force_filter = node
 
@@ -600,7 +600,7 @@ def actions_node():
 @auth.requires_login()
 def actions_svc():
     svcname = request.args[0]
-    tid = 'actions_'+svcname
+    tid = 'actions_'+svcname.replace('-','_').replace('.','_')
     t = table_actions_node(tid, 'ajax_actions_svc')
     t.colprops['svcname'].force_filter = svcname
 

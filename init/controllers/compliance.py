@@ -7086,7 +7086,7 @@ def ajax_svc_comp_status():
         return t.table_lines_data(-1, html=False)
 
 def svc_comp_status(svcname):
-    tid = 'scs_'+svcname
+    tid = 'scs_'+svcname.replace('-','_').replace('.','_')
     t = table_comp_status_svc(tid, 'ajax_svc_comp_status')
     t.colprops['run_svcname'].force_filter = svcname
 
@@ -7146,7 +7146,7 @@ def ajax_node_comp_status():
         return t.table_lines_data(-1, html=False)
 
 def node_comp_status(node):
-    tid = 'ncs_'+node
+    tid = 'ncs_'+node.replace('-','_').replace('.','_')
     t = table_comp_status_node(tid, 'ajax_node_comp_status')
     t.colprops['run_nodename'].force_filter = node
     return DIV(
