@@ -195,8 +195,8 @@ class viz(object):
             self.loc['city'][svc.loc_city] = ""
         self.loc['city'][svc.loc_city] += r"""
         %(v)s [label="", image="%(img)s"];
-        subgraph cluster_%(v)s {fontsize=8; penwidth=0; label="%(n)s\n%(model)s\n%(mem)s MB"; labelloc=b; %(v)s};
-        """%(dict(v=vid, n=svc.mon_nodname, model=svc.model, mem=svc.mem_bytes, img=self.img_node))
+        subgraph cluster_%(vi)s {fontsize=8; penwidth=0; label="%(n)s\n%(model)s\n%(mem)s MB"; labelloc=b; %(v)s};
+        """%(dict(v=vid, vi=vid.replace('-','_').replace('.','_'), n=svc.mon_nodname, model=svc.model, mem=svc.mem_bytes, img=self.img_node))
 
     def add_disk(self, id, disk, size="", vendor="", model="", arrayid="", devid=""):
         vid = self.vid_disk(id)
@@ -239,7 +239,7 @@ class viz(object):
             nodes += [v for v in self.array[a] if "cdg_" not in v]
             self.data += r"""
         subgraph cluster_%(a)s {label="%(l)s"; fillcolor=lightgrey; style="rounded,filled"; fontsize=12; %(disks)s};
-        """%(dict(a=a.replace("-","_"), l=self.arrayinfo[a], disks=';'.join(nodes)))
+        """%(dict(a=a.replace('.','_').replace("-","_"), l=self.arrayinfo[a], disks=';'.join(nodes)))
 
     def rank(self, list):
         return """{ rank=same; %s };
