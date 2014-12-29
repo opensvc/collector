@@ -2212,10 +2212,12 @@ button, input[type=button], input[type=submit] {
     -moz-column-count:2;
 }
 .xset ul li {
-    font-weight: bold;
     list-style: none;
 }
-.xset ul li ul li {
+.xset > ul > li {
+    font-weight: bold;
+}
+.modname {
     font-weight: normal;
     font-family: monospace;
     list-style: none;

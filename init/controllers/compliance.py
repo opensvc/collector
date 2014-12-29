@@ -6998,31 +6998,61 @@ def beautify_rulesets(rsets):
         l.append(beautify_ruleset(rsets[rset]))
     return SPAN(l, _class='xset')
 
-def beautify_moduleset(mset, mods):
+def beautify_moduleset(mset, modulesets, modset_relations):
     ml = []
+    mods = map(lambda x: x[0], modulesets.get(mset, []))
+    modsets = modset_relations.get(mset, [])
+    children = map(lambda x: beautify_moduleset(x, modulesets, modset_relations), modsets)
+    if len(children) > 0:
+        c = SPAN(children)
+    else:
+        c = SPAN()
+
     for m in mods:
-        ml.append(LI(m))
+        ml.append(LI(m, _class="modname"))
 
     u = UL(
           LI(
             mset,
             UL(ml),
+            c,
           ),
         )
     return u
 
-def beautify_svc_modulesets(msets, svcname):
-    q = db.svcmon.mon_svcname == svcname
-    node = db(q).select(cacheable=True)
-    if node is None:
-        return ""
-    node = node.first().mon_nodname
-    return beautify_modulesets(msets, node)
+def beautify_svc_modulesets(svcname):
+    def level(slave):
+        root_modulesets = _comp_get_svc_moduleset_names(svcname, slave=slave)
+        modulesets = _comp_get_svc_moduleset_data(svcname, slave=slave)
+        modset_relations = get_modset_relations_s()
+        l = []
+        for mset in root_modulesets:
+            l.append(beautify_moduleset(mset, modulesets=modulesets, modset_relations=modset_relations))
+        return l
 
-def beautify_modulesets(msets, node):
+    d = []
+
+    slave = False
+    l = level(slave)
+    if len(l) > 0:
+        d.append(SPAN(l, _class="xset"))
+
+    slave = True
+    l = level(slave)
+    if len(l) > 0:
+        d.append(H3(T('Modulesets (slave)')))
+        d.append(SPAN(l, _class="xset"))
+
+    return SPAN(d)
+
+def beautify_modulesets(node):
+    root_modulesets = _comp_get_moduleset_names(node)
+    modulesets = _comp_get_moduleset_data(node)
+    modset_relations = get_modset_relations_s()
+
     l = []
-    for mset in msets:
-        l.append(beautify_moduleset(mset, _comp_get_moduleset_modules(mset, node)))
+    for mset in root_modulesets:
+        l.append(beautify_moduleset(mset, modulesets=modulesets, modset_relations=modset_relations))
     return SPAN(l, _class='xset')
 
 class table_comp_status_svc(table_comp_status):
@@ -7162,7 +7192,6 @@ def ajax_rset_md5():
 def ajax_compliance_svc():
     session.forget(response)
     svcname = request.args[0]
-    msets = _comp_get_svc_moduleset(svcname)
 
     d = []
     q = db.svcmon.mon_svcname==svcname
@@ -7207,7 +7236,7 @@ def ajax_compliance_svc():
           H3(T('Status')),
           svc_comp_status(svcname),
           H3(T('Modulesets')),
-          beautify_svc_modulesets(msets, svcname),
+          beautify_svc_modulesets(svcname),
           H3(T('Rulesets')),
           SPAN(d),
           SPAN(show_diff(svcname)),
@@ -7384,12 +7413,11 @@ def ajax_compliance_node():
     session.forget(response)
     node = request.args[0]
     rsets = _comp_get_ruleset(node)
-    msets = _comp_get_moduleset(node)
     d = SPAN(
           H3(T('Status')),
           node_comp_status(node),
           H3(T('Modulesets')),
-          beautify_modulesets(msets, node),
+          beautify_modulesets(node),
           H3(T('Rulesets')),
           beautify_rulesets(rsets),
         )
