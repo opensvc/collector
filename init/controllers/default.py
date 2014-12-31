@@ -1352,7 +1352,6 @@ def ajax_svcmon():
 @auth.requires_login()
 def svcmon():
     t = table_svcmon('svcmon', 'ajax_svcmon')
-    ajax_svcmon()
     t = DIV(
           t.html(),
           SCRIPT("""

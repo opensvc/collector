@@ -915,6 +915,7 @@ function table_refresh(t) {
          data: query,
          context: document.body,
          beforeSend: function(req){
+             $("#"+t.id).find(".nodataline>td").text(T("Loading data"))
          },
          success: function(msg){
              // disable DOM insert event trigger for perf

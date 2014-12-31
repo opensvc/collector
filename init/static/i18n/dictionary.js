@@ -7,6 +7,7 @@ var fr_t_dictionary = {
  'waiting': 'en attente',
  'queued': 'en queue',
  'cancelled': 'annulé',
+ 'Loading data': 'Chargement des données',
  'Actions on selected resources': 'Actions sur les resources sélectionnées',
  'Actions on selected service instances': 'Actions sur les services sélectionnés',
  'Actions on selected nodes': 'Actions sur les noeuds sélectionnés',
