@@ -466,35 +466,35 @@ def ajax_node():
 
     node = nodes[0]
     loc = TABLE(
-      TR(TH(T('country')), TD(node['loc_country'])),
-      TR(TH(T('city')), TD(node['loc_city'])),
-      TR(TH(T('zip')), TD(node['loc_zip'])),
-      TR(TH(T('address')), TD(node['loc_addr'])),
-      TR(TH(T('building')), TD(node['loc_building'])),
-      TR(TH(T('floor')), TD(node['loc_floor'])),
-      TR(TH(T('room')), TD(node['loc_room'])),
-      TR(TH(T('rack')), TD(node['loc_rack'])),
+      TR(TH(T('country')), TD(node['loc_country'] if node['loc_country'] is not None else '')),
+      TR(TH(T('city')), TD(node['loc_city'] if node['loc_city'] is not None else '')),
+      TR(TH(T('zip')), TD(node['loc_zip'] if node['loc_zip'] is not None else '')),
+      TR(TH(T('address')), TD(node['loc_addr'] if node['loc_addr'] is not None else '')),
+      TR(TH(T('building')), TD(node['loc_building'] if node['loc_building'] is not None else '')),
+      TR(TH(T('floor')), TD(node['loc_floor'] if node['loc_floor'] is not None else '')),
+      TR(TH(T('room')), TD(node['loc_room'] if node['loc_room'] is not None else '')),
+      TR(TH(T('rack')), TD(node['loc_rack'] if node['loc_rack'] is not None else '')),
       TR(TH(T('enclosure')), TD(node['enclosure'] if node['enclosure'] is not None else '')),
       TR(TH(T('enclosure slot')), TD(node['enclosureslot'] if node['enclosureslot'] is not None else '')),
     )
     power = TABLE(
       TR(TH(T('nb power supply')), TD(node['power_supply_nb'] if node['power_supply_nb'] is not None else '')),
-      TR(TH(T('power cabinet #1')), TD(node['power_cabinet1'])),
-      TR(TH(T('power cabinet #2')), TD(node['power_cabinet2'])),
-      TR(TH(T('power protector')), TD(node['power_protect'])),
-      TR(TH(T('power protector breaker')), TD(node['power_protect_breaker'])),
-      TR(TH(T('power breaker #1')), TD(node['power_breaker1'])),
-      TR(TH(T('power breaker #2')), TD(node['power_breaker1'])),
+      TR(TH(T('power cabinet #1')), TD(node['power_cabinet1'] if node['power_cabinet1'] is not None else '')),
+      TR(TH(T('power cabinet #2')), TD(node['power_cabinet2'] if node['power_cabinet2'] is not None else '')),
+      TR(TH(T('power protector')), TD(node['power_protect'] if node['power_protect'] is not None else '')),
+      TR(TH(T('power protector breaker')), TD(node['power_protect_breaker'] if node['power_protect_breaker'] is not None else '')),
+      TR(TH(T('power breaker #1')), TD(node['power_breaker1'] if node['power_breaker1'] is not None else '')),
+      TR(TH(T('power breaker #2')), TD(node['power_breaker1'] if node['power_breaker1'] is not None else '')),
     )
     server = TABLE(
       TR(TH(T('fqdn')), TD(node['fqdn'] if node['fqdn'] is not None else '')),
       TR(TH(T('asset name')), TD(node['assetname'] if node['assetname'] is not None else '')),
-      TR(TH(T('model')), TD(node['model'])),
-      TR(TH(T('type')), TD(node['type'])),
-      TR(TH(T('serial')), TD(node['serial'])),
-      TR(TH(T('security zone')), TD(node['sec_zone'])),
-      TR(TH(T('status')), TD(node['status'])),
-      TR(TH(T('role')), TD(node['role'])),
+      TR(TH(T('model')), TD(node['model'] if node['model'] is not None else '')),
+      TR(TH(T('type')), TD(node['type'] if node['type'] is not None else '')),
+      TR(TH(T('serial')), TD(node['serial'] if node['serial'] is not None else '')),
+      TR(TH(T('security zone')), TD(node['sec_zone'] if node['sec_zone'] is not None else '')),
+      TR(TH(T('status')), TD(node['status'] if node['status'] is not None else '')),
+      TR(TH(T('role')), TD(node['role'] if node['role'] is not None else '')),
       TR(TH(T('env')), TD(node['environnement'] if node['environnement'] is not None else '')),
       TR(TH(T('root pwd')), TD(node_pw)),
     )
@@ -503,10 +503,10 @@ def ajax_node():
       TR(TH(T('maintenance end')), TD(node['maintenance_end'] if node['maintenance_end'] is not None else '')),
     )
     org = TABLE(
-      TR(TH(T('team responsible')), TD(node['team_responsible'])),
-      TR(TH(T('integration')), TD(node['team_integ'])),
-      TR(TH(T('support')), TD(node['team_support'])),
-      TR(TH(T('project')), TD(node['project'])),
+      TR(TH(T('team responsible')), TD(node['team_responsible'] if node['team_responsible'] is not None else '')),
+      TR(TH(T('integration')), TD(node['team_integ'] if node['team_integ'] is not None else '')),
+      TR(TH(T('support')), TD(node['team_support'] if node['team_support'] is not None else '')),
+      TR(TH(T('project')), TD(node['project'] if node['project'] is not None else '')),
     )
     agent = TABLE(
       TR(TH(T('agent version')), TD(node['version'] if node['version'] is not None else '')),
