@@ -1,5 +1,21 @@
 @charset "UTF-8";
 
+.asset_tab > div {
+  float: left;
+  padding: 1em;
+  width: 24em;
+  height: 16em;
+}
+
+.asset_tab > div > table > tbody > tr > td {
+  font-weight: bold;
+}
+
+.asset_tab > div > table > tbody > tr > th {
+  font-weight: normal;
+  width: 10em;
+}
+
 .line {
   position: relative;
   z-index: 1;

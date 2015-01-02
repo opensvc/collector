@@ -466,70 +466,114 @@ def ajax_node():
 
     node = nodes[0]
     loc = TABLE(
-      TR(TD(T('country'), _style='font-style:italic'), TD(node['loc_country'])),
-      TR(TD(T('city'), _style='font-style:italic'), TD(node['loc_city'])),
-      TR(TD(T('zip'), _style='font-style:italic'), TD(node['loc_zip'])),
-      TR(TD(T('address'), _style='font-style:italic'), TD(node['loc_addr'])),
-      TR(TD(T('building'), _style='font-style:italic'), TD(node['loc_building'])),
-      TR(TD(T('floor'), _style='font-style:italic'), TD(node['loc_floor'])),
-      TR(TD(T('room'), _style='font-style:italic'), TD(node['loc_room'])),
-      TR(TD(T('rack'), _style='font-style:italic'), TD(node['loc_rack'])),
-      TR(TD(T('enclosure'), _style='font-style:italic'), TD(node['enclosure'] if node['enclosure'] is not None else '')),
-      TR(TD(T('enclosure slot'), _style='font-style:italic'), TD(node['enclosureslot'] if node['enclosureslot'] is not None else '')),
+      TR(TH(T('country')), TD(node['loc_country'])),
+      TR(TH(T('city')), TD(node['loc_city'])),
+      TR(TH(T('zip')), TD(node['loc_zip'])),
+      TR(TH(T('address')), TD(node['loc_addr'])),
+      TR(TH(T('building')), TD(node['loc_building'])),
+      TR(TH(T('floor')), TD(node['loc_floor'])),
+      TR(TH(T('room')), TD(node['loc_room'])),
+      TR(TH(T('rack')), TD(node['loc_rack'])),
+      TR(TH(T('enclosure')), TD(node['enclosure'] if node['enclosure'] is not None else '')),
+      TR(TH(T('enclosure slot')), TD(node['enclosureslot'] if node['enclosureslot'] is not None else '')),
     )
     power = TABLE(
-      TR(TD(T('nb power supply'), _style='font-style:italic'), TD(node['power_supply_nb'])),
-      TR(TD(T('power cabinet #1'), _style='font-style:italic'), TD(node['power_cabinet1'])),
-      TR(TD(T('power cabinet #2'), _style='font-style:italic'), TD(node['power_cabinet2'])),
-      TR(TD(T('power protector'), _style='font-style:italic'), TD(node['power_protect'])),
-      TR(TD(T('power protector breaker'), _style='font-style:italic'), TD(node['power_protect_breaker'])),
-      TR(TD(T('power breaker #1'), _style='font-style:italic'), TD(node['power_breaker1'])),
-      TR(TD(T('power breaker #2'), _style='font-style:italic'), TD(node['power_breaker1'])),
+      TR(TH(T('nb power supply')), TD(node['power_supply_nb'] if node['power_supply_nb'] is not None else '')),
+      TR(TH(T('power cabinet #1')), TD(node['power_cabinet1'])),
+      TR(TH(T('power cabinet #2')), TD(node['power_cabinet2'])),
+      TR(TH(T('power protector')), TD(node['power_protect'])),
+      TR(TH(T('power protector breaker')), TD(node['power_protect_breaker'])),
+      TR(TH(T('power breaker #1')), TD(node['power_breaker1'])),
+      TR(TH(T('power breaker #2')), TD(node['power_breaker1'])),
     )
     server = TABLE(
-      TR(TD(T('fqdn'), _style='font-style:italic'), TD(node['fqdn'] if node['fqdn'] is not None else '')),
-      TR(TD(T('asset name'), _style='font-style:italic'), TD(node['assetname'] if node['assetname'] is not None else '')),
-      TR(TD(T('agent version'), _style='font-style:italic'), TD(node['version'] if node['version'] is not None else '')),
-      TR(TD(T('agent listener port'), _style='font-style:italic'), TD(node['listener_port'])),
-      TR(TD(T('model'), _style='font-style:italic'), TD(node['model'])),
-      TR(TD(T('type'), _style='font-style:italic'), TD(node['type'])),
-      TR(TD(T('serial'), _style='font-style:italic'), TD(node['serial'])),
-      TR(TD(T('enclosure'), _style='font-style:italic'), TD(node['enclosure'])),
-      TR(TD(T('security zone'), _style='font-style:italic'), TD(node['sec_zone'])),
-      TR(TD(T('warranty end'), _style='font-style:italic'), TD(node['warranty_end'])),
-      TR(TD(T('maintenance end'), _style='font-style:italic'), TD(node['maintenance_end'])),
-      TR(TD(T('team responsible'), _style='font-style:italic'), TD(node['team_responsible'])),
-      TR(TD(T('integration'), _style='font-style:italic'), TD(node['team_integ'])),
-      TR(TD(T('support'), _style='font-style:italic'), TD(node['team_support'])),
-      TR(TD(T('project'), _style='font-style:italic'), TD(node['project'])),
-      TR(TD(T('status'), _style='font-style:italic'), TD(node['status'])),
-      TR(TD(T('role'), _style='font-style:italic'), TD(node['role'])),
-      TR(TD(T('host mode'), _style='font-style:italic'), TD(node['host_mode'])),
-      TR(TD(T('env'), _style='font-style:italic'), TD(node['environnement'])),
-      TR(TD(T('uuid'), _style='font-style:italic'), TD(node_uuid)),
-      TR(TD(T('root pwd'), _style='font-style:italic'), TD(node_pw)),
+      TR(TH(T('fqdn')), TD(node['fqdn'] if node['fqdn'] is not None else '')),
+      TR(TH(T('asset name')), TD(node['assetname'] if node['assetname'] is not None else '')),
+      TR(TH(T('model')), TD(node['model'])),
+      TR(TH(T('type')), TD(node['type'])),
+      TR(TH(T('serial')), TD(node['serial'])),
+      TR(TH(T('security zone')), TD(node['sec_zone'])),
+      TR(TH(T('status')), TD(node['status'])),
+      TR(TH(T('role')), TD(node['role'])),
+      TR(TH(T('env')), TD(node['environnement'] if node['environnement'] is not None else '')),
+      TR(TH(T('root pwd')), TD(node_pw)),
+    )
+    dates = TABLE(
+      TR(TH(T('warranty end')), TD(node['warranty_end'] if node['warranty_end'] is not None else '')),
+      TR(TH(T('maintenance end')), TD(node['maintenance_end'] if node['maintenance_end'] is not None else '')),
+    )
+    org = TABLE(
+      TR(TH(T('team responsible')), TD(node['team_responsible'])),
+      TR(TH(T('integration')), TD(node['team_integ'])),
+      TR(TH(T('support')), TD(node['team_support'])),
+      TR(TH(T('project')), TD(node['project'])),
+    )
+    agent = TABLE(
+      TR(TH(T('agent version')), TD(node['version'] if node['version'] is not None else '')),
+      TR(TH(T('agent listener port')), TD(node['listener_port'])),
+      TR(TH(T('host mode')), TD(node['host_mode'])),
+      TR(TH(T('uuid')), TD(node_uuid)),
     )
     cpu = TABLE(
-      TR(TD(T('cpu frequency'), _style='font-style:italic'), TD(node['cpu_freq'])),
-      TR(TD(T('cpu threads'), _style='font-style:italic'), TD(node['cpu_threads'] if node['cpu_threads'] is not None else '')),
-      TR(TD(T('cpu cores'), _style='font-style:italic'), TD(node['cpu_cores'])),
-      TR(TD(T('cpu dies'), _style='font-style:italic'), TD(node['cpu_dies'])),
-      #TR(TD(T('cpu vendor'), _style='font-style:italic'), TD(node['cpu_vendor'])),
-      TR(TD(T('cpu model'), _style='font-style:italic'), TD(node['cpu_model'])),
+      TR(TH(T('cpu frequency')), TD(node['cpu_freq'])),
+      TR(TH(T('cpu threads')), TD(node['cpu_threads'] if node['cpu_threads'] is not None else '')),
+      TR(TH(T('cpu cores')), TD(node['cpu_cores'])),
+      TR(TH(T('cpu dies')), TD(node['cpu_dies'])),
+      #TR(TH(T('cpu vendor')), TD(node['cpu_vendor'])),
+      TR(TH(T('cpu model')), TD(node['cpu_model'])),
     )
     mem = TABLE(
-      TR(TD(T('memory banks'), _style='font-style:italic'), TD(node['mem_banks'])),
-      TR(TD(T('memory slots'), _style='font-style:italic'), TD(node['mem_slots'])),
-      TR(TD(T('memory total'), _style='font-style:italic'), TD(node['mem_bytes'])),
+      TR(TH(T('memory banks')), TD(node['mem_banks'])),
+      TR(TH(T('memory slots')), TD(node['mem_slots'])),
+      TR(TH(T('memory total')), TD(node['mem_bytes'])),
     )
     ops = TABLE(
-      TR(TD(T('os name'), _style='font-style:italic'), TD(node['os_name'])),
-      TR(TD(T('os vendor'), _style='font-style:italic'), TD(node['os_vendor'])),
-      TR(TD(T('os release'), _style='font-style:italic'), TD(node['os_release'])),
-      TR(TD(T('os kernel'), _style='font-style:italic'), TD(node['os_kernel'])),
-      TR(TD(T('os arch'), _style='font-style:italic'), TD(node['os_arch'])),
+      TR(TH(T('os name')), TD(node['os_name'])),
+      TR(TH(T('os vendor')), TD(node['os_vendor'])),
+      TR(TH(T('os release')), TD(node['os_release'])),
+      TR(TH(T('os kernel')), TD(node['os_kernel'])),
+      TR(TH(T('os arch')), TD(node['os_arch'])),
     )
 
+    asset = DIV(
+      DIV(
+        H3(SPAN(SPAN(T("server"), _class="node16")), _class="line"),
+        server,
+      ),
+      DIV(
+        H3(SPAN(SPAN(T("organization"), _class="guys16")), _class="line"),
+        org,
+      ),
+      DIV(
+        H3(SPAN(SPAN(T("location"), _class="loc")), _class="line"),
+        loc,
+      ),
+      DIV(
+        H3(SPAN(SPAN(T("opensvc agent"), _class="svc")), _class="line"),
+        agent,
+      ),
+      DIV(
+        H3(SPAN(SPAN(T("os"), _class="os16")), _class="line"),
+        ops,
+      ),
+      DIV(
+        H3(SPAN(SPAN(T("mem"), _class="hw16")), _class="line"),
+        mem,
+      ),
+      DIV(
+        H3(SPAN(SPAN(T("cpu"), _class="cpu16")), _class="line"),
+        cpu,
+      ),
+      DIV(
+        H3(SPAN(SPAN(T("power"), _class="pwr")), _class="line"),
+        power,
+      ),
+      DIV(
+        H3(SPAN(SPAN(T("dates"), _class="time16")), _class="line"),
+        dates,
+      ),
+      _class="asset_tab",
+    )
 
     # net
     sql = """select
@@ -633,24 +677,19 @@ def ajax_node():
             ),
             LI(
               P(
-                T("server"),
+                T("properties"),
                 _class='node16',
                 _onclick=js('tab1', rowid),
               ),
               _class="tab_active",
               _id="litab1_"+str(rowid),
             ),
-            LI(P(T("os"), _class='os16', _onclick=js('tab2', rowid)), _id="litab2_"+str(rowid)),
-            LI(P(T("mem"), _class='mem16', _onclick=js('tab3', rowid)), _id="litab3_"+str(rowid)),
-            LI(P(T("cpu"), _class='cpu16', _onclick=js('tab4', rowid)), _id="litab4_"+str(rowid)),
             LI(P(T("alerts"), _class='alert16', _onclick=js('tab14', rowid)), _id="litab14_"+str(rowid)),
             LI(P(T("services"), _class='svc', _onclick=js('tab5', rowid)), _id="litab5_"+str(rowid)),
             LI(P(T("actions"), _class='action16', _onclick=js('tab15', rowid)), _id="litab15_"+str(rowid)),
             LI(P(T("log"), _class='log16', _onclick=js('tab16', rowid)), _id="litab16_"+str(rowid)),
             LI(P(T("storage"), _class='hd16', _onclick=js('tab6', rowid)), _id="litab6_"+str(rowid)),
             LI(P(T("network"), _class='net16', _onclick=js('tab7', rowid)), _id="litab7_"+str(rowid)),
-            LI(P(T("location"), _class='loc', _onclick=js('tab8', rowid)), _id="litab8_"+str(rowid)),
-            LI(P(T("power"), _class='pwr', _onclick=js('tab9', rowid)), _id="litab9_"+str(rowid)),
             LI(P(T("stats"), _class='spark16', _onclick=js('tab10', rowid)), _id="litab10_"+str(rowid)),
             LI(P(T("wiki"), _class='edit', _onclick=js('tab11', rowid)), _id="litab11_"+str(rowid)),
             LI(P(T("checks"), _class='check16', _onclick=js('tab12', rowid)), _id="litab12_"+str(rowid)),
@@ -663,7 +702,7 @@ def ajax_node():
       TR(
         TD(
           DIV(
-            server,
+            asset,
             _id='tab1_'+str(rowid),
             _class='cloud_shown',
           ),
