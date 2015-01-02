@@ -3926,8 +3926,8 @@ function table_init(opts) {
   $("#"+t.id).find("select:visible").combobox()
 
   create_overlay()
-  t.hide_cells()
   t.add_filtered_to_visible_columns()
+  t.hide_cells()
   t.format_header()
   t.add_filterbox()
   t.add_scrollers()
