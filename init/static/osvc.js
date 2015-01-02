@@ -1945,7 +1945,7 @@ function _resize_overlay() {
 }
 
 
-function tool_svctopo(tid) {
+function trigger_tool_svctopo(tid) {
   var t = osvc.tables[tid]
   var data = table_action_menu_get_svcs_data(t)
   if (data.length==0) {
@@ -1958,7 +1958,7 @@ function tool_svctopo(tid) {
   sync_ajax('/init/default/ajax_svcs_topo?nodes='+nodes.join(","), [], 'overlay', function(){})
 }
 
-function tool_nodesantopo(tid) {
+function trigger_tool_nodesantopo(tid) {
   var t = osvc.tables[tid]
   var data = table_action_menu_get_nodes_data(t)
   if (data.length==0) {
@@ -1971,7 +1971,7 @@ function tool_nodesantopo(tid) {
   sync_ajax('/init/ajax_node/ajax_nodes_stor?nodes='+nodes.join(","), [], 'overlay', function(){})
 }
 
-function tool_svcdiff(tid) {
+function trigger_tool_svcdiff(tid) {
   var t = osvc.tables[tid]
   var data = table_action_menu_get_svcs_data(t)
   if (data.length==0) {
@@ -1984,7 +1984,7 @@ function tool_svcdiff(tid) {
   sync_ajax('/init/nodediff/ajax_svcdiff?node='+nodes.join(","), [], 'overlay', function(){})
 }
 
-function tool_nodediff(tid) {
+function trigger_tool_nodediff(tid) {
   var t = osvc.tables[tid]
   var data = table_action_menu_get_nodes_data(t)
   if (data.length==0) {
@@ -1997,7 +1997,7 @@ function tool_nodediff(tid) {
   sync_ajax('/init/nodediff/ajax_nodediff?node='+nodes.join(","), [], 'overlay', function(){})
 }
 
-function tool_grpprf(tid) {
+function trigger_tool_grpprf(tid) {
   var t = osvc.tables[tid]
   var data = table_action_menu_get_nodes_data(t)
   if (data.length==0) {
@@ -2010,26 +2010,55 @@ function tool_grpprf(tid) {
   sync_ajax('/init/nodes/ajax_grpprf?node='+nodes.join(","), [], 'overlay', function(){})
 }
 
-function table_tools_menu_nodes(t){
-  var data = table_action_menu_get_nodes_data(t)
+function tool_nodediff(t, data) {
+  if (data.length<=1) {
+    return ""
+  }
+  return "<div class='clickable common16' onclick='trigger_tool_nodediff(\""+t.id+"\")'>"+T("Nodes differences")+"</div>"
+}
+
+function tool_nodesantopo(t, data) {
   if (data.length==0) {
     return ""
   }
+  return "<div class='clickable hd16' onclick='trigger_tool_nodesantopo(\""+t.id+"\")'>"+T("Nodes SAN topology")+"</div>"
+}
+
+function tool_grpprf(t, data) {
+  if (data.length==0) {
+    return ""
+  }
+  return "<div class='clickable spark16' onclick='trigger_tool_grpprf(\""+t.id+"\")'>"+T("Nodes performance")+"</div>"
+}
+
+function tool_svcdiff(t, data) {
+  if (data.length<=1) {
+    return ""
+  }
+  return "<div class='clickable common16' onclick='trigger_tool_svcdiff(\""+t.id+"\")'>"+T("Services differences")+"</div>"
+}
+
+function tool_svctopo(t, data) {
+  if (data.length==0) {
+    return ""
+  }
+  return "<div class='clickable dia16' onclick='trigger_tool_svctopo(\""+t.id+"\")'>"+T("Services topology")+"</div>"
+}
+
+function table_tools_menu_nodes(t){
+  var data = table_action_menu_get_nodes_data(t)
   var s = ""
-  s += "<div class='clickable common16' onclick='tool_nodediff(\""+t.id+"\")'>"+T("Nodes differences")+"</div>"
-  s += "<div class='clickable hd16' onclick='tool_nodesantopo(\""+t.id+"\")'>"+T("Nodes SAN topology")+"</div>"
-  s += "<div class='clickable spark16' onclick='tool_grpprf(\""+t.id+"\")'>"+T("Nodes performance")+"</div>"
+  s += tool_nodediff(t, data)
+  s += tool_nodesantopo(t, data)
+  s += tool_grpprf(t, data)
   return s
 }
 
 function table_tools_menu_svcs(t){
   var data = table_action_menu_get_svcs_data(t)
-  if (data.length==0) {
-    return ""
-  }
   var s = ""
-  s += "<div class='clickable common16' onclick='tool_svcdiff(\""+t.id+"\")'>"+T("Services differences")+"</div>"
-  s += "<div class='clickable dia16' onclick='tool_svctopo(\""+t.id+"\")'>"+T("Services topology")+"</div>"
+  s += tool_svcdiff(t, data)
+  s += tool_svctopo(t, data)
   return s
 }
 
