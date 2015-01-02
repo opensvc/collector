@@ -106,6 +106,7 @@ function bind_search_tool() {
     if ( event.which == 27 ) {
       $("input:focus").blur()
       $("textarea:focus").blur()
+      $("#overlay").empty()
       $(".white_float").hide()
       $(".white_float_input").hide()
       $(".right_click_menu").hide()
@@ -1553,8 +1554,20 @@ function table_action_menu(t, e){
   }
   $(".right_click_menu").hide()
 
-  // format the action menu
+  // format the tools menu
   var s = ""
+  if ("nodes" in t.action_menu) {
+    s += table_tools_menu_nodes(t)
+  }
+  if ("services" in t.action_menu) {
+    s += table_tools_menu_svcs(t)
+  }
+  if (s != "") {
+    s = "<h3 class='line'><span>"+T("Tools")+"</span></h3>" + s
+  }
+
+  // format the action menu
+  s += "<h3 class='line'><span>"+T("Actions")+"</span></h3>"
   if ("nodes" in t.action_menu) {
     s += table_action_menu_node(t, e)
     s += table_action_menu_nodes(t)
@@ -1894,6 +1907,129 @@ function table_action_menu_node(t, e){
     return ""
   }
   var s = "<li class='clickable'>"+T("Actions on node")+" <b>"+data[0]['nodename']+"</b>"+table_action_menu_node_entries(t, "node")+"</li>"
+  return s
+}
+
+function create_overlay() {
+  e = $("#overlay")
+  if (e.length == 0) {
+    $("body").append("<div class='white_float hidden' id='overlay'></div>")
+  }
+  $(window).resize(function(){
+    resize_overlay()
+  })
+  $("#overlay").bind("DOMSubtreeModified", function(){
+    resize_overlay()
+  })
+}
+
+function resize_overlay() {
+  _resize_overlay()
+  e.find("img").one("load", function(){_resize_overlay()})
+}
+
+function _resize_overlay() {
+  e = $("#overlay")
+  if (e.is(":empty")) {
+    e.hide()
+    return
+  }
+  e.show()
+  e.css({
+   'overflow': 'auto',
+   'max-height': $(window).height()-60,
+   'max-width': $(window).width()-60,
+   'top': ($(window).height()-e.height())/2,
+   'left': ($(window).width()-e.width())/2
+  })
+}
+
+
+function tool_svctopo(tid) {
+  var t = osvc.tables[tid]
+  var data = table_action_menu_get_svcs_data(t)
+  if (data.length==0) {
+    return ""
+  }
+  var nodes = new Array()
+  for (i=0;i<data.length;i++) {
+    nodes.push(data[i]['svcname'])
+  }
+  sync_ajax('/init/default/ajax_svcs_topo?nodes='+nodes.join(","), [], 'overlay', function(){})
+}
+
+function tool_nodesantopo(tid) {
+  var t = osvc.tables[tid]
+  var data = table_action_menu_get_nodes_data(t)
+  if (data.length==0) {
+    return ""
+  }
+  var nodes = new Array()
+  for (i=0;i<data.length;i++) {
+    nodes.push(data[i]['nodename'])
+  }
+  sync_ajax('/init/ajax_node/ajax_nodes_stor?nodes='+nodes.join(","), [], 'overlay', function(){})
+}
+
+function tool_svcdiff(tid) {
+  var t = osvc.tables[tid]
+  var data = table_action_menu_get_svcs_data(t)
+  if (data.length==0) {
+    return ""
+  }
+  var nodes = new Array()
+  for (i=0;i<data.length;i++) {
+    nodes.push(data[i]['svcname'])
+  }
+  sync_ajax('/init/nodediff/ajax_svcdiff?node='+nodes.join(","), [], 'overlay', function(){})
+}
+
+function tool_nodediff(tid) {
+  var t = osvc.tables[tid]
+  var data = table_action_menu_get_nodes_data(t)
+  if (data.length==0) {
+    return ""
+  }
+  var nodes = new Array()
+  for (i=0;i<data.length;i++) {
+    nodes.push(data[i]['nodename'])
+  }
+  sync_ajax('/init/nodediff/ajax_nodediff?node='+nodes.join(","), [], 'overlay', function(){})
+}
+
+function tool_grpprf(tid) {
+  var t = osvc.tables[tid]
+  var data = table_action_menu_get_nodes_data(t)
+  if (data.length==0) {
+    return ""
+  }
+  var nodes = new Array()
+  for (i=0;i<data.length;i++) {
+    nodes.push(data[i]['nodename'])
+  }
+  sync_ajax('/init/nodes/ajax_grpprf?node='+nodes.join(","), [], 'overlay', function(){})
+}
+
+function table_tools_menu_nodes(t){
+  var data = table_action_menu_get_nodes_data(t)
+  if (data.length==0) {
+    return ""
+  }
+  var s = ""
+  s += "<div class='clickable common16' onclick='tool_nodediff(\""+t.id+"\")'>"+T("Nodes differences")+"</div>"
+  s += "<div class='clickable hd16' onclick='tool_nodesantopo(\""+t.id+"\")'>"+T("Nodes SAN topology")+"</div>"
+  s += "<div class='clickable spark16' onclick='tool_grpprf(\""+t.id+"\")'>"+T("Nodes performance")+"</div>"
+  return s
+}
+
+function table_tools_menu_svcs(t){
+  var data = table_action_menu_get_svcs_data(t)
+  if (data.length==0) {
+    return ""
+  }
+  var s = ""
+  s += "<div class='clickable common16' onclick='tool_svcdiff(\""+t.id+"\")'>"+T("Services differences")+"</div>"
+  s += "<div class='clickable dia16' onclick='tool_svctopo(\""+t.id+"\")'>"+T("Services topology")+"</div>"
   return s
 }
 
@@ -3789,6 +3925,7 @@ function table_init(opts) {
   $("#"+t.id).find("select").parent().css("white-space", "nowrap")
   $("#"+t.id).find("select:visible").combobox()
 
+  create_overlay()
   t.hide_cells()
   t.add_filtered_to_visible_columns()
   t.format_header()

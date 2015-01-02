@@ -214,9 +214,6 @@ class table_nodes(HtmlTable):
         if 'NodeManager' in user_groups():
             self.additional_tools.append('node_add')
             self.additional_tools.append('node_del')
-        self.additional_tools.append('nodediff')
-        self.additional_tools.append('grpperf')
-        self.additional_tools.append('santopo')
 
     def format_extrarow(self, o):
         id = self.extra_line_key(o)
@@ -260,102 +257,47 @@ class table_nodes(HtmlTable):
             )
         return d
 
-    def grpperf(self):
-        divid = 'grpperf'
-        now = datetime.datetime.now()
-        s = now - datetime.timedelta(days=0,
-                                     hours=now.hour,
-                                     minutes=now.minute,
-                                     microseconds=now.microsecond)
-        e = s + datetime.timedelta(days=1)
+@auth.requires_login()
+def ajax_grpprf():
+    nodes = request.vars.get("node", "")
+    divid = 'grpperf'
+    now = datetime.datetime.now()
+    s = now - datetime.timedelta(days=0,
+                                 hours=now.hour,
+                                 minutes=now.minute,
+                                 microseconds=now.microsecond)
+    e = s + datetime.timedelta(days=1)
 
-        d = DIV(
-              A(
-                T("Group performance"),
-                _class='spark16',
-                _onclick="""click_toggle_vis(event,'%(div)s', 'block');"""%dict(
-                              div=divid,
-                            ),
+    d = DIV(
+            DIV(
+              INPUT(
+                _value=s.strftime("%Y-%m-%d %H:%M"),
+                _id='begin',
+                _class='datetime',
               ),
-              DIV(
-                SPAN(
-                  INPUT(
-                    _value=s.strftime("%Y-%m-%d %H:%M"),
-                    _id='begin',
-                    _class='datetime',
-                  ),
-                  INPUT(
-                    _value=e.strftime("%Y-%m-%d %H:%M"),
-                    _id='end',
-                    _class='datetime',
-                  ),
-                  INPUT(
-                    _value='gen',
-                    _type='button',
-                    _onClick="""sync_ajax("%(url)s?node="+checked_nodes(),['begin', 'end'],"%(div)s",function(){});"""%dict(url=URL(r=request,c='stats',f='ajax_perfcmp_plot'),
-                             div="prf_cont"),
-                  ),
-                  DIV(
-                    _id="prf_cont"
-                  ),
-                  SCRIPT(
-                    """$(".datetime").datetimepicker({dateFormat: "yy-mm-dd"})""",
-                  ),
-                ),
-                _style='display:none',
-                _class='white_float',
-                _name=divid,
-                _id=divid,
+              INPUT(
+                _value=e.strftime("%Y-%m-%d %H:%M"),
+                _id='end',
+                _class='datetime',
               ),
-              _class='floatw',
-            )
-        return d
-
-    def santopo(self):
-        divid = 'santopo'
-        d = DIV(
-              A(
-                T("SAN topology"),
-                _class='hd16',
-                _onclick="""click_toggle_vis(event,'%(div)s', 'block');
-                            ajax('%(url)s?nodes='+checked_nodes(), [], '%(div)s');"""%dict(
-                              url=URL(r=request,c='ajax_node',f='ajax_nodes_stor'),
-                              div=divid,
-                            ),
+              INPUT(
+                _value='gen',
+                _type='button',
+                _onClick="""sync_ajax("%(url)s?node=%(nodes)s",['begin', 'end'],"%(div)s",function(){})"""%dict(nodes=nodes,url=URL(r=request,c='stats',f='ajax_perfcmp_plot'), div="prf_cont"),
               ),
-              DIV(
-                _style='display:none',
-                _class='white_float',
-                _name=divid,
-                _id=divid,
-              ),
-
-              _class='floatw',
-            )
-        return d
-
-    def nodediff(self):
-        divid = 'nodediff'
-        d = DIV(
-              A(
-                T("Node differences"),
-                _class='common16',
-                _onclick="""click_toggle_vis(event,'%(div)s', 'block');
-                            sync_ajax('%(url)s?node='+checked_nodes(), [], '%(div)s', function(){});"""%dict(
-                              url=URL(r=request,c='nodediff',f='ajax_nodediff'),
-                              div=divid,
-                            ),
-              ),
-              DIV(
-                _style='display:none',
-                _class='white_float',
-                _name=divid,
-                _id=divid,
-              ),
-
-              _class='floatw',
-            )
-        return d
+            ),
+            DIV(
+              T("Please define a timeframe and click the 'gen' button."),
+              _style='padding:0.5em',
+              _id="prf_cont"
+            ),
+            SCRIPT(
+              """$(".datetime").datetimepicker({dateFormat: "yy-mm-dd"})""",
+            ),
+            _name=divid,
+            _id=divid,
+        )
+    return d
 
 @auth.requires_membership('NodeManager')
 def node_del(ids):

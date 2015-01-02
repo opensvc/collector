@@ -1,5 +1,28 @@
 @charset "UTF-8";
 
+.line {
+  position: relative;
+  z-index: 1;
+  padding-bottom: 0.2em;
+}
+.line:before {
+  border-top: 1px solid grey;
+  content: "";
+  margin: 0 auto;
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 95%;
+  z-index: -1;
+}
+.line > span {
+  background: #fff;
+  padding-right: 0.5em;
+  margin-left: 0;
+}
+
 .groups > span {
   padding: 0.2em 0.5em 0.2em 0px;
   cursor: pointer;

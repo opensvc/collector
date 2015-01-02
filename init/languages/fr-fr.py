@@ -1321,6 +1321,7 @@
 'Please confirm service instances deletion': 'Merci de confirmer la suppression des instances',
 'Please confirm the detachment of group %(r)s from segment %(name)s': 'Merci de confirmer le détachement du groupe %(r)s du segment %(name)s',
 "Please confirm you want to fix the '%(mod)s' compliance module on the node '%(node)s'": "Merci de confirmer que vous voulez mettre en conformité le module de conformité '%(mod)s' sur le noeud '%(node)s'",
+"Please define a timeframe and click the 'gen' button.": "Please define a timeframe and click the 'gen' button.",
 'please input your password again': 'merci de saisir à nouveau votre mot de passe',
 'Please report the malfunction to %(author)s': 'Merci de rapporter le dysfonctionnement à %(author)s',
 'Plot aggregated block device usage': "Grapher l'utilisation agrégée des disques",

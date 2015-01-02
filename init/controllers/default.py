@@ -365,6 +365,13 @@ def svcmon_viz_img(services):
     img = str(URL(r=request,c='static',f=os.path.basename(fname)))
     return img
 
+@auth.requires_login()
+def ajax_svcs_topo():
+    svcnames = request.vars.get("nodes", "").split(",")
+    q = db.v_svcmon.mon_svcname.belongs(svcnames)
+    rows = db(q).select(cacheable=True)
+    return IMG(_src=svcmon_viz_img(rows))
+
 def svcmon_viz(ids):
     if len(ids) == 0:
         return SPAN()
@@ -1165,31 +1172,9 @@ class table_svcmon(HtmlTable):
         self.checkbox_id_table = 'v_svcmon'
         self.ajax_col_values = 'ajax_svcmon_col_values'
         self.user_name = user_name()
-        self.additional_tools.append('svcdiff')
-        self.additional_tools.append('tool_topology')
         self.additional_tools.append('tool_provisioning')
         self.additional_tools.append('svc_del')
 
-    def svcdiff(self):
-        divid = 'svcdiff'
-        d = DIV(
-              A(
-                T("Service differences"),
-                _class='common16',
-                _onclick="""click_toggle_vis(event,'%(div)s', 'block'); sync_ajax('%(url)s?node='+checked_services(), [], '%(div)s', function(){});"""%dict(
-                              url=URL(r=request,c='nodediff',f='ajax_svcdiff'),
-                              div=divid,
-                            ),
-              ),
-              DIV(
-                _style='display:none',
-                _class='white_float',
-                _name=divid,
-                _id=divid,
-              ),
-              _class='floatw',
-            )
-        return d
 
     def svc_del(self):
         d = DIV(
@@ -1200,17 +1185,6 @@ class table_svcmon(HtmlTable):
                    s=self.ajax_submit(args=['svc_del']),
                    text=T("Please confirm service instances deletion"),
                 ),
-              ),
-              _class='floatw',
-            )
-        return d
-
-    def tool_topology(self):
-        d = DIV(
-              A(
-                T("Topology"),
-                _class='dia16',
-                _onclick=self.ajax_submit(args=['topology']),
               ),
               _class='floatw',
             )
@@ -1341,13 +1315,6 @@ def ajax_svcmon():
         t.object_list = db(q).select(*cols, limitby=limitby, orderby=o, cacheable=True)
         return t.table_lines_data(n, html=False)
 
-    if len(request.args) == 1:
-        action = request.args[0]
-        try:
-            if action == 'topology':
-                t.flash = svcmon_viz(t.get_checked())
-        except ToolError, e:
-            t.flash = str(e)
 
 @auth.requires_login()
 def svcmon():
