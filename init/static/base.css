@@ -1,10 +1,13 @@
 @charset "UTF-8";
 
+.asset_tab {
+  display: inline-table;
+}
+
 .asset_tab > div {
-  float: left;
   padding: 1em;
   width: 24em;
-  height: 16em;
+  display: inline-block;
 }
 
 .asset_tab > div > table > tbody > tr > td {
