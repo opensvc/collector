@@ -1917,6 +1917,7 @@ function create_overlay() {
   }
   $(window).resize(function(){
     resize_overlay()
+    resize_extralines()
   })
   $("#overlay").bind("DOMSubtreeModified", function(){
     resize_overlay()
@@ -1937,6 +1938,7 @@ function _resize_overlay() {
   e.show()
   e.css({
    'overflow': 'auto',
+   'position': 'fixed',
    'max-height': $(window).height()-60,
    'max-width': $(window).width()-60,
    'top': ($(window).height()-e.height())/2,
@@ -1944,6 +1946,9 @@ function _resize_overlay() {
   })
 }
 
+function resize_extralines() {
+  $(".extraline>td>table").each(function(){$(this).width($(window).width()-$(this).children().position().left-20)})
+}
 
 function trigger_tool_svctopo(tid) {
   var t = osvc.tables[tid]
