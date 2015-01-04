@@ -10830,6 +10830,12 @@ def _export_rulesets(rset_ids):
             d['rulesets'] = []
         rulesets.append(d)
 
+    data = _export_filtersets(fset_ids)
+    data['rulesets'] = rulesets
+
+    return data
+
+def _export_filtersets(fset_ids):
     fset_tree_nodes = get_fset_tree_nodes(fset_ids)
     fset_ids_with_children = set(fset_ids)
     for fset_id, child_fset_ids in fset_tree_nodes.items():
@@ -10882,7 +10888,6 @@ def _export_rulesets(rset_ids):
         filtersets.append(d)
 
     return {
-      'rulesets': rulesets,
       'filtersets': filtersets,
     }
 
@@ -10892,6 +10897,10 @@ def export_modulesets(modset_ids):
 
 def export_rulesets(rset_ids):
     data = _export_rulesets(rset_ids)
+    return json.dumps(data, indent=4, separators=(',', ': '))
+
+def export_filtersets(fset_ids):
+    data = _export_filtersets(fset_ids)
     return json.dumps(data, indent=4, separators=(',', ': '))
 
 def json_tree_modulesets():
@@ -11625,10 +11634,13 @@ def json_tree_action_show_filterset(fset_id):
     rows = db(q).select(db.nodes.nodename, orderby=db.nodes.nodename)
     nodes = [r.nodename.lower() for r in rows]
 
-    matching_nodes = DIV(
-      H3(T("Matching nodes"), " (%d) "%len(nodes)),
-      P(', '.join(nodes)),
-    )
+    if len(nodes) == 0:
+        matching_nodes = SPAN()
+    else:
+        matching_nodes = DIV(
+          H3(SPAN(T("Matching nodes"), " (%d) "%len(nodes)), _class="line"),
+          P(', '.join(nodes)),
+        )
 
     #
     q = db.services.id > 0
@@ -11636,10 +11648,13 @@ def json_tree_action_show_filterset(fset_id):
     rows = db(q).select(db.services.svc_name, orderby=db.services.svc_name)
     services = [r.svc_name.lower() for r in rows]
 
-    matching_services = DIV(
-      H3(T("Matching services"), " (%d) "%len(services)),
-      P(', '.join(services)),
-    )
+    if len(services) == 0:
+        matching_services = SPAN()
+    else:
+        matching_services = DIV(
+          H3(SPAN(T("Matching services"), " (%d) "%len(services)), _class="line"),
+          P(', '.join(services)),
+        )
 
     #
     a = fset_get_ancestors()
@@ -11650,7 +11665,7 @@ def json_tree_action_show_filterset(fset_id):
         rows = db(q).select(cacheable=False)
         l = [ r.fset_name for r in rows ]
         ancestors = DIV(
-          H3(T("Encapsulated in other filtersets"), " (%d) "%len(a[fset_id])),
+          H3(SPAN(T("Encapsulated in other filtersets"), " (%d) "%len(a[fset_id])), _class="line"),
           SPAN(', '.join(l)),
         )
 
@@ -11663,7 +11678,7 @@ def json_tree_action_show_filterset(fset_id):
     else:
         l = [ r.ruleset_name for r in rows ]
         rulesets = DIV(
-          H3(T("Used by rulesets"), " (%d) "%len(rows)),
+          H3(SPAN(T("Used by rulesets"), " (%d) "%len(rows)), _class="line"),
           SPAN(', '.join(l)),
         )
 
@@ -11675,7 +11690,7 @@ def json_tree_action_show_filterset(fset_id):
     else:
         l = [ '.'.join((r.chk_type, r.chk_inst)) for r in rows ]
         check_thres = DIV(
-          H3(T("Used by checker thresholds"), " (%d) "%len(rows)),
+          H3(SPAN(T("Used by checker thresholds"), " (%d) "%len(rows)), _class="line"),
           SPAN(', '.join(l)),
         )
 
@@ -11687,7 +11702,6 @@ def json_tree_action_show_filterset(fset_id):
 
 
     d = DIV(
-      H2(fset_name),
       P(T('Compute statistics')+': ' + T(str(v.fset_stats))),
       matching_nodes,
       matching_services,
@@ -11697,7 +11711,41 @@ def json_tree_action_show_filterset(fset_id):
       compare,
       metrics,
     )
-    return d
+
+    _id = "tabs"
+    t = DIV(
+      DIV(
+        UL(
+          LI(P(fset_name, _class='nok'), _class="closetab"),
+          LI(P(T("filterset"), _class='filter16'), _id="litab1_"+_id),
+          LI(P(T("export"), _class='log16'), _id="litab2_"+_id),
+        ),
+        _class='tab',
+      ),
+      DIV(
+        d,
+        _class="cloud",
+        _id='tab1_'+_id,
+      ),
+      DIV(
+        PRE(
+          export_filtersets([fset_id]),
+          _style="overflow:auto",
+        ),
+        _class="cloud",
+        _id='tab2_'+_id,
+      ),
+      SCRIPT(
+        """bind_tabs("%(id)s", {}, "litab1_%(id)s")
+        """ % dict(id=_id)
+      ),
+      _id=_id,
+    )
+    return DIV(
+             t,
+             _class="white_float",
+             _style="position:relative;padding:0px",
+           )
 
 def json_tree_action_show_moduleset(modset_id):
     modset_id = int(modset_id)
@@ -11780,7 +11828,7 @@ def json_tree_action_show_ruleset(rset_id):
                        db.gen_filtersets.ALL,
                        left=(l1,l2), cacheable=True).first()
     if row is None:
-        return "-1"
+        return ""
     if 'comp_rulesets' in row:
         rset = row.comp_rulesets
     else:
