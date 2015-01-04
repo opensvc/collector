@@ -478,21 +478,6 @@ def ajax_service():
       ),
     )
 
-    def js(tab, rowid):
-        buff = ""
-        for i in range(1, 16):
-            buff += """$('#%(tab)s_%(id)s').hide();
-                       $('#li%(tab)s_%(id)s').removeClass('tab_active');
-                    """%dict(tab='tab'+str(i), id=rowid)
-        buff += """$('#%(tab)s_%(id)s').show();
-                   $('#li%(tab)s_%(id)s').addClass('tab_active');
-                   if ("%(tab)s" in callbacks) {
-                     callbacks["%(tab)s"]();
-                     delete callbacks["%(tab)s"];
-                   }
-                """%dict(tab=tab, id=rowid)
-        return buff
-
     def containerprf(rowid, containers):
         if len(containers) == 0:
             return SPAN()
@@ -805,37 +790,22 @@ def ajax_service():
       TR(
         TD(
           UL(
-            LI(
-              P(
-                T("%(n)s", dict(n=request.vars.node)),
-                _class='nok',
-              ),
-              _onclick="""$('#%(id)s').remove()"""%dict(id=rowid),
-              _class="closetab",
-            ),
-            LI(
-              P(
-                T("properties"),
-                _class='svc',
-                _onclick=js('tab1', rowid)
-               ),
-              _id="litab1_"+str(rowid),
-              _class="tab_active",
-            ),
-            LI(P(T("alerts"), _class='alert16', _onclick=js('tab13', rowid)), _id="litab13_"+str(rowid)),
-            LI(P(T("status"), _class='svc', _onclick=js('tab2', rowid)), _id="litab2_"+str(rowid)),
-            LI(P(T("resources"), _class='svc', _onclick=js('tab3', rowid)), _id="litab3_"+str(rowid)),
-            LI(P(T("actions"), _class='action16', _onclick=js('tab14', rowid)), _id="litab14_"+str(rowid)),
-            LI(P(T("log"), _class='log16', _onclick=js('tab15', rowid)), _id="litab15_"+str(rowid)),
-            LI(P(T("env"), _class='log16', _onclick=js('tab4', rowid)), _id="litab4_"+str(rowid)),
-            LI(P(T("topology"), _class='dia16', _onclick=js('tab5', rowid)), _id="litab5_"+str(rowid)),
-            LI(P(T("storage"), _class='net16', _onclick=js('tab6', rowid)), _id="litab6_"+str(rowid)),
-            LI(P(T("container stats"), _class='spark16', _onclick=js('tab12', rowid)), _id="litab12_"+str(rowid)),
-            LI(P(T("stats"), _class='spark16', _onclick=js('tab7', rowid)), _id="litab7_"+str(rowid)),
-            LI(P(T("wiki"), _class='edit', _onclick=js('tab8', rowid)), _id="litab8_"+str(rowid)),
-            LI(P(T("avail"), _class='svc', _onclick=js('tab9', rowid)), _id="litab9_"+str(rowid)),
-            LI(P(T("pkgdiff"), _class='pkg16', _onclick=js('tab10', rowid)), _id="litab10_"+str(rowid)),
-            LI(P(T("compliance"), _class='comp16', _onclick=js('tab11', rowid)), _id="litab11_"+str(rowid)),
+            LI(P(request.vars.node, _class='nok'), _class="closetab"),
+            LI(P(T("properties"), _class='svc'), _id="litab1_"+str(rowid), _class="tab_active"),
+            LI(P(T("alerts"), _class='alert16'), _id="litab13_"+str(rowid)),
+            LI(P(T("status"), _class='svc'), _id="litab2_"+str(rowid)),
+            LI(P(T("resources"), _class='svc'), _id="litab3_"+str(rowid)),
+            LI(P(T("actions"), _class='action16'), _id="litab14_"+str(rowid)),
+            LI(P(T("log"), _class='log16'), _id="litab15_"+str(rowid)),
+            LI(P(T("env"), _class='log16'), _id="litab4_"+str(rowid)),
+            LI(P(T("topology"), _class='dia16'), _id="litab5_"+str(rowid)),
+            LI(P(T("storage"), _class='net16'), _id="litab6_"+str(rowid)),
+            LI(P(T("container stats"), _class='spark16'), _id="litab12_"+str(rowid)),
+            LI(P(T("stats"), _class='spark16'), _id="litab7_"+str(rowid)),
+            LI(P(T("wiki"), _class='edit'), _id="litab8_"+str(rowid)),
+            LI(P(T("avail"), _class='svc'), _id="litab9_"+str(rowid)),
+            LI(P(T("pkgdiff"), _class='pkg16'), _id="litab10_"+str(rowid)),
+            LI(P(T("compliance"), _class='comp16'), _id="litab11_"+str(rowid)),
           ),
           _class="tab",
         ),
@@ -989,20 +959,21 @@ def ajax_service():
                url=URL(r=request, c='resmon', f='resmon_svc',
                        args=['tab3_'+str(rowid), request.vars.node])
             ),
-            """callbacks = {"tab2": %(id)s_load_svcmon,
-                            "tab3": %(id)s_load_resmon,
-                            "tab6": %(id)s_load_stor,
-                            "tab7": %(id)s_load_grpprf,
-                            "tab12": %(id)s_load_containerprf,
-                            "tab13": %(id)s_load_alerts,
-                            "tab14": %(id)s_load_actions,
-                            "tab15": %(id)s_load_log,
-                            "tab8": %(id)s_load_wiki,
-                            "tab9": %(id)s_load_svcmon_log,
-                            "tab10": %(id)s_load_pkgdiff,
-                            "tab11": %(id)s_load_comp}"""%dict(id='s'+str(rowid)),
-            js(tab, rowid),
-            _name='%s_to_eval'%rowid,
+            """bind_tabs("%(id)s", {
+                 "litab2_%(id)s": s%(id)s_load_svcmon,
+                 "litab3_%(id)s": s%(id)s_load_resmon,
+                 "litab6_%(id)s": s%(id)s_load_stor,
+                 "litab7_%(id)s": s%(id)s_load_grpprf,
+                 "litab12_%(id)s": s%(id)s_load_containerprf,
+                 "litab13_%(id)s": s%(id)s_load_alerts,
+                 "litab14_%(id)s": s%(id)s_load_actions,
+                 "litab15_%(id)s": s%(id)s_load_log,
+                 "litab8_%(id)s": s%(id)s_load_wiki,
+                 "litab9_%(id)s": s%(id)s_load_svcmon_log,
+                 "litab10_%(id)s": s%(id)s_load_pkgdiff,
+                 "litab11_%(id)s": s%(id)s_load_comp
+               }, "%(tab)s")
+            """%dict(id=str(rowid), tab="li"+tab+"_"+str(rowid)),
           ),
         ),
       ),

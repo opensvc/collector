@@ -6,8 +6,10 @@ var designer = {
 }
 
 function resizer(){
-  $("#treerow").height($(window).height()-$(".header").outerHeight()-$(".footer").outerHeight()-$("#casearch").parent().outerHeight(true))
-  $("#cainfo").width($(window).width()-$("#catree").outerWidth(true)-$("#catree2:visible").outerWidth(true)-$("#sep").outerWidth(true)-14)
+  $("#casearch").parent().css({"left": $("#catree").width()-$("#casearch").parent().width()})
+  $("#treerow").height($(window).height()-$(".header").outerHeight()-$(".footer").outerHeight())
+  $("#cainfo").width($(window).width()-$("#catree").outerWidth(true)-$("#catree2:visible").outerWidth(true)-$("#sep").outerWidth(true)-41)
+  $("#cainfo").height($("#treerow").height()-parseInt($("#cainfo").css('padding-top'))-parseInt($("#cainfo").css('padding-bottom')))
 }
 
 function designer_link(){

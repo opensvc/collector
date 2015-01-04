@@ -894,6 +894,12 @@ a.xinfo_shown span {
     padding:0px;
     border-radius: 4px 4px 0px 0px;
 }
+.tab:after {
+  content: ".";
+  height: 0px;
+  display: block;
+  clear: both;
+}
 .tab ul {
     padding:0px;
 }
@@ -1461,6 +1467,11 @@ ul.login_menu ul {
 }
 .wf16 {
     background: transparent url('wf16.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
+.modset16 {
+    background: transparent url('modset16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }

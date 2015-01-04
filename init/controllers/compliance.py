@@ -1873,6 +1873,17 @@ def comp_detach_svc_rulesets(svc_ids=[], ruleset_ids=[], svc_names=[], slave=Tru
 def comp_attach_svc_rulesets(svc_ids=[], ruleset_ids=[], svc_names=[], slave=True):
     return internal_comp_attach_svc_rulesets(svc_ids, ruleset_ids, svc_names, slave)
 
+def get_fset_names(fset_ids=None):
+    if fset_ids is not None:
+        q = db.gen_filtersets.id.belongs(fset_ids)
+    else:
+        q = db.gen_filtersets.id > 0
+    rows = db(q).select()
+    fset_names = {}
+    for row in rows:
+        fset_names[row.id] = row.fset_name
+    return fset_names
+
 def get_rset_names(ruleset_ids=None):
     if ruleset_ids is None:
         q = db.comp_rulesets.id > 0
@@ -6646,11 +6657,7 @@ def comp_get_rulesets_fset_ids(rset_ids=None, nodename=None, svcname=None):
             l[t] += [row.comp_rulesets.id]
     return l
 
-def comp_rulesets_chains():
-    # populate rset names cache
-    rset_names = get_rset_names()
-
-    # populate rset relations cache
+def _get_rset_relations():
     q = db.comp_rulesets_rulesets.id > 0
     q &= db.comp_rulesets_rulesets.child_rset_id == db.comp_rulesets.id
     rows = db(q).select(cacheable=True)
@@ -6659,6 +6666,14 @@ def comp_rulesets_chains():
         if row.comp_rulesets_rulesets.parent_rset_id not in rset_relations:
             rset_relations[row.comp_rulesets_rulesets.parent_rset_id] = []
         rset_relations[row.comp_rulesets_rulesets.parent_rset_id].append(row.comp_rulesets_rulesets.child_rset_id)
+    return rset_relations
+
+def comp_rulesets_chains():
+    # populate rset names cache
+    rset_names = get_rset_names()
+
+    # populate rset relations cache
+    rset_relations = _get_rset_relations()
 
     def recurse_rel(rset_id, chains, rset_id_chain):
         rset_id_chain += [rset_id]
@@ -10608,6 +10623,60 @@ def get_modset_tree_nodes(modset_ids=None):
 
     return modset_tree_nodes
 
+def get_fset_relations():
+    fset_relations = {}
+    q = db.gen_filtersets_filters.encap_fset_id > 0
+    rows = db(q).select()
+    for row in rows:
+        if row.fset_id not in fset_relations:
+            fset_relations[row.fset_id] = [row.encap_fset_id]
+        else:
+            fset_relations[row.fset_id] += [row.encap_fset_id]
+    return fset_relations
+
+def get_fset_tree_nodes(fset_ids=None):
+    fset_tree_nodes = {}
+    fset_relations = get_fset_relations()
+
+    if fset_ids is None:
+        fset_ids = fset_relations.keys()
+
+    def recurse_relations(head):
+        l = []
+        if head not in fset_relations:
+            return l
+        for child_id in fset_relations[head]:
+            l.append(child_id)
+            l += recurse_relations(child_id)
+        return l
+
+    for parent_id in fset_ids:
+        fset_tree_nodes[parent_id] = recurse_relations(parent_id)
+
+    return fset_tree_nodes
+
+def get_rset_tree_nodes(rset_ids=None):
+    rset_tree_nodes = {}
+    rset_relations = _get_rset_relations()
+
+    if rset_ids is None:
+        rset_ids = rset_relations.keys()
+
+    def recurse_relations(head):
+        l = []
+        if head not in rset_relations:
+            return l
+        for child_id in rset_relations[head]:
+            l.append(child_id)
+            l += recurse_relations(child_id)
+        return l
+
+    for parent_id in rset_ids:
+        rset_tree_nodes[parent_id] = recurse_relations(parent_id)
+
+    return rset_tree_nodes
+
+
 def get_modset_rset_relations():
     modset_rset_relations = {}
     q = db.comp_moduleset_ruleset.id > 0
@@ -10631,6 +10700,199 @@ def get_modset_rset_relations_s():
         else:
             modset_rset_relations[row.comp_moduleset.modset_name] += [row.comp_rulesets.ruleset_name]
     return modset_rset_relations
+
+def _export_modulesets(modset_ids):
+    modset_tree_nodes = get_modset_tree_nodes(modset_ids)
+
+    modset_ids_with_children = set(modset_ids)
+    for modset_id, children in modset_tree_nodes.items():
+        modset_ids_with_children |= set(children)
+
+    modset_names =  get_modset_names(modset_ids_with_children)
+    modset_relations = get_modset_relations()
+
+    modset_relations_s = {}
+    for modset_id, child_modset_ids in modset_relations.items():
+        if modset_id not in modset_ids_with_children:
+            continue
+        modset_relations_s[modset_names[modset_id]] = map(lambda x: modset_names[x], child_modset_ids)
+
+    q = db.comp_moduleset_modules.modset_id.belongs(modset_ids_with_children)
+    q &= db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
+    moduleset_modules = db(q).select()
+    moduleset_modules_s = {}
+    for row in moduleset_modules:
+        if row.comp_moduleset.modset_name not in moduleset_modules_s:
+            moduleset_modules_s[row.comp_moduleset.modset_name] = []
+        d = {
+          'modset_mod_name': row.comp_moduleset_modules.modset_mod_name,
+          'autofix': row.comp_moduleset_modules.autofix,
+        }
+        moduleset_modules_s[row.comp_moduleset.modset_name].append(d)
+
+    modset_rset_relations = get_modset_rset_relations()
+    rset_names =  get_rset_names()
+    rset_ids = set([])
+
+    modset_rset_relations_s = {}
+    for modset_id, _rset_ids in modset_rset_relations.items():
+        if modset_id not in modset_ids_with_children:
+            continue
+        rset_ids |= set(_rset_ids)
+        modset_rset_relations_s[modset_names[modset_id]] = map(lambda x: rset_names[x] , _rset_ids)
+
+    data = _export_rulesets(rset_ids)
+
+    # modulesets
+    q = db.comp_moduleset.id.belongs(modset_ids_with_children)
+    rows = db(q).select(db.comp_moduleset.modset_name)
+    modulesets = []
+    for row in rows:
+        d = {
+          'modset_name': row.modset_name,
+        }
+        if row.modset_name in moduleset_modules_s:
+            d['modules'] = moduleset_modules_s[row.modset_name]
+        else:
+            d['modules'] = []
+        if row.modset_name in modset_relations_s:
+            d['modulesets'] = modset_relations_s[row.modset_name]
+        else:
+            d['modulesets'] = []
+        if row.modset_name in modset_rset_relations_s:
+            d['rulesets'] = modset_rset_relations_s[row.modset_name]
+        else:
+            d['rulesets'] = []
+        modulesets.append(d)
+
+    data['modulesets'] = modulesets
+    return data
+
+
+def _export_rulesets(rset_ids):
+    rset_names =  get_rset_names()
+    rset_tree_nodes = get_rset_tree_nodes(rset_ids)
+    rset_ids_with_children = set(rset_ids)
+    for _rset_ids in rset_tree_nodes.values():
+        rset_ids_with_children |= set(_rset_ids)
+
+    rset_relations_s = {}
+    for rset_id, child_rset_ids in rset_tree_nodes.items():
+        rset_relations_s[rset_names[rset_id]] = map(lambda x: rset_names[x], child_rset_ids)
+
+    # ruleset vars
+    q = db.comp_rulesets_variables.ruleset_id.belongs(rset_ids_with_children)
+    q &= db.comp_rulesets_variables.ruleset_id == db.comp_rulesets.id
+    rows = db(q).select()
+    ruleset_vars = {}
+    for row in rows:
+        if row.comp_rulesets.ruleset_name not in ruleset_vars:
+            ruleset_vars[row.comp_rulesets.ruleset_name] = []
+        d = {
+          'var_name': row.comp_rulesets_variables.var_name,
+          'var_value': row.comp_rulesets_variables.var_value,
+          'var_class': row.comp_rulesets_variables.var_class,
+        }
+        ruleset_vars[row.comp_rulesets.ruleset_name].append(d)
+
+
+    # rulesets
+    q = db.comp_rulesets.id.belongs(rset_ids_with_children)
+    j1 = db.comp_rulesets.id == db.comp_rulesets_filtersets.ruleset_id
+    l1 = db.comp_rulesets_filtersets.on(j1)
+    j2 = db.comp_rulesets_filtersets.fset_id == db.gen_filtersets.id
+    l2 = db.gen_filtersets.on(j2)
+    rows = db(q).select(db.comp_rulesets.ruleset_name,
+                            db.comp_rulesets.ruleset_public,
+                            db.comp_rulesets.ruleset_type,
+                            db.gen_filtersets.id,
+                            db.gen_filtersets.fset_name,
+                            left=(l1,l2))
+
+    rulesets = []
+    fset_ids = []
+    for row in rows:
+        if row.gen_filtersets.id is not None:
+            fset_ids.append(row.gen_filtersets.id)
+        d = {
+          'ruleset_name': row.comp_rulesets.ruleset_name,
+          'ruleset_public': row.comp_rulesets.ruleset_public,
+          'ruleset_type': row.comp_rulesets.ruleset_type,
+          'fset_name': row.gen_filtersets.fset_name
+        }
+        if row.comp_rulesets.ruleset_name in ruleset_vars:
+            d['variables'] = ruleset_vars[row.comp_rulesets.ruleset_name]
+        else:
+            d['variables'] = []
+        if row.comp_rulesets.ruleset_name in rset_relations_s:
+            d['rulesets'] = rset_relations_s[row.comp_rulesets.ruleset_name]
+        else:
+            d['rulesets'] = []
+        rulesets.append(d)
+
+    fset_tree_nodes = get_fset_tree_nodes(fset_ids)
+    fset_ids_with_children = set(fset_ids)
+    for fset_id, child_fset_ids in fset_tree_nodes.items():
+        fset_ids_with_children |= set(child_fset_ids)
+    fset_names = get_fset_names(fset_ids_with_children)
+
+    # filtersets filters
+    q = db.gen_filtersets_filters.fset_id.belongs(fset_ids_with_children)
+    fset_filters_rows = db(q).select()
+    filterset_filters = {}
+    f_ids = set([])
+    for row in fset_filters_rows:
+        if row.f_id is not None:
+            f_ids.add(row.f_id)
+
+    # filters
+    q = db.gen_filters.id.belongs(f_ids)
+    rows = db(q).select()
+    filters = {}
+    for row in rows:
+        d = {
+          'f_table': row.f_table,
+          'f_field': row.f_field,
+          'f_op': row.f_op,
+          'f_value': row.f_value,
+        }
+        filters[row.id] = d
+
+    for row in fset_filters_rows:
+        fset_name = fset_names[row.fset_id]
+        if fset_name not in filterset_filters:
+            filterset_filters[fset_name] = []
+        d = {
+          'f_log_op': row.f_log_op,
+          'f_order': row.f_order,
+          'filter': filters[row.f_id] if row.f_id > 0 and row.f_id is not None else None,
+          'filterset': fset_names[row.encap_fset_id] if row.encap_fset_id is not None else None,
+        }
+        filterset_filters[fset_name].append(d)
+
+
+    q = db.gen_filtersets.id.belongs(fset_ids_with_children)
+    rows = db(q).select()
+    filtersets = []
+    for row in rows:
+        d = {
+          'fset_name': row.fset_name,
+          'filters': filterset_filters[row.fset_name] if row.fset_name in filterset_filters else [],
+        }
+        filtersets.append(d)
+
+    return {
+      'rulesets': rulesets,
+      'filtersets': filtersets,
+    }
+
+def export_modulesets(modset_ids):
+    data = _export_modulesets(modset_ids)
+    return json.dumps(data, indent=4, separators=(',', ': '))
+
+def export_rulesets(rset_ids):
+    data = _export_rulesets(rset_ids)
+    return json.dumps(data, indent=4, separators=(',', ': '))
 
 def json_tree_modulesets():
     modsets = {
@@ -11021,8 +11283,7 @@ def comp_admin():
      """ % dict(
       var_class_names = ', '.join(var_class_names),
     )
-    d = DIV(
-      DIV(
+    search = DIV(
         INPUT(
           _id="casearch",
           _value=request.vars.obj_filter,
@@ -11041,11 +11302,14 @@ def comp_admin():
           _class="white_float hidden",
           _style="margin-top:1.1em",
         ),
-        _style="margin-bottom:0.5em;margin-top:0.5em;",
-      ),
-      DIV(
-        _class="spacer",
-      ),
+        DIV(
+          _class="spacer",
+        ),
+        _style="position:absolute;padding:0.2em",
+      )
+
+    d = DIV(
+      search,
       DIV(
         DIV(
           _id="catree",
@@ -11064,7 +11328,7 @@ def comp_admin():
         ),
         DIV(
           _id="cainfo",
-          _style="height:100%;float:left;overflow-y:auto;float:left;text-align:left;padding-left:1em",
+          _style="height:100%;float:left;overflow-y:auto;float:left;text-align:left;padding:20px",
         ),
         _id="treerow",
       ),
@@ -11443,22 +11707,18 @@ def json_tree_action_show_moduleset(modset_id):
     if modset is None:
         return ""
     l = []
-    l.append(H2(modset.modset_name))
-    l.append(HR())
 
     q = db.comp_node_moduleset.modset_id == modset_id
     rows = db(q).select(cacheable=False)
     if len(rows) > 0:
-        l.append(H3(T("Attached to servers")))
+        l.append(H3(SPAN(T("Attached to servers")), _class="line"))
         l.append(P(' '.join(map(lambda x: x.modset_node, rows))))
-        l.append(HR())
 
     q = db.comp_modulesets_services.modset_id == modset_id
     rows = db(q).select(cacheable=False)
     if len(rows) > 0:
-        l.append(H3(T("Attached to services")))
+        l.append(H3(SPAN(T("Attached to services")), _class="line"))
         l.append(P(' '.join(map(lambda x: x.modset_svcname, rows))))
-        l.append(HR())
 
     def mod_html(x):
         l = []
@@ -11473,9 +11733,41 @@ def json_tree_action_show_moduleset(modset_id):
     if len(rows) > 0:
         l.append(H3(T("Modules")))
         l.append(SPAN(map(lambda x: mod_html(x), rows)))
-        l.append(HR())
 
-    return DIV(l)
+    _id = "tabs"
+    t = DIV(
+      DIV(
+        UL(
+          LI(P(modset.modset_name, _class='nok'), _class="closetab"),
+          LI(P(T("moduleset"), _class='modset16'), _id="litab1_"+_id),
+          LI(P(T("export"), _class='log16'), _id="litab2_"+_id),
+        ),
+        _class='tab',
+      ),
+      DIV(
+        l,
+        _class="cloud",
+        _id='tab1_'+_id,
+      ),
+      DIV(
+        PRE(
+          export_modulesets([modset_id]),
+          _style="overflow:auto",
+        ),
+        _class="cloud",
+        _id='tab2_'+_id,
+      ),
+      SCRIPT(
+        """bind_tabs("%(id)s", {}, "litab1_%(id)s")
+        """ % dict(id=_id)
+      ),
+      _id=_id,
+    )
+    return DIV(
+             t,
+             _class="white_float",
+             _style="position:relative;padding:0px",
+           )
 
 def json_tree_action_show_ruleset(rset_id):
     q = db.comp_rulesets.id == rset_id
@@ -11498,7 +11790,6 @@ def json_tree_action_show_ruleset(rset_id):
     else:
         fset_name = T("not set")
     l = []
-    l.append(H2(rset.ruleset_name))
     l.append(P(T('Type')+': ' + str(rset.ruleset_type)))
     if rset.ruleset_type == "contextual":
         l.append(P(T('Filterset')+': ' + str(fset_name)))
@@ -11549,7 +11840,42 @@ def json_tree_action_show_ruleset(rset_id):
         l.append(P(T("Variable class: %(var_class)s", dict(var_class=str(row.var_class)))))
         l.append(P(T("Last modified by %(user)s on %(date)s", dict(user=row.var_author, date=str(row.var_updated)))))
         l.append(renderer.html(row))
-    return DIV(l)
+
+    _id = "tabs"
+    t = DIV(
+      DIV(
+        UL(
+          LI(P(rset.ruleset_name, _class='nok'), _class="closetab"),
+          LI(P(T("ruleset"), _class='pkg16'), _id="litab1_"+_id),
+          LI(P(T("export"), _class='log16'), _id="litab2_"+_id),
+        ),
+        _class='tab',
+      ),
+      DIV(
+        l,
+        _class="cloud",
+        _id='tab1_'+_id,
+      ),
+      DIV(
+        PRE(
+          export_rulesets([rset_id]),
+          _style="overflow:auto",
+        ),
+        _class="cloud",
+        _id='tab2_'+_id,
+      ),
+      SCRIPT(
+        """bind_tabs("%(id)s", {}, "litab1_%(id)s")
+        """ % dict(id=_id)
+      ),
+      _id=_id,
+    )
+    return DIV(
+             t,
+             _class="white_float",
+             _style="position:relative;padding:0px",
+           )
+
 
 def json_tree_action_show_variable(var_id):
     q = db.comp_rulesets_variables.id == var_id

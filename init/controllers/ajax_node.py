@@ -651,50 +651,23 @@ def ajax_node():
       TABLE(_nets),
     )
 
-    def js(tab, rowid):
-        buff = ""
-        for i in range(1, 18):
-            buff += """$('#%(tab)s_%(id)s').hide();$('#li%(tab)s_%(id)s').removeClass('tab_active');"""%dict(tab='tab'+str(i), id=rowid)
-        buff += """$('#%(tab)s_%(id)s').show();$('#li%(tab)s_%(id)s').addClass('tab_active');
-                   if ("%(tab)s" in callbacks) {
-                     callbacks["%(tab)s"]();
-                     delete callbacks["%(tab)s"];
-                   }
-                """%dict(tab=tab, id=rowid)
-        return buff
-
     t = TABLE(
       TR(
         TD(
           UL(
-            LI(
-              P(
-                T("%(n)s", dict(n=request.vars.node)),
-                _class='nok',
-                _onclick="""$('#%(id)s').remove()"""%dict(id=rowid),
-              ),
-              _class="closetab",
-            ),
-            LI(
-              P(
-                T("properties"),
-                _class='node16',
-                _onclick=js('tab1', rowid),
-              ),
-              _class="tab_active",
-              _id="litab1_"+str(rowid),
-            ),
-            LI(P(T("alerts"), _class='alert16', _onclick=js('tab14', rowid)), _id="litab14_"+str(rowid)),
-            LI(P(T("services"), _class='svc', _onclick=js('tab5', rowid)), _id="litab5_"+str(rowid)),
-            LI(P(T("actions"), _class='action16', _onclick=js('tab15', rowid)), _id="litab15_"+str(rowid)),
-            LI(P(T("log"), _class='log16', _onclick=js('tab16', rowid)), _id="litab16_"+str(rowid)),
-            LI(P(T("storage"), _class='hd16', _onclick=js('tab6', rowid)), _id="litab6_"+str(rowid)),
-            LI(P(T("network"), _class='net16', _onclick=js('tab7', rowid)), _id="litab7_"+str(rowid)),
-            LI(P(T("stats"), _class='spark16', _onclick=js('tab10', rowid)), _id="litab10_"+str(rowid)),
-            LI(P(T("wiki"), _class='edit', _onclick=js('tab11', rowid)), _id="litab11_"+str(rowid)),
-            LI(P(T("checks"), _class='check16', _onclick=js('tab12', rowid)), _id="litab12_"+str(rowid)),
-            LI(P(T("compliance"), _class='comp16', _onclick=js('tab13', rowid)), _id="litab13_"+str(rowid)),
-            LI(P(T("sysreport"), _class='log16', _onclick=js('tab17', rowid)), _id="litab17_"+str(rowid)),
+            LI(P(request.vars.node, _class='nok'), _class="closetab"),
+            LI(P(T("properties"), _class='node16'), _class="tab_active", _id="litab1_"+str(rowid)),
+            LI(P(T("alerts"), _class='alert16'), _id="litab14_"+str(rowid)),
+            LI(P(T("services"), _class='svc'), _id="litab5_"+str(rowid)),
+            LI(P(T("actions"), _class='action16'), _id="litab15_"+str(rowid)),
+            LI(P(T("log"), _class='log16'), _id="litab16_"+str(rowid)),
+            LI(P(T("storage"), _class='hd16'), _id="litab6_"+str(rowid)),
+            LI(P(T("network"), _class='net16'), _id="litab7_"+str(rowid)),
+            LI(P(T("stats"), _class='spark16'), _id="litab10_"+str(rowid)),
+            LI(P(T("wiki"), _class='edit'), _id="litab11_"+str(rowid)),
+            LI(P(T("checks"), _class='check16'), _id="litab12_"+str(rowid)),
+            LI(P(T("compliance"), _class='comp16'), _id="litab13_"+str(rowid)),
+            LI(P(T("sysreport"), _class='log16'), _id="litab17_"+str(rowid)),
           ),
           _class="tab",
         ),
@@ -840,17 +813,18 @@ def ajax_node():
                url=URL(r=request, c='default', f='svcmon_node',
                        args=[request.vars.node])
             ),
-            """callbacks = {"tab6": %(id)s_load_node_stor,
-                            "tab11": %(id)s_load_wiki,
-                            "tab12": %(id)s_load_checks,
-                            "tab13": %(id)s_load_comp,
-                            "tab14": %(id)s_load_node_alerts,
-                            "tab15": %(id)s_load_node_actions,
-                            "tab16": %(id)s_load_node_log,
-                            "tab17": %(id)s_load_sysreport,
-                            "tab5": %(id)s_load_svcmon_node}"""%dict(id='n'+str(rowid)),
-            js(tab, rowid),
-            _name='%s_to_eval'%rowid,
+            """bind_tabs("%(id)s", {
+                "litab6_%(id)s": n%(id)s_load_node_stor,
+                "litab11_%(id)s": n%(id)s_load_wiki,
+                "litab12_%(id)s": n%(id)s_load_checks,
+                "litab13_%(id)s": n%(id)s_load_comp,
+                "litab14_%(id)s": n%(id)s_load_node_alerts,
+                "litab15_%(id)s": n%(id)s_load_node_actions,
+                "litab16_%(id)s": n%(id)s_load_node_log,
+                "litab17_%(id)s": n%(id)s_load_sysreport,
+                "litab5_%(id)s": n%(id)s_load_svcmon_node
+               }, "%(tab)s")
+            """%dict(id=str(rowid), tab="li"+tab+"_"+str(rowid)),
           ),
         ),
       ),
