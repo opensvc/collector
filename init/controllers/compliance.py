@@ -11821,6 +11821,7 @@ def json_tree_action_show_moduleset(modset_id):
              _style="position:relative;padding:0px",
            )
 
+@auth.requires_membership('CompManager')
 def json_tree_action_import():
     val = request.vars.value
     try:
@@ -12111,6 +12112,10 @@ def json_tree_action_import():
     return DIV(l)
 
 def json_tree_action_show_import():
+    if "CompManager" not in user_groups():
+        ro = True
+    else:
+        ro = False
     d = DIV(
       H3(
         T("Import"),
@@ -12118,6 +12123,7 @@ def json_tree_action_show_import():
       DIV(
         TEXTAREA(
           _id="import_text",
+          _readonly=ro,
           _style="width:100%;height:20em;margin-bottom:1em",
         ),
         BR(),
