@@ -6729,11 +6729,16 @@ def get_rset_relations():
         rset_relations[row.comp_rulesets_rulesets.parent_rset_id].append(row)
     return rset_relations
 
-def comp_ruleset_vars(ruleset_id, qr=None, matching_fsets=[], rset_relations=None, rset_names=None):
+def comp_ruleset_vars(ruleset_id, qr=None, matching_fsets=[],
+                      rset_relations=None, rset_names=None,
+                      via_moduleset=False):
     if qr is None:
         f = 'explicit attachment'
     else:
         f = comp_format_filter(qr)
+
+    if via_moduleset:
+        f += ' via moduleset'
 
     if rset_names is None:
         rset_names = get_rset_names()
@@ -6867,12 +6872,18 @@ def _comp_get_svc_ruleset(svcname, nodename, slave=None):
                                             rset_names=rset_names))
 
     # add explicit rulesets variables
-    rset_ids = _comp_get_explicit_svc_ruleset_ids(svcname, slave=slave)
+    rset_ids, rset_ids_via_modset = _comp_get_explicit_svc_ruleset_ids(svcname, slave=slave)
     for rset_id in rset_ids:
         ruleset.update(comp_ruleset_vars(rset_id,
                                          matching_fsets=matching_fsets,
                                          rset_relations=rset_relations,
                                          rset_names=rset_names))
+    for rset_id in rset_ids_via_modset:
+        ruleset.update(comp_ruleset_vars(rset_id,
+                                         matching_fsets=matching_fsets,
+                                         rset_relations=rset_relations,
+                                         rset_names=rset_names,
+                                         via_moduleset=True))
 
     return ruleset
 
@@ -6920,9 +6931,9 @@ def _comp_get_explicit_svc_ruleset_ids(svcname, slave=False):
     modset_ids = _comp_get_svc_moduleset_ids_with_children(svcname, slave=slave)
     q = db.comp_moduleset_ruleset.modset_id.belongs(modset_ids)
     rows = db(q).select(db.comp_moduleset_ruleset.ruleset_id)
-    rset_ids = list(set(rset_ids) | set([r.ruleset_id for r in rows]))
+    rset_ids_via_modset = list(set([r.ruleset_id for r in rows]) - set(rset_ids))
 
-    return rset_ids
+    return rset_ids, rset_ids_via_modset
 
 def _comp_get_explicit_ruleset_ids(nodename):
     # attached to the node directly
@@ -6936,9 +6947,9 @@ def _comp_get_explicit_ruleset_ids(nodename):
     modset_ids = _comp_get_moduleset_ids_with_children(nodename)
     q = db.comp_moduleset_ruleset.modset_id.belongs(modset_ids)
     rows = db(q).select(db.comp_moduleset_ruleset.ruleset_id)
-    rset_ids = list(set(rset_ids) | set([r.ruleset_id for r in rows]))
+    rset_ids_via_modset = list(set([r.ruleset_id for r in rows]) - set(rset_ids))
 
-    return rset_ids
+    return rset_ids, rset_ids_via_modset
 
 def _comp_get_ruleset(nodename):
     # initialize ruleset with asset variables
@@ -6957,12 +6968,18 @@ def _comp_get_ruleset(nodename):
                                             rset_names=rset_names))
 
     # add explicit rulesets variables
-    rset_ids = _comp_get_explicit_ruleset_ids(nodename)
+    rset_ids, rset_ids_via_modset = _comp_get_explicit_ruleset_ids(nodename)
     for rset_id in rset_ids:
         ruleset.update(comp_ruleset_vars(rset_id,
                                          matching_fsets=matching_fsets,
                                          rset_relations=rset_relations,
                                          rset_names=rset_names))
+    for rset_id in rset_ids_via_modset:
+        ruleset.update(comp_ruleset_vars(rset_id,
+                                         matching_fsets=matching_fsets,
+                                         rset_relations=rset_relations,
+                                         rset_names=rset_names,
+                                         via_moduleset=True))
 
     ruleset = _comp_remove_dup_vars(ruleset)
 
