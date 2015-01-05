@@ -1280,3 +1280,19 @@ function d_init(data) {
   $(window).bind('resize', resizer)
   $(window).load(resizer)
 }
+
+function comp_import() {
+  $.ajax({
+    async: false,
+    type: "POST",
+    url: designer.url_action,
+    data: {
+     "operation": "import",
+     "value": $("#import_text").val(),
+    },
+    success: function(msg){
+      $("#import").html(msg)
+    }
+  });
+}
+
