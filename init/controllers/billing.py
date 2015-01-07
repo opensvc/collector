@@ -207,9 +207,10 @@ def billing_data():
 
 
     # nodes with opensvc and no services
-    q = db.packages.id > 0
-    rows = db(q).select(db.packages.pkg_nodename, groupby=db.packages.pkg_nodename)
-    data['agents_with_agent'] = [r.pkg_nodename for r in rows]
+    q = db.nodes.version != None
+    q &= db.nodes.updated > datetime.datetime.now()-datetime.timedelta(days=7)
+    rows = db(q).select(db.nodes.nodename)
+    data['agents_with_agent'] = [r.nodename for r in rows]
     data['agents_without_svc'] = set(data['agents_with_agent']) - set(data['agents_with_svc'])
 
     #
