@@ -419,6 +419,16 @@ def filterset_query(row, nodes, services, i=0, nodename=None, svcname=None):
         rows = db(_qry).select(db.nodes.nodename,
                                cacheable=True)
         n_nodes = set(map(lambda x: x.nodename, rows)) - set([None])
+    elif v.f_table == 'v_comp_moduleset_attachments':
+        if svcname is not None:
+            qry &= db.v_comp_moduleset_attachments.svcname == svcname
+        if nodename is not None:
+            qry &= db.v_comp_moduleset_attachments.nodename == nodename
+        rows = db(qry).select(db.v_comp_moduleset_attachments.nodename,
+                              db.v_comp_moduleset_attachments.svcname,
+                              cacheable=True)
+        n_nodes = set(map(lambda x: x.nodename, rows)) - set([None])
+        n_services = set(map(lambda x: x.svcname, rows)) - set([None])
     else:
         raise Exception(str(v))
 

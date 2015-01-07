@@ -2057,3 +2057,9 @@ db.define_table('sysrep_secure',
     Field('pattern','string'),
     migrate=False)
 
+db.define_table('v_comp_moduleset_attachments',
+    Field('nodename','string'),
+    Field('svcname','string'),
+    Field('modset_name','string'),
+    migrate=False)
+
