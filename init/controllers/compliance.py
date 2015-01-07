@@ -6844,11 +6844,22 @@ def comp_contextual_rulesets(nodename, svcname=None, slave=False, matching_fsets
     rows = db(q).select(db.comp_rulesets.id, cacheable=True)
     public_rsets = [r.id for r in rows]
 
+    # attached to the node through modulesets
+    if svcname is not None:
+        modset_ids = _comp_get_svc_moduleset_ids_with_children(svcname, slave=slave)
+    elif nodename is not None:
+        modset_ids = _comp_get_moduleset_ids_with_children(nodename)
+    q = db.comp_moduleset_ruleset.modset_id.belongs(modset_ids)
+    q &= db.comp_moduleset_ruleset.ruleset_id == db.comp_rulesets.id
+    q &= db.comp_rulesets.ruleset_type == "contextual"
+    rows = db(q).select(db.comp_moduleset_ruleset.ruleset_id)
+    rset_ids_via_modset = set([r.ruleset_id for r in rows])
+
     for (fset_id, fset_name), rset_ids in fset_ids.items():
         if fset_id not in matching_fsets:
             continue
         for rset_id in rset_ids:
-            if rset_id not in public_rsets:
+            if rset_id not in public_rsets and rset_id not in rset_ids_via_modset:
                 continue
             ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, matching_fsets=matching_fsets, rset_relations=rset_relations, rset_names=rset_names))
     return ruleset
@@ -6933,6 +6944,8 @@ def _comp_get_explicit_svc_ruleset_ids(svcname, slave=False):
     # attached to the node through modulesets
     modset_ids = _comp_get_svc_moduleset_ids_with_children(svcname, slave=slave)
     q = db.comp_moduleset_ruleset.modset_id.belongs(modset_ids)
+    q &= db.comp_moduleset_ruleset.ruleset_id == db.comp_rulesets.id
+    q &= db.comp_rulesets.ruleset_type == "explicit"
     rows = db(q).select(db.comp_moduleset_ruleset.ruleset_id)
     rset_ids_via_modset = list(set([r.ruleset_id for r in rows]) - set(rset_ids))
 
@@ -6949,6 +6962,8 @@ def _comp_get_explicit_ruleset_ids(nodename):
     # attached to the node through modulesets
     modset_ids = _comp_get_moduleset_ids_with_children(nodename)
     q = db.comp_moduleset_ruleset.modset_id.belongs(modset_ids)
+    q &= db.comp_moduleset_ruleset.ruleset_id == db.comp_rulesets.id
+    q &= db.comp_rulesets.ruleset_type == "explicit"
     rows = db(q).select(db.comp_moduleset_ruleset.ruleset_id)
     rset_ids_via_modset = list(set([r.ruleset_id for r in rows]) - set(rset_ids))
 
