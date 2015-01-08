@@ -10807,12 +10807,13 @@ def _export_modulesets(modset_ids):
 def _export_rulesets(rset_ids):
     rset_names =  get_rset_names()
     rset_tree_nodes = get_rset_tree_nodes(rset_ids)
+    rset_relations = _get_rset_relations()
     rset_ids_with_children = set(rset_ids)
     for _rset_ids in rset_tree_nodes.values():
         rset_ids_with_children |= set(_rset_ids)
 
     rset_relations_s = {}
-    for rset_id, child_rset_ids in rset_tree_nodes.items():
+    for rset_id, child_rset_ids in rset_relations.items():
         rset_relations_s[rset_names[rset_id]] = map(lambda x: rset_names[x], child_rset_ids)
 
     # ruleset vars
