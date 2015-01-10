@@ -143,5 +143,5 @@ class sysreport(object):
 
 if __name__ == "__main__":
     o = sysreport()
-    #print(o.timeline("foo"))
-    print(o.show_data("f8788ec7c6db19e515c2fa9893e2b7035ea68f50"))
+    print(o.timeline("clementine"))
+    #print(o.show_data("f8788ec7c6db19e515c2fa9893e2b7035ea68f50"))
