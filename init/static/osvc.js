@@ -98,7 +98,7 @@ function bind_tabs(id, callbacks, active_id) {
   $("#"+id).find('[id^=litab]').click(function () {
     var _id = $(this).attr('id')
     var did = _id.slice(2, _id.length)
-    $("#"+id).find('[id^=tab]').hide()
+    $("#"+id).find('div[id^=tab]').hide()
     $(this).siblings('[id^=litab]').removeClass('tab_active')
     $("#"+id).find('#'+did).show()
     $(this).show().addClass('tab_active')
@@ -134,6 +134,7 @@ function bind_search_tool() {
       $(".right_click_menu").hide()
       $(".extraline").remove()
       $(".menu").hide("fold")
+      $(".menu").find("[id^=sextra]").remove()
       return
     }
     if ($('input').is(":focus")) {
@@ -216,9 +217,36 @@ function _show_result(e, url, id){
                 $('#'+id).hide()
             } else {
                 $('#'+id).show()
-                //$('#'+id).css("left", $('body').width())
-                //keep_inside($('#'+id))
-                //register_pop_up(e, document.getElementById(id))
+                $('#'+id).find(".meta_nodename").click(function() {
+                  var nodename = $(this).text()
+                  var _id = "sextra_"+nodename.replace(/[\.-]/, '_')
+                  var d = "<div id='"+_id+"' class='searchtab hidden'></div>"
+                  $(this).parents('table').first().find("[name=extra]").html(d)
+                  var _url = $(location).attr("origin") + "/init/ajax_node/ajax_node?node="+nodename+"&rowid="+_id
+                  $("#"+_id).show()
+                  sync_ajax(_url, [], _id, function(){})
+                })
+                $('#'+id).find(".meta_svcname").click(function() {
+                  var nodename = $(this).text()
+                  var _id = "sextra_"+nodename.replace(/[\.-]/, '_')
+                  var d = "<div id='"+_id+"' class='searchtab hidden'></div>"
+                  $(this).parents('table').first().find("[name=extra]").html(d)
+                  var _url = $(location).attr("origin") + "/init/default/ajax_service?node="+nodename+"&rowid="+_id
+                  $("#"+_id).show()
+                  sync_ajax(_url, [], _id, function(){})
+                })
+                $('#'+id).find(".meta_username").click(function() {
+                  var username = $(this).text()
+                  var _id = "sextra_"+username.replace(/[ \.-]/, '_')
+                  var d = "<div id='"+_id+"' class='searchtab hidden'></div>"
+                  $(this).parents('table').first().find("[name=extra]").html(d)
+                  var _url = $(location).attr("origin") + "/init/ajax_user/ajax_user?username="+username+"&rowid="+_id
+                  $("#"+_id).show()
+                  sync_ajax(_url, [], _id, function(){})
+                })
+                if ($('#'+id).find(".meta_nodename,.meta_svcname,.meta_username").length == 1) {
+                  $('#'+id).find(".meta_nodename,.meta_svcname,.meta_username").trigger("click")
+                }
             }
         })
     }, 800)
