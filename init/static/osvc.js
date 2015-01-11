@@ -219,7 +219,7 @@ function _show_result(e, url, id){
                 $('#'+id).show()
                 $('#'+id).find(".meta_nodename").click(function() {
                   var nodename = $(this).text()
-                  var _id = "sextra_"+nodename.replace(/[\.-]/, '_')
+                  var _id = "sextra_"+nodename.replace(/[\.-]/g, '_')
                   var d = "<div id='"+_id+"' class='searchtab hidden'></div>"
                   $(this).parents('table').first().find("[name=extra]").html(d)
                   var _url = $(location).attr("origin") + "/init/ajax_node/ajax_node?node="+nodename+"&rowid="+_id
@@ -228,7 +228,7 @@ function _show_result(e, url, id){
                 })
                 $('#'+id).find(".meta_svcname").click(function() {
                   var nodename = $(this).text()
-                  var _id = "sextra_"+nodename.replace(/[\.-]/, '_')
+                  var _id = "sextra_"+nodename.replace(/[\.-]/g, '_')
                   var d = "<div id='"+_id+"' class='searchtab hidden'></div>"
                   $(this).parents('table').first().find("[name=extra]").html(d)
                   var _url = $(location).attr("origin") + "/init/default/ajax_service?node="+nodename+"&rowid="+_id
@@ -237,7 +237,7 @@ function _show_result(e, url, id){
                 })
                 $('#'+id).find(".meta_username").click(function() {
                   var username = $(this).text()
-                  var _id = "sextra_"+username.replace(/[ \.-]/, '_')
+                  var _id = "sextra_"+username.replace(/[ \.-]/g, '_')
                   var d = "<div id='"+_id+"' class='searchtab hidden'></div>"
                   $(this).parents('table').first().find("[name=extra]").html(d)
                   var _url = $(location).attr("origin") + "/init/ajax_user/ajax_user?username="+username+"&rowid="+_id
