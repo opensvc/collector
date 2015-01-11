@@ -1,6 +1,7 @@
 import os
 from subprocess import *
 import copy
+import uuid
 
 class sysreport(object):
     def __init__(self):
@@ -9,17 +10,28 @@ class sysreport(object):
         self.git_d = os.path.join(self.collect_d, ".git")
         self.cwd = os.getcwd()
 
-    def timeline(self, nodename=None):
+    def timeline(self, nodes=[]):
+        data = []
+        for node in nodes:
+            data += self._timeline(node)
+        return data
+
+    def _timeline(self, nodename):
         s = self.log(nodename)
-        data = self.parse_log(s, nodename)
-        if nodename is not None and len(data) > 1:
+        data = self.parse_log(s)
+        if len(data) > 1:
             # do not to display the node sysreport initial commit
             data = data[:-1]
         return data
 
-    def parse_log(self, s, nodename=None):
+    def parse_log(self, s):
         data = []
-        d0 = {'id': '', 'start': '', 'stat': ''}
+        d0 = {
+         'id': '',
+         'cid': '',
+         'start': '',
+         'stat': ''
+        }
         d = copy.copy(d0)
 
         for line in s.split('\n'):
@@ -27,13 +39,14 @@ class sysreport(object):
                 if d['start'] != '':
                     data.append(d)
                     d = copy.copy(d0)
-                d['id'] = line.split()[1]
+                d['cid'] = line.split()[1]
+                d['id'] = uuid.uuid1().hex
             elif line.startswith("Author:"):
                 pass
             elif line.startswith("Date:"):
                 l = line.split()
                 d['start'] = "T".join(l[1:3])
-            elif d['id'] != '' and d['start'] != '':
+            elif d['cid'] != '' and d['start'] != '':
                 d['stat'] += line+'\n'
         if d['start'] != '':
             data.append(d)
@@ -49,24 +62,24 @@ class sysreport(object):
                 fpath = line.split(" | ")[0].strip()
                 changed.add(fpath)
             data[i]['stat'] = sorted(changed)
+            data[i]['group'] = fpath.split('/')[0]
         return data
 
     def log(self, nodename=None):
         os.environ["COLUMNS"] = "500"
         cmd = ["git", "--git-dir="+self.git_d, "log", "-n", "300", "--stat", "--stat-name-width=500", "--date=iso"]
         if nodename is not None:
-            cmd.append("--")
-            cmd.append(nodename)
+            cmd += ['--', nodename]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
         return out
 
-    def show_data(self, cid):
-        s = self.show(cid)
+    def show_data(self, cid, nodename):
+        s = self.show(cid, nodename)
         return self.parse_show(s)
 
-    def show(self, cid):
-        cmd = ["git", "--git-dir="+self.git_d, "show", '--pretty=format:%ci%n%b', cid]
+    def show(self, cid, nodename):
+        cmd = ["git", "--git-dir="+self.git_d, "show", '--pretty=format:%ci%n%b', cid, '--', nodename]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
         return out
@@ -129,13 +142,13 @@ class sysreport(object):
         s = self.lstree(cid, nodename)
         return self.parse_lstree(cid, s)
 
-    def show_file(self, fpath, cid, uuid):
+    def show_file(self, fpath, cid, _uuid):
         cmd = ["git", "--git-dir="+self.git_d, "ls-tree", cid, fpath]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
         validated_fpath = out[out.index(" ")+1:]
 
-        cmd = ["git", "--git-dir="+self.git_d, "show", uuid]
+        cmd = ["git", "--git-dir="+self.git_d, "show", _uuid]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
         return {'fpath': validated_fpath, 'content': out}
@@ -143,5 +156,5 @@ class sysreport(object):
 
 if __name__ == "__main__":
     o = sysreport()
-    print(o.timeline("clementine"))
-    #print(o.show_data("f8788ec7c6db19e515c2fa9893e2b7035ea68f50"))
+    #print(o.timeline(["clementine", "foo"]))
+    print(o.show_data("50fa58c0d7bda6afcb27aaab3b3efa79390c067a", "foo"))

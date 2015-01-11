@@ -65,7 +65,7 @@ def is_sysresponsible(nodenames):
 
     return False
 
-def show_diff_data(diff_data, sysresponsible, sec_pattern, nodename=None):
+def show_diff_data(diff_data, sysresponsible, sec_pattern):
     l = []
     for k in sorted(diff_data['blocks'].keys()):
         diff_data['blocks'][k] = diff_data['blocks'][k].replace(" @@ ", " @@\n ")
@@ -85,16 +85,17 @@ def show_diff_data(diff_data, sysresponsible, sec_pattern, nodename=None):
 
 @auth.requires_login()
 def ajax_sysreport_commit():
-    cid = request.vars.id
+    cid = request.vars.cid
     nodename = request.vars.nodename
     sysresponsible = is_sysresponsible(nodename)
+    l = []
 
     # load secure patterns
     sec_pattern = get_pattern_secure()
 
     # diff data
-    diff_data = sysreport.sysreport().show_data(cid)
-    l = show_diff_data(diff_data, sysresponsible, sec_pattern)
+    diff_data = sysreport.sysreport().show_data(cid, nodename)
+    l += show_diff_data(diff_data, sysresponsible, sec_pattern)
 
     # file tree data
     tree_data = sysreport.sysreport().lstree_data(cid, nodename)
@@ -119,7 +120,7 @@ def ajax_sysreport_commit():
         t.append(H2(beautify_fpath(d['fpath']), **attrs))
 
     return DIV(
-      H1(T("Differences")),
+      H1(T("Node %(nodename)s changes", dict(nodename=nodename))),
       H3(diff_data['date']),
       DIV(l, _name="diff"),
       H1(T("Files")),
@@ -145,10 +146,19 @@ def ajax_sysreport_show_file():
     return data['content']
 
 @auth.requires_login()
+def ajax_sysrep():
+    nodes = request.vars.nodes.split(",")
+    return _sysreport(nodes)
+
+@auth.requires_login()
 def ajax_sysreport():
-    nodename = request.args[0]
-    tid = 'sysreport_'+nodename.replace('.','_')
-    data = sysreport.sysreport().timeline(nodename)
+    nodes = request.args[0].split(",")
+    return _sysreport(nodes)
+
+def _sysreport(nodes):
+    import uuid
+    tid = uuid.uuid1().hex
+    data = sysreport.sysreport().timeline(nodes)
     if len(data) == 0:
         return DIV(T("No sysreport available for this node"))
 
@@ -168,7 +178,7 @@ def ajax_sysreport():
         _id=tid+"_show",
       ),
       SCRIPT(_src=URL(c="static", f="sysreport.js")),
-      SCRIPT("""sysreport_timeline("%s", "%s", %s)"""% (tid, nodename, str(data))),
+      SCRIPT("""sysreport_timeline("%s", %s)"""% (tid, str(data))),
     )
 
 @auth.requires_login()

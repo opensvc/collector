@@ -1,4 +1,4 @@
-function sysreport_timeline(id, nodename, data){
+function sysreport_timeline(id, data){
   var options = {
     template: function (item) {
       return '<pre style="text-align:left">' + item.stat + '</pre>';
@@ -6,17 +6,39 @@ function sysreport_timeline(id, nodename, data){
     clickToUse: true
   };
   var container = document.getElementById(id);
-  var timeline = new vis.Timeline(container, data, options);
+  var groups = []
+  var groupids = []
+  for (i=0; i<data.length; i++) {
+    if (groupids.indexOf(data[i]['group']) >= 0) {
+       continue
+    }
+    groupids.push(data[i]['group'])
+    groups.push({
+      'id': data[i]['group']
+    })
+  }
+  if (groupids.length == 1) {
+     groups = null
+  }
+  var timeline = new vis.Timeline(container, data, groups, options);
   timeline.on('select', function (properties) {
     var url = $(location).attr("origin") + "/init/ajax_sysreport/ajax_sysreport_commit"
-    data = {
-     'id': properties.items[0],
-     'nodename': nodename
+    var item_id = properties.items[0]
+    var item = null;
+    for (i=0; i<data.length; i++) {
+      if (data[i]['id'] == item_id) {
+        item = data[i]
+        break
+      }
+    }
+    _data = {
+     'cid': item.cid,
+     'nodename': item.group
     }
     $.ajax({
          type: "POST",
          url: url,
-         data: data,
+         data: _data,
          success: function(msg){
            $("#"+id+"_show").html(msg)
            $("#"+id+"_show").find("pre code").each(function(i, block){

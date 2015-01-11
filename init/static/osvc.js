@@ -2011,6 +2011,21 @@ function trigger_tool_nodesysrepdiff(tid) {
   sync_ajax('/init/ajax_sysreport/ajax_sysrepdiff?nodes='+nodes.join(","), [], 'overlay', function(){})
 }
 
+function trigger_tool_nodesysrep(tid) {
+  var t = osvc.tables[tid]
+  var data = table_action_menu_get_nodes_data(t)
+  if (data.length==0) {
+    return ""
+  }
+  var nodes = new Array()
+  for (i=0;i<data.length;i++) {
+    nodes.push(data[i]['nodename'])
+  }
+  sync_ajax('/init/ajax_sysreport/ajax_sysrep?nodes='+nodes.join(","), [], 'overlay', function(){
+    $("#overlay").width($("#overlay").css("max-width"))
+  })
+}
+
 function trigger_tool_svcdiff(tid) {
   var t = osvc.tables[tid]
   var data = table_action_menu_get_svcs_data(t)
@@ -2071,6 +2086,13 @@ function tool_nodesysrepdiff(t, data) {
   return "<div class='clickable common16' onclick='trigger_tool_nodesysrepdiff(\""+t.id+"\")'>"+T("Nodes sysreport differences")+"</div>"
 }
 
+function tool_nodesysrep(t, data) {
+  if (data.length==0) {
+    return ""
+  }
+  return "<div class='clickable log16' onclick='trigger_tool_nodesysrep(\""+t.id+"\")'>"+T("Nodes sysreport")+"</div>"
+}
+
 function tool_grpprf(t, data) {
   if (data.length==0) {
     return ""
@@ -2096,6 +2118,7 @@ function table_tools_menu_nodes(t){
   var data = table_action_menu_get_nodes_data(t)
   var s = ""
   s += tool_nodediff(t, data)
+  s += tool_nodesysrep(t, data)
   s += tool_nodesysrepdiff(t, data)
   s += tool_nodesantopo(t, data)
   s += tool_grpprf(t, data)
