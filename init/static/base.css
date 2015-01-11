@@ -596,7 +596,7 @@ div.error {
   margin-right: 1em;
   color: white;
 }
-.menu_section > div > span > table {
+.menu_section > span > table {
   width: 100%;
 }
 .menu_selected {
@@ -2465,7 +2465,7 @@ a.jqplot-image-container-close {
 
 .searchtab {
   width: 96%;
-  box-shadow: 0px 0px 20px 2px;
+  box-shadow: 0px 0px 20px #555;
   border-radius: 4px;
   -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
