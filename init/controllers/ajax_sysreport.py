@@ -120,8 +120,9 @@ def ajax_sysreport_commit():
         t.append(H2(beautify_fpath(d['fpath']), **attrs))
 
     return DIV(
-      H1(T("Node %(nodename)s changes", dict(nodename=nodename))),
-      H3(diff_data['date']),
+      SPAN(request.vars.nodename, _name="nodename", _class="hidden"),
+      SPAN(request.vars.cid, _name="cid", _class="hidden"),
+      H1(T("Node %(nodename)s changes on %(date)s", dict(nodename=nodename, date=diff_data['date']))),
       DIV(l, _name="diff"),
       H1(T("Files")),
       H3(diff_data['date']),
@@ -145,6 +146,14 @@ def ajax_sysreport_show_file():
         data['content'] = T("You are not allowed to view this file content")
     return data['content']
 
+
+def sysrep():
+    d = DIV(
+      ajax_sysrep(),
+      _style="padding:1em;text-align:left",
+    )
+    return dict(table=d)
+
 @auth.requires_login()
 def ajax_sysrep():
     nodes = request.vars.nodes.split(",")
@@ -162,6 +171,11 @@ def _sysreport(nodes):
     if len(data) == 0:
         return DIV(T("No sysreport available for this node"))
 
+    if len(data) == 1:
+        title = T("Node %(nodename)s changes timeline", dict(nodename=nodes[0]))
+    else:
+        title = T("Nodes %(nodename)s changes timeline", dict(nodename=', '.join(nodes)))
+
     # beautify fpaths
     for i, d in enumerate(data):
         buff = ""
@@ -169,12 +183,43 @@ def _sysreport(nodes):
             buff += beautify_fpath(fpath) + '\n'
         data[i]['stat'] = buff
 
+    link = DIV(
+      DIV(
+        _class="hidden",
+      ),
+      _onclick="""
+        url = $(location).attr("origin")
+        url += "/init/ajax_sysreport/sysrep?nodes="
+        url += $(this).parent().parent().find("[name=nodes]").text()
+
+        cid = $(this).parent().parent().find("[name=cid]").text()
+        nodename = $(this).parent().parent().find("[name=nodename]").text()
+        if (cid != "") {
+          url += "&cid="+cid
+          url += "&nodename="+nodename
+        }
+
+        $(this).children().html(url)
+        $(this).children().show()
+      """,
+      _style="float:right",
+      _class="link16 clickable",
+    )
+
+    if request.vars.cid is not None:
+        show_data = ajax_sysreport_commit()
+    else:
+        show_data = ""
+
     return DIV(
-      H1(T("Changes")),
+      link,
+      SPAN(','.join(nodes), _name="nodes", _class="hidden"),
+      H1(title),
       DIV(
         _id=tid,
       ),
       DIV(
+        show_data,
         _id=tid+"_show",
       ),
       SCRIPT(_src=URL(c="static", f="sysreport.js")),
@@ -195,15 +240,34 @@ def ajax_sysrepdiff():
     for node in nodes[1:]:
         l.append(H1(' > '.join((nodes[0],node))))
         try:
-            data = sysrepdiff(nodes)
+            data = _sysrepdiff(nodes)
         except Exception as e:
             import traceback
             data = PRE(traceback.format_exc())
         l.append(data)
 
-    return SPAN(l)
+    link = DIV(
+      DIV(
+        _class="hidden",
+      ),
+      _onclick="""
+        url = $(location).attr("origin")
+        url += "/init/ajax_sysreport/sysrepdiff?nodes="
+        url += $(this).parent().parent().find("[name=nodes]").text()
+        $(this).children().html(url)
+        $(this).children().show()
+      """,
+      _style="float:right",
+      _class="link16 clickable",
+    )
 
-def sysrepdiff(nodes):
+    return DIV(
+      link,
+      SPAN(','.join(nodes), _class='hidden', _name='nodes'),
+      SPAN(l),
+    )
+
+def _sysrepdiff(nodes):
     import os
     import subprocess
 
@@ -231,9 +295,14 @@ def sysrepdiff(nodes):
     sec_pattern = get_pattern_secure()
 
     diff_data = sysreport.sysreport().parse_show(out)
-    l = show_diff_data(diff_data, sysresponsible, sec_pattern, nodes)
+    l = show_diff_data(diff_data, sysresponsible, sec_pattern)
 
     os.chdir(cwd)
     return SPAN(l)
 
-
+def sysrepdiff():
+    d = DIV(
+      ajax_sysrepdiff(),
+      _style="padding:1em;text-align:left",
+    )
+    return dict(table=d)
