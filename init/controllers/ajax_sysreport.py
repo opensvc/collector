@@ -15,7 +15,7 @@ def get_pattern_secure():
             sec_pattern = re.compile(".*")
     return sec_pattern
 
-def beautify_fpath(fpath, nodename=None):
+def beautify_fpath(fpath):
     if "/cmd/" in fpath:
         fpath = fpath.replace('(space)', ' ')
         fpath = fpath.replace('(pipe)', '|')
@@ -35,12 +35,19 @@ def beautify_fpath(fpath, nodename=None):
         fpath = fpath.replace('(pct)', '%')
         fpath = fpath.replace('(dquote)', '"')
         fpath = fpath.replace('(squote)', "'")
-    if nodename is not None:
-        fpath = fpath.replace(nodename+"/file", "")
-        fpath = fpath.replace(nodename+"/cmd/", "")
+
+    l = fpath.split('/')
+    del(l[1])
+    fpath = '/'.join(['']+l[1:])
+
+    if '\t' in fpath:
+        l = fpath.split('\t')
+        fpath = '\t'.join(l[:-1])
+
     if fpath.startswith("b//"):
         fpath = fpath[2:]
-    return fpath
+
+    return fpath.replace('//', '/')
 
 def is_sysresponsible(nodenames):
     # managers are allowed
@@ -58,17 +65,7 @@ def is_sysresponsible(nodenames):
 
     return False
 
-@auth.requires_login()
-def ajax_sysreport_commit():
-    cid = request.vars.id
-    nodename = request.vars.nodename
-    sysresponsible = is_sysresponsible(nodename)
-
-    # load secure patterns
-    sec_pattern = get_pattern_secure()
-
-    # diff data
-    diff_data = sysreport.sysreport().show_data(cid)
+def show_diff_data(diff_data, sysresponsible, sec_pattern):
     l = []
     for k in sorted(diff_data['blocks'].keys()):
         diff_data['blocks'][k] = diff_data['blocks'][k].replace(" @@ ", " @@\n ")
@@ -82,8 +79,23 @@ def ajax_sysreport_commit():
             cl = ""
             block = PRE(CODE(diff_data['blocks'][k]))
 
-        l.append(H2(beautify_fpath(k, nodename), _class=cl))
+        l.append(H2(beautify_fpath(k), _class=cl))
         l.append(block)
+    return l
+
+@auth.requires_login()
+def ajax_sysreport_commit():
+    cid = request.vars.cid
+    nodename = request.vars.nodename
+    sysresponsible = is_sysresponsible(nodename)
+    l = []
+
+    # load secure patterns
+    sec_pattern = get_pattern_secure()
+
+    # diff data
+    diff_data = sysreport.sysreport().show_data(cid, nodename)
+    l += show_diff_data(diff_data, sysresponsible, sec_pattern)
 
     # file tree data
     tree_data = sysreport.sysreport().lstree_data(cid, nodename)
@@ -105,11 +117,12 @@ def ajax_sysreport_commit():
           '_ftype': d["type"],
           '_fpath': d["fpath"],
         }
-        t.append(H2(beautify_fpath(d['fpath'], nodename), **attrs))
+        t.append(H2(beautify_fpath(d['fpath']), **attrs))
 
     return DIV(
-      H1(T("Differences")),
-      H3(diff_data['date']),
+      SPAN(request.vars.nodename, _name="nodename", _class="hidden"),
+      SPAN(request.vars.cid, _name="cid", _class="hidden"),
+      H1(T("Node %(nodename)s changes on %(date)s", dict(nodename=nodename, date=diff_data['date']))),
       DIV(l, _name="diff"),
       H1(T("Files")),
       H3(diff_data['date']),
@@ -133,30 +146,163 @@ def ajax_sysreport_show_file():
         data['content'] = T("You are not allowed to view this file content")
     return data['content']
 
+
+def sysrep():
+    d = DIV(
+      ajax_sysrep(),
+      _style="padding:1em;text-align:left",
+    )
+    return dict(table=d)
+
+@auth.requires_login()
+def ajax_sysrep():
+    nodes = request.vars.nodes.split(",")
+    return _sysreport(nodes)
+
 @auth.requires_login()
 def ajax_sysreport():
-    nodename = request.args[0]
-    tid = 'sysreport_'+nodename.replace('.','_')
-    data = sysreport.sysreport().timeline(nodename)
+    nodes = request.args[0].split(",")
+    return _sysreport(nodes)
+
+def _sysreport(nodes):
+    import uuid
+    tid = uuid.uuid1().hex
+    data = sysreport.sysreport().timeline(nodes)
     if len(data) == 0:
         return DIV(T("No sysreport available for this node"))
+
+    if len(data) == 1:
+        title = T("Node %(nodename)s changes timeline", dict(nodename=nodes[0]))
+    else:
+        title = T("Nodes %(nodename)s changes timeline", dict(nodename=', '.join(nodes)))
 
     # beautify fpaths
     for i, d in enumerate(data):
         buff = ""
         for fpath in d['stat']:
-            buff += beautify_fpath(fpath, nodename) + '\n'
+            buff += beautify_fpath(fpath) + '\n'
         data[i]['stat'] = buff
 
+    link = DIV(
+      DIV(
+        _class="hidden",
+      ),
+      _onclick="""
+        url = $(location).attr("origin")
+        url += "/init/ajax_sysreport/sysrep?nodes="
+        url += $(this).parent().parent().find("[name=nodes]").text()
+
+        cid = $(this).parent().parent().find("[name=cid]").text()
+        nodename = $(this).parent().parent().find("[name=nodename]").text()
+        if (cid != "") {
+          url += "&cid="+cid
+          url += "&nodename="+nodename
+        }
+
+        $(this).children().html(url)
+        $(this).children().show()
+      """,
+      _style="float:right",
+      _class="link16 clickable",
+    )
+
+    if request.vars.cid is not None:
+        show_data = ajax_sysreport_commit()
+    else:
+        show_data = ""
+
     return DIV(
-      H1(T("Changes")),
+      link,
+      SPAN(','.join(nodes), _name="nodes", _class="hidden"),
+      H1(title),
       DIV(
         _id=tid,
       ),
       DIV(
+        show_data,
         _id=tid+"_show",
       ),
       SCRIPT(_src=URL(c="static", f="sysreport.js")),
-      SCRIPT("""sysreport_timeline("%s", "%s", %s)"""% (tid, nodename, str(data))),
+      SCRIPT("""sysreport_timeline("%s", %s)"""% (tid, str(data))),
     )
 
+@auth.requires_login()
+def ajax_sysrepdiff():
+    nodes = request.vars.nodes
+    if nodes is None:
+        return "No data"
+    nodes = set(nodes.split(','))
+    nodes -= set([""])
+    nodes = sorted(list(nodes))
+
+    l = []
+
+    for node in nodes[1:]:
+        l.append(H1(' > '.join((nodes[0],node))))
+        try:
+            data = _sysrepdiff(nodes)
+        except Exception as e:
+            import traceback
+            data = PRE(traceback.format_exc())
+        l.append(data)
+
+    link = DIV(
+      DIV(
+        _class="hidden",
+      ),
+      _onclick="""
+        url = $(location).attr("origin")
+        url += "/init/ajax_sysreport/sysrepdiff?nodes="
+        url += $(this).parent().parent().find("[name=nodes]").text()
+        $(this).children().html(url)
+        $(this).children().show()
+      """,
+      _style="float:right",
+      _class="link16 clickable",
+    )
+
+    return DIV(
+      link,
+      SPAN(','.join(nodes), _class='hidden', _name='nodes'),
+      SPAN(l),
+    )
+
+def _sysrepdiff(nodes):
+    import os
+    import subprocess
+
+    here_d = os.path.dirname(__file__)
+    sysrep_d = os.path.join(here_d, '..', 'uploads', 'sysreport')
+    cwd = os.getcwd()
+    try:
+        os.chdir(sysrep_d)
+    except:
+        return "path %s does not exist on the collector" % sysrep_d
+    if not os.path.exists(nodes[0]):
+        os.chdir(cwd)
+        return "node %s has no sysreport"%nodes[0]
+    if not os.path.exists(nodes[1]):
+        os.chdir(cwd)
+        return "node %s has no sysreport"%nodes[1]
+
+    cmd = ["diff", "-urN", nodes[0], nodes[1]]
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=None)
+    out, err = p.communicate()
+
+    sysresponsible = is_sysresponsible(nodes[0]) & is_sysresponsible(nodes[1])
+
+    # load secure patterns
+    sec_pattern = get_pattern_secure()
+
+    diff_data = sysreport.sysreport().parse_show(out)
+    l = show_diff_data(diff_data, sysresponsible, sec_pattern)
+
+    os.chdir(cwd)
+    return SPAN(l)
+
+def sysrepdiff():
+    d = DIV(
+      ajax_sysrepdiff(),
+      _style="padding:1em;text-align:left",
+    )
+    return dict(table=d)

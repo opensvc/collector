@@ -555,8 +555,8 @@ def segment_edit():
     #    query &= db.networks.team_responsible.belongs(groups)
     rows = db(query).select()
     if len(rows) != 1:
-        response.flash = "network segment %d not found or insufficient privileges"%request.args[0]
-        return dict(form=None)
+        response.flash = "network segment %s not found or insufficient privileges"%str(request.args[0])
+        return dict(form="")
     record = rows[0]
     form = _segment_form(record=record)
     if form.accepts(request.vars):
@@ -580,8 +580,8 @@ def network_edit():
         query &= db.networks.team_responsible.belongs(groups)
     rows = db(query).select()
     if len(rows) != 1:
-        response.flash = "network %d not found or insufficient privileges"%request.vars.network_id
-        return dict(form=None)
+        response.flash = "network %s not found or insufficient privileges"%str(request.vars.network_id)
+        return dict(form="")
     record = rows[0]
     form = _network_form(record)
     if form.accepts(request.vars):

@@ -101,7 +101,7 @@ function bind_tabs(id, callbacks, active_id) {
   $("#"+id).find('[id^=litab]').click(function () {
     var _id = $(this).attr('id')
     var did = _id.slice(2, _id.length)
-    $("#"+id).find('[id^=tab]').hide()
+    $("#"+id).find('div[id^=tab]').hide()
     $(this).siblings('[id^=litab]').removeClass('tab_active')
     $("#"+id).find('#'+did).show()
     $(this).show().addClass('tab_active')
@@ -137,6 +137,7 @@ function bind_search_tool() {
       $(".right_click_menu").hide()
       $(".extraline").remove()
       $(".menu").hide("fold")
+      $(".menu").find("[id^=sextra]").remove()
       return
     }
     if ($('input').is(":focus")) {
@@ -219,9 +220,36 @@ function _show_result(e, url, id){
                 $('#'+id).hide()
             } else {
                 $('#'+id).show()
-                //$('#'+id).css("left", $('body').width())
-                //keep_inside($('#'+id))
-                //register_pop_up(e, document.getElementById(id))
+                $('#'+id).find(".meta_nodename").click(function() {
+                  var nodename = $(this).text()
+                  var _id = "sextra_"+nodename.replace(/[\.-]/g, '_')
+                  var d = "<div id='"+_id+"' class='searchtab hidden'></div>"
+                  $(this).parents('table').first().find("[name=extra]").html(d)
+                  var _url = $(location).attr("origin") + "/init/ajax_node/ajax_node?node="+nodename+"&rowid="+_id
+                  $("#"+_id).show()
+                  sync_ajax(_url, [], _id, function(){})
+                })
+                $('#'+id).find(".meta_svcname").click(function() {
+                  var nodename = $(this).text()
+                  var _id = "sextra_"+nodename.replace(/[\.-]/g, '_')
+                  var d = "<div id='"+_id+"' class='searchtab hidden'></div>"
+                  $(this).parents('table').first().find("[name=extra]").html(d)
+                  var _url = $(location).attr("origin") + "/init/default/ajax_service?node="+nodename+"&rowid="+_id
+                  $("#"+_id).show()
+                  sync_ajax(_url, [], _id, function(){})
+                })
+                $('#'+id).find(".meta_username").click(function() {
+                  var username = $(this).text()
+                  var _id = "sextra_"+username.replace(/[ \.-]/g, '_')
+                  var d = "<div id='"+_id+"' class='searchtab hidden'></div>"
+                  $(this).parents('table').first().find("[name=extra]").html(d)
+                  var _url = $(location).attr("origin") + "/init/ajax_user/ajax_user?username="+username+"&rowid="+_id
+                  $("#"+_id).show()
+                  sync_ajax(_url, [], _id, function(){})
+                })
+                if ($('#'+id).find(".meta_nodename,.meta_svcname,.meta_username").length == 1) {
+                  $('#'+id).find(".meta_nodename,.meta_svcname,.meta_username").trigger("click")
+                }
             }
         })
     }, 800)
@@ -2001,6 +2029,34 @@ function trigger_tool_nodesantopo(tid) {
   sync_ajax('/init/ajax_node/ajax_nodes_stor?nodes='+nodes.join(","), [], 'overlay', function(){})
 }
 
+function trigger_tool_nodesysrepdiff(tid) {
+  var t = osvc.tables[tid]
+  var data = table_action_menu_get_nodes_data(t)
+  if (data.length<2) {
+    return ""
+  }
+  var nodes = new Array()
+  for (i=0;i<data.length;i++) {
+    nodes.push(data[i]['nodename'])
+  }
+  sync_ajax('/init/ajax_sysreport/ajax_sysrepdiff?nodes='+nodes.join(","), [], 'overlay', function(){})
+}
+
+function trigger_tool_nodesysrep(tid) {
+  var t = osvc.tables[tid]
+  var data = table_action_menu_get_nodes_data(t)
+  if (data.length==0) {
+    return ""
+  }
+  var nodes = new Array()
+  for (i=0;i<data.length;i++) {
+    nodes.push(data[i]['nodename'])
+  }
+  sync_ajax('/init/ajax_sysreport/ajax_sysrep?nodes='+nodes.join(","), [], 'overlay', function(){
+    $("#overlay").width($("#overlay").css("max-width"))
+  })
+}
+
 function trigger_tool_svcdiff(tid) {
   var t = osvc.tables[tid]
   var data = table_action_menu_get_svcs_data(t)
@@ -2054,6 +2110,20 @@ function tool_nodesantopo(t, data) {
   return "<div class='clickable hd16' onclick='trigger_tool_nodesantopo(\""+t.id+"\")'>"+T("Nodes SAN topology")+"</div>"
 }
 
+function tool_nodesysrepdiff(t, data) {
+  if (data.length<2) {
+    return ""
+  }
+  return "<div class='clickable common16' onclick='trigger_tool_nodesysrepdiff(\""+t.id+"\")'>"+T("Nodes sysreport differences")+"</div>"
+}
+
+function tool_nodesysrep(t, data) {
+  if (data.length==0) {
+    return ""
+  }
+  return "<div class='clickable log16' onclick='trigger_tool_nodesysrep(\""+t.id+"\")'>"+T("Nodes sysreport")+"</div>"
+}
+
 function tool_grpprf(t, data) {
   if (data.length==0) {
     return ""
@@ -2079,6 +2149,8 @@ function table_tools_menu_nodes(t){
   var data = table_action_menu_get_nodes_data(t)
   var s = ""
   s += tool_nodediff(t, data)
+  s += tool_nodesysrep(t, data)
+  s += tool_nodesysrepdiff(t, data)
   s += tool_nodesantopo(t, data)
   s += tool_grpprf(t, data)
   return s

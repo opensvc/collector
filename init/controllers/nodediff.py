@@ -3,6 +3,7 @@ def ajax_svcdiff():
     svcs = set(request.vars.node.split(','))
     svcs -= set([""])
     l = []
+    l.append(link("/init/nodediff/svc_diff", request.vars.node))
     l.append(H2(T("Service differences")))
     l.append(SPAN(svcdiff(svcs)))
     #l.append(H2(T("Package differences")))
@@ -12,11 +13,28 @@ def ajax_svcdiff():
 
     return SPAN(l)
 
+def link(url, name):
+    link = DIV(
+      DIV(
+        _class="hidden",
+      ),
+      _onclick="""
+        url = $(location).attr("origin")
+        url += "%(url)s?node=%(name)s"
+        $(this).children().html(url)
+        $(this).children().show()
+      """ % dict(url=url, name=name),
+      _style="float:right",
+      _class="link16 clickable",
+    )
+    return link
+
 @auth.requires_login()
 def ajax_nodediff():
     nodes = set(request.vars.node.split(','))
     nodes -= set([""])
     l = []
+    l.append(link("/init/nodediff/node_diff", request.vars.node))
     l.append(H2(T("Asset differences")))
     l.append(SPAN(nodediff(nodes)))
     l.append(H2(T("Package differences")))
@@ -219,4 +237,8 @@ def _ajax_pkgdiff(nodes):
 
     return DIV(fmt_table(rows))
 
+def svc_diff():
+    return dict(table=ajax_svcdiff())
 
+def node_diff():
+    return dict(table=ajax_nodediff())

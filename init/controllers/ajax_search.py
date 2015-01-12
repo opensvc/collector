@@ -41,7 +41,7 @@ def format_disk(pattern):
         d = TABLE(
               TR(
                 TD(
-                  IMG(_src=URL(r=request, c='static', f='disk48.png')),
+                  _class="s_disk48",
                 ),
                 TD(
                   P(
@@ -86,7 +86,7 @@ def format_app(pattern):
         d = TABLE(
               TR(
                 TD(
-                  IMG(_src=URL(r=request, c='static', f='svc48.png')),
+                  _class="s_svc48",
                 ),
                 TD(
                   P(
@@ -143,10 +143,13 @@ def format_svc(pattern):
         return ''
 
     def format_row(row, _class=""):
+        if _class == "":
+            _class="meta_svcname clickable"
+
         d = TABLE(
               TR(
                 TD(
-                  IMG(_src=URL(r=request, c='static', f='svc48.png')),
+                  _class="s_svc48",
                 ),
                 TD(
                   P(
@@ -183,6 +186,12 @@ def format_svc(pattern):
                   ),
                 ),
               ),
+              TR(
+                TD(
+                  _name="extra",
+                  _colspan=2,
+                ),
+              ),
             )
         return d
     l = []
@@ -209,10 +218,12 @@ def format_vm(pattern):
         return ''
 
     def format_row(row, _class=""):
+        if _class == "":
+            _class="meta_nodename clickable"
         d = TABLE(
               TR(
                 TD(
-                  IMG(_src=URL(r=request, c='static', f='svc48.png')),
+                  _class="s_svc48",
                 ),
                 TD(
                   P(
@@ -233,6 +244,12 @@ def format_vm(pattern):
                                     'clear_filters': 'true'}),
                     _class="avail16",
                   ),
+                ),
+              ),
+              TR(
+                TD(
+                  _name="extra",
+                  _colspan=2,
                 ),
               ),
             )
@@ -261,10 +278,13 @@ def format_node(pattern):
         return ''
 
     def format_row(row, _class=""):
+        if _class == "":
+            _class="meta_nodename clickable"
+
         d = TABLE(
               TR(
                 TD(
-                  IMG(_src=URL(r=request, c='static', f='node48.png')),
+                  _class="s_node48",
                 ),
                 TD(
                   P(row['nodename'].lower(), _class=_class),
@@ -312,6 +332,12 @@ def format_node(pattern):
                   ),
                 ),
               ),
+              TR(
+                TD(
+                  _name="extra",
+                  _colspan=2,
+                ),
+              ),
             )
         return d
     l = []
@@ -336,10 +362,13 @@ def format_user(pattern):
         return ''
 
     def format_row(row, _class=""):
+        if _class == "":
+            _class="meta_username clickable"
+
         d = TABLE(
               TR(
                 TD(
-                  IMG(_src=URL(r=request, c='static', f='guy48.png')),
+                  _class="s_guy48",
                 ),
                 TD(
                   P(row['fullname'], _class=_class),
@@ -347,20 +376,29 @@ def format_user(pattern):
                     T('user'),
                     _href=URL(r=request, c='users', f='users',
                               vars={'users_f_fullname': row['fullname'],
-                                    'clear_filters': 'true'})
+                                    'clear_filters': 'true'}),
+                    _class="guy16",
                   ),
                   A(
                     T('logs'),
                     _href=URL(r=request, c='log', f='log',
                               vars={'log_f_log_user': row['fullname'],
-                                    'clear_filters': 'true'})
+                                    'clear_filters': 'true'}),
+                    _class="log16",
                   ),
                   A(
                     T('apps'),
                     _href=URL(r=request, c='apps', f='apps',
                               vars={'apps_f_responsibles': '%'+row['fullname']+'%',
-                                    'clear_filters': 'true'})
+                                    'clear_filters': 'true'}),
+                    _class="svc",
                   ),
+                ),
+              ),
+              TR(
+                TD(
+                  _name="extra",
+                  _colspan=2,
                 ),
               ),
             )
