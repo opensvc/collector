@@ -24,13 +24,16 @@ function action_queue_stats(data) {
     if (typeof data !== 'undefined') {
       _action_queue_stats(data)
       return
-    }
+    }
     url = $(location).attr("origin") + "/init/action_queue/call/json/json_action_queue_stats"
     $.getJSON(url, function(data){_action_queue_stats(data)})
 }
 
 function _action_queue_stats(data) {
     var s = ''
+    if (!("queued" in data)) {
+      return
+    }
     if (data["queued"] > 0) {
       s += "<span class='boxed_small bgorange'>"+data["queued"]+'</span>'
     }
