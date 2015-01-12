@@ -59,7 +59,7 @@ class sysreport(object):
                     continue
                 if " | " not in line:
                     continue
-                fpath = line.split(" | ")[0].strip()
+                fpath = line.split(" | ")[0].strip().strip('"')
                 changed.add(fpath)
             data[i]['stat'] = sorted(changed)
             data[i]['group'] = fpath.split('/')[0]
@@ -67,7 +67,8 @@ class sysreport(object):
 
     def log(self, nodename=None):
         os.environ["COLUMNS"] = "500"
-        cmd = ["git", "--git-dir="+self.git_d, "log", "-n", "300", "--stat", "--stat-name-width=500", "--date=iso"]
+        cmd = ["git", "--git-dir="+self.git_d, "log", "-n", "300",
+               "--stat=500,500", "--date=iso"]
         if nodename is not None:
             cmd += ['--', nodename]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
@@ -133,7 +134,7 @@ class sysreport(object):
               "mode": l[0],
               "type": l[1],
               "oid": l[2],
-              "fpath": line.split("	")[-1],
+              "fpath": line.split("	")[-1].strip('"'),
             }
             data.append(d)
         return data
@@ -146,7 +147,10 @@ class sysreport(object):
         cmd = ["git", "--git-dir="+self.git_d, "ls-tree", cid, fpath]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
-        validated_fpath = out[out.index(" ")+1:]
+        try:
+            validated_fpath = out[out.index(" ")+1:]
+        except:
+            validated_fpath = fpath
 
         cmd = ["git", "--git-dir="+self.git_d, "show", _uuid]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
@@ -156,5 +160,5 @@ class sysreport(object):
 
 if __name__ == "__main__":
     o = sysreport()
-    #print(o.timeline(["clementine", "foo"]))
-    print(o.show_data("50fa58c0d7bda6afcb27aaab3b3efa79390c067a", "foo"))
+    print(o.timeline(["x64lmwbiegt"]))
+    #print(o.show_data("497f96840deda43460e08cd503ec95d8cc3a2d79", "x64lmwbiegt"))

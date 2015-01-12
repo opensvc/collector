@@ -37,7 +37,8 @@ def beautify_fpath(fpath):
         fpath = fpath.replace('(squote)', "'")
 
     l = fpath.split('/')
-    del(l[1])
+    if len(l) > 2:
+        del(l[1])
     fpath = '/'.join(['']+l[1:])
 
     if '\t' in fpath:
