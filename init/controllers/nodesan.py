@@ -169,7 +169,7 @@ def ajax_nodesan():
     if len(request.args) == 1 and request.args[0] == 'csv':
         t.csv_q = q
         t.csv_orderby = o
-        t.csv()
+        return t.csv()
     if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).select(db.v_nodesan.id.count(), cacheable=True).first()._extra[db.v_nodesan.id.count()]
         limitby = (t.pager_start,t.pager_end)
