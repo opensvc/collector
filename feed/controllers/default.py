@@ -515,7 +515,7 @@ def send_sysreport(fname, binary, deleted, auth):
         os.makedirs(sysreport_d)
 
     need_commit |= send_sysreport_delete(deleted, git_d, sysreport_d, cwd, nodename)
-    need_commit |= send_sysreport_archive(fname, binary, sysreport_d, cwd, nodename)
+    need_commit |= send_sysreport_archive(fname, binary, sysreport_d, nodename)
 
     if not need_commit:
         return
@@ -551,11 +551,12 @@ def send_sysreport_delete(deleted, git_d, sysreport_d, cwd, nodename):
     os.chdir(cwd)
     return True
 
-def send_sysreport_archive(fname, binary, sysreport_d, cwd, nodename):
+def send_sysreport_archive(fname, binary, sysreport_d, nodename):
     if fname == "":
         return False
 
     import codecs
+    import stat
 
     fpath = os.path.join(sysreport_d, fname)
 
@@ -566,10 +567,10 @@ def send_sysreport_archive(fname, binary, sysreport_d, cwd, nodename):
     try:
         f = codecs.open(fpath, "wb")
         f.write(binary.data)
-        f.sync()
         f.close()
-    except:
-        pass
+    except Exception as e:
+        print e
+        return False
 
     if fpath.endswith('.tar'):
         import tarfile
@@ -579,10 +580,31 @@ def send_sysreport_archive(fname, binary, sysreport_d, cwd, nodename):
             print e
             os.unlink(fpath)
             return False
-        os.chdir(sysreport_d)
-        tar.extractall()
+        for member in tar.getmembers():
+            """
+            {
+             'uid': 0,
+             'chksum': 7426,
+             'uname': 'root',
+             'gname': 'root',
+             'size': 14178,
+             'devmajor': 0,
+             'name': 'foo/file/proc/cpuinfo',
+             'devminor': 0,
+             'gid': 0,
+             'mtime': 1421159135,
+             'mode': 292,
+             'linkname': '',
+             'type': '0'
+            }
+            """
+            mi = member.get_info("utf-8", "ignore")
+            mp = os.path.join(sysreport_d, mi['name'])
+            if os.path.exists(mp):
+                st = os.stat(mp)
+                os.chmod(mp, st.st_mode | stat.S_IWRITE)
+        tar.extractall(path=sysreport_d)
         tar.close()
-        os.chdir(cwd)
         os.unlink(fpath)
     else:
         return False
