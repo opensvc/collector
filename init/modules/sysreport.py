@@ -66,9 +66,8 @@ class sysreport(object):
         return data
 
     def log(self, nodename=None):
-        os.environ["COLUMNS"] = "500"
         cmd = ["git", "--git-dir="+self.git_d, "log", "-n", "300",
-               "--stat=500,500", "--date=iso"]
+               "--stat=510,500", "--date=iso"]
         if nodename is not None:
             cmd += ['--', nodename]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
@@ -76,14 +75,36 @@ class sysreport(object):
         return out
 
     def show_data(self, cid, nodename):
+        ss = self.show_stat(cid, nodename)
         s = self.show(cid, nodename)
-        return self.parse_show(s)
+        data = self.parse_show(s)
+        data['stat'] = self.parse_show_stat(ss)
+        return data
 
     def show(self, cid, nodename):
         cmd = ["git", "--git-dir="+self.git_d, "show", '--pretty=format:%ci%n%b', cid, '--', nodename]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
         return out
+
+    def show_stat(self, cid, nodename):
+        cmd = ["git", "--git-dir="+self.git_d, "show", '--pretty=format:%ci%n%b', '--numstat', cid, '--', nodename]
+        p = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        out, err = p.communicate()
+        return out
+
+    def parse_show_stat(self, s):
+        lines = s.split("\n")
+        data = {}
+        for line in lines:
+            try:
+                insertions, deletions, fpath = line.split("\t")
+                insertions = int(insertions)
+                deletions = int(deletions)
+            except:
+                continue
+            data[fpath] = (insertions, deletions)
+        return data
 
     def parse_show(self, s):
         lines = s.split("\n")
@@ -160,5 +181,5 @@ class sysreport(object):
 
 if __name__ == "__main__":
     o = sysreport()
-    print(o.timeline(["x64lmwbiegt"]))
-    #print(o.show_data("497f96840deda43460e08cd503ec95d8cc3a2d79", "x64lmwbiegt"))
+    #print(o.timeline(["x64lmwbiegt"]))
+    print(o.show_data("a6caacfa38a076c1a367c03bacef9f8d28fd0db7", "s64lmwbicgo"))

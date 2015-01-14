@@ -68,19 +68,47 @@ def is_sysresponsible(nodenames):
 
 def show_diff_data(diff_data, sysresponsible, sec_pattern):
     l = []
+    max_blocks = 5
+    stat_width = 30
+    js = "$(this).next().toggle()"
+    if len(diff_data['blocks']) > max_blocks:
+        block_cl = "hidden"
+    else:
+        block_cl = ""
+
+    if 'stat' in diff_data:
+        max_change = 0
+        for inse, dele in diff_data['stat'].values():
+            tot = inse + dele
+            if tot > max_change: max_change = tot
+
     for k in sorted(diff_data['blocks'].keys()):
         diff_data['blocks'][k] = diff_data['blocks'][k].replace(" @@ ", " @@\n ")
         if sec_pattern.match(k):
             cl = "highlight "
             if sysresponsible:
-                block = PRE(CODE(diff_data['blocks'][k]))
+                block = PRE(CODE(diff_data['blocks'][k]), _class=block_cl)
             else:
-                block = T("You are not allowed to view this change")
+                block = SPAN(T("You are not allowed to view this change"), _class=block_cl)
         else:
             cl = ""
-            block = PRE(CODE(diff_data['blocks'][k]))
+            block = PRE(CODE(diff_data['blocks'][k]), _class=block_cl)
 
-        l.append(H2(beautify_fpath(k), _class=cl))
+        if 'stat' in diff_data and k in diff_data['stat']:
+            inse = diff_data['stat'][k][0]
+            dele = diff_data['stat'][k][1]
+            tot = inse + dele
+            quota = int(stat_width*tot/max_change)
+            if quota == 0:
+                quota = 1
+            elif quota > tot:
+                quota = tot
+            _inse = int(inse*quota/tot)
+            _dele = quota-_inse
+            stat = PRE(tot, " ", "+"*_inse+"-"*_dele)
+        else:
+            stat = ""
+        l.append(H2(beautify_fpath(k), stat, _class=cl, _onclick=js))
         l.append(block)
     return l
 
@@ -123,7 +151,8 @@ def ajax_sysreport_commit():
     return DIV(
       SPAN(request.vars.nodename, _name="nodename", _class="hidden"),
       SPAN(request.vars.cid, _name="cid", _class="hidden"),
-      H1(T("Node %(nodename)s changes on %(date)s", dict(nodename=nodename, date=diff_data['date']))),
+      H1(T("Node %(nodename)s changes", dict(nodename=nodename))),
+      H3(diff_data['date']),
       DIV(l, _name="diff"),
       H1(T("Files")),
       H3(diff_data['date']),
@@ -178,9 +207,14 @@ def _sysreport(nodes):
         title = T("Nodes %(nodename)s changes timeline", dict(nodename=', '.join(nodes)))
 
     # beautify fpaths
+    max_fpath = 5
     for i, d in enumerate(data):
         buff = ""
-        for fpath in d['stat']:
+        n = len(d['stat'])
+        for j, fpath in enumerate(d['stat']):
+            if j > max_fpath:
+                buff += T("... %(n)s more", dict(n=n-max_fpath))
+                break
             buff += beautify_fpath(fpath) + '\n'
         data[i]['stat'] = buff
 
