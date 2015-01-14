@@ -5,7 +5,16 @@ def ajax_search():
     word = request.vars.search
     if word is None or len(word) == 0:
         return ''
-    pattern = '%'+word+'%'
+    chars = "%&|,()"
+    is_filter = False
+    for char in chars:
+        if char in word:
+            is_filter = True
+            break
+    if not is_filter:
+        pattern = '%'+word+'%'
+    else:
+        pattern = word
 
     svc = format_svc(pattern)
     node = format_node(pattern)
@@ -28,7 +37,7 @@ def ajax_search():
 
 def format_disk(pattern):
     o = db.b_disk_app.disk_id
-    q = o.like(pattern)
+    q = _where(None, 'b_disk_app', pattern, 'disk_id')
     q = _where(q, 'b_disk_app', domain_perms(), 'disk_nodename')
     q = apply_gen_filters(q, ["b_disk_app"])
     rows = db(q).select(o, orderby=o, groupby=o, limitby=(0,max_search_result))
@@ -73,7 +82,7 @@ def format_disk(pattern):
 
 def format_app(pattern):
     o = db.v_svcmon.svc_app
-    q = o.like(pattern)
+    q = _where(None, 'v_svcmon', pattern, 'mon_svcname')
     q = _where(q, 'v_svcmon', domain_perms(), 'mon_svcname')
     q = apply_gen_filters(q, ["v_svcmon"])
     rows = db(q).select(o, orderby=o, groupby=o, limitby=(0,max_search_result))
@@ -132,7 +141,7 @@ def format_app(pattern):
 
 def format_svc(pattern):
     o = db.services.svc_name
-    q = o.like(pattern)
+    q = _where(None, 'services', pattern, 'svc_name')
     q = _where(q, 'services', domain_perms(), 'svc_name')
     services = filterset_encap_query(user_fset_id())[1]
     q &= db.services.svc_name.belongs(services)
@@ -208,7 +217,7 @@ def format_svc(pattern):
 
 def format_vm(pattern):
     o = db.v_svcmon.mon_vmname
-    q = o.like(pattern)
+    q = _where(None, 'v_svcmon', pattern, 'mon_vmname')
     q = _where(q, 'v_svcmon', domain_perms(), 'mon_svcname')
     q = apply_gen_filters(q, ["v_svcmon"])
     rows = db(q).select(o, orderby=o, groupby=o, limitby=(0,max_search_result))
@@ -268,7 +277,7 @@ def format_vm(pattern):
 
 def format_node(pattern):
     o = db.v_nodes.nodename
-    q = o.like(pattern)
+    q = _where(None, 'v_nodes', pattern, 'nodename')
     q = _where(q, 'v_nodes', domain_perms(), 'nodename')
     q = apply_gen_filters(q, ["v_nodes"])
     rows = db(q).select(o, orderby=o, groupby=o, limitby=(0,max_search_result))
@@ -354,7 +363,7 @@ def format_node(pattern):
 
 def format_user(pattern):
     o = db.v_users.fullname
-    q = o.like(pattern)
+    q = _where(None, 'v_users', pattern, 'fullname')
     rows = db(q).select(o, orderby=o, groupby=o, limitby=(0,max_search_result))
     n = len(db(q).select(o, groupby=o))
 
