@@ -41,7 +41,7 @@ function sysreport_timeline(id, data){
          data: _data,
          success: function(msg){
            $("#"+id+"_show").html(msg)
-           $("#"+id+"_show").find("pre code").each(function(i, block){
+           $("#"+id+"_show").find(".diff").each(function(i, block){
              hljs.highlightBlock(block);
            })
            $("#"+id+"_show").find("[name=tree]").children("h2").bind('click', function(){

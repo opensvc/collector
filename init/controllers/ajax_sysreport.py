@@ -87,12 +87,12 @@ def show_diff_data(diff_data, sysresponsible, sec_pattern):
         if sec_pattern.match(k):
             cl = "highlight "
             if sysresponsible:
-                block = PRE(CODE(diff_data['blocks'][k]), _class=block_cl)
+                block = PRE(diff_data['blocks'][k], _class="diff "+block_cl)
             else:
                 block = SPAN(T("You are not allowed to view this change"), _class=block_cl)
         else:
             cl = ""
-            block = PRE(CODE(diff_data['blocks'][k]), _class=block_cl)
+            block = PRE(diff_data['blocks'][k], _class="diff "+block_cl)
 
         if 'stat' in diff_data and k in diff_data['stat']:
             inse = diff_data['stat'][k][0]
