@@ -180,6 +180,7 @@ def ajax_sysreport_show_file():
 def sysrep():
     d = DIV(
       ajax_sysrep(),
+      SCRIPT("""$(".diff").each(function(i, block){hljs.highlightBlock(block);})"""),
       _style="padding:1em;text-align:left",
     )
     return dict(table=d)
