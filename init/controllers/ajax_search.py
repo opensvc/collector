@@ -92,6 +92,8 @@ def format_app(pattern):
         return ''
 
     def format_row(row, _class=""):
+        if row.get("svc_app") is None:
+            return SPAN()
         d = TABLE(
               TR(
                 TD(
