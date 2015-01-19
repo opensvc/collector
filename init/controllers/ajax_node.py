@@ -241,14 +241,19 @@ class sandata(object):
             ))
         return l
 
+    def cache_relations(self):
+        q = db.switches.id > 0
+        for row in db(q).select(cacheable=True):
+            for t in (row.sw_portname, row.sw_rportname):
+                if t in self.relcache:
+                    self.relcache[t].append(row)
+                else:
+                    self.relcache[t] = [row]
+
     def get_relations(self, portname, endpoints):
-        idx = '-'.join((portname, str(endpoints[2])))
-        if idx in self.relcache:
-            return self.relcache[idx]
-        q = db.switches.sw_rportname == portname
-        q |= (db.switches.sw_portname==portname)&(db.switches.sw_rportname==endpoints[2])
-        self.relcache[idx] = db(q).select(cacheable=True)
-        return self.relcache[idx]
+        rels = self.relcache.get(portname, []) + self.relcache.get(str(endpoints[2]), [])
+        return [r for r in rels if r.sw_rportname == portname or
+                (r.sw_portname == portname and r.sw_rportname == endpoints[2])]
 
     def recurse_relations(self, portname, portindex, endpoints, chain=[]):
         rels = self.get_relations(portname, endpoints)
@@ -276,6 +281,7 @@ class sandata(object):
                 count = 1
                 speed = [rel.sw_portspeed]
                 if rel.sw_rportname == endpoints[2]:
+                    #print chain, "sw -> array"
                     # sw -> array
                     head = endpoints[3]
                     headlabel = rel.sw_rportname
@@ -283,12 +289,14 @@ class sandata(object):
                     taillabel = str(rel.sw_index)
                     self.valid_switch |= set(_chain)
                 elif rel.sw_rportname == endpoints[1]:
+                    #print chain, "nodes -> sw"
                     # node -> sw
                     head = rel.sw_portname
                     headlabel = str(rel.sw_index)
                     tail = endpoints[0]
                     taillabel = rel.sw_rportname
                 else:
+                    #print chain, "sw -> sw", rel.sw_porttype
                     # sw -> sw, single isl or trunks
                     head = rel.sw_portname
                     headlabel = str(rel.sw_index)
@@ -314,7 +322,8 @@ class sandata(object):
                 if portindex is not None:
                     self.d['link'][id]['headlabel'] += ',%d'%rel.sw_index
                     self.d['link'][id]['taillabel'] += ',%d'%portindex
-            if rel.sw_rportname not in self.array_ports:
+            if rel.sw_rportname not in self.array_ports and \
+               (len(chain)==0 or rel.sw_porttype=="E-Port"):
                 self.recurse_relations(rel.sw_portname, rel.sw_index, endpoints, _chain)
 
     def get_remote_port_speed(self, portname, rportname):
@@ -328,6 +337,7 @@ class sandata(object):
         return [r.sw_index for r in db(q).select(db.switches.sw_index, groupby=db.switches.sw_index, orderby=db.switches.sw_index, cacheable=True)]
 
     def main(self):
+        self.cache_relations()
         for nodename in self.nodenames:
             id = 's%d'%self.n_server
             self.n_server += 1
