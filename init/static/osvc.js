@@ -3,6 +3,7 @@ $(document).on('click', function(event){
     event.preventDefault()
   }
 }).on('contextmenu', function(event){
+  if ($(event.target).is("canvas")){return}
   event.preventDefault()
 })
 //
@@ -334,6 +335,84 @@ function ws_switch_one(data) {
 }
 
 web2py_websocket("wss://"+window.location.hostname+"/realtime/generic", ws_switch)
+
+
+//
+// topo
+//
+function draw_topo(id, data, display) {
+  var i=0
+  url = $(location).attr("origin") + "/init/topo/call/json/json_topo_data"
+  if ("svcnames" in data) {
+    if (i==0) {url += '?'}
+    else if (i==1) {url += '&'}
+    i += 1
+    url += "svcnames="+encodeURIComponent(data["svcnames"])
+  }
+  if ("nodenames" in data) {
+    if (i==0) {url += '?'}
+    else if (i>0) {url += '&'}
+    i += 1
+    url += "nodenames="+encodeURIComponent(data["nodenames"])
+  }
+  if (typeof display !== 'undefined') {
+    if (i==0) {url += '?'}
+    else if (i>0) {url += '&'}
+    i += 1
+    url += "display="+encodeURIComponent(display.join(","))
+  }
+  if ($("#"+id).parents(".overlay").length == 0) {
+      _height = $(window).height()-$(".header").outerHeight()-16
+      $("#"+id).height(_height)
+  }
+  $.getJSON(url, function(_data){
+    var eid = document.getElementById(id)
+    var options = {
+      physics: {
+        barnesHut: {
+          enabled: true,
+          gravitationalConstant: -2500,
+          centralGravity: 1,
+          springLength: 95,
+          springConstant: 0.1,
+          damping: 0.5
+        },
+        //repulsion: {
+        //  enabled: true,
+        //}
+      },
+
+      //smoothCurves: false,
+      //hierarchicalLayout: {
+      // direction: "UD",
+      //},
+      clickToUse: true,
+      height: _height+'px',
+      nodes: {
+        widthMax: "48px",
+        fontFace: "arial",
+        fontSize: 12
+      },
+      edges: {
+        fontFace: "arial",
+        fontSize: 12
+      }
+    }
+    var network = new vis.Network(eid, _data, options)
+  })
+}
+
+function init_topo(id, data, display) {
+  $("#"+id).parent().find("input").bind("click", function(){
+    var display = []
+    $(this).parent().parent().find("input:checked").each(function () {
+      display.push($(this).attr("name"))
+    })
+    draw_topo(id, data, display)
+  })
+  draw_topo(id, data, display)
+}
+
 
 
 function print_date(d) {
@@ -1992,8 +2071,8 @@ function _resize_overlay() {
   e.css({
    'overflow': 'auto',
    'position': 'fixed',
-   'max-height': $(window).height()-60,
-   'max-width': $(window).width()-60,
+   'height': $(window).height()-60,
+   'width': $(window).width()-60,
    'top': ($(window).height()-e.height())/2,
    'left': ($(window).width()-e.width())/2
   })
@@ -2013,7 +2092,7 @@ function trigger_tool_svctopo(tid) {
   for (i=0;i<data.length;i++) {
     nodes.push(data[i]['svcname'])
   }
-  sync_ajax('/init/default/ajax_svcs_topo?nodes='+nodes.join(","), [], 'overlay', function(){})
+  sync_ajax('/init/topo/ajax_topo?display=nodes,services,countries,cities,buildings,rooms,racks,enclosures&svcnames=('+nodes.join(",")+")", [], 'overlay', function(){})
 }
 
 function trigger_tool_nodesantopo(tid) {

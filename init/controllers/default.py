@@ -67,318 +67,6 @@ def envfile(svcname):
              TT(XML(envfile), _style="text-align:left"),
            )
 
-class viz(object):
-    import os
-    vizdir = os.path.join(os.getcwd(), 'applications', 'init', 'static')
-    vizprefix = 'tempviz'
-    loc = {
-        'country': {},
-        'city': {},
-        'building': {},
-        'floor': {},
-        'room': {},
-        'rack': {},
-    }
-    svcclu = {}
-    services = set([])
-    resources = {}
-    nodes = set([])
-    disks = {}
-    cdg = {}
-    cdgdg = {}
-    vidcdg = {}
-    array = {}
-    arrayinfo = {}
-    disk2svc = set([])
-    node2disk = set([])
-    node2svc = set([])
-    data = ""
-    img_node = 'applications'+str(URL(r=request,c='static',f='node.png'))
-    img_disk = 'applications'+str(URL(r=request,c='static',f='hd.png'))
-
-    def __str__(self):
-        buff = """
-        graph G {
-                //size=12;
-                rankdir=LR;
-                ranksep=2.5;
-                //nodesep = 0.1;
-                //sep=0.1;
-                splines=false;
-                penwidth=1;
-                //center=true;
-                fontsize=8;
-                compound=true;
-                node [shape=plaintext, fontsize=8];
-                edge [fontsize=8];
-                bgcolor=white;
-
-        """
-        self.add_services()
-        self.add_arrays()
-        self.add_citys()
-        #self.rank(['cluster_'+s for s in self.array])
-        #self.rank(self.services)
-        buff += self.data
-        buff += "}"
-        return buff
-
-    def write(self, type):
-        import tempfile
-        f = tempfile.NamedTemporaryFile(dir=self.vizdir, prefix=self.vizprefix)
-        f.close()
-        dot = f.name + '.dot'
-        f = open(dot, 'w')
-        f.write(str(self))
-        f.close()
-        if type == 'dot':
-            return dot
-        from subprocess import Popen
-        dst = f.name + '.' + type
-        cmd = [ 'dot', '-T'+type, '-o', dst, dot ]
-        process = Popen(cmd, stdout=None, stderr=None)
-        process.communicate()
-        return dst
-
-    def __init__(self):
-        pass
-
-    def vid_svc(self, svc, nodename):
-        if nodename is None or svc is None:
-            return "unknown"
-        return "svc_"+nodename.replace(".", "_").replace("-", "_")+"_"+svc.replace(".", "_").replace("-", "_")
-
-    def vid_svc_dg(self, svc, dg):
-        if svc is None:
-            return "unknown"
-        return "dg_"+svc.replace(".", "_").replace("-", "_")+"_"+dg
-
-    def vid_node(self, node):
-        if node is None:
-            return "unknown"
-        return 'node_'+node.replace(".", "_").replace("-", "_")
-
-    def vid_disk(self, id):
-        if id is None:
-            return "unknown"
-        return 'disk_'+str(id).replace(".", "_").replace("-", "_")
-
-    def vid_loc(self, id):
-        if id is None:
-            return "unknown"
-        return str(id).replace(".", "_").replace("-", "_").replace(" ", "_")
-
-    def add_service(self, svc):
-        vid = self.vid_svc(svc.svc_name, svc.mon_nodname)
-        if vid in self.services: return
-        self.services = set([vid])
-        if svc.mon_overallstatus == "warn":
-            color = "orange"
-        elif svc.mon_overallstatus == "up":
-            color = "green"
-        else:
-            color = "grey"
-        servicesdata = r"""
-        %(v)s [label="%(s)s", style="rounded,filled", fillcolor="%(color)s", fontsize="12"];
-        """%(dict(v=vid, s=svc.svc_name, color=color))
-        if svc.mon_nodname not in self.svcclu:
-            self.svcclu[svc.mon_nodname] = {}
-        if svc.mon_overallstatus not in self.svcclu[svc.mon_nodname]:
-            self.svcclu[svc.mon_nodname][svc.mon_overallstatus] = set([])
-        self.svcclu[svc.mon_nodname][svc.mon_overallstatus] |= set([servicesdata])
-
-    def add_node(self, svc):
-        vid = self.vid_node(svc.mon_nodname)
-        if vid in self.nodes: return
-        self.nodes |= set([vid])
-        if svc.loc_city not in self.loc['city']:
-            self.loc['city'][svc.loc_city] = ""
-        self.loc['city'][svc.loc_city] += r"""
-        %(v)s [label="", image="%(img)s"];
-        subgraph cluster_%(vi)s {fontsize=8; penwidth=0; label="%(n)s\n%(model)s\n%(mem)s MB"; labelloc=b; %(v)s};
-        """%(dict(v=vid, vi=vid.replace('-','_').replace('.','_'), n=svc.mon_nodname, model=svc.model, mem=svc.mem_bytes, img=self.img_node))
-
-    def add_disk(self, id, disk, size="", vendor="", model="", arrayid="", devid=""):
-        vid = self.vid_disk(id)
-        if disk in self.disks: return
-        self.disks[disk]= vid
-        self.add_array(vid, arrayid, vendor, model)
-        self.data += r"""
-        %(id)s [label="%(name)s\n%(devid)s\n%(size)s GB", image="%(img)s"];
-        """%(dict(id=vid, name=disk, size=size, img=self.img_disk, devid=devid))
-
-    def add_array(self, vid, arrayid="", vendor="", model=""):
-        if arrayid == "" or arrayid is None:
-            return
-        if arrayid not in self.array:
-            self.array[arrayid] = set([vid])
-        else:
-            self.array[arrayid] |= set([vid])
-        if arrayid not in self.arrayinfo:
-            title = arrayid
-            self.arrayinfo[arrayid] = r"%s\n%s - %s"%(title, vendor.strip(), model.strip())
-
-    def add_services(self):
-        for n in self.svcclu:
-            for s in self.svcclu[n]:
-                self.data += r"""subgraph cluster_%(n)s_%(s)s {penwidth=0;
-                %(svcs)s
-        };"""%dict(n=n.replace('.','_').replace('-','_'), s=s.replace(' ','_'), svcs=''.join(self.svcclu[n][s]))
-
-    def add_citys(self):
-        for a in self.loc['city']:
-            self.data += r"""
-        subgraph cluster_%(a)s {label="%(l)s"; color=grey; style=rounded; fontsize=12; %(n)s};
-        """%(dict(a=self.vid_loc(a), l=a, n=self.loc['city'][a]))
-
-    def add_arrays(self):
-        for a in self.array:
-            if a is None:
-                continue
-            nodes = [self.cdg_cluster(v) for v in self.array[a] if "cdg_" in v]
-            nodes += [v for v in self.array[a] if "cdg_" not in v]
-            self.data += r"""
-        subgraph cluster_%(a)s {label="%(l)s"; fillcolor=lightgrey; style="rounded,filled"; fontsize=12; %(disks)s};
-        """%(dict(a=a.replace('.','_').replace("-","_"), l=self.arrayinfo[a], disks=';'.join(nodes)))
-
-    def rank(self, list):
-        return """{ rank=same; %s };
-               """%'; '.join(list)
-
-    def add_node2svc(self, svc):
-        vid1 = self.vid_node(svc.mon_nodname)
-        vid2 = self.vid_svc(svc.svc_name, svc.mon_nodname)
-        key = vid1+vid2
-        if key in self.node2svc: return
-        if svc.mon_overallstatus == "up":
-            color = "darkgreen"
-        else:
-            color = "grey"
-        self.node2svc |= set([key])
-        self.data += """
-        edge [color=%(c)s, label="", arrowsize=0, penwidth=1]; %(n)s -- %(d)s;
-        """%(dict(c=color, n=vid1, d=vid2))
-
-    def add_disk2svc(self, disk, svc, dg=""):
-        vid1 = self.disks[disk]
-        if dg == "":
-            vid2 = self.vid_svc(svc.svc_name, svc.mon_nodname)
-        else:
-            vid2 = self.vid_svc_dg(svc.svc_name, dg)
-        key = vid1+vid2
-        if key in self.disk2svc: return
-        self.disk2svc |= set([key])
-        if svc.mon_overallstatus == "up":
-            color = "darkgreen"
-        else:
-            color = "grey"
-        self.data += """
-        edge [color=%(c)s, label="", arrowsize=0, penwidth=1]; %(s)s -- %(d)s;
-        """%(dict(c=color, d=vid1, s=vid2))
-
-    def cdg_cluster(self, cdg):
-        if cdg not in self.cdg or len(self.cdg[cdg]) == 0:
-            return ""
-        if cdg in self.cdgdg:
-            dg = self.cdgdg[cdg]
-        else:
-            dg = cdg
-
-        return r"""
-            %(cdg)s [shape="plaintext"; label=<<table color="white"
-            cellspacing="0" cellpadding="2" cellborder="1">
-            <tr><td colspan="3">%(dg)s</td></tr>
-            <tr><td>wwid</td><td>devid</td><td>size</td></tr>
-            %(n)s
-            </table>>]"""%dict(dg=dg, cdg=cdg, n=''.join(self.cdg[cdg]))
-
-    def vid_cdg(self, d):
-        if d.disk_id.startswith(d.disk_nodename):
-            key = d.disk_arrayid,d.disk_nodename,d.disk_dg
-        else:
-            key = d.disk_arrayid,d.disk_dg
-        cdg = 'cdg_'+str(len(self.vidcdg))
-        if key not in self.vidcdg:
-            self.vidcdg[key] = cdg
-            self.cdgdg[cdg] = d.disk_dg
-        return self.vidcdg[key]
-
-    def add_dgdisk(self, d):
-        cdg = self.vid_cdg(d)
-        vid = self.vid_disk(d.id)
-        self.disks[d.disk_id] = vid
-        self.add_array(cdg, d.disk_arrayid, d.disk_vendor, d.disk_model)
-        if cdg not in self.cdg:
-            self.cdg[cdg] = []
-        label="<tr><td>%(name)s</td><td>%(devid)s</td><td>%(size)s MB</td></tr>"%(dict(id=vid, name=d.disk_id, size=d.disk_size, img=self.img_disk, devid=d.disk_devid))
-        if label not in self.cdg[cdg]:
-            self.cdg[cdg].append(label)
-
-    def add_dg2svc(self, cdg, svc, dg=""):
-        vid1 = cdg
-        if dg == "":
-            vid2 = self.vid_svc(svc.svc_name, svc.mon_nodname)
-        else:
-            vid2 = self.vid_svc_dg(svc.svc_name, dg)
-        key = cdg+vid2
-        if key in self.disk2svc: return
-        self.disk2svc |= set([key])
-        if svc.mon_overallstatus == "up":
-            color = "darkgreen"
-        else:
-            color = "grey"
-        self.data += """
-        edge [color=%(c)s, label="", arrowsize=0, penwidth=1]; %(s)s -- %(cdg)s;
-        """%(dict(c=color, d=vid1, s=vid2, cdg=cdg))
-
-    def add_disks(self, svc):
-        svccdg = set([])
-        q = (db.v_svcdisks.disk_svcname==svc.svc_name)
-        q &= (db.v_svcdisks.disk_nodename==svc.mon_nodname)
-        q &= (db.v_svcdisks.disk_id!="")
-        dl = db(q).select(cacheable=True)
-        if len(dl) == 0:
-            disk_id = svc.mon_nodname + "_unknown"
-            self.add_disk(svc.mon_nodname, disk_id, size="?")
-            self.add_disk2svc(disk_id, svc)
-        else:
-            for d in dl:
-                if d.disk_dg is None or d.disk_dg == "":
-                    disk_id = svc.mon_nodname + "_unknown"
-                    self.add_disk(svc.mon_nodname, disk_id, size="?")
-                    self.add_disk2svc(disk_id, svc)
-                else:
-                    svccdg |= set([self.vid_cdg(d)])
-                    self.add_dgdisk(d)
-        for cdg in svccdg:
-            self.add_dg2svc(cdg, svc)
-
-def svcmon_viz_img(services):
-    v = viz()
-    for svc in services:
-        v.add_node(svc)
-        v.add_disks(svc)
-        v.add_service(svc)
-        v.add_node2svc(svc)
-    fname = v.write('png')
-    import os
-    img = str(URL(r=request,c='static',f=os.path.basename(fname)))
-    return img
-
-@auth.requires_login()
-def ajax_svcs_topo():
-    svcnames = request.vars.get("nodes", "").split(",")
-    q = db.v_svcmon.mon_svcname.belongs(svcnames)
-    rows = db(q).select(cacheable=True)
-    return IMG(_src=svcmon_viz_img(rows))
-
-def svcmon_viz(ids):
-    if len(ids) == 0:
-        return SPAN()
-    q = db.v_svcmon.id.belongs(ids)
-    services = db(q).select(cacheable=True)
-    return IMG(_src=svcmon_viz_img(services))
-
 @auth.requires_login()
 def ajax_service():
     session.forget(response)
@@ -412,7 +100,6 @@ def ajax_service():
         if row.mon_vmtype in ('zone', 'ovm', 'xen'):
             containers.add('@'.join((row.mon_vmname, row.mon_nodname)))
 
-    viz = svcmon_viz_img(rows)
     s = rows[0]
 
     t_misc = TABLE(
@@ -848,7 +535,7 @@ def ajax_service():
             _class='cloud',
           ),
           DIV(
-            IMG(_src=viz),
+            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
             _id='tab5_'+str(rowid),
             _class='cloud',
           ),
@@ -923,6 +610,12 @@ def ajax_service():
                url=URL(r=request, c='compliance', f='ajax_compliance_svc',
                        args=[request.vars.node])
             ),
+            "function s%(rid)s_load_topo(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
+               id='tab5_'+str(rowid),
+               rid=str(rowid),
+               url=URL(r=request, c='topo', f='ajax_topo',
+                       vars={"svcnames": request.vars.node, "display": "nodes,services,countries,cities,buildings,rooms,racks,enclosures,disks"})
+            ),
             "function s%(rid)s_load_stor(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
                id='tab6_'+str(rowid),
                rid=str(rowid),
@@ -962,6 +655,7 @@ def ajax_service():
             """bind_tabs("%(id)s", {
                  "litab2_%(id)s": s%(id)s_load_svcmon,
                  "litab3_%(id)s": s%(id)s_load_resmon,
+                 "litab5_%(id)s": s%(id)s_load_topo,
                  "litab6_%(id)s": s%(id)s_load_stor,
                  "litab7_%(id)s": s%(id)s_load_grpprf,
                  "litab12_%(id)s": s%(id)s_load_containerprf,
