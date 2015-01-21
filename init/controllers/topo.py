@@ -20,19 +20,19 @@ class viz(object):
     edge_len_base = 100
 
     def get_img(self, t, v=""):
-        if t == "nodes":
+        if t == "node":
             return str(URL(r=request,c='static',f='node48.png'))
-        elif t == "disks":
+        elif t == "disk":
             return str(URL(r=request,c='static',f='disk48.png'))
-        elif t == "services":
+        elif t == "svc":
             return str(URL(r=request,c='static',f='svc48o.png'))
-        elif t == "resources":
+        elif t == "resource":
             return str(URL(r=request,c='static',f='action48.png'))
-        elif t == "arrays":
+        elif t == "array":
             return str(URL(r=request,c='static',f='array.png'))
-        elif t == "apps":
+        elif t == "app":
             return str(URL(r=request,c='static',f='pkg48.png'))
-        elif t == "envs":
+        elif t == "env":
             return str(URL(r=request,c='static',f='array.png'))
         elif t == "countries":
             v = v.lower()
@@ -50,7 +50,7 @@ class viz(object):
             return str(URL(r=request,c='static',f='rack48.png'))
         elif t == "enclosures":
             return str(URL(r=request,c='static',f='enclosure48.jpg'))
-        elif t == "sanswitch":
+        elif t == "sansw":
             return str(URL(r=request,c='static',f='net48.png'))
         elif t == "hvvdcs":
             return str(URL(r=request,c='static',f='hv48.png'))
@@ -69,6 +69,33 @@ class viz(object):
             self.nodes.append(n)
             return len(self.nodes)-1
 
+    def add_visnode_node(self, visnode_id, visnode_type="", label="", mass=1, image=None, fontColor=None):
+        if visnode_type in self.visnode_id_per_type:
+            self.visnode_id_per_type[visnode_type].add(visnode_id)
+        else:
+            self.visnode_id_per_type[visnode_type] = set([visnode_id])
+
+        if image is None:
+            image = self.get_img(visnode_type)
+
+        d = {
+          "mass": 3,
+          "id": visnode_id,
+          "label": label,
+          "image": image,
+          "shape": "image"
+        }
+
+        if fontColor is not None:
+            d["fontColor"] = fontColor
+
+        self.data["nodes"].append(d)
+
+    def get_visnode_ids(self, visnode_type):
+        if visnode_type not in self.visnode_id_per_type:
+            return set([])
+        return self.visnode_id_per_type[visnode_type]
+
     def get_visnode_id(self, node_type, name):
         n = "_".join((node_type, name))
         try:
@@ -85,7 +112,8 @@ class viz(object):
         self.nodenames = set(nodenames) - set([""])
         self.display = set(display) - set([""])
         self.nodes = []
-        self.edges = []
+        self.edges = {}
+        self.visnode_id_per_type = {}
         self.data = {"nodes": [], "edges": []}
         self.nodenames_to_svcnames()
         self.svcnames_to_nodenames()
@@ -324,64 +352,63 @@ class viz(object):
     def add_apps(self):
         for app in self.rs['apps']:
             _id = self.add_visnode("app", app)
-            self.data["nodes"].append({
-              "mass": 16,
-              "id": _id,
-              "label": app,
-              "image": self.get_img("apps"),
-              "shape": "image"
-            })
+            self.add_visnode_node(_id, "apps", label=app, mass=16)
 
     def add_envs(self):
         for env in self.rs['envs']:
             _id = self.add_visnode("env", env)
-            self.data["nodes"].append({
-              "mass": 16,
-              "id": _id,
-              "label": env,
-              "image": self.get_img("envs"),
-              "shape": "image"
-            })
+            self.add_visnode_node(_id, "envs", label=env, mass=16)
 
     def add_san(self):
-        q = db.switches.id > 0
-        rows = db(q).select(db.switches.sw_portname,
+        # hba_ids
+        q = db.node_hba.nodename.belongs(self.nodenames)
+        rows = db(q).select(cacheable=True)
+        hba_ids = [r.hba_id for r in rows]
+
+        # tgt_ids
+        q = db.stor_zone.nodename.belongs(self.nodenames)
+        rows = db(q).select(db.stor_zone.tgt_id)
+        tgt_ids = [r.tgt_id for r in rows]
+
+        # switchs
+        q = db.switches.sw_portname.belongs(hba_ids+tgt_ids)
+        q |= db.switches.sw_rportname.belongs(hba_ids+tgt_ids)
+        q |= db.switches.sw_porttype == "E-Port"
+        rows = db(q).select(db.switches.sw_name, groupby=db.switches.sw_name)
+        switches = [r.sw_name for r in rows]
+
+        q = db.switches.sw_name.belongs(switches)
+        ports = db(q).select(db.switches.sw_portname,
                             db.switches.sw_rportname,
                             db.switches.sw_portspeed,
                             db.switches.sw_name,
                             cacheable=True)
         portsw = {}
         rportsw = {}
-        for row in rows:
+        for i, row in enumerate(ports):
             visnode_id = self.get_visnode_id("sansw", row.sw_name)
             if visnode_id < 0:
                 visnode_id = self.add_visnode("sansw", row.sw_name)
-                self.data["nodes"].append({
-                  "mass": 3,
-                  "id": visnode_id,
-                  "label": row.sw_name,
-                  "image": self.get_img("sanswitch"),
-                  "shape": "image"
-                })
-            portsw[row.sw_portname] = visnode_id
-            rportsw[row.sw_rportname] = visnode_id
+                self.add_visnode_node(visnode_id, "sansw", label=row.sw_name, mass=3)
+            portsw[row.sw_portname] = (visnode_id, i)
+            rportsw[row.sw_rportname] = (visnode_id, i)
 
-        for row in rows:
-            i1 = portsw.get(row.sw_portname, -1)
-            i2 = portsw.get(row.sw_rportname, -1)
+        for row in ports:
+            i1, idx = portsw.get(row.sw_portname, (-1, -1))
+            i2, idx = portsw.get(row.sw_rportname, (-1, -1))
             if i1 < 0 or i2 < 0:
                 continue
-            self.add_edge(i1, i2, label=row.sw_portspeed, color="lightgrey")
+            self.add_edge(i1, i2, label=row.sw_portspeed, color="lightgrey", multi=True)
 
         # node -> sw
         q = db.node_hba.nodename.belongs(self.nodenames)
         rows = db(q).select(cacheable=True)
         for row in rows:
             i1 = self.get_visnode_id("node", row.nodename)
-            i2 = rportsw.get(row.hba_id, -1)
+            i2, idx = rportsw.get(row.hba_id, (-1, -1))
             if i1 < 0 or i2 < 0:
                 continue
-            self.add_edge(i1, i2, label=row.hba_type, color="lightgrey")
+            self.add_edge(i1, i2, label=row.hba_type+"/"+str(ports[idx].sw_portspeed), color="lightgrey", multi=True)
 
         # array -> sw
         q = db.stor_zone.nodename.belongs(self.nodenames)
@@ -393,11 +420,42 @@ class viz(object):
                             cacheable=True)
         for row in rows:
             i1 = self.get_visnode_id("array", row.stor_array.array_name)
-            i2 = rportsw.get(row.stor_zone.tgt_id, -1)
+            i2, idx = rportsw.get(row.stor_zone.tgt_id, (-1, -1))
             if i1 < 0 or i2 < 0:
                 continue
-            self.add_edge(i1, i2, color="lightgrey")
+            self.add_edge(i1, i2, label=str(ports[idx].sw_portspeed), color="lightgrey", multi=True)
 
+        # purge edge switches
+        sw_ids = self.get_visnode_ids("sansw")
+        node_ids = self.get_visnode_ids("node")
+        array_ids = self.get_visnode_ids("array")
+        all_ids = sw_ids | node_ids | array_ids
+        rels = {}
+        for i1, i2 in self.edges.keys():
+            if i1 not in all_ids or i2 not in all_ids:
+                continue
+            if i1 not in rels:
+                rels[i1] = set([])
+            if i2 not in rels:
+                rels[i2] = set([])
+            rels[i1].add(i2)
+            rels[i2].add(i1)
+        purge_ids = []
+        for i, l in rels.items():
+            if i in sw_ids and len(l) < 2:
+                purge_ids.append(i)
+        # also purge sw with no rels at all
+        purge_ids = set(purge_ids) | (sw_ids - set(rels.keys()))
+        self.delete_ids(purge_ids)
+
+    def delete_ids(self, ids):
+        for i in range(len(self.data["nodes"])-1, 0, -1):
+            if self.data["nodes"][i]["id"] in ids:
+                del(self.data["nodes"][i])
+        for i in range(len(self.data["edges"])-1, 0, -1):
+            if self.data["edges"][i]["to"] in ids or \
+               self.data["edges"][i]["from"] in ids:
+                del(self.data["edges"][i])
 
     def add_locs(self):
         if "nodes" not in self.rs:
@@ -410,13 +468,7 @@ class viz(object):
                 _id = self.add_visnode(p, loc)
                 if _id < 0:
                     continue
-                self.data["nodes"].append({
-                  "mass": 2+i,
-                  "id": _id,
-                  "label": loc,
-                  "image": self.get_img(p, loc),
-                  "shape": "image"
-                })
+                self.add_visnode_node(_id, p, label=loc, mass=2+i, image=self.get_img(p, loc))
         cache = []
         for row in self.rs['nodes'].values():
             for i, (p1, col1) in enumerate(self.locs[:-1]):
@@ -475,29 +527,19 @@ class viz(object):
     def add_resources(self):
         for (svcname, rid), row in self.rs['services_resources'].items():
             rid_id = self.add_visnode("resource", svcname+"."+rid)
-            self.data["nodes"].append({
-              "mass": 3,
-              "id": rid_id,
-              "label": rid,
-              "image": self.get_img("resources"),
-              "shape": "image"
-            })
+            self.add_visnode_node(rid_id, "resource", label=rid, mass=3)
 
     def add_disks(self):
         for (nodename, svcname, arrayid), rows in self.rs['disks'].items():
             if svcname is None:
                 svcname = ""
+            if "services" in self.display and not svcname in self.svcnames:
+                continue
             label = self.fmt_disk_label(arrayid, rows)
             disk_id = self.get_visnode_id("disk", label)
             if disk_id < 0:
                 disk_id = self.add_visnode("disk", label)
-                self.data["nodes"].append({
-                  "mass": 3,
-                  "id": disk_id,
-                  "label": label,
-                  "image": self.get_img("disks"),
-                  "shape": "image"
-                })
+                self.add_visnode_node(disk_id, "disk", label=label, mass=3)
 
     def add_nodes(self):
         for nodename in self.nodenames:
@@ -507,29 +549,28 @@ class viz(object):
         d = self.rs["nodes"].get(nodename, {})
         label = nodename+"\n"+', '.join((d.get("os_name"), d.get("model", "")))
         nodename_id = self.add_visnode("node", nodename)
-        self.data["nodes"].append({
-          "mass": 3,
-          "id": nodename_id,
-          "label": label,
-          "image": self.get_img("nodes"),
-          "shape": "image"
-        })
+        self.add_visnode_node(nodename_id, "node", label=label, mass=3)
 
-    def add_edge(self, from_node, to_node, color="#555555", label="", length=1):
+    def add_edge(self, from_node, to_node, color="#555555", label="", length=1, multi=False):
         edge = {
          "from": from_node,
          "to": to_node,
          "length": self.edge_len_base*length,
          "color": color,
          "fontColor": color,
-         "label": label,
+         "label": str(label),
          "width": 2
         }
-        sig = (from_node, to_node)
+        sig = tuple(sorted([from_node, to_node]))
         if sig in self.edges:
-            return
-        self.edges.append(sig)
+            if not multi:
+                return
+            else:
+                i = self.edges[sig]
+                self.data["edges"][i]["label"] += ", "+str(label)
+                return
         self.data["edges"].append(edge)
+        self.edges[sig] = len(self.data["edges"])-1
 
     def add_services(self):
         for svcname in self.svcnames:
@@ -540,29 +581,18 @@ class viz(object):
         if node_id < 0:
             return
         row = self.rs["services"][svcname]
-        self.data["nodes"].append({
-          "mass": 8,
-          "id": node_id,
-          "label": svcname,
-          "image": self.get_img("services"),
-          "shape": "image",
-          "fontColor": self.status_color.get(row["svc_availstatus"], "grey"),
-        })
+        self.add_visnode_node(node_id, "svc", label=svcname, mass=8, fontColor=self.status_color.get(row["svc_availstatus"], "grey"))
 
     def add_arrays(self):
         for (nodename, svcname, arrayid), rows in self.rs["disks"].items():
             if arrayid in self.nodenames:
                 continue
+            if "services" in self.display and not svcname in self.svcnames:
+                continue
             visnode_id = self.add_visnode("array", arrayid)
             if visnode_id < 0:
                 continue
-            self.data["nodes"].append({
-              "mass": 4,
-              "id": visnode_id,
-              "label": arrayid,
-              "image": self.get_img("arrays"),
-              "shape": "image"
-            })
+            self.add_visnode_node(visnode_id, "array", label=arrayid, mass=4)
 
     def add_nodes_services_resources(self):
         for (nodename, svcname, rid), row in self.rs["nodes_services_resources"].items():
@@ -647,7 +677,7 @@ class viz(object):
 
     def add_nodes_disks(self):
         for (nodename, svcname, arrayid), rows in self.rs["disks"].items():
-            if svcname != "":
+            if svcname != "" and "services" in self.display:
                 continue
             nodename_id = self.get_visnode_id("node", nodename)
             disk_id = self.get_visnode_id("disk", self.fmt_disk_label(arrayid, rows))
@@ -656,6 +686,8 @@ class viz(object):
     def add_arrays_disks(self):
         for (nodename, svcname, arrayid), rows in self.rs["disks"].items():
             if arrayid in self.nodenames:
+                continue
+            if "services" in self.display and not svcname in self.svcnames:
                 continue
             array_id = self.get_visnode_id("array", arrayid)
             disk_id = self.get_visnode_id("disk", self.fmt_disk_label(arrayid, rows))
