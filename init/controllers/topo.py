@@ -50,6 +50,14 @@ class viz(object):
             return str(URL(r=request,c='static',f='rack48.png'))
         elif t == "enclosures":
             return str(URL(r=request,c='static',f='enclosure48.jpg'))
+        elif t == "sanswitch":
+            return str(URL(r=request,c='static',f='net48.png'))
+        elif t == "hvvdcs":
+            return str(URL(r=request,c='static',f='hv48.png'))
+        elif t == "hvpools":
+            return str(URL(r=request,c='static',f='hv48.png'))
+        elif t == "hvs":
+            return str(URL(r=request,c='static',f='hv48.png'))
         else:
             return str(URL(r=request,c='static',f='action48.png'))
 
@@ -88,7 +96,7 @@ class viz(object):
 
         # fix deps
         if "nodes" in self.display or \
-           set(["countries", "cities", "buildings", "rooms", "racks", "enclosures"]) & self.display != set([]):
+           set(["countries", "cities", "buildings", "rooms", "racks", "enclosures", "hvvdcs", "hvpools", "hvs"]) & self.display != set([]):
             self.data_nodes()
             self.data_nodes_services()
 
@@ -146,9 +154,15 @@ class viz(object):
                 self.add_services_resources()
                 self.add_nodes_services_resources()
 
+        if "san" in self.display:
+            self.add_san()
+
     def get_locs(self):
         l = []
         for t in [
+              ("hvs", "hv"),
+              ("hvpools", "hvpool"),
+              ("hvvdcs", "hvvdc"),
               ("enclosures", "enclosure"),
               ("racks", "loc_rack"),
               ("rooms", "loc_room"),
@@ -243,6 +257,9 @@ class viz(object):
                             db.nodes.loc_room,
                             db.nodes.loc_rack,
                             db.nodes.enclosure,
+                            db.nodes.hv,
+                            db.nodes.hvpool,
+                            db.nodes.hvvdc,
                            )
         d = {}
         for row in rows:
@@ -325,6 +342,62 @@ class viz(object):
               "image": self.get_img("envs"),
               "shape": "image"
             })
+
+    def add_san(self):
+        q = db.switches.id > 0
+        rows = db(q).select(db.switches.sw_portname,
+                            db.switches.sw_rportname,
+                            db.switches.sw_portspeed,
+                            db.switches.sw_name,
+                            cacheable=True)
+        portsw = {}
+        rportsw = {}
+        for row in rows:
+            visnode_id = self.get_visnode_id("sansw", row.sw_name)
+            if visnode_id < 0:
+                visnode_id = self.add_visnode("sansw", row.sw_name)
+                self.data["nodes"].append({
+                  "mass": 3,
+                  "id": visnode_id,
+                  "label": row.sw_name,
+                  "image": self.get_img("sanswitch"),
+                  "shape": "image"
+                })
+            portsw[row.sw_portname] = visnode_id
+            rportsw[row.sw_rportname] = visnode_id
+
+        for row in rows:
+            i1 = portsw.get(row.sw_portname, -1)
+            i2 = portsw.get(row.sw_rportname, -1)
+            if i1 < 0 or i2 < 0:
+                continue
+            self.add_edge(i1, i2, label=row.sw_portspeed, color="lightgrey")
+
+        # node -> sw
+        q = db.node_hba.nodename.belongs(self.nodenames)
+        rows = db(q).select(cacheable=True)
+        for row in rows:
+            i1 = self.get_visnode_id("node", row.nodename)
+            i2 = rportsw.get(row.hba_id, -1)
+            if i1 < 0 or i2 < 0:
+                continue
+            self.add_edge(i1, i2, label=row.hba_type, color="lightgrey")
+
+        # array -> sw
+        q = db.stor_zone.nodename.belongs(self.nodenames)
+        q &= db.stor_zone.tgt_id == db.stor_array_tgtid.array_tgtid
+        q &= db.stor_array_tgtid.array_id == db.stor_array.id
+        rows = db(q).select(db.stor_zone.tgt_id,
+                            db.stor_array.array_name,
+                            groupby=db.stor_zone.tgt_id,
+                            cacheable=True)
+        for row in rows:
+            i1 = self.get_visnode_id("array", row.stor_array.array_name)
+            i2 = rportsw.get(row.stor_zone.tgt_id, -1)
+            if i1 < 0 or i2 < 0:
+                continue
+            self.add_edge(i1, i2, color="lightgrey")
+
 
     def add_locs(self):
         if "nodes" not in self.rs:
@@ -684,7 +757,11 @@ def topo_script(eid):
         check("Rooms", "rooms", "loc"),
         check("Racks", "racks", "loc"),
         check("Enclosures", "enclosures", "loc"),
+        check("Hypervisors", "hvs", "hv16"),
+        check("Hypervisor pools", "hvpools", "hv16"),
+        check("Hypervisor VDC", "hvvdcs", "hv16"),
         check("Disks", "disks", "hd16"),
+        check("San", "san", "net16"),
         _style="display:table-cell;vertical-align:top;text-align:left;padding:0.3em;min-width:12em",
       ),
       DIV(

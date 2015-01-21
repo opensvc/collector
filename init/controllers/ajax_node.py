@@ -672,6 +672,7 @@ def ajax_node():
             LI(P(T("services"), _class='svc'), _id="litab5_"+str(rowid)),
             LI(P(T("actions"), _class='action16'), _id="litab15_"+str(rowid)),
             LI(P(T("log"), _class='log16'), _id="litab16_"+str(rowid)),
+            LI(P(T("topology"), _class='dia16'), _id="litab2_"+str(rowid)),
             LI(P(T("storage"), _class='hd16'), _id="litab6_"+str(rowid)),
             LI(P(T("network"), _class='net16'), _id="litab7_"+str(rowid)),
             LI(P(T("stats"), _class='spark16'), _id="litab10_"+str(rowid)),
@@ -708,6 +709,11 @@ def ajax_node():
           DIV(
             IMG(_src=URL(r=request,c='static',f='spinner.gif')),
             _id='tab16_'+str(rowid),
+            _class='cloud',
+          ),
+          DIV(
+            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            _id='tab2_'+str(rowid),
             _class='cloud',
           ),
           DIV(
@@ -788,6 +794,12 @@ def ajax_node():
                url=URL(r=request, c='svcactions', f='actions_node',
                        args=[request.vars.node])
             ),
+            "function n%(rid)s_load_topo(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
+               id='tab2_'+str(rowid),
+               rid=str(rowid),
+               url=URL(r=request, c='topo', f='ajax_topo',
+                       vars={"nodenames": request.vars.node, "display": "nodes,services,countries,cities,buildings,rooms,racks,enclosures,hvs,hvpools,hvvdcs,disks"})
+            ),
             "function n%(rid)s_load_node_alerts(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
                id='tab14_'+str(rowid),
                rid=str(rowid),
@@ -826,6 +838,7 @@ def ajax_node():
             ),
             """bind_tabs("%(id)s", {
                 "litab6_%(id)s": n%(id)s_load_node_stor,
+                "litab2_%(id)s": n%(id)s_load_topo,
                 "litab11_%(id)s": n%(id)s_load_wiki,
                 "litab12_%(id)s": n%(id)s_load_checks,
                 "litab13_%(id)s": n%(id)s_load_comp,

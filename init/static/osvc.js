@@ -1694,6 +1694,9 @@ function table_action_menu(t, e){
   if ("services" in t.action_menu) {
     s += table_tools_menu_svcs(t)
   }
+  if (("nodes" in t.action_menu) || ("services" in t.action_menu)) {
+    s += tool_topo(t)
+  }
   if (s != "") {
     s = "<h3 class='line'><span>"+T("Tools")+"</span></h3>" + s
   }
@@ -1813,7 +1816,7 @@ function table_action_menu_get_nodes_data(t, action) {
     var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
     var data = []
     var nodenames = []
-    lines.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").each(function(){
+    lines.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_nodname],td[cell=1][name$=hostname]").each(function(){
       nodename = $(this).attr("v")
       var d = {'nodename': nodename, 'action': action}
       if (nodenames.indexOf(nodename) < 0) {
@@ -1827,7 +1830,7 @@ function table_action_menu_get_nodes_data(t, action) {
 function table_action_menu_get_node_data(t, e, action) {
     var cell = $(e.target)
     var line = cell.parents(".tl").first()
-    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").first().attr("v")
+    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_svcname],td[cell=1][name$=hostname]").first().attr("v")
     if ((typeof nodename === "undefined")||(nodename=="")) {
       return []
     }
@@ -2082,17 +2085,25 @@ function resize_extralines() {
   $(".extraline>td>table").each(function(){$(this).width($(window).width()-$(this).children().position().left-20)})
 }
 
-function trigger_tool_svctopo(tid) {
+function trigger_tool_topo(tid) {
   var t = osvc.tables[tid]
-  var data = table_action_menu_get_svcs_data(t)
-  if (data.length==0) {
+  var datasvc = table_action_menu_get_svcs_data(t)
+  var datanode = table_action_menu_get_nodes_data(t)
+  if (datasvc.length+datanode.length==0) {
     return ""
   }
-  var nodes = new Array()
-  for (i=0;i<data.length;i++) {
-    nodes.push(data[i]['svcname'])
+  var nodenames = new Array()
+  for (i=0;i<datanode.length;i++) {
+    nodenames.push(datanode[i]['nodename'])
   }
-  sync_ajax('/init/topo/ajax_topo?display=nodes,services,countries,cities,buildings,rooms,racks,enclosures&svcnames=('+nodes.join(",")+")", [], 'overlay', function(){})
+  var svcnames = new Array()
+  for (i=0;i<datasvc.length;i++) {
+    svcnames.push(datasvc[i]['svcname'])
+  }
+  url = '/init/topo/ajax_topo?display=nodes,services,countries,cities,buildings,rooms,racks,enclosures,hvs,hvpools,hvvdcs'
+  url += '&svcnames=('+svcnames.join(",")+")"
+  url += '&nodenames=('+nodenames.join(",")+")"
+  sync_ajax(url, [], 'overlay', function(){})
 }
 
 function trigger_tool_nodesantopo(tid) {
@@ -2221,11 +2232,13 @@ function tool_svcdiff(t, data) {
   return "<div class='clickable common16' onclick='trigger_tool_svcdiff(\""+t.id+"\")'>"+T("Services differences")+"</div>"
 }
 
-function tool_svctopo(t, data) {
-  if (data.length==0) {
+function tool_topo(t) {
+  var datasvc = table_action_menu_get_svcs_data(t)
+  var datanode = table_action_menu_get_nodes_data(t)
+  if (datasvc.length+datanode.length==0) {
     return ""
   }
-  return "<div class='clickable dia16' onclick='trigger_tool_svctopo(\""+t.id+"\")'>"+T("Services topology")+"</div>"
+  return "<div class='clickable dia16' onclick='trigger_tool_topo(\""+t.id+"\")'>"+T("Topology")+"</div>"
 }
 
 function table_tools_menu_nodes(t){
@@ -2243,7 +2256,6 @@ function table_tools_menu_svcs(t){
   var data = table_action_menu_get_svcs_data(t)
   var s = ""
   s += tool_svcdiff(t, data)
-  s += tool_svctopo(t, data)
   return s
 }
 

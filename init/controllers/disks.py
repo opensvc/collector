@@ -708,6 +708,7 @@ class table_disks(HtmlTable):
         for i in self.cols:
             self.colprops[i].t = self
         self.extraline = True
+        self.checkboxes = True
         self.checkbox_id_col = 'svcdisk_id'
         self.checkbox_id_table = 'b_disk_app'
         self.dbfilterable = True
