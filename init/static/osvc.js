@@ -403,9 +403,9 @@ function draw_topo(id, data, display) {
 }
 
 function init_topo(id, data, display) {
-  $("#"+id).parent().find("input").bind("click", function(){
+  $("#"+id).parent().find("input:submit").bind("click", function(){
     var display = []
-    $(this).parent().parent().find("input:checked").each(function () {
+    $(this).parent().find("input:checked").each(function () {
       display.push($(this).attr("name"))
     })
     draw_topo(id, data, display)

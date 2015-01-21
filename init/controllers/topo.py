@@ -136,7 +136,6 @@ class viz(object):
             self.data_services()
             self.add_services()
             if "nodes" in self.display:
-                self.data_nodes_services()
                 self.add_nodes_services()
 
         if "disks" in self.display:
@@ -370,6 +369,13 @@ class viz(object):
         rows = db(q).select(db.stor_zone.tgt_id)
         tgt_ids = [r.tgt_id for r in rows]
 
+        # edge switchs
+        q = db.switches.sw_rportname.belongs(hba_ids+tgt_ids)
+        rows = db(q).select(db.switches.sw_name, groupby=db.switches.sw_name)
+        edge_switches = [r.sw_name for r in rows]
+        if len(edge_switches) == 0:
+            return
+
         # switchs
         q = db.switches.sw_portname.belongs(hba_ids+tgt_ids)
         q |= db.switches.sw_rportname.belongs(hba_ids+tgt_ids)
@@ -425,7 +431,7 @@ class viz(object):
                 continue
             self.add_edge(i1, i2, label=str(ports[idx].sw_portspeed), color="lightgrey", multi=True)
 
-        # purge edge switches
+        # purge unrelevant edge switches
         sw_ids = self.get_visnode_ids("sansw")
         node_ids = self.get_visnode_ids("node")
         array_ids = self.get_visnode_ids("array")
@@ -444,6 +450,7 @@ class viz(object):
         for i, l in rels.items():
             if i in sw_ids and len(l) < 2:
                 purge_ids.append(i)
+
         # also purge sw with no rels at all
         purge_ids = set(purge_ids) | (sw_ids - set(rels.keys()))
         self.delete_ids(purge_ids)
@@ -533,7 +540,7 @@ class viz(object):
         for (nodename, svcname, arrayid), rows in self.rs['disks'].items():
             if svcname is None:
                 svcname = ""
-            if "services" in self.display and not svcname in self.svcnames:
+            elif "services" in self.display and not svcname in self.svcnames:
                 continue
             label = self.fmt_disk_label(arrayid, rows)
             disk_id = self.get_visnode_id("disk", label)
@@ -552,6 +559,24 @@ class viz(object):
         self.add_visnode_node(nodename_id, "node", label=label, mass=3)
 
     def add_edge(self, from_node, to_node, color="#555555", label="", length=1, multi=False):
+        def format_label(l):
+            if len(l) == 0:
+                return ""
+            _l = []
+            for s in sorted(list(set(l))):
+                i = l.count(s)
+                _l.append("%(i)dx%(v)s" % dict(i=i, v=s))
+            return ' + '.join(_l)
+
+        sig = tuple(sorted([from_node, to_node]))
+        if sig in self.edges:
+            if not multi:
+                return
+            else:
+                i = self.edges[sig]
+                self.data["edges"][i]["_label"].append(label)
+                self.data["edges"][i]["label"] = format_label(self.data["edges"][i]["_label"])
+                return
         edge = {
          "from": from_node,
          "to": to_node,
@@ -559,16 +584,9 @@ class viz(object):
          "color": color,
          "fontColor": color,
          "label": str(label),
-         "width": 2
+         "width": 2,
+         "_label": [label],
         }
-        sig = tuple(sorted([from_node, to_node]))
-        if sig in self.edges:
-            if not multi:
-                return
-            else:
-                i = self.edges[sig]
-                self.data["edges"][i]["label"] += ", "+str(label)
-                return
         self.data["edges"].append(edge)
         self.edges[sig] = len(self.data["edges"])-1
 
@@ -579,6 +597,8 @@ class viz(object):
     def add_service(self, svcname):
         node_id = self.add_visnode("svc", svcname)
         if node_id < 0:
+            return
+        if svcname not in self.rs["services"]:
             return
         row = self.rs["services"][svcname]
         self.add_visnode_node(node_id, "svc", label=svcname, mass=8, fontColor=self.status_color.get(row["svc_availstatus"], "grey"))
@@ -794,6 +814,9 @@ def topo_script(eid):
         check("Hypervisor VDC", "hvvdcs", "hv16"),
         check("Disks", "disks", "hd16"),
         check("San", "san", "net16"),
+        INPUT(
+          _type="submit",
+        ),
         _style="display:table-cell;vertical-align:top;text-align:left;padding:0.3em;min-width:12em",
       ),
       DIV(
