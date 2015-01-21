@@ -269,7 +269,7 @@ class viz(object):
         self.rs["nodes"] = d
 
     def data_disks(self):
-        q = db.b_disk_app.disk_svcname.belongs(self.svcnames) & \
+        q = db.b_disk_app.disk_svcname.belongs(self.svcnames) | \
             db.b_disk_app.disk_nodename.belongs(self.nodenames)
         rows = db(q).select(db.b_disk_app.disk_id,
                             db.b_disk_app.disk_size,
