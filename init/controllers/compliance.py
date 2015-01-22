@@ -12205,21 +12205,47 @@ def json_tree_action_show_ruleset(rset_id):
     if rset.ruleset_type == "contextual":
         l.append(P(T('Filterset')+': ' + str(fset_name)))
     l.append(P(T('Public')+': ' + str(rset.ruleset_public)))
-    l.append(HR())
 
     rset_id = int(rset_id)
 
+    #
+    q = db.comp_moduleset_ruleset.ruleset_id == rset_id
+    q &= db.comp_moduleset_ruleset.modset_id == db.comp_moduleset.id
+    rows = db(q).select(db.comp_moduleset.modset_name, cacheable=False)
+    if len(rows) > 0:
+        _l = [ r.modset_name for r in rows ]
+        d = DIV(
+          H3(SPAN(T("Encapsulated in modulesets"), " (%d) "%len(rows)), _class="line"),
+          SPAN(', '.join(_l)),
+        )
+        l.append(d)
+
+    #
+    q = db.comp_rulesets_rulesets.child_rset_id == rset_id
+    q &= db.comp_rulesets_rulesets.child_rset_id == db.comp_rulesets.id
+    rows = db(q).select(db.comp_rulesets.ruleset_name, cacheable=False)
+    if len(rows) > 0:
+        _l = [ r.ruleset_name for r in rows ]
+        d = DIV(
+          H3(SPAN(T("Encapsulated in rulesets"), " (%d) "%len(rows)), _class="line"),
+          SPAN(', '.join(_l)),
+        )
+        l.append(d)
+
+
+    #
     q = db.comp_rulesets_nodes.ruleset_id == rset_id
     rows = db(q).select(cacheable=False)
     if len(rows) > 0:
-        l.append(H3(T("Attached to servers")))
+        l.append(H3(SPAN(T("Attached to servers"), " (%d) "%len(rows)), _class="line"))
         l.append(P(' '.join(map(lambda x: x.nodename, rows))))
         l.append(HR())
 
+    #
     q = db.comp_rulesets_services.ruleset_id == rset_id
     rows = db(q).select(cacheable=False)
     if len(rows) > 0:
-        l.append(H3(T("Attached to services")))
+        l.append(H3(SPAN(T("Attached to services"), " (%d) "%len(rows)), _class="line"))
         l.append(P(' '.join(map(lambda x: x.svcname, rows))))
         l.append(HR())
 
@@ -12246,6 +12272,8 @@ def json_tree_action_show_ruleset(rset_id):
                              table='comp_rulesets')
     t = table_comp_rulesets("treetable")
     renderer.t = t
+    if len(rows) > 0:
+        l.append(H3(SPAN(T("Variables"), " (%d) "%len(rows)), _class="line"))
     for row in rows:
         l.append(H3(row.var_name))
         l.append(P(T("Variable class: %(var_class)s", dict(var_class=str(row.var_class)))))
