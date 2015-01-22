@@ -1608,12 +1608,18 @@ def _get_node_generic(nodename, col):
     q &= db.v_nodes.nodename == nodename
     node = db(q).select().first()
     if node is not None:
-        return node[col]
+        if node[col] is None:
+            return ""
+        else:
+            return node[col]
     q = db.v_nodes.team_responsible.belongs(user_groups())
     q &= db.v_nodes.nodename == nodename.split('.')[0]
     node = db(q).select().first()
     if node is not None:
-        return node[col]
+        if node[col] is None:
+            return ""
+        else:
+            return node[col]
     return T("node not found")
 
 @service.json
