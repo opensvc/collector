@@ -6143,6 +6143,8 @@ def comp_ruleset_svc_attachable(svcname, rset_id):
     q &= db.auth_group.id == db.comp_ruleset_team_responsible.group_id
     q &= db.comp_ruleset_team_responsible.ruleset_id == db.comp_rulesets.id
     q &= db.comp_rulesets.id == rset_id
+    q &= db.comp_rulesets.ruleset_public == True
+    q &= db.comp_rulesets.ruleset_type == "explicit"
     rows = db(q).select(db.nodes.team_responsible, cacheable=True)
     if len(rows) == 0:
         return False
@@ -6164,6 +6166,8 @@ def comp_ruleset_attachable(nodename, ruleset_id):
     q &= db.auth_group.id == db.comp_ruleset_team_responsible.group_id
     q &= db.comp_ruleset_team_responsible.ruleset_id == db.comp_rulesets.id
     q &= db.comp_rulesets.id == ruleset_id
+    q &= db.comp_rulesets.ruleset_public == True
+    q &= db.comp_rulesets.ruleset_type == "explicit"
     q &= db.nodes.nodename == nodename
     rows = db(q).select(cacheable=True)
     if len(rows) != 1:
