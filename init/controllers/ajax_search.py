@@ -105,11 +105,25 @@ def format_app(pattern):
                     _class=_class,
                   ),
                   A(
+                    T('asset'),
+                    _href=URL(r=request, c='nodes', f='nodes',
+                              vars={'nodes_f_project': row['svc_app'],
+                                    'clear_filters': 'true'}),
+                    _class="hw16",
+                  ),
+                  A(
                     T('status'),
                     _href=URL(r=request, c='default', f='svcmon',
                               vars={'svcmon_f_svc_app': row['svc_app'],
                                     'clear_filters': 'true'}),
                     _class="svc",
+                  ),
+                  A(
+                    T('disk info'),
+                    _href=URL(r=request, c='disks', f='disks',
+                              vars={'disks_f_app': row['svc_app'],
+                                    'clear_filters': 'true'}),
+                    _class="hd16",
                   ),
                   A(
                     T('availability'),
