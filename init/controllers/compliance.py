@@ -11732,7 +11732,10 @@ def json_tree_action_show_filterset(fset_id):
     if len(rows) == 0:
         check_thres = SPAN()
     else:
-        l = [ '.'.join((r.chk_type, r.chk_inst)) for r in rows ]
+        l = [ "%(ti)s:%(low)s-%(high)s" % dict(
+                 ti='.'.join((r.chk_type, r.chk_instance)),
+                 low=str(r.chk_low),
+                 high=str(r.chk_high)) for r in rows ]
         check_thres = DIV(
           H3(SPAN(T("Used by checker thresholds"), " (%d) "%len(rows)), _class="line"),
           SPAN(', '.join(l)),
