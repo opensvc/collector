@@ -22,7 +22,10 @@ def action_q_event():
 
 def get_reachable_name(nodename):
     q = db.nodes.nodename == nodename
-    fqdn = db(q).select(db.nodes.fqdn).first().fqdn
+    row = db(q).select(db.nodes.fqdn).first()
+    if row is None:
+        return nodename
+    fqdn = row.fqdn
     if fqdn is None:
         return nodename
     if not fqdn.endswith('.'):
@@ -303,6 +306,8 @@ def json_action():
 
     for d in data:
         n += json_action_one(d)
+        if n % 10 == 0:
+            action_q_event()
 
     start_actiond()
 

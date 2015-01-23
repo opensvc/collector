@@ -131,6 +131,7 @@ def ajax_sanswitches():
     if len(request.args) == 1 and request.args[0] == 'line':
         if request.vars.volatile_filters is None:
             n = db(q).select(db.v_switches.id.count(), cacheable=True).first()._extra[db.v_switches.id.count()]
+            t.setup_pager(n)
             limitby = (t.pager_start,t.pager_end)
         else:
             n = 0

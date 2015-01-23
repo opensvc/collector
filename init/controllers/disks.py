@@ -627,6 +627,7 @@ def ajax_quota():
     if len(request.args) == 1 and request.args[0] == 'line':
         if request.vars.volatile_filters is None:
             n = len(db(q).select(cacheable=True))
+            t.setup_pager(n)
             limitby = (t.pager_start,t.pager_end)
         else:
             n = 0
@@ -1373,6 +1374,7 @@ def ajax_disks():
     if len(request.args) == 1 and request.args[0] == 'data':
         if request.vars.volatile_filters is None:
             n = db(q).select(db.b_disk_app.id.count(), cacheable=True, left=(l1,l2)).first()._extra[db.b_disk_app.id.count()]
+            t.setup_pager(n)
             limitby = (t.pager_start,t.pager_end)
         cols = t.get_visible_columns()
         t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=False, left=(l1,l2))

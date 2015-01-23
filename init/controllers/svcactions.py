@@ -497,6 +497,7 @@ def ajax_actions():
     if len(request.args) == 1 and request.args[0] == 'data':
         if request.vars.volatile_filters is None:
             n = db(q).count()
+            t.setup_pager(n)
             limitby = (t.pager_start,t.pager_end)
         else:
             n = 0

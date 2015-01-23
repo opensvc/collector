@@ -2160,6 +2160,7 @@ def ajax_comp_rulesets():
     if len(request.args) == 1 and request.args[0] == 'line':
         if request.vars.volatile_filters is None:
             n = db(q).count()
+            v.setup_pager(n)
             limitby = (v.pager_start,v.pager_end)
         else:
             n = 0
@@ -3092,6 +3093,7 @@ def ajax_comp_filters():
     if len(request.args) == 1 and request.args[0] == 'line':
         if request.vars.volatile_filters is None:
             n = db(q).count()
+            v.setup_pager(n)
             limitby = (v.pager_start,v.pager_end)
         else:
             n = 0
@@ -3187,6 +3189,7 @@ def ajax_comp_filtersets():
     if len(request.args) == 1 and request.args[0] == 'line':
         if request.vars.volatile_filters is None:
             n = db(q).count()
+            t.setup_pager(n)
             limitby = (t.pager_start,t.pager_end)
         else:
             n = 0
@@ -3775,6 +3778,7 @@ def ajax_comp_moduleset():
         if request.vars.volatile_filters is None:
 
             n = len(db(q).select(db.comp_moduleset_modules.id, left=(l1,l2,l3), groupby=g))
+            t.setup_pager(n)
             limitby = (t.pager_start,t.pager_end)
         else:
             n = 0
@@ -5022,6 +5026,7 @@ def ajax_comp_status():
     if len(request.args) == 1 and request.args[0] == 'data':
         if request.vars.volatile_filters is None:
             n = db(q).select(db.comp_status.id.count(), cacheable=True).first()._extra[db.comp_status.id.count()]
+            t.setup_pager(n)
             limitby = (t.pager_start,t.pager_end)
         else:
             n = 0

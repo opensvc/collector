@@ -1665,7 +1665,7 @@ function table_action_menu_post_data(t, data, confirmation) {
     }
     table_action_menu_click_animation(t)
     $.ajax({
-      async: false,
+      //async: false,
       type: "POST",
       url: $(location).attr("origin") + "/init/action_menu/call/json/json_action",
       data: {"data": JSON.stringify(data)},
@@ -1706,18 +1706,22 @@ function table_action_menu(t, e){
   if ("nodes" in t.action_menu) {
     s += table_action_menu_node(t, e)
     s += table_action_menu_nodes(t)
+    s += table_action_menu_nodes_all(t, e)
   }
   if ("services" in t.action_menu) {
     s += table_action_menu_svc(t, e)
     s += table_action_menu_svcs(t)
+    s += table_action_menu_svcs_all(t, e)
   }
   if ("resources" in t.action_menu) {
     s += table_action_menu_resource(t, e)
     s += table_action_menu_resources(t)
+    s += table_action_menu_resources_all(t, e)
   }
   if ("modules" in t.action_menu) {
     s += table_action_menu_module(t, e)
     s += table_action_menu_modules(t)
+    s += table_action_menu_modules_all(t, e)
   }
   if (s == "") {
     return
@@ -1746,6 +1750,14 @@ function table_action_menu(t, e){
     }
     table_action_menu_post_data(t, data)
   })
+  $("#am_"+t.id).find("[scope=modules_all]").bind("click", function(){
+    var action = $(this).attr("action")
+    var data = table_action_menu_get_modules_all_data(t, e, action)
+    if (data.length==0) {
+      return
+    }
+    table_action_menu_post_data(t, data)
+  })
   $("#am_"+t.id).find("[scope=resource]").bind("click", function(){
     var action = $(this).attr("action")
     var data = table_action_menu_get_resource_data(t, e, action)
@@ -1757,6 +1769,14 @@ function table_action_menu(t, e){
   $("#am_"+t.id).find("[scope=resources]").bind("click", function(){
     var action = $(this).attr("action")
     var data = table_action_menu_get_resources_data(t, action)
+    if (data.length==0) {
+      return
+    }
+    table_action_menu_post_data(t, data)
+  })
+  $("#am_"+t.id).find("[scope=resources_all]").bind("click", function(){
+    var action = $(this).attr("action")
+    var data = table_action_menu_get_resources_all_data(t, e, action)
     if (data.length==0) {
       return
     }
@@ -1778,6 +1798,14 @@ function table_action_menu(t, e){
     }
     table_action_menu_post_data(t, data)
   })
+  $("#am_"+t.id).find("[scope=svcs_all]").bind("click", function(){
+    var action = $(this).attr("action")
+    var data = table_action_menu_get_svcs_all_data(t, e, action)
+    if (data.length==0) {
+      return
+    }
+    table_action_menu_post_data(t, data)
+  })
   $("#am_"+t.id).find("[scope=node]").bind("click", function(){
     var action = $(this).attr("action")
     var data = table_action_menu_get_node_data(t, e, action)
@@ -1789,6 +1817,14 @@ function table_action_menu(t, e){
   $("#am_"+t.id).find("[scope=nodes]").bind("click", function(){
     var action = $(this).attr("action")
     var data = table_action_menu_get_nodes_data(t, action)
+    if (data.length==0) {
+      return
+    }
+    table_action_menu_post_data(t, data)
+  })
+  $("#am_"+t.id).find("[scope=nodes_all]").bind("click", function(){
+    var action = $(this).attr("action")
+    var data = table_action_menu_get_nodes_all_data(t, e, action)
     if (data.length==0) {
       return
     }
@@ -1812,6 +1848,187 @@ function table_action_menu(t, e){
   })
 }
 
+function table_action_menu_get_nodes_all_data(t, e, action) {
+    var cell = $(e.target)
+    var line = cell.parents(".tl").first()
+    var name = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_nodename],td[cell=1][name$=hostname]").first().attr("name")
+    var col = name.replace(/.*_c_/, "")
+    var url = t.ajax_url+"/data"
+    var vars = {}
+    vars["table_id"] = t.id
+    vars["visible_columns"] = col
+    vars[t.id+"_page"] = 0
+    var data = []
+    $.ajax({
+         async: false,
+         type: "POST",
+         url: url,
+         data: vars,
+         success: function(msg){
+           try {
+             var _data = $.parseJSON(msg)
+             var lines = _data['table_lines']
+           } catch(e) {
+             return []
+           }
+           if (t.extrarow) {
+             var cols = ["extra"].concat(t.columns)
+           } else {
+             var cols = t.columns
+           }
+           idx = cols.indexOf(col)
+           var sigs = []
+           for (i=0; i<lines.length; i++) {
+             var sig = lines[i]["cells"][idx]
+             if (sigs.indexOf(sig) >= 0) { continue }
+             sigs.push(sig)
+             data.push({nodename: lines[i]["cells"][idx], action: action})
+           }
+         }
+    })
+    return data
+}
+
+function table_action_menu_get_svcs_all_data(t, e, action) {
+    var cell = $(e.target)
+    var line = cell.parents(".tl").first()
+    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_nodename],td[cell=1][name$=hostname]").first().attr("name")
+    var svcname = line.find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name],td[cell=1][name$=disk_svcname]").first().attr("name")
+    var colnode = nodename.replace(/.*_c_/, "")
+    var colsvc = svcname.replace(/.*_c_/, "")
+    var url = t.ajax_url+"/data"
+    var vars = {}
+    vars["table_id"] = t.id
+    vars["visible_columns"] = colnode+","+colsvc
+    vars[t.id+"_page"] = 0
+    var data = []
+    $.ajax({
+         async: false,
+         type: "POST",
+         url: url,
+         data: vars,
+         success: function(msg){
+           try {
+             var _data = $.parseJSON(msg)
+             var lines = _data['table_lines']
+           } catch(e) {
+             return []
+           }
+           if (t.extrarow) {
+             var cols = ["extra"].concat(t.columns)
+           } else {
+             var cols = t.columns
+           }
+           idxnode = cols.indexOf(colnode)
+           idxsvc = cols.indexOf(colsvc)
+           var sigs = []
+           for (i=0; i<lines.length; i++) {
+             var sig = lines[i]["cells"][idxnode]+"--"+lines[i]["cells"][idxsvc]
+             if (sigs.indexOf(sig) >= 0) { continue }
+             sigs.push(sig)
+             data.push({nodename: lines[i]["cells"][idxnode], svcname: lines[i]["cells"][idxsvc], action: action})
+           }
+         }
+    })
+    return data
+}
+
+function table_action_menu_get_resources_all_data(t, e, action) {
+    var cell = $(e.target)
+    var line = cell.parents(".tl").first()
+    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_nodename],td[cell=1][name$=hostname]").first().attr("name")
+    var svcname = line.find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name],td[cell=1][name$=disk_svcname]").first().attr("name")
+    var rid = line.find("td[cell=1][name$=_rid]").first().attr("name")
+    var colnode = nodename.replace(/.*_c_/, "")
+    var colsvc = svcname.replace(/.*_c_/, "")
+    var colrid = rid.replace(/.*_c_/, "")
+    var url = t.ajax_url+"/data"
+    var vars = {}
+    vars["table_id"] = t.id
+    vars["visible_columns"] = colnode+","+colsvc+","+rid
+    vars[t.id+"_page"] = 0
+    var data = []
+    $.ajax({
+         async: false,
+         type: "POST",
+         url: url,
+         data: vars,
+         success: function(msg){
+           try {
+             var _data = $.parseJSON(msg)
+             var lines = _data['table_lines']
+           } catch(e) {
+             return []
+           }
+           if (t.extrarow) {
+             var cols = ["extra"].concat(t.columns)
+           } else {
+             var cols = t.columns
+           }
+           idxnode = cols.indexOf(colnode)
+           idxsvc = cols.indexOf(colsvc)
+           idxrid = cols.indexOf(colrid)
+           for (i=0; i<lines.length; i++) {
+             data.push({
+               nodename: lines[i]["cells"][idxnode],
+               svcname: lines[i]["cells"][idxsvc],
+               rid: lines[i]["cells"][idxrid],
+               action: action
+             })
+           }
+         }
+    })
+    return data
+}
+
+function table_action_menu_get_modules_all_data(t, e, action) {
+    var cell = $(e.target)
+    var line = cell.parents(".tl").first()
+    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_nodename],td[cell=1][name$=hostname]").first().attr("name")
+    var svcname = line.find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name],td[cell=1][name$=disk_svcname]").first().attr("name")
+    var module = line.find("td[cell=1][name$=_run_module]").first().attr("name")
+    var colnode = nodename.replace(/.*_c_/, "")
+    var colsvc = svcname.replace(/.*_c_/, "")
+    var colmodule = module.replace(/.*_c_/, "")
+    var url = t.ajax_url+"/data"
+    var vars = {}
+    vars["table_id"] = t.id
+    vars["visible_columns"] = colnode+","+colsvc+","+colmodule
+    vars[t.id+"_page"] = 0
+    var data = []
+    $.ajax({
+         async: false,
+         type: "POST",
+         url: url,
+         data: vars,
+         success: function(msg){
+           try {
+             var _data = $.parseJSON(msg)
+             var lines = _data['table_lines']
+           } catch(e) {
+             return []
+           }
+           if (t.extrarow) {
+             var cols = ["extra"].concat(t.columns)
+           } else {
+             var cols = t.columns
+           }
+           idxnode = cols.indexOf(colnode)
+           idxsvc = cols.indexOf(colsvc)
+           idxmodule = cols.indexOf(colmodule)
+           for (i=0; i<lines.length; i++) {
+             data.push({
+               nodename: lines[i]["cells"][idxnode],
+               svcname: lines[i]["cells"][idxsvc],
+               module: lines[i]["cells"][idxmodule],
+               action: action
+             })
+           }
+         }
+    })
+    return data
+}
+
 function table_action_menu_get_nodes_data(t, action) {
     var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
     var data = []
@@ -1830,7 +2047,7 @@ function table_action_menu_get_nodes_data(t, action) {
 function table_action_menu_get_node_data(t, e, action) {
     var cell = $(e.target)
     var line = cell.parents(".tl").first()
-    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_svcname],td[cell=1][name$=hostname]").first().attr("v")
+    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_nodename],td[cell=1][name$=hostname]").first().attr("v")
     if ((typeof nodename === "undefined")||(nodename=="")) {
       return []
     }
@@ -1843,11 +2060,11 @@ function table_action_menu_get_svcs_data(t, action) {
     var data = []
     var index = []
     lines.each(function(){
-      var nodename = $(this).find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").attr("v")
+      var nodename = $(this).find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_nodename],td[cell=1][name$=hostname]").attr("v")
       if ((typeof nodename === "undefined")||(nodename=="")) {
         return []
       }
-      var svcname = $(this).find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").attr("v")
+      var svcname = $(this).find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name],td[cell=1][name$=disk_svcname]").attr("v")
       if ((typeof svcname === "undefined")||(svcname=="")) {
         return []
       }
@@ -1978,6 +2195,15 @@ function menu_action_status(msg){
   $(".flash").html(s).slideDown().effect("fade", 5000)
 }
 
+function table_action_menu_modules_all(t, e){
+  var data = table_action_menu_get_module_data(t, e)
+  if (data.length==0) {
+    return ""
+  }
+  var s = "<li class='clickable'>"+T("Actions on all modules")+table_action_menu_module_entries(t, "modules_all")+"</li>"
+  return s
+}
+
 function table_action_menu_module(t, e){
   var data = table_action_menu_get_module_data(t, e)
   if (data.length==0) {
@@ -2000,6 +2226,15 @@ function table_action_menu_modules(t){
   return s
 }
 
+function table_action_menu_resources_all(t, e){
+  var data = table_action_menu_get_resource_data(t, e)
+  if (data.length==0) {
+    return ""
+  }
+  var s = "<li class='clickable'>"+T("Actions on all resources")+table_action_menu_resource_entries(t, "resources_all")+"</li>"
+  return s
+}
+
 function table_action_menu_resource(t, e){
   var data = table_action_menu_get_resource_data(t, e)
   if (data.length==0) {
@@ -2018,6 +2253,15 @@ function table_action_menu_resources(t){
   return s
 }
 
+function table_action_menu_svcs_all(t, e){
+  var data = table_action_menu_get_svc_data(t, e)
+  if (data.length==0) {
+    return ""
+  }
+  var s = "<li class='clickable'>"+T("Actions on all service instances")+table_action_menu_svc_entries(t, "svcs_all")+"</li>"
+  return s
+}
+
 function table_action_menu_svc(t, e){
   var data = table_action_menu_get_svc_data(t, e)
   if (data.length==0) {
@@ -2033,6 +2277,15 @@ function table_action_menu_svcs(t){
     return ""
   }
   var s = "<li class='clickable'>"+T("Actions on selected service instances")+" (<b>"+data.length+"</b>)"+table_action_menu_svc_entries(t, "svcs")+"</li>"
+  return s
+}
+
+function table_action_menu_nodes_all(t, e){
+  var data = table_action_menu_get_node_data(t, e)
+  if (data.length==0) {
+    return ""
+  }
+  var s = "<li class='clickable'>"+T("Actions on all nodes")+table_action_menu_node_entries(t, "nodes_all")+"</li>"
   return s
 }
 

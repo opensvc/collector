@@ -172,6 +172,7 @@ def ajax_nodesan():
         return t.csv()
     if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).select(db.v_nodesan.id.count(), cacheable=True).first()._extra[db.v_nodesan.id.count()]
+        t.setup_pager(n)
         limitby = (t.pager_start,t.pager_end)
         cols = t.get_visible_columns()
         t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=False)
