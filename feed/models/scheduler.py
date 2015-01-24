@@ -245,7 +245,7 @@ def _push_checks(vars, vals):
                        'chk_nodename': nodename,
                      }
                     }))
- 
+
 def _insert_generic(data, auth):
     now = datetime.datetime.now()
     if type(data) != dict:
@@ -282,6 +282,27 @@ def _insert_generic(data, auth):
             vars.append('nodename')
             for i, val in enumerate(vals):
                 vals[i].append(auth[1])
+        try:
+            idx = vars.index("mask")
+            for i, val in enumerate(vals):
+                if vals[i][idx].count(".") == 3:
+                    l = vals[i][idx].split(".")
+                elif len(vals[i][idx]) == 8:
+                    l = (
+                     int(vals[i][idx][0:1], base=16),
+                     int(vals[i][idx][2:3], base=16),
+                     int(vals[i][idx][4:5], base=16),
+                     int(vals[i][idx][6:7], base=16)
+                    )
+                else:
+                    continue
+                s = bin(int(l[0]))[2:]+bin(int(l[1]))[2:]+bin(int(l[2]))[2:]+bin(int(l[3]))[2:]
+                vals[i][idx] = str(s.count("1"))
+        except ValueError:
+            print "value error"
+            pass
+        except Exception as e:
+            print str(e)
         ip_blist = ["224.0.0.1", "ff02::1"]
         _vals = []
         i = vars.index("addr")

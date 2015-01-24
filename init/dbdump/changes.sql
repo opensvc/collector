@@ -4414,3 +4414,7 @@ CREATE TABLE comp_moduleset_moduleset (
 
 create view v_comp_moduleset_attachments as select nm.modset_node as nodename, NULL as svcname, ms.modset_name as modset_name from comp_node_moduleset nm join comp_moduleset ms on nm.modset_id=ms.id union all select NULL as nodename, sm.modset_svcname as svcname, ms.modset_name as modset_name from comp_modulesets_services sm join comp_moduleset ms on sm.modset_id=ms.id;
 
+alter table node_users modify column user_name varchar(255) not NULL;
+
+alter table node_groups modify column group_name varchar(255) not NULL;
+

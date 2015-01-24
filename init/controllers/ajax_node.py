@@ -612,37 +612,50 @@ def ajax_node():
              order by node_ip.mac, node_ip.intf
           """ % dict(nodename=request.vars.node)
     rows = db.executesql(sql, as_dict=True)
-    _nets = [TR(
+    nets_header = TR(
                TH("mac"),
-               TH("interface"),
+               TH("interface", _style="width:7em"),
                TH("type"),
-               TH("addr"),
-               TH("mask"),
-               TH("net name"),
-               TH("net comment"),
-               TH("net pvid"),
+               TH("addr", _style="width:20em"),
+               TH("mask", _style="width:7em"),
+               TH("net name", _style="width:10em"),
+               TH("net comment", _style="width:10em"),
+               TH("net pvid", _style="width:4em"),
                TH("net base"),
-               TH("net gateway"),
-               TH("net begin"),
-               TH("net end"),
-             )]
+               TH("net gateway", _style="width:7em"),
+               TH("net begin", _style="width:7em"),
+               TH("net end", _style="width:7em"),
+             )
+    nets_v4_unicast = [nets_header]
+    nets_v6_unicast = [nets_header]
+    nets_v4_mcast = [nets_header]
+    nets_v6_mcast = [nets_header]
     for row in rows:
-        _nets.append(TR(
+        netline = TR(
                        TD(row['mac']),
                        TD(row['intf']),
                        TD(row['type']),
                        TD(row['addr']),
                        TD(row['mask']),
-                       TD(row['name'], _class="bluer"),
-                       TD(row['comment'], _class="bluer"),
-                       TD(row['pvid'], _class="bluer"),
-                       TD(row['network'], _class="bluer"),
-                       TD(row['gateway'], _class="bluer"),
-                       TD(row['begin'], _class="bluer"),
-                       TD(row['end'], _class="bluer"),
-                     ))
-    if len(_nets) == 1:
-        _nets.append(TR(
+                       TD(row['name'] if row['name'] else '-', _class="bluer"),
+                       TD(row['comment'] if row['comment'] else '-', _class="bluer"),
+                       TD(row['pvid'] if row['pvid'] else '-', _class="bluer"),
+                       TD(row['network'] if row['network'] else '-', _class="bluer"),
+                       TD(row['gateway'] if row['gateway'] else '-', _class="bluer"),
+                       TD(row['begin'] if row['begin'] else '-', _class="bluer"),
+                       TD(row['end'] if row['end'] else '-', _class="bluer"),
+                     )
+        if row['type'] == "ipv4":
+            if row['mask'] != "":
+                nets_v4_unicast.append(netline)
+            else:
+                nets_v4_mcast.append(netline)
+        elif row['type'] == "ipv6":
+            if row['mask'] != "":
+                nets_v6_unicast.append(netline)
+            else:
+                nets_v6_mcast.append(netline)
+    empty_netline = TR(
                        TD('-'),
                        TD('-'),
                        TD('-'),
@@ -655,11 +668,25 @@ def ajax_node():
                        TD('-'),
                        TD('-'),
                        TD('-'),
-                     ))
+                     )
+    if len(nets_v4_mcast) == 1:
+        nets_v4_mcast.append(empty_netline)
+    if len(nets_v4_unicast) == 1:
+        nets_v4_unicast.append(empty_netline)
+    if len(nets_v6_mcast) == 1:
+        nets_v6_mcast.append(empty_netline)
+    if len(nets_v6_unicast) == 1:
+        nets_v6_unicast.append(empty_netline)
 
     nets = DIV(
-      H3(T("Networks")),
-      TABLE(_nets),
+      H3(SPAN(T("ipv4 unicast")), _class="line"),
+      TABLE(nets_v4_unicast),
+      H3(SPAN(T("ipv6 unicast")), _class="line"),
+      TABLE(nets_v6_unicast),
+      H3(SPAN(T("ipv4 multicast")), _class="line"),
+      TABLE(nets_v4_mcast),
+      H3(SPAN(T("ipv6 multicast")), _class="line"),
+      TABLE(nets_v6_mcast),
     )
 
     t = TABLE(
