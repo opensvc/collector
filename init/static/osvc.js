@@ -248,8 +248,17 @@ function _show_result(e, url, id){
                   $("#"+_id).show()
                   sync_ajax(_url, [], _id, function(){})
                 })
-                if ($('#'+id).find(".meta_nodename,.meta_svcname,.meta_username").length == 1) {
-                  $('#'+id).find(".meta_nodename,.meta_svcname,.meta_username").trigger("click")
+                $('#'+id).find(".meta_groupname").click(function() {
+                  var groupname = $(this).text()
+                  var _id = "sextra_"+groupname.replace(/[ \.\-\/]/g, '_')
+                  var d = "<div id='"+_id+"' class='searchtab hidden'></div>"
+                  $(this).parents('table').first().find("[name=extra]").html(d)
+                  var _url = $(location).attr("origin") + "/init/ajax_group/ajax_group?groupname="+groupname+"&rowid="+_id
+                  $("#"+_id).show()
+                  sync_ajax(_url, [], _id, function(){})
+                })
+                if ($('#'+id).find(".meta_nodename,.meta_svcname,.meta_username,.meta_groupname").length == 1) {
+                  $('#'+id).find(".meta_nodename,.meta_svcname,.meta_username,.meta_groupname").trigger("click")
                 }
             }
         })

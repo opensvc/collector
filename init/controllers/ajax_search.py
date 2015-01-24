@@ -20,10 +20,11 @@ def ajax_search():
     node = format_node(pattern)
     vm = format_vm(pattern)
     user = format_user(pattern)
+    group = format_group(pattern)
     app = format_app(pattern)
     disk = format_disk(pattern)
 
-    if len(svc)+len(node)+len(user)+len(app)+len(vm)+len(disk) == 0:
+    if len(svc)+len(node)+len(user)+len(group)+len(app)+len(vm)+len(disk) == 0:
         return ''
 
     return DIV(
@@ -31,6 +32,7 @@ def ajax_search():
              node,
              vm,
              user,
+             group,
              app,
              disk,
            )
@@ -82,7 +84,7 @@ def format_disk(pattern):
 
 def format_app(pattern):
     o = db.v_svcmon.svc_app
-    q = _where(None, 'v_svcmon', pattern, 'mon_svcname')
+    q = _where(None, 'v_svcmon', pattern, 'svc_app')
     q = _where(q, 'v_svcmon', domain_perms(), 'mon_svcname')
     q = apply_gen_filters(q, ["v_svcmon"])
     rows = db(q).select(o, orderby=o, groupby=o, limitby=(0,max_search_result))
@@ -435,6 +437,76 @@ def format_user(pattern):
         l.append(format_row(row))
     d = DIV(
           T('Users'), ' (', n, ')',
+          SPAN(l),
+          _class="menu_section",
+        )
+    return d
+
+def format_group(pattern):
+    o = db.auth_group.role
+    q = _where(None, 'auth_group', pattern, 'role')
+    rows = db(q).select(o, orderby=o, groupby=o, limitby=(0,max_search_result))
+    n = len(db(q).select(o, groupby=o))
+
+    if len(rows) == 0:
+        return ''
+
+    def format_row(row, _class=""):
+        if _class == "":
+            _class="meta_groupname clickable"
+
+        d = TABLE(
+              TR(
+                TD(
+                  _class="s_guys48",
+                ),
+                TD(
+                  P(row['role'], _class=_class),
+                  A(
+                    T('asset'),
+                    _href=URL(r=request, c='nodes', f='nodes',
+                              vars={'nodes_f_team_responsible': row['role'],
+                                    'clear_filters': 'true'}),
+                    _class="hw16",
+                  ),
+                  A(
+                    T('apps'),
+                    _href=URL(r=request, c='apps', f='apps',
+                              vars={'apps_f_roles': '%'+row['role']+'%',
+                                    'clear_filters': 'true'}),
+                    _class="svc",
+                  ),
+                  A(
+                    T('checks'),
+                    _href=URL(r=request, c='checks', f='checks',
+                              vars={'checks_f_team_responsible': row['role'],
+                                    'clear_filters': 'true'}),
+                    _class="check16",
+                  ),
+                  A(
+                    T('compliance status'),
+                    _href=URL(r=request, c='compliance', f='comp_status',
+                              vars={'cs0_f_team_responsible': row['role'],
+                                    'clear_filters': 'true'}),
+                    _class="comp16",
+                  ),
+                ),
+              ),
+              TR(
+                TD(
+                  _name="extra",
+                  _colspan=2,
+                ),
+              ),
+            )
+        return d
+    l = []
+    if n > 1:
+        l.append(format_row({'role': pattern}, "highlight_light"))
+    for row in rows:
+        l.append(format_row(row))
+    d = DIV(
+          T('Groups'), ' (', n, ')',
           SPAN(l),
           _class="menu_section",
         )
