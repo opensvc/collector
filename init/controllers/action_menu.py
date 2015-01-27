@@ -1,7 +1,23 @@
+config = local_import('config', reload=True)
+
+try:
+    remote_cmd_preprend = config.remote_cmd_preprend
+except:
+    remote_cmd_preprend = []
+
 ssh_cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
                   '-o', 'ForwardX11=no',
                   '-o', 'PasswordAuthentication=no',
                   '-tt']
+
+def get_ssh_cmd(nodename):
+    row = db(db.nodes.nodename==nodename).select(db.nodes.os_name).first()
+    if row is None:
+        return ssh_cmd
+    try:
+        return config.remote_cmd_ssh.get(row.os_name, ssh_cmd)
+    except:
+        return ssh_cmd
 
 def call():
     """
@@ -21,6 +37,15 @@ def action_q_event():
     _websocket_send(event_msg(l))
 
 def get_reachable_name(nodename):
+    # try short name first
+    import socket
+    try:
+        socket.gethostbyname(nodename)
+        return nodename
+    except:
+        pass
+
+    # try fqdn
     q = db.nodes.nodename == nodename
     row = db(q).select(db.nodes.fqdn).first()
     if row is None:
@@ -30,14 +55,23 @@ def get_reachable_name(nodename):
         return nodename
     if not fqdn.endswith('.'):
         fqdn += '.'
-    import socket
     try:
         socket.gethostbyname(fqdn)
         return fqdn
     except:
         pass
 
-    return nodename
+    # ip fallback
+    q = db.v_nodenetworks.nodename == nodename
+    q &= db.v_nodenetworks.mask != None
+    q &= db.v_nodenetworks.mask != ""
+    q &= db.v_nodenetworks.net_gateway != None
+    q &= db.v_nodenetworks.net_gateway != ""
+    o = db.v_nodenetworks.type
+    row = db(q).select(db.v_nodenetworks.addr, orderby=o, limitby=(0,1)).first()
+    if row is None:
+        return nodename
+    return row.addr
 
 def start_actiond():
     from subprocess import Popen
@@ -93,7 +127,7 @@ def fmt_svc_action(node, svc, action, action_type, rid=None):
     if action_type == "pull":
         cmd = []
     else:
-        cmd = ssh_cmd + ['opensvc@'+node, '--']
+        cmd = get_ssh_cmd(node) + ['opensvc@'+node, '--'] + remote_cmd_preprend
     cmd += ['sudo', '/opt/opensvc/bin/svcmgr', '--service', svc, action]
     if rid is not None:
         cmd += ["--rid", rid]
@@ -104,7 +138,7 @@ def fmt_node_comp_action(node, action, mode, mod, action_type):
     if action_type == "pull":
         cmd = []
     else:
-        cmd = ssh_cmd + ['opensvc@'+node, '--']
+        cmd = get_ssh_cmd(node) + ['opensvc@'+node, '--'] + remote_cmd_preprend
     cmd += ['sudo', '/opt/opensvc/bin/nodemgr', 'compliance', action,
             '--'+mode, mod]
     return ' '.join(cmd)
@@ -114,7 +148,7 @@ def fmt_node_action(node, action, action_type):
     if action_type == "pull":
         cmd = []
     else:
-        cmd = ssh_cmd + ['opensvc@'+node, '--']
+        cmd = get_ssh_cmd(node) + ['opensvc@'+node, '--'] + remote_cmd_preprend
     cmd += ['sudo', '/opt/opensvc/bin/nodemgr', action]
     return ' '.join(cmd)
 
@@ -123,7 +157,7 @@ def fmt_svc_comp_action(node, service, action, mode, mod, action_type):
     if action_type == "pull":
         cmd = []
     else:
-        cmd = ssh_cmd + ['opensvc@'+node, '--']
+        cmd = get_ssh_cmd(node) + ['opensvc@'+node, '--'] + remote_cmd_preprend
     cmd += ['sudo', '/opt/opensvc/bin/svcmgr', '-s', service, 'compliance', action,
             '--'+mode, mod]
     return ' '.join(cmd)
