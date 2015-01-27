@@ -248,7 +248,7 @@ response.menu = [
              [menu_entries_data['comp-log'], display('comp-log'), URL(request.application,'compliance','comp_log')],
              [menu_entries_data['comp-modsets'], display('comp-modsets'), URL(request.application,'compliance','comp_modules')],
              [menu_entries_data['comp-rsets'], display('comp-rsets'), URL(request.application,'compliance','comp_rules')],
-             [menu_entries_data['comp-designer'], display('comp-designer'), URL(request.application,'compliance','comp_admin')],
+             [menu_entries_data['comp-designer'], display('comp-designer'), URL(request.application,'compliance','comp_admin', vars={"obj_filter": "opensvc"})],
              [menu_entries_data['comp-node-rset'], display('comp-node-rset'), URL(request.application,'compliance','comp_rulesets_nodes_attachment')],
              [menu_entries_data['comp-node-modset'], display('comp-node-modset'), URL(request.application,'compliance','comp_modulesets_nodes')],
              [menu_entries_data['comp-svc-rset'], display('comp-svc-rset'), URL(request.application,'compliance','comp_rulesets_services_attachment')],
