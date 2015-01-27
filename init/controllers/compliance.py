@@ -13381,6 +13381,14 @@ def json_tree_action_clone_moduleset(modset_id):
     table_modified("comp_moduleset_modules")
     add_default_team_responsible_to_modset(clone_modset_name)
 
+    # clone moduleset-ruleset attachments
+    q = db.comp_moduleset_ruleset.modset_id == modset_id
+    rows = db(q).select(cacheable=True)
+    for row in rows:
+        db.comp_moduleset_ruleset.insert(modset_id=newid,
+                                         ruleset_id=row.ruleset_id)
+    table_modified("comp_moduleset_ruleset")
+
     _log('compliance.moduleset.clone',
          'cloned moduleset %(o)s from %(n)s',
          dict(n=modset_name, o=clone_modset_name))
