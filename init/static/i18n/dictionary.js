@@ -8,6 +8,7 @@ var fr_t_dictionary = {
  'queued': 'en queue',
  'cancelled': 'annulé',
  'Tools': 'Outils',
+ 'No menu entry found matching filter': 'Aucune entrée du menu ne correspond au filtre',
  'Loading data': 'Chargement des données',
  'Nodes performance': 'Performance des noeuds',
  'Nodes SAN topology': 'Topologie SAN des noeuds',

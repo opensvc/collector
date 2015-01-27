@@ -282,12 +282,17 @@ function filter_menu() {
       $(this).hide()
     }
   })
+  var entries = menu.find(".menu_entry:visible")
   if (is_enter(event)) {
-    var entries = menu.find(".menu_entry:visible")
     if (menu.is(":visible") && (entries.length == 1)) {
       entries.effect("highlight")
       window.location = entries.children("a").attr("href")
     }
+  }
+  if (entries.length==0) {
+    menu.append("<div class='menu_entry meta_not_found'><a><div class='question48'>"+T("No menu entry found matching filter")+"</div></a></div>")
+  } else {
+    menu.find(".meta_not_found").remove()
   }
 }
 
