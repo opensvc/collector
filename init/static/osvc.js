@@ -1542,8 +1542,8 @@ function table_bind_filter_input_events(t) {
       window["ajax_submit_"+t.id]()
       t.refresh_column_filters()
     }
-    _url = url + col + "?" + k + "=" + encodeURIComponent($("#"+k).val())
-    sync_ajax(_url, [], ck, f)
+    _url = url + col
+    sync_ajax(_url, [k], ck, f)
   })
   t.bind_filter_reformat()
 }
