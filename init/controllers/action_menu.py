@@ -36,12 +36,21 @@ def action_q_event():
     }
     _websocket_send(event_msg(l))
 
+def known_ip(nodename, addr):
+    q = db.node_ip.nodename == nodename
+    q &= db.node_ip.addr == addr
+    row = db(q).select().first()
+    if row is None:
+        return False
+    return True
+
 def get_reachable_name(nodename):
     # try short name first
     import socket
     try:
-        socket.gethostbyname(nodename)
-        return nodename
+        addr = socket.gethostbyname(nodename)
+        if known_ip(nodename, addr):
+            return nodename
     except:
         pass
 
@@ -56,8 +65,9 @@ def get_reachable_name(nodename):
     if not fqdn.endswith('.'):
         fqdn += '.'
     try:
-        socket.gethostbyname(fqdn)
-        return fqdn
+        addr = socket.gethostbyname(fqdn)
+        if known_ip(nodename, addr):
+            return fqdn
     except:
         pass
 
