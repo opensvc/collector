@@ -26,10 +26,13 @@ def merge_data(data, mirror=False, purge_old_col=None):
     for table, (vars, vals) in data.items():
         if mirror:
             db.executesql("truncate %s"%table)
+        n = len(vals)
         while len(vals) > max:
             generic_insert(table, vars, vals[:max])
             vals = vals[max:]
         generic_insert(table, vars, vals)
+        if n > 0:
+            table_modified(table)
 
 def get_push_remotes():
     return get_remotes("push")

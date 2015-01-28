@@ -1058,6 +1058,14 @@ db.define_table('comp_log',
     Field('rset_md5','string'),
     migrate=False)
 
+db.define_table('comp_log_daily',
+    Field('run_module','string'),
+    Field('run_nodename','string'),
+    Field('run_svcname','string'),
+    Field('run_status','integer'),
+    Field('run_date','date'),
+    migrate=False)
+
 db.define_table('comp_status',
     Field('run_module','string'),
     Field('run_nodename','string'),

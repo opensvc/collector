@@ -289,10 +289,10 @@ def _insert_generic(data, auth):
                     l = vals[i][idx].split(".")
                 elif len(vals[i][idx]) == 8:
                     l = (
-                     int(vals[i][idx][0:1], base=16),
-                     int(vals[i][idx][2:3], base=16),
-                     int(vals[i][idx][4:5], base=16),
-                     int(vals[i][idx][6:7], base=16)
+                     int(vals[i][idx][0:2], base=16),
+                     int(vals[i][idx][2:4], base=16),
+                     int(vals[i][idx][4:6], base=16),
+                     int(vals[i][idx][6:], base=16)
                     )
                 else:
                     continue

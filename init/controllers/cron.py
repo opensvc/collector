@@ -143,6 +143,7 @@ def cron_purge_expiry():
               ('switches', 'sw_updated', None),
               ('lifecycle_os', 'lc_date', None),
               ('comp_log', 'run_date', 'id'),
+              ('comp_log_daily', 'run_date', 'id'),
               ('svcmon_log', 'mon_end', 'id'),
               ('appinfo_log', 'app_updated', 'id'),
               ('SVCactions', 'begin', 'id'),

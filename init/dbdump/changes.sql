@@ -4418,3 +4418,19 @@ alter table node_users modify column user_name varchar(255) not NULL;
 
 alter table node_groups modify column group_name varchar(255) not NULL;
 
+CREATE TABLE `comp_log_daily` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `run_nodename` varchar(64) NOT NULL,
+  `run_module` varchar(64) NOT NULL,
+  `run_status` int(11) NOT NULL DEFAULT '1',
+  `run_date` date NOT NULL,
+  `run_svcname` varchar(64) NOT NULL DEFAULT "",
+  PRIMARY KEY (`id`,`run_date`),
+  UNIQUE KEY `idx2` (`run_date`, `run_nodename`, `run_svcname`, `run_module`),
+  KEY `idx1` (`run_nodename`),
+  KEY `idx3` (`run_module`)
+) ENGINE=InnoDB;
+
+insert into comp_log_daily select NULL, run_nodename, run_module, run_status, run_date, run_svcname from comp_log where run_date>date_sub(now(), interval 1 day) and run_action="check" on duplicate key update comp_log_daily.run_status=comp_log.run_status;
+
+

@@ -5467,33 +5467,29 @@ def json_svc_history():
 
     sql = """select
                t.run_date,
-               t.week,
                sum(t.ok) as ok,
                sum(t.nok) as nok,
                sum(t.na) as na
               from
               (
-                select week(run_date) as week,
+                select run_date,
                     if(run_status=0, 1, 0) as ok,
                     if(run_status=1, 1, 0) as nok,
-                    if(run_status=2, 1, 0) as na,
-                    run_date
+                    if(run_status=2, 1, 0) as na
                 from comp_log
                 where run_svcname="%(svcname)s" and
                     run_date>date_sub(now(), interval 1 year) and
                     run_module in (%(_sql)s)
-                group by week(run_date), run_module, run_nodename
               ) t
-              group by t.week
-              order by t.week
+              group by t.run_date
              """%dict(svcname=request.vars.svcname, _sql=_sql)
     ok = []
     nok = []
     na = []
     for r in db.executesql(sql):
-        ok.append((r[0], int(r[2])))
-        nok.append((r[0], int(r[3])))
-        na.append((r[0], int(r[4])))
+        ok.append((r[0], int(r[1])))
+        nok.append((r[0], int(r[2])))
+        na.append((r[0], int(r[3])))
     return [ok, nok, na]
 
 
@@ -5531,34 +5527,30 @@ def json_mod_history():
 
     sql = """select
                t.run_date,
-               t.week,
                sum(t.ok) as ok,
                sum(t.nok) as nok,
                sum(t.na) as na
               from
               (
-                select week(run_date) as week,
+                select run_date,
                     if(run_status=0, 1, 0) as ok,
                     if(run_status=1, 1, 0) as nok,
-                    if(run_status=2, 1, 0) as na,
-                    run_date
-                from comp_log
+                    if(run_status=2, 1, 0) as na
+                from comp_log_daily
                 where run_module="%(mod)s" and
                     run_date>date_sub(now(), interval 1 year) and
                     run_nodename in (%(_sql)s)
-                group by week(run_date), run_nodename, run_svcname
               ) t
-              group by t.week
-              order by t.week
+              group by t.run_date
              """%dict(mod=request.vars.modname, _sql=_sql)
     #raise Exception(sql)
     ok = []
     nok = []
     na = []
     for r in db.executesql(sql):
-        ok.append((r[0], int(r[2])))
-        nok.append((r[0], int(r[3])))
-        na.append((r[0], int(r[4])))
+        ok.append((r[0], int(r[1])))
+        nok.append((r[0], int(r[2])))
+        na.append((r[0], int(r[3])))
     return [ok, nok, na]
 
 @auth.requires_login()
@@ -5593,33 +5585,29 @@ def json_node_history():
 
     sql = """select
                t.run_date,
-               t.week,
                sum(t.ok) as ok,
                sum(t.nok) as nok,
                sum(t.na) as na
               from
               (
-                select week(run_date) as week,
+                select run_date,
                     if(run_status=0, 1, 0) as ok,
                     if(run_status=1, 1, 0) as nok,
-                    if(run_status=2, 1, 0) as na,
-                    run_date
-                from comp_log
+                    if(run_status=2, 1, 0) as na
+                from comp_log_daily
                 where run_nodename="%(node)s" and
                     run_date>date_sub(now(), interval 1 year) and
                     run_module in (%(_sql)s)
-                group by week(run_date), run_module
               ) t
-              group by t.week
-              order by t.week
+              group by t.run_date
              """%dict(node=request.vars.nodename, _sql=_sql)
     ok = []
     nok = []
     na = []
     for r in db.executesql(sql):
-        ok.append((r[0], int(r[2])))
-        nok.append((r[0], int(r[3])))
-        na.append((r[0], int(r[4])))
+        ok.append((r[0], int(r[1])))
+        nok.append((r[0], int(r[2])))
+        na.append((r[0], int(r[3])))
     return [ok, nok, na]
 
 @auth.requires_login()
@@ -6520,6 +6508,7 @@ def comp_log_action(vars, vals, auth):
     generic_insert('comp_log', vars, vals)
     if action == 'check':
         generic_insert('comp_status', vars, vals)
+
     update_dash_compdiff(auth[1])
     l = {
       'event': 'comp_status_change',
@@ -6560,6 +6549,19 @@ def comp_log_actions(vars, vals, auth):
     }
     _websocket_send(event_msg(l))
     update_dash_compdiff(auth[1])
+
+    # update comp_log_daily for faster charting
+    l = []
+    for key in ("run_log", "run_action", "rset_md5"):
+        l.append(vars.index(key))
+    l = sorted(l, reverse=True)
+    for j in l:
+        del(vars[j])
+    for i, _vals in enumerate(check_vals):
+        for j in l:
+            del(check_vals[i][j])
+    generic_insert('comp_log_daily', vars, check_vals)
+
 
 def comp_format_filter(q):
     s = str(q)
