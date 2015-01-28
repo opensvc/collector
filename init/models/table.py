@@ -3004,6 +3004,7 @@ node_actions = [
   {'title': 'Update installed patches information', 'class': 'pkg16', 'action': 'pushpatch'},
   {'title': 'Update stats', 'class': 'spark16', 'action': 'pushstats'},
   {'title': 'Update check values', 'class': 'check16', 'action': 'checks'},
+  {'title': 'Update sysreport', 'class': 'log16', 'action': 'sysreport'},
   {'title': 'Update compliance modules', 'class': 'comp16', 'action': 'updatecomp'},
   {'title': 'Update opensvc agent', 'class': 'pkg16', 'action': 'updatepkg'},
   {'title': 'Rotate root password', 'class': 'key16', 'action': 'rotate root pw'},
