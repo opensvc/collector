@@ -3,6 +3,28 @@
 import datetime
 import hashlib
 
+def git_commit(sysreport_d, git_d, nodename):
+    import os
+    cwd = os.getcwd()
+
+    if not os.path.exists(git_d):
+        from applications.init.modules import config
+        print "init sysreport git project"
+        os.system("git --git-dir=%s init" % git_d)
+        os.system("git --git-dir=%s config user.email %s" % (git_d, config.email_from))
+        os.system("git --git-dir=%s config user.name collector" % git_d)
+
+    if not os.path.exists(os.path.join(sysreport_d, nodename)):
+        print nodename, "dir does not exist in", sysreport_d
+        return 0
+
+    os.chdir(sysreport_d)
+    os.system("git add %s" % nodename)
+    os.system('git commit -m"" %s' % nodename)
+    os.chdir(cwd)
+
+    return 0
+
 def _begin_action(vars, vals, auth):
     sql="""insert into SVCactions (%s) values (%s)""" % (','.join(vars), ','.join(vals))
     db.executesql(sql)

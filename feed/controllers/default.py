@@ -523,21 +523,8 @@ def send_sysreport(fname, binary, deleted, auth):
     if which('git') is None:
         return
 
-    if not os.path.exists(git_d):
-        from applications.init.modules import config
-        print "init sysreport git project"
-        os.system("git --git-dir=%s init" % git_d)
-        os.system("git --git-dir=%s config user.email %s" % (git_d, config.email_from))
-        os.system("git --git-dir=%s config user.name collector" % git_d)
-
-    if not os.path.exists(os.path.join(sysreport_d, nodename)):
-        print nodename, "dir does not exist in", sysreport_d
-        return
-
-    os.chdir(sysreport_d)
-    os.system("git add %s" % nodename)
-    os.system('git commit -m"" %s' % nodename)
-    os.chdir(cwd)
+    scheduler.queue_task("git_commit", [sysreport_d, git_d, nodename],
+                         group_name="_insert_generic")
 
 def send_sysreport_delete(deleted, git_d, sysreport_d, cwd, nodename):
     if len(deleted) == 0:
@@ -603,7 +590,8 @@ def send_sysreport_archive(fname, binary, sysreport_d, nodename):
             if os.path.exists(mp):
                 st = os.stat(mp)
                 os.chmod(mp, st.st_mode | stat.S_IWRITE)
-        tar.extractall(path=sysreport_d)
+            tar.extract(member, path=sysreport_d)
+            os.chmod(mp, st.st_mode | stat.S_IREAD)
         tar.close()
         os.unlink(fpath)
     else:
