@@ -12246,7 +12246,6 @@ def json_tree_action_show_ruleset(rset_id):
     if len(rows) > 0:
         l.append(H3(SPAN(T("Attached to servers"), " (%d) "%len(rows)), _class="line"))
         l.append(P(' '.join(map(lambda x: x.nodename, rows))))
-        l.append(HR())
 
     #
     q = db.comp_rulesets_services.ruleset_id == rset_id
@@ -12254,7 +12253,6 @@ def json_tree_action_show_ruleset(rset_id):
     if len(rows) > 0:
         l.append(H3(SPAN(T("Attached to services"), " (%d) "%len(rows)), _class="line"))
         l.append(P(' '.join(map(lambda x: x.svcname, rows))))
-        l.append(HR())
 
     q = db.comp_rulesets_rulesets.id > 0
     rows = db(q).select(cacheable=True)
