@@ -12229,7 +12229,7 @@ def json_tree_action_show_ruleset(rset_id):
 
     #
     q = db.comp_rulesets_rulesets.child_rset_id == rset_id
-    q &= db.comp_rulesets_rulesets.child_rset_id == db.comp_rulesets.id
+    q &= db.comp_rulesets_rulesets.parent_rset_id == db.comp_rulesets.id
     rows = db(q).select(db.comp_rulesets.ruleset_name, cacheable=False)
     if len(rows) > 0:
         _l = [ r.ruleset_name for r in rows ]
