@@ -138,11 +138,15 @@ class viz(object):
             if "nodes" in self.display:
                 self.add_nodes_services()
 
+        if "arrays" in self.display:
+            self.data_disks()
+            self.add_arrays()
+
         if "disks" in self.display:
             self.data_disks()
             self.add_disks()
-            self.add_arrays()
-            self.add_arrays_disks()
+            if "arrays" in self.display:
+                self.add_arrays_disks()
             if "nodes" in self.display:
                 self.add_nodes_disks()
             if "services" in self.display:
@@ -296,6 +300,8 @@ class viz(object):
         self.rs["nodes"] = d
 
     def data_disks(self):
+        if "disks" in self.rs:
+            return
         q = db.b_disk_app.disk_svcname.belongs(self.svcnames) | \
             db.b_disk_app.disk_nodename.belongs(self.nodenames)
         rows = db(q).select(db.b_disk_app.disk_id,
@@ -813,6 +819,7 @@ def topo_script(eid):
         check("Hypervisor pools", "hvpools", "hv16"),
         check("Hypervisor VDC", "hvvdcs", "hv16"),
         check("Disks", "disks", "hd16"),
+        check("Arrays", "arrays", "hd16"),
         check("San", "san", "net16"),
         INPUT(
           _type="submit",
