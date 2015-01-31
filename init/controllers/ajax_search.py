@@ -563,7 +563,9 @@ def format_user(pattern):
 
 def format_group(pattern):
     o = db.auth_group.role
-    q = _where(None, 'auth_group', pattern, 'role')
+    q = db.auth_group.privilege == 'F'
+    q &= ~db.auth_group.role.like("user_%")
+    q = _where(q, 'auth_group', pattern, 'role')
     rows = db(q).select(o, orderby=o, groupby=o, limitby=(0,max_search_result))
     n = len(db(q).select(o, groupby=o))
 

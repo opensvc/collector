@@ -61,29 +61,16 @@ def table_modified(name):
 #
 # custom auth_user table. new field: email_notifications
 #
+auth.settings.extra_fields['auth_group']= [
+    Field('privilege','boolean'),
+]
+
 db.define_table('im_types',
     Field('im_type','string'),
     migrate=False)
 
-table = db.define_table(auth.settings.table_user_name,
-    Field('first_name', length=128, default='',
-          label=auth.messages.label_first_name,
-          requires=IS_NOT_EMPTY(error_message=auth.messages.is_empty)),
-    Field('last_name', length=128, default='',
-          label=auth.messages.label_last_name,
-          requires=IS_NOT_EMPTY(error_message=auth.messages.is_empty)),
-    Field('email', length=512, default='',
-          label=auth.messages.label_email),
+auth.settings.extra_fields['auth_user']= [
     Field('phone_work', 'string', label=T("Work desk phone number"), length=15),
-    Field('password', 'password', length=512,
-          readable=False, label=auth.messages.label_password,
-          requires=[CRYPT(key=auth.settings.hmac_key)]),
-    Field('registration_key', length=512,
-          writable=False, readable=False, default='',
-          label=auth.messages.label_registration_key),
-    Field('reset_password_key', length=512,
-          writable=False, readable=False, default='',
-          label=auth.messages.label_reset_password_key),
     Field('email_notifications', 'boolean', default=True,
           label=T('Email notifications')),
     Field('im_notifications', 'boolean', default=True,
@@ -101,27 +88,18 @@ table = db.define_table(auth.settings.table_user_name,
     Field('lock_filter', 'boolean', default=False,
           label=T("Lock user's session filter"),
           writable=False, readable=False),
-    migrate=False)
+]
 
-table.email.requires = [IS_EMAIL(error_message=auth.messages.invalid_email),
-                        IS_NOT_IN_DB(db, db.auth_user.email)]
-
-auth.define_tables(migrate=False)                         # creates all needed tables
-crud=Crud(globals(),db)                      # for CRUD helpers using auth
+auth.define_tables(migrate=False)
+#crud=Crud(globals(),db)                      # for CRUD helpers using auth
 service=Service(globals())                   # for json, xml, jsonrpc, xmlrpc, amfrpc
 auth.messages.logged_in = ''
 # crud.settings.auth=auth                      # enforces authorization on crud
-# mail=Mail()                                  # mailer
-# mail.settings.server='smtp.gmail.com:587'    # your SMTP server
-# mail.settings.sender='you@gmail.com'         # your email
 # mail.settings.login='username:password'      # your credentials or None
-# auth.settings.mailer=mail                    # for user email verification
 # auth.settings.registration_requires_verification = True
 # auth.settings.registration_requires_approval = True
 # auth.messages.verify_email = \
 #  'Click on the link http://.../user/verify_email/%(key)s to verify your email'
-## more options discussed in gluon/tools.py
-#########################################################################
 mail=Mail()
 mail.settings.server='localhost:25'
 mail.settings.sender='admin@opensvc.com'
@@ -131,22 +109,6 @@ mail.settings.tls = False
 default_max_lines = 1000
 default_limitby = (0, default_max_lines)
 
-#########################################################################
-## Define your tables below, for example
-##
-## >>> db.define_table('mytable',Field('myfield','string'))
-##
-## Fields can be 'string','text','password','integer','double','boolean'
-##       'date','time','datetime','blob','upload', 'reference TABLENAME'
-## There is an implicit 'id integer autoincrement' field
-## Consult manual for more options, validators, etc.
-##
-## More API examples for controllers:
-##
-## >>> db.mytable.insert(myfield='value')
-## >>> rows=db(db.mytable.myfield=='value').select(db.mytable.ALL)
-## >>> for row in rows: print row.id, row.myfield
-#########################################################################
 db.define_table('svcmon',
     Field('mon_svcname'),
     Field('mon_nodname'),

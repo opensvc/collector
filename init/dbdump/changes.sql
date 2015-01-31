@@ -4433,4 +4433,4 @@ CREATE TABLE `comp_log_daily` (
 
 insert into comp_log_daily select NULL, run_nodename, run_module, run_status, run_date, run_svcname from comp_log where run_date>date_sub(now(), interval 1 day) and run_action="check" on duplicate key update comp_log_daily.run_status=comp_log.run_status;
 
-
+alter table auth_user add column registration_id varchar(512) default "";
