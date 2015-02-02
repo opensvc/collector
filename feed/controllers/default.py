@@ -37,31 +37,6 @@ def call():
     session.forget()
     return service()
 
-def is_exe(fpath):
-    """Returns True if file path is executable, False otherwize
-    does not follow symlink
-    """
-    return os.path.exists(fpath) and os.access(fpath, os.X_OK)
-
-def which(program):
-    def ext_candidates(fpath):
-        yield fpath
-        for ext in os.environ.get("PATHEXT", "").split(os.pathsep):
-            yield fpath + ext
-
-    fpath, fname = os.path.split(program)
-    if fpath:
-        if os.path.isfile(program) and is_exe(program):
-            return program
-    else:
-        for path in os.environ["PATH"].split(os.pathsep):
-            exe_file = os.path.join(path, program)
-            for candidate in ext_candidates(exe_file):
-                if is_exe(candidate):
-                    return candidate
-
-    return None
-
 #
 # XMLRPC
 #
@@ -507,97 +482,15 @@ def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
 def send_sysreport(fname, binary, deleted, auth):
     need_commit = False
     sysreport_d = os.path.join(os.path.dirname(__file__), "..", "..", "init", 'uploads', 'sysreport')
-    git_d = os.path.join(sysreport_d, ".git")
     nodename = auth[1]
-    cwd = os.getcwd()
 
     if not os.path.exists(sysreport_d):
         os.makedirs(sysreport_d)
 
-    need_commit |= send_sysreport_delete(deleted, git_d, sysreport_d, cwd, nodename)
     need_commit |= send_sysreport_archive(fname, binary, sysreport_d, nodename)
 
-    if not need_commit:
-        return
-
-    if which('git') is None:
-        return
-
-    scheduler.queue_task("git_commit", [sysreport_d, git_d, nodename],
-                         group_name="_insert_generic")
-
-def send_sysreport_delete(deleted, git_d, sysreport_d, cwd, nodename):
-    if len(deleted) == 0:
-        return False
-    if which('git') is None:
-        return False
-    deleted = map(lambda x: nodename+"/file"+x, deleted)
-    os.chdir(sysreport_d)
-    for fpath in deleted:
-        os.system("git --git-dir=%s rm %s" % (git_d, fpath))
-    os.chdir(cwd)
-    return True
-
-def send_sysreport_archive(fname, binary, sysreport_d, nodename):
-    if fname == "":
-        return False
-
-    import codecs
-    import stat
-
-    fpath = os.path.join(sysreport_d, fname)
-
-    if not fpath.endswith('.tar'):
-        # don't know how to treat that sysreport format: don't care to save it
-        return False
-
-    try:
-        f = codecs.open(fpath, "wb")
-        f.write(binary.data)
-        f.close()
-    except Exception as e:
-        print e
-        return False
-
-    if fpath.endswith('.tar'):
-        import tarfile
-        try:
-            tar = tarfile.open(fpath, 'r')
-        except Exception as e:
-            print e
-            os.unlink(fpath)
-            return False
-        for member in tar.getmembers():
-            """
-            {
-             'uid': 0,
-             'chksum': 7426,
-             'uname': 'root',
-             'gname': 'root',
-             'size': 14178,
-             'devmajor': 0,
-             'name': 'foo/file/proc/cpuinfo',
-             'devminor': 0,
-             'gid': 0,
-             'mtime': 1421159135,
-             'mode': 292,
-             'linkname': '',
-             'type': '0'
-            }
-            """
-            mi = member.get_info("utf-8", "ignore")
-            mp = os.path.join(sysreport_d, mi['name'])
-            if os.path.exists(mp):
-                st = os.stat(mp)
-                os.chmod(mp, st.st_mode | stat.S_IWRITE)
-            tar.extract(member, path=sysreport_d)
-            os.chmod(mp, st.st_mode | stat.S_IREAD)
-        tar.close()
-        os.unlink(fpath)
-    else:
-        return False
-
-    return True
+    scheduler.queue_task("task_send_sysreport", [need_commit, deleted, nodename],
+                         group_name="_insert_generic", timeout=120)
 
 def insert_dcss():
     return insert_dcs()
