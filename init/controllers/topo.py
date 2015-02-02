@@ -457,6 +457,17 @@ class viz(object):
             if i in sw_ids and len(l) < 2:
                 purge_ids.append(i)
 
+        # remove relations with purge_ids
+        for i, l in rels.items():
+            rels[i] = list(set(rels[i]) - set(purge_ids))
+            if len(rels[i]) == 0:
+                del(rels[i])
+
+        # purge orphaned switches
+        for i in sw_ids:
+            if i not in rels:
+                purge_ids.append(i)
+
         # also purge sw with no rels at all
         purge_ids = set(purge_ids) | (sw_ids - set(rels.keys()))
         self.delete_ids(purge_ids)
