@@ -7184,7 +7184,7 @@ class table_comp_status_node(table_comp_status):
         self.bookmarkable = False
         self.commonalityable = False
         self.linkable = False
-        self.checkboxes = False
+        self.checkboxes = True
         self.filterable = False
         self.exportable = False
         self.dbfilterable = False
