@@ -44,6 +44,7 @@ def _network_form(record=None):
                      'network',
                      'netmask',
                      'gateway',
+                     'prio',
                      'team_responsible',
                      'comment'],
                  labels={
@@ -52,6 +53,7 @@ def _network_form(record=None):
                      'network': 'Network',
                      'netmask': 'Netmask',
                      'gateway': 'Gateway',
+                     'prio': 'Priority',
                      'team_responsible': 'Team Responsible',
                      'comment': 'Comment',
                  })
@@ -92,6 +94,7 @@ class table_networks(HtmlTable):
                      'gateway',
                      'begin',
                      'end',
+                     'prio',
                      'team_responsible',
                      'comment',
                      'updated']
@@ -123,6 +126,12 @@ class table_networks(HtmlTable):
             'gateway': col_name(
                      title='Gateway',
                      field='gateway',
+                     img='net16',
+                     display=True,
+                    ),
+            'prio': col_name(
+                     title='Priority',
+                     field='prio',
                      img='net16',
                      display=True,
                     ),

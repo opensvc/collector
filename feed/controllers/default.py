@@ -496,7 +496,7 @@ def send_sysreport(fname, binary, deleted, auth):
     need_commit |= send_sysreport_archive(fname, binary, sysreport_d, nodename)
 
     scheduler.queue_task("task_send_sysreport", [need_commit, deleted, nodename],
-                         group_name="_insert_generic", timeout=120)
+                         group_name="_insert_generic", timeout=240)
 
 def insert_dcss():
     return insert_dcs()

@@ -78,7 +78,7 @@ def get_reachable_name(nodename):
     q &= db.v_nodenetworks.net_gateway != None
     q &= db.v_nodenetworks.net_gateway != ""
     q &= db.v_nodenetworks.net_gateway != "0.0.0.0"
-    o = db.v_nodenetworks.type
+    o = ~db.v_nodenetworks.prio | db.v_nodenetworks.type
     row = db(q).select(db.v_nodenetworks.addr, orderby=o, limitby=(0,1)).first()
     if row is None:
         return nodename
