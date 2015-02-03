@@ -385,7 +385,10 @@ def update_hds(symid, vars, vals, auth):
 @auth_uuid
 @service.xmlrpc
 def update_sym_xml(symid, vars, vals, auth):
-    update_array_xml(symid, vars, vals, auth, "symmetrix", insert_sym)
+    if len(vars) == 1:
+        update_array_xml(symid, vars, vals, auth, "symmetrix", None)
+    else:
+        update_array_xml(symid, vars, vals, auth, "symmetrix", insert_sym)
 
 @auth_uuid
 @service.xmlrpc
@@ -457,6 +460,9 @@ def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
             f.close()
         except:
             pass
+
+    if fn is None:
+        return
 
     #fn(arrayid)
     scheduler.queue_task(fn.__name__, [arrayid, auth[1]], group_name=fn.__name__, timeout=600)
