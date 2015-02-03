@@ -150,6 +150,7 @@ def cron_purge_expiry():
               ('dashboard_events', 'dash_end', None),
               ('packages', 'pkg_updated', None),
               ('patches', 'patch_updated', None),
+              ('node_ip', 'updated', None),
               ('node_users', 'updated', None),
               ('node_groups', 'updated', None)]
     for table, date_col, orderby in tables:
@@ -631,6 +632,61 @@ def cron_scrub_checks():
 #
 ####################
 
+def alert_wrong_netmask():
+    sql = """select
+               nodename,
+               host_mode,
+               addr,
+               mask,
+               net_netmask,
+               net_name
+             from v_nodenetworks
+             where
+               mask<net_netmask and
+               mask!="" and
+               addr_updated>date_sub(now(), interval 2 day)
+          """
+    rows = db.executesql(sql, as_dict=True)
+
+    for row in rows:
+        if row.get('host_mode') == 'PRD':
+            sev = 4
+        else:
+            sev = 3
+        sql = """insert into dashboard
+                 set
+                   dash_type="netmask misconfigured",
+                   dash_svcname="",
+                   dash_nodename="%(nodename)s",
+                   dash_severity=%(sev)d,
+                   dash_fmt="%%(addr)s configured with mask %%(mask)s instead of %%(net_netmask)s",
+                   dash_dict='{"addr": "%(addr)s", "mask": "%(mask)s", "net_netmask": "%(net_netmask)s"}',
+                   dash_created=now(),
+                   dash_env="%(host_mode)s",
+                   dash_updated=now()
+                 on duplicate key update
+                   dash_severity=%(sev)d,
+                   dash_fmt="%%(addr)s configured with mask %%(mask)s instead of %%(net_netmask)s",
+                   dash_dict='{"addr": "%(addr)s", "mask": "%(mask)s", "net_netmask": "%(net_netmask)s"}',
+                   dash_updated=now()
+              """%dict(
+                       nodename=row.get('nodename', ''),
+                       mask=str(row.get('mask', '')),
+                       net_netmask=str(row.get('net_netmask', '')),
+                       sev=sev,
+                       host_mode=row.get('host_mode', ''),
+                       addr=row.get('addr', ''))
+        db.executesql(sql)
+        db.commit()
+
+    sql = """delete from dashboard
+             where
+               dash_type="netmask misconfigured" and
+               dash_updated < date_sub(now(), interval 1 minute)
+          """
+    db.executesql(sql)
+    db.commit()
+
 def alerts_apps_without_responsible():
     q = db.v_apps.mailto == None
     rows = db(q).select()
@@ -1014,6 +1070,7 @@ def cron_alerts_daily():
 
 def cron_alerts_hourly():
     rets = []
+    alert_wrong_netmask()
     rets.append(alerts_svcmon_not_updated())
     return rets
 
