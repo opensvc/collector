@@ -383,9 +383,10 @@ class viz(object):
             return
 
         # switchs
-        q = db.switches.sw_portname.belongs(hba_ids+tgt_ids)
-        q |= db.switches.sw_rportname.belongs(hba_ids+tgt_ids)
-        q |= db.switches.sw_porttype == "E-Port"
+        q = db.switches.id > 0
+        #q = db.switches.sw_portname.belongs(hba_ids+tgt_ids)
+        #q |= db.switches.sw_rportname.belongs(hba_ids+tgt_ids)
+        #q |= db.switches.sw_porttype == "E-Port"
         rows = db(q).select(db.switches.sw_name, groupby=db.switches.sw_name)
         switches = [r.sw_name for r in rows]
 
@@ -695,8 +696,14 @@ class viz(object):
 
     def fmt_disk_label(self, arrayid, rows):
         label = ""
-        for row in rows:
-            label += "\n"+row.disk_id+"\t"+beautify_size_mb(row.disk_size)
+        if len(rows) > 3:
+            total = 0
+            for row in rows:
+                total += row.disk_size
+            label = "%d disks, total %s"%(len(rows), beautify_size_mb(total))
+        else:
+            for row in rows:
+                label += "\n"+row.disk_id+"\t"+beautify_size_mb(row.disk_size)
         return label
 
     def add_services_disks(self):
