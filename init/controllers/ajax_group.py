@@ -51,6 +51,7 @@ def ajax_group():
     group_app_count = db(q).count()
 
     info = TABLE(
+      TR(TD(T('Group id'), _style='font-style:italic'), TD(group.id)),
       TR(TD(T('User count'), _style='font-style:italic'), TD(group_user_count)),
       TR(TD(T('Node count'), _style='font-style:italic'), TD(group_node_count)),
       TR(TD(T('App count'), _style='font-style:italic'), TD(group_app_count)),
