@@ -4441,3 +4441,10 @@ drop view v_nodenetworks; CREATE VIEW `v_nodenetworks` AS select `n`.`fqdn` AS `
 
 alter table networks add index idx3 (prio);
 
+CREATE TABLE `sysrep_allow` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `pattern` text NOT NULL,
+  `fset_id` int(11) NOT NULL,
+  `group_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB;

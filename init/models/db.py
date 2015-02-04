@@ -2029,6 +2029,12 @@ db.define_table('sysrep_secure',
     Field('pattern','string'),
     migrate=False)
 
+db.define_table('sysrep_allow',
+    Field('pattern','string'),
+    Field('fset_id','integer'),
+    Field('group_id','integer'),
+    migrate=False)
+
 db.define_table('v_comp_moduleset_attachments',
     Field('nodename','string'),
     Field('svcname','string'),

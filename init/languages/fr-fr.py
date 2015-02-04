@@ -3,6 +3,7 @@
 '': '',
 '"%(var_class)s" variable "%(var_name)s" already exists with the same value in the ruleset "%(rset_name)s": cancel': 'La variable "%(var_name)s" de classe "%(var_class)s" existe déjà avec la même valeur dans le jeu de règles "%(rset_name)s": abandon',
 '%(a)s': '%(a)s',
+'%(addr)s configured with mask %(mask)s instead of %(net_netmask)s': '%(addr)s configured with mask %(mask)s instead of %(net_netmask)s',
 '%(count)s application%(s)s deleted': '%(count)s application%(s)s supprimée%(s)s',
 '%(ctype)s:%(inst)s check value %(val)d. %(ttype)s thesholds: %(min)d - %(max)d': '%(ctype)s:%(inst)s valeur de sonde %(val)d. Seuils de %(ttype)s: %(min)d - %(max)d',
 '%(ctype)s:%(inst)s check value %(val)d. %(ttype)s thresholds: %(min)d - %(max)d': '%(ctype)s:%(inst)s valeur de sonde %(val)d. %(ttype)s seuils: %(min)d - %(max)d',

@@ -86,7 +86,7 @@ def show_diff_data(diff_data, sysresponsible, sec_pattern):
         diff_data['blocks'][k] = diff_data['blocks'][k].replace(" @@ ", " @@\n ")
         if sec_pattern.match(k):
             cl = "highlight "
-            if sysresponsible:
+            if sysresponsible or sysrep_allow(k):
                 block = PRE(diff_data['blocks'][k], _class="diff "+block_cl)
             else:
                 block = SPAN(T("You are not allowed to view this change"), _class=block_cl)
@@ -111,6 +111,23 @@ def show_diff_data(diff_data, sysresponsible, sec_pattern):
         l.append(H2(beautify_fpath(k), stat, _class=cl, _onclick=js))
         l.append(block)
     return l
+
+@auth.requires_login()
+def sysrep_allow(fpath):
+    nodename = fpath.split("/")[0]
+    q = db.sysrep_allow.group_id.belongs(user_group_ids())
+    rows = db(q).select(db.sysrep_allow.fset_id, db.sysrep_allow.pattern)
+    for row in rows:
+        if not row.fset_id:
+            continue
+        pattern = re.compile(row.pattern)
+        if not pattern.match(fpath):
+            continue
+        nodenames, svcnames = filterset_encap_query(row.fset_id)
+        if nodename not in nodenames:
+            continue
+        return True
+    return False
 
 @auth.requires_login()
 def ajax_sysreport_commit():
@@ -172,7 +189,7 @@ def ajax_sysreport_show_file():
 
     data = sysreport.sysreport().show_file(fpath, cid, oid)
 
-    if sec_pattern.match(data["fpath"]) and not sysresponsible:
+    if sec_pattern.match(data["fpath"]) and not (sysresponsible or sysrep_allow(data["fpath"])):
         data['content'] = T("You are not allowed to view this file content")
     return data['content']
 
