@@ -11756,6 +11756,7 @@ def json_tree_action_show_filterset(fset_id):
 
 
     d = DIV(
+      P(T('Filterset id')+': ' + str(fset_id)),
       P(T('Compute statistics')+': ' + T(str(v.fset_stats))),
       matching_nodes,
       matching_services,
