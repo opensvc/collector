@@ -1836,6 +1836,10 @@ ul.login_menu ul {
     background-position: left center;
     padding: 0 0 0 52px;
 }
+.s_filter48 {
+    background: transparent url('filter48.png') no-repeat left center;
+    width: 48px;
+}
 .s_svc48 {
     background: transparent url('svc48.png') no-repeat left center;
     width: 48px;

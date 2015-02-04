@@ -23,8 +23,9 @@ def ajax_search():
     group = format_group(pattern)
     app = format_app(pattern)
     disk = format_disk(pattern)
+    fset = format_fset(pattern)
 
-    if len(svc)+len(node)+len(user)+len(group)+len(app)+len(vm)+len(disk) == 0:
+    if len(svc)+len(node)+len(user)+len(group)+len(app)+len(vm)+len(disk)+len(fset) == 0:
         return ''
 
     return DIV(
@@ -35,7 +36,70 @@ def ajax_search():
              group,
              app,
              disk,
+             fset,
            )
+
+def format_fset(pattern):
+    o = db.gen_filtersets.fset_name
+    q = _where(None, 'gen_filtersets', pattern, 'fset_name')
+    rows = db(q).select(db.gen_filtersets.id, o, orderby=o, limitby=(0,max_search_result))
+    n = db(q).count()
+
+    if len(rows) == 0:
+        return ''
+
+    def format_row(row, _class=""):
+        if _class == "":
+            _class="meta_fset clickable"
+
+        d = TABLE(
+              TR(
+                TD(
+                  _class="s_filter48",
+                ),
+                TD(
+                  P(
+                    row['fset_name'],
+                    _class=_class,
+                  ),
+                  SPAN(
+                    row.get("id"),
+                    _class="hidden",
+                  ),
+                  A(
+                    T('designer'),
+                    _href=URL(r=request, c='compliance', f='comp_admin',
+                              vars={'obj_filter': row['fset_name']}),
+                    _class="wf16",
+                  ),
+                  A(
+                    T('filterset'),
+                    _href=URL(r=request, c='compliance', f='comp_filters',
+                              vars={'ajax_comp_filtersets_f_fset_name': row['fset_name'],
+                                    'clear_filters': 'true'}),
+                    _class="filter16",
+                  ),
+                ),
+              ),
+              TR(
+                TD(
+                  _name="extra",
+                  _colspan=2,
+                ),
+              ),
+            )
+        return d
+    l = []
+    if n > 1:
+        l.append(format_row({'fset_name': pattern}, "highlight_light"))
+    for row in rows:
+        l.append(format_row(row))
+    d = DIV(
+          T('Filtersets'), ' (', n, ')',
+          SPAN(l),
+          _class="menu_section",
+        )
+    return d
 
 def format_disk(pattern):
     o = db.b_disk_app.disk_id
@@ -49,6 +113,9 @@ def format_disk(pattern):
         return ''
 
     def format_row(row, _class=""):
+        if _class == "":
+            _class="meta_app"
+
         d = TABLE(
               TR(
                 TD(

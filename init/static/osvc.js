@@ -257,8 +257,17 @@ function _show_result(e, url, id){
                   $("#"+_id).show()
                   sync_ajax(_url, [], _id, function(){})
                 })
-                if ($('#'+id).find(".meta_nodename,.meta_svcname,.meta_username,.meta_groupname").length == 1) {
-                  $('#'+id).find(".meta_nodename,.meta_svcname,.meta_username,.meta_groupname").trigger("click")
+                $('#'+id).find(".meta_fset").click(function() {
+                  var fset_id = $(this).next().text()
+                  var _id = "sextra_"+fset_id
+                  var d = "<div id='"+_id+"' class='searchtab hidden'></div>"
+                  $(this).parents('table').first().find("[name=extra]").html(d)
+                  var _url = $(location).attr("origin") + "/init/compliance/json_tree_action?operation=show&obj_type=filterset&obj_id="+fset_id
+                  $("#"+_id).show()
+                  sync_ajax(_url, [], _id, function(){})
+                })
+                if ($('#'+id).find(".meta_nodename,.meta_svcname,.meta_username,.meta_groupname,.meta_fset").length == 1) {
+                  $('#'+id).find(".meta_nodename,.meta_svcname,.meta_username,.meta_groupname,.meta_fset").trigger("click")
                 }
             }
         })
