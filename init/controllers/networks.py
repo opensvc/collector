@@ -190,6 +190,7 @@ class table_networks(HtmlTable):
             self.additional_tools.append('network_add')
             self.additional_tools.append('network_del')
         self.span = ["id"]
+        self.csv_limit = 30000
 
     def format_extrarow(self, o):
         id = self.extra_line_key(o)
