@@ -45,33 +45,6 @@ def known_ip(nodename, addr):
     return True
 
 def get_reachable_name(nodename):
-    # try short name first
-    import socket
-    try:
-        addr = socket.gethostbyname(nodename)
-        if known_ip(nodename, addr):
-            return nodename
-    except:
-        pass
-
-    # try fqdn
-    q = db.nodes.nodename == nodename
-    row = db(q).select(db.nodes.fqdn).first()
-    if row is None:
-        return nodename
-    fqdn = row.fqdn
-    if fqdn is None:
-        return nodename
-    if not fqdn.endswith('.'):
-        fqdn += '.'
-    try:
-        addr = socket.gethostbyname(fqdn)
-        if known_ip(nodename, addr):
-            return fqdn
-    except:
-        pass
-
-    # ip fallback
     q = db.v_nodenetworks.nodename == nodename
     q &= db.v_nodenetworks.mask != None
     q &= db.v_nodenetworks.mask != ""
