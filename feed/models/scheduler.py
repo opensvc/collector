@@ -971,11 +971,14 @@ def insert_hds(name=None, nodename=None):
             db.executesql(sql)
 
             # stor_array_tgtid
-            vars = ['array_id', 'array_tgtid']
+            vars = ['array_id', 'array_tgtid', 'updated']
             vals = []
             for wwn in s.ports:
-                vals.append([array_id, wwn])
+                vals.append([array_id, wwn, now])
             generic_insert('stor_array_tgtid', vars, vals)
+            sql = """delete from stor_array_tgtid where array_id=%s and updated < "%s" """%(array_id, str(now))
+            db.executesql(sql)
+            print sql
 
             # load all of this array devs seens by the nodes
             # index by ldev

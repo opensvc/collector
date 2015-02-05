@@ -79,7 +79,16 @@ class Hds(object):
 
     def load_port(self):
         lines = self.readfile("port").split('\n')
-        for line in lines:
+        n = -1
+
+        for i, line in enumerate(lines):
+            if "serialNum" in line and self.name in line:
+                break
+        for j, line in enumerate(lines[i+1:]):
+            if "serialNum" in line:
+                n = j
+                break
+        for line in lines[i+1:n]:
             if line.startswith("      worldWidePortName"):
                 self.ports.append(line.split('=')[-1].strip().replace('.','').lower())
 
