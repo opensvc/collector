@@ -400,10 +400,10 @@ def ajax_sysreport_admin_secure():
     tid = uuid.uuid1().hex
     secure = []
 
-    def format_secure(row):
+    def format_line(row):
         attrs = {
           "_sec_id": row.id,
-          "_style": "display:table-line",
+          "_style": "display:table-row",
         }
         return DIV(
           DIV(
@@ -417,7 +417,7 @@ def ajax_sysreport_admin_secure():
           **attrs
         )
 
-    def add_secure():
+    def add_line():
         d = DIV(
           DIV(
             T("Add secure pattern"),
@@ -436,8 +436,8 @@ def ajax_sysreport_admin_secure():
     q = db.sysrep_secure.id > 0
     rows = db(q).select()
     for row in rows:
-        secure.append(format_secure(row))
-    secure.append(add_secure())
+        secure.append(format_line(row))
+    secure.append(add_line())
 
     d = DIV(
       H2(T("Secure patterns")),
@@ -452,12 +452,120 @@ def ajax_sysreport_admin_secure():
     return d
 
 @auth.requires_login()
+def ajax_sysreport_admin_del_allow():
+    if "Manager" not in user_groups():
+        raise HTTP(404)
+    q = db.sysrep_allow.id == request.vars.allow_id
+    db(q).delete()
+
+@auth.requires_login()
+def ajax_sysreport_admin_add_allow():
+    if "Manager" not in user_groups():
+        raise HTTP(404)
+    pattern = request.vars.get("pattern")
+    role = request.vars.get("role")
+    fset_name = request.vars.get("fset_name")
+
+    q = db.auth_group.role == role
+    try:
+        group_id = db(q).select(db.auth_group.id).first().id
+    except:
+        raise HTTP(404)
+    q = db.gen_filtersets.fset_name == fset_name
+    try:
+        fset_id = db(q).select(db.gen_filtersets.id).first().id
+    except:
+        raise HTTP(404)
+    q = db.sysrep_allow.pattern == pattern
+    q &= db.sysrep_allow.fset_id == fset_id
+    q &= db.sysrep_allow.group_id == group_id
+    if db(q).count() > 0:
+        raise HTTP(404)
+    db.sysrep_allow.insert(pattern=pattern, group_id=group_id, fset_id=fset_id)
+
+
+@auth.requires_login()
 def ajax_sysreport_admin_allow():
+    tid = uuid.uuid1().hex
     allow = []
+
+    def format_line(row):
+        attrs = {
+          "_allow_id": row.sysrep_allow.id,
+          "_style": "display:table-row",
+        }
+        return DIV(
+          DIV(
+            _class="meta_del nologo16",
+            _style="display:table-cell",
+          ),
+          DIV(
+            T(
+              "Group '%(g)s' can read secured files matching '%(p)s' from nodes matching the filterset '%(f)s'",
+              dict(p=row.sysrep_allow.pattern, g=row.auth_group.role, f=row.gen_filtersets.fset_name),
+            ),
+            _style="display:table-cell",
+          ),
+          **attrs
+        )
+
+    def add_line():
+        d = DIV(
+          DIV(
+            T("Add habilitation"),
+            _class="add16 clickable",
+            _onclick="$(this).next().toggle()",
+          ),
+          DIV(
+            DIV(
+              DIV(T("pattern"), _class="b", _style="display:table-cell"),
+              DIV(T("group"), _class="b", _style="display:table-cell"),
+              DIV(T("filterset"), _class="b", _style="display:table-cell"),
+              _style="display:table-row",
+            ),
+            DIV(
+              DIV(
+                INPUT(_class="meta_pattern"),
+                _style="display:table-cell",
+              ),
+              DIV(
+                INPUT(_class="meta_role"),
+                _style="display:table-cell",
+              ),
+              DIV(
+                INPUT(_class="meta_fset_name"),
+                _style="display:table-cell",
+              ),
+              _style="display:table-row",
+            ),
+            _class="hidden",
+          ),
+          _class="meta_add",
+        )
+        return d
+
+    o = db.sysrep_allow.pattern|db.auth_group.role|db.gen_filtersets.fset_name
+    q = db.sysrep_allow.id > 0
+    q &= db.sysrep_allow.group_id == db.auth_group.id
+    q &= db.sysrep_allow.fset_id == db.gen_filtersets.id
+    rows = db(q).select(
+      db.sysrep_allow.id,
+      db.sysrep_allow.pattern,
+      db.auth_group.role,
+      db.gen_filtersets.fset_name,
+    )
+    for row in rows:
+        allow.append(format_line(row))
+    allow.append(add_line())
+
     d = DIV(
       H2(T("Habilitations")),
       DIV(
         allow,
       ),
+      SCRIPT(
+        """sysreport_admin_allow("%(tid)s")"""%dict(tid=tid),
+      ),
+      _id=tid,
     )
     return d

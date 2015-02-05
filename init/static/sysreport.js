@@ -112,3 +112,30 @@ function sysreport_admin_secure(tid) {
   })
 }
 
+function sysreport_admin_allow(tid) {
+  $("#"+tid).find("[allow_id]").bind("mouseover", function(){
+    $(this).find(".nologo16").addClass("del16").addClass("clickable")
+  }).bind("mouseout", function(){
+    $(this).find(".nologo16").removeClass("del16").removeClass("clickable")
+  })
+  $("#"+tid).find(".meta_del").bind("click", function(){
+    var allow_id = $(this).parent().attr("allow_id")
+    var url = $(location).attr("origin") + "/init/ajax_sysreport/ajax_sysreport_admin_del_allow"
+    url += "?allow_id="+allow_id
+    sync_ajax(url, [], "", function(){$("[allow_id="+allow_id+"]").remove()})
+  })
+  $("#"+tid).find(".meta_add").find("input").bind("keyup", function(){
+    if (!is_enter(event)) {
+      return
+    }
+    var pattern = $(this).parents(".meta_add").find("input.meta_pattern").val()
+    var role = $(this).parents(".meta_add").find("input.meta_role").val()
+    var fset_name = $(this).parents(".meta_add").find("input.meta_fset_name").val()
+    var url = $(location).attr("origin") + "/init/ajax_sysreport/ajax_sysreport_admin_add_allow"
+    url += "?pattern="+encodeURIComponent(pattern)
+    url += "&role="+encodeURIComponent(role)
+    url += "&fset_name="+encodeURIComponent(fset_name)
+    sync_ajax(url, [], "", function(){$(".lock").click().click()})
+  })
+}
+
