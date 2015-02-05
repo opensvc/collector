@@ -259,13 +259,23 @@ def _sysreport(nodes):
       _class="link16 clickable",
     )
 
+    if "Manager" in user_groups():
+        admin = DIV(
+          _style="float:right",
+          _class="lock clickable",
+        )
+    else:
+        admin = ""
+
     if request.vars.cid is not None:
         show_data = ajax_sysreport_commit()
     else:
         show_data = ""
 
     return DIV(
+      admin,
       link,
+      DIV(_id=tid+"_admin", _class="hidden"),
       SPAN(','.join(nodes), _name="nodes", _class="hidden"),
       H1(title),
       DIV(
@@ -359,3 +369,88 @@ def sysrepdiff():
       _style="padding:1em;text-align:left",
     )
     return dict(table=d)
+
+@auth.requires_login()
+def ajax_sysreport_admin_del_secure():
+    if "Manager" not in user_groups():
+        raise HTTP(404)
+    q = db.sysrep_secure.id == request.vars.sec_id
+    db(q).delete()
+
+@auth.requires_login()
+def ajax_sysreport_admin_add_secure():
+    if "Manager" not in user_groups():
+        raise HTTP(404)
+    pattern = request.vars.get(request.vars.iid)
+    p = pattern.lower()
+    q = db.sysrep_secure.pattern == pattern
+    if db(q).count() > 0:
+        raise HTTP(404)
+    db.sysrep_secure.insert(pattern=pattern)
+
+@auth.requires_login()
+def ajax_sysreport_admin():
+    secure = []
+    allow = []
+
+    def format_secure(row):
+        attrs = {
+          "_sec_id": row.id,
+          "_style": "display:table-line",
+          "_onmouseover": """$(this).find(".nologo16").addClass("del16").addClass("clickable")""",
+          "_onmouseout": """$(this).find(".nologo16").removeClass("del16").removeClass("clickable")""",
+        }
+        return DIV(
+          DIV(
+            _class="nologo16",
+            _style="display:table-cell",
+            _onclick="""sync_ajax("%(url)s", [], "", function(){$("[sec_id=%(sec_id)s]").remove()}) """ % dict(
+              sec_id=row.id,
+              url=URL(r=request, f="ajax_sysreport_admin_del_secure", vars={"sec_id": row.id}),
+            ),
+          ),
+          DIV(
+            row.pattern,
+            _style="display:table-cell",
+          ),
+          **attrs
+        )
+
+    def add_secure():
+        iid = uuid.uuid1().hex
+        d = DIV(
+          DIV(
+            T("Add secure pattern"),
+            _class="add16 clickable",
+            _onclick="$(this).next().toggle()",
+          ),
+          DIV(
+            INPUT(_id=iid),
+            _class="hidden",
+            _onkeyup="""if (is_enter(event)) {sync_ajax("%(url)s", ["%(iid)s"], "", function(){ $(".lock").click().click()})}""" % dict(
+              iid=iid,
+              url=URL(r=request, f="ajax_sysreport_admin_add_secure", vars={"iid": iid}),
+            ),
+          ),
+        )
+        return d
+
+    o = db.sysrep_secure.pattern
+    q = db.sysrep_secure.id > 0
+    rows = db(q).select()
+    for row in rows:
+        secure.append(format_secure(row))
+    secure.append(add_secure())
+
+    d = DIV(
+      H1(T("Sysreport administration")),
+      H2(T("Secure patterns")),
+      DIV(
+        secure,
+      ),
+      H2(T("Habilitations")),
+      DIV(
+        allow,
+      ),
+    )
+    return d

@@ -55,6 +55,13 @@ function sysreport_timeline(id, data){
          }
     })
   });
+
+  // bind admin tool
+  $("#"+id).siblings(".lock").bind("click", function(){
+    $(this).siblings("#"+id+"_admin").toggle()
+    var url = $(location).attr("origin") + "/init/ajax_sysreport/ajax_sysreport_admin"
+    sync_ajax(url, [], id+"_admin", function(){})
+  })
 }
 
 function sysreport_show_file(e) {
