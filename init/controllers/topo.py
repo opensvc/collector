@@ -623,6 +623,8 @@ class viz(object):
 
     def add_arrays(self):
         for (nodename, svcname, arrayid), rows in self.rs["disks"].items():
+            if nodename == arrayid:
+                continue
             if "nodes" in self.display and not nodename in self.nodenames:
                 continue
             if "services" in self.display and svcname and not svcname in self.svcnames:
