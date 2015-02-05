@@ -23,17 +23,25 @@ class Hds(object):
         self.pool = {}
         self.load_pool()
         self.load_port()
+        n = -1
         for i, line in enumerate(self.lines):
+            if "serialNum" in line and self.name in line:
+                break
+        for j, line in enumerate(self.lines[i+1:]):
+            if "serialNum" in line:
+                n = i+j
+                break
+        for _i, line in enumerate(self.lines[i-5:n]):
             if line.startswith("  arrayType"):
                 self.model = line.split('=')[1].strip()
             elif line.startswith("  controllerVersion"):
                 self.firmware = line.split('=')[1].strip()
             elif line.endswith("An instance of LogicalUnit"):
-                self.load_lu(i+1)
+                self.load_lu(i-5+_i+1,n)
 
-    def load_lu(self, i):
+    def load_lu(self, i, n):
         vdisk = {}
-        for line in self.lines[i:]:
+        for line in self.lines[i:n]:
             if line.startswith("      objectID"):
                 wwid = line.split('=')[1].strip().split('.')[2:]
                 vdisk["wwid"] = '.'.join(wwid)
@@ -61,21 +69,29 @@ class Hds(object):
     def load_pool(self):
         lines = self.readfile("arraygroup").split('\n')
         pool = {}
-        for line in lines:
-            if line.startswith("      dpPoolID"):
-                self.pool[pool["name"]] = pool
-                pool = {}
-            elif line.startswith("      displayName"):
-                pool["name"] = line.split('=')[-1].strip()
-            elif line.startswith("      totalCapacity"):
-                s = line.split('=')[-1].strip().replace(',','')
-                pool["size"] = int(s)//1024
-            elif line.startswith("      freeCapacity"):
-                s = line.split('=')[-1].strip().replace(',','')
-                pool["free"] = int(s)//1024
-                pool["used"] = pool["size"] - pool["free"]
-            elif line.startswith("      raidType"):
-                pool["raid"] = line.split('=')[-1].strip()
+        n = -1
+        for i, line in enumerate(lines):
+            if "serialNum" in line and self.name in line:
+                break
+        for j, line in enumerate(lines[i+1:]):
+            if "serialNum" in line:
+                n = i+j
+                break
+        for line in lines[i+1:n]:
+           if line.startswith("      dpPoolID"):
+               self.pool[pool["name"]] = pool
+               pool = {}
+           elif line.startswith("      displayName"):
+               pool["name"] = line.split('=')[-1].strip()
+           elif line.startswith("      totalCapacity"):
+               s = line.split('=')[-1].strip().replace(',','')
+               pool["size"] = int(s)//1024
+           elif line.startswith("      freeCapacity"):
+               s = line.split('=')[-1].strip().replace(',','')
+               pool["free"] = int(s)//1024
+               pool["used"] = pool["size"] - pool["free"]
+           elif line.startswith("      raidType"):
+               pool["raid"] = line.split('=')[-1].strip()
 
     def load_port(self):
         lines = self.readfile("port").split('\n')
@@ -86,7 +102,7 @@ class Hds(object):
                 break
         for j, line in enumerate(lines[i+1:]):
             if "serialNum" in line:
-                n = j
+                n = i+j
                 break
         for line in lines[i+1:n]:
             if line.startswith("      worldWidePortName"):
