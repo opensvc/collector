@@ -1729,6 +1729,9 @@ ul.login_menu ul {
     padding: 0 0 0 20px;
     min-height: 16px;
 }
+.nologo16 {
+    padding: 0 0 0 20px;
+}
 .nologo48 {
     padding: 0 0 0 52px;
 }

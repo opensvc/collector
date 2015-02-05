@@ -55,6 +55,18 @@ function sysreport_timeline(id, data){
          }
     })
   });
+
+  // bind admin tool
+  $("#"+id).siblings(".lock").bind("click", function(){
+    var e = $(this).siblings("#"+id+"_admin")
+    if (e.is(":visible")) {
+      e.hide()
+    } else {
+      e.show()
+      var url = $(location).attr("origin") + "/init/ajax_sysreport/ajax_sysreport_admin"
+      sync_ajax(url, [], id+"_admin", function(){})
+    }
+  })
 }
 
 function sysreport_show_file(e) {
@@ -76,3 +88,54 @@ function sysreport_show_file(e) {
        }
   })
 }
+
+function sysreport_admin_secure(tid) {
+  $("#"+tid).find("[sec_id]").bind("mouseover", function(){
+    $(this).find(".nologo16").addClass("del16").addClass("clickable")
+  }).bind("mouseout", function(){
+    $(this).find(".nologo16").removeClass("del16").removeClass("clickable")
+  })
+  $("#"+tid).find(".meta_del").bind("click", function(){
+    var sec_id = $(this).parent().attr("sec_id")
+    var url = $(location).attr("origin") + "/init/ajax_sysreport/ajax_sysreport_admin_del_secure"
+    url += "?sec_id="+sec_id
+    sync_ajax(url, [], "", function(){$("[sec_id="+sec_id+"]").remove()})
+  })
+  $("#"+tid).find(".meta_add").find("input").bind("keyup", function(){
+    if (!is_enter(event)) {
+      return
+    }
+    var pattern = $(this).val()
+    var url = $(location).attr("origin") + "/init/ajax_sysreport/ajax_sysreport_admin_add_secure"
+    url += "?pattern="+encodeURIComponent(pattern)
+    sync_ajax(url, [], "", function(){$(".lock").click().click()})
+  })
+}
+
+function sysreport_admin_allow(tid) {
+  $("#"+tid).find("[allow_id]").bind("mouseover", function(){
+    $(this).find(".nologo16").addClass("del16").addClass("clickable")
+  }).bind("mouseout", function(){
+    $(this).find(".nologo16").removeClass("del16").removeClass("clickable")
+  })
+  $("#"+tid).find(".meta_del").bind("click", function(){
+    var allow_id = $(this).parent().attr("allow_id")
+    var url = $(location).attr("origin") + "/init/ajax_sysreport/ajax_sysreport_admin_del_allow"
+    url += "?allow_id="+allow_id
+    sync_ajax(url, [], "", function(){$("[allow_id="+allow_id+"]").remove()})
+  })
+  $("#"+tid).find(".meta_add").find("input").bind("keyup", function(){
+    if (!is_enter(event)) {
+      return
+    }
+    var pattern = $(this).parents(".meta_add").find("input.meta_pattern").val()
+    var role = $(this).parents(".meta_add").find("input.meta_role").val()
+    var fset_name = $(this).parents(".meta_add").find("input.meta_fset_name").val()
+    var url = $(location).attr("origin") + "/init/ajax_sysreport/ajax_sysreport_admin_add_allow"
+    url += "?pattern="+encodeURIComponent(pattern)
+    url += "&role="+encodeURIComponent(role)
+    url += "&fset_name="+encodeURIComponent(fset_name)
+    sync_ajax(url, [], "", function(){$(".lock").click().click()})
+  })
+}
+
