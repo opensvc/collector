@@ -169,7 +169,7 @@ class sysreport(object):
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
         try:
-            validated_fpath = out[out.index(" ")+1:]
+            validated_fpath = out[out.index("\t")+1:]
         except:
             validated_fpath = fpath
 
