@@ -11823,6 +11823,15 @@ def json_tree_action_show_moduleset(modset_id):
         l.append(H3(SPAN(T("Attached to services")), _class="line"))
         l.append(P(' '.join(map(lambda x: x.modset_svcname, rows))))
 
+    q = db.comp_moduleset_moduleset.child_modset_id == modset_id
+    q &= db.comp_moduleset.id == db.comp_moduleset_moduleset.parent_modset_id
+    rows = db(q).select(db.comp_moduleset.modset_name,
+                        groupby=db.comp_moduleset.modset_name,
+                        cacheable=False)
+    if len(rows) > 0:
+        l.append(H3(SPAN(T("Encapsulated in modulesets")), _class="line"))
+        l.append(P(' '.join(map(lambda x: x.modset_name, rows))))
+
     def mod_html(x):
         l = []
         l.append(B(x.modset_mod_name))
@@ -11834,7 +11843,7 @@ def json_tree_action_show_moduleset(modset_id):
     q = db.comp_moduleset_modules.modset_id == modset_id
     rows = db(q).select(cacheable=False)
     if len(rows) > 0:
-        l.append(H3(T("Modules")))
+        l.append(H3(SPAN(T("Modules")), _class="line"))
         l.append(SPAN(map(lambda x: mod_html(x), rows)))
 
     _id = "tabs"
