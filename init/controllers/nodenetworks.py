@@ -204,6 +204,7 @@ class table_nodenetworks(HtmlTable):
         self.ajax_col_values = 'ajax_nodenetworks_col_values'
         self.keys = ["nodename", "addr"]
         self.span = ["nodename"]
+        self.csv_limit = 30000
 
 @auth.requires_login()
 def ajax_nodenetworks_col_values():
