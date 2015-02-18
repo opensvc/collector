@@ -102,10 +102,11 @@ def send_sysreport_archive(fname, binary, sysreport_d, nodename):
 
     return True
 
-def git_commit(sysreport_d, git_d, nodename):
+def git_commit(git_d, nodename):
     if which('git') is None:
         return
 
+    node_d = os.path.join(git_d, "..")
     cwd = os.getcwd()
 
     if not os.path.exists(git_d):
@@ -115,27 +116,27 @@ def git_commit(sysreport_d, git_d, nodename):
         os.system("git --git-dir=%s config user.email %s" % (git_d, config.email_from))
         os.system("git --git-dir=%s config user.name collector" % git_d)
 
-    if not os.path.exists(os.path.join(sysreport_d, nodename)):
-        print nodename, "dir does not exist in", sysreport_d
+    if not os.path.exists(node_d):
+        print "dir does not exist:", node_d
         return 0
 
-    os.chdir(sysreport_d)
+    os.chdir(node_d)
     os.system("rm -f .git/index.lock")
-    os.system("git add %s" % nodename)
-    os.system('git commit -m"" %s' % nodename)
+    os.system("git add .")
+    os.system('git commit -m"" -a')
     os.chdir(cwd)
 
     return 0
 
 def task_send_sysreport(need_commit, deleted, nodename):
     sysreport_d = os.path.join(os.path.dirname(__file__), "..", "..", "..", "init", 'uploads', 'sysreport')
-    git_d = os.path.join(sysreport_d, ".git")
+    git_d = os.path.join(sysreport_d, nodename, ".git")
     cwd = os.getcwd()
     need_commit |= send_sysreport_delete(deleted, git_d, sysreport_d, cwd, nodename)
 
     if not need_commit:
         return
-    git_commit(sysreport_d, git_d, nodename)
+    git_commit(git_d, nodename)
 
     return 0
 

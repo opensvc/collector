@@ -16,7 +16,8 @@ def get_pattern_secure():
     return sec_pattern
 
 def beautify_fpath(fpath):
-    if "/cmd/" in fpath:
+    if fpath.startswith("cmd/"):
+        fpath = fpath[3:]
         fpath = fpath.replace('(space)', ' ')
         fpath = fpath.replace('(pipe)', '|')
         fpath = fpath.replace('(amp)', '&')
@@ -35,11 +36,8 @@ def beautify_fpath(fpath):
         fpath = fpath.replace('(pct)', '%')
         fpath = fpath.replace('(dquote)', '"')
         fpath = fpath.replace('(squote)', "'")
-
-    l = fpath.split('/')
-    if len(l) > 2:
-        del(l[1])
-    fpath = '/'.join(['']+l[1:])
+    elif fpath.startswith("file/"):
+        fpath = fpath[4:]
 
     if '\t' in fpath:
         l = fpath.split('\t')
@@ -151,7 +149,7 @@ def ajax_sysreport_commit():
             cl = "highlight "
         else:
             cl = "clickable "
-        if "/cmd/" in d["fpath"]:
+        if d["fpath"].startswith("cmd/"):
             cl += "action16"
         else:
             cl += "log16"
@@ -187,7 +185,7 @@ def ajax_sysreport_show_file():
     sec_pattern = get_pattern_secure()
     sysresponsible = is_sysresponsible(nodename)
 
-    data = sysreport.sysreport().show_file(fpath, cid, oid)
+    data = sysreport.sysreport().show_file(fpath, cid, oid, nodename)
 
     if sec_pattern.match(data["fpath"]) and not (sysresponsible or sysrep_allow(data["fpath"])):
         data['content'] = T("You are not allowed to view this file content")

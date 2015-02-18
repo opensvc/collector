@@ -7,7 +7,6 @@ class sysreport(object):
     def __init__(self):
         here_d = os.path.dirname(__file__)
         self.collect_d = os.path.join(here_d, '..', 'uploads', 'sysreport')
-        self.git_d = os.path.join(self.collect_d, ".git")
         self.cwd = os.getcwd()
 
     def timeline(self, nodes=[]):
@@ -18,13 +17,13 @@ class sysreport(object):
 
     def _timeline(self, nodename):
         s = self.log(nodename)
-        data = self.parse_log(s)
+        data = self.parse_log(s, nodename)
         if len(data) > 1:
             # do not to display the node sysreport initial commit
             data = data[:-1]
         return data
 
-    def parse_log(self, s):
+    def parse_log(self, s, nodename):
         data = []
         d0 = {
          'id': '',
@@ -62,14 +61,13 @@ class sysreport(object):
                 fpath = line.split(" | ")[0].strip().strip('"')
                 changed.add(fpath)
             data[i]['stat'] = sorted(changed)
-            data[i]['group'] = fpath.split('/')[0]
+            data[i]['group'] = nodename
         return data
 
     def log(self, nodename=None):
-        cmd = ["git", "--git-dir="+self.git_d, "log", "-n", "300",
+        git_d = os.path.join(self.collect_d, nodename, ".git")
+        cmd = ["git", "--git-dir="+git_d, "log", "-n", "300",
                "--stat=510,500", "--date=iso"]
-        if nodename is not None:
-            cmd += ['--', nodename]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
         return out
@@ -82,13 +80,15 @@ class sysreport(object):
         return data
 
     def show(self, cid, nodename):
-        cmd = ["git", "--git-dir="+self.git_d, "show", '--pretty=format:%ci%n%b', cid, '--', nodename]
+        git_d = os.path.join(self.collect_d, nodename, ".git")
+        cmd = ["git", "--git-dir="+git_d, "show", '--pretty=format:%ci%n%b', cid]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
         return out
 
     def show_stat(self, cid, nodename):
-        cmd = ["git", "--git-dir="+self.git_d, "show", '--pretty=format:%ci%n%b', '--numstat', cid, '--', nodename]
+        git_d = os.path.join(self.collect_d, nodename, ".git")
+        cmd = ["git", "--git-dir="+git_d, "show", '--pretty=format:%ci%n%b', '--numstat', cid]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
         return out
@@ -139,7 +139,8 @@ class sysreport(object):
         return {'date': date, 'blocks': d}
 
     def lstree(self, cid, nodename):
-        cmd = ["git", "--git-dir="+self.git_d, "ls-tree", "-r", cid, nodename]
+        git_d = os.path.join(self.collect_d, nodename, ".git")
+        cmd = ["git", "--git-dir="+git_d, "ls-tree", "-r", cid]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
         return out
@@ -164,8 +165,9 @@ class sysreport(object):
         s = self.lstree(cid, nodename)
         return self.parse_lstree(cid, s)
 
-    def show_file(self, fpath, cid, _uuid):
-        cmd = ["git", "--git-dir="+self.git_d, "ls-tree", cid, fpath]
+    def show_file(self, fpath, cid, _uuid, nodename):
+        git_d = os.path.join(self.collect_d, nodename, ".git")
+        cmd = ["git", "--git-dir="+git_d, "ls-tree", cid, fpath]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
         try:
@@ -173,7 +175,7 @@ class sysreport(object):
         except:
             validated_fpath = fpath
 
-        cmd = ["git", "--git-dir="+self.git_d, "show", _uuid]
+        cmd = ["git", "--git-dir="+git_d, "show", _uuid]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
         return {'fpath': validated_fpath, 'content': out}
@@ -182,4 +184,4 @@ class sysreport(object):
 if __name__ == "__main__":
     o = sysreport()
     #print(o.timeline(["x64lmwbiegt"]))
-    print(o.show_data("a6caacfa38a076c1a367c03bacef9f8d28fd0db7", "s64lmwbicgo"))
+    print(o.lstree_data('f8f48a59d61501e290cb521641ff27bd747252cb', 'x64lmwbiegt'))
