@@ -4448,3 +4448,11 @@ CREATE TABLE `sysrep_allow` (
   `group_id` int(11) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
+
+alter table svcdisks modify column disk_dg varchar(60) default "";
+alter table svcdisks modify column disk_nodename varchar(60) default "";
+alter table svcdisks modify column disk_svcname varchar(60) default "";
+update svcdisks set disk_svcname="" where disk_svcname is null;
+update svcdisks set disk_nodename="" where disk_nodename is null;
+update svcdisks set disk_dg="" where disk_dg is null;
+
