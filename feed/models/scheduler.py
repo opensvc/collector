@@ -29,16 +29,15 @@ def which(program):
 
     return None
 
-def send_sysreport_delete(deleted, git_d, sysreport_d, cwd, nodename):
+def send_sysreport_delete(deleted, git_d):
     if len(deleted) == 0:
         return False
     if which('git') is None:
         return False
-    deleted = map(lambda x: nodename+"/file"+x, deleted)
-    os.chdir(sysreport_d)
+    deleted = map(lambda x: "file"+x, deleted)
+    node_d = os.path.join(git_d, "..")
     for fpath in deleted:
-        os.system("git --git-dir=%s rm %s" % (git_d, fpath))
-    os.chdir(cwd)
+        os.system("cd %s && git rm %s" % (node_d, fpath))
     return True
 
 def send_sysreport_archive(fname, binary, sysreport_d, nodename):
@@ -102,41 +101,39 @@ def send_sysreport_archive(fname, binary, sysreport_d, nodename):
 
     return True
 
-def git_commit(git_d, nodename):
+def git_commit(git_d):
     if which('git') is None:
         return
 
     node_d = os.path.join(git_d, "..")
-    cwd = os.getcwd()
 
     if not os.path.exists(git_d):
         from applications.init.modules import config
         print "init sysreport git project"
+        if hasattr(config, "email_from"):
+            email = config.email_from
+        else:
+            email = "nobody@localhost.localdomain"
         os.system("git --git-dir=%s init" % git_d)
-        os.system("git --git-dir=%s config user.email %s" % (git_d, config.email_from))
+        os.system("git --git-dir=%s config user.email %s" % (git_d, email))
         os.system("git --git-dir=%s config user.name collector" % git_d)
 
     if not os.path.exists(node_d):
         print "dir does not exist:", node_d
         return 0
 
-    os.chdir(node_d)
-    os.system("rm -f .git/index.lock")
-    os.system("git add .")
-    os.system('git commit -m"" -a')
-    os.chdir(cwd)
+    os.system('cd %s && (rm -f .git/index.lock && git add -A ; git commit -m"" -a)' % node_d)
 
     return 0
 
 def task_send_sysreport(need_commit, deleted, nodename):
     sysreport_d = os.path.join(os.path.dirname(__file__), "..", "..", "..", "init", 'uploads', 'sysreport')
     git_d = os.path.join(sysreport_d, nodename, ".git")
-    cwd = os.getcwd()
-    need_commit |= send_sysreport_delete(deleted, git_d, sysreport_d, cwd, nodename)
+    need_commit |= send_sysreport_delete(deleted, git_d)
 
     if not need_commit:
         return
-    git_commit(git_d, nodename)
+    git_commit(git_d)
 
     return 0
 
