@@ -493,6 +493,7 @@ def send_sysreport(fname, binary, deleted, auth):
     if not os.path.exists(sysreport_d):
         os.makedirs(sysreport_d)
 
+    need_commit |= send_sysreport_delete(deleted, sysreport_d, nodename)
     need_commit |= send_sysreport_archive(fname, binary, sysreport_d, nodename)
 
     scheduler.queue_task("task_send_sysreport", [need_commit, deleted, nodename],
@@ -1489,4 +1490,11 @@ def batch_update_save_checks():
 
 def batch_async_post_insert_nsr():
     async_post_insert_nsr()
+
+@auth_uuid
+@service.xmlrpc
+def sysreport_lstree(auth):
+    from applications.init.modules import sysreport
+    tree_data = sysreport.sysreport().lstree_data("HEAD", auth[1])
+    return map(lambda d: d['fpath'], tree_data)
 

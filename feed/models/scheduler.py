@@ -29,15 +29,16 @@ def which(program):
 
     return None
 
-def send_sysreport_delete(deleted, git_d):
+def send_sysreport_delete(deleted, sysreport_d, nodename):
     if len(deleted) == 0:
         return False
-    if which('git') is None:
-        return False
-    deleted = map(lambda x: "file"+x, deleted)
-    node_d = os.path.join(git_d, "..")
+    node_d = os.path.join(sysreport_d, nodename)
     for fpath in deleted:
-        os.system("cd %s && git rm %s" % (node_d, fpath))
+        if fpath.startswith("/"):
+            fpath = "file" + fpath
+        fpath = os.path.join(node_d, fpath)
+        print fpath
+        os.unlink(fpath)
     return True
 
 def send_sysreport_archive(fname, binary, sysreport_d, nodename):
@@ -129,7 +130,6 @@ def git_commit(git_d):
 def task_send_sysreport(need_commit, deleted, nodename):
     sysreport_d = os.path.join(os.path.dirname(__file__), "..", "..", "..", "init", 'uploads', 'sysreport')
     git_d = os.path.join(sysreport_d, nodename, ".git")
-    need_commit |= send_sysreport_delete(deleted, git_d)
 
     if not need_commit:
         return
