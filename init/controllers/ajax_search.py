@@ -5,6 +5,7 @@ def ajax_search():
     word = request.vars.search
     if word is None or len(word) == 0:
         return ''
+    word = word.strip()
     chars = "%&|,()"
     is_filter = False
     for char in chars:
