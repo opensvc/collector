@@ -3010,6 +3010,8 @@ node_actions = [
   {'title': 'Rotate root password', 'class': 'key16', 'action': 'rotate root pw'},
   {'title': 'Rescan scsi hosts', 'class': 'hd16', 'action': 'scanscsi'},
   {'title': 'Reboot', 'class': 'action_restart_16', 'action': 'reboot'},
+  {'title': 'Reboot schedule', 'class': 'action_restart_16', 'action': 'schedule_reboot'},
+  {'title': 'Reboot unschedule', 'class': 'action_restart_16', 'action': 'unschedule_reboot'},
   {'title': 'Shutdown', 'class': 'action_stop_16', 'action': 'shutdown'},
   {'title': 'Wake On LAN', 'class': 'action_start_16', 'action': 'wol'},
   {'title': 'Compliance check', 'class': 'comp16', 'action': 'compliance_check', 'params': ["module", "moduleset"]},
