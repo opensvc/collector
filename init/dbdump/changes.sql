@@ -4456,3 +4456,20 @@ update svcdisks set disk_svcname="" where disk_svcname is null;
 update svcdisks set disk_nodename="" where disk_nodename is null;
 update svcdisks set disk_dg="" where disk_dg is null;
 
+CREATE TABLE `tags` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `tag_name` varchar(64) NOT NULL default "",
+  `tag_created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `tag_name` (`tag_name`)
+) ENGINE=InnoDB;
+
+CREATE TABLE `node_tags` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nodename` varchar(64),
+  `tag_id` integer NOT NULL,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `tag_bind` (`nodename`, `tag_id`)
+) ENGINE=InnoDB;
+

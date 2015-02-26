@@ -425,6 +425,27 @@ def node_pw_tool(nodename, id):
       ),
     )
 
+def get_tags(nodename):
+    q = db.node_tags.nodename == nodename
+    q &= db.node_tags.tag_id == db.tags.id
+    rows = db(q).select(db.tags.id, db.tags.tag_name)
+    l = []
+    for row in rows:
+        attrs = {
+          "_tag_id": row.id,
+          "_class": "tag",
+        }
+        d = DIV(
+             row.tag_name,
+             *attrs
+            )
+        l.append(d)
+    d = DIV(
+      l,
+      _class="tags",
+    )
+    return d
+
 @auth.requires_login()
 def ajax_node():
     session.forget(response)
@@ -545,11 +566,18 @@ def ajax_node():
       TR(TH(T('os kernel')), TD(node['os_kernel'])),
       TR(TH(T('os arch')), TD(node['os_arch'])),
     )
+    tags = TABLE(
+      get_tags(request.vars.node),
+    )
 
     asset = DIV(
       DIV(
         H3(SPAN(SPAN(T("server"), _class="node16")), _class="line"),
         server,
+      ),
+      DIV(
+        H3(SPAN(SPAN(T("tags"), _class="tag16")), _class="line"),
+        tags,
       ),
       DIV(
         H3(SPAN(SPAN(T("organization"), _class="guys16")), _class="line"),

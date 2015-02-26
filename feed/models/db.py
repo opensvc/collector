@@ -748,3 +748,14 @@ db.define_table('stor_array',
     Field('array_level','integer'),
     migrate=False)
 
+db.define_table('tags',
+    Field('tag_name','string'),
+    Field('tag_created','datetime'),
+    migrate=False)
+
+db.define_table('node_tags',
+    Field('nodename','string'),
+    Field('tag_id','integer'),
+    Field('created','datetime'),
+    migrate=False)
+
