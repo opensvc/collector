@@ -54,30 +54,49 @@ action_queue_stats()
 // tags tool
 //
 function e_tag(tag_data, init_data) {
-  s = "<span tag_id='"+tag_data.tag_id+"' class='tag'>"+tag_data.tag_name+" </span>"
+  if (init_data.candidates == true) {
+    cl = "tag tag_candidate"
+  } else {
+    cl = "tag tag_attached"
+  }
+  s = "<span tag_id='"+tag_data.tag_id+"' class='"+cl+"'>"+tag_data.tag_name+" </span>"
   e = $(s)
   e.bind("mouseover", function(){
-    if (init_data.responsible) {
+    if (init_data.responsible && init_data.candidates != true) {
       $(this).addClass("tag_del")
     }
   })
   e.bind("mouseout", function(){
-    if (init_data.responsible) {
+    if (init_data.responsible && init_data.candidates != true) {
       $(this).removeClass("tag_del")
     }
   })
   e.bind("click", function(){
-    if ($(this).hasClass("tag_detach")) {
+    event.stopPropagation()
+    if (!init_data.responsible) {
       return
     }
-    $(".flash").html(T("Double-click to confirm tag detach")).slideDown().effect("fade", 15000)
-    $(this).addClass("tag_detach")
-    $(this).css({"background-color": "darkred"})
+    if ($(this).hasClass("tag_candidate")) {
+      tag_attach(init_data, tag_data.tag_name)
+      return
+    }
+    if ($(this).hasClass("tag_detach1")) {
+      $(this).removeClass("tag_detach1").addClass("tag_detach2")
+    } else
+    if ($(this).hasClass("tag_detach2")) {
+      $(this).removeClass("tag_detach2").addClass("tag_detach3")
+    } else {
+      $(this).addClass("tag_detach1")
+    }
+    if ($(this).hasClass("tag_detach3")) {
+      tag_detach($(this), tag_data, init_data)
+    }
   })
-  e.bind("dblclick", function(){
-    if (!$(this).hasClass("tag_detach")) {
-      return
-    }
+  return e
+}
+
+function tag_detach(tag, tag_data, init_data) {
+    $("#"+init_data.tid).html(T("Detaching tag ..."))
     _data = {
       "nodename": init_data.nodename,
       "tag_id": tag_data.tag_id
@@ -95,11 +114,9 @@ function e_tag(tag_data, init_data) {
         init_tags(init_data)
      }
     })
-  })
-  return e
 }
 
-function e_add_tag(data) {
+function e_add_tag(init_data) {
   s = "<span class='tag_add'>"+T("Add tag")+" </span>"
   e = $(s)
   e.bind("click", function(){
@@ -114,7 +131,7 @@ function e_add_tag(data) {
     e.bind("keyup", function(){
       tag = $(this).parent()
       tag_name = $(this).val()
-      tag_input_keyup(data, tag, tag_name)
+      tag_input_keyup(init_data, tag, tag_name)
     })
     e.focus()
   })
@@ -122,29 +139,65 @@ function e_add_tag(data) {
 }
 
 function init_tags(data) {
-  url = $(location).attr("origin") + "/init/tags/call/json/json_node_tags/"+data.nodename
+  if ("url" in data) {
+    url = data.url
+  } else {
+    url = $(location).attr("origin") + "/init/tags/call/json/json_node_tags/"+data.nodename
+  }
   $.getJSON(url, function(_data){
     d = $("<div></div>")
     for (i=0; i<_data.length; i++) {
       d.append(e_tag(_data[i], data))
     }
-    if (data.responsible) {
+    if (data.responsible && data.candidates != true) {
       d.append(e_add_tag(data))
     }
+    $(document).bind("click", function(){
+      $(this).find(".tag").removeClass("tag_detach1").removeClass("tag_detach2").removeClass("tag_detach3")
+    })
     $("#"+data.tid).html(d)
   })
 }
 
-function tag_input_keyup(data, tag, tag_name) {
+function tag_input_candidates(init_data, tag, tag_name) {
+  tid = init_data.tid
+  prefix = $("#"+tid).find(".tag_input").val()
+  if (prefix.length == 0) {
+    prefix = encodeURIComponent("%")
+  }
+  var url = $(location).attr("origin") + "/init/tags/call/json/list_node_avail_tags/"+init_data.nodename+"/"+prefix
+  ctid = tid+"c"
+  data = {
+   "tid": ctid,
+   "nodename": init_data.nodename,
+   "responsible": init_data.responsible,
+   "url": url,
+   "candidates": true
+  }
+  $("#"+ctid).parent().remove()
+  e = $("<span><h3>"+T("Candidate tags")+"</h3><div id='"+ctid+"' class='tags'></div></span>")
+  $("#"+tid).append(e)
+  init_tags(data)
+}
+
+function tag_input_keyup(init_data, tag, tag_name) {
   if (!is_enter(event)) {
+    tag.removeClass("tag_create")
+    tag.find("input").removeClass("tag_create")
+    tag_input_candidates(init_data, tag, tag_name)
     return
   }
+  tag_attach(init_data, tag_name)
+}
+
+function tag_attach(init_data, tag_name) {
   // ajax
+  //$("#"+init_data.tid).html(T("Attaching tag ..."))
   _data = {
-    "nodename": data["nodename"],
+    "nodename": init_data["nodename"],
     "tag_name": tag_name,
   }
-  if (tag.hasClass("tag_create")) {
+  if (tag.hasClass("tag_create") || tag.hasClass("tag_candidate")) {
     var url = $(location).attr("origin") + "/init/tags/call/json/create_and_add_tag"
   } else {
     var url = $(location).attr("origin") + "/init/tags/call/json/add_tag"
@@ -155,16 +208,25 @@ function tag_input_keyup(data, tag, tag_name) {
      data: _data,
      success: function(msg){
         if (msg.ret == 2) {
-          $(".flash").html(msg.msg).slideDown().effect("fade", 15000)
+          //$("#"+init_data.tid).html(bkp)
+          $(".flash").html(msg.msg).slideDown().effect("fade", 5000)
           tag.addClass("tag_create")
           tag.find("input").addClass("tag_create")
           return
         } else if (msg.ret == 3) {
-          $(".flash").html(msg.msg).slideDown().effect("fade", 15000)
+          //$("#"+init_data.tid).html(bkp)
+          $(".flash").html(msg.msg).slideDown().effect("fade", 5000)
           return
         } else if (msg.ret == 1) {
-          $(".flash").html(msg.msg).slideDown().effect("fade", 15000)
+          //$("#"+init_data.tid).html(bkp)
+          $(".flash").html(msg.msg).slideDown().effect("fade", 5000)
           return
+        }
+        // refresh node tags
+        data = {
+          "nodename": init_data.nodename,
+          "tid": init_data.tid.substr(0, 32),
+          "responsible": init_data.responsible
         }
         init_tags(data)
      }

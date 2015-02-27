@@ -102,3 +102,18 @@ def json_node_tags(nodename):
         l.append({"tag_name": row.tag_name, "tag_id": row.id})
     return l
 
+@auth.requires_login()
+@service.json
+def list_node_avail_tags(nodename, prefix):
+    d = {}
+    l = json_node_tags(nodename)
+    l = [r["tag_id"] for r in l]
+
+    q = ~db.tags.id.belongs(l)
+    q &= db.tags.tag_name.like(prefix+"%")
+    rows = db(q).select()
+    if len(rows) == 0:
+        return []
+    tags = [{"tag_name": r.tag_name.lower(), "tag_id": r.id} for r in rows]
+    return tags
+
