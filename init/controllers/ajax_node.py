@@ -426,23 +426,23 @@ def node_pw_tool(nodename, id):
     )
 
 def get_tags(nodename):
-    q = db.node_tags.nodename == nodename
-    q &= db.node_tags.tag_id == db.tags.id
-    rows = db(q).select(db.tags.id, db.tags.tag_name)
-    l = []
-    for row in rows:
-        attrs = {
-          "_tag_id": row.id,
-          "_class": "tag",
-        }
-        d = DIV(
-             row.tag_name,
-             *attrs
-            )
-        l.append(d)
+    q = db.nodes.nodename == nodename
+    ug = user_groups()
+    if "Manager" not in ug:
+        q &= db.nodes.team_responsible.belongs(ug)
+    rows = db(q).select(db.nodes.id)
+    if len(rows) == 0:
+        responsible = False
+    else:
+        responsible = True
+
+    import uuid
+    tid = uuid.uuid1().hex
+
     d = DIV(
-      l,
+      SCRIPT(""" init_tags({"tid": "%s", "responsible": %s, "nodename": "%s"}) """ % (tid, str(responsible).lower(), nodename)),
       _class="tags",
+      _id=tid,
     )
     return d
 
@@ -568,6 +568,7 @@ def ajax_node():
     )
     tags = TABLE(
       get_tags(request.vars.node),
+      _style="width:100%",
     )
 
     asset = DIV(

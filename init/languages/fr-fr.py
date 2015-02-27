@@ -152,6 +152,7 @@
 'Add ruleset': 'Ajouter un jeu de règles',
 'Add scenario': 'Ajouter un scénario',
 'Add segment': 'Ajouter un segment',
+'Add tag': 'Add tag',
 'Add template': 'Ajouter un modèle',
 'add this responsible to selected applications': 'ajouter ce responsable aux applications sélectionnées',
 'Add threshold defaults': 'Ajouter des seuils par défaut',

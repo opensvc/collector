@@ -51,6 +51,128 @@ function _action_queue_stats(data) {
 action_queue_stats()
 
 //
+// tags tool
+//
+function e_tag(tag_data, init_data) {
+  s = "<span tag_id='"+tag_data.tag_id+"' class='tag'>"+tag_data.tag_name+" </span>"
+  e = $(s)
+  e.bind("mouseover", function(){
+    if (init_data.responsible) {
+      $(this).addClass("tag_del")
+    }
+  })
+  e.bind("mouseout", function(){
+    if (init_data.responsible) {
+      $(this).removeClass("tag_del")
+    }
+  })
+  e.bind("click", function(){
+    if ($(this).hasClass("tag_detach")) {
+      return
+    }
+    $(".flash").html(T("Double-click to confirm tag detach")).slideDown().effect("fade", 15000)
+    $(this).addClass("tag_detach")
+    $(this).css({"background-color": "darkred"})
+  })
+  e.bind("dblclick", function(){
+    if (!$(this).hasClass("tag_detach")) {
+      return
+    }
+    _data = {
+      "nodename": init_data.nodename,
+      "tag_id": tag_data.tag_id
+    }
+    var url = $(location).attr("origin") + "/init/tags/call/json/del_tag"
+    $.ajax({
+     type: "POST",
+     url: url,
+     data: _data,
+     success: function(msg){
+        if (msg.ret != 0) {
+          $(".flash").html(msg.msg).slideDown().effect("fade", 15000)
+          return
+        }
+        init_tags(init_data)
+     }
+    })
+  })
+  return e
+}
+
+function e_add_tag(data) {
+  s = "<span class='tag_add'>"+T("Add tag")+" </span>"
+  e = $(s)
+  e.bind("click", function(){
+    old_html = $(this).html()
+    e = $(this).find(".tag_input")
+    if (e.length>0) {
+      return
+    }
+    s = "<input class='tag_input'></input>"
+    $(this).html(s)
+    e = $(this).find(".tag_input")
+    e.bind("keyup", function(){
+      tag = $(this).parent()
+      tag_name = $(this).val()
+      tag_input_keyup(data, tag, tag_name)
+    })
+    e.focus()
+  })
+  return e
+}
+
+function init_tags(data) {
+  url = $(location).attr("origin") + "/init/tags/call/json/json_node_tags/"+data.nodename
+  $.getJSON(url, function(_data){
+    d = $("<div></div>")
+    for (i=0; i<_data.length; i++) {
+      d.append(e_tag(_data[i], data))
+    }
+    if (data.responsible) {
+      d.append(e_add_tag(data))
+    }
+    $("#"+data.tid).html(d)
+  })
+}
+
+function tag_input_keyup(data, tag, tag_name) {
+  if (!is_enter(event)) {
+    return
+  }
+  // ajax
+  _data = {
+    "nodename": data["nodename"],
+    "tag_name": tag_name,
+  }
+  if (tag.hasClass("tag_create")) {
+    var url = $(location).attr("origin") + "/init/tags/call/json/create_and_add_tag"
+  } else {
+    var url = $(location).attr("origin") + "/init/tags/call/json/add_tag"
+  }
+  $.ajax({
+     type: "POST",
+     url: url,
+     data: _data,
+     success: function(msg){
+        if (msg.ret == 2) {
+          $(".flash").html(msg.msg).slideDown().effect("fade", 15000)
+          tag.addClass("tag_create")
+          tag.find("input").addClass("tag_create")
+          return
+        } else if (msg.ret == 3) {
+          $(".flash").html(msg.msg).slideDown().effect("fade", 15000)
+          return
+        } else if (msg.ret == 1) {
+          $(".flash").html(msg.msg).slideDown().effect("fade", 15000)
+          return
+        }
+        init_tags(data)
+     }
+  })
+}
+
+
+//
 // user group tool
 //
 function bind_user_groups() {

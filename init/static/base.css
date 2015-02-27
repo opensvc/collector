@@ -208,6 +208,66 @@ img {
     text-decoration: none;
 }
 
+.tag_input {
+    border: 0px;
+    background-color:#cdcdcd;
+    width:5em;
+}
+.tag_input:focus {
+    background-color:#cdcdcd;
+}
+
+.tag_add {
+    line-height: 1.5em;
+    margin: 0.1em;
+    font-weight: bold;
+    font-size: 85%;
+    text-align: center;
+    color: white;
+    border-radius:4px;
+   -moz-border-radius:4px;
+   -webkit-border-radius:4px;
+    background-color:#cdcdcd;
+    padding-left:20px;
+    padding-right:20px;
+    padding-top:0.1em;
+    padding-bottom:0.1em;
+    overflow:hidden;
+    cursor: pointer;
+}
+
+.tag_create {
+    background-color:darkred;
+}
+.tag_create:focus {
+    background-color:darkred;
+}
+
+.tag_del {
+    background-color:#008099;
+    background-image:url('whitex.png');
+    background-repeat:no-repeat;
+    cursor: pointer;
+}
+
+.tag {
+    line-height: 1.5em;
+    margin: 0.1em;
+    font-weight: bold;
+    font-size: 85%;
+    text-align: center;
+    color: white;
+    border-radius:4px;
+   -moz-border-radius:4px;
+   -webkit-border-radius:4px;
+    background-color:#008099;
+    padding-left:20px;
+    padding-right:20px;
+    padding-top:0.1em;
+    padding-bottom:0.1em;
+    overflow:hidden;
+}
+
 .boxed_small {
     font-weight: bold;
     font-size: 85%;
@@ -1561,6 +1621,11 @@ ul.login_menu ul {
 }
 .bill16 {
     background: transparent url('bill16.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
+.tag16 {
+    background: transparent url('tag16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
