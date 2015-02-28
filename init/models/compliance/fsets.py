@@ -131,6 +131,9 @@ def comp_get_matching_filters(fset_ids, fset_data=None, nodename=None, svcname=N
             elif table == "v_comp_moduleset_attachments" and svcname is None:
                 _field = "nodename"
                 where_ext += " and %s.%s = '%s'" % (table, _field, nodename)
+            elif table == "v_tags" and svcname is None:
+                _field = "nodename"
+                where_ext += " and %s.%s = '%s'" % (table, _field, nodename)
             elif table in ("services"):
                 where_ext += " and services.svc_name=svcmon.mon_svcname and %s = '%s'" % (svcmon_nodname_field, nodename)
                 join_table += ", svcmon"
@@ -139,7 +142,8 @@ def comp_get_matching_filters(fset_ids, fset_data=None, nodename=None, svcname=N
                 join_table += ", nodes"
 
         if svcname is not None:
-            if table in ("services", "b_disk_app", "svcdisks", "svcmon", "svcmon_log", "v_comp_moduleset_attachments"):
+            if table in ("services", "b_disk_app", "svcdisks", "svcmon",
+                         "svcmon_log", "v_comp_moduleset_attachments", "v_tags"):
                 if table in ("services"):
                     _field = "svc_name"
                 elif table in ("b_disk_app", "svcdisks"):
@@ -147,6 +151,8 @@ def comp_get_matching_filters(fset_ids, fset_data=None, nodename=None, svcname=N
                 elif table in ("svcmon", "svcmon_log"):
                     _field = "mon_svcname"
                 elif table in ("v_comp_moduleset_attachments"):
+                    _field = "svcname"
+                elif table in ("v_tags"):
                     _field = "svcname"
                 else:
                     print "unknown table", table

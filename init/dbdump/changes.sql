@@ -4473,3 +4473,15 @@ CREATE TABLE `node_tags` (
   UNIQUE KEY `tag_bind` (`nodename`, `tag_id`)
 ) ENGINE=InnoDB;
 
+CREATE TABLE `svc_tags` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `svcname` varchar(64),
+  `tag_id` integer NOT NULL,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `tag_bind` (`svcname`, `tag_id`)
+) ENGINE=InnoDB;
+
+drop view v_tags; create view v_tags as select tags.id as tag_id, tags.tag_name as tag_name, node_tags.nodename as nodename, NULL as svcname, node_tags.created as created from tags join node_tags on tags.id=node_tags.tag_id union all select tags.id as tag_id, tags.tag_name as tag_name, NULL as nodename, svc_tags.svcname as svcname, svc_tags.created as created from tags join svc_tags on tags.id=svc_tags.tag_id;
+
+

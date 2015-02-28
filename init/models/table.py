@@ -2665,6 +2665,16 @@ v_nodes_colprops = {
             ),
 }
 
+v_tags_colprops = {
+    'tag_name': HtmlTableColumn(
+             title='Tag name',
+             table='v_tags',
+             field='tag_name',
+             img='tag16',
+             display=True,
+            ),
+}
+
 v_comp_moduleset_attachments_colprops = {
     'modset_name': HtmlTableColumn(
              title='Moduleset name',

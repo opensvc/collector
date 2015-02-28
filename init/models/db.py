@@ -2052,3 +2052,11 @@ db.define_table('node_tags',
     Field('created','datetime'),
     migrate=False)
 
+db.define_table('v_tags',
+    Field('nodename','string'),
+    Field('svcname','string'),
+    Field('tag_id','integer'),
+    Field('tag_name','string'),
+    Field('created','datetime'),
+    migrate=False)
+

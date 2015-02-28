@@ -22,6 +22,7 @@ tables = {
     'node_hba':dict(name='node_hba', title='node host bus adapaters', cl='node16', hide=False),
     'b_disk_app':dict(name='b_disk_app', title='disks', cl='hd16', hide=False),
     'v_comp_moduleset_attachments':dict(name='v_comp_moduleset_attachments', title='moduleset attachments', cl='modset16', hide=False),
+    'v_tags':dict(name='v_tags', title='tags', cl='tag16', hide=False),
 }
 operators = [dict(id='op0', title='='),
              dict(id='op1', title='LIKE'),
@@ -38,6 +39,7 @@ props.update(node_hba_colprops)
 props.update(disk_app_colprops)
 props.update(apps_colprops)
 props.update(v_comp_moduleset_attachments_colprops)
+props.update(v_tags_colprops)
 fields = {
     'nodes': db.nodes.fields,
     'services': db.services.fields,
@@ -46,6 +48,7 @@ fields = {
     'node_hba': db.node_hba.fields,
     'apps': set(db.apps.fields) - set(['updated', 'id']),
     'v_comp_moduleset_attachments': ['modset_name'],
+    'v_tags': ['tag_name'],
 }
 
 import re
