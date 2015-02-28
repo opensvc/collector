@@ -269,6 +269,20 @@ def apply_filters(q, node_field=None, service_field=None, fset_id=None, nodename
 
     return q
 
+def current_fset_nodenames():
+    return current_fset_objects()[0]
+
+def current_fset_svcnames():
+    return current_fset_objects()[1]
+
+def current_fset_objects():
+    """
+     return the a (nodenames, svcnames) tuple of objects matching the currently
+     selected user's filterset
+    """
+    fset_id = user_fset_id()
+    return filterset_encap_query(fset_id)
+
 def filterset_encap_query(fset_id, f_log_op='AND', nodes=set([]), services=set([]), i=0, nodename=None, svcname=None):
     if fset_id == 0:
         all_nodes = set([r.nodename for r in db(db.nodes.id>0).select(db.nodes.nodename, cacheable=True)])
