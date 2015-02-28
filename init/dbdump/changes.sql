@@ -4484,4 +4484,5 @@ CREATE TABLE `svc_tags` (
 
 drop view v_tags; create view v_tags as select tags.id as tag_id, tags.tag_name as tag_name, node_tags.nodename as nodename, NULL as svcname, node_tags.created as created from tags join node_tags on tags.id=node_tags.tag_id union all select tags.id as tag_id, tags.tag_name as tag_name, NULL as nodename, svc_tags.svcname as svcname, svc_tags.created as created from tags join svc_tags on tags.id=svc_tags.tag_id;
 
+alter table tags add column tag_exclude varchar(128) default null;
 

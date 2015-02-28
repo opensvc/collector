@@ -150,7 +150,8 @@ menu_entries = [
   'adm-forms',
   'adm-metrics',
   'adm-charts',
-  'adm-reports'
+  'adm-reports',
+  'adm-tags'
 ]
 
 menu_entries_data = {
@@ -207,6 +208,7 @@ menu_entries_data = {
   'adm-metrics': DIV(T('Metrics'), DIV(T("Design sql requests to embed in charts")), _class='stats48', _style='background-size:40px 40px'),
   'adm-charts': DIV(T('Charts'), DIV(T("Design charts to embed in reports")), _class='stats48', _style='background-size:40px 40px'),
   'adm-reports': DIV(T('Reports'), DIV(T("Design custom reports")), _class='stats48', _style='background-size:40px 40px'),
+  'adm-tags': DIV(T('Tags'), DIV(T("Manage tag properties")), _class='tag48', _style='background-size:40px 40px'),
 }
 
 response.menu = [
@@ -287,6 +289,7 @@ response.menu = [
              [menu_entries_data['adm-metrics'], display('adm-metrics'), URL(request.application,'charts','metrics_admin')],
              [menu_entries_data['adm-charts'], display('adm-charts'), URL(request.application,'charts','charts_admin')],
              [menu_entries_data['adm-reports'], display('adm-reports'), URL(request.application,'charts','reports_admin')],
+             [menu_entries_data['adm-tags'], display('adm-tags'), URL(request.application,'tags','tags')],
          ]
     ],
     ]

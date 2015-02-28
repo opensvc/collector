@@ -3884,6 +3884,47 @@ function cell_decorator_disk_array_dg(e) {
   })
 }
 
+function cell_decorator_tag_exclude(e) {
+  var v = $(e).attr("v")
+  if (v == "empty") {
+    v = ""
+  }
+  $(e).html(v)
+  $(window).bind("click", function() {
+    $("input.tag_exclude").parent().html(v)
+  })
+  $(e).bind("click", function(){
+    event.stopPropagation()
+    i = $("<input class='tag_exclude'></input>")
+    var _v = $(this).attr("v")
+    if (_v == "empty") {
+      _v = ""
+    }
+    i.val(_v)
+    i.bind("keyup", function(){
+      if (!is_enter(event)) {
+        return
+      }
+      var url = $(location).attr("origin") + "/init/tags/call/json/tag_exclude"
+      var data = {
+        "tag_exclude": $(this).val(),
+        "tag_id": $(this).parents(".tl").find("[name=tags_c_id]").attr("v")
+      }
+      var _i = $(this)
+      $.ajax({
+        type: "POST",
+        url: url,
+        data: data,
+        success: function(msg){
+          _i.parent().html(data.tag_exclude)
+        }
+      })
+    })
+    $(e).empty().append(i)
+    i.focus()
+  })
+}
+
 function cell_decorator_dash_entry(e) {
   var v = $(e).attr("v")
   var s = ""
@@ -4232,6 +4273,7 @@ cell_decorators = {
  "date_no_age": cell_decorator_date_no_age,
  "dash_severity": cell_decorator_dash_severity,
  "dash_links": cell_decorator_dash_links,
+ "tag_exclude": cell_decorator_tag_exclude,
  "status": cell_decorator_status
 }
 

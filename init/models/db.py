@@ -2043,6 +2043,7 @@ db.define_table('v_comp_moduleset_attachments',
 
 db.define_table('tags',
     Field('tag_name','string'),
+    Field('tag_exclude','string'),
     Field('tag_created','datetime'),
     migrate=False)
 
