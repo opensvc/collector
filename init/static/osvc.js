@@ -98,8 +98,12 @@ function e_tag(tag_data, init_data) {
 function tag_detach(tag, tag_data, init_data) {
     $("#"+init_data.tid).html(T("Detaching tag ..."))
     _data = {
-      "nodename": init_data.nodename,
       "tag_id": tag_data.tag_id
+    }
+    if ("nodename" in init_data) {
+      _data.nodename = init_data.nodename
+    } else if ("svcname" in init_data) {
+      _data.svcname = init_data.svcname
     }
     var url = $(location).attr("origin") + "/init/tags/call/json/del_tag"
     $.ajax({
@@ -141,8 +145,12 @@ function e_add_tag(init_data) {
 function init_tags(data) {
   if ("url" in data) {
     url = data.url
-  } else {
+  } else if ("nodename" in data) {
     url = $(location).attr("origin") + "/init/tags/call/json/json_node_tags/"+data.nodename
+  } else if ("svcname" in data) {
+    url = $(location).attr("origin") + "/init/tags/call/json/json_svc_tags/"+data.svcname
+  } else {
+    return
   }
   $.getJSON(url, function(_data){
     d = $("<div></div>")
@@ -165,14 +173,24 @@ function tag_input_candidates(init_data, tag, tag_name) {
   if (prefix.length == 0) {
     prefix = encodeURIComponent("%")
   }
-  var url = $(location).attr("origin") + "/init/tags/call/json/list_node_avail_tags/"+init_data.nodename+"/"+prefix
+  if ("nodename" in init_data) {
+    var url = $(location).attr("origin") + "/init/tags/call/json/list_node_avail_tags/"+init_data.nodename+"/"+prefix
+  } else if ("svcname" in init_data) {
+    var url = $(location).attr("origin") + "/init/tags/call/json/list_svc_avail_tags/"+init_data.svcname+"/"+prefix
+  } else {
+    return
+  }
   ctid = tid+"c"
   data = {
    "tid": ctid,
-   "nodename": init_data.nodename,
    "responsible": init_data.responsible,
    "url": url,
    "candidates": true
+  }
+  if ("nodename" in init_data) {
+    data.nodename = init_data.nodename
+  } else if ("svcname" in init_data) {
+    data.svcname = init_data.svcname
   }
   $("#"+ctid).parent().remove()
   e = $("<span><h3>"+T("Candidate tags")+"</h3><div id='"+ctid+"' class='tags'></div></span>")
@@ -194,8 +212,12 @@ function tag_attach(init_data, tag_name) {
   // ajax
   //$("#"+init_data.tid).html(T("Attaching tag ..."))
   _data = {
-    "nodename": init_data["nodename"],
     "tag_name": tag_name,
+  }
+  if ("nodename" in init_data) {
+    _data.nodename = init_data.nodename
+  } else if ("svcname" in init_data) {
+    _data.svcname = init_data.svcname
   }
   if (tag.hasClass("tag_create") || tag.hasClass("tag_candidate")) {
     var url = $(location).attr("origin") + "/init/tags/call/json/create_and_add_tag"
@@ -222,11 +244,15 @@ function tag_attach(init_data, tag_name) {
           $(".flash").html(msg.msg).slideDown().effect("fade", 5000)
           return
         }
-        // refresh node tags
+        // refresh tags
         data = {
-          "nodename": init_data.nodename,
           "tid": init_data.tid.substr(0, 32),
           "responsible": init_data.responsible
+        }
+        if ("nodename" in init_data) {
+          data.nodename = init_data.nodename
+        } else if ("svcname" in init_data) {
+          data.svcname = init_data.svcname
         }
         init_tags(data)
      }

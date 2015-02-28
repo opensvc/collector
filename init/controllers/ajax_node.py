@@ -425,7 +425,7 @@ def node_pw_tool(nodename, id):
       ),
     )
 
-def get_tags(nodename):
+def get_node_tags(nodename):
     q = db.nodes.nodename == nodename
     ug = user_groups()
     if "Manager" not in ug:
@@ -567,7 +567,7 @@ def ajax_node():
       TR(TH(T('os arch')), TD(node['os_arch'])),
     )
     tags = TABLE(
-      get_tags(request.vars.node),
+      get_node_tags(request.vars.node),
       _style="width:100%",
     )
 
