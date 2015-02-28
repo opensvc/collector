@@ -409,6 +409,9 @@ function _show_result(e, url, id){
                 $('#'+id).show()
                 $('#'+id).find(".meta_nodename").click(function() {
                   var nodename = $(this).text()
+                  if (nodename.indexOf("@") > 0) {
+                    nodename = nodename.substr(nodename.indexOf("@")+2, nodename.length)
+                  }
                   var _id = "sextra_"+nodename.replace(/[\.-]/g, '_')
                   var d = "<div id='"+_id+"' class='searchtab hidden'></div>"
                   $(this).parents('table').first().find("[name=extra]").html(d)

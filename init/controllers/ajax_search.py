@@ -431,7 +431,10 @@ def format_ip(pattern):
 
     def format_row(row, _class=""):
         if _class == "":
-            _class="meta_ip clickable"
+            if row["nodename"]:
+                _class="meta_nodename clickable"
+            else:
+                _class="meta_ip clickable"
 
         if row.get("nodename"):
             d = TABLE(
