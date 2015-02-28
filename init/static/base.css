@@ -2026,11 +2026,22 @@ ul.login_menu ul {
     float: right;
     padding:0.2em;
 }
+.searchidle > input {
+  background: white url('search.png') no-repeat;
+}
+.searchidle > input:focus {
+  background: rgb(255, 248, 239) url('search.png') no-repeat;
+}
+.searching > input {
+  background: white url('spinner.gif') no-repeat;
+}
+.searching > input:focus {
+  background: rgb(255, 248, 239) url('spinner.gif') no-repeat;
+}
 .search > input {
   color: black;
   width: 6em;
   padding-left: 18px;
-  background: white url('search.png') no-repeat;
   border: 1px solid #ccc;
   -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
@@ -2039,9 +2050,6 @@ ul.login_menu ul {
   -webkit-appearance: none;
   position: relative;
   top: 1px;
-}
-.search input:focus {
-  background: rgb(255, 248, 239) url('search.png') no-repeat;
 }
 .search > * > menu_section > table {
     padding-bottom: 0.4em;

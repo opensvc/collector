@@ -400,7 +400,9 @@ function show_result(e, url, id){
 function _show_result(e, url, id){
     clearTimeout(timer)
     timer=setTimeout(function validate(){
+        $('#search').parent().removeClass("searchidle").addClass("searching")
         sync_ajax(url, ['search'], id, function(){
+            $('#search').parent().addClass("searchidle").removeClass("searching")
             if ($('#'+id).html().length == 0){
                 $('#'+id).hide()
             } else {
