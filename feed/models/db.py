@@ -750,6 +750,7 @@ db.define_table('stor_array',
 
 db.define_table('tags',
     Field('tag_name','string'),
+    Field('tag_exclude','string'),
     Field('tag_created','datetime'),
     migrate=False)
 

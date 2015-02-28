@@ -654,6 +654,7 @@ def collector_show_tags(cmd, auth):
 def collector_create_tag(data, auth):
     nodename = auth[1]
     tag_name = data.get('tag_name')
+    tag_exclude = data.get('tag_exclude')
     if tag_name is None:
         return {"ret": 1, "msg": "misformatted data"}
     q = db.tags.tag_name == tag_name
@@ -662,13 +663,42 @@ def collector_create_tag(data, auth):
         return {"ret": 0, "msg": "tag already exists"}
 
     db.tags.insert(
-       tag_name=tag_name
+       tag_name=tag_name,
+       tag_exclude=tag_exclude
     )
     _log("tag",
          "tag '%(tag_name)s' created",
          dict(tag_name=tag_name)
     )
     return {"ret": 0, "msg": "tag successfully created"}
+
+def tag_allowed(nodename=None, svcname=None, tag_name=None):
+    if nodename is None and svcname is None:
+        return False
+    if tag_name is None:
+        return False
+    if nodename:
+        q = db.node_tags.nodename == nodename
+        q &= db.node_tags.tag_id == db.tags.id
+        q &= db.tags.tag_exclude != None
+        rows = db(q).select(db.tags.tag_exclude,
+                            groupby=db.tags.tag_exclude)
+    elif svcname:
+        q = db.svc_tags.svcname == svcname
+        q &= db.svc_tags.tag_id == db.tags.id
+        q &= db.tags.tag_exclude != None
+        rows = db(q).select(db.tags.tag_exclude,
+                            groupby=db.tags.tag_exclude)
+    if len(rows) == 0:
+        return True
+
+    pattern = '|'.join([r.tag_exclude for r in rows])
+    q = db.tags.tag_name == tag_name
+    qx = _where(None, "tags", pattern, "tag_name")
+    q &= ~qx
+    if db(q).count() == 0:
+        return False
+    return True
 
 @auth_uuid
 @service.xmlrpc
@@ -684,6 +714,8 @@ def collector_tag(data, auth):
 
     if "svcname" in data:
         svcname = data["svcname"]
+        if not tag_allowed(svcname=svcname, tag_name=tag_name):
+            return {"ret": 1, "msg": "tag incompatible with other attached tags."}
         q = db.svc_tags.svcname == svcname
         q &= db.svc_tags.tag_id == tag_id
         rows = db(q).select()
@@ -700,6 +732,8 @@ def collector_tag(data, auth):
              svcname=svcname)
     else:
         nodename = auth[1]
+        if not tag_allowed(nodename=nodename, tag_name=tag_name):
+            return {"ret": 1, "msg": "tag incompatible with other attached tags."}
         q = db.node_tags.nodename == auth[1]
         q &= db.node_tags.tag_id == tag_id
         rows = db(q).select()
