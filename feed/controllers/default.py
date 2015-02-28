@@ -634,10 +634,16 @@ def collector_list_tags(cmd, auth):
 @service.xmlrpc
 def collector_show_tags(cmd, auth):
     d = {}
-    nodename = auth[1]
-    q = db.node_tags.nodename == nodename
-    q &= db.node_tags.tag_id == db.tags.id
-    rows = db(q).select(db.tags.tag_name, orderby=db.tags.tag_name)
+    if "svcname" in cmd:
+        svcname = cmd["svcname"]
+        q = db.svc_tags.svcname == svcname
+        q &= db.svc_tags.tag_id == db.tags.id
+        rows = db(q).select(db.tags.tag_name, orderby=db.tags.tag_name)
+    else:
+        nodename = auth[1]
+        q = db.node_tags.nodename == nodename
+        q &= db.node_tags.tag_id == db.tags.id
+        rows = db(q).select(db.tags.tag_name, orderby=db.tags.tag_name)
     if len(rows) == 0:
         return {"ret": 1, "msg": "no tags found"}
     tags = [r.tag_name.lower() for r in rows]
@@ -667,7 +673,6 @@ def collector_create_tag(data, auth):
 @auth_uuid
 @service.xmlrpc
 def collector_tag(data, auth):
-    nodename = auth[1]
     tag_name = data.get('tag_name')
     if tag_name is None:
         return {"ret": 1, "msg": "misformatted data"}
@@ -677,26 +682,43 @@ def collector_tag(data, auth):
         return {"ret": 1, "msg": "tag does not exist. create it first."}
     tag_id = rows.first().id
 
-    q = db.node_tags.nodename == auth[1]
-    q &= db.node_tags.tag_id == tag_id
-    rows = db(q).select()
-    if len(rows) > 0:
-        return {"ret": 0, "msg": "tag is already attached"}
+    if "svcname" in data:
+        svcname = data["svcname"]
+        q = db.svc_tags.svcname == svcname
+        q &= db.svc_tags.tag_id == tag_id
+        rows = db(q).select()
+        if len(rows) > 0:
+            return {"ret": 0, "msg": "tag is already attached"}
 
-    db.node_tags.insert(
-       nodename=auth[1],
-       tag_id=tag_id
-    )
-    _log("node.tag",
-         "tag '%(tag_name)s' attached",
-         dict(tag_name=tag_name),
-         nodename=auth[1])
+        db.svc_tags.insert(
+           svcname=svcname,
+           tag_id=tag_id
+        )
+        _log("service.tag",
+             "tag '%(tag_name)s' attached",
+             dict(tag_name=tag_name),
+             svcname=svcname)
+    else:
+        nodename = auth[1]
+        q = db.node_tags.nodename == auth[1]
+        q &= db.node_tags.tag_id == tag_id
+        rows = db(q).select()
+        if len(rows) > 0:
+            return {"ret": 0, "msg": "tag is already attached"}
+
+        db.node_tags.insert(
+           nodename=auth[1],
+           tag_id=tag_id
+        )
+        _log("node.tag",
+             "tag '%(tag_name)s' attached",
+             dict(tag_name=tag_name),
+             nodename=auth[1])
     return {"ret": 0, "msg": "tag successfully attached"}
 
 @auth_uuid
 @service.xmlrpc
 def collector_untag(data, auth):
-    nodename = auth[1]
     tag_name = data.get('tag_name')
     if tag_name is None:
         return {"ret": 1, "msg": "misformatted data"}
@@ -706,17 +728,32 @@ def collector_untag(data, auth):
         return {"ret": 1, "msg": "tag does not exist"}
     tag_id = rows.first().id
 
-    q = db.node_tags.nodename == auth[1]
-    q &= db.node_tags.tag_id == tag_id
-    rows = db(q).select()
-    if len(rows) == 0:
-        return {"ret": 0, "msg": "tag is already detached"}
+    if "svcname" in data:
+        svcname = data["svcname"]
+        q = db.svc_tags.svcname == svcname
+        q &= db.svc_tags.tag_id == tag_id
+        rows = db(q).select()
+        if len(rows) == 0:
+            return {"ret": 0, "msg": "tag is already detached"}
 
-    db(q).delete()
-    _log("node.tag",
-         "tag '%(tag_name)s' detached",
-         dict(tag_name=tag_name),
-         nodename=auth[1])
+        db(q).delete()
+        _log("service.tag",
+             "tag '%(tag_name)s' detached",
+             dict(tag_name=tag_name),
+             svcname=svcname)
+    else:
+        nodename = auth[1]
+        q = db.node_tags.nodename == nodename
+        q &= db.node_tags.tag_id == tag_id
+        rows = db(q).select()
+        if len(rows) == 0:
+            return {"ret": 0, "msg": "tag is already detached"}
+
+        db(q).delete()
+        _log("node.tag",
+             "tag '%(tag_name)s' detached",
+             dict(tag_name=tag_name),
+             nodename=nodename)
     return {"ret": 0, "msg": "tag successfully detached"}
 
 

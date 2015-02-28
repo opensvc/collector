@@ -759,3 +759,9 @@ db.define_table('node_tags',
     Field('created','datetime'),
     migrate=False)
 
+db.define_table('svc_tags',
+    Field('svcname','string'),
+    Field('tag_id','integer'),
+    Field('created','datetime'),
+    migrate=False)
+
