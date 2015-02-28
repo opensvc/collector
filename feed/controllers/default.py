@@ -624,7 +624,7 @@ def collector_list_tags(cmd, auth):
         if pattern[-1] != "%":
             pattern = pattern + "%"
         q &= db.tags.tag_name.like(pattern)
-    rows = db(q).select()
+    rows = db(q).select(orderby=db.tags.tag_name)
     if len(rows) == 0:
         return {"ret": 1, "msg": "no tags found"}
     tags = [r.tag_name.lower() for r in rows]
@@ -637,7 +637,7 @@ def collector_show_tags(cmd, auth):
     nodename = auth[1]
     q = db.node_tags.nodename == nodename
     q &= db.node_tags.tag_id == db.tags.id
-    rows = db(q).select(db.tags.tag_name)
+    rows = db(q).select(db.tags.tag_name, orderby=db.tags.tag_name)
     if len(rows) == 0:
         return {"ret": 1, "msg": "no tags found"}
     tags = [r.tag_name.lower() for r in rows]

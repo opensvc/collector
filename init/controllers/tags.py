@@ -125,7 +125,7 @@ def del_tag():
 def json_svc_tags(svcname):
     q = db.svc_tags.svcname == svcname
     q &= db.svc_tags.tag_id == db.tags.id
-    rows = db(q).select(db.tags.id, db.tags.tag_name, cacheable=True)
+    rows = db(q).select(db.tags.id, db.tags.tag_name, orderby=db.tags.tag_name, cacheable=True)
     l = []
     for row in rows:
         l.append({"tag_name": row.tag_name, "tag_id": row.id})
@@ -136,7 +136,7 @@ def json_svc_tags(svcname):
 def json_node_tags(nodename):
     q = db.node_tags.nodename == nodename
     q &= db.node_tags.tag_id == db.tags.id
-    rows = db(q).select(db.tags.id, db.tags.tag_name, cacheable=True)
+    rows = db(q).select(db.tags.id, db.tags.tag_name, orderby=db.tags.tag_name, cacheable=True)
     l = []
     for row in rows:
         l.append({"tag_name": row.tag_name, "tag_id": row.id})
@@ -151,7 +151,7 @@ def list_svc_avail_tags(svcname, prefix):
 
     q = ~db.tags.id.belongs(l)
     q &= db.tags.tag_name.like(prefix+"%")
-    rows = db(q).select()
+    rows = db(q).select(orderby=db.tags.tag_name)
     if len(rows) == 0:
         return []
     tags = [{"tag_name": r.tag_name.lower(), "tag_id": r.id} for r in rows]
@@ -166,7 +166,7 @@ def list_node_avail_tags(nodename, prefix):
 
     q = ~db.tags.id.belongs(l)
     q &= db.tags.tag_name.like(prefix+"%")
-    rows = db(q).select()
+    rows = db(q).select(orderby=db.tags.tag_name)
     if len(rows) == 0:
         return []
     tags = [{"tag_name": r.tag_name.lower(), "tag_id": r.id} for r in rows]
