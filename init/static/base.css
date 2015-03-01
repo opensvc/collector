@@ -1811,6 +1811,10 @@ ul.login_menu ul {
 .nologo48 {
     padding: 0 0 0 52px;
 }
+.tag48 {
+    background: transparent url('tag48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
 .alert48 {
     background: transparent url('alert48.png') no-repeat left center;
     padding: 0 0 0 52px;
