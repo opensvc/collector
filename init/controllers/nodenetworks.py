@@ -75,6 +75,7 @@ class table_nodenetworks(HtmlTable):
                       'net_gateway',
                       'net_begin',
                       'net_end',
+                      'prio',
                       'net_pvid',
                       'net_netmask',
                       'net_team_responsible']
@@ -111,6 +112,12 @@ class table_nodenetworks(HtmlTable):
             'net_end': HtmlTableColumn(
                      title='Net Ip range end',
                      field='net_end',
+                     img='net16',
+                     display=True,
+                    ),
+            'prio': HtmlTableColumn(
+                     title='Net priority',
+                     field='prio',
                      img='net16',
                      display=True,
                     ),
@@ -196,7 +203,7 @@ class table_nodenetworks(HtmlTable):
         for c in self.cols:
             self.colprops[c].table = 'v_nodenetworks'
             self.colprops[c].t = self
-            if self.colprops[c].field.startswith('net_'):
+            if self.colprops[c].field.startswith('net_') or self.colprops[c].field == "prio":
                 self.colprops[c]._dataclass = "bluer"
         self.extraline = True
         self.dataable = True

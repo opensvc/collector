@@ -1120,6 +1120,7 @@
 'Net Name': 'Net Nom',
 'Net Netmask': 'Net Masque',
 'Net Network': 'Net Réseau',
+'Net priority': 'Net priority',
 'Net Team Responsible': 'Net Equipe responsable',
 'Net VLAN id': 'Net Id de VLAN',
 'Netmask': 'Masque de réseau',
