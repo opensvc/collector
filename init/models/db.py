@@ -2067,3 +2067,7 @@ db.define_table('v_tags',
     Field('created','datetime'),
     migrate=False)
 
+db.define_table('v_tags_full',
+    db.v_tags,
+    migrate=False)
+

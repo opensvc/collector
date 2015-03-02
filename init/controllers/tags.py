@@ -195,7 +195,7 @@ def list_node_avail_tags(nodename, prefix):
 
 
 #
-# view code
+# adm-tags view code
 #
 
 class table_tags(HtmlTable):
@@ -286,6 +286,110 @@ def tags():
     t = DIV(
           t.html(),
           _id='tags',
+        )
+    return dict(table=t)
+
+#
+# view-tagattach view code
+#
+
+class table_tagattach(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['tag_id',
+                     'tag_name',
+                     'nodename',
+                     'svcname',
+                     'created']
+        self.colprops = {
+            'tag_id': HtmlTableColumn(
+                     title='Tag id',
+                     table='v_tags_full',
+                     field='tag_id',
+                     img='tag16',
+                     display=False,
+                    ),
+            'tag_name': HtmlTableColumn(
+                     title='Tag name',
+                     table='v_tags_full',
+                     field='tag_name',
+                     img='tag16',
+                     display=True,
+                    ),
+            'created': HtmlTableColumn(
+                     title='Attach date',
+                     table='v_tags_full',
+                     field='created',
+                     img='date16',
+                     display=True,
+                     _class='datetime',
+                    ),
+            'nodename': HtmlTableColumn(
+                     title='Node',
+                     table='v_tags_full',
+                     field='nodename',
+                     img='node16',
+                     display=True,
+                     _class='nodename',
+                    ),
+            'svcname': HtmlTableColumn(
+                     title='Service',
+                     table='v_tags_full',
+                     field='svcname',
+                     img='svc',
+                     display=True,
+                     _class='svcname',
+                    ),
+        }
+        self.dataable = True
+        #self.extraline = True
+        self.checkboxes = True
+        self.checkbox_id_col = 'id'
+        self.checkbox_id_table = 'v_tags_full'
+        self.ajax_col_values = 'ajax_tagattach_col_values'
+        self.span = ["tag_id"]
+        self.keys = ["tag_id", "nodename", "svcname"]
+
+@auth.requires_login()
+def ajax_tagattach_col_values():
+    t = table_tagattach('tagattach', 'ajax_tagattach')
+    col = request.args[0]
+    o = db[t.colprops[col].table][col]
+    q = db.v_tags_full.id >= 0
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    t.object_list = db(q).select(o, orderby=o)
+    return t.col_values_cloud_ungrouped(col)
+
+@auth.requires_login()
+def ajax_tagattach():
+    t = table_tagattach('tagattach', 'ajax_tagattach')
+    o = db.v_tags_full.tag_name | db.v_tags_full.nodename | db.v_tags_full.svcname
+
+    q = db.v_tags_full.id >= 0
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        t.csv_q = q
+        t.csv_orderby = o
+        return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'data':
+        n = db(q).select(db.v_tags_full.id.count()).first()(db.v_tags_full.id.count())
+        t.setup_pager(n)
+        limitby = (t.pager_start,t.pager_end)
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=False)
+        return t.table_lines_data(n, html=False)
+
+@auth.requires_login()
+def tagattach():
+    t = table_tagattach('tagattach', 'ajax_tagattach')
+    t = DIV(
+          t.html(),
+          _id='tagattach',
         )
     return dict(table=t)
 

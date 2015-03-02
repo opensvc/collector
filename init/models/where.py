@@ -5,7 +5,7 @@ def _where(query, table, var, field):
         return query
 
     if query is None:
-        query = (db[table].id > 0)
+        query = (db[table].id >= 0)
     if var is None: return query
     if len(var) == 0: return query
 
@@ -83,7 +83,7 @@ def _where(query, table, var, field):
             if chunk in ('T', 't', "true", "True", True, "yes", "Yes", "YES", "Y", "y"):
                q = db[table][field]==True
             elif chunk == "%":
-               q = db[table].id > 0
+               q = db[table].id >= 0
             else:
                q = db[table][field]==False
     else:
