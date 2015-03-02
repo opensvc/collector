@@ -1271,7 +1271,19 @@ function d_init(data) {
     }
   })
   
-  $("#sep").click(function(){
+  // tree width dragging
+  $("#sep").mousedown(function(){
+    var ini_x = event.pageX
+    var ini_w = $("#catree").width()
+    $(document).bind("mousemove", function(){
+      $("#catree").css({"width": ini_w+event.pageX-ini_x})
+    })
+  })
+  $(document).mouseup(function(){
+    $(this).unbind("mousemove")
+  })
+
+  $("#sep").dblclick(function(){
     $("#catree2").toggle()
     $("#catree2:visible").jstree("refresh");
     resizer()
