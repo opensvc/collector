@@ -425,6 +425,27 @@ def node_pw_tool(nodename, id):
       ),
     )
 
+def get_node_tags(nodename):
+    q = db.nodes.nodename == nodename
+    ug = user_groups()
+    if "Manager" not in ug:
+        q &= db.nodes.team_responsible.belongs(ug)
+    rows = db(q).select(db.nodes.id)
+    if len(rows) == 0:
+        responsible = False
+    else:
+        responsible = True
+
+    import uuid
+    tid = uuid.uuid1().hex
+
+    d = DIV(
+      SCRIPT(""" init_tags({"tid": "%s", "responsible": %s, "nodename": "%s"}) """ % (tid, str(responsible).lower(), nodename)),
+      _class="tags",
+      _id=tid,
+    )
+    return d
+
 @auth.requires_login()
 def ajax_node():
     session.forget(response)
@@ -545,11 +566,19 @@ def ajax_node():
       TR(TH(T('os kernel')), TD(node['os_kernel'])),
       TR(TH(T('os arch')), TD(node['os_arch'])),
     )
+    tags = TABLE(
+      get_node_tags(request.vars.node),
+      _style="width:100%",
+    )
 
     asset = DIV(
       DIV(
         H3(SPAN(SPAN(T("server"), _class="node16")), _class="line"),
         server,
+      ),
+      DIV(
+        H3(SPAN(SPAN(T("tags"), _class="tag16")), _class="line"),
+        tags,
       ),
       DIV(
         H3(SPAN(SPAN(T("organization"), _class="guys16")), _class="line"),

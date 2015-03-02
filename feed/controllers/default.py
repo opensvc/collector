@@ -614,6 +614,186 @@ def str_to_datetime(s):
 
 @auth_uuid
 @service.xmlrpc
+def collector_list_tags(cmd, auth):
+    d = {}
+    q = db.tags.id > 0
+    if "pattern" in cmd and len(cmd["pattern"]) > 0:
+        pattern = cmd["pattern"]
+        if pattern[0] != "%":
+            pattern = "%" + pattern
+        if pattern[-1] != "%":
+            pattern = pattern + "%"
+        q &= db.tags.tag_name.like(pattern)
+    rows = db(q).select(orderby=db.tags.tag_name)
+    if len(rows) == 0:
+        return {"ret": 1, "msg": "no tags found"}
+    tags = [r.tag_name.lower() for r in rows]
+    return {"ret": 0, "msg": "", "data": tags}
+
+@auth_uuid
+@service.xmlrpc
+def collector_show_tags(cmd, auth):
+    d = {}
+    if "svcname" in cmd:
+        svcname = cmd["svcname"]
+        q = db.svc_tags.svcname == svcname
+        q &= db.svc_tags.tag_id == db.tags.id
+        rows = db(q).select(db.tags.tag_name, orderby=db.tags.tag_name)
+    else:
+        nodename = auth[1]
+        q = db.node_tags.nodename == nodename
+        q &= db.node_tags.tag_id == db.tags.id
+        rows = db(q).select(db.tags.tag_name, orderby=db.tags.tag_name)
+    if len(rows) == 0:
+        return {"ret": 1, "msg": "no tags found"}
+    tags = [r.tag_name.lower() for r in rows]
+    return {"ret": 0, "msg": "", "data": tags}
+
+@auth_uuid
+@service.xmlrpc
+def collector_create_tag(data, auth):
+    nodename = auth[1]
+    tag_name = data.get('tag_name')
+    tag_exclude = data.get('tag_exclude')
+    if tag_name is None:
+        return {"ret": 1, "msg": "misformatted data"}
+    q = db.tags.tag_name == tag_name
+    rows = db(q).select()
+    if len(rows) != 0:
+        return {"ret": 0, "msg": "tag already exists"}
+
+    db.tags.insert(
+       tag_name=tag_name,
+       tag_exclude=tag_exclude
+    )
+    _log("tag",
+         "tag '%(tag_name)s' created",
+         dict(tag_name=tag_name)
+    )
+    return {"ret": 0, "msg": "tag successfully created"}
+
+def tag_allowed(nodename=None, svcname=None, tag_name=None):
+    if nodename is None and svcname is None:
+        return False
+    if tag_name is None:
+        return False
+    if nodename:
+        q = db.node_tags.nodename == nodename
+        q &= db.node_tags.tag_id == db.tags.id
+        q &= db.tags.tag_exclude != None
+        rows = db(q).select(db.tags.tag_exclude,
+                            groupby=db.tags.tag_exclude)
+    elif svcname:
+        q = db.svc_tags.svcname == svcname
+        q &= db.svc_tags.tag_id == db.tags.id
+        q &= db.tags.tag_exclude != None
+        rows = db(q).select(db.tags.tag_exclude,
+                            groupby=db.tags.tag_exclude)
+    if len(rows) == 0:
+        return True
+
+    pattern = '|'.join([r.tag_exclude for r in rows])
+    q = db.tags.tag_name == tag_name
+    qx = _where(None, "tags", pattern, "tag_name")
+    q &= ~qx
+    if db(q).count() == 0:
+        return False
+    return True
+
+@auth_uuid
+@service.xmlrpc
+def collector_tag(data, auth):
+    tag_name = data.get('tag_name')
+    if tag_name is None:
+        return {"ret": 1, "msg": "misformatted data"}
+    q = db.tags.tag_name == tag_name
+    rows = db(q).select()
+    if len(rows) == 0:
+        return {"ret": 1, "msg": "tag does not exist. create it first."}
+    tag_id = rows.first().id
+
+    if "svcname" in data:
+        svcname = data["svcname"]
+        if not tag_allowed(svcname=svcname, tag_name=tag_name):
+            return {"ret": 1, "msg": "tag incompatible with other attached tags."}
+        q = db.svc_tags.svcname == svcname
+        q &= db.svc_tags.tag_id == tag_id
+        rows = db(q).select()
+        if len(rows) > 0:
+            return {"ret": 0, "msg": "tag is already attached"}
+
+        db.svc_tags.insert(
+           svcname=svcname,
+           tag_id=tag_id
+        )
+        _log("service.tag",
+             "tag '%(tag_name)s' attached",
+             dict(tag_name=tag_name),
+             svcname=svcname)
+    else:
+        nodename = auth[1]
+        if not tag_allowed(nodename=nodename, tag_name=tag_name):
+            return {"ret": 1, "msg": "tag incompatible with other attached tags."}
+        q = db.node_tags.nodename == auth[1]
+        q &= db.node_tags.tag_id == tag_id
+        rows = db(q).select()
+        if len(rows) > 0:
+            return {"ret": 0, "msg": "tag is already attached"}
+
+        db.node_tags.insert(
+           nodename=auth[1],
+           tag_id=tag_id
+        )
+        _log("node.tag",
+             "tag '%(tag_name)s' attached",
+             dict(tag_name=tag_name),
+             nodename=auth[1])
+    return {"ret": 0, "msg": "tag successfully attached"}
+
+@auth_uuid
+@service.xmlrpc
+def collector_untag(data, auth):
+    tag_name = data.get('tag_name')
+    if tag_name is None:
+        return {"ret": 1, "msg": "misformatted data"}
+    q = db.tags.tag_name == tag_name
+    rows = db(q).select()
+    if len(rows) == 0:
+        return {"ret": 1, "msg": "tag does not exist"}
+    tag_id = rows.first().id
+
+    if "svcname" in data:
+        svcname = data["svcname"]
+        q = db.svc_tags.svcname == svcname
+        q &= db.svc_tags.tag_id == tag_id
+        rows = db(q).select()
+        if len(rows) == 0:
+            return {"ret": 0, "msg": "tag is already detached"}
+
+        db(q).delete()
+        _log("service.tag",
+             "tag '%(tag_name)s' detached",
+             dict(tag_name=tag_name),
+             svcname=svcname)
+    else:
+        nodename = auth[1]
+        q = db.node_tags.nodename == nodename
+        q &= db.node_tags.tag_id == tag_id
+        rows = db(q).select()
+        if len(rows) == 0:
+            return {"ret": 0, "msg": "tag is already detached"}
+
+        db(q).delete()
+        _log("node.tag",
+             "tag '%(tag_name)s' detached",
+             dict(tag_name=tag_name),
+             nodename=nodename)
+    return {"ret": 0, "msg": "tag successfully detached"}
+
+
+
+@auth_uuid
+@service.xmlrpc
 def collector_update_root_pw(data, auth):
     nodename = auth[1]
     pw = data.get('pw')

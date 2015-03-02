@@ -2041,3 +2041,33 @@ db.define_table('v_comp_moduleset_attachments',
     Field('modset_name','string'),
     migrate=False)
 
+db.define_table('tags',
+    Field('tag_name','string'),
+    Field('tag_exclude','string'),
+    Field('tag_created','datetime'),
+    migrate=False)
+
+db.define_table('node_tags',
+    Field('nodename','string'),
+    Field('tag_id','integer'),
+    Field('created','datetime'),
+    migrate=False)
+
+db.define_table('svc_tags',
+    Field('svcname','string'),
+    Field('tag_id','integer'),
+    Field('created','datetime'),
+    migrate=False)
+
+db.define_table('v_tags',
+    Field('nodename','string'),
+    Field('svcname','string'),
+    Field('tag_id','integer'),
+    Field('tag_name','string'),
+    Field('created','datetime'),
+    migrate=False)
+
+db.define_table('v_tags_full',
+    db.v_tags,
+    migrate=False)
+

@@ -4456,3 +4456,36 @@ update svcdisks set disk_svcname="" where disk_svcname is null;
 update svcdisks set disk_nodename="" where disk_nodename is null;
 update svcdisks set disk_dg="" where disk_dg is null;
 
+CREATE TABLE `tags` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `tag_name` varchar(64) NOT NULL default "",
+  `tag_created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `tag_name` (`tag_name`)
+) ENGINE=InnoDB;
+
+CREATE TABLE `node_tags` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nodename` varchar(64),
+  `tag_id` integer NOT NULL,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `tag_bind` (`nodename`, `tag_id`)
+) ENGINE=InnoDB;
+
+CREATE TABLE `svc_tags` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `svcname` varchar(64),
+  `tag_id` integer NOT NULL,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `tag_bind` (`svcname`, `tag_id`)
+) ENGINE=InnoDB;
+
+drop view v_tags; create view v_tags as select tags.id as tag_id, tags.tag_name as tag_name, node_tags.nodename as nodename, NULL as svcname, node_tags.created as created from tags join node_tags on tags.id=node_tags.tag_id union all select tags.id as tag_id, tags.tag_name as tag_name, NULL as nodename, svc_tags.svcname as svcname, svc_tags.created as created from tags join svc_tags on tags.id=svc_tags.tag_id;
+
+alter table tags add column tag_exclude varchar(128) default null;
+
+drop view v_tags; create view v_tags as select NULL as id, tags.id as tag_id, tags.tag_name as tag_name, node_tags.nodename as nodename, NULL as svcname, node_tags.created as created from tags join node_tags on tags.id=node_tags.tag_id union all select NULL as id, tags.id as tag_id, tags.tag_name as tag_name, NULL as nodename, svc_tags.svcname as svcname, svc_tags.created as created from tags join svc_tags on tags.id=svc_tags.tag_id;
+
+drop view v_tags_full ; create view v_tags_full as select 0 as id, tags.id as tag_id, tags.tag_name as tag_name, nodes.nodename as nodename, NULL as svcname, node_tags.created as created from nodes left join node_tags on nodes.nodename=node_tags.nodename left join tags on node_tags.tag_id=tags.id union all select 0 as id, tags.id as tag_id, tags.tag_name as tag_name, NULL as nodename, services.svc_name as svcname, svc_tags.created as created from services left join svc_tags on services.svc_name=svc_tags.svcname left join tags on svc_tags.tag_id=tags.id;

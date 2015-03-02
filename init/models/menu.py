@@ -108,6 +108,7 @@ menu_entries = [
   'view-resources',
   'view-appinfo',
   'view-nodes',
+  'view-tagattach',
   'view-actions',
   'view-checks',
   'view-pkg',
@@ -150,7 +151,8 @@ menu_entries = [
   'adm-forms',
   'adm-metrics',
   'adm-charts',
-  'adm-reports'
+  'adm-reports',
+  'adm-tags'
 ]
 
 menu_entries_data = {
@@ -164,6 +166,7 @@ menu_entries_data = {
   'view-resources': DIV(T('Resources'), DIV(T("Service resources status")), _class='svc48'),
   'view-appinfo': DIV(T('App Info'), DIV(T("Service 'app' resources key:val store")), _class='svc48'),
   'view-nodes': DIV(T('Nodes'), DIV(T("Technical and organizational info")), _class='node48', _style='background-size:40px 40px'),
+  'view-tagattach': DIV(T('Tag Attachments'), DIV(T("Tags attached to nodes and services")), _class='tag48', _style='background-size:40px 40px'),
   'view-actions': DIV(T('Actions'), DIV(T("Service actions log")), _class='action48', _style='background-size:40px 40px'),
   'view-checks': DIV(T('Checks'), DIV(T("Nodes health monitoring")), _class='completed48'),
   'view-pkg': DIV(T('Packages'), DIV(T("All packages installed on nodes")), _class='pkg48'),
@@ -207,6 +210,7 @@ menu_entries_data = {
   'adm-metrics': DIV(T('Metrics'), DIV(T("Design sql requests to embed in charts")), _class='stats48', _style='background-size:40px 40px'),
   'adm-charts': DIV(T('Charts'), DIV(T("Design charts to embed in reports")), _class='stats48', _style='background-size:40px 40px'),
   'adm-reports': DIV(T('Reports'), DIV(T("Design custom reports")), _class='stats48', _style='background-size:40px 40px'),
+  'adm-tags': DIV(T('Tags'), DIV(T("Manage tag properties")), _class='tag48', _style='background-size:40px 40px'),
 }
 
 response.menu = [
@@ -228,6 +232,7 @@ response.menu = [
              [menu_entries_data['view-resources'], display('view-resources'), URL(request.application,'resmon','resmon')],
              [menu_entries_data['view-appinfo'], display('view-appinfo'), URL(request.application,'appinfo','appinfo')],
              [menu_entries_data['view-nodes'], display('view-nodes'), URL(request.application,'nodes','nodes')],
+             [menu_entries_data['view-tagattach'], display('view-tagattach'), URL(request.application,'tags','tagattach')],
              [menu_entries_data['view-actions'], display('view-actions'), URL(request.application,'svcactions','svcactions')],
              [menu_entries_data['view-checks'], display('view-checks'), URL(request.application,'checks','checks')],
              [menu_entries_data['view-pkg'], display('view-pkg'), URL(request.application,'packages','packages')],
@@ -287,6 +292,7 @@ response.menu = [
              [menu_entries_data['adm-metrics'], display('adm-metrics'), URL(request.application,'charts','metrics_admin')],
              [menu_entries_data['adm-charts'], display('adm-charts'), URL(request.application,'charts','charts_admin')],
              [menu_entries_data['adm-reports'], display('adm-reports'), URL(request.application,'charts','reports_admin')],
+             [menu_entries_data['adm-tags'], display('adm-tags'), URL(request.application,'tags','tags')],
          ]
     ],
     ]

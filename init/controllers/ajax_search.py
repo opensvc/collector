@@ -25,13 +25,15 @@ def ajax_search():
     app = format_app(pattern)
     disk = format_disk(pattern)
     fset = format_fset(pattern)
+    ip = format_ip(pattern)
 
-    if len(svc)+len(node)+len(user)+len(group)+len(app)+len(vm)+len(disk)+len(fset) == 0:
+    if len(svc)+len(node)+len(user)+len(group)+len(app)+len(vm)+len(disk)+len(fset)+len(ip) == 0:
         return ''
 
     return DIV(
              svc,
              node,
+             ip,
              vm,
              user,
              group,
@@ -414,6 +416,183 @@ def format_vm(pattern):
           T('Virtual Machines'), ' (', n, ')',
           SPAN(l),
           _class="menu_section",
+        )
+    return d
+
+def format_ip(pattern):
+    o = db.node_ip.addr
+    q = _where(None, 'node_ip', pattern, 'addr')
+    q = _where(q, 'node_ip', domain_perms(), 'nodename')
+    q &= db.node_ip.nodename.belongs(current_fset_nodenames())
+    rows = db(q).select(o, db.node_ip.nodename, orderby=o, groupby=o, limitby=(0,max_search_result))
+    n = len(db(q).select(o, groupby=o))
+
+    if len(rows) == 0:
+        return ''
+
+    def format_row(row, _class=""):
+        if _class == "":
+            if row["nodename"]:
+                _class="meta_nodename clickable"
+            else:
+                _class="meta_ip clickable"
+
+        if row.get("nodename"):
+            d = TABLE(
+                  TR(
+                    TD(
+                      _class="s_net48",
+                    ),
+                    TD(
+                      P("%s @ %s" % (row['addr'], row["nodename"].lower()), _class=_class),
+                      A(
+                        T('nodes'),
+                        _href=URL(r=request, c='nodes', f='nodes',
+                                  vars={'nodes_f_nodename': row['nodename'],
+                                        'clear_filters': 'true'}),
+                        _class="hw16",
+                      ),
+                      A(
+                        T('dashboard'),
+                        _href=URL(r=request, c='dashboard', f='index',
+                                  vars={'dashboard_f_dash_nodename': row['nodename'],
+                                        'clear_filters': 'true'}),
+                        _class="alert16",
+                      ),
+                      A(
+                        T('services'),
+                        _href=URL(r=request, c='default', f='svcmon',
+                                  vars={'svcmon_f_mon_nodname': row['nodename'],
+                                        'clear_filters': 'true'}),
+                        _class="svc",
+                      ),
+                      A(
+                        T('resources'),
+                        _href=URL(r=request, c='resmon', f='resmon',
+                                  vars={'resmon_f_nodename': row['nodename'],
+                                        'clear_filters': 'true'}),
+                        _class="svc",
+                      ),
+                      A(
+                        T('appinfo'),
+                        _href=URL(r=request, c='appinfo', f='appinfo',
+                                  vars={'appinfo_f_app_nodename': row['nodename'],
+                                        'clear_filters': 'true'}),
+                        _class="svc",
+                      ),
+                      A(
+                        T('actions'),
+                        _href=URL(r=request, c='svcactions', f='svcactions',
+                                  vars={'actions_f_hostname': row['nodename'],
+                                        'clear_filters': 'true'}),
+                        _class="action16",
+                      ),
+                      A(
+                        T('checks'),
+                        _href=URL(r=request, c='checks', f='checks',
+                                  vars={'checks_f_chk_nodename': row['nodename'],
+                                        'clear_filters': 'true'}),
+                        _class="check16",
+                      ),
+                      A(
+                        T('packages'),
+                        _href=URL(r=request, c='packages', f='packages',
+                                  vars={'packages_f_nodename': row['nodename'],
+                                        'clear_filters': 'true'}),
+                        _class="pkg16",
+                      ),
+                      A(
+                        T('network'),
+                        _href=URL(r=request, c='nodenetworks', f='nodenetworks',
+                                  vars={'nodenetworks_f_nodename': row['nodename'],
+                                        'clear_filters': 'true'}),
+                        _class="net16",
+                      ),
+                      A(
+                        T('san'),
+                        _href=URL(r=request, c='nodesan', f='nodesan',
+                                  vars={'nodesan_f_nodename': row['nodename'],
+                                        'clear_filters': 'true'}),
+                        _class="net16",
+                      ),
+                      A(
+                        T('disks'),
+                        _href=URL(r=request, c='disks', f='disks',
+                                  vars={'disks_f_disk_nodename': row['nodename'],
+                                        'clear_filters': 'true'}),
+                        _class="hd16",
+                      ),
+                      A(
+                        T('saves'),
+                        _href=URL(r=request, c='saves', f='saves',
+                                  vars={'saves_f_save_nodename': row['nodename'],
+                                        'clear_filters': 'true'}),
+                        _class="cd16",
+                      ),
+                      A(
+                        T('compliance status'),
+                        _href=URL(r=request, c='compliance', f='comp_status',
+                                  vars={'cs0_f_run_nodename': row['nodename'],
+                                        'clear_filters': 'true'}),
+                        _class="comp16",
+                      ),
+                      A(
+                        T('compliance log'),
+                        _href=URL(r=request, c='compliance', f='comp_log',
+                                  vars={'comp_log_f_run_nodename': row['nodename'],
+                                        'clear_filters': 'true'}),
+                        _class="log16",
+                      ),
+                      A(
+                        T('log'),
+                        _href=URL(r=request, c='log', f='log',
+                                  vars={'log_f_log_nodename': row['nodename'],
+                                        'clear_filters': 'true'}),
+                        _class="log16",
+                      ),
+                    ),
+                  ),
+                  TR(
+                    TD(
+                      _name="extra",
+                      _colspan=2,
+                    ),
+                  ),
+                )
+        else:
+            d = TABLE(
+                  TR(
+                    TD(
+                      _class="s_net48",
+                    ),
+                    TD(
+                      P(row['addr'], _class=_class),
+                      A(
+                        T('node nets'),
+                        _href=URL(r=request, c='nodenetworks', f='nodenetworks',
+                                  vars={'nodenetworks_f_addr': row['addr'],
+                                        'clear_filters': 'true'}),
+                        _class="hw16",
+                      ),
+                    ),
+                  ),
+                  TR(
+                    TD(
+                      _name="extra",
+                      _colspan=2,
+                    ),
+                  ),
+                )
+        return d
+    l = []
+    if n > 1:
+        l.append(format_row({'addr': pattern, 'nodename': None}, "highlight_light"))
+    for row in rows:
+        l.append(format_row(row))
+    d = DIV(
+          T('Ip addresses'), ' (', n, ')',
+          SPAN(l),
+          _class="menu_section"
         )
     return d
 

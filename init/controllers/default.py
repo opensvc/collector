@@ -67,6 +67,29 @@ def envfile(svcname):
              TT(XML(envfile), _style="text-align:left"),
            )
 
+def get_svc_tags(svcname):
+    q = db.services.svc_name == svcname
+    q &= db.services.svc_app == db.apps.app
+    q &= db.apps.id == db.apps_responsibles.app_id
+    ug = user_group_ids()
+    if "Manager" not in ug:
+        q &= db.apps_responsibles.group_id.belongs(ug)
+    rows = db(q).select(db.nodes.id, groupby=db.services.svc_name)
+    if len(rows) == 0:
+        responsible = False
+    else:
+        responsible = True
+
+    import uuid
+    tid = uuid.uuid1().hex
+
+    d = DIV(
+      SCRIPT(""" init_tags({"tid": "%s", "responsible": %s, "svcname": "%s"}) """ % (tid, str(responsible).lower(), svcname)),
+      _class="tags",
+      _id=tid,
+    )
+    return d
+
 @auth.requires_login()
 def ajax_service():
     session.forget(response)
@@ -102,67 +125,85 @@ def ajax_service():
 
     s = rows[0]
 
-    t_misc = TABLE(
+    svcinfo = TABLE(
       TR(
-        TD(T('unacknowledged errors'), _style='font-style:italic'),
-        TD(s['err'])
+        TH(T('unacknowledged errors')), TD(s['err'])
       ),
       TR(
-        TD(T('type'), _style='font-style:italic'),
-        TD(s['svc_type'])
+        TH(T('type')), TD(s['svc_type'])
       ),
       TR(
-        TD(T('HA'), _style='font-style:italic'),
-        TD(T('yes') if s['svc_ha'] == 1 else T('no'))
+        TH(T('HA')), TD(T('yes') if s['svc_ha'] == 1 else T('no'))
       ),
       TR(
-        TD(T('application'), _style='font-style:italic'),
-        TD(s['svc_app'])
+        TH(T('comment')), TD(s['svc_comment'])
       ),
       TR(
-        TD(T('comment'), _style='font-style:italic'),
-        TD(s['svc_comment'])
+        TH(T('primary node')), TD(s['svc_autostart'])
       ),
       TR(
-        TD(T('created'), _style='font-style:italic'),
-        TD(s['svc_created'])
+        TH(T('nodes')), TD(s['svc_nodes'])
       ),
       TR(
-        TD(T('last update'), _style='font-style:italic'),
-        TD(s['svc_updated'])
+        TH(T('drp node')), TD(s['svc_drpnode'])
       ),
       TR(
-        TD(T('responsibles'), _style='font-style:italic'),
-        TD(s['responsibles'])
+        TH(T('drp nodes')), TD(s['svc_drpnodes'])
+      ),
+    )
+    tags = TABLE(
+      get_svc_tags(s["svc_name"])
+    )
+    org = TABLE(
+      TR(
+        TH(T('application')), TD(s['svc_app'])
       ),
       TR(
-        TD(T('responsibles mail'), _style='font-style:italic'),
-        TD(s['mailto'])
+        TH(T('responsibles')), TD(s['responsibles'])
       ),
       TR(
-        TD(T('primary node'), _style='font-style:italic'),
-        TD(s['svc_autostart'])
+        TH(T('responsibles mail')), TD(s['mailto'])
+      ),
+    )
+    dates = TABLE(
+      TR(
+        TH(T('created')), TD(s['svc_created'])
       ),
       TR(
-        TD(T('nodes'), _style='font-style:italic'),
-        TD(s['svc_nodes'])
+        TH(T('last update')), TD(s['svc_updated'])
+      ),
+    )
+    res = TABLE(
+      TR(
+        TH(T('vcpus')), TD(s['mon_vcpus'])
       ),
       TR(
-        TD(T('drp node'), _style='font-style:italic'),
-        TD(s['svc_drpnode'])
+        TH(T('vmem')), TD(s['mon_vmem'])
       ),
-      TR(
-        TD(T('drp nodes'), _style='font-style:italic'),
-        TD(s['svc_drpnodes'])
+    )
+
+    t_misc = DIV(
+      DIV(
+        H3(SPAN(SPAN(T("service"), _class="svc")), _class="line"),
+        svcinfo,
       ),
-      TR(
-        TD(T('vcpus'), _style='font-style:italic'),
-        TD(s['mon_vcpus'])
+      DIV(
+        H3(SPAN(SPAN(T("tags"), _class="tag16")), _class="line"),
+        tags,
       ),
-      TR(
-        TD(T('vmem'), _style='font-style:italic'),
-        TD(s['mon_vmem'])
+      DIV(
+        H3(SPAN(SPAN(T("organization"), _class="guys16")), _class="line"),
+        org,
       ),
+      DIV(
+        H3(SPAN(SPAN(T("dates"), _class="time16")), _class="line"),
+        dates,
+      ),
+      DIV(
+        H3(SPAN(SPAN(T("resources"), _class="action16")), _class="line"),
+        res,
+      ),
+      _class="asset_tab",
     )
 
     def containerprf(rowid, containers):

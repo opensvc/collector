@@ -21,6 +21,6 @@ def tool_search():
           SCRIPT(
             "bind_search_tool()",
           ),
-          _class='search',
+          _class='search searchidle',
         )
     return d

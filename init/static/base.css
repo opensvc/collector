@@ -208,6 +208,77 @@ img {
     text-decoration: none;
 }
 
+.tag_input {
+    border: 0px;
+    background-color:#cdcdcd;
+    width:5em;
+}
+.tag_input:focus {
+    background-color:#cdcdcd;
+}
+
+.tag_add {
+    line-height: 1.5em;
+    margin: 0.1em;
+    font-weight: bold;
+    font-size: 85%;
+    text-align: center;
+    color: white;
+    border-radius:4px;
+   -moz-border-radius:4px;
+   -webkit-border-radius:4px;
+    background-color:#cdcdcd;
+    padding-left:20px;
+    padding-right:20px;
+    padding-top:0.1em;
+    padding-bottom:0.1em;
+    overflow:hidden;
+    cursor: pointer;
+}
+
+.tag_attached {
+    background-color:#008099;
+}
+.tag_candidate {
+    background-color:#cdcdcd;
+    cursor: pointer;
+}
+.tag_create, .tag_create:focus {
+    background-color:darkred;
+}
+.tag_detach1, .tag_detach1:focus {
+    background-color:#00a0b9;
+}
+.tag_detach2, .tag_detach2:focus {
+    background-color:#60c0d9;
+}
+.tag_detach3, .tag_detach3:focus {
+    background-color:#a0e0f9;
+}
+
+.tag_del {
+    background-image:url('whitex.png');
+    background-repeat:no-repeat;
+    cursor: pointer;
+}
+
+.tag {
+    line-height: 1.5em;
+    margin: 0.1em;
+    font-weight: bold;
+    font-size: 85%;
+    text-align: center;
+    color: white;
+    border-radius:4px;
+   -moz-border-radius:4px;
+   -webkit-border-radius:4px;
+    padding-left:20px;
+    padding-right:20px;
+    padding-top:0.1em;
+    padding-bottom:0.1em;
+    overflow:hidden;
+}
+
 .boxed_small {
     font-weight: bold;
     font-size: 85%;
@@ -1564,6 +1635,11 @@ ul.login_menu ul {
     padding: 0 0 0 20px;
     min-height: 16px;
 }
+.tag16 {
+    background: transparent url('tag16.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
 .hw16 {
     background: transparent url('hw16.png') no-repeat;
     padding: 0 0 0 20px;
@@ -1735,6 +1811,10 @@ ul.login_menu ul {
 .nologo48 {
     padding: 0 0 0 52px;
 }
+.tag48 {
+    background: transparent url('tag48.png') no-repeat left center;
+    padding: 0 0 0 52px;
+}
 .alert48 {
     background: transparent url('alert48.png') no-repeat left center;
     padding: 0 0 0 52px;
@@ -1838,6 +1918,10 @@ ul.login_menu ul {
     background-repeat: no-repeat;
     background-position: left center;
     padding: 0 0 0 52px;
+}
+.s_net48 {
+    background: transparent url('net48.png') no-repeat left center;
+    width: 48px;
 }
 .s_filter48 {
     background: transparent url('filter48.png') no-repeat left center;
@@ -1946,11 +2030,22 @@ ul.login_menu ul {
     float: right;
     padding:0.2em;
 }
+.searchidle > input {
+  background: white url('search.png') no-repeat;
+}
+.searchidle > input:focus {
+  background: rgb(255, 248, 239) url('search.png') no-repeat;
+}
+.searching > input {
+  background: white url('spinner.gif') no-repeat;
+}
+.searching > input:focus {
+  background: rgb(255, 248, 239) url('spinner.gif') no-repeat;
+}
 .search > input {
   color: black;
   width: 6em;
   padding-left: 18px;
-  background: white url('search.png') no-repeat;
   border: 1px solid #ccc;
   -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
@@ -1959,9 +2054,6 @@ ul.login_menu ul {
   -webkit-appearance: none;
   position: relative;
   top: 1px;
-}
-.search input:focus {
-  background: rgb(255, 248, 239) url('search.png') no-repeat;
 }
 .search > * > menu_section > table {
     padding-bottom: 0.4em;
