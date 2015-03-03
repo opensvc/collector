@@ -94,7 +94,9 @@ def send_sysreport_archive(fname, binary, sysreport_d, nodename):
                 st = os.stat(mp)
                 os.chmod(mp, st.st_mode | stat.S_IWRITE)
             tar.extract(member, path=sysreport_d)
-            os.chmod(mp, st.st_mode | stat.S_IREAD)
+            if os.path.exists(mp):
+                st = os.stat(mp)
+                os.chmod(mp, st.st_mode | stat.S_IREAD)
         tar.close()
         os.unlink(fpath)
     else:
@@ -104,6 +106,7 @@ def send_sysreport_archive(fname, binary, sysreport_d, nodename):
 
 def git_commit(git_d):
     if which('git') is None:
+        print "git not found"
         return
 
     node_d = os.path.join(git_d, "..")
@@ -123,7 +126,7 @@ def git_commit(git_d):
         print "dir does not exist:", node_d
         return 0
 
-    os.system('cd %s && (rm -f .git/index.lock && git add -A ; git commit -m"" -a)' % node_d)
+    os.system('cd %s && (rm -f .git/index.lock && git add . ; git commit -m"" -a)' % node_d)
 
     return 0
 
@@ -132,6 +135,7 @@ def task_send_sysreport(need_commit, deleted, nodename):
     git_d = os.path.join(sysreport_d, nodename, ".git")
 
     if not need_commit:
+        print "commit not needed"
         return
     git_commit(git_d)
 
