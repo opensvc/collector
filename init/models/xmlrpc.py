@@ -21,6 +21,8 @@ def quote_wrap(x):
             return x
         elif x[0] == '"' and x[-1] == '"':
             return x
+        elif x.startswith("unhex("):
+            return x
         else:
             return "'%s'"%x.replace("'", "''")
     elif x is None:

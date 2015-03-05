@@ -1124,6 +1124,7 @@
 'Net Team Responsible': 'Net Equipe responsable',
 'Net VLAN id': 'Net Id de VLAN',
 'Netmask': 'Masque de réseau',
+'netmask misconfigured': 'netmask misconfigured',
 'network': 'réseau',
 'Network': 'Réseau',
 'network device errors in the last day': 'erreurs sur une interface réseau durant ce dernier jour',

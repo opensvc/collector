@@ -27,6 +27,15 @@ def merge_data(data, mirror=False, purge_old_col=None):
         if mirror:
             db.executesql("truncate %s"%table)
         n = len(vals)
+        hexcols = []
+        for i, c in enumerate(vars):
+            if c.startswith("hex("):
+                hexcols.append(i)
+                vars[i] = vars[i][4:-1]
+        if len(hexcols) > 0:
+            for i, val in enumerate(vals):
+                for j in hexcols:
+                    vals[i][j] = "unhex('" + vals[i][j] +"')"
         while len(vals) > max:
             generic_insert(table, vars, vals[:max])
             vals = vals[max:]
@@ -156,6 +165,8 @@ def push_table_last_status(tables):
     return table_last_status(tables, "push")
 
 def table_last_status(tables, mode):
+    if len(tables) == 0:
+        return []
     tables = ','.join(map(lambda x: repr(x), tables))
     sql = """
      select
@@ -288,7 +299,7 @@ def get_common(remote, fullname, common):
 def get_table_columns(schema, name):
     sql = """
       SELECT
-        `COLUMN_NAME`
+        `COLUMN_NAME`, `DATA_TYPE`
       FROM
         `INFORMATION_SCHEMA`.`COLUMNS`
       WHERE
@@ -296,7 +307,12 @@ def get_table_columns(schema, name):
         `TABLE_NAME`='%s'
     """ % (schema, name)
     rows = db.executesql(sql)
-    columns = [ r[0] for r in rows ]
+    columns = []
+    for row in rows:
+       if row[1] == "blob":
+           columns.append("hex("+row[0]+")")
+       else:
+           columns.append(row[0])
     return columns
 
 def pull_all_table_from_all_remote(force=False):
@@ -364,7 +380,7 @@ def pull_all_table_from_remote(host, ts, force=False):
            where = "where " + ' and '.join(filters)
 
         sql = """select %s from %s %s""" % (
-         ','.join(map(lambda x: "`"+x+"`", columns)),
+         ','.join(columns),
          fullname,
          where
         )

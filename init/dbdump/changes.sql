@@ -4489,3 +4489,9 @@ alter table tags add column tag_exclude varchar(128) default null;
 drop view v_tags; create view v_tags as select NULL as id, tags.id as tag_id, tags.tag_name as tag_name, node_tags.nodename as nodename, NULL as svcname, node_tags.created as created from tags join node_tags on tags.id=node_tags.tag_id union all select NULL as id, tags.id as tag_id, tags.tag_name as tag_name, NULL as nodename, svc_tags.svcname as svcname, svc_tags.created as created from tags join svc_tags on tags.id=svc_tags.tag_id;
 
 drop view v_tags_full ; create view v_tags_full as select 0 as id, tags.id as tag_id, tags.tag_name as tag_name, nodes.nodename as nodename, NULL as svcname, node_tags.created as created from nodes left join node_tags on nodes.nodename=node_tags.nodename left join tags on node_tags.tag_id=tags.id union all select 0 as id, tags.id as tag_id, tags.tag_name as tag_name, NULL as nodename, services.svc_name as svcname, svc_tags.created as created from services left join svc_tags on services.svc_name=svc_tags.svcname left join tags on svc_tags.tag_id=tags.id;
+
+alter table auth_node add column `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+alter table auth_node add unique index idx2 (nodename);
+
+
