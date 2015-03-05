@@ -821,6 +821,7 @@ def collector_update_root_pw(data, auth):
               updated=now()
           """ % dict(nodename=nodename, pw=pw, uuid=uuid+salt)
     db.executesql(sql)
+    table_modified("node_pw")
     return {"ret": 0, "msg": "password updated succesfully"}
 
 @auth_uuid
