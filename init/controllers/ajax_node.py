@@ -630,7 +630,8 @@ def ajax_node():
                networks.netmask,
                networks.gateway,
                networks.begin,
-               networks.end
+               networks.end,
+               networks.prio
              from node_ip
              left join networks
              on
@@ -652,6 +653,7 @@ def ajax_node():
                TH("net pvid", _style="width:4em"),
                TH("net base"),
                TH("net gateway", _style="width:7em"),
+               TH("net prio", _style="width:5em"),
                TH("net begin", _style="width:7em"),
                TH("net end", _style="width:7em"),
              )
@@ -671,6 +673,7 @@ def ajax_node():
                        TD(row['pvid'] if row['pvid'] else '-', _class="bluer"),
                        TD(row['network'] if row['network'] else '-', _class="bluer"),
                        TD(row['gateway'] if row['gateway'] else '-', _class="bluer"),
+                       TD(row['prio'] if row['prio'] is not None else '-', _class="bluer"),
                        TD(row['begin'] if row['begin'] else '-', _class="bluer"),
                        TD(row['end'] if row['end'] else '-', _class="bluer"),
                      )
