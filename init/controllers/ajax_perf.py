@@ -866,14 +866,14 @@ def json_mem():
         kbmemfree.append((r[0], _kbmemfree))
         kbmemused.append((r[0], _kbmemused))
         pct_memused.append((r[0], _pct_memused))
-        kbbuffers.append((r[0], int(r[4])))
-        kbcached.append((r[0], int(r[5])))
-        kbcommit.append((r[0], int(r[6])))
-        pct_commit.append((r[0], int(r[7])))
-        kbmemsys.append((r[0], int(r[8])))
-        kbactive.append((r[0], int(r[9])))
-        kbinact.append((r[0], int(r[10])))
-        kbdirty.append((r[0], int(r[11])))
+        kbbuffers.append((r[0], int(r[4]) if r[5] else None))
+        kbcached.append((r[0], int(r[5]) if r[5] else None))
+        kbcommit.append((r[0], int(r[6]) if r[6] else None))
+        pct_commit.append((r[0], int(r[7]) if r[7] else None))
+        kbmemsys.append((r[0], int(r[8]) if r[8] else None))
+        kbactive.append((r[0], int(r[9]) if r[9] else None))
+        kbinact.append((r[0], int(r[10]) if r[10] else None))
+        kbdirty.append((r[0], int(r[11]) if r[11] else None))
     return [kbmemfree, kbmemused, pct_memused, kbbuffers, kbcached, kbcommit, pct_commit, kbmemsys, kbactive, kbinact, kbdirty]
 
 @service.json
