@@ -41,38 +41,41 @@ def call():
 # XMLRPC
 #
 #########
-def auth_uuid(fn):
-    def new(*args, **kwargs):
-        uuid, node = kwargs['auth']
-        rows = db((db.auth_node.nodename==node)&(db.auth_node.uuid==uuid)).select(cacheable=True)
-        if len(rows) != 1:
-            return "agent authentication error"
-        return fn(*args, **kwargs)
-    return new
-
-@auth_uuid
 @service.xmlrpc
 def delete_services(hostid=None, auth=("", "")):
+    return rpc_delete_services(hostid=None, auth=("", ""))
+
+@auth_uuid
+def rpc_delete_services(hostid=None, auth=("", "")):
     if hostid is None:
         return 0
     db(db.services.svc_hostid==hostid).delete()
     db.commit()
     return 0
 
-@auth_uuid
 @service.xmlrpc
 def delete_service_list(hostid=None, svcnames=[], auth=("", "")):
-    return
+    return rpc_delete_service_list(hostid=None, svcnames=[], auth=("", ""))
 
 @auth_uuid
+def rpc_delete_service_list(hostid=None, svcnames=[], auth=("", "")):
+    return
+
 @service.xmlrpc
 def begin_action(vars, vals, auth):
+    return rpc_begin_action(vars, vals, auth)
+
+@auth_uuid
+def rpc_begin_action(vars, vals, auth):
     scheduler.queue_task("_action_wrapper", ["_begin_action", vars, vals, auth],
                          group_name="actions")
 
-@auth_uuid
 @service.xmlrpc
 def res_action(vars, vals, auth):
+    return rpc_res_action(vars, vals, auth)
+
+@auth_uuid
+def rpc_res_action(vars, vals, auth):
     upd = []
     for a, b in zip(vars, vals):
         upd.append("%s=%s" % (a, b))
@@ -81,15 +84,21 @@ def res_action(vars, vals, auth):
     db.commit()
     return 0
 
-@auth_uuid
 @service.xmlrpc
 def end_action(vars, vals, auth):
+    return rpc_end_action(vars, vals, auth)
+
+@auth_uuid
+def rpc_end_action(vars, vals, auth):
     scheduler.queue_task("_action_wrapper", ["_end_action", vars, vals, auth],
                          group_name="actions")
 
-@auth_uuid
 @service.xmlrpc
 def update_appinfo(vars, vals, auth):
+    return rpc_update_appinfo(vars, vals, auth)
+
+@auth_uuid
+def rpc_update_appinfo(vars, vals, auth):
     if len(vals) == 0:
         return
     h = {}
@@ -113,55 +122,82 @@ def update_appinfo(vars, vals, auth):
     if len(vals_log) > 0:
         generic_insert('appinfo_log', vars, vals_log)
 
-@auth_uuid
 @service.xmlrpc
 def update_service(vars, vals, auth):
+    return rpc_update_service(vars, vals, auth)
+
+@auth_uuid
+def rpc_update_service(vars, vals, auth):
     scheduler.queue_task("_update_service", [vars, vals, auth],
                          group_name="_update_service")
 
-@auth_uuid
 @service.xmlrpc
 def push_checks(vars, vals, auth):
+    return rpc_push_checks(vars, vals, auth)
+
+@auth_uuid
+def rpc_push_checks(vars, vals, auth):
     scheduler.queue_task("_push_checks", [vars, vals],
                          group_name="_push_checks")
 
-@auth_uuid
 @service.xmlrpc
 def insert_generic(data, auth):
+    return rpc_insert_generic(data, auth)
+
+@auth_uuid
+def rpc_insert_generic(data, auth):
     scheduler.queue_task("_insert_generic", [data, auth],
                          group_name="_insert_generic")
 
-@auth_uuid
 @service.xmlrpc
 def update_asset(vars, vals, auth):
+    return rpc_update_asset(vars, vals, auth)
+
+@auth_uuid
+def rpc_update_asset(vars, vals, auth):
     scheduler.queue_task("_update_asset", [vars, vals, auth],
                          group_name="_update_asset")
 
-@auth_uuid
 @service.xmlrpc
 def update_asset_sync(vars, vals, auth):
+    return rpc_update_asset_sync(vars, vals, auth)
+
+@auth_uuid
+def rpc_update_asset_sync(vars, vals, auth):
     _update_asset(vars, vals, auth)
 
-@auth_uuid
 @service.xmlrpc
 def res_action_batch(vars, vals, auth):
+    return rpc_res_action_batch(vars, vals, auth)
+
+@auth_uuid
+def rpc_res_action_batch(vars, vals, auth):
     generic_insert('SVCactions', vars, vals)
 
-@auth_uuid
 @service.xmlrpc
 def resmon_update(vars, vals, auth):
-    _resmon_update(vars, vals, auth)
+    return rpc_resmon_update(vars, vals, auth)
 
 @auth_uuid
+def rpc_resmon_update(vars, vals, auth):
+    _resmon_update(vars, vals, auth)
+
 @service.xmlrpc
 def svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
+    return rpc_svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth)
+
+@auth_uuid
+def rpc_svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
     scheduler.queue_task("_svcmon_update_combo",
                          [g_vars, g_vals, r_vars, r_vals, auth],
                          group_name="_svcmon_update_combo")
 
-@auth_uuid
 @service.xmlrpc
 def register_disks(vars, vals, auth):
+    return rpc_register_disks(vars, vals, auth)
+
+@auth_uuid
+def rpc_register_disks(vars, vals, auth):
     now = datetime.datetime.now()
     now -= datetime.timedelta(microseconds=now.microsecond)
 
@@ -192,9 +228,12 @@ def register_disks(vars, vals, auth):
     db.commit()
     queue_refresh_b_disk_app()
 
-@auth_uuid
 @service.xmlrpc
 def register_disk_blacklist(vars, vals, auth):
+    return rpc_register_disk_blacklist(vars, vals, auth)
+
+@auth_uuid
+def rpc_register_disk_blacklist(vars, vals, auth):
     generic_insert('disk_blacklist', vars, vals)
 
 def disk_level(dev_id, level=0):
@@ -205,9 +244,12 @@ def disk_level(dev_id, level=0):
         return level
     return disk_level(rows.first().disk_devid, level+1)
 
-@auth_uuid
 @service.xmlrpc
 def register_diskinfo(vars, vals, auth):
+    return rpc_register_diskinfo(vars, vals, auth)
+
+@auth_uuid
+def rpc_register_diskinfo(vars, vals, auth):
     if len(vals) == 0:
         return
 
@@ -259,69 +301,108 @@ def register_diskinfo(vars, vals, auth):
     db.executesql(sql)
     db.commit()
 
-@auth_uuid
 @service.xmlrpc
 def register_disk(vars, vals, auth):
+    return rpc_register_disk(vars, vals, auth)
+
+@auth_uuid
+def rpc_register_disk(vars, vals, auth):
     _register_disk(vars, vals, auth)
 
-@auth_uuid
 @service.xmlrpc
 def register_sync(vars, vals, auth):
-    pass
+    return rpc_register_sync(vars, vals, auth)
 
 @auth_uuid
+def rpc_register_sync(vars, vals, auth):
+    pass
+
 @service.xmlrpc
 def register_ip(vars, vals, auth):
-    pass
+    return rpc_register_ip(vars, vals, auth)
 
 @auth_uuid
+def rpc_register_ip(vars, vals, auth):
+    pass
+
 @service.xmlrpc
 def register_fs(vars, vals, auth):
+    return rpc_register_fs(vars, vals, auth)
+
+@auth_uuid
+def rpc_register_fs(vars, vals, auth):
     pass
 
-@auth_uuid
 @service.xmlrpc
 def insert_stats_fs_u(vars, vals, auth):
+    return rpc_insert_stats_fs_u(vars, vals, auth)
+
+@auth_uuid
+def rpc_insert_stats_fs_u(vars, vals, auth):
     generic_insert('stats_fs_u', vars, vals)
 
-@auth_uuid
 @service.xmlrpc
 def insert_stats_cpu(vars, vals, auth):
+    return rpc_insert_stats_cpu(vars, vals, auth)
+
+@auth_uuid
+def rpc_insert_stats_cpu(vars, vals, auth):
     generic_insert('stats_cpu', vars, vals)
 
-@auth_uuid
 @service.xmlrpc
 def insert_stats_mem_u(vars, vals, auth):
+    return rpc_insert_stats_mem_u(vars, vals, auth)
+
+@auth_uuid
+def rpc_insert_stats_mem_u(vars, vals, auth):
     generic_insert('stats_mem_u', vars, vals)
 
-@auth_uuid
 @service.xmlrpc
 def insert_stats_proc(vars, vals, auth):
+    return rpc_insert_stats_proc(vars, vals, auth)
+
+@auth_uuid
+def rpc_insert_stats_proc(vars, vals, auth):
     generic_insert('stats_proc', vars, vals)
 
-@auth_uuid
 @service.xmlrpc
 def insert_stats_swap(vars, vals, auth):
+    return rpc_insert_stats_swap(vars, vals, auth)
+
+@auth_uuid
+def rpc_insert_stats_swap(vars, vals, auth):
     generic_insert('stats_swap', vars, vals)
 
-@auth_uuid
 @service.xmlrpc
 def insert_stats_block(vars, vals, auth):
+    return rpc_insert_stats_block(vars, vals, auth)
+
+@auth_uuid
+def rpc_insert_stats_block(vars, vals, auth):
     generic_insert('stats_block', vars, vals)
 
-@auth_uuid
 @service.xmlrpc
 def insert_stats_blockdev(vars, vals, auth):
+    return rpc_insert_stats_blockdev(vars, vals, auth)
+
+@auth_uuid
+def rpc_insert_stats_blockdev(vars, vals, auth):
     generic_insert('stats_blockdev', vars, vals)
 
-@auth_uuid
 @service.xmlrpc
 def insert_stats_netdev(vars, vals, auth):
-    generic_insert('stats_netdev', vars, vals)
+    return rpc_insert_stats_netdev(vars, vals, auth)
 
 @auth_uuid
+def rpc_insert_stats_netdev(vars, vals, auth):
+    generic_insert('stats_netdev', vars, vals)
+
 @service.xmlrpc
 def insert_stats_netdev_err(vars, vals, auth):
+    return rpc_insert_stats_netdev_err(vars, vals, auth)
+
+@auth_uuid
+def rpc_insert_stats_netdev_err(vars, vals, auth):
     generic_insert('stats_netdev_err', vars, vals)
 
 def get_vcpus(nodename, vmname):
@@ -336,9 +417,12 @@ def get_vcpus(nodename, vmname):
     except:
         return 1
 
-@auth_uuid
 @service.xmlrpc
 def insert_stats(data, auth):
+    return rpc_insert_stats(data, auth)
+
+@auth_uuid
+def rpc_insert_stats(data, auth):
     import cPickle
     h = cPickle.loads(data)
     for stat in h:
@@ -365,79 +449,121 @@ def insert_stats(data, auth):
     scheduler.queue_task("update_dash_netdev_errors" , [auth[1]],
                          group_name="update_dash_netdev_errors", timeout=120)
 
-@auth_uuid
 @service.xmlrpc
 def insert_pkg(vars, vals, auth):
+    return rpc_insert_pkg(vars, vals, auth)
+
+@auth_uuid
+def rpc_insert_pkg(vars, vals, auth):
     scheduler.queue_task("_insert_pkg", [vars, vals, auth],
                          group_name="_insert_pkg", timeout=120)
 
-@auth_uuid
 @service.xmlrpc
 def insert_patch(vars, vals, auth):
+    return rpc_insert_patch(vars, vals, auth)
+
+@auth_uuid
+def rpc_insert_patch(vars, vals, auth):
     scheduler.queue_task("_insert_patch", [vars, vals, auth],
                          group_name="_insert_patch", timeout=120)
 
-@auth_uuid
 @service.xmlrpc
 def update_hds(symid, vars, vals, auth):
-    update_array_xml(symid, vars, vals, auth, "hds", insert_hds)
+    return rpc_update_hds(symid, vars, vals, auth)
 
 @auth_uuid
+def rpc_update_hds(symid, vars, vals, auth):
+    update_array_xml(symid, vars, vals, auth, "hds", insert_hds)
+
 @service.xmlrpc
 def update_sym_xml(symid, vars, vals, auth):
+    return rpc_update_sym_xml(symid, vars, vals, auth)
+
+@auth_uuid
+def rpc_update_sym_xml(symid, vars, vals, auth):
     if len(vars) == 1:
         update_array_xml(symid, vars, vals, auth, "symmetrix", None)
     else:
         update_array_xml(symid, vars, vals, auth, "symmetrix", insert_sym)
 
-@auth_uuid
 @service.xmlrpc
 def update_eva_xml(name, vars, vals, auth):
+    return rpc_update_eva_xml(name, vars, vals, auth)
+
+@auth_uuid
+def rpc_update_eva_xml(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "eva", insert_eva)
 
-@auth_uuid
 @service.xmlrpc
 def update_nsr(name, vars, vals, auth):
+    return rpc_update_nsr(name, vars, vals, auth)
+
+@auth_uuid
+def rpc_update_nsr(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "nsr", insert_nsr)
 
-@auth_uuid
 @service.xmlrpc
 def update_netapp(name, vars, vals, auth):
+    return rpc_update_netapp(name, vars, vals, auth)
+
+@auth_uuid
+def rpc_update_netapp(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "netapp", insert_netapp)
 
-@auth_uuid
 @service.xmlrpc
 def update_hp3par(name, vars, vals, auth):
+    return rpc_update_hp3par(name, vars, vals, auth)
+
+@auth_uuid
+def rpc_update_hp3par(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "hp3par", insert_hp3par)
 
-@auth_uuid
 @service.xmlrpc
 def update_ibmsvc(name, vars, vals, auth):
+    return rpc_update_ibmsvc(name, vars, vals, auth)
+
+@auth_uuid
+def rpc_update_ibmsvc(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "ibmsvc", insert_ibmsvc)
 
-@auth_uuid
 @service.xmlrpc
 def update_ibmds(name, vars, vals, auth):
+    return rpc_update_ibmds(name, vars, vals, auth)
+
+@auth_uuid
+def rpc_update_ibmds(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "ibmds", insert_ibmds)
 
-@auth_uuid
 @service.xmlrpc
 def update_brocade(name, vars, vals, auth):
+    return rpc_update_brocade(name, vars, vals, auth)
+
+@auth_uuid
+def rpc_update_brocade(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "brocade", insert_brocade)
 
-@auth_uuid
 @service.xmlrpc
 def update_vioserver(name, vars, vals, auth):
+    return rpc_update_vioserver(name, vars, vals, auth)
+
+@auth_uuid
+def rpc_update_vioserver(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "vioserver", insert_vioserver)
 
-@auth_uuid
 @service.xmlrpc
 def update_necism(name, vars, vals, auth):
-    update_array_xml(name, vars, vals, auth, "necism", insert_necism)
+    return rpc_update_necism(name, vars, vals, auth)
 
 @auth_uuid
+def rpc_update_necism(name, vars, vals, auth):
+    update_array_xml(name, vars, vals, auth, "necism", insert_necism)
+
 @service.xmlrpc
 def update_dcs(name, vars, vals, auth):
+    return rpc_update_dcs(name, vars, vals, auth)
+
+@auth_uuid
+def rpc_update_dcs(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "dcs", insert_dcs)
 
 def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
@@ -483,9 +609,12 @@ def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
     sql = "delete from stor_array_dg_quota where stor_array_dg_quota.dg_id not in (select id from stor_array_dg)"
     db.executesql(sql)
 
-@auth_uuid
 @service.xmlrpc
 def send_sysreport(fname, binary, deleted, auth):
+    return rpc_send_sysreport(fname, binary, deleted, auth)
+
+@auth_uuid
+def rpc_send_sysreport(fname, binary, deleted, auth):
     need_commit = False
     sysreport_d = os.path.join(os.path.dirname(__file__), "..", "..", "init", 'uploads', 'sysreport')
     nodename = auth[1]
@@ -535,34 +664,52 @@ def insert_evas():
 def insert_syms():
     return insert_sym()
 
-@auth_uuid
 @service.xmlrpc
 def delete_pkg(node, auth):
-    pass
+    return rpc_delete_pkg(node, auth)
 
 @auth_uuid
+def rpc_delete_pkg(node, auth):
+    pass
+
 @service.xmlrpc
 def delete_patch(node, auth):
-    pass
+    return rpc_delete_patch(node, auth)
 
 @auth_uuid
+def rpc_delete_patch(node, auth):
+    pass
+
 @service.xmlrpc
 def delete_syncs(svcname, auth):
-    pass
+    return rpc_delete_syncs(svcname, auth)
 
 @auth_uuid
+def rpc_delete_syncs(svcname, auth):
+    pass
+
 @service.xmlrpc
 def delete_ips(svcname, node, auth):
-    pass
+    return rpc_delete_ips(svcname, node, auth)
 
 @auth_uuid
+def rpc_delete_ips(svcname, node, auth):
+    pass
+
 @service.xmlrpc
 def delete_fss(svcname, auth):
-    pass
+    return rpc_delete_fss(svcname, auth)
 
 @auth_uuid
+def rpc_delete_fss(svcname, auth):
+    pass
+
 @service.xmlrpc
 def delete_disks(svcname, node, auth):
+    return rpc_delete_disks(svcname, node, auth)
+
+@auth_uuid
+def rpc_delete_disks(svcname, node, auth):
     if svcname is None or svcname == '':
         return 0
     db((db.svcdisks.disk_svcname==svcname)&(db.svcdisks.disk_nodename==node)).delete()
@@ -591,9 +738,12 @@ def register_node(node):
          nodename=node)
     return u
 
-@auth_uuid
 @service.xmlrpc
 def svcmon_update(vars, vals, auth):
+    return rpc_svcmon_update(vars, vals, auth)
+
+@auth_uuid
+def rpc_svcmon_update(vars, vals, auth):
     scheduler.queue_task("_svcmon_update", [vars, vals, auth],
                          group_name="_svcmon_update_combo")
 
@@ -612,9 +762,12 @@ def str_to_datetime(s):
            continue
     return d
 
-@auth_uuid
 @service.xmlrpc
 def collector_list_tags(cmd, auth):
+    return rpc_collector_list_tags(cmd, auth)
+
+@auth_uuid
+def rpc_collector_list_tags(cmd, auth):
     d = {}
     q = db.tags.id > 0
     if "pattern" in cmd and len(cmd["pattern"]) > 0:
@@ -630,9 +783,12 @@ def collector_list_tags(cmd, auth):
     tags = [r.tag_name.lower() for r in rows]
     return {"ret": 0, "msg": "", "data": tags}
 
-@auth_uuid
 @service.xmlrpc
 def collector_show_tags(cmd, auth):
+    return rpc_collector_show_tags(cmd, auth)
+
+@auth_uuid
+def rpc_collector_show_tags(cmd, auth):
     d = {}
     if "svcname" in cmd:
         svcname = cmd["svcname"]
@@ -649,9 +805,12 @@ def collector_show_tags(cmd, auth):
     tags = [r.tag_name.lower() for r in rows]
     return {"ret": 0, "msg": "", "data": tags}
 
-@auth_uuid
 @service.xmlrpc
 def collector_create_tag(data, auth):
+    return rpc_collector_create_tag(data, auth)
+
+@auth_uuid
+def rpc_collector_create_tag(data, auth):
     nodename = auth[1]
     tag_name = data.get('tag_name')
     tag_exclude = data.get('tag_exclude')
@@ -700,9 +859,12 @@ def tag_allowed(nodename=None, svcname=None, tag_name=None):
         return False
     return True
 
-@auth_uuid
 @service.xmlrpc
 def collector_tag(data, auth):
+    return rpc_collector_tag(data, auth)
+
+@auth_uuid
+def rpc_collector_tag(data, auth):
     tag_name = data.get('tag_name')
     if tag_name is None:
         return {"ret": 1, "msg": "misformatted data"}
@@ -750,9 +912,12 @@ def collector_tag(data, auth):
              nodename=auth[1])
     return {"ret": 0, "msg": "tag successfully attached"}
 
-@auth_uuid
 @service.xmlrpc
 def collector_untag(data, auth):
+    return rpc_collector_untag(data, auth)
+
+@auth_uuid
+def rpc_collector_untag(data, auth):
     tag_name = data.get('tag_name')
     if tag_name is None:
         return {"ret": 1, "msg": "misformatted data"}
@@ -792,9 +957,12 @@ def collector_untag(data, auth):
 
 
 
-@auth_uuid
 @service.xmlrpc
 def collector_update_root_pw(data, auth):
+    return rpc_collector_update_root_pw(data, auth)
+
+@auth_uuid
+def rpc_collector_update_root_pw(data, auth):
     nodename = auth[1]
     pw = data.get('pw')
     if pw is None:
@@ -824,9 +992,12 @@ def collector_update_root_pw(data, auth):
     table_modified("node_pw")
     return {"ret": 0, "msg": "password updated succesfully"}
 
-@auth_uuid
 @service.xmlrpc
 def collector_ack_action(cmd, auth):
+    return rpc_collector_ack_action(cmd, auth)
+
+@auth_uuid
+def rpc_collector_ack_action(cmd, auth):
     d = {}
     nodename = auth[1]
     d["acked_date"] = datetime.datetime.now()
@@ -883,9 +1054,12 @@ def collector_ack_action(cmd, auth):
 
     return {"ret": 0, "msg": ""}
 
-@auth_uuid
 @service.xmlrpc
 def collector_ack_unavailability(cmd, auth):
+    return rpc_collector_ack_unavailability(cmd, auth)
+
+@auth_uuid
+def rpc_collector_ack_unavailability(cmd, auth):
     d = {}
     nodename = auth[1]
     d["mon_acked_on"] = datetime.datetime.now()
@@ -936,9 +1110,12 @@ def collector_ack_unavailability(cmd, auth):
     generic_insert('svcmon_log_ack', d.keys(), d.values())
     return {"ret": 0, "msg": ""}
 
-@auth_uuid
 @service.xmlrpc
 def collector_list_unavailability_ack(cmd, auth):
+    return rpc_collector_list_unavailability_ack(cmd, auth)
+
+@auth_uuid
+def rpc_collector_list_unavailability_ack(cmd, auth):
     d = {}
     nodename = auth[1]
     d["mon_acked_on"] = datetime.datetime.now()
@@ -991,9 +1168,12 @@ def collector_list_unavailability_ack(cmd, auth):
     rows = db(q).select()
     return {"ret": 0, "msg": "", "data":str(rows)}
 
-@auth_uuid
 @service.xmlrpc
 def collector_show_actions(cmd, auth):
+    return rpc_collector_show_actions(cmd, auth)
+
+@auth_uuid
+def rpc_collector_show_actions(cmd, auth):
     d = {}
     nodename = auth[1]
 
@@ -1069,18 +1249,24 @@ def collector_show_actions(cmd, auth):
                      str(row.status_log)])
     return {"ret": 0, "msg": "", "data":data}
 
-@auth_uuid
 @service.xmlrpc
 def collector_update_action_queue(data, auth):
+    return rpc_collector_update_action_queue(data, auth)
+
+@auth_uuid
+def rpc_collector_update_action_queue(data, auth):
     nodename = auth[1]
     for id, ret, out, err in data:
         q = db.action_queue.id == id
         q &= db.action_queue.nodename == nodename
         db(q).update(stdout=out, stderr=err, ret=ret, status="T", date_dequeued=datetime.datetime.now())
 
-@auth_uuid
 @service.xmlrpc
 def collector_get_action_queue(nodename, auth):
+    return rpc_collector_get_action_queue(nodename, auth)
+
+@auth_uuid
+def rpc_collector_get_action_queue(nodename, auth):
     q = db.action_queue.nodename == nodename
     q &= db.action_queue.action_type == "pull"
     q &= db.action_queue.status == "W"
@@ -1091,9 +1277,12 @@ def collector_get_action_queue(nodename, auth):
         db.commit()
     return data
 
-@auth_uuid
 @service.xmlrpc
 def collector_list_actions(cmd, auth):
+    return rpc_collector_list_actions(cmd, auth)
+
+@auth_uuid
+def rpc_collector_list_actions(cmd, auth):
     d = {}
     nodename = auth[1]
     d["mon_acked_on"] = datetime.datetime.now()
@@ -1162,9 +1351,12 @@ def collector_list_actions(cmd, auth):
 
     return {"ret": 0, "msg": "", "data":data}
 
-@auth_uuid
 @service.xmlrpc
 def collector_status(cmd, auth):
+    return rpc_collector_status(cmd, auth)
+
+@auth_uuid
+def rpc_collector_status(cmd, auth):
     d = {}
     nodename = auth[1]
 
@@ -1214,9 +1406,12 @@ def collector_status(cmd, auth):
 
     return {"ret": 0, "msg": "", "data":data}
 
-@auth_uuid
 @service.xmlrpc
 def collector_networks(cmd, auth):
+    return rpc_collector_networks(cmd, auth)
+
+@auth_uuid
+def rpc_collector_networks(cmd, auth):
     nodename = auth[1]
 
     if "svcname" in cmd:
@@ -1268,9 +1463,12 @@ def collector_networks(cmd, auth):
     return {"ret": 0, "msg": "", "data": data}
 
 
-@auth_uuid
 @service.xmlrpc
 def collector_asset(cmd, auth):
+    return rpc_collector_asset(cmd, auth)
+
+@auth_uuid
+def rpc_collector_asset(cmd, auth):
     d = {}
     nodename = auth[1]
 
@@ -1419,9 +1617,12 @@ def collector_asset(cmd, auth):
 
     return {"ret": 0, "msg": "", "data": data}
 
-@auth_uuid
 @service.xmlrpc
 def collector_checks(cmd, auth):
+    return rpc_collector_checks(cmd, auth)
+
+@auth_uuid
+def rpc_collector_checks(cmd, auth):
     d = {}
     nodename = auth[1]
 
@@ -1469,9 +1670,12 @@ def collector_checks(cmd, auth):
         ])
     return {"ret": 0, "msg": "", "data":data}
 
-@auth_uuid
 @service.xmlrpc
 def collector_alerts(cmd, auth):
+    return rpc_collector_alerts(cmd, auth)
+
+@auth_uuid
+def rpc_collector_alerts(cmd, auth):
     d = {}
     nodename = auth[1]
 
@@ -1501,9 +1705,12 @@ def collector_alerts(cmd, auth):
         data += [[str(row[0]), str(row[1]), row[5], row[6], alert, str(row[2])]]
     return {"ret": 0, "msg": "", "data":data}
 
-@auth_uuid
 @service.xmlrpc
 def collector_events(cmd, auth):
+    return rpc_collector_events(cmd, auth)
+
+@auth_uuid
+def rpc_collector_events(cmd, auth):
     d = {}
     nodename = auth[1]
 
@@ -1549,9 +1756,12 @@ def collector_events(cmd, auth):
         data += [[str(row[0]), str(row[1]), str(row[2]), str(row[3]), str(row[4]), msg]]
     return {"ret": 0, "msg": "", "data":data}
 
-@auth_uuid
 @service.xmlrpc
 def collector_service_status(cmd, auth):
+    return rpc_collector_service_status(cmd, auth)
+
+@auth_uuid
+def rpc_collector_service_status(cmd, auth):
     d = {}
     svcname = cmd["svcname"]
     q = db.services.svc_name == svcname
@@ -1561,9 +1771,12 @@ def collector_service_status(cmd, auth):
     d[svcname] = {"availstatus": row. svc_availstatus}
     return {"ret": 0, "msg": "", "data": d}
 
-@auth_uuid
 @service.xmlrpc
 def collector_disks(cmd, auth):
+    return rpc_collector_disks(cmd, auth)
+
+@auth_uuid
+def rpc_collector_disks(cmd, auth):
     d = {}
     nodename = auth[1]
 
@@ -1609,9 +1822,12 @@ def collector_disks(cmd, auth):
                   str(row.disk_group)]]
     return {"ret": 0, "msg": "", "data":data}
 
-@auth_uuid
 @service.xmlrpc
 def collector_list_nodes(cmd, auth):
+    return rpc_collector_list_nodes(cmd, auth)
+
+@auth_uuid
+def rpc_collector_list_nodes(cmd, auth):
     d = {}
     nodename = auth[1]
     if "fset" not in cmd:
@@ -1628,9 +1844,12 @@ def collector_list_nodes(cmd, auth):
     nodes = [r.nodename.lower() for r in rows]
     return {"ret": 0, "msg": "", "data": nodes}
 
-@auth_uuid
 @service.xmlrpc
 def collector_list_services(cmd, auth):
+    return rpc_collector_list_services(cmd, auth)
+
+@auth_uuid
+def rpc_collector_list_services(cmd, auth):
     d = {}
     nodename = auth[1]
     if "fset" not in cmd:
@@ -1649,9 +1868,12 @@ def collector_list_services(cmd, auth):
     services = [r.mon_svcname.lower() for r in rows]
     return {"ret": 0, "msg": "", "data": services}
 
-@auth_uuid
 @service.xmlrpc
 def collector_list_filtersets(cmd, auth):
+    return rpc_collector_list_filtersets(cmd, auth)
+
+@auth_uuid
+def rpc_collector_list_filtersets(cmd, auth):
     d = {}
     nodename = auth[1]
     if "fset" in cmd and len(cmd['fset']) > 0:
@@ -1672,9 +1894,12 @@ def batch_update_save_checks():
 def batch_async_post_insert_nsr():
     async_post_insert_nsr()
 
-@auth_uuid
 @service.xmlrpc
 def sysreport_lstree(auth):
+    return rpc_sysreport_lstree(auth)
+
+@auth_uuid
+def rpc_sysreport_lstree(auth):
     from applications.init.modules import sysreport
     tree_data = sysreport.sysreport().lstree_data("HEAD", auth[1])
     return map(lambda d: d['fpath'], tree_data)

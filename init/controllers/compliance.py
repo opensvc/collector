@@ -5793,18 +5793,12 @@ def call():
 def user():
     return auth()
 
-def auth_uuid(fn):
-    def new(*args, **kwargs):
-        uuid, node = kwargs['auth']
-        rows = db((db.auth_node.nodename==node)&(db.auth_node.uuid==uuid)).select(cacheable=True)
-        if len(rows) != 1:
-            return "agent authentication error"
-        return fn(*args, **kwargs)
-    return new
-
-@auth_uuid
 @service.xmlrpc
 def comp_get_moduleset_modules(moduleset, auth):
+    return rpc_comp_get_moduleset_modules(moduleset, auth)
+
+@auth_uuid
+def rpc_comp_get_moduleset_modules(moduleset, auth):
     return _comp_get_moduleset_modules(moduleset, auth[1])
 
 def _comp_get_moduleset_modules(moduleset, node):
@@ -5943,9 +5937,12 @@ def has_slave(svcname):
         return False
     return True
 
-@auth_uuid
 @service.xmlrpc
 def comp_attach_svc_ruleset(svcname, ruleset, auth):
+    return rpc_comp_attach_svc_ruleset(svcname, ruleset, auth)
+
+@auth_uuid
+def rpc_comp_attach_svc_ruleset(svcname, ruleset, auth):
     if len(ruleset) == 0:
         return dict(status=False, msg="no ruleset specified"%ruleset)
     rset_id = comp_ruleset_id(ruleset)
@@ -5969,9 +5966,12 @@ def comp_attach_svc_ruleset(svcname, ruleset, auth):
         user='root@'+svcname)
     return dict(status=True, msg="ruleset %s attached"%ruleset)
 
-@auth_uuid
 @service.xmlrpc
 def comp_attach_svc_moduleset(svcname, moduleset, auth):
+    return rpc_comp_attach_svc_moduleset(svcname, moduleset, auth)
+
+@auth_uuid
+def rpc_comp_attach_svc_moduleset(svcname, moduleset, auth):
     if len(moduleset) == 0:
         return dict(status=False, msg="no moduleset specified"%moduleset)
     modset_id = comp_moduleset_id(moduleset)
@@ -5995,9 +5995,12 @@ def comp_attach_svc_moduleset(svcname, moduleset, auth):
         user='root@'+svcname)
     return dict(status=True, msg="moduleset %s attached"%moduleset)
 
-@auth_uuid
 @service.xmlrpc
 def comp_attach_moduleset(nodename, moduleset, auth):
+    return rpc_comp_attach_moduleset(nodename, moduleset, auth)
+
+@auth_uuid
+def rpc_comp_attach_moduleset(nodename, moduleset, auth):
     if len(moduleset) == 0:
         return dict(status=False, msg="no moduleset specified"%moduleset)
     modset_id = comp_moduleset_id(moduleset)
@@ -6021,9 +6024,12 @@ def comp_attach_moduleset(nodename, moduleset, auth):
         user='root@'+nodename)
     return dict(status=True, msg="moduleset %s attached"%moduleset)
 
-@auth_uuid
 @service.xmlrpc
 def comp_detach_svc_ruleset(svcname, ruleset, auth):
+    return rpc_comp_detach_svc_ruleset(svcname, ruleset, auth)
+
+@auth_uuid
+def rpc_comp_detach_svc_ruleset(svcname, ruleset, auth):
     if len(ruleset) == 0:
         return dict(status=False, msg="no ruleset specified"%ruleset)
     slave = comp_slave(svcname, auth[1])
@@ -6053,9 +6059,12 @@ def comp_detach_svc_ruleset(svcname, ruleset, auth):
         user='root@'+svcname)
     return dict(status=True, msg="ruleset %s detached"%ruleset)
 
-@auth_uuid
 @service.xmlrpc
 def comp_detach_svc_moduleset(svcname, moduleset, auth):
+    return rpc_comp_detach_svc_moduleset(svcname, moduleset, auth)
+
+@auth_uuid
+def rpc_comp_detach_svc_moduleset(svcname, moduleset, auth):
     if len(moduleset) == 0:
         return dict(status=False, msg="no moduleset specified"%moduleset)
     if moduleset == 'all':
@@ -6085,9 +6094,12 @@ def comp_detach_svc_moduleset(svcname, moduleset, auth):
         user='root@'+svcname)
     return dict(status=True, msg="moduleset %s detached"%moduleset)
 
-@auth_uuid
 @service.xmlrpc
 def comp_detach_moduleset(nodename, moduleset, auth):
+    return rpc_comp_detach_moduleset(nodename, moduleset, auth)
+
+@auth_uuid
+def rpc_comp_detach_moduleset(nodename, moduleset, auth):
     if len(moduleset) == 0:
         return dict(status=False, msg="no moduleset specified"%moduleset)
     if moduleset == 'all':
@@ -6170,9 +6182,12 @@ def comp_ruleset_attachable(nodename, ruleset_id):
         return False
     return True
 
-@auth_uuid
 @service.xmlrpc
 def comp_attach_ruleset(nodename, ruleset, auth):
+    return rpc_comp_attach_ruleset(nodename, ruleset, auth)
+
+@auth_uuid
+def rpc_comp_attach_ruleset(nodename, ruleset, auth):
     if len(ruleset) == 0:
         return dict(status=False, msg="no ruleset specified"%ruleset)
     ruleset_id = comp_ruleset_exists(ruleset)
@@ -6203,9 +6218,12 @@ def comp_attach_ruleset(nodename, ruleset, auth):
         user='root@'+nodename)
     return dict(status=True, msg="ruleset %s attached"%ruleset)
 
-@auth_uuid
 @service.xmlrpc
 def comp_detach_ruleset(nodename, ruleset, auth):
+    return rpc_comp_detach_ruleset(nodename, ruleset, auth)
+
+@auth_uuid
+def rpc_comp_detach_ruleset(nodename, ruleset, auth):
     if len(ruleset) == 0:
         return dict(status=False, msg="no ruleset specified"%ruleset)
     if ruleset == 'all':
@@ -6235,9 +6253,12 @@ def comp_detach_ruleset(nodename, ruleset, auth):
         user='root@'+nodename)
     return dict(status=True, msg="ruleset %s detached"%ruleset)
 
-@auth_uuid
 @service.xmlrpc
 def comp_list_rulesets(pattern='%', nodename=None, auth=("", "")):
+    return rpc_comp_list_rulesets(pattern='%', nodename=None, auth=("", ""))
+
+@auth_uuid
+def rpc_comp_list_rulesets(pattern='%', nodename=None, auth=("", "")):
     q = db.comp_rulesets.ruleset_name.like(pattern)
     q &= db.comp_rulesets.ruleset_type == 'explicit'
     q &= db.comp_rulesets.ruleset_public == True
@@ -6249,9 +6270,12 @@ def comp_list_rulesets(pattern='%', nodename=None, auth=("", "")):
     rows = db(q).select(groupby=db.comp_rulesets.id, cacheable=True)
     return sorted([r.comp_rulesets.ruleset_name for r in rows])
 
-@auth_uuid
 @service.xmlrpc
 def comp_list_modulesets(pattern='%', auth=("", "")):
+    return rpc_comp_list_modulesets(pattern='%', auth=("", ""))
+
+@auth_uuid
+def rpc_comp_list_modulesets(pattern='%', auth=("", "")):
     node = auth[1]
     q = db.comp_moduleset.modset_name.like(pattern)
     q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
@@ -6262,9 +6286,12 @@ def comp_list_modulesets(pattern='%', auth=("", "")):
                         groupby=db.comp_moduleset.modset_name, cacheable=True)
     return sorted([r.modset_name for r in rows])
 
-@auth_uuid
 @service.xmlrpc
 def comp_show_status(svcname="", pattern='%', auth=("", "")):
+    return rpc_comp_show_status(svcname="", pattern='%', auth=("", ""))
+
+@auth_uuid
+def rpc_comp_show_status(svcname="", pattern='%', auth=("", "")):
     node = auth[1]
     q = db.comp_status.run_module.like(pattern)
     q &= db.comp_status.run_nodename == node
@@ -6278,20 +6305,29 @@ def comp_show_status(svcname="", pattern='%', auth=("", "")):
                   row.run_log))
     return l
 
-@auth_uuid
 @service.xmlrpc
 def comp_get_svc_moduleset(svcname, auth):
+    return rpc_comp_get_svc_moduleset(svcname, auth)
+
+@auth_uuid
+def rpc_comp_get_svc_moduleset(svcname, auth):
     slave = comp_slave(svcname, auth[1])
     return _comp_get_svc_moduleset(svcname, slave=slave)
 
-@auth_uuid
 @service.xmlrpc
 def comp_get_svc_data(nodename, svcname, modulesets, auth):
-    return _comp_get_svc_data(nodename, svcname, modulesets)
+    return rpc_comp_get_svc_data(nodename, svcname, modulesets, auth)
 
 @auth_uuid
+def rpc_comp_get_svc_data(nodename, svcname, modulesets, auth):
+    return _comp_get_svc_data(nodename, svcname, modulesets)
+
 @service.xmlrpc
 def comp_get_data(nodename, modulesets, auth):
+    return rpc_comp_get_data(nodename, modulesets, auth)
+
+@auth_uuid
+def rpc_comp_get_data(nodename, modulesets, auth):
     return _comp_get_data(nodename, modulesets=modulesets)
 
 def _comp_get_data(nodename, modulesets=[]):
@@ -6314,23 +6350,32 @@ def _comp_get_svc_data(nodename, svcname, modulesets=[]):
 def test_comp_get_svc_ruleset():
     return _comp_get_svc_ruleset("unxdevweb01", "clementine")
 
-@auth_uuid
 @service.xmlrpc
 def comp_get_moduleset_data(nodename, auth):
-    return _comp_get_moduleset_data(nodename)
+    return rpc_comp_get_moduleset_data(nodename, auth)
 
 @auth_uuid
+def rpc_comp_get_moduleset_data(nodename, auth):
+    return _comp_get_moduleset_data(nodename)
+
 @service.xmlrpc
 def comp_get_data_moduleset(nodename, auth):
+    return rpc_comp_get_data_moduleset(nodename, auth)
+
+@auth_uuid
+def rpc_comp_get_data_moduleset(nodename, auth):
     return {
       'root_modulesets': _comp_get_moduleset_names(nodename),
       'modulesets': _comp_get_moduleset_data(nodename),
       'modset_relations': get_modset_relations_s(),
     }
 
-@auth_uuid
 @service.xmlrpc
 def comp_get_svc_data_moduleset(svcname, auth):
+    return rpc_comp_get_svc_data_moduleset(svcname, auth)
+
+@auth_uuid
+def rpc_comp_get_svc_data_moduleset(svcname, auth):
     slave = comp_slave(svcname, auth[1])
     return {
       'root_modulesets': _comp_get_svc_moduleset_names(svcname, slave=slave),
@@ -6338,9 +6383,12 @@ def comp_get_svc_data_moduleset(svcname, auth):
       'modset_relations': get_modset_relations_s(),
     }
 
-@auth_uuid
 @service.xmlrpc
 def comp_get_svc_moduleset_data(svcname, auth):
+    return rpc_comp_get_svc_moduleset_data(svcname, auth)
+
+@auth_uuid
+def rpc_comp_get_svc_moduleset_data(svcname, auth):
     slave = comp_slave(svcname, auth[1])
     return _comp_get_svc_moduleset_data(svcname, slave=slave)
 
@@ -6370,9 +6418,12 @@ def _comp_get_all_module():
                        )
     return [(r.id, r.modset_mod_name) for r in rows]
 
-@auth_uuid
 @service.xmlrpc
 def comp_get_moduleset(nodename, auth):
+    return rpc_comp_get_moduleset(nodename, auth)
+
+@auth_uuid
+def rpc_comp_get_moduleset(nodename, auth):
     return _comp_get_moduleset(nodename)
 
 def _comp_get_svc_moduleset_ids_with_children(svcname, modulesets=[], slave=False):
@@ -6493,9 +6544,12 @@ def _comp_get_moduleset(nodename):
     rows = db(q).select(db.comp_moduleset.modset_name, cacheable=True)
     return [r.modset_name for r in rows]
 
-@auth_uuid
 @service.xmlrpc
 def comp_log_action(vars, vals, auth):
+    return rpc_comp_log_action(vars, vals, auth)
+
+@auth_uuid
+def rpc_comp_log_action(vars, vals, auth):
     now = datetime.datetime.now()
     for i, (a, b) in enumerate(zip(vars, vals)):
         if a == 'run_action':
@@ -6520,9 +6574,12 @@ def comp_log_action(vars, vals, auth):
     _websocket_send(event_msg(l))
 
 
-@auth_uuid
 @service.xmlrpc
 def comp_log_actions(vars, vals, auth):
+    return rpc_comp_log_actions(vars, vals, auth)
+
+@auth_uuid
+def rpc_comp_log_actions(vars, vals, auth):
     if len(vals) == 0:
         return
     now = datetime.datetime.now()
@@ -6805,9 +6862,12 @@ def ruleset_add_var(d, rset_name, var, val):
     d[rset_name]['vars'].append((var, val))
     return d
 
-@auth_uuid
 @service.xmlrpc
 def comp_get_ruleset_md5(rset_md5, auth):
+    return rpc_comp_get_ruleset_md5(rset_md5, auth)
+
+@auth_uuid
+def rpc_comp_get_ruleset_md5(rset_md5, auth):
     q = db.comp_run_ruleset.rset_md5 == rset_md5
     row = db(q).select(db.comp_run_ruleset.rset, cacheable=True).first()
     if row is None:
@@ -6836,14 +6896,20 @@ def node_team_responsible_id(nodename):
         return None
     return rows[0].id
 
-@auth_uuid
 @service.xmlrpc
 def comp_get_ruleset(nodename, auth):
-    return _comp_get_ruleset(nodename)
+    return rpc_comp_get_ruleset(nodename, auth)
 
 @auth_uuid
+def rpc_comp_get_ruleset(nodename, auth):
+    return _comp_get_ruleset(nodename)
+
 @service.xmlrpc
 def comp_get_svc_ruleset(svcname, auth):
+    return rpc_comp_get_svc_ruleset(svcname, auth)
+
+@auth_uuid
+def rpc_comp_get_svc_ruleset(svcname, auth):
     ruleset = _comp_get_svc_ruleset(svcname, auth[1])
     ruleset.update(comp_get_svcmon_ruleset(svcname, auth[1]))
     ruleset.update(comp_get_node_ruleset(auth[1]))
