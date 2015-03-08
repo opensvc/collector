@@ -16,7 +16,7 @@ def auth_uuid(fn):
             if 'auth' in kwargs:
                 uuid, node = kwargs['auth']
             else:
-                uuid, node = args[1]
+                uuid, node = args[-1]
         except:
             raise Exception("no authentication data found in the request")
 
