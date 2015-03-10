@@ -199,7 +199,7 @@ class HtmlTable(object):
         self.csv_q = None
         self.csv_orderby = None
         self.csv_left = None
-        self.csv_limit = 2000
+        self.csv_limit = 20000
 
         self.action_menu = {
           'nodes': node_actions,
@@ -741,11 +741,14 @@ class HtmlTable(object):
     def line_id(self, o):
         if o is None:
             return ''
-        if self.checkbox_id_table is None or \
-           self.checkbox_id_table not in o:
-            return o[self.checkbox_id_col]
-        else:
-            return o[self.checkbox_id_table][self.checkbox_id_col]
+        try:
+            if self.checkbox_id_table is None or \
+               self.checkbox_id_table not in o:
+                return o[self.checkbox_id_col]
+            else:
+                return o[self.checkbox_id_table][self.checkbox_id_col]
+        except:
+            return '_'.join(map(lambda x: str(o[x]) if x in o else "", self.keys))
 
     def span_line_id(self, o):
         if o is None:
