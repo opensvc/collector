@@ -7,6 +7,7 @@ except:
 
 ssh_cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
                   '-o', 'ForwardX11=no',
+                  '-o', 'ConnectTimeout=5',
                   '-o', 'PasswordAuthentication=no',
                   '-tt']
 

@@ -4705,6 +4705,7 @@ def fmt_action(nodename, svcname, action, action_type="push", mod=[], modset=[])
     cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
                   '-o', 'ForwardX11=no',
                   '-o', 'PasswordAuthentication=no',
+                  '-o', 'ConnectTimeout=5',
                   '-t',
            'opensvc@'+nodename,
            '--',

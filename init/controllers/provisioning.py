@@ -250,7 +250,7 @@ def ajax_provision():
 
 def prov_enqueue(node, command):
     #command = command.replace("'", "\\'").replace('"', '\\"')
-    cmd = 'ssh -tt -o StrictHostKeyChecking=no -o ForwardX11=no -o PasswordAuthentication=no opensvc@'+node+' -- sudo '+command
+    cmd = 'ssh -tt -o StrictHostKeyChecking=no -o ConnectTimeout=5 -o ForwardX11=no -o PasswordAuthentication=no opensvc@'+node+' -- sudo '+command
     purge_action_queue()
     db.action_queue.insert(
       nodename=node,

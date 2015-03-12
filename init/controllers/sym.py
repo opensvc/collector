@@ -188,8 +188,8 @@ def batch_files():
     if not hasattr(config, 'sym_node'):
         raise Exception('no known sym compute node. report to site admins.')
 
-    scp = ['scp', '-o', 'StrictHostKeyChecking=no', '-o', 'ForwardX11=no']
-    ssh = ['ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'ForwardX11=no', '-t']
+    scp = ['scp', '-o', 'ConnectTimeout=5', '-o', 'StrictHostKeyChecking=no', '-o', 'ForwardX11=no']
+    ssh = ['ssh', '-o', 'ConnectTimeout=5', '-o', 'StrictHostKeyChecking=no', '-o', 'ForwardX11=no', '-t']
 
     rows = db(db.sym_upload.batched != 1).select()
     for row in rows:

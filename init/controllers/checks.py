@@ -665,6 +665,7 @@ def queue_check_refresh(rows):
         cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
                       '-o', 'ForwardX11=no',
                       '-o', 'PasswordAuthentication=no',
+                      '-o', 'ConnectTimeout=5',
                       '-tt',
                'opensvc@'+node,
                '--',
