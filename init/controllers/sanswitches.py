@@ -106,6 +106,9 @@ class table_sanswitches(HtmlTable):
             self.colprops[c].t = self
         self.extraline = True
         self.ajax_col_values = 'ajax_sanswitches_col_values'
+        self.dataable = True
+        self.span = ["sw_name", "sw_index"]
+        self.keys = ["sw_name", "sw_index"]
 
 @auth.requires_login()
 def ajax_sanswitches_col_values():
@@ -115,6 +118,7 @@ def ajax_sanswitches_col_values():
     q = db.v_switches.id > 0
     for f in t.cols:
         q = _where(q, 'v_switches', t.filter_parse(f), f)
+    q = apply_filters(q, db.v_switches.sw_rname, None)
     t.object_list = db(q).select(o, orderby=o)
     return t.col_values_cloud_ungrouped(col)
 
@@ -128,27 +132,23 @@ def ajax_sanswitches():
         q = _where(q, 'v_switches', t.filter_parse(f), f)
     q = apply_filters(q, db.v_switches.sw_rname, None)
 
-    if len(request.args) == 1 and request.args[0] == 'line':
-        if request.vars.volatile_filters is None:
-            n = db(q).select(db.v_switches.id.count(), cacheable=True).first()._extra[db.v_switches.id.count()]
-            t.setup_pager(n)
-            limitby = (t.pager_start,t.pager_end)
-        else:
-            n = 0
-            limitby = (0, 500)
-        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False)
-        return t.table_lines_data(n)
-
-    n = db(q).select(db.v_switches.id.count(), cacheable=True).first()._extra[db.v_switches.id.count()]
-    t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
-
-    return t.html()
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        t.csv_q = q
+        t.csv_orderby = o
+        return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'data':
+        n = db(q).select(db.v_switches.id.count(), cacheable=True).first()._extra[db.v_switches.id.count()]
+        t.setup_pager(n)
+        limitby = (t.pager_start,t.pager_end)
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=False)
+        return t.table_lines_data(n, html=False)
 
 @auth.requires_login()
 def sanswitches():
+    t = table_sanswitches('sanswitches', 'ajax_sanswitches')
     t = DIV(
-          ajax_sanswitches(),
+          t.html(),
           _id='sanswitches',
         )
     return dict(table=t)

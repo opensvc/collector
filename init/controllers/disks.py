@@ -1230,6 +1230,7 @@ def ajax_disk_provision():
     cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
                   '-o', 'ForwardX11=no',
                   '-o', 'PasswordAuthentication=no',
+                  '-o', 'ConnectTimeout=5',
                   '-tt',
            'opensvc@'+info.stor_array_proxy.nodename,
            '--',
