@@ -64,7 +64,7 @@ def is_sysresponsible(nodenames):
 
     return False
 
-def show_diff_data(diff_data, sysresponsible, sec_pattern):
+def show_diff_data(nodenames, diff_data, sysresponsible, sec_pattern):
     l = []
     max_blocks = 5
     stat_width = 30
@@ -84,7 +84,7 @@ def show_diff_data(diff_data, sysresponsible, sec_pattern):
         diff_data['blocks'][k] = diff_data['blocks'][k].replace(" @@ ", " @@\n ")
         if sec_pattern.match(k):
             cl = "highlight "
-            if sysresponsible or sysrep_allow(k):
+            if sysresponsible or sysrep_allow(nodenames, k):
                 block = PRE(diff_data['blocks'][k], _class="diff "+block_cl)
             else:
                 block = SPAN(T("You are not allowed to view this change"), _class=block_cl)
@@ -111,8 +111,7 @@ def show_diff_data(diff_data, sysresponsible, sec_pattern):
     return l
 
 @auth.requires_login()
-def sysrep_allow(fpath):
-    nodename = fpath.split("/")[0]
+def sysrep_allow(nodenames, fpath):
     q = db.sysrep_allow.group_id.belongs(user_group_ids())
     rows = db(q).select(db.sysrep_allow.fset_id, db.sysrep_allow.pattern)
     for row in rows:
@@ -121,8 +120,8 @@ def sysrep_allow(fpath):
         pattern = re.compile(row.pattern)
         if not pattern.match(fpath):
             continue
-        nodenames, svcnames = filterset_encap_query(row.fset_id)
-        if nodename not in nodenames:
+        _nodenames, _svcnames = filterset_encap_query(row.fset_id)
+        if len(set(nodenames) & _nodenames) != len(nodenames):
             continue
         return True
     return False
@@ -139,7 +138,7 @@ def ajax_sysreport_commit():
 
     # diff data
     diff_data = sysreport.sysreport().show_data(cid, nodename)
-    l += show_diff_data(diff_data, sysresponsible, sec_pattern)
+    l += show_diff_data([nodename], diff_data, sysresponsible, sec_pattern)
 
     # file tree data
     tree_data = sysreport.sysreport().lstree_data(cid, nodename)
@@ -187,7 +186,8 @@ def ajax_sysreport_show_file():
 
     data = sysreport.sysreport().show_file(fpath, cid, oid, nodename)
 
-    if sec_pattern.match(data["fpath"]) and not (sysresponsible or sysrep_allow(data["fpath"])):
+    if sec_pattern.match(data["fpath"]) and not (sysresponsible or \
+       sysrep_allow([nodename], data["fpath"])):
         data['content'] = T("You are not allowed to view this file content")
     return data['content']
 
@@ -356,7 +356,7 @@ def _sysrepdiff(nodes):
     sec_pattern = get_pattern_secure()
 
     diff_data = sysreport.sysreport().parse_show(out)
-    l = show_diff_data(diff_data, sysresponsible, sec_pattern)
+    l = show_diff_data(nodes, diff_data, sysresponsible, sec_pattern)
 
     os.chdir(cwd)
     return SPAN(l)
