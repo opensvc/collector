@@ -531,6 +531,7 @@ def ajax_node():
     )
     dates = TABLE(
       TR(TH(T('updated')), TD(node['updated'] if node['updated'] is not None else '')),
+      TR(TH(T('last boot')), TD(node['last_boot'] if node['last_boot'] is not None else '')),
       TR(TH(T('warranty end')), TD(node['warranty_end'] if node['warranty_end'] is not None else '')),
       TR(TH(T('maintenance end')), TD(node['maintenance_end'] if node['maintenance_end'] is not None else '')),
     )
