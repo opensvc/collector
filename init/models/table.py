@@ -1788,6 +1788,7 @@ v_nodes_cols = [
     'environnement',
     'status',
     'type',
+    'last_boot',
     'warranty_end',
     'maintenance_end',
     'os_obs_warn_date',
@@ -2365,6 +2366,13 @@ v_nodes_colprops = {
              field='cpu_cores',
              display = False,
              img = 'cpu16',
+             table = 'v_nodes',
+            ),
+    'last_boot': HtmlTableColumn(
+             title = 'Last boot',
+             field='last_boot',
+             display = False,
+             img = 'time16',
              table = 'v_nodes',
             ),
     'sec_zone': HtmlTableColumn(
