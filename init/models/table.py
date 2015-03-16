@@ -672,6 +672,11 @@ class HtmlTable(object):
                         v = v.strftime("%Y-%m-%d %H:%M:%S")
                     except ValueError:
                         v = str(v)
+                elif type(v) == datetime.date:
+                    try:
+                        v = v.strftime("%Y-%m-%d")
+                    except ValueError:
+                        v = str(v)
                 elif v is None:
                     v = 'empty'
                 elif type(v) in (str, unicode):
