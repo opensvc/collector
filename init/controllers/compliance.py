@@ -11884,13 +11884,13 @@ def json_tree_action_show_moduleset(modset_id):
     q = db.comp_node_moduleset.modset_id == modset_id
     rows = db(q).select(cacheable=False)
     if len(rows) > 0:
-        l.append(H3(SPAN(T("Attached to servers")), _class="line"))
+        l.append(H3(SPAN(T("Attached to servers"), " (%d) "%len(rows)), _class="line"))
         l.append(P(' '.join(map(lambda x: x.modset_node, rows))))
 
     q = db.comp_modulesets_services.modset_id == modset_id
     rows = db(q).select(cacheable=False)
     if len(rows) > 0:
-        l.append(H3(SPAN(T("Attached to services")), _class="line"))
+        l.append(H3(SPAN(T("Attached to services"), " (%d) "%len(rows)), _class="line"))
         l.append(P(' '.join(map(lambda x: x.modset_svcname, rows))))
 
     q = db.comp_moduleset_moduleset.child_modset_id == modset_id
@@ -11899,7 +11899,7 @@ def json_tree_action_show_moduleset(modset_id):
                         groupby=db.comp_moduleset.modset_name,
                         cacheable=False)
     if len(rows) > 0:
-        l.append(H3(SPAN(T("Encapsulated in modulesets")), _class="line"))
+        l.append(H3(SPAN(T("Encapsulated in modulesets"), " (%d) "%len(rows)), _class="line"))
         l.append(P(' '.join(map(lambda x: x.modset_name, rows))))
 
     def mod_html(x):
@@ -11913,7 +11913,7 @@ def json_tree_action_show_moduleset(modset_id):
     q = db.comp_moduleset_modules.modset_id == modset_id
     rows = db(q).select(cacheable=False)
     if len(rows) > 0:
-        l.append(H3(SPAN(T("Modules")), _class="line"))
+        l.append(H3(SPAN(T("Modules"), " (%d) "%len(rows)), _class="line"))
         l.append(SPAN(map(lambda x: mod_html(x), rows)))
 
     _id = "tabs"
@@ -12303,7 +12303,7 @@ def json_tree_action_show_ruleset(rset_id):
         _l = [ r.modset_name for r in rows ]
         d = DIV(
           H3(SPAN(T("Encapsulated in modulesets"), " (%d) "%len(rows)), _class="line"),
-          SPAN(', '.join(_l)),
+          SPAN(' '.join(_l)),
         )
         l.append(d)
 
@@ -12315,7 +12315,7 @@ def json_tree_action_show_ruleset(rset_id):
         _l = [ r.ruleset_name for r in rows ]
         d = DIV(
           H3(SPAN(T("Encapsulated in rulesets"), " (%d) "%len(rows)), _class="line"),
-          SPAN(', '.join(_l)),
+          SPAN(' '.join(_l)),
         )
         l.append(d)
 

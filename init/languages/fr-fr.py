@@ -973,6 +973,7 @@
 "L'input 'hostname' est obligatoire": "L'input 'hostname' est obligatoire",
 'Last assignee': 'Dernier assigné',
 'Last boot': 'Last boot',
+'last boot': 'last boot',
 'Last change': 'Dernier changement',
 'Last Check': 'Dernière vérification',
 'Last check update': 'Dernière mise à jour de sonde',

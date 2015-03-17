@@ -4475,6 +4475,7 @@ function table_bind_filter_reformat(t) {
    }
    if ( ! attr.match(/nodename/gi) && 
         ! attr.match(/svcname/gi) && 
+        ! attr.match(/svc_name/gi) && 
         ! attr.match(/assetname/gi) && 
         ! attr.match(/mon_nodname/gi) && 
         ! attr.match(/disk_nodename/gi) && 
