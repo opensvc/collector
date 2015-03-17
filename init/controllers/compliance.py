@@ -6256,7 +6256,7 @@ def rpc_comp_detach_ruleset(nodename, ruleset, auth):
 
 @service.xmlrpc
 def comp_list_rulesets(pattern='%', nodename=None, auth=("", "")):
-    return rpc_comp_list_rulesets(pattern='%', nodename=None, auth=("", ""))
+    return rpc_comp_list_rulesets(pattern=pattern, nodename=nodename, auth=auth)
 
 @auth_uuid
 def rpc_comp_list_rulesets(pattern='%', nodename=None, auth=("", "")):
@@ -6273,7 +6273,7 @@ def rpc_comp_list_rulesets(pattern='%', nodename=None, auth=("", "")):
 
 @service.xmlrpc
 def comp_list_modulesets(pattern='%', auth=("", "")):
-    return rpc_comp_list_modulesets(pattern='%', auth=("", ""))
+    return rpc_comp_list_modulesets(pattern=pattern, auth=auth)
 
 @auth_uuid
 def rpc_comp_list_modulesets(pattern='%', auth=("", "")):
@@ -6289,7 +6289,7 @@ def rpc_comp_list_modulesets(pattern='%', auth=("", "")):
 
 @service.xmlrpc
 def comp_show_status(svcname="", pattern='%', auth=("", "")):
-    return rpc_comp_show_status(svcname="", pattern='%', auth=("", ""))
+    return rpc_comp_show_status(svcname=svcname, pattern=pattern, auth=auth)
 
 @auth_uuid
 def rpc_comp_show_status(svcname="", pattern='%', auth=("", "")):
