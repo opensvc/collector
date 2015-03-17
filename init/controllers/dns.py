@@ -603,7 +603,7 @@ def ips():
             if row[2] == "dynamic":
                 ipl += map(lambda x: [inet_ntoa(pack('>l', x)), T("dynamic")], range(row[0], row[1]))
             else:
-                ipl += map(lambda x: [inet_ntoa(pack('>l', x)), T("")], range(row[0], row[1]))
+                ipl += map(lambda x: [inet_ntoa(pack('>l', x)), ""], range(row[0], row[1]))
     else:
         sql = """select inet_aton(network), inet_aton(broadcast) from networks where id=%s"""%network_id
         rows = db.executesql(sql)

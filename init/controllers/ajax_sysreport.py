@@ -217,7 +217,7 @@ def _sysreport(nodes):
     if len(data) == 0:
         return DIV(T("No sysreport available for this node"))
 
-    if len(data) == 1:
+    if len(nodes) == 1:
         title = T("Node %(nodename)s changes timeline", dict(nodename=nodes[0]))
     else:
         title = T("Nodes %(nodename)s changes timeline", dict(nodename=', '.join(nodes)))

@@ -63,7 +63,7 @@ def ajax_group():
           UL(
             LI(
               P(
-                T("%(n)s", dict(n=request.vars.groupname)),
+                request.vars.groupname,
                 _class='nok',
                 _onclick="""$('#%(id)s').remove()"""%dict(id=rowid),
               ),
