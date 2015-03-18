@@ -11629,6 +11629,8 @@ def json_tree_action_show():
         return json_tree_action_show_filterset(request.vars.obj_id)
     elif request.vars.obj_type == "modset":
         return json_tree_action_show_moduleset(request.vars.obj_id)
+    elif request.vars.obj_type == "group":
+        return json_tree_action_show_group(request.vars.obj_id)
     return ""
 
 def json_tree_action_rename():
@@ -12266,6 +12268,14 @@ def json_tree_action_show_import():
       _id="import",
     )
     return d
+
+def json_tree_action_show_group(group_id):
+    t = group_tabs(group_id)
+    return DIV(
+             t,
+             _class="white_float",
+             _style="position:relative;padding:0px",
+           )
 
 def json_tree_action_show_ruleset(rset_id):
     q = db.comp_rulesets.id == rset_id
