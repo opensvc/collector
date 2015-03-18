@@ -1,8 +1,11 @@
-def _where(query, table, var, field):
+def _where(query, table, var, field, depth=0):
     if table not in db:
         return query
     if field not in db[table]:
         return query
+
+    if depth == 0 and var and len(var) > 0 and var[0] == "|":
+       var = var[1:]
 
     if query is None:
         query = (db[table].id >= 0)
@@ -110,7 +113,7 @@ def _where(query, table, var, field):
         q = ~q
 
     if not done:
-        q = _where(q, table, var, field)
+        q = _where(q, table, var, field, depth=depth+1)
 
     if _or:
         return query|q
