@@ -6348,6 +6348,9 @@ def _comp_get_svc_data(nodename, svcname, modulesets=[]):
       'modset_relations': get_modset_relations_s(),
     }
 
+def test_comp_get_data():
+    return _comp_get_data("clementine")
+
 def test_comp_get_svc_ruleset():
     return _comp_get_svc_ruleset("unxdevweb01", "clementine")
 
@@ -6676,6 +6679,8 @@ def comp_get_node_ruleset(nodename):
                'vars': []}
     for f in db.nodes.fields:
         val = rows[0][f]
+        if type(val) == datetime.date:
+            val = val.strftime("%Y-%m-%d")
         ruleset['vars'].append(('nodes.'+f, val))
     return {'osvc_node':ruleset}
 
@@ -6691,17 +6696,7 @@ def comp_get_rulesets_fset_ids(rset_ids=None, nodename=None, svcname=None):
     if nodename is None:
         raise
 
-    q1 = db.comp_rulesets.id == db.comp_rulesets_chains.tail_rset_id
-    q1 &= db.comp_rulesets_chains.head_rset_id == db.comp_ruleset_team_responsible.ruleset_id
-    q1 &= db.comp_ruleset_team_responsible.group_id == node_team_responsible_id(nodename)
-
-    if svcname is not None:
-        q2 = db.comp_rulesets.id == db.comp_rulesets_chains.tail_rset_id
-        q2 &= db.comp_rulesets_chains.head_rset_id == db.comp_ruleset_team_responsible.ruleset_id
-        q2 &= db.comp_ruleset_team_responsible.group_id.belongs(svc_team_responsible_id(svcname))
-        q1 |= q2
-
-    q &= q1
+    q &= db.comp_rulesets.id == db.comp_rulesets_chains.tail_rset_id
 
     l = {}
     g = db.comp_rulesets_filtersets.fset_id|db.comp_rulesets.id
