@@ -6950,6 +6950,9 @@ def _comp_get_svc_ruleset(svcname, nodename, slave=None):
     # initialize ruleset with asset variables
     ruleset = comp_get_service_ruleset(svcname)
 
+    # initialize ruleset with asset variables
+    ruleset.update(comp_get_node_ruleset(nodename))
+
     # add contextual rulesets variables
     l = comp_get_rulesets_fset_ids(svcname=svcname, nodename=nodename)
     matching_fsets = comp_get_matching_fset_ids(fset_ids=l, nodename=nodename, svcname=svcname, slave=slave)
