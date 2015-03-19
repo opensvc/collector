@@ -116,6 +116,9 @@ class sysreport(object):
         d = {}
         block = []
         fpath = ''
+        import re
+        re1 = re.compile(r".*/cmd/")
+        re2 = re.compile(r".*/file/")
         for line in lines:
             if line.startswith("diff "):
                 if fpath != "" and len(block) > 0:
@@ -125,13 +128,10 @@ class sysreport(object):
                 continue
             if line.startswith("index "):
                 continue
-            if line.startswith("--- "):
+            if line.startswith("--- ") or line.startswith("+++ "):
                 if "/dev/null" not in line:
-                    fpath = line.replace("--- ", "").lstrip("a/")
-                continue
-            if line.startswith("+++ "):
-                if "/dev/null" not in line:
-                    fpath = line.replace("+++ ", "").lstrip("b/")
+                    fpath = re1.sub('cmd/', line)
+                    fpath = re2.sub('file/', fpath)
                 continue
             block.append(line)
         if fpath != "" and len(block) > 0:
@@ -183,5 +183,5 @@ class sysreport(object):
 
 if __name__ == "__main__":
     o = sysreport()
-    #print(o.timeline(["x64lmwbiegt"]))
-    print(o.lstree_data('f8f48a59d61501e290cb521641ff27bd747252cb', 'x64lmwbiegt'))
+    #print(o.timeline(["clementine"]))
+    print(o.lstree_data('f8f48a59d61501e290cb521641ff27bd747252cb', 'clementine'))
