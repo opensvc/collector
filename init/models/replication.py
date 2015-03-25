@@ -389,7 +389,10 @@ def pull_all_table_from_remote(host, ts, force=False):
         except Exception as e:
             print e, sql
             raise
-        print " + data received from %s (%d lines)" % (rfullname, len(rows))
+        n_rows = len(rows)
+        print " + data received from %s (%d lines)" % (rfullname, n_rows)
+        if n_rows == 0:
+            return
 
         for i, row in enumerate(rows):
             rows[i] = list(row)
