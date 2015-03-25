@@ -212,7 +212,7 @@ function tag_attach(init_data, tag_name) {
   // ajax
   //$("#"+init_data.tid).html(T("Attaching tag ..."))
   _data = {
-    "tag_name": tag_name,
+    "tag_name": tag_name
   }
   if ("nodename" in init_data) {
     _data.nodename = init_data.nodename
@@ -614,16 +614,8 @@ function draw_topo(id, data, display) {
           springLength: 95,
           springConstant: 0.1,
           damping: 0.5
-        },
-        //repulsion: {
-        //  enabled: true,
-        //}
+        }
       },
-
-      //smoothCurves: false,
-      //hierarchicalLayout: {
-      // direction: "UD",
-      //},
       clickToUse: true,
       height: _height+'px',
       nodes: {
