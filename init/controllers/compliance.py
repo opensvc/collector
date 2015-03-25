@@ -4706,7 +4706,7 @@ def fmt_action(nodename, svcname, action, action_type="push", mod=[], modset=[])
                   '-o', 'ForwardX11=no',
                   '-o', 'PasswordAuthentication=no',
                   '-o', 'ConnectTimeout=5',
-                  '-t',
+#                  '-t',
            'opensvc@'+nodename,
            '--',
            'sudo'] + _cmd + base_cmd

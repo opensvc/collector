@@ -8,8 +8,8 @@ except:
 ssh_cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
                   '-o', 'ForwardX11=no',
                   '-o', 'ConnectTimeout=5',
-                  '-o', 'PasswordAuthentication=no',
-                  '-tt']
+                  '-o', 'PasswordAuthentication=no']
+#                  '-tt']
 
 def get_ssh_cmd(nodename):
     row = db(db.nodes.nodename==nodename).select(db.nodes.os_name).first()
