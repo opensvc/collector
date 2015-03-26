@@ -31,6 +31,7 @@ class table_services(HtmlTable):
         self.checkbox_id_table = 'services'
         self.dbfilterable = True
         self.dataable = True
+        self.wsable = True
         self.ajax_col_values = 'ajax_services_col_values'
         self.span = ["svc_name"]
         self.keys = ["svc_name"]
