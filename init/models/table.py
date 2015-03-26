@@ -3024,7 +3024,7 @@ svc_actions = [
 node_actions = [
   {'title': 'Update node information', 'class': 'hw16', 'action': 'pushasset'},
   {'title': 'Update disks information', 'class': 'hd16', 'action': 'pushdisks'},
-  {'title': 'Update app information', 'class': 'svc', 'action': 'push appinfo'},
+  {'title': 'Update app information', 'class': 'svc', 'action': 'push_appinfo'},
   {'title': 'Update services information', 'class': 'svc', 'action': 'pushservices'},
   {'title': 'Update installed packages information', 'class': 'pkg16', 'action': 'pushpkg'},
   {'title': 'Update installed patches information', 'class': 'pkg16', 'action': 'pushpatch'},
