@@ -12015,7 +12015,7 @@ def json_tree_action_import():
           fset_updated=now,
         )
         filterset_id[fset['fset_name']] = n
-        l.append(T("Filterset added: %(r)s", dict(fset["fset_name"])))
+        l.append(T("Filterset added: %(r)s", dict(r=fset["fset_name"])))
 
     # filtersets relations
     for fset in data.get('filtersets', []):
@@ -12044,7 +12044,7 @@ def json_tree_action_import():
                   fset_id=fset_id,
                   f_id=f_id,
                   f_log_op=f['f_log_op'],
-                  f_order=_f['f_order'],
+                  f_order=f['f_order'],
                   encap_fset_id=None,
                 )
                 l.append(T("Filterset relation added: %(r)s", dict(r=rel_s)))
@@ -12062,9 +12062,8 @@ def json_tree_action_import():
                     continue
                 n = db.gen_filtersets_filters.insert(
                   fset_id=fset_id,
-                  f_id=None,
                   f_log_op=f['f_log_op'],
-                  f_order=_f['f_order'],
+                  f_order=f['f_order'],
                   encap_fset_id=encap_fset_id,
                 )
                 l.append(T("Filterset relation added: %(r)s", dict(r=rel_s)))
@@ -12169,7 +12168,7 @@ def json_tree_action_import():
             # todo: verify the existing ruleset has the same definition
             continue
         n = db.comp_moduleset.insert(
-          modset_name=rset['modset_name'],
+          modset_name=modset['modset_name'],
           modset_author=u,
           modset_updated=now,
         )
