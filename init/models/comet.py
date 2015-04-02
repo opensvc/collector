@@ -2,7 +2,14 @@ from gluon.contrib.websocket_messaging import websocket_send
 import json
 import uuid
 
-websocket_url = "http://127.0.0.1:8889"
+from applications.init.modules import config
+
+if hasattr(config, 'dbopensvc'):
+    dbopensvc = config.dbopensvc
+else:
+    dbopensvc = 'dbopensvc'
+
+websocket_url = "http://%s:8889" % dbopensvc
 websocket_key = "magix123"
 
 def event_msg(data):

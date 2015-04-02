@@ -1,6 +1,7 @@
 import re
 import os
 import uuid
+import yaml
 
 def call():
     """
@@ -200,24 +201,37 @@ def metrics_editor():
 
 @auth.requires_login()
 def ajax_metric_test():
-    q = db.metrics.id == request.vars.metric_id
+    return request.vars.metric_id
+
+def format_metric(metric_id):
+    q = db.metrics.id == metric_id
     row = db(q).select().first()
     if row is None:
         return T("No metric request definition")
     sql = replace_fset_sql(row.metric_sql)
+    if row.metric_col_instance_index is None or row.metric_col_value_index is None:
+        as_dict = True
+    else:
+        as_dict = False
     try:
-        rows = dbro.executesql(sql)
+        rows = dbro.executesql(sql, as_dict=as_dict)
     except Exception as e:
         return str(e)
 
-    return format_test(rows, row)
+    return _format_metric(rows, row)
 
-def format_test(rows, m):
+def _format_metric(rows, m):
     n = len(rows)
     if n == 0:
         return T("No data")
     elif n == 1:
         return rows[0][m.metric_col_value_index]
+
+    if m.metric_col_instance_index is None or m.metric_col_value_index is None:
+        l = [TR(map(lambda x: TH(x), rows[0].keys()))]
+        for row in rows:
+            l.append(map(lambda x: TD(x), row.values()))
+        return TABLE(l)
 
     l = [TR(TH(m.metric_col_instance_label), TH(T("Value")))]
     for row in rows:
@@ -726,8 +740,8 @@ def ajax_report(report_id):
 
     try:
         report.report_yaml = yaml.load(report.report_yaml)
-    except:
-        return T('Report definition error')
+    except Exception as e:
+        return T('Report definition error')+": "+str(e)
 
     return do_report(report.report_yaml)
 
@@ -755,6 +769,12 @@ def do_section(section_yaml):
            _style="width:400px;height:300px",
         )
         d.append(_d)
+
+    metric_id = section_yaml.get('metric_id')
+    if metric_id is not None:
+        d.append(I(section_yaml.get('Desc', '')))
+        d.append(format_metric(metric_id))
+
     d.append(DIV(_class="spacer", _style="height:100px"))
     return SPAN(d)
 

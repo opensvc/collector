@@ -1091,6 +1091,7 @@ def cron_mac_dup():
                join nodes on nodes.nodename=node_ip.nodename
                where
                 intf not like "%:%" and
+                intf not like "usbecm%" and
                 mac!="00:00:00:00:00:00" and
                 mac!="0:0:0:0:0:0" and
                 mac!="0" and

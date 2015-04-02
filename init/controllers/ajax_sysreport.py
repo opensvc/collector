@@ -346,7 +346,7 @@ def _sysrepdiff(nodes):
         os.chdir(cwd)
         return "node %s has no sysreport"%nodes[1]
 
-    cmd = ["diff", "-urN", nodes[0], nodes[1]]
+    cmd = ["diff", "-urN", "--exclude=.git", nodes[0], nodes[1]]
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=None)
     out, err = p.communicate()
 
@@ -359,7 +359,7 @@ def _sysrepdiff(nodes):
     l = show_diff_data(nodes, diff_data, sysresponsible, sec_pattern)
 
     os.chdir(cwd)
-    return SPAN(l)
+    return DIV(l, name="diff")
 
 def sysrepdiff():
     d = DIV(
