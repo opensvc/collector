@@ -279,6 +279,11 @@ def get_creds(remote):
 def get_proxy(remote):
     user, password = get_creds(remote)
     import xmlrpclib
+    try:
+        import ssl
+        ssl._create_default_https_context = ssl._create_unverified_context
+    except:
+        pass
     xmlrpclib.Marshaller.dispatch[type(0L)] = lambda _, v, w: w("<value><i8>%d</i8></value>" % v)
     p = xmlrpclib.ServerProxy("https://%s:%s@%s/init/replication/call/xmlrpc" %
                                (user, password, remote), allow_none=True)

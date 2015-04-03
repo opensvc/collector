@@ -1410,6 +1410,7 @@ def update_save_checks():
     now = datetime.datetime.now()
     now -= datetime.timedelta(microseconds=now.microsecond)
 
+    # fs known to have fs_u checks but not in saves index
     sql = """
            insert into checks_live (chk_nodename, chk_svcname, chk_type, chk_updated, chk_value, chk_created, chk_instance)
              select
@@ -1466,6 +1467,61 @@ def update_save_checks():
              where
                chk_type="save" and
                chk_updated < "%(now)s"
+          """%dict(now=now)
+    db.executesql(sql)
+    db.commit()
+
+    # remove checks from shared fs saved from passive cluster nodes
+    # those fs should have a more recent save on the active node
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+
+    sql = """update checks_live inner join (
+               select t.* from (
+                 select
+                   count(id) as n,
+                   chk_svcname,
+                   chk_instance,
+                   min(chk_value) as chk_value
+                 from checks_live
+                 where
+                   chk_type="save"
+                 group by chk_svcname,chk_instance
+               ) t
+               join services s on
+                 t.chk_svcname = s.svc_name and
+                 s.svc_cluster_type="failover"
+               where t.n>1
+             ) u on
+               checks_live.chk_svcname=u.chk_svcname and
+               checks_live.chk_instance=u.chk_instance and
+               checks_live.chk_value=u.chk_value and
+               checks_live.chk_type="save"
+             set checks_live.chk_updated=now()
+    """
+    db.executesql(sql)
+    db.commit()
+
+    sql = """delete from checks_live
+             where
+               chk_type="save" and
+               chk_updated < "%(now)s" and
+               concat(chk_svcname, chk_instance) in (
+                 select concat(t.chk_svcname, t.chk_instance) from (
+                 select
+                   count(id) as n,
+                   chk_svcname,
+                   chk_instance
+                 from checks_live
+                 where
+                   chk_type="save"
+                 group by chk_svcname,chk_instance
+               ) t
+               join services s on
+                 t.chk_svcname = s.svc_name and
+                 s.svc_cluster_type="failover"
+               where t.n>1
+             )
           """%dict(now=now)
     db.executesql(sql)
     db.commit()
