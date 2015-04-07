@@ -349,7 +349,7 @@ def stat_nb_core(fset_id):
     rows = db(q).select(db.nodes.cpu_cores)
     n = 0
     for row in rows:
-        n += row.cpu_cores
+        n += row.cpu_cores if row.cpu_cores else 0
     print "stat_nb_cores():", str(n)
     return n
 
