@@ -4028,6 +4028,9 @@ function _outdated(s, max_age) {
   if (typeof s === 'undefined') {
     return true
   }
+  if (s == 'empty') {
+    return true
+  }
   s = s.replace(/ /, "T")
   var d = new Date(s)
   var now = new Date()
@@ -4040,6 +4043,9 @@ function _outdated(s, max_age) {
 
 function status_outdated(line) {
   var s = line.children("[cell=1][name$=mon_updated]").attr("v")
+  if (typeof s === 'undefined') {
+    var s = line.children("[cell=1][name$=status_updated]").attr("v")
+  }
   if (typeof s === 'undefined') {
     var s = line.children("[cell=1][name$=_updated]").attr("v")
   }

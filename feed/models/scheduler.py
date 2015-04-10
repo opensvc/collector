@@ -2150,7 +2150,9 @@ def svc_status_update(svcname):
 
     db(db.services.svc_name==svcname).update(
       svc_status=ostatus,
-      svc_availstatus=astatus)
+      svc_availstatus=astatus,
+      svc_status_updated=datetime.datetime.now(),
+    )
     db.commit()
 
     update_dash_service_unavailable(svcname, svctype, astatus)

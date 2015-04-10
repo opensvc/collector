@@ -5,15 +5,24 @@ class table_services(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols += ['svc_name']
         self.cols += v_services_cols
+        self.cols += ['svc_status_updated']
         self.colprops = v_services_colprops
         self.colprops.update({
             'svc_name': HtmlTableColumn(
                      title='Service',
-                     table='v_services',
+                     table='services',
                      field='svc_name',
                      img='svc',
                      display=True,
                      _class='svcname',
+                    ),
+            'svc_status_updated': HtmlTableColumn(
+                     title='Status updated',
+                     table='services',
+                     field='svc_status_updated',
+                     img='time16',
+                     display=True,
+                     _class='datetime_status',
                     ),
             'id': HtmlTableColumn(
                      title='Id',
@@ -23,6 +32,7 @@ class table_services(HtmlTable):
                      display=False,
                     ),
         })
+        self.force_cols = ['svc_name', 'Status updated']
         for col in self.colprops:
             self.colprops[col].table = "services"
         self.extraline = True
