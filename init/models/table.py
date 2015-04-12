@@ -1981,6 +1981,14 @@ v_services_colprops = {
              table = 'v_services',
              _class = 'datetime_daily',
             ),
+    'svc_status_updated': HtmlTableColumn(
+             title='Status updated',
+             table='services',
+             field='svc_status_updated',
+             img='time16',
+             display=True,
+             _class='datetime_status',
+            ),
     'responsibles': HtmlTableColumn(
              title = 'Responsibles',
              field='responsibles',
