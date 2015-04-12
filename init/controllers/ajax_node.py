@@ -636,8 +636,8 @@ def ajax_node():
              from node_ip
              left join networks
              on
-               inet_aton(node_ip.addr) > inet_aton(begin) and
-               inet_aton(node_ip.addr) < inet_aton(end)
+               inet_aton(node_ip.addr) >= inet_aton(begin) and
+               inet_aton(node_ip.addr) <= inet_aton(end)
              where
                node_ip.nodename = "%(nodename)s"
              order by node_ip.mac, node_ip.intf
