@@ -1,9 +1,9 @@
 config = local_import('config', reload=True)
 
 try:
-    remote_cmd_preprend = config.remote_cmd_preprend
+    remote_cmd_prepend = config.remote_cmd_prepend
 except:
-    remote_cmd_preprend = []
+    remote_cmd_prepend = []
 
 ssh_cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
                   '-o', 'ForwardX11=no',
@@ -112,7 +112,7 @@ def fmt_svc_action(node, svc, action, action_type, rid=None):
     if action_type == "pull":
         cmd = []
     else:
-        cmd = get_ssh_cmd(node) + ['opensvc@'+node, '--'] + remote_cmd_preprend
+        cmd = get_ssh_cmd(node) + ['opensvc@'+node, '--'] + remote_cmd_prepend
     cmd += ['sudo', '/opt/opensvc/bin/svcmgr', '--service', svc, action]
     if rid is not None:
         cmd += ["--rid", rid]
@@ -123,7 +123,7 @@ def fmt_node_comp_action(node, action, mode, mod, action_type):
     if action_type == "pull":
         cmd = []
     else:
-        cmd = get_ssh_cmd(node) + ['opensvc@'+node, '--'] + remote_cmd_preprend
+        cmd = get_ssh_cmd(node) + ['opensvc@'+node, '--'] + remote_cmd_prepend
     cmd += ['sudo', '/opt/opensvc/bin/nodemgr', 'compliance', action,
             '--'+mode, mod]
     return ' '.join(cmd)
@@ -133,7 +133,7 @@ def fmt_node_action(node, action, action_type):
     if action_type == "pull":
         cmd = []
     else:
-        cmd = get_ssh_cmd(node) + ['opensvc@'+node, '--'] + remote_cmd_preprend
+        cmd = get_ssh_cmd(node) + ['opensvc@'+node, '--'] + remote_cmd_prepend
     cmd += ['sudo', '/opt/opensvc/bin/nodemgr', action]
     return ' '.join(cmd)
 
@@ -142,7 +142,7 @@ def fmt_svc_comp_action(node, service, action, mode, mod, action_type):
     if action_type == "pull":
         cmd = []
     else:
-        cmd = get_ssh_cmd(node) + ['opensvc@'+node, '--'] + remote_cmd_preprend
+        cmd = get_ssh_cmd(node) + ['opensvc@'+node, '--'] + remote_cmd_prepend
     cmd += ['sudo', '/opt/opensvc/bin/svcmgr', '-s', service, 'compliance', action,
             '--'+mode, mod]
     return ' '.join(cmd)
