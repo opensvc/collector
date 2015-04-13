@@ -663,7 +663,13 @@ div.error {
     padding: 3px;
 }
 
-.menu_section a {
+.menu_section > a,
+.menu_section > * > a,
+.menu_section > * > * > a,
+.menu_section > * > * > * > a,
+.menu_section > * > * > * > * > a,
+.menu_section > * > * > * > * > * > a,
+.menu_section > * > * > * > * > * > * > a {
   margin-right: 1em;
   color: white;
 }
