@@ -166,7 +166,12 @@ digraph G {
             for speed in link['speed']:
                 l.append(self.colors[speed])
             color = ':'.join(l)
-            if not link['tail'] in self.index or not link['head'] in self.index:
+            if not link['tail'] in self.index or \
+               not link['tail'] in self.ports or \
+               not link['head'] in self.ports or \
+               not link['head'] in self.index or \
+               not link['taillabel'] in self.ports[link['tail']] or \
+               not link['headlabel'] in self.ports[link['head']]:
                 print "discard", link['tail'], link['head']
                 continue
             s += """\t%s:p%s->%s:p%s [color="%s"]\n"""%(

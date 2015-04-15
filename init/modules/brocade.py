@@ -139,8 +139,12 @@ class Brocade(object):
         for line in lines[start:]:
             if len(line) < comment_idx:
                 continue
+            l = line.split()
+            if len(l) < n_cols + 1:
+                comment = ""
+            else:
+                comment = " ".join(l[n_cols:])
             a = line[:comment_idx]
-            comment = line[comment_idx:]
             l = a.split()
             port = {
               "Index": "",
@@ -166,6 +170,8 @@ class Brocade(object):
                 l = comment.split()
                 if len(l) >= 2 and ':' in l[1]:
                     port['RemotePortName'] = l[1].replace(':','').lower()
+                elif len(l) >= 3 and ':' in l[2]:
+                    port['RemotePortName'] = l[2].replace(':','').lower()
                 if "master is Port" in comment:
                     master = comment.split('Port')[-1].strip(')').strip()
                     port['TrunkMaster'] = port['Slot'], master
