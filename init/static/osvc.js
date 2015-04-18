@@ -1916,43 +1916,51 @@ function table_action_menu(t, e){
   }
   $(".right_click_menu").hide()
 
-  // format the tools menu
   var s = ""
+
+  // format the tools menu
+  var tm = ""
   if ("nodes" in t.action_menu) {
-    s += table_tools_menu_nodes(t)
+    tm += table_tools_menu_nodes(t)
   }
   if ("services" in t.action_menu) {
-    s += table_tools_menu_svcs(t)
+    tm += table_tools_menu_svcs(t)
   }
   if (("nodes" in t.action_menu) || ("services" in t.action_menu)) {
-    s += tool_topo(t)
+    tm += tool_topo(t)
   }
-  if (s != "") {
-    s = "<h3 class='line'><span>"+T("Tools")+"</span></h3>" + s
+  if (tm != "") {
+    s += "<h3 class='line'><span>"+T("Tools")+"</span></h3>" + s
+    s += tm
   }
 
   // format the action menu
-  s += "<h3 class='line'><span>"+T("Actions")+"</span></h3>"
+  var am = ""
   if ("nodes" in t.action_menu) {
-    s += table_action_menu_node(t, e)
-    s += table_action_menu_nodes(t)
-    s += table_action_menu_nodes_all(t, e)
+    am += table_action_menu_node(t, e)
+    am += table_action_menu_nodes(t)
+    am += table_action_menu_nodes_all(t, e)
   }
   if ("services" in t.action_menu) {
-    s += table_action_menu_svc(t, e)
-    s += table_action_menu_svcs(t)
-    s += table_action_menu_svcs_all(t, e)
+    am += table_action_menu_svc(t, e)
+    am += table_action_menu_svcs(t)
+    am += table_action_menu_svcs_all(t, e)
   }
   if ("resources" in t.action_menu) {
-    s += table_action_menu_resource(t, e)
-    s += table_action_menu_resources(t)
-    s += table_action_menu_resources_all(t, e)
+    am += table_action_menu_resource(t, e)
+    am += table_action_menu_resources(t)
+    am += table_action_menu_resources_all(t, e)
   }
   if ("modules" in t.action_menu) {
-    s += table_action_menu_module(t, e)
-    s += table_action_menu_modules(t)
-    s += table_action_menu_modules_all(t, e)
+    am += table_action_menu_module(t, e)
+    am += table_action_menu_modules(t)
+    am += table_action_menu_modules_all(t, e)
   }
+  if (am != "") {
+      s += "<h3 class='line'><span>"+T("Actions")+"</span></h3>"
+      s += am
+  }
+
   if (s == "") {
     return
   }
@@ -2285,6 +2293,17 @@ function table_action_menu_get_node_data(t, e, action) {
     return data
 }
 
+function table_action_menu_get_svcs_data_with_node(t, action) {
+    var d = table_action_menu_get_svcs_data(t, action)
+    var n = []
+    for (i=0; i<d.length; i++) {
+        if (d[i]["nodename"] != "") {
+            n.push(d[i])
+        }
+    }
+    return n
+}
+
 function table_action_menu_get_svcs_data(t, action) {
     var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
     var data = []
@@ -2292,7 +2311,7 @@ function table_action_menu_get_svcs_data(t, action) {
     lines.each(function(){
       var nodename = $(this).find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_nodename],td[cell=1][name$=hostname]").attr("v")
       if ((typeof nodename === "undefined")||(nodename=="")) {
-        return []
+        nodename = ""
       }
       var svcname = $(this).find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name],td[cell=1][name$=disk_svcname]").attr("v")
       if ((typeof svcname === "undefined")||(svcname=="")) {
@@ -2502,7 +2521,7 @@ function table_action_menu_svc(t, e){
 }
 
 function table_action_menu_svcs(t){
-  var data = table_action_menu_get_svcs_data(t)
+  var data = table_action_menu_get_svcs_data_with_node(t)
   if (data.length==0) {
     return ""
   }
