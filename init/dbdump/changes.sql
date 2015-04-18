@@ -4512,4 +4512,12 @@ drop view v_nodenetworks; CREATE VIEW `v_nodenetworks` AS select `n`.`fqdn` AS `
 
 alter table services add column svc_status_updated datetime;
 
+alter table node_hba add index index_2 (hba_id);
+
+alter table switches add index idx3 (sw_rportname);
+
+alter table stor_array_tgtid add index index_2 (array_tgtid);
+
+alter table stor_array_tgtid add index index_3 (array_id);
+
 
