@@ -423,6 +423,7 @@ def _insert_generic(data, auth):
         try:
             idx = vars.index("mask")
             for i, val in enumerate(vals):
+                vals[i][idx] = vals[i][idx].lstrip("0x")
                 if vals[i][idx].count(".") == 3:
                     l = vals[i][idx].split(".")
                 elif len(vals[i][idx]) == 8:
