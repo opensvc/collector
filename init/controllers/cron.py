@@ -75,6 +75,12 @@ def _cron_table_purge(table, date_col, orderby=None):
         days = 365
     day = now - datetime.timedelta(days=days)
 
+    # sanity purge (entries dated in the future)
+    sql = """delete from %(table)s where
+               %(date_col)s > now()
+          """ % dict(table=table,date_col=date_col)
+    n = db.executesql(sql)
+
     if orderby is None:
         orderby = date_col
     sql = """select %(date_col)s from %(table)s where
