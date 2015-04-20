@@ -4520,4 +4520,69 @@ alter table stor_array_tgtid add index index_2 (array_tgtid);
 
 alter table stor_array_tgtid add index index_3 (array_id);
 
+alter table svcdisks modify column disk_id varchar(120) character set latin1 DEFAULT NULL;
+
+drop view v_disk_app;
+create view v_disk_app as 
+                     select
+                       diskinfo.id,
+                       diskinfo.disk_id,
+                       svcdisks.disk_region,
+                       svcdisks.disk_svcname,
+                       svcdisks.disk_nodename,
+                       svcdisks.disk_vendor,
+                       svcdisks.disk_model,
+                       svcdisks.disk_dg,
+                       svcdisks.disk_updated as svcdisk_updated,
+                       svcdisks.id as svcdisk_id,
+                       svcdisks.disk_local,
+                       services.svc_app as app,
+                       svcdisks.disk_used as disk_used,
+                       diskinfo.disk_size,
+                       diskinfo.disk_arrayid,
+                       diskinfo.disk_group,
+                       diskinfo.disk_devid,
+                       diskinfo.disk_name,
+                       diskinfo.disk_alloc,
+                       diskinfo.disk_created,
+                       diskinfo.disk_updated,
+                       diskinfo.disk_raid,
+                       diskinfo.disk_level
+                     from
+                       diskinfo
+                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+                     left join services on svcdisks.disk_svcname=services.svc_name
+                     where svcdisks.disk_svcname != ""
+                     union all
+                     select
+                       diskinfo.id,
+                       diskinfo.disk_id,
+                       svcdisks.disk_region,
+                       svcdisks.disk_svcname,
+                       svcdisks.disk_nodename,
+                       svcdisks.disk_vendor,
+                       svcdisks.disk_model,
+                       svcdisks.disk_dg,
+                       svcdisks.disk_updated as svcdisk_updated,
+                       svcdisks.id as svcdisk_id,
+                       svcdisks.disk_local,
+                       nodes.project as app,
+                       svcdisks.disk_used as disk_used,
+                       diskinfo.disk_size,
+                       diskinfo.disk_arrayid,
+                       diskinfo.disk_group,
+                       diskinfo.disk_devid,
+                       diskinfo.disk_name,
+                       diskinfo.disk_alloc,
+                       diskinfo.disk_created,
+                       diskinfo.disk_updated,
+                       diskinfo.disk_raid,
+                       diskinfo.disk_level
+                     from
+                       diskinfo
+                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+                     left join nodes on svcdisks.disk_nodename=nodes.nodename
+                     where (svcdisks.disk_svcname = "" or svcdisks.disk_svcname is NULL)
+;
+
 
