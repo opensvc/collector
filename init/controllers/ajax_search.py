@@ -153,10 +153,8 @@ def format_disk(pattern):
     return d
 
 def format_app(pattern):
-    o = db.v_svcmon.svc_app
-    q = _where(None, 'v_svcmon', pattern, 'svc_app')
-    q = _where(q, 'v_svcmon', domain_perms(), 'mon_svcname')
-    q = apply_gen_filters(q, ["v_svcmon"])
+    o = db.apps.app
+    q = _where(None, 'apps', pattern, 'app')
     rows = db(q).select(o, orderby=o, groupby=o, limitby=(0,max_search_result))
     n = len(db(q).select(o, groupby=o))
 
@@ -164,7 +162,7 @@ def format_app(pattern):
         return ''
 
     def format_row(row, _class=""):
-        if row.get("svc_app") is None:
+        if row.get("app") is None:
             return SPAN()
         d = TABLE(
               TR(
@@ -173,41 +171,41 @@ def format_app(pattern):
                 ),
                 TD(
                   P(
-                    row['svc_app'].upper(),
+                    row['app'].upper(),
                     _class=_class,
                   ),
                   A(
                     T('nodes'),
                     _href=URL(r=request, c='nodes', f='nodes',
-                              vars={'nodes_f_project': row['svc_app'],
+                              vars={'nodes_f_project': row['app'],
                                     'clear_filters': 'true'}),
                     _class="hw16",
                   ),
                   A(
                     T('status'),
                     _href=URL(r=request, c='default', f='svcmon',
-                              vars={'svcmon_f_svc_app': row['svc_app'],
+                              vars={'svcmon_f_svc_app': row['app'],
                                     'clear_filters': 'true'}),
                     _class="svc",
                   ),
                   A(
                     T('disk info'),
                     _href=URL(r=request, c='disks', f='disks',
-                              vars={'disks_f_app': row['svc_app'],
+                              vars={'disks_f_app': row['app'],
                                     'clear_filters': 'true'}),
                     _class="hd16",
                   ),
                   A(
                     T('availability'),
                     _href=URL(r=request, c='svcmon_log', f='svcmon_log',
-                              vars={'svcmon_log_f_svc_app': row['svc_app'],
+                              vars={'svcmon_log_f_svc_app': row['app'],
                                     'clear_filters': 'true'}),
                     _class="avail16",
                   ),
                   A(
                     T('application'),
                     _href=URL(r=request, c='apps', f='apps',
-                              vars={'apps_f_app': row['svc_app'],
+                              vars={'apps_f_app': row['app'],
                                     'clear_filters': 'true'}),
                     _class="svc",
                   ),
@@ -217,7 +215,7 @@ def format_app(pattern):
         return d
     l = []
     if n > 1:
-        l.append(format_row({'svc_app': pattern}, "highlight_light"))
+        l.append(format_row({'app': pattern}, "highlight_light"))
     for row in rows:
         l.append(format_row(row))
     d = DIV(
