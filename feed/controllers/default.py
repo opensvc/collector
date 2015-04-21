@@ -190,7 +190,8 @@ def svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
 def rpc_svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
     scheduler.queue_task("_svcmon_update_combo",
                          [g_vars, g_vals, r_vars, r_vals, auth],
-                         group_name="_svcmon_update_combo")
+                         group_name="_svcmon_update_combo",
+                         immediate=True)
 
 @service.xmlrpc
 def register_disks(vars, vals, auth):
