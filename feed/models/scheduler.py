@@ -641,14 +641,16 @@ def _resmon_clean(node, svcname):
 def _resmon_update(vars, vals, auth):
     if len(vals) == 0:
         return
-    if isinstance(vals[0], list):
+    if type(vals[0]) in (str, unicode):
+        __resmon_update(vars, vals)
+    else:
         for v in vals:
             __resmon_update(vars, v)
-    else:
-        __resmon_update(vars, vals)
 
 def __resmon_update(vars, vals):
     h = {}
+    if len(vals) == 0:
+        return
     for a,b in zip(vars, vals[0]):
         h[a] = b
     if 'nodename' in h and 'svcname' in h:
@@ -658,8 +660,6 @@ def __resmon_update(vars, vals):
             h['nodename'] = nodename
         if 'vmname' not in h:
             h['vmname'] = ""
-    if len(vals) == 0:
-        return
     idx = vars.index("res_status")
     if type(vals[0]) == list:
         for i, v in enumerate(vals):
