@@ -1098,6 +1098,7 @@ def cron_mac_dup():
                where
                 intf not like "%:%" and
                 intf not like "usbecm%" and
+                intf not like "docker%" and
                 mac!="00:00:00:00:00:00" and
                 mac!="0:0:0:0:0:0" and
                 mac!="0" and
