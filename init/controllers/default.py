@@ -915,28 +915,6 @@ class table_svcmon(HtmlTable):
             )
         return d
 
-def dash_purge_svc(svcname):
-    q = db.dashboard.dash_svcname == svcname
-    db(q).delete()
-
-def check_purge_svc(svcname):
-    q = db.checks_live.chk_svcname == svcname
-    db(q).delete()
-
-def appinfo_purge_svc(svcname):
-    q = db.appinfo.app_svcname == svcname
-    db(q).delete()
-
-def purge_svc(svcname):
-    q = db.svcmon.mon_svcname == svcname
-    print db(q).count()
-    if db(q).count() == 0:
-        dash_purge_svc(svcname)
-        check_purge_svc(svcname)
-        appinfo_purge_svc(svcname)
-        q = db.services.svc_name == svcname
-        db(q).delete()
-
 @auth.requires_login()
 def svc_del(ids):
     groups = user_groups()
@@ -962,9 +940,6 @@ def svc_del(ids):
              svcname=r.mon_svcname,
              nodename=r.mon_nodname)
         purge_svc(r.mon_svcname)
-        update_dash_compdiff_svc(r.mon_svcname)
-        update_dash_moddiff(r.mon_svcname)
-        update_dash_rsetdiff(r.mon_svcname)
     if len(rows) > 0:
         _websocket_send(event_msg({
              'event': 'svcmon_change',
