@@ -1758,6 +1758,7 @@
 'Start': 'Début',
 'start': 'début',
 'Start a new workflow or orchestration': 'Instancier une nouvelle demande ou une orchestration',
+'startup': 'startup',
 'state': 'état',
 'State transitions for %(svc)s': "Changements d'états pour %(svc)s",
 'Statistics': 'Statistiques',

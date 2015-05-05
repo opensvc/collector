@@ -643,8 +643,59 @@ function init_topo(id, data, display) {
   draw_topo(id, data, display)
 }
 
+//
+// startup sequence diagram
+//
+function draw_startup(id, data) {
+  var i=0
+  url = $(location).attr("origin") + "/init/topo/call/json/json_startup_data"
+  if ("svcnames" in data) {
+    if (i==0) {url += '?'}
+    else if (i==1) {url += '&'}
+    i += 1
+    url += "svcnames="+encodeURIComponent(data["svcnames"])
+  }
+  if ($("#"+id).parents(".overlay").length == 0) {
+      _height = $(window).height()-$(".header").outerHeight()-16
+      $("#"+id).height(_height)
+  }
+  $.getJSON(url, function(_data){
+    var eid = document.getElementById(id)
+    var options = {
+      physics: {
+        barnesHut: {
+          enabled: true,
+          gravitationalConstant: -2500,
+          centralGravity: 1,
+          springLength: 95,
+          springConstant: 0.1,
+          damping: 0.5
+        }
+      },
+      clickToUse: true,
+      height: _height+'px',
+      nodes: {
+        widthMax: "48px",
+        fontFace: "arial",
+        fontSize: 12
+      },
+      edges: {
+        fontFace: "arial",
+        fontSize: 12
+      }
+    }
+    var network = new vis.Network(eid, _data, options)
+  })
+}
+
+function init_startup(id, data) {
+  draw_startup(id, data)
+}
 
 
+//
+//
+//
 function print_date(d) {
   var day = d.getDate()
   var month = d.getMonth()+1

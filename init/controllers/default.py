@@ -527,6 +527,7 @@ def ajax_service():
             LI(P(T("log"), _class='log16'), _id="litab15_"+str(rowid)),
             LI(P(T("env"), _class='log16'), _id="litab4_"+str(rowid)),
             LI(P(T("topology"), _class='dia16'), _id="litab5_"+str(rowid)),
+            LI(P(T("startup"), _class='action_start_16'), _id="litab16_"+str(rowid)),
             LI(P(T("storage"), _class='net16'), _id="litab6_"+str(rowid)),
             LI(P(T("container stats"), _class='spark16'), _id="litab12_"+str(rowid)),
             LI(P(T("stats"), _class='spark16'), _id="litab7_"+str(rowid)),
@@ -578,6 +579,11 @@ def ajax_service():
           DIV(
             IMG(_src=URL(r=request,c='static',f='spinner.gif')),
             _id='tab5_'+str(rowid),
+            _class='cloud',
+          ),
+          DIV(
+            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            _id='tab16_'+str(rowid),
             _class='cloud',
           ),
           DIV(
@@ -657,6 +663,11 @@ def ajax_service():
                url=URL(r=request, c='topo', f='ajax_topo',
                        vars={"svcnames": request.vars.node, "display": "nodes,services,countries,cities,buildings,rooms,racks,enclosures,hvs,hvpools,hvvdcs,disks"})
             ),
+            "function s%(rid)s_load_startup(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
+               id='tab16_'+str(rowid),
+               rid=str(rowid),
+               url=URL(r=request, c='topo', f='ajax_startup', vars={"svcnames": request.vars.node})
+            ),
             "function s%(rid)s_load_stor(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
                id='tab6_'+str(rowid),
                rid=str(rowid),
@@ -703,6 +714,7 @@ def ajax_service():
                  "litab13_%(id)s": s%(id)s_load_alerts,
                  "litab14_%(id)s": s%(id)s_load_actions,
                  "litab15_%(id)s": s%(id)s_load_log,
+                 "litab16_%(id)s": s%(id)s_load_startup,
                  "litab8_%(id)s": s%(id)s_load_wiki,
                  "litab9_%(id)s": s%(id)s_load_svcmon_log,
                  "litab10_%(id)s": s%(id)s_load_pkgdiff,
