@@ -1043,16 +1043,6 @@ def json_startup_data():
       "app",
     ]
 
-    sections = {
-      "hb": {"hb": []},
-      "ip": {"ip": []},
-      "disk": {"disk": []},
-      "fs": {"fs": []},
-      "share": {"share": []},
-      "container": {"container": []},
-      "app": {"app": []},
-    }
-
     disk_types = [
       "vg",
       "drbd",
@@ -1066,6 +1056,15 @@ def json_startup_data():
     ]
 
     def do_node(nodename, node_ids, node_tail):
+        sections = {
+          "hb": {"hb": []},
+          "ip": {"ip": []},
+          "disk": {"disk": []},
+          "fs": {"fs": []},
+          "share": {"share": []},
+          "container": {"container": []},
+          "app": {"app": []},
+        }
         data = {
           "edges": [],
           "nodes": [],
