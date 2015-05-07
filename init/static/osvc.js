@@ -655,6 +655,12 @@ function draw_startup(id, data) {
     i += 1
     url += "svcnames="+encodeURIComponent(data["svcnames"])
   }
+  if ("nodenames" in data) {
+    if (i==0) {url += '?'}
+    else if (i==1) {url += '&'}
+    i += 1
+    url += "nodenames="+encodeURIComponent(data["nodenames"])
+  }
   if ($("#"+id).parents(".overlay").length == 0) {
       _height = $(window).height()-$(".header").outerHeight()-16
       $("#"+id).height(_height)

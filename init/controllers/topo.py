@@ -862,18 +862,85 @@ def ajax_startup():
     rowid = uuid.uuid1().hex
     return startup_script(rowid)
 
+def startup():
+    d = startup_script("startup")
+    return dict(table=d)
+
 def startup_script(eid):
     svcnames = request.vars.get("svcnames", "")
+    nodenames = request.vars.get("nodenames", "")
+
+    q = db.svcmon.mon_svcname.belongs(svcnames.split(","))
+    rows = db(q).select(db.svcmon.mon_nodname)
+    all_nodenames = ",".join([r.mon_nodname for r in rows])
+
+    if nodenames == "":
+        nodenames = all_nodenames.split(",")[0]
+
     s = SCRIPT("""init_startup("%(eid)s", {
         svcnames: "%(svcnames)s",
+        nodenames: "%(nodenames)s",
        })"""%dict(
          eid=eid,
          svcnames=svcnames,
+         nodenames=nodenames,
        ),
     )
+
+    link = DIV(
+      DIV(
+        _style="word-break:break-all",
+        _class="white_float hidden",
+      ),
+      DIV(
+        _onclick="""
+          url = $(location).attr("origin")
+          url += "/init/topo/startup?svcnames=%(svcnames)s&nodenames=%(nodenames)s"
+          $(this).siblings("div").html(url)
+          $(this).siblings("div").toggle()
+        """ % dict(
+          svcnames=svcnames,
+          nodenames=nodenames,
+        ),
+        _class="link16 clickable",
+      ),
+    )
+
+    def check(label="set me", name="set me", cl="action16"):
+        return DIV(
+          INPUT(
+            _type="checkbox",
+            _name=name,
+            _style="vertical-align:text-bottom",
+            _value="true" if name in nodenames.split(",") else "false",
+            value=True if name in nodenames.split(",") else False,
+          ),
+          SPAN(
+            T(label),
+            _class=cl,
+            _style="padding-left:18px;margin-left:0.2em",
+          ),
+        )
+
+    checks = []
+    for nodename in all_nodenames.split(","):
+        checks.append(check(nodename, nodename, "hw16"))
+
     d = DIV(
+      DIV(
+        link,
+        SPAN(checks),
+        INPUT(
+          _type="submit",
+        ),
+        _style="display:table-cell;vertical-align:top;text-align:left;padding:0.3em;min-width:12em",
+      ),
+      DIV(
+        _id=eid,
+        _style="display:table-cell;width:100%",
+      ),
       s,
-      _id=eid,
+      _style="display:table-row",
     )
     return d
 
@@ -887,15 +954,21 @@ def json_startup_data():
     else:
         svcnames = []
 
+    f = request.vars.get("nodenames")
+    nodenames = f.split(",")
+
     svcname = svcnames[0]
     q = db.services.svc_name.belongs(svcnames)
     env = db(q).select(db.services.svc_envfile).first().svc_envfile
 
     q = db.resmon.svcname == svcname
+    q &= db.resmon.nodename.belongs(nodenames)
     rows = db(q).select()
     resmon = {}
     for row in rows:
-        resmon[row.rid] = row
+        if row.nodename not in resmon:
+            resmon[row.nodename] = {}
+        resmon[row.nodename][row.rid] = row
 
     import os
     import StringIO
@@ -910,7 +983,7 @@ def json_startup_data():
       "edges": [],
     }
 
-    node_ids = [svcname]
+    node_ids = []
     node_tail = 0
 
     imgs = {
@@ -929,11 +1002,16 @@ def json_startup_data():
             return i
         return imgs.get((None, None))
 
-    def get_label(section, family, t):
+    def get_label(nodename, section, family, t):
         s = "\n"+section+"\n"
-        if section in resmon:
-            s += resmon[section].res_desc
-            return s
+        if section in resmon[nodename]:
+            s += resmon[nodename][section].res_desc
+        return s
+
+    def get_disabled(s):
+        if config.has_option(s, "disable"):
+            return config.getboolean(s, "disable")
+        return False
 
     # add root node
     d = {
@@ -944,6 +1022,7 @@ def json_startup_data():
       "shape": "image"
     }
     node_tail += 1
+    node_ids.append(svcname)
     data["nodes"].append(d)
 
     status_color = {
@@ -985,112 +1064,124 @@ def json_startup_data():
       "vg",
       "gandi",
     ]
-    subsets = {
-    }
-    for s in config.sections():
-        if "sync#" in s:
-            continue
 
-        if config.has_option(s, "type"):
-            t = config.get(s, "type")
-        else:
-            t = None
-
-        if s.startswith("subset#") and ":" in s:
-            # subset
-            if config.has_option(s, "parallel") and config.getboolean(s, "parallel"):
-                parallel = True
-            else:
-                parallel = False
-            family, name = s.replace("subset#", "").split(":")
-            subsets[s] = {
-              "parallel": parallel,
-              "family": family,
-              "name": family,
-            }
-            img = URL(r=request, c="static", f="pkg48.png")
-            d = {
-              "mass": 3,
-              "id": node_tail,
-              "label": s,
-              "image": img,
-              "shape": "image"
-            }
-            node_ids.append(s)
-            node_tail += 1
-            data["nodes"].append(d)
-            continue
-
-        family = s.split("#")[0]
-        if family in disk_types:
-            family = "disk"
-
-        if config.has_option(s, "subset"):
-            subset = config.get(s, "subset")
-            if subset not in sections[family]:
-                sections[family][subset] = []
-            sections[family][subset].append(s)
-        else:
-            sections[family][family].append(s)
-
-        img = get_img(family, t)
-        label = get_label(s, family, t)
-        color = status_color.get(resmon[s].res_status, "grey")
-
+    def do_node(nodename, node_ids, node_tail):
+        data = {
+          "edges": [],
+          "nodes": [],
+        }
+        subsets = {
+        }
         d = {
           "mass": 3,
           "id": node_tail,
-          "label": label,
-          "image": img,
-          "fontColor": color,
+          "label": nodename,
+          "image": URL(r=request,c='static',f='node48.png'),
           "shape": "image"
         }
-        node_ids.append(s)
         node_tail += 1
+        node_ids.append((nodename, nodename))
         data["nodes"].append(d)
 
+        from_node = node_ids.index(svcname)
+        to_node = node_ids.index((nodename, nodename))
+        label = ""
+        edge = {
+          "from": from_node,
+          "to": to_node,
+          "length": 100,
+          "color": "grey",
+          "label": str(label),
+          "width": 2,
+          "style": "arrow",
+          "_label": [label],
+        }
+        data["edges"].append(edge)
 
-    prev = svcname
-    for family in levels:
-        for rs in sorted(sections[family].keys()):
-            last = len(sections[family][rs]) - 1
-            for i, s in enumerate(sections[family][rs]):
-                subset = "subset#"+family+":"+rs
-                color = "grey"
-                if family in ("ip", "fs", "disk") and \
-                   config.has_option(s, "tags") and \
-                   "zone" in config.get(s, "tags").split():
-                    continue
-                if subset in subsets:
-                    subset_data = subsets[subset]
-                    if "done" not in subset_data:
-                        subsets[subset]["done"] = True
-                        from_node = node_ids.index(prev)
-                        to_node = node_ids.index(subset)
-                        label = ""
-                        edge = {
-                         "from": from_node,
-                         "to": to_node,
-                         "length": 100,
-                         "color": color,
-                         "fontColor": color,
-                         "label": str(label),
-                         "width": 2,
-                         "style": "arrow",
-                         "_label": [label],
-                        }
-                        data["edges"].append(edge)
-                        _prev = subset
-                        prev = subset
-                    if subset_data["parallel"]:
-                        from_node = node_ids.index(subset)
-                        to_node = node_ids.index(s)
-                    else:
-                        if i == 0:
-                            color = "black"
-                        if i == last:
-                            from_node = node_ids.index(s)
-                            to_node = node_ids.index(subset)
+        for s in config.sections():
+            if "sync#" in s:
+                continue
+
+            if config.has_option(s, "type"):
+                t = config.get(s, "type")
+            else:
+                t = None
+
+            if s.startswith("subset#") and ":" in s:
+                # subset
+                if config.has_option(s, "parallel") and config.getboolean(s, "parallel"):
+                    parallel = True
+                else:
+                    parallel = False
+                family, name = s.replace("subset#", "").split(":")
+                subsets[s] = {
+                  "parallel": parallel,
+                  "family": family,
+                  "name": family,
+                }
+                img = URL(r=request, c="static", f="pkg48.png")
+                d = {
+                  "mass": 3,
+                  "id": node_tail,
+                  "label": s,
+                  "image": img,
+                  "shape": "image"
+                }
+                node_ids.append((nodename, s))
+                node_tail += 1
+                data["nodes"].append(d)
+                continue
+
+            family = s.split("#")[0]
+            if family in disk_types:
+                family = "disk"
+
+            if config.has_option(s, "subset"):
+                subset = config.get(s, "subset")
+                if subset not in sections[family]:
+                    sections[family][subset] = []
+                sections[family][subset].append(s)
+            else:
+                sections[family][family].append(s)
+
+            disabled = get_disabled(s)
+            if disabled:
+                img = URL(r=request, c="static", f="reject48.png")
+            else:
+                img = get_img(family, t)
+            label = get_label(nodename, s, family, t)
+            color = status_color.get(resmon[nodename][s].res_status, "grey")
+
+            d = {
+              "mass": 3,
+              "id": node_tail,
+              "label": label,
+              "image": img,
+              "fontColor": color,
+              "shape": "image"
+            }
+            node_ids.append((nodename, s))
+            node_tail += 1
+            data["nodes"].append(d)
+
+
+        prev = nodename
+        for family in levels:
+            for rs in sorted(sections[family].keys()):
+                last = len(sections[family][rs]) - 1
+                for i, s in enumerate(sections[family][rs]):
+                    subset = "subset#"+family+":"+rs
+                    color = "grey"
+                    if family in ("ip", "fs", "disk") and \
+                       config.has_option(s, "tags") and \
+                       "zone" in config.get(s, "tags").split():
+                        continue
+                    if subset in subsets:
+                        subset_data = subsets[subset]
+                        if "done" not in subset_data:
+                            subsets[subset]["done"] = True
+                            from_node = node_ids.index((nodename, prev))
+                            to_node = node_ids.index((nodename, subset))
                             label = ""
                             edge = {
                              "from": from_node,
@@ -1104,27 +1195,57 @@ def json_startup_data():
                              "_label": [label],
                             }
                             data["edges"].append(edge)
-                        from_node = node_ids.index(_prev)
-                        to_node = node_ids.index(s)
-                        _prev = s
-                else:
-                    from_node = node_ids.index(prev)
-                    to_node = node_ids.index(s)
-                label = ""
-                edge = {
-                 "from": from_node,
-                 "to": to_node,
-                 "length": 100,
-                 "color": color,
-                 "fontColor": color,
-                 "label": str(label),
-                 "width": 2,
-                 "style": "arrow",
-                 "_label": [label],
-                }
-                data["edges"].append(edge)
-                if subset not in subsets:
-                    prev = s
+                            _prev = subset
+                            prev = subset
+                        if subset_data["parallel"]:
+                            from_node = node_ids.index((nodename, subset))
+                            to_node = node_ids.index((nodename, s))
+                        else:
+                            if i == 0:
+                                color = "black"
+                            if i == last:
+                                from_node = node_ids.index((nodename, s))
+                                to_node = node_ids.index((nodename, subset))
+                                label = ""
+                                edge = {
+                                 "from": from_node,
+                                 "to": to_node,
+                                 "length": 100,
+                                 "color": color,
+                                 "fontColor": color,
+                                 "label": str(label),
+                                 "width": 2,
+                                 "style": "arrow",
+                                 "_label": [label],
+                                }
+                                data["edges"].append(edge)
+                            from_node = node_ids.index((nodename, _prev))
+                            to_node = node_ids.index((nodename, s))
+                            _prev = s
+                    else:
+                        from_node = node_ids.index((nodename, prev))
+                        to_node = node_ids.index((nodename, s))
+                    label = ""
+                    edge = {
+                     "from": from_node,
+                     "to": to_node,
+                     "length": 100,
+                     "color": color,
+                     "fontColor": color,
+                     "label": str(label),
+                     "width": 2,
+                     "style": "arrow",
+                     "_label": [label],
+                    }
+                    data["edges"].append(edge)
+                    if subset not in subsets:
+                        prev = s
+        return data["nodes"], data["edges"], node_ids, node_tail
+
+    for nodename in nodenames:
+        nodes, edges, node_ids, node_tail = do_node(nodename, node_ids, node_tail)
+        data["nodes"] += nodes
+        data["edges"] += edges
 
     return data
 

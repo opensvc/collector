@@ -406,6 +406,7 @@
 'city': 'ville',
 'City': 'Ville',
 'Class': 'Classe',
+'clementine': 'clementine',
 'click here for online examples': 'cliquez ici pour voir des exemples en ligne',
 'click here for the administrative interface': "cliquez ici pour aller à l'interface d'administration",
 'click to view state transition': "cliquer ici pour voir les changements d'états",
