@@ -1010,7 +1010,7 @@ def json_startup_data():
 
     def get_disabled(s, nodename):
         try:
-            return get_scoped(s, "disable", nodename)
+            return getboolean_scoped(s, "disable", nodename)
         except ConfigParser.NoOptionError:
             pass
         if config.has_option(s, "disable_on"):
