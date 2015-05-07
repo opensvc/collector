@@ -695,6 +695,14 @@ function draw_startup(id, data) {
 }
 
 function init_startup(id, data) {
+  $("#"+id).parent().find("input:submit").bind("click", function(){
+    var nodenames = []
+    $(this).parent().find("input:checked").each(function () {
+      nodenames.push($(this).attr("name"))
+    })
+    data["nodenames"] = nodenames
+    draw_startup(id, data)
+  })
   draw_startup(id, data)
 }
 
