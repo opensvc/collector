@@ -1008,10 +1008,57 @@ def json_startup_data():
             s += resmon[nodename][section].res_desc
         return s
 
-    def get_disabled(s):
-        if config.has_option(s, "disable"):
-            return config.getboolean(s, "disable")
+    def get_disabled(s, nodename):
+        try:
+            return get_scoped(s, "disable", nodename)
+        except ConfigParser.NoOptionError:
+            pass
+        if config.has_option(s, "disable_on"):
+            disable_on = config.get(s, "disable_on").split()
+            l = []
+            if "nodes" in disable_on: l += nodes
+            if "drpnodes" in disable_on: l += drpnodes
+            if "encapnodes" in disable_on: l += encapnodes
+            if nodename in l:
+                return True
         return False
+
+    def _get_scoped(s, o, nodename, fn):
+        _o = o+"@"+nodename
+        if config.has_option(s, _o):
+            return fn(s, _o)
+        if nodename in nodes:
+            _o = o+"@nodes"
+        elif nodename in drpnodes:
+            _o = o+"@drpnodes"
+        elif nodename in encapnodes:
+            _o = o+"@encapnodes"
+        else:
+            _o = o
+        if config.has_option(s, _o):
+            return fn(s, _o)
+        return fn(s, o)
+
+    def get_scoped(s, o, nodename):
+        return _get_scoped(s, o, nodename, config.get)
+
+    def getboolean_scoped(s, o, nodename):
+        return _get_scoped(s, o, nodename, config.getboolean)
+
+    # header parser
+    nodes = []
+    if config.has_option("DEFAULT", "nodes"):
+        nodes = config.get("DEFAULT", "nodes").split()
+    drpnodes = []
+    if config.has_option("DEFAULT", "drpnodes"):
+        drpnodes = config.get("DEFAULT", "drpnodes").split()
+    if config.has_option("DEFAULT", "drpnode"):
+        drpnode = config.get("DEFAULT", "drpnode").split()[0]
+        if drpnode not in drpnodes:
+            drpnodes.append(drpnode)
+    encapnodes = []
+    if config.has_option("DEFAULT", "encapnodes"):
+        encapnodes = config.get("DEFAULT", "encapnodes").split()
 
     # add root node
     d = {
@@ -1101,16 +1148,16 @@ def json_startup_data():
             if "sync#" in s:
                 continue
 
-            if config.has_option(s, "type"):
-                t = config.get(s, "type")
-            else:
+            try:
+                t = get_scoped(s, "type", nodename)
+            except ConfigParser.NoOptionError:
                 t = None
 
             if s.startswith("subset#") and ":" in s:
                 # subset
-                if config.has_option(s, "parallel") and config.getboolean(s, "parallel"):
-                    parallel = True
-                else:
+                try:
+                    parallel = getboolean_scoped(s, "parallel", nodename)
+                except ConfigParser.NoOptionError:
                     parallel = False
                 family, name = s.replace("subset#", "").split(":")
                 subsets[s] = {
@@ -1135,15 +1182,15 @@ def json_startup_data():
             if family in disk_types:
                 family = "disk"
 
-            if config.has_option(s, "subset"):
-                subset = config.get(s, "subset")
+            try:
+                subset = get_scoped(s, "subset", nodename)
                 if subset not in sections[family]:
                     sections[family][subset] = []
                 sections[family][subset].append(s)
-            else:
+            except ConfigParser.NoOptionError:
                 sections[family][family].append(s)
 
-            disabled = get_disabled(s)
+            disabled = get_disabled(s, nodename)
             if disabled:
                 img = URL(r=request, c="static", f="reject48.png")
             else:
@@ -1171,9 +1218,12 @@ def json_startup_data():
                 for i, s in enumerate(sections[family][rs]):
                     subset = "subset#"+family+":"+rs
                     color = "grey"
+                    try:
+                       tags = get_scoped(s, "tags", nodename).split()
+                    except ConfigParser.NoOptionError:
+                       tags = []
                     if family in ("ip", "fs", "disk") and \
-                       config.has_option(s, "tags") and \
-                       "zone" in config.get(s, "tags").split():
+                       "zone" in tags:
                         continue
                     if subset in subsets:
                         subset_data = subsets[subset]
