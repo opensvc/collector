@@ -1003,7 +1003,14 @@ def json_startup_data():
         return imgs.get((None, None))
 
     def get_label(nodename, section, family, t):
-        s = "\n"+section+"\n"
+        s = "\n"+section
+        try:
+            tags = get_scoped(section, "tags", nodename).split()
+        except ConfigParser.NoOptionError:
+            tags = []
+        if "noaction" in tags:
+            s += " (no action)"
+        s += "\n"
         if section in resmon[nodename]:
             s += resmon[nodename][section].res_desc
         return s
