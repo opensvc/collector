@@ -969,6 +969,10 @@ def json_startup_data():
         if row.nodename not in resmon:
             resmon[row.nodename] = {}
         resmon[row.nodename][row.rid] = row
+        if row.vmname:
+            if row.vmname not in resmon:
+                resmon[row.vmname] = {}
+            resmon[row.vmname][row.rid] = row
 
     import os
     import StringIO
@@ -984,6 +988,7 @@ def json_startup_data():
     }
 
     node_ids = []
+    edge_ids = []
     node_tail = 0
 
     imgs = {
@@ -1011,7 +1016,7 @@ def json_startup_data():
         if "noaction" in tags:
             s += " (no action)"
         s += "\n"
-        if section in resmon[nodename]:
+        if nodename in resmon and section in resmon[nodename]:
             s += resmon[nodename][section].res_desc
         return s
 
@@ -1051,6 +1056,17 @@ def json_startup_data():
 
     def getboolean_scoped(s, o, nodename):
         return _get_scoped(s, o, nodename, config.getboolean)
+
+    def container_rid(nodename, hv):
+        nodename = nodename.split(".")[0]
+        for section in config.sections():
+            if section.startswith("container#"):
+                try:
+                    name = get_scoped(section, "name", hv).split(".")[0]
+                    if name == nodename:
+                        return section
+                except ConfigParser.NoOptionError:
+                    pass
 
     # header parser
     nodes = []
@@ -1109,7 +1125,7 @@ def json_startup_data():
       "gandi",
     ]
 
-    def do_node(nodename, node_ids, node_tail):
+    def do_node(nodename, node_ids, node_tail, hv=None):
         sections = {
           "hb": {"hb": []},
           "ip": {"ip": []},
@@ -1125,18 +1141,24 @@ def json_startup_data():
         }
         subsets = {
         }
-        d = {
-          "mass": 3,
-          "id": node_tail,
-          "label": nodename,
-          "image": URL(r=request,c='static',f='node48.png'),
-          "shape": "image"
-        }
-        node_tail += 1
-        node_ids.append((nodename, nodename))
-        data["nodes"].append(d)
 
-        from_node = node_ids.index(svcname)
+        if (nodename, nodename) not in node_ids:
+            d = {
+              "mass": 3,
+              "id": node_tail,
+              "label": nodename,
+              "image": URL(r=request,c='static',f='node48.png'),
+              "shape": "image"
+            }
+            node_tail += 1
+            node_ids.append((nodename, nodename))
+            data["nodes"].append(d)
+
+        if hv:
+            rid = container_rid(nodename, hv)
+            from_node = node_ids.index((hv, rid))
+        else:
+            from_node = node_ids.index(svcname)
         to_node = node_ids.index((nodename, nodename))
         label = ""
         edge = {
@@ -1149,10 +1171,22 @@ def json_startup_data():
           "style": "arrow",
           "_label": [label],
         }
-        data["edges"].append(edge)
+        if (from_node, to_node) not in edge_ids:
+            data["edges"].append(edge)
+            edge_ids.append((from_node, to_node))
 
         for s in config.sections():
             if "sync#" in s:
+                continue
+
+            try:
+                tags = get_scoped(s, "tags", nodename).split()
+            except ConfigParser.NoOptionError:
+                tags = []
+
+            if hv and not "encap" in tags:
+                continue
+            elif hv is None and "encap" in tags:
                 continue
 
             try:
@@ -1209,18 +1243,18 @@ def json_startup_data():
             except KeyError:
                 color = "grey"
 
-            d = {
-              "mass": 3,
-              "id": node_tail,
-              "label": label,
-              "image": img,
-              "fontColor": color,
-              "shape": "image"
-            }
-            node_ids.append((nodename, s))
-            node_tail += 1
-            data["nodes"].append(d)
-
+            if (nodename, s) not in node_ids:
+                d = {
+                  "mass": 3,
+                  "id": node_tail,
+                  "label": label,
+                  "image": img,
+                  "fontColor": color,
+                  "shape": "image"
+                }
+                node_ids.append((nodename, s))
+                node_tail += 1
+                data["nodes"].append(d)
 
         prev = nodename
         for family in levels:
@@ -1230,11 +1264,12 @@ def json_startup_data():
                     subset = "subset#"+family+":"+rs
                     color = "grey"
                     try:
-                       tags = get_scoped(s, "tags", nodename).split()
+                        tags = get_scoped(s, "tags", nodename).split()
                     except ConfigParser.NoOptionError:
-                       tags = []
-                    if family in ("ip", "fs", "disk") and \
-                       "zone" in tags:
+                        tags = []
+                    if hv is None and "encap" in tags:
+                        continue
+                    if family in ("ip", "fs", "disk") and "zone" in tags:
                         continue
                     if subset in subsets:
                         subset_data = subsets[subset]
@@ -1254,7 +1289,9 @@ def json_startup_data():
                              "style": "arrow",
                              "_label": [label],
                             }
-                            data["edges"].append(edge)
+                            if (from_node, to_node) not in edge_ids:
+                                data["edges"].append(edge)
+                                edge_ids.append((from_node, to_node))
                             _prev = subset
                             prev = subset
                         if subset_data["parallel"]:
@@ -1278,7 +1315,9 @@ def json_startup_data():
                                  "style": "arrow",
                                  "_label": [label],
                                 }
-                                data["edges"].append(edge)
+                                if (from_node, to_node) not in edge_ids:
+                                    data["edges"].append(edge)
+                                    edge_ids.append((from_node, to_node))
                             from_node = node_ids.index((nodename, _prev))
                             to_node = node_ids.index((nodename, s))
                             _prev = s
@@ -1297,9 +1336,18 @@ def json_startup_data():
                      "style": "arrow",
                      "_label": [label],
                     }
-                    data["edges"].append(edge)
+                    if (from_node, to_node) not in edge_ids:
+                        data["edges"].append(edge)
+                        edge_ids.append((from_node, to_node))
                     if subset not in subsets:
                         prev = s
+
+        if hv is None:
+            for container in encapnodes:
+                _nodes, _edges, node_ids, node_tail = do_node(container, node_ids, node_tail, hv=nodename)
+                data["nodes"] += _nodes
+                data["edges"] += _edges
+
         return data["nodes"], data["edges"], node_ids, node_tail
 
     for nodename in nodenames:
