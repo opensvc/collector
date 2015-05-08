@@ -1203,7 +1203,11 @@ def json_startup_data():
             else:
                 img = get_img(family, t)
             label = get_label(nodename, s, family, t)
-            color = status_color.get(resmon[nodename][s].res_status, "grey")
+            try:
+                res_status = resmon[nodename][s].res_status
+                color = status_color.get(res_status, "grey")
+            except KeyError:
+                color = "grey"
 
             d = {
               "mass": 3,
