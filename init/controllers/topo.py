@@ -1007,14 +1007,19 @@ def json_startup_data():
             return i
         return imgs.get((None, None))
 
-    def get_label(nodename, section, family, t):
+    def get_label(nodename, section, family, t=""):
         s = "\n"+section
+
+        if get_disabled(section, nodename):
+            s += " (disabled)"
+
         try:
             tags = get_scoped(section, "tags", nodename).split()
         except ConfigParser.NoOptionError:
             tags = []
         if "noaction" in tags:
             s += " (no action)"
+
         s += "\n"
         if nodename in resmon and section in resmon[nodename]:
             s += resmon[nodename][section].res_desc
@@ -1068,7 +1073,114 @@ def json_startup_data():
                 except ConfigParser.NoOptionError:
                     pass
 
+    def trigger_add_node(nodename, s, t, node_tail):
+        try:
+            script = get_scoped(s, t, nodename)
+            trigger_id = s + "_" + t
+            if (nodename, trigger_id) not in node_ids:
+                triggers.append(trigger_id)
+                label = "\n" + s + " " + t + "\n" + script
+                img = get_img("app", t)
+                d = {
+                  "mass": 3,
+                  "id": node_tail,
+                  "label": label,
+                  "image": img,
+                  "fontColor": "grey",
+                  "shape": "image"
+                }
+                node_ids.append((nodename, trigger_id))
+                node_tail += 1
+                data["nodes"].append(d)
+        except ConfigParser.NoOptionError:
+            pass
+        return node_tail
+
+    def add_edge(from_node, to_node, nodename, color="grey"):
+        _to = node_ids[to_node][1]
+        _from = node_ids[from_node][1]
+        if _to + "_pre_start" in triggers:
+            name = _to + "_pre_start"
+            trigger_node = node_ids.index((nodename, name))
+            _add_edge(from_node, trigger_node, color=color)
+            color = "grey"
+            _add_edge(trigger_node, to_node, color=color)
+            return node_ids[to_node][1]
+        elif _from + "_post_start" in triggers:
+            name = _from + "_post_start"
+            trigger_node = node_ids.index((nodename, name))
+            _add_edge(from_node, trigger_node, color=color)
+            color = "grey"
+            _add_edge(trigger_node, to_node, color=color)
+            return name
+        else:
+            _add_edge(from_node, to_node, color=color)
+            return node_ids[to_node][1]
+
+    def _add_edge(from_node, to_node, color="grey"):
+        label = ""
+        edge = {
+         "from": from_node,
+         "to": to_node,
+         "length": 100,
+         "color": color,
+         "fontColor": color,
+         "label": str(label),
+         "width": 2,
+         "style": "arrow",
+         "_label": [label],
+        }
+        if (from_node, to_node) not in edge_ids:
+            data["edges"].append(edge)
+            edge_ids.append((from_node, to_node))
+
+    def do_resource_edges(nodename, family, rs, s, hv, prev, i, last, _prev=None, subsets={}):
+        subset = "subset#"+family+":"+rs
+        color = "grey"
+        try:
+            tags = get_scoped(s, "tags", nodename).split()
+        except ConfigParser.NoOptionError:
+            tags = []
+        if hv is None and "encap" in tags:
+            return prev, _prev
+        if family in ("ip", "fs", "disk") and "zone" in tags:
+            return prev, _prev
+        if subset in subsets:
+            subset_data = subsets[subset]
+            if "done" not in subset_data:
+                # prev to new subset extra edge
+                subsets[subset]["done"] = True
+                from_node = node_ids.index((nodename, prev))
+                to_node = node_ids.index((nodename, subset))
+                add_edge(from_node, to_node, nodename)
+                _prev = subset
+                prev = subset
+            if subset_data["parallel"]:
+                # //-subset to resource (star-like)
+                from_node = node_ids.index((nodename, subset))
+                to_node = node_ids.index((nodename, s))
+                add_edge(from_node, to_node, nodename)
+            else:
+                if i == 0:
+                    # highlight edge to first resource of a serial subset
+                    color = "black"
+                if i == last:
+                    # last resource to serial-subset extra edge
+                    from_node = node_ids.index((nodename, s))
+                    to_node = node_ids.index((nodename, subset))
+                    add_edge(from_node, to_node, nodename)
+                from_node = node_ids.index((nodename, _prev))
+                to_node = node_ids.index((nodename, s))
+                _prev = add_edge(from_node, to_node, nodename, color=color)
+        else:
+            from_node = node_ids.index((nodename, prev))
+            to_node = node_ids.index((nodename, s))
+            prev = add_edge(from_node, to_node, nodename)
+        return prev, _prev
+
+
     # header parser
+    triggers = []
     nodes = []
     if config.has_option("DEFAULT", "nodes"):
         nodes = config.get("DEFAULT", "nodes").split()
@@ -1256,91 +1368,35 @@ def json_startup_data():
                 node_tail += 1
                 data["nodes"].append(d)
 
+            node_tail = trigger_add_node(nodename, s, "pre_start", node_tail)
+            node_tail = trigger_add_node(nodename, s, "post_start", node_tail)
+
         prev = nodename
+        _prev = None
         for family in levels:
             for rs in sorted(sections[family].keys()):
-                last = len(sections[family][rs]) - 1
-                for i, s in enumerate(sections[family][rs]):
-                    subset = "subset#"+family+":"+rs
-                    color = "grey"
-                    try:
-                        tags = get_scoped(s, "tags", nodename).split()
-                    except ConfigParser.NoOptionError:
-                        tags = []
-                    if hv is None and "encap" in tags:
-                        continue
-                    if family in ("ip", "fs", "disk") and "zone" in tags:
-                        continue
-                    if subset in subsets:
-                        subset_data = subsets[subset]
-                        if "done" not in subset_data:
-                            subsets[subset]["done"] = True
-                            from_node = node_ids.index((nodename, prev))
-                            to_node = node_ids.index((nodename, subset))
-                            label = ""
-                            edge = {
-                             "from": from_node,
-                             "to": to_node,
-                             "length": 100,
-                             "color": color,
-                             "fontColor": color,
-                             "label": str(label),
-                             "width": 2,
-                             "style": "arrow",
-                             "_label": [label],
-                            }
-                            if (from_node, to_node) not in edge_ids:
-                                data["edges"].append(edge)
-                                edge_ids.append((from_node, to_node))
-                            _prev = subset
-                            prev = subset
-                        if subset_data["parallel"]:
-                            from_node = node_ids.index((nodename, subset))
-                            to_node = node_ids.index((nodename, s))
-                        else:
-                            if i == 0:
-                                color = "black"
-                            if i == last:
-                                from_node = node_ids.index((nodename, s))
-                                to_node = node_ids.index((nodename, subset))
-                                label = ""
-                                edge = {
-                                 "from": from_node,
-                                 "to": to_node,
-                                 "length": 100,
-                                 "color": color,
-                                 "fontColor": color,
-                                 "label": str(label),
-                                 "width": 2,
-                                 "style": "arrow",
-                                 "_label": [label],
-                                }
-                                if (from_node, to_node) not in edge_ids:
-                                    data["edges"].append(edge)
-                                    edge_ids.append((from_node, to_node))
-                            from_node = node_ids.index((nodename, _prev))
-                            to_node = node_ids.index((nodename, s))
-                            _prev = s
-                    else:
-                        from_node = node_ids.index((nodename, prev))
-                        to_node = node_ids.index((nodename, s))
-                    label = ""
-                    edge = {
-                     "from": from_node,
-                     "to": to_node,
-                     "length": 100,
-                     "color": color,
-                     "fontColor": color,
-                     "label": str(label),
-                     "width": 2,
-                     "style": "arrow",
-                     "_label": [label],
-                    }
-                    if (from_node, to_node) not in edge_ids:
-                        data["edges"].append(edge)
-                        edge_ids.append((from_node, to_node))
-                    if subset not in subsets:
-                        prev = s
+                rset_resources = sections[family][rs]
+                last = len(rset_resources) - 1
+
+                # sort resources
+                if rs.startswith("fs#"):
+                    # fs resourceset are sorted by mnt deepness
+                    fs_mnt = {}
+                    for s in rset_resources:
+                        try:
+                            mnt = get_scoped(s, "mnt", nodename)
+                            fs_mnt[mnt] = s
+                        except ConfigParser.NoOptionError:
+                            pass
+                    rset_resources = []
+                    for mnt in sorted(fs_mnt.keys()):
+                        rset_resources.append(fs_mnt[mnt])
+                else:
+                    # other resourceset are sorted by rid (alphnum)
+                    rset_resources.sort()
+
+                for i, s in enumerate(rset_resources):
+                    prev, _prev = do_resource_edges(nodename, family, rs, s, hv, prev, i, last, _prev=_prev, subsets=subsets)
 
         if hv is None:
             for container in encapnodes:
