@@ -1099,23 +1099,30 @@ def json_startup_data():
     def add_edge(from_node, to_node, nodename, color="grey"):
         _to = node_ids[to_node][1]
         _from = node_ids[from_node][1]
+        if _to + "_pre_start" in triggers and \
+           _from + "_post_start" in triggers:
+            from_trigger_name = _from + "_post_start"
+            from_trigger_node = node_ids.index((nodename, from_trigger_name))
+            to_trigger_name = _to + "_pre_start"
+            to_trigger_node = node_ids.index((nodename, to_trigger_name))
+            _add_edge(from_node, from_trigger_node, color=color)
+            _add_edge(from_trigger_node, to_trigger_node)
+            _add_edge(to_trigger_node, to_node)
+            return _to
         if _to + "_pre_start" in triggers:
             name = _to + "_pre_start"
             trigger_node = node_ids.index((nodename, name))
             _add_edge(from_node, trigger_node, color=color)
-            color = "grey"
-            _add_edge(trigger_node, to_node, color=color)
-            return node_ids[to_node][1]
-        elif _from + "_post_start" in triggers:
+            _add_edge(trigger_node, to_node)
+            return _to
+        if _from + "_post_start" in triggers:
             name = _from + "_post_start"
             trigger_node = node_ids.index((nodename, name))
             _add_edge(from_node, trigger_node, color=color)
-            color = "grey"
-            _add_edge(trigger_node, to_node, color=color)
-            return name
-        else:
-            _add_edge(from_node, to_node, color=color)
-            return node_ids[to_node][1]
+            _add_edge(trigger_node, to_node)
+            return _to
+        _add_edge(from_node, to_node, color=color)
+        return _to
 
     def _add_edge(from_node, to_node, color="grey"):
         label = ""
