@@ -1095,10 +1095,10 @@ def ajax_node_stor():
 
     # node disk list
     q = db.svcdisks.disk_nodename == nodename
-    q &= db.diskinfo.id > 0
-    q &= db.svcdisks.disk_id==db.diskinfo.disk_id
-    q &= db.diskinfo.disk_arrayid==db.stor_array.array_name
-    disks = db(q).select(cacheable=True)
+    q &= db.svcdisks.disk_local == False
+    l1 = db.diskinfo.on(db.svcdisks.disk_id==db.diskinfo.disk_id)
+    l2 = db.stor_array.on(db.diskinfo.disk_arrayid==db.stor_array.array_name)
+    disks = db(q).select(db.svcdisks.ALL, db.diskinfo.ALL, db.stor_array.ALL, cacheable=True, left=(l1,l2))
     _disks = [TR(
           TH("wwid"),
           TH("size"),
