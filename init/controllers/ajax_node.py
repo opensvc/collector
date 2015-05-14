@@ -1095,10 +1095,8 @@ def ajax_node_stor():
 
     # node disk list
     q = db.svcdisks.disk_nodename == nodename
-    q &= db.svcdisks.disk_local == False
     q &= (db.diskinfo.disk_group != "virtual")|(db.diskinfo.disk_group==None)
     q &= (db.stor_array.array_model != "vdisk provider")|(db.stor_array.array_model==None)
-    #q &= db.diskinfo.disk_arrayid != None
     l1 = db.diskinfo.on(db.svcdisks.disk_id==db.diskinfo.disk_id)
     l2 = db.stor_array.on(db.diskinfo.disk_arrayid==db.stor_array.array_name)
     disks = db(q).select(db.svcdisks.ALL, db.diskinfo.ALL, db.stor_array.ALL, 
@@ -1388,10 +1386,8 @@ def ajax_svc_stor():
 
     # node disk list
     q = db.svcdisks.disk_svcname == svcname
-    q &= db.svcdisks.disk_local == False
     q &= (db.diskinfo.disk_group != "virtual")|(db.diskinfo.disk_group==None)
     q &= (db.stor_array.array_model != "vdisk provider")|(db.stor_array.array_model==None)
-    #q &= db.diskinfo.disk_arrayid != None
     l1 = db.diskinfo.on(db.svcdisks.disk_id==db.diskinfo.disk_id)
     l2 = db.stor_array.on(db.diskinfo.disk_arrayid==db.stor_array.array_name)
     disks = db(q).select(db.svcdisks.ALL, db.diskinfo.ALL, db.stor_array.ALL,
