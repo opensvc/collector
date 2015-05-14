@@ -1096,9 +1096,14 @@ def ajax_node_stor():
     # node disk list
     q = db.svcdisks.disk_nodename == nodename
     q &= db.svcdisks.disk_local == False
+    q &= db.diskinfo.disk_group != "virtual"
+    q &= db.stor_array.array_model != "vdisk provider"
+    q &= db.diskinfo.disk_arrayid != None
     l1 = db.diskinfo.on(db.svcdisks.disk_id==db.diskinfo.disk_id)
     l2 = db.stor_array.on(db.diskinfo.disk_arrayid==db.stor_array.array_name)
-    disks = db(q).select(db.svcdisks.ALL, db.diskinfo.ALL, db.stor_array.ALL, cacheable=True, left=(l1,l2))
+    disks = db(q).select(db.svcdisks.ALL, db.diskinfo.ALL, db.stor_array.ALL, 
+                         cacheable=True, left=(l1,l2),
+                         orderby=db.svcdisks.disk_id)
     _disks = [TR(
           TH("wwid"),
           TH("size"),
@@ -1383,10 +1388,15 @@ def ajax_svc_stor():
 
     # node disk list
     q = db.svcdisks.disk_svcname == svcname
-    q &= db.diskinfo.id > 0
-    q &= db.svcdisks.disk_id==db.diskinfo.disk_id
-    q &= db.diskinfo.disk_arrayid==db.stor_array.array_name
-    disks = db(q).select(groupby=db.svcdisks.disk_id, cacheable=True)
+    q &= db.svcdisks.disk_local == False
+    q &= db.diskinfo.disk_group != "virtual"
+    q &= db.stor_array.array_model != "vdisk provider"
+    q &= db.diskinfo.disk_arrayid != None
+    l1 = db.diskinfo.on(db.svcdisks.disk_id==db.diskinfo.disk_id)
+    l2 = db.stor_array.on(db.diskinfo.disk_arrayid==db.stor_array.array_name)
+    disks = db(q).select(db.svcdisks.ALL, db.diskinfo.ALL, db.stor_array.ALL,
+                         cacheable=True, left=(l1,l2),
+                         orderby=db.svcdisks.disk_id)
     _disks = [TR(
           TH("wwid"),
           TH("size"),
