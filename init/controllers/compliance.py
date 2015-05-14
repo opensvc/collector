@@ -12236,7 +12236,7 @@ def json_tree_action_import():
             )
             l.append(T("Moduleset ruleset relation added: %(r)s", dict(r=rel_s)))
 
-
+    comp_rulesets_chains()
     l =  map(lambda x: P(x), l)
     return DIV(l)
 
