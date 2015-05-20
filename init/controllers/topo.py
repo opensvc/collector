@@ -1224,6 +1224,7 @@ def json_startup_data():
 
     levels = [
       "hb",
+      "stonith",
       "ip",
       "disk",
       "fs",
@@ -1246,6 +1247,7 @@ def json_startup_data():
 
     def do_node(nodename, node_ids, node_tail, hv=None):
         sections = {
+          "stonith": {"stonith": []},
           "hb": {"hb": []},
           "ip": {"ip": []},
           "disk": {"disk": []},
