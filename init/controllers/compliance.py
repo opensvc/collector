@@ -11620,7 +11620,9 @@ def json_tree_action_create():
     return ""
 
 def json_tree_action_show():
-    if request.vars.obj_type in ["ruleset_head", "moduleset_head", "filterset_head"]:
+    if request.vars.obj_type is None:
+        return json_tree_action_show_import()
+    elif request.vars.obj_type in ["ruleset_head", "moduleset_head", "filterset_head"]:
         return json_tree_action_show_import()
     elif request.vars.obj_type.startswith("ruleset"):
         return json_tree_action_show_ruleset(request.vars.obj_id)
