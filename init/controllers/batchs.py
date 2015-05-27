@@ -32,6 +32,10 @@ data = {
        'comment': "Insert HP 3par arrays data from uploads",
      },
      {
+       'url': URL(r=request, a='feed',  c='default', f='insert_vnxs'),
+       'comment': "Insert VNX arrays data from uploads",
+     },
+     {
        'url': URL(r=request, a='feed',  c='default', f='insert_necisms'),
        'comment': "Insert NEC ISM arrays data from uploads",
      },

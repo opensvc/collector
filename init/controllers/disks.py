@@ -199,13 +199,14 @@ class table_quota(HtmlTable):
                      'dg_name',
                      'app']
         self.colprops.update({
-            'array_name': col_array(
+            'array_name': HtmlTableColumn(
                      title='Array',
                      #table='stor_array',
                      table='v_disk_quota',
                      field='array_name',
                      img='hd16',
                      display=True,
+                     _class="disk_array",
                     ),
             'array_model': HtmlTableColumn(
                      title='Array Model',
@@ -224,53 +225,59 @@ class table_quota(HtmlTable):
                      img='hd16',
                      display=True,
                     ),
-            'dg_name': col_array_dg(
+            'dg_name': HtmlTableColumn(
                      title='Array Disk Group',
                      #table='stor_array_dg',
                      table='v_disk_quota',
                      field='dg_name',
                      img='hd16',
                      display=True,
+                     _class="disk_array_dg",
                     ),
-            'dg_free': col_size_mb(
+            'dg_free': HtmlTableColumn(
                      title='Free',
                      #table='stor_array_dg',
                      table='v_disk_quota',
                      field='dg_free',
                      img='hd16',
                      display=True,
+                     _class="numeric size_mb",
                     ),
-            'dg_used': col_size_mb(
+            'dg_used': HtmlTableColumn(
                      title='Used',
                      #table='stor_array_dg',
                      table='v_disk_quota',
                      field='dg_used',
                      img='hd16',
                      display=True,
+                     _class="numeric size_mb",
                     ),
-            'dg_reservable': col_size_mb(
+            'dg_reservable': HtmlTableColumn(
                      title='Reservable',
                      #table='stor_array_dg',
                      table='v_disk_quota',
                      field='dg_reservable',
                      img='hd16',
                      display=True,
+                     _class="numeric size_mb",
                     ),
-            'dg_reserved': col_size_mb(
+            'dg_reserved': HtmlTableColumn(
                      title='Reserved',
                      #table='stor_array_dg',
                      table='v_disk_quota',
                      field='dg_reserved',
                      img='hd16',
                      display=True,
+                     _class="numeric size_mb",
                     ),
-            'dg_size': col_size_mb(
+            'dg_size': HtmlTableColumn(
                      title='Size',
                      #table='stor_array_dg',
                      table='v_disk_quota',
                      field='dg_size',
                      img='hd16',
                      display=True,
+                     _class="numeric size_mb",
                     ),
             'dg_id': HtmlTableColumn(
                      title='Array Disk Group Id',

@@ -117,8 +117,8 @@ def comp_get_matching_filters(fset_ids, fset_data=None, nodename=None, svcname=N
             svcmon_nodname_field = "svcmon.mon_nodname"
 
         if nodename is not None:
-            if table in ("nodes", "packages", "patches", 'node_hba', "b_disk_app", "svcdisks", "svcmon", "svcmon_log"):
-                if table in ("nodes", "packages", "patches", 'node_hba'):
+            if table in ("nodes", "packages", "patches", 'node_hba', "b_disk_app", "svcdisks", "svcmon", "svcmon_log", "resmon"):
+                if table in ("nodes", "packages", "patches", 'node_hba', "resmon"):
                     _field = "nodename"
                 elif table in ("b_disk_app", "svcdisks"):
                     _field = "disk_nodename"
@@ -143,16 +143,15 @@ def comp_get_matching_filters(fset_ids, fset_data=None, nodename=None, svcname=N
 
         if svcname is not None:
             if table in ("services", "b_disk_app", "svcdisks", "svcmon",
-                         "svcmon_log", "v_comp_moduleset_attachments", "v_tags"):
+                         "svcmon_log", "v_comp_moduleset_attachments",
+                         "v_tags", "resmon"):
                 if table in ("services"):
                     _field = "svc_name"
                 elif table in ("b_disk_app", "svcdisks"):
                     _field = "disk_svcname"
                 elif table in ("svcmon", "svcmon_log"):
                     _field = "mon_svcname"
-                elif table in ("v_comp_moduleset_attachments"):
-                    _field = "svcname"
-                elif table in ("v_tags"):
+                elif table in ("v_comp_moduleset_attachments", "v_tags", "resmon"):
                     _field = "svcname"
                 else:
                     print "unknown table", table

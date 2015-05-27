@@ -18,6 +18,7 @@ tables = {
     'nodes':dict(name='nodes', title='nodes', cl='node16', hide=False),
     'services':dict(name='services', title='services', cl='svc', hide=False),
     'svcmon':dict(name='svcmon', title='service status', cl='svc', hide=False),
+    'resmon':dict(name='resmon', title='resources', cl='action16', hide=False),
     'apps':dict(name='apps', title='apps', cl='svc', hide=False),
     'node_hba':dict(name='node_hba', title='node host bus adapaters', cl='node16', hide=False),
     'b_disk_app':dict(name='b_disk_app', title='disks', cl='hd16', hide=False),
@@ -40,10 +41,12 @@ props.update(disk_app_colprops)
 props.update(apps_colprops)
 props.update(v_comp_moduleset_attachments_colprops)
 props.update(v_tags_colprops)
+props.update(resmon_colprops)
 fields = {
     'nodes': db.nodes.fields,
     'services': db.services.fields,
     'svcmon': db.svcmon.fields,
+    'resmon': set(db.resmon.fields) - set(["nodename", "svcname", "id", "vmname"]),
     'b_disk_app': db.b_disk_app.fields,
     'node_hba': db.node_hba.fields,
     'apps': set(db.apps.fields) - set(['updated', 'id']),
@@ -11617,7 +11620,9 @@ def json_tree_action_create():
     return ""
 
 def json_tree_action_show():
-    if request.vars.obj_type in ["ruleset_head", "moduleset_head", "filterset_head"]:
+    if request.vars.obj_type is None:
+        return json_tree_action_show_import()
+    elif request.vars.obj_type in ["ruleset_head", "moduleset_head", "filterset_head"]:
         return json_tree_action_show_import()
     elif request.vars.obj_type.startswith("ruleset"):
         return json_tree_action_show_ruleset(request.vars.obj_id)
