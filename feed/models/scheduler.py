@@ -2990,17 +2990,6 @@ def update_dash_service_not_updated(svcname):
     db.commit()
     dashboard_events()
 
-def update_dash_svcmon_not_updated(svcname, nodename):
-    sql = """delete from dashboard
-               where
-                 dash_svcname = "%(svcname)s" and
-                 dash_nodename = "%(nodename)s" and
-                 dash_type = "service status not updated"
-          """%dict(svcname=svcname, nodename=nodename)
-    rows = db.executesql(sql)
-    db.commit()
-    # dashboard_events() called from __svcmon_update
-
 def update_dash_node_not_updated(nodename):
     sql = """delete from dashboard
                where
