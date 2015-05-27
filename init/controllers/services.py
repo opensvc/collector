@@ -5,7 +5,8 @@ class table_services(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols += ['svc_name']
         self.cols += v_services_cols
-        self.cols += ['svc_status_updated']
+        self.cols.remove("svc_updated")
+        self.cols += ['updated', 'svc_status_updated']
         self.colprops = v_services_colprops
         self.colprops.update({
             'svc_name': HtmlTableColumn(
@@ -35,6 +36,7 @@ class table_services(HtmlTable):
         self.force_cols = ['svc_name', 'Status updated']
         for col in self.colprops:
             self.colprops[col].table = "services"
+        self.colprops["updated"] = self.colprops["svc_updated"]
         self.extraline = True
         self.checkboxes = True
         self.checkbox_id_col = 'svc_name'
