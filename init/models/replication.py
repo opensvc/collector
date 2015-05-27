@@ -42,6 +42,11 @@ def merge_data(data, mirror=False, purge_old_col=None):
         generic_insert(table, vars, vals)
         if n > 0:
             table_modified(table)
+            if table.endswith(".svcmon"):
+                idx = vars.index("mon_svcname")
+                svcnames = set([v[idx] for v in vals])
+                for svcname in svcnames:
+                    svc_status_update(svcname)
 
 def get_push_remotes():
     return get_remotes("push")
