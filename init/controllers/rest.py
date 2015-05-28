@@ -17,6 +17,8 @@ def api():
             if n_args == 0:
                 return doc()
             if n_args == 1:
+                if args[0] == "":
+                    return doc()
                 if args[0] == "nodes":
                     return get_nodes(**vars)
                 if args[0] == "filtersets":
