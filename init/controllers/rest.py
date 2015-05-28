@@ -8,6 +8,10 @@ def call():
 @auth.requires_login()
 def api():
     def GET(*args,**vars):
+        # the default restful wrapper suppress the trailing .xxx
+        # we need it for nodenames and svcname though.
+        args = request.raw_args.split('/')
+
         try:
             n_args = len(args)
             if n_args == 0:
@@ -31,6 +35,7 @@ def api():
             return dict(error=str(e))
         return dict()
     def POST(*args,**vars):
+        args = request.raw_args.split('/')
         try:
             n_args = len(args)
             if n_args == 1:
@@ -43,8 +48,10 @@ def api():
             return dict(error=str(e))
         return dict()
     def PUT(*args,**vars):
+        args = request.raw_args.split('/')
         return dict()
     def DELETE(*args,**vars):
+        args = request.raw_args.split('/')
         return dict()
     return locals()
 
