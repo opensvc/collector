@@ -76,7 +76,7 @@ Optional parameters:
 
 Example:
 
-``# curl -u me:mypass -o- https://collector/init/rest/api/nodes?props=nodename,loc_city&fset_id=10``
+``# curl -u me:mypass -o- https://%(collector)s/init/rest/api/nodes?props=nodename,loc_city&fset_id=10``
 
 ### POST
 
@@ -94,7 +94,7 @@ Data:
 
 Example:
 
-``# curl -u me:mypass -o- -d nodename=mynode -d loc_city="Zanzibar" -d team_responsible="SYSADM" https://collector/init/rest/api/nodes``
+``# curl -u me:mypass -o- -d nodename=mynode -d loc_city="Zanzibar" -d team_responsible="SYSADM" https://%(collector)s/init/rest/api/nodes``
 
 
 ## ``/api/nodes/<nodename>``:red
@@ -116,7 +116,7 @@ Optional parameters:
 
 Example:
 
-``# curl -u me:mypass -o- https://collector/init/rest/api/nodes/mynode?props=nodename,loc_city``
+``# curl -u me:mypass -o- https://%(collector)s/init/rest/api/nodes/mynode?props=nodename,loc_city``
 
 ### POST
 
@@ -136,7 +136,7 @@ Data:
 
 Example:
 
-``# curl -u me:mypass -o- -d loc_city="Zanzibar" -d project="ERP" https://collector/init/rest/api/nodes/mynode``
+``# curl -u me:mypass -o- -d loc_city="Zanzibar" -d project="ERP" https://%(collector)s/init/rest/api/nodes/mynode``
 
 
 ## ``/api/nodes/<nodename>/alerts``:red
@@ -157,7 +157,7 @@ Optional parameters:
 
 Example:
 
-``# curl -u me:mypass -o- https://collector/init/rest/api/nodes/mynode/alerts?props=dash_nodename,dash_type``
+``# curl -u me:mypass -o- https://%(collector)s/init/rest/api/nodes/mynode/alerts?props=dash_nodename,dash_type``
 
 
 ## ``/api/nodes/<nodename>/disks``:red
@@ -178,7 +178,7 @@ Optional parameters:
 
 Example:
 
-``# curl -u me:mypass -o- https://collector/init/rest/api/nodes/mynode/disks?props=b_disk_app.disk_nodename,b_disk_app.disk_id,stor_array.array_name``
+``# curl -u me:mypass -o- https://%(collector)s/init/rest/api/nodes/mynode/disks?props=b_disk_app.disk_nodename,b_disk_app.disk_id,stor_array.array_name``
 
 
 ## ``/api/nodes/<nodename>/ips``:red
@@ -199,7 +199,7 @@ Optional parameters:
 
 Example:
 
-``# curl -u readonly:readonly -o- https://collector/init/rest/api/nodes/mynode/ips?props=prio,net_network,net_netmask``
+``# curl -u readonly:readonly -o- https://%(collector)s/init/rest/api/nodes/mynode/ips?props=prio,net_network,net_netmask``
 
 
 ## ``/api/filtersets``:red
@@ -220,10 +220,11 @@ Optional parameters:
 
 Example:
 
-``# curl -u readonly:readonly -o- https://collector/init/rest/api/filtersets?like=%%aix%%``
+``# curl -u readonly:readonly -o- https://%(collector)s/init/rest/api/filtersets?like=%%aix%%``
 
 
 """ % dict(
+        collector=request.env.http_host,
         nodes_props=", ".join(sorted(db.nodes.fields)),
         nodes_ips_props=", ".join(sorted(list(set(db.v_nodenetworks.fields) - set(db.nodes.fields)))),
         nodes_alerts_props=", ".join(sorted(db.dashboard.fields)),
