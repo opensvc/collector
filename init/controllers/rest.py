@@ -7,7 +7,7 @@ def call():
 @request.restful()
 @auth.requires_login()
 def api():
-    def GET(*args,**vars):
+    def GET(*args, **vars):
         # the default restful wrapper suppress the trailing .xxx
         # we need it for nodenames and svcname though.
         args = request.raw_args.split('/')
@@ -36,7 +36,7 @@ def api():
         except Exception as e:
             return dict(error=str(e))
         return dict()
-    def POST(*args,**vars):
+    def POST(*args, **vars):
         args = request.raw_args.split('/')
         try:
             n_args = len(args)
@@ -49,11 +49,18 @@ def api():
         except Exception as e:
             return dict(error=str(e))
         return dict()
-    def PUT(*args,**vars):
+    def PUT(*args, **vars):
         args = request.raw_args.split('/')
         return dict()
-    def DELETE(*args,**vars):
+    def DELETE(*args, **vars):
         args = request.raw_args.split('/')
+        try:
+            n_args = len(args)
+            if n_args == 2:
+                if args[0] == "nodes":
+                    return delete_node(args[1], **vars)
+        except Exception as e:
+            return dict(error=str(e))
         return dict()
     return locals()
 
@@ -146,6 +153,21 @@ Data:
 Example:
 
 ``# curl -u me:mypass -o- -d loc_city="Zanzibar" -d project="ERP" https://%(collector)s/init/rest/api/nodes/mynode``
+
+
+### DELETE
+
+Description:
+
+- Delete a node.
+- The user must be responsible for the node.
+- The user must be in the NodeManager privilege group.
+- The action is logged in the collector's log.
+- A websocket event is sent to announce the change in the nodes table.
+
+Example:
+
+``# curl -u me:mypass -o- -X DELETE https://%(collector)s/init/rest/api/nodes/mynode``
 
 
 ## ``/api/nodes/<nodename>/alerts``:red
@@ -310,8 +332,16 @@ def get_filtersets(like=None):
     data = db(q).select().as_list()
     return dict(data=data)
 
+def check_privilege(priv):
+    ug = user_groups()
+    if priv not in ug:
+        raise Exception("Not authorized: user has no %s privilege" % priv)
+
 def node_responsible(nodename):
     q = db.nodes.nodename == nodename
+    n = db(q).count()
+    if n == 0:
+        raise Exception("Node %s does not exist" % nodename)
     q &= db.nodes.team_responsible == db.auth_group.role
     q &= db.auth_group.id.belongs(user_group_ids())
     n = db(q).count()
@@ -319,6 +349,7 @@ def node_responsible(nodename):
         raise Exception("Not authorized: user is not responsible for node %s" % nodename)
 
 def set_node(nodename, **vars):
+    check_privilege("NodeManager")
     node_responsible(nodename)
     q = db.nodes.nodename == nodename
     vars["updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -336,6 +367,7 @@ def set_node(nodename, **vars):
     return get_node(nodename, props=','.join(["nodename","updated"]+vars.keys()))
 
 def create_node(**vars):
+    check_privilege("NodeManager")
     if 'nodename' not in vars:
         raise Exception("the nodename property must be set in the POST data")
     nodename = vars['nodename']
@@ -352,3 +384,20 @@ def create_node(**vars):
     _websocket_send(event_msg(l))
 
     return get_node(nodename)
+
+def delete_node(nodename):
+    node_responsible(nodename)
+    check_privilege("NodeManager")
+    q = db.nodes.nodename == nodename
+    db(q).delete()
+    _log('rest.nodes.delete',
+         '',
+         dict(),
+         nodename=nodename)
+    l = {
+      'event': 'nodes_change',
+      'data': {'foo': 'bar'},
+    }
+    _websocket_send(event_msg(l))
+
+    return dict(info="Node %s deleted" % nodename)
