@@ -367,12 +367,15 @@ def ajax_saves_charts():
             if row[0] is None or row[0] == "":
                 label = 'unknown'
             else:
-                label = row[0]
+		try:
+                    label = str(row[0])
+		except:
+                    label = row[0]
             try:
                 size = int(row[1])
             except:
                 continue
-            data_svc += [[str(label) +' (%s)'%beautify_size_b(size), size]]
+            data_svc += [[label +' (%s)'%beautify_size_b(size), size]]
 
         data_svc.sort(lambda x, y: cmp(y[1], x[1]))
         if len(data_svc) == 0:
@@ -406,12 +409,15 @@ def ajax_saves_charts():
             if row[0] is None or row[0] == "":
                 label = 'unknown'
             else:
-                label = row[0]
+		try:
+                    label = str(row[0])
+		except:
+                    label = row[0]
             try:
                 size = int(row[1])
             except:
                 continue
-            data_app += [[str(label) +' (%s)'%beautify_size_b(size), size]]
+            data_app += [[label +' (%s)'%beautify_size_b(size), size]]
 
         data_app.sort(lambda x, y: cmp(y[1], x[1]))
         if len(data_app) == 0:
