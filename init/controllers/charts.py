@@ -201,7 +201,7 @@ def metrics_editor():
 
 @auth.requires_login()
 def ajax_metric_test():
-    return request.vars.metric_id
+    return format_metric(request.vars.metric_id)
 
 def format_metric(metric_id):
     q = db.metrics.id == metric_id
