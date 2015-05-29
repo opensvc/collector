@@ -68,7 +68,18 @@ def doc():
     s = MARKMIN("""
 # RESTful API documentation
 
+## API digest
 
+### [[_ #/api/nodes]] ``/api/nodes``:red
+### [[_ #/api/nodes/<nodename>]] ``/api/nodes/<nodename>``:red
+### [[_ #/api/nodes/<nodename>/alerts]] ``/api/nodes/<nodename>/alerts``:red
+### [[_ #/api/nodes/<nodename>/ips]] ``/api/nodes/<nodename>/ips``:red
+### [[_ #/api/nodes/<nodename>/disks]] ``/api/nodes/<nodename>/disks``:red
+### [[_ #/api/filtersets]] ``/api/filtersets``:red
+
+## API reference
+
+[[/api/nodes]]
 ## ``/api/nodes``:red
 
 ### GET
@@ -113,6 +124,7 @@ Example:
 ``# curl -u me:mypass -o- -d nodename=mynode -d loc_city="Zanzibar" -d team_responsible="SYSADM" https://%(collector)s/init/rest/api/nodes``
 
 
+[[/api/nodes/<nodename>]]
 ## ``/api/nodes/<nodename>``:red
 
 ### GET
@@ -170,6 +182,7 @@ Example:
 ``# curl -u me:mypass -o- -X DELETE https://%(collector)s/init/rest/api/nodes/mynode``
 
 
+[[/api/nodes/<nodename>/alerts]]
 ## ``/api/nodes/<nodename>/alerts``:red
 
 ### GET
@@ -191,6 +204,7 @@ Example:
 ``# curl -u me:mypass -o- https://%(collector)s/init/rest/api/nodes/mynode/alerts?props=dash_nodename,dash_type``
 
 
+[[/api/nodes/<nodename>/disks]]
 ## ``/api/nodes/<nodename>/disks``:red
 
 ### GET
@@ -212,6 +226,7 @@ Example:
 ``# curl -u me:mypass -o- https://%(collector)s/init/rest/api/nodes/mynode/disks?props=b_disk_app.disk_nodename,b_disk_app.disk_id,stor_array.array_name``
 
 
+[[/api/nodes/<nodename>/ips]]
 ## ``/api/nodes/<nodename>/ips``:red
 
 ### GET
@@ -233,6 +248,7 @@ Example:
 ``# curl -u readonly:readonly -o- https://%(collector)s/init/rest/api/nodes/mynode/ips?props=prio,net_network,net_netmask``
 
 
+[[/api/filtersets]]
 ## ``/api/filtersets``:red
 
 ### GET
