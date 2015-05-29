@@ -774,7 +774,8 @@ def get_sym(xml_dir=None, preload_data=False):
                 return Vmax(xml_dir, preload_data)
             elif 'DMX' in model or '3000-M':
                 return Dmx(xml_dir, preload_data)
-        except:
+        except Exception as e:
+            print e
             return None
         return None
 
