@@ -1355,6 +1355,15 @@ def insert_nsr(name=None, nodename=None):
             lines = f.read().split('\n')
 
         i = 0
+	# 0  10.198.234.6;
+	# 1  /fsmntpt;
+	# 2  DAY_savegroup;
+	# 3  129138964;
+	# 4  05/29/15 00:41:49;
+	# 5  06/19/15 23:59:59;
+	# 6  DDCLONEMAR.001;
+	# 7  incr;
+	# 8  2e0d2628-00000006-796799ac-556799ac-b298000b-5de57314
         for line in lines:
             l = line.split(';')
             if len(l) != 9:
@@ -1379,6 +1388,14 @@ def insert_nsr(name=None, nodename=None):
                 app = node_app[nodename]
             else:
                 app = ''
+	    try:
+	        l[4] = datetime.datetime.strptime(l[4], "%m/%d/%y %H:%M:%S")
+	    except:
+	        pass
+	    try:
+	        l[5] = datetime.datetime.strptime(l[5], "%m/%d/%y %H:%M:%S")
+	    except:
+	        pass
             vals.append([server, nodename, svcname]+l[1:]+[app])
             i += 1
             if i > 300:
