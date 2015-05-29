@@ -1,3 +1,4 @@
+from gluon.dal import smart_query
 import datetime
 
 def call():
@@ -101,6 +102,9 @@ Optional parameters:
 - **fset_id**
 . Filter the node names list using the filterset identified by fset_id.
 
+- **query**
+. A web2py smart query
+
 Example:
 
 ``# curl -u me:mypass -o- https://%(collector)s/init/rest/api/nodes?props=nodename,loc_city&fset_id=10``
@@ -141,6 +145,9 @@ Optional parameters:
 . If omitted, all properties are included.
 . The separator is ','.
 . Available properties are: ``%(nodes_props)s``:green.
+
+- **query**
+. A web2py smart query
 
 Example:
 
@@ -199,6 +206,9 @@ Optional parameters:
 . The separator is ','.
 . Available properties are: ``%(nodes_alerts_props)s``:green.
 
+- **query**
+. A web2py smart query
+
 Example:
 
 ``# curl -u me:mypass -o- https://%(collector)s/init/rest/api/nodes/mynode/alerts?props=dash_nodename,dash_type``
@@ -220,6 +230,9 @@ Optional parameters:
 . If omitted, all properties are included.
 . The separator is ','.
 . Available properties are: ``%(nodes_disks_props)s``:green.
+
+- **query**
+. A web2py smart query
 
 Example:
 
@@ -243,6 +256,9 @@ Optional parameters:
 . The separator is ','.
 . Available properties are: ``%(nodes_ips_props)s``:green.
 
+- **query**
+. A web2py smart query
+
 Example:
 
 ``# curl -u readonly:readonly -o- https://%(collector)s/init/rest/api/nodes/mynode/ips?props=prio,net_network,net_netmask``
@@ -260,10 +276,15 @@ Description:
 
 Optional parameters:
 
-- **like**
-. Filter the filtersets list using this like sql pattern.
-. The multi-character wildcard is '%%'.
-. The one-character wildcard is '_'.
+- **props**
+. A list of properties to include in each node data.
+. If omitted, all properties are included.
+. The separator is ','.
+. Available properties are: ``%(filtersets_props)s``:green.
+
+
+- **query**
+. A web2py smart query
 
 Example:
 
@@ -273,9 +294,10 @@ Example:
 """ % dict(
         collector=request.env.http_host,
         nodes_props=", ".join(sorted(db.nodes.fields)),
-        nodes_ips_props=", ".join(sorted(list(set(db.v_nodenetworks.fields) - set(db.nodes.fields)))),
         nodes_alerts_props=", ".join(sorted(db.dashboard.fields)),
         nodes_disks_props=", ".join(sorted(map(lambda x: "b_disk_app."+x, db.b_disk_app.fields)+map(lambda x: "stor_array."+x, db.stor_array.fields))),
+        nodes_ips_props=", ".join(sorted(list(set(db.v_nodenetworks.fields) - set(db.nodes.fields)))),
+        filtersets_props=", ".join(sorted(db.gen_filtersets.fields)),
       )
     )
     return dict(doc=DIV(s, _style="padding:1em;text-align:left"))
@@ -302,25 +324,31 @@ def props_to_cols(props, tables=[], blacklist=[]):
         cols.append(db[v[0]][v[1]])
     return cols
 
-def get_node_ips(nodename, props=None):
+def get_node_ips(nodename, props=None, query=None):
     q = db.v_nodenetworks.nodename == nodename
     q &= _where(None, 'v_nodenetworks', domain_perms(), 'nodename')
     cols = props_to_cols(props, tables=["v_nodenetworks"], blacklist=db.nodes.fields)
+    if query:
+        q &= smart_query(cols, query)
     data = db(q).select(*cols, cacheable=True).as_list()
     return dict(data=data)
 
-def get_node_disks(nodename, props=None):
+def get_node_disks(nodename, props=None, query=None):
     q = db.b_disk_app.disk_nodename == nodename
     l = db.stor_array.on(db.b_disk_app.disk_arrayid == db.stor_array.array_name)
     q &= _where(None, 'b_disk_app', domain_perms(), 'disk_nodename')
     cols = props_to_cols(props, ["b_disk_app", "stor_array"])
+    if query:
+        q &= smart_query(cols, query)
     data = db(q).select(*cols, left=l, cacheable=True).as_list()
     return dict(data=data)
 
-def get_node_alerts(nodename, props=None):
+def get_node_alerts(nodename, props=None, query=None):
     q = db.dashboard.dash_nodename == nodename
     q &= _where(None, 'dashboard', domain_perms(), 'dash_nodename')
     cols = props_to_cols(props, ["dashboard"])
+    if query:
+        q &= smart_query(cols, query)
     data = db(q).select(*cols, cacheable=True).as_list()
     return dict(data=data)
 
@@ -331,21 +359,24 @@ def get_node(nodename, props=None):
     data = db(q).select(*cols, cacheable=True).as_list()[0]
     return dict(data=data)
 
-def get_nodes(props="nodename", fset_id=None):
+def get_nodes(props="nodename", fset_id=None, query=None):
     q = db.nodes.id > 0
     q &= _where(None, 'nodes', domain_perms(), 'nodename')
     if fset_id:
         q = apply_filters(q, node_field=db.nodes.nodename, fset_id=fset_id)
     cols = props_to_cols(props, tables=["nodes"])
+    if query:
+        q &= smart_query(cols, query)
     rows = db(q).select(*cols, cacheable=True)
     data = [r.as_dict() for r in rows]
     return dict(data=data)
 
-def get_filtersets(like=None):
+def get_filtersets(props=None, query=None):
     q = db.gen_filtersets.id > 0
-    if like:
-        q &= db.gen_filtersets.fset_name.like(like)
-    data = db(q).select().as_list()
+    cols = props_to_cols(props, tables=["gen_filtersets"])
+    if query:
+        q &= smart_query(cols, query)
+    data = db(q).select(*cols, cacheable=True).as_list()
     return dict(data=data)
 
 def check_privilege(priv):
