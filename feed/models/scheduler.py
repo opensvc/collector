@@ -423,6 +423,7 @@ def _insert_generic(data, auth):
         try:
             idx = vars.index("mask")
             for i, val in enumerate(vals):
+                vals[i][idx] = vals[i][idx].lstrip("0x")
                 if vals[i][idx].count(".") == 3:
                     l = vals[i][idx].split(".")
                 elif len(vals[i][idx]) == 8:
@@ -640,14 +641,16 @@ def _resmon_clean(node, svcname):
 def _resmon_update(vars, vals, auth):
     if len(vals) == 0:
         return
-    if isinstance(vals[0], list):
+    if type(vals[0]) in (str, unicode):
+        __resmon_update(vars, vals)
+    else:
         for v in vals:
             __resmon_update(vars, v)
-    else:
-        __resmon_update(vars, vals)
 
 def __resmon_update(vars, vals):
     h = {}
+    if len(vals) == 0:
+        return
     for a,b in zip(vars, vals[0]):
         h[a] = b
     if 'nodename' in h and 'svcname' in h:
@@ -657,8 +660,6 @@ def __resmon_update(vars, vals):
             h['nodename'] = nodename
         if 'vmname' not in h:
             h['vmname'] = ""
-    if len(vals) == 0:
-        return
     idx = vars.index("res_status")
     if type(vals[0]) == list:
         for i, v in enumerate(vals):
@@ -1013,6 +1014,79 @@ def insert_hds(name=None, nodename=None):
                              d.get('label', ''),
                              str(d['size']),
                              str(d.get('alloc', '')),
+                             d['raid'],
+                             d['disk_group'],
+                             now])
+            generic_insert('diskinfo', vars, vals)
+            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
+            db.executesql(sql)
+    queue_refresh_b_disk_app()
+
+def insert_vnx(name=None, nodename=None):
+    import glob
+    import os
+    from applications.init.modules import vnx
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+
+    dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='vnx'))
+    if name is None:
+        pattern = "*"
+    else:
+        pattern = name
+    dirs = glob.glob(os.path.join(dir, pattern))
+
+    for d in dirs:
+        s = vnx.get_vnx(d)
+        if s is not None:
+            # stor_array
+            vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
+            vals = []
+            vals.append([s.name,
+                         s.model,
+                         str(s.cache),
+                         s.firmware,
+                         now])
+            generic_insert('stor_array', vars, vals)
+
+            sql = """select id from stor_array where array_name="%s" """%s.name
+            array_id = str(db.executesql(sql)[0][0])
+
+            # stor_array_dg
+            vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
+            vals = []
+            for dg in s.pool:
+                vals.append([array_id,
+                             dg['name'],
+                             str(dg['free']),
+                             str(dg['used']),
+                             str(dg['size']),
+                             now])
+            generic_insert('stor_array_dg', vars, vals)
+            sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
+            db.executesql(sql)
+
+            # stor_array_tgtid
+            vars = ['array_id', 'array_tgtid']
+            vals = []
+            for wwn in s.ports:
+                vals.append([array_id, wwn])
+            generic_insert('stor_array_tgtid', vars, vals)
+
+            # diskinfo
+            vars = ['disk_id',
+                    'disk_arrayid',
+                    'disk_devid',
+                    'disk_size',
+                    'disk_raid',
+                    'disk_group',
+                    'disk_updated']
+            vals = []
+            for d in s.vdisk:
+                vals.append([d['wwid'],
+                             s.name,
+                             d['name'],
+                             str(d['size']),
                              d['raid'],
                              d['disk_group'],
                              now])
@@ -1427,6 +1501,7 @@ def update_save_checks():
     now = datetime.datetime.now()
     now -= datetime.timedelta(microseconds=now.microsecond)
 
+    # fs known to have fs_u checks but not in saves index
     sql = """
            insert into checks_live (chk_nodename, chk_svcname, chk_type, chk_updated, chk_value, chk_created, chk_instance)
              select
@@ -1483,6 +1558,61 @@ def update_save_checks():
              where
                chk_type="save" and
                chk_updated < "%(now)s"
+          """%dict(now=now)
+    db.executesql(sql)
+    db.commit()
+
+    # remove checks from shared fs saved from passive cluster nodes
+    # those fs should have a more recent save on the active node
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+
+    sql = """update checks_live inner join (
+               select t.* from (
+                 select
+                   count(id) as n,
+                   chk_svcname,
+                   chk_instance,
+                   min(chk_value) as chk_value
+                 from checks_live
+                 where
+                   chk_type="save"
+                 group by chk_svcname,chk_instance
+               ) t
+               join services s on
+                 t.chk_svcname = s.svc_name and
+                 s.svc_cluster_type="failover"
+               where t.n>1
+             ) u on
+               checks_live.chk_svcname=u.chk_svcname and
+               checks_live.chk_instance=u.chk_instance and
+               checks_live.chk_value=u.chk_value and
+               checks_live.chk_type="save"
+             set checks_live.chk_updated=now()
+    """
+    db.executesql(sql)
+    db.commit()
+
+    sql = """delete from checks_live
+             where
+               chk_type="save" and
+               chk_updated < "%(now)s" and
+               concat(chk_svcname, chk_instance) in (
+                 select concat(t.chk_svcname, t.chk_instance) from (
+                 select
+                   count(id) as n,
+                   chk_svcname,
+                   chk_instance
+                 from checks_live
+                 where
+                   chk_type="save"
+                 group by chk_svcname,chk_instance
+               ) t
+               join services s on
+                 t.chk_svcname = s.svc_name and
+                 s.svc_cluster_type="failover"
+               where t.n>1
+             )
           """%dict(now=now)
     db.executesql(sql)
     db.commit()
@@ -2047,75 +2177,6 @@ def compute_availstatus(h):
     elif s == 'stdby up with down':
         s = 'stdby up'
     return s
-
-def svc_status_update(svcname):
-    """ avail and overall status can be:
-        up, down, stdby up, stdby down, warn, undef
-    """
-    q = db.svcmon.mon_svcname == svcname
-    rows = db(q).select(db.svcmon.mon_overallstatus,
-                        db.svcmon.mon_availstatus,
-                        db.svcmon.mon_updated,
-                        db.svcmon.mon_svctype,
-                        db.svcmon.mon_frozen)
-
-    tlim = datetime.datetime.now() - datetime.timedelta(minutes=15)
-    ostatus_l = [r.mon_overallstatus for r in rows if r.mon_updated is not None and r.mon_updated > tlim]
-    astatus_l = [r.mon_availstatus for r in rows if r.mon_updated is not None and r.mon_updated > tlim]
-    n_trusted_nodes = len(ostatus_l)
-    n_nodes = len(rows)
-    ostatus_l = set(ostatus_l)
-    astatus_l = set(astatus_l)
-
-    ostatus = 'undef'
-    astatus = 'undef'
-
-    if 'up' in astatus_l:
-        astatus = 'up'
-    elif n_trusted_nodes == 0:
-        astatus = 'undef'
-    else:
-        if astatus_l == set(['n/a']):
-            astatus = 'n/a'
-        elif 'warn' in astatus_l:
-            astatus = 'warn'
-        else:
-            astatus = 'down'
-
-    if n_trusted_nodes < n_nodes:
-        ostatus = 'warn'
-    elif n_trusted_nodes == 0:
-        ostatus = 'undef'
-    elif 'warn' in ostatus_l or \
-         'stdby down' in ostatus_l or \
-         'undef' in ostatus_l:
-        ostatus = 'warn'
-    elif set(['up']) == ostatus_l or \
-         set(['up', 'down']) == ostatus_l or \
-         set(['up', 'stdby up']) == ostatus_l or \
-         set(['up', 'down', 'stdby up']) == ostatus_l or \
-         set(['up', 'down', 'stdby up', 'n/a']) == ostatus_l:
-        ostatus = 'up'
-    elif set(['down']) == ostatus_l or \
-         set(['down', 'stdby up']) == ostatus_l or \
-         set(['down', 'stdby up', 'n/a']) == ostatus_l:
-        ostatus = 'down'
-    else:
-        ostatus = 'undef'
-
-    svc_log_update(svcname, astatus)
-    try:
-        svctype = rows[0].mon_svctype
-    except:
-        svctype = 'TST'
-
-    db(db.services.svc_name==svcname).update(
-      svc_status=ostatus,
-      svc_availstatus=astatus)
-    db.commit()
-
-    update_dash_service_unavailable(svcname, svctype, astatus)
-    update_dash_service_available_but_degraded(svcname, svctype, astatus, ostatus)
 
 def svc_log_update(svcname, astatus):
     q = db.services_log.svc_name == svcname
@@ -3019,17 +3080,6 @@ def update_dash_service_not_updated(svcname):
     db.commit()
     dashboard_events()
 
-def update_dash_svcmon_not_updated(svcname, nodename):
-    sql = """delete from dashboard
-               where
-                 dash_svcname = "%(svcname)s" and
-                 dash_nodename = "%(nodename)s" and
-                 dash_type = "service status not updated"
-          """%dict(svcname=svcname, nodename=nodename)
-    rows = db.executesql(sql)
-    db.commit()
-    # dashboard_events() called from __svcmon_update
-
 def update_dash_node_not_updated(nodename):
     sql = """delete from dashboard
                where
@@ -3629,101 +3679,6 @@ def update_dash_action_errors(svc_name, nodename):
                        nodename=nodename)
         db.executesql(sql)
         db.commit()
-
-def update_dash_service_available_but_degraded(svc_name, svc_type, svc_availstatus, svc_status):
-    if svc_type == 'PRD':
-        sev = 3
-    else:
-        sev = 2
-    if svc_availstatus == "up" and svc_status != "up":
-        sql = """insert into dashboard
-                 set
-                   dash_type="service available but degraded",
-                   dash_svcname="%(svcname)s",
-                   dash_nodename="",
-                   dash_severity=%(sev)d,
-                   dash_fmt="current overall status: %%(s)s",
-                   dash_dict='{"s": "%(status)s"}',
-                   dash_created=now(),
-                   dash_updated=now(),
-                   dash_env="%(env)s"
-                 on duplicate key update
-                   dash_severity=%(sev)d,
-                   dash_fmt="current overall status: %%(s)s",
-                   dash_dict='{"s": "%(status)s"}',
-                   dash_updated=now(),
-                   dash_env="%(env)s"
-              """%dict(svcname=svc_name,
-                       sev=sev,
-                       env=svc_type,
-                       status=svc_status)
-        db.executesql(sql)
-        db.commit()
-    else:
-        sql = """delete from dashboard
-                 where
-                   dash_type="service available but degraded" and
-                   dash_svcname="%s"
-              """%svc_name
-        db.executesql(sql)
-        db.commit()
-    # dashboard_events() called from __svcmon_update
-
-def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
-    if svc_type == 'PRD':
-        sev = 4
-    else:
-        sev = 3
-    if svc_availstatus in ["up", "n/a"]:
-        sql = """delete from dashboard
-                 where
-                   dash_type="service unavailable" and
-                   dash_svcname="%s"
-              """%svc_name
-        db.executesql(sql)
-        db.commit()
-    else:
-        sql = """select count(id) from svcmon_log_ack
-                 where
-                   mon_svcname="%s" and
-                   mon_begin <= now() and
-                   mon_end >= now()
-              """%(svc_name)
-        n = db.executesql(sql)[0][0]
-        if n > 0:
-            sql = """delete from dashboard
-                     where
-                       dash_type="service unavailable" and
-                       dash_svcname="%s"
-                  """%(svc_name)
-            db.executesql(sql)
-            db.commit()
-            return
-
-        sql = """insert into dashboard
-                 set
-                   dash_type="service unavailable",
-                   dash_svcname="%(svcname)s",
-                   dash_nodename="",
-                   dash_severity=%(sev)d,
-                   dash_fmt="current availability status: %%(s)s",
-                   dash_dict='{"s": "%(status)s", "svcname": "%(svcname)s"}',
-                   dash_created=now(),
-                   dash_updated=now(),
-                   dash_env="%(env)s"
-                 on duplicate key update
-                   dash_severity=%(sev)d,
-                   dash_fmt="current availability status: %%(s)s",
-                   dash_dict='{"s": "%(status)s", "svcname": "%(svcname)s"}',
-                   dash_updated=now(),
-                   dash_env="%(env)s"
-              """%dict(svcname=svc_name,
-                       sev=sev,
-                       env=svc_type,
-                       status=svc_availstatus)
-        db.executesql(sql)
-        db.commit()
-    # dashboard_events() called from __svcmon_update
 
 def update_dash_service_frozen(svc_name, nodename, svc_type, frozen):
     if svc_type == 'PRD':

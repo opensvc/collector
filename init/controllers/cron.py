@@ -75,6 +75,12 @@ def _cron_table_purge(table, date_col, orderby=None):
         days = 365
     day = now - datetime.timedelta(days=days)
 
+    # sanity purge (entries dated in the future)
+    sql = """delete from %(table)s where
+               %(date_col)s > now()
+          """ % dict(table=table,date_col=date_col)
+    n = db.executesql(sql)
+
     if orderby is None:
         orderby = date_col
     sql = """select %(date_col)s from %(table)s where
@@ -349,7 +355,7 @@ def stat_nb_core(fset_id):
     rows = db(q).select(db.nodes.cpu_cores)
     n = 0
     for row in rows:
-        n += row.cpu_cores
+        n += row.cpu_cores if row.cpu_cores else 0
     print "stat_nb_cores():", str(n)
     return n
 
@@ -1092,6 +1098,7 @@ def cron_mac_dup():
                where
                 intf not like "%:%" and
                 intf not like "usbecm%" and
+                intf not like "docker%" and
                 mac!="00:00:00:00:00:00" and
                 mac!="0:0:0:0:0:0" and
                 mac!="0" and

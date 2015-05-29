@@ -37,3 +37,30 @@ def svc_status(svc, cellclass="cell2"):
     )
     return t
 
+def dash_purge_svc(svcname):
+    q = db.dashboard.dash_svcname == svcname
+    db(q).delete()
+
+def check_purge_svc(svcname):
+    q = db.checks_live.chk_svcname == svcname
+    db(q).delete()
+
+def appinfo_purge_svc(svcname):
+    q = db.appinfo.app_svcname == svcname
+    db(q).delete()
+
+def purge_svc(svcname):
+    q = db.svcmon.mon_svcname == svcname
+    if db(q).count() > 0:
+        return
+    dash_purge_svc(svcname)
+    check_purge_svc(svcname)
+    appinfo_purge_svc(svcname)
+    update_dash_compdiff_svc(svcname)
+    update_dash_moddiff(svcname)
+    update_dash_rsetdiff(svcname)
+
+    q = db.services.svc_name == svcname
+    db(q).delete()
+
+

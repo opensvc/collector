@@ -42,6 +42,15 @@ def merge_data(data, mirror=False, purge_old_col=None):
         generic_insert(table, vars, vals)
         if n > 0:
             table_modified(table)
+            if table.endswith(".svcmon"):
+                idx_svcname = vars.index("mon_svcname")
+                svcnames = set([v[idx_svcname] for v in vals])
+                for svcname in svcnames:
+                    svc_status_update(svcname)
+
+                idx_nodename = vars.index("mon_nodname")
+                for nodename, svcname in set([(v[idx_nodename], v[idx_svcname]) for v in vals]):
+                    update_dash_svcmon_not_updated(svcname, nodename)
 
 def get_push_remotes():
     return get_remotes("push")
@@ -279,6 +288,11 @@ def get_creds(remote):
 def get_proxy(remote):
     user, password = get_creds(remote)
     import xmlrpclib
+    try:
+        import ssl
+        ssl._create_default_https_context = ssl._create_unverified_context
+    except:
+        pass
     xmlrpclib.Marshaller.dispatch[type(0L)] = lambda _, v, w: w("<value><i8>%d</i8></value>" % v)
     p = xmlrpclib.ServerProxy("https://%s:%s@%s/init/replication/call/xmlrpc" %
                                (user, password, remote), allow_none=True)
@@ -389,7 +403,10 @@ def pull_all_table_from_remote(host, ts, force=False):
         except Exception as e:
             print e, sql
             raise
-        print " + data received from %s (%d lines)" % (rfullname, len(rows))
+        n_rows = len(rows)
+        print " + data received from %s (%d lines)" % (rfullname, n_rows)
+        if n_rows == 0:
+            return
 
         for i, row in enumerate(rows):
             rows[i] = list(row)

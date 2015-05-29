@@ -248,6 +248,39 @@ class table_tags(HtmlTable):
         self.span = ["id"]
         self.keys = ["id"]
 
+        ug = user_groups()
+        if 'Manager' in ug or 'TagManager' in ug:
+            self.additional_tools.append('t_tag_del')
+
+    def t_tag_del(self):
+        d = DIV(
+              A(
+                T("Delete tags"),
+                _class='del16',
+                _onclick="""if (confirm("%(text)s")){%(s)s};
+                         """%dict(s=self.ajax_submit(args=['t_tag_del']),
+                                  text=T("Deleting tags also deletes their attachments to nodes and services. Please confirm tags deletion"),
+                                 ),
+              ),
+              _class='floatw',
+            )
+        return d
+
+@auth.requires(auth.has_membership('Manager') or auth.has_membership('TagManager'))
+def t_tag_del(ids):
+    q = db.tags.id.belongs(ids)
+    u = ', '.join([r.tag_name for r in db(q).select(db.tags.tag_name) if r.tag_name is not None])
+    db(db.node_tags.tag_id.belongs(ids)).delete()
+    db(db.svc_tags.tag_id.belongs(ids)).delete()
+    table_modified("node_tags")
+    table_modified("svc_tags")
+    db(q).delete()
+    table_modified("tags")
+    db.commit()
+    _log('tag.delete',
+         'deleted tags %(u)s',
+         dict(u=u))
+
 @auth.requires_login()
 def ajax_tags_col_values():
     t = table_tags('tags', 'ajax_tags')
@@ -263,6 +296,14 @@ def ajax_tags_col_values():
 def ajax_tags():
     t = table_tags('tags', 'ajax_tags')
     o = db.tags.tag_name
+
+    if len(request.args) == 1:
+        action = request.args[0]
+        try:
+            if action == 't_tag_del':
+                t_tag_del(t.get_checked())
+        except ToolError, e:
+            t.flash = str(e)
 
     q = db.tags.id>0
     for f in t.cols:

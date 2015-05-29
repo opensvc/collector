@@ -18,6 +18,7 @@ tables = {
     'nodes':dict(name='nodes', title='nodes', cl='node16', hide=False),
     'services':dict(name='services', title='services', cl='svc', hide=False),
     'svcmon':dict(name='svcmon', title='service status', cl='svc', hide=False),
+    'resmon':dict(name='resmon', title='resources', cl='action16', hide=False),
     'apps':dict(name='apps', title='apps', cl='svc', hide=False),
     'node_hba':dict(name='node_hba', title='node host bus adapaters', cl='node16', hide=False),
     'b_disk_app':dict(name='b_disk_app', title='disks', cl='hd16', hide=False),
@@ -40,10 +41,12 @@ props.update(disk_app_colprops)
 props.update(apps_colprops)
 props.update(v_comp_moduleset_attachments_colprops)
 props.update(v_tags_colprops)
+props.update(resmon_colprops)
 fields = {
     'nodes': db.nodes.fields,
     'services': db.services.fields,
     'svcmon': db.svcmon.fields,
+    'resmon': set(db.resmon.fields) - set(["nodename", "svcname", "id", "vmname"]),
     'b_disk_app': db.b_disk_app.fields,
     'node_hba': db.node_hba.fields,
     'apps': set(db.apps.fields) - set(['updated', 'id']),
@@ -4706,7 +4709,7 @@ def fmt_action(nodename, svcname, action, action_type="push", mod=[], modset=[])
                   '-o', 'ForwardX11=no',
                   '-o', 'PasswordAuthentication=no',
                   '-o', 'ConnectTimeout=5',
-                  '-t',
+#                  '-t',
            'opensvc@'+nodename,
            '--',
            'sudo'] + _cmd + base_cmd
@@ -11617,7 +11620,9 @@ def json_tree_action_create():
     return ""
 
 def json_tree_action_show():
-    if request.vars.obj_type in ["ruleset_head", "moduleset_head", "filterset_head"]:
+    if request.vars.obj_type is None:
+        return json_tree_action_show_import()
+    elif request.vars.obj_type in ["ruleset_head", "moduleset_head", "filterset_head"]:
         return json_tree_action_show_import()
     elif request.vars.obj_type.startswith("ruleset"):
         return json_tree_action_show_ruleset(request.vars.obj_id)
@@ -12015,7 +12020,7 @@ def json_tree_action_import():
           fset_updated=now,
         )
         filterset_id[fset['fset_name']] = n
-        l.append(T("Filterset added: %(r)s", dict(fset["fset_name"])))
+        l.append(T("Filterset added: %(r)s", dict(r=fset["fset_name"])))
 
     # filtersets relations
     for fset in data.get('filtersets', []):
@@ -12044,7 +12049,7 @@ def json_tree_action_import():
                   fset_id=fset_id,
                   f_id=f_id,
                   f_log_op=f['f_log_op'],
-                  f_order=_f['f_order'],
+                  f_order=f['f_order'],
                   encap_fset_id=None,
                 )
                 l.append(T("Filterset relation added: %(r)s", dict(r=rel_s)))
@@ -12062,9 +12067,8 @@ def json_tree_action_import():
                     continue
                 n = db.gen_filtersets_filters.insert(
                   fset_id=fset_id,
-                  f_id=None,
                   f_log_op=f['f_log_op'],
-                  f_order=_f['f_order'],
+                  f_order=f['f_order'],
                   encap_fset_id=encap_fset_id,
                 )
                 l.append(T("Filterset relation added: %(r)s", dict(r=rel_s)))
@@ -12169,7 +12173,7 @@ def json_tree_action_import():
             # todo: verify the existing ruleset has the same definition
             continue
         n = db.comp_moduleset.insert(
-          modset_name=rset['modset_name'],
+          modset_name=modset['modset_name'],
           modset_author=u,
           modset_updated=now,
         )
@@ -12237,7 +12241,7 @@ def json_tree_action_import():
             )
             l.append(T("Moduleset ruleset relation added: %(r)s", dict(r=rel_s)))
 
-
+    comp_rulesets_chains()
     l =  map(lambda x: P(x), l)
     return DIV(l)
 

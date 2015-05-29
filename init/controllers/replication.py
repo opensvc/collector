@@ -22,7 +22,13 @@ def serve_common(fullname, common):
 
 @service.xmlrpc
 def replication_pull(sql):
-    return list(db.executesql(sql))
+    rows = list(db.executesql(sql))
+    for i, row in enumerate(rows):
+        rows[i] = list(row)
+        for j, t in enumerate(rows[i]):
+            if type(t) == datetime.date:
+                rows[i][j] = datetime.datetime(t.year, t.month, t.day)
+    return rows
 
 class table_replication_status(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):

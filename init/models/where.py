@@ -65,7 +65,7 @@ def _where(query, table, var, field, depth=0):
     elif chunk[0] not in '<>=':
         if field not in db[table]:
             pass
-        elif db[table][field].type in ('string', 'text'):
+        elif db[table][field].type in ('string', 'text', 'date'):
             if '%' in chunk:
                 q = db[table][field].like(chunk)
             else:
@@ -99,7 +99,7 @@ def _where(query, table, var, field, depth=0):
 
         if field not in db[table]:
             pass
-        elif db[table][field].type in ('datetime', 'timestamp'):
+        elif db[table][field].type in ('datetime', 'timestamp', 'date'):
             chunk = delta_to_date(chunk)
 
         if _op == '>':

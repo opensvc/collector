@@ -1981,6 +1981,14 @@ v_services_colprops = {
              table = 'v_services',
              _class = 'datetime_daily',
             ),
+    'svc_status_updated': HtmlTableColumn(
+             title='Status updated',
+             table='services',
+             field='svc_status_updated',
+             img='time16',
+             display=True,
+             _class='datetime_status',
+            ),
     'responsibles': HtmlTableColumn(
              title = 'Responsibles',
              field='responsibles',
@@ -2055,6 +2063,49 @@ v_svcmon_colprops = {
              table = 'v_svcmon',
              _class = 'svc_action_err',
             ),
+}
+
+resmon_colprops = {
+    'rid': HtmlTableColumn(
+             title='Resource id',
+             table='resmon',
+             field='rid',
+             img='svc',
+             display=True,
+            ),
+    'res_desc': HtmlTableColumn(
+             title='Description',
+             field='res_desc',
+             img='svc',
+             display=True,
+            ),
+    'res_status': HtmlTableColumn(
+             title='Status',
+             field='res_status',
+             img='svc',
+             display=True,
+             _class="status",
+            ),
+    'res_log': HtmlTableColumn(
+             title='Log',
+             field='res_log',
+             img='svc',
+             display=True,
+            ),
+    'changed': HtmlTableColumn(
+             title='Last change',
+             field='changed',
+             img='time16',
+             display=True,
+             _class='datetime_no_age',
+            ),
+    'updated': HtmlTableColumn(
+             title='Updated',
+             field='updated',
+             img='time16',
+             display=True,
+             _class='datetime_status',
+            )
 }
 
 svcmon_colprops = {
@@ -3024,7 +3075,7 @@ svc_actions = [
 node_actions = [
   {'title': 'Update node information', 'class': 'hw16', 'action': 'pushasset'},
   {'title': 'Update disks information', 'class': 'hd16', 'action': 'pushdisks'},
-  {'title': 'Update app information', 'class': 'svc', 'action': 'push appinfo'},
+  {'title': 'Update app information', 'class': 'svc', 'action': 'push_appinfo'},
   {'title': 'Update services information', 'class': 'svc', 'action': 'pushservices'},
   {'title': 'Update installed packages information', 'class': 'pkg16', 'action': 'pushpkg'},
   {'title': 'Update installed patches information', 'class': 'pkg16', 'action': 'pushpatch'},

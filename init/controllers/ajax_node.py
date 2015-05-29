@@ -210,6 +210,10 @@ def perf_stats(node, rowid):
         )
     return t
 
+def test_sandata():
+    d = sandata(["foo"]).main()
+    print json.dumps(d, indent=4, separators=(',', ': '))
+
 class sandata(object):
     def __init__(self, nodenames):
         self.nodenames = nodenames
@@ -242,8 +246,10 @@ class sandata(object):
         return l
 
     def cache_relations(self):
+        self.swname_cache = {}
         q = db.switches.id > 0
         for row in db(q).select(cacheable=True):
+            self.swname_cache[row.sw_portname] = row.sw_name
             for t in (row.sw_portname, row.sw_rportname):
                 if t in self.relcache:
                     self.relcache[t].append(row)
@@ -260,11 +266,15 @@ class sandata(object):
         if len(rels) == 0:
             return
         for rel in rels:
+            if rel.sw_rportname in self.array_ports:
+               print "array port found", rel.sw_rportname, "in chain", " => ".join(map(lambda x: self.swname_cache[x], chain))
+               self.valid_switch |= set(chain)
             if rel.sw_rportname not in self.array_ports and \
                rel.sw_portname in chain:
                 # loop
                 continue
             _chain = chain + [rel.sw_portname]
+            print "follow", " => ".join(map(lambda x: self.swname_cache[x], _chain))
             if rel.sw_portname not in self.d['switch']:
                 # new switch
                 id = 'sw%d'%self.n_switch
@@ -277,6 +287,7 @@ class sandata(object):
             id.sort()
             id = '-'.join(id)
             if id not in self.d['link']:
+                print "new link", " => ".join(map(lambda x: self.swname_cache.get(x, x), [rel.sw_rportname, rel.sw_portname]))
                 # new link
                 count = 1
                 speed = [rel.sw_portspeed]
@@ -288,6 +299,7 @@ class sandata(object):
                     tail = rel.sw_portname
                     taillabel = str(rel.sw_index)
                     self.valid_switch |= set(_chain)
+                    print "valid", " => ".join(map(lambda x: self.swname_cache[x], _chain))
                 elif rel.sw_rportname == endpoints[1]:
                     #print chain, "nodes -> sw"
                     # node -> sw
@@ -407,7 +419,8 @@ def fetch_node_pw():
 
     _log('password.retrieve',
          'retrieved root password of node %(nodename)s',
-         dict(nodename=nodename))
+         dict(nodename=nodename),
+         nodename=nodename)
 
     return pwl[0][0]
 
@@ -636,8 +649,8 @@ def ajax_node():
              from node_ip
              left join networks
              on
-               inet_aton(node_ip.addr) > inet_aton(begin) and
-               inet_aton(node_ip.addr) < inet_aton(end)
+               inet_aton(node_ip.addr) >= inet_aton(begin) and
+               inet_aton(node_ip.addr) <= inet_aton(end)
              where
                node_ip.nodename = "%(nodename)s"
              order by node_ip.mac, node_ip.intf
@@ -1082,10 +1095,13 @@ def ajax_node_stor():
 
     # node disk list
     q = db.svcdisks.disk_nodename == nodename
-    q &= db.diskinfo.id > 0
-    q &= db.svcdisks.disk_id==db.diskinfo.disk_id
-    q &= db.diskinfo.disk_arrayid==db.stor_array.array_name
-    disks = db(q).select(cacheable=True)
+    q &= (db.diskinfo.disk_group != "virtual")|(db.diskinfo.disk_group==None)
+    q &= (db.stor_array.array_model != "vdisk provider")|(db.stor_array.array_model==None)
+    l1 = db.diskinfo.on(db.svcdisks.disk_id==db.diskinfo.disk_id)
+    l2 = db.stor_array.on(db.diskinfo.disk_arrayid==db.stor_array.array_name)
+    disks = db(q).select(db.svcdisks.ALL, db.diskinfo.ALL, db.stor_array.ALL, 
+                         cacheable=True, left=(l1,l2),
+                         orderby=db.svcdisks.disk_id)
     _disks = [TR(
           TH("wwid"),
           TH("size"),
@@ -1370,10 +1386,13 @@ def ajax_svc_stor():
 
     # node disk list
     q = db.svcdisks.disk_svcname == svcname
-    q &= db.diskinfo.id > 0
-    q &= db.svcdisks.disk_id==db.diskinfo.disk_id
-    q &= db.diskinfo.disk_arrayid==db.stor_array.array_name
-    disks = db(q).select(groupby=db.svcdisks.disk_id, cacheable=True)
+    q &= (db.diskinfo.disk_group != "virtual")|(db.diskinfo.disk_group==None)
+    q &= (db.stor_array.array_model != "vdisk provider")|(db.stor_array.array_model==None)
+    l1 = db.diskinfo.on(db.svcdisks.disk_id==db.diskinfo.disk_id)
+    l2 = db.stor_array.on(db.diskinfo.disk_arrayid==db.stor_array.array_name)
+    disks = db(q).select(db.svcdisks.ALL, db.diskinfo.ALL, db.stor_array.ALL,
+                         cacheable=True, left=(l1,l2),
+                         orderby=db.svcdisks.disk_id)
     _disks = [TR(
           TH("wwid"),
           TH("size"),

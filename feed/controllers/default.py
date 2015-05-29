@@ -190,7 +190,8 @@ def svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
 def rpc_svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
     scheduler.queue_task("_svcmon_update_combo",
                          [g_vars, g_vals, r_vars, r_vals, auth],
-                         group_name="_svcmon_update_combo")
+                         group_name="_svcmon_update_combo",
+                         immediate=True)
 
 @service.xmlrpc
 def register_disks(vars, vals, auth):
@@ -551,6 +552,14 @@ def rpc_update_vioserver(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "vioserver", insert_vioserver)
 
 @service.xmlrpc
+def update_vnx(name, vars, vals, auth):
+    return rpc_update_vnx(name, vars, vals, auth)
+
+@auth_uuid
+def rpc_update_vnx(name, vars, vals, auth):
+    update_array_xml(name, vars, vals, auth, "vnx", insert_vnx)
+
+@service.xmlrpc
 def update_necism(name, vars, vals, auth):
     return rpc_update_necism(name, vars, vals, auth)
 
@@ -633,6 +642,9 @@ def insert_dcss():
 
 def insert_hdss():
     return insert_hds()
+
+def insert_vnxs():
+    return insert_vnx()
 
 def insert_necisms():
     return insert_necism()

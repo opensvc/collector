@@ -572,7 +572,7 @@ class viz(object):
 
     def add_node(self, nodename):
         d = self.rs["nodes"].get(nodename, {})
-        label = nodename+"\n"+', '.join((d.get("os_name"), d.get("model", "")))
+        label = nodename+"\n"+', '.join((d.get("os_name", ""), d.get("model", "")))
         nodename_id = self.add_visnode("node", nodename)
         self.add_visnode_node(nodename_id, "node", label=label, mass=3)
 
@@ -854,5 +854,572 @@ def topo_script(eid):
       _style="display:table-row",
     )
     return d
+
+
+@auth.requires_login()
+def ajax_startup():
+    import uuid
+    rowid = uuid.uuid1().hex
+    return startup_script(rowid)
+
+def startup():
+    d = startup_script("startup")
+    return dict(table=d)
+
+def startup_script(eid):
+    svcnames = request.vars.get("svcnames", "")
+    nodenames = request.vars.get("nodenames", "")
+
+    q = db.svcmon.mon_svcname.belongs(svcnames.split(","))
+    rows = db(q).select(db.svcmon.mon_nodname)
+    all_nodenames = ",".join([r.mon_nodname for r in rows])
+
+    if nodenames == "":
+        nodenames = all_nodenames.split(",")[0]
+
+    s = SCRIPT("""init_startup("%(eid)s", {
+        svcnames: "%(svcnames)s",
+        nodenames: "%(nodenames)s",
+       })"""%dict(
+         eid=eid,
+         svcnames=svcnames,
+         nodenames=nodenames,
+       ),
+    )
+
+    link = DIV(
+      DIV(
+        _style="word-break:break-all",
+        _class="white_float hidden",
+      ),
+      DIV(
+        _onclick="""
+          url = $(location).attr("origin")
+          url += "/init/topo/startup?svcnames=%(svcnames)s&nodenames=%(nodenames)s"
+          $(this).siblings("div").html(url)
+          $(this).siblings("div").toggle()
+        """ % dict(
+          svcnames=svcnames,
+          nodenames=nodenames,
+        ),
+        _class="link16 clickable",
+      ),
+    )
+
+    def check(label="set me", name="set me", cl="action16"):
+        return DIV(
+          INPUT(
+            _type="checkbox",
+            _name=name,
+            _style="vertical-align:text-bottom",
+            _value="true" if name in nodenames.split(",") else "false",
+            value=True if name in nodenames.split(",") else False,
+          ),
+          SPAN(
+            T(label),
+            _class=cl,
+            _style="padding-left:18px;margin-left:0.2em",
+          ),
+        )
+
+    checks = []
+    for nodename in all_nodenames.split(","):
+        checks.append(check(nodename, nodename, "hw16"))
+
+    d = DIV(
+      DIV(
+        link,
+        SPAN(checks),
+        INPUT(
+          _type="submit",
+        ),
+        _style="display:table-cell;vertical-align:top;text-align:left;padding:0.3em;min-width:12em",
+      ),
+      DIV(
+        _id=eid,
+        _style="display:table-cell;width:100%",
+      ),
+      s,
+      _style="display:table-row",
+    )
+    return d
+
+@auth.requires_login()
+@service.json
+def json_startup_data():
+    f = request.vars.get("svcnames")
+    if f is not None and f != "":
+        q = _where(None, 'services', f, 'svc_name')
+        svcnames = [r.svc_name for r in db(q).select(db.services.svc_name, cacheable=True)]
+    else:
+        svcnames = []
+
+    f = request.vars.get("nodenames")
+    nodenames = f.split(",")
+
+    svcname = svcnames[0]
+    q = db.services.svc_name.belongs(svcnames)
+    env = db(q).select(db.services.svc_envfile).first().svc_envfile
+
+    q = db.resmon.svcname == svcname
+    q &= db.resmon.nodename.belongs(nodenames)
+    rows = db(q).select()
+    resmon = {}
+    for row in rows:
+        if row.nodename not in resmon:
+            resmon[row.nodename] = {}
+        resmon[row.nodename][row.rid] = row
+        if row.vmname:
+            if row.vmname not in resmon:
+                resmon[row.vmname] = {}
+            resmon[row.vmname][row.rid] = row
+
+    import os
+    import StringIO
+    import ConfigParser
+    env = env.replace("\\n", "\n")
+    buf = StringIO.StringIO(env)
+    config = ConfigParser.RawConfigParser()
+    config.readfp(buf)
+
+    data = {
+      "nodes": [],
+      "edges": [],
+    }
+
+    node_ids = []
+    edge_ids = []
+    node_tail = 0
+
+    imgs = {
+      (None, None): URL(r=request,c='static',f='action48.png'),
+      ("ip", None): URL(r=request,c='static',f='net48.png'),
+      ("fs", None): URL(r=request,c='static',f='fs.png'),
+      ("disk", None): URL(r=request,c='static',f='disk48.png'),
+      ("container", "docker"): URL(r=request,c='static',f='docker48.png'),
+    }
+    def get_img(family, t):
+        i = imgs.get((family, t))
+        if i:
+            return i
+        i = imgs.get((family, None))
+        if i:
+            return i
+        return imgs.get((None, None))
+
+    def get_label(nodename, section, family, t=""):
+        s = "\n"+section
+
+        if get_disabled(section, nodename):
+            s += " (disabled)"
+
+        try:
+            tags = get_scoped(section, "tags", nodename).split()
+        except ConfigParser.NoOptionError:
+            tags = []
+        if "noaction" in tags:
+            s += " (no action)"
+
+        s += "\n"
+        if nodename in resmon and section in resmon[nodename]:
+            s += resmon[nodename][section].res_desc
+        return s
+
+    def get_disabled(s, nodename):
+        try:
+            return getboolean_scoped(s, "disable", nodename)
+        except ConfigParser.NoOptionError:
+            pass
+        if config.has_option(s, "disable_on"):
+            disable_on = config.get(s, "disable_on").split()
+            l = []
+            if "nodes" in disable_on: l += nodes
+            if "drpnodes" in disable_on: l += drpnodes
+            if "encapnodes" in disable_on: l += encapnodes
+            if nodename in l:
+                return True
+        return False
+
+    def _get_scoped(s, o, nodename, fn):
+        _o = o+"@"+nodename
+        if config.has_option(s, _o):
+            return fn(s, _o)
+        if nodename in nodes:
+            _o = o+"@nodes"
+        elif nodename in drpnodes:
+            _o = o+"@drpnodes"
+        elif nodename in encapnodes:
+            _o = o+"@encapnodes"
+        else:
+            _o = o
+        if config.has_option(s, _o):
+            return fn(s, _o)
+        return fn(s, o)
+
+    def get_scoped(s, o, nodename):
+        return _get_scoped(s, o, nodename, config.get)
+
+    def getboolean_scoped(s, o, nodename):
+        return _get_scoped(s, o, nodename, config.getboolean)
+
+    def container_rid(nodename, hv):
+        nodename = nodename.split(".")[0]
+        for section in config.sections():
+            if section.startswith("container#"):
+                try:
+                    name = get_scoped(section, "name", hv).split(".")[0]
+                    if name == nodename:
+                        return section
+                except ConfigParser.NoOptionError:
+                    pass
+
+    def trigger_add_node(nodename, s, t, node_tail):
+        try:
+            script = get_scoped(s, t, nodename)
+            trigger_id = s + "_" + t
+            if (nodename, trigger_id) not in node_ids:
+                triggers.append(trigger_id)
+                label = "\n" + s + " " + t + "\n" + script
+                img = get_img("app", t)
+                d = {
+                  "mass": 3,
+                  "id": node_tail,
+                  "label": label,
+                  "image": img,
+                  "fontColor": "grey",
+                  "shape": "image"
+                }
+                node_ids.append((nodename, trigger_id))
+                node_tail += 1
+                data["nodes"].append(d)
+        except ConfigParser.NoOptionError:
+            pass
+        return node_tail
+
+    def add_edge(from_node, to_node, nodename, color="grey"):
+        _to = node_ids[to_node][1]
+        _from = node_ids[from_node][1]
+        if _to + "_pre_start" in triggers and \
+           _from + "_post_start" in triggers:
+            from_trigger_name = _from + "_post_start"
+            from_trigger_node = node_ids.index((nodename, from_trigger_name))
+            to_trigger_name = _to + "_pre_start"
+            to_trigger_node = node_ids.index((nodename, to_trigger_name))
+            _add_edge(from_node, from_trigger_node, color=color)
+            _add_edge(from_trigger_node, to_trigger_node)
+            _add_edge(to_trigger_node, to_node)
+            return _to
+        if _to + "_pre_start" in triggers:
+            name = _to + "_pre_start"
+            trigger_node = node_ids.index((nodename, name))
+            _add_edge(from_node, trigger_node, color=color)
+            _add_edge(trigger_node, to_node)
+            return _to
+        if _from + "_post_start" in triggers:
+            name = _from + "_post_start"
+            trigger_node = node_ids.index((nodename, name))
+            _add_edge(from_node, trigger_node, color=color)
+            _add_edge(trigger_node, to_node)
+            return _to
+        _add_edge(from_node, to_node, color=color)
+        return _to
+
+    def _add_edge(from_node, to_node, color="grey"):
+        label = ""
+        edge = {
+         "from": from_node,
+         "to": to_node,
+         "length": 100,
+         "color": color,
+         "fontColor": color,
+         "label": str(label),
+         "width": 2,
+         "style": "arrow",
+         "_label": [label],
+        }
+        if (from_node, to_node) not in edge_ids:
+            data["edges"].append(edge)
+            edge_ids.append((from_node, to_node))
+
+    def do_resource_edges(nodename, family, rs, s, hv, prev, i, last, _prev=None, subsets={}):
+        subset = "subset#"+family+":"+rs
+        color = "grey"
+        try:
+            tags = get_scoped(s, "tags", nodename).split()
+        except ConfigParser.NoOptionError:
+            tags = []
+        if hv is None and "encap" in tags:
+            return prev, _prev
+        if family in ("ip", "fs", "disk") and "zone" in tags:
+            return prev, _prev
+        if subset in subsets:
+            subset_data = subsets[subset]
+            if "done" not in subset_data:
+                # prev to new subset extra edge
+                subsets[subset]["done"] = True
+                from_node = node_ids.index((nodename, prev))
+                to_node = node_ids.index((nodename, subset))
+                add_edge(from_node, to_node, nodename)
+                _prev = subset
+                prev = subset
+            if subset_data["parallel"]:
+                # //-subset to resource (star-like)
+                from_node = node_ids.index((nodename, subset))
+                to_node = node_ids.index((nodename, s))
+                add_edge(from_node, to_node, nodename)
+            else:
+                if i == 0:
+                    # highlight edge to first resource of a serial subset
+                    color = "black"
+                if i == last:
+                    # last resource to serial-subset extra edge
+                    from_node = node_ids.index((nodename, s))
+                    to_node = node_ids.index((nodename, subset))
+                    add_edge(from_node, to_node, nodename)
+                from_node = node_ids.index((nodename, _prev))
+                to_node = node_ids.index((nodename, s))
+                _prev = add_edge(from_node, to_node, nodename, color=color)
+        else:
+            from_node = node_ids.index((nodename, prev))
+            to_node = node_ids.index((nodename, s))
+            prev = add_edge(from_node, to_node, nodename)
+        return prev, _prev
+
+
+    # header parser
+    triggers = []
+    nodes = []
+    if config.has_option("DEFAULT", "nodes"):
+        nodes = config.get("DEFAULT", "nodes").split()
+    drpnodes = []
+    if config.has_option("DEFAULT", "drpnodes"):
+        drpnodes = config.get("DEFAULT", "drpnodes").split()
+    if config.has_option("DEFAULT", "drpnode"):
+        drpnode = config.get("DEFAULT", "drpnode").split()[0]
+        if drpnode not in drpnodes:
+            drpnodes.append(drpnode)
+    encapnodes = []
+    if config.has_option("DEFAULT", "encapnodes"):
+        encapnodes = config.get("DEFAULT", "encapnodes").split()
+
+    # add root node
+    d = {
+      "mass": 3,
+      "id": node_tail,
+      "label": svcname,
+      "image": URL(r=request,c='static',f='svc48o.png'),
+      "shape": "image"
+    }
+    node_tail += 1
+    node_ids.append(svcname)
+    data["nodes"].append(d)
+
+    status_color = {
+      "up": "darkgreen",
+      "stdby up": "darkgreen",
+      "down": "darkred",
+      "stdby down": "darkred",
+      "warn": "orange",
+    }
+
+    levels = [
+      "hb",
+      "stonith",
+      "ip",
+      "disk",
+      "fs",
+      "share",
+      "container",
+      "app",
+    ]
+
+    disk_types = [
+      "vg",
+      "drbd",
+      "zpool",
+      "loop",
+      "raw",
+      "rados",
+      "lock",
+      "vg",
+      "gandi",
+    ]
+
+    def do_node(nodename, node_ids, node_tail, hv=None):
+        sections = {
+          "stonith": {"stonith": []},
+          "hb": {"hb": []},
+          "ip": {"ip": []},
+          "disk": {"disk": []},
+          "fs": {"fs": []},
+          "share": {"share": []},
+          "container": {"container": []},
+          "app": {"app": []},
+        }
+        data = {
+          "edges": [],
+          "nodes": [],
+        }
+        subsets = {
+        }
+
+        if (nodename, nodename) not in node_ids:
+            d = {
+              "mass": 3,
+              "id": node_tail,
+              "label": nodename,
+              "image": URL(r=request,c='static',f='node48.png'),
+              "shape": "image"
+            }
+            node_tail += 1
+            node_ids.append((nodename, nodename))
+            data["nodes"].append(d)
+
+        if hv:
+            rid = container_rid(nodename, hv)
+            from_node = node_ids.index((hv, rid))
+        else:
+            from_node = node_ids.index(svcname)
+        to_node = node_ids.index((nodename, nodename))
+        label = ""
+        edge = {
+          "from": from_node,
+          "to": to_node,
+          "length": 100,
+          "color": "grey",
+          "label": str(label),
+          "width": 2,
+          "style": "arrow",
+          "_label": [label],
+        }
+        if (from_node, to_node) not in edge_ids:
+            data["edges"].append(edge)
+            edge_ids.append((from_node, to_node))
+
+        for s in config.sections():
+            if "sync#" in s:
+                continue
+
+            try:
+                tags = get_scoped(s, "tags", nodename).split()
+            except ConfigParser.NoOptionError:
+                tags = []
+
+            if hv and not "encap" in tags:
+                continue
+            elif hv is None and "encap" in tags:
+                continue
+
+            try:
+                t = get_scoped(s, "type", nodename)
+            except ConfigParser.NoOptionError:
+                t = None
+
+            if s.startswith("subset#") and ":" in s:
+                # subset
+                try:
+                    parallel = getboolean_scoped(s, "parallel", nodename)
+                except ConfigParser.NoOptionError:
+                    parallel = False
+                family, name = s.replace("subset#", "").split(":")
+                subsets[s] = {
+                  "parallel": parallel,
+                  "family": family,
+                  "name": family,
+                }
+                img = URL(r=request, c="static", f="pkg48.png")
+                d = {
+                  "mass": 3,
+                  "id": node_tail,
+                  "label": s,
+                  "image": img,
+                  "shape": "image"
+                }
+                node_ids.append((nodename, s))
+                node_tail += 1
+                data["nodes"].append(d)
+                continue
+
+            family = s.split("#")[0]
+            if family in disk_types:
+                family = "disk"
+
+            try:
+                subset = get_scoped(s, "subset", nodename)
+                if subset not in sections[family]:
+                    sections[family][subset] = []
+                sections[family][subset].append(s)
+            except ConfigParser.NoOptionError:
+                sections[family][family].append(s)
+
+            disabled = get_disabled(s, nodename)
+            if disabled:
+                img = URL(r=request, c="static", f="reject48.png")
+            else:
+                img = get_img(family, t)
+            label = get_label(nodename, s, family, t)
+            try:
+                res_status = resmon[nodename][s].res_status
+                color = status_color.get(res_status, "grey")
+            except KeyError:
+                color = "grey"
+
+            if (nodename, s) not in node_ids:
+                d = {
+                  "mass": 3,
+                  "id": node_tail,
+                  "label": label,
+                  "image": img,
+                  "fontColor": color,
+                  "shape": "image"
+                }
+                node_ids.append((nodename, s))
+                node_tail += 1
+                data["nodes"].append(d)
+
+            node_tail = trigger_add_node(nodename, s, "pre_start", node_tail)
+            node_tail = trigger_add_node(nodename, s, "post_start", node_tail)
+
+        prev = nodename
+        _prev = None
+        for family in levels:
+            for rs in sorted(sections[family].keys()):
+                rset_resources = sections[family][rs]
+                last = len(rset_resources) - 1
+
+                # sort resources
+                if rs.startswith("fs#"):
+                    # fs resourceset are sorted by mnt deepness
+                    fs_mnt = {}
+                    for s in rset_resources:
+                        try:
+                            mnt = get_scoped(s, "mnt", nodename)
+                            fs_mnt[mnt] = s
+                        except ConfigParser.NoOptionError:
+                            pass
+                    rset_resources = []
+                    for mnt in sorted(fs_mnt.keys()):
+                        rset_resources.append(fs_mnt[mnt])
+                else:
+                    # other resourceset are sorted by rid (alphnum)
+                    rset_resources.sort()
+
+                for i, s in enumerate(rset_resources):
+                    prev, _prev = do_resource_edges(nodename, family, rs, s, hv, prev, i, last, _prev=_prev, subsets=subsets)
+
+        if hv is None:
+            for container in encapnodes:
+                _nodes, _edges, node_ids, node_tail = do_node(container, node_ids, node_tail, hv=nodename)
+                data["nodes"] += _nodes
+                data["edges"] += _edges
+
+        return data["nodes"], data["edges"], node_ids, node_tail
+
+    for nodename in nodenames:
+        nodes, edges, node_ids, node_tail = do_node(nodename, node_ids, node_tail)
+        data["nodes"] += nodes
+        data["edges"] += edges
+
+    return data
 
 

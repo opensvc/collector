@@ -41,6 +41,7 @@ def _node_form(record=None):
                          'team_integ',
                          'team_support',
                          'project',
+                         'environnement',
                          'warranty_end',
                          'maintenance_end',
                          'status',

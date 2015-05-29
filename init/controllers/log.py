@@ -302,8 +302,8 @@ def ajax_log_svc():
     t = table_log_node(tid, 'ajax_log_svc')
     o = ~db.log.log_date
     q = _where(None, 'log', domain_perms(), 'log_svcname')
-    for f in ['svcname']:
-        q = _where(q, 'v_svclog', t.filter_parse(f), f)
+    for f in ['log_svcname']:
+        q = _where(q, 'log', t.filter_parse(f), f)
     if request.args[0] == "data":
         t.object_list = db(q).select(cacheable=True, orderby=o, limitby=(0,20))
         return t.table_lines_data(-1, html=False)

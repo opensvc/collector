@@ -212,7 +212,7 @@ function tag_attach(init_data, tag_name) {
   // ajax
   //$("#"+init_data.tid).html(T("Attaching tag ..."))
   _data = {
-    "tag_name": tag_name,
+    "tag_name": tag_name
   }
   if ("nodename" in init_data) {
     _data.nodename = init_data.nodename
@@ -614,16 +614,8 @@ function draw_topo(id, data, display) {
           springLength: 95,
           springConstant: 0.1,
           damping: 0.5
-        },
-        //repulsion: {
-        //  enabled: true,
-        //}
+        }
       },
-
-      //smoothCurves: false,
-      //hierarchicalLayout: {
-      // direction: "UD",
-      //},
       clickToUse: true,
       height: _height+'px',
       nodes: {
@@ -651,8 +643,73 @@ function init_topo(id, data, display) {
   draw_topo(id, data, display)
 }
 
+//
+// startup sequence diagram
+//
+function draw_startup(id, data) {
+  var i=0
+  url = $(location).attr("origin") + "/init/topo/call/json/json_startup_data"
+  if ("svcnames" in data) {
+    if (i==0) {url += '?'}
+    else if (i==1) {url += '&'}
+    i += 1
+    url += "svcnames="+encodeURIComponent(data["svcnames"])
+  }
+  if ("nodenames" in data) {
+    if (i==0) {url += '?'}
+    else if (i==1) {url += '&'}
+    i += 1
+    url += "nodenames="+encodeURIComponent(data["nodenames"])
+  }
+  if ($("#"+id).parents(".overlay").length == 0) {
+      _height = $(window).height()-$(".header").outerHeight()-16
+      $("#"+id).height(_height)
+  }
+  $.getJSON(url, function(_data){
+    var eid = document.getElementById(id)
+    var options = {
+      physics: {
+        barnesHut: {
+          enabled: true,
+          gravitationalConstant: -2500,
+          centralGravity: 1,
+          springLength: 95,
+          springConstant: 0.1,
+          damping: 0.5
+        }
+      },
+      clickToUse: true,
+      height: _height+'px',
+      nodes: {
+        widthMax: "48px",
+        fontFace: "arial",
+        fontSize: 12
+      },
+      edges: {
+        fontFace: "arial",
+        fontSize: 12
+      }
+    }
+    var network = new vis.Network(eid, _data, options)
+  })
+}
+
+function init_startup(id, data) {
+  $("#"+id).parent().find("input:submit").bind("click", function(){
+    var nodenames = []
+    $(this).parent().find("input:checked").each(function () {
+      nodenames.push($(this).attr("name"))
+    })
+    data["nodenames"] = nodenames
+    draw_startup(id, data)
+  })
+  draw_startup(id, data)
+}
 
 
+//
+//
+//
 function print_date(d) {
   var day = d.getDate()
   var month = d.getMonth()+1
@@ -1924,43 +1981,51 @@ function table_action_menu(t, e){
   }
   $(".right_click_menu").hide()
 
-  // format the tools menu
   var s = ""
+
+  // format the tools menu
+  var tm = ""
   if ("nodes" in t.action_menu) {
-    s += table_tools_menu_nodes(t)
+    tm += table_tools_menu_nodes(t)
   }
   if ("services" in t.action_menu) {
-    s += table_tools_menu_svcs(t)
+    tm += table_tools_menu_svcs(t)
   }
   if (("nodes" in t.action_menu) || ("services" in t.action_menu)) {
-    s += tool_topo(t)
+    tm += tool_topo(t)
   }
-  if (s != "") {
-    s = "<h3 class='line'><span>"+T("Tools")+"</span></h3>" + s
+  if (tm != "") {
+    s += "<h3 class='line'><span>"+T("Tools")+"</span></h3>" + s
+    s += tm
   }
 
   // format the action menu
-  s += "<h3 class='line'><span>"+T("Actions")+"</span></h3>"
+  var am = ""
   if ("nodes" in t.action_menu) {
-    s += table_action_menu_node(t, e)
-    s += table_action_menu_nodes(t)
-    s += table_action_menu_nodes_all(t, e)
+    am += table_action_menu_node(t, e)
+    am += table_action_menu_nodes(t)
+    am += table_action_menu_nodes_all(t, e)
   }
   if ("services" in t.action_menu) {
-    s += table_action_menu_svc(t, e)
-    s += table_action_menu_svcs(t)
-    s += table_action_menu_svcs_all(t, e)
+    am += table_action_menu_svc(t, e)
+    am += table_action_menu_svcs(t)
+    am += table_action_menu_svcs_all(t, e)
   }
   if ("resources" in t.action_menu) {
-    s += table_action_menu_resource(t, e)
-    s += table_action_menu_resources(t)
-    s += table_action_menu_resources_all(t, e)
+    am += table_action_menu_resource(t, e)
+    am += table_action_menu_resources(t)
+    am += table_action_menu_resources_all(t, e)
   }
   if ("modules" in t.action_menu) {
-    s += table_action_menu_module(t, e)
-    s += table_action_menu_modules(t)
-    s += table_action_menu_modules_all(t, e)
+    am += table_action_menu_module(t, e)
+    am += table_action_menu_modules(t)
+    am += table_action_menu_modules_all(t, e)
   }
+  if (am != "") {
+      s += "<h3 class='line'><span>"+T("Actions")+"</span></h3>"
+      s += am
+  }
+
   if (s == "") {
     return
   }
@@ -2293,6 +2358,17 @@ function table_action_menu_get_node_data(t, e, action) {
     return data
 }
 
+function table_action_menu_get_svcs_data_with_node(t, action) {
+    var d = table_action_menu_get_svcs_data(t, action)
+    var n = []
+    for (i=0; i<d.length; i++) {
+        if (d[i]["nodename"] != "") {
+            n.push(d[i])
+        }
+    }
+    return n
+}
+
 function table_action_menu_get_svcs_data(t, action) {
     var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
     var data = []
@@ -2300,7 +2376,7 @@ function table_action_menu_get_svcs_data(t, action) {
     lines.each(function(){
       var nodename = $(this).find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_nodename],td[cell=1][name$=hostname]").attr("v")
       if ((typeof nodename === "undefined")||(nodename=="")) {
-        return []
+        nodename = ""
       }
       var svcname = $(this).find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name],td[cell=1][name$=disk_svcname]").attr("v")
       if ((typeof svcname === "undefined")||(svcname=="")) {
@@ -2510,7 +2586,7 @@ function table_action_menu_svc(t, e){
 }
 
 function table_action_menu_svcs(t){
-  var data = table_action_menu_get_svcs_data(t)
+  var data = table_action_menu_get_svcs_data_with_node(t)
   if (data.length==0) {
     return ""
   }
@@ -4036,6 +4112,9 @@ function _outdated(s, max_age) {
   if (typeof s === 'undefined') {
     return true
   }
+  if (s == 'empty') {
+    return true
+  }
   s = s.replace(/ /, "T")
   var d = new Date(s)
   var now = new Date()
@@ -4048,6 +4127,9 @@ function _outdated(s, max_age) {
 
 function status_outdated(line) {
   var s = line.children("[cell=1][name$=mon_updated]").attr("v")
+  if (typeof s === 'undefined') {
+    var s = line.children("[cell=1][name$=status_updated]").attr("v")
+  }
   if (typeof s === 'undefined') {
     var s = line.children("[cell=1][name$=_updated]").attr("v")
   }

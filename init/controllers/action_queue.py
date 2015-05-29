@@ -159,6 +159,7 @@ def cancel_actions(ids):
     ids = [r.id for r in rows]
     q = db.action_queue.id.belongs(ids)
     db(q).update(status='C')
+    table_modified('action_queue')
 
     _log('action.delete',
          'deleted actions %(u)s',
@@ -193,6 +194,10 @@ def ajax_actions():
     for f in t.cols:
         q = _where(q, 'v_action_queue', t.filter_parse(f), f)
 
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        t.csv_q = q
+        t.csv_orderby = o
+        return t.csv()
     if len(request.args) == 1 and request.args[0] == 'data':
         if request.vars.volatile_filters is None:
             n = db(q).count()

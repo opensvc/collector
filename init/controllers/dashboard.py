@@ -405,7 +405,8 @@ class table_dashboard(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['dash_severity',
+        self.cols = ['id',
+                     'dash_severity',
                      'dash_links',
                      'dash_type',
                      'dash_svcname',
@@ -513,9 +514,17 @@ class table_dashboard(HtmlTable):
                      img='log16',
                      display=False,
                     ),
+            'id': HtmlTableColumn(
+                     title='Alert id',
+                     table='dashboard',
+                     field='id',
+                     img='log16',
+                     display=False,
+                    ),
         }
         self.keys = ["dash_nodename", "dash_type", "dash_svcname", "dash_md5"]
-        self.span = ["dash_nodename", "dash_type", "dash_svcname", "dash_md5"]
+        #self.span = ["dash_nodename", "dash_type", "dash_svcname", "dash_md5"]
+        self.span = ["id"]
         self.order = ["~dash_severity", "dash_type", "dash_nodename", "dash_svcname"]
         self.colprops['dash_svcname'].t = self
         self.colprops['dash_nodename'].t = self
