@@ -22,6 +22,8 @@ class viz(object):
     def get_img(self, t, v=""):
         if t == "node":
             return str(URL(r=request,c='static',f='node48.png'))
+        elif t == "pool":
+            return str(URL(r=request,c='static',f='disk48.png'))
         elif t == "disk":
             return str(URL(r=request,c='static',f='disk48.png'))
         elif t == "svc":
@@ -1236,6 +1238,7 @@ def json_startup_data():
     disk_types = [
       "vg",
       "drbd",
+      "pool",
       "zpool",
       "loop",
       "raw",
