@@ -668,6 +668,9 @@ function draw_startup(id, data) {
   $.getJSON(url, function(_data){
     var eid = document.getElementById(id)
     var options = {
+      interaction: {
+        hover: true
+      },
       physics: {
         barnesHut: {
           enabled: true,

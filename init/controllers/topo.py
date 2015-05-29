@@ -602,7 +602,7 @@ class viz(object):
          "to": to_node,
          "length": self.edge_len_base*length,
          "color": color,
-         "fontColor": color,
+         "font": {"color": color},
          "label": str(label),
          "width": 2,
          "_label": [label],
@@ -707,7 +707,7 @@ class viz(object):
             label = "%d disks, total %s"%(len(rows), beautify_size_mb(total))
         else:
             for row in rows:
-                label += "\n"+row.disk_id+"\t"+beautify_size_mb(row.disk_size)
+                label += row.disk_id+"\t"+beautify_size_mb(row.disk_size)+"\n"
         return label
 
     def add_services_disks(self):
@@ -1009,11 +1009,15 @@ def json_startup_data():
             return i
         return imgs.get((None, None))
 
-    def get_label(nodename, section, family, t=""):
-        s = "\n"+section
+    def get_label(nodename, section, family, t="", monitor=False, optional=False):
+        s = section
 
         if get_disabled(section, nodename):
             s += " (disabled)"
+        if monitor:
+            s += " (monitored)"
+        if optional:
+            s += " (optional)"
 
         try:
             tags = get_scoped(section, "tags", nodename).split()
@@ -1081,14 +1085,14 @@ def json_startup_data():
             trigger_id = s + "_" + t
             if (nodename, trigger_id) not in node_ids:
                 triggers.append(trigger_id)
-                label = "\n" + s + " " + t + "\n" + script
+                label = s + " " + t + "\n" + script
                 img = get_img("app", t)
                 d = {
                   "mass": 3,
                   "id": node_tail,
                   "label": label,
                   "image": img,
-                  "fontColor": "grey",
+                  "font": {"color": "grey"},
                   "shape": "image"
                 }
                 node_ids.append((nodename, trigger_id))
@@ -1133,7 +1137,7 @@ def json_startup_data():
          "to": to_node,
          "length": 100,
          "color": color,
-         "fontColor": color,
+         "font": {"color": color},
          "label": str(label),
          "width": 2,
          "style": "arrow",
@@ -1360,21 +1364,36 @@ def json_startup_data():
                 img = URL(r=request, c="static", f="reject48.png")
             else:
                 img = get_img(family, t)
-            label = get_label(nodename, s, family, t)
             try:
                 res_status = resmon[nodename][s].res_status
                 color = status_color.get(res_status, "grey")
             except KeyError:
                 color = "grey"
-
+            try:
+                monitor = getboolean_scoped(s, "monitor", nodename)
+            except ConfigParser.NoOptionError:
+                monitor = False
+            try:
+                optional = getboolean_scoped(s, "optional", nodename)
+            except ConfigParser.NoOptionError:
+                optional = False
+            """
+            if monitor:
+                fcolor = "red"
+            if optional:
+                fcolor = "blue"
+            else:
+                fcolor = "transparent"
+            """
+            label = get_label(nodename, s, family, t, monitor=monitor, optional=optional)
             if (nodename, s) not in node_ids:
                 d = {
                   "mass": 3,
                   "id": node_tail,
                   "label": label,
                   "image": img,
-                  "fontColor": color,
-                  "shape": "image"
+                  "shape": "image",
+                  "font": {"color": color},
                 }
                 node_ids.append((nodename, s))
                 node_tail += 1
