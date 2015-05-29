@@ -20,6 +20,8 @@ def api():
             if n_args == 1:
                 if args[0] == "":
                     return doc()
+                if args[0] == "arrays":
+                    return get_arrays(**vars)
                 if args[0] == "nodes":
                     return get_nodes(**vars)
                 if args[0] == "filtersets":
@@ -27,7 +29,13 @@ def api():
             if n_args == 2:
                 if args[0] == "nodes":
                     return get_node(args[1], **vars)
+                if args[0] == "arrays":
+                    return get_array(args[1], **vars)
             if n_args == 3:
+                if args[0] == "arrays" and args[2] == "diskgroups":
+                    return get_array_dgs(args[1], **vars)
+                if args[0] == "arrays" and args[2] == "proxies":
+                    return get_array_proxies(args[1], **vars)
                 if args[0] == "nodes" and args[2] == "disks":
                     return get_node_disks(args[1], **vars)
                 if args[0] == "nodes" and args[2] == "ips":
@@ -71,6 +79,10 @@ def doc():
 
 ## API digest
 
+### [[_ #/api/arrays]] ``/api/arrays``:red
+### [[_ #/api/arrays/<arrayname>]] ``/api/arrays/<arrayname>``:red
+### [[_ #/api/arrays/<arrayname>/diskgroups]] ``/api/arrays/<arrayname>/diskgroups``:red
+### [[_ #/api/arrays/<arrayname>/proxies]] ``/api/arrays/<arrayname>/proxies``:red
 ### [[_ #/api/nodes]] ``/api/nodes``:red
 ### [[_ #/api/nodes/<nodename>]] ``/api/nodes/<nodename>``:red
 ### [[_ #/api/nodes/<nodename>/alerts]] ``/api/nodes/<nodename>/alerts``:red
@@ -79,6 +91,111 @@ def doc():
 ### [[_ #/api/filtersets]] ``/api/filtersets``:red
 
 ## API reference
+
+[[/api/arrays]]
+## ``/api/arrays``:red
+
+### GET
+
+Description:
+
+- List storage arrays.
+
+Optional parameters:
+
+- **props**
+. A list of properties to include in each dictionnary.
+. If omitted, all properties are included.
+. The separator is ','.
+. Available properties are: ``%(arrays_props)s``:green.
+
+- **query**
+. A web2py smart query
+
+Example:
+
+``# curl -u me:mypass -o-
+"https://%(collector)s/init/rest/api/arrays?props=array_name&query=array_model contains hitachi"``
+
+
+[[/api/arrays/<arrayname>]]
+## ``/api/arrays/<arrayname>``:red
+
+### GET
+
+Description:
+
+- Display all array properties.
+- Display selected array properties.
+
+Optional parameters:
+
+- **props**
+. A list of properties to include.
+. If omitted, all properties are included.
+. The separator is ','.
+. Available properties are: ``%(arrays_props)s``:green.
+
+- **query**
+. A web2py smart query
+
+Example:
+
+``# curl -u me:mypass -o- https://%(collector)s/init/rest/api/arrays/myarray?props=array_name,array_model``
+
+
+[[/api/arrays/<arrayname>/diskgroups]]
+## ``/api/arrays/<arrayname>/diskgroups``:red
+
+### GET
+
+Description:
+
+- Display array diskgroups.
+
+Optional parameters:
+
+- **props**
+. A list of properties to include.
+. If omitted, all properties are included.
+. The separator is ','.
+. Available properties are: ``%(arrays_diskgroups_props)s``:green.
+
+- **query**
+. A web2py smart query
+
+Example:
+
+``# curl -u me:mypass -o-
+https://%(collector)s/init/rest/api/arrays/myarray/diskgroups``
+
+
+[[/api/arrays/<arrayname>/proxies]]
+## ``/api/arrays/<arrayname>/proxies``:red
+
+### GET
+
+Description:
+
+- Display array proxies.
+- Proxies are OpenSVC agent inventoring the array.
+
+Optional parameters:
+
+- **props**
+. A list of properties to include.
+. If omitted, all properties are included.
+. The separator is ','.
+. Available properties are: ``%(arrays_proxies_props)s``:green.
+
+- **query**
+. A web2py smart query
+
+Example:
+
+``# curl -u me:mypass -o-
+https://%(collector)s/init/rest/api/arrays/myarray/proxies``
+
 
 [[/api/nodes]]
 ## ``/api/nodes``:red
@@ -141,7 +258,7 @@ Description:
 Optional parameters:
 
 - **props**
-. A list of properties to include in each node data.
+. A list of properties to include in node data.
 . If omitted, all properties are included.
 . The separator is ','.
 . Available properties are: ``%(nodes_props)s``:green.
@@ -201,7 +318,7 @@ Description:
 Optional parameters:
 
 - **props**
-. A list of properties to include in each node data.
+. A list of properties to include in each dictionnary.
 . If omitted, all properties are included.
 . The separator is ','.
 . Available properties are: ``%(nodes_alerts_props)s``:green.
@@ -226,7 +343,7 @@ Description:
 Optional parameters:
 
 - **props**
-. A list of properties to include in each node data.
+. A list of properties to include in each dictionnary.
 . If omitted, all properties are included.
 . The separator is ','.
 . Available properties are: ``%(nodes_disks_props)s``:green.
@@ -251,7 +368,7 @@ Description:
 Optional parameters:
 
 - **props**
-. A list of properties to include in each node data.
+. A list of properties to include in each dictionnary.
 . If omitted, all properties are included.
 . The separator is ','.
 . Available properties are: ``%(nodes_ips_props)s``:green.
@@ -277,7 +394,7 @@ Description:
 Optional parameters:
 
 - **props**
-. A list of properties to include in each node data.
+. A list of properties to include in each dictionnary.
 . If omitted, all properties are included.
 . The separator is ','.
 . Available properties are: ``%(filtersets_props)s``:green.
@@ -293,6 +410,9 @@ Example:
 
 """ % dict(
         collector=request.env.http_host,
+        arrays_props=", ".join(sorted(db.stor_array.fields)),
+        arrays_diskgroups_props=", ".join(sorted(db.stor_array_dg.fields)),
+        arrays_proxies_props=", ".join(sorted(db.stor_array_proxy.fields)),
         nodes_props=", ".join(sorted(db.nodes.fields)),
         nodes_alerts_props=", ".join(sorted(db.dashboard.fields)),
         nodes_disks_props=", ".join(sorted(map(lambda x: "b_disk_app."+x, db.b_disk_app.fields)+map(lambda x: "stor_array."+x, db.stor_array.fields))),
@@ -327,9 +447,10 @@ def props_to_cols(props, tables=[], blacklist=[]):
 def get_node_ips(nodename, props=None, query=None):
     q = db.v_nodenetworks.nodename == nodename
     q &= _where(None, 'v_nodenetworks', domain_perms(), 'nodename')
-    cols = props_to_cols(props, tables=["v_nodenetworks"], blacklist=db.nodes.fields)
     if query:
+        cols = props_to_cols(None, tables=["v_nodenetworks"], blacklist=db.nodes.fields)
         q &= smart_query(cols, query)
+    cols = props_to_cols(props, tables=["v_nodenetworks"], blacklist=db.nodes.fields)
     data = db(q).select(*cols, cacheable=True).as_list()
     return dict(data=data)
 
@@ -337,18 +458,20 @@ def get_node_disks(nodename, props=None, query=None):
     q = db.b_disk_app.disk_nodename == nodename
     l = db.stor_array.on(db.b_disk_app.disk_arrayid == db.stor_array.array_name)
     q &= _where(None, 'b_disk_app', domain_perms(), 'disk_nodename')
-    cols = props_to_cols(props, ["b_disk_app", "stor_array"])
     if query:
+        cols = props_to_cols(None, ["b_disk_app", "stor_array"])
         q &= smart_query(cols, query)
+    cols = props_to_cols(props, ["b_disk_app", "stor_array"])
     data = db(q).select(*cols, left=l, cacheable=True).as_list()
     return dict(data=data)
 
 def get_node_alerts(nodename, props=None, query=None):
     q = db.dashboard.dash_nodename == nodename
     q &= _where(None, 'dashboard', domain_perms(), 'dash_nodename')
-    cols = props_to_cols(props, ["dashboard"])
     if query:
+        cols = props_to_cols(None, ["dashboard"])
         q &= smart_query(cols, query)
+    cols = props_to_cols(props, ["dashboard"])
     data = db(q).select(*cols, cacheable=True).as_list()
     return dict(data=data)
 
@@ -359,23 +482,65 @@ def get_node(nodename, props=None):
     data = db(q).select(*cols, cacheable=True).as_list()[0]
     return dict(data=data)
 
+def get_array(array_name, props=None):
+    q = db.stor_array.array_name == array_name
+    cols = props_to_cols(props, tables=["stor_array"])
+    data = db(q).select(*cols, cacheable=True).first().as_dict()
+    return dict(data=data)
+
+def get_arrays(props=None, query=None):
+    q = db.stor_array.id > 0
+    if query:
+        cols = props_to_cols(None, tables=["stor_array"])
+        q &= smart_query(cols, query)
+    cols = props_to_cols(props, tables=["stor_array"])
+    rows = db(q).select(*cols, cacheable=True)
+    data = [r.as_dict() for r in rows]
+    return dict(data=data)
+
+def get_array_dgs(array_name, props=None, query=None):
+    q = db.stor_array.array_name == array_name
+    array_id = db(q).select(db.stor_array.id).first().id
+    q = db.stor_array_dg.array_id == array_id
+    if query:
+        cols = props_to_cols(None, tables=["stor_array_dg"])
+        q &= smart_query(cols, query)
+    cols = props_to_cols(props, tables=["stor_array_dg"])
+    rows = db(q).select(*cols, cacheable=True)
+    data = [r.as_dict() for r in rows]
+    return dict(data=data)
+
+def get_array_proxies(array_name, props=None, query=None):
+    q = db.stor_array.array_name == array_name
+    array_id = db(q).select(db.stor_array.id).first().id
+    q = db.stor_array_proxy.array_id == array_id
+    if query:
+        cols = props_to_cols(None, tables=["stor_array_proxy"])
+        q &= smart_query(cols, query)
+    cols = props_to_cols(props, tables=["stor_array_proxy"])
+    rows = db(q).select(*cols, cacheable=True)
+    data = [r.as_dict() for r in rows]
+    return dict(data=data)
+
 def get_nodes(props="nodename", fset_id=None, query=None):
     q = db.nodes.id > 0
     q &= _where(None, 'nodes', domain_perms(), 'nodename')
     if fset_id:
         q = apply_filters(q, node_field=db.nodes.nodename, fset_id=fset_id)
-    cols = props_to_cols(props, tables=["nodes"])
     if query:
+        cols = props_to_cols(None, tables=["nodes"])
         q &= smart_query(cols, query)
+    cols = props_to_cols(props, tables=["nodes"])
     rows = db(q).select(*cols, cacheable=True)
     data = [r.as_dict() for r in rows]
     return dict(data=data)
 
 def get_filtersets(props=None, query=None):
     q = db.gen_filtersets.id > 0
-    cols = props_to_cols(props, tables=["gen_filtersets"])
     if query:
+        cols = props_to_cols(None, tables=["gen_filtersets"])
         q &= smart_query(cols, query)
+    cols = props_to_cols(props, tables=["gen_filtersets"])
     data = db(q).select(*cols, cacheable=True).as_list()
     return dict(data=data)
 
