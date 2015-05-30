@@ -514,6 +514,7 @@ def refresh_fset_cache():
     sql = "truncate fset_cache"
     db.executesql(sql)
 
+    _refresh_fset_cache(0)
     for fset_id in fset_ids:
         _refresh_fset_cache(fset_id)
 
