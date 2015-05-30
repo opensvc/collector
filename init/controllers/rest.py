@@ -105,6 +105,39 @@ Supported operators are:
 - in aaa,bbb
 - not
 
+
+## Using the API with python
+
+``
+#!/usr/bin/python
+
+import requests, json
+
+requests.packages.urllib3.disable_warnings()
+
+host = 'https://%(collector)s'
+url = host + '/init/rest/api'
+
+user = "%(email)s"
+password = "mypass"
+auth = (user, password)
+verify=False
+
+print "* post node"
+data = {"nodename": "testnode", "model": "x1234", "team_responsible": "myteam"}
+r = requests.post(url+"/nodes", data, auth=auth, verify=verify)
+print r.content
+
+print "* get node"
+r = requests.get(url+"/nodes/testnode?props=nodename,os_name,model,updated",
+auth=auth, verify=verify)
+print r.content
+
+print "* delete node"
+r = requests.delete(url+"/nodes/testnode", auth=auth, verify=verify)
+print r.content
+``
+
 ## API reference
 
 [[/api/arrays]]
