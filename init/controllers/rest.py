@@ -90,6 +90,21 @@ def doc():
 ### [[_ #/api/nodes/<nodename>/disks]] ``/api/nodes/<nodename>/disks``:red
 ### [[_ #/api/filtersets]] ``/api/filtersets``:red
 
+## Smart queries
+
+Most API urls returning lists accept the ''query'' parameter, which value is a
+web2py smart query.
+
+A smart query is a filtering string like:
+
+''os_name=linux and os_release contains 6.1''
+
+Supported operators are:
+- =, >, >=, <, <=
+- equals, greater than, lesser than
+- in aaa,bbb
+- not
+
 ## API reference
 
 [[/api/arrays]]
@@ -114,8 +129,7 @@ Optional parameters:
 
 Example:
 
-``# curl -u me:mypass -o-
-"https://%(collector)s/init/rest/api/arrays?props=array_name&query=array_model contains hitachi"``
+``# curl -u %(email)s -o- "https://%(collector)s/init/rest/api/arrays?props=array_name&query=array_model contains hitachi"``
 
 
 [[/api/arrays/<arrayname>]]
@@ -141,7 +155,7 @@ Optional parameters:
 
 Example:
 
-``# curl -u me:mypass -o- https://%(collector)s/init/rest/api/arrays/myarray?props=array_name,array_model``
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/arrays/myarray?props=array_name,array_model``
 
 
 [[/api/arrays/<arrayname>/diskgroups]]
@@ -166,7 +180,7 @@ Optional parameters:
 
 Example:
 
-``# curl -u me:mypass -o-
+``# curl -u %(email)s -o-
 https://%(collector)s/init/rest/api/arrays/myarray/diskgroups``
 
 
@@ -193,7 +207,7 @@ Optional parameters:
 
 Example:
 
-``# curl -u me:mypass -o-
+``# curl -u %(email)s -o-
 https://%(collector)s/init/rest/api/arrays/myarray/proxies``
 
 
@@ -224,7 +238,7 @@ Optional parameters:
 
 Example:
 
-``# curl -u me:mypass -o- https://%(collector)s/init/rest/api/nodes?props=nodename,loc_city&fset_id=10``
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes?props=nodename,loc_city&fset_id=10``
 
 ### POST
 
@@ -242,7 +256,7 @@ Data:
 
 Example:
 
-``# curl -u me:mypass -o- -d nodename=mynode -d loc_city="Zanzibar" -d team_responsible="SYSADM" https://%(collector)s/init/rest/api/nodes``
+``# curl -u %(email)s -o- -d nodename=mynode -d loc_city="Zanzibar" -d team_responsible="SYSADM" https://%(collector)s/init/rest/api/nodes``
 
 
 [[/api/nodes/<nodename>]]
@@ -268,7 +282,7 @@ Optional parameters:
 
 Example:
 
-``# curl -u me:mypass -o- https://%(collector)s/init/rest/api/nodes/mynode?props=nodename,loc_city``
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/mynode?props=nodename,loc_city``
 
 ### POST
 
@@ -288,7 +302,7 @@ Data:
 
 Example:
 
-``# curl -u me:mypass -o- -d loc_city="Zanzibar" -d project="ERP" https://%(collector)s/init/rest/api/nodes/mynode``
+``# curl -u %(email)s -o- -d loc_city="Zanzibar" -d project="ERP" https://%(collector)s/init/rest/api/nodes/mynode``
 
 
 ### DELETE
@@ -303,7 +317,7 @@ Description:
 
 Example:
 
-``# curl -u me:mypass -o- -X DELETE https://%(collector)s/init/rest/api/nodes/mynode``
+``# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/nodes/mynode``
 
 
 [[/api/nodes/<nodename>/alerts]]
@@ -328,7 +342,7 @@ Optional parameters:
 
 Example:
 
-``# curl -u me:mypass -o- https://%(collector)s/init/rest/api/nodes/mynode/alerts?props=dash_nodename,dash_type``
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/mynode/alerts?props=dash_nodename,dash_type``
 
 
 [[/api/nodes/<nodename>/disks]]
@@ -353,7 +367,7 @@ Optional parameters:
 
 Example:
 
-``# curl -u me:mypass -o- https://%(collector)s/init/rest/api/nodes/mynode/disks?props=b_disk_app.disk_nodename,b_disk_app.disk_id,stor_array.array_name``
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/mynode/disks?props=b_disk_app.disk_nodename,b_disk_app.disk_id,stor_array.array_name``
 
 
 [[/api/nodes/<nodename>/ips]]
@@ -378,7 +392,7 @@ Optional parameters:
 
 Example:
 
-``# curl -u readonly:readonly -o- https://%(collector)s/init/rest/api/nodes/mynode/ips?props=prio,net_network,net_netmask``
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/mynode/ips?props=prio,net_network,net_netmask``
 
 
 [[/api/filtersets]]
@@ -405,10 +419,11 @@ Optional parameters:
 
 Example:
 
-``# curl -u readonly:readonly -o- https://%(collector)s/init/rest/api/filtersets?like=%%aix%%``
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/filtersets?like=%%aix%%``
 
 
 """ % dict(
+        email=user_email(),
         collector=request.env.http_host,
         arrays_props=", ".join(sorted(db.stor_array.fields)),
         arrays_diskgroups_props=", ".join(sorted(db.stor_array_dg.fields)),
