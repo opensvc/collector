@@ -203,6 +203,10 @@ def metrics_editor():
 def ajax_metric_test():
     return format_metric(request.vars.metric_id)
 
+@auth.requires_login()
+def metric():
+    return dict(table=format_metric(request.vars.metric_id))
+
 def format_metric(metric_id):
     q = db.metrics.id == metric_id
     row = db(q).select().first()
@@ -218,7 +222,20 @@ def format_metric(metric_id):
     except Exception as e:
         return str(e)
 
-    return _format_metric(rows, row)
+    link = DIV(
+             A(
+               IMG(_src=URL(r=request, c='static', f='link16.png')),
+               _onclick="""$(this).siblings().toggle()""",
+             ),
+             DIV(
+               "https://"+request.env.http_host+URL(r=request, f='metric', vars={'metric_id': request.vars.metric_id}),
+               _style="display:none",
+             ),
+           )
+    return DIV(
+             link,
+             _format_metric(rows, row)
+           )
 
 def _format_metric(rows, m):
     n = len(rows)
@@ -419,6 +436,10 @@ def ajax_chart_test():
     return ajax_chart_plot(request.vars.chart_id)
 
 @auth.requires_login()
+def chart():
+    return dict(table=ajax_chart_plot(request.vars.chart_id))
+
+@auth.requires_login()
 def ajax_charts_admin_col_values():
     t = table_charts('charts', 'ajax_charts_admin')
 
@@ -493,7 +514,19 @@ def ajax_chart_plot(chart_id):
     else:
         title = DIV(H3(T(title)))
 
+    link = DIV(
+             A(
+               IMG(_src=URL(r=request, c='static', f='link16.png')),
+               _onclick="""$(this).siblings().toggle()""",
+             ),
+             DIV(
+               "https://"+request.env.http_host+URL(r=request, f='chart', vars={'chart_id': request.vars.chart_id}),
+               _style="display:none",
+             ),
+           )
+
     d = DIV(
+      link,
       title,
       DIV(
         _id="c%s"%str(uid),
@@ -684,6 +717,10 @@ def reports_editor():
     return dict(form=form)
 
 @auth.requires_login()
+def report():
+    return dict(table=ajax_report(request.vars.report_id))
+
+@auth.requires_login()
 def ajax_report_test():
     return ajax_report(request.vars.report_id)
 
@@ -746,7 +783,18 @@ def ajax_report(report_id):
     return do_report(report.report_yaml)
 
 def do_report(report_yaml):
-    d = [H1(report_yaml.get('Title', ''))]
+    link = DIV(
+             A(
+               IMG(_src=URL(r=request, c='static', f='link16.png')),
+               _onclick="""$(this).siblings().toggle()""",
+             ),
+             DIV(
+               "https://"+request.env.http_host+URL(r=request, f='report', vars={'report_id': request.vars.report_id}),
+               _style="display:none",
+             ),
+           )
+
+    d = [link, H1(report_yaml.get('Title', ''))]
     for section in report_yaml.get('Sections', []):
         s = do_section(section)
         _d = DIV(
