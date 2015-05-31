@@ -162,6 +162,7 @@ menu_entries_data = {
   'key-r': DIV(SPAN('r', _class='keyboard-key'), T("Refresh"), DIV(T("Reload table data"))),
   'key-s': DIV(SPAN('s', _class='keyboard-key'), T("Search"), DIV(T("Focus the global search tool"))),
   'key-esc': DIV(SPAN('Esc', _class='keyboard-key'), T("Unfocus"), DIV(T("Close pop-ups and menus"))),
+  'help-api': DIV(T("Rest API"), DIV(T("Documentation")), _class="api48", _style='background-size:40px 40px'),
   'view-dashboard': DIV(T('Dashboard'), DIV(T("Current issues on nodes and services")), _class='alert48', _style='background-size:40px 40px'),
   'view-service-instances': DIV(T('Services Instances'), DIV(T("Service instances status")), _class='svc48'),
   'view-services': DIV(T('Services'), DIV(T("Services information and status")), _class='svc48'),
@@ -225,6 +226,7 @@ response.menu = [
              [menu_entries_data['key-r'], display('key-r'), ''],
              [menu_entries_data['key-s'], display('key-s'), ''],
              [menu_entries_data['key-esc'], display('key-esc'), ''],
+             [menu_entries_data['help-api'], display('help-api'), URL(request.application,'rest','api')],
          ]
     ],
     [T('Views'), False, '',
