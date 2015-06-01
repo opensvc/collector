@@ -33,7 +33,8 @@ function sysreport_timeline(id, data){
     }
     _data = {
      'cid': item.cid,
-     'nodename': item.group
+     'nodename': item.group,
+     'path': $("#"+id).parents("[name=sysrep_top]").find("input[name=filter]").val()
     }
     $.ajax({
          type: "POST",

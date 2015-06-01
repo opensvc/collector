@@ -129,7 +129,11 @@ def sysrep_allow(nodenames, fpath):
 @auth.requires_login()
 def ajax_sysreport_commit():
     cid = request.vars.cid
+    path = request.vars.path
     nodename = request.vars.nodename
+    return _sysreport_commit(nodename, cid, path=path)
+
+def _sysreport_commit(nodename, cid, path=None):
     sysresponsible = is_sysresponsible(nodename)
     l = []
 
@@ -137,11 +141,11 @@ def ajax_sysreport_commit():
     sec_pattern = get_pattern_secure()
 
     # diff data
-    diff_data = sysreport.sysreport().show_data(cid, nodename)
+    diff_data = sysreport.sysreport().show_data(cid, nodename, path=path)
     l += show_diff_data([nodename], diff_data, sysresponsible, sec_pattern)
 
     # file tree data
-    tree_data = sysreport.sysreport().lstree_data(cid, nodename)
+    tree_data = sysreport.sysreport().lstree_data(cid, nodename, path=path)
     t = []
     for d in tree_data:
         if sec_pattern.match(d["fpath"]):
@@ -203,17 +207,19 @@ def sysrep():
 @auth.requires_login()
 def ajax_sysrep():
     nodes = request.vars.nodes.split(",")
-    return _sysreport(nodes)
+    path = request.vars.path
+    return _sysreport(nodes, path=path)
 
 @auth.requires_login()
 def ajax_sysreport():
     nodes = request.args[0].split(",")
-    return _sysreport(nodes)
+    path = request.vars.path
+    return _sysreport(nodes, path=path)
 
-def _sysreport(nodes):
+def _sysreport(nodes, path=None):
     import uuid
     tid = uuid.uuid1().hex
-    data = sysreport.sysreport().timeline(nodes)
+    data = sysreport.sysreport().timeline(nodes, path=path)
     if len(data) == 0:
         return DIV(T("No sysreport available for this node"))
 
@@ -234,6 +240,42 @@ def _sysreport(nodes):
             buff += beautify_fpath(fpath) + '\n'
         data[i]['stat'] = buff
 
+    if path:
+        _cl1 = ""
+        _cl2 = "hidden"
+    else:
+        _cl1 = "hidden"
+        _cl2 = ""
+
+    filt = DIV(
+      DIV(
+        INPUT(
+          _value=path,
+          _name="filter",
+          _onclick="""$(this).focus()""",
+          _onkeyup="""
+              url = $(location).attr("origin") + "/init/ajax_sysreport/ajax_sysrep"
+              dest = $(this).parents("[name=sysrep_top]")
+              if(is_enter(event)){
+                $.ajax({
+                  type: "POST",
+                  url: url,
+                  data: {nodes: "%(nodes)s", "path": $(this).val()},
+                  success: function(msg){
+                    dest.html(msg)
+                  }
+                })
+          }""" % dict(nodes=','.join(nodes)),
+        ),
+        _class="filter " + _cl1,
+      ),
+      DIV(
+        _class="filter16 clickable " + _cl2,
+        _onclick="""$(this).toggle();$(this).siblings().toggle().children("input").focus()""",
+      ),
+      _style="float:right",
+    )
+
     link = DIV(
       DIV(
         _class="hidden",
@@ -242,6 +284,10 @@ def _sysreport(nodes):
         url = $(location).attr("origin")
         url += "/init/ajax_sysreport/sysrep?nodes="
         url += $(this).parent().parent().find("[name=nodes]").text()
+        fval = $(this).parent().parent().find("input[name=filter]").val()
+        if (fval!="") {
+          url += "&path="+fval
+        }
 
         cid = $(this).parent().parent().find("[name=cid]").text()
         nodename = $(this).parent().parent().find("[name=nodename]").text()
@@ -266,13 +312,14 @@ def _sysreport(nodes):
         admin = ""
 
     if request.vars.cid is not None:
-        show_data = ajax_sysreport_commit()
+        show_data = _sysreport_commit(request.vars.nodename, request.vars.cid, path=path)
     else:
         show_data = ""
 
     return DIV(
       admin,
       link,
+      filt,
       DIV(_id=tid+"_admin", _class="hidden"),
       SPAN(','.join(nodes), _name="nodes", _class="hidden"),
       H1(title),
@@ -285,6 +332,7 @@ def _sysreport(nodes):
       ),
       SCRIPT(_src=URL(c="static", f="sysreport.js")),
       SCRIPT("""sysreport_timeline("%s", %s)"""% (tid, str(data))),
+      _name="sysrep_top",
     )
 
 @auth.requires_login()

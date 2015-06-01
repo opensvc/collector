@@ -2091,6 +2091,21 @@ ul.login_menu ul {
     white-space: nowrap;
 }
  
+.filter > input {
+  background: white url('filter16.png') no-repeat;
+  color: black;
+  width: 10em;
+  padding-left: 18px;
+  border: 1px solid #ccc;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  border-radius: 4px;
+  outline: 0;
+  -webkit-appearance: none;
+  position: relative;
+  top: -2px;
+}
+
 .floatw > a {
     color: black;
 }

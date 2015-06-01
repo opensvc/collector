@@ -9,14 +9,14 @@ class sysreport(object):
         self.collect_d = os.path.join(here_d, '..', 'uploads', 'sysreport')
         self.cwd = os.getcwd()
 
-    def timeline(self, nodes=[]):
+    def timeline(self, nodes=[], path=None):
         data = []
         for node in nodes:
-            data += self._timeline(node)
+            data += self._timeline(node, path=path)
         return data
 
-    def _timeline(self, nodename):
-        s = self.log(nodename)
+    def _timeline(self, nodename, path=None):
+        s = self.log(nodename, path=path)
         data = self.parse_log(s, nodename)
         if len(data) > 1:
             # do not to display the node sysreport initial commit
@@ -64,31 +64,37 @@ class sysreport(object):
             data[i]['group'] = nodename
         return data
 
-    def log(self, nodename=None):
+    def log(self, nodename=None, path=None):
         git_d = os.path.join(self.collect_d, nodename, ".git")
         cmd = ["git", "--git-dir="+git_d, "log", "-n", "300",
                "--stat=510,500", "--date=iso"]
+        if path:
+            cmd += ['--', path]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
         return out
 
-    def show_data(self, cid, nodename):
-        ss = self.show_stat(cid, nodename)
-        s = self.show(cid, nodename)
+    def show_data(self, cid, nodename, path=None):
+        ss = self.show_stat(cid, nodename, path=path)
+        s = self.show(cid, nodename, path=path)
         data = self.parse_show(s)
         data['stat'] = self.parse_show_stat(ss)
         return data
 
-    def show(self, cid, nodename):
+    def show(self, cid, nodename, path=None):
         git_d = os.path.join(self.collect_d, nodename, ".git")
         cmd = ["git", "--git-dir="+git_d, "show", '--pretty=format:%ci%n%b', cid]
+        if path:
+            cmd += ["--", path]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
         return out
 
-    def show_stat(self, cid, nodename):
+    def show_stat(self, cid, nodename, path=None):
         git_d = os.path.join(self.collect_d, nodename, ".git")
         cmd = ["git", "--git-dir="+git_d, "show", '--pretty=format:%ci%n%b', '--numstat', cid]
+        if path:
+            cmd += ["--", path]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
         return out
@@ -138,9 +144,15 @@ class sysreport(object):
             d[fpath] = '\n'.join(block)
         return {'date': date, 'blocks': d}
 
-    def lstree(self, cid, nodename):
+    def lstree(self, cid, nodename, path=None):
         git_d = os.path.join(self.collect_d, nodename, ".git")
         cmd = ["git", "--git-dir="+git_d, "ls-tree", "-r", cid]
+        if path:
+            import glob
+            base_d = os.path.join(git_d, '..')
+            paths = glob.glob(os.path.join(base_d, path))
+            paths = map(lambda x: x.replace(base_d+"/", ""), paths)
+            cmd += ["--"] + paths
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
         return out
@@ -161,8 +173,8 @@ class sysreport(object):
             data.append(d)
         return data
 
-    def lstree_data(self, cid, nodename):
-        s = self.lstree(cid, nodename)
+    def lstree_data(self, cid, nodename, path=None):
+        s = self.lstree(cid, nodename, path=path)
         return self.parse_lstree(cid, s)
 
     def show_file(self, fpath, cid, _uuid, nodename):
