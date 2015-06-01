@@ -77,8 +77,7 @@ Optional parameters:
 
 Example:
 
-``# curl -u %(email)s -o-
-https://%(collector)s/init/rest/api/nodes/mynode/disks?props=b_disk_app.disk_nodename,b_disk_app.disk_id,stor_array.array_name``
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/mynode/disks?props=b_disk_app.disk_nodename,b_disk_app.disk_id,stor_array.array_name``
 
 """ % dict(
         email=user_email(),
@@ -94,6 +93,89 @@ def get_node_disks(nodename, props=None, query=None):
         cols = props_to_cols(None, ["b_disk_app", "stor_array"])
         q &= smart_query(cols, query)
     cols = props_to_cols(props, ["b_disk_app", "stor_array"])
+    data = db(q).select(*cols, left=l, cacheable=True).as_list()
+    return dict(data=data)
+
+
+#
+api_nodes_doc["/nodes/<nodename>/services"] = """
+### GET
+
+Description:
+
+- List a node services.
+
+Optional parameters:
+
+- **props**
+. A list of properties to include in each dictionnary.
+. If omitted, all properties are included.
+. The separator is ','.
+. Available properties are: ``%(props)s``:green.
+
+- **query**
+. A web2py smart query
+
+Example:
+
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/mynode/services``
+
+""" % dict(
+        email=user_email(),
+        collector=request.env.http_host,
+        props=", ".join(sorted(map(lambda x: "svcmon."+x, db.svcmon.fields)+map(lambda x: "services."+x, db.services.fields))),
+      )
+
+def get_node_services(nodename, props=None, query=None):
+    q = db.svcmon.mon_nodname == nodename
+    l = db.services.on(db.svcmon.mon_svcname == db.services.svc_name)
+    q &= _where(None, 'svcmon', domain_perms(), 'mon_nodname')
+    if query:
+        cols = props_to_cols(None, ["svcmon", "services"])
+        q &= smart_query(cols, query)
+    cols = props_to_cols(props, ["svcmon", "services"])
+    data = db(q).select(*cols, left=l, cacheable=True).as_list()
+    return dict(data=data)
+
+
+#
+api_nodes_doc["/nodes/<nodename>/services/<svcname>"] = """
+### GET
+
+Description:
+
+- Display the specified service on the specified node.
+
+Optional parameters:
+
+- **props**
+. A list of properties to include in each dictionnary.
+. If omitted, all properties are included.
+. The separator is ','.
+. Available properties are: ``%(props)s``:green.
+
+- **query**
+. A web2py smart query
+
+Example:
+
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/mynode/services``
+
+""" % dict(
+        email=user_email(),
+        collector=request.env.http_host,
+        props=", ".join(sorted(map(lambda x: "svcmon."+x, db.svcmon.fields)+map(lambda x: "services."+x, db.services.fields))),
+      )
+
+def get_node_service(nodename, svcname, props=None, query=None):
+    q = db.svcmon.mon_nodname == nodename
+    q = db.svcmon.mon_svcname == svcname
+    l = db.services.on(db.svcmon.mon_svcname == db.services.svc_name)
+    q &= _where(None, 'svcmon', domain_perms(), 'mon_nodname')
+    if query:
+        cols = props_to_cols(None, ["svcmon", "services"])
+        q &= smart_query(cols, query)
+    cols = props_to_cols(props, ["svcmon", "services"])
     data = db(q).select(*cols, left=l, cacheable=True).as_list()
     return dict(data=data)
 

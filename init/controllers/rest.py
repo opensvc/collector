@@ -47,6 +47,8 @@ def api():
                     return get_node_ips(args[1], **vars)
                 if args[0] == "nodes" and args[2] == "alerts":
                     return get_node_alerts(args[1], **vars)
+                if args[0] == "nodes" and args[2] == "services":
+                    return get_node_services(args[1], **vars)
                 if args[0] == "services" and args[2] == "nodes":
                     return get_service_nodes(args[1], **vars)
                 if args[0] == "tags" and args[2] == "nodes":
@@ -56,6 +58,8 @@ def api():
             if n_args == 4:
                 if args[0] == "services" and args[2] == "nodes":
                     return get_service_node(args[1], args[3], **vars)
+                if args[0] == "nodes" and args[2] == "services":
+                    return get_node_service(args[1], args[3], **vars)
         except Exception as e:
             return dict(error=str(e))
         return dict()
