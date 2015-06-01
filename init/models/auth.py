@@ -49,6 +49,8 @@ def user_phone_work():
 def user_email():
     q = db.auth_user.id == auth.user_id
     row = db(q).select(db.auth_user.email).first()
+    if row is None:
+        return None
     return row.email
 
 def user_groups():
