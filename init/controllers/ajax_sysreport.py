@@ -15,6 +15,31 @@ def get_pattern_secure():
             sec_pattern = re.compile(".*")
     return sec_pattern
 
+def encode_fpath(fpath):
+    if fpath is None:
+        return
+    if "/bin/" in fpath:
+        fpath = fpath.replace(' ', '(space)')
+        fpath = fpath.replace('|', '(pipe)')
+        fpath = fpath.replace('&', '(amp)')
+        fpath = fpath.replace('$', '(dollar)')
+        fpath = fpath.replace('^', '(caret)')
+        fpath = fpath.replace('/', '(slash)')
+        fpath = fpath.replace(':', '(colon)')
+        fpath = fpath.replace(';', '(semicolon)')
+        fpath = fpath.replace('<', '(lt)')
+        fpath = fpath.replace('>', '(gt)')
+        fpath = fpath.replace('=', '(eq)')
+        fpath = fpath.replace('?', '(question)')
+        fpath = fpath.replace('@', '(at)')
+        fpath = fpath.replace('!', '(excl)')
+        fpath = fpath.replace('#', '(num)')
+        fpath = fpath.replace('%', '(pct)')
+        fpath = fpath.replace('"', '(dquote)')
+        fpath = fpath.replace("'", '(squote)')
+    fpath = "*/" + fpath
+    return fpath
+
 def beautify_fpath(fpath):
     if fpath.startswith("cmd/"):
         fpath = fpath[3:]
@@ -141,11 +166,11 @@ def _sysreport_commit(nodename, cid, path=None):
     sec_pattern = get_pattern_secure()
 
     # diff data
-    diff_data = sysreport.sysreport().show_data(cid, nodename, path=path)
+    diff_data = sysreport.sysreport().show_data(cid, nodename, path=encode_fpath(path))
     l += show_diff_data([nodename], diff_data, sysresponsible, sec_pattern)
 
     # file tree data
-    tree_data = sysreport.sysreport().lstree_data(cid, nodename, path=path)
+    tree_data = sysreport.sysreport().lstree_data(cid, nodename, path=encode_fpath(path))
     t = []
     for d in tree_data:
         if sec_pattern.match(d["fpath"]):
@@ -219,9 +244,7 @@ def ajax_sysreport():
 def _sysreport(nodes, path=None):
     import uuid
     tid = uuid.uuid1().hex
-    data = sysreport.sysreport().timeline(nodes, path=path)
-    if len(data) == 0:
-        return DIV(T("No sysreport available for this node"))
+    data = sysreport.sysreport().timeline(nodes, path=encode_fpath(path))
 
     if len(nodes) == 1:
         title = T("Node %(nodename)s changes timeline", dict(nodename=nodes[0]))
@@ -311,6 +334,11 @@ def _sysreport(nodes, path=None):
     else:
         admin = ""
 
+    if len(data) == 0:
+        mesg = DIV(T("No sysreport available for this node"))
+    else:
+        mesg = ""
+
     if request.vars.cid is not None:
         show_data = _sysreport_commit(request.vars.nodename, request.vars.cid, path=path)
     else:
@@ -326,6 +354,7 @@ def _sysreport(nodes, path=None):
       DIV(
         _id=tid,
       ),
+      mesg,
       DIV(
         show_data,
         _id=tid+"_show",

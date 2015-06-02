@@ -148,10 +148,16 @@ class sysreport(object):
         git_d = os.path.join(self.collect_d, nodename, ".git")
         cmd = ["git", "--git-dir="+git_d, "ls-tree", "-r", cid]
         if path:
-            import glob
             base_d = os.path.join(git_d, '..')
-            paths = glob.glob(os.path.join(base_d, path))
+            path = path.replace("//", "/")
+            f_cmd = ["find", base_d, "-path", path]
+            p = Popen(f_cmd, stdout=PIPE, stderr=PIPE)
+            out, err = p.communicate()
+            paths = out.split("\n")
             paths = map(lambda x: x.replace(base_d+"/", ""), paths)
+            paths.remove("")
+            if len(paths) == 0:
+                return ""
             cmd += ["--"] + paths
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
