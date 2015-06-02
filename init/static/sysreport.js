@@ -3,7 +3,7 @@ function sysreport_timeline(id, data){
     template: function (item) {
       return '<pre style="text-align:left">' + item.stat + '</pre>';
     },
-    clickToUse: true
+    clickToUse: false
   };
   var container = document.getElementById(id);
   var groups = []

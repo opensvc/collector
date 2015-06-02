@@ -16,7 +16,7 @@ def get_pattern_secure():
     return sec_pattern
 
 def encode_fpath(fpath):
-    if fpath is None:
+    if fpath is None or fpath == "":
         return
     if "/bin/" in fpath:
         fpath = fpath.replace(' ', '(space)')
@@ -155,10 +155,18 @@ def sysrep_allow(nodenames, fpath):
 def ajax_sysreport_commit():
     cid = request.vars.cid
     path = request.vars.path
+    begin = request.vars.begin
+    end = request.vars.end
     nodename = request.vars.nodename
-    return _sysreport_commit(nodename, cid, path=path)
+    return _sysreport_commit(nodename, cid, path=path, begin=begin, end=end)
 
-def _sysreport_commit(nodename, cid, path=None):
+def _sysreport_range_diff(nodenames, path=None, begin=None, end=None):
+    d = []
+    for nodename in nodenames:
+        d += __sysreport_range_diff(nodename, path=path, begin=begin, end=end)
+    return DIV(d)
+
+def __sysreport_range_diff(nodename, path=None, begin=None, end=None):
     sysresponsible = is_sysresponsible(nodename)
     l = []
 
@@ -166,7 +174,40 @@ def _sysreport_commit(nodename, cid, path=None):
     sec_pattern = get_pattern_secure()
 
     # diff data
-    diff_data = sysreport.sysreport().show_data(cid, nodename, path=encode_fpath(path))
+    try:
+        diff_data = sysreport.sysreport().show_data(None, nodename,
+                                                path=encode_fpath(path),
+                                                begin=begin,
+                                                end=end
+                                               )
+    except Exception as e:
+        return str(e)
+
+    dd = show_diff_data([nodename], diff_data, sysresponsible, sec_pattern)
+    if len(dd):
+        l += dd
+    else:
+        l += SPAN(T("No changes"))
+
+    return DIV(
+      #SPAN(request.vars.nodename, _name="nodename", _class="hidden"),
+      H2(T("Node %(nodename)s changes between %(begin)s and %(end)s", dict(nodename=nodename, begin=begin, end=end))),
+      DIV(l, _name="diff"),
+    )
+
+def _sysreport_commit(nodename, cid, path=None, begin=None, end=None):
+    sysresponsible = is_sysresponsible(nodename)
+    l = []
+
+    # load secure patterns
+    sec_pattern = get_pattern_secure()
+
+    # diff data
+    diff_data = sysreport.sysreport().show_data(cid, nodename,
+                                                path=encode_fpath(path),
+                                                begin=begin,
+                                                end=end
+                                               )
     l += show_diff_data([nodename], diff_data, sysresponsible, sec_pattern)
 
     # file tree data
@@ -224,7 +265,6 @@ def ajax_sysreport_show_file():
 def sysrep():
     d = DIV(
       ajax_sysrep(),
-      SCRIPT("""$(".diff").each(function(i, block){hljs.highlightBlock(block);})"""),
       _style="padding:1em;text-align:left",
     )
     return dict(table=d)
@@ -233,20 +273,34 @@ def sysrep():
 def ajax_sysrep():
     nodes = request.vars.nodes.split(",")
     path = request.vars.path
-    return _sysreport(nodes, path=path)
+    begin = request.vars.begin
+    end = request.vars.end
+    d = DIV(
+      _sysreport(nodes, path=path, begin=begin, end=end),
+      SCRIPT("""$(".diff").each(function(i, block){hljs.highlightBlock(block);})"""),
+    )
+    return d
 
 @auth.requires_login()
 def ajax_sysreport():
     nodes = request.args[0].split(",")
     path = request.vars.path
-    return _sysreport(nodes, path=path)
+    begin = request.vars.begin
+    end = request.vars.end
+    return _sysreport(nodes, path=path, begin=begin, end=end)
 
-def _sysreport(nodes, path=None):
+def _sysreport(nodes, path=None, begin=None, end=None):
+    if begin == "":
+        begin = None
+    if end == "":
+        end = None
     import uuid
     tid = uuid.uuid1().hex
     data = sysreport.sysreport().timeline(nodes, path=encode_fpath(path))
 
-    if len(nodes) == 1:
+    if begin or end:
+        title = ""
+    elif len(nodes) == 1:
         title = T("Node %(nodename)s changes timeline", dict(nodename=nodes[0]))
     else:
         title = T("Nodes %(nodename)s changes timeline", dict(nodename=', '.join(nodes)))
@@ -262,6 +316,76 @@ def _sysreport(nodes, path=None):
                 break
             buff += beautify_fpath(fpath) + '\n'
         data[i]['stat'] = buff
+
+    if begin or end:
+        r_cl1 = ""
+        r_cl2 = "hidden"
+    else:
+        r_cl1 = "hidden"
+        r_cl2 = ""
+
+    rangesel = DIV(
+      DIV(
+        INPUT(
+          _value=end,
+          _name="end",
+          _class="date",
+          _onkeyup="""
+              url = $(location).attr("origin") + "/init/ajax_sysreport/ajax_sysrep"
+              dest = $(this).parents("[name=sysrep_top]")
+              if(is_enter(event)){
+                $.ajax({
+                  type: "POST",
+                  url: url,
+                  data: {
+                    nodes: "%(nodes)s",
+                    end: $(this).val(),
+                    begin: dest.find("[name=begin]").val(),
+                    path: dest.find("[name=filter]").val()
+                  },
+                  success: function(msg){
+                    dest.html(msg)
+                  }
+                })
+          }""" % dict(nodes=','.join(nodes)),
+        ),
+        _class="end "+r_cl1,
+        _style="float:right",
+      ),
+      DIV(
+        INPUT(
+          _value=begin,
+          _name="begin",
+          _class="date",
+          _onkeyup="""
+              url = $(location).attr("origin") + "/init/ajax_sysreport/ajax_sysrep"
+              dest = $(this).parents("[name=sysrep_top]")
+              if(is_enter(event)){
+                $.ajax({
+                  type: "POST",
+                  url: url,
+                  data: {
+                    nodes: "%(nodes)s",
+                    begin: $(this).val(),
+                    end: dest.find("[name=end]").val(),
+                    path: dest.find("[name=filter]").val()
+                  },
+                  success: function(msg){
+                    dest.html(msg)
+                  }
+                })
+          }""" % dict(nodes=','.join(nodes)),
+        ),
+        _class="begin "+r_cl1,
+        _style="float:right",
+      ),
+      DIV(
+        _class="time16 clickable " + r_cl2,
+        _onclick="""$(this).toggle();$(this).siblings().toggle().children("input").focus();
+                    $("input.date").datetimepicker({dateFormat: "yy-mm-dd"})""",
+      ),
+      _style="float:right",
+    )
 
     if path:
         _cl1 = ""
@@ -281,9 +405,15 @@ def _sysreport(nodes, path=None):
               dest = $(this).parents("[name=sysrep_top]")
               if(is_enter(event)){
                 $.ajax({
+                  async: true,
                   type: "POST",
                   url: url,
-                  data: {nodes: "%(nodes)s", "path": $(this).val()},
+                  data: {
+                    nodes: "%(nodes)s",
+                    path: $(this).val(),
+                    begin: dest.find("[name=begin]").val(),
+                    end: dest.find("[name=end]").val()
+                  },
                   success: function(msg){
                     dest.html(msg)
                   }
@@ -310,6 +440,14 @@ def _sysreport(nodes, path=None):
         fval = $(this).parent().parent().find("input[name=filter]").val()
         if (fval!="") {
           url += "&path="+fval
+        }
+        fval = $(this).parent().parent().find("input[name=begin]").val()
+        if (fval!="") {
+          url += "&begin="+fval
+        }
+        fval = $(this).parent().parent().find("input[name=end]").val()
+        if (fval!="") {
+          url += "&end="+fval
         }
 
         cid = $(this).parent().parent().find("[name=cid]").text()
@@ -339,15 +477,21 @@ def _sysreport(nodes, path=None):
     else:
         mesg = ""
 
-    if request.vars.cid is not None:
+    if begin or end:
+        show_data = _sysreport_range_diff(nodes, path=path, begin=begin, end=end)
+        scr = ""
+    elif request.vars.cid:
         show_data = _sysreport_commit(request.vars.nodename, request.vars.cid, path=path)
+        scr = SCRIPT("""sysreport_timeline("%s", %s)"""% (tid, str(data))),
     else:
         show_data = ""
+        scr = SCRIPT("""sysreport_timeline("%s", %s)"""% (tid, str(data))),
 
     return DIV(
       admin,
       link,
       filt,
+      rangesel,
       DIV(_id=tid+"_admin", _class="hidden"),
       SPAN(','.join(nodes), _name="nodes", _class="hidden"),
       H1(title),
@@ -360,7 +504,7 @@ def _sysreport(nodes, path=None):
         _id=tid+"_show",
       ),
       SCRIPT(_src=URL(c="static", f="sysreport.js")),
-      SCRIPT("""sysreport_timeline("%s", %s)"""% (tid, str(data))),
+      SPAN(scr),
       _name="sysrep_top",
     )
 

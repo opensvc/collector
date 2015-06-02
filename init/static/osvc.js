@@ -616,7 +616,7 @@ function draw_topo(id, data, display) {
           damping: 0.5
         }
       },
-      clickToUse: true,
+      clickToUse: false,
       height: _height+'px',
       nodes: {
         widthMax: "48px",
@@ -681,7 +681,7 @@ function draw_startup(id, data) {
           damping: 0.5
         }
       },
-      clickToUse: true,
+      clickToUse: false,
       height: _height+'px',
       nodes: {
         widthMax: "48px",

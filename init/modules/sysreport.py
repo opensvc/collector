@@ -74,17 +74,39 @@ class sysreport(object):
         out, err = p.communicate()
         return out
 
-    def show_data(self, cid, nodename, path=None):
-        ss = self.show_stat(cid, nodename, path=path)
-        s = self.show(cid, nodename, path=path)
+    def show_data(self, cid, nodename, path=None, begin=None, end=None):
+        if begin or end:
+            ss = ""
+            s = self.diff(nodename, path=path, begin=begin, end=end)
+        elif cid:
+            ss = self.show_stat(cid, nodename, path=path)
+            s = self.show(cid, nodename, path=path)
+        else:
+            ss = ""
+            s = ""
         data = self.parse_show(s)
         data['stat'] = self.parse_show_stat(ss)
         return data
 
+    def diff(self, nodename, path=None, begin=None, end=None):
+        git_d = os.path.join(self.collect_d, nodename, ".git")
+        cmd = ["git", "--git-dir="+git_d, "diff", '--pretty=format:%ci%n%b']
+        if begin:
+            cmd += ['master@{%s}'%begin]
+        if end:
+            cmd += ['master@{%s}'%end]
+        if path:
+            cmd += ["--", path]
+        p = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        out, err = p.communicate()
+        if len(err) > 0 and "only goes back" in err:
+            raise Exception(err)
+        return out
+
     def show(self, cid, nodename, path=None):
         git_d = os.path.join(self.collect_d, nodename, ".git")
         cmd = ["git", "--git-dir="+git_d, "show", '--pretty=format:%ci%n%b', cid]
-        if path:
+        if path and path != "":
             cmd += ["--", path]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
@@ -115,8 +137,11 @@ class sysreport(object):
     def parse_show(self, s):
         lines = s.split("\n")
         if len(lines) > 0:
-            date = lines[0]
-            lines = lines[1:]
+            if 'diff' in lines[0]:
+                date = ""
+            else:
+                date = lines[0]
+                lines = lines[1:]
         else:
             date = ''
         d = {}
@@ -180,6 +205,8 @@ class sysreport(object):
         return data
 
     def lstree_data(self, cid, nodename, path=None):
+        if cid is None:
+            return []
         s = self.lstree(cid, nodename, path=path)
         return self.parse_lstree(cid, s)
 
