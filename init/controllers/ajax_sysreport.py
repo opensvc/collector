@@ -367,6 +367,7 @@ def _sysreport(nodes, path=None):
 @auth.requires_login()
 def ajax_sysrepdiff():
     nodes = request.vars.nodes
+    path = request.vars.path
     if nodes is None:
         return "No data"
     nodes = set(nodes.split(','))
@@ -375,14 +376,60 @@ def ajax_sysrepdiff():
 
     l = []
 
-    for node in nodes[1:]:
-        l.append(H1(' > '.join((nodes[0],node))))
+    if path:
+        l.append(H1(path))
         try:
-            data = _sysrepdiff(nodes)
+            data = _sysrepdiff(nodes, path=path)
         except Exception as e:
             import traceback
             data = PRE(traceback.format_exc())
         l.append(data)
+    else:
+        for node in nodes[1:]:
+            l.append(H1(' > '.join((nodes[0],node))))
+            try:
+                data = _sysrepdiff(nodes, path=path)
+            except Exception as e:
+                import traceback
+                data = PRE(traceback.format_exc())
+            l.append(data)
+
+    if path:
+        _cl1 = ""
+        _cl2 = "hidden"
+    else:
+        _cl1 = "hidden"
+        _cl2 = ""
+
+    filt = DIV(
+      DIV(
+        INPUT(
+          _value=path,
+          _name="filter",
+          _onclick="""$(this).focus()""",
+          _onkeyup="""
+              url = $(location).attr("origin") + "/init/ajax_sysreport/ajax_sysrepdiff"
+              dest = $(this).parents("[name=sysrepdiff_top]")
+              if(is_enter(event)){
+                $.ajax({
+                  type: "POST",
+                  url: url,
+                  data: {nodes: "%(nodes)s", "path": $(this).val()},
+                  success: function(msg){
+                    dest.html(msg)
+                  }
+                })
+          }""" % dict(nodes=','.join(nodes)),
+        ),
+        _class="filter " + _cl1,
+      ),
+      DIV(
+        _class="filter16 clickable " + _cl2,
+        _onclick="""$(this).toggle();$(this).siblings().toggle().children("input").focus()""",
+      ),
+      _style="float:right",
+      _title="Paths to submit to the diff command. The paths begin with the nodename and the 'file' or 'cmd' directory. For example 'node1/file/dir1 node2/file/dir2'"
+    )
 
     link = DIV(
       DIV(
@@ -392,6 +439,10 @@ def ajax_sysrepdiff():
         url = $(location).attr("origin")
         url += "/init/ajax_sysreport/sysrepdiff?nodes="
         url += $(this).parent().parent().find("[name=nodes]").text()
+        fval = $(this).parent().parent().find("input[name=filter]").val()
+        if (fval!="") {
+          url += "&path="+fval
+        }
         $(this).children().html(url)
         $(this).children().show()
       """,
@@ -401,11 +452,13 @@ def ajax_sysrepdiff():
 
     return DIV(
       link,
+      filt,
       SPAN(','.join(nodes), _class='hidden', _name='nodes'),
       SPAN(l),
+      _name="sysrepdiff_top"
     )
 
-def _sysrepdiff(nodes):
+def _sysrepdiff(nodes, path=None):
     import os
     import subprocess
 
@@ -423,7 +476,10 @@ def _sysrepdiff(nodes):
         os.chdir(cwd)
         return "node %s has no sysreport"%nodes[1]
 
-    cmd = ["diff", "-urN", "--exclude=.git", nodes[0], nodes[1]]
+    if path:
+        cmd = ["diff", "-urN", "--exclude=.git"] + path.split()
+    else:
+        cmd = ["diff", "-urN", "--exclude=.git", nodes[0], nodes[1]]
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=None)
     out, err = p.communicate()
 
