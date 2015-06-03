@@ -102,6 +102,47 @@ def get_services(props=None, fset_id=None, query=None):
 
 
 #
+api_services_doc["/services/<service>/alerts"] = """
+### GET
+
+Description:
+
+- List a service alerts.
+
+Optional parameters:
+
+- **props**
+. A list of properties to include in each dictionnary.
+. If omitted, all properties are included.
+. The separator is ','.
+. Available properties are: ``%(props)s``:green.
+
+- **query**
+. A web2py smart query
+
+Example:
+
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/alerts``
+
+""" % dict(
+        email=user_email(),
+        collector=request.env.http_host,
+        props=", ".join(sorted(db.dashboard.fields)),
+      )
+
+def get_service_alerts(svcname, props=None, query=None):
+    q = db.dashboard.dash_svcname == svcname
+    q &= _where(None, 'dashboard', domain_perms(), 'dash_svcname')
+    if query:
+        cols = props_to_cols(None, ["dashboard"])
+        q &= smart_query(cols, query)
+    cols = props_to_cols(props, ["dashboard"])
+    data = db(q).select(*cols, cacheable=True).as_list()
+    data = mangle_alerts(data)
+    return dict(data=data)
+
+
+#
 api_services_doc["/services/<svcname>/nodes"] = """
 ### GET
 

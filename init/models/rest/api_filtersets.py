@@ -24,7 +24,7 @@ Optional parameters:
 
 Example:
 
-``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/filtersets?like=%%aix%%``
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/filtersets?query=fset_name contains aix``
 
 """ % dict(
         email=user_email(),

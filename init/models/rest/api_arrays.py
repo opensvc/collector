@@ -23,8 +23,7 @@ Optional parameters:
 
 Example:
 
-``# curl -u %(email)s -o-
-https://%(collector)s/init/rest/api/arrays/myarray?props=array_name,array_model``
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/arrays/myarray?props=array_name,array_model``
 
 """ % dict(
         email=user_email(),
@@ -58,9 +57,7 @@ Optional parameters:
 
 Example:
 
-``# curl -u %(email)s -o-
-"https://%(collector)s/init/rest/api/arrays?props=array_name&query=array_model
-contains hitachi"``
+``# curl -u %(email)s -o- "https://%(collector)s/init/rest/api/arrays?props=array_name&query=array_model contains hitachi"``
 """ % dict(
         email=user_email(),
         collector=request.env.http_host,
@@ -97,8 +94,7 @@ Optional parameters:
 
 Example:
 
-``# curl -u %(email)s -o-
-https://%(collector)s/init/rest/api/arrays/myarray/diskgroups``
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/arrays/myarray/diskgroups``
 
 """ % dict(
         email=user_email(),
@@ -140,8 +136,7 @@ Optional parameters:
 
 Example:
 
-``# curl -u %(email)s -o-
-https://%(collector)s/init/rest/api/arrays/myarray/proxies``
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/arrays/myarray/proxies``
 
 """ % dict(
         email=user_email(),

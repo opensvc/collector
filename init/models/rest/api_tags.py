@@ -99,7 +99,7 @@ Optional parameters:
 
 Example:
 
-``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/tags/10
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/tags/10``
 
 """ % dict(
         email=user_email(),

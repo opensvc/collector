@@ -28,20 +28,19 @@ Optional parameters:
 . A list of properties to include in each dictionnary.
 . If omitted, all properties are included.
 . The separator is ','.
-. Available properties are: ``%(nodes_ips_props)s``:green.
+. Available properties are: ``%(props)s``:green.
 
 - **query**
 . A web2py smart query
 
 Example:
 
-``# curl -u %(email)s -o-
-https://%(collector)s/init/rest/api/nodes/mynode/ips?props=prio,net_network,net_netmask``
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/mynode/ips?props=prio,net_network,net_netmask``
 
 """ % dict(
         email=user_email(),
         collector=request.env.http_host,
-        nodes_ips_props=", ".join(sorted(list(set(db.v_nodenetworks.fields) - set(db.nodes.fields)))),
+        props=", ".join(sorted(list(set(db.v_nodenetworks.fields) - set(db.nodes.fields)))),
       )
 
 def get_node_ips(nodename, props=None, query=None):
@@ -70,7 +69,7 @@ Optional parameters:
 . A list of properties to include in each dictionnary.
 . If omitted, all properties are included.
 . The separator is ','.
-. Available properties are: ``%(nodes_disks_props)s``:green.
+. Available properties are: ``%(props)s``:green.
 
 - **query**
 . A web2py smart query
@@ -82,7 +81,7 @@ Example:
 """ % dict(
         email=user_email(),
         collector=request.env.http_host,
-        nodes_disks_props=", ".join(sorted(map(lambda x: "b_disk_app."+x, db.b_disk_app.fields)+map(lambda x: "stor_array."+x, db.stor_array.fields))),
+        props=", ".join(sorted(map(lambda x: "b_disk_app."+x, db.b_disk_app.fields)+map(lambda x: "stor_array."+x, db.stor_array.fields))),
       )
 
 def get_node_disks(nodename, props=None, query=None):
@@ -194,20 +193,19 @@ Optional parameters:
 . A list of properties to include in each dictionnary.
 . If omitted, all properties are included.
 . The separator is ','.
-. Available properties are: ``%(nodes_alerts_props)s``:green.
+. Available properties are: ``%(props)s``:green.
 
 - **query**
 . A web2py smart query
 
 Example:
 
-``# curl -u %(email)s -o-
-https://%(collector)s/init/rest/api/nodes/mynode/alerts?props=dash_nodename,dash_type``
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/mynode/alerts?props=dash_nodename,dash_type``
 
 """ % dict(
         email=user_email(),
         collector=request.env.http_host,
-        nodes_alerts_props=", ".join(sorted(db.dashboard.fields)),
+        props=", ".join(sorted(db.dashboard.fields)),
       )
 
 def get_node_alerts(nodename, props=None, query=None):
@@ -218,6 +216,7 @@ def get_node_alerts(nodename, props=None, query=None):
         q &= smart_query(cols, query)
     cols = props_to_cols(props, ["dashboard"])
     data = db(q).select(*cols, cacheable=True).as_list()
+    data = mangle_alerts(data)
     return dict(data=data)
 
 
@@ -236,7 +235,7 @@ Optional parameters:
 . A list of properties to include in node data.
 . If omitted, all properties are included.
 . The separator is ','.
-. Available properties are: ``%(nodes_props)s``:green.
+. Available properties are: ``%(props)s``:green.
 
 - **query**
 . A web2py smart query
@@ -248,7 +247,7 @@ Example:
 """ % dict(
         email=user_email(),
         collector=request.env.http_host,
-        nodes_props=", ".join(sorted(db.nodes.fields)),
+        props=", ".join(sorted(db.nodes.fields)),
       )
 
 def get_node(nodename, props=None):
@@ -275,7 +274,7 @@ Optional parameters:
 . A list of properties to include in each node data.
 . If omitted, only the node name is included.
 . The separator is ','.
-. Available properties are: ``%(nodes_props)s``:green.
+. Available properties are: ``%(props)s``:green.
 
 - **fset_id**
 . Filter the node names list using the filterset identified by fset_id.
@@ -290,7 +289,7 @@ Example:
 """ % dict(
         email=user_email(),
         collector=request.env.http_host,
-        nodes_props=", ".join(sorted(db.nodes.fields)),
+        props=", ".join(sorted(db.nodes.fields)),
       )
 
 def get_nodes(props=None, fset_id=None, query=None):
@@ -323,7 +322,7 @@ Description:
 Data:
 
 - <property>=<value> pairs.
-- Available properties are: ``%(nodes_props)s``:green.
+- Available properties are: ``%(props)s``:green.
 
 Example:
 
@@ -332,7 +331,7 @@ Example:
 """ % dict(
         email=user_email(),
         collector=request.env.http_host,
-        nodes_props=", ".join(sorted(db.nodes.fields)),
+        props=", ".join(sorted(db.nodes.fields)),
       )
 
 def set_node(nodename, **vars):
@@ -369,7 +368,7 @@ Data:
 
 - <property>=<value> pairs.
 - The nodename property is mandatory.
-- Available properties are: ``%(nodes_props)s``:green.
+- Available properties are: ``%(props)s``:green.
 
 Example:
 
@@ -378,7 +377,7 @@ Example:
 """ % dict(
         email=user_email(),
         collector=request.env.http_host,
-        nodes_props=", ".join(sorted(db.nodes.fields)),
+        props=", ".join(sorted(db.nodes.fields)),
       )
 
 
@@ -416,8 +415,7 @@ Description:
 
 Example:
 
-``# curl -u %(email)s -o- -X DELETE
-https://%(collector)s/init/rest/api/nodes/mynode``
+``# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/nodes/mynode``
 
 """ % dict(
         email=user_email(),

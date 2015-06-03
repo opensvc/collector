@@ -226,7 +226,7 @@ response.menu = [
              [menu_entries_data['key-r'], display('key-r'), ''],
              [menu_entries_data['key-s'], display('key-s'), ''],
              [menu_entries_data['key-esc'], display('key-esc'), ''],
-             [menu_entries_data['help-api'], display('help-api'), URL(request.application,'rest','api')],
+             [menu_entries_data['help-api'], display('help-api'), URL(request.application,'rest','doc')],
          ]
     ],
     [T('Views'), False, '',

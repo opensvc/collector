@@ -12,11 +12,11 @@ def api():
 
         try:
             n_args = len(args)
-            if n_args == 0:
-                return doc()
             if n_args == 1:
                 if args[0] == "":
-                    return doc()
+                    return doc()["doc"]
+                if args[0] == "alerts":
+                    return get_alerts(**vars)
                 if args[0] == "arrays":
                     return get_arrays(**vars)
                 if args[0] == "nodes":
@@ -28,6 +28,8 @@ def api():
                 if args[0] == "tags":
                     return get_tags(**vars)
             if n_args == 2:
+                if args[0] == "alerts":
+                    return get_alert(args[1], **vars)
                 if args[0] == "arrays":
                     return get_array(args[1], **vars)
                 if args[0] == "nodes":
@@ -51,6 +53,8 @@ def api():
                     return get_node_services(args[1], **vars)
                 if args[0] == "services" and args[2] == "nodes":
                     return get_service_nodes(args[1], **vars)
+                if args[0] == "services" and args[2] == "alerts":
+                    return get_service_alerts(args[1], **vars)
                 if args[0] == "tags" and args[2] == "nodes":
                     return get_tag_nodes(args[1], **vars)
                 if args[0] == "tags" and args[2] == "services":
@@ -62,7 +66,7 @@ def api():
                     return get_node_service(args[1], args[3], **vars)
         except Exception as e:
             return dict(error=str(e))
-        return dict()
+        return dict(error="Unsupported api url")
     def POST(*args, **vars):
         args = request.raw_args.split('/')
         try:
@@ -105,8 +109,9 @@ def api():
         return dict()
     return locals()
 
-def doc(obj_docs=[api_nodes_doc]):
+def doc():
     all_docs = {}
+    all_docs.update(api_alerts_doc)
     all_docs.update(api_arrays_doc)
     all_docs.update(api_filtersets_doc)
     all_docs.update(api_nodes_doc)
@@ -120,7 +125,7 @@ def doc(obj_docs=[api_nodes_doc]):
 
 """
     urls = sorted(all_docs.keys())
-    s += "\n".join(map(lambda x: "### [[_ #"+x+"]] ``"+x+"``:red", urls))
+    s += "\n".join(map(lambda x: "#### [[``%(url)s``:red #%(url)s]]"%dict(url=x), urls))
 
     s += """
 ## Smart queries
@@ -182,7 +187,7 @@ print r.content
 """ % dict(url=url)
         s += all_docs[url]
 
-    return DIV(MARKMIN(s), _style="padding:1em;text-align:left")
+    return dict(doc=DIV(MARKMIN(s), _style="padding:1em;text-align:left"))
 
 
 
