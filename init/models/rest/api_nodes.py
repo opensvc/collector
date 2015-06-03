@@ -20,7 +20,7 @@ api_nodes_doc["/nodes/<nodename>/ips"] = """
 
 Description:
 
-- List a node disks.
+- List a node ips.
 
 Optional parameters:
 

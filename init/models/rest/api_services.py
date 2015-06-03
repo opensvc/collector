@@ -143,6 +143,47 @@ def get_service_alerts(svcname, props=None, query=None):
 
 
 #
+api_nodes_doc["/services/<svcname>/disks"] = """
+### GET
+
+Description:
+
+- List a service disks.
+
+Optional parameters:
+
+- **props**
+. A list of properties to include in each dictionnary.
+. If omitted, all properties are included.
+. The separator is ','.
+. Available properties are: ``%(props)s``:green.
+
+- **query**
+. A web2py smart query
+
+Example:
+
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/disks?props=b_disk_app.disk_svcname,disk_nodename,b_disk_app.disk_id,stor_array.array_name``
+
+""" % dict(
+        email=user_email(),
+        collector=request.env.http_host,
+        props=", ".join(sorted(map(lambda x: "b_disk_app."+x, db.b_disk_app.fields)+map(lambda x: "stor_array."+x, db.stor_array.fields))),
+      )
+
+def get_service_disks(svcname, props=None, query=None):
+    q = db.b_disk_app.disk_svcname == svcname
+    l = db.stor_array.on(db.b_disk_app.disk_arrayid == db.stor_array.array_name)
+    q &= _where(None, 'b_disk_app', domain_perms(), 'disk_svcname')
+    if query:
+        cols = props_to_cols(None, ["b_disk_app", "stor_array"])
+        q &= smart_query(cols, query)
+    cols = props_to_cols(props, ["b_disk_app", "stor_array"])
+    data = db(q).select(*cols, left=l, cacheable=True).as_list()
+    return dict(data=data)
+
+
+#
 api_services_doc["/services/<svcname>/nodes"] = """
 ### GET
 
