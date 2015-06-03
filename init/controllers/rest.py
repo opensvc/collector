@@ -17,6 +17,8 @@ def api():
                     return doc()["doc"]
                 if args[0] == "alerts":
                     return get_alerts(**vars)
+                if args[0] == "apps":
+                    return get_apps(**vars)
                 if args[0] == "arrays":
                     return get_arrays(**vars)
                 if args[0] == "filtersets":
@@ -32,6 +34,8 @@ def api():
             if n_args == 2:
                 if args[0] == "alerts":
                     return get_alert(args[1], **vars)
+                if args[0] == "apps":
+                    return get_app(args[1], **vars)
                 if args[0] == "arrays":
                     return get_array(args[1], **vars)
                 if args[0] == "ips":
@@ -43,6 +47,10 @@ def api():
                 if args[0] == "tags":
                     return get_tag(args[1], **vars)
             if n_args == 3:
+                if args[0] == "apps" and args[2] == "nodes":
+                    return get_app_nodes(args[1], **vars)
+                if args[0] == "apps" and args[2] == "services":
+                    return get_app_services(args[1], **vars)
                 if args[0] == "arrays" and args[2] == "diskgroups":
                     return get_array_dgs(args[1], **vars)
                 if args[0] == "arrays" and args[2] == "proxies":
@@ -124,6 +132,7 @@ def api():
 def doc():
     all_docs = {}
     all_docs.update(api_alerts_doc)
+    all_docs.update(api_apps_doc)
     all_docs.update(api_arrays_doc)
     all_docs.update(api_filtersets_doc)
     all_docs.update(api_ips_doc)
