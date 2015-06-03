@@ -47,12 +47,14 @@ def api():
                     return get_array_dgs(args[1], **vars)
                 if args[0] == "arrays" and args[2] == "proxies":
                     return get_array_proxies(args[1], **vars)
-                if args[0] == "nodes" and args[2] == "disks":
-                    return get_node_disks(args[1], **vars)
-                if args[0] == "nodes" and args[2] == "ips":
-                    return get_node_ips(args[1], **vars)
                 if args[0] == "nodes" and args[2] == "alerts":
                     return get_node_alerts(args[1], **vars)
+                if args[0] == "nodes" and args[2] == "disks":
+                    return get_node_disks(args[1], **vars)
+                if args[0] == "nodes" and args[2] == "hbas":
+                    return get_node_hbas(args[1], **vars)
+                if args[0] == "nodes" and args[2] == "ips":
+                    return get_node_ips(args[1], **vars)
                 if args[0] == "nodes" and args[2] == "services":
                     return get_node_services(args[1], **vars)
                 if args[0] == "services" and args[2] == "alerts":

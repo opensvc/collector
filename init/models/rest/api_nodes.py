@@ -97,6 +97,46 @@ def get_node_disks(nodename, props=None, query=None):
 
 
 #
+api_nodes_doc["/nodes/<nodename>/hbas"] = """
+### GET
+
+Description:
+
+- List a node hbas.
+
+Optional parameters:
+
+- **props**
+. A list of properties to include in each dictionnary.
+. If omitted, all properties are included.
+. The separator is ','.
+. Available properties are: ``%(props)s``:green.
+
+- **query**
+. A web2py smart query
+
+Example:
+
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/mynode/hbas``
+
+""" % dict(
+        email=user_email(),
+        collector=request.env.http_host,
+        props=", ".join(sorted(db.node_hba.fields)),
+      )
+
+def get_node_hbas(nodename, props=None, query=None):
+    q = db.node_hba.nodename == nodename
+    q &= _where(None, 'node_hba', domain_perms(), 'nodename')
+    if query:
+        cols = props_to_cols(None, ["node_hba"])
+        q &= smart_query(cols, query)
+    cols = props_to_cols(props, ["node_hba"])
+    data = db(q).select(*cols, cacheable=True).as_list()
+    return dict(data=data)
+
+
+#
 api_nodes_doc["/nodes/<nodename>/services"] = """
 ### GET
 
