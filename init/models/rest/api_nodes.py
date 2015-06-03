@@ -97,6 +97,46 @@ def get_node_disks(nodename, props=None, query=None):
 
 
 #
+api_nodes_doc["/nodes/<nodename>/checks"] = """
+### GET
+
+Description:
+
+- List a node checks.
+
+Optional parameters:
+
+- **props**
+. A list of properties to include in each dictionnary.
+. If omitted, all properties are included.
+. The separator is ','.
+. Available properties are: ``%(props)s``:green.
+
+- **query**
+. A web2py smart query
+
+Example:
+
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/mynode/checks``
+
+""" % dict(
+        email=user_email(),
+        collector=request.env.http_host,
+        props=", ".join(sorted(db.checks_live.fields)),
+      )
+
+def get_node_checks(nodename, props=None, query=None):
+    q = db.checks_live.chk_nodename == nodename
+    q &= _where(None, 'checks_live', domain_perms(), 'chk_nodename')
+    if query:
+        cols = props_to_cols(None, ["checks_live"])
+        q &= smart_query(cols, query)
+    cols = props_to_cols(props, ["checks_live"])
+    data = db(q).select(*cols, cacheable=True).as_list()
+    return dict(data=data)
+
+
+#
 api_nodes_doc["/nodes/<nodename>/hbas"] = """
 ### GET
 

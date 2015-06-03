@@ -143,6 +143,46 @@ def get_service_alerts(svcname, props=None, query=None):
 
 
 #
+api_services_doc["/services/<svcname>/checks"] = """
+### GET
+
+Description:
+
+- List a service checks.
+
+Optional parameters:
+
+- **props**
+. A list of properties to include in each dictionnary.
+. If omitted, all properties are included.
+. The separator is ','.
+. Available properties are: ``%(props)s``:green.
+
+- **query**
+. A web2py smart query
+
+Example:
+
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/checks``
+
+""" % dict(
+        email=user_email(),
+        collector=request.env.http_host,
+        props=", ".join(sorted(db.checks_live.fields)),
+      )
+
+def get_service_checks(svcname, props=None, query=None):
+    q = db.checks_live.chk_svcname == svcname
+    q &= _where(None, 'checks_live', domain_perms(), 'chk_svcname')
+    if query:
+        cols = props_to_cols(None, ["checks_live"])
+        q &= smart_query(cols, query)
+    cols = props_to_cols(props, ["checks_live"])
+    data = db(q).select(*cols, cacheable=True).as_list()
+    return dict(data=data)
+
+
+#
 api_nodes_doc["/services/<svcname>/disks"] = """
 ### GET
 

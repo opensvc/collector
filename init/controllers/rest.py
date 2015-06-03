@@ -49,6 +49,8 @@ def api():
                     return get_array_proxies(args[1], **vars)
                 if args[0] == "nodes" and args[2] == "alerts":
                     return get_node_alerts(args[1], **vars)
+                if args[0] == "nodes" and args[2] == "checks":
+                    return get_node_checks(args[1], **vars)
                 if args[0] == "nodes" and args[2] == "disks":
                     return get_node_disks(args[1], **vars)
                 if args[0] == "nodes" and args[2] == "hbas":
@@ -59,6 +61,8 @@ def api():
                     return get_node_services(args[1], **vars)
                 if args[0] == "services" and args[2] == "alerts":
                     return get_service_alerts(args[1], **vars)
+                if args[0] == "services" and args[2] == "checks":
+                    return get_service_checks(args[1], **vars)
                 if args[0] == "services" and args[2] == "disks":
                     return get_service_disks(args[1], **vars)
                 if args[0] == "services" and args[2] == "nodes":
