@@ -1,5 +1,7 @@
 def check_privilege(priv):
     ug = user_groups()
+    if 'Manager' in ug:
+        return
     if priv not in ug:
         raise Exception("Not authorized: user has no %s privilege" % priv)
 

@@ -25,6 +25,8 @@ def api():
                     return get_filtersets(**vars)
                 if args[0] == "ips":
                     return get_ips(**vars)
+                if args[0] == "networks":
+                    return get_networks(**vars)
                 if args[0] == "nodes":
                     return get_nodes(**vars)
                 if args[0] == "services":
@@ -40,6 +42,8 @@ def api():
                     return get_array(args[1], **vars)
                 if args[0] == "ips":
                     return get_ip(args[1], **vars)
+                if args[0] == "networks":
+                    return get_network(args[1], **vars)
                 if args[0] == "nodes":
                     return get_node(args[1], **vars)
                 if args[0] == "services":
@@ -49,12 +53,16 @@ def api():
             if n_args == 3:
                 if args[0] == "apps" and args[2] == "nodes":
                     return get_app_nodes(args[1], **vars)
+                if args[0] == "apps" and args[2] == "quotas":
+                    return get_app_quotas(args[1], **vars)
                 if args[0] == "apps" and args[2] == "services":
                     return get_app_services(args[1], **vars)
                 if args[0] == "arrays" and args[2] == "diskgroups":
                     return get_array_dgs(args[1], **vars)
                 if args[0] == "arrays" and args[2] == "proxies":
                     return get_array_proxies(args[1], **vars)
+                if args[0] == "networks" and args[2] == "nodes":
+                    return get_network_nodes(args[1], **vars)
                 if args[0] == "nodes" and args[2] == "alerts":
                     return get_node_alerts(args[1], **vars)
                 if args[0] == "nodes" and args[2] == "checks":
@@ -92,11 +100,15 @@ def api():
         try:
             n_args = len(args)
             if n_args == 1:
+                if args[0] == "networks":
+                    return create_network(**vars)
                 if args[0] == "nodes":
                     return create_node(**vars)
                 if args[0] == "tags":
                     return add_tag(**vars)
             if n_args == 2:
+                if args[0] == "networks":
+                    return set_network(args[1], **vars)
                 if args[0] == "nodes":
                     return set_node(args[1], **vars)
             if n_args == 4:
@@ -115,6 +127,8 @@ def api():
         try:
             n_args = len(args)
             if n_args == 2:
+                if args[0] == "networks":
+                    return delete_network(args[1], **vars)
                 if args[0] == "nodes":
                     return delete_node(args[1], **vars)
                 if args[0] == "tags":
@@ -136,6 +150,7 @@ def doc():
     all_docs.update(api_arrays_doc)
     all_docs.update(api_filtersets_doc)
     all_docs.update(api_ips_doc)
+    all_docs.update(api_networks_doc)
     all_docs.update(api_nodes_doc)
     all_docs.update(api_services_doc)
     all_docs.update(api_tags_doc)

@@ -440,9 +440,8 @@ api_nodes_doc["/nodes"] += """
 Description:
 
 - Create a new node
-- Don't forget to set a ``team_responsible``:green, or you won't be able to
-  change
-  properties through the API afterwards
+- If ``team_responsible``:green is not specified, default to user's primary
+  group
 
 Data:
 
@@ -467,6 +466,8 @@ def create_node(**vars):
         raise Exception("the nodename property must be set in the POST data")
     nodename = vars['nodename']
     vars["updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    if "team_responsible" not in vars:
+        vars["team_responsible"] = user_primary_group()
     db.nodes.insert(**vars)
     _log('rest.nodes.create',
          'create properties %(data)s',

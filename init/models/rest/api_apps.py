@@ -134,6 +134,51 @@ def get_app_nodes(id, props=None, query=None):
     return dict(data=data)
 
 #
+api_apps_doc["/apps/<id>/quotas"] = """
+### GET
+
+Description:
+
+- List storage disk group quotas usage for the <id> application code.
+- <id> can be either the proper id or the application code.
+
+Optional parameters:
+
+- **props**
+. A list of properties to include in each dictionnary.
+. If omitted, all properties are included.
+. The separator is ','.
+. Available properties are: ``%(props)s``:green.
+
+- **query**
+. A web2py smart query
+
+Example:
+
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/apps/MYAPP/quotas``
+
+""" % dict(
+        email=user_email(),
+        collector=request.env.http_host,
+        props=", ".join(sorted(db.v_disk_quota.fields)),
+      )
+
+def get_app_quotas(id, props=None, query=None):
+    q = db.apps.app == id
+    n = db(q).count()
+    if n == 0:
+        try: int(id)
+        except: return dict(data=[])
+        q = db.apps.id == id
+    q &= db.v_disk_quota.app == db.apps.app
+    if query:
+        cols = props_to_cols(None, tables=["v_disk_quota"])
+        q &= smart_query(cols, query)
+    cols = props_to_cols(props, tables=["v_disk_quota"])
+    data = db(q).select(*cols, cacheable=True).as_list()
+    return dict(data=data)
+
+#
 api_apps_doc["/apps/<id>/services"] = """
 ### GET
 
