@@ -19,10 +19,12 @@ def api():
                     return get_alerts(**vars)
                 if args[0] == "arrays":
                     return get_arrays(**vars)
-                if args[0] == "nodes":
-                    return get_nodes(**vars)
                 if args[0] == "filtersets":
                     return get_filtersets(**vars)
+                if args[0] == "ips":
+                    return get_ips(**vars)
+                if args[0] == "nodes":
+                    return get_nodes(**vars)
                 if args[0] == "services":
                     return get_services(**vars)
                 if args[0] == "tags":
@@ -32,6 +34,8 @@ def api():
                     return get_alert(args[1], **vars)
                 if args[0] == "arrays":
                     return get_array(args[1], **vars)
+                if args[0] == "ips":
+                    return get_ip(args[1], **vars)
                 if args[0] == "nodes":
                     return get_node(args[1], **vars)
                 if args[0] == "services":
@@ -114,6 +118,7 @@ def doc():
     all_docs.update(api_alerts_doc)
     all_docs.update(api_arrays_doc)
     all_docs.update(api_filtersets_doc)
+    all_docs.update(api_ips_doc)
     all_docs.update(api_nodes_doc)
     all_docs.update(api_services_doc)
     all_docs.update(api_tags_doc)
