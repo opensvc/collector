@@ -116,15 +116,12 @@ Optional parameters:
 . The separator is ','.
 . Available properties are: ``%(props)s``:green.
 
-- **fset_id**
-. Filter the network names list using the filterset identified by fset_id.
-
 - **query**
 . A web2py smart query
 
 Example:
 
-``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/networks?props=id,loc_city&fset_id=10``
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/networks?props=id,network,netmask,gateway``
 
 """ % dict(
         email=user_email(),
