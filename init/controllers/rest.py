@@ -215,7 +215,10 @@ print r.content
 
 ## API reference
 
-"""
+""" % dict(
+        email=user_email(),
+        collector=request.env.http_host,
+      )
     for url in urls:
         s += """
 [[%(url)s]]
