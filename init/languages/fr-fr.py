@@ -920,6 +920,7 @@
 'Hypervisors': 'Hyperviseurs',
 'Icons': 'Icônes',
 'Id': 'Id',
+'Ignore blanks': 'Ignore blanks',
 'Import': 'Import',
 'Import Date': "Date d'import",
 'Import/Export': 'Import/Export',
