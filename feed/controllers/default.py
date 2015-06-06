@@ -568,6 +568,14 @@ def rpc_update_necism(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "necism", insert_necism)
 
 @service.xmlrpc
+def update_freenas(name, vars, vals, auth):
+    return rpc_update_freenas(name, vars, vals, auth)
+
+@auth_uuid
+def rpc_update_freenas(name, vars, vals, auth):
+    update_array_xml(name, vars, vals, auth, "freenas", insert_freenas)
+
+@service.xmlrpc
 def update_dcs(name, vars, vals, auth):
     return rpc_update_dcs(name, vars, vals, auth)
 
@@ -636,6 +644,9 @@ def rpc_send_sysreport(fname, binary, deleted, auth):
 
     scheduler.queue_task("task_send_sysreport", [need_commit, deleted, nodename],
                          group_name="_insert_generic", timeout=240)
+
+def insert_freenass():
+    return insert_freenas()
 
 def insert_dcss():
     return insert_dcs()

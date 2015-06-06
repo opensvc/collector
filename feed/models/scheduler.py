@@ -836,6 +836,113 @@ def insert_array_proxy(nodename, array_name):
     vals = [array_id, nodename]
     generic_insert('stor_array_proxy', vars, vals)
 
+def insert_freenas(name=None, nodename=None):
+    import glob
+    import os
+    from applications.init.modules import freenas
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+
+    dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='freenas'))
+    if name is None:
+        pattern = "*"
+    else:
+        pattern = name
+    dirs = glob.glob(os.path.join(dir, pattern))
+
+    for d in dirs:
+        print d
+        s = freenas.get_freenas(d)
+        if s is None :
+            print "error parsing data"
+            continue
+
+        # stor_array_proxy
+        if nodename is not None:
+            print " insert %s as proxy node"%nodename
+            insert_array_proxy(nodename, s.name)
+
+        # stor_array
+        vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
+        vals = []
+        name = s.name
+        vals.append([s.name,
+                     s.version['name'],
+                     "0",
+                     s.version['fullversion'],
+                     now])
+        generic_insert('stor_array', vars, vals)
+
+        sql = """select id from stor_array where array_name="%s" """ % s.name
+        array_id = str(db.executesql(sql)[0][0])
+
+        # stor_array_dg
+        vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
+        vals = []
+        for dg in s.volumes:
+            avail = int(dg['avail']) // 1024 // 1024
+            used = int(dg['used']) // 1024 // 1024
+            vals.append([array_id,
+                         dg['name'],
+                         str(avail),
+                         str(used),
+                         str(avail+used),
+                         now])
+        generic_insert('stor_array_dg', vars, vals)
+        sql = """delete from stor_array_dg where array_id=%s and dg_updated < date_sub(now(), interval 24 hour) """%array_id
+        db.executesql(sql)
+
+        # stor_array_tgtid
+        vars = ['array_id', 'array_tgtid']
+        vals = []
+        for target in s.iscsi_targets:
+            vals.append([array_id, target['iscsi_target_name']])
+        generic_insert('stor_array_tgtid', vars, vals)
+        sql = """delete from stor_array_tgtid where array_id=%s and updated < date_sub(now(), interval 24 hour) """%array_id
+        db.executesql(sql)
+
+        # load cache
+        devices = {}
+        for v in s.volumes:
+            for ds in v['children']:
+                for d in ds['children']:
+                    if d['type'] == "zvol":
+                        path = "/dev/zvol/"+d['path']
+                        devices[path] = d
+
+        # diskinfo
+        vars = ['disk_id',
+                'disk_arrayid',
+                'disk_name',
+                'disk_devid',
+                'disk_size',
+                'disk_alloc',
+                'disk_raid',
+                'disk_group',
+                'disk_updated']
+
+        vals = []
+        for d in s.iscsi_extents:
+            if d['iscsi_target_extent_path'] not in devices:
+                continue
+            device = devices[d['iscsi_target_extent_path']]
+            size = int(device['used'])
+            alloc = size * device['used_pct'] // 100
+            vals.append([d['iscsi_target_extent_naa'][2:],
+                         name,
+                         d['iscsi_target_extent_name'],
+                         str(d['id']),
+                         str(size // 1024 // 1024),
+                         str(alloc // 1024 // 1024),
+                         d['iscsi_target_extent_type'],
+                         d['iscsi_target_extent_path'].replace("/dev/zvol", "").replace("/"+d['iscsi_target_extent_path'], ""),
+                         now])
+        generic_insert('diskinfo', vars, vals)
+        sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(name, str(now))
+        db.executesql(sql)
+        db.commit()
+    queue_refresh_b_disk_app()
+
 def insert_dcs(name=None, nodename=None):
     import glob
     import os
