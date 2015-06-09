@@ -23,6 +23,8 @@ def api():
                     return get_arrays(**vars)
                 if args[0] == "filtersets":
                     return get_filtersets(**vars)
+                if args[0] == "forms":
+                    return get_forms(**vars)
                 if args[0] == "ips":
                     return get_ips(**vars)
                 if args[0] == "networks":
@@ -40,6 +42,8 @@ def api():
                     return get_app(args[1], **vars)
                 if args[0] == "arrays":
                     return get_array(args[1], **vars)
+                if args[0] == "forms":
+                    return get_form(args[1], **vars)
                 if args[0] == "ips":
                     return get_ip(args[1], **vars)
                 if args[0] == "networks":
@@ -121,6 +125,13 @@ def api():
         return dict()
     def PUT(*args, **vars):
         args = request.raw_args.split('/')
+        try:
+            n_args = len(args)
+            if n_args == 2:
+                if args[0] == "forms":
+                    return put_form(args[1], **vars)
+        except Exception as e:
+            return dict(error=str(e))
         return dict()
     def DELETE(*args, **vars):
         args = request.raw_args.split('/')
