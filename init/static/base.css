@@ -2133,7 +2133,7 @@ ul.login_menu ul {
 .filter > input {
   background: white url('filter16.png') no-repeat;
   color: black;
-  width: 10em;
+  width: 20em;
   padding-left: 18px;
   border: 1px solid #ccc;
   -moz-border-radius: 4px;
