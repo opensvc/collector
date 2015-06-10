@@ -101,7 +101,7 @@ def get_form(form_id, props=None, query=None):
     return dict(data=data)
 
 
-api_filtersets_doc["/forms/<id>"] = """
+api_filtersets_doc["/forms/<id>"] += """
 ### PUT
 
 Description:
