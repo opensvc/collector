@@ -119,7 +119,7 @@ defintion.
 
 Example:
 
-``# curl -u %(email)s -d "[{"foo": "bar"}]" -o- https://%(collector)s/init/rest/api/forms/10``
+``# curl -u %(email)s -d data='{"nodename": "foooo"}' -X PUT -o- https://%(collector)s/init/rest/api/forms/10``
 
 """ % dict(
         email=user_email(),
