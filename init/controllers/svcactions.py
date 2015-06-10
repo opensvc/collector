@@ -358,7 +358,7 @@ class table_actions(HtmlTable):
             self.colprops[c].t = self
         self.ajax_col_values = 'ajax_actions_col_values'
         self.extraline = True
-        self.force_cols = ['os_name', 'acked_by', 'acked_date', 'acked_comment']
+        self.force_cols = ['os_name', 'acked_by', 'acked_date', 'acked_comment', 'end']
         self.span = ['pid']
         #self.span = ['pid', 'hostname', 'svcname', 'action'] + ncols
         self.wsable = True
