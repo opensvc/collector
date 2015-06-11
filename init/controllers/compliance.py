@@ -8574,8 +8574,8 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
             _help = ""
 
         trigger_args = input.get('Args', [])
-        trigger_args = map(lambda x: x.replace(' ', '').replace('=#', '--'), trigger_args)
-        trigger_args = ' '.join(trigger_args)
+        trigger_args = map(lambda x: x.replace(' = ', '='), trigger_args)
+        trigger_args = '@@'.join(trigger_args)
 
         if display_mode:
             if default is None or default == "":
@@ -8636,7 +8636,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
                     candidates = [('','')] + candidates
                 elif type(o) == dict and 'Value' in o and o['Value'] != "":
                     candidates = [{'Value':'','Label':''}] + candidates
-                elif o != "":
+                elif o != "" and type(candidates) in (list, tuple):
                     candidates = [''] + candidates
 
             max = 10
@@ -9182,8 +9182,11 @@ function refresh_select(e) {
       });
     } else {
       e.find('option').remove()
+      data = parse_data(data)
       for (i=0;i<data.length;i++) {
-        if (typeof(data[i]) == "string") {
+        if (!data[i]) {
+          continue
+        } else if (typeof(data[i]) == "string") {
           var _label = data[i]
           var _value = data[i]
         } else {
@@ -9210,20 +9213,50 @@ function refresh_div(e) {
   };
 }
 
+function parse_data(data) {
+  if (!data instanceof Array) {
+    return [data]
+  }
+  if (data.length == 0) {
+    return data
+  }
+  if (data[0] instanceof Array) {
+    return data
+  }
+  if (!(data["data"] instanceof Array)) {
+    data["data"] = [data["data"]]
+  }
+  try {
+    keys = Object.keys(data["data"][0])
+    key = keys[0]
+  } catch(e) {
+    key = false
+  }
+  if (key) {
+    var _data = []
+    for (i=0; i<data["data"].length; i++) {
+      _data.push(data["data"][i][key])
+    }
+    return _data
+  }
+  return data
+}
+
 function refresh_input(e) {
   return function(data) {
-    if (data instanceof Array) {
-      s = data.join("\\n")
-    } else {
-      s = data
+    data = parse_data(data)
+    if (data.length == 0) {
+      return
     }
+    s = data.join("\\n")
     e.val(s)
     e.trigger('change')
-  };
+  }
 }
 
 function refresh_textarea(e) {
   return function(data) {
+    data = parse_data(data)
     h = 1.3
     if (data instanceof Array) {
       s = data.join("\\n")
@@ -9253,38 +9286,66 @@ function form_submit_toggle (o) {
   }
 }
 
+function replace_references(s) {
+  regex = /#\w+/g
+  while (match = regex.exec(s)) {
+    _match = match[0].replace(/^#/, "")
+    id = "%(xid)s"+_match+"_"+index
+    if ($('#'+id).length == 0) {
+      continue
+    }
+    if ($('#'+id).get(0).tagName == 'SELECT') {
+      val = $("#"+id+" option:selected").val()
+    } else {
+      val = $("#"+id).val()
+    }
+    if ((val == undefined) || (val == "")) {
+      return
+    }
+    re = new RegExp(match[0])
+    s = s.replace(re, val)
+  }
+  return s
+}
+
+function form_input_functions (o) {
+    l = $(o).attr("id").split("_")
+    index = l[l.length-1]
+    l = o.attr("trigger_args").split("@@")
+    args = []
+    for (i=0; i<l.length; i++) {
+      arg = replace_references(l[i])
+      if (!arg) { break; }
+      parm = arg.substring(0, arg.indexOf("="))
+      val = arg.substring(arg.indexOf("=")+1, arg.length)
+      args.push(encodeURIComponent(parm)+"="+encodeURIComponent(val))
+    }
+    args = args.join("&")
+    trigger_fn = replace_references(o.attr("trigger_fn"))
+    if (!trigger_fn) { return; }
+    if (trigger_fn[0] == "/") {
+      url = "%(url_api)s"+trigger_fn+"?"+args
+    } else {
+      url = "%(url)s/call/json/"+trigger_fn+"?"+args
+    }
+    if (o.get(0).tagName == 'SELECT') {
+      $.getJSON(url, refresh_select(o))
+    } else if (o.get(0).tagName == 'INPUT') {
+      $.getJSON(url, refresh_input(o))
+    } else if (o.get(0).tagName == 'TEXTAREA') {
+      $.getJSON(url, refresh_textarea(o))
+    } else {
+      $.getJSON(url, refresh_div(o))
+    }
+}
+
 function form_inputs_functions (o) {
   l = $(o).attr("id").split("_")
   index = l[l.length-1]
   l.pop()
   id = l.join("_").replace("%(xid)s", "")
-  $(o).parents('table').first().find("[trigger_args*=--"+id+"]").each(function(){
-    l = $(this).attr("trigger_args").split(" ")
-    args = []
-    for (i=0; i<l.length; i++) {
-      v = l[i].split("--")
-      if (v.length != 2) continue
-      param = v[0]
-      value = v[1]
-      id = "%(xid)s"+value+"_"+index
-      if ($('#'+id).get(0).tagName == 'SELECT') {
-        val = $("#"+id+" option:selected").val()
-      } else {
-        val = $("#"+id).val()
-      }
-      args.push(encodeURIComponent(param)+"="+encodeURIComponent(val))
-    }
-    args = args.join("&")
-    url = "%(url)s/call/json/"+$(this).attr("trigger_fn")+"?"+args
-    if ($(this).get(0).tagName == 'SELECT') {
-      $.getJSON(url, refresh_select($(this)))
-    } else if ($(this).get(0).tagName == 'INPUT') {
-      $.getJSON(url, refresh_input($(this)))
-    } else if ($(this).get(0).tagName == 'TEXTAREA') {
-      $.getJSON(url, refresh_textarea($(this)))
-    } else {
-      $.getJSON(url, refresh_div($(this)))
-    }
+  $(o).parents('table').first().find("[trigger_args*=#"+id+"],[trigger_fn*=#"+id+"]").each(function(){
+    form_input_functions($(this))
   })
 }
 
@@ -9396,6 +9457,9 @@ function form_inputs_conditions (o) {
 
 $("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").each(function(){
   form_inputs_resize(this)
+  if ($(this).attr("trigger_fn") != "") {
+    form_input_functions($(this))
+  }
 })
 $("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").bind('change', function(){
   form_inputs_trigger(this)
@@ -9405,6 +9469,7 @@ $("input[name^=%(xid)s][readonly=on],select[name^=%(xid)s][readonly=on],textarea
      idx=len(l),
      xid=forms_xid(''),
      url=str(URL(r=request, c='forms', f='a'))[:-2],
+     url_api=str(URL(r=request, c='rest', f='api')),
     ),
                _name=str(_hid)+"_to_eval",
              ),
