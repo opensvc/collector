@@ -1033,7 +1033,9 @@ function sync_ajax(url, inputs, id, f) {
                //eval($(this).text());
                $(this).remove();
              });
-             f()
+             if (f) {
+               f()
+             }
              $("#"+id).parents(".white_float").each(function(){keep_inside(this)})
              var t = osvc.tables[id]
              if (typeof t === 'undefined') { return }
