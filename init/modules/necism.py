@@ -21,11 +21,14 @@ class NecIsm(object):
         self.ports = []
         self.vdisk = []
         self.pool = []
+        self.model = None
+        self.product = None
         for i, line in enumerate(self.lines):
-            if line.startswith("Vendor ID"):
+            if line.startswith("Vendor ID") and self.model is None:
                 self.model = line.split(':')[1].strip()
-            elif line.startswith("Product ID"):
-                self.model += " "+line.split(':')[1].strip()
+            elif line.startswith("Product ID") and self.product is None:
+                self.product = " "+line.split(':')[1].strip()
+                self.model += self.product
             elif line.startswith("Product FW Revision"):
                 self.firmware = line.split(':')[1].strip()
             elif line.startswith("World Wide Name"):
