@@ -35,6 +35,8 @@ def api():
                     return get_services(**vars)
                 if args[0] == "tags":
                     return get_tags(**vars)
+                if args[0] == "users":
+                    return get_users(**vars)
             if n_args == 2:
                 if args[0] == "alerts":
                     return get_alert(args[1], **vars)
@@ -54,6 +56,8 @@ def api():
                     return get_service(args[1], **vars)
                 if args[0] == "tags":
                     return get_tag(args[1], **vars)
+                if args[0] == "users":
+                    return get_user(args[1], **vars)
             if n_args == 3:
                 if args[0] == "apps" and args[2] == "nodes":
                     return get_app_nodes(args[1], **vars)
@@ -91,6 +95,12 @@ def api():
                     return get_tag_nodes(args[1], **vars)
                 if args[0] == "tags" and args[2] == "services":
                     return get_tag_services(args[1], **vars)
+                if args[0] == "users" and args[2] == "apps":
+                    return get_user_apps(args[1], **vars)
+                if args[0] == "users" and args[2] == "nodes":
+                    return get_user_nodes(args[1], **vars)
+                if args[0] == "users" and args[2] == "services":
+                    return get_user_services(args[1], **vars)
             if n_args == 4:
                 if args[0] == "services" and args[2] == "nodes":
                     return get_service_node(args[1], args[3], **vars)
@@ -165,6 +175,7 @@ def doc():
     all_docs.update(api_nodes_doc)
     all_docs.update(api_services_doc)
     all_docs.update(api_tags_doc)
+    all_docs.update(api_users_doc)
 
     s = """
 # RESTful API documentation
