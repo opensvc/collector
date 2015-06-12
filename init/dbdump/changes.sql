@@ -4585,4 +4585,32 @@ create view v_disk_app as
                      where (svcdisks.disk_svcname = "" or svcdisks.disk_svcname is NULL)
 ;
 
+drop view v_disk_quota;
+create view v_disk_quota as 
+  SELECT
+    stor_array_dg_quota.id, stor_array.id as array_id, stor_array_dg.id as dg_id, apps.id as app_id, stor_array.array_name, stor_array_dg.dg_name, stor_array_dg.dg_free, stor_array_dg.dg_size, stor_array_dg.dg_used, stor_array_dg.dg_reserved, stor_array_dg.dg_size - stor_array_dg.dg_reserved as dg_reservable, stor_array.array_model, apps.app, stor_array_dg_quota.quota, v_disks_app.disk_used as quota_used
+  FROM
+    stor_array
+    JOIN stor_array_dg ON (stor_array_dg.array_id = stor_array.id)
+    LEFT JOIN v_disks_app ON ( v_disks_app.disk_arrayid=stor_array.array_name and v_disks_app.disk_group=stor_array_dg.dg_name)
+    LEFT JOIN apps ON (apps.app = v_disks_app.app)
+    LEFT JOIN stor_array_dg_quota ON ( stor_array_dg.id = stor_array_dg_quota.dg_id and apps.id = stor_array_dg_quota.app_id)
+  WHERE
+    apps.id is not NULL
+  GROUP BY apps.id, stor_array.id, stor_array_dg.id
+  UNION ALL
+  SELECT
+    stor_array_dg_quota.id, stor_array.id as array_id, stor_array_dg.id as dg_id, NULL as app_id, stor_array.array_name, stor_array_dg.dg_name, stor_array_dg.dg_free, stor_array_dg.dg_size, stor_array_dg.dg_used, stor_array_dg.dg_reserved, stor_array_dg.dg_size - stor_array_dg.dg_reserved as dg_reservable, stor_array.array_model, "unknown" as app, v_disks_app.disk_used as quota, v_disks_app.disk_used as quota_used
+  FROM
+    stor_array
+    JOIN stor_array_dg ON (stor_array_dg.array_id = stor_array.id)
+    LEFT JOIN stor_array_dg_quota ON (stor_array_dg.id = stor_array_dg_quota.dg_id)
+    LEFT JOIN v_disks_app ON ( v_disks_app.disk_arrayid=stor_array.array_name and v_disks_app.disk_group=stor_array_dg.dg_name)
+  WHERE
+    v_disks_app.app is NULL
+  GROUP BY stor_array.id, stor_array_dg.id
+  UNION ALL
+  select `stor_array_dg_quota`.`id` AS `id`,`stor_array`.`id` AS `array_id`,`stor_array_dg`.`id` AS `dg_id`,stor_array_dg_quota.app_id AS `app_id`,`stor_array`.`array_name` AS `array_name`,`stor_array_dg`.`dg_name` AS `dg_name`,`stor_array_dg`.`dg_free` AS `dg_free`,`stor_array_dg`.`dg_size` AS `dg_size`,`stor_array_dg`.`dg_used` AS `dg_used`,`stor_array_dg`.`dg_reserved` AS `dg_reserved`,(`stor_array_dg`.`dg_size` - `stor_array_dg`.`dg_reserved`) AS `dg_reservable`,`stor_array`.`array_model` AS `array_model`,apps.app AS app,stor_array_dg_quota.quota AS `quota`,0 AS `quota_used` from `stor_array` join `stor_array_dg` on `stor_array_dg`.`array_id` = `stor_array`.`id` left join `stor_array_dg_quota` on `stor_array_dg`.`id` = `stor_array_dg_quota`.`dg_id` left join apps on stor_array_dg_quota.app_id=apps.id where apps.app not in (select distinct app from v_disk_app where not app is null) group by `stor_array`.`id`,`stor_array_dg`.`id`,stor_array_dg_quota.app_id
+;
+
 
