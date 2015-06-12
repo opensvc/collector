@@ -156,4 +156,44 @@ def get_array_proxies(array_name, props=None, query=None):
     data = [r.as_dict() for r in rows]
     return dict(data=data)
 
+api_arrays_doc["/arrays/<arrayname>/targets"] = """
+### GET
+
+Description:
+
+- Display array target ports.
+
+Optional parameters:
+
+- **props**
+. A list of properties to include.
+. If omitted, all properties are included.
+. The separator is ','.
+. Available properties are: ``%(props)s``:green.
+
+- **query**
+. A web2py smart query
+
+Example:
+
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/arrays/myarray/targets``
+
+""" % dict(
+        email=user_email(),
+        collector=request.env.http_host,
+        props=", ".join(sorted(db.stor_array_tgtid.fields)),
+    )
+
+def get_array_targets(array_name, props=None, query=None):
+    q = db.stor_array.array_name == array_name
+    array_id = db(q).select(db.stor_array.id).first().id
+    q = db.stor_array_tgtid.array_id == array_id
+    if query:
+        cols = props_to_cols(None, tables=["stor_array_tgtid"])
+        q &= smart_query(cols, query)
+    cols = props_to_cols(props, tables=["stor_array_tgtid"])
+    rows = db(q).select(*cols, cacheable=True)
+    data = [r.as_dict() for r in rows]
+    return dict(data=data)
+
 

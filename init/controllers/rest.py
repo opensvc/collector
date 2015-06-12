@@ -69,6 +69,8 @@ def api():
                     return get_array_dgs(args[1], **vars)
                 if args[0] == "arrays" and args[2] == "proxies":
                     return get_array_proxies(args[1], **vars)
+                if args[0] == "arrays" and args[2] == "targets":
+                    return get_array_targets(args[1], **vars)
                 if args[0] == "networks" and args[2] == "nodes":
                     return get_network_nodes(args[1], **vars)
                 if args[0] == "nodes" and args[2] == "alerts":
