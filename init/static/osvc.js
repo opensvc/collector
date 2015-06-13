@@ -539,6 +539,7 @@ function ws_duplicate_event(uid) {
 }
 
 function ws_switch(e) {
+    var data = []
     try {
         data = eval('('+e.data+')')
     } catch(ex) {
