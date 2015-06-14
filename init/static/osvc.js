@@ -1385,9 +1385,9 @@ function table_refresh(t) {
              tbody.append(msg)
 
              tbody.children(".tl").each(function(){
-               new_line = $(this)
-               cksum = new_line.attr("cksum")
-               old_line = $("[cksum="+cksum+"]", old_lines)
+               var new_line = $(this)
+               var cksum = new_line.attr("cksum")
+               var old_line = $("[cksum="+cksum+"]", old_lines)
                if (old_line.length == 0) {
                    // this is a new line : highlight
                    new_line.addClass("tohighlight")
@@ -1397,17 +1397,19 @@ function table_refresh(t) {
                    return
                }
                for (i=0; i<old_line.children().length; i++) {
-                 new_cell = $(":nth-child("+i+")", new_line)
+                 var new_cell = $(":nth-child("+i+")", new_line)
                  if (!new_cell.is(":visible")) {
                    continue
                  }
-                 old_cell = $(":nth-child("+i+")", old_line)
+                 var old_cell = $(":nth-child("+i+")", old_line)
                  if (old_cell.attr("v") == new_cell.attr("v")) {
                    continue
                  }
                  new_cell.addClass("tohighlight")
                }
              })
+
+             old_lines.remove()
 
              // clear mem refs
              cksum = null
@@ -4376,7 +4378,7 @@ function _table_cell_decorator(id, cell) {
   }
   cl = cl.split(/\s+/)
   for (i=0; i<cl.length; i++) {
-    c = cl[i]
+    var c = cl[i]
     if (!(c in cell_decorators)) {
       continue
     }
@@ -4395,11 +4397,11 @@ function table_cell_decorator(id) {
 // table pager
 //
 function _table_pager(id, p_page, p_perpage, p_start, p_end, p_total) {
-  pager = $("#"+id).find(".pager")
-  p_page = parseInt(p_page)
-  p_start = parseInt(p_start)
-  p_end = parseInt(p_end)
-  p_total = parseInt(p_total)
+  var pager = $("#"+id).find(".pager")
+  var p_page = parseInt(p_page)
+  var p_start = parseInt(p_start)
+  var p_end = parseInt(p_end)
+  var p_total = parseInt(p_total)
 
   if ((p_total > 0) && (p_end > p_total)) {
     p_end = p_total
