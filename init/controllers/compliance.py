@@ -9214,6 +9214,9 @@ function refresh_div(e) {
 }
 
 function parse_data(data) {
+  if (typeof(data[i]) == "string") {
+    return [data]
+  }
   if (!data instanceof Array) {
     return [data]
   }
@@ -9300,7 +9303,7 @@ function replace_references(s) {
       val = $("#"+id).val()
     }
     if ((val == undefined) || (val == "")) {
-      return
+      return s
     }
     re = new RegExp(match[0])
     s = s.replace(re, val)
@@ -9315,7 +9318,9 @@ function form_input_functions (o) {
     args = []
     for (i=0; i<l.length; i++) {
       arg = replace_references(l[i])
-      if (!arg) { break; }
+      if (!arg) {
+        break
+      }
       parm = arg.substring(0, arg.indexOf("="))
       val = arg.substring(arg.indexOf("=")+1, arg.length)
       args.push(encodeURIComponent(parm)+"="+encodeURIComponent(val))
