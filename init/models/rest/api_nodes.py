@@ -501,7 +501,6 @@ Example:
 """ % dict(
         email=user_email(),
         collector=request.env.http_host,
-        nodes_alerts_props=", ".join(sorted(db.nodes.fields)),
       )
 
 def delete_node(nodename):

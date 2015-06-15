@@ -15,6 +15,8 @@ def api():
             if n_args == 1:
                 if args[0] == "":
                     return doc()["doc"]
+                if args[0] == "action_queue":
+                    return get_action_queue(**vars)
                 if args[0] == "alerts":
                     return get_alerts(**vars)
                 if args[0] == "apps":
@@ -38,6 +40,8 @@ def api():
                 if args[0] == "users":
                     return get_users(**vars)
             if n_args == 2:
+                if args[0] == "action_queue":
+                    return get_action_queue_one(args[1], **vars)
                 if args[0] == "alerts":
                     return get_alert(args[1], **vars)
                 if args[0] == "apps":
@@ -123,6 +127,8 @@ def api():
                 if args[0] == "tags":
                     return add_tag(**vars)
             if n_args == 2:
+                if args[0] == "action_queue":
+                    return set_action_queue_one(args[1], **vars)
                 if args[0] == "networks":
                     return set_network(args[1], **vars)
                 if args[0] == "nodes":
@@ -150,6 +156,8 @@ def api():
         try:
             n_args = len(args)
             if n_args == 2:
+                if args[0] == "action_queue":
+                    return delete_action_queue_one(args[1], **vars)
                 if args[0] == "networks":
                     return delete_network(args[1], **vars)
                 if args[0] == "nodes":
@@ -168,6 +176,7 @@ def api():
 
 def doc():
     all_docs = {}
+    all_docs.update(api_action_queue_doc)
     all_docs.update(api_alerts_doc)
     all_docs.update(api_apps_doc)
     all_docs.update(api_arrays_doc)
