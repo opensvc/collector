@@ -164,6 +164,11 @@ def cancel_actions(ids):
     _log('action.delete',
          'deleted actions %(u)s',
          dict(u=u))
+    l = {
+      'event': 'action_queue',
+      'data': {'foo': 'bar'},
+    }
+    _websocket_send(event_msg(l))
 
 @auth.requires_login()
 def ajax_actions_col_values():
