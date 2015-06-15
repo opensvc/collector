@@ -928,6 +928,10 @@ def insert_freenas(name=None, nodename=None):
             device = devices[d['iscsi_target_extent_path']]
             size = int(device['used'])
             alloc = size * device['used_pct'] // 100
+            disk_group = d['iscsi_target_extent_path']
+            disk_group = disk_group.replace("/dev/zvol/", "")
+            disk_group = disk_group.replace("/mnt/", "")
+            disk_group = disk_group[:disk_group.index("/")]
             vals.append([d['iscsi_target_extent_naa'][2:],
                          name,
                          d['iscsi_target_extent_name'],
@@ -935,7 +939,7 @@ def insert_freenas(name=None, nodename=None):
                          str(size // 1024 // 1024),
                          str(alloc // 1024 // 1024),
                          d['iscsi_target_extent_type'],
-                         d['iscsi_target_extent_path'].replace("/dev/zvol", "").replace("/"+d['iscsi_target_extent_path'], ""),
+                         disk_group,
                          now])
         generic_insert('diskinfo', vars, vals)
         sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(name, str(now))

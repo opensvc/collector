@@ -116,6 +116,7 @@ def group_tabs(gid=None, role=None):
           ),
         ),
       ),
+      _id=rowid,
     )
     return t
 
