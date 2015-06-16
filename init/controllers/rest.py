@@ -134,6 +134,8 @@ def api():
         try:
             n_args = len(args)
             if n_args == 1:
+                if args[0] == "action_queue":
+                    return post_action_queue(**vars)
                 if args[0] == "networks":
                     return create_network(**vars)
                 if args[0] == "nodes":

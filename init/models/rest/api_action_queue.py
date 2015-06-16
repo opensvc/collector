@@ -44,6 +44,77 @@ def get_action_queue(props=None, query=None):
     return dict(data=data)
 
 
+api_action_queue_doc["/action_queue"] += """
+### POST
+
+Description:
+
+- Enqueue an action that will be executed by opensvc agents
+- The user must be responsible for the target node or service
+- The action is logged in the collector's log.
+
+Data:
+
+- <property>=<value> pairs.
+- **nodename**: The node targeted by the action. If svcname is not specified, the
+  action is run using the nodemgr opensvc agent command
+- **svcname**: The service targeted by the action. The action is run using the
+  svcmgr opensvc agent command on the node specified by **nodename**.
+- **action**: The opensvc agent action to execute.
+- **module**: The compliance module to run **action** on.
+- **moduleset**: The compliance moduleset to run **action** on.
+- **rid**: The service resource id to limit **action** to.
+
+Each action has specific property requirements:
+
+- **compliance_check**: requires **nodename**, **module** or **moduleset**, optionally
+  **svcname**
+- **compliance_fix**: requires **nodename**, **module** or **moduleset**, optionally
+  **svcname**
+- **start**: requires **nodename**, **svcname**, optionally **rid**
+- **stop**: requires **nodename**, **svcname**, optionally **rid**
+- **restart**: requires **nodename**, **svcname**, optionally **rid**
+- **syncall**: requires **nodename**, **svcname**, optionally **rid**
+- **syncnodes**: requires **nodename**, **svcname**, optionally **rid**
+- **syncdrp**: requires **nodename**, **svcname**, optionally **rid**
+- **enable**: requires **nodename**, **svcname**, optionally **rid**
+- **disable**: requires **nodename**, **svcname**, optionally **rid**
+- **freeze**: requires **nodename**, **svcname**, optionally **rid**
+- **thaw**: requires **nodename**, **svcname**, optionally **rid**
+- **pushasset**: requires **nodename**
+- **pushdisks**: requires **nodename**
+- **push**: requires **nodename**
+- **pushpkg**: requires **nodename**
+- **pushpatch**: requires **nodename**
+- **pushstats**: requires **nodename**
+- **checks**: requires **nodename**
+- **sysreport**: requires **nodename**
+- **updatecomp**: requires **nodename**
+- **updatepkg**: requires **nodename**
+- **rotate_root_pw**: requires **nodename**
+- **scanscsi**: requires **nodename**
+- **reboot**: requires **nodename**
+- **schedule_reboot**: requires **nodename**
+- **unschedule_reboot**: requires **nodename**
+- **shutdown**: requires **nodename**
+- **wol**: requires **nodename**
+
+Example:
+
+``# curl -u %(email)s -o- -X POST -d nodename=clementine -d action=pushasset https://%(collector)s/init/rest/api/action_queue``
+
+""" % dict(
+        email=user_email(),
+        props="status",
+        collector=request.env.http_host,
+      )
+
+def post_action_queue(**vars):
+    n = json_action_one(vars)
+    if n > 0:
+        action_q_event()
+    return dict(info="Accepted to enqueue %d actions" % n)
+
 #
 api_action_queue_doc["/action_queue/stats"] = """
 ### GET
