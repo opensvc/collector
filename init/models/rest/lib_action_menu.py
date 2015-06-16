@@ -1,1 +1,1 @@
-../action_menu/lib_action_menu.py
+../action_menu/action_menu.py
