@@ -304,3 +304,78 @@ def set_scheduler_run(_id, **vars):
     return get_scheduler_run(_id)
 
 
+#
+api_scheduler_doc["/scheduler/workers"] = """
+### GET
+
+Description:
+
+- List workers of the collector scheduler.
+
+Optional parameters:
+
+- **props**
+. A list of properties to include in each dictionnary.
+. If omitted, all properties are included.
+. The separator is ','.
+. Available properties are: ``%(props)s``:green.
+
+
+- **query**
+. A web2py smart query
+
+Example:
+
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/scheduler/workers?query=group_names contains slow``
+
+""" % dict(
+        email=user_email(),
+        collector=request.env.http_host,
+        props=", ".join(sorted(db.scheduler_worker.fields)),
+      )
+
+def get_scheduler_workers(props=None, query=None):
+    check_privilege("Manager")
+    q = db.scheduler_worker.id > 0
+    if query:
+        cols = props_to_cols(None, tables=["scheduler_worker"])
+        q &= smart_query(cols, query)
+    cols = props_to_cols(props, tables=["scheduler_worker"])
+    data = db(q).select(*cols, cacheable=True).as_list()
+    return dict(data=data)
+
+
+api_scheduler_doc["/scheduler/workers/<id>"] = """
+### GET
+
+Description:
+
+- Display properties of a specific worker of the collector scheduler
+
+Optional parameters:
+
+- **props**
+. A list of properties to include in each dictionnary.
+. If omitted, all properties are included.
+. The separator is ','.
+. Available properties are: ``%(props)s``:green.
+
+
+Example:
+
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/scheduler/workers/10``
+
+""" % dict(
+        email=user_email(),
+        collector=request.env.http_host,
+        props=", ".join(sorted(db.scheduler_worker.fields)),
+      )
+
+def get_scheduler_worker(id, props=None):
+    check_privilege("Manager")
+    q = db.scheduler_worker.id == int(id)
+    cols = props_to_cols(props, tables=["scheduler_worker"])
+    data = db(q).select(*cols, cacheable=True).as_list()
+    return dict(data=data)
+
+

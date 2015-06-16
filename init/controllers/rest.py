@@ -62,6 +62,8 @@ def api():
                     return get_scheduler_tasks(**vars)
                 if args[0] == "scheduler" and args[1] == "runs":
                     return get_scheduler_runs(**vars)
+                if args[0] == "scheduler" and args[1] == "workers":
+                    return get_scheduler_workers(**vars)
                 if args[0] == "services":
                     return get_service(args[1], **vars)
                 if args[0] == "tags":
@@ -99,6 +101,8 @@ def api():
                     return get_scheduler_task(args[2], **vars)
                 if args[0] == "scheduler" and args[1] == "runs":
                     return get_scheduler_run(args[2], **vars)
+                if args[0] == "scheduler" and args[1] == "workers":
+                    return get_scheduler_worker(args[2], **vars)
                 if args[0] == "services" and args[2] == "alerts":
                     return get_service_alerts(args[1], **vars)
                 if args[0] == "services" and args[2] == "checks":
