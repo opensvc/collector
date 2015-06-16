@@ -44,6 +44,27 @@ def get_action_queue(props=None, query=None):
     return dict(data=data)
 
 
+#
+api_action_queue_doc["/action_queue/stats"] = """
+### GET
+
+Description:
+
+- Display action queue statistics
+
+Example:
+
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/action_queue/stats``
+
+""" % dict(
+        email=user_email(),
+        collector=request.env.http_host,
+      )
+
+def get_action_queue_stats():
+    return dict(data=action_queue_ws_data())
+
+
 api_action_queue_doc["/action_queue/<id>"] = """
 ### GET
 

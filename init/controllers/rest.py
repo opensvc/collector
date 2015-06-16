@@ -40,6 +40,8 @@ def api():
                 if args[0] == "users":
                     return get_users(**vars)
             if n_args == 2:
+                if args[0] == "action_queue" and args[1] == "stats":
+                    return get_action_queue_stats()
                 if args[0] == "action_queue":
                     return get_action_queue_one(args[1], **vars)
                 if args[0] == "alerts":
