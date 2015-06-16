@@ -3736,8 +3736,7 @@ function cell_decorator_dash_link_pkg_tab(e) {
 }
 
 function cell_decorator_dash_link_feed_queue(e) {
-  url = $(location).attr("origin") + "/init/feed_queue/feed_queue?feed_queue_f_created=<-15m&clear_filters=true"
-  s = "<a class='action16 clickable' href='"+url+"'></a>"
+  s = "<a class='action16' href=''></a>"
   $(e).html(s)
 }
 
