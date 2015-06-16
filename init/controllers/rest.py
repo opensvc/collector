@@ -58,6 +58,10 @@ def api():
                     return get_network(args[1], **vars)
                 if args[0] == "nodes":
                     return get_node(args[1], **vars)
+                if args[0] == "scheduler" and args[1] == "tasks":
+                    return get_scheduler_tasks(**vars)
+                if args[0] == "scheduler" and args[1] == "runs":
+                    return get_scheduler_runs(**vars)
                 if args[0] == "services":
                     return get_service(args[1], **vars)
                 if args[0] == "tags":
@@ -91,6 +95,10 @@ def api():
                     return get_node_ips(args[1], **vars)
                 if args[0] == "nodes" and args[2] == "services":
                     return get_node_services(args[1], **vars)
+                if args[0] == "scheduler" and args[1] == "tasks":
+                    return get_scheduler_task(args[2], **vars)
+                if args[0] == "scheduler" and args[1] == "runs":
+                    return get_scheduler_run(args[2], **vars)
                 if args[0] == "services" and args[2] == "alerts":
                     return get_service_alerts(args[1], **vars)
                 if args[0] == "services" and args[2] == "checks":
@@ -135,6 +143,11 @@ def api():
                     return set_network(args[1], **vars)
                 if args[0] == "nodes":
                     return set_node(args[1], **vars)
+            if n_args == 3:
+                if args[0] == "scheduler" and args[1] == "tasks":
+                    return set_scheduler_task(args[2], **vars)
+                if args[0] == "scheduler" and args[1] == "runs":
+                    return set_scheduler_run(args[2], **vars)
             if n_args == 4:
                 if args[0] == "tags" and args[2] == "nodes":
                     return tag_node_attach(args[1], args[3], **vars)
@@ -166,6 +179,11 @@ def api():
                     return delete_node(args[1], **vars)
                 if args[0] == "tags":
                     return del_tag(args[1], **vars)
+            if n_args == 3:
+                if args[0] == "scheduler" and args[1] == "tasks":
+                    return delete_scheduler_task(args[2], **vars)
+                if args[0] == "scheduler" and args[1] == "runs":
+                    return delete_scheduler_run(args[2], **vars)
             if n_args == 4:
                 if args[0] == "tags" and args[2] == "nodes":
                     return tag_node_detach(args[1], args[3], **vars)
@@ -187,6 +205,7 @@ def doc():
     all_docs.update(api_networks_doc)
     all_docs.update(api_nodes_doc)
     all_docs.update(api_services_doc)
+    all_docs.update(api_scheduler_doc)
     all_docs.update(api_tags_doc)
     all_docs.update(api_users_doc)
 
