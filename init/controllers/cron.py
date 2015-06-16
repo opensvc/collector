@@ -94,6 +94,9 @@ def _cron_table_purge(table, date_col, orderby=None):
         print "no data in table %s" % table
         return
 
+    if type(oldest) == datetime.date:
+        oldest = datetime.datetime.combine(oldest, datetime.datetime.min.time())
+
     if oldest > day:
         print "oldest entry is dated %s, threshold is set to %s ... skip table %s purge"%(str(oldest), str(day), table)
         return
