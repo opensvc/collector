@@ -133,7 +133,7 @@ Example:
 
 """ % dict(
         email=user_email(),
-        props=sorted(set(db.action_queue.fields)-set(["id"])),
+        props="status",
         collector=request.env.http_host,
       )
 
@@ -144,8 +144,9 @@ def set_action_queue_one(_id, **vars):
     if row is None:
         return dict(error="Action %s does not exist in action queue" % _id)
     node_responsible(row.nodename)
-    if "id" in vars:
-        del(vars["id"])
+    if vars.keys() != ["status"]:
+        invalid = ', '.join(sorted(set(vars.keys())-set(["status"])))
+        return dict(error="Permission denied: properties not updateable: %(props)s" % dict(props=invalid))
     db(q).update(**vars)
     _log('rest.action.update',
          'update properties %(data)s',
