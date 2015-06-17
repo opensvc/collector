@@ -400,7 +400,7 @@ def set_group(id, **vars):
 
 
 #
-api_groups_doc["/groups"]["DELETE"] = """
+api_groups_doc["/groups/<id>"]["DELETE"] = """
 Description:
 
 - Delete a group.
