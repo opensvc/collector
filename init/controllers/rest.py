@@ -27,6 +27,8 @@ def api():
                     return get_filtersets(**vars)
                 if args[0] == "forms":
                     return get_forms(**vars)
+                if args[0] == "groups":
+                    return get_groups(**vars)
                 if args[0] == "ips":
                     return get_ips(**vars)
                 if args[0] == "networks":
@@ -52,6 +54,8 @@ def api():
                     return get_array(args[1], **vars)
                 if args[0] == "forms":
                     return get_form(args[1], **vars)
+                if args[0] == "groups":
+                    return get_group(args[1], **vars)
                 if args[0] == "ips":
                     return get_ip(args[1], **vars)
                 if args[0] == "networks":
@@ -83,6 +87,12 @@ def api():
                     return get_array_proxies(args[1], **vars)
                 if args[0] == "arrays" and args[2] == "targets":
                     return get_array_targets(args[1], **vars)
+                if args[0] == "groups" and args[2] == "apps":
+                    return get_group_apps(args[1], **vars)
+                if args[0] == "groups" and args[2] == "nodes":
+                    return get_group_nodes(args[1], **vars)
+                if args[0] == "groups" and args[2] == "services":
+                    return get_group_services(args[1], **vars)
                 if args[0] == "networks" and args[2] == "nodes":
                     return get_network_nodes(args[1], **vars)
                 if args[0] == "nodes" and args[2] == "alerts":
@@ -207,6 +217,7 @@ def doc():
     all_docs.update(api_apps_doc)
     all_docs.update(api_arrays_doc)
     all_docs.update(api_filtersets_doc)
+    all_docs.update(api_groups_doc)
     all_docs.update(api_ips_doc)
     all_docs.update(api_networks_doc)
     all_docs.update(api_nodes_doc)
