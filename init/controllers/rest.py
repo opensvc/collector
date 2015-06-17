@@ -52,6 +52,8 @@ def api():
                     return get_app(args[1], **vars)
                 if args[0] == "arrays":
                     return get_array(args[1], **vars)
+                if args[0] == "compliance" and args[1] == "status":
+                    return get_compliance_status(**vars)
                 if args[0] == "forms":
                     return get_form(args[1], **vars)
                 if args[0] == "groups":
@@ -87,6 +89,8 @@ def api():
                     return get_array_proxies(args[1], **vars)
                 if args[0] == "arrays" and args[2] == "targets":
                     return get_array_targets(args[1], **vars)
+                if args[0] == "compliance" and args[1] == "status":
+                    return get_compliance_status_one(args[2], **vars)
                 if args[0] == "groups" and args[2] == "apps":
                     return get_group_apps(args[1], **vars)
                 if args[0] == "groups" and args[2] == "nodes":
@@ -200,6 +204,8 @@ def api():
                 if args[0] == "tags":
                     return del_tag(args[1], **vars)
             if n_args == 3:
+                if args[0] == "compliance" and args[1] == "status":
+                    return delete_compliance_status(args[2], **vars)
                 if args[0] == "scheduler" and args[1] == "tasks":
                     return delete_scheduler_task(args[2], **vars)
                 if args[0] == "scheduler" and args[1] == "runs":
@@ -220,6 +226,7 @@ def doc():
     all_docs.update(api_alerts_doc)
     all_docs.update(api_apps_doc)
     all_docs.update(api_arrays_doc)
+    all_docs.update(api_compliance_doc)
     all_docs.update(api_filtersets_doc)
     all_docs.update(api_groups_doc)
     all_docs.update(api_ips_doc)
