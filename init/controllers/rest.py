@@ -158,6 +158,8 @@ def api():
             if n_args == 1:
                 if args[0] == "action_queue":
                     return post_action_queue(**vars)
+                if args[0] == "groups":
+                    return add_group(**vars)
                 if args[0] == "networks":
                     return create_network(**vars)
                 if args[0] == "nodes":
@@ -167,6 +169,8 @@ def api():
             if n_args == 2:
                 if args[0] == "action_queue":
                     return set_action_queue_one(args[1], **vars)
+                if args[0] == "groups":
+                    return set_group(args[1], **vars)
                 if args[0] == "networks":
                     return set_network(args[1], **vars)
                 if args[0] == "nodes":
@@ -201,6 +205,8 @@ def api():
             if n_args == 2:
                 if args[0] == "action_queue":
                     return delete_action_queue_one(args[1], **vars)
+                if args[0] == "groups":
+                    return delete_group(args[1], **vars)
                 if args[0] == "networks":
                     return delete_network(args[1], **vars)
                 if args[0] == "nodes":

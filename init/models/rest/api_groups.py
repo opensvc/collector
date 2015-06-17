@@ -305,3 +305,160 @@ def get_group_users(id, props=None, query=None):
     return dict(data=data)
 
 
+#
+api_groups_doc["/groups"]["POST"] = """
+Description:
+
+- Create a group.
+- The user must be in the UserManager privilege group
+- The action is logged in the collector's log.
+- A websocket event is sent to announce the change in the groups table.
+
+Data:
+
+- <property>=<value> pairs.
+- Available properties are: ``%(props)s``:green.
+
+Example:
+
+``# curl -u %(email)s -o- -d role=NodeManager -d privilege=T https://%(collector)s/init/rest/api/groups``
+
+""" % dict(
+        email=user_email(),
+        collector=request.env.http_host,
+        props=", ".join(sorted(db.auth_group.fields)),
+      )
+
+def add_group(**vars):
+    check_privilege("UserManager")
+    db.auth_group.insert(**vars)
+    _log('rest.groups.add',
+         'add group %(data)s',
+         dict(data=str(vars)),
+        )
+    l = {
+      'event': 'auth_group',
+      'data': {'foo': 'bar'},
+    }
+    _websocket_send(event_msg(l))
+
+    return get_group(vars["role"])
+
+
+#
+api_groups_doc["/groups/<id>"]["POST"] = """
+Description:
+
+- Modify a group properties.
+- The user must be in the UserManager privilege group
+- The action is logged in the collector's log.
+- A websocket event is sent to announce the change in the groups table.
+
+Data:
+
+- <property>=<value> pairs.
+- Available properties are: ``%(props)s``:green.
+
+Example:
+
+``# curl -u %(email)s -o- -d privilege=T https://%(collector)s/init/rest/api/groups/10``
+
+""" % dict(
+        email=user_email(),
+        collector=request.env.http_host,
+        props=", ".join(sorted(db.auth_group.fields)),
+      )
+
+def set_group(id, **vars):
+    check_privilege("UserManager")
+    try:
+        id = int(id)
+        q = db.auth_group.id == id
+    except:
+        q = db.auth_group.role == id
+    row = db(q).select().first()
+    if row is None:
+        return dict(error="Group %s does not exist" % id)
+    if "id" in vars.keys():
+        del(vars["id"])
+    db(q).update(**vars)
+    l = []
+    for key in vars:
+        l.append("%s: %s => %s" % (str(key), str(row[key]), str(vars[key])))
+
+    _log('rest.groups.change',
+         'change group %(data)s',
+         dict(data=', '.join(l)),
+        )
+    l = {
+      'event': 'auth_group',
+      'data': {'foo': 'bar'},
+    }
+    _websocket_send(event_msg(l))
+
+    return get_group(row.id)
+
+
+#
+api_groups_doc["/groups"]["DELETE"] = """
+Description:
+
+- Delete a group.
+- Delete all group membership, apps/forms/rulesets/modulesets responsabilities
+  and publications
+- The user must be in the UserManager privilege group
+- The action is logged in the collector's log.
+- A websocket event is sent to announce the change in the changed tables.
+
+Example:
+
+``# curl -u %(email)s -o- -d role=NodeManager -d privilege=T https://%(collector)s/init/rest/api/groups``
+
+""" % dict(
+        email=user_email(),
+        collector=request.env.http_host,
+      )
+
+def delete_group(id):
+    check_privilege("UserManager")
+    try:
+        id = int(id)
+        q = db.auth_group.id == id
+    except:
+        q = db.auth_group.role == id
+
+    row = db(q).select().first()
+    if row is None:
+        return dict(info="Group %s does not exists" % str(id))
+
+    # group
+    db(q).delete()
+    _log('rest.groups.delete',
+         'deleted group %(g)s',
+         dict(g=row.role))
+    l = {
+      'event': 'auth_group',
+      'data': {'foo': 'bar'},
+    }
+    _websocket_send(event_msg(l))
+
+    # apps responsibles
+    q = db.apps_responsibles.group_id == row.id
+    db(q).delete()
+
+    # forms responsibles and publication
+    q = db.forms_team_responsible.group_id == row.id
+    db(q).delete()
+    q = db.forms_team_publication.group_id == row.id
+    db(q).delete()
+
+    # modset responsibles
+    q = db.comp_moduleset_team_responsible.group_id == row.id
+    db(q).delete()
+
+    # ruleset responsibles
+    q = db.comp_ruleset_team_responsible.group_id == row.id
+    db(q).delete()
+
+    return dict(info="Group %s deleted" % row.role)
+
