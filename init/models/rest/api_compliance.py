@@ -25,8 +25,7 @@ Optional parameters:
 
 Example:
 
-``# curl -u %(email)s -o-
-https://%(collector)s/init/rest/api/compliance/status?query=run_status=1 and run_module=mymod``
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/status?query=run_status=1 and run_module=mymod``
 
 """ % dict(
         email=user_email(),
@@ -36,7 +35,7 @@ https://%(collector)s/init/rest/api/compliance/status?query=run_status=1 and run
 
 def get_compliance_status(props=None, query=None):
     q = db.comp_status.id > 0
-    q &= _where(q, 'comp_status', domain_perms(), 'run_nodname')
+    q &= _where(q, 'comp_status', domain_perms(), 'run_nodename')
     if query:
         cols = props_to_cols(None, tables=["comp_status"])
         q &= smart_query(cols, query)
@@ -73,7 +72,7 @@ Example:
 
 def get_compliance_status_one(id, props=None):
     q = db.comp_status.id == int(id)
-    q &= _where(q, 'comp_status', domain_perms(), 'run_nodname')
+    q &= _where(q, 'comp_status', domain_perms(), 'run_nodename')
     cols = props_to_cols(props, tables=["comp_status"])
     data = db(q).select(*cols, cacheable=True).as_list()
     return dict(data=data)
@@ -97,7 +96,7 @@ Example:
 def delete_compliance_status(id, props=None):
     check_privilege("CompManager")
     q = db.comp_status.id == int(id)
-    q &= _where(q, 'comp_status', domain_perms(), 'run_nodname')
+    q &= _where(q, 'comp_status', domain_perms(), 'run_nodename')
     row = db(q).select().first()
     if row is None:
         return dict(info="Task %s does not exist in the scheduler" % id)

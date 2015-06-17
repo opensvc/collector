@@ -142,8 +142,12 @@ def api():
             if n_args == 4:
                 if args[0] == "services" and args[2] == "nodes":
                     return get_service_node(args[1], args[3], **vars)
+                if args[0] == "services" and args[2] == "compliance" and args[3] == "status":
+                    return get_service_compliance_status(args[1], **vars)
                 if args[0] == "nodes" and args[2] == "services":
                     return get_node_service(args[1], args[3], **vars)
+                if args[0] == "nodes" and args[2] == "compliance" and args[3] == "status":
+                    return get_node_compliance_status(args[1], **vars)
         except Exception as e:
             return dict(error=str(e))
         return dict(error="Unsupported api url")

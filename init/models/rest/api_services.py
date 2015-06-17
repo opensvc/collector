@@ -298,4 +298,44 @@ def get_service_node(svcname, nodename, props=None, query=None):
     data = [r.as_dict() for r in rows]
     return dict(data=data)
 
+#
+api_services_doc["/services/<svcname>/compliance/status"] = {}
+api_services_doc["/services/<svcname>/compliance/status"]["GET"] = """
+Description:
+
+- List compliance modules' last check run on specified service.
+
+Optional parameters:
+
+- **props**
+. A list of properties to include in each dictionnary.
+. If omitted, all properties are included.
+. The separator is ','.
+. Available properties are: ``%(props)s``:green.
+
+
+- **query**
+. A web2py smart query
+
+Example:
+
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/compliance/status?query=run_status=1``
+
+""" % dict(
+        email=user_email(),
+        collector=request.env.http_host,
+        props=", ".join(sorted(db.comp_status.fields)),
+      )
+
+def get_service_compliance_status(svcname, props=None, query=None):
+    q = db.comp_status.run_svcname == svcname
+    q &= _where(q, 'comp_status', domain_perms(), 'run_nodename')
+    if query:
+        cols = props_to_cols(None, tables=["comp_status"])
+        q &= smart_query(cols, query)
+    cols = props_to_cols(props, tables=["comp_status"])
+    data = db(q).select(*cols, cacheable=True).as_list()
+    return dict(data=data)
+
+
 
