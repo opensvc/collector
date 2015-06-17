@@ -250,7 +250,7 @@ def doc():
             if a in d:
                 l.append("[[``%(a)s``:red #%(anchor)s]]" % dict(a=a, anchor=url+":"+a))
             else:
-                l.append("``%(a)s``:grey" % dict(a=a))
+                l.append("[[``%(a)s``:gray #]]" % dict(a=a))
         s += " | ".join(l)
         s += "\n"
     s += "-----\n"
