@@ -2,9 +2,8 @@ from gluon.dal import smart_query
 
 api_arrays_doc = {}
 
-api_arrays_doc["/arrays/<arrayname>"] = """
-### GET
-
+api_arrays_doc["/arrays/<arrayname>"] = {}
+api_arrays_doc["/arrays/<arrayname>"]["GET"] = """
 Description:
 
 - Display all array properties.
@@ -37,9 +36,8 @@ def get_array(array_name, props=None):
     data = db(q).select(*cols, cacheable=True).first().as_dict()
     return dict(data=data)
 
-api_arrays_doc["/arrays"] = """
-### GET
-
+api_arrays_doc["/arrays"] = {}
+api_arrays_doc["/arrays"]["GET"] = """
 Description:
 
 - List storage arrays.
@@ -74,9 +72,8 @@ def get_arrays(props=None, query=None):
     data = [r.as_dict() for r in rows]
     return dict(data=data)
 
-api_arrays_doc["/arrays/<arrayname>/diskgroups"] = """
-### GET
-
+api_arrays_doc["/arrays/<arrayname>/diskgroups"] = {}
+api_arrays_doc["/arrays/<arrayname>/diskgroups"]["GET"] = """
 Description:
 
 - Display array diskgroups.
@@ -115,9 +112,8 @@ def get_array_dgs(array_name, props=None, query=None):
     data = [r.as_dict() for r in rows]
     return dict(data=data)
 
-api_arrays_doc["/arrays/<arrayname>/proxies"] = """
-### GET
-
+api_arrays_doc["/arrays/<arrayname>/proxies"] = {}
+api_arrays_doc["/arrays/<arrayname>/proxies"]["GET"] = """
 Description:
 
 - Display array proxies.
@@ -156,9 +152,8 @@ def get_array_proxies(array_name, props=None, query=None):
     data = [r.as_dict() for r in rows]
     return dict(data=data)
 
-api_arrays_doc["/arrays/<arrayname>/targets"] = """
-### GET
-
+api_arrays_doc["/arrays/<arrayname>/targets"] = {}
+api_arrays_doc["/arrays/<arrayname>/targets"]["GET"] = """
 Description:
 
 - Display array target ports.

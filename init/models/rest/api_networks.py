@@ -18,9 +18,8 @@ def network_responsible(id):
 
 
 #
-api_networks_doc["/networks/<id>/nodes"] = """
-### GET
-
+api_networks_doc["/networks/<id>/nodes"] = {}
+api_networks_doc["/networks/<id>/nodes"]["GET"] = """
 Description:
 
 - List a nodes on the specified network.
@@ -63,9 +62,8 @@ def get_network_nodes(id, props=None, query=None):
 
 
 #
-api_networks_doc["/networks/<id>"] = """
-### GET
-
+api_networks_doc["/networks/<id>"] = {}
+api_networks_doc["/networks/<id>"]["GET"] = """
 Description:
 
 - Display all network properties.
@@ -101,9 +99,8 @@ def get_network(id, props=None):
 
 
 #
-api_networks_doc["/networks"] = """
-### GET
-
+api_networks_doc["/networks"] = {}
+api_networks_doc["/networks"]["GET"] = """
 Description:
 
 - List all networks and their selected properties.
@@ -140,9 +137,7 @@ def get_networks(props=None, query=None):
 
 
 #
-api_networks_doc["/networks/<id>"] += """
-### POST
-
+api_networks_doc["/networks/<id>"]["POST"] = """
 Description:
 
 - Update a set of network properties.
@@ -187,9 +182,7 @@ def set_network(id, **vars):
 
 
 #
-api_networks_doc["/networks"] += """
-### POST
-
+api_networks_doc["/networks"]["POST"] = """
 Description:
 
 - Create a new network
@@ -232,9 +225,7 @@ def create_network(**vars):
 
 
 #
-api_networks_doc["/networks/<id>"] += """
-### DELETE
-
+api_networks_doc["/networks/<id>"]["DELETE"] = """
 Description:
 
 - Delete a network.

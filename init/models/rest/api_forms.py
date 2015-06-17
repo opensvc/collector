@@ -6,9 +6,8 @@ from hashlib import md5
 
 api_forms_doc = {}
 
-api_filtersets_doc["/forms"] = """
-### GET
-
+api_filtersets_doc["/forms"] = {}
+api_filtersets_doc["/forms"]["GET"] = """
 Description:
 
 - List available forms.
@@ -54,9 +53,8 @@ def get_forms(props=None, query=None):
 
 
 
-api_filtersets_doc["/forms/<id>"] = """
-### GET
-
+api_filtersets_doc["/forms/<id>"] = {}
+api_filtersets_doc["/forms/<id>"]["GET"] = """
 Description:
 
 - List form <id> properties.
@@ -101,9 +99,7 @@ def get_form(form_id, props=None, query=None):
     return dict(data=data)
 
 
-api_filtersets_doc["/forms/<id>"] += """
-### PUT
-
+api_filtersets_doc["/forms/<id>"]["PUT"] = """
 Description:
 
 - Submit form <id>.

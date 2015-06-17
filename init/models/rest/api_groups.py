@@ -2,9 +2,8 @@ from gluon.dal import smart_query
 
 api_groups_doc = {}
 
-api_groups_doc["/groups"] = """
-### GET
-
+api_groups_doc["/groups"] = {}
+api_groups_doc["/groups"]["GET"] = """
 Description:
 
 - List existing groups
@@ -46,9 +45,8 @@ def get_groups(props=None, query=None):
     data = db(q).select(*cols, cacheable=True).as_list()
     return dict(data=data)
 
-api_groups_doc["/groups/<id>"] = """
-### GET
-
+api_groups_doc["/groups/<id>"] = {}
+api_groups_doc["/groups/<id>"]["GET"] = """
 Description:
 
 - Display group property
@@ -98,9 +96,8 @@ def get_group(id, props=None, query=None):
     return dict(data=data)
 
 
-api_groups_doc["/groups/<id>/apps"] = """
-### GET
-
+api_groups_doc["/groups/<id>/apps"] = {}
+api_groups_doc["/groups/<id>/apps"]["GET"] = """
 Description:
 
 - Display apps the group is responsible for
@@ -151,9 +148,8 @@ def get_group_apps(id, props=None, query=None):
     data = db(q).select(*cols, cacheable=True).as_list()
     return dict(data=data)
 
-api_groups_doc["/groups/<id>/nodes"] = """
-### GET
-
+api_groups_doc["/groups/<id>/nodes"] = {}
+api_groups_doc["/groups/<id>/nodes"]["GET"] = """
 Description:
 
 - Display nodes the group is responsible for
@@ -203,9 +199,8 @@ def get_group_nodes(id, props=None, query=None):
     data = db(q).select(*cols, cacheable=True).as_list()
     return dict(data=data)
 
-api_groups_doc["/groups/<id>/services"] = """
-### GET
-
+api_groups_doc["/groups/<id>/services"] = {}
+api_groups_doc["/groups/<id>/services"]["GET"] = """
 Description:
 
 - Display services the group is responsible for
@@ -257,9 +252,8 @@ def get_group_services(id, props=None, query=None):
     data = db(q).select(*cols, cacheable=True, groupby=db.services.id).as_list()
     return dict(data=data)
 
-api_groups_doc["/groups/<id>/users"] = """
-### GET
-
+api_groups_doc["/groups/<id>/users"] = {}
+api_groups_doc["/groups/<id>/users"]["GET"] = """
 Description:
 
 - Display users member of the specified group

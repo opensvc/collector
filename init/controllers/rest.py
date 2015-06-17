@@ -233,14 +233,30 @@ def doc():
     s = """
 # RESTful API documentation
 
-## API digest
-
 """
+    actions = [
+      "GET",
+      "DELETE",
+      "POST",
+      "PUT",
+    ]
     urls = sorted(all_docs.keys())
-    s += "\n".join(map(lambda x: "#### [[``%(url)s``:red #%(url)s]]"%dict(url=x), urls))
+    s += "-----\n"
+    for url in urls:
+        l = []
+        d = all_docs[url]
+        l.append(url)
+        for a in actions:
+            if a in d:
+                l.append("[[``%(a)s``:red #%(anchor)s]]" % dict(a=a, anchor=url+":"+a))
+            else:
+                l.append("``%(a)s``:grey" % dict(a=a))
+        s += " | ".join(l)
+        s += "\n"
+    s += "-----\n"
 
     s += """
-## Smart queries
+# Smart queries
 
 Most API urls returning lists accept the ''query'' parameter, which value is a
 web2py smart query.
@@ -256,7 +272,7 @@ Supported operators are:
 - not
 
 
-## Using the API with python
+# Using the API with python
 
 ``
 #!/usr/bin/python
@@ -288,19 +304,28 @@ r = requests.delete(url+"/nodes/testnode", auth=auth, verify=verify)
 print r.content
 ``
 
-## API reference
+# API reference
 
 """ % dict(
         email=user_email(),
         collector=request.env.http_host,
       )
     for url in urls:
+        d = all_docs[url]
         s += """
 [[%(url)s]]
-## ``%(url)s``:red
+## ``%(url)s``:black
 
 """ % dict(url=url)
-        s += all_docs[url]
+        for a in actions:
+            if a not in d:
+                continue
+            s += """
+[[%(url)s:%(a)s]]
+## ``%(url)s :: %(a)s``:red
+
+""" % dict(url=url, a=a)
+            s += d[a]
 
     return dict(doc=DIV(MARKMIN(s), _style="padding:1em;text-align:left"))
 

@@ -5,9 +5,8 @@ api_scheduler_doc = {}
 
 
 #
-api_scheduler_doc["/scheduler/tasks"] = """
-### GET
-
+api_scheduler_doc["/scheduler/tasks"] = {}
+api_scheduler_doc["/scheduler/tasks"]["GET"] = """
 Description:
 
 - List tasks in the collector scheduler.
@@ -45,9 +44,8 @@ def get_scheduler_tasks(props=None, query=None):
     return dict(data=data)
 
 
-api_scheduler_doc["/scheduler/tasks/<id>"] = """
-### GET
-
+api_scheduler_doc["/scheduler/tasks/<id>"] = {}
+api_scheduler_doc["/scheduler/tasks/<id>"]["GET"] = """
 Description:
 
 - Display properties of a specific task in the collector scheduler
@@ -78,9 +76,7 @@ def get_scheduler_task(id, props=None):
     data = db(q).select(*cols, cacheable=True).as_list()
     return dict(data=data)
 
-api_scheduler_doc["/scheduler/tasks/<id>"] += """
-### DELETE
-
+api_scheduler_doc["/scheduler/tasks/<id>"]["DELETE"] = """
 Description:
 
 - Delete a task in the collector scheduler
@@ -107,9 +103,7 @@ def delete_scheduler_task(id, props=None):
     return dict(info="Task %s deleted" % id)
 
 
-api_scheduler_doc["/scheduler/tasks/<id>"] += """
-### POST
-
+api_scheduler_doc["/scheduler/tasks/<id>"]["POST"] = """
 Description:
 
 - Modify properties of a task in the collector scheduler
@@ -152,9 +146,8 @@ def set_scheduler_task(_id, **vars):
 
 
 #
-api_scheduler_doc["/scheduler/runs"] = """
-### GET
-
+api_scheduler_doc["/scheduler/runs"] = {}
+api_scheduler_doc["/scheduler/runs"]["GET"] = """
 Description:
 
 - List runs in the collector scheduler.
@@ -192,9 +185,8 @@ def get_scheduler_runs(props=None, query=None):
     return dict(data=data)
 
 
-api_scheduler_doc["/scheduler/runs/<id>"] = """
-### GET
-
+api_scheduler_doc["/scheduler/runs/<id>"] = {}
+api_scheduler_doc["/scheduler/runs/<id>"]["GET"] = """
 Description:
 
 - Display properties of a specific run in the collector scheduler
@@ -225,9 +217,7 @@ def get_scheduler_run(id, props=None):
     data = db(q).select(*cols, cacheable=True).as_list()
     return dict(data=data)
 
-api_scheduler_doc["/scheduler/runs/<id>"] += """
-### DELETE
-
+api_scheduler_doc["/scheduler/runs/<id>"]["DELETE"] = """
 Description:
 
 - Delete a run in the collector scheduler
@@ -260,9 +250,7 @@ def delete_scheduler_run(id, props=None):
     return dict(info="Run %s deleted" % id)
 
 
-api_scheduler_doc["/scheduler/runs/<id>"] += """
-### POST
-
+api_scheduler_doc["/scheduler/runs/<id>"]["POST"] = """
 Description:
 
 - Modify properties of a run in the collector scheduler
@@ -305,9 +293,8 @@ def set_scheduler_run(_id, **vars):
 
 
 #
-api_scheduler_doc["/scheduler/workers"] = """
-### GET
-
+api_scheduler_doc["/scheduler/workers"] = {}
+api_scheduler_doc["/scheduler/workers"]["GET"] = """
 Description:
 
 - List workers of the collector scheduler.
@@ -345,9 +332,8 @@ def get_scheduler_workers(props=None, query=None):
     return dict(data=data)
 
 
-api_scheduler_doc["/scheduler/workers/<id>"] = """
-### GET
-
+api_scheduler_doc["/scheduler/workers/<id>"] = {}
+api_scheduler_doc["/scheduler/workers/<id>"]["GET"] = """
 Description:
 
 - Display properties of a specific worker of the collector scheduler

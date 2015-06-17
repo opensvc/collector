@@ -5,9 +5,8 @@ api_action_queue_doc = {}
 
 
 #
-api_action_queue_doc["/action_queue"] = """
-### GET
-
+api_action_queue_doc["/action_queue"] = {}
+api_action_queue_doc["/action_queue"]["GET"] = """
 Description:
 
 - List service and node actions posted in the action_queue.
@@ -44,9 +43,7 @@ def get_action_queue(props=None, query=None):
     return dict(data=data)
 
 
-api_action_queue_doc["/action_queue"] += """
-### POST
-
+api_action_queue_doc["/action_queue"]["POST"] = """
 Description:
 
 - Enqueue an action that will be executed by opensvc agents
@@ -116,9 +113,8 @@ def post_action_queue(**vars):
     return dict(info="Accepted to enqueue %d actions" % n)
 
 #
-api_action_queue_doc["/action_queue/stats"] = """
-### GET
-
+api_action_queue_doc["/action_queue/stats"] = {}
+api_action_queue_doc["/action_queue/stats"]["GET"] = """
 Description:
 
 - Display action queue statistics
@@ -136,9 +132,8 @@ def get_action_queue_stats():
     return dict(data=action_queue_ws_data())
 
 
-api_action_queue_doc["/action_queue/<id>"] = """
-### GET
-
+api_action_queue_doc["/action_queue/<id>"] = {}
+api_action_queue_doc["/action_queue/<id>"]["GET"] = """
 Description:
 
 - Display properties of a specific action posted in the action queue
@@ -168,9 +163,7 @@ def get_action_queue_one(id, props=None):
     data = db(q).select(*cols, cacheable=True).as_list()
     return dict(data=data)
 
-api_action_queue_doc["/action_queue/<id>"] += """
-### DELETE
-
+api_action_queue_doc["/action_queue/<id>"]["DELETE"] = """
 Description:
 
 - Delete an action posted in the action queue
@@ -203,9 +196,7 @@ def delete_action_queue_one(id, props=None):
     _websocket_send(event_msg(l))
     return dict(info="Action %s deleted" % id)
 
-api_action_queue_doc["/action_queue/<id>"] += """
-### POST
-
+api_action_queue_doc["/action_queue/<id>"]["POST"] = """
 Description:
 
 - Modify properties of an action posted in the action queue

@@ -16,9 +16,8 @@ def svc_responsible(svcname):
 
 
 #
-api_services_doc["/services/<svcname>"] = """
-### GET
-
+api_services_doc["/services/<svcname>"] = {}
+api_services_doc["/services/<svcname>"]["GET"] = """
 Description:
 
 - Display all services properties.
@@ -54,9 +53,8 @@ def get_service(svcname, props=None):
 
 
 #
-api_services_doc["/services"] = """
-### GET
-
+api_services_doc["/services"] = {}
+api_services_doc["/services"]["GET"] = """
 Description:
 
 - List all services and their selected properties.
@@ -102,9 +100,8 @@ def get_services(props=None, fset_id=None, query=None):
 
 
 #
-api_services_doc["/services/<service>/alerts"] = """
-### GET
-
+api_services_doc["/services/<service>/alerts"] = {}
+api_services_doc["/services/<service>/alerts"]["GET"] = """
 Description:
 
 - List a service alerts.
@@ -143,9 +140,8 @@ def get_service_alerts(svcname, props=None, query=None):
 
 
 #
-api_services_doc["/services/<svcname>/checks"] = """
-### GET
-
+api_services_doc["/services/<svcname>/checks"] = {}
+api_services_doc["/services/<svcname>/checks"]["GET"] = """
 Description:
 
 - List a service checks.
@@ -183,9 +179,8 @@ def get_service_checks(svcname, props=None, query=None):
 
 
 #
-api_nodes_doc["/services/<svcname>/disks"] = """
-### GET
-
+api_nodes_doc["/services/<svcname>/disks"] = {}
+api_nodes_doc["/services/<svcname>/disks"]["GET"] = """
 Description:
 
 - List a service disks.
@@ -224,9 +219,8 @@ def get_service_disks(svcname, props=None, query=None):
 
 
 #
-api_services_doc["/services/<svcname>/nodes"] = """
-### GET
-
+api_services_doc["/services/<svcname>/nodes"] = {}
+api_services_doc["/services/<svcname>/nodes"]["GET"] = """
 Description:
 
 - Display service instance status on each of its nodes.
@@ -265,9 +259,8 @@ def get_service_nodes(svcname, props=None, query=None):
     return dict(data=data)
 
 #
-api_services_doc["/services/<svcname>/nodes/<nodename>"] = """
-### GET
-
+api_services_doc["/services/<svcname>/nodes/<nodename>"] = {}
+api_services_doc["/services/<svcname>/nodes/<nodename>"]["GET"] = """
 Description:
 
 - Display service instance status on the specified node.

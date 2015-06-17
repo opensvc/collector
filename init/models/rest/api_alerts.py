@@ -5,9 +5,8 @@ api_alerts_doc = {}
 
 
 #
-api_alerts_doc["/alerts"] = """
-### GET
-
+api_alerts_doc["/alerts"] = {}
+api_alerts_doc["/alerts"]["GET"] = """
 Description:
 
 - List existing alerts.
@@ -54,9 +53,8 @@ def get_alerts(props=None, query=None):
     return dict(data=data)
 
 
-api_alerts_doc["/alerts/<id>"] = """
-### GET
-
+api_alerts_doc["/alerts/<id>"] = {}
+api_alerts_doc["/alerts/<id>"]["GET"] = """
 Description:
 
 - Display alert properties

@@ -3,9 +3,8 @@ from gluon.dal import smart_query
 api_ips_doc = {}
 
 #
-api_ips_doc["/ips"] = """
-### GET
-
+api_ips_doc["/ips"] = {}
+api_ips_doc["/ips"]["GET"] = """
 Description:
 
 - List ips detected on nodes.
@@ -47,9 +46,8 @@ def get_ips(props=None, query=None):
 
 
 #
-api_ips_doc["/ips/<id>"] = """
-### GET
-
+api_ips_doc["/ips/<id>"] = {}
+api_ips_doc["/ips/<id>"]["GET"] = """
 Description:
 
 - Display a node ip properties.

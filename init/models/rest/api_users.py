@@ -2,9 +2,8 @@ from gluon.dal import smart_query
 
 api_users_doc = {}
 
-api_users_doc["/users"] = """
-### GET
-
+api_users_doc["/users"] = {}
+api_users_doc["/users"]["GET"] = """
 Description:
 
 - List existing users
@@ -52,9 +51,8 @@ def get_users(props=None, query=None):
     data = db(q).select(*cols, cacheable=True).as_list()
     return dict(data=data)
 
-api_users_doc["/users/<id>"] = """
-### GET
-
+api_users_doc["/users/<id>"] = {}
+api_users_doc["/users/<id>"]["GET"] = """
 Description:
 
 - Display user property
@@ -104,9 +102,8 @@ def get_user(id, props=None, query=None):
     return dict(data=data)
 
 
-api_users_doc["/users/<id>/apps"] = """
-### GET
-
+api_users_doc["/users/<id>/apps"] = {}
+api_users_doc["/users/<id>/apps"]["GET"] = """
 Description:
 
 - Display apps the user is responsible for
@@ -158,9 +155,8 @@ def get_user_apps(id, props=None, query=None):
     data = db(q).select(*cols, cacheable=True).as_list()
     return dict(data=data)
 
-api_users_doc["/users/<id>/nodes"] = """
-### GET
-
+api_users_doc["/users/<id>/nodes"] = {}
+api_users_doc["/users/<id>/nodes"]["GET"] = """
 Description:
 
 - Display nodes the user is responsible for
@@ -212,9 +208,8 @@ def get_user_nodes(id, props=None, query=None):
     data = db(q).select(*cols, cacheable=True).as_list()
     return dict(data=data)
 
-api_users_doc["/users/<id>/services"] = """
-### GET
-
+api_users_doc["/users/<id>/services"] = {}
+api_users_doc["/users/<id>/services"]["GET"] = """
 Description:
 
 - Display services the user is responsible for
@@ -268,9 +263,8 @@ def get_user_services(id, props=None, query=None):
     return dict(data=data)
 
 
-api_users_doc["/users/<id>/groups"] = """
-### GET
-
+api_users_doc["/users/<id>/groups"] = {}
+api_users_doc["/users/<id>/groups"]["GET"] = """
 Description:
 
 - Display groups the user is member of

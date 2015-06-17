@@ -2,9 +2,8 @@ from gluon.dal import smart_query
 
 api_filtersets_doc = {}
 
-api_filtersets_doc["/filtersets"] = """
-### GET
-
+api_filtersets_doc["/filtersets"] = {}
+api_filtersets_doc["/filtersets"]["GET"] = """
 Description:
 
 - List all existing filtersets.

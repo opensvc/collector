@@ -4,9 +4,8 @@ api_tags_doc = {}
 
 
 #
-api_tags_doc["/tags"] = """
-### GET
-
+api_tags_doc["/tags"] = {}
+api_tags_doc["/tags"]["GET"] = """
 Description:
 
 - List existing tags.
@@ -44,9 +43,7 @@ def get_tags(props=None, query=None):
 
 
 #
-api_tags_doc["/tags"] += """
-### POST
-
+api_tags_doc["/tags"]["POST"] = """
 Description:
 
 - Create a tag.
@@ -81,9 +78,8 @@ def add_tag(**vars):
 
 
 #
-api_tags_doc["/tags/<id>"] = """
-### GET
-
+api_tags_doc["/tags/<id>"] = {}
+api_tags_doc["/tags/<id>"]["GET"] = """
 Description:
 
 - Display tag property
@@ -115,9 +111,7 @@ def get_tag(tagid, props=None):
 
 
 #
-api_tags_doc["/tags/<id>"] += """
-### DELETE
-
+api_tags_doc["/tags/<id>"]["DELETE"] = """
 Description:
 
 - Delete the tag with id <id>.
@@ -163,9 +157,8 @@ def del_tag(tagid):
 
 
 #
-api_tags_doc["/tags/<id>/nodes"] = """
-### GET
-
+api_tags_doc["/tags/<id>/nodes"] = {}
+api_tags_doc["/tags/<id>/nodes"]["GET"] = """
 Description:
 
 - List nodes where tag <id> is attached.
@@ -197,9 +190,8 @@ def get_tag_nodes(tagid, props=None, query=None):
 
 
 #
-api_tags_doc["/tags/<id>/services"] = """
-### GET
-
+api_tags_doc["/tags/<id>/services"] = {}
+api_tags_doc["/tags/<id>/services"]["GET"] = """
 Description:
 
 - List services where tag <id> is attached.
@@ -230,9 +222,8 @@ def get_tag_services(tagid, props=None, query=None):
     return dict(data=data)
 
 #
-api_tags_doc["/tags/<id>/nodes/<nodename>"] = """
-### POST
-
+api_tags_doc["/tags/<id>/nodes/<nodename>"] = {}
+api_tags_doc["/tags/<id>/nodes/<nodename>"]["POST"] = """
 Description:
 
 - Attach a tag to a node
@@ -272,9 +263,7 @@ def tag_node_attach(tagid, nodename):
 
 
 #
-api_tags_doc["/tags/<id>/nodes/<nodename>"] += """
-### DELETE
-
+api_tags_doc["/tags/<id>/nodes/<nodename>"]["DELETE"] = """
 Description:
 
 - Detach a tag from a node
@@ -307,9 +296,8 @@ def tag_node_detach(tagid, nodename):
 
 
 #
-api_tags_doc["/tags/<id>/services/<svcname>"] = """
-### POST
-
+api_tags_doc["/tags/<id>/services/<svcname>"] = {}
+api_tags_doc["/tags/<id>/services/<svcname>"]["POST"] = """
 Description:
 
 - Attach a tag to a service
@@ -341,9 +329,7 @@ def tag_service_attach(tagid, svcname):
 
 
 #
-api_tags_doc["/tags/<id>/services/<svcname>"] += """
-### DELETE
-
+api_tags_doc["/tags/<id>/services/<svcname>"]["DELETE"] = """
 Description:
 
 - Detach a tag from a service

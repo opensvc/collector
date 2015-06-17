@@ -3,9 +3,8 @@ from gluon.dal import smart_query
 api_apps_doc = {}
 
 #
-api_apps_doc["/apps"] = """
-### GET
-
+api_apps_doc["/apps"] = {}
+api_apps_doc["/apps"]["GET"] = """
 Description:
 
 - List application codes.
@@ -43,9 +42,8 @@ def get_apps(props=None, query=None):
 
 
 #
-api_apps_doc["/apps/<id>"] = """
-### GET
-
+api_apps_doc["/apps/<id>"] = {}
+api_apps_doc["/apps/<id>"]["GET"] = """
 Description:
 
 - Display an application code properties.
@@ -89,9 +87,8 @@ def get_app(id, props=None, query=None):
 
 
 #
-api_apps_doc["/apps/<id>/nodes"] = """
-### GET
-
+api_apps_doc["/apps/<id>/nodes"] = {}
+api_apps_doc["/apps/<id>/nodes"]["GET"] = """
 Description:
 
 - List nodes with the <id> application codes.
@@ -134,9 +131,8 @@ def get_app_nodes(id, props=None, query=None):
     return dict(data=data)
 
 #
-api_apps_doc["/apps/<id>/quotas"] = """
-### GET
-
+api_apps_doc["/apps/<id>/quotas"] = {}
+api_apps_doc["/apps/<id>/quotas"]["GET"] = """
 Description:
 
 - List storage disk group quotas usage for the <id> application code.
@@ -179,9 +175,8 @@ def get_app_quotas(id, props=None, query=None):
     return dict(data=data)
 
 #
-api_apps_doc["/apps/<id>/services"] = """
-### GET
-
+api_apps_doc["/apps/<id>/services"] = {}
+api_apps_doc["/apps/<id>/services"]["GET"] = """
 Description:
 
 - List services with the <id> application codes.

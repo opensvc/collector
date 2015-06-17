@@ -15,9 +15,8 @@ def node_responsible(nodename):
         raise Exception("Not authorized: user is not responsible for node %s" % nodename)
 
 #
-api_nodes_doc["/nodes/<nodename>/ips"] = """
-### GET
-
+api_nodes_doc["/nodes/<nodename>/ips"] = {}
+api_nodes_doc["/nodes/<nodename>/ips"]["GET"] = """
 Description:
 
 - List a node ips.
@@ -56,9 +55,8 @@ def get_node_ips(nodename, props=None, query=None):
 
 
 #
-api_nodes_doc["/nodes/<nodename>/disks"] = """
-### GET
-
+api_nodes_doc["/nodes/<nodename>/disks"] = {}
+api_nodes_doc["/nodes/<nodename>/disks"]["GET"] = """
 Description:
 
 - List a node disks.
@@ -97,9 +95,8 @@ def get_node_disks(nodename, props=None, query=None):
 
 
 #
-api_nodes_doc["/nodes/<nodename>/checks"] = """
-### GET
-
+api_nodes_doc["/nodes/<nodename>/checks"] = {}
+api_nodes_doc["/nodes/<nodename>/checks"]["GET"] = """
 Description:
 
 - List a node checks.
@@ -137,9 +134,8 @@ def get_node_checks(nodename, props=None, query=None):
 
 
 #
-api_nodes_doc["/nodes/<nodename>/hbas"] = """
-### GET
-
+api_nodes_doc["/nodes/<nodename>/hbas"] = {}
+api_nodes_doc["/nodes/<nodename>/hbas"]["GET"] = """
 Description:
 
 - List a node hbas.
@@ -177,9 +173,8 @@ def get_node_hbas(nodename, props=None, query=None):
 
 
 #
-api_nodes_doc["/nodes/<nodename>/services"] = """
-### GET
-
+api_nodes_doc["/nodes/<nodename>/services"] = {}
+api_nodes_doc["/nodes/<nodename>/services"]["GET"] = """
 Description:
 
 - List a node services.
@@ -218,9 +213,8 @@ def get_node_services(nodename, props=None, query=None):
 
 
 #
-api_nodes_doc["/nodes/<nodename>/services/<svcname>"] = """
-### GET
-
+api_nodes_doc["/nodes/<nodename>/services/<svcname>"] = {}
+api_nodes_doc["/nodes/<nodename>/services/<svcname>"]["GET"] = """
 Description:
 
 - Display the specified service on the specified node.
@@ -260,9 +254,8 @@ def get_node_service(nodename, svcname, props=None, query=None):
 
 
 #
-api_nodes_doc["/nodes/<nodename>/alerts"] = """
-### GET
-
+api_nodes_doc["/nodes/<nodename>/alerts"] = {}
+api_nodes_doc["/nodes/<nodename>/alerts"]["GET"] = """
 Description:
 
 - List a node alerts.
@@ -301,9 +294,8 @@ def get_node_alerts(nodename, props=None, query=None):
 
 
 #
-api_nodes_doc["/nodes/<nodename>"] = """
-### GET
-
+api_nodes_doc["/nodes/<nodename>"] = {}
+api_nodes_doc["/nodes/<nodename>"]["GET"] = """
 Description:
 
 - Display all node properties.
@@ -339,9 +331,8 @@ def get_node(nodename, props=None):
 
 
 #
-api_nodes_doc["/nodes"] = """
-### GET
-
+api_nodes_doc["/nodes"] = {}
+api_nodes_doc["/nodes"]["GET"] = """
 Description:
 
 - List all node names and their selected properties.
@@ -387,9 +378,7 @@ def get_nodes(props=None, fset_id=None, query=None):
 
 
 #
-api_nodes_doc["/nodes/<nodename>"] += """
-### POST
-
+api_nodes_doc["/nodes/<nodename>"]["POST"] = """
 Description:
 
 - Update a set of node properties.
@@ -434,9 +423,7 @@ def set_node(nodename, **vars):
 
 
 #
-api_nodes_doc["/nodes"] += """
-### POST
-
+api_nodes_doc["/nodes"]["POST"] = """
 Description:
 
 - Create a new node
@@ -483,9 +470,7 @@ def create_node(**vars):
 
 
 #
-api_nodes_doc["/nodes/<nodename>"] += """
-### DELETE
-
+api_nodes_doc["/nodes/<nodename>"]["DELETE"] = """
 Description:
 
 - Delete a node.
