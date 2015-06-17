@@ -35,6 +35,7 @@ Example:
 
 def get_action_queue(props=None, query=None):
     q = db.action_queue.id > 0
+    q &= _where(q, 'action_queue', domain_perms(), 'nodename')
     if query:
         cols = props_to_cols(None, tables=["action_queue"])
         q &= smart_query(cols, query)
@@ -159,6 +160,7 @@ Example:
 
 def get_action_queue_one(id, props=None):
     q = db.action_queue.id == int(id)
+    q &= _where(q, 'action_queue', domain_perms(), 'nodename')
     cols = props_to_cols(props, tables=["action_queue"])
     data = db(q).select(*cols, cacheable=True).as_list()
     return dict(data=data)
@@ -180,6 +182,7 @@ Example:
 def delete_action_queue_one(id, props=None):
     check_privilege("NodeManager")
     q = db.action_queue.id == int(id)
+    q &= _where(q, 'action_queue', domain_perms(), 'nodename')
     row = db(q).select().first()
     if row is None:
         return dict(info="Action %s does not exist in action queue" % id)
@@ -223,6 +226,7 @@ Example:
 def set_action_queue_one(_id, **vars):
     check_privilege("NodeManager")
     q = db.action_queue.id == int(_id)
+    q &= _where(q, 'action_queue', domain_perms(), 'nodename')
     row = db(q).select().first()
     if row is None:
         return dict(error="Action %s does not exist in action queue" % _id)
