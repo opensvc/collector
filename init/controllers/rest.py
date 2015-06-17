@@ -93,6 +93,8 @@ def api():
                     return get_group_nodes(args[1], **vars)
                 if args[0] == "groups" and args[2] == "services":
                     return get_group_services(args[1], **vars)
+                if args[0] == "groups" and args[2] == "users":
+                    return get_group_users(args[1], **vars)
                 if args[0] == "networks" and args[2] == "nodes":
                     return get_network_nodes(args[1], **vars)
                 if args[0] == "nodes" and args[2] == "alerts":
@@ -127,6 +129,8 @@ def api():
                     return get_tag_services(args[1], **vars)
                 if args[0] == "users" and args[2] == "apps":
                     return get_user_apps(args[1], **vars)
+                if args[0] == "users" and args[2] == "groups":
+                    return get_user_groups(args[1], **vars)
                 if args[0] == "users" and args[2] == "nodes":
                     return get_user_nodes(args[1], **vars)
                 if args[0] == "users" and args[2] == "services":

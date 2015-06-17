@@ -268,3 +268,57 @@ def get_user_services(id, props=None, query=None):
     return dict(data=data)
 
 
+api_users_doc["/users/<id>/groups"] = """
+### GET
+
+Description:
+
+- Display groups the user is member of
+- Managers and UserManager are allowed to see all users' information
+- Others can only see information for users in their organisational groups
+
+Optional parameters:
+
+- **props**
+. A list of properties to include in each dictionnary.
+. If omitted, all properties are included.
+. The separator is ','.
+. Available properties are: ``%(props)s``:green.
+
+
+- **query**
+. A web2py smart query
+
+Example:
+
+``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/users/%(email)s/services``
+
+""" % dict(
+        email=user_email(),
+        collector=request.env.http_host,
+        props=", ".join(sorted(db.auth_group.fields)),
+      )
+
+def get_user_groups(id, props=None, query=None):
+    try:
+        check_privilege("UserManager")
+        q = db.auth_user.id > 0
+    except:
+        user_ids = allowed_user_ids()
+        q = db.auth_user.id.belongs(user_ids)
+
+    if "@" in id:
+        q &= db.auth_user.email == id
+    else:
+        q &= db.auth_user.id == id
+
+    q &= db.auth_membership.user_id == db.auth_user.id
+    q &= db.auth_group.id == db.auth_membership.group_id
+    if query:
+        cols = props_to_cols(None, tables=["auth_group"])
+        q &= smart_query(cols, query)
+    cols = props_to_cols(props, tables=["auth_group"])
+    data = db(q).select(*cols, cacheable=True).as_list()
+    return dict(data=data)
+
+
