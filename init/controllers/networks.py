@@ -67,12 +67,9 @@ class col_name(HtmlTableColumn):
               A(
                 s,
                 _onclick="""
-if ($("#networks_x_%(domain_id)d").is(":visible")) {
-  $("#networks_x_%(domain_id)d").hide()
-} else {
-  $("#networks_x_%(domain_id)d").show()
-  ajax("%(url)s", [], "networks_x_%(domain_id)d")
-}
+var id=%(domain_id)d
+var url="%(url)s"
+toggle_extra(url, id, $(this), 0)
 """%dict(domain_id=domain_id,
          url=URL(r=request, f="segments", args=[domain_id]),
         ),
