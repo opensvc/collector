@@ -1,221 +1,142 @@
 from gluon.dal import smart_query
 
-api_apps_doc = {}
-
 #
-api_apps_doc["/apps"] = {}
-api_apps_doc["/apps"]["GET"] = """
-Description:
-
-- List application codes.
-
-Optional parameters:
-
-- **props**
-. A list of properties to include in each dictionnary.
-. If omitted, all properties are included.
-. The separator is ','.
-. Available properties are: ``%(props)s``:green.
-
-- **query**
-. A web2py smart query
-
-Example:
-
-``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/apps``
-
-""" % dict(
-        email=user_email(),
-        collector=request.env.http_host,
-        props=", ".join(sorted(db.apps.fields)),
-      )
-
-def get_apps(props=None, query=None):
-    q = db.apps.id > 0
-    if query:
-        cols = props_to_cols(None, tables=["apps"])
-        q &= smart_query(cols, query)
-    cols = props_to_cols(props, tables=["apps"])
-    data = db(q).select(*cols, cacheable=True).as_list()
-    return dict(data=data)
-
+class rest_get_apps(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List application codes.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/apps"
+        ]
+        q = db.apps.id > 0
+        rest_get_table_handler.__init__(
+          self,
+          path="/apps",
+          tables=["apps"],
+          q=q,
+          desc=desc,
+          examples=examples,
+        )
 
 
 #
-api_apps_doc["/apps/<id>"] = {}
-api_apps_doc["/apps/<id>"]["GET"] = """
-Description:
+class rest_get_app(rest_get_line_handler):
+    def __init__(self):
+        desc = [
+          "Display an application code properties.",
+          "<id> can be either the proper id or the application code.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/apps/10"
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/apps/MYAPP"
+        ]
+        rest_get_line_handler.__init__(
+          self,
+          path="/apps/<id>",
+          tables=["apps"],
+          desc=desc,
+          examples=examples,
+        )
 
-- Display an application code properties.
-- <id> can be either the proper id or the application code.
-
-Optional parameters:
-
-- **props**
-. A list of properties to include in each dictionnary.
-. If omitted, all properties are included.
-. The separator is ','.
-. Available properties are: ``%(props)s``:green.
-
-- **query**
-. A web2py smart query
-
-Example:
-
-``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/apps/10``
-``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/apps/MYAPP``
-
-""" % dict(
-        email=user_email(),
-        collector=request.env.http_host,
-        props=", ".join(sorted(db.apps.fields)),
-      )
-
-def get_app(id, props=None, query=None):
-    q = db.apps.app == id
-    n = db(q).count()
-    if n == 0:
-        try: int(id)
-        except: return dict(data=[])
-        q = db.apps.id == id
-    if query:
-        cols = props_to_cols(None, tables=["apps"])
-        q &= smart_query(cols, query)
-    cols = props_to_cols(props, tables=["apps"])
-    data = db(q).select(*cols, cacheable=True).as_list()
-    return dict(data=data)
+    def handler(self, id, **vars):
+        q = db.apps.app == id
+        n = db(q).count()
+        if n == 0:
+            try: int(id)
+            except: return dict(data=[])
+            q = db.apps.id == id
+        self.set_q(q)
+        return self.prepare_data(**vars)
 
 
 #
-api_apps_doc["/apps/<id>/nodes"] = {}
-api_apps_doc["/apps/<id>/nodes"]["GET"] = """
-Description:
+class rest_get_app_nodes(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List nodes with the <id> application codes."
+          "<id> can be either the proper id or the application code."
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/apps/MYAPP/nodes"
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/apps/<id>/nodes",
+          tables=["nodes"],
+          desc=desc,
+          examples=examples,
+        )
 
-- List nodes with the <id> application codes.
-- <id> can be either the proper id or the application code.
+    def handler(self, id, **vars):
+        q = db.apps.app == id
+        n = db(q).count()
+        if n == 0:
+            try: id = int(id)
+            except: return dict(data=[])
+            q = db.apps.id == id
+        q &= db.nodes.project == db.apps.app
+        self.set_q(q)
+        return self.prepare_data(**vars)
 
-Optional parameters:
-
-- **props**
-. A list of properties to include in each dictionnary.
-. If omitted, all properties are included.
-. The separator is ','.
-. Available properties are: ``%(props)s``:green.
-
-- **query**
-. A web2py smart query
-
-Example:
-
-``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/apps/MYAPP/nodes``
-
-""" % dict(
-        email=user_email(),
-        collector=request.env.http_host,
-        props=", ".join(sorted(db.nodes.fields)),
-      )
-
-def get_app_nodes(id, props=None, query=None):
-    q = db.apps.app == id
-    n = db(q).count()
-    if n == 0:
-        try: int(id)
-        except: return dict(data=[])
-        q = db.apps.id == id
-    q &= db.nodes.project == db.apps.app
-    if query:
-        cols = props_to_cols(None, tables=["nodes"])
-        q &= smart_query(cols, query)
-    cols = props_to_cols(props, tables=["nodes"])
-    data = db(q).select(*cols, cacheable=True).as_list()
-    return dict(data=data)
 
 #
-api_apps_doc["/apps/<id>/quotas"] = {}
-api_apps_doc["/apps/<id>/quotas"]["GET"] = """
-Description:
+class rest_get_app_quotas(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List storage disk group quotas usage for the <id> application code.",
+          "<id> can be either the proper id or the application code.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/apps/MYAPP/quotas"
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/apps/<id>/quotas",
+          tables=["v_disk_quota"],
+          desc=desc,
+          examples=examples,
+        )
 
-- List storage disk group quotas usage for the <id> application code.
-- <id> can be either the proper id or the application code.
+    def handler(self, id, **vars):
+        q = db.apps.app == id
+        n = db(q).count()
+        if n == 0:
+            try: int(id)
+            except: return dict(data=[])
+            q = db.apps.id == id
+        q &= db.v_disk_quota.app == db.apps.app
+        self.set_q(q)
+        return self.prepare_data(**vars)
 
-Optional parameters:
-
-- **props**
-. A list of properties to include in each dictionnary.
-. If omitted, all properties are included.
-. The separator is ','.
-. Available properties are: ``%(props)s``:green.
-
-- **query**
-. A web2py smart query
-
-Example:
-
-``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/apps/MYAPP/quotas``
-
-""" % dict(
-        email=user_email(),
-        collector=request.env.http_host,
-        props=", ".join(sorted(db.v_disk_quota.fields)),
-      )
-
-def get_app_quotas(id, props=None, query=None):
-    q = db.apps.app == id
-    n = db(q).count()
-    if n == 0:
-        try: int(id)
-        except: return dict(data=[])
-        q = db.apps.id == id
-    q &= db.v_disk_quota.app == db.apps.app
-    if query:
-        cols = props_to_cols(None, tables=["v_disk_quota"])
-        q &= smart_query(cols, query)
-    cols = props_to_cols(props, tables=["v_disk_quota"])
-    data = db(q).select(*cols, cacheable=True).as_list()
-    return dict(data=data)
 
 #
-api_apps_doc["/apps/<id>/services"] = {}
-api_apps_doc["/apps/<id>/services"]["GET"] = """
-Description:
+class rest_get_app_services(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List services with the <id> application codes.",
+          "<id> can be either the proper id or the application code."
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/apps/MYAPP/services"
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/apps/<id>/services",
+          tables=["services"],
+          desc=desc,
+          examples=examples,
+        )
 
-- List services with the <id> application codes.
-- <id> can be either the proper id or the application code.
-
-Optional parameters:
-
-- **props**
-. A list of properties to include in each dictionnary.
-. If omitted, all properties are included.
-. The separator is ','.
-. Available properties are: ``%(props)s``:green.
-
-- **query**
-. A web2py smart query
-
-Example:
-
-``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/apps/MYAPP/services``
-
-""" % dict(
-        email=user_email(),
-        collector=request.env.http_host,
-        props=", ".join(sorted(db.services.fields)),
-      )
-
-def get_app_services(id, props=None, query=None):
-    q = db.apps.app == id
-    n = db(q).count()
-    if n == 0:
-        try: int(id)
-        except: return dict(data=[])
-        q = db.apps.id == id
-    q &= db.services.svc_app == db.apps.app
-    if query:
-        cols = props_to_cols(None, tables=["services"])
-        q &= smart_query(cols, query)
-    cols = props_to_cols(props, tables=["services"])
-    data = db(q).select(*cols, cacheable=True).as_list()
-    return dict(data=data)
+    def handler(self, id, **vars):
+        q = db.apps.app == id
+        n = db(q).count()
+        if n == 0:
+            try: int(id)
+            except: return dict(data=[])
+            q = db.apps.id == id
+        q &= db.services.svc_app == db.apps.app
+        self.set_q(q)
+        return self.prepare_data(**vars)
 
 

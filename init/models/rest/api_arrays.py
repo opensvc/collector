@@ -1,194 +1,136 @@
 from gluon.dal import smart_query
 
-api_arrays_doc = {}
-
-api_arrays_doc["/arrays/<arrayname>"] = {}
-api_arrays_doc["/arrays/<arrayname>"]["GET"] = """
-Description:
-
-- Display all array properties.
-- Display selected array properties.
-
-Optional parameters:
-
-- **props**
-. A list of properties to include.
-. If omitted, all properties are included.
-. The separator is ','.
-. Available properties are: ``%(arrays_props)s``:green.
-
-- **query**
-. A web2py smart query
-
-Example:
-
-``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/arrays/myarray?props=array_name,array_model``
-
-""" % dict(
-        email=user_email(),
-        collector=request.env.http_host,
-        arrays_props=", ".join(sorted(db.stor_array.fields)),
-    )
-
-def get_array(array_name, props=None):
-    q = db.stor_array.array_name == array_name
-    cols = props_to_cols(props, tables=["stor_array"])
-    data = db(q).select(*cols, cacheable=True).first().as_dict()
-    return dict(data=data)
-
-api_arrays_doc["/arrays"] = {}
-api_arrays_doc["/arrays"]["GET"] = """
-Description:
-
-- List storage arrays.
-
-Optional parameters:
-
-- **props**
-. A list of properties to include in each dictionnary.
-. If omitted, all properties are included.
-. The separator is ','.
-. Available properties are: ``%(arrays_props)s``:green.
-
-- **query**
-. A web2py smart query
-
-Example:
-
-``# curl -u %(email)s -o- "https://%(collector)s/init/rest/api/arrays?props=array_name&query=array_model contains hitachi"``
-""" % dict(
-        email=user_email(),
-        collector=request.env.http_host,
-        arrays_props=", ".join(sorted(db.stor_array.fields)),
-    )
-
-def get_arrays(props=None, query=None):
-    q = db.stor_array.id > 0
-    if query:
-        cols = props_to_cols(None, tables=["stor_array"])
-        q &= smart_query(cols, query)
-    cols = props_to_cols(props, tables=["stor_array"])
-    rows = db(q).select(*cols, cacheable=True)
-    data = [r.as_dict() for r in rows]
-    return dict(data=data)
-
-api_arrays_doc["/arrays/<arrayname>/diskgroups"] = {}
-api_arrays_doc["/arrays/<arrayname>/diskgroups"]["GET"] = """
-Description:
-
-- Display array diskgroups.
-
-Optional parameters:
-
-- **props**
-. A list of properties to include.
-. If omitted, all properties are included.
-. The separator is ','.
-. Available properties are: ``%(arrays_diskgroups_props)s``:green.
-
-- **query**
-. A web2py smart query
-
-Example:
-
-``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/arrays/myarray/diskgroups``
-
-""" % dict(
-        email=user_email(),
-        collector=request.env.http_host,
-        arrays_diskgroups_props=", ".join(sorted(db.stor_array_dg.fields)),
-    )
+#
+class rest_get_arrays(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List storage arrays.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- "https://%(collector)s/init/rest/api/arrays?props=array_name&query=array_model contains hitachi"""
+        ]
+        q = db.stor_array.id > 0
+        rest_get_table_handler.__init__(
+          self,
+          path="/arrays",
+          tables=["stor_array"],
+          q=q,
+          desc=desc,
+          examples=examples,
+        )
 
 
-def get_array_dgs(array_name, props=None, query=None):
-    q = db.stor_array.array_name == array_name
-    array_id = db(q).select(db.stor_array.id).first().id
-    q = db.stor_array_dg.array_id == array_id
-    if query:
-        cols = props_to_cols(None, tables=["stor_array_dg"])
-        q &= smart_query(cols, query)
-    cols = props_to_cols(props, tables=["stor_array_dg"])
-    rows = db(q).select(*cols, cacheable=True)
-    data = [r.as_dict() for r in rows]
-    return dict(data=data)
+#
+class rest_get_array(rest_get_line_handler):
+    def __init__(self):
+        desc = [
+          "Display a storage array properties.",
+          "<id> can be either the id or the array name.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/arrays/myarray?props=array_name,array_model"
+        ]
+        rest_get_line_handler.__init__(
+          self,
+          path="/arrays/<id>",
+          tables=["stor_array"],
+          desc=desc,
+          examples=examples,
+        )
 
-api_arrays_doc["/arrays/<arrayname>/proxies"] = {}
-api_arrays_doc["/arrays/<arrayname>/proxies"]["GET"] = """
-Description:
+    def handler(self, id, **vars):
+        q = db.stor_array.array_name == id
+        n = db(q).count()
+        if n == 0:
+            try: id = int(id)
+            except: return dict(data=[])
+            q = db.stor_array.id == id
+        self.set_q(q)
+        return self.prepare_data(**vars)
 
-- Display array proxies.
-- Proxies are OpenSVC agent inventoring the array.
 
-Optional parameters:
+#
+class rest_get_array_diskgroups(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List storage array diskgroups.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/arrays/myarray/diskgroups"
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/arrays/<id>/diskgroups",
+          tables=["stor_array_dg"],
+          desc=desc,
+          examples=examples,
+        )
 
-- **props**
-. A list of properties to include.
-. If omitted, all properties are included.
-. The separator is ','.
-. Available properties are: ``%(arrays_proxies_props)s``:green.
+    def handler(self, id, **vars):
+        q = db.stor_array.array_name == id
+        try:
+            array_id = db(q).select().first().id
+        except:
+            array_id = int(id)
+        q = db.stor_array_dg.array_id == array_id
+        self.set_q(q)
+        return self.prepare_data(**vars)
 
-- **query**
-. A web2py smart query
 
-Example:
+#
+class rest_get_array_proxies(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List storage array proxies.",
+          "Proxies are OpenSVC agent inventoring the array.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/arrays/myarray/proxies"
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/arrays/<id>/proxies",
+          tables=["stor_array_proxy"],
+          desc=desc,
+          examples=examples,
+        )
 
-``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/arrays/myarray/proxies``
+    def handler(self, id, **vars):
+        q = db.stor_array.array_name == id
+        try:
+            array_id = db(q).select().first().id
+        except:
+            array_id = int(id)
+        q = db.stor_array_proxy.array_id == array_id
+        self.set_q(q)
+        return self.prepare_data(**vars)
 
-""" % dict(
-        email=user_email(),
-        collector=request.env.http_host,
-        arrays_proxies_props=", ".join(sorted(db.stor_array_proxy.fields)),
-    )
 
-def get_array_proxies(array_name, props=None, query=None):
-    q = db.stor_array.array_name == array_name
-    array_id = db(q).select(db.stor_array.id).first().id
-    q = db.stor_array_proxy.array_id == array_id
-    if query:
-        cols = props_to_cols(None, tables=["stor_array_proxy"])
-        q &= smart_query(cols, query)
-    cols = props_to_cols(props, tables=["stor_array_proxy"])
-    rows = db(q).select(*cols, cacheable=True)
-    data = [r.as_dict() for r in rows]
-    return dict(data=data)
+#
+class rest_get_array_targets(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List storage array target ports.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/arrays/myarray/targets"
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/arrays/<id>/targets",
+          tables=["stor_array_tgtid"],
+          desc=desc,
+          examples=examples,
+        )
 
-api_arrays_doc["/arrays/<arrayname>/targets"] = {}
-api_arrays_doc["/arrays/<arrayname>/targets"]["GET"] = """
-Description:
-
-- Display array target ports.
-
-Optional parameters:
-
-- **props**
-. A list of properties to include.
-. If omitted, all properties are included.
-. The separator is ','.
-. Available properties are: ``%(props)s``:green.
-
-- **query**
-. A web2py smart query
-
-Example:
-
-``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/arrays/myarray/targets``
-
-""" % dict(
-        email=user_email(),
-        collector=request.env.http_host,
-        props=", ".join(sorted(db.stor_array_tgtid.fields)),
-    )
-
-def get_array_targets(array_name, props=None, query=None):
-    q = db.stor_array.array_name == array_name
-    array_id = db(q).select(db.stor_array.id).first().id
-    q = db.stor_array_tgtid.array_id == array_id
-    if query:
-        cols = props_to_cols(None, tables=["stor_array_tgtid"])
-        q &= smart_query(cols, query)
-    cols = props_to_cols(props, tables=["stor_array_tgtid"])
-    rows = db(q).select(*cols, cacheable=True)
-    data = [r.as_dict() for r in rows]
-    return dict(data=data)
+    def handler(self, id, **vars):
+        q = db.stor_array.array_name == id
+        try:
+            array_id = db(q).select().first().id
+        except:
+            array_id = int(id)
+        q = db.stor_array_tgtid.array_id == array_id
+        self.set_q(q)
+        return self.prepare_data(**vars)
 
 

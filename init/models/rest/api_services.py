@@ -1,7 +1,5 @@
 from gluon.dal import smart_query
 
-api_services_doc = {}
-
 def svc_responsible(svcname):
     q = db.services.svc_name == svcname
     n = db(q).count()
@@ -16,326 +14,208 @@ def svc_responsible(svcname):
 
 
 #
-api_services_doc["/services/<svcname>"] = {}
-api_services_doc["/services/<svcname>"]["GET"] = """
-Description:
+class rest_get_service(rest_get_line_handler):
+    def __init__(self):
+        desc = [
+          "Display an OpenSVC service properties.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc?props=svcname,app",
+        ]
+        rest_get_line_handler.__init__(
+          self,
+          path="/services/<svcname>",
+          tables=["services"],
+          desc=desc,
+          examples=examples,
+        )
 
-- Display all services properties.
-- Display selected services properties.
-
-Optional parameters:
-
-- **props**
-. A list of properties to include in data.
-. If omitted, all properties are included.
-. The separator is ','.
-. Available properties are: ``%(props)s``:green.
-
-- **query**
-. A web2py smart query
-
-Example:
-
-``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc?props=svcname,app``
-
-""" % dict(
-        email=user_email(),
-        collector=request.env.http_host,
-        props=", ".join(sorted(db.services.fields)),
-      )
-
-def get_service(svcname, props=None):
-    q = db.services.svc_name == svcname
-    q = _where(q, 'services', domain_perms(), 'svc_name')
-    cols = props_to_cols(props, tables=["services"])
-    data = db(q).select(*cols, cacheable=True).as_list()[0]
-    return dict(data=data)
+    def handler(self, svcname, **vars):
+        q = db.services.svc_name == svcname
+        q = _where(q, 'services', domain_perms(), 'svc_name')
+        self.set_q(q)
+        return self.prepare_data(**vars)
 
 
 #
-api_services_doc["/services"] = {}
-api_services_doc["/services"]["GET"] = """
-Description:
+class rest_get_services(rest_get_table_handler):
+    def __init__(self):
+        params = [
+          "**fset_id**\n. Filter the services list using the filterset identified by fset_id."
+        ]
+        desc = [
+          "List OpenSVC services.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services?props=svc_name,app&fset_id=10",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/services",
+          tables=["services"],
+          desc=desc,
+          examples=examples,
+        )
 
-- List all services and their selected properties.
-- List service names and their selected properties for services matching a specified
-  filterset id.
-
-Optional parameters:
-
-- **props**
-. A list of properties to include in each data dictionnary.
-. If omitted, all propertoes are included.
-. The separator is ','.
-. Available properties are: ``%(props)s``:green.
-
-- **fset_id**
-. Filter the services list using the filterset identified by fset_id.
-
-- **query**
-. A web2py smart query
-
-Example:
-
-``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services?props=svc_name,app&fset_id=10``
-
-""" % dict(
-        email=user_email(),
-        collector=request.env.http_host,
-        props=", ".join(sorted(db.services.fields)),
-      )
-
-def get_services(props=None, fset_id=None, query=None):
-    q = db.services.id > 0
-    q = _where(q, 'services', domain_perms(), 'svc_name')
-    if fset_id:
-        q = apply_filters(q, service_field=db.services.svc_name, fset_id=fset_id)
-    if query:
-        cols = props_to_cols(None, tables=["services"])
-        q &= smart_query(cols, query)
-    cols = props_to_cols(props, tables=["services"])
-    rows = db(q).select(*cols, cacheable=True)
-    data = [r.as_dict() for r in rows]
-    return dict(data=data)
+    def handler(self, **vars):
+        q = db.services.id > 0
+        q = _where(q, 'services', domain_perms(), 'svc_name')
+        fset_id = vars.get("fset_id")
+        if fset_id:
+            q = apply_filters(q, service_field=db.services.svc_name, fset_id=fset_id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
 
 
 #
-api_services_doc["/services/<service>/alerts"] = {}
-api_services_doc["/services/<service>/alerts"]["GET"] = """
-Description:
+class rest_get_service_alerts(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List an OpenSVC service alerts.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/alerts",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/services/<svcname>/alerts",
+          tables=["dashboard"],
+          desc=desc,
+          examples=examples,
+        )
 
-- List a service alerts.
-
-Optional parameters:
-
-- **props**
-. A list of properties to include in each dictionnary.
-. If omitted, all properties are included.
-. The separator is ','.
-. Available properties are: ``%(props)s``:green.
-
-- **query**
-. A web2py smart query
-
-Example:
-
-``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/alerts``
-
-""" % dict(
-        email=user_email(),
-        collector=request.env.http_host,
-        props=", ".join(sorted(db.dashboard.fields)),
-      )
-
-def get_service_alerts(svcname, props=None, query=None):
-    q = db.dashboard.dash_svcname == svcname
-    q &= _where(None, 'dashboard', domain_perms(), 'dash_svcname')
-    if query:
-        cols = props_to_cols(None, ["dashboard"])
-        q &= smart_query(cols, query)
-    cols = props_to_cols(props, ["dashboard"])
-    data = db(q).select(*cols, cacheable=True).as_list()
-    data = mangle_alerts(data)
-    return dict(data=data)
+    def handler(self, svcname, **vars):
+        q = db.dashboard.dash_svcname == svcname
+        q &= _where(None, 'dashboard', domain_perms(), 'dash_svcname')
+        self.set_q(q)
+        data = self.prepare_data(**vars)
+        data["data"] = mangle_alerts(data["data"])
+        return data
 
 
 #
-api_services_doc["/services/<svcname>/checks"] = {}
-api_services_doc["/services/<svcname>/checks"]["GET"] = """
-Description:
+class rest_get_service_checks(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List an OpenSVC service checks.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/checks",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/services/<svcname>/checks",
+          tables=["checks_live"],
+          desc=desc,
+          examples=examples,
+        )
 
-- List a service checks.
+    def handler(self, svcname, **vars):
+        q = db.checks_live.chk_svcname == svcname
+        q &= _where(None, 'checks_live', domain_perms(), 'chk_svcname')
+        self.set_q(q)
+        return self.prepare_data(**vars)
 
-Optional parameters:
-
-- **props**
-. A list of properties to include in each dictionnary.
-. If omitted, all properties are included.
-. The separator is ','.
-. Available properties are: ``%(props)s``:green.
-
-- **query**
-. A web2py smart query
-
-Example:
-
-``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/checks``
-
-""" % dict(
-        email=user_email(),
-        collector=request.env.http_host,
-        props=", ".join(sorted(db.checks_live.fields)),
-      )
-
-def get_service_checks(svcname, props=None, query=None):
-    q = db.checks_live.chk_svcname == svcname
-    q &= _where(None, 'checks_live', domain_perms(), 'chk_svcname')
-    if query:
-        cols = props_to_cols(None, ["checks_live"])
-        q &= smart_query(cols, query)
-    cols = props_to_cols(props, ["checks_live"])
-    data = db(q).select(*cols, cacheable=True).as_list()
-    return dict(data=data)
 
 
 #
-api_nodes_doc["/services/<svcname>/disks"] = {}
-api_nodes_doc["/services/<svcname>/disks"]["GET"] = """
-Description:
+class rest_get_service_disks(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List an OpenSVC service disks.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/disks",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/disks?props=b_disk_app.disk_svcname,disk_nodename,b_disk_app.disk_id,stor_array.array_name",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/services/<svcname>/disks",
+          tables=["stor_array", "b_disk_app"],
+          left=db.stor_array.on(db.b_disk_app.disk_arrayid == db.stor_array.array_name),
+          count_prop="b_disk_app.id",
+          desc=desc,
+          examples=examples,
+        )
 
-- List a service disks.
-
-Optional parameters:
-
-- **props**
-. A list of properties to include in each dictionnary.
-. If omitted, all properties are included.
-. The separator is ','.
-. Available properties are: ``%(props)s``:green.
-
-- **query**
-. A web2py smart query
-
-Example:
-
-``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/disks?props=b_disk_app.disk_svcname,disk_nodename,b_disk_app.disk_id,stor_array.array_name``
-
-""" % dict(
-        email=user_email(),
-        collector=request.env.http_host,
-        props=", ".join(sorted(map(lambda x: "b_disk_app."+x, db.b_disk_app.fields)+map(lambda x: "stor_array."+x, db.stor_array.fields))),
-      )
-
-def get_service_disks(svcname, props=None, query=None):
-    q = db.b_disk_app.disk_svcname == svcname
-    l = db.stor_array.on(db.b_disk_app.disk_arrayid == db.stor_array.array_name)
-    q &= _where(None, 'b_disk_app', domain_perms(), 'disk_svcname')
-    if query:
-        cols = props_to_cols(None, ["b_disk_app", "stor_array"])
-        q &= smart_query(cols, query)
-    cols = props_to_cols(props, ["b_disk_app", "stor_array"])
-    data = db(q).select(*cols, left=l, cacheable=True).as_list()
-    return dict(data=data)
+    def handler(self, svcname, **vars):
+        q = db.b_disk_app.disk_svcname == svcname
+        q &= _where(None, 'b_disk_app', domain_perms(), 'disk_svcname')
+        self.set_q(q)
+        return self.prepare_data(**vars)
 
 
 #
-api_services_doc["/services/<svcname>/nodes"] = {}
-api_services_doc["/services/<svcname>/nodes"]["GET"] = """
-Description:
+class rest_get_service_nodes(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List an OpenSVC service instance status on each of its nodes.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/nodes?props=mon_svcname,mon_availstatus",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/services/<svcname>/nodes",
+          tables=["svcmon"],
+          desc=desc,
+          examples=examples,
+        )
 
-- Display service instance status on each of its nodes.
+    def handler(self, svcname, **vars):
+        q = db.svcmon.mon_svcname == svcname
+        q = _where(q, 'svcmon', domain_perms(), 'mon_svcname')
+        self.set_q(q)
+        return self.prepare_data(**vars)
 
-Optional parameters:
-
-- **props**
-. A list of properties to include in data.
-. If omitted, all properties are included.
-. The separator is ','.
-. Available properties are: ``%(props)s``:green.
-
-- **query**
-. A web2py smart query
-
-Example:
-
-``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/nodes?props=mon_svcname,mon_availstatus``
-
-""" % dict(
-        email=user_email(),
-        collector=request.env.http_host,
-        props=", ".join(sorted(db.svcmon.fields)),
-      )
-
-
-def get_service_nodes(svcname, props=None, query=None):
-    q = db.svcmon.mon_svcname == svcname
-    q = _where(q, 'svcmon', domain_perms(), 'mon_svcname')
-    if query:
-        cols = props_to_cols(None, tables=["svcmon"])
-        q &= smart_query(cols, query)
-    cols = props_to_cols(props, tables=["svcmon"])
-    rows = db(q).select(*cols, cacheable=True)
-    data = [r.as_dict() for r in rows]
-    return dict(data=data)
 
 #
-api_services_doc["/services/<svcname>/nodes/<nodename>"] = {}
-api_services_doc["/services/<svcname>/nodes/<nodename>"]["GET"] = """
-Description:
+class rest_get_service_node(rest_get_line_handler):
+    def __init__(self):
+        desc = [
+          "Display service instance status on the specified node.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/nodes/mynode?props=mon_svcname,mon_availstatus",
+        ]
+        rest_get_line_handler.__init__(
+          self,
+          path="/services/<svcname>/nodes/<nodename>",
+          tables=["svcmon"],
+          desc=desc,
+          examples=examples,
+        )
 
-- Display service instance status on the specified node.
+    def handler(self, svcname, nodename, **vars):
+        q = db.svcmon.mon_svcname == svcname
+        q &= db.svcmon.mon_nodname == nodename
+        q = _where(q, 'svcmon', domain_perms(), 'mon_svcname')
+        self.set_q(q)
+        return self.prepare_data(**vars)
 
-Optional parameters:
 
-- **props**
-. A list of properties to include in data.
-. If omitted, all properties are included.
-. The separator is ','.
-. Available properties are: ``%(props)s``:green.
-
-- **query**
-. A web2py smart query
-
-Example:
-
-``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/nodes/mynode?props=mon_svcname,mon_availstatus``
-
-""" % dict(
-        email=user_email(),
-        collector=request.env.http_host,
-        props=", ".join(sorted(db.svcmon.fields)),
-      )
-
-def get_service_node(svcname, nodename, props=None, query=None):
-    q = db.svcmon.mon_svcname == svcname
-    q &= db.svcmon.mon_nodname == nodename
-    q = _where(q, 'svcmon', domain_perms(), 'mon_svcname')
-    if query:
-        cols = props_to_cols(None, tables=["svcmon"])
-        q &= smart_query(cols, query)
-    cols = props_to_cols(props, tables=["svcmon"])
-    rows = db(q).select(*cols, cacheable=True)
-    data = [r.as_dict() for r in rows]
-    return dict(data=data)
 
 #
-api_services_doc["/services/<svcname>/compliance/status"] = {}
-api_services_doc["/services/<svcname>/compliance/status"]["GET"] = """
-Description:
+class rest_get_service_compliance_status(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List compliance modules' last check run on specified service.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/compliance/status?query=run_status=1",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/services/<svcname>/compliance/status",
+          tables=["comp_status"],
+          desc=desc,
+          examples=examples,
+        )
 
-- List compliance modules' last check run on specified service.
-
-Optional parameters:
-
-- **props**
-. A list of properties to include in each dictionnary.
-. If omitted, all properties are included.
-. The separator is ','.
-. Available properties are: ``%(props)s``:green.
-
-
-- **query**
-. A web2py smart query
-
-Example:
-
-``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/compliance/status?query=run_status=1``
-
-""" % dict(
-        email=user_email(),
-        collector=request.env.http_host,
-        props=", ".join(sorted(db.comp_status.fields)),
-      )
-
-def get_service_compliance_status(svcname, props=None, query=None):
-    q = db.comp_status.run_svcname == svcname
-    q &= _where(q, 'comp_status', domain_perms(), 'run_nodename')
-    if query:
-        cols = props_to_cols(None, tables=["comp_status"])
-        q &= smart_query(cols, query)
-    cols = props_to_cols(props, tables=["comp_status"])
-    data = db(q).select(*cols, cacheable=True).as_list()
-    return dict(data=data)
-
+    def handler(self, svcname, **vars):
+        q = db.comp_status.run_svcname == svcname
+        q &= _where(q, 'comp_status', domain_perms(), 'run_nodename')
+        self.set_q(q)
+        return self.prepare_data(**vars)
 
 

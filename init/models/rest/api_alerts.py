@@ -1,38 +1,6 @@
 from gluon.dal import smart_query
 import json
 
-api_alerts_doc = {}
-
-
-#
-api_alerts_doc["/alerts"] = {}
-api_alerts_doc["/alerts"]["GET"] = """
-Description:
-
-- List existing alerts.
-
-Optional parameters:
-
-- **props**
-. A list of properties to include in each dictionnary.
-. If omitted, all properties are included.
-. The separator is ','.
-. Available properties are: ``%(props)s``:green.
-
-
-- **query**
-. A web2py smart query
-
-Example:
-
-``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/alerts?query=not dash_type contains save``
-
-""" % dict(
-        email=user_email(),
-        collector=request.env.http_host,
-        props=", ".join(sorted(db.dashboard.fields)),
-      )
-
 def mangle_alerts(data):
     for i, row in enumerate(data):
         try:
@@ -42,46 +10,54 @@ def mangle_alerts(data):
             pass
     return data
 
-def get_alerts(props=None, query=None):
-    q = db.dashboard.id > 0
-    if query:
-        cols = props_to_cols(None, tables=["dashboard"])
-        q &= smart_query(cols, query)
-    cols = props_to_cols(props, tables=["dashboard"])
-    data = db(q).select(*cols, cacheable=True).as_list()
-    data = mangle_alerts(data)
-    return dict(data=data)
+#
+class rest_get_alerts(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List existing alerts.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/alerts?query=not dash_type contains save"
+        ]
 
+        q = db.dashboard.id > 0
 
-api_alerts_doc["/alerts/<id>"] = {}
-api_alerts_doc["/alerts/<id>"]["GET"] = """
-Description:
+        rest_get_table_handler.__init__(
+          self,
+          path="/alerts",
+          tables=["dashboard"],
+          q=q,
+          desc=desc,
+          examples=examples,
+        )
 
-- Display alert properties
+    def handler(self, **vars):
+        data = self.prepare_data(**vars)
+        data["data"] = mangle_alerts(data["data"])
+        return data
 
-Optional parameters:
+#
+class rest_get_alert(rest_get_line_handler):
+    def __init__(self):
+        desc = [
+          "Display an alert properties.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/alerts/10"
+        ]
 
-- **props**
-. A list of properties to include in each dictionnary.
-. If omitted, all properties are included.
-. The separator is ','.
-. Available properties are: ``%(props)s``:green.
+        rest_get_line_handler.__init__(
+          self,
+          path="/alerts/<id>",
+          tables=["dashboard"],
+          desc=desc,
+          examples=examples,
+        )
 
-
-Example:
-
-``# curl -u %(email)s -o- https://%(collector)s/init/rest/api/alerts/10``
-
-""" % dict(
-        email=user_email(),
-        collector=request.env.http_host,
-        props=", ".join(sorted(db.dashboard.fields)),
-      )
-
-def get_alert(tagid, props=None):
-    q = db.dashboard.id == int(tagid)
-    cols = props_to_cols(props, tables=["dashboard"])
-    data = db(q).select(*cols, cacheable=True).as_list()
-    data = mangle_alerts(data)
-    return dict(data=data)
+    def handler(self, _id, **vars):
+        q = db.dashboard.id == int(_id)
+        self.set_q(q)
+        data = self.prepare_data(**vars)
+        data["data"] = mangle_alerts(data["data"])
+        return data
 
