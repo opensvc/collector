@@ -38,19 +38,14 @@ class rest_post_tags(rest_post_handler):
         desc = [
           "Create a tag.",
         ]
-        data = """
-- ``tag_name``:green
-- ``tag_exclude``:green
-. A regexp to match other tags that can not be attached to the same object as this tag
-"""
         examples = [
           "# curl -u %(email)s -o- -X POST -d tag_name=foo https://%(collector)s/init/rest/api/tags",
         ]
         rest_post_handler.__init__(
           self,
           path="/tags",
+          tables=["tags"],
           desc=desc,
-          data=data,
           examples=examples
         )
 

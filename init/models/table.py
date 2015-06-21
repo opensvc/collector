@@ -1853,6 +1853,145 @@ svcmon_cols = [
     'mon_hbstatus'
 ]
 
+tags_colprops = {
+    'tag_name': HtmlTableColumn(
+             title='Tag name',
+             table='tags',
+             field='tag_name',
+             img='tag16',
+             display=True,
+            ),
+    'tag_created': HtmlTableColumn(
+             title='Tag created',
+             table='tags',
+             field='tag_created',
+             img='time16',
+             display=True,
+             _class='datetime',
+            ),
+    'tag_exclude': HtmlTableColumn(
+             title='Tag exclude',
+             table='tags',
+             field='tag_exclude',
+             img='tag16',
+             display=True,
+             _class='tag_exclude',
+            ),
+    'id': HtmlTableColumn(
+             title='Id',
+             table='tags',
+             field='id',
+             img='tag16',
+             display=False,
+            ),
+}
+
+networks_colprops = {
+    'id': HtmlTableColumn(
+             title='Network Id',
+             field='id',
+             img='net16',
+             display=True,
+            ),
+    'pvid': HtmlTableColumn(
+             title='VLAN id',
+             field='pvid',
+             img='net16',
+             display=True,
+            ),
+    'begin': HtmlTableColumn(
+             title='Ip range begin',
+             field='begin',
+             img='net16',
+             display=True,
+            ),
+    'end': HtmlTableColumn(
+             title='Ip range end',
+             field='end',
+             img='net16',
+             display=True,
+            ),
+    'gateway': HtmlTableColumn(
+             title='Gateway',
+             field='gateway',
+             img='net16',
+             display=True,
+            ),
+    'prio': HtmlTableColumn(
+             title='Priority',
+             field='prio',
+             img='net16',
+             display=True,
+            ),
+    'comment': HtmlTableColumn(
+             title='Comment',
+             field='comment',
+             img='net16',
+             display=True,
+            ),
+    'name': HtmlTableColumn(
+             title='Name',
+             field='name',
+             img='net16',
+             display=True,
+            ),
+    'network': HtmlTableColumn(
+             title='Network',
+             field='network',
+             img='net16',
+             display=True,
+            ),
+    'broadcast': HtmlTableColumn(
+             title='Broadcast',
+             field='broadcast',
+             img='net16',
+             display=True,
+            ),
+    'netmask': HtmlTableColumn(
+             title='Netmask',
+             field='netmask',
+             img='net16',
+             display=True,
+            ),
+    'team_responsible': HtmlTableColumn(
+             title='Team Responsible',
+             field='team_responsible',
+             img='guys16',
+             display=True,
+            ),
+    'updated': HtmlTableColumn(
+             title='Updated',
+             field='updated',
+             img='time16',
+             display=True,
+             _class='datetime_daily',
+            ),
+}
+
+auth_group_colprops = {
+    'privilege': HtmlTableColumn(
+             title = 'Privilege',
+             field='privilege',
+             display = True,
+             img = 'admin',
+             table = 'auth_group',
+            ),
+    'role': HtmlTableColumn(
+             title = 'Group name',
+             field='role',
+             display = True,
+             img = 'guys16',
+             table = 'auth_group',
+            ),
+    'description': HtmlTableColumn(
+             title = 'Description',
+             field='description',
+             display = True,
+             img = 'envfile',
+             table = 'auth_group',
+            ),
+}
+
 v_services_colprops = {
     'svc_name': HtmlTableColumn(
              title = 'Service',
@@ -2731,6 +2870,7 @@ v_nodes_colprops = {
              table = 'v_nodes',
             ),
 }
+nodes_colprops = v_nodes_colprops
 
 v_tags_colprops = {
     'tag_name': HtmlTableColumn(

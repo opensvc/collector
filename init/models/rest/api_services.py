@@ -40,9 +40,11 @@ class rest_get_service(rest_get_line_handler):
 #
 class rest_get_services(rest_get_table_handler):
     def __init__(self):
-        params = [
-          "**fset_id**\n. Filter the services list using the filterset identified by fset_id."
-        ]
+        params = {
+          "fset_id": {
+             "desc": "Filter the list using the filterset identified by fset_id."
+          }
+        }
         desc = [
           "List OpenSVC services.",
         ]

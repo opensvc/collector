@@ -86,20 +86,14 @@ class rest_post_scheduler_task(rest_post_handler):
           "The modification is logged in the collector's log.",
           "A websocket event is sent to announce the change in the table.",
         ]
-        data = """
-- <property>=<value> pairs.
-- Available properties are: ``%(props)s``:green.
-""" % dict(
-        props=', '.join(sorted(set(db.scheduler_task.fields)-set(["id"]))),
-      )
         examples = [
           """# curl -u %(email)s -o- -X POST -d status="C" https://%(collector)s/init/rest/api/scheduler/tasks/10""",
         ]
         rest_post_handler.__init__(
           self,
           path="/scheduler/tasks/<id>",
+          tables=["scheduler_task"],
           desc=desc,
-          data=data,
           examples=examples
         )
 
@@ -212,20 +206,14 @@ class rest_post_scheduler_run(rest_post_handler):
           "The modification is logged in the collector's log.",
           "A websocket event is sent to announce the change in the table.",
         ]
-        data = """
-- <property>=<value> pairs.
-- Available properties are: ``%(props)s``:green.
-""" % dict(
-        props=', '.join(sorted(set(db.scheduler_run.fields)-set(["id"]))),
-      )
         examples = [
           """# curl -u %(email)s -o- -X POST -d status="C" https://%(collector)s/init/rest/api/scheduler/runs/10""",
         ]
         rest_post_handler.__init__(
           self,
           path="/scheduler/runs/<id>",
+          tables=["scheduler_run"],
           desc=desc,
-          data=data,
           examples=examples
         )
 

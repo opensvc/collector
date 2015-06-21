@@ -222,9 +222,11 @@ class rest_get_node(rest_get_line_handler):
 #
 class rest_get_nodes(rest_get_table_handler):
     def __init__(self):
-        params = [
-          "**fset_id**\n. Filter the node names list using the filterset identified by fset_id."
-        ]
+        params = {
+          "fset_id": {
+             "desc": "Filter the list using the filterset identified by fset_id."
+          }
+        }
         desc = [
           "List all node names and their selected properties.",
           "List node names and their selected properties for nodes matching a specified filterset id.",
@@ -236,6 +238,7 @@ class rest_get_nodes(rest_get_table_handler):
           self,
           path="/nodes",
           tables=["nodes"],
+          params=params,
           desc=desc,
           examples=examples,
         )
@@ -261,20 +264,14 @@ class rest_post_node(rest_post_handler):
           "The action is logged in the collector's log.",
           "A websocket event is sent to announce the change in the nodes table.",
         ]
-        data = """
-- <property>=<value> pairs.
-- Available properties are: ``%(props)s``:green.
-""" % dict(
-        props=", ".join(sorted(db.nodes.fields)),
-      )
         examples = [
           """# curl -u %(email)s -o- -d loc_city="Zanzibar" -d project="ERP" https://%(collector)s/init/rest/api/nodes/mynode""",
         ]
         rest_post_handler.__init__(
           self,
           path="/nodes/<nodename>",
+          tables=["nodes"],
           desc=desc,
-          data=data,
           examples=examples
         )
 
@@ -303,21 +300,14 @@ class rest_post_nodes(rest_post_handler):
           "Create a new node",
           "If ``team_responsible``:green is not specified, default to user's primary group",
         ]
-        data = """
-- <property>=<value> pairs.
-- The nodename property is mandatory.
-- Available properties are: ``%(props)s``:green.
-""" % dict(
-        props=", ".join(sorted(db.nodes.fields)),
-      )
         examples = [
           """# curl -u %(email)s -o- -d nodename=mynode -d loc_city="Zanzibar" -d team_responsible="SYSADM" https://%(collector)s/init/rest/api/nodes""",
         ]
         rest_post_handler.__init__(
           self,
           path="/nodes",
+          tables=["nodes"],
           desc=desc,
-          data=data,
           examples=examples
         )
 

@@ -224,20 +224,14 @@ class rest_post_groups(rest_post_handler):
           "The action is logged in the collector's log.",
           "A websocket event is sent to announce the change in the groups table.",
         ]
-        data = """
-- <property>=<value> pairs.
-- Available properties are: ``%(props)s``:green.
-""" % dict(
-        props=", ".join(sorted(db.auth_group.fields)),
-      )
         examples = [
           "# curl -u %(email)s -o- -d role=NodeManager -d privilege=T https://%(collector)s/init/rest/api/groups",
         ]
         rest_post_handler.__init__(
           self,
           path="/groups",
+          tables=["auth_group"],
           desc=desc,
-          data=data,
           examples=examples
         )
 
@@ -265,20 +259,14 @@ class rest_post_group(rest_post_handler):
           "The action is logged in the collector's log.",
           "A websocket event is sent to announce the change in the groups table.",
         ]
-        data = """
-- <property>=<value> pairs.
-- Available properties are: ``%(props)s``:green.
-""" % dict(
-        props=", ".join(sorted(db.auth_group.fields)),
-      )
         examples = [
           "# curl -u %(email)s -o- -d privilege=T https://%(collector)s/init/rest/api/groups/10",
         ]
         rest_post_handler.__init__(
           self,
           path="/groups/<id>",
+          tables=["auth_group"],
           desc=desc,
-          data=data,
           examples=examples
         )
 

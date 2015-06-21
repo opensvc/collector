@@ -9,7 +9,7 @@ class rest_handler(object):
                  q=None,
                  left=None,
                  groupby=None,
-                 desc=[], params=[], examples=[], data=[]):
+                 desc=[], params={}, examples=[], data={}):
         self.path = path.rstrip("/")
         self.tables = tables
         self.props_blacklist = props_blacklist
@@ -67,7 +67,7 @@ class rest_handler(object):
     def fmt_parameters(self):
         s = ""
         if len(self.params) > 0:
-           s += "\n".join(map(lambda x: "- "+x, self.params))
+           s += "\n".join(map(lambda x: "- **%s**\n. %s"%(x[0], x[1].get("desc", "")), self.params.items()))
         if hasattr(self, "fmt_standard_parameters"):
            s += self.fmt_standard_parameters()
         if len(s) > 0:
@@ -77,11 +77,40 @@ class rest_handler(object):
     def fmt_data(self):
         if type(self.data) in (str, unicode):
             return "### Data\n"+self.data
+        self.update_data()
+        if self.data is None:
+            return ""
         s = ""
-        if len(self.data) > 0:
-           s += "\n".join(map(lambda x: "- "+x, self.data))
+        for key in sorted(set(self.data.keys())-set(["_extra"])):
+            d = self.data[key]
+            _writable = d.get("writable", True)
+            if not _writable:
+                continue
+            l = []
+            img = d.get("img", "")
+            if len(img) > 0:
+                l.append("[[ https://%s/init/static/%s.png left 16px]]" % (request.env.http_host, img))
+            else:
+                l.append("")
+            l.append("**%s**"%key)
+            _type = d.get("type", "")
+            if len(_type) > 0:
+                l.append("type: %s" % _type)
+            else:
+                l.append("")
+            _unique = d.get("unique", False)
+            if _unique:
+                l.append("unique")
+            else:
+                l.append("")
+            desc = d.get("desc", "")
+            if len(desc) > 0:
+                l.append("%s " % desc)
+            else:
+                l.append("")
+            s += " | ".join(l)+"\n"
         if len(s) > 0:
-           s = "### Data\n"+s+"\n"
+           s = "### Data\n-----\n"+s+"-----\n"
         return s
 
     def fmt_examples(self):
@@ -104,6 +133,34 @@ class rest_handler(object):
 
     def handler(self, **vars):
         return self.prepare_data(**vars)
+
+    def update_data(self):
+        if len(self.tables) == 0 or self.action != "POST":
+            return
+        for prop in all_props(tables=self.tables, blacklist=self.props_blacklist):
+            if prop in self.data:
+                # suppose the caller knows better
+                continue
+
+            v = prop.split(".")
+            if len(v) == 2:
+                _table, _prop = v
+            else:
+                _table = self.tables[0]
+                _prop = prop
+            if _prop == "id":
+                continue
+            colprops = globals().get(_table+"_colprops", {}).get(_prop, {})
+
+            self.data[prop] = {
+              "desc":  getattr(colprops, "title") if hasattr(colprops, "title") else "",
+              "img":  getattr(colprops, "img") if hasattr(colprops, "img") else "",
+              "type": db[_table][_prop].type,
+              "requires": db[_table][_prop].requires,
+              "default": db[_table][_prop].default,
+              "unique": db[_table][_prop].unique,
+              "writable": db[_table][_prop].writable,
+            }
 
 
 class rest_post_handler(rest_handler):
@@ -215,6 +272,10 @@ def check_privilege(priv):
         return
     if priv not in ug:
         raise Exception("Not authorized: user has no %s privilege" % priv)
+
+def all_props(tables=[], blacklist=[]):
+    cols = props_to_cols(None, tables=tables, blacklist=blacklist)
+    return cols_to_props(cols, tables=tables)
 
 def props_to_cols(props, tables=[], blacklist=[]):
     if props is None:

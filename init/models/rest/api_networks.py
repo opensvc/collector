@@ -103,12 +103,6 @@ class rest_post_network(rest_post_handler):
           "The action is logged in the collector's log.",
           "A websocket event is sent to announce the change in the networks table.",
         ]
-        data = """
-- <property>=<value> pairs.
-- Available properties are: ``%(props)s``:green.
-""" % dict(
-        props=", ".join(sorted(db.networks.fields)),
-      )
         examples = [
           """# curl -u %(email)s -o- -d pvid=12 -d comment="foo" https://%(collector)s/init/rest/api/networks/10""",
         ]
@@ -116,7 +110,8 @@ class rest_post_network(rest_post_handler):
           self,
           path="/networks/<id>",
           desc=desc,
-          data=data,
+          tables=["networks"],
+          props_blacklist=["begin", "end"],
           examples=examples
         )
 
@@ -145,13 +140,6 @@ class rest_post_networks(rest_post_handler):
           "Create a new network",
           "If ``team_responsible``:green is not specified, default to user's primary group",
         ]
-        data = """
-- <property>=<value> pairs.
-- The id property is mandatory.
-- Available properties are: ``%(props)s``:green.
-""" % dict(
-        props=", ".join(sorted(db.networks.fields)),
-      )
         examples = [
           """# curl -u %(email)s -o- -d comment="foo" -d network="192.168.0.0" -d netmask=22 -d team_responsible="SYSADM" https://%(collector)s/init/rest/api/networks""",
         ]
@@ -159,7 +147,8 @@ class rest_post_networks(rest_post_handler):
           self,
           path="/networks",
           desc=desc,
-          data=data,
+          tables=["networks"],
+          props_blacklist=["begin", "end"],
           examples=examples
         )
 

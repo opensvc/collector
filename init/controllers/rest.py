@@ -130,7 +130,13 @@ def api():
 
 def doc_section():
     s = ""
-    for action in handlers:
+    actions = [
+      "GET",
+      "DELETE",
+      "POST",
+      "PUT",
+    ]
+    for action in actions:
         for handler in handlers[action]:
             if handler.match_doc("/"+request.raw_args.lstrip("doc/")):
                 s += handler.doc()
