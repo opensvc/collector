@@ -3375,11 +3375,11 @@ var os_class_h = {
 
 function cell_decorator_network(e) {
   var v = $(e).attr("v")
-  var line = $(e).parent(".tl")
-  var net_id = line.children("[name$=_c_id]").attr("v")
-  url = $(location).attr("origin") + "/init/networks/segments/"+net_id
   $(e).html("<span class='clickable'>"+v+"</span>")
   $(e).click(function(){
+    var line = $(this).parent(".tl")
+    var net_id = line.children("[name$=_c_id]").attr("v")
+    url = $(location).attr("origin") + "/init/networks/segments/"+net_id
     toggle_extra(url, net_id, $(this), 0)
   })
 }
