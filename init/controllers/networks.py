@@ -76,6 +76,7 @@ class table_networks(HtmlTable):
         self.commonalityable = True
         self.span = ["id"]
         self.csv_limit = 30000
+        self.force_cols = ['id']
 
         for c in self.cols:
             self.colprops[c].table = 'networks'
