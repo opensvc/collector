@@ -3373,6 +3373,17 @@ var os_class_h = {
   'vmware': 'os_vmware'
 }
 
+function cell_decorator_network(e) {
+  var v = $(e).attr("v")
+  var line = $(e).parent(".tl")
+  var net_id = line.children("[name$=_c_id]").attr("v")
+  url = $(location).attr("origin") + "/init/networks/segments/"+net_id
+  $(e).html("<span class='clickable'>"+v+"</span>")
+  $(e).click(function(){
+    toggle_extra(url, net_id, $(this), 0)
+  })
+}
+
 function cell_decorator_chk_instance(e) {
   var v = $(e).attr("v")
   var line = $(e).parent(".tl")
@@ -4363,6 +4374,7 @@ cell_decorators = {
  "dash_severity": cell_decorator_dash_severity,
  "dash_links": cell_decorator_dash_links,
  "tag_exclude": cell_decorator_tag_exclude,
+ "_network": cell_decorator_network,
  "status": cell_decorator_status
 }
 

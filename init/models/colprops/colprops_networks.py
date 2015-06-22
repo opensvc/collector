@@ -1,0 +1,108 @@
+networks_cols = [
+  'id',
+  'name',
+  'pvid',
+  'network',
+  'broadcast',
+  'netmask',
+  'gateway',
+  'begin',
+  'end',
+  'prio',
+  'team_responsible',
+  'comment',
+  'updated'
+]
+
+networks_colprops = {
+    'id': HtmlTableColumn(
+             title='Network Id',
+             field='id',
+             img='net16',
+             display=True,
+            ),
+    'pvid': HtmlTableColumn(
+             title='VLAN id',
+             field='pvid',
+             img='net16',
+             display=True,
+             _class="_network",
+            ),
+    'begin': HtmlTableColumn(
+             title='Ip range begin',
+             field='begin',
+             img='net16',
+             display=True,
+             _class="_network",
+            ),
+    'end': HtmlTableColumn(
+             title='Ip range end',
+             field='end',
+             img='net16',
+             display=True,
+             _class="_network",
+            ),
+    'gateway': HtmlTableColumn(
+             title='Gateway',
+             field='gateway',
+             img='net16',
+             display=True,
+             _class="_network",
+            ),
+    'prio': HtmlTableColumn(
+             title='Priority',
+             field='prio',
+             img='net16',
+             display=True,
+             _class="_network",
+            ),
+    'comment': HtmlTableColumn(
+             title='Comment',
+             field='comment',
+             img='net16',
+             display=True,
+             _class="_network",
+            ),
+    'name': HtmlTableColumn(
+             title='Name',
+             field='name',
+             img='net16',
+             display=True,
+             _class="_network",
+            ),
+    'network': HtmlTableColumn(
+             title='Network',
+             field='network',
+             img='net16',
+             display=True,
+             _class="_network",
+            ),
+    'broadcast': HtmlTableColumn(
+             title='Broadcast',
+             field='broadcast',
+             img='net16',
+             display=True,
+             _class="_network",
+            ),
+    'netmask': HtmlTableColumn(
+             title='Netmask',
+             field='netmask',
+             img='net16',
+             display=True,
+             _class="_network",
+            ),
+    'team_responsible': HtmlTableColumn(
+             title='Team Responsible',
+             field='team_responsible',
+             img='guys16',
+             display=True,
+            ),
+    'updated': HtmlTableColumn(
+             title='Updated',
+             field='updated',
+             img='time16',
+             display=True,
+             _class='datetime_daily',
+            ),
+}
+

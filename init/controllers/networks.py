@@ -58,136 +58,33 @@ def _network_form(record=None):
                      'comment': 'Comment',
                  })
 
-class col_name(HtmlTableColumn):
-    def html(self, o):
-        s = self.get(o)
-        domain_id = self.t.colprops["id"].get(o)
-
-        d = DIV(
-              A(
-                s,
-                _onclick="""
-var id=%(domain_id)d
-var url="%(url)s"
-toggle_extra(url, id, $(this), 0)
-"""%dict(domain_id=domain_id,
-         url=URL(r=request, f="segments", args=[domain_id]),
-        ),
-              ),
-            )
-        return d
-
 class table_networks(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['id',
-                     'name',
-                     'pvid',
-                     'network',
-                     'broadcast',
-                     'netmask',
-                     'gateway',
-                     'begin',
-                     'end',
-                     'prio',
-                     'team_responsible',
-                     'comment',
-                     'updated']
-        self.colprops = {
-            'id': HtmlTableColumn(
-                     title='Network Id',
-                     field='id',
-                     img='net16',
-                     display=True,
-                    ),
-            'pvid': col_name(
-                     title='VLAN id',
-                     field='pvid',
-                     img='net16',
-                     display=True,
-                    ),
-            'begin': col_name(
-                     title='Ip range begin',
-                     field='begin',
-                     img='net16',
-                     display=True,
-                    ),
-            'end': col_name(
-                     title='Ip range end',
-                     field='end',
-                     img='net16',
-                     display=True,
-                    ),
-            'gateway': col_name(
-                     title='Gateway',
-                     field='gateway',
-                     img='net16',
-                     display=True,
-                    ),
-            'prio': col_name(
-                     title='Priority',
-                     field='prio',
-                     img='net16',
-                     display=True,
-                    ),
-            'comment': col_name(
-                     title='Comment',
-                     field='comment',
-                     img='net16',
-                     display=True,
-                    ),
-            'name': col_name(
-                     title='Name',
-                     field='name',
-                     img='net16',
-                     display=True,
-                    ),
-            'network': HtmlTableColumn(
-                     title='Network',
-                     field='network',
-                     img='net16',
-                     display=True,
-                    ),
-            'broadcast': HtmlTableColumn(
-                     title='Broadcast',
-                     field='broadcast',
-                     img='net16',
-                     display=True,
-                    ),
-            'netmask': HtmlTableColumn(
-                     title='Netmask',
-                     field='netmask',
-                     img='net16',
-                     display=True,
-                    ),
-            'team_responsible': HtmlTableColumn(
-                     title='Team Responsible',
-                     field='team_responsible',
-                     img='guys16',
-                     display=True,
-                    ),
-            'updated': HtmlTableColumn(
-                     title='Updated',
-                     field='updated',
-                     img='time16',
-                     display=True,
-                     _class='datetime_daily',
-                    ),
-        }
-        for c in self.cols:
-            self.colprops[c].t = self
+
+        # from models/colprops/
+        self.cols = networks_cols
+        self.colprops = networks_colprops
+
         self.extrarow = True
         self.extraline = True
         self.checkboxes = True
         self.dbfilterable = False
+        self.dataable = True
+        self.commonalityable = True
+        self.span = ["id"]
+        self.csv_limit = 30000
+
+        for c in self.cols:
+            self.colprops[c].table = 'networks'
+
         self.ajax_col_values = 'ajax_networks_col_values'
+
         if 'NetworkManager' in user_groups():
             self.additional_tools.append('network_add')
             self.additional_tools.append('network_del')
-        self.span = ["id"]
-        self.csv_limit = 30000
 
     def format_extrarow(self, o):
         id = self.extra_line_key(o)
@@ -204,7 +101,7 @@ class table_networks(HtmlTable):
                       ),
               ),
             )
-        return d
+        return d.xml()
 
     def network_del(self):
         d = DIV(
@@ -629,26 +526,32 @@ def ajax_networks():
     for f in set(t.cols):
         q = _where(q, 'networks', t.filter_parse(f), f)
 
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        t.csv_q = q
+        t.csv_orderby = o
+        t.csv_limit = 10000
+        return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        t.csv_q = q
+        return t.do_commonality()
+    if len(request.args) == 1 and request.args[0] == 'data':
         if request.vars.volatile_filters is None:
             n = db(q).count()
+            t.setup_pager(n)
             limitby = (t.pager_start,t.pager_end)
         else:
             n = 0
             limitby = (0, 500)
-        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False)
-        return t.table_lines_data(n)
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=True)
+        return t.table_lines_data(n, html=False)
 
-    n = db(q).count()
-    t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
-
-    return t.html()
 
 @auth.requires_login()
 def networks():
+    t = table_networks('networks', 'ajax_networks')
     t = DIV(
-          ajax_networks(),
+          t.html(),
           _id='networks',
         )
     return dict(table=t)
