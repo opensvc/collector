@@ -292,6 +292,7 @@
 'attach group %(role)s to moduleset %(modset_name)s': 'groupe %(role)s attaché au jeu de modules %(modset_name)s',
 'attach group %(role)s to ruleset %(rset_name)s': 'groupe %(role)s attaché au jeu de règles %(rset_name)s',
 'Attach group to segment': 'Attacher un groupe au segment',
+'Attach group to segment 172.21.82.0-172.21.82.10': 'Attach group to segment 172.21.82.0-172.21.82.10',
 'Attach moduleset': 'Attacher un jeu de modules',
 'Attach ruleset': 'Attacher un jeu de règles',
 'attach ruleset %(child)s to %(parent)s': 'jeu de règles %(child)s attaché à %(parent)s',
