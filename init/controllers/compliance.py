@@ -6926,11 +6926,14 @@ def _comp_get_svc_ruleset(svcname, nodename, slave=None):
     rset_relations = get_rset_relations()
     rset_names = get_rset_names()
 
-    # initialize ruleset with asset variables
+    # initialize ruleset with service variables
     ruleset = comp_get_service_ruleset(svcname)
 
     # initialize ruleset with asset variables
     ruleset.update(comp_get_node_ruleset(nodename))
+
+    # initialize ruleset with svcmon variables
+    ruleset.update(comp_get_svcmon_ruleset(svcname, nodename))
 
     # add contextual rulesets variables
     l = comp_get_rulesets_fset_ids(svcname=svcname, nodename=nodename)
