@@ -8,6 +8,13 @@ def action_queue_ws_data():
     data = db.executesql(sql, as_dict=True)[0]
     return data
 
+def action_q_event():
+    l = {
+      'event': 'action_q_change',
+      'data': action_queue_ws_data(),
+    }
+    _websocket_send(event_msg(l))
+
 def notify_action_queue(nodename):
     pass
 

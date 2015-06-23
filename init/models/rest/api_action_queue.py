@@ -183,6 +183,7 @@ class rest_delete_action_queue_one(rest_delete_handler):
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
+        action_q_event()
         return dict(info="Action %s deleted" % id)
 
 
@@ -234,6 +235,7 @@ class rest_post_action_queue_one(rest_post_handler):
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
+        action_q_event()
         return rest_get_action_queue_one().handler(_id)
 
 

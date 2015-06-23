@@ -20,13 +20,6 @@ def get_ssh_cmd(nodename):
     except:
         return ssh_cmd
 
-def action_q_event():
-    l = {
-      'event': 'action_q_change',
-      'data': action_queue_ws_data(),
-    }
-    _websocket_send(event_msg(l))
-
 def known_ip(nodename, addr):
     q = db.node_ip.nodename == nodename
     q &= db.node_ip.addr == addr

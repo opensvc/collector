@@ -169,6 +169,7 @@ def cancel_actions(ids):
       'data': {'foo': 'bar'},
     }
     _websocket_send(event_msg(l))
+    action_q_event()
 
 @auth.requires_login()
 def ajax_actions_col_values():
