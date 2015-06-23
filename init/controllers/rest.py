@@ -21,6 +21,9 @@ handlers = {
      rest_get_array_targets(),
      rest_get_compliance_status(),
      rest_get_compliance_status_one(),
+     rest_get_dns_domains(),
+     rest_get_dns_domain_records(),
+     rest_get_dns_records(),
      rest_get_filtersets(),
      rest_get_forms(),
      rest_get_form(),
@@ -145,7 +148,7 @@ def doc_section():
     ]
     for action in actions:
         for handler in handlers[action]:
-            if handler.match_doc("/"+request.raw_args.lstrip("doc/")):
+            if handler.match_doc("/"+request.raw_args):
                 s += handler.doc()
     return dict(doc=DIV(MARKMIN(s), _style="padding:1em;text-align:left"))
 
@@ -156,6 +159,7 @@ def doc():
     if len(args) > 0 and args != ['']:
         return doc_section()
 
+    # doc index
     all_docs = {}
     for a in handlers:
         for handler in handlers[a]:

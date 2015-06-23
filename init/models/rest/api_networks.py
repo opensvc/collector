@@ -41,7 +41,7 @@ def network_responsible(id):
 class rest_get_network_nodes(rest_get_table_handler):
     def __init__(self):
         desc = [
-          "List a nodes on the specified network.",
+          "List nodes on the specified network.",
         ]
         examples = [
           "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/networks/10/nodes",
@@ -55,8 +55,8 @@ class rest_get_network_nodes(rest_get_table_handler):
           examples=examples,
         )
 
-    def handler(id, self, **vars):
-        q = db.networks.id == id
+    def handler(self, net_id, **vars):
+        q = db.networks.id == net_id
         net = db(q).select().first()
         if net is None:
             return dict(data=[])
