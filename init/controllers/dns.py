@@ -1,3 +1,5 @@
+import os
+
 #
 # Domains
 #
@@ -600,10 +602,10 @@ def ips():
         if len(rows) == 0:
             return T("you are owner of no segment of this network")
         for row in rows:
-            if row[2] == "dynamic":
-                ipl += map(lambda x: [inet_ntoa(pack('>l', x)), T("dynamic")], range(row[0], row[1]))
+            if row[2] == "dhcp":
+                ipl += map(lambda x: [inet_ntoa(pack('>L', x)), T("dhcp")], range(row[0], row[1]))
             else:
-                ipl += map(lambda x: [inet_ntoa(pack('>l', x)), ""], range(row[0], row[1]))
+                ipl += map(lambda x: [inet_ntoa(pack('>L', x)), ""], range(row[0], row[1]))
     else:
         sql = """select inet_aton(network), inet_aton(broadcast) from networks where id=%s"""%network_id
         rows = db.executesql(sql)
@@ -621,8 +623,35 @@ def ips():
     l = map(lambda r: OPTION("%16s %s"%(r[0], r[1]), _value=r[0]), ipl)
     return SELECT(l, _id="pdns_records_content_select")
 
+def is_exe(fpath):
+    """Returns True if file path is executable, False otherwize
+    does not follow symlink
+    """
+    return os.path.exists(fpath) and os.access(fpath, os.X_OK)
+
+def which(program):
+    def ext_candidates(fpath):
+        yield fpath
+        for ext in os.environ.get("PATHEXT", "").split(os.pathsep):
+            yield fpath + ext
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if os.path.isfile(program) and is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            exe_file = os.path.join(path, program)
+            for candidate in ext_candidates(exe_file):
+                if is_exe(candidate):
+                    return candidate
+
+    return None
+
 @auth.requires_login()
 def ping():
+    if not which("fping"):
+        return SPAN(T("fping not found. disable ip testing"))
     ip = request.args[0]
     import subprocess
     cmd = ['fping', ip]
