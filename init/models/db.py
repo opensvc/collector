@@ -1431,26 +1431,24 @@ db.pdns_domains.name.requires = [IS_NOT_EMPTY(),
 db.define_table('networks',
     Field('name','string'),
     Field('network','string'),
-    Field('broadcast','string'),
+    Field('broadcast','string', writable=False),
     Field('comment','text'),
     Field('gateway','string'),
-    Field('begin','string'),
-    Field('end','string'),
+    Field('begin','string', writable=False),
+    Field('end','string', writable=False),
     Field('pvid','integer'),
     Field('updated','datetime'),
     Field('netmask','integer',
           requires=IS_INT_IN_RANGE(0, 33)),
     Field('prio','integer', default=0, requires=IS_INT_IN_RANGE(0,100)),
     Field('team_responsible','string',
-          requires=IS_IN_DB(db, db.auth_group.role, "%(role)s", zero=T('choose team'))),
+          requires=IS_IN_DB(db((db.auth_group.privilege=="F")&(~db.auth_group.role.like("user_%"))), db.auth_group.role, "%(role)s", zero=T('choose team'))),
     migrate=False)
 
 db.networks.name.requires = [IS_NOT_EMPTY(),
                              IS_NOT_IN_DB(db, db.networks.name)]
 db.networks.network.requires = [IS_NOT_EMPTY(),
                                 IS_NOT_IN_DB(db, db.networks.network)]
-db.networks.broadcast.requires = [IS_NOT_EMPTY(),
-                                 IS_NOT_IN_DB(db, db.networks.broadcast)]
 
 db.define_table('network_segments',
     Field('seg_type','string', requires=IS_IN_SET(["static", "dynamic"])),
