@@ -1586,8 +1586,10 @@ def insert_nsr(name=None, nodename=None):
             if i > 300:
                 i = 0
                 generic_insert('saves', vars, vals)
+                generic_insert('saves_last', vars, vals)
                 vals = []
         generic_insert('saves', vars, vals)
+        generic_insert('saves_last', vars, vals)
         db.commit()
 
     q = db.scheduler_task.status.belongs(("QUEUED", "ASSIGNED", "RUNNING"))
@@ -1597,13 +1599,21 @@ def insert_nsr(name=None, nodename=None):
         db.commit()
 
 def async_post_insert_nsr():
+    print "starting purge_saves", datetime.datetime.now()
     purge_saves()
+    print "starting update_save_checks", datetime.datetime.now()
     update_save_checks()
+    print "starting update_thresholds_batch_type", datetime.datetime.now()
     update_thresholds_batch_type("save")
+    print "starting update_dash_checks_all", datetime.datetime.now()
     update_dash_checks_all()
+    print "end", datetime.datetime.now()
 
 def purge_saves():
     sql = """delete from saves where
+             save_retention < now()"""
+    db.executesql(sql)
+    sql = """delete from saves_last where
              save_retention < now()"""
     db.executesql(sql)
     db.commit()
@@ -1613,58 +1623,63 @@ def update_save_checks():
     now -= datetime.timedelta(microseconds=now.microsecond)
 
     # fs known to have fs_u checks but not in saves index
+    print "== not saved", datetime.datetime.now()
     sql = """
            insert into checks_live (chk_nodename, chk_svcname, chk_type, chk_updated, chk_value, chk_created, chk_instance)
              select
-               checks_live.chk_nodename as chk_nodename,
-               checks_live.chk_svcname as chk_svcname,
+               t.chk_nodename as chk_nodename,
+               t.chk_svcname as chk_svcname,
                "save",
                now(),
                1000000 as chk_value,
                now(),
-               checks_live.chk_instance as chk_instance
-             from
-               checks_live
-               left join saves on
-                 checks_live.chk_nodename = saves.save_nodename and
-                 (checks_live.chk_svcname = saves.save_svcname or saves.save_svcname = "" or checks_live.chk_svcname = "") and
-                 checks_live.chk_instance = saves.save_name
+               t.chk_instance as chk_instance
+             from  (
+               select * from checks_live where
+                 chk_type="fs_u" and
+                 chk_instance not like "/run/%" and
+                 chk_instance like "/%" and
+                 chk_instance not in ("/run", "/dev/shm", "/tmp", "/var/lib/xenstored", "/var/adm/crash", "/var/adm/ras/livedump")
+               ) t
+               left join saves_last on
+                 t.chk_nodename = saves_last.save_nodename and
+                 (t.chk_svcname = saves_last.save_svcname or saves_last.save_svcname = "" or t.chk_svcname = "") and
+                 t.chk_instance = saves_last.save_name
              where
-               checks_live.chk_type="fs_u" and
-               checks_live.chk_instance not in ("/dev/shm", "/tmp", "/var/lib/xenstored", "/var/adm/crash", "/var/adm/ras/livedump") and
-               saves.save_name is null
+               saves_last.save_name is null
            on duplicate key update
              chk_updated=now(),
-             chk_value=if(datediff(now(), saves.save_date) is null, 1000000, datediff(now(), saves.save_date))
+             chk_value=1000000
           """
     db.executesql(sql)
     db.commit()
 
+    print "== saved", datetime.datetime.now()
     sql = """
            insert into checks_live (chk_nodename, chk_svcname, chk_type, chk_updated, chk_value, chk_created, chk_instance)
              select
-               saves.save_nodename as chk_nodename,
-               saves.save_svcname as chk_svcname,
+               saves_last.save_nodename as chk_nodename,
+               saves_last.save_svcname as chk_svcname,
                "save",
                now(),
-               datediff(now(), saves.save_date) as chk_value,
+               datediff(now(), saves_last.save_date) as chk_value,
                now(),
-               if (substring(saves.save_name, 1, 4) = "RMAN", substring_index(saves.save_name, '_', 1), saves.save_name) as chk_instance
+               saves_last.chk_instance
              from
-               saves
+               saves_last
              where
-               not substring(lower(saves.save_nodename),1,1) between '0' and '9' and
-               saves.save_name not in ("/dev/shm", "/tmp", "/var/lib/xenstored", "/var/adm/crash", "/var/adm/ras/livedump", "bootstrap") and
-               saves.save_name not like "index%"
-             order by
-               saves.save_date
+               saves_last.save_resolved=1 and
+               saves_last.chk_instance not like "/run/%" and
+               saves_last.chk_instance like "/%" and
+               saves_last.chk_instance not in ("/run", "/dev/shm", "/tmp", "/var/lib/xenstored", "/var/adm/crash", "/var/adm/ras/livedump")
            on duplicate key update
              chk_updated=now(),
-             chk_value=datediff(now(), saves.save_date)
+             chk_value=datediff(now(), saves_last.save_date)
           """
     db.executesql(sql)
     db.commit()
 
+    print "== purge checks_live", datetime.datetime.now()
     sql = """delete from checks_live
              where
                chk_type="save" and
@@ -1675,9 +1690,10 @@ def update_save_checks():
 
     # remove checks from shared fs saved from passive cluster nodes
     # those fs should have a more recent save on the active node
-    now = datetime.datetime.now()
-    now -= datetime.timedelta(microseconds=now.microsecond)
+    now2 = datetime.datetime.now()
+    now2 -= datetime.timedelta(microseconds=now.microsecond)
 
+    print "== update clustered save checks", datetime.datetime.now()
     sql = """update checks_live inner join (
                select t.* from (
                  select
@@ -1704,6 +1720,7 @@ def update_save_checks():
     db.executesql(sql)
     db.commit()
 
+    print "== purge non updated clustered save checks", datetime.datetime.now()
     sql = """delete from checks_live
              where
                chk_type="save" and
@@ -1711,20 +1728,20 @@ def update_save_checks():
                concat(chk_svcname, chk_instance) in (
                  select concat(t.chk_svcname, t.chk_instance) from (
                  select
-                   count(id) as n,
                    chk_svcname,
                    chk_instance
                  from checks_live
                  where
                    chk_type="save"
                  group by chk_svcname,chk_instance
+                 having count(id)>1
                ) t
                join services s on
                  t.chk_svcname = s.svc_name and
                  s.svc_cluster_type="failover"
-               where t.n>1
              )
-          """%dict(now=now)
+          """%dict(now=now2)
+
     db.executesql(sql)
     db.commit()
 

@@ -4610,7 +4610,21 @@ create view v_disk_quota as
     v_disks_app.app is NULL
   GROUP BY stor_array.id, stor_array_dg.id
   UNION ALL
-  select `stor_array_dg_quota`.`id` AS `id`,`stor_array`.`id` AS `array_id`,`stor_array_dg`.`id` AS `dg_id`,stor_array_dg_quota.app_id AS `app_id`,`stor_array`.`array_name` AS `array_name`,`stor_array_dg`.`dg_name` AS `dg_name`,`stor_array_dg`.`dg_free` AS `dg_free`,`stor_array_dg`.`dg_size` AS `dg_size`,`stor_array_dg`.`dg_used` AS `dg_used`,`stor_array_dg`.`dg_reserved` AS `dg_reserved`,(`stor_array_dg`.`dg_size` - `stor_array_dg`.`dg_reserved`) AS `dg_reservable`,`stor_array`.`array_model` AS `array_model`,apps.app AS app,stor_array_dg_quota.quota AS `quota`,0 AS `quota_used` from `stor_array` join `stor_array_dg` on `stor_array_dg`.`array_id` = `stor_array`.`id` left join `stor_array_dg_quota` on `stor_array_dg`.`id` = `stor_array_dg_quota`.`dg_id` left join apps on stor_array_dg_quota.app_id=apps.id where apps.app not in (select distinct app from v_disk_app where not app is null) group by `stor_array`.`id`,`stor_array_dg`.`id`,stor_array_dg_quota.app_id
+  select `stor_array_dg_quota`.`id` AS `id`,`stor_array`.`id` AS `array_id`,`stor_array_dg`.`id` AS `dg_id`,stor_array_dg_quota.app_id AS `app_id`,`stor_array`.`array_name` AS `array_name`,`stor_array_dg`.`dg_name` AS `dg_name`,`stor_array_dg`.`dg_free` AS `dg_free`,`stor_array_dg`.`dg_size` AS `dg_size`,`stor_array_dg`.`dg_used` AS `dg_used`,`stor_array_dg`.`dg_reserved` AS `dg_reserved`,(`stor_array_dg`.`dg_size` - `stor_array_dg`.`dg_reserved`) AS `dg_reservable`,`stor_array`.`array_model` AS `array_model`,apps.app AS app,stor_array_dg_quota.quota AS `quota`,0 AS `quota_used` from `stor_array` join `stor_array_dg` on `stor_array_dg`.`array_id` = `stor_array`.`id` left join `stor_array_dg_quota` on `stor_array_dg`.`id` = `stor_array_dg_quota`.`dg_id` left join apps on stor_array_dg_quota.app_id=apps.id where apps.app not in (select distinct app from b_disk_app where not app is null) group by `stor_array`.`id`,`stor_array_dg`.`id`,stor_array_dg_quota.app_id
 ;
 
+alter table dashboard_ref add index idx2 (dash_dict);
+alter table dashboard_ref add index idx3 (dash_type);
+
+alter table checks_live add key idx_chk_instance (chk_instance);
+alter table saves add key idx_save_name (save_name);
+alter table saves add key idx_save_nodename (save_nodename);
+alter table saves add key idx_save_svcname (save_svcname);
+
+alter table saves add column chk_instance varchar(100) as (if (substring(save_name, 1, 4) = "RMAN", substring_index(save_name, '_', 1), save_name)) persistent;
+alter table saves add column save_resolved varchar(1) as (not substring(lower(save_nodename),1,1) between '0' and '9') persistent;
+
+create table saves_last as select * from saves group by save_nodename,save_svcname,save_name;
+alter table saves_last add unique key idx1 (save_nodename,save_svcname,save_name);
+alter table saves_last add key idx2 (save_nodename,save_svcname);
 
