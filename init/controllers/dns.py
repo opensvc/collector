@@ -611,15 +611,28 @@ def ips():
         rows = db.executesql(sql)
         if len(rows) == 0:
             return T("you are not owner of this network")
-        ipl = map(lambda x: [inet_ntoa(pack('>l', x)), ""], range(rows[0][0], rows[0][1]))
+        ipl = map(lambda x: [inet_ntoa(pack('>L', x)), ""], range(rows[0][0], rows[0][1]))
     if len(ipl) == 0:
         return SPAN()
+
     sql = """select content from pdns_records where content in (%s)"""%','.join(map(lambda x: repr(x[0]), ipl))
     rows = db.executesql(sql)
     alloc_ips = map(lambda r: r[0], rows)
     for i, (ip, ip_type) in enumerate(ipl):
         if ip in alloc_ips:
            ipl[i][1] = T("allocated")
+
+    sql = """select nodename, addr from v_nodenetworks where net_id=%s"""%network_id
+    rows = db.executesql(sql)
+    alloc_ips = {}
+    for nodename, addr in rows:
+        alloc_ips[addr] = nodename
+    for i, (ip, ip_type) in enumerate(ipl):
+        if ip in alloc_ips:
+           if len(ipl[i][1]) > 0:
+               ipl[i][1] += ", "
+           ipl[i][1] += T("reported by %(nodename)s", dict(nodename=alloc_ips[ip]))
+
     l = map(lambda r: OPTION("%16s %s"%(r[0], r[1]), _value=r[0]), ipl)
     return SELECT(l, _id="pdns_records_content_select")
 
