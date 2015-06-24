@@ -1440,7 +1440,7 @@ db.define_table('networks',
     Field('updated','datetime'),
     Field('netmask','integer',
           requires=IS_INT_IN_RANGE(0, 33)),
-    Field('prio','integer'),
+    Field('prio','integer', default=0, requires=IS_INT_IN_RANGE(0,100)),
     Field('team_responsible','string',
           requires=IS_IN_DB(db, db.auth_group.role, "%(role)s", zero=T('choose team'))),
     migrate=False)
