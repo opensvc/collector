@@ -5,6 +5,7 @@
 #########################################################################
 #from gluon.contrib.redis_cache import RedisCache
 
+import datetime
 from applications.init.modules import config
 
 if hasattr(config, 'dbopensvc'):
@@ -1423,7 +1424,10 @@ db.define_table('pdns_records',
           requires=IS_NOT_EMPTY()),
     Field('ttl','integer', default=120),
     Field('prio','integer'),
-    Field('change_date','integer'),
+    Field('change_date', 'integer',
+          default=(request.now-datetime.datetime(1970, 1, 1)).total_seconds(),
+          update=(request.now-datetime.datetime(1970, 1, 1)).total_seconds(),
+          writable=False),
     migrate=False)
 
 db.pdns_domains.name.requires = [IS_NOT_EMPTY(),
