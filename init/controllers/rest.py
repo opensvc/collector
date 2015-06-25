@@ -24,6 +24,7 @@ handlers = {
      rest_get_dns_domains(),
      rest_get_dns_domain_records(),
      rest_get_dns_records(),
+     rest_get_dns_record(),
      rest_get_filtersets(),
      rest_get_forms(),
      rest_get_form(),
@@ -79,6 +80,7 @@ handlers = {
   'DELETE': [
      rest_delete_action_queue_one(),
      rest_delete_compliance_status_run(),
+     rest_delete_dns_record(),
      rest_delete_group(),
      rest_delete_network(),
      rest_delete_network_segment(),
@@ -93,6 +95,8 @@ handlers = {
   'POST': [
      rest_post_action_queue(),
      rest_post_action_queue_one(),
+     rest_post_dns_records(),
+     rest_post_dns_record(),
      rest_post_groups(),
      rest_post_group(),
      rest_post_networks(),
