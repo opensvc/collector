@@ -40,6 +40,8 @@ class viz(object):
             v = v.lower()
             if v == "france":
                 return str(URL(r=request,c='static',f='flags/fr.png'))
+            elif v == "united kingdom":
+                return str(URL(r=request,c='static',f='flags/uk.png'))
             else:
                 return str(URL(r=request,c='static',f='flag16.png'))
         elif t == "cities":
