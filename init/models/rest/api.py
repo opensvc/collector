@@ -123,7 +123,7 @@ class rest_handler(object):
 
     def fmt_example(self, ex):
         s = ex % dict(email=user_email(), collector=request.env.http_host)
-        return "``" + s + "``"
+        return "``" + s + "``+\n"
 
     def prepare_data(self, **vars):
         for v in ["q", "groupby", "left", "count_prop", "props_blacklist", "tables"]:
