@@ -1412,6 +1412,7 @@ db.define_table('pdns_domains',
 
 db.define_table('pdns_records',
     Field('domain_id','integer',
+          required=True,
           requires=IS_IN_DB(db, db.pdns_domains.id, "%(name)s", zero=T("choose domain"))),
     Field('name','string',
           requires=IS_NOT_EMPTY()),

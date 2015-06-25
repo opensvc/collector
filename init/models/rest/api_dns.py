@@ -119,7 +119,7 @@ class rest_get_dns_record(rest_get_line_handler):
 
         rest_get_line_handler.__init__(
           self,
-          path="/dns/records",
+          path="/dns/records/<id>",
           tables=["pdns_records"],
           desc=desc,
           examples=examples,
