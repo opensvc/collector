@@ -108,6 +108,29 @@ class rest_get_dns_records(rest_get_table_handler):
         return self.prepare_data(**vars)
 
 #
+class rest_get_dns_domain(rest_get_line_handler):
+    def __init__(self):
+        desc = [
+          "Display a dns domain.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/dns/domains/5",
+        ]
+
+        rest_get_line_handler.__init__(
+          self,
+          path="/dns/domains/<id>",
+          tables=["pdns_domains"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, domain_id, **vars):
+        q = db.pdns_domains.id == domain_id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
 class rest_get_dns_record(rest_get_line_handler):
     def __init__(self):
         desc = [
@@ -155,12 +178,97 @@ class rest_get_dns_domain_records(rest_get_table_handler):
 
 
 #
+class rest_post_dns_domains(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Create a dns domain.",
+          "The user must be in the DnsManager privilege group.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the nodes table.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -X POST -d name="opensvc.com" -d type=MASTER https://%(collector)s/init/rest/api/dns/domains""",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/dns/domains",
+          tables=["pdns_domains"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        check_privilege("DnsManager")
+        if len(vars) == 0:
+            raise Exception("Insufficient data")
+        q = db.pdns_domains.id > 0
+        for v in vars:
+            q &= db.pdns_domains[v] == vars[v]
+        row = db(q).select().first()
+        if row is not None:
+            return dict(info="Domain already exists")
+        response = db.pdns_domains.validate_and_insert(**vars)
+        raise_on_error(response)
+        row = db(q).select().first()
+        _log('rest.dns.domains.create',
+             'record %(name)s %(type)s created. data %(data)s',
+             dict(name=row.name, type=row.type, data=str(vars)),
+            )
+        l = {
+          'event': 'pdns_domains_change',
+          'data': {'foo': 'bar'},
+        }
+        _websocket_send(event_msg(l))
+        return rest_get_dns_domain().handler(row.id)
+
+
+#
+class rest_post_dns_domain(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Change a dns domain.",
+          "The user must be in the DnsManager privilege group.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the nodes table.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -X POST -d master="foo" https://%(collector)s/init/rest/api/dns/domains/10""",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/dns/domains/<id>",
+          tables=["pdns_domains"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, domain_id, **vars):
+        check_privilege("DnsManager")
+        q = db.pdns_domains.id == domain_id
+        row = db(q).select().first()
+        if row is None:
+            return dict(error="Domain %s does not exist"%domain_id)
+        response = db(q).validate_and_update(**vars)
+        raise_on_error(response)
+        _log('rest.dns.domains.change',
+             'record %(name)s %(type)s changed. data %(data)s',
+             dict(name=row.name, type=row.type, data=str(vars)),
+            )
+        l = {
+          'event': 'pdns_domains_change',
+          'data': {'foo': 'bar'},
+        }
+        _websocket_send(event_msg(l))
+        return rest_get_dns_domain().handler(domain_id)
+
+
+#
 class rest_post_dns_records(rest_post_handler):
     def __init__(self):
         desc = [
           "Create a dns record.",
           "The user must be responsible for the ip address network or segment.",
-          "The user must be in the DnsManager privilege group.",
+          "The user must be in the DnsOperator privilege group.",
           "The action is logged in the collector's log.",
           "A websocket event is sent to announce the change in the nodes table.",
         ]
@@ -176,7 +284,7 @@ class rest_post_dns_records(rest_post_handler):
         )
 
     def handler(self, **vars):
-        check_privilege("DnsManager")
+        check_privilege("DnsOperator")
         if len(vars) == 0:
             raise Exception("Insufficient data")
         q = db.pdns_records.id > 0
@@ -207,7 +315,7 @@ class rest_post_dns_record(rest_post_handler):
         desc = [
           "Change a dns record.",
           "The user must be responsible for the ip address network or segment.",
-          "The user must be in the DnsManager privilege group.",
+          "The user must be in the DnsOperator privilege group.",
           "The action is logged in the collector's log.",
           "A websocket event is sent to announce the change in the nodes table.",
         ]
@@ -223,7 +331,7 @@ class rest_post_dns_record(rest_post_handler):
         )
 
     def handler(self, record_id, **vars):
-        check_privilege("DnsManager")
+        check_privilege("DnsOperator")
         q = db.pdns_records.id == record_id
         row = db(q).select().first()
         if row is None:
@@ -245,12 +353,61 @@ class rest_post_dns_record(rest_post_handler):
 
 
 #
+class rest_delete_dns_domain(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete a dns domain.",
+          "Also delete dns records in this domain.",
+          "The user must be in the DnsManager privilege group.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the nodes table.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/dns/domains/10",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/dns/domains/<id>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, domain_id, **vars):
+        check_privilege("DnsManager")
+
+        q = db.pdns_domains.id == domain_id
+        row = db(q).select().first()
+        if row is None:
+            return dict(info="Domain %s does not exist"%record_id)
+        db(q).delete()
+
+        q = db.pdns_records.domain_id == domain_id
+        q = db(q).delete()
+
+        # todo lookup nodename, svcname for logging
+        _log('rest.dns.domains.delete',
+             'record %(name)s %(type)s deleted',
+             dict(name=row.name, type=row.type),
+            )
+        l = {
+          'event': 'pdns_domains_change',
+          'data': {'foo': 'bar'},
+        }
+        _websocket_send(event_msg(l))
+        l = {
+          'event': 'pdns_records_change',
+          'data': {'foo': 'bar'},
+        }
+        _websocket_send(event_msg(l))
+        return dict(info="Domain %s %s deleted" % (row.name, row.type))
+
+#
 class rest_delete_dns_record(rest_delete_handler):
     def __init__(self):
         desc = [
           "Delete a dns record.",
           "The user must be responsible for the ip address network or segment.",
-          "The user must be in the DnsManager privilege group.",
+          "The user must be in the DnsOperator privilege group.",
           "The action is logged in the collector's log.",
           "A websocket event is sent to announce the change in the nodes table.",
         ]
@@ -265,7 +422,7 @@ class rest_delete_dns_record(rest_delete_handler):
         )
 
     def handler(self, record_id, **vars):
-        check_privilege("DnsManager")
+        check_privilege("DnsOperator")
         q = db.pdns_records.id == record_id
         row = db(q).select().first()
         if row is None:

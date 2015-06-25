@@ -22,6 +22,7 @@ handlers = {
      rest_get_compliance_status(),
      rest_get_compliance_status_one(),
      rest_get_dns_domains(),
+     rest_get_dns_domain(),
      rest_get_dns_domain_records(),
      rest_get_dns_records(),
      rest_get_dns_record(),
@@ -80,6 +81,7 @@ handlers = {
   'DELETE': [
      rest_delete_action_queue_one(),
      rest_delete_compliance_status_run(),
+     rest_delete_dns_domain(),
      rest_delete_dns_record(),
      rest_delete_group(),
      rest_delete_network(),
@@ -95,6 +97,8 @@ handlers = {
   'POST': [
      rest_post_action_queue(),
      rest_post_action_queue_one(),
+     rest_post_dns_domains(),
+     rest_post_dns_domain(),
      rest_post_dns_records(),
      rest_post_dns_record(),
      rest_post_groups(),
