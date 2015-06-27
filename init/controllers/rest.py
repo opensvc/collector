@@ -80,6 +80,7 @@ handlers = {
   ],
   'DELETE': [
      rest_delete_action_queue_one(),
+     rest_delete_app(),
      rest_delete_compliance_status_run(),
      rest_delete_dns_domain(),
      rest_delete_dns_record(),
@@ -97,6 +98,8 @@ handlers = {
   'POST': [
      rest_post_action_queue(),
      rest_post_action_queue_one(),
+     rest_post_apps(),
+     rest_post_app(),
      rest_post_dns_domains(),
      rest_post_dns_domain(),
      rest_post_dns_records(),

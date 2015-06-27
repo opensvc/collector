@@ -384,10 +384,13 @@ db.define_table('drpprojects',
 
 db.define_table('apps',
     Field('id'),
-    Field('app'),
+    Field('app', required=True),
+    Field('description', 'text'),
     Field('app_domain', 'string'),
     Field('app_team_ops', 'string'),
-    Field('updated'),
+    Field('updated',
+          default=request.now,
+          update=request.now),
     migrate=False)
 
 db.define_table('v_apps',
