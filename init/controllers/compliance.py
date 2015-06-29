@@ -4953,7 +4953,7 @@ def check_del(ids):
 
 @auth.requires_login()
 def ajax_comp_log_col_values():
-    t = table_comp_log('ajax_comp_log', 'ajax_comp_log')
+    t = table_comp_log('comp_log', 'ajax_comp_log')
     col = request.args[0]
     o = db.comp_log[col]
     q = _where(None, 'comp_log', domain_perms(), 'run_nodename')
