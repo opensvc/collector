@@ -13,6 +13,16 @@ if hasattr(config, 'dbopensvc'):
 else:
     dbopensvc = 'dbopensvc'
 
+if hasattr(config, 'dbopensvc_user'):
+    dbopensvc_user = config.dbopensvc_user
+else:
+    dbopensvc_user = 'opensvc'
+
+if hasattr(config, 'dbopensvc_password'):
+    dbopensvc_password = config.dbopensvc_password
+else:
+    dbopensvc_password = 'opensvc'
+
 #if hasattr(config, 'redis_host'):
 #    redis_host = config.redis_host
 #else:
@@ -28,10 +38,7 @@ if request.env.web2py_runtime_gae:            # if running on Google App Engine
     # from google.appengine.api.memcache import Client
     # session.connect(request, response, db=MEMDB(Client())
 else:                                         # else use a normal relational database
-    db = DAL('mysql://opensvc:opensvc@%s/opensvc' % dbopensvc,
-             driver_args={'connect_timeout': 20},
-             pool_size=0)
-    dbdns = DAL('mysql://pdns:pdns@%s/pdns' % dbopensvc,
+    db = DAL('mysql://%s:%s@%s/opensvc' % (dbopensvc_user, dbopensvc_password, dbopensvc),
              driver_args={'connect_timeout': 20},
              pool_size=0)
 ## if no need for session
@@ -1407,37 +1414,6 @@ db.define_table('prov_template_team_responsible',
     Field('tpl_id','integer'),
     Field('group_id','integer'),
     migrate=False)
-
-dbdns.define_table('domains',
-    Field('name','string'),
-    Field('master','string'),
-    Field('last_check','integer'),
-    Field('type','string', requires=IS_IN_SET(['MASTER', 'NATIVE', 'SLAVE']), default='MASTER'),
-    Field('notified_serial','integer'),
-    Field('account','string'),
-    migrate=False)
-
-dbdns.define_table('records',
-    Field('domain_id','integer',
-          required=True,
-          requires=IS_IN_DB(dbdns, dbdns.domains.id, "%(name)s", zero=T("choose domain"))),
-    Field('name','string',
-          requires=IS_NOT_EMPTY()),
-    Field('type','string',
-          requires=IS_IN_SET(['A', 'AAAA', 'A6', 'AFSDB', 'CNAME', 'DNAME', 'DNSKEY', 'DS', 'HINFO', 'ISDN', 'KEY', 'LOC', 'MX', 'NAPTR', 'NS', 'NSEC', 'NXT', 'PTR', 'RP', 'RRSIG', 'RT', 'SIG', 'SOA', 'SPF', 'SRV', 'TXT', 'WKS', 'X25']),
-          default='A'),
-    Field('content','string',
-          requires=IS_NOT_EMPTY()),
-    Field('ttl','integer', default=120),
-    Field('prio','integer'),
-    Field('change_date', 'integer',
-          default=(request.now-datetime.datetime(1970, 1, 1)).total_seconds(),
-          update=(request.now-datetime.datetime(1970, 1, 1)).total_seconds(),
-          writable=False),
-    migrate=False)
-
-dbdns.domains.name.requires = [IS_NOT_EMPTY(),
-                               IS_NOT_IN_DB(dbdns, dbdns.domains.name)]
 
 db.define_table('networks',
     Field('name','string'),
