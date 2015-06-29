@@ -115,10 +115,13 @@ def _cron_table_purge(table, date_col, orderby=None):
                 threshold=str(_day)
               )
         db.executesql(sql)
+        db.commit()
     db.commit()
 
 def cron_purge_expiry():
-    tables = [('stats_cpu', 'date', None),
+    tables = [('saves', 'save_date', None),
+              ('log', 'log_date', None),
+              ('stats_cpu', 'date', None),
               ('stats_fs_u', 'date', None),
               ('stats_swap', 'date', None),
               ('stats_netdev', 'date', None),
