@@ -3,10 +3,12 @@
 *.pyc
 *.swp
 *.class
+config.py
 stat_lifecycle*
 tempviz*
 viz*.png
 viz*.dot
+/*/form_scripts/
 /*/cache/
 /*/databases/
 /*/private/
