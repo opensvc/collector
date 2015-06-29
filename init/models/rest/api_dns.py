@@ -75,13 +75,14 @@ class rest_get_dns_domains(rest_get_table_handler):
         rest_get_table_handler.__init__(
           self,
           path="/dns/domains",
-          tables=["pdns_domains"],
+          tables=["domains"],
+          dbo=dbdns,
           desc=desc,
           examples=examples,
         )
 
     def handler(self, **vars):
-        q = db.pdns_domains.id > 0
+        q = dbdns.domains.id > 0
         self.set_q(q)
         return self.prepare_data(**vars)
 #
@@ -97,13 +98,14 @@ class rest_get_dns_records(rest_get_table_handler):
         rest_get_table_handler.__init__(
           self,
           path="/dns/records",
-          tables=["pdns_records"],
+          tables=["records"],
+          dbo=dbdns,
           desc=desc,
           examples=examples,
         )
 
     def handler(self, **vars):
-        q = db.pdns_records.id > 0
+        q = dbdns.records.id > 0
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -120,13 +122,14 @@ class rest_get_dns_domain(rest_get_line_handler):
         rest_get_line_handler.__init__(
           self,
           path="/dns/domains/<id>",
-          tables=["pdns_domains"],
+          tables=["domains"],
+          dbo=dbdns,
           desc=desc,
           examples=examples,
         )
 
     def handler(self, domain_id, **vars):
-        q = db.pdns_domains.id == domain_id
+        q = dbdns.domains.id == domain_id
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -143,13 +146,14 @@ class rest_get_dns_record(rest_get_line_handler):
         rest_get_line_handler.__init__(
           self,
           path="/dns/records/<id>",
-          tables=["pdns_records"],
+          tables=["records"],
+          dbo=dbdns,
           desc=desc,
           examples=examples,
         )
 
     def handler(self, record_id, **vars):
-        q = db.pdns_records.id == record_id
+        q = dbdns.records.id == record_id
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -166,13 +170,14 @@ class rest_get_dns_domain_records(rest_get_table_handler):
         rest_get_table_handler.__init__(
           self,
           path="/dns/domains/<id>/records",
-          tables=["pdns_records"],
+          tables=["records"],
+          dbo=dbdns,
           desc=desc,
           examples=examples,
         )
 
     def handler(self, dom_id, **vars):
-        q = db.pdns_records.domain_id == dom_id
+        q = dbdns.records.domain_id == dom_id
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -192,7 +197,8 @@ class rest_post_dns_domains(rest_post_handler):
         rest_post_handler.__init__(
           self,
           path="/dns/domains",
-          tables=["pdns_domains"],
+          tables=["domains"],
+          dbo=dbdns,
           desc=desc,
           examples=examples,
         )
@@ -201,15 +207,15 @@ class rest_post_dns_domains(rest_post_handler):
         check_privilege("DnsManager")
         if len(vars) == 0:
             raise Exception("Insufficient data")
-        q = db.pdns_domains.id > 0
+        q = dbdns.domains.id > 0
         for v in vars:
-            q &= db.pdns_domains[v] == vars[v]
-        row = db(q).select().first()
+            q &= dbdns.domains[v] == vars[v]
+        row = dbdns(q).select().first()
         if row is not None:
             return dict(info="Domain already exists")
-        response = db.pdns_domains.validate_and_insert(**vars)
+        response = dbdns.domains.validate_and_insert(**vars)
         raise_on_error(response)
-        row = db(q).select().first()
+        row = dbdns(q).select().first()
         _log('rest.dns.domains.create',
              'record %(name)s %(type)s created. data %(data)s',
              dict(name=row.name, type=row.type, data=str(vars)),
@@ -237,18 +243,19 @@ class rest_post_dns_domain(rest_post_handler):
         rest_post_handler.__init__(
           self,
           path="/dns/domains/<id>",
-          tables=["pdns_domains"],
+          tables=["domains"],
+          dbo=dbdns,
           desc=desc,
           examples=examples,
         )
 
     def handler(self, domain_id, **vars):
         check_privilege("DnsManager")
-        q = db.pdns_domains.id == domain_id
-        row = db(q).select().first()
+        q = dbdns.domains.id == domain_id
+        row = dbdns(q).select().first()
         if row is None:
             return dict(error="Domain %s does not exist"%domain_id)
-        response = db(q).validate_and_update(**vars)
+        response = dbdns(q).validate_and_update(**vars)
         raise_on_error(response)
         _log('rest.dns.domains.change',
              'record %(name)s %(type)s changed. data %(data)s',
@@ -278,7 +285,8 @@ class rest_post_dns_records(rest_post_handler):
         rest_post_handler.__init__(
           self,
           path="/dns/records",
-          tables=["pdns_records"],
+          tables=["records"],
+          dbo=dbdns,
           desc=desc,
           examples=examples,
         )
@@ -287,16 +295,16 @@ class rest_post_dns_records(rest_post_handler):
         check_privilege("DnsOperator")
         if len(vars) == 0:
             raise Exception("Insufficient data")
-        q = db.pdns_records.id > 0
+        q = dbdns.records.id > 0
         for v in vars:
-            q &= db.pdns_records[v] == vars[v]
-        row = db(q).select().first()
+            q &= dbdns.records[v] == vars[v]
+        row = dbdns(q).select().first()
         if row is not None:
             return dict(info="Record already exists")
         dns_record_responsible(vars)
-        response = db.pdns_records.validate_and_insert(**vars)
+        response = dbdns.records.validate_and_insert(**vars)
         raise_on_error(response)
-        row = db(q).select().first()
+        row = dbdns(q).select().first()
         _log('rest.dns.records.create',
              'record %(name)s %(type)s %(content)s created. data %(data)s',
              dict(name=row.name, type=row.type, content=row.content, data=str(vars)),
@@ -325,20 +333,21 @@ class rest_post_dns_record(rest_post_handler):
         rest_post_handler.__init__(
           self,
           path="/dns/records/<id>",
-          tables=["pdns_records"],
+          tables=["records"],
+          dbo=dbdns,
           desc=desc,
           examples=examples,
         )
 
     def handler(self, record_id, **vars):
         check_privilege("DnsOperator")
-        q = db.pdns_records.id == record_id
-        row = db(q).select().first()
+        q = dbdns.records.id == record_id
+        row = dbdns(q).select().first()
         if row is None:
             return dict(error="Record %s does not exist"%record_id)
         dns_record_responsible(row)
         dns_record_responsible(vars, current=row)
-        response = db(q).validate_and_update(**vars)
+        response = dbdns(q).validate_and_update(**vars)
         raise_on_error(response)
         _log('rest.dns.records.change',
              'record %(name)s %(type)s %(content)s changed. data %(data)s',
@@ -375,14 +384,14 @@ class rest_delete_dns_domain(rest_delete_handler):
     def handler(self, domain_id, **vars):
         check_privilege("DnsManager")
 
-        q = db.pdns_domains.id == domain_id
-        row = db(q).select().first()
+        q = dbdns.domains.id == domain_id
+        row = dbdns(q).select().first()
         if row is None:
             return dict(info="Domain %s does not exist"%record_id)
-        db(q).delete()
+        dbdns(q).delete()
 
-        q = db.pdns_records.domain_id == domain_id
-        q = db(q).delete()
+        q = dbdns.records.domain_id == domain_id
+        q = dbdns(q).delete()
 
         # todo lookup nodename, svcname for logging
         _log('rest.dns.domains.delete',
@@ -423,12 +432,12 @@ class rest_delete_dns_record(rest_delete_handler):
 
     def handler(self, record_id, **vars):
         check_privilege("DnsOperator")
-        q = db.pdns_records.id == record_id
-        row = db(q).select().first()
+        q = dbdns.records.id == record_id
+        row = dbdns(q).select().first()
         if row is None:
             return dict(info="Record %s does not exist"%record_id)
         dns_record_responsible(row)
-        db(q).delete()
+        dbdns(q).delete()
         # todo lookup nodename, svcname for logging
         _log('rest.dns.records.delete',
              'record %(name)s %(type)s %(content)s deleted',

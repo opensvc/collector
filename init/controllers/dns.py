@@ -9,7 +9,7 @@ def _domain_form(record=None):
         deletable = True
     else:
         deletable = False
-    return SQLFORM(db.pdns_domains,
+    return SQLFORM(dbdns.domains,
                  record=record,
                  deletable=deletable,
                  hidden_fields=['id'],
@@ -154,28 +154,28 @@ def domain_add():
 
 @auth.requires_membership('DnsManager')
 def domain_del(ids):
-    q = db.pdns_domains.id.belongs(ids)
+    q = dbdns.domains.id.belongs(ids)
     #groups = user_groups()
     #if 'Manager' not in groups:
         # Manager+DnsManager can delete any domain
         # DnsManager can delete the domains they are responsible of
-    #    q &= db.pdns_domains.team_responsible.belongs(groups)
-    u = ', '.join([r.name for r in db(q).select(db.pdns_domains.name)])
-    db(q).delete()
+    #    q &= dbdns.domains.team_responsible.belongs(groups)
+    u = ', '.join([r.name for r in dbdns(q).select(dbdns.domains.name)])
+    dbdns(q).delete()
     _log('dns.domains.delete',
          'deleted domains %(u)s',
          dict(u=u))
 
 @auth.requires_login()
 def domain_sync():
-    q = (db.pdns_domains.id>0)
-    q &= _where(None, 'pdns_domains', request.vars.domain_id, 'id')
-    rows = db(q).select()
+    q = (dbdns.domains.id>0)
+    q &= _where(None, 'domains', request.vars.domain_id, 'id', db=dbdns)
+    rows = dbdns(q).select()
     dname = rows[0].name
 
-    q = db.pdns_records.name == dname
-    q &= db.pdns_records.type == "SOA"
-    rows = db(q).select()
+    q = dbdns.records.name == dname
+    q &= dbdns.records.type == "SOA"
+    rows = dbdns(q).select()
 
     if len(rows) != 1:
         response.flash = "no single SOA found for domain %s"%dname
@@ -189,20 +189,20 @@ def domain_sync():
 
     new = int(l[2]) + 1
     l[2] = str(new)
-    db(q).update(content=' '.join(l))
+    dbdns(q).update(content=' '.join(l))
     response.flash = "SOA incremented to %d for domain %s"%(new, dname)
     redirect(URL(r=request, f='dns'))
 
 @auth.requires_login()
 def domain_edit():
-    query = (db.pdns_domains.id>0)
-    query &= _where(None, 'pdns_domains', request.vars.domain_id, 'id')
+    query = (dbdns.domains.id>0)
+    query &= _where(None, 'domains', request.vars.domain_id, 'id', db=dbdns)
     #groups = user_groups()
     #if 'Manager' not in groups:
         # Manager+DnsManager can edit any domain
         # DnsManager can edit the domains they are responsible of
-    #    query &= db.pdns_domains.team_responsible.belongs(groups)
-    rows = db(query).select()
+    #    query &= dbdns.domains.team_responsible.belongs(groups)
+    rows = dbdns(query).select()
     if len(rows) != 1:
         response.flash = "domain %d not found or insufficient privileges"%request.vars.domain_id
         return dict(form=None)
@@ -223,11 +223,11 @@ def domain_edit():
 def ajax_dns_domains_col_values():
     t = table_dns_domains('dnsd', 'ajax_dns_domains')
     col = request.args[0]
-    o = db.pdns_domains[col]
-    q = db.pdns_domains.id > 0
+    o = dbdns.domains[col]
+    q = dbdns.domains.id > 0
     for f in set(t.cols):
-        q = _where(q, 'pdns_domains', t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o)
+        q = _where(q, 'domains', t.filter_parse(f), f, db=dbdns)
+    t.object_list = dbdns(q).select(o, orderby=o)
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
@@ -242,24 +242,24 @@ def ajax_dns_domains():
         except ToolError, e:
             t.flash = str(e)
 
-    o = ~db.pdns_domains.name
-    q = db.pdns_domains.id > 0
+    o = ~dbdns.domains.name
+    q = dbdns.domains.id > 0
     for f in set(t.cols):
-        q = _where(q, 'pdns_domains', t.filter_parse(f), f)
+        q = _where(q, 'domains', t.filter_parse(f), f, db=dbdns)
 
     if len(request.args) == 1 and request.args[0] == 'line':
         if request.vars.volatile_filters is None:
-            n = db(q).count()
+            n = dbdns(q).count()
             limitby = (t.pager_start,t.pager_end)
         else:
             n = 0
             limitby = (0, 500)
-        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False)
+        t.object_list = dbdns(q).select(orderby=o, limitby=limitby, cacheable=False)
         return t.table_lines_data(n)
 
-    n = db(q).count()
+    n = dbdns(q).count()
     t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    t.object_list = dbdns(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
 
     return t.html()
 
@@ -282,34 +282,34 @@ def _record_form(record=None):
         deletable = True
     else:
         deletable = False
-    js = """if ($("#pdns_records_content").is(":visible")) {
-            $("#pdns_records_content").hide();
-            $("#pdns_records_content").parent().append("<div id=pdns_records_content_1>loading...</div>");
-            $("#pdns_records_content").parent().append("<div id=pdns_records_content_2></div>");
-            $("#pdns_records_content").parent().append("<div id=pdns_records_content_3></div>");
+    js = """if ($("#records_content").is(":visible")) {
+            $("#records_content").hide();
+            $("#records_content").parent().append("<div id=records_content_1>loading...</div>");
+            $("#records_content").parent().append("<div id=records_content_2></div>");
+            $("#records_content").parent().append("<div id=records_content_3></div>");
             function g() {
-                $("#pdns_records_content_2 > select").change(function(){
-                    $("#pdns_records_content").val($(this).val());
-                    $("#pdns_records_content_3").text("%(pingmsg)s");
-                    ajax("%(url3)s"+"/"+$(this).val(), [], "pdns_records_content_3");
+                $("#records_content_2 > select").change(function(){
+                    $("#records_content").val($(this).val());
+                    $("#records_content_3").text("%(pingmsg)s");
+                    ajax("%(url3)s"+"/"+$(this).val(), [], "records_content_3");
                 });
             };
             function f() {
-                $("#pdns_records_content_1 > select").click(function(){
-                    sync_ajax("%(url2)s"+"/"+$(this).val(), [], "pdns_records_content_2", g);
+                $("#records_content_1 > select").click(function(){
+                    sync_ajax("%(url2)s"+"/"+$(this).val(), [], "records_content_2", g);
                 });
             };
-            sync_ajax("%(url1)s", [], "pdns_records_content_1", f);
+            sync_ajax("%(url1)s", [], "records_content_1", f);
             } else {
-                $("#pdns_records_content").show();
-                $("#pdns_records_content_1").remove();
-                $("#pdns_records_content_2").remove();
+                $("#records_content").show();
+                $("#records_content_1").remove();
+                $("#records_content_2").remove();
             }
          """%dict(url1=URL(r=request, f="networks"),
                   url2=URL(r=request, f="ips"),
                   url3=URL(r=request, f="ping"),
                   pingmsg=T("testing ip ..."))
-    return SQLFORM(db.pdns_records,
+    return SQLFORM(dbdns.records,
                  record=record,
                  deletable=deletable,
                  hidden_fields=['id'],
@@ -483,28 +483,28 @@ def record_add():
 
 @auth.requires_membership('DnsManager')
 def record_del(ids):
-    q = db.pdns_records.id.belongs(ids)
+    q = dbdns.records.id.belongs(ids)
     #groups = user_groups()
     #if 'Manager' not in groups:
         # Manager+DnsManager can delete any record
         # DnsManager can delete the records they are responsible of
-    #    q &= db.pdns_records.team_responsible.belongs(groups)
-    u = ', '.join([r.name for r in db(q).select(db.pdns_records.name)])
-    db(q).delete()
+    #    q &= dbdns.records.team_responsible.belongs(groups)
+    u = ', '.join([r.name for r in dbdns(q).select(dbdns.records.name)])
+    dbdns(q).delete()
     _log('dns.records.delete',
          'deleted records %(u)s',
          dict(u=u))
 
 @auth.requires_login()
 def record_edit():
-    query = (db.pdns_records.id>0)
-    query &= _where(None, 'pdns_records', request.vars.record_id, 'id')
+    query = (dbdns.records.id>0)
+    query &= _where(None, 'records', request.vars.record_id, 'id', db=dbdns)
     #groups = user_groups()
     #if 'Manager' not in groups:
         # Manager+DnsManager can edit any record
         # DnsManager can edit the records they are responsible of
-    #    query &= db.pdns_records.team_responsible.belongs(groups)
-    rows = db(query).select()
+    #    query &= dbdns.records.team_responsible.belongs(groups)
+    rows = dbdns(query).select()
     if len(rows) != 1:
         response.flash = "record %d not found or insufficient privileges"%request.vars.record_id
         return dict(form=None)
@@ -525,11 +525,11 @@ def record_edit():
 def ajax_dns_records_col_values():
     t = table_dns_records('dnsr', 'ajax_dns_records')
     col = request.args[0]
-    o = db.pdns_records[col]
-    q = db.pdns_records.id > 0
+    o = dbdns.records[col]
+    q = dbdns.records.id > 0
     for f in set(t.cols):
-        q = _where(q, 'pdns_records', t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o)
+        q = _where(q, 'records', t.filter_parse(f), f, db=dbdns)
+    t.object_list = dbdns(q).select(o, orderby=o)
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
@@ -544,24 +544,24 @@ def ajax_dns_records():
         except ToolError, e:
             t.flash = str(e)
 
-    o = ~db.pdns_records.name
-    q = db.pdns_records.id > 0
+    o = ~dbdns.records.name
+    q = dbdns.records.id > 0
     for f in set(t.cols):
-        q = _where(q, 'pdns_records', t.filter_parse(f), f)
+        q = _where(q, 'records', t.filter_parse(f), f, db=dbdns)
 
     if len(request.args) == 1 and request.args[0] == 'line':
         if request.vars.volatile_filters is None:
-            n = db(q).count()
+            n = dbdns(q).count()
             limitby = (t.pager_start,t.pager_end)
         else:
             n = 0
             limitby = (0, 500)
-        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False)
+        t.object_list = dbdns(q).select(orderby=o, limitby=limitby, cacheable=False)
         return t.table_lines_data(n)
 
-    n = db(q).count()
+    n = dbdns(q).count()
     t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    t.object_list = dbdns(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
 
     return t.html()
 
@@ -615,8 +615,8 @@ def ips():
     if len(ipl) == 0:
         return SPAN()
 
-    sql = """select content from pdns_records where content in (%s)"""%','.join(map(lambda x: repr(x[0]), ipl))
-    rows = db.executesql(sql)
+    sql = """select content from records where content in (%s)"""%','.join(map(lambda x: repr(x[0]), ipl))
+    rows = dbdns.executesql(sql)
     alloc_ips = map(lambda r: r[0], rows)
     for i, (ip, ip_type) in enumerate(ipl):
         if ip in alloc_ips:
@@ -634,7 +634,7 @@ def ips():
            ipl[i][1] += T("reported by %(nodename)s", dict(nodename=alloc_ips[ip]))
 
     l = map(lambda r: OPTION("%16s %s"%(r[0], r[1]), _value=r[0]), ipl)
-    return SELECT(l, _id="pdns_records_content_select")
+    return SELECT(l, _id="records_content_select")
 
 def is_exe(fpath):
     """Returns True if file path is executable, False otherwize

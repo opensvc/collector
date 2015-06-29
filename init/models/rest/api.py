@@ -4,6 +4,7 @@ class rest_handler(object):
     def __init__(self,
                  path=None,
                  tables=[],
+                 dbo=None,
                  props_blacklist=[],
                  count_prop="id",
                  q=None,
@@ -21,6 +22,10 @@ class rest_handler(object):
         self.q = q
         self.left = left
         self.groupby = groupby
+        if dbo:
+            self.db = dbo
+        else:
+            self.db = db
 
         self.pattern = "^"+re.sub("\<\w+\>", "\w+", path)+"$"
         self.regexp = re.compile(self.pattern)
@@ -123,10 +128,10 @@ class rest_handler(object):
 
     def fmt_example(self, ex):
         s = ex % dict(email=user_email(), collector=request.env.http_host)
-        return "``" + s + "``+\n"
+        return "``" + s + "``\n"
 
     def prepare_data(self, **vars):
-        for v in ["q", "groupby", "left", "count_prop", "props_blacklist", "tables"]:
+        for v in ["q", "groupby", "left", "count_prop", "props_blacklist", "tables", "db"]:
             if hasattr(self, v) and vars.get(v) is None:
                 vars[v] = getattr(self, v)
         return prepare_data(**vars)
@@ -137,7 +142,7 @@ class rest_handler(object):
     def update_data(self):
         if len(self.tables) == 0 or self.action != "POST":
             return
-        for prop in all_props(tables=self.tables, blacklist=self.props_blacklist):
+        for prop in all_props(tables=self.tables, blacklist=self.props_blacklist, db=self.db):
             if prop in self.data:
                 # suppose the caller knows better
                 continue
@@ -155,11 +160,11 @@ class rest_handler(object):
             self.data[prop] = {
               "desc":  getattr(colprops, "title") if hasattr(colprops, "title") else "",
               "img":  getattr(colprops, "img") if hasattr(colprops, "img") else "",
-              "type": db[_table][_prop].type,
-              "requires": db[_table][_prop].requires,
-              "default": db[_table][_prop].default,
-              "unique": db[_table][_prop].unique,
-              "writable": db[_table][_prop].writable,
+              "type": self.db[_table][_prop].type,
+              "requires": self.db[_table][_prop].requires,
+              "default": self.db[_table][_prop].default,
+              "unique": self.db[_table][_prop].unique,
+              "writable": self.db[_table][_prop].writable,
             }
 
 
@@ -178,12 +183,12 @@ class rest_get_handler(rest_handler):
 class rest_get_table_handler(rest_handler):
     action = "GET"
     def fmt_standard_parameters(self):
-        return doc_fmt_props_get(tables=self.tables, blacklist=self.props_blacklist)
+        return doc_fmt_props_get(tables=self.tables, blacklist=self.props_blacklist, db=self.db)
 
 class rest_get_line_handler(rest_handler):
     action = "GET"
     def fmt_standard_parameters(self):
-        return doc_fmt_props_get_one(tables=self.tables, blacklist=self.props_blacklist)
+        return doc_fmt_props_get_one(tables=self.tables, blacklist=self.props_blacklist, db=self.db)
 
     def prepare_data(self, **vars):
         vars["meta"] = False
@@ -200,14 +205,15 @@ def prepare_data(
      tables=[],
      data=None,
      q=None,
+     db=db,
      groupby=None,
      left=None,
      cols=[],
      offset=0,
      limit=20,
      total=None):
-    cols = props_to_cols(props, tables=tables, blacklist=props_blacklist)
-    all_cols = props_to_cols(None, tables=tables, blacklist=props_blacklist)
+    cols = props_to_cols(props, tables=tables, blacklist=props_blacklist, db=db)
+    all_cols = props_to_cols(None, tables=tables, blacklist=props_blacklist, db=db)
     if meta in ("0", "f", "F", "False", "false", False):
         meta = False
     else:
@@ -273,11 +279,11 @@ def check_privilege(priv):
     if priv not in ug:
         raise Exception("Not authorized: user has no %s privilege" % priv)
 
-def all_props(tables=[], blacklist=[]):
-    cols = props_to_cols(None, tables=tables, blacklist=blacklist)
+def all_props(tables=[], blacklist=[], db=db):
+    cols = props_to_cols(None, tables=tables, blacklist=blacklist, db=db)
     return cols_to_props(cols, tables=tables)
 
-def props_to_cols(props, tables=[], blacklist=[]):
+def props_to_cols(props, tables=[], blacklist=[], db=db):
     if props is None:
         cols = []
         for table in tables:
@@ -301,15 +307,15 @@ def cols_to_props(cols, tables):
     props = [".".join((c.table._tablename, c.name)) if multi else c.name for c in cols]
     return props
 
-def doc_fmt_props_get_one(props=None, tables=[], blacklist=[]):
-    s = doc_fmt_props_props(props=props, tables=tables, blacklist=blacklist)
+def doc_fmt_props_get_one(props=None, tables=[], blacklist=[], db=db):
+    s = doc_fmt_props_props(props=props, tables=tables, blacklist=blacklist, db=db)
     return s
 
-def doc_fmt_props_get(props=None, tables=[], blacklist=[]):
+def doc_fmt_props_get(props=None, tables=[], blacklist=[], db=db):
     s = doc_fmt_props_meta()
     s += doc_fmt_props_limit()
     s += doc_fmt_props_offset()
-    s += doc_fmt_props_props(props=props, tables=tables, blacklist=blacklist)
+    s += doc_fmt_props_props(props=props, tables=tables, blacklist=blacklist, db=db)
     s += doc_fmt_props_query()
     return s
 
@@ -348,8 +354,8 @@ def doc_fmt_props_query():
 """
     return s
 
-def doc_fmt_props_props(props=None, tables=[], blacklist=[]):
-    cols = props_to_cols(props, tables=tables, blacklist=blacklist)
+def doc_fmt_props_props(props=None, tables=[], blacklist=[], db=db):
+    cols = props_to_cols(props, tables=tables, blacklist=blacklist, db=db)
     props = cols_to_props(cols, tables)
     s = """
 - **props**

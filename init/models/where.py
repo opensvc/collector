@@ -1,4 +1,4 @@
-def _where(query, table, var, field, depth=0):
+def _where(query, table, var, field, depth=0, db=db):
     if table not in db:
         return query
     if field not in db[table]:

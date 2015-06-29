@@ -31,6 +31,9 @@ else:                                         # else use a normal relational dat
     db = DAL('mysql://opensvc:opensvc@%s/opensvc' % dbopensvc,
              driver_args={'connect_timeout': 20},
              pool_size=0)
+    dbdns = DAL('mysql://pdns:pdns@%s/pdns' % dbopensvc,
+             driver_args={'connect_timeout': 20},
+             pool_size=0)
 ## if no need for session
 # session.forget()
 
@@ -1405,7 +1408,7 @@ db.define_table('prov_template_team_responsible',
     Field('group_id','integer'),
     migrate=False)
 
-db.define_table('pdns_domains',
+dbdns.define_table('domains',
     Field('name','string'),
     Field('master','string'),
     Field('last_check','integer'),
@@ -1414,10 +1417,10 @@ db.define_table('pdns_domains',
     Field('account','string'),
     migrate=False)
 
-db.define_table('pdns_records',
+dbdns.define_table('records',
     Field('domain_id','integer',
           required=True,
-          requires=IS_IN_DB(db, db.pdns_domains.id, "%(name)s", zero=T("choose domain"))),
+          requires=IS_IN_DB(dbdns, dbdns.domains.id, "%(name)s", zero=T("choose domain"))),
     Field('name','string',
           requires=IS_NOT_EMPTY()),
     Field('type','string',
@@ -1433,8 +1436,8 @@ db.define_table('pdns_records',
           writable=False),
     migrate=False)
 
-db.pdns_domains.name.requires = [IS_NOT_EMPTY(),
-                                 IS_NOT_IN_DB(db, db.pdns_domains.name)]
+dbdns.domains.name.requires = [IS_NOT_EMPTY(),
+                               IS_NOT_IN_DB(dbdns, dbdns.domains.name)]
 
 db.define_table('networks',
     Field('name','string'),
