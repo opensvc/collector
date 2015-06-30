@@ -247,7 +247,7 @@ class rest_post_groups(rest_post_handler):
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
-        return get_group(vars["role"])
+        return rest_get_group().handler(vars["role"])
 
 
 #
@@ -295,7 +295,7 @@ class rest_post_group(rest_post_handler):
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
-        return get_group(row.id)
+        return rest_get_group().handler(row.id)
 
 
 #

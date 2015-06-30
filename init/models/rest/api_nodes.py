@@ -290,7 +290,7 @@ class rest_post_node(rest_post_handler):
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
-        return get_node(nodename, props=','.join(["nodename","updated"]+vars.keys()))
+        return rest_get_node().handler(nodename, props=','.join(["nodename","updated"]+vars.keys()))
 
 
 #
@@ -329,7 +329,7 @@ class rest_post_nodes(rest_post_handler):
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
-        return get_node(nodename)
+        return rest_get_node().handler(nodename)
 
 
 #
