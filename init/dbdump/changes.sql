@@ -4628,3 +4628,43 @@ create table saves_last as select * from saves group by save_nodename,save_svcna
 alter table saves_last add unique key idx1 (save_nodename,save_svcname,save_name);
 alter table saves_last add key idx2 (save_nodename,save_svcname);
 
+create table comp_ruleset_team_publication like comp_ruleset_team_responsible;
+insert into comp_ruleset_team_publication select * from comp_ruleset_team_responsible;
+
+drop view v_comp_rulesets;
+
+create view v_comp_rulesets as
+select
+ `r`.`id` AS `ruleset_id`,
+ `r`.`ruleset_name` AS `ruleset_name`,
+ `r`.`ruleset_type` AS `ruleset_type`,
+  r.ruleset_public as ruleset_public,
+  group_concat(distinct `rg`.`role` separator ', ') AS `teams_responsible`,
+  group_concat(distinct `pg`.`role` separator ', ') AS `teams_publication`,
+  if (`rr`.`ruleset_name`!=`r`.`ruleset_name`, `rr`.`ruleset_name`, "") as encap_rset,
+  if (`rr`.`id`!=`r`.`id`, `rr`.`id`, null) AS `encap_rset_id`,
+ `rc`.`chain` AS `chain`,
+ `rc`.`chain_len` AS `chain_len`,
+ `rv`.`id` AS `id`,
+ `rv`.`var_name` AS `var_name`,
+ `rv`.`var_class` AS `var_class`,
+ `rv`.`var_value` AS `var_value`,
+ `rv`.`var_author` AS `var_author`,
+ `rv`.`var_updated` AS `var_updated`,
+ `rf`.`fset_id` AS `fset_id`,
+ `fs`.`fset_name` AS `fset_name`
+from
+ `comp_rulesets` r
+  left join `comp_rulesets_filtersets` `rf` on `r`.`id` = `rf`.`ruleset_id`
+  left join `gen_filtersets` `fs` on `fs`.`id` = `rf`.`fset_id`
+  left join `comp_ruleset_team_responsible` `rt` on `r`.`id` = `rt`.`ruleset_id`
+  left join `comp_ruleset_team_publication` `pt` on `r`.`id` = `pt`.`ruleset_id`
+  left join `auth_group` `rg` on `rt`.`group_id` = `rg`.`id`
+  left join `auth_group` `pg` on `pt`.`group_id` = `pg`.`id`
+  left join comp_rulesets_chains rc on r.`id` = `rc`.`head_rset_id`
+  left join comp_rulesets rr on rc.tail_rset_id=rr.id
+  left join comp_rulesets_variables rv on rr.id=rv.ruleset_id
+group by
+  r.id, rv.id, rr.id;
+
+

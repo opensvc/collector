@@ -1683,6 +1683,11 @@ ul.login_menu ul {
     padding: 0 0 0 20px;
     min-height: 16px;
 }
+.admins16 {
+    background: transparent url('admins16.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
 .guys16 {
     background: transparent url('guys16.png') no-repeat;
     padding: 0 0 0 20px;

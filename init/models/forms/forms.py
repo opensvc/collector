@@ -385,8 +385,14 @@ def ajax_custo_form_submit(output, data):
               ruleset_id=rset.id,
               group_id=gid
             )
+            db.comp_ruleset_team_publication.insert(
+              ruleset_id=rset.id,
+              group_id=gid
+            )
             table_modified("comp_ruleset_team_responsible")
-            log.append((0, "compliance.ruleset.group.attach", "Added group %(gid)d ruleset '%(rset_name)s' owners", dict(gid=gid, rset_name=rset_name)))
+            log.append((0, "compliance.ruleset.group.attach", "Added group %(gid)d to ruleset '%(rset_name)s' responsibles", dict(gid=gid, rset_name=rset_name)))
+            table_modified("comp_ruleset_team_publication")
+            log.append((0, "compliance.ruleset.group.attach", "Added group %(gid)d to ruleset '%(rset_name)s' publication", dict(gid=gid, rset_name=rset_name)))
     if rset is None:
         log.append((1, "", "error fetching %(rset_name)s ruleset", dict(rset_name=rset_name)))
         return log

@@ -1192,6 +1192,7 @@ db.define_table('v_comp_rulesets',
     Field('ruleset_type','string', requires=IS_IN_SET(['contextual','explicit'])),
     Field('ruleset_public','boolean', default=True),
     Field('teams_responsible','string'),
+    Field('teams_publication','string'),
     Field('fset_name','string'),
     Field('var_class','string'),
     Field('var_name','string'),
@@ -1201,6 +1202,11 @@ db.define_table('v_comp_rulesets',
     migrate=False)
 
 db.define_table('comp_ruleset_team_responsible',
+    Field('ruleset_id','string'),
+    Field('group_id','string'),
+    migrate=False)
+
+db.define_table('comp_ruleset_team_publication',
     Field('ruleset_id','string'),
     Field('group_id','string'),
     migrate=False)

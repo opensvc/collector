@@ -360,5 +360,9 @@ class rest_delete_group(rest_delete_handler):
         q = db.comp_ruleset_team_responsible.group_id == row.id
         db(q).delete()
 
+        # ruleset publications
+        q = db.comp_ruleset_team_publication.group_id == row.id
+        db(q).delete()
+
         return dict(info="Group %s deleted" % row.role)
 

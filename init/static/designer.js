@@ -108,6 +108,16 @@ jstree_data = {
      "image": designer.url_static+"/guys16.png",
     },
    },
+   "group_pub": {
+    "icon": {
+     "image": designer.url_static+"/guys16.png",
+    },
+   },
+   "group_resp": {
+    "icon": {
+     "image": designer.url_static+"/admins16.png",
+    },
+   },
    "filter": {
     "icon": {
      "image": designer.url_static+"/filter16.png",
@@ -657,14 +667,68 @@ jstree_data = {
      }
 
      //
-     // group
+     // group responsible or publication
      //
-     else if (node.attr("rel")=="group") {
+     if (node.attr("rel").indexOf("group_") == 0) {
        h["remove"]["_disabled"] = true
        h["rename"]["_disabled"] = true
+       if (node.parents("li").attr("rel").indexOf("ruleset") == 0) {
+         h["set_gtype"] = {
+           "label": "Set group role",
+           "separator_before": false,
+           "separator_after": false,
+           "icon": false,
+           "submenu": {
+             "publication": {
+               "label": "Publication",
+               "action": function(obj){
+                 var t = this
+                 $.ajax({
+                   async: false,
+                   type: "POST",
+                   url: designer.url_action,
+                   data: {
+                    "operation": "set_rset_group_publication",
+                    "obj_id": obj.attr("obj_id"),
+                    "parent_obj_id": obj.parents("li").attr("obj_id")
+                   },
+                   success: function(msg){
+                     $("[name=catree]:visible").find("[obj_id="+obj.attr("obj_id")+"]").attr("rel", "group_pub")
+                     json_status(msg)
+                   }
+                 });
+               }
+             },
+             "responsible": {
+               "label": "Responsible",
+               "action": function(obj){
+                 $.ajax({
+                   async: false,
+                   type: "POST",
+                   url: designer.url_action,
+                   data: {
+                    "operation": "set_rset_group_responsible",
+                    "obj_id": obj.attr("obj_id"),
+                    "parent_obj_id": obj.parents("li").attr("obj_id")
+                   },
+                   success: function(msg){
+                     $("[name=catree]:visible").find("[obj_id="+obj.attr("obj_id")+"]").attr("rel", "group_resp")
+                     json_status(msg)
+                   }
+                 });
+               }
+             },
+           }
+         }
+       }
+     }
+     //
+     // group responsible
+     //
+     if (node.attr("rel")=="group_resp") {
        if (node.parents("li").attr("rel").indexOf("ruleset") == 0 || node.parents("li").attr("rel") == "modset") {
-         h["detach_group"] = {
-           "label": "Detach group",
+         h["detach_group_responsible"] = {
+           "label": "Detach responsible",
            "action": function(obj){
              var t = this
              $.ajax({
@@ -672,7 +736,48 @@ jstree_data = {
                type: "POST",
                url: designer.url_action,
                data: {
-                "operation": "detach_group",
+                "operation": "detach_responsible_group",
+                "parent_obj_type": obj.parents("li").attr("rel"),
+                "obj_id": obj.attr("obj_id"),
+                "parent_obj_id": obj.parents("li").attr("obj_id")
+               },
+               success: function(msg){
+                   var id = obj.attr("id")
+                   var l = id.split("_")
+                   var child_id = l.pop()
+                   var parent_id = l.pop()
+                   l = [parent_id, child_id]
+                   id = l.join("_")
+                   $("[name=catree]:visible").each(function(){
+                     $(this).jstree("delete_node", "[id$="+id+"]")
+                   })
+
+                 t.delete_node(obj)
+                 json_status(msg)
+               }
+             });
+           }
+         }
+       }
+     }
+
+     //
+     // group publication
+     //
+     if (node.attr("rel")=="group_pub") {
+       h["remove"]["_disabled"] = true
+       h["rename"]["_disabled"] = true
+       if (node.parents("li").attr("rel").indexOf("ruleset") == 0 || node.parents("li").attr("rel") == "modset") {
+         h["detach_group_publication"] = {
+           "label": "Detach publication",
+           "action": function(obj){
+             var t = this
+             $.ajax({
+               async: false,
+               type: "POST",
+               url: designer.url_action,
+               data: {
+                "operation": "detach_publication_group",
                 "parent_obj_type": obj.parents("li").attr("rel"),
                 "obj_id": obj.attr("obj_id"),
                 "parent_obj_id": obj.parents("li").attr("obj_id")

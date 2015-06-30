@@ -1843,6 +1843,7 @@
 'team responsible': 'équipe responsable',
 'Team Responsible': 'Equipe Responsable',
 'Team responsible': 'Equipe responsable',
+'Teams publication': 'Teams publication',
 'Teams responsible': 'Equipes responsables',
 'Technical and organizational info': 'Infos techniques et organisationelles',
 'Template comment': 'Commentaire du modèle',

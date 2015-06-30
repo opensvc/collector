@@ -609,9 +609,9 @@ def ajax_comp_explicit_rules():
     r = table_comp_explicit_rules('crn1', 'ajax_comp_explicit_rules')
 
     o = db.v_comp_explicit_rulesets.ruleset_name
-    q = db.v_comp_explicit_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    q = db.v_comp_explicit_rulesets.id == db.comp_ruleset_team_publication.ruleset_id
     if 'Manager' not in user_groups():
-        q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+        q &= db.comp_ruleset_team_publication.group_id.belongs(user_group_ids())
     for f in r.cols:
         q = _where(q, 'v_comp_explicit_rulesets', r.filter_parse_glob(f), f)
 
@@ -711,6 +711,7 @@ class table_comp_rulesets(HtmlTable):
                      'ruleset_type',
                      'ruleset_public',
                      'teams_responsible',
+                     'teams_publication',
                      'fset_name',
                      'chain',
                      'chain_len',
@@ -732,6 +733,13 @@ class table_comp_rulesets(HtmlTable):
             'teams_responsible': HtmlTableColumn(
                      title='Teams responsible',
                      field='teams_responsible',
+                     table='v_comp_rulesets',
+                     display=True,
+                     img='admins16',
+                    ),
+            'teams_publication': HtmlTableColumn(
+                     title='Teams publication',
+                     field='teams_publication',
                      table='v_comp_rulesets',
                      display=True,
                      img='guy16',
@@ -845,13 +853,14 @@ class table_comp_rulesets(HtmlTable):
         self.colprops['var_name'].t = self
         self.colprops['var_value'].t = self
         self.span = ['ruleset_name', 'ruleset_type', 'ruleset_public',
-                     'fset_name', 'teams_responsible']
+                     'fset_name', 'teams_responsible', 'teams_publication']
         if 'CompManager' in user_groups():
             self.form_filterset_attach = self.comp_filterset_attach_sqlform()
             self.form_ruleset_var_add = self.comp_ruleset_var_add_sqlform()
             self.form_ruleset_add = self.comp_ruleset_add_sqlform()
             self.form_ruleset_attach = self.comp_ruleset_attach_sqlform()
-            self += HtmlTableMenu('Team responsible', 'guys16', ['team_responsible_attach', 'team_responsible_detach'])
+            self += HtmlTableMenu('Team responsible', 'admins16', ['team_responsible_attach', 'team_responsible_detach'])
+            self += HtmlTableMenu('Team publication', 'guys16', ['team_publication_attach', 'team_publication_detach'])
             self += HtmlTableMenu('Filterset', 'filters', ['filterset_attach', 'filterset_detach'])
             self += HtmlTableMenu('Variable', 'comp16', ['ruleset_var_add', 'ruleset_var_del'])
             self += HtmlTableMenu('Ruleset', 'comp16', ['ruleset_add',
@@ -966,8 +975,8 @@ class table_comp_rulesets(HtmlTable):
             q = db.comp_rulesets.id > 0
             options = [OPTION(g.ruleset_name,_value=g.id) for g in db(q).select(orderby=o, cacheable=True)]
         else:
-            q = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
-            q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+            q = db.comp_rulesets.id == db.comp_ruleset_team_publication.ruleset_id
+            q &= db.comp_ruleset_team_publication.group_id.belongs(user_group_ids())
             options = [OPTION(g.comp_rulesets.ruleset_name,_value=g.comp_rulesets.id) for g in db(q).select(orderby=o, cacheable=True)]
         d = DIV(
               A(
@@ -1089,6 +1098,22 @@ class table_comp_rulesets(HtmlTable):
                 _id=divid,
               ),
             )
+        return d
+
+    def team_publication_attach(self):
+        d = self.team_responsible_select_tool(label="Attach",
+                                              action="team_publication_attach",
+                                              divid="team_publication_attach",
+                                              sid="team_publication_attach_s",
+                                              _class="attach16")
+        return d
+
+    def team_publication_detach(self):
+        d = self.team_responsible_select_tool(label="Detach",
+                                              action="team_publication_detach",
+                                              divid="team_publication_detach",
+                                              sid="team_publication_detach_s",
+                                              _class="detach16")
         return d
 
     def team_responsible_attach(self):
@@ -1226,10 +1251,17 @@ class table_comp_rulesets(HtmlTable):
         else:
             qu = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
             qu &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
-        allowed = db(qu)
+        allowed_parents = db(qu)
+
+        if 'Manager' in user_groups():
+            qu = db.comp_rulesets.id > 0
+        else:
+            qu = db.comp_rulesets.id == db.comp_ruleset_team_publication.ruleset_id
+            qu &= db.comp_ruleset_team_publication.group_id.belongs(user_group_ids())
+        allowed_children = db(qu)
 
         db.comp_rulesets_rulesets.parent_rset_id.requires = IS_IN_DB(
-          allowed,
+          allowed_parents,
           db.comp_rulesets.id,
           "%(ruleset_name)s",
           zero=T('choose one')
@@ -1240,7 +1272,7 @@ class table_comp_rulesets(HtmlTable):
                             cacheable=True)
         parent_rset_ids = [r.parent_rset_id for r in rows]
         q = ~db.comp_rulesets.id.belongs(parent_rset_ids)
-        q &= db.comp_rulesets.id.belongs(allowed.select(db.comp_rulesets.id, cacheable=True))
+        q &= db.comp_rulesets.id.belongs(allowed_children.select(db.comp_rulesets.id, cacheable=True))
         db.comp_rulesets_rulesets.child_rset_id.requires = IS_IN_DB(
           db(q),
           db.comp_rulesets.id,
@@ -1392,7 +1424,36 @@ def team_responsible_attach(ids=[]):
     rows = db(db.comp_rulesets.id.belongs(done)).select(db.comp_rulesets.ruleset_name, cacheable=True)
     u = ', '.join([r.ruleset_name for r in rows])
     _log('ruleset.group.attach',
-         'attached group %(g)s to rulesets %(u)s',
+         'attached group %(g)s to rulesets %(u)s responsibles',
+         dict(g=group_role(group_id), u=u))
+
+@auth.requires_membership('CompManager')
+def team_publication_attach(ids=[]):
+    if len(ids) == 0:
+        raise ToolError("no ruleset selected")
+    ids = map(lambda x: x.split('_')[0], ids)
+    group_id = request.vars.team_publication_attach_s
+
+    done = []
+    for id in ids:
+        if 'Manager' not in user_groups():
+            q = db.comp_ruleset_team_responsible.ruleset_id == id
+            q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+            if db(q).count() == 0:
+                continue
+        q = db.comp_ruleset_team_publication.ruleset_id == id
+        q &= db.comp_ruleset_team_publication.group_id == group_id
+        if db(q).count() != 0:
+            continue
+        done.append(id)
+        db.comp_ruleset_team_publication.insert(ruleset_id=id, group_id=group_id)
+        table_modified("comp_ruleset_team_publication")
+    if len(done) == 0:
+        return
+    rows = db(db.comp_rulesets.id.belongs(done)).select(db.comp_rulesets.ruleset_name, cacheable=True)
+    u = ', '.join([r.ruleset_name for r in rows])
+    _log('ruleset.group.attach',
+         'attached group %(g)s to rulesets %(u)s publications',
          dict(g=group_role(group_id), u=u))
 
 @auth.requires_membership('CompManager')
@@ -1455,7 +1516,36 @@ def team_responsible_detach(ids=[]):
     rows = db(db.comp_rulesets.id.belongs(done)).select(db.comp_rulesets.ruleset_name, cacheable=True)
     u = ', '.join([r.ruleset_name for r in rows])
     _log('ruleset.group.detach',
-         'detached group %(g)s from rulesets %(u)s',
+         'detached group %(g)s from rulesets %(u)s responsibles',
+         dict(g=group_role(group_id), u=u))
+
+@auth.requires_membership('CompManager')
+def team_publication_detach(ids=[]):
+    if len(ids) == 0:
+        raise ToolError("no ruleset selected")
+    ids = map(lambda x: x.split('_')[0], ids)
+    group_id = request.vars.team_publication_detach_s
+
+    done = []
+    for id in ids:
+        if 'Manager' not in user_groups():
+            q = db.comp_ruleset_team_responsible.ruleset_id == id
+            q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+            if db(q).count() == 0:
+                continue
+        q = db.comp_ruleset_team_publication.ruleset_id == id
+        q &= db.comp_ruleset_team_publication.group_id == group_id
+        if db(q).count() == 0:
+            continue
+        db(q).delete()
+        done.append(id)
+        table_modified("comp_ruleset_team_publication")
+    if len(done) == 0:
+        return
+    rows = db(db.comp_rulesets.id.belongs(done)).select(db.comp_rulesets.ruleset_name, cacheable=True)
+    u = ', '.join([r.ruleset_name for r in rows])
+    _log('ruleset.group.detach',
+         'detached group %(g)s from rulesets %(u)s publications',
          dict(g=group_role(group_id), u=u))
 
 @auth.requires_membership('CompManager')
@@ -1558,7 +1648,7 @@ def ruleset_clone():
                                           var_value=row.var_value,
                                           var_author=user_name())
     table_modified("comp_rulesets_variables")
-    add_default_team_responsible(iid)
+    add_default_teams(iid)
 
     # clone parent to children relations
     q = db.comp_rulesets_rulesets.parent_rset_id==sid
@@ -1610,6 +1700,8 @@ def comp_delete_ruleset(ids=[]):
             raise ToolError("delete ruleset failed: no ruleset deletion allowed")
     rows = db(db.comp_rulesets.id.belongs(ids)).select(db.comp_rulesets.ruleset_name, cacheable=True)
     x = ', '.join([str(r.ruleset_name) for r in rows])
+    n = db(db.comp_ruleset_team_publication.ruleset_id.belongs(ids)).delete()
+    table_modified("comp_ruleset_team_publication")
     n = db(db.comp_ruleset_team_responsible.ruleset_id.belongs(ids)).delete()
     table_modified("comp_ruleset_team_responsible")
     n = db(db.comp_rulesets_filtersets.ruleset_id.belongs(ids)).delete()
@@ -2062,6 +2154,10 @@ def ajax_comp_rulesets():
                 team_responsible_attach(v.get_checked())
             elif action == 'team_responsible_detach':
                 team_responsible_detach(v.get_checked())
+            elif action == 'team_publication_attach':
+                team_publication_attach(v.get_checked())
+            elif action == 'team_publication_detach':
+                team_publication_detach(v.get_checked())
         except ToolError, e:
             v.flash = str(e)
     elif len(request.args) == 2:
@@ -2115,7 +2211,7 @@ def ajax_comp_rulesets():
             v.form_ruleset_attach = v.comp_ruleset_attach_sqlform()
             v.form_filterset_attach = v.comp_filterset_attach_sqlform()
             v.form_ruleset_var_add = v.comp_ruleset_var_add_sqlform()
-            add_default_team_responsible(request.vars.ruleset_name)
+            add_default_teams(request.vars.ruleset_name)
             _log('compliance.ruleset.add',
                  'added ruleset %(ruleset)s',
                  dict(ruleset=request.vars.ruleset_name))
@@ -2153,7 +2249,7 @@ def ajax_comp_rulesets():
 
     o = db.v_comp_rulesets.ruleset_name|db.v_comp_rulesets.chain_len|db.v_comp_rulesets.encap_rset|db.v_comp_rulesets.var_name
     g = db.v_comp_rulesets.ruleset_id|db.v_comp_rulesets.id
-    q = teams_responsible_filter()
+    q = teams_publication_filter()
     for f in v.cols:
         q = _where(q, 'v_comp_rulesets', v.filter_parse(f), f)
 
@@ -2180,19 +2276,19 @@ def ajax_comp_rulesets():
 
     return v.html()
 
-def add_default_team_responsible(ruleset_name):
-    q = db.comp_rulesets.ruleset_name == ruleset_name
-    ruleset_id = db(q).select(cacheable=True)[0].id
-    q = db.auth_membership.user_id == auth.user_id
-    q &= db.auth_membership.group_id == db.auth_group.id
-    q &= db.auth_group.role.like('user_%')
-    try:
-        group_id = db(q).select(cacheable=True)[0].auth_group.id
-    except:
+def add_default_teams(ruleset_name):
+    group_id = user_primary_group_id()
+    if group_id is None:
+        group_id = user_private_group_id()
+    if group_id is None:
         q = db.auth_group.role == 'Manager'
         group_id = db(q).select(cacheable=True)[0].id
+    q = db.comp_rulesets.ruleset_name == ruleset_name
+    ruleset_id = db(q).select(cacheable=True)[0].id
     db.comp_ruleset_team_responsible.insert(ruleset_id=ruleset_id, group_id=group_id)
     table_modified("comp_ruleset_team_responsible")
+    db.comp_ruleset_team_publication.insert(ruleset_id=ruleset_id, group_id=group_id)
+    table_modified("comp_ruleset_team_publication")
 
 def add_default_team_responsible_to_filterset(name):
     q = db.gen_filtersets.fset_name == name
@@ -2222,12 +2318,12 @@ def add_default_team_responsible_to_modset(modset_name):
     db.comp_moduleset_team_responsible.insert(modset_id=modset_id, group_id=group_id)
     table_modified("comp_moduleset_team_responsible")
 
-def teams_responsible_filter():
+def teams_publication_filter():
     if 'Manager' in user_groups():
         q = db.v_comp_rulesets.ruleset_id > 0
     else:
-        q = db.v_comp_rulesets.ruleset_id == db.comp_ruleset_team_responsible.ruleset_id
-        q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+        q = db.v_comp_rulesets.ruleset_id == db.comp_ruleset_team_publication.ruleset_id
+        q &= db.comp_ruleset_team_publication.group_id.belongs(user_group_ids())
     return q
 
 @auth.requires_login()
@@ -3818,12 +3914,10 @@ def ajax_comp_moduleset():
 def add_modset_default_team_responsible(modset_name):
     q = db.comp_moduleset.modset_name == modset_name
     modset_id = db(q).select()[0].id
-    q = db.auth_membership.user_id == auth.user_id
-    q &= db.auth_membership.group_id == db.auth_group.id
-    q &= db.auth_group.role.like('user_%')
-    try:
-        group_id = db(q).select()[0].auth_group.id
-    except:
+    group_id = user_primary_group_id()
+    if group_id is None:
+        group_id = user_private_group_id()
+    if group_id is None:
         q = db.auth_group.role == 'Manager'
         group_id = db(q).select()[0].id
     db.comp_moduleset_team_responsible.insert(modset_id=modset_id, group_id=group_id)
@@ -6128,8 +6222,8 @@ def comp_ruleset_svc_attachable(svcname, rset_id):
     q &= db.services.svc_app == db.apps.app
     q &= db.apps.id == db.apps_responsibles.app_id
     q &= db.apps_responsibles.group_id == db.auth_group.id
-    q &= db.auth_group.id == db.comp_ruleset_team_responsible.group_id
-    q &= db.comp_ruleset_team_responsible.ruleset_id == db.comp_rulesets.id
+    q &= db.auth_group.id == db.comp_ruleset_team_publication.group_id
+    q &= db.comp_ruleset_team_publication.ruleset_id == db.comp_rulesets.id
     q &= db.comp_rulesets.id == rset_id
     q &= db.comp_rulesets.ruleset_public == True
     q &= db.comp_rulesets.ruleset_type == "explicit"
@@ -6151,8 +6245,8 @@ def comp_moduleset_attachable(nodename, modset_id):
 
 def comp_ruleset_attachable(nodename, ruleset_id):
     q = db.nodes.team_responsible == db.auth_group.role
-    q &= db.auth_group.id == db.comp_ruleset_team_responsible.group_id
-    q &= db.comp_ruleset_team_responsible.ruleset_id == db.comp_rulesets.id
+    q &= db.auth_group.id == db.comp_ruleset_team_publication.group_id
+    q &= db.comp_ruleset_team_publication.ruleset_id == db.comp_rulesets.id
     q &= db.comp_rulesets.id == ruleset_id
     q &= db.comp_rulesets.ruleset_public == True
     q &= db.comp_rulesets.ruleset_type == "explicit"
@@ -6242,11 +6336,11 @@ def rpc_comp_list_rulesets(pattern='%', nodename=None, auth=("", "")):
     q = db.comp_rulesets.ruleset_name.like(pattern)
     q &= db.comp_rulesets.ruleset_type == 'explicit'
     q &= db.comp_rulesets.ruleset_public == True
-    q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    q &= db.comp_rulesets.id == db.comp_ruleset_team_publication.ruleset_id
     if nodename != None:
         q &= db.nodes.nodename == nodename
         q &= db.nodes.team_responsible == db.auth_group.role
-        q &= db.auth_group.id == db.comp_ruleset_team_responsible.group_id
+        q &= db.auth_group.id == db.comp_ruleset_team_publication.group_id
     rows = db(q).select(groupby=db.comp_rulesets.id, cacheable=True)
     return sorted([r.comp_rulesets.ruleset_name for r in rows])
 
@@ -10410,19 +10504,27 @@ def _tree_rulesets_children(ruleset_ids=None, id_prefix="", obj_filter=None, hid
             rsets_variables[row.ruleset_id] = []
         rsets_variables[row.ruleset_id].append(row)
 
+    q = db.comp_ruleset_team_publication.id > 0
+    q &= db.comp_ruleset_team_publication.group_id == db.auth_group.id
+    rows = db(q).select(cacheable=True)
+    rsets_publications = {}
+    for row in rows:
+        if row.comp_ruleset_team_publication.ruleset_id not in rsets_publications:
+            rsets_publications[row.comp_ruleset_team_publication.ruleset_id] = []
+        rsets_publications[row.comp_ruleset_team_publication.ruleset_id].append(row)
+
     q = db.comp_ruleset_team_responsible.id > 0
     q &= db.comp_ruleset_team_responsible.group_id == db.auth_group.id
     rows = db(q).select(cacheable=True)
-    rsets_groups = {}
+    rsets_responsibles = {}
     for row in rows:
-        if row.comp_ruleset_team_responsible.ruleset_id not in rsets_groups:
-            rsets_groups[row.comp_ruleset_team_responsible.ruleset_id] = []
-        rsets_groups[row.comp_ruleset_team_responsible.ruleset_id].append(row)
+        if row.comp_ruleset_team_responsible.ruleset_id not in rsets_responsibles:
+            rsets_responsibles[row.comp_ruleset_team_responsible.ruleset_id] = []
+        rsets_responsibles[row.comp_ruleset_team_responsible.ruleset_id].append(row)
 
     q = db.comp_rulesets.id > 0
-    q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
-    rows = db(q).select(groupby=db.comp_rulesets.id,
-                        cacheable=True)
+    q &= db.comp_rulesets.id == db.comp_ruleset_team_publication.ruleset_id
+    rows = db(q).select(groupby=db.comp_rulesets.id, cacheable=True)
     rsets = {}
     for row in rows:
         rsets[row.comp_rulesets.id] = row.comp_rulesets
@@ -10430,11 +10532,11 @@ def _tree_rulesets_children(ruleset_ids=None, id_prefix="", obj_filter=None, hid
     # main ruleset selection
     o = db.comp_rulesets.ruleset_name
     q = db.comp_rulesets.id > 0
-    q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    q &= db.comp_rulesets.id == db.comp_ruleset_team_publication.ruleset_id
     if ruleset_ids is not None:
         q &= db.comp_rulesets.id.belongs(ruleset_ids)
     if 'Manager' not in user_groups():
-        q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+        q &= db.comp_ruleset_team_publication.group_id.belongs(user_group_ids())
     if obj_filter is not None:
         q &= _where(None, 'comp_rulesets', obj_filter, 'ruleset_name')
 
@@ -10465,14 +10567,22 @@ def _tree_rulesets_children(ruleset_ids=None, id_prefix="", obj_filter=None, hid
              "data": v.var_name,
             }
             variables.append(vdata)
-        groups = []
-        for v in rsets_groups.get(rset.id, []):
-            _parent_ids = parent_ids + ["grp%d"%v.comp_ruleset_team_responsible.group_id]
+        groups_publication = []
+        for v in rsets_publications.get(rset.id, []):
+            _parent_ids = parent_ids + ["grppub%d"%v.comp_ruleset_team_publication.group_id]
             vdata = {
-             "attr": {"id": id_prefix+"_".join(_parent_ids), "rel": "group", "obj_id": v.comp_ruleset_team_responsible.group_id, "class": "jstree-draggable"},
+             "attr": {"id": id_prefix+"_".join(_parent_ids), "rel": "group_pub", "obj_id": v.comp_ruleset_team_publication.group_id, "class": "jstree-draggable"},
              "data": v.auth_group.role,
             }
-            groups.append(vdata)
+            groups_publication.append(vdata)
+        groups_responsible = []
+        for v in rsets_responsibles.get(rset.id, []):
+            _parent_ids = parent_ids + ["grpresp%d"%v.comp_ruleset_team_responsible.group_id]
+            vdata = {
+             "attr": {"id": id_prefix+"_".join(_parent_ids), "rel": "group_resp", "obj_id": v.comp_ruleset_team_responsible.group_id, "class": "jstree-draggable"},
+             "data": v.auth_group.role,
+            }
+            groups_responsible.append(vdata)
         if rset.ruleset_type == "contextual":
             if rset.ruleset_public == True:
                 rel = "ruleset_cxt"
@@ -10486,7 +10596,7 @@ def _tree_rulesets_children(ruleset_ids=None, id_prefix="", obj_filter=None, hid
         _data = {
           "attr": {"id": id_prefix+"_".join(parent_ids), "rel": rel, "obj_id": rset.id, "rset_type": rset.ruleset_type, "class": "jstree-draggable,jstree-drop"},
           "data": rset.ruleset_name,
-          "children": groups+fsets+variables+child_rsets,
+          "children": groups_publication+groups_responsible+fsets+variables+child_rsets,
         }
         return _data
 
@@ -10662,6 +10772,12 @@ def json_tree_action():
     elif action == "set_var_class":
         return json_tree_action_set_var_class(request.vars.obj_id,
                                               request.vars.var_class)
+    elif action == "set_rset_group_responsible":
+        return json_tree_action_set_rset_group_responsible(request.vars.obj_id,
+                                                           request.vars.parent_obj_id)
+    elif action == "set_rset_group_publication":
+        return json_tree_action_set_rset_group_publication(request.vars.obj_id,
+                                                           request.vars.parent_obj_id)
     elif action == "set_public":
         return json_tree_action_set_public(request.vars.obj_id,
                                            request.vars.publication)
@@ -10688,6 +10804,16 @@ def json_tree_action():
     elif action == "detach_filter":
         return json_tree_action_detach_filter(request.vars.obj_id,
                                               request.vars.parent_obj_id)
+    elif action == "detach_publication_group":
+        return json_tree_action_detach_group(request.vars.obj_id,
+                                             request.vars.parent_obj_id,
+                                             request.vars.parent_obj_type,
+                                             gtype="publication")
+    elif action == "detach_responsible_group":
+        return json_tree_action_detach_group(request.vars.obj_id,
+                                             request.vars.parent_obj_id,
+                                             request.vars.parent_obj_type,
+                                             gtype="responsible")
     elif action == "detach_group":
         return json_tree_action_detach_group(request.vars.obj_id,
                                              request.vars.parent_obj_id,
@@ -11205,7 +11331,7 @@ def json_tree_action_import():
           ruleset_type=rset['ruleset_type'],
           ruleset_public=rset['ruleset_public'],
         )
-        add_default_team_responsible(rset['ruleset_name'])
+        add_default_teams(rset['ruleset_name'])
         ruleset_id[rset['ruleset_name']] = n
         l.append(T("Ruleset added: %(r)s", dict(r=rset["ruleset_name"])))
 
@@ -11614,7 +11740,7 @@ def json_tree_action_create_ruleset(rset_name):
       ruleset_type="explicit",
     )
     table_modified("comp_rulesets")
-    add_default_team_responsible(rset_name)
+    add_default_teams(rset_name)
     _log('compliance.ruleset.add',
          'added ruleset %(rset_name)s',
          dict(rset_name=rset_name))
@@ -11918,14 +12044,14 @@ def json_tree_action_move_var_to_rset(var_id, rset_id):
 @auth.requires_membership('CompManager')
 def json_tree_action_copy_var_to_rset(var_id, rset_id):
     q = db.comp_rulesets_variables.id == var_id
-    q1 = db.comp_rulesets_variables.ruleset_id == db.comp_ruleset_team_responsible.ruleset_id
+    q1 = db.comp_rulesets_variables.ruleset_id == db.comp_ruleset_team_publication.ruleset_id
     q1 &= db.comp_rulesets_variables.ruleset_id == db.comp_rulesets.id
     if 'Manager' not in user_groups():
-        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+        q1 &= db.comp_ruleset_team_publication.group_id.belongs(user_group_ids())
     rows = db(q&q1).select(cacheable=True)
     v = rows.first()
     if v is None:
-        return {"err": "variable not found or originating ruleset not owned by you"}
+        return {"err": "variable not found or originating ruleset not published to you"}
 
     q2 = db.comp_rulesets.id == rset_id
     q3 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
@@ -12026,10 +12152,14 @@ def json_tree_action_copy_or_move_rset_to_rset(rset_id, parent_rset_id, dst_rset
     if db(q).count() > 0:
         return {"err": "ruleset already attached"}
 
+    if move:
+        responsible_table = db.comp_ruleset_team_responsible
+    else:
+        responsible_table = db.comp_ruleset_team_publication
     q = db.comp_rulesets.id == rset_id
-    q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    q1 = db.comp_rulesets.id == responsible_table.ruleset_id
     if 'Manager' not in user_groups():
-        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+        q1 &= responsible_table.group_id.belongs(user_group_ids())
     rows = db(q&q1).select(cacheable=True)
     v = rows.first()
     if v is None:
@@ -12090,9 +12220,9 @@ def json_tree_action_detach_filterset(obj_id, parent_obj_id, parent_obj_type):
         return {"err": "detach filterset not supported for this parent object type"}
 
 @auth.requires_membership('CompManager')
-def json_tree_action_detach_group(group_id, obj_id, parent_obj_type):
+def json_tree_action_detach_group(group_id, obj_id, parent_obj_type, gtype="responsible"):
     if parent_obj_type.startswith("ruleset"):
-        return json_tree_action_detach_group_from_rset(group_id, obj_id)
+        return json_tree_action_detach_group_from_rset(group_id, obj_id, gtype=gtype)
     elif parent_obj_type == "modset":
         return json_tree_action_detach_group_from_modset(group_id, obj_id)
     else:
@@ -12126,7 +12256,7 @@ def json_tree_action_detach_group_from_modset(group_id, modset_id):
     return "0"
 
 @auth.requires_membership('CompManager')
-def json_tree_action_detach_group_from_rset(group_id, rset_id):
+def json_tree_action_detach_group_from_rset(group_id, rset_id, gtype="responsible"):
     q = db.comp_rulesets.id == rset_id
     q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
     if 'Manager' not in user_groups():
@@ -12142,13 +12272,14 @@ def json_tree_action_detach_group_from_rset(group_id, rset_id):
     if w is None:
         return {"err": "group not found"}
 
-    q = db.comp_ruleset_team_responsible.ruleset_id == rset_id
-    q &= db.comp_ruleset_team_responsible.group_id == group_id
+    q = db["comp_ruleset_team_"+gtype].ruleset_id == rset_id
+    q &= db["comp_ruleset_team_"+gtype].group_id == group_id
     db(q).delete()
-    table_modified("comp_ruleset_team_responsible")
+    table_modified("comp_ruleset_team_"+gtype)
     _log('compliance.ruleset.detach',
-         'detach group %(role)s from ruleset %(rset_name)s',
+         'detach %(gtype)s group %(role)s from ruleset %(rset_name)s',
          dict(rset_name=v.comp_rulesets.ruleset_name,
+              gtype=gtype,
               role=w.role))
     return "0"
 
@@ -12192,13 +12323,13 @@ def json_tree_action_detach_ruleset_from_moduleset(rset_id, modset_id):
         return {"err": "parent moduleset not found or not owned by you"}
 
     q = db.comp_rulesets.id == rset_id
-    q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    q1 = db.comp_rulesets.id == db.comp_ruleset_team_publication.ruleset_id
     if 'Manager' not in user_groups():
-        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+        q1 &= db.comp_ruleset_team_publication.group_id.belongs(user_group_ids())
     rows = db(q&q1).select(cacheable=True)
     w = rows.first()
     if w is None:
-        return {"err": "child ruleset not found or not owned by you"}
+        return {"err": "child ruleset not found or not published to you"}
 
     q = db.comp_moduleset_ruleset.modset_id == modset_id
     q &= db.comp_moduleset_ruleset.ruleset_id == rset_id
@@ -12223,13 +12354,13 @@ def json_tree_action_detach_ruleset(rset_id, parent_rset_id):
         return {"err": "parent ruleset not found or not owned by you"}
 
     q = db.comp_rulesets.id == rset_id
-    q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    q1 = db.comp_rulesets.id == db.comp_ruleset_team_publication.ruleset_id
     if 'Manager' not in user_groups():
-        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+        q1 &= db.comp_ruleset_team_publication.group_id.belongs(user_group_ids())
     rows = db(q&q1).select(cacheable=True)
     w = rows.first()
     if w is None:
-        return {"err": "child ruleset not found or not owned by you"}
+        return {"err": "child ruleset not found or not published to you"}
 
     q = db.comp_rulesets_rulesets.parent_rset_id == parent_rset_id
     q &= db.comp_rulesets_rulesets.child_rset_id == rset_id
@@ -12520,6 +12651,68 @@ def json_tree_action_copy_rset_to_modset(rset_id, modset_id):
     return "0"
 
 @auth.requires_membership('CompManager')
+def json_tree_action_set_rset_group_responsible(group_id, rset_id):
+    ug = user_groups()
+    q = db.comp_rulesets.id == rset_id
+    q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in ug:
+        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "ruleset not found or not owned by you"}
+
+    q = db.auth_group.id == group_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        return {"err": "group not found"}
+
+    q = db.comp_ruleset_team_publication.ruleset_id == rset_id
+    q &= db.comp_ruleset_team_publication.group_id == group_id
+    db(q).delete()
+
+    q = db.comp_ruleset_team_responsible.ruleset_id == rset_id
+    q &= db.comp_ruleset_team_responsible.group_id == group_id
+    n = db(q).count()
+    if n > 0:
+        return "0"
+    db.comp_ruleset_team_responsible.insert(ruleset_id=rset_id,
+                                            group_id=group_id)
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_set_rset_group_publication(group_id, rset_id):
+    ug = user_groups()
+    q = db.comp_rulesets.id == rset_id
+    q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in ug:
+        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "ruleset not found or not owned by you"}
+
+    q = db.auth_group.id == group_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        return {"err": "group not found"}
+
+    q = db.comp_ruleset_team_responsible.ruleset_id == rset_id
+    q &= db.comp_ruleset_team_responsible.group_id == group_id
+    db(q).delete()
+
+    q = db.comp_ruleset_team_publication.ruleset_id == rset_id
+    q &= db.comp_ruleset_team_publication.group_id == group_id
+    n = db(q).count()
+    if n > 0:
+        return "0"
+    db.comp_ruleset_team_publication.insert(ruleset_id=rset_id,
+                                            group_id=group_id)
+    return "0"
+
+@auth.requires_membership('CompManager')
 def json_tree_action_move_group_to_rset(group_id, rset_id):
     ug = user_groups()
     q = db.comp_rulesets.id == rset_id
@@ -12540,16 +12733,16 @@ def json_tree_action_move_group_to_rset(group_id, rset_id):
     if 'Manager' not in ug and int(group_id) not in user_group_ids():
         return {"err": "you can't attach a group you are not a member of"}
 
-    q = db.comp_ruleset_team_responsible.ruleset_id == rset_id
-    q &= db.comp_ruleset_team_responsible.group_id == group_id
+    q = db.comp_ruleset_team_publication.ruleset_id == rset_id
+    q &= db.comp_ruleset_team_publication.group_id == group_id
     if db(q).count() > 0:
         return "0"
 
-    db.comp_ruleset_team_responsible.update_or_insert(ruleset_id=rset_id,
+    db.comp_ruleset_team_publication.update_or_insert(ruleset_id=rset_id,
                                                       group_id=group_id)
-    table_modified("comp_ruleset_team_responsible")
+    table_modified("comp_ruleset_team_publication")
     _log('compliance.ruleset.change',
-         'attach group %(role)s to ruleset %(rset_name)s',
+         'attach group %(role)s to ruleset %(rset_name)s publications',
          dict(rset_name=v.comp_rulesets.ruleset_name,
               role=w.role))
     return "0"
@@ -12740,6 +12933,10 @@ def json_tree_action_delete_ruleset(rset_id):
     q = db.comp_rulesets_services.ruleset_id == rset_id
     db(q).delete()
     table_modified("comp_rulesets_services")
+
+    q = db.comp_ruleset_team_publication.ruleset_id == rset_id
+    db(q).delete()
+    table_modified("comp_ruleset_team_publication")
 
     q = db.comp_ruleset_team_responsible.ruleset_id == rset_id
     db(q).delete()
