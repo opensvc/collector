@@ -4675,11 +4675,12 @@ create view v_comp_moduleset_teams_publication as (select m.id as modset_id, gro
 
 create view v_comp_modulesets as
 select
+  if(m.id, m.id, 0) as id,
   ms.id AS modset_id,
   ms.modset_name,
   ms.modset_author,
   ms.modset_updated,
-  m.id as id,
+  m.id as modset_mod_id,
   m.modset_mod_name,
   m.modset_mod_author,
   m.modset_mod_updated,
