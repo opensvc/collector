@@ -5885,9 +5885,11 @@ def ajax_comp_log():
             limitby = (t.pager_start,t.pager_end)
         else:
             limitby = (0, 500)
+        n = db(q).count()
+        t.setup_pager(n)
         cols = t.get_visible_columns()
         t.object_list = db(q).select(*cols, limitby=limitby, orderby=o, cacheable=False)
-        return t.table_lines_data(-1, html=False)
+        return t.table_lines_data(n, html=False)
 
 @auth.requires_login()
 def comp_log():
