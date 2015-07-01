@@ -112,7 +112,7 @@ class rest_post_scheduler_task(rest_post_handler):
         _log('rest.scheduler.update',
              'update properties %(data)s',
              dict(data=", ".join(l)))
-        return get_scheduler_task(_id)
+        return rest_get_scheduler_task().handler(_id)
 
 
 #
@@ -232,7 +232,7 @@ class rest_post_scheduler_run(rest_post_handler):
         _log('rest.scheduler.update',
              'update properties %(data)s',
              dict(data=", ".join(l)))
-        return get_scheduler_run(_id)
+        return rest_get_scheduler_run().handler(_id)
 
 
 class rest_get_scheduler_workers(rest_get_table_handler):
