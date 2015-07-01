@@ -234,9 +234,9 @@ class col_modset_mod_name(HtmlTableColumn):
             ss = '(no name)'
         else:
             ss = s
-        tid = 'd_t_%s_%s'%(o.comp_moduleset.id, o.comp_moduleset_modules.id)
-        iid = 'd_i_%s_%s'%(o.comp_moduleset.id, o.comp_moduleset_modules.id)
-        sid = 'd_s_%s_%s'%(o.comp_moduleset.id, o.comp_moduleset_modules.id)
+        tid = 'd_t_%s_%s'%(o.modset_id, o.id)
+        iid = 'd_i_%s_%s'%(o.modset_id, o.id)
+        sid = 'd_s_%s_%s'%(o.modset_id, o.id)
         d = SPAN(
               SPAN(
                 ss,
@@ -2304,19 +2304,19 @@ def add_default_team_responsible_to_filterset(name):
     db.gen_filterset_team_responsible.insert(fset_id=fset_id, group_id=group_id)
     table_modified("gen_filterset_team_responsible")
 
-def add_default_team_responsible_to_modset(modset_name):
-    q = db.comp_moduleset.modset_name == modset_name
-    modset_id = db(q).select(cacheable=True)[0].id
-    q = db.auth_membership.user_id == auth.user_id
-    q &= db.auth_membership.group_id == db.auth_group.id
-    q &= db.auth_group.role.like('user_%')
-    try:
-        group_id = db(q).select(cacheable=True)[0].auth_group.id
-    except:
+def add_default_teams_to_modset(modset_name):
+    group_id = user_primary_group_id()
+    if group_id is None:
+        group_id = user_private_group_id()
+    if group_id is None:
         q = db.auth_group.role == 'Manager'
         group_id = db(q).select(cacheable=True)[0].id
+    q = db.comp_modulesets.modset_name == ruleset_name
+    modset_id = db(q).select(cacheable=True)[0].id
     db.comp_moduleset_team_responsible.insert(modset_id=modset_id, group_id=group_id)
     table_modified("comp_moduleset_team_responsible")
+    db.comp_moduleset_team_publication.insert(modset_id=modset_id, group_id=group_id)
+    table_modified("comp_moduleset_team_publication")
 
 def teams_publication_filter():
     if 'Manager' in user_groups():
@@ -3329,6 +3329,7 @@ class table_comp_moduleset(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['modset_name',
                      'teams_responsible',
+                     'teams_publication',
                      'modset_mod_name',
                      'autofix',
                      'modset_mod_updated',
@@ -3336,45 +3337,52 @@ class table_comp_moduleset(HtmlTable):
         self.colprops = {
             'modset_name': HtmlTableColumn(
                      title='Moduleset',
-                     table='comp_moduleset',
+                     table='v_comp_modulesets',
                      field='modset_name',
                      display=True,
                      img='action16',
                     ),
             'autofix': HtmlTableColumn(
                      title='Autofix',
-                     table='comp_moduleset_modules',
+                     table='v_comp_modulesets',
                      field='autofix',
                      display=True,
                      img='actionred16',
                     ),
             'modset_mod_name': col_modset_mod_name(
                      title='Module',
-                     table='comp_moduleset_modules',
+                     table='v_comp_modulesets',
                      field='modset_mod_name',
                      display=True,
                      img='action16',
                     ),
             'modset_mod_updated': HtmlTableColumn(
                      title='Updated',
-                     table='comp_moduleset_modules',
+                     table='v_comp_modulesets',
                      field='modset_mod_updated',
                      display=True,
                      img='action16',
                     ),
             'modset_mod_author': HtmlTableColumn(
                      title='Author',
-                     table='comp_moduleset_modules',
+                     table='v_comp_modulesets',
                      field='modset_mod_author',
                      display=True,
                      img='guy16',
                     ),
             'teams_responsible': HtmlTableColumn(
                      title='Teams responsible',
-                     table='v_comp_moduleset_teams_responsible',
+                     table='v_comp_modulesets',
                      field='teams_responsible',
                      display=True,
-                     img='guy16',
+                     img='admins16',
+                    ),
+            'teams_publication': HtmlTableColumn(
+                     title='Teams publication',
+                     table='v_comp_modulesets',
+                     field='teams_publication',
+                     display=True,
+                     img='guys16',
                     ),
         }
         self.ajax_col_values = ajax_comp_moduleset_col_values
@@ -3386,14 +3394,15 @@ class table_comp_moduleset(HtmlTable):
             self += HtmlTableMenu('Moduleset', 'action16', ['moduleset_add',
                                                             'moduleset_del',
                                                             'moduleset_rename'])
-            self += HtmlTableMenu('Team responsible', 'guys16', ['team_responsible_attach', 'team_responsible_detach'])
-        self.span = ['modset_name', 'teams_responsible']
+            self += HtmlTableMenu('Team responsible', 'admins16', ['team_responsible_attach', 'team_responsible_detach'])
+            self += HtmlTableMenu('Team publication', 'guys16', ['team_publication_attach', 'team_publication_detach'])
+        self.span = ['modset_name']
 
     def checkbox_key(self, o):
         if o is None:
             return '_'.join((self.id, 'ckid', ''))
-        id1 = o['comp_moduleset']['id']
-        id2 = o['comp_moduleset_modules']['id']
+        id1 = o.modset_id
+        id2 = o.id
         return '_'.join((self.id, 'ckid', str(id1), str(id2)))
 
     def team_responsible_select_tool(self, label, action, divid, sid, _class=''):
@@ -3459,6 +3468,22 @@ class table_comp_moduleset(HtmlTable):
                 _id=divid,
               ),
             )
+        return d
+
+    def team_publication_attach(self):
+        d = self.team_responsible_select_tool(label="Attach",
+                                              action="team_publication_attach",
+                                              divid="team_publication_attach",
+                                              sid="team_publication_attach_s",
+                                              _class="attach16")
+        return d
+
+    def team_publication_detach(self):
+        d = self.team_responsible_select_tool(label="Detach",
+                                              action="team_publication_detach",
+                                              divid="team_publication_detach",
+                                              sid="team_publication_detach_s",
+                                              _class="detach16")
         return d
 
     def team_responsible_attach(self):
@@ -3735,6 +3760,62 @@ def mod_name_set():
              'change module name from %(on)s to %(d)s in moduleset %(x)s',
              dict(on=oldn, x=modset_name, d=new))
 
+def modset_team_publication_attach(ids=[]):
+    if len(ids) == 0:
+        raise ToolError("no moduleset selected")
+    ids = map(lambda x: x.split('_')[0], ids)
+    group_id = request.vars.team_publication_attach_s
+
+    done = []
+    for id in ids:
+        if 'Manager' not in user_groups():
+            q = db.comp_moduleset_team_responsible.modset_id == id
+            q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+            if db(q).count() == 0:
+                continue
+        q = db.comp_moduleset_team_publication.modset_id == id
+        q &= db.comp_moduleset_team_publication.group_id == group_id
+        if db(q).count() != 0:
+            continue
+        done.append(id)
+        db.comp_moduleset_team_publication.insert(modset_id=id, group_id=group_id)
+    table_modified("comp_moduleset_team_publication")
+    if len(done) == 0:
+        return
+    rows = db(db.comp_moduleset.id.belongs(done)).select(db.comp_moduleset.modset_name)
+    u = ', '.join([r.modset_name for r in rows])
+    _log('moduleset.group.attach',
+         'attached group %(g)s to modulesets %(u)s publications',
+         dict(g=group_role(group_id), u=u))
+
+@auth.requires_membership('CompManager')
+def modset_team_publication_detach(ids=[]):
+    if len(ids) == 0:
+        raise ToolError("no moduleset selected")
+    ids = map(lambda x: x.split('_')[0], ids)
+    group_id = request.vars.team_publication_detach_s
+
+    done = []
+    for id in ids:
+        if 'Manager' not in user_groups():
+            q = db.comp_moduleset_team_responsible.modset_id == id
+            q &= db.comp_moduleset_team_responsible.group_id == group_id
+            q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+            if db(q).count() == 0:
+                continue
+        q = db.comp_moduleset_team_publication.modset_id == id
+        q &= db.comp_moduleset_team_publication.group_id == group_id
+        db(q).delete()
+        done.append(id)
+    if len(done) == 0:
+        return
+    table_modified("comp_moduleset_team_publication")
+    rows = db(db.comp_moduleset.id.belongs(done)).select(db.comp_moduleset.modset_name)
+    u = ', '.join([r.modset_name for r in rows])
+    _log('modset.group.detach',
+         'detached group %(g)s from modsets %(u)s publications',
+         dict(g=group_role(group_id), u=u))
+
 def modset_team_responsible_attach(ids=[]):
     if len(ids) == 0:
         raise ToolError("no moduleset selected")
@@ -3760,7 +3841,7 @@ def modset_team_responsible_attach(ids=[]):
     rows = db(db.comp_moduleset.id.belongs(done)).select(db.comp_moduleset.modset_name)
     u = ', '.join([r.modset_name for r in rows])
     _log('moduleset.group.attach',
-         'attached group %(g)s to modulesets %(u)s',
+         'attached group %(g)s to modulesets %(u)s responsibles',
          dict(g=group_role(group_id), u=u))
 
 @auth.requires_membership('CompManager')
@@ -3786,7 +3867,7 @@ def modset_team_responsible_detach(ids=[]):
     rows = db(db.comp_moduleset.id.belongs(done)).select(db.comp_moduleset.modset_name)
     u = ', '.join([r.modset_name for r in rows])
     _log('modset.group.detach',
-         'detached group %(g)s from modsets %(u)s',
+         'detached group %(g)s from modsets %(u)s responsibles',
          dict(g=group_role(group_id), u=u))
 
 @auth.requires_login()
@@ -3795,24 +3876,13 @@ def ajax_comp_moduleset_col_values():
     col = request.args[0]
     o = db[t.colprops[col].table][col]
 
-    q = db.comp_moduleset.id > 0
-    j = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
-    l1 = db.comp_moduleset_team_responsible.on(j)
-    j = db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
-    l2 = db.comp_moduleset_modules.on(j)
-    j = db.comp_moduleset.id == db.v_comp_moduleset_teams_responsible.modset_id
-    l3 = db.v_comp_moduleset_teams_responsible.on(j)
+    q = db.v_comp_modulesets.id > 0
     if 'Manager' not in user_groups():
-        q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+        q &= db.comp_moduleset_team_publication.group_id.belongs(user_group_ids())
+        q &= db.comp_moduleset_team_publication.modset_id == v_comp_modulesets.modset_id
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    t.object_list = db(q).select(db.comp_moduleset_modules.ALL,
-                                 db.comp_moduleset.modset_name,
-                                 db.comp_moduleset.id,
-                                 db.v_comp_moduleset_teams_responsible.teams_responsible,
-                                 orderby=o,
-                                 left=(l1,l2,l3)
-                                 )
+    t.object_list = db(q).select(db.v_comp_modulesets.ALL, orderby=o)
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
@@ -3839,12 +3909,16 @@ def ajax_comp_moduleset():
                 modset_team_responsible_attach(t.get_checked())
             elif action == 'team_responsible_detach':
                 modset_team_responsible_detach(t.get_checked())
+            elif action == 'team_publication_attach':
+                modset_team_publication_attach(t.get_checked())
+            elif action == 'team_publication_detach':
+                modset_team_publication_detach(t.get_checked())
         except ToolError, e:
             t.flash = str(e)
 
     try:
         if t.form_moduleset_add.accepts(request.vars, formname='add_moduleset'):
-            add_modset_default_team_responsible(request.vars.modset_name)
+            add_default_teams_to_modset(request.vars.modset_name)
             t.form_module_add = t.comp_module_add_sqlform()
             _log('compliance.moduleset.add',
                 'added moduleset %(modset_name)s',
@@ -3862,66 +3936,38 @@ def ajax_comp_moduleset():
     except AttributeError:
         pass
 
-    o = db.comp_moduleset.modset_name|db.comp_moduleset_modules.modset_mod_name
-    g = db.comp_moduleset.modset_name|db.comp_moduleset_modules.id
-    q = db.comp_moduleset.id > 0
-    j = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
-    l1 = db.comp_moduleset_team_responsible.on(j)
-    j = db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
-    l2 = db.comp_moduleset_modules.on(j)
-    j = db.comp_moduleset.id == db.v_comp_moduleset_teams_responsible.modset_id
-    l3 = db.v_comp_moduleset_teams_responsible.on(j)
+    o = db.v_comp_modulesets.modset_name|db.v_comp_modulesets.modset_mod_name
+    q = db.v_comp_modulesets.id > 0
     if 'Manager' not in user_groups():
-        q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+        q &= db.comp_moduleset_team_publication.group_id.belongs(user_group_ids())
+        q &= db.comp_moduleset_team_publication.modset_id == db.v_comp_modulesets.modset_id
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
     if len(request.args) == 1 and request.args[0] == 'line':
         if request.vars.volatile_filters is None:
 
-            n = len(db(q).select(db.comp_moduleset_modules.id, left=(l1,l2,l3), groupby=g))
+            n = len(db(q).select(db.v_comp_modulesets.ALL, db.comp_moduleset_modules.id))
             t.setup_pager(n)
             limitby = (t.pager_start,t.pager_end)
         else:
             n = 0
             limitby = (0, 500)
         t.object_list = db(q).select(
-          db.comp_moduleset_modules.ALL,
-          db.comp_moduleset.modset_name,
-          db.comp_moduleset.id,
-          db.v_comp_moduleset_teams_responsible.teams_responsible,
+          db.v_comp_modulesets.ALL,
           orderby=o,
           limitby=limitby,
-          cacheable=False,
-          left=(l1,l2,l3),
-          groupby=g
+          cacheable=True
         )
         return t.table_lines_data(n)
 
-    rows = db(q).select(db.comp_moduleset_modules.id, left=(l1,l2,l3), groupby=g)
+    rows = db(q).select(db.v_comp_modulesets.id)
     t.setup_pager(len(rows))
-    t.object_list = db(q).select(db.comp_moduleset_modules.ALL,
-                                 db.comp_moduleset.modset_name,
-                                 db.comp_moduleset.id,
-                                 db.v_comp_moduleset_teams_responsible.teams_responsible,
+    t.object_list = db(q).select(db.v_comp_modulesets.ALL,
                                  orderby=o,
-                                 groupby=g,
-                                 left=(l1,l2,l3),
                                  limitby=(t.pager_start,t.pager_end))
 
     return t.html()
-
-def add_modset_default_team_responsible(modset_name):
-    q = db.comp_moduleset.modset_name == modset_name
-    modset_id = db(q).select()[0].id
-    group_id = user_primary_group_id()
-    if group_id is None:
-        group_id = user_private_group_id()
-    if group_id is None:
-        q = db.auth_group.role == 'Manager'
-        group_id = db(q).select()[0].id
-    db.comp_moduleset_team_responsible.insert(modset_id=modset_id, group_id=group_id)
-    table_modified("comp_moduleset_team_responsible")
 
 class table_comp_moduleset_short(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
@@ -4145,13 +4191,15 @@ def ajax_comp_modulesets_short_col_values():
     t.modulesets = r
     col = request.args[0]
     o = db.comp_moduleset[col]
+    g = db.comp_moduleset.id
     q = db.comp_moduleset.id > 0
     if 'Manager' not in user_groups():
-        q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+        q &= db.comp_moduleset_team_publication.modset_id == db.comp_moduleset.id
+        q &= db.comp_moduleset_team_publication.group_id.belongs(user_group_ids())
     for f in r.cols:
         q = _where(q, 'comp_moduleset', r.filter_parse_glob(f), f)
     q = apply_gen_filters(q, r.tables())
-    r.object_list = db(q).select(o, orderby=o)
+    r.object_list = db(q).select(o, orderby=o, groupby=g)
     return r.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
@@ -4271,18 +4319,21 @@ def ajax_comp_modulesets_short():
     t.modulesets = r
 
     o = db.comp_moduleset.modset_name
+    j = db.comp_moduleset.id == db.comp_moduleset_team_publication.modset_id
+    l1 = db.comp_moduleset_team_publication.on(j)
     j = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
-    l = db.comp_moduleset_team_responsible.on(j)
+    l2 = db.comp_moduleset_team_responsible.on(j)
     q = db.comp_moduleset.id > 0
     if 'Manager' not in user_groups():
-        q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+        q &= db.comp_moduleset_team_publication.group_id.belongs(user_group_ids())
     for f in r.cols:
         q = _where(q, 'comp_moduleset', r.filter_parse_glob(f), f)
 
     if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).count()
         r.setup_pager(n)
-        r.object_list = db(q).select(limitby=(r.pager_start,r.pager_end), orderby=o, groupby=o, left=l)
+        r.object_list = db(q).select(limitby=(r.pager_start,r.pager_end),
+                                     orderby=o, groupby=o, left=(l1,l2))
         return r.table_lines_data(n, html=False)
 
     if len(request.args) == 1 and request.args[0] == 'csv':
@@ -5885,8 +5936,8 @@ def _comp_get_moduleset_modules(moduleset, node):
     else:
         return []
     q &= db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
-    q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
-    q &= db.auth_group.id == db.comp_moduleset_team_responsible.group_id
+    q &= db.comp_moduleset.id == db.comp_moduleset_team_publication.modset_id
+    q &= db.auth_group.id == db.comp_moduleset_team_publication.group_id
     q &= db.nodes.team_responsible == db.auth_group.role
     q &= db.nodes.nodename == node
     rows = db(q).select(db.comp_moduleset_modules.modset_mod_name,
@@ -5904,8 +5955,8 @@ def _comp_get_moduleset_svc_modules(moduleset, svcname):
     else:
         return []
     q &= db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
-    q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
-    q &= db.auth_group.id == db.comp_moduleset_team_responsible.group_id
+    q &= db.comp_moduleset.id == db.comp_moduleset_team_publication.modset_id
+    q &= db.auth_group.id == db.comp_moduleset_team_publication.group_id
     q &= db.apps_responsibles.group_id == db.auth_group.id
     q &= db.apps_responsibles.app_id == db.apps.id
     q &= db.apps.app == db.services.svc_app
@@ -6209,8 +6260,8 @@ def comp_moduleset_svc_attachable(svcname, modset_id):
     q &= db.services.svc_app == db.apps.app
     q &= db.apps.id == db.apps_responsibles.app_id
     q &= db.apps_responsibles.group_id == db.auth_group.id
-    q &= db.auth_group.id == db.comp_moduleset_team_responsible.group_id
-    q &= db.comp_moduleset_team_responsible.modset_id == db.comp_moduleset.id
+    q &= db.auth_group.id == db.comp_moduleset_team_publication.group_id
+    q &= db.comp_moduleset_team_publication.modset_id == db.comp_moduleset.id
     q &= db.comp_moduleset.id == modset_id
     rows = db(q).select(db.nodes.team_responsible, cacheable=True)
     if len(rows) == 0:
@@ -6234,8 +6285,8 @@ def comp_ruleset_svc_attachable(svcname, rset_id):
 
 def comp_moduleset_attachable(nodename, modset_id):
     q = db.nodes.team_responsible == db.auth_group.role
-    q &= db.auth_group.id == db.comp_moduleset_team_responsible.group_id
-    q &= db.comp_moduleset_team_responsible.modset_id == db.comp_moduleset.id
+    q &= db.auth_group.id == db.comp_moduleset_team_publication.group_id
+    q &= db.comp_moduleset_team_publication.modset_id == db.comp_moduleset.id
     q &= db.comp_moduleset.id == modset_id
     q &= db.nodes.nodename == nodename
     rows = db(q).select(db.nodes.team_responsible, cacheable=True)
@@ -6352,8 +6403,8 @@ def comp_list_modulesets(pattern='%', auth=("", "")):
 def rpc_comp_list_modulesets(pattern='%', auth=("", "")):
     node = auth[1]
     q = db.comp_moduleset.modset_name.like(pattern)
-    q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
-    q &= db.auth_group.id == db.comp_moduleset_team_responsible.group_id
+    q &= db.comp_moduleset.id == db.comp_moduleset_team_publication.modset_id
+    q &= db.auth_group.id == db.comp_moduleset_team_publication.group_id
     q &= db.nodes.team_responsible == db.auth_group.role
     q &= db.nodes.nodename == node
     rows = db(q).select(db.comp_moduleset.modset_name,
@@ -6521,8 +6572,8 @@ def _comp_get_svc_moduleset_ids(svcname, modulesets=[], slave=False):
     q = db.comp_modulesets_services.modset_svcname == svcname
     q &= db.comp_modulesets_services.slave == slave
     q &= db.comp_modulesets_services.modset_id == db.comp_moduleset.id
-    q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
-    q &= db.auth_group.id == db.comp_moduleset_team_responsible.group_id
+    q &= db.comp_moduleset.id == db.comp_moduleset_team_publication.modset_id
+    q &= db.auth_group.id == db.comp_moduleset_team_publication.group_id
     q &= db.services.svc_name == svcname
     q &= db.services.svc_app == db.apps.app
     q &= db.apps.id == db.apps_responsibles.app_id
@@ -6568,8 +6619,8 @@ def _comp_get_svc_moduleset_data(svcname, modulesets=[], slave=False):
 def _comp_get_moduleset_ids(nodename, modulesets=[]):
     q = db.comp_node_moduleset.modset_node == nodename
     q &= db.comp_node_moduleset.modset_id == db.comp_moduleset.id
-    q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
-    q &= db.auth_group.id == db.comp_moduleset_team_responsible.group_id
+    q &= db.comp_moduleset.id == db.comp_moduleset_team_publication.modset_id
+    q &= db.auth_group.id == db.comp_moduleset_team_publication.group_id
     q &= db.nodes.team_responsible == db.auth_group.role
     q &= db.nodes.nodename == nodename
     if len(modulesets) > 0:
@@ -10239,10 +10290,16 @@ def json_tree_modulesets():
     modset_rset_relations = get_modset_rset_relations()
     modset_relations = get_modset_relations()
 
+    group_names = {}
+    q = db.auth_group.privilege == False
+    rows = db(q).select(db.auth_group.id, db.auth_group.role, cacheable=True)
+    for row in rows:
+        group_names[row.id] = row.role
+
     q = db.comp_moduleset.id > 0
-    q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
+    q &= db.comp_moduleset.id == db.comp_moduleset_team_publication.modset_id
     if 'Manager' not in user_groups():
-        q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+        q &= db.comp_moduleset_team_publication.group_id.belongs(user_group_ids())
     if request.vars.obj_filter is not None:
         q = _where(q, 'comp_moduleset', request.vars.obj_filter, 'modset_name')
     rows = db(q).select(db.comp_moduleset.id,
@@ -10256,21 +10313,38 @@ def json_tree_modulesets():
         if modset_id in modset_tree_nodes:
             visible_modset_ids |= set(modset_tree_nodes[modset_id])
 
+    # caches
+    groups_responsible = {}
+    q = db.comp_moduleset_team_responsible.modset_id.belongs(visible_modset_ids)
+    rows = db(q).select()
+    for row in rows:
+        if row.modset_id not in groups_responsible:
+            groups_responsible[row.modset_id] = [row.group_id]
+        else:
+            groups_responsible[row.modset_id].append(row.group_id)
+
+    groups_publication = {}
+    q = db.comp_moduleset_team_publication.modset_id.belongs(visible_modset_ids)
+    rows = db(q).select()
+    for row in rows:
+        if row.modset_id not in groups_publication:
+            groups_publication[row.modset_id] = [row.group_id]
+        else:
+            groups_publication[row.modset_id].append(row.group_id)
+
+    # modules
     q = db.comp_moduleset.id.belongs(visible_modset_ids)
-    q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
-    q &= db.comp_moduleset_team_responsible.group_id == db.auth_group.id
     j = db.comp_moduleset.id == db.comp_moduleset_modules.modset_id
     l = db.comp_moduleset_modules.on(j)
+    g = db.comp_moduleset.id|db.comp_moduleset_modules.id
     rows = db(q).select(db.comp_moduleset.id,
                         db.comp_moduleset.modset_name,
                         db.comp_moduleset_modules.id,
                         db.comp_moduleset_modules.modset_mod_name,
                         db.comp_moduleset_modules.autofix,
-                        db.auth_group.id,
-                        db.auth_group.role,
                         left=l,
                         orderby=(db.comp_moduleset.modset_name|db.comp_moduleset_modules.modset_mod_name),
-                        groupby=(db.comp_moduleset.id|db.comp_moduleset_modules.id|db.auth_group.id)
+                        groupby=g
            )
 
     modset_done = set([])
@@ -10278,11 +10352,9 @@ def json_tree_modulesets():
     for row in rows:
         if row.comp_moduleset.id not in modset_done:
             if _data is not None:
-                _data['children'] += groups
                 _data['children'] += mods
                 _data['children'] += rulesets
                 obj_id = _data["attr"]["obj_id"]
-                modset_by_objid[obj_id] = _data
                 if obj_id in visible_head_modset_ids:
                     modsets['children'].append(_data)
 
@@ -10291,8 +10363,6 @@ def json_tree_modulesets():
               "data": row.comp_moduleset.modset_name,
               "children": []
             }
-            groups_done = []
-            groups = []
             mods_done = []
             mods = []
             rulesets = []
@@ -10314,22 +10384,29 @@ def json_tree_modulesets():
             mods.append(__data)
             mods_done.append(row.comp_moduleset_modules.id)
 
-        if row.auth_group.id is not None and row.auth_group.id not in groups_done:
-            __data = {
-              "attr": {"id": "grp%d"%row.auth_group.id, "rel": "group", "obj_id": row.auth_group.id},
-              "data": row.auth_group.role,
-            }
-            groups.append(__data)
-            groups_done.append(row.auth_group.id)
-
     if _data is not None:
-        _data['children'] += groups
         _data['children'] += mods
         _data['children'] += rulesets
         obj_id = _data["attr"]["obj_id"]
-        modset_by_objid[obj_id] = _data
         if obj_id in visible_head_modset_ids:
             modsets['children'].append(_data)
+
+    for i, modset in enumerate(modsets["children"]):
+        modset_id = modset["attr"]["obj_id"]
+        for group_id in groups_responsible.get(modset_id, []):
+            __data = {
+              "attr": {"id": "grpresp%d"%group_id, "rel": "group_resp", "obj_id": group_id},
+              "data": group_names.get(group_id, ""),
+            }
+            modsets["children"][i]["children"].append(__data)
+
+        for group_id in groups_publication.get(modset_id, []):
+            __data = {
+              "attr": {"id": "grppub%d"%group_id, "rel": "group_pub", "obj_id": group_id},
+              "data": group_names.get(group_id, ""),
+            }
+            modsets["children"][i]["children"].append(__data)
+        modset_by_objid[modset_id] = modsets["children"][i]
 
     def recurse_modsets(head, id_prefix=""):
         if "obj_id" in head["attr"]:
@@ -10347,7 +10424,7 @@ def json_tree_modulesets():
                     srel = "rset"
                 elif srel == "module":
                     srel = "mod"
-                elif srel == "group":
+                elif srel.startswith("group"):
                     srel = "grp"
                 child["attr"]["id"] = id_prefix+srel+str(child["attr"]["obj_id"])
                 continue
@@ -10738,14 +10815,26 @@ def json_tree_action():
            request.vars.dst_type.startswith("ruleset"):
             return json_tree_action_move_fset_to_rset(request.vars.obj_id,
                                                       request.vars.dst_id)
-        elif request.vars.obj_type == "group" and \
+        elif (request.vars.obj_type == "group" or request.vars.obj_type == "group_pub") and \
            request.vars.dst_type.startswith("ruleset"):
             return json_tree_action_move_group_to_rset(request.vars.obj_id,
-                                                       request.vars.dst_id)
-        elif request.vars.obj_type == "group" and \
+                                                       request.vars.dst_id,
+                                                       gtype="publication")
+        elif request.vars.obj_type == "group_resp" and \
+           request.vars.dst_type.startswith("ruleset"):
+            return json_tree_action_move_group_to_rset(request.vars.obj_id,
+                                                       request.vars.dst_id,
+                                                       gtype="responsible")
+        elif (request.vars.obj_type == "group" or request.vars.obj_type == "group_pub") and \
            request.vars.dst_type == "modset":
             return json_tree_action_move_group_to_modset(request.vars.obj_id,
-                                                         request.vars.dst_id)
+                                                         request.vars.dst_id,
+                                                         gtype="publication")
+        elif request.vars.obj_type == "group_resp" and \
+           request.vars.dst_type == "modset":
+            return json_tree_action_move_group_to_modset(request.vars.obj_id,
+                                                         request.vars.dst_id,
+                                                         gtype="responsible")
         elif request.vars.obj_type == "filter" and \
            request.vars.dst_type == "filterset":
             return json_tree_action_copy_filter_to_fset(request.vars.obj_id,
@@ -10772,6 +10861,12 @@ def json_tree_action():
     elif action == "set_var_class":
         return json_tree_action_set_var_class(request.vars.obj_id,
                                               request.vars.var_class)
+    elif action == "set_modset_group_responsible":
+        return json_tree_action_set_modset_group_responsible(request.vars.obj_id,
+                                                             request.vars.parent_obj_id)
+    elif action == "set_modset_group_publication":
+        return json_tree_action_set_modset_group_publication(request.vars.obj_id,
+                                                             request.vars.parent_obj_id)
     elif action == "set_rset_group_responsible":
         return json_tree_action_set_rset_group_responsible(request.vars.obj_id,
                                                            request.vars.parent_obj_id)
@@ -11416,7 +11511,7 @@ def json_tree_action_import():
           modset_author=u,
           modset_updated=now,
         )
-        add_default_team_responsible_to_modset(modset['modset_name'])
+        add_default_teams_to_modset(modset['modset_name'])
         moduleset_id[modset['modset_name']] = n
         l.append(T("Moduleset added: %(r)s", dict(r=modset["modset_name"])))
 
@@ -11715,7 +11810,7 @@ def json_tree_action_create_moduleset(modset_name):
       modset_updated=datetime.datetime.now(),
     )
     table_modified("comp_moduleset")
-    add_default_team_responsible_to_modset(modset_name)
+    add_default_teams_to_modset(modset_name)
     _log('compliance.moduleset.add',
          'added moduleset %(modset_name)s',
          dict(modset_name=modset_name))
@@ -12224,12 +12319,12 @@ def json_tree_action_detach_group(group_id, obj_id, parent_obj_type, gtype="resp
     if parent_obj_type.startswith("ruleset"):
         return json_tree_action_detach_group_from_rset(group_id, obj_id, gtype=gtype)
     elif parent_obj_type == "modset":
-        return json_tree_action_detach_group_from_modset(group_id, obj_id)
+        return json_tree_action_detach_group_from_modset(group_id, obj_id, gtype=gtype)
     else:
         return {"err": "detach group not supported for this parent object type"}
 
 @auth.requires_membership('CompManager')
-def json_tree_action_detach_group_from_modset(group_id, modset_id):
+def json_tree_action_detach_group_from_modset(group_id, modset_id, gtype="responsible"):
     q = db.comp_moduleset.id == modset_id
     q1 = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
     if 'Manager' not in user_groups():
@@ -12245,13 +12340,14 @@ def json_tree_action_detach_group_from_modset(group_id, modset_id):
     if w is None:
         return {"err": "group not found"}
 
-    q = db.comp_moduleset_team_responsible.modset_id == modset_id
-    q &= db.comp_moduleset_team_responsible.group_id == group_id
+    q = db["comp_moduleset_team_"+gtype].modset_id == modset_id
+    q &= db["comp_moduleset_team_"+gtype].group_id == group_id
     db(q).delete()
-    table_modified("comp_moduleset_team_responsible")
+    table_modified("comp_moduleset_team_"+gtype)
     _log('compliance.moduleset.detach',
-         'detach group %(role)s from moduleset %(modset_name)s',
+         'detach %(gtype)s group %(role)s from moduleset %(modset_name)s',
          dict(modset_name=v.comp_moduleset.modset_name,
+              gtype=gtype,
               role=w.role))
     return "0"
 
@@ -12552,7 +12648,7 @@ def json_tree_action_detach_filterset_from_rset(rset_id):
     return 0
 
 @auth.requires_membership('CompManager')
-def json_tree_action_move_group_to_modset(group_id, modset_id):
+def json_tree_action_move_group_to_modset(group_id, modset_id, gtype="publication"):
     ug = user_groups()
     q = db.comp_moduleset.id == modset_id
     q1 = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
@@ -12572,17 +12668,18 @@ def json_tree_action_move_group_to_modset(group_id, modset_id):
     if 'Manager' not in ug and int(group_id) not in user_group_ids():
         return {"err": "you can't attach a group you are not a member of"}
 
-    q = db.comp_moduleset_team_responsible.modset_id == modset_id
-    q &= db.comp_moduleset_team_responsible.group_id == group_id
+    q = db["comp_moduleset_team_"+gtype].modset_id == modset_id
+    q &= db["comp_moduleset_team_"+gtype].group_id == group_id
     if db(q).count() > 0:
         return "0"
 
-    db.comp_moduleset_team_responsible.update_or_insert(modset_id=modset_id,
-                                                        group_id=group_id)
-    table_modified("comp_moduleset_team_responsible")
+    db["comp_moduleset_team_"+gtype].update_or_insert(modset_id=modset_id,
+                                                      group_id=group_id)
+    table_modified("comp_moduleset_team_"+gtype)
     _log('compliance.moduleset.change',
-         'attach group %(role)s to moduleset %(modset_name)s',
+         'attach %(gtype)s group %(role)s to moduleset %(modset_name)s',
          dict(modset_name=v.comp_moduleset.modset_name,
+              gtype=gtype,
               role=w.role))
     return "0"
 
@@ -12651,6 +12748,68 @@ def json_tree_action_copy_rset_to_modset(rset_id, modset_id):
     return "0"
 
 @auth.requires_membership('CompManager')
+def json_tree_action_set_modset_group_responsible(group_id, modset_id):
+    ug = user_groups()
+    q = db.comp_moduleset.id == modset_id
+    q1 = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
+    if 'Manager' not in ug:
+        q1 &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "moduleset not found or not owned by you"}
+
+    q = db.auth_group.id == group_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        return {"err": "group not found"}
+
+    q = db.comp_moduleset_team_publication.modset_id == modset_id
+    q &= db.comp_moduleset_team_publication.group_id == group_id
+    db(q).delete()
+
+    q = db.comp_moduleset_team_responsible.modset_id == modset_id
+    q &= db.comp_moduleset_team_responsible.group_id == group_id
+    n = db(q).count()
+    if n > 0:
+        return "0"
+    db.comp_moduleset_team_responsible.insert(modset_id=modset_id,
+                                              group_id=group_id)
+    return "0"
+
+@auth.requires_membership('CompManager')
+def json_tree_action_set_modset_group_publication(group_id, modset_id):
+    ug = user_groups()
+    q = db.comp_moduleset.id == modset_id
+    q1 = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
+    if 'Manager' not in ug:
+        q1 &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        return {"err": "moduleset not found or not owned by you"}
+
+    q = db.auth_group.id == group_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        return {"err": "group not found"}
+
+    q = db.comp_moduleset_team_responsible.modset_id == modset_id
+    q &= db.comp_moduleset_team_responsible.group_id == group_id
+    db(q).delete()
+
+    q = db.comp_moduleset_team_publication.modset_id == modset_id
+    q &= db.comp_moduleset_team_publication.group_id == group_id
+    n = db(q).count()
+    if n > 0:
+        return "0"
+    db.comp_moduleset_team_publication.insert(modset_id=modset_id,
+                                            group_id=group_id)
+    return "0"
+
+@auth.requires_membership('CompManager')
 def json_tree_action_set_rset_group_responsible(group_id, rset_id):
     ug = user_groups()
     q = db.comp_rulesets.id == rset_id
@@ -12713,7 +12872,7 @@ def json_tree_action_set_rset_group_publication(group_id, rset_id):
     return "0"
 
 @auth.requires_membership('CompManager')
-def json_tree_action_move_group_to_rset(group_id, rset_id):
+def json_tree_action_move_group_to_rset(group_id, rset_id, gtype="publication"):
     ug = user_groups()
     q = db.comp_rulesets.id == rset_id
     q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
@@ -12733,17 +12892,18 @@ def json_tree_action_move_group_to_rset(group_id, rset_id):
     if 'Manager' not in ug and int(group_id) not in user_group_ids():
         return {"err": "you can't attach a group you are not a member of"}
 
-    q = db.comp_ruleset_team_publication.ruleset_id == rset_id
-    q &= db.comp_ruleset_team_publication.group_id == group_id
+    q = db["comp_ruleset_team_"+gtype].ruleset_id == rset_id
+    q &= db["comp_ruleset_team_"+gtype].group_id == group_id
     if db(q).count() > 0:
         return "0"
 
-    db.comp_ruleset_team_publication.update_or_insert(ruleset_id=rset_id,
+    db["comp_ruleset_team_"+gtype].update_or_insert(ruleset_id=rset_id,
                                                       group_id=group_id)
-    table_modified("comp_ruleset_team_publication")
+    table_modified("comp_ruleset_team_"+gtype)
     _log('compliance.ruleset.change',
-         'attach group %(role)s to ruleset %(rset_name)s publications',
+         'attach %(gtype)s group %(role)s to ruleset %(rset_name)s publications',
          dict(rset_name=v.comp_rulesets.ruleset_name,
+              gtype=gtype,
               role=w.role))
     return "0"
 
@@ -12777,7 +12937,7 @@ def json_tree_action_clone_moduleset(modset_id):
                                          modset_mod_author=row.modset_mod_author,
                                          modset_mod_updated=datetime.datetime.now())
     table_modified("comp_moduleset_modules")
-    add_default_team_responsible_to_modset(clone_modset_name)
+    add_default_teams_to_modset(clone_modset_name)
 
     # clone moduleset-ruleset attachments
     q = db.comp_moduleset_ruleset.modset_id == modset_id
@@ -12983,6 +13143,10 @@ def json_tree_action_delete_moduleset(modset_id):
     q = db.comp_modulesets_services.modset_id == modset_id
     db(q).delete()
     table_modified("comp_modulesets_services")
+
+    q = db.comp_moduleset_team_publication.modset_id == modset_id
+    db(q).delete()
+    table_modified("comp_moduleset_team_publication")
 
     q = db.comp_moduleset_team_responsible.modset_id == modset_id
     db(q).delete()

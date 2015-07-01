@@ -356,6 +356,10 @@ class rest_delete_group(rest_delete_handler):
         q = db.comp_moduleset_team_responsible.group_id == row.id
         db(q).delete()
 
+        # modset publications
+        q = db.comp_moduleset_team_publication.group_id == row.id
+        db(q).delete()
+
         # ruleset responsibles
         q = db.comp_ruleset_team_responsible.group_id == row.id
         db(q).delete()

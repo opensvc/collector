@@ -4668,3 +4668,34 @@ group by
   r.id, rv.id, rr.id;
 
 
+create table comp_moduleset_team_publication like comp_moduleset_team_responsible;
+insert into comp_moduleset_team_publication select * from comp_moduleset_team_responsible;
+
+create view v_comp_moduleset_teams_publication as (select m.id as modset_id, group_concat(g.role separator ', ') as teams_publication from comp_moduleset m left join comp_moduleset_team_publication j on m.id=j.modset_id left join auth_group g on j.group_id=g.id group by m.id);
+
+create view v_comp_modulesets as
+select
+  ms.id AS modset_id,
+  ms.modset_name,
+  ms.modset_author,
+  ms.modset_updated,
+  m.id as id,
+  m.modset_mod_name,
+  m.modset_mod_author,
+  m.modset_mod_updated,
+  m.autofix,
+  group_concat(distinct rg.role separator ', ') AS teams_responsible,
+  group_concat(distinct pg.role separator ', ') AS teams_publication
+from
+  comp_moduleset ms
+  left join comp_moduleset_modules m on ms.id = m.modset_id
+  left join comp_moduleset_team_responsible rt on ms.id = rt.modset_id
+  left join comp_moduleset_team_publication pt on ms.id = pt.modset_id
+  left join auth_group rg on rt.group_id = rg.id
+  left join auth_group pg on pt.group_id = pg.id
+group by
+  m.id, ms.id;
+
+drop view v_comp_moduleset_teams_publication;
+drop view v_comp_moduleset_teams_responsible;
+

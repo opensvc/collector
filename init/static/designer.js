@@ -673,6 +673,14 @@ jstree_data = {
        h["remove"]["_disabled"] = true
        h["rename"]["_disabled"] = true
        if (node.parents("li").attr("rel").indexOf("ruleset") == 0) {
+          var set_group_publication = "set_rset_group_publication"
+          var set_group_responsible = "set_rset_group_responsible"
+       } else if (node.parents("li").attr("rel") == "modset") {
+          var set_group_publication = "set_modset_group_publication"
+          var set_group_responsible = "set_modset_group_responsible"
+       }
+       if ((node.parents("li").attr("rel").indexOf("ruleset") == 0) || 
+           (node.parents("li").attr("rel") == "modset")) {
          h["set_gtype"] = {
            "label": "Set group role",
            "separator_before": false,
@@ -688,12 +696,12 @@ jstree_data = {
                    type: "POST",
                    url: designer.url_action,
                    data: {
-                    "operation": "set_rset_group_publication",
+                    "operation": set_group_publication,
                     "obj_id": obj.attr("obj_id"),
                     "parent_obj_id": obj.parents("li").attr("obj_id")
                    },
                    success: function(msg){
-                     $("[name=catree]:visible").find("[obj_id="+obj.attr("obj_id")+"]").attr("rel", "group_pub")
+                     $("[name=catree]:visible").find("li[obj_id="+obj.parents("li").attr("obj_id")+"][rel="+obj.parents("li").attr("rel")+"]").children("ul").children("li[obj_id="+obj.attr("obj_id")+"]").attr("rel", "group_pub")
                      json_status(msg)
                    }
                  });
@@ -707,12 +715,12 @@ jstree_data = {
                    type: "POST",
                    url: designer.url_action,
                    data: {
-                    "operation": "set_rset_group_responsible",
+                    "operation": set_group_responsible,
                     "obj_id": obj.attr("obj_id"),
                     "parent_obj_id": obj.parents("li").attr("obj_id")
                    },
                    success: function(msg){
-                     $("[name=catree]:visible").find("[obj_id="+obj.attr("obj_id")+"]").attr("rel", "group_resp")
+                     $("[name=catree]:visible").find("li[obj_id="+obj.parents("li").attr("obj_id")+"][rel="+obj.parents("li").attr("rel")+"]").children("ul").children("li[obj_id="+obj.attr("obj_id")+"]").attr("rel", "group_resp")
                      json_status(msg)
                    }
                  });
@@ -749,7 +757,7 @@ jstree_data = {
                    l = [parent_id, child_id]
                    id = l.join("_")
                    $("[name=catree]:visible").each(function(){
-                     $(this).jstree("delete_node", "[id$="+id+"]")
+                     $(this).jstree("delete_node", "[id$="+id+"][rel="+obj.attr("rel")+"]")
                    })
 
                  t.delete_node(obj)
@@ -790,7 +798,7 @@ jstree_data = {
                    l = [parent_id, child_id]
                    id = l.join("_")
                    $("[name=catree]:visible").each(function(){
-                     $(this).jstree("delete_node", "[id$="+id+"]")
+                     $(this).jstree("delete_node", "[id$="+id+"][rel="+obj.attr("rel")+"]")
                    })
 
                  t.delete_node(obj)
@@ -981,8 +989,8 @@ jstree_data = {
         if (m.o.attr('rel')=="variable" && m.np.attr('rel').indexOf("ruleset")==0) { return true }
         if (m.o.attr('rel')=="filter" && m.np.attr('rel')=="filterset") { return true }
         if (m.o.attr('rel')=="filterset" && m.np.attr('rel')=="filterset") { return true }
-        if (m.o.attr('rel')=="group" && m.np.attr('rel').indexOf("ruleset")==0) { return true }
-        if (m.o.attr('rel')=="group" && m.np.attr('rel')=="modset") { return true }
+        if (m.o.attr('rel').indexOf("group")==0 && m.np.attr('rel').indexOf("ruleset")==0) { return true }
+        if (m.o.attr('rel').indexOf("group")==0 && m.np.attr('rel')=="modset") { return true }
         if (m.o.attr('rel')=="modset" && m.np.attr('rel')=="modset") { return true }
         return false
      }

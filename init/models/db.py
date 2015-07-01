@@ -1013,6 +1013,20 @@ db.define_table('sym_upload',
     Field('batched','integer', writable=False),
     migrate=False)
 
+db.define_table('v_comp_modulesets',
+    Field('modset_id','integer'),
+    Field('modset_name','string'),
+    Field('modset_author','string'),
+    Field('modset_updated','datetime'),
+    Field('id','integer'),
+    Field('modset_mod_name','string'),
+    Field('modset_mod_author','string'),
+    Field('modset_mod_updated','datetime'),
+    Field('autofix','boolean', default=False),
+    Field('teams_responsible','string'),
+    Field('teams_publication','string'),
+    migrate=False)
+
 db.define_table('comp_moduleset',
     Field('modset_name','string'),
     Field('modset_author','string'),
@@ -1341,14 +1355,14 @@ db.define_table('auth_node',
     Field('uuid', 'string'),
     migrate=False)
 
-db.define_table('v_comp_moduleset_teams_responsible',
-    Field('modset_id', 'integer'),
-    Field('teams_responsible', 'string'),
-    migrate=False)
-
 db.define_table('v_gen_filterset_teams_responsible',
     Field('fset_id', 'integer'),
     Field('teams_responsible', 'string'),
+    migrate=False)
+
+db.define_table('comp_moduleset_team_publication',
+    Field('modset_id','string'),
+    Field('group_id','string'),
     migrate=False)
 
 db.define_table('comp_moduleset_team_responsible',
