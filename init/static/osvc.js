@@ -171,8 +171,9 @@ function tag_input_candidates(init_data, tag, tag_name) {
   tid = init_data.tid
   prefix = $("#"+tid).find(".tag_input").val()
   if (prefix.length == 0) {
-    prefix = encodeURIComponent("%")
+    prefix = "%"
   }
+  prefix = encodeURIComponent(prefix)
   if ("nodename" in init_data) {
     var url = $(location).attr("origin") + "/init/tags/call/json/list_node_avail_tags/"+init_data.nodename+"/"+prefix
   } else if ("svcname" in init_data) {
