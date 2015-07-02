@@ -997,6 +997,8 @@ def ajax_svcmon():
     t.csv_orderby = o
     if len(request.args) == 1 and request.args[0] == 'csv':
         return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'data':
         if request.vars.volatile_filters is None:
             n = db(q).count()

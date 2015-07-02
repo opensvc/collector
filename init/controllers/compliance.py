@@ -564,6 +564,7 @@ class table_comp_explicit_rules(HtmlTable):
         self.ajax_col_values = 'ajax_comp_explicit_rules_col_values'
         self.checkbox_id_table = 'v_comp_explicit_rulesets'
         self.dataable = True
+        self.commonalityable = False
 
 @auth.requires_login()
 def ajax_comp_explicit_rules_col_values():
@@ -622,6 +623,10 @@ def ajax_comp_explicit_rules():
         r.object_list = db(q).select(*cols, limitby=(r.pager_start,r.pager_end),
                                      orderby=o, groupby=o, cacheable=True)
         return r.table_lines_data(n, html=False)
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        r.csv_q = q
+        r.csv_groupby = o
+        return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'csv':
         r.csv_q = q
         r.csv_orderby = o
@@ -668,8 +673,11 @@ def ajax_comp_rulesets_services():
         t.object_list = db(q).select(*cols, limitby=(t.pager_start,t.pager_end),
                                      orderby=o, cacheable=True)
         return t.table_lines_data(n, html=False)
-
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        t.csv_q = q
+        return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'csv':
+        t.csv_q = q
         return t.csv()
 
 @auth.requires_login()
@@ -698,8 +706,11 @@ def ajax_comp_rulesets_nodes():
         t.object_list = db(q).select(*cols, limitby=(t.pager_start,t.pager_end),
                                      orderby=o, cacheable=True)
         return t.table_lines_data(n, html=False)
-
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        t.csv_q = q
+        return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'csv':
+        t.csv_q = q
         return t.csv()
 
 class table_comp_rulesets(HtmlTable):
@@ -3998,6 +4009,7 @@ class table_comp_moduleset_short(HtmlTable):
         self.exportable = False
         self.columnable = False
         self.dataable = True
+        self.commonalityable = False
         self.checkbox_id_table = 'comp_moduleset'
         self.ajax_col_values = 'ajax_comp_modulesets_short_col_values'
 
@@ -4275,7 +4287,9 @@ def ajax_comp_modulesets_services():
         cols = t.get_visible_columns()
         t.object_list = db(q).select(*cols, limitby=(t.pager_start,t.pager_end), orderby=o)
         return t.table_lines_data(n, html=False)
-
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        t.csv_q = q
+        return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'csv':
         t.csv_q = q
         t.csv_o = o
@@ -4306,7 +4320,9 @@ def ajax_comp_modulesets_nodes():
         cols = t.get_visible_columns()
         t.object_list = db(q).select(*cols, limitby=(t.pager_start,t.pager_end), orderby=o)
         return t.table_lines_data(n, html=False)
-
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        t.csv_q = q
+        return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'csv':
         t.csv_q = q
         t.csv_o = o

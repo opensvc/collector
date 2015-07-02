@@ -283,6 +283,9 @@ def ajax_tags():
         t.csv_q = q
         t.csv_orderby = o
         return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        t.csv_q = q
+        return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).select(db.tags.id.count()).first()(db.tags.id.count())
         t.setup_pager(n)
@@ -387,6 +390,9 @@ def ajax_tagattach():
         t.csv_q = q
         t.csv_orderby = o
         return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        t.csv_q = q
+        return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).select(db.v_tags_full.id.count()).first()(db.v_tags_full.id.count())
         t.setup_pager(n)

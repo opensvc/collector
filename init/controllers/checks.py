@@ -873,6 +873,10 @@ def ajax_checks():
         t.csv_limit = 15000
         t.csv_left = l
         return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        t.csv_q = q
+        t.csv_left = l
+        return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'data':
         if request.vars.volatile_filters is None:
             n = db(q).select(db.checks_live.id.count(), left=l).first()(db.checks_live.id.count())
