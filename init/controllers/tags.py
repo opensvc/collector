@@ -183,10 +183,11 @@ def list_node_avail_tags(nodename, prefix):
     tag_ids = [r["tag_id"] for r in l]
     pattern = '|'.join([r["tag_exclude"] for r in l if r["tag_exclude"] is not None])
 
-    q = ~db.tags.id.belongs(tag_ids)
-    q &= db.tags.tag_name.like(prefix+"%")
-    qx = _where(q, "tags", pattern, "tag_name")
-    q &= ~qx
+    q = db.tags.tag_name.like(prefix+"%")
+    q &= ~db.tags.id.belongs(tag_ids)
+    if len(pattern) > 0:
+        qx = _where(q, "tags", pattern, "tag_name")
+        q &= ~qx
     rows = db(q).select(orderby=db.tags.tag_name)
     if len(rows) == 0:
         return []
