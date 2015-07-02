@@ -172,6 +172,30 @@ class rest_get_service_nodes(rest_get_table_handler):
 
 
 #
+class rest_get_service_resources(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "Display service resources on all nodes.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/resources?props=rid,res_status",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/services/<svcname>/resources",
+          tables=["resmon"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, svcname, **vars):
+        q = db.resmon.svcname == svcname
+        q = _where(q, 'resmon', domain_perms(), 'svcname')
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+
+#
 class rest_get_service_node(rest_get_line_handler):
     def __init__(self):
         desc = [
@@ -192,6 +216,31 @@ class rest_get_service_node(rest_get_line_handler):
         q = db.svcmon.mon_svcname == svcname
         q &= db.svcmon.mon_nodname == nodename
         q = _where(q, 'svcmon', domain_perms(), 'mon_svcname')
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+
+#
+class rest_get_service_node_resources(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "Display service instance resources on the specified node.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/nodes/mynode/resources?props=rid,res_status",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/services/<svcname>/nodes/<nodename>/resources",
+          tables=["resmon"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, svcname, nodename, **vars):
+        q = db.resmon.svcname == svcname
+        q &= db.resmon.nodename == nodename
+        q = _where(q, 'resmon', domain_perms(), 'svcname')
         self.set_q(q)
         return self.prepare_data(**vars)
 
