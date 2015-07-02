@@ -220,7 +220,42 @@ class table_tags(HtmlTable):
 
         ug = user_groups()
         if 'Manager' in ug or 'TagManager' in ug:
-            self.additional_tools.append('t_tag_del')
+            self.form_tag_add = self.tag_add_sqlform()
+            self += HtmlTableMenu('Tag', 'tag16', [
+              't_tag_add',
+              't_tag_del'
+            ])
+
+    @auth.requires_membership('CompManager')
+    def tag_add_sqlform(self):
+        f = SQLFORM(
+                 db.tags,
+                 labels={
+                  'tag_name': T('Tag name'),
+                  'tag_exclude': T('Tag exclusions')
+                 },
+                 _name='form_tag_add',
+            )
+        return f
+
+    def t_tag_add(self):
+        d = DIV(
+              A(
+                T("Add tag"),
+                _class='add16',
+                _onclick="""
+                  click_toggle_vis(event,'%(div)s', 'block');
+                """%dict(div='tag_add'),
+              ),
+              DIV(
+                self.form_tag_add,
+                _style='display:none',
+                _class='white_float',
+                _name='tag_add',
+                _id='tag_add',
+              ),
+            )
+        return d
 
     def t_tag_del(self):
         d = DIV(
@@ -232,7 +267,6 @@ class table_tags(HtmlTable):
                                   text=T("Deleting tags also deletes their attachments to nodes and services. Please confirm tags deletion"),
                                  ),
               ),
-              _class='floatw',
             )
         return d
 
@@ -297,6 +331,22 @@ def ajax_tags():
 @auth.requires_login()
 def tags():
     t = table_tags('tags', 'ajax_tags')
+
+    try:
+        if t.form_tag_add.accepts(request.vars, formname='add_tag'):
+            _log("tag",
+                 "tag '%(tag_name)s' created",
+                 dict(tag_name=request.vars.tag_name)
+            )
+            table_modified("tags")
+            redirect(URL(r=request))
+        elif t.form_ruleset_add.errors:
+            response.flash = T("errors in form")
+    except AttributeError:
+        pass
+    except ToolError as e:
+        t.flash = str(e)
+
     t = DIV(
           t.html(),
           _id='tags',
