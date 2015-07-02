@@ -71,7 +71,7 @@ function e_tag(tag_data, init_data) {
       $(this).removeClass("tag_del")
     }
   })
-  e.bind("click", function(){
+  e.bind("click", function(event){
     event.stopPropagation()
     if (!init_data.responsible) {
       return
@@ -132,10 +132,10 @@ function e_add_tag(init_data) {
     s = "<input class='tag_input'></input>"
     $(this).html(s)
     e = $(this).find(".tag_input")
-    e.bind("keyup", function(){
+    e.bind("keyup", function(event){
       tag = $(this).parent()
       tag_name = $(this).val()
-      tag_input_keyup(init_data, tag, tag_name)
+      tag_input_keyup(event, init_data, tag, tag_name)
     })
     e.focus()
   })
@@ -198,7 +198,7 @@ function tag_input_candidates(init_data, tag, tag_name) {
   init_tags(data)
 }
 
-function tag_input_keyup(init_data, tag, tag_name) {
+function tag_input_keyup(event, init_data, tag, tag_name) {
   if (!is_enter(event)) {
     tag.removeClass("tag_create")
     tag.find("input").removeClass("tag_create")
