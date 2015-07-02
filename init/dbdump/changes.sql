@@ -4700,3 +4700,5 @@ group by
 drop view v_comp_moduleset_teams_publication;
 drop view v_comp_moduleset_teams_responsible;
 
+alter table apps change column `desc` description text;
+
