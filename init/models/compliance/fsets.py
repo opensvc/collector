@@ -262,7 +262,10 @@ def comp_get_matching_fset_ids(fset_ids=None, nodename=None, svcname=None, slave
 
     for fset_id, fset_name in fset_ids:
         #print fset_id, fset_name
-        match = recurse_match(fset_data[fset_id])
+	if fset_id in fset_data:
+            match = recurse_match(fset_data[fset_id])
+	else:
+	    match = False
         #print "=>", match
         if match:
             matching_fsets.append(fset_id)
