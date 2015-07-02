@@ -13,6 +13,13 @@ apps_colprops = {
              img='svc',
              display=True,
             ),
+    'description': HtmlTableColumn(
+             title='Description',
+             table='apps',
+             field='description',
+             img='edit16',
+             display=True,
+            ),
     'app_team_ops': HtmlTableColumn(
              title='Ops team',
              table='apps',

@@ -12995,7 +12995,7 @@ def json_tree_action_clone_ruleset(rset_id):
                                           var_value=row.var_value,
                                           var_author=user_name())
     table_modified("comp_rulesets_variables")
-    add_default_team_responsible(clone_rset_name)
+    add_default_teams(clone_rset_name)
 
     # clone parent to children relations
     q = db.comp_rulesets_rulesets.parent_rset_id==rset_id
@@ -13079,7 +13079,7 @@ def json_tree_action_delete_ruleset(rset_id):
     if 'Manager' not in user_groups():
         q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
         q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
-    rows = db(q&q1).select(db.comp_rulesets.ALL, cacheable=True)
+    rows = db(q).select(db.comp_rulesets.ALL, cacheable=True)
     v = rows.first()
     if v is None:
         return {"err": "ruleset not found or not owned by you"}
