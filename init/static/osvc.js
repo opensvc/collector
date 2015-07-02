@@ -173,6 +173,7 @@ function tag_input_candidates(init_data, tag, tag_name) {
   if (prefix.length == 0) {
     prefix = "%"
   }
+  prefix = prefix.replace(/\//, "_")
   prefix = encodeURIComponent(prefix)
   if ("nodename" in init_data) {
     var url = $(location).attr("origin") + "/init/tags/call/json/list_node_avail_tags/"+init_data.nodename+"/"+prefix
