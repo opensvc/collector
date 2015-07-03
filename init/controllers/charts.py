@@ -228,7 +228,7 @@ def format_metric(metric_id):
                _onclick="""$(this).siblings().toggle()""",
              ),
              DIV(
-               "https://"+request.env.http_host+URL(r=request, f='metric', vars={'metric_id': request.vars.metric_id}),
+               "https://"+request.env.http_host+URL(r=request, f='metric', vars={'metric_id': metric_id}),
                _style="display:none",
              ),
            )
@@ -520,7 +520,7 @@ def ajax_chart_plot(chart_id):
                _onclick="""$(this).siblings().toggle()""",
              ),
              DIV(
-               "https://"+request.env.http_host+URL(r=request, f='chart', vars={'chart_id': request.vars.chart_id}),
+               "https://"+request.env.http_host+URL(r=request, f='chart', vars={'chart_id': chart_id}),
                _style="display:none",
              ),
            )
@@ -780,16 +780,16 @@ def ajax_report(report_id):
     except Exception as e:
         return T('Report definition error')+": "+str(e)
 
-    return do_report(report.report_yaml)
+    return do_report(report_id, report.report_yaml)
 
-def do_report(report_yaml):
+def do_report(report_id, report_yaml):
     link = DIV(
              A(
                IMG(_src=URL(r=request, c='static', f='link16.png')),
                _onclick="""$(this).siblings().toggle()""",
              ),
              DIV(
-               "https://"+request.env.http_host+URL(r=request, f='report', vars={'report_id': request.vars.report_id}),
+               "https://"+request.env.http_host+URL(r=request, f='report', vars={'report_id': report_id}),
                _style="display:none",
              ),
            )
