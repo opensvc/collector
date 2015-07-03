@@ -9369,6 +9369,7 @@ function refresh_select(e) {
 
 function refresh_div(e) {
   return function(data) {
+    data = parse_data(data)
     if (data instanceof Array) {
       s = data.join("\\n")
     } else {
