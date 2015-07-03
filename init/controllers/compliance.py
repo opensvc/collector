@@ -9372,6 +9372,8 @@ function refresh_div(e) {
     data = parse_data(data)
     if (data instanceof Array) {
       s = data.join("\\n")
+    } else if (("data" in data) && (data["data"].length == 0)) {
+      s = T("not found")
     } else {
       s = data
     }
@@ -9470,7 +9472,7 @@ function replace_references(s) {
       val = $("#"+id).val()
     }
     if ((val == undefined) || (val == "")) {
-      return s
+      val = "ERR_REFERENCE_NOT_FOUND"
     }
     re = new RegExp(match[0])
     s = s.replace(re, val)
@@ -9482,7 +9484,7 @@ function form_input_functions (o) {
     l = $(o).attr("id").split("_")
     index = l[l.length-1]
     l = o.attr("trigger_args").split("@@")
-    args = []
+    var data = {}
     for (i=0; i<l.length; i++) {
       arg = replace_references(l[i])
       if (!arg) {
@@ -9490,24 +9492,23 @@ function form_input_functions (o) {
       }
       parm = arg.substring(0, arg.indexOf("="))
       val = arg.substring(arg.indexOf("=")+1, arg.length)
-      args.push(encodeURIComponent(parm)+"="+encodeURIComponent(val))
+      data[parm] = val
     }
-    args = args.join("&")
     trigger_fn = replace_references(o.attr("trigger_fn"))
     if (!trigger_fn) { return; }
     if (trigger_fn[0] == "/") {
-      url = "%(url_api)s"+trigger_fn+"?"+args
+      url = "%(url_api)s"+trigger_fn
     } else {
-      url = "%(url)s/call/json/"+trigger_fn+"?"+args
+      url = "%(url)s/call/json/"+trigger_fn
     }
     if (o.get(0).tagName == 'SELECT') {
-      $.getJSON(url, refresh_select(o))
+      $.getJSON(url, data, refresh_select(o))
     } else if (o.get(0).tagName == 'INPUT') {
-      $.getJSON(url, refresh_input(o))
+      $.getJSON(url, data, refresh_input(o))
     } else if (o.get(0).tagName == 'TEXTAREA') {
-      $.getJSON(url, refresh_textarea(o))
+      $.getJSON(url, data, refresh_textarea(o))
     } else {
-      $.getJSON(url, refresh_div(o))
+      $.getJSON(url, data, refresh_div(o))
     }
 }
 
