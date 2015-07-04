@@ -9475,17 +9475,21 @@ function replace_references(s) {
   regex = /#\w+/g
   while (match = regex.exec(s)) {
     _match = match[0].replace(/^#/, "")
-    id = "%(xid)s"+_match+"_"+index
-    if ($('#'+id).length == 0) {
-      continue
-    }
-    if ($('#'+id).get(0).tagName == 'SELECT') {
-      val = $("#"+id+" option:selected").val()
+    if (_match == "user_id") {
+      val = %(uid)d
     } else {
-      val = $("#"+id).val()
-    }
-    if ((val == undefined) || (val == "")) {
-      val = "ERR_REFERENCE_NOT_FOUND"
+      id = "%(xid)s"+_match+"_"+index
+      if ($('#'+id).length == 0) {
+        continue
+      }
+      if ($('#'+id).get(0).tagName == 'SELECT') {
+        val = $("#"+id+" option:selected").val()
+      } else {
+        val = $("#"+id).val()
+      }
+      if ((val == undefined) || (val == "")) {
+        val = "ERR_REFERENCE_NOT_FOUND"
+      }
     }
     re = new RegExp(match[0])
     s = s.replace(re, val)
@@ -9652,6 +9656,7 @@ $("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").bind('ch
 })
 $("input[name^=%(xid)s][readonly=on],select[name^=%(xid)s][readonly=on],textarea[name^=%(xid)s][readonly=on]").trigger('change')
 """%dict(
+     uid = auth.user_id,
      idx=len(l),
      xid=forms_xid(''),
      url=str(URL(r=request, c='forms', f='a'))[:-2],
