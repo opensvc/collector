@@ -24,3 +24,4 @@ __init__.py
 *.log
 *.log.*
 init/modules/replication_config.py
+init/static/custom.css
