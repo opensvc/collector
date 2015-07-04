@@ -44,7 +44,7 @@ class rest_get_users(rest_get_table_handler):
         )
 
     def handler(self, **vars):
-        q = allowed_user_ids_q(id)
+        q = allowed_user_ids_q()
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -70,7 +70,7 @@ class rest_get_user(rest_get_line_handler):
         )
 
     def handler(self, id, **vars):
-        q = allowed_user_ids_q(id)
+        q = allowed_user_ids_q()
         q &= user_id_q(id)
         self.set_q(q)
         return self.prepare_data(**vars)
@@ -97,7 +97,7 @@ class rest_get_user_apps(rest_get_table_handler):
         )
 
     def handler(self, id, **vars):
-        q = allowed_user_ids_q(id)
+        q = allowed_user_ids_q()
         q &= user_id_q(id)
         q &= db.apps_responsibles.group_id == db.auth_membership.group_id
         q &= db.auth_membership.user_id == db.auth_user.id
@@ -127,7 +127,7 @@ class rest_get_user_nodes(rest_get_table_handler):
         )
 
     def handler(self, id, **vars):
-        q = allowed_user_ids_q(id)
+        q = allowed_user_ids_q()
         q &= user_id_q(id)
         q &= db.nodes.team_responsible == db.auth_group.role
         q &= db.auth_group.id == db.auth_membership.group_id
@@ -157,7 +157,7 @@ class rest_get_user_services(rest_get_table_handler):
         )
 
     def handler(self, id, **vars):
-        q = allowed_user_ids_q(id)
+        q = allowed_user_ids_q()
         q &= user_id_q(id)
         q &= db.services.svc_app == db.apps.app
         q &= db.apps.id == db.apps_responsibles.app_id
@@ -187,7 +187,7 @@ class rest_get_user_groups(rest_get_table_handler):
         )
 
     def handler(self, id, **vars):
-        q = allowed_user_ids_q(id)
+        q = allowed_user_ids_q()
         q &= user_id_q(id)
         q &= db.auth_membership.user_id == db.auth_user.id
         q &= db.auth_group.id == db.auth_membership.group_id
