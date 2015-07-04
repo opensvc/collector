@@ -9448,6 +9448,8 @@ function refresh_textarea(e) {
       if (data.length > 2) {
         h = 1.3 * data.length
       }
+    } else if (("data" in data) && (data["data"].length == 0)) {
+      s = T("not found")
     } else {
       s = data
     }
