@@ -639,26 +639,29 @@ def ajax_comp_rulesets_services():
     t = table_comp_rulesets_services('crs2', 'ajax_comp_rulesets_services')
     t.rulesets = r
 
-    if len(request.args) == 1 and request.args[0] == 'attach_ruleset':
-        l = t.get_checked()
-        d = {'True': [] , 'False': []}
-        for s in l:
-            _id, _encap = s.split("_")
-            d[_encap].append(_id)
-        if len(d['True']) > 0:
-            comp_attach_svc_rulesets(d['True'], r.get_checked(), slave=True)
-        if len(d['False']) > 0:
-            comp_attach_svc_rulesets(d['False'], r.get_checked(), slave=False)
-    elif len(request.args) == 1 and request.args[0] == 'detach_ruleset':
-        l = t.get_checked()
-        d = {'True': [] , 'False': []}
-        for s in l:
-            _id, _encap = s.split("_")
-            d[_encap].append(_id)
-        if len(d['True']) > 0:
-            comp_detach_svc_rulesets(d['True'], r.get_checked(), slave=True)
-        if len(d['False']) > 0:
-            comp_detach_svc_rulesets(d['False'], r.get_checked(), slave=False)
+    try:
+        if len(request.args) == 1 and request.args[0] == 'attach_ruleset':
+            l = t.get_checked()
+            d = {'True': [] , 'False': []}
+            for s in l:
+                _id, _encap = s.split("_")
+                d[_encap].append(_id)
+            if len(d['True']) > 0:
+                comp_attach_svc_rulesets(d['True'], r.get_checked(), slave=True)
+            if len(d['False']) > 0:
+                comp_attach_svc_rulesets(d['False'], r.get_checked(), slave=False)
+        elif len(request.args) == 1 and request.args[0] == 'detach_ruleset':
+            l = t.get_checked()
+            d = {'True': [] , 'False': []}
+            for s in l:
+                _id, _encap = s.split("_")
+                d[_encap].append(_id)
+            if len(d['True']) > 0:
+                comp_detach_svc_rulesets(d['True'], r.get_checked(), slave=True)
+            if len(d['False']) > 0:
+                comp_detach_svc_rulesets(d['False'], r.get_checked(), slave=False)
+    except ToolError as e:
+        response.flash = str(e)
 
     o = db.v_comp_services.svc_name|db.v_comp_services.encap
     q = _where(None, 'v_comp_services', domain_perms(), 'svc_name')
@@ -686,10 +689,13 @@ def ajax_comp_rulesets_nodes():
     t = table_comp_rulesets_nodes('crn2', 'ajax_comp_rulesets_nodes')
     t.rulesets = r
 
-    if len(request.args) == 1 and request.args[0] == 'attach_ruleset':
-        comp_attach_rulesets(t.get_checked(), r.get_checked())
-    elif len(request.args) == 1 and request.args[0] == 'detach_ruleset':
-        comp_detach_rulesets(t.get_checked(), r.get_checked())
+    try:
+        if len(request.args) == 1 and request.args[0] == 'attach_ruleset':
+            comp_attach_rulesets(t.get_checked(), r.get_checked())
+        elif len(request.args) == 1 and request.args[0] == 'detach_ruleset':
+            comp_detach_rulesets(t.get_checked(), r.get_checked())
+    except ToolError as e:
+        response.flash = str(e)
 
     o = db.v_comp_nodes.nodename
     q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
@@ -4252,26 +4258,29 @@ def ajax_comp_modulesets_services():
     t = table_comp_modulesets_services('cms2', 'ajax_comp_modulesets_services')
     t.modulesets = r
 
-    if len(request.args) == 1 and request.args[0] == 'attach_moduleset':
-        l = t.get_checked()
-        d = {'True': [] , 'False': []}
-        for s in l:
-            _id, _encap = s.split("_")
-            d[_encap].append(_id)
-        if len(d['True']) > 0:
-            comp_attach_svc_modulesets(d['True'], r.get_checked(), slave=True)
-        if len(d['False']) > 0:
-            comp_attach_svc_modulesets(d['False'], r.get_checked(), slave=False)
-    elif len(request.args) == 1 and request.args[0] == 'detach_moduleset':
-        l = t.get_checked()
-        d = {'True': [] , 'False': []}
-        for s in l:
-            _id, _encap = s.split("_")
-            d[_encap].append(_id)
-        if len(d['True']) > 0:
-            comp_detach_svc_modulesets(d['True'], r.get_checked(), slave=True)
-        if len(d['False']) > 0:
-            comp_detach_svc_modulesets(d['False'], r.get_checked(), slave=False)
+    try:
+        if len(request.args) == 1 and request.args[0] == 'attach_moduleset':
+            l = t.get_checked()
+            d = {'True': [] , 'False': []}
+            for s in l:
+                _id, _encap = s.split("_")
+                d[_encap].append(_id)
+            if len(d['True']) > 0:
+                comp_attach_svc_modulesets(d['True'], r.get_checked(), slave=True)
+            if len(d['False']) > 0:
+                comp_attach_svc_modulesets(d['False'], r.get_checked(), slave=False)
+        elif len(request.args) == 1 and request.args[0] == 'detach_moduleset':
+            l = t.get_checked()
+            d = {'True': [] , 'False': []}
+            for s in l:
+                _id, _encap = s.split("_")
+                d[_encap].append(_id)
+            if len(d['True']) > 0:
+                comp_detach_svc_modulesets(d['True'], r.get_checked(), slave=True)
+            if len(d['False']) > 0:
+                comp_detach_svc_modulesets(d['False'], r.get_checked(), slave=False)
+    except ToolError as e:
+        response.flash = str(e)
 
     o = db.v_comp_services.svc_name
     q = _where(None, 'v_comp_services', domain_perms(), 'svc_name')
@@ -4301,10 +4310,14 @@ def ajax_comp_modulesets_nodes():
     t = table_comp_modulesets_nodes('cmn2', 'ajax_comp_modulesets_nodes')
     t.modulesets = r
 
-    if len(request.args) == 1 and request.args[0] == 'attach_moduleset':
-        comp_attach_modulesets(t.get_checked(), r.get_checked())
-    elif len(request.args) == 1 and request.args[0] == 'detach_moduleset':
-        comp_detach_modulesets(t.get_checked(), r.get_checked())
+    try:
+        if len(request.args) == 1 and request.args[0] == 'attach_moduleset':
+            comp_attach_modulesets(t.get_checked(), r.get_checked())
+        elif len(request.args) == 1 and request.args[0] == 'detach_moduleset':
+            comp_detach_modulesets(t.get_checked(), r.get_checked())
+    except ToolError as e:
+        response.flash = str(e)
+
 
     o = db.v_comp_nodes.nodename
     q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
