@@ -1731,6 +1731,11 @@ def comp_delete_ruleset(ids=[]):
     table_modified("comp_rulesets_nodes")
     n = db(db.comp_rulesets_services.ruleset_id.belongs(ids)).delete()
     table_modified("comp_rulesets_services")
+    n = db(db.comp_rulesets_rulesets.parent_rset_id.belongs(ids)).delete()
+    n = db(db.comp_rulesets_rulesets.child_rset_id.belongs(ids)).delete()
+    table_modified("comp_rulesets_rulesets")
+    q = db(db.comp_moduleset_ruleset.ruleset_id.belongs(ids)).delete()
+    table_modified("comp_moduleset_ruleset")
     comp_rulesets_chains()
     _log('compliance.ruleset.delete',
          'deleted rulesets %(x)s',
@@ -3706,10 +3711,21 @@ def comp_delete_moduleset(ids=[]):
     modset_names = ', '.join([r.modset_name for r in rows])
     n = db(db.comp_moduleset_modules.modset_id.belongs(ids)).delete()
     table_modified("comp_moduleset_modules")
-    n = db(db.comp_node_moduleset.id.belongs(ids)).delete()
+    n = db(db.comp_node_moduleset.modset_id.belongs(ids)).delete()
     table_modified("comp_node_moduleset")
+    n = db(db.comp_modulesets_services.modset_id.belongs(ids)).delete()
+    table_modified("comp_modulesets_services")
+    n = db(db.comp_moduleset_team_responsible.modset_id.belongs(ids)).delete()
+    table_modified("comp_moduleset_team_responsible")
+    n = db(db.comp_moduleset_team_publication.modset_id.belongs(ids)).delete()
+    table_modified("comp_moduleset_team_publication")
     n = db(db.comp_moduleset.id.belongs(ids)).delete()
     table_modified("comp_moduleset")
+    n = db(db.comp_moduleset_moduleset.parent_modset_id.belongs(ids)).delete()
+    n = db(db.comp_moduleset_moduleset.child_modset_id.belongs(ids)).delete()
+    table_modified("comp_moduleset_moduleset")
+    n = db(db.comp_moduleset_ruleset.modset_id.belongs(ids)).delete()
+    table_modified("comp_moduleset_ruleset")
     _log('compliance.moduleset.delete',
         'deleted modulesets %(modset_names)s',
         dict(modset_names=modset_names))
@@ -6504,7 +6520,7 @@ def _comp_get_svc_data(nodename, svcname, modulesets=[]):
     }
 
 def test_comp_get_data():
-    return _comp_get_data("clementine")
+    return _comp_get_data("x64lmwbiegt")
 
 def test_comp_get_svc_ruleset():
     return _comp_get_svc_ruleset("unxdevweb01", "clementine")
@@ -10002,7 +10018,10 @@ def get_modset_relations_s():
     modset_relations = get_modset_relations()
     modset_relations_s = {}
     for modset_id, l in modset_relations.items():
-        modset_relations_s[modset_names[modset_id]] = map(lambda x: modset_names[x], l)
+        try:
+            modset_relations_s[modset_names[modset_id]] = map(lambda x: modset_names[x], l)
+        except KeyError as e:
+            print e
     return modset_relations_s
 
 def get_modset_relations():
@@ -13158,6 +13177,10 @@ def json_tree_action_delete_ruleset(rset_id):
     db(q).delete()
     table_modified("comp_rulesets")
 
+    q = db.comp_moduleset_ruleset.ruleset_id == rset_id
+    db(q).delete()
+    table_modified("comp_moduleset_ruleset")
+
     comp_rulesets_chains()
 
     _log('compliance.ruleset.delete',
@@ -13199,6 +13222,16 @@ def json_tree_action_delete_moduleset(modset_id):
     q = db.comp_moduleset.id == modset_id
     db(q).delete()
     table_modified("comp_moduleset")
+
+    q = db.comp_moduleset_moduleset.parent_modset_id == modset_id
+    db(q).delete()
+    q = db.comp_moduleset_moduleset.child_modset_id == modset_id
+    db(q).delete()
+    table_modified("comp_moduleset_moduleset")
+
+    q = db.comp_moduleset_ruleset.modset_id == modset_id
+    db(q).delete()
+    table_modified("comp_moduleset_ruleset")
 
     _log('compliance.moduleset.delete',
          'deleted moduleset %(modset_name)s',
