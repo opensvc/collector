@@ -11025,7 +11025,7 @@ def json_tree_action_show():
         return json_tree_action_show_filterset(request.vars.obj_id)
     elif request.vars.obj_type == "modset":
         return json_tree_action_show_moduleset(request.vars.obj_id)
-    elif request.vars.obj_type == "group":
+    elif request.vars.obj_type in ("group", "group_pub", "group_resp"):
         return json_tree_action_show_group(request.vars.obj_id)
     return ""
 
