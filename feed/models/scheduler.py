@@ -420,6 +420,12 @@ def _insert_generic(data, auth):
             vars.append('nodename')
             for i, val in enumerate(vals):
                 vals[i].append(auth[1])
+
+        # ip addr returns 802.11q intf names with a @<base intf> suffix. remove it.
+        idx_intf = vars.index("intf")
+        for i, val in enumerate(vals):
+            vals[i][idx_intf] = vals[i][idx_intf].split("@")[0]
+
         try:
             idx = vars.index("mask")
             for i, val in enumerate(vals):
