@@ -141,7 +141,7 @@ class rest_get_tag_nodes(rest_get_table_handler):
           examples=examples,
         )
 
-    def handler(self, **vars):
+    def handler(self, tagid, **vars):
         q = db.node_tags.tag_id == tagid
         q &= db.node_tags.nodename == db.nodes.nodename
         q &= _where(None, 'node_tags', domain_perms(), 'nodename')
@@ -166,7 +166,7 @@ class rest_get_tag_services(rest_get_table_handler):
           examples=examples,
         )
 
-    def handler(self, **vars):
+    def handler(self, tagid, **vars):
         q = db.svc_tags.tag_id == tagid
         q &= db.svc_tags.svcname == db.services.svc_name
         q &= _where(None, 'svc_tags', domain_perms(), 'svcname')
