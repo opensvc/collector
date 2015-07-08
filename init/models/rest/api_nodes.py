@@ -3,17 +3,6 @@ import datetime
 
 api_nodes_doc = {}
 
-def node_responsible(nodename):
-    q = db.nodes.nodename == nodename
-    n = db(q).count()
-    if n == 0:
-        raise Exception("Node %s does not exist" % nodename)
-    q &= db.nodes.team_responsible == db.auth_group.role
-    q &= db.auth_group.id.belongs(user_group_ids())
-    n = db(q).count()
-    if n != 1:
-        raise Exception("Not authorized: user is not responsible for node %s" % nodename)
-
 #
 class rest_get_node_ips(rest_get_table_handler):
     def __init__(self):

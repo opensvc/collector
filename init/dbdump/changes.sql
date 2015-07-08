@@ -4702,3 +4702,7 @@ drop view v_comp_moduleset_teams_responsible;
 
 alter table apps change column `desc` description text;
 
+drop view v_tags_full ; create view v_tags_full as select 0 as id, concat(nodes.nodename, "_null_", if(tags.id, tags.id, "null")) as ckid, tags.id as tag_id, tags.tag_name as tag_name, nodes.nodename as nodename, NULL as svcname, node_tags.created as created from nodes left join node_tags on nodes.nodename=node_tags.nodename left join tags on node_tags.tag_id=tags.id union all select 0 as id, concat("null_", services.svc_name, "_", if(tags.id, tags.id, "null")) as ckid, tags.id as tag_id, tags.tag_name as tag_name, NULL as nodename, services.svc_name as svcname, svc_tags.created as created from services left join svc_tags on services.svc_name=svc_tags.svcname left join tags on svc_tags.tag_id=tags.id;
+
+ALTER TABLE dashboard MODIFY COLUMN dash_env enum('PRD','PPRD','REC','INT','DEV','TST','TMP','DRP','FOR','PRA','PRJ','');
+

@@ -1,18 +1,5 @@
 from gluon.dal import smart_query
 
-def svc_responsible(svcname):
-    q = db.services.svc_name == svcname
-    n = db(q).count()
-    if n == 0:
-        raise Exception("Service %s does not exist" % svcname)
-    q &= db.services.svc_app == db.apps.app
-    q &= db.apps.id == db.apps_responsibles.app_id
-    db.apps_responsibles.group_id.belongs(user_group_ids())
-    n = db(q).count()
-    if n != 1:
-        raise Exception("Not authorized: user is not responsible for service %s" % svcname)
-
-
 #
 class rest_get_service(rest_get_line_handler):
     def __init__(self):

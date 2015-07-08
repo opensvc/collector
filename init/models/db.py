@@ -80,6 +80,11 @@ db.define_table('im_types',
     Field('im_type','string'),
     migrate=False)
 
+auth.settings.extra_fields['auth_membership']= [
+    Field('primary_group', 'boolean', default=False,
+          label=T("The user's primary group, used for task assignation and message routing")),
+]
+
 auth.settings.extra_fields['auth_user']= [
     Field('phone_work', 'string', label=T("Work desk phone number"), length=15),
     Field('email_notifications', 'boolean', default=True,
@@ -2053,9 +2058,11 @@ db.define_table('v_comp_moduleset_attachments',
     migrate=False)
 
 db.define_table('tags',
-    Field('tag_name','string'),
+    Field('tag_name','string',
+          requires=[IS_NOT_EMPTY(), IS_NOT_IN_DB(db, 'tags.tag_name')],
+          unique=True),
     Field('tag_exclude','string'),
-    Field('tag_created','datetime'),
+    Field('tag_created','datetime', default=request.now, writable=False),
     migrate=False)
 
 db.define_table('node_tags',
@@ -2071,6 +2078,7 @@ db.define_table('svc_tags',
     migrate=False)
 
 db.define_table('v_tags',
+    Field('ckid','string'),
     Field('nodename','string'),
     Field('svcname','string'),
     Field('tag_id','integer'),

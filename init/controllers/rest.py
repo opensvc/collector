@@ -79,6 +79,7 @@ handlers = {
      rest_get_user_nodes(),
      rest_get_user_services(),
      rest_get_user_groups(),
+     rest_get_user_primary_group(),
   ],
   'DELETE': [
      rest_delete_action_queue_one(),

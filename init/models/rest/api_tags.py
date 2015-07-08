@@ -1,14 +1,6 @@
 from gluon.dal import smart_query
 
 
-def get_tag_name(tagid):
-    try:
-        q = db.tags.id == tagid
-        tag_name = db(q).select().first().tag_name
-    except Exception as e:
-        raise Exception({"error": "tag does not exist"})
-    return tag_name
-
 #
 class rest_get_tags(rest_get_table_handler):
     def __init__(self):
@@ -199,20 +191,7 @@ class rest_post_tag_node(rest_post_handler):
         )
 
     def handler(self, tagid, nodename, **vars):
-        node_responsible(nodename)
-        tag_name = get_tag_name(tagid)
-        q = db.node_tags.tag_id == tagid
-        q &= db.node_tags.nodename == nodename
-        q &= _where(None, 'node_tags', domain_perms(), 'nodename')
-        if db(q).count() == 1:
-            return dict(info="tag already attached")
-        db.node_tags.insert(tag_id=tagid, nodename=nodename)
-        table_modified("node_tags")
-        _log("node.tag",
-             "tag '%(tag_name)s' attached",
-             dict(tag_name=tag_name),
-             nodename=nodename)
-        return dict(info="tag attached")
+        return lib_tag_attach_node(tagid, nodename)
 
 
 #
@@ -232,20 +211,7 @@ class rest_delete_tag_node(rest_delete_handler):
         )
 
     def handler(self, tagid, nodename, **vars):
-        node_responsible(nodename)
-        tag_name = get_tag_name(tagid)
-        q = db.node_tags.tag_id == tagid
-        q &= db.node_tags.nodename == nodename
-        q &= _where(None, 'node_tags', domain_perms(), 'nodename')
-        if db(q).count() == 0:
-            return dict(info="tag already detached")
-        db(q).delete()
-        table_modified("node_tags")
-        _log("node.tag",
-             "tag '%(tag_name)s' detached",
-             dict(tag_name=tag_name),
-             nodename=nodename)
-        return dict(info="tag detached")
+        return lib_tag_detach_node(tagid, nodename)
 
 
 
@@ -266,21 +232,7 @@ class rest_post_tag_service(rest_post_handler):
         )
 
     def handler(self, tagid, svcname, **vars):
-        svc_responsible(svcname)
-        tag_name = get_tag_name(tagid)
-        q = db.svc_tags.tag_id == tagid
-        q &= db.svc_tags.svcname == svcname
-        q &= _where(None, 'svc_tags', domain_perms(), 'svcname')
-        if db(q).count() == 1:
-            return dict(info="tag already attached")
-        db.svc_tags.insert(tag_id=tagid, svcname=svcname)
-        table_modified("svc_tags")
-        _log("service.tag",
-             "tag '%(tag_name)s' attached",
-             dict(tag_name=tag_name),
-             svcname=svcname)
-        return dict(info="tag attached")
-
+        return lib_tag_attach_service(tagid, svcname)
 
 #
 class rest_delete_tag_service(rest_delete_handler):
@@ -299,20 +251,7 @@ class rest_delete_tag_service(rest_delete_handler):
         )
 
     def handler(self, tagid, svcname, **vars):
-        svc_responsible(svcname)
-        tag_name = get_tag_name(tagid)
-        q = db.svc_tags.tag_id == tagid
-        q &= db.svc_tags.svcname == svcname
-        q &= _where(None, 'svc_tags', domain_perms(), 'svcname')
-        if db(q).count() == 0:
-            return dict(info="tag already detached")
-        db(q).delete()
-        table_modified("svc_tags")
-        _log("service.tag",
-             "tag '%(tag_name)s' detached",
-             dict(tag_name=tag_name),
-             svcname=svcname)
-        return dict(info="tag detached")
+        return lib_tag_detach_service(tagid, svcname)
 
 
 

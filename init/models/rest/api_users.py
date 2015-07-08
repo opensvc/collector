@@ -194,4 +194,32 @@ class rest_get_user_groups(rest_get_table_handler):
         self.set_q(q)
         return self.prepare_data(**vars)
 
+#
+class rest_get_user_primary_group(rest_get_line_handler):
+    def __init__(self):
+        desc = [
+          "Display the user's primary group properties.",
+          "Managers and UserManager are allowed to see all users' information.",
+          "Others can only see information for users in their organisational groups.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/users/%(email)s/primary_group",
+        ]
+        rest_get_line_handler.__init__(
+          self,
+          path="/users/<id>/primary_group",
+          tables=["auth_group"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        q = allowed_user_ids_q()
+        q &= user_id_q(id)
+        q &= db.auth_membership.user_id == db.auth_user.id
+        q &= db.auth_membership.primary_group == True
+        q &= db.auth_group.id == db.auth_membership.group_id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
 
