@@ -283,9 +283,18 @@ def filterset_query(row, nodes, services, i=0, nodename=None, svcname=None):
             qry &= db.b_disk_app.disk_svcname == svcname
         if nodename is not None:
             qry &= db.b_disk_app.disk_nodename == nodename
-        rows = db(qry).select(db.b_disk_app.disk_nodename,
-                              db.b_disk_app.disk_svcname,
-                              cacheable=True)
+        try:
+            rows = db(qry).select(db.b_disk_app.disk_nodename,
+                                  db.b_disk_app.disk_svcname,
+                                  cacheable=True)
+        except Exception as e:
+            if "retry" in str(e):
+                rows = db(qry).select(db.b_disk_app.disk_nodename,
+                                      db.b_disk_app.disk_svcname,
+                                      cacheable=True)
+            else:
+                raise
+
         n_nodes = set(map(lambda x: x.disk_nodename, rows)) - set([None])
         n_services = set(map(lambda x: x.disk_svcname, rows)) - set([None])
     elif v.f_table == 'node_hba':
