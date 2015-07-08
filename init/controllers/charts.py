@@ -193,7 +193,7 @@ def metrics_editor():
                      dict(metric_name=request.vars.metric_name,
                           metric_sql=request.vars.metric_sql))
 
-        session.flash = T("Chart recorded")
+        session.flash = T("Metric recorded")
         redirect(URL(r=request, c='charts', f='metrics_admin'))
     elif form.errors:
         response.flash = T("errors in form")
@@ -241,8 +241,12 @@ def _format_metric(rows, m):
     n = len(rows)
     if n == 0:
         return T("No data")
-    elif n == 1:
-        return rows[0][m.metric_col_value_index]
+
+    if n == 1 and type(rows[0]) == list:
+        if m.metric_col_value_index > len(rows[0])-1:
+            response. flash = T("metric column value index (%(idx)s) out of range: %(data)s", dict(idx=str(m.metric_col_value_index), data=str(rows[0])))
+        else:
+            return rows[0][m.metric_col_value_index]
 
     if m.metric_col_instance_index is None or m.metric_col_value_index is None:
         l = [TR(map(lambda x: TH(x), rows[0].keys()))]
@@ -710,7 +714,7 @@ def reports_editor():
                      dict(report_name=request.vars.report_name,
                           report_yaml=request.vars.report_yaml))
 
-        session.flash = T("Chart recorded")
+        session.flash = T("Report recorded")
         redirect(URL(r=request, c='charts', f='reports_admin'))
     elif form.errors:
         response.flash = T("errors in form")
@@ -806,6 +810,8 @@ def do_report(report_id, report_yaml):
 
 def do_section(section_yaml):
     d = [H2(section_yaml.get('Title', ''))]
+    d.append(I(section_yaml.get('Desc', '')))
+    d.append(DIV(_class="spacer", _style="height:100px"))
     for chart in section_yaml.get('Charts', []):
         chart_id = chart.get('chart_id')
         if chart_id is None:
@@ -814,13 +820,17 @@ def do_section(section_yaml):
         _d = DIV(
            c,
            _class="float",
-           _style="width:400px;height:300px",
+           #_style="width:400px;height:300px",
         )
+        d.append(H3(chart.get('Title', '')))
         d.append(_d)
 
-    metric_id = section_yaml.get('metric_id')
-    if metric_id is not None:
-        d.append(I(section_yaml.get('Desc', '')))
+    for metric in section_yaml.get('Metrics', []):
+        metric_id = metric.get('metric_id')
+        if metric_id is None:
+            continue
+        d.append(H3(metric.get('Title', '')))
+        d.append(I(metric.get('Desc', '')))
         d.append(format_metric(metric_id))
 
     d.append(DIV(_class="spacer", _style="height:100px"))
@@ -923,3 +933,5 @@ def ajax_reports():
 def reports():
     return dict(table=ajax_reports())
 
+def batch_task_metrics():
+    task_metrics()
