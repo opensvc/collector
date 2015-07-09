@@ -50,6 +50,7 @@ handlers = {
      rest_get_node_checks(),
      rest_get_node_compliance_status(),
      rest_get_node_hbas(),
+     rest_get_node_interfaces(),
      rest_get_node_ips(),
      rest_get_node_services(),
      rest_get_node_service(),

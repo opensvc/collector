@@ -4,6 +4,33 @@ import datetime
 api_nodes_doc = {}
 
 #
+class rest_get_node_interfaces(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List a node network interfaces.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/mynode/interfaces?props=intf,mac",
+        ]
+
+        rest_get_table_handler.__init__(
+          self,
+          path="/nodes/<nodename>/interfaces",
+          tables=["node_ip"],
+          props_blacklist=["type", "addr", "mask"],
+          groupby=db.node_ip.intf,
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, nodename, **vars):
+        q = db.node_ip.nodename == nodename
+        q &= _where(None, 'node_ip', domain_perms(), 'nodename')
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+
+#
 class rest_get_node_ips(rest_get_table_handler):
     def __init__(self):
         desc = [
