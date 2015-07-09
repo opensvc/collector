@@ -220,10 +220,23 @@ class table_tags(HtmlTable):
 
         ug = user_groups()
         if 'Manager' in ug or 'TagManager' in ug:
+	    self.form_tag_add = self.tag_add_sqlform()
             self += HtmlTableMenu('Tag', 'tag16', [
               't_tag_add',
               't_tag_del'
             ])
+
+    @auth.requires_membership('CompManager')
+    def tag_add_sqlform(self):
+        f = SQLFORM(
+                 db.tags,
+                 labels={
+                  'tag_name': T('Tag name'),
+                  'tag_exclude': T('Tag exclusions')
+                 },
+                 _name='form_tag_add',
+            )
+        return f
 
     def t_tag_add(self):
         d = DIV(
@@ -483,19 +496,25 @@ def tag_detach(ids):
     for id in ids:
         nodename, svcname, tag_id = id.split("_")
         tag_id = int(tag_id)
-        if nodename == "null":
-            lib_tag_detach_service(tag_id, svcname)
-        if svcname == "null":
-            lib_tag_detach_node(tag_id, nodename)
+	try:
+            if nodename == "null":
+                lib_tag_detach_service(tag_id, svcname)
+            if svcname == "null":
+                lib_tag_detach_node(tag_id, nodename)
+        except Exception as e:
+	    response.flash = str(e)
 
 @auth.requires(auth.has_membership('Manager') or auth.has_membership('TagManager'))
 def tag_attach(tag_id, ids):
     for id in ids:
         nodename, svcname, dummy = id.split("_")
-        if nodename == "null":
-            lib_tag_attach_service(tag_id, svcname)
-        if svcname == "null":
-            lib_tag_attach_node(tag_id, nodename)
+	try:
+            if nodename == "null":
+                lib_tag_attach_service(tag_id, svcname)
+            if svcname == "null":
+                lib_tag_attach_node(tag_id, nodename)
+        except Exception as e:
+	    response.flash = str(e)
 
 @auth.requires_login()
 def ajax_tagattach():
