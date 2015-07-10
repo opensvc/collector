@@ -77,9 +77,11 @@ function json_status(msg){
     $(".flash").html("")
     return
   }
-  try {
+  if ("err" in msg) {
     s = msg["err"]
-  } catch(e) {
+  } else if ("error" in msg) {
+    s = msg["error"]
+  } else {
     s = ""
   }
   $(".flash").html(s).slideDown()

@@ -256,4 +256,52 @@ class rest_get_service_compliance_status(rest_get_table_handler):
         self.set_q(q)
         return self.prepare_data(**vars)
 
+#
+class rest_get_service_compliance_modulesets(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List compliance modulesets attached to the service.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/compliance/modulesets",
+        ]
+
+        rest_get_table_handler.__init__(
+          self,
+          path="/services/<svcname>/compliance/modulesets",
+          tables=["comp_moduleset"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, svcname, **vars):
+        q = db.comp_modulesets_services.modset_svcname == svcname
+        q &= db.comp_modulesets_services.modset_id == db.comp_moduleset.id
+        q &= _where(None, 'comp_modulesets_services', domain_perms(), 'modset_svcname')
+        self.set_q(q)
+        return self.prepare_data(**vars)
+#
+class rest_get_service_compliance_rulesets(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List compliance rulesets attached to the service.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/compliance/rulesets",
+        ]
+
+        rest_get_table_handler.__init__(
+          self,
+          path="/services/<svcname>/compliance/rulesets",
+          tables=["comp_rulesets"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, svcname, **vars):
+        q = db.comp_rulesets_services.svcname == svcname
+        q &= db.comp_rulesets_services.ruleset_id == db.comp_rulesets.id
+        q &= _where(None, 'comp_rulesets_services', domain_perms(), 'svcname')
+        self.set_q(q)
+        return self.prepare_data(**vars)
 

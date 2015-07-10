@@ -12744,35 +12744,7 @@ def json_tree_action_move_group_to_modset(group_id, modset_id, gtype="publicatio
 
 @auth.requires_membership('CompManager')
 def json_tree_action_copy_modset_to_modset(child_modset_id, parent_modset_id):
-    ug = user_groups()
-    q = db.comp_moduleset.id == parent_modset_id
-    if 'Manager' not in ug:
-        q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
-        q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
-    rows = db(q).select(db.comp_moduleset.ALL, cacheable=True)
-    v = rows.first()
-    if v is None:
-        return {"err": "parent moduleset not found or not owned by you"}
-
-    q = db.comp_moduleset.id == child_modset_id
-    rows = db(q).select(cacheable=True)
-    w = rows.first()
-    if w is None:
-        return {"err": "child moduleset not found"}
-
-    q = db.comp_moduleset_moduleset.parent_modset_id == parent_modset_id
-    q &= db.comp_moduleset_moduleset.child_modset_id == child_modset_id
-    if db(q).count() > 0:
-        return "0"
-
-    db.comp_moduleset_moduleset.update_or_insert(parent_modset_id=parent_modset_id,
-                                                 child_modset_id=child_modset_id)
-    table_modified("comp_moduleset_moduleset")
-    _log('compliance.moduleset.moduleset.attach',
-         'attach moduleset %(child_modset_name)s to moduleset %(parent_modset_name)s',
-         dict(child_modset_name=w.modset_name,
-              parent_modset_name=v.modset_name))
-    return "0"
+    return attach_modset_to_modset(child_modset_id, parent_modset_id)
 
 @auth.requires_membership('CompManager')
 def json_tree_action_copy_rset_to_modset(rset_id, modset_id):

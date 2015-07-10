@@ -4,6 +4,58 @@ import datetime
 api_nodes_doc = {}
 
 #
+class rest_get_node_compliance_rulesets(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List compliance rulesets attached to the node.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/mynode/compliance/rulesets",
+        ]
+
+        rest_get_table_handler.__init__(
+          self,
+          path="/nodes/<nodename>/compliance/rulesets",
+          tables=["comp_rulesets"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, nodename, **vars):
+        q = db.comp_rulesets_nodes.nodename == nodename
+        q &= db.comp_rulesets_nodes.ruleset_id == db.comp_rulesets.id
+        q &= _where(None, 'comp_rulesets_nodes', domain_perms(), 'nodename')
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+
+#
+class rest_get_node_compliance_modulesets(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List compliance modulesets attached to the node.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/mynode/compliance/modulesets",
+        ]
+
+        rest_get_table_handler.__init__(
+          self,
+          path="/nodes/<nodename>/compliance/modulesets",
+          tables=["comp_moduleset"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, nodename, **vars):
+        q = db.comp_node_moduleset.modset_node == nodename
+        q &= db.comp_node_moduleset.modset_id == db.comp_moduleset.id
+        q &= _where(None, 'comp_node_moduleset', domain_perms(), 'modset_node')
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+
+#
 class rest_get_node_interfaces(rest_get_table_handler):
     def __init__(self):
         desc = [
