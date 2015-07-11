@@ -1,5 +1,11 @@
 from gluon.dal import smart_query
 
+def get_slave(vars):
+    slave = vars.get("slave", False)
+    if slave in ("true", "True", "T"):
+        return True
+    return False
+
 #
 class rest_get_service(rest_get_line_handler):
     def __init__(self):
@@ -280,6 +286,8 @@ class rest_get_service_compliance_modulesets(rest_get_table_handler):
         q &= _where(None, 'comp_modulesets_services', domain_perms(), 'modset_svcname')
         self.set_q(q)
         return self.prepare_data(**vars)
+
+
 #
 class rest_get_service_compliance_rulesets(rest_get_table_handler):
     def __init__(self):
@@ -304,4 +312,62 @@ class rest_get_service_compliance_rulesets(rest_get_table_handler):
         q &= _where(None, 'comp_rulesets_services', domain_perms(), 'svcname')
         self.set_q(q)
         return self.prepare_data(**vars)
+
+
+#
+class rest_delete_service_compliance_moduleset(rest_delete_handler):
+    def __init__(self):
+        params = {
+          "slave": {
+             "desc": "If set to true, detach from the encapsulated service."
+          }
+        }
+        desc = [
+          "Detach a moduleset from a service",
+          "Modules of attached modulesets are scheduled for check or fix by the OpenSVC agent.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/services/mysvc/compliance/modulesets/151",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/services/<svcname>/compliance/modulesets/<id>",
+          desc=desc,
+          params=params,
+          examples=examples
+        )
+
+    def handler(self, svcname, modset_id, **vars):
+        svc_responsible(svcname)
+        slave = get_slave(vars)
+        return lib_comp_moduleset_detach_service(svcname, modset_id, slave)
+
+#
+class rest_post_service_compliance_moduleset(rest_post_handler):
+    def __init__(self):
+        params = {
+          "slave": {
+             "desc": "If set to true, attach to the encapsulated service."
+          }
+        }
+        desc = [
+          "Attach a moduleset to a service",
+          "Modules of attached modulesets are scheduled for check or fix by the OpenSVC agent.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/services/mysvc/compliance/modulesets/151",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/services/<svcname>/compliance/modulesets/<id>",
+          desc=desc,
+          params=params,
+          examples=examples
+        )
+
+    def handler(self, svcname, modset_id, **vars):
+        svc_responsible(svcname)
+        slave = get_slave(vars)
+        return lib_comp_moduleset_attach_service(svcname, modset_id, slave)
+
 

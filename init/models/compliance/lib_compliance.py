@@ -240,3 +240,53 @@ def lib_comp_moduleset_detach_node(nodename, modset_id):
     )
     return dict(info="moduleset %s detached"%moduleset)
 
+
+def lib_comp_moduleset_detach_service(svcname, modset_id, slave=False):
+    if type(modset_id) == list:
+        moduleset = "all"
+        if len(modset_id) == 0:
+            return dict(info="this service has no moduleset attached")
+    else:
+        moduleset = comp_moduleset_name(modset_id)
+        if moduleset is None:
+            return dict(error="moduleset %s does not exist"%moduleset)
+        if not comp_moduleset_svc_attached(svcname, modset_id, slave):
+            return dict(info="moduleset %s is not attached to this service"%moduleset)
+    q = db.comp_modulesets_services.modset_svcname == svcname
+    if isinstance(modset_id, list):
+        q &= db.comp_modulesets_services.modset_id.belongs(modset_id)
+    else:
+        q &= db.comp_modulesets_services.modset_id == modset_id
+    n = db(q).delete()
+    table_modified("comp_modulesets_services")
+    if n == 0:
+        return dict(error="failed to detach the moduleset")
+    _log('compliance.moduleset.service.detach',
+         '%(moduleset)s detached from service %(svcname)s',
+         dict(svcname=svcname, moduleset=moduleset),
+         svcname=svcname,
+    )
+    return dict(info="moduleset %s detached"%moduleset)
+
+
+def lib_comp_moduleset_attach_service(svcname, modset_id, slave):
+    moduleset = comp_moduleset_name(modset_id)
+    if moduleset is None:
+        return dict(error="moduleset %s does not exist"%moduleset)
+    if comp_moduleset_svc_attached(svcname, modset_id, slave):
+        return dict(info="moduleset %s is already attached to this service"%moduleset)
+    if not comp_moduleset_svc_attachable(svcname, modset_id):
+        return dict(error="moduleset %s is not attachable"%moduleset)
+    n = db.comp_modulesets_services.insert(modset_svcname=svcname,
+                                           modset_id=modset_id,
+                                           slave=slave)
+    table_modified("comp_modulesets_services")
+    if n == 0:
+        return dict(error="failed to attach moduleset %s"%moduleset)
+    _log('compliance.moduleset.service.attach',
+         '%(moduleset)s attached to service %(svcname)s',
+        dict(svcname=svcname, moduleset=moduleset),
+        svcname=svcname,
+    )
+    return dict(info="moduleset %s attached"%moduleset)
+

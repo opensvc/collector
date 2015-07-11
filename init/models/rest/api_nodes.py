@@ -1,8 +1,6 @@
 from gluon.dal import smart_query
 import datetime
 
-api_nodes_doc = {}
-
 #
 class rest_delete_node_compliance_moduleset(rest_delete_handler):
     def __init__(self):

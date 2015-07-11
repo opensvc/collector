@@ -6013,6 +6013,19 @@ def _comp_get_moduleset_svc_modules(moduleset, svcname):
                         cacheable=True)
     return [r.modset_mod_name for r in rows]
 
+def mangle_lib_result(d):
+    msg = []
+    if "error" in d:
+        d["status"] = False
+        msg.append(d["error"])
+    else:
+        d["status"] = True
+    if "info" in d:
+        d["msg"] = d["info"]
+        msg.append(d["info"])
+    d["msg"] = '. '.join(msg)
+    return d
+
 @service.xmlrpc
 def comp_attach_svc_ruleset(svcname, ruleset, auth):
     return rpc_comp_attach_svc_ruleset(svcname, ruleset, auth)
@@ -6052,41 +6065,12 @@ def rpc_comp_attach_svc_moduleset(svcname, moduleset, auth):
         return dict(status=False, msg="no moduleset specified"%moduleset)
     modset_id = comp_moduleset_id(moduleset)
     slave = comp_slave(svcname, auth[1])
-    if modset_id is None:
-        return dict(status=False, msg="moduleset %s does not exist"%moduleset)
-    if comp_moduleset_svc_attached(svcname, modset_id, slave):
-        return dict(status=True, msg="moduleset %s is already attached to this service"%moduleset)
-    if not comp_moduleset_svc_attachable(svcname, modset_id):
-        return dict(status=False, msg="moduleset %s is not attachable"%moduleset)
-
-    n = db.comp_modulesets_services.insert(modset_svcname=svcname,
-                                           modset_id=modset_id,
-                                           slave=slave)
-    table_modified("comp_modulesets_services")
-    if n == 0:
-        return dict(status=False, msg="failed to attach moduleset %s"%moduleset)
-    _log('compliance.moduleset.service.attach',
-         '%(moduleset)s attached to service %(svcname)s',
-        dict(svcname=svcname, moduleset=moduleset),
-        user='root@'+svcname)
-    return dict(status=True, msg="moduleset %s attached"%moduleset)
+    d = lib_comp_moduleset_attach_service(svcname, modset_id, slave)
+    return mangle_lib_result(d)
 
 @service.xmlrpc
 def comp_attach_moduleset(nodename, moduleset, auth):
     return rpc_comp_attach_moduleset(nodename, moduleset, auth)
-
-def mangle_lib_result(d):
-    msg = []
-    if "error" in d:
-        d["status"] = False
-        msg.append(d["error"])
-    else:
-        d["status"] = True
-    if "info" in d:
-        d["msg"] = d["info"]
-        msg.append(d["info"])
-    d["msg"] = '. '.join(msg)
-    return d
 
 @auth_uuid
 def rpc_comp_attach_moduleset(nodename, moduleset, auth):
@@ -6148,23 +6132,8 @@ def rpc_comp_detach_svc_moduleset(svcname, moduleset, auth):
         return dict(status=True, msg="moduleset %s does not exist"%moduleset)
     elif moduleset == 'all' and len(modset_id) == 0:
         return dict(status=True, msg="this service has no moduleset attached")
-    if moduleset != 'all' and not comp_moduleset_svc_attached(svcname, modset_id, slave):
-        return dict(status=True,
-                    msg="moduleset %s is not attached to this service"%moduleset)
-    q = db.comp_modulesets_services.modset_svcname == svcname
-    if isinstance(modset_id, list):
-        q &= db.comp_modulesets_services.modset_id.belongs(modset_id)
-    else:
-        q &= db.comp_modulesets_services.modset_id == modset_id
-    n = db(q).delete()
-    table_modified("comp_modulesets_services")
-    if n == 0:
-        return dict(status=False, msg="failed to detach the moduleset")
-    _log('compliance.moduleset.service.detach',
-        '%(moduleset)s detached from service %(svcname)s',
-        dict(svcname=svcname, moduleset=moduleset),
-        user='root@'+svcname)
-    return dict(status=True, msg="moduleset %s detached"%moduleset)
+    d = lib_comp_moduleset_detach_service(svcname, modset_id, slave)
+    return mangle_lib_result(d)
 
 @service.xmlrpc
 def comp_detach_moduleset(nodename, moduleset, auth):
