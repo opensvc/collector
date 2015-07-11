@@ -2,6 +2,48 @@ from gluon.dal import smart_query
 import datetime
 
 #
+class rest_delete_node_compliance_ruleset(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Detach a ruleset from a node",
+          "Attached rulesets add their variables to the modules execution environment.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/nodes/mynode/compliance/rulesets/151",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/nodes/<nodename>/compliance/rulesets/<id>",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, nodename, rset_id, **vars):
+        node_responsible(nodename)
+        return lib_comp_ruleset_detach_node(nodename, rset_id)
+
+#
+class rest_post_node_compliance_ruleset(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Attach a ruleset to a node",
+          "Attached rulesets add their variables to the modules execution environment.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/nodes/mynode/compliance/rulesets/151",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/nodes/<nodename>/compliance/rulesets/<id>",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, nodename, rset_id, **vars):
+        node_responsible(nodename)
+        return lib_comp_ruleset_attach_node(nodename, rset_id)
+
+#
 class rest_delete_node_compliance_moduleset(rest_delete_handler):
     def __init__(self):
         desc = [

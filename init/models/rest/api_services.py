@@ -315,6 +315,62 @@ class rest_get_service_compliance_rulesets(rest_get_table_handler):
 
 
 #
+class rest_delete_service_compliance_ruleset(rest_delete_handler):
+    def __init__(self):
+        params = {
+          "slave": {
+             "desc": "If set to true, detach from the encapsulated service."
+          }
+        }
+        desc = [
+          "Detach a ruleset from a service",
+          "Attached rulesets add their variables to the modules execution environment.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/services/mysvc/compliance/rulesets/151",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/services/<svcname>/compliance/rulesets/<id>",
+          desc=desc,
+          params=params,
+          examples=examples
+        )
+
+    def handler(self, svcname, rset_id, **vars):
+        svc_responsible(svcname)
+        slave = get_slave(vars)
+        return lib_comp_ruleset_detach_service(svcname, rset_id, slave)
+
+#
+class rest_post_service_compliance_ruleset(rest_post_handler):
+    def __init__(self):
+        params = {
+          "slave": {
+             "desc": "If set to true, attach to the encapsulated service."
+          }
+        }
+        desc = [
+          "Attach a ruleset to a service",
+          "Attached rulesets add their variables to the modules execution environment.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/services/mysvc/compliance/rulesets/151",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/services/<svcname>/compliance/rulesets/<id>",
+          desc=desc,
+          params=params,
+          examples=examples
+        )
+
+    def handler(self, svcname, rset_id, **vars):
+        svc_responsible(svcname)
+        slave = get_slave(vars)
+        return lib_comp_ruleset_attach_service(svcname, rset_id, slave)
+
+#
 class rest_delete_service_compliance_moduleset(rest_delete_handler):
     def __init__(self):
         params = {

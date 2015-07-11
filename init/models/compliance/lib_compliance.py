@@ -126,6 +126,13 @@ def comp_ruleset_id(ruleset):
         return None
     return rows[0].id
 
+def comp_ruleset_name(ruleset_id):
+    q = db.comp_rulesets.id == ruleset_id
+    rows = db(q).select(db.comp_rulesets.ruleset_name, cacheable=True)
+    if len(rows) == 0:
+        return None
+    return rows[0].ruleset_name
+
 def comp_moduleset_name(modset_id):
     q = db.comp_moduleset.id == modset_id
     rows = db(q).select(db.comp_moduleset.modset_name, cacheable=True)
@@ -187,6 +194,9 @@ def attach_modset_to_modset(child_modset_id, parent_modset_id):
     return {"info": fmt % fmt_data}
 
 
+#
+# moduleset attachments
+#
 def lib_comp_moduleset_attach_node(nodename, modset_id):
     moduleset = comp_moduleset_name(modset_id)
     if moduleset is None:
@@ -289,4 +299,110 @@ def lib_comp_moduleset_attach_service(svcname, modset_id, slave):
         svcname=svcname,
     )
     return dict(info="moduleset %s attached"%moduleset)
+
+#
+# ruleset attachments
+#
+def lib_comp_ruleset_attach_node(nodename, ruleset_id):
+    ruleset = comp_ruleset_name(ruleset_id)
+    if ruleset is None:
+        return dict(error="ruleset %s does not exist"%ruleset)
+    if comp_ruleset_attached(nodename, ruleset_id):
+        return dict(info="ruleset %s is already attached to this node"%ruleset)
+    if not comp_ruleset_attachable(nodename, ruleset_id):
+        return dict(error="ruleset %s is not attachable"%ruleset)
+
+    n = db.comp_rulesets_nodes.insert(nodename=nodename,
+                                      ruleset_id=ruleset_id)
+    table_modified("comp_rulesets_nodes")
+    update_dash_rsetdiff_node(nodename)
+
+    if n == 0:
+        return dict(error="failed to attach ruleset %s"%ruleset)
+    _log('compliance.ruleset.node.attach',
+         '%(ruleset)s attached to node %(node)s',
+         dict(node=nodename, ruleset=ruleset),
+         nodename=nodename,
+    )
+    return dict(info="ruleset %s attached"%ruleset)
+
+
+def lib_comp_ruleset_detach_node(nodename, ruleset_id):
+    if type(ruleset_id) == list:
+        ruleset = "all"
+        if len(ruleset_id) == 0:
+            return dict(info="this node has no ruleset attached")
+    else:
+        ruleset = comp_ruleset_name(ruleset_id)
+        if ruleset is None:
+            return dict(error="ruleset %s does not exist"%ruleset)
+        if not comp_ruleset_attached(nodename, ruleset_id):
+            return dict(info="ruleset %s is not attached to this node"%ruleset)
+    q = db.comp_rulesets_nodes.nodename == nodename
+    if isinstance(ruleset_id, list):
+        q &= db.comp_rulesets_nodes.ruleset_id.belongs(ruleset_id)
+    else:
+        q &= db.comp_rulesets_nodes.ruleset_id == ruleset_id
+    n = db(q).delete()
+    table_modified("comp_rulesets_nodes")
+    if n == 0:
+        return dict(error="failed to detach the ruleset")
+    update_dash_rsetdiff_node(nodename)
+
+    _log('compliance.ruleset.node.detach',
+         '%(ruleset)s detached from node %(node)s',
+         dict(node=nodename, ruleset=ruleset),
+         nodename=nodename,
+    )
+    return dict(info="ruleset %s detached"%ruleset)
+
+
+def lib_comp_ruleset_detach_service(svcname, ruleset_id, slave=False):
+    if type(ruleset_id) == list:
+        ruleset = "all"
+        if len(ruleset_id) == 0:
+            return dict(info="this service has no ruleset attached")
+    else:
+        ruleset = comp_ruleset_name(ruleset_id)
+        if ruleset is None:
+            return dict(error="ruleset %s does not exist"%ruleset)
+        if not comp_ruleset_svc_attached(svcname, ruleset_id, slave):
+            return dict(info="ruleset %s is not attached to this service"%ruleset)
+    q = db.comp_rulesets_services.svcname == svcname
+    if isinstance(ruleset_id, list):
+        q &= db.comp_rulesets_services.ruleset_id.belongs(ruleset_id)
+    else:
+        q &= db.comp_rulesets_services.ruleset_id == ruleset_id
+    n = db(q).delete()
+    table_modified("comp_rulesets_services")
+    if n == 0:
+        return dict(error="failed to detach the ruleset")
+    _log('compliance.ruleset.service.detach',
+         '%(ruleset)s detached from service %(svcname)s',
+         dict(svcname=svcname, ruleset=ruleset),
+         svcname=svcname,
+    )
+    return dict(info="ruleset %s detached"%ruleset)
+
+
+def lib_comp_ruleset_attach_service(svcname, ruleset_id, slave):
+    ruleset = comp_ruleset_name(ruleset_id)
+    if ruleset is None:
+        return dict(error="ruleset %s does not exist"%ruleset)
+    if comp_ruleset_svc_attached(svcname, ruleset_id, slave):
+        return dict(info="ruleset %s is already attached to this service"%ruleset)
+    if not comp_ruleset_svc_attachable(svcname, ruleset_id):
+        return dict(error="ruleset %s is not attachable"%ruleset)
+    n = db.comp_rulesets_services.insert(svcname=svcname,
+                                           ruleset_id=ruleset_id,
+                                           slave=slave)
+    table_modified("comp_rulesets_services")
+    if n == 0:
+        return dict(error="failed to attach ruleset %s"%ruleset)
+    _log('compliance.ruleset.service.attach',
+         '%(ruleset)s attached to service %(svcname)s',
+        dict(svcname=svcname, ruleset=ruleset),
+        svcname=svcname,
+    )
+    return dict(info="ruleset %s attached"%ruleset)
 

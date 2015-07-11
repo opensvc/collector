@@ -6036,24 +6036,8 @@ def rpc_comp_attach_svc_ruleset(svcname, ruleset, auth):
         return dict(status=False, msg="no ruleset specified"%ruleset)
     rset_id = comp_ruleset_id(ruleset)
     slave = comp_slave(svcname, auth[1])
-    if rset_id is None:
-        return dict(status=False, msg="ruleset %s does not exist"%ruleset)
-    if comp_ruleset_svc_attached(svcname, rset_id, slave):
-        return dict(status=True, msg="ruleset %s is already attached to this service"%ruleset)
-    if not comp_ruleset_svc_attachable(svcname, rset_id):
-        return dict(status=False, msg="ruleset %s is not attachable"%ruleset)
-
-    n = db.comp_rulesets_services.insert(svcname=svcname,
-                                         ruleset_id=rset_id,
-                                         slave=slave)
-    table_modified("comp_rulesets_services")
-    if n == 0:
-        return dict(status=False, msg="failed to attach ruleset %s"%ruleset)
-    _log('compliance.ruleset.service.attach',
-         '%(ruleset)s attached to service %(svcname)s',
-        dict(svcname=svcname, ruleset=ruleset),
-        user='root@'+svcname)
-    return dict(status=True, msg="ruleset %s attached"%ruleset)
+    d = lib_comp_ruleset_attach_service(svcname, rset_id, slave)
+    return mangle_lib_result(d)
 
 @service.xmlrpc
 def comp_attach_svc_moduleset(svcname, moduleset, auth):
@@ -6090,30 +6074,15 @@ def rpc_comp_detach_svc_ruleset(svcname, ruleset, auth):
         return dict(status=False, msg="no ruleset specified"%ruleset)
     slave = comp_slave(svcname, auth[1])
     if ruleset == 'all':
-        rset_id = comp_attached_svc_ruleset_id(svcname, slave)
+        ruleset_id = comp_attached_svc_ruleset_id(svcname, slave)
     else:
-        rset_id = comp_ruleset_id(ruleset)
-    if rset_id is None:
+        ruleset_id = comp_ruleset_id(ruleset)
+    if ruleset_id is None:
         return dict(status=True, msg="ruleset %s does not exist"%ruleset)
-    elif ruleset == 'all' and len(rset_id) == 0:
+    elif ruleset == 'all' and len(ruleset_id) == 0:
         return dict(status=True, msg="this service has no ruleset attached")
-    if ruleset != 'all' and not comp_ruleset_svc_attached(svcname, rset_id, slave):
-        return dict(status=True,
-                    msg="ruleset %s is not attached to this service"%ruleset)
-    q = db.comp_rulesets_services.svcname == svcname
-    if isinstance(rset_id, list):
-        q &= db.comp_rulesets_services.ruleset_id.belongs(rset_id)
-    else:
-        q &= db.comp_rulesets_services.ruleset_id == rset_id
-    n = db(q).delete()
-    table_modified("comp_rulesets_services")
-    if n == 0:
-        return dict(status=False, msg="failed to detach the ruleset")
-    _log('compliance.ruleset.service.detach',
-        '%(ruleset)s detached from service %(svcname)s',
-        dict(svcname=svcname, ruleset=ruleset),
-        user='root@'+svcname)
-    return dict(status=True, msg="ruleset %s detached"%ruleset)
+    d = lib_comp_ruleset_detach_service(svcname, ruleset_id, slave)
+    return mangle_lib_result(d)
 
 @service.xmlrpc
 def comp_detach_svc_moduleset(svcname, moduleset, auth):
@@ -6162,33 +6131,9 @@ def comp_attach_ruleset(nodename, ruleset, auth):
 def rpc_comp_attach_ruleset(nodename, ruleset, auth):
     if len(ruleset) == 0:
         return dict(status=False, msg="no ruleset specified"%ruleset)
-    ruleset_id = comp_ruleset_exists(ruleset)
-    if ruleset_id is None:
-        return dict(status=False, msg="ruleset %s does not exist"%ruleset)
-    if comp_ruleset_attached(nodename, ruleset_id):
-        return dict(status=True,
-                    msg="ruleset %s is already attached to this node"%ruleset)
-    if not comp_ruleset_attachable(nodename, ruleset_id):
-        return dict(status=False,
-                    msg="ruleset %s is not attachable"%ruleset)
-
-    q = db.comp_rulesets_nodes.nodename == nodename
-    q &= db.comp_rulesets_nodes.ruleset_id == ruleset_id
-    if db(q).count() > 0:
-        return dict(status=True, msg="ruleset %s already attached"%ruleset)
-
-    n = db.comp_rulesets_nodes.insert(nodename=nodename,
-                                      ruleset_id=ruleset_id)
-    table_modified("comp_rulesets_nodes")
-    update_dash_rsetdiff_node(nodename)
-
-    if n == 0:
-        return dict(status=False, msg="failed to attach ruleset %s"%ruleset)
-    _log('compliance.ruleset.node.attach',
-        '%(ruleset)s attached to node %(node)s',
-        dict(node=nodename, ruleset=ruleset),
-        user='root@'+nodename)
-    return dict(status=True, msg="ruleset %s attached"%ruleset)
+    ruleset_id = comp_ruleset_id(ruleset)
+    d = lib_comp_ruleset_attach_node(nodename, ruleset_id)
+    return mangle_lib_result(d)
 
 @service.xmlrpc
 def comp_detach_ruleset(nodename, ruleset, auth):
@@ -6201,29 +6146,13 @@ def rpc_comp_detach_ruleset(nodename, ruleset, auth):
     if ruleset == 'all':
         ruleset_id = comp_attached_ruleset_id(nodename)
     else:
-        ruleset_id = comp_ruleset_exists(ruleset)
+        ruleset_id = comp_ruleset_id(ruleset)
     if ruleset_id is None:
         return dict(status=False, msg="ruleset %s does not exist"%ruleset)
     elif ruleset == 'all' and len(ruleset_id) == 0:
         return dict(status=True, msg="this node has no ruleset attached")
-    if ruleset != 'all' and not comp_ruleset_attached(nodename, ruleset_id):
-        return dict(status=True,
-                    msg="ruleset %s is not attached to this node"%ruleset)
-    q = db.comp_rulesets_nodes.nodename == nodename
-    if isinstance(ruleset_id, list):
-        q &= db.comp_rulesets_nodes.ruleset_id.belongs(ruleset_id)
-    else:
-        q &= db.comp_rulesets_nodes.ruleset_id == ruleset_id
-    n = db(q).delete()
-    table_modified("comp_rulesets_nodes")
-    if n == 0:
-        return dict(status=False, msg="failed to detach the ruleset")
-    update_dash_rsetdiff_node(nodename)
-    _log('compliance.ruleset.node.detach',
-        '%(ruleset)s detached from node %(node)s',
-        dict(node=nodename, ruleset=ruleset),
-        user='root@'+nodename)
-    return dict(status=True, msg="ruleset %s detached"%ruleset)
+    d = lib_comp_ruleset_detach_node(nodename, ruleset_id)
+    return mangle_lib_result(d)
 
 @service.xmlrpc
 def comp_list_rulesets(pattern='%', nodename=None, auth=("", "")):
