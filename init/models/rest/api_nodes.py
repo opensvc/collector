@@ -4,6 +4,48 @@ import datetime
 api_nodes_doc = {}
 
 #
+class rest_delete_node_compliance_moduleset(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Detach a moduleset from a node",
+          "Modules of attached modulesets are scheduled for check or fix by the node OpenSVC agent.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/nodes/mynode/compliance/modulesets/151",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/nodes/<nodename>/compliance/modulesets/<id>",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, nodename, modset_id, **vars):
+        node_responsible(nodename)
+        return lib_comp_moduleset_detach_node(nodename, modset_id)
+
+#
+class rest_post_node_compliance_moduleset(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Attach a moduleset to a node",
+          "Modules of attached modulesets are scheduled for check or fix by the node OpenSVC agent.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/nodes/mynode/compliance/modulesets/151",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/nodes/<nodename>/compliance/modulesets/<id>",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, nodename, modset_id, **vars):
+        node_responsible(nodename)
+        return lib_comp_moduleset_attach_node(nodename, modset_id)
+
+#
 class rest_get_node_compliance_rulesets(rest_get_table_handler):
     def __init__(self):
         desc = [

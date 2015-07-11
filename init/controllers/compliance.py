@@ -6013,102 +6013,6 @@ def _comp_get_moduleset_svc_modules(moduleset, svcname):
                         cacheable=True)
     return [r.modset_mod_name for r in rows]
 
-def comp_attached_svc_ruleset_id(svcname, slave):
-    q = db.comp_rulesets_services.svcname == svcname
-    q &= db.comp_rulesets_services.slave == slave
-    rows = db(q).select(db.comp_rulesets_services.ruleset_id, cacheable=True)
-    return [r.ruleset_id for r in rows]
-
-def comp_attached_ruleset_id(nodename):
-    q = db.comp_rulesets_nodes.nodename == nodename
-    rows = db(q).select(db.comp_rulesets_nodes.ruleset_id, cacheable=True)
-    return [r.ruleset_id for r in rows]
-
-def comp_attached_svc_moduleset_id(svcname):
-    q = db.comp_modulesets_services.modset_svcname == svcname
-    rows = db(q).select(db.comp_modulesets_services.modset_id, cacheable=True)
-    return [r.modset_id for r in rows]
-
-def comp_attached_moduleset_id(nodename):
-    q = db.comp_node_moduleset.modset_node == nodename
-    rows = db(q).select(db.comp_node_moduleset.modset_id, cacheable=True)
-    return [r.modset_id for r in rows]
-
-def comp_ruleset_id(ruleset):
-    q = db.comp_rulesets.ruleset_name == ruleset
-    rows = db(q).select(db.comp_rulesets.id, cacheable=True)
-    if len(rows) == 0:
-        return None
-    return rows[0].id
-
-def comp_moduleset_id(moduleset):
-    q = db.comp_moduleset.modset_name == moduleset
-    rows = db(q).select(db.comp_moduleset.id, cacheable=True)
-    if len(rows) == 0:
-        return None
-    return rows[0].id
-
-def comp_moduleset_exists(moduleset):
-    q = db.comp_moduleset.modset_name == moduleset
-    rows = db(q).select(db.comp_moduleset.id, cacheable=True)
-    if len(rows) != 1:
-        return None
-    return rows[0].id
-
-def comp_ruleset_svc_attached(svcname, rset_id, slave):
-    q = db.comp_rulesets_services.svcname == svcname
-    q &= db.comp_rulesets_services.ruleset_id == rset_id
-    q &= db.comp_rulesets_services.slave == slave
-    if len(db(q).select(db.comp_rulesets_services.id, cacheable=True)) == 0:
-        return False
-    return True
-
-def comp_moduleset_svc_attached(svcname, modset_id, slave):
-    q = db.comp_modulesets_services.modset_svcname == svcname
-    q &= db.comp_modulesets_services.modset_id == modset_id
-    q &= db.comp_modulesets_services.slave == slave
-    if len(db(q).select(db.comp_modulesets_services.id, cacheable=True)) == 0:
-        return False
-    return True
-
-def comp_moduleset_attached(nodename, modset_id):
-    q = db.comp_node_moduleset.modset_node == nodename
-    q &= db.comp_node_moduleset.modset_id == modset_id
-    if len(db(q).select(db.comp_node_moduleset.id, cacheable=True)) == 0:
-        return False
-    return True
-
-def comp_ruleset_exists(ruleset):
-    q = db.v_comp_explicit_rulesets.ruleset_name == ruleset
-    rows = db(q).select(db.v_comp_explicit_rulesets.id, cacheable=True)
-    if len(rows) != 1:
-        return None
-    return rows[0].id
-
-def comp_ruleset_attached(nodename, ruleset_id):
-    q = db.comp_rulesets_nodes.nodename == nodename
-    q &= db.comp_rulesets_nodes.ruleset_id == ruleset_id
-    if len(db(q).select(db.comp_rulesets_nodes.id, cacheable=True)) == 0:
-        return False
-    return True
-
-def comp_slave(svcname, nodename):
-    q = db.svcmon.mon_vmname == nodename
-    q &= db.svcmon.mon_svcname == svcname
-    row = db(q).select(cacheable=True).first()
-    if row is None:
-        return False
-    return True
-
-def has_slave(svcname):
-    q = db.svcmon.mon_svcname == svcname
-    q &= db.svcmon.mon_vmname != None
-    q &= db.svcmon.mon_vmname != ""
-    row = db(q).select(cacheable=True).first()
-    if row is None:
-        return False
-    return True
-
 @service.xmlrpc
 def comp_attach_svc_ruleset(svcname, ruleset, auth):
     return rpc_comp_attach_svc_ruleset(svcname, ruleset, auth)
@@ -6171,30 +6075,26 @@ def rpc_comp_attach_svc_moduleset(svcname, moduleset, auth):
 def comp_attach_moduleset(nodename, moduleset, auth):
     return rpc_comp_attach_moduleset(nodename, moduleset, auth)
 
+def mangle_lib_result(d):
+    msg = []
+    if "error" in d:
+        d["status"] = False
+        msg.append(d["error"])
+    else:
+        d["status"] = True
+    if "info" in d:
+        d["msg"] = d["info"]
+        msg.append(d["info"])
+    d["msg"] = '. '.join(msg)
+    return d
+
 @auth_uuid
 def rpc_comp_attach_moduleset(nodename, moduleset, auth):
     if len(moduleset) == 0:
         return dict(status=False, msg="no moduleset specified"%moduleset)
     modset_id = comp_moduleset_id(moduleset)
-    if modset_id is None:
-        return dict(status=False, msg="moduleset %s does not exist"%moduleset)
-    if comp_moduleset_attached(nodename, modset_id):
-        return dict(status=True, msg="moduleset %s is already attached to this node"%moduleset)
-    if not comp_moduleset_attachable(nodename, modset_id):
-        return dict(status=False, msg="moduleset %s is not attachable"%moduleset)
-
-    n = db.comp_node_moduleset.insert(modset_node=nodename,
-                                      modset_id=modset_id)
-    table_modified("comp_node_moduleset")
-    update_dash_moddiff_node(nodename)
-
-    if n == 0:
-        return dict(status=False, msg="failed to attach moduleset %s"%moduleset)
-    _log('compliance.moduleset.node.attach',
-        '%(moduleset)s attached to node %(node)s',
-        dict(node=nodename, moduleset=moduleset),
-        user='root@'+nodename)
-    return dict(status=True, msg="moduleset %s attached"%moduleset)
+    d = lib_comp_moduleset_attach_node(nodename, modset_id)
+    return mangle_lib_result(d)
 
 @service.xmlrpc
 def comp_detach_svc_ruleset(svcname, ruleset, auth):
@@ -6282,77 +6182,8 @@ def rpc_comp_detach_moduleset(nodename, moduleset, auth):
         return dict(status=True, msg="moduleset %s does not exist"%moduleset)
     elif moduleset == 'all' and len(modset_id) == 0:
         return dict(status=True, msg="this node has no moduleset attached")
-    if moduleset != 'all' and not comp_moduleset_attached(nodename, modset_id):
-        return dict(status=True,
-                    msg="moduleset %s is not attached to this node"%moduleset)
-    q = db.comp_node_moduleset.modset_node == nodename
-    if isinstance(modset_id, list):
-        q &= db.comp_node_moduleset.modset_id.belongs(modset_id)
-    else:
-        q &= db.comp_node_moduleset.modset_id == modset_id
-    n = db(q).delete()
-    table_modified("comp_node_moduleset")
-    if n == 0:
-        return dict(status=False, msg="failed to detach the moduleset")
-    update_dash_moddiff_node(nodename)
-
-    _log('compliance.moduleset.node.detach',
-        '%(moduleset)s detached from node %(node)s',
-        dict(node=nodename, moduleset=moduleset),
-        user='root@'+nodename)
-    return dict(status=True, msg="moduleset %s detached"%moduleset)
-
-def comp_moduleset_svc_attachable(svcname, modset_id):
-    q = db.services.svc_name == svcname
-    q &= db.services.svc_app == db.apps.app
-    q &= db.apps.id == db.apps_responsibles.app_id
-    q &= db.apps_responsibles.group_id == db.auth_group.id
-    q &= db.auth_group.id == db.comp_moduleset_team_publication.group_id
-    q &= db.comp_moduleset_team_publication.modset_id == db.comp_moduleset.id
-    q &= db.comp_moduleset.id == modset_id
-    rows = db(q).select(db.nodes.team_responsible, cacheable=True)
-    if len(rows) == 0:
-        return False
-    return True
-
-def comp_ruleset_svc_attachable(svcname, rset_id):
-    q = db.services.svc_name == svcname
-    q &= db.services.svc_app == db.apps.app
-    q &= db.apps.id == db.apps_responsibles.app_id
-    q &= db.apps_responsibles.group_id == db.auth_group.id
-    q &= db.auth_group.id == db.comp_ruleset_team_publication.group_id
-    q &= db.comp_ruleset_team_publication.ruleset_id == db.comp_rulesets.id
-    q &= db.comp_rulesets.id == rset_id
-    q &= db.comp_rulesets.ruleset_public == True
-    q &= db.comp_rulesets.ruleset_type == "explicit"
-    rows = db(q).select(db.nodes.team_responsible, cacheable=True)
-    if len(rows) == 0:
-        return False
-    return True
-
-def comp_moduleset_attachable(nodename, modset_id):
-    q = db.nodes.team_responsible == db.auth_group.role
-    q &= db.auth_group.id == db.comp_moduleset_team_publication.group_id
-    q &= db.comp_moduleset_team_publication.modset_id == db.comp_moduleset.id
-    q &= db.comp_moduleset.id == modset_id
-    q &= db.nodes.nodename == nodename
-    rows = db(q).select(db.nodes.team_responsible, cacheable=True)
-    if len(rows) != 1:
-        return False
-    return True
-
-def comp_ruleset_attachable(nodename, ruleset_id):
-    q = db.nodes.team_responsible == db.auth_group.role
-    q &= db.auth_group.id == db.comp_ruleset_team_publication.group_id
-    q &= db.comp_ruleset_team_publication.ruleset_id == db.comp_rulesets.id
-    q &= db.comp_rulesets.id == ruleset_id
-    q &= db.comp_rulesets.ruleset_public == True
-    q &= db.comp_rulesets.ruleset_type == "explicit"
-    q &= db.nodes.nodename == nodename
-    rows = db(q).select(cacheable=True)
-    if len(rows) != 1:
-        return False
-    return True
+    d = lib_comp_moduleset_detach_node(nodename, modset_id)
+    return mangle_lib_result(d)
 
 @service.xmlrpc
 def comp_attach_ruleset(nodename, ruleset, auth):
