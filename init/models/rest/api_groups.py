@@ -178,6 +178,68 @@ class rest_get_group_services(rest_get_table_handler):
 
 
 #
+class rest_get_group_modulesets(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List modulesets published to the specified group.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/groups/mygroup/modulesets"
+        ]
+
+        rest_get_table_handler.__init__(
+          self,
+          path="/groups/<id>/modulesets",
+          tables=["comp_moduleset"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        try:
+            id = int(id)
+            q = db.auth_group.id == id
+        except:
+            q = db.auth_group.role == id
+        q &= db.auth_group.id.belongs(user_group_ids())
+        q &= db.comp_moduleset_team_publication.group_id == db.auth_group.id
+        q &= db.comp_moduleset_team_publication.modset_id == db.comp_moduleset.id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+
+#
+class rest_get_group_rulesets(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List rulesets published to the specified group.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/groups/mygroup/rulesets"
+        ]
+
+        rest_get_table_handler.__init__(
+          self,
+          path="/groups/<id>/rulesets",
+          tables=["comp_rulesets"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        try:
+            id = int(id)
+            q = db.auth_group.id == id
+        except:
+            q = db.auth_group.role == id
+        q &= db.auth_group.id.belongs(user_group_ids())
+        q &= db.comp_ruleset_team_publication.group_id == db.auth_group.id
+        q &= db.comp_ruleset_team_publication.ruleset_id == db.comp_rulesets.id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+
+#
 class rest_get_group_users(rest_get_table_handler):
     def __init__(self):
         desc = [
