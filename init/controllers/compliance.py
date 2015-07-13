@@ -8592,6 +8592,8 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
               '_style': 'width:%(max)dem'%dict(max=max),
               '_trigger_args': trigger_args,
               '_trigger_fn': input.get('Function', ""),
+              '_trigger_id': input.get('CandidateId', ""),
+              '_trigger_fmt': input.get('Format', ""),
               '_mandatory': input.get('Mandatory', ""),
             }
             _input = SELECT(
@@ -8607,6 +8609,8 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
               '_style': 'padding: 0.3em',
               '_trigger_args': trigger_args,
               '_trigger_fn': input.get('Function', ""),
+              '_trigger_id': input.get('CandidateId', ""),
+              '_trigger_fmt': input.get('Format', ""),
             }
             _input = DIV(
                    default,
@@ -8618,6 +8622,8 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
               '_name': forms_xid(''),
               '_trigger_args': trigger_args,
               '_trigger_fn': input.get('Function', ""),
+              '_trigger_id': input.get('CandidateId', ""),
+              '_trigger_fmt': input.get('Format', ""),
               '_mandatory': input.get('Mandatory', ""),
             }
             if input.get('ReadOnly', False):
@@ -8635,6 +8641,8 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
               '_class': 'date',
               '_trigger_args': trigger_args,
               '_trigger_fn': input.get('Function', ""),
+              '_trigger_id': input.get('CandidateId', ""),
+              '_trigger_fmt': input.get('Format', ""),
               '_mandatory': input.get('Mandatory', ""),
             }
             if input.get('ReadOnly', False):
@@ -8648,6 +8656,8 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
               '_class': 'datetime',
               '_trigger_args': trigger_args,
               '_trigger_fn': input.get('Function', ""),
+              '_trigger_id': input.get('CandidateId', ""),
+              '_trigger_fmt': input.get('Format', ""),
               '_mandatory': input.get('Mandatory', ""),
             }
             if input.get('ReadOnly', False):
@@ -8661,6 +8671,8 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
               '_class': 'time',
               '_trigger_args': trigger_args,
               '_trigger_fn': input.get('Function', ""),
+              '_trigger_id': input.get('CandidateId', ""),
+              '_trigger_fmt': input.get('Format', ""),
               '_mandatory': input.get('Mandatory', ""),
             }
             if input.get('ReadOnly', False):
@@ -8672,6 +8684,8 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
               '_name': forms_xid(''),
               '_trigger_args': trigger_args,
               '_trigger_fn': input.get('Function', ""),
+              '_trigger_id': input.get('CandidateId', ""),
+              '_trigger_fmt': input.get('Format', ""),
               '_value': default,
               '_mandatory': input.get('Mandatory', ""),
             }
@@ -9106,7 +9120,7 @@ function refresh_select(e) {
       });
     } else {
       e.find('option').remove()
-      data = parse_data(data)
+      data = parse_data(data, e)
       for (i=0;i<data.length;i++) {
         if (!data[i]) {
           continue
@@ -9127,7 +9141,7 @@ function refresh_select(e) {
 
 function refresh_div(e) {
   return function(data) {
-    data = parse_data(data)
+    data = parse_data(data, e)
     if (data instanceof Array) {
       s = data.join("\\n")
     } else if (("data" in data) && (data["data"].length == 0)) {
@@ -9140,7 +9154,7 @@ function refresh_div(e) {
   };
 }
 
-function parse_data(data) {
+function parse_data(data, e) {
   if (typeof(data[i]) == "string") {
     return [data]
   }
@@ -9156,16 +9170,51 @@ function parse_data(data) {
   if (!(data["data"] instanceof Array)) {
     data["data"] = [data["data"]]
   }
-  try {
-    keys = Object.keys(data["data"][0])
-    key = keys[0]
-  } catch(e) {
-    key = false
+  var fmt = e.attr("trigger_fmt")
+  var key = e.attr("trigger_id")
+  if (key && !fmt) {
+    fmt = key
   }
-  if (key) {
+  if (fmt.length == 0) {
+    try {
+      keys = Object.keys(data["data"][0])
+      fmt = "#"+keys[0]
+    } catch(e) {
+      fmt = false
+    }
+  }
+  if (key.length == 0) {
+    try {
+      keys = Object.keys(data["data"][0])
+      key = "#"+keys[0]
+    } catch(e) {
+      key = false
+    }
+  }
+  if (e.get(0).tagName == 'SELECT' && key && fmt) {
     var _data = []
     for (i=0; i<data["data"].length; i++) {
-      _data.push(data["data"][i][key])
+      key = key.replace(/^#/, "")
+      var _fmt = fmt
+      for (k in data["data"][i]) {
+        var reg = new RegExp("#"+k, "i")
+        var val = data["data"][i][k]
+        _fmt = _fmt.replace(reg, val)
+      }
+      _data.push([data["data"][i][key], _fmt])
+    }
+    return _data
+  }
+  if (fmt) {
+    var _data = []
+    for (i=0; i<data["data"].length; i++) {
+      var _fmt = fmt
+      for (k in data["data"][i]) {
+        var reg = new RegExp("#"+k, "i")
+        var val = data["data"][i][k]
+        _fmt = _fmt.replace(reg, val)
+      }
+      _data.push(_fmt)
     }
     return _data
   }
@@ -9174,11 +9223,15 @@ function parse_data(data) {
 
 function refresh_input(e) {
   return function(data) {
-    data = parse_data(data)
+    data = parse_data(data, e)
     if (data.length == 0) {
       return
     }
-    s = data.join("\\n")
+    if (data instanceof Array) {
+      s = data.join("\\n")
+    } else {
+      s = data
+    }
     e.val(s)
     e.trigger('change')
   }
@@ -9186,11 +9239,11 @@ function refresh_input(e) {
 
 function refresh_textarea(e) {
   return function(data) {
-    data = parse_data(data)
+    data = parse_data(data, e)
     h = 1.3
     if (data instanceof Array) {
       s = data.join("\\n")
-      if (data.length > 2) {
+      if (data.length > 1) {
         h = 1.3 * data.length
       }
     } else if (("data" in data) && (data["data"].length == 0)) {
@@ -9244,7 +9297,10 @@ function replace_references(s) {
   return s
 }
 
-function form_input_functions (o) {
+function form_input_functions (o, init) {
+    if (!init && !o.parent().is(":visible")) {
+      return
+    }
     l = $(o).attr("id").split("_")
     index = l[l.length-1]
     l = o.attr("trigger_args").split("@@")
@@ -9282,7 +9338,15 @@ function form_inputs_functions (o) {
   l.pop()
   id = l.join("_").replace("%(xid)s", "")
   $(o).parents('table').first().find("[trigger_args*=#"+id+"],[trigger_fn*=#"+id+"]").each(function(){
-    form_input_functions($(this))
+    form_input_functions($(this), false)
+  })
+  reg = new RegExp("#"+id)
+  $(o).parents('table').first().find("[name=cond]").each(function(){
+    if (!$(this).text().match(reg)) {
+      return
+    }
+    var input = $(this).parent().find("[name^=%(xid)s]").first()
+    form_input_functions(input, false)
   })
 }
 
@@ -9325,6 +9389,7 @@ function form_inputs_constraints (o) {
       if (1.0*val <= 1.0*tgt) {
         $(this).parents('tr').first().addClass("highlight_input")
         $(this).show()
+        form_input_functions($(this), false)
         return
       }
     } else if (op == "match") {
@@ -9333,6 +9398,7 @@ function form_inputs_constraints (o) {
       if (!re.test(val)) {
         $(this).parents('tr').first().addClass("highlight_input")
         $(this).show()
+        form_input_functions($(this), false)
         return
       }
     }
@@ -9367,12 +9433,14 @@ function form_inputs_conditions (o) {
     if (left.charAt(0) == "#"){
       left = left.substr(1);
       v_left = $('#'+prefix+"_"+left+"_"+index).val()
+      if (!v_left) { v_left = "" }
     } else {
       v_left = left
     }
     if (right.charAt(0) == "#"){
       right = right.substr(1);
       v_right = $('#'+prefix+"_"+right+"_"+index).val()
+      if (!v_right) { v_right = "" }
     } else {
       v_right = right
     }
@@ -9395,11 +9463,11 @@ function form_inputs_conditions (o) {
 $("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").each(function(){
   form_inputs_resize(this)
   if ($(this).attr("trigger_fn") != "") {
-    form_input_functions($(this))
+    form_input_functions($(this), true)
   }
-})
-$("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").bind('change', function(){
-  form_inputs_trigger(this)
+  $(this).bind("change", function(){
+    form_inputs_trigger(this)
+  })
 })
 $("input[name^=%(xid)s][readonly=on],select[name^=%(xid)s][readonly=on],textarea[name^=%(xid)s][readonly=on]").trigger('change')
 """%dict(
