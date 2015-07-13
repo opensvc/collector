@@ -8592,7 +8592,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
               '_style': 'width:%(max)dem'%dict(max=max),
               '_trigger_args': trigger_args,
               '_trigger_fn': input.get('Function', ""),
-              '_trigger_id': input.get('CandidateId', ""),
+              '_trigger_id': input.get('Value', ""),
               '_trigger_fmt': input.get('Format', ""),
               '_mandatory': input.get('Mandatory', ""),
             }
@@ -8609,7 +8609,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
               '_style': 'padding: 0.3em',
               '_trigger_args': trigger_args,
               '_trigger_fn': input.get('Function', ""),
-              '_trigger_id': input.get('CandidateId', ""),
+              '_trigger_id': input.get('Value', ""),
               '_trigger_fmt': input.get('Format', ""),
             }
             _input = DIV(
@@ -8622,7 +8622,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
               '_name': forms_xid(''),
               '_trigger_args': trigger_args,
               '_trigger_fn': input.get('Function', ""),
-              '_trigger_id': input.get('CandidateId', ""),
+              '_trigger_id': input.get('Value', ""),
               '_trigger_fmt': input.get('Format', ""),
               '_mandatory': input.get('Mandatory', ""),
             }
@@ -8641,7 +8641,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
               '_class': 'date',
               '_trigger_args': trigger_args,
               '_trigger_fn': input.get('Function', ""),
-              '_trigger_id': input.get('CandidateId', ""),
+              '_trigger_id': input.get('Value', ""),
               '_trigger_fmt': input.get('Format', ""),
               '_mandatory': input.get('Mandatory', ""),
             }
@@ -8656,7 +8656,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
               '_class': 'datetime',
               '_trigger_args': trigger_args,
               '_trigger_fn': input.get('Function', ""),
-              '_trigger_id': input.get('CandidateId', ""),
+              '_trigger_id': input.get('Value', ""),
               '_trigger_fmt': input.get('Format', ""),
               '_mandatory': input.get('Mandatory', ""),
             }
@@ -8671,7 +8671,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
               '_class': 'time',
               '_trigger_args': trigger_args,
               '_trigger_fn': input.get('Function', ""),
-              '_trigger_id': input.get('CandidateId', ""),
+              '_trigger_id': input.get('Value', ""),
               '_trigger_fmt': input.get('Format', ""),
               '_mandatory': input.get('Mandatory', ""),
             }
@@ -8684,7 +8684,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
               '_name': forms_xid(''),
               '_trigger_args': trigger_args,
               '_trigger_fn': input.get('Function', ""),
-              '_trigger_id': input.get('CandidateId', ""),
+              '_trigger_id': input.get('Value', ""),
               '_trigger_fmt': input.get('Format', ""),
               '_value': default,
               '_mandatory': input.get('Mandatory', ""),
@@ -9303,6 +9303,10 @@ function form_input_functions (o, init) {
     }
     l = $(o).attr("id").split("_")
     index = l[l.length-1]
+    var trigger_args = o.attr("trigger_args")
+    if (!trigger_args) {
+      return
+    }
     l = o.attr("trigger_args").split("@@")
     var data = {}
     for (i=0; i<l.length; i++) {
