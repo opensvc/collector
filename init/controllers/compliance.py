@@ -10211,6 +10211,7 @@ def json_tree_modulesets():
                 _data['children'] += mods
                 _data['children'] += rulesets
                 obj_id = _data["attr"]["obj_id"]
+                modset_by_objid[obj_id] = _data
                 if obj_id in visible_head_modset_ids:
                     modsets['children'].append(_data)
 
@@ -10244,6 +10245,7 @@ def json_tree_modulesets():
         _data['children'] += mods
         _data['children'] += rulesets
         obj_id = _data["attr"]["obj_id"]
+        modset_by_objid[obj_id] = _data
         if obj_id in visible_head_modset_ids:
             modsets['children'].append(_data)
 
@@ -10262,7 +10264,6 @@ def json_tree_modulesets():
               "data": group_names.get(group_id, ""),
             }
             modsets["children"][i]["children"].append(__data)
-        modset_by_objid[modset_id] = modsets["children"][i]
 
     def recurse_modsets(head, id_prefix=""):
         if "obj_id" in head["attr"]:
