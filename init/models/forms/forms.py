@@ -119,6 +119,14 @@ def get_form_formatted_data_o(output, data, _d=None):
         elif output.get('Format') == "dict":
             h = {}
             for input in data['Inputs']:
+                key = input.get('Key')
+                if key is None:
+                    key = input.get('Id')
+                if key is None:
+                    continue
+                if key in h and h[key] not in (None, "", "undefined"):
+                    # multiple inputs with the same key
+                    continue
                 val = request.vars.get(forms_xid(input['Id'])+'_0')
                 if val is None:
                     if input.get('Mandatory', False):
@@ -133,6 +141,7 @@ def get_form_formatted_data_o(output, data, _d=None):
                 except Exception, e:
                     raise Exception(T(str(e)))
                 if input.get('Type', 'string') != 'integer' or val != "":
+                    h[key] = val
                     h[input['Id']] = val
             output_value = h
         elif output.get('Format') == "list of dict":
@@ -151,6 +160,16 @@ def get_form_formatted_data_o(output, data, _d=None):
                     if idx not in h:
                         h[idx] = {}
                         idxs.append(idx)
+
+                    key = input.get('Key')
+                    if key is None:
+                        key = input.get('Id')
+                    if key is None:
+                        continue
+                    if key in h[idx] and h[idx][key] not in (None, "", "undefined"):
+                        # multiple inputs with the same key
+                        continue
+
                     val = request.vars.get(v)
                     if len(str(val)) == 0:
                         if 'Mandatory' in input and input['Mandatory']:
@@ -160,6 +179,7 @@ def get_form_formatted_data_o(output, data, _d=None):
                     except Exception, e:
                         raise Exception(T(str(e)))
                     if input.get('Type', 'string') != 'integer' or val != "":
+                        h[idx][key] = val
                         h[idx][input['Id']] = val
             output_value = [h[i] for i in idxs]
         elif output.get('Format') == "dict of dict":
@@ -171,6 +191,16 @@ def get_form_formatted_data_o(output, data, _d=None):
                     idx = v.replace(forms_xid(input['Id'])+'_', '')
                     if idx not in h:
                         h[idx] = {}
+
+                    key = input.get('Key')
+                    if key is None:
+                        key = input.get('Id')
+                    if key is None:
+                        continue
+                    if key in h[idx] and h[idx][key] not in (None, "", "undefined"):
+                        # multiple inputs with the same key
+                        continue
+
                     val = request.vars.get(v)
                     if len(str(val)) == 0:
                         if 'Mandatory' in input and input['Mandatory']:
@@ -181,6 +211,7 @@ def get_form_formatted_data_o(output, data, _d=None):
                     except Exception, e:
                         raise Exception(T(str(e)))
                     if input.get('Type', 'string') != 'integer' or val != "":
+                        h[idx][key] = val
                         h[idx][input['Id']] = val
             if 'Key' not in output:
                 raise Exception(T("'Key' must be defined in form Output of 'dict of dict' format"))

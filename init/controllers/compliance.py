@@ -8714,7 +8714,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
                 name = forms_xid('hidden')
                 style = "display:none"
             elif input.get('Condition'):
-                if display_mode and default != "-" and default != "":
+                if display_mode and default != "-" and default != "" and default != "undefined":
                     style = ""
                 else:
                     style = "display:none"
