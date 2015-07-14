@@ -93,6 +93,7 @@ class rest_get_user_apps(rest_get_table_handler):
           path="/users/<id>/apps",
           tables=["apps"],
           desc=desc,
+          groupby=db.apps.id,
           examples=examples,
         )
 
