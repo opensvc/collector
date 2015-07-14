@@ -8472,7 +8472,12 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
             default = user_email()
 
         if type(default) == list:
-            default = ','.join(default)
+            if len(default) == 0:
+                default = ""
+            elif type(default[0]) in (str, unicode):
+                default = ','.join(default)
+            else:
+                default = ""
 
         if type(default) in (str, unicode):
             try:
