@@ -87,6 +87,13 @@ def forms_xid(id=None):
         xid += str(id)
     return xid
 
+def validate_input_value(val):
+    if val is None:
+        return False
+    if type(val) in (str, unicode) and val in ("", "undefined"):
+        return False
+    return True
+
 def get_form_formatted_data_o(output, data, _d=None):
     if _d is not None:
         return _d
@@ -114,7 +121,8 @@ def get_form_formatted_data_o(output, data, _d=None):
                     val = convert_val(val, input['Type'])
                 except Exception, e:
                     raise Exception(T(str(e)))
-                l.append(val)
+                if validate_input_value(val):
+                    l.append(val)
             output_value = l
         elif output.get('Format') == "dict":
             h = {}
@@ -140,7 +148,7 @@ def get_form_formatted_data_o(output, data, _d=None):
                     val = convert_val(val, input['Type'])
                 except Exception, e:
                     raise Exception(T(str(e)))
-                if input.get('Type', 'string') != 'integer' or val != "":
+                if validate_input_value(val):
                     h[key] = val
                     h[input['Id']] = val
             output_value = h
@@ -178,7 +186,7 @@ def get_form_formatted_data_o(output, data, _d=None):
                         val = convert_val(val, input.get('Type', 'string'))
                     except Exception, e:
                         raise Exception(T(str(e)))
-                    if input.get('Type', 'string') != 'integer' or val != "":
+                    if validate_input_value(val):
                         h[idx][key] = val
                         h[idx][input['Id']] = val
             output_value = [h[i] for i in idxs]
@@ -210,7 +218,7 @@ def get_form_formatted_data_o(output, data, _d=None):
                         val = convert_val(val, input['Type'])
                     except Exception, e:
                         raise Exception(T(str(e)))
-                    if input.get('Type', 'string') != 'integer' or val != "":
+                    if validate_input_value(val):
                         h[idx][key] = val
                         h[idx][input['Id']] = val
             if 'Key' not in output:
@@ -251,19 +259,34 @@ def check_output_condition(output, form, data, _d=None):
             raise Exception("malformed output condition: %s"%cond)
         var = var[1:]
         if var not in o:
-            raise Exception("input id %s is not present in submitted data : %s"%(var, str(o)))
+            if op == "==" and val == "empty":
+                pass
+            else:
+                raise Exception("input id %s is not present in submitted data : %s"%(var, str(o)))
         return var, val
 
     o = get_form_formatted_data_o(output, data, _d)
 
     if "==" in cond:
         var, val = get_var_val("==")
+        if val == "empty":
+            if var not in o or o[val] in (None, "undefined", ""):
+                return True
+            return False
+        if var not in o:
+            return False
         if o[var] == val:
             return True
         else:
             return False
     elif "!=" in cond:
         var, val = get_var_val("!=")
+        if val == "empty":
+            if var in o and o[val] not in (None, "undefined", ""):
+                return True
+            return False
+        if var not in o:
+            return True
         if o[var] != val:
             return True
         else:
