@@ -1651,7 +1651,12 @@ def json_node_team_responsible(nodename):
 def json_node_macs(nodename):
     q = db.nodes.nodename.belongs((nodename, nodename.split('.')[0]))
     q &= db.node_ip.nodename == db.nodes.nodename
-    q &= (db.node_ip.intf.like('eth%')) | (db.node_ip.intf.like('bond%'))
+    q &= ~db.node_ip.intf.belongs(["lo", "lo0"])
+    q &= ~db.node_ip.intf.like("veth%")
+    q &= ~db.node_ip.intf.like("docker%")
+    q &= ~db.node_ip.intf.like("br%")
+    q &= ~db.node_ip.intf.like("lxc%")
+    q &= ~db.node_ip.intf.like("xenbr%")
     rows = db(q).select(db.node_ip.mac, db.node_ip.intf,
                         groupby=db.node_ip.mac,
                         orderby=db.node_ip.mac)
