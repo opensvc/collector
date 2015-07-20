@@ -1652,6 +1652,7 @@
 'Scheduled': 'Planifié',
 'Scheduled at': 'Planifié pour',
 'Script %(path)s does not exists': "Le script %(path)s n'existe pas",
+'Script %(path)s execution error: %(err)s': 'Script %(path)s execution error: %(err)s',
 'script %(path)s returned on success:\n%(out)s': 'script %(path)s returned on success:\r\n%(out)s',
 'Script %(path)s returned with error:\n%(err)s': 'Script %(path)s returned with error:\r\n%(err)s',
 'Script %(path)s returned with error: %(err)s': "Le script %(path)s s'est terminé avecc l'erreur : %(err)s",

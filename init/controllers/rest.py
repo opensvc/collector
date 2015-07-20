@@ -58,6 +58,7 @@ handlers = {
      rest_get_node_ips(),
      rest_get_node_services(),
      rest_get_node_service(),
+     rest_get_resources(),
      rest_get_scheduler_tasks(),
      rest_get_scheduler_task(),
      rest_get_scheduler_runs(),
