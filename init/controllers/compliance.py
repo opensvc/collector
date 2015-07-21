@@ -9177,8 +9177,11 @@ function parse_data(data, e) {
   }
   var fmt = e.attr("trigger_fmt")
   var key = e.attr("trigger_id")
+  if (key) {
+    key = key.replace(/^#/, "")
+  }
   if (key && !fmt) {
-    fmt = key
+    fmt = "#"+key
   }
   if (fmt.length == 0) {
     try {
@@ -9188,7 +9191,7 @@ function parse_data(data, e) {
       fmt = false
     }
   }
-  if (key.length == 0) {
+  if (key && key.length == 0) {
     try {
       keys = Object.keys(data["data"][0])
       key = "#"+keys[0]
@@ -9199,7 +9202,6 @@ function parse_data(data, e) {
   if (e.get(0).tagName == 'SELECT' && key && fmt) {
     var _data = []
     for (i=0; i<data["data"].length; i++) {
-      key = key.replace(/^#/, "")
       var _fmt = fmt
       for (k in data["data"][i]) {
         var reg = new RegExp("#"+k, "i")
