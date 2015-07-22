@@ -536,10 +536,6 @@ jstree_data = {
                    } else if (r == "ruleset") {
                      e.attr("rel", "ruleset_hidden")
                    }
-                   // remove unpublished contextual ruleset from head
-                   $("[rel=ruleset_head]>ul>li[rel=ruleset_cxt_hidden").each(function(){
-                     $(this).parents("[name=catree]").jstree("delete_node", "#"+$(this).attr("id"))
-                   })
                    json_status(msg)
                  }
                });
