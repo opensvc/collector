@@ -3557,7 +3557,7 @@
 						var w = $(document).width(),
 							h = $(document).height(),
 							ul = $(this).children("ul").show(); 
-						if(w !== $(document).width()) { ul.toggleClass("right"); }
+						//if(w !== $(document).width()) { ul.toggleClass("right"); }
 						//if(h !== $(document).height()) { ul.toggleClass("bottom"); }
 					})
 					.bind("mouseleave", function (e) { 

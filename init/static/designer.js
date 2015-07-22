@@ -1353,6 +1353,7 @@ function __select(e, data) {
         eval($(this).text());
         $(this).remove();
       });
+      resizer()
     }
   });
  });
@@ -1422,4 +1423,30 @@ function comp_import() {
     }
   });
 }
+
+//
+// monitor doc height changes to trigger the resizer
+//
+function monitor_doc_height(callback){
+  var lastHeight, newHeight, timer;
+  try {
+    lastHeight = $(document).height()
+  } catch(e) {
+    lastHeight = 0
+  }
+  (function run(){
+    try {
+      newHeight = $(document).height()
+    } catch(e) {
+      newHeight = 0
+    }
+
+    if( lastHeight != newHeight )
+      callback()
+    lastHeight = newHeight
+    timer = setTimeout(run, 200)
+  })()
+}
+
+monitor_doc_height(resizer);
 
