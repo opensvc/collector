@@ -495,7 +495,7 @@ function filter_menu() {
   var text = searchbox = $(".search").find("input").val()
   var reg = new RegExp(text, "i");
   menu.find(".menu_entry").each(function(){
-    if ($(this).text().match(reg)) {
+    if (($(this).parents(".menu_section").children("a").text().match(reg)) || ($(this).text().match(reg))) {
       $(this).show()
       $(this).parents(".menu_section").first().show()
     } else {
