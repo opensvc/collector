@@ -6223,7 +6223,8 @@ def _comp_get_svc_data(nodename, svcname, modulesets=[]):
     }
 
 def test_comp_get_data():
-    return _comp_get_data("x64lmwbiegt")
+    d = _comp_get_data("clementine")
+    print d
 
 def test_comp_get_svc_ruleset():
     return _comp_get_svc_ruleset("unxdevweb01", "clementine")
@@ -6800,6 +6801,8 @@ def comp_contextual_rulesets(nodename, svcname=None, slave=False, matching_fsets
         for rset_id in rset_ids:
             if rset_id not in public_rsets and rset_id not in rset_ids_via_modset:
                 continue
+            if rset_id not in public_rsets and rset_id in rset_ids_via_modset:
+                fset_name += " (matching non-public contextual ruleset shown via moduleset)"
             ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, matching_fsets=matching_fsets, rset_relations=rset_relations, rset_names=rset_names))
     return ruleset
 
