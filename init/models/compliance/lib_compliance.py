@@ -773,14 +773,14 @@ def _export_filtersets(fset_ids):
 
 def export_modulesets(modset_ids):
     data = _export_modulesets(modset_ids)
-    return json.dumps(data, indent=4, separators=(',', ': '))
+    return json.dumps(data, indent=4, separators=(',', ': '), sort_keys=True)
 
 def export_rulesets(rset_ids):
     data = _export_rulesets(rset_ids)
-    return json.dumps(data, indent=4, separators=(',', ': '))
+    return json.dumps(data, indent=4, separators=(',', ': '), sort_keys=True)
 
 def export_filtersets(fset_ids):
     data = _export_filtersets(fset_ids)
-    return json.dumps(data, indent=4, separators=(',', ': '))
+    return json.dumps(data, indent=4, separators=(',', ': '), sort_keys=True)
 
 
