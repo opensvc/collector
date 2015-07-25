@@ -81,4 +81,208 @@ class rest_delete_compliance_status_run(rest_delete_handler):
         )
         return dict(info="Run %s deleted" % id)
 
+#
+class rest_get_compliance_modulesets(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List modulesets published to the requesting user's groups.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/modulesets"
+        ]
+
+        rest_get_table_handler.__init__(
+          self,
+          path="/compliance/modulesets",
+          tables=["comp_moduleset"],
+          groupby=db.comp_moduleset.id,
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        q = db.auth_group.id.belongs(user_group_ids())
+        q &= db.comp_moduleset_team_publication.group_id == db.auth_group.id
+        q &= db.comp_moduleset_team_publication.modset_id == db.comp_moduleset.id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+
+#
+class rest_get_compliance_moduleset(rest_get_line_handler):
+    def __init__(self):
+        desc = [
+          "Display the moduleset properties, if published to the requesting users's group.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/modulesets/2"
+        ]
+
+        rest_get_line_handler.__init__(
+          self,
+          path="/compliance/modulesets/<id>",
+          tables=["comp_moduleset"],
+          groupby=db.comp_moduleset.id,
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        q = db.auth_group.id.belongs(user_group_ids())
+        q &= db.comp_moduleset.id == id
+        q &= db.comp_moduleset_team_publication.group_id == db.auth_group.id
+        q &= db.comp_moduleset_team_publication.modset_id == db.comp_moduleset.id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+
+#
+class rest_get_compliance_moduleset_export(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Export the moduleset in a JSON format compatible with the import handler.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/modulesets/2/export"
+        ]
+
+        rest_get_handler.__init__(
+          self,
+          path="/compliance/modulesets/<id>/export",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        id = int(id)
+        return _export_modulesets([id])
+
+
+#
+class rest_get_compliance_modulesets_export(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Export all modulesets in a JSON format compatible with the import handler.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/modulesets/2/export"
+        ]
+
+        rest_get_handler.__init__(
+          self,
+          path="/compliance/modulesets/export",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        q = db.auth_group.id.belongs(user_group_ids())
+        q &= db.comp_moduleset.id > 0
+        q &= db.comp_moduleset_team_publication.group_id == db.auth_group.id
+        q &= db.comp_moduleset_team_publication.modset_id == db.comp_moduleset.id
+        ids = [r.id for r in db(q).select(db.comp_moduleset.id)]
+        return _export_modulesets(ids)
+
+
+#
+class rest_get_compliance_rulesets(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List rulesets published to the requesting users's group.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/rulesets"
+        ]
+
+        rest_get_table_handler.__init__(
+          self,
+          path="/compliance/rulesets",
+          tables=["comp_rulesets"],
+          groupby=db.comp_rulesets.id,
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        q = db.auth_group.id.belongs(user_group_ids())
+        q &= db.comp_ruleset_team_publication.group_id == db.auth_group.id
+        q &= db.comp_ruleset_team_publication.ruleset_id == db.comp_rulesets.id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
+class rest_get_compliance_ruleset(rest_get_line_handler):
+    def __init__(self):
+        desc = [
+          "Display the ruleset properties, if published to the requesting users's group.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/rulesets/2"
+        ]
+
+        rest_get_line_handler.__init__(
+          self,
+          path="/compliance/rulesets/<id>",
+          tables=["comp_rulesets"],
+          groupby=db.comp_rulesets.id,
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        q = db.auth_group.id.belongs(user_group_ids())
+        q &= db.comp_rulesets.id == id
+        q &= db.comp_ruleset_team_publication.group_id == db.auth_group.id
+        q &= db.comp_ruleset_team_publication.ruleset_id == db.comp_rulesets.id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
+class rest_get_compliance_ruleset_export(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Export the ruleset in a JSON format compatible with the import handler.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/rulesets/2/export"
+        ]
+
+        rest_get_handler.__init__(
+          self,
+          path="/compliance/rulesets/<id>/export",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        id = int(id)
+        return _export_rulesets([id])
+
+
+#
+class rest_get_compliance_rulesets_export(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Export all rulesets in a JSON format compatible with the import handler.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/rulesets/export"
+        ]
+
+        rest_get_handler.__init__(
+          self,
+          path="/compliance/rulesets/export",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        q = db.auth_group.id.belongs(user_group_ids())
+        q &= db.comp_rulesets.id > 0
+        q &= db.comp_ruleset_team_publication.group_id == db.auth_group.id
+        q &= db.comp_ruleset_team_publication.ruleset_id == db.comp_rulesets.id
+        ids = [r.id for r in db(q).select(db.comp_rulesets.id)]
+        return _export_rulesets(ids)
+
+
 
