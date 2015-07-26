@@ -10231,8 +10231,20 @@ def comp_admin():
         _style="position:absolute;padding:0.2em",
       )
 
+    if request.vars.obj_filter2 is None:
+        tree2_display = "display:none"
+    else:
+        tree2_display = ""
+    search2 = INPUT(
+          _id="casearch2",
+          _value=request.vars.obj_filter2,
+          _style="float:left;position:absolute;margin-top:0.2em;"+tree2_display,
+        _class="wfsearch",
+        )
+
     d = DIV(
       search,
+      search2,
       DIV(
         DIV(
           _id="catree",
@@ -10242,7 +10254,7 @@ def comp_admin():
         DIV(
           _id="catree2",
           _name="catree",
-          _style="height:100%;overflow-y:scroll;width:20%;float:left;display:none",
+          _style="height:100%;overflow-y:scroll;width:20%;float:left;"+tree2_display,
         ),
         DIV(
           XML("&nbsp;"),

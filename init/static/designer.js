@@ -7,6 +7,7 @@ var designer = {
 
 function resizer(){
   $("#casearch").parent().css({"left": $("#catree").width()-$("#casearch").parent().width()})
+  $("#casearch2").css({"left": $("#sep").position()["left"]-$("#casearch2").width()-$("#casearch2").css("padding-left").replace(/px/,"")-10})
   $("#treerow").height($(window).height()-$(".header").outerHeight()-$(".footer").outerHeight())
   $("#cainfo").width($(window).width()-$("#catree").outerWidth(true)-$("#catree2:visible").outerWidth(true)-$("#sep").outerWidth(true)-41)
   $("#cainfo").height($("#treerow").height()-parseInt($("#cainfo").css('padding-top'))-parseInt($("#cainfo").css('padding-bottom')))
@@ -21,6 +22,7 @@ function designer_link(){
   var re = /#$/;
   url = url.replace(re, "")+"?";
   args = "obj_filter="+encodeURIComponent($("#casearch").val())
+  args += "&obj_filter2="+encodeURIComponent($("#casearch2").val())
   $("#calink_val").children("textarea").val(url+args).attr("readonly", "on").select()
   $("#calink_val").show()
   $("#calink_val").children("textarea").select()
@@ -85,6 +87,13 @@ function json_status(msg){
     s = ""
   }
   $(".flash").html(s).slideDown()
+}
+
+function json_data_url(tree) {
+   if (tree==2) {
+     return function(){ return designer.url+"?obj_filter="+encodeURIComponent($("#casearch2").val()) }
+   }
+   return function(){ return designer.url+"?obj_filter="+encodeURIComponent($("#casearch").val()) }
 }
 
 jstree_data = {
@@ -164,7 +173,7 @@ jstree_data = {
  },
  "json_data" : {
   "ajax" : {
-   "url" : function(){ return designer.url+"?obj_filter="+encodeURIComponent($("#casearch").val()) },
+   "url" : json_data_url(),
   },
  },
  "contextmenu": {
@@ -1372,6 +1381,7 @@ function d_init(data) {
     "save_opened": "jstree_open2",
     "save_selected": "jstree_select2",
   }
+  jstree_data["json_data"]["ajax"]["url"] = json_data_url(2)
   
   $("#catree2").jstree(jstree_data).bind("rename.jstree", __rename)
                                    .bind("move_node.jstree", __move)
@@ -1383,6 +1393,10 @@ function d_init(data) {
   $("#casearch").keyup(function(event){
     if (is_enter(event)) {
       $("#catree:visible").jstree("refresh");
+    }
+  })
+  $("#casearch2").keyup(function(event){
+    if (is_enter(event)) {
       $("#catree2:visible").jstree("refresh");
     }
   })
@@ -1393,6 +1407,7 @@ function d_init(data) {
     var ini_w = $("#catree").width()
     $(document).bind("mousemove", function(){
       $("#catree").css({"width": ini_w+event.pageX-ini_x})
+      resizer()
     })
   })
   $(document).mouseup(function(){
@@ -1401,6 +1416,7 @@ function d_init(data) {
 
   $("#sep").dblclick(function(){
     $("#catree2").toggle()
+    $("#casearch2").toggle()
     $("#catree2:visible").jstree("refresh");
     resizer()
   })
