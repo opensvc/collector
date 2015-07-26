@@ -138,6 +138,7 @@ def ajax_action_status():
                        'actions_f_end':'<'+str(end+datetime.timedelta(days=1)),
                        'actions_f_perpage':0,
                        'clear_filters': 'true',
+                       'volatile_filters': 'true',
                      }
           ),
         )

@@ -813,6 +813,8 @@ class HtmlTable(object):
         db(q).delete()
 
     def drop_filter_value(self, f, bookmark="current"):
+        if request.vars.volatile_filters is not None:
+            return
         field = self.stored_filter_field(f)
         if field is None:
             return
@@ -842,6 +844,8 @@ class HtmlTable(object):
             db(q).update(col_filter=v)
 
     def stored_filter_value(self, f, bookmark="current"):
+        if request.vars.volatile_filters is not None:
+            return ""
         field = self.stored_filter_field(f)
         if field is None:
             return ""
@@ -1297,6 +1301,7 @@ table_init({
  'span': %(span)s,
  'columns': %(columns)s,
  'colprops': %(colprops)s,
+ 'volatile_filters': "%(volatile_filters)s",
  'visible_columns': %(visible_columns)s,
  'child_tables': %(child_tables)s,
  'action_menu': %(action_menu)s,
@@ -1314,6 +1319,7 @@ function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
                    span=str(self.span),
                    columns=str(self.cols),
                    colprops=self.serialize_colprops(),
+                   volatile_filters=str(request.vars.get("volatile_filters", "")),
                    visible_columns=str(self.visible_columns()),
                    child_tables=str(self.child_tables),
                    ajax_submit=self.ajax_submit(),

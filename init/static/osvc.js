@@ -1200,7 +1200,11 @@ function table_format_theader_slim(t, c, val) {
   }
   var cl = ""
   if ((val.length > 0) && (val != "**clear**")) {
-    cl = " class='bgred'"
+    if (t.volatile_filters == "") {
+      cl = " class='bgred'"
+    } else {
+      cl = " class='bgblack'"
+    }
   }
   var s = "<td name='"+t.id+"_c_"+c+"'"+cl+">"
   return s
@@ -1331,15 +1335,20 @@ function table_refresh(t) {
     } else {
         t.set_refresh_spin()
     }
-    var query="table_id="+t.id
-    query += '&'+t.id+"_page="+$("#"+t.id+"_page").val()
-    for (c in t.colprops) {
-      if (t.colprops[c].force_filter == "") {
-        continue
-      }
-      query += "&"+encodeURIComponent(t.id+"_f_"+c)+"="+encodeURIComponent(t.colprops[c].force_filter)
+    var data = {
+      "table_id": t.id,
+      "volatile_filters": true,
+      "visible_columns": t.visible_columns.join(',')
     }
-    query += "&visible_columns="+t.visible_columns.join(',')
+    data[t.id+"_page"] = $("#"+t.id+"_page").val()
+    for (c in t.colprops) {
+      var current = $("#"+t.id+"_f_"+c).val()
+      if (current != "") {
+        data[t.id+"_f_"+c] = current
+      } else if (t.colprops[c].force_filter != "") {
+        data[t.id+"_f_"+c] = t.colprops[c].force_filter
+      }
+    }
     if (t.dataable) {
       var ajax_interface = "data"
     } else {
@@ -1348,7 +1357,7 @@ function table_refresh(t) {
     $.ajax({
          type: "POST",
          url: t.ajax_url+"/"+ajax_interface,
-         data: query,
+         data: data,
          context: document.body,
          beforeSend: function(req){
              $("#"+t.id).find(".nodataline>td").text(T("Loading data"))
@@ -1594,6 +1603,9 @@ function table_ajax_submit(url, id, additional_inputs, input_name, additional_in
             query=query+encodeURIComponent(s[i])+"="+encodeURIComponent(document.getElementById(s[i]).value);
         } catch(e) {}
     }
+    if (t.volatile_filters != "") {
+      query += "&volatile_filters=true"
+    }
     $.ajax({
          type: "POST",
          url: url,
@@ -1784,6 +1796,7 @@ function table_bind_filter_input_events(t) {
       timer = setTimeout(function validate(){
         var dest_id = input.siblings("[id^="+t.id+"_fc_]").attr("id")
         _url = url + col + "?" + input.attr('id') + "=" + encodeURIComponent(input.val())
+        _url += "&volatile_filters=true"
         sync_ajax(_url, [], dest_id, function(){})
       }, 1000)
     }
@@ -3391,8 +3404,8 @@ function cell_decorator_chk_instance(e) {
   var line = $(e).parent(".tl")
   var chk_type = line.children("[name$=_chk_type]").attr("v")
   if (chk_type == "mpath") {
-    url = $(location).attr("origin") + "/init/disks/disks?disks_f_disk_id="+v+"&clear_filters=true"
-    s = "<a class='hd16' href='"+url+"'>"+v+"</a>"
+    url = $(location).attr("origin") + "/init/disks/disks?disks_f_disk_id="+v+"&volatile_filters=true"
+    s = "<a class='hd16' href='"+url+"' target='_blank'>"+v+"</a>"
     $(e).html(s)
   }
 }
@@ -3461,10 +3474,11 @@ function cell_decorator_action_pid(e) {
     var d = new Date(+new Date(_end) + 1000*60*60*24)
     end = print_date(d)
 
-    url = $(location).attr("origin") + "/init/svcactions/svcactions?actions_f_svcname="+svcname+"&actions_f_hostname="+hostname+"&actions_f_pid="+v+"&actions_f_begin=>"+begin+"&actions_f_end=<"+end+"&clear_filters=true"
+    url = $(location).attr("origin") + "/init/svcactions/svcactions?actions_f_svcname="+svcname+"&actions_f_hostname="+hostname+"&actions_f_pid="+v+"&actions_f_begin=>"+begin+"&actions_f_end=<"+end+"&volatile_filters=true"
 
     $(this).children("a").attr("href", url)
-    $(this).children("a").click()
+    $(this).children("a").attr("target", "_blank")
+    //$(this).children("a").click()
   })
 }
 
@@ -3549,8 +3563,8 @@ function cell_decorator_svc_action_err(e) {
   }
   var line = $(e).parent(".tl")
   var svcname = line.children("[name$=mon_svcname]").attr("v")
-  url = $(location).attr("origin") + "/init/svcactions/svcactions?actions_f_svcname="+svcname+"&actions_f_status=err&actions_f_ack=!1|empty&actions_f_begin=>-30d&clear_filters=true"
-  s = "<a class='boxed_small bgred clickable' href='"+url+"'>"+v+"</a>"
+  url = $(location).attr("origin") + "/init/svcactions/svcactions?actions_f_svcname="+svcname+"&actions_f_status=err&actions_f_ack=!1|empty&actions_f_begin=>-30d&volatile_filters=true"
+  s = "<a class='boxed_small bgred clickable' href='"+url+"' target='_blank'>"+v+"</a>"
   $(e).html(s)
 }
 
@@ -3671,11 +3685,11 @@ function cell_decorator_status(e) {
 function cell_decorator_svcmon_links(e) {
   var line = $(e).parent(".tl")
   var mon_svcname = line.children("[name$=mon_svcname]").attr("v")
-  var query = "clear_filters=true&actions_f_svcname="+mon_svcname
+  var query = "volatile_filters=true&actions_f_svcname="+mon_svcname
   query += "&actions_f_status_log=empty"
   query += "&actions_f_begin="+encodeURIComponent(">-1d")
   url = $(location).attr("origin") + "/init/svcactions/svcactions?"+query
-  var d = "<a class='clickable action16' href="+url+">&nbsp</a>"
+  var d = "<a class='clickable action16' target='_blank' href="+url+">&nbsp</a>"
 
   var mon_frozen = line.children("[name$=mon_frozen]").attr("v")
   if (mon_frozen == "1") {
@@ -3754,14 +3768,14 @@ function cell_decorator_dash_link_feed_queue(e) {
 }
 
 function _cell_decorator_dash_link_actions(svcname) {
-  url = $(location).attr("origin") + "/init/svcactions/svcactions?actions_f_svcname="+svcname+"&actions_f_begin=>-7d&clear_filters=true"
-  s = "<a class='action16 clickable' href='"+url+"'></a>"
+  url = $(location).attr("origin") + "/init/svcactions/svcactions?actions_f_svcname="+svcname+"&actions_f_begin=>-7d&volatile_filters=true"
+  s = "<a class='action16 clickable' target='_blank' href='"+url+"'></a>"
   return s
 }
 
 function _cell_decorator_dash_link_action_error(svcname) {
-  url = $(location).attr("origin") + "/init/svcactions/svcactions?actions_f_svcname="+svcname+"&actions_f_status=err&actions_f_ack=!1|empty&actions_f_begin=>-30d&clear_filters=true"
-  s = "<a class='alert16 clickable' href='"+url+"'></a>"
+  url = $(location).attr("origin") + "/init/svcactions/svcactions?actions_f_svcname="+svcname+"&actions_f_status=err&actions_f_ack=!1|empty&actions_f_begin=>-30d&volatile_filters=true"
+  s = "<a class='alert16 clickable' target='_blank' href='"+url+"'></a>"
   return s
 }
 
@@ -3775,8 +3789,8 @@ function cell_decorator_dash_link_action_error(e) {
 }
 
 function _cell_decorator_dash_link_svcmon(svcname) {
-  url = $(location).attr("origin") + "/init/default/svcmon?svcmon_f_mon_svcname="+svcname+"&clear_filters=true"
-  s = "<a class='svc clickable' href='"+url+"'></a>"
+  url = $(location).attr("origin") + "/init/default/svcmon?svcmon_f_mon_svcname="+svcname+"&volatile_filters=true"
+  s = "<a class='svc clickable' target='_blank' href='"+url+"'></a>"
   return s
 }
 
@@ -3789,8 +3803,8 @@ function cell_decorator_dash_link_svcmon(e) {
 }
 
 function _cell_decorator_dash_link_node(nodename) {
-  url = $(location).attr("origin") + "/init/nodes/nodes?nodes_f_nodename="+nodename+"&clear_filters=true"
-  s = "<a class='node16 clickable' href='"+url+"'></a>"
+  url = $(location).attr("origin") + "/init/nodes/nodes?nodes_f_nodename="+nodename+"&volatile_filters=true"
+  s = "<a class='node16 clickable' target='_blank' href='"+url+"'></a>"
   return s
 }
 
@@ -3803,8 +3817,8 @@ function cell_decorator_dash_link_node(e) {
 }
 
 function _cell_decorator_dash_link_checks(nodename) {
-  url = $(location).attr("origin") + "/init/checks/checks?checks_f_chk_nodename="+nodename+"&clear_filters=true"
-  s = "<a class='check16 clickable' href='"+url+"'></a>"
+  url = $(location).attr("origin") + "/init/checks/checks?checks_f_chk_nodename="+nodename+"&volatile_filters=true"
+  s = "<a class='check16 clickable' target='_blank' href='"+url+"'></a>"
   return s
 }
 
@@ -3817,8 +3831,8 @@ function cell_decorator_dash_link_checks(e) {
 }
 
 function _cell_decorator_dash_link_mac_networks(mac) {
-  url = $(location).attr("origin") + "/init/nodenetworks/nodenetworks?nodenetworks_f_mac="+mac+"&clear_filters=true"
-  s = "<a class='net16 clickable' href='"+url+"'></a>"
+  url = $(location).attr("origin") + "/init/nodenetworks/nodenetworks?nodenetworks_f_mac="+mac+"&volatile_filters=true"
+  s = "<a class='net16 clickable' target='_blank' href='"+url+"'></a>"
   return s
 }
 
@@ -3834,8 +3848,8 @@ function cell_decorator_dash_link_obsolescence(e, t) {
   var line = $(e).parent(".tl")
   var nodename = line.find("[name$=dash_nodename]").attr("v")
   var s = ""
-  url = $(location).attr("origin") + "/init/obsolescence/obsolescence_config?obs_f_obs_type="+t+"&clear_filters=true"
-  s = "<a class='"+t+"16 clickable' href='"+url+"'></a>"
+  url = $(location).attr("origin") + "/init/obsolescence/obsolescence_config?obs_f_obs_type="+t+"&volatile_filters=true"
+  s = "<a class='"+t+"16 clickable' target='_blank' href='"+url+"'></a>"
   $(e).html(s)
 }
 
@@ -3904,8 +3918,8 @@ function cell_decorator_dash_severity(e) {
 function cell_decorator_form_id(e) {
   var v = $(e).attr("v")
   var s = ""
-  url = $(location).attr("origin") + "/init/forms/workflow?wfid="+v+"&clear_filters=true"
-  s = "<a class='clickable' href='"+url+"'></a>"
+  url = $(location).attr("origin") + "/init/forms/workflow?wfid="+v+"&volatile_filters=true"
+  s = "<a class='clickable' target='_blank' href='"+url+"'></a>"
   $(e).html(s)
 }
 
@@ -4672,6 +4686,7 @@ function table_init(opts) {
     'columns': opts['columns'],
     'colprops': opts['colprops'],
     'visible_columns': opts['visible_columns'],
+    'volatile_filters': opts['volatile_filters'],
     'child_tables': opts['child_tables'],
     'dataable': opts['dataable'],
     'action_menu': opts['action_menu'],
