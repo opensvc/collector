@@ -1403,6 +1403,7 @@ function d_init(data) {
   
   // tree width dragging
   $("#sep").mousedown(function(){
+    $("body").addClass("noselect")
     var ini_x = event.pageX
     var ini_w = $("#catree").width()
     $(document).bind("mousemove", function(){
@@ -1411,6 +1412,7 @@ function d_init(data) {
     })
   })
   $(document).mouseup(function(){
+    $("body").removeClass("noselect")
     $(this).unbind("mousemove")
   })
 

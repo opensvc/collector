@@ -10237,7 +10237,7 @@ def comp_admin():
         tree2_display = ""
     search2 = INPUT(
           _id="casearch2",
-          _value=request.vars.obj_filter2,
+          _value=request.vars.get("obj_filter2", "opensvc"),
           _style="float:left;position:absolute;margin-top:0.2em;"+tree2_display,
         _class="wfsearch",
         )
