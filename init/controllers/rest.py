@@ -2,8 +2,39 @@ def call():
     session.forget()
     return service()
 
+class rest_get_api(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "List the api available handlers."
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api"
+        ]
+
+        rest_get_handler.__init__(
+          self,
+          path="/",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        data = {}
+        for a in handlers:
+            for handler in handlers[a]:
+                d = dict(path=handler.path, pattern=handler.pattern, actions=[a], desc=handler.desc, examples=handler.examples)
+                if handler.path not in data:
+                    data[handler.path] = d
+                else:
+                    data[handler.path]["actions"].append(a)
+        values = []
+        for i in sorted(data):
+            values.append(data[i])
+        return dict(data=values)
+
 handlers = {
   'GET': [
+     rest_get_api(),
      rest_get_action_queue(),
      rest_get_action_queue_stats(),
      rest_get_action_queue_one(),
@@ -100,6 +131,8 @@ handlers = {
   'DELETE': [
      rest_delete_action_queue_one(),
      rest_delete_app(),
+     rest_delete_compliance_moduleset(),
+     rest_delete_compliance_ruleset(),
      rest_delete_compliance_status_run(),
      rest_delete_dns_domain(),
      rest_delete_dns_record(),
@@ -123,6 +156,8 @@ handlers = {
      rest_post_action_queue_one(),
      rest_post_apps(),
      rest_post_app(),
+     rest_post_compliance_modulesets(),
+     rest_post_compliance_rulesets(),
      rest_post_dns_domains(),
      rest_post_dns_domain(),
      rest_post_dns_records(),

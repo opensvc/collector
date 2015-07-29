@@ -82,6 +82,114 @@ class rest_delete_compliance_status_run(rest_delete_handler):
         return dict(info="Run %s deleted" % id)
 
 #
+class rest_delete_compliance_ruleset(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete a ruleset.",
+          "All ruleset parent and child relations are also removed.",
+          "All ruleset nodes and services attachements are also removed.",
+          "All ruleset publication and responsible groups are also detached.",
+          "The user have the CompManager privilege.",
+          "One of the user's groups must be responsible for the ruleset.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/compliance/rulesets/10"
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/compliance/rulesets/<id>",
+          tables=["comp_rulesets"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        delete_ruleset(id)
+        return dict(info="Ruleset %s deleted" % id)
+
+#
+class rest_post_compliance_rulesets(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Create a ruleset.",
+          "The user have the CompManager privilege.",
+          "The created ruleset inherits the user's primary group as publication and responsible groups.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the rulesets table.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -d ruleset_name="testapi" https://%(collector)s/init/rest/api/compliance/rulesets""",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/compliance/rulesets",
+          tables=["comp_rulesets"],
+          props_blacklist=["created", "author"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, **vars):
+        ruleset_name = vars.get("ruleset_name")
+        obj_id = create_ruleset(ruleset_name)
+        return rest_get_compliance_ruleset().handler(obj_id)
+
+#
+class rest_delete_compliance_moduleset(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete a moduleset.",
+          "All moduleset parent and child relations are also removed.",
+          "All moduleset nodes and services attachements are also removed.",
+          "All moduleset publication and responsible groups are also detached.",
+          "The user have the CompManager privilege.",
+          "One of the user's groups must be responsible for the moduleset.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/compliance/modulesets/10"
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/compliance/modulesets/<id>",
+          tables=["comp_moduleset"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        delete_moduleset(id)
+        return dict(info="Moduleset %s deleted" % id)
+
+#
+class rest_post_compliance_modulesets(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Create a moduleset.",
+          "The user have the CompManager privilege.",
+          "The created moduleset inherits the user's primary group as publication and responsible groups.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the modulesets table.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -d modset_name="testapi" https://%(collector)s/init/rest/api/compliance/modulesets""",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/compliance/modulesets",
+          tables=["comp_moduleset"],
+          props_blacklist=["created", "author"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, **vars):
+        modset_name = vars.get("modset_name")
+        obj_id = create_moduleset(modset_name)
+        return rest_get_compliance_moduleset().handler(obj_id)
+
+#
 class rest_get_compliance_modulesets(rest_get_table_handler):
     def __init__(self):
         desc = [

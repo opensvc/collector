@@ -1549,6 +1549,7 @@
 'Report': 'Rapport',
 'Report definition error': 'Report definition error',
 'Report not found': 'Rapport non trouvé',
+'Report recorded': 'Report recorded',
 'Reports': 'Rapports',
 'Request form id': 'Id du formulaire de demande',
 'Request workflow': 'Workflow de la demande',
