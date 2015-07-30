@@ -1,6 +1,22 @@
 from gluon.dal import smart_query
 import json
 
+def moduleset_id_q(id):
+    try:
+        id = int(id)
+        q = db.comp_moduleset.id == id
+    except:
+        q = db.comp_moduleset.modset_name == id
+    return q
+
+def ruleset_id_q(id):
+    try:
+        id = int(id)
+        q = db.comp_rulesets.id == id
+    except:
+        q = db.comp_rulesets.ruleset_name == id
+    return q
+
 #
 class rest_get_compliance_status(rest_get_table_handler):
     def __init__(self):
@@ -237,7 +253,7 @@ class rest_get_compliance_moduleset(rest_get_line_handler):
 
     def handler(self, id, **vars):
         q = db.auth_group.id.belongs(user_group_ids())
-        q &= db.comp_moduleset.id == id
+        q &= moduleset_id_q(id)
         q &= db.comp_moduleset_team_publication.group_id == db.auth_group.id
         q &= db.comp_moduleset_team_publication.modset_id == db.comp_moduleset.id
         self.set_q(q)
@@ -262,7 +278,10 @@ class rest_get_compliance_moduleset_export(rest_get_handler):
         )
 
     def handler(self, id, **vars):
-        id = int(id)
+        try:
+            id = int(id)
+        except:
+            id = comp_moduleset_id(id)
         return _export_modulesets([id])
 
 
@@ -339,7 +358,7 @@ class rest_get_compliance_ruleset(rest_get_line_handler):
 
     def handler(self, id, **vars):
         q = db.auth_group.id.belongs(user_group_ids())
-        q &= db.comp_rulesets.id == id
+        q &= ruleset_id_q(id)
         q &= db.comp_ruleset_team_publication.group_id == db.auth_group.id
         q &= db.comp_ruleset_team_publication.ruleset_id == db.comp_rulesets.id
         self.set_q(q)
@@ -363,7 +382,10 @@ class rest_get_compliance_ruleset_export(rest_get_handler):
         )
 
     def handler(self, id, **vars):
-        id = int(id)
+        try:
+            id = int(id)
+        except:
+            id = comp_ruleset_id(id)
         return _export_rulesets([id])
 
 
