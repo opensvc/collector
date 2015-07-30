@@ -424,6 +424,70 @@ class rest_get_compliance_rulesets_export(rest_get_handler):
 
 
 #
+class rest_delete_compliance_moduleset_moduleset(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Detach a moduleset from a moduleset",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/compliance/modulesets/10/modulesets/151",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/compliance/modulesets/<id>/modulesets/<id>",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, parent_modset_id, child_modset_id, **vars):
+        try:
+            parent_modset_id = int(parent_modset_id)
+        except:
+            parent_modset_id = comp_moduleset_id(parent_modset_id)
+        try:
+            child_modset_id = int(child_modset_id)
+        except:
+            child_modset_id = comp_moduleset_id(child_modset_id)
+        try:
+            detach_moduleset_from_moduleset(child_modset_id, parent_modset_id)
+        except CompError as e:
+            return dict(error=str(e))
+        return dict(info="moduleset detached")
+
+#
+class rest_post_compliance_moduleset_moduleset(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Attach a moduleset to a moduleset",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/compliance/modulesets/10/modulesets/151",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/compliance/modulesets/<id>/modulesets/<id>",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, parent_modset_id, child_modset_id, **vars):
+        try:
+            parent_modset_id = int(parent_modset_id)
+        except:
+            parent_modset_id = comp_moduleset_id(parent_modset_id)
+        try:
+            child_modset_id = int(child_modset_id)
+        except:
+            child_modset_id = comp_moduleset_id(child_modset_id)
+        try:
+            attach_moduleset_to_moduleset(child_modset_id, parent_modset_id)
+        except CompError as e:
+            return dict(error=str(e))
+        except CompInfo as e:
+            return dict(info=str(e))
+        return dict(info="moduleset attached")
+
+#
 class rest_delete_compliance_moduleset_ruleset(rest_delete_handler):
     def __init__(self):
         desc = [
@@ -449,7 +513,11 @@ class rest_delete_compliance_moduleset_ruleset(rest_delete_handler):
             rset_id = int(rset_id)
         except:
             rset_id = comp_ruleset_id(rset_id)
-        return detach_ruleset_from_moduleset(rset_id, modset_id)
+        try:
+            detach_ruleset_from_moduleset(rset_id, modset_id)
+        except CompError as e:
+            return dict(error=str(e))
+        return dict(info="ruleset detached")
 
 #
 class rest_post_compliance_moduleset_ruleset(rest_post_handler):
@@ -477,7 +545,11 @@ class rest_post_compliance_moduleset_ruleset(rest_post_handler):
             rset_id = int(rset_id)
         except:
             rset_id = comp_ruleset_id(rset_id)
-        return attach_ruleset_to_moduleset(rset_id, modset_id)
+        try:
+            attach_ruleset_to_moduleset(rset_id, modset_id)
+        except CompError as e:
+            return dict(error=str(e))
+        return dict(info="ruleset attached")
 
 #
 class rest_delete_compliance_ruleset_ruleset(rest_delete_handler):
@@ -504,7 +576,11 @@ class rest_delete_compliance_ruleset_ruleset(rest_delete_handler):
             child_rset_id = int(child_rset_id)
         except:
             child_rset_id = comp_ruleset_id(child_rset_id)
-        return detach_ruleset_from_ruleset(child_rset_id, parent_rset_id)
+        try:
+            detach_ruleset_to_ruleset(child_rset_id, parent_rset_id)
+        except CompError as e:
+            return dict(error=str(e))
+        return dict(info="ruleset detached")
 
 #
 class rest_post_compliance_ruleset_ruleset(rest_post_handler):
@@ -531,6 +607,11 @@ class rest_post_compliance_ruleset_ruleset(rest_post_handler):
             child_rset_id = int(child_rset_id)
         except:
             child_rset_id = comp_ruleset_id(child_rset_id)
-        return attach_ruleset_to_ruleset(child_rset_id, parent_rset_id)
+        try:
+            attach_ruleset_to_ruleset(child_rset_id, parent_rset_id)
+        except CompError as e:
+            return dict(error=str(e))
+        return dict(info="ruleset attached")
+
 
 

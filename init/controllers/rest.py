@@ -131,6 +131,7 @@ handlers = {
   'DELETE': [
      rest_delete_action_queue_one(),
      rest_delete_app(),
+     rest_delete_compliance_moduleset_moduleset(),
      rest_delete_compliance_moduleset_ruleset(),
      rest_delete_compliance_moduleset(),
      rest_delete_compliance_ruleset_ruleset(),
@@ -158,6 +159,7 @@ handlers = {
      rest_post_action_queue_one(),
      rest_post_apps(),
      rest_post_app(),
+     rest_post_compliance_moduleset_moduleset(),
      rest_post_compliance_moduleset_ruleset(),
      rest_post_compliance_modulesets(),
      rest_post_compliance_ruleset_ruleset(),

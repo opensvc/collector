@@ -11859,9 +11859,14 @@ def json_tree_action_move_group_to_modset(group_id, modset_id, gtype="publicatio
               role=w.role))
     return "0"
 
-@auth.requires_membership('CompManager')
 def json_tree_action_copy_modset_to_modset(child_modset_id, parent_modset_id):
-    return attach_modset_to_modset(child_modset_id, parent_modset_id)
+    try:
+        attach_moduleset_to_moduleset(child_modset_id, parent_modset_id)
+    except CompError as e:
+        return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
+    return "0"
 
 def json_tree_action_copy_rset_to_modset(rset_id, modset_id):
     try:
