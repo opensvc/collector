@@ -11578,127 +11578,18 @@ def json_tree_action_copy_rset_to_rset(rset_id, parent_rset_id, dst_rset_id):
 def json_tree_action_move_rset_to_rset(rset_id, parent_rset_id, dst_rset_id):
     return json_tree_action_copy_or_move_rset_to_rset(rset_id, parent_rset_id, dst_rset_id, move=True)
 
-def fset_get_ancestors():
-    q = db.gen_filtersets_filters.f_id == 0
-    rows = db(q).select()
-    ancestors = {}
-    for row in rows:
-        if row.encap_fset_id not in ancestors:
-            ancestors[row.encap_fset_id] = []
-        ancestors[row.encap_fset_id].append(row.fset_id)
-    return ancestors
-
-def fset_loop(fset_id, parent_fset_id):
-    if fset_id == parent_fset_id:
-        return True
-    fset_id = int(fset_id)
-    parent_fset_id = int(parent_fset_id)
-    ancestors = fset_get_ancestors()
-    tested = []
-    def recurse_rel(fset_id, parent_fset_id):
-        if parent_fset_id not in ancestors:
-            return False
-        for _parent_fset_id in ancestors[parent_fset_id]:
-            tested.append("%d-%d"%(fset_id,_parent_fset_id))
-            if fset_id == _parent_fset_id:
-                return True
-            if recurse_rel(fset_id, _parent_fset_id):
-                return True
-        return False
-
-    return recurse_rel(fset_id, parent_fset_id)
-
-def rset_loop(rset_id, parent_rset_id):
-    rset_id = int(rset_id)
-    parent_rset_id = int(parent_rset_id)
-    q = db.comp_rulesets_rulesets.id > 0
-    rows = db(q).select()
-    ancestors = {}
-    for row in rows:
-        if row.child_rset_id not in ancestors:
-            ancestors[row.child_rset_id] = []
-        ancestors[row.child_rset_id].append(row.parent_rset_id)
-
-    tested = []
-    def recurse_rel(rset_id, parent_rset_id):
-        if parent_rset_id not in ancestors:
-            return False
-        for _parent_rset_id in ancestors[parent_rset_id]:
-            tested.append("%d-%d"%(rset_id,_parent_rset_id))
-            if rset_id == _parent_rset_id:
-                return True
-            if recurse_rel(rset_id, _parent_rset_id):
-                return True
-        return False
-
-    return recurse_rel(rset_id, parent_rset_id)
-
 @auth.requires_membership('CompManager')
 def json_tree_action_copy_or_move_rset_to_rset(rset_id, parent_rset_id, dst_rset_id, move=False):
-    if dst_rset_id == rset_id:
-        return {"err": "abort action to avoid introducing a recursion loop"}
-
-    q = db.comp_rulesets_rulesets.parent_rset_id == dst_rset_id
-    q &= db.comp_rulesets_rulesets.child_rset_id == rset_id
-    if db(q).count() > 0:
-        return {"err": "ruleset already attached"}
-
-    if move:
-        responsible_table = db.comp_ruleset_team_responsible
-    else:
-        responsible_table = db.comp_ruleset_team_publication
-    q = db.comp_rulesets.id == rset_id
-    q1 = db.comp_rulesets.id == responsible_table.ruleset_id
-    if 'Manager' not in user_groups():
-        q1 &= responsible_table.group_id.belongs(user_group_ids())
-    rows = db(q&q1).select(cacheable=True)
-    v = rows.first()
-    if v is None:
-        return {"err": "attached ruleset not found or not owned by you"}
-
-    q2 = db.comp_rulesets.id == dst_rset_id
-    q3 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
-    if 'Manager' not in user_groups():
-        q3 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
-    rows = db(q2&q3).select(cacheable=True)
-    w = rows.first()
-    if w is None:
-        return {"err": "destination ruleset not found or not owned by you"}
-
-    if rset_loop(rset_id, dst_rset_id):
-        return {"err": "the parent ruleset is already a child of the encapsulated ruleset. abort encapsulation not to cause infinite recursion"}
-
-    db.comp_rulesets_rulesets.insert(
-      parent_rset_id=dst_rset_id,
-      child_rset_id=rset_id,
-    )
-    table_modified("comp_rulesets_rulesets")
-    _log('compliance.ruleset.attach',
-         'attach ruleset %(rset_name)s to %(dst_rset_name)s',
-         dict(rset_name=v.comp_rulesets.ruleset_name,
-              dst_rset_name=w.comp_rulesets.ruleset_name))
-    comp_rulesets_chains()
+    try:
+        attach_ruleset_to_ruleset(rset_id, dst_rset_id)
+    except CompError as e:
+        return {"err": str(e)}
     if not move or parent_rset_id is None or parent_rset_id == dst_rset_id:
         return "0"
-
-    q = db.comp_rulesets_rulesets.parent_rset_id == parent_rset_id
-    q &= db.comp_rulesets_rulesets.child_rset_id == rset_id
-    q1 = db.comp_rulesets_rulesets.parent_rset_id == db.comp_rulesets.id
-    q1 &= db.comp_rulesets_rulesets.parent_rset_id == db.comp_ruleset_team_responsible.ruleset_id
-    if 'Manager' not in user_groups():
-        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
-    rows = db(q&q1).select(cacheable=True)
-    x = rows.first()
-    if x is None:
-        return {"err": "parent ruleset not found or not owned by you"}
-
-    db(q).delete()
-    table_modified("comp_rulesets_rulesets")
-    _log('compliance.ruleset.detach',
-         'detach ruleset %(rset_name)s from %(parent_rset_name)s',
-         dict(rset_name=v.comp_rulesets.ruleset_name,
-              parent_rset_name=x.comp_rulesets.ruleset_name))
-    comp_rulesets_chains()
+    try:
+        detach_ruleset_from_ruleset(rset_id, parent_rset_id)
+    except CompError as e:
+        return {"err": str(e)}
     return "0"
 
 @auth.requires_membership('CompManager')
@@ -11719,150 +11610,39 @@ def json_tree_action_detach_group(group_id, obj_id, parent_obj_type, gtype="resp
     else:
         return {"err": "detach group not supported for this parent object type"}
 
-@auth.requires_membership('CompManager')
 def json_tree_action_detach_group_from_modset(group_id, modset_id, gtype="responsible"):
-    q = db.comp_moduleset.id == modset_id
-    q1 = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
-    if 'Manager' not in user_groups():
-        q1 &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
-    rows = db(q&q1).select(cacheable=True)
-    v = rows.first()
-    if v is None:
-        return {"err": "moduleset not found or not owned by you"}
-
-    q = db.auth_group.id == group_id
-    rows = db(q).select(cacheable=True)
-    w = rows.first()
-    if w is None:
-        return {"err": "group not found"}
-
-    q = db["comp_moduleset_team_"+gtype].modset_id == modset_id
-    q &= db["comp_moduleset_team_"+gtype].group_id == group_id
-    db(q).delete()
-    table_modified("comp_moduleset_team_"+gtype)
-    _log('compliance.moduleset.detach',
-         'detach %(gtype)s group %(role)s from moduleset %(modset_name)s',
-         dict(modset_name=v.comp_moduleset.modset_name,
-              gtype=gtype,
-              role=w.role))
+    try:
+        detach_group_from_moduleset(group_id, modset_id, gtype=gtype)
+    except CompError as e:
+        return {"err": str(e)}
     return "0"
 
-@auth.requires_membership('CompManager')
 def json_tree_action_detach_group_from_rset(group_id, rset_id, gtype="responsible"):
-    q = db.comp_rulesets.id == rset_id
-    q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
-    if 'Manager' not in user_groups():
-        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
-    rows = db(q&q1).select(cacheable=True)
-    v = rows.first()
-    if v is None:
-        return {"err": "ruleset not found or not owned by you"}
-
-    q = db.auth_group.id == group_id
-    rows = db(q).select(cacheable=True)
-    w = rows.first()
-    if w is None:
-        return {"err": "group not found"}
-
-    q = db["comp_ruleset_team_"+gtype].ruleset_id == rset_id
-    q &= db["comp_ruleset_team_"+gtype].group_id == group_id
-    db(q).delete()
-    table_modified("comp_ruleset_team_"+gtype)
-    _log('compliance.ruleset.detach',
-         'detach %(gtype)s group %(role)s from ruleset %(rset_name)s',
-         dict(rset_name=v.comp_rulesets.ruleset_name,
-              gtype=gtype,
-              role=w.role))
+    try:
+        detach_group_from_ruleset(group_id, rset_id, gtype=gtype)
+    except CompError as e:
+        return {"err": str(e)}
     return "0"
 
-@auth.requires_membership('CompManager')
 def json_tree_action_detach_moduleset_from_moduleset(child_modset_id, parent_modset_id):
-    q = db.comp_moduleset.id == parent_modset_id
-    q1 = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
-    if 'Manager' not in user_groups():
-        q1 &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
-    rows = db(q&q1).select(cacheable=True)
-    v = rows.first()
-    if v is None:
-        return {"err": "parent moduleset not found or not owned by you"}
-
-    q = db.comp_moduleset.id == child_modset_id
-    rows = db(q).select(cacheable=True)
-    w = rows.first()
-    if w is None:
-        return {"err": "child ruleset not found"}
-
-    q = db.comp_moduleset_moduleset.parent_modset_id == parent_modset_id
-    q &= db.comp_moduleset_moduleset.child_modset_id == child_modset_id
-    db(q).delete()
-    table_modified("comp_moduleset_moduleset")
-    _log('compliance.moduleset.detach',
-         'detach moduleset %(child_modset_name)s from moduleset %(parent_modset_name)s',
-         dict(parent_modset_name=v.comp_moduleset.modset_name,
-              child_modset_name=w.modset_name))
-    #comp_rulesets_chains()
+    try:
+        detach_moduleset_from_moduleset(child_modset_id, parent_modset_id)
+    except CompError as e:
+        return {"err": str(e)}
     return "0"
 
-@auth.requires_membership('CompManager')
 def json_tree_action_detach_ruleset_from_moduleset(rset_id, modset_id):
-    q = db.comp_moduleset.id == modset_id
-    q1 = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
-    if 'Manager' not in user_groups():
-        q1 &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
-    rows = db(q&q1).select(cacheable=True)
-    v = rows.first()
-    if v is None:
-        return {"err": "parent moduleset not found or not owned by you"}
-
-    q = db.comp_rulesets.id == rset_id
-    q1 = db.comp_rulesets.id == db.comp_ruleset_team_publication.ruleset_id
-    if 'Manager' not in user_groups():
-        q1 &= db.comp_ruleset_team_publication.group_id.belongs(user_group_ids())
-    rows = db(q&q1).select(cacheable=True)
-    w = rows.first()
-    if w is None:
-        return {"err": "child ruleset not found or not published to you"}
-
-    q = db.comp_moduleset_ruleset.modset_id == modset_id
-    q &= db.comp_moduleset_ruleset.ruleset_id == rset_id
-    db(q).delete()
-    table_modified("comp_moduleset_ruleset")
-    _log('compliance.ruleset.detach',
-         'detach ruleset %(rset_name)s from moduleset %(modset_name)s',
-         dict(rset_name=w.comp_rulesets.ruleset_name,
-              modset_name=v.comp_moduleset.modset_name))
-    #comp_rulesets_chains()
+    try:
+        detach_ruleset_from_moduleset(rset_id, modset_id)
+    except CompError as e:
+        return {"err": str(e)}
     return "0"
 
-@auth.requires_membership('CompManager')
 def json_tree_action_detach_ruleset(rset_id, parent_rset_id):
-    q = db.comp_rulesets.id == parent_rset_id
-    q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
-    if 'Manager' not in user_groups():
-        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
-    rows = db(q&q1).select(cacheable=True)
-    v = rows.first()
-    if v is None:
-        return {"err": "parent ruleset not found or not owned by you"}
-
-    q = db.comp_rulesets.id == rset_id
-    q1 = db.comp_rulesets.id == db.comp_ruleset_team_publication.ruleset_id
-    if 'Manager' not in user_groups():
-        q1 &= db.comp_ruleset_team_publication.group_id.belongs(user_group_ids())
-    rows = db(q&q1).select(cacheable=True)
-    w = rows.first()
-    if w is None:
-        return {"err": "child ruleset not found or not published to you"}
-
-    q = db.comp_rulesets_rulesets.parent_rset_id == parent_rset_id
-    q &= db.comp_rulesets_rulesets.child_rset_id == rset_id
-    db(q).delete()
-    table_modified("comp_rulesets_rulesets")
-    _log('compliance.ruleset.detach',
-         'detach ruleset %(rset_name)s from %(parent_rset_name)s',
-         dict(rset_name=w.comp_rulesets.ruleset_name,
-              parent_rset_name=v.comp_rulesets.ruleset_name))
-    comp_rulesets_chains()
+    try:
+        detach_ruleset_from_ruleset(rset_id, parent_rset_id)
+    except CompError as e:
+        return {"err": str(e)}
     return "0"
 
 @auth.requires_membership('CompManager')
@@ -12083,36 +11863,11 @@ def json_tree_action_move_group_to_modset(group_id, modset_id, gtype="publicatio
 def json_tree_action_copy_modset_to_modset(child_modset_id, parent_modset_id):
     return attach_modset_to_modset(child_modset_id, parent_modset_id)
 
-@auth.requires_membership('CompManager')
 def json_tree_action_copy_rset_to_modset(rset_id, modset_id):
-    ug = user_groups()
-    q = db.comp_moduleset.id == modset_id
-    if 'Manager' not in ug:
-        q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
-        q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
-    rows = db(q).select(db.comp_moduleset.ALL, cacheable=True)
-    v = rows.first()
-    if v is None:
-        return {"err": "moduleset not found or not owned by you"}
-
-    q = db.comp_rulesets.id == rset_id
-    rows = db(q).select(cacheable=True)
-    w = rows.first()
-    if w is None:
-        return {"err": "ruleset not found"}
-
-    q = db.comp_moduleset_ruleset.ruleset_id == rset_id
-    q &= db.comp_moduleset_ruleset.modset_id == modset_id
-    if db(q).count() > 0:
-        return "0"
-
-    db.comp_moduleset_ruleset.update_or_insert(ruleset_id=rset_id,
-                                               modset_id=modset_id)
-    table_modified("comp_moduleset_ruleset")
-    _log('compliance.moduleset.ruleset.attach',
-         'attach ruleset %(rset_name)s to moduleset %(modset_name)s',
-         dict(modset_name=v.modset_name,
-              rset_name=w.ruleset_name))
+    try:
+        attach_ruleset_to_moduleset(rset_id, modset_id)
+    except CompError as e:
+        return {"err": str(e)}
     return "0"
 
 @auth.requires_membership('CompManager')

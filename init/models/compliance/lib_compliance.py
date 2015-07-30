@@ -1,5 +1,60 @@
 import copy
 
+def fset_get_ancestors():
+    q = db.gen_filtersets_filters.f_id == 0
+    rows = db(q).select()
+    ancestors = {}
+    for row in rows:
+        if row.encap_fset_id not in ancestors:
+            ancestors[row.encap_fset_id] = []
+        ancestors[row.encap_fset_id].append(row.fset_id)
+    return ancestors
+
+def fset_loop(fset_id, parent_fset_id):
+    if fset_id == parent_fset_id:
+        return True
+    fset_id = int(fset_id)
+    parent_fset_id = int(parent_fset_id)
+    ancestors = fset_get_ancestors()
+    tested = []
+    def recurse_rel(fset_id, parent_fset_id):
+        if parent_fset_id not in ancestors:
+            return False
+        for _parent_fset_id in ancestors[parent_fset_id]:
+            tested.append("%d-%d"%(fset_id,_parent_fset_id))
+            if fset_id == _parent_fset_id:
+                return True
+            if recurse_rel(fset_id, _parent_fset_id):
+                return True
+        return False
+
+    return recurse_rel(fset_id, parent_fset_id)
+
+def rset_loop(rset_id, parent_rset_id):
+    rset_id = int(rset_id)
+    parent_rset_id = int(parent_rset_id)
+    q = db.comp_rulesets_rulesets.id > 0
+    rows = db(q).select()
+    ancestors = {}
+    for row in rows:
+        if row.child_rset_id not in ancestors:
+            ancestors[row.child_rset_id] = []
+        ancestors[row.child_rset_id].append(row.parent_rset_id)
+
+    tested = []
+    def recurse_rel(rset_id, parent_rset_id):
+        if parent_rset_id not in ancestors:
+            return False
+        for _parent_rset_id in ancestors[parent_rset_id]:
+            tested.append("%d-%d"%(rset_id,_parent_rset_id))
+            if rset_id == _parent_rset_id:
+                return True
+            if recurse_rel(rset_id, _parent_rset_id):
+                return True
+        return False
+
+    return recurse_rel(rset_id, parent_rset_id)
+
 def comp_rulesets_chains():
     # populate rset names cache
     rset_names = get_rset_names()
@@ -693,10 +748,11 @@ def _export_modulesets(modset_ids):
 
     # modulesets
     q = db.comp_moduleset.id.belongs(modset_ids_with_children)
-    rows = db(q).select(db.comp_moduleset.modset_name)
+    rows = db(q).select(db.comp_moduleset.id, db.comp_moduleset.modset_name)
     modulesets = []
     for row in rows:
         d = {
+          'id': row.id,
           'modset_name': row.modset_name,
         }
         if row.modset_name in moduleset_modules_s:
@@ -783,7 +839,8 @@ def _export_rulesets(rset_ids):
     l1 = db.comp_rulesets_filtersets.on(j1)
     j2 = db.comp_rulesets_filtersets.fset_id == db.gen_filtersets.id
     l2 = db.gen_filtersets.on(j2)
-    rows = db(q).select(db.comp_rulesets.ruleset_name,
+    rows = db(q).select(db.comp_rulesets.id,
+                            db.comp_rulesets.ruleset_name,
                             db.comp_rulesets.ruleset_public,
                             db.comp_rulesets.ruleset_type,
                             db.gen_filtersets.id,
@@ -796,6 +853,7 @@ def _export_rulesets(rset_ids):
         if row.gen_filtersets.id is not None:
             fset_ids.append(row.gen_filtersets.id)
         d = {
+          'id': row.comp_rulesets.id,
           'ruleset_name': row.comp_rulesets.ruleset_name,
           'ruleset_public': row.comp_rulesets.ruleset_public,
           'ruleset_type': row.comp_rulesets.ruleset_type,
@@ -1090,5 +1148,216 @@ def add_default_teams_to_modset(modset_name):
     table_modified("comp_moduleset_team_responsible")
     db.comp_moduleset_team_publication.insert(modset_id=modset_id, group_id=group_id)
     table_modified("comp_moduleset_team_publication")
+
+@auth.requires_membership('CompManager')
+def detach_moduleset_from_moduleset(child_modset_id, parent_modset_id):
+    q = db.comp_moduleset.id == parent_modset_id
+    q1 = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        raise CompError("parent moduleset not found or not owned by you")
+
+    q = db.comp_moduleset.id == child_modset_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        raise CompError("child ruleset not found")
+
+    q = db.comp_moduleset_moduleset.parent_modset_id == parent_modset_id
+    q &= db.comp_moduleset_moduleset.child_modset_id == child_modset_id
+    db(q).delete()
+    table_modified("comp_moduleset_moduleset")
+    _log('compliance.moduleset.detach',
+         'detach moduleset %(child_modset_name)s from moduleset %(parent_modset_name)s',
+         dict(parent_modset_name=v.comp_moduleset.modset_name,
+              child_modset_name=w.modset_name))
+    #comp_rulesets_chains()
+
+@auth.requires_membership('CompManager')
+def detach_ruleset_from_moduleset(rset_id, modset_id):
+    q = db.comp_moduleset.id == modset_id
+    q1 = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        raise CompError("parent moduleset not found or not owned by you")
+
+    q = db.comp_rulesets.id == rset_id
+    q1 = db.comp_rulesets.id == db.comp_ruleset_team_publication.ruleset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_ruleset_team_publication.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        raise CompError("child ruleset not found or not published to you")
+
+    q = db.comp_moduleset_ruleset.modset_id == modset_id
+    q &= db.comp_moduleset_ruleset.ruleset_id == rset_id
+    db(q).delete()
+    table_modified("comp_moduleset_ruleset")
+    _log('compliance.ruleset.detach',
+         'detach ruleset %(rset_name)s from moduleset %(modset_name)s',
+         dict(rset_name=w.comp_rulesets.ruleset_name,
+              modset_name=v.comp_moduleset.modset_name))
+    #comp_rulesets_chains()
+
+@auth.requires_membership('CompManager')
+def detach_ruleset_from_ruleset(rset_id, parent_rset_id):
+    q = db.comp_rulesets.id == parent_rset_id
+    q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        raise CompError("parent ruleset not found or not owned by you")
+
+    q = db.comp_rulesets.id == rset_id
+    q1 = db.comp_rulesets.id == db.comp_ruleset_team_publication.ruleset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_ruleset_team_publication.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        raise CompError("child ruleset not found or not published to you")
+
+    q = db.comp_rulesets_rulesets.parent_rset_id == parent_rset_id
+    q &= db.comp_rulesets_rulesets.child_rset_id == rset_id
+    db(q).delete()
+    table_modified("comp_rulesets_rulesets")
+    _log('compliance.ruleset.detach',
+         'detach ruleset %(rset_name)s from %(parent_rset_name)s',
+         dict(rset_name=w.comp_rulesets.ruleset_name,
+              parent_rset_name=v.comp_rulesets.ruleset_name))
+    comp_rulesets_chains()
+
+@auth.requires_membership('CompManager')
+def detach_group_from_ruleset(group_id, rset_id, gtype="responsible"):
+    q = db.comp_rulesets.id == rset_id
+    q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        raise CompError("ruleset not found or not owned by you")
+
+    q = db.auth_group.id == group_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        raise CompError("group not found")
+
+    q = db["comp_ruleset_team_"+gtype].ruleset_id == rset_id
+    q &= db["comp_ruleset_team_"+gtype].group_id == group_id
+    db(q).delete()
+    table_modified("comp_ruleset_team_"+gtype)
+    _log('compliance.ruleset.detach',
+         'detach %(gtype)s group %(role)s from ruleset %(rset_name)s',
+         dict(rset_name=v.comp_rulesets.ruleset_name,
+              gtype=gtype,
+              role=w.role))
+
+@auth.requires_membership('CompManager')
+def detach_group_from_moduleset(group_id, modset_id, gtype="responsible"):
+    q = db.comp_moduleset.id == modset_id
+    q1 = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        raise CompError("moduleset not found or not owned by you")
+
+    q = db.auth_group.id == group_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        raise CompError("group not found")
+
+    q = db["comp_moduleset_team_"+gtype].modset_id == modset_id
+    q &= db["comp_moduleset_team_"+gtype].group_id == group_id
+    db(q).delete()
+    table_modified("comp_moduleset_team_"+gtype)
+    _log('compliance.moduleset.detach',
+         'detach %(gtype)s group %(role)s from moduleset %(modset_name)s',
+         dict(modset_name=v.comp_moduleset.modset_name,
+              gtype=gtype,
+              role=w.role))
+
+@auth.requires_membership('CompManager')
+def attach_ruleset_to_ruleset(rset_id, dst_rset_id):
+    if dst_rset_id == rset_id:
+        raise CompError("abort action to avoid introducing a recursion loop")
+
+    q = db.comp_rulesets_rulesets.parent_rset_id == dst_rset_id
+    q &= db.comp_rulesets_rulesets.child_rset_id == rset_id
+    if db(q).count() > 0:
+        raise CompError("ruleset already attached")
+
+    q = db.comp_rulesets.id == rset_id
+    rows = db(q).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        raise CompError("attached ruleset not found")
+
+    q2 = db.comp_rulesets.id == dst_rset_id
+    q3 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q3 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q2&q3).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        raise CompError("destination ruleset not found or not owned by you")
+
+    if rset_loop(rset_id, dst_rset_id):
+        raise CompError("the parent ruleset is already a child of the encapsulated ruleset. abort encapsulation not to cause infinite recursion")
+
+    db.comp_rulesets_rulesets.insert(
+      parent_rset_id=dst_rset_id,
+      child_rset_id=rset_id,
+    )
+    table_modified("comp_rulesets_rulesets")
+    _log('compliance.ruleset.attach',
+         'attach ruleset %(rset_name)s to %(dst_rset_name)s',
+         dict(rset_name=v.ruleset_name,
+              dst_rset_name=w.comp_rulesets.ruleset_name))
+    comp_rulesets_chains()
+
+@auth.requires_membership('CompManager')
+def attach_ruleset_to_moduleset(rset_id, modset_id):
+    ug = user_groups()
+    q = db.comp_moduleset.id == modset_id
+    if 'Manager' not in ug:
+        q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
+        q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q).select(db.comp_moduleset.ALL, cacheable=True)
+    v = rows.first()
+    if v is None:
+        raise CompError("moduleset not found or not owned by you")
+
+    q = db.comp_rulesets.id == rset_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        raise CompError("ruleset not found")
+
+    q = db.comp_moduleset_ruleset.ruleset_id == rset_id
+    q &= db.comp_moduleset_ruleset.modset_id == modset_id
+    if db(q).count() > 0:
+        return "0"
+
+    db.comp_moduleset_ruleset.update_or_insert(ruleset_id=rset_id,
+                                               modset_id=modset_id)
+    table_modified("comp_moduleset_ruleset")
+    _log('compliance.moduleset.ruleset.attach',
+         'attach ruleset %(rset_name)s to moduleset %(modset_name)s',
+         dict(modset_name=v.modset_name,
+              rset_name=w.ruleset_name))
 
 

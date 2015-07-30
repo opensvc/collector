@@ -121,6 +121,10 @@ class rest_delete_compliance_ruleset(rest_delete_handler):
         )
 
     def handler(self, id, **vars):
+        try:
+            id = int(id)
+        except:
+            id = comp_ruleset_id(id)
         delete_ruleset(id)
         return dict(info="Ruleset %s deleted" % id)
 
@@ -175,6 +179,10 @@ class rest_delete_compliance_moduleset(rest_delete_handler):
         )
 
     def handler(self, id, **vars):
+        try:
+            id = int(id)
+        except:
+            id = comp_moduleset_id(id)
         delete_moduleset(id)
         return dict(info="Moduleset %s deleted" % id)
 
@@ -414,5 +422,115 @@ class rest_get_compliance_rulesets_export(rest_get_handler):
         ids = [r.id for r in db(q).select(db.comp_rulesets.id)]
         return _export_rulesets(ids)
 
+
+#
+class rest_delete_compliance_moduleset_ruleset(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Detach a ruleset from a moduleset",
+          "Attached rulesets add their variables to the moduleset's modules execution environment.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/compliance/modulesets/10/rulesets/151",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/compliance/modulesets/<id>/rulesets/<id>",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, modset_id, rset_id, **vars):
+        try:
+            modset_id = int(modset_id)
+        except:
+            modset_id = comp_moduleset_id(modset_id)
+        try:
+            rset_id = int(rset_id)
+        except:
+            rset_id = comp_ruleset_id(rset_id)
+        return detach_ruleset_from_moduleset(rset_id, modset_id)
+
+#
+class rest_post_compliance_moduleset_ruleset(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Attach a ruleset to a moduleset",
+          "Attached rulesets add their variables to the moduleset's modules execution environment.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/compliance/modulesets/10/rulesets/151",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/compliance/modulesets/<id>/rulesets/<id>",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, modset_id, rset_id, **vars):
+        try:
+            modset_id = int(modset_id)
+        except:
+            modset_id = comp_moduleset_id(modset_id)
+        try:
+            rset_id = int(rset_id)
+        except:
+            rset_id = comp_ruleset_id(rset_id)
+        return attach_ruleset_to_moduleset(rset_id, modset_id)
+
+#
+class rest_delete_compliance_ruleset_ruleset(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Detach a ruleset from a ruleset",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/compliance/rulesets/10/rulesets/151",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/compliance/rulesets/<id>/rulesets/<id>",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, parent_rset_id, child_rset_id, **vars):
+        try:
+            parent_rset_id = int(parent_rset_id)
+        except:
+            parent_rset_id = comp_ruleset_id(parent_rset_id)
+        try:
+            child_rset_id = int(child_rset_id)
+        except:
+            child_rset_id = comp_ruleset_id(child_rset_id)
+        return detach_ruleset_from_ruleset(child_rset_id, parent_rset_id)
+
+#
+class rest_post_compliance_ruleset_ruleset(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Attach a ruleset to a ruleset",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/compliance/rulesets/10/rulesets/151",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/compliance/rulesets/<id>/rulesets/<id>",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, parent_rset_id, child_rset_id, **vars):
+        try:
+            parent_rset_id = int(parent_rset_id)
+        except:
+            parent_rset_id = comp_ruleset_id(parent_rset_id)
+        try:
+            child_rset_id = int(child_rset_id)
+        except:
+            child_rset_id = comp_ruleset_id(child_rset_id)
+        return attach_ruleset_to_ruleset(child_rset_id, parent_rset_id)
 
 
