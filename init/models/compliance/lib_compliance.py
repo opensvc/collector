@@ -667,6 +667,30 @@ def _export_modulesets(modset_ids):
 
     data = _export_rulesets(rset_ids)
 
+    #
+    q = db.comp_moduleset.id.belongs(modset_ids_with_children)
+    q &= db.comp_moduleset_team_publication.modset_id == db.comp_moduleset.id
+    q &= db.comp_moduleset_team_publication.group_id == db.auth_group.id
+    rows = db(q).select()
+    team_publication_s = {}
+    for row in rows:
+        if row.comp_moduleset.modset_name not in team_publication_s:
+            team_publication_s[row.comp_moduleset.modset_name] = [row.auth_group.role]
+        else:
+            team_publication_s[row.comp_moduleset.modset_name] += [row.auth_group.role]
+
+    #
+    q = db.comp_moduleset.id.belongs(modset_ids_with_children)
+    q &= db.comp_moduleset_team_responsible.modset_id == db.comp_moduleset.id
+    q &= db.comp_moduleset_team_responsible.group_id == db.auth_group.id
+    rows = db(q).select()
+    team_responsible_s = {}
+    for row in rows:
+        if row.comp_moduleset.modset_name not in team_responsible_s:
+            team_responsible_s[row.comp_moduleset.modset_name] = [row.auth_group.role]
+        else:
+            team_responsible_s[row.comp_moduleset.modset_name] += [row.auth_group.role]
+
     # modulesets
     q = db.comp_moduleset.id.belongs(modset_ids_with_children)
     rows = db(q).select(db.comp_moduleset.modset_name)
@@ -687,6 +711,14 @@ def _export_modulesets(modset_ids):
             d['rulesets'] = modset_rset_relations_s[row.modset_name]
         else:
             d['rulesets'] = []
+        if row.modset_name in team_publication_s:
+            d['publications'] = team_publication_s[row.modset_name]
+        else:
+            d['publications'] = []
+        if row.modset_name in team_responsible_s:
+            d['responsibles'] = team_responsible_s[row.modset_name]
+        else:
+            d['responsibles'] = []
         modulesets.append(d)
 
     data['modulesets'] = modulesets
@@ -719,6 +751,30 @@ def _export_rulesets(rset_ids):
           'var_class': row.comp_rulesets_variables.var_class,
         }
         ruleset_vars[row.comp_rulesets.ruleset_name].append(d)
+
+    #
+    q = db.comp_rulesets.id.belongs(rset_ids_with_children)
+    q &= db.comp_ruleset_team_publication.ruleset_id == db.comp_rulesets.id
+    q &= db.comp_ruleset_team_publication.group_id == db.auth_group.id
+    rows = db(q).select()
+    team_publication_s = {}
+    for row in rows:
+        if row.comp_rulesets.ruleset_name not in team_publication_s:
+            team_publication_s[row.comp_rulesets.ruleset_name] = [row.auth_group.role]
+        else:
+            team_publication_s[row.comp_rulesets.ruleset_name] += [row.auth_group.role]
+
+    #
+    q = db.comp_rulesets.id.belongs(rset_ids_with_children)
+    q &= db.comp_ruleset_team_responsible.ruleset_id == db.comp_rulesets.id
+    q &= db.comp_ruleset_team_responsible.group_id == db.auth_group.id
+    rows = db(q).select()
+    team_responsible_s = {}
+    for row in rows:
+        if row.comp_rulesets.ruleset_name not in team_responsible_s:
+            team_responsible_s[row.comp_rulesets.ruleset_name] = [row.auth_group.role]
+        else:
+            team_responsible_s[row.comp_rulesets.ruleset_name] += [row.auth_group.role]
 
 
     # rulesets
@@ -753,6 +809,14 @@ def _export_rulesets(rset_ids):
             d['rulesets'] = rset_relations_s[row.comp_rulesets.ruleset_name]
         else:
             d['rulesets'] = []
+        if row.comp_rulesets.ruleset_name in team_publication_s:
+            d['publications'] = team_publication_s[row.comp_rulesets.ruleset_name]
+        else:
+            d['publications'] = []
+        if row.comp_rulesets.ruleset_name in team_responsible_s:
+            d['responsibles'] = team_responsible_s[row.comp_rulesets.ruleset_name]
+        else:
+            d['responsibles'] = []
         rulesets.append(d)
 
     data = _export_filtersets(fset_ids)
