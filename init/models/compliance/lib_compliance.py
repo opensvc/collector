@@ -1,5 +1,29 @@
 import copy
 
+def ruleset_responsible(id):
+    ug = user_groups()
+    q = db.comp_rulesets.id == id
+    if 'Manager' not in ug:
+        q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+        q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q).select(db.comp_rulesets.id, cacheable=True)
+    v = rows.first()
+    if v is None:
+        return False
+    return True
+
+def moduleset_responsible(id):
+    ug = user_groups()
+    q = db.comp_moduleset.id == id
+    if 'Manager' not in ug:
+        q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
+        q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q).select(db.comp_moduleset.id, cacheable=True)
+    v = rows.first()
+    if v is None:
+        return False
+    return True
+
 def fset_get_ancestors():
     q = db.gen_filtersets_filters.f_id == 0
     rows = db(q).select()

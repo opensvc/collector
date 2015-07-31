@@ -577,7 +577,7 @@ class rest_delete_compliance_ruleset_ruleset(rest_delete_handler):
         except:
             child_rset_id = comp_ruleset_id(child_rset_id)
         try:
-            detach_ruleset_to_ruleset(child_rset_id, parent_rset_id)
+            detach_ruleset_from_ruleset(child_rset_id, parent_rset_id)
         except CompError as e:
             return dict(error=str(e))
         return dict(info="ruleset detached")
@@ -613,5 +613,50 @@ class rest_post_compliance_ruleset_ruleset(rest_post_handler):
             return dict(error=str(e))
         return dict(info="ruleset attached")
 
+#
+class rest_post_compliance_ruleset(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Update a set of ruleset properties.",
+          "The user must be responsible for the ruleset.",
+          "The user must be in the CompManager privilege group.",
+          "The updated timestamp is automatically updated.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the rulesets table.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -d public=true https://%(collector)s/init/rest/api/compliance/rulesets/10""",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/compliance/rulesets/<id>",
+          tables=["comp_rulesets"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, id, **vars):
+        check_privilege("CompManager")
+        try:
+            id = int(id)
+        except:
+            id = comp_ruleset_id(id)
+        if id is None:
+            return dict(error="ruleset not found")
+        if not ruleset_responsible(id):
+            return dict(error="you are not responsible for this ruleset")
+        q = db.comp_rulesets.id == id
+        #vars["ruleset_updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        db(q).update(**vars)
+        _log('compliance.ruleset.change',
+             'update properties %(data)s',
+             dict(data=str(vars)),
+        )
+        l = {
+          'event': 'comp_rulesets_change',
+          'data': {'foo': 'bar'},
+        }
+        _websocket_send(event_msg(l))
+        return rest_get_compliance_ruleset().handler(id, props=','.join(["ruleset_name"]+vars.keys()))
 
 

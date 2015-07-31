@@ -164,6 +164,7 @@ handlers = {
      rest_post_compliance_modulesets(),
      rest_post_compliance_ruleset_ruleset(),
      rest_post_compliance_rulesets(),
+     rest_post_compliance_ruleset(),
      rest_post_dns_domains(),
      rest_post_dns_domain(),
      rest_post_dns_records(),
