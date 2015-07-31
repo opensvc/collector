@@ -1474,7 +1474,7 @@ def create_variable(rset_id, var_name):
     return obj_id
 
 @auth.requires_membership('CompManager')
-def json_tree_action_delete_module(mod_id):
+def delete_module(mod_id):
     q = db.comp_moduleset_modules.id == mod_id
     q1 = db.comp_moduleset.id == db.comp_moduleset_modules.modset_id
     v = db(q & q1).select(cacheable=True).first()
@@ -1488,7 +1488,7 @@ def json_tree_action_delete_module(mod_id):
               modset_name=v.comp_moduleset.modset_name))
 
 @auth.requires_membership('CompManager')
-def json_tree_action_delete_variable(var_id):
+def delete_variable(var_id):
     q = db.comp_rulesets_variables.id == var_id
     q1 = db.comp_rulesets.id == db.comp_rulesets_variables.ruleset_id
     v = db(q & q1).select(cacheable=True).first()
@@ -1500,5 +1500,75 @@ def json_tree_action_delete_variable(var_id):
          'deleted variable %(var_name)s from ruleset %(rset_name)s',
          dict(var_name=v.comp_rulesets_variables.var_name,
               rset_name=v.comp_rulesets.ruleset_name))
+
+@auth.requires_membership('CompManager')
+def attach_group_to_ruleset(group_id, rset_id, gtype="publication"):
+    ug = user_groups()
+    q = db.comp_rulesets.id == rset_id
+    if 'Manager' not in ug:
+        q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+        q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q).select(db.comp_rulesets.ALL, cacheable=True)
+    v = rows.first()
+    if v is None:
+        raise CompError("ruleset not found or not owned by you")
+
+    q = db.auth_group.id == group_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        raise CompError("group not found")
+
+    if 'Manager' not in ug and int(group_id) not in user_group_ids():
+        raise CompError("you can't attach a group you are not a member of")
+
+    q = db["comp_ruleset_team_"+gtype].ruleset_id == rset_id
+    q &= db["comp_ruleset_team_"+gtype].group_id == group_id
+    if db(q).count() > 0:
+        raise CompInfo(gtype+" group already attached")
+
+    db["comp_ruleset_team_"+gtype].update_or_insert(ruleset_id=rset_id,
+                                                      group_id=group_id)
+    table_modified("comp_ruleset_team_"+gtype)
+    _log('compliance.ruleset.change',
+         'attach %(gtype)s group %(role)s to ruleset %(rset_name)s publications',
+         dict(rset_name=v.ruleset_name,
+              gtype=gtype,
+              role=w.role))
+
+@auth.requires_membership('CompManager')
+def attach_group_to_moduleset(group_id, modset_id, gtype="publication"):
+    ug = user_groups()
+    q = db.comp_moduleset.id == modset_id
+    if 'Manager' not in ug:
+        q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
+        q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q).select(db.comp_moduleset.ALL, cacheable=True)
+    v = rows.first()
+    if v is None:
+        raise CompError("moduleset not found or not owned by you")
+
+    q = db.auth_group.id == group_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        raise CompError("group not found")
+
+    if 'Manager' not in ug and int(group_id) not in user_group_ids():
+        raise CompError("you can't attach a group you are not a member of")
+
+    q = db["comp_moduleset_team_"+gtype].modset_id == modset_id
+    q &= db["comp_moduleset_team_"+gtype].group_id == group_id
+    if db(q).count() > 0:
+        raise CompInfo(gtype+" group already attached")
+
+    db["comp_moduleset_team_"+gtype].update_or_insert(modset_id=modset_id,
+                                                      group_id=group_id)
+    table_modified("comp_moduleset_team_"+gtype)
+    _log('compliance.moduleset.change',
+         'attach %(gtype)s group %(role)s to moduleset %(modset_name)s',
+         dict(modset_name=v.modset_name,
+              gtype=gtype,
+              role=w.role))
 
 

@@ -11797,40 +11797,13 @@ def json_tree_action_detach_filterset_from_rset(rset_id):
               fset_name=w.gen_filtersets.fset_name))
     return 0
 
-@auth.requires_membership('CompManager')
 def json_tree_action_move_group_to_modset(group_id, modset_id, gtype="publication"):
-    ug = user_groups()
-    q = db.comp_moduleset.id == modset_id
-    if 'Manager' not in ug:
-        q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
-        q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
-    rows = db(q).select(db.comp_moduleset.ALL, cacheable=True)
-    v = rows.first()
-    if v is None:
-        return {"err": "moduleset not found or not owned by you"}
-
-    q = db.auth_group.id == group_id
-    rows = db(q).select(cacheable=True)
-    w = rows.first()
-    if w is None:
-        return {"err": "group not found"}
-
-    if 'Manager' not in ug and int(group_id) not in user_group_ids():
-        return {"err": "you can't attach a group you are not a member of"}
-
-    q = db["comp_moduleset_team_"+gtype].modset_id == modset_id
-    q &= db["comp_moduleset_team_"+gtype].group_id == group_id
-    if db(q).count() > 0:
-        return "0"
-
-    db["comp_moduleset_team_"+gtype].update_or_insert(modset_id=modset_id,
-                                                      group_id=group_id)
-    table_modified("comp_moduleset_team_"+gtype)
-    _log('compliance.moduleset.change',
-         'attach %(gtype)s group %(role)s to moduleset %(modset_name)s',
-         dict(modset_name=v.modset_name,
-              gtype=gtype,
-              role=w.role))
+    try:
+        attach_group_to_moduleset(group_id, modset_id, gtype=gtype)
+    except CompError as e:
+        return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
     return "0"
 
 def json_tree_action_copy_modset_to_modset(child_modset_id, parent_modset_id):
@@ -11975,40 +11948,13 @@ def json_tree_action_set_rset_group_publication(group_id, rset_id):
                                             group_id=group_id)
     return "0"
 
-@auth.requires_membership('CompManager')
 def json_tree_action_move_group_to_rset(group_id, rset_id, gtype="publication"):
-    ug = user_groups()
-    q = db.comp_rulesets.id == rset_id
-    if 'Manager' not in ug:
-        q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
-        q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
-    rows = db(q).select(db.comp_rulesets.ALL, cacheable=True)
-    v = rows.first()
-    if v is None:
-        return {"err": "ruleset not found or not owned by you"}
-
-    q = db.auth_group.id == group_id
-    rows = db(q).select(cacheable=True)
-    w = rows.first()
-    if w is None:
-        return {"err": "group not found"}
-
-    if 'Manager' not in ug and int(group_id) not in user_group_ids():
-        return {"err": "you can't attach a group you are not a member of"}
-
-    q = db["comp_ruleset_team_"+gtype].ruleset_id == rset_id
-    q &= db["comp_ruleset_team_"+gtype].group_id == group_id
-    if db(q).count() > 0:
-        return "0"
-
-    db["comp_ruleset_team_"+gtype].update_or_insert(ruleset_id=rset_id,
-                                                      group_id=group_id)
-    table_modified("comp_ruleset_team_"+gtype)
-    _log('compliance.ruleset.change',
-         'attach %(gtype)s group %(role)s to ruleset %(rset_name)s publications',
-         dict(rset_name=v.ruleset_name,
-              gtype=gtype,
-              role=w.role))
+    try:
+        attach_group_to_ruleset(group_id, modset_id, gtype=gtype)
+    except CompError as e:
+        return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
     return "0"
 
 @auth.requires_membership('CompManager')

@@ -37,6 +37,12 @@ def group_role(id):
         return None
     return rows[0].role
 
+def lib_group_id(role):
+    rows = db(db.auth_group.role==role).select()
+    if len(rows) != 1:
+        return None
+    return rows[0].id
+
 def user_private_group_id():
     q = db.auth_membership.user_id == auth.user_id
     q &= db.auth_membership.group_id == db.auth_group.id

@@ -1142,4 +1142,247 @@ class rest_post_compliance_moduleset_modules(rest_post_handler):
         _websocket_send(event_msg(l))
         return rest_get_compliance_moduleset_module().handler(modset_id, obj_id)
 
+#
+# groups
+#
+class rest_post_compliance_moduleset_publication(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Attach a publication group to a moduleset",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/compliance/modulesets/10/publications/151",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/compliance/modulesets/<id>/publications/<id>",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, modset_id, group_id, **vars):
+        try:
+            modset_id = int(modset_id)
+        except:
+            modset_id = comp_moduleset_id(modset_id)
+        try:
+            group_id = int(group_id)
+        except:
+            group_id = lib_group_id(group_id)
+        try:
+            attach_group_to_moduleset(group_id, modset_id, gtype="publication")
+        except CompError as e:
+            return dict(error=str(e))
+        return dict(info="group attached")
+
+class rest_delete_compliance_moduleset_publication(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Detach a publication group from a moduleset",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/compliance/modulesets/10/publications/151",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/compliance/modulesets/<id>/publications/<id>",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, modset_id, group_id, **vars):
+        try:
+            modset_id = int(modset_id)
+        except:
+            modset_id = comp_moduleset_id(modset_id)
+        try:
+            group_id = int(group_id)
+        except:
+            group_id = lib_group_id(group_id)
+        try:
+            detach_group_from_moduleset(group_id, modset_id, gtype="publication")
+        except CompError as e:
+            return dict(error=str(e))
+        return dict(info="group detached")
+
+class rest_post_compliance_moduleset_responsible(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Attach a responsible group from a moduleset",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/compliance/modulesets/10/responsibles/151",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/compliance/modulesets/<id>/responsibles/<id>",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, modset_id, group_id, **vars):
+        try:
+            modset_id = int(modset_id)
+        except:
+            modset_id = comp_moduleset_id(modset_id)
+        try:
+            group_id = int(group_id)
+        except:
+            group_id = lib_group_id(group_id)
+        try:
+            attach_group_to_moduleset(group_id, modset_id, gtype="responsible")
+        except CompError as e:
+            return dict(error=str(e))
+        return dict(info="group attached")
+
+class rest_delete_compliance_moduleset_responsible(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Detach a responsible group from a moduleset",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/compliance/modulesets/10/responsibles/151",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/compliance/modulesets/<id>/responsibles/<id>",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, modset_id, group_id, **vars):
+        try:
+            modset_id = int(modset_id)
+        except:
+            modset_id = comp_moduleset_id(modset_id)
+        try:
+            group_id = int(group_id)
+        except:
+            group_id = lib_group_id(group_id)
+        try:
+            detach_group_from_moduleset(group_id, modset_id, gtype="responsible")
+        except CompError as e:
+            return dict(error=str(e))
+        return dict(info="group detached")
+
+class rest_post_compliance_ruleset_publication(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Attach a publication group from a ruleset",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/compliance/rulesets/10/publications/151",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/compliance/rulesets/<id>/publications/<id>",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, ruleset_id, group_id, **vars):
+        try:
+            ruleset_id = int(ruleset_id)
+        except:
+            ruleset_id = comp_ruleset_id(ruleset_id)
+        try:
+            group_id = int(group_id)
+        except:
+            group_id = lib_group_id(group_id)
+        try:
+            attach_group_to_ruleset(group_id, ruleset_id, gtype="publication")
+        except CompError as e:
+            return dict(error=str(e))
+        return dict(info="group attached")
+
+class rest_delete_compliance_ruleset_publication(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Detach a publication group from a ruleset",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/compliance/rulesets/10/publications/151",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/compliance/rulesets/<id>/publications/<id>",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, ruleset_id, group_id, **vars):
+        try:
+            ruleset_id = int(ruleset_id)
+        except:
+            ruleset_id = comp_ruleset_id(ruleset_id)
+        try:
+            group_id = int(group_id)
+        except:
+            group_id = lib_group_id(group_id)
+        try:
+            detach_group_from_ruleset(group_id, ruleset_id, gtype="publication")
+        except CompError as e:
+            return dict(error=str(e))
+        return dict(info="group detached")
+
+class rest_post_compliance_ruleset_responsible(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Attach a responsible group from a ruleset",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/compliance/rulesets/10/responsibles/151",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/compliance/rulesets/<id>/responsibles/<id>",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, ruleset_id, group_id, **vars):
+        try:
+            ruleset_id = int(ruleset_id)
+        except:
+            ruleset_id = comp_ruleset_id(ruleset_id)
+        try:
+            group_id = int(group_id)
+        except:
+            group_id = lib_group_id(group_id)
+        try:
+            attach_group_to_ruleset(group_id, ruleset_id, gtype="responsible")
+        except CompError as e:
+            return dict(error=str(e))
+        return dict(info="group attached")
+
+class rest_delete_compliance_ruleset_responsible(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Detach a responsible group from a ruleset",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/compliance/rulesets/10/responsibles/151",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/compliance/rulesets/<id>/responsibles/<id>",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, ruleset_id, group_id, **vars):
+        try:
+            ruleset_id = int(ruleset_id)
+        except:
+            ruleset_id = comp_ruleset_id(ruleset_id)
+        try:
+            group_id = int(group_id)
+        except:
+            group_id = lib_group_id(group_id)
+        try:
+            detach_group_from_ruleset(group_id, ruleset_id, gtype="responsible")
+        except CompError as e:
+            return dict(error=str(e))
+        return dict(info="group detached")
+
 
