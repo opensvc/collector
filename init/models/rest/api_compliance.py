@@ -214,6 +214,52 @@ class rest_post_compliance_modulesets(rest_post_handler):
         return rest_get_compliance_moduleset().handler(obj_id)
 
 #
+class rest_post_compliance_moduleset(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Update a set of moduleset properties.",
+          "The user must be responsible for the moduleset.",
+          "The user must be in the CompManager privilege group.",
+          "The updated timestamp is automatically updated.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the modulesets table.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -d modset_name=new_name https://%(collector)s/init/rest/api/compliance/modulesets/10""",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/compliance/modulesets/<id>",
+          tables=["comp_moduleset"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, id, **vars):
+        check_privilege("CompManager")
+        try:
+            id = int(id)
+        except:
+            id = comp_moduleset_id(id)
+        if id is None:
+            return dict(error="moduleset not found")
+        if not moduleset_responsible(id):
+            return dict(error="you are not responsible for this moduleset")
+        q = db.comp_moduleset.id == id
+        vars["modset_updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        db(q).update(**vars)
+        _log('compliance.moduleset.change',
+             'update properties %(data)s',
+             dict(data=str(vars)),
+        )
+        l = {
+          'event': 'comp_moduleset_change',
+          'data': {'foo': 'bar'},
+        }
+        _websocket_send(event_msg(l))
+        return rest_get_compliance_moduleset().handler(id, props=','.join(["modset_name"]+vars.keys()))
+
+#
 class rest_get_compliance_modulesets(rest_get_table_handler):
     def __init__(self):
         desc = [

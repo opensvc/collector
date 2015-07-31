@@ -170,6 +170,7 @@ handlers = {
      rest_post_compliance_moduleset_modules(),
      rest_post_compliance_moduleset_ruleset(),
      rest_post_compliance_modulesets(),
+     rest_post_compliance_moduleset(),
      rest_post_compliance_ruleset_ruleset(),
      rest_post_compliance_ruleset_variable(),
      rest_post_compliance_ruleset_variables(),
