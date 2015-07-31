@@ -11248,7 +11248,7 @@ def json_tree_action_create_module(modset_id, modset_mod_name):
     except:
         pass
     try:
-        obj_id = create_module(rset_name)
+        obj_id = create_module(modset_id, modset_mod_name)
     except CompError as e:
         return {"err": str(e)}
     except CompInfo as e:
@@ -11263,7 +11263,7 @@ def json_tree_action_create_variable(rset_id, var_name):
     except:
         pass
     try:
-        obj_id = create_variable(var_name)
+        obj_id = create_variable(rset_id, var_name)
     except CompError as e:
         return {"err": str(e)}
     except CompInfo as e:
@@ -11909,7 +11909,7 @@ def json_tree_action_set_rset_group_publication(group_id, rset_id):
 
 def json_tree_action_move_group_to_rset(group_id, rset_id, gtype="publication"):
     try:
-        attach_group_to_ruleset(group_id, modset_id, gtype=gtype)
+        attach_group_to_ruleset(group_id, rset_id, gtype=gtype)
     except CompError as e:
         return {"err": str(e)}
     except CompInfo as e:
